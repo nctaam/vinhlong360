@@ -244,7 +244,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cs-icon { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }
 .cs-card div { flex: 1; min-width: 0; }
 .cs-card h3 { margin: 0; font-size: .95rem; font-weight: 600; }
-.cs-card p { margin: 4px 0 0; font-size: .78rem; color: var(--muted); line-height: 1.4; }
+.cs-card p { margin: var(--space-1) 0 0; font-size: .78rem; color: var(--muted); line-height: 1.4; }
 .cs-arrow {
   font-size: 1.4rem; font-weight: 300; color: var(--muted); flex-shrink: 0;
   opacity: .4; transition: opacity .2s, transform .2s cubic-bezier(.2,1,.4,1);

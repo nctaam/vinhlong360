@@ -113,7 +113,7 @@ async function submit() {
 .rm-head { flex-shrink: 0; }
 .rm-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }
 
-.rm-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+.rm-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: var(--space-1) var(--space-2); border-radius: 8px; }
 .rm-close:hover { background: var(--bg-warm); color: var(--ink); }
 .rm-sheet h3 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 700; }
 .rm-sub { margin: 0 0 var(--space-4); font-size: .84rem; color: var(--muted); line-height: 1.45; }

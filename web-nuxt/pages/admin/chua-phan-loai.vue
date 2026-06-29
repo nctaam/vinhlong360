@@ -328,7 +328,7 @@ onMounted(load)
 }
 
 .cpl-place-select {
-  max-width: 220px; padding: 4px 8px; min-height: 44px;
+  max-width: 220px; padding: var(--space-1) var(--space-2); min-height: 44px;
   font-size: .82rem; border: .5px solid var(--line); border-radius: 8px;
   background: var(--bg); color: var(--ink); cursor: pointer;
   transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;

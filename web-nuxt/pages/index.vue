@@ -909,7 +909,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .event-mini .ec-info { gap: 2px; }
 .event-mini h3 { margin: 0; font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ec-countdown {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: var(--space-1);
   font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--amber-700);
   background: rgba(154, 109, 30, .08); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
 }

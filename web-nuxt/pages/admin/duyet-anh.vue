@@ -335,7 +335,7 @@ onMounted(() => fetchQueue())
 .img-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
 .img-reject-btns { display: flex; gap: var(--space-2); }
 .img-reject-btns .btn-danger { flex: 1; }
-.btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
+.btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
 .img-load-more { margin-top: var(--space-5); }

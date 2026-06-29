@@ -457,7 +457,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-subsys {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 12px; border-radius: 100px;
+  padding: var(--space-1) var(--space-3); border-radius: 100px;
   font-size: .75rem; font-weight: 500;
 }
 .ai-subsys-dot {

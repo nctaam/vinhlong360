@@ -499,7 +499,7 @@ onMounted(fetchDashboard)
 .dash-donut-legend {
   display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center;
 }
-.dash-legend-item { display: flex; align-items: center; gap: 4px; font-size: .72rem; }
+.dash-legend-item { display: flex; align-items: center; gap: var(--space-1); font-size: .72rem; }
 .dash-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dash-legend-name { color: var(--muted); }
 .dash-legend-pct { font-weight: 700; }

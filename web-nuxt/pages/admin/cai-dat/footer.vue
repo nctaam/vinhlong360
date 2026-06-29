@@ -195,7 +195,7 @@ function onFooterKeydown(e: KeyboardEvent) {
   margin-top: var(--space-4); border-top: .5px solid var(--line);
 }
 .sf-save {
-  padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
+  padding: var(--space-3) var(--space-7); border-radius: 12px; font-weight: 600; font-size: .88rem;
   background: var(--primary, #219653); color: var(--on-primary); border: none; cursor: pointer;
   min-height: 44px;
   transition: transform .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;

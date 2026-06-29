@@ -93,7 +93,7 @@ onMounted(reload)
 }
 .cs-help p { margin: 0 0 var(--space-2); }
 .cs-help pre {
-  margin: 0; padding: 8px 12px; border-radius: 8px; white-space: pre-wrap;
+  margin: 0; padding: var(--space-2) var(--space-3); border-radius: 8px; white-space: pre-wrap;
   background: var(--bg); border: .5px solid var(--line);
   font-family: 'SF Mono', 'Cascadia Code', monospace; font-size: .76rem; color: var(--ink);
 }

@@ -1272,7 +1272,7 @@ useHead({
 .img-preview-item { position: relative; width: 64px; height: 64px; border-radius: var(--radius-sm); overflow: hidden; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .img-preview-item:hover { transform: scale(1.08); box-shadow: var(--shadow-sm); }
 .img-preview-item img { width: 100%; height: 100%; object-fit: cover; }
-.img-preview-item .remove { position: absolute; top: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--overlay-dark); color: var(--text-on-dark, #fff); border: none; cursor: pointer; font-size: .7rem; display: flex; align-items: center; justify-content: center; padding: 8px; box-sizing: content-box; transition: background .2s, transform .25s var(--ease-spring-gentle); }
+.img-preview-item .remove { position: absolute; top: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--overlay-dark); color: var(--text-on-dark, #fff); border: none; cursor: pointer; font-size: .7rem; display: flex; align-items: center; justify-content: center; padding: var(--space-2); box-sizing: content-box; transition: background .2s, transform .25s var(--ease-spring-gentle); }
 .img-preview-item .remove:hover { background: var(--error); transform: scale(1.1); }
 .img-preview-item .remove:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 1px; }
 @keyframes fadeIn { from { opacity: 0; } }

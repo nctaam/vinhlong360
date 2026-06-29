@@ -351,7 +351,7 @@ async function onReset() {
 }
 .sf-color-hex:focus { outline: none; border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1); }
 .sf-color-clear {
-  padding: 8px 14px; border: .5px solid var(--line); border-radius: 10px; background: var(--bg);
+  padding: var(--space-2) 14px; border: .5px solid var(--line); border-radius: 10px; background: var(--bg);
   cursor: pointer; font-size: .78rem; color: var(--muted);
   min-height: 44px; display: flex; align-items: center;
   transition: background .2s, color .2s, border-color .2s, transform .15s cubic-bezier(.2,1,.4,1);
@@ -425,7 +425,7 @@ async function onReset() {
 .sf-actions-dirty { border-top-color: var(--primary, #219653); }
 .sf-dirty-badge {
   display: inline-flex; align-items: center; align-self: center;
-  padding: 4px 10px; border-radius: 999px;
+  padding: var(--space-1) 10px; border-radius: 999px;
   font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
   background: rgba(var(--primary-rgb), .1); border: .5px solid rgba(var(--primary-rgb), .25);
 }

@@ -375,7 +375,7 @@ onUnmounted(() => { if (entitySearchTimer) clearTimeout(entitySearchTimer) })
 .lt-area-badge:hover { background: rgba(var(--blue-rgb),.14); transform: scale(1.04); }
 .lt-duration {
   font-size: .82rem; color: var(--muted);
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: var(--space-1);
 }
 .lt-stops-badge {
   display: inline-flex; align-items: center; justify-content: center;
@@ -402,7 +402,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: flex; align-items: center; justify-content: space-between;
   gap: var(--space-2); margin-top: var(--space-1);
 }
-.lt-stops-label { margin: 0; display: inline-flex; align-items: center; gap: 8px; }
+.lt-stops-label { margin: 0; display: inline-flex; align-items: center; gap: var(--space-2); }
 .lt-stops-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 22px; height: 22px; padding: 0 6px;
@@ -507,7 +507,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .lt-dirty-badge {
   margin-right: auto;
   display: inline-flex; align-items: center;
-  padding: 4px 10px; border-radius: 999px;
+  padding: var(--space-1) 10px; border-radius: 999px;
   font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
   background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
 }

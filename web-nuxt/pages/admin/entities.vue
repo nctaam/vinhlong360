@@ -940,7 +940,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-kbyg-summary:hover { background: rgba(0,0,0,.03); }
 .ent-kbyg-fields { padding: 0 14px 14px; display: flex; flex-direction: column; gap: var(--space-3); }
 .kbyg-amenity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
-.kbyg-amenity-check { display: flex; align-items: center; gap: 5px; font-size: .82rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+.kbyg-amenity-check { display: flex; align-items: center; gap: 5px; font-size: .82rem; cursor: pointer; padding: var(--space-1) 6px; border-radius: 6px; }
 .kbyg-amenity-check:hover { background: rgba(0,0,0,.04); }
 .kbyg-amenity-check input[type="checkbox"] { accent-color: var(--primary); }
 .dark .ent-kbyg-summary:hover { background: rgba(255,255,255,.05); }

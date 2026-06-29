@@ -157,7 +157,7 @@ onMounted(reload)
 
 .cs-save-row { display: flex; gap: var(--space-3); padding-top: var(--space-5); margin-top: var(--space-4); border-top: .5px solid var(--line); }
 .sf-save {
-  padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
+  padding: var(--space-3) var(--space-7); border-radius: 12px; font-weight: 600; font-size: .88rem;
   background: var(--primary, #219653); color: var(--text-on-dark, #fff); border: none; cursor: pointer; min-height: 44px;
   transition: transform .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
 }
@@ -165,7 +165,7 @@ onMounted(reload)
 .sf-save:active:not(:disabled) { transform: scale(.97); }
 .sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .sf-reset {
-  padding: 12px 20px; border-radius: 12px; font-size: .85rem; font-weight: 500;
+  padding: var(--space-3) var(--space-5); border-radius: 12px; font-size: .85rem; font-weight: 500;
   background: transparent; border: .5px solid var(--line); color: var(--muted); cursor: pointer; min-height: 44px;
   transition: border-color .2s, color .2s, transform .15s cubic-bezier(.2,1,.4,1);
 }

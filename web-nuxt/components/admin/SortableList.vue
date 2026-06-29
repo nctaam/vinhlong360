@@ -225,7 +225,7 @@ function addChild(parentIdx: number) {
 .sl-child-bullet { color: var(--muted); font-size: 1.1rem; font-weight: 600; width: 12px; text-align: center; flex-shrink: 0; }
 .sl-child-input { flex: 1; }
 .sl-add-child {
-  align-self: flex-start; padding: 8px 14px; border-radius: 10px;
+  align-self: flex-start; padding: var(--space-2) 14px; border-radius: 10px;
   font-size: .8rem; font-weight: 500; color: var(--primary, #219653);
   background: rgba(var(--primary-rgb),.06); border: none; cursor: pointer;
   min-height: 44px;

@@ -61,7 +61,7 @@ onMounted(reload)
 .cs-help p { margin: 0 0 var(--space-2); }
 .cs-help p:last-child { margin-bottom: 0; }
 .cs-help pre {
-  margin: 0 0 var(--space-2); padding: 8px 12px; border-radius: 8px;
+  margin: 0 0 var(--space-2); padding: var(--space-2) var(--space-3); border-radius: 8px;
   background: var(--bg); border: .5px solid var(--line);
   font-family: 'SF Mono', 'Cascadia Code', monospace; font-size: .78rem; color: var(--ink);
   overflow-x: auto;

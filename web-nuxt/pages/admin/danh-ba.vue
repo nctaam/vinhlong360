@@ -232,7 +232,7 @@ onMounted(loadFacilities)
   display: grid; grid-template-columns: 1fr 1fr;
   gap: var(--space-3); margin-bottom: var(--space-4);
 }
-.db-field { display: flex; flex-direction: column; gap: 4px; }
+.db-field { display: flex; flex-direction: column; gap: var(--space-1); }
 .db-field-label {
   font-size: .78rem; font-weight: 600; color: var(--muted);
   transition: color .2s;
@@ -243,7 +243,7 @@ onMounted(loadFacilities)
 /* ── Inline validation ── */
 .db-field-error {
   font-size: .74rem; font-weight: 500; color: var(--error, #D94F3D);
-  display: flex; align-items: center; gap: 4px;
+  display: flex; align-items: center; gap: var(--space-1);
 }
 .db-field-error::before { content: "\26A0"; font-size: .8em; }
 .db-field-hint { font-size: .74rem; color: var(--muted); }
@@ -286,7 +286,7 @@ onMounted(loadFacilities)
 /* ── Dirty / unsaved indicator (mirrors SettingsForm .sf-dirty-badge) ── */
 .sf-dirty-badge {
   display: inline-flex; align-items: center;
-  padding: 4px 10px; border-radius: 999px;
+  padding: var(--space-1) 10px; border-radius: 999px;
   font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
   background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
 }

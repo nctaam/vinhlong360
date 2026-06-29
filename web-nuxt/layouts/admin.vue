@@ -230,7 +230,7 @@ onUnmounted(() => {
 
 .sidebar-toggle {
   background: none; border: none; color: rgba(255,255,255,.5);
-  cursor: pointer; padding: 4px; font-size: 1rem;
+  cursor: pointer; padding: var(--space-1); font-size: 1rem;
   min-width: 36px; min-height: 36px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px;
@@ -292,7 +292,7 @@ onUnmounted(() => {
 .collapsed .admin-nav a[title]:is(:hover, :focus-visible)::after {
   content: attr(title); position: absolute; left: calc(100% + 8px); top: 50%;
   transform: translateY(-50%); background: rgba(0,0,0,.85); color: var(--text-on-dark);
-  padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600;
+  padding: var(--space-1) 10px; border-radius: 6px; font-size: .75rem; font-weight: 600;
   white-space: nowrap; z-index: var(--z-overlay); pointer-events: none;
   animation: tooltipIn .15s ease-out;
 }

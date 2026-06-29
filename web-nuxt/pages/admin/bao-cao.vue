@@ -413,7 +413,7 @@ onMounted(() => fetchAll())
 .rpt-filter-label { font-size: .72rem; font-weight: 600; color: var(--muted); margin-right: 2px; }
 .rpt-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  min-height: 44px; padding: 4px 12px;
+  min-height: 44px; padding: var(--space-1) var(--space-3);
   border: 1px solid var(--border); border-radius: 100px;
   background: var(--surface, #fff); color: var(--text, #1d1d1f);
   font-size: .78rem; font-weight: 500; cursor: pointer;

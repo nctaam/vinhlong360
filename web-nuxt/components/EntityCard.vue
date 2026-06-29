@@ -188,7 +188,7 @@ const ratingDisplay = computed(() => {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   z-index: 3;
 }
 .card-dot {

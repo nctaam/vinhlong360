@@ -466,7 +466,7 @@ onMounted(() => fetchUsers())
 
 /* ── Sortable column headers ── */
 .usr-sort-th {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: var(--space-1);
   padding: 4px 6px; margin: -4px -6px;
   font: inherit; font-weight: inherit; color: inherit; text-align: left;
   background: none; border: none; border-radius: 6px;
@@ -498,7 +498,7 @@ onMounted(() => fetchUsers())
 
 /* ── Role select ── */
 .usr-role-select {
-  padding: 4px 8px; min-height: 44px; font-size: .78rem;
+  padding: var(--space-1) var(--space-2); min-height: 44px; font-size: .78rem;
   border: .5px solid var(--line); border-radius: 8px;
   background: var(--bg); color: var(--ink);
   cursor: pointer; transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;

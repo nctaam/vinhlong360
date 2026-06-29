@@ -510,7 +510,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-btn-spin { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: admin-spin .6s linear infinite; }
 .mod-reason-presets { display: flex; flex-wrap: wrap; gap: var(--space-1); width: 100%; }
 .mod-reason-chip {
-  padding: 4px 10px; border-radius: 100px; border: .5px solid var(--line);
+  padding: var(--space-1) 10px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); font-size: .76rem; font-weight: 500; color: var(--muted);
   cursor: pointer; transition: background .15s, color .15s, border-color .15s;
 }

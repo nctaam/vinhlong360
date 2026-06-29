@@ -222,7 +222,7 @@ onMounted(fetchMedia)
   position: absolute; top: 6px; right: 6px; padding: 2px 8px; border-radius: 100px;
   background: rgba(var(--warning-rgb, 255,159,10),.9); color: var(--text-on-dark, #fff); font-size: .7rem; font-weight: 700;
 }
-.media-card-info { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+.media-card-info { padding: var(--space-2) 10px; display: flex; flex-direction: column; gap: 2px; }
 .media-entity-name { font-weight: 600; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .media-entity-type { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
 .media-credit { font-size: .72rem; color: var(--primary-fg); }
