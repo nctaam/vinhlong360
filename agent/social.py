@@ -27,7 +27,7 @@ from database import db
 from moderation import moderate_content, moderate_content_enhanced, log_moderation
 from notifications import create_notification
 from storage import storage
-from ratelimit import check_rate
+from ratelimit import check_rate, check_rate_ip
 
 logger = logging.getLogger("social")
 
@@ -2827,12 +2827,16 @@ async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le
 # ── Share Tracking ──
 
 @router.post("/posts/{post_id}/share")
-async def track_share(post_id: str, user=Depends(get_current_user), _csrf=Depends(require_csrf)):
+async def track_share(post_id: str, request: Request, user=Depends(get_current_user), _csrf=Depends(require_csrf)):
     """Track when a user shares a post (copy link, social media share)."""
     post_id = validate_path_id(post_id, "post_id")
     if user:
         check_rate(f"share:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
                    "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
+    else:
+        from middleware import get_client_ip
+        check_rate_ip(get_client_ip(request), "share", 30, 300,
+                      "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
     ph = db._ph
 
     def _query():

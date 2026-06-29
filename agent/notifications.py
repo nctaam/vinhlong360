@@ -536,6 +536,8 @@ async def get_following(
 
 @router.get("/followers/count/{target_type}/{target_id}")
 async def get_follower_count(target_type: str, target_id: str):
+    if target_type not in ("user", "entity"):
+        raise HTTPException(400, "target_type phải là 'user' hoặc 'entity'")
     validate_path_id(target_id, "target_id")
     def _query():
         ph = db._ph
@@ -546,7 +548,7 @@ async def get_follower_count(target_type: str, target_id: str):
             """, (target_type, target_id))
         return row
     row = await asyncio.to_thread(_query)
-    return {"count": row["c"] if row else 0}
+    return {"count": db._row_to_dict(row)["c"] if row else 0}
 
 
 # ── Report ──

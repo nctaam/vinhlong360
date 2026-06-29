@@ -2457,3 +2457,55 @@ class TestPerformanceOptimizations:
     def test_following_feed_uses_enrich_all(self):
         src = inspect.getsource(__import__("social").get_following_feed)
         assert "_enrich_all" in src
+
+
+# ── Cross-cutting: anonymous rate-limit on track_share ──
+
+
+class TestTrackShareAnonymousRateLimit:
+    """track_share must rate-limit anonymous callers by IP."""
+
+    def test_track_share_has_request_param(self):
+        src = inspect.getsource(__import__("social").track_share)
+        assert "request: Request" in src
+
+    def test_track_share_anonymous_uses_ip_rate_limit(self):
+        src = inspect.getsource(__import__("social").track_share)
+        assert "check_rate_ip" in src
+        assert "get_client_ip" in src
+
+    def test_track_share_auth_uses_user_rate_limit(self):
+        src = inspect.getsource(__import__("social").track_share)
+        assert 'check_rate(f"share:{user' in src
+
+    def test_track_share_branches_on_user(self):
+        src = inspect.getsource(__import__("social").track_share)
+        assert "if user:" in src
+        assert "else:" in src
+
+    def test_check_rate_ip_imported(self):
+        import social
+        assert hasattr(social, "check_rate_ip") or "check_rate_ip" in dir(social)
+        from ratelimit import check_rate_ip
+        assert callable(check_rate_ip)
+
+
+# ── Cross-cutting: follower count target_type validation ──
+
+
+class TestFollowerCountTargetTypeValidation:
+    """get_follower_count must validate target_type against whitelist."""
+
+    def test_target_type_validated(self):
+        src = inspect.getsource(__import__("notifications").get_follower_count)
+        assert '"user"' in src
+        assert '"entity"' in src
+        assert "not in" in src
+
+    def test_invalid_target_type_raises_400(self):
+        src = inspect.getsource(__import__("notifications").get_follower_count)
+        assert "400" in src or "HTTPException" in src
+
+    def test_row_access_uses_row_to_dict(self):
+        src = inspect.getsource(__import__("notifications").get_follower_count)
+        assert "db._row_to_dict(row)" in src
