@@ -803,3 +803,76 @@ class TestSiteSettingsValidation:
     def test_reset_category_validates(self):
         src = inspect.getsource(__import__("admin").admin_reset_category)
         assert "_SETTING_KEY_RE" in src
+
+
+# ── Hashtag posts has_more accuracy ──
+
+
+class TestHashtagPostsHasMore:
+    """hashtag_posts() must use total count for accurate has_more."""
+
+    def test_has_total_count_query(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "COUNT(*)" in src
+
+    def test_uses_total_for_has_more(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "offset + limit < total" in src
+
+    def test_does_not_use_len_for_has_more(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert 'len(posts) == limit' not in src
+
+
+# ── User status enrichment completeness ──
+
+
+class TestUserStatusEnrichment:
+    """related_posts, collection_items, hidden_posts must enrich user status."""
+
+    def test_related_posts_enriches_user_status(self):
+        src = inspect.getsource(__import__("social").related_posts)
+        assert "_enrich_user_status" in src
+
+    def test_collection_items_enriches_user_status(self):
+        src = inspect.getsource(__import__("social").get_collection_items)
+        assert "_enrich_user_status" in src
+
+    def test_hidden_posts_enriches_user_status(self):
+        src = inspect.getsource(__import__("social").list_hidden_posts)
+        assert "_enrich_user_status" in src
+
+    def test_hidden_posts_enriches_reactions(self):
+        src = inspect.getsource(__import__("social").list_hidden_posts)
+        assert "_enrich_reactions" in src
+
+
+# ── Notification type mapping completeness ──
+
+
+class TestNotificationTypeMappings:
+    """All notification types used in callers must be mapped to preferences."""
+
+    def test_event_reminder_maps_to_system(self):
+        from notifications import _NOTIF_TYPE_TO_PREF
+        assert _NOTIF_TYPE_TO_PREF["event_reminder"] == "pref_system"
+
+    def test_moderation_mapped(self):
+        from notifications import _NOTIF_TYPE_TO_PREF
+        assert "moderation" in _NOTIF_TYPE_TO_PREF
+
+    def test_repost_always_notifies(self):
+        from notifications import _NOTIF_TYPE_TO_PREF
+        assert "repost" not in _NOTIF_TYPE_TO_PREF
+
+    def test_entity_post_always_notifies(self):
+        from notifications import _NOTIF_TYPE_TO_PREF
+        assert "entity_post" not in _NOTIF_TYPE_TO_PREF
+
+    def test_social_mapped(self):
+        from notifications import _NOTIF_TYPE_TO_PREF
+        assert "social" in _NOTIF_TYPE_TO_PREF
+
+    def test_comment_like_mapped(self):
+        from notifications import _NOTIF_TYPE_TO_PREF
+        assert "comment_like" in _NOTIF_TYPE_TO_PREF

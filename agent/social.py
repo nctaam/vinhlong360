@@ -1475,7 +1475,7 @@ async def hashtag_posts(
     await asyncio.to_thread(_enrich_user_status, posts, user)
     await asyncio.to_thread(_enrich_reactions, posts)
     posts = [_format_post(p) for p in posts]
-    return {"tag": tag, "posts": posts, "total": total, "page": page, "has_more": len(posts) == limit}
+    return {"tag": tag, "posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 _leaderboard_cache: dict = {"ts": 0.0, "data": None}
@@ -1825,6 +1825,7 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
             return candidates
     candidates = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in candidates[:limit]]
+    await asyncio.to_thread(_enrich_user_status, posts, user)
     await asyncio.to_thread(_enrich_reactions, posts)
     return {"posts": [_format_post(p) for p in posts]}
 
@@ -2738,6 +2739,7 @@ async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le
 
     rows = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_user_status, posts, user)
     await asyncio.to_thread(_enrich_reactions, posts)
     posts = [_format_post(p) for p in posts]
     return {"posts": posts, "page": page, "has_more": len(posts) == limit}
@@ -2833,7 +2835,10 @@ async def list_hidden_posts(
             """, (uid, limit, offset))
             return rows, total
     rows, total = await asyncio.to_thread(_query)
-    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_user_status, posts, user)
+    await asyncio.to_thread(_enrich_reactions, posts)
+    posts = [_format_post(p) for p in posts]
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
