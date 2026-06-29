@@ -539,6 +539,99 @@ async def delete_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(
     return {"success": True}
 
 
+@router.post("/drafts/{draft_id}/schedule")
+async def schedule_draft(draft_id: str, scheduled_at: str = Query(..., max_length=30),
+                         user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Schedule a draft for future publication."""
+    draft_id = validate_path_id(draft_id, "draft_id")
+    check_rate(f"schedule:{user['id']}", 10, 300, "Đặt lịch quá nhanh. Vui lòng đợi.")
+    ph = db._ph
+    uid = str(user["id"])
+    try:
+        from datetime import datetime as _dt, timezone as _tz
+        publish_time = _dt.fromisoformat(scheduled_at.replace("Z", "+00:00"))
+        if publish_time.tzinfo is None:
+            publish_time = publish_time.replace(tzinfo=_tz.utc)
+        if publish_time <= _dt.now(_tz.utc):
+            raise HTTPException(400, "Thời gian đặt lịch phải trong tương lai")
+    except (ValueError, TypeError):
+        raise HTTPException(400, "Định dạng thời gian không hợp lệ (ISO 8601)")
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT id, content FROM posts
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+            """, (draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+            d = db._row_to_dict(row)
+            if len((d.get("content") or "").strip()) < 10:
+                raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+            db._execute(conn, f"""
+                UPDATE posts SET scheduled_at = {ph}::timestamptz, is_draft = FALSE
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (scheduled_at, draft_id, uid))
+            return True
+
+    await asyncio.to_thread(_query)
+    return {"success": True, "scheduled_at": scheduled_at}
+
+
+@router.get("/scheduled")
+async def list_scheduled(
+    page: int = Query(1, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    """List user's scheduled posts (not yet published)."""
+    ph = db._ph
+    uid = str(user["id"])
+    offset = (page - 1) * limit
+
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, content, post_type, entity_id, rating, images,
+                       scheduled_at, created_at
+                FROM posts
+                WHERE user_id = {ph}::uuid AND scheduled_at IS NOT NULL
+                  AND scheduled_at > NOW() AND is_draft = FALSE
+                ORDER BY scheduled_at ASC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            return [db._row_to_dict(r) for r in rows]
+
+    scheduled = await asyncio.to_thread(_query)
+    for s in scheduled:
+        s["id"] = str(s["id"])
+    return {"scheduled": scheduled, "page": page, "has_more": len(scheduled) == limit}
+
+
+@router.delete("/scheduled/{post_id}")
+async def cancel_scheduled(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Cancel a scheduled post (converts back to draft)."""
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"schedule-del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
+               "Thao tác quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE posts SET scheduled_at = NULL, is_draft = TRUE
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+                  AND scheduled_at IS NOT NULL AND scheduled_at > NOW()
+                RETURNING id
+            """, (post_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài đặt lịch không tồn tại")
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
 @router.get("/posts/{post_id}")
 async def get_post(post_id: str, user=Depends(get_current_user)):
     post_id = validate_path_id(post_id, "post_id")
@@ -2701,6 +2794,17 @@ def _resolve_user_id(user_id: str) -> str | None:
     return str(db._row_to_dict(row)["id"]) if row else None
 
 
+_WORDS_PER_MINUTE_VI = 200
+
+
+def _reading_time_min(content: str) -> int:
+    """Estimate reading time in minutes for Vietnamese text."""
+    if not content:
+        return 0
+    word_count = len(content.split())
+    return max(1, round(word_count / _WORDS_PER_MINUTE_VI))
+
+
 def _format_post(row: dict) -> dict:
     images = row.get("images", [])
     if isinstance(images, str):
@@ -2769,6 +2873,7 @@ def _format_post(row: dict) -> dict:
             "name": row.get("entity_name"),
             "type": row.get("entity_type"),
         } if row.get("entity_id") else None,
+        "reading_time_min": _reading_time_min(row.get("content", "")),
         "review_response": {
             "content": row.get("response_content"),
             "responder_name": row.get("responder_name"),

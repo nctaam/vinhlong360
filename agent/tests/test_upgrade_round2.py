@@ -3101,3 +3101,110 @@ class TestMeCountsDrafts:
     def test_counts_exclude_drafts_from_posts(self):
         src = inspect.getsource(__import__("social").user_counts)
         assert "is_draft IS NOT TRUE" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Reading Time Estimation
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestReadingTime:
+    def test_helper_function_exists(self):
+        from social import _reading_time_min
+        assert callable(_reading_time_min)
+
+    def test_empty_content(self):
+        from social import _reading_time_min
+        assert _reading_time_min("") == 0
+        assert _reading_time_min(None) == 0
+
+    def test_short_content(self):
+        from social import _reading_time_min
+        assert _reading_time_min("Một hai ba bốn năm") == 1
+
+    def test_long_content(self):
+        from social import _reading_time_min
+        content = " ".join(["word"] * 600)
+        assert _reading_time_min(content) == 3
+
+    def test_included_in_format_post(self):
+        src = inspect.getsource(__import__("social")._format_post)
+        assert "reading_time_min" in src
+
+    def test_uses_words_per_minute(self):
+        from social import _WORDS_PER_MINUTE_VI
+        assert _WORDS_PER_MINUTE_VI == 200
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Post Scheduling
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestPostSchedulingMigration:
+    def test_migration_file_exists(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "044_post_scheduling.sql"
+        assert p.exists()
+
+    def test_migration_adds_column(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "044_post_scheduling.sql"
+        sql = p.read_text()
+        assert "scheduled_at" in sql
+        assert "ALTER TABLE posts" in sql
+
+    def test_migration_adds_index(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "044_post_scheduling.sql"
+        sql = p.read_text()
+        assert "idx_posts_scheduled" in sql
+
+
+class TestPostSchedulingEndpoints:
+    def test_schedule_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/drafts/{draft_id}/schedule" in paths
+
+    def test_scheduled_list_endpoint(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/scheduled" in paths
+
+    def test_cancel_scheduled_endpoint(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "DELETE" in routes.get("/api/scheduled/{post_id}", set())
+
+    def test_schedule_requires_auth(self):
+        src = inspect.getsource(__import__("social").schedule_draft)
+        assert "require_user" in src
+
+    def test_schedule_has_rate_limit(self):
+        src = inspect.getsource(__import__("social").schedule_draft)
+        assert "check_rate" in src
+
+    def test_schedule_validates_future_time(self):
+        src = inspect.getsource(__import__("social").schedule_draft)
+        assert "tương lai" in src or "future" in src.lower()
+
+    def test_schedule_validates_iso_format(self):
+        src = inspect.getsource(__import__("social").schedule_draft)
+        assert "fromisoformat" in src
+
+    def test_schedule_checks_content_length(self):
+        src = inspect.getsource(__import__("social").schedule_draft)
+        assert "10" in src
+
+    def test_cancel_converts_back_to_draft(self):
+        src = inspect.getsource(__import__("social").cancel_scheduled)
+        assert "is_draft = TRUE" in src
+
+    def test_cancel_has_rate_limit(self):
+        src = inspect.getsource(__import__("social").cancel_scheduled)
+        assert "check_rate" in src
+
+    def test_list_scheduled_requires_auth(self):
+        src = inspect.getsource(__import__("social").list_scheduled)
+        assert "require_user" in src
+
+    def test_list_scheduled_orders_by_time(self):
+        src = inspect.getsource(__import__("social").list_scheduled)
+        assert "scheduled_at ASC" in src
