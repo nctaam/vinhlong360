@@ -675,3 +675,16 @@ class TestLikesTableName:
     def test_admin_module_no_post_likes(self):
         src = inspect.getsource(__import__("admin"))
         assert "post_likes" not in src
+
+
+class TestFollowingEndpointTotal:
+    """GET /following returns total count."""
+
+    def test_following_has_total(self):
+        src = inspect.getsource(__import__("notifications").get_following)
+        assert '"total"' in src
+        assert "COUNT(*)" in src
+
+    def test_following_accurate_has_more(self):
+        src = inspect.getsource(__import__("notifications").get_following)
+        assert "offset + limit < total" in src

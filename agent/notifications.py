@@ -494,9 +494,13 @@ async def get_following(
     where = " AND ".join(conditions)
     params.extend([limit, offset])
 
+    count_params = list(params[:-2])
+
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM follows f WHERE {where}", count_params)
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT f.*,
                        CASE WHEN f.target_type = 'user' THEN u.display_name
                             WHEN f.target_type = 'entity' THEN e.name END as target_name,
@@ -508,7 +512,8 @@ async def get_following(
                 ORDER BY f.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, params)
-    rows = await asyncio.to_thread(_query)
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
 
     items = [{
         "target_type": r["target_type"],
@@ -517,7 +522,7 @@ async def get_following(
         "entity_type": r.get("entity_type"),
         "created_at": str(r.get("created_at", "")),
     } for r in [db._row_to_dict(row) for row in rows]]
-    return {"following": items, "has_more": len(items) == limit}
+    return {"following": items, "total": total, "has_more": offset + limit < total}
 
 
 @router.get("/followers/count/{target_type}/{target_id}")
