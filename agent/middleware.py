@@ -1562,7 +1562,7 @@ class BehavioralFingerprint:
             p = self._profiles[key]
             p["paths"].append((now, path))
             p["methods"][method] = p["methods"].get(method, 0) + 1
-            if ua_hash:
+            if ua_hash and len(p["ua_hashes"]) < 50:
                 p["ua_hashes"].add(ua_hash)
             if p["last_ts"] != now:
                 p["intervals"].append(now - p["last_ts"])

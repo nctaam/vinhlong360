@@ -123,6 +123,7 @@ async def merge_saved(body: MergeBody, user=Depends(require_user), _csrf=Depends
     def _query():
         with db._conn() as conn:
             ph = db._ph
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"saved:{uid}",))
             for it in items:
                 if it.id:
                     _upsert(conn, uid, it)

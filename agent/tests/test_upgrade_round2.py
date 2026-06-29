@@ -1741,7 +1741,7 @@ class TestEntityTypes:
 
     def test_sorted_by_count(self):
         src = inspect.getsource(__import__("public_api").entity_types)
-        assert "sorted" in src
+        assert "sorted" in src or "ORDER BY" in src
 
 
 # ── Areas endpoint ──

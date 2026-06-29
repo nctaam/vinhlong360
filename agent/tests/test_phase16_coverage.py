@@ -1952,7 +1952,7 @@ class TestSavedMergeCap:
         src = (Path(__file__).resolve().parent.parent / "saved.py").read_text(encoding="utf-8")
         idx = src.find("def merge_saved")
         assert idx != -1, "merge_saved function must exist"
-        block = src[idx:idx+800]
+        block = src[idx:idx+1000]
         assert "MAX_SAVED" in block, \
             "merge_saved must reference MAX_SAVED to enforce limit"
         assert "DELETE" in block, \

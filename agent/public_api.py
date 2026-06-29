@@ -339,12 +339,9 @@ async def get_featured_entities(response: Response):
 async def entity_types(response: Response):
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
-        all_ents = db.list_entities(limit=10000, offset=0, public_only=True)
-        counts: dict[str, int] = {}
-        for e in all_ents:
-            t = e.get("type", "unknown")
-            counts[t] = counts.get(t, 0) + 1
-        return sorted([{"type": k, "count": v} for k, v in counts.items()], key=lambda x: -x["count"])
+        with db._conn() as conn:
+            rows = db._fetchall(conn, "SELECT type, COUNT(*) as count FROM entities GROUP BY type ORDER BY count DESC", ())
+        return [{"type": db._row_to_dict(r)["type"], "count": db._row_to_dict(r)["count"]} for r in rows]
     result = await asyncio.to_thread(_query)
     return {"types": result, "total": sum(t["count"] for t in result)}
 
@@ -1016,7 +1013,7 @@ async def homepage_curated(response: Response):
 
     all_ents = await asyncio.to_thread(db.list_entities, limit=5000, offset=0, public_only=True)
     public = [e for e in all_ents if not _event_is_past(e)]
-    _enrich_place(public)
+    await asyncio.to_thread(_enrich_place, public)
 
     for e in public:
         e["_score"] = _homepage_score(e, month)
@@ -2040,7 +2037,7 @@ async def entities_map_search(
     if north <= south:
         raise HTTPException(400, "Giá trị north phải lớn hơn south")
     def _query():
-        entities = db.list_entities()
+        entities = db.list_entities(limit=5000, public_only=True)
         results = []
         for e in entities:
             coords = e.get("coordinates")
@@ -2246,7 +2243,7 @@ async def popular_entities(
                "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
 
     def _query():
-        all_entities = db.list_entities(limit=5000)
+        all_entities = db.list_entities(limit=5000, public_only=True)
         if entity_type:
             all_entities = [e for e in all_entities if e.get("type") == entity_type]
         if area:
