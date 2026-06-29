@@ -1,7 +1,7 @@
 /* ── Buttons (Apple HIG) ── */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 12px 20px; border: none; border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  padding: var(--space-3) var(--space-5); border: none; border-radius: var(--radius-sm);
   font-size: var(--text-sm); font-weight: var(--weight-semibold); cursor: pointer;
   transition: background .3s var(--ease-out), transform .2s var(--ease-spring-gentle), opacity .3s, box-shadow .2s var(--ease-out);
   min-height: 44px; min-width: 44px; letter-spacing: .01em;
@@ -31,7 +31,7 @@
 .btn-ghost { background: transparent; color: var(--muted); }
 .btn-ghost:hover:not(:disabled) { background: var(--bg-warm); color: var(--ink); }
 
-.btn-sm { padding: 8px 16px; font-size: var(--text-sm); min-height: 44px; }
+.btn-sm { padding: var(--space-2) var(--space-4); font-size: var(--text-sm); min-height: 44px; }
 .btn-lg { padding: 14px 28px; font-size: 1rem; min-height: var(--touch-min); }
 .btn-icon { padding: var(--space-2); border-radius: 50%; min-width: var(--touch-min); min-height: var(--touch-min); display: inline-flex; align-items: center; justify-content: center; }
 
@@ -87,7 +87,7 @@
   position: fixed; inset: 0; z-index: var(--z-modal);
   background: rgba(0, 0, 0, .4); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px);
   display: none; align-items: center; justify-content: center;
-  padding: 20px;
+  padding: var(--space-5);
   animation: overlayFadeIn .2s var(--ease-out);
 }
 @keyframes overlayFadeIn { from { opacity: 0; } }
@@ -135,7 +135,7 @@
 }
 @media (max-width: 840px) { .toast-container { bottom: calc(72px + env(safe-area-inset-bottom)); } }
 .toast {
-  padding: 12px 20px; border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5); border-radius: var(--radius-md);
   background: var(--ink-900); color: var(--text-on-dark, #fff);
   font-size: var(--text-sm); font-weight: var(--weight-semibold);
   box-shadow: var(--shadow-xl);
@@ -171,8 +171,8 @@
 
 /* ── Badges & Tags ── */
 .tag {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 4px 10px; border-radius: var(--radius-full);
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  padding: var(--space-1) 10px; border-radius: var(--radius-full);
   font-size: .76rem; font-weight: 700;
 }
 .tag-primary { background: rgba(var(--primary-rgb), .1); color: var(--primary-fg); }
@@ -186,7 +186,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 /* ── Auth section (topbar) ── */
 .auth-area { display: flex; align-items: center; gap: var(--space-3); margin-inline-start: auto; }
 .auth-btn {
-  padding: 8px 18px; border-radius: var(--radius-full); font-weight: 700; font-size: .9rem;
+  padding: var(--space-2) 18px; border-radius: var(--radius-full); font-weight: 700; font-size: .9rem;
   cursor: pointer; border: 2px solid var(--primary); background: transparent; color: var(--primary-fg);
   min-height: 44px;
   transition: background .3s var(--ease-out), color .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
@@ -230,10 +230,10 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 /* ── Image Uploader ── */
 .img-upload {
   border: 2px dashed var(--line); border-radius: var(--radius-md);
-  padding: 20px; text-align: center; cursor: pointer;
+  padding: var(--space-5); text-align: center; cursor: pointer;
   transition: border-color .3s var(--ease-out), background .3s;
   min-height: 80px; display: flex; align-items: center; justify-content: center;
-  gap: 8px; color: var(--muted); font-size: .9rem;
+  gap: var(--space-2); color: var(--muted); font-size: .9rem;
 }
 .img-upload:hover { border-color: var(--primary-fg); background: rgba(var(--primary-rgb), .03); }
 .img-upload:active { transform: scale(.98); transition-duration: .08s; }
