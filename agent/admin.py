@@ -1491,7 +1491,7 @@ async def system_health():
             result["sqlite"]["entities"] = len(db.list_entities(limit=100000, offset=0))
         if db._use_pg:
             with db._conn() as conn:
-                tables = ["users", "posts", "comments", "post_likes", "follows",
+                tables = ["users", "posts", "comments", "likes", "follows",
                            "notifications", "blocks", "sessions", "user_visits",
                            "reports", "saved_entities", "announcements"]
                 pg_tables = {}
@@ -1715,7 +1715,7 @@ async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
                 WHERE created_at > NOW() - INTERVAL '{days} days'
             """, ())
             active_likers = db._fetchone(conn, f"""
-                SELECT COUNT(DISTINCT user_id) as c FROM post_likes
+                SELECT COUNT(DISTINCT user_id) as c FROM likes
                 WHERE created_at > NOW() - INTERVAL '{days} days'
             """, ())
             new_users = db._fetchone(conn, f"""
@@ -2658,7 +2658,7 @@ async def admin_post_detail(post_id: str):
             """, (post_id,))
 
             likes = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM post_likes WHERE post_id::text = {ph}
+                SELECT COUNT(*) as c FROM likes WHERE post_id::text = {ph}
             """, (post_id,))
 
             reports = db._fetchall(conn, f"""

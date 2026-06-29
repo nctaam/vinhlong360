@@ -795,7 +795,7 @@ class TestUserDataExport:
 
     def test_queries_likes(self):
         src = inspect.getsource(__import__("auth").export_user_data)
-        assert "FROM post_likes WHERE user_id" in src
+        assert "FROM likes WHERE user_id" in src
 
     def test_queries_bookmarks(self):
         src = inspect.getsource(__import__("auth").export_user_data)

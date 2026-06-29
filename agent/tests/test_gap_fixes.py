@@ -657,3 +657,21 @@ class TestHiddenPostsTotalCount:
     def test_hidden_posts_accurate_has_more(self):
         src = inspect.getsource(__import__("social").list_hidden_posts)
         assert "offset + limit < total" in src
+
+
+class TestLikesTableName:
+    """All code uses 'likes' table (not 'post_likes' which doesn't exist)."""
+
+    def test_admin_engagement_uses_likes(self):
+        src = inspect.getsource(__import__("admin").user_engagement_stats)
+        assert "post_likes" not in src
+        assert "FROM likes" in src
+
+    def test_auth_export_uses_likes(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "post_likes" not in src
+        assert "FROM likes" in src
+
+    def test_admin_module_no_post_likes(self):
+        src = inspect.getsource(__import__("admin"))
+        assert "post_likes" not in src

@@ -1104,7 +1104,7 @@ async def export_user_data(request: Request):
             """, (uid,))
             likes = db._fetchall(conn, f"""
                 SELECT post_id, created_at
-                FROM post_likes WHERE user_id = {ph}::uuid
+                FROM likes WHERE user_id = {ph}::uuid
                 ORDER BY created_at DESC
             """, (uid,))
             bookmarks = db._fetchall(conn, f"""
