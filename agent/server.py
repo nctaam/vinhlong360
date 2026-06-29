@@ -1518,11 +1518,14 @@ _llm_call_fn_mini = _make_llm_call_fn(get_model_mini)
 
 # Orchestrator singleton (lazy init)
 _orchestrator = None
+_orchestrator_lock = threading.Lock()
 
 def _get_orchestrator():
     global _orchestrator
     if _orchestrator is None and HAS_ORCHESTRATOR:
-        _orchestrator = Orchestrator(TOOLS)
+        with _orchestrator_lock:
+            if _orchestrator is None:
+                _orchestrator = Orchestrator(TOOLS)
     return _orchestrator
 
 
@@ -1532,7 +1535,9 @@ _parallel_executor = None
 def _get_parallel_executor():
     global _parallel_executor
     if _parallel_executor is None and HAS_PARALLEL:
-        _parallel_executor = ParallelToolExecutor(call_tool, max_workers=4)
+        with _orchestrator_lock:
+            if _parallel_executor is None:
+                _parallel_executor = ParallelToolExecutor(call_tool, max_workers=4)
     return _parallel_executor
 
 
@@ -2514,8 +2519,8 @@ async def _check_llm_health() -> str:
             return f"error: {type(e).__name__}"
 
     status = await asyncio.to_thread(_ping)
-    _health_llm_cache["status"] = status
-    _health_llm_cache["checked_at"] = time.time()
+    global _health_llm_cache
+    _health_llm_cache = {"status": status, "checked_at": time.time()}
     return status
 
 

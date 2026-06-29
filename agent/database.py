@@ -121,7 +121,8 @@ class Database:
                         from psycopg2.pool import ThreadedConnectionPool
                         mx = max(2, int(os.environ.get("PG_POOL_MAX", "10")))
                         self._pg_pool = ThreadedConnectionPool(1, mx, self._dsn, connect_timeout=5)
-                    except Exception:
+                    except Exception as e:
+                        logger.warning("PG pool creation failed: %s", e)
                         self._pg_pool_failed = True
                         self._pg_pool_fail_ts = time.time()
                         return None
@@ -255,8 +256,8 @@ class Database:
                     ]:
                         try:
                             cur.execute(idx_sql)
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            logger.debug("Index creation skipped: %s — %s", idx_sql[:60], e)
                     conn.commit()
                 self._initialized = True
                 return
