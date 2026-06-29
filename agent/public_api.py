@@ -1651,6 +1651,7 @@ async def get_similar_entities(
             entities_map = knowledge._entities
             rels = knowledge._relationships if hasattr(knowledge, "_relationships") else []
         except Exception:
+            logger.warning("Knowledge load failed for recommendations", exc_info=True)
             return None
         if entity_id not in entities_map:
             return None

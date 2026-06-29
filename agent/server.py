@@ -317,7 +317,7 @@ def _tool_description(name: str, args: dict) -> str:
         try:
             return fn(args)
         except Exception:
-            pass
+            logger.debug("Tool description failed for %s", name, exc_info=True)
     return f"Đang xử lý {name}..."
 
 
@@ -1691,7 +1691,7 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
                 suggestions.clear()
                 suggestions.extend(sug)
         except Exception:
-            pass
+            logger.debug("Failed to parse suggest_followups result", exc_info=True)
 
     # Self-correction: if search returned empty, inject a hint
     if fn_name == "search":
@@ -2285,7 +2285,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                             data = json.loads(result)
                             suggestions = data.get("suggestions", [])
                         except Exception:
-                            pass
+                            logger.debug("Failed to parse suggest_followups result", exc_info=True)
             else:
                 # CONC-001: SDK streaming là iterator ĐỒNG-BỘ — lặp nó trong async gen sẽ
                 # chặn event loop từng token. Chạy create+iterate trong THREAD, đẩy từng

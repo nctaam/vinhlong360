@@ -84,7 +84,7 @@ async def list_saved(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.post("")
+@router.post("", status_code=201)
 async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
     def _query():

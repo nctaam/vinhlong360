@@ -763,7 +763,7 @@ class Database:
             invalidate_entity_cache(from_id)
             invalidate_entity_cache(to_id)
         except Exception:
-            pass
+            logger.warning("Cache invalidation failed for %s / %s", from_id, to_id, exc_info=True)
 
     def _parse_coordinates(self, value) -> list[float] | None:
         current = value

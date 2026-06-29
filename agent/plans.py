@@ -89,7 +89,7 @@ async def list_plans(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.post("")
+@router.post("", status_code=201)
 async def add_plan(body: PlanBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"plan:{user['id']}", 30, 300, "Tạo lịch trình quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
