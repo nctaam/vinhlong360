@@ -653,6 +653,8 @@ async def delete_itinerary(itin_id: str):
 
 @router.post("/relationships")
 async def add_relationship(body: RelationshipCreate):
+    validate_path_id(body.from_id, "from_id")
+    validate_path_id(body.to_id, "to_id")
     await asyncio.to_thread(db.add_relationship, body.from_id, body.to_id, body.type)
     return {"status": "created"}
 
@@ -675,6 +677,7 @@ async def delete_relationship(from_id: str, to_id: str, type: str):
 @router.post("/relationships/bulk")
 async def add_relationships_bulk(body: RelationshipBulkCreate):
     """B7b: thêm nhiều quan hệ cùng lúc."""
+    validate_path_id(body.from_id, "from_id")
     def _query():
         added = 0
         errors = []
@@ -1805,7 +1808,7 @@ async def trigger_backup():
     _last_backup_time = now
     script = Path(__file__).resolve().parent.parent / "scripts" / "backup_data.py"
     if not script.exists():
-        raise HTTPException(500, "backup_data.py not found")
+        raise HTTPException(500, "Không tìm thấy script backup_data.py")
     def _run():
         try:
             result = subprocess.run(

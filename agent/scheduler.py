@@ -783,6 +783,7 @@ TASKS = [
 
 _scheduler_thread = None
 _running = False
+_scheduler_lock = threading.Lock()
 
 
 def _scheduler_loop():
@@ -804,13 +805,14 @@ def start_scheduler():
         _sched_logger.info("Background scheduler disabled by SCHEDULER_ENABLED")
         return
 
-    if _scheduler_thread and _scheduler_thread.is_alive():
-        return
+    with _scheduler_lock:
+        if _scheduler_thread and _scheduler_thread.is_alive():
+            return
 
-    _running = True
-    _scheduler_thread = threading.Thread(target=_scheduler_loop, daemon=True, name="scheduler")
-    _scheduler_thread.start()
-    _sched_logger.info("Background scheduler thread started")
+        _running = True
+        _scheduler_thread = threading.Thread(target=_scheduler_loop, daemon=True, name="scheduler")
+        _scheduler_thread.start()
+        _sched_logger.info("Background scheduler thread started")
 
 
 def stop_scheduler():

@@ -175,6 +175,8 @@ class OTPVerify(BaseModel):
         v = v.strip().replace(" ", "").replace("-", "")
         if v.startswith("+84"):
             v = "0" + v[3:]
+        if not VN_PHONE_RE.match(v):
+            raise ValueError("Số điện thoại VN không hợp lệ")
         return v
 
 
@@ -188,6 +190,8 @@ class PasswordLogin(BaseModel):
         v = v.strip().replace(" ", "").replace("-", "")
         if v.startswith("+84"):
             v = "0" + v[3:]
+        if not VN_PHONE_RE.match(v):
+            raise ValueError("Số điện thoại VN không hợp lệ")
         return v
 
 
@@ -218,6 +222,8 @@ class ResetPasswordOTP(BaseModel):
         v = v.strip().replace(" ", "").replace("-", "")
         if v.startswith("+84"):
             v = "0" + v[3:]
+        if not VN_PHONE_RE.match(v):
+            raise ValueError("Số điện thoại VN không hợp lệ")
         return v
 
     @field_validator("new_password")
@@ -718,6 +724,7 @@ async def list_sessions(request: Request):
 
 @router.delete("/sessions/{session_id}")
 async def revoke_session(session_id: str, request: Request, _csrf=Depends(_require_csrf_lazy)):
+    session_id = validate_path_id(session_id, "session_id")
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")

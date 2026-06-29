@@ -930,6 +930,7 @@ def test_type_schema_covers_all_data_types():
         "accommodation", "attraction", "cafe", "craft_village", "dish", "drink",
         "economy", "event", "experience", "facility", "history", "itinerary",
         "nature", "organization", "person", "place", "product", "restaurant",
+        "artisan", "craft", "market", "festival",
     }
     assert set(seo.TYPE_SCHEMA.keys()) == expected
 
@@ -1979,7 +1980,7 @@ def test_entity_jsonld_aggregate_rating():
     assert agg["@type"] == "AggregateRating"
     assert agg["ratingValue"] == 4.5
     assert agg["bestRating"] == 5
-    assert agg["reviewCount"] == 120
+    assert agg["ratingCount"] == 120
 
 
 def test_entity_jsonld_no_aggregate_rating_below_min_count():
@@ -2000,7 +2001,7 @@ def test_entity_jsonld_aggregate_rating_at_min_count():
     assert "aggregateRating" in ld
     agg = ld["aggregateRating"]
     assert agg["ratingValue"] == 3.8
-    assert agg["reviewCount"] == 3
+    assert agg["ratingCount"] == 3
 
 
 def test_entity_jsonld_no_aggregate_rating_when_zero():

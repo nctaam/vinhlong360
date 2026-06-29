@@ -54,6 +54,10 @@ TYPE_SCHEMA = {
     "place": "Place",
     "product": "Product",
     "restaurant": "Restaurant",
+    "artisan": "LocalBusiness",
+    "craft": "LocalBusiness",
+    "market": "LocalBusiness",
+    "festival": "Event",
 }
 
 # Maps entity type -> existing catalog/list route used as the breadcrumb's
@@ -657,18 +661,18 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
             else:
                 ld["additionalProperty"] = props
 
-    rating_val = attrs.get("rating")
-    review_count = attrs.get("review_count")
-    if isinstance(rating_val, (int, float)) and 0 < rating_val <= 5:
-        rc_attr = int(review_count) if isinstance(review_count, int) and review_count > 0 else 0
-        if rc_attr >= AGGREGATE_RATING_MIN_COUNT:
-            agg: dict[str, Any] = {
-                "@type": "AggregateRating",
-                "ratingValue": round(float(rating_val), 1),
-                "bestRating": 5,
-                "reviewCount": rc_attr,
-            }
-            ld["aggregateRating"] = agg
+    if "aggregateRating" not in ld:
+        rating_val = attrs.get("rating")
+        review_count = attrs.get("review_count")
+        if isinstance(rating_val, (int, float)) and 0 < rating_val <= 5:
+            rc_attr = int(review_count) if isinstance(review_count, int) and review_count > 0 else 0
+            if rc_attr >= AGGREGATE_RATING_MIN_COUNT:
+                ld["aggregateRating"] = {
+                    "@type": "AggregateRating",
+                    "ratingValue": round(float(rating_val), 1),
+                    "bestRating": 5,
+                    "ratingCount": rc_attr,
+                }
 
     kw_parts: list[str] = []
     entity_name = entity.get("name")

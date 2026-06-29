@@ -928,3 +928,138 @@ class TestNotificationTypeMappings:
     def test_comment_like_mapped(self):
         from notifications import _NOTIF_TYPE_TO_PREF
         assert "comment_like" in _NOTIF_TYPE_TO_PREF
+
+
+# ── SEO aggregateRating dedup ──
+
+
+class TestAggregateRatingDedup:
+    """Second aggregateRating block must not overwrite the first (UGC-based)."""
+
+    def test_fallback_guarded_by_not_in_ld(self):
+        src = inspect.getsource(__import__("seo").build_entity_jsonld)
+        assert '"aggregateRating" not in ld' in src
+
+    def test_fallback_uses_ratingCount_not_reviewCount(self):
+        src = inspect.getsource(__import__("seo").build_entity_jsonld)
+        lines = src.split("\n")
+        fallback_block = False
+        for line in lines:
+            if '"aggregateRating" not in ld' in line:
+                fallback_block = True
+            if fallback_block and "reviewCount" in line:
+                pytest.fail("Fallback aggregateRating should use ratingCount, not reviewCount")
+            if fallback_block and "ratingCount" in line:
+                break
+
+    def test_ugc_rating_block_still_exists(self):
+        src = inspect.getsource(__import__("seo").build_entity_jsonld)
+        assert "avg_rating" in src
+        assert "rating_count" in src
+
+
+# ── SEO type mappings ──
+
+
+class TestSeoTypeMappings:
+    """TYPE_SCHEMA should cover all common entity types."""
+
+    def test_artisan_mapped(self):
+        from seo import TYPE_SCHEMA
+        assert "artisan" in TYPE_SCHEMA
+
+    def test_craft_mapped(self):
+        from seo import TYPE_SCHEMA
+        assert "craft" in TYPE_SCHEMA
+
+    def test_market_mapped(self):
+        from seo import TYPE_SCHEMA
+        assert "market" in TYPE_SCHEMA
+
+    def test_festival_mapped(self):
+        from seo import TYPE_SCHEMA
+        assert "festival" in TYPE_SCHEMA
+
+    def test_all_map_to_valid_schema_types(self):
+        from seo import TYPE_SCHEMA
+        valid = {"LodgingBusiness", "TouristAttraction", "CafeOrCoffeeShop",
+                 "LocalBusiness", "Recipe", "Product", "Event", "CivicStructure",
+                 "LandmarkOrHistoricalBuilding", "TouristTrip", "Organization",
+                 "Person", "Place", "Restaurant", "Thing"}
+        for etype, schema in TYPE_SCHEMA.items():
+            assert schema in valid, f"{etype} maps to unknown schema type {schema}"
+
+
+# ── Scheduler thread safety ──
+
+
+class TestSchedulerThreadSafety:
+    """start_scheduler must use a lock to prevent duplicate threads."""
+
+    def test_scheduler_lock_exists(self):
+        import scheduler
+        assert hasattr(scheduler, "_scheduler_lock")
+
+    def test_start_scheduler_uses_lock(self):
+        src = inspect.getsource(__import__("scheduler").start_scheduler)
+        assert "_scheduler_lock" in src
+
+
+# ── Phone validation in all auth models ──
+
+
+class TestPhoneValidationConsistency:
+    """All auth models that accept phone must validate VN format, not just normalize."""
+
+    def test_otp_verify_validates_phone(self):
+        src = inspect.getsource(__import__("auth").OTPVerify)
+        assert "VN_PHONE_RE" in src
+
+    def test_password_login_validates_phone(self):
+        src = inspect.getsource(__import__("auth").PasswordLogin)
+        assert "VN_PHONE_RE" in src
+
+    def test_reset_password_otp_validates_phone(self):
+        src = inspect.getsource(__import__("auth").ResetPasswordOTP)
+        assert "VN_PHONE_RE" in src
+
+    def test_otp_request_validates_phone(self):
+        src = inspect.getsource(__import__("auth").OTPRequest)
+        assert "VN_PHONE_RE" in src
+
+    def test_otp_verify_rejects_invalid_phone(self):
+        from auth import OTPVerify
+        import pydantic
+        with pytest.raises(pydantic.ValidationError):
+            OTPVerify(phone="00000", code="123456")
+
+    def test_password_login_rejects_invalid_phone(self):
+        from auth import PasswordLogin
+        import pydantic
+        with pytest.raises(pydantic.ValidationError):
+            PasswordLogin(phone="invalid", password="Test1234")
+
+
+# ── validate_path_id on session and relationship endpoints ──
+
+
+class TestPathIdValidation:
+    """All path params and entity IDs must go through validate_path_id."""
+
+    def test_revoke_session_validates_id(self):
+        src = inspect.getsource(__import__("auth").revoke_session)
+        assert "validate_path_id" in src
+
+    def test_add_relationship_validates_ids(self):
+        src = inspect.getsource(__import__("admin").add_relationship)
+        assert "validate_path_id" in src
+        assert "from_id" in src
+        assert "to_id" in src
+
+    def test_add_relationships_bulk_validates_from_id(self):
+        src = inspect.getsource(__import__("admin").add_relationships_bulk)
+        assert "validate_path_id" in src
+
+    def test_admin_backup_error_is_vietnamese(self):
+        src = inspect.getsource(__import__("admin").trigger_backup)
+        assert "backup_data.py not found" not in src
