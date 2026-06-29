@@ -1222,7 +1222,7 @@ def _safe_user(user: dict) -> dict:
         return None
     return {
         "id": str(user["id"]),
-        "phone": user["phone"][:3] + "****" + user["phone"][-3:],
+        "phone": (user.get("phone") or "")[:3] + "****" + (user.get("phone") or "")[-3:],
         "display_name": user.get("display_name"),
         "avatar_url": user.get("avatar_url"),
         "cover_url": user.get("cover_url"),

@@ -1019,6 +1019,13 @@ async def trending_posts(
     mc, mc_p = _mute_sql(user, "p.user_id")
     def _query():
         with db._conn() as conn:
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as cnt FROM posts p
+                WHERE p.moderation_status = 'approved'
+                  AND p.created_at > NOW() - INTERVAL '{days} days'
+                  {bc} {mc}
+            """, (*bc_p, *mc_p))
+            total = db._row_to_dict(total_row).get("cnt", 0) if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
@@ -1032,12 +1039,12 @@ async def trending_posts(
                          p.created_at DESC
                 LIMIT {ph}
             """, (*bc_p, *mc_p, limit))
-        return rows
-    rows = await asyncio.to_thread(_query)
+            return total, rows
+    total, rows = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     await asyncio.to_thread(_enrich_user_status, posts, user)
     await asyncio.to_thread(_enrich_reactions, posts)
-    return {"posts": posts, "window": window, "days": days}
+    return {"posts": posts, "total": total, "has_more": total > len(posts), "window": window, "days": days}
 
 
 @router.get("/feed/explore")
@@ -2394,22 +2401,28 @@ async def get_post_likers(post_id: str, request: Request, limit: int = Query(20,
 
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as cnt FROM likes l
+                WHERE l.post_id = {ph}::uuid {bc}
+            """, (post_id, *bc_p))
+            total = db._row_to_dict(total_row).get("cnt", 0) if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username, l.created_at
                 FROM likes l JOIN users u ON u.id = l.user_id
                 WHERE l.post_id = {ph}::uuid
                 {bc}
                 ORDER BY l.created_at DESC LIMIT {ph}
             """, (post_id, *bc_p, limit))
+            return total, rows
 
-    rows = await asyncio.to_thread(_query)
+    total, rows = await asyncio.to_thread(_query)
     likers = []
     for r in rows:
         d = db._row_to_dict(r)
         likers.append({"id": str(d["id"]), "display_name": d.get("display_name"),
                         "avatar_url": d.get("avatar_url"), "username": d.get("username"),
                         "liked_at": str(d.get("created_at", ""))})
-    return {"likers": likers, "total": len(likers)}
+    return {"likers": likers, "total": total, "has_more": total > len(likers)}
 
 
 @router.post("/comments/{comment_id}/like")

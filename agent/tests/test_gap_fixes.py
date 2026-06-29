@@ -1277,3 +1277,58 @@ class TestSeoOgDescription:
         entity = {"id": "test", "name": "Test", "type": "dish"}
         meta = seo.build_og_meta(entity)
         assert meta.get("og:description") == meta.get("twitter:description")
+
+
+# ── Pagination metadata completeness ──
+
+
+class TestPaginationMetadata:
+    """All list endpoints must return proper pagination metadata (total, has_more)."""
+
+    def test_likers_returns_total_from_db(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "COUNT(*)" in src, "likers must query actual total from DB"
+
+    def test_likers_returns_has_more(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "has_more" in src, "likers must include has_more in response"
+
+    def test_likers_total_not_len(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert '"total": len(' not in src, "likers total must not use len(batch)"
+
+    def test_trending_returns_total(self):
+        src = inspect.getsource(__import__("social").trending_posts)
+        assert "COUNT(*)" in src, "trending must query actual total from DB"
+
+    def test_trending_returns_has_more(self):
+        src = inspect.getsource(__import__("social").trending_posts)
+        assert "has_more" in src, "trending must include has_more in response"
+
+    def test_trending_preserves_window_and_days(self):
+        src = inspect.getsource(__import__("social").trending_posts)
+        assert '"window"' in src and '"days"' in src
+
+
+# ── _safe_user defensive phone access ──
+
+
+class TestSafeUserDefensive:
+    """_safe_user must not crash when phone is missing or None."""
+
+    def test_safe_user_uses_get_for_phone(self):
+        src = inspect.getsource(__import__("auth")._safe_user)
+        assert 'user.get("phone")' in src, "_safe_user must use .get() for phone"
+        assert 'user["phone"]' not in src, "_safe_user must not use direct dict access for phone"
+
+    def test_safe_user_handles_none_phone(self):
+        from auth import _safe_user
+        result = _safe_user({"id": "123", "phone": None, "display_name": "Test"})
+        assert result is not None
+        assert "phone" in result
+
+    def test_safe_user_handles_missing_phone(self):
+        from auth import _safe_user
+        result = _safe_user({"id": "456", "display_name": "Test"})
+        assert result is not None
+        assert "phone" in result
