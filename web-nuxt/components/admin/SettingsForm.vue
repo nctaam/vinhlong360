@@ -319,7 +319,7 @@ async function onReset() {
 .sf-textarea { resize: vertical; min-height: 88px; font-family: inherit; line-height: 1.5; }
 .sf-json { font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: .8rem; min-height: 160px; line-height: 1.5; tab-size: 2; }
 .sf-json-invalid { border-color: var(--danger, #D94F3D) !important; box-shadow: 0 0 0 3px rgba(var(--danger-rgb, 217,79,61),.08) !important; }
-.sf-json-error { color: var(--danger, #D94F3D); font-size: .75rem; margin-top: 4px; }
+.sf-json-error { color: var(--danger, #D94F3D); font-size: .75rem; margin-top: var(--space-1); }
 
 /* ── Repeater (A3) ── */
 .sf-rep-label { font-size: .88rem; font-weight: 500; }

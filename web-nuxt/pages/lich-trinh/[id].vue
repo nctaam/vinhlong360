@@ -528,7 +528,7 @@ if (itinerary.value && !itinerary.value.error) {
   .itin-actions, .transport-mode-spaced, .route-map-section { display: none; }
   .step-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
   .step-card:hover { transform: none; }
-  .timeline { padding-left: 16px; }
+  .timeline { padding-left: var(--space-4); }
   .timeline::before { background: #999; }
 }
 </style>

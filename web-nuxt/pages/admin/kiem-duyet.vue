@@ -484,7 +484,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Content cell ── */
 .mod-content-cell { max-width: 420px; }
 .mod-content-truncate { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.mod-expand { display: inline-block; margin-top: 4px; background: none; border: none; padding: 0; color: var(--primary-fg, #219653); font-size: .76rem; font-weight: 600; cursor: pointer; }
+.mod-expand { display: inline-block; margin-top: var(--space-1); background: none; border: none; padding: 0; color: var(--primary-fg, #219653); font-size: .76rem; font-weight: 600; cursor: pointer; }
 .mod-expand:hover { text-decoration: underline; }
 .mod-expand:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; border-radius: 4px; }
 

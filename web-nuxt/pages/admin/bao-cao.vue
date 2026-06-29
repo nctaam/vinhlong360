@@ -476,7 +476,7 @@ onMounted(() => fetchAll())
 .rpt-reason-cell { max-width: 360px; }
 .rpt-reason-full { white-space: normal; word-break: break-word; line-height: 1.45; }
 .rpt-reason-toggle {
-  margin-top: 4px; padding: 0; border: none; background: none;
+  margin-top: var(--space-1); padding: 0; border: none; background: none;
   color: var(--primary, #0071e3); font-size: .72rem; font-weight: 600; cursor: pointer;
 }
 .rpt-reason-toggle:hover { text-decoration: underline; }

@@ -162,7 +162,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <style scoped>
-.cs-subtitle { font-size: .85rem; color: var(--muted); margin-top: 4px; }
+.cs-subtitle { font-size: .85rem; color: var(--muted); margin-top: var(--space-1); }
 
 /* ── Quick-link chips ── */
 .cs-quick-links {

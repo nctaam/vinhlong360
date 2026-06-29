@@ -96,7 +96,7 @@ onMounted(reload)
 <style scoped>
 .cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
 .cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: 4px; }
+.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
 .cs-form-wrap { max-width: 640px; }
 .cs-hint { font-size: .82rem; color: var(--muted); margin-bottom: var(--space-4); line-height: 1.4; }
 

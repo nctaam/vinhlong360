@@ -376,7 +376,7 @@ onMounted(fetchDashboard)
 .dash-stat-card:hover .dash-stat-icon { transform: scale(1.08); }
 .dash-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
 .dash-stat-label { font-size: .75rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
-.dash-delta { font-size: .7rem; font-weight: 600; color: var(--secondary); margin-left: 4px; }
+.dash-delta { font-size: .7rem; font-weight: 600; color: var(--secondary); margin-left: var(--space-1); }
 
 /* ── Partial-degradation banner ── */
 .dash-degraded {
@@ -428,7 +428,7 @@ onMounted(fetchDashboard)
 .dash-health-metrics b { color: var(--ink); font-weight: 600; }
 .dash-health-warn { color: rgb(var(--warning-rgb)) !important; }
 .dash-backup-btn {
-  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 6px;
+  display: inline-block; margin-left: var(--space-2); padding: 2px 10px; border-radius: 6px;
   border: .5px solid var(--line); background: var(--bg); color: var(--primary-fg, #219653);
   font-size: .72rem; font-weight: 600; cursor: pointer; transition: background .2s;
 }

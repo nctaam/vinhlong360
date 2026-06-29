@@ -23,7 +23,7 @@
 .chip.season.active { background: rgba(var(--primary-rgb), .88); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 .dark .chip.season.active { background: rgba(var(--primary-rgb), .75); }
 @media (max-width: 840px) {
-  .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
+  .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-1); scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
   .chip-row::-webkit-scrollbar { display: none; }
   .chip-row:focus-within, .chip-row:hover { mask-image: none; -webkit-mask-image: none; }
   .chip-row .chip { scroll-snap-align: start; }
@@ -175,7 +175,7 @@
 /* ── Interest Nav (kham-pha page chips) ── */
 .interest-nav { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-5); }
 @media (max-width: 640px) {
-  .interest-nav { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; padding-bottom: 4px; }
+  .interest-nav { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; padding-bottom: var(--space-1); }
   .interest-nav::-webkit-scrollbar { display: none; }
   .interest-nav .chip { scroll-snap-align: start; flex-shrink: 0; }
 }

@@ -170,7 +170,7 @@ function onFooterKeydown(e: KeyboardEvent) {
 <style scoped>
 .cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
 .cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: 4px; }
+.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
 .cs-form-wrap { max-width: 640px; }
 .cs-section { margin-top: var(--space-6); }
 .cs-section-title { font-size: 1rem; font-weight: 600; margin-bottom: var(--space-3); }

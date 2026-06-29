@@ -60,7 +60,7 @@ onMounted(reload)
 <style scoped>
 .cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
 .cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: 4px; }
+.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
 .cs-view { color: var(--primary, #219653); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
 .cs-view:hover { text-decoration: underline; }
 .cs-form-wrap { max-width: 760px; }
