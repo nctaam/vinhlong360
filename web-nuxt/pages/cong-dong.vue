@@ -326,7 +326,7 @@
 
       <aside class="threads-sidebar">
         <div class="sidebar-card sidebar-about">
-          <h3>Cộng đồng vinhlong360</h3>
+          <h2>Cộng đồng vinhlong360</h2>
           <p>Nơi chia sẻ trải nghiệm du lịch, đánh giá đặc sản và kết nối với cộng đồng yêu miền Tây.</p>
           <div class="sidebar-stats">
             <div class="sidebar-stat">
@@ -341,7 +341,7 @@
         </div>
 
         <div v-if="topMembers.length" class="sidebar-card">
-          <h3>Thành viên tích cực</h3>
+          <h2>Thành viên tích cực</h2>
           <ol class="leaderboard-list">
             <li v-for="(m, i) in topMembers" :key="m.id">
               <NuxtLink :to="`/nguoi-dung/${m.username || m.id}`" class="lb-row">
@@ -356,7 +356,7 @@
         </div>
 
         <div v-if="isLoggedIn && suggestedUsers.length" class="sidebar-card">
-          <h3>Có thể bạn quan tâm</h3>
+          <h2>Có thể bạn quan tâm</h2>
           <ul class="suggest-list">
             <li v-for="s in suggestedUsers" :key="s.id" class="suggest-row">
               <NuxtLink :to="`/nguoi-dung/${s.username || s.id}`" class="suggest-user">
@@ -371,7 +371,7 @@
         </div>
 
         <div v-if="trendingTags.length" class="sidebar-card">
-          <h3>Hashtag thịnh hành</h3>
+          <h2>Hashtag thịnh hành</h2>
           <div class="trending-tags">
             <NuxtLink
               v-for="t in trendingTags"
@@ -383,7 +383,7 @@
         </div>
 
         <div class="sidebar-card reveal">
-          <h3>Cách tham gia</h3>
+          <h2>Cách tham gia</h2>
           <ul class="sidebar-list">
             <li>
               <span class="sl-icon">📸</span>
@@ -405,7 +405,7 @@
         </div>
 
         <div class="sidebar-card sidebar-rules">
-          <h3>Quy tắc cộng đồng</h3>
+          <h2>Quy tắc cộng đồng</h2>
           <ol class="sidebar-rules-list">
             <li>Tôn trọng lẫn nhau</li>
             <li>Chia sẻ thông tin chính xác</li>
@@ -1200,7 +1200,7 @@ useHead({
 }
 .sidebar-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border, var(--ink)); }
 .sidebar-card:focus-within { border-color: var(--border, var(--ink)); }
-.sidebar-card h3 { margin: 0 0 var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.sidebar-card h2 { margin: 0 0 var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-bold); }
 .sidebar-card p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 .sidebar-stats { display: flex; gap: var(--space-4); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }

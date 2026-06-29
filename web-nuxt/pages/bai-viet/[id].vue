@@ -129,7 +129,7 @@
       <!-- Related posts -->
       <ClientOnly>
         <div v-if="relatedPosts.length" class="related-section">
-          <h3 class="related-title">Bài viết liên quan</h3>
+          <h2 class="related-title">Bài viết liên quan</h2>
           <div class="related-grid">
             <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="`/bai-viet/${rp.id}`" class="related-card">
               <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />

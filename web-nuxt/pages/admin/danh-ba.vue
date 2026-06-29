@@ -14,26 +14,26 @@
       <div class="db-form-grid">
         <label class="db-field">
           <span class="db-field-label">Tên cơ quan *</span>
-          <input v-model="f.name" class="input" :class="{ 'db-input-error': formErrors.name }" required placeholder="UBND xã An Bình" :aria-invalid="!!formErrors.name" />
-          <span v-if="formErrors.name" class="db-field-error" role="alert">{{ formErrors.name }}</span>
+          <input v-model="f.name" class="input" :class="{ 'db-input-error': formErrors.name }" required placeholder="UBND xã An Bình" :aria-invalid="!!formErrors.name" :aria-describedby="formErrors.name ? 'db-err-name' : undefined" />
+          <span v-if="formErrors.name" id="db-err-name" class="db-field-error" role="alert">{{ formErrors.name }}</span>
         </label>
         <label class="db-field">
           <span class="db-field-label">Loại cơ quan *</span>
-          <select v-model="f.office_kind" class="input" :class="{ 'db-input-error': formErrors.office_kind }" required :aria-invalid="!!formErrors.office_kind">
+          <select v-model="f.office_kind" class="input" :class="{ 'db-input-error': formErrors.office_kind }" required :aria-invalid="!!formErrors.office_kind" :aria-describedby="formErrors.office_kind ? 'db-err-kind' : undefined">
             <option value="">— Chọn —</option>
             <option v-for="(m, k) in OFFICE_KIND" :key="k" :value="k">{{ m.emoji }} {{ m.label }}</option>
           </select>
-          <span v-if="formErrors.office_kind" class="db-field-error" role="alert">{{ formErrors.office_kind }}</span>
+          <span v-if="formErrors.office_kind" id="db-err-kind" class="db-field-error" role="alert">{{ formErrors.office_kind }}</span>
         </label>
         <label class="db-field">
           <span class="db-field-label">Xã / phường *</span>
-          <select v-model="f.placeId" class="input" :class="{ 'db-input-error': formErrors.placeId }" required :aria-invalid="!!formErrors.placeId">
+          <select v-model="f.placeId" class="input" :class="{ 'db-input-error': formErrors.placeId }" required :aria-invalid="!!formErrors.placeId" :aria-describedby="formErrors.placeId ? 'db-err-place' : undefined">
             <option value="">— Chọn —</option>
             <optgroup v-for="g in wardGroups" :key="g.area" :label="g.label">
               <option v-for="w in g.wards" :key="w.id" :value="w.id">{{ w.name }}</option>
             </optgroup>
           </select>
-          <span v-if="formErrors.placeId" class="db-field-error" role="alert">{{ formErrors.placeId }}</span>
+          <span v-if="formErrors.placeId" id="db-err-place" class="db-field-error" role="alert">{{ formErrors.placeId }}</span>
         </label>
         <label class="db-field">
           <span class="db-field-label">Số điện thoại</span>
@@ -49,8 +49,8 @@
         </label>
         <label class="db-field db-field-full">
           <span class="db-field-label">Nguồn (URL chính thống) *</span>
-          <input v-model="f.sourceUrl" class="input" :class="{ 'db-input-error': formErrors.sourceUrl, 'db-input-ok': sourceUrlValid }" required placeholder="https://...gov.vn/..." :aria-invalid="!!formErrors.sourceUrl" />
-          <span v-if="formErrors.sourceUrl" class="db-field-error" role="alert">{{ formErrors.sourceUrl }}</span>
+          <input v-model="f.sourceUrl" class="input" :class="{ 'db-input-error': formErrors.sourceUrl, 'db-input-ok': sourceUrlValid }" required placeholder="https://...gov.vn/..." :aria-invalid="!!formErrors.sourceUrl" :aria-describedby="formErrors.sourceUrl ? 'db-err-url' : undefined" />
+          <span v-if="formErrors.sourceUrl" id="db-err-url" class="db-field-error" role="alert">{{ formErrors.sourceUrl }}</span>
           <span v-else-if="f.sourceUrl && !sourceUrlValid" class="db-field-hint">Nên là URL chính thống .gov.vn (bắt đầu bằng https://)</span>
         </label>
       </div>

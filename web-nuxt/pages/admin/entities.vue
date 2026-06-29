@@ -137,13 +137,13 @@
           <legend class="ent-fieldset-legend">Thông tin cơ bản</legend>
           <div class="ent-field">
             <label class="form-label" for="ent-id">ID (slug)</label>
-            <input id="ent-id" v-model="form.id" class="input" :class="{ error: fieldErrors.id }" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editingEntity" @input="clearFieldError('id')" />
-            <span v-if="fieldErrors.id" class="form-error">{{ fieldErrors.id }}</span>
+            <input id="ent-id" v-model="form.id" class="input" :class="{ error: fieldErrors.id }" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editingEntity" :aria-invalid="!!fieldErrors.id" :aria-describedby="fieldErrors.id ? 'ent-id-err' : undefined" @input="clearFieldError('id')" />
+            <span v-if="fieldErrors.id" id="ent-id-err" class="form-error" role="alert">{{ fieldErrors.id }}</span>
           </div>
           <div class="ent-field">
             <label class="form-label" for="ent-name">Tên</label>
-            <input id="ent-name" v-model="form.name" class="input" :class="{ error: fieldErrors.name }" placeholder="Tên" aria-label="Tên entity" @input="clearFieldError('name'); checkDuplicate()" />
-            <span v-if="fieldErrors.name" class="form-error">{{ fieldErrors.name }}</span>
+            <input id="ent-name" v-model="form.name" class="input" :class="{ error: fieldErrors.name }" placeholder="Tên" aria-label="Tên entity" :aria-invalid="!!fieldErrors.name" :aria-describedby="fieldErrors.name ? 'ent-name-err' : undefined" @input="clearFieldError('name'); checkDuplicate()" />
+            <span v-if="fieldErrors.name" id="ent-name-err" class="form-error" role="alert">{{ fieldErrors.name }}</span>
             <div v-if="duplicates.length && !editingEntity" class="ent-dup-warn" role="alert">
               <strong>&#9888; Có thể trùng:</strong>
               <span v-for="d in duplicates" :key="d.id" class="ent-dup-item">{{ d.name }} <span class="ent-dup-type">({{ d.type }})</span></span>

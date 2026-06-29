@@ -384,7 +384,7 @@
 
         <!-- Contextual next steps -->
         <div class="next-steps">
-          <h3 class="ns-title">{{ ss('labels.detail.next_steps_title', 'Bước tiếp theo') }}</h3>
+          <h2 class="ns-title">{{ ss('labels.detail.next_steps_title', 'Bước tiếp theo') }}</h2>
           <!-- Save affordance lives in the hero (SaveButton) — avoid a second, divergent toggle here.
                Next step is the active-planning CTA, labeled to distinguish it from "save for later". -->
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="ns-action">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
