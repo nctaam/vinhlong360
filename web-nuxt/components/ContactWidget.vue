@@ -91,6 +91,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 .cw {
   position: sticky;
   top: calc(var(--header-height, 60px) + var(--space-4));
+  z-index: var(--z-sticky, 2);
   width: var(--contact-widget-width);
   background: var(--card);
   border-radius: var(--radius-xl, 16px);

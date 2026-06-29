@@ -1031,7 +1031,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .hl-rank { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
 .hl-rank-1 { --rank-color: #d4a017; color: var(--rank-color); } .hl-rank-2 { --rank-color: #8a8d91; color: var(--rank-color); } .hl-rank-3 { --rank-color: #b07b4f; color: var(--rank-color); }
 .dark .hl-rank-1 { --rank-color: #ffd54f; } .dark .hl-rank-2 { --rank-color: #b0b3b8; } .dark .hl-rank-3 { --rank-color: #d4a574; }
-.hl-avatar { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: 11px; font-weight: var(--weight-semibold); }
+.hl-avatar { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: var(--text-2xs); font-weight: var(--weight-semibold); }
 .hl-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .hl-more { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-semibold); }
 .hl-more:hover { text-decoration: underline; }

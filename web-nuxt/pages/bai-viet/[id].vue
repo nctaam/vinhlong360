@@ -513,7 +513,7 @@ useHead({
 .thread-subreply { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-left: var(--space-2); border-left: 2px solid var(--line); }
 .subreply-body { flex: 1; min-width: 0; }
 .subreply-body .comment-reply-btn { margin-top: .25rem; }
-.avatar-xs { width: 26px; height: 26px; font-size: 11px; }
+.avatar-xs { width: 26px; height: 26px; font-size: var(--text-2xs); }
 .reply-context { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-xs); color: var(--ink-700); background: var(--bg-alt); border-radius: var(--radius-sm); padding: .3rem .6rem; margin-bottom: var(--space-2); }
 .reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; }
 .reply-context-x:hover { color: var(--ink); }

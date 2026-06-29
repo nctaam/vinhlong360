@@ -225,14 +225,14 @@ onBeforeUnmount(() => {
 <style scoped>
 .chat-disclaimer {
   margin: 0;
-  padding: 6px 12px 10px;
-  font-size: 11px;
+  padding: 6px var(--space-3) 10px;
+  font-size: var(--text-2xs);
   line-height: 1.4;
   color: var(--text-muted, var(--muted));
   text-align: center;
 }
 .cmsg-failed { opacity: .7; border-left: 2px solid var(--error, #d32); }
-.cmsg-retry { display: inline-block; margin-top: 4px; font-size: 11px; color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 2px 4px; min-height: 44px; border-radius: var(--radius-sm, 4px); }
+.cmsg-retry { display: inline-block; margin-top: var(--space-1); font-size: var(--text-2xs); color: var(--primary-fg); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 2px 4px; min-height: 44px; border-radius: var(--radius-sm, 4px); }
 .cmsg-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .csuggestions button { min-height: 44px; }
 .chat-panel-input button { min-height: 44px; }

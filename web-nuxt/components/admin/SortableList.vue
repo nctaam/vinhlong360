@@ -3,7 +3,7 @@
     <TransitionGroup name="sl-list" tag="div" class="sl-items">
       <div v-for="(item, i) in localItems" :key="itemKey(item, i)" class="sl-item" :class="{ 'sl-item-editing': editingIndex === i }">
         <div class="sl-item-head">
-          <span class="sl-handle" aria-hidden="true" tabindex="0"
+          <span class="sl-handle" role="button" tabindex="0"
             :aria-label="`Mục ${i + 1}. Shift+mũi tên lên/xuống để di chuyển`"
             @keydown.up.shift.prevent="moveUp(i)" @keydown.down.shift.prevent="moveDown(i)">☰</span>
           <div class="sl-item-content">
