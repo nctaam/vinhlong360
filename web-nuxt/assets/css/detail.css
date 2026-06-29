@@ -243,7 +243,7 @@
 .ns-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Practical tips (Scenarios 2,3,6,9) ── */
-.practical-tips { margin-top: var(--space-5); }
+.practical-tips { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
 .pt-list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .pt-item { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .pt-item:hover { background: var(--bg-alt); transform: translateX(2px); box-shadow: var(--shadow-xs); }
@@ -266,7 +266,7 @@
 .btc-body span { font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 /* ── Food specialties ── */
-.food-specialties { margin-top: var(--space-5); }
+.food-specialties { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
 .fs-list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-2); }
 .fs-item { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
 .fs-item:hover { background: var(--bg-alt); transform: translateY(-1px); }
@@ -288,7 +288,7 @@
 .rd-count { font-size: var(--text-xs); color: var(--muted); }
 
 /* ── Season block (was inline style) ── */
-.season-block { margin-top: var(--space-5); }
+.season-block { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
 .section-subtitle { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0 0 var(--space-2); }
 
 /* ── Contact row + claim CTA (was inline style) ── */

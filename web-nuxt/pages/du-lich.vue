@@ -33,7 +33,7 @@
     </section>
 
     <!-- Category sections -->
-    <section v-for="cat in categories" :key="cat.type" class="block reveal">
+    <section v-for="(cat, ci) in categories" :key="cat.type" :class="['block', 'reveal', { band: ci % 2 === 0 }]">
       <div class="section-head">
         <h2>{{ cat.emoji }} {{ cat.label }}</h2>
         <button type="button" class="see-all" @click="typeFilter = cat.type; scrollToGrid()">{{ cat.items.length }} kết quả →</button>
