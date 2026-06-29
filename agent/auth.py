@@ -603,7 +603,7 @@ async def list_sessions(request: Request):
                 SELECT id, user_agent, ip_address, created_at, expires_at, token
                 FROM user_sessions
                 WHERE user_id::text = {db._ph} AND expires_at > NOW()
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT 50
             """, (str(user["id"]),))
     rows = await asyncio.to_thread(_query)
     sessions = []
