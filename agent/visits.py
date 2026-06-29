@@ -71,6 +71,31 @@ async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(r
     return {"status": body.status}
 
 
+@router.get("/review-prompts")
+async def review_prompts(user=Depends(require_user), limit: int = Query(10, ge=1, le=30)):
+    """Entities visited but not yet reviewed — prompt user to write a review."""
+    def _query():
+        ph = db._ph
+        uid = str(user["id"])
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT v.entity_id, v.created_at as visited_at
+                FROM user_visits v
+                WHERE v.user_id = {ph}::uuid
+                AND v.status = 'visited'
+                AND v.entity_id NOT IN (
+                    SELECT p.entity_id FROM posts p
+                    WHERE p.user_id = {ph}::uuid
+                    AND p.post_type = 'review'
+                    AND p.entity_id IS NOT NULL
+                )
+                ORDER BY v.created_at DESC
+                LIMIT {ph}
+            """, (uid, uid, limit))
+        return {"prompts": [db._row_to_dict(r) for r in rows]}
+    return await asyncio.to_thread(_query)
+
+
 @router.delete("/{entity_id}")
 async def remove_visit(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     entity_id = validate_path_id(entity_id, "entity_id")

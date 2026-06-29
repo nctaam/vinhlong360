@@ -157,3 +157,32 @@ class TestWhatsNewFeed:
     def test_skips_place_entities(self):
         src = inspect.getsource(__import__("public_api").feed_new_since)
         assert '"place"' in src
+
+
+# ── U-20: Post-visit review prompts ─────────────────────────────────
+
+class TestReviewPrompts:
+
+    def test_endpoint_exists(self):
+        from visits import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/me/visits/review-prompts" in paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("visits").review_prompts)
+        assert "require_user" in src
+
+    def test_queries_visited_not_reviewed(self):
+        src = inspect.getsource(__import__("visits").review_prompts)
+        assert "status = 'visited'" in src
+        assert "NOT IN" in src
+        assert "post_type = 'review'" in src
+
+    def test_response_shape(self):
+        src = inspect.getsource(__import__("visits").review_prompts)
+        assert '"prompts"' in src
+
+    def test_has_limit_param(self):
+        src = inspect.getsource(__import__("visits").review_prompts)
+        assert "limit" in src
+        assert "LIMIT" in src
