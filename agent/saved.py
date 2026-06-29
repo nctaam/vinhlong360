@@ -9,6 +9,7 @@ device can render saved cards without fetching each entity. Postgres-only
 
 import asyncio
 import json
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -20,6 +21,8 @@ from ratelimit import check_rate
 
 
 from auth_middleware import require_pg as _require_pg
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/saved", tags=["saved"], dependencies=[Depends(_require_pg)])
 
@@ -37,7 +40,7 @@ class SavedItem(BaseModel):
 
 
 class MergeBody(BaseModel):
-    items: list[SavedItem] = []
+    items: list[SavedItem] = Field(default_factory=list, max_length=500)
 
 
 def _row_item(row) -> dict:
@@ -47,6 +50,7 @@ def _row_item(row) -> dict:
         try:
             snap = json.loads(snap)
         except (json.JSONDecodeError, TypeError):
+            logger.warning("Corrupted snapshot JSON for entity %s", d.get("entity_id"))
             snap = {}
     if not isinstance(snap, dict):
         snap = {}
@@ -57,7 +61,7 @@ def _list(conn, uid: str) -> list[dict]:
     ph = db._ph
     rows = db._fetchall(conn, f"""
         SELECT entity_id, snapshot, created_at FROM saved_entities
-        WHERE user_id = {ph}::uuid ORDER BY created_at DESC
+        WHERE user_id = {ph}::uuid ORDER BY created_at DESC LIMIT 2000
     """, (uid,))
     return [_row_item(r) for r in rows]
 
@@ -86,11 +90,13 @@ async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(r
     def _query():
         with db._conn() as conn:
             ph = db._ph
+            uid = str(user["id"])
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"saved:{uid}",))
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM saved_entities WHERE user_id = {ph}::uuid",
-                               (str(user["id"]),))
+                               (uid,))
             if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_SAVED:
                 raise HTTPException(400, f"Tối đa {MAX_SAVED} địa điểm đã lưu. Hãy xoá bớt.")
-            _upsert(conn, str(user["id"]), item)
+            _upsert(conn, uid, item)
     await asyncio.to_thread(_query)
     return {"saved": True}
 

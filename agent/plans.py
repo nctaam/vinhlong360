@@ -6,6 +6,7 @@ Postgres-only (UGC parity); 503 ở SQLite dev. Mỗi plan = {title, stops[]}.
 """
 import asyncio
 import json
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -17,6 +18,8 @@ from ratelimit import check_rate
 
 
 from auth_middleware import require_pg as _require_pg
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/my-plans", tags=["plans"], dependencies=[Depends(_require_pg)])
 
@@ -37,7 +40,7 @@ class PlanBody(BaseModel):
 
 
 class MergeBody(BaseModel):
-    plans: list[PlanBody] = Field(default_factory=list)
+    plans: list[PlanBody] = Field(default_factory=list, max_length=100)
 
 
 def _row_plan(row) -> dict:
@@ -47,6 +50,7 @@ def _row_plan(row) -> dict:
         try:
             stops = json.loads(stops)
         except (json.JSONDecodeError, TypeError):
+            logger.warning("Corrupted stops JSON for plan %s", d.get("id"))
             stops = []
     return {
         "id": str(d["id"]),
@@ -61,7 +65,7 @@ def _list(conn, uid: str) -> list[dict]:
     ph = db._ph
     rows = db._fetchall(conn, f"""
         SELECT id, title, stops, is_public, created_at FROM user_plans
-        WHERE user_id = {ph}::uuid ORDER BY created_at DESC
+        WHERE user_id = {ph}::uuid ORDER BY created_at DESC LIMIT 100
     """, (uid,))
     return [_row_plan(r) for r in rows]
 
@@ -92,6 +96,7 @@ async def add_plan(body: PlanBody, user=Depends(require_user), _csrf=Depends(req
     def _query():
         with db._conn() as conn:
             ph = db._ph
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"plan:{uid}",))
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM user_plans WHERE user_id = {ph}::uuid", (uid,))
             if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_PLANS:
                 raise HTTPException(400, f"Tối đa {MAX_PLANS} lịch trình. Hãy xoá bớt.")

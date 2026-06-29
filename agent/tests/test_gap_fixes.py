@@ -1759,6 +1759,92 @@ class TestMentionSearchAsync:
         assert "asyncio.to_thread" in fn_src
 
 
+class TestSavedModuleHardening:
+    """Hardening fixes for saved.py: bounded queries, advisory locks, JSON logging."""
+
+    def test_list_query_has_limit(self):
+        src = (AGENT_DIR / "saved.py").read_text(encoding="utf-8")
+        idx = src.index("def _list(")
+        fn_src = src[idx:idx + 500]
+        assert "LIMIT" in fn_src
+
+    def test_add_saved_advisory_lock(self):
+        src = (AGENT_DIR / "saved.py").read_text(encoding="utf-8")
+        idx = src.index("async def add_saved(")
+        fn_src = src[idx:idx + 800]
+        assert "pg_advisory_xact_lock" in fn_src
+
+    def test_merge_body_max_items(self):
+        from saved import MergeBody
+        from pydantic import ValidationError
+        from saved import SavedItem
+        items = [SavedItem(id=f"e{i}") for i in range(501)]
+        with pytest.raises(ValidationError):
+            MergeBody(items=items)
+
+    def test_json_parse_failure_logged(self):
+        src = (AGENT_DIR / "saved.py").read_text(encoding="utf-8")
+        idx = src.index("def _row_item(")
+        fn_src = src[idx:idx + 500]
+        assert "logger.warning" in fn_src
+        assert "Corrupted snapshot" in fn_src
+
+    def test_logger_defined(self):
+        import saved
+        assert hasattr(saved, "logger")
+
+
+class TestVisitsModuleHardening:
+    """Hardening fixes for visits.py: bounded queries, efficient row parsing."""
+
+    def test_list_visits_has_limit(self):
+        src = (AGENT_DIR / "visits.py").read_text(encoding="utf-8")
+        idx = src.index("async def list_visits(")
+        fn_src = src[idx:idx + 800]
+        assert "LIMIT" in fn_src
+
+    def test_list_visits_single_row_to_dict_call(self):
+        src = (AGENT_DIR / "visits.py").read_text(encoding="utf-8")
+        idx = src.index("async def list_visits(")
+        fn_src = src[idx:idx + 800]
+        assert fn_src.count("_row_to_dict") == 1
+
+
+class TestPlansModuleHardening:
+    """Hardening fixes for plans.py: bounded queries, advisory locks, JSON logging."""
+
+    def test_list_query_has_limit(self):
+        src = (AGENT_DIR / "plans.py").read_text(encoding="utf-8")
+        idx = src.index("def _list(")
+        fn_src = src[idx:idx + 500]
+        assert "LIMIT" in fn_src
+
+    def test_add_plan_advisory_lock(self):
+        src = (AGENT_DIR / "plans.py").read_text(encoding="utf-8")
+        idx = src.index("async def add_plan(")
+        fn_src = src[idx:idx + 800]
+        assert "pg_advisory_xact_lock" in fn_src
+
+    def test_merge_body_max_plans(self):
+        from plans import MergeBody
+        from pydantic import ValidationError
+        from plans import PlanBody
+        plans = [PlanBody(title=f"p{i}", stops=[{"id": "a"}]) for i in range(101)]
+        with pytest.raises(ValidationError):
+            MergeBody(plans=plans)
+
+    def test_json_parse_failure_logged(self):
+        src = (AGENT_DIR / "plans.py").read_text(encoding="utf-8")
+        idx = src.index("def _row_plan(")
+        fn_src = src[idx:idx + 500]
+        assert "logger.warning" in fn_src
+        assert "Corrupted stops" in fn_src
+
+    def test_logger_defined(self):
+        import plans
+        assert hasattr(plans, "logger")
+
+
 class TestDataRetentionCleanup:
     """Expired data cleanup function exists and covers key tables."""
 

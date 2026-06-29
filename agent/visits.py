@@ -38,10 +38,10 @@ async def list_visits(status: str = Query(None, max_length=20), user=Depends(req
         if status in ("want", "visited"):
             sql += f" AND status = {ph}"
             params.append(status)
-        sql += " ORDER BY created_at DESC"
+        sql += " ORDER BY created_at DESC LIMIT 5000"
         with db._conn() as conn:
             rows = db._fetchall(conn, sql, tuple(params))
-        return {"visits": [{"entity_id": db._row_to_dict(r)["entity_id"], "status": db._row_to_dict(r)["status"]} for r in rows]}
+        return {"visits": [{"entity_id": (rd := db._row_to_dict(r))["entity_id"], "status": rd["status"]} for r in rows]}
     return await asyncio.to_thread(_query)
 
 

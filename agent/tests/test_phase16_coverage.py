@@ -1237,7 +1237,7 @@ class TestMediumFixesBatch2:
         assert "MAX_SAVED" in src, "saved.py must define MAX_SAVED"
         idx = src.find("async def add_saved(")
         assert idx > 0
-        block = src[idx:idx+600]
+        block = src[idx:idx+800]
         assert "MAX_SAVED" in block, "add_saved must check MAX_SAVED"
 
     def test_sse_eviction_sends_sentinel(self):
