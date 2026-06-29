@@ -637,7 +637,7 @@ useSeoMeta({
 @keyframes savedEnter { from { opacity: 0; transform: translateY(8px); } }
 .saved-cta { text-align: center; margin-top: var(--space-5); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
-.dark .tab-count { background: rgba(232,163,61,.2); color: var(--accent); }
+.dark .tab-count { background: rgba(var(--accent-rgb),.2); color: var(--accent); }
 
 /* Dark mode */
 .dark .profile-cover { border-color: var(--line); }

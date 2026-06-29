@@ -1316,12 +1316,12 @@ useHead({
 .dark .bm-dismiss:hover { background: rgba(255,255,255,.08); }
 .dark .sidebar-stat:hover { background: rgba(255,255,255,.03); }
 .dark .sidebar-list li:hover { background: rgba(255,255,255,.03); }
-.dark .report-entity-card { background: rgba(232,163,61,.08); border-color: rgba(232,163,61,.22); }
+.dark .report-entity-card { background: rgba(var(--accent-rgb),.08); border-color: rgba(var(--accent-rgb),.22); }
 .dark .compose-attach:hover { background: rgba(255,255,255,.08); }
-.dark .threads-compose { background: rgba(232,163,61,.06); }
-.dark .threads-compose:focus-within { background: rgba(232,163,61,.1); }
+.dark .threads-compose { background: rgba(var(--accent-rgb),.06); }
+.dark .threads-compose:focus-within { background: rgba(var(--accent-rgb),.1); }
 .dark .threads-filter { background: var(--surface-translucent, rgba(0,0,0,.72)); }
-.dark .sidebar-rules-list li::before { background: rgba(232,163,61,.2); color: var(--accent); }
+.dark .sidebar-rules-list li::before { background: rgba(var(--accent-rgb),.2); color: var(--accent); }
 .dark .lb-rank-1 { --lb-gold: #f0c040; } .dark .lb-rank-2 { --lb-silver: #b0b3b8; } .dark .lb-rank-3 { --lb-bronze: #d4975a; }
 
 .mobile-discovery { display: none; }

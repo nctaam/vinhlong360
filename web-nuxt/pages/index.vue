@@ -565,7 +565,7 @@ useHead({
 .home .hero-scrim {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(120% 95% at 88% 6%, rgba(232,163,61,.30) 0%, rgba(232,163,61,.07) 34%, transparent 60%),
+    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.30) 0%, rgba(var(--accent-rgb),.07) 34%, transparent 60%),
     radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.32) 0%, transparent 58%),
     linear-gradient(to top, rgba(var(--ink-rgb),.55) 0%, rgba(var(--ink-rgb),.06) 32%, transparent 55%);
 }
@@ -1117,7 +1117,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .dark .home .hero-scrim {
   background:
-    radial-gradient(120% 95% at 88% 6%, rgba(232,163,61,.18) 0%, rgba(232,163,61,.04) 34%, transparent 60%),
+    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.18) 0%, rgba(var(--accent-rgb),.04) 34%, transparent 60%),
     radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.22) 0%, transparent 58%),
     linear-gradient(to top, rgba(0,0,0,.48) 0%, rgba(0,0,0,.06) 34%, transparent 58%);
 }

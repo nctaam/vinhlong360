@@ -101,7 +101,7 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot-badge-pop { background: var(--info-bg, rgba(59,130,246,.1)); color: var(--info, #2563eb); }
 .dark .cspot-badge-peak { background: rgba(var(--danger-rgb), .2); color: var(--error); }
 .dark .cspot-badge-year { background: rgba(var(--success-rgb), .2); color: var(--success); }
-.dark .cspot-badge-pop { background: rgba(100,181,246, .2); color: var(--info); }
+.dark .cspot-badge-pop { background: rgba(var(--blue-rgb), .2); color: var(--info); }
 .cspot-cta { align-self: flex-start; margin-top: var(--space-2); }
 @media (prefers-reduced-motion: reduce) { .cspot-visual::before { animation: none; } }
 </style>

@@ -859,9 +859,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* ── Dark mode ── */
 .dark .type-badge[data-type="attraction"] { background: rgba(var(--primary-rgb),.15); }
-.dark .type-badge[data-type="dish"] { background: rgba(230,126,34,.15); color: #f0943a; }
+.dark .type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.15); color: var(--warning); }
 .dark .type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.15); }
-.dark .type-badge[data-type="accommodation"] { background: rgba(175,82,222,.15); }
+.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); }
 .dark .type-badge[data-type="nature"] { background: rgba(52,199,89,.15); }
 .dark .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.15); color: #ffb340; }
 .dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); }

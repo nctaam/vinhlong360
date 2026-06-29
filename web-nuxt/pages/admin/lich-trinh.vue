@@ -438,7 +438,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 /* Status colour-coding: a left accent bar for quick scanning. */
 .lt-stop-row { border-left-width: 3px; }
 .lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.5); }
-.lt-stop-warn { border-left-color: rgba(230,126,34,.55); }
+.lt-stop-warn { border-left-color: rgba(var(--warning-rgb),.55); }
 
 .lt-stop-order { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; padding-top: 2px; }
 .lt-stop-num {
@@ -520,10 +520,10 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .dark .lt-stop-row { background: rgba(255,255,255,.02); border-color: rgba(255,255,255,.08); }
 .dark .lt-stop-row:hover { background: rgba(var(--blue-rgb),.08); }
 .dark .lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.6); }
-.dark .lt-stop-warn { border-left-color: rgba(230,126,34,.65); }
+.dark .lt-stop-warn { border-left-color: rgba(var(--warning-rgb),.65); }
 .dark .lt-stops-empty { border-color: rgba(255,255,255,.14); }
 .dark .lt-stop-status-ok { background: rgba(var(--primary-rgb),.2); color: #5fcf8a; }
-.dark .lt-stop-status-warn { background: rgba(230,126,34,.22); color: #f0a35a; }
+.dark .lt-stop-status-warn { background: rgba(var(--warning-rgb),.22); color: var(--warning); }
 .dark .lt-duration { color: rgba(255,255,255,.55); }
 .dark .lt-duration-icon { opacity: .8; }
 .dark .lt-dirty-badge { color: #5fcf8a; background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
