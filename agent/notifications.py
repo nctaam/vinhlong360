@@ -379,12 +379,14 @@ def create_notification(user_id: str, notif_type: str, title: str,
             """, (user_id, notif_type, ref_id))
             if dup:
                 return
-        db._execute(conn, f"""
+        row = db._fetchone(conn, f"""
             INSERT INTO notifications (user_id, type, title, body, ref_type, ref_id)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
+            RETURNING id
         """, (user_id, notif_type, title, body, ref_type, ref_id))
-    _notify_sse(user_id, {"type": notif_type, "title": title, "body": body,
-                          "ref_type": ref_type, "ref_id": ref_id})
+        notif_id = str(db._row_to_dict(row)["id"]) if row else None
+    _notify_sse(user_id, {"id": notif_id, "type": notif_type, "title": title, "body": body,
+                          "ref_type": ref_type, "ref_id": str(ref_id) if ref_id else None})
 
 
 # ── Follow ──
@@ -725,7 +727,7 @@ def _format_notif(row: dict) -> dict:
         "title": row["title"],
         "body": row.get("body"),
         "ref_type": row.get("ref_type"),
-        "ref_id": row.get("ref_id"),
+        "ref_id": str(row["ref_id"]) if row.get("ref_id") else None,
         "is_read": row.get("is_read", False),
         "created_at": str(row.get("created_at", "")),
     }

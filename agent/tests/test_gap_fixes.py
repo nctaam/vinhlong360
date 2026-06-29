@@ -1436,3 +1436,25 @@ class TestEarlyReturnConsistency:
                 assert "has_more" in block, "search short query early return missing 'has_more'"
                 return
         pytest.fail("Could not find short query early return")
+
+
+# ── Notification SSE/REST consistency ──
+
+
+class TestNotificationConsistency:
+    """SSE and REST notification responses must have consistent fields."""
+
+    def test_sse_push_includes_id(self):
+        src = inspect.getsource(__import__("notifications").create_notification)
+        assert "RETURNING id" in src, "create_notification must return id for SSE"
+        sse_idx = src.index("_notify_sse")
+        sse_block = src[sse_idx:sse_idx + 200]
+        assert '"id"' in sse_block, "SSE push payload must include id field"
+
+    def test_rest_ref_id_serialized_to_string(self):
+        src = inspect.getsource(__import__("notifications")._format_notif)
+        assert "str(row" in src and "ref_id" in src, "REST ref_id must be serialized to string"
+
+    def test_sse_ref_id_serialized_to_string(self):
+        src = inspect.getsource(__import__("notifications").create_notification)
+        assert "str(ref_id)" in src, "SSE ref_id must be serialized to string"
