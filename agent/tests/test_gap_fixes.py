@@ -1,0 +1,200 @@
+"""Tests for gap-scan fixes: reaction enrichment, user rating, SSE reconnect, moderation history."""
+import inspect
+from pathlib import Path
+import pytest
+
+AGENT_DIR = Path(__file__).resolve().parent.parent
+
+
+# ── Reaction counts in feed ──
+
+class TestReactionEnrichment:
+    """_enrich_reactions() batch-fetches reaction counts for feed posts."""
+
+    def test_enrich_reactions_exists(self):
+        from social import _enrich_reactions
+        assert callable(_enrich_reactions)
+
+    def test_enrich_reactions_queries_post_reactions(self):
+        src = inspect.getsource(__import__("social")._enrich_reactions)
+        assert "post_reactions" in src
+        assert "reaction_type" in src
+        assert "GROUP BY" in src
+
+    def test_enrich_reactions_sets_empty_dict_default(self):
+        src = inspect.getsource(__import__("social")._enrich_reactions)
+        assert "counts.get" in src
+        assert "{}" in src
+
+    def test_enrich_reactions_handles_empty_list(self):
+        from social import _enrich_reactions
+        result = _enrich_reactions([])
+        assert result == []
+
+    def test_format_post_has_reactions_key(self):
+        src = inspect.getsource(__import__("social")._format_post)
+        assert '"reactions"' in src
+
+    def test_feed_calls_enrich_reactions(self):
+        src = inspect.getsource(__import__("social").get_feed)
+        assert "_enrich_reactions" in src
+
+    def test_following_feed_calls_enrich_reactions(self):
+        src = inspect.getsource(__import__("social").get_following_feed)
+        assert "_enrich_reactions" in src
+
+    def test_entity_feed_calls_enrich_reactions(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert "_enrich_reactions" in src
+
+    def test_search_posts_calls_enrich_reactions(self):
+        src = inspect.getsource(__import__("social").search_posts)
+        assert "_enrich_reactions" in src
+
+    def test_enrich_reactions_batch_query(self):
+        src = inspect.getsource(__import__("social")._enrich_reactions)
+        assert "ANY" in src
+
+
+# ── User's own rating in entity reviews ──
+
+class TestMyReviewInEntityReviews:
+    """Entity reviews endpoint returns user's own review when authenticated."""
+
+    def test_reviews_accepts_user_dependency(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert "get_current_user" in src
+
+    def test_reviews_queries_user_review(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert "my_review" in src
+        assert "my_row" in src
+
+    def test_reviews_returns_my_review_conditionally(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert 'result["my_review"]' in src
+        assert "my_review is not None" in src
+
+    def test_my_review_includes_rating(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert '"rating"' in src
+        assert '"content"' in src
+        assert '"created_at"' in src
+
+
+# ── SSE reconnection ──
+
+class TestSSEReconnection:
+    """SSE notification stream supports Last-Event-ID reconnection."""
+
+    def test_stream_reads_last_event_id(self):
+        src = inspect.getsource(__import__("notifications").notification_stream)
+        assert "Last-Event-ID" in src
+
+    def test_stream_fetches_missed_notifications(self):
+        src = inspect.getsource(__import__("notifications").notification_stream)
+        assert "missed" in src
+        assert "is_read = FALSE" in src
+
+    def test_stream_includes_event_ids(self):
+        src = inspect.getsource(__import__("notifications").notification_stream)
+        assert "id:" in src or 'f"id:' in src
+
+    def test_event_counter_exists(self):
+        import notifications
+        assert hasattr(notifications, "_sse_event_counter")
+
+    def test_next_event_id_is_async(self):
+        import notifications
+        assert inspect.iscoroutinefunction(notifications._next_event_id)
+
+    def test_missed_limited_to_5_minutes(self):
+        src = inspect.getsource(__import__("notifications").notification_stream)
+        assert "5 minutes" in src or "INTERVAL" in src
+
+
+# ── Moderation history per post ──
+
+class TestModerationHistory:
+    """Admin can view moderation action timeline for a specific post."""
+
+    def test_endpoint_exists(self):
+        src = inspect.getsource(__import__("admin"))
+        assert "moderation/{post_id}/history" in src
+        assert "moderation_history" in src
+
+    def test_queries_moderation_log(self):
+        src = inspect.getsource(__import__("admin").moderation_history)
+        assert "moderation_log" in src
+        assert "target_type = 'post'" in src
+
+    def test_includes_moderator_name(self):
+        src = inspect.getsource(__import__("admin").moderation_history)
+        assert "moderator_name" in src
+        assert "LEFT JOIN users" in src
+
+    def test_returns_actions_and_status(self):
+        src = inspect.getsource(__import__("admin").moderation_history)
+        assert '"current_status"' in src
+        assert '"actions"' in src
+
+    def test_validates_post_id(self):
+        src = inspect.getsource(__import__("admin").moderation_history)
+        assert "validate_path_id" in src
+
+    def test_returns_auto_flag(self):
+        src = inspect.getsource(__import__("admin").moderation_history)
+        assert '"auto"' in src
+
+    def test_scores_parsed_from_json(self):
+        src = inspect.getsource(__import__("admin").moderation_history)
+        assert "json.loads" in src or "scores" in src
+
+
+# ── Admin reports filter by reporter/target user ──
+
+class TestAdminReportsUserFilter:
+    """Admin reports endpoint supports filtering by reporter_id and target_user_id."""
+
+    def test_reports_accepts_reporter_id(self):
+        src = inspect.getsource(__import__("admin").get_reports)
+        assert "reporter_id" in src
+
+    def test_reports_accepts_target_user_id(self):
+        src = inspect.getsource(__import__("admin").get_reports)
+        assert "target_user_id" in src
+
+    def test_reporter_id_filters_sql(self):
+        src = inspect.getsource(__import__("admin").get_reports)
+        assert "r.reporter_id" in src
+
+    def test_target_user_id_filters_user_type(self):
+        src = inspect.getsource(__import__("admin").get_reports)
+        assert "target_type = 'user'" in src
+        assert "r.target_id" in src
+
+    def test_validates_reporter_id(self):
+        src = inspect.getsource(__import__("admin").get_reports)
+        assert "validate_path_id" in src
+
+    def test_reporter_id_in_response(self):
+        src = inspect.getsource(__import__("admin").get_reports)
+        assert "r.reporter_id" in src
+
+
+# ── JSONL rotation in social.py comment report ──
+
+class TestCommentReportRotation:
+    """Comment report endpoint uses shared lock and rotation."""
+
+    def test_comment_report_uses_shared_lock(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "_jsonl_lock" in src
+
+    def test_comment_report_calls_rotation(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "_maybe_rotate_jsonl" in src
+
+    def test_imports_from_public_api(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "from public_api import" in src

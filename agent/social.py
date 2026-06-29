@@ -106,6 +106,28 @@ def _enrich_user_status(posts: list[dict], user) -> list[dict]:
     return posts
 
 
+def _enrich_reactions(posts: list[dict]) -> list[dict]:
+    """Batch-fetch reaction counts for a list of formatted posts."""
+    if not posts:
+        return posts
+    ph = db._ph
+    post_ids = [p["id"] for p in posts]
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT post_id::text AS pid, reaction_type, COUNT(*) AS c
+            FROM post_reactions
+            WHERE post_id::text = ANY({ph}::text[])
+            GROUP BY post_id, reaction_type
+        """, (post_ids,))
+    counts: dict[str, dict[str, int]] = {}
+    for r in rows:
+        d = db._row_to_dict(r)
+        counts.setdefault(d["pid"], {})[d["reaction_type"]] = int(d["c"])
+    for p in posts:
+        p["reactions"] = counts.get(p["id"], {})
+    return posts
+
+
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 
 def _strip_html_tags(s: str) -> str:
@@ -906,6 +928,7 @@ async def get_feed(
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
 
     await asyncio.to_thread(_enrich_user_status, posts, user)
+    await asyncio.to_thread(_enrich_reactions, posts)
 
     total_c = db._row_to_dict(total)["c"] if total else 0
     return {
@@ -965,6 +988,7 @@ async def get_following_feed(
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     await asyncio.to_thread(_enrich_user_status, posts, user)
+    await asyncio.to_thread(_enrich_reactions, posts)
 
     total_c = total["c"] if total else 0
     return {"posts": posts, "page": page, "total": total_c,
@@ -1002,6 +1026,7 @@ async def trending_posts(
     rows = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     await asyncio.to_thread(_enrich_user_status, posts, user)
+    await asyncio.to_thread(_enrich_reactions, posts)
     return {"posts": posts, "window": window, "days": days}
 
 
@@ -1046,6 +1071,7 @@ async def explore_feed(
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     if user:
         await asyncio.to_thread(_enrich_user_status, posts, user)
+    await asyncio.to_thread(_enrich_reactions, posts)
     return {"posts": posts, "page": page, "has_more": len(posts) == limit}
 
 
@@ -1093,6 +1119,7 @@ async def search_posts(
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     await asyncio.to_thread(_enrich_user_status, posts, user)
+    await asyncio.to_thread(_enrich_reactions, posts)
 
     total_c = db._row_to_dict(total)["c"] if total else 0
     return {"posts": posts, "q": _strip_html_tags(q), "page": page, "total": total_c,
@@ -1712,6 +1739,7 @@ async def get_entity_feed(
 
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     await asyncio.to_thread(_enrich_user_status, posts, user)
+    await asyncio.to_thread(_enrich_reactions, posts)
 
     total_d = db._row_to_dict(total) if total else {}
     rating_d = db._row_to_dict(rating_row) if rating_row else {}
@@ -2042,13 +2070,13 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
         "ip_hash": _hashlib.sha256(get_client_ip(request).encode()).hexdigest()[:16],
         "status": "open",
     }
-    import threading as _threading
-    _lock = _threading.Lock()
+    from public_api import _jsonl_lock, _maybe_rotate_jsonl
     def _write():
-        with _lock:
+        with _jsonl_lock:
             reports_file.parent.mkdir(exist_ok=True)
             with open(reports_file, "a", encoding="utf-8") as f:
                 f.write(_json.dumps(record, ensure_ascii=False) + "\n")
+            _maybe_rotate_jsonl(reports_file)
     try:
         await asyncio.to_thread(_write)
     except OSError:
@@ -3300,6 +3328,7 @@ def _format_post(row: dict) -> dict:
         "reading_time_min": _reading_time_min(row.get("content", "")),
         "is_edited": bool(row.get("updated_at") and row.get("created_at") and str(row["updated_at"]) != str(row["created_at"])),
         "is_featured": bool(row.get("is_featured")),
+        "reactions": row.get("reactions", {}),
         "review_response": {
             "content": row.get("response_content"),
             "responder_name": row.get("responder_name"),

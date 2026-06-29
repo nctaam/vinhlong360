@@ -2359,6 +2359,55 @@ async def batch_moderation(body: BatchModerationBody):
     return {"success": True, "updated": updated, "requested": len(body.post_ids)}
 
 
+@router.get("/moderation/{post_id}/history")
+async def moderation_history(post_id: str):
+    """Admin: view full moderation action timeline for a specific post."""
+    post_id = validate_path_id(post_id, "post_id")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT id, moderation_status, created_at FROM posts WHERE id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            rows = db._fetchall(conn, f"""
+                SELECT ml.action, ml.reason, ml.auto, ml.scores, ml.created_at,
+                       u.display_name AS moderator_name
+                FROM moderation_log ml
+                LEFT JOIN users u ON u.id = ml.moderator_id
+                WHERE ml.target_type = 'post' AND ml.target_id = {ph}
+                ORDER BY ml.created_at DESC
+                LIMIT 50
+            """, (post_id,))
+        pd = db._row_to_dict(post)
+        actions = []
+        for r in rows:
+            d = db._row_to_dict(r)
+            scores = d.get("scores")
+            if isinstance(scores, str):
+                try:
+                    scores = json.loads(scores)
+                except (json.JSONDecodeError, ValueError, TypeError):
+                    scores = {}
+            actions.append({
+                "action": d["action"],
+                "reason": d.get("reason"),
+                "auto": bool(d.get("auto")),
+                "moderator": d.get("moderator_name"),
+                "scores": scores or {},
+                "created_at": str(d.get("created_at", "")),
+            })
+        return {
+            "post_id": post_id,
+            "current_status": pd.get("moderation_status"),
+            "post_created_at": str(pd.get("created_at", "")),
+            "actions": actions,
+            "total": len(actions),
+        }
+    return await asyncio.to_thread(_query)
+
+
 @router.post("/posts/{post_id}/feature")
 async def feature_post(post_id: str, request: Request):
     """Admin: toggle feature a post at the top of its entity page."""
@@ -2930,9 +2979,15 @@ async def search_analytics(days: int = Query(7, ge=1, le=90)):
 async def get_reports(
     status: str = Query("pending", pattern="^(pending|resolved|dismissed)$"),
     target_type: str = Query(None, pattern="^(post|comment|user|entity)$"),
+    reporter_id: str = Query(None, max_length=64),
+    target_user_id: str = Query(None, max_length=64),
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
 ):
+    if reporter_id:
+        reporter_id = validate_path_id(reporter_id, "reporter_id")
+    if target_user_id:
+        target_user_id = validate_path_id(target_user_id, "target_user_id")
     ph = db._ph
     offset = (page - 1) * limit
     def _query():
@@ -2942,10 +2997,16 @@ async def get_reports(
             if target_type:
                 where += f" AND r.target_type = {ph}"
                 params.append(target_type)
+            if reporter_id:
+                where += f" AND r.reporter_id::text = {ph}"
+                params.append(reporter_id)
+            if target_user_id:
+                where += f" AND r.target_type = 'user' AND r.target_id = {ph}"
+                params.append(target_user_id)
             params.extend([limit, offset])
             rows = db._fetchall(conn, f"""
                 SELECT r.id, r.target_type, r.target_id, r.reason, r.details,
-                       r.status, r.created_at, u.display_name as reporter_name
+                       r.reporter_id, r.status, r.created_at, u.display_name as reporter_name
                 FROM reports r
                 JOIN users u ON u.id = r.reporter_id
                 WHERE {where}
@@ -2953,7 +3014,7 @@ async def get_reports(
                 LIMIT {ph} OFFSET {ph}
             """, tuple(params))
             total = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM reports WHERE {where}
+                SELECT COUNT(*) as c FROM reports r WHERE {where}
             """, tuple(params[:-2]))
         return {
             "reports": [db._row_to_dict(r) for r in rows],

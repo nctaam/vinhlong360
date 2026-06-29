@@ -1245,7 +1245,7 @@ class TestMediumFixesBatch2:
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
         idx = src.find("notification_stream")
         assert idx > 0
-        block = src[idx:idx+1500]
+        block = src[idx:idx+2500]
         assert "put_nowait(None)" in block, \
             "SSE eviction must send None sentinel to old queue"
 
@@ -1254,7 +1254,7 @@ class TestMediumFixesBatch2:
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
         idx = src.find("async def event_generator()")
         assert idx > 0
-        block = src[idx:idx+400]
+        block = src[idx:idx+800]
         assert "data is None" in block, \
             "Event generator must break on None sentinel from eviction"
 

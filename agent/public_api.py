@@ -26,7 +26,7 @@ from pydantic import BaseModel, Field
 from database import db
 from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
-from auth_middleware import validate_path_id, require_pg, require_user, require_csrf
+from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
 
 router = APIRouter(prefix="/api", tags=["public"])
 
@@ -490,11 +490,13 @@ async def get_entity_reviews(
     limit: int = Query(20, ge=1, le=50),
     sort: str = Query("newest", max_length=20),
     min_rating: int = Query(None, ge=1, le=5),
+    user=Depends(get_current_user),
 ):
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
     ph = db._ph
     offset = (page - 1) * limit
+    uid = str(user["id"]) if user else None
     _REVIEW_SORT = {"newest": "p.created_at DESC", "helpful": "p.like_count DESC, p.created_at DESC",
                      "highest": "p.rating DESC, p.created_at DESC", "lowest": "p.rating ASC, p.created_at DESC"}
     order = _REVIEW_SORT.get(sort, "p.created_at DESC")
@@ -524,8 +526,20 @@ async def get_entity_reviews(
                   AND p.moderation_status = 'approved' AND p.rating IS NOT NULL
                 GROUP BY p.rating ORDER BY p.rating DESC
             """, (entity_id,))
-        return rows, total_row, dist_rows
-    rows, total_row, dist_rows = await asyncio.to_thread(_query)
+            my_review = None
+            if uid:
+                my_row = db._fetchone(conn, f"""
+                    SELECT p.id, p.rating, p.content, p.created_at FROM posts p
+                    WHERE p.entity_id = {ph} AND p.user_id = {ph}::uuid
+                      AND p.post_type = 'review' AND p.moderation_status = 'approved'
+                    ORDER BY p.created_at DESC LIMIT 1
+                """, (entity_id, uid))
+                if my_row:
+                    mr = db._row_to_dict(my_row)
+                    my_review = {"id": str(mr["id"]), "rating": mr["rating"],
+                                 "content": mr["content"][:100], "created_at": str(mr.get("created_at", ""))}
+        return rows, total_row, dist_rows, my_review
+    rows, total_row, dist_rows, my_review = await asyncio.to_thread(_query)
     td = db._row_to_dict(total_row) if total_row else {}
     total = td.get("c", 0)
     distribution = {str(db._row_to_dict(r)["rating"]): db._row_to_dict(r)["cnt"] for r in dist_rows}
@@ -553,7 +567,7 @@ async def get_entity_reviews(
                 "avatar_url": rd.get("avatar_url"),
             },
         })
-    return {
+    result = {
         "reviews": reviews,
         "total": total,
         "avg_rating": round(float(td.get("avg_rating", 0)), 1),
@@ -561,6 +575,9 @@ async def get_entity_reviews(
         "page": page,
         "has_more": offset + limit < total,
     }
+    if my_review is not None:
+        result["my_review"] = my_review
+    return result
 
 
 @router.get("/places")

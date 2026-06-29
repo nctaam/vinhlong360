@@ -216,6 +216,17 @@ def _notify_sse(user_id: str, data: dict):
             pass
 
 
+_sse_event_counter = 0
+_sse_event_lock = asyncio.Lock()
+
+
+async def _next_event_id() -> int:
+    global _sse_event_counter
+    async with _sse_event_lock:
+        _sse_event_counter += 1
+        return _sse_event_counter
+
+
 @router.get("/notifications/stream")
 async def notification_stream(request: Request, token: str = Query(None, max_length=200)):
     from auth import _hash_token
@@ -232,6 +243,21 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
     if not row:
         raise HTTPException(401, "Invalid token")
     uid = str(db._row_to_dict(row)["id"])
+
+    last_event_id = request.headers.get("Last-Event-ID")
+    missed = []
+    if last_event_id:
+        def _fetch_missed():
+            with db._conn() as conn:
+                return db._fetchall(conn, f"""
+                    SELECT id, type, title, body, ref_type, ref_id, created_at
+                    FROM notifications
+                    WHERE user_id = {db._ph}::uuid AND is_read = FALSE
+                      AND created_at > NOW() - INTERVAL '5 minutes'
+                    ORDER BY created_at ASC LIMIT 50
+                """, (uid,))
+        missed = await asyncio.to_thread(_fetch_missed)
+
     queue: asyncio.Queue = asyncio.Queue(maxsize=50)
     async with _sse_lock:
         subs = _sse_subscribers.setdefault(uid, [])
@@ -245,6 +271,12 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
 
     async def event_generator():
         try:
+            for m in missed:
+                md = db._row_to_dict(m)
+                eid = await _next_event_id()
+                payload = {k: str(md[k]) if md.get(k) else None for k in ("id", "type", "title", "body", "ref_type", "ref_id")}
+                payload["created_at"] = str(md.get("created_at", ""))
+                yield f"id: {eid}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
             while True:
                 if await request.is_disconnected():
                     break
@@ -252,7 +284,8 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
                     data = await asyncio.wait_for(queue.get(), timeout=30)
                     if data is None:
                         break
-                    yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+                    eid = await _next_event_id()
+                    yield f"id: {eid}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
                 except asyncio.TimeoutError:
                     yield ": keepalive\n\n"
         finally:
