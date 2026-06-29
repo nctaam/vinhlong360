@@ -37,7 +37,7 @@
         <div><div class="stat-value">{{ modStats.approved || 0 }}</div><div class="stat-label">Đã duyệt</div></div>
       </div>
       <div class="stat-card">
-        <div class="mod-icon" style="background: rgba(142,142,147,.12); color: var(--muted);">&#10060;</div>
+        <div class="mod-icon si-muted">&#10060;</div>
         <div><div class="stat-value">{{ modStats.rejected || 0 }}</div><div class="stat-label">Từ chối</div></div>
       </div>
     </div>

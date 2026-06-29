@@ -249,6 +249,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
 .si-red    { background: rgba(var(--red-rgb), .1);        color: rgb(var(--red-rgb)); }
 .si-danger { background: rgba(var(--danger-rgb), .1);     color: var(--error); }
 .si-teal   { background: rgba(var(--teal-rgb), .1);       color: rgb(var(--teal-rgb)); }
+.si-muted  { background: rgba(142,142,147,.12);            color: var(--muted); }
 
 /* ── MapLibre popup overrides ── */
 .maplibregl-popup-content { font-family: var(--font-body); font-size: var(--text-sm); line-height: var(--leading-normal); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); border: .5px solid var(--line); background: var(--card); color: var(--ink); }
