@@ -2088,6 +2088,45 @@ async def report_post(post_id: str, body: ReportPostBody, user=Depends(require_u
     return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
 
 
+_USER_REPORT_REASONS = {"spam", "harassment", "impersonation", "inappropriate", "scam", "other"}
+
+
+class ReportUserBody(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=30)
+    detail: str = Field("", max_length=1000)
+
+
+@router.post("/users/{user_id}/report")
+async def report_user(user_id: str, body: ReportUserBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    user_id = validate_path_id(user_id, "user_id")
+    check_rate(f"report-user:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    uid = str(user["id"])
+    if user_id == uid:
+        raise HTTPException(400, "Không thể báo cáo chính mình")
+
+    def _query():
+        with db._conn() as conn:
+            target = db._fetchone(conn, f"SELECT id FROM users WHERE id::text = {ph} AND is_active = TRUE", (user_id,))
+            if not target:
+                raise HTTPException(404, "Người dùng không tồn tại")
+            existing = db._fetchone(conn, f"""
+                SELECT 1 FROM reports
+                WHERE reporter_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
+                  AND status = 'pending'
+            """, (uid, user_id))
+            if existing:
+                raise HTTPException(400, "Bạn đã báo cáo người dùng này rồi")
+            reason = body.reason.strip() if body.reason.strip() in _USER_REPORT_REASONS else "other"
+            db._execute(conn, f"""
+                INSERT INTO reports (reporter_id, target_type, target_id, reason)
+                VALUES ({ph}::uuid, 'user', {ph}, {ph})
+            """, (uid, user_id, reason))
+
+    await asyncio.to_thread(_query)
+    return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
+
+
 # ── Moderation appeal (NĐ147 compliance) ──
 
 class AppealBody(BaseModel):

@@ -803,7 +803,7 @@ class TestUserDataExport:
 
     def test_queries_follows(self):
         src = inspect.getsource(__import__("auth").export_user_data)
-        assert "FROM follows WHERE user_id" in src
+        assert "FROM follows WHERE follower_id" in src
 
     def test_queries_visits(self):
         src = inspect.getsource(__import__("auth").export_user_data)
@@ -3972,3 +3972,162 @@ class TestClaimNotifications:
         import admin
         src = inspect.getsource(admin.reject_claim)
         assert 'return {"ok": True}' in src
+
+
+# ── Data export completeness ────────────────────────────────────────
+
+class TestDataExportCompleteness:
+    """GDPR data export should include all user-generated data."""
+
+    def test_export_includes_reactions(self):
+        import auth
+        src = inspect.getsource(auth.export_user_data)
+        assert "post_reactions" in src
+
+    def test_export_includes_collections(self):
+        import auth
+        src = inspect.getsource(auth.export_user_data)
+        assert "user_collections" in src
+
+    def test_export_includes_blocks(self):
+        import auth
+        src = inspect.getsource(auth.export_user_data)
+        assert "blocks" in src and "blocker_id" in src
+
+    def test_export_includes_mutes(self):
+        import auth
+        src = inspect.getsource(auth.export_user_data)
+        assert "user_mutes" in src
+
+    def test_export_follows_uses_correct_columns(self):
+        import auth
+        src = inspect.getsource(auth.export_user_data)
+        assert "follower_id" in src
+        assert "target_type" in src
+        assert "target_id" in src
+
+    def test_export_follows_no_wrong_columns(self):
+        import auth
+        src = inspect.getsource(auth.export_user_data)
+        assert "target_user_id" not in src
+        assert "target_entity_id" not in src
+
+    def test_export_returns_all_sections(self):
+        import auth
+        src = inspect.getsource(auth.export_user_data)
+        for section in ("posts", "comments", "likes", "bookmarks", "follows",
+                        "visits", "reactions", "collections", "blocks", "mutes"):
+            assert f'"{section}"' in src
+
+
+# ── Report user endpoint ────────────────────────────────────────────
+
+class TestReportUser:
+    """Users should be able to report other users."""
+
+    def test_report_user_endpoint_exists(self):
+        import social
+        routes = {r.path for r in social.router.routes if hasattr(r, "path")}
+        assert "/api/users/{user_id}/report" in routes
+
+    def test_report_user_validates_path_id(self):
+        import social
+        src = inspect.getsource(social.report_user)
+        assert "validate_path_id" in src
+
+    def test_report_user_has_rate_limit(self):
+        import social
+        src = inspect.getsource(social.report_user)
+        first_lines = src[:300]
+        assert "check_rate" in first_lines
+
+    def test_report_user_prevents_self_report(self):
+        import social
+        src = inspect.getsource(social.report_user)
+        assert "Không thể báo cáo chính mình" in src
+
+    def test_report_user_prevents_duplicate(self):
+        import social
+        src = inspect.getsource(social.report_user)
+        assert "đã báo cáo người dùng này rồi" in src
+
+    def test_report_user_uses_target_type_user(self):
+        import social
+        src = inspect.getsource(social.report_user)
+        assert "'user'" in src
+
+    def test_report_user_reasons(self):
+        import social
+        assert "spam" in social._USER_REPORT_REASONS
+        assert "harassment" in social._USER_REPORT_REASONS
+        assert "impersonation" in social._USER_REPORT_REASONS
+
+    def test_report_user_requires_auth(self):
+        import social
+        src = inspect.getsource(social.report_user)
+        assert "require_user" in src
+
+    def test_report_user_requires_csrf(self):
+        import social
+        src = inspect.getsource(social.report_user)
+        assert "require_csrf" in src
+
+
+# ── Admin user mutes visibility ─────────────────────────────────────
+
+class TestAdminUserMutes:
+    """Admin should be able to view user's muted list."""
+
+    def test_admin_user_mutes_endpoint_exists(self):
+        import admin
+        routes = {r.path for r in admin.router.routes if hasattr(r, "path")}
+        assert "/admin/users/{user_id}/mutes" in routes
+
+    def test_admin_user_mutes_validates_id(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_mutes)
+        assert "validate_path_id" in src
+
+    def test_admin_user_mutes_joins_users(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_mutes)
+        assert "JOIN users" in src
+
+    def test_admin_user_mutes_returns_shape(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_mutes)
+        assert '"mutes"' in src
+        assert '"total"' in src
+
+
+# ── Admin user reactions visibility ─────────────────────────────────
+
+class TestAdminUserReactions:
+    """Admin should be able to view user's reaction summary."""
+
+    def test_admin_user_reactions_endpoint_exists(self):
+        import admin
+        routes = {r.path for r in admin.router.routes if hasattr(r, "path")}
+        assert "/admin/users/{user_id}/reactions" in routes
+
+    def test_admin_user_reactions_validates_id(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_reactions)
+        assert "validate_path_id" in src
+
+    def test_admin_user_reactions_groups_by_type(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_reactions)
+        assert "GROUP BY" in src
+
+    def test_admin_user_reactions_returns_summary(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_reactions)
+        assert '"summary"' in src
+        assert '"total"' in src
+
+    def test_admin_user_reactions_returns_recent(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_reactions)
+        assert '"recent"' in src
+        assert "content_preview" in src

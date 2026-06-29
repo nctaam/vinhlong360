@@ -1111,13 +1111,33 @@ async def export_user_data(request: Request):
                 ORDER BY created_at DESC
             """, (uid,))
             follows = db._fetchall(conn, f"""
-                SELECT target_user_id, target_entity_id, created_at
-                FROM follows WHERE user_id = {ph}::uuid
+                SELECT target_type, target_id, created_at
+                FROM follows WHERE follower_id = {ph}::uuid
                 ORDER BY created_at DESC
             """, (uid,))
             visits = db._fetchall(conn, f"""
                 SELECT entity_id, status, visited_at, created_at
                 FROM user_visits WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+            reactions = db._fetchall(conn, f"""
+                SELECT post_id, reaction_type, created_at
+                FROM post_reactions WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+            collections = db._fetchall(conn, f"""
+                SELECT id, name, description, is_public, created_at
+                FROM user_collections WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+            blocks = db._fetchall(conn, f"""
+                SELECT blocked_id, created_at
+                FROM blocks WHERE blocker_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+            mutes = db._fetchall(conn, f"""
+                SELECT muted_id, created_at
+                FROM user_mutes WHERE user_id = {ph}::uuid
                 ORDER BY created_at DESC
             """, (uid,))
         return {
@@ -1127,6 +1147,10 @@ async def export_user_data(request: Request):
             "bookmarks": [db._row_to_dict(r) for r in bookmarks],
             "follows": [db._row_to_dict(r) for r in follows],
             "visits": [db._row_to_dict(r) for r in visits],
+            "reactions": [db._row_to_dict(r) for r in reactions],
+            "collections": [db._row_to_dict(r) for r in collections],
+            "blocks": [db._row_to_dict(r) for r in blocks],
+            "mutes": [db._row_to_dict(r) for r in mutes],
         }
 
     ugc = await asyncio.to_thread(_query)

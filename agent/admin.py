@@ -3480,6 +3480,53 @@ async def delete_user_note(user_id: str, note_id: str):
     return {"success": True}
 
 
+# ── Admin: user mutes + reactions visibility ────────────────────────
+
+@router.get("/users/{user_id}/mutes")
+async def admin_user_mutes(user_id: str, limit: int = Query(50, ge=1, le=200)):
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT m.muted_id, u.display_name, u.username, m.created_at
+                FROM user_mutes m JOIN users u ON u.id = m.muted_id
+                WHERE m.user_id = {ph}::uuid
+                ORDER BY m.created_at DESC LIMIT {ph}
+            """, (user_id, limit))
+            return [db._row_to_dict(r) for r in rows]
+    mutes = await asyncio.to_thread(_query)
+    return {"mutes": [{"muted_id": str(m["muted_id"]), "display_name": m.get("display_name"),
+                        "username": m.get("username"), "created_at": str(m["created_at"])} for m in mutes],
+            "total": len(mutes)}
+
+
+@router.get("/users/{user_id}/reactions")
+async def admin_user_reactions(user_id: str, limit: int = Query(100, ge=1, le=500)):
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT r.reaction_type, COUNT(*) as count
+                FROM post_reactions r WHERE r.user_id = {ph}::uuid
+                GROUP BY r.reaction_type
+            """, (user_id,))
+            summary = {db._row_to_dict(r)["reaction_type"]: int(db._row_to_dict(r)["count"]) for r in rows}
+            recent = db._fetchall(conn, f"""
+                SELECT r.post_id, r.reaction_type, r.created_at, p.content
+                FROM post_reactions r LEFT JOIN posts p ON p.id = r.post_id
+                WHERE r.user_id = {ph}::uuid
+                ORDER BY r.created_at DESC LIMIT {ph}
+            """, (user_id, limit))
+            return summary, [db._row_to_dict(r) for r in recent]
+    summary, recent = await asyncio.to_thread(_query)
+    return {"summary": summary, "total": sum(summary.values()),
+            "recent": [{"post_id": str(r["post_id"]), "reaction_type": r["reaction_type"],
+                        "created_at": str(r["created_at"]),
+                        "content_preview": (r.get("content") or "")[:100]} for r in recent]}
+
+
 def _mod_post(row: dict) -> dict:
     images = row.get("images", [])
     if isinstance(images, str):
