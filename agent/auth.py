@@ -1190,56 +1190,57 @@ async def export_user_data(request: Request):
 
     def _query():
         with db._conn() as conn:
+            _EXPORT_CAP = 5000
             posts = db._fetchall(conn, f"""
                 SELECT id, content, post_type, rating, entity_id, entity_name,
                        like_count, comment_count, created_at
                 FROM posts WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             comments = db._fetchall(conn, f"""
                 SELECT id, post_id, content, parent_id, created_at
                 FROM comments WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             likes = db._fetchall(conn, f"""
                 SELECT post_id, created_at
                 FROM likes WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             bookmarks = db._fetchall(conn, f"""
                 SELECT entity_id, created_at
                 FROM saved_entities WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             follows = db._fetchall(conn, f"""
                 SELECT target_type, target_id, created_at
                 FROM follows WHERE follower_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             visits = db._fetchall(conn, f"""
                 SELECT entity_id, status, visited_at, created_at
                 FROM user_visits WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             reactions = db._fetchall(conn, f"""
                 SELECT post_id, reaction_type, created_at
                 FROM post_reactions WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             collections = db._fetchall(conn, f"""
                 SELECT id, name, description, is_public, created_at
                 FROM user_collections WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             blocks = db._fetchall(conn, f"""
                 SELECT blocked_id, created_at
                 FROM blocks WHERE blocker_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             mutes = db._fetchall(conn, f"""
                 SELECT muted_id, created_at
                 FROM user_mutes WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC
+                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
         return {
             "posts": [db._row_to_dict(r) for r in posts],

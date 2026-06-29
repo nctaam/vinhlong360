@@ -839,6 +839,7 @@ class Database:
         if not include_near:
             conditions.append("r.type != 'near'")
         where = " AND ".join(conditions)
+        _FETCH_CAP = 500
         with self._conn() as conn:
             rows = self._fetchall(conn, f"""
                 SELECT
@@ -857,6 +858,7 @@ class Database:
                 JOIN entities src ON src.id = r.from_id
                 JOIN entities dst ON dst.id = r.to_id
                 WHERE {where}
+                LIMIT {_FETCH_CAP}
             """, tuple(params))
 
         entity_area = ""

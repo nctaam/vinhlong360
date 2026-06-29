@@ -2159,6 +2159,7 @@ async def export_users_csv():
                     GROUP BY target_id
                 ) fc ON fc.target_id = u.id::text
                 ORDER BY u.created_at DESC
+                LIMIT 50000
             """, ())
         yield "id,phone,display_name,role,is_active,reputation,created_at,post_count,follower_count\n"
         for r in rows:
@@ -2200,6 +2201,7 @@ async def export_posts_csv(
                 LEFT JOIN users u ON u.id = p.user_id
                 WHERE {where_clause}
                 ORDER BY p.created_at DESC
+                LIMIT 50000
             """, tuple(params))
         yield "id,user_id,author_name,post_type,rating,like_count,comment_count,share_count,status,entity_id,created_at\n"
         for r in rows:
