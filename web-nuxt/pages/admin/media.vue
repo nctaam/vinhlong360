@@ -70,7 +70,7 @@
 
     <!-- Preview modal -->
     <Transition name="modal-fade">
-    <div v-if="previewItem" ref="mediaModalRef" class="modal-overlay show" role="dialog" aria-modal="true" @click.self="previewItem = null">
+    <div v-if="previewItem" ref="mediaModalRef" class="modal-overlay show" role="dialog" aria-modal="true" :aria-label="`Xem ảnh ${previewItem.entity_name}`" @click.self="previewItem = null">
       <div class="modal admin-modal-lg">
         <div class="media-preview-header">
           <strong>{{ previewItem.entity_name }}</strong>

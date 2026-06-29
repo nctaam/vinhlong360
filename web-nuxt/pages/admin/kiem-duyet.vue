@@ -176,7 +176,7 @@
           <div v-if="previewPost.moderation_notes?.length" class="mod-notes-list">
             <div v-for="(n, i) in previewPost.moderation_notes" :key="i" class="mod-note-item">
               <span class="mod-note-text">{{ n.text }}</span>
-              <time class="mod-note-time">{{ formatDate(n.at) }}</time>
+              <time class="mod-note-time" :datetime="n.at">{{ formatDate(n.at) }}</time>
             </div>
           </div>
           <div v-else class="mod-notes-empty">Chưa có ghi chú</div>
