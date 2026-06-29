@@ -341,6 +341,12 @@ def create_notification(user_id: str, notif_type: str, title: str,
             """, (user_id, actor_id, actor_id, user_id))
             if blocked:
                 return
+            muted = db._fetchone(conn, f"""
+                SELECT 1 FROM user_mutes
+                WHERE muter_id = {ph}::uuid AND muted_id = {ph}::uuid
+            """, (user_id, actor_id))
+            if muted:
+                return
         if not _user_wants_notif(conn, user_id, notif_type):
             return
         if ref_id:

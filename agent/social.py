@@ -1477,13 +1477,15 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
     now = _t.time()
     ph = db._ph
     bc, bc_p = _block_sql(user)
-    if not bc and _leaderboard_cache["data"] is not None and now - _leaderboard_cache["ts"] < _cfg.TRENDING_CACHE_TTL:
+    mc, mc_p = _mute_sql(user)
+    has_personal_filter = bool(bc or mc)
+    if not has_personal_filter and _leaderboard_cache["data"] is not None and now - _leaderboard_cache["ts"] < _cfg.TRENDING_CACHE_TTL:
         return {"leaders": _leaderboard_cache["data"][:limit]}
 
     async with _leaderboard_lock:
         # Re-check after acquiring lock
         now = _t.time()
-        if not bc and _leaderboard_cache["data"] is not None and now - _leaderboard_cache["ts"] < _cfg.TRENDING_CACHE_TTL:
+        if not has_personal_filter and _leaderboard_cache["data"] is not None and now - _leaderboard_cache["ts"] < _cfg.TRENDING_CACHE_TTL:
             return {"leaders": _leaderboard_cache["data"][:limit]}
 
         def _query():
@@ -1508,11 +1510,11 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                                  GROUP BY f.target_id) fc
                            ON fc.target_id = u.id::text
                     WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
-                    {bc}
+                    {bc}{mc}
                     GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
                     HAVING COUNT(p.id) > 0
                     LIMIT 500
-                """, tuple(bc_p))
+                """, tuple([*bc_p, *mc_p]))
         rows = await asyncio.to_thread(_query)
 
         leaders = []
@@ -1535,7 +1537,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                 "posts": posts, "reviews": reviews,
             })
         leaders.sort(key=lambda x: x["points"], reverse=True)
-        if not bc:
+        if not has_personal_filter:
             _leaderboard_cache["ts"] = _t.time()
             _leaderboard_cache["data"] = leaders
         return {"leaders": leaders[:limit]}
@@ -3135,6 +3137,12 @@ async def get_user_posts(
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
+    viewer_id = str(user["id"]) if user else None
+    is_self = viewer_id == uid
+    if not is_self:
+        privacy_hidden = await asyncio.to_thread(_check_show_activity, uid, viewer_id)
+        if privacy_hidden:
+            return {"posts": [], "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
     offset = (page - 1) * limit
     def _query():
@@ -3166,6 +3174,11 @@ async def get_user_reviews(
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
         raise HTTPException(404, "Người dùng không tồn tại")
+    viewer_id = str(user["id"]) if user else None
+    if viewer_id != uid:
+        privacy_hidden = await asyncio.to_thread(_check_show_activity, uid, viewer_id)
+        if privacy_hidden:
+            return {"reviews": [], "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
     offset = (page - 1) * limit
     def _query():
@@ -3231,6 +3244,27 @@ def get_trending_posts(limit: int = 10, entity_type: str = None) -> list[dict]:
 
 
 # ── Format helpers ──
+
+
+def _check_show_activity(target_uid: str, viewer_uid: str | None) -> bool:
+    """Return True if target user's activity is hidden from viewer (privacy enforcement)."""
+    ph = db._ph
+    with db._conn() as conn:
+        prow = db._fetchone(conn, f"""
+            SELECT show_activity FROM user_privacy WHERE user_id = {ph}::uuid
+        """, (target_uid,))
+        if not prow:
+            return False
+        d = db._row_to_dict(prow)
+        if d.get("show_activity", True) in (True, None):
+            return False
+        if not viewer_uid:
+            return True
+        follower = db._fetchone(conn, f"""
+            SELECT 1 FROM follows
+            WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
+        """, (viewer_uid, target_uid))
+        return follower is None
 
 
 def _resolve_user_id(user_id: str) -> str | None:

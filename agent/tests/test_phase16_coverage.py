@@ -1059,7 +1059,7 @@ class TestSecurityPosture:
         src = (Path(__file__).resolve().parent.parent / "notifications.py").read_text(encoding="utf-8")
         idx = src.find("def create_notification(")
         assert idx > 0
-        block = src[idx:idx+1000]
+        block = src[idx:idx+1500]
         assert "INTERVAL '5 minutes'" in block or "5 minutes" in block, \
             "create_notification must deduplicate recent notifications"
 
@@ -1500,7 +1500,7 @@ class TestDeepScanBatch5:
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         idx = src.find("community_leaderboard")
         assert idx > 0
-        block = src[idx:idx+2500]
+        block = src[idx:idx+3000]
         assert "LIMIT 500" in block or "LIMIT 200" in block or "LIMIT 100" in block, \
             "Leaderboard query must have LIMIT to prevent unbounded results"
 

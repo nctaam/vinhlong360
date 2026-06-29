@@ -198,3 +198,81 @@ class TestCommentReportRotation:
     def test_imports_from_public_api(self):
         src = inspect.getsource(__import__("social").report_comment)
         assert "from public_api import" in src
+
+
+# ── Mute enforcement in notifications ──
+
+class TestNotificationMuteEnforcement:
+    """create_notification skips delivery when actor is muted by recipient."""
+
+    def test_create_notification_checks_mutes(self):
+        src = inspect.getsource(__import__("notifications").create_notification)
+        assert "user_mutes" in src
+        assert "muted" in src
+
+    def test_mute_check_uses_actor_id(self):
+        src = inspect.getsource(__import__("notifications").create_notification)
+        assert "muter_id" in src
+        assert "muted_id" in src
+
+    def test_mute_check_returns_early(self):
+        src = inspect.getsource(__import__("notifications").create_notification)
+        idx = src.find("user_mutes")
+        assert idx > 0
+        block = src[idx:idx+200]
+        assert "return" in block
+
+
+# ── Leaderboard mute filter ──
+
+class TestLeaderboardMuteFilter:
+    """Leaderboard filters muted users alongside blocked users."""
+
+    def test_leaderboard_uses_mute_sql(self):
+        src = inspect.getsource(__import__("social").community_leaderboard)
+        assert "_mute_sql" in src
+
+    def test_leaderboard_includes_mc_in_sql(self):
+        src = inspect.getsource(__import__("social").community_leaderboard)
+        assert "{mc}" in src or "mc}" in src
+
+    def test_leaderboard_cache_checks_both_filters(self):
+        src = inspect.getsource(__import__("social").community_leaderboard)
+        assert "has_personal_filter" in src
+
+
+# ── Privacy show_activity enforcement ──
+
+class TestPrivacyShowActivityEnforcement:
+    """get_user_posts and get_user_reviews respect show_activity privacy setting."""
+
+    def test_check_show_activity_exists(self):
+        from social import _check_show_activity
+        assert callable(_check_show_activity)
+
+    def test_check_show_activity_queries_user_privacy(self):
+        src = inspect.getsource(__import__("social")._check_show_activity)
+        assert "user_privacy" in src
+        assert "show_activity" in src
+
+    def test_check_show_activity_checks_follower(self):
+        src = inspect.getsource(__import__("social")._check_show_activity)
+        assert "follows" in src
+        assert "follower_id" in src
+
+    def test_user_posts_checks_privacy(self):
+        src = inspect.getsource(__import__("social").get_user_posts)
+        assert "_check_show_activity" in src
+        assert "privacy_hidden" in src
+
+    def test_user_reviews_checks_privacy(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        assert "_check_show_activity" in src
+
+    def test_self_view_skips_privacy(self):
+        src = inspect.getsource(__import__("social").get_user_posts)
+        assert "is_self" in src
+
+    def test_privacy_hidden_returns_empty(self):
+        src = inspect.getsource(__import__("social").get_user_posts)
+        assert '"posts": []' in src or "'posts': []" in src
