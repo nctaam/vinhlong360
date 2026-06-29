@@ -14,26 +14,23 @@ const touchDX = ref(0)
 let touchStartX = 0
 let pendingDX = 0
 let dragRafId = 0
-let triggerEl: HTMLElement | null = null
 
 const prefetched = new Set<string>()
 const prefetchLinks: HTMLLinkElement[] = []
 
+function close() { emit('update:modelValue', false) }
+
+const isOpen = computed(() => props.modelValue)
+useModalA11y(isOpen, dialogEl, { onClose: close })
+
 watch(() => props.modelValue, (open) => {
-  if (!import.meta.client) return
-  document.body.style.overflow = open ? 'hidden' : ''
   if (open) {
-    triggerEl = document.activeElement as HTMLElement
     index.value = props.startIndex
-    nextTick(() => dialogEl.value?.focus())
   } else {
     swiping.value = false
     touchDX.value = 0
-    nextTick(() => triggerEl?.focus())
   }
 })
-
-function close() { emit('update:modelValue', false) }
 
 function prev() {
   const len = props.images.length || 1
@@ -62,17 +59,6 @@ watch(index, (idx) => {
     }
   }
 })
-
-function focusTrap(e: KeyboardEvent) {
-  const el = dialogEl.value
-  if (!el) return
-  const focusable = el.querySelectorAll<HTMLElement>('button:not([disabled])')
-  if (!focusable.length) return
-  const first = focusable[0]
-  const last = focusable[focusable.length - 1]
-  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
-  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
-}
 
 const dragStyle = computed(() => {
   if (!swiping.value || !touchDX.value) return {}
@@ -109,7 +95,6 @@ function onTouchEnd() {
 
 onUnmounted(() => {
   if (import.meta.client) {
-    document.body.style.overflow = ''
     prefetchLinks.forEach(link => link.remove())
     if (dragRafId) { cancelAnimationFrame(dragRafId); dragRafId = 0 }
   }
@@ -120,8 +105,8 @@ onUnmounted(() => {
   <Teleport to="body">
     <Transition name="lb-fade">
       <div v-if="modelValue" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh"
-        @click.self="close" @keydown.escape="close" @keydown.left="prev" @keydown.right="next"
-        @keydown.tab="focusTrap" tabindex="-1" ref="dialogEl"
+        @click.self="close" @keydown.left="prev" @keydown.right="next"
+        ref="dialogEl"
         @touchstart.passive="onTouchStart" @touchmove.passive="onTouchMove" @touchend="onTouchEnd">
         <button type="button" class="lb-close" aria-label="Đóng" @click="close">&times;</button>
         <button type="button" v-if="images.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="prev">&#8249;</button>
