@@ -2204,3 +2204,48 @@ class TestRaceConditionFixes:
         assert lock_pos != -1, "Missing advisory lock"
         assert check_pos != -1, "Missing duplicate check"
         assert lock_pos < check_pos, "Lock must come before duplicate check"
+
+
+class TestAdminAuditLogging:
+    """Admin mutation endpoints must call _log_mod_action for audit trail."""
+
+    def _get_fn(self, func_name, window=2000):
+        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        idx = src.index(f"async def {func_name}(")
+        return src[idx:idx+window]
+
+    def test_approve_appeal_logged(self):
+        fn = self._get_fn("approve_appeal")
+        assert '_log_mod_action("appeal"' in fn
+
+    def test_reject_appeal_logged(self):
+        fn = self._get_fn("reject_appeal")
+        assert '_log_mod_action("appeal"' in fn
+
+    def test_resolve_report_logged(self):
+        fn = self._get_fn("resolve_report")
+        assert '_log_mod_action("report"' in fn
+
+    def test_dismiss_report_logged(self):
+        fn = self._get_fn("dismiss_report")
+        assert '_log_mod_action("report"' in fn
+
+    def test_approve_claim_logged(self):
+        fn = self._get_fn("approve_claim")
+        assert '_log_mod_action("claim"' in fn
+
+    def test_reject_claim_logged(self):
+        fn = self._get_fn("reject_claim")
+        assert '_log_mod_action("claim"' in fn
+
+    def test_admin_review_response_logged(self):
+        fn = self._get_fn("admin_review_response")
+        assert '_log_mod_action("review_response"' in fn
+
+    def test_delete_review_response_logged(self):
+        fn = self._get_fn("delete_review_response")
+        assert '_log_mod_action("review_response"' in fn
+
+    def test_add_moderation_note_logged(self):
+        fn = self._get_fn("add_moderation_note")
+        assert '_log_mod_action("post"' in fn

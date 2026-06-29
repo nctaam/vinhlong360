@@ -1243,6 +1243,7 @@ async def admin_review_response(post_id: str, body: ReviewResponseBody, request:
                 VALUES ({ph}::uuid, {ph}::uuid, {ph})
             """, (post_id, responder_id, body.content))
             row = db._fetchone(conn, f"SELECT * FROM review_responses WHERE post_id::text = {ph}", (post_id,))
+        _log_mod_action("review_response", post_id, "added")
         return db._row_to_dict(row) if row else {"ok": True}
     return await asyncio.to_thread(_query)
 
@@ -2485,6 +2486,7 @@ async def add_review_response(post_id: str, body: _ReviewResponseBody2, request:
         except Exception:
             logger.exception("Failed to notify review response %s", post_id)
     await asyncio.to_thread(_query)
+    _log_mod_action("review_response", post_id, "added")
     return {"success": True}
 
 
@@ -2500,6 +2502,7 @@ async def delete_review_response(post_id: str):
             if not row:
                 raise HTTPException(404, "Không có phản hồi để xoá")
     await asyncio.to_thread(_query)
+    _log_mod_action("review_response", post_id, "deleted")
     return {"success": True}
 
 
@@ -2522,6 +2525,7 @@ async def add_moderation_note(post_id: str, body: ModNoteBody):
                 WHERE id::text = {ph}
             """, (json.dumps({"text": body.note, "at": datetime.now(timezone.utc).isoformat()}), post_id))
     await asyncio.to_thread(_query)
+    _log_mod_action("post", post_id, "note_added")
     return {"success": True}
 
 
@@ -2760,6 +2764,7 @@ async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisi
             db._execute(conn, f"""
                 UPDATE posts SET moderation_status = 'approved' WHERE id::text = {ph}
             """, (str(rd["post_id"]),))
+        _log_mod_action("appeal", appeal_id, "approved", body.note.strip() or None)
         try:
             create_notification(str(rd["user_id"]), "moderation",
                                 "Khiếu nại được chấp nhận — bài viết đã được duyệt lại",
@@ -2789,6 +2794,7 @@ async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisio
                 SET status = 'rejected', reviewer_note = {ph}, reviewed_at = NOW()
                 WHERE id::text = {ph}
             """, (body.note.strip() or None, appeal_id))
+        _log_mod_action("appeal", appeal_id, "rejected", body.note.strip() or None)
         try:
             note_msg = f" Lý do: {body.note.strip()}" if body.note.strip() else ""
             create_notification(str(rd["user_id"]), "moderation",
@@ -3049,6 +3055,8 @@ async def bulk_report_action(body: BulkReportAction):
                               (status, *body.ids))
             return cur.rowcount
     updated = await asyncio.to_thread(_query)
+    for rid in body.ids:
+        _log_mod_action("report", rid, status)
     return {"success": True, "updated": updated, "requested": len(body.ids)}
 
 
@@ -3064,6 +3072,7 @@ async def resolve_report(report_id: str):
             if cur.rowcount == 0:
                 raise HTTPException(404, "Báo cáo không tồn tại")
     await asyncio.to_thread(_query)
+    _log_mod_action("report", report_id, "resolved")
     return {"success": True}
 
 
@@ -3079,6 +3088,7 @@ async def dismiss_report(report_id: str):
             if cur.rowcount == 0:
                 raise HTTPException(404, "Báo cáo không tồn tại")
     await asyncio.to_thread(_query)
+    _log_mod_action("report", report_id, "dismissed")
     return {"success": True}
 
 
@@ -3931,6 +3941,7 @@ async def approve_claim(claim_id: str, request: Request):
     if "error" in result:
         code = 404 if result["error"] == "not_found" else 409
         return JSONResponse(status_code=code, content=result)
+    _log_mod_action("claim", claim_id, "approved")
     if result.get("claimant_id"):
         def _notify():
             create_notification(
@@ -3968,6 +3979,7 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
     if "error" in result:
         code = 404 if result["error"] == "not_found" else 409
         return JSONResponse(status_code=code, content=result)
+    _log_mod_action("claim", claim_id, "rejected", body.reason or None)
     if result.get("claimant_id"):
         def _notify():
             create_notification(
