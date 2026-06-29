@@ -2,13 +2,14 @@
 vinhlong360 — Notifications + Community Features.
 
 Endpoints:
-  GET  /api/notifications          — list notifications (polling)
-  GET  /api/notifications/stream   — SSE real-time stream
-  POST /api/notifications/read-all — mark all as read
-  POST /api/follow/{type}/{id}     — toggle follow user/entity
-  GET  /api/following              — list follows
-  POST /api/report                 — report content
-  POST /api/block/{user_id}        — toggle block user
+  GET    /api/notifications            — list notifications (polling)
+  GET    /api/notifications/stream     — SSE real-time stream
+  POST   /api/notifications/read-all   — mark all as read
+  DELETE /api/notifications/{id}       — delete single notification
+  POST   /api/follow/{type}/{id}       — toggle follow user/entity
+  GET    /api/following                — list follows
+  POST   /api/report                   — report content
+  POST   /api/block/{user_id}          — toggle block user
 """
 
 import asyncio
@@ -113,6 +114,21 @@ async def mark_notification_read(notif_id: str, user=Depends(require_user), _csr
         with db._conn() as conn:
             db._execute(conn, f"""
                 UPDATE notifications SET is_read = TRUE
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (notif_id, str(user["id"])))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.delete("/notifications/{notif_id}")
+async def delete_notification(notif_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"notif-del:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    notif_id = validate_path_id(notif_id, "notif_id")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                DELETE FROM notifications
                 WHERE id::text = {ph} AND user_id = {ph}::uuid
             """, (notif_id, str(user["id"])))
     await asyncio.to_thread(_query)

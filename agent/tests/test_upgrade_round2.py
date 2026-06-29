@@ -632,3 +632,128 @@ class TestRound2IndexesMigration:
     def test_all_use_if_not_exists(self):
         sql = (AGENT_DIR / "migrations" / "033_round2_indexes.sql").read_text()
         assert sql.count("IF NOT EXISTS") >= 7
+
+
+class TestDeleteNotification:
+    """Delete individual notification endpoint."""
+
+    def test_endpoint_exists(self):
+        from notifications import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/notifications/{notif_id}" in paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("notifications").delete_notification)
+        assert "require_user" in src
+
+    def test_requires_csrf(self):
+        src = inspect.getsource(__import__("notifications").delete_notification)
+        assert "require_csrf" in src or "_csrf" in src
+
+    def test_rate_limited(self):
+        src = inspect.getsource(__import__("notifications").delete_notification)
+        assert "check_rate" in src
+
+    def test_uses_parameterized(self):
+        src = inspect.getsource(__import__("notifications").delete_notification)
+        assert "db._ph" in src
+        assert "validate_path_id" in src
+
+    def test_scoped_to_user(self):
+        src = inspect.getsource(__import__("notifications").delete_notification)
+        assert "user_id" in src
+
+
+class TestCommentLikes:
+    """Comment like/unlike toggle."""
+
+    def test_migration_exists(self):
+        path = AGENT_DIR / "migrations" / "034_comment_likes.sql"
+        assert path.exists()
+
+    def test_migration_creates_table(self):
+        sql = (AGENT_DIR / "migrations" / "034_comment_likes.sql").read_text()
+        assert "comment_likes" in sql
+        assert "CREATE TABLE IF NOT EXISTS" in sql
+
+    def test_migration_adds_like_count(self):
+        sql = (AGENT_DIR / "migrations" / "034_comment_likes.sql").read_text()
+        assert "like_count" in sql
+        assert "ALTER TABLE comments" in sql
+
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/comments/{comment_id}/like" in paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("social").toggle_comment_like)
+        assert "require_user" in src
+
+    def test_prevents_self_like(self):
+        src = inspect.getsource(__import__("social").toggle_comment_like)
+        assert "chính mình" in src
+
+    def test_rate_limited(self):
+        src = inspect.getsource(__import__("social").toggle_comment_like)
+        assert "check_rate" in src
+
+    def test_returns_liked_and_count(self):
+        src = inspect.getsource(__import__("social").toggle_comment_like)
+        assert '"liked"' in src
+        assert '"like_count"' in src
+
+    def test_uses_parameterized(self):
+        src = inspect.getsource(__import__("social").toggle_comment_like)
+        assert "db._ph" in src
+        assert "validate_path_id" in src
+
+    def test_format_comment_has_like_count(self):
+        src = inspect.getsource(__import__("social")._format_comment)
+        assert "like_count" in src
+
+
+class TestEntityReviews:
+    """Dedicated entity reviews endpoint."""
+
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/{entity_id}/reviews" in paths
+
+    def test_sort_options(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert "newest" in src
+        assert "helpful" in src
+        assert "highest" in src
+        assert "lowest" in src
+
+    def test_returns_distribution(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert '"distribution"' in src
+        assert "GROUP BY p.rating" in src
+
+    def test_returns_avg_rating(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert '"avg_rating"' in src
+        assert "AVG" in src
+
+    def test_min_rating_filter(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert "min_rating" in src
+        assert "p.rating >=" in src
+
+    def test_uses_parameterized(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert "db._ph" in src
+        assert "validate_path_id" in src
+
+    def test_cached(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert "Cache-Control" in src
+
+    def test_pagination(self):
+        src = inspect.getsource(__import__("public_api").get_entity_reviews)
+        assert '"has_more"' in src
+        assert '"page"' in src
+        assert '"total"' in src

@@ -356,6 +356,87 @@ async def get_entity_stats(entity_id: str, response: Response):
     return result
 
 
+@router.get("/entities/{entity_id}/reviews")
+async def get_entity_reviews(
+    entity_id: str,
+    response: Response,
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=50),
+    sort: str = Query("newest", max_length=20),
+    min_rating: int = Query(None, ge=1, le=5),
+):
+    validate_path_id(entity_id, "entity_id")
+    response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
+    ph = db._ph
+    offset = (page - 1) * limit
+    _REVIEW_SORT = {"newest": "p.created_at DESC", "helpful": "p.like_count DESC, p.created_at DESC",
+                     "highest": "p.rating DESC, p.created_at DESC", "lowest": "p.rating ASC, p.created_at DESC"}
+    order = _REVIEW_SORT.get(sort, "p.created_at DESC")
+    def _query():
+        conditions = [f"p.entity_id = {ph}", "p.post_type = 'review'", "p.moderation_status = 'approved'"]
+        params = [entity_id]
+        if min_rating is not None:
+            conditions.append(f"p.rating >= {ph}")
+            params.append(min_rating)
+        where = " AND ".join(conditions)
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.id, p.user_id, p.content, p.rating, p.images, p.like_count,
+                       p.comment_count, p.created_at, u.display_name, u.avatar_url, u.username
+                FROM posts p JOIN users u ON u.id = p.user_id
+                WHERE {where}
+                ORDER BY {order}
+                LIMIT {ph} OFFSET {ph}
+            """, (*params, limit, offset))
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c, COALESCE(AVG(p.rating), 0) as avg_rating
+                FROM posts p WHERE {where}
+            """, tuple(params))
+            dist_rows = db._fetchall(conn, f"""
+                SELECT p.rating, COUNT(*) as cnt FROM posts p
+                WHERE p.entity_id = {ph} AND p.post_type = 'review'
+                  AND p.moderation_status = 'approved' AND p.rating IS NOT NULL
+                GROUP BY p.rating ORDER BY p.rating DESC
+            """, (entity_id,))
+        return rows, total_row, dist_rows
+    rows, total_row, dist_rows = await asyncio.to_thread(_query)
+    td = db._row_to_dict(total_row) if total_row else {}
+    total = td.get("c", 0)
+    distribution = {str(db._row_to_dict(r)["rating"]): db._row_to_dict(r)["cnt"] for r in dist_rows}
+    reviews = []
+    for r in rows:
+        rd = db._row_to_dict(r)
+        images = rd.get("images", [])
+        if isinstance(images, str):
+            try:
+                images = json.loads(images)
+            except (json.JSONDecodeError, ValueError, TypeError):
+                images = []
+        reviews.append({
+            "id": str(rd["id"]),
+            "content": rd["content"],
+            "rating": rd.get("rating"),
+            "images": images,
+            "like_count": rd.get("like_count", 0),
+            "comment_count": rd.get("comment_count", 0),
+            "created_at": str(rd.get("created_at", "")),
+            "author": {
+                "id": str(rd.get("user_id", "")),
+                "display_name": rd.get("display_name", ""),
+                "username": rd.get("username"),
+                "avatar_url": rd.get("avatar_url"),
+            },
+        })
+    return {
+        "reviews": reviews,
+        "total": total,
+        "avg_rating": round(float(td.get("avg_rating", 0)), 1),
+        "distribution": distribution,
+        "page": page,
+        "has_more": offset + limit < total,
+    }
+
+
 @router.get("/places")
 async def list_places(response: Response, area: Optional[str] = Query(None, max_length=100)):
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"

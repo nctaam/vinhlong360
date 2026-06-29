@@ -1535,6 +1535,47 @@ async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(re
     return {"liked": liked, "like_count": like_count}
 
 
+@router.post("/comments/{comment_id}/like")
+async def toggle_comment_like(comment_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    comment_id = validate_path_id(comment_id, "comment_id")
+    check_rate(f"like:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
+               "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (comment_id,))
+            if not c:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            cd = db._row_to_dict(c)
+            if str(cd["user_id"]) == uid:
+                raise HTTPException(400, "Không thể thích bình luận của chính mình")
+            existing = db._fetchone(conn, f"""
+                SELECT 1 FROM comment_likes WHERE user_id = {ph}::uuid AND comment_id = {ph}::uuid
+            """, (uid, comment_id))
+            if existing:
+                db._execute(conn, f"""
+                    DELETE FROM comment_likes WHERE user_id = {ph}::uuid AND comment_id = {ph}::uuid
+                """, (uid, comment_id))
+                db._execute(conn, f"""
+                    UPDATE comments SET like_count = GREATEST(0, like_count - 1) WHERE id::text = {ph}
+                """, (comment_id,))
+                liked = False
+            else:
+                db._execute(conn, f"""
+                    INSERT INTO comment_likes (user_id, comment_id) VALUES ({ph}::uuid, {ph}::uuid)
+                    ON CONFLICT DO NOTHING
+                """, (uid, comment_id))
+                db._execute(conn, f"""
+                    UPDATE comments SET like_count = like_count + 1 WHERE id::text = {ph}
+                """, (comment_id,))
+                liked = True
+            row = db._fetchone(conn, f"SELECT like_count FROM comments WHERE id::text = {ph}", (comment_id,))
+            return liked, db._row_to_dict(row)["like_count"] if row else 0
+    liked, like_count = await asyncio.to_thread(_query)
+    return {"liked": liked, "like_count": like_count}
+
+
 # ── Bookmarks ──
 
 @router.post("/posts/{post_id}/bookmark")
@@ -2133,6 +2174,7 @@ def _format_comment(row: dict) -> dict:
         "content": row["content"],
         "mentions": mentions if isinstance(mentions, list) else [],
         "parent_id": str(row["parent_id"]) if row.get("parent_id") else None,
+        "like_count": row.get("like_count", 0),
         "created_at": str(row.get("created_at", "")),
         "author": {
             "id": str(row.get("user_id", "")),
