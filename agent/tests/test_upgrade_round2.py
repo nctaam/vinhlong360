@@ -2266,3 +2266,91 @@ class TestAdminUserDetail:
     def test_404_for_missing_user(self):
         src = inspect.getsource(__import__("admin").admin_user_detail)
         assert "404" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Admin Content Search
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestAdminContentSearch:
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/content/search" in paths
+
+    def test_searches_posts(self):
+        src = inspect.getsource(__import__("admin").admin_content_search)
+        assert "ILIKE" in src
+        assert "posts" in src.lower()
+
+    def test_searches_comments(self):
+        src = inspect.getsource(__import__("admin").admin_content_search)
+        assert "comments" in src.lower()
+
+    def test_supports_content_type_filter(self):
+        src = inspect.getsource(__import__("admin").admin_content_search)
+        assert "content_type" in src
+        assert "post" in src
+        assert "comment" in src
+
+    def test_supports_status_filter(self):
+        src = inspect.getsource(__import__("admin").admin_content_search)
+        assert "moderation_status" in src
+
+    def test_supports_post_type_filter(self):
+        src = inspect.getsource(__import__("admin").admin_content_search)
+        assert "post_type" in src
+        assert "review" in src
+
+    def test_truncates_content(self):
+        src = inspect.getsource(__import__("admin").admin_content_search)
+        assert "300" in src
+
+    def test_has_pagination(self):
+        src = inspect.getsource(__import__("admin").admin_content_search)
+        assert "LIMIT" in src
+        assert "OFFSET" in src
+
+    def test_uses_escape_like(self):
+        src = inspect.getsource(__import__("admin").admin_content_search)
+        assert "_escape_like" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Admin Post Detail
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestAdminPostDetail:
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/posts/{post_id}" in paths
+
+    def test_validates_path_id(self):
+        src = inspect.getsource(__import__("admin").admin_post_detail)
+        assert "validate_path_id" in src
+
+    def test_returns_post_with_author(self):
+        src = inspect.getsource(__import__("admin").admin_post_detail)
+        assert "author_name" in src
+
+    def test_includes_comments(self):
+        src = inspect.getsource(__import__("admin").admin_post_detail)
+        assert '"comments"' in src
+
+    def test_includes_reports(self):
+        src = inspect.getsource(__import__("admin").admin_post_detail)
+        assert '"reports"' in src
+        assert "report_count" in src
+
+    def test_masks_author_phone(self):
+        src = inspect.getsource(__import__("admin").admin_post_detail)
+        assert "_mask" in src
+
+    def test_404_for_missing_post(self):
+        src = inspect.getsource(__import__("admin").admin_post_detail)
+        assert "404" in src
+
+    def test_verified_like_count(self):
+        src = inspect.getsource(__import__("admin").admin_post_detail)
+        assert "like_count_verified" in src

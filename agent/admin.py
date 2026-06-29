@@ -2351,6 +2351,130 @@ async def moderation_stats():
     return await asyncio.to_thread(_query)
 
 
+# ── Admin Content Search ──────────────────────────────────────────────────
+
+@router.get("/content/search")
+async def admin_content_search(
+    q: str = Query(..., min_length=1, max_length=200),
+    content_type: str = Query("post", pattern="^(post|comment|all)$"),
+    status: str = Query("all", pattern="^(all|approved|pending|rejected|flagged)$"),
+    post_type: str = Query(None, pattern="^(review|question|tip|photo|general)$"),
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """Admin search across posts and comments by keyword."""
+    ph = db._ph
+    offset = (page - 1) * limit
+    search_esc = _escape_like(q)
+
+    def _query():
+        results = []
+        total = 0
+        with db._conn() as conn:
+            if content_type in ("post", "all"):
+                conditions = [f"(p.content ILIKE {ph} ESCAPE '\\' OR p.title ILIKE {ph} ESCAPE '\\')"]
+                params = [f"%{search_esc}%", f"%{search_esc}%"]
+                if status != "all":
+                    conditions.append(f"p.moderation_status = {ph}")
+                    params.append(status)
+                if post_type:
+                    conditions.append(f"p.post_type = {ph}")
+                    params.append(post_type)
+                where = " AND ".join(conditions)
+                post_rows = db._fetchall(conn, f"""
+                    SELECT p.id, p.title, p.content, p.post_type, p.moderation_status,
+                           p.entity_id, p.created_at, p.like_count,
+                           u.display_name as author_name
+                    FROM posts p JOIN users u ON u.id = p.user_id
+                    WHERE {where}
+                    ORDER BY p.created_at DESC
+                    LIMIT {ph} OFFSET {ph}
+                """, tuple(params + [limit, offset]))
+                post_count = db._fetchone(conn, f"SELECT COUNT(*) as c FROM posts p WHERE {where}", tuple(params))
+                for r in post_rows:
+                    d = db._row_to_dict(r)
+                    d["_type"] = "post"
+                    if d.get("content"):
+                        d["content"] = d["content"][:300]
+                    results.append(d)
+                total += db._row_to_dict(post_count)["c"] if post_count else 0
+
+            if content_type in ("comment", "all"):
+                c_conditions = [f"c.content ILIKE {ph} ESCAPE '\\'"]
+                c_params = [f"%{search_esc}%"]
+                c_where = " AND ".join(c_conditions)
+                comment_rows = db._fetchall(conn, f"""
+                    SELECT c.id, c.content, c.post_id, c.created_at,
+                           u.display_name as author_name
+                    FROM comments c JOIN users u ON u.id = c.user_id
+                    WHERE {c_where}
+                    ORDER BY c.created_at DESC
+                    LIMIT {ph} OFFSET {ph}
+                """, tuple(c_params + [limit, offset]))
+                comment_count = db._fetchone(conn, f"SELECT COUNT(*) as c FROM comments c WHERE {c_where}", tuple(c_params))
+                for r in comment_rows:
+                    d = db._row_to_dict(r)
+                    d["_type"] = "comment"
+                    if d.get("content"):
+                        d["content"] = d["content"][:300]
+                    results.append(d)
+                total += db._row_to_dict(comment_count)["c"] if comment_count else 0
+        return {"results": results, "total": total, "query": q, "page": page}
+
+    return await asyncio.to_thread(_query)
+
+
+# ── Admin Post Detail ────────────────────────────────────────────────────
+
+@router.get("/posts/{post_id}")
+async def admin_post_detail(post_id: str):
+    """Full post detail with comments for admin review."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT p.*, u.display_name as author_name, u.phone as author_phone,
+                       u.avatar_url as author_avatar, u.role as author_role
+                FROM posts p JOIN users u ON u.id = p.user_id
+                WHERE p.id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            pd = db._row_to_dict(post)
+            pd["author_phone"] = _mask(pd.get("author_phone", ""))
+
+            comments = db._fetchall(conn, f"""
+                SELECT c.id, c.content, c.created_at, c.parent_id,
+                       u.display_name as author_name, u.id as user_id
+                FROM comments c JOIN users u ON u.id = c.user_id
+                WHERE c.post_id::text = {ph}
+                ORDER BY c.created_at ASC
+                LIMIT 100
+            """, (post_id,))
+
+            likes = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM post_likes WHERE post_id::text = {ph}
+            """, (post_id,))
+
+            reports = db._fetchall(conn, f"""
+                SELECT r.id, r.reason, r.created_at, u.display_name as reporter_name
+                FROM reports r JOIN users u ON u.id = r.reporter_id
+                WHERE r.target_type = 'post' AND r.target_id = {ph}
+                ORDER BY r.created_at DESC
+            """, (post_id,))
+
+        pd["comments"] = [db._row_to_dict(c) for c in comments]
+        pd["comment_count"] = len(pd["comments"])
+        pd["like_count_verified"] = db._row_to_dict(likes)["c"] if likes else 0
+        pd["reports"] = [db._row_to_dict(r) for r in reports]
+        pd["report_count"] = len(pd["reports"])
+        return pd
+
+    return await asyncio.to_thread(_query)
+
+
 # ── Appeal management (NĐ147 compliance) ──
 
 @router.get("/appeals")
