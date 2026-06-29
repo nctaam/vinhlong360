@@ -10,6 +10,7 @@ Endpoints:
   POST /auth/check-phone         — kiểm tra SĐT đã có mật khẩu chưa
   POST /auth/logout              — hủy session
   GET  /auth/me                  — thông tin user hiện tại
+  GET  /auth/export-data         — xuất toàn bộ dữ liệu user (GDPR)
 
 Tuân thủ NĐ 147/2024: xác thực SĐT VN trước khi cho đăng bài/bình luận.
 """
@@ -1063,6 +1064,70 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
                 """, (uid, body.profile_visibility or "public", body.show_activity if body.show_activity is not None else True, body.show_saved if body.show_saved is not None else True))
     await asyncio.to_thread(_query)
     return await get_privacy(request)
+
+
+# ── Data export (GDPR / privacy compliance) ──
+
+@router.get("/export-data")
+async def export_user_data(request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"export-data:{user['id']}", 2, 86400, "Chỉ được xuất dữ liệu 2 lần/ngày.")
+    uid = str(user["id"])
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            posts = db._fetchall(conn, f"""
+                SELECT id, content, post_type, rating, entity_id, entity_name,
+                       like_count, comment_count, created_at
+                FROM posts WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+            comments = db._fetchall(conn, f"""
+                SELECT id, post_id, content, parent_id, created_at
+                FROM comments WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+            likes = db._fetchall(conn, f"""
+                SELECT post_id, created_at
+                FROM post_likes WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+            bookmarks = db._fetchall(conn, f"""
+                SELECT entity_id, created_at
+                FROM saved_entities WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+            follows = db._fetchall(conn, f"""
+                SELECT target_user_id, target_entity_id, created_at
+                FROM follows WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+            visits = db._fetchall(conn, f"""
+                SELECT entity_id, status, visited_at, created_at
+                FROM user_visits WHERE user_id = {ph}::uuid
+                ORDER BY created_at DESC
+            """, (uid,))
+        return {
+            "posts": [db._row_to_dict(r) for r in posts],
+            "comments": [db._row_to_dict(r) for r in comments],
+            "likes": [db._row_to_dict(r) for r in likes],
+            "bookmarks": [db._row_to_dict(r) for r in bookmarks],
+            "follows": [db._row_to_dict(r) for r in follows],
+            "visits": [db._row_to_dict(r) for r in visits],
+        }
+
+    ugc = await asyncio.to_thread(_query)
+    profile = _safe_user(user)
+    profile["bio"] = user.get("bio", "")
+    return {
+        "profile": profile,
+        "data": ugc,
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 # ── Auth helpers (used by other modules) ──

@@ -757,3 +757,140 @@ class TestEntityReviews:
         assert '"has_more"' in src
         assert '"page"' in src
         assert '"total"' in src
+
+
+# ── User data export (GDPR) ──
+
+class TestUserDataExport:
+    """GET /auth/export-data — user downloads all their data."""
+
+    def test_endpoint_exists(self):
+        from auth import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/auth/export-data" in paths
+
+    def test_method_is_get(self):
+        from auth import router
+        for r in router.routes:
+            if hasattr(r, "path") and r.path == "/auth/export-data":
+                assert "GET" in r.methods
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "_get_current_user_or_none" in src
+        assert "401" in src
+
+    def test_rate_limited(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "check_rate" in src
+        assert "export-data" in src
+
+    def test_queries_posts(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "FROM posts WHERE user_id" in src
+
+    def test_queries_comments(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "FROM comments WHERE user_id" in src
+
+    def test_queries_likes(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "FROM post_likes WHERE user_id" in src
+
+    def test_queries_bookmarks(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "FROM saved_entities WHERE user_id" in src
+
+    def test_queries_follows(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "FROM follows WHERE user_id" in src
+
+    def test_queries_visits(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "FROM user_visits WHERE user_id" in src
+
+    def test_returns_profile(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert '"profile"' in src
+        assert "_safe_user" in src
+
+    def test_returns_exported_at(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert '"exported_at"' in src
+
+    def test_parameterized_queries(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "db._ph" in src
+        assert "uid" in src
+
+    def test_uses_asyncio_to_thread(self):
+        src = inspect.getsource(__import__("auth").export_user_data)
+        assert "asyncio.to_thread" in src
+
+    def test_docstring_updated(self):
+        import auth
+        assert "export-data" in auth.__doc__
+
+
+# ── Report comment ──
+
+class TestReportComment:
+    """POST /api/comments/{comment_id}/report — report a comment."""
+
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/comments/{comment_id}/report" in paths
+
+    def test_method_is_post(self):
+        from social import router
+        for r in router.routes:
+            if hasattr(r, "path") and r.path == "/api/comments/{comment_id}/report":
+                assert "POST" in r.methods
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "require_user" in src
+
+    def test_has_csrf(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "require_csrf" in src
+
+    def test_rate_limited(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "check_rate" in src
+        assert "report-comment" in src
+
+    def test_validates_comment_id(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "validate_path_id" in src
+
+    def test_checks_comment_exists(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "FROM comments WHERE" in src
+        assert "404" in src
+
+    def test_prevents_self_report(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "uid" in src
+        assert "400" in src
+
+    def test_writes_to_reports_jsonl(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "reports.jsonl" in src
+        assert '"target_type": "comment"' in src
+
+    def test_report_reasons(self):
+        from social import _COMMENT_REPORT_REASONS
+        assert "spam" in _COMMENT_REPORT_REASONS
+        assert "harassment" in _COMMENT_REPORT_REASONS
+        assert "inappropriate" in _COMMENT_REPORT_REASONS
+
+    def test_model_validation(self):
+        from social import ReportCommentBody
+        body = ReportCommentBody(reason="spam", detail="test")
+        assert body.reason == "spam"
+
+    def test_parameterized_query(self):
+        src = inspect.getsource(__import__("social").report_comment)
+        assert "db._ph" in src

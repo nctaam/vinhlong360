@@ -1447,6 +1447,63 @@ async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depe
     return {"success": True}
 
 
+# ── Report comment ──
+
+_COMMENT_REPORT_REASONS = {"spam", "harassment", "misinformation", "inappropriate", "other"}
+
+
+class ReportCommentBody(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=30)
+    detail: str = Field("", max_length=1000)
+
+
+@router.post("/comments/{comment_id}/report")
+async def report_comment(comment_id: str, body: ReportCommentBody, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    comment_id = validate_path_id(comment_id, "comment_id")
+    check_rate(f"report-comment:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    uid = str(user["id"])
+    def _check():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (comment_id,))
+            if not row:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            rd = db._row_to_dict(row)
+            if str(rd["user_id"]) == uid:
+                raise HTTPException(400, "Không thể báo cáo bình luận của chính mình")
+    await asyncio.to_thread(_check)
+    import json as _json
+    from pathlib import Path as _Path
+    import hashlib as _hashlib
+    from datetime import datetime as _dt, timezone as _tz
+    from middleware import get_client_ip
+    reports_file = _Path(__file__).resolve().parent / "data" / "reports.jsonl"
+    reason = body.reason.strip() if body.reason.strip() in _COMMENT_REPORT_REASONS else "other"
+    record = {
+        "ts": _dt.now(_tz.utc).isoformat(),
+        "target_id": comment_id,
+        "target_type": "comment",
+        "reason": reason,
+        "detail": body.detail.strip(),
+        "reporter_id": uid,
+        "ip_hash": _hashlib.sha256(get_client_ip(request).encode()).hexdigest()[:16],
+        "status": "open",
+    }
+    import threading as _threading
+    _lock = _threading.Lock()
+    def _write():
+        with _lock:
+            reports_file.parent.mkdir(exist_ok=True)
+            with open(reports_file, "a", encoding="utf-8") as f:
+                f.write(_json.dumps(record, ensure_ascii=False) + "\n")
+    try:
+        await asyncio.to_thread(_write)
+    except OSError:
+        logger.exception("Failed to write comment report")
+        raise HTTPException(500, "Lỗi lưu báo cáo")
+    return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
+
+
 # ── Q&A: câu trả lời hay nhất (chủ bài hỏi chọn 1 bình luận) ──
 
 class BestAnswerBody(BaseModel):
