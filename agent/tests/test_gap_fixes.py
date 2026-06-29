@@ -2591,3 +2591,60 @@ class TestLogInjectionPrevention:
         result = sanitize_log_param("test\ninjection\r\n")
         assert "\n" not in result
         assert "\r" not in result
+
+
+# ── Async correctness & admin_user crash fixes ──
+
+
+class TestAdminUserStatefix:
+    """require_admin must set request.state.admin_user; endpoints use getattr."""
+
+    def test_require_admin_sets_admin_user(self):
+        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        idx = src.index("async def require_admin(")
+        fn_src = src[idx:idx + 1200]
+        assert "request.state.admin_user" in fn_src
+
+    def test_toggle_featured_uses_getattr(self):
+        src = inspect.getsource(__import__("admin").toggle_featured)
+        assert "getattr(request.state" in src
+
+    def test_approve_claim_uses_getattr(self):
+        src = inspect.getsource(__import__("admin").approve_claim)
+        assert "getattr(request.state" in src
+
+    def test_reject_claim_uses_getattr(self):
+        src = inspect.getsource(__import__("admin").reject_claim)
+        assert "getattr(request.state" in src
+
+    def test_create_announcement_uses_getattr(self):
+        src = inspect.getsource(__import__("admin").create_announcement)
+        assert "getattr(request.state" in src
+
+
+class TestAsyncCorrectnessFixes:
+    """Blocking calls must not run in the event loop."""
+
+    def test_assert_public_url_wrapped_in_to_thread(self):
+        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        assert "asyncio.to_thread(_assert_public_url" in src
+
+    def test_round_exhaustion_uses_queue(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("Round-exhaustion")
+        fn_src = src[idx:idx + 800]
+        assert "asyncio.Queue" in fn_src or "run_in_executor" in fn_src
+
+    def test_system_health_uses_count_entities(self):
+        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        assert "count_entities()" in src
+        assert "list_entities(limit=100000" not in src
+
+    def test_batch_moderation_per_admin_rate_limit(self):
+        src = inspect.getsource(__import__("admin").batch_moderation)
+        assert "admin:batch-mod:" in src
+
+    def test_review_response_html_escape(self):
+        src = inspect.getsource(__import__("admin").admin_review_response)
+        assert "_html.escape" in src
+        assert "create_notification" in src
