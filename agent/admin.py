@@ -2109,6 +2109,60 @@ async def batch_moderation(body: BatchModerationBody):
     return {"success": True, "updated": updated, "requested": len(body.post_ids)}
 
 
+class ReviewResponseBody(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
+@router.post("/posts/{post_id}/response")
+async def add_review_response(post_id: str, body: ReviewResponseBody, request: Request):
+    post_id = validate_path_id(post_id, "post_id")
+    admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT user_id, post_type FROM posts WHERE id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            pd = db._row_to_dict(post)
+            if pd["post_type"] != "review":
+                raise HTTPException(400, "Chỉ trả lời đánh giá (review)")
+            existing = db._fetchone(conn, f"""
+                SELECT id FROM review_responses WHERE post_id::text = {ph}
+            """, (post_id,))
+            if existing:
+                raise HTTPException(409, "Đánh giá đã có phản hồi")
+            import html as _html
+            db._execute(conn, f"""
+                INSERT INTO review_responses (post_id, responder_id, content)
+                VALUES ({ph}::uuid, {ph}::uuid, {ph})
+            """, (post_id, str(admin_id) if admin_id else None, _html.escape(body.content.strip())))
+        try:
+            create_notification(str(pd["user_id"]), "social",
+                                "Đánh giá của bạn đã nhận được phản hồi",
+                                ref_type="post", ref_id=post_id)
+        except Exception:
+            logger.exception("Failed to notify review response %s", post_id)
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.delete("/posts/{post_id}/response")
+async def delete_review_response(post_id: str):
+    post_id = validate_path_id(post_id, "post_id")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM review_responses WHERE post_id::text = {ph} RETURNING id
+            """, (post_id,))
+            if not row:
+                raise HTTPException(404, "Không có phản hồi để xoá")
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
 class ModNoteBody(BaseModel):
     note: str = Field(..., min_length=1, max_length=500)
 

@@ -2281,6 +2281,11 @@ def _format_post(row: dict) -> dict:
             "name": row.get("entity_name"),
             "type": row.get("entity_type"),
         } if row.get("entity_id") else None,
+        "review_response": {
+            "content": row.get("response_content"),
+            "responder_name": row.get("responder_name"),
+            "created_at": str(row.get("response_created_at", "")),
+        } if row.get("response_content") else None,
     }
 
 

@@ -1181,3 +1181,95 @@ class TestUserEngagementStats:
         src = inspect.getsource(__import__("admin").user_engagement_stats)
         assert "days" in src
         assert "period_days" in src
+
+
+# ── Review responses ──
+
+class TestReviewResponseMigration:
+    """Migration 036: review_responses table."""
+
+    def test_migration_file_exists(self):
+        path = AGENT_DIR / "migrations" / "036_review_responses.sql"
+        assert path.exists()
+
+    def test_creates_table(self):
+        sql = (AGENT_DIR / "migrations" / "036_review_responses.sql").read_text(encoding="utf-8")
+        assert "CREATE TABLE IF NOT EXISTS review_responses" in sql
+
+    def test_unique_per_post(self):
+        sql = (AGENT_DIR / "migrations" / "036_review_responses.sql").read_text(encoding="utf-8")
+        assert "UNIQUE(post_id)" in sql
+
+    def test_has_index(self):
+        sql = (AGENT_DIR / "migrations" / "036_review_responses.sql").read_text(encoding="utf-8")
+        assert "idx_review_responses_post" in sql
+
+
+class TestAdminReviewResponse:
+    """POST /admin/posts/{post_id}/response — admin responds to review."""
+
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/posts/{post_id}/response" in paths
+
+    def test_validates_post_id(self):
+        src = inspect.getsource(__import__("admin").add_review_response)
+        assert "validate_path_id" in src
+
+    def test_only_reviews(self):
+        src = inspect.getsource(__import__("admin").add_review_response)
+        assert '"review"' in src
+        assert "400" in src
+
+    def test_prevents_duplicate(self):
+        src = inspect.getsource(__import__("admin").add_review_response)
+        assert "409" in src
+
+    def test_inserts_response(self):
+        src = inspect.getsource(__import__("admin").add_review_response)
+        assert "INSERT INTO review_responses" in src
+
+    def test_notifies_author(self):
+        src = inspect.getsource(__import__("admin").add_review_response)
+        assert "create_notification" in src
+
+    def test_html_escapes_content(self):
+        src = inspect.getsource(__import__("admin").add_review_response)
+        assert "_html.escape" in src
+
+    def test_parameterized(self):
+        src = inspect.getsource(__import__("admin").add_review_response)
+        assert "db._ph" in src
+
+    def test_model_validation(self):
+        from admin import ReviewResponseBody
+        body = ReviewResponseBody(content="Test response")
+        assert body.content == "Test response"
+
+
+class TestDeleteReviewResponse:
+    """DELETE /admin/posts/{post_id}/response."""
+
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/posts/{post_id}/response" in paths
+
+    def test_validates_post_id(self):
+        src = inspect.getsource(__import__("admin").delete_review_response)
+        assert "validate_path_id" in src
+
+    def test_returns_404_if_none(self):
+        src = inspect.getsource(__import__("admin").delete_review_response)
+        assert "404" in src
+
+
+class TestFormatPostReviewResponse:
+    """_format_post includes review_response field."""
+
+    def test_includes_review_response(self):
+        src = inspect.getsource(__import__("social")._format_post)
+        assert '"review_response"' in src
+        assert '"response_content"' in src
+        assert '"responder_name"' in src
