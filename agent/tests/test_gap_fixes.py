@@ -688,3 +688,118 @@ class TestFollowingEndpointTotal:
     def test_following_accurate_has_more(self):
         src = inspect.getsource(__import__("notifications").get_following)
         assert "offset + limit < total" in src
+
+
+# ── Post likers block filter ──
+
+
+class TestPostLikersBlockFilter:
+    """get_post_likers() must filter blocked users from likers list."""
+
+    def test_likers_has_request_param(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "request: Request" in src
+
+    def test_likers_calls_get_current_user(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "get_current_user(request)" in src
+
+    def test_likers_applies_block_sql(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "_block_sql(user" in src
+
+    def test_likers_block_clause_in_query(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "{bc}" in src
+
+
+# ── i18n: no English error messages in user-facing endpoints ──
+
+
+class TestI18nNotifications:
+    """notification_stream must use Vietnamese error messages."""
+
+    def test_no_english_token_required(self):
+        src = inspect.getsource(__import__("notifications").notification_stream)
+        assert "Token required" not in src
+
+    def test_no_english_invalid_token(self):
+        src = inspect.getsource(__import__("notifications").notification_stream)
+        assert "Invalid token" not in src
+
+    def test_has_vietnamese_token_messages(self):
+        src = inspect.getsource(__import__("notifications").notification_stream)
+        assert "token xác thực" in src.lower() or "token không hợp lệ" in src.lower()
+
+
+class TestI18nPublicApi:
+    """public_api map search must use Vietnamese error messages."""
+
+    def test_no_english_north_south(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert "north must be" not in src
+
+    def test_has_vietnamese_north_south(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert "north phải lớn hơn south" in src.lower() or "giá trị north" in src.lower()
+
+
+class TestI18nAdmin:
+    """Admin endpoints must use Vietnamese error messages."""
+
+    def test_no_english_rate_limit(self):
+        src = inspect.getsource(__import__("admin").require_admin)
+        assert "Rate limit exceeded" not in src
+
+    def test_no_english_invalid_credentials(self):
+        src = inspect.getsource(__import__("admin").require_admin)
+        assert "Invalid admin credentials" not in src
+
+    def test_no_english_site_settings(self):
+        from pathlib import Path
+        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        assert "Site settings require PostgreSQL" not in admin_src
+
+    def test_no_english_post_not_found(self):
+        from pathlib import Path
+        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        assert '"Post not found"' not in admin_src
+
+    def test_no_english_suggestion_not_found(self):
+        from pathlib import Path
+        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        assert '"Suggestion not found"' not in admin_src
+
+    def test_no_english_relationship_not_found(self):
+        from pathlib import Path
+        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        assert '"Relationship not found"' not in admin_src
+
+    def test_no_english_requires_postgresql(self):
+        from pathlib import Path
+        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        assert '"Requires PostgreSQL"' not in admin_src
+
+
+# ── Admin site-settings input validation ──
+
+
+class TestSiteSettingsValidation:
+    """Admin site-settings endpoints must validate key/category params."""
+
+    def test_setting_key_regex_exists(self):
+        from pathlib import Path
+        admin_src = Path(AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        assert "_SETTING_KEY_RE" in admin_src
+
+    def test_update_setting_validates_key(self):
+        src = inspect.getsource(__import__("admin").admin_update_setting)
+        assert "_SETTING_KEY_RE" in src
+
+    def test_get_category_validates(self):
+        src = inspect.getsource(__import__("admin").admin_get_settings_by_category)
+        assert "_SETTING_KEY_RE" in src
+
+    def test_reset_category_validates(self):
+        src = inspect.getsource(__import__("admin").admin_reset_category)
+        assert "_SETTING_KEY_RE" in src

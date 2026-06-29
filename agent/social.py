@@ -2346,10 +2346,12 @@ async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(re
 
 
 @router.get("/posts/{post_id}/likers")
-async def get_post_likers(post_id: str, limit: int = Query(20, ge=1, le=100)):
+async def get_post_likers(post_id: str, request: Request, limit: int = Query(20, ge=1, le=100)):
     """List users who liked a post."""
     post_id = validate_path_id(post_id, "post_id")
+    user = await get_current_user(request)
     ph = db._ph
+    bc, bc_p = _block_sql(user, "l.user_id")
 
     def _query():
         with db._conn() as conn:
@@ -2357,8 +2359,9 @@ async def get_post_likers(post_id: str, limit: int = Query(20, ge=1, le=100)):
                 SELECT u.id, u.display_name, u.avatar_url, u.username, l.created_at
                 FROM likes l JOIN users u ON u.id = l.user_id
                 WHERE l.post_id = {ph}::uuid
+                {bc}
                 ORDER BY l.created_at DESC LIMIT {ph}
-            """, (post_id, limit))
+            """, (post_id, *bc_p, limit))
 
     rows = await asyncio.to_thread(_query)
     likers = []

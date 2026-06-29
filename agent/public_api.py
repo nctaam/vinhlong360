@@ -1986,7 +1986,7 @@ async def entities_map_search(
 ):
     """Entities within a bounding box for map display."""
     if north <= south:
-        raise HTTPException(400, "north must be > south")
+        raise HTTPException(400, "Giá trị north phải lớn hơn south")
     entities = db.list_entities()
     results = []
     for e in entities:

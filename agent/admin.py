@@ -116,7 +116,7 @@ async def require_admin(request: Request):
     client_ip = get_client_ip(request)
     allowed, rate_info = admin_limiter.is_allowed(client_ip)
     if not allowed:
-        raise HTTPException(429, detail="Rate limit exceeded", headers={"Retry-After": str(rate_info["retry_after"])})
+        raise HTTPException(429, detail="Quá nhiều yêu cầu. Vui lòng thử lại sau.", headers={"Retry-After": str(rate_info["retry_after"])})
     # Auth: allow server-side admin key or a logged-in admin user from the frontend.
     actor = None
     if verify_admin_key(request):
@@ -126,7 +126,7 @@ async def require_admin(request: Request):
         if user and user.get("role") == "admin":
             actor = f"user:{user.get('id')}"
     if not actor:
-        raise HTTPException(401, detail="Invalid admin credentials. Use X-Admin-Key or an admin session.")
+        raise HTTPException(401, detail="Xác thực admin không hợp lệ. Sử dụng X-Admin-Key hoặc phiên làm việc admin.")
     # P2-7: audit các thao tác THAY ĐỔI (đọc/GET không log để tránh nhiễu)
     if request.method in ("POST", "PUT", "DELETE", "PATCH"):
         _log_admin_audit(actor, request.method, request.url.path, client_ip)
@@ -667,7 +667,7 @@ async def delete_relationship(from_id: str, to_id: str, type: str):
             cur = db._execute(conn, f"DELETE FROM relationships WHERE from_id={ph} AND to_id={ph} AND type={ph}",
                               (from_id, to_id, type))
             if cur.rowcount == 0:
-                raise HTTPException(404, "Relationship not found")
+                raise HTTPException(404, "Mối quan hệ không tồn tại")
     await asyncio.to_thread(_query)
     return {"success": True}
 
@@ -1336,7 +1336,7 @@ async def get_image_suggestion(suggestion_id: str):
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
-            raise HTTPException(404, "Suggestion not found")
+            raise HTTPException(404, "Đề xuất không tồn tại")
         return s
     return await asyncio.to_thread(_query)
 
@@ -1380,7 +1380,7 @@ async def approve_image_suggestion(suggestion_id: str):
 
     s = _imgq.get_suggestion(suggestion_id)
     if not s:
-        raise HTTPException(404, "Suggestion not found")
+        raise HTTPException(404, "Đề xuất không tồn tại")
     if s.get("status") != "pending":
         raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể duyệt lại")
 
@@ -1456,7 +1456,7 @@ async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequ
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
-            raise HTTPException(404, "Suggestion not found")
+            raise HTTPException(404, "Đề xuất không tồn tại")
         if s.get("status") != "pending":
             raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể từ chối lại")
         _imgq.mark_status(suggestion_id, "rejected", rejection_reason=(body.reason or "").strip())
@@ -2509,7 +2509,7 @@ async def add_moderation_note(post_id: str, body: ModNoteBody):
         with db._conn() as conn:
             post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
             if not post:
-                raise HTTPException(404, "Post not found")
+                raise HTTPException(404, "Bài viết không tồn tại")
             db._execute(conn, f"""
                 UPDATE posts SET moderation_notes = COALESCE(moderation_notes, '[]'::jsonb) || {ph}::jsonb
                 WHERE id::text = {ph}
@@ -2526,7 +2526,7 @@ async def get_moderation_notes(post_id: str):
         with db._conn() as conn:
             row = db._fetchone(conn, f"SELECT moderation_notes FROM posts WHERE id::text = {ph}", (post_id,))
         if not row:
-            raise HTTPException(404, "Post not found")
+            raise HTTPException(404, "Bài viết không tồn tại")
         notes = db._row_to_dict(row).get("moderation_notes") or []
         return {"notes": notes}
     return await asyncio.to_thread(_query)
@@ -3690,19 +3690,23 @@ def _log_mod_action(target_type, target_id, action, reason=None):
 async def admin_get_all_settings():
     """All settings grouped by category (for admin overview)."""
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     return await asyncio.to_thread(site_settings.get_all_grouped)
 
+
+_SETTING_KEY_RE = re.compile(r"^[a-zA-Z0-9_./:-]{1,200}$")
 
 @router.get("/site-settings/{category}")
 async def admin_get_settings_by_category(category: str):
     """Settings for a specific category (for admin editor page)."""
+    if not _SETTING_KEY_RE.match(category):
+        raise HTTPException(400, detail="Tên danh mục không hợp lệ")
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     def _query():
         items = site_settings.get_by_category(category)
         if not items:
-            raise HTTPException(404, detail=f"No settings found for category '{category}'")
+            raise HTTPException(404, detail=f"Không tìm thấy cài đặt cho danh mục '{category}'")
         return {"category": category, "settings": items}
     return await asyncio.to_thread(_query)
 
@@ -3714,12 +3718,14 @@ class SettingUpdate(BaseModel):
 @router.put("/site-settings/{key:path}")
 async def admin_update_setting(key: str, body: SettingUpdate):
     """Update a single setting value."""
+    if not _SETTING_KEY_RE.match(key):
+        raise HTTPException(400, detail="Tên cài đặt không hợp lệ")
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     def _query():
         ok = site_settings.upsert(key, body.value)
         if not ok:
-            raise HTTPException(500, detail="Failed to update setting")
+            raise HTTPException(500, detail="Không thể cập nhật cài đặt")
     await asyncio.to_thread(_query)
     return {"success": True, "key": key}
 
@@ -3732,7 +3738,7 @@ class BulkSettingUpdate(BaseModel):
 async def admin_bulk_update_settings(body: BulkSettingUpdate):
     """Batch update multiple settings at once."""
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     count = await asyncio.to_thread(site_settings.bulk_upsert, body.updates)
     return {"success": True, "updated": count}
 
@@ -3740,8 +3746,10 @@ async def admin_bulk_update_settings(body: BulkSettingUpdate):
 @router.post("/site-settings/reset/{category}")
 async def admin_reset_category(category: str):
     """Reset all settings in a category to their defaults."""
+    if not _SETTING_KEY_RE.match(category):
+        raise HTTPException(400, detail="Tên danh mục không hợp lệ")
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     def _query():
         from seed_site_settings import DEFAULTS
         return site_settings.reset_category(category, DEFAULTS)
@@ -3794,7 +3802,7 @@ async def admin_reset_llm_config():
 async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
     """Delete read notifications older than N days."""
     if not db._use_pg:
-        raise HTTPException(503, detail="Notifications require PostgreSQL")
+        raise HTTPException(503, detail="Thông báo yêu cầu PostgreSQL")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -3812,7 +3820,7 @@ async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
 async def admin_cleanup_orphan_entity_refs():
     """Remove UGC records referencing entity IDs that no longer exist in knowledge base."""
     if not db._use_pg:
-        raise HTTPException(503, detail="Requires PostgreSQL")
+        raise HTTPException(503, detail="Chức năng này yêu cầu PostgreSQL")
     valid_ids = {e["id"] for e in db.list_entities(limit=10000, offset=0)}
     if not valid_ids:
         return {"success": True, "cleaned": {}}

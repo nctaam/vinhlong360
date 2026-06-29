@@ -250,7 +250,7 @@ async def _next_event_id() -> int:
 async def notification_stream(request: Request, token: str = Query(None, max_length=200)):
     from auth import _hash_token
     if not token:
-        raise HTTPException(401, "Token required")
+        raise HTTPException(401, "Yêu cầu token xác thực")
     def _check_token():
         with db._conn() as conn:
             return db._fetchone(conn, f"""
@@ -260,7 +260,7 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
             """, (_hash_token(token),))
     row = await asyncio.to_thread(_check_token)
     if not row:
-        raise HTTPException(401, "Invalid token")
+        raise HTTPException(401, "Token không hợp lệ")
     uid = str(db._row_to_dict(row)["id"])
 
     last_event_id = request.headers.get("Last-Event-ID")
