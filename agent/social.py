@@ -703,6 +703,7 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
     post = await asyncio.to_thread(_get_post)
     if not post:
         raise HTTPException(404, "Bài viết không tồn tại")
+    await asyncio.to_thread(_enrich_reactions, [post])
 
     return {"post": _format_post(post)}
 
@@ -1470,7 +1471,10 @@ async def hashtag_posts(
         total = db._row_to_dict(total_row)["c"] if total_row else 0
         return rows, total
     rows, total = await asyncio.to_thread(_query)
-    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_user_status, posts, user)
+    await asyncio.to_thread(_enrich_reactions, posts)
+    posts = [_format_post(p) for p in posts]
     return {"tag": tag, "posts": posts, "total": total, "page": page, "has_more": len(posts) == limit}
 
 
@@ -1820,7 +1824,9 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
                         seen.add(rid)
             return candidates
     candidates = await asyncio.to_thread(_query)
-    return {"posts": [_format_post(db._row_to_dict(r)) for r in candidates[:limit]]}
+    posts = [db._row_to_dict(r) for r in candidates[:limit]]
+    await asyncio.to_thread(_enrich_reactions, posts)
+    return {"posts": [_format_post(p) for p in posts]}
 
 
 # ── Comments ──
@@ -2032,9 +2038,10 @@ async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depe
             if not row:
                 raise HTTPException(404, "Bình luận không tồn tại")
             rd = db._row_to_dict(row)
-            if str(rd["user_id"]) != uid:
+            if str(rd["user_id"]) != uid and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
             db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'comment' AND ref_id = {ph}", (comment_id,))
+            db._execute(conn, f"DELETE FROM comments WHERE parent_id::text = {ph}", (comment_id,))
             db._execute(conn, f"DELETE FROM comments WHERE id::text = {ph}", (comment_id,))
     await asyncio.to_thread(_query)
     return {"success": True}
@@ -2694,7 +2701,9 @@ async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le
             """, (collection_id, limit, offset))
 
     rows = await asyncio.to_thread(_query)
-    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_reactions, posts)
+    posts = [_format_post(p) for p in posts]
     return {"posts": posts, "page": page, "has_more": len(posts) == limit}
 
 
@@ -3175,7 +3184,9 @@ async def get_user_posts(
                 LIMIT {ph} OFFSET {ph}
             """, (uid, *bc_p, limit, offset))
     rows = await asyncio.to_thread(_query)
-    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_reactions, posts)
+    posts = [_format_post(p) for p in posts]
     return {"posts": posts, "page": page, "has_more": len(posts) == limit}
 
 
@@ -3212,7 +3223,9 @@ async def get_user_reviews(
                 LIMIT {ph} OFFSET {ph}
             """, (uid, *bc_p, limit, offset))
     rows = await asyncio.to_thread(_query)
-    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    posts = [db._row_to_dict(r) for r in rows]
+    await asyncio.to_thread(_enrich_reactions, posts)
+    posts = [_format_post(p) for p in posts]
     return {"reviews": posts, "page": page, "has_more": len(posts) == limit}
 
 

@@ -495,3 +495,99 @@ class TestAdminUserDetailActivity:
         idx = src.find("login_history")
         pre = src[max(0, idx-100):idx]
         assert "try" in pre or "except" in pre
+
+
+class TestDeleteCommentAdminPermission:
+    """Admin/moderator can delete any comment, not just own."""
+
+    def test_admin_can_delete_comment(self):
+        src = inspect.getsource(__import__("social").delete_comment)
+        assert 'role' in src
+        assert 'admin' in src
+        assert 'moderator' in src
+
+    def test_child_replies_deleted(self):
+        src = inspect.getsource(__import__("social").delete_comment)
+        assert "parent_id" in src
+
+
+class TestReactionEnrichmentComprehensive:
+    """All post-returning endpoints call _enrich_reactions."""
+
+    def test_get_post_enriches_reactions(self):
+        src = inspect.getsource(__import__("social").get_post)
+        assert "_enrich_reactions" in src
+
+    def test_hashtag_posts_enriches_reactions(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "_enrich_reactions" in src
+
+    def test_related_posts_enriches_reactions(self):
+        src = inspect.getsource(__import__("social").related_posts)
+        assert "_enrich_reactions" in src
+
+    def test_user_posts_enriches_reactions(self):
+        src = inspect.getsource(__import__("social").get_user_posts)
+        assert "_enrich_reactions" in src
+
+    def test_user_reviews_enriches_reactions(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        assert "_enrich_reactions" in src
+
+    def test_collection_items_enriches_reactions(self):
+        src = inspect.getsource(__import__("social").get_collection_items)
+        assert "_enrich_reactions" in src
+
+    def test_hashtag_posts_enriches_user_status(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "_enrich_user_status" in src
+
+
+class TestAdminErrorMessagesVietnamese:
+    """All user-facing admin error messages are in Vietnamese."""
+
+    def test_no_english_entity_not_found(self):
+        src = inspect.getsource(__import__("admin"))
+        assert '"Entity not found"' not in src
+
+    def test_no_english_itinerary_not_found(self):
+        src = inspect.getsource(__import__("admin"))
+        assert '"Itinerary not found"' not in src
+
+    def test_no_english_requires_postgres(self):
+        src = inspect.getsource(__import__("admin"))
+        assert '"Requires Postgres"' not in src
+
+
+class TestBlockedMutedPagination:
+    """blocked-users and muted-users endpoints have proper pagination."""
+
+    def test_blocked_users_has_page_param(self):
+        src = inspect.getsource(__import__("notifications").list_blocked_users)
+        assert "page" in src
+        assert "limit" in src
+        assert "offset" in src
+
+    def test_blocked_users_returns_total(self):
+        src = inspect.getsource(__import__("notifications").list_blocked_users)
+        assert '"total"' in src
+        assert '"has_more"' in src
+
+    def test_muted_users_has_page_param(self):
+        src = inspect.getsource(__import__("notifications").list_muted_users)
+        assert "page" in src
+        assert "limit" in src
+        assert "offset" in src
+
+    def test_muted_users_returns_total(self):
+        src = inspect.getsource(__import__("notifications").list_muted_users)
+        assert '"total"' in src
+        assert '"has_more"' in src
+
+    def test_blocked_users_count_query(self):
+        src = inspect.getsource(__import__("notifications").list_blocked_users)
+        assert "COUNT(*)" in src
+
+    def test_muted_users_count_query(self):
+        src = inspect.getsource(__import__("notifications").list_muted_users)
+        assert "COUNT(*)" in src

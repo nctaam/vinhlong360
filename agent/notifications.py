@@ -599,25 +599,31 @@ async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depend
 
 
 @router.get("/blocked-users")
-async def list_blocked_users(user=Depends(require_user)):
+async def list_blocked_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
+                              user=Depends(require_user)):
+    offset = (page - 1) * limit
     def _query():
         ph = db._ph
+        uid = str(user["id"])
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM blocks WHERE blocker_id = {ph}::uuid", (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username, b.created_at
                 FROM blocks b JOIN users u ON u.id = b.blocked_id
                 WHERE b.blocker_id = {ph}::uuid
                 ORDER BY b.created_at DESC
-                LIMIT 200
-            """, (str(user["id"]),))
-    rows = await asyncio.to_thread(_query)
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
     result = []
     for r in rows:
         d = db._row_to_dict(r)
         result.append({"id": str(d["id"]), "display_name": d.get("display_name"),
                         "avatar_url": d.get("avatar_url"), "username": d.get("username"),
                         "blocked_at": str(d.get("created_at", ""))})
-    return {"blocked": result}
+    return {"blocked": result, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 # ── Mute (soft block — hides posts from feed only) ──
@@ -650,24 +656,31 @@ async def toggle_mute(muted_id: str, user=Depends(require_user), _csrf=Depends(r
 
 
 @router.get("/muted-users")
-async def list_muted_users(user=Depends(require_user)):
+async def list_muted_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
+                            user=Depends(require_user)):
+    offset = (page - 1) * limit
     def _query():
         ph = db._ph
+        uid = str(user["id"])
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM user_mutes WHERE user_id = {ph}::uuid", (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username, m.created_at
                 FROM user_mutes m JOIN users u ON u.id = m.muted_id
-                WHERE m.user_id = {ph}::uuid ORDER BY m.created_at DESC LIMIT 200
-            """, (str(user["id"]),))
+                WHERE m.user_id = {ph}::uuid ORDER BY m.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            return rows, total
 
-    rows = await asyncio.to_thread(_query)
+    rows, total = await asyncio.to_thread(_query)
     result = []
     for r in rows:
         d = db._row_to_dict(r)
         result.append({"id": str(d["id"]), "display_name": d.get("display_name"),
                         "avatar_url": d.get("avatar_url"), "username": d.get("username"),
                         "muted_at": str(d.get("created_at", ""))})
-    return {"muted": result}
+    return {"muted": result, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 # ── Helpers ──

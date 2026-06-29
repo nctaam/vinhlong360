@@ -358,7 +358,7 @@ async def get_entity(entity_id: str):
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         entity["relationships"] = db.get_relationships(entity_id)
         return entity
     return await asyncio.to_thread(_query)
@@ -371,7 +371,7 @@ async def update_entity(entity_id: str, update: EntityUpdate):
     def _query():
         existing = db.get_entity(entity_id)
         if not existing:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         old_snapshot = {k: v for k, v in existing.items()}
         updates = update.model_dump(exclude_none=True)
         existing.update(updates)
@@ -422,7 +422,7 @@ async def delete_entity(entity_id: str):
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         db.delete_entity(entity_id)
         _sync_kb()
         from public_api import invalidate_entity_cache, invalidate_place_cache
@@ -449,7 +449,7 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         images = list(entity.get("images") or [])
         if len(images) >= 10:
             raise HTTPException(400, "Tối đa 10 ảnh mỗi entity")
@@ -473,7 +473,7 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
 
     entity = db.get_entity(entity_id)
     if not entity:
-        raise HTTPException(404, "Entity not found")
+        raise HTTPException(404, "Entity không tồn tại")
     data = await file.read()
     if len(data) > MAX_IMAGE_SIZE:
         raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
@@ -508,7 +508,7 @@ async def remove_entity_image(entity_id: str, idx: int):
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         images = list(entity.get("images") or [])
         if not (0 <= idx < len(images)):
             raise HTTPException(400, f"Chỉ số ảnh không hợp lệ (0–{len(images) - 1})")
@@ -557,7 +557,7 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
     def _query():
         e = db.get_entity(entity_id)
         if not e:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         pid = body.place_id or None
         if pid:
             p = db.get_entity(pid)
@@ -584,7 +584,7 @@ async def get_itinerary_admin(itin_id: str):
     def _query():
         it = db.get_itinerary(itin_id)
         if not it:
-            raise HTTPException(404, "Itinerary not found")
+            raise HTTPException(404, "Lộ trình không tồn tại")
         return it
     return await asyncio.to_thread(_query)
 
@@ -833,7 +833,7 @@ async def stale_mark_reviewed(entity_id: str):
     def _query():
         e = db.get_entity(entity_id)
         if not e:
-            raise HTTPException(404, detail="Entity not found")
+            raise HTTPException(404, detail="Entity không tồn tại")
         attrs = e.get("attributes") or {}
         attrs["stale_reviewed_at"] = datetime.now(timezone.utc).isoformat()
         db.update_entity(entity_id, {"attributes": attrs})
@@ -1581,7 +1581,7 @@ async def toggle_featured(entity_id: str, request: Request):
     ph = db._ph
     def _query():
         if not db._use_pg:
-            raise HTTPException(503, "Requires Postgres")
+            raise HTTPException(503, "Chức năng này yêu cầu Postgres")
         with db._conn() as conn:
             existing = db._fetchone(conn, f"""
                 SELECT id FROM featured_entities WHERE entity_id = {ph}
@@ -1704,7 +1704,7 @@ async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
     ph = db._ph
     def _query():
         if not db._use_pg:
-            return {"error": "Requires Postgres"}
+            return {"error": "Chức năng này yêu cầu Postgres"}
         with db._conn() as conn:
             active_posters = db._fetchone(conn, f"""
                 SELECT COUNT(DISTINCT user_id) as c FROM posts
@@ -1755,7 +1755,7 @@ async def user_growth(days: int = Query(30, ge=7, le=365)):
     ph = db._ph
     def _query():
         if not db._use_pg:
-            return {"error": "Requires Postgres"}
+            return {"error": "Chức năng này yêu cầu Postgres"}
         with db._conn() as conn:
             daily_reg = db._fetchall(conn, f"""
                 SELECT DATE(created_at) as day, COUNT(*) as signups
@@ -2017,10 +2017,10 @@ _learn_proc: Optional[subprocess.Popen] = None
 async def trigger_learn(category: Optional[str] = Query(None, max_length=50), topics: int = 3):
     """Trigger 1 vòng auto-learn (chạy background)."""
     if topics < 1 or topics > 20:
-        raise HTTPException(400, "topics must be between 1 and 20")
+        raise HTTPException(400, "Số chủ đề phải từ 1 đến 20")
     if category:
         if len(category) > 50 or not re.match(r'^[\w\s\-À-ɏḀ-ỿ]+$', category):
-            raise HTTPException(400, "Invalid category — only letters, numbers, hyphens, underscores allowed (max 50 chars)")
+            raise HTTPException(400, "Danh mục không hợp lệ — chỉ chấp nhận chữ, số, dấu gạch (tối đa 50 ký tự)")
     cmd = [sys.executable, str(ROOT / "agent" / "auto_learn.py"), "--apply", "--topics", str(topics)]
     if category:
         cmd.extend(["--category", category])
@@ -2872,7 +2872,7 @@ async def content_stats(days: int = Query(30, ge=1, le=365)):
     ph = db._ph
     def _query():
         if not db._use_pg:
-            return {"error": "Requires Postgres"}
+            return {"error": "Chức năng này yêu cầu Postgres"}
         with db._conn() as conn:
             by_type = db._fetchall(conn, f"""
                 SELECT post_type, COUNT(*) as cnt
