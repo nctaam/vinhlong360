@@ -693,6 +693,40 @@ async def logout(request: Request, _csrf=Depends(_require_csrf_lazy)):
     return {"success": True}
 
 
+@router.post("/refresh")
+async def refresh_token(request: Request, _csrf=Depends(_require_csrf_lazy)):
+    """Rotate session token — issue new token, revoke old. Reduces compromise window."""
+    from ratelimit import check_rate
+    from middleware import get_client_ip
+    check_rate(f"refresh:{get_client_ip(request)}", 10, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+    old_token = _extract_token(request)
+    if not old_token:
+        raise HTTPException(401, "Chưa đăng nhập")
+
+    new_token = _generate_token()
+    new_hash = _hash_token(new_token)
+    old_hash = _hash_token(old_token)
+    new_expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
+
+    def _rotate():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE user_sessions SET token = {db._ph}, expires_at = {db._ph}
+                WHERE token = {db._ph} AND expires_at > NOW()
+                RETURNING user_id
+            """, (new_hash, new_expires.isoformat(), old_hash))
+            return row
+    result = await asyncio.to_thread(_rotate)
+    if not result:
+        raise HTTPException(401, "Session không hợp lệ hoặc đã hết hạn")
+
+    return {
+        "success": True,
+        "token": new_token,
+        "expires_at": new_expires.isoformat(),
+    }
+
+
 @router.get("/sessions")
 async def list_sessions(request: Request):
     user = await _get_current_user_or_none(request)

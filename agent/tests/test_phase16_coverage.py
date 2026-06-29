@@ -1770,25 +1770,22 @@ class TestImageURLLengthValidation:
 
 
 class TestPostDeletionCleanup:
-    """B3: Post deletion must cascade to comments, likes, bookmarks."""
+    """B3: Post deletion uses soft delete (deleted_at), not hard DELETE."""
 
-    def test_delete_post_cleans_comments(self):
+    def test_delete_post_uses_soft_delete(self):
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         delete_fn = src[src.index("async def delete_post("):]
         delete_fn = delete_fn[:delete_fn.index("\n@router.")]
-        assert "DELETE FROM comments WHERE post_id" in delete_fn
+        assert "SET deleted_at" in delete_fn
+        assert "DELETE FROM posts" not in delete_fn
 
-    def test_delete_post_cleans_likes(self):
+    def test_feeds_filter_deleted_posts(self):
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        delete_fn = src[src.index("async def delete_post("):]
-        delete_fn = delete_fn[:delete_fn.index("\n@router.")]
-        assert "DELETE FROM likes WHERE post_id" in delete_fn
+        assert src.count("deleted_at IS NULL") >= 30
 
-    def test_delete_post_cleans_bookmarks(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        delete_fn = src[src.index("async def delete_post("):]
-        delete_fn = delete_fn[:delete_fn.index("\n@router.")]
-        assert "DELETE FROM bookmarks WHERE post_id" in delete_fn
+    def test_public_api_filters_deleted_posts(self):
+        src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
+        assert src.count("deleted_at IS NULL") >= 10
 
 
 class TestInfoReportsLockShared:

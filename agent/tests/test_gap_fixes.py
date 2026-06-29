@@ -1625,3 +1625,94 @@ class TestUnifiedErrorResponse:
         src = inspect.getsource(server.track_response_time)
         assert "_error_response(504" in src
         assert "_error_response(500" in src
+
+
+# ── P1: Token rotation ──
+
+class TestTokenRotation:
+    """POST /auth/refresh must rotate session token atomically."""
+
+    def test_refresh_endpoint_exists(self):
+        import auth
+        assert hasattr(auth, "refresh_token")
+
+    def test_refresh_generates_new_token(self):
+        import auth
+        src = inspect.getsource(auth.refresh_token)
+        assert "_generate_token()" in src
+        assert "_hash_token" in src
+
+    def test_refresh_updates_atomically(self):
+        import auth
+        src = inspect.getsource(auth.refresh_token)
+        assert "UPDATE user_sessions SET token" in src
+        assert "RETURNING" in src
+
+    def test_refresh_validates_old_token(self):
+        import auth
+        src = inspect.getsource(auth.refresh_token)
+        assert "expires_at > NOW()" in src
+
+    def test_refresh_returns_new_token(self):
+        import auth
+        src = inspect.getsource(auth.refresh_token)
+        assert '"token": new_token' in src
+        assert '"expires_at"' in src
+
+    def test_refresh_rate_limited(self):
+        import auth
+        src = inspect.getsource(auth.refresh_token)
+        assert "check_rate" in src
+
+    def test_refresh_requires_csrf(self):
+        import auth
+        src = inspect.getsource(auth.refresh_token)
+        assert "_csrf" in src or "csrf" in src.lower()
+
+
+# ── P1: Soft delete for posts ──
+
+class TestSoftDeletePosts:
+    """Posts must use soft delete (deleted_at) instead of hard DELETE."""
+
+    def test_migration_file_exists(self):
+        migration = AGENT_DIR / "migrations" / "051_post_soft_delete.sql"
+        assert migration.exists()
+        content = migration.read_text()
+        assert "deleted_at" in content
+        assert "ALTER TABLE posts" in content
+
+    def test_delete_endpoint_uses_soft_delete(self):
+        import social
+        src = inspect.getsource(social.delete_post)
+        assert "UPDATE posts SET deleted_at" in src, "delete_post must SET deleted_at, not DELETE FROM"
+        assert "DELETE FROM posts" not in src, "delete_post must not hard DELETE"
+
+    def test_main_feed_filters_deleted(self):
+        import social
+        src = inspect.getsource(social.get_feed)
+        assert "deleted_at IS NULL" in src
+
+    def test_following_feed_filters_deleted(self):
+        import social
+        src = inspect.getsource(social.get_following_feed)
+        assert "deleted_at IS NULL" in src
+
+    def test_trending_filters_deleted(self):
+        import social
+        src = inspect.getsource(social.get_trending_posts)
+        assert "deleted_at IS NULL" in src
+
+    def _check_deleted_filter(self, func_name):
+        """Check that a function's SQL queries filter out soft-deleted posts."""
+        import social
+        fn = getattr(social, func_name)
+        src = inspect.getsource(fn)
+        if "moderation_status" in src and "FROM posts" in src:
+            assert "deleted_at IS NULL" in src, f"{func_name} reads posts but missing deleted_at IS NULL filter"
+
+    def test_search_posts_filters_deleted(self):
+        self._check_deleted_filter("search_posts")
+
+    def test_user_profile_filters_deleted(self):
+        self._check_deleted_filter("get_user_profile")

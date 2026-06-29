@@ -409,11 +409,11 @@ async def get_entity_stats(entity_id: str, response: Response):
                        COALESCE(AVG(rating), 0) as avg_rating
                 FROM posts
                 WHERE entity_id = {ph} AND post_type = 'review'
-                  AND moderation_status = 'approved' AND rating IS NOT NULL
+                  AND moderation_status = 'approved' AND deleted_at IS NULL AND rating IS NOT NULL
             """, (entity_id,))
             post_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as post_count FROM posts
-                WHERE entity_id = {ph} AND moderation_status = 'approved'
+                WHERE entity_id = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
             """, (entity_id,))
             bookmark_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as bookmark_count FROM saved_entities
@@ -458,14 +458,14 @@ async def get_entity_rating_breakdown(entity_id: str, response: Response):
                 SELECT rating, COUNT(*) as count
                 FROM posts
                 WHERE entity_id = {ph} AND post_type = 'review'
-                  AND moderation_status = 'approved' AND rating IS NOT NULL
+                  AND moderation_status = 'approved' AND deleted_at IS NULL AND rating IS NOT NULL
                 GROUP BY rating ORDER BY rating DESC
             """, (entity_id,))
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as total, COALESCE(AVG(rating), 0) as avg
                 FROM posts
                 WHERE entity_id = {ph} AND post_type = 'review'
-                  AND moderation_status = 'approved' AND rating IS NOT NULL
+                  AND moderation_status = 'approved' AND deleted_at IS NULL AND rating IS NOT NULL
             """, (entity_id,))
         breakdown = {str(i): 0 for i in range(1, 6)}
         for r in rows:
@@ -508,7 +508,7 @@ async def get_entity_reviews(
                      "highest": "p.rating DESC, p.created_at DESC", "lowest": "p.rating ASC, p.created_at DESC"}
     order = _REVIEW_SORT.get(sort, "p.created_at DESC")
     def _query():
-        conditions = [f"p.entity_id = {ph}", "p.post_type = 'review'", "p.moderation_status = 'approved'"]
+        conditions = [f"p.entity_id = {ph}", "p.post_type = 'review'", "p.moderation_status = 'approved'", "p.deleted_at IS NULL"]
         params = [entity_id]
         if min_rating is not None:
             conditions.append(f"p.rating >= {ph}")
@@ -530,7 +530,7 @@ async def get_entity_reviews(
             dist_rows = db._fetchall(conn, f"""
                 SELECT p.rating, COUNT(*) as cnt FROM posts p
                 WHERE p.entity_id = {ph} AND p.post_type = 'review'
-                  AND p.moderation_status = 'approved' AND p.rating IS NOT NULL
+                  AND p.moderation_status = 'approved' AND p.deleted_at IS NULL AND p.rating IS NOT NULL
                 GROUP BY p.rating ORDER BY p.rating DESC
             """, (entity_id,))
             my_review = None
@@ -538,7 +538,7 @@ async def get_entity_reviews(
                 my_row = db._fetchone(conn, f"""
                     SELECT p.id, p.rating, p.content, p.created_at FROM posts p
                     WHERE p.entity_id = {ph} AND p.user_id = {ph}::uuid
-                      AND p.post_type = 'review' AND p.moderation_status = 'approved'
+                      AND p.post_type = 'review' AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                     ORDER BY p.created_at DESC LIMIT 1
                 """, (entity_id, uid))
                 if my_row:
@@ -833,7 +833,7 @@ async def user_activity(
         with db._conn() as conn:
             posts = db._fetchall(conn, f"""
                 SELECT id, content, post_type, entity_id, created_at, like_count, comment_count
-                FROM posts WHERE user_id = {ph}::uuid AND moderation_status != 'rejected'
+                FROM posts WHERE user_id = {ph}::uuid AND moderation_status != 'rejected' AND deleted_at IS NULL
                 ORDER BY created_at DESC LIMIT {ph} OFFSET {ph}
             """, (uid, limit, offset))
             comments = db._fetchall(conn, f"""
@@ -1468,7 +1468,7 @@ async def get_entity_gallery(entity_id: str, response: Response):
                     FROM posts p
                     JOIN users u ON u.id = p.user_id
                     WHERE p.entity_id = {ph} AND p.post_type = 'review'
-                        AND p.moderation_status = 'approved'
+                        AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                         AND p.images IS NOT NULL
                     ORDER BY p.created_at DESC
                     LIMIT 50
@@ -1559,13 +1559,13 @@ async def get_review_stats(entity_id: str, response: Response):
                 SELECT rating, COUNT(*) as cnt
                 FROM posts
                 WHERE entity_id = {ph} AND post_type = 'review'
-                    AND moderation_status = 'approved' AND rating IS NOT NULL
+                    AND moderation_status = 'approved' AND deleted_at IS NULL AND rating IS NOT NULL
                 GROUP BY rating
             """, (entity_id,))
             content_rows = db._fetchall(conn, f"""
                 SELECT content FROM posts
                 WHERE entity_id = {ph} AND post_type = 'review'
-                    AND moderation_status = 'approved' AND content IS NOT NULL
+                    AND moderation_status = 'approved' AND deleted_at IS NULL AND content IS NOT NULL
                     AND content != ''
                 ORDER BY created_at DESC LIMIT 200
             """, (entity_id,))
@@ -1718,7 +1718,7 @@ async def get_entity_qa(
                 JOIN users u ON u.id = p.user_id
                 WHERE p.entity_id = {ph}
                   AND p.post_type = 'question'
-                  AND p.moderation_status = 'approved'
+                  AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 ORDER BY (CASE WHEN p.best_answer_id IS NOT NULL THEN 0 ELSE 1 END),
                          p.like_count DESC, p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
@@ -1727,7 +1727,7 @@ async def get_entity_qa(
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts
                 WHERE entity_id = {ph} AND post_type = 'question'
-                  AND moderation_status = 'approved'
+                  AND moderation_status = 'approved' AND deleted_at IS NULL
             """, (entity_id,))
 
             questions = []
@@ -1909,7 +1909,7 @@ async def feed_new_since(
                     SELECT p.id, p.title, p.post_type, p.entity_id, p.created_at,
                            u.display_name
                     FROM posts p JOIN users u ON u.id = p.user_id
-                    WHERE p.moderation_status = 'approved'
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                     AND p.created_at >= {ph}
                     ORDER BY p.created_at DESC
                     LIMIT {ph}
@@ -2070,7 +2070,7 @@ async def entities_trending(
                        COALESCE(AVG(rating) FILTER (WHERE rating IS NOT NULL), 0) as avg_rating
                 FROM posts
                 WHERE entity_id IS NOT NULL
-                  AND moderation_status = 'approved'
+                  AND moderation_status = 'approved' AND deleted_at IS NULL
                   AND created_at >= NOW() - INTERVAL '1 day' * {ph}
                 GROUP BY entity_id
                 ORDER BY activity_count DESC, review_count DESC
@@ -2123,7 +2123,7 @@ async def user_engagement_stats(user_id: str, response: Response):
                     COALESCE(AVG(rating) FILTER (WHERE post_type = 'review' AND rating IS NOT NULL), 0) as avg_rating,
                     COUNT(*) FILTER (WHERE post_type = 'question') as total_questions,
                     COUNT(DISTINCT entity_id) FILTER (WHERE entity_id IS NOT NULL AND moderation_status = 'approved') as entities_reviewed
-                FROM posts WHERE user_id::text = {ph}
+                FROM posts WHERE user_id::text = {ph} AND deleted_at IS NULL
             """, (user_id,))
             stats_d = db._row_to_dict(stats) if stats else {}
             followers = db._fetchone(conn, f"""
@@ -2132,7 +2132,7 @@ async def user_engagement_stats(user_id: str, response: Response):
             """, (user_id,))
             likes = db._fetchone(conn, f"""
                 SELECT COALESCE(SUM(like_count), 0) as total_likes
-                FROM posts WHERE user_id::text = {ph} AND moderation_status = 'approved'
+                FROM posts WHERE user_id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
             """, (user_id,))
         return {
             "user_id": user_id,

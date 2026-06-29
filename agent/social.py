@@ -345,7 +345,7 @@ async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depend
                 return db._fetchone(conn, f"""
                     SELECT p.id, p.content, p.user_id, p.created_at, p.repost_of, u.display_name
                     FROM posts p JOIN users u ON u.id = p.user_id
-                    WHERE p.id::text = {ph} AND p.moderation_status = 'approved'
+                    WHERE p.id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 """, (body.repost_of,))
         orig = await asyncio.to_thread(_check_repost)
         if not orig:
@@ -689,7 +689,7 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
-                WHERE p.id::text = {ph} AND p.moderation_status = 'approved'
+                WHERE p.id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 {bc}
             """, (post_id, *bc_params))
             if not row:
@@ -731,11 +731,8 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
             if str(rd["user_id"]) != str(user["id"]) and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Không có quyền xóa bài viết này")
             db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = {ph}", (post_id,))
-            db._execute(conn, f"DELETE FROM comments WHERE post_id::text = {ph}", (post_id,))
-            db._execute(conn, f"DELETE FROM likes WHERE post_id::text = {ph}", (post_id,))
-            db._execute(conn, f"DELETE FROM bookmarks WHERE post_id::text = {ph}", (post_id,))
             db._execute(conn, f"UPDATE posts SET repost_of = NULL WHERE repost_of::text = {ph}", (post_id,))
-            db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (post_id,))
+            db._execute(conn, f"UPDATE posts SET deleted_at = NOW() WHERE id::text = {ph}", (post_id,))
     await asyncio.to_thread(_query)
     _invalidate_social_caches()
     return {"success": True}
@@ -817,7 +814,7 @@ async def get_post_edit_history(post_id: str, limit: int = Query(20, ge=1, le=10
 
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph} AND moderation_status = 'approved'", (post_id,))
+            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
             rows = db._fetchall(conn, f"""
@@ -855,7 +852,7 @@ async def get_feed(
     """
     ph = db._ph
     offset = (page - 1) * limit
-    conditions = ["p.moderation_status = 'approved'"]
+    conditions = ["p.moderation_status = 'approved'", "p.deleted_at IS NULL"]
     params = []
 
     if post_type and post_type in POST_TYPES:
@@ -974,7 +971,7 @@ async def get_following_feed(
         FROM posts p
         JOIN users u ON u.id = p.user_id
         LEFT JOIN entities e ON e.id = p.entity_id
-        WHERE p.moderation_status = 'approved' AND {follow_cond}
+        WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND {follow_cond}
         {bc}{mc}
         {hidden_cond}
         ORDER BY p.created_at DESC
@@ -982,7 +979,7 @@ async def get_following_feed(
     """
     count_sql = f"""
         SELECT COUNT(*) as c FROM posts p
-        WHERE p.moderation_status = 'approved' AND {follow_cond}
+        WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND {follow_cond}
         {bc}{mc}
         {hidden_cond}
     """
@@ -1021,7 +1018,7 @@ async def trending_posts(
         with db._conn() as conn:
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as cnt FROM posts p
-                WHERE p.moderation_status = 'approved'
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND p.created_at > NOW() - INTERVAL '{days} days'
                   {bc} {mc}
             """, (*bc_p, *mc_p))
@@ -1032,7 +1029,7 @@ async def trending_posts(
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
-                WHERE p.moderation_status = 'approved'
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND p.created_at > NOW() - INTERVAL '{days} days'
                   {bc} {mc}
                 ORDER BY (p.like_count * 2 + p.comment_count * 3) DESC,
@@ -1072,7 +1069,7 @@ async def explore_feed(
         with db._conn() as conn:
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
-                WHERE p.moderation_status = 'approved'
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND p.created_at > NOW() - INTERVAL '90 days'
                   {exclude_following} {bc} {mc}
             """, (*exclude_params, *bc_p, *mc_p))
@@ -1083,7 +1080,7 @@ async def explore_feed(
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
-                WHERE p.moderation_status = 'approved'
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND p.created_at > NOW() - INTERVAL '90 days'
                   {exclude_following}
                   {bc} {mc}
@@ -1130,7 +1127,7 @@ async def search_posts(
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
-                WHERE p.moderation_status = 'approved'
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
                 {bc} {mc}
                 ORDER BY p.created_at DESC
@@ -1138,7 +1135,7 @@ async def search_posts(
             """, (pattern, *bc_p, *mc_p, limit, offset))
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
-                WHERE p.moderation_status = 'approved' AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
                 {bc} {mc}
             """, (pattern, *bc_p, *mc_p))
         return rows, total
@@ -1189,7 +1186,7 @@ async def search_users(
                 SELECT u.id, u.display_name, u.avatar_url, u.username,
                        COUNT(p.id) AS post_count
                 FROM users u
-                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
+                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 WHERE u.is_active = TRUE AND u.deleted_at IS NULL
                   AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph}) ESCAPE '\\'
                   {bc} {mc}
@@ -1292,12 +1289,12 @@ async def user_stats(user=Depends(require_user)):
             """, (uid,))
             likes_received = db._fetchone(conn, f"""
                 SELECT COALESCE(SUM(like_count), 0) AS c FROM posts
-                WHERE user_id = {ph}::uuid AND moderation_status = 'approved'
+                WHERE user_id = {ph}::uuid AND moderation_status = 'approved' AND deleted_at IS NULL
             """, (uid,))
             entities_reviewed = db._fetchone(conn, f"""
                 SELECT COUNT(DISTINCT entity_id) AS c FROM posts
                 WHERE user_id = {ph}::uuid AND post_type = 'review'
-                  AND moderation_status = 'approved' AND entity_id IS NOT NULL
+                  AND moderation_status = 'approved' AND deleted_at IS NULL AND entity_id IS NOT NULL
             """, (uid,))
             reactions_received = db._fetchone(conn, f"""
                 SELECT COUNT(*) AS c FROM post_reactions r
@@ -1335,7 +1332,7 @@ async def user_activity(limit: int = Query(30, ge=1, le=100), user=Depends(requi
         with db._conn() as conn:
             posts = db._fetchall(conn, f"""
                 SELECT 'post' as action, p.id as ref_id, p.content, p.post_type, p.created_at
-                FROM posts p WHERE p.user_id = {ph}::uuid AND p.moderation_status = 'approved'
+                FROM posts p WHERE p.user_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 ORDER BY p.created_at DESC LIMIT {ph}
             """, (uid, limit))
             comments = db._fetchall(conn, f"""
@@ -1407,7 +1404,7 @@ async def trending_tags(
                 return db._fetchall(conn, f"""
                     SELECT tag, COUNT(*) AS c
                     FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
-                    WHERE p.moderation_status = 'approved'
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                       AND p.created_at > NOW() - INTERVAL '{days} days'
                     GROUP BY tag
                     ORDER BY c DESC, tag
@@ -1438,27 +1435,27 @@ async def list_hashtags(
                 rows = db._fetchall(conn, f"""
                     SELECT tag, COUNT(*) AS post_count
                     FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
-                    WHERE p.moderation_status = 'approved' AND LOWER(tag) LIKE {ph}
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND LOWER(tag) LIKE {ph}
                     GROUP BY tag ORDER BY post_count DESC, tag
                     LIMIT {ph} OFFSET {ph}
                 """, (pattern, limit, offset))
                 total_row = db._fetchone(conn, f"""
                     SELECT COUNT(DISTINCT tag) AS c
                     FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
-                    WHERE p.moderation_status = 'approved' AND LOWER(tag) LIKE {ph}
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND LOWER(tag) LIKE {ph}
                 """, (pattern,))
             else:
                 rows = db._fetchall(conn, f"""
                     SELECT tag, COUNT(*) AS post_count
                     FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
-                    WHERE p.moderation_status = 'approved'
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                     GROUP BY tag ORDER BY post_count DESC, tag
                     LIMIT {ph} OFFSET {ph}
                 """, (limit, offset))
                 total_row = db._fetchone(conn, f"""
                     SELECT COUNT(DISTINCT tag) AS c
                     FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
-                    WHERE p.moderation_status = 'approved'
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 """, ())
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             return rows, total
@@ -1490,7 +1487,7 @@ async def hashtag_posts(
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
-                WHERE p.moderation_status = 'approved'
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND p.hashtags @> {ph}::jsonb
                   {bc} {mc}
                 ORDER BY {order}
@@ -1498,7 +1495,7 @@ async def hashtag_posts(
             """, (json.dumps([tag]), *bc_p, *mc_p, limit, offset))
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
-                WHERE p.moderation_status = 'approved' AND p.hashtags @> {ph}::jsonb
+                WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND p.hashtags @> {ph}::jsonb
                 {bc} {mc}
             """, (json.dumps([tag]), *bc_p, *mc_p))
         total = db._row_to_dict(total_row)["c"] if total_row else 0
@@ -1545,7 +1542,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                                              WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
                                              ELSE 0 END), 0) AS likes
                     FROM users u
-                    LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
+                    LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                     LEFT JOIN (SELECT f.target_id, COUNT(*) c FROM follows f
                                  JOIN users fu ON fu.id::text = f.follower_id
                                  WHERE f.target_type='user'
@@ -1673,7 +1670,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
                                          WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
                                          ELSE 0 END), 0) AS likes
                 FROM users u
-                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
+                LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
                              WHERE target_type='user' GROUP BY target_id) fc ON fc.target_id = u.id::text
                 WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
@@ -1760,7 +1757,7 @@ async def get_entity_feed(
         SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username
         FROM posts p
         JOIN users u ON u.id = p.user_id
-        WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
+        WHERE p.entity_id = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
         {bc} {mc}{extra_where}
         ORDER BY COALESCE(p.is_featured, FALSE) DESC, {order_clause}
         LIMIT {ph} OFFSET {ph}
@@ -1785,7 +1782,7 @@ async def get_entity_feed(
             rows = db._fetchall(conn, feed_sql, feed_params)
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
-                WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
+                WHERE p.entity_id = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 {bc} {mc}{total_extra}
             """, tuple(total_params))
             rating_row = db._fetchone(conn, f"""
@@ -1829,7 +1826,7 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
         with db._conn() as conn:
             src = db._fetchone(conn, f"""
                 SELECT entity_id, hashtags FROM posts
-                WHERE id::text = {ph} AND moderation_status = 'approved'
+                WHERE id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
             """, (post_id,))
             if not src:
                 return []
@@ -1843,7 +1840,7 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
                     SELECT {_POST_COLS}, u.display_name, u.avatar_url
                     FROM posts p JOIN users u ON u.id = p.user_id
                     WHERE p.entity_id = {ph} AND p.id::text <> {ph}
-                      AND p.moderation_status = 'approved'
+                      AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                     {bc} {mc}
                     ORDER BY p.like_count DESC, p.created_at DESC
                     LIMIT {ph}
@@ -1855,7 +1852,7 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
                 tag_rows = db._fetchall(conn, f"""
                     SELECT {_POST_COLS}, u.display_name, u.avatar_url
                     FROM posts p JOIN users u ON u.id = p.user_id
-                    WHERE p.moderation_status = 'approved' AND p.id::text <> {ph}
+                    WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND p.id::text <> {ph}
                       AND p.hashtags && ARRAY[{','.join(ph for _ in tags)}]::text[]
                     {bc} {mc}
                     ORDER BY p.like_count DESC
@@ -2610,7 +2607,7 @@ async def get_my_bookmarks(
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM bookmarks b
                 JOIN posts p ON p.id = b.post_id
-                WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved'
+                WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
             """, (uid,))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
@@ -2620,7 +2617,7 @@ async def get_my_bookmarks(
                 JOIN posts p ON p.id = b.post_id
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
-                WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved'
+                WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 ORDER BY b.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, (uid, limit, offset))
@@ -2785,7 +2782,7 @@ async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM collection_items ci
                 JOIN posts p ON p.id = ci.post_id
-                WHERE ci.collection_id = {ph}::uuid AND p.moderation_status = 'approved'
+                WHERE ci.collection_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
             """, (collection_id,))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
@@ -2795,7 +2792,7 @@ async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le
                 JOIN posts p ON p.id = ci.post_id
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
-                WHERE ci.collection_id = {ph}::uuid AND p.moderation_status = 'approved'
+                WHERE ci.collection_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 ORDER BY ci.added_at DESC LIMIT {ph} OFFSET {ph}
             """, (collection_id, limit, offset))
             return rows, total
@@ -2823,7 +2820,7 @@ async def track_share(post_id: str, user=Depends(get_current_user), _csrf=Depend
         with db._conn() as conn:
             row = db._fetchone(conn, f"""
                 UPDATE posts SET share_count = COALESCE(share_count, 0) + 1
-                WHERE id::text = {ph} AND moderation_status = 'approved'
+                WHERE id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
                 RETURNING share_count
             """, (post_id,))
             if not row:
@@ -3061,7 +3058,7 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
             COUNT(DISTINCT entity_id) FILTER (WHERE entity_id IS NOT NULL) AS places,
             COALESCE(SUM(CASE WHEN jsonb_typeof(likes)='number' THEN likes::int
                 WHEN jsonb_typeof(likes)='array' THEN jsonb_array_length(likes) ELSE 0 END), 0) AS total_likes
-        FROM posts WHERE user_id::text = {ph} AND moderation_status = 'approved'
+        FROM posts WHERE user_id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
     """, (user_id,))
     agg = db._row_to_dict(agg) if agg else {}
     photos = _v(agg, "photos")
@@ -3146,7 +3143,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                 SELECT COUNT(*) as total,
                        COUNT(*) FILTER (WHERE post_type = 'review') as reviews
                 FROM posts
-                WHERE user_id::text = {ph} AND moderation_status = 'approved'
+                WHERE user_id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
             """, (resolved_id,))
             counts_d = db._row_to_dict(counts) if counts else {}
             posts_n = counts_d.get("total", 0)
@@ -3281,7 +3278,7 @@ async def get_user_posts(
         with db._conn() as conn:
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
-                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' {bc}
+                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc}
             """, (uid, *bc_p))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
@@ -3290,7 +3287,7 @@ async def get_user_posts(
                 FROM posts p
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
-                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
+                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 {bc}
                 ORDER BY COALESCE(p.is_pinned, FALSE) DESC, p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
@@ -3326,7 +3323,7 @@ async def get_user_reviews(
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.user_id::text = {ph} AND p.post_type = 'review'
-                  AND p.moderation_status = 'approved' {bc}
+                  AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc}
             """, (uid, *bc_p))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
@@ -3336,7 +3333,7 @@ async def get_user_reviews(
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.user_id::text = {ph} AND p.post_type = 'review'
-                  AND p.moderation_status = 'approved'
+                  AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 {bc}
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
@@ -3360,7 +3357,7 @@ def get_community_reviews(entity_id: str, limit: int = 5) -> list[dict]:
             FROM posts p
             JOIN users u ON u.id = p.user_id
             WHERE p.entity_id = {ph} AND p.post_type = 'review'
-                AND p.moderation_status = 'approved'
+                AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
             ORDER BY p.created_at DESC
             LIMIT {ph}
         """, (entity_id, limit))
@@ -3370,7 +3367,7 @@ def get_community_reviews(entity_id: str, limit: int = 5) -> list[dict]:
 def get_trending_posts(limit: int = 10, entity_type: str = None) -> list[dict]:
     """Get trending posts (high engagement) — used by AI chatbot."""
     ph = db._ph
-    conditions = ["p.moderation_status = 'approved'"]
+    conditions = ["p.moderation_status = 'approved'", "p.deleted_at IS NULL"]
     params = []
     if entity_type:
         conditions.append(f"e.type = {ph}")
