@@ -418,7 +418,7 @@ class DraftPost(BaseModel):
 
 
 @router.post("/drafts", status_code=201)
-async def save_draft(body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf)):
+async def save_draft(body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"draft:{user['id']}", 20, 300, "Lưu nháp quá nhanh. Vui lòng đợi.")
     ph = db._ph
     uid = str(user["id"])
@@ -500,7 +500,7 @@ async def update_draft(draft_id: str, body: DraftPost, user=Depends(require_user
 
 
 @router.post("/drafts/{draft_id}/publish")
-async def publish_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+async def publish_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     """Publish a draft — runs moderation and converts to a real post."""
     draft_id = validate_path_id(draft_id, "draft_id")
     check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
@@ -577,7 +577,7 @@ async def delete_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(
 
 @router.post("/drafts/{draft_id}/schedule")
 async def schedule_draft(draft_id: str, scheduled_at: str = Query(..., max_length=30),
-                         user=Depends(require_user), _csrf=Depends(require_csrf)):
+                         user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     """Schedule a draft for future publication."""
     draft_id = validate_path_id(draft_id, "draft_id")
     check_rate(f"schedule:{user['id']}", 10, 300, "Đặt lịch quá nhanh. Vui lòng đợi.")
@@ -2631,7 +2631,7 @@ class CreateCollection(BaseModel):
 
 
 @router.post("/me/collections")
-async def create_collection(body: CreateCollection, user=Depends(require_user), _csrf=Depends(require_csrf)):
+async def create_collection(body: CreateCollection, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"coll:{user['id']}", 10, 300, "Tạo danh sách quá nhanh. Vui lòng đợi chút.")
     mod = await moderate_content(body.name.strip())
     if mod["status"] == "flagged":
@@ -2705,7 +2705,7 @@ async def delete_collection(collection_id: str, user=Depends(require_user), _csr
 
 @router.post("/me/collections/{collection_id}/items")
 async def add_to_collection(collection_id: str, post_id: str = Query(..., max_length=100),
-                             user=Depends(require_user), _csrf=Depends(require_csrf)):
+                             user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     collection_id = validate_path_id(collection_id, "collection_id")
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"coll-add:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW, "Thao tác quá nhanh.")

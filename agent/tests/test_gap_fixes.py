@@ -1203,3 +1203,54 @@ class TestPathIdValidationSweep:
                     if "validate_path_id" not in src and param != "target_id":
                         missing.append(f"{mod_name}:{fn.__name__} param={param}")
         assert not missing, f"Endpoints with unvalidated path ID params: {missing}"
+
+
+class TestIdempotencyCoverage:
+    """CREATE-type POST endpoints in social.py must use require_idempotency."""
+
+    _CREATE_ENDPOINTS = {
+        "create_post", "create_comment", "save_draft", "publish_draft",
+        "schedule_draft", "create_collection", "add_to_collection",
+        "upload_image",
+    }
+
+    def test_create_endpoints_have_idempotency(self):
+        import social
+        import fastapi
+        missing = []
+        for route in social.router.routes:
+            if not isinstance(route, fastapi.routing.APIRoute):
+                continue
+            if "POST" not in (route.methods or set()):
+                continue
+            fn = route.endpoint
+            if fn.__name__ not in self._CREATE_ENDPOINTS:
+                continue
+            src = inspect.getsource(fn)
+            if "require_idempotency" not in src:
+                missing.append(fn.__name__)
+        assert not missing, f"CREATE endpoints missing idempotency: {missing}"
+
+
+class TestHtmlTagStripping:
+    """User-generated content models must strip HTML tags."""
+
+    def test_create_post_strips_tags(self):
+        import social
+        src = inspect.getsource(social.CreatePost)
+        assert "_strip_html_tags" in src
+
+    def test_create_comment_strips_tags(self):
+        import social
+        src = inspect.getsource(social.CreateComment)
+        assert "_strip_html_tags" in src
+
+    def test_edit_comment_strips_tags(self):
+        import social
+        src = inspect.getsource(social.EditComment)
+        assert "_strip_html_tags" in src
+
+    def test_update_post_strips_tags(self):
+        import social
+        src = inspect.getsource(social.UpdatePost)
+        assert "_strip_html_tags" in src
