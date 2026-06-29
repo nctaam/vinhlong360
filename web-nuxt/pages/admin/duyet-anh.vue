@@ -281,7 +281,7 @@ onMounted(() => fetchQueue())
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
 .img-tab {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 38px;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
   padding: 7px 14px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
   transition: background .2s, color .2s, border-color .2s, transform .15s cubic-bezier(.2,1,.4,1);

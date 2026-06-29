@@ -509,7 +509,7 @@ onMounted(() => refreshAll())
 .dq-apply-result-stat b { color: var(--ink, #1c1c1e); font-variant-numeric: tabular-nums; }
 .dq-apply-result-meta { display: flex; align-items: center; gap: var(--space-2); font-size: .8rem; color: var(--muted); flex-wrap: wrap; }
 .dq-mono { font-family: var(--font-mono, ui-monospace, monospace); font-size: .76rem; word-break: break-all; }
-.dq-copy-btn { font-size: .72rem; padding: 2px 8px; min-height: 28px; border: .5px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+.dq-copy-btn { font-size: .72rem; padding: 2px 8px; min-height: 44px; border: .5px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
 .dq-copy-btn:hover { color: var(--primary, #219653); border-color: var(--primary, #219653); }
 .dq-copy-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .dq-table-wrap { margin-top: var(--space-3); }

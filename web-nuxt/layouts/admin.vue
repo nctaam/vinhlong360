@@ -231,7 +231,7 @@ onUnmounted(() => {
 .sidebar-toggle {
   background: none; border: none; color: rgba(255,255,255,.5);
   cursor: pointer; padding: var(--space-1); font-size: 1rem;
-  min-width: 36px; min-height: 36px;
+  min-width: 44px; min-height: 44px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px;
   transition: color .25s, background .25s, transform .35s cubic-bezier(.2,1,.4,1);
@@ -263,7 +263,7 @@ onUnmounted(() => {
   padding: var(--space-2) var(--space-3); border-radius: 8px;
   color: rgba(255,255,255,.6); text-decoration: none;
   font-size: .85rem; font-weight: 500;
-  min-height: 40px; position: relative;
+  min-height: 44px; position: relative;
   transition: background .25s, color .25s, transform .35s cubic-bezier(.2,1,.4,1);
 }
 .admin-nav a:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.95); }
@@ -396,7 +396,7 @@ onUnmounted(() => {
   padding: 6px var(--space-3); font-size: .8rem; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg); cursor: pointer;
   transition: background .25s, color .25s, border-color .25s, transform .35s cubic-bezier(.2,1,.4,1), box-shadow .25s;
-  font-weight: 500; min-height: 36px;
+  font-weight: 500; min-height: 44px;
 }
 .admin-actions button:hover { background: var(--bg-alt); }
 .admin-actions button:active { transform: scale(.95); transition-duration: .08s; }
