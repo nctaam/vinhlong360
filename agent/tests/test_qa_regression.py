@@ -500,3 +500,7 @@ class TestIPMasking:
     def test_login_history_stores_masked_phone(self):
         src = inspect.getsource(auth._log_login)
         assert "_mask_phone" in src
+
+    def test_sessions_list_masks_ip(self):
+        src = inspect.getsource(auth.list_sessions)
+        assert "_mask_ip" in src

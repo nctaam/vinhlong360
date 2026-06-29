@@ -612,7 +612,7 @@ async def list_sessions(request: Request):
         sessions.append({
             "id": str(rd["id"]),
             "user_agent": rd.get("user_agent", ""),
-            "ip_address": rd.get("ip_address", ""),
+            "ip_address": _mask_ip(rd.get("ip_address", "")),
             "created_at": str(rd.get("created_at", "")),
             "expires_at": str(rd.get("expires_at", "")),
             "is_current": hmac.compare_digest(rd.get("token") or "", cur_hash or ""),
