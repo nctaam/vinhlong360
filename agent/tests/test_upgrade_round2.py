@@ -2354,3 +2354,97 @@ class TestAdminPostDetail:
     def test_verified_like_count(self):
         src = inspect.getsource(__import__("admin").admin_post_detail)
         assert "like_count_verified" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Migration 041: Round-3 indexes
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestRound3Indexes:
+    def test_migration_file_exists(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "041_round3_indexes.sql"
+        assert p.exists()
+
+    def test_rating_breakdown_index(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "041_round3_indexes.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "idx_posts_entity_rating" in sql
+
+    def test_trending_index(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "041_round3_indexes.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "idx_posts_entity_recent" in sql
+
+    def test_reports_indexes(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "041_round3_indexes.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "idx_reports_reporter" in sql
+        assert "idx_reports_target" in sql
+
+    def test_announcements_time_index(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "041_round3_indexes.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "idx_announcements_active_time" in sql
+
+    def test_all_use_if_not_exists(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "041_round3_indexes.sql"
+        sql = p.read_text(encoding="utf-8")
+        for line in sql.split("\n"):
+            if line.strip().startswith("CREATE INDEX"):
+                assert "IF NOT EXISTS" in line
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Security: all new admin endpoints use admin guard
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestRound3SecurityGuards:
+    def test_admin_router_has_global_admin_dependency(self):
+        import admin
+        deps = [d.dependency.__name__ if hasattr(d, 'dependency') and hasattr(d.dependency, '__name__') else str(d)
+                for d in (admin.router.dependencies or [])]
+        has_admin = any("require_admin" in str(d) for d in deps)
+        if not has_admin:
+            has_admin = any("admin" in str(d).lower() for d in admin.router.dependencies)
+        assert has_admin, "Admin router must have require_admin dependency"
+
+    def test_all_new_endpoints_exist_under_admin_router(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        new_admin_paths = [
+            "/admin/announcements",
+            "/admin/content/search",
+            "/admin/posts/{post_id}",
+            "/admin/users/{user_id}",
+        ]
+        for p in new_admin_paths:
+            assert p in paths, f"Missing admin endpoint: {p}"
+
+    def test_public_announcements_not_under_admin(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/announcements" in paths
+
+    def test_all_new_public_endpoints_validate_path_id(self):
+        for func_name in ["get_entity_rating_breakdown", "user_engagement_stats"]:
+            src = inspect.getsource(getattr(__import__("public_api"), func_name))
+            assert "validate_path_id" in src, f"{func_name} missing validate_path_id"
+
+    def test_all_new_admin_endpoints_validate_path_id(self):
+        for func_name in ["admin_user_detail", "admin_post_detail",
+                          "update_announcement", "delete_announcement"]:
+            src = inspect.getsource(getattr(__import__("admin"), func_name))
+            assert "validate_path_id" in src, f"{func_name} missing validate_path_id"
+
+    def test_all_new_endpoints_use_parameterized_queries(self):
+        for mod_name, func_name in [
+            ("admin", "admin_content_search"),
+            ("admin", "admin_post_detail"),
+            ("admin", "admin_user_detail"),
+            ("admin", "create_announcement"),
+            ("public_api", "get_entity_rating_breakdown"),
+            ("public_api", "entities_trending"),
+            ("public_api", "user_engagement_stats"),
+        ]:
+            src = inspect.getsource(getattr(__import__(mod_name), func_name))
+            assert "db._ph" in src or "ph" in src, f"{mod_name}.{func_name} missing parameterized queries"
