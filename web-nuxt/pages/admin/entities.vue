@@ -16,7 +16,7 @@
         <button v-if="search" type="button" class="ent-search-clear" aria-label="Xóa tìm kiếm" @click="clearSearch">&times;</button>
         <span v-if="searching" class="ent-searching" aria-live="polite">Đang tìm…</span>
       </div>
-      <select v-model="typeFilter" class="input admin-select-filter" @change="fetchEntities(true)">
+      <select v-model="typeFilter" class="input admin-select-filter" aria-label="Lọc theo loại entity" @change="fetchEntities(true)">
         <option value="">Tất cả loại</option>
         <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
       </select>
@@ -54,7 +54,7 @@
       <table class="admin-table" aria-label="Danh sách entity">
         <thead>
           <tr>
-            <th class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
+            <th scope="col" class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
             <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></button></th>
             <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></button></th>
             <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></button></th>

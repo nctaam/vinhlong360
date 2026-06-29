@@ -12,7 +12,7 @@
 
     <div class="audit-filters">
       <input v-model="search" class="input" placeholder="Tìm theo path hoặc actor..." aria-label="Tìm nhật ký" @input="applyFilter" />
-      <select v-model="methodFilter" class="input audit-select" @change="applyFilterImmediate">
+      <select v-model="methodFilter" class="input audit-select" aria-label="Lọc theo HTTP method" @change="applyFilterImmediate">
         <option value="">Tất cả method</option>
         <option value="POST">POST</option>
         <option value="PUT">PUT</option>

@@ -46,7 +46,7 @@
         <table class="admin-table" aria-label="Entity chưa phân loại">
           <thead>
             <tr>
-              <th class="cpl-check-col">
+              <th scope="col" class="cpl-check-col">
                 <input
                   type="checkbox"
                   class="cpl-checkbox"

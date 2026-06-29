@@ -188,7 +188,7 @@
         <div class="shortcut-table-wrap">
           <table class="shortcut-table" aria-label="Phím tắt và thao tác nhanh">
             <thead>
-              <tr><th>Thao tác</th><th>Trên máy tính</th><th>Trên di động</th></tr>
+              <tr><th scope="col">Thao tác</th><th scope="col">Trên máy tính</th><th scope="col">Trên di động</th></tr>
             </thead>
             <tbody>
               <tr v-for="(sc, i) in shortcuts" :key="i">

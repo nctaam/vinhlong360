@@ -57,7 +57,7 @@
         <table class="admin-table" aria-label="Danh sách báo cáo vi phạm">
           <thead>
             <tr>
-              <th class="rpt-th-check">
+              <th scope="col" class="rpt-th-check">
                 <input
                   type="checkbox" class="rpt-checkbox" aria-label="Chọn tất cả (chờ xử lý) trên trang"
                   :checked="allPageSelected" :indeterminate.prop="somePageSelected && !allPageSelected"
