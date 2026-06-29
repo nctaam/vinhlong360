@@ -60,7 +60,7 @@
                 </li>
               </ul>
             </div>
-            <button type="button" class="btn btn-primary btn-sm compose-send" :disabled="!commentText.trim() || submitting" @click="submitComment">
+            <button type="button" class="btn btn-primary btn-sm compose-send" aria-label="Gửi bình luận" :disabled="!commentText.trim() || submitting" @click="submitComment">
               <svg v-if="!submitting" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/></svg>
               <span v-else class="spinner spinner-sm"></span>
             </button>
