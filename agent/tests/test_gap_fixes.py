@@ -1310,6 +1310,32 @@ class TestPaginationMetadata:
         assert '"window"' in src and '"days"' in src
 
 
+# ── Count-limited operations race condition guards ──
+
+
+class TestCountLimitAdvisoryLock:
+    """Count-limited operations must use pg_advisory_xact_lock to prevent races."""
+
+    def test_create_comment_uses_advisory_lock(self):
+        src = inspect.getsource(__import__("social").create_comment)
+        assert "pg_advisory_xact_lock" in src
+
+    def test_create_collection_uses_advisory_lock(self):
+        src = inspect.getsource(__import__("social").create_collection)
+        assert "pg_advisory_xact_lock" in src
+
+    def test_add_to_collection_uses_advisory_lock(self):
+        src = inspect.getsource(__import__("social").add_to_collection)
+        assert "pg_advisory_xact_lock" in src
+
+    def test_advisory_lock_before_count_check(self):
+        """Lock must come BEFORE the count query to prevent races."""
+        src = inspect.getsource(__import__("social").create_comment)
+        lock_pos = src.index("pg_advisory_xact_lock")
+        count_pos = src.index("COUNT(*) c FROM comments")
+        assert lock_pos < count_pos, "Advisory lock must come before count check"
+
+
 # ── _safe_user defensive phone access ──
 
 

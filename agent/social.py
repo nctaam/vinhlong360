@@ -1960,6 +1960,7 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
                 """, (post_author, me, me, post_author))
                 if is_blocked:
                     raise HTTPException(403, "Không thể bình luận bài viết này")
+            db._fetchone(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (post_id,))
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM comments WHERE post_id::text = {ph}", (post_id,))
             if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_COMMENTS_PER_POST:
                 raise HTTPException(400, "Bài viết đã đạt giới hạn bình luận")
@@ -2658,6 +2659,7 @@ async def create_collection(body: CreateCollection, user=Depends(require_user), 
 
     def _query():
         with db._conn() as conn:
+            db._fetchone(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (uid,))
             cnt = db._fetchone(conn, f"SELECT COUNT(*) as c FROM user_collections WHERE user_id = {ph}::uuid", (uid,))
             if cnt and db._row_to_dict(cnt)["c"] >= _MAX_COLLECTIONS_PER_USER:
                 raise HTTPException(400, f"Tối đa {_MAX_COLLECTIONS_PER_USER} danh sách")
@@ -2730,6 +2732,7 @@ async def add_to_collection(collection_id: str, post_id: str = Query(..., max_le
             coll = db._fetchone(conn, f"SELECT id FROM user_collections WHERE id = {ph}::uuid AND user_id = {ph}::uuid", (collection_id, uid))
             if not coll:
                 raise HTTPException(404, "Danh sách không tồn tại")
+            db._fetchone(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (collection_id,))
             cnt = db._fetchone(conn, f"SELECT COUNT(*) as c FROM collection_items WHERE collection_id = {ph}::uuid", (collection_id,))
             if cnt and db._row_to_dict(cnt)["c"] >= _MAX_ITEMS_PER_COLLECTION:
                 raise HTTPException(400, f"Tối đa {_MAX_ITEMS_PER_COLLECTION} bài trong danh sách")
