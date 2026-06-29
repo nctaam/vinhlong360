@@ -166,7 +166,7 @@ def _log_search_query(q: str, entity_type: str | None, area: str | None, total: 
                 f.write(record + "\n")
             _maybe_rotate_jsonl(SEARCH_LOG_FILE)
     except Exception:
-        pass
+        logger.debug("search log write failed", exc_info=True)
 
 
 import site_settings
@@ -1606,6 +1606,9 @@ async def get_review_stats(entity_id: str, response: Response):
 
     result = {"avg": avg, "count": total, "distribution": distribution, "mentions": mentions}
     _REVIEW_STATS_CACHE[entity_id] = (now, result)
+    if len(_REVIEW_STATS_CACHE) > 500:
+        oldest = min(_REVIEW_STATS_CACHE, key=lambda k: _REVIEW_STATS_CACHE[k][0])
+        _REVIEW_STATS_CACHE.pop(oldest, None)
     return result
 
 

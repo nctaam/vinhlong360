@@ -728,6 +728,25 @@ def task_session_cleanup():
                     _sched_logger.info("Session cleanup: purged %d old login_history entries", old_logins)
             except Exception:
                 pass
+            try:
+                deleted_ids = db._fetchall(conn, """
+                    SELECT id FROM posts WHERE deleted_at IS NOT NULL
+                    AND deleted_at < NOW() - INTERVAL '30 days'
+                """, ())
+                if deleted_ids:
+                    ids = [str(db._row_to_dict(r)["id"]) for r in deleted_ids]
+                    for pid in ids:
+                        db._execute(conn, "DELETE FROM comments WHERE post_id::text = %s", (pid,))
+                        db._execute(conn, "DELETE FROM likes WHERE post_id::text = %s", (pid,))
+                        db._execute(conn, "DELETE FROM bookmarks WHERE post_id::text = %s", (pid,))
+                        db._execute(conn, "DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = %s", (pid,))
+                    db._execute(conn, """
+                        DELETE FROM posts WHERE deleted_at IS NOT NULL
+                        AND deleted_at < NOW() - INTERVAL '30 days'
+                    """, ())
+                    _sched_logger.info("Session cleanup: hard-deleted %d soft-deleted posts past grace period", len(ids))
+            except Exception as e:
+                _sched_logger.warning("Post hard-delete cleanup error: %s", e)
         _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
     except Exception as e:
         _sched_logger.error("Session cleanup error: %s", e)

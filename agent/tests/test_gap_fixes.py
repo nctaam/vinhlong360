@@ -1938,3 +1938,75 @@ class TestSchedulerLoginHistoryCleanup:
         fn_src = src[idx:idx+1500]
         assert "login_history" in fn_src
         assert "90 days" in fn_src
+
+    def test_session_cleanup_hard_deletes_posts(self):
+        src = (AGENT_DIR / "scheduler.py").read_text(encoding="utf-8")
+        idx = src.index("def task_session_cleanup():")
+        fn_src = src[idx:idx+2500]
+        assert "deleted_at IS NOT NULL" in fn_src
+        assert "DELETE FROM posts" in fn_src
+        assert "30 days" in fn_src
+
+
+class TestSecurityFixes:
+    """Security hardening: fail-closed session binding, bounded file reads, connection safety."""
+
+    def test_session_binding_fails_closed(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("async def _check_session_binding_safe(")
+        fn_src = src[idx:idx+400]
+        assert "return False" in fn_src
+        assert "return True" not in fn_src.split("return await")[0]
+
+    def test_avatar_upload_bounded_read(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("async def upload_avatar(")
+        fn_src = src[idx:idx+800]
+        assert "file.read(MAX_IMAGE_SIZE" in fn_src
+
+    def test_cover_upload_bounded_read(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("async def upload_cover(")
+        fn_src = src[idx:idx+800]
+        assert "file.read(MAX_IMAGE_SIZE" in fn_src
+
+    def test_admin_image_bounded_read(self):
+        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        idx = src.index("async def upload_entity_image(")
+        fn_src = src[idx:idx+600]
+        assert "file.read(MAX_IMAGE_SIZE" in fn_src
+
+    def test_dashboard_alerts_connection_safety(self):
+        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
+        idx = src.index("async def dashboard_alerts(")
+        fn_src = src[idx:idx+3000]
+        assert "conn3" in fn_src
+
+    def test_mention_search_imports_db(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def mention_search(")
+        fn_src = src[idx:idx+400]
+        assert "from database import db" in fn_src
+
+    def test_sse_thread_lock_exists(self):
+        import notifications
+        assert hasattr(notifications, "_sse_thread_lock")
+
+    def test_notify_sse_uses_thread_lock(self):
+        src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
+        idx = src.index("def _notify_sse(")
+        fn_src = src[idx:idx+300]
+        assert "_sse_thread_lock" in fn_src
+
+    def test_review_stats_cache_bounded(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        assert "_REVIEW_STATS_CACHE" in src
+        idx = src.index("_REVIEW_STATS_CACHE[entity_id]")
+        fn_src = src[idx:idx+200]
+        assert "500" in fn_src
+
+    def test_community_stats_filters_deleted(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def community_stats(")
+        fn_src = src[idx:idx+500]
+        assert "deleted_at IS NULL" in fn_src

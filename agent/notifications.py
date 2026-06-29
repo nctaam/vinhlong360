@@ -223,12 +223,14 @@ async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(r
 
 _sse_subscribers: dict[str, list[asyncio.Queue]] = {}
 _sse_lock = asyncio.Lock()
+_sse_thread_lock = __import__("threading").Lock()
 _SSE_MAX_PER_USER = 5
 
 
 def _notify_sse(user_id: str, data: dict):
-    queues = _sse_subscribers.get(user_id, [])
-    for q in list(queues):
+    with _sse_thread_lock:
+        queues = list(_sse_subscribers.get(user_id, []))
+    for q in queues:
         try:
             q.put_nowait(data)
         except asyncio.QueueFull:
@@ -279,14 +281,15 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
 
     queue: asyncio.Queue = asyncio.Queue(maxsize=50)
     async with _sse_lock:
-        subs = _sse_subscribers.setdefault(uid, [])
-        if len(subs) >= _SSE_MAX_PER_USER:
-            evicted = subs.pop(0)
-            try:
-                evicted.put_nowait(None)
-            except asyncio.QueueFull:
-                pass
-        subs.append(queue)
+        with _sse_thread_lock:
+            subs = _sse_subscribers.setdefault(uid, [])
+            if len(subs) >= _SSE_MAX_PER_USER:
+                evicted = subs.pop(0)
+                try:
+                    evicted.put_nowait(None)
+                except asyncio.QueueFull:
+                    pass
+            subs.append(queue)
 
     async def event_generator():
         try:
@@ -309,11 +312,12 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
                     yield ": keepalive\n\n"
         finally:
             async with _sse_lock:
-                subs = _sse_subscribers.get(uid, [])
-                if queue in subs:
-                    subs.remove(queue)
-                if not subs:
-                    _sse_subscribers.pop(uid, None)
+                with _sse_thread_lock:
+                    subs = _sse_subscribers.get(uid, [])
+                    if queue in subs:
+                        subs.remove(queue)
+                    if not subs:
+                        _sse_subscribers.pop(uid, None)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})

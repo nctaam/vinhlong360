@@ -474,10 +474,10 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     entity = db.get_entity(entity_id)
     if not entity:
         raise HTTPException(404, "Entity không tồn tại")
-    data = await file.read()
+    data = await file.read(MAX_IMAGE_SIZE + 1)
     if len(data) > MAX_IMAGE_SIZE:
-        raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
-    # Không tin Content-Type client gửi — kiểm magic-byte thật.
+        del data
+        raise HTTPException(413, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
     if not storage.sniff_image_type(data):
         raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
     if len(entity.get("images") or []) >= 10:
@@ -1978,7 +1978,8 @@ async def dashboard_alerts():
         except Exception:
             logger.debug("Alert kb_curation stats failed", exc_info=True)
         try:
-            appeal_row = db._fetchone(conn2, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
+            with db._conn() as conn3:
+                appeal_row = db._fetchone(conn3, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
             appeal_count = db._row_to_dict(appeal_row)["c"] if appeal_row else 0
             if appeal_count:
                 alerts.append({"type": "appeals", "count": appeal_count, "label": f"{appeal_count} khiếu nại chờ xử lý", "icon": "📩", "link": "/admin/khieu-nai", "priority": 2})

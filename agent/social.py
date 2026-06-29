@@ -1217,8 +1217,8 @@ async def community_stats(response: Response):
         return int(db._row_to_dict(row)["c"]) if row else 0
     def _query():
         with db._conn() as conn:
-            posts = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE moderation_status='approved'")
-            reviews = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE post_type='review' AND moderation_status='approved'")
+            posts = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE moderation_status='approved' AND deleted_at IS NULL")
+            reviews = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE post_type='review' AND moderation_status='approved' AND deleted_at IS NULL")
             members = db._fetchone(conn, "SELECT COUNT(*) c FROM users WHERE is_active=TRUE")
         return {"posts": _c(posts), "reviews": _c(reviews), "members": _c(members)}
     return await asyncio.to_thread(_query)
@@ -1238,7 +1238,7 @@ async def user_counts(response: Response, user=Depends(require_user)):
             posts = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts
                 WHERE user_id = {ph}::uuid AND moderation_status != 'rejected'
-                  AND (is_draft IS NOT TRUE)
+                  AND (is_draft IS NOT TRUE) AND deleted_at IS NULL
             """, (uid,))
             drafts = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts

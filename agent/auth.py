@@ -48,8 +48,8 @@ async def _check_session_binding_safe(request, user):
         from auth_middleware import check_session_binding
         return await check_session_binding(request, user)
     except Exception:
-        logging.getLogger("auth").warning("session binding check failed, allowing access", exc_info=True)
-        return True
+        logging.getLogger("auth").warning("session binding check failed, denying access", exc_info=True)
+        return False
 
 
 def _require_pg():
@@ -951,7 +951,13 @@ async def upload_avatar(request: Request, file: UploadFile = File(...), _csrf=De
 
     from storage import storage, MAX_IMAGE_SIZE, sniff_image_type
 
-    data = await file.read()
+    cl = request.headers.get("content-length")
+    if cl and cl.isdigit() and int(cl) > MAX_IMAGE_SIZE * 2:
+        raise HTTPException(413, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+    data = await file.read(MAX_IMAGE_SIZE + 1)
+    if len(data) > MAX_IMAGE_SIZE:
+        del data
+        raise HTTPException(413, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
     if len(data) > MAX_IMAGE_SIZE:
         raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
     if not sniff_image_type(data):
@@ -980,9 +986,13 @@ async def upload_cover(request: Request, file: UploadFile = File(...), _csrf=Dep
 
     from storage import storage, MAX_IMAGE_SIZE, sniff_image_type
 
-    data = await file.read()
+    cl = request.headers.get("content-length")
+    if cl and cl.isdigit() and int(cl) > MAX_IMAGE_SIZE * 2:
+        raise HTTPException(413, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+    data = await file.read(MAX_IMAGE_SIZE + 1)
     if len(data) > MAX_IMAGE_SIZE:
-        raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+        del data
+        raise HTTPException(413, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
     if not sniff_image_type(data):
         raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
 

@@ -971,6 +971,7 @@ async def mention_search(q: str = ""):
     results: list[dict] = []
     # Người dùng (chỉ khi có Postgres)
     try:
+        from database import db
         if db._use_pg:
             ph = db._ph
             def _user_search():
