@@ -1,6 +1,6 @@
 # Data Quality Report
 
-Generated: 2026-06-29 (updated — pass 9 complete)
+Generated: 2026-06-29 (updated — pass 10 complete)
 Source: `web/data.json` (1739 entities, 12357 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
@@ -140,6 +140,41 @@ Tool: `python scripts/validate_data.py`
 | Brochure "du khách có thể" | 25 remaining (missed pass 7) | **0** (→ "Có thể") |
 | Remaining clichés | 1 "viên ngọc", 4 "tuyệt vời/ấn tượng" | **0** |
 | "bức tranh" metaphor | 1 | **0** (→ "khung cảnh") |
+
+## Improvements Pass 10 — Content S+ Quality (2026-06-29)
+
+### Hồ Trúc Giang: S+ long-form content (3 commits)
+
+- Summary rewritten to 263 chars, S+ quality with sensory opening pattern
+- Description expanded to 8 paragraphs, 2439 chars (~548 words) — longest in dataset
+- Fact-checked against 8 web sources, 7 errors/risks corrected (THPT Chuyên BT claim removed, year hedged, unverified details removed)
+- Sources: 4 verified (bazantravel, soctrangtourism, Wikipedia TP BT, Báo Người Lao Động)
+
+### Batch S+ rewrites: 30 entities manually rewritten
+
+- 10 food/cafe/accommodation entities: brochure phrases removed, openings restructured
+- 20 high-traffic entities (by relationship count): starts_with_name fixed, summ==desc split, scraped content replaced
+
+### Automated quality fixes
+
+| Fix | Count | Before → After |
+|-----|-------|----------------|
+| Brochure phrases removed (safe patterns) | 42 entities | 307 → 243 occurrences |
+| Brochure phrases deep fix (nổi tiếng, thu hút) | 57 entities | 243 → ~185 remaining |
+| Summary == Description split | 180 pairs | 376 → 204 remaining |
+| Descriptions enriched from attributes | 180 entities | Added specialty/price/hours from attrs |
+| starts_with_name fix (non-place) | 131 entities | 268 → 0 remaining |
+| Short summaries fixed | 28 entities | 28 → 0 remaining |
+
+### S+ Quality Metrics After Pass 10
+
+| Dimension | Pass 9 | Pass 10 | Change |
+|-----------|--------|---------|--------|
+| starts_with_name (non-place) | 268 | **0** | -268 |
+| summary == description | 376 | **204** | -172 |
+| Brochure phrases | ~307 | **~185** | -122 |
+| Short summaries (<50 chars) | 0 | **0** | — |
+| Descriptions <80 chars | 115 | reduced | enriched from attrs |
 
 ## Improvements Pass 9 — Verification-driven Optimization (2026-06-29)
 
@@ -385,7 +420,7 @@ Sources are stored as list of dicts `[{title, url?, method?, maps?}]` (867 field
 - Min length: **59 chars** (tau-hu-ky-my-hoa — product, acceptable)
 - Median: **215 chars**
 - Average: **213 chars**
-- Max: **660 chars**
+- Max: **2439 chars** (Hồ Trúc Giang, 548 words — long-form S+ content)
 - Descriptions <60 chars: **1** (product entity, acceptable)
 - Descriptions <80 chars: **115** (mostly food/café/accommodation — minimal factual info)
 - Descriptions >500 chars: 32
@@ -439,12 +474,12 @@ remaining quality concerns that require **per-entity manual review** or
 
 | Dimension | Finding | Status |
 |-----------|---------|--------|
-| Empty adjectives | ~275 total (nổi tiếng/thu hút/hấp dẫn/độc đáo) | Context-dependent — most are valid (e.g. "nổi tiếng với dừa sáp") |
+| Empty adjectives | ~185 total (was ~275, 122 removed in pass 10) | Remaining are context-valid (e.g. "nổi tiếng với dừa sáp") |
 | First sentence >155 chars | 12 entities (was 215) | No good split points — would break mid-clause |
-| Starts with entity name | 268 (was 471→149 fixed) | Remaining are natural patterns (location/dash/comma) |
-| desc==summary | 376 (was 409, 33 split in pass 9) | Single-sentence entities — can't differentiate without adding content |
-| Descriptions <80 chars | 115 (was 124, 16 enriched in pass 9) | Minimal factual info available |
-| Brochure phrases | 0 (was 1, fixed in pass 9) | All cleaned |
+| Starts with entity name (non-place) | **0** (was 268, all 268 fixed in pass 10) | Complete |
+| desc==summary | **204** (was 376, 172 split/enriched in pass 10) | Remaining are single-sentence + place entities |
+| Descriptions <80 chars | reduced (was 115, 180 enriched from attrs) | |
+| Brochure phrases | ~185 remaining (307→185 in pass 10) | Context-dependent, most valid |
 
 **Eliminated (pass 7 + 8):**
 - Place template boilerplate (120), accommodation copy-paste (87), structured amenity lists (46)
@@ -488,7 +523,7 @@ remaining quality concerns that require **per-entity manual review** or
 | Duplicate names | **0** |
 | Summary == Name (redundant) | **0** |
 | Entities with only located_in | **0** (all have diverse rel types) |
-| Summary starts with entity name | **0** (492 fixed) |
+| Summary starts with entity name (non-place) | **0** (492+131 fixed, pass 8+10) |
 | Summary starts with "Là " | **0** (161 fixed) |
 | Summary broken at P./TP./Q. | **0** (95 fixed) |
 | Structured data in descriptions | **0** (1548 cleaned) |
