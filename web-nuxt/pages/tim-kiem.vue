@@ -402,7 +402,7 @@ useHead({
 /* Autocomplete suggestions */
 .search-input-wrap { position: relative; flex: 1; min-width: 0; }
 .search-suggestions {
-  position: absolute; top: 100%; left: 0; right: 0; z-index: 20;
+  position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-dropdown);
   margin: var(--space-1) 0 0; padding: var(--space-1); list-style: none;
   background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);

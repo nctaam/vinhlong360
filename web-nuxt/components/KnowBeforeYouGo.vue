@@ -138,8 +138,8 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 .kbyg {
   margin: var(--space-6) 0;
   padding: var(--space-5);
-  background: linear-gradient(135deg, rgba(52, 120, 246, .04), rgba(33, 150, 83, .04));
-  border: 1px solid rgba(52, 120, 246, .12);
+  background: linear-gradient(135deg, rgba(var(--blue-rgb), .04), rgba(var(--secondary-rgb), .04));
+  border: 1px solid rgba(var(--blue-rgb), .12);
   border-radius: 16px;
 }
 .kbyg-title {
@@ -159,11 +159,11 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
   display: inline-flex; align-items: center; gap: 4px;
   padding: 5px 12px; border-radius: 100px;
   font-size: .8rem; font-weight: 500;
-  background: rgba(52, 120, 246, .08);
+  background: rgba(var(--blue-rgb), .08);
   color: var(--ink);
   transition: background .2s, transform .15s ease;
 }
-.kbyg-badge:hover { background: rgba(52, 120, 246, .14); transform: scale(1.04); }
+.kbyg-badge:hover { background: rgba(var(--blue-rgb), .14); transform: scale(1.04); }
 .kbyg-badge-icon { font-size: .9rem; }
 
 /* Golden hours */
@@ -174,7 +174,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 .kbyg-golden-item {
   display: flex; align-items: flex-start; gap: 8px;
   padding: 10px 14px; border-radius: 12px;
-  background: rgba(255, 159, 10, .08);
+  background: rgba(var(--accent-rgb), .08);
   flex: 1 1 160px; min-width: 160px;
 }
 .kbyg-golden-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
@@ -189,7 +189,7 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 .kbyg-tip {
   display: flex; align-items: flex-start; gap: 8px;
   padding: 8px 12px; border-radius: 10px;
-  background: rgba(33, 150, 83, .06);
+  background: rgba(var(--secondary-rgb), .06);
   font-size: .88rem; line-height: 1.45;
 }
 .kbyg-tip-icon { flex-shrink: 0; font-size: .9rem; margin-top: 1px; }
@@ -213,13 +213,13 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 
 /* Dark mode */
 .dark .kbyg {
-  background: linear-gradient(135deg, rgba(52, 120, 246, .06), rgba(33, 150, 83, .06));
-  border-color: rgba(52, 120, 246, .18);
+  background: linear-gradient(135deg, rgba(var(--blue-rgb), .06), rgba(var(--secondary-rgb), .06));
+  border-color: rgba(var(--blue-rgb), .18);
 }
-.dark .kbyg-badge { background: rgba(52, 120, 246, .14); }
-.dark .kbyg-badge:hover { background: rgba(52, 120, 246, .22); }
-.dark .kbyg-golden-item { background: rgba(255, 159, 10, .12); }
-.dark .kbyg-tip { background: rgba(33, 150, 83, .1); }
+.dark .kbyg-badge { background: rgba(var(--blue-rgb), .14); }
+.dark .kbyg-badge:hover { background: rgba(var(--blue-rgb), .22); }
+.dark .kbyg-golden-item { background: rgba(var(--accent-rgb), .12); }
+.dark .kbyg-tip { background: rgba(var(--secondary-rgb), .1); }
 
 @media (max-width: 540px) {
   .kbyg { padding: var(--space-4); }

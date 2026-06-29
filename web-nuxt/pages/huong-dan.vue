@@ -1084,8 +1084,8 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   border-radius: var(--radius-lg); font-size: var(--text-sm);
 }
 .tip-box { background: rgba(var(--primary-rgb, 46, 125, 50), .06); border: .5px solid rgba(var(--primary-rgb, 46, 125, 50), .15); }
-.warn-box { background: rgba(255, 152, 0, .06); border: .5px solid rgba(255, 152, 0, .2); }
-.dyk-box { background: rgba(33, 150, 243, .06); border: .5px solid rgba(33, 150, 243, .15); }
+.warn-box { background: rgba(var(--warning-rgb), .06); border: .5px solid rgba(var(--warning-rgb), .2); }
+.dyk-box { background: rgba(var(--blue-rgb), .06); border: .5px solid rgba(var(--blue-rgb), .15); }
 .tip-line, .warn-line { margin: 0; line-height: var(--leading-relaxed); color: var(--ink); }
 .tip-line + .tip-line, .warn-line + .warn-line { margin-top: var(--space-2); }
 .dyk-box p { margin: 0; line-height: var(--leading-relaxed); }
@@ -1167,8 +1167,8 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .dark .qs-step { background: var(--bg-alt); }
 .dark .subtopic { background: rgba(255,255,255,.03); }
 .dark .tip-box { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.08); }
-.dark .warn-box { background: rgba(255, 152, 0, .05); border-color: rgba(255, 152, 0, .12); }
-.dark .dyk-box { background: rgba(33, 150, 243, .04); border-color: rgba(33, 150, 243, .1); }
+.dark .warn-box { background: rgba(var(--warning-rgb), .05); border-color: rgba(var(--warning-rgb), .12); }
+.dark .dyk-box { background: rgba(var(--blue-rgb), .04); border-color: rgba(var(--blue-rgb), .1); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
