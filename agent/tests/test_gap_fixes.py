@@ -2676,3 +2676,55 @@ class TestAsyncCorrectnessFixes:
     def test_homepage_enrich_place_async(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
         assert "asyncio.to_thread(_enrich_place" in src
+
+
+# ── Phase P1: Input validation — enum pattern constraints ──
+
+class TestEnumPatternValidation:
+    """Query params with known enum values must use pattern= to reject invalid input early."""
+
+    def test_review_sort_has_pattern(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("def get_entity_reviews")
+        fn_src = src[idx:idx + 400]
+        assert 'pattern=' in fn_src
+        for val in ("newest", "helpful", "highest", "lowest"):
+            assert val in fn_src
+
+    def test_trending_tags_period_has_pattern(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("def trending_tags")
+        fn_src = src[idx:idx + 300]
+        assert 'pattern=' in fn_src
+        for val in ("7d", "14d", "30d", "90d"):
+            assert val in fn_src
+
+    def test_entity_feed_sort_has_pattern(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("def get_entity_feed")
+        fn_src = src[idx:idx + 400]
+        assert 'pattern=' in fn_src
+        for val in ("default", "newest", "helpful", "photo", "star", "unanswered"):
+            assert val in fn_src
+
+    def test_following_target_type_has_pattern(self):
+        src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
+        idx = src.index("def get_following")
+        fn_src = src[idx:idx + 300]
+        assert 'pattern=' in fn_src
+        assert "user" in fn_src
+        assert "entity" in fn_src
+
+    def test_visits_status_has_pattern(self):
+        src = (AGENT_DIR / "visits.py").read_text(encoding="utf-8")
+        idx = src.index("def list_visits")
+        fn_src = src[idx:idx + 200]
+        assert 'pattern=' in fn_src
+        assert "want" in fn_src
+        assert "visited" in fn_src
+
+    def test_visits_status_is_optional(self):
+        src = (AGENT_DIR / "visits.py").read_text(encoding="utf-8")
+        idx = src.index("def list_visits")
+        fn_src = src[idx:idx + 200]
+        assert "Optional" in fn_src

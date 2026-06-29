@@ -4,6 +4,8 @@ Postgres-only (UGC parity); 503 ở SQLite dev. status ∈ {want, visited}, 1 st
 """
 import asyncio
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, Field, field_validator
 
@@ -30,7 +32,7 @@ class VisitBody(BaseModel):
 
 
 @router.get("")
-async def list_visits(status: str = Query(None, max_length=20), user=Depends(require_user)):
+async def list_visits(status: Optional[str] = Query(None, pattern="^(want|visited)$"), user=Depends(require_user)):
     def _query():
         ph = db._ph
         sql = f"SELECT entity_id, status, created_at FROM user_visits WHERE user_id = {ph}::uuid"

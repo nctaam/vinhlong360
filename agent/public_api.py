@@ -512,7 +512,7 @@ async def get_entity_reviews(
     response: Response,
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
-    sort: str = Query("newest", max_length=20),
+    sort: str = Query("newest", pattern="^(newest|helpful|highest|lowest)$"),
     min_rating: int = Query(None, ge=1, le=5),
     user=Depends(get_current_user),
 ):

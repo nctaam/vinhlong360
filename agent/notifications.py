@@ -487,7 +487,7 @@ async def check_follow(target_type: str, target_id: str, user=Depends(require_us
 
 @router.get("/following")
 async def get_following(
-    target_type: Optional[str] = Query(None, max_length=20),
+    target_type: Optional[str] = Query(None, pattern="^(user|entity)$"),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0, le=10000),
     user=Depends(require_user),

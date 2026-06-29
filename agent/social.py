@@ -1388,7 +1388,7 @@ _TRENDING_PERIOD_DAYS = {"7d": 7, "14d": 14, "30d": 30, "90d": 90}
 async def trending_tags(
     response: Response,
     limit: int = Query(10, ge=1, le=20),
-    period: str = Query("30d", max_length=5),
+    period: str = Query("30d", pattern="^(7d|14d|30d|90d)$"),
 ):
     """Hashtag thịnh hành: đếm hashtag trên bài ĐÃ DUYỆT trong N ngày gần nhất."""
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
@@ -1715,7 +1715,7 @@ async def get_entity_feed(
     entity_id: str,
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
-    sort: str = Query("default", max_length=20),
+    sort: str = Query("default", pattern="^(default|newest|helpful|photo|star|unanswered)$"),
     min_rating: Optional[int] = Query(None, ge=1, le=5),
     has_photo: Optional[bool] = Query(None),
     post_type: Optional[str] = Query(None, max_length=20),
