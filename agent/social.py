@@ -1504,6 +1504,71 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
     return {"success": True, "message": "Đã ghi nhận báo cáo. Cảm ơn bạn!"}
 
 
+# ── Moderation appeal (NĐ147 compliance) ──
+
+class AppealBody(BaseModel):
+    reason: str = Field(..., min_length=10, max_length=2000)
+
+
+@router.post("/posts/{post_id}/appeal")
+async def appeal_post(post_id: str, body: AppealBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"appeal:{user['id']}", 3, 3600, "Chỉ được khiếu nại 3 lần/giờ.")
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT user_id, moderation_status FROM posts WHERE id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            pd = db._row_to_dict(post)
+            if str(pd["user_id"]) != uid:
+                raise HTTPException(403, "Chỉ tác giả mới được khiếu nại")
+            if pd["moderation_status"] != "rejected":
+                raise HTTPException(400, "Chỉ khiếu nại bài bị từ chối")
+            existing = db._fetchone(conn, f"""
+                SELECT id FROM moderation_appeals
+                WHERE post_id::text = {ph} AND user_id::text = {ph}
+            """, (post_id, uid))
+            if existing:
+                raise HTTPException(409, "Bạn đã khiếu nại bài này rồi")
+            db._execute(conn, f"""
+                INSERT INTO moderation_appeals (post_id, user_id, reason)
+                VALUES ({ph}::uuid, {ph}::uuid, {ph})
+            """, (post_id, uid, body.reason.strip()))
+    await asyncio.to_thread(_query)
+    return {"success": True, "message": "Khiếu nại đã được ghi nhận. Chúng tôi sẽ xem xét trong 7 ngày."}
+
+
+@router.get("/posts/{post_id}/appeal")
+async def get_appeal_status(post_id: str, user=Depends(require_user)):
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT id, status, reviewer_note, reviewed_at, created_at
+                FROM moderation_appeals
+                WHERE post_id::text = {ph} AND user_id::text = {ph}
+            """, (post_id, uid))
+            if not row:
+                return None
+            return db._row_to_dict(row)
+    result = await asyncio.to_thread(_query)
+    if not result:
+        return {"appeal": None}
+    return {"appeal": {
+        "id": str(result["id"]),
+        "status": result["status"],
+        "reviewer_note": result.get("reviewer_note"),
+        "reviewed_at": str(result["reviewed_at"]) if result.get("reviewed_at") else None,
+        "created_at": str(result["created_at"]),
+    }}
+
+
 # ── Q&A: câu trả lời hay nhất (chủ bài hỏi chọn 1 bình luận) ──
 
 class BestAnswerBody(BaseModel):

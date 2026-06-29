@@ -894,3 +894,160 @@ class TestReportComment:
     def test_parameterized_query(self):
         src = inspect.getsource(__import__("social").report_comment)
         assert "db._ph" in src
+
+
+# ── Moderation appeals (NĐ147 compliance) ──
+
+class TestAppealsMigration:
+    """Migration 035: moderation_appeals table."""
+
+    def test_migration_file_exists(self):
+        path = AGENT_DIR / "migrations" / "035_moderation_appeals.sql"
+        assert path.exists()
+
+    def test_creates_table(self):
+        sql = (AGENT_DIR / "migrations" / "035_moderation_appeals.sql").read_text(encoding="utf-8")
+        assert "CREATE TABLE IF NOT EXISTS moderation_appeals" in sql
+
+    def test_has_status_check(self):
+        sql = (AGENT_DIR / "migrations" / "035_moderation_appeals.sql").read_text(encoding="utf-8")
+        assert "pending" in sql
+        assert "approved" in sql
+        assert "rejected" in sql
+
+    def test_unique_per_user_post(self):
+        sql = (AGENT_DIR / "migrations" / "035_moderation_appeals.sql").read_text(encoding="utf-8")
+        assert "UNIQUE" in sql
+
+    def test_has_indexes(self):
+        sql = (AGENT_DIR / "migrations" / "035_moderation_appeals.sql").read_text(encoding="utf-8")
+        assert "idx_moderation_appeals_status" in sql
+        assert "idx_moderation_appeals_user" in sql
+
+
+class TestAppealPostEndpoint:
+    """POST /api/posts/{post_id}/appeal — user appeals rejected post."""
+
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/posts/{post_id}/appeal" in paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("social").appeal_post)
+        assert "require_user" in src
+
+    def test_has_csrf(self):
+        src = inspect.getsource(__import__("social").appeal_post)
+        assert "require_csrf" in src
+
+    def test_rate_limited(self):
+        src = inspect.getsource(__import__("social").appeal_post)
+        assert "check_rate" in src
+
+    def test_validates_post_id(self):
+        src = inspect.getsource(__import__("social").appeal_post)
+        assert "validate_path_id" in src
+
+    def test_checks_post_ownership(self):
+        src = inspect.getsource(__import__("social").appeal_post)
+        assert "403" in src
+        assert "user_id" in src
+
+    def test_requires_rejected_status(self):
+        src = inspect.getsource(__import__("social").appeal_post)
+        assert '"rejected"' in src
+        assert "400" in src
+
+    def test_prevents_duplicate_appeal(self):
+        src = inspect.getsource(__import__("social").appeal_post)
+        assert "409" in src
+        assert "moderation_appeals" in src
+
+    def test_inserts_appeal(self):
+        src = inspect.getsource(__import__("social").appeal_post)
+        assert "INSERT INTO moderation_appeals" in src
+
+    def test_parameterized(self):
+        src = inspect.getsource(__import__("social").appeal_post)
+        assert "db._ph" in src
+
+    def test_model_validation(self):
+        from social import AppealBody
+        body = AppealBody(reason="This is a valid appeal reason")
+        assert len(body.reason) >= 10
+
+
+class TestGetAppealStatus:
+    """GET /api/posts/{post_id}/appeal — user checks appeal status."""
+
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        get_paths = []
+        for r in router.routes:
+            if hasattr(r, "path") and "GET" in getattr(r, "methods", set()):
+                get_paths.append(r.path)
+        assert "/api/posts/{post_id}/appeal" in get_paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("social").get_appeal_status)
+        assert "require_user" in src
+
+    def test_returns_appeal_fields(self):
+        src = inspect.getsource(__import__("social").get_appeal_status)
+        assert '"status"' in src
+        assert '"reviewer_note"' in src
+        assert '"created_at"' in src
+
+
+class TestAdminAppeals:
+    """Admin appeal management endpoints."""
+
+    def test_list_appeals_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/appeals" in paths
+
+    def test_approve_appeal_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/appeals/{appeal_id}/approve" in paths
+
+    def test_reject_appeal_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/appeals/{appeal_id}/reject" in paths
+
+    def test_list_appeals_pagination(self):
+        src = inspect.getsource(__import__("admin").list_appeals)
+        assert '"total"' in src
+        assert '"page"' in src
+        assert "LIMIT" in src
+
+    def test_list_appeals_status_filter(self):
+        src = inspect.getsource(__import__("admin").list_appeals)
+        assert "pending" in src
+        assert "all" in src
+
+    def test_approve_appeal_updates_post(self):
+        src = inspect.getsource(__import__("admin").approve_appeal)
+        assert "moderation_status = 'approved'" in src
+
+    def test_approve_appeal_notifies_user(self):
+        src = inspect.getsource(__import__("admin").approve_appeal)
+        assert "create_notification" in src
+
+    def test_reject_appeal_notifies_user(self):
+        src = inspect.getsource(__import__("admin").reject_appeal)
+        assert "create_notification" in src
+
+    def test_appeal_status_check(self):
+        src = inspect.getsource(__import__("admin").approve_appeal)
+        assert '"pending"' in src
+        assert "400" in src
+
+    def test_appeal_parameterized(self):
+        src = inspect.getsource(__import__("admin").approve_appeal)
+        assert "db._ph" in src
+        assert "validate_path_id" in src

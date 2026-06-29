@@ -2109,6 +2109,121 @@ async def moderation_stats():
     return await asyncio.to_thread(_query)
 
 
+# ── Appeal management (NĐ147 compliance) ──
+
+@router.get("/appeals")
+async def list_appeals(
+    status: str = Query("pending", pattern="^(pending|approved|rejected|all)$"),
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=100),
+):
+    ph = db._ph
+    offset = (page - 1) * limit
+    def _query():
+        with db._conn() as conn:
+            where = "" if status == "all" else f"WHERE a.status = {ph}"
+            params = [] if status == "all" else [status]
+            rows = db._fetchall(conn, f"""
+                SELECT a.*, u.display_name, u.username,
+                       p.content AS post_content, p.post_type
+                FROM moderation_appeals a
+                JOIN users u ON u.id = a.user_id
+                JOIN posts p ON p.id = a.post_id
+                {where}
+                ORDER BY a.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (*params, limit, offset))
+            total = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM moderation_appeals a {where}
+            """, tuple(params))
+        return {
+            "appeals": [{
+                "id": str(db._row_to_dict(r)["id"]),
+                "post_id": str(db._row_to_dict(r)["post_id"]),
+                "post_content": db._row_to_dict(r).get("post_content", "")[:200],
+                "post_type": db._row_to_dict(r).get("post_type"),
+                "user": {"display_name": db._row_to_dict(r).get("display_name"),
+                         "username": db._row_to_dict(r).get("username")},
+                "reason": db._row_to_dict(r).get("reason"),
+                "status": db._row_to_dict(r)["status"],
+                "reviewer_note": db._row_to_dict(r).get("reviewer_note"),
+                "reviewed_at": str(db._row_to_dict(r)["reviewed_at"]) if db._row_to_dict(r).get("reviewed_at") else None,
+                "created_at": str(db._row_to_dict(r)["created_at"]),
+            } for r in rows],
+            "total": db._row_to_dict(total)["c"] if total else 0,
+            "page": page,
+        }
+    return await asyncio.to_thread(_query)
+
+
+class AppealDecisionBody(BaseModel):
+    note: str = Field("", max_length=500)
+
+
+@router.post("/appeals/{appeal_id}/approve")
+async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
+    appeal_id = validate_path_id(appeal_id, "appeal_id")
+    admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT post_id, user_id, status FROM moderation_appeals WHERE id::text = {ph}
+            """, (appeal_id,))
+            if not row:
+                raise HTTPException(404, "Khiếu nại không tồn tại")
+            rd = db._row_to_dict(row)
+            if rd["status"] != "pending":
+                raise HTTPException(400, f"Khiếu nại đã {rd['status']}")
+            db._execute(conn, f"""
+                UPDATE moderation_appeals
+                SET status = 'approved', reviewer_note = {ph},
+                    reviewer_id = {ph}::uuid, reviewed_at = NOW()
+                WHERE id::text = {ph}
+            """, (body.note.strip() or None, str(admin_id) if admin_id else None, appeal_id))
+            db._execute(conn, f"""
+                UPDATE posts SET moderation_status = 'approved' WHERE id::text = {ph}
+            """, (str(rd["post_id"]),))
+        try:
+            create_notification(str(rd["user_id"]), "moderation",
+                                "Khiếu nại được chấp nhận — bài viết đã được duyệt lại",
+                                ref_type="post", ref_id=str(rd["post_id"]))
+        except Exception:
+            logger.exception("Failed to notify appeal approval %s", appeal_id)
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.post("/appeals/{appeal_id}/reject")
+async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody()):
+    appeal_id = validate_path_id(appeal_id, "appeal_id")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT post_id, user_id, status FROM moderation_appeals WHERE id::text = {ph}
+            """, (appeal_id,))
+            if not row:
+                raise HTTPException(404, "Khiếu nại không tồn tại")
+            rd = db._row_to_dict(row)
+            if rd["status"] != "pending":
+                raise HTTPException(400, f"Khiếu nại đã {rd['status']}")
+            db._execute(conn, f"""
+                UPDATE moderation_appeals
+                SET status = 'rejected', reviewer_note = {ph}, reviewed_at = NOW()
+                WHERE id::text = {ph}
+            """, (body.note.strip() or None, appeal_id))
+        try:
+            note_msg = f" Lý do: {body.note.strip()}" if body.note.strip() else ""
+            create_notification(str(rd["user_id"]), "moderation",
+                                f"Khiếu nại không được chấp nhận.{note_msg}",
+                                ref_type="post", ref_id=str(rd["post_id"]))
+        except Exception:
+            logger.exception("Failed to notify appeal rejection %s", appeal_id)
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
 @router.get("/analytics-overview")
 async def analytics_overview(days: int = Query(0, ge=0, le=365)):
     """GĐ9.6: gói số liệu cho trang admin Analytics (1 call, đã auth qua require_admin).
