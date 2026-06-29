@@ -373,6 +373,172 @@ async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depend
     return {"post": result}
 
 
+# ── Draft Posts ──
+
+class DraftPost(BaseModel):
+    content: str = Field("", max_length=5000)
+    post_type: str = Field("share", max_length=20)
+    entity_id: Optional[str] = Field(None, max_length=200)
+    rating: Optional[int] = None
+    images: list[str] = Field(default_factory=list, max_length=10)
+
+
+@router.post("/drafts", status_code=201)
+async def save_draft(body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"draft:{user['id']}", 20, 300, "Lưu nháp quá nhanh. Vui lòng đợi.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id = {ph}::uuid AND is_draft = TRUE
+            """, (uid,))
+            if count and db._row_to_dict(count)["c"] >= 20:
+                raise HTTPException(400, "Tối đa 20 bài nháp")
+            row = db._fetchone(conn, f"""
+                INSERT INTO posts (user_id, content, post_type, entity_id, rating, images,
+                                   moderation_status, is_draft, hashtags, mentions)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph}::jsonb, 'pending', TRUE, '[]'::jsonb, '[]'::jsonb)
+                RETURNING id, content, post_type, entity_id, rating, images, created_at
+            """, (uid, body.content, body.post_type, body.entity_id, body.rating,
+                  json.dumps(body.images)))
+            return db._row_to_dict(row)
+
+    draft = await asyncio.to_thread(_query)
+    draft["id"] = str(draft["id"])
+    return {"draft": draft}
+
+
+@router.get("/drafts")
+async def list_drafts(
+    page: int = Query(1, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    ph = db._ph
+    uid = str(user["id"])
+    offset = (page - 1) * limit
+
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, content, post_type, entity_id, rating, images, created_at, updated_at
+                FROM posts
+                WHERE user_id = {ph}::uuid AND is_draft = TRUE
+                ORDER BY COALESCE(updated_at, created_at) DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            return [db._row_to_dict(r) for r in rows]
+
+    drafts = await asyncio.to_thread(_query)
+    for d in drafts:
+        d["id"] = str(d["id"])
+    return {"drafts": drafts, "page": page, "has_more": len(drafts) == limit}
+
+
+@router.put("/drafts/{draft_id}")
+async def update_draft(draft_id: str, body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    draft_id = validate_path_id(draft_id, "draft_id")
+    check_rate(f"draft:{user['id']}", 20, 300, "Lưu nháp quá nhanh. Vui lòng đợi.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE posts SET content = {ph}, post_type = {ph}, entity_id = {ph},
+                       rating = {ph}, images = {ph}::jsonb, updated_at = NOW()
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+                RETURNING id, content, post_type, entity_id, rating, images, updated_at
+            """, (body.content, body.post_type, body.entity_id, body.rating,
+                  json.dumps(body.images), draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+            return db._row_to_dict(row)
+
+    draft = await asyncio.to_thread(_query)
+    draft["id"] = str(draft["id"])
+    return {"draft": draft}
+
+
+@router.post("/drafts/{draft_id}/publish")
+async def publish_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Publish a draft — runs moderation and converts to a real post."""
+    draft_id = validate_path_id(draft_id, "draft_id")
+    check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
+               "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _get_draft():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT id, content, post_type, entity_id, rating, images
+                FROM posts
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+            """, (draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+            return db._row_to_dict(row)
+
+    draft = await asyncio.to_thread(_get_draft)
+    content = draft.get("content", "")
+    if len(content.strip()) < 10:
+        raise HTTPException(400, "Nội dung cần ít nhất 10 ký tự")
+
+    images = draft.get("images", [])
+    if isinstance(images, str):
+        try:
+            images = json.loads(images)
+        except (json.JSONDecodeError, ValueError):
+            images = []
+
+    mod_result = await moderate_content_enhanced(content, user_id=uid, image_urls=images)
+    hashtags = _extract_hashtags(content)
+
+    def _publish():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE posts SET is_draft = FALSE, moderation_status = {ph},
+                       hashtags = {ph}::jsonb, updated_at = NOW()
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+                RETURNING *
+            """, (mod_result["status"], json.dumps(hashtags, ensure_ascii=False),
+                  draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+            return db._row_to_dict(row)
+
+    post = await asyncio.to_thread(_publish)
+    log_moderation("post", str(post["id"]), mod_result["status"], mod_result, auto=True)
+    _invalidate_social_caches()
+    return {"post": _enrich_post(post, user)}
+
+
+@router.delete("/drafts/{draft_id}")
+async def delete_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    draft_id = validate_path_id(draft_id, "draft_id")
+    check_rate(f"draft-del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
+               "Xóa nháp quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM posts
+                WHERE id::text = {ph} AND user_id = {ph}::uuid AND is_draft = TRUE
+                RETURNING id
+            """, (draft_id, uid))
+            if not row:
+                raise HTTPException(404, "Bài nháp không tồn tại")
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
 @router.get("/posts/{post_id}")
 async def get_post(post_id: str, user=Depends(get_current_user)):
     post_id = validate_path_id(post_id, "post_id")
@@ -862,6 +1028,11 @@ async def user_counts(user=Depends(require_user)):
             posts = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts
                 WHERE user_id = {ph}::uuid AND moderation_status != 'rejected'
+                  AND (is_draft IS NOT TRUE)
+            """, (uid,))
+            drafts = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id = {ph}::uuid AND is_draft = TRUE
             """, (uid,))
             bookmarks = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM saved_entities
@@ -876,6 +1047,7 @@ async def user_counts(user=Depends(require_user)):
         return {
             "unread_notifications": _c(notif),
             "posts": _c(posts),
+            "drafts": _c(drafts),
             "bookmarks": _c(bookmarks),
             "visits": _c(visits),
         }

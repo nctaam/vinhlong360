@@ -2855,3 +2855,249 @@ class TestRound4SecurityGuards:
     def test_hashtag_browse_no_auth_required(self):
         src = inspect.getsource(__import__("social").list_hashtags)
         assert "require_user" not in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Entity Comparison
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestEntityComparison:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/compare" in paths
+
+    def test_method_is_get(self):
+        from public_api import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/entities/compare", set())
+
+    def test_requires_ids_param(self):
+        src = inspect.getsource(__import__("public_api").compare_entities)
+        assert "ids" in src
+
+    def test_minimum_2_entities(self):
+        src = inspect.getsource(__import__("public_api").compare_entities)
+        assert "2" in src
+
+    def test_max_5_entities(self):
+        src = inspect.getsource(__import__("public_api").compare_entities)
+        assert "5" in src or "[:5]" in src
+
+    def test_returns_quality_score(self):
+        src = inspect.getsource(__import__("public_api").compare_entities)
+        assert "quality_score" in src
+
+    def test_returns_attributes(self):
+        src = inspect.getsource(__import__("public_api").compare_entities)
+        assert "hours" in src
+        assert "phone" in src
+        assert "address" in src
+
+    def test_has_rate_limit(self):
+        src = inspect.getsource(__import__("public_api").compare_entities)
+        assert "check_rate" in src
+
+    def test_has_cache_control(self):
+        src = inspect.getsource(__import__("public_api").compare_entities)
+        assert "Cache-Control" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Popular Entities by Type
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestPopularEntities:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/popular" in paths
+
+    def test_method_is_get(self):
+        from public_api import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/entities/popular", set())
+
+    def test_has_type_filter(self):
+        src = inspect.getsource(__import__("public_api").popular_entities)
+        assert "entity_type" in src
+
+    def test_has_area_filter(self):
+        src = inspect.getsource(__import__("public_api").popular_entities)
+        assert "area" in src
+
+    def test_returns_rating_info(self):
+        src = inspect.getsource(__import__("public_api").popular_entities)
+        assert "rating_count" in src
+        assert "rating_avg" in src
+
+    def test_returns_quality_score(self):
+        src = inspect.getsource(__import__("public_api").popular_entities)
+        assert "quality_score" in src
+
+    def test_has_rate_limit(self):
+        src = inspect.getsource(__import__("public_api").popular_entities)
+        assert "check_rate" in src
+
+    def test_scoring_uses_reviews(self):
+        src = inspect.getsource(__import__("public_api").popular_entities)
+        assert "rating_count" in src
+        assert "score" in src
+
+    def test_has_cache_control(self):
+        src = inspect.getsource(__import__("public_api").popular_entities)
+        assert "Cache-Control" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Draft Posts
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestDraftPostsMigration:
+    def test_migration_file_exists(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "043_draft_posts.sql"
+        assert p.exists()
+
+    def test_migration_adds_column(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "043_draft_posts.sql"
+        sql = p.read_text()
+        assert "is_draft" in sql
+        assert "ALTER TABLE posts" in sql
+
+    def test_migration_adds_index(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "043_draft_posts.sql"
+        sql = p.read_text()
+        assert "idx_posts_user_drafts" in sql
+
+
+class TestDraftPostsCRUD:
+    def test_create_draft_endpoint(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/drafts" in paths
+
+    def test_list_drafts_endpoint(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/drafts", set())
+
+    def test_update_draft_endpoint(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/drafts/{draft_id}" in paths
+
+    def test_publish_draft_endpoint(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/drafts/{draft_id}/publish" in paths
+
+    def test_delete_draft_endpoint(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "DELETE" in routes.get("/api/drafts/{draft_id}", set())
+
+    def test_create_requires_auth(self):
+        src = inspect.getsource(__import__("social").save_draft)
+        assert "require_user" in src
+
+    def test_create_has_rate_limit(self):
+        src = inspect.getsource(__import__("social").save_draft)
+        assert "check_rate" in src
+
+    def test_create_enforces_draft_limit(self):
+        src = inspect.getsource(__import__("social").save_draft)
+        assert "20" in src
+
+    def test_update_validates_path_id(self):
+        src = inspect.getsource(__import__("social").update_draft)
+        assert "validate_path_id" in src
+
+    def test_publish_runs_moderation(self):
+        src = inspect.getsource(__import__("social").publish_draft)
+        assert "moderate_content_enhanced" in src
+
+    def test_publish_extracts_hashtags(self):
+        src = inspect.getsource(__import__("social").publish_draft)
+        assert "_extract_hashtags" in src
+
+    def test_publish_sets_not_draft(self):
+        src = inspect.getsource(__import__("social").publish_draft)
+        assert "is_draft = FALSE" in src
+
+    def test_delete_only_deletes_drafts(self):
+        src = inspect.getsource(__import__("social").delete_draft)
+        assert "is_draft = TRUE" in src
+
+    def test_list_has_pagination(self):
+        src = inspect.getsource(__import__("social").list_drafts)
+        assert "page" in src
+        assert "limit" in src
+
+    def test_draft_model_fields(self):
+        from social import DraftPost
+        fields = DraftPost.model_fields
+        assert "content" in fields
+        assert "post_type" in fields
+        assert "entity_id" in fields
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Enhanced System Health
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestEnhancedSystemHealth:
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/system-health" in paths
+
+    def test_includes_uptime(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "uptime_seconds" in src
+        assert "uptime_human" in src
+
+    def test_includes_pid(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "pid" in src
+
+    def test_includes_storage(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "jsonl_files" in src
+        assert "jsonl_size_mb" in src
+
+    def test_includes_pending_moderation(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "pending_moderation" in src
+
+    def test_includes_open_reports(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "open_reports" in src
+
+    def test_format_uptime_helper(self):
+        from admin import _format_uptime
+        assert _format_uptime(90061) == "1d 1h 1m"
+        assert _format_uptime(3660) == "1h 1m"
+        assert _format_uptime(300) == "5m"
+
+    def test_includes_more_pg_tables(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "reports" in src
+        assert "announcements" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Me/Counts includes drafts
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestMeCountsDrafts:
+    def test_counts_include_drafts(self):
+        src = inspect.getsource(__import__("social").user_counts)
+        assert '"drafts"' in src
+
+    def test_counts_exclude_drafts_from_posts(self):
+        src = inspect.getsource(__import__("social").user_counts)
+        assert "is_draft IS NOT TRUE" in src

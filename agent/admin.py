@@ -1466,11 +1466,25 @@ async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequ
 
 # ── Data management ──
 
+_server_start_time = __import__("time").time()
+
+
 @router.get("/system-health")
 async def system_health():
     import os
+    import time as _t
     def _query():
-        result = {"sqlite": {}, "postgres": {}}
+        result = {"sqlite": {}, "postgres": {}, "server": {}}
+        result["server"]["uptime_seconds"] = int(_t.time() - _server_start_time)
+        result["server"]["uptime_human"] = _format_uptime(int(_t.time() - _server_start_time))
+        result["server"]["pid"] = os.getpid()
+        try:
+            import psutil
+            proc = psutil.Process(os.getpid())
+            result["server"]["memory_mb"] = round(proc.memory_info().rss / 1024 / 1024, 1)
+        except (ImportError, Exception):
+            result["server"]["memory_mb"] = -1
+
         db_path = os.path.join(os.path.dirname(__file__), "data", "knowledge.db")
         if os.path.exists(db_path):
             result["sqlite"]["size_mb"] = round(os.path.getsize(db_path) / 1024 / 1024, 2)
@@ -1478,7 +1492,8 @@ async def system_health():
         if db._use_pg:
             with db._conn() as conn:
                 tables = ["users", "posts", "comments", "post_likes", "follows",
-                           "notifications", "blocks", "sessions", "user_visits"]
+                           "notifications", "blocks", "sessions", "user_visits",
+                           "reports", "saved_entities", "announcements"]
                 pg_tables = {}
                 for t in tables:
                     try:
@@ -1498,8 +1513,35 @@ async def system_health():
                     SELECT COUNT(*) as c FROM sessions WHERE expires_at > NOW()
                 """, ())
                 result["postgres"]["active_sessions"] = db._row_to_dict(active_row)["c"] if active_row else 0
+                pending_row = db._fetchone(conn, """
+                    SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'pending'
+                """, ())
+                result["postgres"]["pending_moderation"] = db._row_to_dict(pending_row)["c"] if pending_row else 0
+                open_reports = db._fetchone(conn, """
+                    SELECT COUNT(*) as c FROM reports WHERE status = 'pending'
+                """, ())
+                result["postgres"]["open_reports"] = db._row_to_dict(open_reports)["c"] if open_reports else 0
+        data_dir = Path(__file__).resolve().parent / "data"
+        jsonl_files = list(data_dir.glob("*.jsonl"))
+        result["storage"] = {
+            "jsonl_files": len(jsonl_files),
+            "jsonl_size_mb": round(sum(f.stat().st_size for f in jsonl_files) / 1024 / 1024, 2),
+        }
         return result
     return await asyncio.to_thread(_query)
+
+
+def _format_uptime(seconds: int) -> str:
+    days, remainder = divmod(seconds, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, _ = divmod(remainder, 60)
+    parts = []
+    if days:
+        parts.append(f"{days}d")
+    if hours:
+        parts.append(f"{hours}h")
+    parts.append(f"{minutes}m")
+    return " ".join(parts)
 
 
 @router.get("/featured")

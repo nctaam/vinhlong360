@@ -2103,6 +2103,109 @@ async def user_engagement_stats(user_id: str):
     return await asyncio.to_thread(_query)
 
 
+# ── Entity comparison ─────────────────────────────────────────────────
+
+@router.get("/entities/compare")
+async def compare_entities(
+    request: Request,
+    response: Response,
+    ids: str = Query(..., min_length=1, max_length=500),
+):
+    """Side-by-side entity comparison. Pass comma-separated IDs (max 5)."""
+    from ratelimit import check_rate
+    check_rate(f"compare:{get_client_ip(request)}", 20, 60,
+               "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+    id_list = [i.strip() for i in ids.split(",") if i.strip()][:5]
+    if len(id_list) < 2:
+        from fastapi import HTTPException
+        raise HTTPException(400, "Cần ít nhất 2 entity để so sánh")
+
+    def _query():
+        results = []
+        for eid in id_list:
+            e = db.get_entity(eid)
+            if not e:
+                continue
+            attrs = e.get("attributes", {})
+            if isinstance(attrs, str):
+                try:
+                    attrs = json.loads(attrs)
+                except (json.JSONDecodeError, ValueError):
+                    attrs = {}
+            results.append({
+                "id": e["id"], "name": e.get("name", ""),
+                "type": e.get("type", ""),
+                "place": e.get("place", ""),
+                "summary": (e.get("summary") or "")[:300],
+                "images": e.get("images", [])[:3],
+                "coordinates": e.get("coordinates"),
+                "attributes": {
+                    "hours": attrs.get("hours"),
+                    "phone": attrs.get("phone"),
+                    "address": attrs.get("address"),
+                    "admission_fee": attrs.get("admission_fee"),
+                    "parking": attrs.get("parking"),
+                },
+                "quality_score": entity_quality(e),
+            })
+        return results
+
+    entities = await asyncio.to_thread(_query)
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    return {"entities": entities, "count": len(entities)}
+
+
+# ── Popular entities by type ─────────────────────────────────────────
+
+@router.get("/entities/popular")
+async def popular_entities(
+    request: Request,
+    response: Response,
+    entity_type: Optional[str] = Query(None, max_length=50),
+    area: Optional[str] = Query(None, max_length=100),
+    limit: int = Query(10, ge=1, le=50),
+):
+    """Popular entities by review count + rating. Filter by type and area."""
+    from ratelimit import check_rate
+    check_rate(f"popular:{get_client_ip(request)}", 20, 60,
+               "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+
+    def _query():
+        all_entities = db.list_entities(limit=5000)
+        if entity_type:
+            all_entities = [e for e in all_entities if e.get("type") == entity_type]
+        if area:
+            all_entities = [e for e in all_entities
+                           if area.lower() in (e.get("place", "") or "").lower()
+                           or area.lower() in (e.get("area", "") or "").lower()]
+
+        scored = []
+        for e in all_entities:
+            rc = e.get("rating_count", 0) or 0
+            avg = e.get("rating_avg", 0) or 0
+            has_img = 1 if e.get("images") else 0
+            score = rc * 2 + avg * 3 + has_img * 5 + entity_quality(e) * 0.1
+            scored.append((score, e))
+        scored.sort(key=lambda x: -x[0])
+        return [
+            {
+                "id": e["id"], "name": e.get("name", ""),
+                "type": e.get("type", ""),
+                "place": e.get("place", ""),
+                "summary": (e.get("summary") or "")[:200],
+                "images": e.get("images", [])[:2],
+                "rating_count": e.get("rating_count", 0) or 0,
+                "rating_avg": round(float(e.get("rating_avg", 0) or 0), 1),
+                "quality_score": entity_quality(e),
+            }
+            for _, e in scored[:limit]
+        ]
+
+    results = await asyncio.to_thread(_query)
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
+    return {"entities": results, "entity_type": entity_type, "area": area}
+
+
 # ── Dedicated entity search with advanced filters ─────────────────────
 
 @router.get("/entities/search")
