@@ -1051,3 +1051,75 @@ class TestAdminAppeals:
         src = inspect.getsource(__import__("admin").approve_appeal)
         assert "db._ph" in src
         assert "validate_path_id" in src
+
+
+# ── Search query logging & analytics ──
+
+class TestSearchQueryLogging:
+    """Search endpoint logs queries to JSONL for analytics."""
+
+    def test_search_calls_log(self):
+        src = inspect.getsource(__import__("public_api").search)
+        assert "_log_search_query" in src
+
+    def test_log_function_exists(self):
+        from public_api import _log_search_query
+        assert callable(_log_search_query)
+
+    def test_log_writes_jsonl(self):
+        src = inspect.getsource(__import__("public_api")._log_search_query)
+        assert "SEARCH_LOG_FILE" in src
+        assert "json.dumps" in src
+
+    def test_log_records_fields(self):
+        src = inspect.getsource(__import__("public_api")._log_search_query)
+        assert '"q"' in src
+        assert '"type"' in src
+        assert '"results"' in src
+        assert '"ts"' in src
+
+    def test_log_uses_lock(self):
+        src = inspect.getsource(__import__("public_api")._log_search_query)
+        assert "_jsonl_lock" in src
+
+    def test_log_rotates(self):
+        src = inspect.getsource(__import__("public_api")._log_search_query)
+        assert "_maybe_rotate_jsonl" in src
+
+    def test_log_silent_failure(self):
+        src = inspect.getsource(__import__("public_api")._log_search_query)
+        assert "except" in src
+
+
+class TestAdminSearchAnalytics:
+    """GET /admin/search-analytics — aggregated search insights."""
+
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/search-analytics" in paths
+
+    def test_returns_top_queries(self):
+        src = inspect.getsource(__import__("admin").search_analytics)
+        assert '"top_queries"' in src
+
+    def test_returns_zero_results(self):
+        src = inspect.getsource(__import__("admin").search_analytics)
+        assert '"zero_results"' in src
+
+    def test_returns_total(self):
+        src = inspect.getsource(__import__("admin").search_analytics)
+        assert '"total_searches"' in src
+
+    def test_filters_by_period(self):
+        src = inspect.getsource(__import__("admin").search_analytics)
+        assert "cutoff" in src
+        assert "days" in src
+
+    def test_reads_jsonl(self):
+        src = inspect.getsource(__import__("admin").search_analytics)
+        assert "search_queries.jsonl" in src
+
+    def test_uses_asyncio_to_thread(self):
+        src = inspect.getsource(__import__("admin").search_analytics)
+        assert "asyncio.to_thread" in src

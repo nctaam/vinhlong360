@@ -2246,6 +2246,43 @@ async def analytics_overview(days: int = Query(0, ge=0, le=365)):
     return await asyncio.to_thread(_query)
 
 
+# ── Search analytics ──
+
+@router.get("/search-analytics")
+async def search_analytics(days: int = Query(7, ge=1, le=90)):
+    search_log = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    def _read():
+        if not search_log.exists():
+            return {"top_queries": [], "zero_results": [], "total_searches": 0, "period_days": days}
+        queries = {}
+        zero_result = {}
+        total = 0
+        for line in search_log.read_text(encoding="utf-8").splitlines():
+            try:
+                r = json.loads(line)
+            except (json.JSONDecodeError, ValueError):
+                continue
+            if r.get("ts", "") < cutoff:
+                continue
+            total += 1
+            q = r.get("q", "").strip().lower()
+            if not q:
+                continue
+            queries[q] = queries.get(q, 0) + 1
+            if r.get("results", 0) == 0:
+                zero_result[q] = zero_result.get(q, 0) + 1
+        top = sorted(queries.items(), key=lambda x: x[1], reverse=True)[:30]
+        zeros = sorted(zero_result.items(), key=lambda x: x[1], reverse=True)[:20]
+        return {
+            "top_queries": [{"query": q, "count": c} for q, c in top],
+            "zero_results": [{"query": q, "count": c} for q, c in zeros],
+            "total_searches": total,
+            "period_days": days,
+        }
+    return await asyncio.to_thread(_read)
+
+
 @router.get("/reports")
 async def get_reports(
     status: str = Query("pending", pattern="^(pending|resolved|dismissed)$"),

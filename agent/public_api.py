@@ -127,6 +127,7 @@ def invalidate_place_cache():
 # GĐ13.6f: báo cáo thông tin sai / nội dung vi phạm — lưu JSONL nhẹ (free-tier),
 # admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
+SEARCH_LOG_FILE = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
 
 _JSONL_MAX_LINES = 5000
@@ -148,6 +149,24 @@ def _maybe_rotate_jsonl(filepath: Path) -> None:
         tmp.replace(filepath)
     except Exception:
         logger.exception("JSONL rotation failed for %s", filepath)
+
+
+def _log_search_query(q: str, entity_type: str | None, area: str | None, total: int) -> None:
+    try:
+        record = json.dumps({
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "q": q[:200],
+            "type": entity_type,
+            "area": area,
+            "results": total,
+        }, ensure_ascii=False)
+        with _jsonl_lock:
+            SEARCH_LOG_FILE.parent.mkdir(exist_ok=True)
+            with open(SEARCH_LOG_FILE, "a", encoding="utf-8") as f:
+                f.write(record + "\n")
+            _maybe_rotate_jsonl(SEARCH_LOG_FILE)
+    except Exception:
+        pass
 
 
 import site_settings
@@ -632,6 +651,7 @@ async def search(
     _enrich_place(results)
     total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q)
     safe_q = re.sub(r"<[^>]+>", "", q)
+    _log_search_query(safe_q, type, area, total)
     return {"q": safe_q, "total": total, "results": results}
 
 
