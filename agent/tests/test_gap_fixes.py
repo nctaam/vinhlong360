@@ -1254,3 +1254,26 @@ class TestHtmlTagStripping:
         import social
         src = inspect.getsource(social.UpdatePost)
         assert "_strip_html_tags" in src
+
+
+class TestSeoOgDescription:
+    """Entity OG meta always has og:description, even without summary."""
+
+    def test_entity_with_summary_uses_summary(self):
+        import seo
+        entity = {"id": "test", "name": "Test", "type": "dish", "summary": "Món ngon", "area": "vinh-long"}
+        meta = seo.build_og_meta(entity)
+        assert "Món ngon" in meta.get("og:description", "")
+
+    def test_entity_without_summary_falls_back(self):
+        import seo
+        entity = {"id": "test", "name": "Cơm tấm", "type": "dish", "area": "vinh-long"}
+        meta = seo.build_og_meta(entity)
+        assert meta.get("og:description"), "og:description must not be empty"
+        assert "Cơm tấm" in meta["og:description"]
+
+    def test_twitter_description_matches_og(self):
+        import seo
+        entity = {"id": "test", "name": "Test", "type": "dish"}
+        meta = seo.build_og_meta(entity)
+        assert meta.get("og:description") == meta.get("twitter:description")

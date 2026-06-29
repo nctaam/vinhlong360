@@ -1216,10 +1216,15 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
     meta["og:type"] = "article"
     meta["twitter:title"] = title
 
-    if entity.get("summary"):
-        desc = _html.escape(str(entity["summary"])[:200])
-        meta["og:description"] = desc
-        meta["twitter:description"] = desc
+    summary = entity.get("summary")
+    if summary:
+        desc = _html.escape(str(summary)[:200])
+    else:
+        ename = _html.escape(entity.get("name", ""))
+        area = _html.escape(entity.get("area", ""))
+        desc = f"{ename} — {area}" if area else ename
+    meta["og:description"] = desc
+    meta["twitter:description"] = desc
 
     images = entity.get("images")
     if isinstance(images, list):
