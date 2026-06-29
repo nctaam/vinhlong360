@@ -1211,6 +1211,61 @@ async def delete_collection(collection_id: str):
     return await asyncio.to_thread(_query)
 
 
+# ── Review responses (U-11) ──
+
+
+class ReviewResponseBody(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
+@router.post("/posts/{post_id}/response")
+async def admin_review_response(post_id: str, body: ReviewResponseBody, request: Request):
+    """Admin/business reply to a review — one response per review (UNIQUE)."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    user = request.state.user if hasattr(request.state, "user") else None
+    responder_id = str(user["id"]) if user else None
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT post_type FROM posts WHERE id::text = {ph}", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            if db._row_to_dict(post).get("post_type") != "review":
+                raise HTTPException(400, "Chỉ phản hồi cho bài đánh giá (review)")
+            existing = db._fetchone(conn, f"SELECT id FROM review_responses WHERE post_id::text = {ph}", (post_id,))
+            if existing:
+                raise HTTPException(409, "Bài đánh giá đã có phản hồi")
+            db._execute(conn, f"""
+                INSERT INTO review_responses (post_id, responder_id, content)
+                VALUES ({ph}::uuid, {ph}::uuid, {ph})
+            """, (post_id, responder_id, body.content))
+            row = db._fetchone(conn, f"SELECT * FROM review_responses WHERE post_id::text = {ph}", (post_id,))
+        return db._row_to_dict(row) if row else {"ok": True}
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/posts/{post_id}/response")
+async def get_review_response(post_id: str):
+    """Get the admin response for a review post."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT rr.*, u.display_name as responder_name
+                FROM review_responses rr
+                JOIN users u ON u.id = rr.responder_id
+                WHERE rr.post_id::text = {ph}
+            """, (post_id,))
+        if not row:
+            return None
+        return db._row_to_dict(row)
+    result = await asyncio.to_thread(_query)
+    if not result:
+        return JSONResponse(status_code=404, content={"error": "no_response"})
+    return result
+
+
 class BulkDeleteRequest(BaseModel):
     entity_ids: list[str] = Field(..., min_length=1, max_length=200)
 
