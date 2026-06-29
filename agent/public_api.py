@@ -236,6 +236,7 @@ def _to_minimal(entity: dict) -> dict:
 
 @router.get("/entities")
 async def list_entities(
+    response: Response,
     type: Optional[str] = Query(None, max_length=100),
     area: Optional[str] = Query(None, max_length=50),
     q: Optional[str] = Query(None, max_length=200),
@@ -245,6 +246,7 @@ async def list_entities(
     limit: int = Query(50, ge=1, le=1000),
     offset: int = Query(0, ge=0, le=10000),
 ):
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     entity_types: list[str] | None = None
     single_type = type
     if type and "," in type:
@@ -269,11 +271,13 @@ async def list_entities(
 @router.get("/entities/{entity_id}/relationships")
 async def get_entity_relationships(
     entity_id: str,
+    response: Response,
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0, le=10000),
     type: Optional[str] = Query(None, max_length=50),
     include_near: bool = True,
 ):
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     validate_path_id(entity_id, "entity_id")
     def _query():
         e = db.get_entity(entity_id)
@@ -292,7 +296,8 @@ async def get_entity_relationships(
 
 
 @router.get("/featured")
-async def get_featured_entities():
+async def get_featured_entities(response: Response):
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     def _query():
         if not db._use_pg:
             return {"featured": []}
@@ -322,7 +327,8 @@ async def get_featured_entities():
 
 
 @router.get("/entity-types")
-async def entity_types():
+async def entity_types(response: Response):
+    response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
         all_ents = db.list_entities(limit=10000, offset=0, public_only=True)
         counts: dict[str, int] = {}
@@ -335,7 +341,8 @@ async def entity_types():
 
 
 @router.get("/areas")
-async def list_areas():
+async def list_areas(response: Response):
+    response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
         places = db.list_entities(entity_type="place", limit=1000, offset=0, public_only=True)
         areas: dict[str, list] = {}
@@ -599,8 +606,9 @@ async def list_places(response: Response, area: Optional[str] = Query(None, max_
 
 
 @router.get("/facilities")
-async def list_facilities(place: Optional[str] = Query(None, max_length=100)):
+async def list_facilities(response: Response, place: Optional[str] = Query(None, max_length=100)):
     """GĐ13.4: danh bạ hành chính — cơ quan công vụ (UBND/công an/...) theo xã/phường."""
+    response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     facilities = await asyncio.to_thread(db.facilities_by_place, place)
     return {"facilities": facilities}
 
@@ -614,7 +622,7 @@ _WARD_GROUPS = {
 
 
 @router.get("/places/{place_id}/overview")
-async def place_overview(place_id: str):
+async def place_overview(place_id: str, response: Response):
     """Trang hub 1 xã/phường: danh bạ hành chính + du lịch + lưu trú + sản phẩm.
 
     Gom theo placeId trong 1 lượt gọi. facilities rỗng đến khi có dữ liệu thật (Track-H 13.6).
@@ -651,6 +659,7 @@ async def place_overview(place_id: str):
     result = await asyncio.to_thread(_query)
     if not result:
         return JSONResponse(status_code=404, content={"error": "not_found", "detail": "Không phải xã/phường"})
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=60"
     return result
 
 
@@ -679,7 +688,7 @@ def _haversine_km(a: list | None, b: list | None) -> float:
 
 
 @router.get("/places/{place_id}/day-plan")
-async def place_day_plan(place_id: str):
+async def place_day_plan(place_id: str, response: Response):
     """Gợi ý lịch trình 1 ngày cho xã/phường — đa dạng loại hình, sắp theo khoảng cách."""
     validate_path_id(place_id, "place_id")
 
@@ -724,20 +733,24 @@ async def place_day_plan(place_id: str):
     result = await asyncio.to_thread(_query)
     if not result:
         return JSONResponse(status_code=404, content={"error": "not_found", "detail": "Không phải xã/phường"})
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=60"
     return result
 
 
 @router.get("/itineraries")
 async def list_itineraries(
+    response: Response,
     area: Optional[str] = Query(None, max_length=100),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0, le=10000),
 ):
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     return await asyncio.to_thread(db.list_itineraries, area=area, limit=limit, offset=offset)
 
 
 @router.get("/itineraries/{itin_id}")
-async def get_itinerary(itin_id: str):
+async def get_itinerary(itin_id: str, response: Response):
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     validate_path_id(itin_id, "itin_id")
     def _query():
         it = db.get_itinerary(itin_id)
@@ -764,6 +777,7 @@ async def get_itinerary(itin_id: str):
 @router.get("/search")
 async def search(
     request: Request,
+    response: Response,
     q: str = Query(..., min_length=1, max_length=200),
     type: Optional[str] = Query(None, max_length=50),
     area: Optional[str] = Query(None, max_length=100),
@@ -776,6 +790,7 @@ async def search(
     total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q)
     safe_q = re.sub(r"<[^>]+>", "", q)
     _log_search_query(safe_q, type, area, total)
+    response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=10"
     return {"q": safe_q, "total": total, "results": results}
 
 
@@ -804,6 +819,7 @@ async def autocomplete(
 @router.get("/me/activity")
 async def user_activity(
     request: Request,
+    response: Response,
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
     user=Depends(require_user),
@@ -849,11 +865,13 @@ async def user_activity(
         lk["post_id"] = str(lk["post_id"])
         lk["type"] = "like"
     items = sorted(posts + comments + likes, key=lambda x: str(x.get("created_at", "")), reverse=True)[:limit]
+    response.headers["Cache-Control"] = "private, max-age=30"
     return {"activity": items, "page": page, "has_more": len(items) == limit}
 
 
 @router.get("/stats")
-async def public_stats():
+async def public_stats(response: Response):
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     return db.stats()
 
 
@@ -1633,10 +1651,12 @@ async def get_similar_entities(
 @router.get("/entities/{entity_id}/nearby")
 async def get_nearby_entities(
     entity_id: str,
+    response: Response,
     limit: int = Query(10, ge=1, le=30),
     radius_km: float = Query(10.0, ge=0.5, le=50.0),
     type: str = Query(None, max_length=50),
 ):
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     validate_path_id(entity_id, "entity_id")
     entity = await asyncio.to_thread(db.get_entity, entity_id)
     if not entity:
@@ -1849,6 +1869,7 @@ async def submit_entity_claim(entity_id: str, payload: EntityClaimIn, request: R
 
 @router.get("/feed/new-since")
 async def feed_new_since(
+    response: Response,
     since: str = Query(..., min_length=10, max_length=30),
     limit: int = Query(50, ge=1, le=100),
 ):
@@ -1900,14 +1921,17 @@ async def feed_new_since(
             "counts": {"entities": len(new_entities), "posts": len(new_posts)},
             "since": since,
         }
-    return await asyncio.to_thread(_query)
+    result = await asyncio.to_thread(_query)
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=30"
+    return result
 
 
 # ── Collections (U-28, public read-only) ──────────────────────────────
 
 
 @router.get("/collections")
-async def list_public_collections(limit: int = Query(20, ge=1, le=100)):
+async def list_public_collections(response: Response, limit: int = Query(20, ge=1, le=100)):
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Published collections — sorted by sort_order."""
     ph = db._ph
     def _query():
@@ -1924,7 +1948,8 @@ async def list_public_collections(limit: int = Query(20, ge=1, le=100)):
 
 
 @router.get("/collections/{slug}")
-async def get_collection_by_slug(slug: str):
+async def get_collection_by_slug(slug: str, response: Response):
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Public collection detail by slug — resolve entity_ids to summaries."""
     validate_path_id(slug, "slug")
     ph = db._ph
@@ -1951,8 +1976,9 @@ async def get_collection_by_slug(slug: str):
 # ── Public Announcements ─────────────────────────────────────────────────
 
 @router.get("/announcements")
-async def list_active_announcements(limit: int = Query(10, ge=1, le=50)):
+async def list_active_announcements(response: Response, limit: int = Query(10, ge=1, le=50)):
     """Active announcements for display to users."""
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     _require_pg()
     ph = db._ph
 
@@ -1977,6 +2003,7 @@ async def list_active_announcements(limit: int = Query(10, ge=1, le=50)):
 
 @router.get("/entities/map")
 async def entities_map_search(
+    response: Response,
     north: float = Query(..., ge=-90, le=90),
     south: float = Query(..., ge=-90, le=90),
     east: float = Query(..., ge=-180, le=180),
@@ -1985,6 +2012,7 @@ async def entities_map_search(
     limit: int = Query(100, ge=1, le=500),
 ):
     """Entities within a bounding box for map display."""
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     if north <= south:
         raise HTTPException(400, "Giá trị north phải lớn hơn south")
     entities = db.list_entities()
@@ -2077,7 +2105,7 @@ async def entities_trending(
 # ── User Engagement Stats ────────────────────────────────────────────────
 
 @router.get("/users/{user_id}/engagement")
-async def user_engagement_stats(user_id: str):
+async def user_engagement_stats(user_id: str, response: Response):
     """Lightweight engagement stats for a user profile card."""
     validate_path_id(user_id, "user_id")
     _require_pg()
@@ -2117,7 +2145,9 @@ async def user_engagement_stats(user_id: str):
             "total_likes_received": db._row_to_dict(likes)["total_likes"] if likes else 0,
         }
 
-    return await asyncio.to_thread(_query)
+    result = await asyncio.to_thread(_query)
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=30"
+    return result
 
 
 # ── Entity comparison ─────────────────────────────────────────────────
@@ -2129,6 +2159,7 @@ async def compare_entities(
     ids: str = Query(..., min_length=1, max_length=500),
 ):
     """Side-by-side entity comparison. Pass comma-separated IDs (max 5)."""
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     from ratelimit import check_rate
     check_rate(f"compare:{get_client_ip(request)}", 20, 60,
                "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
@@ -2271,8 +2302,9 @@ async def entity_search(
 # ── ND 147/2024 Compliance & Transparency ──────────────────────────────
 
 @router.get("/transparency")
-async def transparency_report():
+async def transparency_report(response: Response):
     """ND 147/2024 transparency: moderation policy, contact, takedown SLA."""
+    response.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=172800"
     return {
         "platform": "VinhLong360",
         "legal_entity": "Cá nhân vận hành — vinhlong360.vn",

@@ -1090,3 +1090,27 @@ class TestToggleRowcountGuard:
     def test_rsvp_checks_insert_rowcount(self):
         src = inspect.getsource(__import__("notifications").toggle_rsvp)
         assert "rowcount" in src
+
+
+# ── Cache-Control on public endpoints ──
+
+
+class TestCacheControlCoverage:
+    """All public GET endpoints in public_api.py should set Cache-Control."""
+
+    _NO_CACHE_ENDPOINTS: set = set()
+
+    def test_public_get_endpoints_have_cache_control(self):
+        import public_api
+        import fastapi
+        for route in public_api.router.routes:
+            if not isinstance(route, fastapi.routing.APIRoute):
+                continue
+            if "GET" not in route.methods:
+                continue
+            fn = route.endpoint
+            name = fn.__name__
+            if name in self._NO_CACHE_ENDPOINTS:
+                continue
+            src = inspect.getsource(fn)
+            assert "Cache-Control" in src, f"{name} missing Cache-Control header"
