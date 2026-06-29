@@ -14,7 +14,7 @@
   border: .5px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xs);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out);
+  transition: var(--transition-card);
   color: var(--ink);
 }
 .event-row:hover {

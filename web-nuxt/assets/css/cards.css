@@ -9,7 +9,7 @@
 @container (min-width: 481px) and (max-width: 720px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
-.card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); display: flex; flex-direction: column; }
+.card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition-card); display: flex; flex-direction: column; }
 .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--border); will-change: transform; }
 .card:active { transform: translateY(-1px) scale(.97); transition-duration: .1s; }
 .card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; transform: translateY(-6px); }
@@ -133,7 +133,7 @@
 @container (max-width: 600px) {
   .region-grid { grid-template-columns: 1fr; }
 }
-.region-card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); display: flex; flex-direction: column; }
+.region-card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition-card); display: flex; flex-direction: column; }
 .region-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--border); will-change: transform; }
 .region-card:active { transform: translateY(0) scale(.97); transition-duration: .1s; }
 .region-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
