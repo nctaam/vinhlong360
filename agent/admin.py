@@ -758,6 +758,89 @@ async def data_quality_rollback(batch_id: str):
         return result
     return await asyncio.to_thread(_query)
 
+# ── Stale content queue (U-17) ──
+
+_STALE_QUEUE_MISSING_FIELDS = {"source", "images", "coordinates", "phone", "summary"}
+_STALE_THRESHOLD_DEFAULT = 180
+
+
+@router.get("/stale-queue")
+async def stale_queue(
+    threshold_days: int = Query(_STALE_THRESHOLD_DEFAULT, ge=30, le=730),
+    missing_field: Optional[str] = Query(None, pattern="^(source|images|coordinates|phone|summary)$"),
+    entity_type: Optional[str] = Query(None, max_length=50),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    """Danh sách entity cũ/thiếu thông tin — admin review queue."""
+    def _query():
+        now = datetime.now(timezone.utc)
+        cutoff = now - timedelta(days=threshold_days)
+        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        results = []
+        for eid, e in entities.items():
+            if e.get("type") == "place":
+                continue
+            if entity_type and e.get("type") != entity_type:
+                continue
+            updated = e.get("updatedAt") or e.get("created_at")
+            days_since = None
+            if updated:
+                try:
+                    dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
+                    days_since = (now - dt).days
+                except (ValueError, TypeError):
+                    days_since = 9999
+            else:
+                days_since = 9999
+            is_stale = days_since >= threshold_days
+            attrs = e.get("attributes") or {}
+            missing = []
+            if not e.get("source"):
+                missing.append("source")
+            if not e.get("images"):
+                missing.append("images")
+            if not e.get("coordinates"):
+                missing.append("coordinates")
+            if not attrs.get("phone"):
+                missing.append("phone")
+            if not e.get("summary"):
+                missing.append("summary")
+            if missing_field and missing_field not in missing:
+                continue
+            if not is_stale and not missing:
+                continue
+            results.append({
+                "id": eid,
+                "name": e.get("name"),
+                "type": e.get("type"),
+                "area": e.get("area"),
+                "days_since_update": days_since,
+                "is_stale": is_stale,
+                "missing_fields": missing,
+                "stale_reviewed_at": attrs.get("stale_reviewed_at"),
+            })
+        results.sort(key=lambda x: -(x["days_since_update"] or 0))
+        total = len(results)
+        return {"items": results[offset:offset + limit], "total": total}
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/stale-queue/{entity_id}/mark-reviewed")
+async def stale_mark_reviewed(entity_id: str):
+    """Đánh dấu entity đã được admin xem xét — ghi timestamp vào attributes."""
+    validate_path_id(entity_id, "entity_id")
+    def _query():
+        e = db.get_entity(entity_id)
+        if not e:
+            raise HTTPException(404, detail="Entity not found")
+        attrs = e.get("attributes") or {}
+        attrs["stale_reviewed_at"] = datetime.now(timezone.utc).isoformat()
+        db.update_entity(entity_id, {"attributes": attrs})
+        return {"ok": True, "entity_id": entity_id, "stale_reviewed_at": attrs["stale_reviewed_at"]}
+    return await asyncio.to_thread(_query)
+
+
 class BulkDeleteRequest(BaseModel):
     entity_ids: list[str] = Field(..., min_length=1, max_length=200)
 
