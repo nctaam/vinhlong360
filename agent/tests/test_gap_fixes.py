@@ -2250,6 +2250,11 @@ class TestAdminAuditLogging:
         fn = self._get_fn("add_moderation_note")
         assert '_log_mod_action("post"' in fn
 
+    def test_reject_appeal_records_reviewer_id(self):
+        """reject_appeal must record reviewer_id like approve_appeal does."""
+        fn = self._get_fn("reject_appeal")
+        assert "reviewer_id" in fn
+
 
 class TestSchedulerReliability:
     """Scheduler hardening: bounded queries, thread safety, observability."""
@@ -2295,3 +2300,20 @@ class TestGuardrailsInputBounds:
         idx = src.index("def check_input(")
         fn = src[idx:idx+500]
         assert "_MAX_INPUT_LEN" in fn or "MAX_INPUT" in fn
+
+
+class TestCommentCountSync:
+    """comment_count on posts must be updated when comments are created/deleted."""
+
+    def test_create_comment_increments_count(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def create_comment(")
+        fn = src[idx:idx+3000]
+        assert "comment_count = comment_count + 1" in fn
+
+    def test_delete_comment_decrements_count(self):
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def delete_comment(")
+        fn = src[idx:idx+1500]
+        assert "comment_count" in fn
+        assert "GREATEST" in fn

@@ -1982,6 +1982,9 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
             """, (post_id, str(user["id"]),
                   body.parent_id if body.parent_id else None,
                   body.content, status, json.dumps(mentions, ensure_ascii=False)))
+            db._execute(conn, f"""
+                UPDATE posts SET comment_count = comment_count + 1 WHERE id::text = {ph}
+            """, (post_id,))
             post_owner = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
             parent_author = None
             if body.parent_id:
@@ -2095,8 +2098,13 @@ async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depe
             if str(rd["user_id"]) != uid and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
             db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'comment' AND ref_id = {ph}", (comment_id,))
+            child_count = db._fetchone(conn, f"SELECT COUNT(*) as c FROM comments WHERE parent_id::text = {ph}", (comment_id,))
+            children = int(db._row_to_dict(child_count)["c"]) if child_count else 0
             db._execute(conn, f"DELETE FROM comments WHERE parent_id::text = {ph}", (comment_id,))
             db._execute(conn, f"DELETE FROM comments WHERE id::text = {ph}", (comment_id,))
+            db._execute(conn, f"""
+                UPDATE posts SET comment_count = GREATEST(comment_count - {ph}::int, 0) WHERE id::text = {ph}
+            """, (1 + children, str(rd["post_id"])))
     await asyncio.to_thread(_query)
     return {"success": True}
 
