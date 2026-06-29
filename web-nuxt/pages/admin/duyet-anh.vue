@@ -337,6 +337,7 @@ onMounted(() => fetchQueue())
 .img-reject-btns .btn-danger { flex: 1; }
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
+.btn-ghost-sm:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
 .img-load-more { margin-top: var(--space-5); }
 

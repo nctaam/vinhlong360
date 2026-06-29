@@ -204,6 +204,7 @@ onMounted(fetchMedia)
   transition: background .2s, color .2s;
 }
 .media-tab:hover { border-color: var(--primary); color: var(--ink); }
+.media-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .media-tab.active { background: var(--primary, #219653); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 
 .media-grid {
@@ -216,6 +217,7 @@ onMounted(fetchMedia)
   padding: 0; font: inherit; text-align: left; color: inherit;
 }
 .media-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.media-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .media-img-wrap { position: relative; aspect-ratio: 4/3; background: var(--bg-alt); overflow: hidden; }
 .media-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
 .media-dup-badge {
@@ -237,6 +239,8 @@ onMounted(fetchMedia)
 .media-preview-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
 
 .stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
+.dark .media-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+.dark .media-tab { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 @media (max-width: 640px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .media-card:hover { transform: none; } .media-skeleton-img, .media-skeleton-line { animation: none; } }
 </style>
