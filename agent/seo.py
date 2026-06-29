@@ -27,6 +27,7 @@ router = APIRouter()
 
 DATA_PATH = Path(__file__).parent.parent / "web" / "data.json"
 SITE = "https://vinhlong360.vn"
+AGGREGATE_RATING_MIN_COUNT = 3
 
 AREA_NAMES = {
     "vinh-long": "Vĩnh Long",
@@ -610,7 +611,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         try:
             rv = float(avg_rating)
             rc = int(rating_count)
-            if 1.0 <= rv <= 5.0 and rc > 0:
+            if 1.0 <= rv <= 5.0 and rc >= AGGREGATE_RATING_MIN_COUNT:
                 ld["aggregateRating"] = {
                     "@type": "AggregateRating",
                     "ratingValue": round(rv, 1),
@@ -659,14 +660,15 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     rating_val = attrs.get("rating")
     review_count = attrs.get("review_count")
     if isinstance(rating_val, (int, float)) and 0 < rating_val <= 5:
-        agg: dict[str, Any] = {
-            "@type": "AggregateRating",
-            "ratingValue": round(float(rating_val), 1),
-            "bestRating": 5,
-        }
-        if isinstance(review_count, int) and review_count > 0:
-            agg["reviewCount"] = review_count
-        ld["aggregateRating"] = agg
+        rc_attr = int(review_count) if isinstance(review_count, int) and review_count > 0 else 0
+        if rc_attr >= AGGREGATE_RATING_MIN_COUNT:
+            agg: dict[str, Any] = {
+                "@type": "AggregateRating",
+                "ratingValue": round(float(rating_val), 1),
+                "bestRating": 5,
+                "reviewCount": rc_attr,
+            }
+            ld["aggregateRating"] = agg
 
     kw_parts: list[str] = []
     entity_name = entity.get("name")

@@ -1982,15 +1982,25 @@ def test_entity_jsonld_aggregate_rating():
     assert agg["reviewCount"] == 120
 
 
-def test_entity_jsonld_aggregate_rating_without_review_count():
+def test_entity_jsonld_no_aggregate_rating_below_min_count():
     entity = {
         "id": "rated-no-cnt", "name": "Rated", "type": "restaurant",
-        "attributes": {"rating": 3.8},
+        "attributes": {"rating": 3.8, "review_count": 2},
     }
     ld = seo.build_entity_jsonld(entity, {})
+    assert "aggregateRating" not in ld
+
+
+def test_entity_jsonld_aggregate_rating_at_min_count():
+    entity = {
+        "id": "rated-min", "name": "Rated", "type": "restaurant",
+        "attributes": {"rating": 3.8, "review_count": 3},
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    assert "aggregateRating" in ld
     agg = ld["aggregateRating"]
     assert agg["ratingValue"] == 3.8
-    assert "reviewCount" not in agg
+    assert agg["reviewCount"] == 3
 
 
 def test_entity_jsonld_no_aggregate_rating_when_zero():

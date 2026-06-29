@@ -147,3 +147,65 @@ class TestWardDayPlan:
         src = inspect.getsource(__import__("public_api").place_day_plan)
         assert '"type") != "place"' in src
         assert "404" in src
+
+
+# ── U-12: AggregateRating schema gating ─────────────────────────────
+
+class TestAggregateRatingGating:
+
+    def test_min_count_constant_defined(self):
+        from seo import AGGREGATE_RATING_MIN_COUNT
+        assert AGGREGATE_RATING_MIN_COUNT == 3
+
+    def test_rating_count_below_min_omits_schema(self):
+        import seo
+        entity = {
+            "id": "low-cnt", "name": "Low", "type": "attraction",
+            "avg_rating": 4.5, "rating_count": 2,
+        }
+        ld = seo.build_entity_jsonld(entity, {})
+        assert "aggregateRating" not in ld
+
+    def test_rating_count_at_min_emits_schema(self):
+        import seo
+        entity = {
+            "id": "exact-cnt", "name": "Exact", "type": "attraction",
+            "avg_rating": 4.0, "rating_count": 3,
+        }
+        ld = seo.build_entity_jsonld(entity, {})
+        assert "aggregateRating" in ld
+        assert ld["aggregateRating"]["ratingCount"] == 3
+
+    def test_rating_count_above_min_emits_schema(self):
+        import seo
+        entity = {
+            "id": "high-cnt", "name": "High", "type": "attraction",
+            "avg_rating": 4.8, "rating_count": 50,
+        }
+        ld = seo.build_entity_jsonld(entity, {})
+        assert "aggregateRating" in ld
+        assert ld["aggregateRating"]["ratingValue"] == 4.8
+        assert ld["aggregateRating"]["ratingCount"] == 50
+
+    def test_attrs_rating_below_min_omits(self):
+        import seo
+        entity = {
+            "id": "attr-low", "name": "Low", "type": "restaurant",
+            "attributes": {"rating": 4.0, "review_count": 1},
+        }
+        ld = seo.build_entity_jsonld(entity, {})
+        assert "aggregateRating" not in ld
+
+    def test_attrs_rating_at_min_emits(self):
+        import seo
+        entity = {
+            "id": "attr-ok", "name": "OK", "type": "restaurant",
+            "attributes": {"rating": 4.2, "review_count": 5},
+        }
+        ld = seo.build_entity_jsonld(entity, {})
+        assert "aggregateRating" in ld
+        assert ld["aggregateRating"]["ratingValue"] == 4.2
+
+    def test_gating_uses_constant_in_source(self):
+        src = inspect.getsource(__import__("seo").build_entity_jsonld)
+        assert "AGGREGATE_RATING_MIN_COUNT" in src
