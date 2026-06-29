@@ -1757,3 +1757,31 @@ class TestMentionSearchAsync:
         idx = src.index("async def mention_search(")
         fn_src = src[idx:idx+1000]
         assert "asyncio.to_thread" in fn_src
+
+
+class TestRateLimitThreadSafety:
+    """Rate limit operations are protected by a lock."""
+
+    def test_rl_lock_exists(self):
+        import ratelimit
+        assert hasattr(ratelimit, "_rl_lock")
+        import threading
+        assert isinstance(ratelimit._rl_lock, type(threading.Lock()))
+
+    def test_check_rate_uses_lock(self):
+        src = (AGENT_DIR / "ratelimit.py").read_text(encoding="utf-8")
+        idx = src.index("def check_rate(")
+        fn_src = src[idx:idx+600]
+        assert "_rl_lock" in fn_src
+
+    def test_global_ip_budget_uses_lock(self):
+        src = (AGENT_DIR / "ratelimit.py").read_text(encoding="utf-8")
+        idx = src.index("def check_global_ip_budget(")
+        fn_src = src[idx:idx+600]
+        assert "_rl_lock" in fn_src
+
+    def test_token_bucket_uses_lock(self):
+        src = (AGENT_DIR / "ratelimit.py").read_text(encoding="utf-8")
+        idx = src.index("def check_rate_token_bucket(")
+        fn_src = src[idx:idx+600]
+        assert "_rl_lock" in fn_src

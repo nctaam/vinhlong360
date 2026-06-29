@@ -1310,7 +1310,7 @@ class TestDeepScanBatch3:
         src = (Path(__file__).resolve().parent.parent / "ratelimit.py").read_text(encoding="utf-8")
         idx = src.find("def is_in_penalty_box(")
         assert idx > 0
-        block = src[idx:idx+250]
+        block = src[idx:idx+400]
         assert "_penalty_box.get(" in block, "Must use .get() not [] to avoid race condition KeyError"
         assert "_penalty_box.pop(" in block, "Must use .pop() not del for thread-safe removal"
         assert "del _penalty_box[" not in block, "del _penalty_box[] is not thread-safe"
