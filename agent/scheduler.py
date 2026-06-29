@@ -646,6 +646,59 @@ def task_notification_cleanup():
         _sched_logger.error("Notification cleanup error: %s", e)
 
 
+def task_event_reminders():
+    """Send reminder notifications to users who RSVP'd to events happening within 24h."""
+    try:
+        import database as db_mod
+        if not db_mod._use_pg:
+            return
+        from notifications import create_notification
+        import knowledge as kb
+        with db_mod._conn() as conn:
+            rsvps = db_mod._fetchall(conn, """
+                SELECT er.user_id, er.entity_id
+                FROM event_rsvp er
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM notifications n
+                    WHERE n.user_id = er.user_id
+                    AND n.ref_type = 'event_reminder'
+                    AND n.ref_id = er.entity_id
+                    AND n.created_at > NOW() - INTERVAL '12 hours'
+                )
+            """, ())
+        if not rsvps:
+            return
+        entities = kb._entities if hasattr(kb, "_entities") else {}
+        from datetime import datetime, timezone, timedelta
+        now = datetime.now(timezone.utc)
+        cutoff = now + timedelta(hours=24)
+        sent = 0
+        for row in rsvps:
+            r = db_mod._row_to_dict(row)
+            entity = entities.get(r["entity_id"], {})
+            event_date_str = (entity.get("attributes") or {}).get("event_date")
+            if not event_date_str:
+                continue
+            try:
+                event_dt = datetime.fromisoformat(str(event_date_str).replace("Z", "+00:00"))
+            except (ValueError, TypeError):
+                continue
+            if not (now <= event_dt <= cutoff):
+                continue
+            try:
+                create_notification(
+                    str(r["user_id"]), "event_reminder",
+                    f"Sự kiện sắp diễn ra: {entity.get('name', '')}",
+                    ref_type="event_reminder", ref_id=r["entity_id"])
+                sent += 1
+            except Exception:
+                _sched_logger.exception("Failed to send event reminder for %s", r["entity_id"])
+        if sent:
+            _sched_logger.info("Event reminders: sent %d", sent)
+    except Exception as e:
+        _sched_logger.error("Event reminders error: %s", e)
+
+
 def task_session_cleanup():
     """Purge expired user_sessions, otp_sessions, and sessions of deleted users."""
     try:
@@ -720,6 +773,7 @@ TASKS = [
     ScheduledTask("guardrails-cleanup",task_guardrails_cleanup,   interval_seconds=12 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("session-cleanup", task_session_cleanup,       interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("notification-cleanup", task_notification_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
+    ScheduledTask("event-reminders",    task_event_reminders,      interval_seconds=6 * 3600, run_immediately=False),  # 6h
     ScheduledTask("ratelimit-gc",  task_ratelimit_gc,          interval_seconds=300),        # 5min
     ScheduledTask("moderation-escalation", task_moderation_auto_escalation, interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("learning-loop",    task_learning_loop,         interval_seconds=LEARNING_LOOP_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 1h (env)

@@ -80,3 +80,40 @@ class TestCollections:
         src = inspect.getsource(__import__("admin").create_collection)
         assert "409" in src
         assert "slug" in src.lower()
+
+
+# ── U-26: Event RSVP reminders ──────────────────────────────────────
+
+class TestEventReminders:
+
+    def test_task_exists(self):
+        from scheduler import task_event_reminders
+        assert callable(task_event_reminders)
+
+    def test_task_registered(self):
+        from scheduler import TASKS
+        names = [t.name for t in TASKS]
+        assert "event-reminders" in names
+
+    def test_task_queries_event_rsvp(self):
+        src = inspect.getsource(__import__("scheduler").task_event_reminders)
+        assert "event_rsvp" in src
+
+    def test_task_checks_event_date(self):
+        src = inspect.getsource(__import__("scheduler").task_event_reminders)
+        assert "event_date" in src
+        assert "timedelta(hours=24)" in src
+
+    def test_task_dedup_12h_window(self):
+        src = inspect.getsource(__import__("scheduler").task_event_reminders)
+        assert "12 hours" in src
+        assert "NOT EXISTS" in src
+
+    def test_task_creates_notification(self):
+        src = inspect.getsource(__import__("scheduler").task_event_reminders)
+        assert "create_notification" in src
+        assert "event_reminder" in src
+
+    def test_task_requires_pg(self):
+        src = inspect.getsource(__import__("scheduler").task_event_reminders)
+        assert "_use_pg" in src
