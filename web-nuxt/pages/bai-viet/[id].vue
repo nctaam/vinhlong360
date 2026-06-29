@@ -169,7 +169,7 @@ const route = useRoute()
 const postId = computed(() => route.params.id as string)
 const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
-const { confirmDialog } = useConfirm()
+
 const { repost, quote } = useRepost()
 
 // Linkify @-mention + #hashtag trong bình luận (content escape trước → an toàn v-html)
@@ -227,17 +227,8 @@ async function setBestAnswer(commentId: string) {
     showToast('Không thể chọn, thử lại', 'error')
   }
 }
-async function deletePost() {
-  const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
-  if (!ok) return
-  try {
-    await $fetch(`/api/posts/${postId.value}`, { method: 'DELETE', headers: authHeaders() })
-    showToast('Đã xoá bài viết', 'success')
-    navigateTo('/cong-dong')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể xoá bài viết', 'error')
-  }
+function deletePost() {
+  _delete(postId.value, () => navigateTo('/cong-dong'))
 }
 
 const composeRef = ref<HTMLElement>()
@@ -360,36 +351,13 @@ async function submitComment() {
   submitting.value = false
 }
 
-const pendingActions = reactive(new Set<string>())
+const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
 
-async function toggleLike(id: string) {
-  if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
-  if (!post.value || pendingActions.has('like')) return
-  pendingActions.add('like')
-  post.value.user_liked = !post.value.user_liked
-  post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
-  try {
-    await $fetch(`/api/posts/${id}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    post.value.user_liked = !post.value.user_liked
-    post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể thích bài viết', 'error')
-  } finally { pendingActions.delete('like') }
+function toggleLike(id: string) {
+  if (post.value) _like(id, post.value)
 }
-
-async function toggleBookmark(id: string) {
-  if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
-  if (!post.value || pendingActions.has('bookmark')) return
-  pendingActions.add('bookmark')
-  post.value.user_bookmarked = !post.value.user_bookmarked
-  try {
-    await $fetch(`/api/posts/${id}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    post.value.user_bookmarked = !post.value.user_bookmarked
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể lưu bài viết', 'error')
-  } finally { pendingActions.delete('bookmark') }
+function toggleBookmark(id: string) {
+  if (post.value) _bookmark(id, post.value)
 }
 
 const { timeAgo } = useTimeAgo()

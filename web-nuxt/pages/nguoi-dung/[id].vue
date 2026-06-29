@@ -320,50 +320,18 @@ async function fetchPosts() {
   loading.value = false
 }
 
-const pendingActions = reactive(new Set<string>())
+const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
 
-async function toggleLike(postId: string) {
-  if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
-  if (pendingActions.has(`like:${postId}`)) return
-  pendingActions.add(`like:${postId}`)
-  const post = posts.value.find(p => p.id === postId)
-  if (!post) { pendingActions.delete(`like:${postId}`); return }
-  post.user_liked = !post.user_liked
-  post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
-  try {
-    await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    post.user_liked = !post.user_liked
-    post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể thích bài viết', 'error')
-  } finally { pendingActions.delete(`like:${postId}`) }
+function toggleLike(pid: string) {
+  const p = posts.value.find(x => x.id === pid)
+  if (p) _like(pid, p)
 }
-
-async function deletePost(postId: string) {
-  const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
-  if (!ok) return
-  try {
-    await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
-    posts.value = posts.value.filter(p => p.id !== postId)
-    showToast('Đã xoá bài viết', 'success')
-  } catch { showToast('Không thể xoá bài viết', 'error') }
+function toggleBookmark(pid: string) {
+  const p = posts.value.find(x => x.id === pid)
+  if (p) _bookmark(pid, p)
 }
-
-async function toggleBookmark(postId: string) {
-  if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
-  if (pendingActions.has(`bm:${postId}`)) return
-  pendingActions.add(`bm:${postId}`)
-  const post = posts.value.find(p => p.id === postId)
-  if (!post) { pendingActions.delete(`bm:${postId}`); return }
-  post.user_bookmarked = !post.user_bookmarked
-  try {
-    await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    post.user_bookmarked = !post.user_bookmarked
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể lưu bài viết', 'error')
-  } finally { pendingActions.delete(`bm:${postId}`) }
+function deletePost(pid: string) {
+  _delete(pid, () => { posts.value = posts.value.filter(x => x.id !== pid) })
 }
 
 

@@ -438,7 +438,6 @@ const MAX_CHARS = 500
 
 const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
-const { confirmDialog } = useConfirm()
 const { repost } = useRepost()
 function repostPost(postId: string) {
   repost(postId, () => { activeTab.value = 'latest'; fetchFeed(true) })
@@ -900,66 +899,22 @@ function _copies(postId: string) {
   return [...posts.value, ...bookmarks.value, ...searchResults.value].filter(p => p.id === postId)
 }
 
-const pendingActions = reactive(new Set<string>())
+const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
 
-async function toggleLike(postId: string) {
-  if (!isLoggedIn.value) {
-    showToast('Đăng nhập để thích bài viết', 'info')
-    return
-  }
-  if (pendingActions.has(`like:${postId}`)) return
-  pendingActions.add(`like:${postId}`)
-  const copies = _copies(postId)
-  const flip = () => copies.forEach(p => {
-    p.user_liked = !p.user_liked
-    p.likes = (p.likes || 0) + (p.user_liked ? 1 : -1)
+function toggleLike(postId: string) {
+  _like(postId, _copies(postId))
+}
+function toggleBookmark(postId: string) {
+  _bookmark(postId, _copies(postId), () => {
+    if (!sessionBookmarked.value) sessionBookmarked.value = true
   })
-  flip()
-  try {
-    await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    flip()
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể thích bài viết', 'error')
-  } finally { pendingActions.delete(`like:${postId}`) }
 }
-
-async function toggleBookmark(postId: string) {
-  if (!isLoggedIn.value) {
-    showToast('Đăng nhập để lưu bài viết', 'info')
-    return
-  }
-  if (pendingActions.has(`bm:${postId}`)) return
-  pendingActions.add(`bm:${postId}`)
-  const copies = _copies(postId)
-  const wasBookmarked = copies[0]?.user_bookmarked
-  copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
-  try {
-    await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-    if (!wasBookmarked && copies[0]?.user_bookmarked) {
-      showToast('Đã lưu bài viết', 'success')
-      if (!sessionBookmarked.value) sessionBookmarked.value = true
-    }
-  } catch (e: unknown) {
-    copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể lưu bài viết', 'error')
-  } finally { pendingActions.delete(`bm:${postId}`) }
-}
-
-async function deletePost(postId: string) {
-  const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
-  if (!ok) return
-  try {
-    await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
+function deletePost(postId: string) {
+  _delete(postId, () => {
     posts.value = posts.value.filter(p => p.id !== postId)
     bookmarks.value = bookmarks.value.filter(p => p.id !== postId)
     searchResults.value = searchResults.value.filter(p => p.id !== postId)
-    showToast('Đã xoá bài viết', 'success')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể xoá bài viết', 'error')
-  }
+  })
 }
 
 function goToPost(postId: string) {
