@@ -734,7 +734,7 @@ def task_session_cleanup():
                 if old_logins:
                     _sched_logger.info("Session cleanup: purged %d old login_history entries", old_logins)
             except Exception:
-                _sched_logger.debug("login_history cleanup failed", exc_info=True)
+                _sched_logger.warning("login_history cleanup failed", exc_info=True)
             try:
                 deleted_ids = db._fetchall(conn, """
                     SELECT id FROM posts WHERE deleted_at IS NOT NULL

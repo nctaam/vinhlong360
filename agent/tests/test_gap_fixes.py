@@ -2302,6 +2302,23 @@ class TestGuardrailsInputBounds:
         assert "_MAX_INPUT_LEN" in fn or "MAX_INPUT" in fn
 
 
+class TestPasswordRehash:
+    """Legacy PBKDF2 passwords must be rehashed on login."""
+
+    def test_verify_password_return_legacy_flag(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("def _verify_password(")
+        fn = src[idx:idx+500]
+        assert "_return_legacy" in fn
+
+    def test_login_rehashes_legacy(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("async def login_password(")
+        fn = src[idx:idx+3000]
+        assert "is_legacy" in fn
+        assert "_rehash" in fn or "rehash" in fn
+
+
 class TestCommentCountSync:
     """comment_count on posts must be updated when comments are created/deleted."""
 

@@ -321,14 +321,15 @@ def _hash_password(password: str) -> str:
 _DUMMY_HASH = _hash_password("timing_safety_dummy")
 
 
-def _verify_password(password: str, stored: str) -> bool:
+def _verify_password(password: str, stored: str, *, _return_legacy=False):
     decoded = base64.b64decode(stored)
     salt, stored_key = decoded[:16], decoded[16:]
     key = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, _PBKDF2_ITERATIONS)
     if hmac.compare_digest(key, stored_key):
-        return True
+        return (True, False) if _return_legacy else True
     key_legacy = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 200_000)
-    return hmac.compare_digest(key_legacy, stored_key)
+    matched = hmac.compare_digest(key_legacy, stored_key)
+    return (matched, matched) if _return_legacy else matched
 
 
 _SMS_MAX_RETRIES = 3
@@ -575,12 +576,22 @@ async def login_password(body: PasswordLogin, request: Request):
         await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
         raise HTTPException(403, "Tài khoản đã bị vô hiệu hóa")
 
-    if not _verify_password(body.password, user["password_hash"]):
+    matched, is_legacy = _verify_password(body.password, user["password_hash"], _return_legacy=True)
+    if not matched:
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
         _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
         await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
+
+    if is_legacy:
+        new_hash = _hash_password(body.password)
+        def _rehash():
+            with db._conn() as conn:
+                db._execute(conn, f"UPDATE users SET password_hash = {db._ph} WHERE id::text = {db._ph}",
+                            (new_hash, str(user["id"])))
+        await asyncio.to_thread(_rehash)
+        logger.info("Rehashed legacy PBKDF2 password for user %s", user["id"])
 
     _login_phone_fails.pop(phone, None)
 
