@@ -591,3 +591,39 @@ class TestBlockedMutedPagination:
     def test_muted_users_count_query(self):
         src = inspect.getsource(__import__("notifications").list_muted_users)
         assert "COUNT(*)" in src
+
+
+class TestBlockEnforcementOnInteractions:
+    """Like, comment-like, and reaction check blocks before acting."""
+
+    def test_toggle_like_checks_blocks(self):
+        src = inspect.getsource(__import__("social").toggle_like)
+        assert "blocks" in src
+        assert "blocker_id" in src
+
+    def test_toggle_like_rejects_blocked(self):
+        src = inspect.getsource(__import__("social").toggle_like)
+        assert "Không thể thao tác với người dùng đã chặn" in src
+
+    def test_comment_like_checks_blocks(self):
+        src = inspect.getsource(__import__("social").toggle_comment_like)
+        assert "blocks" in src
+        assert "blocker_id" in src
+
+    def test_comment_like_rejects_blocked(self):
+        src = inspect.getsource(__import__("social").toggle_comment_like)
+        assert "Không thể thao tác với người dùng đã chặn" in src
+
+    def test_reaction_checks_blocks(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "blocks" in src
+        assert "blocker_id" in src
+
+    def test_reaction_rejects_blocked(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "Không thể thao tác với người dùng đã chặn" in src
+
+    def test_block_check_bidirectional(self):
+        src = inspect.getsource(__import__("social").toggle_like)
+        assert src.count("blocker_id") >= 2
+        assert src.count("blocked_id") >= 2

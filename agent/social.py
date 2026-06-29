@@ -2296,8 +2296,16 @@ async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(re
             if not row:
                 raise HTTPException(404, "Bài viết không tồn tại")
             rd = db._row_to_dict(row)
-            if str(rd["user_id"]) == uid:
+            post_owner_id = str(rd["user_id"])
+            if post_owner_id == uid:
                 raise HTTPException(400, "Không thể thích bài viết của chính mình")
+            blocked = db._fetchone(conn, f"""
+                SELECT 1 FROM blocks
+                WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                   OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+            """, (uid, post_owner_id, post_owner_id, uid))
+            if blocked:
+                raise HTTPException(403, "Không thể thao tác với người dùng đã chặn")
     await asyncio.to_thread(_check_self_like)
 
     def _query():
@@ -2375,8 +2383,16 @@ async def toggle_comment_like(comment_id: str, user=Depends(require_user), _csrf
             if not c:
                 raise HTTPException(404, "Bình luận không tồn tại")
             cd = db._row_to_dict(c)
-            if str(cd["user_id"]) == uid:
+            comment_owner = str(cd["user_id"])
+            if comment_owner == uid:
                 raise HTTPException(400, "Không thể thích bình luận của chính mình")
+            blocked = db._fetchone(conn, f"""
+                SELECT 1 FROM blocks
+                WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                   OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+            """, (uid, comment_owner, comment_owner, uid))
+            if blocked:
+                raise HTTPException(403, "Không thể thao tác với người dùng đã chặn")
             existing = db._fetchone(conn, f"""
                 SELECT 1 FROM comment_likes WHERE user_id = {ph}::uuid AND comment_id = {ph}::uuid
             """, (uid, comment_id))
@@ -2427,6 +2443,13 @@ async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_leng
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
             post_owner = str(db._row_to_dict(post)["user_id"])
+            blocked = db._fetchone(conn, f"""
+                SELECT 1 FROM blocks
+                WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                   OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+            """, (uid, post_owner, post_owner, uid))
+            if blocked:
+                raise HTTPException(403, "Không thể thao tác với người dùng đã chặn")
             existing = db._fetchone(conn, f"""
                 SELECT id FROM post_reactions
                 WHERE post_id = {ph}::uuid AND user_id = {ph}::uuid AND reaction_type = {ph}
