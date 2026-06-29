@@ -112,6 +112,32 @@ def _gc_rate_dict(d: dict, window: float) -> None:
             del d[k]
 
 
+def cleanup_expired_data() -> dict:
+    """Remove expired sessions, OTP records, and old login history. Call from scheduler."""
+    if not db._use_pg:
+        return {"skipped": True}
+    ph = db._ph
+    results = {}
+    try:
+        with db._conn() as conn:
+            r = db._execute(conn, "DELETE FROM user_sessions WHERE expires_at < NOW()", ())
+            results["expired_sessions"] = getattr(r, "rowcount", 0) if r else 0
+            r = db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
+            results["expired_otps"] = getattr(r, "rowcount", 0) if r else 0
+            r = db._execute(conn, f"""
+                DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'
+            """, ())
+            results["old_login_history"] = getattr(r, "rowcount", 0) if r else 0
+            r = db._execute(conn, f"""
+                DELETE FROM notifications WHERE read = TRUE AND created_at < NOW() - INTERVAL '60 days'
+            """, ())
+            results["old_read_notifications"] = getattr(r, "rowcount", 0) if r else 0
+    except Exception as e:
+        logger.warning("cleanup_expired_data error: %s", e)
+        results["error"] = str(e)
+    return results
+
+
 def _mask_phone(phone: str) -> str:
     if len(phone) <= 6:
         return phone[:2] + "***"

@@ -1759,6 +1759,47 @@ class TestMentionSearchAsync:
         assert "asyncio.to_thread" in fn_src
 
 
+class TestDataRetentionCleanup:
+    """Expired data cleanup function exists and covers key tables."""
+
+    def test_cleanup_function_exists(self):
+        from auth import cleanup_expired_data
+        assert callable(cleanup_expired_data)
+
+    def test_cleanup_covers_sessions(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("def cleanup_expired_data(")
+        fn_src = src[idx:idx+800]
+        assert "user_sessions" in fn_src
+        assert "expires_at < NOW()" in fn_src
+
+    def test_cleanup_covers_otps(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("def cleanup_expired_data(")
+        fn_src = src[idx:idx+800]
+        assert "otp_sessions" in fn_src
+
+    def test_cleanup_covers_login_history(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("def cleanup_expired_data(")
+        fn_src = src[idx:idx+800]
+        assert "login_history" in fn_src
+        assert "90 days" in fn_src
+
+    def test_cleanup_covers_notifications(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("def cleanup_expired_data(")
+        fn_src = src[idx:idx+1200]
+        assert "notifications" in fn_src
+        assert "60 days" in fn_src
+
+    def test_cleanup_returns_dict(self):
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("def cleanup_expired_data(")
+        fn_src = src[idx:idx+800]
+        assert "return results" in fn_src or "return {" in fn_src
+
+
 class TestRateLimitThreadSafety:
     """Rate limit operations are protected by a lock."""
 
