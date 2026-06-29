@@ -66,7 +66,7 @@
       <h2 class="admin-section-title">Cache</h2>
       <div class="ai-cache-row">
         <div class="ai-ring-wrap">
-          <svg class="ai-ring" viewBox="0 0 80 80">
+          <svg class="ai-ring" viewBox="0 0 80 80" aria-hidden="true">
             <circle cx="40" cy="40" r="32" fill="none" stroke="var(--line)" stroke-width="8" opacity=".15" />
             <circle cx="40" cy="40" r="32" fill="none"
               :stroke="hitRate >= 70 ? '#219653' : hitRate >= 40 ? '#e67e22' : '#D94F3D'"
