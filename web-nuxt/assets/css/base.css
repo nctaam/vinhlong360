@@ -896,6 +896,7 @@ a.thread-author:hover { color: var(--primary-fg); }
   .hero-inner { padding: var(--space-10) var(--space-4) calc(var(--space-10) + var(--space-1)); }
   .hero-search { flex-direction: column; }
   .hero-search button { padding: var(--space-3); }
+  .block { padding-top: var(--space-10); }
   .builder-title { min-width: auto; width: 100%; }
   .planner-picker { max-height: 300px; }
 }

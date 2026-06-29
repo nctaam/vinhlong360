@@ -14,11 +14,11 @@
     <Transition name="cs-fade">
       <div v-if="!loading" class="cs-form-wrap">
         <section class="cs-section">
-          <h3 class="cs-section-title">💬 Chat widget</h3>
+          <h2 class="cs-section-title">💬 Chat widget</h2>
           <AdminSettingsForm :category="'chat'" :fields="chatFields" @saved="reload" />
         </section>
         <section class="cs-section">
-          <h3 class="cs-section-title">✨ Gợi ý AI</h3>
+          <h2 class="cs-section-title">✨ Gợi ý AI</h2>
           <AdminSettingsForm :category="'ai'" :fields="aiFields" @saved="reload" />
         </section>
       </div>

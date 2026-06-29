@@ -17,7 +17,7 @@
     <Transition name="cs-fade">
       <div v-if="!loading" class="ff-wrap">
         <div v-for="group in groups" :key="group.name" class="ff-group">
-          <h3 class="ff-group-title">{{ group.name }}</h3>
+          <h2 class="ff-group-title">{{ group.name }}</h2>
           <label v-for="flag in group.items" :key="flag.key" class="ff-row">
             <div class="ff-info">
               <span class="ff-label">{{ flag.label }}</span>

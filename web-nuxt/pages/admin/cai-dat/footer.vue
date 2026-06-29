@@ -17,7 +17,7 @@
         <AdminSettingsForm :category="'footer'" :fields="textFields" @saved="reload" />
 
         <div class="cs-section" v-if="footerColumns.length || !loading">
-          <h3 class="cs-section-title">Cột footer</h3>
+          <h2 class="cs-section-title">Cột footer</h2>
           <p class="cs-hint">Mỗi cột có tiêu đề và danh sách liên kết. Bấm ✎ để sửa.</p>
 
           <AdminSortableList
@@ -42,7 +42,7 @@
         </div>
 
         <div class="cs-section">
-          <h3 class="cs-section-title">Liên kết pháp lý (đáy trang)</h3>
+          <h2 class="cs-section-title">Liên kết pháp lý (đáy trang)</h2>
           <p class="cs-hint">Hàng liên kết nhỏ ở đáy footer (Bảo mật, Điều khoản, Liên hệ…).</p>
           <AdminSortableList
             :items="legalLinks"
@@ -65,7 +65,7 @@
         </div>
 
         <div class="cs-section">
-          <h3 class="cs-section-title">Mạng xã hội</h3>
+          <h2 class="cs-section-title">Mạng xã hội</h2>
           <p class="cs-hint">Hiện ở footer dưới slogan. Mỗi liên kết có emoji + tên + URL. Để trống = không hiện.</p>
           <AdminSortableList
             :items="socialLinks"

@@ -41,8 +41,10 @@
               <div v-for="(child, ci) in item.children" :key="`child-${ci}-${child.label}`" class="sl-child-item">
                 <span class="sl-child-bullet" aria-hidden="true">›</span>
                 <input :value="child.label" placeholder="Label" class="sl-edit-input sl-child-input"
+                  :aria-label="`Label mục con ${ci + 1}`"
                   @input="updateChild(i, ci, 'label', ($event.target as HTMLInputElement).value)" />
                 <input :value="child.to" placeholder="/path" class="sl-edit-input sl-child-input"
+                  :aria-label="`Đường dẫn mục con ${ci + 1}`"
                   @input="updateChild(i, ci, 'to', ($event.target as HTMLInputElement).value)" />
                 <button type="button" class="sl-btn sl-btn-remove" @click="removeChild(i, ci)" aria-label="Xoá mục con">✕</button>
               </div>
