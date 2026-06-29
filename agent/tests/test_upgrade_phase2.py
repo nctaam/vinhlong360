@@ -37,3 +37,35 @@ class TestFieldLevelReport:
     def test_backward_compat_field_none(self):
         src = inspect.getsource(__import__("public_api").submit_report)
         assert "payload.field" in src
+
+
+# ── U-29: Rule-based similar recommendations ─────────────────────────
+
+class TestSimilarRecommendations:
+
+    def test_similar_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/{entity_id}/similar" in paths
+
+    def test_similar_uses_recommender(self):
+        src = inspect.getsource(__import__("public_api").get_similar_entities)
+        assert "recommend_by_entity" in src
+
+    def test_similar_has_cache(self):
+        from public_api import _similar_cache, _SIMILAR_TTL
+        assert _SIMILAR_TTL == 300
+        assert isinstance(_similar_cache, dict)
+
+    def test_similar_response_shape(self):
+        src = inspect.getsource(__import__("public_api").get_similar_entities)
+        assert '"entity_id"' in src
+        assert '"similar"' in src
+
+    def test_similar_validates_entity_id(self):
+        src = inspect.getsource(__import__("public_api").get_similar_entities)
+        assert "validate_path_id" in src
+
+    def test_similar_limit_default(self):
+        src = inspect.getsource(__import__("public_api").get_similar_entities)
+        assert "limit: int = Query(6" in src

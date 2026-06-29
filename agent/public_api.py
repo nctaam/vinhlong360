@@ -1161,6 +1161,56 @@ async def get_review_stats(entity_id: str, response: Response):
     return result
 
 
+# ── Similar entity recommendations (U-29: rule-based) ────────────────
+
+_similar_cache: OrderedDict[str, tuple[float, list]] = OrderedDict()
+_SIMILAR_TTL = 300  # 5 min cache
+
+
+@router.get("/entities/{entity_id}/similar")
+async def get_similar_entities(
+    entity_id: str,
+    response: Response,
+    limit: int = Query(6, ge=1, le=20),
+):
+    """U-29: Rule-based similar entity recommendations (no ML)."""
+    validate_path_id(entity_id, "entity_id")
+    response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
+
+    now = _time.time()
+    cache_key = f"{entity_id}:{limit}"
+    cached = _similar_cache.get(cache_key)
+    if cached and now - cached[0] < _SIMILAR_TTL:
+        _similar_cache.move_to_end(cache_key)
+        return {"entity_id": entity_id, "similar": cached[1]}
+
+    def _compute():
+        try:
+            import knowledge
+            knowledge._ensure()
+            entities_map = knowledge._entities
+            rels = knowledge._relationships if hasattr(knowledge, "_relationships") else []
+        except Exception:
+            return None
+        if entity_id not in entities_map:
+            return None
+        from recommender import recommend_by_entity
+        return recommend_by_entity(entity_id, entities_map, rels, limit=limit)
+
+    result = await asyncio.to_thread(_compute)
+    if result is None:
+        entity = await asyncio.to_thread(db.get_entity, entity_id)
+        if not entity:
+            return JSONResponse(status_code=404, content={"error": "not_found"})
+        return {"entity_id": entity_id, "similar": []}
+
+    _similar_cache[cache_key] = (now, result)
+    while len(_similar_cache) > 200:
+        _similar_cache.popitem(last=False)
+
+    return {"entity_id": entity_id, "similar": result}
+
+
 # ── Entity Q&A (U-09: questions with best answer resolution) ─────────
 
 from fastapi import Depends
