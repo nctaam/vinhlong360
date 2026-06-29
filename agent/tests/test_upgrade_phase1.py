@@ -170,3 +170,51 @@ class TestPracticalFacts:
         result = _build_practical_facts({"attributes": {"hours": "8-17"}})
         for key in _PRACTICAL_FACTS_KEYS:
             assert key in result
+
+
+# ── U-04: Review sort/filter/photo-first ─────────────────────────────
+
+class TestEntityFeedSortFilter:
+
+    def test_entity_feed_has_sort_param(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert "sort" in src
+        assert "default" in src
+        assert "newest" in src
+        assert "helpful" in src
+        assert "photo" in src
+        assert "star" in src
+
+    def test_entity_feed_has_min_rating_param(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert "min_rating" in src
+        assert "p.rating >=" in src
+
+    def test_entity_feed_has_photo_filter(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert "has_photo" in src
+        assert "jsonb_array_length" in src
+
+    def test_entity_feed_sort_options_defined(self):
+        from social import _ENTITY_FEED_SORT_OPTIONS
+        assert "default" in _ENTITY_FEED_SORT_OPTIONS
+        assert "newest" in _ENTITY_FEED_SORT_OPTIONS
+        assert "helpful" in _ENTITY_FEED_SORT_OPTIONS
+        assert "photo" in _ENTITY_FEED_SORT_OPTIONS
+        assert "star" in _ENTITY_FEED_SORT_OPTIONS
+
+    def test_entity_feed_sort_newest_order(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert '"newest": "p.created_at DESC"' in src
+
+    def test_entity_feed_sort_star_order(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert "p.rating DESC NULLS LAST" in src
+
+    def test_entity_feed_invalid_sort_defaults(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert 'sort not in _ENTITY_FEED_SORT_OPTIONS' in src
+
+    def test_entity_feed_total_includes_filters(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert "total_extra" in src

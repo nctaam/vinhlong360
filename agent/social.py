@@ -983,15 +983,23 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
     return {"users": cands[:limit]}
 
 
+_ENTITY_FEED_SORT_OPTIONS = {"default", "newest", "helpful", "photo", "star"}
+
+
 @router.get("/entities/{entity_id}/feed")
 async def get_entity_feed(
     entity_id: str,
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
+    sort: str = Query("default", max_length=10),
+    min_rating: Optional[int] = Query(None, ge=1, le=5),
+    has_photo: Optional[bool] = Query(None),
     user=Depends(get_current_user),
 ):
     """Feed cho một entity cụ thể (điểm du lịch, sản phẩm...)."""
     entity_id = validate_path_id(entity_id, "entity_id")
+    if sort not in _ENTITY_FEED_SORT_OPTIONS:
+        sort = "default"
     entity = await asyncio.to_thread(db.get_entity, entity_id)
     if not entity:
         raise HTTPException(404, "Không tìm thấy")
@@ -999,23 +1007,45 @@ async def get_entity_feed(
     ph = db._ph
     offset = (page - 1) * limit
     bc, bc_p = _block_sql(user)
-    params: list = [entity_id] + bc_p + [limit, offset]
+    params: list = [entity_id] + bc_p
 
+    extra_where = ""
+    if min_rating is not None:
+        extra_where += f" AND p.rating >= {ph}"
+        params.append(min_rating)
+    if has_photo is True:
+        extra_where += " AND jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0"
+
+    order_clause = {
+        "newest": "p.created_at DESC",
+        "helpful": "p.like_count DESC, p.created_at DESC",
+        "photo": """(CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
+                     THEN 1 ELSE 0 END) DESC, p.created_at DESC""",
+        "star": "p.rating DESC NULLS LAST, p.created_at DESC",
+    }.get(sort, """(CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
+                       THEN 1 ELSE 0 END) DESC,
+                 p.like_count DESC,
+                 p.created_at DESC""")
+
+    params += [limit, offset]
     feed_sql = f"""
         SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username
         FROM posts p
         JOIN users u ON u.id = p.user_id
         WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
-        {bc}
-        ORDER BY (CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
-                       THEN 1 ELSE 0 END) DESC,
-                 p.like_count DESC,
-                 p.created_at DESC
+        {bc}{extra_where}
+        ORDER BY {order_clause}
         LIMIT {ph} OFFSET {ph}
     """
     feed_params = tuple(params)
 
     total_params: list = [entity_id] + bc_p
+    total_extra = ""
+    if min_rating is not None:
+        total_extra += f" AND p.rating >= {ph}"
+        total_params.append(min_rating)
+    if has_photo is True:
+        total_extra += " AND jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0"
 
     def _entity_feed_query():
         with db._conn() as conn:
@@ -1023,7 +1053,7 @@ async def get_entity_feed(
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
-                {bc}
+                {bc}{total_extra}
             """, tuple(total_params))
             rating_row = db._fetchone(conn, f"""
                 SELECT avg_rating, rating_count FROM entity_ratings
