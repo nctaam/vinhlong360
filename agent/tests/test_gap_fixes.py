@@ -2149,3 +2149,58 @@ class TestSoftDeleteEnforcement:
         idx = src.index("async def edit_comment(")
         fn = src[idx:idx+2500]
         assert "if not updated:" in fn or "if updated is None" in fn
+
+
+class TestRaceConditionFixes:
+    """Advisory locks on count-limited and uniqueness-dependent operations."""
+
+    def test_validate_path_id_imported_in_auth(self):
+        """validate_path_id must be imported in auth.py (lazy to avoid circular)."""
+        src = (AGENT_DIR / "auth.py").read_text(encoding="utf-8")
+        idx = src.index("async def revoke_session(")
+        fn = src[idx:idx+500]
+        assert "from auth_middleware import validate_path_id" in fn
+
+    def test_pin_post_advisory_lock(self):
+        """pin_post_to_profile must use advisory lock before count check."""
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def pin_post_to_profile(")
+        fn = src[idx:idx+1500]
+        lock_pos = fn.find("pg_advisory_xact_lock")
+        count_pos = fn.find("SELECT COUNT(*) as c FROM posts")
+        assert lock_pos != -1, "Missing advisory lock"
+        assert count_pos != -1, "Missing count check"
+        assert lock_pos < count_pos, "Lock must come before count check"
+
+    def test_report_post_advisory_lock(self):
+        """report_post must use advisory lock to prevent duplicate reports."""
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def report_post(")
+        fn = src[idx:idx+1500]
+        lock_pos = fn.find("pg_advisory_xact_lock")
+        check_pos = fn.find("SELECT 1 FROM reports")
+        assert lock_pos != -1, "Missing advisory lock"
+        assert check_pos != -1, "Missing duplicate check"
+        assert lock_pos < check_pos, "Lock must come before duplicate check"
+
+    def test_report_user_advisory_lock(self):
+        """report_user must use advisory lock to prevent duplicate reports."""
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def report_user(")
+        fn = src[idx:idx+1500]
+        lock_pos = fn.find("pg_advisory_xact_lock")
+        check_pos = fn.find("SELECT 1 FROM reports")
+        assert lock_pos != -1, "Missing advisory lock"
+        assert check_pos != -1, "Missing duplicate check"
+        assert lock_pos < check_pos, "Lock must come before duplicate check"
+
+    def test_appeal_post_advisory_lock(self):
+        """appeal_post must use advisory lock to prevent duplicate appeals."""
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def appeal_post(")
+        fn = src[idx:idx+1500]
+        lock_pos = fn.find("pg_advisory_xact_lock")
+        check_pos = fn.find("SELECT id FROM moderation_appeals")
+        assert lock_pos != -1, "Missing advisory lock"
+        assert check_pos != -1, "Missing duplicate check"
+        assert lock_pos < check_pos, "Lock must come before duplicate check"

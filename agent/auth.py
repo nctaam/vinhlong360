@@ -788,6 +788,7 @@ async def list_sessions(request: Request):
 
 @router.delete("/sessions/{session_id}")
 async def revoke_session(session_id: str, request: Request, _csrf=Depends(_require_csrf_lazy)):
+    from auth_middleware import validate_path_id
     session_id = validate_path_id(session_id, "session_id")
     user = await _get_current_user_or_none(request)
     if not user:

@@ -2182,6 +2182,7 @@ async def report_post(post_id: str, body: ReportPostBody, user=Depends(require_u
                 raise HTTPException(404, "Bài viết không tồn tại")
             if str(db._row_to_dict(post)["user_id"]) == uid:
                 raise HTTPException(400, "Không thể báo cáo bài viết của chính mình")
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"report:{uid}:{post_id}",))
             existing = db._fetchone(conn, f"""
                 SELECT 1 FROM reports
                 WHERE reporter_id = {ph}::uuid AND target_type = 'post' AND target_id = {ph}
@@ -2221,6 +2222,7 @@ async def report_user(user_id: str, body: ReportUserBody, user=Depends(require_u
             target = db._fetchone(conn, f"SELECT id FROM users WHERE id::text = {ph} AND is_active = TRUE", (user_id,))
             if not target:
                 raise HTTPException(404, "Người dùng không tồn tại")
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"report:{uid}:{user_id}",))
             existing = db._fetchone(conn, f"""
                 SELECT 1 FROM reports
                 WHERE reporter_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
@@ -2262,6 +2264,7 @@ async def appeal_post(post_id: str, body: AppealBody, user=Depends(require_user)
                 raise HTTPException(403, "Chỉ tác giả mới được khiếu nại")
             if pd["moderation_status"] != "rejected":
                 raise HTTPException(400, "Chỉ khiếu nại bài bị từ chối")
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"appeal:{uid}:{post_id}",))
             existing = db._fetchone(conn, f"""
                 SELECT id FROM moderation_appeals
                 WHERE post_id::text = {ph} AND user_id::text = {ph}
@@ -2984,6 +2987,7 @@ async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=De
             if rd.get("is_pinned"):
                 db._execute(conn, f"UPDATE posts SET is_pinned = FALSE WHERE id::text = {ph}", (post_id,))
                 return False
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"pin:{uid}",))
             pinned_count = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts
                 WHERE user_id::text = {ph} AND is_pinned = TRUE
