@@ -270,7 +270,7 @@ onUnmounted(() => {
 .admin-nav a:active { transform: scale(.97); transition-duration: .08s; }
 .admin-nav a:focus-visible { outline: 2px solid var(--accent, #f5c518); outline-offset: -2px; }
 .admin-nav a.active {
-  background: rgba(255,255,255,.14); color: #fff; font-weight: 600;
+  background: rgba(255,255,255,.14); color: var(--text-on-dark); font-weight: 600;
   box-shadow: inset 4px 0 0 var(--accent, #f5c518);
   transition: box-shadow .2s, background .2s, color .25s;
 }
@@ -279,7 +279,7 @@ onUnmounted(() => {
 .nav-text { white-space: nowrap; overflow: hidden; transition: opacity .2s; }
 .nav-badge {
   margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px;
-  border-radius: 10px; background: var(--error, #D94F3D); color: #fff;
+  border-radius: 10px; background: var(--error, #D94F3D); color: var(--on-error);
   font-size: .65rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
   line-height: 1; flex-shrink: 0;
 }
@@ -291,7 +291,7 @@ onUnmounted(() => {
 .collapsed .admin-nav a { justify-content: center; padding: var(--space-2); }
 .collapsed .admin-nav a[title]:is(:hover, :focus-visible)::after {
   content: attr(title); position: absolute; left: calc(100% + 8px); top: 50%;
-  transform: translateY(-50%); background: rgba(0,0,0,.85); color: #fff;
+  transform: translateY(-50%); background: rgba(0,0,0,.85); color: var(--text-on-dark);
   padding: 4px 10px; border-radius: 6px; font-size: .75rem; font-weight: 600;
   white-space: nowrap; z-index: var(--z-overlay); pointer-events: none;
   animation: tooltipIn .15s ease-out;
@@ -402,9 +402,9 @@ onUnmounted(() => {
 .admin-actions button:active { transform: scale(.95); transition-duration: .08s; }
 .admin-actions button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .admin-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
-.admin-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
+.admin-actions .btn-danger:hover { background: var(--error, #D94F3D); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
 .admin-actions .btn-success { color: var(--primary, #219653); border-color: var(--primary); }
-.admin-actions .btn-success:hover { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
+.admin-actions .btn-success:hover { background: var(--primary); color: var(--on-primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 
 /* ── Pagination ── */
 .admin-pagination { display: flex; gap: var(--space-2); justify-content: center; margin-top: var(--space-4); }
@@ -418,7 +418,7 @@ onUnmounted(() => {
 .admin-pagination button:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
 .admin-pagination button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .admin-pagination button:disabled { opacity: .35; cursor: default; }
-.admin-pagination button.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
+.admin-pagination button.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 
 /* ── Shared utilities ── */
 .admin-loading { display: flex; align-items: center; justify-content: center; padding: var(--space-10); }
@@ -600,7 +600,7 @@ onUnmounted(() => {
 .admin-help::after {
   content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
   transform: translateX(-50%); padding: 6px 10px; border-radius: 8px;
-  background: var(--ink, #1a1a2e); color: #fff; font-size: .72rem; font-weight: 400;
+  background: var(--ink, #1a1a2e); color: var(--text-on-dark); font-size: .72rem; font-weight: 400;
   white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s;
   z-index: var(--z-sticky); max-width: 260px; white-space: normal; line-height: 1.4;
 }

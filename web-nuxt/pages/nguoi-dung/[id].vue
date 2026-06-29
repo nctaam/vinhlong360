@@ -615,7 +615,7 @@ useSeoMeta({
 .profile-name-row .btn:active { transform: scale(.92); transition-duration: .08s; }
 .profile-name-row .btn[aria-busy="true"] { pointer-events: none; }
 /* Spinner contrast inside filled primary follow button */
-.profile-name-row .btn-primary .spinner-sm { border-color: rgba(255,255,255,.45); border-top-color: #fff; }
+.profile-name-row .btn-primary .spinner-sm { border-color: rgba(var(--text-on-dark-rgb),.45); border-top-color: var(--text-on-dark); }
 
 .profile-skeleton { margin-top: var(--space-2); }
 

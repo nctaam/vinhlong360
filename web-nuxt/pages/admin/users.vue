@@ -544,7 +544,7 @@ onMounted(() => fetchUsers())
   font-size: .7rem; font-weight: 700; border-radius: 100px;
   background: var(--line); color: var(--ink);
 }
-.usr-rolecount.active .usr-rolecount-n { background: var(--primary, #219653); color: #fff; }
+.usr-rolecount.active .usr-rolecount-n { background: var(--primary, #219653); color: var(--on-primary); }
 
 /* ── Inline confirm row (ban/unban) ── */
 .usr-confirm-row td { background: var(--bg-alt); }
@@ -565,9 +565,9 @@ onMounted(() => fetchUsers())
 .usr-confirm-actions button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .usr-confirm-actions button:disabled { opacity: .5; cursor: default; }
 .usr-confirm-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
-.usr-confirm-actions .btn-danger:hover { background: var(--error, #D94F3D); color: #fff; box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
+.usr-confirm-actions .btn-danger:hover { background: var(--error, #D94F3D); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
 .usr-confirm-actions .btn-success { color: var(--primary, #219653); border-color: var(--primary, #219653); }
-.usr-confirm-actions .btn-success:hover { background: var(--primary, #219653); color: #fff; box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
+.usr-confirm-actions .btn-success:hover { background: var(--primary, #219653); color: var(--on-primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 .usr-confirm-cancel:hover { background: var(--bg-alt); }
 
 /* ── Loading skeleton rows ── */

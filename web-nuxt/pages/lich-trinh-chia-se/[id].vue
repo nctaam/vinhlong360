@@ -61,7 +61,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl(`/lich-trinh-chia-se/${p
 .sp-meta { color: var(--ink-700); display: flex; gap: .4rem; margin-bottom: 1.25rem; font-size: var(--text-sm); }
 .sp-stops { list-style: none; margin: 0 0 1.5rem; padding: 0; display: flex; flex-direction: column; gap: .9rem; }
 .sp-stop { display: flex; gap: .75rem; }
-.sp-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: .85rem; }
+.sp-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px; background: var(--primary); color: var(--on-primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: .85rem; }
 .sp-stop-body { display: flex; flex-direction: column; gap: .15rem; }
 .sp-stop-name { font-weight: var(--weight-medium); color: var(--ink-900); text-decoration: none; }
 .sp-stop-place, .sp-stop-time { color: var(--ink-700); font-size: var(--text-sm); }

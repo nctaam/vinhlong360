@@ -126,7 +126,7 @@ async function submit() {
 }
 .rm-chip:hover { border-color: var(--primary, #219653); }
 .rm-chip:active { transform: scale(.96); }
-.rm-chip.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary, #219653); }
+.rm-chip.active { background: var(--primary, #219653); color: var(--on-primary); border-color: var(--primary, #219653); }
 .rm-chip:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
 .rm-textarea {

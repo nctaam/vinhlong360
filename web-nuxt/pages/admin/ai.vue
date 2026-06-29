@@ -491,7 +491,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 /* Primary actions — stronger visual weight */
 .ai-action-primary {
   background: var(--primary, #219653); border-color: var(--primary, #219653);
-  color: #fff; font-weight: 600;
+  color: var(--on-primary); font-weight: 600;
 }
 .ai-action-primary:hover:not(:disabled) {
   transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--primary-rgb),.28);

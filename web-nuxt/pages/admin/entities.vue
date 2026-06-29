@@ -756,17 +756,17 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .type-badge[data-type="attraction"] { background: rgba(var(--primary-rgb),.1); color: var(--success); }
 .type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
 .type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.1); color: rgb(var(--blue-rgb)); }
-.type-badge[data-type="accommodation"] { background: rgba(175,82,222,.1); color: #AF52DE; }
-.type-badge[data-type="nature"] { background: rgba(52,199,89,.1); color: #34C759; }
+.type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.1); color: rgb(var(--purple-rgb)); }
+.type-badge[data-type="nature"] { background: rgba(52,199,89,.1); color: rgb(52,199,89); }
 .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
-.type-badge[data-type="craft_village"] { background: rgba(162,132,94,.1); color: #A2845E; }
+.type-badge[data-type="craft_village"] { background: rgba(162,132,94,.1); color: rgb(162,132,94); }
 .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.1); color: var(--error); }
-.type-badge[data-type="drink"] { background: rgba(0,199,190,.1); color: #00C7BE; }
+.type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.1); color: rgb(var(--teal-rgb)); }
 .type-badge[data-type="place"] { background: rgba(142,142,147,.1); color: var(--muted); }
-.dark .type-badge[data-type="accommodation"] { background: rgba(175,82,222,.15); color: #C084FC; }
+.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); color: #C084FC; }
 .dark .type-badge[data-type="nature"] { background: rgba(52,199,89,.15); color: #66BB6A; }
 .dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); color: #D4A574; }
-.dark .type-badge[data-type="drink"] { background: rgba(0,199,190,.15); color: #5CE5DD; }
+.dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); color: #5CE5DD; }
 
 /* ── Selected row ── */
 .row-selected td { background: rgba(var(--blue-rgb),.04); transition: background .2s; }
@@ -927,7 +927,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   display: inline-flex; align-items: center; justify-content: center;
   width: 16px; height: 16px; border-radius: 50%;
   margin-right: 2px; vertical-align: middle; transition: transform .15s, box-shadow .15s;
-  font-size: 9px; line-height: 1; color: #fff;
+  font-size: 9px; line-height: 1; color: var(--text-on-dark);
 }
 .ent-health-cell:hover .ent-dot { transform: scale(1.4); }
 .ent-health-cell:hover .dot-miss { box-shadow: 0 0 0 3px rgba(255,59,48,.15); }

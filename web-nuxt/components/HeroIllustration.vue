@@ -168,7 +168,7 @@ onMounted(() => {
   opacity: .1;
 }
 :global(.dark) .hero-illustration .motif {
-  color: #fff;
+  color: var(--text-on-dark);
   opacity: .08;
 }
 /* Gentle sway — only on the 'waves' motif, which has no static SVG transform
