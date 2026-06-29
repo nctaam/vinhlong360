@@ -72,3 +72,59 @@ class TestStaleQueue:
     def test_stale_threshold_default(self):
         from admin import _STALE_THRESHOLD_DEFAULT
         assert _STALE_THRESHOLD_DEFAULT == 180
+
+
+# ── U-24: Q&A quality queue ─────────────────────────────────────────
+
+class TestQAQueue:
+
+    def test_qa_queue_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/qa-queue" in paths
+
+    def test_qa_set_best_answer_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/qa-queue/{post_id}/set-best-answer" in paths
+
+    def test_qa_queue_filters_questions_only(self):
+        src = inspect.getsource(__import__("admin").qa_queue)
+        assert "post_type = 'question'" in src
+        assert "moderation_status = 'approved'" in src
+
+    def test_qa_queue_has_filter_param(self):
+        src = inspect.getsource(__import__("admin").qa_queue)
+        assert "unanswered" in src
+        assert "no_best_answer" in src
+        assert "comment_count = 0" in src
+        assert "best_answer_id IS NULL" in src
+
+    def test_qa_queue_has_entity_filter(self):
+        src = inspect.getsource(__import__("admin").qa_queue)
+        assert "entity_id" in src
+
+    def test_qa_queue_response_shape(self):
+        src = inspect.getsource(__import__("admin").qa_queue)
+        assert '"questions"' in src
+        assert '"total"' in src
+        assert '"filter"' in src
+
+    def test_set_best_answer_validates_post_type(self):
+        src = inspect.getsource(__import__("admin").qa_set_best_answer)
+        assert "post_type" in src
+        assert "question" in src
+
+    def test_set_best_answer_validates_comment_belongs(self):
+        src = inspect.getsource(__import__("admin").qa_set_best_answer)
+        assert "post_id::text" in src
+        assert "comments" in src
+
+    def test_set_best_answer_body_model(self):
+        from admin import SetBestAnswerBody
+        m = SetBestAnswerBody(comment_id="abc-123")
+        assert m.comment_id == "abc-123"
+
+    def test_set_best_answer_validates_path_id(self):
+        src = inspect.getsource(__import__("admin").qa_set_best_answer)
+        assert "validate_path_id" in src

@@ -841,6 +841,83 @@ async def stale_mark_reviewed(entity_id: str):
     return await asyncio.to_thread(_query)
 
 
+# ── Q&A quality queue (U-24) ──
+
+
+@router.get("/qa-queue")
+async def qa_queue(
+    filter: Optional[str] = Query(None, pattern="^(unanswered|no_best_answer)$"),
+    entity_id: Optional[str] = Query(None, max_length=100),
+    limit: int = Query(30, ge=1, le=100),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    """Admin queue: questions chưa có best answer hoặc chưa có reply."""
+    ph = db._ph
+    def _query():
+        conditions = [f"p.post_type = 'question'", f"p.moderation_status = 'approved'"]
+        params: list = []
+        if entity_id:
+            conditions.append(f"p.entity_id::text = {ph}")
+            params.append(entity_id)
+        if filter == "unanswered":
+            conditions.append("p.comment_count = 0")
+        elif filter == "no_best_answer":
+            conditions.append("p.best_answer_id IS NULL")
+        where = " AND ".join(conditions)
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.id, p.title, p.content, p.entity_id, p.user_id,
+                       p.comment_count, p.best_answer_id, p.created_at,
+                       u.display_name
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                WHERE {where}
+                ORDER BY p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (*params, limit, offset))
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p WHERE {where}
+            """, (*params,))
+        total = db._row_to_dict(total_row)["c"] if total_row else 0
+        return {
+            "questions": [db._row_to_dict(r) for r in rows],
+            "total": total,
+            "filter": filter,
+        }
+    return await asyncio.to_thread(_query)
+
+
+class SetBestAnswerBody(BaseModel):
+    comment_id: str = Field(..., min_length=1, max_length=100)
+
+
+@router.post("/qa-queue/{post_id}/set-best-answer")
+async def qa_set_best_answer(post_id: str, body: SetBestAnswerBody):
+    """Admin override: set best_answer_id cho 1 question."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT id, post_type FROM posts WHERE id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài hỏi không tồn tại")
+            p = db._row_to_dict(post)
+            if p.get("post_type") != "question":
+                raise HTTPException(400, "Chỉ set best answer cho post_type=question")
+            comment = db._fetchone(conn, f"""
+                SELECT id FROM comments WHERE id::text = {ph} AND post_id::text = {ph}
+            """, (body.comment_id, post_id))
+            if not comment:
+                raise HTTPException(404, "Comment không thuộc bài hỏi này")
+            db._execute(conn, f"""
+                UPDATE posts SET best_answer_id = {ph}::uuid WHERE id::text = {ph}
+            """, (body.comment_id, post_id))
+        return {"ok": True, "post_id": post_id, "best_answer_id": body.comment_id}
+    return await asyncio.to_thread(_query)
+
+
 class BulkDeleteRequest(BaseModel):
     entity_ids: list[str] = Field(..., min_length=1, max_length=200)
 
