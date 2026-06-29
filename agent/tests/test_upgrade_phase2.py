@@ -1,5 +1,6 @@
 """Tests for Phase 2 upgrade cards: U-08, U-29, U-25, U-12."""
 import inspect
+import math
 import pytest
 
 
@@ -69,3 +70,80 @@ class TestSimilarRecommendations:
     def test_similar_limit_default(self):
         src = inspect.getsource(__import__("public_api").get_similar_entities)
         assert "limit: int = Query(6" in src
+
+
+# ── U-25: Ward day plan ─────────────────────────────────────────────
+
+class TestWardDayPlan:
+
+    def test_day_plan_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/places/{place_id}/day-plan" in paths
+
+    def test_day_plan_validates_path_id(self):
+        src = inspect.getsource(__import__("public_api").place_day_plan)
+        assert "validate_path_id" in src
+
+    def test_day_plan_uses_entities_by_place(self):
+        src = inspect.getsource(__import__("public_api").place_day_plan)
+        assert "entities_by_place" in src
+
+    def test_day_plan_type_diversity(self):
+        src = inspect.getsource(__import__("public_api").place_day_plan)
+        assert "seen_types" in src
+        assert "if t in seen_types" in src
+
+    def test_day_plan_time_slots_defined(self):
+        from public_api import _DAY_PLAN_SLOTS
+        assert len(_DAY_PLAN_SLOTS) >= 5
+        labels = {s["label"] for s in _DAY_PLAN_SLOTS}
+        assert "sáng" in labels
+        assert "trưa" in labels
+        assert "chiều" in labels
+        for slot in _DAY_PLAN_SLOTS:
+            assert "start" in slot
+            assert "duration_min" in slot
+            assert slot["duration_min"] > 0
+
+    def test_day_plan_type_priority_defined(self):
+        from public_api import _DAY_PLAN_TYPE_PRIORITY
+        assert "attraction" in _DAY_PLAN_TYPE_PRIORITY
+        assert "dish" in _DAY_PLAN_TYPE_PRIORITY
+        assert "accommodation" in _DAY_PLAN_TYPE_PRIORITY
+        assert len(_DAY_PLAN_TYPE_PRIORITY) >= 8
+
+    def test_day_plan_response_shape(self):
+        src = inspect.getsource(__import__("public_api").place_day_plan)
+        assert '"place"' in src
+        assert '"stops"' in src
+        assert '"total_stops"' in src
+        assert '"total_duration_min"' in src
+
+    def test_day_plan_stop_shape(self):
+        src = inspect.getsource(__import__("public_api").place_day_plan)
+        assert '"entity_id"' in src
+        assert '"name"' in src
+        assert '"type"' in src
+        assert '"suggested_time"' in src
+        assert '"time_of_day"' in src
+        assert '"visit_duration_min"' in src
+
+    def test_day_plan_haversine_helper(self):
+        from public_api import _haversine_km
+        d = _haversine_km([10.25, 105.97], [10.25, 105.97])
+        assert d == 0.0
+        d2 = _haversine_km([10.25, 105.97], [10.26, 105.98])
+        assert 0 < d2 < 5
+        assert _haversine_km(None, [10.0, 105.0]) == 999.0
+        assert _haversine_km([10.0, 105.0], None) == 999.0
+
+    def test_day_plan_sorts_by_proximity(self):
+        src = inspect.getsource(__import__("public_api").place_day_plan)
+        assert "_haversine_km" in src
+        assert "sorted" in src
+
+    def test_day_plan_404_non_place(self):
+        src = inspect.getsource(__import__("public_api").place_day_plan)
+        assert '"type") != "place"' in src
+        assert "404" in src

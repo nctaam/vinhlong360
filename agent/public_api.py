@@ -11,6 +11,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import math
 import re
 from collections import Counter
 from datetime import datetime, timezone
@@ -376,6 +377,79 @@ async def place_overview(place_id: str):
             "products": groups["products"],
             "other": groups["other"],
         }
+    result = await asyncio.to_thread(_query)
+    if not result:
+        return JSONResponse(status_code=404, content={"error": "not_found", "detail": "Không phải xã/phường"})
+    return result
+
+
+_DAY_PLAN_TYPE_PRIORITY = [
+    "attraction", "nature", "history", "experience", "craft_village",
+    "dish", "drink", "product", "market", "accommodation", "event",
+]
+_DAY_PLAN_SLOTS = [
+    {"label": "sáng", "start": "08:00", "duration_min": 60},
+    {"label": "sáng", "start": "09:30", "duration_min": 45},
+    {"label": "trưa", "start": "11:00", "duration_min": 60},
+    {"label": "chiều", "start": "13:30", "duration_min": 60},
+    {"label": "chiều", "start": "15:00", "duration_min": 45},
+    {"label": "chiều", "start": "16:30", "duration_min": 45},
+]
+
+
+def _haversine_km(a: list | None, b: list | None) -> float:
+    if not a or not b:
+        return 999.0
+    lat1, lon1 = math.radians(a[0]), math.radians(a[1])
+    lat2, lon2 = math.radians(b[0]), math.radians(b[1])
+    dlat, dlon = lat2 - lat1, lon2 - lon1
+    h = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+    return 6371.0 * 2 * math.asin(math.sqrt(h))
+
+
+@router.get("/places/{place_id}/day-plan")
+async def place_day_plan(place_id: str):
+    """Gợi ý lịch trình 1 ngày cho xã/phường — đa dạng loại hình, sắp theo khoảng cách."""
+    validate_path_id(place_id, "place_id")
+
+    def _query():
+        p = db.get_entity(place_id)
+        if not p or p.get("type") != "place":
+            return None
+        ents = db.entities_by_place(place_id)
+        center = p.get("coordinates")
+        seen_types: set = set()
+        candidates = []
+        for e in sorted(ents, key=lambda x: _haversine_km(center, x.get("coordinates"))):
+            t = e.get("type")
+            if t in seen_types or t == "place":
+                continue
+            seen_types.add(t)
+            candidates.append(e)
+            if len(candidates) >= len(_DAY_PLAN_SLOTS):
+                break
+        if not candidates and ents:
+            candidates = ents[:len(_DAY_PLAN_SLOTS)]
+        stops = []
+        for i, e in enumerate(candidates):
+            slot = _DAY_PLAN_SLOTS[i] if i < len(_DAY_PLAN_SLOTS) else _DAY_PLAN_SLOTS[-1]
+            stops.append({
+                "entity_id": e["id"],
+                "name": e.get("name"),
+                "type": e.get("type"),
+                "suggested_time": slot["start"],
+                "time_of_day": slot["label"],
+                "visit_duration_min": slot["duration_min"],
+                "coordinates": e.get("coordinates"),
+            })
+        total_min = sum(s["visit_duration_min"] for s in stops)
+        return {
+            "place": {"id": p["id"], "name": p.get("name"), "area": p.get("area")},
+            "stops": stops,
+            "total_stops": len(stops),
+            "total_duration_min": total_min,
+        }
+
     result = await asyncio.to_thread(_query)
     if not result:
         return JSONResponse(status_code=404, content={"error": "not_found", "detail": "Không phải xã/phường"})
