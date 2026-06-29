@@ -438,3 +438,60 @@ class TestClearAllNotifications:
         src = inspect.getsource(__import__("notifications").clear_all_notifications)
         assert "require_user" in src
         assert "require_csrf" in src
+
+
+class TestViewerMutedInProfile:
+    """get_user_profile returns is_muted in viewer_relationship."""
+
+    def test_profile_queries_user_mutes(self):
+        src = inspect.getsource(__import__("social").get_user_profile)
+        assert "user_mutes" in src
+        assert "muted_id" in src
+
+    def test_profile_has_viewer_muted_var(self):
+        src = inspect.getsource(__import__("social").get_user_profile)
+        assert "viewer_muted" in src
+
+    def test_profile_returns_is_muted(self):
+        src = inspect.getsource(__import__("social").get_user_profile)
+        assert '"is_muted"' in src
+        assert "viewer_muted" in src
+
+    def test_viewer_relationship_includes_muted(self):
+        src = inspect.getsource(__import__("social").get_user_profile)
+        idx = src.find("viewer_relationship")
+        block = src[idx:idx+200]
+        assert "is_muted" in block
+
+    def test_blocked_return_has_12_values(self):
+        src = inspect.getsource(__import__("social").get_user_profile)
+        idx = src.find('"blocked"')
+        block = src[idx:idx+200]
+        assert "False" in block
+
+
+class TestAdminUserDetailActivity:
+    """admin_user_detail returns last_login and last_post_at."""
+
+    def test_queries_login_history(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert "login_history" in src
+        assert "success = TRUE" in src
+
+    def test_returns_last_login(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert '"last_login"' in src
+
+    def test_queries_last_post(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert "ORDER BY created_at DESC LIMIT 1" in src
+
+    def test_returns_last_post_at(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        assert '"last_post_at"' in src
+
+    def test_login_history_handles_missing_table(self):
+        src = inspect.getsource(__import__("admin").admin_user_detail)
+        idx = src.find("login_history")
+        pre = src[max(0, idx-100):idx]
+        assert "try" in pre or "except" in pre

@@ -3024,7 +3024,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                        OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
                 """, (viewer_id, resolved_id, resolved_id, viewer_id))
                 if is_blocked:
-                    return "blocked", profile, None, None, None, None, None, None, None, False, True
+                    return "blocked", profile, None, None, None, None, None, None, None, False, True, False
 
             counts = db._fetchone(conn, f"""
                 SELECT COUNT(*) as total,
@@ -3061,6 +3061,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
 
             viewer_following = False
             viewer_blocked = False
+            viewer_muted = False
             if not is_self and viewer_id:
                 fcheck = db._fetchone(conn, f"""
                     SELECT 1 FROM follows
@@ -3071,11 +3072,15 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                     SELECT 1 FROM blocks WHERE blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid
                 """, (viewer_id, resolved_id))
                 viewer_blocked = bcheck is not None
+                mcheck = db._fetchone(conn, f"""
+                    SELECT 1 FROM user_mutes WHERE user_id = {ph}::uuid AND muted_id = {ph}::uuid
+                """, (viewer_id, resolved_id))
+                viewer_muted = mcheck is not None
 
-        return vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy, viewer_following, viewer_blocked
+        return vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy, viewer_following, viewer_blocked, viewer_muted
 
     result = await asyncio.to_thread(_query)
-    vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy, viewer_following, viewer_blocked = result
+    vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy, viewer_following, viewer_blocked, viewer_muted = result
 
     if vis == "blocked":
         return {
@@ -3130,6 +3135,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             "viewer_relationship": {
                 "is_following": viewer_following,
                 "is_blocked": viewer_blocked,
+                "is_muted": viewer_muted,
                 "is_self": is_self,
             } if not is_self else {"is_self": True},
         },

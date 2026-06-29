@@ -3372,6 +3372,24 @@ async def admin_user_detail(user_id: str):
             """, (user_id,))
             rep = db._row_to_dict(reputation).get("reputation_score", 0) if reputation else 0
 
+            last_login = None
+            try:
+                ll = db._fetchone(conn, f"""
+                    SELECT created_at FROM login_history
+                    WHERE user_id = {ph}::uuid AND success = TRUE
+                    ORDER BY created_at DESC LIMIT 1
+                """, (user_id,))
+                if ll:
+                    last_login = str(db._row_to_dict(ll)["created_at"])
+            except Exception:
+                pass
+
+            last_post = db._fetchone(conn, f"""
+                SELECT created_at FROM posts
+                WHERE user_id::text = {ph} AND moderation_status = 'approved'
+                ORDER BY created_at DESC LIMIT 1
+            """, (user_id,))
+
         return {
             "user": ud,
             "stats": {
@@ -3386,6 +3404,8 @@ async def admin_user_detail(user_id: str):
                 "blocked_by": blk.get("blocked_by", 0),
                 "muted_users": db._row_to_dict(mute_count)["c"] if mute_count else 0,
                 "reputation_score": rep,
+                "last_login": last_login,
+                "last_post_at": str(db._row_to_dict(last_post)["created_at"]) if last_post else None,
             },
         }
 
