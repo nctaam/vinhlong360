@@ -269,102 +269,115 @@
 
         <h2 class="facts-heading"><span class="facts-heading-icon" aria-hidden="true">📑</span>{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
         <div class="facts-card">
-          <div class="fact">
-            <span class="fact-ic" aria-hidden="true">{{ typeMeta.emoji }}</span>
-            <span class="k">{{ ss('labels.detail.fact_type', 'Loại') }}</span>
-            <span class="v">{{ typeMeta.label }}</span>
-          </div>
-          <div v-if="entity.place_name" class="fact">
-            <span class="fact-ic" aria-hidden="true">📍</span>
-            <span class="k">{{ ss('labels.detail.fact_place', 'Địa điểm') }}</span>
-            <span class="v">
-              <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="fact-link">{{ entity.place_name }}</NuxtLink>
-              <template v-else>{{ entity.place_name }}</template>
-            </span>
-          </div>
-          <div v-if="entity.place_area" class="fact">
-            <span class="fact-ic" aria-hidden="true">🗺️</span>
-            <span class="k">{{ ss('labels.detail.fact_area', 'Khu vực') }}</span>
-            <span class="v">
-              <NuxtLink :to="`/khu-vuc/${entity.place_area}`" class="fact-link">{{ areaName }}</NuxtLink>
-            </span>
-          </div>
-          <div v-if="entity.season" class="fact">
-            <span class="fact-ic" aria-hidden="true">🌤️</span>
-            <span class="k">{{ ss('labels.detail.fact_season', 'Mùa') }}</span>
-            <span class="v">{{ seasonLabel }}</span>
+          <div class="fact-group">
+            <h3 class="fg-label">Tổng quan</h3>
+            <div class="fact">
+              <span class="fact-ic" aria-hidden="true">{{ typeMeta.emoji }}</span>
+              <span class="k">{{ ss('labels.detail.fact_type', 'Loại') }}</span>
+              <span class="v">{{ typeMeta.label }}</span>
+            </div>
+            <div v-if="entity.place_name" class="fact">
+              <span class="fact-ic" aria-hidden="true">📍</span>
+              <span class="k">{{ ss('labels.detail.fact_place', 'Địa điểm') }}</span>
+              <span class="v">
+                <NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="fact-link">{{ entity.place_name }}</NuxtLink>
+                <template v-else>{{ entity.place_name }}</template>
+              </span>
+            </div>
+            <div v-if="entity.place_area" class="fact">
+              <span class="fact-ic" aria-hidden="true">🗺️</span>
+              <span class="k">{{ ss('labels.detail.fact_area', 'Khu vực') }}</span>
+              <span class="v">
+                <NuxtLink :to="`/khu-vuc/${entity.place_area}`" class="fact-link">{{ areaName }}</NuxtLink>
+              </span>
+            </div>
+            <div v-if="entity.season" class="fact">
+              <span class="fact-ic" aria-hidden="true">🌤️</span>
+              <span class="k">{{ ss('labels.detail.fact_season', 'Mùa') }}</span>
+              <span class="v">{{ seasonLabel }}</span>
+            </div>
           </div>
 
-          <!-- Practical info from attributes -->
-          <div v-if="entity.attributes?.price" class="fact">
-            <span class="fact-ic" aria-hidden="true">💰</span>
-            <span class="k">{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span>
-            <span class="v">{{ entity.attributes.price }}</span>
+          <div v-if="hasVisitFacts" class="fact-group">
+            <h3 class="fg-label">Tham quan</h3>
+            <div v-if="entity.attributes?.hours" class="fact">
+              <span class="fact-ic" aria-hidden="true">🕒</span>
+              <span class="k">{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</span>
+              <span class="v">{{ entity.attributes.hours }}</span>
+            </div>
+            <div v-if="entity.attributes?.price" class="fact">
+              <span class="fact-ic" aria-hidden="true">💰</span>
+              <span class="k">{{ ss('labels.detail.fact_price', 'Giá tham khảo') }}</span>
+              <span class="v">{{ entity.attributes.price }}</span>
+            </div>
+            <div v-if="entity.attributes?.fee" class="fact">
+              <span class="fact-ic" aria-hidden="true">🎫</span>
+              <span class="k">{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</span>
+              <span class="v">{{ entity.attributes.fee }}</span>
+            </div>
+            <div v-if="entity.attributes?.suggested_duration" class="fact">
+              <span class="fact-ic" aria-hidden="true">⏱️</span>
+              <span class="k">Thời gian tham quan</span>
+              <span class="v">{{ entity.attributes.suggested_duration }}</span>
+            </div>
+            <div v-if="entity.attributes?.transport" class="fact">
+              <span class="fact-ic" aria-hidden="true">🚗</span>
+              <span class="k">{{ ss('labels.detail.fact_transport', 'Di chuyển') }}</span>
+              <span class="v">{{ entity.attributes.transport }}</span>
+            </div>
           </div>
-          <div v-if="entity.attributes?.hours" class="fact">
-            <span class="fact-ic" aria-hidden="true">🕒</span>
-            <span class="k">{{ ss('labels.detail.fact_hours', 'Giờ mở cửa') }}</span>
-            <span class="v">{{ entity.attributes.hours }}</span>
+
+          <div v-if="hasContactFacts" class="fact-group">
+            <h3 class="fg-label">Liên hệ</h3>
+            <div v-if="entity.attributes?.phone" class="fact">
+              <span class="fact-ic" aria-hidden="true">📞</span>
+              <span class="k">{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span>
+              <span class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link">{{ entity.attributes.phone }}</a><button type="button" class="fact-copy" @click="copyText(entity.attributes.phone!, 'số điện thoại')" aria-label="Sao chép số điện thoại" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
+            </div>
+            <div v-if="entity.attributes?.address" class="fact">
+              <span class="fact-ic" aria-hidden="true">🏠</span>
+              <span class="k">{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span>
+              <span class="v">{{ entity.attributes.address }}<button type="button" class="fact-copy" @click="copyText(entity.attributes.address!, 'địa chỉ')" aria-label="Sao chép địa chỉ" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
+            </div>
+            <div v-if="entity.attributes?.coords_approximate && hasCoords" class="fact fact-approx">
+              <span class="fact-ic" aria-hidden="true">📍</span>
+              <span class="k">{{ ss('labels.detail.fact_location', 'Vị trí') }}</span>
+              <span class="v">{{ ss('labels.detail.coords_approximate', 'Gần đúng (trung tâm xã/phường) — chưa có toạ độ chính xác') }}</span>
+            </div>
+            <div v-if="entity.attributes?.website" class="fact">
+              <span class="fact-ic" aria-hidden="true">🔗</span>
+              <span class="k">{{ ss('labels.detail.fact_website', 'Website') }}</span>
+              <span class="v"><a :href="safeUrl(entity.attributes.website)" target="_blank" rel="noopener nofollow" class="fact-link website-link">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
+            </div>
           </div>
-          <div v-if="entity.attributes?.phone" class="fact">
-            <span class="fact-ic" aria-hidden="true">📞</span>
-            <span class="k">{{ ss('labels.detail.fact_phone', 'Liên hệ') }}</span>
-            <span class="v"><a :href="telHref(entity.attributes.phone)" class="fact-link">{{ entity.attributes.phone }}</a><button type="button" class="fact-copy" @click="copyText(entity.attributes.phone!, 'số điện thoại')" aria-label="Sao chép số điện thoại" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
-          </div>
-          <div v-if="entity.attributes?.address" class="fact">
-            <span class="fact-ic" aria-hidden="true">🏠</span>
-            <span class="k">{{ ss('labels.detail.fact_address', 'Địa chỉ') }}</span>
-            <span class="v">{{ entity.attributes.address }}<button type="button" class="fact-copy" @click="copyText(entity.attributes.address!, 'địa chỉ')" aria-label="Sao chép địa chỉ" title="Sao chép"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></span>
-          </div>
-          <div v-if="entity.attributes?.coords_approximate && hasCoords" class="fact fact-approx">
-            <span class="fact-ic" aria-hidden="true">📍</span>
-            <span class="k">{{ ss('labels.detail.fact_location', 'Vị trí') }}</span>
-            <span class="v">{{ ss('labels.detail.coords_approximate', 'Gần đúng (trung tâm xã/phường) — chưa có toạ độ chính xác') }}</span>
-          </div>
-          <div v-if="entity.attributes?.website" class="fact">
-            <span class="fact-ic" aria-hidden="true">🔗</span>
-            <span class="k">{{ ss('labels.detail.fact_website', 'Website') }}</span>
-            <span class="v"><a :href="safeUrl(entity.attributes.website)" target="_blank" rel="noopener nofollow" class="fact-link website-link">{{ entity.attributes?.website?.replace(/^https?:\/\//, '') }}</a></span>
-          </div>
-          <div v-if="entity.attributes?.fee" class="fact">
-            <span class="fact-ic" aria-hidden="true">🎫</span>
-            <span class="k">{{ ss('labels.detail.fact_fee', 'Phí vào cửa') }}</span>
-            <span class="v">{{ entity.attributes.fee }}</span>
-          </div>
-          <div v-if="entity.attributes?.transport" class="fact">
-            <span class="fact-ic" aria-hidden="true">🚗</span>
-            <span class="k">{{ ss('labels.detail.fact_transport', 'Di chuyển') }}</span>
-            <span class="v">{{ entity.attributes.transport }}</span>
-          </div>
-          <div v-if="entity.attributes?.amenities" class="fact">
-            <span class="fact-ic" aria-hidden="true">✅</span>
-            <span class="k">{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</span>
-            <span class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</span>
-          </div>
-          <div v-if="entity.attributes?.price_range" class="fact">
-            <span class="fact-ic" aria-hidden="true">💵</span>
-            <span class="k">Mức giá</span>
-            <span class="v">{{ entity.attributes.price_range }}</span>
-          </div>
-          <div v-if="entity.attributes?.suggested_duration" class="fact">
-            <span class="fact-ic" aria-hidden="true">⏱️</span>
-            <span class="k">Thời gian tham quan</span>
-            <span class="v">{{ entity.attributes.suggested_duration }}</span>
-          </div>
-          <div v-if="entity.attributes?.atmosphere" class="fact">
-            <span class="fact-ic" aria-hidden="true">🌿</span>
-            <span class="k">Không gian</span>
-            <span class="v">{{ entity.attributes.atmosphere }}</span>
-          </div>
-          <div v-if="entity.attributes?.famous_for" class="fact">
-            <span class="fact-ic" aria-hidden="true">🏆</span>
-            <span class="k">Nổi tiếng với</span>
-            <span class="v">{{ entity.attributes.famous_for }}</span>
-          </div>
-          <div v-if="entity.attributes?.significance" class="fact">
-            <span class="fact-ic" aria-hidden="true">📜</span>
-            <span class="k">Ý nghĩa</span>
-            <span class="v">{{ entity.attributes.significance }}</span>
+
+          <div v-if="hasFeatureFacts" class="fact-group">
+            <h3 class="fg-label">Đặc điểm</h3>
+            <div v-if="entity.attributes?.amenities" class="fact">
+              <span class="fact-ic" aria-hidden="true">✅</span>
+              <span class="k">{{ ss('labels.detail.fact_amenities', 'Tiện ích') }}</span>
+              <span class="v">{{ Array.isArray(entity.attributes.amenities) ? entity.attributes.amenities.join(', ') : entity.attributes.amenities }}</span>
+            </div>
+            <div v-if="entity.attributes?.price_range" class="fact">
+              <span class="fact-ic" aria-hidden="true">💵</span>
+              <span class="k">Mức giá</span>
+              <span class="v">{{ entity.attributes.price_range }}</span>
+            </div>
+            <div v-if="entity.attributes?.atmosphere" class="fact">
+              <span class="fact-ic" aria-hidden="true">🌿</span>
+              <span class="k">Không gian</span>
+              <span class="v">{{ entity.attributes.atmosphere }}</span>
+            </div>
+            <div v-if="entity.attributes?.famous_for" class="fact">
+              <span class="fact-ic" aria-hidden="true">🏆</span>
+              <span class="k">Nổi tiếng với</span>
+              <span class="v">{{ entity.attributes.famous_for }}</span>
+            </div>
+            <div v-if="entity.attributes?.significance" class="fact">
+              <span class="fact-ic" aria-hidden="true">📜</span>
+              <span class="k">Ý nghĩa</span>
+              <span class="v">{{ entity.attributes.significance }}</span>
+            </div>
           </div>
         </div>
 
@@ -678,6 +691,9 @@ const mapUrl = computed(() => {
   return c ? `${base}&lat=${c[0]}&lng=${c[1]}` : base
 })
 const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
+const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.suggested_duration || a?.transport) })
+const hasContactFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.phone || a?.address || (a?.coords_approximate && hasCoords.value) || a?.website) })
+const hasFeatureFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.amenities || a?.price_range || a?.atmosphere || a?.famous_for || a?.significance) })
 // Sticky bar always renders; this tells the template whether any "contact" CTA
 // (phone/Zalo/map) is present. If not, the bar shows the itinerary fallback CTA.
 const hasStickyContact = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || hasCoords.value))
