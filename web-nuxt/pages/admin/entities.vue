@@ -863,16 +863,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.15); }
 .dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); }
 .dark .type-badge[data-type="nature"] { background: rgba(52,199,89,.15); }
-.dark .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.15); color: #ffb340; }
+.dark .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.15); color: var(--accent-text); }
 .dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); }
-.dark .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.15); color: #ef7d6c; }
-.dark .type-badge[data-type="drink"] { background: rgba(0,199,190,.15); }
-.dark .type-badge[data-type="place"] { background: rgba(142,142,147,.18); color: #b0b0b5; }
+.dark .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.15); color: rgb(var(--danger-rgb)); }
+.dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); }
+.dark .type-badge[data-type="place"] { background: rgba(142,142,147,.18); color: var(--muted); }
 .dark .ent-name-cell:hover .ent-thumb { box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 .dark .row-selected td { background: rgba(var(--blue-rgb),.08); }
 .dark .bulk-bar { background: rgba(var(--blue-rgb),.08); border-color: rgba(var(--blue-rgb),.15); }
 .dark .img-thumb { border-color: rgba(255,255,255,.1); }
-.dark .ent-search-clear:hover { background: rgba(255,255,255,.08); color: #fff; }
+.dark .ent-search-clear:hover { background: rgba(255,255,255,.08); color: var(--ink); }
 .dark .admin-actions button:focus-visible,
 .dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg, #D98A6F); }
 /* ── Bulk relationship add ── */

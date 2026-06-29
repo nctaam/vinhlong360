@@ -495,8 +495,8 @@ onUnmounted(() => {
 .dark .admin-sidebar { background: var(--bg); border-right-color: rgba(255,255,255,.08); }
 .dark .nav-group-label { color: rgba(255,255,255,.35); }
 .dark .admin-nav a { color: rgba(255,255,255,.65); }
-.dark .admin-nav a:hover { color: #fff; background: rgba(255,255,255,.12); }
-.dark .admin-nav a.active { background: rgba(255,255,255,.14); color: #fff; box-shadow: inset 4px 0 0 var(--primary-fg, #D98A6F); }
+.dark .admin-nav a:hover { color: var(--ink); background: rgba(255,255,255,.12); }
+.dark .admin-nav a.active { background: rgba(255,255,255,.14); color: var(--ink); box-shadow: inset 4px 0 0 var(--primary-fg, #D98A6F); }
 .dark .admin-table th { box-shadow: 0 2px 4px rgba(0,0,0,.03); }
 .dark .admin-empty-state-hint { color: rgba(255,255,255,.3); }
 .dark .admin-topbar { background: color-mix(in oklab, var(--bg, #1c1c1e) 85%, transparent); border-bottom-color: rgba(255,255,255,.08); }

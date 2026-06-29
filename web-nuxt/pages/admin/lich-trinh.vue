@@ -522,9 +522,9 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .dark .lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.6); }
 .dark .lt-stop-warn { border-left-color: rgba(var(--warning-rgb),.65); }
 .dark .lt-stops-empty { border-color: rgba(255,255,255,.14); }
-.dark .lt-stop-status-ok { background: rgba(var(--primary-rgb),.2); color: #5fcf8a; }
+.dark .lt-stop-status-ok { background: rgba(var(--primary-rgb),.2); color: rgb(var(--success-rgb)); }
 .dark .lt-stop-status-warn { background: rgba(var(--warning-rgb),.22); color: var(--warning); }
 .dark .lt-duration { color: rgba(255,255,255,.55); }
 .dark .lt-duration-icon { opacity: .8; }
-.dark .lt-dirty-badge { color: #5fcf8a; background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+.dark .lt-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
 </style>

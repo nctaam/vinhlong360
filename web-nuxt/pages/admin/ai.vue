@@ -551,7 +551,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .dark .ai-subsys-off { background: rgba(var(--danger-rgb),.1); }
 .dark .ai-action-secondary { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); color: var(--ink); }
 .dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(0,0,0,.3); }
-.dark .ai-action-primary { color: #fff; }
+.dark .ai-action-primary { color: var(--ink); }
 .dark .ai-triage-box { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.3); }
 .dark .ai-triage-box.ai-triage-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); border-left-color: var(--error); }
 .dark .ai-trigger-result { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.2); }
