@@ -197,7 +197,7 @@ const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'M
 const viewMode = ref('grid')
 const gridSection = ref<HTMLElement | null>(null)
 
-useFilterUrl({ type: typeFilter, mua: seasonFilter, sort: sortBy }, { type: 'all', mua: 'all', sort: 'relevant' })
+useFilterUrl({ q, type: typeFilter, mua: seasonFilter, sort: sortBy }, { q: '', type: 'all', mua: 'all', sort: 'relevant' })
 const { sortByRegion } = useRegionPref()
 
 onMounted(() => {

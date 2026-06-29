@@ -172,7 +172,7 @@
 
         <!-- Đang xem kết quả tìm -->
         <div v-if="searchMode" class="tag-banner" role="status">
-          <span>Kết quả cho <strong>“{{ searchQuery }}”</strong></span>
+          <span><strong>{{ displayPosts.length }}</strong> kết quả cho <strong>&ldquo;{{ searchQuery }}&rdquo;</strong></span>
           <button type="button" class="tag-clear" @click="clearSearch">✕ Bỏ tìm</button>
         </div>
 

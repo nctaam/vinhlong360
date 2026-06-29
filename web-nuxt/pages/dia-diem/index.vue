@@ -227,9 +227,17 @@ function setType(t: string) { if (typeFilter.value !== t) { typeFilter.value = t
 function setArea(a: string) { if (areaFilter.value !== a) { areaFilter.value = a; syncUrlAndRefresh() } }
 function pickArea(key: string) { areaFilter.value = areaFilter.value === key ? 'all' : key; syncUrlAndRefresh(); scrollToGrid() }
 function pickType(value: string) { typeFilter.value = typeFilter.value === value ? 'all' : value; syncUrlAndRefresh(); scrollToGrid() }
-function applyQuery() { qApplied.value = qInput.value.trim(); syncUrlAndRefresh() }
-function clearQuery() { qInput.value = ''; qApplied.value = ''; syncUrlAndRefresh() }
-function resetAll() { typeFilter.value = 'all'; areaFilter.value = 'all'; qInput.value = ''; qApplied.value = ''; syncUrlAndRefresh() }
+let _qTimer: ReturnType<typeof setTimeout> | undefined
+function cancelQDebounce() { clearTimeout(_qTimer) }
+function applyQuery() { cancelQDebounce(); qApplied.value = qInput.value.trim(); syncUrlAndRefresh() }
+function clearQuery() { cancelQDebounce(); qInput.value = ''; qApplied.value = ''; syncUrlAndRefresh() }
+function resetAll() { cancelQDebounce(); typeFilter.value = 'all'; areaFilter.value = 'all'; qInput.value = ''; qApplied.value = ''; syncUrlAndRefresh() }
+watch(qInput, (val) => {
+  cancelQDebounce()
+  const trimmed = val.trim()
+  if (trimmed === qApplied.value) return
+  _qTimer = setTimeout(() => { qApplied.value = trimmed; syncUrlAndRefresh() }, 350)
+})
 
 const activeTypeLabel = computed(() => typeFilter.value === 'all' ? '' : (TYPE_META[typeFilter.value]?.label || ''))
 useSeoMeta({
