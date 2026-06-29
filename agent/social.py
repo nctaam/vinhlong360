@@ -1862,6 +1862,42 @@ async def unpin_comment(post_id: str, user=Depends(require_user), _csrf=Depends(
     return {"success": True}
 
 
+_MAX_PINNED_POSTS = 3
+
+
+@router.post("/posts/{post_id}/pin-to-profile")
+async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    uid = str(user["id"])
+    check_rate(f"pin:{uid}", 10, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT user_id, is_pinned, moderation_status FROM posts WHERE id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Không tìm thấy bài viết")
+            rd = db._row_to_dict(post)
+            if str(rd["user_id"]) != uid:
+                raise HTTPException(403, "Chỉ tác giả bài viết mới có thể ghim")
+            if rd.get("moderation_status") != "approved":
+                raise HTTPException(400, "Chỉ ghim bài viết đã được duyệt")
+            if rd.get("is_pinned"):
+                db._execute(conn, f"UPDATE posts SET is_pinned = FALSE WHERE id::text = {ph}", (post_id,))
+                return False
+            pinned_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id::text = {ph} AND is_pinned = TRUE
+            """, (uid,))
+            if pinned_count and db._row_to_dict(pinned_count)["c"] >= _MAX_PINNED_POSTS:
+                raise HTTPException(400, f"Tối đa {_MAX_PINNED_POSTS} bài ghim")
+            db._execute(conn, f"UPDATE posts SET is_pinned = TRUE WHERE id::text = {ph}", (post_id,))
+            return True
+    pinned = await asyncio.to_thread(_query)
+    return {"pinned": pinned}
+
+
 # ── Image upload ──
 
 @router.post("/upload/image")
@@ -2148,7 +2184,7 @@ async def get_user_posts(
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
                 {bc}
-                ORDER BY p.created_at DESC
+                ORDER BY COALESCE(p.is_pinned, FALSE) DESC, p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, (uid, *bc_p, limit, offset))
     rows = await asyncio.to_thread(_query)
@@ -2249,6 +2285,7 @@ def _format_post(row: dict) -> dict:
         "hashtags": hashtags,
         "best_answer_id": str(row["best_answer_id"]) if row.get("best_answer_id") else None,
         "pinned_comment_id": str(row["pinned_comment_id"]) if row.get("pinned_comment_id") else None,
+        "is_pinned": bool(row.get("is_pinned")),
         "repost_of": str(row["repost_of"]) if row.get("repost_of") else None,
         "repost": _jlist_obj(row.get("repost_snapshot")),
         "post_type": row.get("post_type", "share"),

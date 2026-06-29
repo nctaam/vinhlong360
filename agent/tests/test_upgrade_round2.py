@@ -1399,3 +1399,125 @@ class TestAdminClaims:
         src = inspect.getsource(__import__("admin").approve_claim)
         assert "db._ph" in src
         assert "validate_path_id" in src
+
+
+# ── Pinned posts migration ──
+
+class TestPinnedPostsMigration:
+    def test_migration_file_exists(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "038_pinned_posts.sql"
+        assert p.exists()
+
+    def test_adds_is_pinned_column(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "038_pinned_posts.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "is_pinned" in sql
+        assert "BOOLEAN" in sql
+
+    def test_creates_index(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "038_pinned_posts.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "idx_posts_pinned" in sql
+
+
+# ── Pin post to profile ──
+
+class TestPinPostToProfile:
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/posts/{post_id}/pin-to-profile" in paths
+
+    def test_endpoint_is_post(self):
+        from social import router
+        methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
+        assert "POST" in methods.get("/api/posts/{post_id}/pin-to-profile", set())
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        assert "require_user" in src
+
+    def test_requires_csrf(self):
+        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        assert "require_csrf" in src
+
+    def test_validates_path_id(self):
+        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        assert "validate_path_id" in src
+
+    def test_rate_limited(self):
+        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        assert "check_rate" in src
+
+    def test_checks_ownership(self):
+        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        assert "403" in src
+        assert "user_id" in src
+
+    def test_checks_approved(self):
+        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        assert "approved" in src
+        assert "400" in src
+
+    def test_max_pinned_limit(self):
+        from social import _MAX_PINNED_POSTS
+        assert _MAX_PINNED_POSTS == 3
+
+    def test_toggle_unpin(self):
+        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        assert "is_pinned" in src
+        assert "FALSE" in src
+
+    def test_parameterized(self):
+        src = inspect.getsource(__import__("social").pin_post_to_profile)
+        assert "db._ph" in src
+
+    def test_is_pinned_in_format_post(self):
+        src = inspect.getsource(__import__("social")._format_post)
+        assert '"is_pinned"' in src
+
+    def test_user_posts_pinned_first(self):
+        src = inspect.getsource(__import__("social").get_user_posts)
+        assert "is_pinned" in src
+        assert "DESC" in src
+
+
+# ── Admin user growth ──
+
+class TestAdminUserGrowth:
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/user-growth" in paths
+
+    def test_requires_pg(self):
+        src = inspect.getsource(__import__("admin").user_growth)
+        assert "_use_pg" in src
+
+    def test_returns_total_users(self):
+        src = inspect.getsource(__import__("admin").user_growth)
+        assert '"total_users"' in src
+
+    def test_returns_growth_rate(self):
+        src = inspect.getsource(__import__("admin").user_growth)
+        assert '"growth_rate_pct"' in src
+
+    def test_returns_daily_signups(self):
+        src = inspect.getsource(__import__("admin").user_growth)
+        assert '"daily_signups"' in src
+        assert "DATE(created_at)" in src
+
+    def test_weekly_comparison(self):
+        src = inspect.getsource(__import__("admin").user_growth)
+        assert "signups_this_week" in src
+        assert "signups_prev_week" in src
+
+    def test_deactivated_count(self):
+        src = inspect.getsource(__import__("admin").user_growth)
+        assert "deactivated_users" in src
+        assert "is_active = FALSE" in src
+
+    def test_growth_rate_calculation(self):
+        src = inspect.getsource(__import__("admin").user_growth)
+        assert "growth_rate" in src
+        assert "round" in src
