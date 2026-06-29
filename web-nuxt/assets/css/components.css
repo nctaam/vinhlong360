@@ -413,6 +413,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .ac-item:nth-child(5) { animation-delay: .12s; }
 @keyframes acItemIn { from { opacity: 0; transform: translateY(-4px); } }
 .ac-item:hover, .ac-item.highlighted { background: var(--bg-alt); }
+.ac-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: var(--radius-sm); }
 .ac-item:active { transform: scale(.97); transition-duration: .08s; }
 .ac-emoji { font-size: 1.2rem; flex-shrink: 0; width: 28px; text-align: center; }
 .ac-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
