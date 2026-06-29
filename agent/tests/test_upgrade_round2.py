@@ -1911,3 +1911,231 @@ class TestPublicFeatured:
     def test_limited(self):
         src = inspect.getsource(__import__("public_api").get_featured_entities)
         assert "LIMIT" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Announcements (migration 040 + admin CRUD + public endpoint)
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestAnnouncementsMigration:
+    def test_migration_file_exists(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "040_announcements.sql"
+        assert p.exists()
+
+    def test_migration_creates_table(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "040_announcements.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "CREATE TABLE IF NOT EXISTS announcements" in sql
+
+    def test_migration_has_types_check(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "040_announcements.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "info" in sql
+        assert "warning" in sql
+        assert "maintenance" in sql
+        assert "update" in sql
+
+    def test_migration_has_active_index(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "040_announcements.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "idx_announcements_active" in sql
+
+    def test_migration_has_expiry(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "040_announcements.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "expires_at" in sql
+
+
+class TestAdminAnnouncementsCRUD:
+    def test_list_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/announcements" in paths
+
+    def test_create_endpoint_exists(self):
+        from admin import router
+        methods_paths = [(list(r.methods)[0] if hasattr(r, "methods") else "", r.path)
+                        for r in router.routes if hasattr(r, "path")]
+        assert ("POST", "/admin/announcements") in methods_paths
+
+    def test_update_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/announcements/{announcement_id}" in paths
+
+    def test_delete_endpoint_exists(self):
+        from admin import router
+        methods_paths = [(list(r.methods)[0] if hasattr(r, "methods") else "", r.path)
+                        for r in router.routes if hasattr(r, "path")]
+        assert ("DELETE", "/admin/announcements/{announcement_id}") in methods_paths
+
+    def test_create_validates_type(self):
+        from admin import AnnouncementCreate
+        import pytest
+        with pytest.raises(Exception):
+            AnnouncementCreate(title="Test", type="invalid_type")
+
+    def test_create_accepts_valid_types(self):
+        from admin import AnnouncementCreate
+        for t in ("info", "warning", "maintenance", "update"):
+            m = AnnouncementCreate(title="Test", type=t)
+            assert m.type == t
+
+    def test_create_title_required(self):
+        from admin import AnnouncementCreate
+        import pytest
+        with pytest.raises(Exception):
+            AnnouncementCreate(title="", type="info")
+
+    def test_update_allows_partial(self):
+        from admin import AnnouncementUpdate
+        m = AnnouncementUpdate(title="New title")
+        assert m.title == "New title"
+        assert m.content is None
+        assert m.type is None
+
+    def test_list_has_pagination(self):
+        src = inspect.getsource(__import__("admin").list_announcements)
+        assert "LIMIT" in src
+        assert "OFFSET" in src
+        assert "total" in src
+
+    def test_list_has_active_filter(self):
+        src = inspect.getsource(__import__("admin").list_announcements)
+        assert "is_active" in src
+
+    def test_update_validates_path_id(self):
+        src = inspect.getsource(__import__("admin").update_announcement)
+        assert "validate_path_id" in src
+
+    def test_delete_validates_path_id(self):
+        src = inspect.getsource(__import__("admin").delete_announcement)
+        assert "validate_path_id" in src
+
+    def test_create_uses_parameterized(self):
+        src = inspect.getsource(__import__("admin").create_announcement)
+        assert "db._ph" in src or "ph" in src
+
+
+class TestPublicAnnouncements:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/announcements" in paths
+
+    def test_filters_active_only(self):
+        src = inspect.getsource(__import__("public_api").list_active_announcements)
+        assert "is_active = TRUE" in src
+
+    def test_filters_by_time(self):
+        src = inspect.getsource(__import__("public_api").list_active_announcements)
+        assert "starts_at" in src
+        assert "expires_at" in src
+
+    def test_orders_by_priority(self):
+        src = inspect.getsource(__import__("public_api").list_active_announcements)
+        assert "priority DESC" in src
+
+    def test_requires_pg(self):
+        src = inspect.getsource(__import__("public_api").list_active_announcements)
+        assert "_require_pg" in src
+
+    def test_has_limit(self):
+        src = inspect.getsource(__import__("public_api").list_active_announcements)
+        assert "LIMIT" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# Entity Map Search (bounding box)
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestEntityMapSearch:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/map" in paths
+
+    def test_requires_bbox_params(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert "north" in src
+        assert "south" in src
+        assert "east" in src
+        assert "west" in src
+
+    def test_validates_north_gt_south(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert "north" in src and "south" in src
+        assert "400" in src or "must be" in src
+
+    def test_filters_by_coordinates(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert "coordinates" in src
+        assert "lat" in src
+        assert "lng" in src
+
+    def test_supports_type_filter(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert "entity_type" in src
+
+    def test_returns_bbox_in_response(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert '"bbox"' in src
+
+    def test_returns_entity_fields(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert '"name"' in src
+        assert '"type"' in src
+        assert '"coordinates"' in src
+
+    def test_respects_limit(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert "limit" in src
+
+    def test_handles_antimeridian(self):
+        src = inspect.getsource(__import__("public_api").entities_map_search)
+        assert "west" in src and "east" in src
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# User Engagement Stats
+# ══════════════════════════════════════════════════════════════════════════
+
+class TestUserEngagementStats:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/users/{user_id}/engagement" in paths
+
+    def test_validates_path_id(self):
+        src = inspect.getsource(__import__("public_api").user_engagement_stats)
+        assert "validate_path_id" in src
+
+    def test_requires_pg(self):
+        src = inspect.getsource(__import__("public_api").user_engagement_stats)
+        assert "_require_pg" in src
+
+    def test_checks_user_exists(self):
+        src = inspect.getsource(__import__("public_api").user_engagement_stats)
+        assert "404" in src
+        assert "is_active" in src
+
+    def test_returns_post_counts(self):
+        src = inspect.getsource(__import__("public_api").user_engagement_stats)
+        assert "total_posts" in src
+        assert "total_reviews" in src
+
+    def test_returns_avg_rating(self):
+        src = inspect.getsource(__import__("public_api").user_engagement_stats)
+        assert "avg_rating" in src
+
+    def test_returns_followers(self):
+        src = inspect.getsource(__import__("public_api").user_engagement_stats)
+        assert "followers" in src
+
+    def test_returns_likes_received(self):
+        src = inspect.getsource(__import__("public_api").user_engagement_stats)
+        assert "total_likes_received" in src or "total_likes" in src
+
+    def test_uses_parameterized_queries(self):
+        src = inspect.getsource(__import__("public_api").user_engagement_stats)
+        assert "db._ph" in src or "ph" in src

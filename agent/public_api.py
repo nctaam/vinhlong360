@@ -1883,6 +1883,122 @@ async def get_collection_by_slug(slug: str):
     return result
 
 
+# ── Public Announcements ─────────────────────────────────────────────────
+
+@router.get("/announcements")
+async def list_active_announcements(limit: int = Query(10, ge=1, le=50)):
+    """Active announcements for display to users."""
+    _require_pg()
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, title, content, type, priority, starts_at, expires_at, created_at
+                FROM announcements
+                WHERE is_active = TRUE
+                  AND starts_at <= NOW()
+                  AND (expires_at IS NULL OR expires_at > NOW())
+                ORDER BY priority DESC, created_at DESC
+                LIMIT {ph}
+            """, (limit,))
+        return [db._row_to_dict(r) for r in rows]
+
+    items = await asyncio.to_thread(_query)
+    return {"announcements": items, "total": len(items)}
+
+
+# ── Entity Map Search (bounding box) ────────────────────────────────────
+
+@router.get("/entities/map")
+async def entities_map_search(
+    north: float = Query(..., ge=-90, le=90),
+    south: float = Query(..., ge=-90, le=90),
+    east: float = Query(..., ge=-180, le=180),
+    west: float = Query(..., ge=-180, le=180),
+    entity_type: str = Query(None, max_length=50),
+    limit: int = Query(100, ge=1, le=500),
+):
+    """Entities within a bounding box for map display."""
+    if north <= south:
+        raise HTTPException(400, "north must be > south")
+    entities = db.list_entities()
+    results = []
+    for e in entities:
+        coords = e.get("coordinates")
+        if not coords or not isinstance(coords, list) or len(coords) < 2:
+            continue
+        lat, lng = coords[0], coords[1]
+        if not (south <= lat <= north):
+            continue
+        if west <= east:
+            if not (west <= lng <= east):
+                continue
+        else:
+            if not (lng >= west or lng <= east):
+                continue
+        if entity_type and e.get("type") != entity_type:
+            continue
+        results.append({
+            "id": e.get("id"),
+            "name": e.get("name"),
+            "type": e.get("type"),
+            "coordinates": coords,
+            "place": e.get("place"),
+            "summary": (e.get("summary") or "")[:150],
+            "images": (e.get("images") or [])[:1],
+        })
+        if len(results) >= limit:
+            break
+    return {"entities": results, "total": len(results), "bbox": {"north": north, "south": south, "east": east, "west": west}}
+
+
+# ── User Engagement Stats ────────────────────────────────────────────────
+
+@router.get("/users/{user_id}/engagement")
+async def user_engagement_stats(user_id: str):
+    """Lightweight engagement stats for a user profile card."""
+    validate_path_id(user_id, "user_id")
+    _require_pg()
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            user_check = db._fetchone(conn, f"SELECT id FROM users WHERE id::text = {ph} AND is_active = TRUE", (user_id,))
+            if not user_check:
+                raise HTTPException(404, "Người dùng không tồn tại")
+            stats = db._fetchone(conn, f"""
+                SELECT
+                    COUNT(*) FILTER (WHERE moderation_status = 'approved') as total_posts,
+                    COUNT(*) FILTER (WHERE post_type = 'review' AND moderation_status = 'approved') as total_reviews,
+                    COALESCE(AVG(rating) FILTER (WHERE post_type = 'review' AND rating IS NOT NULL), 0) as avg_rating,
+                    COUNT(*) FILTER (WHERE post_type = 'question') as total_questions,
+                    COUNT(DISTINCT entity_id) FILTER (WHERE entity_id IS NOT NULL AND moderation_status = 'approved') as entities_reviewed
+                FROM posts WHERE user_id::text = {ph}
+            """, (user_id,))
+            stats_d = db._row_to_dict(stats) if stats else {}
+            followers = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM follows
+                WHERE target_type = 'user' AND target_id = {ph}
+            """, (user_id,))
+            likes = db._fetchone(conn, f"""
+                SELECT COALESCE(SUM(like_count), 0) as total_likes
+                FROM posts WHERE user_id::text = {ph} AND moderation_status = 'approved'
+            """, (user_id,))
+        return {
+            "user_id": user_id,
+            "total_posts": stats_d.get("total_posts", 0),
+            "total_reviews": stats_d.get("total_reviews", 0),
+            "avg_rating": round(float(stats_d.get("avg_rating", 0)), 1),
+            "total_questions": stats_d.get("total_questions", 0),
+            "entities_reviewed": stats_d.get("entities_reviewed", 0),
+            "followers": db._row_to_dict(followers)["c"] if followers else 0,
+            "total_likes_received": db._row_to_dict(likes)["total_likes"] if likes else 0,
+        }
+
+    return await asyncio.to_thread(_query)
+
+
 # ── ND 147/2024 Compliance & Transparency ──────────────────────────────
 
 @router.get("/transparency")

@@ -3299,3 +3299,168 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
         code = 404 if result["error"] == "not_found" else 409
         return JSONResponse(status_code=code, content=result)
     return result
+
+
+# ── Announcements (system notices for users) ────────────────────────────
+
+class AnnouncementCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    content: str = Field("", max_length=5000)
+    type: str = Field("info", max_length=20)
+    priority: int = Field(0, ge=0, le=100)
+    starts_at: Optional[str] = None
+    expires_at: Optional[str] = None
+
+    @field_validator("type")
+    @classmethod
+    def _validate_type(cls, v):
+        allowed = ("info", "warning", "maintenance", "update")
+        if v not in allowed:
+            raise ValueError(f"type must be one of {allowed}")
+        return v
+
+
+class AnnouncementUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    content: Optional[str] = Field(None, max_length=5000)
+    type: Optional[str] = Field(None, max_length=20)
+    is_active: Optional[bool] = None
+    priority: Optional[int] = Field(None, ge=0, le=100)
+    starts_at: Optional[str] = None
+    expires_at: Optional[str] = None
+
+    @field_validator("type")
+    @classmethod
+    def _validate_type(cls, v):
+        if v is None:
+            return v
+        allowed = ("info", "warning", "maintenance", "update")
+        if v not in allowed:
+            raise ValueError(f"type must be one of {allowed}")
+        return v
+
+
+@router.get("/announcements")
+async def list_announcements(
+    is_active: Optional[bool] = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    ph = db._ph
+
+    def _query():
+        where_clauses = []
+        params = []
+        if is_active is not None:
+            where_clauses.append(f"is_active = {ph}")
+            params.append(is_active)
+        where = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, title, content, type, is_active, priority,
+                       starts_at, expires_at, created_by, created_at, updated_at
+                FROM announcements
+                {where}
+                ORDER BY priority DESC, created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, tuple(params + [limit, offset]))
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as cnt FROM announcements {where}", tuple(params))
+        total = db._row_to_dict(total_row)["cnt"] if total_row else 0
+        return {
+            "announcements": [db._row_to_dict(r) for r in rows],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/announcements")
+async def create_announcement(body: AnnouncementCreate, request: Request):
+    ph = db._ph
+    admin_user = request.state.admin_user
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                INSERT INTO announcements (title, content, type, priority, starts_at, expires_at, created_by)
+                VALUES ({ph}, {ph}, {ph}, {ph},
+                        COALESCE({ph}::timestamptz, NOW()),
+                        {ph}::timestamptz,
+                        {ph}::uuid)
+                RETURNING id, title, type, is_active, priority, starts_at, expires_at, created_at
+            """, (
+                body.title.strip(), body.content.strip(), body.type,
+                body.priority, body.starts_at, body.expires_at,
+                str(admin_user["id"]),
+            ))
+        return db._row_to_dict(row) if row else None
+
+    result = await asyncio.to_thread(_query)
+    return {"success": True, "announcement": result}
+
+
+@router.put("/announcements/{announcement_id}")
+async def update_announcement(announcement_id: str, body: AnnouncementUpdate):
+    announcement_id = validate_path_id(announcement_id, "announcement_id")
+    ph = db._ph
+
+    def _query():
+        sets = []
+        params = []
+        if body.title is not None:
+            sets.append(f"title = {ph}")
+            params.append(body.title.strip())
+        if body.content is not None:
+            sets.append(f"content = {ph}")
+            params.append(body.content.strip())
+        if body.type is not None:
+            sets.append(f"type = {ph}")
+            params.append(body.type)
+        if body.is_active is not None:
+            sets.append(f"is_active = {ph}")
+            params.append(body.is_active)
+        if body.priority is not None:
+            sets.append(f"priority = {ph}")
+            params.append(body.priority)
+        if body.starts_at is not None:
+            sets.append(f"starts_at = {ph}::timestamptz")
+            params.append(body.starts_at)
+        if body.expires_at is not None:
+            sets.append(f"expires_at = {ph}::timestamptz")
+            params.append(body.expires_at)
+        if not sets:
+            raise HTTPException(400, "Không có thay đổi")
+        sets.append("updated_at = NOW()")
+        params.append(announcement_id)
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE announcements SET {", ".join(sets)}
+                WHERE id::text = {ph}
+                RETURNING id, title, content, type, is_active, priority, starts_at, expires_at, updated_at
+            """, tuple(params))
+        if not row:
+            raise HTTPException(404, "Thông báo không tồn tại")
+        return db._row_to_dict(row)
+
+    result = await asyncio.to_thread(_query)
+    return {"success": True, "announcement": result}
+
+
+@router.delete("/announcements/{announcement_id}")
+async def delete_announcement(announcement_id: str):
+    announcement_id = validate_path_id(announcement_id, "announcement_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM announcements WHERE id::text = {ph} RETURNING id
+            """, (announcement_id,))
+        if not row:
+            raise HTTPException(404, "Thông báo không tồn tại")
+        return True
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
