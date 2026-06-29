@@ -118,6 +118,7 @@
           @touchstart.passive="onLbTouchStart"
           @touchmove.passive="onLbTouchMove"
           @touchend="onLbTouchEnd"
+          @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')"
         />
         <button type="button" v-if="allImages.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
         <span class="lb-counter">{{ lbIdx + 1 }} / {{ allImages.length }}</span>

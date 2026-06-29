@@ -4,12 +4,12 @@
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
-        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" />
+        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         <UserCoverPlaceholder v-else />
         <div class="cover-scrim" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">
           <span v-if="profile.avatar" class="avatar avatar-xl">
-            <img :src="profile.avatar" :alt="profile.display_name" loading="lazy" decoding="async" width="96" height="96" />
+            <img :src="profile.avatar" :alt="profile.display_name" loading="lazy" decoding="async" width="96" height="96" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
           </span>
           <span v-else class="avatar avatar-xl">{{ initial }}</span>
         </div>
@@ -113,7 +113,7 @@
           <div v-if="favorites.length" class="saved-grid">
             <NuxtLink v-for="fav in favorites" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card saved-card">
               <div v-if="fav.image" class="cover cover-img">
-                <img :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" />
+                <img :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
               </div>
               <div class="card-b">
                 <span class="card-type">{{ getSavedTypeMeta(fav.type).label }}</span>

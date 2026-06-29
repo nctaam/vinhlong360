@@ -40,8 +40,8 @@
         <div class="scroll-row saved-row" role="region" aria-label="Mục đã lưu">
           <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
             <div v-if="fav.image" class="cover cover-img">
-              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" sizes="sm:100vw md:50vw lg:400px" />
-              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" />
+              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" sizes="sm:100vw md:50vw lg:400px" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.opacity = '.15' }" />
+              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
             </div>
             <div class="card-b">
               <span class="card-type">{{ getTypeMeta(fav.type).label }}</span>

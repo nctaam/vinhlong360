@@ -17,8 +17,8 @@
               <time :datetime="p.created_at">{{ timeAgo(p.created_at) }}</time>
             </span>
           </div>
-          <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" sizes="80px" />
-          <img v-else-if="firstImage(p)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" />
+          <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" sizes="80px" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.display = 'none' }" />
+          <img v-else-if="firstImage(p)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
         </NuxtLink>
       </li>
     </ul>

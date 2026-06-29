@@ -39,7 +39,7 @@
       <div class="rf-images">
         <div v-if="formImages.length" class="rf-image-grid">
           <div v-for="(img, i) in formImages" :key="img" class="rf-image-thumb">
-            <img :src="img" :alt="`Ảnh đính kèm ${i + 1}`" loading="lazy" decoding="async" width="64" height="64" />
+            <img :src="img" :alt="`Ảnh đính kèm ${i + 1}`" loading="lazy" decoding="async" width="64" height="64" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
             <button type="button" class="rf-image-remove" :aria-label="`Xóa ảnh ${i + 1}`" @click="removeImage(i)">×</button>
           </div>
         </div>

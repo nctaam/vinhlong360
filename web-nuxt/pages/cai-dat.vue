@@ -32,7 +32,7 @@
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
           <button type="button" class="sf-avatar-preview" aria-label="Thay đổi ảnh đại diện" @click="($refs.avatarInput as HTMLInputElement)?.click()">
-            <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" width="96" height="96" decoding="async" />
+            <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" width="96" height="96" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
             <AvatarPlaceholder v-else :initial="user?.display_name?.[0]?.toUpperCase()" />
             <span class="sf-avatar-overlay">&#128247;</span>
           </button>
@@ -48,7 +48,7 @@
 
         <div class="sf-cover-section">
           <button type="button" class="sf-cover-preview" aria-label="Thay đổi ảnh bìa" @click="($refs.coverInput as HTMLInputElement)?.click()">
-            <img v-if="coverPreview || user?.cover_url" :src="coverPreview || user?.cover_url!" alt="Ảnh bìa" class="sf-cover-img" width="640" height="160" decoding="async" />
+            <img v-if="coverPreview || user?.cover_url" :src="coverPreview || user?.cover_url!" alt="Ảnh bìa" class="sf-cover-img" width="640" height="160" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
             <div v-else class="sf-cover-placeholder">
               <span>Thêm ảnh bìa</span>
             </div>
