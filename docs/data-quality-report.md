@@ -197,6 +197,23 @@ Extracted better summaries from existing description content (no LLM, no fabrica
 - Summaries <80 chars: **462 → 282** (180 improved)
 - Remaining 282 are genuinely single-sentence entities — need external research or LLM enrichment
 
+### Phase 6: Geocoded 36 entities from province center
+
+Two batches of Nominatim geocoding (50 entities each):
+- Batch 1: 33 geocoded, 10 reverted (wrong province), 17 no results → **23 net**
+- Batch 2: 13 geocoded, 0 reverted, 37 no results → **13 net**
+- Coordinate clusters: 1360 → 1347 entities sharing coordinates
+- All results validated within province bounding boxes
+
+### Continued fixes
+
+- Extracted hospital emergency phone to `attributes.emergency_phone`
+- Enriched 16 very short descriptions (<60 chars → 60-134 chars)
+- Fixed last brochure phrase "du khách có thể"
+- Split 33 multi-sentence summary==description pairs
+- Fixed spacing artifacts (' , ' → ', ')
+- Summary == Description: 409 → 376
+
 ## Errors
 
 | Code | Count | Notes |
@@ -207,9 +224,9 @@ Extracted better summaries from existing description content (no LLM, no fabrica
 
 | Code | Count | Notes |
 |------|-------|-------|
-| `near_asymmetric` | 5033 | By design — system handles bidirectionality automatically |
-| `coordinate_clusters` | 189 clusters (1366 entities) | Ward/province centroids; needs real geocoding data |
-| `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
+| `near_asymmetric` | 4990 | By design — system handles bidirectionality automatically |
+| `coordinate_clusters` | 196 clusters (1347 entities) | Ward/province centroids; 36 geocoded in pass 9 |
+| `itinerary_area_mismatch` | 57 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 26 | Rare but valid relationship combos |
 | `summary_short` | 0 | All summaries ≥50 chars |
 | `missing_location` | 6 | 6 non-place entities without coordinates |
@@ -250,7 +267,7 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 
 ## Entities with Approximate Coordinates (QA-19)
 
-**~1200 entities have `coords_approximate=true`** — flagged entities whose coordinates are derived from ward/province centroids or placeId fallback rather than exact geocoding.
+**~1347 entities share coordinates** (detected by coordinate clustering) — these are at ward/province centroids or placeId fallback rather than exact geocoding. 36 entities geocoded to street-level in pass 9.
 
 | Source | Count |
 |--------|-------|
@@ -266,12 +283,12 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 | attraction | **100%** (202/202) | sub_category=202, admission=191, hours=99, price_range=22 |
 | cafe | **100%** (56/56) | sub_category=56, specialty=56, price_range=18, hours=18 |
 | craft_village | **100%** (86/86) | sub_category=86, specialty=86 |
-| dish | **100%** (120/120) | sub_category=120, specialty=114, price_range=76, origin=120 |
+| dish | **100%** (118/118) | sub_category=118, specialty=112, price_range=74, origin=118 |
 | drink | **100%** (1/1) | sub_category=1, price_range=1 |
 | event | **100%** (67/67) | sub_category=67, date_start=67 |
 | experience | **100%** (92/92) | sub_category=92, admission=89, price_range=50, hours=10 |
 | facility | **100%** (58/58) | sub_category=58 |
-| nature | **100%** (125/125) | sub_category=125, admission=125, hours=10 |
+| nature | **100%** (124/124) | sub_category=124, admission=124, hours=10 |
 | person | **100%** (35/35) | sub_category=35, role=35 |
 | product | **100%** (218/218) | sub_category=218, ocop_star=84, price_range=64, ocop_certified=48, brand=45 |
 | restaurant | **100%** (191/191) | sub_category=191, specialty=191, price_range=108, hours=105 |
@@ -294,14 +311,14 @@ Note: 5 entities lowered to 0.50 during pass 9 suspect verification — could no
 
 | Type | Count |
 |------|-------|
-| near | 5003 |
-| related_to | 4279 |
-| located_in | 2208 |
-| associated_with | 660 |
-| produced_in | 184 |
+| near | 5022 |
+| related_to | 4276 |
+| located_in | 2204 |
+| associated_with | 668 |
+| produced_in | 187 |
 | **Total** | **12357** |
 
-Note: -84 relationships from pass 9 (6 fabricated entities removed). 23 itinerary stops also cleaned (2 referencing deleted entities removed).
+Note: -84 relationships from pass 9 (6 fabricated entities removed). 2 itinerary stops referencing deleted entities also removed.
 
 ## Deep Research Findings
 
@@ -365,11 +382,12 @@ Sources are stored as list of dicts `[{title, url?, method?, maps?}]` (867 field
 
 ### Description Quality
 
-- Min length: **57 chars**
+- Min length: **59 chars** (tau-hu-ky-my-hoa — product, acceptable)
 - Median: **215 chars**
-- Average: **212 chars**
+- Average: **213 chars**
 - Max: **660 chars**
-- Descriptions <80 chars: **124** (mostly food/café/accommodation — minimal factual info after name prefix dropped)
+- Descriptions <60 chars: **1** (product entity, acceptable)
+- Descriptions <80 chars: **115** (mostly food/café/accommodation — minimal factual info)
 - Descriptions >500 chars: 32
 - Double periods: **0** (1053 fixed)
 - Unbalanced parentheses: **0** (15 fixed)
@@ -413,7 +431,7 @@ Sources are stored as list of dicts `[{title, url?, method?, maps?}]` (867 field
 
 **Theoretical max without images: ~100.** Current: 90.0. Only images remain as a significant gap.
 
-## S+ Quality Analysis (pass 8)
+## S+ Quality Analysis (pass 8 + 9)
 
 Audit against viet-content-optimizer S+ criteria. Results below represent
 remaining quality concerns that require **per-entity manual review** or
@@ -423,9 +441,10 @@ remaining quality concerns that require **per-entity manual review** or
 |-----------|---------|--------|
 | Empty adjectives | ~275 total (nổi tiếng/thu hút/hấp dẫn/độc đáo) | Context-dependent — most are valid (e.g. "nổi tiếng với dừa sáp") |
 | First sentence >155 chars | 12 entities (was 215) | No good split points — would break mid-clause |
-| Starts with entity name | 471 (was 569) | 149 fixed; remaining are natural patterns (location/dash/comma) |
-| desc==summary | 352 (single-sentence entities) | Structural — can't differentiate without adding content |
-| Descriptions <80 chars | 124 (food/café/accommodation) | Minimal factual info available |
+| Starts with entity name | 268 (was 471→149 fixed) | Remaining are natural patterns (location/dash/comma) |
+| desc==summary | 376 (was 409, 33 split in pass 9) | Single-sentence entities — can't differentiate without adding content |
+| Descriptions <80 chars | 115 (was 124, 16 enriched in pass 9) | Minimal factual info available |
+| Brochure phrases | 0 (was 1, fixed in pass 9) | All cleaned |
 
 **Eliminated (pass 7 + 8):**
 - Place template boilerplate (120), accommodation copy-paste (87), structured amenity lists (46)
