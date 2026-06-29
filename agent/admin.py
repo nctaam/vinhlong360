@@ -3413,6 +3413,73 @@ async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|mod
     return {"success": True}
 
 
+class AdminUserNote(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
+@router.post("/users/{user_id}/notes")
+async def add_user_note(user_id: str, body: AdminUserNote, request: Request):
+    """Admin: add internal note to a user profile."""
+    user_id = validate_path_id(user_id, "user_id")
+    admin_id = str(request.state.user["id"]) if hasattr(request, "state") and hasattr(request.state, "user") else None
+
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT id FROM users WHERE id::text = {ph}", (user_id,))
+            if not row:
+                raise HTTPException(404, "Người dùng không tồn tại")
+            note = db._fetchone(conn, f"""
+                INSERT INTO admin_user_notes (user_id, admin_id, content)
+                VALUES ({ph}::uuid, {ph}::uuid, {ph}) RETURNING id, created_at
+            """, (user_id, admin_id, body.content.strip()))
+            return db._row_to_dict(note)
+
+    result = await asyncio.to_thread(_query)
+    return {"note": {"id": str(result["id"]), "created_at": str(result["created_at"])}}
+
+
+@router.get("/users/{user_id}/notes")
+async def get_user_notes(user_id: str, limit: int = Query(50, ge=1, le=200)):
+    """Admin: list internal notes for a user."""
+    user_id = validate_path_id(user_id, "user_id")
+
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT n.id, n.content, n.created_at, u.display_name as admin_name
+                FROM admin_user_notes n JOIN users u ON u.id = n.admin_id
+                WHERE n.user_id = {ph}::uuid ORDER BY n.created_at DESC LIMIT {ph}
+            """, (user_id, limit))
+
+    rows = await asyncio.to_thread(_query)
+    notes = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        notes.append({"id": str(d["id"]), "content": d["content"],
+                       "admin_name": d.get("admin_name"), "created_at": str(d["created_at"])})
+    return {"notes": notes}
+
+
+@router.delete("/users/{user_id}/notes/{note_id}")
+async def delete_user_note(user_id: str, note_id: str):
+    """Admin: delete an internal note."""
+    user_id = validate_path_id(user_id, "user_id")
+    note_id = validate_path_id(note_id, "note_id")
+
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"DELETE FROM admin_user_notes WHERE id = {ph}::uuid AND user_id = {ph}::uuid RETURNING 1",
+                               (note_id, user_id))
+            if not row:
+                raise HTTPException(404, "Ghi chú không tồn tại")
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
 def _mod_post(row: dict) -> dict:
     images = row.get("images", [])
     if isinstance(images, str):

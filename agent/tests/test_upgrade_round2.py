@@ -3721,3 +3721,109 @@ class TestUserActivityFeed:
     def test_activity_uses_async_thread(self):
         src = inspect.getsource(__import__("social").user_activity)
         assert "asyncio.to_thread" in src
+
+
+# ── Post Likers List ──
+
+
+class TestPostLikers:
+    """Test post likers list endpoint."""
+
+    def test_likers_endpoint_exists(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/posts/{post_id}/likers", set())
+
+    def test_likers_validates_path_id(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "validate_path_id" in src
+
+    def test_likers_returns_user_info(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "display_name" in src
+        assert "avatar_url" in src
+
+    def test_likers_orders_by_time(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "created_at DESC" in src
+
+    def test_likers_has_limit(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "LIMIT" in src
+
+    def test_likers_uses_async_thread(self):
+        src = inspect.getsource(__import__("social").get_post_likers)
+        assert "asyncio.to_thread" in src
+
+
+# ── Admin User Notes ──
+
+
+class TestAdminUserNotesMigration:
+    """Test migration 050 creates admin_user_notes table."""
+
+    def test_migration_file_exists(self):
+        import pathlib
+        p = pathlib.Path(__file__).resolve().parent.parent / "migrations" / "050_admin_user_notes.sql"
+        assert p.exists()
+
+    def test_migration_creates_table(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "050_admin_user_notes.sql").read_text()
+        assert "CREATE TABLE IF NOT EXISTS admin_user_notes" in sql
+
+    def test_migration_has_index(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "050_admin_user_notes.sql").read_text()
+        assert "idx_admin_user_notes_user" in sql
+
+
+class TestAdminUserNotesEndpoints:
+    """Test admin user notes CRUD."""
+
+    def test_add_note_endpoint_exists(self):
+        import admin
+        pairs = {(m, r.path) for r in admin.router.routes if hasattr(r, "path") for m in (r.methods if hasattr(r, "methods") else set())}
+        assert ("POST", "/admin/users/{user_id}/notes") in pairs
+
+    def test_get_notes_endpoint_exists(self):
+        import admin
+        pairs = {(m, r.path) for r in admin.router.routes if hasattr(r, "path") for m in (r.methods if hasattr(r, "methods") else set())}
+        assert ("GET", "/admin/users/{user_id}/notes") in pairs
+
+    def test_delete_note_endpoint_exists(self):
+        import admin
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in admin.router.routes if hasattr(r, "path")}
+        assert "DELETE" in routes.get("/admin/users/{user_id}/notes/{note_id}", set())
+
+    def test_add_note_validates_path_id(self):
+        import admin
+        src = inspect.getsource(admin.add_user_note)
+        assert "validate_path_id" in src
+
+    def test_add_note_checks_user_exists(self):
+        import admin
+        src = inspect.getsource(admin.add_user_note)
+        assert "404" in src
+
+    def test_get_notes_orders_desc(self):
+        import admin
+        src = inspect.getsource(admin.get_user_notes)
+        assert "created_at DESC" in src
+
+    def test_get_notes_includes_admin_name(self):
+        import admin
+        src = inspect.getsource(admin.get_user_notes)
+        assert "admin_name" in src
+
+    def test_delete_note_validates_ids(self):
+        import admin
+        src = inspect.getsource(admin.delete_user_note)
+        assert "validate_path_id" in src
+
+    def test_note_model_max_length(self):
+        import admin
+        src = inspect.getsource(admin.AdminUserNote)
+        assert "2000" in src

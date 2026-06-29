@@ -2241,6 +2241,31 @@ async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(re
     return {"liked": liked, "like_count": like_count}
 
 
+@router.get("/posts/{post_id}/likers")
+async def get_post_likers(post_id: str, limit: int = Query(20, ge=1, le=100)):
+    """List users who liked a post."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username, l.created_at
+                FROM likes l JOIN users u ON u.id = l.user_id
+                WHERE l.post_id = {ph}::uuid
+                ORDER BY l.created_at DESC LIMIT {ph}
+            """, (post_id, limit))
+
+    rows = await asyncio.to_thread(_query)
+    likers = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        likers.append({"id": str(d["id"]), "display_name": d.get("display_name"),
+                        "avatar_url": d.get("avatar_url"), "username": d.get("username"),
+                        "liked_at": str(d.get("created_at", ""))})
+    return {"likers": likers, "total": len(likers)}
+
+
 @router.post("/comments/{comment_id}/like")
 async def toggle_comment_like(comment_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     comment_id = validate_path_id(comment_id, "comment_id")
