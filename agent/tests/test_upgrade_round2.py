@@ -1273,3 +1273,129 @@ class TestFormatPostReviewResponse:
         assert '"review_response"' in src
         assert '"response_content"' in src
         assert '"responder_name"' in src
+
+
+# ── Entity claims ──
+
+class TestEntityClaimsMigration:
+    """Migration 037: entity_claims table."""
+
+    def test_migration_file_exists(self):
+        path = AGENT_DIR / "migrations" / "037_entity_claims.sql"
+        assert path.exists()
+
+    def test_creates_table(self):
+        sql = (AGENT_DIR / "migrations" / "037_entity_claims.sql").read_text(encoding="utf-8")
+        assert "CREATE TABLE IF NOT EXISTS entity_claims" in sql
+
+    def test_status_check(self):
+        sql = (AGENT_DIR / "migrations" / "037_entity_claims.sql").read_text(encoding="utf-8")
+        assert "pending" in sql
+        assert "approved" in sql
+        assert "rejected" in sql
+
+    def test_unique_per_entity_user(self):
+        sql = (AGENT_DIR / "migrations" / "037_entity_claims.sql").read_text(encoding="utf-8")
+        assert "UNIQUE" in sql
+
+    def test_has_indexes(self):
+        sql = (AGENT_DIR / "migrations" / "037_entity_claims.sql").read_text(encoding="utf-8")
+        assert "idx_entity_claims_status" in sql
+        assert "idx_entity_claims_entity" in sql
+
+
+class TestSubmitEntityClaim:
+    """POST /api/entities/{entity_id}/claim — user submits ownership claim."""
+
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/{entity_id}/claim" in paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("public_api").submit_entity_claim)
+        assert "require_user" in src
+
+    def test_has_csrf(self):
+        src = inspect.getsource(__import__("public_api").submit_entity_claim)
+        assert "require_csrf" in src
+
+    def test_rate_limited(self):
+        src = inspect.getsource(__import__("public_api").submit_entity_claim)
+        assert "check_rate" in src
+
+    def test_validates_entity_id(self):
+        src = inspect.getsource(__import__("public_api").submit_entity_claim)
+        assert "validate_path_id" in src
+
+    def test_checks_entity_exists(self):
+        src = inspect.getsource(__import__("public_api").submit_entity_claim)
+        assert "get_entity" in src
+        assert "404" in src
+
+    def test_prevents_duplicate(self):
+        src = inspect.getsource(__import__("public_api").submit_entity_claim)
+        assert "409" in src
+
+    def test_inserts_claim(self):
+        src = inspect.getsource(__import__("public_api").submit_entity_claim)
+        assert "INSERT INTO entity_claims" in src
+
+    def test_html_escapes(self):
+        src = inspect.getsource(__import__("public_api").submit_entity_claim)
+        assert "_html.escape" in src
+
+    def test_model_validation(self):
+        from public_api import EntityClaimIn
+        claim = EntityClaimIn(business_name="Test", contact_phone="0901234567")
+        assert claim.business_name == "Test"
+
+
+class TestAdminClaims:
+    """Admin claim management endpoints."""
+
+    def test_list_claims_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/claims" in paths
+
+    def test_approve_claim_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/claims/{claim_id}/approve" in paths
+
+    def test_reject_claim_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/claims/{claim_id}/reject" in paths
+
+    def test_list_claims_pagination(self):
+        src = inspect.getsource(__import__("admin").list_claims)
+        assert '"total"' in src
+        assert "LIMIT" in src
+        assert "OFFSET" in src
+
+    def test_list_claims_status_filter(self):
+        src = inspect.getsource(__import__("admin").list_claims)
+        assert "pending" in src
+        assert "all" in src
+
+    def test_approve_claim_updates_status(self):
+        src = inspect.getsource(__import__("admin").approve_claim)
+        assert "'approved'" in src
+        assert "UPDATE" in src
+
+    def test_reject_claim_uses_reason(self):
+        src = inspect.getsource(__import__("admin").reject_claim)
+        assert "body.reason" in src
+        assert "'rejected'" in src
+
+    def test_claim_status_check(self):
+        src = inspect.getsource(__import__("admin").approve_claim)
+        assert '"pending"' in src
+        assert "409" in src or "not_pending" in src
+
+    def test_claim_parameterized(self):
+        src = inspect.getsource(__import__("admin").approve_claim)
+        assert "db._ph" in src
+        assert "validate_path_id" in src

@@ -1642,6 +1642,48 @@ async def track_contact_view(
     return {"ok": True}
 
 
+# ── Entity claims (U-30) ────────────────────────────────────────────
+
+class EntityClaimIn(BaseModel):
+    business_name: str = Field(..., min_length=2, max_length=200)
+    contact_phone: str = Field(..., min_length=10, max_length=15)
+    contact_email: str = Field("", max_length=200)
+    evidence: str = Field("", max_length=2000)
+
+
+@router.post("/entities/{entity_id}/claim", dependencies=[Depends(require_pg)])
+async def submit_entity_claim(entity_id: str, payload: EntityClaimIn, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    validate_path_id(entity_id, "entity_id")
+    from ratelimit import check_rate
+    check_rate(f"claim:{user['id']}", 3, 86400, "Chỉ được gửi 3 yêu cầu xác nhận/ngày.")
+    uid = str(user["id"])
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    if not entity:
+        raise HTTPException(404, "Entity không tồn tại")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            existing = db._fetchone(conn, f"""
+                SELECT id, status FROM entity_claims
+                WHERE entity_id = {ph} AND claimant_id::text = {ph}
+            """, (entity_id, uid))
+            if existing:
+                st = db._row_to_dict(existing)["status"]
+                if st == "pending":
+                    raise HTTPException(409, "Bạn đã gửi yêu cầu xác nhận cho entity này")
+                if st == "approved":
+                    raise HTTPException(409, "Entity này đã được xác nhận cho bạn")
+            import html as _html
+            db._execute(conn, f"""
+                INSERT INTO entity_claims (entity_id, claimant_id, business_name, contact_phone, contact_email, evidence)
+                VALUES ({ph}, {ph}::uuid, {ph}, {ph}, {ph}, {ph})
+            """, (entity_id, uid, _html.escape(payload.business_name.strip()),
+                  payload.contact_phone.strip(), payload.contact_email.strip(),
+                  _html.escape(payload.evidence.strip()) if payload.evidence else ""))
+    await asyncio.to_thread(_query)
+    return {"success": True, "message": "Yêu cầu xác nhận đã được gửi. Chúng tôi sẽ xem xét."}
+
+
 # ── What's-new feed (U-15) ────────────────────────────────────────────
 
 
@@ -1779,59 +1821,3 @@ async def transparency_report():
             "cooperation_with_authorities": True,
         },
     }
-
-
-# ── Entity claims (U-30: business owner claim flow) ───────────────────
-
-class ClaimIn(BaseModel):
-    business_name: str = Field(..., min_length=2, max_length=200)
-    contact_phone: str = Field(..., min_length=8, max_length=20)
-    contact_email: Optional[str] = Field(None, max_length=200)
-    evidence: Optional[str] = Field(None, max_length=2000)
-
-
-@router.post("/entities/{entity_id}/claim", dependencies=[Depends(require_pg)])
-async def submit_entity_claim(
-    entity_id: str,
-    payload: ClaimIn,
-    user=Depends(require_user),
-    _csrf=Depends(require_csrf),
-):
-    """U-30: Submit a claim to own/manage an entity listing."""
-    validate_path_id(entity_id, "entity_id")
-
-    from ratelimit import check_rate
-    check_rate(f"claim:{user['id']}", 5, 3600, "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.")
-
-    entity = await asyncio.to_thread(db.get_entity, entity_id)
-    if not entity:
-        return JSONResponse(status_code=404, content={"error": "entity_not_found"})
-
-    ph = db._ph
-    uid = str(user["id"])
-
-    def _check_duplicate():
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                SELECT id FROM entity_claims
-                WHERE entity_id = {ph} AND claimant_id = {ph}::uuid AND status = 'pending'
-            """, (entity_id, uid))
-        return row is not None
-
-    has_pending = await asyncio.to_thread(_check_duplicate)
-    if has_pending:
-        return JSONResponse(status_code=409, content={
-            "error": "duplicate_pending",
-            "message": "Bạn đã có yêu cầu đang chờ duyệt cho địa điểm này.",
-        })
-
-    def _insert():
-        with db._conn() as conn:
-            db._execute(conn, f"""
-                INSERT INTO entity_claims (entity_id, claimant_id, business_name, contact_phone, contact_email, evidence)
-                VALUES ({ph}, {ph}::uuid, {ph}, {ph}, {ph}, {ph})
-            """, (entity_id, uid, payload.business_name, payload.contact_phone,
-                  payload.contact_email, payload.evidence))
-
-    await asyncio.to_thread(_insert)
-    return {"ok": True, "message": "Yêu cầu xác nhận đã được gửi. Chúng tôi sẽ xem xét trong 3-5 ngày."}
