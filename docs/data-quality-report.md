@@ -141,6 +141,62 @@ Tool: `python scripts/validate_data.py`
 | Remaining clichés | 1 "viên ngọc", 4 "tuyệt vời/ấn tượng" | **0** |
 | "bức tranh" metaphor | 1 | **0** (→ "khung cảnh") |
 
+## Improvements Pass 11 — Deep Verification & Enrichment (2026-06-29)
+
+### Phase 1: Removed 5 fabricated/unverifiable entities
+
+WebSearch agents verified 12 low-confidence entities in parallel. 5 were fabricated (LLM hallucinations with zero credible evidence online), removed along with 73 relationships:
+
+| Entity ID | Problem |
+|-----------|---------|
+| lang-nghe-tac-tuong-go-long-duc | Fabricated: Long Đức = hoa kiểng, not wood carving |
+| chua-botum-rangsay | Fabricated: no temple by this name in Trà Vinh |
+| bun-nuoc-leo-cho-ba-tri-ben-tre | Unverifiable: Trà Vinh dish misplaced to Bến Tre |
+| hu-tieu-sa-dec-chu-tu-gan-cho-phu-hung-ben-tre | Unverifiable: zero online presence |
+| banh-mi-sau-hoa-ben-tre | Unverifiable: zero online presence, shared fake coords |
+
+### Phase 2: Verified & enriched 4 confirmed entities
+
+| Entity ID | Action | Confidence |
+|-----------|--------|------------|
+| chua-khai-tuong | Confirmed in Ba Tri (Phú Lễ), 600 gifts Trung Thu 2024 | 0.5 → 0.85 |
+| chua-hung-hue | Confirmed in Bình Tân, ~200 years old, BTS PG huyện | 0.5 → 0.85 |
+| dinh-cai-von | Renamed → Đình Thần Mỹ Thuận (correct name), sắc phong 1854 | 0.5 → 0.85 |
+| mieu-ba-chua-xu-tra-vinh | Enriched: tradition with 147+ shrines, 2 notable ones detailed | 0.5 → 0.65 |
+
+### Phase 3: Rating scale normalization
+
+126 entities had ratings on /10 scale (7.0-10.0, from Foody/Google Maps). Converted to /5 by dividing by 2: `new_rating = round(rating / 2, 1)`. Range now 3.5-5.0.
+
+### Phase 4: Enriched 5 high-value person entities with web-researched content
+
+All facts verified against government sources, Wikipedia, and official tourism sites:
+
+| Entity | Description length | Key facts added |
+|--------|-------------------|-----------------|
+| lang-banh-trang-giay-tuong-loc | 648c | 100+ year history, 40 hộ, 110 tấn/năm, 1 of 17 làng nghề |
+| bao-tang-vinh-long | 413c | 12,000m², 28,000 artifacts, 4 exhibition halls, hours |
+| nguyen-thi-dinh | 748c | Born 13/2/1920, Đồng Khởi 17/1/1960, first female general 4/1974 |
+| nguyen-dinh-chieu | 748c | Born 1822, Lục Vân Tiên 2082 lines, UNESCO 2022 |
+| nguyen-thi-ut (Út Tịch) | 816c | Born 19/4/1931, 23 battles, "Người mẹ cầm súng" 1965 |
+
+### Brochure phrase cleanup: "nổi tiếng" eradicated
+
+86 context-aware replacements across summaries and descriptions. Each "nổi tiếng" replaced with a context-appropriate alternative (lẫy lừng, lỗi lạc, để đời, có tiếng, phổ biến, lâu đời, đặc trưng, or dropped entirely).
+
+### Pass 11 cumulative metrics
+
+| Metric | Pass 10 | Pass 11 | Change |
+|--------|---------|---------|--------|
+| Entities | 1736 | **1731** | -5 (fabricated removed) |
+| Relationships | 12326 | **12253** | -73 |
+| Low confidence (<0.8) | 7 | **4** | -3 (verified+raised) |
+| Ratings > 5.0 | 126 | **0** | -126 (normalized) |
+| "nổi tiếng" in text | 86 | **0** | -86 |
+| Summary == Description | 204 | **113** | -91 |
+
+---
+
 ## Improvements Pass 10 — Content S+ Quality (2026-06-29)
 
 ### Hồ Trúc Giang: S+ long-form content (3 commits)
@@ -270,7 +326,7 @@ Two batches of Nominatim geocoding (50 entities each):
 
 ## Entities Missing Images (QA-18)
 
-**All 1739 entities have `images: []`** — 0% image coverage.
+**All 1731 entities have `images: []`** — 0% image coverage.
 
 Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-image` API. No stock photos (Pexels/Unsplash), UGC, or Wikimedia images per project policy.
 
@@ -317,8 +373,8 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 | accommodation | **100%** (164/164) | sub_category=164, price_range=120, phone=89, star_rating=56 |
 | attraction | **100%** (202/202) | sub_category=202, admission=191, hours=99, price_range=22 |
 | cafe | **100%** (56/56) | sub_category=56, specialty=56, price_range=18, hours=18 |
-| craft_village | **100%** (86/86) | sub_category=86, specialty=86 |
-| dish | **100%** (118/118) | sub_category=118, specialty=112, price_range=74, origin=118 |
+| craft_village | **100%** (85/85) | sub_category=85, specialty=85 |
+| dish | **100%** (116/116) | sub_category=116, specialty=110, price_range=73, origin=116 |
 | drink | **100%** (1/1) | sub_category=1, price_range=1 |
 | event | **100%** (67/67) | sub_category=67, date_start=67 |
 | experience | **100%** (92/92) | sub_category=92, admission=89, price_range=50, hours=10 |
@@ -326,19 +382,19 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 | nature | **100%** (124/124) | sub_category=124, admission=124, hours=10 |
 | person | **100%** (35/35) | sub_category=35, role=35 |
 | product | **100%** (218/218) | sub_category=218, ocop_star=84, price_range=64, ocop_certified=48, brand=45 |
-| restaurant | **100%** (191/191) | sub_category=191, specialty=191, price_range=108, hours=105 |
+| restaurant | **100%** (188/188) | sub_category=188, specialty=188, price_range=106, hours=103 |
 | organization | **100%** (1/1) | sub_category=1 |
 
 **All entity types are at 100% sub_category coverage.** 1604/1604 non-place entities classified.
 
 ## Confidence Distribution
 
-- Min: **0.50** (5 unverifiable suspect entities)
+- Min: **0.50** (2 unverifiable entities)
 - Median: **0.88**
 - Max: 0.95
-- Entities at 0.9+: **366**
-- Entities at 0.5 (unverifiable): **5**
-- All other entities: **≥0.81**
+- Entities at 0.9+: **362**
+- Entities at 0.8-0.89: **1365**
+- Entities at <0.8: **4** (cha-gio-chay 0.50, mieu-ba-chua-xu-tra-vinh 0.65, di-tich-co-vinh-xuan-tra-on 0.70, du-lich-sinh-thai-cong-dong-thanh-phong-ben-tre 0.70)
 
 Note: 5 entities lowered to 0.50 during pass 9 suspect verification — could not confirm via WebSearch. These may be real but obscure. Confidence formula differentiates approximate coordinates (+0.03) from verified coordinates (+0.10).
 
