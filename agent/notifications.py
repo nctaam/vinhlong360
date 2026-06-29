@@ -296,8 +296,8 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
             for m in missed:
                 md = db._row_to_dict(m)
                 eid = await _next_event_id()
-                payload = {k: str(md[k]) if md.get(k) else None for k in ("id", "type", "title", "body", "ref_type", "ref_id")}
-                payload["created_at"] = str(md.get("created_at", ""))
+                payload = {k: str(md[k]) if md.get(k) is not None else None for k in ("id", "type", "title", "body", "ref_type", "ref_id")}
+                payload["created_at"] = str(md["created_at"]) if md.get("created_at") is not None else ""
                 yield f"id: {eid}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
             while True:
                 if await request.is_disconnected():

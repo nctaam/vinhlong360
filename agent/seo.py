@@ -12,6 +12,7 @@ import html as _html
 import json
 import logging
 import re
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -211,13 +212,18 @@ def _load() -> dict[str, Any]:
     return _data
 
 
+_by_id_lock = threading.Lock()
+
+
 def _by_id(data: dict[str, Any] | None = None) -> dict[str, dict[str, Any]]:
     global _by_id_cache, _by_id_cache_key
     data = data or _load()
     data_key = id(data)
     if _by_id_cache is None or _by_id_cache_key != data_key:
-        _by_id_cache = {str(e.get("id")): e for e in data["entities"] if isinstance(e, dict) and e.get("id")}
-        _by_id_cache_key = data_key
+        with _by_id_lock:
+            if _by_id_cache is None or _by_id_cache_key != data_key:
+                _by_id_cache = {str(e.get("id")): e for e in data["entities"] if isinstance(e, dict) and e.get("id")}
+                _by_id_cache_key = data_key
     return _by_id_cache
 
 

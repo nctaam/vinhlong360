@@ -3338,7 +3338,7 @@ async def get_user_reviews(
     if viewer_id != uid:
         privacy_hidden = await asyncio.to_thread(_check_show_activity, uid, viewer_id)
         if privacy_hidden:
-            return {"reviews": [], "page": page, "has_more": False}
+            return {"reviews": [], "total": 0, "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
     offset = (page - 1) * limit
     def _query():

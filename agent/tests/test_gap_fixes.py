@@ -2509,3 +2509,50 @@ class TestFollowerCountTargetTypeValidation:
     def test_row_access_uses_row_to_dict(self):
         src = inspect.getsource(__import__("notifications").get_follower_count)
         assert "db._row_to_dict(row)" in src
+
+
+# ── SEO _by_id thread safety ──
+
+
+class TestSeoByIdThreadSafety:
+    """_by_id() must use a lock for thread-safe lazy initialization."""
+
+    def test_by_id_lock_exists(self):
+        import seo
+        assert hasattr(seo, "_by_id_lock")
+
+    def test_by_id_uses_double_checked_locking(self):
+        src = inspect.getsource(__import__("seo")._by_id)
+        assert "_by_id_lock" in src
+        idx_lock = src.index("_by_id_lock")
+        idx_second_check = src.index("_by_id_cache is None", idx_lock)
+        assert idx_second_check > idx_lock
+
+    def test_by_id_returns_dict(self):
+        import seo
+        result = seo._by_id()
+        assert isinstance(result, dict)
+
+
+# ── SSE payload None handling ──
+
+
+class TestSSEPayloadNoneHandling:
+    """SSE notification payload must use 'is not None' to avoid dropping falsy values."""
+
+    def test_sse_missed_uses_is_not_none(self):
+        src = inspect.getsource(__import__("notifications").notification_stream)
+        assert "is not None" in src
+
+    def test_sse_created_at_not_str_none(self):
+        src = inspect.getsource(__import__("notifications").notification_stream)
+        assert 'str(md.get("created_at", ""))' not in src
+
+    def test_user_reviews_early_return_has_total(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        lines = src.split("\n")
+        for line in lines:
+            if "privacy_hidden" in line or ("reviews" in line and "[]" in line):
+                continue
+            if '"reviews": []' in line:
+                assert '"total"' in line, "reviews early return missing total"
