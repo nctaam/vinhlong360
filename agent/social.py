@@ -457,6 +457,8 @@ async def list_drafts(
 
     def _query():
         with db._conn() as conn:
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM posts WHERE user_id = {ph}::uuid AND is_draft = TRUE", (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT id, content, post_type, entity_id, rating, images, created_at, updated_at
                 FROM posts
@@ -464,12 +466,12 @@ async def list_drafts(
                 ORDER BY COALESCE(updated_at, created_at) DESC
                 LIMIT {ph} OFFSET {ph}
             """, (uid, limit, offset))
-            return [db._row_to_dict(r) for r in rows]
+            return [db._row_to_dict(r) for r in rows], total
 
-    drafts = await asyncio.to_thread(_query)
+    drafts, total = await asyncio.to_thread(_query)
     for d in drafts:
         d["id"] = str(d["id"])
-    return {"drafts": drafts, "page": page, "has_more": len(drafts) == limit}
+    return {"drafts": drafts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 @router.put("/drafts/{draft_id}")
@@ -625,6 +627,12 @@ async def list_scheduled(
 
     def _query():
         with db._conn() as conn:
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id = {ph}::uuid AND scheduled_at IS NOT NULL
+                  AND scheduled_at > NOW() AND is_draft = FALSE
+            """, (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT id, content, post_type, entity_id, rating, images,
                        scheduled_at, created_at
@@ -634,12 +642,12 @@ async def list_scheduled(
                 ORDER BY scheduled_at ASC
                 LIMIT {ph} OFFSET {ph}
             """, (uid, limit, offset))
-            return [db._row_to_dict(r) for r in rows]
+            return [db._row_to_dict(r) for r in rows], total
 
-    scheduled = await asyncio.to_thread(_query)
+    scheduled, total = await asyncio.to_thread(_query)
     for s in scheduled:
         s["id"] = str(s["id"])
-    return {"scheduled": scheduled, "page": page, "has_more": len(scheduled) == limit}
+    return {"scheduled": scheduled, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 @router.delete("/scheduled/{post_id}")
@@ -1055,7 +1063,14 @@ async def explore_feed(
         exclude_params = [uid, uid]
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.moderation_status = 'approved'
+                  AND p.created_at > NOW() - INTERVAL '90 days'
+                  {exclude_following} {bc} {mc}
+            """, (*exclude_params, *bc_p, *mc_p))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM posts p
@@ -1070,12 +1085,13 @@ async def explore_feed(
                          p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, (*exclude_params, *bc_p, *mc_p, limit, offset))
-    rows = await asyncio.to_thread(_query)
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     if user:
         await asyncio.to_thread(_enrich_user_status, posts, user)
     await asyncio.to_thread(_enrich_reactions, posts)
-    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 @router.get("/search/posts")
@@ -1151,9 +1167,18 @@ async def search_users(
     mc, mc_p = _mute_sql(user, "u.id")
     params: list = [pattern] + bc_p + mc_p + [limit, offset]
 
+    count_params: list = [pattern] + bc_p + mc_p
+
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM users u
+                WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
+                  AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph}) ESCAPE '\\'
+                  {bc} {mc}
+            """, tuple(count_params))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username,
                        COUNT(p.id) AS post_count
                 FROM users u
@@ -1165,7 +1190,8 @@ async def search_users(
                 ORDER BY post_count DESC, u.display_name
                 LIMIT {ph} OFFSET {ph}
             """, tuple(params))
-    rows = await asyncio.to_thread(_query)
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
 
     users = []
     for r in rows:
@@ -1176,7 +1202,7 @@ async def search_users(
                 "avatar_url": d.get("avatar_url"), "username": d.get("username"),
                 "post_count": int(d.get("post_count") or 0),
             })
-    return {"users": users, "q": _strip_html_tags(q), "page": page, "total": len(users), "has_more": len(users) == limit}
+    return {"users": users, "q": _strip_html_tags(q), "page": page, "total": total, "has_more": offset + limit < total}
 
 
 @router.get("/community/stats")
@@ -1564,20 +1590,26 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
     bc, bc_p = _block_sql(user)
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM follows f JOIN users u ON u.id::text = f.target_id
+                WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE {bc}
+            """, (uid,) + tuple(bc_p))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username
                 FROM follows f JOIN users u ON u.id::text = f.target_id
                 WHERE f.follower_id = {ph}::uuid AND f.target_type = 'user' AND u.is_active = TRUE
                 {bc}
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
             """, (uid,) + tuple(bc_p) + (limit, offset))
-    rows = await asyncio.to_thread(_query)
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
     users = []
     for r in rows:
         d = db._row_to_dict(r)
         users.append({"id": str(d["id"]), "display_name": d["display_name"],
                        "username": d.get("username"), "avatar_url": d.get("avatar_url")})
-    return {"users": users, "offset": offset, "has_more": len(users) == limit}
+    return {"users": users, "total": total, "offset": offset, "has_more": offset + limit < total}
 
 
 @router.get("/users/{user_id}/followers")
@@ -1591,20 +1623,26 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
     bc, bc_p = _block_sql(user)
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM follows f JOIN users u ON u.id = f.follower_id
+                WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE {bc}
+            """, (uid,) + tuple(bc_p))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username
                 FROM follows f JOIN users u ON u.id = f.follower_id
                 WHERE f.target_type = 'user' AND f.target_id = {ph} AND u.is_active = TRUE
                 {bc}
                 ORDER BY f.created_at DESC LIMIT {ph} OFFSET {ph}
             """, (uid,) + tuple(bc_p) + (limit, offset))
-    rows = await asyncio.to_thread(_query)
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
     users = []
     for r in rows:
         d = db._row_to_dict(r)
         users.append({"id": str(d["id"]), "display_name": d["display_name"],
                        "username": d.get("username"), "avatar_url": d.get("avatar_url")})
-    return {"users": users, "offset": offset, "has_more": len(users) == limit}
+    return {"users": users, "total": total, "offset": offset, "has_more": offset + limit < total}
 
 
 @router.get("/community/suggested-follows")
@@ -2726,7 +2764,13 @@ async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le
             cd = db._row_to_dict(coll)
             if str(cd["user_id"]) != uid and not cd.get("is_public"):
                 raise HTTPException(403, "Không có quyền xem danh sách này")
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM collection_items ci
+                JOIN posts p ON p.id = ci.post_id
+                WHERE ci.collection_id = {ph}::uuid AND p.moderation_status = 'approved'
+            """, (collection_id,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM collection_items ci
@@ -2736,13 +2780,14 @@ async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le
                 WHERE ci.collection_id = {ph}::uuid AND p.moderation_status = 'approved'
                 ORDER BY ci.added_at DESC LIMIT {ph} OFFSET {ph}
             """, (collection_id, limit, offset))
+            return rows, total
 
-    rows = await asyncio.to_thread(_query)
+    rows, total = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]
     await asyncio.to_thread(_enrich_user_status, posts, user)
     await asyncio.to_thread(_enrich_reactions, posts)
     posts = [_format_post(p) for p in posts]
-    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 # ── Share Tracking ──
@@ -3216,7 +3261,12 @@ async def get_user_posts(
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' {bc}
+            """, (uid, *bc_p))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM posts p
@@ -3227,11 +3277,12 @@ async def get_user_posts(
                 ORDER BY COALESCE(p.is_pinned, FALSE) DESC, p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, (uid, *bc_p, limit, offset))
-    rows = await asyncio.to_thread(_query)
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]
     await asyncio.to_thread(_enrich_reactions, posts)
     posts = [_format_post(p) for p in posts]
-    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
+    return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 @router.get("/users/{user_id}/reviews")
@@ -3254,7 +3305,13 @@ async def get_user_reviews(
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.user_id::text = {ph} AND p.post_type = 'review'
+                  AND p.moderation_status = 'approved' {bc}
+            """, (uid, *bc_p))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
                        e.name as entity_name, e.type as entity_type
                 FROM posts p
@@ -3266,11 +3323,12 @@ async def get_user_reviews(
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, (uid, *bc_p, limit, offset))
-    rows = await asyncio.to_thread(_query)
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]
     await asyncio.to_thread(_enrich_reactions, posts)
     posts = [_format_post(p) for p in posts]
-    return {"reviews": posts, "page": page, "has_more": len(posts) == limit}
+    return {"reviews": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 # ── Helpers for AI integration (called by tools.py) ──

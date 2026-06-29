@@ -805,6 +805,58 @@ class TestSiteSettingsValidation:
         assert "_SETTING_KEY_RE" in src
 
 
+# ── Pagination accuracy: total count + offset-based has_more ──
+
+
+class TestPaginationAccuracy:
+    """All paginated endpoints must use total COUNT for accurate has_more."""
+
+    def test_user_posts_has_total(self):
+        src = inspect.getsource(__import__("social").get_user_posts)
+        assert "offset + limit < total" in src
+        assert '"total"' in src or "'total'" in src
+
+    def test_user_reviews_has_total(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        assert "offset + limit < total" in src
+
+    def test_explore_feed_has_total(self):
+        src = inspect.getsource(__import__("social").explore_feed)
+        assert "offset + limit < total" in src
+
+    def test_list_following_has_total(self):
+        src = inspect.getsource(__import__("social").list_following_users)
+        assert "offset + limit < total" in src
+
+    def test_list_followers_has_total(self):
+        src = inspect.getsource(__import__("social").list_followers)
+        assert "offset + limit < total" in src
+
+    def test_search_users_has_total(self):
+        src = inspect.getsource(__import__("social").search_users)
+        assert "offset + limit < total" in src
+
+    def test_list_drafts_has_total(self):
+        src = inspect.getsource(__import__("social").list_drafts)
+        assert "offset + limit < total" in src
+
+    def test_list_scheduled_has_total(self):
+        src = inspect.getsource(__import__("social").list_scheduled)
+        assert "offset + limit < total" in src
+
+    def test_collection_items_has_total(self):
+        src = inspect.getsource(__import__("social").get_collection_items)
+        assert "offset + limit < total" in src
+
+    def test_no_len_equals_limit_pattern(self):
+        """No endpoint should use len(results) == limit for has_more."""
+        from pathlib import Path
+        src = Path(AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        occurrences = src.count('len(posts) == limit') + src.count('len(users) == limit') + \
+                      src.count('len(drafts) == limit') + src.count('len(scheduled) == limit')
+        assert occurrences == 0, f"Found {occurrences} inaccurate has_more patterns"
+
+
 # ── Hashtag posts has_more accuracy ──
 
 
