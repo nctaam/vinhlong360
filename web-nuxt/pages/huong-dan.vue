@@ -178,7 +178,7 @@
       </section>
 
       <p v-if="search && !filteredSections.length" class="no-results reveal">
-        Không tìm thấy nội dung nào cho "{{ search }}". Thử từ khóa khác hoặc <a href="#" @click.prevent="search = ''">xóa bộ lọc</a>.
+        Không tìm thấy nội dung nào cho "{{ search }}". Thử từ khóa khác hoặc <button type="button" class="link-btn" @click="search = ''">xóa bộ lọc</button>.
       </p>
 
       <!-- ==================== PHÍM TẮT ==================== -->

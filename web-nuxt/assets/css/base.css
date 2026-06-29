@@ -324,6 +324,7 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
 
 /* ── Footer ── */
 .site-footer {
+  content-visibility: auto; contain-intrinsic-size: auto 400px;
   background: var(--bg-warm);
   background-image: linear-gradient(to bottom, rgba(var(--primary-rgb), .03) 0%, transparent 40%);
   border-top: .5px solid var(--line);

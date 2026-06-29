@@ -31,6 +31,10 @@
 .btn-ghost { background: transparent; color: var(--muted); }
 .btn-ghost:hover:not(:disabled) { background: var(--bg-warm); color: var(--ink); }
 
+.link-btn { background: none; border: none; padding: 0; color: var(--primary-fg); cursor: pointer; font: inherit; text-decoration: underline; }
+.link-btn:hover { color: var(--primary-fg-strong, var(--primary)); }
+.link-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 2px; }
+
 .btn-sm { padding: var(--space-2) var(--space-4); font-size: var(--text-sm); min-height: 44px; }
 .btn-lg { padding: 14px 28px; font-size: 1rem; min-height: var(--touch-min); }
 .btn-icon { padding: var(--space-2); border-radius: 50%; min-width: var(--touch-min); min-height: var(--touch-min); display: inline-flex; align-items: center; justify-content: center; }
