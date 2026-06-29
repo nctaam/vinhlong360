@@ -49,7 +49,7 @@
     </section>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Danh bạ hành chính — tìm nhanh liên hệ địa phương</h2>
       <p>Khi đến một vùng đất mới, việc biết số điện thoại và địa chỉ cơ quan hành chính địa phương là rất cần thiết — từ xin xác nhận tạm trú, hỏi thông tin quy hoạch, đến liên hệ công an khi cần hỗ trợ. Danh bạ này tổng hợp thông tin liên hệ UBND, công an và các cơ quan công vụ theo từng xã, phường trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh.</p>
       <p>Sau khi sáp nhập ba tỉnh thành một đơn vị hành chính mới, hệ thống xã/phường đang trong quá trình điều chỉnh. Thông tin trên đây được cập nhật liên tục nhưng có thể chưa phản ánh đầy đủ các thay đổi mới nhất — vui lòng kiểm chứng trực tiếp với cơ quan khi cần.</p>

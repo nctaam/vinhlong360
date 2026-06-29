@@ -75,7 +75,7 @@
     </section>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Lịch trình có sẵn — đi ngay không cần lên kế hoạch</h2>
       <p>Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế, sắp xếp các điểm đến theo thứ tự hợp lý về khoảng cách và thời gian. Bạn chỉ cần chọn lịch trình phù hợp với số ngày đi, sở thích (văn hoá, ẩm thực, thiên nhiên) và phương tiện (xe máy, ô tô, xuồng). Mỗi điểm dừng đều có thông tin thực tế: giờ mở cửa, giá tham khảo, mẹo di chuyển.</p>
       <p>Có thể kết hợp nhiều lịch trình hoặc tuỳ chỉnh — bỏ bớt điểm dừng, thêm điểm mới, thay đổi thứ tự. Tất cả lịch trình đều miễn phí và có thể lưu vào tài khoản để xem lại khi đi.</p>
