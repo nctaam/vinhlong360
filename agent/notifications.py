@@ -91,6 +91,20 @@ async def get_notifications(
     }
 
 
+@router.get("/notifications/unread-count")
+async def unread_count(user=Depends(require_user)):
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM notifications
+                WHERE user_id = {ph}::uuid AND is_read = FALSE
+            """, (str(user["id"]),))
+        return db._row_to_dict(row)["c"] if row else 0
+    count = await asyncio.to_thread(_query)
+    return {"unread_count": count}
+
+
 @router.post("/notifications/read-all")
 async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"notif-read:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")

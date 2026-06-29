@@ -290,6 +290,35 @@ async def get_entity_relationships(
         return JSONResponse(status_code=404, content={"error": "not_found"})
     return result
 
+
+@router.get("/entity-types")
+async def entity_types():
+    def _query():
+        all_ents = db.list_entities(limit=10000, offset=0, public_only=True)
+        counts: dict[str, int] = {}
+        for e in all_ents:
+            t = e.get("type", "unknown")
+            counts[t] = counts.get(t, 0) + 1
+        return sorted([{"type": k, "count": v} for k, v in counts.items()], key=lambda x: -x["count"])
+    result = await asyncio.to_thread(_query)
+    return {"types": result, "total": sum(t["count"] for t in result)}
+
+
+@router.get("/areas")
+async def list_areas():
+    def _query():
+        places = db.list_entities(entity_type="place", limit=1000, offset=0, public_only=True)
+        areas: dict[str, list] = {}
+        for p in places:
+            area = p.get("area", "")
+            if area not in areas:
+                areas[area] = []
+            areas[area].append({"id": p["id"], "name": p["name"]})
+        return [{"area": k, "places": v, "count": len(v)} for k, v in sorted(areas.items())]
+    result = await asyncio.to_thread(_query)
+    return {"areas": result, "total_places": sum(a["count"] for a in result)}
+
+
 @router.get("/entities/{entity_id}")
 async def get_entity(
     entity_id: str,

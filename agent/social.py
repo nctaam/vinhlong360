@@ -2231,6 +2231,38 @@ async def get_user_posts(
     return {"posts": posts, "page": page, "has_more": len(posts) == limit}
 
 
+@router.get("/users/{user_id}/reviews")
+async def get_user_reviews(
+    user_id: str, request: Request,
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
+):
+    validate_path_id(user_id, "user_id")
+    user = await get_current_user(request)
+    ph = db._ph
+    uid = await asyncio.to_thread(_resolve_user_id, user_id)
+    if not uid:
+        raise HTTPException(404, "Người dùng không tồn tại")
+    bc, bc_p = _block_sql(user, "p.user_id")
+    offset = (page - 1) * limit
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.user_id::text = {ph} AND p.post_type = 'review'
+                  AND p.moderation_status = 'approved'
+                {bc}
+                ORDER BY p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, *bc_p, limit, offset))
+    rows = await asyncio.to_thread(_query)
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    return {"reviews": posts, "page": page, "has_more": len(posts) == limit}
+
+
 # ── Helpers for AI integration (called by tools.py) ──
 
 def get_community_reviews(entity_id: str, limit: int = 5) -> list[dict]:

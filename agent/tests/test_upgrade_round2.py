@@ -1648,3 +1648,122 @@ class TestAdminContentStats:
     def test_parameterized(self):
         src = inspect.getsource(__import__("admin").content_stats)
         assert "INTERVAL" in src
+
+
+# ── User reviews endpoint ──
+
+class TestUserReviews:
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/users/{user_id}/reviews" in paths
+
+    def test_endpoint_is_get(self):
+        from social import router
+        methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
+        assert "GET" in methods.get("/api/users/{user_id}/reviews", set())
+
+    def test_filters_by_review(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        assert "post_type = 'review'" in src
+
+    def test_validates_path_id(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        assert "validate_path_id" in src
+
+    def test_block_filter(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        assert "_block_sql" in src
+
+    def test_pagination(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        assert "LIMIT" in src
+        assert "OFFSET" in src
+
+    def test_formats_posts(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        assert "_format_post" in src
+
+    def test_resolves_user_id(self):
+        src = inspect.getsource(__import__("social").get_user_reviews)
+        assert "_resolve_user_id" in src
+
+
+# ── Unread notification count ──
+
+class TestUnreadNotificationCount:
+    def test_endpoint_exists(self):
+        from notifications import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/notifications/unread-count" in paths
+
+    def test_endpoint_is_get(self):
+        from notifications import router
+        methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
+        assert "GET" in methods.get("/api/notifications/unread-count", set())
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("notifications").unread_count)
+        assert "require_user" in src
+
+    def test_returns_count(self):
+        src = inspect.getsource(__import__("notifications").unread_count)
+        assert '"unread_count"' in src
+
+    def test_queries_unread(self):
+        src = inspect.getsource(__import__("notifications").unread_count)
+        assert "is_read = FALSE" in src
+
+    def test_parameterized(self):
+        src = inspect.getsource(__import__("notifications").unread_count)
+        assert "db._ph" in src
+
+
+# ── Entity types endpoint ──
+
+class TestEntityTypes:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entity-types" in paths
+
+    def test_returns_types(self):
+        src = inspect.getsource(__import__("public_api").entity_types)
+        assert '"types"' in src
+
+    def test_returns_counts(self):
+        src = inspect.getsource(__import__("public_api").entity_types)
+        assert '"count"' in src
+
+    def test_returns_total(self):
+        src = inspect.getsource(__import__("public_api").entity_types)
+        assert '"total"' in src
+
+    def test_sorted_by_count(self):
+        src = inspect.getsource(__import__("public_api").entity_types)
+        assert "sorted" in src
+
+
+# ── Areas endpoint ──
+
+class TestAreas:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/areas" in paths
+
+    def test_returns_areas(self):
+        src = inspect.getsource(__import__("public_api").list_areas)
+        assert '"areas"' in src
+
+    def test_returns_places(self):
+        src = inspect.getsource(__import__("public_api").list_areas)
+        assert '"places"' in src
+
+    def test_returns_total(self):
+        src = inspect.getsource(__import__("public_api").list_areas)
+        assert '"total_places"' in src
+
+    def test_filters_place_type(self):
+        src = inspect.getsource(__import__("public_api").list_areas)
+        assert 'entity_type="place"' in src
