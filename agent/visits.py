@@ -96,6 +96,43 @@ async def review_prompts(user=Depends(require_user), limit: int = Query(10, ge=1
     return await asyncio.to_thread(_query)
 
 
+@router.get("/stats")
+async def visit_stats(user=Depends(require_user)):
+    def _query():
+        ph = db._ph
+        uid = str(user["id"])
+        with db._conn() as conn:
+            total = db._fetchone(conn, f"""
+                SELECT COUNT(*) as total,
+                       COUNT(*) FILTER (WHERE status = 'visited') as visited,
+                       COUNT(*) FILTER (WHERE status = 'want') as want
+                FROM user_visits WHERE user_id = {ph}::uuid
+            """, (uid,))
+            by_type = db._fetchall(conn, f"""
+                SELECT e.type, v.status, COUNT(*) as cnt
+                FROM user_visits v
+                JOIN entities e ON e.id = v.entity_id
+                WHERE v.user_id = {ph}::uuid
+                GROUP BY e.type, v.status
+                ORDER BY cnt DESC
+            """, (uid,))
+        td = db._row_to_dict(total) if total else {}
+        breakdown = {}
+        for r in by_type:
+            rd = db._row_to_dict(r)
+            etype = rd.get("type", "unknown")
+            if etype not in breakdown:
+                breakdown[etype] = {"visited": 0, "want": 0}
+            breakdown[etype][rd["status"]] = rd["cnt"]
+        return {
+            "total": td.get("total", 0),
+            "visited": td.get("visited", 0),
+            "want": td.get("want", 0),
+            "by_type": breakdown,
+        }
+    return await asyncio.to_thread(_query)
+
+
 @router.delete("/{entity_id}")
 async def remove_visit(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     entity_id = validate_path_id(entity_id, "entity_id")

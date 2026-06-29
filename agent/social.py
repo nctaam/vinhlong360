@@ -658,6 +658,40 @@ async def get_following_feed(
             "has_more": offset + limit < total_c}
 
 
+_TRENDING_POSTS_WINDOWS = {"24h": 1, "7d": 7, "30d": 30}
+
+
+@router.get("/feed/trending")
+async def trending_posts(
+    window: str = Query("7d", max_length=10),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(get_current_user),
+):
+    days = _TRENDING_POSTS_WINDOWS.get(window, 7)
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.moderation_status = 'approved'
+                  AND p.created_at > NOW() - INTERVAL '{days} days'
+                  {bc}
+                ORDER BY (p.like_count * 2 + p.comment_count * 3) DESC,
+                         p.created_at DESC
+                LIMIT {ph}
+            """, (*bc_p, limit))
+        return rows
+    rows = await asyncio.to_thread(_query)
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    await asyncio.to_thread(_enrich_user_status, posts, user)
+    return {"posts": posts, "window": window, "days": days}
+
+
 @router.get("/search/posts")
 async def search_posts(
     q: str = Query(..., min_length=2, max_length=100),

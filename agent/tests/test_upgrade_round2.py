@@ -486,3 +486,69 @@ class TestUserActivity:
         src = inspect.getsource(__import__("public_api").user_activity)
         assert "sorted" in src
         assert "created_at" in src
+
+
+class TestVisitStats:
+    """Visit stats endpoint."""
+
+    def test_endpoint_exists(self):
+        from visits import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/me/visits/stats" in paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("visits").visit_stats)
+        assert "require_user" in src
+
+    def test_returns_totals(self):
+        src = inspect.getsource(__import__("visits").visit_stats)
+        assert '"total"' in src
+        assert '"visited"' in src
+        assert '"want"' in src
+
+    def test_returns_by_type(self):
+        src = inspect.getsource(__import__("visits").visit_stats)
+        assert '"by_type"' in src
+        assert "e.type" in src
+
+    def test_uses_parameterized(self):
+        src = inspect.getsource(__import__("visits").visit_stats)
+        assert "db._ph" in src
+
+    def test_uses_filter_aggregation(self):
+        src = inspect.getsource(__import__("visits").visit_stats)
+        assert "FILTER" in src
+
+
+class TestTrendingPosts:
+    """Trending posts feed endpoint."""
+
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/feed/trending" in paths
+
+    def test_window_options(self):
+        from social import _TRENDING_POSTS_WINDOWS
+        assert "24h" in _TRENDING_POSTS_WINDOWS
+        assert "7d" in _TRENDING_POSTS_WINDOWS
+        assert "30d" in _TRENDING_POSTS_WINDOWS
+
+    def test_engagement_weighted_sort(self):
+        src = inspect.getsource(__import__("social").trending_posts)
+        assert "like_count" in src
+        assert "comment_count" in src
+
+    def test_time_windowed(self):
+        src = inspect.getsource(__import__("social").trending_posts)
+        assert "INTERVAL" in src
+        assert "days" in src
+
+    def test_block_filter(self):
+        src = inspect.getsource(__import__("social").trending_posts)
+        assert "_block_sql" in src
+
+    def test_response_includes_window(self):
+        src = inspect.getsource(__import__("social").trending_posts)
+        assert '"window"' in src
+        assert '"days"' in src
