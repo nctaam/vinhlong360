@@ -240,8 +240,11 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
 _NOTIF_TYPE_TO_PREF = {
     "like": "pref_like",
     "comment": "pref_comment",
+    "comment_reply": "pref_comment",
+    "question_answer": "pref_comment",
     "mention": "pref_mention",
     "follow": "pref_follow",
+    "event_reminder": "pref_like",
 }
 
 

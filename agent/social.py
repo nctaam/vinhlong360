@@ -983,7 +983,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
     return {"users": cands[:limit]}
 
 
-_ENTITY_FEED_SORT_OPTIONS = {"default", "newest", "helpful", "photo", "star"}
+_ENTITY_FEED_SORT_OPTIONS = {"default", "newest", "helpful", "photo", "star", "unanswered"}
 
 
 @router.get("/entities/{entity_id}/feed")
@@ -991,9 +991,10 @@ async def get_entity_feed(
     entity_id: str,
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
-    sort: str = Query("default", max_length=10),
+    sort: str = Query("default", max_length=20),
     min_rating: Optional[int] = Query(None, ge=1, le=5),
     has_photo: Optional[bool] = Query(None),
+    post_type: Optional[str] = Query(None, max_length=20),
     user=Depends(get_current_user),
 ):
     """Feed cho một entity cụ thể (điểm du lịch, sản phẩm...)."""
@@ -1009,12 +1010,18 @@ async def get_entity_feed(
     bc, bc_p = _block_sql(user)
     params: list = [entity_id] + bc_p
 
+    _VALID_POST_TYPES = {"review", "question", "discussion", "event", "tip"}
     extra_where = ""
     if min_rating is not None:
         extra_where += f" AND p.rating >= {ph}"
         params.append(min_rating)
     if has_photo is True:
         extra_where += " AND jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0"
+    if post_type and post_type in _VALID_POST_TYPES:
+        extra_where += f" AND p.post_type = {ph}"
+        params.append(post_type)
+    if sort == "unanswered":
+        extra_where += " AND p.post_type = 'question' AND p.best_answer_id IS NULL"
 
     order_clause = {
         "newest": "p.created_at DESC",
@@ -1022,6 +1029,7 @@ async def get_entity_feed(
         "photo": """(CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
                      THEN 1 ELSE 0 END) DESC, p.created_at DESC""",
         "star": "p.rating DESC NULLS LAST, p.created_at DESC",
+        "unanswered": "p.comment_count ASC, p.created_at DESC",
     }.get(sort, """(CASE WHEN jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0
                        THEN 1 ELSE 0 END) DESC,
                  p.like_count DESC,
@@ -1046,6 +1054,11 @@ async def get_entity_feed(
         total_params.append(min_rating)
     if has_photo is True:
         total_extra += " AND jsonb_typeof(p.images)='array' AND jsonb_array_length(p.images) > 0"
+    if post_type and post_type in _VALID_POST_TYPES:
+        total_extra += f" AND p.post_type = {ph}"
+        total_params.append(post_type)
+    if sort == "unanswered":
+        total_extra += " AND p.post_type = 'question' AND p.best_answer_id IS NULL"
 
     def _entity_feed_query():
         with db._conn() as conn:
@@ -1206,10 +1219,12 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     ph = db._ph
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT id, user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            post = db._fetchone(conn, f"SELECT id, user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
-            post_author = str(db._row_to_dict(post)["user_id"])
+            post_d = db._row_to_dict(post)
+            post_author = str(post_d["user_id"])
+            post_type_val = post_d.get("post_type")
             me = str(user["id"])
             if post_author != me:
                 is_blocked = db._fetchone(conn, f"""
@@ -1241,8 +1256,8 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
                 pa = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (body.parent_id,))
                 if pa:
                     parent_author = str(db._row_to_dict(pa)["user_id"])
-        return row, post_owner, parent_author
-    row, post_owner, parent_author = await asyncio.to_thread(_query)
+        return row, post_owner, parent_author, post_type_val
+    row, post_owner, parent_author, post_type_val = await asyncio.to_thread(_query)
 
     log_moderation("comment", str(db._row_to_dict(row)["id"]), status, mod_result, auto=True)
 
@@ -1252,14 +1267,21 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
             owner_id = str(db._row_to_dict(post_owner)["user_id"]) if post_owner else None
             preview = body.content[:80] + ("..." if len(body.content) > 80 else "")
             if owner_id and owner_id != me:
-                create_notification(
-                    owner_id, "comment",
-                    f"{user.get('display_name', 'Ai đó')} đã bình luận bài viết của bạn",
-                    body=preview, ref_type="post", ref_id=post_id, actor_id=me,
-                )
+                if post_type_val == "question":
+                    create_notification(
+                        owner_id, "question_answer",
+                        f"{user.get('display_name', 'Ai đó')} đã trả lời câu hỏi của bạn",
+                        body=preview, ref_type="post", ref_id=post_id, actor_id=me,
+                    )
+                else:
+                    create_notification(
+                        owner_id, "comment",
+                        f"{user.get('display_name', 'Ai đó')} đã bình luận bài viết của bạn",
+                        body=preview, ref_type="post", ref_id=post_id, actor_id=me,
+                    )
             if parent_author and parent_author != me and parent_author != owner_id:
                 create_notification(
-                    parent_author, "comment",
+                    parent_author, "comment_reply",
                     f"{user.get('display_name', 'Ai đó')} đã trả lời bình luận của bạn",
                     body=preview, ref_type="post", ref_id=post_id, actor_id=me,
                 )
