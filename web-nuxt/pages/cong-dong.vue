@@ -464,8 +464,17 @@ const activeTab = ref<'latest' | 'trending' | 'following' | 'bookmarks'>('latest
 const sort = computed(() => activeTab.value === 'trending' ? 'trending' : 'latest')
 const filterType = ref('')
 const activeTag = ref(String(route.query.tag || '').toLowerCase())
-watch(() => route.query.tag, (t) => { activeTag.value = String(t || '').toLowerCase(); fetchFeed(true) })
-function clearTag() { activeTag.value = ''; router.replace({ query: {} }); fetchFeed(true) }
+useFilterUrl({ tab: activeTab, type: filterType }, { tab: 'latest', type: '' })
+watch(() => route.query.tag, (t) => {
+  const newTag = String(t || '').toLowerCase()
+  if (newTag !== activeTag.value) { activeTag.value = newTag; fetchFeed(true) }
+})
+function clearTag() {
+  activeTag.value = ''
+  const { tag: _, ...rest } = route.query
+  router.replace({ query: rest })
+  fetchFeed(true)
+}
 const page = ref(1)
 const posts = ref<Entity[]>([])
 const hasMore = ref(false)
@@ -693,6 +702,7 @@ function setTab(tab: 'latest' | 'trending' | 'following' | 'bookmarks') {
   } else {
     fetchFeed(true)
   }
+  nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
 }
 
 async function fetchFeed(reset = false) {
