@@ -102,14 +102,14 @@ onMounted(reload)
 
 /* ── Skeleton ── */
 .cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: 2px; }
-.cs-skel-item { height: 58px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s ease-in-out infinite; }
+.cs-skel-item { height: 58px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(2) { animation-delay: .1s; }
 .cs-skel-item:nth-child(3) { animation-delay: .2s; }
 .cs-skel-item:nth-child(4) { animation-delay: .3s; }
 @keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
 
 /* ── Fade transition ── */
-.cs-fade-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
+.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
 .cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
 
 .cs-save-row {
@@ -120,7 +120,7 @@ onMounted(reload)
   padding: var(--space-3) var(--space-7); border-radius: 12px; font-weight: 600; font-size: .88rem;
   background: var(--primary, #219653); color: var(--on-primary); border: none; cursor: pointer;
   min-height: 44px;
-  transition: transform .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
+  transition: transform .2s var(--ease-soft), box-shadow .2s;
 }
 .sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
@@ -130,7 +130,7 @@ onMounted(reload)
   padding: var(--space-3) var(--space-5); border-radius: 12px; font-size: .85rem; font-weight: 500;
   background: transparent; border: .5px solid var(--line); color: var(--muted); cursor: pointer;
   min-height: 44px;
-  transition: border-color .2s, color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: border-color .2s, color .2s, transform .15s var(--ease-soft);
 }
 .sf-reset:hover:not(:disabled) { border-color: var(--error); color: var(--error); }
 .sf-reset:active:not(:disabled) { transform: scale(.97); }

@@ -103,10 +103,10 @@ onMounted(reload)
 .legal-doc-title { font-size: 1.05rem; font-weight: 600; margin-bottom: var(--space-4); }
 
 .cs-skeleton { max-width: 680px; display: flex; flex-direction: column; gap: 2px; }
-.cs-skel-item { height: 64px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s ease-in-out infinite; }
+.cs-skel-item { height: 64px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(even) { animation-delay: .2s; }
 @keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
-.cs-fade-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
+.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
 .cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
 .dark .cs-help { background: rgba(var(--primary-rgb),.08); }
 .dark .cs-help pre { background: var(--card, #2c2c2e); }

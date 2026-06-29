@@ -38,8 +38,8 @@ const pages = PAGE_MANIFEST_LIST
   padding: var(--space-5); border-radius: 14px;
   background: var(--bg); border: .5px solid var(--line);
   text-decoration: none; color: inherit; min-height: 80px;
-  animation: cs-fade-in .4s cubic-bezier(.2,1,.4,1) both; animation-delay: var(--stagger, 0ms);
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  animation: cs-fade-in .4s var(--ease-soft) both; animation-delay: var(--stagger, 0ms);
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .cs-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.06); border-color: var(--primary, #219653); }
 .cs-card:active { transform: scale(.98); }
@@ -48,7 +48,7 @@ const pages = PAGE_MANIFEST_LIST
 .cs-card div { flex: 1; min-width: 0; }
 .cs-card h3 { margin: 0; font-size: .95rem; font-weight: 600; }
 .cs-card p { margin: var(--space-1) 0 0; font-size: .78rem; color: var(--muted); font-family: 'SF Mono', monospace; }
-.cs-arrow { font-size: 1.4rem; font-weight: 300; color: var(--muted); flex-shrink: 0; opacity: .4; transition: opacity .2s, transform .2s cubic-bezier(.2,1,.4,1); }
+.cs-arrow { font-size: 1.4rem; font-weight: 300; color: var(--muted); flex-shrink: 0; opacity: .4; transition: opacity .2s, transform .2s var(--ease-soft); }
 .cs-card:hover .cs-arrow { opacity: .8; transform: translateX(3px); }
 @keyframes cs-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .dark .cs-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }

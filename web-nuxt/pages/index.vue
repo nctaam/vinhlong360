@@ -620,7 +620,7 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
     url('/img/hero.webp');
   background-size: cover; background-position: center;
   transform: scale(1.06);
-  animation: hero-kenburns 34s ease-in-out infinite alternate;
+  animation: hero-kenburns 34s var(--ease-in-out) infinite alternate;
   will-change: transform;
 }
 @media (max-width: 640px) {
@@ -914,7 +914,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   background: rgba(154, 109, 30, .08); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
 }
 .ec-today { color: var(--error); }
-.ec-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--error); animation: pulse-dot 1.5s ease-in-out infinite; }
+.ec-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--error); animation: pulse-dot 1.5s var(--ease-in-out) infinite; }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.7); } }
 .happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); margin: var(--space-4) 0 var(--space-2); }
 .dark .happening-label { color: var(--primary-fg-strong); }
@@ -941,7 +941,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .spot-visual::before {
   content: ""; position: absolute; inset: -18%; z-index: 0;
   background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.24) 0%, transparent 68%);
-  animation: spot-glow 13s ease-in-out infinite alternate; pointer-events: none;
+  animation: spot-glow 13s var(--ease-in-out) infinite alternate; pointer-events: none;
   will-change: transform;
 }
 .spot-region, .spot-icon { position: relative; z-index: 1; }

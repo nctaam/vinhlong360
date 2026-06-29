@@ -363,7 +363,7 @@ onMounted(fetchDashboard)
   display: flex; align-items: center; gap: var(--space-4);
   background: var(--bg); border-radius: 14px; padding: var(--space-5);
   border: .5px solid var(--line);
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .dash-stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
 .dash-stat-card:active { transform: scale(.98); }
@@ -371,7 +371,7 @@ onMounted(fetchDashboard)
   width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-size: 1.3rem; flex-shrink: 0;
-  transition: transform .25s cubic-bezier(.2,1,.4,1);
+  transition: transform .25s var(--ease-soft);
 }
 .dash-stat-card:hover .dash-stat-icon { transform: scale(1.08); }
 .dash-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
@@ -395,7 +395,7 @@ onMounted(fetchDashboard)
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-4); border-radius: 10px;
   text-decoration: none; font-size: .88rem; font-weight: 500;
-  transition: transform .25s cubic-bezier(.2,1,.4,1), opacity .2s;
+  transition: transform .25s var(--ease-soft), opacity .2s;
 }
 .dash-alert:hover { transform: translateX(4px); }
 .dash-alert:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
@@ -444,7 +444,7 @@ onMounted(fetchDashboard)
 .dash-comp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); font-size: .88rem; }
 .dash-comp-pct { font-weight: 800; font-size: 1.1rem; }
 .dash-comp-bar { height: 8px; background: rgba(142,142,147,.1); border-radius: 4px; overflow: hidden; }
-.dash-comp-fill { height: 100%; background: var(--primary, #219653); border-radius: 4px; transition: width .5s ease-out; }
+.dash-comp-fill { height: 100%; background: var(--primary, #219653); border-radius: 4px; transition: width .5s var(--ease-out); }
 .dash-comp-details { display: flex; gap: var(--space-4); margin-top: var(--space-3); font-size: .78rem; color: var(--muted); }
 .dash-orphan-link { color: inherit; text-decoration: none; border-bottom: 1px dashed rgb(var(--warning-rgb)); }
 .dash-orphan-link:hover { color: rgb(var(--warning-rgb)); }
@@ -459,7 +459,7 @@ onMounted(fetchDashboard)
   padding: var(--space-5) var(--space-3); border-radius: 14px;
   background: var(--bg); border: .5px solid var(--line);
   text-decoration: none; color: inherit; font-size: .85rem; font-weight: 500;
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .dash-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); background: color-mix(in oklab, var(--primary, #219653) 6%, var(--bg)); }
 .dash-action:active { transform: scale(.97); }
@@ -482,7 +482,7 @@ onMounted(fetchDashboard)
 .dash-donut-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); position: relative; }
 .dash-donut { width: 160px; height: 160px; }
 .dash-donut-seg {
-  animation: dash-donut-in .6s cubic-bezier(.4,0,.2,1) both;
+  animation: dash-donut-in .6s var(--ease-standard) both;
   transform-origin: center;
 }
 @keyframes dash-donut-in {
@@ -518,7 +518,7 @@ onMounted(fetchDashboard)
 }
 .dash-bar-fill {
   height: 100%; border-radius: 6px;
-  animation: dash-bar-grow .5s cubic-bezier(.4,0,.2,1) both;
+  animation: dash-bar-grow .5s var(--ease-standard) both;
 }
 @keyframes dash-bar-grow { from { width: 0 !important; } }
 .dash-bar-count { font-size: .82rem; font-weight: 700; text-align: right; }

@@ -459,7 +459,7 @@ onMounted(() => fetchUsers())
   padding: 6px 10px; min-height: 44px; font-size: .85rem;
   border: .5px solid var(--line); border-radius: 10px;
   background: var(--bg); color: var(--ink);
-  cursor: pointer; transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
+  cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
 .usr-filter-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
 .usr-filter-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
@@ -471,14 +471,14 @@ onMounted(() => fetchUsers())
   font: inherit; font-weight: inherit; color: inherit; text-align: left;
   background: none; border: none; border-radius: 6px;
   cursor: pointer; white-space: nowrap;
-  transition: background .2s cubic-bezier(.2,1,.4,1), color .2s;
+  transition: background .2s var(--ease-soft), color .2s;
 }
 .usr-sort-th:hover { background: var(--primary-light, rgba(var(--primary-rgb),.08)); color: var(--primary, #219653); }
 .usr-sort-th:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .usr-sort-th.usr-sort-active { color: var(--primary, #219653); }
 .usr-sort-arrow {
   display: inline-block; min-width: .7em; font-size: .8em;
-  transition: transform .25s cubic-bezier(.2,1,.4,1);
+  transition: transform .25s var(--ease-soft);
 }
 
 .dark .usr-filter-select { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
@@ -492,7 +492,7 @@ onMounted(() => fetchUsers())
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: .78rem; flex-shrink: 0;
   text-transform: uppercase;
-  transition: transform .25s cubic-bezier(.2,1,.4,1), box-shadow .25s;
+  transition: transform .25s var(--ease-soft), box-shadow .25s;
 }
 .usr-cell:hover .usr-avatar { transform: scale(1.08); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.15); }
 
@@ -501,7 +501,7 @@ onMounted(() => fetchUsers())
   padding: var(--space-1) var(--space-2); min-height: 44px; font-size: .78rem;
   border: .5px solid var(--line); border-radius: 8px;
   background: var(--bg); color: var(--ink);
-  cursor: pointer; transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
+  cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
 .usr-role-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
 .usr-role-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
@@ -517,7 +517,7 @@ onMounted(() => fetchUsers())
   width: 6px; height: 6px; border-radius: 50%;
 }
 .usr-active { background: rgba(var(--primary-rgb),.08); color: var(--secondary); }
-.usr-active .usr-status-dot { background: var(--secondary); animation: usr-pulse 2s ease-in-out infinite; }
+.usr-active .usr-status-dot { background: var(--secondary); animation: usr-pulse 2s var(--ease-in-out) infinite; }
 .usr-banned { background: rgba(var(--danger-rgb),.08); color: var(--error); }
 .usr-banned .usr-status-dot { background: var(--error); }
 @keyframes usr-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
@@ -533,7 +533,7 @@ onMounted(() => fetchUsers())
   font-size: .78rem; font-weight: 500; color: var(--muted);
   background: var(--bg); border: .5px solid var(--line); border-radius: 100px;
   cursor: pointer;
-  transition: border-color .2s cubic-bezier(.2,1,.4,1), color .2s, background .2s;
+  transition: border-color .2s var(--ease-soft), color .2s, background .2s;
 }
 .usr-rolecount:hover { border-color: var(--primary, #219653); color: var(--primary, #219653); }
 .usr-rolecount:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
@@ -559,7 +559,7 @@ onMounted(() => fetchUsers())
   padding: 6px var(--space-3); font-size: .8rem; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg); cursor: pointer;
   font-weight: 500; min-height: 44px;
-  transition: background .25s, color .25s, border-color .25s, transform .35s cubic-bezier(.2,1,.4,1), box-shadow .25s;
+  transition: background .25s, color .25s, border-color .25s, transform .35s var(--ease-soft), box-shadow .25s;
 }
 .usr-confirm-actions button:active { transform: scale(.95); transition-duration: .08s; }
 .usr-confirm-actions button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
@@ -575,7 +575,7 @@ onMounted(() => fetchUsers())
   height: 16px; border-radius: 6px;
   background: linear-gradient(90deg, var(--line) 25%, rgba(0,0,0,.03) 50%, var(--line) 75%);
   background-size: 200% 100%;
-  animation: usr-skeleton-pulse 1.4s ease-in-out infinite;
+  animation: usr-skeleton-pulse 1.4s var(--ease-in-out) infinite;
 }
 @keyframes usr-skeleton-pulse { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
@@ -603,7 +603,7 @@ onMounted(() => fetchUsers())
 
 /* ── User detail drawer ── */
 .ud-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(0,0,0,.45); display: flex; justify-content: flex-end; }
-.ud-drawer { width: 100%; max-width: 440px; background: var(--card); height: 100%; display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(0,0,0,.15); animation: udSlideIn .25s var(--ease-out, cubic-bezier(.2,1,.4,1)); overflow: hidden; }
+.ud-drawer { width: 100%; max-width: 440px; background: var(--card); height: 100%; display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(0,0,0,.15); animation: udSlideIn .25s var(--ease-out, var(--ease-soft)); overflow: hidden; }
 @keyframes udSlideIn { from { transform: translateX(100%); } }
 .ud-head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4); border-bottom: .5px solid var(--line); }
 .ud-head-user { display: flex; align-items: center; gap: var(--space-3); }

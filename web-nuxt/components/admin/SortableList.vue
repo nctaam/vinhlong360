@@ -161,7 +161,7 @@ function addChild(parentIdx: number) {
 
 .sl-item {
   background: var(--bg); border: .5px solid var(--line); border-radius: 12px;
-  transition: box-shadow .3s cubic-bezier(.2,1,.4,1), border-color .3s;
+  transition: box-shadow .3s var(--ease-soft), border-color .3s;
 }
 .sl-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,.05); }
 .sl-item-editing { border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.08); }
@@ -194,7 +194,7 @@ function addChild(parentIdx: number) {
   min-width: 44px; min-height: 44px; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg);
   font-size: .72rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background .2s cubic-bezier(.2,1,.4,1), color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s var(--ease-soft), color .2s, transform .15s var(--ease-soft);
 }
 .sl-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary-fg); }
 .sl-btn:active:not(:disabled) { transform: scale(.9); }
@@ -232,7 +232,7 @@ function addChild(parentIdx: number) {
   font-size: .8rem; font-weight: 500; color: var(--primary, #219653);
   background: rgba(var(--primary-rgb),.06); border: none; cursor: pointer;
   min-height: 44px;
-  transition: background .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, transform .15s var(--ease-soft);
 }
 .sl-add-child:hover { background: rgba(var(--primary-rgb), .1); }
 .sl-add-child:active { transform: scale(.97); }
@@ -243,21 +243,21 @@ function addChild(parentIdx: number) {
   border: 1.5px dashed var(--line); background: transparent;
   font-size: .88rem; font-weight: 500; color: var(--primary, #219653);
   cursor: pointer; min-height: 44px;
-  transition: background .2s cubic-bezier(.2,1,.4,1), border-color .2s, transform .15s;
+  transition: background .2s var(--ease-soft), border-color .2s, transform .15s;
 }
 .sl-add:hover { background: rgba(var(--primary-rgb),.04); border-color: var(--primary, #219653); }
 .sl-add:active { transform: scale(.98); }
 .sl-add:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
 /* ── List transitions ── */
-.sl-list-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
+.sl-list-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
 .sl-list-leave-active { transition: opacity .2s ease-in, transform .2s ease-in; }
 .sl-list-enter-from { opacity: 0; transform: translateY(-8px); }
 .sl-list-leave-to { opacity: 0; transform: scale(.96); }
-.sl-list-move { transition: transform .3s cubic-bezier(.2,1,.4,1); }
+.sl-list-move { transition: transform .3s var(--ease-soft); }
 
 /* ── Expand transition ── */
-.sl-expand-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
+.sl-expand-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
 .sl-expand-leave-active { transition: opacity .15s ease-in, transform .15s ease-in; }
 .sl-expand-enter-from { opacity: 0; transform: translateY(-6px); }
 .sl-expand-leave-to { opacity: 0; }

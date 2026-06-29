@@ -175,7 +175,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   background: var(--bg-alt, rgba(0,0,0,.03)); border: .5px solid var(--line);
   color: inherit; text-decoration: none;
   font-size: .8rem; font-weight: 500; line-height: 1;
-  transition: transform .2s cubic-bezier(.2,1,.4,1), border-color .2s, background .2s, box-shadow .2s;
+  transition: transform .2s var(--ease-soft), border-color .2s, background .2s, box-shadow .2s;
 }
 .cs-chip:hover { border-color: var(--primary, #219653); color: var(--primary, #219653); transform: translateY(-1px); }
 .cs-chip:active { transform: scale(.96); transition-duration: .08s; }
@@ -227,9 +227,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   padding: var(--space-5); border-radius: 14px;
   background: var(--bg); border: .5px solid var(--line);
   text-decoration: none; color: inherit; min-height: 80px;
-  animation: cs-fade-in .4s cubic-bezier(.2,1,.4,1) both;
+  animation: cs-fade-in .4s var(--ease-soft) both;
   animation-delay: var(--stagger, 0ms);
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .cs-card:hover {
   transform: translateY(-2px);
@@ -247,7 +247,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cs-card p { margin: var(--space-1) 0 0; font-size: .78rem; color: var(--muted); line-height: 1.4; }
 .cs-arrow {
   font-size: 1.4rem; font-weight: 300; color: var(--muted); flex-shrink: 0;
-  opacity: .4; transition: opacity .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  opacity: .4; transition: opacity .2s, transform .2s var(--ease-soft);
 }
 .cs-card:hover .cs-arrow { opacity: .8; transform: translateX(3px); }
 

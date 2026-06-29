@@ -529,7 +529,7 @@ onMounted(() => refreshAll())
 .dq-history-card {
   padding: var(--space-4); border: .5px solid var(--line); border-radius: 14px;
   background: var(--card); box-shadow: var(--shadow-xs);
-  transition: transform .25s cubic-bezier(.2,1,.4,1), box-shadow .25s, border-color .25s;
+  transition: transform .25s var(--ease-soft), box-shadow .25s, border-color .25s;
 }
 .dq-history-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
 .dq-history-card--apply { border-left: 3px solid var(--primary, #219653); }

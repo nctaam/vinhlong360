@@ -186,7 +186,7 @@ onMounted(() => {
 .hero-illustration .hero-glow {
   transform-box: fill-box;
   transform-origin: center;
-  animation: hero-glow-breathe 9s ease-in-out infinite;
+  animation: hero-glow-breathe 9s var(--ease-in-out) infinite;
   will-change: transform, opacity;
 }
 @keyframes hero-glow-breathe {
@@ -195,7 +195,7 @@ onMounted(() => {
 }
 /* River sheen — a slow light sweep travelling across the water */
 .hero-illustration .hero-sheen {
-  animation: hero-sheen-sweep 11s ease-in-out infinite;
+  animation: hero-sheen-sweep 11s var(--ease-in-out) infinite;
   will-change: transform, opacity;
 }
 @keyframes hero-sheen-sweep {
@@ -204,7 +204,7 @@ onMounted(() => {
 }
 /* Boat float (full scene) */
 .hero-illustration :deep(g[transform*="translate(80, 240)"]) {
-  animation: boat-float 6s ease-in-out infinite;
+  animation: boat-float 6s var(--ease-in-out) infinite;
 }
 @keyframes boat-float {
   0%, 100% { transform: translate(80px, 240px); }
@@ -212,13 +212,13 @@ onMounted(() => {
 }
 /* Waves shimmer (full scene) */
 .hero-illustration :deep(path[d*="M50 310"]) {
-  animation: wave-drift 8s ease-in-out infinite;
+  animation: wave-drift 8s var(--ease-in-out) infinite;
 }
 .hero-illustration :deep(path[d*="M200 320"]) {
-  animation: wave-drift 8s ease-in-out infinite 2s;
+  animation: wave-drift 8s var(--ease-in-out) infinite 2s;
 }
 .hero-illustration :deep(path[d*="M350 305"]) {
-  animation: wave-drift 8s ease-in-out infinite 4s;
+  animation: wave-drift 8s var(--ease-in-out) infinite 4s;
 }
 @keyframes wave-drift {
   0%, 100% { opacity: 1; transform: translateX(0); }

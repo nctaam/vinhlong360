@@ -122,7 +122,7 @@ async function submit() {
 .rm-chip {
   font-size: .82rem; padding: 7px 14px; border-radius: 20px; min-height: var(--touch-min);
   border: .5px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer;
-  transition: background .2s, border-color .2s, color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, border-color .2s, color .2s, transform .15s var(--ease-soft);
 }
 .rm-chip:hover { border-color: var(--primary, #219653); }
 .rm-chip:active { transform: scale(.96); }
@@ -140,7 +140,7 @@ async function submit() {
 .rm-actions .btn { min-height: 44px; }
 
 .rm-fade-enter-active, .rm-fade-leave-active { transition: opacity .25s ease; }
-.rm-fade-enter-active .rm-sheet, .rm-fade-leave-active .rm-sheet { transition: transform .3s cubic-bezier(.2,1,.4,1); }
+.rm-fade-enter-active .rm-sheet, .rm-fade-leave-active .rm-sheet { transition: transform .3s var(--ease-soft); }
 .rm-fade-enter-from, .rm-fade-leave-to { opacity: 0; }
 .rm-fade-enter-from .rm-sheet, .rm-fade-leave-to .rm-sheet { transform: translateY(16px); }
 

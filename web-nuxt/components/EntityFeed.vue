@@ -90,9 +90,9 @@ function firstImage(p: any): string | null {
 
 .ef-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
 .ef-sk-item { display: flex; gap: var(--space-3); padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); }
-.ef-sk-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-alt); flex-shrink: 0; animation: skPulse 1.2s ease-in-out infinite; }
+.ef-sk-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-alt); flex-shrink: 0; animation: skPulse 1.2s var(--ease-in-out) infinite; }
 .ef-sk-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-top: var(--space-1); }
-.ef-sk-line { height: 10px; border-radius: 4px; background: var(--bg-alt); animation: skPulse 1.2s ease-in-out infinite; }
+.ef-sk-line { height: 10px; border-radius: 4px; background: var(--bg-alt); animation: skPulse 1.2s var(--ease-in-out) infinite; }
 .ef-sk-line.w60 { width: 60%; }
 .ef-sk-line.w90 { width: 90%; }
 .ef-sk-line.w40 { width: 40%; }

@@ -44,10 +44,10 @@ onMounted(reload)
 .cs-form-wrap { max-width: 640px; }
 .cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: var(--space-5); }
 .cs-skel-row { display: flex; flex-direction: column; gap: var(--space-2); }
-.cs-skel-label { width: 120px; height: 14px; border-radius: 6px; background: var(--line); animation: cs-pulse 1.5s ease-in-out infinite; }
-.cs-skel-input { width: 100%; height: 44px; border-radius: 10px; background: var(--line); opacity: .5; animation: cs-pulse 1.5s ease-in-out .15s infinite; }
+.cs-skel-label { width: 120px; height: 14px; border-radius: 6px; background: var(--line); animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
+.cs-skel-input { width: 100%; height: 44px; border-radius: 10px; background: var(--line); opacity: .5; animation: cs-pulse 1.5s var(--ease-in-out) .15s infinite; }
 @keyframes cs-pulse { 0%, 100% { opacity: .4; } 50% { opacity: .7; } }
-.cs-fade-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
+.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
 .cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-label, .cs-skel-input { animation: none; }

@@ -296,7 +296,7 @@ onMounted(() => fetchReviews())
   border: none; border-radius: var(--radius-full);
   background: rgba(0, 0, 0, .6); color: var(--text-on-dark, #fff); font-size: var(--text-sm);
   cursor: pointer; padding: 0;
-  transition: background .15s cubic-bezier(.2, 1, .4, 1);
+  transition: background .15s var(--ease-soft);
 }
 .rf-image-remove:hover { background: rgba(0, 0, 0, .8); }
 .rf-image-remove:focus-visible { outline: 2px solid var(--brand, currentColor); outline-offset: 1px; }
@@ -305,7 +305,7 @@ onMounted(() => fetchReviews())
   min-height: 44px; padding-inline: var(--space-3);
   border: 1px dashed var(--line); border-radius: var(--radius-md);
   font-size: var(--text-sm); color: var(--muted); cursor: pointer; align-self: flex-start;
-  transition: border-color .15s cubic-bezier(.2, 1, .4, 1), color .15s cubic-bezier(.2, 1, .4, 1);
+  transition: border-color .15s var(--ease-soft), color .15s var(--ease-soft);
 }
 .rf-image-add:hover { border-color: var(--brand, var(--muted)); color: var(--ink, var(--muted)); }
 .rf-image-add:focus-within { outline: 2px solid var(--brand, currentColor); outline-offset: 2px; }

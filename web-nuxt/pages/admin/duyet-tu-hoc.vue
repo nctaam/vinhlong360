@@ -218,7 +218,7 @@ onMounted(loadProvisional)
   padding: var(--space-5) var(--space-4); border-radius: 14px;
   background: var(--bg); border: .5px solid var(--line);
   cursor: pointer; text-align: center;
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .dth-tool-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: var(--primary); }
 .dth-tool-card:active:not(:disabled) { transform: scale(.97); }

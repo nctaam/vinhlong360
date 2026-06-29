@@ -588,14 +588,14 @@
 
 /* ── Skeleton fallbacks for ClientOnly ── */
 .detail-skeleton { padding: var(--space-5) 0; }
-.sk-title { width: 40%; height: 20px; background: var(--bg-alt); border-radius: 6px; margin-bottom: var(--space-3); animation: skPulse 1.2s ease-in-out infinite; }
-.sk-line { height: 14px; background: var(--bg-alt); border-radius: 4px; margin-bottom: var(--space-2); animation: skPulse 1.2s ease-in-out infinite; }
+.sk-title { width: 40%; height: 20px; background: var(--bg-alt); border-radius: 6px; margin-bottom: var(--space-3); animation: skPulse 1.2s var(--ease-in-out) infinite; }
+.sk-line { height: 14px; background: var(--bg-alt); border-radius: 4px; margin-bottom: var(--space-2); animation: skPulse 1.2s var(--ease-in-out) infinite; }
 .sk-line.w90 { width: 90%; }
 .sk-line.w80 { width: 80%; }
 .sk-line.w70 { width: 70%; }
 .sk-line.w60 { width: 60%; }
 .sk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-3); }
-.sk-card { height: 160px; background: var(--bg-alt); border-radius: 12px; animation: skPulse 1.2s ease-in-out infinite; }
+.sk-card { height: 160px; background: var(--bg-alt); border-radius: 12px; animation: skPulse 1.2s var(--ease-in-out) infinite; }
 @keyframes skPulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 @media (prefers-reduced-motion: reduce) { .sk-title, .sk-line, .sk-card { animation: none; } }
 

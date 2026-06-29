@@ -291,7 +291,7 @@ onMounted(fetchData)
 .tk-panel {
   background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
   padding: var(--space-5); overflow: hidden;
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .tk-panel:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: rgba(var(--blue-rgb),.15); }
 
@@ -353,7 +353,7 @@ onMounted(fetchData)
   position: absolute; left: 0; top: 0; bottom: 0;
   border-radius: 6px; opacity: .07;
   background: var(--info);
-  animation: tk-bar-grow .5s cubic-bezier(.4,0,.2,1) both;
+  animation: tk-bar-grow .5s var(--ease-standard) both;
   pointer-events: none;
 }
 .tk-bar-warn { background: var(--warning); }
@@ -401,14 +401,14 @@ onMounted(fetchData)
 .tk-skeleton .stat-grid { margin-bottom: var(--space-8); }
 .tk-sk-card {
   height: 80px; border-radius: 14px; background: var(--line);
-  opacity: .4; animation: tk-skeleton-pulse 1.4s ease-in-out infinite;
+  opacity: .4; animation: tk-skeleton-pulse 1.4s var(--ease-in-out) infinite;
 }
 .tk-skeleton .tk-panels {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4);
 }
 .tk-sk-panel {
   height: 256px; border-radius: 14px; background: var(--line);
-  opacity: .3; animation: tk-skeleton-pulse 1.4s ease-in-out infinite;
+  opacity: .3; animation: tk-skeleton-pulse 1.4s var(--ease-in-out) infinite;
 }
 @keyframes tk-skeleton-pulse {
   0%, 100% { opacity: .4; }

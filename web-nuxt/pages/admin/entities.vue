@@ -738,7 +738,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-thumb {
   width: 32px; height: 32px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
   background: var(--bg-alt);
-  transition: transform .25s cubic-bezier(.2,1,.4,1), box-shadow .25s;
+  transition: transform .25s var(--ease-soft), box-shadow .25s;
 }
 .ent-name-cell:hover .ent-thumb { transform: scale(1.08); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
 .ent-thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -781,7 +781,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   padding: var(--space-3) var(--space-4);
   background: rgba(var(--blue-rgb),.06); border: .5px solid rgba(var(--blue-rgb),.2);
   border-radius: 10px; font-size: .88rem; font-weight: 500;
-  animation: bulk-slide-in .3s cubic-bezier(.2,1,.4,1);
+  animation: bulk-slide-in .3s var(--ease-soft);
 }
 @keyframes bulk-slide-in { from { opacity: 0; transform: translateY(-8px); } }
 

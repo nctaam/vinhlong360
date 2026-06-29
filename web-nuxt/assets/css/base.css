@@ -209,7 +209,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible) { outline: none; }
 .sk-shimmer::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 0%, var(--sk-highlight) 50%, transparent 100%); transform: translateX(-100%); animation: sk-shimmer-sweep var(--sk-duration) infinite; will-change: transform; }
 @keyframes sk-shimmer-sweep { 100% { transform: translateX(100%); } }
 @media (prefers-reduced-motion: reduce) {
-  .sk-shimmer::after { animation: sk-pulse 2s ease-in-out infinite; background: var(--sk-highlight); transform: none; }
+  .sk-shimmer::after { animation: sk-pulse 2s var(--ease-in-out) infinite; background: var(--sk-highlight); transform: none; }
   @keyframes sk-pulse { 0%, 100% { opacity: 0; } 50% { opacity: .5; } }
 }
 @media (forced-colors: active) {

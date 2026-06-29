@@ -224,7 +224,7 @@ onMounted(loadFacilities)
 .db-form {
   background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
   padding: var(--space-5); margin-bottom: var(--space-6);
-  transition: box-shadow .3s cubic-bezier(.2,1,.4,1), border-color .3s;
+  transition: box-shadow .3s var(--ease-soft), border-color .3s;
 }
 .db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.06); border-color: rgba(var(--primary-rgb),.2); }
 .db-form-title { font-size: .95rem; font-weight: 600; margin: 0 0 var(--space-4); }

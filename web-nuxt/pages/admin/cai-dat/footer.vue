@@ -181,13 +181,13 @@ function onFooterKeydown(e: KeyboardEvent) {
 /* ── Skeleton ── */
 .cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: var(--space-5); }
 .cs-skel-row { display: flex; flex-direction: column; gap: var(--space-2); }
-.cs-skel-label { width: 120px; height: 14px; border-radius: 6px; background: var(--line); animation: cs-pulse 1.5s ease-in-out infinite; }
-.cs-skel-input { width: 100%; height: 44px; border-radius: 10px; background: var(--line); opacity: .5; animation: cs-pulse 1.5s ease-in-out .15s infinite; }
-.cs-skel-item { height: 58px; border-radius: 12px; background: var(--line); opacity: .35; animation: cs-pulse 1.5s ease-in-out .2s infinite; }
+.cs-skel-label { width: 120px; height: 14px; border-radius: 6px; background: var(--line); animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
+.cs-skel-input { width: 100%; height: 44px; border-radius: 10px; background: var(--line); opacity: .5; animation: cs-pulse 1.5s var(--ease-in-out) .15s infinite; }
+.cs-skel-item { height: 58px; border-radius: 12px; background: var(--line); opacity: .35; animation: cs-pulse 1.5s var(--ease-in-out) .2s infinite; }
 @keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
 
 /* ── Fade transition ── */
-.cs-fade-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
+.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
 .cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
 
 .cs-save-row {
@@ -198,7 +198,7 @@ function onFooterKeydown(e: KeyboardEvent) {
   padding: var(--space-3) var(--space-7); border-radius: 12px; font-weight: 600; font-size: .88rem;
   background: var(--primary, #219653); color: var(--on-primary); border: none; cursor: pointer;
   min-height: 44px;
-  transition: transform .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
+  transition: transform .2s var(--ease-soft), box-shadow .2s;
 }
 .sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }

@@ -72,9 +72,9 @@ onMounted(reload)
 .cs-help p { margin: 0; }
 .cs-help code { font-family: 'SF Mono', monospace; font-size: .76rem; color: var(--primary, #219653); }
 .cs-skeleton { max-width: 760px; }
-.cs-skel-item { height: 280px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s ease-in-out infinite; }
+.cs-skel-item { height: 280px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 @keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
-.cs-fade-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
+.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
 .cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
 .dark .cs-help { background: rgba(var(--primary-rgb),.08); }
 @media (prefers-reduced-motion: reduce) {

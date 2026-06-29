@@ -284,7 +284,7 @@ onMounted(() => fetchQueue())
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
   padding: 7px 14px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
-  transition: background .2s, color .2s, border-color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, color .2s, border-color .2s, transform .15s var(--ease-soft);
 }
 .img-tab:hover { border-color: var(--primary, #219653); color: var(--ink); }
 .img-tab:active { transform: scale(.97); }
@@ -350,7 +350,7 @@ onMounted(() => fetchQueue())
 
 /* ── Confidence bar (additive visual of match_confidence) ── */
 .img-conf-bar { height: 4px; border-radius: 100px; background: rgba(142,142,147,.18); overflow: hidden; }
-.img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s cubic-bezier(.2,1,.4,1); }
+.img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s var(--ease-soft); }
 .img-conf-bar.conf-high .img-conf-fill { background: var(--secondary-fg); }
 .img-conf-bar.conf-mid .img-conf-fill { background: var(--warning); }
 .img-conf-bar.conf-low .img-conf-fill { background: var(--error); }

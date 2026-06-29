@@ -367,7 +367,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   width: 40px; height: 40px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   font-size: 1.15rem; flex-shrink: 0;
-  transition: transform .25s cubic-bezier(.2,1,.4,1);
+  transition: transform .25s var(--ease-soft);
 }
 .stat-card:hover .ai-icon { transform: scale(1.08); }
 .ai-model-val { font-size: .9rem; font-family: var(--font-mono, monospace); }
@@ -391,7 +391,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-ring-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
 .ai-ring { width: 80px; height: 80px; transform: rotate(-90deg); }
-.ai-ring-fill { animation: ai-ring-in .8s cubic-bezier(.4,0,.2,1) both; }
+.ai-ring-fill { animation: ai-ring-in .8s var(--ease-standard) both; }
 @keyframes ai-ring-in { from { stroke-dasharray: 0 201; } }
 .ai-ring-center {
   position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -418,7 +418,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-dq-fill {
   height: 100%; border-radius: 5px;
-  animation: ai-dq-grow .6s cubic-bezier(.4,0,.2,1) both;
+  animation: ai-dq-grow .6s var(--ease-standard) both;
 }
 @keyframes ai-dq-grow { from { width: 0 !important; } }
 
@@ -444,7 +444,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-near-cap {
   border-color: var(--warning); background: rgba(var(--warning-rgb),.04);
   border-left-width: 4px; border-left-style: dashed;
-  animation: ai-near-cap-pulse 2s ease-in-out infinite;
+  animation: ai-near-cap-pulse 2s var(--ease-in-out) infinite;
 }
 @keyframes ai-near-cap-pulse {
   0%, 100% { border-left-color: var(--warning); }
@@ -464,7 +464,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   width: 6px; height: 6px; border-radius: 50%;
 }
 .ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: var(--secondary); }
-.ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s ease-in-out infinite; }
+.ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s var(--ease-in-out) infinite; }
 .ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: var(--error); }
 .ai-subsys-off .ai-subsys-dot { background: var(--error); opacity: .5; }
 @keyframes ai-sub-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -480,7 +480,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   padding: var(--space-4) var(--space-3); border-radius: 14px;
   background: var(--bg); border: .5px solid var(--line);
   cursor: pointer; font-size: .82rem; font-weight: 500; color: var(--ink);
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s, background .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s, background .3s;
 }
 .ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); }
 .ai-action-btn:active:not(:disabled) { transform: scale(.97); }

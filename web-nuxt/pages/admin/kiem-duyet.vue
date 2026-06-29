@@ -457,7 +457,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
   padding: 7px 14px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
-  transition: background .2s, color .2s, border-color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, color .2s, border-color .2s, transform .15s var(--ease-soft);
 }
 .mod-tab:hover { border-color: var(--primary, #219653); color: var(--ink); }
 .mod-tab:active { transform: scale(.97); }
@@ -468,7 +468,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* ── Stat card icon ── */
 .stat-card { display: flex; align-items: center; gap: var(--space-4); }
-.mod-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: transform .25s cubic-bezier(.2,1,.4,1); }
+.mod-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: transform .25s var(--ease-soft); }
 .stat-card:hover .mod-icon { transform: scale(1.08); }
 /* Urgency accent for queue cards with pending/flagged items (dashboard-at-a-glance) */
 .stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
@@ -525,7 +525,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   background: none; border: .5px solid var(--line); border-radius: 8px;
   padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--primary, #219653);
   cursor: pointer; min-height: 44px;
-  transition: border-color .25s, background .25s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: border-color .25s, background .25s, transform .15s var(--ease-soft);
 }
 .mod-empty-action:hover { border-color: var(--primary, #219653); background: rgba(var(--primary-rgb),.04); }
 .mod-empty-action:active { transform: scale(.96); }

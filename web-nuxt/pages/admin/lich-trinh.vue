@@ -370,7 +370,7 @@ onUnmounted(() => { if (entitySearchTimer) clearTimeout(entitySearchTimer) })
   display: inline-block; padding: 2px 10px; border-radius: 100px;
   font-size: .72rem; font-weight: 600; letter-spacing: .3px;
   background: rgba(var(--blue-rgb),.08); color: var(--info);
-  transition: background .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, transform .2s var(--ease-soft);
 }
 .lt-area-badge:hover { background: rgba(var(--blue-rgb),.14); transform: scale(1.04); }
 .lt-duration {
@@ -382,7 +382,7 @@ onUnmounted(() => { if (entitySearchTimer) clearTimeout(entitySearchTimer) })
   min-width: 24px; height: 24px; padding: 0 6px;
   border-radius: 8px; font-size: .78rem; font-weight: 700;
   background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg);
-  transition: transform .2s cubic-bezier(.2,1,.4,1);
+  transition: transform .2s var(--ease-soft);
 }
 tr:hover .lt-stops-badge { transform: scale(1.1); }
 
@@ -457,7 +457,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   color: var(--muted); font-size: .7rem; line-height: 1;
   width: 44px; height: 44px; border-radius: 6px;
   display: inline-flex; align-items: center; justify-content: center;
-  transition: background .2s, color .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, color .2s, transform .2s var(--ease-soft);
 }
 .lt-move:hover:not(:disabled) { background: rgba(var(--blue-rgb),.1); color: var(--info); transform: scale(1.12); }
 .lt-move:focus-visible { outline: 2px solid var(--info); outline-offset: 1px; }
@@ -472,7 +472,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   color: var(--muted); font-size: .9rem; line-height: 1;
   width: 44px; height: 44px; min-width: 44px; border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
-  transition: background .2s, color .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, color .2s, transform .2s var(--ease-soft);
 }
 .lt-stop-del:hover { background: rgba(var(--danger-rgb),.12); color: var(--error); transform: scale(1.1); }
 .lt-stop-del:focus-visible { outline: 2px solid var(--error); outline-offset: 1px; }
@@ -482,7 +482,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   border: 1px dashed rgba(var(--blue-rgb),.4); background: rgba(var(--blue-rgb),.04);
   color: var(--info); font-size: .84rem; font-weight: 600;
   padding: 10px 14px; border-radius: 10px; width: 100%; min-height: 44px;
-  transition: background .2s, border-color .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, border-color .2s, transform .2s var(--ease-soft);
 }
 .lt-add-stop:hover { background: rgba(var(--blue-rgb),.1); border-color: rgba(var(--blue-rgb),.6); transform: translateY(-1px); }
 .lt-add-stop:focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }
