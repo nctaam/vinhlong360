@@ -405,3 +405,84 @@ class TestPinComment:
     def test_format_post_includes_pinned(self):
         src = inspect.getsource(__import__("social")._format_post)
         assert "pinned_comment_id" in src
+
+
+class TestEntityStats:
+    """Entity stats endpoint."""
+
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/{entity_id}/stats" in paths
+
+    def test_returns_review_count(self):
+        src = inspect.getsource(__import__("public_api").get_entity_stats)
+        assert '"review_count"' in src
+
+    def test_returns_avg_rating(self):
+        src = inspect.getsource(__import__("public_api").get_entity_stats)
+        assert '"avg_rating"' in src
+        assert "AVG(rating)" in src
+
+    def test_returns_bookmark_count(self):
+        src = inspect.getsource(__import__("public_api").get_entity_stats)
+        assert '"bookmark_count"' in src
+        assert "saved_entities" in src
+
+    def test_returns_follower_count(self):
+        src = inspect.getsource(__import__("public_api").get_entity_stats)
+        assert '"follower_count"' in src
+        assert "follows" in src
+
+    def test_uses_parameterized(self):
+        src = inspect.getsource(__import__("public_api").get_entity_stats)
+        assert "db._ph" in src
+        assert "validate_path_id" in src
+
+    def test_cached(self):
+        src = inspect.getsource(__import__("public_api").get_entity_stats)
+        assert "Cache-Control" in src
+
+    def test_filters_approved_reviews(self):
+        src = inspect.getsource(__import__("public_api").get_entity_stats)
+        assert "approved" in src
+        assert "post_type = 'review'" in src
+
+
+class TestUserActivity:
+    """User activity feed endpoint."""
+
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/me/activity" in paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("public_api").user_activity)
+        assert "require_user" in src
+
+    def test_rate_limited(self):
+        src = inspect.getsource(__import__("public_api").user_activity)
+        assert "check_rate" in src
+
+    def test_returns_posts(self):
+        src = inspect.getsource(__import__("public_api").user_activity)
+        assert '"post"' in src
+        assert "posts" in src
+
+    def test_returns_comments(self):
+        src = inspect.getsource(__import__("public_api").user_activity)
+        assert '"comment"' in src
+
+    def test_returns_likes(self):
+        src = inspect.getsource(__import__("public_api").user_activity)
+        assert '"like"' in src
+
+    def test_uses_parameterized(self):
+        src = inspect.getsource(__import__("public_api").user_activity)
+        assert "db._ph" in src
+
+    def test_merges_and_sorts(self):
+        src = inspect.getsource(__import__("public_api").user_activity)
+        assert "sorted" in src
+        assert "created_at" in src

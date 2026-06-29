@@ -20,7 +20,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-from fastapi import APIRouter, Query, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from database import db
@@ -309,6 +309,53 @@ async def get_entity(
     return entity
 
 
+@router.get("/entities/{entity_id}/stats")
+async def get_entity_stats(entity_id: str, response: Response):
+    validate_path_id(entity_id, "entity_id")
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    ph = db._ph
+    def _query():
+        e = db.get_entity(entity_id)
+        if not e:
+            return None
+        with db._conn() as conn:
+            review_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as review_count,
+                       COALESCE(AVG(rating), 0) as avg_rating
+                FROM posts
+                WHERE entity_id = {ph} AND post_type = 'review'
+                  AND moderation_status = 'approved' AND rating IS NOT NULL
+            """, (entity_id,))
+            post_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as post_count FROM posts
+                WHERE entity_id = {ph} AND moderation_status = 'approved'
+            """, (entity_id,))
+            bookmark_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as bookmark_count FROM saved_entities
+                WHERE entity_id = {ph}
+            """, (entity_id,))
+            follow_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as follower_count FROM follows
+                WHERE target_id = {ph} AND target_type = 'entity'
+            """, (entity_id,))
+        rd = db._row_to_dict(review_row) if review_row else {}
+        pd = db._row_to_dict(post_row) if post_row else {}
+        bd = db._row_to_dict(bookmark_row) if bookmark_row else {}
+        fd = db._row_to_dict(follow_row) if follow_row else {}
+        return {
+            "entity_id": entity_id,
+            "review_count": rd.get("review_count", 0),
+            "avg_rating": round(float(rd.get("avg_rating", 0)), 1),
+            "post_count": pd.get("post_count", 0),
+            "bookmark_count": bd.get("bookmark_count", 0),
+            "follower_count": fd.get("follower_count", 0),
+        }
+    result = await asyncio.to_thread(_query)
+    if not result:
+        return JSONResponse(status_code=404, content={"error": "not_found"})
+    return result
+
+
 @router.get("/places")
 async def list_places(response: Response, area: Optional[str] = Query(None, max_length=100)):
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
@@ -527,6 +574,57 @@ async def autocomplete(
             for e in results
         ],
     }
+
+
+@router.get("/me/activity")
+async def user_activity(
+    request: Request,
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    from ratelimit import check_rate
+    check_rate(f"activity:{user['id']}", 20, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+    ph = db._ph
+    offset = (page - 1) * limit
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            posts = db._fetchall(conn, f"""
+                SELECT id, content, post_type, entity_id, created_at, like_count, comment_count
+                FROM posts WHERE user_id = {ph}::uuid AND moderation_status != 'rejected'
+                ORDER BY created_at DESC LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            comments = db._fetchall(conn, f"""
+                SELECT c.id, c.content, c.post_id, c.created_at, p.entity_id
+                FROM comments c JOIN posts p ON p.id = c.post_id
+                WHERE c.user_id = {ph}::uuid
+                ORDER BY c.created_at DESC LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            likes = db._fetchall(conn, f"""
+                SELECT l.post_id, l.created_at, p.content, p.entity_id
+                FROM likes l JOIN posts p ON p.id = l.post_id
+                WHERE l.user_id = {ph}::uuid
+                ORDER BY l.created_at DESC LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+        return (
+            [db._row_to_dict(r) for r in posts],
+            [db._row_to_dict(r) for r in comments],
+            [db._row_to_dict(r) for r in likes],
+        )
+    posts, comments, likes = await asyncio.to_thread(_query)
+    for p in posts:
+        p["id"] = str(p["id"])
+        p["type"] = "post"
+    for c in comments:
+        c["id"] = str(c["id"])
+        c["post_id"] = str(c["post_id"])
+        c["type"] = "comment"
+    for lk in likes:
+        lk["post_id"] = str(lk["post_id"])
+        lk["type"] = "like"
+    items = sorted(posts + comments + likes, key=lambda x: str(x.get("created_at", "")), reverse=True)[:limit]
+    return {"activity": items, "page": page, "has_more": len(items) == limit}
 
 
 @router.get("/stats")
