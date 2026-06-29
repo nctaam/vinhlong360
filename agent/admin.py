@@ -279,7 +279,7 @@ async def list_entities(
     """Danh sách entities với filter — đọc từ database."""
     def _query():
         if q or orphans_only:
-            all_matches = db.search_entities(q=q, entity_type=type, area=area, limit=10000, offset=0) if q else db.list_entities(entity_type=type, area=area, limit=10000, offset=0)
+            all_matches = db.search_entities(q=q, entity_type=type, area=area, limit=2000, offset=0) if q else db.list_entities(entity_type=type, area=area, limit=2000, offset=0)
         else:
             all_matches = None
             results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
@@ -1021,6 +1021,8 @@ async def contact_funnel(
         total = 0
         if not CONTACT_VIEWS_FILE.exists():
             return {"entities": [], "period_days": days, "total_contacts": 0}
+        if CONTACT_VIEWS_FILE.stat().st_size > 20 * 1024 * 1024:
+            return {"entities": [], "period_days": days, "total_contacts": 0, "warning": "Log quá lớn, cần rotation"}
         with open(CONTACT_VIEWS_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
@@ -2940,10 +2942,12 @@ async def search_analytics(days: int = Query(7, ge=1, le=90)):
     def _read():
         if not search_log.exists():
             return {"top_queries": [], "zero_results": [], "total_searches": 0, "period_days": days}
+        if search_log.stat().st_size > 20 * 1024 * 1024:
+            return {"top_queries": [], "zero_results": [], "total_searches": 0, "period_days": days, "warning": "Log quá lớn, cần rotation"}
         queries = {}
         zero_result = {}
         total = 0
-        for line in search_log.read_text(encoding="utf-8").splitlines():
+        for line in open(search_log, "r", encoding="utf-8"):
             try:
                 r = json.loads(line)
             except (json.JSONDecodeError, ValueError):

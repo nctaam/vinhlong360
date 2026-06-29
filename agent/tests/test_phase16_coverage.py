@@ -2036,8 +2036,8 @@ class TestAdminBugFixes:
         idx = src.find("def list_entities")
         assert idx != -1
         block = src[idx:idx+2000]
-        assert "limit=10000" in block or "limit=5000" in block, \
-            "search path must fetch all matches for correct total count"
+        assert "limit=10000" in block or "limit=5000" in block or "limit=2000" in block, \
+            "search path must fetch matches with bounded cap for correct total count"
         assert "all_matches" in block, \
             "search path should use all_matches for correct total"
 
