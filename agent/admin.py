@@ -326,7 +326,7 @@ async def list_places():
     def _query():
         db.initialize()
         with db._conn() as conn:
-            rows = db._fetchall(conn, "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name")
+            rows = db._fetchall(conn, "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name LIMIT 500")
         return [db._row_to_dict(r) for r in rows]
     return await asyncio.to_thread(_query)
 
