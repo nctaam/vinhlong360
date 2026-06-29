@@ -558,7 +558,7 @@ def _fire_callbacks(key: str, ip: str = "", limit: int = 0):
         try:
             cb(key, ip, limit)
         except Exception:
-            pass
+            logger.debug("Rate limit callback failed", exc_info=True)
 
 
 def check_rate_with_callback(
