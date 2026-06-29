@@ -2376,6 +2376,57 @@ async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisio
     return {"success": True}
 
 
+@router.get("/content-stats")
+async def content_stats(days: int = Query(30, ge=1, le=365)):
+    ph = db._ph
+    def _query():
+        if not db._use_pg:
+            return {"error": "Requires Postgres"}
+        with db._conn() as conn:
+            by_type = db._fetchall(conn, f"""
+                SELECT post_type, COUNT(*) as cnt
+                FROM posts
+                WHERE created_at > NOW() - INTERVAL '{days} days'
+                  AND moderation_status = 'approved'
+                GROUP BY post_type ORDER BY cnt DESC
+            """, ())
+            by_status = db._fetchall(conn, f"""
+                SELECT moderation_status, COUNT(*) as cnt
+                FROM posts
+                WHERE created_at > NOW() - INTERVAL '{days} days'
+                GROUP BY moderation_status ORDER BY cnt DESC
+            """, ())
+            avg_rating = db._fetchone(conn, f"""
+                SELECT AVG(rating) as avg_r, COUNT(*) as cnt
+                FROM posts
+                WHERE post_type = 'review' AND rating IS NOT NULL
+                  AND created_at > NOW() - INTERVAL '{days} days'
+                  AND moderation_status = 'approved'
+            """, ())
+            total_comments = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM comments
+                WHERE created_at > NOW() - INTERVAL '{days} days'
+            """, ())
+            daily_posts = db._fetchall(conn, f"""
+                SELECT DATE(created_at) as day, COUNT(*) as cnt
+                FROM posts
+                WHERE created_at > NOW() - INTERVAL '{days} days'
+                  AND moderation_status = 'approved'
+                GROUP BY DATE(created_at) ORDER BY day
+            """, ())
+        ar = db._row_to_dict(avg_rating) if avg_rating else {}
+        return {
+            "period_days": days,
+            "posts_by_type": {db._row_to_dict(r)["post_type"]: db._row_to_dict(r)["cnt"] for r in by_type},
+            "posts_by_status": {db._row_to_dict(r)["moderation_status"]: db._row_to_dict(r)["cnt"] for r in by_status},
+            "avg_review_rating": round(float(ar["avg_r"]), 2) if ar.get("avg_r") else None,
+            "total_reviews_with_rating": ar.get("cnt", 0),
+            "total_comments": db._row_to_dict(total_comments)["c"] if total_comments else 0,
+            "daily_posts": [{"day": str(db._row_to_dict(r)["day"]), "count": db._row_to_dict(r)["cnt"]} for r in daily_posts],
+        }
+    return await asyncio.to_thread(_query)
+
+
 @router.get("/analytics-overview")
 async def analytics_overview(days: int = Query(0, ge=0, le=365)):
     """GĐ9.6: gói số liệu cho trang admin Analytics (1 call, đã auth qua require_admin).

@@ -888,6 +888,45 @@ async def trending_tags(
         return result
 
 
+@router.get("/hashtags/{tag}/posts")
+async def hashtag_posts(
+    tag: str, request: Request,
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
+    sort: str = Query("newest", max_length=10),
+):
+    tag = tag.lower().lstrip("#")[:50]
+    if not tag:
+        raise HTTPException(400, "Tag không hợp lệ")
+    user = await get_current_user(request)
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
+    offset = (page - 1) * limit
+    order = "p.like_count DESC, p.created_at DESC" if sort == "popular" else "p.created_at DESC"
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.moderation_status = 'approved'
+                  AND p.hashtags @> {ph}::jsonb
+                  {bc}
+                ORDER BY {order}
+                LIMIT {ph} OFFSET {ph}
+            """, (json.dumps([tag]), *bc_p, limit, offset))
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p
+                WHERE p.moderation_status = 'approved' AND p.hashtags @> {ph}::jsonb
+            """, (json.dumps([tag]),))
+        total = db._row_to_dict(total_row)["c"] if total_row else 0
+        return rows, total
+    rows, total = await asyncio.to_thread(_query)
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    return {"tag": tag, "posts": posts, "total": total, "page": page, "has_more": len(posts) == limit}
+
+
 _leaderboard_cache: dict = {"ts": 0.0, "data": None}
 
 @router.get("/community/leaderboard")

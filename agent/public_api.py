@@ -1506,6 +1506,42 @@ async def get_similar_entities(
     return {"entity_id": entity_id, "similar": result}
 
 
+@router.get("/entities/{entity_id}/nearby")
+async def get_nearby_entities(
+    entity_id: str,
+    limit: int = Query(10, ge=1, le=30),
+    radius_km: float = Query(10.0, ge=0.5, le=50.0),
+    type: str = Query(None, max_length=50),
+):
+    validate_path_id(entity_id, "entity_id")
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    if not entity:
+        raise HTTPException(404, "Entity không tồn tại")
+    center = entity.get("coordinates")
+    if not center or not isinstance(center, (list, tuple)) or len(center) < 2:
+        return {"entity_id": entity_id, "nearby": [], "message": "Entity không có tọa độ"}
+    def _query():
+        type_filters = [type] if type else None
+        all_ents = db.list_entities(limit=3000, offset=0, public_only=True, entity_types=type_filters)
+        nearby = []
+        for e in all_ents:
+            if e["id"] == entity_id:
+                continue
+            dist = _haversine_km(center, e.get("coordinates"))
+            if dist <= radius_km:
+                nearby.append({
+                    "id": e["id"],
+                    "name": e["name"],
+                    "type": e.get("type"),
+                    "distance_km": round(dist, 2),
+                    "coordinates": e.get("coordinates"),
+                })
+        nearby.sort(key=lambda x: x["distance_km"])
+        return nearby[:limit]
+    result = await asyncio.to_thread(_query)
+    return {"entity_id": entity_id, "nearby": result, "radius_km": radius_km}
+
+
 # ── Entity Q&A (U-09: questions with best answer resolution) ─────────
 
 from fastapi import Depends

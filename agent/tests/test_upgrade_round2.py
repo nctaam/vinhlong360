@@ -1521,3 +1521,130 @@ class TestAdminUserGrowth:
         src = inspect.getsource(__import__("admin").user_growth)
         assert "growth_rate" in src
         assert "round" in src
+
+
+# ── Hashtag posts endpoint ──
+
+class TestHashtagPosts:
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/hashtags/{tag}/posts" in paths
+
+    def test_endpoint_is_get(self):
+        from social import router
+        methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
+        assert "GET" in methods.get("/api/hashtags/{tag}/posts", set())
+
+    def test_filters_by_hashtag(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "hashtags @>" in src
+        assert "jsonb" in src
+
+    def test_sort_options(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "popular" in src
+        assert "newest" in src
+
+    def test_block_filter(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "_block_sql" in src
+
+    def test_pagination(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "LIMIT" in src
+        assert "OFFSET" in src
+        assert '"total"' in src
+
+    def test_returns_tag_name(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert '"tag"' in src
+
+    def test_formats_posts(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "_format_post" in src
+
+
+# ── Nearby entities endpoint ──
+
+class TestNearbyEntities:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/{entity_id}/nearby" in paths
+
+    def test_validates_path_id(self):
+        src = inspect.getsource(__import__("public_api").get_nearby_entities)
+        assert "validate_path_id" in src
+
+    def test_checks_entity_exists(self):
+        src = inspect.getsource(__import__("public_api").get_nearby_entities)
+        assert "404" in src
+
+    def test_uses_haversine(self):
+        src = inspect.getsource(__import__("public_api").get_nearby_entities)
+        assert "_haversine_km" in src
+
+    def test_radius_filter(self):
+        src = inspect.getsource(__import__("public_api").get_nearby_entities)
+        assert "radius_km" in src
+
+    def test_excludes_self(self):
+        src = inspect.getsource(__import__("public_api").get_nearby_entities)
+        assert "entity_id" in src
+        assert "continue" in src
+
+    def test_sorts_by_distance(self):
+        src = inspect.getsource(__import__("public_api").get_nearby_entities)
+        assert "distance_km" in src
+        assert "sort" in src
+
+    def test_type_filter(self):
+        src = inspect.getsource(__import__("public_api").get_nearby_entities)
+        assert "type" in src
+
+    def test_handles_no_coordinates(self):
+        src = inspect.getsource(__import__("public_api").get_nearby_entities)
+        assert "coordinates" in src
+        assert "nearby" in src
+
+
+# ── Admin content stats ──
+
+class TestAdminContentStats:
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/content-stats" in paths
+
+    def test_requires_pg(self):
+        src = inspect.getsource(__import__("admin").content_stats)
+        assert "_use_pg" in src
+
+    def test_posts_by_type(self):
+        src = inspect.getsource(__import__("admin").content_stats)
+        assert '"posts_by_type"' in src
+        assert "post_type" in src
+
+    def test_posts_by_status(self):
+        src = inspect.getsource(__import__("admin").content_stats)
+        assert '"posts_by_status"' in src
+        assert "moderation_status" in src
+
+    def test_avg_rating(self):
+        src = inspect.getsource(__import__("admin").content_stats)
+        assert '"avg_review_rating"' in src
+        assert "AVG(rating)" in src
+
+    def test_daily_posts(self):
+        src = inspect.getsource(__import__("admin").content_stats)
+        assert '"daily_posts"' in src
+        assert "DATE(created_at)" in src
+
+    def test_total_comments(self):
+        src = inspect.getsource(__import__("admin").content_stats)
+        assert '"total_comments"' in src
+
+    def test_parameterized(self):
+        src = inspect.getsource(__import__("admin").content_stats)
+        assert "INTERVAL" in src
