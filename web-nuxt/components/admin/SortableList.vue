@@ -236,6 +236,7 @@ function addChild(parentIdx: number) {
 }
 .sl-add-child:hover { background: rgba(var(--primary-rgb), .1); }
 .sl-add-child:active { transform: scale(.97); }
+.sl-add-child:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
 .sl-add {
   padding: 14px; border-radius: 12px;

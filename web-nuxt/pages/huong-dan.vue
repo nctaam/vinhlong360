@@ -1019,7 +1019,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .qs-step p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 /* Sections */
-.guide-section { margin-bottom: var(--space-8); scroll-margin-top: 80px; }
+.guide-section { margin-bottom: var(--space-8); scroll-margin-top: calc(var(--header-h) + 0.5rem); }
 .guide-section > h2 {
   font-size: var(--text-xl); font-weight: var(--weight-bold); margin: 0 0 var(--space-2);
   padding-bottom: var(--space-2); border-bottom: 2px solid var(--primary-fg);
@@ -1030,7 +1030,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .guide-topic {
   margin-bottom: var(--space-3); border: .5px solid var(--line);
   border-radius: var(--radius-xl); background: var(--card); overflow: hidden;
-  scroll-margin-top: 80px;
+  scroll-margin-top: calc(var(--header-h) + 0.5rem);
 }
 .topic-summary {
   display: flex; align-items: center; gap: var(--space-2);
