@@ -64,6 +64,35 @@ def _is_public(e: dict) -> bool:
     return e.get("status") != "provisional" and e.get("verified") is not False
 
 
+def _build_source_freshness(entity: dict) -> dict:
+    """Compute source freshness metadata for entity detail response."""
+    from data_quality import source_info
+    src = source_info(entity)
+    updated_at = entity.get("updatedAt")
+    days_since = None
+    if updated_at:
+        try:
+            updated_dt = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+            days_since = (datetime.now(timezone.utc) - updated_dt).days
+        except (ValueError, TypeError):
+            pass
+    if days_since is None:
+        status = "unknown"
+    elif days_since <= 90:
+        status = "fresh"
+    elif days_since <= 180:
+        status = "aging"
+    else:
+        status = "stale"
+    return {
+        "source_title": src.get("title") or None,
+        "source_url": src.get("url") or None,
+        "updated_at": updated_at,
+        "days_since_update": days_since,
+        "freshness_status": status,
+    }
+
+
 def invalidate_place_cache():
     """Xoá cache tên/khu-vực xã/phường — gọi sau /reload để tránh phục vụ tên cũ
     khi admin đổi/di chuyển place."""
@@ -241,6 +270,7 @@ async def get_entity(
         e["relationships"] = rels
         _enrich_entity_place(e)
         e["quality"] = entity_quality(e)
+        e["source_freshness"] = _build_source_freshness(e)
         return e
     entity = await asyncio.to_thread(_query)
     if not entity:
@@ -886,6 +916,55 @@ async def submit_report(payload: ReportIn, request: Request):
         logger.exception("Failed to write report to %s", REPORTS_FILE)
         return JSONResponse(status_code=500, content={"error": "store_failed"})
     return {"ok": True, "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra."}
+
+
+# ── Report stale field (U-02: field-level freshness reports) ─────────
+
+_STALE_FIELDS = {"phone", "hours", "address", "source", "name", "price", "images", "other"}
+
+
+class ReportStaleIn(BaseModel):
+    field: str = Field(..., min_length=1, max_length=20)
+    detail: str = Field("", max_length=2000)
+
+
+@router.post("/entities/{entity_id}/report-stale")
+async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Request):
+    """U-02: Report a specific field as stale/incorrect on an entity."""
+    validate_path_id(entity_id, "entity_id")
+    if payload.field not in _STALE_FIELDS:
+        return JSONResponse(status_code=422, content={
+            "error": "invalid_field",
+            "valid_fields": sorted(_STALE_FIELDS),
+        })
+    ip = get_client_ip(request)
+    allowed, info = report_limiter.is_allowed(ip)
+    if not allowed:
+        return JSONResponse(
+            status_code=429,
+            content={"error": "rate_limited", "retry_after": info.get("retry_after", 60)},
+        )
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "target_id": entity_id,
+        "target_type": "stale_field",
+        "field": payload.field,
+        "detail": payload.detail.strip(),
+        "ip_hash": hashlib.sha256(ip.encode()).hexdigest()[:16],
+        "status": "open",
+    }
+    def _write():
+        with _jsonl_lock:
+            REPORTS_FILE.parent.mkdir(exist_ok=True)
+            with open(REPORTS_FILE, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+            _maybe_rotate_jsonl(REPORTS_FILE)
+    try:
+        await asyncio.to_thread(_write)
+    except OSError:
+        logger.exception("Failed to write stale report")
+        return JSONResponse(status_code=500, content={"error": "store_failed"})
+    return {"ok": True, "message": "Đã ghi nhận — chúng tôi sẽ kiểm tra và cập nhật."}
 
 
 # ── Entity gallery (entity images + review images) ───────────────────
