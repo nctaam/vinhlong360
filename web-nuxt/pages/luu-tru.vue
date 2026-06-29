@@ -33,7 +33,7 @@
     <CatalogSpotlight :items="allEntities" />
 
     <!-- Quick picks by region -->
-    <section class="block band">
+    <section class="block band reveal">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
