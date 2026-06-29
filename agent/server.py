@@ -1129,6 +1129,7 @@ def _sanitize_message(v: str) -> str:
     (validator) lẫn GET /chat/stream (query param) — đảm bảo parity."""
     v = re.sub(r"<script[^>]*>.*?</script>", "", v or "", flags=re.DOTALL | re.IGNORECASE)
     v = re.sub(r"<[^>]+>", "", v)
+    v = v.replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
     return v.strip()
 
 
@@ -1208,6 +1209,7 @@ def _sanitize_client_text(text: str, max_len: int) -> str:
     if not text or not isinstance(text, str):
         return ""
     out = re.sub(r"<[^>]+>", "", text)
+    out = out.replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
     for pat, repl in _PII_PATTERNS:
         out = pat.sub(repl, out)
     return out[:max_len].strip()

@@ -2556,3 +2556,38 @@ class TestSSEPayloadNoneHandling:
                 continue
             if '"reviews": []' in line:
                 assert '"total"' in line, "reviews early return missing total"
+
+
+# ── Log injection prevention ──
+
+
+class TestLogInjectionPrevention:
+    """Sanitization functions must strip newlines to prevent log injection."""
+
+    def test_sanitize_message_strips_newlines(self):
+        from server import _sanitize_message
+        result = _sanitize_message("hello\nfake log entry\r\nevil")
+        assert "\n" not in result
+        assert "\r" not in result
+
+    def test_sanitize_message_strips_cr(self):
+        from server import _sanitize_message
+        result = _sanitize_message("hello\rworld")
+        assert "\r" not in result
+
+    def test_sanitize_message_preserves_content(self):
+        from server import _sanitize_message
+        result = _sanitize_message("hello world")
+        assert result == "hello world"
+
+    def test_sanitize_client_text_strips_newlines(self):
+        from server import _sanitize_client_text
+        result = _sanitize_client_text("hello\nworld\r\ntest", 100)
+        assert "\n" not in result
+        assert "\r" not in result
+
+    def test_sanitize_log_param_strips_newlines(self):
+        from auth_middleware import sanitize_log_param
+        result = sanitize_log_param("test\ninjection\r\n")
+        assert "\n" not in result
+        assert "\r" not in result
