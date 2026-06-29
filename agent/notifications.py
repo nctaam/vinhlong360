@@ -343,7 +343,7 @@ def create_notification(user_id: str, notif_type: str, title: str,
                 return
             muted = db._fetchone(conn, f"""
                 SELECT 1 FROM user_mutes
-                WHERE muter_id = {ph}::uuid AND muted_id = {ph}::uuid
+                WHERE user_id = {ph}::uuid AND muted_id = {ph}::uuid
             """, (user_id, actor_id))
             if muted:
                 return

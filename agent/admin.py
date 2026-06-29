@@ -2321,6 +2321,8 @@ class BatchModerationBody(BaseModel):
 
 @router.post("/moderation/batch")
 async def batch_moderation(body: BatchModerationBody):
+    from ratelimit import check_rate
+    check_rate("admin:batch-mod", 10, 60, "Thao tác quá nhanh")
     if body.action not in ("approve", "reject"):
         raise HTTPException(400, "action must be 'approve' or 'reject'")
     if not body.post_ids or len(body.post_ids) > 100:
@@ -3440,6 +3442,8 @@ class BulkUserAction(BaseModel):
 
 @router.post("/users/bulk-ban")
 async def bulk_ban_users(body: BulkUserAction, request: Request):
+    from ratelimit import check_rate
+    check_rate("admin:bulk-ban", 5, 60, "Thao tác quá nhanh")
     admin_user = await get_current_user(request)
     admin_id = str(admin_user["id"]) if admin_user else None
     ids = [validate_path_id(uid, "user_id") for uid in body.user_ids]
@@ -3465,6 +3469,8 @@ async def bulk_ban_users(body: BulkUserAction, request: Request):
 
 @router.post("/users/bulk-unban")
 async def bulk_unban_users(body: BulkUserAction):
+    from ratelimit import check_rate
+    check_rate("admin:bulk-unban", 5, 60, "Thao tác quá nhanh")
     ids = [validate_path_id(uid, "user_id") for uid in body.user_ids]
     def _query():
         ph = db._ph

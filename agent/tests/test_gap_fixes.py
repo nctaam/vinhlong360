@@ -212,7 +212,7 @@ class TestNotificationMuteEnforcement:
 
     def test_mute_check_uses_actor_id(self):
         src = inspect.getsource(__import__("notifications").create_notification)
-        assert "muter_id" in src
+        assert "user_id" in src
         assert "muted_id" in src
 
     def test_mute_check_returns_early(self):
@@ -276,3 +276,116 @@ class TestPrivacyShowActivityEnforcement:
     def test_privacy_hidden_returns_empty(self):
         src = inspect.getsource(__import__("social").get_user_posts)
         assert '"posts": []' in src or "'posts': []" in src
+
+
+# ── Full mute enforcement across all feed/search/list endpoints ──
+
+class TestMuteEnforcementComprehensive:
+    """Every endpoint that has _block_sql on feed/list content must also apply _mute_sql."""
+
+    def test_trending_posts_mute(self):
+        src = inspect.getsource(__import__("social").trending_posts)
+        assert "_mute_sql" in src
+        assert "{mc}" in src or "mc}" in src
+
+    def test_explore_feed_mute(self):
+        src = inspect.getsource(__import__("social").explore_feed)
+        assert "_mute_sql" in src
+        assert "{mc}" in src or "mc}" in src
+
+    def test_search_posts_mute(self):
+        src = inspect.getsource(__import__("social").search_posts)
+        assert "_mute_sql" in src
+        assert "{mc}" in src or "mc}" in src
+
+    def test_search_users_mute(self):
+        src = inspect.getsource(__import__("social").search_users)
+        assert "_mute_sql" in src
+        assert "{mc}" in src or "mc}" in src
+
+    def test_suggested_follows_mute(self):
+        src = inspect.getsource(__import__("social").suggested_follows)
+        assert "_mute_sql" in src
+        assert "{mc}" in src or "mc}" in src
+
+    def test_entity_feed_mute(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        assert "_mute_sql" in src
+        assert "{mc}" in src or "mc}" in src
+
+    def test_related_posts_mute(self):
+        src = inspect.getsource(__import__("social").related_posts)
+        assert "_mute_sql" in src
+        assert "{mc}" in src or "mc}" in src
+
+    def test_comments_mute(self):
+        src = inspect.getsource(__import__("social").get_comments)
+        assert "_mute_sql" in src
+        assert "{mc}" in src or "mc}" in src
+
+    def test_hashtag_posts_mute(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        assert "_mute_sql" in src
+        assert "{mc}" in src or "mc}" in src
+
+    def test_entity_feed_count_query_has_mute(self):
+        src = inspect.getsource(__import__("social").get_entity_feed)
+        lines = src.split("\n")
+        count_section = [l for l in lines if "COUNT(*)" in l or "mc}" in l]
+        assert len(count_section) >= 2
+
+    def test_search_posts_count_query_has_mute(self):
+        src = inspect.getsource(__import__("social").search_posts)
+        lines = src.split("\n")
+        mc_lines = [l for l in lines if "mc}" in l or "{mc}" in l]
+        assert len(mc_lines) >= 2
+
+    def test_hashtag_posts_count_query_has_mute(self):
+        src = inspect.getsource(__import__("social").hashtag_posts)
+        lines = src.split("\n")
+        mc_lines = [l for l in lines if "mc}" in l or "{mc}" in l]
+        assert len(mc_lines) >= 2
+
+
+class TestNotificationMuteColumnFix:
+    """create_notification mute check uses correct column name (user_id not muter_id)."""
+
+    def test_mute_check_uses_user_id_column(self):
+        src = inspect.getsource(__import__("notifications").create_notification)
+        idx = src.find("user_mutes")
+        block = src[idx:idx+150]
+        assert "WHERE user_id" in block
+        assert "muter_id" not in block
+
+    def test_mute_check_matches_schema(self):
+        schema = (AGENT_DIR / "migrations" / "048_user_mutes.sql").read_text()
+        assert "user_id UUID" in schema
+        assert "muter_id" not in schema
+
+
+class TestAuthMeRateLimit:
+    """GET /auth/me has rate limiting."""
+
+    def test_get_me_has_rate_limit(self):
+        src = inspect.getsource(__import__("auth").get_me)
+        assert "check_rate" in src
+
+    def test_get_me_rate_limit_generous(self):
+        src = inspect.getsource(__import__("auth").get_me)
+        assert "60" in src
+
+
+class TestAdminBulkRateLimits:
+    """Admin bulk operations have rate limiting."""
+
+    def test_bulk_ban_rate_limited(self):
+        src = inspect.getsource(__import__("admin").bulk_ban_users)
+        assert "check_rate" in src
+
+    def test_bulk_unban_rate_limited(self):
+        src = inspect.getsource(__import__("admin").bulk_unban_users)
+        assert "check_rate" in src
+
+    def test_batch_moderation_rate_limited(self):
+        src = inspect.getsource(__import__("admin").batch_moderation)
+        assert "check_rate" in src

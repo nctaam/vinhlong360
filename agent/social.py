@@ -1007,6 +1007,7 @@ async def trending_posts(
     days = _TRENDING_POSTS_WINDOWS.get(window, 7)
     ph = db._ph
     bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
@@ -1017,11 +1018,11 @@ async def trending_posts(
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.moderation_status = 'approved'
                   AND p.created_at > NOW() - INTERVAL '{days} days'
-                  {bc}
+                  {bc} {mc}
                 ORDER BY (p.like_count * 2 + p.comment_count * 3) DESC,
                          p.created_at DESC
                 LIMIT {ph}
-            """, (*bc_p, limit))
+            """, (*bc_p, *mc_p, limit))
         return rows
     rows = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
@@ -1037,6 +1038,7 @@ async def explore_feed(
 ):
     ph = db._ph
     bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
     offset = (page - 1) * limit
     uid = str(user["id"]) if user else None
     exclude_following = ""
@@ -1061,12 +1063,12 @@ async def explore_feed(
                 WHERE p.moderation_status = 'approved'
                   AND p.created_at > NOW() - INTERVAL '90 days'
                   {exclude_following}
-                  {bc}
+                  {bc} {mc}
                 ORDER BY (p.like_count * 2 + p.comment_count * 3 +
                           CASE WHEN p.post_type = 'review' AND p.rating >= 4 THEN 5 ELSE 0 END) DESC,
                          p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (*exclude_params, *bc_p, limit, offset))
+            """, (*exclude_params, *bc_p, *mc_p, limit, offset))
     rows = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     if user:
@@ -1094,6 +1096,7 @@ async def search_posts(
     from database import escape_like
     pattern = "%" + escape_like(stripped.lower()) + "%"
     bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
 
     def _query():
         with db._conn() as conn:
@@ -1105,15 +1108,15 @@ async def search_posts(
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.moderation_status = 'approved'
                   AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
-                {bc}
+                {bc} {mc}
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (pattern, *bc_p, limit, offset))
+            """, (pattern, *bc_p, *mc_p, limit, offset))
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.moderation_status = 'approved' AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
-                {bc}
-            """, (pattern, *bc_p))
+                {bc} {mc}
+            """, (pattern, *bc_p, *mc_p))
         return rows, total
     rows, total = await asyncio.to_thread(_query)
 
@@ -1144,7 +1147,8 @@ async def search_users(
     from database import escape_like
     pattern = "%" + escape_like(stripped.lower()) + "%"
     bc, bc_p = _block_sql(user)
-    params: list = [pattern] + bc_p + [limit, offset]
+    mc, mc_p = _mute_sql(user, "u.id")
+    params: list = [pattern] + bc_p + mc_p + [limit, offset]
 
     def _query():
         with db._conn() as conn:
@@ -1155,7 +1159,7 @@ async def search_users(
                 LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
                 WHERE u.is_active = TRUE AND u.deleted_at IS NULL
                   AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph}) ESCAPE '\\'
-                  {bc}
+                  {bc} {mc}
                 GROUP BY u.id, u.display_name, u.avatar_url, u.username
                 ORDER BY post_count DESC, u.display_name
                 LIMIT {ph} OFFSET {ph}
@@ -1441,6 +1445,7 @@ async def hashtag_posts(
     user = await get_current_user(request)
     ph = db._ph
     bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
     offset = (page - 1) * limit
     order = "p.like_count DESC, p.created_at DESC" if sort == "popular" else "p.created_at DESC"
     def _query():
@@ -1453,14 +1458,15 @@ async def hashtag_posts(
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.moderation_status = 'approved'
                   AND p.hashtags @> {ph}::jsonb
-                  {bc}
+                  {bc} {mc}
                 ORDER BY {order}
                 LIMIT {ph} OFFSET {ph}
-            """, (json.dumps([tag]), *bc_p, limit, offset))
+            """, (json.dumps([tag]), *bc_p, *mc_p, limit, offset))
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.moderation_status = 'approved' AND p.hashtags @> {ph}::jsonb
-            """, (json.dumps([tag]),))
+                {bc} {mc}
+            """, (json.dumps([tag]), *bc_p, *mc_p))
         total = db._row_to_dict(total_row)["c"] if total_row else 0
         return rows, total
     rows, total = await asyncio.to_thread(_query)
@@ -1603,6 +1609,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
     ph = db._ph
     me = str(user["id"])
     bc, bc_p = _block_sql(user)
+    mc, mc_p = _mute_sql(user, "u.id")
     def _query():
         with db._conn() as conn:
             return db._fetchall(conn, f"""
@@ -1624,11 +1631,11 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
                   AND u.id::text <> {ph}
                   AND u.id::text NOT IN (SELECT target_id FROM follows
                                            WHERE follower_id = {ph}::uuid AND target_type='user')
-                  {bc}
+                  {bc} {mc}
                 GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
                 HAVING COUNT(p.id) > 0
                 LIMIT 200
-            """, (me, me) + tuple(bc_p))
+            """, (me, me) + tuple(bc_p) + tuple(mc_p))
     rows = await asyncio.to_thread(_query)
     cands = []
     for r in rows:
@@ -1671,7 +1678,8 @@ async def get_entity_feed(
     ph = db._ph
     offset = (page - 1) * limit
     bc, bc_p = _block_sql(user)
-    params: list = [entity_id] + bc_p
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    params: list = [entity_id] + bc_p + mc_p
 
     _VALID_POST_TYPES = {"review", "question", "discussion", "event", "tip"}
     extra_where = ""
@@ -1704,13 +1712,13 @@ async def get_entity_feed(
         FROM posts p
         JOIN users u ON u.id = p.user_id
         WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
-        {bc}{extra_where}
+        {bc} {mc}{extra_where}
         ORDER BY COALESCE(p.is_featured, FALSE) DESC, {order_clause}
         LIMIT {ph} OFFSET {ph}
     """
     feed_params = tuple(params)
 
-    total_params: list = [entity_id] + bc_p
+    total_params: list = [entity_id] + bc_p + mc_p
     total_extra = ""
     if min_rating is not None:
         total_extra += f" AND p.rating >= {ph}"
@@ -1729,7 +1737,7 @@ async def get_entity_feed(
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.entity_id = {ph} AND p.moderation_status = 'approved'
-                {bc}{total_extra}
+                {bc} {mc}{total_extra}
             """, tuple(total_params))
             rating_row = db._fetchone(conn, f"""
                 SELECT avg_rating, rating_count FROM entity_ratings
@@ -1767,6 +1775,7 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
     def _query():
         with db._conn() as conn:
             src = db._fetchone(conn, f"""
@@ -1786,10 +1795,10 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
                     FROM posts p JOIN users u ON u.id = p.user_id
                     WHERE p.entity_id = {ph} AND p.id::text <> {ph}
                       AND p.moderation_status = 'approved'
-                    {bc}
+                    {bc} {mc}
                     ORDER BY p.like_count DESC, p.created_at DESC
                     LIMIT {ph}
-                """, (entity_id, post_id) + tuple(bc_p) + (limit,))
+                """, (entity_id, post_id) + tuple(bc_p) + tuple(mc_p) + (limit,))
                 candidates.extend(rows)
 
             if len(candidates) < limit and tags:
@@ -1799,10 +1808,10 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
                     FROM posts p JOIN users u ON u.id = p.user_id
                     WHERE p.moderation_status = 'approved' AND p.id::text <> {ph}
                       AND p.hashtags && ARRAY[{','.join(ph for _ in tags)}]::text[]
-                    {bc}
+                    {bc} {mc}
                     ORDER BY p.like_count DESC
                     LIMIT {ph}
-                """, (post_id, *tags) + tuple(bc_p) + (limit,))
+                """, (post_id, *tags) + tuple(bc_p) + tuple(mc_p) + (limit,))
                 for r in tag_rows:
                     d = db._row_to_dict(r)
                     rid = str(d["id"])
@@ -1826,6 +1835,7 @@ async def get_comments(
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     bc, bc_p = _block_sql(user, "c.user_id")
+    mc, mc_p = _mute_sql(user, "c.user_id")
 
     def _get_comments():
         with db._conn() as conn:
@@ -1835,10 +1845,10 @@ async def get_comments(
                 JOIN users u ON u.id = c.user_id
                 WHERE c.post_id::text = {ph} AND c.parent_id IS NULL
                   AND c.moderation_status = 'approved'
-                {bc}
+                {bc} {mc}
                 ORDER BY c.created_at ASC
                 LIMIT {ph} OFFSET {ph}
-            """, tuple([post_id] + bc_p + [min(limit, 200), offset]))
+            """, tuple([post_id] + bc_p + mc_p + [min(limit, 200), offset]))
 
             if not top_rows:
                 return [], []
@@ -1852,9 +1862,9 @@ async def get_comments(
                 WHERE c.post_id::text = {ph}
                   AND c.parent_id::text IN ({id_placeholders})
                   AND c.moderation_status = 'approved'
-                {bc}
+                {bc} {mc}
                 ORDER BY c.created_at ASC
-            """, tuple([post_id] + list(top_ids) + bc_p))
+            """, tuple([post_id] + list(top_ids) + bc_p + mc_p))
             return top_rows, reply_rows
 
     top_rows, reply_rows = await asyncio.to_thread(_get_comments)

@@ -736,6 +736,8 @@ async def get_me(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    from ratelimit import check_rate
+    check_rate(f"me:{user['id']}", 60, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
     return {"user": _safe_user(user)}
 
 
