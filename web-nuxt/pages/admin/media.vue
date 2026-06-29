@@ -76,7 +76,7 @@
           <strong>{{ previewItem.entity_name }}</strong>
           <button type="button" class="btn btn-ghost btn-sm" @click="previewItem = null">Đóng</button>
         </div>
-        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" loading="lazy" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         <div class="media-preview-meta">
           <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank" rel="noopener">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>
           <div><strong>Credit:</strong> {{ previewItem.credit || 'Không có' }}</div>

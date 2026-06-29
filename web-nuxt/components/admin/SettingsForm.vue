@@ -63,7 +63,7 @@
 
       <template v-else-if="field.input_type === 'url'">
         <input :id="`sf-${field.key}`" type="url" v-model="localValues[field.key]" class="sf-input" placeholder="https://..." />
-        <img v-if="localValues[field.key] && isImageUrl(localValues[field.key])" :src="localValues[field.key]" class="sf-url-preview" alt="Preview" loading="lazy" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+        <img v-if="localValues[field.key] && isImageUrl(localValues[field.key])" :src="localValues[field.key]" class="sf-url-preview" alt="Preview" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
       </template>
 
       <template v-else>

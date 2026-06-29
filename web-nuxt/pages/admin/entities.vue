@@ -70,7 +70,7 @@
             <td>
               <div class="ent-name-cell">
                 <div class="ent-thumb" v-if="e.images?.length">
-                  <img :src="e.images[0]" :alt="e.name" width="32" height="32" loading="lazy" @error="(ev) => ((ev.target as HTMLImageElement).style.display = 'none')" />
+                  <img :src="e.images[0]" :alt="e.name" width="32" height="32" loading="lazy" decoding="async" @error="(ev) => ((ev.target as HTMLImageElement).style.display = 'none')" />
                 </div>
                 <div class="ent-thumb ent-thumb-empty" v-else>&#128247;</div>
                 <template v-if="inlineEdit.id === e.id && inlineEdit.field === 'name'">
@@ -215,7 +215,7 @@
           <div v-if="editingEntity" class="img-mgr">
             <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
             <div v-for="(img, i) in (form.images || [])" :key="i" class="img-row">
-              <img :src="img" :alt="`Ảnh ${i + 1}`" class="img-thumb" width="48" height="48" loading="lazy" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.3')" />
+              <img :src="img" :alt="`Ảnh ${i + 1}`" class="img-thumb" width="48" height="48" loading="lazy" decoding="async" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.3')" />
               <span class="img-url">{{ img }}</span>
               <button type="button" class="btn-danger btn-sm" @click="removeImage(i)">Xóa</button>
             </div>

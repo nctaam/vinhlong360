@@ -168,7 +168,7 @@
         </div>
         <div class="mod-preview-body">{{ previewPost.content }}</div>
         <div v-if="previewPost.images?.length" class="mod-preview-images">
-          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" width="200" height="150" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" decoding="async" width="200" height="150" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         </div>
         <!-- Moderation notes -->
         <div class="mod-notes-section">
