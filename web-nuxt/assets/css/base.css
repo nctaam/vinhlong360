@@ -2,6 +2,7 @@
 html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 html, body { margin: 0; padding: 0; }
 body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); line-height: var(--leading-normal); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'cv11' 1; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; overflow-x: hidden; transition: background .35s var(--ease-out), color .35s var(--ease-out); }
+body { accent-color: var(--primary); }
 h1, h2, h3 { text-wrap: balance; }
 .icon-inline { vertical-align: -2px; margin-inline-end: var(--space-1); }
 p, li, figcaption { text-wrap: pretty; }
@@ -918,6 +919,13 @@ a.thread-author:hover { color: var(--primary-fg); }
   :focus::placeholder { opacity: .7; }
   a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline-width: 3px; }
   .card, .step-card, .route-card, .cross-card, .quick-pick, .interest-card, .route-preview { border-width: 1px; }
+}
+
+/* ── Reduced transparency (solid fallbacks for glass effects) ── */
+@media (prefers-reduced-transparency: reduce) {
+  :root { --glass-bg: var(--bg); --glass-bg-heavy: var(--bg); --surface-translucent: var(--bg); }
+  .dark { --glass-bg: var(--card); --glass-bg-heavy: var(--card); --surface-translucent: var(--card); }
+  .topbar, .scroll-top, .share-btn, .chat-panel { backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
 
 /* ── Forced-colors / Windows High Contrast ── */
