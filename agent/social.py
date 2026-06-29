@@ -772,17 +772,22 @@ def _invalidate_social_caches():
     _trending_cache["ts"] = 0.0
     _leaderboard_cache["ts"] = 0.0
 
+_TRENDING_PERIOD_DAYS = {"7d": 7, "14d": 14, "30d": 30, "90d": 90}
+
 @router.get("/community/trending-tags")
-async def trending_tags(limit: int = Query(10, ge=1, le=20)):
-    """Hashtag thịnh hành: đếm hashtag trên bài ĐÃ DUYỆT trong 30 ngày gần nhất."""
+async def trending_tags(
+    limit: int = Query(10, ge=1, le=20),
+    period: str = Query("30d", max_length=5),
+):
+    """Hashtag thịnh hành: đếm hashtag trên bài ĐÃ DUYỆT trong N ngày gần nhất."""
+    days = _TRENDING_PERIOD_DAYS.get(period, 30)
     import time as _t
     now = _t.time()
-    cache_key = f"tags:{limit}"
+    cache_key = f"tags:{limit}:{days}"
     if now - _trending_cache["ts"] < _TRENDING_TTL and cache_key in _trending_cache.get("data", {}):
         return _trending_cache["data"][cache_key]
 
     async with _trending_lock:
-        # Re-check after acquiring lock (another coroutine may have refreshed)
         now = _t.time()
         if now - _trending_cache["ts"] < _TRENDING_TTL and cache_key in _trending_cache.get("data", {}):
             return _trending_cache["data"][cache_key]
@@ -794,16 +799,16 @@ async def trending_tags(limit: int = Query(10, ge=1, le=20)):
                     SELECT tag, COUNT(*) AS c
                     FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
                     WHERE p.moderation_status = 'approved'
-                      AND p.created_at > NOW() - INTERVAL '30 days'
+                      AND p.created_at > NOW() - INTERVAL '{days} days'
                     GROUP BY tag
                     ORDER BY c DESC, tag
                     LIMIT {ph}
                 """, (limit,))
         rows = await asyncio.to_thread(_query)
         tags = [{"tag": (d := db._row_to_dict(r))["tag"], "count": int(d["c"])} for r in rows]
-        result = {"tags": tags}
+        result = {"tags": tags, "period": period, "days": days}
         _trending_cache["ts"] = now
-        _trending_cache["data"] = {cache_key: result}
+        _trending_cache.setdefault("data", {})[cache_key] = result
         return result
 
 
@@ -1656,7 +1661,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                        OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
                 """, (viewer_id, resolved_id, resolved_id, viewer_id))
                 if is_blocked:
-                    return "blocked", profile, None, None, None, None, None, None, None
+                    return "blocked", profile, None, None, None, None, None, None, None, False, True
 
             counts = db._fetchone(conn, f"""
                 SELECT COUNT(*) as total,
@@ -1691,10 +1696,23 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
                 """, (viewer_id, resolved_id))
                 is_follower = frow is not None
 
-        return vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy
+            viewer_following = False
+            viewer_blocked = False
+            if not is_self and viewer_id:
+                fcheck = db._fetchone(conn, f"""
+                    SELECT 1 FROM follows
+                    WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
+                """, (viewer_id, resolved_id))
+                viewer_following = fcheck is not None
+                bcheck = db._fetchone(conn, f"""
+                    SELECT 1 FROM blocks WHERE blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid
+                """, (viewer_id, resolved_id))
+                viewer_blocked = bcheck is not None
+
+        return vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy, viewer_following, viewer_blocked
 
     result = await asyncio.to_thread(_query)
-    vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy = result
+    vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy, viewer_following, viewer_blocked = result
 
     if vis == "blocked":
         return {
@@ -1746,6 +1764,11 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             "reputation": reputation,
             "show_activity": show_activity,
             "show_saved": show_saved,
+            "viewer_relationship": {
+                "is_following": viewer_following,
+                "is_blocked": viewer_blocked,
+                "is_self": is_self,
+            } if not is_self else {"is_self": True},
         },
     }
 

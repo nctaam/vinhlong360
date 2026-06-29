@@ -104,3 +104,76 @@ class TestFeedPerformanceMigration:
         path = AGENT_DIR / "migrations" / "031_feed_performance.sql"
         sql = path.read_text()
         assert sql.count("IF NOT EXISTS") >= 3
+
+
+class TestUserProfileRelationship:
+    """Viewer relationship status in user profile response."""
+
+    def test_profile_returns_viewer_relationship(self):
+        src = inspect.getsource(__import__("social").get_user_profile)
+        assert "viewer_relationship" in src
+        assert "is_following" in src
+        assert "is_blocked" in src
+
+    def test_profile_checks_following(self):
+        src = inspect.getsource(__import__("social").get_user_profile)
+        assert "viewer_following" in src
+        assert "follows" in src
+
+    def test_profile_checks_blocked(self):
+        src = inspect.getsource(__import__("social").get_user_profile)
+        assert "viewer_blocked" in src
+        assert "blocks" in src
+
+    def test_profile_includes_is_self(self):
+        src = inspect.getsource(__import__("social").get_user_profile)
+        assert '"is_self"' in src
+
+
+class TestAutocomplete:
+    """Entity autocomplete endpoint."""
+
+    def test_autocomplete_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/autocomplete" in paths
+
+    def test_autocomplete_has_type_filter(self):
+        src = inspect.getsource(__import__("public_api").autocomplete)
+        assert "type" in src
+
+    def test_autocomplete_returns_suggestions(self):
+        src = inspect.getsource(__import__("public_api").autocomplete)
+        assert '"suggestions"' in src
+
+    def test_autocomplete_rate_limited(self):
+        src = inspect.getsource(__import__("public_api").autocomplete)
+        assert "check_rate" in src
+
+    def test_autocomplete_cached(self):
+        src = inspect.getsource(__import__("public_api").autocomplete)
+        assert "Cache-Control" in src
+
+
+class TestTrendingPeriod:
+    """Trending tags period filter."""
+
+    def test_period_param_exists(self):
+        src = inspect.getsource(__import__("social").trending_tags)
+        assert "period" in src
+
+    def test_period_options(self):
+        from social import _TRENDING_PERIOD_DAYS
+        assert "7d" in _TRENDING_PERIOD_DAYS
+        assert "30d" in _TRENDING_PERIOD_DAYS
+        assert "90d" in _TRENDING_PERIOD_DAYS
+
+    def test_period_maps_to_days(self):
+        from social import _TRENDING_PERIOD_DAYS
+        assert _TRENDING_PERIOD_DAYS["7d"] == 7
+        assert _TRENDING_PERIOD_DAYS["30d"] == 30
+
+    def test_response_includes_period(self):
+        src = inspect.getsource(__import__("social").trending_tags)
+        assert '"period"' in src
+        assert '"days"' in src

@@ -507,6 +507,28 @@ async def search(
     return {"q": safe_q, "total": total, "results": results}
 
 
+@router.get("/autocomplete")
+async def autocomplete(
+    request: Request,
+    response: Response,
+    q: str = Query(..., min_length=1, max_length=100),
+    type: Optional[str] = Query(None, max_length=50),
+    limit: int = Query(8, ge=1, le=20),
+):
+    """Lightweight typeahead for entity name search."""
+    from ratelimit import check_rate
+    check_rate(f"autocomplete:{get_client_ip(request)}", 60, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
+    response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
+    results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, limit=limit)
+    return {
+        "suggestions": [
+            {"id": e["id"], "name": e["name"], "type": e.get("type", ""),
+             "place": e.get("place", "")}
+            for e in results
+        ],
+    }
+
+
 @router.get("/stats")
 async def public_stats():
     return db.stats()
