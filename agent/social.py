@@ -2183,6 +2183,81 @@ async def toggle_comment_like(comment_id: str, user=Depends(require_user), _csrf
     return {"liked": liked, "like_count": like_count}
 
 
+# ── Reactions (emoji beyond likes) ──
+
+_VALID_REACTIONS = {"heart", "useful", "beautiful", "funny", "surprised"}
+
+
+@router.post("/posts/{post_id}/react")
+async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_length=20),
+                           user=Depends(require_user), _csrf=Depends(require_csrf)):
+    """Toggle an emoji reaction on a post."""
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"react:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW, "Bạn thao tác quá nhanh. Vui lòng đợi chút.")
+    if reaction_type not in _VALID_REACTIONS:
+        raise HTTPException(400, f"Reaction không hợp lệ. Cho phép: {', '.join(sorted(_VALID_REACTIONS))}")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND moderation_status = 'approved'", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            existing = db._fetchone(conn, f"""
+                SELECT id FROM post_reactions
+                WHERE post_id = {ph}::uuid AND user_id = {ph}::uuid AND reaction_type = {ph}
+            """, (post_id, uid, reaction_type))
+            if existing:
+                db._execute(conn, f"""
+                    DELETE FROM post_reactions
+                    WHERE post_id = {ph}::uuid AND user_id = {ph}::uuid AND reaction_type = {ph}
+                """, (post_id, uid, reaction_type))
+                reacted = False
+            else:
+                db._execute(conn, f"""
+                    INSERT INTO post_reactions (post_id, user_id, reaction_type)
+                    VALUES ({ph}::uuid, {ph}::uuid, {ph})
+                    ON CONFLICT DO NOTHING
+                """, (post_id, uid, reaction_type))
+                reacted = True
+            counts = db._fetchall(conn, f"""
+                SELECT reaction_type, COUNT(*) as c
+                FROM post_reactions WHERE post_id = {ph}::uuid
+                GROUP BY reaction_type
+            """, (post_id,))
+            reaction_counts = {db._row_to_dict(r)["reaction_type"]: int(db._row_to_dict(r)["c"]) for r in counts}
+            return reacted, reaction_counts
+
+    reacted, counts = await asyncio.to_thread(_query)
+    return {"reacted": reacted, "reaction_type": reaction_type, "reactions": counts}
+
+
+@router.get("/posts/{post_id}/reactions")
+async def get_reactions(post_id: str):
+    """Get reaction counts and details for a post."""
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            counts = db._fetchall(conn, f"""
+                SELECT reaction_type, COUNT(*) as c
+                FROM post_reactions WHERE post_id = {ph}::uuid
+                GROUP BY reaction_type
+            """, (post_id,))
+            total = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM post_reactions WHERE post_id = {ph}::uuid
+            """, (post_id,))
+            return (
+                {db._row_to_dict(r)["reaction_type"]: int(db._row_to_dict(r)["c"]) for r in counts},
+                db._row_to_dict(total)["c"] if total else 0,
+            )
+
+    counts, total = await asyncio.to_thread(_query)
+    return {"reactions": counts, "total": total}
+
+
 # ── Bookmarks ──
 
 @router.post("/posts/{post_id}/bookmark")

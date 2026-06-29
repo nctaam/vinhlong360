@@ -3208,3 +3208,125 @@ class TestPostSchedulingEndpoints:
     def test_list_scheduled_orders_by_time(self):
         src = inspect.getsource(__import__("social").list_scheduled)
         assert "scheduled_at ASC" in src
+
+
+# ── Reactions (emoji beyond likes) ──
+
+
+class TestReactionsMigration:
+    """Test migration 045 creates post_reactions table."""
+
+    def test_migration_file_exists(self):
+        import pathlib
+        p = pathlib.Path(__file__).resolve().parent.parent / "migrations" / "045_reactions.sql"
+        assert p.exists()
+
+    def test_migration_creates_table(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "045_reactions.sql").read_text()
+        assert "CREATE TABLE IF NOT EXISTS post_reactions" in sql
+
+    def test_migration_has_unique_constraint(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "045_reactions.sql").read_text()
+        assert "UNIQUE(post_id, user_id, reaction_type)" in sql
+
+    def test_migration_has_check_constraint(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "045_reactions.sql").read_text()
+        for rt in ("heart", "useful", "beautiful", "funny", "surprised"):
+            assert rt in sql
+
+    def test_migration_has_indexes(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "045_reactions.sql").read_text()
+        assert "idx_post_reactions_post" in sql
+        assert "idx_post_reactions_user" in sql
+
+
+class TestReactionsEndpoints:
+    """Test reaction toggle and get endpoints."""
+
+    def test_toggle_reaction_endpoint_exists(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "POST" in routes.get("/api/posts/{post_id}/react", set())
+
+    def test_get_reactions_endpoint_exists(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/posts/{post_id}/reactions", set())
+
+    def test_toggle_requires_auth(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "require_user" in src
+
+    def test_toggle_requires_csrf(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "require_csrf" in src
+
+    def test_toggle_has_rate_limit(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "check_rate" in src
+
+    def test_toggle_validates_path_id(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "validate_path_id" in src
+
+    def test_toggle_validates_reaction_type(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "_VALID_REACTIONS" in src
+
+    def test_toggle_checks_post_exists(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "404" in src
+
+    def test_toggle_returns_reacted_flag(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert '"reacted"' in src
+
+    def test_toggle_returns_counts(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert '"reactions"' in src
+
+    def test_toggle_deletes_existing(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "DELETE FROM post_reactions" in src
+
+    def test_toggle_inserts_new(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "INSERT INTO post_reactions" in src
+
+    def test_get_reactions_validates_path_id(self):
+        src = inspect.getsource(__import__("social").get_reactions)
+        assert "validate_path_id" in src
+
+    def test_get_reactions_returns_total(self):
+        src = inspect.getsource(__import__("social").get_reactions)
+        assert '"total"' in src
+
+    def test_get_reactions_groups_by_type(self):
+        src = inspect.getsource(__import__("social").get_reactions)
+        assert "GROUP BY reaction_type" in src
+
+    def test_valid_reactions_constant(self):
+        from social import _VALID_REACTIONS
+        assert _VALID_REACTIONS == {"heart", "useful", "beautiful", "funny", "surprised"}
+
+    def test_toggle_uses_async_thread(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "asyncio.to_thread" in src
+
+    def test_get_uses_async_thread(self):
+        src = inspect.getsource(__import__("social").get_reactions)
+        assert "asyncio.to_thread" in src
+
+    def test_toggle_on_conflict(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "ON CONFLICT DO NOTHING" in src
+
+    def test_toggle_only_approved_posts(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "moderation_status = 'approved'" in src
