@@ -223,7 +223,7 @@ onMounted(loadProvisional)
 .dth-tool-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: var(--primary); }
 .dth-tool-card:active:not(:disabled) { transform: scale(.97); }
 .dth-tool-card:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.dth-tool-card:disabled { opacity: .4; cursor: not-allowed; }
+.dth-tool-card:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .dth-tool-icon { font-size: 1.6rem; }
 .dth-tool-spinner {
   width: 22px; height: 22px; border-radius: 50%;

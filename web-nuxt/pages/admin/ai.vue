@@ -485,7 +485,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); }
 .ai-action-btn:active:not(:disabled) { transform: scale(.97); }
 .ai-action-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.ai-action-btn:disabled { opacity: .4; cursor: not-allowed; }
+.ai-action-btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .ai-action-icon { font-size: 1.4rem; }
 
 /* Primary actions — stronger visual weight */

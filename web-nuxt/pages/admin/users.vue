@@ -563,7 +563,7 @@ onMounted(() => fetchUsers())
 }
 .usr-confirm-actions button:active { transform: scale(.95); transition-duration: .08s; }
 .usr-confirm-actions button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.usr-confirm-actions button:disabled { opacity: .5; cursor: default; }
+.usr-confirm-actions button:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .usr-confirm-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
 .usr-confirm-actions .btn-danger:hover { background: var(--error, #D94F3D); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
 .usr-confirm-actions .btn-success { color: var(--primary, #219653); border-color: var(--primary, #219653); }

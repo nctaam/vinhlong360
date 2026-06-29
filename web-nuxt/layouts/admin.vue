@@ -417,7 +417,7 @@ onUnmounted(() => {
 .admin-pagination button:hover:not(:disabled) { border-color: var(--primary, #219653); color: var(--primary); transform: translateY(-1px); }
 .admin-pagination button:active:not(:disabled) { transform: scale(.95); transition-duration: .08s; }
 .admin-pagination button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.admin-pagination button:disabled { opacity: .35; cursor: default; }
+.admin-pagination button:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .admin-pagination button.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 
 /* ── Shared utilities ── */
@@ -438,7 +438,7 @@ onUnmounted(() => {
 .admin-refresh:hover { border-color: var(--primary, #219653); color: var(--primary); background: rgba(var(--primary-rgb),.04); }
 .admin-refresh:active { transform: scale(.95); transition-duration: .08s; }
 .admin-refresh:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.admin-refresh:disabled { opacity: .35; cursor: default; }
+.admin-refresh:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
 
 .admin-head-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-5); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--primary-rgb), .04) 0%, rgba(var(--secondary-rgb), .04) 100%); border: .5px solid var(--line); border-radius: var(--radius-lg); }
@@ -558,7 +558,7 @@ onUnmounted(() => {
   .admin-nav:hover, .admin-nav:focus-within { mask-image: none; -webkit-mask-image: none; }
   .nav-group { display: contents; }
   .nav-group-label { display: none; }
-  .admin-nav a { padding: var(--space-2) var(--space-3); font-size: .78rem; white-space: nowrap; scroll-snap-align: start; min-height: 36px; }
+  .admin-nav a { padding: var(--space-2) var(--space-3); font-size: .78rem; white-space: nowrap; scroll-snap-align: start; min-height: 44px; }
   .nav-text { display: inline !important; }
   .admin-nav a.active { box-shadow: none; background: rgba(255,255,255,.15); }
   .admin-sidebar-footer { display: none; }

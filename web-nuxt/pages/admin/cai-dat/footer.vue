@@ -203,7 +203,7 @@ function onFooterKeydown(e: KeyboardEvent) {
 .sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
 .sf-save:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.sf-save:disabled { opacity: .45; cursor: not-allowed; }
+.sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-label, .cs-skel-input, .cs-skel-item { animation: none; }

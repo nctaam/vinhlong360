@@ -433,7 +433,7 @@ onMounted(fetchDashboard)
   font-size: .72rem; font-weight: 600; cursor: pointer; transition: background .2s;
 }
 .dash-backup-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb),.08); }
-.dash-backup-btn:disabled { opacity: .5; cursor: wait; }
+.dash-backup-btn:disabled { opacity: var(--opacity-disabled); cursor: wait; }
 .dark .dash-health { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 
 /* ── Entity completeness ── */
@@ -525,7 +525,7 @@ onMounted(fetchDashboard)
 
 /* ── Refresh animation ── */
 .refresh-spin { display: inline-block; font-size: 1.3rem; line-height: 1; animation: admin-spin .6s linear infinite; }
-.admin-refresh:disabled { opacity: .55; cursor: not-allowed; }
+.admin-refresh:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 
 /* ── Dark mode ── */
 .dark .dash-stat-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
