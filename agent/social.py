@@ -43,6 +43,7 @@ RL_DELETE_LIMIT, RL_DELETE_WINDOW = 10, 300     # 10 xóa / 5 phút
 from auth_middleware import require_pg as _require_pg
 
 _POST_COLS = ("p.id, p.user_id, p.content, p.mentions, p.hashtags, p.best_answer_id, "
+              "p.pinned_comment_id, "
               "p.repost_of, p.repost_snapshot, p.post_type, p.rating, p.images, "
               "p.like_count, p.comment_count, p.created_at, p.entity_id, p.entity_name, "
               "p.entity_type, p.moderation_status")
@@ -801,6 +802,39 @@ async def community_stats():
             reviews = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE post_type='review' AND moderation_status='approved'")
             members = db._fetchone(conn, "SELECT COUNT(*) c FROM users WHERE is_active=TRUE")
         return {"posts": _c(posts), "reviews": _c(reviews), "members": _c(members)}
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/me/counts")
+async def user_counts(user=Depends(require_user)):
+    ph = db._ph
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            notif = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM notifications
+                WHERE user_id = {ph}::uuid AND is_read = FALSE
+            """, (uid,))
+            posts = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE user_id = {ph}::uuid AND moderation_status != 'rejected'
+            """, (uid,))
+            bookmarks = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM saved_entities
+                WHERE user_id = {ph}::uuid
+            """, (uid,))
+            visits = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM user_visits
+                WHERE user_id = {ph}::uuid
+            """, (uid,))
+        def _c(r):
+            return db._row_to_dict(r)["c"] if r else 0
+        return {
+            "unread_notifications": _c(notif),
+            "posts": _c(posts),
+            "bookmarks": _c(bookmarks),
+            "visits": _c(visits),
+        }
     return await asyncio.to_thread(_query)
 
 

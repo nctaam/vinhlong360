@@ -552,3 +552,46 @@ class TestTrendingPosts:
         src = inspect.getsource(__import__("social").trending_posts)
         assert '"window"' in src
         assert '"days"' in src
+
+
+class TestUserCounts:
+    """User badge counts endpoint."""
+
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/me/counts" in paths
+
+    def test_requires_auth(self):
+        src = inspect.getsource(__import__("social").user_counts)
+        assert "require_user" in src
+
+    def test_returns_unread_notifications(self):
+        src = inspect.getsource(__import__("social").user_counts)
+        assert '"unread_notifications"' in src
+
+    def test_returns_posts_count(self):
+        src = inspect.getsource(__import__("social").user_counts)
+        assert '"posts"' in src
+
+    def test_returns_bookmarks_count(self):
+        src = inspect.getsource(__import__("social").user_counts)
+        assert '"bookmarks"' in src
+        assert "saved_entities" in src
+
+    def test_returns_visits_count(self):
+        src = inspect.getsource(__import__("social").user_counts)
+        assert '"visits"' in src
+        assert "user_visits" in src
+
+    def test_uses_parameterized(self):
+        src = inspect.getsource(__import__("social").user_counts)
+        assert "db._ph" in src
+
+
+class TestPostColsPinnedComment:
+    """_POST_COLS includes pinned_comment_id."""
+
+    def test_post_cols_has_pinned(self):
+        from social import _POST_COLS
+        assert "pinned_comment_id" in _POST_COLS
