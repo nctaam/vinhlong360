@@ -21,7 +21,7 @@
           <input :id="`sf-${field.key}`" type="color" :value="localValues[field.key] || '#000000'"
             @input="localValues[field.key] = ($event.target as HTMLInputElement).value" class="sf-color-picker" />
           <input type="text" :value="localValues[field.key]" class="sf-color-hex"
-            placeholder="#000000" @input="localValues[field.key] = ($event.target as HTMLInputElement).value" />
+            placeholder="#000000" :aria-label="`${field.label} (mã hex)`" @input="localValues[field.key] = ($event.target as HTMLInputElement).value" />
           <button v-if="localValues[field.key]" type="button" class="sf-color-clear" @click="localValues[field.key] = ''" title="Xoá (dùng mặc định)" aria-label="Xoá màu (dùng mặc định)">✕</button>
         </div>
       </template>
@@ -47,9 +47,9 @@
             <div v-for="s in field.itemSchema" :key="s.field" class="sf-rep-field">
               <label class="sf-rep-flabel">{{ s.label }}</label>
               <textarea v-if="s.input_type === 'textarea'" :value="item[s.field]" rows="2" class="sf-rep-input"
-                @input="update(s.field, ($event.target as HTMLTextAreaElement).value)"></textarea>
+                :aria-label="s.label" @input="update(s.field, ($event.target as HTMLTextAreaElement).value)"></textarea>
               <input v-else :value="item[s.field]" :placeholder="s.label" class="sf-rep-input"
-                @input="update(s.field, ($event.target as HTMLInputElement).value)" />
+                :aria-label="s.label" @input="update(s.field, ($event.target as HTMLInputElement).value)" />
             </div>
           </template>
         </AdminSortableList>

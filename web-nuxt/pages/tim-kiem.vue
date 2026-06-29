@@ -37,7 +37,7 @@
       <ClientOnly>
         <LazyAISearchAssist v-if="q" :query="q" />
         <template #fallback>
-          <div v-if="q" class="ai-loading ai-loading-padded" aria-hidden="true"><div class="spinner spinner-center"></div></div>
+          <div v-if="q" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý AI"><div class="spinner spinner-center"></div></div>
         </template>
       </ClientOnly>
     </NuxtErrorBoundary>

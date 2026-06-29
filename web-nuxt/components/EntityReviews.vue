@@ -98,7 +98,7 @@
 
     <!-- Auto-load more on scroll -->
     <div v-if="hasMore" ref="sentinel" class="review-sentinel">
-      <div v-if="infiniteLoading" class="spinner spinner-sm"></div>
+      <div v-if="infiniteLoading" class="spinner spinner-sm" role="status" aria-label="Đang tải thêm đánh giá"></div>
     </div>
   </div>
 </template>

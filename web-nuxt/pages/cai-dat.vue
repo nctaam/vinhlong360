@@ -87,6 +87,7 @@
               v-model="username"
               type="text"
               class="sf-input sf-username-input"
+              aria-label="Username"
               maxlength="30"
               minlength="3"
               pattern="[a-z][a-z0-9._-]*"
@@ -150,7 +151,7 @@
 
       <div class="settings-card card">
         <h2>Phiên đăng nhập</h2>
-        <div v-if="sessionsLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
+        <div v-if="sessionsLoading" class="sf-loading" role="status" aria-label="Đang tải phiên"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="sessions.length" class="sessions-list">
           <div v-for="s in sessions" :key="s.id" :class="['session-item', { current: s.is_current }]">
             <div class="session-info">
@@ -166,7 +167,7 @@
 
       <div class="settings-card card">
         <h2>Lịch sử đăng nhập</h2>
-        <div v-if="loginHistoryLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
+        <div v-if="loginHistoryLoading" class="sf-loading" role="status" aria-label="Đang tải lịch sử"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="loginHistory.length" class="sessions-list">
           <div v-for="h in loginHistory" :key="h.id" :class="['session-item', { 'login-fail': !h.success }]">
             <div class="session-info">
@@ -184,7 +185,7 @@
     <div v-if="activeTab === 'thong-bao'" id="panel-thong-bao" class="settings-card card" role="tabpanel" aria-labelledby="tab-thong-bao">
       <h2>Tùy chọn thông báo</h2>
       <p class="sf-hint sf-hint-spaced">Chọn loại thông báo bạn muốn nhận.</p>
-      <div v-if="notifPrefsLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
+      <div v-if="notifPrefsLoading" class="sf-loading" role="status" aria-label="Đang tải tùy chọn"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="notif-prefs">
         <label v-for="np in NOTIF_TYPES" :key="np.key" class="notif-pref-item">
           <div class="notif-pref-info">
@@ -222,7 +223,7 @@
     <!-- Tab: Quyền riêng tư -->
     <div v-if="activeTab === 'rieng-tu'" id="panel-rieng-tu" class="settings-card card" role="tabpanel" aria-labelledby="tab-rieng-tu">
       <h2>Quyền riêng tư</h2>
-      <div v-if="privacyLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
+      <div v-if="privacyLoading" class="sf-loading" role="status" aria-label="Đang tải cài đặt"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="settings-form">
         <div class="sf-field">
           <span class="sf-label">Ai xem được hồ sơ?</span>

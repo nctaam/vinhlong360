@@ -194,7 +194,7 @@
             <button type="button" class="fm-close" aria-label="Đóng" @click="followModalOpen = false">&times;</button>
           </header>
           <div class="fm-body">
-            <div v-if="followLoadingList" class="fm-loading"><div class="spinner spinner-sm"></div></div>
+            <div v-if="followLoadingList" class="fm-loading" role="status" aria-label="Đang tải danh sách"><div class="spinner spinner-sm"></div></div>
             <template v-else>
               <ul v-if="followModalList.length" class="fm-list">
                 <li v-for="u in followModalList" :key="u.id">
