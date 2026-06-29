@@ -2442,13 +2442,24 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                             "tốt nhất TỪ thông tin đã thu thập, KHÔNG gọi thêm tool, "
                             "trả lời trực tiếp bằng tiếng Việt."),
             })
-            synth = get_client().chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
+            synth_q: asyncio.Queue = asyncio.Queue()
+            def _synth_produce():
+                try:
+                    resp = get_client().chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
+                    for chunk in resp:
+                        delta = chunk.choices[0].delta
+                        if delta.content:
+                            synth_q.put_nowait(delta.content)
+                finally:
+                    synth_q.put_nowait(None)
+            asyncio.get_event_loop().run_in_executor(None, _synth_produce)
             synth_text = ""
-            for chunk in synth:
-                delta = chunk.choices[0].delta
-                if delta.content:
-                    synth_text += delta.content
-                    yield f"data: {json.dumps({'type': 'text', 'content': delta.content}, ensure_ascii=False)}\n\n"
+            while True:
+                token = await synth_q.get()
+                if token is None:
+                    break
+                synth_text += token
+                yield f"data: {json.dumps({'type': 'text', 'content': token}, ensure_ascii=False)}\n\n"
             if synth_text:
                 memory_manager.on_message(sid, "assistant", synth_text)
                 analytics.track_query(message, tools_used, synth_text, sid)

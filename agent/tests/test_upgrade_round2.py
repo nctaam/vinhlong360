@@ -1214,32 +1214,32 @@ class TestAdminReviewResponse:
         assert "/admin/posts/{post_id}/response" in paths
 
     def test_validates_post_id(self):
-        src = inspect.getsource(__import__("admin").add_review_response)
+        src = inspect.getsource(__import__("admin").admin_review_response)
         assert "validate_path_id" in src
 
     def test_only_reviews(self):
-        src = inspect.getsource(__import__("admin").add_review_response)
+        src = inspect.getsource(__import__("admin").admin_review_response)
         assert '"review"' in src
         assert "400" in src
 
     def test_prevents_duplicate(self):
-        src = inspect.getsource(__import__("admin").add_review_response)
+        src = inspect.getsource(__import__("admin").admin_review_response)
         assert "409" in src
 
     def test_inserts_response(self):
-        src = inspect.getsource(__import__("admin").add_review_response)
+        src = inspect.getsource(__import__("admin").admin_review_response)
         assert "INSERT INTO review_responses" in src
 
     def test_notifies_author(self):
-        src = inspect.getsource(__import__("admin").add_review_response)
+        src = inspect.getsource(__import__("admin").admin_review_response)
         assert "create_notification" in src
 
     def test_html_escapes_content(self):
-        src = inspect.getsource(__import__("admin").add_review_response)
+        src = inspect.getsource(__import__("admin").admin_review_response)
         assert "_html.escape" in src
 
     def test_parameterized(self):
-        src = inspect.getsource(__import__("admin").add_review_response)
+        src = inspect.getsource(__import__("admin").admin_review_response)
         assert "db._ph" in src
 
     def test_model_validation(self):

@@ -127,6 +127,7 @@ async def require_admin(request: Request):
             actor = f"user:{user.get('id')}"
     if not actor:
         raise HTTPException(401, detail="Xác thực admin không hợp lệ. Sử dụng X-Admin-Key hoặc phiên làm việc admin.")
+    request.state.admin_user = user if actor != "admin-key" else None
     # P2-7: audit các thao tác THAY ĐỔI (đọc/GET không log để tránh nhiễu)
     if request.method in ("POST", "PUT", "DELETE", "PATCH"):
         _log_admin_audit(actor, request.method, request.url.path, client_ip)
@@ -445,7 +446,7 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     if url.startswith("/"):
         pass
     else:
-        _assert_public_url(url)
+        await asyncio.to_thread(_assert_public_url, url)
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
@@ -1230,10 +1231,11 @@ async def admin_review_response(post_id: str, body: ReviewResponseBody, request:
     responder_id = str(user["id"]) if user else None
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT post_type FROM posts WHERE id::text = {ph}", (post_id,))
+            post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
-            if db._row_to_dict(post).get("post_type") != "review":
+            pd = db._row_to_dict(post)
+            if pd.get("post_type") != "review":
                 raise HTTPException(400, "Chỉ phản hồi cho bài đánh giá (review)")
             db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"review_resp:{post_id}",))
             existing = db._fetchone(conn, f"SELECT id FROM review_responses WHERE post_id::text = {ph}", (post_id,))
@@ -1242,9 +1244,15 @@ async def admin_review_response(post_id: str, body: ReviewResponseBody, request:
             db._execute(conn, f"""
                 INSERT INTO review_responses (post_id, responder_id, content)
                 VALUES ({ph}::uuid, {ph}::uuid, {ph})
-            """, (post_id, responder_id, body.content))
+            """, (post_id, responder_id, _html.escape(body.content.strip())))
             row = db._fetchone(conn, f"SELECT * FROM review_responses WHERE post_id::text = {ph}", (post_id,))
         _log_mod_action("review_response", post_id, "added")
+        try:
+            create_notification(str(pd["user_id"]), "social",
+                                "Đánh giá của bạn đã nhận được phản hồi",
+                                ref_type="post", ref_id=post_id)
+        except Exception:
+            logger.exception("Failed to notify review response %s", post_id)
         return db._row_to_dict(row) if row else {"ok": True}
     return await asyncio.to_thread(_query)
 
@@ -1399,7 +1407,7 @@ async def approve_image_suggestion(suggestion_id: str):
 
     # Fetch the candidate from its licensed source (Commons etc.). Bounded + guarded.
     candidate_url = s["candidate_url"]
-    _assert_public_url(candidate_url)  # P0-13: chặn SSRF tới host nội bộ
+    await asyncio.to_thread(_assert_public_url, candidate_url)  # P0-13: chặn SSRF tới host nội bộ
     try:
         import httpx
         headers = {"User-Agent": "vinhlong360-image-review/1.0 (+https://vinhlong360.vn)"}
@@ -1493,7 +1501,7 @@ async def system_health():
         db_path = os.path.join(os.path.dirname(__file__), "data", "knowledge.db")
         if os.path.exists(db_path):
             result["sqlite"]["size_mb"] = round(os.path.getsize(db_path) / 1024 / 1024, 2)
-            result["sqlite"]["entities"] = len(db.list_entities(limit=100000, offset=0))
+            result["sqlite"]["entities"] = sum(db.count_entities().values())
         if db._use_pg:
             with db._conn() as conn:
                 tables = ["users", "posts", "comments", "likes", "follows",
@@ -1582,7 +1590,7 @@ async def toggle_featured(entity_id: str, request: Request):
     entity = await asyncio.to_thread(db.get_entity, entity_id)
     if not entity:
         raise HTTPException(404, "Entity không tồn tại")
-    admin_user = request.state.admin_user
+    admin_user = getattr(request.state, "admin_user", None)
     ph = db._ph
     def _query():
         if not db._use_pg:
@@ -1594,10 +1602,11 @@ async def toggle_featured(entity_id: str, request: Request):
             if existing:
                 db._execute(conn, f"DELETE FROM featured_entities WHERE entity_id = {ph}", (entity_id,))
                 return False
+            added_by = str(admin_user["id"]) if admin_user else None
             db._execute(conn, f"""
                 INSERT INTO featured_entities (entity_id, added_by, sort_order)
                 VALUES ({ph}, {ph}::uuid, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM featured_entities))
-            """, (entity_id, str(admin_user["id"])))
+            """, (entity_id, added_by))
             return True
     is_featured = await asyncio.to_thread(_query)
     return {"entity_id": entity_id, "featured": is_featured}
@@ -2329,9 +2338,11 @@ class BatchModerationBody(BaseModel):
 
 
 @router.post("/moderation/batch")
-async def batch_moderation(body: BatchModerationBody):
+async def batch_moderation(body: BatchModerationBody, request: Request):
     from ratelimit import check_rate
-    check_rate("admin:batch-mod", 10, 60, "Thao tác quá nhanh")
+    admin_user = getattr(request.state, "admin_user", None)
+    rl_key = f"admin:batch-mod:{admin_user['id']}" if admin_user else "admin:batch-mod:key"
+    check_rate(rl_key, 10, 60, "Thao tác quá nhanh")
     if body.action not in ("approve", "reject"):
         raise HTTPException(400, "action must be 'approve' or 'reject'")
     if not body.post_ids or len(body.post_ids) > 100:
@@ -2450,46 +2461,6 @@ async def feature_post(post_id: str, request: Request):
     _log_mod_action("post", post_id, "featured" if featured else "unfeatured", None)
     return {"featured": featured}
 
-
-class _ReviewResponseBody2(BaseModel):
-    content: str = Field(..., min_length=1, max_length=2000)
-
-
-@router.post("/posts/{post_id}/response")
-async def add_review_response(post_id: str, body: _ReviewResponseBody2, request: Request):
-    post_id = validate_path_id(post_id, "post_id")
-    admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
-    def _query():
-        ph = db._ph
-        with db._conn() as conn:
-            post = db._fetchone(conn, f"""
-                SELECT user_id, post_type FROM posts WHERE id::text = {ph}
-            """, (post_id,))
-            if not post:
-                raise HTTPException(404, "Bài viết không tồn tại")
-            pd = db._row_to_dict(post)
-            if pd["post_type"] != "review":
-                raise HTTPException(400, "Chỉ trả lời đánh giá (review)")
-            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"review_resp:{post_id}",))
-            existing = db._fetchone(conn, f"""
-                SELECT id FROM review_responses WHERE post_id::text = {ph}
-            """, (post_id,))
-            if existing:
-                raise HTTPException(409, "Đánh giá đã có phản hồi")
-            import html as _html
-            db._execute(conn, f"""
-                INSERT INTO review_responses (post_id, responder_id, content)
-                VALUES ({ph}::uuid, {ph}::uuid, {ph})
-            """, (post_id, str(admin_id) if admin_id else None, _html.escape(body.content.strip())))
-        try:
-            create_notification(str(pd["user_id"]), "social",
-                                "Đánh giá của bạn đã nhận được phản hồi",
-                                ref_type="post", ref_id=post_id)
-        except Exception:
-            logger.exception("Failed to notify review response %s", post_id)
-    await asyncio.to_thread(_query)
-    _log_mod_action("review_response", post_id, "added")
-    return {"success": True}
 
 
 @router.delete("/posts/{post_id}/response")
@@ -3925,7 +3896,7 @@ async def approve_claim(claim_id: str, request: Request):
     """U-30: Approve an entity claim."""
     claim_id = validate_path_id(claim_id, "claim_id")
     ph = db._ph
-    admin_user = request.state.admin_user
+    admin_user = getattr(request.state, "admin_user", None)
 
     def _approve():
         with db._conn() as conn:
@@ -3935,10 +3906,11 @@ async def approve_claim(claim_id: str, request: Request):
             claim = db._row_to_dict(row)
             if claim["status"] != "pending":
                 return {"error": "not_pending", "current_status": claim["status"]}
+            reviewer_id = str(admin_user["id"]) if admin_user else None
             db._execute(conn, f"""
                 UPDATE entity_claims SET status = 'approved', reviewer_id = {ph}::uuid, reviewed_at = NOW()
                 WHERE id = {ph}::uuid
-            """, (str(admin_user["id"]), claim_id))
+            """, (reviewer_id, claim_id))
         return {"ok": True, "claimant_id": str(claim["claimant_id"]), "entity_id": claim.get("entity_id")}
 
     result = await asyncio.to_thread(_approve)
@@ -3962,7 +3934,7 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
     """U-30: Reject an entity claim with optional reason."""
     claim_id = validate_path_id(claim_id, "claim_id")
     ph = db._ph
-    admin_user = request.state.admin_user
+    admin_user = getattr(request.state, "admin_user", None)
 
     def _reject():
         with db._conn() as conn:
@@ -3972,11 +3944,12 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
             claim = db._row_to_dict(row)
             if claim["status"] != "pending":
                 return {"error": "not_pending", "current_status": claim["status"]}
+            reviewer_id = str(admin_user["id"]) if admin_user else None
             db._execute(conn, f"""
                 UPDATE entity_claims SET status = 'rejected', reviewer_id = {ph}::uuid,
                     reviewed_at = NOW(), rejection_reason = {ph}
                 WHERE id = {ph}::uuid
-            """, (str(admin_user["id"]), body.reason, claim_id))
+            """, (reviewer_id, body.reason, claim_id))
         return {"ok": True, "claimant_id": str(claim["claimant_id"]), "entity_id": claim.get("entity_id")}
 
     result = await asyncio.to_thread(_reject)
@@ -4073,9 +4046,10 @@ async def list_announcements(
 @router.post("/announcements", status_code=201)
 async def create_announcement(body: AnnouncementCreate, request: Request):
     ph = db._ph
-    admin_user = request.state.admin_user
+    admin_user = getattr(request.state, "admin_user", None)
 
     def _query():
+        created_by = str(admin_user["id"]) if admin_user else None
         with db._conn() as conn:
             row = db._fetchone(conn, f"""
                 INSERT INTO announcements (title, content, type, priority, starts_at, expires_at, created_by)
@@ -4087,7 +4061,7 @@ async def create_announcement(body: AnnouncementCreate, request: Request):
             """, (
                 body.title.strip(), body.content.strip(), body.type,
                 body.priority, body.starts_at, body.expires_at,
-                str(admin_user["id"]),
+                created_by,
             ))
         return db._row_to_dict(row) if row else None
 
