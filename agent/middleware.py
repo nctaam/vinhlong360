@@ -9,6 +9,7 @@ Bao gồm:
   - Response time monitoring
 """
 
+import contextvars
 import hashlib
 import hmac
 import ipaddress
@@ -23,6 +24,8 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from threading import Lock
 from pathlib import Path
+
+_request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="")
 
 # ══════════════════════════════════════════════════
 #  STRUCTURED LOGGING
@@ -53,12 +56,15 @@ class StructuredLogger:
             self._py_logger.setLevel(getattr(logging, log_level, logging.INFO))
 
     def log(self, level: str, message: str, **extra):
+        rid = _request_id_var.get("")
         entry = {
             "ts": datetime.now(timezone.utc).isoformat(),
             "level": level,
             "msg": message,
-            **extra,
         }
+        if rid:
+            entry["req_id"] = rid
+        entry.update(extra)
         with self._lock:
             self._buffer.append(entry)
             if len(self._buffer) >= 50:

@@ -1493,3 +1493,80 @@ class TestEarlyReturnFieldSweep:
         import social
         issues = self._check_early_return_fields(social.get_user_posts, ["has_more", "total"])
         assert not issues, f"get_user_posts: {issues}"
+
+
+# ── P0: Weather API async ──
+
+class TestWeatherAsync:
+    """Weather endpoints must not block the event loop."""
+
+    def test_weather_endpoint_uses_to_thread(self):
+        import server
+        src = inspect.getsource(server.weather_endpoint)
+        assert "asyncio.to_thread" in src, "weather_endpoint must wrap sync get_weather in asyncio.to_thread"
+
+    def test_weather_all_uses_to_thread(self):
+        import server
+        src = inspect.getsource(server.weather_all)
+        assert "asyncio.to_thread" in src, "weather_all must wrap sync get_all_weather in asyncio.to_thread"
+
+
+# ── P0: Request ID context propagation ──
+
+class TestRequestIdPropagation:
+    """request_id must be propagated via contextvars to all log entries."""
+
+    def test_contextvar_exists(self):
+        from middleware import _request_id_var
+        assert _request_id_var.get("") == ""
+
+    def test_contextvar_set_propagates_to_logger(self):
+        from middleware import _request_id_var, StructuredLogger
+        sl = StructuredLogger(name="test_reqid", max_entries=100)
+        token = _request_id_var.set("test-abc123")
+        try:
+            sl.log("info", "test message")
+            assert sl._buffer[-1].get("req_id") == "test-abc123"
+        finally:
+            _request_id_var.reset(token)
+
+    def test_contextvar_empty_omits_req_id(self):
+        from middleware import _request_id_var, StructuredLogger
+        sl = StructuredLogger(name="test_reqid2", max_entries=100)
+        sl.log("info", "test without req_id")
+        assert "req_id" not in sl._buffer[-1]
+
+    def test_middleware_sets_contextvar(self):
+        import server
+        src = inspect.getsource(server.track_response_time)
+        assert "_request_id_var.set" in src, "track_response_time must set _request_id_var"
+
+
+# ── P0: Graceful shutdown drain ──
+
+class TestGracefulShutdown:
+    """Graceful shutdown must drain in-flight requests."""
+
+    def test_draining_flag_exists(self):
+        import server
+        assert hasattr(server, "_draining")
+        assert hasattr(server, "_inflight")
+
+    def test_graceful_drain_middleware_exists(self):
+        import server
+        assert hasattr(server, "graceful_drain")
+        src = inspect.getsource(server.graceful_drain)
+        assert "_draining" in src
+        assert "_inflight" in src
+        assert "503" in src
+
+    def test_health_bypasses_drain(self):
+        import server
+        src = inspect.getsource(server.graceful_drain)
+        assert "/health" in src, "Health endpoints must bypass drain check"
+
+    def test_lifespan_sets_draining(self):
+        import server
+        src = inspect.getsource(server.lifespan)
+        assert "_draining = True" in src
+        assert "_inflight" in src

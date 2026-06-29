@@ -842,7 +842,14 @@ async def lifespan(app):
     start_scheduler()
     logger.info("Server started", model=get_model(), entities=len(knowledge._entities))
     yield
-    logger.info("Server shutting down — stopping scheduler")
+    global _draining
+    _draining = True
+    logger.info("Server shutting down — draining in-flight requests")
+    deadline = time.time() + 30
+    while _inflight > 0 and time.time() < deadline:
+        await asyncio.sleep(0.5)
+    if _inflight > 0:
+        logger.warn("Force shutdown with in-flight requests", inflight=_inflight)
     stop_scheduler()
     from database import db as _db
     if _db._pg_pool:
@@ -1028,12 +1035,31 @@ async def gate_internal_endpoints(request: Request, call_next):
     return await call_next(request)
 
 
+_inflight = 0
+_draining = False
+
+
+@app.middleware("http")
+async def graceful_drain(request: Request, call_next):
+    global _inflight
+    if _draining and not request.url.path.startswith("/health"):
+        return JSONResponse(status_code=503, content={"error": "Server shutting down"},
+                            headers={"Retry-After": "5"})
+    _inflight += 1
+    try:
+        return await call_next(request)
+    finally:
+        _inflight -= 1
+
+
 @app.middleware("http")
 async def track_response_time(request: Request, call_next):
     """Track response time + request logging."""
     start = time.time()
     req_id = generate_request_id()
     request.state.request_id = req_id
+    from middleware import _request_id_var
+    _request_id_var.set(req_id)
 
     is_streaming = request.url.path in ("/chat", "/chat/stream")
     timeout_s = 120 if is_streaming else 30
@@ -3137,13 +3163,13 @@ async def vector_search_endpoint(q: str = Query(..., max_length=200), limit: int
 async def weather_endpoint(area: str = Query("vinh-long", max_length=50)):
     if not HAS_REALTIME:
         raise HTTPException(503, detail="Realtime module not available")
-    return get_weather(area)
+    return await asyncio.to_thread(get_weather, area)
 
 @app.get("/weather/all")
 async def weather_all():
     if not HAS_REALTIME:
         raise HTTPException(503, detail="Realtime module not available")
-    return {"areas": get_all_weather()}
+    return {"areas": await asyncio.to_thread(get_all_weather)}
 
 @app.get("/events")
 async def events_endpoint(days: int = Query(30, ge=1, le=365), area: str = Query(None, max_length=50)):
