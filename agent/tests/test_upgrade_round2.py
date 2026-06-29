@@ -302,3 +302,106 @@ class TestBulkUserBanUnban:
     def test_bulk_unban_skips_active(self):
         src = inspect.getsource(__import__("admin").bulk_unban_users)
         assert "is_active" in src
+
+
+class TestHiddenPostsMigration:
+    """Migration 032 for hidden posts + pinned comments."""
+
+    def test_migration_exists(self):
+        path = AGENT_DIR / "migrations" / "032_hidden_posts_pin_comment.sql"
+        assert path.exists()
+
+    def test_migration_creates_table(self):
+        sql = (AGENT_DIR / "migrations" / "032_hidden_posts_pin_comment.sql").read_text()
+        assert "user_hidden_posts" in sql
+        assert "CREATE TABLE IF NOT EXISTS" in sql
+
+    def test_migration_has_index(self):
+        sql = (AGENT_DIR / "migrations" / "032_hidden_posts_pin_comment.sql").read_text()
+        assert "idx_hidden_posts_user" in sql
+
+    def test_migration_adds_pinned_column(self):
+        sql = (AGENT_DIR / "migrations" / "032_hidden_posts_pin_comment.sql").read_text()
+        assert "pinned_comment_id" in sql
+        assert "ALTER TABLE posts" in sql
+
+
+class TestHidePostEndpoints:
+    """Hide/unhide post + list hidden posts."""
+
+    def test_hide_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/posts/{post_id}/hide" in paths
+
+    def test_unhide_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/posts/{post_id}/unhide" in paths
+
+    def test_hidden_list_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/posts/hidden" in paths
+
+    def test_hide_uses_parameterized(self):
+        src = inspect.getsource(__import__("social").hide_post)
+        assert "db._ph" in src
+        assert "validate_path_id" in src
+
+    def test_hide_requires_auth(self):
+        src = inspect.getsource(__import__("social").hide_post)
+        assert "require_user" in src
+
+    def test_hide_uses_on_conflict(self):
+        src = inspect.getsource(__import__("social").hide_post)
+        assert "ON CONFLICT DO NOTHING" in src
+
+    def test_unhide_uses_parameterized(self):
+        src = inspect.getsource(__import__("social").unhide_post)
+        assert "db._ph" in src
+
+    def test_feed_filters_hidden(self):
+        src = inspect.getsource(__import__("social").get_feed)
+        assert "user_hidden_posts" in src
+
+    def test_following_feed_filters_hidden(self):
+        src = inspect.getsource(__import__("social").get_following_feed)
+        assert "user_hidden_posts" in src
+
+
+class TestPinComment:
+    """Pin/unpin comment by post author."""
+
+    def test_pin_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/posts/{post_id}/pin-comment" in paths
+
+    def test_pin_requires_auth(self):
+        src = inspect.getsource(__import__("social").pin_comment)
+        assert "require_user" in src
+
+    def test_pin_checks_post_author(self):
+        src = inspect.getsource(__import__("social").pin_comment)
+        assert "user_id" in src
+        assert "403" in src or "Chỉ tác giả" in src
+
+    def test_pin_verifies_comment_belongs(self):
+        src = inspect.getsource(__import__("social").pin_comment)
+        assert "post_id" in src
+        assert "comments" in src
+
+    def test_pin_uses_parameterized(self):
+        src = inspect.getsource(__import__("social").pin_comment)
+        assert "db._ph" in src
+        assert "validate_path_id" in src
+
+    def test_unpin_checks_author(self):
+        src = inspect.getsource(__import__("social").unpin_comment)
+        assert "user_id" in src
+        assert "403" in src or "Chỉ tác giả" in src
+
+    def test_format_post_includes_pinned(self):
+        src = inspect.getsource(__import__("social")._format_post)
+        assert "pinned_comment_id" in src

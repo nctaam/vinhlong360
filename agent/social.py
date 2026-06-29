@@ -548,6 +548,11 @@ async def get_feed(
         conditions.append(bc.removeprefix("AND "))
         params.extend(bc_p)
 
+    uid = str(user["id"]) if user else None
+    if uid:
+        conditions.append(f"p.id NOT IN (SELECT post_id FROM user_hidden_posts WHERE user_id = {ph}::uuid)")
+        params.append(uid)
+
     where = " AND ".join(conditions)
     where_params = list(params)
 
@@ -611,6 +616,7 @@ async def get_following_feed(
     uid = str(user["id"])
     # điều kiện: tác giả là người mình follow HOẶC bài gắn địa-điểm mình follow
     bc, bc_p = _block_sql(user, "p.user_id")
+    hidden_cond = f"AND p.id NOT IN (SELECT post_id FROM user_hidden_posts WHERE user_id = {ph}::uuid)"
     follow_cond = f"""
         (p.user_id IN (SELECT target_id::uuid FROM follows
                          WHERE follower_id = {ph}::uuid AND target_type='user')
@@ -625,6 +631,7 @@ async def get_following_feed(
         LEFT JOIN entities e ON e.id = p.entity_id
         WHERE p.moderation_status = 'approved' AND {follow_cond}
         {bc}
+        {hidden_cond}
         ORDER BY p.created_at DESC
         LIMIT {ph} OFFSET {ph}
     """
@@ -632,12 +639,13 @@ async def get_following_feed(
         SELECT COUNT(*) as c FROM posts p
         WHERE p.moderation_status = 'approved' AND {follow_cond}
         {bc}
+        {hidden_cond}
     """
 
     def _following_query():
         with db._conn() as conn:
-            rows = db._fetchall(conn, feed_sql, (uid, uid, *bc_p, limit, offset))
-            total = db._fetchone(conn, count_sql, (uid, uid, *bc_p))
+            rows = db._fetchall(conn, feed_sql, (uid, uid, *bc_p, uid, limit, offset))
+            total = db._fetchone(conn, count_sql, (uid, uid, *bc_p, uid))
         return rows, total
 
     rows, total = await asyncio.to_thread(_following_query)
@@ -1510,6 +1518,119 @@ async def get_my_bookmarks(
     return {"posts": posts, "page": page, "has_more": len(posts) == limit}
 
 
+# ── Hide / Pin ──
+
+@router.post("/posts/{post_id}/hide")
+async def hide_post(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    uid = str(user["id"])
+    check_rate(f"hide:{uid}", 30, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
+            if not post:
+                raise HTTPException(404, "Không tìm thấy bài viết")
+            db._execute(conn, f"""
+                INSERT INTO user_hidden_posts (user_id, post_id)
+                VALUES ({ph}::uuid, {ph}::uuid)
+                ON CONFLICT DO NOTHING
+            """, (uid, post_id))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.post("/posts/{post_id}/unhide")
+async def unhide_post(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    uid = str(user["id"])
+    check_rate(f"hide:{uid}", 30, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                DELETE FROM user_hidden_posts
+                WHERE user_id = {ph}::uuid AND post_id = {ph}::uuid
+            """, (uid, post_id))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.get("/posts/hidden")
+async def list_hidden_posts(
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(require_user),
+):
+    ph = db._ph
+    offset = (page - 1) * limit
+    uid = str(user["id"])
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM user_hidden_posts h
+                JOIN posts p ON p.id = h.post_id
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE h.user_id = {ph}::uuid
+                ORDER BY h.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+    rows = await asyncio.to_thread(_query)
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
+
+
+@router.post("/posts/{post_id}/pin-comment")
+async def pin_comment(post_id: str, comment_id: str = Query(..., max_length=100),
+                      user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    comment_id = validate_path_id(comment_id, "comment_id")
+    uid = str(user["id"])
+    check_rate(f"pin:{uid}", 10, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            if not post:
+                raise HTTPException(404, "Không tìm thấy bài viết")
+            post_d = db._row_to_dict(post)
+            if str(post_d["user_id"]) != uid:
+                raise HTTPException(403, "Chỉ tác giả bài viết mới có thể ghim bình luận")
+            comment = db._fetchone(conn, f"""
+                SELECT id FROM comments WHERE id::text = {ph} AND post_id::text = {ph}
+            """, (comment_id, post_id))
+            if not comment:
+                raise HTTPException(404, "Không tìm thấy bình luận trong bài này")
+            db._execute(conn, f"""
+                UPDATE posts SET pinned_comment_id = {ph}::uuid WHERE id::text = {ph}
+            """, (comment_id, post_id))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.delete("/posts/{post_id}/pin-comment")
+async def unpin_comment(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    post_id = validate_path_id(post_id, "post_id")
+    uid = str(user["id"])
+    check_rate(f"pin:{uid}", 10, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            if not post:
+                raise HTTPException(404, "Không tìm thấy bài viết")
+            if str(db._row_to_dict(post)["user_id"]) != uid:
+                raise HTTPException(403, "Chỉ tác giả bài viết mới có thể gỡ ghim")
+            db._execute(conn, f"""
+                UPDATE posts SET pinned_comment_id = NULL WHERE id::text = {ph}
+            """, (post_id,))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
 # ── Image upload ──
 
 @router.post("/upload/image")
@@ -1896,6 +2017,7 @@ def _format_post(row: dict) -> dict:
         "mentions": mentions,
         "hashtags": hashtags,
         "best_answer_id": str(row["best_answer_id"]) if row.get("best_answer_id") else None,
+        "pinned_comment_id": str(row["pinned_comment_id"]) if row.get("pinned_comment_id") else None,
         "repost_of": str(row["repost_of"]) if row.get("repost_of") else None,
         "repost": _jlist_obj(row.get("repost_snapshot")),
         "post_type": row.get("post_type", "share"),
