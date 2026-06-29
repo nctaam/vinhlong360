@@ -1466,6 +1466,96 @@ async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequ
 
 # ── Data management ──
 
+@router.get("/system-health")
+async def system_health():
+    import os
+    def _query():
+        result = {"sqlite": {}, "postgres": {}}
+        db_path = os.path.join(os.path.dirname(__file__), "data", "knowledge.db")
+        if os.path.exists(db_path):
+            result["sqlite"]["size_mb"] = round(os.path.getsize(db_path) / 1024 / 1024, 2)
+            result["sqlite"]["entities"] = len(db.list_entities(limit=100000, offset=0))
+        if db._use_pg:
+            with db._conn() as conn:
+                tables = ["users", "posts", "comments", "post_likes", "follows",
+                           "notifications", "blocks", "sessions", "user_visits"]
+                pg_tables = {}
+                for t in tables:
+                    try:
+                        row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM {t}", ())
+                        pg_tables[t] = db._row_to_dict(row)["c"] if row else 0
+                    except Exception:
+                        pg_tables[t] = -1
+                result["postgres"]["tables"] = pg_tables
+                try:
+                    size_row = db._fetchone(conn, """
+                        SELECT pg_database_size(current_database()) as s
+                    """, ())
+                    result["postgres"]["size_mb"] = round(db._row_to_dict(size_row)["s"] / 1024 / 1024, 2) if size_row else 0
+                except Exception:
+                    result["postgres"]["size_mb"] = -1
+                active_row = db._fetchone(conn, """
+                    SELECT COUNT(*) as c FROM sessions WHERE expires_at > NOW()
+                """, ())
+                result["postgres"]["active_sessions"] = db._row_to_dict(active_row)["c"] if active_row else 0
+        return result
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/featured")
+async def list_featured():
+    ph = db._ph
+    def _query():
+        if not db._use_pg:
+            return {"featured": []}
+        with db._conn() as conn:
+            rows = db._fetchall(conn, """
+                SELECT entity_id, sort_order, created_at
+                FROM featured_entities ORDER BY sort_order
+            """, ())
+        result = []
+        for r in rows:
+            rd = db._row_to_dict(r)
+            entity = db.get_entity(rd["entity_id"])
+            if entity:
+                result.append({
+                    "entity_id": rd["entity_id"],
+                    "name": entity.get("name"),
+                    "type": entity.get("type"),
+                    "sort_order": rd["sort_order"],
+                    "created_at": str(rd["created_at"]),
+                })
+        return {"featured": result}
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/featured/{entity_id}")
+async def toggle_featured(entity_id: str, request: Request):
+    entity_id = validate_path_id(entity_id, "entity_id")
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    if not entity:
+        raise HTTPException(404, "Entity không tồn tại")
+    admin_user = request.state.admin_user
+    ph = db._ph
+    def _query():
+        if not db._use_pg:
+            raise HTTPException(503, "Requires Postgres")
+        with db._conn() as conn:
+            existing = db._fetchone(conn, f"""
+                SELECT id FROM featured_entities WHERE entity_id = {ph}
+            """, (entity_id,))
+            if existing:
+                db._execute(conn, f"DELETE FROM featured_entities WHERE entity_id = {ph}", (entity_id,))
+                return False
+            db._execute(conn, f"""
+                INSERT INTO featured_entities (entity_id, added_by, sort_order)
+                VALUES ({ph}, {ph}::uuid, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM featured_entities))
+            """, (entity_id, str(admin_user["id"])))
+            return True
+    is_featured = await asyncio.to_thread(_query)
+    return {"entity_id": entity_id, "featured": is_featured}
+
+
 @router.get("/stats")
 async def admin_stats():
     """Thống kê chi tiết cho admin."""

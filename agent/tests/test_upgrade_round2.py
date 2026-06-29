@@ -1767,3 +1767,147 @@ class TestAreas:
     def test_filters_place_type(self):
         src = inspect.getsource(__import__("public_api").list_areas)
         assert 'entity_type="place"' in src
+
+
+# ── Explore feed ──
+
+class TestExploreFeed:
+    def test_endpoint_exists(self):
+        from social import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/feed/explore" in paths
+
+    def test_endpoint_is_get(self):
+        from social import router
+        methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
+        assert "GET" in methods.get("/api/feed/explore", set())
+
+    def test_excludes_following(self):
+        src = inspect.getsource(__import__("social").explore_feed)
+        assert "NOT IN" in src
+        assert "follows" in src
+
+    def test_block_filter(self):
+        src = inspect.getsource(__import__("social").explore_feed)
+        assert "_block_sql" in src
+
+    def test_ranking_algorithm(self):
+        src = inspect.getsource(__import__("social").explore_feed)
+        assert "like_count" in src
+        assert "comment_count" in src
+
+    def test_time_window(self):
+        src = inspect.getsource(__import__("social").explore_feed)
+        assert "90 days" in src
+
+    def test_pagination(self):
+        src = inspect.getsource(__import__("social").explore_feed)
+        assert "LIMIT" in src
+        assert "OFFSET" in src
+
+    def test_formats_posts(self):
+        src = inspect.getsource(__import__("social").explore_feed)
+        assert "_format_post" in src
+
+
+# ── Admin system health ──
+
+class TestAdminSystemHealth:
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/system-health" in paths
+
+    def test_checks_sqlite(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "sqlite" in src
+        assert "size_mb" in src
+
+    def test_checks_postgres(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "postgres" in src
+        assert "tables" in src
+
+    def test_counts_table_rows(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "users" in src
+        assert "posts" in src
+        assert "comments" in src
+
+    def test_active_sessions(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "active_sessions" in src
+        assert "expires_at" in src
+
+    def test_db_size(self):
+        src = inspect.getsource(__import__("admin").system_health)
+        assert "pg_database_size" in src
+
+
+# ── Featured entities ──
+
+class TestFeaturedEntitiesMigration:
+    def test_migration_file_exists(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "039_featured_entities.sql"
+        assert p.exists()
+
+    def test_creates_table(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "039_featured_entities.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "featured_entities" in sql
+        assert "entity_id" in sql
+
+    def test_unique_entity(self):
+        p = Path(__file__).resolve().parent.parent / "migrations" / "039_featured_entities.sql"
+        sql = p.read_text(encoding="utf-8")
+        assert "UNIQUE" in sql
+
+
+class TestAdminFeatured:
+    def test_list_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/featured" in paths
+
+    def test_toggle_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/featured/{entity_id}" in paths
+
+    def test_toggle_validates_entity(self):
+        src = inspect.getsource(__import__("admin").toggle_featured)
+        assert "validate_path_id" in src
+        assert "404" in src
+
+    def test_toggle_logic(self):
+        src = inspect.getsource(__import__("admin").toggle_featured)
+        assert "DELETE" in src
+        assert "INSERT" in src
+
+    def test_list_resolves_entities(self):
+        src = inspect.getsource(__import__("admin").list_featured)
+        assert "get_entity" in src
+
+    def test_sort_order(self):
+        src = inspect.getsource(__import__("admin").list_featured)
+        assert "sort_order" in src
+
+
+class TestPublicFeatured:
+    def test_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/featured" in paths
+
+    def test_returns_entities(self):
+        src = inspect.getsource(__import__("public_api").get_featured_entities)
+        assert '"featured"' in src
+
+    def test_includes_entity_details(self):
+        src = inspect.getsource(__import__("public_api").get_featured_entities)
+        assert '"name"' in src
+        assert '"type"' in src
+
+    def test_limited(self):
+        src = inspect.getsource(__import__("public_api").get_featured_entities)
+        assert "LIMIT" in src

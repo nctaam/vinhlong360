@@ -693,6 +693,50 @@ async def trending_posts(
     return {"posts": posts, "window": window, "days": days}
 
 
+@router.get("/feed/explore")
+async def explore_feed(
+    page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
+    user=Depends(get_current_user),
+):
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
+    offset = (page - 1) * limit
+    uid = str(user["id"]) if user else None
+    exclude_following = ""
+    exclude_params: list = []
+    if uid:
+        exclude_following = f"""
+            AND p.user_id NOT IN (
+                SELECT target_id::uuid FROM follows
+                WHERE follower_id = {ph}::uuid AND target_type = 'user'
+            )
+            AND p.user_id::text != {ph}
+        """
+        exclude_params = [uid, uid]
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.moderation_status = 'approved'
+                  AND p.created_at > NOW() - INTERVAL '90 days'
+                  {exclude_following}
+                  {bc}
+                ORDER BY (p.like_count * 2 + p.comment_count * 3 +
+                          CASE WHEN p.post_type = 'review' AND p.rating >= 4 THEN 5 ELSE 0 END) DESC,
+                         p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (*exclude_params, *bc_p, limit, offset))
+    rows = await asyncio.to_thread(_query)
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    if user:
+        await asyncio.to_thread(_enrich_user_status, posts, user)
+    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
+
+
 @router.get("/search/posts")
 async def search_posts(
     q: str = Query(..., min_length=2, max_length=100),

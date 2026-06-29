@@ -291,6 +291,36 @@ async def get_entity_relationships(
     return result
 
 
+@router.get("/featured")
+async def get_featured_entities():
+    def _query():
+        if not db._use_pg:
+            return {"featured": []}
+        ph = db._ph
+        with db._conn() as conn:
+            rows = db._fetchall(conn, """
+                SELECT entity_id, sort_order FROM featured_entities
+                ORDER BY sort_order LIMIT 20
+            """, ())
+        result = []
+        for r in rows:
+            rd = db._row_to_dict(r)
+            entity = db.get_entity(rd["entity_id"])
+            if entity:
+                attrs = entity.get("attributes") or {}
+                result.append({
+                    "id": entity["id"],
+                    "name": entity["name"],
+                    "type": entity.get("type"),
+                    "summary": entity.get("summary", ""),
+                    "images": entity.get("images", [])[:1],
+                    "rating": attrs.get("rating"),
+                    "coordinates": entity.get("coordinates"),
+                })
+        return {"featured": result}
+    return await asyncio.to_thread(_query)
+
+
 @router.get("/entity-types")
 async def entity_types():
     def _query():
