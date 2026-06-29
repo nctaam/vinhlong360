@@ -48,7 +48,6 @@
 </template>
 
 <script setup lang="ts">
-useReveal()
 const fetchFailed = ref(false)
 const { data, pending } = await useAsyncData('leaderboard',
   () => apiFetch<any>('/api/community/leaderboard?limit=50').catch(() => { fetchFailed.value = true; return { leaders: [] } }))

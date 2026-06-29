@@ -49,7 +49,6 @@
 </template>
 
 <script setup lang="ts">
-useReveal()
 const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()

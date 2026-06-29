@@ -190,7 +190,6 @@
 
 <script setup lang="ts">
 import type { Itinerary, Entity} from '~/types'
-useReveal()
 import { TYPE_META, CARD_TYPES } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
 

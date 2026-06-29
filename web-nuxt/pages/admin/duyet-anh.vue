@@ -44,7 +44,7 @@
             <!-- Candidate is an external licensed URL (not yet re-hosted) -->
             <img
               :src="s.candidate_url" :alt="`Ứng viên ảnh cho ${s.entity_name || s.entity_id}`"
-              class="img-thumb" loading="lazy" referrerpolicy="no-referrer" width="200" height="150"
+              class="img-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="200" height="150"
               @error="onImgError"
             />
             <span class="img-conf" :class="confClass(s.match_confidence)">
