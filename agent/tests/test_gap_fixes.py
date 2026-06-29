@@ -1063,3 +1063,30 @@ class TestPathIdValidation:
     def test_admin_backup_error_is_vietnamese(self):
         src = inspect.getsource(__import__("admin").trigger_backup)
         assert "backup_data.py not found" not in src
+
+
+# ── Toggle race condition guards (rowcount checks) ──
+
+
+class TestToggleRowcountGuard:
+    """ON CONFLICT DO NOTHING toggles must check rowcount before updating counts or returning state."""
+
+    def test_comment_like_checks_insert_rowcount(self):
+        src = inspect.getsource(__import__("social").toggle_comment_like)
+        assert "rowcount" in src
+
+    def test_comment_like_checks_delete_rowcount(self):
+        src = inspect.getsource(__import__("social").toggle_comment_like)
+        assert "cur" in src and "rowcount" in src
+
+    def test_reaction_checks_insert_rowcount(self):
+        src = inspect.getsource(__import__("social").toggle_reaction)
+        assert "rowcount" in src
+
+    def test_bookmark_checks_insert_rowcount(self):
+        src = inspect.getsource(__import__("social").toggle_bookmark)
+        assert "rowcount" in src
+
+    def test_rsvp_checks_insert_rowcount(self):
+        src = inspect.getsource(__import__("notifications").toggle_rsvp)
+        assert "rowcount" in src

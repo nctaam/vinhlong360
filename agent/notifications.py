@@ -752,8 +752,8 @@ async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(
             if deleted:
                 going = False
             else:
-                db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph}) ON CONFLICT DO NOTHING", (uid, entity_id))
-                going = True
+                cur = db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph}) ON CONFLICT DO NOTHING", (uid, entity_id))
+                going = bool(cur and cur.rowcount > 0)
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
         return going, int(db._row_to_dict(cnt)["c"]) if cnt else 0
     going, count = await asyncio.to_thread(_query)

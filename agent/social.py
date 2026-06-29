@@ -2439,22 +2439,24 @@ async def toggle_comment_like(comment_id: str, user=Depends(require_user), _csrf
                 SELECT 1 FROM comment_likes WHERE user_id = {ph}::uuid AND comment_id = {ph}::uuid
             """, (uid, comment_id))
             if existing:
-                db._execute(conn, f"""
+                cur = db._execute(conn, f"""
                     DELETE FROM comment_likes WHERE user_id = {ph}::uuid AND comment_id = {ph}::uuid
                 """, (uid, comment_id))
-                db._execute(conn, f"""
-                    UPDATE comments SET like_count = GREATEST(0, like_count - 1) WHERE id::text = {ph}
-                """, (comment_id,))
+                if cur and cur.rowcount > 0:
+                    db._execute(conn, f"""
+                        UPDATE comments SET like_count = GREATEST(0, like_count - 1) WHERE id::text = {ph}
+                    """, (comment_id,))
                 liked = False
             else:
-                db._execute(conn, f"""
+                cur = db._execute(conn, f"""
                     INSERT INTO comment_likes (user_id, comment_id) VALUES ({ph}::uuid, {ph}::uuid)
                     ON CONFLICT DO NOTHING
                 """, (uid, comment_id))
-                db._execute(conn, f"""
-                    UPDATE comments SET like_count = like_count + 1 WHERE id::text = {ph}
-                """, (comment_id,))
-                liked = True
+                if cur and cur.rowcount > 0:
+                    db._execute(conn, f"""
+                        UPDATE comments SET like_count = like_count + 1 WHERE id::text = {ph}
+                    """, (comment_id,))
+                liked = bool(cur and cur.rowcount > 0)
             row = db._fetchone(conn, f"SELECT like_count FROM comments WHERE id::text = {ph}", (comment_id,))
             return liked, db._row_to_dict(row)["like_count"] if row else 0
     liked, like_count = await asyncio.to_thread(_query)
@@ -2503,12 +2505,12 @@ async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_leng
                 """, (post_id, uid, reaction_type))
                 reacted = False
             else:
-                db._execute(conn, f"""
+                cur = db._execute(conn, f"""
                     INSERT INTO post_reactions (post_id, user_id, reaction_type)
                     VALUES ({ph}::uuid, {ph}::uuid, {ph})
                     ON CONFLICT DO NOTHING
                 """, (post_id, uid, reaction_type))
-                reacted = True
+                reacted = bool(cur and cur.rowcount > 0)
             counts = db._fetchall(conn, f"""
                 SELECT reaction_type, COUNT(*) as c
                 FROM post_reactions WHERE post_id = {ph}::uuid
@@ -2572,11 +2574,11 @@ async def toggle_bookmark(post_id: str, user=Depends(require_user), _csrf=Depend
             """, (uid, post_id))
             if deleted:
                 return False
-            db._execute(conn, f"""
+            cur = db._execute(conn, f"""
                 INSERT INTO bookmarks (user_id, post_id) VALUES ({ph}::uuid, {ph}::uuid)
                 ON CONFLICT DO NOTHING
             """, (uid, post_id))
-            return True
+            return bool(cur and cur.rowcount > 0)
     saved = await asyncio.to_thread(_query)
     return {"bookmarked": saved}
 
