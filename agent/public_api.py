@@ -93,6 +93,30 @@ def _build_source_freshness(entity: dict) -> dict:
     }
 
 
+_PRACTICAL_FACTS_KEYS = [
+    "hours", "admission_fee", "phone", "address", "website",
+    "zalo", "parking", "best_time", "peak_hours", "tips",
+    "price_range", "duration", "accessibility",
+]
+
+
+def _build_practical_facts(entity: dict) -> dict:
+    """U-07: Extract standardized practical info from entity attributes."""
+    attrs = entity.get("attributes") or {}
+    facts = {}
+    for key in _PRACTICAL_FACTS_KEYS:
+        facts[key] = attrs.get(key)
+    if facts["hours"] is None:
+        facts["hours"] = attrs.get("open_hours") or attrs.get("opening_hours")
+    if facts["admission_fee"] is None:
+        facts["admission_fee"] = attrs.get("admission") or attrs.get("ticket_price")
+    if facts["price_range"] is None:
+        facts["price_range"] = attrs.get("price") or attrs.get("gia")
+    has_any = any(v is not None for v in facts.values())
+    facts["_completeness"] = sum(1 for v in facts.values() if v is not None and v != "_completeness")
+    return facts if has_any else facts
+
+
 def invalidate_place_cache():
     """Xoá cache tên/khu-vực xã/phường — gọi sau /reload để tránh phục vụ tên cũ
     khi admin đổi/di chuyển place."""
@@ -271,6 +295,7 @@ async def get_entity(
         _enrich_entity_place(e)
         e["quality"] = entity_quality(e)
         e["source_freshness"] = _build_source_freshness(e)
+        e["practical_facts"] = _build_practical_facts(e)
         return e
     entity = await asyncio.to_thread(_query)
     if not entity:

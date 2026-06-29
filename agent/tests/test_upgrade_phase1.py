@@ -1,5 +1,6 @@
 """Tests for Phase 1 upgrade cards: U-02, U-07, U-04, U-09."""
 import inspect
+import sys
 import pytest
 
 
@@ -98,3 +99,74 @@ class TestReportStale:
     def test_report_stale_validates_path_id(self):
         src = inspect.getsource(__import__("public_api").report_stale_field)
         assert "validate_path_id" in src
+
+
+# ── U-07: Practical facts struct ─────────────────────────────────────
+
+class TestPracticalFacts:
+
+    def test_build_practical_facts_empty_attrs(self):
+        from public_api import _build_practical_facts
+        result = _build_practical_facts({})
+        assert "hours" in result
+        assert "phone" in result
+        assert "address" in result
+        assert "website" in result
+        assert "zalo" in result
+        assert "parking" in result
+        assert "best_time" in result
+        assert result["hours"] is None
+
+    def test_build_practical_facts_with_data(self):
+        from public_api import _build_practical_facts
+        entity = {"attributes": {
+            "hours": "7:00-17:00",
+            "phone": "0270 123 456",
+            "parking": "Miễn phí",
+        }}
+        result = _build_practical_facts(entity)
+        assert result["hours"] == "7:00-17:00"
+        assert result["phone"] == "0270 123 456"
+        assert result["parking"] == "Miễn phí"
+        assert result["address"] is None
+
+    def test_build_practical_facts_alias_open_hours(self):
+        from public_api import _build_practical_facts
+        entity = {"attributes": {"open_hours": "8:00-16:30"}}
+        result = _build_practical_facts(entity)
+        assert result["hours"] == "8:00-16:30"
+
+    def test_build_practical_facts_alias_opening_hours(self):
+        from public_api import _build_practical_facts
+        entity = {"attributes": {"opening_hours": "Hàng ngày 6:00-18:00"}}
+        result = _build_practical_facts(entity)
+        assert result["hours"] == "Hàng ngày 6:00-18:00"
+
+    def test_build_practical_facts_alias_admission(self):
+        from public_api import _build_practical_facts
+        entity = {"attributes": {"admission": "50.000đ"}}
+        result = _build_practical_facts(entity)
+        assert result["admission_fee"] == "50.000đ"
+
+    def test_build_practical_facts_alias_price(self):
+        from public_api import _build_practical_facts
+        entity = {"attributes": {"price": "30.000-50.000đ"}}
+        result = _build_practical_facts(entity)
+        assert result["price_range"] == "30.000-50.000đ"
+
+    def test_build_practical_facts_completeness_count(self):
+        from public_api import _build_practical_facts
+        entity = {"attributes": {"hours": "8-17", "phone": "123", "parking": "Có"}}
+        result = _build_practical_facts(entity)
+        assert result["_completeness"] >= 3
+
+    def test_entity_detail_includes_practical_facts(self):
+        src = inspect.getsource(__import__("public_api").get_entity)
+        assert "practical_facts" in src
+        assert "_build_practical_facts" in src
+
+    def test_practical_facts_consistent_keys(self):
+        from public_api import _build_practical_facts, _PRACTICAL_FACTS_KEYS
+        result = _build_practical_facts({"attributes": {"hours": "8-17"}})
+        for key in _PRACTICAL_FACTS_KEYS:
+            assert key in result
