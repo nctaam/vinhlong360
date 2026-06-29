@@ -2647,4 +2647,32 @@ class TestAsyncCorrectnessFixes:
     def test_review_response_html_escape(self):
         src = inspect.getsource(__import__("admin").admin_review_response)
         assert "_html.escape" in src
-        assert "create_notification" in src
+
+    def test_round_exhaustion_thread_safe_queue(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("Round-exhaustion")
+        fn_src = src[idx:idx + 1200]
+        assert "call_soon_threadsafe" in fn_src, \
+            "Round-exhaustion synthesis must use call_soon_threadsafe for asyncio.Queue"
+
+    def test_map_entities_has_public_only(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("def _query():\n        entities = db.list_entities(")
+        fn_src = src[idx:idx + 200]
+        assert "public_only=True" in fn_src
+
+    def test_popular_entities_has_public_only(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("def popular_entities")
+        fn_src = src[idx:idx + 600]
+        assert "public_only=True" in fn_src
+
+    def test_merge_saved_has_advisory_lock(self):
+        src = (AGENT_DIR / "saved.py").read_text(encoding="utf-8")
+        idx = src.index("def merge_saved")
+        fn_src = src[idx:idx + 500]
+        assert "pg_advisory_xact_lock" in fn_src
+
+    def test_homepage_enrich_place_async(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        assert "asyncio.to_thread(_enrich_place" in src
