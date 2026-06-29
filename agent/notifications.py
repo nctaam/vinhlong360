@@ -234,7 +234,7 @@ def _notify_sse(user_id: str, data: dict):
         try:
             q.put_nowait(data)
         except asyncio.QueueFull:
-            pass
+            logger.debug("SSE queue full for user %s — notification dropped", user_id)
 
 
 _sse_event_counter = 0

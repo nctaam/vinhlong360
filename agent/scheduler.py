@@ -369,6 +369,7 @@ def task_admin_digest():
 
 _TELEGRAM_RETRY_QUEUE: list[tuple[str, int]] = []
 _TELEGRAM_MAX_QUEUE = 50
+_telegram_queue_lock = __import__("threading").Lock()
 
 def _send_telegram_admins(text: str) -> bool:
     """Gửi 1 tin Telegram tới mọi ADMIN_TELEGRAM_IDS (free, HTTP API).
@@ -389,12 +390,13 @@ def _send_telegram_admins(text: str) -> bool:
                     ok = True
                     break
             except Exception:
-                _sched_logger.warning("telegram attempt %d failed for chat %s", attempt + 1, cid)
+                _sched_logger.warning("telegram attempt %d failed for chat %s", attempt + 1, cid, exc_info=True)
             _time.sleep(0.5 * (2 ** attempt))
         if not ok:
             _sched_logger.error("telegram send failed after 3 attempts for chat %s", cid)
-            if len(_TELEGRAM_RETRY_QUEUE) < _TELEGRAM_MAX_QUEUE:
-                _TELEGRAM_RETRY_QUEUE.append((text, int(_time.time())))
+            with _telegram_queue_lock:
+                if len(_TELEGRAM_RETRY_QUEUE) < _TELEGRAM_MAX_QUEUE:
+                    _TELEGRAM_RETRY_QUEUE.append((text, int(_time.time())))
             return False
     return True
 
@@ -404,13 +406,18 @@ def retry_pending_telegram(max_age_hours: int = 24):
     import time as _time
     cutoff = int(_time.time()) - max_age_hours * 3600
     retried = 0
-    while _TELEGRAM_RETRY_QUEUE:
-        text, ts = _TELEGRAM_RETRY_QUEUE[0]
-        if ts < cutoff:
-            _TELEGRAM_RETRY_QUEUE.pop(0)
-            continue
+    while True:
+        with _telegram_queue_lock:
+            if not _TELEGRAM_RETRY_QUEUE:
+                break
+            text, ts = _TELEGRAM_RETRY_QUEUE[0]
+            if ts < cutoff:
+                _TELEGRAM_RETRY_QUEUE.pop(0)
+                continue
         if _send_telegram_admins(text):
-            _TELEGRAM_RETRY_QUEUE.pop(0)
+            with _telegram_queue_lock:
+                if _TELEGRAM_RETRY_QUEUE and _TELEGRAM_RETRY_QUEUE[0] == (text, ts):
+                    _TELEGRAM_RETRY_QUEUE.pop(0)
             retried += 1
         else:
             break
@@ -732,6 +739,7 @@ def task_session_cleanup():
                 deleted_ids = db._fetchall(conn, """
                     SELECT id FROM posts WHERE deleted_at IS NOT NULL
                     AND deleted_at < NOW() - INTERVAL '30 days'
+                    LIMIT 500
                 """, ())
                 if deleted_ids:
                     ids = [str(db._row_to_dict(r)["id"]) for r in deleted_ids]

@@ -655,8 +655,12 @@ def check_input(message: str, session_id: str) -> dict:
             "blocked_reason": str | None
         }
     """
+    _MAX_INPUT_LEN = 50_000
     warnings = []
     blocked_reason = None
+    if len(message) > _MAX_INPUT_LEN:
+        message = message[:_MAX_INPUT_LEN]
+        warnings.append("Input truncated to 50k characters")
     cleaned = message
 
     # ── 1. Injection detection ──

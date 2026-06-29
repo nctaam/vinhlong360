@@ -2249,3 +2249,49 @@ class TestAdminAuditLogging:
     def test_add_moderation_note_logged(self):
         fn = self._get_fn("add_moderation_note")
         assert '_log_mod_action("post"' in fn
+
+
+class TestSchedulerReliability:
+    """Scheduler hardening: bounded queries, thread safety, observability."""
+
+    def test_hard_delete_query_has_limit(self):
+        """Deleted posts cleanup SELECT must have LIMIT to prevent OOM."""
+        src = (AGENT_DIR / "scheduler.py").read_text(encoding="utf-8")
+        idx = src.index("SELECT id FROM posts WHERE deleted_at IS NOT NULL")
+        chunk = src[idx:idx+200]
+        assert "LIMIT" in chunk
+
+    def test_telegram_queue_has_lock(self):
+        """Telegram retry queue must be protected by a lock."""
+        src = (AGENT_DIR / "scheduler.py").read_text(encoding="utf-8")
+        assert "_telegram_queue_lock" in src
+        idx = src.index("_TELEGRAM_RETRY_QUEUE.append")
+        ctx = src[max(0, idx-200):idx]
+        assert "_telegram_queue_lock" in ctx
+
+    def test_telegram_exception_logged(self):
+        """Telegram send failures must include exc_info for debugging."""
+        src = (AGENT_DIR / "scheduler.py").read_text(encoding="utf-8")
+        idx = src.index("telegram attempt %d failed")
+        chunk = src[idx:idx+100]
+        assert "exc_info=True" in chunk
+
+
+class TestNotificationReliability:
+
+    def test_sse_queue_full_logged(self):
+        """Dropped SSE notifications must be logged, not silently swallowed."""
+        src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
+        idx = src.index("QueueFull")
+        chunk = src[idx:idx+200]
+        assert "logger.debug" in chunk
+
+
+class TestGuardrailsInputBounds:
+
+    def test_check_input_truncates_long_messages(self):
+        """check_input must truncate messages exceeding max length."""
+        src = (AGENT_DIR / "guardrails.py").read_text(encoding="utf-8")
+        idx = src.index("def check_input(")
+        fn = src[idx:idx+500]
+        assert "_MAX_INPUT_LEN" in fn or "MAX_INPUT" in fn
