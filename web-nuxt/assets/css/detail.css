@@ -69,13 +69,15 @@
 
 /* Thumbnail strip (multi-image) */
 .dc-thumbs { position: absolute; bottom: var(--space-5); right: 160px; z-index: 3; display: flex; gap: var(--space-1); }
-.dc-thumb { width: 56px; height: 44px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(255,255,255,.4); cursor: pointer; opacity: .8; transition: opacity .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
-.dc-thumb:hover, .dc-thumb.active { opacity: 1; border-color: var(--text-on-dark, #fff); transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,.35); }
-.dc-thumb:active { transform: scale(.95); transition-duration: .08s; }
+.dc-thumb-btn { background: none; border: 2px solid rgba(255,255,255,.4); padding: 0; border-radius: 8px; cursor: pointer; opacity: .8; overflow: hidden; transition: opacity .3s var(--ease-out), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.dc-thumb-btn:hover, .dc-thumb-btn.active { opacity: 1; border-color: var(--text-on-dark, #fff); transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,.35); }
+.dc-thumb-btn:active { transform: scale(.95); transition-duration: .08s; }
+.dc-thumb-btn:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
+.dc-thumb { width: 56px; height: 44px; object-fit: cover; display: block; }
 .dc-thumb-more { width: 56px; height: 44px; border-radius: 8px; background: rgba(0,0,0,.5); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--text-on-dark, #fff); display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--weight-bold); cursor: pointer; border: 2px solid rgba(255,255,255,.2); transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out); }
 .dc-thumb-more:hover { background: rgba(0,0,0,.7); transform: scale(1.05); will-change: transform; }
 .dc-thumb-more:active { transform: scale(.93); transition-duration: .08s; }
-.dc-thumb:focus-visible, .dc-thumb-more:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
+.dc-thumb-more:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
 
 /* Image credit */
 .dc-credit { position: absolute; bottom: var(--space-1); left: var(--space-5); z-index: 3; font-size: .72rem; color: rgba(255,255,255,.78); font-style: italic; }
@@ -349,34 +351,6 @@
   transition: box-shadow .35s var(--ease-out-expo);
 }
 .provenance-block:hover { box-shadow: 0 0 0 1px rgba(var(--secondary-rgb), .18), var(--shadow-sm); }
-/* Trust band header — a quiet "verified data" assurance moment */
-.pb-head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: rgba(var(--secondary-rgb), .1);
-  border-bottom: .5px solid var(--line);
-}
-.pb-shield {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-full);
-  background: var(--secondary);
-  color: var(--text-on-dark, #fff);
-  flex: 0 0 auto;
-  box-shadow: 0 1px 4px rgba(var(--secondary-rgb), .4);
-}
-.pb-head-text {
-  font-size: 0.72rem;
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--secondary-fg);
-}
 .pb-row {
   display: flex;
   align-items: center;
@@ -433,7 +407,7 @@
   .fact:hover .fact-ic { transform: none; }
   .desc-content { transition: none; }
   .desc-toggle-icon { transition: none; }
-  .dc-thumb:hover, .dc-thumb.active { transform: none; }
+  .dc-thumb-btn:hover, .dc-thumb-btn.active { transform: none; }
   .ms-cell:hover { transform: none; }
   .ms-cell.on.peak { animation: none; }
   .ns-action:hover { transform: none; }
@@ -485,8 +459,6 @@
   background: linear-gradient(135deg, rgba(75, 169, 125, .08) 0%, rgba(240, 160, 80, .03) 100%);
   border-left-color: rgba(75, 169, 125, .55);
 }
-.dark .pb-head { background: rgba(75, 169, 125, .12); border-color: var(--line); }
-.dark .pb-head-text { color: var(--secondary-fg); }
 .dark .pb-row + .pb-row, .dark .provenance-block > .pb-report {
   border-color: rgba(255, 255, 255, .05);
 }

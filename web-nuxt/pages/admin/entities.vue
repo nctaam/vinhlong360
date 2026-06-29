@@ -55,10 +55,10 @@
         <thead>
           <tr>
             <th class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
-            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('id')" @keydown.enter="toggleSort('id')" @keydown.space.prevent="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></th>
-            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('name')" @keydown.enter="toggleSort('name')" @keydown.space.prevent="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></th>
-            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('type')" @keydown.enter="toggleSort('type')" @keydown.space.prevent="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></th>
-            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('place_name')" @keydown.enter="toggleSort('place_name')" @keydown.space.prevent="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></th>
+            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></button></th>
+            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></button></th>
+            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></button></th>
+            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></button></th>
             <th scope="col"><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>
             <th scope="col">Thao tác</th>
           </tr>
@@ -912,8 +912,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .ent-dup-warn { background: rgba(var(--warning-rgb),.08); border-color: rgba(var(--warning-rgb),.2); color: var(--accent-text); }
 
 /* ── Sortable columns ── */
-.ent-sortable { cursor: pointer; user-select: none; white-space: nowrap; }
-.ent-sortable:hover { color: var(--primary, #219653); }
+.ent-sortable { white-space: nowrap; }
+.ent-sort-btn { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; user-select: none; }
+.ent-sort-btn:hover { color: var(--primary, #219653); }
+.ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-xs, 4px); }
 .ent-sort-arrow { font-size: .65rem; opacity: .7; margin-left: 2px; }
 
 .ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); transition: color .2s; }

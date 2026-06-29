@@ -56,8 +56,10 @@
       </button>
       <div v-if="hasEntityImages && entity.images.length > 1" class="dc-thumbs">
         <template v-for="(src, i) in entity.images.slice(0, 4)" :key="src">
-          <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" sizes="56px" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.display = 'none' }" />
-          <img v-else :src="src" :alt="`${entity.name} - ${i + 1}`" :class="['dc-thumb', { active: i === 0 }]" loading="lazy" width="56" height="40" decoding="async" role="button" tabindex="0" @click="openCoverLightbox(i)" @keydown.enter="openCoverLightbox(i)" @keydown.space.prevent="openCoverLightbox(i)" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
+          <button type="button" class="dc-thumb-btn" :class="{ active: i === 0 }" :aria-label="`Xem ảnh ${i + 1} của ${entity.name}`" @click="openCoverLightbox(i)">
+            <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" class="dc-thumb" loading="lazy" width="56" height="40" sizes="56px" decoding="async" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.display = 'none' }" />
+            <img v-else :src="src" :alt="`${entity.name} - ${i + 1}`" class="dc-thumb" loading="lazy" width="56" height="40" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
+          </button>
         </template>
         <button type="button" v-if="entity.images.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entity.images.length - 4} ảnh`" @click="openCoverLightbox(4)">
           +{{ entity.images.length - 4 }}

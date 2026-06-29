@@ -3,9 +3,9 @@
     <TransitionGroup name="sl-list" tag="div" class="sl-items">
       <div v-for="(item, i) in localItems" :key="itemKey(item, i)" class="sl-item" :class="{ 'sl-item-editing': editingIndex === i }">
         <div class="sl-item-head">
-          <span class="sl-handle" role="button" tabindex="0"
+          <button type="button" class="sl-handle"
             :aria-label="`Mục ${i + 1}. Shift+mũi tên lên/xuống để di chuyển`"
-            @keydown.up.shift.prevent="moveUp(i)" @keydown.down.shift.prevent="moveDown(i)">☰</span>
+            @keydown.up.shift.prevent="moveUp(i)" @keydown.down.shift.prevent="moveDown(i)">☰</button>
           <div class="sl-item-content">
             <template v-if="editingIndex === i">
               <div class="sl-edit-fields">
@@ -169,6 +169,7 @@ function addChild(parentIdx: number) {
   padding: var(--space-3) 14px; min-height: 44px;
 }
 .sl-handle {
+  background: none; border: none; padding: 0; font: inherit;
   color: var(--muted); font-size: .85rem; cursor: grab; user-select: none;
   width: 20px; text-align: center; opacity: .5; border-radius: 6px;
   transition: opacity .2s;
