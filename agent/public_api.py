@@ -549,7 +549,7 @@ async def get_entity_reviews(
     rows, total_row, dist_rows, my_review = await asyncio.to_thread(_query)
     td = db._row_to_dict(total_row) if total_row else {}
     total = td.get("c", 0)
-    distribution = {str(db._row_to_dict(r)["rating"]): db._row_to_dict(r)["cnt"] for r in dist_rows}
+    distribution = {str(db._row_to_dict(r).get("rating", 0)): db._row_to_dict(r).get("cnt", 0) for r in dist_rows}
     reviews = []
     for r in rows:
         rd = db._row_to_dict(r)

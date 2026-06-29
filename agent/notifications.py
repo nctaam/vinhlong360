@@ -346,7 +346,7 @@ def _user_wants_notif(conn, user_id: str, notif_type: str) -> bool:
     """, (user_id,))
     if not row:
         return True
-    return bool(db._row_to_dict(row)[pref_col])
+    return bool(db._row_to_dict(row).get(pref_col, True))
 
 
 def create_notification(user_id: str, notif_type: str, title: str,
