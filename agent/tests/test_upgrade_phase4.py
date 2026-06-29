@@ -1,0 +1,82 @@
+"""Tests for Phase 4 upgrade cards: U-28, U-26, U-15, U-20."""
+import inspect
+from pathlib import Path
+import pytest
+
+
+# ── U-28: Collections model + CRUD ──────────────────────────────────
+
+class TestCollections:
+
+    def test_migration_file_exists(self):
+        migration = Path(__file__).resolve().parent.parent / "migrations" / "027_collections.sql"
+        assert migration.exists()
+
+    def test_migration_creates_table(self):
+        migration = Path(__file__).resolve().parent.parent / "migrations" / "027_collections.sql"
+        sql = migration.read_text()
+        assert "CREATE TABLE IF NOT EXISTS collections" in sql
+        assert "slug TEXT UNIQUE NOT NULL" in sql
+        assert "entity_ids JSONB" in sql
+        assert "is_published BOOLEAN" in sql
+        assert "idx_collections_published" in sql
+
+    def test_admin_list_collections_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/collections" in paths
+
+    def test_admin_create_collection_endpoint(self):
+        from admin import router
+        methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
+        assert "POST" in methods.get("/admin/collections", set())
+
+    def test_admin_update_collection_endpoint(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/collections/{collection_id}" in paths
+
+    def test_admin_delete_collection_endpoint(self):
+        from admin import router
+        methods = {r.path: r.methods for r in router.routes if hasattr(r, "path")}
+        assert "DELETE" in methods.get("/admin/collections/{collection_id}", set())
+
+    def test_public_list_collections_endpoint(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/collections" in paths
+
+    def test_public_collection_by_slug_endpoint(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/collections/{slug}" in paths
+
+    def test_public_collections_filters_published(self):
+        src = inspect.getsource(__import__("public_api").list_public_collections)
+        assert "is_published = TRUE" in src
+
+    def test_collection_create_model_validates_slug(self):
+        from admin import CollectionCreate
+        m = CollectionCreate(slug="top-10-mon-an", title="Top 10 món ăn")
+        assert m.slug == "top-10-mon-an"
+
+    def test_collection_create_rejects_bad_slug(self):
+        from admin import CollectionCreate
+        with pytest.raises(Exception):
+            CollectionCreate(slug="Bad Slug!", title="X")
+
+    def test_collection_update_model(self):
+        from admin import CollectionUpdate
+        m = CollectionUpdate(title="New Title", is_published=True)
+        assert m.title == "New Title"
+        assert m.is_published is True
+
+    def test_public_collection_resolves_entities(self):
+        src = inspect.getsource(__import__("public_api").get_collection_by_slug)
+        assert "get_entities_batch" in src
+        assert "entity_ids" in src
+
+    def test_admin_create_checks_slug_unique(self):
+        src = inspect.getsource(__import__("admin").create_collection)
+        assert "409" in src
+        assert "slug" in src.lower()

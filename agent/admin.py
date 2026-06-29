@@ -1100,6 +1100,117 @@ async def contact_funnel_export(days: int = Query(30, ge=1, le=365)):
                              headers={"Content-Disposition": "attachment; filename=contact_funnel.csv"})
 
 
+# ── Collections CRUD (U-28) ──
+
+
+class CollectionCreate(BaseModel):
+    slug: str = Field(..., min_length=2, max_length=100, pattern=r"^[a-z0-9\-]+$")
+    title: str = Field(..., min_length=1, max_length=200)
+    description: str = Field("", max_length=2000)
+    cover_image: str | None = None
+    entity_ids: list[str] = Field(default_factory=list, max_length=100)
+    sort_order: int = Field(0, ge=0)
+    is_published: bool = False
+
+
+class CollectionUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = Field(None, max_length=2000)
+    cover_image: str | None = None
+    entity_ids: list[str] | None = Field(None, max_length=100)
+    sort_order: int | None = Field(None, ge=0)
+    is_published: bool | None = None
+
+
+@router.get("/collections")
+async def list_collections(limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0)):
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT * FROM collections ORDER BY sort_order, created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (limit, offset))
+            total_row = db._fetchone(conn, "SELECT COUNT(*) as c FROM collections", ())
+        return {
+            "collections": [db._row_to_dict(r) for r in rows],
+            "total": db._row_to_dict(total_row)["c"] if total_row else 0,
+        }
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/collections", status_code=201)
+async def create_collection(body: CollectionCreate, request: Request):
+    ph = db._ph
+    user = request.state.user if hasattr(request.state, "user") else None
+    created_by = str(user["id"]) if user else None
+    def _query():
+        with db._conn() as conn:
+            existing = db._fetchone(conn, f"SELECT id FROM collections WHERE slug = {ph}", (body.slug,))
+            if existing:
+                raise HTTPException(409, "Slug đã tồn tại")
+            db._execute(conn, f"""
+                INSERT INTO collections (slug, title, description, cover_image, entity_ids, sort_order, is_published, created_by)
+                VALUES ({ph}, {ph}, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}::uuid)
+            """, (body.slug, body.title, body.description, body.cover_image,
+                  json.dumps(body.entity_ids), body.sort_order, body.is_published, created_by))
+            row = db._fetchone(conn, f"SELECT * FROM collections WHERE slug = {ph}", (body.slug,))
+        return db._row_to_dict(row)
+    return await asyncio.to_thread(_query)
+
+
+@router.put("/collections/{collection_id}")
+async def update_collection(collection_id: str, body: CollectionUpdate):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    ph = db._ph
+    def _query():
+        sets = []
+        params: list = []
+        if body.title is not None:
+            sets.append(f"title = {ph}")
+            params.append(body.title)
+        if body.description is not None:
+            sets.append(f"description = {ph}")
+            params.append(body.description)
+        if body.cover_image is not None:
+            sets.append(f"cover_image = {ph}")
+            params.append(body.cover_image)
+        if body.entity_ids is not None:
+            sets.append(f"entity_ids = {ph}::jsonb")
+            params.append(json.dumps(body.entity_ids))
+        if body.sort_order is not None:
+            sets.append(f"sort_order = {ph}")
+            params.append(body.sort_order)
+        if body.is_published is not None:
+            sets.append(f"is_published = {ph}")
+            params.append(body.is_published)
+        if not sets:
+            raise HTTPException(400, "Không có trường nào để cập nhật")
+        sets.append("updated_at = NOW()")
+        params.append(collection_id)
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE collections SET {', '.join(sets)} WHERE id::text = {ph} RETURNING *
+            """, tuple(params))
+        if not row:
+            raise HTTPException(404, "Collection không tồn tại")
+        return db._row_to_dict(row)
+    return await asyncio.to_thread(_query)
+
+
+@router.delete("/collections/{collection_id}")
+async def delete_collection(collection_id: str):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"DELETE FROM collections WHERE id::text = {ph} RETURNING id", (collection_id,))
+        if not row:
+            raise HTTPException(404, "Collection không tồn tại")
+        return {"ok": True, "deleted": collection_id}
+    return await asyncio.to_thread(_query)
+
+
 class BulkDeleteRequest(BaseModel):
     entity_ids: list[str] = Field(..., min_length=1, max_length=200)
 

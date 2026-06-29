@@ -1421,6 +1421,51 @@ async def track_contact_view(
     return {"ok": True}
 
 
+# ── Collections (U-28, public read-only) ──────────────────────────────
+
+
+@router.get("/collections")
+async def list_public_collections(limit: int = Query(20, ge=1, le=100)):
+    """Published collections — sorted by sort_order."""
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, slug, title, description, cover_image, entity_ids, sort_order
+                FROM collections
+                WHERE is_published = TRUE
+                ORDER BY sort_order, created_at DESC
+                LIMIT {ph}
+            """, (limit,))
+        return {"collections": [db._row_to_dict(r) for r in rows]}
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/collections/{slug}")
+async def get_collection_by_slug(slug: str):
+    """Public collection detail by slug — resolve entity_ids to summaries."""
+    validate_path_id(slug, "slug")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT * FROM collections WHERE slug = {ph} AND is_published = TRUE
+            """, (slug,))
+        if not row:
+            return None
+        col = db._row_to_dict(row)
+        entity_ids = col.get("entity_ids") or []
+        if isinstance(entity_ids, str):
+            entity_ids = json.loads(entity_ids)
+        entities = db.get_entities_batch(entity_ids) if entity_ids else []
+        col["entities"] = entities
+        return col
+    result = await asyncio.to_thread(_query)
+    if not result:
+        return JSONResponse(status_code=404, content={"error": "not_found"})
+    return result
+
+
 # ── ND 147/2024 Compliance & Transparency ──────────────────────────────
 
 @router.get("/transparency")
