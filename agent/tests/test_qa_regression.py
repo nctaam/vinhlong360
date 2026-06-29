@@ -468,3 +468,35 @@ class TestPathTraversalProtection:
         import storage
         src = inspect.getsource(storage.Storage._put)
         assert "is_relative_to" in src
+
+
+# ── IP/phone masking in user-facing responses ──
+
+class TestIPMasking:
+    """IPs returned to users must be masked."""
+
+    def test_mask_ip_ipv4(self):
+        assert auth._mask_ip("192.168.1.100") == "192.168.*.*"
+
+    def test_mask_ip_preserves_first_two_octets(self):
+        result = auth._mask_ip("10.0.5.22")
+        assert result.startswith("10.0.")
+        assert "5" not in result.split(".")[-1]
+
+    def test_mask_ip_none(self):
+        assert auth._mask_ip(None) == ""
+
+    def test_mask_ip_empty(self):
+        assert auth._mask_ip("") == ""
+
+    def test_login_history_masks_ip(self):
+        src = inspect.getsource(auth.get_login_history)
+        assert "_mask_ip" in src
+
+    def test_consent_history_masks_ip(self):
+        src = inspect.getsource(auth.consent_history)
+        assert "_mask_ip" in src
+
+    def test_login_history_stores_masked_phone(self):
+        src = inspect.getsource(auth._log_login)
+        assert "_mask_phone" in src

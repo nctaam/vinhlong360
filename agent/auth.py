@@ -116,6 +116,16 @@ def _mask_phone(phone: str) -> str:
     return phone[:3] + "***" + phone[-3:]
 
 
+def _mask_ip(ip: str | None) -> str:
+    """Mask IP for user-facing responses (keep first two octets for rough geo)."""
+    if not ip:
+        return ""
+    parts = ip.split(".")
+    if len(parts) == 4:
+        return f"{parts[0]}.{parts[1]}.*.*"
+    return ip[:8] + "***"
+
+
 def _create_session_atomic(uid: str, token_hash: str, ua: str, ip: str, expires_iso: str):
     from auth_middleware import MAX_CONCURRENT_SESSIONS
     with db._conn() as conn:
@@ -841,7 +851,7 @@ async def consent_history(request: Request):
             """, (str(user["id"]),))
         return {"history": [{"id": str(db._row_to_dict(r)["id"]),
                              "version": db._row_to_dict(r).get("version"),
-                             "ip": db._row_to_dict(r).get("ip"),
+                             "ip": _mask_ip(db._row_to_dict(r).get("ip")),
                              "created_at": str(db._row_to_dict(r).get("created_at", ""))}
                             for r in rows]}
     return await asyncio.to_thread(_query)
@@ -859,7 +869,7 @@ def _log_login(phone: str, method: str, success: bool, request: Request, user_id
             db._execute(conn, f"""
                 INSERT INTO login_history (user_id, phone, method, success, ip, user_agent)
                 VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
-            """, (user_id, phone, method, success, ip, ua))
+            """, (user_id, _mask_phone(phone), method, success, ip, ua))
     except Exception as e:
         logger.warning("Failed to log login for %s: %s", _mask_phone(phone), e)
 
@@ -883,7 +893,7 @@ async def get_login_history(request: Request, limit: int = Query(20, ge=1, le=10
         for r in rows:
             d = db._row_to_dict(r)
             result.append({"id": str(d["id"]), "method": d.get("method"),
-                           "success": d.get("success"), "ip": d.get("ip"),
+                           "success": d.get("success"), "ip": _mask_ip(d.get("ip")),
                            "user_agent": d.get("user_agent"),
                            "created_at": str(d.get("created_at", ""))})
         return {"history": result}
