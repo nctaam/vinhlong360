@@ -4131,3 +4131,29 @@ class TestAdminUserReactions:
         src = inspect.getsource(admin.admin_user_reactions)
         assert '"recent"' in src
         assert "content_preview" in src
+
+
+# ── Admin reports filter by target_type ─────────────────────────────
+
+class TestAdminReportsFilter:
+    """Admin reports endpoint should support target_type filter."""
+
+    def test_reports_has_target_type_param(self):
+        import admin
+        src = inspect.getsource(admin.get_reports)
+        assert "target_type" in src
+
+    def test_reports_filters_by_target_type(self):
+        import admin
+        src = inspect.getsource(admin.get_reports)
+        assert "r.target_type" in src
+
+    def test_reports_target_type_optional(self):
+        import admin
+        src = inspect.getsource(admin.get_reports)
+        assert "target_type: str = Query(None" in src
+
+    def test_reports_validates_target_type(self):
+        import admin
+        src = inspect.getsource(admin.get_reports)
+        assert "post|comment|user|entity" in src

@@ -2929,6 +2929,7 @@ async def search_analytics(days: int = Query(7, ge=1, le=90)):
 @router.get("/reports")
 async def get_reports(
     status: str = Query("pending", pattern="^(pending|resolved|dismissed)$"),
+    target_type: str = Query(None, pattern="^(post|comment|user|entity)$"),
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
 ):
@@ -2936,18 +2937,24 @@ async def get_reports(
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
+            where = f"r.status = {ph}"
+            params = [status]
+            if target_type:
+                where += f" AND r.target_type = {ph}"
+                params.append(target_type)
+            params.extend([limit, offset])
             rows = db._fetchall(conn, f"""
                 SELECT r.id, r.target_type, r.target_id, r.reason, r.details,
                        r.status, r.created_at, u.display_name as reporter_name
                 FROM reports r
                 JOIN users u ON u.id = r.reporter_id
-                WHERE r.status = {ph}
+                WHERE {where}
                 ORDER BY r.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (status, limit, offset))
+            """, tuple(params))
             total = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM reports WHERE status = {ph}
-            """, (status,))
+                SELECT COUNT(*) as c FROM reports WHERE {where}
+            """, tuple(params[:-2]))
         return {
             "reports": [db._row_to_dict(r) for r in rows],
             "total": db._row_to_dict(total)["c"] if total else 0,
