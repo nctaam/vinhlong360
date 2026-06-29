@@ -51,7 +51,7 @@
     <div class="media-grid">
       <button v-for="item in items" :key="item.url + item.entity_id" type="button" class="media-card" :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item">
         <div class="media-img-wrap">
-          <img :src="item.url" :alt="item.entity_name" loading="lazy" decoding="async" @error="onImgError" />
+          <img :src="item.url" :alt="item.entity_name" width="400" height="300" loading="lazy" decoding="async" @error="onImgError" />
           <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
         </div>
         <div class="media-card-info">
