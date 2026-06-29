@@ -1235,6 +1235,7 @@ async def admin_review_response(post_id: str, body: ReviewResponseBody, request:
                 raise HTTPException(404, "Bài viết không tồn tại")
             if db._row_to_dict(post).get("post_type") != "review":
                 raise HTTPException(400, "Chỉ phản hồi cho bài đánh giá (review)")
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"review_resp:{post_id}",))
             existing = db._fetchone(conn, f"SELECT id FROM review_responses WHERE post_id::text = {ph}", (post_id,))
             if existing:
                 raise HTTPException(409, "Bài đánh giá đã có phản hồi")
@@ -2469,6 +2470,7 @@ async def add_review_response(post_id: str, body: _ReviewResponseBody2, request:
             pd = db._row_to_dict(post)
             if pd["post_type"] != "review":
                 raise HTTPException(400, "Chỉ trả lời đánh giá (review)")
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"review_resp:{post_id}",))
             existing = db._fetchone(conn, f"""
                 SELECT id FROM review_responses WHERE post_id::text = {ph}
             """, (post_id,))
@@ -2776,8 +2778,9 @@ async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisi
 
 
 @router.post("/appeals/{appeal_id}/reject")
-async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody()):
+async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
     appeal_id = validate_path_id(appeal_id, "appeal_id")
+    admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -2791,9 +2794,10 @@ async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisio
                 raise HTTPException(400, f"Khiếu nại đã {rd['status']}")
             db._execute(conn, f"""
                 UPDATE moderation_appeals
-                SET status = 'rejected', reviewer_note = {ph}, reviewed_at = NOW()
+                SET status = 'rejected', reviewer_note = {ph},
+                    reviewer_id = {ph}::uuid, reviewed_at = NOW()
                 WHERE id::text = {ph}
-            """, (body.note.strip() or None, appeal_id))
+            """, (body.note.strip() or None, str(admin_id) if admin_id else None, appeal_id))
         _log_mod_action("appeal", appeal_id, "rejected", body.note.strip() or None)
         try:
             note_msg = f" Lý do: {body.note.strip()}" if body.note.strip() else ""
