@@ -177,3 +177,128 @@ class TestTrendingPeriod:
         src = inspect.getsource(__import__("social").trending_tags)
         assert '"period"' in src
         assert '"days"' in src
+
+
+class TestResetPasswordOTP:
+    """Password reset via OTP — forgot password flow."""
+
+    def test_endpoint_exists(self):
+        from auth import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/auth/reset-password-otp" in paths
+
+    def test_model_validates_password_length(self):
+        from auth import ResetPasswordOTP
+        with pytest.raises(Exception):
+            ResetPasswordOTP(phone="0901234567", code="123456", new_password="short")
+
+    def test_model_validates_password_digit(self):
+        from auth import ResetPasswordOTP
+        with pytest.raises(Exception):
+            ResetPasswordOTP(phone="0901234567", code="123456", new_password="NoDigitHere")
+
+    def test_model_validates_password_letter(self):
+        from auth import ResetPasswordOTP
+        with pytest.raises(Exception):
+            ResetPasswordOTP(phone="0901234567", code="123456", new_password="12345678")
+
+    def test_model_accepts_valid(self):
+        from auth import ResetPasswordOTP
+        m = ResetPasswordOTP(phone="0901234567", code="123456", new_password="GoodPass1")
+        assert m.new_password == "GoodPass1"
+
+    def test_model_normalizes_phone(self):
+        from auth import ResetPasswordOTP
+        m = ResetPasswordOTP(phone="+84901234567", code="123456", new_password="GoodPass1")
+        assert m.phone == "0901234567"
+
+    def test_verifies_otp_before_reset(self):
+        src = inspect.getsource(__import__("auth").reset_password_otp)
+        assert "_hash_otp" in src
+        assert "otp_sessions" in src
+        assert "verified = TRUE" in src
+
+    def test_uses_parameterized_queries(self):
+        src = inspect.getsource(__import__("auth").reset_password_otp)
+        assert "db._ph" in src
+        assert "f-string" not in src or "{db._ph}" in src
+
+    def test_revokes_all_sessions(self):
+        src = inspect.getsource(__import__("auth").reset_password_otp)
+        assert "DELETE FROM user_sessions" in src
+
+    def test_rate_limited_by_ip(self):
+        src = inspect.getsource(__import__("auth").reset_password_otp)
+        assert "_otp_verify_ip_rate" in src
+
+    def test_rate_limited_by_phone(self):
+        src = inspect.getsource(__import__("auth").reset_password_otp)
+        assert "_otp_verify_phone_rate" in src
+
+    def test_logs_password_reset(self):
+        src = inspect.getsource(__import__("auth").reset_password_otp)
+        assert "_log_login" in src
+        assert '"password_reset"' in src
+
+    def test_requires_csrf(self):
+        src = inspect.getsource(__import__("auth").reset_password_otp)
+        assert "_require_csrf_lazy" in src or "_csrf" in src
+
+    def test_updates_password_hash(self):
+        src = inspect.getsource(__import__("auth").reset_password_otp)
+        assert "_hash_password" in src
+        assert "password_hash" in src
+
+
+class TestBulkUserBanUnban:
+    """Admin bulk ban/unban endpoints."""
+
+    def test_bulk_ban_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/users/bulk-ban" in paths
+
+    def test_bulk_unban_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/users/bulk-unban" in paths
+
+    def test_bulk_ban_model_validates(self):
+        from admin import BulkUserAction
+        m = BulkUserAction(user_ids=["abc-123"], reason="test")
+        assert len(m.user_ids) == 1
+
+    def test_bulk_ban_model_max_50(self):
+        from admin import BulkUserAction
+        with pytest.raises(Exception):
+            BulkUserAction(user_ids=[f"id-{i}" for i in range(51)])
+
+    def test_bulk_ban_model_min_1(self):
+        from admin import BulkUserAction
+        with pytest.raises(Exception):
+            BulkUserAction(user_ids=[])
+
+    def test_bulk_ban_revokes_sessions(self):
+        src = inspect.getsource(__import__("admin").bulk_ban_users)
+        assert "DELETE FROM user_sessions" in src
+
+    def test_bulk_ban_prevents_self(self):
+        src = inspect.getsource(__import__("admin").bulk_ban_users)
+        assert "Không thể tự ban chính mình" in src
+
+    def test_bulk_ban_logs_actions(self):
+        src = inspect.getsource(__import__("admin").bulk_ban_users)
+        assert "_log_mod_action" in src
+
+    def test_bulk_unban_logs_actions(self):
+        src = inspect.getsource(__import__("admin").bulk_unban_users)
+        assert "_log_mod_action" in src
+
+    def test_bulk_ban_uses_parameterized(self):
+        src = inspect.getsource(__import__("admin").bulk_ban_users)
+        assert "db._ph" in src
+        assert "validate_path_id" in src
+
+    def test_bulk_unban_skips_active(self):
+        src = inspect.getsource(__import__("admin").bulk_unban_users)
+        assert "is_active" in src

@@ -2482,6 +2482,59 @@ async def unban_user(user_id: str):
     return {"success": True}
 
 
+class BulkUserAction(BaseModel):
+    user_ids: list[str] = Field(..., min_length=1, max_length=50)
+    reason: str = Field("", max_length=500)
+
+
+@router.post("/users/bulk-ban")
+async def bulk_ban_users(body: BulkUserAction, request: Request):
+    admin_user = await get_current_user(request)
+    admin_id = str(admin_user["id"]) if admin_user else None
+    ids = [validate_path_id(uid, "user_id") for uid in body.user_ids]
+    if admin_id and admin_id in ids:
+        raise HTTPException(400, "Không thể tự ban chính mình")
+    def _query():
+        ph = db._ph
+        banned = []
+        with db._conn() as conn:
+            for uid in ids:
+                target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (uid,))
+                if not target:
+                    continue
+                db._execute(conn, f"UPDATE users SET is_active = FALSE WHERE id::text = {ph}", (uid,))
+                db._execute(conn, f"DELETE FROM user_sessions WHERE user_id = {ph}::uuid", (uid,))
+                banned.append(uid)
+        return banned
+    banned = await asyncio.to_thread(_query)
+    for uid in banned:
+        _log_mod_action("user", uid, "ban", body.reason or None)
+    return {"success": True, "banned_count": len(banned), "banned_ids": banned}
+
+
+@router.post("/users/bulk-unban")
+async def bulk_unban_users(body: BulkUserAction):
+    ids = [validate_path_id(uid, "user_id") for uid in body.user_ids]
+    def _query():
+        ph = db._ph
+        unbanned = []
+        with db._conn() as conn:
+            for uid in ids:
+                target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (uid,))
+                if not target:
+                    continue
+                td = db._row_to_dict(target)
+                if td["is_active"]:
+                    continue
+                db._execute(conn, f"UPDATE users SET is_active = TRUE WHERE id::text = {ph}", (uid,))
+                unbanned.append(uid)
+        return unbanned
+    unbanned = await asyncio.to_thread(_query)
+    for uid in unbanned:
+        _log_mod_action("user", uid, "unban", body.reason or None)
+    return {"success": True, "unbanned_count": len(unbanned), "unbanned_ids": unbanned}
+
+
 @router.post("/users/{user_id}/role")
 async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|moderator|admin)$")):
     user_id = validate_path_id(user_id, "user_id")

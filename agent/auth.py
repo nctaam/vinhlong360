@@ -2,13 +2,14 @@
 vinhlong360 — Authentication (OTP + Password).
 
 Endpoints:
-  POST /auth/request-otp   — gửi OTP qua SMS (eSMS.vn)
-  POST /auth/verify-otp    — xác minh OTP, tạo session
-  POST /auth/set-password   — đặt/đổi mật khẩu (cần đăng nhập)
-  POST /auth/login          — đăng nhập bằng SĐT + mật khẩu
-  POST /auth/check-phone    — kiểm tra SĐT đã có mật khẩu chưa
-  POST /auth/logout         — hủy session
-  GET  /auth/me             — thông tin user hiện tại
+  POST /auth/request-otp        — gửi OTP qua SMS (eSMS.vn)
+  POST /auth/verify-otp         — xác minh OTP, tạo session
+  POST /auth/set-password        — đặt/đổi mật khẩu (cần đăng nhập)
+  POST /auth/reset-password-otp  — đặt lại mật khẩu qua OTP (quên mật khẩu)
+  POST /auth/login               — đăng nhập bằng SĐT + mật khẩu
+  POST /auth/check-phone         — kiểm tra SĐT đã có mật khẩu chưa
+  POST /auth/logout              — hủy session
+  GET  /auth/me                  — thông tin user hiện tại
 
 Tuân thủ NĐ 147/2024: xác thực SĐT VN trước khi cho đăng bài/bình luận.
 """
@@ -194,6 +195,31 @@ class SetPassword(BaseModel):
     current_password: str | None = Field(None, max_length=128)
 
     @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Mật khẩu phải từ 8 ký tự trở lên")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Mật khẩu cần có ít nhất 1 chữ số")
+        if not any(c.isalpha() for c in v):
+            raise ValueError("Mật khẩu cần có ít nhất 1 chữ cái")
+        return v
+
+
+class ResetPasswordOTP(BaseModel):
+    phone: str = Field(..., max_length=20)
+    code: str = Field(..., max_length=10)
+    new_password: str = Field(..., max_length=128)
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str) -> str:
+        v = v.strip().replace(" ", "").replace("-", "")
+        if v.startswith("+84"):
+            v = "0" + v[3:]
+        return v
+
+    @field_validator("new_password")
     @classmethod
     def validate_password(cls, v: str) -> str:
         if len(v) < 8:
@@ -574,6 +600,75 @@ async def set_password(body: SetPassword, request: Request, _csrf=Depends(_requi
                 db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (str(user["id"]),))
     await asyncio.to_thread(_revoke_others)
     return {"success": True, "message": "Đã đặt mật khẩu thành công"}
+
+
+@router.post("/reset-password-otp")
+async def reset_password_otp(body: ResetPasswordOTP, request: Request, _csrf=Depends(_require_csrf_lazy)):
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
+    now = time.time()
+    hits = [t for t in _otp_verify_ip_rate.get(ip, []) if now - t < OTP_VERIFY_IP_WINDOW]
+    if len(hits) >= OTP_VERIFY_IP_LIMIT:
+        raise HTTPException(429, "Quá nhiều lần xác thực OTP từ IP này. Vui lòng thử lại sau.")
+    hits.append(now)
+    _otp_verify_ip_rate[ip] = hits
+    _gc_rate_dict(_otp_verify_ip_rate, OTP_VERIFY_IP_WINDOW)
+
+    phone = _normalize_phone(body.phone)
+    phone_hits = [t for t in _otp_verify_phone_rate.get(phone, []) if now - t < OTP_VERIFY_PHONE_WINDOW]
+    if len(phone_hits) >= OTP_VERIFY_PHONE_LIMIT:
+        raise HTTPException(429, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
+    phone_hits.append(now)
+    _otp_verify_phone_rate[phone] = phone_hits
+    _gc_rate_dict(_otp_verify_phone_rate, OTP_VERIFY_PHONE_WINDOW)
+    hashed_code = _hash_otp(body.code.strip())
+
+    def _verify_and_reset():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT id, code, expires_at, attempts, phone FROM otp_sessions
+                WHERE phone = {db._ph} AND verified = FALSE
+                ORDER BY created_at DESC LIMIT 1
+                FOR UPDATE SKIP LOCKED
+            """, (phone,))
+            if not row:
+                raise HTTPException(400, "Không tìm thấy OTP. Vui lòng yêu cầu mã mới")
+            otp = db._row_to_dict(row)
+            if isinstance(otp.get("expires_at"), str):
+                exp = datetime.fromisoformat(otp["expires_at"])
+            else:
+                exp = otp["expires_at"]
+            if exp.tzinfo is None:
+                exp = exp.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > exp:
+                raise HTTPException(400, "OTP đã hết hạn. Vui lòng yêu cầu mã mới")
+            attempts = otp.get("attempts", 0) + 1
+            if attempts > OTP_MAX_ATTEMPTS:
+                raise HTTPException(429, "Quá nhiều lần thử. Vui lòng yêu cầu mã mới")
+            if not hmac.compare_digest(otp["code"], hashed_code):
+                db._execute(conn, f"""
+                    UPDATE otp_sessions SET attempts = {db._ph} WHERE id::text = {db._ph}
+                """, (attempts, str(otp["id"])))
+                raise HTTPException(400, f"OTP không đúng. Còn {OTP_MAX_ATTEMPTS - attempts} lần thử")
+            db._execute(conn, f"""
+                UPDATE otp_sessions SET verified = TRUE WHERE id::text = {db._ph}
+            """, (str(otp["id"]),))
+
+            user = db.get_user_by_phone(phone)
+            if not user:
+                raise HTTPException(404, "Không tìm thấy tài khoản với số điện thoại này")
+            pw_hash = _hash_password(body.new_password)
+            db._execute(conn, f"""
+                UPDATE users SET password_hash = {db._ph} WHERE id::text = {db._ph}
+            """, (pw_hash, str(user["id"])))
+            db._execute(conn, f"""
+                DELETE FROM user_sessions WHERE user_id::text = {db._ph}
+            """, (str(user["id"]),))
+            return user
+
+    user = await asyncio.to_thread(_verify_and_reset)
+    await asyncio.to_thread(_log_login, phone, "password_reset", True, request, str(user["id"]))
+    return {"success": True, "message": "Đã đặt lại mật khẩu. Vui lòng đăng nhập lại."}
 
 
 @router.post("/logout")
