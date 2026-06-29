@@ -86,7 +86,6 @@
 .dark .season-badge { background: rgba(0,0,0,.7); }
 
 /* ── Community (cong-dong) ── */
-.dark .create-post:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
 .dark .sidebar-card:hover { box-shadow: var(--shadow-md); }
 .dark .report-entity-card { background: rgba(255,255,255,.04); }
 
