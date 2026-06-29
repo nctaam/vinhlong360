@@ -1716,3 +1716,44 @@ class TestSoftDeletePosts:
 
     def test_user_profile_filters_deleted(self):
         self._check_deleted_filter("get_user_profile")
+
+
+class TestETagSupport:
+    """Entity detail endpoint supports ETag conditional requests."""
+
+    def test_entity_detail_generates_etag(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("async def get_entity(")
+        fn_src = src[idx:idx+2000]
+        assert "ETag" in fn_src
+        assert "hashlib.md5" in fn_src or "hashlib.sha" in fn_src
+
+    def test_entity_detail_checks_if_none_match(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("async def get_entity(")
+        fn_src = src[idx:idx+2000]
+        assert "if-none-match" in fn_src
+        assert "304" in fn_src
+
+    def test_entity_detail_accepts_request_param(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("async def get_entity(")
+        fn_sig = src[idx:src.index(")", idx) + 1]
+        assert "request: Request" in fn_sig
+
+    def test_etag_cached_with_entity(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("async def get_entity(")
+        fn_src = src[idx:idx+2000]
+        assert "_entity_cache[cache_key]" in fn_src
+        assert "etag" in fn_src.lower()
+
+
+class TestMentionSearchAsync:
+    """Mention search wraps PG query in asyncio.to_thread."""
+
+    def test_mention_search_uses_thread(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("async def mention_search(")
+        fn_src = src[idx:idx+1000]
+        assert "asyncio.to_thread" in fn_src

@@ -971,12 +971,14 @@ async def mention_search(q: str = ""):
     try:
         if db._use_pg:
             ph = db._ph
-            with db._conn() as conn:
-                rows = db._fetchall(conn, f"""
-                    SELECT id, display_name, avatar_url FROM users
-                    WHERE is_active = TRUE AND display_name ILIKE {ph}
-                    ORDER BY display_name LIMIT 5
-                """, (f"%{ql}%",))
+            def _user_search():
+                with db._conn() as conn:
+                    return db._fetchall(conn, f"""
+                        SELECT id, display_name, avatar_url FROM users
+                        WHERE is_active = TRUE AND display_name ILIKE {ph}
+                        ORDER BY display_name LIMIT 5
+                    """, (f"%{ql}%",))
+            rows = await asyncio.to_thread(_user_search)
             for r in rows:
                 d = db._row_to_dict(r)
                 if d.get("display_name"):

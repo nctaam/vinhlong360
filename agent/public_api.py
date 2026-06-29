@@ -359,6 +359,7 @@ async def list_areas(response: Response):
 @router.get("/entities/{entity_id}")
 async def get_entity(
     entity_id: str,
+    request: Request,
     response: Response,
     relationship_limit: int = Query(DEFAULT_RELATIONSHIP_LIMIT, ge=0, le=100),
 ):
@@ -369,6 +370,11 @@ async def get_entity(
     cached = _entity_cache.get(cache_key)
     if cached and now - cached[0] < _ENTITY_TTL:
         _entity_cache.move_to_end(cache_key)
+        etag = cached[2] if len(cached) > 2 else None
+        if etag:
+            response.headers["ETag"] = etag
+            if request.headers.get("if-none-match") == etag:
+                return Response(status_code=304, headers={"ETag": etag, "Cache-Control": "public, max-age=60, stale-while-revalidate=120"})
         return cached[1]
 
     def _query():
@@ -387,7 +393,12 @@ async def get_entity(
     if not entity:
         return JSONResponse(status_code=404, content={"error": "not_found"})
 
-    _entity_cache[cache_key] = (now, entity)
+    etag = f'W/"{hashlib.md5(json.dumps(entity, sort_keys=True, default=str).encode()).hexdigest()[:16]}"'
+    response.headers["ETag"] = etag
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers={"ETag": etag, "Cache-Control": "public, max-age=60, stale-while-revalidate=120"})
+
+    _entity_cache[cache_key] = (now, entity, etag)
     while len(_entity_cache) > _ENTITY_CACHE_MAX:
         _entity_cache.popitem(last=False)
 
