@@ -1134,7 +1134,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .chatbot-cta { background: linear-gradient(135deg, var(--card) 0%, rgba(255,255,255,.03) 100%); border-color: var(--line); }
 .dark .chatbot-cta:hover { border-color: rgba(255,255,255,.1); }
 .dark .hero-pill { background: var(--glass-medium); border-color: var(--border); }
-.dark .hero-stat-num { color: #fff; }
+.dark .hero-stat-num { color: var(--ink); }
 .dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.1) 0%, transparent 68%); }
 
 /* ═══════════════════════════════════════════════════

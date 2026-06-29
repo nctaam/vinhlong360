@@ -909,7 +909,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-dup-warn strong { white-space: nowrap; }
 .ent-dup-item { background: rgba(var(--warning-rgb),.12); padding: 2px 8px; border-radius: 100px; font-weight: 500; }
 .ent-dup-type { font-weight: 400; font-size: .72rem; opacity: .7; }
-.dark .ent-dup-warn { background: rgba(var(--warning-rgb),.08); border-color: rgba(var(--warning-rgb),.2); color: #ffb340; }
+.dark .ent-dup-warn { background: rgba(var(--warning-rgb),.08); border-color: rgba(var(--warning-rgb),.2); color: var(--accent-text); }
 
 /* ── Sortable columns ── */
 .ent-sortable { cursor: pointer; user-select: none; white-space: nowrap; }
