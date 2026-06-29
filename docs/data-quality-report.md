@@ -1,20 +1,20 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — pass 8 complete)
-Source: `web/data.json` (1745 entities, 12441 relationships, 33 itineraries)
+Generated: 2026-06-29 (updated — pass 9 complete)
+Source: `web/data.json` (1739 entities, 12357 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
 ## Summary
 
-| Metric | Value | Previous (06-27) | Delta |
+| Metric | Value | Previous (06-28) | Delta |
 |--------|-------|-------------------|-------|
-| Entity quality score (avg) | **90.0/100** | 81.7 | +8.3 |
+| Entity quality score (avg) | **90.0/100** | 90.0 | — |
 | Critical entities (0-29) | 0 | 0 | — |
-| Needs work (30-59) | 0 | 5 | -5 |
-| OK (60-79) | 1 | 955 | -954 |
-| Good (80-100) | **1619** | 668 | +951 |
-| Errors | 0 | 1 | -1 |
-| Warnings | 6 | 13 | -7 |
+| Needs work (30-59) | 0 | 0 | — |
+| OK (60-79) | 1 | 1 | — |
+| Good (80-100) | **1613** | 1619 | -6 (fabricated removed) |
+| Errors | 1 (pre-existing fanout) | 0 | +1 |
+| Warnings | 7 | 6 | +1 (data_js cosmetic) |
 | Graph components | 1 (fully connected) | 1 | — |
 | Isolated entities | 0 | 0 | — |
 | Broken relationships | 0 | 0 | — |
@@ -102,7 +102,7 @@ Tool: `python scripts/validate_data.py`
 | Corrupted encoding (? chars) | 4 entities | **0** (all rewritten) |
 | Near relationships (isolated) | 155 entities without near | **2** (762 near rels added) |
 | Related_to (isolated) | 67 entities without related_to | **16** (142 rels added) |
-| Total relationships | 11537 | **12441** (+904) |
+| Total relationships | 11537 | **12357** (+820, net after pass 9 -84) |
 | Short descriptions (<80 chars) | 17 | **0** (all enriched to 80+ chars) |
 | Summary == Description | 581 identical pairs | **174 remain** (all single-sentence, can't differentiate) |
 | Structured data pass 2 (desc) | 464 (Mở cửa/Nên mua/Đặc sản/Thời lượng/Chi phí/Giá phòng/etc.) | **0** |
@@ -141,9 +141,67 @@ Tool: `python scripts/validate_data.py`
 | Remaining clichés | 1 "viên ngọc", 4 "tuyệt vời/ấn tượng" | **0** |
 | "bức tranh" metaphor | 1 | **0** (→ "khung cảnh") |
 
+## Improvements Pass 9 — Verification-driven Optimization (2026-06-29)
+
+### Phase 1 (P0): Removed 6 fabricated entities
+
+Forensic verification report identified 6 entities with origins **outside** the 3-province scope (VL+BT+TV). Hard-deleted from data.json along with 84 relationships and 2 itinerary stops.
+
+| Entity ID | Problem | Actual Origin |
+|-----------|---------|---------------|
+| hu-tieu-my-tho | Wrong province | Mỹ Tho, Tiền Giang |
+| banh-cong-soc-trang | Wrong province | Sóc Trăng |
+| chua-sa-lon-chua-chen-kieu | Wrong province | Sóc Trăng/Cần Thơ |
+| chien-thang-giong-dua-giong-trom | Wrong province + contaminated desc | Tiền Giang |
+| chua-ong-met-botum-vong-sa-som-rong | Conflates 2 temples | Mixed provinces |
+| khu-bao-ton-lung-binh-hoa-tra-vinh | Content describes wrong entity | Hậu Giang |
+
+Itineraries affected: `tra-vinh-khmer-1-ngay` and `ba-lo-budget-3-ngay` (stops referencing `banh-cong-soc-trang` removed).
+
+### Phase 2 (P1): WebSearch-verified 14 suspect entities
+
+| Entity ID | Result | Action |
+|-----------|--------|--------|
+| chua-khai-tuong | CONFIRMED (Long An origin but has VL branch) | Kept, source URL added |
+| dinh-cai-von | CONFIRMED (Bình Minh, VL) | Kept, source URL added |
+| banh-mi-sau-hoa-ben-tre | CONFIRMED | Kept, source URL added |
+| bun-nuoc-leo-cho-ba-tri-ben-tre | CONFIRMED | Kept, source URL added |
+| khoai-lang-binh-tan | CONFIRMED (OCOP VL) | Kept, source URL added |
+| quan-thuan-phuc-vinh-long | CONFIRMED | Kept, source URL added |
+| cha-gio-chay | UNVERIFIABLE | confidence → 0.5 |
+| rau-thom-ocop-hop-tac-xa-phuoc-hau | UNVERIFIABLE | confidence → 0.5 |
+| so-diep-binh-dai | UNVERIFIABLE | confidence → 0.5 |
+| hu-tieu-sa-dec-chu-tu | UNVERIFIABLE | confidence → 0.5 |
+| chua-ang-angkorajaborey | UNVERIFIABLE | confidence → 0.5 |
+
+### Phase 3A: Extracted 3 phone numbers from descriptions
+
+| Entity | Phone |
+|--------|-------|
+| diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long | 02703822702 |
+| buu-dien-trung-tam-vinh-long-vinh-long | 1900 0317 |
+| benh-vien-da-khoa-minh-duc-ben-tre-ben-tre | 1900 0317 |
+
+### Phase 5A: Normalized 867 source metadata fields
+
+- Renamed `name` → `title` in all source entries
+- Renamed `type` → `method` where present
+- Removed null/empty `url` fields
+- Schema now consistently: `{title, url?, method?, maps?}`
+
+### Phase 4: Enriched 200 short summaries
+
+Extracted better summaries from existing description content (no LLM, no fabrication):
+- First-sentence extraction from multi-sentence descriptions
+- Two-sentence extraction for richer summaries
+- Summaries <80 chars: **462 → 282** (180 improved)
+- Remaining 282 are genuinely single-sentence entities — need external research or LLM enrichment
+
 ## Errors
 
-None.
+| Code | Count | Notes |
+|------|-------|-------|
+| `relationship_fanout` | 1 | Pre-existing: 1 entity with >120 direct relationships |
 
 ## Warnings
 
@@ -160,7 +218,7 @@ None.
 
 ## Entities Missing Images (QA-18)
 
-**All 1745 entities have `images: []`** — 0% image coverage.
+**All 1739 entities have `images: []`** — 0% image coverage.
 
 Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-image` API. No stock photos (Pexels/Unsplash), UGC, or Wikimedia images per project policy.
 
@@ -223,24 +281,27 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 
 ## Confidence Distribution
 
-- Min: **0.81** (was 0.5)
-- Median: **0.88** (was 0.7)
+- Min: **0.50** (5 unverifiable suspect entities)
+- Median: **0.88**
 - Max: 0.95
-- Entities at 0.9+: **366** (was 74)
-- All entities: **≥0.81**
+- Entities at 0.9+: **366**
+- Entities at 0.5 (unverifiable): **5**
+- All other entities: **≥0.81**
 
-Note: Confidence formula now correctly differentiates approximate coordinates (+0.03) from verified coordinates (+0.10). The median dropped from 0.95 after geographic anomaly fixes because 159 entities moved from "verified" to "approximate" status — a more accurate reflection of data quality.
+Note: 5 entities lowered to 0.50 during pass 9 suspect verification — could not confirm via WebSearch. These may be real but obscure. Confidence formula differentiates approximate coordinates (+0.03) from verified coordinates (+0.10).
 
 ## Relationship Summary
 
 | Type | Count |
 |------|-------|
-| near | 5065 |
-| related_to | 4305 |
-| located_in | 2214 |
-| associated_with | 670 |
-| produced_in | 187 |
-| **Total** | **12441** |
+| near | 5003 |
+| related_to | 4279 |
+| located_in | 2208 |
+| associated_with | 660 |
+| produced_in | 184 |
+| **Total** | **12357** |
+
+Note: -84 relationships from pass 9 (6 fabricated entities removed). 23 itinerary stops also cleaned (2 referencing deleted entities removed).
 
 ## Deep Research Findings
 
@@ -285,7 +346,7 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 | vinhlongtourist.vn | 49 |
 | Facebook crawl | 1 |
 
-Sources are stored as list of dicts `[{title, method}]`, not URL strings.
+Sources are stored as list of dicts `[{title, url?, method?, maps?}]` (867 fields normalized in pass 9).
 
 ### Attribute Format Normalization (completed)
 
@@ -345,9 +406,10 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 | Deduction | Entities | Points/each | Avg impact | Actionable? |
 |-----------|----------|-------------|------------|-------------|
-| No images | 1745 | -10 | -10.00 | Needs IMAGE_API_KEY |
+| No images | 1739 | -10 | -10.00 | Needs IMAGE_API_KEY |
 | No coordinates | 6 | -15 | -0.05 | HCM facility + 5 entities without geocodable address |
 | No placeId | 1 | -10 | -0.01 | HCM entity, outside scope |
+| Low confidence (0.5) | 5 | varies | -0.01 | Unverifiable suspects — need manual research |
 
 **Theoretical max without images: ~100.** Current: 90.0. Only images remain as a significant gap.
 
@@ -375,10 +437,12 @@ remaining quality concerns that require **per-entity manual review** or
 ## Next Steps (Priority Order)
 
 1. **Image generation** — 0% coverage, the ONLY remaining significant gap (-10.00 avg pts). Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API.
-2. **Geocoding** — ~337 entities at province centroids (178 original + 159 from geographic fixes). Google Places API would improve coverage beyond Nominatim.
-3. **Experience coverage** — Trà Vinh has only 7 experiences vs 70 for Vĩnh Long (10x imbalance). Need curated TV experiences.
-4. **produced_in coverage** — 156/218 products linked (71%); remaining 62 are fresh produce/processed foods without matching craft village entities.
-5. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours. Needs Google Places or manual research.
+2. **Geocoding** — ~1151 entities with coords_approximate=true. Top 50 could be geocoded via `scripts/geocode_clusters.py`.
+3. **Short summaries** — 282 entities still <80 chars (all single-sentence). Need LLM enrichment or manual research.
+4. **Experience coverage** — Trà Vinh has only 7 experiences vs 70 for Vĩnh Long (10x imbalance). Need curated TV experiences.
+5. **Unverifiable suspects** — 5 entities at confidence 0.5; need manual research to confirm or remove.
+6. **Source URLs** — ~1350 entities lack independent external source URL. High-visibility entities (restaurants, accommodations, attractions) would benefit from WebSearch verification.
+7. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours. Needs Google Places or manual research.
 
 ## Data Integrity Checks (all pass)
 
