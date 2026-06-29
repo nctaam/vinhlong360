@@ -3169,7 +3169,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             except Exception:
                 logger.warning("Failed to load privacy settings for user %s", resolved_id)
 
-            vis = privacy["profile_visibility"] if privacy else "public"
+            vis = privacy["profile_visibility"] if privacy else ("public" if is_self else "followers_only")
             is_follower = False
             if not is_self and vis != "public" and viewer_id:
                 frow = db._fetchone(conn, f"""

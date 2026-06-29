@@ -31,9 +31,11 @@ from auth_middleware import validate_path_id, require_pg, require_user, require_
 router = APIRouter(prefix="/api", tags=["public"])
 
 from collections import OrderedDict
+import threading as _threading
 
 _PLACE_CACHE_MAX = 500
 _place_cache: OrderedDict[str, dict] = OrderedDict()
+_place_cache_lock = _threading.Lock()
 DEFAULT_RELATIONSHIP_LIMIT = 24
 
 # Perf-P0: cache payload /homepage (endpoint nóng nhất) — trước đây scan toàn bảng entity
@@ -53,7 +55,7 @@ def invalidate_entity_cache(entity_id: str | None = None):
     if entity_id:
         to_del = [k for k in _entity_cache if k.startswith(f"{entity_id}:")]
         for k in to_del:
-            del _entity_cache[k]
+            _entity_cache.pop(k, None)
     else:
         _entity_cache.clear()
 
@@ -121,7 +123,8 @@ def _build_practical_facts(entity: dict) -> dict:
 def invalidate_place_cache():
     """Xoá cache tên/khu-vực xã/phường — gọi sau /reload để tránh phục vụ tên cũ
     khi admin đổi/di chuyển place."""
-    _place_cache.clear()
+    with _place_cache_lock:
+        _place_cache.clear()
     _homepage_cache.update(month=None, data=None, ts=0.0)  # Perf-P0: refresh homepage sau reload
 
 # GĐ13.6f: báo cáo thông tin sai / nội dung vi phạm — lưu JSONL nhẹ (free-tier),
@@ -179,27 +182,33 @@ async def get_site_settings(response: Response):
     return site_settings.get_all_public()
 
 def _get_place(place_id: str) -> dict | None:
-    if place_id in _place_cache:
-        _place_cache.move_to_end(place_id)
-        return _place_cache[place_id]
+    with _place_cache_lock:
+        if place_id in _place_cache:
+            _place_cache.move_to_end(place_id)
+            return _place_cache[place_id]
     place = db.get_entity(place_id)
     if place:
-        _place_cache[place_id] = {"name": place["name"], "area": place.get("area")}
-        if len(_place_cache) > _PLACE_CACHE_MAX:
-            _place_cache.popitem(last=False)
-    return _place_cache.get(place_id)
+        with _place_cache_lock:
+            _place_cache[place_id] = {"name": place["name"], "area": place.get("area")}
+            if len(_place_cache) > _PLACE_CACHE_MAX:
+                _place_cache.popitem(last=False)
+    with _place_cache_lock:
+        return _place_cache.get(place_id)
 
 def _enrich_place(entities: list[dict]):
-    uncached = {e["placeId"] for e in entities if e.get("placeId") and e["placeId"] not in _place_cache}
+    with _place_cache_lock:
+        uncached = {e["placeId"] for e in entities if e.get("placeId") and e["placeId"] not in _place_cache}
     if uncached:
         batch = db.get_entities_batch(list(uncached))
-        for pid, place in batch.items():
-            _place_cache[pid] = {"name": place["name"], "area": place.get("area")}
+        with _place_cache_lock:
+            for pid, place in batch.items():
+                _place_cache[pid] = {"name": place["name"], "area": place.get("area")}
     for e in entities:
         explicit_area = e.get("area")
         pid = e.get("placeId")
         if pid:
-            p = _place_cache.get(pid)
+            with _place_cache_lock:
+                p = _place_cache.get(pid)
             if p:
                 e["place_name"] = p["name"]
                 e["place_area"] = explicit_area or p.get("area")

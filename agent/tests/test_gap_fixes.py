@@ -2010,3 +2010,54 @@ class TestSecurityFixes:
         idx = src.index("async def community_stats(")
         fn_src = src[idx:idx+500]
         assert "deleted_at IS NULL" in fn_src
+
+
+class TestReliabilityFixes:
+    """Tests for reliability hardening — thread safety, fail-closed, resource cleanup."""
+
+    def test_place_cache_thread_safe(self):
+        """Place cache operations must be wrapped in _place_cache_lock."""
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        assert "_place_cache_lock" in src
+        idx = src.index("def _get_place(")
+        fn_src = src[idx:idx+500]
+        assert "_place_cache_lock" in fn_src
+
+    def test_enrich_place_thread_safe(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("def _enrich_place(")
+        fn_src = src[idx:idx+600]
+        assert "_place_cache_lock" in fn_src
+
+    def test_invalidate_place_cache_thread_safe(self):
+        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
+        idx = src.index("def invalidate_place_cache(")
+        fn_src = src[idx:idx+300]
+        assert "_place_cache_lock" in fn_src
+
+    def test_privacy_fail_closed(self):
+        """Privacy load failure must NOT default to public for non-self views."""
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("Failed to load privacy settings")
+        fn_src = src[idx:idx+300]
+        assert "followers_only" in fn_src
+
+    def test_backup_conn_closed_on_error(self):
+        """Backup connection must be closed in finally block."""
+        src = (AGENT_DIR / "database.py").read_text(encoding="utf-8")
+        idx = src.index("backup_conn = sqlite3.connect")
+        fn_src = src[idx:idx+200]
+        assert "finally:" in fn_src
+        assert "backup_conn.close()" in fn_src
+
+    def test_stream_guardrail_logs_errors(self):
+        """Stream guardrail failure must log, not silently pass."""
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("Stream guardrail check failed")
+        assert idx > 0
+
+    def test_pool_failure_logged(self):
+        """PG pool creation failure must log a warning."""
+        src = (AGENT_DIR / "database.py").read_text(encoding="utf-8")
+        idx = src.index("PG pool creation failed")
+        assert idx > 0

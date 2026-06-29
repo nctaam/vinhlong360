@@ -2411,7 +2411,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         if out_check.get("cleaned_reply") and out_check["cleaned_reply"] != full_text:
                             full_text = out_check["cleaned_reply"]
                     except Exception:
-                        pass
+                        logger.debug("Stream guardrail check failed", exc_info=True)
 
                 # Track & cache
                 analytics.track_query(message, tools_used, full_text, sid)
@@ -2423,7 +2423,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         try:
                             semantic_put(message, cache_data)
                         except Exception:
-                            pass
+                            logger.debug("Semantic cache put failed", exc_info=True)
 
                 # Send quality score for UI feedback prompt
                 yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'quality': evaluation['score']}, ensure_ascii=False)}\n\n"

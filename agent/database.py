@@ -1216,8 +1216,10 @@ class Database:
             backup_path = str(DB_DIR / f"vinhlong360_backup_{ts}.db")
         with self._conn() as conn:
             backup_conn = sqlite3.connect(backup_path)
-            conn.backup(backup_conn)
-            backup_conn.close()
+            try:
+                conn.backup(backup_conn)
+            finally:
+                backup_conn.close()
         return backup_path
 
     def stats(self) -> dict:
