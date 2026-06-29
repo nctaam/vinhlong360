@@ -93,6 +93,11 @@ const sizeClass = computed(() => `modal-${props.size}`)
 .modal-fade-leave-to .modal-sheet { transform: translateY(8px) scale(.98); opacity: 0; }
 
 .dark .modal-sheet { border: .5px solid var(--line); }
+@media (prefers-reduced-motion: reduce) {
+  .modal-fade-enter-active, .modal-fade-leave-active,
+  .modal-fade-enter-active .modal-sheet, .modal-fade-leave-active .modal-sheet { transition: none; }
+  .modal-close { transition: none; }
+}
 @media (forced-colors: active) {
   .modal-sheet { border: 2px solid CanvasText; }
   .modal-close { border: 1px solid ButtonText; }

@@ -852,4 +852,8 @@ onUnmounted(() => {
   .sf-input { font-size: 16px; }
   .sf-username-prefix { font-size: .75rem; padding: .65rem .4rem; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .settings-tab, .settings-tab-icon, .sf-input, .toggle, .toggle::after,
+  .notif-pref-item, .theme-btn { transition: none; }
+}
 </style>

@@ -135,6 +135,10 @@ defineExpose({ open })
   .cmd-results { max-height: 50vh; }
   .cmd-footer { display: none; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .cmd-item { transition: none; }
+  .cmd-fade-enter-active, .cmd-fade-leave-active { transition: none; }
+}
 @media (forced-colors: active) {
   .cmd-palette { border: 2px solid CanvasText; background: Canvas; }
   .cmd-input { border-bottom: 1px solid CanvasText; }

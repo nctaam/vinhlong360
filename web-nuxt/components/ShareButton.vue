@@ -56,6 +56,12 @@ async function share() {
 .share-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .share-icon { flex-shrink: 0; transition: transform .35s var(--ease-spring-gentle); }
 .share-btn:hover .share-icon { transform: scale(1.08); }
+@media (prefers-reduced-motion: reduce) {
+  .share-btn { transition: none; }
+  .share-btn:hover, .share-btn:active { transform: none; }
+  .share-icon { transition: none; }
+  .share-btn:hover .share-icon { transform: none; }
+}
 @media (forced-colors: active) {
   .share-btn { border: 1px solid ButtonText; background: Canvas; }
 }
