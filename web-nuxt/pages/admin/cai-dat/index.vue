@@ -171,7 +171,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .cs-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  min-height: 36px; padding: 6px 14px; border-radius: 999px;
+  min-height: 44px; padding: 6px 14px; border-radius: 999px;
   background: var(--bg-alt, rgba(0,0,0,.03)); border: .5px solid var(--line);
   color: inherit; text-decoration: none;
   font-size: .8rem; font-weight: 500; line-height: 1;

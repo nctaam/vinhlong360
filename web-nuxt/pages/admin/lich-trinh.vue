@@ -455,7 +455,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .lt-move {
   appearance: none; border: none; background: transparent; cursor: pointer;
   color: var(--muted); font-size: .7rem; line-height: 1;
-  width: 28px; height: 24px; border-radius: 6px;
+  width: 44px; height: 44px; border-radius: 6px;
   display: inline-flex; align-items: center; justify-content: center;
   transition: background .2s, color .2s, transform .2s cubic-bezier(.2,1,.4,1);
 }
@@ -470,7 +470,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .lt-stop-del {
   flex: 0 0 auto; appearance: none; border: none; background: transparent; cursor: pointer;
   color: var(--muted); font-size: .9rem; line-height: 1;
-  width: 32px; height: 32px; min-width: 32px; border-radius: 8px;
+  width: 44px; height: 44px; min-width: 44px; border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
   transition: background .2s, color .2s, transform .2s cubic-bezier(.2,1,.4,1);
 }
