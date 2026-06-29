@@ -4157,3 +4157,61 @@ class TestAdminReportsFilter:
         import admin
         src = inspect.getsource(admin.get_reports)
         assert "post|comment|user|entity" in src
+
+
+# ── Admin user detail enrichment ────────────────────────────────────
+
+class TestAdminUserDetailEnriched:
+    """Admin user detail should include reports against, blocks, mutes, reputation."""
+
+    def test_includes_reports_against(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_detail)
+        assert "reports_against" in src
+
+    def test_includes_blocking_stats(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_detail)
+        assert '"blocking"' in src
+        assert '"blocked_by"' in src
+
+    def test_includes_muted_count(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_detail)
+        assert '"muted_users"' in src
+
+    def test_includes_reputation(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_detail)
+        assert '"reputation_score"' in src
+
+    def test_queries_reports_as_target(self):
+        import admin
+        src = inspect.getsource(admin.admin_user_detail)
+        assert "target_type = 'user'" in src
+
+
+# ── User stats enrichment ──────────────────────────────────────────
+
+class TestUserStatsEnriched:
+    """User stats should include reactions received and collections count."""
+
+    def test_includes_reactions_received(self):
+        import social
+        src = inspect.getsource(social.user_stats)
+        assert "reactions_received" in src
+
+    def test_includes_collections_count(self):
+        import social
+        src = inspect.getsource(social.user_stats)
+        assert '"collections"' in src
+
+    def test_queries_post_reactions(self):
+        import social
+        src = inspect.getsource(social.user_stats)
+        assert "post_reactions" in src
+
+    def test_queries_user_collections(self):
+        import social
+        src = inspect.getsource(social.user_stats)
+        assert "user_collections" in src

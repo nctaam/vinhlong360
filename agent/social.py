@@ -1234,6 +1234,14 @@ async def user_stats(user=Depends(require_user)):
                 WHERE user_id = {ph}::uuid AND post_type = 'review'
                   AND moderation_status = 'approved' AND entity_id IS NOT NULL
             """, (uid,))
+            reactions_received = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM post_reactions r
+                JOIN posts p ON p.id = r.post_id
+                WHERE p.user_id = {ph}::uuid
+            """, (uid,))
+            collections_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS c FROM user_collections WHERE user_id = {ph}::uuid
+            """, (uid,))
         def _c(r, col="c"):
             return db._row_to_dict(r)[col] if r else 0
         rd = db._row_to_dict(reviews) if reviews else {"c": 0, "avg": 0}
@@ -1244,7 +1252,9 @@ async def user_stats(user=Depends(require_user)):
             "followers": _c(followers),
             "following": _c(following),
             "likes_received": int(_c(likes_received)),
+            "reactions_received": int(_c(reactions_received)),
             "entities_reviewed": _c(entities_reviewed),
+            "collections": int(_c(collections_count)),
             "reputation": user.get("reputation", 0),
         }
     return await asyncio.to_thread(_query)

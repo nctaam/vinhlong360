@@ -3289,6 +3289,26 @@ async def admin_user_detail(user_id: str):
                 SELECT COUNT(*) as c FROM reports WHERE reporter_id::text = {ph}
             """, (user_id,))
 
+            reported_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM reports WHERE target_type = 'user' AND target_id = {ph}
+            """, (user_id,))
+
+            block_count = db._fetchone(conn, f"""
+                SELECT
+                    (SELECT COUNT(*) FROM blocks WHERE blocker_id::text = {ph}) as blocking,
+                    (SELECT COUNT(*) FROM blocks WHERE blocked_id::text = {ph}) as blocked_by
+            """, (user_id, user_id))
+            blk = db._row_to_dict(block_count) if block_count else {}
+
+            mute_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM user_mutes WHERE user_id::text = {ph}
+            """, (user_id,))
+
+            reputation = db._fetchone(conn, f"""
+                SELECT reputation_score FROM users WHERE id::text = {ph}
+            """, (user_id,))
+            rep = db._row_to_dict(reputation).get("reputation_score", 0) if reputation else 0
+
         return {
             "user": ud,
             "stats": {
@@ -3298,6 +3318,11 @@ async def admin_user_detail(user_id: str):
                 "followers": fs.get("followers", 0),
                 "active_sessions": db._row_to_dict(session_count)["c"] if session_count else 0,
                 "reports_filed": db._row_to_dict(report_count)["c"] if report_count else 0,
+                "reports_against": db._row_to_dict(reported_count)["c"] if reported_count else 0,
+                "blocking": blk.get("blocking", 0),
+                "blocked_by": blk.get("blocked_by", 0),
+                "muted_users": db._row_to_dict(mute_count)["c"] if mute_count else 0,
+                "reputation_score": rep,
             },
         }
 
