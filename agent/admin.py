@@ -39,6 +39,7 @@ try:
     from cost_tracker import get_cost_report as _get_cost_report
     _HAS_COST = True
 except Exception:  # noqa: BLE001
+    logger.warning("Cost tracker unavailable", exc_info=True)
     _HAS_COST = False
 from auth_middleware import get_current_user, validate_path_id, require_csrf
 from middleware import admin_limiter, verify_admin_key, get_client_ip
@@ -65,6 +66,7 @@ def _safe(fn, default):
     try:
         return fn()
     except Exception:
+        logger.debug("_safe(%s) failed, returning default", getattr(fn, "__name__", fn), exc_info=True)
         return default
 
 # ── Auth dependency ──
@@ -1266,6 +1268,7 @@ async def activity_feed(limit: int = Query(10, ge=1, le=50)):
                     break
             return {"actions": actions}
         except Exception:
+            logger.debug("Activity feed read failed", exc_info=True)
             return {"actions": []}
     return await asyncio.to_thread(_query)
 
