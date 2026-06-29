@@ -3574,3 +3574,150 @@ class TestUserMuteEndpoints:
     def test_following_feed_uses_mute_filter(self):
         src = inspect.getsource(__import__("social").get_following_feed)
         assert "_mute_sql" in src
+
+
+# ── User Collections (themed post lists) ──
+
+
+class TestUserCollectionsMigration:
+    """Test migration 049 creates user_collections + collection_items."""
+
+    def test_migration_file_exists(self):
+        import pathlib
+        p = pathlib.Path(__file__).resolve().parent.parent / "migrations" / "049_user_collections.sql"
+        assert p.exists()
+
+    def test_migration_creates_collections_table(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "049_user_collections.sql").read_text()
+        assert "CREATE TABLE IF NOT EXISTS user_collections" in sql
+
+    def test_migration_creates_items_table(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "049_user_collections.sql").read_text()
+        assert "CREATE TABLE IF NOT EXISTS collection_items" in sql
+
+    def test_migration_unique_item(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "049_user_collections.sql").read_text()
+        assert "UNIQUE(collection_id, post_id)" in sql
+
+    def test_migration_has_indexes(self):
+        import pathlib
+        sql = (pathlib.Path(__file__).resolve().parent.parent / "migrations" / "049_user_collections.sql").read_text()
+        assert "idx_user_collections_user" in sql
+        assert "idx_collection_items_coll" in sql
+
+
+class TestUserCollectionEndpoints:
+    """Test user collection CRUD endpoints."""
+
+    def test_create_collection_endpoint(self):
+        from social import router
+        pairs = {(m, r.path) for r in router.routes if hasattr(r, "path") for m in (r.methods if hasattr(r, "methods") else set())}
+        assert ("POST", "/api/me/collections") in pairs
+
+    def test_list_collections_endpoint(self):
+        from social import router
+        pairs = {(m, r.path) for r in router.routes if hasattr(r, "path") for m in (r.methods if hasattr(r, "methods") else set())}
+        assert ("GET", "/api/me/collections") in pairs
+
+    def test_delete_collection_endpoint(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "DELETE" in routes.get("/api/me/collections/{collection_id}", set())
+
+    def test_add_item_endpoint(self):
+        from social import router
+        pairs = {(m, r.path) for r in router.routes if hasattr(r, "path") for m in (r.methods if hasattr(r, "methods") else set())}
+        assert ("POST", "/api/me/collections/{collection_id}/items") in pairs
+
+    def test_remove_item_endpoint(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "DELETE" in routes.get("/api/me/collections/{collection_id}/items/{post_id}", set())
+
+    def test_get_items_endpoint(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/me/collections/{collection_id}/items", set())
+
+    def test_create_requires_auth(self):
+        src = inspect.getsource(__import__("social").create_collection)
+        assert "require_user" in src
+
+    def test_create_has_rate_limit(self):
+        src = inspect.getsource(__import__("social").create_collection)
+        assert "check_rate" in src
+
+    def test_create_limits_per_user(self):
+        src = inspect.getsource(__import__("social").create_collection)
+        assert "_MAX_COLLECTIONS_PER_USER" in src
+
+    def test_add_item_limits_per_collection(self):
+        src = inspect.getsource(__import__("social").add_to_collection)
+        assert "_MAX_ITEMS_PER_COLLECTION" in src
+
+    def test_add_item_validates_ids(self):
+        src = inspect.getsource(__import__("social").add_to_collection)
+        assert "validate_path_id" in src
+
+    def test_get_items_checks_access(self):
+        src = inspect.getsource(__import__("social").get_collection_items)
+        assert "is_public" in src
+
+    def test_delete_checks_ownership(self):
+        src = inspect.getsource(__import__("social").delete_collection)
+        assert "user_id" in src
+
+    def test_max_collections_constant(self):
+        from social import _MAX_COLLECTIONS_PER_USER
+        assert _MAX_COLLECTIONS_PER_USER == 20
+
+    def test_max_items_constant(self):
+        from social import _MAX_ITEMS_PER_COLLECTION
+        assert _MAX_ITEMS_PER_COLLECTION == 100
+
+
+# ── User Activity Feed ──
+
+
+class TestUserActivityFeed:
+    """Test unified user activity endpoint."""
+
+    def test_activity_endpoint_exists(self):
+        from social import router
+        routes = {r.path: set(r.methods) if hasattr(r, "methods") else set()
+                  for r in router.routes if hasattr(r, "path")}
+        assert "GET" in routes.get("/api/me/activity", set())
+
+    def test_activity_requires_auth(self):
+        src = inspect.getsource(__import__("social").user_activity)
+        assert "require_user" in src
+
+    def test_activity_queries_posts(self):
+        src = inspect.getsource(__import__("social").user_activity)
+        assert "'post' as action" in src
+
+    def test_activity_queries_comments(self):
+        src = inspect.getsource(__import__("social").user_activity)
+        assert "'comment' as action" in src
+
+    def test_activity_queries_likes(self):
+        src = inspect.getsource(__import__("social").user_activity)
+        assert "'like' as action" in src
+
+    def test_activity_sorts_by_time(self):
+        src = inspect.getsource(__import__("social").user_activity)
+        assert "reverse=True" in src
+
+    def test_activity_truncates_content(self):
+        src = inspect.getsource(__import__("social").user_activity)
+        assert "[:200]" in src
+
+    def test_activity_uses_async_thread(self):
+        src = inspect.getsource(__import__("social").user_activity)
+        assert "asyncio.to_thread" in src

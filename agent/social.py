@@ -1250,6 +1250,52 @@ async def user_stats(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
+@router.get("/me/activity")
+async def user_activity(limit: int = Query(30, ge=1, le=100), user=Depends(require_user)):
+    """Unified activity feed: user's recent posts, comments, likes, bookmarks."""
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            posts = db._fetchall(conn, f"""
+                SELECT 'post' as action, p.id as ref_id, p.content, p.post_type, p.created_at
+                FROM posts p WHERE p.user_id = {ph}::uuid AND p.moderation_status = 'approved'
+                ORDER BY p.created_at DESC LIMIT {ph}
+            """, (uid, limit))
+            comments = db._fetchall(conn, f"""
+                SELECT 'comment' as action, c.id as ref_id, c.content, 'comment' as post_type, c.created_at
+                FROM comments c WHERE c.user_id = {ph}::uuid
+                ORDER BY c.created_at DESC LIMIT {ph}
+            """, (uid, limit))
+            likes = db._fetchall(conn, f"""
+                SELECT 'like' as action, l.post_id as ref_id, NULL as content, 'like' as post_type, l.created_at
+                FROM likes l WHERE l.user_id = {ph}::uuid
+                ORDER BY l.created_at DESC LIMIT {ph}
+            """, (uid, limit))
+            return posts, comments, likes
+
+    posts, comments, likes = await asyncio.to_thread(_query)
+    activities = []
+    for row in posts:
+        d = db._row_to_dict(row)
+        activities.append({"action": "post", "ref_id": str(d["ref_id"]),
+                          "content": (d.get("content") or "")[:200], "type": d.get("post_type"),
+                          "created_at": str(d["created_at"])})
+    for row in comments:
+        d = db._row_to_dict(row)
+        activities.append({"action": "comment", "ref_id": str(d["ref_id"]),
+                          "content": (d.get("content") or "")[:200], "type": "comment",
+                          "created_at": str(d["created_at"])})
+    for row in likes:
+        d = db._row_to_dict(row)
+        activities.append({"action": "like", "ref_id": str(d["ref_id"]),
+                          "content": None, "type": "like",
+                          "created_at": str(d["created_at"])})
+    activities.sort(key=lambda x: x["created_at"], reverse=True)
+    return {"activities": activities[:limit]}
+
+
 _trending_cache: dict = {"ts": 0.0, "data": {}}
 _TRENDING_TTL = _cfg.TRENDING_CACHE_TTL
 _trending_lock = asyncio.Lock()
@@ -2357,6 +2403,163 @@ async def get_my_bookmarks(
                 ORDER BY b.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, (str(user["id"]), limit, offset))
+    rows = await asyncio.to_thread(_query)
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    return {"posts": posts, "page": page, "has_more": len(posts) == limit}
+
+
+# ── User Collections (themed post lists) ──
+
+_MAX_COLLECTIONS_PER_USER = 20
+_MAX_ITEMS_PER_COLLECTION = 100
+
+
+class CreateCollection(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    description: str = Field("", max_length=500)
+    is_public: bool = False
+
+
+@router.post("/me/collections")
+async def create_collection(body: CreateCollection, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"coll:{user['id']}", 10, 300, "Tạo danh sách quá nhanh. Vui lòng đợi chút.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) as c FROM user_collections WHERE user_id = {ph}::uuid", (uid,))
+            if cnt and db._row_to_dict(cnt)["c"] >= _MAX_COLLECTIONS_PER_USER:
+                raise HTTPException(400, f"Tối đa {_MAX_COLLECTIONS_PER_USER} danh sách")
+            row = db._fetchone(conn, f"""
+                INSERT INTO user_collections (user_id, name, description, is_public)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}) RETURNING id, name, description, is_public, created_at
+            """, (uid, body.name.strip(), body.description.strip(), body.is_public))
+            return db._row_to_dict(row)
+
+    coll = await asyncio.to_thread(_query)
+    return {"collection": {"id": str(coll["id"]), "name": coll["name"],
+            "description": coll["description"], "is_public": coll["is_public"],
+            "created_at": str(coll["created_at"]), "item_count": 0}}
+
+
+@router.get("/me/collections")
+async def list_my_collections(user=Depends(require_user)):
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT uc.id, uc.name, uc.description, uc.is_public, uc.created_at,
+                       (SELECT COUNT(*) FROM collection_items ci WHERE ci.collection_id = uc.id) as item_count
+                FROM user_collections uc WHERE uc.user_id = {ph}::uuid
+                ORDER BY uc.updated_at DESC
+            """, (uid,))
+
+    rows = await asyncio.to_thread(_query)
+    result = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        result.append({"id": str(d["id"]), "name": d["name"], "description": d.get("description", ""),
+                        "is_public": d.get("is_public", False), "item_count": d.get("item_count", 0),
+                        "created_at": str(d.get("created_at", ""))})
+    return {"collections": result}
+
+
+@router.delete("/me/collections/{collection_id}")
+async def delete_collection(collection_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    check_rate(f"coll-del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW, "Xóa quá nhanh.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM user_collections WHERE id = {ph}::uuid AND user_id = {ph}::uuid RETURNING 1
+            """, (collection_id, uid))
+            if not row:
+                raise HTTPException(404, "Danh sách không tồn tại")
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.post("/me/collections/{collection_id}/items")
+async def add_to_collection(collection_id: str, post_id: str = Query(..., max_length=100),
+                             user=Depends(require_user), _csrf=Depends(require_csrf)):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"coll-add:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW, "Thao tác quá nhanh.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            coll = db._fetchone(conn, f"SELECT id FROM user_collections WHERE id = {ph}::uuid AND user_id = {ph}::uuid", (collection_id, uid))
+            if not coll:
+                raise HTTPException(404, "Danh sách không tồn tại")
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) as c FROM collection_items WHERE collection_id = {ph}::uuid", (collection_id,))
+            if cnt and db._row_to_dict(cnt)["c"] >= _MAX_ITEMS_PER_COLLECTION:
+                raise HTTPException(400, f"Tối đa {_MAX_ITEMS_PER_COLLECTION} bài trong danh sách")
+            db._execute(conn, f"""
+                INSERT INTO collection_items (collection_id, post_id) VALUES ({ph}::uuid, {ph}::uuid)
+                ON CONFLICT DO NOTHING
+            """, (collection_id, post_id))
+            db._execute(conn, f"UPDATE user_collections SET updated_at = NOW() WHERE id = {ph}::uuid", (collection_id,))
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.delete("/me/collections/{collection_id}/items/{post_id}")
+async def remove_from_collection(collection_id: str, post_id: str,
+                                  user=Depends(require_user), _csrf=Depends(require_csrf)):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    post_id = validate_path_id(post_id, "post_id")
+    check_rate(f"coll-rm:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW, "Xóa quá nhanh.")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            coll = db._fetchone(conn, f"SELECT id FROM user_collections WHERE id = {ph}::uuid AND user_id = {ph}::uuid", (collection_id, uid))
+            if not coll:
+                raise HTTPException(404, "Danh sách không tồn tại")
+            db._execute(conn, f"DELETE FROM collection_items WHERE collection_id = {ph}::uuid AND post_id = {ph}::uuid", (collection_id, post_id))
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.get("/me/collections/{collection_id}/items")
+async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le=1000),
+                                limit: int = Query(20, ge=1, le=50), user=Depends(require_user)):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    ph = db._ph
+    uid = str(user["id"])
+    offset = (page - 1) * limit
+
+    def _query():
+        with db._conn() as conn:
+            coll = db._fetchone(conn, f"SELECT id, is_public, user_id FROM user_collections WHERE id = {ph}::uuid", (collection_id,))
+            if not coll:
+                raise HTTPException(404, "Danh sách không tồn tại")
+            cd = db._row_to_dict(coll)
+            if str(cd["user_id"]) != uid and not cd.get("is_public"):
+                raise HTTPException(403, "Không có quyền xem danh sách này")
+            return db._fetchall(conn, f"""
+                SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                       e.name as entity_name, e.type as entity_type
+                FROM collection_items ci
+                JOIN posts p ON p.id = ci.post_id
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE ci.collection_id = {ph}::uuid AND p.moderation_status = 'approved'
+                ORDER BY ci.added_at DESC LIMIT {ph} OFFSET {ph}
+            """, (collection_id, limit, offset))
+
     rows = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
     return {"posts": posts, "page": page, "has_more": len(posts) == limit}
