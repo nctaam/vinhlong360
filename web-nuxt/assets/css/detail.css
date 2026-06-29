@@ -434,7 +434,7 @@
 }
 @media (max-width: 840px) {
   .detail-body { grid-template-columns: 1fr; }
-  .detail-aside { position: static; max-height: none; overflow-y: visible; }
+  .detail-aside { position: static; max-height: none; overflow-y: visible; margin-top: var(--space-6); padding-top: var(--space-6); border-top: .5px solid var(--line); }
   /* Sticky CTA bar is the single source of truth for contact on mobile —
      hide the duplicate sidebar contact-row to avoid showing Gọi/Zalo twice. */
   .contact-row { display: none; }

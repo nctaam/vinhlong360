@@ -103,8 +103,9 @@
       <span class="catalog-divider-text">Duyệt tất cả</span>
     </div>
 
-    <!-- Controls -->
-    <div ref="controlsSection" class="controls">
+    <!-- Controls + Content -->
+    <section ref="controlsSection" class="block reveal" aria-label="Duyệt tất cả lễ hội">
+    <div class="controls">
       <div class="search-row">
         <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm lễ hội…" aria-label="Tìm lễ hội" />
       </div>
@@ -209,6 +210,7 @@
         </div>
       </div>
     </template>
+    </section>
 
     <!-- Cross-links -->
     <section class="block reveal catalog-cross">
