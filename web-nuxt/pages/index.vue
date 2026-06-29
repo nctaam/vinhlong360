@@ -114,7 +114,7 @@
     </section>
 
     <!-- 3. Tinh hoa miền Tây — spotlight magazine + quán ngon rating -->
-    <section v-if="spotlight || topDishes.length" class="block reveal" aria-label="Tinh hoa miền Tây">
+    <section v-if="spotlight || topDishes.length" class="block reveal band" aria-label="Tinh hoa miền Tây">
       <div class="section-head">
         <div class="sh-text">
           <h2>Tinh hoa miền Tây</h2>
