@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, Depends, UploadFile, File
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
 import data_quality
@@ -2696,3 +2696,108 @@ async def admin_cleanup_orphan_entity_refs():
 
     await asyncio.to_thread(_cleanup)
     return {"success": True, "cleaned": cleaned}
+
+
+# ── Entity claims admin (U-30: approve/reject business claims) ────────
+
+@router.get("/claims")
+async def list_claims(
+    status: str = Query("pending", max_length=20),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    """U-30: List entity claims for admin review."""
+    valid_statuses = ("pending", "approved", "rejected", "all")
+    if status not in valid_statuses:
+        return JSONResponse(status_code=422, content={"error": "invalid_status", "valid": list(valid_statuses)})
+
+    ph = db._ph
+
+    def _query():
+        where = "" if status == "all" else f"WHERE c.status = {ph}"
+        params = [] if status == "all" else [status]
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT c.id, c.entity_id, c.business_name, c.contact_phone,
+                       c.contact_email, c.evidence, c.status, c.created_at,
+                       c.reviewed_at, c.rejection_reason,
+                       u.display_name as claimant_name, u.phone as claimant_phone
+                FROM entity_claims c
+                JOIN users u ON u.id = c.claimant_id
+                {where}
+                ORDER BY c.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, tuple(params + [limit, offset]))
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as cnt FROM entity_claims c {where}
+            """, tuple(params))
+        total = db._row_to_dict(total_row)["cnt"] if total_row else 0
+        return {
+            "claims": [db._row_to_dict(r) for r in rows],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    return await asyncio.to_thread(_query)
+
+
+class ClaimDecisionBody(BaseModel):
+    reason: str = Field("", max_length=1000)
+
+
+@router.post("/claims/{claim_id}/approve")
+async def approve_claim(claim_id: str, request: Request):
+    """U-30: Approve an entity claim."""
+    claim_id = validate_path_id(claim_id, "claim_id")
+    ph = db._ph
+    admin_user = request.state.admin_user
+
+    def _approve():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT id, status FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
+            if not row:
+                return {"error": "not_found"}
+            claim = db._row_to_dict(row)
+            if claim["status"] != "pending":
+                return {"error": "not_pending", "current_status": claim["status"]}
+            db._execute(conn, f"""
+                UPDATE entity_claims SET status = 'approved', reviewer_id = {ph}::uuid, reviewed_at = NOW()
+                WHERE id = {ph}::uuid
+            """, (str(admin_user["id"]), claim_id))
+        return {"ok": True}
+
+    result = await asyncio.to_thread(_approve)
+    if "error" in result:
+        code = 404 if result["error"] == "not_found" else 409
+        return JSONResponse(status_code=code, content=result)
+    return result
+
+
+@router.post("/claims/{claim_id}/reject")
+async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request):
+    """U-30: Reject an entity claim with optional reason."""
+    claim_id = validate_path_id(claim_id, "claim_id")
+    ph = db._ph
+    admin_user = request.state.admin_user
+
+    def _reject():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT id, status FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
+            if not row:
+                return {"error": "not_found"}
+            claim = db._row_to_dict(row)
+            if claim["status"] != "pending":
+                return {"error": "not_pending", "current_status": claim["status"]}
+            db._execute(conn, f"""
+                UPDATE entity_claims SET status = 'rejected', reviewer_id = {ph}::uuid,
+                    reviewed_at = NOW(), rejection_reason = {ph}
+                WHERE id = {ph}::uuid
+            """, (str(admin_user["id"]), body.reason, claim_id))
+        return {"ok": True}
+
+    result = await asyncio.to_thread(_reject)
+    if "error" in result:
+        code = 404 if result["error"] == "not_found" else 409
+        return JSONResponse(status_code=code, content=result)
+    return result

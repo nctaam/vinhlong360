@@ -154,3 +154,73 @@ class TestEntityClaimsEndpoint:
     def test_claim_requires_pg(self):
         src = inspect.getsource(__import__("public_api").submit_entity_claim)
         assert "require_pg" in src or "dependencies" in src
+
+
+# ── U-30: Entity claims — admin management ────────────────────────────
+
+class TestEntityClaimsAdmin:
+
+    def test_list_claims_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/claims" in paths
+
+    def test_approve_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/claims/{claim_id}/approve" in paths
+
+    def test_reject_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/claims/{claim_id}/reject" in paths
+
+    def test_list_claims_supports_status_filter(self):
+        src = inspect.getsource(__import__("admin").list_claims)
+        assert "status" in src
+        assert "pending" in src
+        assert "approved" in src
+        assert "rejected" in src
+
+    def test_list_claims_pagination(self):
+        src = inspect.getsource(__import__("admin").list_claims)
+        assert "limit" in src
+        assert "offset" in src
+        assert "total" in src
+
+    def test_approve_validates_path_id(self):
+        src = inspect.getsource(__import__("admin").approve_claim)
+        assert "validate_path_id" in src
+
+    def test_approve_checks_pending_status(self):
+        src = inspect.getsource(__import__("admin").approve_claim)
+        assert "not_pending" in src
+        assert "pending" in src
+
+    def test_approve_sets_reviewer(self):
+        src = inspect.getsource(__import__("admin").approve_claim)
+        assert "reviewer_id" in src
+        assert "reviewed_at" in src
+
+    def test_reject_validates_path_id(self):
+        src = inspect.getsource(__import__("admin").reject_claim)
+        assert "validate_path_id" in src
+
+    def test_reject_saves_reason(self):
+        src = inspect.getsource(__import__("admin").reject_claim)
+        assert "rejection_reason" in src
+        assert "reason" in src
+
+    def test_reject_checks_pending_status(self):
+        src = inspect.getsource(__import__("admin").reject_claim)
+        assert "not_pending" in src
+
+    def test_claim_decision_model(self):
+        from admin import ClaimDecisionBody
+        m = ClaimDecisionBody(reason="Không đủ bằng chứng")
+        assert m.reason == "Không đủ bằng chứng"
+
+    def test_claim_decision_allows_empty_reason(self):
+        from admin import ClaimDecisionBody
+        m = ClaimDecisionBody()
+        assert m.reason == ""
