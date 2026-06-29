@@ -380,7 +380,7 @@ onMounted(fetchData)
 
 /* ── Dark mode ── */
 .dark .tk-panel {
-  background: rgb(46,46,50);
+  background: var(--bg-alt);
   border-color: rgba(255,255,255,.1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
 }
