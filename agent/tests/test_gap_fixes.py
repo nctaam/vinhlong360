@@ -2097,3 +2097,55 @@ class TestReliabilityFixes:
         bind_idx = fn_src.index("_check_session_binding_safe")
         after_bind = fn_src[bind_idx:bind_idx+300]
         assert "raise HTTPException(403" in after_bind
+
+
+class TestSoftDeleteEnforcement:
+    """Write operations must check deleted_at IS NULL on posts."""
+
+    def _get_fn(self, name: str, window: int = 800) -> str:
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index(name)
+        return src[idx:idx+window]
+
+    def test_delete_post_checks_soft_delete(self):
+        fn = self._get_fn("async def delete_post(")
+        assert "deleted_at IS NULL" in fn
+
+    def test_update_post_checks_soft_delete(self):
+        fn = self._get_fn("async def update_post(")
+        assert "deleted_at IS NULL" in fn
+
+    def test_create_comment_checks_soft_delete(self):
+        fn = self._get_fn("async def create_comment(", 1200)
+        assert "deleted_at IS NULL" in fn
+
+    def test_toggle_like_checks_soft_delete(self):
+        fn = self._get_fn("async def toggle_like(")
+        assert "deleted_at IS NULL" in fn
+
+    def test_report_post_checks_soft_delete(self):
+        fn = self._get_fn("async def report_post(")
+        assert "deleted_at IS NULL" in fn
+
+    def test_react_post_checks_soft_delete(self):
+        fn = self._get_fn("async def toggle_reaction(", 1200)
+        assert "deleted_at IS NULL" in fn
+
+    def test_hide_post_checks_soft_delete(self):
+        fn = self._get_fn("async def hide_post(")
+        assert "deleted_at IS NULL" in fn
+
+    def test_pin_comment_checks_soft_delete(self):
+        fn = self._get_fn("async def pin_comment(")
+        assert "deleted_at IS NULL" in fn
+
+    def test_pin_post_checks_soft_delete(self):
+        fn = self._get_fn("async def pin_post_to_profile(", 1000)
+        assert "deleted_at IS NULL" in fn
+
+    def test_update_comment_none_check(self):
+        """Update comment must handle None result from re-fetch."""
+        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
+        idx = src.index("async def edit_comment(")
+        fn = src[idx:idx+2500]
+        assert "if not updated:" in fn or "if updated is None" in fn

@@ -724,7 +724,7 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
     ph = db._ph
     def _query():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if not row:
                 raise HTTPException(404, "Bài viết không tồn tại")
             rd = db._row_to_dict(row)
@@ -746,7 +746,7 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
     ph = db._ph
     def _check_owner():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
+            row = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if not row:
                 raise HTTPException(404, "Bài viết không tồn tại")
             d = db._row_to_dict(row)
@@ -1950,7 +1950,7 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
     ph = db._ph
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT id, user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
+            post = db._fetchone(conn, f"SELECT id, user_id, post_type FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
             post_d = db._row_to_dict(post)
@@ -2074,6 +2074,8 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
                 WHERE c.id::text = {ph}
             """, (comment_id,))
     updated = await asyncio.to_thread(_update)
+    if not updated:
+        raise HTTPException(404, "Bình luận không tồn tại hoặc không có quyền sửa")
     return {"comment": _format_comment(db._row_to_dict(updated))}
 
 
@@ -2175,7 +2177,7 @@ async def report_post(post_id: str, body: ReportPostBody, user=Depends(require_u
 
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
             if str(db._row_to_dict(post)["user_id"]) == uid:
@@ -2314,7 +2316,7 @@ async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(requi
     ph = db._ph
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
+            post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
             d = db._row_to_dict(post)
@@ -2344,7 +2346,7 @@ async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(re
 
     def _check_self_like():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            row = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if not row:
                 raise HTTPException(404, "Bài viết không tồn tại")
             rd = db._row_to_dict(row)
@@ -2502,7 +2504,7 @@ async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_leng
 
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND moderation_status = 'approved'", (post_id,))
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL", (post_id,))
             if not post:
                 raise HTTPException(404, "Bài viết không tồn tại")
             post_owner = str(db._row_to_dict(post)["user_id"])
@@ -2849,7 +2851,7 @@ async def hide_post(post_id: str, user=Depends(require_user), _csrf=Depends(requ
     ph = db._ph
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
+            post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if not post:
                 raise HTTPException(404, "Không tìm thấy bài viết")
             db._execute(conn, f"""
@@ -2920,7 +2922,7 @@ async def pin_comment(post_id: str, comment_id: str = Query(..., max_length=100)
     ph = db._ph
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if not post:
                 raise HTTPException(404, "Không tìm thấy bài viết")
             post_d = db._row_to_dict(post)
@@ -2946,7 +2948,7 @@ async def unpin_comment(post_id: str, user=Depends(require_user), _csrf=Depends(
     ph = db._ph
     def _query():
         with db._conn() as conn:
-            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
+            post = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if not post:
                 raise HTTPException(404, "Không tìm thấy bài viết")
             if str(db._row_to_dict(post)["user_id"]) != uid:
@@ -2970,7 +2972,7 @@ async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=De
     def _query():
         with db._conn() as conn:
             post = db._fetchone(conn, f"""
-                SELECT user_id, is_pinned, moderation_status FROM posts WHERE id::text = {ph}
+                SELECT user_id, is_pinned, moderation_status FROM posts WHERE id::text = {ph} AND deleted_at IS NULL
             """, (post_id,))
             if not post:
                 raise HTTPException(404, "Không tìm thấy bài viết")
