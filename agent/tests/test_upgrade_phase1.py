@@ -218,3 +218,52 @@ class TestEntityFeedSortFilter:
     def test_entity_feed_total_includes_filters(self):
         src = inspect.getsource(__import__("social").get_entity_feed)
         assert "total_extra" in src
+
+
+# ── U-09: Entity Q&A endpoint ────────────────────────────────────────
+
+class TestEntityQA:
+
+    def test_qa_endpoint_exists(self):
+        from public_api import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/api/entities/{entity_id}/qa" in paths
+
+    def test_qa_endpoint_requires_pg(self):
+        src = inspect.getsource(__import__("public_api").get_entity_qa)
+        assert "require_pg" in str(
+            [d for r in __import__("public_api").router.routes
+             if hasattr(r, "path") and r.path == "/api/entities/{entity_id}/qa"
+             for d in getattr(r, "dependencies", [])]
+        ) or "require_pg" in inspect.getsource(__import__("public_api").get_entity_qa)
+
+    def test_qa_queries_questions_only(self):
+        src = inspect.getsource(__import__("public_api").get_entity_qa)
+        assert "post_type = 'question'" in src
+        assert "moderation_status = 'approved'" in src
+
+    def test_qa_resolves_best_answer(self):
+        src = inspect.getsource(__import__("public_api").get_entity_qa)
+        assert "best_answer_id" in src
+        assert "best_answer" in src
+        assert "comments" in src
+
+    def test_qa_response_shape(self):
+        src = inspect.getsource(__import__("public_api").get_entity_qa)
+        assert '"entity_id"' in src
+        assert '"questions"' in src
+        assert '"total"' in src
+        assert '"has_more"' in src
+
+    def test_qa_pagination(self):
+        src = inspect.getsource(__import__("public_api").get_entity_qa)
+        assert "LIMIT" in src
+        assert "OFFSET" in src
+
+    def test_qa_orders_answered_first(self):
+        src = inspect.getsource(__import__("public_api").get_entity_qa)
+        assert "best_answer_id IS NOT NULL THEN 0" in src
+
+    def test_qa_validates_entity_id(self):
+        src = inspect.getsource(__import__("public_api").get_entity_qa)
+        assert "validate_path_id" in src

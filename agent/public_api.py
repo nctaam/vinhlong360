@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 from database import db
 from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
-from auth_middleware import validate_path_id
+from auth_middleware import validate_path_id, require_pg
 
 router = APIRouter(prefix="/api", tags=["public"])
 
@@ -1153,6 +1153,102 @@ async def get_review_stats(entity_id: str, response: Response):
     result = {"avg": avg, "count": total, "distribution": distribution, "mentions": mentions}
     _REVIEW_STATS_CACHE[entity_id] = (now, result)
     return result
+
+
+# ── Entity Q&A (U-09: questions with best answer resolution) ─────────
+
+from fastapi import Depends
+
+@router.get("/entities/{entity_id}/qa", dependencies=[Depends(require_pg)])
+async def get_entity_qa(
+    entity_id: str,
+    response: Response,
+    page: int = Query(1, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=50),
+):
+    """U-09: Surface Q&A posts for an entity with accepted answer resolution."""
+    validate_path_id(entity_id, "entity_id")
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    if not entity:
+        return JSONResponse(status_code=404, content={"error": "not_found"})
+
+    ph = db._ph
+    offset = (page - 1) * limit
+
+    def _qa_query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.id, p.content, p.created_at, p.user_id, p.best_answer_id,
+                       p.comment_count, p.like_count,
+                       u.display_name, u.avatar_url, u.username
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                WHERE p.entity_id = {ph}
+                  AND p.post_type = 'question'
+                  AND p.moderation_status = 'approved'
+                ORDER BY (CASE WHEN p.best_answer_id IS NOT NULL THEN 0 ELSE 1 END),
+                         p.like_count DESC, p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (entity_id, limit, offset))
+
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts
+                WHERE entity_id = {ph} AND post_type = 'question'
+                  AND moderation_status = 'approved'
+            """, (entity_id,))
+
+            questions = []
+            for r in rows:
+                d = db._row_to_dict(r)
+                q = {
+                    "id": d["id"],
+                    "content": d["content"],
+                    "created_at": d["created_at"],
+                    "user": {
+                        "id": d["user_id"],
+                        "display_name": d.get("display_name"),
+                        "avatar_url": d.get("avatar_url"),
+                        "username": d.get("username"),
+                    },
+                    "comment_count": d.get("comment_count", 0),
+                    "like_count": d.get("like_count", 0),
+                    "best_answer_id": d.get("best_answer_id"),
+                    "best_answer": None,
+                }
+                if d.get("best_answer_id"):
+                    answer = db._fetchone(conn, f"""
+                        SELECT c.id, c.content, c.created_at, c.user_id,
+                               u2.display_name, u2.avatar_url, u2.username
+                        FROM comments c
+                        JOIN users u2 ON u2.id = c.user_id
+                        WHERE c.id = {ph}
+                    """, (d["best_answer_id"],))
+                    if answer:
+                        a = db._row_to_dict(answer)
+                        q["best_answer"] = {
+                            "id": a["id"],
+                            "content": a["content"],
+                            "created_at": a["created_at"],
+                            "user": {
+                                "id": a["user_id"],
+                                "display_name": a.get("display_name"),
+                                "avatar_url": a.get("avatar_url"),
+                                "username": a.get("username"),
+                            },
+                        }
+                questions.append(q)
+            return questions, db._row_to_dict(total_row) if total_row else {}
+
+    questions, total_d = await asyncio.to_thread(_qa_query)
+    total = total_d.get("c", 0)
+    return {
+        "entity_id": entity_id,
+        "questions": questions,
+        "total": total,
+        "has_more": (page * limit) < total,
+    }
 
 
 # ── Contact view tracking (CTA analytics) ───────────────────────────
