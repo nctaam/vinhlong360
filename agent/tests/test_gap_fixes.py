@@ -1458,3 +1458,38 @@ class TestNotificationConsistency:
     def test_sse_ref_id_serialized_to_string(self):
         src = inspect.getsource(__import__("notifications").create_notification)
         assert "str(ref_id)" in src, "SSE ref_id must be serialized to string"
+
+
+# ── Early return field sweep ──
+
+
+class TestEarlyReturnFieldSweep:
+    """All early-return responses must match normal response field structure."""
+
+    def _check_early_return_fields(self, func, required_fields):
+        """Find early returns and verify they include required fields."""
+        src = inspect.getsource(func)
+        lines = src.split("\n")
+        issues = []
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith("return {") and "[]" in stripped:
+                for field in required_fields:
+                    if f'"{field}"' not in stripped:
+                        issues.append(f"Line ~{i}: early return missing '{field}'")
+        return issues
+
+    def test_search_users_early_return(self):
+        import social
+        issues = self._check_early_return_fields(social.search_users, ["has_more", "total"])
+        assert not issues, f"search_users: {issues}"
+
+    def test_search_posts_early_return(self):
+        import social
+        issues = self._check_early_return_fields(social.search_posts, ["has_more", "total"])
+        assert not issues, f"search_posts: {issues}"
+
+    def test_user_posts_privacy_early_return(self):
+        import social
+        issues = self._check_early_return_fields(social.get_user_posts, ["has_more", "total"])
+        assert not issues, f"get_user_posts: {issues}"

@@ -1164,7 +1164,7 @@ async def search_users(
     check_rate(f"search:{uid}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     stripped = q.strip()
     if len(stripped) < 2:
-        return {"users": [], "total": 0, "page": 1}
+        return {"users": [], "total": 0, "page": 1, "has_more": False}
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit
