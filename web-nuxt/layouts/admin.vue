@@ -123,8 +123,8 @@
       <slot />
     </main>
     <ClientOnly><LazyCommandPalette /></ClientOnly>
-    <ClientOnly><ToastContainer /></ClientOnly>
-    <ClientOnly><ConfirmDialog /></ClientOnly>
+    <ClientOnly><LazyToastContainer /></ClientOnly>
+    <ClientOnly><LazyConfirmDialog /></ClientOnly>
   </div>
 </template>
 

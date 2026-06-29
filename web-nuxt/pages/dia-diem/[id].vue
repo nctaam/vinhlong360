@@ -67,7 +67,7 @@
     </div>
 
     <!-- Photo Gallery (asymmetric grid for 2+ images) -->
-    <PhotoGallery
+    <LazyPhotoGallery
       v-if="hasEntityImages && entity.images.length >= 2"
       :images="entity.images"
       :alt="entity.name"
@@ -75,7 +75,7 @@
       @open-lightbox="openCoverLightbox"
     />
 
-    <ImageLightbox v-if="entity?.images?.length" v-model="lightboxOpen" :images="entity.images" :start-index="lbIndex" />
+    <LazyImageLightbox v-if="entity?.images?.length" v-model="lightboxOpen" :images="entity.images" :start-index="lbIndex" />
 
     <!-- Body -->
     <div class="detail-body">
@@ -245,7 +245,7 @@
       <!-- Sidebar -->
       <aside class="detail-aside" aria-label="Thông tin bổ sung">
         <!-- Contact Widget (sticky, replaces old contact-row on desktop) -->
-        <ContactWidget :entity="entity" class="detail-contact-widget" />
+        <LazyContactWidget :entity="entity" class="detail-contact-widget" />
 
         <!-- OCOP highlight -->
         <div v-if="entity.attributes?.ocop" class="ocop-highlight">
