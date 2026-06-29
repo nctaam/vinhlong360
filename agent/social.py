@@ -1113,7 +1113,7 @@ async def search_posts(
     check_rate(f"search:{uid}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
     stripped = q.strip()
     if len(stripped) < 2:
-        return {"posts": [], "total": 0, "page": 1}
+        return {"posts": [], "total": 0, "page": 1, "has_more": False}
     ph = db._ph
     limit = 20
     offset = (page - 1) * limit
@@ -1804,7 +1804,7 @@ async def get_entity_feed(
     rating_d = db._row_to_dict(rating_row) if rating_row else {}
     return {
         "entity": {
-            "id": entity["id"],
+            "id": str(entity["id"]),
             "name": entity["name"],
             "type": entity["type"],
             "summary": entity.get("summary", ""),
@@ -3271,7 +3271,7 @@ async def get_user_posts(
     if not is_self:
         privacy_hidden = await asyncio.to_thread(_check_show_activity, uid, viewer_id)
         if privacy_hidden:
-            return {"posts": [], "page": page, "has_more": False}
+            return {"posts": [], "total": 0, "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
     offset = (page - 1) * limit
     def _query():

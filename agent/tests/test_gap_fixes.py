@@ -1332,3 +1332,81 @@ class TestSafeUserDefensive:
         result = _safe_user({"id": "456", "display_name": "Test"})
         assert result is not None
         assert "phone" in result
+
+
+# ── Admin POST status codes ──
+
+
+class TestAdminCreateStatusCodes:
+    """Admin POST endpoints that create resources should return 201."""
+
+    _CREATE_ENDPOINTS = {
+        "add_entity_image_url", "add_relationship", "add_relationships_bulk",
+        "create_image_suggestion_batch", "add_user_note", "create_announcement",
+    }
+
+    def test_admin_create_endpoints_return_201(self):
+        import admin
+        import fastapi
+        missing = []
+        for route in admin.router.routes:
+            if not isinstance(route, fastapi.routing.APIRoute):
+                continue
+            if "POST" not in (route.methods or set()):
+                continue
+            fn = route.endpoint
+            if fn.__name__ not in self._CREATE_ENDPOINTS:
+                continue
+            if route.status_code != 201:
+                missing.append(fn.__name__)
+        assert not missing, f"Admin CREATE endpoints not returning 201: {missing}"
+
+
+# ── Input validation bounds ──
+
+
+class TestInputValidationBounds:
+    """Query parameters must have proper bounds to prevent abuse."""
+
+    def test_collections_offset_has_upper_bound(self):
+        src = inspect.getsource(__import__("admin").list_collections)
+        assert "le=" in src, "list_collections offset missing upper bound"
+
+    def test_check_duplicate_name_has_max_length(self):
+        src = inspect.getsource(__import__("admin").check_duplicate)
+        assert "max_length" in src, "check_duplicate name missing max_length"
+
+
+# ── Response consistency — early returns ──
+
+
+class TestEarlyReturnConsistency:
+    """Early-return responses must include same fields as normal responses."""
+
+    def test_privacy_hidden_posts_includes_total(self):
+        src = inspect.getsource(__import__("social").get_user_posts)
+        lines = src.split("\n")
+        for line in lines:
+            if "privacy_hidden" in line or ("posts" in line and "[]" in line and "has_more" in line):
+                if '"total"' in line:
+                    return
+        for i, line in enumerate(lines):
+            if "privacy_hidden" in line:
+                block = "\n".join(lines[i:i+5])
+                assert '"total"' in block, "privacy-hidden early return missing 'total'"
+                return
+        pytest.fail("Could not find privacy_hidden early return")
+
+    def test_search_short_query_includes_has_more(self):
+        src = inspect.getsource(__import__("social").search_posts)
+        lines = src.split("\n")
+        for line in lines:
+            if "len(stripped) < 2" in line or ("posts" in line and "[]" in line and "total" in line and "page" in line):
+                if "has_more" in line:
+                    return
+        for i, line in enumerate(lines):
+            if "len(stripped) < 2" in line:
+                block = "\n".join(lines[i:i+3])
+                assert "has_more" in block, "search short query early return missing 'has_more'"
+                return
+        pytest.fail("Could not find short query early return")

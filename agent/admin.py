@@ -332,7 +332,7 @@ async def list_places():
 
 
 @router.get("/entities/check-duplicate")
-async def check_duplicate(name: str = Query(..., min_length=2)):
+async def check_duplicate(name: str = Query(..., min_length=2, max_length=200)):
     """Kiểm tra entity trùng tên (substring match, case-insensitive)."""
     name_lower = name.lower().strip()
     if len(name_lower) < 2:
@@ -437,7 +437,7 @@ class _EntityImageURL(BaseModel):
     url: str = Field(..., max_length=600)
 
 
-@router.post("/entities/{entity_id}/images")
+@router.post("/entities/{entity_id}/images", status_code=201)
 async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     """GĐ8.4: thêm ảnh entity theo URL (chỉ nguồn cấp phép — B6)."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -651,7 +651,7 @@ async def delete_itinerary(itin_id: str):
 
 # ── Relationship CRUD ──
 
-@router.post("/relationships")
+@router.post("/relationships", status_code=201)
 async def add_relationship(body: RelationshipCreate):
     validate_path_id(body.from_id, "from_id")
     validate_path_id(body.to_id, "to_id")
@@ -674,7 +674,7 @@ async def delete_relationship(from_id: str, to_id: str, type: str = Query(..., m
     return {"success": True}
 
 
-@router.post("/relationships/bulk")
+@router.post("/relationships/bulk", status_code=201)
 async def add_relationships_bulk(body: RelationshipBulkCreate):
     """B7b: thêm nhiều quan hệ cùng lúc."""
     validate_path_id(body.from_id, "from_id")
@@ -1126,7 +1126,7 @@ class CollectionUpdate(BaseModel):
 
 
 @router.get("/collections")
-async def list_collections(limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0)):
+async def list_collections(limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=10000)):
     ph = db._ph
     def _query():
         with db._conn() as conn:
@@ -1344,7 +1344,7 @@ async def get_image_suggestion(suggestion_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/image-suggestions/create-batch")
+@router.post("/image-suggestions/create-batch", status_code=201)
 async def create_image_suggestion_batch(body: ImageSuggestionBatch):
     """Nhận lô ứng viên từ script ingest (mode=queue). KHÔNG publish — chỉ xếp hàng chờ duyệt."""
     def _query():
@@ -3539,7 +3539,7 @@ class AdminUserNote(BaseModel):
     content: str = Field(..., min_length=1, max_length=2000)
 
 
-@router.post("/users/{user_id}/notes")
+@router.post("/users/{user_id}/notes", status_code=201)
 async def add_user_note(user_id: str, body: AdminUserNote, request: Request):
     """Admin: add internal note to a user profile."""
     user_id = validate_path_id(user_id, "user_id")
@@ -4049,7 +4049,7 @@ async def list_announcements(
     return await asyncio.to_thread(_query)
 
 
-@router.post("/announcements")
+@router.post("/announcements", status_code=201)
 async def create_announcement(body: AnnouncementCreate, request: Request):
     ph = db._ph
     admin_user = request.state.admin_user
