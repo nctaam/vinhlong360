@@ -916,16 +916,29 @@ async def security_headers(request, call_next):
     return response
 
 
+def _error_response(status_code: int, detail: str, request: Request = None, **extra) -> JSONResponse:
+    body = {"detail": detail}
+    if request:
+        rid = getattr(getattr(request, "state", None), "request_id", None)
+        if rid:
+            body["request_id"] = rid
+    body.update(extra)
+    return JSONResponse(status_code=status_code, content=body)
+
+
+@app.exception_handler(HTTPException)
+async def _http_exception_handler(request: Request, exc: HTTPException):
+    return _error_response(exc.status_code, exc.detail, request)
+
+
 @app.exception_handler(Exception)
 async def _global_exception_handler(request: Request, exc: Exception):
     exc_name = type(exc).__name__
     if exc_name in ("OperationalError", "InterfaceError", "DatabaseError", "PoolTimeout"):
         logger.error("Database connection error on %s %s: %s", request.method, request.url.path, exc_name)
-        return JSONResponse(status_code=503, content={"detail": "Dịch vụ tạm gián đoạn, vui lòng thử lại sau."})
-    if isinstance(exc, HTTPException):
-        raise exc
+        return _error_response(503, "Dịch vụ tạm gián đoạn, vui lòng thử lại sau.", request)
     logger.exception("Unhandled error on %s %s", request.method, request.url.path)
-    return JSONResponse(status_code=500, content={"detail": "Lỗi hệ thống."})
+    return _error_response(500, "Lỗi hệ thống.", request)
 
 app.include_router(admin_router)
 app.include_router(auth_router)
@@ -1043,8 +1056,9 @@ _draining = False
 async def graceful_drain(request: Request, call_next):
     global _inflight
     if _draining and not request.url.path.startswith("/health"):
-        return JSONResponse(status_code=503, content={"error": "Server shutting down"},
-                            headers={"Retry-After": "5"})
+        resp = _error_response(503, "Server shutting down", request)
+        resp.headers["Retry-After"] = "5"
+        return resp
     _inflight += 1
     try:
         return await call_next(request)
@@ -1091,10 +1105,7 @@ async def track_response_time(request: Request, call_next):
         response_tracker.record(endpoint, duration_ms, 504)
         logger.error("Request timeout", endpoint=endpoint, req_id=req_id,
                       duration_ms=round(duration_ms), timeout_s=timeout_s)
-        return JSONResponse(
-            status_code=504,
-            content={"error": "Request timeout", "request_id": req_id},
-        )
+        return _error_response(504, "Request timeout", request)
     except Exception as exc:
         duration_ms = (time.time() - start) * 1000
         endpoint = f"{request.method} {request.url.path}"
@@ -1102,10 +1113,7 @@ async def track_response_time(request: Request, call_next):
         response_tracker.record(endpoint, duration_ms, 500)
         logger.error("Unhandled exception", endpoint=endpoint, req_id=req_id,
                       duration_ms=round(duration_ms), error=str(exc)[:200])
-        return JSONResponse(
-            status_code=500,
-            content={"error": "Internal server error", "request_id": req_id},
-        )
+        return _error_response(500, "Internal server error", request)
 
 
 from pydantic import Field, field_validator

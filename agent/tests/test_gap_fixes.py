@@ -1570,3 +1570,58 @@ class TestGracefulShutdown:
         src = inspect.getsource(server.lifespan)
         assert "_draining = True" in src
         assert "_inflight" in src
+
+
+# ── P0: Unified error response ──
+
+class TestUnifiedErrorResponse:
+    """All error responses must use consistent format with request_id."""
+
+    def test_error_response_helper_exists(self):
+        from server import _error_response
+        assert callable(_error_response)
+
+    def test_error_response_includes_detail(self):
+        from server import _error_response
+        resp = _error_response(404, "Not found")
+        import json
+        body = json.loads(resp.body)
+        assert body["detail"] == "Not found"
+        assert resp.status_code == 404
+
+    def test_error_response_includes_request_id(self):
+        from server import _error_response
+        from starlette.requests import Request
+        from starlette.testclient import TestClient
+        scope = {"type": "http", "method": "GET", "path": "/test", "headers": [], "query_string": b""}
+        req = Request(scope)
+        req.state.request_id = "test-rid-456"
+        resp = _error_response(400, "Bad request", req)
+        import json
+        body = json.loads(resp.body)
+        assert body["request_id"] == "test-rid-456"
+
+    def test_error_response_extra_fields(self):
+        from server import _error_response
+        resp = _error_response(422, "Invalid", error="validation_error", field="name")
+        import json
+        body = json.loads(resp.body)
+        assert body["detail"] == "Invalid"
+        assert body["error"] == "validation_error"
+        assert body["field"] == "name"
+
+    def test_http_exception_handler_exists(self):
+        import server
+        src = inspect.getsource(server._http_exception_handler)
+        assert "_error_response" in src
+
+    def test_global_exception_handler_uses_error_response(self):
+        import server
+        src = inspect.getsource(server._global_exception_handler)
+        assert "_error_response" in src
+
+    def test_timeout_uses_error_response(self):
+        import server
+        src = inspect.getsource(server.track_response_time)
+        assert "_error_response(504" in src
+        assert "_error_response(500" in src
