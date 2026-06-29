@@ -1123,3 +1123,61 @@ class TestAdminSearchAnalytics:
     def test_uses_asyncio_to_thread(self):
         src = inspect.getsource(__import__("admin").search_analytics)
         assert "asyncio.to_thread" in src
+
+
+# ── Dashboard alerts includes appeals ──
+
+class TestDashboardAlertsAppeals:
+    """Dashboard alerts include pending appeals count."""
+
+    def test_alerts_check_appeals(self):
+        src = inspect.getsource(__import__("admin").dashboard_alerts)
+        assert "moderation_appeals" in src
+        assert '"appeals"' in src
+
+    def test_appeals_alert_priority(self):
+        src = inspect.getsource(__import__("admin").dashboard_alerts)
+        assert "khiếu nại" in src
+
+
+# ── User engagement stats ──
+
+class TestUserEngagementStats:
+    """GET /admin/user-engagement — engagement metrics for admin."""
+
+    def test_endpoint_exists(self):
+        from admin import router
+        paths = [r.path for r in router.routes if hasattr(r, "path")]
+        assert "/admin/user-engagement" in paths
+
+    def test_returns_metrics(self):
+        src = inspect.getsource(__import__("admin").user_engagement_stats)
+        assert '"active_posters"' in src
+        assert '"active_commenters"' in src
+        assert '"active_likers"' in src
+
+    def test_returns_new_users(self):
+        src = inspect.getsource(__import__("admin").user_engagement_stats)
+        assert '"new_users"' in src
+
+    def test_returns_retained_users(self):
+        src = inspect.getsource(__import__("admin").user_engagement_stats)
+        assert '"retained_users"' in src
+
+    def test_returns_engagement_rate(self):
+        src = inspect.getsource(__import__("admin").user_engagement_stats)
+        assert '"engagement_rate"' in src
+
+    def test_returns_daily_active(self):
+        src = inspect.getsource(__import__("admin").user_engagement_stats)
+        assert '"daily_active"' in src
+        assert "DATE(created_at)" in src
+
+    def test_requires_pg(self):
+        src = inspect.getsource(__import__("admin").user_engagement_stats)
+        assert "db._use_pg" in src
+
+    def test_period_param(self):
+        src = inspect.getsource(__import__("admin").user_engagement_stats)
+        assert "days" in src
+        assert "period_days" in src

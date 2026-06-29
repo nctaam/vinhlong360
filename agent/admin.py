@@ -1567,6 +1567,57 @@ async def admin_stats():
     return await asyncio.to_thread(_query)
 
 
+@router.get("/user-engagement")
+async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
+    ph = db._ph
+    def _query():
+        if not db._use_pg:
+            return {"error": "Requires Postgres"}
+        with db._conn() as conn:
+            active_posters = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT user_id) as c FROM posts
+                WHERE created_at > NOW() - INTERVAL '{days} days'
+            """, ())
+            active_commenters = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT user_id) as c FROM comments
+                WHERE created_at > NOW() - INTERVAL '{days} days'
+            """, ())
+            active_likers = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT user_id) as c FROM post_likes
+                WHERE created_at > NOW() - INTERVAL '{days} days'
+            """, ())
+            new_users = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM users
+                WHERE created_at > NOW() - INTERVAL '{days} days'
+            """, ())
+            retained = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT p.user_id) as c FROM posts p
+                JOIN users u ON u.id = p.user_id
+                WHERE p.created_at > NOW() - INTERVAL '{days} days'
+                  AND u.created_at < NOW() - INTERVAL '{days} days'
+            """, ())
+            total_users = db._fetchone(conn, f"SELECT COUNT(*) as c FROM users WHERE is_active = TRUE", ())
+            daily = db._fetchall(conn, f"""
+                SELECT DATE(created_at) as day, COUNT(DISTINCT user_id) as active_users
+                FROM posts WHERE created_at > NOW() - INTERVAL '{days} days'
+                GROUP BY DATE(created_at) ORDER BY day
+            """, ())
+        tu = db._row_to_dict(total_users)["c"] if total_users else 1
+        ap = db._row_to_dict(active_posters)["c"] if active_posters else 0
+        return {
+            "period_days": days,
+            "total_active_users": tu,
+            "active_posters": ap,
+            "active_commenters": db._row_to_dict(active_commenters)["c"] if active_commenters else 0,
+            "active_likers": db._row_to_dict(active_likers)["c"] if active_likers else 0,
+            "new_users": db._row_to_dict(new_users)["c"] if new_users else 0,
+            "retained_users": db._row_to_dict(retained)["c"] if retained else 0,
+            "engagement_rate": round(ap / tu * 100, 1) if tu else 0,
+            "daily_active": [{"day": str(db._row_to_dict(r)["day"]), "users": db._row_to_dict(r)["active_users"]} for r in daily],
+        }
+    return await asyncio.to_thread(_query)
+
+
 _last_backup_time: float = 0
 _BACKUP_COOLDOWN = _cfg.BACKUP_COOLDOWN
 
@@ -1751,6 +1802,13 @@ async def dashboard_alerts():
                 alerts.append({"type": "provisional", "count": prov, "label": f"{prov} entity chờ xét duyệt", "icon": "🔬", "link": "/admin/duyet-tu-hoc", "priority": 6})
         except Exception:
             logger.debug("Alert kb_curation stats failed", exc_info=True)
+        try:
+            appeal_row = db._fetchone(conn2, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
+            appeal_count = db._row_to_dict(appeal_row)["c"] if appeal_row else 0
+            if appeal_count:
+                alerts.append({"type": "appeals", "count": appeal_count, "label": f"{appeal_count} khiếu nại chờ xử lý", "icon": "📩", "link": "/admin/khieu-nai", "priority": 2})
+        except Exception:
+            logger.debug("Alert appeals count failed", exc_info=True)
         alerts.sort(key=lambda a: a["priority"])
         return {"alerts": alerts[:5]}
     return await asyncio.to_thread(_query)
