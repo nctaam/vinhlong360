@@ -1291,6 +1291,12 @@ async def moderate_content_enhanced(
         for tech in obf.get("techniques", []):
             extra_reasons.append(f"obfuscation:{tech}")
 
+    # Transactional CTA check (intro-only policy)
+    cta = check_transactional_cta(content)
+    if cta["has_cta"]:
+        extra_score = max(extra_score, 0.6)
+        extra_reasons.append(f"transactional_cta:{','.join(cta['matches'][:3])}")
+
     # Merge scores
     final_score = max(base_result["score"], extra_score)
     all_reasons = base_result["reasons"] + extra_reasons
@@ -1320,6 +1326,22 @@ async def moderate_content_enhanced(
             "high_entropy": ent["is_suspicious"],
         },
     }
+
+
+_TRANSACTIONAL_CTA = re.compile(
+    r"\b(đặt\s*(ngay|tour|phòng|vé|hàng)|mua\s*ngay|thanh\s*toán|giỏ\s*hàng"
+    r"|checkout|add\s*to\s*cart|book\s*now|buy\s*now|đặt\s*cọc|chuyển\s*khoản"
+    r"|pay\s*now|order\s*now)\b",
+    re.IGNORECASE,
+)
+
+
+def check_transactional_cta(text: str) -> dict:
+    """Detect transactional CTA wording that violates the intro-only policy."""
+    if not text:
+        return {"has_cta": False, "matches": []}
+    matches = _TRANSACTIONAL_CTA.findall(text)
+    return {"has_cta": bool(matches), "matches": [m[0] if isinstance(m, tuple) else m for m in matches]}
 
 
 log_moderation_orig = None  # forward ref

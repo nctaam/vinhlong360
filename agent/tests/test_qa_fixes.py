@@ -1,5 +1,7 @@
 """Tests for QA audit fixes — pagination bounds, CSRF fail-closed,
-system gate always-on, check-phone privacy, IP hashing, review stats limit."""
+system gate always-on, check-phone privacy, IP hashing, review stats limit,
+SMS retry, itinerary pagination, comment thread assembly, CTA lint,
+orphan cleanup, reputation anti-sybil."""
 import inspect
 import os
 import re
@@ -11,6 +13,9 @@ import public_api
 import auth
 import auth_middleware
 import server
+import social
+import moderation
+import admin
 
 
 class TestPaginationBounds:
@@ -143,3 +148,126 @@ class TestReviewStatsLimit:
         assert limit_match, "No LIMIT clause found in review stats query"
         limit_val = int(limit_match.group(1))
         assert limit_val <= 500, f"LIMIT too high: {limit_val}"
+
+
+class TestSMSRetry:
+    """Finding-018: SMS delivery with retry + exponential backoff."""
+
+    def test_send_sms_has_retry_loop(self):
+        src = inspect.getsource(auth._send_sms)
+        assert "_SMS_MAX_RETRIES" in src or "range(" in src
+        assert "asyncio.sleep" in src
+
+    def test_send_sms_has_backoff(self):
+        src = inspect.getsource(auth._send_sms)
+        assert "2 **" in src or "2**" in src
+
+    def test_max_retries_is_reasonable(self):
+        assert 2 <= auth._SMS_MAX_RETRIES <= 5
+
+
+class TestItineraryPagination:
+    """Finding-031: itinerary listing must have pagination."""
+
+    def test_itinerary_endpoint_has_limit_param(self):
+        sig = inspect.signature(public_api.list_itineraries)
+        assert "limit" in sig.parameters
+        assert "offset" in sig.parameters
+
+    def test_itinerary_limit_has_bounds(self):
+        src = inspect.getsource(public_api.list_itineraries)
+        assert "ge=1" in src
+
+
+class TestCommentThreadAssembly:
+    """Finding-035: comments must page top-level first, then fetch replies."""
+
+    def test_get_comments_pages_top_level_first(self):
+        src = inspect.getsource(social.get_comments)
+        assert "parent_id IS NULL" in src
+
+    def test_get_comments_fetches_replies_for_top_ids(self):
+        src = inspect.getsource(social.get_comments)
+        assert "parent_id" in src
+        assert "IN (" in src or "IN(" in src
+
+
+class TestTransactionalCTALint:
+    """Finding-021: transactional CTA wording must be detected."""
+
+    def test_cta_detects_vietnamese_buy_now(self):
+        r = moderation.check_transactional_cta("Mua ngay sản phẩm")
+        assert r["has_cta"] is True
+
+    def test_cta_detects_booking(self):
+        r = moderation.check_transactional_cta("Đặt tour ngay hôm nay")
+        assert r["has_cta"] is True
+
+    def test_cta_detects_checkout(self):
+        r = moderation.check_transactional_cta("Go to checkout now")
+        assert r["has_cta"] is True
+
+    def test_cta_clean_content_passes(self):
+        r = moderation.check_transactional_cta("Đây là quán ăn rất ngon ở Vĩnh Long")
+        assert r["has_cta"] is False
+
+    def test_cta_empty_passes(self):
+        r = moderation.check_transactional_cta("")
+        assert r["has_cta"] is False
+
+    def test_cta_integrated_in_moderation(self):
+        src = inspect.getsource(moderation.moderate_content_enhanced)
+        assert "check_transactional_cta" in src
+        assert "transactional_cta" in src
+
+
+class TestOrphanRefCleanup:
+    """Finding-033: admin endpoint to clean orphaned UGC entity refs."""
+
+    def test_cleanup_endpoint_mounted(self):
+        from fastapi import FastAPI
+        app = FastAPI()
+        app.include_router(admin.router)
+        routes = {r.path for r in app.routes if hasattr(r, "path")}
+        assert "/admin/cleanup-orphan-refs" in routes
+
+    def test_cleanup_requires_pg(self):
+        src = inspect.getsource(admin.admin_cleanup_orphan_entity_refs)
+        assert "503" in src or "_use_pg" in src
+
+    def test_cleanup_checks_ugc_tables(self):
+        src = inspect.getsource(admin.admin_cleanup_orphan_entity_refs)
+        assert "saved_entities" in src
+        assert "user_visits" in src
+        assert "event_rsvp" in src
+
+
+class TestReputationAntiSybil:
+    """Finding-020: reputation ignores followers from accounts < 7 days old."""
+
+    def test_leaderboard_filters_new_followers(self):
+        src = inspect.getsource(social.community_leaderboard)
+        assert "7 days" in src or "INTERVAL" in src
+
+    def test_reputation_filters_new_followers(self):
+        src = inspect.getsource(social._reputation)
+        assert "7 days" in src or "INTERVAL" in src
+
+    def test_both_join_users_for_age(self):
+        lb_src = inspect.getsource(social.community_leaderboard)
+        rep_src = inspect.getsource(social._reputation)
+        assert "fu.created_at" in lb_src or "created_at" in lb_src
+        assert "fu.created_at" in rep_src or "created_at" in rep_src
+
+
+class TestOrderBySQLiRegression:
+    """Finding-024: ORDER BY must use whitelist, not raw caller input."""
+
+    def test_list_entities_sort_whitelist(self):
+        import database
+        src = inspect.getsource(database.Database.list_entities)
+        assert '"name"' in src or "'name'" in src
+        assert '"rating"' in src or "'rating'" in src
+        assert "ORDER BY" in src
+        assert "sort" not in src.split("ORDER BY")[1].split("LIMIT")[0], \
+            "Raw sort param must not appear directly in ORDER BY clause"

@@ -328,8 +328,12 @@ async def place_overview(place_id: str):
 
 
 @router.get("/itineraries")
-async def list_itineraries(area: Optional[str] = Query(None, max_length=100)):
-    return await asyncio.to_thread(db.list_itineraries, area=area)
+async def list_itineraries(
+    area: Optional[str] = Query(None, max_length=100),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    return await asyncio.to_thread(db.list_itineraries, area=area, limit=limit, offset=offset)
 
 
 @router.get("/itineraries/{itin_id}")

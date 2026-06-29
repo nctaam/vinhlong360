@@ -262,31 +262,43 @@ def _verify_password(password: str, stored: str) -> bool:
     return hmac.compare_digest(key_legacy, stored_key)
 
 
+_SMS_MAX_RETRIES = 3
+
 async def _send_sms(phone: str, message: str) -> bool:
-    """Send SMS via eSMS.vn API."""
+    """Send SMS via eSMS.vn API with retry + exponential backoff."""
     if not ESMS_API_KEY:
         logger.debug("DEV MODE — SMS to %s: %s", phone, message)
         return True
 
     intl_phone = "84" + phone[1:] if phone.startswith("0") else phone
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.post(
-                "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/",
-                json={
-                    "ApiKey": ESMS_API_KEY,
-                    "Content": message,
-                    "Phone": intl_phone,
-                    "SecretKey": ESMS_SECRET,
-                    "SmsType": "2",
-                    "Brandname": ESMS_BRANDNAME,
-                },
-            )
-            data = resp.json()
-            return data.get("CodeResult") == "100"
-    except Exception:
-        logger.exception("SMS send failed to %s", _mask_phone(phone))
-        return False
+    payload = {
+        "ApiKey": ESMS_API_KEY,
+        "Content": message,
+        "Phone": intl_phone,
+        "SecretKey": ESMS_SECRET,
+        "SmsType": "2",
+        "Brandname": ESMS_BRANDNAME,
+    }
+    for attempt in range(_SMS_MAX_RETRIES):
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.post(
+                    "https://rest.esms.vn/MainService.svc/json/SendMultipleMessage_V4_post_json/",
+                    json=payload,
+                )
+                data = resp.json()
+                if data.get("CodeResult") == "100":
+                    return True
+                logger.warning("SMS attempt %d failed for %s: code=%s",
+                               attempt + 1, _mask_phone(phone), data.get("CodeResult"))
+        except Exception:
+            logger.warning("SMS attempt %d exception for %s",
+                           attempt + 1, _mask_phone(phone), exc_info=True)
+        if attempt < _SMS_MAX_RETRIES - 1:
+            await asyncio.sleep(0.5 * (2 ** attempt))
+    logger.error("SMS delivery failed after %d attempts for %s",
+                 _SMS_MAX_RETRIES, _mask_phone(phone))
+    return False
 
 
 # ── Endpoints ──

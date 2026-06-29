@@ -2151,3 +2151,37 @@ async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
             return cur.rowcount if cur else 0
     deleted = await asyncio.to_thread(_query)
     return {"success": True, "deleted": deleted, "days": days}
+
+
+@router.post("/cleanup-orphan-refs")
+async def admin_cleanup_orphan_entity_refs():
+    """Remove UGC records referencing entity IDs that no longer exist in knowledge base."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Requires PostgreSQL")
+    valid_ids = {e["id"] for e in db.list_entities(limit=10000, offset=0)}
+    if not valid_ids:
+        return {"success": True, "cleaned": {}}
+
+    ph = db._ph
+    tables = ["saved_entities", "user_visits", "event_rsvp"]
+    cleaned = {}
+
+    def _cleanup():
+        with db._conn() as conn:
+            for table in tables:
+                try:
+                    rows = db._fetchall(conn, f"SELECT DISTINCT entity_id FROM {table}", ())
+                    orphan_ids = [r[0] if not hasattr(r, 'keys') else db._row_to_dict(r)["entity_id"]
+                                  for r in rows
+                                  if (r[0] if not hasattr(r, 'keys') else db._row_to_dict(r)["entity_id"]) not in valid_ids]
+                    if orphan_ids:
+                        placeholders = ",".join(ph for _ in orphan_ids)
+                        cur = db._execute(conn, f"DELETE FROM {table} WHERE entity_id IN ({placeholders})", tuple(orphan_ids))
+                        cleaned[table] = cur.rowcount if cur else 0
+                    else:
+                        cleaned[table] = 0
+                except Exception:
+                    cleaned[table] = -1
+
+    await asyncio.to_thread(_cleanup)
+    return {"success": True, "cleaned": cleaned}

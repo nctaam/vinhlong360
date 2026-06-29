@@ -840,8 +840,11 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                                              ELSE 0 END), 0) AS likes
                     FROM users u
                     LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved'
-                    LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
-                                 WHERE target_type='user' GROUP BY target_id) fc
+                    LEFT JOIN (SELECT f.target_id, COUNT(*) c FROM follows f
+                                 JOIN users fu ON fu.id::text = f.follower_id
+                                 WHERE f.target_type='user'
+                                   AND fu.created_at < NOW() - INTERVAL '7 days'
+                                 GROUP BY f.target_id) fc
                            ON fc.target_id = u.id::text
                     WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
                     {bc}
@@ -1116,34 +1119,44 @@ async def get_comments(
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     bc, bc_p = _block_sql(user, "c.user_id")
-    params: list = [post_id] + bc_p + [min(limit, 200), offset]
-    comment_sql = f"""
-        SELECT {_COMMENT_COLS}, u.display_name, u.avatar_url
-        FROM comments c
-        JOIN users u ON u.id = c.user_id
-        WHERE c.post_id::text = {ph} AND c.moderation_status = 'approved'
-        {bc}
-        ORDER BY c.created_at ASC
-        LIMIT {ph} OFFSET {ph}
-    """
-    comment_params = tuple(params)
 
     def _get_comments():
         with db._conn() as conn:
-            return db._fetchall(conn, comment_sql, comment_params)
+            top_rows = db._fetchall(conn, f"""
+                SELECT {_COMMENT_COLS}, u.display_name, u.avatar_url
+                FROM comments c
+                JOIN users u ON u.id = c.user_id
+                WHERE c.post_id::text = {ph} AND c.parent_id IS NULL
+                  AND c.moderation_status = 'approved'
+                {bc}
+                ORDER BY c.created_at ASC
+                LIMIT {ph} OFFSET {ph}
+            """, tuple([post_id] + bc_p + [min(limit, 200), offset]))
 
-    rows = await asyncio.to_thread(_get_comments)
+            if not top_rows:
+                return [], []
 
-    comments = [_format_comment(db._row_to_dict(r)) for r in rows]
+            top_ids = [str(db._row_to_dict(r)["id"]) for r in top_rows]
+            id_placeholders = ",".join(ph for _ in top_ids)
+            reply_rows = db._fetchall(conn, f"""
+                SELECT {_COMMENT_COLS}, u.display_name, u.avatar_url
+                FROM comments c
+                JOIN users u ON u.id = c.user_id
+                WHERE c.post_id::text = {ph}
+                  AND c.parent_id::text IN ({id_placeholders})
+                  AND c.moderation_status = 'approved'
+                {bc}
+                ORDER BY c.created_at ASC
+            """, tuple([post_id] + list(top_ids) + bc_p))
+            return top_rows, reply_rows
 
+    top_rows, reply_rows = await asyncio.to_thread(_get_comments)
+
+    top_level = [_format_comment(db._row_to_dict(r)) for r in top_rows]
     replies_by_parent: dict[str, list] = {}
-    top_level = []
-    for c in comments:
-        pid = c.get("parent_id")
-        if pid:
-            replies_by_parent.setdefault(str(pid), []).append(c)
-        else:
-            top_level.append(c)
+    for r in reply_rows:
+        c = _format_comment(db._row_to_dict(r))
+        replies_by_parent.setdefault(str(c.get("parent_id", "")), []).append(c)
     for c in top_level:
         c["replies"] = replies_by_parent.get(c["id"], [])
 
@@ -1519,7 +1532,12 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
     places = _v(agg, "places")
     likes = _v(agg, "total_likes")
 
-    followers_row = db._fetchone(conn, f"SELECT COUNT(*) c FROM follows WHERE target_type='user' AND target_id={ph}", (user_id,))
+    followers_row = db._fetchone(conn, f"""
+        SELECT COUNT(*) c FROM follows f
+        JOIN users fu ON fu.id::text = f.follower_id
+        WHERE f.target_type='user' AND f.target_id={ph}
+          AND fu.created_at < NOW() - INTERVAL '7 days'
+    """, (user_id,))
     followers = _v(db._row_to_dict(followers_row) if followers_row else {}, "c")
 
     visit_agg = db._fetchone(conn, f"""

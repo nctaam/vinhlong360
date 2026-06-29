@@ -953,14 +953,14 @@ class Database:
             row = self._fetchone(conn, f"SELECT * FROM itineraries WHERE id = {ph}", (itin_id,))
             return self._parse_itinerary(row) if row else None
 
-    def list_itineraries(self, area: str = None) -> list[dict]:
+    def list_itineraries(self, area: str = None, limit: int = 100, offset: int = 0) -> list[dict]:
         self.initialize()
         ph = self._ph
         with self._conn() as conn:
             if area:
-                rows = self._fetchall(conn, f"SELECT * FROM itineraries WHERE area = {ph}", (area,))
+                rows = self._fetchall(conn, f"SELECT * FROM itineraries WHERE area = {ph} LIMIT {ph} OFFSET {ph}", (area, limit, offset))
             else:
-                rows = self._fetchall(conn, "SELECT * FROM itineraries")
+                rows = self._fetchall(conn, f"SELECT * FROM itineraries LIMIT {ph} OFFSET {ph}", (limit, offset))
             return [self._parse_itinerary(r) for r in rows]
 
     def export_all(self) -> dict:
