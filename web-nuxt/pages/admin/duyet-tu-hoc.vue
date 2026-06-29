@@ -27,7 +27,7 @@
           <small class="admin-muted">Quay lại kiểm tra sau, hoặc tải nguồn dữ liệu để xem thống kê.</small>
         </div>
         <div v-else class="admin-table-wrap">
-          <table class="admin-table">
+          <table class="admin-table" aria-label="Entity tự học chờ duyệt">
             <thead><tr><th scope="col">Entity</th><th scope="col">Loại</th><th scope="col">Tin cậy</th><th scope="col">Nguồn</th><th scope="col">Thao tác</th></tr></thead>
             <tbody>
               <tr v-for="e in provisional" :key="e.id">
@@ -74,7 +74,7 @@
 
       <div v-if="sources.length" class="dth-sources">
         <div class="admin-table-wrap">
-          <table class="admin-table">
+          <table class="admin-table" aria-label="Nguồn dữ liệu tự học">
             <thead><tr><th scope="col">Nguồn</th><th scope="col">Số entity</th><th scope="col">URL mẫu</th></tr></thead>
             <tbody>
               <tr v-for="s in sources" :key="s.title">

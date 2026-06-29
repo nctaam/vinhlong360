@@ -76,7 +76,7 @@
       </div>
       <template v-else>
         <div v-if="facilities.length" class="admin-table-wrap">
-          <table class="admin-table">
+          <table class="admin-table" aria-label="Danh bạ cơ sở">
             <thead><tr><th scope="col">Cơ quan</th><th scope="col">Liên hệ</th><th scope="col">Nguồn</th><th scope="col"><span class="sr-only">Thao tác</span></th></tr></thead>
             <tbody>
               <tr v-for="e in facilities" :key="e.id">

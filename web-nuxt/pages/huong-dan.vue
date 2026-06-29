@@ -186,7 +186,7 @@
         <h2>⌨️ Phím tắt & Thao tác nhanh</h2>
         <p class="section-intro">Các thao tác giúp sử dụng nhanh hơn trên máy tính và di động.</p>
         <div class="shortcut-table-wrap">
-          <table class="shortcut-table">
+          <table class="shortcut-table" aria-label="Phím tắt và thao tác nhanh">
             <thead>
               <tr><th>Thao tác</th><th>Trên máy tính</th><th>Trên di động</th></tr>
             </thead>

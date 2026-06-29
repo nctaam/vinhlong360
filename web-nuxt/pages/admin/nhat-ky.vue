@@ -29,7 +29,7 @@
       <div class="audit-summary">{{ filtered.length }} mục{{ total > entries.length ? ` (hiển thị ${entries.length}/${total})` : '' }}</div>
 
       <div class="admin-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" aria-label="Nhật ký hoạt động">
           <thead>
             <tr>
               <th scope="col">Thời gian</th>

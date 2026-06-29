@@ -43,7 +43,7 @@
       </div>
 
       <div v-if="items.length && filtered.length" class="admin-table-wrap cpl-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" aria-label="Entity chưa phân loại">
           <thead>
             <tr>
               <th class="cpl-check-col">

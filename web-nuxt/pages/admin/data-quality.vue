@@ -111,7 +111,7 @@
     </div>
 
     <div class="admin-table-wrap dq-table-wrap">
-      <table class="admin-table dq-table">
+      <table class="admin-table dq-table" aria-label="Chất lượng dữ liệu">
         <thead>
           <tr>
             <th scope="col" class="dq-th-checkbox"></th>

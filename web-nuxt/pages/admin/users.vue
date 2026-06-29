@@ -38,7 +38,7 @@
     </div>
 
     <div v-if="loading" class="admin-table-wrap" aria-busy="true" aria-label="Đang tải danh sách user">
-      <table class="admin-table">
+      <table class="admin-table" aria-label="Danh sách người dùng">
         <thead>
           <tr>
             <th scope="col">User</th><th scope="col">SĐT</th><th scope="col">Role</th><th scope="col">Trạng thái</th><th scope="col">Ngày tạo</th><th scope="col">Thao tác</th>
@@ -53,7 +53,7 @@
     </div>
     <template v-else>
       <div class="admin-table-wrap">
-      <table class="admin-table">
+      <table class="admin-table" aria-label="Danh sách người dùng">
         <thead>
           <tr>
             <th scope="col">

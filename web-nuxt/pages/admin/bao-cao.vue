@@ -54,7 +54,7 @@
       </div>
 
       <div class="admin-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" aria-label="Danh sách báo cáo vi phạm">
           <thead>
             <tr>
               <th class="rpt-th-check">
@@ -135,7 +135,7 @@
         <span v-if="infoOpen" class="rpt-open-badge">{{ infoOpen }} chưa xử lý</span>
       </div>
       <div class="admin-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" aria-label="Thông tin vi phạm">
           <thead><tr><th scope="col">Loại</th><th scope="col">Đối tượng</th><th scope="col">Lý do</th><th scope="col">Trạng thái</th><th scope="col">Ngày</th><th scope="col">Thao tác</th></tr></thead>
           <tbody>
             <tr v-for="r in infoReports" :key="r.ts" :style="{ opacity: (r.status || 'open') === 'open' ? 1 : .5 }">

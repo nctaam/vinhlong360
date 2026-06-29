@@ -51,7 +51,7 @@
     </div>
     <template v-else>
       <div class="admin-table-wrap">
-      <table class="admin-table">
+      <table class="admin-table" aria-label="Danh sách entity">
         <thead>
           <tr>
             <th class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>

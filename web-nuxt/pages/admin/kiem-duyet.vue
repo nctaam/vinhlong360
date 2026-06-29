@@ -70,7 +70,7 @@
 
     <!-- Queue table -->
     <div class="admin-table-wrap">
-    <table class="admin-table">
+    <table class="admin-table" aria-label="Hàng đợi kiểm duyệt">
       <thead>
         <tr>
           <th scope="col" class="admin-th-check"><input type="checkbox" :checked="allBatchSelected" @change="toggleBatchAll" aria-label="Chọn tất cả" /></th>
