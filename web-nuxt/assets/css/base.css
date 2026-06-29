@@ -901,10 +901,21 @@ a.thread-author:hover { color: var(--primary-fg); }
   .planner-picker { max-height: 300px; }
 }
 
-/* ── High contrast (a11y — Apple Accessibility guidelines) ── */
+/* ── High contrast (a11y — Apple Accessibility guidelines + WCAG AAA text) ── */
 @media (prefers-contrast: more) {
-  :root { --line: rgba(0,0,0,.25); --shadow-sm: 0 1px 3px rgba(0,0,0,.15); }
-  .dark { --line: rgba(255,255,255,.25); --shadow-sm: 0 1px 3px rgba(0,0,0,.4); }
+  :root {
+    --line: rgba(0,0,0,.25); --shadow-sm: 0 1px 3px rgba(0,0,0,.15);
+    --muted: #4A5B53;
+    --ink-tertiary: #545458;
+  }
+  .dark {
+    --line: rgba(255,255,255,.25); --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+    --muted: #B8B8BD;
+    --ink-tertiary: #B0B0B5;
+    --primary-fg: #EAA78E;
+  }
+  .dark ::placeholder { color: rgba(255,255,255,.5); }
+  :focus::placeholder { opacity: .7; }
   a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline-width: 3px; }
   .card, .step-card, .route-card, .cross-card, .quick-pick, .interest-card, .route-preview { border-width: 1px; }
 }
