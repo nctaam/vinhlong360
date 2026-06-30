@@ -23,6 +23,10 @@ export const TYPE_META: Record<string, TypeMeta> = {
   facility: { emoji: '🏛️', label: 'Cơ quan hành chính', cat: 'facility' },
 }
 
+export function getTypeMeta(type: string): TypeMeta {
+  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
+}
+
 // GĐ13.4: nhãn loại cơ quan công vụ (facility.attributes.office_kind) cho danh bạ hành chính.
 export const OFFICE_KIND: Record<string, { emoji: string; label: string }> = {
   ubnd: { emoji: '🏛️', label: 'UBND xã/phường' },

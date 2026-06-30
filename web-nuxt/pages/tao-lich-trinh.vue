@@ -296,9 +296,6 @@ const pickerResults = computed(() => {
   return list.slice(0, 50)
 })
 
-function getTypeMeta(type: string) {
-  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
-}
 
 // F4: dùng chuẩn chung normalizeCoords (validate + hoán đổi lat/lng đảo)
 function extractCoords(entity: Entity): [number, number] | null {

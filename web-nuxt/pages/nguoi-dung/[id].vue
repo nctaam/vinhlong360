@@ -288,9 +288,7 @@ const filteredPosts = computed(() => {
   return posts.value
 })
 
-function getSavedTypeMeta(type: string) {
-  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
-}
+const getSavedTypeMeta = getTypeMeta
 
 const displayName = computed(() => profile.value?.display_name || profile.value?.phone || 'Người dùng')
 const emptyHint = computed(() => {

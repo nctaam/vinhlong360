@@ -347,9 +347,7 @@ if (import.meta.client) {
     }
   })
 }
-function getFavTypeMeta(type: string) {
-  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
-}
+const getFavTypeMeta = getTypeMeta
 
 const ssrBase = import.meta.server ? 'https://vinhlong360.vn' : ''
 const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = await useAsyncData('homepage',
