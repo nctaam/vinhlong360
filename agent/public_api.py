@@ -2271,9 +2271,8 @@ async def compare_entities(
     from ratelimit import check_rate
     check_rate(f"compare:{get_client_ip(request)}", 20, 60,
                "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
-    id_list = [i.strip() for i in ids.split(",") if i.strip()][:5]
+    id_list = [validate_path_id(i.strip(), "entity_id") for i in ids.split(",") if i.strip()][:5]
     if len(id_list) < 2:
-        from fastapi import HTTPException
         raise HTTPException(400, "Cần ít nhất 2 entity để so sánh")
 
     def _query():
