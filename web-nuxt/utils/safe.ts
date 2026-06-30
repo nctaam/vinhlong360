@@ -58,6 +58,49 @@ export function downloadIcal(e: { id: string; name?: string; summary?: string; p
   URL.revokeObjectURL(url)
 }
 
+// ── Event date helpers (shared by le-hoi + su-kien pages) ──
+
+interface EventLike { attributes?: Record<string, any>; season?: { months?: number[] } }
+
+export function getDateStart(e: EventLike): Date | null {
+  const ds = e.attributes?.date_start
+  if (!ds) return null
+  const d = new Date(ds + 'T00:00:00')
+  return isNaN(d.getTime()) ? null : d
+}
+
+export function formatEventMonth(e: EventLike): string {
+  const d = getDateStart(e)
+  if (!d) {
+    const months = e.season?.months
+    if (months?.length) return `T${months[0]}`
+    return ''
+  }
+  return `Tg ${d.getMonth() + 1}`
+}
+
+export function formatEventDay(e: EventLike): string {
+  const d = getDateStart(e)
+  if (!d) return '—'
+  return String(d.getDate())
+}
+
+export function eventDateRange(e: EventLike): string {
+  const attrs = e.attributes || {}
+  const ds = attrs.date_start
+  if (!ds) return ''
+  const de = attrs.date_end || ds
+  const fmt = (s: string) => {
+    const d = new Date(s + 'T00:00:00')
+    if (isNaN(d.getTime())) return ''
+    return `${d.getDate()}/${d.getMonth() + 1}`
+  }
+  if (ds === de) return fmt(ds)
+  const f1 = fmt(ds)
+  const f2 = fmt(de)
+  return (f1 && f2) ? `${f1} – ${f2}` : f1
+}
+
 /** Build a dialable tel: href, stripping dots/spaces/parens (keeps leading +). */
 export function telHref(phone?: string | null): string {
   if (!phone) return '#'

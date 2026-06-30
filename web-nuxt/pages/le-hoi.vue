@@ -320,32 +320,12 @@ const filtered = computed(() => {
 
 const getArea = getEntityArea
 
-function getDateStart(e: Entity): Date | null {
-  const ds = e.attributes?.date_start
-  if (!ds) return null
-  const d = new Date(ds + 'T00:00:00')
-  return isNaN(d.getTime()) ? null : d
-}
-
-function formatMonth(e: Entity): string {
-  const d = getDateStart(e)
-  if (!d) {
-    const months = e.season?.months
-    if (months?.length) return `T${months[0]}`
-    return ''
-  }
-  return `Tg ${d.getMonth() + 1}`
-}
-
-function formatDay(e: Entity): string {
-  const d = getDateStart(e)
-  if (!d) return '—'
-  return String(d.getDate())
-}
+const formatMonth = formatEventMonth
+const formatDay = formatEventDay
+const dateRange = eventDateRange
 
 const todayStr = new Date().toISOString().slice(0, 10)
 
-// Time-aware status for a festival: '' | 'now' (đang diễn ra) | 'soon' (sắp khai mạc, ≤14 ngày)
 function eventStatus(e: Entity): '' | 'now' | 'soon' {
   const attrs = e.attributes || {}
   const ds = attrs.date_start
@@ -360,22 +340,6 @@ function eventStatus(e: Entity): '' | 'now' | 'soon' {
 }
 
 const STATUS_LABEL: Record<string, string> = { now: 'Đang diễn ra', soon: 'Sắp khai mạc' }
-
-function dateRange(e: Entity): string {
-  const attrs = e.attributes || {}
-  const ds = attrs.date_start
-  if (!ds) return ''
-  const de = attrs.date_end || ds
-  const fmt = (s: string) => {
-    const d = new Date(s + 'T00:00:00')
-    if (isNaN(d.getTime())) return ''
-    return `${d.getDate()}/${d.getMonth() + 1}`
-  }
-  if (ds === de) return fmt(ds)
-  const f1 = fmt(ds)
-  const f2 = fmt(de)
-  return (f1 && f2) ? `${f1} – ${f2}` : f1
-}
 
 
 
