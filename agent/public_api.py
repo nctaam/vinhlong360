@@ -2457,9 +2457,10 @@ async def transparency_report(response: Response):
 
 
 # ── Health (alias for /health under /api prefix) ────────────────────────
-@router.get("/health", tags=["health"])
+@router.get("/health", tags=["health"],
+            summary="System health check",
+            description="Returns system health status including DB connectivity and entity count. Alias for /health under the /api prefix.")
 async def api_health():
-    """Proxy to the main /health endpoint — the admin dashboard calls /api/health."""
     from server import health
     data = await health()
     return JSONResponse(data, headers={"Cache-Control": "no-store"})
