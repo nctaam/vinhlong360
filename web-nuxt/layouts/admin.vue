@@ -377,6 +377,23 @@ onUnmounted(() => {
 .stat-card .stat-value { font-size: var(--text-2xl); font-weight: 800; color: var(--primary, #219653); transition: color .3s; font-variant-numeric: tabular-nums; }
 .stat-card .stat-label { font-size: .75rem; color: var(--muted); margin-top: var(--space-1); text-transform: uppercase; letter-spacing: .5px; }
 
+/* ── Settings (shared across cai-dat pages) ── */
+.cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
+.cs-back:hover { color: var(--primary, #219653); }
+.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
+.cs-form-wrap { max-width: 640px; }
+.cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: var(--space-5); }
+.cs-skel-row { display: flex; flex-direction: column; gap: var(--space-2); }
+.cs-skel-label { width: 120px; height: 14px; border-radius: 6px; background: var(--line); animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
+.cs-skel-input { width: 100%; height: 44px; border-radius: 10px; background: var(--line); opacity: .5; animation: cs-pulse 1.5s var(--ease-in-out) .15s infinite; }
+@keyframes cs-pulse { 0%, 100% { opacity: .4; } 50% { opacity: .7; } }
+.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
+.cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
+.cs-hint { font-size: .82rem; color: var(--muted); margin-bottom: var(--space-4); max-width: 640px; }
+.cs-link { color: var(--primary, #219653); }
+.cs-help { font-size: .84rem; color: var(--muted); margin-bottom: var(--space-5); max-width: 640px; line-height: var(--leading-relaxed); }
+.cs-help pre { background: var(--bg-alt); padding: var(--space-3); border-radius: 8px; overflow-x: auto; font-size: .8rem; margin: var(--space-2) 0; }
+
 /* ── Tables ── */
 .admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 14px; border: .5px solid var(--line); }
 .admin-table { width: 100%; border-collapse: collapse; background: var(--bg); min-width: 600px; }
@@ -524,6 +541,7 @@ onUnmounted(() => {
 .dark .admin-triage-box { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .admin-simple-table th, .dark .admin-simple-table td { border-bottom-color: rgba(255,255,255,.06); }
 .dark .admin-simple-table tr:hover td { background: rgba(255,255,255,.03); }
+.dark .cs-help pre { background: var(--card, #2c2c2e); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
@@ -544,6 +562,8 @@ onUnmounted(() => {
   .admin-user-info:hover .admin-user-avatar { transform: none; }
   .admin-loading .spinner, .refresh-spin { animation: none; }
   .collapsed .admin-nav a[title]:is(:hover, :focus-visible)::after { animation: none; }
+  .cs-skel-label, .cs-skel-input { animation: none; }
+  .cs-fade-enter-active { transition: none; }
 }
 
 /* ── Mobile ── */

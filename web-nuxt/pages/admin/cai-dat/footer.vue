@@ -168,28 +168,11 @@ function onFooterKeydown(e: KeyboardEvent) {
 </script>
 
 <style scoped>
-.cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
-.cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
-.cs-form-wrap { max-width: 640px; }
 .cs-section { margin-top: var(--space-6); }
 .cs-section-title { font-size: 1rem; font-weight: 600; margin-bottom: var(--space-3); }
-.cs-hint { font-size: .82rem; color: var(--muted); margin-bottom: var(--space-4); line-height: 1.4; }
 .sl-item-label { font-size: .88rem; font-weight: 500; }
 .sl-item-sub { display: block; font-size: .75rem; color: var(--muted); margin-top: 2px; }
-
-/* ── Skeleton ── */
-.cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: var(--space-5); }
-.cs-skel-row { display: flex; flex-direction: column; gap: var(--space-2); }
-.cs-skel-label { width: 120px; height: 14px; border-radius: 6px; background: var(--line); animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
-.cs-skel-input { width: 100%; height: 44px; border-radius: 10px; background: var(--line); opacity: .5; animation: cs-pulse 1.5s var(--ease-in-out) .15s infinite; }
 .cs-skel-item { height: 58px; border-radius: 12px; background: var(--line); opacity: .35; animation: cs-pulse 1.5s var(--ease-in-out) .2s infinite; }
-@keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
-
-/* ── Fade transition ── */
-.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
-.cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
-
 .cs-save-row {
   display: flex; gap: var(--space-3); padding-top: var(--space-5);
   margin-top: var(--space-4); border-top: .5px solid var(--line);
@@ -206,8 +189,7 @@ function onFooterKeydown(e: KeyboardEvent) {
 .sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cs-skel-label, .cs-skel-input, .cs-skel-item { animation: none; }
-  .cs-fade-enter-active { transition: none; }
+  .cs-skel-item { animation: none; }
   .sf-save:hover:not(:disabled), .sf-save:active:not(:disabled) { transform: none; }
 }
 </style>

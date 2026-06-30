@@ -51,21 +51,6 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
-.cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
-.cs-form-wrap { max-width: 640px; }
 .cs-section { margin-bottom: var(--space-8); }
 .cs-section-title { font-size: 1rem; font-weight: 600; margin-bottom: var(--space-4); }
-.cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: var(--space-5); }
-.cs-skel-row { display: flex; flex-direction: column; gap: var(--space-2); }
-.cs-skel-label { width: 120px; height: 14px; border-radius: 6px; background: var(--line); animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
-.cs-skel-input { width: 100%; height: 44px; border-radius: 10px; background: var(--line); opacity: .5; animation: cs-pulse 1.5s var(--ease-in-out) .15s infinite; }
-@keyframes cs-pulse { 0%, 100% { opacity: .4; } 50% { opacity: .7; } }
-.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
-.cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
-@media (prefers-reduced-motion: reduce) {
-  .cs-skel-label, .cs-skel-input { animation: none; }
-  .cs-fade-enter-active { transition: none; }
-}
 </style>

@@ -81,9 +81,6 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
-.cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
 .cs-form-wrap { max-width: 680px; }
 
 .cs-help {
@@ -105,13 +102,9 @@ onMounted(reload)
 .cs-skeleton { max-width: 680px; display: flex; flex-direction: column; gap: 2px; }
 .cs-skel-item { height: 64px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(even) { animation-delay: .2s; }
-@keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
-.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
-.cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
 .dark .cs-help { background: rgba(var(--primary-rgb),.08); }
 .dark .cs-help pre { background: var(--card, #2c2c2e); }
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }
-  .cs-fade-enter-active { transition: none; }
 }
 </style>

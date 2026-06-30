@@ -29,9 +29,6 @@ const pages = PAGE_MANIFEST_LIST
 </script>
 
 <style scoped>
-.cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
-.cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
 .cs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
 .cs-card {
   display: flex; align-items: center; gap: var(--space-4);

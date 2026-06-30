@@ -94,23 +94,12 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
-.cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: var(--space-1); }
-.cs-form-wrap { max-width: 640px; }
-.cs-hint { font-size: .82rem; color: var(--muted); margin-bottom: var(--space-4); line-height: 1.4; }
-
 /* ── Skeleton ── */
 .cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: 2px; }
 .cs-skel-item { height: 58px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(2) { animation-delay: .1s; }
 .cs-skel-item:nth-child(3) { animation-delay: .2s; }
 .cs-skel-item:nth-child(4) { animation-delay: .3s; }
-@keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
-
-/* ── Fade transition ── */
-.cs-fade-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
-.cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
 
 .cs-save-row {
   display: flex; gap: var(--space-3); padding-top: var(--space-5);
@@ -138,7 +127,6 @@ onMounted(reload)
 
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }
-  .cs-fade-enter-active { transition: none; }
   .sf-save:hover:not(:disabled), .sf-save:active:not(:disabled),
   .sf-reset:active:not(:disabled) { transform: none; }
 }
