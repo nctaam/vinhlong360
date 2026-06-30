@@ -47,7 +47,7 @@ def _load_from_db() -> dict | None:
 
 
 def _build_client(cfg: dict) -> OpenAI:
-    return OpenAI(api_key=cfg["api_key"], base_url=cfg["base_url"])
+    return OpenAI(api_key=cfg["api_key"], base_url=cfg["base_url"], timeout=120.0)
 
 
 def _resolve_config() -> tuple[dict, str]:
