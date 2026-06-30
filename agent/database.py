@@ -405,11 +405,12 @@ class Database:
             if self._use_pg:
                 self._execute(conn, """
                     INSERT INTO entities
-                    (id, type, name, summary, "placeId", confidence, season, attributes, source, images, "updatedAt",
+                    (id, type, name, summary, description, "placeId", confidence, season, attributes, source, images, "updatedAt",
                      coordinates, area, level, "parentId", "legacyArea")
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     ON CONFLICT (id) DO UPDATE SET
                         type = EXCLUDED.type, name = EXCLUDED.name, summary = EXCLUDED.summary,
+                        description = EXCLUDED.description,
                         "placeId" = EXCLUDED."placeId", confidence = EXCLUDED.confidence,
                         season = EXCLUDED.season, attributes = EXCLUDED.attributes,
                         source = EXCLUDED.source, images = EXCLUDED.images,
@@ -419,7 +420,8 @@ class Database:
                         "legacyArea" = EXCLUDED."legacyArea"
                 """, (
                     entity["id"], entity["type"], entity["name"],
-                    entity.get("summary", ""), entity.get("placeId"),
+                    entity.get("summary", ""), entity.get("description", ""),
+                    entity.get("placeId"),
                     entity.get("confidence", 1.0),
                     json.dumps(season_val, ensure_ascii=False) if season_val else None,
                     json.dumps(attrs_val, ensure_ascii=False),
@@ -433,12 +435,13 @@ class Database:
             else:
                 conn.execute("""
                     INSERT OR REPLACE INTO entities
-                    (id, type, name, summary, placeId, confidence, season, attributes, source, images, updatedAt,
+                    (id, type, name, summary, description, placeId, confidence, season, attributes, source, images, updatedAt,
                      coordinates, area, level, parentId, legacyArea)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """, (
                     entity["id"], entity["type"], entity["name"],
-                    entity.get("summary", ""), entity.get("placeId"),
+                    entity.get("summary", ""), entity.get("description", ""),
+                    entity.get("placeId"),
                     entity.get("confidence", 1.0),
                     json.dumps(season_val, ensure_ascii=False) if season_val else None,
                     json.dumps(attrs_val, ensure_ascii=False),
@@ -1126,7 +1129,8 @@ class Database:
             coords_val = entity.get("coordinates")
             entity_rows.append((
                 entity["id"], entity["type"], entity["name"],
-                entity.get("summary", ""), entity.get("placeId"),
+                entity.get("summary", ""), entity.get("description", ""),
+                entity.get("placeId"),
                 entity.get("confidence", 1.0),
                 json.dumps(season_val, ensure_ascii=False) if season_val else None,
                 json.dumps(entity.get("attributes", {}), ensure_ascii=False),
@@ -1157,9 +1161,9 @@ class Database:
         if self._use_pg:
             cur = conn.cursor()
             cur.executemany(
-                'INSERT INTO entities (id, type, name, summary, "placeId", confidence, season, '
+                'INSERT INTO entities (id, type, name, summary, description, "placeId", confidence, season, '
                 'attributes, source, images, "updatedAt", coordinates, area, level, "parentId", "legacyArea") '
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING",
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING",
                 entity_rows)
             cur.executemany(
                 "INSERT INTO relationships (from_id, to_id, type) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
@@ -1171,9 +1175,9 @@ class Database:
             stored = self._fetchone(conn, "SELECT COUNT(*) as c FROM relationships")["c"]
         else:
             conn.executemany(
-                "INSERT OR REPLACE INTO entities (id, type, name, summary, placeId, confidence, season, "
+                "INSERT OR REPLACE INTO entities (id, type, name, summary, description, placeId, confidence, season, "
                 "attributes, source, images, updatedAt, coordinates, area, level, parentId, legacyArea) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", entity_rows)
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", entity_rows)
             try:
                 conn.executemany(
                     "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",

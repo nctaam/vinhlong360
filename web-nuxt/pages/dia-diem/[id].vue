@@ -1011,7 +1011,7 @@ const jsonLdScripts = computed(() => {
 
   const bcItems: any[] = [
     { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: `${SITE_URL}/` },
-    { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE}${typeBreadcrumbUrl.value}` },
+    { '@type': 'ListItem', position: 2, name: typeMeta.value.label, item: `${SITE_URL}${typeBreadcrumbUrl.value}` },
   ]
   if (e.place_area) {
     bcItems.push({ '@type': 'ListItem', position: 3, name: areaName.value, item: `${SITE_URL}/khu-vuc/${e.place_area}` })
