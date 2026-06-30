@@ -42,7 +42,7 @@ def _load_from_db() -> dict | None:
                 "model_mini": settings.get("llm.model_mini") or _ENV_DEFAULTS["model_mini"],
             }
     except Exception:
-        pass
+        logger.debug("Failed to load LLM config from DB", exc_info=True)
     return None
 
 
@@ -136,7 +136,7 @@ def reset_to_env() -> dict:
             from site_settings import _invalidate
             _invalidate()
     except Exception:
-        pass
+        logger.debug("Failed to clear LLM config from DB", exc_info=True)
 
     global _client, _config, _config_source
     with _lock:

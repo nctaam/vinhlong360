@@ -1823,10 +1823,9 @@ async def admin_stats():
             summary="Get user engagement metrics",
             description="Returns engagement metrics over a configurable period: active posters, commenters, likers, retention rate, and daily active users.")
 async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
+    require_pg()
     ph = db._ph
     def _query():
-        if not db._use_pg:
-            return {"error": "Chức năng này yêu cầu Postgres"}
         interval_param = f"{days} days"
         with db._conn() as conn:
             active_posters = db._fetchone(conn, f"""
@@ -1877,10 +1876,9 @@ async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
             summary="Get user growth over time",
             description="Returns daily signup counts, total/deactivated user counts, and week-over-week growth rate.")
 async def user_growth(days: int = Query(30, ge=7, le=365)):
+    require_pg()
     ph = db._ph
     def _query():
-        if not db._use_pg:
-            return {"error": "Chức năng này yêu cầu Postgres"}
         interval_param = f"{days} days"
         with db._conn() as conn:
             daily_reg = db._fetchall(conn, f"""
@@ -3051,10 +3049,9 @@ async def admin_delete_comment(comment_id: str, request: Request):
             summary="Get content statistics",
             description="Returns content statistics including posts by type/status, average ratings, and daily post counts for a given period.")
 async def content_stats(days: int = Query(30, ge=1, le=365)):
+    require_pg()
     ph = db._ph
     def _query():
-        if not db._use_pg:
-            return {"error": "Chức năng này yêu cầu Postgres"}
         interval_param = f"{days} days"
         with db._conn() as conn:
             by_type = db._fetchall(conn, f"""

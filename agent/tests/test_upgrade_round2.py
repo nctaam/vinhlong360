@@ -1492,7 +1492,7 @@ class TestAdminUserGrowth:
 
     def test_requires_pg(self):
         src = inspect.getsource(__import__("admin").user_growth)
-        assert "_use_pg" in src
+        assert "require_pg" in src
 
     def test_returns_total_users(self):
         src = inspect.getsource(__import__("admin").user_growth)
@@ -1619,7 +1619,7 @@ class TestAdminContentStats:
 
     def test_requires_pg(self):
         src = inspect.getsource(__import__("admin").content_stats)
-        assert "_use_pg" in src
+        assert "require_pg" in src
 
     def test_posts_by_type(self):
         src = inspect.getsource(__import__("admin").content_stats)
