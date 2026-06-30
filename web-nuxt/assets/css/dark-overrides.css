@@ -126,35 +126,16 @@
 .dark .status-dismissed { background: rgba(255,255,255,.06); color: rgba(255,255,255,.4); }
 
 /* ── Homepage hero + category grid ── */
-/* Search capsule — lift glass on dark bg */
-.dark .home .hero-search { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.28); }
-.dark .home .hero-search:focus-within { border-color: rgba(var(--accent-rgb), .7); }
-.dark .home .hero-search input { background: var(--bg-warm); color: var(--ink); }
-.dark .home .hero-search input::placeholder { color: rgba(255,255,255,.45); }
-
-/* Hero pills — boost contrast */
-.dark .hero-pill { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.32); }
-.dark .hero-pill:hover { background: rgba(255,255,255,.28); }
-
-/* Stats bar — lift glass */
-.dark .hero-stats { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.25); }
-.dark .hero-stat-label { color: rgba(255,255,255,.8); }
-
-/* Feature card — lift glass */
-.dark .hf-card { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.3); }
-.dark .hf-card:hover { background: rgba(255,255,255,.22); }
-
-/* Hero scrim — slightly stronger on dark to ensure text readability */
-.dark .home .hero-scrim {
-  background:
-    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.22) 0%, rgba(var(--accent-rgb),.05) 34%, transparent 60%),
-    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.24) 0%, transparent 58%),
-    linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.15) 32%, transparent 55%);
-}
+/* Hero glass elements — values must match/exceed index.vue scoped overrides */
+.dark .hero-pill:hover { background: rgba(255,255,255,.36); }
+.dark .hero-stats { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.36); }
+.dark .hero-stat-label { color: rgba(255,255,255,.85); }
+.dark .hf-card { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.38); }
+.dark .hf-card:hover { background: rgba(255,255,255,.30); }
 
 /* Category tiles — stronger border/bg in dark */
-.dark .cat-tile { background: var(--surface-container); border-color: rgba(255,255,255,.1); }
-.dark .cat-tile:hover { background: var(--surface-container-high); border-color: rgba(255,255,255,.18); box-shadow: var(--shadow-md); }
+.dark .cat-tile { background: var(--surface-container-high); border-color: rgba(255,255,255,.14); }
+.dark .cat-tile:hover { background: var(--surface-container-highest); border-color: rgba(255,255,255,.24); box-shadow: var(--shadow-md); }
 .dark .cat-label { color: var(--ink); }
 
 /* Section headings */
@@ -162,26 +143,59 @@
 .dark .home .section-head .section-link { color: var(--primary-fg); }
 
 /* Event cards */
-.dark .event-mini { background: var(--surface-container); border-color: rgba(255,255,255,.1); }
-.dark .event-mini:hover { border-color: var(--primary-fg); background: var(--surface-container-high); }
+.dark .event-mini { background: var(--surface-container-high); border-color: rgba(255,255,255,.14); }
+.dark .event-mini:hover { border-color: var(--primary-fg); background: var(--surface-container-highest); }
 .dark .event-mini h3 { color: var(--ink); }
 .dark .ec-countdown { color: var(--accent-text); background: rgba(var(--accent-rgb), .12); }
 
 /* Spotlight */
-.dark .spotlight { background: var(--surface-container); border-color: rgba(255,255,255,.1); }
+.dark .spotlight { background: var(--surface-container-high); border-color: rgba(255,255,255,.16); }
 .dark .spot-body { color: var(--ink); }
-.dark .spot-body .spot-desc { color: #b8b8be; }
+.dark .spot-body .spot-desc { color: #c8c8ce; }
 
 /* Quán ngon list */
-.dark .top-place { border-color: rgba(255,255,255,.06); }
-.dark .top-place:hover { background: rgba(255,255,255,.04); }
+.dark .top-place { border-color: rgba(255,255,255,.10); }
+.dark .top-place:hover { background: rgba(255,255,255,.08); }
 .dark .top-place h3 { color: var(--ink); }
-.dark .top-place .tp-reviews { color: #a0a0a6; }
+.dark .top-place .tp-reviews { color: #b0b0b6; }
 
 /* Section subtitle */
-.dark .section-head p { color: #a0a0a6; }
+.dark .section-head p { color: #b8b8be; }
 
 /* ── Admin: data quality ── */
 .dark .dq-diff-item { background: rgba(255,255,255,.04); }
 .dark .dq-apply-result { background: rgba(33,150,83,.1); border-color: var(--primary); color: var(--primary); }
 .dark .dq-skipped-list { background: rgba(230,126,34,.06); }
+
+/* ── HeroIllustration (moved from scoped :global(.dark) — see component comment) ── */
+.dark .hero-illustration .motif { color: var(--text-on-dark); opacity: .08; }
+
+/* ── SearchAutocomplete ── */
+.dark .ac-chip { background: var(--glass-subtle); border-color: var(--glass-border); }
+.dark .ac-chip:hover { background: var(--overlay-light); border-color: rgba(255,255,255,.2); }
+.dark .ac-empty-title { color: rgba(255,255,255,.9); }
+
+/* ── NotificationBell ── */
+.dark .notif-retry { background: var(--bg-alt); border-color: var(--line); }
+.dark .notif-retry:hover { border-color: rgba(255,255,255,.2); }
+
+/* ── ReviewCard ── */
+.dark .review-featured { background: rgba(var(--accent-rgb),.06); }
+
+/* ── CommandPalette ── */
+.dark .cmd-palette { background: var(--card, #2c2c2e); }
+.dark .cmd-item.active { background: rgba(var(--blue-rgb),.15); }
+.dark .cmd-footer kbd { background: rgba(255,255,255,.12); color: rgba(255,255,255,.7); }
+
+/* ── Sự kiện ── */
+.dark .ical-btn { background: var(--card); border-color: var(--line); color: var(--ink); }
+.dark .ical-btn:hover { background: rgba(255,255,255,.08); }
+
+/* ── Lưu trú ── */
+.dark .quick-pick-count { background: rgba(var(--river-rgb, var(--primary-rgb)), .18); color: var(--ink); }
+.dark .quick-pick.active .quick-pick-count,
+.dark .quick-pick:hover .quick-pick-count { background: rgba(var(--river-rgb, var(--primary-rgb)), .28); }
+.dark .type-pill { background: rgba(var(--river-rgb, var(--primary-rgb)), .16); border-color: rgba(var(--river-rgb, var(--primary-rgb)), .3); }
+.dark .type-pill:hover { background: rgba(var(--river-rgb, var(--primary-rgb)), .24); }
+.dark .type-count { color: var(--ink); }
+.dark .type-name { color: var(--muted); }

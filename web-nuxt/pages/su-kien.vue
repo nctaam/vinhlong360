@@ -394,6 +394,5 @@ useHead(() => ({
 .event-row:focus-within .ical-btn { opacity: 1; }
 .ical-btn:hover { background: var(--surface); box-shadow: var(--shadow-xs); }
 .ical-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; opacity: 1; }
-:global(.dark) .ical-btn { background: var(--card); border-color: var(--line); color: var(--ink); }
-:global(.dark) .ical-btn:hover { background: rgba(255,255,255,.08); }
+/* dark overrides for .ical-btn in dark-overrides.css */
 </style>

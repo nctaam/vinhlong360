@@ -41,6 +41,23 @@ BOILERPLATE_SUMMARY = re.compile(
     re.IGNORECASE,
 )
 
+BAD_SENTENCE_JOIN = re.compile(r"(?<=[a-zA-ZÀ-ỹ])\.(?=[a-zà-ỹ])")
+TEXT_QUALITY_FIELDS = ("summary", "desc", "description")
+MAX_REASONABLE_TEXT_LEN = 1500
+
+def _normalize_sentence(sentence: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[^\w\sÀ-ỹ]", "", sentence.lower())).strip()
+
+def has_adjacent_repeated_sentence(text: str) -> bool:
+    parts = [p.strip() for p in re.split(r"(?<=[.!?])\s+", text) if p.strip()]
+    previous = ""
+    for part in parts:
+        normalized = _normalize_sentence(part)
+        if len(normalized) >= 20 and normalized == previous:
+            return True
+        previous = normalized
+    return False
+
 VALID_ENTITY_TYPES = {
     "attraction", "place", "dish", "drink", "product", "itinerary",
     "facility", "organization", "accommodation", "experience",
@@ -291,6 +308,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     timestamp_inversions = 0
     summary_short = 0
     summary_long = 0
+    text_repeated_sentence = 0
+    text_bad_sentence_join = 0
+    text_excessive_length = 0
     has_images_non_place = 0
     name_too_short = 0
     name_too_long = 0
@@ -396,6 +416,18 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             # DI-029: truncated summaries (end with "..." or "…")
             if stripped.endswith("...") or stripped.endswith("…"):
                 summary_truncated += 1
+
+        text_values = [
+            str(entity.get(field)).strip()
+            for field in TEXT_QUALITY_FIELDS
+            if isinstance(entity.get(field), str) and str(entity.get(field)).strip()
+        ]
+        if any(len(text) > MAX_REASONABLE_TEXT_LEN for text in text_values):
+            text_excessive_length += 1
+        if any(BAD_SENTENCE_JOIN.search(text) for text in text_values):
+            text_bad_sentence_join += 1
+        if any(has_adjacent_repeated_sentence(text) for text in text_values):
+            text_repeated_sentence += 1
 
         # DI-015: name length anomalies
         ename = entity.get("name")
@@ -769,6 +801,12 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("warning", "summary_short", f"{summary_short} entities have summary < 50 chars"))
     if summary_long:
         issues.append(Issue("warning", "summary_long", f"{summary_long} entities have summary > 500 chars"))
+    if text_repeated_sentence:
+        issues.append(Issue("warning", "text_repeated_sentence", f"{text_repeated_sentence} entities have adjacent repeated sentences"))
+    if text_bad_sentence_join:
+        issues.append(Issue("warning", "text_bad_sentence_join", f"{text_bad_sentence_join} entities have suspicious joined sentences like 'word.next'"))
+    if text_excessive_length:
+        issues.append(Issue("warning", "text_excessive_length", f"{text_excessive_length} entities have text fields > {MAX_REASONABLE_TEXT_LEN} chars"))
     if name_too_short:
         issues.append(Issue("warning", "name_too_short", f"{name_too_short} entities have name < 2 chars"))
     if name_too_long:
@@ -869,6 +907,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "image_coverage_pct": round(100 * has_images_non_place / max(sum(1 for e in entities if isinstance(e, dict) and e.get("type") != "place"), 1), 1),
         "summary_short": summary_short,
         "summary_long": summary_long,
+        "text_repeated_sentence": text_repeated_sentence,
+        "text_bad_sentence_join": text_bad_sentence_join,
+        "text_excessive_length": text_excessive_length,
         "itinerary_area_mismatches": itinerary_area_mismatches,
         "rel_type_singletons": rel_type_singletons,
         "name_too_short": name_too_short,

@@ -8,7 +8,7 @@
         <span class="catalog-hero-icon" aria-hidden="true">🗺️</span>
         <div>
           <h1>Bản đồ</h1>
-          <p>Khám phá trực quan hơn 500 điểm đến trên bản đồ tương tác — lọc theo loại hình để tìm nhanh.</p>
+          <p>Khám phá trực quan hàng trăm điểm đến trên bản đồ tương tác — lọc theo loại hình để tìm nhanh.</p>
         </div>
       </div>
     </section>
@@ -71,7 +71,7 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
-import { TYPE_META } from '~/composables/useConstants'
+import { getTypeMeta } from '~/composables/useConstants'
 
 const MARKER_COLORS: Record<string, string> = {
   experience: '#2D7D46',
@@ -99,11 +99,12 @@ const typeFilters = [
 ]
 
 const route = useRoute()
+type MapFilterOption = { key: string; label: string; icon?: string }
 const activeTypes = ref(new Set(['all']))
 
-const typeFilterOptions = typeFilters.map(f => {
+const typeFilterOptions: MapFilterOption[] = typeFilters.map(f => {
   const parts = f.label.match(/^(\S+)\s+(.+)$/)
-  return parts ? { key: f.value, label: parts[2], icon: parts[1] } : { key: f.value, label: f.label }
+  return parts ? { key: f.value, label: parts[2] || f.label, icon: parts[1] || undefined } : { key: f.value, label: f.label }
 })
 const activeTypeArray = computed(() => [...activeTypes.value])
 
@@ -147,7 +148,7 @@ const { data, error: fetchError } = await useAsyncData('map-entities', () =>
 )
 
 let mapInited = false
-let mapRef: unknown = null  // GĐ10.2: tham chiếu map để cập nhật source khi lọc
+let mapRef: any = null  // GĐ10.2: tham chiếu map để cập nhật source khi lọc
 
 function esc(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -178,7 +179,7 @@ function buildGeoJSON() {
     const coords = normalizeCoords(e.coordinates)
     if (!coords) continue
     const [lat, lng] = coords
-    const meta = TYPE_META[e.type] || { emoji: '📍' }
+    const meta = getTypeMeta(e.type)
     features.push({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [lng, lat] },
@@ -274,7 +275,7 @@ watch(mapEl, async (el) => {
       },
     })
 
-    map.on('click', 'clusters', (ev: { features?: { properties: Record<string, unknown> }[] }) => {
+    map.on('click', 'clusters', (ev: any) => {
       const f = map.queryRenderedFeatures(ev.point, { layers: ['clusters'] })[0]
       if (!f) return
       ;(map.getSource('entities') as { getClusterExpansionZoom: Function }).getClusterExpansionZoom(f.properties.cluster_id, (err: Error | null, zoom: number) => {
@@ -282,7 +283,7 @@ watch(mapEl, async (el) => {
         map.easeTo({ center: f.geometry.coordinates, zoom })
       })
     })
-    map.on('click', 'unclustered', (ev: { features?: { properties: Record<string, unknown> }[] }) => {
+    map.on('click', 'unclustered', (ev: any) => {
       const f = ev.features?.[0]
       if (!f) return
       const p = f.properties
@@ -304,10 +305,10 @@ watch(mapEl, async (el) => {
     let flat = parseFloat(route.query.lat as string)
     let flng = parseFloat(route.query.lng as string)
     const fent = fid ? (data.value?.entities || []).find((e: Entity) => e.id === fid) : null
-    if (fent) { const c = normalizeCoords(fent.coordinates ?? fent.coords); if (c) { flat = c[0]; flng = c[1] } }
+    if (fent) { const c = normalizeCoords(fent.coordinates ?? (fent as any).coords); if (c) { flat = c[0]; flng = c[1] } }
     if (isFinite(flat) && isFinite(flng)) {
       map.flyTo({ center: [flng, flat], zoom: 15 })
-      const m: any = fent ? (TYPE_META[fent.type] || { emoji: '📍' }) : { emoji: '📍' }
+      const m: any = fent ? getTypeMeta(fent.type) : { emoji: '📍' }
       const nm = fent ? fent.name : 'Địa điểm'
       const fColor = fent ? (MARKER_COLORS[fent.type] || '#9C3D22') : '#9C3D22'
       new maplibregl.Popup({ offset: 12 }).setLngLat([flng, flat])

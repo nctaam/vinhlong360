@@ -68,6 +68,26 @@ describe('Page module imports', () => {
     expect(mod.default).toBeTruthy()
   })
 
+  it('imports settings page', async () => {
+    const mod = await import('../pages/cai-dat.vue')
+    expect(mod.default).toBeTruthy()
+  })
+
+  it('imports account page', async () => {
+    const mod = await import('../pages/tai-khoan.vue')
+    expect(mod.default).toBeTruthy()
+  })
+
+  it('imports user profile page', async () => {
+    const mod = await import('../pages/nguoi-dung/[id].vue')
+    expect(mod.default).toBeTruthy()
+  })
+
+  it('imports map page', async () => {
+    const mod = await import('../pages/ban-do.vue')
+    expect(mod.default).toBeTruthy()
+  })
+
   it('imports lien-he page', async () => {
     const mod = await import('../pages/lien-he.vue')
     expect(mod.default).toBeTruthy()

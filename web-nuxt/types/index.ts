@@ -92,6 +92,7 @@ export interface User {
   id: string
   phone?: string
   display_name?: string | null
+  full_name?: string | null
   avatar_url?: string | null
   avatar?: string | null
   cover_url?: string | null
@@ -100,6 +101,9 @@ export interface User {
   role?: string
   is_private?: boolean
   created_at?: string
+  date_of_birth?: string | null
+  email?: string | null
+  contact_info?: string | null
   has_password?: boolean
   post_count?: number
   review_count?: number

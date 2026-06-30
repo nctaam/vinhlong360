@@ -46,7 +46,7 @@ _POST_COLS = ("p.id, p.user_id, p.content, p.mentions, p.hashtags, p.best_answer
               "p.pinned_comment_id, "
               "p.repost_of, p.repost_snapshot, p.post_type, p.rating, p.images, "
               "p.like_count, p.comment_count, p.share_count, p.created_at, p.updated_at, "
-              "p.entity_id, p.entity_name, p.entity_type, p.moderation_status")
+              "p.entity_id, p.moderation_status")
 _COMMENT_COLS = "c.id, c.user_id, c.content, c.mentions, c.parent_id, c.created_at"
 
 router = APIRouter(prefix="/api", tags=["social"], dependencies=[Depends(_require_pg)])
@@ -78,6 +78,19 @@ def _mute_sql(user: dict | None, column: str = "p.user_id") -> tuple[str, list]:
 
 
 # ── Models ──
+
+_PROD_TEST_POST_PHRASES = (
+    "đây là test của admin",
+    "day la test cua admin",
+    "test admin",
+)
+
+def _prod_seed_post_filter(alias: str = "p") -> tuple[str, list]:
+    if not _cfg.is_production:
+        return "", []
+    ph = db._ph
+    clauses = [f"lower({alias}.content) NOT LIKE {ph}" for _ in _PROD_TEST_POST_PHRASES]
+    return " AND " + " AND ".join(clauses), [f"%{phrase}%" for phrase in _PROD_TEST_POST_PHRASES]
 
 POST_TYPES = ("review", "share", "recommend", "question")
 ENTITY_LINK_REQUIRED = ("review",)  # These types must link to an entity
@@ -929,6 +942,11 @@ async def get_feed(
         conditions.append(f"p.id NOT IN (SELECT post_id FROM user_hidden_posts WHERE user_id = {ph}::uuid)")
         params.append(uid)
 
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+    if seed_filter:
+        conditions.append(seed_filter.removeprefix(" AND "))
+        params.extend(seed_params)
+
     where = " AND ".join(conditions)
     where_params = list(params)
 
@@ -996,6 +1014,7 @@ async def get_following_feed(
     bc, bc_p = _block_sql(user, "p.user_id")
     mc, mc_p = _mute_sql(user, "p.user_id")
     hidden_cond = f"AND p.id NOT IN (SELECT post_id FROM user_hidden_posts WHERE user_id = {ph}::uuid)"
+    seed_filter, seed_params = _prod_seed_post_filter("p")
     follow_cond = f"""
         (p.user_id IN (SELECT target_id::uuid FROM follows
                          WHERE follower_id = {ph}::uuid AND target_type='user')
@@ -1011,6 +1030,7 @@ async def get_following_feed(
         WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND {follow_cond}
         {bc}{mc}
         {hidden_cond}
+        {seed_filter}
         ORDER BY p.created_at DESC
         LIMIT {ph} OFFSET {ph}
     """
@@ -1019,12 +1039,13 @@ async def get_following_feed(
         WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND {follow_cond}
         {bc}{mc}
         {hidden_cond}
+        {seed_filter}
     """
 
     def _following_query():
         with db._conn() as conn:
-            rows = db._fetchall(conn, feed_sql, (uid, uid, *bc_p, *mc_p, uid, limit, offset))
-            total = db._fetchone(conn, count_sql, (uid, uid, *bc_p, *mc_p, uid))
+            rows = db._fetchall(conn, feed_sql, (uid, uid, *bc_p, *mc_p, uid, *seed_params, limit, offset))
+            total = db._fetchone(conn, count_sql, (uid, uid, *bc_p, *mc_p, uid, *seed_params))
         return rows, total
 
     rows, total = await asyncio.to_thread(_following_query)
@@ -1601,9 +1622,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                                                  AND jsonb_array_length(p.images) > 0) AS photos,
                            COALESCE(fc.c, 0) AS followers,
                            COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
-                           COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
-                                             WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
-                                             ELSE 0 END), 0) AS likes
+                           COALESCE(SUM(p.like_count), 0) AS likes
                     FROM users u
                     LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                     LEFT JOIN (SELECT f.target_id, COUNT(*) c FROM follows f
@@ -1651,7 +1670,6 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
             description="Paginated list of users that the specified user is following. Returns public profile info for each followed user.")
 async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
     """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
-    validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
@@ -1686,7 +1704,6 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
             description="Paginated list of users following the specified user. Returns public profile info for each follower.")
 async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
     """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
-    validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
@@ -1735,9 +1752,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
                                              AND jsonb_array_length(p.images) > 0) AS photos,
                        COALESCE(fc.c, 0) AS followers,
                        COUNT(DISTINCT p.entity_id) FILTER (WHERE p.entity_id IS NOT NULL) AS places,
-                       COALESCE(SUM(CASE WHEN jsonb_typeof(p.likes)='number' THEN p.likes::int
-                                         WHEN jsonb_typeof(p.likes)='array' THEN jsonb_array_length(p.likes)
-                                         ELSE 0 END), 0) AS likes
+                       COALESCE(SUM(p.like_count), 0) AS likes
                 FROM users u
                 LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                 LEFT JOIN (SELECT target_id, COUNT(*) c FROM follows
@@ -1825,9 +1840,11 @@ async def get_entity_feed(
 
     params += [limit, offset]
     feed_sql = f"""
-        SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username
+        SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+               e.name as entity_name, e.type as entity_type
         FROM posts p
         JOIN users u ON u.id = p.user_id
+        LEFT JOIN entities e ON e.id = p.entity_id
         WHERE p.entity_id = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
         {bc} {mc}{extra_where}
         ORDER BY COALESCE(p.is_featured, FALSE) DESC, {order_clause}
@@ -1909,8 +1926,10 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
             candidates = []
             if entity_id:
                 rows = db._fetchall(conn, f"""
-                    SELECT {_POST_COLS}, u.display_name, u.avatar_url
+                    SELECT {_POST_COLS}, u.display_name, u.avatar_url,
+                           e.name as entity_name, e.type as entity_type
                     FROM posts p JOIN users u ON u.id = p.user_id
+                    LEFT JOIN entities e ON e.id = p.entity_id
                     WHERE p.entity_id = {ph} AND p.id::text <> {ph}
                       AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                     {bc} {mc}
@@ -1922,8 +1941,10 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
             if len(candidates) < limit and tags:
                 seen = {post_id} | {str(db._row_to_dict(r)["id"]) for r in candidates}
                 tag_rows = db._fetchall(conn, f"""
-                    SELECT {_POST_COLS}, u.display_name, u.avatar_url
+                    SELECT {_POST_COLS}, u.display_name, u.avatar_url,
+                           e.name as entity_name, e.type as entity_type
                     FROM posts p JOIN users u ON u.id = p.user_id
+                    LEFT JOIN entities e ON e.id = p.entity_id
                     WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND p.id::text <> {ph}
                       AND p.hashtags && ARRAY[{','.join(ph for _ in tags)}]::text[]
                     {bc} {mc}
@@ -3206,8 +3227,7 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
             COUNT(*) FILTER (WHERE (CASE WHEN jsonb_typeof(images)='array'
                 THEN jsonb_array_length(images) ELSE 0 END) > 0) AS photos,
             COUNT(DISTINCT entity_id) FILTER (WHERE entity_id IS NOT NULL) AS places,
-            COALESCE(SUM(CASE WHEN jsonb_typeof(likes)='number' THEN likes::int
-                WHEN jsonb_typeof(likes)='array' THEN jsonb_array_length(likes) ELSE 0 END), 0) AS total_likes
+            COALESCE(SUM(like_count), 0) AS total_likes
         FROM posts WHERE user_id::text = {ph} AND moderation_status = 'approved' AND deleted_at IS NULL
     """, (user_id,))
     agg = db._row_to_dict(agg) if agg else {}
@@ -3257,7 +3277,6 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
             summary="Get user profile",
             description="Retrieve a user's public profile by UUID or username. Includes stats, reputation, badges, privacy settings, and viewer relationship status (following/blocked/muted).")
 async def get_user_profile(user_id: str, user=Depends(get_current_user)):
-    validate_path_id(user_id, "user_id")
     ph = db._ph
     _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
     viewer_id = str(user["id"]) if user else None
@@ -3414,7 +3433,6 @@ async def get_user_posts(
     user_id: str, request: Request,
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
 ):
-    validate_path_id(user_id, "user_id")
     user = await get_current_user(request)
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
@@ -3461,7 +3479,6 @@ async def get_user_reviews(
     user_id: str, request: Request,
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
 ):
-    validate_path_id(user_id, "user_id")
     user = await get_current_user(request)
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
@@ -3571,14 +3588,19 @@ def _check_show_activity(target_uid: str, viewer_uid: str | None) -> bool:
 
 def _resolve_user_id(user_id: str) -> str | None:
     """Resolve a user_id param (UUID or username) to actual UUID string."""
-    _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
-    if _is_uuid:
-        return user_id
+    identifier = (user_id or "").strip()
+    if not identifier:
+        return None
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn,
-            f"SELECT id FROM users WHERE lower(username) = {ph} AND is_active = TRUE",
-            (user_id.lower(),))
+            f"""
+                SELECT id FROM users
+                WHERE is_active = TRUE AND deleted_at IS NULL
+                  AND (id::text = {ph} OR lower(username) = {ph})
+                LIMIT 1
+            """,
+            (identifier, identifier.lower()))
     return str(db._row_to_dict(row)["id"]) if row else None
 
 

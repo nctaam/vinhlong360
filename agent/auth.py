@@ -154,6 +154,20 @@ def _mask_ip(ip: str | None) -> str:
     return ip[:8] + "***"
 
 
+def _is_internal_session(user_agent: str | None, ip: str | None) -> bool:
+    ua = (user_agent or "").lower()
+    ip_text = (ip or "").strip().lower()
+    internal_ua_markers = (
+        "python-urllib", "python-requests", "httpx", "aiohttp",
+        "curl/", "wget/", "healthcheck", "uptime",
+    )
+    if any(marker in ua for marker in internal_ua_markers):
+        return True
+    loopback = ip_text in {"::1", "localhost", "0.0.0.0"} or ip_text.startswith("127.")
+    browser_markers = ("mozilla/", "chrome/", "safari/", "firefox/", "edg/")
+    return loopback and not any(marker in ua for marker in browser_markers)
+
+
 def _create_session_atomic(uid: str, token_hash: str, ua: str, ip: str, expires_iso: str):
     from auth_middleware import MAX_CONCURRENT_SESSIONS
     with db._conn() as conn:
@@ -194,6 +208,10 @@ class OTPVerify(BaseModel):
     phone: str = Field(..., max_length=20)
     code: str = Field(..., max_length=10)
     consent: bool = False
+    full_name: str | None = Field(None, max_length=100)
+    username: str | None = Field(None, max_length=30)
+    password: str | None = Field(None, max_length=128)
+    date_of_birth: str | None = Field(None, max_length=10)
 
     @field_validator("phone")
     @classmethod
@@ -278,8 +296,10 @@ class CheckPhone(BaseModel):
 
 class ProfileUpdate(BaseModel):
     display_name: str | None = Field(None, max_length=50)
+    full_name: str | None = Field(None, max_length=100)
     bio: str | None = Field(None, max_length=300)
-    username: str | None = Field(None, max_length=30)
+    email: str | None = Field(None, max_length=200)
+    contact_info: str | None = Field(None, max_length=500)
 
 
 # ── Helpers ──
@@ -486,7 +506,26 @@ async def verify_otp(body: OTPVerify, request: Request):
         if not u:
             if not body.consent:
                 raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
-            u = db.create_user(phone, consent_version=CONSENT_VERSION)
+            reg_kwargs = {}
+            if body.full_name:
+                reg_kwargs["full_name"] = _html.escape(body.full_name.strip()[:100])
+            if body.username:
+                uname = body.username.strip().lower()
+                if len(uname) >= 3 and re.match(r'^[a-z][a-z0-9._-]*$', uname):
+                    with db._conn() as conn:
+                        dup = db._fetchone(conn,
+                            f"SELECT id FROM users WHERE lower(username) = {db._ph}", (uname,))
+                    if dup:
+                        raise HTTPException(409, "Username đã được sử dụng")
+                    reg_kwargs["username"] = uname
+            if body.password:
+                pwd = body.password
+                if len(pwd) < 8:
+                    raise HTTPException(400, "Mật khẩu phải từ 8 ký tự trở lên")
+                reg_kwargs["password_hash"] = _hash_password(pwd)
+            if body.date_of_birth:
+                reg_kwargs["date_of_birth"] = body.date_of_birth
+            u = db.create_user(phone, consent_version=CONSENT_VERSION, **reg_kwargs)
         else:
             updates = {}
             if not u.get("is_active", True):
@@ -802,17 +841,22 @@ async def list_sessions(request: Request):
             """, (str(user["id"]),))
     rows = await asyncio.to_thread(_query)
     sessions = []
+    hidden_internal_count = 0
     for r in rows:
         rd = db._row_to_dict(r)
+        is_current = hmac.compare_digest(rd.get("token") or "", cur_hash or "")
+        if not is_current and _is_internal_session(rd.get("user_agent"), rd.get("ip_address")):
+            hidden_internal_count += 1
+            continue
         sessions.append({
             "id": str(rd["id"]),
             "user_agent": rd.get("user_agent", ""),
             "ip_address": _mask_ip(rd.get("ip_address", "")),
             "created_at": str(rd.get("created_at", "")),
             "expires_at": str(rd.get("expires_at", "")),
-            "is_current": hmac.compare_digest(rd.get("token") or "", cur_hash or ""),
+            "is_current": is_current,
         })
-    return {"sessions": sessions}
+    return {"sessions": sessions, "hidden_internal_count": hidden_internal_count}
 
 
 @router.delete("/sessions/{session_id}",
@@ -846,6 +890,20 @@ async def get_me(request: Request):
     from ratelimit import check_rate
     check_rate(f"me:{user['id']}", 60, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
     return {"user": _safe_user(user)}
+
+
+@router.get("/csrf",
+            summary="Get CSRF token",
+            description="Returns the CSRF token required for authenticated state-changing requests.")
+async def get_csrf(request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chua dang nhap")
+    session_token = _extract_token(request)
+    if not session_token:
+        raise HTTPException(401, "Chua dang nhap")
+    from auth_middleware import generate_csrf_token
+    return {"csrf_token": generate_csrf_token(session_token)}
 
 
 @router.post("/deactivate",
@@ -918,6 +976,14 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
         if mod["status"] == "flagged":
             raise HTTPException(400, "Tên hiển thị chứa nội dung không phù hợp")
         fields["display_name"] = _html.escape(name)
+    if body.full_name is not None:
+        fname = body.full_name.strip()[:100]
+        if fname and len(fname) < 2:
+            raise HTTPException(400, "Họ tên phải từ 2 ký tự trở lên")
+        mod = await moderate_content(fname)
+        if mod["status"] == "flagged":
+            raise HTTPException(400, "Họ tên chứa nội dung không phù hợp")
+        fields["full_name"] = _html.escape(fname) if fname else None
     if body.bio is not None:
         bio_text = body.bio.strip()[:300]
         if bio_text:
@@ -925,37 +991,18 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
             if mod["status"] == "flagged":
                 raise HTTPException(400, "Tiểu sử chứa nội dung không phù hợp")
         fields["bio"] = _html.escape(bio_text)
-    if body.username is not None:
-        uname = body.username.strip().lower()
-        if uname == "":
-            fields["username"] = None
-        else:
-            if len(uname) < 3 or len(uname) > 30:
-                raise HTTPException(400, "Username phải từ 3–30 ký tự")
-            if not re.match(r'^[a-z][a-z0-9._-]*$', uname):
-                raise HTTPException(400, "Username chỉ gồm chữ cái, số, dấu chấm, gạch ngang (bắt đầu bằng chữ)")
-            _reserved = {"admin", "mod", "moderator", "support", "help", "system", "root",
-                         "api", "auth", "login", "signup", "register", "settings", "caidat",
-                         "vinhlong360", "congdong", "baiviet", "thongbao", "nguoidung"}
-            if uname in _reserved:
-                raise HTTPException(400, "Username này không được phép sử dụng")
-            ph = db._ph
-            def _check_uname():
-                with db._conn() as conn:
-                    return db._fetchone(conn,
-                        f"SELECT id FROM users WHERE lower(username) = {ph} AND id != {ph}::uuid",
-                        (uname, str(user["id"])))
-            existing = await asyncio.to_thread(_check_uname)
-            if existing:
-                raise HTTPException(409, "Username đã được sử dụng")
-            fields["username"] = uname
+    if body.email is not None:
+        email_val = body.email.strip()[:200]
+        if email_val and not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email_val):
+            raise HTTPException(400, "Email không hợp lệ")
+        fields["email"] = email_val if email_val else None
+    if body.contact_info is not None:
+        fields["contact_info"] = _html.escape(body.contact_info.strip()[:500])
 
     if fields:
         try:
             user = await asyncio.to_thread(lambda: db.update_user(str(user["id"]), **fields))
         except Exception as e:
-            if "unique" in str(e).lower() or "duplicate" in str(e).lower():
-                raise HTTPException(409, "Username đã được sử dụng")
             logger.exception("Profile update failed")
             raise HTTPException(500, "Cập nhật hồ sơ thất bại")
 
@@ -1237,10 +1284,13 @@ async def export_user_data(request: Request):
         with db._conn() as conn:
             _EXPORT_CAP = 5000
             posts = db._fetchall(conn, f"""
-                SELECT id, content, post_type, rating, entity_id, entity_name,
-                       like_count, comment_count, created_at
-                FROM posts WHERE user_id = {ph}::uuid
-                ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
+                SELECT p.id, p.content, p.post_type, p.rating, p.entity_id,
+                       e.name as entity_name,
+                       p.like_count, p.comment_count, p.created_at
+                FROM posts p
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.user_id = {ph}::uuid
+                ORDER BY p.created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
             comments = db._fetchall(conn, f"""
                 SELECT id, post_id, content, parent_id, created_at
@@ -1355,10 +1405,15 @@ def _safe_user(user: dict) -> dict:
         "id": str(user["id"]),
         "phone": (user.get("phone") or "")[:3] + "****" + (user.get("phone") or "")[-3:],
         "display_name": user.get("display_name"),
+        "full_name": user.get("full_name"),
         "avatar_url": user.get("avatar_url"),
         "cover_url": user.get("cover_url"),
         "bio": user.get("bio", ""),
         "username": user.get("username"),
         "role": user.get("role", "user"),
+        "has_password": bool(user.get("password_hash")),
         "created_at": str(user.get("created_at", "")),
+        "date_of_birth": str(user.get("date_of_birth", "")) if user.get("date_of_birth") else None,
+        "email": user.get("email"),
+        "contact_info": user.get("contact_info"),
     }

@@ -1281,15 +1281,35 @@ class Database:
             row = self._fetchone(conn, f"SELECT * FROM users WHERE id::text = {ph}", (str(user_id),))
             return self._row_to_dict(row)
 
-    def create_user(self, phone: str, display_name: str = None, consent_version: str = "1.0") -> dict:
+    def create_user(self, phone: str, display_name: str = None, consent_version: str = "1.0",
+                    full_name: str = None, username: str = None, password_hash: str = None,
+                    date_of_birth: str = None) -> dict:
         self.initialize()
         ph = self._ph
+        extra_cols = []
+        extra_phs = []
+        extra_params = []
+        if full_name:
+            extra_cols.append("full_name"); extra_phs.append(ph); extra_params.append(full_name)
+        if username:
+            extra_cols.append("username"); extra_phs.append(ph); extra_params.append(username)
+        if password_hash:
+            extra_cols.append("password_hash"); extra_phs.append(ph); extra_params.append(password_hash)
+        if date_of_birth:
+            extra_cols.append("date_of_birth"); extra_phs.append(ph); extra_params.append(date_of_birth)
+        cols_str = "phone, display_name, consent_at, consent_version"
+        vals_str = f"{ph}, {ph}, NOW(), {ph}"
+        params = [phone, display_name or full_name or f"User_{phone[-4:]}", consent_version]
+        if extra_cols:
+            cols_str += ", " + ", ".join(extra_cols)
+            vals_str += ", " + ", ".join(extra_phs)
+            params.extend(extra_params)
         with self._conn() as conn:
             row = self._fetchone(conn, f"""
-                INSERT INTO users (phone, display_name, consent_at, consent_version)
-                VALUES ({ph}, {ph}, NOW(), {ph})
+                INSERT INTO users ({cols_str})
+                VALUES ({vals_str})
                 RETURNING *
-            """, (phone, display_name or f"User_{phone[-4:]}", consent_version))
+            """, params)
             return self._row_to_dict(row)
 
     def update_user(self, user_id: str, **fields) -> dict | None:
@@ -1298,7 +1318,7 @@ class Database:
         sets = []
         params = []
         for k, v in fields.items():
-            if k in ("display_name", "avatar_url", "cover_url", "bio", "role", "is_active", "password_hash", "username", "deleted_at"):
+            if k in ("display_name", "avatar_url", "cover_url", "bio", "role", "is_active", "password_hash", "username", "deleted_at", "full_name", "email", "contact_info"):
                 sets.append(f"{k} = {ph}")
                 params.append(v)
         if not sets:

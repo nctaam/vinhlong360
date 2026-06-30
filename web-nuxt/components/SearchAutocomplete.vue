@@ -330,15 +330,8 @@ if (import.meta.client) {
   padding-left: calc(var(--space-4) - 3px);
 }
 
-/* ── Dark-mode contrast for result metadata (WCAG 1.4.3) ───────────────────
-   Re-implemented here (was proposed for dark-overrides.css) so the autocomplete
-   owns its own dark tokens. Raises .ac-type / .ac-place legibility on dark bg
-   and on the .highlighted state. */
-:global(.dark) .ac-dropdown :deep(.ac-type) {
-  color: rgba(255, 255, 255, .78);
-  font-weight: var(--weight-semibold);
-}
-:global(.dark) .ac-dropdown :deep(.ac-place) { color: rgba(255, 255, 255, .56); }
+/* dark overrides for .ac-type / .ac-place moved to dark-overrides.css —
+   :global(.dark) in scoped CSS compiles to bare .dark{} */
 
 /* ── Loading entry motion ──────────────────────────────────────────────────*/
 .ac-loading { animation: acLoadingFade .25s var(--ease-out) both; }
@@ -380,10 +373,7 @@ if (import.meta.client) {
 .ac-empty-all:hover { text-decoration: underline; }
 .ac-empty-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
 
-/* ── Dark mode for new sections ────────────────────────────────────────────*/
-:global(.dark) .ac-chip { background: var(--glass-subtle); border-color: var(--glass-border); }
-:global(.dark) .ac-chip:hover { background: var(--overlay-light); border-color: rgba(255, 255, 255, .2); }
-:global(.dark) .ac-empty-title { color: rgba(255, 255, 255, .9); }
+/* dark overrides for .ac-chip / .ac-empty-title in dark-overrides.css */
 
 /* ── Reduced motion ────────────────────────────────────────────────────────*/
 @media (pointer: coarse) { .ac-chip { min-height: 44px; } }

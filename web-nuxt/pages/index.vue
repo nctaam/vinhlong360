@@ -113,11 +113,11 @@
       </div>
     </section>
 
-    <!-- 3. Tinh hoa miền Tây — spotlight magazine + quán ngon rating -->
-    <section v-if="spotlight || topDishes.length" class="block reveal band" aria-label="Tinh hoa miền Tây">
+    <!-- 3. Nổi bật — spotlight magazine + quán ngon rating -->
+    <section v-if="spotlight || topDishes.length" class="block reveal band" aria-label="Nổi bật">
       <div class="section-head">
         <div class="sh-text">
-          <h2>Tinh hoa miền Tây</h2>
+          <h2>Nổi bật</h2>
           <p class="sh-sub">Điểm đến &amp; quán ăn được cộng đồng yêu thích</p>
         </div>
       </div>
@@ -1102,38 +1102,38 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
    ═══════════════════════════════════════════════════ */
 .dark .home .hero-kenburns {
   background-image:
-    linear-gradient(105deg, rgba(26,26,26,.82) 0%, rgba(26,26,26,.48) 46%, rgba(26,26,26,.08) 100%),
+    linear-gradient(105deg, rgba(26,26,26,.60) 0%, rgba(26,26,26,.30) 46%, rgba(26,26,26,.05) 100%),
     url('/img/hero.webp');
 }
 @media (max-width: 640px) {
   .dark .home .hero-kenburns {
     background-image:
-      linear-gradient(105deg, rgba(26,26,26,.82) 0%, rgba(26,26,26,.48) 46%, rgba(26,26,26,.08) 100%),
+      linear-gradient(105deg, rgba(26,26,26,.60) 0%, rgba(26,26,26,.30) 46%, rgba(26,26,26,.05) 100%),
       url('/img/hero-mobile.webp');
   }
 }
 .dark .home .hero-scrim {
   background:
-    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.18) 0%, rgba(var(--accent-rgb),.04) 34%, transparent 60%),
-    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.22) 0%, transparent 58%),
-    linear-gradient(to top, rgba(0,0,0,.48) 0%, rgba(0,0,0,.06) 34%, transparent 58%);
+    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.12) 0%, rgba(var(--accent-rgb),.03) 34%, transparent 60%),
+    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.12) 0%, transparent 58%),
+    linear-gradient(to top, rgba(0,0,0,.30) 0%, rgba(0,0,0,.04) 28%, transparent 50%);
 }
-.dark .home .hero-kicker { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16); }
-.dark .home .hero-search { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.28); }
+.dark .home .hero-kicker { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.22); }
+.dark .home .hero-search { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.38); }
 .dark .home .hero-search input { background: var(--bg-warm); color: var(--ink); }
-.dark .home .hero-search input::placeholder { color: rgba(255,255,255,.45); }
+.dark .home .hero-search input::placeholder { color: rgba(255,255,255,.50); }
 .dark .home .hero-search:focus-within { border-color: rgba(var(--accent-rgb), .7); }
 .dark .home .section-head h2::before { background: linear-gradient(180deg, var(--accent) 0%, var(--primary-fg) 100%); }
 .dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
-.dark .event-card { background: var(--card); border-color: var(--line); }
+.dark .event-card { background: var(--surface-container); border-color: rgba(255,255,255,.12); }
 .dark .ec-countdown { color: var(--accent-text, #e0b366); }
 .dark .ec-today { color: var(--secondary-fg, #f0846f); }
-.dark .event-card:hover { border-color: rgba(255,255,255,.1); }
-.dark .chatbot-cta { background: linear-gradient(135deg, var(--card) 0%, rgba(255,255,255,.03) 100%); border-color: var(--line); }
-.dark .chatbot-cta:hover { border-color: rgba(255,255,255,.1); }
-.dark .hero-pill { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.32); }
+.dark .event-card:hover { border-color: rgba(255,255,255,.2); }
+.dark .chatbot-cta { background: linear-gradient(135deg, var(--surface-container) 0%, rgba(255,255,255,.06) 100%); border-color: rgba(255,255,255,.12); }
+.dark .chatbot-cta:hover { border-color: rgba(255,255,255,.2); }
+.dark .hero-pill { background: rgba(255,255,255,.24); border-color: rgba(255,255,255,.40); }
 .dark .hero-stat-num { color: var(--ink); }
-.dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.1) 0%, transparent 68%); }
+.dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.14) 0%, transparent 68%); }
 
 /* ═══════════════════════════════════════════════════
    REDUCED TRANSPARENCY / MOTION

@@ -126,9 +126,7 @@ defineExpose({ open })
 .cmd-footer kbd { background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 4px; font-family: inherit; font-size: .75rem; }
 .cmd-fade-enter-active, .cmd-fade-leave-active { transition: opacity .15s; }
 .cmd-fade-enter-from, .cmd-fade-leave-to { opacity: 0; }
-:global(.dark) .cmd-palette { background: var(--card, #2c2c2e); }
-:global(.dark) .cmd-item.active { background: rgba(var(--blue-rgb),.15); }
-:global(.dark) .cmd-footer kbd { background: rgba(255,255,255,.12); color: rgba(255,255,255,.7); }
+/* dark overrides for .cmd-palette in dark-overrides.css */
 @media (max-width: 600px) {
   .cmd-overlay { padding-top: 0; align-items: flex-end; }
   .cmd-palette { width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }

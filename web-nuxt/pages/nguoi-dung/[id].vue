@@ -63,7 +63,7 @@
             </div>
           </template>
           <button type="button" class="stat-item stat-clickable" @click="openFollowModal('followers')">
-            <strong>{{ followerCount }}</strong>
+            <strong>{{ displayFollowerCount }}</strong>
             <span>người theo dõi</span>
           </button>
           <button type="button" class="stat-item stat-clickable" @click="openFollowModal('following')">
@@ -214,12 +214,26 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
+type ProfileView = Record<string, any> & {
+  id?: string
+  username?: string
+  display_name?: string
+  phone?: string
+  bio?: string
+  avatar?: string | null
+  avatar_url?: string | null
+  cover_url?: string | null
+  created_at?: string
+  post_count?: number
+  review_count?: number
+  follower_count?: number
+  following_count?: number
+}
 useReveal()
 const route = useRoute()
 const userId = computed(() => route.params.id as string)
-const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
+const { user: currentUser, isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { show: showToast } = useToast()
 const { reportPost, openReport } = useReport()
 const { repost, quote } = useRepost()
@@ -232,19 +246,23 @@ useHead({
 const validProfileTabs = new Set(['posts', 'reviews', 'saved'])
 const initialTab = route.query.tab as string
 const tab = ref(validProfileTabs.has(initialTab) ? initialTab : 'posts')
-const posts = ref<Entity[]>([])
+const posts = ref<any[]>([])
 const { favorites, count: savedCount } = useFavorites()
 const loading = ref(true)
 const isFollowing = ref(false)
 const followLoading = ref(false)
-const followerCount = ref(0)
+const followerCount = ref<number | null>(null)
 const isSelf = computed(() => {
-  const { user } = useAuth()
-  return user.value?.id === userId.value
+  const me = currentUser.value
+  if (!me) return false
+  const profileUsername = profile.value?.username
+  return String(me.id) === profileId.value || (!!profileUsername && me.username === profileUsername) || me.username === userId.value
 })
+const profileId = computed(() => String(profile.value?.id || userId.value))
+const displayFollowerCount = computed(() => followerCount.value ?? profile.value?.follower_count ?? 0)
 
 const profileFetchFailed = ref(false)
-const { data: profile } = await useAsyncData(() => `user-${userId.value}`, async () => {
+const { data: profile } = await useAsyncData<ProfileView | null>(() => `user-${userId.value}`, async () => {
   try {
     profileFetchFailed.value = false
     const res = await apiFetch<Record<string, any>>(`/api/users/${userId.value}`, { headers: authHeaders() })
@@ -258,7 +276,6 @@ const { data: profile } = await useAsyncData(() => `user-${userId.value}`, async
       follower_count: u.stats?.followers ?? 0,
       following_count: u.stats?.following ?? 0,
     }
-    followerCount.value = mapped.follower_count
     return mapped
   } catch {
     profileFetchFailed.value = true
@@ -301,7 +318,7 @@ async function fetchPosts() {
   loading.value = true
   postsFetchFailed.value = false
   try {
-    const res = await $fetch<Record<string, unknown>>(`/api/users/${userId.value}/posts?limit=50`, { headers: authHeaders() })
+    const res = await $fetch<Record<string, unknown>>(`/api/users/${profileId.value}/posts?limit=50`, { headers: authHeaders() })
     const list = res?.posts
     posts.value = Array.isArray(list) ? list : []
   } catch {
@@ -336,7 +353,7 @@ async function loadFollowList(which: 'followers' | 'following') {
   if (followLists.value[which]) return  // đã tải (cache)
   followLoadingList.value = true
   try {
-    const res = await $fetch<any>(`/api/users/${userId.value}/${which}`, { headers: authHeaders() })
+    const res = await $fetch<any>(`/api/users/${profileId.value}/${which}`, { headers: authHeaders() })
     followLists.value[which] = res.users || []
   } catch (e: unknown) {
     followLists.value[which] = []
@@ -358,7 +375,7 @@ watch(followModalTab, (t) => loadFollowList(t))
 async function checkFollowing() {
   if (!isLoggedIn.value) return
   try {
-    const res = await $fetch<{ following: boolean }>(`/api/follow/check/user/${userId.value}`, { headers: authHeaders() })
+    const res = await $fetch<{ following: boolean }>(`/api/follow/check/user/${profileId.value}`, { headers: authHeaders() })
     isFollowing.value = res.following
   } catch { /* non-critical */ }
 }
@@ -375,13 +392,13 @@ async function toggleFollow() {
   followLoading.value = true
   const was = isFollowing.value
   isFollowing.value = !was
-  followerCount.value += was ? -1 : 1
+  followerCount.value = Math.max(0, displayFollowerCount.value + (was ? -1 : 1))
   try {
-    await $fetch(`/api/follow/user/${userId.value}`, { method: 'POST', headers: authHeaders() })
+    await $fetch(`/api/follow/user/${profileId.value}`, { method: 'POST', headers: authHeaders() })
     followLists.value = { followers: null, following: null }
   } catch (e: unknown) {
     isFollowing.value = was
-    followerCount.value += was ? 1 : -1
+    followerCount.value = Math.max(0, displayFollowerCount.value + (was ? 1 : -1))
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể theo dõi', 'error')
   }
@@ -409,14 +426,14 @@ async function checkBlocked() {
   if (!isLoggedIn.value || isSelf.value) return
   try {
     const res = await $fetch<{ blocked: any[] }>('/api/blocked-users', { headers: authHeaders() })
-    isBlocked.value = (res.blocked || []).some(u => u.id === userId.value)
+    isBlocked.value = (res.blocked || []).some(u => u.id === profileId.value)
   } catch { /* non-critical */ }
 }
 
 async function toggleBlock() {
   if (isBlocked.value) {
     try {
-      await $fetch(`/api/block/${userId.value}`, { method: 'POST', headers: authHeaders() })
+      await $fetch(`/api/block/${profileId.value}`, { method: 'POST', headers: authHeaders() })
       isBlocked.value = false
       showToast('Đã bỏ chặn', 'success')
     } catch (e: unknown) {
@@ -435,9 +452,9 @@ async function toggleBlock() {
   )
   if (!ok) return
   try {
-    await $fetch(`/api/block/${userId.value}`, { method: 'POST', headers: authHeaders() })
+    await $fetch(`/api/block/${profileId.value}`, { method: 'POST', headers: authHeaders() })
     isBlocked.value = true
-    if (isFollowing.value) { isFollowing.value = false; followerCount.value-- }
+    if (isFollowing.value) { isFollowing.value = false; followerCount.value = Math.max(0, displayFollowerCount.value - 1) }
     showToast('Đã chặn người dùng', 'success')
   } catch (e: unknown) {
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
@@ -447,7 +464,7 @@ async function toggleBlock() {
 
 function reportUser() {
   showMoreMenu.value = false
-  openReport('user', userId.value)
+  openReport('user', profileId.value)
 }
 
 async function shareProfile() {
@@ -475,6 +492,7 @@ watch(userId, () => {
   loading.value = true
   isFollowing.value = false
   isBlocked.value = false
+  followerCount.value = null
   followLists.value = { followers: null, following: null }
   fetchPosts()
   checkFollowing()

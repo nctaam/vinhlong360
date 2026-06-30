@@ -297,14 +297,7 @@ useHead(() => ({
 .quick-pick:hover .quick-pick-count {
   background: rgba(var(--river-rgb, var(--primary-rgb)), .2);
 }
-:global(.dark) .quick-pick-count {
-  background: rgba(var(--river-rgb, var(--primary-rgb)), .18);
-  color: var(--ink);
-}
-:global(.dark) .quick-pick.active .quick-pick-count,
-:global(.dark) .quick-pick:hover .quick-pick-count {
-  background: rgba(var(--river-rgb, var(--primary-rgb)), .28);
-}
+/* dark overrides for .quick-pick-count in dark-overrides.css */
 
 /* Hero accommodation type breakdown — supply-by-category trust cue.
    Data-driven from typeCounts; only renders when data is present. */
@@ -332,13 +325,7 @@ useHead(() => ({
 .type-pill:hover { transform: translateY(-1px); background: rgba(var(--river-rgb, var(--primary-rgb)), .16); }
 .type-count { font-weight: var(--weight-bold); color: var(--tertiary, var(--primary-fg)); }
 .type-name { color: var(--muted); font-weight: var(--weight-medium); }
-:global(.dark) .type-pill {
-  background: rgba(var(--river-rgb, var(--primary-rgb)), .16);
-  border-color: rgba(var(--river-rgb, var(--primary-rgb)), .3);
-}
-:global(.dark) .type-pill:hover { background: rgba(var(--river-rgb, var(--primary-rgb)), .24); }
-:global(.dark) .type-count { color: var(--ink); }
-:global(.dark) .type-name { color: var(--muted); }
+/* dark overrides for .type-pill in dark-overrides.css */
 
 @media (prefers-reduced-motion: reduce) {
   .quick-pick-count,

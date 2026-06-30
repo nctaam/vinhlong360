@@ -52,9 +52,12 @@ export function useFavorites() {
   async function mergeToServer() {
     if (!isLoggedIn.value || import.meta.server) return
     try {
-      const res = await $fetch<{ items?: FavoriteItem[] }>('/api/saved/merge', {
-        method: 'POST', headers: authHeaders(), body: { items: favorites.value },
-      })
+      const hasLocalItems = favorites.value.length > 0
+      const res = hasLocalItems
+        ? await $fetch<{ items?: FavoriteItem[] }>('/api/saved/merge', {
+            method: 'POST', headers: authHeaders(), body: { items: favorites.value },
+          })
+        : await $fetch<{ items?: FavoriteItem[] }>('/api/saved', { headers: authHeaders() })
       if (Array.isArray(res?.items)) { favorites.value = res.items; persist() }
     } catch { /* offline / not available — keep local */ }
   }

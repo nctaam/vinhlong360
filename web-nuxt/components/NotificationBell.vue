@@ -110,8 +110,7 @@ onUnmounted(() => stopPolling())
 .notif-retry:active { transform: scale(.96); transition-duration: .08s; }
 .notif-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .notif-loading-text { font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-1); }
-:global(.dark) .notif-retry { background: var(--bg-alt); border-color: var(--line); }
-:global(.dark) .notif-retry:hover { border-color: rgba(255,255,255,.2); }
+/* dark overrides for .notif-retry in dark-overrides.css */
 @media (max-width: 600px) {
   .notif-dropdown { max-height: 60vh; }
   .notif-list { max-height: calc(60vh - 80px); overflow-y: auto; }

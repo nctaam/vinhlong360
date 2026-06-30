@@ -5,7 +5,7 @@
     <div v-if="!isLoggedIn" class="settings-guest card">
       <h1>Cài đặt</h1>
       <p>Bạn cần đăng nhập để chỉnh sửa hồ sơ.</p>
-      <button type="button" class="btn btn-primary" @click="openAuth">Đăng nhập</button>
+      <button type="button" class="btn btn-primary" @click="() => openAuth()">Đăng nhập</button>
     </div>
 
     <template v-else>
@@ -64,6 +64,30 @@
           <input ref="coverInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onCoverChange" />
         </div>
 
+        <div class="sf-field sf-readonly-group">
+          <span class="sf-label">Số điện thoại <span class="sf-hint">— không thể thay đổi</span></span>
+          <input type="tel" class="sf-input sf-readonly" :value="user?.phone" disabled readonly />
+        </div>
+
+        <div class="sf-field sf-readonly-group">
+          <span class="sf-label">Username <span class="sf-hint">— không thể thay đổi</span></span>
+          <div class="sf-username-row">
+            <span class="sf-username-prefix">vinhlong360.vn/nguoi-dung/</span>
+            <input type="text" class="sf-input sf-username-input sf-readonly" :value="user?.username || '—'" disabled readonly />
+          </div>
+        </div>
+
+        <label class="sf-field">
+          <span class="sf-label">Họ và tên</span>
+          <input
+            v-model="fullName"
+            type="text"
+            class="sf-input"
+            maxlength="100"
+            placeholder="Họ và tên thật"
+          />
+        </label>
+
         <label class="sf-field">
           <span class="sf-label">Tên hiển thị</span>
           <input
@@ -80,28 +104,6 @@
         </label>
 
         <label class="sf-field">
-          <span class="sf-label">Username <span class="sf-hint">— dùng làm đường dẫn hồ sơ</span></span>
-          <div class="sf-username-row">
-            <span class="sf-username-prefix">vinhlong360.vn/nguoi-dung/</span>
-            <input
-              v-model="username"
-              type="text"
-              class="sf-input sf-username-input"
-              aria-label="Username"
-              maxlength="30"
-              minlength="3"
-              pattern="[a-z][a-z0-9._-]*"
-              placeholder="ten-cua-ban"
-              autocomplete="username"
-              @input="onUsernameInput"
-            />
-          </div>
-          <span v-if="usernameStatus === 'taken'" class="sf-error" role="alert">Username đã được sử dụng</span>
-          <span v-else-if="usernameStatus === 'invalid'" class="sf-error" role="alert">{{ usernameError }}</span>
-          <span v-else-if="usernameStatus === 'ok'" class="sf-success">Username khả dụng ✓</span>
-        </label>
-
-        <label class="sf-field">
           <span class="sf-label">Giới thiệu <span class="sf-hint">({{ bio.length }}/300)</span></span>
           <textarea
             v-model="bio"
@@ -112,12 +114,35 @@
           ></textarea>
         </label>
 
+        <label class="sf-field">
+          <span class="sf-label">Email</span>
+          <input
+            v-model="email"
+            type="email"
+            class="sf-input"
+            maxlength="200"
+            placeholder="email@example.com"
+            autocomplete="email"
+          />
+        </label>
+
+        <label class="sf-field">
+          <span class="sf-label">Thông tin liên hệ <span class="sf-hint">— Zalo, Facebook, v.v.</span></span>
+          <textarea
+            v-model="contactInfo"
+            class="sf-input sf-textarea"
+            maxlength="500"
+            rows="2"
+            placeholder="Zalo: 0901234567, Facebook: facebook.com/ten-cua-ban"
+          ></textarea>
+        </label>
+
         <div class="sf-actions">
           <button type="submit" class="btn btn-primary" :disabled="saving" :aria-busy="saving">
             <span v-if="saving" class="spinner spinner-sm" aria-hidden="true"></span>
             {{ saving ? 'Đang lưu…' : 'Lưu thay đổi' }}
           </button>
-          <NuxtLink v-if="user" :to="`/nguoi-dung/${savedUsername || user.id}`" class="btn btn-ghost">Xem hồ sơ</NuxtLink>
+          <NuxtLink v-if="user" :to="`/nguoi-dung/${user.username || user.id}`" class="btn btn-ghost">Xem hồ sơ</NuxtLink>
         </div>
       </form>
     </div>
@@ -126,14 +151,14 @@
     <div v-if="activeTab === 'bao-mat'" id="panel-bao-mat" role="tabpanel" aria-labelledby="tab-bao-mat">
       <div class="settings-card card">
         <h2>Mật khẩu</h2>
-        <p v-if="!user?.has_password" class="sf-hint">Bạn chưa đặt mật khẩu. Đặt mật khẩu để đăng nhập nhanh hơn.</p>
+        <p v-if="hasPasswordKnown && !hasPassword" class="sf-hint">Bạn chưa đặt mật khẩu. Đặt mật khẩu để đăng nhập nhanh hơn.</p>
         <form class="settings-form" @submit.prevent="savePassword">
-          <label v-if="user?.has_password" class="sf-field">
+          <label v-if="hasPassword" class="sf-field">
             <span class="sf-label">Mật khẩu hiện tại</span>
             <input v-model="currentPw" type="password" class="sf-input" autocomplete="current-password" required />
           </label>
           <label class="sf-field">
-            <span class="sf-label">{{ user?.has_password ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
+            <span class="sf-label">{{ hasPassword ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
             <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
           </label>
           <label class="sf-field">
@@ -143,7 +168,7 @@
           </label>
           <div class="sf-actions">
             <button type="submit" class="btn btn-primary" :disabled="savingPw">
-              {{ savingPw ? 'Đang lưu...' : (user?.has_password ? 'Đổi mật khẩu' : 'Đặt mật khẩu') }}
+              {{ savingPw ? 'Đang lưu...' : (hasPassword ? 'Đổi mật khẩu' : 'Đặt mật khẩu') }}
             </button>
           </div>
         </form>
@@ -278,6 +303,32 @@
       <p v-else class="sf-hint">Bạn chưa chặn ai.</p>
     </div>
 
+    <!-- Tab: Dữ liệu & pháp lý -->
+    <div v-if="activeTab === 'du-lieu'" id="panel-du-lieu" class="settings-card card" role="tabpanel" aria-labelledby="tab-du-lieu">
+      <h2>Dữ liệu & pháp lý</h2>
+
+      <div class="dl-section">
+        <h3>Xuất dữ liệu</h3>
+        <p class="sf-hint">Tải toàn bộ dữ liệu tài khoản (hồ sơ, bài viết, bình luận, lưu, theo dõi) dưới dạng JSON.</p>
+        <button type="button" class="btn btn-secondary" :disabled="exportLoading" @click="exportData">
+          {{ exportLoading ? 'Đang tạo...' : '📥 Tải dữ liệu' }}
+        </button>
+      </div>
+
+      <div class="dl-section">
+        <h3>Lịch sử đồng ý</h3>
+        <p class="sf-hint">Các sự kiện đồng ý điều khoản và chính sách bảo mật.</p>
+        <div v-if="consentHistory.length" class="dl-consent-list">
+          <div v-for="(c, i) in consentHistory" :key="i" class="dl-consent-item">
+            <span class="dl-consent-ver">v{{ c.consent_version || '1.0' }}</span>
+            <span class="dl-consent-time">{{ new Date(c.consent_at).toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</span>
+          </div>
+        </div>
+        <p v-else-if="consentLoaded" class="sf-hint">Chưa có dữ liệu đồng ý.</p>
+        <button v-if="!consentLoaded" type="button" class="btn btn-ghost btn-sm" @click="loadConsent">Xem lịch sử</button>
+      </div>
+    </div>
+
     <!-- Tab: Nguy hiểm -->
     <div v-if="activeTab === 'nguy-hiem'" id="panel-nguy-hiem" class="settings-card card settings-danger" role="tabpanel" aria-labelledby="tab-nguy-hiem">
       <h2>Vùng nguy hiểm</h2>
@@ -327,6 +378,7 @@ const TABS = [
   { key: 'giao-dien', label: 'Giao diện', icon: '🎨' },
   { key: 'rieng-tu', label: 'Riêng tư', icon: '🔒' },
   { key: 'chan', label: 'Chặn', icon: '\u{1F6AB}' },
+  { key: 'du-lieu', label: 'Dữ liệu', icon: '📋' },
   { key: 'nguy-hiem', label: 'Nguy hiểm', icon: '⚠️' },
 ] as const
 type TabKey = typeof TABS[number]['key']
@@ -351,34 +403,17 @@ function lazyLoadTab(key: TabKey) {
 }
 
 const displayName = ref(user.value?.display_name || '')
+const fullName = ref(user.value?.full_name || '')
 const bio = ref('')
+const email = ref(user.value?.email || '')
+const contactInfo = ref(user.value?.contact_info || '')
 const savedName = ref(displayName.value)
+const savedFullName = ref(fullName.value)
 const savedBio = ref('')
-const isDirty = computed(() => displayName.value !== savedName.value || bio.value !== savedBio.value || username.value !== savedUsername.value)
+const savedEmail = ref(email.value)
+const savedContactInfo = ref(contactInfo.value)
 const saving = ref(false)
 const nameError = ref('')
-const username = ref(user.value?.username || '')
-const savedUsername = ref(username.value)
-const usernameStatus = ref<'' | 'ok' | 'taken' | 'invalid' | 'checking'>('')
-const usernameError = ref('')
-let usernameCheckTimer: ReturnType<typeof setTimeout> | null = null
-
-function onUsernameInput() {
-  const val = username.value.trim().toLowerCase()
-  if (!val) { usernameStatus.value = ''; return }
-  if (val.length < 3) { usernameStatus.value = 'invalid'; usernameError.value = 'Tối thiểu 3 ký tự'; return }
-  if (!/^[a-z][a-z0-9._-]*$/.test(val)) { usernameStatus.value = 'invalid'; usernameError.value = 'Chỉ chữ cái, số, dấu chấm, gạch ngang'; return }
-  usernameStatus.value = 'checking'
-  if (usernameCheckTimer) clearTimeout(usernameCheckTimer)
-  usernameCheckTimer = setTimeout(async () => {
-    try {
-      const res = await $fetch<{ available: boolean; reason?: string }>(`/auth/check-username/${encodeURIComponent(val)}`, { headers: authHeaders() })
-      if (username.value.trim().toLowerCase() !== val) return
-      if (res.available) { usernameStatus.value = 'ok' }
-      else { usernameStatus.value = 'taken'; usernameError.value = res.reason || 'Đã được sử dụng' }
-    } catch { usernameStatus.value = '' }
-  }, 500)
-}
 
 const uploadingAvatar = ref(false)
 const avatarPreview = ref('')
@@ -423,7 +458,9 @@ onMounted(async () => {
     const u = res?.user ?? res
     if (u?.bio) { bio.value = u.bio; savedBio.value = u.bio }
     if (!displayName.value && u?.display_name) { displayName.value = u.display_name; savedName.value = u.display_name }
-    if (u?.username) { username.value = u.username; savedUsername.value = u.username }
+    if (u?.full_name) { fullName.value = u.full_name; savedFullName.value = u.full_name }
+    if (u?.email) { email.value = u.email; savedEmail.value = u.email }
+    if (u?.contact_info) { contactInfo.value = u.contact_info; savedContactInfo.value = u.contact_info }
   } catch { /* prefill is best-effort */ }
   lazyLoadTab(activeTab.value)
 })
@@ -432,9 +469,11 @@ const currentPw = ref('')
 const newPw = ref('')
 const confirmPw = ref('')
 const savingPw = ref(false)
+const hasPassword = computed(() => user.value?.has_password === true)
+const hasPasswordKnown = computed(() => typeof user.value?.has_password === 'boolean')
 
 async function savePassword() {
-  if (user.value?.has_password && !currentPw.value) {
+  if (hasPassword.value && !currentPw.value) {
     showToast('Vui lòng nhập mật khẩu hiện tại', 'error')
     return
   }
@@ -476,6 +515,7 @@ async function loadSessions() {
 
 function shortUA(ua: string): string {
   if (!ua) return 'Không rõ'
+  if (/(python|urllib|httpx|aiohttp|curl|wget|healthcheck|uptime)/i.test(ua)) return 'Phiên hệ thống'
   if (ua.includes('Mobile')) return 'Di động'
   if (ua.includes('Windows')) return 'Windows'
   if (ua.includes('Mac')) return 'macOS'
@@ -607,7 +647,7 @@ async function loadNotifPrefs() {
 }
 
 async function toggleNotifPref(prefKey: string) {
-  const prev = notifPrefs.value[prefKey]
+  const prev = notifPrefs.value[prefKey] ?? false
   notifPrefs.value[prefKey] = !prev
   try {
     await $fetch('/api/notification-preferences', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: { [prefKey]: !prev } })
@@ -619,10 +659,47 @@ async function toggleNotifPref(prefKey: string) {
   }
 }
 
-const { confirm } = useConfirm()
+const { confirmDialog: confirm } = useConfirm()
+
+// ── Data & legal ──
+const exportLoading = ref(false)
+const consentHistory = ref<any[]>([])
+const consentLoaded = ref(false)
+
+async function exportData() {
+  exportLoading.value = true
+  try {
+    const data = await $fetch<Record<string, any>>('/auth/export-data', { headers: authHeaders() })
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `vinhlong360-data-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    showToast('Đã tải dữ liệu', 'success')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Không thể xuất dữ liệu'), 'error')
+  } finally {
+    exportLoading.value = false
+  }
+}
+
+async function loadConsent() {
+  try {
+    const data = await $fetch<{ history: any[] }>('/auth/consent-history', { headers: authHeaders() })
+    consentHistory.value = data.history || []
+    consentLoaded.value = true
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast(extractErrorMessage(e, 'Không thể tải lịch sử'), 'error')
+    consentLoaded.value = true
+  }
+}
 
 async function deactivate() {
-  const ok = await confirm({ title: 'Vô hiệu hóa tài khoản?', message: 'Tài khoản sẽ bị khóa tạm thời. Đăng nhập lại bằng OTP để kích hoạt.', confirmText: 'Vô hiệu hóa', danger: true })
+  const ok = await confirm('Tài khoản sẽ bị khóa tạm thời. Đăng nhập lại bằng OTP để kích hoạt.', { title: 'Vô hiệu hóa tài khoản?', confirmText: 'Vô hiệu hóa', danger: true })
   if (!ok) return
   try {
     await $fetch('/auth/deactivate', { method: 'POST', headers: authHeaders() })
@@ -636,7 +713,7 @@ async function deactivate() {
 }
 
 async function deleteAccount() {
-  const ok = await confirm({ title: 'Xóa tài khoản vĩnh viễn?', message: 'Toàn bộ dữ liệu sẽ bị xóa và không thể khôi phục.', confirmText: 'Xóa tài khoản', danger: true })
+  const ok = await confirm('Toàn bộ dữ liệu sẽ bị xóa và không thể khôi phục.', { title: 'Xóa tài khoản vĩnh viễn?', confirmText: 'Xóa tài khoản', danger: true })
   if (!ok) return
   try {
     await $fetch('/auth/account', { method: 'DELETE', headers: authHeaders() })
@@ -658,15 +735,15 @@ async function save() {
     nameError.value = 'Tên hiển thị phải từ 2 ký tự trở lên'
     return
   }
-  if (usernameStatus.value === 'taken' || usernameStatus.value === 'invalid') {
-    showToast('Vui lòng kiểm tra lại username', 'error')
-    return
-  }
   saving.value = true
   try {
-    const body: Record<string, any> = { display_name: name, bio: bio.value.trim() }
-    const uname = username.value.trim().toLowerCase()
-    if (uname !== savedUsername.value) body.username = uname || null
+    const body: Record<string, any> = {
+      display_name: name,
+      full_name: fullName.value.trim() || null,
+      bio: bio.value.trim(),
+      email: email.value.trim() || null,
+      contact_info: contactInfo.value.trim() || null,
+    }
     await $fetch('/auth/profile', {
       method: 'PUT',
       headers: authHeaders(),
@@ -674,19 +751,20 @@ async function save() {
     })
     await fetchMe()
     savedName.value = displayName.value
+    savedFullName.value = fullName.value
     savedBio.value = bio.value
-    savedUsername.value = username.value.trim().toLowerCase()
-    usernameStatus.value = ''
+    savedEmail.value = email.value
+    savedContactInfo.value = contactInfo.value
     showToast('Đã lưu hồ sơ', 'success')
   } catch (e: unknown) {
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    if (getStatusCode(e) === 409) { usernameStatus.value = 'taken'; showToast('Username đã được sử dụng', 'error'); return }
     showToast(extractErrorMessage(e, 'Không thể lưu hồ sơ'), 'error')
   } finally {
     saving.value = false
   }
 }
 
+const isDirty = computed(() => displayName.value !== savedName.value || bio.value !== savedBio.value || fullName.value !== savedFullName.value || email.value !== savedEmail.value || contactInfo.value !== savedContactInfo.value)
 function onBeforeUnload(e: BeforeUnloadEvent) {
   if (isDirty.value) e.preventDefault()
 }
@@ -707,7 +785,6 @@ onUnmounted(() => {
   }
   if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
-  if (usernameCheckTimer) clearTimeout(usernameCheckTimer)
 })
 </script>
 
@@ -756,6 +833,8 @@ onUnmounted(() => {
 .sf-username-row { display: flex; align-items: center; gap: 0; border: 1px solid var(--border-input); border-radius: var(--radius-md); overflow: hidden; }
 .sf-username-prefix { padding: .65rem .6rem; background: var(--bg-warm, #f5f5f5); color: var(--ink-700); font-size: .85rem; white-space: nowrap; border-right: 1px solid var(--border-input); flex-shrink: 0; }
 .sf-username-input { border: none !important; border-radius: 0 !important; flex: 1; min-width: 0; }
+.sf-readonly { opacity: .6; cursor: not-allowed; background: var(--bg-warm, #f5f5f5); }
+.sf-readonly-group { margin-bottom: var(--space-1); }
 .sf-actions { display: flex; gap: .75rem; align-items: center; }
 .sf-avatar-section { display: flex; align-items: center; gap: 1rem; }
 .sf-avatar-preview {
@@ -814,6 +893,14 @@ onUnmounted(() => {
   width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
   background: var(--bg-warm); color: var(--ink-700); font-size: .85rem;
 }
+/* ── Data & legal ── */
+.dl-section { margin-bottom: 1.25rem; }
+.dl-section h3 { font-size: 1rem; margin: 0 0 .3rem; }
+.dl-consent-list { display: flex; flex-direction: column; gap: .35rem; margin-top: .5rem; }
+.dl-consent-item { display: flex; gap: .75rem; align-items: center; padding: .4rem .6rem; border: 1px solid var(--border-input); border-radius: var(--radius-md); }
+.dl-consent-ver { font-weight: 600; font-size: .85rem; }
+.dl-consent-time { font-size: .82rem; color: var(--ink-700); }
+
 .login-fail { border-color: rgba(192,57,43,.3) !important; }
 .login-ok { color: var(--accent); font-weight: 600; font-size: 1.1rem; }
 .login-bad { color: var(--danger, #c0392b); font-weight: 600; font-size: 1.1rem; }
@@ -840,6 +927,7 @@ onUnmounted(() => {
 .dark .sf-username-prefix { background: var(--bg-alt); border-color: var(--line); }
 .dark .notif-pref-item { border-color: var(--line); }
 .dark .notif-pref-item:hover { background: var(--bg-alt); }
+.dark .sf-readonly { background: var(--bg); }
 
 /* ── Mobile ── */
 @media (max-width: 600px) {

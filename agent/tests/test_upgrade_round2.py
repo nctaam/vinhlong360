@@ -787,7 +787,7 @@ class TestUserDataExport:
 
     def test_queries_posts(self):
         src = inspect.getsource(__import__("auth").export_user_data)
-        assert "FROM posts WHERE user_id" in src
+        assert "FROM posts p" in src
 
     def test_queries_comments(self):
         src = inspect.getsource(__import__("auth").export_user_data)

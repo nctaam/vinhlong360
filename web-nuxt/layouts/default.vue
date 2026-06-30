@@ -35,11 +35,16 @@
               <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối">🌙</button>
             </template>
           </ClientOnly>
-          <template v-if="isLoggedIn">
-            <LazyNotificationBell />
-            <LazyUserMenu />
-          </template>
-          <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
+          <ClientOnly>
+            <template v-if="isLoggedIn">
+              <LazyNotificationBell />
+              <LazyUserMenu />
+            </template>
+            <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
+            <template #fallback>
+              <button type="button" class="auth-btn">Đăng nhập</button>
+            </template>
+          </ClientOnly>
         </div>
       </div>
     </header>

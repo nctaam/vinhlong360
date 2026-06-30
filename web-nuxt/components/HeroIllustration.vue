@@ -167,10 +167,8 @@ onMounted(() => {
   color: var(--ink-700, #586860);
   opacity: .1;
 }
-:global(.dark) .hero-illustration .motif {
-  color: var(--text-on-dark);
-  opacity: .08;
-}
+/* dark override moved to dark-overrides.css — :global(.dark) in scoped CSS
+   compiles to bare .dark{} which sets opacity on <html> */
 /* Gentle sway — only on the 'waves' motif, which has no static SVG transform
    (animating transform on the translated fruit/palm/lotus groups would clobber
    their positioning, so those stay static — they still read as authored). */

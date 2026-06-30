@@ -6,6 +6,7 @@ import inspect
 import os
 import re
 import sys
+from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -118,6 +119,86 @@ class TestCheckPhonePrivacy:
         src = inspect.getsource(auth.check_phone)
         assert '"exists"' in src or "'exists'" in src
 
+
+class TestUserProfileSlug:
+    """Regression: /api/users/{username} must not be rejected as non-UUID."""
+
+    def test_profile_allows_username_slug(self):
+        src = inspect.getsource(social.get_user_profile)
+        assert "validate_path_id(user_id" not in src
+        assert "lower(username)" in src
+
+    def test_user_posts_resolve_username_slug(self):
+        src = inspect.getsource(social.get_user_posts)
+        assert "validate_path_id(user_id" not in src
+        assert "_resolve_user_id" in src
+
+class TestAuthMePasswordState:
+    """Regression: /auth/me must expose the account password state."""
+
+    def test_safe_user_includes_has_password(self):
+        src = inspect.getsource(auth._safe_user)
+        assert "has_password" in src
+        assert "password_hash" in src
+
+class TestAuthCsrfBootstrap:
+    """Regression: frontend write requests must get a CSRF token after login."""
+
+    def test_csrf_endpoint_mounted(self):
+        from fastapi import FastAPI
+        app = FastAPI()
+        app.include_router(auth.router)
+        routes = {(tuple(r.methods), r.path) for r in app.routes if hasattr(r, "path")}
+        assert any("/auth/csrf" == path and "GET" in methods for methods, path in routes)
+
+    def test_csrf_endpoint_uses_session_token(self):
+        src = inspect.getsource(auth.get_csrf)
+        assert "_extract_token" in src
+        assert "generate_csrf_token" in src
+
+    def test_frontend_auth_headers_include_csrf(self):
+        src = (Path(__file__).resolve().parents[2] / "web-nuxt/composables/useAuth.ts").read_text(encoding="utf-8")
+        assert "/auth/csrf" in src
+        assert "X-CSRF-Token" in src
+        assert "auth-csrf-token-for" not in src
+
+    def test_saved_merge_does_not_auto_post_when_local_cache_empty(self):
+        src = (Path(__file__).resolve().parents[2] / "web-nuxt/composables/useFavorites.ts").read_text(encoding="utf-8")
+        assert "hasLocalItems" in src
+        assert "/api/saved/merge" in src
+        assert "await $fetch<{ items?: FavoriteItem[] }>('/api/saved', { headers: authHeaders() })" in src
+
+class TestSessionListCleanup:
+    """Regression: internal script sessions must not pollute user UI."""
+
+    def test_internal_session_filter_exists(self):
+        src = inspect.getsource(auth.list_sessions)
+        assert "_is_internal_session" in src
+        assert "hidden_internal_count" in src
+
+class TestProductionFeedCleanup:
+    """Regression: production community feed hides known seed/test posts."""
+
+    def test_main_feed_filters_seed_posts(self):
+        src = inspect.getsource(social.get_feed)
+        assert "_prod_seed_post_filter" in src
+
+    def test_following_feed_filters_seed_posts(self):
+        src = inspect.getsource(social.get_following_feed)
+        assert "_prod_seed_post_filter" in src
+
+class TestReputationLikeCount:
+    """Regression: profile and leaderboard must use posts.like_count, not old posts.likes."""
+
+    def test_profile_reputation_uses_like_count(self):
+        src = inspect.getsource(social._reputation)
+        assert "like_count" in src
+        assert "jsonb_typeof(likes)" not in src
+
+    def test_leaderboard_uses_like_count(self):
+        src = inspect.getsource(social.community_leaderboard)
+        assert "p.like_count" in src
+        assert "p.likes" not in src
 
 class TestIPHashing:
     """Finding-011/012: IP addresses must be hashed, not stored raw."""

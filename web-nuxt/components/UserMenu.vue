@@ -6,12 +6,24 @@
     </button>
     <Transition name="menu-pop">
     <div v-if="open" ref="menuRef" class="dropdown-menu show" role="menu" @keydown="onMenuKeydown">
+      <NuxtLink to="/tai-khoan" class="dropdown-item" role="menuitem" @click="open = false">
+        📊 Tài khoản
+      </NuxtLink>
       <NuxtLink v-if="user" :to="`/nguoi-dung/${user.username || user.id}`" class="dropdown-item" role="menuitem" @click="open = false">
         👤 Trang cá nhân
       </NuxtLink>
+      <NuxtLink to="/thong-bao" class="dropdown-item" role="menuitem" @click="open = false">
+        🔔 Thông báo
+        <span v-if="unreadCount" class="menu-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+      </NuxtLink>
+      <NuxtLink to="/da-luu" class="dropdown-item" role="menuitem" @click="open = false">
+        💾 Đã lưu
+      </NuxtLink>
+      <NuxtLink to="/cai-dat" class="dropdown-item" role="menuitem" @click="open = false">
+        ⚙️ Cài đặt
+      </NuxtLink>
       <div class="dropdown-divider"></div>
       <button type="button" class="dropdown-item" role="menuitem" @click="doLogout">🚪 Đăng xuất</button>
-      <button type="button" class="dropdown-item danger" role="menuitem" @click="doDeleteAccount">🗑️ Xoá tài khoản</button>
     </div>
     </Transition>
   </div>
@@ -19,8 +31,8 @@
 
 <script setup lang="ts">
 const { user, logout, authHeaders } = useAuth()
-const { confirmDialog } = useConfirm()
 const { show: showToast } = useToast()
+const { unreadCount } = useNotifications()
 const open = ref(false)
 const triggerRef = ref<HTMLButtonElement>()
 const menuRef = ref<HTMLElement>()
@@ -29,19 +41,6 @@ const { onMenuKeydown } = useDropdown(open, '.dropdown', { triggerRef })
 function toggle() {
   open.value = !open.value
   if (open.value) nextTick(() => menuRef.value?.querySelector<HTMLElement>('[role="menuitem"]')?.focus())
-}
-
-async function doDeleteAccount() {
-  // GĐ5.5: quyền xoá tài khoản & dữ liệu (PDPL).
-  open.value = false
-  if (!await confirmDialog('Xoá vĩnh viễn tài khoản và toàn bộ dữ liệu của bạn? Hành động này không thể hoàn tác.', { danger: true, confirmText: 'Xoá tài khoản', title: 'Xoá tài khoản' })) return
-  try {
-    await $fetch('/auth/account', { method: 'DELETE', headers: authHeaders() })
-    await logout()
-    await navigateTo('/')
-  } catch (e) {
-    showToast('Không thể xoá tài khoản lúc này. Vui lòng thử lại hoặc liên hệ.', 'error')
-  }
 }
 
 const displayName = computed(() => user.value?.display_name || user.value?.phone || '')
@@ -56,3 +55,16 @@ async function doLogout() {
 }
 
 </script>
+
+<style scoped>
+.menu-badge {
+  background: var(--error, #e53e3e);
+  color: #fff;
+  font-size: .7rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-full, 9999px);
+  margin-left: auto;
+  line-height: 1.3;
+}
+</style>

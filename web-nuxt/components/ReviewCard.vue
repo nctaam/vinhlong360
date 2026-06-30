@@ -69,5 +69,5 @@ const { timeAgo } = useTimeAgo()
 .ri-action-btn:disabled { opacity: .55; cursor: not-allowed; }
 .rf-error { font-size: var(--text-sm); color: var(--error, #D94F3D); margin-top: var(--space-1); }
 .review-featured { border-left: 3px solid var(--accent); background: rgba(var(--accent-rgb), .04); border-radius: var(--radius-md); }
-:global(.dark) .review-featured { background: rgba(var(--accent-rgb), .06); }
+/* dark override for .review-featured in dark-overrides.css */
 </style>

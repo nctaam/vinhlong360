@@ -39,6 +39,75 @@
           </button>
         </div>
 
+        <!-- Step: Register (new user fills info before OTP) -->
+        <div v-else-if="step === 'register'" class="otp-step">
+          <h3 tabindex="-1">Tạo tài khoản</h3>
+          <p>Hoàn tất thông tin để đăng ký cho {{ phone }}</p>
+          <div class="form-group">
+            <label class="form-label">Họ và tên <span class="required">*</span></label>
+            <input
+              v-model="regFullName"
+              class="input"
+              type="text"
+              autocomplete="name"
+              placeholder="Nguyễn Văn A"
+              maxlength="100"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ngày sinh</label>
+            <input
+              v-model="regDob"
+              class="input"
+              type="date"
+              autocomplete="bday"
+              :max="maxDob"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username <span class="required">*</span></label>
+            <input
+              v-model="regUsername"
+              class="input"
+              type="text"
+              autocomplete="username"
+              placeholder="nguyenvana"
+              maxlength="30"
+              @blur="checkUsernameAvail"
+            />
+            <p v-if="usernameStatus === 'taken'" class="form-error">Username đã được sử dụng</p>
+            <p v-else-if="usernameStatus === 'invalid'" class="form-error">Username 3–30 ký tự, bắt đầu bằng chữ, chỉ gồm chữ/số/dấu chấm/gạch ngang</p>
+            <p v-else-if="usernameStatus === 'available'" class="form-success">Username khả dụng</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mật khẩu <span class="required">*</span></label>
+            <input
+              v-model="regPassword"
+              class="input"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Tối thiểu 8 ký tự, có chữ và số"
+              maxlength="128"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Xác nhận mật khẩu <span class="required">*</span></label>
+            <input
+              v-model="regPasswordConfirm"
+              class="input"
+              type="password"
+              autocomplete="new-password"
+              placeholder="Nhập lại mật khẩu"
+              maxlength="128"
+            />
+          </div>
+          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleRegister">
+            {{ sending ? 'Đang gửi OTP…' : 'Xác minh số điện thoại' }}
+          </button>
+          <button type="button" class="otp-resend" @click="error = ''; step = 'phone'">Đổi số điện thoại</button>
+        </div>
+
         <!-- Step: Password login (returning user) -->
         <div v-else-if="step === 'password'" class="otp-step">
           <h3 tabindex="-1">Nhập mật khẩu</h3>
@@ -60,6 +129,7 @@
           <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="handleLogin">
             {{ sending ? 'Đang đăng nhập…' : 'Đăng nhập' }}
           </button>
+          <button type="button" class="otp-resend" @click="sendOtp">Đăng nhập bằng OTP</button>
           <button type="button" class="otp-resend" @click="forgotPassword">Quên mật khẩu?</button>
           <button type="button" class="otp-resend" @click="error = ''; step = 'phone'">Đổi số điện thoại</button>
         </div>
@@ -95,7 +165,7 @@
           </div>
         </div>
 
-        <!-- Step: Set password (after first OTP verification) -->
+        <!-- Step: Set password (after first OTP login without password) -->
         <div v-else-if="step === 'set-password'" class="otp-step">
           <h3 tabindex="-1">Đặt mật khẩu</h3>
           <p>Tạo mật khẩu để lần sau đăng nhập nhanh hơn (không cần OTP).</p>
@@ -108,7 +178,7 @@
               type="password"
               autocomplete="new-password"
               aria-label="Mật khẩu mới"
-              placeholder="Mật khẩu (tối thiểu 6 ký tự)"
+              placeholder="Mật khẩu (tối thiểu 8 ký tự)"
               @keyup.enter="handleSetPassword"
             />
           </div>
@@ -132,7 +202,7 @@
 
         <!-- Step: Done -->
         <div v-else class="otp-step otp-done">
-          <h3 tabindex="-1">Đăng nhập thành công!</h3>
+          <h3 tabindex="-1">{{ isNewAccount ? 'Đăng ký thành công!' : 'Đăng nhập thành công!' }}</h3>
           <p>Chào mừng bạn đến với vinhlong360.</p>
           <button type="button" class="btn btn-primary btn-full" @click="close">Đóng</button>
         </div>
@@ -149,7 +219,7 @@ const emit = defineEmits<{ (e: 'close'): void }>()
 const { requestOtp, verifyOtp, checkPhone, login, setPassword } = useAuth()
 const { onLoginSuccess } = useAuthModal()
 
-const step = ref<'phone' | 'password' | 'otp' | 'set-password' | 'done'>('phone')
+const step = ref<'phone' | 'register' | 'password' | 'otp' | 'set-password' | 'done'>('phone')
 watch(step, (v) => {
   if (v === 'done') onLoginSuccess()
   nextTick(() => modalEl.value?.querySelector<HTMLElement>('h3')?.focus())
@@ -166,9 +236,24 @@ const consent = ref(false)
 const countdown = ref(0)
 const modalEl = ref<HTMLElement | null>(null)
 const isResetFlow = ref(false)
+const isNewAccount = ref(false)
 let countdownTimer: ReturnType<typeof setInterval> | null = null
 
+const regFullName = ref('')
+const regDob = ref('')
+const regUsername = ref('')
+const regPassword = ref('')
+const regPasswordConfirm = ref('')
+const usernameStatus = ref<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle')
+
+const maxDob = computed(() => {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - 13)
+  return d.toISOString().split('T')[0]
+})
+
 const modalTitle = computed(() => {
+  if (step.value === 'register') return 'Đăng ký'
   if (step.value === 'set-password') return 'Đặt mật khẩu'
   if (step.value === 'done') return 'Thành công'
   return 'Đăng nhập'
@@ -185,11 +270,17 @@ function close() {
     newPassword.value = ''
     confirmPassword.value = ''
     isResetFlow.value = false
+    isNewAccount.value = false
     otpDigits.value = ['', '', '', '', '', '']
+    regFullName.value = ''
+    regDob.value = ''
+    regUsername.value = ''
+    regPassword.value = ''
+    regPasswordConfirm.value = ''
+    usernameStatus.value = 'idle'
   }, 300)
 }
 
-// Body-scroll lock, focus trap, Escape-to-close + focus restore (SSR-safe).
 const visibleRef = computed(() => props.visible)
 useModalA11y(visibleRef, modalEl, { onClose: close })
 
@@ -208,16 +299,63 @@ async function handlePhone() {
   error.value = ''
   try {
     const res = await checkPhone(phone.value)
-    if (res.has_password) {
+    if (res.exists) {
       step.value = 'password'
     } else {
-      await sendOtp()
+      isNewAccount.value = true
+      step.value = 'register'
     }
   } catch (e: unknown) {
-    error.value = e.data?.detail || 'Lỗi kiểm tra số điện thoại'
+    error.value = (e as any).data?.detail || 'Lỗi kiểm tra số điện thoại'
   } finally {
     sending.value = false
   }
+}
+
+async function checkUsernameAvail() {
+  const uname = regUsername.value.trim().toLowerCase()
+  if (!uname) { usernameStatus.value = 'idle'; return }
+  if (uname.length < 3 || uname.length > 30 || !/^[a-z][a-z0-9._-]*$/.test(uname)) {
+    usernameStatus.value = 'invalid'
+    return
+  }
+  usernameStatus.value = 'checking'
+  try {
+    const res = await $fetch<{ available: boolean }>(`/auth/check-username/${encodeURIComponent(uname)}`)
+    usernameStatus.value = res.available ? 'available' : 'taken'
+  } catch {
+    usernameStatus.value = 'idle'
+  }
+}
+
+async function handleRegister() {
+  error.value = ''
+  if (!regFullName.value.trim() || regFullName.value.trim().length < 2) {
+    error.value = 'Vui lòng nhập họ và tên (ít nhất 2 ký tự)'
+    return
+  }
+  const uname = regUsername.value.trim().toLowerCase()
+  if (!uname || uname.length < 3 || !/^[a-z][a-z0-9._-]*$/.test(uname)) {
+    error.value = 'Username phải từ 3 ký tự, bắt đầu bằng chữ, chỉ gồm chữ/số/dấu chấm/gạch ngang'
+    return
+  }
+  if (usernameStatus.value === 'taken') {
+    error.value = 'Username đã được sử dụng, vui lòng chọn tên khác'
+    return
+  }
+  if (!regPassword.value || regPassword.value.length < 8) {
+    error.value = 'Mật khẩu phải từ 8 ký tự trở lên'
+    return
+  }
+  if (!/\d/.test(regPassword.value) || !/[a-zA-Z]/.test(regPassword.value)) {
+    error.value = 'Mật khẩu cần có ít nhất 1 chữ cái và 1 chữ số'
+    return
+  }
+  if (regPassword.value !== regPasswordConfirm.value) {
+    error.value = 'Mật khẩu nhập lại không khớp'
+    return
+  }
+  await sendOtp()
 }
 
 async function handleLogin() {
@@ -231,7 +369,7 @@ async function handleLogin() {
     await login(phone.value, password.value)
     step.value = 'done'
   } catch (e: unknown) {
-    error.value = e.data?.detail || 'Số điện thoại hoặc mật khẩu không đúng'
+    error.value = (e as any).data?.detail || 'Số điện thoại hoặc mật khẩu không đúng'
   } finally {
     sending.value = false
   }
@@ -257,7 +395,7 @@ async function sendOtp() {
     }, 1000)
     nextTick(() => otpRefs.value[0]?.focus())
   } catch (e: unknown) {
-    error.value = e.data?.detail || 'Lỗi gửi OTP. Thử lại sau.'
+    error.value = (e as any).data?.detail || 'Lỗi gửi OTP. Thử lại sau.'
   } finally {
     sending.value = false
   }
@@ -276,18 +414,24 @@ async function verifyCode() {
   sending.value = true
   error.value = ''
   try {
-    const res = await verifyOtp(phone.value, code, consent.value)
+    const registration = isNewAccount.value ? {
+      full_name: regFullName.value.trim(),
+      username: regUsername.value.trim().toLowerCase(),
+      password: regPassword.value,
+      date_of_birth: regDob.value || undefined,
+    } : undefined
+    const res = await verifyOtp(phone.value, code, consent.value, registration)
     if (res.error) {
       error.value = res.error
+    } else if (isNewAccount.value) {
+      step.value = 'done'
+    } else if (res.has_password && !isResetFlow.value) {
+      step.value = 'done'
     } else {
-      if (res.has_password && !isResetFlow.value) {
-        step.value = 'done'
-      } else {
-        step.value = 'set-password'
-      }
+      step.value = 'set-password'
     }
   } catch (e: unknown) {
-    error.value = e.data?.detail || 'Mã OTP không đúng.'
+    error.value = (e as any).data?.detail || 'Mã OTP không đúng.'
     otpDigits.value = ['', '', '', '', '', '']
     nextTick(() => otpRefs.value[0]?.focus())
   } finally {
@@ -311,7 +455,7 @@ async function handleSetPassword() {
     await setPassword(newPassword.value)
     step.value = 'done'
   } catch (e: unknown) {
-    error.value = e.data?.detail || 'Lỗi đặt mật khẩu'
+    error.value = (e as any).data?.detail || 'Lỗi đặt mật khẩu'
   } finally {
     sending.value = false
   }
@@ -358,6 +502,10 @@ function onOtpPaste(e: ClipboardEvent) {
 @keyframes successPop { 0% { transform: scale(.85); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
 .otp-step { animation: stepSlideIn .35s var(--ease-out-expo); }
 @keyframes stepSlideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
+.form-label { display: block; font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-1); color: var(--ink-secondary); }
+.form-label .required { color: var(--error, #e53e3e); }
+.form-group { margin-bottom: var(--space-3); }
+.form-success { font-size: var(--text-sm); color: var(--success, #38a169); margin-top: var(--space-1); }
 @media (prefers-reduced-motion: reduce) {
   .otp-done h3 { animation: none; }
   .otp-step { animation: none; }

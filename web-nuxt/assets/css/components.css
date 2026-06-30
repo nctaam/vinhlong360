@@ -186,7 +186,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .auth-btn {
   padding: var(--space-2) 18px; border-radius: var(--radius-full); font-weight: 700; font-size: .9rem;
   cursor: pointer; border: 2px solid var(--primary); background: transparent; color: var(--primary-fg);
-  min-height: 44px;
+  min-height: 44px; white-space: nowrap;
   transition: background .3s var(--ease-out), color .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
 }
 .auth-btn:hover { background: var(--primary); color: var(--text-on-dark, #fff); }
