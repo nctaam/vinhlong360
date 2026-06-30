@@ -2728,3 +2728,46 @@ class TestEnumPatternValidation:
         idx = src.index("def list_visits")
         fn_src = src[idx:idx + 200]
         assert "Optional" in fn_src
+
+
+# ── Phase P3: Structured logging bridge ──
+
+class TestStructuredLogBridge:
+    """Python stdlib logging calls should route through StructuredLogger JSONL."""
+
+    def test_bridge_handler_exists(self):
+        src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")
+        assert "_StructuredLogBridge" in src
+        assert "logging.Handler" in src
+
+    def test_bridge_attached_to_root_logger(self):
+        src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")
+        assert "logging.getLogger().addHandler" in src
+
+    def test_bridge_skips_own_logger_to_prevent_recursion(self):
+        src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")
+        idx = src.index("class _StructuredLogBridge")
+        cls_src = src[idx:idx + 600]
+        assert "record.name == self._slogger.name" in cls_src
+
+    def test_bridge_maps_levels_correctly(self):
+        src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")
+        idx = src.index("class _StructuredLogBridge")
+        cls_src = src[idx:idx + 600]
+        assert '"WARNING"' in cls_src
+        assert '"ERROR"' in cls_src
+        assert '"CRITICAL"' in cls_src
+        assert '"DEBUG"' in cls_src
+
+    def test_structured_logger_has_warning_alias(self):
+        src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")
+        idx = src.index("class StructuredLogger")
+        cls_src = src[idx:idx + 2500]
+        assert "def warning(" in cls_src
+        assert "def debug(" in cls_src
+
+    def test_bridge_includes_module_name(self):
+        src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")
+        idx = src.index("class _StructuredLogBridge")
+        cls_src = src[idx:idx + 800]
+        assert "module=record.name" in cls_src

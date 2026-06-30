@@ -84,8 +84,14 @@ class StructuredLogger:
     def warn(self, msg: str, **kw):
         self.log("warn", msg, **kw)
 
+    def warning(self, msg: str, **kw):
+        self.log("warn", msg, **kw)
+
     def error(self, msg: str, **kw):
         self.log("error", msg, **kw)
+
+    def debug(self, msg: str, **kw):
+        self.log("debug", msg, **kw)
 
     def _flush(self):
         """Write buffer to file."""
@@ -144,8 +150,32 @@ class StructuredLogger:
         return entries[-limit:]
 
 
+class _StructuredLogBridge(logging.Handler):
+    """Routes Python stdlib logging calls to StructuredLogger JSONL output."""
+
+    _LEVEL_MAP = {"WARNING": "warn", "ERROR": "error", "CRITICAL": "error", "DEBUG": "debug"}
+
+    def __init__(self, slogger: StructuredLogger):
+        super().__init__(level=logging.INFO)
+        self._slogger = slogger
+
+    def emit(self, record: logging.LogRecord):
+        if record.name == self._slogger.name:
+            return
+        level = self._LEVEL_MAP.get(record.levelname, "info")
+        try:
+            msg = record.getMessage()
+        except Exception:
+            msg = str(record.msg)
+        self._slogger.log(level, msg, module=record.name)
+
+
 # Singleton
 logger = StructuredLogger()
+
+# Bridge: all Python loggers → structured JSONL
+_bridge = _StructuredLogBridge(logger)
+logging.getLogger().addHandler(_bridge)
 
 
 # ══════════════════════════════════════════════════
