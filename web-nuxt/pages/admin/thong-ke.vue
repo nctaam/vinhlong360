@@ -38,7 +38,7 @@
     <!-- Summary cards -->
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="tk-icon si-blue">&#128172;</div>
+        <div class="stat-icon si-blue">&#128172;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.total_queries ?? '—' }}</div>
           <div class="stat-label">Tổng truy vấn</div>
@@ -46,21 +46,21 @@
         <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none" role="img" aria-label="Xu hướng entity 30 ngày"><title>Trend</title><polyline :points="sparkPoints" fill="none" stroke="rgb(52,120,246)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </div>
       <div class="stat-card">
-        <div class="tk-icon si-purple">&#128161;</div>
+        <div class="stat-icon si-purple">&#128161;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.unique_queries ?? '—' }}</div>
           <div class="stat-label">Truy vấn khác nhau</div>
         </div>
       </div>
       <div class="stat-card" :class="{ 'status-warn': (data.gaps || []).length > 5 }">
-        <div class="tk-icon si-orange">&#128371;</div>
+        <div class="stat-icon si-orange">&#128371;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ (data.gaps || []).length }}</div>
           <div class="stat-label">Knowledge gaps</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="tk-icon si-green">&#128176;</div>
+        <div class="stat-icon si-green">&#128176;</div>
         <div class="tk-stat-body">
           <div class="stat-value">
             {{ costTotal }}
@@ -238,13 +238,8 @@ onMounted(fetchData)
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
 
 /* ── Stat card icon ── */
-.stat-card { display: flex; align-items: center; gap: var(--space-4); position: relative; overflow: hidden; }
 .tk-stat-body { flex: 1; min-width: 0; }
-.tk-icon {
-  width: 44px; height: 44px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.3rem; flex-shrink: 0;
-}
+.stat-icon { width: 44px; height: 44px; border-radius: 12px; font-size: 1.3rem; }
 
 /* ── Metric hierarchy (page-local override of shared .stat-card) ── */
 .stat-card .stat-value {
@@ -269,7 +264,7 @@ onMounted(fetchData)
   border-color: var(--warning, #e67e22);
   background: var(--warning-bg);
 }
-.stat-card.status-warn .tk-icon {
+.stat-card.status-warn .stat-icon {
   background: rgba(var(--warning-rgb),.18) !important;
   color: var(--warning, #e67e22) !important;
 }

@@ -12,42 +12,42 @@
 
     <div v-if="summary" class="stat-grid dq-stats">
       <div class="stat-card">
-        <div class="dq-icon si-blue">&#127760;</div>
+        <div class="stat-icon si-blue">&#127760;</div>
         <div>
           <div class="stat-value">{{ summary.data?.public_entities || 0 }}</div>
           <div class="stat-label">Entity public</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon si-orange">&#128218;</div>
+        <div class="stat-icon si-orange">&#128218;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_source || 0 }}</div>
           <div class="stat-label">Thiếu nguồn</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon si-orange">&#128205;</div>
+        <div class="stat-icon si-orange">&#128205;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_location || 0 }}</div>
           <div class="stat-label">Thiếu tọa độ</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon si-orange">&#127963;</div>
+        <div class="stat-icon si-orange">&#127963;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_place_id_non_place || 0 }}</div>
           <div class="stat-label">Thiếu placeId</div>
         </div>
       </div>
       <div class="stat-card ok">
-        <div class="dq-icon si-green">&#9989;</div>
+        <div class="stat-icon si-green">&#9989;</div>
         <div>
           <div class="stat-value">{{ summary.candidates?.auto_apply || 0 }}</div>
           <div class="stat-label">Có thể auto-apply</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="dq-icon si-purple">&#128065;</div>
+        <div class="stat-icon si-purple">&#128065;</div>
         <div>
           <div class="stat-value">{{ summary.candidates?.needs_review || 0 }}</div>
           <div class="stat-label">Cần duyệt</div>
@@ -471,14 +471,8 @@ onMounted(() => refreshAll())
 </script>
 
 <style scoped>
-.dq-stats .stat-card { display: flex; align-items: center; gap: var(--space-4); }
 .dq-stats .stat-card.warn .stat-value { color: var(--warning, #e67e22); }
 .dq-stats .stat-card.ok .stat-value { color: var(--primary, #219653); }
-.dq-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; flex-shrink: 0;
-}
 .dq-th-checkbox { width: 42px; }
 .dq-th-sev { width: 64px; }
 .dq-cache-info { margin: var(--space-3) 0 0; color: var(--muted); font-size: .88rem; }

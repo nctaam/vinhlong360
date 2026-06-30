@@ -18,42 +18,42 @@
     <!-- Health Status -->
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="ai-icon" :style="{ background: statusBg, color: statusColor }">&#9889;</div>
+        <div class="stat-icon" :style="{ background: statusBg, color: statusColor }">&#9889;</div>
         <div>
           <div class="stat-value" :style="{ color: statusColor }">{{ health?.status || '—' }}</div>
           <div class="stat-label">Trạng thái</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-blue">&#128640;</div>
+        <div class="stat-icon si-blue">&#128640;</div>
         <div>
           <div class="stat-value">{{ health?.version || '—' }}</div>
           <div class="stat-label">Phiên bản</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-purple">&#129302;</div>
+        <div class="stat-icon si-purple">&#129302;</div>
         <div>
           <div class="stat-value ai-model-val">{{ health?.model || health?.llm_api || '—' }}</div>
           <div class="stat-label">Model / API</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-orange">&#128338;</div>
+        <div class="stat-icon si-orange">&#128338;</div>
         <div>
           <div class="stat-value">{{ uptime }}</div>
           <div class="stat-label">Uptime</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-green">&#127760;</div>
+        <div class="stat-icon si-green">&#127760;</div>
         <div>
           <div class="stat-value">{{ health?.entities || '—' }}</div>
           <div class="stat-label">Entities (KB)</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-teal">&#128190;</div>
+        <div class="stat-icon si-teal">&#128190;</div>
         <div>
           <div class="stat-value">{{ health?.memory_mb || '—' }} MB</div>
           <div class="stat-label">Bộ nhớ</div>
@@ -362,14 +362,6 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-subtitle { font-size: .82rem; color: var(--muted); margin-top: 2px; }
 
 /* ── Stat card icon ── */
-.stat-card { display: flex; align-items: center; gap: var(--space-4); }
-.ai-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem; flex-shrink: 0;
-  transition: transform .25s var(--ease-soft);
-}
-.stat-card:hover .ai-icon { transform: scale(1.08); }
 .ai-model-val { font-size: .9rem; font-family: var(--font-mono, monospace); }
 
 /* ── Sections (card containers with left accent bar) ── */
@@ -560,7 +552,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .stat-card:hover .ai-icon { transform: none; }
+  .stat-card:hover .stat-icon { transform: none; }
   .ai-subsys-on .ai-subsys-dot { animation: none; }
   .ai-ring-fill { animation: none; }
   .ai-dq-fill { animation: none; }

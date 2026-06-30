@@ -353,11 +353,19 @@ onUnmounted(() => {
 /* ── Stat cards ── */
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-8); }
 .stat-card {
+  display: flex; align-items: center; gap: var(--space-4);
   background: var(--bg); border-radius: 14px; padding: var(--space-5);
   box-shadow: 0 1px 3px rgba(0,0,0,.04); border: .5px solid var(--line);
   transition: transform .35s var(--ease-soft), box-shadow .35s var(--ease-standard), border-color .25s;
   position: relative; overflow: hidden;
 }
+.stat-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem; flex-shrink: 0;
+  transition: transform .25s var(--ease-soft);
+}
+.stat-card:hover .stat-icon { transform: scale(1.08); }
 .stat-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
   background: linear-gradient(90deg, var(--primary) 0%, var(--accent, var(--primary)) 100%);

@@ -25,19 +25,19 @@
     <!-- Stats row -->
     <div class="stat-grid">
       <div class="stat-card" :class="{ 'status-warn': (modStats.pending || 0) > 0 }">
-        <div class="mod-icon si-orange">&#9203;</div>
+        <div class="stat-icon si-orange">&#9203;</div>
         <div><div class="stat-value">{{ modStats.pending || 0 }}</div><div class="stat-label">Chờ duyệt</div></div>
       </div>
       <div class="stat-card" :class="{ 'status-error': (modStats.flagged || 0) > 0 }">
-        <div class="mod-icon si-danger">&#9873;</div>
+        <div class="stat-icon si-danger">&#9873;</div>
         <div><div class="stat-value">{{ modStats.flagged || 0 }}</div><div class="stat-label">Gắn cờ</div></div>
       </div>
       <div class="stat-card status-ok">
-        <div class="mod-icon si-green">&#9989;</div>
+        <div class="stat-icon si-green">&#9989;</div>
         <div><div class="stat-value">{{ modStats.approved || 0 }}</div><div class="stat-label">Đã duyệt</div></div>
       </div>
       <div class="stat-card">
-        <div class="mod-icon si-muted">&#10060;</div>
+        <div class="stat-icon si-muted">&#10060;</div>
         <div><div class="stat-value">{{ modStats.rejected || 0 }}</div><div class="stat-label">Từ chối</div></div>
       </div>
     </div>
@@ -466,15 +466,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 100px; background: var(--line); color: var(--muted); }
 .mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: var(--text-on-dark); }
 
-/* ── Stat card icon ── */
-.stat-card { display: flex; align-items: center; gap: var(--space-4); }
-.mod-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: transform .25s var(--ease-soft); }
-.stat-card:hover .mod-icon { transform: scale(1.08); }
 /* Urgency accent for queue cards with pending/flagged items (dashboard-at-a-glance) */
 .stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
 .stat-card.status-error { border-left: 4px solid var(--error, #D94F3D); }
-.stat-card.status-warn .mod-icon,
-.stat-card.status-error .mod-icon { font-size: 1.3rem; font-weight: 700; }
+.stat-card.status-warn .stat-icon,
+.stat-card.status-error .stat-icon { font-size: 1.3rem; font-weight: 700; }
 
 /* ── Author cell ── */
 .mod-author { display: flex; align-items: center; gap: var(--space-3); }
@@ -533,7 +529,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 @media (prefers-reduced-motion: reduce) { .mod-empty-action:active { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .stat-card:hover .mod-icon { transform: none; }
+  .stat-card:hover .stat-icon { transform: none; }
   .mod-tab:active { transform: none; }
   .mod-btn-spin { animation: none; }
 }
