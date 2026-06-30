@@ -548,13 +548,7 @@ onMounted(async () => {
 })
 const RELATIONSHIP_BATCH_SIZE = 24
 
-function goBack() {
-  if (import.meta.client && window.history.length > 1) {
-    router.back()
-  } else {
-    navigateTo('/du-lich')
-  }
-}
+const goBack = () => goBackOr('/du-lich')
 
 const { data: entity, error: fetchError, refresh: refreshEntity } = await useAsyncData(
   computed(() => `entity-${id.value}`),

@@ -111,6 +111,20 @@ export function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url)
 }
 
+/** Navigate back if history exists, otherwise go to a fallback path. */
+export function goBackOr(fallback: string) {
+  if (import.meta.client && window.history.length > 1) {
+    useRouter().back()
+  } else {
+    navigateTo(fallback)
+  }
+}
+
+/** Emoji icon for a user reputation level (1–4). */
+export function levelIcon(level: number): string {
+  return (['', '🌱', '🤝', '🌟', '👑'][level]) || '🌱'
+}
+
 /** Build a dialable tel: href, stripping dots/spaces/parens (keeps leading +). */
 export function telHref(phone?: string | null): string {
   if (!phone) return '#'

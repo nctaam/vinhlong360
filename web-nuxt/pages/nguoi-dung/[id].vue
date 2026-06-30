@@ -292,10 +292,6 @@ function getSavedTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
 }
 
-function levelIcon(level: number) {
-  return (['', '🌱', '🤝', '🌟', '👑'][level]) || '🌱'  // 1→4
-}
-
 const displayName = computed(() => profile.value?.display_name || profile.value?.phone || 'Người dùng')
 const emptyHint = computed(() => {
   if (isSelf.value) return 'Chia sẻ trải nghiệm của bạn với cộng đồng.'

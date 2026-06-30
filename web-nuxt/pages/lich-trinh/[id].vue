@@ -114,13 +114,7 @@ const route = useRoute()
 const router = useRouter()
 const id = route.params.id as string
 
-function goBack() {
-  if (import.meta.client && window.history.length > 1) {
-    router.back()
-  } else {
-    navigateTo('/lich-trinh')
-  }
-}
+const goBack = () => goBackOr('/lich-trinh')
 
 const { openReport } = useReport()
 
