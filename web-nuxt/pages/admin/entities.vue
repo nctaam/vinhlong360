@@ -509,22 +509,14 @@ function cloneEntity(e: Entity) {
 }
 
 function exportJSON() {
-  const blob = new Blob([JSON.stringify(entities.value, null, 2)], { type: 'application/json' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `entities-${new Date().toISOString().slice(0, 10)}.json`
-  a.click(); URL.revokeObjectURL(a.href)
+  downloadBlob(new Blob([JSON.stringify(entities.value, null, 2)], { type: 'application/json' }), `entities-${new Date().toISOString().slice(0, 10)}.json`)
 }
 function exportCSV() {
   const cols = ['id', 'name', 'type', 'placeId', 'summary']
   const esc = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`
   const rows = entities.value.map(e => cols.map(c => esc((e as Record<string, any>)[c])).join(','))
   const csv = '﻿' + cols.join(',') + '\n' + rows.join('\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `entities-${new Date().toISOString().slice(0, 10)}.csv`
-  a.click(); URL.revokeObjectURL(a.href)
+  downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `entities-${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 // ── Quản lý quan hệ ──

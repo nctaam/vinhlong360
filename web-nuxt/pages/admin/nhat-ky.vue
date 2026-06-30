@@ -121,12 +121,7 @@ function exportCSV() {
   const csvCell = (v: string) => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
   const header = 'Thời gian,Method,Path,Actor,IP'
   const lines = rows.map(e => [e.ts, e.method, e.path, e.actor, e.ip].map(v => csvCell(String(v || ''))).join(','))
-  const blob = new Blob(['﻿' + header + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`
-  a.click()
-  URL.revokeObjectURL(a.href)
+  downloadBlob(new Blob(['﻿' + header + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), `audit-log-${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 function formatTs(ts: string): string {

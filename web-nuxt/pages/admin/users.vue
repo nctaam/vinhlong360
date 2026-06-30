@@ -405,13 +405,7 @@ function exportCSV() {
     formatDate(u.created_at),
   ].map(csvCell).join(','))
   const csv = '﻿' + [header.map(csvCell).join(','), ...rows].join('\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `users-trang-${page.value}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `users-trang-${page.value}.csv`)
 }
 
 // ── User detail drawer ──

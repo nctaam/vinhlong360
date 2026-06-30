@@ -154,12 +154,7 @@ async function exportJson() {
   exporting.value = true
   try {
     const data = await $fetch<Record<string, unknown>>('/admin-api/export', { method: 'POST', headers: authHeaders() })
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `vinhlong360-export-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(a.href)
+    downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `vinhlong360-export-${new Date().toISOString().slice(0, 10)}.json`)
   } catch { showToast('Export lỗi', 'error') }
   exporting.value = false
 }

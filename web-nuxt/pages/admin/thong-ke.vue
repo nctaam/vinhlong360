@@ -222,11 +222,7 @@ function exportCSV() {
   for (const it of (data.value.top_entities || []) as Record<string, unknown>[])
     rows.push(['Entity', String(label(it)), String(count(it))])
   const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n')
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url; a.download = `analytics-${new Date().toISOString().slice(0, 10)}.csv`
-  a.click(); URL.revokeObjectURL(url)
+  downloadBlob(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), `analytics-${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 onMounted(fetchData)

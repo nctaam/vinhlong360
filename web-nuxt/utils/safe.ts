@@ -49,13 +49,7 @@ export function downloadIcal(e: { id: string; name?: string; summary?: string; p
     `URL:https://vinhlong360.vn/dia-diem/${e.id}`,
     'END:VEVENT', 'END:VCALENDAR',
   ]
-  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${e.id}.ics`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadBlob(new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' }), `${e.id}.ics`)
 }
 
 // ── Event date helpers (shared by le-hoi + su-kien pages) ──
@@ -105,6 +99,16 @@ export function eventDateRange(e: EventLike): string {
 export function formatDateVN(d?: string | null): string {
   if (!d) return ''
   return new Date(d).toLocaleDateString('vi-VN')
+}
+
+/** Trigger a file download from a Blob (used by admin CSV/JSON export and iCal). */
+export function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 /** Build a dialable tel: href, stripping dots/spaces/parens (keeps leading +). */
