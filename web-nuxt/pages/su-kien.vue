@@ -351,30 +351,6 @@ function dateRange(e: Entity): string {
 }
 
 
-function downloadIcal(e: Entity) {
-  const attrs = e.attributes || {}
-  const ds = String(attrs.date_start || '').replace(/-/g, '')
-  if (!ds) return
-  const de = String(attrs.date_end || attrs.date_start || '').replace(/-/g, '')
-  const lines = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI',
-    'BEGIN:VEVENT',
-    `DTSTART;VALUE=DATE:${ds}`,
-    `DTEND;VALUE=DATE:${de}`,
-    `SUMMARY:${(e.name || '').replace(/[,;\\]/g, ' ')}`,
-    `DESCRIPTION:${(e.summary || '').slice(0, 200).replace(/\n/g, '\\n')}`,
-    `LOCATION:${(e.place_name || '').replace(/[,;\\]/g, ' ')}`,
-    `URL:https://vinhlong360.vn/dia-diem/${e.id}`,
-    'END:VEVENT', 'END:VCALENDAR',
-  ]
-  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${e.id}.ics`
-  a.click()
-  URL.revokeObjectURL(url)
-}
 
 // Calendar
 const today = new Date()
