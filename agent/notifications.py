@@ -2,13 +2,14 @@
 vinhlong360 — Notifications + Community Features.
 
 Endpoints:
-  GET  /api/notifications          — list notifications (polling)
-  GET  /api/notifications/stream   — SSE real-time stream
-  POST /api/notifications/read-all — mark all as read
-  POST /api/follow/{type}/{id}     — toggle follow user/entity
-  GET  /api/following              — list follows
-  POST /api/report                 — report content
-  POST /api/block/{user_id}        — toggle block user
+  GET    /api/notifications            — list notifications (polling)
+  GET    /api/notifications/stream     — SSE real-time stream
+  POST   /api/notifications/read-all   — mark all as read
+  DELETE /api/notifications/{id}       — delete single notification
+  POST   /api/follow/{type}/{id}       — toggle follow user/entity
+  GET    /api/following                — list follows
+  POST   /api/report                   — report content
+  POST   /api/block/{user_id}          — toggle block user
 """
 
 import asyncio
@@ -59,7 +60,9 @@ class ReportRequest(BaseModel):
 
 # ── Notifications ──
 
-@router.get("/notifications")
+@router.get("/notifications",
+            summary="List notifications",
+            description="Returns paginated notifications for the authenticated user, grouped by type. Includes unread count.")
 async def get_notifications(
     limit: int = Query(20, ge=1, le=50),
     offset: int = Query(0, ge=0, le=10000),
@@ -86,11 +89,29 @@ async def get_notifications(
     grouped = _group_notifications(raw)
     return {
         "notifications": grouped,
-        "unread_count": unread["c"] if unread else 0,
+        "unread_count": db._row_to_dict(unread)["c"] if unread else 0,
     }
 
 
-@router.post("/notifications/read-all")
+@router.get("/notifications/unread-count",
+            summary="Get unread notification count",
+            description="Returns the total number of unread notifications for the authenticated user.")
+async def unread_count(user=Depends(require_user)):
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM notifications
+                WHERE user_id = {ph}::uuid AND is_read = FALSE
+            """, (str(user["id"]),))
+        return db._row_to_dict(row)["c"] if row else 0
+    count = await asyncio.to_thread(_query)
+    return {"unread_count": count}
+
+
+@router.post("/notifications/read-all",
+             summary="Mark all notifications as read",
+             description="Marks every unread notification as read for the authenticated user.")
 async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"notif-read:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
@@ -104,7 +125,9 @@ async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf))
     return {"success": True}
 
 
-@router.post("/notifications/{notif_id}/read")
+@router.post("/notifications/{notif_id}/read",
+             summary="Mark single notification as read",
+             description="Marks a specific notification as read. Only the notification owner can perform this action.")
 async def mark_notification_read(notif_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"notif-read:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     notif_id = validate_path_id(notif_id, "notif_id")
@@ -119,6 +142,44 @@ async def mark_notification_read(notif_id: str, user=Depends(require_user), _csr
     return {"success": True}
 
 
+@router.delete("/notifications/{notif_id}",
+               summary="Delete a notification",
+               description="Permanently deletes a single notification by ID. Only the notification owner can delete it.")
+async def delete_notification(notif_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"notif-del:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    notif_id = validate_path_id(notif_id, "notif_id")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                DELETE FROM notifications
+                WHERE id::text = {ph} AND user_id = {ph}::uuid
+            """, (notif_id, str(user["id"])))
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.delete("/notifications",
+               summary="Clear all notifications",
+               description="Deletes all notifications for the authenticated user. Returns the count of deleted notifications.")
+async def clear_all_notifications(user=Depends(require_user), _csrf=Depends(require_csrf)):
+    check_rate(f"notif-clear:{user['id']}", 3, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            result = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM notifications
+                WHERE user_id = {ph}::uuid
+            """, (str(user["id"]),))
+            db._execute(conn, f"""
+                DELETE FROM notifications
+                WHERE user_id = {ph}::uuid
+            """, (str(user["id"]),))
+            return db._row_to_dict(result)["c"] if result else 0
+    deleted = await asyncio.to_thread(_query)
+    return {"success": True, "deleted": deleted}
+
+
 # ── Notification Preferences ──
 
 class NotifPrefsUpdate(BaseModel):
@@ -129,7 +190,9 @@ class NotifPrefsUpdate(BaseModel):
     pref_system: Optional[bool] = None
 
 
-@router.get("/notification-preferences")
+@router.get("/notification-preferences",
+            summary="Get notification preferences",
+            description="Returns the user's notification preference flags for each notification type (like, comment, mention, follow, system).")
 async def get_notification_preferences(user=Depends(require_user)):
     ph = db._ph
     uid = str(user["id"])
@@ -146,7 +209,9 @@ async def get_notification_preferences(user=Depends(require_user)):
     return {"pref_like": True, "pref_comment": True, "pref_mention": True, "pref_follow": True, "pref_system": True}
 
 
-@router.put("/notification-preferences")
+@router.put("/notification-preferences",
+            summary="Update notification preferences",
+            description="Updates one or more notification preference flags. Only provided fields are changed; omitted fields keep their current value.")
 async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"notif-prefs:{user['id']}", 10, 600, "Cập nhật cài đặt quá nhanh. Vui lòng thử lại sau.")
     ph = db._ph
@@ -174,23 +239,43 @@ async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(r
 
 _sse_subscribers: dict[str, list[asyncio.Queue]] = {}
 _sse_lock = asyncio.Lock()
+_sse_thread_lock = __import__("threading").Lock()
 _SSE_MAX_PER_USER = 5
+_sse_loop: asyncio.AbstractEventLoop | None = None
 
 
 def _notify_sse(user_id: str, data: dict):
-    queues = _sse_subscribers.get(user_id, [])
-    for q in list(queues):
+    with _sse_thread_lock:
+        queues = list(_sse_subscribers.get(user_id, []))
+    loop = _sse_loop
+    for q in queues:
         try:
-            q.put_nowait(data)
-        except asyncio.QueueFull:
-            pass
+            if loop is not None and loop.is_running():
+                loop.call_soon_threadsafe(q.put_nowait, data)
+            else:
+                q.put_nowait(data)
+        except (asyncio.QueueFull, RuntimeError):
+            logger.debug("SSE queue full for user %s — notification dropped", user_id)
 
 
-@router.get("/notifications/stream")
+_sse_event_counter = 0
+_sse_event_lock = asyncio.Lock()
+
+
+async def _next_event_id() -> int:
+    global _sse_event_counter
+    async with _sse_event_lock:
+        _sse_event_counter += 1
+        return _sse_event_counter
+
+
+@router.get("/notifications/stream",
+            summary="SSE notification stream",
+            description="Server-Sent Events stream for real-time notifications. Authenticates via query token. Supports Last-Event-ID for missed event recovery.")
 async def notification_stream(request: Request, token: str = Query(None, max_length=200)):
     from auth import _hash_token
     if not token:
-        raise HTTPException(401, "Token required")
+        raise HTTPException(401, "Yêu cầu token xác thực")
     def _check_token():
         with db._conn() as conn:
             return db._fetchone(conn, f"""
@@ -200,21 +285,47 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
             """, (_hash_token(token),))
     row = await asyncio.to_thread(_check_token)
     if not row:
-        raise HTTPException(401, "Invalid token")
+        raise HTTPException(401, "Token không hợp lệ")
     uid = str(db._row_to_dict(row)["id"])
+
+    last_event_id = request.headers.get("Last-Event-ID")
+    missed = []
+    if last_event_id:
+        def _fetch_missed():
+            with db._conn() as conn:
+                return db._fetchall(conn, f"""
+                    SELECT id, type, title, body, ref_type, ref_id, created_at
+                    FROM notifications
+                    WHERE user_id = {db._ph}::uuid AND is_read = FALSE
+                      AND created_at > NOW() - INTERVAL '5 minutes'
+                    ORDER BY created_at ASC LIMIT 50
+                """, (uid,))
+        missed = await asyncio.to_thread(_fetch_missed)
+
+    global _sse_loop
+    if _sse_loop is None:
+        _sse_loop = asyncio.get_running_loop()
+
     queue: asyncio.Queue = asyncio.Queue(maxsize=50)
     async with _sse_lock:
-        subs = _sse_subscribers.setdefault(uid, [])
-        if len(subs) >= _SSE_MAX_PER_USER:
-            evicted = subs.pop(0)
-            try:
-                evicted.put_nowait(None)
-            except asyncio.QueueFull:
-                pass
-        subs.append(queue)
+        with _sse_thread_lock:
+            subs = _sse_subscribers.setdefault(uid, [])
+            if len(subs) >= _SSE_MAX_PER_USER:
+                evicted = subs.pop(0)
+                try:
+                    evicted.put_nowait(None)
+                except asyncio.QueueFull:
+                    pass
+            subs.append(queue)
 
     async def event_generator():
         try:
+            for m in missed:
+                md = db._row_to_dict(m)
+                eid = await _next_event_id()
+                payload = {k: str(md[k]) if md.get(k) is not None else None for k in ("id", "type", "title", "body", "ref_type", "ref_id")}
+                payload["created_at"] = str(md["created_at"]) if md.get("created_at") is not None else ""
+                yield f"id: {eid}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
             while True:
                 if await request.is_disconnected():
                     break
@@ -222,16 +333,18 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
                     data = await asyncio.wait_for(queue.get(), timeout=30)
                     if data is None:
                         break
-                    yield f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+                    eid = await _next_event_id()
+                    yield f"id: {eid}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
                 except asyncio.TimeoutError:
                     yield ": keepalive\n\n"
         finally:
             async with _sse_lock:
-                subs = _sse_subscribers.get(uid, [])
-                if queue in subs:
-                    subs.remove(queue)
-                if not subs:
-                    _sse_subscribers.pop(uid, None)
+                with _sse_thread_lock:
+                    subs = _sse_subscribers.get(uid, [])
+                    if queue in subs:
+                        subs.remove(queue)
+                    if not subs:
+                        _sse_subscribers.pop(uid, None)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -239,9 +352,18 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
 
 _NOTIF_TYPE_TO_PREF = {
     "like": "pref_like",
+    "reaction": "pref_like",
     "comment": "pref_comment",
+    "comment_reply": "pref_comment",
+    "comment_like": "pref_like",
+    "question_answer": "pref_comment",
     "mention": "pref_mention",
     "follow": "pref_follow",
+    "event_reminder": "pref_system",
+    "moderation": "pref_system",
+    "social": "pref_system",
+    "claim_approved": "pref_system",
+    "claim_rejected": "pref_system",
 }
 
 
@@ -255,7 +377,7 @@ def _user_wants_notif(conn, user_id: str, notif_type: str) -> bool:
     """, (user_id,))
     if not row:
         return True
-    return bool(db._row_to_dict(row)[pref_col])
+    return bool(db._row_to_dict(row).get(pref_col, True))
 
 
 def create_notification(user_id: str, notif_type: str, title: str,
@@ -272,6 +394,12 @@ def create_notification(user_id: str, notif_type: str, title: str,
             """, (user_id, actor_id, actor_id, user_id))
             if blocked:
                 return
+            muted = db._fetchone(conn, f"""
+                SELECT 1 FROM user_mutes
+                WHERE user_id = {ph}::uuid AND muted_id = {ph}::uuid
+            """, (user_id, actor_id))
+            if muted:
+                return
         if not _user_wants_notif(conn, user_id, notif_type):
             return
         if ref_id:
@@ -282,17 +410,21 @@ def create_notification(user_id: str, notif_type: str, title: str,
             """, (user_id, notif_type, ref_id))
             if dup:
                 return
-        db._execute(conn, f"""
+        row = db._fetchone(conn, f"""
             INSERT INTO notifications (user_id, type, title, body, ref_type, ref_id)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
+            RETURNING id
         """, (user_id, notif_type, title, body, ref_type, ref_id))
-    _notify_sse(user_id, {"type": notif_type, "title": title, "body": body,
-                          "ref_type": ref_type, "ref_id": ref_id})
+        notif_id = str(db._row_to_dict(row)["id"]) if row else None
+    _notify_sse(user_id, {"id": notif_id, "type": notif_type, "title": title, "body": body,
+                          "ref_type": ref_type, "ref_id": str(ref_id) if ref_id else None})
 
 
 # ── Follow ──
 
-@router.post("/follow/{target_type}/{target_id}")
+@router.post("/follow/{target_type}/{target_id}",
+             summary="Toggle follow",
+             description="Follows or unfollows a user or entity. Returns the new follow state. Blocked users cannot be followed.")
 async def toggle_follow(target_type: str, target_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     target_id = validate_path_id(target_id, "target_id")
     check_rate(f"follow:{user['id']}", 30, 300, "Thao tác follow quá nhanh. Vui lòng thử lại sau.")
@@ -326,6 +458,8 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
 
     ph = db._ph
     uid = str(user["id"])
+    _MAX_FOLLOW_USER = 500
+    _MAX_FOLLOW_ENTITY = 1000
     def _toggle():
         with db._conn() as conn:
             deleted = db._fetchone(conn, f"""
@@ -335,6 +469,13 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
             """, (uid, target_type, target_id))
             if deleted:
                 return False
+            cap = _MAX_FOLLOW_USER if target_type == "user" else _MAX_FOLLOW_ENTITY
+            cnt = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM follows
+                WHERE follower_id = {ph}::uuid AND target_type = {ph}
+            """, (uid, target_type))
+            if cnt and db._row_to_dict(cnt)["c"] >= cap:
+                raise HTTPException(400, f"Đã đạt giới hạn follow ({cap})")
             db._execute(conn, f"""
                 INSERT INTO follows (follower_id, target_type, target_id)
                 VALUES ({ph}::uuid, {ph}, {ph})
@@ -355,7 +496,9 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
     return {"following": following}
 
 
-@router.get("/follow/check/{target_type}/{target_id}")
+@router.get("/follow/check/{target_type}/{target_id}",
+            summary="Check follow status",
+            description="Checks whether the authenticated user is following a specific user or entity.")
 async def check_follow(target_type: str, target_id: str, user=Depends(require_user)):
     validate_path_id(target_id, "target_id")
     _require_pg()
@@ -373,9 +516,11 @@ async def check_follow(target_type: str, target_id: str, user=Depends(require_us
     return {"following": row is not None}
 
 
-@router.get("/following")
+@router.get("/following",
+            summary="List followed users and entities",
+            description="Returns a paginated list of users and entities the authenticated user follows. Optionally filter by target type.")
 async def get_following(
-    target_type: Optional[str] = Query(None, max_length=20),
+    target_type: Optional[str] = Query(None, pattern="^(user|entity)$"),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0, le=10000),
     user=Depends(require_user),
@@ -391,9 +536,13 @@ async def get_following(
     where = " AND ".join(conditions)
     params.extend([limit, offset])
 
+    count_params = list(params[:-2])
+
     def _query():
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM follows f WHERE {where}", count_params)
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT f.*,
                        CASE WHEN f.target_type = 'user' THEN u.display_name
                             WHEN f.target_type = 'entity' THEN e.name END as target_name,
@@ -405,7 +554,8 @@ async def get_following(
                 ORDER BY f.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, params)
-    rows = await asyncio.to_thread(_query)
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
 
     items = [{
         "target_type": r["target_type"],
@@ -414,11 +564,15 @@ async def get_following(
         "entity_type": r.get("entity_type"),
         "created_at": str(r.get("created_at", "")),
     } for r in [db._row_to_dict(row) for row in rows]]
-    return {"following": items, "has_more": len(items) == limit}
+    return {"following": items, "total": total, "has_more": offset + limit < total}
 
 
-@router.get("/followers/count/{target_type}/{target_id}")
+@router.get("/followers/count/{target_type}/{target_id}",
+            summary="Get follower count",
+            description="Returns the total number of followers for a given user or entity. No authentication required.")
 async def get_follower_count(target_type: str, target_id: str):
+    if target_type not in ("user", "entity"):
+        raise HTTPException(400, "target_type phải là 'user' hoặc 'entity'")
     validate_path_id(target_id, "target_id")
     def _query():
         ph = db._ph
@@ -429,7 +583,7 @@ async def get_follower_count(target_type: str, target_id: str):
             """, (target_type, target_id))
         return row
     row = await asyncio.to_thread(_query)
-    return {"count": row["c"] if row else 0}
+    return {"count": db._row_to_dict(row)["c"] if row else 0}
 
 
 # ── Report ──
@@ -439,7 +593,9 @@ async def get_follower_count(target_type: str, target_id: str):
 RL_REPORT_LIMIT = 10
 RL_REPORT_WINDOW = 3600
 
-@router.post("/report-ugc")
+@router.post("/report-ugc",
+             summary="Report user-generated content",
+             description="Submits a moderation report for a post, comment, or user. Duplicate pending reports for the same target are rejected.")
 async def create_report(body: ReportRequest, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"report:{user['id']}", RL_REPORT_LIMIT, RL_REPORT_WINDOW, "Bạn đã gửi quá nhiều báo cáo. Vui lòng thử lại sau.")
     ph = db._ph
@@ -462,7 +618,9 @@ async def create_report(body: ReportRequest, user=Depends(require_user), _csrf=D
 
 # ── Block ──
 
-@router.post("/block/{blocked_id}")
+@router.post("/block/{blocked_id}",
+             summary="Toggle block user",
+             description="Blocks or unblocks a user. Blocking automatically removes mutual follows. Returns the new block state.")
 async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     blocked_id = validate_path_id(blocked_id, "blocked_id")
     check_rate(f"block:{user['id']}", 20, 300, "Thao tác chặn quá nhanh. Vui lòng thử lại sau.")
@@ -495,26 +653,95 @@ async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depend
     return {"blocked": blocked}
 
 
-@router.get("/blocked-users")
-async def list_blocked_users(user=Depends(require_user)):
+@router.get("/blocked-users",
+            summary="List blocked users",
+            description="Returns a paginated list of users blocked by the authenticated user, with display name and avatar.")
+async def list_blocked_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
+                              user=Depends(require_user)):
+    offset = (page - 1) * limit
     def _query():
         ph = db._ph
+        uid = str(user["id"])
         with db._conn() as conn:
-            return db._fetchall(conn, f"""
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM blocks WHERE blocker_id = {ph}::uuid", (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
                 SELECT u.id, u.display_name, u.avatar_url, u.username, b.created_at
                 FROM blocks b JOIN users u ON u.id = b.blocked_id
                 WHERE b.blocker_id = {ph}::uuid
                 ORDER BY b.created_at DESC
-                LIMIT 200
-            """, (str(user["id"]),))
-    rows = await asyncio.to_thread(_query)
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            return rows, total
+    rows, total = await asyncio.to_thread(_query)
     result = []
     for r in rows:
         d = db._row_to_dict(r)
         result.append({"id": str(d["id"]), "display_name": d.get("display_name"),
                         "avatar_url": d.get("avatar_url"), "username": d.get("username"),
                         "blocked_at": str(d.get("created_at", ""))})
-    return {"blocked": result}
+    return {"blocked": result, "total": total, "page": page, "has_more": offset + limit < total}
+
+
+# ── Mute (soft block — hides posts from feed only) ──
+
+@router.post("/mute/{muted_id}",
+             summary="Toggle mute user",
+             description="Mutes or unmutes a user. Muted users' posts are hidden from the feed but they are not blocked. Returns the new mute state.")
+async def toggle_mute(muted_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    muted_id = validate_path_id(muted_id, "muted_id")
+    check_rate(f"mute:{user['id']}", 20, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    if muted_id == str(user["id"]):
+        raise HTTPException(400, "Không thể tắt tiếng chính mình")
+    ph = db._ph
+    uid = str(user["id"])
+
+    def _query():
+        with db._conn() as conn:
+            deleted = db._fetchone(conn, f"""
+                DELETE FROM user_mutes
+                WHERE user_id = {ph}::uuid AND muted_id = {ph}::uuid RETURNING 1
+            """, (uid, muted_id))
+            if deleted:
+                return False
+            db._execute(conn, f"""
+                INSERT INTO user_mutes (user_id, muted_id) VALUES ({ph}::uuid, {ph}::uuid)
+                ON CONFLICT DO NOTHING
+            """, (uid, muted_id))
+            return True
+
+    muted = await asyncio.to_thread(_query)
+    return {"muted": muted}
+
+
+@router.get("/muted-users",
+            summary="List muted users",
+            description="Returns a paginated list of users muted by the authenticated user, with display name and avatar.")
+async def list_muted_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
+                            user=Depends(require_user)):
+    offset = (page - 1) * limit
+    def _query():
+        ph = db._ph
+        uid = str(user["id"])
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM user_mutes WHERE user_id = {ph}::uuid", (uid,))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            rows = db._fetchall(conn, f"""
+                SELECT u.id, u.display_name, u.avatar_url, u.username, m.created_at
+                FROM user_mutes m JOIN users u ON u.id = m.muted_id
+                WHERE m.user_id = {ph}::uuid ORDER BY m.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (uid, limit, offset))
+            return rows, total
+
+    rows, total = await asyncio.to_thread(_query)
+    result = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        result.append({"id": str(d["id"]), "display_name": d.get("display_name"),
+                        "avatar_url": d.get("avatar_url"), "username": d.get("username"),
+                        "muted_at": str(d.get("created_at", ""))})
+    return {"muted": result, "total": total, "page": page, "has_more": offset + limit < total}
 
 
 # ── Helpers ──
@@ -551,7 +778,7 @@ def _format_notif(row: dict) -> dict:
         "title": row["title"],
         "body": row.get("body"),
         "ref_type": row.get("ref_type"),
-        "ref_id": row.get("ref_id"),
+        "ref_id": str(row["ref_id"]) if row.get("ref_id") else None,
         "is_read": row.get("is_read", False),
         "created_at": str(row.get("created_at", "")),
     }
@@ -559,7 +786,9 @@ def _format_notif(row: dict) -> dict:
 
 # ── RSVP lễ-hội/sự-kiện: "Tôi sẽ đi" ──
 
-@router.post("/events/{entity_id}/rsvp")
+@router.post("/events/{entity_id}/rsvp",
+             summary="Toggle event RSVP",
+             description="Marks or unmarks the authenticated user as attending an event. Only entities of type 'event' are accepted. Returns the new RSVP state and attendee count.")
 async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     validate_path_id(entity_id, "entity_id")
     check_rate(f"rsvp:{user['id']}", 30, 300, "Thao tác RSVP quá nhanh. Vui lòng thử lại sau.")
@@ -578,15 +807,17 @@ async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(
             if deleted:
                 going = False
             else:
-                db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph}) ON CONFLICT DO NOTHING", (uid, entity_id))
-                going = True
+                cur = db._execute(conn, f"INSERT INTO event_rsvp (user_id, entity_id) VALUES ({ph}::uuid, {ph}) ON CONFLICT DO NOTHING", (uid, entity_id))
+                going = bool(cur and cur.rowcount > 0)
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM event_rsvp WHERE entity_id = {ph}", (entity_id,))
         return going, int(db._row_to_dict(cnt)["c"]) if cnt else 0
     going, count = await asyncio.to_thread(_query)
     return {"going": going, "count": count}
 
 
-@router.get("/events/{entity_id}/rsvp")
+@router.get("/events/{entity_id}/rsvp",
+            summary="Get event RSVP status",
+            description="Returns the total attendee count and whether the current user (if authenticated) has RSVP'd to the event.")
 async def get_rsvp(entity_id: str, request: Request = None):
     validate_path_id(entity_id, "entity_id")
     u = await get_current_user(request) if request else None

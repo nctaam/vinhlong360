@@ -34,9 +34,12 @@ Input validation:
 
 import hashlib
 import hmac
+import logging
 import os
 import re
 import secrets
+
+logger = logging.getLogger(__name__)
 
 from fastapi import Depends, HTTPException, Request
 
@@ -85,6 +88,8 @@ def require_role(*roles: str):
 
 _CSRF_SECRET = os.environ.get("CSRF_SECRET", "")
 if not _CSRF_SECRET:
+    if os.environ.get("ENVIRONMENT") == "production":
+        raise RuntimeError("CSRF_SECRET is required in production")
     _CSRF_SECRET = secrets.token_hex(32)
 
 _SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
@@ -507,6 +512,7 @@ def validate_url_safe(url: str) -> dict:
         parsed = _urlparse.urlparse(url)
         hostname = parsed.hostname or ""
     except Exception:
+        logger.debug("SSRF check: unparseable URL", exc_info=True)
         return {"safe": False, "reason": "invalid_url"}
 
     if not hostname:
@@ -548,9 +554,10 @@ def validate_redirect_url(url: str, allowed_hosts: frozenset[str] | None = None)
 
     hosts = allowed_hosts or _DEFAULT_ALLOWED_HOSTS
 
-    # Block javascript: and data: schemes
-    url_stripped = url.strip().lower()
-    if url_stripped.startswith("javascript:") or url_stripped.startswith("data:"):
+    # Strip control chars and whitespace that browsers may ignore in scheme position
+    import re as _re
+    url_stripped = _re.sub(r'[\x00-\x1f\x7f\s]', '', url).lower()
+    if url_stripped.startswith("javascript:") or url_stripped.startswith("data:") or url_stripped.startswith("vbscript:"):
         return {"safe": False, "reason": "dangerous_scheme"}
 
     # Relative URLs are safe
@@ -567,6 +574,7 @@ def validate_redirect_url(url: str, allowed_hosts: frozenset[str] | None = None)
         parsed = _urlparse.urlparse(url)
         hostname = (parsed.hostname or "").lower()
     except Exception:
+        logger.debug("Redirect check: unparseable URL", exc_info=True)
         return {"safe": False, "reason": "invalid_url"}
 
     if hostname in hosts:
@@ -1148,6 +1156,7 @@ def validate_token_structure(token: str) -> dict:
         header_b64 = parts[0] + "=" * padding
         header = _json.loads(_base64.urlsafe_b64decode(header_b64))
     except Exception:
+        logger.debug("JWT inspect: invalid header encoding", exc_info=True)
         return {"valid": False, "issues": ["invalid_header"], "claims": {}}
 
     alg = header.get("alg", "")
@@ -1170,6 +1179,7 @@ def validate_token_structure(token: str) -> dict:
         payload_b64 = parts[1] + "=" * padding
         claims = _json.loads(_base64.urlsafe_b64decode(payload_b64))
     except Exception:
+        logger.debug("JWT inspect: invalid payload encoding", exc_info=True)
         return {"valid": False, "issues": ["invalid_payload"], "claims": {}}
 
     # Check expiry
@@ -1269,6 +1279,7 @@ def validate_referrer(referrer: str, is_production: bool = False) -> dict:
         parsed = urlparse(referrer)
         host = (parsed.hostname or "").lower()
     except Exception:
+        logger.debug("Referrer validation: unparseable referrer", exc_info=True)
         return {"valid": False, "reason": "unparseable_referrer"}
 
     if is_production and host in ("localhost", "127.0.0.1"):

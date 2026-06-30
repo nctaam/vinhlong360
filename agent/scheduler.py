@@ -2,7 +2,7 @@
 vinhlong360 — Task Scheduler.
 
 Chạy các tác vụ nền định kỳ:
-  - Auto-learn từ knowledge gaps (mỗi 6h)
+  - Auto-learn từ knowledge gaps (mỗi 3h, cấu hình LEARN_INTERVAL_AUTOLEARN)
   - Relationship discovery (mỗi 24h)
   - Data sync (data.json → data.js) sau mỗi thay đổi
   - Analytics cleanup (mỗi 24h)
@@ -21,7 +21,9 @@ import sys
 import time
 import threading
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
+_VN_TZ = timezone(timedelta(hours=7))
 from pathlib import Path
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -149,15 +151,19 @@ class ScheduledTask:
         self.timeout = timeout or _TASK_TIMEOUT
         self.next_run_after = 0 if run_immediately else time.time() + interval_seconds
         self._consecutive_failures = 0
+        self._is_running = False
 
     def should_run(self) -> bool:
         if not self.enabled:
+            return False
+        if self._is_running:
             return False
         if time.time() < self.next_run_after:
             return False
         return time.time() - self.last_run >= self.interval
 
     def run(self):
+        self._is_running = True
         try:
             _sched_logger.info("Running task: %s (timeout=%ds)", self.name, self.timeout)
             start = time.time()
@@ -208,6 +214,8 @@ class ScheduledTask:
             else:
                 _sched_logger.error("Task failed: %s — %d consecutive failures, waiting normal interval — %s\n%s",
                                     self.name, self._consecutive_failures, e, traceback.format_exc())
+        finally:
+            self._is_running = False
 
 
 def task_auto_learn():
@@ -359,23 +367,61 @@ def task_admin_digest():
         _sched_logger.error("digest send error: %s", e)
 
 
+_TELEGRAM_RETRY_QUEUE: list[tuple[str, int]] = []
+_TELEGRAM_MAX_QUEUE = 50
+_telegram_queue_lock = __import__("threading").Lock()
+
 def _send_telegram_admins(text: str) -> bool:
-    """Gửi 1 tin Telegram tới mọi ADMIN_TELEGRAM_IDS (free, HTTP API)."""
-    import os
+    """Gửi 1 tin Telegram tới mọi ADMIN_TELEGRAM_IDS (free, HTTP API).
+    Retry 3 lần với backoff; nếu vẫn thất bại thì xếp hàng chờ retry sau."""
+    import os, time as _time
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     ids = [x.strip() for x in os.environ.get("ADMIN_TELEGRAM_IDS", "").split(",") if x.strip()]
     if not token or not ids:
         return False
-    sent = False
-    try:
-        import httpx
-        for cid in ids:
-            httpx.post(f"https://api.telegram.org/bot{token}/sendMessage",
-                       json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
-            sent = True
-    except Exception as e:
-        _sched_logger.error("telegram send error: %s", e)
-    return sent
+    import httpx
+    for cid in ids:
+        ok = False
+        for attempt in range(3):
+            try:
+                resp = httpx.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                                  json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
+                if resp.status_code < 500:
+                    ok = True
+                    break
+            except Exception:
+                _sched_logger.warning("telegram attempt %d failed for chat %s", attempt + 1, cid, exc_info=True)
+            _time.sleep(0.5 * (2 ** attempt))
+        if not ok:
+            _sched_logger.error("telegram send failed after 3 attempts for chat %s", cid)
+            with _telegram_queue_lock:
+                if len(_TELEGRAM_RETRY_QUEUE) < _TELEGRAM_MAX_QUEUE:
+                    _TELEGRAM_RETRY_QUEUE.append((text, int(_time.time())))
+            return False
+    return True
+
+
+def retry_pending_telegram(max_age_hours: int = 24):
+    """Retry queued Telegram messages (called from digest or cleanup tasks)."""
+    import time as _time
+    cutoff = int(_time.time()) - max_age_hours * 3600
+    retried = 0
+    while True:
+        with _telegram_queue_lock:
+            if not _TELEGRAM_RETRY_QUEUE:
+                break
+            text, ts = _TELEGRAM_RETRY_QUEUE[0]
+            if ts < cutoff:
+                _TELEGRAM_RETRY_QUEUE.pop(0)
+                continue
+        if _send_telegram_admins(text):
+            with _telegram_queue_lock:
+                if _TELEGRAM_RETRY_QUEUE and _TELEGRAM_RETRY_QUEUE[0] == (text, ts):
+                    _TELEGRAM_RETRY_QUEUE.pop(0)
+            retried += 1
+        else:
+            break
+    return retried
 
 
 def task_autonomous_agent():
@@ -413,9 +459,9 @@ def task_autonomous_agent():
     raw = "\n".join(ctx) or "(không có dữ liệu)"
 
     try:
-        from server import client, MODEL_MINI
-        resp = client.chat.completions.create(
-            model=MODEL_MINI, temperature=0.3, max_tokens=400, timeout=20,  # P1-2: tránh treo scheduler
+        from llm_config import get_client, get_model_mini
+        resp = get_client().chat.completions.create(
+            model=get_model_mini(), temperature=0.3, max_tokens=400, timeout=20,  # P1-2: tránh treo scheduler
             messages=[
                 {"role": "system", "content": "Bạn là trợ lý quản trị vinhlong360. Đề xuất TỐI ĐA 3 việc ưu tiên xử lý, ngắn gọn, tiếng Việt, có thứ tự."},
                 {"role": "user", "content": f"Tình hình hiện tại:\n{raw}\n\nĐề xuất việc ưu tiên:"},
@@ -444,7 +490,7 @@ def task_cache_warmup():
     """Warm semantic cache with popular and seasonal queries."""
     try:
         from semantic_cache import cache_warmer, multi_tier_cache
-        month = datetime.now().month
+        month = datetime.now(_VN_TZ).month
         seasonal = cache_warmer.get_seasonal_queries(month)
         _sched_logger.info("Cache warmup: %d seasonal queries for month %d", len(seasonal), month)
     except Exception as e:
@@ -607,6 +653,59 @@ def task_notification_cleanup():
         _sched_logger.error("Notification cleanup error: %s", e)
 
 
+def task_event_reminders():
+    """Send reminder notifications to users who RSVP'd to events happening within 24h."""
+    try:
+        import database as db_mod
+        if not db_mod._use_pg:
+            return
+        from notifications import create_notification
+        import knowledge as kb
+        with db_mod._conn() as conn:
+            rsvps = db_mod._fetchall(conn, """
+                SELECT er.user_id, er.entity_id
+                FROM event_rsvp er
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM notifications n
+                    WHERE n.user_id = er.user_id
+                    AND n.ref_type = 'event_reminder'
+                    AND n.ref_id = er.entity_id
+                    AND n.created_at > NOW() - INTERVAL '12 hours'
+                )
+            """, ())
+        if not rsvps:
+            return
+        entities = kb._entities if hasattr(kb, "_entities") else {}
+        from datetime import datetime, timezone, timedelta
+        now = datetime.now(timezone.utc)
+        cutoff = now + timedelta(hours=24)
+        sent = 0
+        for row in rsvps:
+            r = db_mod._row_to_dict(row)
+            entity = entities.get(r["entity_id"], {})
+            event_date_str = (entity.get("attributes") or {}).get("event_date")
+            if not event_date_str:
+                continue
+            try:
+                event_dt = datetime.fromisoformat(str(event_date_str).replace("Z", "+00:00"))
+            except (ValueError, TypeError):
+                continue
+            if not (now <= event_dt <= cutoff):
+                continue
+            try:
+                create_notification(
+                    str(r["user_id"]), "event_reminder",
+                    f"Sự kiện sắp diễn ra: {entity.get('name', '')}",
+                    ref_type="event_reminder", ref_id=r["entity_id"])
+                sent += 1
+            except Exception:
+                _sched_logger.exception("Failed to send event reminder for %s", r["entity_id"])
+        if sent:
+            _sched_logger.info("Event reminders: sent %d", sent)
+    except Exception as e:
+        _sched_logger.error("Event reminders error: %s", e)
+
+
 def task_session_cleanup():
     """Purge expired user_sessions, otp_sessions, and sessions of deleted users."""
     try:
@@ -629,6 +728,33 @@ def task_session_cleanup():
             hard_deleted = getattr(result, 'rowcount', 0)
             if hard_deleted and hard_deleted > 0:
                 _sched_logger.info("Session cleanup: hard-deleted %d accounts past grace period", hard_deleted)
+            try:
+                r = db._execute(conn, "DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'", ())
+                old_logins = getattr(r, 'rowcount', 0) if r else 0
+                if old_logins:
+                    _sched_logger.info("Session cleanup: purged %d old login_history entries", old_logins)
+            except Exception:
+                _sched_logger.warning("login_history cleanup failed", exc_info=True)
+            try:
+                deleted_ids = db._fetchall(conn, """
+                    SELECT id FROM posts WHERE deleted_at IS NOT NULL
+                    AND deleted_at < NOW() - INTERVAL '30 days'
+                    LIMIT 500
+                """, ())
+                if deleted_ids:
+                    ids = [str(db._row_to_dict(r)["id"]) for r in deleted_ids]
+                    for pid in ids:
+                        db._execute(conn, "DELETE FROM comments WHERE post_id::text = %s", (pid,))
+                        db._execute(conn, "DELETE FROM likes WHERE post_id::text = %s", (pid,))
+                        db._execute(conn, "DELETE FROM bookmarks WHERE post_id::text = %s", (pid,))
+                        db._execute(conn, "DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = %s", (pid,))
+                    db._execute(conn, """
+                        DELETE FROM posts WHERE deleted_at IS NOT NULL
+                        AND deleted_at < NOW() - INTERVAL '30 days'
+                    """, ())
+                    _sched_logger.info("Session cleanup: hard-deleted %d soft-deleted posts past grace period", len(ids))
+            except Exception as e:
+                _sched_logger.warning("Post hard-delete cleanup error: %s", e)
         _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
     except Exception as e:
         _sched_logger.error("Session cleanup error: %s", e)
@@ -681,6 +807,7 @@ TASKS = [
     ScheduledTask("guardrails-cleanup",task_guardrails_cleanup,   interval_seconds=12 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
     ScheduledTask("session-cleanup", task_session_cleanup,       interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("notification-cleanup", task_notification_cleanup, interval_seconds=24 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 24h
+    ScheduledTask("event-reminders",    task_event_reminders,      interval_seconds=6 * 3600, run_immediately=False),  # 6h
     ScheduledTask("ratelimit-gc",  task_ratelimit_gc,          interval_seconds=300),        # 5min
     ScheduledTask("moderation-escalation", task_moderation_auto_escalation, interval_seconds=6 * 3600, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h
     ScheduledTask("learning-loop",    task_learning_loop,         interval_seconds=LEARNING_LOOP_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 1h (env)
@@ -690,6 +817,7 @@ TASKS = [
 
 _scheduler_thread = None
 _running = False
+_scheduler_lock = threading.Lock()
 
 
 def _scheduler_loop():
@@ -711,13 +839,14 @@ def start_scheduler():
         _sched_logger.info("Background scheduler disabled by SCHEDULER_ENABLED")
         return
 
-    if _scheduler_thread and _scheduler_thread.is_alive():
-        return
+    with _scheduler_lock:
+        if _scheduler_thread and _scheduler_thread.is_alive():
+            return
 
-    _running = True
-    _scheduler_thread = threading.Thread(target=_scheduler_loop, daemon=True, name="scheduler")
-    _scheduler_thread.start()
-    _sched_logger.info("Background scheduler thread started")
+        _running = True
+        _scheduler_thread = threading.Thread(target=_scheduler_loop, daemon=True, name="scheduler")
+        _scheduler_thread.start()
+        _sched_logger.info("Background scheduler thread started")
 
 
 def stop_scheduler():

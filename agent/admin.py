@@ -33,14 +33,15 @@ import analytics
 
 logger = logging.getLogger("admin")
 import site_settings
-from database import db
+from database import db, escape_like as _escape_like
 
 try:
     from cost_tracker import get_cost_report as _get_cost_report
     _HAS_COST = True
 except Exception:  # noqa: BLE001
+    logger.warning("Cost tracker unavailable", exc_info=True)
     _HAS_COST = False
-from auth_middleware import get_current_user, validate_path_id, require_csrf
+from auth_middleware import get_current_user, validate_path_id, require_csrf, require_pg
 from middleware import admin_limiter, verify_admin_key, get_client_ip
 
 
@@ -48,17 +49,24 @@ def _sync_kb():
     """GĐ3.6: write-through — sau khi ghi DB, nạp lại knowledge để chat/tool thấy ngay.
 
     Bọc try/except: lỗi reload không được làm hỏng thao tác admin đã commit.
+    Also invalidates LLM response cache to prevent stale chat answers.
     """
     try:
         knowledge.reload()
     except Exception:
         logger.exception("Knowledge reload failed after admin write — chat may serve stale data")
+    try:
+        import cache
+        cache.invalidate_all()
+    except Exception:
+        logger.warning("LLM cache invalidation failed after KB sync")
 
 
 def _safe(fn, default):
     try:
         return fn()
     except Exception:
+        logger.debug("_safe(%s) failed, returning default", getattr(fn, "__name__", fn), exc_info=True)
         return default
 
 # ── Auth dependency ──
@@ -80,6 +88,7 @@ def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:
                    "method": method, "path": path, "ip": ip}
             with open(_AUDIT_FILE, "a", encoding="utf-8") as f:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            _audit_cache["mtime"] = 0.0
             _maybe_rotate_audit()
     except Exception:
         logger.exception("Failed to write admin audit log")
@@ -94,7 +103,9 @@ def _maybe_rotate_audit() -> None:
             return
         archive = _AUDIT_FILE.with_suffix(f".{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}.jsonl")
         archive.write_text("\n".join(lines[:-_AUDIT_MAX_LINES]) + "\n", encoding="utf-8")
-        _AUDIT_FILE.write_text("\n".join(lines[-_AUDIT_MAX_LINES:]) + "\n", encoding="utf-8")
+        tmp = _AUDIT_FILE.with_suffix(".tmp")
+        tmp.write_text("\n".join(lines[-_AUDIT_MAX_LINES:]) + "\n", encoding="utf-8")
+        tmp.replace(_AUDIT_FILE)
     except Exception:
         logger.exception("Audit log rotation failed")
 
@@ -105,7 +116,7 @@ async def require_admin(request: Request):
     client_ip = get_client_ip(request)
     allowed, rate_info = admin_limiter.is_allowed(client_ip)
     if not allowed:
-        raise HTTPException(429, detail="Rate limit exceeded", headers={"Retry-After": str(rate_info["retry_after"])})
+        raise HTTPException(429, detail="Quá nhiều yêu cầu. Vui lòng thử lại sau.", headers={"Retry-After": str(rate_info["retry_after"])})
     # Auth: allow server-side admin key or a logged-in admin user from the frontend.
     actor = None
     if verify_admin_key(request):
@@ -115,7 +126,8 @@ async def require_admin(request: Request):
         if user and user.get("role") == "admin":
             actor = f"user:{user.get('id')}"
     if not actor:
-        raise HTTPException(401, detail="Invalid admin credentials. Use X-Admin-Key or an admin session.")
+        raise HTTPException(401, detail="Xác thực admin không hợp lệ. Sử dụng X-Admin-Key hoặc phiên làm việc admin.")
+    request.state.admin_user = user if actor != "admin-key" else None
     # P2-7: audit các thao tác THAY ĐỔI (đọc/GET không log để tránh nhiễu)
     if request.method in ("POST", "PUT", "DELETE", "PATCH"):
         _log_admin_audit(actor, request.method, request.url.path, client_ip)
@@ -254,7 +266,9 @@ class DataQualityApplyRequest(BaseModel):
     candidate_ids: list[str] | None = Field(None, max_length=500)
     dry_run: bool = True
 
-@router.get("/entities")
+@router.get("/entities",
+            summary="List entities (admin)",
+            description="Returns a paginated list of all entities for admin management. Supports filtering by type, area, search query, and orphan detection.")
 async def list_entities(
     type: Optional[str] = Query(None, max_length=50),
     area: Optional[str] = Query(None, max_length=100),
@@ -266,26 +280,35 @@ async def list_entities(
 ):
     """Danh sách entities với filter — đọc từ database."""
     def _query():
-        if q:
-            results = db.search_entities(q=q, entity_type=type, area=area, limit=limit)
-        elif type:
-            results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
+        if q or orphans_only:
+            all_matches = db.search_entities(q=q, entity_type=type, area=area, limit=2000, offset=0) if q else db.list_entities(entity_type=type, area=area, limit=2000, offset=0)
         else:
-            results = db.list_entities(area=area, limit=limit, offset=offset)
+            all_matches = None
+            results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
 
         if include_places:
-            places = db.list_entities(entity_type=None, limit=1000, offset=0)
-            results = [e for e in (results + [p for p in places if p["type"] == "place"])]
+            with db._conn() as conn:
+                place_rows = db._fetchall(conn, "SELECT * FROM entities WHERE type = 'place' ORDER BY name LIMIT 1000", ())
+            places = [db._parse_entity(r) for r in place_rows]
+            if all_matches is not None:
+                all_matches = all_matches + places
+            else:
+                results = results + places
 
         if orphans_only:
             with db._conn() as conn:
                 rows = db._fetchall(conn,
                     "SELECT from_id AS eid FROM relationships UNION SELECT to_id FROM relationships", ())
                 rel_ids = {db._row_to_dict(r)["eid"] for r in rows}
-            results = [e for e in results if e.get("type") != "place" and e["id"] not in rel_ids]
+            if all_matches is not None:
+                all_matches = [e for e in all_matches if e.get("type") != "place" and e["id"] not in rel_ids]
 
-        total = len(results)
-        items = results[:limit] if q else results
+        if all_matches is not None:
+            total = len(all_matches)
+            items = all_matches[offset:offset + limit]
+        else:
+            total = db.count_entities_filtered(entity_type=type, area=area)
+            items = results
 
         place_ids = list({e["placeId"] for e in items if e.get("placeId")})
         if place_ids:
@@ -300,19 +323,23 @@ async def list_entities(
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entities/places")
+@router.get("/entities/places",
+            summary="List places for dropdown",
+            description="Returns a list of place entities (xa/phuong) for use in admin dropdown selectors.")
 async def list_places():
     """Danh sách xã/phường cho dropdown."""
     def _query():
         db.initialize()
         with db._conn() as conn:
-            rows = db._fetchall(conn, "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name")
+            rows = db._fetchall(conn, "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name LIMIT 500")
         return [db._row_to_dict(r) for r in rows]
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entities/check-duplicate")
-async def check_duplicate(name: str = Query(..., min_length=2)):
+@router.get("/entities/check-duplicate",
+            summary="Check entity name duplicate",
+            description="Checks for existing entities with similar names using case-insensitive substring matching. Returns up to 5 matches.")
+async def check_duplicate(name: str = Query(..., min_length=2, max_length=200)):
     """Kiểm tra entity trùng tên (substring match, case-insensitive)."""
     name_lower = name.lower().strip()
     if len(name_lower) < 2:
@@ -331,27 +358,31 @@ async def check_duplicate(name: str = Query(..., min_length=2)):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entities/{entity_id}")
+@router.get("/entities/{entity_id}",
+            summary="Get entity details",
+            description="Returns full details of a single entity including its relationships.")
 async def get_entity(entity_id: str):
     """Chi tiết 1 entity."""
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         entity["relationships"] = db.get_relationships(entity_id)
         return entity
     return await asyncio.to_thread(_query)
 
 
-@router.put("/entities/{entity_id}")
+@router.put("/entities/{entity_id}",
+            summary="Update entity",
+            description="Updates an entity's fields. Logs changes to entity history and invalidates relevant caches.")
 async def update_entity(entity_id: str, update: EntityUpdate):
     """Cập nhật entity."""
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         existing = db.get_entity(entity_id)
         if not existing:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         old_snapshot = {k: v for k, v in existing.items()}
         updates = update.model_dump(exclude_none=True)
         existing.update(updates)
@@ -367,7 +398,9 @@ async def update_entity(entity_id: str, update: EntityUpdate):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entities/{entity_id}/history")
+@router.get("/entities/{entity_id}/history",
+            summary="Get entity change history",
+            description="Returns the change history (diffs) for a specific entity, ordered by most recent first.")
 async def get_entity_history(entity_id: str, limit: int = Query(50, ge=1, le=200)):
     """Lịch sử thay đổi entity."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -376,7 +409,9 @@ async def get_entity_history(entity_id: str, limit: int = Query(50, ge=1, le=200
     return await asyncio.to_thread(_query)
 
 
-@router.post("/entities", status_code=201)
+@router.post("/entities", status_code=201,
+             summary="Create entity",
+             description="Creates a new entity. Returns 409 if an entity with the same ID already exists.")
 async def create_entity(entity: EntityCreate):
     """Tạo entity mới."""
     def _query():
@@ -395,14 +430,16 @@ async def create_entity(entity: EntityCreate):
     return await asyncio.to_thread(_query)
 
 
-@router.delete("/entities/{entity_id}")
+@router.delete("/entities/{entity_id}",
+               summary="Delete entity",
+               description="Deletes an entity and invalidates related caches. Does not remove associated files.")
 async def delete_entity(entity_id: str):
     """Xóa entity."""
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         db.delete_entity(entity_id)
         _sync_kb()
         from public_api import invalidate_entity_cache, invalidate_place_cache
@@ -417,7 +454,9 @@ class _EntityImageURL(BaseModel):
     url: str = Field(..., max_length=600)
 
 
-@router.post("/entities/{entity_id}/images")
+@router.post("/entities/{entity_id}/images", status_code=201,
+             summary="Add image URL to entity",
+             description="Adds an image URL to an entity's image list. Validates URL accessibility. Maximum 10 images per entity.")
 async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     """GĐ8.4: thêm ảnh entity theo URL (chỉ nguồn cấp phép — B6)."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -425,11 +464,11 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     if url.startswith("/"):
         pass
     else:
-        _assert_public_url(url)
+        await asyncio.to_thread(_assert_public_url, url)
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         images = list(entity.get("images") or [])
         if len(images) >= 10:
             raise HTTPException(400, "Tối đa 10 ảnh mỗi entity")
@@ -443,7 +482,9 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/entities/{entity_id}/images/upload")
+@router.post("/entities/{entity_id}/images/upload",
+             summary="Upload image file for entity",
+             description="Uploads an image file, converts to WebP in 3 sizes (sm/md/lg), and adds to the entity. Maximum 10 images per entity.")
 async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     """GĐ8.4: upload file ảnh → WebP 3 cỡ → R2 (fallback đĩa) → entity.images.
     Lưu URL cỡ md (800px) làm ảnh hiển thị; sm/lg cũng được upload để dùng srcset sau."""
@@ -453,11 +494,11 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
 
     entity = db.get_entity(entity_id)
     if not entity:
-        raise HTTPException(404, "Entity not found")
-    data = await file.read()
+        raise HTTPException(404, "Entity không tồn tại")
+    data = await file.read(MAX_IMAGE_SIZE + 1)
     if len(data) > MAX_IMAGE_SIZE:
-        raise HTTPException(400, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
-    # Không tin Content-Type client gửi — kiểm magic-byte thật.
+        del data
+        raise HTTPException(413, f"Ảnh quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
     if not storage.sniff_image_type(data):
         raise HTTPException(400, "File không phải ảnh hợp lệ (JPEG/PNG/GIF/WebP)")
     if len(entity.get("images") or []) >= 10:
@@ -481,17 +522,20 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     return {"status": "uploaded", "url": cover, "sizes": urls, "images": images, "backend": storage.backend}
 
 
-@router.delete("/entities/{entity_id}/images/{idx}")
+@router.delete("/entities/{entity_id}/images/{idx}",
+               summary="Remove image from entity",
+               description="Removes an image at the given index from the entity's image list. Does not delete the actual file from storage.")
 async def remove_entity_image(entity_id: str, idx: int):
     """Gỡ ảnh thứ idx khỏi entity.images (không xoá file R2 — tránh mất ảnh dùng chung)."""
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         entity = db.get_entity(entity_id)
         if not entity:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         images = list(entity.get("images") or [])
-        if 0 <= idx < len(images):
-            images.pop(idx)
+        if not (0 <= idx < len(images)):
+            raise HTTPException(400, f"Chỉ số ảnh không hợp lệ (0–{len(images) - 1})")
+        images.pop(idx)
         entity["images"] = images
         entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         db.upsert_entity(entity)
@@ -500,7 +544,9 @@ async def remove_entity_image(entity_id: str, idx: int):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/unclassified")
+@router.get("/unclassified",
+            summary="List unclassified entities",
+            description="Returns entities not yet assigned to a commune/ward (empty placeId). Supports search and pagination.")
 async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0, le=10000),
                             q: Optional[str] = Query(None, max_length=200)):
     """Entity nội dung CHƯA gán xã/phường (placeId rỗng) — để admin gán đúng (lấp nợ placeId)."""
@@ -529,14 +575,16 @@ class AssignPlaceRequest(BaseModel):
     place_id: Optional[str] = Field(None, max_length=100)
 
 
-@router.post("/entities/{entity_id}/place")
+@router.post("/entities/{entity_id}/place",
+             summary="Assign place to entity",
+             description="Assigns or removes a commune/ward (placeId) for an entity. Validates the place exists.")
 async def assign_place(entity_id: str, body: AssignPlaceRequest):
     """Gán (hoặc gỡ) xã/phường cho 1 entity. Validate place_id là place thật (chống gán bừa)."""
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
         e = db.get_entity(entity_id)
         if not e:
-            raise HTTPException(404, "Entity not found")
+            raise HTTPException(404, "Entity không tồn tại")
         pid = body.place_id or None
         if pid:
             p = db.get_entity(pid)
@@ -553,17 +601,21 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
 
 # ── Itinerary CRUD ──
 
-@router.get("/itineraries")
+@router.get("/itineraries",
+            summary="List itineraries",
+            description="Returns all itineraries, optionally filtered by area.")
 async def list_itineraries_admin(area: Optional[str] = Query(None, max_length=100)):
     return await asyncio.to_thread(db.list_itineraries, area=area)
 
-@router.get("/itineraries/{itin_id}")
+@router.get("/itineraries/{itin_id}",
+            summary="Get itinerary by ID",
+            description="Returns the full details of a single itinerary by its ID.")
 async def get_itinerary_admin(itin_id: str):
     itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
         it = db.get_itinerary(itin_id)
         if not it:
-            raise HTTPException(404, "Itinerary not found")
+            raise HTTPException(404, "Lộ trình không tồn tại")
         return it
     return await asyncio.to_thread(_query)
 
@@ -596,7 +648,9 @@ class RelationshipBulkCreate(BaseModel):
     pairs: list[RelationshipBulkPair] = Field(..., max_length=50)
 
 
-@router.post("/itineraries", status_code=201)
+@router.post("/itineraries", status_code=201,
+             summary="Create itinerary",
+             description="Creates a new itinerary with title, description, days, area, and tags.")
 async def create_itinerary(body: ItineraryCreate):
     def _query():
         data = body.model_dump(exclude_none=True)
@@ -604,7 +658,9 @@ async def create_itinerary(body: ItineraryCreate):
     await asyncio.to_thread(_query)
     return {"status": "created", "id": body.id}
 
-@router.put("/itineraries/{itin_id}")
+@router.put("/itineraries/{itin_id}",
+            summary="Update itinerary",
+            description="Updates an existing itinerary. Only provided fields are changed.")
 async def update_itinerary(itin_id: str, body: ItineraryUpdate):
     itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
@@ -614,42 +670,57 @@ async def update_itinerary(itin_id: str, body: ItineraryUpdate):
     await asyncio.to_thread(_query)
     return {"status": "updated", "id": itin_id}
 
-@router.delete("/itineraries/{itin_id}")
+@router.delete("/itineraries/{itin_id}",
+               summary="Delete itinerary",
+               description="Permanently deletes an itinerary by its ID. Returns 404 if not found.")
 async def delete_itinerary(itin_id: str):
     itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
         db.initialize()
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"DELETE FROM itineraries WHERE id = {ph}", (itin_id,))
+            cur = db._execute(conn, f"DELETE FROM itineraries WHERE id = {ph}", (itin_id,))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Lộ trình không tồn tại")
     await asyncio.to_thread(_query)
     return {"success": True, "id": itin_id}
 
 
 # ── Relationship CRUD ──
 
-@router.post("/relationships")
+@router.post("/relationships", status_code=201,
+             summary="Create entity relationship",
+             description="Creates a directional relationship between two entities (e.g. related_to, belongs_to).")
 async def add_relationship(body: RelationshipCreate):
+    validate_path_id(body.from_id, "from_id")
+    validate_path_id(body.to_id, "to_id")
     await asyncio.to_thread(db.add_relationship, body.from_id, body.to_id, body.type)
     return {"status": "created"}
 
-@router.delete("/relationships")
-async def delete_relationship(from_id: str, to_id: str, type: str):
+@router.delete("/relationships",
+               summary="Delete entity relationship",
+               description="Removes a specific directional relationship between two entities. Returns 404 if not found.")
+async def delete_relationship(from_id: str, to_id: str, type: str = Query(..., max_length=100)):
     validate_path_id(from_id, "from_id")
     validate_path_id(to_id, "to_id")
     def _query():
         db.initialize()
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"DELETE FROM relationships WHERE from_id={ph} AND to_id={ph} AND type={ph}",
-                        (from_id, to_id, type))
+            cur = db._execute(conn, f"DELETE FROM relationships WHERE from_id={ph} AND to_id={ph} AND type={ph}",
+                              (from_id, to_id, type))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Mối quan hệ không tồn tại")
     await asyncio.to_thread(_query)
     return {"success": True}
 
 
-@router.post("/relationships/bulk")
+@router.post("/relationships/bulk", status_code=201,
+             summary="Bulk create relationships",
+             description="Creates multiple relationships from one source entity at once. Reports individual errors without rolling back.")
 async def add_relationships_bulk(body: RelationshipBulkCreate):
     """B7b: thêm nhiều quan hệ cùng lúc."""
+    validate_path_id(body.from_id, "from_id")
     def _query():
         added = 0
         errors = []
@@ -672,7 +743,9 @@ async def add_relationships_bulk(body: RelationshipBulkCreate):
 
 # Data quality review queue
 
-@router.get("/data-quality/summary")
+@router.get("/data-quality/summary",
+            summary="Get data quality summary",
+            description="Returns an overview of data quality metrics including candidate counts, stream counts, and sitemap expectations.")
 async def data_quality_summary(refresh: bool = Query(False)):
     def _query():
         data_summary = data_quality.summarize_data()
@@ -691,7 +764,9 @@ async def data_quality_summary(refresh: bool = Query(False)):
         }
     return await asyncio.to_thread(_query)
 
-@router.get("/data-quality/review")
+@router.get("/data-quality/review",
+            summary="Review data quality candidates",
+            description="Returns filterable data quality improvement candidates. Supports filtering by kind, bucket, and pagination.")
 async def data_quality_review(
     kind: Optional[str] = Query(None, pattern="^(source|location|placeid|accuracy|relationship)$"),
     bucket: Optional[str] = Query(None, pattern="^(auto_apply|needs_review|reject)$"),
@@ -706,7 +781,9 @@ async def data_quality_review(
         return result
     return await asyncio.to_thread(_query)
 
-@router.post("/data-quality/apply")
+@router.post("/data-quality/apply",
+             summary="Apply data quality improvements",
+             description="Applies selected data quality candidates to entities. Supports dry-run mode for preview.")
 async def data_quality_apply(body: DataQualityApplyRequest):
     def _query():
         result = data_quality.apply_candidates(body.candidate_ids, dry_run=body.dry_run)
@@ -715,28 +792,585 @@ async def data_quality_apply(body: DataQualityApplyRequest):
         return result
     return await asyncio.to_thread(_query)
 
-@router.get("/data-quality/history")
+@router.get("/data-quality/history",
+            summary="Get data quality apply history",
+            description="Returns the history of applied data quality batches, ordered by most recent first.")
 async def data_quality_history(limit: int = Query(20, ge=1, le=200)):
     return await asyncio.to_thread(data_quality.load_apply_history, limit=limit)
 
-@router.post("/data-quality/rollback/{batch_id}")
+@router.post("/data-quality/rollback/{batch_id}",
+             summary="Rollback data quality batch",
+             description="Reverts all changes from a previously applied data quality batch by restoring original entity data.")
 async def data_quality_rollback(batch_id: str):
     validate_path_id(batch_id, "batch_id")
     def _query():
         try:
             result = data_quality.rollback_apply(batch_id)
-        except ValueError as exc:
-            raise HTTPException(400, detail=str(exc)) from exc
-        except FileNotFoundError as exc:
-            raise HTTPException(404, detail=str(exc)) from exc
+        except ValueError:
+            raise HTTPException(400, detail="Batch ID không hợp lệ")
+        except FileNotFoundError:
+            raise HTTPException(404, detail="Không tìm thấy batch")
         _sync_kb()
         return result
     return await asyncio.to_thread(_query)
 
+# ── Stale content queue (U-17) ──
+
+_STALE_QUEUE_MISSING_FIELDS = {"source", "images", "coordinates", "phone", "summary"}
+_STALE_THRESHOLD_DEFAULT = 180
+
+
+@router.get("/stale-queue",
+            summary="List stale entities",
+            description="Returns entities that are outdated or missing key fields, sorted by staleness. Supports filtering by missing field and entity type.")
+async def stale_queue(
+    threshold_days: int = Query(_STALE_THRESHOLD_DEFAULT, ge=30, le=730),
+    missing_field: Optional[str] = Query(None, pattern="^(source|images|coordinates|phone|summary)$"),
+    entity_type: Optional[str] = Query(None, max_length=50),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    """Danh sách entity cũ/thiếu thông tin — admin review queue."""
+    def _query():
+        now = datetime.now(timezone.utc)
+        cutoff = now - timedelta(days=threshold_days)
+        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        results = []
+        for eid, e in entities.items():
+            if e.get("type") == "place":
+                continue
+            if entity_type and e.get("type") != entity_type:
+                continue
+            updated = e.get("updatedAt") or e.get("created_at")
+            days_since = None
+            if updated:
+                try:
+                    dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
+                    days_since = (now - dt).days
+                except (ValueError, TypeError):
+                    days_since = 9999
+            else:
+                days_since = 9999
+            is_stale = days_since >= threshold_days
+            attrs = e.get("attributes") or {}
+            missing = []
+            if not e.get("source"):
+                missing.append("source")
+            if not e.get("images"):
+                missing.append("images")
+            if not e.get("coordinates"):
+                missing.append("coordinates")
+            if not attrs.get("phone"):
+                missing.append("phone")
+            if not e.get("summary"):
+                missing.append("summary")
+            if missing_field and missing_field not in missing:
+                continue
+            if not is_stale and not missing:
+                continue
+            results.append({
+                "id": eid,
+                "name": e.get("name"),
+                "type": e.get("type"),
+                "area": e.get("area"),
+                "days_since_update": days_since,
+                "is_stale": is_stale,
+                "missing_fields": missing,
+                "stale_reviewed_at": attrs.get("stale_reviewed_at"),
+            })
+        results.sort(key=lambda x: -(x["days_since_update"] or 0))
+        total = len(results)
+        return {"items": results[offset:offset + limit], "total": total}
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/stale-queue/{entity_id}/mark-reviewed",
+             summary="Mark stale entity as reviewed",
+             description="Records a review timestamp on the entity's attributes, indicating an admin has acknowledged its staleness.")
+async def stale_mark_reviewed(entity_id: str):
+    """Đánh dấu entity đã được admin xem xét — ghi timestamp vào attributes."""
+    validate_path_id(entity_id, "entity_id")
+    def _query():
+        e = db.get_entity(entity_id)
+        if not e:
+            raise HTTPException(404, detail="Entity không tồn tại")
+        attrs = e.get("attributes") or {}
+        attrs["stale_reviewed_at"] = datetime.now(timezone.utc).isoformat()
+        db.update_entity(entity_id, {"attributes": attrs})
+        return {"ok": True, "entity_id": entity_id, "stale_reviewed_at": attrs["stale_reviewed_at"]}
+    return await asyncio.to_thread(_query)
+
+
+# ── Completeness standalone (BE-10) ──
+
+
+@router.get("/completeness",
+            summary="Entity completeness overview",
+            description="Returns aggregate completeness statistics showing the percentage of entities that have source, images, place ID, and summary.")
+async def completeness_overview():
+    """Tổng quan hoàn thiện: % entities có source+images+placeId+summary."""
+    def _query():
+        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        total = 0
+        has_source = 0
+        has_images = 0
+        has_place = 0
+        has_summary = 0
+        for e in entities.values():
+            if e.get("type") == "place":
+                continue
+            total += 1
+            q = data_quality.entity_quality(e)
+            if q["has_source"]:
+                has_source += 1
+            if e.get("images"):
+                has_images += 1
+            if q["has_place"]:
+                has_place += 1
+            if e.get("summary"):
+                has_summary += 1
+        pct = lambda n: round(n / total * 100, 1) if total else 0
+        return {
+            "total_entities": total,
+            "source": {"count": has_source, "pct": pct(has_source)},
+            "images": {"count": has_images, "pct": pct(has_images)},
+            "place_id": {"count": has_place, "pct": pct(has_place)},
+            "summary": {"count": has_summary, "pct": pct(has_summary)},
+            "overall_pct": pct(has_source + has_images + has_place + has_summary) / 4 * total if total else 0,
+        }
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/completeness/details",
+            summary="Entity completeness details",
+            description="Returns per-entity completeness scores with missing field breakdown. Supports filtering by specific missing field and entity type.")
+async def completeness_details(
+    missing: Optional[str] = Query(None, pattern="^(source|images|place|summary)$"),
+    entity_type: Optional[str] = Query(None, max_length=50),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    """Per-entity completeness scores with filter."""
+    def _query():
+        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        results = []
+        for eid, e in entities.items():
+            if e.get("type") == "place":
+                continue
+            if entity_type and e.get("type") != entity_type:
+                continue
+            q = data_quality.entity_quality(e)
+            has_imgs = bool(e.get("images"))
+            has_summ = bool(e.get("summary"))
+            if missing == "source" and q["has_source"]:
+                continue
+            elif missing == "images" and has_imgs:
+                continue
+            elif missing == "place" and q["has_place"]:
+                continue
+            elif missing == "summary" and has_summ:
+                continue
+            results.append({
+                "id": eid,
+                "name": e.get("name"),
+                "type": e.get("type"),
+                "score": q["score"],
+                "has_source": q["has_source"],
+                "has_images": has_imgs,
+                "has_place": q["has_place"],
+                "has_summary": has_summ,
+                "missing": q["missing"] + ([] if has_imgs else ["images"]) + ([] if has_summ else ["summary"]),
+            })
+        results.sort(key=lambda x: x["score"])
+        total = len(results)
+        return {"items": results[offset:offset + limit], "total": total}
+    return await asyncio.to_thread(_query)
+
+
+# ── Q&A quality queue (U-24) ──
+
+
+@router.get("/qa-queue",
+            summary="List Q&A posts needing attention",
+            description="Returns Q&A questions that are unanswered or lack a best answer. Supports filtering by status and entity.")
+async def qa_queue(
+    filter: Optional[str] = Query(None, pattern="^(unanswered|no_best_answer)$"),
+    entity_id: Optional[str] = Query(None, max_length=100),
+    limit: int = Query(30, ge=1, le=100),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    """Admin queue: questions chưa có best answer hoặc chưa có reply."""
+    require_pg()
+    ph = db._ph
+    def _query():
+        conditions = [f"p.post_type = 'question'", f"p.moderation_status = 'approved'"]
+        params: list = []
+        if entity_id:
+            conditions.append(f"p.entity_id::text = {ph}")
+            params.append(entity_id)
+        if filter == "unanswered":
+            conditions.append("p.comment_count = 0")
+        elif filter == "no_best_answer":
+            conditions.append("p.best_answer_id IS NULL")
+        where = " AND ".join(conditions)
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.id, p.title, p.content, p.entity_id, p.user_id,
+                       p.comment_count, p.best_answer_id, p.created_at,
+                       u.display_name
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                WHERE {where}
+                ORDER BY p.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (*params, limit, offset))
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM posts p WHERE {where}
+            """, (*params,))
+        total = db._row_to_dict(total_row)["c"] if total_row else 0
+        return {
+            "questions": [db._row_to_dict(r) for r in rows],
+            "total": total,
+            "filter": filter,
+        }
+    return await asyncio.to_thread(_query)
+
+
+class SetBestAnswerBody(BaseModel):
+    comment_id: str = Field(..., min_length=1, max_length=100)
+
+
+@router.post("/qa-queue/{post_id}/set-best-answer",
+             summary="Set best answer on Q&A post",
+             description="Admin override to designate a comment as the best answer for a question post. Validates both the post and comment exist.")
+async def qa_set_best_answer(post_id: str, body: SetBestAnswerBody):
+    """Admin override: set best_answer_id cho 1 question."""
+    require_pg()
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT id, post_type FROM posts WHERE id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài hỏi không tồn tại")
+            p = db._row_to_dict(post)
+            if p.get("post_type") != "question":
+                raise HTTPException(400, "Chỉ set best answer cho post_type=question")
+            comment = db._fetchone(conn, f"""
+                SELECT id FROM comments WHERE id::text = {ph} AND post_id::text = {ph}
+            """, (body.comment_id, post_id))
+            if not comment:
+                raise HTTPException(404, "Comment không thuộc bài hỏi này")
+            db._execute(conn, f"""
+                UPDATE posts SET best_answer_id = {ph}::uuid WHERE id::text = {ph}
+            """, (body.comment_id, post_id))
+        return {"ok": True, "post_id": post_id, "best_answer_id": body.comment_id}
+    return await asyncio.to_thread(_query)
+
+
+# ── Contact funnel dashboard (U-22) ──
+
+CONTACT_VIEWS_FILE = Path(__file__).resolve().parent / "data" / "contact_views.jsonl"
+
+
+@router.get("/contact-funnel",
+            summary="Contact funnel analytics",
+            description="Returns contact interaction statistics (zalo, phone, website, map clicks) per entity for a given time period.")
+async def contact_funnel(
+    days: int = Query(30, ge=1, le=365),
+    entity_id: Optional[str] = Query(None, max_length=100),
+):
+    """Thống kê click vào thông tin liên hệ — zalo/phone/website/map."""
+    def _query():
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        counts: dict[str, dict[str, int]] = {}
+        total = 0
+        if not CONTACT_VIEWS_FILE.exists():
+            return {"entities": [], "period_days": days, "total_contacts": 0}
+        if CONTACT_VIEWS_FILE.stat().st_size > 20 * 1024 * 1024:
+            return {"entities": [], "period_days": days, "total_contacts": 0, "warning": "Log quá lớn, cần rotation"}
+        with open(CONTACT_VIEWS_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except (json.JSONDecodeError, ValueError):
+                    continue
+                ts_str = rec.get("ts", "")
+                try:
+                    ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                except (ValueError, TypeError):
+                    continue
+                if ts < cutoff:
+                    continue
+                eid = rec.get("entity_id", "")
+                if entity_id and eid != entity_id:
+                    continue
+                action = rec.get("action", "other")
+                if eid not in counts:
+                    counts[eid] = {"zalo": 0, "phone": 0, "website": 0, "map": 0, "total": 0}
+                counts[eid][action] = counts[eid].get(action, 0) + 1
+                counts[eid]["total"] += 1
+                total += 1
+        entities_list = []
+        ent_dict = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
+            e = ent_dict.get(eid, {})
+            entities_list.append({
+                "id": eid,
+                "name": e.get("name", eid),
+                "zalo": c["zalo"],
+                "phone": c["phone"],
+                "website": c["website"],
+                "map": c["map"],
+                "total": c["total"],
+            })
+        return {"entities": entities_list, "period_days": days, "total_contacts": total}
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/contact-funnel/export",
+            summary="Export contact funnel as CSV",
+            description="Exports contact funnel data as a downloadable CSV file with per-entity interaction counts.")
+async def contact_funnel_export(days: int = Query(30, ge=1, le=365)):
+    """Export contact funnel dạng CSV."""
+    import io
+
+    def _generate():
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        counts: dict[str, dict[str, int]] = {}
+        if CONTACT_VIEWS_FILE.exists():
+            with open(CONTACT_VIEWS_FILE, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        rec = json.loads(line)
+                    except (json.JSONDecodeError, ValueError):
+                        continue
+                    ts_str = rec.get("ts", "")
+                    try:
+                        ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+                    except (ValueError, TypeError):
+                        continue
+                    if ts < cutoff:
+                        continue
+                    eid = rec.get("entity_id", "")
+                    action = rec.get("action", "other")
+                    if eid not in counts:
+                        counts[eid] = {"zalo": 0, "phone": 0, "website": 0, "map": 0, "total": 0}
+                    counts[eid][action] = counts[eid].get(action, 0) + 1
+                    counts[eid]["total"] += 1
+        ent_dict = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        yield "entity_id,name,zalo,phone,website,map,total\n"
+        for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
+            name = (ent_dict.get(eid, {}).get("name") or eid).replace(",", " ")
+            yield f"{eid},{name},{c['zalo']},{c['phone']},{c['website']},{c['map']},{c['total']}\n"
+
+    return StreamingResponse(_generate(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=contact_funnel.csv"})
+
+
+# ── Collections CRUD (U-28) ──
+
+
+class CollectionCreate(BaseModel):
+    slug: str = Field(..., min_length=2, max_length=100, pattern=r"^[a-z0-9\-]+$")
+    title: str = Field(..., min_length=1, max_length=200)
+    description: str = Field("", max_length=2000)
+    cover_image: str | None = None
+    entity_ids: list[str] = Field(default_factory=list, max_length=100)
+    sort_order: int = Field(0, ge=0)
+    is_published: bool = False
+
+
+class CollectionUpdate(BaseModel):
+    title: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = Field(None, max_length=2000)
+    cover_image: str | None = None
+    entity_ids: list[str] | None = Field(None, max_length=100)
+    sort_order: int | None = Field(None, ge=0)
+    is_published: bool | None = None
+
+
+@router.get("/collections",
+            summary="List curated collections",
+            description="Returns all curated entity collections ordered by sort_order. Supports pagination via limit and offset.")
+async def list_collections(limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=10000)):
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT * FROM collections ORDER BY sort_order, created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (limit, offset))
+            total_row = db._fetchone(conn, "SELECT COUNT(*) as c FROM collections", ())
+        return {
+            "collections": [db._row_to_dict(r) for r in rows],
+            "total": db._row_to_dict(total_row)["c"] if total_row else 0,
+        }
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/collections", status_code=201,
+             summary="Create a curated collection",
+             description="Creates a new curated entity collection with a unique slug. Returns the created collection.")
+async def create_collection(body: CollectionCreate, request: Request):
+    ph = db._ph
+    user = request.state.user if hasattr(request.state, "user") else None
+    created_by = str(user["id"]) if user else None
+    def _query():
+        with db._conn() as conn:
+            existing = db._fetchone(conn, f"SELECT id FROM collections WHERE slug = {ph}", (body.slug,))
+            if existing:
+                raise HTTPException(409, "Slug đã tồn tại")
+            db._execute(conn, f"""
+                INSERT INTO collections (slug, title, description, cover_image, entity_ids, sort_order, is_published, created_by)
+                VALUES ({ph}, {ph}, {ph}, {ph}, {ph}::jsonb, {ph}, {ph}, {ph}::uuid)
+            """, (body.slug, body.title, body.description, body.cover_image,
+                  json.dumps(body.entity_ids), body.sort_order, body.is_published, created_by))
+            row = db._fetchone(conn, f"SELECT * FROM collections WHERE slug = {ph}", (body.slug,))
+        return db._row_to_dict(row)
+    return await asyncio.to_thread(_query)
+
+
+@router.put("/collections/{collection_id}",
+            summary="Update a collection",
+            description="Updates fields of an existing collection. Only provided fields are modified.")
+async def update_collection(collection_id: str, body: CollectionUpdate):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    ph = db._ph
+    def _query():
+        sets = []
+        params: list = []
+        if body.title is not None:
+            sets.append(f"title = {ph}")
+            params.append(body.title)
+        if body.description is not None:
+            sets.append(f"description = {ph}")
+            params.append(body.description)
+        if body.cover_image is not None:
+            sets.append(f"cover_image = {ph}")
+            params.append(body.cover_image)
+        if body.entity_ids is not None:
+            sets.append(f"entity_ids = {ph}::jsonb")
+            params.append(json.dumps(body.entity_ids))
+        if body.sort_order is not None:
+            sets.append(f"sort_order = {ph}")
+            params.append(body.sort_order)
+        if body.is_published is not None:
+            sets.append(f"is_published = {ph}")
+            params.append(body.is_published)
+        if not sets:
+            raise HTTPException(400, "Không có trường nào để cập nhật")
+        sets.append("updated_at = NOW()")
+        params.append(collection_id)
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE collections SET {', '.join(sets)} WHERE id::text = {ph} RETURNING *
+            """, tuple(params))
+        if not row:
+            raise HTTPException(404, "Collection không tồn tại")
+        return db._row_to_dict(row)
+    return await asyncio.to_thread(_query)
+
+
+@router.delete("/collections/{collection_id}",
+               summary="Delete a collection",
+               description="Permanently deletes a curated collection by its ID.")
+async def delete_collection(collection_id: str):
+    collection_id = validate_path_id(collection_id, "collection_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"DELETE FROM collections WHERE id::text = {ph} RETURNING id", (collection_id,))
+        if not row:
+            raise HTTPException(404, "Collection không tồn tại")
+        return {"ok": True, "deleted": collection_id}
+    return await asyncio.to_thread(_query)
+
+
+# ── Review responses (U-11) ──
+
+
+class ReviewResponseBody(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
+@router.post("/posts/{post_id}/response",
+             summary="Respond to a review post",
+             description="Creates an admin or business response to a review post. Only one response per review is allowed.")
+async def admin_review_response(post_id: str, body: ReviewResponseBody, request: Request):
+    """Admin/business reply to a review — one response per review (UNIQUE)."""
+    require_pg()
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    user = request.state.user if hasattr(request.state, "user") else None
+    responder_id = str(user["id"]) if user else None
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            pd = db._row_to_dict(post)
+            if pd.get("post_type") != "review":
+                raise HTTPException(400, "Chỉ phản hồi cho bài đánh giá (review)")
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"review_resp:{post_id}",))
+            existing = db._fetchone(conn, f"SELECT id FROM review_responses WHERE post_id::text = {ph}", (post_id,))
+            if existing:
+                raise HTTPException(409, "Bài đánh giá đã có phản hồi")
+            db._execute(conn, f"""
+                INSERT INTO review_responses (post_id, responder_id, content)
+                VALUES ({ph}::uuid, {ph}::uuid, {ph})
+            """, (post_id, responder_id, _html.escape(body.content.strip())))
+            row = db._fetchone(conn, f"SELECT * FROM review_responses WHERE post_id::text = {ph}", (post_id,))
+        _log_mod_action("review_response", post_id, "added")
+        try:
+            create_notification(str(pd["user_id"]), "social",
+                                "Đánh giá của bạn đã nhận được phản hồi",
+                                ref_type="post", ref_id=post_id)
+        except Exception:
+            logger.exception("Failed to notify review response %s", post_id)
+        return db._row_to_dict(row) if row else {"ok": True}
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/posts/{post_id}/response",
+            summary="Get review response",
+            description="Returns the admin response for a specific review post, if one exists.")
+async def get_review_response(post_id: str):
+    """Get the admin response for a review post."""
+    require_pg()
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT rr.*, u.display_name as responder_name
+                FROM review_responses rr
+                JOIN users u ON u.id = rr.responder_id
+                WHERE rr.post_id::text = {ph}
+            """, (post_id,))
+        if not row:
+            return None
+        return db._row_to_dict(row)
+    result = await asyncio.to_thread(_query)
+    if not result:
+        raise HTTPException(404, "Không tìm thấy phản hồi review")
+    return result
+
+
 class BulkDeleteRequest(BaseModel):
     entity_ids: list[str] = Field(..., min_length=1, max_length=200)
 
-@router.post("/entities/bulk-delete")
+@router.post("/entities/bulk-delete",
+             summary="Bulk delete entities",
+             description="Deletes multiple entities by their IDs in a single operation. Returns the count of successfully deleted entities.")
 async def bulk_delete(body: BulkDeleteRequest):
     """Xóa nhiều entities cùng lúc."""
     def _query():
@@ -781,7 +1415,9 @@ class RejectSuggestionRequest(BaseModel):
     reason: str | None = Field(None, max_length=300)
 
 
-@router.get("/image-suggestions")
+@router.get("/image-suggestions",
+            summary="List image suggestions",
+            description="Lists image candidates awaiting review. Filterable by status and entity_id with pagination.")
 async def list_image_suggestions(
     status: Optional[str] = Query(None, pattern="^(pending|approved|rejected)$"),
     entity_id: Optional[str] = Query(None, max_length=100),
@@ -796,19 +1432,23 @@ async def list_image_suggestions(
     return await asyncio.to_thread(_query)
 
 
-@router.get("/image-suggestions/{suggestion_id}")
+@router.get("/image-suggestions/{suggestion_id}",
+            summary="Get image suggestion details",
+            description="Returns full details of a single image suggestion including entity name for review.")
 async def get_image_suggestion(suggestion_id: str):
     """Chi tiết 1 ứng viên ảnh (kèm tên entity để review)."""
     validate_path_id(suggestion_id, "suggestion_id")
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
-            raise HTTPException(404, "Suggestion not found")
+            raise HTTPException(404, "Đề xuất không tồn tại")
         return s
     return await asyncio.to_thread(_query)
 
 
-@router.post("/image-suggestions/create-batch")
+@router.post("/image-suggestions/create-batch", status_code=201,
+             summary="Create image suggestion batch",
+             description="Queues a batch of image candidates from ingest scripts for admin review. Does not publish anything.")
 async def create_image_suggestion_batch(body: ImageSuggestionBatch):
     """Nhận lô ứng viên từ script ingest (mode=queue). KHÔNG publish — chỉ xếp hàng chờ duyệt."""
     def _query():
@@ -837,7 +1477,9 @@ def _assert_public_url(url: str) -> None:
             raise HTTPException(400, "Host ảnh trỏ địa chỉ nội bộ — từ chối (SSRF)")
 
 
-@router.post("/image-suggestions/{suggestion_id}/approve")
+@router.post("/image-suggestions/{suggestion_id}/approve",
+             summary="Approve an image suggestion",
+             description="Approves a pending image suggestion: downloads, re-encodes to WebP, uploads to storage, and attaches to the entity with license credits.")
 async def approve_image_suggestion(suggestion_id: str):
     """Duyệt 1 ứng viên: tải ảnh → WebP 3 cỡ → R2 → gắn vào entity.images + lưu
     license/author/source vào attributes.image_credits (B6). Chỉ xử lý khi đang 'pending'."""
@@ -847,7 +1489,7 @@ async def approve_image_suggestion(suggestion_id: str):
 
     s = _imgq.get_suggestion(suggestion_id)
     if not s:
-        raise HTTPException(404, "Suggestion not found")
+        raise HTTPException(404, "Đề xuất không tồn tại")
     if s.get("status") != "pending":
         raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể duyệt lại")
 
@@ -861,7 +1503,7 @@ async def approve_image_suggestion(suggestion_id: str):
 
     # Fetch the candidate from its licensed source (Commons etc.). Bounded + guarded.
     candidate_url = s["candidate_url"]
-    _assert_public_url(candidate_url)  # P0-13: chặn SSRF tới host nội bộ
+    await asyncio.to_thread(_assert_public_url, candidate_url)  # P0-13: chặn SSRF tới host nội bộ
     try:
         import httpx
         headers = {"User-Agent": "vinhlong360-image-review/1.0 (+https://vinhlong360.vn)"}
@@ -916,14 +1558,16 @@ async def approve_image_suggestion(suggestion_id: str):
             "backend": storage.backend, "credits": credits[-1]}
 
 
-@router.post("/image-suggestions/{suggestion_id}/reject")
+@router.post("/image-suggestions/{suggestion_id}/reject",
+              summary="Reject image suggestion",
+              description="Reject a pending image suggestion by ID, optionally recording a reason. No files are downloaded or uploaded.")
 async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequest = RejectSuggestionRequest()):
     """Từ chối 1 ứng viên (ghi lý do). Không tải/không upload gì."""
     validate_path_id(suggestion_id, "suggestion_id")
     def _query():
         s = _imgq.get_suggestion(suggestion_id)
         if not s:
-            raise HTTPException(404, "Suggestion not found")
+            raise HTTPException(404, "Đề xuất không tồn tại")
         if s.get("status") != "pending":
             raise HTTPException(400, f"Suggestion đã ở trạng thái '{s.get('status')}' — không thể từ chối lại")
         _imgq.mark_status(suggestion_id, "rejected", rejection_reason=(body.reason or "").strip())
@@ -933,7 +1577,149 @@ async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequ
 
 # ── Data management ──
 
-@router.get("/stats")
+_server_start_time = __import__("time").time()
+
+
+@router.get("/system-health",
+            summary="Get system health status",
+            description="Returns system health information including SQLite/Postgres status, server uptime, memory usage, and storage metrics.")
+async def system_health():
+    import os
+    import time as _t
+    def _query():
+        result = {"sqlite": {}, "postgres": {}, "server": {}}
+        result["server"]["uptime_seconds"] = int(_t.time() - _server_start_time)
+        result["server"]["uptime_human"] = _format_uptime(int(_t.time() - _server_start_time))
+        result["server"]["pid"] = os.getpid()
+        try:
+            import psutil
+            proc = psutil.Process(os.getpid())
+            result["server"]["memory_mb"] = round(proc.memory_info().rss / 1024 / 1024, 1)
+        except (ImportError, Exception):
+            result["server"]["memory_mb"] = -1
+
+        db_path = os.path.join(os.path.dirname(__file__), "data", "knowledge.db")
+        if os.path.exists(db_path):
+            result["sqlite"]["size_mb"] = round(os.path.getsize(db_path) / 1024 / 1024, 2)
+            result["sqlite"]["entities"] = sum(db.count_entities().values())
+        if db._use_pg:
+            with db._conn() as conn:
+                tables = ["users", "posts", "comments", "likes", "follows",
+                           "notifications", "blocks", "sessions", "user_visits",
+                           "reports", "saved_entities", "announcements"]
+                pg_tables = {}
+                for t in tables:
+                    try:
+                        row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM {t}", ())
+                        pg_tables[t] = db._row_to_dict(row)["c"] if row else 0
+                    except Exception:
+                        pg_tables[t] = -1
+                result["postgres"]["tables"] = pg_tables
+                try:
+                    size_row = db._fetchone(conn, """
+                        SELECT pg_database_size(current_database()) as s
+                    """, ())
+                    result["postgres"]["size_mb"] = round(db._row_to_dict(size_row)["s"] / 1024 / 1024, 2) if size_row else 0
+                except Exception:
+                    result["postgres"]["size_mb"] = -1
+                active_row = db._fetchone(conn, """
+                    SELECT COUNT(*) as c FROM sessions WHERE expires_at > NOW()
+                """, ())
+                result["postgres"]["active_sessions"] = db._row_to_dict(active_row)["c"] if active_row else 0
+                pending_row = db._fetchone(conn, """
+                    SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'pending'
+                """, ())
+                result["postgres"]["pending_moderation"] = db._row_to_dict(pending_row)["c"] if pending_row else 0
+                open_reports = db._fetchone(conn, """
+                    SELECT COUNT(*) as c FROM reports WHERE status = 'pending'
+                """, ())
+                result["postgres"]["open_reports"] = db._row_to_dict(open_reports)["c"] if open_reports else 0
+        data_dir = Path(__file__).resolve().parent / "data"
+        jsonl_files = list(data_dir.glob("*.jsonl"))
+        result["storage"] = {
+            "jsonl_files": len(jsonl_files),
+            "jsonl_size_mb": round(sum(f.stat().st_size for f in jsonl_files) / 1024 / 1024, 2),
+        }
+        return result
+    return await asyncio.to_thread(_query)
+
+
+def _format_uptime(seconds: int) -> str:
+    days, remainder = divmod(seconds, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, _ = divmod(remainder, 60)
+    parts = []
+    if days:
+        parts.append(f"{days}d")
+    if hours:
+        parts.append(f"{hours}h")
+    parts.append(f"{minutes}m")
+    return " ".join(parts)
+
+
+@router.get("/featured",
+            summary="List featured entities",
+            description="Returns all currently featured entities with their sort order, name, and type.")
+async def list_featured():
+    ph = db._ph
+    def _query():
+        if not db._use_pg:
+            return {"featured": []}
+        with db._conn() as conn:
+            rows = db._fetchall(conn, """
+                SELECT entity_id, sort_order, created_at
+                FROM featured_entities ORDER BY sort_order
+            """, ())
+        items = [db._row_to_dict(r) for r in rows]
+        batch = db.get_entities_batch([rd["entity_id"] for rd in items])
+        result = []
+        for rd in items:
+            entity = batch.get(rd["entity_id"])
+            if entity:
+                result.append({
+                    "entity_id": rd["entity_id"],
+                    "name": entity.get("name"),
+                    "type": entity.get("type"),
+                    "sort_order": rd["sort_order"],
+                    "created_at": str(rd["created_at"]),
+                })
+        return {"featured": result}
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/featured/{entity_id}",
+             summary="Toggle entity featured status",
+             description="Add or remove an entity from the featured list. If already featured, it is removed; otherwise it is added.")
+async def toggle_featured(entity_id: str, request: Request):
+    entity_id = validate_path_id(entity_id, "entity_id")
+    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    if not entity:
+        raise HTTPException(404, "Entity không tồn tại")
+    admin_user = getattr(request.state, "admin_user", None)
+    ph = db._ph
+    def _query():
+        if not db._use_pg:
+            raise HTTPException(503, "Chức năng này yêu cầu Postgres")
+        with db._conn() as conn:
+            existing = db._fetchone(conn, f"""
+                SELECT id FROM featured_entities WHERE entity_id = {ph}
+            """, (entity_id,))
+            if existing:
+                db._execute(conn, f"DELETE FROM featured_entities WHERE entity_id = {ph}", (entity_id,))
+                return False
+            added_by = str(admin_user["id"]) if admin_user else None
+            db._execute(conn, f"""
+                INSERT INTO featured_entities (entity_id, added_by, sort_order)
+                VALUES ({ph}, {ph}::uuid, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM featured_entities))
+            """, (entity_id, added_by))
+            return True
+    is_featured = await asyncio.to_thread(_query)
+    return {"entity_id": entity_id, "featured": is_featured}
+
+
+@router.get("/stats",
+            summary="Get admin dashboard statistics",
+            description="Returns detailed statistics including entity counts by type, completeness scores, weekly deltas, and backup info.")
 async def admin_stats():
     """Thống kê chi tiết cho admin."""
     def _query():
@@ -1002,8 +1788,11 @@ async def admin_stats():
 
         entities_week = 0
         try:
+            week_sql = ("SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= NOW() - INTERVAL '7 days'"
+                        if db._use_pg else
+                        "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', '-7 days')")
             with db._conn() as c3:
-                ew = db._fetchone(c3, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', '-7 days')", ())
+                ew = db._fetchone(c3, week_sql, ())
                 entities_week = db._row_to_dict(ew)["c"] if ew else 0
         except Exception:
             logger.debug("Stats entities_week query failed", exc_info=True)
@@ -1023,8 +1812,8 @@ async def admin_stats():
         return {
             "total_entities": total_entities,
             "total_places": total_places,
-            "total_relationships": rel_count["c"] if rel_count else 0,
-            "total_itineraries": itin_count["c"] if itin_count else 0,
+            "total_relationships": db._row_to_dict(rel_count)["c"] if rel_count else 0,
+            "total_itineraries": db._row_to_dict(itin_count)["c"] if itin_count else 0,
             "by_type": by_type,
             "completeness": completeness,
             "entities_week": entities_week,
@@ -1034,10 +1823,107 @@ async def admin_stats():
     return await asyncio.to_thread(_query)
 
 
+@router.get("/user-engagement",
+            summary="Get user engagement metrics",
+            description="Returns engagement metrics over a configurable period: active posters, commenters, likers, retention rate, and daily active users.")
+async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
+    require_pg()
+    ph = db._ph
+    def _query():
+        interval_param = f"{days} days"
+        with db._conn() as conn:
+            active_posters = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT user_id) as c FROM posts
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
+            active_commenters = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT user_id) as c FROM comments
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
+            active_likers = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT user_id) as c FROM likes
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
+            new_users = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM users
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
+            retained = db._fetchone(conn, f"""
+                SELECT COUNT(DISTINCT p.user_id) as c FROM posts p
+                JOIN users u ON u.id = p.user_id
+                WHERE p.created_at > NOW() - CAST({ph} AS INTERVAL)
+                  AND u.created_at < NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param, interval_param))
+            total_users = db._fetchone(conn, f"SELECT COUNT(*) as c FROM users WHERE is_active = TRUE", ())
+            daily = db._fetchall(conn, f"""
+                SELECT DATE(created_at) as day, COUNT(DISTINCT user_id) as active_users
+                FROM posts WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+                GROUP BY DATE(created_at) ORDER BY day
+            """, (interval_param,))
+        tu = db._row_to_dict(total_users)["c"] if total_users else 1
+        ap = db._row_to_dict(active_posters)["c"] if active_posters else 0
+        return {
+            "period_days": days,
+            "total_active_users": tu,
+            "active_posters": ap,
+            "active_commenters": db._row_to_dict(active_commenters)["c"] if active_commenters else 0,
+            "active_likers": db._row_to_dict(active_likers)["c"] if active_likers else 0,
+            "new_users": db._row_to_dict(new_users)["c"] if new_users else 0,
+            "retained_users": db._row_to_dict(retained)["c"] if retained else 0,
+            "engagement_rate": round(ap / tu * 100, 1) if tu else 0,
+            "daily_active": [{"day": str(db._row_to_dict(r)["day"]), "users": db._row_to_dict(r)["active_users"]} for r in daily],
+        }
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/user-growth",
+            summary="Get user growth over time",
+            description="Returns daily signup counts, total/deactivated user counts, and week-over-week growth rate.")
+async def user_growth(days: int = Query(30, ge=7, le=365)):
+    require_pg()
+    ph = db._ph
+    def _query():
+        interval_param = f"{days} days"
+        with db._conn() as conn:
+            daily_reg = db._fetchall(conn, f"""
+                SELECT DATE(created_at) as day, COUNT(*) as signups
+                FROM users
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+                GROUP BY DATE(created_at) ORDER BY day
+            """, (interval_param,))
+            total = db._fetchone(conn, "SELECT COUNT(*) as c FROM users WHERE is_active = TRUE", ())
+            deactivated = db._fetchone(conn, "SELECT COUNT(*) as c FROM users WHERE is_active = FALSE", ())
+            week_ago = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM users WHERE created_at > NOW() - INTERVAL '7 days'
+            """, ())
+            prev_week = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM users
+                WHERE created_at > NOW() - INTERVAL '14 days'
+                  AND created_at <= NOW() - INTERVAL '7 days'
+            """, ())
+        t = db._row_to_dict(total)["c"] if total else 0
+        d = db._row_to_dict(deactivated)["c"] if deactivated else 0
+        w = db._row_to_dict(week_ago)["c"] if week_ago else 0
+        pw = db._row_to_dict(prev_week)["c"] if prev_week else 0
+        growth_rate = round((w - pw) / pw * 100, 1) if pw > 0 else 0
+        return {
+            "total_users": t,
+            "active_users": t,
+            "deactivated_users": d,
+            "signups_this_week": w,
+            "signups_prev_week": pw,
+            "growth_rate_pct": growth_rate,
+            "daily_signups": [{"day": str(db._row_to_dict(r)["day"]), "signups": db._row_to_dict(r)["signups"]} for r in daily_reg],
+        }
+    return await asyncio.to_thread(_query)
+
+
 _last_backup_time: float = 0
 _BACKUP_COOLDOWN = _cfg.BACKUP_COOLDOWN
 
-@router.post("/backup-trigger")
+@router.post("/backup-trigger",
+             summary="Trigger data backup",
+             description="Initiates a manual backup of the database. Returns the backup file path, size, and status. Rate-limited by a cooldown period.")
 async def trigger_backup():
     """B5c: trigger manual backup from admin UI."""
     import time as _time
@@ -1049,7 +1935,7 @@ async def trigger_backup():
     _last_backup_time = now
     script = Path(__file__).resolve().parent.parent / "scripts" / "backup_data.py"
     if not script.exists():
-        raise HTTPException(500, "backup_data.py not found")
+        raise HTTPException(500, "Không tìm thấy script backup_data.py")
     def _run():
         try:
             result = subprocess.run(
@@ -1079,7 +1965,9 @@ async def trigger_backup():
     return await asyncio.to_thread(_run)
 
 
-@router.get("/media")
+@router.get("/media",
+            summary="List uploaded media files",
+            description="Returns a paginated gallery of all images across entities with credit and duplicate detection stats.")
 async def media_gallery(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(50, ge=1, le=200),
@@ -1114,6 +2002,10 @@ async def media_gallery(
                 media_items.append(item)
                 url_usage.setdefault(url, []).append(e.get("id", ""))
 
+        total_images = len(media_items)
+        no_credit_count = sum(1 for m in media_items if not m["credit"])
+        dup_count = sum(1 for u, ids in url_usage.items() if len(ids) > 1)
+
         if filter == "missing_credit":
             media_items = [m for m in media_items if not m["credit"]]
         elif filter == "duplicate":
@@ -1128,15 +2020,12 @@ async def media_gallery(
             usage = url_usage.get(item["url"], [])
             item["usage_count"] = len(usage)
 
-        dup_count = sum(1 for u, ids in url_usage.items() if len(ids) > 1)
-        no_credit_count = sum(1 for m in media_items if not m["credit"]) if filter != "missing_credit" else total
-
         return {
             "items": page_items,
             "total": total,
             "page": page,
             "stats": {
-                "total_images": len(media_items) if filter == "all" else sum(len(e.get("images") or []) for e in entities),
+                "total_images": total_images,
                 "duplicates": dup_count,
                 "missing_credit": no_credit_count,
             },
@@ -1144,15 +2033,18 @@ async def media_gallery(
     return await asyncio.to_thread(_query)
 
 
-@router.get("/badge-counts")
+@router.get("/badge-counts",
+            summary="Get admin dashboard badge counts",
+            description="Returns lightweight counts for sidebar badges including moderation, images, unclassified entities, provisional items, and reports.")
 async def badge_counts():
     """Lightweight counts cho sidebar badges — moderation/images/unclassified/provisional."""
     def _query():
         counts = {"moderation": 0, "images": 0, "unclassified": 0, "provisional": 0, "reports": 0}
-        with db._conn() as conn:
-            row = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review','flagged')", ())
-            if row:
-                counts["moderation"] = db._row_to_dict(row)["c"]
+        if db._use_pg:
+            with db._conn() as conn:
+                row = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review','flagged')", ())
+                if row:
+                    counts["moderation"] = db._row_to_dict(row)["c"]
         try:
             counts["images"] = _imgq.status_counts().get("pending", 0)
         except Exception:
@@ -1176,16 +2068,21 @@ async def badge_counts():
     return await asyncio.to_thread(_query)
 
 
-@router.get("/dashboard-alerts")
+@router.get("/dashboard-alerts",
+            summary="Get dashboard alert notifications",
+            description="Returns priority-sorted alerts for the admin dashboard. Scans moderation, reports, images, unclassified entities, provisional items, and appeals queues.")
 async def dashboard_alerts():
     """Priority-sorted alerts cho admin dashboard."""
     def _query():
         alerts: list[dict] = []
-        with db._conn() as conn:
-            mod = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('flagged')", ())
-            flagged = db._row_to_dict(mod)["c"] if mod else 0
-            mod2 = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
-            pending_mod = db._row_to_dict(mod2)["c"] if mod2 else 0
+        flagged = 0
+        pending_mod = 0
+        if db._use_pg:
+            with db._conn() as conn:
+                mod = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('flagged')", ())
+                flagged = db._row_to_dict(mod)["c"] if mod else 0
+                mod2 = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
+                pending_mod = db._row_to_dict(mod2)["c"] if mod2 else 0
         if flagged:
             alerts.append({"type": "flagged", "count": flagged, "label": f"{flagged} bài viết bị gắn cờ", "icon": "🚩", "link": "/admin/kiem-duyet?tab=flagged", "priority": 1})
         if pending_mod:
@@ -1217,12 +2114,22 @@ async def dashboard_alerts():
                 alerts.append({"type": "provisional", "count": prov, "label": f"{prov} entity chờ xét duyệt", "icon": "🔬", "link": "/admin/duyet-tu-hoc", "priority": 6})
         except Exception:
             logger.debug("Alert kb_curation stats failed", exc_info=True)
+        try:
+            with db._conn() as conn3:
+                appeal_row = db._fetchone(conn3, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
+            appeal_count = db._row_to_dict(appeal_row)["c"] if appeal_row else 0
+            if appeal_count:
+                alerts.append({"type": "appeals", "count": appeal_count, "label": f"{appeal_count} khiếu nại chờ xử lý", "icon": "📩", "link": "/admin/khieu-nai", "priority": 2})
+        except Exception:
+            logger.debug("Alert appeals count failed", exc_info=True)
         alerts.sort(key=lambda a: a["priority"])
         return {"alerts": alerts[:5]}
     return await asyncio.to_thread(_query)
 
 
-@router.get("/activity-feed")
+@router.get("/activity-feed",
+            summary="Recent admin activity feed",
+            description="Returns the most recent admin actions from the audit JSONL log file. Defaults to 10 entries.")
 async def activity_feed(limit: int = Query(10, ge=1, le=50)):
     """10 admin actions gần nhất từ audit JSONL."""
     def _query():
@@ -1242,20 +2149,23 @@ async def activity_feed(limit: int = Query(10, ge=1, le=50)):
                     break
             return {"actions": actions}
         except Exception:
+            logger.debug("Activity feed read failed", exc_info=True)
             return {"actions": []}
     return await asyncio.to_thread(_query)
 
 
 _learn_proc: Optional[subprocess.Popen] = None
 
-@router.post("/trigger-learn")
+@router.post("/trigger-learn",
+             summary="Trigger knowledge learning",
+             description="Starts a background auto-learn cycle that discovers and ingests new knowledge topics. Optionally filtered by category.")
 async def trigger_learn(category: Optional[str] = Query(None, max_length=50), topics: int = 3):
     """Trigger 1 vòng auto-learn (chạy background)."""
     if topics < 1 or topics > 20:
-        raise HTTPException(400, "topics must be between 1 and 20")
+        raise HTTPException(400, "Số chủ đề phải từ 1 đến 20")
     if category:
         if len(category) > 50 or not re.match(r'^[\w\s\-À-ɏḀ-ỿ]+$', category):
-            raise HTTPException(400, "Invalid category — only letters, numbers, hyphens, underscores allowed (max 50 chars)")
+            raise HTTPException(400, "Danh mục không hợp lệ — chỉ chấp nhận chữ, số, dấu gạch (tối đa 50 ký tự)")
     cmd = [sys.executable, str(ROOT / "agent" / "auto_learn.py"), "--apply", "--topics", str(topics)]
     if category:
         cmd.extend(["--category", category])
@@ -1268,8 +2178,8 @@ async def trigger_learn(category: Optional[str] = Query(None, max_length=50), to
             _learn_proc = subprocess.Popen(
                 cmd,
                 cwd=str(ROOT),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 env={**os.environ, "PYTHONIOENCODING": "utf-8"},
             )
             return {
@@ -1286,7 +2196,9 @@ async def trigger_learn(category: Optional[str] = Query(None, max_length=50), to
 
 # ── Quarantine review queue (provisional auto-learned entities) ──
 
-@router.get("/provisional")
+@router.get("/provisional",
+            summary="List provisional entities",
+            description="Returns auto-learned entities pending verification, along with queue statistics.")
 async def list_provisional_entities():
     """Liệt kê các entity tự học CHƯA kiểm chứng (chờ duyệt)."""
     def _query():
@@ -1295,7 +2207,9 @@ async def list_provisional_entities():
     return await asyncio.to_thread(_query)
 
 
-@router.post("/provisional/{entity_id}/approve")
+@router.post("/provisional/{entity_id}/approve",
+             summary="Approve provisional entity",
+             description="Promotes a provisional auto-learned entity to verified status in the knowledge base.")
 async def approve_provisional(entity_id: str):
     """Duyệt 1 entity provisional → verified (tin cậy)."""
     validate_path_id(entity_id, "entity_id")
@@ -1308,7 +2222,9 @@ async def approve_provisional(entity_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/provisional/{entity_id}/reject")
+@router.post("/provisional/{entity_id}/reject",
+             summary="Reject provisional entity",
+             description="Rejects and removes a provisional auto-learned entity from the knowledge base.")
 async def reject_provisional(entity_id: str):
     """Từ chối + xóa 1 entity provisional khỏi KB."""
     validate_path_id(entity_id, "entity_id")
@@ -1321,14 +2237,16 @@ async def reject_provisional(entity_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/export")
+@router.post("/export",
+             summary="Export entity data",
+             description="Exports all entities, relationships, and itineraries as a streaming JSON file to avoid memory issues.")
 async def export_data():
     """Export toàn bộ entities từ DB — streaming JSON để không OOM."""
     import io
 
     def _generate():
         yield '{"entities":['
-        entities = db.list_entities(limit=10000)
+        entities = db.all_entities()
         for i, e in enumerate(entities):
             if i:
                 yield ","
@@ -1353,7 +2271,96 @@ async def export_data():
                              headers={"Content-Disposition": "attachment; filename=vinhlong360-export.json"})
 
 
-@router.get("/sources")
+@router.get("/export/users",
+            summary="Export user data as CSV",
+            description="Exports all users with stats (post count, follower count, reputation) as a downloadable CSV file. Phone numbers are masked.")
+async def export_users_csv():
+    """CSV export of all users with stats."""
+    require_pg()
+    ph = db._ph
+
+    def _generate():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, """
+                SELECT u.id, u.phone, u.display_name, u.role, u.is_active,
+                       u.reputation, u.created_at,
+                       COALESCE(pc.post_count, 0) AS post_count,
+                       COALESCE(fc.follower_count, 0) AS follower_count
+                FROM users u
+                LEFT JOIN (
+                    SELECT user_id, COUNT(*) AS post_count FROM posts
+                    WHERE moderation_status != 'rejected'
+                    GROUP BY user_id
+                ) pc ON pc.user_id = u.id
+                LEFT JOIN (
+                    SELECT target_id, COUNT(*) AS follower_count FROM follows
+                    WHERE target_type = 'user'
+                    GROUP BY target_id
+                ) fc ON fc.target_id = u.id::text
+                ORDER BY u.created_at DESC
+                LIMIT 50000
+            """, ())
+        yield "id,phone,display_name,role,is_active,reputation,created_at,post_count,follower_count\n"
+        for r in rows:
+            d = db._row_to_dict(r)
+            phone = _mask(d.get("phone") or "")
+            name = (d.get("display_name") or "").replace(",", " ").replace('"', "'")
+            yield (f'{d["id"]},{phone},"{name}",{d.get("role","user")},'
+                   f'{d.get("is_active",True)},{d.get("reputation",0)},'
+                   f'{d.get("created_at","")},{d["post_count"]},{d["follower_count"]}\n')
+
+    return StreamingResponse(_generate(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=users.csv"})
+
+
+@router.get("/export/posts",
+            summary="Export post data as CSV",
+            description="Exports posts with author and entity info as a downloadable CSV. Supports filtering by moderation status and date range.")
+async def export_posts_csv(
+    status: str = Query("all", max_length=20),
+    days: int = Query(90, ge=1, le=365),
+):
+    """CSV export of posts with author/entity info."""
+    require_pg()
+    ph = db._ph
+
+    def _generate():
+        where_parts = []
+        params = []
+        if status != "all":
+            where_parts.append(f"p.moderation_status = {ph}")
+            params.append(status)
+        where_parts.append(f"p.created_at > NOW() - CAST({ph} AS INTERVAL)")
+        params.append(f"{days} days")
+        where_clause = " AND ".join(where_parts) if where_parts else "TRUE"
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.id, p.user_id, p.post_type, p.rating,
+                       p.like_count, p.comment_count, p.share_count,
+                       p.moderation_status, p.entity_id, p.created_at,
+                       u.display_name AS author_name
+                FROM posts p
+                LEFT JOIN users u ON u.id = p.user_id
+                WHERE {where_clause}
+                ORDER BY p.created_at DESC
+                LIMIT 50000
+            """, tuple(params))
+        yield "id,user_id,author_name,post_type,rating,like_count,comment_count,share_count,status,entity_id,created_at\n"
+        for r in rows:
+            d = db._row_to_dict(r)
+            name = (d.get("author_name") or "").replace(",", " ").replace('"', "'")
+            yield (f'{d["id"]},{d.get("user_id","")},"{name}",'
+                   f'{d.get("post_type","")},{d.get("rating","")},{d.get("like_count",0)},'
+                   f'{d.get("comment_count",0)},{d.get("share_count",0)},'
+                   f'{d.get("moderation_status","")},{d.get("entity_id","")},{d.get("created_at","")}\n')
+
+    return StreamingResponse(_generate(), media_type="text/csv",
+                             headers={"Content-Disposition": "attachment; filename=posts.csv"})
+
+
+@router.get("/sources",
+            summary="List data sources",
+            description="Returns all unique data sources across entities with entity counts and sample entity IDs per source.")
 async def list_sources():
     """Liệt kê tất cả nguồn dữ liệu."""
     def _query():
@@ -1382,12 +2389,15 @@ async def list_sources():
 # ═══════════════════════════════════════════════════════
 
 
-@router.get("/moderation/queue")
+@router.get("/moderation/queue",
+            summary="Get moderation queue",
+            description="Returns posts pending moderation review. Supports filtering by status and pagination.")
 async def moderation_queue(
     status: str = Query("review", pattern="^(review|pending|flagged|approved|rejected)$"),
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
 ):
+    require_pg()
     ph = db._ph
     offset = (page - 1) * limit
     statuses = ["pending", "flagged"] if status == "review" else [status]
@@ -1409,22 +2419,35 @@ async def moderation_queue(
             """, (*statuses,))
         return {
             "posts": [_mod_post(db._row_to_dict(r)) for r in rows],
-            "total": total["c"] if total else 0,
+            "total": db._row_to_dict(total)["c"] if total else 0,
             "page": page,
         }
     return await asyncio.to_thread(_query)
 
 
-@router.post("/moderation/{post_id}/approve")
+@router.post("/moderation/{post_id}/approve",
+             summary="Approve moderated post",
+             description="Approves a post pending moderation and notifies the author.")
 async def approve_post(post_id: str):
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"""
+            row = db._fetchone(conn, f"""
                 UPDATE posts SET moderation_status = 'approved' WHERE id::text = {ph}
+                RETURNING user_id
             """, (post_id,))
+            if not row:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            author_id = str(db._row_to_dict(row)["user_id"])
         _log_mod_action("post", post_id, "approved")
+        try:
+            create_notification(author_id, "moderation",
+                                "Bài viết của bạn đã được duyệt",
+                                ref_type="post", ref_id=post_id)
+        except Exception:
+            logger.exception("Failed to notify post approval %s", post_id)
     await asyncio.to_thread(_query)
     return {"success": True}
 
@@ -1433,16 +2456,32 @@ class RejectBody(BaseModel):
     reason: str | None = Field(None, max_length=500)
 
 
-@router.post("/moderation/{post_id}/reject")
+@router.post("/moderation/{post_id}/reject",
+             summary="Reject moderated post",
+             description="Rejects a post pending moderation with an optional reason. Notifies the author.")
 async def reject_post(post_id: str, body: RejectBody = RejectBody()):
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
+    reason = (body.reason or "").strip() or None
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"""
+            row = db._fetchone(conn, f"""
                 UPDATE posts SET moderation_status = 'rejected' WHERE id::text = {ph}
+                RETURNING user_id
             """, (post_id,))
-        _log_mod_action("post", post_id, "rejected", (body.reason or "").strip() or None)
+            if not row:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            author_id = str(db._row_to_dict(row)["user_id"])
+        _log_mod_action("post", post_id, "rejected", reason)
+        try:
+            notif_body = f"Lý do: {reason}" if reason else None
+            create_notification(author_id, "moderation",
+                                "Bài viết của bạn đã bị từ chối",
+                                body=notif_body,
+                                ref_type="post", ref_id=post_id)
+        except Exception:
+            logger.exception("Failed to notify post rejection %s", post_id)
     await asyncio.to_thread(_query)
     return {"success": True}
 
@@ -1453,73 +2492,619 @@ class BatchModerationBody(BaseModel):
     reason: str = Field("", max_length=500)
 
 
-@router.post("/moderation/batch")
-async def batch_moderation(body: BatchModerationBody):
+@router.post("/moderation/batch",
+             summary="Batch moderate multiple posts",
+             description="Approve or reject multiple posts at once. Notifies each author and logs moderation actions.")
+async def batch_moderation(body: BatchModerationBody, request: Request):
+    require_pg()
+    from ratelimit import check_rate
+    admin_user = getattr(request.state, "admin_user", None)
+    rl_key = f"admin:batch-mod:{admin_user['id']}" if admin_user else "admin:batch-mod:key"
+    check_rate(rl_key, 10, 60, "Thao tác quá nhanh")
     if body.action not in ("approve", "reject"):
         raise HTTPException(400, "action must be 'approve' or 'reject'")
     if not body.post_ids or len(body.post_ids) > 100:
         raise HTTPException(400, "post_ids: 1-100 items")
     status = "approved" if body.action == "approve" else "rejected"
+    reason = body.reason.strip() or None
     def _query():
         ph = db._ph
         placeholders = ", ".join(ph for _ in body.post_ids)
         params = [status] + list(body.post_ids)
         with db._conn() as conn:
-            db._execute(conn, f"UPDATE posts SET moderation_status = {ph} WHERE id::text IN ({placeholders})", tuple(params))
+            rows = db._fetchall(conn, f"""
+                UPDATE posts SET moderation_status = {ph}
+                WHERE id::text IN ({placeholders})
+                RETURNING id, user_id
+            """, tuple(params))
+            updated = len(rows)
         for pid in body.post_ids:
-            _log_mod_action("post", pid, status, body.reason.strip() or None)
+            _log_mod_action("post", pid, status, reason)
+        if status == "approved":
+            title = "Bài viết của bạn đã được duyệt"
+            notif_body = None
+        else:
+            title = "Bài viết của bạn đã bị từ chối"
+            notif_body = f"Lý do: {reason}" if reason else None
+        for r in rows:
+            rd = db._row_to_dict(r)
+            try:
+                create_notification(str(rd["user_id"]), "moderation", title,
+                                    body=notif_body,
+                                    ref_type="post", ref_id=str(rd["id"]))
+            except Exception:
+                logger.exception("Failed to notify batch moderation %s", rd["id"])
+        return updated
+    updated = await asyncio.to_thread(_query)
+    return {"success": True, "updated": updated, "requested": len(body.post_ids)}
+
+
+@router.get("/moderation/{post_id}/history",
+            summary="Get post moderation history",
+            description="Returns the full moderation action timeline for a specific post, including moderator names and scores.")
+async def moderation_history(post_id: str):
+    """Admin: view full moderation action timeline for a specific post."""
+    require_pg()
+    post_id = validate_path_id(post_id, "post_id")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT id, moderation_status, created_at FROM posts WHERE id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            rows = db._fetchall(conn, f"""
+                SELECT ml.action, ml.reason, ml.auto, ml.scores, ml.created_at,
+                       u.display_name AS moderator_name
+                FROM moderation_log ml
+                LEFT JOIN users u ON u.id = ml.moderator_id
+                WHERE ml.target_type = 'post' AND ml.target_id = {ph}
+                ORDER BY ml.created_at DESC
+                LIMIT 50
+            """, (post_id,))
+        pd = db._row_to_dict(post)
+        actions = []
+        for r in rows:
+            d = db._row_to_dict(r)
+            scores = d.get("scores")
+            if isinstance(scores, str):
+                try:
+                    scores = json.loads(scores)
+                except (json.JSONDecodeError, ValueError, TypeError):
+                    scores = {}
+            actions.append({
+                "action": d["action"],
+                "reason": d.get("reason"),
+                "auto": bool(d.get("auto")),
+                "moderator": d.get("moderator_name"),
+                "scores": scores or {},
+                "created_at": str(d.get("created_at", "")),
+            })
+        return {
+            "post_id": post_id,
+            "current_status": pd.get("moderation_status"),
+            "post_created_at": str(pd.get("created_at", "")),
+            "actions": actions,
+            "total": len(actions),
+        }
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/posts/{post_id}/feature",
+             summary="Toggle post featured status",
+             description="Toggles whether a post is featured at the top of its entity page. Logs the action.")
+async def feature_post(post_id: str, request: Request):
+    """Admin: toggle feature a post at the top of its entity page."""
+    require_pg()
+    post_id = validate_path_id(post_id, "post_id")
+    admin_id = str(request.state.user["id"]) if hasattr(request, "state") and hasattr(request.state, "user") else None
+
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT id, entity_id, is_featured FROM posts WHERE id::text = {ph}", (post_id,))
+            if not row:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            rd = db._row_to_dict(row)
+            if not rd.get("entity_id"):
+                raise HTTPException(400, "Bài viết không thuộc entity nào")
+            if rd.get("is_featured"):
+                db._execute(conn, f"""
+                    UPDATE posts SET is_featured = FALSE, featured_by = NULL, featured_at = NULL
+                    WHERE id::text = {ph}
+                """, (post_id,))
+                return False
+            db._execute(conn, f"""
+                UPDATE posts SET is_featured = TRUE, featured_by = {ph}::uuid, featured_at = NOW()
+                WHERE id::text = {ph}
+            """, (admin_id, post_id))
+            return True
+
+    featured = await asyncio.to_thread(_query)
+    _log_mod_action("post", post_id, "featured" if featured else "unfeatured", None)
+    return {"featured": featured}
+
+
+
+@router.delete("/posts/{post_id}/response",
+               summary="Delete admin response",
+               description="Deletes the admin review response for a post. Logs the deletion.")
+async def delete_review_response(post_id: str):
+    post_id = validate_path_id(post_id, "post_id")
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM review_responses WHERE post_id::text = {ph} RETURNING id
+            """, (post_id,))
+            if not row:
+                raise HTTPException(404, "Không có phản hồi để xoá")
     await asyncio.to_thread(_query)
-    return {"success": True, "updated": len(body.post_ids)}
+    _log_mod_action("review_response", post_id, "deleted")
+    return {"success": True}
 
 
 class ModNoteBody(BaseModel):
     note: str = Field(..., min_length=1, max_length=500)
 
 
-@router.post("/moderation/{post_id}/note")
+@router.post("/moderation/{post_id}/note",
+             summary="Add moderation note",
+             description="Adds an internal admin note to a post. Notes are not visible to the post author.")
 async def add_moderation_note(post_id: str, body: ModNoteBody):
     """B3d: Add internal admin note (not visible to poster)."""
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
             post = db._fetchone(conn, f"SELECT id FROM posts WHERE id::text = {ph}", (post_id,))
             if not post:
-                raise HTTPException(404, "Post not found")
+                raise HTTPException(404, "Bài viết không tồn tại")
             db._execute(conn, f"""
                 UPDATE posts SET moderation_notes = COALESCE(moderation_notes, '[]'::jsonb) || {ph}::jsonb
                 WHERE id::text = {ph}
             """, (json.dumps({"text": body.note, "at": datetime.now(timezone.utc).isoformat()}), post_id))
     await asyncio.to_thread(_query)
+    _log_mod_action("post", post_id, "note_added")
     return {"success": True}
 
 
-@router.get("/moderation/{post_id}/notes")
+@router.get("/moderation/{post_id}/notes",
+            summary="Get moderation notes",
+            description="Returns all internal admin notes for a specific post.")
 async def get_moderation_notes(post_id: str):
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
             row = db._fetchone(conn, f"SELECT moderation_notes FROM posts WHERE id::text = {ph}", (post_id,))
         if not row:
-            raise HTTPException(404, "Post not found")
+            raise HTTPException(404, "Bài viết không tồn tại")
         notes = db._row_to_dict(row).get("moderation_notes") or []
         return {"notes": notes}
     return await asyncio.to_thread(_query)
 
 
-@router.get("/moderation/stats")
+@router.get("/moderation/stats",
+            summary="Get moderation statistics",
+            description="Returns post counts grouped by moderation status, plus totals for today and this week.")
 async def moderation_stats():
+    require_pg()
     def _query():
+        ph = db._ph
         with db._conn() as conn:
             rows = db._fetchall(conn, """
                 SELECT moderation_status, COUNT(*) as c FROM posts GROUP BY moderation_status
             """, ())
-        return {"counts": {r["moderation_status"]: r["c"] for r in [db._row_to_dict(row) for row in rows]}}
+            today = db._fetchone(conn, """
+                SELECT COUNT(*) as c FROM posts WHERE created_at > NOW() - INTERVAL '24 hours'
+            """, ())
+            week = db._fetchone(conn, """
+                SELECT COUNT(*) as c FROM posts WHERE created_at > NOW() - INTERVAL '7 days'
+            """, ())
+        return {
+            "counts": {db._row_to_dict(row)["moderation_status"]: db._row_to_dict(row)["c"] for row in rows},
+            "today": db._row_to_dict(today)["c"] if today else 0,
+            "week": db._row_to_dict(week)["c"] if week else 0,
+        }
     return await asyncio.to_thread(_query)
 
 
-@router.get("/analytics-overview")
+# ── Admin Content Search ──────────────────────────────────────────────────
+
+@router.get("/content/search",
+            summary="Search across all content",
+            description="Admin keyword search across posts and comments. Supports filtering by content type, moderation status, and post type.")
+async def admin_content_search(
+    q: str = Query(..., min_length=1, max_length=200),
+    content_type: str = Query("post", pattern="^(post|comment|all)$"),
+    status: str = Query("all", pattern="^(all|approved|pending|rejected|flagged)$"),
+    post_type: str = Query(None, pattern="^(review|question|tip|photo|general)$"),
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """Admin search across posts and comments by keyword."""
+    require_pg()
+    ph = db._ph
+    offset = (page - 1) * limit
+    search_esc = _escape_like(q)
+
+    def _query():
+        results = []
+        total = 0
+        with db._conn() as conn:
+            if content_type in ("post", "all"):
+                conditions = [f"(p.content ILIKE {ph} ESCAPE '\\' OR p.title ILIKE {ph} ESCAPE '\\')"]
+                params = [f"%{search_esc}%", f"%{search_esc}%"]
+                if status != "all":
+                    conditions.append(f"p.moderation_status = {ph}")
+                    params.append(status)
+                if post_type:
+                    conditions.append(f"p.post_type = {ph}")
+                    params.append(post_type)
+                where = " AND ".join(conditions)
+                post_rows = db._fetchall(conn, f"""
+                    SELECT p.id, p.title, p.content, p.post_type, p.moderation_status,
+                           p.entity_id, p.created_at, p.like_count,
+                           u.display_name as author_name
+                    FROM posts p JOIN users u ON u.id = p.user_id
+                    WHERE {where}
+                    ORDER BY p.created_at DESC
+                    LIMIT {ph} OFFSET {ph}
+                """, tuple(params + [limit, offset]))
+                post_count = db._fetchone(conn, f"SELECT COUNT(*) as c FROM posts p WHERE {where}", tuple(params))
+                for r in post_rows:
+                    d = db._row_to_dict(r)
+                    d["_type"] = "post"
+                    if d.get("content"):
+                        d["content"] = d["content"][:300]
+                    results.append(d)
+                total += db._row_to_dict(post_count)["c"] if post_count else 0
+
+            if content_type in ("comment", "all"):
+                c_conditions = [f"c.content ILIKE {ph} ESCAPE '\\'"]
+                c_params = [f"%{search_esc}%"]
+                c_where = " AND ".join(c_conditions)
+                comment_rows = db._fetchall(conn, f"""
+                    SELECT c.id, c.content, c.post_id, c.created_at,
+                           u.display_name as author_name
+                    FROM comments c JOIN users u ON u.id = c.user_id
+                    WHERE {c_where}
+                    ORDER BY c.created_at DESC
+                    LIMIT {ph} OFFSET {ph}
+                """, tuple(c_params + [limit, offset]))
+                comment_count = db._fetchone(conn, f"SELECT COUNT(*) as c FROM comments c WHERE {c_where}", tuple(c_params))
+                for r in comment_rows:
+                    d = db._row_to_dict(r)
+                    d["_type"] = "comment"
+                    if d.get("content"):
+                        d["content"] = d["content"][:300]
+                    results.append(d)
+                total += db._row_to_dict(comment_count)["c"] if comment_count else 0
+        return {"results": results, "total": total, "query": q, "page": page}
+
+    return await asyncio.to_thread(_query)
+
+
+# ── Admin Post Detail ────────────────────────────────────────────────────
+
+@router.get("/posts/{post_id}",
+            summary="Get post details (admin view)",
+            description="Returns full post details including comments, author info, and moderation data for admin review.")
+async def admin_post_detail(post_id: str):
+    """Full post detail with comments for admin review."""
+    require_pg()
+    post_id = validate_path_id(post_id, "post_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            post = db._fetchone(conn, f"""
+                SELECT p.*, u.display_name as author_name, u.phone as author_phone,
+                       u.avatar_url as author_avatar, u.role as author_role
+                FROM posts p JOIN users u ON u.id = p.user_id
+                WHERE p.id::text = {ph}
+            """, (post_id,))
+            if not post:
+                raise HTTPException(404, "Bài viết không tồn tại")
+            pd = db._row_to_dict(post)
+            pd["author_phone"] = _mask(pd.get("author_phone", ""))
+
+            comments = db._fetchall(conn, f"""
+                SELECT c.id, c.content, c.created_at, c.parent_id,
+                       u.display_name as author_name, u.id as user_id
+                FROM comments c JOIN users u ON u.id = c.user_id
+                WHERE c.post_id::text = {ph}
+                ORDER BY c.created_at ASC
+                LIMIT 100
+            """, (post_id,))
+
+            likes = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM likes WHERE post_id::text = {ph}
+            """, (post_id,))
+
+            reports = db._fetchall(conn, f"""
+                SELECT r.id, r.reason, r.created_at, u.display_name as reporter_name
+                FROM reports r JOIN users u ON u.id = r.reporter_id
+                WHERE r.target_type = 'post' AND r.target_id = {ph}
+                ORDER BY r.created_at DESC
+            """, (post_id,))
+
+        pd["comments"] = [db._row_to_dict(c) for c in comments]
+        pd["comment_count"] = len(pd["comments"])
+        pd["like_count_verified"] = db._row_to_dict(likes)["c"] if likes else 0
+        pd["reports"] = [db._row_to_dict(r) for r in reports]
+        pd["report_count"] = len(pd["reports"])
+        return pd
+
+    return await asyncio.to_thread(_query)
+
+
+# ── Appeal management (NĐ147 compliance) ──
+
+@router.get("/appeals",
+            summary="List user appeals",
+            description="Returns a paginated list of user appeals against moderation decisions. Supports filtering by status.")
+async def list_appeals(
+    status: str = Query("pending", pattern="^(pending|approved|rejected|all)$"),
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=100),
+):
+    require_pg()
+    ph = db._ph
+    offset = (page - 1) * limit
+    def _query():
+        with db._conn() as conn:
+            where = "" if status == "all" else f"WHERE a.status = {ph}"
+            params = [] if status == "all" else [status]
+            rows = db._fetchall(conn, f"""
+                SELECT a.*, u.display_name, u.username,
+                       p.content AS post_content, p.post_type
+                FROM moderation_appeals a
+                JOIN users u ON u.id = a.user_id
+                JOIN posts p ON p.id = a.post_id
+                {where}
+                ORDER BY a.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, (*params, limit, offset))
+            total = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM moderation_appeals a {where}
+            """, tuple(params))
+        return {
+            "appeals": [{
+                "id": str(db._row_to_dict(r)["id"]),
+                "post_id": str(db._row_to_dict(r)["post_id"]),
+                "post_content": db._row_to_dict(r).get("post_content", "")[:200],
+                "post_type": db._row_to_dict(r).get("post_type"),
+                "user": {"display_name": db._row_to_dict(r).get("display_name"),
+                         "username": db._row_to_dict(r).get("username")},
+                "reason": db._row_to_dict(r).get("reason"),
+                "status": db._row_to_dict(r)["status"],
+                "reviewer_note": db._row_to_dict(r).get("reviewer_note"),
+                "reviewed_at": str(db._row_to_dict(r)["reviewed_at"]) if db._row_to_dict(r).get("reviewed_at") else None,
+                "created_at": str(db._row_to_dict(r)["created_at"]),
+            } for r in rows],
+            "total": db._row_to_dict(total)["c"] if total else 0,
+            "page": page,
+        }
+    return await asyncio.to_thread(_query)
+
+
+class AppealDecisionBody(BaseModel):
+    note: str = Field("", max_length=500)
+
+
+@router.post("/appeals/{appeal_id}/approve",
+              summary="Approve a user appeal",
+              description="Approves a moderation appeal, restoring the post and notifying the user.")
+async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
+    require_pg()
+    appeal_id = validate_path_id(appeal_id, "appeal_id")
+    admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT post_id, user_id, status FROM moderation_appeals WHERE id::text = {ph}
+            """, (appeal_id,))
+            if not row:
+                raise HTTPException(404, "Khiếu nại không tồn tại")
+            rd = db._row_to_dict(row)
+            if rd["status"] != "pending":
+                raise HTTPException(400, f"Khiếu nại đã {rd['status']}")
+            db._execute(conn, f"""
+                UPDATE moderation_appeals
+                SET status = 'approved', reviewer_note = {ph},
+                    reviewer_id = {ph}::uuid, reviewed_at = NOW()
+                WHERE id::text = {ph}
+            """, (body.note.strip() or None, str(admin_id) if admin_id else None, appeal_id))
+            db._execute(conn, f"""
+                UPDATE posts SET moderation_status = 'approved' WHERE id::text = {ph}
+            """, (str(rd["post_id"]),))
+        _log_mod_action("appeal", appeal_id, "approved", body.note.strip() or None)
+        try:
+            create_notification(str(rd["user_id"]), "moderation",
+                                "Khiếu nại được chấp nhận — bài viết đã được duyệt lại",
+                                ref_type="post", ref_id=str(rd["post_id"]))
+        except Exception:
+            logger.exception("Failed to notify appeal approval %s", appeal_id)
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+@router.post("/appeals/{appeal_id}/reject",
+              summary="Reject a user appeal",
+              description="Rejects a moderation appeal and notifies the user with an optional reason.")
+async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
+    require_pg()
+    appeal_id = validate_path_id(appeal_id, "appeal_id")
+    admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT post_id, user_id, status FROM moderation_appeals WHERE id::text = {ph}
+            """, (appeal_id,))
+            if not row:
+                raise HTTPException(404, "Khiếu nại không tồn tại")
+            rd = db._row_to_dict(row)
+            if rd["status"] != "pending":
+                raise HTTPException(400, f"Khiếu nại đã {rd['status']}")
+            db._execute(conn, f"""
+                UPDATE moderation_appeals
+                SET status = 'rejected', reviewer_note = {ph},
+                    reviewer_id = {ph}::uuid, reviewed_at = NOW()
+                WHERE id::text = {ph}
+            """, (body.note.strip() or None, str(admin_id) if admin_id else None, appeal_id))
+        _log_mod_action("appeal", appeal_id, "rejected", body.note.strip() or None)
+        try:
+            note_msg = f" Lý do: {body.note.strip()}" if body.note.strip() else ""
+            create_notification(str(rd["user_id"]), "moderation",
+                                f"Khiếu nại không được chấp nhận.{note_msg}",
+                                ref_type="post", ref_id=str(rd["post_id"]))
+        except Exception:
+            logger.exception("Failed to notify appeal rejection %s", appeal_id)
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+# ── Admin Comment List ────────────────────────────────────────────────────
+
+@router.get("/comments",
+            summary="List comments for admin review",
+            description="Returns a paginated list of comments with optional search and post filter.")
+async def admin_list_comments(
+    search: str = Query("", max_length=200),
+    post_id: str = Query(None, max_length=50),
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """List comments for admin review with optional search and post filter."""
+    ph = db._ph
+    offset = (page - 1) * limit
+
+    def _query():
+        conditions = []
+        params = []
+        if search:
+            search_esc = _escape_like(search)
+            conditions.append(f"c.content ILIKE {ph} ESCAPE '\\'")
+            params.append(f"%{search_esc}%")
+        if post_id:
+            conditions.append(f"c.post_id::text = {ph}")
+            params.append(post_id)
+        where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+        count_params = list(params)
+        params.extend([limit, offset])
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT c.id, c.content, c.post_id, c.parent_id, c.created_at,
+                       u.display_name as author_name, u.id as user_id,
+                       p.title as post_title, p.post_type
+                FROM comments c
+                JOIN users u ON u.id = c.user_id
+                JOIN posts p ON p.id = c.post_id
+                {where}
+                ORDER BY c.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, tuple(params))
+            total = db._fetchone(conn, f"SELECT COUNT(*) as c FROM comments c {where}", tuple(count_params))
+        return {
+            "comments": [db._row_to_dict(r) for r in rows],
+            "total": db._row_to_dict(total)["c"] if total else 0,
+            "page": page,
+        }
+
+    return await asyncio.to_thread(_query)
+
+
+@router.delete("/comments/{comment_id}",
+               summary="Delete a comment",
+               description="Force-deletes a comment by ID and decrements the parent post comment count.")
+async def admin_delete_comment(comment_id: str, request: Request):
+    """Admin force-delete a comment."""
+    comment_id = validate_path_id(comment_id, "comment_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM comments WHERE id::text = {ph}
+                RETURNING id, post_id, user_id
+            """, (comment_id,))
+            if not row:
+                raise HTTPException(404, "Bình luận không tồn tại")
+            rd = db._row_to_dict(row)
+            db._execute(conn, f"""
+                UPDATE posts SET comment_count = GREATEST(comment_count - 1, 0)
+                WHERE id = {ph}::uuid
+            """, (str(rd["post_id"]),))
+        _log_mod_action("comment", comment_id, "deleted")
+        return rd
+
+    result = await asyncio.to_thread(_query)
+    return {"success": True, "deleted_comment": str(result["id"])}
+
+
+@router.get("/content-stats",
+            summary="Get content statistics",
+            description="Returns content statistics including posts by type/status, average ratings, and daily post counts for a given period.")
+async def content_stats(days: int = Query(30, ge=1, le=365)):
+    require_pg()
+    ph = db._ph
+    def _query():
+        interval_param = f"{days} days"
+        with db._conn() as conn:
+            by_type = db._fetchall(conn, f"""
+                SELECT post_type, COUNT(*) as cnt
+                FROM posts
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+                  AND moderation_status = 'approved'
+                GROUP BY post_type ORDER BY cnt DESC
+            """, (interval_param,))
+            by_status = db._fetchall(conn, f"""
+                SELECT moderation_status, COUNT(*) as cnt
+                FROM posts
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+                GROUP BY moderation_status ORDER BY cnt DESC
+            """, (interval_param,))
+            avg_rating = db._fetchone(conn, f"""
+                SELECT AVG(rating) as avg_r, COUNT(*) as cnt
+                FROM posts
+                WHERE post_type = 'review' AND rating IS NOT NULL
+                  AND created_at > NOW() - CAST({ph} AS INTERVAL)
+                  AND moderation_status = 'approved'
+            """, (interval_param,))
+            total_comments = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM comments
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+            """, (interval_param,))
+            daily_posts = db._fetchall(conn, f"""
+                SELECT DATE(created_at) as day, COUNT(*) as cnt
+                FROM posts
+                WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
+                  AND moderation_status = 'approved'
+                GROUP BY DATE(created_at) ORDER BY day
+            """, (interval_param,))
+        ar = db._row_to_dict(avg_rating) if avg_rating else {}
+        return {
+            "period_days": days,
+            "posts_by_type": {db._row_to_dict(r)["post_type"]: db._row_to_dict(r)["cnt"] for r in by_type},
+            "posts_by_status": {db._row_to_dict(r)["moderation_status"]: db._row_to_dict(r)["cnt"] for r in by_status},
+            "avg_review_rating": round(float(ar["avg_r"]), 2) if ar.get("avg_r") else None,
+            "total_reviews_with_rating": ar.get("cnt", 0),
+            "total_comments": db._row_to_dict(total_comments)["c"] if total_comments else 0,
+            "daily_posts": [{"day": str(db._row_to_dict(r)["day"]), "count": db._row_to_dict(r)["cnt"]} for r in daily_posts],
+        }
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/analytics-overview",
+            summary="Analytics dashboard overview",
+            description="Returns aggregated analytics for the admin dashboard including popular queries, knowledge gaps, top entities, and cost reports.")
 async def analytics_overview(days: int = Query(0, ge=0, le=365)):
     """GĐ9.6: gói số liệu cho trang admin Analytics (1 call, đã auth qua require_admin).
 
@@ -1541,31 +3126,94 @@ async def analytics_overview(days: int = Query(0, ge=0, le=365)):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/reports")
+# ── Search analytics ──
+
+@router.get("/search-analytics",
+            summary="Search term analytics",
+            description="Analyzes search query logs and returns top queries, zero-result queries, and total search count for a given period.")
+async def search_analytics(days: int = Query(7, ge=1, le=90)):
+    search_log = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    def _read():
+        if not search_log.exists():
+            return {"top_queries": [], "zero_results": [], "total_searches": 0, "period_days": days}
+        if search_log.stat().st_size > 20 * 1024 * 1024:
+            return {"top_queries": [], "zero_results": [], "total_searches": 0, "period_days": days, "warning": "Log quá lớn, cần rotation"}
+        queries = {}
+        zero_result = {}
+        total = 0
+        with open(search_log, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    r = json.loads(line)
+                except (json.JSONDecodeError, ValueError):
+                    continue
+                if r.get("ts", "") < cutoff:
+                    continue
+                total += 1
+                q = r.get("q", "").strip().lower()
+                if not q:
+                    continue
+                queries[q] = queries.get(q, 0) + 1
+                if r.get("results", 0) == 0:
+                    zero_result[q] = zero_result.get(q, 0) + 1
+        top = sorted(queries.items(), key=lambda x: x[1], reverse=True)[:30]
+        zeros = sorted(zero_result.items(), key=lambda x: x[1], reverse=True)[:20]
+        return {
+            "top_queries": [{"query": q, "count": c} for q, c in top],
+            "zero_results": [{"query": q, "count": c} for q, c in zeros],
+            "total_searches": total,
+            "period_days": days,
+        }
+    return await asyncio.to_thread(_read)
+
+
+@router.get("/reports",
+            summary="List user reports",
+            description="Returns a paginated list of user reports with filtering by status, target type, reporter, and target user.")
 async def get_reports(
     status: str = Query("pending", pattern="^(pending|resolved|dismissed)$"),
+    target_type: str = Query(None, pattern="^(post|comment|user|entity)$"),
+    reporter_id: str = Query(None, max_length=64),
+    target_user_id: str = Query(None, max_length=64),
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
 ):
+    if reporter_id:
+        reporter_id = validate_path_id(reporter_id, "reporter_id")
+    if target_user_id:
+        target_user_id = validate_path_id(target_user_id, "target_user_id")
     ph = db._ph
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
+            where = f"r.status = {ph}"
+            params = [status]
+            if target_type:
+                where += f" AND r.target_type = {ph}"
+                params.append(target_type)
+            if reporter_id:
+                where += f" AND r.reporter_id::text = {ph}"
+                params.append(reporter_id)
+            if target_user_id:
+                where += f" AND r.target_type = 'user' AND r.target_id = {ph}"
+                params.append(target_user_id)
+            params.extend([limit, offset])
             rows = db._fetchall(conn, f"""
                 SELECT r.id, r.target_type, r.target_id, r.reason, r.details,
-                       r.status, r.created_at, u.display_name as reporter_name
+                       r.reporter_id, r.status, r.created_at, u.display_name as reporter_name
                 FROM reports r
                 JOIN users u ON u.id = r.reporter_id
-                WHERE r.status = {ph}
+                WHERE {where}
                 ORDER BY r.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (status, limit, offset))
+            """, tuple(params))
             total = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM reports WHERE status = {ph}
-            """, (status,))
+                SELECT COUNT(*) as c FROM reports r WHERE {where}
+            """, tuple(params[:-2]))
         return {
             "reports": [db._row_to_dict(r) for r in rows],
-            "total": total["c"] if total else 0,
+            "total": db._row_to_dict(total)["c"] if total else 0,
         }
     return await asyncio.to_thread(_query)
 
@@ -1575,51 +3223,70 @@ class BulkReportAction(BaseModel):
     action: str = Field(..., pattern="^(resolve|dismiss)$")
 
 
-@router.post("/reports/bulk")
+@router.post("/reports/bulk",
+              summary="Bulk action on reports",
+              description="Applies a resolve or dismiss action to multiple reports at once.")
 async def bulk_report_action(body: BulkReportAction):
     status = "resolved" if body.action == "resolve" else "dismissed"
     def _query():
         ph = db._ph
         placeholders = ",".join([ph] * len(body.ids))
         with db._conn() as conn:
-            db._execute(conn, f"UPDATE reports SET status = {ph} WHERE id::text IN ({placeholders})",
-                        (status, *body.ids))
-    await asyncio.to_thread(_query)
-    return {"success": True, "updated": len(body.ids)}
+            cur = db._execute(conn, f"UPDATE reports SET status = {ph} WHERE id::text IN ({placeholders})",
+                              (status, *body.ids))
+            return cur.rowcount
+    updated = await asyncio.to_thread(_query)
+    for rid in body.ids:
+        _log_mod_action("report", rid, status)
+    return {"success": True, "updated": updated, "requested": len(body.ids)}
 
 
-@router.post("/reports/{report_id}/resolve")
+@router.post("/reports/{report_id}/resolve",
+              summary="Resolve a report",
+              description="Marks a user report as resolved after admin review.")
 async def resolve_report(report_id: str):
     report_id = validate_path_id(report_id, "report_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"""
+            cur = db._execute(conn, f"""
                 UPDATE reports SET status = 'resolved' WHERE id::text = {ph}
             """, (report_id,))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Báo cáo không tồn tại")
     await asyncio.to_thread(_query)
+    _log_mod_action("report", report_id, "resolved")
     return {"success": True}
 
 
-@router.post("/reports/{report_id}/dismiss")
+@router.post("/reports/{report_id}/dismiss",
+              summary="Dismiss a report",
+              description="Marks a user report as dismissed, indicating no action is needed.")
 async def dismiss_report(report_id: str):
     report_id = validate_path_id(report_id, "report_id")
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"""
+            cur = db._execute(conn, f"""
                 UPDATE reports SET status = 'dismissed' WHERE id::text = {ph}
             """, (report_id,))
+            if cur.rowcount == 0:
+                raise HTTPException(404, "Báo cáo không tồn tại")
     await asyncio.to_thread(_query)
+    _log_mod_action("report", report_id, "dismissed")
     return {"success": True}
 
 
 # GĐ13.6f: báo-sai thông tin (facility/entity) & báo nội dung ẩn danh — kênh nhẹ JSONL
 # (KHÔNG cần đăng nhập, không DB), tách khỏi UGC `reports` (Postgres) ở trên.
 _INFO_REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
+from notifications import create_notification
+from public_api import _jsonl_lock as _info_reports_lock
 
 
-@router.get("/info-reports")
+@router.get("/info-reports",
+            summary="List information reports",
+            description="List anonymous info-correction and content reports from the JSONL store, newest first. Returns open count for badge display.")
 async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
     """Liệt kê báo-sai/báo cáo ẩn danh (reports.jsonl), mới nhất trước. Admin tự xử lý
     (sửa entity qua editor / takedown thủ công)."""
@@ -1644,7 +3311,9 @@ async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
 
 _audit_cache: dict = {"mtime": 0.0, "items": []}
 
-@router.get("/audit-log")
+@router.get("/audit-log",
+            summary="Get admin audit log",
+            description="Returns paginated audit log entries of admin actions. Supports filtering by HTTP method, search query, and date range.")
 async def get_audit_log(
     limit: int = Query(200, ge=1, le=5000),
     method: Optional[str] = Query(None, max_length=10),
@@ -1660,20 +3329,21 @@ async def get_audit_log(
             mtime = _AUDIT_FILE.stat().st_mtime
         except OSError:
             mtime = 0.0
-        if mtime != _audit_cache["mtime"]:
-            items = []
-            with open(_AUDIT_FILE, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        items.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        continue
-            _audit_cache["mtime"] = mtime
-            _audit_cache["items"] = items
-        items = _audit_cache["items"]
+        with _audit_lock:
+            if mtime != _audit_cache["mtime"]:
+                raw_items = []
+                with open(_AUDIT_FILE, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            raw_items.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            continue
+                _audit_cache["mtime"] = mtime
+                _audit_cache["items"] = raw_items
+            items = list(_audit_cache["items"])
         filtered = items
         if method:
             filtered = [e for e in filtered if e.get("method") == method.upper()]
@@ -1694,35 +3364,40 @@ class ReportActionRequest(BaseModel):
     status: str = Field(..., pattern="^(open|resolved|dismissed)$")
 
 
-@router.post("/info-reports/action")
+@router.post("/info-reports/action",
+             summary="Update information report status",
+             description="Change the status of an info-correction report to open, resolved, or dismissed. Writes atomically to the JSONL store.")
 async def info_report_action(body: ReportActionRequest):
     """Đổi trạng thái 1 báo-sai (resolve/dismiss/open) — ghi lại reports.jsonl atomic."""
     def _query():
-        if not _INFO_REPORTS_FILE.exists():
-            raise HTTPException(404, "Không có báo cáo")
-        records, found = [], False
-        for line in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                r = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if r.get("ts") == body.ts:
-                r["status"] = body.status
-                found = True
-            records.append(r)
-        if not found:
-            raise HTTPException(404, f"Không tìm thấy báo cáo ts={body.ts}")
-        tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
-        tmp.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
-        tmp.replace(_INFO_REPORTS_FILE)
+        with _info_reports_lock:
+            if not _INFO_REPORTS_FILE.exists():
+                raise HTTPException(404, "Không có báo cáo")
+            records, found = [], False
+            for line in _INFO_REPORTS_FILE.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if r.get("ts") == body.ts:
+                    r["status"] = body.status
+                    found = True
+                records.append(r)
+            if not found:
+                raise HTTPException(404, f"Không tìm thấy báo cáo ts={body.ts}")
+            tmp = _INFO_REPORTS_FILE.with_suffix(".tmp")
+            tmp.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in records) + "\n", encoding="utf-8")
+            tmp.replace(_INFO_REPORTS_FILE)
     await asyncio.to_thread(_query)
     return {"success": True, "ts": body.ts, "new_status": body.status}
 
 
-@router.get("/cost-overview")
+@router.get("/cost-overview",
+            summary="Get LLM and API cost overview",
+            description="Returns LLM usage costs from the cost tracker and autonomous agent budget status. Helps monitor the monthly budget cap.")
 async def cost_overview():
     """Bảng chi phí: chi phí LLM (cost_tracker) + ngân sách agent tự động (cap/dùng/còn).
     Bảo vệ ngân sách <1tr/tháng khi autonomous-LLM được bật."""
@@ -1748,7 +3423,9 @@ async def cost_overview():
     return await asyncio.to_thread(_query)
 
 
-@router.post("/ai/triage")
+@router.post("/ai/triage",
+             summary="AI-assisted admin triage",
+             description="On-demand LLM call that suggests up to 3 priority admin actions based on current system state. Degrades gracefully if LLM is unavailable.")
 async def ai_triage():
     """On-demand: trợ lý LLM gợi ý ≤3 việc quản trị ưu tiên từ tình hình hiện tại.
     Chỉ chạy KHI admin bấm (1 lần gọi LLM — KHÔNG vòng lặp nền, tôn trọng §B8).
@@ -1769,9 +3446,9 @@ async def ai_triage():
         raw = "\n".join(ctx) or "(không có dữ liệu)"
 
         try:
-            from server import client, MODEL_MINI
-            resp = client.chat.completions.create(
-                model=MODEL_MINI, temperature=0.3, max_tokens=400,
+            from llm_config import get_client, get_model_mini
+            resp = get_client().chat.completions.create(
+                model=get_model_mini(), temperature=0.3, max_tokens=400, timeout=30,
                 messages=[
                     {"role": "system", "content": "Bạn là trợ lý quản trị của vinhlong360. Dựa trên tình hình, đề xuất TỐI ĐA 3 việc ưu tiên xử lý, ngắn gọn, tiếng Việt, có thứ tự."},
                     {"role": "user", "content": f"Tình hình hiện tại:\n{raw}\n\nĐề xuất việc ưu tiên:"},
@@ -1779,36 +3456,46 @@ async def ai_triage():
             return {"ok": True, "suggestion": resp.choices[0].message.content, "context": raw}
         except Exception as e:  # noqa: BLE001 - LLM down/budget → vẫn trả context để admin tự xử
             return {"ok": False, "suggestion": None, "context": raw,
-                    "note": "LLM không khả dụng — xem tình hình thô bên dưới.", "detail": str(e)[:120]}
+                    "note": "LLM không khả dụng — xem tình hình thô bên dưới."}
     return await asyncio.to_thread(_query)
 
 
-@router.get("/users")
+@router.get("/users",
+            summary="List all users",
+            description="Returns a paginated list of users with post counts. Supports search by name or phone, and filtering by role.")
 async def list_users(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
     search: str = Query("", max_length=100),
+    role_filter: Optional[str] = Query(None, pattern="^(user|moderator|admin)$"),
 ):
+    require_pg()
     ph = db._ph
     offset = (page - 1) * limit
     conditions = ["1=1"]
     params = []
     if search:
-        conditions.append(f"(display_name ILIKE {ph} OR phone LIKE {ph})")
-        params.extend([f"%{search}%", f"%{search}%"])
+        search_esc = _escape_like(search)
+        conditions.append(f"(display_name ILIKE {ph} ESCAPE '\\' OR phone LIKE {ph} ESCAPE '\\')")
+        params.extend([f"%{search_esc}%", f"%{search_esc}%"])
+    if role_filter:
+        conditions.append(f"COALESCE(role, 'user') = {ph}")
+        params.append(role_filter)
     where = " AND ".join(conditions)
+    count_params = list(params)
     params.extend([limit, offset])
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
-                SELECT id, phone, display_name, role, is_active, created_at
-                FROM users WHERE {where}
-                ORDER BY created_at DESC
+                SELECT u.id, u.phone, u.display_name, u.role, u.is_active, u.created_at,
+                       (SELECT COUNT(*) FROM posts p WHERE p.user_id = u.id AND p.moderation_status = 'approved') as post_count
+                FROM users u WHERE {where}
+                ORDER BY u.created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """, params)
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM users WHERE {where}
-            """, params[:len(params) - 2])
+            """, count_params)
         role_counts = {}
         try:
             with db._conn() as conn2:
@@ -1826,15 +3513,130 @@ async def list_users(
                 "role": r.get("role", "user"),
                 "is_active": r.get("is_active", True),
                 "created_at": str(r.get("created_at", "")),
+                "post_count": r.get("post_count", 0),
             } for r in [db._row_to_dict(row) for row in rows]],
-            "total": total["c"] if total else 0,
+            "total": db._row_to_dict(total)["c"] if total else 0,
             "role_counts": role_counts,
         }
     return await asyncio.to_thread(_query)
 
 
-@router.post("/users/{user_id}/ban")
+@router.get("/users/{user_id}",
+            summary="Get user details",
+            description="Returns comprehensive user profile and activity statistics for the admin panel, including post counts, follow stats, reports, blocks, and reputation.")
+async def admin_user_detail(user_id: str):
+    """Comprehensive user detail for admin panel."""
+    require_pg()
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            user = db._fetchone(conn, f"""
+                SELECT id, phone, display_name, avatar_url, cover_url, bio,
+                       username, role, is_active, created_at
+                FROM users WHERE id::text = {ph}
+            """, (user_id,))
+            if not user:
+                raise HTTPException(404, "Người dùng không tồn tại")
+            ud = db._row_to_dict(user)
+            ud["phone"] = _mask(ud.get("phone", ""))
+
+            post_stats = db._fetchone(conn, f"""
+                SELECT COUNT(*) as total,
+                       COUNT(*) FILTER (WHERE moderation_status = 'approved') as approved,
+                       COUNT(*) FILTER (WHERE moderation_status = 'rejected') as rejected,
+                       COUNT(*) FILTER (WHERE moderation_status = 'pending') as pending,
+                       COUNT(*) FILTER (WHERE post_type = 'review') as reviews,
+                       COUNT(*) FILTER (WHERE post_type = 'question') as questions
+                FROM posts WHERE user_id::text = {ph}
+            """, (user_id,))
+            ps = db._row_to_dict(post_stats) if post_stats else {}
+
+            comment_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM comments WHERE user_id::text = {ph}
+            """, (user_id,))
+
+            follow_stats = db._fetchone(conn, f"""
+                SELECT
+                    (SELECT COUNT(*) FROM follows WHERE follower_id::text = {ph} AND target_type = 'user') as following,
+                    (SELECT COUNT(*) FROM follows WHERE target_id = {ph} AND target_type = 'user') as followers
+            """, (user_id, user_id))
+            fs = db._row_to_dict(follow_stats) if follow_stats else {}
+
+            session_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM user_sessions WHERE user_id = {ph}::uuid
+            """, (user_id,))
+
+            report_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM reports WHERE reporter_id::text = {ph}
+            """, (user_id,))
+
+            reported_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM reports WHERE target_type = 'user' AND target_id = {ph}
+            """, (user_id,))
+
+            block_count = db._fetchone(conn, f"""
+                SELECT
+                    (SELECT COUNT(*) FROM blocks WHERE blocker_id::text = {ph}) as blocking,
+                    (SELECT COUNT(*) FROM blocks WHERE blocked_id::text = {ph}) as blocked_by
+            """, (user_id, user_id))
+            blk = db._row_to_dict(block_count) if block_count else {}
+
+            mute_count = db._fetchone(conn, f"""
+                SELECT COUNT(*) as c FROM user_mutes WHERE user_id::text = {ph}
+            """, (user_id,))
+
+            reputation = db._fetchone(conn, f"""
+                SELECT reputation_score FROM users WHERE id::text = {ph}
+            """, (user_id,))
+            rep = db._row_to_dict(reputation).get("reputation_score", 0) if reputation else 0
+
+            last_login = None
+            try:
+                ll = db._fetchone(conn, f"""
+                    SELECT created_at FROM login_history
+                    WHERE user_id = {ph}::uuid AND success = TRUE
+                    ORDER BY created_at DESC LIMIT 1
+                """, (user_id,))
+                if ll:
+                    last_login = str(db._row_to_dict(ll)["created_at"])
+            except Exception:
+                logger.debug("login_history query failed for user %s", user_id, exc_info=True)
+
+            last_post = db._fetchone(conn, f"""
+                SELECT created_at FROM posts
+                WHERE user_id::text = {ph} AND moderation_status = 'approved'
+                ORDER BY created_at DESC LIMIT 1
+            """, (user_id,))
+
+        return {
+            "user": ud,
+            "stats": {
+                "posts": ps,
+                "comments": db._row_to_dict(comment_count)["c"] if comment_count else 0,
+                "following": fs.get("following", 0),
+                "followers": fs.get("followers", 0),
+                "active_sessions": db._row_to_dict(session_count)["c"] if session_count else 0,
+                "reports_filed": db._row_to_dict(report_count)["c"] if report_count else 0,
+                "reports_against": db._row_to_dict(reported_count)["c"] if reported_count else 0,
+                "blocking": blk.get("blocking", 0),
+                "blocked_by": blk.get("blocked_by", 0),
+                "muted_users": db._row_to_dict(mute_count)["c"] if mute_count else 0,
+                "reputation_score": rep,
+                "last_login": last_login,
+                "last_post_at": str(db._row_to_dict(last_post)["created_at"]) if last_post else None,
+            },
+        }
+
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/users/{user_id}/ban",
+             summary="Ban a user",
+             description="Deactivate a user account and revoke all active sessions. Admins cannot ban themselves.")
 async def ban_user(user_id: str, request: Request):
+    require_pg()
     user_id = validate_path_id(user_id, "user_id")
     admin_user = await get_current_user(request)
     if admin_user and str(admin_user["id"]) == user_id:
@@ -1856,8 +3658,11 @@ async def ban_user(user_id: str, request: Request):
     return {"success": True}
 
 
-@router.post("/users/{user_id}/unban")
+@router.post("/users/{user_id}/unban",
+             summary="Unban a user",
+             description="Reactivate a previously banned user account. Returns an error if the user is not currently banned.")
 async def unban_user(user_id: str):
+    require_pg()
     user_id = validate_path_id(user_id, "user_id")
     def _query():
         ph = db._ph
@@ -1865,7 +3670,8 @@ async def unban_user(user_id: str):
             target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
             if not target:
                 raise HTTPException(404, "Không tìm thấy người dùng")
-            if target["is_active"]:
+            td = db._row_to_dict(target)
+            if td["is_active"]:
                 raise HTTPException(400, "Người dùng không bị ban")
             db._execute(conn, f"""
                 UPDATE users SET is_active = TRUE WHERE id::text = {ph}
@@ -1875,7 +3681,72 @@ async def unban_user(user_id: str):
     return {"success": True}
 
 
-@router.post("/users/{user_id}/role")
+class BulkUserAction(BaseModel):
+    user_ids: list[str] = Field(..., min_length=1, max_length=50)
+    reason: str = Field("", max_length=500)
+
+
+@router.post("/users/bulk-ban",
+             summary="Bulk ban users",
+             description="Ban multiple users at once. Accepts a list of user IDs and an optional reason; skips non-existent users.")
+async def bulk_ban_users(body: BulkUserAction, request: Request):
+    require_pg()
+    from ratelimit import check_rate
+    check_rate("admin:bulk-ban", 5, 60, "Thao tác quá nhanh")
+    admin_user = await get_current_user(request)
+    admin_id = str(admin_user["id"]) if admin_user else None
+    ids = [validate_path_id(uid, "user_id") for uid in body.user_ids]
+    if admin_id and admin_id in ids:
+        raise HTTPException(400, "Không thể tự ban chính mình")
+    def _query():
+        ph = db._ph
+        banned = []
+        with db._conn() as conn:
+            for uid in ids:
+                target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (uid,))
+                if not target:
+                    continue
+                db._execute(conn, f"UPDATE users SET is_active = FALSE WHERE id::text = {ph}", (uid,))
+                db._execute(conn, f"DELETE FROM user_sessions WHERE user_id = {ph}::uuid", (uid,))
+                banned.append(uid)
+        return banned
+    banned = await asyncio.to_thread(_query)
+    for uid in banned:
+        _log_mod_action("user", uid, "ban", body.reason or None)
+    return {"success": True, "banned_count": len(banned), "banned_ids": banned}
+
+
+@router.post("/users/bulk-unban",
+             summary="Bulk unban users",
+             description="Unban multiple users at once. Accepts a list of user IDs and an optional reason; skips non-existent or active users.")
+async def bulk_unban_users(body: BulkUserAction):
+    require_pg()
+    from ratelimit import check_rate
+    check_rate("admin:bulk-unban", 5, 60, "Thao tác quá nhanh")
+    ids = [validate_path_id(uid, "user_id") for uid in body.user_ids]
+    def _query():
+        ph = db._ph
+        unbanned = []
+        with db._conn() as conn:
+            for uid in ids:
+                target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (uid,))
+                if not target:
+                    continue
+                td = db._row_to_dict(target)
+                if td["is_active"]:
+                    continue
+                db._execute(conn, f"UPDATE users SET is_active = TRUE WHERE id::text = {ph}", (uid,))
+                unbanned.append(uid)
+        return unbanned
+    unbanned = await asyncio.to_thread(_query)
+    for uid in unbanned:
+        _log_mod_action("user", uid, "unban", body.reason or None)
+    return {"success": True, "unbanned_count": len(unbanned), "unbanned_ids": unbanned}
+
+
+@router.post("/users/{user_id}/role",
+             summary="Set user role",
+             description="Assign a role (user, moderator, or admin) to a user. Banned users cannot be assigned roles.")
 async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|moderator|admin)$")):
     user_id = validate_path_id(user_id, "user_id")
     def _query():
@@ -1884,7 +3755,8 @@ async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|mod
             target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
             if not target:
                 raise HTTPException(404, "Không tìm thấy người dùng")
-            if not target["is_active"]:
+            td = db._row_to_dict(target)
+            if not td["is_active"]:
                 raise HTTPException(400, "Không thể gán quyền cho tài khoản đã bị ban")
             db._execute(conn, f"""
                 UPDATE users SET role = {ph} WHERE id::text = {ph}
@@ -1892,6 +3764,130 @@ async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|mod
     await asyncio.to_thread(_query)
     _log_mod_action("user", user_id, f"set_role:{role}")
     return {"success": True}
+
+
+class AdminUserNote(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
+@router.post("/users/{user_id}/notes", status_code=201,
+             summary="Add admin note to user",
+             description="Create an internal admin note attached to a user profile. Notes are only visible to admins.")
+async def add_user_note(user_id: str, body: AdminUserNote, request: Request):
+    """Admin: add internal note to a user profile."""
+    user_id = validate_path_id(user_id, "user_id")
+    admin_id = str(request.state.user["id"]) if hasattr(request, "state") and hasattr(request.state, "user") else None
+
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT id FROM users WHERE id::text = {ph}", (user_id,))
+            if not row:
+                raise HTTPException(404, "Người dùng không tồn tại")
+            note = db._fetchone(conn, f"""
+                INSERT INTO admin_user_notes (user_id, admin_id, content)
+                VALUES ({ph}::uuid, {ph}::uuid, {ph}) RETURNING id, created_at
+            """, (user_id, admin_id, body.content.strip()))
+            return db._row_to_dict(note)
+
+    result = await asyncio.to_thread(_query)
+    return {"note": {"id": str(result["id"]), "created_at": str(result["created_at"])}}
+
+
+@router.get("/users/{user_id}/notes",
+            summary="List admin notes for user",
+            description="Retrieve all internal admin notes for a user, ordered by most recent first.")
+async def get_user_notes(user_id: str, limit: int = Query(50, ge=1, le=200)):
+    """Admin: list internal notes for a user."""
+    user_id = validate_path_id(user_id, "user_id")
+
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            return db._fetchall(conn, f"""
+                SELECT n.id, n.content, n.created_at, u.display_name as admin_name
+                FROM admin_user_notes n JOIN users u ON u.id = n.admin_id
+                WHERE n.user_id = {ph}::uuid ORDER BY n.created_at DESC LIMIT {ph}
+            """, (user_id, limit))
+
+    rows = await asyncio.to_thread(_query)
+    notes = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        notes.append({"id": str(d["id"]), "content": d["content"],
+                       "admin_name": d.get("admin_name"), "created_at": str(d["created_at"])})
+    return {"notes": notes}
+
+
+@router.delete("/users/{user_id}/notes/{note_id}",
+               summary="Delete admin note",
+               description="Delete a specific internal admin note from a user profile.")
+async def delete_user_note(user_id: str, note_id: str):
+    """Admin: delete an internal note."""
+    user_id = validate_path_id(user_id, "user_id")
+    note_id = validate_path_id(note_id, "note_id")
+
+    def _query():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"DELETE FROM admin_user_notes WHERE id = {ph}::uuid AND user_id = {ph}::uuid RETURNING 1",
+                               (note_id, user_id))
+            if not row:
+                raise HTTPException(404, "Ghi chú không tồn tại")
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+# ── Admin: user mutes + reactions visibility ────────────────────────
+
+@router.get("/users/{user_id}/mutes",
+            summary="Get user mute list",
+            description="List all users muted by a specific user, with display names and timestamps.")
+async def admin_user_mutes(user_id: str, limit: int = Query(50, ge=1, le=200)):
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT m.muted_id, u.display_name, u.username, m.created_at
+                FROM user_mutes m JOIN users u ON u.id = m.muted_id
+                WHERE m.user_id = {ph}::uuid
+                ORDER BY m.created_at DESC LIMIT {ph}
+            """, (user_id, limit))
+            return [db._row_to_dict(r) for r in rows]
+    mutes = await asyncio.to_thread(_query)
+    return {"mutes": [{"muted_id": str(m["muted_id"]), "display_name": m.get("display_name"),
+                        "username": m.get("username"), "created_at": str(m["created_at"])} for m in mutes],
+            "total": len(mutes)}
+
+
+@router.get("/users/{user_id}/reactions",
+            summary="Get user reaction history",
+            description="Retrieve a summary of reaction types and recent reactions made by a user.")
+async def admin_user_reactions(user_id: str, limit: int = Query(100, ge=1, le=500)):
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT r.reaction_type, COUNT(*) as count
+                FROM post_reactions r WHERE r.user_id = {ph}::uuid
+                GROUP BY r.reaction_type
+            """, (user_id,))
+            summary = {db._row_to_dict(r)["reaction_type"]: int(db._row_to_dict(r)["count"]) for r in rows}
+            recent = db._fetchall(conn, f"""
+                SELECT r.post_id, r.reaction_type, r.created_at, p.content
+                FROM post_reactions r LEFT JOIN posts p ON p.id = r.post_id
+                WHERE r.user_id = {ph}::uuid
+                ORDER BY r.created_at DESC LIMIT {ph}
+            """, (user_id, limit))
+            return summary, [db._row_to_dict(r) for r in recent]
+    summary, recent = await asyncio.to_thread(_query)
+    return {"summary": summary, "total": sum(summary.values()),
+            "recent": [{"post_id": str(r["post_id"]), "reaction_type": r["reaction_type"],
+                        "created_at": str(r["created_at"]),
+                        "content_preview": (r.get("content") or "")[:100]} for r in recent]}
 
 
 def _mod_post(row: dict) -> dict:
@@ -1934,23 +3930,31 @@ def _log_mod_action(target_type, target_id, action, reason=None):
 #  SITE SETTINGS — CMS admin endpoints
 # ══════════════════════════════════════════════════
 
-@router.get("/site-settings")
+@router.get("/site-settings",
+            summary="Get all site settings",
+            description="Retrieve all site settings grouped by category for the admin overview panel.")
 async def admin_get_all_settings():
     """All settings grouped by category (for admin overview)."""
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     return await asyncio.to_thread(site_settings.get_all_grouped)
 
 
-@router.get("/site-settings/{category}")
+_SETTING_KEY_RE = re.compile(r"^[a-zA-Z0-9_./:-]{1,200}$")
+
+@router.get("/site-settings/{category}",
+            summary="Get settings by category",
+            description="Retrieve all site settings for a specific category, for the admin editor page.")
 async def admin_get_settings_by_category(category: str):
     """Settings for a specific category (for admin editor page)."""
+    if not _SETTING_KEY_RE.match(category):
+        raise HTTPException(400, detail="Tên danh mục không hợp lệ")
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     def _query():
         items = site_settings.get_by_category(category)
         if not items:
-            raise HTTPException(404, detail=f"No settings found for category '{category}'")
+            raise HTTPException(404, detail=f"Không tìm thấy cài đặt cho danh mục '{category}'")
         return {"category": category, "settings": items}
     return await asyncio.to_thread(_query)
 
@@ -1959,15 +3963,19 @@ class SettingUpdate(BaseModel):
     value: object = Field(..., description="New value for the setting")
 
 
-@router.put("/site-settings/{key:path}")
+@router.put("/site-settings/{key:path}",
+            summary="Update a site setting",
+            description="Update the value of a single site setting by its key path.")
 async def admin_update_setting(key: str, body: SettingUpdate):
     """Update a single setting value."""
+    if not _SETTING_KEY_RE.match(key):
+        raise HTTPException(400, detail="Tên cài đặt không hợp lệ")
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     def _query():
         ok = site_settings.upsert(key, body.value)
         if not ok:
-            raise HTTPException(500, detail="Failed to update setting")
+            raise HTTPException(500, detail="Không thể cập nhật cài đặt")
     await asyncio.to_thread(_query)
     return {"success": True, "key": key}
 
@@ -1976,20 +3984,26 @@ class BulkSettingUpdate(BaseModel):
     updates: dict[str, object] = Field(..., description="Map of key→value to update")
 
 
-@router.post("/site-settings/bulk")
+@router.post("/site-settings/bulk",
+             summary="Bulk update site settings",
+             description="Update multiple site settings at once. Accepts a map of key-value pairs.")
 async def admin_bulk_update_settings(body: BulkSettingUpdate):
     """Batch update multiple settings at once."""
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     count = await asyncio.to_thread(site_settings.bulk_upsert, body.updates)
     return {"success": True, "updated": count}
 
 
-@router.post("/site-settings/reset/{category}")
+@router.post("/site-settings/reset/{category}",
+             summary="Reset category settings to defaults",
+             description="Reset all site settings in a category back to their default values.")
 async def admin_reset_category(category: str):
     """Reset all settings in a category to their defaults."""
+    if not _SETTING_KEY_RE.match(category):
+        raise HTTPException(400, detail="Tên danh mục không hợp lệ")
     if not db._use_pg:
-        raise HTTPException(503, detail="Site settings require PostgreSQL")
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     def _query():
         from seed_site_settings import DEFAULTS
         return site_settings.reset_category(category, DEFAULTS)
@@ -1997,11 +4011,60 @@ async def admin_reset_category(category: str):
     return {"success": True, "reset": count}
 
 
-@router.post("/notifications/cleanup")
+# ══════════════════════════════════════════════════
+#  LLM CONFIG — runtime AI configuration
+# ══════════════════════════════════════════════════
+
+@router.get("/llm-config",
+            summary="Get LLM configuration",
+            description="Retrieve the current LLM configuration with the API key masked.")
+async def admin_get_llm_config():
+    """Current LLM configuration (API key masked)."""
+    import llm_config
+    return await asyncio.to_thread(llm_config.get_status)
+
+
+class LLMConfigUpdate(BaseModel):
+    base_url: str = Field(..., min_length=1, max_length=500)
+    api_key: str = Field(..., min_length=1, max_length=500)
+    model: str = Field(..., min_length=1, max_length=100)
+    model_mini: str = Field(..., min_length=1, max_length=100)
+
+
+@router.put("/llm-config",
+            summary="Update LLM configuration",
+            description="Update the LLM configuration. Validates settings with a test API call before applying.")
+async def admin_update_llm_config(body: LLMConfigUpdate):
+    """Update LLM config. Validates with a test API call before applying."""
+    import llm_config
+    try:
+        result = await asyncio.to_thread(
+            llm_config.update_config,
+            body.base_url, body.api_key, body.model, body.model_mini,
+        )
+    except ValueError as e:
+        logger.warning("LLM config update rejected: %s", e)
+        raise HTTPException(400, detail="Cấu hình LLM không hợp lệ")
+    return {"success": True, "config": result}
+
+
+@router.post("/llm-config/reset",
+             summary="Reset LLM config to defaults",
+             description="Reset the LLM configuration back to values from environment variables.")
+async def admin_reset_llm_config():
+    """Reset LLM config to environment variables."""
+    import llm_config
+    result = await asyncio.to_thread(llm_config.reset_to_env)
+    return {"success": True, "config": result}
+
+
+@router.post("/notifications/cleanup",
+             summary="Clean up old notifications",
+             description="Delete read notifications older than N days. Returns the count of deleted records.")
 async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
     """Delete read notifications older than N days."""
     if not db._use_pg:
-        raise HTTPException(503, detail="Notifications require PostgreSQL")
+        raise HTTPException(503, detail="Thông báo yêu cầu PostgreSQL")
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -2013,3 +4076,393 @@ async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
             return cur.rowcount if cur else 0
     deleted = await asyncio.to_thread(_query)
     return {"success": True, "deleted": deleted, "days": days}
+
+
+@router.post("/cleanup-orphan-refs",
+             summary="Clean up orphaned entity references",
+             description="Remove UGC records that reference entity IDs no longer present in the knowledge base.")
+async def admin_cleanup_orphan_entity_refs():
+    """Remove UGC records referencing entity IDs that no longer exist in knowledge base."""
+    if not db._use_pg:
+        raise HTTPException(503, detail="Chức năng này yêu cầu PostgreSQL")
+    valid_ids = {e["id"] for e in db.list_entities(limit=10000, offset=0)}
+    if not valid_ids:
+        return {"success": True, "cleaned": {}}
+
+    ph = db._ph
+    tables = ["saved_entities", "user_visits", "event_rsvp"]
+    cleaned = {}
+
+    def _cleanup():
+        with db._conn() as conn:
+            for table in tables:
+                try:
+                    rows = db._fetchall(conn, f"SELECT DISTINCT entity_id FROM {table}", ())
+                    orphan_ids = [r[0] if not hasattr(r, 'keys') else db._row_to_dict(r)["entity_id"]
+                                  for r in rows
+                                  if (r[0] if not hasattr(r, 'keys') else db._row_to_dict(r)["entity_id"]) not in valid_ids]
+                    if orphan_ids:
+                        placeholders = ",".join(ph for _ in orphan_ids)
+                        cur = db._execute(conn, f"DELETE FROM {table} WHERE entity_id IN ({placeholders})", tuple(orphan_ids))
+                        cleaned[table] = cur.rowcount if cur else 0
+                    else:
+                        cleaned[table] = 0
+                except Exception:
+                    logger.debug("Orphan cleanup failed for table %s", table, exc_info=True)
+                    cleaned[table] = -1
+
+    await asyncio.to_thread(_cleanup)
+    return {"success": True, "cleaned": cleaned}
+
+
+# ── Entity claims admin (U-30: approve/reject business claims) ────────
+
+@router.get("/claims",
+            summary="List entity ownership claims",
+            description="List entity ownership claims filtered by status for admin review. Supports pagination.")
+async def list_claims(
+    status: str = Query("pending", max_length=20),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    """U-30: List entity claims for admin review."""
+    require_pg()
+    valid_statuses = ("pending", "approved", "rejected", "all")
+    if status not in valid_statuses:
+        raise HTTPException(422, f"Status không hợp lệ. Cho phép: {', '.join(valid_statuses)}")
+
+    ph = db._ph
+
+    def _query():
+        where = "" if status == "all" else f"WHERE c.status = {ph}"
+        params = [] if status == "all" else [status]
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT c.id, c.entity_id, c.business_name, c.contact_phone,
+                       c.contact_email, c.evidence, c.status, c.created_at,
+                       c.reviewed_at, c.rejection_reason,
+                       u.display_name as claimant_name, u.phone as claimant_phone
+                FROM entity_claims c
+                JOIN users u ON u.id = c.claimant_id
+                {where}
+                ORDER BY c.created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, tuple(params + [limit, offset]))
+            total_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) as cnt FROM entity_claims c {where}
+            """, tuple(params))
+        total = db._row_to_dict(total_row)["cnt"] if total_row else 0
+        return {
+            "claims": [db._row_to_dict(r) for r in rows],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    return await asyncio.to_thread(_query)
+
+
+class ClaimDecisionBody(BaseModel):
+    reason: str = Field("", max_length=1000)
+
+
+@router.post("/claims/{claim_id}/approve",
+             summary="Approve an entity ownership claim",
+             description="Approve a pending entity ownership claim. Notifies the claimant upon approval.")
+async def approve_claim(claim_id: str, request: Request):
+    """U-30: Approve an entity claim."""
+    require_pg()
+    claim_id = validate_path_id(claim_id, "claim_id")
+    ph = db._ph
+    admin_user = getattr(request.state, "admin_user", None)
+
+    def _approve():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT id, status, claimant_id, entity_id FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
+            if not row:
+                return {"error": "not_found"}
+            claim = db._row_to_dict(row)
+            if claim["status"] != "pending":
+                return {"error": "not_pending", "current_status": claim["status"]}
+            reviewer_id = str(admin_user["id"]) if admin_user else None
+            db._execute(conn, f"""
+                UPDATE entity_claims SET status = 'approved', reviewer_id = {ph}::uuid, reviewed_at = NOW()
+                WHERE id = {ph}::uuid
+            """, (reviewer_id, claim_id))
+        return {"ok": True, "claimant_id": str(claim["claimant_id"]), "entity_id": claim.get("entity_id")}
+
+    result = await asyncio.to_thread(_approve)
+    if "error" in result:
+        code = 404 if result["error"] == "not_found" else 409
+        detail = "Không tìm thấy claim" if result["error"] == "not_found" else f"Claim đã xử lý ({result.get('current_status', '')})"
+        raise HTTPException(code, detail)
+    _log_mod_action("claim", claim_id, "approved")
+    if result.get("claimant_id"):
+        def _notify():
+            create_notification(
+                result["claimant_id"], "claim_approved",
+                "Yêu cầu xác nhận doanh nghiệp của bạn đã được duyệt!",
+                ref_type="entity", ref_id=result.get("entity_id", ""),
+            )
+        await asyncio.to_thread(_notify)
+    return {"ok": True}
+
+
+@router.post("/claims/{claim_id}/reject",
+             summary="Reject an entity ownership claim",
+             description="Reject a pending entity ownership claim with an optional reason. Notifies the claimant.")
+async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request):
+    """U-30: Reject an entity claim with optional reason."""
+    require_pg()
+    claim_id = validate_path_id(claim_id, "claim_id")
+    ph = db._ph
+    admin_user = getattr(request.state, "admin_user", None)
+
+    def _reject():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT id, status, claimant_id, entity_id FROM entity_claims WHERE id = {ph}::uuid", (claim_id,))
+            if not row:
+                return {"error": "not_found"}
+            claim = db._row_to_dict(row)
+            if claim["status"] != "pending":
+                return {"error": "not_pending", "current_status": claim["status"]}
+            reviewer_id = str(admin_user["id"]) if admin_user else None
+            db._execute(conn, f"""
+                UPDATE entity_claims SET status = 'rejected', reviewer_id = {ph}::uuid,
+                    reviewed_at = NOW(), rejection_reason = {ph}
+                WHERE id = {ph}::uuid
+            """, (reviewer_id, body.reason, claim_id))
+        return {"ok": True, "claimant_id": str(claim["claimant_id"]), "entity_id": claim.get("entity_id")}
+
+    result = await asyncio.to_thread(_reject)
+    if "error" in result:
+        code = 404 if result["error"] == "not_found" else 409
+        detail = "Không tìm thấy claim" if result["error"] == "not_found" else f"Claim đã xử lý ({result.get('current_status', '')})"
+        raise HTTPException(code, detail)
+    _log_mod_action("claim", claim_id, "rejected", body.reason or None)
+    if result.get("claimant_id"):
+        def _notify():
+            create_notification(
+                result["claimant_id"], "claim_rejected",
+                "Yêu cầu xác nhận doanh nghiệp của bạn chưa được duyệt.",
+                ref_type="entity", ref_id=result.get("entity_id", ""),
+            )
+        await asyncio.to_thread(_notify)
+    return {"ok": True}
+
+
+# ── Announcements (system notices for users) ────────────────────────────
+
+class AnnouncementCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    content: str = Field("", max_length=5000)
+    type: str = Field("info", max_length=20)
+    priority: int = Field(0, ge=0, le=100)
+    starts_at: Optional[str] = None
+    expires_at: Optional[str] = None
+
+    @field_validator("type")
+    @classmethod
+    def _validate_type(cls, v):
+        allowed = ("info", "warning", "maintenance", "update")
+        if v not in allowed:
+            raise ValueError(f"type must be one of {allowed}")
+        return v
+
+
+class AnnouncementUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    content: Optional[str] = Field(None, max_length=5000)
+    type: Optional[str] = Field(None, max_length=20)
+    is_active: Optional[bool] = None
+    priority: Optional[int] = Field(None, ge=0, le=100)
+    starts_at: Optional[str] = None
+    expires_at: Optional[str] = None
+
+    @field_validator("type")
+    @classmethod
+    def _validate_type(cls, v):
+        if v is None:
+            return v
+        allowed = ("info", "warning", "maintenance", "update")
+        if v not in allowed:
+            raise ValueError(f"type must be one of {allowed}")
+        return v
+
+
+@router.get("/announcements",
+            summary="List announcements",
+            description="List system announcements with optional active-status filter. Supports pagination.")
+async def list_announcements(
+    is_active: Optional[bool] = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0, le=10000),
+):
+    require_pg()
+    ph = db._ph
+
+    def _query():
+        where_clauses = []
+        params = []
+        if is_active is not None:
+            where_clauses.append(f"is_active = {ph}")
+            params.append(is_active)
+        where = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, title, content, type, is_active, priority,
+                       starts_at, expires_at, created_by, created_at, updated_at
+                FROM announcements
+                {where}
+                ORDER BY priority DESC, created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """, tuple(params + [limit, offset]))
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as cnt FROM announcements {where}", tuple(params))
+        total = db._row_to_dict(total_row)["cnt"] if total_row else 0
+        return {
+            "announcements": [db._row_to_dict(r) for r in rows],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    return await asyncio.to_thread(_query)
+
+
+@router.post("/announcements", status_code=201,
+             summary="Create an announcement",
+             description="Create a new system announcement with title, content, type, priority, and optional schedule.")
+async def create_announcement(body: AnnouncementCreate, request: Request):
+    require_pg()
+    ph = db._ph
+    admin_user = getattr(request.state, "admin_user", None)
+
+    def _query():
+        created_by = str(admin_user["id"]) if admin_user else None
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                INSERT INTO announcements (title, content, type, priority, starts_at, expires_at, created_by)
+                VALUES ({ph}, {ph}, {ph}, {ph},
+                        COALESCE({ph}::timestamptz, NOW()),
+                        {ph}::timestamptz,
+                        {ph}::uuid)
+                RETURNING id, title, type, is_active, priority, starts_at, expires_at, created_at
+            """, (
+                body.title.strip(), body.content.strip(), body.type,
+                body.priority, body.starts_at, body.expires_at,
+                created_by,
+            ))
+        return db._row_to_dict(row) if row else None
+
+    result = await asyncio.to_thread(_query)
+    return {"success": True, "announcement": result}
+
+
+@router.put("/announcements/{announcement_id}",
+            summary="Update an announcement",
+            description="Update fields of an existing announcement. Only provided fields are changed.")
+async def update_announcement(announcement_id: str, body: AnnouncementUpdate):
+    require_pg()
+    announcement_id = validate_path_id(announcement_id, "announcement_id")
+    ph = db._ph
+
+    def _query():
+        sets = []
+        params = []
+        if body.title is not None:
+            sets.append(f"title = {ph}")
+            params.append(body.title.strip())
+        if body.content is not None:
+            sets.append(f"content = {ph}")
+            params.append(body.content.strip())
+        if body.type is not None:
+            sets.append(f"type = {ph}")
+            params.append(body.type)
+        if body.is_active is not None:
+            sets.append(f"is_active = {ph}")
+            params.append(body.is_active)
+        if body.priority is not None:
+            sets.append(f"priority = {ph}")
+            params.append(body.priority)
+        if body.starts_at is not None:
+            sets.append(f"starts_at = {ph}::timestamptz")
+            params.append(body.starts_at)
+        if body.expires_at is not None:
+            sets.append(f"expires_at = {ph}::timestamptz")
+            params.append(body.expires_at)
+        if not sets:
+            raise HTTPException(400, "Không có thay đổi")
+        sets.append("updated_at = NOW()")
+        params.append(announcement_id)
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE announcements SET {", ".join(sets)}
+                WHERE id::text = {ph}
+                RETURNING id, title, content, type, is_active, priority, starts_at, expires_at, updated_at
+            """, tuple(params))
+        if not row:
+            raise HTTPException(404, "Thông báo không tồn tại")
+        return db._row_to_dict(row)
+
+    result = await asyncio.to_thread(_query)
+    return {"success": True, "announcement": result}
+
+
+@router.delete("/announcements/{announcement_id}",
+               summary="Delete an announcement",
+               description="Permanently delete an announcement by ID.")
+async def delete_announcement(announcement_id: str):
+    require_pg()
+    announcement_id = validate_path_id(announcement_id, "announcement_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                DELETE FROM announcements WHERE id::text = {ph} RETURNING id
+            """, (announcement_id,))
+        if not row:
+            raise HTTPException(404, "Thông báo không tồn tại")
+        return True
+
+    await asyncio.to_thread(_query)
+    return {"success": True}
+
+
+# ── Route ordering fix ───────────────────────────────────────────────────
+def _fix_admin_route_order():
+    """Ensure static sub-paths match before parameterized catch-alls."""
+    param_bases = {}
+    shadowed = set()
+    for r in router.routes:
+        path = getattr(r, "path", "")
+        if "{" in path:
+            base = path.split("{")[0].rstrip("/")
+            if base not in param_bases:
+                param_bases[base] = True
+        else:
+            for base in param_bases:
+                if path.startswith(base + "/"):
+                    shadowed.add(path)
+    if not shadowed:
+        return
+    static_routes = []
+    other_routes = []
+    for r in router.routes:
+        path = getattr(r, "path", "")
+        if path in shadowed:
+            static_routes.append(r)
+        else:
+            other_routes.append(r)
+    for s in reversed(static_routes):
+        spath = getattr(s, "path", "")
+        for i, r in enumerate(other_routes):
+            rpath = getattr(r, "path", "")
+            if "{" in rpath:
+                base = rpath.split("{")[0].rstrip("/")
+                if spath.startswith(base + "/"):
+                    other_routes.insert(i, s)
+                    break
+    router.routes[:] = other_routes
+
+_fix_admin_route_order()

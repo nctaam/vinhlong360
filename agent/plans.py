@@ -6,6 +6,7 @@ Postgres-only (UGC parity); 503 ở SQLite dev. Mỗi plan = {title, stops[]}.
 """
 import asyncio
 import json
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -17,6 +18,8 @@ from ratelimit import check_rate
 
 
 from auth_middleware import require_pg as _require_pg
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/my-plans", tags=["plans"], dependencies=[Depends(_require_pg)])
 
@@ -37,7 +40,7 @@ class PlanBody(BaseModel):
 
 
 class MergeBody(BaseModel):
-    plans: list[PlanBody] = Field(default_factory=list)
+    plans: list[PlanBody] = Field(default_factory=list, max_length=100)
 
 
 def _row_plan(row) -> dict:
@@ -47,6 +50,7 @@ def _row_plan(row) -> dict:
         try:
             stops = json.loads(stops)
         except (json.JSONDecodeError, TypeError):
+            logger.warning("Corrupted stops JSON for plan %s", d.get("id"))
             stops = []
     return {
         "id": str(d["id"]),
@@ -61,7 +65,7 @@ def _list(conn, uid: str) -> list[dict]:
     ph = db._ph
     rows = db._fetchall(conn, f"""
         SELECT id, title, stops, is_public, created_at FROM user_plans
-        WHERE user_id = {ph}::uuid ORDER BY created_at DESC
+        WHERE user_id = {ph}::uuid ORDER BY created_at DESC LIMIT 100
     """, (uid,))
     return [_row_plan(r) for r in rows]
 
@@ -77,7 +81,9 @@ def _insert(conn, uid: str, body: PlanBody) -> str:
     return str(db._row_to_dict(row)["id"])
 
 
-@router.get("")
+@router.get("",
+            summary="List user plans",
+            description="Returns all itinerary plans created by the authenticated user, ordered by most recent. Each plan includes title, stops, and public/private status.")
 async def list_plans(user=Depends(require_user)):
     def _query():
         with db._conn() as conn:
@@ -85,13 +91,16 @@ async def list_plans(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.post("")
+@router.post("", status_code=201,
+             summary="Create a plan",
+             description="Creates a new itinerary plan with a title and up to 50 stops. Limited to 100 plans per user. Returns the new plan ID.")
 async def add_plan(body: PlanBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"plan:{user['id']}", 30, 300, "Tạo lịch trình quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
             ph = db._ph
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"plan:{uid}",))
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM user_plans WHERE user_id = {ph}::uuid", (uid,))
             if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_PLANS:
                 raise HTTPException(400, f"Tối đa {MAX_PLANS} lịch trình. Hãy xoá bớt.")
@@ -100,7 +109,9 @@ async def add_plan(body: PlanBody, user=Depends(require_user), _csrf=Depends(req
     return await asyncio.to_thread(_query)
 
 
-@router.delete("/{plan_id}")
+@router.delete("/{plan_id}",
+               summary="Delete a plan",
+               description="Deletes a user's itinerary plan by ID. Returns 404 if the plan does not exist or belongs to another user.")
 async def remove_plan(plan_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     plan_id = validate_path_id(plan_id, "plan_id")
     check_rate(f"plan:{user['id']}", 30, 300, "Xóa lịch trình quá nhanh. Vui lòng thử lại sau.")
@@ -119,7 +130,9 @@ async def remove_plan(plan_id: str, user=Depends(require_user), _csrf=Depends(re
     return {"deleted": True}
 
 
-@router.post("/merge")
+@router.post("/merge",
+             summary="Merge plans from device",
+             description="Merges locally created plans into the server for cross-device sync. Only plans with stops are imported. Returns the full plan list.")
 async def merge_plans(body: MergeBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"plan-merge:{user['id']}", 10, 300, "Đồng bộ lịch trình quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
@@ -137,7 +150,9 @@ class PublishBody(BaseModel):
     is_public: bool = True
 
 
-@router.post("/{plan_id}/publish")
+@router.post("/{plan_id}/publish",
+             summary="Toggle plan visibility",
+             description="Sets a plan's public/private status. Public plans are visible in the shared plans listing. Returns the new is_public value.")
 async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     plan_id = validate_path_id(plan_id, "plan_id")
     check_rate(f"plan:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
@@ -157,7 +172,9 @@ async def publish_plan(plan_id: str, body: PublishBody, user=Depends(require_use
 public_router = APIRouter(prefix="/api/shared-plans", tags=["plans"], dependencies=[Depends(_require_pg)])
 
 
-@public_router.get("")
+@public_router.get("",
+                    summary="List shared plans",
+                    description="Returns publicly shared itinerary plans from all users, ordered by most recent. No authentication required. Includes author name and stop count.")
 async def list_shared(limit: int = Query(30, ge=1, le=60)):
     def _query():
         ph = db._ph
@@ -178,7 +195,9 @@ async def list_shared(limit: int = Query(30, ge=1, le=60)):
     return await asyncio.to_thread(_query)
 
 
-@public_router.get("/{plan_id}")
+@public_router.get("/{plan_id}",
+                    summary="Get a shared plan",
+                    description="Returns a single publicly shared plan by ID. Returns 404 if the plan does not exist or is not public.")
 async def get_shared(plan_id: str):
     plan_id = validate_path_id(plan_id, "plan_id")
     def _query():

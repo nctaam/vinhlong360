@@ -9,6 +9,7 @@ device can render saved cards without fetching each entity. Postgres-only
 
 import asyncio
 import json
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -20,6 +21,8 @@ from ratelimit import check_rate
 
 
 from auth_middleware import require_pg as _require_pg
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/saved", tags=["saved"], dependencies=[Depends(_require_pg)])
 
@@ -37,7 +40,7 @@ class SavedItem(BaseModel):
 
 
 class MergeBody(BaseModel):
-    items: list[SavedItem] = []
+    items: list[SavedItem] = Field(default_factory=list, max_length=500)
 
 
 def _row_item(row) -> dict:
@@ -47,6 +50,7 @@ def _row_item(row) -> dict:
         try:
             snap = json.loads(snap)
         except (json.JSONDecodeError, TypeError):
+            logger.warning("Corrupted snapshot JSON for entity %s", d.get("entity_id"))
             snap = {}
     if not isinstance(snap, dict):
         snap = {}
@@ -57,7 +61,7 @@ def _list(conn, uid: str) -> list[dict]:
     ph = db._ph
     rows = db._fetchall(conn, f"""
         SELECT entity_id, snapshot, created_at FROM saved_entities
-        WHERE user_id = {ph}::uuid ORDER BY created_at DESC
+        WHERE user_id = {ph}::uuid ORDER BY created_at DESC LIMIT 2000
     """, (uid,))
     return [_row_item(r) for r in rows]
 
@@ -72,7 +76,9 @@ def _upsert(conn, uid: str, item: SavedItem) -> None:
     """, (uid, item.id, json.dumps(snap, ensure_ascii=False)))
 
 
-@router.get("")
+@router.get("",
+            summary="List saved entities",
+            description="Returns all entities saved by the authenticated user, ordered by most recently saved. Each item includes a snapshot with name, type, and image.")
 async def list_saved(user=Depends(require_user)):
     def _query():
         with db._conn() as conn:
@@ -80,22 +86,28 @@ async def list_saved(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.post("")
+@router.post("", status_code=201,
+             summary="Save an entity",
+             description="Adds an entity to the user's saved list with a snapshot for offline display. Upserts on conflict. Limited to 2000 saved entities per user.")
 async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
     def _query():
         with db._conn() as conn:
             ph = db._ph
+            uid = str(user["id"])
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"saved:{uid}",))
             cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM saved_entities WHERE user_id = {ph}::uuid",
-                               (str(user["id"]),))
+                               (uid,))
             if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_SAVED:
                 raise HTTPException(400, f"Tối đa {MAX_SAVED} địa điểm đã lưu. Hãy xoá bớt.")
-            _upsert(conn, str(user["id"]), item)
+            _upsert(conn, uid, item)
     await asyncio.to_thread(_query)
     return {"saved": True}
 
 
-@router.delete("/{entity_id}")
+@router.delete("/{entity_id}",
+               summary="Remove a saved entity",
+               description="Removes an entity from the user's saved list by entity ID. Returns {saved: false} on success.")
 async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     entity_id = validate_path_id(entity_id, "entity_id")
     check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
@@ -109,15 +121,30 @@ async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends
     return {"saved": False}
 
 
-@router.post("/merge")
+@router.post("/merge",
+             summary="Merge saved entities from device",
+             description="Merges locally saved entities into the server list for cross-device sync. Trims oldest entries if the total exceeds 2000. Returns the full merged list.")
 async def merge_saved(body: MergeBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"saved-merge:{user['id']}", 10, 300, "Đồng bộ quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])
     items = (body.items or [])[:500]
     def _query():
         with db._conn() as conn:
+            ph = db._ph
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"saved:{uid}",))
             for it in items:
                 if it.id:
                     _upsert(conn, uid, it)
+            cnt_row = db._fetchone(conn, f"SELECT COUNT(*) c FROM saved_entities WHERE user_id = {ph}::uuid", (uid,))
+            total = int(db._row_to_dict(cnt_row)["c"]) if cnt_row else 0
+            if total > MAX_SAVED:
+                db._execute(conn, f"""
+                    DELETE FROM saved_entities WHERE id IN (
+                        SELECT id FROM saved_entities
+                        WHERE user_id = {ph}::uuid
+                        ORDER BY created_at ASC
+                        LIMIT {ph}
+                    )
+                """, (uid, total - MAX_SAVED))
             return {"items": _list(conn, uid)}
     return await asyncio.to_thread(_query)

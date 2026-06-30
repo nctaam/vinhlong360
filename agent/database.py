@@ -121,7 +121,8 @@ class Database:
                         from psycopg2.pool import ThreadedConnectionPool
                         mx = max(2, int(os.environ.get("PG_POOL_MAX", "10")))
                         self._pg_pool = ThreadedConnectionPool(1, mx, self._dsn, connect_timeout=5)
-                    except Exception:
+                    except Exception as e:
+                        logger.warning("PG pool creation failed: %s", e)
                         self._pg_pool_failed = True
                         self._pg_pool_fail_ts = time.time()
                         return None
@@ -244,11 +245,25 @@ class Database:
                         "CREATE INDEX IF NOT EXISTS idx_likes_user ON likes(user_id, post_id)",
                         "CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id, post_id)",
                         "CREATE INDEX IF NOT EXISTS idx_entity_ratings ON entity_ratings(entity_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_feed ON posts(moderation_status, created_at DESC)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC)",
+                        "CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_hashtags ON posts USING GIN(hashtags)",
+                        "CREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(token)",
+                        "CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id, expires_at DESC)",
+                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(lower(username)) WHERE username IS NOT NULL",
+                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone_number) WHERE phone_number IS NOT NULL",
+                        "CREATE INDEX IF NOT EXISTS idx_entity_changes_entity ON entity_changes(entity_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_entities_type_area ON entities(type, area)",
+                        "CREATE INDEX IF NOT EXISTS idx_relationships_type ON relationships(type)",
+                        "CREATE INDEX IF NOT EXISTS idx_comments_user ON comments(user_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_user_draft ON posts(user_id, is_draft)",
+                        "CREATE INDEX IF NOT EXISTS idx_user_hidden_posts_user ON user_hidden_posts(user_id, post_id)",
                     ]:
                         try:
                             cur.execute(idx_sql)
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            logger.debug("Index creation skipped: %s — %s", idx_sql[:60], e)
                     conn.commit()
                 self._initialized = True
                 return
@@ -754,7 +769,7 @@ class Database:
             invalidate_entity_cache(from_id)
             invalidate_entity_cache(to_id)
         except Exception:
-            pass
+            logger.warning("Cache invalidation failed for %s / %s", from_id, to_id, exc_info=True)
 
     def _parse_coordinates(self, value) -> list[float] | None:
         current = value
@@ -830,6 +845,7 @@ class Database:
         if not include_near:
             conditions.append("r.type != 'near'")
         where = " AND ".join(conditions)
+        _FETCH_CAP = 500
         with self._conn() as conn:
             rows = self._fetchall(conn, f"""
                 SELECT
@@ -848,6 +864,7 @@ class Database:
                 JOIN entities src ON src.id = r.from_id
                 JOIN entities dst ON dst.id = r.to_id
                 WHERE {where}
+                LIMIT {_FETCH_CAP}
             """, tuple(params))
 
         entity_area = ""
@@ -948,14 +965,14 @@ class Database:
             row = self._fetchone(conn, f"SELECT * FROM itineraries WHERE id = {ph}", (itin_id,))
             return self._parse_itinerary(row) if row else None
 
-    def list_itineraries(self, area: str = None) -> list[dict]:
+    def list_itineraries(self, area: str = None, limit: int = 100, offset: int = 0) -> list[dict]:
         self.initialize()
         ph = self._ph
         with self._conn() as conn:
             if area:
-                rows = self._fetchall(conn, f"SELECT * FROM itineraries WHERE area = {ph}", (area,))
+                rows = self._fetchall(conn, f"SELECT * FROM itineraries WHERE area = {ph} LIMIT {ph} OFFSET {ph}", (area, limit, offset))
             else:
-                rows = self._fetchall(conn, "SELECT * FROM itineraries")
+                rows = self._fetchall(conn, f"SELECT * FROM itineraries LIMIT {ph} OFFSET {ph}", (limit, offset))
             return [self._parse_itinerary(r) for r in rows]
 
     def export_all(self) -> dict:
@@ -1013,14 +1030,15 @@ class Database:
         ph = self._ph
         with self._conn() as conn:
             if self._use_pg:
+                interval_param = f"{days} days"
                 total = self._fetchone(conn, f"""
                     SELECT COUNT(*) as c FROM query_log
-                    WHERE created_at >= NOW() - INTERVAL '{days} days'
-                """)["c"]
+                    WHERE created_at >= NOW() - CAST({ph} AS INTERVAL)
+                """, (interval_param,))["c"]
                 avg_score = self._fetchone(conn, f"""
                     SELECT AVG(score) as a FROM query_log
-                    WHERE score IS NOT NULL AND created_at >= NOW() - INTERVAL '{days} days'
-                """)["a"]
+                    WHERE score IS NOT NULL AND created_at >= NOW() - CAST({ph} AS INTERVAL)
+                """, (interval_param,))["a"]
             else:
                 cutoff = datetime.now(timezone.utc).strftime("%Y-%m-%d")
                 total = conn.execute(
@@ -1211,8 +1229,10 @@ class Database:
             backup_path = str(DB_DIR / f"vinhlong360_backup_{ts}.db")
         with self._conn() as conn:
             backup_conn = sqlite3.connect(backup_path)
-            conn.backup(backup_conn)
-            backup_conn.close()
+            try:
+                conn.backup(backup_conn)
+            finally:
+                backup_conn.close()
         return backup_path
 
     def stats(self) -> dict:

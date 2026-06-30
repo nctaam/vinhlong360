@@ -8,9 +8,11 @@ older coordinate/source shapes do not break structured data endpoints.
 
 from __future__ import annotations
 
+import html as _html
 import json
 import logging
 import re
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -26,6 +28,7 @@ router = APIRouter()
 
 DATA_PATH = Path(__file__).parent.parent / "web" / "data.json"
 SITE = "https://vinhlong360.vn"
+AGGREGATE_RATING_MIN_COUNT = 3
 
 AREA_NAMES = {
     "vinh-long": "Vĩnh Long",
@@ -52,6 +55,10 @@ TYPE_SCHEMA = {
     "place": "Place",
     "product": "Product",
     "restaurant": "Restaurant",
+    "artisan": "LocalBusiness",
+    "craft": "LocalBusiness",
+    "market": "LocalBusiness",
+    "festival": "Event",
 }
 
 # Maps entity type -> existing catalog/list route used as the breadcrumb's
@@ -205,13 +212,18 @@ def _load() -> dict[str, Any]:
     return _data
 
 
+_by_id_lock = threading.Lock()
+
+
 def _by_id(data: dict[str, Any] | None = None) -> dict[str, dict[str, Any]]:
     global _by_id_cache, _by_id_cache_key
     data = data or _load()
     data_key = id(data)
     if _by_id_cache is None or _by_id_cache_key != data_key:
-        _by_id_cache = {str(e.get("id")): e for e in data["entities"] if isinstance(e, dict) and e.get("id")}
-        _by_id_cache_key = data_key
+        with _by_id_lock:
+            if _by_id_cache is None or _by_id_cache_key != data_key:
+                _by_id_cache = {str(e.get("id")): e for e in data["entities"] if isinstance(e, dict) and e.get("id")}
+                _by_id_cache_key = data_key
     return _by_id_cache
 
 
@@ -609,7 +621,7 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         try:
             rv = float(avg_rating)
             rc = int(rating_count)
-            if 1.0 <= rv <= 5.0 and rc > 0:
+            if 1.0 <= rv <= 5.0 and rc >= AGGREGATE_RATING_MIN_COUNT:
                 ld["aggregateRating"] = {
                     "@type": "AggregateRating",
                     "ratingValue": round(rv, 1),
@@ -655,17 +667,18 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
             else:
                 ld["additionalProperty"] = props
 
-    rating_val = attrs.get("rating")
-    review_count = attrs.get("review_count")
-    if isinstance(rating_val, (int, float)) and 0 < rating_val <= 5:
-        agg: dict[str, Any] = {
-            "@type": "AggregateRating",
-            "ratingValue": round(float(rating_val), 1),
-            "bestRating": 5,
-        }
-        if isinstance(review_count, int) and review_count > 0:
-            agg["reviewCount"] = review_count
-        ld["aggregateRating"] = agg
+    if "aggregateRating" not in ld:
+        rating_val = attrs.get("rating")
+        review_count = attrs.get("review_count")
+        if isinstance(rating_val, (int, float)) and 0 < rating_val <= 5:
+            rc_attr = int(review_count) if isinstance(review_count, int) and review_count > 0 else 0
+            if rc_attr >= AGGREGATE_RATING_MIN_COUNT:
+                ld["aggregateRating"] = {
+                    "@type": "AggregateRating",
+                    "ratingValue": round(float(rating_val), 1),
+                    "bestRating": 5,
+                    "ratingCount": rc_attr,
+                }
 
     kw_parts: list[str] = []
     entity_name = entity.get("name")
@@ -693,7 +706,9 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     return {key: value for key, value in ld.items() if value not in (None, "", [], {})}
 
 
-@router.get("/seo/jsonld/site")
+@router.get("/seo/jsonld/site",
+            summary="Site-wide JSON-LD",
+            description="Returns WebSite and Organization JSON-LD structured data for the homepage. Used by search engines to understand site identity and search action.")
 def site_jsonld():
     return [
         {
@@ -880,7 +895,9 @@ def build_area_jsonld(area_slug: str, data: dict[str, Any] | None = None) -> dic
     return ld
 
 
-@router.get("/seo/jsonld/area/{area_slug}")
+@router.get("/seo/jsonld/area/{area_slug}",
+            summary="Area JSON-LD",
+            description="Returns TouristDestination JSON-LD for a geographic area (vinh-long, ben-tre, tra-vinh). Includes contained entities up to 50.")
 def area_jsonld(area_slug: str):
     data = _load()
     result = build_area_jsonld(area_slug, data)
@@ -889,7 +906,9 @@ def area_jsonld(area_slug: str):
     return result
 
 
-@router.get("/seo/jsonld/itinerary/{itinerary_id}")
+@router.get("/seo/jsonld/itinerary/{itinerary_id}",
+            summary="Itinerary JSON-LD",
+            description="Returns TouristTrip JSON-LD for a specific itinerary. Includes stops as an ItemList with linked entities.")
 def itinerary_jsonld(itinerary_id: str):
     data = _load()
     by_id = _by_id(data)
@@ -899,7 +918,9 @@ def itinerary_jsonld(itinerary_id: str):
     raise HTTPException(status_code=404, detail="not found")
 
 
-@router.get("/seo/jsonld/{entity_id}")
+@router.get("/seo/jsonld/{entity_id}",
+            summary="Entity JSON-LD",
+            description="Returns schema.org JSON-LD for a single entity. Includes type-specific fields, breadcrumb, FAQ, geo, ratings, and relationships.")
 def entity_jsonld(entity_id: str):
     data = _load()
     by_id = _by_id(data)
@@ -982,7 +1003,9 @@ def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[
     }
 
 
-@router.get("/seo/jsonld/collection/{collection_type}")
+@router.get("/seo/jsonld/collection/{collection_type}",
+            summary="Collection JSON-LD",
+            description="Returns ItemList JSON-LD for a catalog collection (du-lich, ocop, san-pham, luu-tru, le-hoi). Lists up to 100 public entities.")
 def collection_jsonld(collection_type: str):
     data = _load()
     result = build_collection_jsonld(collection_type, data)
@@ -1004,7 +1027,9 @@ def _url_xml(loc: str, *, changefreq: str, priority: str, lastmod: str | None = 
     return "\n".join(parts)
 
 
-@router.get("/sitemap.xml", response_class=Response)
+@router.get("/sitemap.xml", response_class=Response,
+            summary="XML Sitemap",
+            description="Returns the XML sitemap for search engine crawlers. Includes core pages, area pages, entity detail pages, and itineraries with lastmod dates.")
 def sitemap():
     global _sitemap_cache
     data = _load()
@@ -1079,7 +1104,9 @@ def sitemap():
     )
 
 
-@router.get("/sitemap-media.xml", response_class=Response)
+@router.get("/sitemap-media.xml", response_class=Response,
+            summary="Image Sitemap",
+            description="Returns an image sitemap for Google Images indexing. Lists entity detail URLs with their associated image URLs, titles, and captions.")
 def sitemap_media():
     """GĐ8.5: image sitemap — entity detail URLs with their image(s) so Google
     Images can index them. Auto-populates as entities gain images (GĐ8.2/8.4)."""
@@ -1123,7 +1150,9 @@ def sitemap_media():
     )
 
 
-@router.get("/sitemap-index.xml", response_class=Response)
+@router.get("/sitemap-index.xml", response_class=Response,
+            summary="Sitemap Index",
+            description="Returns a sitemap index file pointing to the main sitemap and image sitemap. Entry point for search engine crawlers.")
 def sitemap_index():
     """Sitemap index pointing to the main and media sitemaps."""
     now = datetime.now(UTC).strftime("%Y-%m-%d")
@@ -1139,12 +1168,16 @@ def sitemap_index():
     )
 
 
-@router.get("/favicon.ico", include_in_schema=False)
+@router.get("/favicon.ico", include_in_schema=False,
+            summary="Favicon placeholder",
+            description="Returns 204 No Content to prevent browser 404 errors for favicon requests.")
 def favicon():
     return Response(status_code=204)
 
 
-@router.get("/robots.txt", response_class=PlainTextResponse)
+@router.get("/robots.txt", response_class=PlainTextResponse,
+            summary="Robots.txt",
+            description="Returns the robots.txt file with crawl directives. Allows major search engines and AI bots, blocks admin and API paths.")
 def robots():
     return f"""User-agent: *
 Allow: /
@@ -1202,17 +1235,22 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
         return meta
 
     entity_id = str(entity.get("id", ""))
-    title = entity.get("name") or entity_id
+    title = _html.escape(entity.get("name") or entity_id)
     url = _entity_url(entity_id)
     meta["og:title"] = title
     meta["og:url"] = url
     meta["og:type"] = "article"
     meta["twitter:title"] = title
 
-    if entity.get("summary"):
-        desc = str(entity["summary"])[:200]
-        meta["og:description"] = desc
-        meta["twitter:description"] = desc
+    summary = entity.get("summary")
+    if summary:
+        desc = _html.escape(str(summary)[:200])
+    else:
+        ename = _html.escape(entity.get("name", ""))
+        area = _html.escape(entity.get("area", ""))
+        desc = f"{ename} — {area}" if area else ename
+    meta["og:description"] = desc
+    meta["twitter:description"] = desc
 
     images = entity.get("images")
     if isinstance(images, list):
@@ -1225,7 +1263,9 @@ def build_og_meta(entity: dict[str, Any] | None = None) -> dict[str, str]:
     return meta
 
 
-@router.get("/seo/og/{entity_id}")
+@router.get("/seo/og/{entity_id}",
+            summary="Entity Open Graph meta",
+            description="Returns Open Graph, Twitter Card, and Zalo meta tags for a specific entity. Used by the frontend for social sharing previews.")
 def entity_og_meta(entity_id: str):
     data = _load()
     by_id = _by_id(data)
@@ -1235,6 +1275,8 @@ def entity_og_meta(entity_id: str):
     return build_og_meta(entity)
 
 
-@router.get("/seo/og")
+@router.get("/seo/og",
+            summary="Site-wide Open Graph meta",
+            description="Returns default Open Graph, Twitter Card, and Zalo meta tags for the homepage. Provides fallback social sharing data.")
 def site_og_meta():
     return build_og_meta()

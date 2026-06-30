@@ -40,7 +40,6 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
-from openai import OpenAI
 from pydantic import BaseModel
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -136,7 +135,7 @@ except ImportError:
     HAS_IMAGE_RECOGNITION = False
 
 try:
-    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_error, set_gauge
+    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_error, set_gauge, track_http_request
     HAS_METRICS = True
 except ImportError:
     HAS_METRICS = False
@@ -267,14 +266,9 @@ for _name, _val in {
 }.items():
     features.register(_name, _val)
 
-# ── OpenAI client ──
+# ── OpenAI client (runtime-configurable via admin) ──
 
-client = OpenAI(
-    api_key=os.environ["LLM_API_KEY"],
-    base_url=os.environ["LLM_BASE_URL"],
-)
-MODEL = os.environ.get("LLM_MODEL", "cx/gpt-5.4")
-MODEL_MINI = os.environ.get("LLM_MODEL_MINI", "cx/gpt-5.4-mini")
+from llm_config import get_client, get_model, get_model_mini
 
 # ── Web search (DuckDuckGo) ──
 
@@ -323,14 +317,14 @@ def _tool_description(name: str, args: dict) -> str:
         try:
             return fn(args)
         except Exception:
-            pass
+            logger.debug("Tool description failed for %s", name, exc_info=True)
     return f"Đang xử lý {name}..."
 
 
 def generate_followups(context: str) -> list[str]:
     try:
-        response = client.chat.completions.create(
-            model=MODEL_MINI,
+        response = get_client().chat.completions.create(
+            model=get_model_mini(),
             messages=[{"role": "user", "content": f"""Dựa vào ngữ cảnh sau, gợi ý 3 câu hỏi tiếp theo ngắn gọn (< 40 ký tự) mà du khách có thể muốn hỏi.
 
 Ngữ cảnh: {context}
@@ -344,6 +338,7 @@ Trả về JSON array gồm 3 string. Chỉ trả JSON, không text khác."""}],
         content = re.sub(r"\s*```$", "", content)
         return json.loads(content)[:3]
     except Exception:
+        logger.debug("Follow-up generation failed", exc_info=True)
         return []
 
 
@@ -841,14 +836,21 @@ async def lifespan(app):
             load_entity_names(knowledge._entities)
             logger.info("Autocorrect loaded", entities=len(knowledge._entities))
         except Exception:
-            pass
+            logger.debug("Autocorrect load failed", exc_info=True)
     # Build search indexes without blocking readiness. Use BACKGROUND_INDEX_BUILD=false
     # only when deployment should wait for the full enhanced search index.
     start_search_index_build(background=BACKGROUND_INDEX_BUILD)
     start_scheduler()
-    logger.info("Server started", model=MODEL, entities=len(knowledge._entities))
+    logger.info("Server started", model=get_model(), entities=len(knowledge._entities))
     yield
-    logger.info("Server shutting down — stopping scheduler")
+    global _draining
+    _draining = True
+    logger.info("Server shutting down — draining in-flight requests")
+    deadline = time.time() + 30
+    while _inflight > 0 and time.time() < deadline:
+        await asyncio.sleep(0.5)
+    if _inflight > 0:
+        logger.warn("Force shutdown with in-flight requests", inflight=_inflight)
     stop_scheduler()
     from database import db as _db
     if _db._pg_pool:
@@ -856,7 +858,16 @@ async def lifespan(app):
             _db._pg_pool.closeall()
             logger.info("PG connection pool closed")
         except Exception:
-            pass
+            logger.debug("PG pool close failed", exc_info=True)
+    if not _db._use_pg:
+        try:
+            import sqlite3
+            conn = sqlite3.connect(_db.db_path, timeout=5)
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            conn.close()
+            logger.info("SQLite WAL checkpoint complete")
+        except Exception:
+            logger.debug("SQLite WAL checkpoint failed", exc_info=True)
     logger.info("Shutdown complete")
     logger.flush()
 
@@ -896,7 +907,8 @@ if _env_name in ("production", "prod", "prd"):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Content-Type", "X-Admin-Key", "Authorization", "X-CSRF-Token"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
@@ -912,7 +924,24 @@ async def security_headers(request, call_next):
         response.headers[k] = v
     response.headers["Content-Security-Policy"] = build_csp(nonce)
     response.headers["X-API-Version"] = "1.0"
+    if request.method == "GET" and "cache-control" not in response.headers:
+        response.headers["Cache-Control"] = "private, max-age=30"
     return response
+
+
+def _error_response(status_code: int, detail: str, request: Request = None, **extra) -> JSONResponse:
+    body = {"detail": detail}
+    if request:
+        rid = getattr(getattr(request, "state", None), "request_id", None)
+        if rid:
+            body["request_id"] = rid
+    body.update(extra)
+    return JSONResponse(status_code=status_code, content=body)
+
+
+@app.exception_handler(HTTPException)
+async def _http_exception_handler(request: Request, exc: HTTPException):
+    return _error_response(exc.status_code, exc.detail, request)
 
 
 @app.exception_handler(Exception)
@@ -920,11 +949,9 @@ async def _global_exception_handler(request: Request, exc: Exception):
     exc_name = type(exc).__name__
     if exc_name in ("OperationalError", "InterfaceError", "DatabaseError", "PoolTimeout"):
         logger.error("Database connection error on %s %s: %s", request.method, request.url.path, exc_name)
-        return JSONResponse(status_code=503, content={"detail": "Dịch vụ tạm gián đoạn, vui lòng thử lại sau."})
-    if isinstance(exc, HTTPException):
-        raise exc
+        return _error_response(503, "Dịch vụ tạm gián đoạn, vui lòng thử lại sau.", request)
     logger.exception("Unhandled error on %s %s", request.method, request.url.path)
-    return JSONResponse(status_code=500, content={"detail": "Lỗi hệ thống."})
+    return _error_response(500, "Lỗi hệ thống.", request)
 
 app.include_router(admin_router)
 app.include_router(auth_router)
@@ -955,21 +982,24 @@ async def mention_search(q: str = ""):
     results: list[dict] = []
     # Người dùng (chỉ khi có Postgres)
     try:
+        from database import db
         if db._use_pg:
             ph = db._ph
-            with db._conn() as conn:
-                rows = db._fetchall(conn, f"""
-                    SELECT id, display_name, avatar_url FROM users
-                    WHERE is_active = TRUE AND display_name ILIKE {ph}
-                    ORDER BY display_name LIMIT 5
-                """, (f"%{ql}%",))
+            def _user_search():
+                with db._conn() as conn:
+                    return db._fetchall(conn, f"""
+                        SELECT id, display_name, avatar_url FROM users
+                        WHERE is_active = TRUE AND display_name ILIKE {ph}
+                        ORDER BY display_name LIMIT 5
+                    """, (f"%{ql}%",))
+            rows = await asyncio.to_thread(_user_search)
             for r in rows:
                 d = db._row_to_dict(r)
                 if d.get("display_name"):
                     results.append({"type": "user", "id": str(d["id"]), "label": d["display_name"],
                                     "sub": "Người dùng", "avatar": d.get("avatar_url")})
     except Exception:
-        pass
+        logger.debug("Mention search user query failed", exc_info=True)
     # Địa điểm/entity (in-RAM, nhanh)
     try:
         ents = [e for e in (knowledge._entities or {}).values() if ql in (e.get("name") or "").lower()]
@@ -978,7 +1008,7 @@ async def mention_search(q: str = ""):
             results.append({"type": "entity", "id": e["id"], "label": e["name"],
                             "sub": TYPE_LABELS_VI.get(e.get("type"), e.get("type") or "Địa điểm")})
     except Exception:
-        pass
+        logger.debug("Mention search entity query failed", exc_info=True)
     return {"results": results}
 
 
@@ -1013,17 +1043,43 @@ async def limit_request_size(request: Request, call_next):
 
 @app.middleware("http")
 async def gate_internal_endpoints(request: Request, call_next):
-    """GĐ4 phụ (a): ở production, ẩn endpoint nội bộ (/system/*, /analytics/*, /metrics)
-    sau admin key — tránh lộ chi phí/trace/log. Không có key → 404 (giấu cả sự tồn tại).
-    Dev (ENVIRONMENT != production) giữ nguyên để tiện debug. Nuxt KHÔNG gọi các path này
-    trực tiếp (đi qua /admin/*) nên không ảnh hưởng UI."""
-    if _IS_PROD:
-        path = request.url.path
-        if path == "/metrics" or path.startswith("/system") or path.startswith("/analytics"):
-            from middleware import verify_admin_key
-            if not verify_admin_key(request):
-                return JSONResponse(status_code=404, content={"detail": "Not Found"})
+    """Gate internal endpoints behind admin key in ALL environments.
+    Prevents accidental exposure of /system/*, /analytics/*, /metrics, checkpoints, etc."""
+    path = request.url.path
+    _gated = (path == "/metrics"
+              or path == "/vectors/stats"
+              or path.startswith("/system")
+              or path.startswith("/analytics")
+              or path.startswith("/checkpoints")
+              or path.startswith("/confirmations")
+              or path.startswith("/confirm/")
+              or path.startswith("/reject/")
+              or path.startswith("/ab-testing")
+              or path.startswith("/prompt-cache")
+              or path.startswith("/freshness"))
+    if _gated:
+        from middleware import verify_admin_key
+        if not verify_admin_key(request):
+            return JSONResponse(status_code=404, content={"detail": "Not Found"})
     return await call_next(request)
+
+
+_inflight = 0
+_draining = False
+
+
+@app.middleware("http")
+async def graceful_drain(request: Request, call_next):
+    global _inflight
+    if _draining and not request.url.path.startswith("/health"):
+        resp = _error_response(503, "Server shutting down", request)
+        resp.headers["Retry-After"] = "5"
+        return resp
+    _inflight += 1
+    try:
+        return await call_next(request)
+    finally:
+        _inflight -= 1
 
 
 @app.middleware("http")
@@ -1032,6 +1088,8 @@ async def track_response_time(request: Request, call_next):
     start = time.time()
     req_id = generate_request_id()
     request.state.request_id = req_id
+    from middleware import _request_id_var
+    _request_id_var.set(req_id)
 
     is_streaming = request.url.path in ("/chat", "/chat/stream")
     timeout_s = 120 if is_streaming else 30
@@ -1041,6 +1099,8 @@ async def track_response_time(request: Request, call_next):
         duration_ms = (time.time() - start) * 1000
         endpoint = f"{request.method} {request.url.path}"
         response_tracker.record(endpoint, duration_ms, response.status_code)
+        if HAS_METRICS:
+            track_http_request(request.method, request.url.path, response.status_code, duration_ms / 1000)
 
         if duration_ms > 5000:
             logger.warn("Slow request", endpoint=endpoint, duration_ms=round(duration_ms), req_id=req_id)
@@ -1063,10 +1123,7 @@ async def track_response_time(request: Request, call_next):
         response_tracker.record(endpoint, duration_ms, 504)
         logger.error("Request timeout", endpoint=endpoint, req_id=req_id,
                       duration_ms=round(duration_ms), timeout_s=timeout_s)
-        return JSONResponse(
-            status_code=504,
-            content={"error": "Request timeout", "request_id": req_id},
-        )
+        return _error_response(504, "Request timeout", request)
     except Exception as exc:
         duration_ms = (time.time() - start) * 1000
         endpoint = f"{request.method} {request.url.path}"
@@ -1074,10 +1131,7 @@ async def track_response_time(request: Request, call_next):
         response_tracker.record(endpoint, duration_ms, 500)
         logger.error("Unhandled exception", endpoint=endpoint, req_id=req_id,
                       duration_ms=round(duration_ms), error=str(exc)[:200])
-        return JSONResponse(
-            status_code=500,
-            content={"error": "Internal server error", "request_id": req_id},
-        )
+        return _error_response(500, "Internal server error", request)
 
 
 from pydantic import Field, field_validator
@@ -1087,6 +1141,7 @@ def _sanitize_message(v: str) -> str:
     (validator) lẫn GET /chat/stream (query param) — đảm bảo parity."""
     v = re.sub(r"<script[^>]*>.*?</script>", "", v or "", flags=re.DOTALL | re.IGNORECASE)
     v = re.sub(r"<[^>]+>", "", v)
+    v = v.replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
     return v.strip()
 
 
@@ -1166,6 +1221,7 @@ def _sanitize_client_text(text: str, max_len: int) -> str:
     if not text or not isinstance(text, str):
         return ""
     out = re.sub(r"<[^>]+>", "", text)
+    out = out.replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
     for pat, repl in _PII_PATTERNS:
         out = pat.sub(repl, out)
     return out[:max_len].strip()
@@ -1300,7 +1356,7 @@ def _build_messages(
         try:
             realtime_ctx = get_realtime_context() or ""
         except Exception:
-            pass
+            logger.debug("Realtime context failed", exc_info=True)
     memory_ctx = memory_manager.build_context(session_id, user_id, message)
     reflexion_ctx = reflexion_engine.get_reflection_prompt(message)
     graph_ctx = ""
@@ -1308,7 +1364,7 @@ def _build_messages(
         try:
             graph_ctx = memory_graph.build_graph_context(user_id) or ""
         except Exception:
-            pass
+            logger.debug("Memory graph context failed", exc_info=True)
 
     # A/B testing: select prompt variant
     ab_info = {}
@@ -1324,7 +1380,7 @@ def _build_messages(
                 elif style == "detailed":
                     base_prompt = SYSTEM_PROMPT + "\nPhong cách trả lời: chi tiết, đầy đủ thông tin, có ví dụ minh họa."
         except Exception:
-            pass
+            logger.debug("A/B variant selection failed", exc_info=True)
 
     # KB-in-context: inject a compact index (or full digest) of the knowledge base
     # so the agent knows what exists → better searches + correct abstention. Static
@@ -1335,7 +1391,7 @@ def _build_messages(
             if kb_ctx:
                 base_prompt = base_prompt + "\n\n" + kb_ctx
         except Exception:
-            pass
+            logger.debug("KB context injection failed", exc_info=True)
 
     # Lazy context: skip heavy modules for simple queries (search/general)
     # to reduce token count and speed up responses. Only load for complex queries.
@@ -1353,7 +1409,7 @@ def _build_messages(
             if experience_ctx:
                 reflexion_ctx = (reflexion_ctx or "") + ("\n" + experience_ctx)
         except Exception:
-            pass
+            logger.debug("Experience memory failed", exc_info=True)
 
     # Few-shot demonstrations (BootstrapFewShot). OFF by default (token cost);
     # enable via FEWSHOT_DEMOS=on. Compiled artifact is static → works offline.
@@ -1363,7 +1419,7 @@ def _build_messages(
             if fewshot_ctx:
                 reflexion_ctx = (reflexion_ctx or "") + ("\n" + fewshot_ctx)
         except Exception:
-            pass
+            logger.debug("Few-shot prompt build failed", exc_info=True)
 
     # Use prompt cache if available
     if HAS_PROMPT_CACHE:
@@ -1429,17 +1485,17 @@ def _build_messages(
 LLM_TIMEOUT = int(os.environ.get("LLM_TIMEOUT", "30"))
 
 
-def _make_llm_call_fn(model_override=None):
+def _make_llm_call_fn(model_fn=None):
     """Create an LLM call function for orchestrator injection.
 
-    ``model_override`` selects which model to use (MODEL or MODEL_MINI).
+    ``model_fn`` is a callable returning the model name (resolved at call time).
     """
-    _model = model_override or MODEL
 
     def _llm_call_fn(messages, tools, temperature):
+        _model = (model_fn or get_model)()
         if tools:
             if HAS_CIRCUIT_BREAKER:
-                cb_result = safe_llm_call(client, model=_model, messages=messages, tools=tools, tool_choice="auto", timeout=LLM_TIMEOUT)
+                cb_result = safe_llm_call(get_client(), model=_model, messages=messages, tools=tools, tool_choice="auto", timeout=LLM_TIMEOUT)
                 if not cb_result["success"]:
                     class _MockChoice:
                         class message:
@@ -1449,14 +1505,14 @@ def _make_llm_call_fn(model_override=None):
                         choices = [_MockChoice()]
                     return _MockResponse()
                 return cb_result["response"]
-            return client.chat.completions.create(
+            return get_client().chat.completions.create(
                 model=_model, messages=messages, tools=tools, tool_choice="auto",
                 timeout=LLM_TIMEOUT,
             )
 
         # No-tools synthesis call
         if HAS_CIRCUIT_BREAKER:
-            cb_result = safe_llm_call(client, model=_model, messages=messages, timeout=LLM_TIMEOUT)
+            cb_result = safe_llm_call(get_client(), model=_model, messages=messages, timeout=LLM_TIMEOUT)
             if not cb_result["success"]:
                 class _MockChoice:
                     class message:
@@ -1466,22 +1522,25 @@ def _make_llm_call_fn(model_override=None):
                     choices = [_MockChoice()]
                 return _MockResponse()
             return cb_result["response"]
-        return client.chat.completions.create(model=_model, messages=messages, timeout=LLM_TIMEOUT)
+        return get_client().chat.completions.create(model=_model, messages=messages, timeout=LLM_TIMEOUT)
 
     return _llm_call_fn
 
 
-_llm_call_fn_default = _make_llm_call_fn(MODEL)
-_llm_call_fn_mini = _make_llm_call_fn(MODEL_MINI)
+_llm_call_fn_default = _make_llm_call_fn(get_model)
+_llm_call_fn_mini = _make_llm_call_fn(get_model_mini)
 
 
 # Orchestrator singleton (lazy init)
 _orchestrator = None
+_orchestrator_lock = threading.Lock()
 
 def _get_orchestrator():
     global _orchestrator
     if _orchestrator is None and HAS_ORCHESTRATOR:
-        _orchestrator = Orchestrator(TOOLS)
+        with _orchestrator_lock:
+            if _orchestrator is None:
+                _orchestrator = Orchestrator(TOOLS)
     return _orchestrator
 
 
@@ -1491,7 +1550,9 @@ _parallel_executor = None
 def _get_parallel_executor():
     global _parallel_executor
     if _parallel_executor is None and HAS_PARALLEL:
-        _parallel_executor = ParallelToolExecutor(call_tool, max_workers=4)
+        with _orchestrator_lock:
+            if _parallel_executor is None:
+                _parallel_executor = ParallelToolExecutor(call_tool, max_workers=4)
     return _parallel_executor
 
 
@@ -1502,6 +1563,7 @@ def _optimal_params_fn(category: str) -> dict:
     try:
         return parameter_tuner.get_optimal_params(category)
     except Exception:
+        logger.debug("Optimal params lookup failed for %s", category, exc_info=True)
         return {}
 
 
@@ -1512,6 +1574,7 @@ def _tool_order_fn(category: str) -> list:
     try:
         return tool_weight_optimizer.suggest_tool_order(category)
     except Exception:
+        logger.debug("Tool order lookup failed for %s", category, exc_info=True)
         return []
 
 
@@ -1566,13 +1629,13 @@ def _run_agent(messages: list[dict], max_rounds: int = 8, max_tool_calls: int = 
         # Circuit breaker protected LLM call
         try:
             if HAS_CIRCUIT_BREAKER:
-                cb_result = safe_llm_call(client, model=MODEL, messages=messages, tools=TOOLS, tool_choice="auto")
+                cb_result = safe_llm_call(get_client(), model=get_model(), messages=messages, tools=TOOLS, tool_choice="auto")
                 if not cb_result["success"]:
                     return cb_result["message"], tools_used, suggestions
                 response = cb_result["response"]
             else:
-                response = client.chat.completions.create(
-                    model=MODEL, messages=messages, tools=TOOLS, tool_choice="auto",
+                response = get_client().chat.completions.create(
+                    model=get_model(), messages=messages, tools=TOOLS, tool_choice="auto",
                     timeout=LLM_TIMEOUT,
                 )
             msg = response.choices[0].message
@@ -1644,7 +1707,7 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
                 suggestions.clear()
                 suggestions.extend(sug)
         except Exception:
-            pass
+            logger.debug("Failed to parse suggest_followups result", exc_info=True)
 
     # Self-correction: if search returned empty, inject a hint
     if fn_name == "search":
@@ -1658,7 +1721,7 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
                         "content": "[Observation]: Search returned 0 results. Try broader keywords, remove filters, or use web_search as fallback."
                     })
         except Exception:
-            pass
+            logger.debug("Tool loop search fallback failed", exc_info=True)
 
     return empty_results_count
 
@@ -1710,7 +1773,7 @@ async def chat(req: ChatRequest, request: Request):
                     track_cache("hit")
                 return ChatResponse(**sem_cached, session_id=session_id, cached=True)
         except Exception:
-            pass
+            logger.debug("Semantic cache retrieval failed", exc_info=True)
 
     # Check cache (only for new conversations without history)
     if not req.history:
@@ -1736,7 +1799,7 @@ async def chat(req: ChatRequest, request: Request):
     _trace_ctx = None
     try:
         if HAS_TRACING:
-            _trace_ctx = trace_chat_request(corrected_message, session_id, MODEL)
+            _trace_ctx = trace_chat_request(corrected_message, session_id, get_model())
             _trace_ctx.__enter__()
         messages, build_info = _build_messages(corrected_message, req.history, session_id, user_id)
 
@@ -1750,7 +1813,7 @@ async def chat(req: ChatRequest, request: Request):
                     agent_factory.update_performance(dyn_route["agent_id"], 5.0)  # default, updated later
                     logger.info("Dynamic agent matched", agent=dyn_route.get("name", ""), session_id=session_id)
             except Exception:
-                pass
+                logger.debug("Dynamic agent matching failed", exc_info=True)
 
         # Extract the enriched system context (proactive + RAG + realtime + memory
         # + reflexion + graph) that _build_messages just computed. Previously the
@@ -1772,7 +1835,7 @@ async def chat(req: ChatRequest, request: Request):
                 if _variant_addon:
                     _enriched_system = _enriched_system + "\n\n" + _variant_addon
             except Exception:
-                pass
+                logger.debug("Self-optimizer variant failed", exc_info=True)
 
         # Use orchestrator when available for specialist routing.
         # GĐ4.1: offload vòng lặp agent (OpenAI client ĐỒNG BỘ) sang thread để KHÔNG
@@ -1797,7 +1860,7 @@ async def chat(req: ChatRequest, request: Request):
             try:
                 _trace_ctx.__exit__(None, None, None)
             except Exception:
-                pass
+                logger.debug("Trace context exit failed", exc_info=True)
 
     # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
     # P0/chat: chỉ coi là lỗi khi reply RỖNG, hoặc là fallback hệ-thống thật (mọi fallback
@@ -1922,11 +1985,11 @@ async def chat(req: ChatRequest, request: Request):
             # Estimate tokens from message + reply when no response object
             est_in = token_counter.estimate_tokens(corrected_message)
             est_out = token_counter.estimate_tokens(reply)
-            cost_attribution.record(session_id, corrected_message[:200], "chat", None, MODEL,
+            cost_attribution.record(session_id, corrected_message[:200], "chat", None, get_model(),
                                      {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
-                                     token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, MODEL))
+                                     token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
         except Exception:
-            pass
+            logger.debug("Cost tracking failed", exc_info=True)
 
     # Record assistant reply in memory
     memory_manager.on_message(session_id, "assistant", reply)
@@ -1936,13 +1999,13 @@ async def chat(req: ChatRequest, request: Request):
         try:
             memory_graph.on_chat_complete(user_id, corrected_message, reply, [])
         except Exception:
-            pass
+            logger.debug("Memory graph record failed", exc_info=True)
 
     # LLM memory extraction: extract preferences/facts
     try:
         memory_manager.on_chat_complete(session_id, user_id, corrected_message, reply)
     except Exception:
-        pass
+        logger.debug("LLM memory extraction failed", exc_info=True)
 
     # Reflexion: evaluate answer quality
     try:
@@ -1965,13 +2028,13 @@ async def chat(req: ChatRequest, request: Request):
             try:
                 experience_memory.record(req.message, tools_used, evaluation["score"], reply)
             except Exception:
-                pass
+                logger.debug("Experience memory record failed", exc_info=True)
         # Few-shot demo pool: capture high-scoring (query, answer) exemplars
         if HAS_FEWSHOT:
             try:
                 prompt_compiler.record_demo(req.message, reply, evaluation["score"])
             except Exception:
-                pass
+                logger.debug("Few-shot demo record failed", exc_info=True)
     except Exception as eval_err:
         logger.warn("Reflexion evaluation error", error=str(eval_err))
         evaluation = {"score": 0, "issues": [], "good_points": []}
@@ -1983,7 +2046,7 @@ async def chat(req: ChatRequest, request: Request):
             record_outcome(session_id, corrected_message, "orchestrator" if HAS_ORCHESTRATOR else "direct",
                           tools_used, evaluation["score"], duration, est_tokens)
         except Exception:
-            pass
+            logger.debug("Self-optimizer outcome record failed", exc_info=True)
 
     # ── LLM Judge: quality evaluation (non-blocking, best-effort) ──
     if HAS_LLM_JUDGE and LLM_JUDGE_ENABLED and evaluation["score"] >= 3:
@@ -1992,14 +2055,14 @@ async def chat(req: ChatRequest, request: Request):
             if judge_result and judge_result.get("weighted_score", 0) < 4:
                 logger.info("LLM Judge low score", score=judge_result.get("weighted_score"), query=req.message[:80])
         except Exception:
-            pass
+            logger.debug("LLM Judge evaluation failed", exc_info=True)
 
     # A/B testing: record outcome
     if HAS_AB_TESTING and session_id:
         try:
             ab_manager.record_outcome("prompt_style", session_id, evaluation["score"])
         except Exception:
-            pass
+            logger.debug("A/B outcome record failed", exc_info=True)
 
     # Metrics tracking
     if HAS_METRICS:
@@ -2009,7 +2072,7 @@ async def chat(req: ChatRequest, request: Request):
     try:
         analytics.track_query(req.message, tools_used, reply, session_id)
     except Exception:
-        pass
+        logger.debug("Analytics tracking failed", exc_info=True)
 
     # ── Guardrails: output validation (PII mask + hallucination check) ──
     if HAS_GUARDRAILS:
@@ -2109,7 +2172,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 analytics.track_query(message, ["semantic_cache_hit"], sem_cached.get("reply", ""), sid)
                 return StreamingResponse(sem_cached_stream(), media_type="text/event-stream")
         except Exception:
-            pass
+            logger.debug("Semantic cache retrieval failed (stream)", exc_info=True)
 
     # Check cache for history-less requests
     if not hist:
@@ -2148,27 +2211,27 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 if _dyn and _dyn.get("system_prompt_addon"):
                     _sys += "\n\n" + _dyn["system_prompt_addon"]
             except Exception:
-                pass
+                logger.debug("Dynamic agent routing failed (stream)", exc_info=True)
         if HAS_OPTIMIZER:
             try:
                 _v = prompt_optimizer.get_current_variant().get("prompt_addon", "")
                 if _v:
                     _sys += "\n\n" + _v
             except Exception:
-                pass
+                logger.debug("Self-optimizer variant failed (stream)", exc_info=True)
         messages[0]["content"] = _sys
 
     # ── Smart model routing for stream path ──
-    _stream_model = MODEL
+    _stream_model = get_model()
     try:
         from orchestrator import QueryRouter as _QR2, _CATEGORY_AGENTS
         _stream_cat = _QR2.classify(message)
         _stream_agent = _CATEGORY_AGENTS.get(_stream_cat)
         if _stream_agent and getattr(_stream_agent, "use_mini", False):
-            _stream_model = MODEL_MINI
+            _stream_model = get_model_mini()
             logger.info("Stream model routing: MINI", category=_stream_cat.value)
     except Exception:
-        pass
+        logger.debug("Stream model routing failed", exc_info=True)
 
     # ── Tuned params (self_optimizer) for the streaming loop ──
     _stream_temp = None
@@ -2181,7 +2244,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             _stream_rounds = int(_p.get("max_rounds", 4))
             _stream_temp = _p.get("temperature")
         except Exception:
-            pass
+            logger.debug("Stream tuned params failed", exc_info=True)
 
     async def event_stream():
         # Send autocorrect info if corrected
@@ -2198,7 +2261,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     _kw["temperature"] = _stream_temp
                 # CONC-001: chạy LLM-call ĐỒNG-BỘ trong thread để KHÔNG chặn event loop
                 # (request /chat khác + /health vẫn xử lý được trong lúc chờ LLM).
-                response = await asyncio.to_thread(lambda: client.chat.completions.create(**_kw))
+                response = await asyncio.to_thread(lambda: get_client().chat.completions.create(**_kw))
                 msg = response.choices[0].message
             except Exception as exc:
                 error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
@@ -2238,39 +2301,48 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                             data = json.loads(result)
                             suggestions = data.get("suggestions", [])
                         except Exception:
-                            pass
+                            logger.debug("Failed to parse suggest_followups result", exc_info=True)
             else:
                 # CONC-001: SDK streaming là iterator ĐỒNG-BỘ — lặp nó trong async gen sẽ
                 # chặn event loop từng token. Chạy create+iterate trong THREAD, đẩy từng
                 # chunk qua asyncio.Queue (thread-safe) để consumer async yield không chặn.
                 loop = asyncio.get_running_loop()
                 chunk_q: asyncio.Queue = asyncio.Queue()
+                _cancelled = threading.Event()
 
                 def _produce_stream():
                     try:
-                        stream = client.chat.completions.create(
+                        stream = get_client().chat.completions.create(
                             model=_stream_model, messages=messages, stream=True,
                             timeout=LLM_TIMEOUT,
                         )
                         for chunk in stream:
+                            if _cancelled.is_set():
+                                break
                             delta = chunk.choices[0].delta
                             if delta.content:
                                 loop.call_soon_threadsafe(chunk_q.put_nowait, delta.content)
-                    except Exception as exc:  # đẩy lỗi sang consumer để xử lý sạch
-                        loop.call_soon_threadsafe(chunk_q.put_nowait, exc)
+                    except Exception as exc:
+                        if not _cancelled.is_set():
+                            loop.call_soon_threadsafe(chunk_q.put_nowait, exc)
                     finally:
-                        loop.call_soon_threadsafe(chunk_q.put_nowait, None)  # sentinel hết stream
+                        loop.call_soon_threadsafe(chunk_q.put_nowait, None)
 
                 producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
                 _chunks: list[str] = []
-                while True:
-                    item = await chunk_q.get()
-                    if item is None:
-                        break
-                    if isinstance(item, Exception):
-                        raise item
-                    _chunks.append(item)
-                    yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
+                try:
+                    while True:
+                        item = await chunk_q.get()
+                        if item is None:
+                            break
+                        if isinstance(item, Exception):
+                            raise item
+                        _chunks.append(item)
+                        yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
+                except (asyncio.CancelledError, GeneratorExit):
+                    _cancelled.set()
+                    await producer
+                    return
                 await producer
                 full_text = "".join(_chunks)
 
@@ -2282,24 +2354,24 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     try:
                         memory_graph.on_chat_complete(user_id, message, full_text, [])
                     except Exception:
-                        pass
+                        logger.debug("Memory graph record failed (stream)", exc_info=True)
 
                 # LLM memory extraction
                 try:
                     memory_manager.on_chat_complete(sid, user_id, message, full_text)
                 except Exception:
-                    pass
+                    logger.debug("LLM memory extraction failed (stream)", exc_info=True)
 
                 # ── Cost tracking ──
                 if HAS_COST_TRACKER:
                     try:
                         est_in = token_counter.estimate_tokens(message)
                         est_out = token_counter.estimate_tokens(full_text)
-                        cost_attribution.record(sid, message[:200], "stream", None, MODEL,
+                        cost_attribution.record(sid, message[:200], "stream", None, get_model(),
                                                  {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
-                                                 token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, MODEL))
+                                                 token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
                     except Exception:
-                        pass
+                        logger.debug("Cost tracking failed (stream)", exc_info=True)
 
                 # Reflexion: evaluate quality
                 evaluation = reflexion_engine.evaluate_answer(message, full_text, tools_used)
@@ -2316,12 +2388,12 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     try:
                         experience_memory.record(message, tools_used, evaluation["score"], full_text)
                     except Exception:
-                        pass
+                        logger.debug("Experience memory record failed (stream)", exc_info=True)
                 if HAS_FEWSHOT:
                     try:
                         prompt_compiler.record_demo(message, full_text, evaluation["score"])
                     except Exception:
-                        pass
+                        logger.debug("Few-shot demo record failed (stream)", exc_info=True)
 
                 # ── Self optimizer: record outcome ──
                 if HAS_OPTIMIZER:
@@ -2329,21 +2401,21 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         est_tok = token_counter.estimate_tokens(full_text) if HAS_COST_TRACKER else len(full_text) // 3
                         record_outcome(sid, message, "stream", tools_used, evaluation["score"], 0, est_tok)
                     except Exception:
-                        pass
+                        logger.debug("Self-optimizer outcome failed (stream)", exc_info=True)
 
                 # ── LLM Judge: quality evaluation ──
                 if HAS_LLM_JUDGE and LLM_JUDGE_ENABLED and evaluation["score"] >= 3:
                     try:
                         judge(message, full_text)
                     except Exception:
-                        pass
+                        logger.debug("LLM Judge failed (stream)", exc_info=True)
 
                 # A/B testing: record outcome
                 if HAS_AB_TESTING and sid:
                     try:
                         ab_manager.record_outcome("prompt_style", sid, evaluation["score"])
                     except Exception:
-                        pass
+                        logger.debug("A/B outcome record failed (stream)", exc_info=True)
 
                 # Metrics tracking
                 if HAS_METRICS:
@@ -2356,7 +2428,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         if out_check.get("cleaned_reply") and out_check["cleaned_reply"] != full_text:
                             full_text = out_check["cleaned_reply"]
                     except Exception:
-                        pass
+                        logger.debug("Stream guardrail check failed", exc_info=True)
 
                 # Track & cache
                 analytics.track_query(message, tools_used, full_text, sid)
@@ -2368,7 +2440,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         try:
                             semantic_put(message, cache_data)
                         except Exception:
-                            pass
+                            logger.debug("Semantic cache put failed", exc_info=True)
 
                 # Send quality score for UI feedback prompt
                 yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid, 'quality': evaluation['score']}, ensure_ascii=False)}\n\n"
@@ -2384,18 +2456,30 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                             "tốt nhất TỪ thông tin đã thu thập, KHÔNG gọi thêm tool, "
                             "trả lời trực tiếp bằng tiếng Việt."),
             })
-            synth = client.chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
+            synth_q: asyncio.Queue = asyncio.Queue()
+            loop = asyncio.get_event_loop()
+            def _synth_produce():
+                try:
+                    resp = get_client().chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
+                    for chunk in resp:
+                        delta = chunk.choices[0].delta
+                        if delta.content:
+                            loop.call_soon_threadsafe(synth_q.put_nowait, delta.content)
+                finally:
+                    loop.call_soon_threadsafe(synth_q.put_nowait, None)
+            loop.run_in_executor(None, _synth_produce)
             synth_text = ""
-            for chunk in synth:
-                delta = chunk.choices[0].delta
-                if delta.content:
-                    synth_text += delta.content
-                    yield f"data: {json.dumps({'type': 'text', 'content': delta.content}, ensure_ascii=False)}\n\n"
+            while True:
+                token = await synth_q.get()
+                if token is None:
+                    break
+                synth_text += token
+                yield f"data: {json.dumps({'type': 'text', 'content': token}, ensure_ascii=False)}\n\n"
             if synth_text:
                 memory_manager.on_message(sid, "assistant", synth_text)
                 analytics.track_query(message, tools_used, synth_text, sid)
         except Exception:
-            pass
+            logger.debug("Stream synthesis fallback failed", exc_info=True)
 
         yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
 
@@ -2453,8 +2537,8 @@ _health_llm_cache = {"status": "not_checked", "checked_at": 0.0}
 async def _check_llm_health() -> str:
     def _ping() -> str:
         try:
-            client.chat.completions.create(
-                model=MODEL_MINI,
+            get_client().chat.completions.create(
+                model=get_model_mini(),
                 messages=[{"role": "user", "content": "ping"}],
                 max_tokens=5,
                 timeout=8,
@@ -2464,36 +2548,15 @@ async def _check_llm_health() -> str:
             return f"error: {type(e).__name__}"
 
     status = await asyncio.to_thread(_ping)
-    _health_llm_cache["status"] = status
-    _health_llm_cache["checked_at"] = time.time()
+    global _health_llm_cache
+    _health_llm_cache = {"status": status, "checked_at": time.time()}
     return status
 
 
-@app.get("/health")
-async def health():
+def _health_core() -> tuple:
+    """Shared health probes — returns (overall_status, db_ok, llm_status)."""
     knowledge._ensure()
-
-    # Fast health must not call external services. Use /health/deep for LLM/API checks.
     llm_status = _health_llm_cache["status"]
-
-    # Memory usage
-    try:
-        import psutil
-        proc = psutil.Process()
-        memory_mb = round(proc.memory_info().rss / 1024 / 1024, 1)
-    except Exception:
-        memory_mb = None
-
-    # Data quality quick check
-    total_entities = len([e for e in knowledge._entities.values() if e.get("type") != "place"])
-    missing_summary = len([e for e in knowledge._entities.values() if e.get("type") != "place" and not e.get("summary")])
-    data_quality = {
-        "total_entities": total_entities,
-        "missing_summary": missing_summary,
-        "coverage_pct": round((total_entities - missing_summary) / total_entities * 100, 1) if total_entities else 0,
-    }
-
-    # DB probe (lightweight SELECT 1)
     db_ok = False
     try:
         from database import db as _db
@@ -2501,13 +2564,41 @@ async def health():
             _db._fetchone(conn, "SELECT 1", ())
         db_ok = True
     except Exception:
-        pass
-
-    # Overall status
+        logger.debug("Health check DB probe failed", exc_info=True)
     errors_healthy = error_tracker.is_healthy()
     llm_ok = llm_status != "error"
     overall = "ok" if (errors_healthy and db_ok and llm_ok) else "degraded"
+    return overall, db_ok, llm_status
 
+
+@app.get("/health")
+async def health():
+    overall, db_ok, llm_status = await asyncio.to_thread(_health_core)
+    return {
+        "status": overall,
+        "time": datetime.now(timezone.utc).isoformat(),
+        "entities": len(knowledge._entities),
+        "db": db_ok,
+        "llm": llm_status,
+    }
+
+
+async def _health_detail() -> dict:
+    """Full health payload — internal use by admin-gated endpoints."""
+    overall, db_ok, llm_status = _health_core()
+    try:
+        import psutil
+        memory_mb = round(psutil.Process().memory_info().rss / 1024 / 1024, 1)
+    except Exception:
+        memory_mb = None
+    total_entities = len([e for e in knowledge._entities.values() if e.get("type") != "place"])
+    missing_summary = len([e for e in knowledge._entities.values() if e.get("type") != "place" and not e.get("summary")])
+    data_quality = {
+        "total_entities": total_entities,
+        "missing_summary": missing_summary,
+        "coverage_pct": round((total_entities - missing_summary) / total_entities * 100, 1) if total_entities else 0,
+    }
+    from database import db as _db
     return {
         "status": overall,
         "version": "8.2",
@@ -2519,7 +2610,7 @@ async def health():
         "deep_checks": False,
         "entities": len(knowledge._entities),
         "data_quality": data_quality,
-        "model": MODEL,
+        "model": get_model(),
         "cache": cache.stats(),
         "response_times": response_tracker.stats(),
         "rate_limits": chat_limiter.stats(),
@@ -2545,13 +2636,11 @@ async def health():
         "tracing": {"available": HAS_TRACING},
         "contextual_retrieval": {"available": HAS_CONTEXTUAL},
         "checkpoints": {"available": HAS_CHECKPOINTS},
-        # Level 6
         "guardrails": {"available": HAS_GUARDRAILS},
         "cost_tracker": {"available": HAS_COST_TRACKER},
         "eval_framework": {"available": HAS_EVAL},
         "self_optimizer": {"available": HAS_OPTIMIZER},
         "semantic_cache": {"available": HAS_SEMANTIC_CACHE, **(semantic_cache_stats() if HAS_SEMANTIC_CACHE else {})},
-        # Level 7
         "llm_judge": {"available": HAS_LLM_JUDGE},
         "dynamic_agents": {"available": HAS_DYNAMIC_AGENTS, "active_agents": len(agent_factory.get_active_agents()) if HAS_DYNAMIC_AGENTS else 0},
         "time": datetime.now(timezone.utc).isoformat(),
@@ -2559,26 +2648,38 @@ async def health():
 
 
 @app.get("/health/deep")
-async def deep_health():
+async def deep_health(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     await _check_llm_health()
-    payload = await health()
+    payload = await _health_detail()
     payload["deep_checks"] = True
     if payload["llm_api"] != "ok" and payload["status"] == "ok":
         payload["status"] = "degraded"
     return payload
 
 
+@app.get("/health/details")
+async def health_details(request: Request):
+    from admin import require_admin
+    await require_admin(request)
+    return await _health_detail()
+
+
 @app.get("/health/ready")
 async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
-    from database import db as _db
-    checks = {"knowledge": len(knowledge._entities) > 0}
-    try:
-        with _db._conn() as conn:
-            _db._fetchone(conn, "SELECT 1", ())
-        checks["database"] = True
-    except Exception:
-        checks["database"] = False
+    def _probe():
+        from database import db as _db
+        checks = {"knowledge": len(knowledge._entities) > 0}
+        try:
+            with _db._conn() as conn:
+                _db._fetchone(conn, "SELECT 1", ())
+            checks["database"] = True
+        except Exception:
+            checks["database"] = False
+        return checks
+    checks = await asyncio.to_thread(_probe)
     ready = all(checks.values())
     return JSONResponse(
         status_code=200 if ready else 503,
@@ -2587,8 +2688,10 @@ async def readiness_probe():
 
 
 @app.get("/health/slo")
-async def slo_metrics():
-    """Basic SLO tracking: uptime, error rate, p95 latency."""
+async def slo_metrics(request: Request):
+    """Basic SLO tracking: uptime, error rate, p95 latency. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     uptime_s = time.time() - _server_start_time
     rt_stats = response_tracker.stats()
     err_stats = error_tracker.stats()
@@ -2616,11 +2719,12 @@ async def slo_metrics():
 # ── Prometheus metrics endpoint ──
 
 @app.get("/metrics", tags=["System"])
-async def metrics_endpoint():
-    """Prometheus-compatible metrics in text exposition format."""
+async def metrics_endpoint(request: Request):
+    """Prometheus-compatible metrics in text exposition format. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_METRICS:
         return JSONResponse(status_code=501, content={"error": "Metrics module not available"})
-    # Update gauges before export
     set_gauge("cache_size", len(cache._cache) if hasattr(cache, '_cache') else 0)
     set_gauge("entities_total", len(knowledge._entities))
     from fastapi.responses import Response
@@ -2630,15 +2734,19 @@ async def metrics_endpoint():
 # ── A/B Testing endpoints ──
 
 @app.get("/ab-testing/experiments", tags=["System"])
-async def ab_experiments():
-    """List all A/B testing experiments."""
+async def ab_experiments(request: Request):
+    """List all A/B testing experiments. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_AB_TESTING:
         raise HTTPException(503, detail="A/B testing not available")
     return {"experiments": ab_manager.list_experiments()}
 
 @app.get("/ab-testing/results/{experiment_name}", tags=["System"])
-async def ab_results(experiment_name: str):
-    """Get A/B test results with statistics."""
+async def ab_results(experiment_name: str, request: Request):
+    """Get A/B test results with statistics. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_AB_TESTING:
         raise HTTPException(503, detail="A/B testing not available")
     results = ab_manager.get_results(experiment_name)
@@ -2646,8 +2754,10 @@ async def ab_results(experiment_name: str):
     return {"experiment": experiment_name, "results": results, "significance": significance}
 
 @app.get("/prompt-cache/stats", tags=["System"])
-async def prompt_cache_stats():
-    """Get prompt cache statistics."""
+async def prompt_cache_stats(request: Request):
+    """Get prompt cache statistics. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_PROMPT_CACHE:
         return {"available": False}
     return {"available": True, **prompt_cache.stats()}
@@ -2656,7 +2766,9 @@ async def prompt_cache_stats():
 # ── Analytics endpoints ──
 
 @app.get("/analytics/summary")
-async def analytics_summary():
+async def analytics_summary(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     try:
         return await asyncio.to_thread(analytics.get_summary)
     except Exception:
@@ -2664,50 +2776,68 @@ async def analytics_summary():
 
 
 @app.get("/analytics/popular")
-async def analytics_popular(limit: int = Query(20, ge=1, le=200)):
+async def analytics_popular(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     return {"popular_queries": await asyncio.to_thread(analytics.get_popular_queries, limit)}
 
 
 @app.get("/analytics/gaps")
-async def analytics_gaps(limit: int = Query(20, ge=1, le=200)):
+async def analytics_gaps(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     return {"knowledge_gaps": await asyncio.to_thread(analytics.get_knowledge_gaps, limit)}
 
 
 @app.get("/analytics/daily")
-async def analytics_daily(days: int = Query(30, ge=1, le=365)):
+async def analytics_daily(request: Request, days: int = Query(30, ge=1, le=365)):
+    from admin import require_admin
+    await require_admin(request)
     return {"daily_stats": await asyncio.to_thread(analytics.get_daily_stats, days)}
 
 
 @app.get("/analytics/top-entities")
-async def analytics_top_entities(limit: int = Query(20, ge=1, le=200)):
+async def analytics_top_entities(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     return {"top_entities": await asyncio.to_thread(analytics.get_top_entities, limit)}
 
 
 # ── System monitoring endpoints ──
 
 @app.get("/system/logs")
-async def system_logs(limit: int = Query(50, ge=1, le=500), level: str = None):
+async def system_logs(request: Request, limit: int = Query(50, ge=1, le=500), level: str = None):
+    from admin import require_admin
+    await require_admin(request)
     return {"logs": logger.recent(limit, level)}
 
 
 @app.get("/system/errors")
-async def system_errors(limit: int = Query(20, ge=1, le=200)):
+async def system_errors(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     return {"errors": error_tracker.recent_errors(limit), **error_tracker.stats()}
 
 
 @app.get("/system/response-times")
-async def system_response_times():
+async def system_response_times(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     return response_tracker.stats()
 
 
 @app.get("/system/scheduler")
-async def system_scheduler():
+async def system_scheduler(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     return scheduler_status()
 
 
 @app.get("/system/learning", tags=["System"])
-async def system_learning():
-    """Trạng thái vòng lặp tự học."""
+async def system_learning(request: Request):
+    """Trạng thái vòng lặp tự học. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     try:
         from learn_loop import learning_status
         return learning_status()
@@ -2733,45 +2863,56 @@ async def trigger_learning(request: Request):
 
 
 @app.get("/system/self-evolution", tags=["System"])
-async def system_self_evolution():
-    """Trạng thái cơ chế tự tiến hoá có kiểm soát (fitness gate + rollback)."""
+async def system_self_evolution(request: Request):
+    """Trạng thái cơ chế tự tiến hoá. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     out = {}
     try:
         import self_evolve
         out["evolution"] = self_evolve.status()
     except Exception as e:
-        out["evolution"] = {"error": str(e)}
+        logger.warning("self_evolve status error: %s", e)
+        out["evolution"] = {"error": "unavailable"}
     try:
         import self_eval
         out["current_fitness"] = self_eval.compute_fitness()
     except Exception as e:
-        out["current_fitness"] = {"error": str(e)}
+        logger.warning("self_eval fitness error: %s", e)
+        out["current_fitness"] = {"error": "unavailable"}
     try:
         import kb_curation
         out["curation"] = kb_curation.stats()
     except Exception as e:
-        out["curation"] = {"error": str(e)}
+        logger.warning("kb_curation stats error: %s", e)
+        out["curation"] = {"error": "unavailable"}
     try:
         import experience_memory
         out["experience"] = experience_memory.stats()
     except Exception as e:
-        out["experience"] = {"error": str(e)}
+        logger.warning("experience_memory stats error: %s", e)
+        out["experience"] = {"error": "unavailable"}
     try:
         import geocode
         out["geocode"] = geocode.stats()
     except Exception as e:
-        out["geocode"] = {"error": str(e)}
+        logger.warning("geocode stats error: %s", e)
+        out["geocode"] = {"error": "unavailable"}
     return out
 
 
 @app.get("/system/memory")
-async def system_memory():
+async def system_memory(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     return memory_manager.stats()
 
 
 @app.get("/system/traces", tags=["System"])
-async def system_traces(limit: int = Query(50, ge=1, le=500)):
-    """OpenTelemetry trace data."""
+async def system_traces(request: Request, limit: int = Query(50, ge=1, le=500)):
+    """OpenTelemetry trace data. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_TRACING:
         return {"available": False}
     return {
@@ -2782,8 +2923,10 @@ async def system_traces(limit: int = Query(50, ge=1, le=500)):
 
 
 @app.get("/system/handoffs", tags=["System"])
-async def system_handoffs(limit: int = Query(50, ge=1, le=200)):
-    """Multi-agent orchestrator handoff log."""
+async def system_handoffs(request: Request, limit: int = Query(50, ge=1, le=200)):
+    """Multi-agent orchestrator handoff log. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_ORCHESTRATOR:
         return {"available": False}
     from dataclasses import asdict
@@ -2796,8 +2939,10 @@ async def system_handoffs(limit: int = Query(50, ge=1, le=200)):
 
 
 @app.get("/system/memory-graph", tags=["System"])
-async def system_memory_graph():
-    """Memory graph statistics."""
+async def system_memory_graph(request: Request):
+    """Memory graph statistics. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_MEMORY_GRAPH:
         return {"available": False}
     graph_stats = memory_graph.stats()
@@ -2811,16 +2956,20 @@ async def system_memory_graph():
 # ── Checkpoint / Confirmation endpoints ──
 
 @app.get("/checkpoints/{session_id}", tags=["System"])
-async def list_checkpoints(session_id: str):
-    """List conversation checkpoints for a session."""
+async def list_checkpoints(session_id: str, request: Request):
+    """List conversation checkpoints. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return {"available": False}
     return {"checkpoints": checkpoint_manager.list_checkpoints(session_id)}
 
 
 @app.post("/checkpoints", tags=["System"])
-async def save_checkpoint(req: CheckpointSaveRequest):
-    """Save a conversation checkpoint."""
+async def save_checkpoint(req: CheckpointSaveRequest, request: Request):
+    """Save a conversation checkpoint. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
     cp_id = checkpoint_manager.save_checkpoint(
@@ -2834,8 +2983,10 @@ async def save_checkpoint(req: CheckpointSaveRequest):
 
 
 @app.post("/checkpoints/{checkpoint_id}/resume", tags=["System"])
-async def resume_checkpoint(checkpoint_id: str):
-    """Resume from a conversation checkpoint."""
+async def resume_checkpoint(checkpoint_id: str, request: Request):
+    """Resume from a conversation checkpoint. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
     result = checkpoint_manager.resume_from(checkpoint_id)
@@ -2846,8 +2997,10 @@ async def resume_checkpoint(checkpoint_id: str):
 
 
 @app.get("/confirmations/{session_id}", tags=["System"])
-async def pending_confirmations(session_id: str):
-    """List pending confirmations for a session."""
+async def pending_confirmations(session_id: str, request: Request):
+    """List pending confirmations. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return {"available": False}
     pending = confirmation_manager.get_pending(session_id)
@@ -2857,8 +3010,10 @@ async def pending_confirmations(session_id: str):
 
 
 @app.post("/confirm/{confirmation_id}", tags=["System"])
-async def confirm_action(confirmation_id: str):
-    """Confirm a pending action."""
+async def confirm_action(confirmation_id: str, request: Request):
+    """Confirm a pending action. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
     params = confirmation_manager.confirm(confirmation_id)
@@ -2869,7 +3024,9 @@ async def confirm_action(confirmation_id: str):
 
 @app.post("/reject/{confirmation_id}", tags=["System"])
 async def reject_action(confirmation_id: str, request: Request):
-    """Reject a pending action."""
+    """Reject a pending action. Admin-only."""
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CHECKPOINTS:
         return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
     body = await request.json() if request.headers.get("content-type") == "application/json" else {}
@@ -2885,35 +3042,38 @@ async def enhanced_search(q: str = Query(..., max_length=200), limit: int = Quer
     """Enhanced hybrid search with BM25 + contextual embeddings."""
     if not HAS_CONTEXTUAL:
         raise HTTPException(503, detail="Contextual retrieval not available")
-    knowledge._ensure()
-    # Get initial keyword results
-    keyword_results = knowledge.search_entities(q=q, limit=limit * 3)
-    relationships = knowledge._relationships if hasattr(knowledge, '_relationships') else []
-    results = enhanced_hybrid_search(
-        query=q,
-        keyword_results=keyword_results,
-        entities=knowledge._entities,
-        relationships=relationships,
-        rerank=rerank,
-        top_k=limit,
-    )
-    enriched = []
-    for r in results:
-        eid = r.get("entity_id", r.get("id", ""))
-        e = knowledge.get_entity(eid)
-        if e:
-            enriched.append({
-                "entity_id": eid,
-                "name": e["name"],
-                "type": e["type"],
-                "summary": e.get("summary", "")[:150],
-                "score": r.get("score", r.get("combined_score", 0)),
-            })
-    return {"results": enriched}
+    def _search():
+        knowledge._ensure()
+        keyword_results = knowledge.search_entities(q=q, limit=limit * 3)
+        relationships = knowledge._relationships if hasattr(knowledge, '_relationships') else []
+        results = enhanced_hybrid_search(
+            query=q,
+            keyword_results=keyword_results,
+            entities=knowledge._entities,
+            relationships=relationships,
+            rerank=rerank,
+            top_k=limit,
+        )
+        enriched = []
+        for r in results:
+            eid = r.get("entity_id", r.get("id", ""))
+            e = knowledge.get_entity(eid)
+            if e:
+                enriched.append({
+                    "entity_id": eid,
+                    "name": e["name"],
+                    "type": e["type"],
+                    "summary": e.get("summary", "")[:150],
+                    "score": r.get("score", r.get("combined_score", 0)),
+                })
+        return enriched
+    return {"results": await asyncio.to_thread(_search)}
 
 
 @app.get("/system/quality")
-async def system_quality():
+async def system_quality(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     return {
         "quality": quality_tracker.stats(),
         "reflexion": reflexion_engine.stats(),
@@ -2941,7 +3101,7 @@ async def user_feedback(req: FeedbackRequest, request: Request):
         from learn_loop import record_feedback
         record_feedback(query=query, rating=rating, entity_id=entity_id, session_id=user_id)
     except Exception:
-        pass  # Non-critical
+        logger.debug("Learn loop feedback record failed", exc_info=True)
     logger.info("User feedback", user_id=user_id, rating=rating, query=query[:50])
     return {"success": True}
 
@@ -3019,12 +3179,15 @@ async def build_vectors(request: Request):
         return JSONResponse(status_code=403, content={"error": "forbidden"})
     if not HAS_VECTOR:
         return JSONResponse(status_code=501, content={"error": "Vector search module not available"})
-    knowledge._ensure()
-    result = embedding_store.build_index(knowledge._entities)
-    return result
+    def _build():
+        knowledge._ensure()
+        return embedding_store.build_index(knowledge._entities)
+    return await asyncio.to_thread(_build)
 
 @app.get("/vectors/stats")
-async def vector_stats():
+async def vector_stats(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_VECTOR:
         return {"available": False}
     return {"available": True, **embedding_store.stats()}
@@ -3033,19 +3196,20 @@ async def vector_stats():
 async def vector_search_endpoint(q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=100)):
     if not HAS_VECTOR:
         raise HTTPException(503, detail="Vector search not available")
-    results = embedding_store.search(q, top_k=limit)
-    # Enrich with entity names
-    enriched = []
-    for r in results:
-        e = knowledge.get_entity(r["entity_id"])
-        if e:
-            enriched.append({
-                **r,
-                "name": e["name"],
-                "type": e["type"],
-                "summary": e.get("summary", "")[:100],
-            })
-    return {"results": enriched}
+    def _search():
+        results = embedding_store.search(q, top_k=limit)
+        enriched = []
+        for r in results:
+            e = knowledge.get_entity(r["entity_id"])
+            if e:
+                enriched.append({
+                    **r,
+                    "name": e["name"],
+                    "type": e["type"],
+                    "summary": e.get("summary", "")[:100],
+                })
+        return enriched
+    return {"results": await asyncio.to_thread(_search)}
 
 
 # ── Realtime endpoints ──
@@ -3054,19 +3218,19 @@ async def vector_search_endpoint(q: str = Query(..., max_length=200), limit: int
 async def weather_endpoint(area: str = Query("vinh-long", max_length=50)):
     if not HAS_REALTIME:
         raise HTTPException(503, detail="Realtime module not available")
-    return get_weather(area)
+    return await asyncio.to_thread(get_weather, area)
 
 @app.get("/weather/all")
 async def weather_all():
     if not HAS_REALTIME:
         raise HTTPException(503, detail="Realtime module not available")
-    return {"areas": get_all_weather()}
+    return {"areas": await asyncio.to_thread(get_all_weather)}
 
 @app.get("/events")
 async def events_endpoint(days: int = Query(30, ge=1, le=365), area: str = Query(None, max_length=50)):
     if not HAS_REALTIME:
         raise HTTPException(503, detail="Realtime module not available")
-    return {"events": get_upcoming_events(days, area)}
+    return {"events": await asyncio.to_thread(get_upcoming_events, days, area)}
 
 
 # ── Recommendation endpoints ──
@@ -3079,47 +3243,60 @@ async def recommend_endpoint(
 ):
     if not HAS_RECOMMENDER:
         raise HTTPException(503, detail="Recommender not available")
-    knowledge._ensure()
-    ctx = {}
-    if entity_id:
-        ctx["entity_id"] = entity_id
-    if month:
-        ctx["month"] = month
-    else:
-        ctx["month"] = datetime.now(timezone.utc).month
-    if weather:
-        ctx["weather"] = weather
-    if time_of_day:
-        ctx["time_of_day"] = time_of_day
-    ctx["entities"] = knowledge._entities
-    ctx["relationships"] = knowledge._relationships if hasattr(knowledge, '_relationships') else []
-    ctx["limit"] = limit
-    result = recommend(ctx)
-    return result
+    def _rec():
+        knowledge._ensure()
+        ctx = {}
+        if entity_id:
+            ctx["entity_id"] = entity_id
+        if month:
+            ctx["month"] = month
+        else:
+            ctx["month"] = datetime.now(timezone.utc).month
+        if weather:
+            ctx["weather"] = weather
+        if time_of_day:
+            ctx["time_of_day"] = time_of_day
+        ctx["entities"] = knowledge._entities
+        ctx["relationships"] = knowledge._relationships if hasattr(knowledge, '_relationships') else []
+        ctx["limit"] = limit
+        return recommend(ctx)
+    return await asyncio.to_thread(_rec)
 
 
 # ── Freshness endpoints ──
 
 @app.get("/freshness/check")
-async def freshness_check_endpoint():
+async def freshness_check_endpoint(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
-    knowledge._ensure()
-    return check_freshness(knowledge._entities)
+    def _check():
+        knowledge._ensure()
+        return check_freshness(knowledge._entities)
+    return await asyncio.to_thread(_check)
 
 @app.get("/freshness/report")
-async def freshness_report_endpoint():
+async def freshness_report_endpoint(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
-    knowledge._ensure()
-    return {"report": freshness_report(knowledge._entities)}
+    def _report():
+        knowledge._ensure()
+        return freshness_report(knowledge._entities)
+    return {"report": await asyncio.to_thread(_report)}
 
 @app.get("/freshness/candidates")
-async def freshness_candidates_endpoint(limit: int = Query(20, ge=1, le=200)):
+async def freshness_candidates_endpoint(request: Request, limit: int = Query(20, ge=1, le=200)):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_FRESHNESS:
         raise HTTPException(503, detail="Freshness module not available")
-    knowledge._ensure()
-    return {"candidates": auto_refresh_candidates(knowledge._entities, limit)}
+    def _candidates():
+        knowledge._ensure()
+        return auto_refresh_candidates(knowledge._entities, limit)
+    return {"candidates": await asyncio.to_thread(_candidates)}
 
 
 # ── Image recognition endpoint ──
@@ -3140,6 +3317,8 @@ async def image_recognize_endpoint(request: Request):
         if not file:
             return JSONResponse(status_code=400, content={"error": "No file uploaded"})
         file_bytes = await file.read()
+        if len(file_bytes) > 10 * 1024 * 1024:
+            return JSONResponse(status_code=413, content={"error": "Image too large (max 10MB)"})
         filename = getattr(file, "filename", "image.jpg")
         ct = getattr(file, "content_type", "image/jpeg")
         result = process_upload(file_bytes, filename, ct)
@@ -3163,13 +3342,15 @@ async def image_recognize_endpoint(request: Request):
 async def autocorrect_endpoint(q: str):
     if not HAS_AUTOCORRECT:
         return {"original": q, "corrected": q, "was_corrected": False}
-    return autocorrect(q)
+    return await asyncio.to_thread(autocorrect, q)
 
 
 # ── Circuit breaker stats ──
 
 @app.get("/system/circuit-breakers")
-async def circuit_breaker_stats():
+async def circuit_breaker_stats(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_CIRCUIT_BREAKER:
         return {"available": False}
     return {"available": True, **all_breaker_stats()}
@@ -3181,8 +3362,7 @@ async def circuit_breaker_stats():
 async def graph_endpoint(entity_id: str, hops: int = 2, max_nodes: int = 30):
     """Return subgraph data for knowledge graph visualization."""
     from agentic_rag import graph_expand
-    result = graph_expand(entity_id, max_hops=min(hops, 4), max_nodes=min(max_nodes, 50))
-    return result
+    return await asyncio.to_thread(lambda: graph_expand(entity_id, max_hops=min(hops, 4), max_nodes=min(max_nodes, 50)))
 
 
 # ════════════════════════════════════════════════════════════════
@@ -3192,7 +3372,9 @@ async def graph_endpoint(entity_id: str, hops: int = 2, max_nodes: int = 30):
 # ── Guardrails ──
 
 @app.get("/system/guardrails", tags=["Level6"])
-async def guardrails_status():
+async def guardrails_status(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_GUARDRAILS:
         return {"available": False}
     return {
@@ -3202,7 +3384,9 @@ async def guardrails_status():
     }
 
 @app.post("/system/guardrails/check-input", tags=["Level6"])
-async def guardrails_check_input(req: GuardrailCheckRequest):
+async def guardrails_check_input(req: GuardrailCheckRequest, request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_GUARDRAILS:
         raise HTTPException(503, detail="Guardrails not available")
     return check_input(req.message, req.session_id)
@@ -3211,19 +3395,25 @@ async def guardrails_check_input(req: GuardrailCheckRequest):
 # ── Cost tracker ──
 
 @app.get("/system/costs", tags=["Level6"])
-async def cost_tracker_report():
+async def cost_tracker_report(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_COST_TRACKER:
         return {"available": False}
     return {"available": True, **get_cost_report()}
 
 @app.get("/system/costs/session/{session_id}", tags=["Level6"])
-async def cost_tracker_session(session_id: str):
+async def cost_tracker_session(session_id: str, request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_COST_TRACKER:
         raise HTTPException(503, detail="Cost tracker not available")
     return cost_attribution.get_session_cost(session_id)
 
 @app.get("/system/costs/budget", tags=["Level6"])
-async def cost_budget_status():
+async def cost_budget_status(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_COST_TRACKER:
         raise HTTPException(503, detail="Cost tracker not available")
     return {
@@ -3235,14 +3425,18 @@ async def cost_budget_status():
 # ── Eval framework ──
 
 @app.get("/system/eval/latest", tags=["Level6"])
-async def eval_latest():
+async def eval_latest(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_EVAL:
         return {"available": False}
     report = get_latest_report()
     return {"available": True, "report": report}
 
 @app.get("/system/eval/history", tags=["Level6"])
-async def eval_history(limit: int = Query(10, ge=1, le=100)):
+async def eval_history(request: Request, limit: int = Query(10, ge=1, le=100)):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_EVAL:
         return {"available": False}
     return {"available": True, "reports": get_report_history(limit)}
@@ -3251,7 +3445,9 @@ async def eval_history(limit: int = Query(10, ge=1, le=100)):
 # ── Self optimizer ──
 
 @app.get("/system/optimizer", tags=["Level6"])
-async def optimizer_report():
+async def optimizer_report(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_OPTIMIZER:
         return {"available": False}
     return {"available": True, **get_optimization_report()}
@@ -3260,13 +3456,17 @@ async def optimizer_report():
 # ── Semantic cache ──
 
 @app.get("/system/semantic-cache", tags=["Level6"])
-async def semantic_cache_status():
+async def semantic_cache_status(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_SEMANTIC_CACHE:
         return {"available": False}
     return {"available": True, **semantic_cache_stats()}
 
 @app.post("/system/semantic-cache/invalidate", tags=["Level6"])
-async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest):
+async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest, request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_SEMANTIC_CACHE:
         raise HTTPException(503, detail="Semantic cache not available")
     if req.entity_id:
@@ -3285,13 +3485,17 @@ async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest):
 # ── LLM Judge ──
 
 @app.get("/system/judge", tags=["Level7"])
-async def judge_report():
+async def judge_report(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_LLM_JUDGE:
         return {"available": False}
     return {"available": True, **get_judge_report()}
 
 @app.post("/system/judge/evaluate", tags=["Level7"])
-async def judge_evaluate(req: JudgeEvaluateRequest):
+async def judge_evaluate(req: JudgeEvaluateRequest, request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_LLM_JUDGE:
         raise HTTPException(503, detail="LLM Judge not available")
     result = judge(req.query, req.reply)
@@ -3301,7 +3505,9 @@ async def judge_evaluate(req: JudgeEvaluateRequest):
 # ── Dynamic agents ──
 
 @app.get("/system/dynamic-agents", tags=["Level7"])
-async def dynamic_agents_report():
+async def dynamic_agents_report(request: Request):
+    from admin import require_admin
+    await require_admin(request)
     if not HAS_DYNAMIC_AGENTS:
         return {"available": False}
     return {"available": True, **get_agent_report()}
@@ -3437,9 +3643,8 @@ hr { border: none; border-top: 1px solid #e6e0d4; margin: 12px 0; }
 const msgs=document.getElementById('messages'),input=document.getElementById('input'),sendBtn=document.getElementById('sendBtn');
 let history=[];
 fetch('/health').then(r=>r.json()).then(d=>{
-  const c=d.cache||{};
   document.getElementById('statsBar').innerHTML=
-    '<span>'+d.entities+' thực thể</span><span>Cache: '+c.hit_rate+'</span><span>'+d.model+'</span>';
+    '<span>'+d.entities+' thực thể</span><span>'+d.status+'</span>';
 }).catch(()=>{});
 input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!sendBtn.disabled)send()});
 function ask(t){input.value=t;send()}
@@ -3550,7 +3755,7 @@ if __name__ == "__main__":
     print("=" * 64)
     print("  vinhlong360 Knowledge Agent v8.2 — Level 7 Architecture")
     print("=" * 64)
-    print(f"  Model:       {MODEL}")
+    print(f"  Model:       {get_model()}")
     print(f"  API:         {os.environ.get('LLM_BASE_URL', '(unset)')}")
     print(f"  Chat:        /chat, /chat/stream  (+rate limit)")
     print(f"  Admin:       /admin/* (Nuxt SPA)")

@@ -9,6 +9,7 @@ Bao gồm:
   - Response time monitoring
 """
 
+import contextvars
 import hashlib
 import hmac
 import ipaddress
@@ -23,6 +24,8 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from threading import Lock
 from pathlib import Path
+
+_request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="")
 
 # ══════════════════════════════════════════════════
 #  STRUCTURED LOGGING
@@ -53,12 +56,15 @@ class StructuredLogger:
             self._py_logger.setLevel(getattr(logging, log_level, logging.INFO))
 
     def log(self, level: str, message: str, **extra):
+        rid = _request_id_var.get("")
         entry = {
             "ts": datetime.now(timezone.utc).isoformat(),
             "level": level,
             "msg": message,
-            **extra,
         }
+        if rid:
+            entry["req_id"] = rid
+        entry.update(extra)
         with self._lock:
             self._buffer.append(entry)
             if len(self._buffer) >= 50:
@@ -78,8 +84,14 @@ class StructuredLogger:
     def warn(self, msg: str, **kw):
         self.log("warn", msg, **kw)
 
+    def warning(self, msg: str, **kw):
+        self.log("warn", msg, **kw)
+
     def error(self, msg: str, **kw):
         self.log("error", msg, **kw)
+
+    def debug(self, msg: str, **kw):
+        self.log("debug", msg, **kw)
 
     def _flush(self):
         """Write buffer to file."""
@@ -138,8 +150,32 @@ class StructuredLogger:
         return entries[-limit:]
 
 
+class _StructuredLogBridge(logging.Handler):
+    """Routes Python stdlib logging calls to StructuredLogger JSONL output."""
+
+    _LEVEL_MAP = {"WARNING": "warn", "ERROR": "error", "CRITICAL": "error", "DEBUG": "debug"}
+
+    def __init__(self, slogger: StructuredLogger):
+        super().__init__(level=logging.INFO)
+        self._slogger = slogger
+
+    def emit(self, record: logging.LogRecord):
+        if record.name == self._slogger.name:
+            return
+        level = self._LEVEL_MAP.get(record.levelname, "info")
+        try:
+            msg = record.getMessage()
+        except Exception:
+            msg = str(record.msg)
+        self._slogger.log(level, msg, module=record.name)
+
+
 # Singleton
 logger = StructuredLogger()
+
+# Bridge: all Python loggers → structured JSONL
+_bridge = _StructuredLogBridge(logger)
+logging.getLogger().addHandler(_bridge)
 
 
 # ══════════════════════════════════════════════════
@@ -205,7 +241,7 @@ class RateLimiter:
 
 # Singletons: different limits for different endpoints
 chat_limiter = RateLimiter(max_requests=30, window_seconds=60)   # 30 req/min
-admin_limiter = RateLimiter(max_requests=10, window_seconds=60)  # 10 req/min
+admin_limiter = RateLimiter(max_requests=60, window_seconds=60)  # 60 req/min
 stream_limiter = RateLimiter(max_requests=20, window_seconds=60)  # 20 req/min
 report_limiter = RateLimiter(max_requests=5, window_seconds=300)  # 5 báo cáo / 5 phút (chống spam)
 
@@ -285,7 +321,7 @@ response_tracker = ResponseTimeTracker()
 class ErrorTracker:
     """Track errors for circuit-breaking."""
 
-    def __init__(self, threshold: int = 10, window_seconds: int = 300):
+    def __init__(self, threshold: int = 50, window_seconds: int = 300):
         self.threshold = threshold
         self.window = window_seconds
         self._errors: list[dict] = []
@@ -380,7 +416,7 @@ def _log_admin_key_failure(request):
         path = getattr(request, "url", None)
         security_logger.admin_key_failure(ip, endpoint=str(path) if path else "")
     except Exception:
-        pass
+        logger.debug("Admin key failure logging failed", exc_info=True)
 
 
 # ══════════════════════════════════════════════════
@@ -1556,7 +1592,7 @@ class BehavioralFingerprint:
             p = self._profiles[key]
             p["paths"].append((now, path))
             p["methods"][method] = p["methods"].get(method, 0) + 1
-            if ua_hash:
+            if ua_hash and len(p["ua_hashes"]) < 50:
                 p["ua_hashes"].add(ua_hash)
             if p["last_ts"] != now:
                 p["intervals"].append(now - p["last_ts"])

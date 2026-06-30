@@ -149,8 +149,22 @@ class TestTokenExtraction:
     def test_bearer_header(self):
         from starlette.requests import Request
 
-        scope = {"type": "http", "headers": [(b"authorization", b"Bearer abc123")]}
-        assert auth._extract_token(Request(scope)) == "abc123"
+        tok = "a" * 64
+        scope = {"type": "http", "headers": [(b"authorization", f"Bearer {tok}".encode())]}
+        assert auth._extract_token(Request(scope)) == tok
+
+    def test_bearer_too_short_rejected(self):
+        from starlette.requests import Request
+
+        scope = {"type": "http", "headers": [(b"authorization", b"Bearer abc")]}
+        assert auth._extract_token(Request(scope)) is None
+
+    def test_bearer_too_long_rejected(self):
+        from starlette.requests import Request
+
+        tok = "x" * 200
+        scope = {"type": "http", "headers": [(b"authorization", f"Bearer {tok}".encode())]}
+        assert auth._extract_token(Request(scope)) is None
 
     def test_no_token_returns_none(self):
         from starlette.requests import Request

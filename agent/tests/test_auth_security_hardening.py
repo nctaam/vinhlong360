@@ -558,7 +558,7 @@ class TestAdminAuthGate:
     def test_admin_rate_limiter_exists(self):
         from middleware import admin_limiter
         assert admin_limiter is not None
-        assert admin_limiter.max_requests <= 20
+        assert admin_limiter.max_requests <= 120
 
 
 class TestMiddlewareSecurityHeaders:

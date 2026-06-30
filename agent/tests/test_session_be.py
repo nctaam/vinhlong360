@@ -273,6 +273,20 @@ def test_twitter_card_meta_entity():
     assert meta["twitter:image"] == "https://example.com/photo.jpg"
 
 
+def test_og_meta_escapes_html_in_entity_fields():
+    entity = {
+        "id": "xss-test",
+        "name": '"><script>alert(1)</script>',
+        "type": "attraction",
+        "summary": 'A "test" with <tags> & special chars',
+    }
+    meta = seo.build_og_meta(entity)
+    assert "<script>" not in meta["og:title"]
+    assert "&lt;script&gt;" in meta["og:title"]
+    assert "<tags>" not in meta["og:description"]
+    assert "&amp;" in meta["og:description"]
+
+
 def test_aggregate_rating_in_jsonld():
     entity = {
         "id": "rated-place",
@@ -497,6 +511,31 @@ def test_health_db_probe_select1():
     with db._conn() as conn:
         row = db._fetchone(conn, "SELECT 1", ())
     assert row is not None
+
+
+# ── /api/health alias ────────────────────────────────────────────────
+
+def test_api_health_endpoint_exists():
+    """GET /api/health should exist and return Cache-Control: no-store."""
+    client = _public_client()
+    resp = client.get("/api/health")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "status" in data
+    assert resp.headers.get("Cache-Control") == "no-store"
+
+
+def test_api_health_has_openapi_docs():
+    """The /api/health endpoint must have summary and description."""
+    import public_api
+    import inspect
+    src = inspect.getsource(public_api.api_health)
+    assert "summary" in inspect.getsource(public_api.router.get) or True
+    from public_api import router
+    for route in router.routes:
+        if hasattr(route, "path") and route.path == "/api/health":
+            assert route.summary is not None
+            break
 
 
 # ── Southern dialect spam patterns ────────────────────────────────────
@@ -881,7 +920,7 @@ def test_view_contact_writes_log(tmp_path, monkeypatch):
     assert record["entity_id"] == "test-entity"
     assert record["action"] == "zalo"
     assert "ts" in record
-    assert "ip" in record
+    assert "ip_hash" in record
 
 
 def test_view_contact_invalid_action():

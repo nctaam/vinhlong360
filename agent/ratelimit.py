@@ -7,11 +7,14 @@ luận/upload ảnh). Login/OTP đã có limit riêng trong auth.py.
     check_rate(f"post:{user_id}", limit=10, window=600)   # raise HTTPException(429) nếu vượt
 """
 import logging
+import threading
 import time
 
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
+
+_rl_lock = threading.Lock()
 
 # key -> list[timestamp] (chỉ giữ trong cửa sổ hiện tại)
 _buckets: dict[str, list[float]] = {}
@@ -26,33 +29,37 @@ def check_rate(key: str, limit: int, window: int,
                msg: str = "Bạn thao tác quá nhanh. Vui lòng thử lại sau.") -> None:
     """Ghi nhận 1 lượt cho `key`; raise HTTPException(429) nếu đã đạt `limit` trong `window` giây."""
     now = _now()
-    hits = [t for t in _buckets.get(key, []) if now - t < window]
-    if len(hits) >= limit:
+    with _rl_lock:
+        hits = [t for t in _buckets.get(key, []) if now - t < window]
+        if len(hits) >= limit:
+            _buckets[key] = hits
+            retry_after = int(window - (now - hits[0])) + 1
+            raise HTTPException(
+                429, msg,
+                headers={
+                    "Retry-After": str(max(1, retry_after)),
+                    "X-RateLimit-Limit": str(limit),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(int(hits[0] + window)),
+                },
+            )
+        hits.append(now)
         _buckets[key] = hits
-        retry_after = int(window - (now - hits[0])) + 1
-        raise HTTPException(
-            429, msg,
-            headers={
-                "Retry-After": str(max(1, retry_after)),
-                "X-RateLimit-Limit": str(limit),
-                "X-RateLimit-Remaining": "0",
-                "X-RateLimit-Reset": str(int(hits[0] + window)),
-            },
-        )
-    hits.append(now)
-    _buckets[key] = hits
-    if len(_buckets) > _MAX_KEYS:
-        logger.warning("Rate-limit buckets at capacity (%d); running GC", len(_buckets))
-        _gc(now)
+        if len(_buckets) > _MAX_KEYS:
+            logger.warning("Rate-limit buckets at capacity (%d); running GC", len(_buckets))
+            _gc(now)
 
 
 def _gc(now: float | None = None) -> None:
     """Dọn các bucket rỗng/hết hạn (gọi cơ hội khi dict phình to)."""
     now = now if now is not None else _now()
-    # window lớn nhất đang dùng ~600s; bucket không có timestamp nào < 3600s coi như chết
     dead = [k for k, ts in _buckets.items() if not ts or now - ts[-1] > 3600]
     for k in dead:
         _buckets.pop(k, None)
+    if len(_buckets) > _MAX_KEYS:
+        by_age = sorted(_buckets.items(), key=lambda kv: kv[1][-1] if kv[1] else 0)
+        for k, _ in by_age[:len(_buckets) - _MAX_KEYS + _MAX_KEYS // 10]:
+            _buckets.pop(k, None)
 
 
 def check_rate_ip(ip: str, action: str, limit: int, window: int,
@@ -103,31 +110,31 @@ def check_rate_adaptive(key: str, base_limit: int, base_window: int,
     3rd+ violations: limit quartered, window doubled
     """
     now = _now()
-    violation_count = len([t for t in _violations.get(key, []) if now - t < _VIOLATION_DECAY])
+    with _rl_lock:
+        violation_count = len([t for t in _violations.get(key, []) if now - t < _VIOLATION_DECAY])
 
-    if violation_count >= 3:
-        effective_limit = max(1, base_limit // 4)
-        effective_window = base_window * 2
-    elif violation_count >= 1:
-        effective_limit = max(1, base_limit // 2)
-        effective_window = base_window
-    else:
-        effective_limit = base_limit
-        effective_window = base_window
+        if violation_count >= 3:
+            effective_limit = max(1, base_limit // 4)
+            effective_window = base_window * 2
+        elif violation_count >= 1:
+            effective_limit = max(1, base_limit // 2)
+            effective_window = base_window
+        else:
+            effective_limit = base_limit
+            effective_window = base_window
 
-    hits = [t for t in _buckets.get(key, []) if now - t < effective_window]
-    if len(hits) >= effective_limit:
+        hits = [t for t in _buckets.get(key, []) if now - t < effective_window]
+        if len(hits) >= effective_limit:
+            _buckets[key] = hits
+            if key not in _violations:
+                _violations[key] = []
+            _violations[key].append(now)
+            _violations[key] = [t for t in _violations[key] if now - t < _VIOLATION_DECAY]
+            raise HTTPException(429, msg)
+        hits.append(now)
         _buckets[key] = hits
-        # Record violation
-        if key not in _violations:
-            _violations[key] = []
-        _violations[key].append(now)
-        _violations[key] = [t for t in _violations[key] if now - t < _VIOLATION_DECAY]
-        raise HTTPException(429, msg)
-    hits.append(now)
-    _buckets[key] = hits
-    if len(_buckets) > _MAX_KEYS:
-        _gc(now)
+        if len(_buckets) > _MAX_KEYS:
+            _gc(now)
 
 
 # ── Global IP budget (total requests across all endpoints) ──
@@ -145,16 +152,17 @@ def check_global_ip_budget(ip: str,
     to evade per-endpoint limits.
     """
     now = _now()
-    hits = [t for t in _ip_global.get(ip, []) if now - t < _IP_GLOBAL_WINDOW]
-    if len(hits) >= _IP_GLOBAL_LIMIT:
+    with _rl_lock:
+        hits = [t for t in _ip_global.get(ip, []) if now - t < _IP_GLOBAL_WINDOW]
+        if len(hits) >= _IP_GLOBAL_LIMIT:
+            _ip_global[ip] = hits
+            raise HTTPException(429, msg)
+        hits.append(now)
         _ip_global[ip] = hits
-        raise HTTPException(429, msg)
-    hits.append(now)
-    _ip_global[ip] = hits
-    if len(_ip_global) > _MAX_KEYS:
-        dead = [k for k, ts in _ip_global.items() if not ts or now - ts[-1] > _IP_GLOBAL_WINDOW * 2]
-        for k in dead:
-            _ip_global.pop(k, None)
+        if len(_ip_global) > _MAX_KEYS:
+            dead = [k for k, ts in _ip_global.items() if not ts or now - ts[-1] > _IP_GLOBAL_WINDOW * 2]
+            for k in dead:
+                _ip_global.pop(k, None)
 
 
 def get_violation_count(key: str) -> int:
@@ -211,20 +219,20 @@ def check_coordinated_attack(resource: str, ip: str) -> dict:
     Returns {is_coordinated: bool, unique_ips: int, window: int}
     """
     now = _now()
-    entries = _resource_access.get(resource, [])
-    entries = [(t, addr) for t, addr in entries if now - t < _COORD_WINDOW]
-    entries.append((now, ip))
-    _resource_access[resource] = entries
+    with _rl_lock:
+        entries = _resource_access.get(resource, [])
+        entries = [(t, addr) for t, addr in entries if now - t < _COORD_WINDOW]
+        entries.append((now, ip))
+        _resource_access[resource] = entries
 
-    # GC
-    if len(_resource_access) > 10_000:
-        cutoff = now - _COORD_WINDOW
-        dead = [k for k, v in _resource_access.items()
-                if not v or v[-1][0] < cutoff]
-        for k in dead:
-            _resource_access.pop(k, None)
+        if len(_resource_access) > 10_000:
+            cutoff = now - _COORD_WINDOW
+            dead = [k for k, v in _resource_access.items()
+                    if not v or v[-1][0] < cutoff]
+            for k in dead:
+                _resource_access.pop(k, None)
 
-    unique_ips = len({addr for _, addr in entries})
+        unique_ips = len({addr for _, addr in entries})
     return {
         "is_coordinated": unique_ips >= _COORD_THRESHOLD,
         "unique_ips": unique_ips,
@@ -248,16 +256,15 @@ def detect_slow_attack(ip: str) -> dict:
     Returns {is_slow_attack: bool, request_count: int, regularity: float}
     """
     now = _now()
-    hits = _slow_rate_tracking.get(ip, [])
-    hits = [t for t in hits if now - t < _SLOW_RATE_WINDOW]
-    hits.append(now)
-    _slow_rate_tracking[ip] = hits
+    with _rl_lock:
+        hits = _slow_rate_tracking.get(ip, [])
+        hits = [t for t in hits if now - t < _SLOW_RATE_WINDOW]
+        hits.append(now)
+        _slow_rate_tracking[ip] = hits
 
     if len(hits) < _SLOW_RATE_THRESHOLD:
         return {"is_slow_attack": False, "request_count": len(hits), "regularity": 0.0}
 
-    # Calculate interval regularity — if intervals are suspiciously uniform
-    # it suggests an automated tool
     if len(hits) >= 3:
         intervals = [hits[i+1] - hits[i] for i in range(len(hits)-1)]
         if intervals:
@@ -297,22 +304,23 @@ def check_rate_token_bucket(
     Raises HTTPException(429) when bucket is empty.
     """
     now = _now()
-    tokens, last_refill = _token_buckets.get(key, (float(capacity), now))
+    with _rl_lock:
+        tokens, last_refill = _token_buckets.get(key, (float(capacity), now))
 
-    elapsed = now - last_refill
-    tokens = min(capacity, tokens + elapsed * refill_rate)
+        elapsed = now - last_refill
+        tokens = min(capacity, tokens + elapsed * refill_rate)
 
-    if tokens < 1.0:
-        raise HTTPException(429, msg)
+        if tokens < 1.0:
+            raise HTTPException(429, msg)
 
-    tokens -= 1.0
-    _token_buckets[key] = (tokens, now)
+        tokens -= 1.0
+        _token_buckets[key] = (tokens, now)
 
-    if len(_token_buckets) > _MAX_KEYS:
-        cutoff = now - 3600
-        dead = [k for k, (_, t) in _token_buckets.items() if t < cutoff]
-        for k in dead:
-            _token_buckets.pop(k, None)
+        if len(_token_buckets) > _MAX_KEYS:
+            cutoff = now - 3600
+            dead = [k for k, (_, t) in _token_buckets.items() if t < cutoff]
+            for k in dead:
+                _token_buckets.pop(k, None)
 
 
 # ── Rate limit exemption list ──
@@ -381,31 +389,32 @@ def check_rate_load_aware(
 def gc_all() -> dict:
     """Periodic GC for all in-memory rate-limit dicts. Call from scheduler."""
     now = _now()
-    before = sum(len(d) for d in [_buckets, _violations, _ip_global, _resource_access,
-                                    _slow_rate_tracking, _token_buckets, _penalty_box,
-                                    _penalty_violations, _sliding_counters])
-    _gc(now)
-    cutoff_global = now - _IP_GLOBAL_WINDOW * 2
-    for k in [k for k, ts in _ip_global.items() if not ts or now - ts[-1] > cutoff_global]:
-        _ip_global.pop(k, None)
-    for k in [k for k, ts in _violations.items() if not ts or now - ts[-1] > _VIOLATION_DECAY]:
-        _violations.pop(k, None)
-    for k in [k for k, v in _resource_access.items() if not v or v[-1][0] < now - _COORD_WINDOW]:
-        _resource_access.pop(k, None)
-    for k in [k for k, ts in _slow_rate_tracking.items() if not ts or now - ts[-1] > _SLOW_RATE_WINDOW]:
-        _slow_rate_tracking.pop(k, None)
-    for k in [k for k, (_, t) in _token_buckets.items() if t < now - 3600]:
-        _token_buckets.pop(k, None)
-    for ip in [ip for ip, t in _penalty_box.items() if now >= t]:
-        _penalty_box.pop(ip, None)
-    for ip in [ip for ip, cnt in _penalty_violations.items()
-               if cnt <= 0 or ip not in _penalty_box]:
-        _penalty_violations.pop(ip, None)
-    for k in [k for k, v in _sliding_counters.items() if not v or v[-1][0] < now - 3600]:
-        _sliding_counters.pop(k, None)
-    after = sum(len(d) for d in [_buckets, _violations, _ip_global, _resource_access,
-                                   _slow_rate_tracking, _token_buckets, _penalty_box,
-                                   _penalty_violations, _sliding_counters])
+    with _rl_lock:
+        before = sum(len(d) for d in [_buckets, _violations, _ip_global, _resource_access,
+                                        _slow_rate_tracking, _token_buckets, _penalty_box,
+                                        _penalty_violations, _sliding_counters])
+        _gc(now)
+        cutoff_global = now - _IP_GLOBAL_WINDOW * 2
+        for k in [k for k, ts in _ip_global.items() if not ts or now - ts[-1] > cutoff_global]:
+            _ip_global.pop(k, None)
+        for k in [k for k, ts in _violations.items() if not ts or now - ts[-1] > _VIOLATION_DECAY]:
+            _violations.pop(k, None)
+        for k in [k for k, v in _resource_access.items() if not v or v[-1][0] < now - _COORD_WINDOW]:
+            _resource_access.pop(k, None)
+        for k in [k for k, ts in _slow_rate_tracking.items() if not ts or now - ts[-1] > _SLOW_RATE_WINDOW]:
+            _slow_rate_tracking.pop(k, None)
+        for k in [k for k, (_, t) in _token_buckets.items() if t < now - 3600]:
+            _token_buckets.pop(k, None)
+        for ip in [ip for ip, t in _penalty_box.items() if now >= t]:
+            _penalty_box.pop(ip, None)
+        for ip in [ip for ip, cnt in _penalty_violations.items()
+                   if cnt <= 0 or ip not in _penalty_box]:
+            _penalty_violations.pop(ip, None)
+        for k in [k for k, v in _sliding_counters.items() if not v or v[-1][0] < now - 3600]:
+            _sliding_counters.pop(k, None)
+        after = sum(len(d) for d in [_buckets, _violations, _ip_global, _resource_access,
+                                       _slow_rate_tracking, _token_buckets, _penalty_box,
+                                       _penalty_violations, _sliding_counters])
     return {"before": before, "after": after, "freed": before - after}
 
 
@@ -436,23 +445,26 @@ _PENALTY_DURATION = 600  # 10 minutes
 def add_to_penalty_box(ip: str, duration: int = 0):
     """Put an IP in the penalty box (temporary ban)."""
     dur = duration if duration > 0 else _PENALTY_DURATION
-    _penalty_box[ip] = _now() + dur
+    with _rl_lock:
+        _penalty_box[ip] = _now() + dur
 
 
 def is_in_penalty_box(ip: str) -> bool:
     """Check if an IP is currently in the penalty box."""
-    expiry = _penalty_box.get(ip)
-    if expiry is None:
-        return False
-    if _now() >= expiry:
-        _penalty_box.pop(ip, None)
-        return False
-    return True
+    with _rl_lock:
+        expiry = _penalty_box.get(ip)
+        if expiry is None:
+            return False
+        if _now() >= expiry:
+            _penalty_box.pop(ip, None)
+            return False
+        return True
 
 
 def remove_from_penalty_box(ip: str):
     """Manually remove an IP from the penalty box."""
-    _penalty_box.pop(ip, None)
+    with _rl_lock:
+        _penalty_box.pop(ip, None)
 
 
 _penalty_violations: dict[str, int] = {}
@@ -473,9 +485,10 @@ def check_rate_with_penalty(
     try:
         check_rate(key, limit, window)
     except HTTPException:
-        _penalty_violations[ip] = _penalty_violations.get(ip, 0) + 1
-        if _penalty_violations[ip] >= penalty_after:
-            add_to_penalty_box(ip)
+        with _rl_lock:
+            _penalty_violations[ip] = _penalty_violations.get(ip, 0) + 1
+            if _penalty_violations[ip] >= penalty_after:
+                _penalty_box[ip] = _now() + _PENALTY_DURATION
         raise
 
 
@@ -545,7 +558,7 @@ def _fire_callbacks(key: str, ip: str = "", limit: int = 0):
         try:
             cb(key, ip, limit)
         except Exception:
-            pass
+            logger.debug("Rate limit callback failed", exc_info=True)
 
 
 def check_rate_with_callback(

@@ -213,6 +213,26 @@ class TestOpenRedirectPrevention:
         result = validate_redirect_url("https://trusted.com/ok", allowed_hosts=hosts)
         assert result["safe"] is True
 
+    def test_javascript_with_whitespace_bypass(self):
+        from auth_middleware import validate_redirect_url
+        result = validate_redirect_url("java\nscript:alert(1)")
+        assert result["safe"] is False
+
+    def test_javascript_with_tab_bypass(self):
+        from auth_middleware import validate_redirect_url
+        result = validate_redirect_url("java\tscript:alert(1)")
+        assert result["safe"] is False
+
+    def test_javascript_uppercase_blocked(self):
+        from auth_middleware import validate_redirect_url
+        result = validate_redirect_url("JAVASCRIPT:alert(1)")
+        assert result["safe"] is False
+
+    def test_vbscript_blocked(self):
+        from auth_middleware import validate_redirect_url
+        result = validate_redirect_url("vbscript:MsgBox")
+        assert result["safe"] is False
+
 
 # ============================================================================
 #  Layer 6: Path Traversal Detection
