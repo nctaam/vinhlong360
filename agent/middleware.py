@@ -321,7 +321,7 @@ response_tracker = ResponseTimeTracker()
 class ErrorTracker:
     """Track errors for circuit-breaking."""
 
-    def __init__(self, threshold: int = 10, window_seconds: int = 300):
+    def __init__(self, threshold: int = 50, window_seconds: int = 300):
         self.threshold = threshold
         self.window = window_seconds
         self._errors: list[dict] = []

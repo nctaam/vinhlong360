@@ -2450,6 +2450,15 @@ async def transparency_report(response: Response):
     }
 
 
+# ── Health (alias for /health under /api prefix) ────────────────────────
+@router.get("/health", tags=["health"])
+async def api_health():
+    """Proxy to the main /health endpoint — the admin dashboard calls /api/health."""
+    from server import health
+    data = await health()
+    return JSONResponse(data, headers={"Cache-Control": "no-store"})
+
+
 # ── Route ordering fix ───────────────────────────────────────────────────
 # Static paths like /entities/map must match BEFORE /entities/{entity_id}.
 # Starlette resolves routes in definition order, so late-defined static
