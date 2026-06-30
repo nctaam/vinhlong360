@@ -123,6 +123,47 @@
 .dark .status-resolved { background: rgba(var(--secondary-rgb), .18); color: var(--secondary-fg-strong, #34d399); }
 .dark .status-dismissed { background: rgba(255,255,255,.06); color: rgba(255,255,255,.4); }
 
+/* ── Homepage hero + category grid ── */
+/* Search capsule — lift glass on dark bg */
+.dark .home .hero-search { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.28); }
+.dark .home .hero-search:focus-within { border-color: rgba(var(--accent-rgb), .7); }
+.dark .home .hero-search input { background: var(--bg-warm); color: var(--ink); }
+.dark .home .hero-search input::placeholder { color: rgba(255,255,255,.45); }
+
+/* Hero pills — boost contrast */
+.dark .hero-pill { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.32); }
+.dark .hero-pill:hover { background: rgba(255,255,255,.28); }
+
+/* Stats bar — lift glass */
+.dark .hero-stats { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.25); }
+.dark .hero-stat-label { color: rgba(255,255,255,.8); }
+
+/* Feature card — lift glass */
+.dark .hf-card { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.3); }
+.dark .hf-card:hover { background: rgba(255,255,255,.22); }
+
+/* Hero scrim — slightly stronger on dark to ensure text readability */
+.dark .home .hero-scrim {
+  background:
+    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.22) 0%, rgba(var(--accent-rgb),.05) 34%, transparent 60%),
+    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.24) 0%, transparent 58%),
+    linear-gradient(to top, rgba(0,0,0,.65) 0%, rgba(0,0,0,.15) 32%, transparent 55%);
+}
+
+/* Category tiles — stronger border/bg in dark */
+.dark .cat-tile { background: var(--surface-container); border-color: rgba(255,255,255,.1); }
+.dark .cat-tile:hover { background: var(--surface-container-high); border-color: rgba(255,255,255,.18); box-shadow: var(--shadow-md); }
+.dark .cat-label { color: var(--ink); }
+
+/* Section headings */
+.dark .home .section-head h2 { color: var(--ink); }
+.dark .home .section-head .section-link { color: var(--primary-fg); }
+
+/* Event cards */
+.dark .ev-main { border-color: rgba(255,255,255,.12); }
+.dark .ev-side { border-color: rgba(255,255,255,.08); }
+.dark .ev-side:hover { background: rgba(255,255,255,.04); }
+
 /* ── Admin: data quality ── */
 .dark .dq-diff-item { background: rgba(255,255,255,.04); }
 .dark .dq-apply-result { background: rgba(33,150,83,.1); border-color: var(--primary); color: var(--primary); }
