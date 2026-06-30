@@ -2017,7 +2017,7 @@ async def feed_new_since(
             "since": since,
         }
     result = await asyncio.to_thread(_query)
-    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=30"
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     return result
 
 
@@ -2257,7 +2257,7 @@ async def user_engagement_stats(user_id: str, response: Response):
         }
 
     result = await asyncio.to_thread(_query)
-    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=30"
+    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     return result
 
 

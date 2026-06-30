@@ -256,6 +256,9 @@ class Database:
                         "CREATE INDEX IF NOT EXISTS idx_entity_changes_entity ON entity_changes(entity_id)",
                         "CREATE INDEX IF NOT EXISTS idx_entities_type_area ON entities(type, area)",
                         "CREATE INDEX IF NOT EXISTS idx_relationships_type ON relationships(type)",
+                        "CREATE INDEX IF NOT EXISTS idx_comments_user ON comments(user_id)",
+                        "CREATE INDEX IF NOT EXISTS idx_posts_user_draft ON posts(user_id, is_draft)",
+                        "CREATE INDEX IF NOT EXISTS idx_user_hidden_posts_user ON user_hidden_posts(user_id, post_id)",
                     ]:
                         try:
                             cur.execute(idx_sql)
