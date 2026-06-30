@@ -2038,7 +2038,7 @@ class TestPublicAnnouncements:
 
     def test_requires_pg(self):
         src = inspect.getsource(__import__("public_api").list_active_announcements)
-        assert "_require_pg" in src
+        assert "require_pg" in src
 
     def test_has_limit(self):
         src = inspect.getsource(__import__("public_api").list_active_announcements)
@@ -2112,7 +2112,7 @@ class TestUserEngagementStats:
 
     def test_requires_pg(self):
         src = inspect.getsource(__import__("public_api").user_engagement_stats)
-        assert "_require_pg" in src
+        assert "require_pg" in src
 
     def test_checks_user_exists(self):
         src = inspect.getsource(__import__("public_api").user_engagement_stats)
@@ -2157,7 +2157,7 @@ class TestEntityRatingBreakdown:
 
     def test_requires_pg(self):
         src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
-        assert "_require_pg" in src
+        assert "require_pg" in src
 
     def test_returns_breakdown_dict(self):
         src = inspect.getsource(__import__("public_api").get_entity_rating_breakdown)
@@ -2197,7 +2197,7 @@ class TestEntityTrending:
 
     def test_requires_pg(self):
         src = inspect.getsource(__import__("public_api").entities_trending)
-        assert "_require_pg" in src
+        assert "require_pg" in src
 
     def test_has_days_param(self):
         src = inspect.getsource(__import__("public_api").entities_trending)

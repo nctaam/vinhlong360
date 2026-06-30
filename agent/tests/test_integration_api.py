@@ -202,13 +202,15 @@ class TestEntityDetail:
         assert "relationships" in data
         assert "total" in data
 
-    @pg_only
-    def test_entity_stats(self):
+    def test_entity_stats_pg_guard(self):
         eid = self._get_first_entity_id()
         if not eid:
             pytest.skip("No entities in knowledge base")
         resp = _public_client().get(f"/api/entities/{eid}/stats")
-        assert resp.status_code in (200, 404)
+        if not db._use_pg:
+            assert resp.status_code == 503
+        else:
+            assert resp.status_code in (200, 404)
 
     def test_entity_gallery(self):
         eid = self._get_first_entity_id()
@@ -230,6 +232,23 @@ class TestEntityDetail:
             pytest.skip("No entities in knowledge base")
         resp = _public_client().get(f"/api/entities/{eid}/nearby")
         assert resp.status_code in (200, 404)
+
+
+class TestEntityReviews:
+    def _get_first_entity_id(self):
+        resp = _public_client().get("/api/entities?limit=1")
+        entities = resp.json().get("entities", [])
+        return entities[0]["id"] if entities else None
+
+    def test_entity_reviews_pg_guard(self):
+        eid = self._get_first_entity_id()
+        if not eid:
+            pytest.skip("No entities in knowledge base")
+        resp = _public_client().get(f"/api/entities/{eid}/reviews")
+        if not db._use_pg:
+            assert resp.status_code == 503
+        else:
+            assert resp.status_code == 200
 
 
 class TestEntityTypes:
@@ -450,17 +469,19 @@ class TestFeatured:
 
 
 class TestCollections:
-    @pg_only
-    def test_collections_200(self):
+    def test_collections_pg_guard(self):
         resp = _public_client().get("/api/collections")
-        assert resp.status_code == 200
+        if not db._use_pg:
+            assert resp.status_code == 503
+        else:
+            assert resp.status_code == 200
 
-    def test_collections_endpoint_exists(self):
-        pairs = set()
-        for r in _public_client().app.routes:
-            for m in (getattr(r, "methods", None) or set()):
-                pairs.add((m, r.path))
-        assert ("GET", "/api/collections") in pairs
+    def test_collection_slug_pg_guard(self):
+        resp = _public_client().get("/api/collections/test-slug")
+        if not db._use_pg:
+            assert resp.status_code == 503
+        else:
+            assert resp.status_code in (200, 404)
 
 
 # ═══════════════════════════════════════════════════════════════════════════

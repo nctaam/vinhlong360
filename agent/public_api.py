@@ -430,6 +430,7 @@ async def get_entity(
             description="Returns aggregated social stats for an entity: review count, average rating, post count, bookmark count, and follower count.")
 async def get_entity_stats(entity_id: str, response: Response):
     validate_path_id(entity_id, "entity_id")
+    require_pg()
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     ph = db._ph
     def _query():
@@ -481,7 +482,7 @@ async def get_entity_rating_breakdown(entity_id: str, response: Response):
     """5-star rating distribution for an entity."""
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
-    _require_pg()
+    require_pg()
     ph = db._ph
 
     def _query():
@@ -537,6 +538,7 @@ async def get_entity_reviews(
     user=Depends(get_current_user),
 ):
     validate_path_id(entity_id, "entity_id")
+    require_pg()
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
     ph = db._ph
     offset = (page - 1) * limit
@@ -2022,8 +2024,8 @@ async def feed_new_since(
             summary="List public collections",
             description="Returns published editorial collections sorted by display order. Each collection includes title, description, cover image, and entity IDs.")
 async def list_public_collections(response: Response, limit: int = Query(20, ge=1, le=100)):
+    require_pg()
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
-    """Published collections — sorted by sort_order."""
     ph = db._ph
     def _query():
         with db._conn() as conn:
@@ -2042,8 +2044,8 @@ async def list_public_collections(response: Response, limit: int = Query(20, ge=
             summary="Get collection by slug",
             description="Returns a single published collection by its URL slug with entity IDs resolved to full entity summaries.")
 async def get_collection_by_slug(slug: str, response: Response):
+    require_pg()
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
-    """Public collection detail by slug — resolve entity_ids to summaries."""
     validate_path_id(slug, "slug")
     ph = db._ph
     def _query():
@@ -2074,7 +2076,7 @@ async def get_collection_by_slug(slug: str, response: Response):
 async def list_active_announcements(response: Response, limit: int = Query(10, ge=1, le=50)):
     """Active announcements for display to users."""
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
-    _require_pg()
+    require_pg()
     ph = db._ph
 
     def _query():
@@ -2158,7 +2160,7 @@ async def entities_trending(
     response: Response = None,
 ):
     """Entities with most activity (posts+reviews+bookmarks) in recent days."""
-    _require_pg()
+    require_pg()
     ph = db._ph
     if response:
         response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
@@ -2212,7 +2214,7 @@ async def entities_trending(
 async def user_engagement_stats(user_id: str, response: Response):
     """Lightweight engagement stats for a user profile card."""
     validate_path_id(user_id, "user_id")
-    _require_pg()
+    require_pg()
     ph = db._ph
 
     def _query():
