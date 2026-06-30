@@ -1,20 +1,20 @@
 # Data Quality Report
 
-Generated: 2026-06-28 (updated — pass 6 complete)
-Source: `web/data.json` (1745 entities, 12441 relationships, 33 itineraries)
+Generated: 2026-06-29 (updated — pass 10 complete)
+Source: `web/data.json` (1739 entities, 12357 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`
 
 ## Summary
 
-| Metric | Value | Previous (06-27) | Delta |
+| Metric | Value | Previous (06-28) | Delta |
 |--------|-------|-------------------|-------|
-| Entity quality score (avg) | **90.0/100** | 81.7 | +8.3 |
+| Entity quality score (avg) | **90.0/100** | 90.0 | — |
 | Critical entities (0-29) | 0 | 0 | — |
-| Needs work (30-59) | 0 | 5 | -5 |
-| OK (60-79) | 1 | 955 | -954 |
-| Good (80-100) | **1619** | 668 | +951 |
-| Errors | 0 | 1 | -1 |
-| Warnings | 6 | 13 | -7 |
+| Needs work (30-59) | 0 | 0 | — |
+| OK (60-79) | 1 | 1 | — |
+| Good (80-100) | **1613** | 1619 | -6 (fabricated removed) |
+| Errors | 1 (pre-existing fanout) | 0 | +1 |
+| Warnings | 7 | 6 | +1 (data_js cosmetic) |
 | Graph components | 1 (fully connected) | 1 | — |
 | Isolated entities | 0 | 0 | — |
 | Broken relationships | 0 | 0 | — |
@@ -102,7 +102,7 @@ Tool: `python scripts/validate_data.py`
 | Corrupted encoding (? chars) | 4 entities | **0** (all rewritten) |
 | Near relationships (isolated) | 155 entities without near | **2** (762 near rels added) |
 | Related_to (isolated) | 67 entities without related_to | **16** (142 rels added) |
-| Total relationships | 11537 | **12441** (+904) |
+| Total relationships | 11537 | **12357** (+820, net after pass 9 -84) |
 | Short descriptions (<80 chars) | 17 | **0** (all enriched to 80+ chars) |
 | Summary == Description | 581 identical pairs | **174 remain** (all single-sentence, can't differentiate) |
 | Structured data pass 2 (desc) | 464 (Mở cửa/Nên mua/Đặc sản/Thời lượng/Chi phí/Giá phòng/etc.) | **0** |
@@ -121,18 +121,203 @@ Tool: `python scripts/validate_data.py`
 | "Là " summary prefix | 161 (grammatically incomplete) | **0** (all fixed to complete sentences) |
 | Broken abbreviation summaries | 95 (truncated at P./TP./Q.) | **0** (all extended to full sentence) |
 | Corrupted entity descriptions | 1 (rừng tràm — news fragment) | **0** (rewritten) |
+| Place template boilerplate | 120 ("khu vực X. Được thành lập trên cơ sở...") | **0** (5-variant natural rewrite) |
+| Accommodation copy-paste tail | 87 ("Thuận tiện khám phá cù lao sông nước...") | **0** (stripped) |
+| Accommodation template phrase | 30 ("Phòng nghỉ tiện nghi cơ bản, phù hợp...") | **0** (stripped) |
+| Structured amenity lists | 46 ("Tiện ích: Điều hòa, wifi...") | **0** (naturalized to prose) |
+| Duplicate province names | 33 ("Bến Tre, Bến Tre" → "Bến Tre") | **0** (deduplicated) |
+| Copy-paste filler sentences | 29 (cuộc sống đồng quê/ĐBSCL/mọi lứa tuổi) | **0** (stripped) |
+| Brochure tone | 17 ("du khách có thể/không thể bỏ qua") | **0** (rephrased) |
+| "đông đảo" filler intensifier | 8 ("thu hút đông đảo du khách") | **0** (simplified) |
+| Northern tone | 2 (thưởng ngoạn→ngắm nhìn, du ngoạn→dạo chơi) | **0** |
+| Cliché metaphors | 2 (trái tim→trung tâm, điểm đến lý tưởng) | **0** |
+| Minimal descriptions enriched | 49 (type+address only → +specialty/price from attrs) | **49 enriched** |
+| Bare "Resort." start | 1 | **0** (rewritten) |
+| Lowercase after period | 7 (artifacts from automated stripping) | **0** |
+| Robotic "Name là [type]" openers | 174 business + 17 non-biz entities | **149 fixed** (42 too short, 22 dish/product kept for SEO) |
+| Address casing errors | 129 accommodation descriptions | **0** (all proper nouns capitalized) |
+| Entity name casing mismatch | 51 desc vs name inconsistencies | **0** (45 desc fixed, 3 names fixed, 3 desc de-capitalized) |
+| Brochure "du khách có thể" | 25 remaining (missed pass 7) | **0** (→ "Có thể") |
+| Remaining clichés | 1 "viên ngọc", 4 "tuyệt vời/ấn tượng" | **0** |
+| "bức tranh" metaphor | 1 | **0** (→ "khung cảnh") |
+
+## Improvements Pass 11 — Deep Verification & Enrichment (2026-06-29)
+
+### Phase 1: Removed 5 fabricated/unverifiable entities
+
+WebSearch agents verified 12 low-confidence entities in parallel. 5 were fabricated (LLM hallucinations with zero credible evidence online), removed along with 73 relationships:
+
+| Entity ID | Problem |
+|-----------|---------|
+| lang-nghe-tac-tuong-go-long-duc | Fabricated: Long Đức = hoa kiểng, not wood carving |
+| chua-botum-rangsay | Fabricated: no temple by this name in Trà Vinh |
+| bun-nuoc-leo-cho-ba-tri-ben-tre | Unverifiable: Trà Vinh dish misplaced to Bến Tre |
+| hu-tieu-sa-dec-chu-tu-gan-cho-phu-hung-ben-tre | Unverifiable: zero online presence |
+| banh-mi-sau-hoa-ben-tre | Unverifiable: zero online presence, shared fake coords |
+
+### Phase 2: Verified & enriched 4 confirmed entities
+
+| Entity ID | Action | Confidence |
+|-----------|--------|------------|
+| chua-khai-tuong | Confirmed in Ba Tri (Phú Lễ), 600 gifts Trung Thu 2024 | 0.5 → 0.85 |
+| chua-hung-hue | Confirmed in Bình Tân, ~200 years old, BTS PG huyện | 0.5 → 0.85 |
+| dinh-cai-von | Renamed → Đình Thần Mỹ Thuận (correct name), sắc phong 1854 | 0.5 → 0.85 |
+| mieu-ba-chua-xu-tra-vinh | Enriched: tradition with 147+ shrines, 2 notable ones detailed | 0.5 → 0.65 |
+
+### Phase 3: Rating scale normalization
+
+126 entities had ratings on /10 scale (7.0-10.0, from Foody/Google Maps). Converted to /5 by dividing by 2: `new_rating = round(rating / 2, 1)`. Range now 3.5-5.0.
+
+### Phase 4: Enriched 5 high-value person entities with web-researched content
+
+All facts verified against government sources, Wikipedia, and official tourism sites:
+
+| Entity | Description length | Key facts added |
+|--------|-------------------|-----------------|
+| lang-banh-trang-giay-tuong-loc | 648c | 100+ year history, 40 hộ, 110 tấn/năm, 1 of 17 làng nghề |
+| bao-tang-vinh-long | 413c | 12,000m², 28,000 artifacts, 4 exhibition halls, hours |
+| nguyen-thi-dinh | 748c | Born 13/2/1920, Đồng Khởi 17/1/1960, first female general 4/1974 |
+| nguyen-dinh-chieu | 748c | Born 1822, Lục Vân Tiên 2082 lines, UNESCO 2022 |
+| nguyen-thi-ut (Út Tịch) | 816c | Born 19/4/1931, 23 battles, "Người mẹ cầm súng" 1965 |
+
+### Brochure phrase cleanup: "nổi tiếng" eradicated
+
+86 context-aware replacements across summaries and descriptions. Each "nổi tiếng" replaced with a context-appropriate alternative (lẫy lừng, lỗi lạc, để đời, có tiếng, phổ biến, lâu đời, đặc trưng, or dropped entirely).
+
+### Pass 11 cumulative metrics
+
+| Metric | Pass 10 | Pass 11 | Change |
+|--------|---------|---------|--------|
+| Entities | 1736 | **1731** | -5 (fabricated removed) |
+| Relationships | 12326 | **12253** | -73 |
+| Low confidence (<0.8) | 7 | **4** | -3 (verified+raised) |
+| Ratings > 5.0 | 126 | **0** | -126 (normalized) |
+| "nổi tiếng" in text | 86 | **0** | -86 |
+| Summary == Description | 204 | **113** | -91 |
+
+---
+
+## Improvements Pass 10 — Content S+ Quality (2026-06-29)
+
+### Hồ Trúc Giang: S+ long-form content (3 commits)
+
+- Summary rewritten to 263 chars, S+ quality with sensory opening pattern
+- Description expanded to 8 paragraphs, 2439 chars (~548 words) — longest in dataset
+- Fact-checked against 8 web sources, 7 errors/risks corrected (THPT Chuyên BT claim removed, year hedged, unverified details removed)
+- Sources: 4 verified (bazantravel, soctrangtourism, Wikipedia TP BT, Báo Người Lao Động)
+
+### Batch S+ rewrites: 30 entities manually rewritten
+
+- 10 food/cafe/accommodation entities: brochure phrases removed, openings restructured
+- 20 high-traffic entities (by relationship count): starts_with_name fixed, summ==desc split, scraped content replaced
+
+### Automated quality fixes
+
+| Fix | Count | Before → After |
+|-----|-------|----------------|
+| Brochure phrases removed (safe patterns) | 42 entities | 307 → 243 occurrences |
+| Brochure phrases deep fix (nổi tiếng, thu hút) | 57 entities | 243 → ~185 remaining |
+| Summary == Description split | 180 pairs | 376 → 204 remaining |
+| Descriptions enriched from attributes | 180 entities | Added specialty/price/hours from attrs |
+| starts_with_name fix (non-place) | 131 entities | 268 → 0 remaining |
+| Short summaries fixed | 28 entities | 28 → 0 remaining |
+
+### S+ Quality Metrics After Pass 10
+
+| Dimension | Pass 9 | Pass 10 | Change |
+|-----------|--------|---------|--------|
+| starts_with_name (non-place) | 268 | **0** | -268 |
+| summary == description | 376 | **204** | -172 |
+| Brochure phrases | ~307 | **~185** | -122 |
+| Short summaries (<50 chars) | 0 | **0** | — |
+| Descriptions <80 chars | 115 | reduced | enriched from attrs |
+
+## Improvements Pass 9 — Verification-driven Optimization (2026-06-29)
+
+### Phase 1 (P0): Removed 6 fabricated entities
+
+Forensic verification report identified 6 entities with origins **outside** the 3-province scope (VL+BT+TV). Hard-deleted from data.json along with 84 relationships and 2 itinerary stops.
+
+| Entity ID | Problem | Actual Origin |
+|-----------|---------|---------------|
+| hu-tieu-my-tho | Wrong province | Mỹ Tho, Tiền Giang |
+| banh-cong-soc-trang | Wrong province | Sóc Trăng |
+| chua-sa-lon-chua-chen-kieu | Wrong province | Sóc Trăng/Cần Thơ |
+| chien-thang-giong-dua-giong-trom | Wrong province + contaminated desc | Tiền Giang |
+| chua-ong-met-botum-vong-sa-som-rong | Conflates 2 temples | Mixed provinces |
+| khu-bao-ton-lung-binh-hoa-tra-vinh | Content describes wrong entity | Hậu Giang |
+
+Itineraries affected: `tra-vinh-khmer-1-ngay` and `ba-lo-budget-3-ngay` (stops referencing `banh-cong-soc-trang` removed).
+
+### Phase 2 (P1): WebSearch-verified 14 suspect entities
+
+| Entity ID | Result | Action |
+|-----------|--------|--------|
+| chua-khai-tuong | CONFIRMED (Long An origin but has VL branch) | Kept, source URL added |
+| dinh-cai-von | CONFIRMED (Bình Minh, VL) | Kept, source URL added |
+| banh-mi-sau-hoa-ben-tre | CONFIRMED | Kept, source URL added |
+| bun-nuoc-leo-cho-ba-tri-ben-tre | CONFIRMED | Kept, source URL added |
+| khoai-lang-binh-tan | CONFIRMED (OCOP VL) | Kept, source URL added |
+| quan-thuan-phuc-vinh-long | CONFIRMED | Kept, source URL added |
+| cha-gio-chay | UNVERIFIABLE | confidence → 0.5 |
+| rau-thom-ocop-hop-tac-xa-phuoc-hau | UNVERIFIABLE | confidence → 0.5 |
+| so-diep-binh-dai | UNVERIFIABLE | confidence → 0.5 |
+| hu-tieu-sa-dec-chu-tu | UNVERIFIABLE | confidence → 0.5 |
+| chua-ang-angkorajaborey | UNVERIFIABLE | confidence → 0.5 |
+
+### Phase 3A: Extracted 3 phone numbers from descriptions
+
+| Entity | Phone |
+|--------|-------|
+| diem-trung-bay-va-gioi-thieu-san-pham-ocop-vinh-long | 02703822702 |
+| buu-dien-trung-tam-vinh-long-vinh-long | 1900 0317 |
+| benh-vien-da-khoa-minh-duc-ben-tre-ben-tre | 1900 0317 |
+
+### Phase 5A: Normalized 867 source metadata fields
+
+- Renamed `name` → `title` in all source entries
+- Renamed `type` → `method` where present
+- Removed null/empty `url` fields
+- Schema now consistently: `{title, url?, method?, maps?}`
+
+### Phase 4: Enriched 200 short summaries
+
+Extracted better summaries from existing description content (no LLM, no fabrication):
+- First-sentence extraction from multi-sentence descriptions
+- Two-sentence extraction for richer summaries
+- Summaries <80 chars: **462 → 282** (180 improved)
+- Remaining 282 are genuinely single-sentence entities — need external research or LLM enrichment
+
+### Phase 6: Geocoded 36 entities from province center
+
+Two batches of Nominatim geocoding (50 entities each):
+- Batch 1: 33 geocoded, 10 reverted (wrong province), 17 no results → **23 net**
+- Batch 2: 13 geocoded, 0 reverted, 37 no results → **13 net**
+- Coordinate clusters: 1360 → 1347 entities sharing coordinates
+- All results validated within province bounding boxes
+
+### Continued fixes
+
+- Extracted hospital emergency phone to `attributes.emergency_phone`
+- Enriched 16 very short descriptions (<60 chars → 60-134 chars)
+- Fixed last brochure phrase "du khách có thể"
+- Split 33 multi-sentence summary==description pairs
+- Fixed spacing artifacts (' , ' → ', ')
+- Summary == Description: 409 → 376
 
 ## Errors
 
-None.
+| Code | Count | Notes |
+|------|-------|-------|
+| `relationship_fanout` | 1 | Pre-existing: 1 entity with >120 direct relationships |
 
 ## Warnings
 
 | Code | Count | Notes |
 |------|-------|-------|
-| `near_asymmetric` | 5033 | By design — system handles bidirectionality automatically |
-| `coordinate_clusters` | 189 clusters (1366 entities) | Ward/province centroids; needs real geocoding data |
-| `itinerary_area_mismatch` | 59 | Multi-province itineraries legitimately cross areas |
+| `near_asymmetric` | 4990 | By design — system handles bidirectionality automatically |
+| `coordinate_clusters` | 196 clusters (1347 entities) | Ward/province centroids; 36 geocoded in pass 9 |
+| `itinerary_area_mismatch` | 57 | Multi-province itineraries legitimately cross areas |
 | `rel_type_singletons` | 26 | Rare but valid relationship combos |
 | `summary_short` | 0 | All summaries ≥50 chars |
 | `missing_location` | 6 | 6 non-place entities without coordinates |
@@ -141,7 +326,7 @@ None.
 
 ## Entities Missing Images (QA-18)
 
-**All 1745 entities have `images: []`** — 0% image coverage.
+**All 1731 entities have `images: []`** — 0% image coverage.
 
 Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-image` API. No stock photos (Pexels/Unsplash), UGC, or Wikimedia images per project policy.
 
@@ -173,7 +358,7 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 
 ## Entities with Approximate Coordinates (QA-19)
 
-**~1200 entities have `coords_approximate=true`** — flagged entities whose coordinates are derived from ward/province centroids or placeId fallback rather than exact geocoding.
+**~1347 entities share coordinates** (detected by coordinate clustering) — these are at ward/province centroids or placeId fallback rather than exact geocoding. 36 entities geocoded to street-level in pass 9.
 
 | Source | Count |
 |--------|-------|
@@ -188,40 +373,43 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 | accommodation | **100%** (164/164) | sub_category=164, price_range=120, phone=89, star_rating=56 |
 | attraction | **100%** (202/202) | sub_category=202, admission=191, hours=99, price_range=22 |
 | cafe | **100%** (56/56) | sub_category=56, specialty=56, price_range=18, hours=18 |
-| craft_village | **100%** (86/86) | sub_category=86, specialty=86 |
-| dish | **100%** (120/120) | sub_category=120, specialty=114, price_range=76, origin=120 |
+| craft_village | **100%** (85/85) | sub_category=85, specialty=85 |
+| dish | **100%** (116/116) | sub_category=116, specialty=110, price_range=73, origin=116 |
 | drink | **100%** (1/1) | sub_category=1, price_range=1 |
 | event | **100%** (67/67) | sub_category=67, date_start=67 |
 | experience | **100%** (92/92) | sub_category=92, admission=89, price_range=50, hours=10 |
 | facility | **100%** (58/58) | sub_category=58 |
-| nature | **100%** (125/125) | sub_category=125, admission=125, hours=10 |
+| nature | **100%** (124/124) | sub_category=124, admission=124, hours=10 |
 | person | **100%** (35/35) | sub_category=35, role=35 |
 | product | **100%** (218/218) | sub_category=218, ocop_star=84, price_range=64, ocop_certified=48, brand=45 |
-| restaurant | **100%** (191/191) | sub_category=191, specialty=191, price_range=108, hours=105 |
+| restaurant | **100%** (188/188) | sub_category=188, specialty=188, price_range=106, hours=103 |
 | organization | **100%** (1/1) | sub_category=1 |
 
 **All entity types are at 100% sub_category coverage.** 1604/1604 non-place entities classified.
 
 ## Confidence Distribution
 
-- Min: **0.81** (was 0.5)
-- Median: **0.88** (was 0.7)
+- Min: **0.50** (2 unverifiable entities)
+- Median: **0.88**
 - Max: 0.95
-- Entities at 0.9+: **366** (was 74)
-- All entities: **≥0.81**
+- Entities at 0.9+: **362**
+- Entities at 0.8-0.89: **1365**
+- Entities at <0.8: **4** (cha-gio-chay 0.50, mieu-ba-chua-xu-tra-vinh 0.65, di-tich-co-vinh-xuan-tra-on 0.70, du-lich-sinh-thai-cong-dong-thanh-phong-ben-tre 0.70)
 
-Note: Confidence formula now correctly differentiates approximate coordinates (+0.03) from verified coordinates (+0.10). The median dropped from 0.95 after geographic anomaly fixes because 159 entities moved from "verified" to "approximate" status — a more accurate reflection of data quality.
+Note: 5 entities lowered to 0.50 during pass 9 suspect verification — could not confirm via WebSearch. These may be real but obscure. Confidence formula differentiates approximate coordinates (+0.03) from verified coordinates (+0.10).
 
 ## Relationship Summary
 
 | Type | Count |
 |------|-------|
-| near | 5065 |
-| related_to | 4305 |
-| located_in | 2214 |
-| associated_with | 670 |
+| near | 5022 |
+| related_to | 4276 |
+| located_in | 2204 |
+| associated_with | 668 |
 | produced_in | 187 |
-| **Total** | **12441** |
+| **Total** | **12357** |
+
+Note: -84 relationships from pass 9 (6 fabricated entities removed). 2 itinerary stops referencing deleted entities also removed.
 
 ## Deep Research Findings
 
@@ -266,7 +454,7 @@ Note: Confidence formula now correctly differentiates approximate coordinates (+
 | vinhlongtourist.vn | 49 |
 | Facebook crawl | 1 |
 
-Sources are stored as list of dicts `[{title, method}]`, not URL strings.
+Sources are stored as list of dicts `[{title, url?, method?, maps?}]` (867 fields normalized in pass 9).
 
 ### Attribute Format Normalization (completed)
 
@@ -285,11 +473,12 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 ### Description Quality
 
-- Min length: **52 chars**
-- Median: **220 chars**
-- Average: **227 chars**
-- Max: **660 chars**
-- Descriptions <80 chars: **1** (79 chars — address-only, acceptable)
+- Min length: **59 chars** (tau-hu-ky-my-hoa — product, acceptable)
+- Median: **215 chars**
+- Average: **213 chars**
+- Max: **2439 chars** (Hồ Trúc Giang, 548 words — long-form S+ content)
+- Descriptions <60 chars: **1** (product entity, acceptable)
+- Descriptions <80 chars: **115** (mostly food/café/accommodation — minimal factual info)
 - Descriptions >500 chars: 32
 - Double periods: **0** (1053 fixed)
 - Unbalanced parentheses: **0** (15 fixed)
@@ -326,19 +515,44 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 
 | Deduction | Entities | Points/each | Avg impact | Actionable? |
 |-----------|----------|-------------|------------|-------------|
-| No images | 1745 | -10 | -10.00 | Needs IMAGE_API_KEY |
+| No images | 1739 | -10 | -10.00 | Needs IMAGE_API_KEY |
 | No coordinates | 6 | -15 | -0.05 | HCM facility + 5 entities without geocodable address |
 | No placeId | 1 | -10 | -0.01 | HCM entity, outside scope |
+| Low confidence (0.5) | 5 | varies | -0.01 | Unverifiable suspects — need manual research |
 
 **Theoretical max without images: ~100.** Current: 90.0. Only images remain as a significant gap.
+
+## S+ Quality Analysis (pass 8 + 9)
+
+Audit against viet-content-optimizer S+ criteria. Results below represent
+remaining quality concerns that require **per-entity manual review** or
+**external research** to fix (not auto-fixable).
+
+| Dimension | Finding | Status |
+|-----------|---------|--------|
+| Empty adjectives | ~185 total (was ~275, 122 removed in pass 10) | Remaining are context-valid (e.g. "nổi tiếng với dừa sáp") |
+| First sentence >155 chars | 12 entities (was 215) | No good split points — would break mid-clause |
+| Starts with entity name (non-place) | **0** (was 268, all 268 fixed in pass 10) | Complete |
+| desc==summary | **204** (was 376, 172 split/enriched in pass 10) | Remaining are single-sentence + place entities |
+| Descriptions <80 chars | reduced (was 115, 180 enriched from attrs) | |
+| Brochure phrases | ~185 remaining (307→185 in pass 10) | Context-dependent, most valid |
+
+**Eliminated (pass 7 + 8):**
+- Place template boilerplate (120), accommodation copy-paste (87), structured amenity lists (46)
+- Brochure tone (25+17=42 total: "du khách có thể" → "Có thể"), northern tone (2), cliché metaphors (2+5=7)
+- Copy-paste filler sentences (29), "đông đảo" filler (8), "bức tranh" metaphor (1)
+- Duplicate province names (33), bare type starts (1)
+- Robotic "Name là [type]" openers (149), address casing errors (129), name casing mismatches (51)
 
 ## Next Steps (Priority Order)
 
 1. **Image generation** — 0% coverage, the ONLY remaining significant gap (-10.00 avg pts). Use `scripts/gen_image.py` + `cx/gpt-5.5-image` API.
-2. **Geocoding** — ~337 entities at province centroids (178 original + 159 from geographic fixes). Google Places API would improve coverage beyond Nominatim.
-3. **Experience coverage** — Trà Vinh has only 7 experiences vs 70 for Vĩnh Long (10x imbalance). Need curated TV experiences.
-4. **produced_in coverage** — 156/218 products linked (71%); remaining 62 are fresh produce/processed foods without matching craft village entities.
-5. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours. Needs Google Places or manual research.
+2. **Geocoding** — ~1151 entities with coords_approximate=true. Top 50 could be geocoded via `scripts/geocode_clusters.py`.
+3. **Short summaries** — 282 entities still <80 chars (all single-sentence). Need LLM enrichment or manual research.
+4. **Experience coverage** — Trà Vinh has only 7 experiences vs 70 for Vĩnh Long (10x imbalance). Need curated TV experiences.
+5. **Unverifiable suspects** — 5 entities at confidence 0.5; need manual research to confirm or remove.
+6. **Source URLs** — ~1350 entities lack independent external source URL. High-visibility entities (restaurants, accommodations, attractions) would benefit from WebSearch verification.
+7. **Phone/hours real data** — Some restaurants/accommodations have specialty but still lack phone/hours. Needs Google Places or manual research.
 
 ## Data Integrity Checks (all pass)
 
@@ -356,11 +570,16 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 | Phone in summaries (ĐT:) | **0** |
 | Liên hệ: in descriptions | **0** |
 | Template-format descriptions | **0** |
+| Place template ("khu vực X. Được thành lập...") | **0** (120 rewritten) |
+| Accommodation boilerplate | **0** (87+30+46 stripped/naturalized) |
+| Copy-paste filler sentences | **0** (29 stripped) |
+| Brochure tone ("du khách có thể") | **0** (42 rephrased total) |
+| Northern tone (thưởng ngoạn/du ngoạn) | **0** (2 fixed) |
 | Duplicate summaries | **0** |
 | Duplicate names | **0** |
 | Summary == Name (redundant) | **0** |
 | Entities with only located_in | **0** (all have diverse rel types) |
-| Summary starts with entity name | **0** (492 fixed) |
+| Summary starts with entity name (non-place) | **0** (492+131 fixed, pass 8+10) |
 | Summary starts with "Là " | **0** (161 fixed) |
 | Summary broken at P./TP./Q. | **0** (95 fixed) |
 | Structured data in descriptions | **0** (1548 cleaned) |
@@ -371,3 +590,9 @@ Sources are stored as list of dicts `[{title, method}]`, not URL strings.
 | Ghost/test entities | **0** (prov-1 deleted) |
 | Description starts lowercase | **0** |
 | Double spaces in descriptions | **0** |
+| Robotic "Name là [type]" openers | **42 remain** (22 dish/product + 20 too short; 149 fixed) |
+| Address casing errors | **0** (129 fixed) |
+| Entity name/description casing mismatch | **0** (51 fixed) |
+| "viên ngọc" cliché | **0** (1 fixed) |
+| "tuyệt vời/ấn tượng" filler | **0** (4 fixed) |
+| "bức tranh" metaphor | **0** (1 fixed) |
