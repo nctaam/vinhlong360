@@ -31,7 +31,9 @@ class VisitBody(BaseModel):
         return v
 
 
-@router.get("")
+@router.get("",
+            summary="List visit marks",
+            description="Returns all entities marked as 'want' or 'visited' by the user. Optionally filter by status. Ordered by most recent, limited to 5000.")
 async def list_visits(status: Optional[str] = Query(None, pattern="^(want|visited)$"), user=Depends(require_user)):
     def _query():
         ph = db._ph
@@ -47,7 +49,9 @@ async def list_visits(status: Optional[str] = Query(None, pattern="^(want|visite
     return await asyncio.to_thread(_query)
 
 
-@router.get("/check/{entity_id}")
+@router.get("/check/{entity_id}",
+            summary="Check visit status for an entity",
+            description="Returns the current visit status ('want', 'visited', or null) for a specific entity. Used to render toggle state in the UI.")
 async def check_visit(entity_id: str, user=Depends(require_user)):
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():
@@ -59,7 +63,9 @@ async def check_visit(entity_id: str, user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.post("")
+@router.post("",
+             summary="Set visit status",
+             description="Marks an entity as 'want' or 'visited' for the user. Upserts on conflict, updating the status and timestamp.")
 async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"visit:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
@@ -73,7 +79,9 @@ async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(r
     return {"status": body.status}
 
 
-@router.get("/review-prompts")
+@router.get("/review-prompts",
+            summary="Get review prompts",
+            description="Returns entities the user has visited but not yet reviewed. Used to prompt the user to write reviews for places they have been to.")
 async def review_prompts(user=Depends(require_user), limit: int = Query(10, ge=1, le=30)):
     """Entities visited but not yet reviewed — prompt user to write a review."""
     def _query():
@@ -98,7 +106,9 @@ async def review_prompts(user=Depends(require_user), limit: int = Query(10, ge=1
     return await asyncio.to_thread(_query)
 
 
-@router.get("/stats")
+@router.get("/stats",
+            summary="Visit statistics",
+            description="Returns aggregate visit statistics for the user: total count, visited vs. want breakdown, and per-entity-type counts.")
 async def visit_stats(user=Depends(require_user)):
     def _query():
         ph = db._ph
@@ -135,7 +145,9 @@ async def visit_stats(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.delete("/{entity_id}")
+@router.delete("/{entity_id}",
+               summary="Remove visit mark",
+               description="Removes the visit mark (want or visited) for a specific entity. Returns {status: null} on success.")
 async def remove_visit(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     entity_id = validate_path_id(entity_id, "entity_id")
     check_rate(f"visit:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")

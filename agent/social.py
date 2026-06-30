@@ -308,7 +308,9 @@ POST_TYPE_LABELS = {
 RL_POST_DAILY_LIMIT = _cfg.RL_POST_DAILY_LIMIT
 RL_POST_DAILY_WINDOW = _cfg.RL_POST_DAILY_WINDOW
 
-@router.post("/posts", status_code=201)
+@router.post("/posts", status_code=201,
+             summary="Create a post",
+             description="Create a community post (review, share, question, tip, or repost). Runs content moderation, extracts hashtags/mentions, and sends notifications to tagged users.")
 async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"post:{user['id']}", RL_POST_LIMIT, RL_POST_WINDOW,
                "Bạn đăng bài quá nhanh. Vui lòng đợi ít phút rồi thử lại.")
@@ -424,7 +426,9 @@ class DraftPost(BaseModel):
     images: list[str] = Field(default_factory=list, max_length=10)
 
 
-@router.post("/drafts", status_code=201)
+@router.post("/drafts", status_code=201,
+             summary="Save a draft",
+             description="Save a post as a draft for later editing or publishing. Each user can have up to 20 drafts.")
 async def save_draft(body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"draft:{user['id']}", 20, 300, "Lưu nháp quá nhanh. Vui lòng đợi.")
     ph = db._ph
@@ -452,7 +456,9 @@ async def save_draft(body: DraftPost, user=Depends(require_user), _csrf=Depends(
     return {"draft": draft}
 
 
-@router.get("/drafts")
+@router.get("/drafts",
+            summary="List drafts",
+            description="List the authenticated user's draft posts with pagination. Returns drafts sorted by most recently updated.")
 async def list_drafts(
     page: int = Query(1, ge=1, le=100),
     limit: int = Query(20, ge=1, le=50),
@@ -481,7 +487,9 @@ async def list_drafts(
     return {"drafts": drafts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-@router.put("/drafts/{draft_id}")
+@router.put("/drafts/{draft_id}",
+            summary="Update a draft",
+            description="Update the content, type, entity, rating, or images of an existing draft. Returns the updated draft.")
 async def update_draft(draft_id: str, body: DraftPost, user=Depends(require_user), _csrf=Depends(require_csrf)):
     draft_id = validate_path_id(draft_id, "draft_id")
     check_rate(f"draft:{user['id']}", 20, 300, "Lưu nháp quá nhanh. Vui lòng đợi.")
@@ -506,7 +514,9 @@ async def update_draft(draft_id: str, body: DraftPost, user=Depends(require_user
     return {"draft": draft}
 
 
-@router.post("/drafts/{draft_id}/publish")
+@router.post("/drafts/{draft_id}/publish",
+             summary="Publish a draft",
+             description="Publish a draft post. Runs content moderation, extracts hashtags, and converts the draft into a visible post.")
 async def publish_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     """Publish a draft — runs moderation and converts to a real post."""
     draft_id = validate_path_id(draft_id, "draft_id")
@@ -560,7 +570,9 @@ async def publish_draft(draft_id: str, user=Depends(require_user), _csrf=Depends
     return {"post": _enrich_post(post, user)}
 
 
-@router.delete("/drafts/{draft_id}")
+@router.delete("/drafts/{draft_id}",
+               summary="Delete a draft",
+               description="Permanently delete a draft post. Only the draft owner can delete it.")
 async def delete_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     draft_id = validate_path_id(draft_id, "draft_id")
     check_rate(f"draft-del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
@@ -582,7 +594,9 @@ async def delete_draft(draft_id: str, user=Depends(require_user), _csrf=Depends(
     return {"success": True}
 
 
-@router.post("/drafts/{draft_id}/schedule")
+@router.post("/drafts/{draft_id}/schedule",
+             summary="Schedule a draft for publication",
+             description="Schedule a draft for future automatic publication at the specified ISO 8601 timestamp. The draft must have at least 10 characters.")
 async def schedule_draft(draft_id: str, scheduled_at: str = Query(..., max_length=30),
                          user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     """Schedule a draft for future publication."""
@@ -621,7 +635,9 @@ async def schedule_draft(draft_id: str, scheduled_at: str = Query(..., max_lengt
     return {"success": True, "scheduled_at": scheduled_at}
 
 
-@router.get("/scheduled")
+@router.get("/scheduled",
+            summary="List scheduled posts",
+            description="List the authenticated user's posts scheduled for future publication, sorted by publish time ascending.")
 async def list_scheduled(
     page: int = Query(1, ge=1, le=100),
     limit: int = Query(20, ge=1, le=50),
@@ -657,7 +673,9 @@ async def list_scheduled(
     return {"scheduled": scheduled, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-@router.delete("/scheduled/{post_id}")
+@router.delete("/scheduled/{post_id}",
+               summary="Cancel a scheduled post",
+               description="Cancel a scheduled post and convert it back to a draft. Only works for posts not yet published.")
 async def cancel_scheduled(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     """Cancel a scheduled post (converts back to draft)."""
     post_id = validate_path_id(post_id, "post_id")
@@ -681,7 +699,9 @@ async def cancel_scheduled(post_id: str, user=Depends(require_user), _csrf=Depen
     return {"success": True}
 
 
-@router.get("/posts/{post_id}")
+@router.get("/posts/{post_id}",
+            summary="Get a post",
+            description="Retrieve a single approved post by ID with author info, entity details, like/bookmark status, and reaction counts.")
 async def get_post(post_id: str, user=Depends(get_current_user)):
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
@@ -723,7 +743,9 @@ async def get_post(post_id: str, user=Depends(get_current_user)):
     return {"post": _format_post(post)}
 
 
-@router.delete("/posts/{post_id}")
+@router.delete("/posts/{post_id}",
+               summary="Delete a post",
+               description="Soft-delete a post. The post owner or admin/moderator can delete. Cleans up notifications and repost references.")
 async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"delete:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
@@ -745,7 +767,9 @@ async def delete_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
     return {"success": True}
 
 
-@router.patch("/posts/{post_id}")
+@router.patch("/posts/{post_id}",
+              summary="Update a post",
+              description="Edit the content or rating of the user's own post. Re-runs moderation, re-extracts hashtags, and saves edit history.")
 async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user), _csrf=Depends(require_csrf)):
     """Sửa bài của CHÍNH MÌNH (nội dung; review đổi sao). Kiểm duyệt + hashtag lại."""
     check_rate(f"edit:{user['id']}", 20, 300, "Bạn sửa bài quá nhanh. Vui lòng thử lại sau.")
@@ -813,7 +837,9 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
     return {"post": _format_post(db._row_to_dict(post)), "moderation_status": status}
 
 
-@router.get("/posts/{post_id}/edit-history")
+@router.get("/posts/{post_id}/edit-history",
+            summary="Get post edit history",
+            description="Retrieve the edit history of a post for transparency. Returns previous content and rating snapshots with timestamps.")
 async def get_post_edit_history(post_id: str, limit: int = Query(20, ge=1, le=100)):
     """View edit history for a post (public — transparency)."""
     post_id = validate_path_id(post_id, "post_id")
@@ -843,7 +869,9 @@ async def get_post_edit_history(post_id: str, limit: int = Query(20, ge=1, le=10
 
 # ── Feed ──
 
-@router.get("/feed")
+@router.get("/feed",
+            summary="Get community feed",
+            description="Main community feed with chronological + seasonal/quality boost ranking. Filterable by post type, entity type, area, and hashtag.")
 async def get_feed(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
@@ -951,7 +979,9 @@ async def get_feed(
     }
 
 
-@router.get("/feed/following")
+@router.get("/feed/following",
+            summary="Get following feed",
+            description="Feed of posts from users and entities the authenticated user follows, sorted by newest first.")
 async def get_following_feed(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
@@ -1009,7 +1039,9 @@ async def get_following_feed(
 _TRENDING_POSTS_WINDOWS = {"24h": 1, "7d": 7, "30d": 30}
 
 
-@router.get("/feed/trending")
+@router.get("/feed/trending",
+            summary="Get trending posts",
+            description="Trending posts ranked by engagement (likes x2 + comments x3) within a configurable time window (24h, 7d, or 30d).")
 async def trending_posts(
     window: str = Query("7d", max_length=10),
     limit: int = Query(20, ge=1, le=50),
@@ -1049,7 +1081,9 @@ async def trending_posts(
     return {"posts": posts, "total": total, "has_more": total > len(posts), "window": window, "days": days}
 
 
-@router.get("/feed/explore")
+@router.get("/feed/explore",
+            summary="Get explore feed",
+            description="Discover posts from users you don't follow yet, ranked by engagement and review quality. Excludes your own posts and those from followed users.")
 async def explore_feed(
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
     user=Depends(get_current_user),
@@ -1101,7 +1135,9 @@ async def explore_feed(
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-@router.get("/search/posts")
+@router.get("/search/posts",
+            summary="Search posts",
+            description="Full-text search across approved community posts using case-insensitive and accent-insensitive matching. Returns paginated results.")
 async def search_posts(
     q: str = Query(..., min_length=2, max_length=100),
     page: int = Query(1, ge=1, le=1000),
@@ -1152,7 +1188,9 @@ async def search_posts(
             "has_more": offset + limit < total_c}
 
 
-@router.get("/search/users")
+@router.get("/search/users",
+            summary="Search users",
+            description="Search users by display name with accent-insensitive matching. Returns public profile info and post count, sorted by activity.")
 async def search_users(
     q: str = Query(..., min_length=2, max_length=50),
     page: int = Query(1, ge=1, le=1000),
@@ -1211,7 +1249,9 @@ async def search_users(
     return {"users": users, "q": _strip_html_tags(q), "page": page, "total": total, "has_more": offset + limit < total}
 
 
-@router.get("/community/stats")
+@router.get("/community/stats",
+            summary="Get community statistics",
+            description="Real-time community statistics: total approved posts, reviews, and active members. Cached for 60 seconds.")
 async def community_stats(response: Response):
     """Số liệu THẬT của cộng đồng (không phải đếm 20 bài đã tải) cho sidebar /cong-dong."""
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
@@ -1226,7 +1266,9 @@ async def community_stats(response: Response):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/me/counts")
+@router.get("/me/counts",
+            summary="Get current user's counts",
+            description="Quick counts for the authenticated user: unread notifications, posts, drafts, bookmarks, and visits. Used for sidebar badges.")
 async def user_counts(response: Response, user=Depends(require_user)):
     response.headers["Cache-Control"] = "private, no-cache"
     ph = db._ph
@@ -1266,7 +1308,9 @@ async def user_counts(response: Response, user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/me/stats")
+@router.get("/me/stats",
+            summary="Get current user's extended stats",
+            description="Extended statistics for the user's profile dashboard: reviews, ratings, followers, following, likes received, reactions, entities reviewed, and collections.")
 async def user_stats(user=Depends(require_user)):
     """Extended stats for the authenticated user's profile dashboard."""
     ph = db._ph
@@ -1326,7 +1370,9 @@ async def user_stats(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/me/activity")
+@router.get("/me/activity",
+            summary="Get current user's activity feed",
+            description="Unified activity feed showing the user's recent posts, comments, and likes in reverse chronological order.")
 async def user_activity(limit: int = Query(30, ge=1, le=100), user=Depends(require_user)):
     """Unified activity feed: user's recent posts, comments, likes, bookmarks."""
     ph = db._ph
@@ -1384,7 +1430,9 @@ def _invalidate_social_caches():
 
 _TRENDING_PERIOD_DAYS = {"7d": 7, "14d": 14, "30d": 30, "90d": 90}
 
-@router.get("/community/trending-tags")
+@router.get("/community/trending-tags",
+            summary="Get trending hashtags",
+            description="Most-used hashtags from approved posts within a configurable period (7d/14d/30d/90d). Cached in memory with configurable TTL.")
 async def trending_tags(
     response: Response,
     limit: int = Query(10, ge=1, le=20),
@@ -1425,7 +1473,9 @@ async def trending_tags(
         return result
 
 
-@router.get("/hashtags")
+@router.get("/hashtags",
+            summary="List all hashtags",
+            description="Browse all hashtags with their post counts, paginated and optionally filtered by search query. Cached for 2 minutes.")
 async def list_hashtags(
     response: Response,
     limit: int = Query(50, ge=1, le=100),
@@ -1473,7 +1523,9 @@ async def list_hashtags(
     return {"hashtags": tags, "total": total, "page": page, "has_more": page * limit < total}
 
 
-@router.get("/hashtags/{tag}/posts")
+@router.get("/hashtags/{tag}/posts",
+            summary="Get posts by hashtag",
+            description="Retrieve approved posts tagged with a specific hashtag. Sortable by newest or most popular.")
 async def hashtag_posts(
     tag: str, request: Request,
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
@@ -1518,7 +1570,9 @@ async def hashtag_posts(
 
 _leaderboard_cache: dict = {"ts": 0.0, "data": None}
 
-@router.get("/community/leaderboard")
+@router.get("/community/leaderboard",
+            summary="Get community leaderboard",
+            description="Ranked list of top contributors by reputation points (reviews, posts, photos, followers, places, likes). Anti-inflation scoring with diminishing returns.")
 async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depends(get_current_user)):
     """Bảng xếp hạng: thành viên tích cực theo điểm danh-tiếng (1 query gộp)."""
     import time as _t
@@ -1591,7 +1645,9 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
         return {"leaders": leaders[:limit]}
 
 
-@router.get("/users/{user_id}/following")
+@router.get("/users/{user_id}/following",
+            summary="List users a user follows",
+            description="Paginated list of users that the specified user is following. Returns public profile info for each followed user.")
 async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
     """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
     validate_path_id(user_id, "user_id")
@@ -1624,7 +1680,9 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
     return {"users": users, "total": total, "offset": offset, "has_more": offset + limit < total}
 
 
-@router.get("/users/{user_id}/followers")
+@router.get("/users/{user_id}/followers",
+            summary="List a user's followers",
+            description="Paginated list of users following the specified user. Returns public profile info for each follower.")
 async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
     """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
     validate_path_id(user_id, "user_id")
@@ -1657,7 +1715,9 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
     return {"users": users, "total": total, "offset": offset, "has_more": offset + limit < total}
 
 
-@router.get("/community/suggested-follows")
+@router.get("/community/suggested-follows",
+            summary="Get suggested users to follow",
+            description="Suggest active contributors the user doesn't follow yet, ranked by reputation points. Excludes blocked/muted users.")
 async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge=1, le=20)):
     """Gợi ý người để theo dõi: top contributor mình CHƯA theo dõi (loại chính mình)."""
     ph = db._ph
@@ -1710,7 +1770,9 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
 _ENTITY_FEED_SORT_OPTIONS = {"default", "newest", "helpful", "photo", "star", "unanswered"}
 
 
-@router.get("/entities/{entity_id}/feed")
+@router.get("/entities/{entity_id}/feed",
+            summary="Get entity feed",
+            description="Feed of posts for a specific entity (place, product, etc.). Supports sorting (newest, helpful, photo, star, unanswered) and filtering by rating, photo, and post type.")
 async def get_entity_feed(
     entity_id: str,
     page: int = Query(1, ge=1, le=1000),
@@ -1822,7 +1884,9 @@ async def get_entity_feed(
     }
 
 
-@router.get("/posts/{post_id}/related")
+@router.get("/posts/{post_id}/related",
+            summary="Get related posts",
+            description="Find posts related to a given post by shared entity or overlapping hashtags. Returns up to the specified limit.")
 async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=Depends(get_current_user)):
     """Bài viết liên quan: cùng entity hoặc cùng hashtag."""
     post_id = validate_path_id(post_id, "post_id")
@@ -1880,7 +1944,9 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
 
 # ── Comments ──
 
-@router.get("/posts/{post_id}/comments")
+@router.get("/posts/{post_id}/comments",
+            summary="Get post comments",
+            description="Retrieve threaded comments for a post. Returns top-level comments with nested replies, excluding blocked/muted users.")
 async def get_comments(
     post_id: str, request: Request,
     limit: int = Query(100, ge=1, le=200),
@@ -1936,7 +2002,9 @@ async def get_comments(
     return {"comments": top_level}
 
 
-@router.post("/posts/{post_id}/comments", status_code=201)
+@router.post("/posts/{post_id}/comments", status_code=201,
+             summary="Create a comment",
+             description="Add a comment or reply to a post. Runs content moderation and sends notifications to the post author, parent comment author, and mentioned users.")
 async def create_comment(post_id: str, body: CreateComment, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"comment:{user['id']}", RL_COMMENT_LIMIT, RL_COMMENT_WINDOW,
@@ -2039,7 +2107,9 @@ class EditComment(BaseModel):
         return v
 
 
-@router.put("/comments/{comment_id}")
+@router.put("/comments/{comment_id}",
+            summary="Edit a comment",
+            description="Edit the user's own comment within the edit window (default 24 hours). Re-runs content moderation on the updated content.")
 async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"edit:{user['id']}", 20, 300, "Bạn sửa bình luận quá nhanh. Vui lòng thử lại sau.")
     comment_id = validate_path_id(comment_id, "comment_id")
@@ -2081,7 +2151,9 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
     return {"comment": _format_comment(db._row_to_dict(updated))}
 
 
-@router.delete("/comments/{comment_id}")
+@router.delete("/comments/{comment_id}",
+               summary="Delete a comment",
+               description="Delete a comment and its child replies. The comment owner or admin/moderator can delete. Updates the post's comment count.")
 async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     comment_id = validate_path_id(comment_id, "comment_id")
     check_rate(f"del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW,
@@ -2118,7 +2190,9 @@ class ReportCommentBody(BaseModel):
     detail: str = Field("", max_length=1000)
 
 
-@router.post("/comments/{comment_id}/report")
+@router.post("/comments/{comment_id}/report",
+             summary="Report a comment",
+             description="Report a comment for moderation review (spam, harassment, misinformation, etc.). Logged to JSONL file with auto-rotation.")
 async def report_comment(comment_id: str, body: ReportCommentBody, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
     comment_id = validate_path_id(comment_id, "comment_id")
     check_rate(f"report-comment:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
@@ -2175,7 +2249,9 @@ class ReportPostBody(BaseModel):
     detail: str = Field("", max_length=1000)
 
 
-@router.post("/posts/{post_id}/report")
+@router.post("/posts/{post_id}/report",
+             summary="Report a post",
+             description="Report a post for moderation review. Uses advisory locks to prevent duplicate reports. Stored in the PG reports table.")
 async def report_post(post_id: str, body: ReportPostBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"report-post:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
@@ -2215,7 +2291,9 @@ class ReportUserBody(BaseModel):
     detail: str = Field("", max_length=1000)
 
 
-@router.post("/users/{user_id}/report")
+@router.post("/users/{user_id}/report",
+             summary="Report a user",
+             description="Report a user for moderation review (spam, harassment, impersonation, etc.). Uses advisory locks to prevent duplicate reports.")
 async def report_user(user_id: str, body: ReportUserBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     user_id = validate_path_id(user_id, "user_id")
     check_rate(f"report-user:{user['id']}", 10, 600, "Bạn báo cáo quá nhanh. Vui lòng thử lại sau.")
@@ -2253,7 +2331,9 @@ class AppealBody(BaseModel):
     reason: str = Field(..., min_length=10, max_length=2000)
 
 
-@router.post("/posts/{post_id}/appeal")
+@router.post("/posts/{post_id}/appeal",
+             summary="Appeal a rejected post",
+             description="Submit a moderation appeal for a rejected post. Only the post author can appeal, and only once per post. Limited to 3 appeals per hour.")
 async def appeal_post(post_id: str, body: AppealBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"appeal:{user['id']}", 3, 3600, "Chỉ được khiếu nại 3 lần/giờ.")
@@ -2286,7 +2366,9 @@ async def appeal_post(post_id: str, body: AppealBody, user=Depends(require_user)
     return {"success": True, "message": "Khiếu nại đã được ghi nhận. Chúng tôi sẽ xem xét trong 7 ngày."}
 
 
-@router.get("/posts/{post_id}/appeal")
+@router.get("/posts/{post_id}/appeal",
+            summary="Get appeal status",
+            description="Check the status of a moderation appeal for the user's post. Returns appeal details including reviewer notes if reviewed.")
 async def get_appeal_status(post_id: str, user=Depends(require_user)):
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
@@ -2319,7 +2401,9 @@ class BestAnswerBody(BaseModel):
     comment_id: Optional[str] = Field(None, max_length=128)  # None = bỏ chọn
 
 
-@router.post("/posts/{post_id}/best-answer")
+@router.post("/posts/{post_id}/best-answer",
+             summary="Set or unset best answer",
+             description="Mark a comment as the best answer on a Q&A post, or unset it by passing null. Only the post author can select the best answer.")
 async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"best-answer:{user['id']}", 20, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     post_id = validate_path_id(post_id, "post_id")
@@ -2346,7 +2430,9 @@ async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(requi
 
 # ── Likes ──
 
-@router.post("/posts/{post_id}/like")
+@router.post("/posts/{post_id}/like",
+             summary="Toggle post like",
+             description="Like or unlike a post (toggle). Cannot like own posts or posts from blocked users. Sends notification to the post author on like.")
 async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"like:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
@@ -2409,7 +2495,9 @@ async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(re
     return {"liked": liked, "like_count": like_count}
 
 
-@router.get("/posts/{post_id}/likers")
+@router.get("/posts/{post_id}/likers",
+            summary="List post likers",
+            description="List users who liked a specific post with their profile info and like timestamp. Excludes blocked users.")
 async def get_post_likers(post_id: str, request: Request, limit: int = Query(20, ge=1, le=100)):
     """List users who liked a post."""
     post_id = validate_path_id(post_id, "post_id")
@@ -2443,7 +2531,9 @@ async def get_post_likers(post_id: str, request: Request, limit: int = Query(20,
     return {"likers": likers, "total": total, "has_more": total > len(likers)}
 
 
-@router.post("/comments/{comment_id}/like")
+@router.post("/comments/{comment_id}/like",
+             summary="Toggle comment like",
+             description="Like or unlike a comment (toggle). Cannot like own comments or comments from blocked users. Returns updated like count.")
 async def toggle_comment_like(comment_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     comment_id = validate_path_id(comment_id, "comment_id")
     check_rate(f"like:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
@@ -2499,7 +2589,9 @@ async def toggle_comment_like(comment_id: str, user=Depends(require_user), _csrf
 _VALID_REACTIONS = {"heart", "useful", "beautiful", "funny", "surprised"}
 
 
-@router.post("/posts/{post_id}/react")
+@router.post("/posts/{post_id}/react",
+             summary="Toggle emoji reaction on a post",
+             description="Add or remove an emoji reaction (heart, useful, beautiful, funny, surprised) on a post. Sends notification to the post author.")
 async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_length=20),
                            user=Depends(require_user), _csrf=Depends(require_csrf)):
     """Toggle an emoji reaction on a post."""
@@ -2563,7 +2655,9 @@ async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_leng
     return {"reacted": reacted, "reaction_type": reaction_type, "reactions": counts}
 
 
-@router.get("/posts/{post_id}/reactions")
+@router.get("/posts/{post_id}/reactions",
+            summary="Get post reaction counts",
+            description="Get reaction counts grouped by type (heart, useful, beautiful, funny, surprised) and total count for a post.")
 async def get_reactions(post_id: str):
     """Get reaction counts and details for a post."""
     post_id = validate_path_id(post_id, "post_id")
@@ -2590,7 +2684,9 @@ async def get_reactions(post_id: str):
 
 # ── Bookmarks ──
 
-@router.post("/posts/{post_id}/bookmark")
+@router.post("/posts/{post_id}/bookmark",
+             summary="Toggle post bookmark",
+             description="Save or unsave a post to the user's bookmarks (toggle). Returns the current bookmark state.")
 async def toggle_bookmark(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     check_rate(f"bookmark:{user['id']}", RL_LIKE_LIMIT, RL_LIKE_WINDOW,
@@ -2614,7 +2710,9 @@ async def toggle_bookmark(post_id: str, user=Depends(require_user), _csrf=Depend
     return {"bookmarked": saved}
 
 
-@router.get("/me/bookmarks")
+@router.get("/me/bookmarks",
+            summary="List bookmarked posts",
+            description="Paginated list of the authenticated user's bookmarked posts with full post details and reactions, sorted by most recently bookmarked.")
 async def get_my_bookmarks(
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
     user=Depends(require_user),
@@ -2661,7 +2759,9 @@ class CreateCollection(BaseModel):
     is_public: bool = False
 
 
-@router.post("/me/collections")
+@router.post("/me/collections",
+             summary="Create a collection",
+             description="Create a themed post collection (public or private). Runs content moderation on the name and description. Max 20 collections per user.")
 async def create_collection(body: CreateCollection, user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"coll:{user['id']}", 10, 300, "Tạo danh sách quá nhanh. Vui lòng đợi chút.")
     mod = await moderate_content(body.name.strip())
@@ -2692,7 +2792,9 @@ async def create_collection(body: CreateCollection, user=Depends(require_user), 
             "created_at": str(coll["created_at"]), "item_count": 0}}
 
 
-@router.get("/me/collections")
+@router.get("/me/collections",
+            summary="List my collections",
+            description="List all post collections owned by the authenticated user with item counts, sorted by most recently updated.")
 async def list_my_collections(user=Depends(require_user)):
     ph = db._ph
     uid = str(user["id"])
@@ -2716,7 +2818,9 @@ async def list_my_collections(user=Depends(require_user)):
     return {"collections": result}
 
 
-@router.delete("/me/collections/{collection_id}")
+@router.delete("/me/collections/{collection_id}",
+               summary="Delete a collection",
+               description="Delete a post collection and all its items. Only the collection owner can delete it.")
 async def delete_collection(collection_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     collection_id = validate_path_id(collection_id, "collection_id")
     check_rate(f"coll-del:{user['id']}", RL_DELETE_LIMIT, RL_DELETE_WINDOW, "Xóa quá nhanh.")
@@ -2735,7 +2839,9 @@ async def delete_collection(collection_id: str, user=Depends(require_user), _csr
     return {"success": True}
 
 
-@router.post("/me/collections/{collection_id}/items")
+@router.post("/me/collections/{collection_id}/items",
+             summary="Add post to collection",
+             description="Add a post to a collection. Uses advisory locks to enforce the max items limit (100 per collection).")
 async def add_to_collection(collection_id: str, post_id: str = Query(..., max_length=100),
                              user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     collection_id = validate_path_id(collection_id, "collection_id")
@@ -2763,7 +2869,9 @@ async def add_to_collection(collection_id: str, post_id: str = Query(..., max_le
     return {"success": True}
 
 
-@router.delete("/me/collections/{collection_id}/items/{post_id}")
+@router.delete("/me/collections/{collection_id}/items/{post_id}",
+               summary="Remove post from collection",
+               description="Remove a specific post from a collection. Only the collection owner can remove items.")
 async def remove_from_collection(collection_id: str, post_id: str,
                                   user=Depends(require_user), _csrf=Depends(require_csrf)):
     collection_id = validate_path_id(collection_id, "collection_id")
@@ -2783,7 +2891,9 @@ async def remove_from_collection(collection_id: str, post_id: str,
     return {"success": True}
 
 
-@router.get("/me/collections/{collection_id}/items")
+@router.get("/me/collections/{collection_id}/items",
+            summary="Get collection items",
+            description="Paginated list of posts in a collection with full post details and reactions. Public collections are viewable by anyone; private ones only by the owner.")
 async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le=1000),
                                 limit: int = Query(20, ge=1, le=50), user=Depends(require_user)):
     collection_id = validate_path_id(collection_id, "collection_id")
@@ -2826,7 +2936,9 @@ async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le
 
 # ── Share Tracking ──
 
-@router.post("/posts/{post_id}/share")
+@router.post("/posts/{post_id}/share",
+             summary="Track a post share",
+             description="Increment the share counter when a user shares a post (copy link, social media). Works for both authenticated and anonymous users.")
 async def track_share(post_id: str, request: Request, user=Depends(get_current_user), _csrf=Depends(require_csrf)):
     """Track when a user shares a post (copy link, social media share)."""
     post_id = validate_path_id(post_id, "post_id")
@@ -2856,7 +2968,9 @@ async def track_share(post_id: str, request: Request, user=Depends(get_current_u
 
 # ── Hide / Pin ──
 
-@router.post("/posts/{post_id}/hide")
+@router.post("/posts/{post_id}/hide",
+             summary="Hide a post from feed",
+             description="Hide a specific post from the authenticated user's feeds. The post remains visible to other users.")
 async def hide_post(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     uid = str(user["id"])
@@ -2876,7 +2990,9 @@ async def hide_post(post_id: str, user=Depends(require_user), _csrf=Depends(requ
     return {"success": True}
 
 
-@router.post("/posts/{post_id}/unhide")
+@router.post("/posts/{post_id}/unhide",
+             summary="Unhide a post",
+             description="Remove a post from the authenticated user's hidden list so it appears in feeds again.")
 async def unhide_post(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     uid = str(user["id"])
@@ -2892,7 +3008,9 @@ async def unhide_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
     return {"success": True}
 
 
-@router.get("/posts/hidden")
+@router.get("/posts/hidden",
+            summary="List hidden posts",
+            description="Paginated list of posts the authenticated user has hidden from their feeds, sorted by most recently hidden.")
 async def list_hidden_posts(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=50),
@@ -2924,7 +3042,9 @@ async def list_hidden_posts(
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-@router.post("/posts/{post_id}/pin-comment")
+@router.post("/posts/{post_id}/pin-comment",
+             summary="Pin a comment",
+             description="Pin a comment to the top of a post's comment section. Only the post author can pin comments. One pinned comment per post.")
 async def pin_comment(post_id: str, comment_id: str = Query(..., max_length=100),
                       user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
@@ -2952,7 +3072,9 @@ async def pin_comment(post_id: str, comment_id: str = Query(..., max_length=100)
     return {"success": True}
 
 
-@router.delete("/posts/{post_id}/pin-comment")
+@router.delete("/posts/{post_id}/pin-comment",
+               summary="Unpin a comment",
+               description="Remove the pinned comment from a post. Only the post author can unpin comments.")
 async def unpin_comment(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     uid = str(user["id"])
@@ -2975,7 +3097,9 @@ async def unpin_comment(post_id: str, user=Depends(require_user), _csrf=Depends(
 _MAX_PINNED_POSTS = 3
 
 
-@router.post("/posts/{post_id}/pin-to-profile")
+@router.post("/posts/{post_id}/pin-to-profile",
+             summary="Toggle pin post to profile",
+             description="Pin or unpin a post on the user's profile (toggle). Only approved posts can be pinned. Maximum 3 pinned posts per user.")
 async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     post_id = validate_path_id(post_id, "post_id")
     uid = str(user["id"])
@@ -3011,7 +3135,9 @@ async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=De
 
 # ── Image upload ──
 
-@router.post("/upload/image")
+@router.post("/upload/image",
+             summary="Upload an image",
+             description="Upload an image for use in posts. Validates file type via magic bytes (JPEG/PNG/GIF/WebP only), enforces 5MB limit. Returns the uploaded image URL.")
 async def upload_image(file: UploadFile = File(...), user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"upload:{user['id']}", RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW,
                "Bạn tải ảnh quá nhanh. Vui lòng đợi chút rồi thử lại.")
@@ -3126,7 +3252,9 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
             "photos": photos, "followers": followers, "places": places, "likes": likes}
 
 
-@router.get("/users/{user_id}")
+@router.get("/users/{user_id}",
+            summary="Get user profile",
+            description="Retrieve a user's public profile by UUID or username. Includes stats, reputation, badges, privacy settings, and viewer relationship status (following/blocked/muted).")
 async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     validate_path_id(user_id, "user_id")
     ph = db._ph
@@ -3278,7 +3406,9 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     }
 
 
-@router.get("/users/{user_id}/posts")
+@router.get("/users/{user_id}/posts",
+            summary="Get a user's posts",
+            description="Paginated list of a user's approved posts. Respects privacy settings (show_activity). Pinned posts appear first.")
 async def get_user_posts(
     user_id: str, request: Request,
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
@@ -3323,7 +3453,9 @@ async def get_user_posts(
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-@router.get("/users/{user_id}/reviews")
+@router.get("/users/{user_id}/reviews",
+            summary="Get a user's reviews",
+            description="Paginated list of a user's approved review posts. Respects privacy settings (show_activity). Sorted by newest first.")
 async def get_user_reviews(
     user_id: str, request: Request,
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),

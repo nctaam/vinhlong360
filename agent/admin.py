@@ -266,7 +266,9 @@ class DataQualityApplyRequest(BaseModel):
     candidate_ids: list[str] | None = Field(None, max_length=500)
     dry_run: bool = True
 
-@router.get("/entities")
+@router.get("/entities",
+            summary="List entities (admin)",
+            description="Returns a paginated list of all entities for admin management. Supports filtering by type, area, search query, and orphan detection.")
 async def list_entities(
     type: Optional[str] = Query(None, max_length=50),
     area: Optional[str] = Query(None, max_length=100),
@@ -321,7 +323,9 @@ async def list_entities(
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entities/places")
+@router.get("/entities/places",
+            summary="List places for dropdown",
+            description="Returns a list of place entities (xa/phuong) for use in admin dropdown selectors.")
 async def list_places():
     """Danh sách xã/phường cho dropdown."""
     def _query():
@@ -332,7 +336,9 @@ async def list_places():
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entities/check-duplicate")
+@router.get("/entities/check-duplicate",
+            summary="Check entity name duplicate",
+            description="Checks for existing entities with similar names using case-insensitive substring matching. Returns up to 5 matches.")
 async def check_duplicate(name: str = Query(..., min_length=2, max_length=200)):
     """Kiểm tra entity trùng tên (substring match, case-insensitive)."""
     name_lower = name.lower().strip()
@@ -352,7 +358,9 @@ async def check_duplicate(name: str = Query(..., min_length=2, max_length=200)):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entities/{entity_id}")
+@router.get("/entities/{entity_id}",
+            summary="Get entity details",
+            description="Returns full details of a single entity including its relationships.")
 async def get_entity(entity_id: str):
     """Chi tiết 1 entity."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -365,7 +373,9 @@ async def get_entity(entity_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.put("/entities/{entity_id}")
+@router.put("/entities/{entity_id}",
+            summary="Update entity",
+            description="Updates an entity's fields. Logs changes to entity history and invalidates relevant caches.")
 async def update_entity(entity_id: str, update: EntityUpdate):
     """Cập nhật entity."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -388,7 +398,9 @@ async def update_entity(entity_id: str, update: EntityUpdate):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entities/{entity_id}/history")
+@router.get("/entities/{entity_id}/history",
+            summary="Get entity change history",
+            description="Returns the change history (diffs) for a specific entity, ordered by most recent first.")
 async def get_entity_history(entity_id: str, limit: int = Query(50, ge=1, le=200)):
     """Lịch sử thay đổi entity."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -397,7 +409,9 @@ async def get_entity_history(entity_id: str, limit: int = Query(50, ge=1, le=200
     return await asyncio.to_thread(_query)
 
 
-@router.post("/entities", status_code=201)
+@router.post("/entities", status_code=201,
+             summary="Create entity",
+             description="Creates a new entity. Returns 409 if an entity with the same ID already exists.")
 async def create_entity(entity: EntityCreate):
     """Tạo entity mới."""
     def _query():
@@ -416,7 +430,9 @@ async def create_entity(entity: EntityCreate):
     return await asyncio.to_thread(_query)
 
 
-@router.delete("/entities/{entity_id}")
+@router.delete("/entities/{entity_id}",
+               summary="Delete entity",
+               description="Deletes an entity and invalidates related caches. Does not remove associated files.")
 async def delete_entity(entity_id: str):
     """Xóa entity."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -438,7 +454,9 @@ class _EntityImageURL(BaseModel):
     url: str = Field(..., max_length=600)
 
 
-@router.post("/entities/{entity_id}/images", status_code=201)
+@router.post("/entities/{entity_id}/images", status_code=201,
+             summary="Add image URL to entity",
+             description="Adds an image URL to an entity's image list. Validates URL accessibility. Maximum 10 images per entity.")
 async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     """GĐ8.4: thêm ảnh entity theo URL (chỉ nguồn cấp phép — B6)."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -464,7 +482,9 @@ async def add_entity_image_url(entity_id: str, body: _EntityImageURL):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/entities/{entity_id}/images/upload")
+@router.post("/entities/{entity_id}/images/upload",
+             summary="Upload image file for entity",
+             description="Uploads an image file, converts to WebP in 3 sizes (sm/md/lg), and adds to the entity. Maximum 10 images per entity.")
 async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     """GĐ8.4: upload file ảnh → WebP 3 cỡ → R2 (fallback đĩa) → entity.images.
     Lưu URL cỡ md (800px) làm ảnh hiển thị; sm/lg cũng được upload để dùng srcset sau."""
@@ -502,7 +522,9 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
     return {"status": "uploaded", "url": cover, "sizes": urls, "images": images, "backend": storage.backend}
 
 
-@router.delete("/entities/{entity_id}/images/{idx}")
+@router.delete("/entities/{entity_id}/images/{idx}",
+               summary="Remove image from entity",
+               description="Removes an image at the given index from the entity's image list. Does not delete the actual file from storage.")
 async def remove_entity_image(entity_id: str, idx: int):
     """Gỡ ảnh thứ idx khỏi entity.images (không xoá file R2 — tránh mất ảnh dùng chung)."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -522,7 +544,9 @@ async def remove_entity_image(entity_id: str, idx: int):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/unclassified")
+@router.get("/unclassified",
+            summary="List unclassified entities",
+            description="Returns entities not yet assigned to a commune/ward (empty placeId). Supports search and pagination.")
 async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0, le=10000),
                             q: Optional[str] = Query(None, max_length=200)):
     """Entity nội dung CHƯA gán xã/phường (placeId rỗng) — để admin gán đúng (lấp nợ placeId)."""
@@ -551,7 +575,9 @@ class AssignPlaceRequest(BaseModel):
     place_id: Optional[str] = Field(None, max_length=100)
 
 
-@router.post("/entities/{entity_id}/place")
+@router.post("/entities/{entity_id}/place",
+             summary="Assign place to entity",
+             description="Assigns or removes a commune/ward (placeId) for an entity. Validates the place exists.")
 async def assign_place(entity_id: str, body: AssignPlaceRequest):
     """Gán (hoặc gỡ) xã/phường cho 1 entity. Validate place_id là place thật (chống gán bừa)."""
     entity_id = validate_path_id(entity_id, "entity_id")
@@ -575,11 +601,15 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
 
 # ── Itinerary CRUD ──
 
-@router.get("/itineraries")
+@router.get("/itineraries",
+            summary="List itineraries",
+            description="Returns all itineraries, optionally filtered by area.")
 async def list_itineraries_admin(area: Optional[str] = Query(None, max_length=100)):
     return await asyncio.to_thread(db.list_itineraries, area=area)
 
-@router.get("/itineraries/{itin_id}")
+@router.get("/itineraries/{itin_id}",
+            summary="Get itinerary by ID",
+            description="Returns the full details of a single itinerary by its ID.")
 async def get_itinerary_admin(itin_id: str):
     itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
@@ -618,7 +648,9 @@ class RelationshipBulkCreate(BaseModel):
     pairs: list[RelationshipBulkPair] = Field(..., max_length=50)
 
 
-@router.post("/itineraries", status_code=201)
+@router.post("/itineraries", status_code=201,
+             summary="Create itinerary",
+             description="Creates a new itinerary with title, description, days, area, and tags.")
 async def create_itinerary(body: ItineraryCreate):
     def _query():
         data = body.model_dump(exclude_none=True)
@@ -626,7 +658,9 @@ async def create_itinerary(body: ItineraryCreate):
     await asyncio.to_thread(_query)
     return {"status": "created", "id": body.id}
 
-@router.put("/itineraries/{itin_id}")
+@router.put("/itineraries/{itin_id}",
+            summary="Update itinerary",
+            description="Updates an existing itinerary. Only provided fields are changed.")
 async def update_itinerary(itin_id: str, body: ItineraryUpdate):
     itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
@@ -636,7 +670,9 @@ async def update_itinerary(itin_id: str, body: ItineraryUpdate):
     await asyncio.to_thread(_query)
     return {"status": "updated", "id": itin_id}
 
-@router.delete("/itineraries/{itin_id}")
+@router.delete("/itineraries/{itin_id}",
+               summary="Delete itinerary",
+               description="Permanently deletes an itinerary by its ID. Returns 404 if not found.")
 async def delete_itinerary(itin_id: str):
     itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
@@ -652,14 +688,18 @@ async def delete_itinerary(itin_id: str):
 
 # ── Relationship CRUD ──
 
-@router.post("/relationships", status_code=201)
+@router.post("/relationships", status_code=201,
+             summary="Create entity relationship",
+             description="Creates a directional relationship between two entities (e.g. related_to, belongs_to).")
 async def add_relationship(body: RelationshipCreate):
     validate_path_id(body.from_id, "from_id")
     validate_path_id(body.to_id, "to_id")
     await asyncio.to_thread(db.add_relationship, body.from_id, body.to_id, body.type)
     return {"status": "created"}
 
-@router.delete("/relationships")
+@router.delete("/relationships",
+               summary="Delete entity relationship",
+               description="Removes a specific directional relationship between two entities. Returns 404 if not found.")
 async def delete_relationship(from_id: str, to_id: str, type: str = Query(..., max_length=100)):
     validate_path_id(from_id, "from_id")
     validate_path_id(to_id, "to_id")
@@ -675,7 +715,9 @@ async def delete_relationship(from_id: str, to_id: str, type: str = Query(..., m
     return {"success": True}
 
 
-@router.post("/relationships/bulk", status_code=201)
+@router.post("/relationships/bulk", status_code=201,
+             summary="Bulk create relationships",
+             description="Creates multiple relationships from one source entity at once. Reports individual errors without rolling back.")
 async def add_relationships_bulk(body: RelationshipBulkCreate):
     """B7b: thêm nhiều quan hệ cùng lúc."""
     validate_path_id(body.from_id, "from_id")
@@ -701,7 +743,9 @@ async def add_relationships_bulk(body: RelationshipBulkCreate):
 
 # Data quality review queue
 
-@router.get("/data-quality/summary")
+@router.get("/data-quality/summary",
+            summary="Get data quality summary",
+            description="Returns an overview of data quality metrics including candidate counts, stream counts, and sitemap expectations.")
 async def data_quality_summary(refresh: bool = Query(False)):
     def _query():
         data_summary = data_quality.summarize_data()
@@ -720,7 +764,9 @@ async def data_quality_summary(refresh: bool = Query(False)):
         }
     return await asyncio.to_thread(_query)
 
-@router.get("/data-quality/review")
+@router.get("/data-quality/review",
+            summary="Review data quality candidates",
+            description="Returns filterable data quality improvement candidates. Supports filtering by kind, bucket, and pagination.")
 async def data_quality_review(
     kind: Optional[str] = Query(None, pattern="^(source|location|placeid|accuracy|relationship)$"),
     bucket: Optional[str] = Query(None, pattern="^(auto_apply|needs_review|reject)$"),
@@ -735,7 +781,9 @@ async def data_quality_review(
         return result
     return await asyncio.to_thread(_query)
 
-@router.post("/data-quality/apply")
+@router.post("/data-quality/apply",
+             summary="Apply data quality improvements",
+             description="Applies selected data quality candidates to entities. Supports dry-run mode for preview.")
 async def data_quality_apply(body: DataQualityApplyRequest):
     def _query():
         result = data_quality.apply_candidates(body.candidate_ids, dry_run=body.dry_run)
@@ -744,11 +792,15 @@ async def data_quality_apply(body: DataQualityApplyRequest):
         return result
     return await asyncio.to_thread(_query)
 
-@router.get("/data-quality/history")
+@router.get("/data-quality/history",
+            summary="Get data quality apply history",
+            description="Returns the history of applied data quality batches, ordered by most recent first.")
 async def data_quality_history(limit: int = Query(20, ge=1, le=200)):
     return await asyncio.to_thread(data_quality.load_apply_history, limit=limit)
 
-@router.post("/data-quality/rollback/{batch_id}")
+@router.post("/data-quality/rollback/{batch_id}",
+             summary="Rollback data quality batch",
+             description="Reverts all changes from a previously applied data quality batch by restoring original entity data.")
 async def data_quality_rollback(batch_id: str):
     validate_path_id(batch_id, "batch_id")
     def _query():
@@ -768,7 +820,9 @@ _STALE_QUEUE_MISSING_FIELDS = {"source", "images", "coordinates", "phone", "summ
 _STALE_THRESHOLD_DEFAULT = 180
 
 
-@router.get("/stale-queue")
+@router.get("/stale-queue",
+            summary="List stale entities",
+            description="Returns entities that are outdated or missing key fields, sorted by staleness. Supports filtering by missing field and entity type.")
 async def stale_queue(
     threshold_days: int = Query(_STALE_THRESHOLD_DEFAULT, ge=30, le=730),
     missing_field: Optional[str] = Query(None, pattern="^(source|images|coordinates|phone|summary)$"),
@@ -830,7 +884,9 @@ async def stale_queue(
     return await asyncio.to_thread(_query)
 
 
-@router.post("/stale-queue/{entity_id}/mark-reviewed")
+@router.post("/stale-queue/{entity_id}/mark-reviewed",
+             summary="Mark stale entity as reviewed",
+             description="Records a review timestamp on the entity's attributes, indicating an admin has acknowledged its staleness.")
 async def stale_mark_reviewed(entity_id: str):
     """Đánh dấu entity đã được admin xem xét — ghi timestamp vào attributes."""
     validate_path_id(entity_id, "entity_id")
@@ -848,7 +904,9 @@ async def stale_mark_reviewed(entity_id: str):
 # ── Completeness standalone (BE-10) ──
 
 
-@router.get("/completeness")
+@router.get("/completeness",
+            summary="Entity completeness overview",
+            description="Returns aggregate completeness statistics showing the percentage of entities that have source, images, place ID, and summary.")
 async def completeness_overview():
     """Tổng quan hoàn thiện: % entities có source+images+placeId+summary."""
     def _query():
@@ -883,7 +941,9 @@ async def completeness_overview():
     return await asyncio.to_thread(_query)
 
 
-@router.get("/completeness/details")
+@router.get("/completeness/details",
+            summary="Entity completeness details",
+            description="Returns per-entity completeness scores with missing field breakdown. Supports filtering by specific missing field and entity type.")
 async def completeness_details(
     missing: Optional[str] = Query(None, pattern="^(source|images|place|summary)$"),
     entity_type: Optional[str] = Query(None, max_length=50),
@@ -930,7 +990,9 @@ async def completeness_details(
 # ── Q&A quality queue (U-24) ──
 
 
-@router.get("/qa-queue")
+@router.get("/qa-queue",
+            summary="List Q&A posts needing attention",
+            description="Returns Q&A questions that are unanswered or lack a best answer. Supports filtering by status and entity.")
 async def qa_queue(
     filter: Optional[str] = Query(None, pattern="^(unanswered|no_best_answer)$"),
     entity_id: Optional[str] = Query(None, max_length=100),
@@ -977,7 +1039,9 @@ class SetBestAnswerBody(BaseModel):
     comment_id: str = Field(..., min_length=1, max_length=100)
 
 
-@router.post("/qa-queue/{post_id}/set-best-answer")
+@router.post("/qa-queue/{post_id}/set-best-answer",
+             summary="Set best answer on Q&A post",
+             description="Admin override to designate a comment as the best answer for a question post. Validates both the post and comment exist.")
 async def qa_set_best_answer(post_id: str, body: SetBestAnswerBody):
     """Admin override: set best_answer_id cho 1 question."""
     post_id = validate_path_id(post_id, "post_id")
@@ -1009,7 +1073,9 @@ async def qa_set_best_answer(post_id: str, body: SetBestAnswerBody):
 CONTACT_VIEWS_FILE = Path(__file__).resolve().parent / "data" / "contact_views.jsonl"
 
 
-@router.get("/contact-funnel")
+@router.get("/contact-funnel",
+            summary="Contact funnel analytics",
+            description="Returns contact interaction statistics (zalo, phone, website, map clicks) per entity for a given time period.")
 async def contact_funnel(
     days: int = Query(30, ge=1, le=365),
     entity_id: Optional[str] = Query(None, max_length=100),
@@ -1065,7 +1131,9 @@ async def contact_funnel(
     return await asyncio.to_thread(_query)
 
 
-@router.get("/contact-funnel/export")
+@router.get("/contact-funnel/export",
+            summary="Export contact funnel as CSV",
+            description="Exports contact funnel data as a downloadable CSV file with per-entity interaction counts.")
 async def contact_funnel_export(days: int = Query(30, ge=1, le=365)):
     """Export contact funnel dạng CSV."""
     import io
@@ -1128,7 +1196,9 @@ class CollectionUpdate(BaseModel):
     is_published: bool | None = None
 
 
-@router.get("/collections")
+@router.get("/collections",
+            summary="List curated collections",
+            description="Returns all curated entity collections ordered by sort_order. Supports pagination via limit and offset.")
 async def list_collections(limit: int = Query(50, ge=1, le=200), offset: int = Query(0, ge=0, le=10000)):
     ph = db._ph
     def _query():
@@ -1145,7 +1215,9 @@ async def list_collections(limit: int = Query(50, ge=1, le=200), offset: int = Q
     return await asyncio.to_thread(_query)
 
 
-@router.post("/collections", status_code=201)
+@router.post("/collections", status_code=201,
+             summary="Create a curated collection",
+             description="Creates a new curated entity collection with a unique slug. Returns the created collection.")
 async def create_collection(body: CollectionCreate, request: Request):
     ph = db._ph
     user = request.state.user if hasattr(request.state, "user") else None
@@ -1165,7 +1237,9 @@ async def create_collection(body: CollectionCreate, request: Request):
     return await asyncio.to_thread(_query)
 
 
-@router.put("/collections/{collection_id}")
+@router.put("/collections/{collection_id}",
+            summary="Update a collection",
+            description="Updates fields of an existing collection. Only provided fields are modified.")
 async def update_collection(collection_id: str, body: CollectionUpdate):
     collection_id = validate_path_id(collection_id, "collection_id")
     ph = db._ph
@@ -1204,7 +1278,9 @@ async def update_collection(collection_id: str, body: CollectionUpdate):
     return await asyncio.to_thread(_query)
 
 
-@router.delete("/collections/{collection_id}")
+@router.delete("/collections/{collection_id}",
+               summary="Delete a collection",
+               description="Permanently deletes a curated collection by its ID.")
 async def delete_collection(collection_id: str):
     collection_id = validate_path_id(collection_id, "collection_id")
     ph = db._ph
@@ -1224,7 +1300,9 @@ class ReviewResponseBody(BaseModel):
     content: str = Field(..., min_length=1, max_length=2000)
 
 
-@router.post("/posts/{post_id}/response")
+@router.post("/posts/{post_id}/response",
+             summary="Respond to a review post",
+             description="Creates an admin or business response to a review post. Only one response per review is allowed.")
 async def admin_review_response(post_id: str, body: ReviewResponseBody, request: Request):
     """Admin/business reply to a review — one response per review (UNIQUE)."""
     post_id = validate_path_id(post_id, "post_id")
@@ -1259,7 +1337,9 @@ async def admin_review_response(post_id: str, body: ReviewResponseBody, request:
     return await asyncio.to_thread(_query)
 
 
-@router.get("/posts/{post_id}/response")
+@router.get("/posts/{post_id}/response",
+            summary="Get review response",
+            description="Returns the admin response for a specific review post, if one exists.")
 async def get_review_response(post_id: str):
     """Get the admin response for a review post."""
     post_id = validate_path_id(post_id, "post_id")
@@ -1284,7 +1364,9 @@ async def get_review_response(post_id: str):
 class BulkDeleteRequest(BaseModel):
     entity_ids: list[str] = Field(..., min_length=1, max_length=200)
 
-@router.post("/entities/bulk-delete")
+@router.post("/entities/bulk-delete",
+             summary="Bulk delete entities",
+             description="Deletes multiple entities by their IDs in a single operation. Returns the count of successfully deleted entities.")
 async def bulk_delete(body: BulkDeleteRequest):
     """Xóa nhiều entities cùng lúc."""
     def _query():
@@ -1329,7 +1411,9 @@ class RejectSuggestionRequest(BaseModel):
     reason: str | None = Field(None, max_length=300)
 
 
-@router.get("/image-suggestions")
+@router.get("/image-suggestions",
+            summary="List image suggestions",
+            description="Lists image candidates awaiting review. Filterable by status and entity_id with pagination.")
 async def list_image_suggestions(
     status: Optional[str] = Query(None, pattern="^(pending|approved|rejected)$"),
     entity_id: Optional[str] = Query(None, max_length=100),
@@ -1344,7 +1428,9 @@ async def list_image_suggestions(
     return await asyncio.to_thread(_query)
 
 
-@router.get("/image-suggestions/{suggestion_id}")
+@router.get("/image-suggestions/{suggestion_id}",
+            summary="Get image suggestion details",
+            description="Returns full details of a single image suggestion including entity name for review.")
 async def get_image_suggestion(suggestion_id: str):
     """Chi tiết 1 ứng viên ảnh (kèm tên entity để review)."""
     validate_path_id(suggestion_id, "suggestion_id")
@@ -1356,7 +1442,9 @@ async def get_image_suggestion(suggestion_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/image-suggestions/create-batch", status_code=201)
+@router.post("/image-suggestions/create-batch", status_code=201,
+             summary="Create image suggestion batch",
+             description="Queues a batch of image candidates from ingest scripts for admin review. Does not publish anything.")
 async def create_image_suggestion_batch(body: ImageSuggestionBatch):
     """Nhận lô ứng viên từ script ingest (mode=queue). KHÔNG publish — chỉ xếp hàng chờ duyệt."""
     def _query():
@@ -1385,7 +1473,9 @@ def _assert_public_url(url: str) -> None:
             raise HTTPException(400, "Host ảnh trỏ địa chỉ nội bộ — từ chối (SSRF)")
 
 
-@router.post("/image-suggestions/{suggestion_id}/approve")
+@router.post("/image-suggestions/{suggestion_id}/approve",
+             summary="Approve an image suggestion",
+             description="Approves a pending image suggestion: downloads, re-encodes to WebP, uploads to storage, and attaches to the entity with license credits.")
 async def approve_image_suggestion(suggestion_id: str):
     """Duyệt 1 ứng viên: tải ảnh → WebP 3 cỡ → R2 → gắn vào entity.images + lưu
     license/author/source vào attributes.image_credits (B6). Chỉ xử lý khi đang 'pending'."""
@@ -1464,7 +1554,9 @@ async def approve_image_suggestion(suggestion_id: str):
             "backend": storage.backend, "credits": credits[-1]}
 
 
-@router.post("/image-suggestions/{suggestion_id}/reject")
+@router.post("/image-suggestions/{suggestion_id}/reject",
+              summary="Reject image suggestion",
+              description="Reject a pending image suggestion by ID, optionally recording a reason. No files are downloaded or uploaded.")
 async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequest = RejectSuggestionRequest()):
     """Từ chối 1 ứng viên (ghi lý do). Không tải/không upload gì."""
     validate_path_id(suggestion_id, "suggestion_id")
@@ -1484,7 +1576,9 @@ async def reject_image_suggestion(suggestion_id: str, body: RejectSuggestionRequ
 _server_start_time = __import__("time").time()
 
 
-@router.get("/system-health")
+@router.get("/system-health",
+            summary="Get system health status",
+            description="Returns system health information including SQLite/Postgres status, server uptime, memory usage, and storage metrics.")
 async def system_health():
     import os
     import time as _t
@@ -1559,7 +1653,9 @@ def _format_uptime(seconds: int) -> str:
     return " ".join(parts)
 
 
-@router.get("/featured")
+@router.get("/featured",
+            summary="List featured entities",
+            description="Returns all currently featured entities with their sort order, name, and type.")
 async def list_featured():
     ph = db._ph
     def _query():
@@ -1586,7 +1682,9 @@ async def list_featured():
     return await asyncio.to_thread(_query)
 
 
-@router.post("/featured/{entity_id}")
+@router.post("/featured/{entity_id}",
+             summary="Toggle entity featured status",
+             description="Add or remove an entity from the featured list. If already featured, it is removed; otherwise it is added.")
 async def toggle_featured(entity_id: str, request: Request):
     entity_id = validate_path_id(entity_id, "entity_id")
     entity = await asyncio.to_thread(db.get_entity, entity_id)
@@ -1614,7 +1712,9 @@ async def toggle_featured(entity_id: str, request: Request):
     return {"entity_id": entity_id, "featured": is_featured}
 
 
-@router.get("/stats")
+@router.get("/stats",
+            summary="Get admin dashboard statistics",
+            description="Returns detailed statistics including entity counts by type, completeness scores, weekly deltas, and backup info.")
 async def admin_stats():
     """Thống kê chi tiết cho admin."""
     def _query():
@@ -1715,7 +1815,9 @@ async def admin_stats():
     return await asyncio.to_thread(_query)
 
 
-@router.get("/user-engagement")
+@router.get("/user-engagement",
+            summary="Get user engagement metrics",
+            description="Returns engagement metrics over a configurable period: active posters, commenters, likers, retention rate, and daily active users.")
 async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
     ph = db._ph
     def _query():
@@ -1767,7 +1869,9 @@ async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/user-growth")
+@router.get("/user-growth",
+            summary="Get user growth over time",
+            description="Returns daily signup counts, total/deactivated user counts, and week-over-week growth rate.")
 async def user_growth(days: int = Query(30, ge=7, le=365)):
     ph = db._ph
     def _query():
@@ -1811,7 +1915,9 @@ async def user_growth(days: int = Query(30, ge=7, le=365)):
 _last_backup_time: float = 0
 _BACKUP_COOLDOWN = _cfg.BACKUP_COOLDOWN
 
-@router.post("/backup-trigger")
+@router.post("/backup-trigger",
+             summary="Trigger data backup",
+             description="Initiates a manual backup of the database. Returns the backup file path, size, and status. Rate-limited by a cooldown period.")
 async def trigger_backup():
     """B5c: trigger manual backup from admin UI."""
     import time as _time
@@ -1853,7 +1959,9 @@ async def trigger_backup():
     return await asyncio.to_thread(_run)
 
 
-@router.get("/media")
+@router.get("/media",
+            summary="List uploaded media files",
+            description="Returns a paginated gallery of all images across entities with credit and duplicate detection stats.")
 async def media_gallery(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(50, ge=1, le=200),
@@ -1919,7 +2027,9 @@ async def media_gallery(
     return await asyncio.to_thread(_query)
 
 
-@router.get("/badge-counts")
+@router.get("/badge-counts",
+            summary="Get admin dashboard badge counts",
+            description="Returns lightweight counts for sidebar badges including moderation, images, unclassified entities, provisional items, and reports.")
 async def badge_counts():
     """Lightweight counts cho sidebar badges — moderation/images/unclassified/provisional."""
     def _query():
@@ -1951,7 +2061,9 @@ async def badge_counts():
     return await asyncio.to_thread(_query)
 
 
-@router.get("/dashboard-alerts")
+@router.get("/dashboard-alerts",
+            summary="Get dashboard alert notifications",
+            description="Returns priority-sorted alerts for the admin dashboard. Scans moderation, reports, images, unclassified entities, provisional items, and appeals queues.")
 async def dashboard_alerts():
     """Priority-sorted alerts cho admin dashboard."""
     def _query():
@@ -2005,7 +2117,9 @@ async def dashboard_alerts():
     return await asyncio.to_thread(_query)
 
 
-@router.get("/activity-feed")
+@router.get("/activity-feed",
+            summary="Recent admin activity feed",
+            description="Returns the most recent admin actions from the audit JSONL log file. Defaults to 10 entries.")
 async def activity_feed(limit: int = Query(10, ge=1, le=50)):
     """10 admin actions gần nhất từ audit JSONL."""
     def _query():
@@ -2032,7 +2146,9 @@ async def activity_feed(limit: int = Query(10, ge=1, le=50)):
 
 _learn_proc: Optional[subprocess.Popen] = None
 
-@router.post("/trigger-learn")
+@router.post("/trigger-learn",
+             summary="Trigger knowledge learning",
+             description="Starts a background auto-learn cycle that discovers and ingests new knowledge topics. Optionally filtered by category.")
 async def trigger_learn(category: Optional[str] = Query(None, max_length=50), topics: int = 3):
     """Trigger 1 vòng auto-learn (chạy background)."""
     if topics < 1 or topics > 20:
@@ -2070,7 +2186,9 @@ async def trigger_learn(category: Optional[str] = Query(None, max_length=50), to
 
 # ── Quarantine review queue (provisional auto-learned entities) ──
 
-@router.get("/provisional")
+@router.get("/provisional",
+            summary="List provisional entities",
+            description="Returns auto-learned entities pending verification, along with queue statistics.")
 async def list_provisional_entities():
     """Liệt kê các entity tự học CHƯA kiểm chứng (chờ duyệt)."""
     def _query():
@@ -2079,7 +2197,9 @@ async def list_provisional_entities():
     return await asyncio.to_thread(_query)
 
 
-@router.post("/provisional/{entity_id}/approve")
+@router.post("/provisional/{entity_id}/approve",
+             summary="Approve provisional entity",
+             description="Promotes a provisional auto-learned entity to verified status in the knowledge base.")
 async def approve_provisional(entity_id: str):
     """Duyệt 1 entity provisional → verified (tin cậy)."""
     validate_path_id(entity_id, "entity_id")
@@ -2092,7 +2212,9 @@ async def approve_provisional(entity_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/provisional/{entity_id}/reject")
+@router.post("/provisional/{entity_id}/reject",
+             summary="Reject provisional entity",
+             description="Rejects and removes a provisional auto-learned entity from the knowledge base.")
 async def reject_provisional(entity_id: str):
     """Từ chối + xóa 1 entity provisional khỏi KB."""
     validate_path_id(entity_id, "entity_id")
@@ -2105,7 +2227,9 @@ async def reject_provisional(entity_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/export")
+@router.post("/export",
+             summary="Export entity data",
+             description="Exports all entities, relationships, and itineraries as a streaming JSON file to avoid memory issues.")
 async def export_data():
     """Export toàn bộ entities từ DB — streaming JSON để không OOM."""
     import io
@@ -2137,7 +2261,9 @@ async def export_data():
                              headers={"Content-Disposition": "attachment; filename=vinhlong360-export.json"})
 
 
-@router.get("/export/users")
+@router.get("/export/users",
+            summary="Export user data as CSV",
+            description="Exports all users with stats (post count, follower count, reputation) as a downloadable CSV file. Phone numbers are masked.")
 async def export_users_csv():
     """CSV export of all users with stats."""
     ph = db._ph
@@ -2176,7 +2302,9 @@ async def export_users_csv():
                              headers={"Content-Disposition": "attachment; filename=users.csv"})
 
 
-@router.get("/export/posts")
+@router.get("/export/posts",
+            summary="Export post data as CSV",
+            description="Exports posts with author and entity info as a downloadable CSV. Supports filtering by moderation status and date range.")
 async def export_posts_csv(
     status: str = Query("all", max_length=20),
     days: int = Query(90, ge=1, le=365),
@@ -2218,7 +2346,9 @@ async def export_posts_csv(
                              headers={"Content-Disposition": "attachment; filename=posts.csv"})
 
 
-@router.get("/sources")
+@router.get("/sources",
+            summary="List data sources",
+            description="Returns all unique data sources across entities with entity counts and sample entity IDs per source.")
 async def list_sources():
     """Liệt kê tất cả nguồn dữ liệu."""
     def _query():
@@ -2247,7 +2377,9 @@ async def list_sources():
 # ═══════════════════════════════════════════════════════
 
 
-@router.get("/moderation/queue")
+@router.get("/moderation/queue",
+            summary="Get moderation queue",
+            description="Returns posts pending moderation review. Supports filtering by status and pagination.")
 async def moderation_queue(
     status: str = Query("review", pattern="^(review|pending|flagged|approved|rejected)$"),
     page: int = Query(1, ge=1, le=1000),
@@ -2280,7 +2412,9 @@ async def moderation_queue(
     return await asyncio.to_thread(_query)
 
 
-@router.post("/moderation/{post_id}/approve")
+@router.post("/moderation/{post_id}/approve",
+             summary="Approve moderated post",
+             description="Approves a post pending moderation and notifies the author.")
 async def approve_post(post_id: str):
     post_id = validate_path_id(post_id, "post_id")
     def _query():
@@ -2308,7 +2442,9 @@ class RejectBody(BaseModel):
     reason: str | None = Field(None, max_length=500)
 
 
-@router.post("/moderation/{post_id}/reject")
+@router.post("/moderation/{post_id}/reject",
+             summary="Reject moderated post",
+             description="Rejects a post pending moderation with an optional reason. Notifies the author.")
 async def reject_post(post_id: str, body: RejectBody = RejectBody()):
     post_id = validate_path_id(post_id, "post_id")
     reason = (body.reason or "").strip() or None
@@ -2341,7 +2477,9 @@ class BatchModerationBody(BaseModel):
     reason: str = Field("", max_length=500)
 
 
-@router.post("/moderation/batch")
+@router.post("/moderation/batch",
+             summary="Batch moderate multiple posts",
+             description="Approve or reject multiple posts at once. Notifies each author and logs moderation actions.")
 async def batch_moderation(body: BatchModerationBody, request: Request):
     from ratelimit import check_rate
     admin_user = getattr(request.state, "admin_user", None)
@@ -2385,7 +2523,9 @@ async def batch_moderation(body: BatchModerationBody, request: Request):
     return {"success": True, "updated": updated, "requested": len(body.post_ids)}
 
 
-@router.get("/moderation/{post_id}/history")
+@router.get("/moderation/{post_id}/history",
+            summary="Get post moderation history",
+            description="Returns the full moderation action timeline for a specific post, including moderator names and scores.")
 async def moderation_history(post_id: str):
     """Admin: view full moderation action timeline for a specific post."""
     post_id = validate_path_id(post_id, "post_id")
@@ -2434,7 +2574,9 @@ async def moderation_history(post_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/posts/{post_id}/feature")
+@router.post("/posts/{post_id}/feature",
+             summary="Toggle post featured status",
+             description="Toggles whether a post is featured at the top of its entity page. Logs the action.")
 async def feature_post(post_id: str, request: Request):
     """Admin: toggle feature a post at the top of its entity page."""
     post_id = validate_path_id(post_id, "post_id")
@@ -2467,7 +2609,9 @@ async def feature_post(post_id: str, request: Request):
 
 
 
-@router.delete("/posts/{post_id}/response")
+@router.delete("/posts/{post_id}/response",
+               summary="Delete admin response",
+               description="Deletes the admin review response for a post. Logs the deletion.")
 async def delete_review_response(post_id: str):
     post_id = validate_path_id(post_id, "post_id")
     def _query():
@@ -2487,7 +2631,9 @@ class ModNoteBody(BaseModel):
     note: str = Field(..., min_length=1, max_length=500)
 
 
-@router.post("/moderation/{post_id}/note")
+@router.post("/moderation/{post_id}/note",
+             summary="Add moderation note",
+             description="Adds an internal admin note to a post. Notes are not visible to the post author.")
 async def add_moderation_note(post_id: str, body: ModNoteBody):
     """B3d: Add internal admin note (not visible to poster)."""
     post_id = validate_path_id(post_id, "post_id")
@@ -2506,7 +2652,9 @@ async def add_moderation_note(post_id: str, body: ModNoteBody):
     return {"success": True}
 
 
-@router.get("/moderation/{post_id}/notes")
+@router.get("/moderation/{post_id}/notes",
+            summary="Get moderation notes",
+            description="Returns all internal admin notes for a specific post.")
 async def get_moderation_notes(post_id: str):
     post_id = validate_path_id(post_id, "post_id")
     def _query():
@@ -2520,7 +2668,9 @@ async def get_moderation_notes(post_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/moderation/stats")
+@router.get("/moderation/stats",
+            summary="Get moderation statistics",
+            description="Returns post counts grouped by moderation status, plus totals for today and this week.")
 async def moderation_stats():
     def _query():
         ph = db._ph
@@ -2544,7 +2694,9 @@ async def moderation_stats():
 
 # ── Admin Content Search ──────────────────────────────────────────────────
 
-@router.get("/content/search")
+@router.get("/content/search",
+            summary="Search across all content",
+            description="Admin keyword search across posts and comments. Supports filtering by content type, moderation status, and post type.")
 async def admin_content_search(
     q: str = Query(..., min_length=1, max_length=200),
     content_type: str = Query("post", pattern="^(post|comment|all)$"),
@@ -2617,7 +2769,9 @@ async def admin_content_search(
 
 # ── Admin Post Detail ────────────────────────────────────────────────────
 
-@router.get("/posts/{post_id}")
+@router.get("/posts/{post_id}",
+            summary="Get post details (admin view)",
+            description="Returns full post details including comments, author info, and moderation data for admin review.")
 async def admin_post_detail(post_id: str):
     """Full post detail with comments for admin review."""
     post_id = validate_path_id(post_id, "post_id")
@@ -2668,7 +2822,9 @@ async def admin_post_detail(post_id: str):
 
 # ── Appeal management (NĐ147 compliance) ──
 
-@router.get("/appeals")
+@router.get("/appeals",
+            summary="List user appeals",
+            description="Returns a paginated list of user appeals against moderation decisions. Supports filtering by status.")
 async def list_appeals(
     status: str = Query("pending", pattern="^(pending|approved|rejected|all)$"),
     page: int = Query(1, ge=1, le=1000),
@@ -2717,7 +2873,9 @@ class AppealDecisionBody(BaseModel):
     note: str = Field("", max_length=500)
 
 
-@router.post("/appeals/{appeal_id}/approve")
+@router.post("/appeals/{appeal_id}/approve",
+              summary="Approve a user appeal",
+              description="Approves a moderation appeal, restoring the post and notifying the user.")
 async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
     appeal_id = validate_path_id(appeal_id, "appeal_id")
     admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
@@ -2752,7 +2910,9 @@ async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisi
     return {"success": True}
 
 
-@router.post("/appeals/{appeal_id}/reject")
+@router.post("/appeals/{appeal_id}/reject",
+              summary="Reject a user appeal",
+              description="Rejects a moderation appeal and notifies the user with an optional reason.")
 async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
     appeal_id = validate_path_id(appeal_id, "appeal_id")
     admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
@@ -2787,7 +2947,9 @@ async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisio
 
 # ── Admin Comment List ────────────────────────────────────────────────────
 
-@router.get("/comments")
+@router.get("/comments",
+            summary="List comments for admin review",
+            description="Returns a paginated list of comments with optional search and post filter.")
 async def admin_list_comments(
     search: str = Query("", max_length=200),
     post_id: str = Query(None, max_length=50),
@@ -2833,7 +2995,9 @@ async def admin_list_comments(
     return await asyncio.to_thread(_query)
 
 
-@router.delete("/comments/{comment_id}")
+@router.delete("/comments/{comment_id}",
+               summary="Delete a comment",
+               description="Force-deletes a comment by ID and decrements the parent post comment count.")
 async def admin_delete_comment(comment_id: str, request: Request):
     """Admin force-delete a comment."""
     comment_id = validate_path_id(comment_id, "comment_id")
@@ -2859,7 +3023,9 @@ async def admin_delete_comment(comment_id: str, request: Request):
     return {"success": True, "deleted_comment": str(result["id"])}
 
 
-@router.get("/content-stats")
+@router.get("/content-stats",
+            summary="Get content statistics",
+            description="Returns content statistics including posts by type/status, average ratings, and daily post counts for a given period.")
 async def content_stats(days: int = Query(30, ge=1, le=365)):
     ph = db._ph
     def _query():
@@ -2911,7 +3077,9 @@ async def content_stats(days: int = Query(30, ge=1, le=365)):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/analytics-overview")
+@router.get("/analytics-overview",
+            summary="Analytics dashboard overview",
+            description="Returns aggregated analytics for the admin dashboard including popular queries, knowledge gaps, top entities, and cost reports.")
 async def analytics_overview(days: int = Query(0, ge=0, le=365)):
     """GĐ9.6: gói số liệu cho trang admin Analytics (1 call, đã auth qua require_admin).
 
@@ -2935,7 +3103,9 @@ async def analytics_overview(days: int = Query(0, ge=0, le=365)):
 
 # ── Search analytics ──
 
-@router.get("/search-analytics")
+@router.get("/search-analytics",
+            summary="Search term analytics",
+            description="Analyzes search query logs and returns top queries, zero-result queries, and total search count for a given period.")
 async def search_analytics(days: int = Query(7, ge=1, le=90)):
     search_log = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
@@ -2972,7 +3142,9 @@ async def search_analytics(days: int = Query(7, ge=1, le=90)):
     return await asyncio.to_thread(_read)
 
 
-@router.get("/reports")
+@router.get("/reports",
+            summary="List user reports",
+            description="Returns a paginated list of user reports with filtering by status, target type, reporter, and target user.")
 async def get_reports(
     status: str = Query("pending", pattern="^(pending|resolved|dismissed)$"),
     target_type: str = Query(None, pattern="^(post|comment|user|entity)$"),
@@ -3025,7 +3197,9 @@ class BulkReportAction(BaseModel):
     action: str = Field(..., pattern="^(resolve|dismiss)$")
 
 
-@router.post("/reports/bulk")
+@router.post("/reports/bulk",
+              summary="Bulk action on reports",
+              description="Applies a resolve or dismiss action to multiple reports at once.")
 async def bulk_report_action(body: BulkReportAction):
     status = "resolved" if body.action == "resolve" else "dismissed"
     def _query():
@@ -3041,7 +3215,9 @@ async def bulk_report_action(body: BulkReportAction):
     return {"success": True, "updated": updated, "requested": len(body.ids)}
 
 
-@router.post("/reports/{report_id}/resolve")
+@router.post("/reports/{report_id}/resolve",
+              summary="Resolve a report",
+              description="Marks a user report as resolved after admin review.")
 async def resolve_report(report_id: str):
     report_id = validate_path_id(report_id, "report_id")
     def _query():
@@ -3057,7 +3233,9 @@ async def resolve_report(report_id: str):
     return {"success": True}
 
 
-@router.post("/reports/{report_id}/dismiss")
+@router.post("/reports/{report_id}/dismiss",
+              summary="Dismiss a report",
+              description="Marks a user report as dismissed, indicating no action is needed.")
 async def dismiss_report(report_id: str):
     report_id = validate_path_id(report_id, "report_id")
     def _query():
@@ -3080,7 +3258,9 @@ from notifications import create_notification
 from public_api import _jsonl_lock as _info_reports_lock
 
 
-@router.get("/info-reports")
+@router.get("/info-reports",
+            summary="List information reports",
+            description="List anonymous info-correction and content reports from the JSONL store, newest first. Returns open count for badge display.")
 async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
     """Liệt kê báo-sai/báo cáo ẩn danh (reports.jsonl), mới nhất trước. Admin tự xử lý
     (sửa entity qua editor / takedown thủ công)."""
@@ -3105,7 +3285,9 @@ async def get_info_reports(limit: int = Query(100, ge=1, le=500)):
 
 _audit_cache: dict = {"mtime": 0.0, "items": []}
 
-@router.get("/audit-log")
+@router.get("/audit-log",
+            summary="Get admin audit log",
+            description="Returns paginated audit log entries of admin actions. Supports filtering by HTTP method, search query, and date range.")
 async def get_audit_log(
     limit: int = Query(200, ge=1, le=5000),
     method: Optional[str] = Query(None, max_length=10),
@@ -3155,7 +3337,9 @@ class ReportActionRequest(BaseModel):
     status: str = Field(..., pattern="^(open|resolved|dismissed)$")
 
 
-@router.post("/info-reports/action")
+@router.post("/info-reports/action",
+             summary="Update information report status",
+             description="Change the status of an info-correction report to open, resolved, or dismissed. Writes atomically to the JSONL store.")
 async def info_report_action(body: ReportActionRequest):
     """Đổi trạng thái 1 báo-sai (resolve/dismiss/open) — ghi lại reports.jsonl atomic."""
     def _query():
@@ -3184,7 +3368,9 @@ async def info_report_action(body: ReportActionRequest):
     return {"success": True, "ts": body.ts, "new_status": body.status}
 
 
-@router.get("/cost-overview")
+@router.get("/cost-overview",
+            summary="Get LLM and API cost overview",
+            description="Returns LLM usage costs from the cost tracker and autonomous agent budget status. Helps monitor the monthly budget cap.")
 async def cost_overview():
     """Bảng chi phí: chi phí LLM (cost_tracker) + ngân sách agent tự động (cap/dùng/còn).
     Bảo vệ ngân sách <1tr/tháng khi autonomous-LLM được bật."""
@@ -3210,7 +3396,9 @@ async def cost_overview():
     return await asyncio.to_thread(_query)
 
 
-@router.post("/ai/triage")
+@router.post("/ai/triage",
+             summary="AI-assisted admin triage",
+             description="On-demand LLM call that suggests up to 3 priority admin actions based on current system state. Degrades gracefully if LLM is unavailable.")
 async def ai_triage():
     """On-demand: trợ lý LLM gợi ý ≤3 việc quản trị ưu tiên từ tình hình hiện tại.
     Chỉ chạy KHI admin bấm (1 lần gọi LLM — KHÔNG vòng lặp nền, tôn trọng §B8).
@@ -3245,7 +3433,9 @@ async def ai_triage():
     return await asyncio.to_thread(_query)
 
 
-@router.get("/users")
+@router.get("/users",
+            summary="List all users",
+            description="Returns a paginated list of users with post counts. Supports search by name or phone, and filtering by role.")
 async def list_users(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
@@ -3303,7 +3493,9 @@ async def list_users(
     return await asyncio.to_thread(_query)
 
 
-@router.get("/users/{user_id}")
+@router.get("/users/{user_id}",
+            summary="Get user details",
+            description="Returns comprehensive user profile and activity statistics for the admin panel, including post counts, follow stats, reports, blocks, and reputation.")
 async def admin_user_detail(user_id: str):
     """Comprehensive user detail for admin panel."""
     user_id = validate_path_id(user_id, "user_id")
@@ -3411,7 +3603,9 @@ async def admin_user_detail(user_id: str):
     return await asyncio.to_thread(_query)
 
 
-@router.post("/users/{user_id}/ban")
+@router.post("/users/{user_id}/ban",
+             summary="Ban a user",
+             description="Deactivate a user account and revoke all active sessions. Admins cannot ban themselves.")
 async def ban_user(user_id: str, request: Request):
     user_id = validate_path_id(user_id, "user_id")
     admin_user = await get_current_user(request)
@@ -3434,7 +3628,9 @@ async def ban_user(user_id: str, request: Request):
     return {"success": True}
 
 
-@router.post("/users/{user_id}/unban")
+@router.post("/users/{user_id}/unban",
+             summary="Unban a user",
+             description="Reactivate a previously banned user account. Returns an error if the user is not currently banned.")
 async def unban_user(user_id: str):
     user_id = validate_path_id(user_id, "user_id")
     def _query():
@@ -3459,7 +3655,9 @@ class BulkUserAction(BaseModel):
     reason: str = Field("", max_length=500)
 
 
-@router.post("/users/bulk-ban")
+@router.post("/users/bulk-ban",
+             summary="Bulk ban users",
+             description="Ban multiple users at once. Accepts a list of user IDs and an optional reason; skips non-existent users.")
 async def bulk_ban_users(body: BulkUserAction, request: Request):
     from ratelimit import check_rate
     check_rate("admin:bulk-ban", 5, 60, "Thao tác quá nhanh")
@@ -3486,7 +3684,9 @@ async def bulk_ban_users(body: BulkUserAction, request: Request):
     return {"success": True, "banned_count": len(banned), "banned_ids": banned}
 
 
-@router.post("/users/bulk-unban")
+@router.post("/users/bulk-unban",
+             summary="Bulk unban users",
+             description="Unban multiple users at once. Accepts a list of user IDs and an optional reason; skips non-existent or active users.")
 async def bulk_unban_users(body: BulkUserAction):
     from ratelimit import check_rate
     check_rate("admin:bulk-unban", 5, 60, "Thao tác quá nhanh")
@@ -3511,7 +3711,9 @@ async def bulk_unban_users(body: BulkUserAction):
     return {"success": True, "unbanned_count": len(unbanned), "unbanned_ids": unbanned}
 
 
-@router.post("/users/{user_id}/role")
+@router.post("/users/{user_id}/role",
+             summary="Set user role",
+             description="Assign a role (user, moderator, or admin) to a user. Banned users cannot be assigned roles.")
 async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|moderator|admin)$")):
     user_id = validate_path_id(user_id, "user_id")
     def _query():
@@ -3535,7 +3737,9 @@ class AdminUserNote(BaseModel):
     content: str = Field(..., min_length=1, max_length=2000)
 
 
-@router.post("/users/{user_id}/notes", status_code=201)
+@router.post("/users/{user_id}/notes", status_code=201,
+             summary="Add admin note to user",
+             description="Create an internal admin note attached to a user profile. Notes are only visible to admins.")
 async def add_user_note(user_id: str, body: AdminUserNote, request: Request):
     """Admin: add internal note to a user profile."""
     user_id = validate_path_id(user_id, "user_id")
@@ -3557,7 +3761,9 @@ async def add_user_note(user_id: str, body: AdminUserNote, request: Request):
     return {"note": {"id": str(result["id"]), "created_at": str(result["created_at"])}}
 
 
-@router.get("/users/{user_id}/notes")
+@router.get("/users/{user_id}/notes",
+            summary="List admin notes for user",
+            description="Retrieve all internal admin notes for a user, ordered by most recent first.")
 async def get_user_notes(user_id: str, limit: int = Query(50, ge=1, le=200)):
     """Admin: list internal notes for a user."""
     user_id = validate_path_id(user_id, "user_id")
@@ -3580,7 +3786,9 @@ async def get_user_notes(user_id: str, limit: int = Query(50, ge=1, le=200)):
     return {"notes": notes}
 
 
-@router.delete("/users/{user_id}/notes/{note_id}")
+@router.delete("/users/{user_id}/notes/{note_id}",
+               summary="Delete admin note",
+               description="Delete a specific internal admin note from a user profile.")
 async def delete_user_note(user_id: str, note_id: str):
     """Admin: delete an internal note."""
     user_id = validate_path_id(user_id, "user_id")
@@ -3600,7 +3808,9 @@ async def delete_user_note(user_id: str, note_id: str):
 
 # ── Admin: user mutes + reactions visibility ────────────────────────
 
-@router.get("/users/{user_id}/mutes")
+@router.get("/users/{user_id}/mutes",
+            summary="Get user mute list",
+            description="List all users muted by a specific user, with display names and timestamps.")
 async def admin_user_mutes(user_id: str, limit: int = Query(50, ge=1, le=200)):
     user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
@@ -3619,7 +3829,9 @@ async def admin_user_mutes(user_id: str, limit: int = Query(50, ge=1, le=200)):
             "total": len(mutes)}
 
 
-@router.get("/users/{user_id}/reactions")
+@router.get("/users/{user_id}/reactions",
+            summary="Get user reaction history",
+            description="Retrieve a summary of reaction types and recent reactions made by a user.")
 async def admin_user_reactions(user_id: str, limit: int = Query(100, ge=1, le=500)):
     user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
@@ -3685,7 +3897,9 @@ def _log_mod_action(target_type, target_id, action, reason=None):
 #  SITE SETTINGS — CMS admin endpoints
 # ══════════════════════════════════════════════════
 
-@router.get("/site-settings")
+@router.get("/site-settings",
+            summary="Get all site settings",
+            description="Retrieve all site settings grouped by category for the admin overview panel.")
 async def admin_get_all_settings():
     """All settings grouped by category (for admin overview)."""
     if not db._use_pg:
@@ -3695,7 +3909,9 @@ async def admin_get_all_settings():
 
 _SETTING_KEY_RE = re.compile(r"^[a-zA-Z0-9_./:-]{1,200}$")
 
-@router.get("/site-settings/{category}")
+@router.get("/site-settings/{category}",
+            summary="Get settings by category",
+            description="Retrieve all site settings for a specific category, for the admin editor page.")
 async def admin_get_settings_by_category(category: str):
     """Settings for a specific category (for admin editor page)."""
     if not _SETTING_KEY_RE.match(category):
@@ -3714,7 +3930,9 @@ class SettingUpdate(BaseModel):
     value: object = Field(..., description="New value for the setting")
 
 
-@router.put("/site-settings/{key:path}")
+@router.put("/site-settings/{key:path}",
+            summary="Update a site setting",
+            description="Update the value of a single site setting by its key path.")
 async def admin_update_setting(key: str, body: SettingUpdate):
     """Update a single setting value."""
     if not _SETTING_KEY_RE.match(key):
@@ -3733,7 +3951,9 @@ class BulkSettingUpdate(BaseModel):
     updates: dict[str, object] = Field(..., description="Map of key→value to update")
 
 
-@router.post("/site-settings/bulk")
+@router.post("/site-settings/bulk",
+             summary="Bulk update site settings",
+             description="Update multiple site settings at once. Accepts a map of key-value pairs.")
 async def admin_bulk_update_settings(body: BulkSettingUpdate):
     """Batch update multiple settings at once."""
     if not db._use_pg:
@@ -3742,7 +3962,9 @@ async def admin_bulk_update_settings(body: BulkSettingUpdate):
     return {"success": True, "updated": count}
 
 
-@router.post("/site-settings/reset/{category}")
+@router.post("/site-settings/reset/{category}",
+             summary="Reset category settings to defaults",
+             description="Reset all site settings in a category back to their default values.")
 async def admin_reset_category(category: str):
     """Reset all settings in a category to their defaults."""
     if not _SETTING_KEY_RE.match(category):
@@ -3760,7 +3982,9 @@ async def admin_reset_category(category: str):
 #  LLM CONFIG — runtime AI configuration
 # ══════════════════════════════════════════════════
 
-@router.get("/llm-config")
+@router.get("/llm-config",
+            summary="Get LLM configuration",
+            description="Retrieve the current LLM configuration with the API key masked.")
 async def admin_get_llm_config():
     """Current LLM configuration (API key masked)."""
     import llm_config
@@ -3774,7 +3998,9 @@ class LLMConfigUpdate(BaseModel):
     model_mini: str = Field(..., min_length=1, max_length=100)
 
 
-@router.put("/llm-config")
+@router.put("/llm-config",
+            summary="Update LLM configuration",
+            description="Update the LLM configuration. Validates settings with a test API call before applying.")
 async def admin_update_llm_config(body: LLMConfigUpdate):
     """Update LLM config. Validates with a test API call before applying."""
     import llm_config
@@ -3789,7 +4015,9 @@ async def admin_update_llm_config(body: LLMConfigUpdate):
     return {"success": True, "config": result}
 
 
-@router.post("/llm-config/reset")
+@router.post("/llm-config/reset",
+             summary="Reset LLM config to defaults",
+             description="Reset the LLM configuration back to values from environment variables.")
 async def admin_reset_llm_config():
     """Reset LLM config to environment variables."""
     import llm_config
@@ -3797,7 +4025,9 @@ async def admin_reset_llm_config():
     return {"success": True, "config": result}
 
 
-@router.post("/notifications/cleanup")
+@router.post("/notifications/cleanup",
+             summary="Clean up old notifications",
+             description="Delete read notifications older than N days. Returns the count of deleted records.")
 async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
     """Delete read notifications older than N days."""
     if not db._use_pg:
@@ -3815,7 +4045,9 @@ async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
     return {"success": True, "deleted": deleted, "days": days}
 
 
-@router.post("/cleanup-orphan-refs")
+@router.post("/cleanup-orphan-refs",
+             summary="Clean up orphaned entity references",
+             description="Remove UGC records that reference entity IDs no longer present in the knowledge base.")
 async def admin_cleanup_orphan_entity_refs():
     """Remove UGC records referencing entity IDs that no longer exist in knowledge base."""
     if not db._use_pg:
@@ -3851,7 +4083,9 @@ async def admin_cleanup_orphan_entity_refs():
 
 # ── Entity claims admin (U-30: approve/reject business claims) ────────
 
-@router.get("/claims")
+@router.get("/claims",
+            summary="List entity ownership claims",
+            description="List entity ownership claims filtered by status for admin review. Supports pagination.")
 async def list_claims(
     status: str = Query("pending", max_length=20),
     limit: int = Query(50, ge=1, le=200),
@@ -3897,7 +4131,9 @@ class ClaimDecisionBody(BaseModel):
     reason: str = Field("", max_length=1000)
 
 
-@router.post("/claims/{claim_id}/approve")
+@router.post("/claims/{claim_id}/approve",
+             summary="Approve an entity ownership claim",
+             description="Approve a pending entity ownership claim. Notifies the claimant upon approval.")
 async def approve_claim(claim_id: str, request: Request):
     """U-30: Approve an entity claim."""
     claim_id = validate_path_id(claim_id, "claim_id")
@@ -3935,7 +4171,9 @@ async def approve_claim(claim_id: str, request: Request):
     return {"ok": True}
 
 
-@router.post("/claims/{claim_id}/reject")
+@router.post("/claims/{claim_id}/reject",
+             summary="Reject an entity ownership claim",
+             description="Reject a pending entity ownership claim with an optional reason. Notifies the claimant.")
 async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request):
     """U-30: Reject an entity claim with optional reason."""
     claim_id = validate_path_id(claim_id, "claim_id")
@@ -4013,7 +4251,9 @@ class AnnouncementUpdate(BaseModel):
         return v
 
 
-@router.get("/announcements")
+@router.get("/announcements",
+            summary="List announcements",
+            description="List system announcements with optional active-status filter. Supports pagination.")
 async def list_announcements(
     is_active: Optional[bool] = Query(None),
     limit: int = Query(50, ge=1, le=200),
@@ -4049,7 +4289,9 @@ async def list_announcements(
     return await asyncio.to_thread(_query)
 
 
-@router.post("/announcements", status_code=201)
+@router.post("/announcements", status_code=201,
+             summary="Create an announcement",
+             description="Create a new system announcement with title, content, type, priority, and optional schedule.")
 async def create_announcement(body: AnnouncementCreate, request: Request):
     ph = db._ph
     admin_user = getattr(request.state, "admin_user", None)
@@ -4075,7 +4317,9 @@ async def create_announcement(body: AnnouncementCreate, request: Request):
     return {"success": True, "announcement": result}
 
 
-@router.put("/announcements/{announcement_id}")
+@router.put("/announcements/{announcement_id}",
+            summary="Update an announcement",
+            description="Update fields of an existing announcement. Only provided fields are changed.")
 async def update_announcement(announcement_id: str, body: AnnouncementUpdate):
     announcement_id = validate_path_id(announcement_id, "announcement_id")
     ph = db._ph
@@ -4122,7 +4366,9 @@ async def update_announcement(announcement_id: str, body: AnnouncementUpdate):
     return {"success": True, "announcement": result}
 
 
-@router.delete("/announcements/{announcement_id}")
+@router.delete("/announcements/{announcement_id}",
+               summary="Delete an announcement",
+               description="Permanently delete an announcement by ID.")
 async def delete_announcement(announcement_id: str):
     announcement_id = validate_path_id(announcement_id, "announcement_id")
     ph = db._ph

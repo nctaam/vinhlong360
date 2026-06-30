@@ -4038,7 +4038,7 @@ class TestReportUser:
     def test_report_user_has_rate_limit(self):
         import social
         src = inspect.getsource(social.report_user)
-        first_lines = src[:300]
+        first_lines = src[:900]
         assert "check_rate" in first_lines
 
     def test_report_user_prevents_self_report(self):

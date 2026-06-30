@@ -76,7 +76,9 @@ def _upsert(conn, uid: str, item: SavedItem) -> None:
     """, (uid, item.id, json.dumps(snap, ensure_ascii=False)))
 
 
-@router.get("")
+@router.get("",
+            summary="List saved entities",
+            description="Returns all entities saved by the authenticated user, ordered by most recently saved. Each item includes a snapshot with name, type, and image.")
 async def list_saved(user=Depends(require_user)):
     def _query():
         with db._conn() as conn:
@@ -84,7 +86,9 @@ async def list_saved(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201,
+             summary="Save an entity",
+             description="Adds an entity to the user's saved list with a snapshot for offline display. Upserts on conflict. Limited to 2000 saved entities per user.")
 async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
     def _query():
@@ -101,7 +105,9 @@ async def add_saved(item: SavedItem, user=Depends(require_user), _csrf=Depends(r
     return {"saved": True}
 
 
-@router.delete("/{entity_id}")
+@router.delete("/{entity_id}",
+               summary="Remove a saved entity",
+               description="Removes an entity from the user's saved list by entity ID. Returns {saved: false} on success.")
 async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     entity_id = validate_path_id(entity_id, "entity_id")
     check_rate(f"saved:{user['id']}", 60, 300, "Thao tác lưu quá nhanh. Vui lòng thử lại sau.")
@@ -115,7 +121,9 @@ async def remove_saved(entity_id: str, user=Depends(require_user), _csrf=Depends
     return {"saved": False}
 
 
-@router.post("/merge")
+@router.post("/merge",
+             summary="Merge saved entities from device",
+             description="Merges locally saved entities into the server list for cross-device sync. Trims oldest entries if the total exceeds 2000. Returns the full merged list.")
 async def merge_saved(body: MergeBody, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"saved-merge:{user['id']}", 10, 300, "Đồng bộ quá nhanh. Vui lòng thử lại sau.")
     uid = str(user["id"])

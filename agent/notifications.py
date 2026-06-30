@@ -60,7 +60,9 @@ class ReportRequest(BaseModel):
 
 # ── Notifications ──
 
-@router.get("/notifications")
+@router.get("/notifications",
+            summary="List notifications",
+            description="Returns paginated notifications for the authenticated user, grouped by type. Includes unread count.")
 async def get_notifications(
     limit: int = Query(20, ge=1, le=50),
     offset: int = Query(0, ge=0, le=10000),
@@ -91,7 +93,9 @@ async def get_notifications(
     }
 
 
-@router.get("/notifications/unread-count")
+@router.get("/notifications/unread-count",
+            summary="Get unread notification count",
+            description="Returns the total number of unread notifications for the authenticated user.")
 async def unread_count(user=Depends(require_user)):
     ph = db._ph
     def _query():
@@ -105,7 +109,9 @@ async def unread_count(user=Depends(require_user)):
     return {"unread_count": count}
 
 
-@router.post("/notifications/read-all")
+@router.post("/notifications/read-all",
+             summary="Mark all notifications as read",
+             description="Marks every unread notification as read for the authenticated user.")
 async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"notif-read:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
@@ -119,7 +125,9 @@ async def mark_all_read(user=Depends(require_user), _csrf=Depends(require_csrf))
     return {"success": True}
 
 
-@router.post("/notifications/{notif_id}/read")
+@router.post("/notifications/{notif_id}/read",
+             summary="Mark single notification as read",
+             description="Marks a specific notification as read. Only the notification owner can perform this action.")
 async def mark_notification_read(notif_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"notif-read:{user['id']}", 60, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     notif_id = validate_path_id(notif_id, "notif_id")
@@ -134,7 +142,9 @@ async def mark_notification_read(notif_id: str, user=Depends(require_user), _csr
     return {"success": True}
 
 
-@router.delete("/notifications/{notif_id}")
+@router.delete("/notifications/{notif_id}",
+               summary="Delete a notification",
+               description="Permanently deletes a single notification by ID. Only the notification owner can delete it.")
 async def delete_notification(notif_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"notif-del:{user['id']}", 30, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     notif_id = validate_path_id(notif_id, "notif_id")
@@ -149,7 +159,9 @@ async def delete_notification(notif_id: str, user=Depends(require_user), _csrf=D
     return {"success": True}
 
 
-@router.delete("/notifications")
+@router.delete("/notifications",
+               summary="Clear all notifications",
+               description="Deletes all notifications for the authenticated user. Returns the count of deleted notifications.")
 async def clear_all_notifications(user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"notif-clear:{user['id']}", 3, 60, "Thao tác quá nhanh. Vui lòng thử lại sau.")
     def _query():
@@ -178,7 +190,9 @@ class NotifPrefsUpdate(BaseModel):
     pref_system: Optional[bool] = None
 
 
-@router.get("/notification-preferences")
+@router.get("/notification-preferences",
+            summary="Get notification preferences",
+            description="Returns the user's notification preference flags for each notification type (like, comment, mention, follow, system).")
 async def get_notification_preferences(user=Depends(require_user)):
     ph = db._ph
     uid = str(user["id"])
@@ -195,7 +209,9 @@ async def get_notification_preferences(user=Depends(require_user)):
     return {"pref_like": True, "pref_comment": True, "pref_mention": True, "pref_follow": True, "pref_system": True}
 
 
-@router.put("/notification-preferences")
+@router.put("/notification-preferences",
+            summary="Update notification preferences",
+            description="Updates one or more notification preference flags. Only provided fields are changed; omitted fields keep their current value.")
 async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"notif-prefs:{user['id']}", 10, 600, "Cập nhật cài đặt quá nhanh. Vui lòng thử lại sau.")
     ph = db._ph
@@ -248,7 +264,9 @@ async def _next_event_id() -> int:
         return _sse_event_counter
 
 
-@router.get("/notifications/stream")
+@router.get("/notifications/stream",
+            summary="SSE notification stream",
+            description="Server-Sent Events stream for real-time notifications. Authenticates via query token. Supports Last-Event-ID for missed event recovery.")
 async def notification_stream(request: Request, token: str = Query(None, max_length=200)):
     from auth import _hash_token
     if not token:
@@ -395,7 +413,9 @@ def create_notification(user_id: str, notif_type: str, title: str,
 
 # ── Follow ──
 
-@router.post("/follow/{target_type}/{target_id}")
+@router.post("/follow/{target_type}/{target_id}",
+             summary="Toggle follow",
+             description="Follows or unfollows a user or entity. Returns the new follow state. Blocked users cannot be followed.")
 async def toggle_follow(target_type: str, target_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     target_id = validate_path_id(target_id, "target_id")
     check_rate(f"follow:{user['id']}", 30, 300, "Thao tác follow quá nhanh. Vui lòng thử lại sau.")
@@ -467,7 +487,9 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
     return {"following": following}
 
 
-@router.get("/follow/check/{target_type}/{target_id}")
+@router.get("/follow/check/{target_type}/{target_id}",
+            summary="Check follow status",
+            description="Checks whether the authenticated user is following a specific user or entity.")
 async def check_follow(target_type: str, target_id: str, user=Depends(require_user)):
     validate_path_id(target_id, "target_id")
     _require_pg()
@@ -485,7 +507,9 @@ async def check_follow(target_type: str, target_id: str, user=Depends(require_us
     return {"following": row is not None}
 
 
-@router.get("/following")
+@router.get("/following",
+            summary="List followed users and entities",
+            description="Returns a paginated list of users and entities the authenticated user follows. Optionally filter by target type.")
 async def get_following(
     target_type: Optional[str] = Query(None, pattern="^(user|entity)$"),
     limit: int = Query(50, ge=1, le=100),
@@ -534,7 +558,9 @@ async def get_following(
     return {"following": items, "total": total, "has_more": offset + limit < total}
 
 
-@router.get("/followers/count/{target_type}/{target_id}")
+@router.get("/followers/count/{target_type}/{target_id}",
+            summary="Get follower count",
+            description="Returns the total number of followers for a given user or entity. No authentication required.")
 async def get_follower_count(target_type: str, target_id: str):
     if target_type not in ("user", "entity"):
         raise HTTPException(400, "target_type phải là 'user' hoặc 'entity'")
@@ -558,7 +584,9 @@ async def get_follower_count(target_type: str, target_id: str):
 RL_REPORT_LIMIT = 10
 RL_REPORT_WINDOW = 3600
 
-@router.post("/report-ugc")
+@router.post("/report-ugc",
+             summary="Report user-generated content",
+             description="Submits a moderation report for a post, comment, or user. Duplicate pending reports for the same target are rejected.")
 async def create_report(body: ReportRequest, user=Depends(require_user), _csrf=Depends(require_csrf)):
     check_rate(f"report:{user['id']}", RL_REPORT_LIMIT, RL_REPORT_WINDOW, "Bạn đã gửi quá nhiều báo cáo. Vui lòng thử lại sau.")
     ph = db._ph
@@ -581,7 +609,9 @@ async def create_report(body: ReportRequest, user=Depends(require_user), _csrf=D
 
 # ── Block ──
 
-@router.post("/block/{blocked_id}")
+@router.post("/block/{blocked_id}",
+             summary="Toggle block user",
+             description="Blocks or unblocks a user. Blocking automatically removes mutual follows. Returns the new block state.")
 async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     blocked_id = validate_path_id(blocked_id, "blocked_id")
     check_rate(f"block:{user['id']}", 20, 300, "Thao tác chặn quá nhanh. Vui lòng thử lại sau.")
@@ -614,7 +644,9 @@ async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depend
     return {"blocked": blocked}
 
 
-@router.get("/blocked-users")
+@router.get("/blocked-users",
+            summary="List blocked users",
+            description="Returns a paginated list of users blocked by the authenticated user, with display name and avatar.")
 async def list_blocked_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
                               user=Depends(require_user)):
     offset = (page - 1) * limit
@@ -644,7 +676,9 @@ async def list_blocked_users(page: int = Query(1, ge=1, le=100), limit: int = Qu
 
 # ── Mute (soft block — hides posts from feed only) ──
 
-@router.post("/mute/{muted_id}")
+@router.post("/mute/{muted_id}",
+             summary="Toggle mute user",
+             description="Mutes or unmutes a user. Muted users' posts are hidden from the feed but they are not blocked. Returns the new mute state.")
 async def toggle_mute(muted_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     muted_id = validate_path_id(muted_id, "muted_id")
     check_rate(f"mute:{user['id']}", 20, 300, "Thao tác quá nhanh. Vui lòng thử lại sau.")
@@ -671,7 +705,9 @@ async def toggle_mute(muted_id: str, user=Depends(require_user), _csrf=Depends(r
     return {"muted": muted}
 
 
-@router.get("/muted-users")
+@router.get("/muted-users",
+            summary="List muted users",
+            description="Returns a paginated list of users muted by the authenticated user, with display name and avatar.")
 async def list_muted_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
                             user=Depends(require_user)):
     offset = (page - 1) * limit
@@ -741,7 +777,9 @@ def _format_notif(row: dict) -> dict:
 
 # ── RSVP lễ-hội/sự-kiện: "Tôi sẽ đi" ──
 
-@router.post("/events/{entity_id}/rsvp")
+@router.post("/events/{entity_id}/rsvp",
+             summary="Toggle event RSVP",
+             description="Marks or unmarks the authenticated user as attending an event. Only entities of type 'event' are accepted. Returns the new RSVP state and attendee count.")
 async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(require_csrf)):
     validate_path_id(entity_id, "entity_id")
     check_rate(f"rsvp:{user['id']}", 30, 300, "Thao tác RSVP quá nhanh. Vui lòng thử lại sau.")
@@ -768,7 +806,9 @@ async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(
     return {"going": going, "count": count}
 
 
-@router.get("/events/{entity_id}/rsvp")
+@router.get("/events/{entity_id}/rsvp",
+            summary="Get event RSVP status",
+            description="Returns the total attendee count and whether the current user (if authenticated) has RSVP'd to the event.")
 async def get_rsvp(entity_id: str, request: Request = None):
     validate_path_id(entity_id, "entity_id")
     u = await get_current_user(request) if request else None

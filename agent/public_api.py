@@ -175,7 +175,9 @@ def _log_search_query(q: str, entity_type: str | None, area: str | None, total: 
 import site_settings
 
 
-@router.get("/site-settings")
+@router.get("/site-settings",
+            summary="Get site settings",
+            description="Returns all public site settings as a flat key-value dict. Cached for 60 seconds.")
 async def get_site_settings(response: Response):
     """Public flat {key: value} dict of all site settings (cached 60s)."""
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
@@ -243,7 +245,9 @@ def _to_minimal(entity: dict) -> dict:
     return out
 
 
-@router.get("/entities")
+@router.get("/entities",
+            summary="List entities",
+            description="Returns a paginated list of public entities. Supports filtering by type, area, search query, month, and sorting by rating/name/newest.")
 async def list_entities(
     response: Response,
     type: Optional[str] = Query(None, max_length=100),
@@ -277,7 +281,9 @@ async def list_entities(
     return {"total": total, "entities": results}
 
 
-@router.get("/entities/{entity_id}/relationships")
+@router.get("/entities/{entity_id}/relationships",
+            summary="Get entity relationships",
+            description="Returns paginated relationships for a given entity. Supports filtering by relationship type and including nearby entities.")
 async def get_entity_relationships(
     entity_id: str,
     response: Response,
@@ -304,7 +310,9 @@ async def get_entity_relationships(
     return result
 
 
-@router.get("/featured")
+@router.get("/featured",
+            summary="Get featured entities",
+            description="Returns up to 20 editorially featured entities sorted by display order. Includes basic entity info and images.")
 async def get_featured_entities(response: Response):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     def _query():
@@ -335,7 +343,9 @@ async def get_featured_entities(response: Response):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entity-types")
+@router.get("/entity-types",
+            summary="List entity types",
+            description="Returns all entity types with their counts, ordered by frequency. Cached for 1 hour.")
 async def entity_types(response: Response):
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
@@ -346,7 +356,9 @@ async def entity_types(response: Response):
     return {"types": result, "total": sum(t["count"] for t in result)}
 
 
-@router.get("/areas")
+@router.get("/areas",
+            summary="List areas with places",
+            description="Returns all administrative areas grouped with their places (wards/communes). Cached for 1 hour.")
 async def list_areas(response: Response):
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     def _query():
@@ -362,7 +374,9 @@ async def list_areas(response: Response):
     return {"areas": result, "total_places": sum(a["count"] for a in result)}
 
 
-@router.get("/entities/{entity_id}")
+@router.get("/entities/{entity_id}",
+            summary="Get entity detail",
+            description="Returns full entity detail including relationships, quality score, source freshness, and practical facts. Supports ETag caching.")
 async def get_entity(
     entity_id: str,
     request: Request,
@@ -411,7 +425,9 @@ async def get_entity(
     return entity
 
 
-@router.get("/entities/{entity_id}/stats")
+@router.get("/entities/{entity_id}/stats",
+            summary="Get entity social stats",
+            description="Returns aggregated social stats for an entity: review count, average rating, post count, bookmark count, and follower count.")
 async def get_entity_stats(entity_id: str, response: Response):
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
@@ -458,7 +474,9 @@ async def get_entity_stats(entity_id: str, response: Response):
     return result
 
 
-@router.get("/entities/{entity_id}/rating-breakdown")
+@router.get("/entities/{entity_id}/rating-breakdown",
+            summary="Get entity rating breakdown",
+            description="Returns 5-star rating distribution with counts, percentages, total reviews, and average rating for an entity. Requires Postgres.")
 async def get_entity_rating_breakdown(entity_id: str, response: Response):
     """5-star rating distribution for an entity."""
     validate_path_id(entity_id, "entity_id")
@@ -506,7 +524,9 @@ async def get_entity_rating_breakdown(entity_id: str, response: Response):
     return result
 
 
-@router.get("/entities/{entity_id}/reviews")
+@router.get("/entities/{entity_id}/reviews",
+            summary="Get entity reviews",
+            description="Returns paginated user reviews for an entity with sorting, rating filter, distribution, and the current user's own review if logged in.")
 async def get_entity_reviews(
     entity_id: str,
     response: Response,
@@ -604,7 +624,9 @@ async def get_entity_reviews(
     return result
 
 
-@router.get("/places")
+@router.get("/places",
+            summary="List places",
+            description="Returns all place entities (wards/communes) with id, name, area, and level. Optionally filtered by area. Cached for 1 hour.")
 async def list_places(response: Response, area: Optional[str] = Query(None, max_length=100)):
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
     db.initialize()
@@ -622,7 +644,9 @@ async def list_places(response: Response, area: Optional[str] = Query(None, max_
     return await asyncio.to_thread(_query)
 
 
-@router.get("/facilities")
+@router.get("/facilities",
+            summary="List public facilities",
+            description="Returns administrative facilities (government offices, police, etc.) for a given ward/commune. Cached for 1 hour.")
 async def list_facilities(response: Response, place: Optional[str] = Query(None, max_length=100)):
     """GĐ13.4: danh bạ hành chính — cơ quan công vụ (UBND/công an/...) theo xã/phường."""
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
@@ -638,7 +662,9 @@ _WARD_GROUPS = {
 }
 
 
-@router.get("/places/{place_id}/overview")
+@router.get("/places/{place_id}/overview",
+            summary="Get place overview",
+            description="Returns a ward/commune hub page with facilities, tourism, lodging, and product entities grouped by category with counts.")
 async def place_overview(place_id: str, response: Response):
     """Trang hub 1 xã/phường: danh bạ hành chính + du lịch + lưu trú + sản phẩm.
 
@@ -704,7 +730,9 @@ def _haversine_km(a: list | None, b: list | None) -> float:
     return 6371.0 * 2 * math.asin(math.sqrt(h))
 
 
-@router.get("/places/{place_id}/day-plan")
+@router.get("/places/{place_id}/day-plan",
+            summary="Get place day plan",
+            description="Returns a suggested one-day itinerary for a ward/commune with diverse entity types ordered by proximity. Includes time slots and durations.")
 async def place_day_plan(place_id: str, response: Response):
     """Gợi ý lịch trình 1 ngày cho xã/phường — đa dạng loại hình, sắp theo khoảng cách."""
     validate_path_id(place_id, "place_id")
@@ -754,7 +782,9 @@ async def place_day_plan(place_id: str, response: Response):
     return result
 
 
-@router.get("/itineraries")
+@router.get("/itineraries",
+            summary="List itineraries",
+            description="Returns paginated travel itineraries. Optionally filtered by area. Cached for 5 minutes.")
 async def list_itineraries(
     response: Response,
     area: Optional[str] = Query(None, max_length=100),
@@ -765,7 +795,9 @@ async def list_itineraries(
     return await asyncio.to_thread(db.list_itineraries, area=area, limit=limit, offset=offset)
 
 
-@router.get("/itineraries/{itin_id}")
+@router.get("/itineraries/{itin_id}",
+            summary="Get itinerary detail",
+            description="Returns a single itinerary with stops enriched with entity names, summaries, types, and coordinates.")
 async def get_itinerary(itin_id: str, response: Response):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     validate_path_id(itin_id, "itin_id")
@@ -791,7 +823,9 @@ async def get_itinerary(itin_id: str, response: Response):
     return result
 
 
-@router.get("/search")
+@router.get("/search",
+            summary="Search entities",
+            description="Full-text search across entities with optional type and area filters. Rate-limited to 30 requests per minute per IP. Logs queries for analytics.")
 async def search(
     request: Request,
     response: Response,
@@ -811,7 +845,9 @@ async def search(
     return {"q": safe_q, "total": total, "results": results}
 
 
-@router.get("/autocomplete")
+@router.get("/autocomplete",
+            summary="Autocomplete entity names",
+            description="Lightweight typeahead suggestions for entity name search. Returns id, name, type, and place for up to 8 matches.")
 async def autocomplete(
     request: Request,
     response: Response,
@@ -833,7 +869,9 @@ async def autocomplete(
     }
 
 
-@router.get("/me/activity")
+@router.get("/me/activity",
+            summary="Get current user activity",
+            description="Returns the authenticated user's recent activity feed combining posts, comments, and likes sorted by recency. Requires authentication.")
 async def user_activity(
     request: Request,
     response: Response,
@@ -886,7 +924,9 @@ async def user_activity(
     return {"activity": items, "page": page, "has_more": len(items) == limit}
 
 
-@router.get("/stats")
+@router.get("/stats",
+            summary="Get public stats",
+            description="Returns aggregate platform statistics including entity counts, user counts, and other summary metrics. Cached for 5 minutes.")
 async def public_stats(response: Response):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     return await asyncio.to_thread(db.stats)
@@ -990,7 +1030,9 @@ def _diverse_pick(entities: list[dict], max_per_type: int = 2,
     return result
 
 
-@router.get("/homepage")
+@router.get("/homepage",
+            summary="Get curated homepage feed",
+            description="Returns the curated homepage with seasonal picks, diverse experiences, products, top dishes, trending entities, upcoming events, itineraries, and area counts. Cached for 2 minutes.")
 async def homepage_curated(response: Response):
     """Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped."""
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
@@ -1234,7 +1276,9 @@ _map_pins_cache: dict = {"data": None, "filters": None, "ts": 0.0}
 _MAP_PINS_TTL = 120
 
 
-@router.get("/map-pins")
+@router.get("/map-pins",
+            summary="Get map pins",
+            description="Returns lightweight map pin data for all entities with coordinates. Includes emoji, color, rating, and place name. Filterable by type and area.")
 async def get_map_pins(
     response: Response,
     type: Optional[str] = Query(None, max_length=50),
@@ -1290,7 +1334,9 @@ async def get_map_pins(
     return result
 
 
-@router.get("/events")
+@router.get("/events",
+            summary="List events",
+            description="Returns upcoming events sorted by date. Filters out past events by default and excludes unreliable dates. Filterable by area.")
 async def list_events(
     response: Response,
     area: Optional[str] = Query(None, max_length=100),
@@ -1362,7 +1408,9 @@ class ReportIn(BaseModel):
     field: Optional[str] = Field(None, max_length=20)
 
 
-@router.post("/report")
+@router.post("/report",
+             summary="Submit a report",
+             description="Submits a report for incorrect information or policy-violating content. Stored in JSONL for admin review. Rate-limited per IP.")
 async def submit_report(payload: ReportIn, request: Request):
     """GĐ13.6f: tiếp nhận báo-sai (facility/entity) & báo cáo nội dung (post/comment).
 
@@ -1413,7 +1461,9 @@ class ReportStaleIn(BaseModel):
     detail: str = Field("", max_length=2000)
 
 
-@router.post("/entities/{entity_id}/report-stale")
+@router.post("/entities/{entity_id}/report-stale",
+             summary="Report stale entity field",
+             description="Reports a specific field (phone, hours, address, etc.) as outdated or incorrect on an entity. Rate-limited per IP.")
 async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Request):
     """U-02: Report a specific field as stale/incorrect on an entity."""
     validate_path_id(entity_id, "entity_id")
@@ -1454,7 +1504,9 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
 
 # ── Entity gallery (entity images + review images) ───────────────────
 
-@router.get("/entities/{entity_id}/gallery")
+@router.get("/entities/{entity_id}/gallery",
+            summary="Get entity image gallery",
+            description="Returns all images for an entity including editorial images and user review photos with credits and alt text.")
 async def get_entity_gallery(entity_id: str, response: Response):
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
@@ -1549,7 +1601,9 @@ def _extract_mentions(texts: list[str], top_n: int = 8) -> list[dict]:
     return [{"keyword": kw, "count": cnt} for kw, cnt in combined.most_common(top_n)]
 
 
-@router.get("/entities/{entity_id}/review-stats")
+@router.get("/entities/{entity_id}/review-stats",
+            summary="Get entity review stats",
+            description="Returns review statistics for an entity: average rating, distribution by star, and frequently mentioned keywords extracted from review text.")
 async def get_review_stats(entity_id: str, response: Response):
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
@@ -1624,7 +1678,9 @@ _similar_cache: OrderedDict[str, tuple[float, list]] = OrderedDict()
 _SIMILAR_TTL = 300  # 5 min cache
 
 
-@router.get("/entities/{entity_id}/similar")
+@router.get("/entities/{entity_id}/similar",
+            summary="Get similar entities",
+            description="Returns rule-based similar entity recommendations based on type, area, and relationship graph. No ML required. Cached for 5 minutes.")
 async def get_similar_entities(
     entity_id: str,
     response: Response,
@@ -1669,7 +1725,9 @@ async def get_similar_entities(
     return {"entity_id": entity_id, "similar": result}
 
 
-@router.get("/entities/{entity_id}/nearby")
+@router.get("/entities/{entity_id}/nearby",
+            summary="Get nearby entities",
+            description="Returns entities within a given radius (km) of the specified entity, sorted by distance. Optionally filtered by entity type.")
 async def get_nearby_entities(
     entity_id: str,
     response: Response,
@@ -1711,7 +1769,10 @@ async def get_nearby_entities(
 
 from fastapi import Depends
 
-@router.get("/entities/{entity_id}/qa", dependencies=[Depends(require_pg)])
+@router.get("/entities/{entity_id}/qa",
+            dependencies=[Depends(require_pg)],
+            summary="Get entity Q&A",
+            description="Returns paginated Q&A posts for an entity with accepted answer resolution. Questions with best answers are shown first. Requires Postgres.")
 async def get_entity_qa(
     entity_id: str,
     response: Response,
@@ -1809,7 +1870,9 @@ CONTACT_VIEWS_FILE = Path(__file__).resolve().parent / "data" / "contact_views.j
 _VALID_CONTACT_ACTIONS = {"zalo", "phone", "website", "map"}
 
 
-@router.post("/entities/{entity_id}/view-contact")
+@router.post("/entities/{entity_id}/view-contact",
+             summary="Track contact view",
+             description="Logs a CTA analytics event when a user views contact info (Zalo, phone, website, or map). Rate-limited to 10 per minute per IP.")
 async def track_contact_view(
     entity_id: str,
     request: Request,
@@ -1852,7 +1915,10 @@ class EntityClaimIn(BaseModel):
     evidence: str = Field("", max_length=2000)
 
 
-@router.post("/entities/{entity_id}/claim", dependencies=[Depends(require_pg)])
+@router.post("/entities/{entity_id}/claim",
+             dependencies=[Depends(require_pg)],
+             summary="Submit entity ownership claim",
+             description="Submits a business ownership claim for an entity. Requires authentication and CSRF. Limited to 3 claims per day per user. Requires Postgres.")
 async def submit_entity_claim(entity_id: str, payload: EntityClaimIn, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
     validate_path_id(entity_id, "entity_id")
     from ratelimit import check_rate
@@ -1888,7 +1954,9 @@ async def submit_entity_claim(entity_id: str, payload: EntityClaimIn, request: R
 # ── What's-new feed (U-15) ────────────────────────────────────────────
 
 
-@router.get("/feed/new-since")
+@router.get("/feed/new-since",
+            summary="Get new content since timestamp",
+            description="Returns entities and posts created or updated since a given ISO datetime. Useful for incremental feed updates.")
 async def feed_new_since(
     response: Response,
     since: str = Query(..., min_length=10, max_length=30),
@@ -1950,7 +2018,9 @@ async def feed_new_since(
 # ── Collections (U-28, public read-only) ──────────────────────────────
 
 
-@router.get("/collections")
+@router.get("/collections",
+            summary="List public collections",
+            description="Returns published editorial collections sorted by display order. Each collection includes title, description, cover image, and entity IDs.")
 async def list_public_collections(response: Response, limit: int = Query(20, ge=1, le=100)):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Published collections — sorted by sort_order."""
@@ -1968,7 +2038,9 @@ async def list_public_collections(response: Response, limit: int = Query(20, ge=
     return await asyncio.to_thread(_query)
 
 
-@router.get("/collections/{slug}")
+@router.get("/collections/{slug}",
+            summary="Get collection by slug",
+            description="Returns a single published collection by its URL slug with entity IDs resolved to full entity summaries.")
 async def get_collection_by_slug(slug: str, response: Response):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     """Public collection detail by slug — resolve entity_ids to summaries."""
@@ -1996,7 +2068,9 @@ async def get_collection_by_slug(slug: str, response: Response):
 
 # ── Public Announcements ─────────────────────────────────────────────────
 
-@router.get("/announcements")
+@router.get("/announcements",
+            summary="List active announcements",
+            description="Returns currently active announcements sorted by priority. Only shows announcements within their active date range. Requires Postgres.")
 async def list_active_announcements(response: Response, limit: int = Query(10, ge=1, le=50)):
     """Active announcements for display to users."""
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
@@ -2022,7 +2096,9 @@ async def list_active_announcements(response: Response, limit: int = Query(10, g
 
 # ── Entity Map Search (bounding box) ────────────────────────────────────
 
-@router.get("/entities/map")
+@router.get("/entities/map",
+            summary="Search entities by bounding box",
+            description="Returns entities within a geographic bounding box for map display. Supports entity type filter. Returns coordinates, summary, and first image.")
 async def entities_map_search(
     response: Response,
     north: float = Query(..., ge=-90, le=90),
@@ -2072,7 +2148,9 @@ async def entities_map_search(
 
 # ── Entity Trending (hot entities recently) ──────────────────────────────
 
-@router.get("/entities/trending")
+@router.get("/entities/trending",
+            summary="Get trending entities",
+            description="Returns entities with the most activity (posts, reviews, bookmarks) in a recent time period. Filterable by entity type. Requires Postgres.")
 async def entities_trending(
     days: int = Query(7, ge=1, le=90),
     entity_type: str = Query(None, max_length=50),
@@ -2128,7 +2206,9 @@ async def entities_trending(
 
 # ── User Engagement Stats ────────────────────────────────────────────────
 
-@router.get("/users/{user_id}/engagement")
+@router.get("/users/{user_id}/engagement",
+            summary="Get user engagement stats",
+            description="Returns engagement metrics for a user profile: total posts, reviews, questions, average rating, follower count, and likes received. Requires Postgres.")
 async def user_engagement_stats(user_id: str, response: Response):
     """Lightweight engagement stats for a user profile card."""
     validate_path_id(user_id, "user_id")
@@ -2176,7 +2256,9 @@ async def user_engagement_stats(user_id: str, response: Response):
 
 # ── Entity comparison ─────────────────────────────────────────────────
 
-@router.get("/entities/compare")
+@router.get("/entities/compare",
+            summary="Compare entities side by side",
+            description="Returns side-by-side comparison data for 2-5 entities. Includes practical attributes (hours, phone, address) and quality scores.")
 async def compare_entities(
     request: Request,
     response: Response,
@@ -2229,7 +2311,9 @@ async def compare_entities(
 
 # ── Popular entities by type ─────────────────────────────────────────
 
-@router.get("/entities/popular")
+@router.get("/entities/popular",
+            summary="Get popular entities",
+            description="Returns entities ranked by a composite popularity score based on review count, rating, images, and quality. Filterable by type and area.")
 async def popular_entities(
     request: Request,
     response: Response,
@@ -2280,7 +2364,9 @@ async def popular_entities(
 
 # ── Dedicated entity search with advanced filters ─────────────────────
 
-@router.get("/entities/search")
+@router.get("/entities/search",
+            summary="Advanced entity search",
+            description="Entity search with advanced filters: type, area, image presence, and sort order. Returns paginated results with enriched place data.")
 async def entity_search(
     request: Request,
     response: Response,
@@ -2325,7 +2411,9 @@ async def entity_search(
 
 # ── ND 147/2024 Compliance & Transparency ──────────────────────────────
 
-@router.get("/transparency")
+@router.get("/transparency",
+            summary="Get transparency report",
+            description="Returns ND 147/2024 compliance info: moderation policy, takedown SLA, data practices, and contact details. Cached for 24 hours.")
 async def transparency_report(response: Response):
     """ND 147/2024 transparency: moderation policy, contact, takedown SLA."""
     response.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=172800"

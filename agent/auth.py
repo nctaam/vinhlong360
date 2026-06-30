@@ -373,7 +373,9 @@ async def _send_sms(phone: str, message: str) -> bool:
 
 # ── Endpoints ──
 
-@router.post("/request-otp")
+@router.post("/request-otp",
+             summary="Request OTP code",
+             description="Sends a one-time password to the provided phone number via SMS. Rate-limited per phone and per IP to prevent abuse.")
 async def request_otp(body: OTPRequest, request: Request):
     phone = body.phone
 
@@ -424,7 +426,9 @@ async def request_otp(body: OTPRequest, request: Request):
     }
 
 
-@router.post("/verify-otp")
+@router.post("/verify-otp",
+             summary="Verify OTP and create session",
+             description="Verifies the OTP code for a phone number. On success, creates or reactivates the user account and returns a session token.")
 async def verify_otp(body: OTPVerify, request: Request):
     from middleware import get_client_ip
     ip = get_client_ip(request)
@@ -525,7 +529,9 @@ CHECK_PHONE_IP_WINDOW = _cfg.CHECK_PHONE_IP_WINDOW
 _check_phone_ip_rate: dict[str, list[float]] = {}
 
 
-@router.post("/check-phone")
+@router.post("/check-phone",
+             summary="Check if phone number exists",
+             description="Checks whether a phone number is already registered. Returns a boolean indicating account existence.")
 async def check_phone(body: CheckPhone, request: Request):
     from middleware import get_client_ip
     ip = get_client_ip(request)
@@ -542,7 +548,9 @@ async def check_phone(body: CheckPhone, request: Request):
     return {"exists": bool(user)}
 
 
-@router.post("/login")
+@router.post("/login",
+             summary="Login with phone and password",
+             description="Authenticates a user with phone number and password. Returns a session token on success. Rate-limited per IP and per phone to prevent brute-force attacks.")
 async def login_password(body: PasswordLogin, request: Request):
     # P0-15: rate-limit theo IP (chống brute-force mật khẩu).
     from middleware import get_client_ip
@@ -613,7 +621,9 @@ async def login_password(body: PasswordLogin, request: Request):
     }
 
 
-@router.post("/set-password")
+@router.post("/set-password",
+             summary="Set or change password",
+             description="Sets a new password for the authenticated user. If a password already exists, the current password must be verified first. Revokes all other sessions on success.")
 async def set_password(body: SetPassword, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -647,7 +657,9 @@ async def set_password(body: SetPassword, request: Request, _csrf=Depends(_requi
     return {"success": True, "message": "Đã đặt mật khẩu thành công"}
 
 
-@router.post("/reset-password-otp")
+@router.post("/reset-password-otp",
+             summary="Reset password via OTP",
+             description="Resets the user's password by verifying an OTP code. Revokes all existing sessions, requiring the user to log in again with the new password.")
 async def reset_password_otp(body: ResetPasswordOTP, request: Request, _csrf=Depends(_require_csrf_lazy)):
     from middleware import get_client_ip
     ip = get_client_ip(request)
@@ -716,7 +728,9 @@ async def reset_password_otp(body: ResetPasswordOTP, request: Request, _csrf=Dep
     return {"success": True, "message": "Đã đặt lại mật khẩu. Vui lòng đăng nhập lại."}
 
 
-@router.post("/logout")
+@router.post("/logout",
+             summary="Logout current session",
+             description="Invalidates the current session token. Returns success even if no valid session exists.")
 async def logout(request: Request, _csrf=Depends(_require_csrf_lazy)):
     from ratelimit import check_rate
     from middleware import get_client_ip
@@ -731,7 +745,9 @@ async def logout(request: Request, _csrf=Depends(_require_csrf_lazy)):
     return {"success": True}
 
 
-@router.post("/refresh")
+@router.post("/refresh",
+             summary="Refresh session token",
+             description="Rotates the session token by issuing a new token and revoking the old one. Extends the session expiry.")
 async def refresh_token(request: Request, _csrf=Depends(_require_csrf_lazy)):
     """Rotate session token — issue new token, revoke old. Reduces compromise window."""
     from ratelimit import check_rate
@@ -765,7 +781,9 @@ async def refresh_token(request: Request, _csrf=Depends(_require_csrf_lazy)):
     }
 
 
-@router.get("/sessions")
+@router.get("/sessions",
+            summary="List active sessions",
+            description="Returns all active sessions for the authenticated user, including device info, IP address, and which session is current.")
 async def list_sessions(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -797,7 +815,9 @@ async def list_sessions(request: Request):
     return {"sessions": sessions}
 
 
-@router.delete("/sessions/{session_id}")
+@router.delete("/sessions/{session_id}",
+               summary="Revoke a session",
+               description="Revokes a specific session by ID, logging out that device. Only sessions belonging to the authenticated user can be revoked.")
 async def revoke_session(session_id: str, request: Request, _csrf=Depends(_require_csrf_lazy)):
     from auth_middleware import validate_path_id
     session_id = validate_path_id(session_id, "session_id")
@@ -816,7 +836,9 @@ async def revoke_session(session_id: str, request: Request, _csrf=Depends(_requi
     return {"success": True}
 
 
-@router.get("/me")
+@router.get("/me",
+            summary="Get current user profile",
+            description="Returns the profile of the currently authenticated user, including display name, avatar, role, and masked phone number.")
 async def get_me(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -826,7 +848,9 @@ async def get_me(request: Request):
     return {"user": _safe_user(user)}
 
 
-@router.post("/deactivate")
+@router.post("/deactivate",
+             summary="Deactivate account",
+             description="Deactivates the authenticated user's account and revokes all sessions. The account can be reactivated by logging in again via OTP.")
 async def deactivate_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -845,7 +869,9 @@ async def deactivate_account(request: Request, _csrf=Depends(_require_csrf_lazy)
     return {"success": True, "message": "Tài khoản đã bị vô hiệu hóa. Đăng nhập lại bằng OTP để kích hoạt."}
 
 
-@router.delete("/account")
+@router.delete("/account",
+               summary="Schedule account deletion",
+               description="Schedules the authenticated user's account for permanent deletion after a grace period. Revokes all sessions. Logging in via OTP within the grace period cancels deletion.")
 async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -872,7 +898,9 @@ async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
     }
 
 
-@router.put("/profile")
+@router.put("/profile",
+            summary="Update user profile",
+            description="Updates the authenticated user's display name, bio, and/or username. Content is moderated and HTML-escaped. Returns the updated profile.")
 async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -933,7 +961,9 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
     return {"user": _safe_user(user)}
 
 
-@router.get("/check-username/{username}")
+@router.get("/check-username/{username}",
+            summary="Check username availability",
+            description="Checks whether a username is available for registration. Returns availability status and a reason if unavailable.")
 async def check_username(username: str, request: Request):
     from middleware import get_client_ip
     from ratelimit import check_rate
@@ -956,7 +986,9 @@ async def check_username(username: str, request: Request):
     return {"available": True}
 
 
-@router.post("/avatar")
+@router.post("/avatar",
+             summary="Upload avatar image",
+             description="Uploads and processes a user avatar image. The image is resized to multiple sizes in WebP format. Returns the avatar URL and all available sizes.")
 async def upload_avatar(request: Request, file: UploadFile = File(...), _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -991,7 +1023,9 @@ async def upload_avatar(request: Request, file: UploadFile = File(...), _csrf=De
     return {"avatar_url": avatar_url, "sizes": urls}
 
 
-@router.post("/cover")
+@router.post("/cover",
+             summary="Upload cover image",
+             description="Uploads and processes a profile cover image. The image is resized to multiple sizes in WebP format. Returns the cover URL and all available sizes.")
 async def upload_cover(request: Request, file: UploadFile = File(...), _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -1038,7 +1072,9 @@ def _log_consent(user_id: str, version: str, ip: str):
         logger.warning("Failed to log consent for user %s: %s", user_id, e)
 
 
-@router.get("/consent-history")
+@router.get("/consent-history",
+            summary="Get consent history",
+            description="Returns the authenticated user's consent acceptance history, including version, masked IP, and timestamp for each record.")
 async def consent_history(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -1078,7 +1114,9 @@ def _log_login(phone: str, method: str, success: bool, request: Request, user_id
         logger.warning("Failed to log login for %s: %s", _mask_phone(phone), e)
 
 
-@router.get("/login-history")
+@router.get("/login-history",
+            summary="Get login history",
+            description="Returns the authenticated user's recent login attempts, including method, success status, masked IP, and user agent.")
 async def get_login_history(request: Request, limit: int = Query(20, ge=1, le=100)):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -1119,7 +1157,9 @@ class PrivacyUpdate(BaseModel):
         return v
 
 
-@router.get("/privacy")
+@router.get("/privacy",
+            summary="Get privacy settings",
+            description="Returns the authenticated user's privacy settings including profile visibility, activity visibility, and saved items visibility.")
 async def get_privacy(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -1135,7 +1175,9 @@ async def get_privacy(request: Request):
     return await asyncio.to_thread(_query)
 
 
-@router.put("/privacy")
+@router.put("/privacy",
+            summary="Update privacy settings",
+            description="Updates the authenticated user's privacy settings. Supports profile visibility (public/followers/private), activity visibility, and saved items visibility.")
 async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
@@ -1178,7 +1220,9 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
 
 # ── Data export (GDPR / privacy compliance) ──
 
-@router.get("/export-data")
+@router.get("/export-data",
+            summary="Export all user data",
+            description="Exports all data associated with the authenticated user for GDPR compliance. Includes profile, posts, comments, likes, bookmarks, follows, visits, reactions, collections, blocks, and mutes.")
 async def export_user_data(request: Request):
     user = await _get_current_user_or_none(request)
     if not user:

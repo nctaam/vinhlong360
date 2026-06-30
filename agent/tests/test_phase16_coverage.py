@@ -896,7 +896,7 @@ class TestSecurityPosture:
             lines = src.split("\n")
             for i, line in enumerate(lines):
                 if "@router.post(" in line or "@router.put(" in line or "@router.patch(" in line or "@router.delete(" in line:
-                    func_block = "\n".join(lines[i:i+8])
+                    func_block = "\n".join(lines[i:i+12])
                     if "check_rate(" not in func_block and "require_admin" not in func_block:
                         assert False, f"{module_name}.py:{i+1} write endpoint without rate limit: {line.strip()}"
 
@@ -917,7 +917,7 @@ class TestSecurityPosture:
                 pattern = f"async def {fn}("
                 idx = src.find(pattern)
                 assert idx != -1, f"{fn} not found in {module_name}.py"
-                before = src[max(0, idx-100):idx]
+                before = src[max(0, idx-300):idx]
                 assert "status_code=201" in before, f"{module_name}.py {fn} missing status_code=201"
 
     def test_privacy_visibility_enum_validation(self):
