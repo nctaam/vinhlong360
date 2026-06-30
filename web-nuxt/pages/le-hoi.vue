@@ -152,7 +152,7 @@
           <div class="event-info">
             <span v-if="eventStatus(e)" class="lehoi-status" :class="`status-${eventStatus(e)}`">{{ STATUS_LABEL[eventStatus(e)] }}</span>
             <h3>{{ e.name }}</h3>
-            <p v-if="e.summary" class="event-summary">{{ truncate(e.summary, 120) }}</p>
+            <p v-if="e.summary" class="event-summary">{{ truncateText(e.summary, 120) }}</p>
             <div class="event-meta">
               <span v-if="e.place_name" class="event-place">📍 {{ e.place_name }}</span>
               <span v-if="getArea(e)" class="event-area">{{ AREA_META[getArea(e)]?.emoji }} {{ AREA_META[getArea(e)]?.name }}</span>
@@ -203,7 +203,7 @@
                 :to="`/dia-diem/${ev.id}`"
                 class="cal-event-dot lehoi-dot"
                 :title="ev.name"
-              >{{ truncate(ev.name, 18) }}</NuxtLink>
+              >{{ truncateText(ev.name, 18) }}</NuxtLink>
               <span v-if="cell.events.length > 2" class="cal-more">+{{ cell.events.length - 2 }}</span>
             </div>
           </div>
@@ -379,9 +379,6 @@ function dateRange(e: Entity): string {
   return (f1 && f2) ? `${f1} – ${f2}` : f1
 }
 
-function truncate(s: string, n: number): string {
-  return s.length > n ? s.slice(0, n) + '…' : s
-}
 
 function downloadIcal(e: Entity) {
   const attrs = e.attributes || {}

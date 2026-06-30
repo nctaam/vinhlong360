@@ -21,6 +21,12 @@ export function isRemoteUrl(url: string): boolean {
   return /^https?:\/\//.test(url)
 }
 
+/** Truncate text at a word boundary, appending '…' if trimmed. */
+export function truncateText(text: string, max: number): string {
+  if (!text || text.length <= max) return text || ''
+  return text.slice(0, max).replace(/\s+\S*$/, '') + '…'
+}
+
 /** Build a dialable tel: href, stripping dots/spaces/parens (keeps leading +). */
 export function telHref(phone?: string | null): string {
   if (!phone) return '#'

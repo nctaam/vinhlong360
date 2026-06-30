@@ -10,7 +10,7 @@
           <span class="ef-avatar">{{ (p.display_name || '?')[0].toUpperCase() }}</span>
           <div class="ef-body">
             <span class="ef-author">{{ p.display_name }}</span>
-            <p class="ef-text">{{ truncate(p.content, 120) }}</p>
+            <p class="ef-text">{{ truncateText(p.content, 120) }}</p>
             <span class="ef-meta">
               <span v-if="p.rating" class="ef-rating">{{ '⭐'.repeat(p.rating) }}</span>
               <span v-if="p.like_count">{{ p.like_count }} thích</span>
@@ -45,10 +45,7 @@ onMounted(async () => {
   } catch { /* non-critical */ } finally { loading.value = false }
 })
 
-function truncate(text: string, max: number): string {
-  if (!text || text.length <= max) return text || ''
-  return text.slice(0, max).replace(/\s+\S*$/, '') + '…'
-}
+
 
 function firstImage(p: any): string | null {
   if (Array.isArray(p.images) && p.images.length) return p.images[0]
