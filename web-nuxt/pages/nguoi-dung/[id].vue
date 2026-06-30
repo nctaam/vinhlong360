@@ -178,7 +178,7 @@
     </div>
 
     <EmptyState v-else-if="profileFetchFailed" icon="⚠️" tone="error" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
-      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`user-${userId}`)">Thử lại</button>
+      <button type="button" class="btn btn-outline btn-sm" @click="refreshProfile()">Thử lại</button>
     </EmptyState>
     <EmptyState v-else message="Không tìm thấy người dùng." />
 
@@ -238,11 +238,6 @@ const { show: showToast } = useToast()
 const { reportPost, openReport } = useReport()
 const { repost, quote } = useRepost()
 
-useHead({
-  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${profile.value?.username || userId.value}`) }]),
-  meta: [{ name: 'robots', content: 'noindex,follow' }],
-})
-
 const validProfileTabs = new Set(['posts', 'reviews', 'saved'])
 const initialTab = route.query.tab as string
 const tab = ref(validProfileTabs.has(initialTab) ? initialTab : 'posts')
@@ -252,17 +247,9 @@ const loading = ref(true)
 const isFollowing = ref(false)
 const followLoading = ref(false)
 const followerCount = ref<number | null>(null)
-const isSelf = computed(() => {
-  const me = currentUser.value
-  if (!me) return false
-  const profileUsername = profile.value?.username
-  return String(me.id) === profileId.value || (!!profileUsername && me.username === profileUsername) || me.username === userId.value
-})
-const profileId = computed(() => String(profile.value?.id || userId.value))
-const displayFollowerCount = computed(() => followerCount.value ?? profile.value?.follower_count ?? 0)
 
 const profileFetchFailed = ref(false)
-const { data: profile } = await useAsyncData<ProfileView | null>(() => `user-${userId.value}`, async () => {
+const { data: profile, refresh: refreshProfile } = await useAsyncData<ProfileView | null>(`user-${route.params.id}`, async () => {
   try {
     profileFetchFailed.value = false
     const res = await apiFetch<Record<string, any>>(`/api/users/${userId.value}`, { headers: authHeaders() })
@@ -285,6 +272,20 @@ const { data: profile } = await useAsyncData<ProfileView | null>(() => `user-${u
 if (import.meta.server && !profile.value && !profileFetchFailed.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy người dùng' })
 }
+
+useHead({
+  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${profile.value?.username || userId.value}`) }]),
+  meta: [{ name: 'robots', content: 'noindex,follow' }],
+})
+
+const isSelf = computed(() => {
+  const me = currentUser.value
+  if (!me) return false
+  const profileUsername = profile.value?.username
+  return String(me.id) === profileId.value || (!!profileUsername && me.username === profileUsername) || me.username === userId.value
+})
+const profileId = computed(() => String(profile.value?.id || userId.value))
+const displayFollowerCount = computed(() => followerCount.value ?? profile.value?.follower_count ?? 0)
 
 const initial = computed(() => {
   const name = profile.value?.display_name || profile.value?.phone || '?'
@@ -486,7 +487,7 @@ onMounted(() => {
   checkBlocked()
 })
 
-watch(userId, () => {
+watch(userId, async () => {
   tab.value = 'posts'
   posts.value = []
   loading.value = true
@@ -494,6 +495,7 @@ watch(userId, () => {
   isBlocked.value = false
   followerCount.value = null
   followLists.value = { followers: null, following: null }
+  await refreshProfile()
   fetchPosts()
   checkFollowing()
   checkBlocked()

@@ -56,6 +56,7 @@
                 {{ post.author_name || 'Người dùng' }} · {{ timeAgo(post.bookmarked_at || post.created_at) }}
               </span>
             </NuxtLink>
+            <button type="button" class="saved-remove" aria-label="Bỏ lưu" @click="removeBookmark(post.id)">✕</button>
           </div>
         </div>
         <p v-else class="saved-empty">Chưa bookmark bài viết nào.</p>
@@ -75,6 +76,7 @@
               <span class="saved-post-title">{{ plan.title || `Lịch trình ${plan.days || ''}` }}</span>
               <span class="saved-post-meta">{{ timeAgo(plan.savedAt || plan.created_at) }}</span>
             </NuxtLink>
+            <button type="button" class="saved-remove" aria-label="Xóa lịch trình" @click="removeItinerary(plan.id)">✕</button>
           </div>
         </div>
         <p v-else class="saved-empty">Chưa có lịch trình nào.</p>
@@ -166,6 +168,16 @@ function removeEntity(id: string) {
   savedEntities.value = savedEntities.value.filter(e => e.id !== id)
   removeFavoriteLocal(id)
 }
+
+async function removeBookmark(postId: string) {
+  bookmarkedPosts.value = bookmarkedPosts.value.filter(p => p.id !== postId)
+  try { await $fetch(`/api/posts/${postId}/bookmark`, { method: 'DELETE', headers: authHeaders() }) } catch { /* ignore */ }
+}
+
+async function removeItinerary(planId: string) {
+  itineraries.value = itineraries.value.filter(p => p.id !== planId)
+  try { await $fetch(`/api/my-plans/${planId}`, { method: 'DELETE', headers: authHeaders() }) } catch { /* ignore */ }
+}
 </script>
 
 <style scoped>
@@ -216,8 +228,8 @@ function removeEntity(id: string) {
 
 /* Posts list */
 .saved-posts-list { display: flex; flex-direction: column; gap: .5rem; }
-.saved-post { padding: .75rem 1rem; }
-.saved-post-link { text-decoration: none; color: var(--ink); display: block; }
+.saved-post { padding: .75rem 1rem; display: flex; align-items: center; gap: .5rem; }
+.saved-post-link { text-decoration: none; color: var(--ink); display: block; flex: 1; min-width: 0; }
 .saved-post-title { display: block; font-weight: 500; font-size: .92rem; line-height: 1.4; }
 .saved-post-meta { display: block; font-size: .78rem; color: var(--ink-700); margin-top: .2rem; }
 .saved-load-more { margin-top: .75rem; width: 100%; }

@@ -1626,7 +1626,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                     FROM users u
                     LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
                     LEFT JOIN (SELECT f.target_id, COUNT(*) c FROM follows f
-                                 JOIN users fu ON fu.id::text = f.follower_id
+                                 JOIN users fu ON fu.id = f.follower_id
                                  WHERE f.target_type='user'
                                    AND fu.created_at < NOW() - INTERVAL '7 days'
                                  GROUP BY f.target_id) fc
@@ -3237,7 +3237,7 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
 
     followers_row = db._fetchone(conn, f"""
         SELECT COUNT(*) c FROM follows f
-        JOIN users fu ON fu.id::text = f.follower_id
+        JOIN users fu ON fu.id = f.follower_id
         WHERE f.target_type='user' AND f.target_id={ph}
           AND fu.created_at < NOW() - INTERVAL '7 days'
     """, (user_id,))

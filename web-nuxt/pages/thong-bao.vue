@@ -39,6 +39,7 @@
                 <time class="tb-time" :datetime="n.created_at">{{ timeAgo(n.created_at) }}</time>
               </span>
               <span v-if="!n.is_read" class="tb-dot" aria-label="Chưa đọc"></span>
+              <button type="button" class="tb-dismiss" aria-label="Xóa thông báo" @click.stop="dismiss(n)">✕</button>
             </button>
           </li>
         </ul>
@@ -131,6 +132,11 @@ async function readAll() {
   try { await $fetch('/api/notifications/read-all', { method: 'POST', headers: authHeaders() }) } catch { /* ignore */ }
 }
 
+async function dismiss(n: any) {
+  items.value = items.value.filter(x => x.id !== n.id)
+  try { await $fetch(`/api/notifications/${n.id}`, { method: 'DELETE', headers: authHeaders() }) } catch { /* ignore */ }
+}
+
 onMounted(load)
 
 useHead({
@@ -155,6 +161,14 @@ useHead({
 .tb-sub { font-size: var(--text-sm); color: var(--ink-700); }
 .tb-time { font-size: var(--text-xs); color: var(--muted); }
 .tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: .35rem; }
+.tb-dismiss {
+  flex-shrink: 0; width: 24px; height: 24px; border: none; background: none;
+  color: var(--ink-700); cursor: pointer; font-size: .75rem; border-radius: var(--radius-full);
+  opacity: 0; transition: opacity .15s, background .15s, color .15s;
+  display: flex; align-items: center; justify-content: center; margin-top: .1rem;
+}
+.tb-item:hover .tb-dismiss { opacity: 1; }
+.tb-dismiss:hover { background: var(--bg-alt); color: var(--error, #e53e3e); }
 .tb-guest { margin-top: var(--space-6); }
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
 .tb-filters::-webkit-scrollbar { display: none; }

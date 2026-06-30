@@ -30,7 +30,10 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--prefix", "web-nuxt"],
       "port": 3000,
-      "autoPort": true
+      "autoPort": true,
+      "env": {
+        "API_BASE": "https://vinhlong360.vn"
+      }
     },
     {
       "name": "nuxt-prod",

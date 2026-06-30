@@ -1,7 +1,7 @@
 <template>
   <section v-if="fetchFailed" class="page">
     <EmptyState icon="⚠️" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
-      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`ward-${id}`)">Thử lại</button>
+      <button type="button" class="btn btn-outline btn-sm" @click="refreshWard()">Thử lại</button>
     </EmptyState>
   </section>
 
@@ -156,7 +156,7 @@ const id = computed(() => route.params.id as string)
 const goBack = () => goBackOr('/danh-ba')
 
 const fetchFailed = ref(false)
-const { data } = await useAsyncData(() => `ward-${id.value}`, async () => {
+const { data, refresh: refreshWard } = await useAsyncData(`ward-${route.params.id}`, async () => {
   try {
     fetchFailed.value = false
     return await apiFetch<Record<string, unknown>>(`/api/places/${id.value}/overview`)

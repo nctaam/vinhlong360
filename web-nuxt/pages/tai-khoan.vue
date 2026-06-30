@@ -94,13 +94,20 @@
           <div v-for="i in 4" :key="i" class="skeleton-box cp-activity-skel"></div>
         </div>
         <div v-else-if="activity.length" class="cp-activity-list">
-          <div v-for="a in activity" :key="`${a.action}-${a.ref_id}`" class="cp-activity-item">
+          <component :is="activityLink(a) ? 'a' : 'div'" v-for="a in activity" :key="`${a.action}-${a.ref_id}-${a.created_at}`"
+            :href="activityLink(a) || undefined"
+            :class="['cp-activity-item', { 'cp-activity-link': !!activityLink(a) }]"
+            @click.prevent="activityLink(a) && navigateTo(activityLink(a)!)"
+          >
             <span class="cp-activity-icon">{{ actionIcon(a.action) }}</span>
             <div class="cp-activity-body">
               <span class="cp-activity-text">{{ actionLabel(a) }}</span>
               <span class="cp-activity-time">{{ timeAgo(a.created_at) }}</span>
             </div>
-          </div>
+          </component>
+          <button v-if="activityHasMore" type="button" class="btn btn-ghost btn-sm cp-load-more" :disabled="activityLoadingMore" @click="loadMoreActivity">
+            {{ activityLoadingMore ? 'Đang tải…' : 'Xem thêm hoạt động' }}
+          </button>
         </div>
         <p v-else class="cp-empty-hint">Chưa có hoạt động nào.</p>
       </div>
@@ -123,6 +130,9 @@ const counts = ref<Record<string, number> | null>(null)
 const stats = ref<Record<string, number> | null>(null)
 const activity = ref<any[]>([])
 const activityLoading = ref(true)
+const activityHasMore = ref(false)
+const activityLoadingMore = ref(false)
+const ACTIVITY_PAGE = 10
 
 onMounted(async () => {
   if (!isLoggedIn.value) return
@@ -130,17 +140,39 @@ onMounted(async () => {
   const [c, s, a] = await Promise.allSettled([
     $fetch<Record<string, number>>('/api/me/counts', { headers }),
     $fetch<Record<string, number>>('/api/me/stats', { headers }),
-    $fetch<{ items: any[] }>('/api/me/activity?limit=10', { headers }),
+    $fetch<{ items: any[] }>(`/api/me/activity?limit=${ACTIVITY_PAGE}`, { headers }),
   ])
   if (c.status === 'fulfilled') counts.value = c.value
   if (s.status === 'fulfilled') stats.value = s.value
-  if (a.status === 'fulfilled') activity.value = (a.value as any).items || []
+  if (a.status === 'fulfilled') {
+    const items = (a.value as any).items || []
+    activity.value = items
+    activityHasMore.value = items.length >= ACTIVITY_PAGE
+  }
   activityLoading.value = false
 })
 
+async function loadMoreActivity() {
+  activityLoadingMore.value = true
+  try {
+    const res = await $fetch<{ items: any[] }>(`/api/me/activity?limit=${ACTIVITY_PAGE}&offset=${activity.value.length}`, { headers: authHeaders() })
+    const items = res.items || []
+    activity.value.push(...items)
+    activityHasMore.value = items.length >= ACTIVITY_PAGE
+  } catch { /* non-critical */ }
+  activityLoadingMore.value = false
+}
+
 function actionIcon(action: string) {
-  const icons: Record<string, string> = { post: '✍️', comment: '💬', like: '❤️', bookmark: '💾', review: '⭐' }
+  const icons: Record<string, string> = { post: '✍️', comment: '💬', like: '❤️', bookmark: '💾', review: '⭐', follow: '👤', mention: '📣', repost: '🔁' }
   return icons[action] || '📌'
+}
+
+function activityLink(a: any): string | null {
+  if (a.ref_type === 'post' && a.ref_id) return `/bai-viet/${a.ref_id}`
+  if (a.ref_type === 'entity' && a.ref_id) return `/dia-diem/${a.ref_id}`
+  if (a.ref_type === 'user' && a.ref_id) return `/nguoi-dung/${a.ref_id}`
+  return null
 }
 
 function actionLabel(a: any) {
@@ -150,6 +182,9 @@ function actionLabel(a: any) {
     like: 'Đã thích một bài viết',
     bookmark: 'Đã lưu một bài viết',
     review: 'Đã đánh giá',
+    follow: 'Đã theo dõi',
+    mention: 'Được nhắc đến',
+    repost: 'Đã chia sẻ lại',
   }
   let label = types[a.action] || `${a.action}`
   if (a.content) {
@@ -221,8 +256,11 @@ function actionLabel(a: any) {
 .cp-activity-body { flex: 1; min-width: 0; }
 .cp-activity-text { display: block; font-size: .88rem; color: var(--ink); line-height: 1.4; }
 .cp-activity-time { font-size: .78rem; color: var(--ink-700); }
+.cp-activity-link { cursor: pointer; text-decoration: none; color: inherit; }
+.cp-activity-link:hover { background: var(--bg-alt); border-color: var(--primary); }
 .cp-activity-loading { display: flex; flex-direction: column; gap: .5rem; }
 .cp-activity-skel { height: 48px; border-radius: var(--radius-md); }
+.cp-load-more { width: 100%; margin-top: var(--space-3); }
 .cp-empty-hint { color: var(--ink-700); font-size: .9rem; }
 
 /* Dark */

@@ -153,7 +153,7 @@
 
     <div v-else class="empty-state-wrap">
       <EmptyState v-if="postFetchFailed" icon="⚠️" title="Không thể tải bài viết" message="Lỗi kết nối. Vui lòng thử lại.">
-        <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData(`post-${postId}`)">Thử lại</button>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshPost()">Thử lại</button>
       </EmptyState>
       <EmptyState v-else icon="🔍" title="Không tìm thấy bài viết" message="Bài viết có thể đã bị xoá hoặc đường dẫn không đúng.">
         <NuxtLink to="/cong-dong" class="btn btn-outline btn-sm">Về Cộng đồng</NuxtLink>
@@ -276,7 +276,7 @@ const userInitial = computed(() => {
 })
 
 const postFetchFailed = ref(false)
-const { data: post, pending } = await useAsyncData(() => `post-${postId.value}`, async () => {
+const { data: post, pending, refresh: refreshPost } = await useAsyncData(`post-${route.params.id}`, async () => {
   try {
     postFetchFailed.value = false
     const res = await apiFetch<Post>(`/api/posts/${postId.value}`, { headers: authHeaders() })
