@@ -324,10 +324,11 @@ async def get_featured_entities(response: Response):
                 SELECT entity_id, sort_order FROM featured_entities
                 ORDER BY sort_order LIMIT 20
             """, ())
+        entity_ids = [db._row_to_dict(r)["entity_id"] for r in rows]
+        batch = db.get_entities_batch(entity_ids)
         result = []
-        for r in rows:
-            rd = db._row_to_dict(r)
-            entity = db.get_entity(rd["entity_id"])
+        for eid in entity_ids:
+            entity = batch.get(eid)
             if entity:
                 attrs = entity.get("attributes") or {}
                 result.append({
@@ -506,9 +507,12 @@ async def get_entity_rating_breakdown(entity_id: str, response: Response):
         breakdown = {str(i): 0 for i in range(1, 6)}
         for r in rows:
             rd = db._row_to_dict(r)
-            star = str(int(rd["rating"]))
-            if star in breakdown:
-                breakdown[star] = rd["count"]
+            rating = rd.get("rating")
+            count = rd.get("count", 0)
+            if rating is not None:
+                star = str(int(rating))
+                if star in breakdown:
+                    breakdown[star] = count
         td = db._row_to_dict(total_row) if total_row else {}
         total = td.get("total", 0)
         return {
@@ -723,7 +727,7 @@ _DAY_PLAN_SLOTS = [
 
 
 def _haversine_km(a: list | None, b: list | None) -> float:
-    if not a or not b:
+    if not a or not b or len(a) < 2 or len(b) < 2:
         return 999.0
     lat1, lon1 = math.radians(a[0]), math.radians(a[1])
     lat2, lon2 = math.radians(b[0]), math.radians(b[1])
@@ -2181,9 +2185,10 @@ async def entities_trending(
                 LIMIT {ph}
             """, (days, limit * 3))
         candidates = [db._row_to_dict(r) for r in rows]
+        batch = db.get_entities_batch([c["entity_id"] for c in candidates])
         results = []
         for c in candidates:
-            e = db.get_entity(c["entity_id"])
+            e = batch.get(c["entity_id"])
             if not e:
                 continue
             if entity_type and e.get("type") != entity_type:
@@ -2276,9 +2281,10 @@ async def compare_entities(
         raise HTTPException(400, "Cần ít nhất 2 entity để so sánh")
 
     def _query():
+        batch = db.get_entities_batch(id_list)
         results = []
         for eid in id_list:
-            e = db.get_entity(eid)
+            e = batch.get(eid)
             if not e:
                 continue
             attrs = e.get("attributes", {})

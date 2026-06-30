@@ -925,9 +925,10 @@ class TestBE23BlockIntegration:
 
     def test_block_sql_both_directions(self):
         clause, params = social._block_sql({"id": "me"})
-        assert clause.count("NOT IN") == 2
-        assert clause.count("blocked_id") >= 1
-        assert clause.count("blocker_id") >= 1
+        assert "NOT IN" in clause
+        assert "blocked_id" in clause
+        assert "blocker_id" in clause
+        assert "UNION" in clause
 
     def test_entity_feed_block_enforcement_in_count_query(self):
         src = inspect.getsource(social.get_entity_feed)

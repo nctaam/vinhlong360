@@ -1670,10 +1670,11 @@ async def list_featured():
                 SELECT entity_id, sort_order, created_at
                 FROM featured_entities ORDER BY sort_order
             """, ())
+        items = [db._row_to_dict(r) for r in rows]
+        batch = db.get_entities_batch([rd["entity_id"] for rd in items])
         result = []
-        for r in rows:
-            rd = db._row_to_dict(r)
-            entity = db.get_entity(rd["entity_id"])
+        for rd in items:
+            entity = batch.get(rd["entity_id"])
             if entity:
                 result.append({
                     "entity_id": rd["entity_id"],

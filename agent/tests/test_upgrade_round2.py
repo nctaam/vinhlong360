@@ -1886,7 +1886,7 @@ class TestAdminFeatured:
 
     def test_list_resolves_entities(self):
         src = inspect.getsource(__import__("admin").list_featured)
-        assert "get_entity" in src
+        assert "get_entities_batch" in src
 
     def test_sort_order(self):
         src = inspect.getsource(__import__("admin").list_featured)

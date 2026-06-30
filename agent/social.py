@@ -59,8 +59,9 @@ def _block_sql(user: dict | None, column: str = "u.id") -> tuple[str, list]:
     ph = db._ph
     uid = str(user["id"])
     return (
-        f"AND {column} NOT IN (SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid) "
-        f"AND {column} NOT IN (SELECT blocker_id FROM blocks WHERE blocked_id = {ph}::uuid)",
+        f"AND {column} NOT IN ("
+        f"SELECT blocked_id FROM blocks WHERE blocker_id = {ph}::uuid "
+        f"UNION SELECT blocker_id FROM blocks WHERE blocked_id = {ph}::uuid)",
         [uid, uid],
     )
 
