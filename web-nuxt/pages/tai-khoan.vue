@@ -109,7 +109,13 @@
             {{ activityLoadingMore ? 'Đang tải…' : 'Xem thêm hoạt động' }}
           </button>
         </div>
-        <p v-else class="cp-empty-hint">Chưa có hoạt động nào.</p>
+        <div v-else class="cp-onboarding">
+          <p class="cp-empty-hint">Chưa có hoạt động nào.</p>
+          <div class="cp-onboarding-actions">
+            <NuxtLink to="/cong-dong" class="btn btn-primary btn-sm">✍️ Viết bài đầu tiên</NuxtLink>
+            <NuxtLink to="/dia-diem" class="btn btn-ghost btn-sm">🗺️ Khám phá địa điểm</NuxtLink>
+          </div>
+        </div>
       </div>
     </template>
   </section>
@@ -262,6 +268,8 @@ function actionLabel(a: any) {
 .cp-activity-skel { height: 48px; border-radius: var(--radius-md); }
 .cp-load-more { width: 100%; margin-top: var(--space-3); }
 .cp-empty-hint { color: var(--ink-700); font-size: .9rem; }
+.cp-onboarding { text-align: center; padding: 1.5rem 1rem; }
+.cp-onboarding-actions { display: flex; gap: var(--space-2); justify-content: center; margin-top: .75rem; flex-wrap: wrap; }
 
 /* Dark */
 .dark .cp-stats { background: var(--bg-alt); border-color: var(--line); }

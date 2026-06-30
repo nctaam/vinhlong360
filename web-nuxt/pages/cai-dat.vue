@@ -32,8 +32,8 @@
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
           <button type="button" class="sf-avatar-preview" aria-label="Thay đổi ảnh đại diện" @click="($refs.avatarInput as HTMLInputElement)?.click()">
-            <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" width="96" height="96" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
-            <AvatarPlaceholder v-else :initial="user?.display_name?.[0]?.toUpperCase()" />
+            <img v-if="(avatarPreview || user?.avatar_url) && !avatarBroken" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" width="96" height="96" loading="lazy" decoding="async" @error="avatarBroken = true" />
+            <AvatarPlaceholder v-if="avatarBroken || (!avatarPreview && !user?.avatar_url)" :initial="user?.display_name?.[0]?.toUpperCase()" />
             <span class="sf-avatar-overlay">&#128247;</span>
           </button>
           <div class="sf-avatar-info">
@@ -66,14 +66,14 @@
 
         <div class="sf-field sf-readonly-group">
           <span class="sf-label">Số điện thoại <span class="sf-hint">— không thể thay đổi</span></span>
-          <input type="tel" class="sf-input sf-readonly" :value="user?.phone" disabled readonly />
+          <input type="tel" class="sf-input sf-readonly" :value="user?.phone" readonly tabindex="0" />
         </div>
 
         <div class="sf-field sf-readonly-group">
           <span class="sf-label">Username <span class="sf-hint">— không thể thay đổi</span></span>
           <div class="sf-username-row">
             <span class="sf-username-prefix">vinhlong360.vn/nguoi-dung/</span>
-            <input type="text" class="sf-input sf-username-input sf-readonly" :value="user?.username || '—'" disabled readonly />
+            <input type="text" class="sf-input sf-username-input sf-readonly" :value="user?.username || '—'" readonly tabindex="0" />
           </div>
         </div>
 
@@ -417,6 +417,7 @@ const nameError = ref('')
 
 const uploadingAvatar = ref(false)
 const avatarPreview = ref('')
+const avatarBroken = ref(false)
 
 const ALLOWED_IMG = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_IMG_SIZE = 12 * 1024 * 1024
@@ -428,6 +429,7 @@ async function onAvatarChange(e: Event) {
   if (file.size > MAX_IMG_SIZE) { showToast('Ảnh quá lớn (tối đa 12MB)', 'error'); return }
   if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   avatarPreview.value = URL.createObjectURL(file)
+  avatarBroken.value = false
   uploadingAvatar.value = true
   try {
     const form = new FormData()

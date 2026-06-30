@@ -16,9 +16,9 @@
 
     <template v-else>
       <div class="tb-filters">
-        <button v-for="f in FILTERS" :key="f.key" type="button"
+        <button v-for="f in FILTERS" :key="f.key" type="button" role="tab"
           :class="['chip', { active: filter === f.key }]"
-          :aria-pressed="filter === f.key"
+          :aria-selected="filter === f.key"
           @click="filter = f.key"
         >{{ f.icon }} {{ f.label }}</button>
       </div>
@@ -38,7 +38,7 @@
                 <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
                 <time class="tb-time" :datetime="n.created_at">{{ timeAgo(n.created_at) }}</time>
               </span>
-              <span v-if="!n.is_read" class="tb-dot" aria-label="Chưa đọc"></span>
+              <span v-if="!n.is_read" class="tb-dot" role="status" aria-label="Chưa đọc" title="Chưa đọc"></span>
               <button type="button" class="tb-dismiss" aria-label="Xóa thông báo" @click.stop="dismiss(n)">✕</button>
             </button>
           </li>
@@ -133,8 +133,10 @@ async function readAll() {
 }
 
 async function dismiss(n: any) {
+  const idx = items.value.indexOf(n)
   items.value = items.value.filter(x => x.id !== n.id)
-  try { await $fetch(`/api/notifications/${n.id}`, { method: 'DELETE', headers: authHeaders() }) } catch { /* ignore */ }
+  try { await $fetch(`/api/notifications/${n.id}`, { method: 'DELETE', headers: authHeaders() }) }
+  catch { items.value.splice(idx, 0, n) }
 }
 
 onMounted(load)

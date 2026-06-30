@@ -40,7 +40,10 @@
             <button type="button" class="saved-remove" aria-label="Bỏ lưu" @click="removeEntity(item.id)">✕</button>
           </div>
         </div>
-        <p v-else class="saved-empty">Chưa lưu địa điểm nào. Khi duyệt các trang địa điểm, nhấn nút lưu để thêm vào đây.</p>
+        <div v-else class="saved-empty">
+          <p>Chưa lưu địa điểm nào. Khi duyệt các trang địa điểm, nhấn nút lưu để thêm vào đây.</p>
+          <NuxtLink to="/dia-diem" class="btn btn-ghost btn-sm">Khám phá địa điểm</NuxtLink>
+        </div>
       </div>
 
       <!-- Bookmarked posts -->
@@ -59,7 +62,10 @@
             <button type="button" class="saved-remove" aria-label="Bỏ lưu" @click="removeBookmark(post.id)">✕</button>
           </div>
         </div>
-        <p v-else class="saved-empty">Chưa bookmark bài viết nào.</p>
+        <div v-else class="saved-empty">
+          <p>Chưa bookmark bài viết nào.</p>
+          <NuxtLink to="/cong-dong" class="btn btn-ghost btn-sm">Xem bài viết cộng đồng</NuxtLink>
+        </div>
         <button v-if="postsHasMore && bookmarkedPosts.length" type="button" class="btn btn-secondary saved-load-more" @click="loadMorePosts">
           Xem thêm
         </button>
@@ -79,7 +85,10 @@
             <button type="button" class="saved-remove" aria-label="Xóa lịch trình" @click="removeItinerary(plan.id)">✕</button>
           </div>
         </div>
-        <p v-else class="saved-empty">Chưa có lịch trình nào.</p>
+        <div v-else class="saved-empty">
+          <p>Chưa có lịch trình nào.</p>
+          <NuxtLink to="/lich-trinh" class="btn btn-ghost btn-sm">Tạo lịch trình mới</NuxtLink>
+        </div>
       </div>
     </template>
   </section>
@@ -108,7 +117,7 @@ const itinerariesLoading = ref(false)
 const itineraries = ref<any[]>([])
 
 const tabs = computed(() => [
-  { key: 'entities' as const, label: 'Địa điểm', count: savedEntities.value.length || favorites.value.length },
+  { key: 'entities' as const, label: 'Địa điểm', count: savedEntities.value.length || favorites.value.length || null },
   { key: 'posts' as const, label: 'Bài viết', count: bookmarkedPosts.value.length || null },
   { key: 'itineraries' as const, label: 'Lịch trình', count: itineraries.value.length || null },
 ])
@@ -170,13 +179,17 @@ function removeEntity(id: string) {
 }
 
 async function removeBookmark(postId: string) {
+  const prev = [...bookmarkedPosts.value]
   bookmarkedPosts.value = bookmarkedPosts.value.filter(p => p.id !== postId)
-  try { await $fetch(`/api/posts/${postId}/bookmark`, { method: 'DELETE', headers: authHeaders() }) } catch { /* ignore */ }
+  try { await $fetch(`/api/posts/${postId}/bookmark`, { method: 'DELETE', headers: authHeaders() }) }
+  catch { bookmarkedPosts.value = prev }
 }
 
 async function removeItinerary(planId: string) {
+  const prev = [...itineraries.value]
   itineraries.value = itineraries.value.filter(p => p.id !== planId)
-  try { await $fetch(`/api/my-plans/${planId}`, { method: 'DELETE', headers: authHeaders() }) } catch { /* ignore */ }
+  try { await $fetch(`/api/my-plans/${planId}`, { method: 'DELETE', headers: authHeaders() }) }
+  catch { itineraries.value = prev }
 }
 </script>
 
@@ -237,7 +250,8 @@ async function removeItinerary(planId: string) {
 /* Skeletons & empty */
 .saved-skeletons { display: flex; flex-direction: column; gap: .5rem; }
 .saved-card-skel { height: 64px; border-radius: var(--radius-md); }
-.saved-empty { color: var(--ink-700); font-size: .9rem; text-align: center; padding: 2rem 1rem; }
+.saved-empty { color: var(--ink-700); font-size: .9rem; text-align: center; padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; gap: .75rem; }
+.saved-empty p { margin: 0; }
 
 /* Dark */
 .dark .saved-entity { background: var(--bg-alt); }
