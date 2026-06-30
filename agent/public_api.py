@@ -20,7 +20,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-from fastapi import APIRouter, Depends, Query, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from database import db
@@ -2340,7 +2340,9 @@ async def popular_entities(
             rc = e.get("rating_count", 0) or 0
             avg = e.get("rating_avg", 0) or 0
             has_img = 1 if e.get("images") else 0
-            score = rc * 2 + avg * 3 + has_img * 5 + entity_quality(e) * 0.1
+            eq = entity_quality(e)
+            eq_score = eq.get("score", 0) if isinstance(eq, dict) else eq
+            score = rc * 2 + avg * 3 + has_img * 5 + eq_score * 0.1
             scored.append((score, e))
         scored.sort(key=lambda x: -x[0])
         return [
@@ -2445,3 +2447,32 @@ async def transparency_report(response: Response):
             "cooperation_with_authorities": True,
         },
     }
+
+
+# ── Route ordering fix ───────────────────────────────────────────────────
+# Static paths like /entities/map must match BEFORE /entities/{entity_id}.
+# Starlette resolves routes in definition order, so late-defined static
+# paths are shadowed by earlier parameterized ones. Fix: reorder once at
+# module load so static entity sub-paths precede the catch-all.
+_STATIC_ENTITY_PATHS = frozenset({
+    "/api/entities/map", "/api/entities/trending", "/api/entities/compare",
+    "/api/entities/popular", "/api/entities/search",
+})
+
+def _fix_route_order():
+    static = []
+    rest = []
+    insert_idx = None
+    for r in router.routes:
+        path = getattr(r, "path", "")
+        if path in _STATIC_ENTITY_PATHS:
+            static.append(r)
+        else:
+            if path == "/api/entities/{entity_id}" and insert_idx is None:
+                insert_idx = len(rest)
+            rest.append(r)
+    if static and insert_idx is not None:
+        rest[insert_idx:insert_idx] = static
+        router.routes[:] = rest
+
+_fix_route_order()
