@@ -177,7 +177,7 @@ onMounted(loadProvisional)
 }
 .dth-count-warn { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
 
-.dth-summary { display: block; color: var(--muted); margin-top: 2px; font-size: .8rem; }
+.dth-summary { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--muted); margin-top: 2px; font-size: .8rem; }
 .dth-type-badge {
   display: inline-block; padding: 2px 8px; border-radius: 100px;
   font-size: .72rem; font-weight: 600;

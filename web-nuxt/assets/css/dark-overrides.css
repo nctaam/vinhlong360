@@ -45,6 +45,8 @@
 /* ── Map (ban-do) ── */
 .dark #mapContainer { border-color: rgba(255,255,255,.08); box-shadow: var(--shadow-md); }
 .dark #mapContainer:hover { box-shadow: var(--shadow-lg); }
+.dark .maplibregl-canvas { filter: brightness(.8) contrast(1.1) invert(1) hue-rotate(180deg); }
+.dark .maplibregl-popup-content { filter: invert(1) hue-rotate(180deg); }
 
 /* ── Ward hub (xa-phuong/[id]) ── */
 .dark .wp-card { border-color: rgba(255,255,255,.08); }

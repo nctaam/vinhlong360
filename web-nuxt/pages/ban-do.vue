@@ -233,6 +233,9 @@ watch(mapEl, async (el) => {
     return
   }
   mapRef = map
+  map.on('styleimagemissing', (e: any) => {
+    if (!map.hasImage(e.id)) map.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) })
+  })
   // Fallback if the style/tiles never load (bad key, host down, offline). Generous
   // timeout for slow rural connections; self-clears the moment the map loads.
   if (loadTimer) clearTimeout(loadTimer)

@@ -290,6 +290,9 @@ watch(mapEl, async (el) => {
     mapLoadError.value = true
     return
   }
+  map.on('styleimagemissing', (e: any) => {
+    if (!map.hasImage(e.id)) map.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) })
+  })
   mapLoadTimer = setTimeout(() => { if (!map.isStyleLoaded()) mapLoadError.value = true }, 15000)
   map.on('load', () => { clearTimeout(mapLoadTimer); mapLoadError.value = false; mapReady.value = true })
 

@@ -512,6 +512,9 @@ async function updateMap(result: RouteResult | null) {
     const res = await createNDAMap(routeMapEl.value)
     mapInstance = res.map
     maplibre = res.maplibregl
+    mapInstance.on('styleimagemissing', (e: any) => {
+      if (!mapInstance.hasImage(e.id)) mapInstance.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) })
+    })
     await new Promise<void>(r => mapInstance.on('load', r))
   }
 
