@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, Depends, UploadFile, File
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
 import data_quality
@@ -1361,7 +1361,7 @@ async def get_review_response(post_id: str):
         return db._row_to_dict(row)
     result = await asyncio.to_thread(_query)
     if not result:
-        return JSONResponse(status_code=404, content={"error": "no_response"})
+        raise HTTPException(404, "Không tìm thấy phản hồi review")
     return result
 
 
@@ -3138,20 +3138,21 @@ async def search_analytics(days: int = Query(7, ge=1, le=90)):
         queries = {}
         zero_result = {}
         total = 0
-        for line in open(search_log, "r", encoding="utf-8"):
-            try:
-                r = json.loads(line)
-            except (json.JSONDecodeError, ValueError):
-                continue
-            if r.get("ts", "") < cutoff:
-                continue
-            total += 1
-            q = r.get("q", "").strip().lower()
-            if not q:
-                continue
-            queries[q] = queries.get(q, 0) + 1
-            if r.get("results", 0) == 0:
-                zero_result[q] = zero_result.get(q, 0) + 1
+        with open(search_log, "r", encoding="utf-8") as f:
+            for line in f:
+                try:
+                    r = json.loads(line)
+                except (json.JSONDecodeError, ValueError):
+                    continue
+                if r.get("ts", "") < cutoff:
+                    continue
+                total += 1
+                q = r.get("q", "").strip().lower()
+                if not q:
+                    continue
+                queries[q] = queries.get(q, 0) + 1
+                if r.get("results", 0) == 0:
+                    zero_result[q] = zero_result.get(q, 0) + 1
         top = sorted(queries.items(), key=lambda x: x[1], reverse=True)[:30]
         zeros = sorted(zero_result.items(), key=lambda x: x[1], reverse=True)[:20]
         return {
@@ -4123,7 +4124,7 @@ async def list_claims(
     """U-30: List entity claims for admin review."""
     valid_statuses = ("pending", "approved", "rejected", "all")
     if status not in valid_statuses:
-        return JSONResponse(status_code=422, content={"error": "invalid_status", "valid": list(valid_statuses)})
+        raise HTTPException(422, f"Status không hợp lệ. Cho phép: {', '.join(valid_statuses)}")
 
     ph = db._ph
 
@@ -4187,7 +4188,8 @@ async def approve_claim(claim_id: str, request: Request):
     result = await asyncio.to_thread(_approve)
     if "error" in result:
         code = 404 if result["error"] == "not_found" else 409
-        return JSONResponse(status_code=code, content=result)
+        detail = "Không tìm thấy claim" if result["error"] == "not_found" else f"Claim đã xử lý ({result.get('current_status', '')})"
+        raise HTTPException(code, detail)
     _log_mod_action("claim", claim_id, "approved")
     if result.get("claimant_id"):
         def _notify():
@@ -4228,7 +4230,8 @@ async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request)
     result = await asyncio.to_thread(_reject)
     if "error" in result:
         code = 404 if result["error"] == "not_found" else 409
-        return JSONResponse(status_code=code, content=result)
+        detail = "Không tìm thấy claim" if result["error"] == "not_found" else f"Claim đã xử lý ({result.get('current_status', '')})"
+        raise HTTPException(code, detail)
     _log_mod_action("claim", claim_id, "rejected", body.reason or None)
     if result.get("claimant_id"):
         def _notify():

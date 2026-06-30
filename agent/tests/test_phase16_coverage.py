@@ -765,7 +765,7 @@ class TestSecurityPosture:
         idx = src.find("def login_password")
         assert idx > 0
         block = src[idx:idx + 1200]
-        assert "_verify_password(body.password, _DUMMY_HASH)" in block, \
+        assert "_verify_password" in block and "_DUMMY_HASH" in block, \
             "login_password must call _verify_password with dummy hash for non-existent users"
 
     def test_idempotency_key_scoped_to_user(self):

@@ -573,7 +573,7 @@ async def login_password(body: PasswordLogin, request: Request):
 
     if not user or not user.get("password_hash"):
         # Constant-time: always run PBKDF2 to prevent timing oracle
-        _verify_password(body.password, _DUMMY_HASH)
+        await asyncio.to_thread(_verify_password, body.password, _DUMMY_HASH)
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
         _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
@@ -584,7 +584,7 @@ async def login_password(body: PasswordLogin, request: Request):
         await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
         raise HTTPException(403, "Tài khoản đã bị vô hiệu hóa")
 
-    matched, is_legacy = _verify_password(body.password, user["password_hash"], _return_legacy=True)
+    matched, is_legacy = await asyncio.to_thread(_verify_password, body.password, user["password_hash"], _return_legacy=True)
     if not matched:
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
@@ -593,7 +593,7 @@ async def login_password(body: PasswordLogin, request: Request):
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
     if is_legacy:
-        new_hash = _hash_password(body.password)
+        new_hash = await asyncio.to_thread(_hash_password, body.password)
         def _rehash():
             with db._conn() as conn:
                 db._execute(conn, f"UPDATE users SET password_hash = {db._ph} WHERE id::text = {db._ph}",
@@ -637,10 +637,10 @@ async def set_password(body: SetPassword, request: Request, _csrf=Depends(_requi
     if user.get("password_hash"):
         if not body.current_password:
             raise HTTPException(400, "Vui lòng nhập mật khẩu hiện tại")
-        if not _verify_password(body.current_password, user["password_hash"]):
+        if not await asyncio.to_thread(_verify_password, body.current_password, user["password_hash"]):
             raise HTTPException(400, "Mật khẩu hiện tại không đúng")
 
-    hashed = _hash_password(body.password)
+    hashed = await asyncio.to_thread(_hash_password, body.password)
     await asyncio.to_thread(db.update_user, str(user["id"]), password_hash=hashed)
 
     # P1-9: đổi mật khẩu → thu hồi MỌI phiên khác (giữ phiên hiện tại), chống chiếm dụng.
