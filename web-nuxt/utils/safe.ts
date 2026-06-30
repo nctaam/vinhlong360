@@ -131,3 +131,22 @@ export function telHref(phone?: string | null): string {
   const digits = String(phone).replace(/[^\d+]/g, '')
   return digits ? `tel:${digits}` : '#'
 }
+
+/** Escape content then linkify @-mentions and #hashtags for safe v-html rendering. */
+export function linkifyContent(content: string, mentions?: Array<{ label?: string; id?: string; type?: string }>): string {
+  let html = escapeHtml(content)
+  if (Array.isArray(mentions) && mentions.length) {
+    const sorted = [...mentions].sort((a, b) => (b?.label?.length || 0) - (a?.label?.length || 0))
+    for (const m of sorted) {
+      if (!m?.label || !m?.id || (m.type !== 'user' && m.type !== 'entity')) continue
+      const href = m.type === 'user'
+        ? `/nguoi-dung/${encodeURIComponent(m.id)}`
+        : `/dia-diem/${encodeURIComponent(m.id)}`
+      const token = '@' + escapeHtml(m.label)
+      html = html.split(token).join(`<a class="mention-link" href="${href}">${token}</a>`)
+    }
+  }
+  html = html.replace(/#(\w{1,30})/gu, (_m, tag) =>
+    `<a class="hashtag-link" href="/cong-dong?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`)
+  return html
+}

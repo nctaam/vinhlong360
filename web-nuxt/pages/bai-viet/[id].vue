@@ -172,18 +172,8 @@ const { openAuth } = useAuthModal()
 
 const { repost, quote } = useRepost()
 
-// Linkify @-mention + #hashtag trong bình luận (content escape trước → an toàn v-html)
-function renderComment(c: any): string {
-  let html = escapeHtml(c?.content || '')
-  const mentions = Array.isArray(c?.mentions) ? [...c.mentions].sort((a, b) => (b?.label?.length || 0) - (a?.label?.length || 0)) : []
-  for (const m of mentions) {
-    if (!m?.label || !m?.id || (m.type !== 'user' && m.type !== 'entity')) continue
-    const href = m.type === 'user' ? `/nguoi-dung/${encodeURIComponent(m.id)}` : `/dia-diem/${encodeURIComponent(m.id)}`
-    const token = '@' + escapeHtml(m.label)
-    html = html.split(token).join(`<a class="mention-link" href="${href}">${token}</a>`)
-  }
-  html = html.replace(/#(\w{1,30})/gu, (_m, tag) => `<a class="hashtag-link" href="/cong-dong?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`)
-  return html
+function renderComment(c: { content?: string; mentions?: Array<{ label?: string; id?: string; type?: string }> }): string {
+  return linkifyContent(c?.content || '', c?.mentions)
 }
 const { reportPost } = useReport()
 const { show: showToast } = useToast()

@@ -153,27 +153,7 @@ const likePop = ref(false)
 const expanded = ref(false)
 const isLong = computed(() => (props.post.content || '').length > 280)
 
-// @-mention: escape nội dung rồi linkify các mention (an toàn — content đã escape,
-// href dựng từ id qua encodeURIComponent + type cố định).
-const contentHtml = computed(() => {
-  let html = escapeHtml(props.post.content || '')
-  const mentions = props.post.mentions
-  if (Array.isArray(mentions) && mentions.length) {
-    const sorted = [...mentions].sort((a, b) => (b?.label?.length || 0) - (a?.label?.length || 0))
-    for (const m of sorted) {
-      if (!m?.label || !m?.id || (m.type !== 'user' && m.type !== 'entity')) continue
-      const href = m.type === 'user'
-        ? `/nguoi-dung/${encodeURIComponent(m.id)}`
-        : `/dia-diem/${encodeURIComponent(m.id)}`
-      const token = '@' + escapeHtml(m.label)
-      html = html.split(token).join(`<a class="mention-link" href="${href}">${token}</a>`)
-    }
-  }
-  // Hashtag #tag → link feed theo chủ-đề (content đã escape; tag chỉ \w nên an toàn)
-  html = html.replace(/#(\w{1,30})/gu, (_m, tag) =>
-    `<a class="hashtag-link" href="/cong-dong?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`)
-  return html
-})
+const contentHtml = computed(() => linkifyContent(props.post.content || '', props.post.mentions))
 
 const typeLabels: Record<string, string> = {
   review: 'Đánh giá',
