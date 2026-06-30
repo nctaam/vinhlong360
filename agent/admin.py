@@ -1000,6 +1000,7 @@ async def qa_queue(
     offset: int = Query(0, ge=0, le=10000),
 ):
     """Admin queue: questions chưa có best answer hoặc chưa có reply."""
+    require_pg()
     ph = db._ph
     def _query():
         conditions = [f"p.post_type = 'question'", f"p.moderation_status = 'approved'"]
@@ -1044,6 +1045,7 @@ class SetBestAnswerBody(BaseModel):
              description="Admin override to designate a comment as the best answer for a question post. Validates both the post and comment exist.")
 async def qa_set_best_answer(post_id: str, body: SetBestAnswerBody):
     """Admin override: set best_answer_id cho 1 question."""
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     def _query():
@@ -1305,6 +1307,7 @@ class ReviewResponseBody(BaseModel):
              description="Creates an admin or business response to a review post. Only one response per review is allowed.")
 async def admin_review_response(post_id: str, body: ReviewResponseBody, request: Request):
     """Admin/business reply to a review — one response per review (UNIQUE)."""
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     user = request.state.user if hasattr(request.state, "user") else None
@@ -1342,6 +1345,7 @@ async def admin_review_response(post_id: str, body: ReviewResponseBody, request:
             description="Returns the admin response for a specific review post, if one exists.")
 async def get_review_response(post_id: str):
     """Get the admin response for a review post."""
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
     def _query():
@@ -2034,10 +2038,11 @@ async def badge_counts():
     """Lightweight counts cho sidebar badges — moderation/images/unclassified/provisional."""
     def _query():
         counts = {"moderation": 0, "images": 0, "unclassified": 0, "provisional": 0, "reports": 0}
-        with db._conn() as conn:
-            row = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review','flagged')", ())
-            if row:
-                counts["moderation"] = db._row_to_dict(row)["c"]
+        if db._use_pg:
+            with db._conn() as conn:
+                row = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review','flagged')", ())
+                if row:
+                    counts["moderation"] = db._row_to_dict(row)["c"]
         try:
             counts["images"] = _imgq.status_counts().get("pending", 0)
         except Exception:
@@ -2068,11 +2073,14 @@ async def dashboard_alerts():
     """Priority-sorted alerts cho admin dashboard."""
     def _query():
         alerts: list[dict] = []
-        with db._conn() as conn:
-            mod = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('flagged')", ())
-            flagged = db._row_to_dict(mod)["c"] if mod else 0
-            mod2 = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
-            pending_mod = db._row_to_dict(mod2)["c"] if mod2 else 0
+        flagged = 0
+        pending_mod = 0
+        if db._use_pg:
+            with db._conn() as conn:
+                mod = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('flagged')", ())
+                flagged = db._row_to_dict(mod)["c"] if mod else 0
+                mod2 = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
+                pending_mod = db._row_to_dict(mod2)["c"] if mod2 else 0
         if flagged:
             alerts.append({"type": "flagged", "count": flagged, "label": f"{flagged} bài viết bị gắn cờ", "icon": "🚩", "link": "/admin/kiem-duyet?tab=flagged", "priority": 1})
         if pending_mod:
@@ -2266,6 +2274,7 @@ async def export_data():
             description="Exports all users with stats (post count, follower count, reputation) as a downloadable CSV file. Phone numbers are masked.")
 async def export_users_csv():
     """CSV export of all users with stats."""
+    require_pg()
     ph = db._ph
 
     def _generate():
@@ -2310,6 +2319,7 @@ async def export_posts_csv(
     days: int = Query(90, ge=1, le=365),
 ):
     """CSV export of posts with author/entity info."""
+    require_pg()
     ph = db._ph
 
     def _generate():
@@ -2385,6 +2395,7 @@ async def moderation_queue(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
 ):
+    require_pg()
     ph = db._ph
     offset = (page - 1) * limit
     statuses = ["pending", "flagged"] if status == "review" else [status]
@@ -2416,6 +2427,7 @@ async def moderation_queue(
              summary="Approve moderated post",
              description="Approves a post pending moderation and notifies the author.")
 async def approve_post(post_id: str):
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     def _query():
         ph = db._ph
@@ -2446,6 +2458,7 @@ class RejectBody(BaseModel):
              summary="Reject moderated post",
              description="Rejects a post pending moderation with an optional reason. Notifies the author.")
 async def reject_post(post_id: str, body: RejectBody = RejectBody()):
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     reason = (body.reason or "").strip() or None
     def _query():
@@ -2481,6 +2494,7 @@ class BatchModerationBody(BaseModel):
              summary="Batch moderate multiple posts",
              description="Approve or reject multiple posts at once. Notifies each author and logs moderation actions.")
 async def batch_moderation(body: BatchModerationBody, request: Request):
+    require_pg()
     from ratelimit import check_rate
     admin_user = getattr(request.state, "admin_user", None)
     rl_key = f"admin:batch-mod:{admin_user['id']}" if admin_user else "admin:batch-mod:key"
@@ -2528,6 +2542,7 @@ async def batch_moderation(body: BatchModerationBody, request: Request):
             description="Returns the full moderation action timeline for a specific post, including moderator names and scores.")
 async def moderation_history(post_id: str):
     """Admin: view full moderation action timeline for a specific post."""
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     def _query():
         ph = db._ph
@@ -2579,6 +2594,7 @@ async def moderation_history(post_id: str):
              description="Toggles whether a post is featured at the top of its entity page. Logs the action.")
 async def feature_post(post_id: str, request: Request):
     """Admin: toggle feature a post at the top of its entity page."""
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     admin_id = str(request.state.user["id"]) if hasattr(request, "state") and hasattr(request.state, "user") else None
 
@@ -2636,6 +2652,7 @@ class ModNoteBody(BaseModel):
              description="Adds an internal admin note to a post. Notes are not visible to the post author.")
 async def add_moderation_note(post_id: str, body: ModNoteBody):
     """B3d: Add internal admin note (not visible to poster)."""
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     def _query():
         ph = db._ph
@@ -2656,6 +2673,7 @@ async def add_moderation_note(post_id: str, body: ModNoteBody):
             summary="Get moderation notes",
             description="Returns all internal admin notes for a specific post.")
 async def get_moderation_notes(post_id: str):
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     def _query():
         ph = db._ph
@@ -2707,6 +2725,7 @@ async def admin_content_search(
     limit: int = Query(20, ge=1, le=100),
 ):
     """Admin search across posts and comments by keyword."""
+    require_pg()
     ph = db._ph
     offset = (page - 1) * limit
     search_esc = _escape_like(q)
@@ -2775,6 +2794,7 @@ async def admin_content_search(
             description="Returns full post details including comments, author info, and moderation data for admin review.")
 async def admin_post_detail(post_id: str):
     """Full post detail with comments for admin review."""
+    require_pg()
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
 
@@ -2831,6 +2851,7 @@ async def list_appeals(
     page: int = Query(1, ge=1, le=1000),
     limit: int = Query(20, ge=1, le=100),
 ):
+    require_pg()
     ph = db._ph
     offset = (page - 1) * limit
     def _query():
@@ -2878,6 +2899,7 @@ class AppealDecisionBody(BaseModel):
               summary="Approve a user appeal",
               description="Approves a moderation appeal, restoring the post and notifying the user.")
 async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
+    require_pg()
     appeal_id = validate_path_id(appeal_id, "appeal_id")
     admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
     def _query():
@@ -2915,6 +2937,7 @@ async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisi
               summary="Reject a user appeal",
               description="Rejects a moderation appeal and notifies the user with an optional reason.")
 async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
+    require_pg()
     appeal_id = validate_path_id(appeal_id, "appeal_id")
     admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
     def _query():
@@ -3443,6 +3466,7 @@ async def list_users(
     search: str = Query("", max_length=100),
     role_filter: Optional[str] = Query(None, pattern="^(user|moderator|admin)$"),
 ):
+    require_pg()
     ph = db._ph
     offset = (page - 1) * limit
     conditions = ["1=1"]
@@ -3499,6 +3523,7 @@ async def list_users(
             description="Returns comprehensive user profile and activity statistics for the admin panel, including post counts, follow stats, reports, blocks, and reputation.")
 async def admin_user_detail(user_id: str):
     """Comprehensive user detail for admin panel."""
+    require_pg()
     user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
 
@@ -3608,6 +3633,7 @@ async def admin_user_detail(user_id: str):
              summary="Ban a user",
              description="Deactivate a user account and revoke all active sessions. Admins cannot ban themselves.")
 async def ban_user(user_id: str, request: Request):
+    require_pg()
     user_id = validate_path_id(user_id, "user_id")
     admin_user = await get_current_user(request)
     if admin_user and str(admin_user["id"]) == user_id:
@@ -3633,6 +3659,7 @@ async def ban_user(user_id: str, request: Request):
              summary="Unban a user",
              description="Reactivate a previously banned user account. Returns an error if the user is not currently banned.")
 async def unban_user(user_id: str):
+    require_pg()
     user_id = validate_path_id(user_id, "user_id")
     def _query():
         ph = db._ph
@@ -3660,6 +3687,7 @@ class BulkUserAction(BaseModel):
              summary="Bulk ban users",
              description="Ban multiple users at once. Accepts a list of user IDs and an optional reason; skips non-existent users.")
 async def bulk_ban_users(body: BulkUserAction, request: Request):
+    require_pg()
     from ratelimit import check_rate
     check_rate("admin:bulk-ban", 5, 60, "Thao tác quá nhanh")
     admin_user = await get_current_user(request)
@@ -3689,6 +3717,7 @@ async def bulk_ban_users(body: BulkUserAction, request: Request):
              summary="Bulk unban users",
              description="Unban multiple users at once. Accepts a list of user IDs and an optional reason; skips non-existent or active users.")
 async def bulk_unban_users(body: BulkUserAction):
+    require_pg()
     from ratelimit import check_rate
     check_rate("admin:bulk-unban", 5, 60, "Thao tác quá nhanh")
     ids = [validate_path_id(uid, "user_id") for uid in body.user_ids]
