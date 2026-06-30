@@ -862,7 +862,6 @@ a.thread-author:hover { color: var(--primary-fg); }
 .dark .chat-panel-input input:focus { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .2); }
 .dark .csuggestions button { background: var(--glass-light); border-color: var(--line); }
 .dark .csuggestions button:hover { background: var(--glass-medium); border-color: var(--primary-fg); }
-.dark .region-card { background: var(--card); }
 .dark .stop-card { background: var(--card); }
 .dark .saved-plan-item { background: var(--card); }
 .dark .transport-mode { background: var(--card); border-color: var(--line); }

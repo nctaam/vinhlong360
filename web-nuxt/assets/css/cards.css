@@ -128,31 +128,10 @@
 .cover.cat-org { background: var(--cat-org); }
 .cover.cat-place { background: var(--cat-place); }
 
-/* ── Region cards ── */
-.region-grid { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); container-type: inline-size; content-visibility: auto; contain-intrinsic-size: auto 500px; }
-@container (max-width: 600px) {
-  .region-grid { grid-template-columns: 1fr; }
-}
-.region-card { background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: var(--transition-card); display: flex; flex-direction: column; }
-.region-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--border); will-change: transform; }
-.region-card:active { transform: translateY(0) scale(.97); transition-duration: .1s; }
-.region-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.rc-body { padding: var(--space-4) var(--space-4); display: flex; flex-direction: column; gap: var(--space-1); }
-.region-card h3 { margin: 0; font-size: 1.2rem; }
-.region-card p { margin: 0; color: var(--muted); font-size: .9rem; }
-.region-card .rc-count { color: var(--primary-fg); font-weight: var(--weight-bold); font-size: var(--text-sm); margin-top: var(--space-1); }
-
-.region-head { display: flex; gap: var(--space-4); align-items: center; color: var(--text-on-dark, #fff); border-radius: var(--radius); padding: var(--space-6); margin-bottom: var(--space-2); background: var(--cat-attraction); }
-.region-head .rc-emoji { font-size: var(--icon-2xl); }
-.region-head h1 { margin: 0; }
-.region-head p { margin: var(--space-1) 0 0; opacity: .92; }
-
-
 /* ── Tablet: clean 2-column grids ── */
 @media (min-width: 769px) and (max-width: 1024px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
   .grid.itin { grid-template-columns: repeat(2, 1fr); }
-  .region-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ── Dark mode (cards) ── */
@@ -166,8 +145,6 @@
 .dark .badge.ocop-4 { background: rgba(var(--secondary-rgb), .22); color: var(--secondary-fg); border-color: rgba(var(--secondary-rgb), .4); }
 .dark .badge.ocop-3 { color: var(--secondary-fg); border-color: rgba(75, 169, 125, .3); }
 .dark .badge.year { background: rgba(255,255,255,.06); }
-.dark .region-card { background: var(--card); border-color: var(--line); }
-.dark .region-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.08); }
 
 /* ============================================================
    SIGNATURE UPGRADE — premium card depth, hover-glow & badges
@@ -332,8 +309,6 @@
   .card:hover .badge { transform: none; }
   .cover-img { animation: none; }
   .cover-img img[loading="lazy"] { opacity: 1; transform: none; filter: none; }
-  .region-card:hover { transform: none; }
-  .region-card:active { transform: none; }
   /* signature additions */
   .card::before, .card:hover::before { opacity: 0; transition: none; }
   .card .cover-img::after { transition: none; }
