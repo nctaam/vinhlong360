@@ -135,7 +135,7 @@ except ImportError:
     HAS_IMAGE_RECOGNITION = False
 
 try:
-    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_error, set_gauge
+    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_error, set_gauge, track_http_request
     HAS_METRICS = True
 except ImportError:
     HAS_METRICS = False
@@ -1089,6 +1089,8 @@ async def track_response_time(request: Request, call_next):
         duration_ms = (time.time() - start) * 1000
         endpoint = f"{request.method} {request.url.path}"
         response_tracker.record(endpoint, duration_ms, response.status_code)
+        if HAS_METRICS:
+            track_http_request(request.method, request.url.path, response.status_code, duration_ms / 1000)
 
         if duration_ms > 5000:
             logger.warn("Slow request", endpoint=endpoint, duration_ms=round(duration_ms), req_id=req_id)

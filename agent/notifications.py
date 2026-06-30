@@ -241,15 +241,20 @@ _sse_subscribers: dict[str, list[asyncio.Queue]] = {}
 _sse_lock = asyncio.Lock()
 _sse_thread_lock = __import__("threading").Lock()
 _SSE_MAX_PER_USER = 5
+_sse_loop: asyncio.AbstractEventLoop | None = None
 
 
 def _notify_sse(user_id: str, data: dict):
     with _sse_thread_lock:
         queues = list(_sse_subscribers.get(user_id, []))
+    loop = _sse_loop
     for q in queues:
         try:
-            q.put_nowait(data)
-        except asyncio.QueueFull:
+            if loop is not None and loop.is_running():
+                loop.call_soon_threadsafe(q.put_nowait, data)
+            else:
+                q.put_nowait(data)
+        except (asyncio.QueueFull, RuntimeError):
             logger.debug("SSE queue full for user %s — notification dropped", user_id)
 
 
@@ -296,6 +301,10 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
                     ORDER BY created_at ASC LIMIT 50
                 """, (uid,))
         missed = await asyncio.to_thread(_fetch_missed)
+
+    global _sse_loop
+    if _sse_loop is None:
+        _sse_loop = asyncio.get_running_loop()
 
     queue: asyncio.Queue = asyncio.Queue(maxsize=50)
     async with _sse_lock:

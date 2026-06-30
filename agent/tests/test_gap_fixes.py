@@ -2081,8 +2081,21 @@ class TestSecurityFixes:
     def test_notify_sse_uses_thread_lock(self):
         src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
         idx = src.index("def _notify_sse(")
-        fn_src = src[idx:idx+300]
+        fn_src = src[idx:idx+500]
         assert "_sse_thread_lock" in fn_src
+
+    def test_notify_sse_uses_call_soon_threadsafe(self):
+        src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
+        idx = src.index("def _notify_sse(")
+        fn_src = src[idx:idx+500]
+        assert "call_soon_threadsafe" in fn_src
+
+    def test_sse_loop_captured_in_stream(self):
+        src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
+        idx = src.index("async def notification_stream")
+        fn_src = src[idx:idx+1500]
+        assert "_sse_loop" in fn_src
+        assert "get_running_loop" in fn_src
 
     def test_review_stats_cache_bounded(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
@@ -2771,3 +2784,38 @@ class TestStructuredLogBridge:
         idx = src.index("class _StructuredLogBridge")
         cls_src = src[idx:idx + 800]
         assert "module=record.name" in cls_src
+
+
+# ── Phase P7: HTTP request metrics ──
+
+class TestHttpRequestMetrics:
+    """Prometheus metrics for all HTTP requests via middleware."""
+
+    def test_http_requests_counter_exists(self):
+        from metrics import http_requests_total
+        assert http_requests_total.name == "http_requests_total"
+
+    def test_http_duration_histogram_exists(self):
+        from metrics import http_request_duration_seconds
+        assert http_request_duration_seconds.name == "http_request_duration_seconds"
+
+    def test_track_http_request_function(self):
+        from metrics import track_http_request
+        track_http_request("GET", "/api/entities", 200, 0.05)
+        track_http_request("POST", "/auth/login", 401, 0.1)
+
+    def test_middleware_calls_track_http_request(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        idx = src.index("def track_response_time")
+        fn_src = src[idx:idx + 1200]
+        assert "track_http_request" in fn_src
+
+    def test_http_metrics_imported_in_server(self):
+        src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
+        assert "track_http_request" in src
+
+    def test_path_prefix_bucketing(self):
+        from metrics import track_http_request, http_request_duration_seconds
+        track_http_request("GET", "/api/entities/123/reviews", 200, 0.1)
+        output = http_request_duration_seconds.collect()
+        assert "api" in output

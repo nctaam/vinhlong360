@@ -330,6 +330,21 @@ tool_call_duration_seconds = Histogram(
     buckets=[0.01, 0.05, 0.1, 0.5, 1, 5],
 )
 
+# --- HTTP request metrics ---
+
+http_requests_total = Counter(
+    "http_requests_total",
+    "Total HTTP requests by method and status",
+    labels=["method", "status"],
+)
+
+http_request_duration_seconds = Histogram(
+    "http_request_duration_seconds",
+    "HTTP request duration in seconds by method and path prefix",
+    buckets=[0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30],
+    labels=["method", "path"],
+)
+
 # --- Gauges ---
 
 active_sessions = Gauge(
@@ -428,6 +443,18 @@ def track_error(endpoint: str, error_type: str) -> None:
                     ``"timeout"``, ``"llm_api_error"``).
     """
     errors_total.inc({"endpoint": endpoint, "error_type": error_type})
+
+
+def track_http_request(method: str, path: str, status_code: int,
+                       duration_seconds: float) -> None:
+    """Record an HTTP request with method, path prefix, status, and duration."""
+    status_bucket = f"{status_code // 100}xx"
+    http_requests_total.inc({"method": method, "status": status_bucket})
+    path_prefix = "/" + path.strip("/").split("/")[0] if path.strip("/") else "/"
+    http_request_duration_seconds.observe(
+        value=duration_seconds,
+        labels={"method": method, "path": path_prefix},
+    )
 
 
 def set_gauge(name: str, value: float, labels: Optional[Dict[str, str]] = None) -> None:
