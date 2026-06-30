@@ -9,7 +9,7 @@
 /* ── Shared components ── */
 
 /* ScrollToTop */
-.dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); }
+.dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); color: var(--primary-fg); }
 .dark .scroll-top:hover { box-shadow: var(--shadow-lg); }
 
 /* ShareButton */
