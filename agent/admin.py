@@ -3324,20 +3324,21 @@ async def get_audit_log(
             mtime = _AUDIT_FILE.stat().st_mtime
         except OSError:
             mtime = 0.0
-        if mtime != _audit_cache["mtime"]:
-            items = []
-            with open(_AUDIT_FILE, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        items.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        continue
-            _audit_cache["mtime"] = mtime
-            _audit_cache["items"] = items
-        items = _audit_cache["items"]
+        with _audit_lock:
+            if mtime != _audit_cache["mtime"]:
+                raw_items = []
+                with open(_AUDIT_FILE, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            raw_items.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            continue
+                _audit_cache["mtime"] = mtime
+                _audit_cache["items"] = raw_items
+            items = list(_audit_cache["items"])
         filtered = items
         if method:
             filtered = [e for e in filtered if e.get("method") == method.upper()]
@@ -3596,7 +3597,7 @@ async def admin_user_detail(user_id: str):
                 if ll:
                     last_login = str(db._row_to_dict(ll)["created_at"])
             except Exception:
-                pass
+                logger.debug("login_history query failed for user %s", user_id, exc_info=True)
 
             last_post = db._fetchone(conn, f"""
                 SELECT created_at FROM posts
@@ -4102,6 +4103,7 @@ async def admin_cleanup_orphan_entity_refs():
                     else:
                         cleaned[table] = 0
                 except Exception:
+                    logger.debug("Orphan cleanup failed for table %s", table, exc_info=True)
                     cleaned[table] = -1
 
     await asyncio.to_thread(_cleanup)

@@ -416,7 +416,7 @@ def _log_admin_key_failure(request):
         path = getattr(request, "url", None)
         security_logger.admin_key_failure(ip, endpoint=str(path) if path else "")
     except Exception:
-        pass
+        logger.debug("Admin key failure logging failed", exc_info=True)
 
 
 # ══════════════════════════════════════════════════

@@ -34,9 +34,12 @@ Input validation:
 
 import hashlib
 import hmac
+import logging
 import os
 import re
 import secrets
+
+logger = logging.getLogger(__name__)
 
 from fastapi import Depends, HTTPException, Request
 
@@ -509,6 +512,7 @@ def validate_url_safe(url: str) -> dict:
         parsed = _urlparse.urlparse(url)
         hostname = parsed.hostname or ""
     except Exception:
+        logger.debug("SSRF check: unparseable URL", exc_info=True)
         return {"safe": False, "reason": "invalid_url"}
 
     if not hostname:
@@ -570,6 +574,7 @@ def validate_redirect_url(url: str, allowed_hosts: frozenset[str] | None = None)
         parsed = _urlparse.urlparse(url)
         hostname = (parsed.hostname or "").lower()
     except Exception:
+        logger.debug("Redirect check: unparseable URL", exc_info=True)
         return {"safe": False, "reason": "invalid_url"}
 
     if hostname in hosts:
@@ -1151,6 +1156,7 @@ def validate_token_structure(token: str) -> dict:
         header_b64 = parts[0] + "=" * padding
         header = _json.loads(_base64.urlsafe_b64decode(header_b64))
     except Exception:
+        logger.debug("JWT inspect: invalid header encoding", exc_info=True)
         return {"valid": False, "issues": ["invalid_header"], "claims": {}}
 
     alg = header.get("alg", "")
@@ -1173,6 +1179,7 @@ def validate_token_structure(token: str) -> dict:
         payload_b64 = parts[1] + "=" * padding
         claims = _json.loads(_base64.urlsafe_b64decode(payload_b64))
     except Exception:
+        logger.debug("JWT inspect: invalid payload encoding", exc_info=True)
         return {"valid": False, "issues": ["invalid_payload"], "claims": {}}
 
     # Check expiry
@@ -1272,6 +1279,7 @@ def validate_referrer(referrer: str, is_production: bool = False) -> dict:
         parsed = urlparse(referrer)
         host = (parsed.hostname or "").lower()
     except Exception:
+        logger.debug("Referrer validation: unparseable referrer", exc_info=True)
         return {"valid": False, "reason": "unparseable_referrer"}
 
     if is_production and host in ("localhost", "127.0.0.1"):

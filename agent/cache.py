@@ -71,7 +71,7 @@ def _track_cache_metric(operation: str) -> None:
         from agent.metrics import track_cache
         track_cache(operation)
     except Exception:
-        pass
+        logger.debug("Cache metric tracking unavailable", exc_info=True)
 
 
 def _normalize_key(message: str, session_id: str = "") -> str:
