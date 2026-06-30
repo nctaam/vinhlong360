@@ -835,7 +835,7 @@ async def lifespan(app):
             load_entity_names(knowledge._entities)
             logger.info("Autocorrect loaded", entities=len(knowledge._entities))
         except Exception:
-            pass
+            logger.debug("Autocorrect load failed", exc_info=True)
     # Build search indexes without blocking readiness. Use BACKGROUND_INDEX_BUILD=false
     # only when deployment should wait for the full enhanced search index.
     start_search_index_build(background=BACKGROUND_INDEX_BUILD)
@@ -857,7 +857,7 @@ async def lifespan(app):
             _db._pg_pool.closeall()
             logger.info("PG connection pool closed")
         except Exception:
-            pass
+            logger.debug("PG pool close failed", exc_info=True)
     logger.info("Shutdown complete")
     logger.flush()
 
@@ -1346,7 +1346,7 @@ def _build_messages(
         try:
             realtime_ctx = get_realtime_context() or ""
         except Exception:
-            pass
+            logger.debug("Realtime context failed", exc_info=True)
     memory_ctx = memory_manager.build_context(session_id, user_id, message)
     reflexion_ctx = reflexion_engine.get_reflection_prompt(message)
     graph_ctx = ""
@@ -1354,7 +1354,7 @@ def _build_messages(
         try:
             graph_ctx = memory_graph.build_graph_context(user_id) or ""
         except Exception:
-            pass
+            logger.debug("Memory graph context failed", exc_info=True)
 
     # A/B testing: select prompt variant
     ab_info = {}
@@ -1370,7 +1370,7 @@ def _build_messages(
                 elif style == "detailed":
                     base_prompt = SYSTEM_PROMPT + "\nPhong cách trả lời: chi tiết, đầy đủ thông tin, có ví dụ minh họa."
         except Exception:
-            pass
+            logger.debug("A/B variant selection failed", exc_info=True)
 
     # KB-in-context: inject a compact index (or full digest) of the knowledge base
     # so the agent knows what exists → better searches + correct abstention. Static
@@ -1381,7 +1381,7 @@ def _build_messages(
             if kb_ctx:
                 base_prompt = base_prompt + "\n\n" + kb_ctx
         except Exception:
-            pass
+            logger.debug("KB context injection failed", exc_info=True)
 
     # Lazy context: skip heavy modules for simple queries (search/general)
     # to reduce token count and speed up responses. Only load for complex queries.
@@ -1399,7 +1399,7 @@ def _build_messages(
             if experience_ctx:
                 reflexion_ctx = (reflexion_ctx or "") + ("\n" + experience_ctx)
         except Exception:
-            pass
+            logger.debug("Experience memory failed", exc_info=True)
 
     # Few-shot demonstrations (BootstrapFewShot). OFF by default (token cost);
     # enable via FEWSHOT_DEMOS=on. Compiled artifact is static → works offline.
@@ -1409,7 +1409,7 @@ def _build_messages(
             if fewshot_ctx:
                 reflexion_ctx = (reflexion_ctx or "") + ("\n" + fewshot_ctx)
         except Exception:
-            pass
+            logger.debug("Few-shot prompt build failed", exc_info=True)
 
     # Use prompt cache if available
     if HAS_PROMPT_CACHE:
@@ -1709,7 +1709,7 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
                         "content": "[Observation]: Search returned 0 results. Try broader keywords, remove filters, or use web_search as fallback."
                     })
         except Exception:
-            pass
+            logger.debug("Tool loop search fallback failed", exc_info=True)
 
     return empty_results_count
 
@@ -1761,7 +1761,7 @@ async def chat(req: ChatRequest, request: Request):
                     track_cache("hit")
                 return ChatResponse(**sem_cached, session_id=session_id, cached=True)
         except Exception:
-            pass
+            logger.debug("Semantic cache retrieval failed", exc_info=True)
 
     # Check cache (only for new conversations without history)
     if not req.history:
@@ -1801,7 +1801,7 @@ async def chat(req: ChatRequest, request: Request):
                     agent_factory.update_performance(dyn_route["agent_id"], 5.0)  # default, updated later
                     logger.info("Dynamic agent matched", agent=dyn_route.get("name", ""), session_id=session_id)
             except Exception:
-                pass
+                logger.debug("Dynamic agent matching failed", exc_info=True)
 
         # Extract the enriched system context (proactive + RAG + realtime + memory
         # + reflexion + graph) that _build_messages just computed. Previously the
@@ -1823,7 +1823,7 @@ async def chat(req: ChatRequest, request: Request):
                 if _variant_addon:
                     _enriched_system = _enriched_system + "\n\n" + _variant_addon
             except Exception:
-                pass
+                logger.debug("Self-optimizer variant failed", exc_info=True)
 
         # Use orchestrator when available for specialist routing.
         # GĐ4.1: offload vòng lặp agent (OpenAI client ĐỒNG BỘ) sang thread để KHÔNG
@@ -1848,7 +1848,7 @@ async def chat(req: ChatRequest, request: Request):
             try:
                 _trace_ctx.__exit__(None, None, None)
             except Exception:
-                pass
+                logger.debug("Trace context exit failed", exc_info=True)
 
     # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
     # P0/chat: chỉ coi là lỗi khi reply RỖNG, hoặc là fallback hệ-thống thật (mọi fallback
@@ -1977,7 +1977,7 @@ async def chat(req: ChatRequest, request: Request):
                                      {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
                                      token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
         except Exception:
-            pass
+            logger.debug("Cost tracking failed", exc_info=True)
 
     # Record assistant reply in memory
     memory_manager.on_message(session_id, "assistant", reply)
@@ -1987,13 +1987,13 @@ async def chat(req: ChatRequest, request: Request):
         try:
             memory_graph.on_chat_complete(user_id, corrected_message, reply, [])
         except Exception:
-            pass
+            logger.debug("Memory graph record failed", exc_info=True)
 
     # LLM memory extraction: extract preferences/facts
     try:
         memory_manager.on_chat_complete(session_id, user_id, corrected_message, reply)
     except Exception:
-        pass
+        logger.debug("LLM memory extraction failed", exc_info=True)
 
     # Reflexion: evaluate answer quality
     try:
@@ -2016,13 +2016,13 @@ async def chat(req: ChatRequest, request: Request):
             try:
                 experience_memory.record(req.message, tools_used, evaluation["score"], reply)
             except Exception:
-                pass
+                logger.debug("Experience memory record failed", exc_info=True)
         # Few-shot demo pool: capture high-scoring (query, answer) exemplars
         if HAS_FEWSHOT:
             try:
                 prompt_compiler.record_demo(req.message, reply, evaluation["score"])
             except Exception:
-                pass
+                logger.debug("Few-shot demo record failed", exc_info=True)
     except Exception as eval_err:
         logger.warn("Reflexion evaluation error", error=str(eval_err))
         evaluation = {"score": 0, "issues": [], "good_points": []}
@@ -2034,7 +2034,7 @@ async def chat(req: ChatRequest, request: Request):
             record_outcome(session_id, corrected_message, "orchestrator" if HAS_ORCHESTRATOR else "direct",
                           tools_used, evaluation["score"], duration, est_tokens)
         except Exception:
-            pass
+            logger.debug("Self-optimizer outcome record failed", exc_info=True)
 
     # ── LLM Judge: quality evaluation (non-blocking, best-effort) ──
     if HAS_LLM_JUDGE and LLM_JUDGE_ENABLED and evaluation["score"] >= 3:
@@ -2043,14 +2043,14 @@ async def chat(req: ChatRequest, request: Request):
             if judge_result and judge_result.get("weighted_score", 0) < 4:
                 logger.info("LLM Judge low score", score=judge_result.get("weighted_score"), query=req.message[:80])
         except Exception:
-            pass
+            logger.debug("LLM Judge evaluation failed", exc_info=True)
 
     # A/B testing: record outcome
     if HAS_AB_TESTING and session_id:
         try:
             ab_manager.record_outcome("prompt_style", session_id, evaluation["score"])
         except Exception:
-            pass
+            logger.debug("A/B outcome record failed", exc_info=True)
 
     # Metrics tracking
     if HAS_METRICS:
@@ -2060,7 +2060,7 @@ async def chat(req: ChatRequest, request: Request):
     try:
         analytics.track_query(req.message, tools_used, reply, session_id)
     except Exception:
-        pass
+        logger.debug("Analytics tracking failed", exc_info=True)
 
     # ── Guardrails: output validation (PII mask + hallucination check) ──
     if HAS_GUARDRAILS:
@@ -2160,7 +2160,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 analytics.track_query(message, ["semantic_cache_hit"], sem_cached.get("reply", ""), sid)
                 return StreamingResponse(sem_cached_stream(), media_type="text/event-stream")
         except Exception:
-            pass
+            logger.debug("Semantic cache retrieval failed (stream)", exc_info=True)
 
     # Check cache for history-less requests
     if not hist:
@@ -2199,14 +2199,14 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 if _dyn and _dyn.get("system_prompt_addon"):
                     _sys += "\n\n" + _dyn["system_prompt_addon"]
             except Exception:
-                pass
+                logger.debug("Dynamic agent routing failed (stream)", exc_info=True)
         if HAS_OPTIMIZER:
             try:
                 _v = prompt_optimizer.get_current_variant().get("prompt_addon", "")
                 if _v:
                     _sys += "\n\n" + _v
             except Exception:
-                pass
+                logger.debug("Self-optimizer variant failed (stream)", exc_info=True)
         messages[0]["content"] = _sys
 
     # ── Smart model routing for stream path ──
@@ -2219,7 +2219,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             _stream_model = get_model_mini()
             logger.info("Stream model routing: MINI", category=_stream_cat.value)
     except Exception:
-        pass
+        logger.debug("Stream model routing failed", exc_info=True)
 
     # ── Tuned params (self_optimizer) for the streaming loop ──
     _stream_temp = None
@@ -2232,7 +2232,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             _stream_rounds = int(_p.get("max_rounds", 4))
             _stream_temp = _p.get("temperature")
         except Exception:
-            pass
+            logger.debug("Stream tuned params failed", exc_info=True)
 
     async def event_stream():
         # Send autocorrect info if corrected
@@ -2342,13 +2342,13 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     try:
                         memory_graph.on_chat_complete(user_id, message, full_text, [])
                     except Exception:
-                        pass
+                        logger.debug("Memory graph record failed (stream)", exc_info=True)
 
                 # LLM memory extraction
                 try:
                     memory_manager.on_chat_complete(sid, user_id, message, full_text)
                 except Exception:
-                    pass
+                    logger.debug("LLM memory extraction failed (stream)", exc_info=True)
 
                 # ── Cost tracking ──
                 if HAS_COST_TRACKER:
@@ -2359,7 +2359,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                                                  {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
                                                  token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
                     except Exception:
-                        pass
+                        logger.debug("Cost tracking failed (stream)", exc_info=True)
 
                 # Reflexion: evaluate quality
                 evaluation = reflexion_engine.evaluate_answer(message, full_text, tools_used)
@@ -2376,12 +2376,12 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     try:
                         experience_memory.record(message, tools_used, evaluation["score"], full_text)
                     except Exception:
-                        pass
+                        logger.debug("Experience memory record failed (stream)", exc_info=True)
                 if HAS_FEWSHOT:
                     try:
                         prompt_compiler.record_demo(message, full_text, evaluation["score"])
                     except Exception:
-                        pass
+                        logger.debug("Few-shot demo record failed (stream)", exc_info=True)
 
                 # ── Self optimizer: record outcome ──
                 if HAS_OPTIMIZER:
@@ -2389,21 +2389,21 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         est_tok = token_counter.estimate_tokens(full_text) if HAS_COST_TRACKER else len(full_text) // 3
                         record_outcome(sid, message, "stream", tools_used, evaluation["score"], 0, est_tok)
                     except Exception:
-                        pass
+                        logger.debug("Self-optimizer outcome failed (stream)", exc_info=True)
 
                 # ── LLM Judge: quality evaluation ──
                 if HAS_LLM_JUDGE and LLM_JUDGE_ENABLED and evaluation["score"] >= 3:
                     try:
                         judge(message, full_text)
                     except Exception:
-                        pass
+                        logger.debug("LLM Judge failed (stream)", exc_info=True)
 
                 # A/B testing: record outcome
                 if HAS_AB_TESTING and sid:
                     try:
                         ab_manager.record_outcome("prompt_style", sid, evaluation["score"])
                     except Exception:
-                        pass
+                        logger.debug("A/B outcome record failed (stream)", exc_info=True)
 
                 # Metrics tracking
                 if HAS_METRICS:
@@ -2467,7 +2467,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 memory_manager.on_message(sid, "assistant", synth_text)
                 analytics.track_query(message, tools_used, synth_text, sid)
         except Exception:
-            pass
+            logger.debug("Stream synthesis fallback failed", exc_info=True)
 
         yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
 
@@ -2552,7 +2552,7 @@ def _health_core() -> tuple:
             _db._fetchone(conn, "SELECT 1", ())
         db_ok = True
     except Exception:
-        pass
+        logger.debug("Health check DB probe failed", exc_info=True)
     errors_healthy = error_tracker.is_healthy()
     llm_ok = llm_status != "error"
     overall = "ok" if (errors_healthy and db_ok and llm_ok) else "degraded"
@@ -3087,7 +3087,7 @@ async def user_feedback(req: FeedbackRequest, request: Request):
         from learn_loop import record_feedback
         record_feedback(query=query, rating=rating, entity_id=entity_id, session_id=user_id)
     except Exception:
-        pass  # Non-critical
+        logger.debug("Learn loop feedback record failed", exc_info=True)
     logger.info("User feedback", user_id=user_id, rating=rating, query=query[:50])
     return {"success": True}
 
