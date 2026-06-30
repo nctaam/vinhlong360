@@ -1119,9 +1119,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
     linear-gradient(to top, rgba(0,0,0,.48) 0%, rgba(0,0,0,.06) 34%, transparent 58%);
 }
 .dark .home .hero-kicker { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16); }
-.dark .home .hero-search { background: rgba(28,28,30,.5); border-color: rgba(255,255,255,.12); }
-.dark .home .hero-search input { background: var(--bg-alt); }
-.dark .home .hero-search:focus-within { border-color: rgba(var(--accent-rgb), .55); }
+.dark .home .hero-search { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.28); }
+.dark .home .hero-search input { background: var(--bg-warm); color: var(--ink); }
+.dark .home .hero-search input::placeholder { color: rgba(255,255,255,.45); }
+.dark .home .hero-search:focus-within { border-color: rgba(var(--accent-rgb), .7); }
 .dark .home .section-head h2::before { background: linear-gradient(180deg, var(--accent) 0%, var(--primary-fg) 100%); }
 .dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
 .dark .event-card { background: var(--card); border-color: var(--line); }
@@ -1130,7 +1131,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .event-card:hover { border-color: rgba(255,255,255,.1); }
 .dark .chatbot-cta { background: linear-gradient(135deg, var(--card) 0%, rgba(255,255,255,.03) 100%); border-color: var(--line); }
 .dark .chatbot-cta:hover { border-color: rgba(255,255,255,.1); }
-.dark .hero-pill { background: var(--glass-medium); border-color: var(--border); }
+.dark .hero-pill { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.32); }
 .dark .hero-stat-num { color: var(--ink); }
 .dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.1) 0%, transparent 68%); }
 
