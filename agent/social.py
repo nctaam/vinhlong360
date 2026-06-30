@@ -3698,3 +3698,42 @@ def _enrich_post(row: dict, user: dict) -> dict:
     row["display_name"] = user.get("display_name")
     row["avatar_url"] = user.get("avatar_url")
     return _format_post(row)
+
+
+# ── Route ordering fix ───────────────────────────────────────────────────
+def _fix_social_route_order():
+    """Ensure /posts/hidden matches before /posts/{post_id}."""
+    param_bases = {}
+    shadowed = set()
+    for r in router.routes:
+        path = getattr(r, "path", "")
+        if "{" in path:
+            base = path.split("{")[0].rstrip("/")
+            if base not in param_bases:
+                param_bases[base] = True
+        else:
+            for base in param_bases:
+                if path.startswith(base + "/"):
+                    shadowed.add(path)
+    if not shadowed:
+        return
+    static_routes = []
+    other_routes = []
+    for r in router.routes:
+        path = getattr(r, "path", "")
+        if path in shadowed:
+            static_routes.append(r)
+        else:
+            other_routes.append(r)
+    for s in reversed(static_routes):
+        spath = getattr(s, "path", "")
+        for i, r in enumerate(other_routes):
+            rpath = getattr(r, "path", "")
+            if "{" in rpath:
+                base = rpath.split("{")[0].rstrip("/")
+                if spath.startswith(base + "/"):
+                    other_routes.insert(i, s)
+                    break
+    router.routes[:] = other_routes
+
+_fix_social_route_order()

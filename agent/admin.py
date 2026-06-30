@@ -41,7 +41,7 @@ try:
 except Exception:  # noqa: BLE001
     logger.warning("Cost tracker unavailable", exc_info=True)
     _HAS_COST = False
-from auth_middleware import get_current_user, validate_path_id, require_csrf
+from auth_middleware import get_current_user, validate_path_id, require_csrf, require_pg
 from middleware import admin_limiter, verify_admin_key, get_client_ip
 
 
@@ -2672,6 +2672,7 @@ async def get_moderation_notes(post_id: str):
             summary="Get moderation statistics",
             description="Returns post counts grouped by moderation status, plus totals for today and this week.")
 async def moderation_stats():
+    require_pg()
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -4384,3 +4385,42 @@ async def delete_announcement(announcement_id: str):
 
     await asyncio.to_thread(_query)
     return {"success": True}
+
+
+# ── Route ordering fix ───────────────────────────────────────────────────
+def _fix_admin_route_order():
+    """Ensure static sub-paths match before parameterized catch-alls."""
+    param_bases = {}
+    shadowed = set()
+    for r in router.routes:
+        path = getattr(r, "path", "")
+        if "{" in path:
+            base = path.split("{")[0].rstrip("/")
+            if base not in param_bases:
+                param_bases[base] = True
+        else:
+            for base in param_bases:
+                if path.startswith(base + "/"):
+                    shadowed.add(path)
+    if not shadowed:
+        return
+    static_routes = []
+    other_routes = []
+    for r in router.routes:
+        path = getattr(r, "path", "")
+        if path in shadowed:
+            static_routes.append(r)
+        else:
+            other_routes.append(r)
+    for s in reversed(static_routes):
+        spath = getattr(s, "path", "")
+        for i, r in enumerate(other_routes):
+            rpath = getattr(r, "path", "")
+            if "{" in rpath:
+                base = rpath.split("{")[0].rstrip("/")
+                if spath.startswith(base + "/"):
+                    other_routes.insert(i, s)
+                    break
+    router.routes[:] = other_routes
+
+_fix_admin_route_order()

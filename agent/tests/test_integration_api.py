@@ -779,6 +779,46 @@ class TestAdminEndpoints:
         resp = client.get("/admin/audit-log")
         assert resp.status_code == 200
 
+    def test_admin_moderation_stats(self):
+        client = _admin_client()
+        resp = client.get("/admin/moderation/stats")
+        if db._use_pg:
+            assert resp.status_code == 200
+        else:
+            assert resp.status_code == 503
+
+
+class TestRouteOrdering:
+    """Verify static routes are not shadowed by parameterized catch-alls."""
+
+    def test_public_entities_map_not_shadowed(self):
+        resp = _public_client().get(
+            "/api/entities/map?north=10.5&south=10.0&east=106.5&west=106.0"
+        )
+        assert resp.status_code == 200
+
+    def test_public_entities_popular_not_shadowed(self):
+        resp = _public_client().get("/api/entities/popular")
+        assert resp.status_code == 200
+
+    def test_public_entities_search_not_shadowed(self):
+        resp = _public_client().get("/api/entities/search?q=test")
+        assert resp.status_code == 200
+
+    def test_admin_moderation_stats_not_shadowed(self):
+        resp = _admin_client().get("/admin/moderation/stats")
+        if db._use_pg:
+            assert resp.status_code == 200
+        else:
+            assert resp.status_code == 503
+
+    def test_social_posts_hidden_not_shadowed(self):
+        client = _social_client()
+        if not db._use_pg:
+            assert client.get("/api/posts/hidden").status_code == 503
+        else:
+            assert client.get("/api/posts/hidden").status_code in (200, 401, 403)
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  QUERY PARAMETER VALIDATION
