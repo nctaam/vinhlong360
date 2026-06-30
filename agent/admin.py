@@ -1787,8 +1787,11 @@ async def admin_stats():
 
         entities_week = 0
         try:
+            week_sql = ("SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= NOW() - INTERVAL '7 days'"
+                        if db._use_pg else
+                        "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', '-7 days')")
             with db._conn() as c3:
-                ew = db._fetchone(c3, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', '-7 days')", ())
+                ew = db._fetchone(c3, week_sql, ())
                 entities_week = db._row_to_dict(ew)["c"] if ew else 0
         except Exception:
             logger.debug("Stats entities_week query failed", exc_info=True)
