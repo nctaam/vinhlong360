@@ -184,29 +184,20 @@ const typeLabels: Record<string, string> = {
 }
 const typeLabel = computed(() => typeLabels[props.post?.post_type] || '')
 
-function onPostMenuKey(e: KeyboardEvent) {
-  if (e.key === 'Escape') { showMenu.value = false; return }
-  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
-  e.preventDefault()
-  const menu = (e.currentTarget as HTMLElement)
-  const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'))
-  if (!items.length) return
-  const cur = items.indexOf(document.activeElement as HTMLElement)
-  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
-  items[next]?.focus()
+function menuKeyHandler(closeRef: Ref<boolean>) {
+  return (e: KeyboardEvent) => {
+    if (e.key === 'Escape') { closeRef.value = false; return }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+    e.preventDefault()
+    const items = Array.from((e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="menuitem"]'))
+    if (!items.length) return
+    const cur = items.indexOf(document.activeElement as HTMLElement)
+    const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
+    items[next]?.focus()
+  }
 }
-
-function onRepostMenuKey(e: KeyboardEvent) {
-  if (e.key === 'Escape') { repostMenu.value = false; return }
-  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
-  e.preventDefault()
-  const menu = (e.currentTarget as HTMLElement)
-  const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'))
-  if (!items.length) return
-  const cur = items.indexOf(document.activeElement as HTMLElement)
-  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
-  items[next]?.focus()
-}
+const onPostMenuKey = menuKeyHandler(showMenu)
+const onRepostMenuKey = menuKeyHandler(repostMenu)
 
 let likePopTimer: ReturnType<typeof setTimeout> | undefined
 function onLike() {

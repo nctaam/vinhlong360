@@ -24,22 +24,11 @@ const { show: showToast } = useToast()
 const open = ref(false)
 const triggerRef = ref<HTMLButtonElement>()
 const menuRef = ref<HTMLElement>()
+const { onMenuKeydown } = useDropdown(open, '.dropdown', { triggerRef })
 
 function toggle() {
   open.value = !open.value
   if (open.value) nextTick(() => menuRef.value?.querySelector<HTMLElement>('[role="menuitem"]')?.focus())
-}
-
-function onMenuKeydown(e: KeyboardEvent) {
-  const items = menuRef.value ? Array.from(menuRef.value.querySelectorAll<HTMLElement>('[role="menuitem"]')) : []
-  if (!items.length) return
-  if (e.key === 'Home') { e.preventDefault(); items[0]?.focus(); return }
-  if (e.key === 'End') { e.preventDefault(); items[items.length - 1]?.focus(); return }
-  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
-  e.preventDefault()
-  const cur = items.indexOf(document.activeElement as HTMLElement)
-  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
-  items[next]?.focus()
 }
 
 async function doDeleteAccount() {
@@ -66,15 +55,4 @@ async function doLogout() {
   await logout()
 }
 
-function onClickOutside(e: MouseEvent) {
-  if (!(e.target as HTMLElement).closest('.dropdown')) {
-    open.value = false
-  }
-}
-function onEsc(e: KeyboardEvent) {
-  if (e.key === 'Escape' && open.value) { open.value = false; triggerRef.value?.focus() }
-}
-
-onMounted(() => { document.addEventListener('click', onClickOutside); document.addEventListener('keydown', onEsc) })
-onUnmounted(() => { document.removeEventListener('click', onClickOutside); document.removeEventListener('keydown', onEsc) })
 </script>
