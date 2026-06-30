@@ -338,6 +338,7 @@ Trả về JSON array gồm 3 string. Chỉ trả JSON, không text khác."""}],
         content = re.sub(r"\s*```$", "", content)
         return json.loads(content)[:3]
     except Exception:
+        logger.debug("Follow-up generation failed", exc_info=True)
         return []
 
 
@@ -1553,6 +1554,7 @@ def _optimal_params_fn(category: str) -> dict:
     try:
         return parameter_tuner.get_optimal_params(category)
     except Exception:
+        logger.debug("Optimal params lookup failed for %s", category, exc_info=True)
         return {}
 
 
@@ -1563,6 +1565,7 @@ def _tool_order_fn(category: str) -> list:
     try:
         return tool_weight_optimizer.suggest_tool_order(category)
     except Exception:
+        logger.debug("Tool order lookup failed for %s", category, exc_info=True)
         return []
 
 
