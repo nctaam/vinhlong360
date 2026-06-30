@@ -956,7 +956,8 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
         except Exception as e:
             if "unique" in str(e).lower() or "duplicate" in str(e).lower():
                 raise HTTPException(409, "Username đã được sử dụng")
-            raise
+            logger.exception("Profile update failed")
+            raise HTTPException(500, "Cập nhật hồ sơ thất bại")
 
     return {"user": _safe_user(user)}
 
