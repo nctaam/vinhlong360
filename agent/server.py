@@ -859,6 +859,15 @@ async def lifespan(app):
             logger.info("PG connection pool closed")
         except Exception:
             logger.debug("PG pool close failed", exc_info=True)
+    if not _db._use_pg:
+        try:
+            import sqlite3
+            conn = sqlite3.connect(_db.db_path, timeout=5)
+            conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            conn.close()
+            logger.info("SQLite WAL checkpoint complete")
+        except Exception:
+            logger.debug("SQLite WAL checkpoint failed", exc_info=True)
     logger.info("Shutdown complete")
     logger.flush()
 
@@ -2564,11 +2573,13 @@ def _health_core() -> tuple:
 
 @app.get("/health")
 async def health():
-    overall, db_ok, _ = await asyncio.to_thread(_health_core)
+    overall, db_ok, llm_status = await asyncio.to_thread(_health_core)
     return {
         "status": overall,
         "time": datetime.now(timezone.utc).isoformat(),
         "entities": len(knowledge._entities),
+        "db": db_ok,
+        "llm": llm_status,
     }
 
 
