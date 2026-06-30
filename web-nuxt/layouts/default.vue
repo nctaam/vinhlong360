@@ -129,6 +129,7 @@ const showBeta = ref(false)
 const LS_BETA = 'vl360_beta_dismissed'
 onMounted(() => {
   if (bannerEnabled.value && localStorage.getItem(LS_BETA) !== '1') showBeta.value = true
+  if (route.query.login === 'admin') showAuth.value = true
 })
 function dismissBeta() { showBeta.value = false; localStorage.setItem(LS_BETA, '1') }
 

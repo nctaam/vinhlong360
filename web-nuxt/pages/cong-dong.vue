@@ -61,7 +61,7 @@
         </div>
 
         <!-- Create post (Threads style) -->
-        <div v-if="isLoggedIn" ref="composeEl" class="threads-compose" role="form" aria-label="Viết bài mới">
+        <div v-if="isLoggedIn && !ugcUnavailable" ref="composeEl" class="threads-compose" role="form" aria-label="Viết bài mới">
           <div class="compose-left">
             <span class="avatar thread-avatar">{{ userInitial }}</span>
           </div>
@@ -143,7 +143,7 @@
           </div>
         </div>
 
-        <div v-else class="threads-compose-guest">
+        <div v-else-if="!ugcUnavailable" class="threads-compose-guest">
           <div class="guest-avatar">
             <span class="avatar thread-avatar guest">?</span>
           </div>
@@ -154,7 +154,7 @@
         </div>
 
         <!-- Tìm bài viết -->
-        <div class="community-search" role="search">
+        <div v-if="!ugcUnavailable" class="community-search" role="search">
           <svg class="cs-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
           <input
             v-model="searchInput"
@@ -177,7 +177,7 @@
         </div>
 
         <!-- Main tabs -->
-        <div v-if="!searchMode" class="threads-filter" role="tablist" aria-label="Bộ lọc bảng tin">
+        <div v-if="!searchMode && !ugcUnavailable" class="threads-filter" role="tablist" aria-label="Bộ lọc bảng tin">
           <button type="button" role="tab" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-selected="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
           <button type="button" role="tab" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-selected="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
           <button type="button" role="tab" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'following' }]" :aria-selected="activeTab === 'following'" @click="setTab('following')">Đang theo dõi</button>
@@ -264,6 +264,12 @@
           v-if="searchMode && !searchResults.length && !searchLoading"
           icon="🔍" title="Không tìm thấy bài viết"
           :message="`Không có bài viết nào khớp “${searchQuery}”.`"
+        />
+
+        <EmptyState
+          v-else-if="ugcUnavailable"
+          icon="🚧" title="Cộng đồng sắp mở"
+          message="Tính năng cộng đồng đang được hoàn thiện. Bạn sẽ sớm có thể chia sẻ trải nghiệm, đánh giá địa điểm và kết nối với những người yêu miền Tây."
         />
 
         <div v-else-if="feedError && !displayPosts.length" class="feed-error">
@@ -479,6 +485,7 @@ const posts = ref<Entity[]>([])
 const hasMore = ref(false)
 const loading = ref(false)
 const feedError = ref(false)
+const ugcUnavailable = ref(false)
 let feedAbort: AbortController | null = null
 // ── Tìm bài viết cộng đồng ──
 const searchInput = ref('')
@@ -732,6 +739,11 @@ async function fetchFeed(reset = false) {
     hasMore.value = newPosts.length === 20
   } catch (e: unknown) {
     if (e instanceof DOMException && e.name === 'AbortError') return
+    const status = (e as any)?.response?.status || (e as any)?.status || (e as any)?.statusCode
+    if (status === 503) {
+      ugcUnavailable.value = true
+      return
+    }
     if (reset && !posts.value.length) feedError.value = true
     showToast(reset ? 'Không thể tải bảng tin' : 'Không thể tải thêm', 'error')
   }

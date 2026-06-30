@@ -8,6 +8,8 @@ export const TYPE_META: Record<string, TypeMeta> = {
   experience: { emoji: '🌾', label: 'Trải nghiệm', cat: 'experience' },
   product: { emoji: '🍊', label: 'Đặc sản & OCOP', cat: 'product' },
   dish: { emoji: '🍲', label: 'Ẩm thực', cat: 'dish' },
+  restaurant: { emoji: '🍽️', label: 'Quán ăn', cat: 'dish' },
+  cafe: { emoji: '☕', label: 'Quán cà phê', cat: 'dish' },
   craft_village: { emoji: '🏺', label: 'Làng nghề', cat: 'craft' },
   attraction: { emoji: '🛕', label: 'Tham quan', cat: 'attraction' },
   accommodation: { emoji: '🏡', label: 'Lưu trú', cat: 'accommodation' },
