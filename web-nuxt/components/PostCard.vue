@@ -144,7 +144,6 @@ const emit = defineEmits<{
 }>()
 
 const { user: _authUser } = useAuth()
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 const isOwner = computed(() =>
   !!_authUser.value?.id && String(props.post?.user_id) === String(_authUser.value.id))
 

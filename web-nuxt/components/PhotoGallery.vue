@@ -25,9 +25,7 @@ function openLightbox(idx: number) {
 const thumbImages = computed(() => props.images.slice(1, props.maxThumbs + 1))
 const extraCount = computed(() => Math.max(0, props.images.length - props.maxThumbs - 1))
 
-function isRemote(src: string) {
-  return /^https?:\/\//.test(src)
-}
+const isRemote = isRemoteUrl
 
 function onImgError(e: Event) {
   const img = e.target as HTMLImageElement

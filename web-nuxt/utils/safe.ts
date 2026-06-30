@@ -16,6 +16,11 @@ export function escapeHtml(s?: string | null): string {
   ))
 }
 
+/** True if the string is an absolute http(s) URL (used to pick NuxtImg vs plain img). */
+export function isRemoteUrl(url: string): boolean {
+  return /^https?:\/\//.test(url)
+}
+
 /** Build a dialable tel: href, stripping dots/spaces/parens (keeps leading +). */
 export function telHref(phone?: string | null): string {
   if (!phone) return '#'

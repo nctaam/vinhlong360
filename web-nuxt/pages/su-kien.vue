@@ -236,7 +236,6 @@ import { lunarLabel, isLunarFirstDay, isLunarFull } from '~/composables/useLunar
 
 useReveal()
 const { f: pc } = usePageContent('su_kien')
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 const q = ref('')
 const areaFilter = ref('all')

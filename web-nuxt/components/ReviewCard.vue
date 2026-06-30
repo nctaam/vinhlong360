@@ -51,7 +51,6 @@ defineEmits<{
 }>()
 
 const { timeAgo } = useTimeAgo()
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 </script>
 
 <style scoped>

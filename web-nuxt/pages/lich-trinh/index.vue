@@ -170,7 +170,6 @@ useReveal()
 const { favorites, byType, count, clear } = useFavorites()
 const { confirmDialog } = useConfirm()
 const recentSaved = computed(() => favorites.value.slice(0, 8))
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 function getTypeMeta(type: string) {
   return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }

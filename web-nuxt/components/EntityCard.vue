@@ -85,7 +85,7 @@ const coverImage = computed(() => {
   if (Array.isArray(imgs) && imgs.length > 0) return imgs[0]
   return null
 })
-const isRemote = computed(() => typeof coverImage.value === 'string' && /^https?:\/\//.test(coverImage.value))
+const isRemote = computed(() => typeof coverImage.value === 'string' && isRemoteUrl(coverImage.value))
 const isYearRoundSeason = computed(() => !props.entity.season || isYearRound(props.entity.season))
 const seasonLabel = computed(() => seasonText(props.entity.season))
 const placeName = computed(() => props.entity.placeName || props.entity.place_name || '')

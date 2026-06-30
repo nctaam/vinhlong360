@@ -587,7 +587,7 @@ const coverImage = computed(() => {
   if (hasEntityImages.value) return entity.value!.images[0]
   return `/img/cat/${typeMeta.value.cat}.jpg`
 })
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
+
 
 const imageCredit = computed(() => {
   const credits = entity.value?.image_credits

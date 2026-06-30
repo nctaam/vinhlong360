@@ -31,7 +31,7 @@
 <script setup lang="ts">
 const props = defineProps<{ entityId: string; entityName: string }>()
 const { timeAgo } = useTimeAgo()
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
+
 
 const posts = ref<any[]>([])
 const total = ref(0)

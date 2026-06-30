@@ -329,7 +329,6 @@ const heroPills = computed(() => ss('homepage.hero_pills', DEFAULT_HERO_PILLS) a
 
 const { favorites } = useFavorites()
 const recentSaved = computed(() => favorites.value.slice(0, 4))
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 const { recentItems } = useRecentlyViewed()
 const recentlyViewed = computed(() => recentItems.value.slice(0, 6))
