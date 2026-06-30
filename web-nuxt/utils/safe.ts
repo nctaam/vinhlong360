@@ -27,6 +27,11 @@ export function truncateText(text: string, max: number): string {
   return text.slice(0, max).replace(/\s+\S*$/, '') + '…'
 }
 
+/** Get the area slug from an entity (place_area or area field). */
+export function getEntityArea(e: { place_area?: string; area?: string }): string {
+  return e.place_area || e.area || ''
+}
+
 /** Generate and download an .ics calendar file for an entity with date attributes. */
 export function downloadIcal(e: { id: string; name?: string; summary?: string; place_name?: string; attributes?: Record<string, any> }) {
   const attrs = e.attributes || {}

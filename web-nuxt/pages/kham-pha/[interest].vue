@@ -177,7 +177,7 @@ const filtered = computed(() => {
     list = list.filter((e: Entity) => e.type === typeFilter.value)
   }
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: Entity) => (e.place_area || e.area) === areaFilter.value)
+    list = list.filter((e: Entity) => getEntityArea(e) === areaFilter.value)
   }
   return list
 })

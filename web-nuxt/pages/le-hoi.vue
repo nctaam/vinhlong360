@@ -318,9 +318,7 @@ const filtered = computed(() => {
   return list
 })
 
-function getArea(e: Entity): string {
-  return e.place_area || e.area || ''
-}
+const getArea = getEntityArea
 
 function getDateStart(e: Entity): Date | null {
   const ds = e.attributes?.date_start

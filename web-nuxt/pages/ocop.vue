@@ -296,7 +296,7 @@ const fiveStarHighlights = computed(() =>
 )
 
 function countByArea(key: string) {
-  return allOcop.value.filter((e: Entity) => (e.place_area || e.area) === key).length
+  return allOcop.value.filter((e: Entity) => getEntityArea(e) === key).length
 }
 
 function scrollToGrid() {
@@ -328,7 +328,7 @@ const filtered = computed(() => {
   }
 
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: Entity) => (e.place_area || e.area) === areaFilter.value)
+    list = list.filter((e: Entity) => getEntityArea(e) === areaFilter.value)
   }
 
   if (seasonFilter.value !== 'all') {

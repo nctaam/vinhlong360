@@ -179,7 +179,7 @@ const allEntities = computed(() => {
 const areaCountMap = computed(() => {
   const counts: Record<string, number> = {}
   for (const e of allEntities.value) {
-    const area = e.place_area || e.area || ''
+    const area = getEntityArea(e)
     if (area) counts[area] = (counts[area] || 0) + 1
   }
   return counts
@@ -241,7 +241,7 @@ const filtered = computed(() => {
   let list = allEntities.value
 
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: Entity) => (e.place_area || e.area) === areaFilter.value)
+    list = list.filter((e: Entity) => getEntityArea(e) === areaFilter.value)
   }
 
   if (q.value.trim()) {

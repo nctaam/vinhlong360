@@ -574,7 +574,7 @@ const typeMeta = computed(() => {
 })
 
 const areaName = computed(() => {
-  const area = entity.value?.place_area || entity.value?.area
+  const area = entity.value ? getEntityArea(entity.value) : ''
   return AREA_META[area]?.name || area || ''
 })
 
