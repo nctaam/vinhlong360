@@ -4125,6 +4125,7 @@ async def list_claims(
     offset: int = Query(0, ge=0, le=10000),
 ):
     """U-30: List entity claims for admin review."""
+    require_pg()
     valid_statuses = ("pending", "approved", "rejected", "all")
     if status not in valid_statuses:
         raise HTTPException(422, f"Status không hợp lệ. Cho phép: {', '.join(valid_statuses)}")
@@ -4169,6 +4170,7 @@ class ClaimDecisionBody(BaseModel):
              description="Approve a pending entity ownership claim. Notifies the claimant upon approval.")
 async def approve_claim(claim_id: str, request: Request):
     """U-30: Approve an entity claim."""
+    require_pg()
     claim_id = validate_path_id(claim_id, "claim_id")
     ph = db._ph
     admin_user = getattr(request.state, "admin_user", None)
@@ -4210,6 +4212,7 @@ async def approve_claim(claim_id: str, request: Request):
              description="Reject a pending entity ownership claim with an optional reason. Notifies the claimant.")
 async def reject_claim(claim_id: str, body: ClaimDecisionBody, request: Request):
     """U-30: Reject an entity claim with optional reason."""
+    require_pg()
     claim_id = validate_path_id(claim_id, "claim_id")
     ph = db._ph
     admin_user = getattr(request.state, "admin_user", None)
@@ -4294,6 +4297,7 @@ async def list_announcements(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0, le=10000),
 ):
+    require_pg()
     ph = db._ph
 
     def _query():
@@ -4328,6 +4332,7 @@ async def list_announcements(
              summary="Create an announcement",
              description="Create a new system announcement with title, content, type, priority, and optional schedule.")
 async def create_announcement(body: AnnouncementCreate, request: Request):
+    require_pg()
     ph = db._ph
     admin_user = getattr(request.state, "admin_user", None)
 
@@ -4356,6 +4361,7 @@ async def create_announcement(body: AnnouncementCreate, request: Request):
             summary="Update an announcement",
             description="Update fields of an existing announcement. Only provided fields are changed.")
 async def update_announcement(announcement_id: str, body: AnnouncementUpdate):
+    require_pg()
     announcement_id = validate_path_id(announcement_id, "announcement_id")
     ph = db._ph
 
@@ -4405,6 +4411,7 @@ async def update_announcement(announcement_id: str, body: AnnouncementUpdate):
                summary="Delete an announcement",
                description="Permanently delete an announcement by ID.")
 async def delete_announcement(announcement_id: str):
+    require_pg()
     announcement_id = validate_path_id(announcement_id, "announcement_id")
     ph = db._ph
 

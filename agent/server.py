@@ -908,7 +908,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Content-Type", "X-Admin-Key", "Authorization", "X-CSRF-Token"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
