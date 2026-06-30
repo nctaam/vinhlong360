@@ -137,14 +137,20 @@
 /* ── Dark mode (cards) ── */
 .dark .card { background: var(--card); border-color: var(--line); }
 .dark .card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .card h3 { color: #f0f0f2; }
+.dark .card .summary { color: #b8b8be; }
+.dark .card .place { color: #a0a0a6; opacity: 1; }
+.dark .card-type { color: var(--primary-fg-strong); }
 .dark .cover-img { background: linear-gradient(110deg, var(--bg-alt) 30%, rgba(255,255,255,.04) 50%, var(--bg-alt) 70%); background-size: 200% 100%; }
-.dark .cover-tag { background: rgba(0,0,0,.6); border-color: rgba(255,255,255,.1); }
-.dark .badge.season { color: var(--primary-fg-strong); }
+.dark .cover-tag { background: rgba(0,0,0,.6); border-color: rgba(255,255,255,.1); color: #f0f0f2; }
+.dark .badge { color: #e0e0e4; }
+.dark .badge.season { background: var(--badge-season-bg); color: var(--primary-fg-strong); }
+.dark .badge.peak { color: var(--on-accent); }
 .dark .badge.ocop { color: var(--secondary-fg); border-color: rgba(75, 169, 125, .3); }
 .dark .badge.ocop-5 { color: var(--text-on-dark, #fff); box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .3); }
 .dark .badge.ocop-4 { background: rgba(var(--secondary-rgb), .22); color: var(--secondary-fg); border-color: rgba(var(--secondary-rgb), .4); }
 .dark .badge.ocop-3 { color: var(--secondary-fg); border-color: rgba(75, 169, 125, .3); }
-.dark .badge.year { background: rgba(255,255,255,.06); }
+.dark .badge.year { background: rgba(255,255,255,.08); color: #b8b8be; }
 
 /* ============================================================
    SIGNATURE UPGRADE — premium card depth, hover-glow & badges

@@ -160,9 +160,24 @@
 .dark .home .section-head .section-link { color: var(--primary-fg); }
 
 /* Event cards */
-.dark .ev-main { border-color: rgba(255,255,255,.12); }
-.dark .ev-side { border-color: rgba(255,255,255,.08); }
-.dark .ev-side:hover { background: rgba(255,255,255,.04); }
+.dark .event-mini { background: var(--surface-container); border-color: rgba(255,255,255,.1); }
+.dark .event-mini:hover { border-color: var(--primary-fg); background: var(--surface-container-high); }
+.dark .event-mini h3 { color: var(--ink); }
+.dark .ec-countdown { color: var(--accent-text); background: rgba(var(--accent-rgb), .12); }
+
+/* Spotlight */
+.dark .spotlight { background: var(--surface-container); border-color: rgba(255,255,255,.1); }
+.dark .spot-body { color: var(--ink); }
+.dark .spot-body .spot-desc { color: #b8b8be; }
+
+/* Quán ngon list */
+.dark .top-place { border-color: rgba(255,255,255,.06); }
+.dark .top-place:hover { background: rgba(255,255,255,.04); }
+.dark .top-place h3 { color: var(--ink); }
+.dark .top-place .tp-reviews { color: #a0a0a6; }
+
+/* Section subtitle */
+.dark .section-head p { color: #a0a0a6; }
 
 /* ── Admin: data quality ── */
 .dark .dq-diff-item { background: rgba(255,255,255,.04); }
