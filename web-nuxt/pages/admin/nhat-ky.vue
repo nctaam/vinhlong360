@@ -12,7 +12,7 @@
 
     <div class="audit-filters">
       <input v-model="search" class="input" placeholder="Tìm theo path hoặc actor..." aria-label="Tìm nhật ký" @input="applyFilter" />
-      <select v-model="methodFilter" class="input audit-select" @change="applyFilterImmediate">
+      <select v-model="methodFilter" class="input audit-select" aria-label="Lọc theo HTTP method" @change="applyFilterImmediate">
         <option value="">Tất cả method</option>
         <option value="POST">POST</option>
         <option value="PUT">PUT</option>
@@ -29,7 +29,7 @@
       <div class="audit-summary">{{ filtered.length }} mục{{ total > entries.length ? ` (hiển thị ${entries.length}/${total})` : '' }}</div>
 
       <div class="admin-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" aria-label="Nhật ký hoạt động">
           <thead>
             <tr>
               <th scope="col">Thời gian</th>
@@ -121,12 +121,7 @@ function exportCSV() {
   const csvCell = (v: string) => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
   const header = 'Thời gian,Method,Path,Actor,IP'
   const lines = rows.map(e => [e.ts, e.method, e.path, e.actor, e.ip].map(v => csvCell(String(v || ''))).join(','))
-  const blob = new Blob(['﻿' + header + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`
-  a.click()
-  URL.revokeObjectURL(a.href)
+  downloadBlob(new Blob(['﻿' + header + '\n' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), `audit-log-${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 function formatTs(ts: string): string {
@@ -147,17 +142,17 @@ onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 .audit-date { max-width: 160px; }
 .audit-summary { font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-2); }
 .audit-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-sm); text-transform: uppercase; }
-.audit-method.post { background: rgba(52,199,89,.15); color: #219653; }
-.audit-method.put, .audit-method.patch { background: rgba(var(--warning-rgb),.15); color: #FF9F0A; }
-.audit-method.delete { background: rgba(255,69,58,.15); color: #FF453A; }
+.audit-method.post { background: rgba(52,199,89,.15); color: var(--success); }
+.audit-method.put, .audit-method.patch { background: rgba(var(--warning-rgb),.15); color: var(--warning); }
+.audit-method.delete { background: rgba(255,69,58,.15); color: var(--error); }
 .audit-ts { white-space: nowrap; font-size: .8rem; }
 .audit-path { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .audit-actor { font-weight: 500; }
 .audit-ip { font-size: .8rem; }
 
-.dark .audit-method.post { background: rgba(52,199,89,.2); color: #34c759; }
-.dark .audit-method.put, .dark .audit-method.patch { background: rgba(var(--warning-rgb),.2); color: #ffb340; }
-.dark .audit-method.delete { background: rgba(255,69,58,.2); color: #ff6961; }
+.dark .audit-method.post { background: rgba(52,199,89,.2); }
+.dark .audit-method.put, .dark .audit-method.patch { background: rgba(var(--warning-rgb),.2); }
+.dark .audit-method.delete { background: rgba(255,69,58,.2); }
 
 @media (max-width: 600px) {
   .audit-filters { flex-direction: column; }

@@ -20,7 +20,7 @@
     </div>
     <template v-else>
       <div class="admin-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" aria-label="Danh sách lịch trình">
           <thead>
             <tr>
               <th scope="col">ID</th>
@@ -72,7 +72,7 @@
           <input v-model="form.name" class="input" placeholder="Tên lịch trình" aria-label="Tên lịch trình" />
           <input v-model="form.area" class="input" placeholder="Khu vực (vinh-long / ben-tre / tra-vinh)" aria-label="Khu vực" />
           <input v-model="form.duration" class="input" placeholder="Thời gian (VD: 1 ngày)" aria-label="Thời gian" />
-          <textarea v-model="form.description" class="input admin-textarea" placeholder="Mô tả" rows="3"></textarea>
+          <textarea v-model="form.description" class="input admin-textarea" placeholder="Mô tả" aria-label="Mô tả lịch trình" rows="3"></textarea>
 
           <div class="lt-stops-head">
             <label class="admin-label lt-stops-label">Điểm dừng <span class="lt-stops-count">{{ stops.length }}</span></label>
@@ -370,19 +370,19 @@ onUnmounted(() => { if (entitySearchTimer) clearTimeout(entitySearchTimer) })
   display: inline-block; padding: 2px 10px; border-radius: 100px;
   font-size: .72rem; font-weight: 600; letter-spacing: .3px;
   background: rgba(var(--blue-rgb),.08); color: var(--info);
-  transition: background .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, transform .2s var(--ease-soft);
 }
 .lt-area-badge:hover { background: rgba(var(--blue-rgb),.14); transform: scale(1.04); }
 .lt-duration {
   font-size: .82rem; color: var(--muted);
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: var(--space-1);
 }
 .lt-stops-badge {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 24px; height: 24px; padding: 0 6px;
   border-radius: 8px; font-size: .78rem; font-weight: 700;
   background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg);
-  transition: transform .2s cubic-bezier(.2,1,.4,1);
+  transition: transform .2s var(--ease-soft);
 }
 tr:hover .lt-stops-badge { transform: scale(1.1); }
 
@@ -402,7 +402,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   display: flex; align-items: center; justify-content: space-between;
   gap: var(--space-2); margin-top: var(--space-1);
 }
-.lt-stops-label { margin: 0; display: inline-flex; align-items: center; gap: 8px; }
+.lt-stops-label { margin: 0; display: inline-flex; align-items: center; gap: var(--space-2); }
 .lt-stops-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 22px; height: 22px; padding: 0 6px;
@@ -438,7 +438,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 /* Status colour-coding: a left accent bar for quick scanning. */
 .lt-stop-row { border-left-width: 3px; }
 .lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.5); }
-.lt-stop-warn { border-left-color: rgba(230,126,34,.55); }
+.lt-stop-warn { border-left-color: rgba(var(--warning-rgb),.55); }
 
 .lt-stop-order { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 0 0 auto; padding-top: 2px; }
 .lt-stop-num {
@@ -451,13 +451,13 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   border-radius: 50%; font-size: .68rem; font-weight: 700; line-height: 1;
 }
 .lt-stop-status-ok { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
-.lt-stop-status-warn { background: rgba(230,126,34,.14); color: #c46b13; }
+.lt-stop-status-warn { background: rgba(var(--warning-rgb),.14); color: var(--warning); }
 .lt-move {
   appearance: none; border: none; background: transparent; cursor: pointer;
   color: var(--muted); font-size: .7rem; line-height: 1;
-  width: 28px; height: 24px; border-radius: 6px;
+  width: 44px; height: 44px; border-radius: 6px;
   display: inline-flex; align-items: center; justify-content: center;
-  transition: background .2s, color .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, color .2s, transform .2s var(--ease-soft);
 }
 .lt-move:hover:not(:disabled) { background: rgba(var(--blue-rgb),.1); color: var(--info); transform: scale(1.12); }
 .lt-move:focus-visible { outline: 2px solid var(--info); outline-offset: 1px; }
@@ -470,19 +470,19 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .lt-stop-del {
   flex: 0 0 auto; appearance: none; border: none; background: transparent; cursor: pointer;
   color: var(--muted); font-size: .9rem; line-height: 1;
-  width: 32px; height: 32px; min-width: 32px; border-radius: 8px;
+  width: 44px; height: 44px; min-width: 44px; border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
-  transition: background .2s, color .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, color .2s, transform .2s var(--ease-soft);
 }
-.lt-stop-del:hover { background: rgba(235,87,87,.12); color: #EB5757; transform: scale(1.1); }
-.lt-stop-del:focus-visible { outline: 2px solid #EB5757; outline-offset: 1px; }
+.lt-stop-del:hover { background: rgba(var(--danger-rgb),.12); color: var(--error); transform: scale(1.1); }
+.lt-stop-del:focus-visible { outline: 2px solid var(--error); outline-offset: 1px; }
 
 .lt-add-stop {
   appearance: none; cursor: pointer; margin-top: var(--space-2);
   border: 1px dashed rgba(var(--blue-rgb),.4); background: rgba(var(--blue-rgb),.04);
   color: var(--info); font-size: .84rem; font-weight: 600;
   padding: 10px 14px; border-radius: 10px; width: 100%; min-height: 44px;
-  transition: background .2s, border-color .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, border-color .2s, transform .2s var(--ease-soft);
 }
 .lt-add-stop:hover { background: rgba(var(--blue-rgb),.1); border-color: rgba(var(--blue-rgb),.6); transform: translateY(-1px); }
 .lt-add-stop:focus-visible { outline: 2px solid var(--info); outline-offset: 2px; }
@@ -507,7 +507,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .lt-dirty-badge {
   margin-right: auto;
   display: inline-flex; align-items: center;
-  padding: 4px 10px; border-radius: 999px;
+  padding: var(--space-1) 10px; border-radius: 999px;
   font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
   background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
 }
@@ -520,11 +520,11 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .dark .lt-stop-row { background: rgba(255,255,255,.02); border-color: rgba(255,255,255,.08); }
 .dark .lt-stop-row:hover { background: rgba(var(--blue-rgb),.08); }
 .dark .lt-stop-ok { border-left-color: rgba(var(--primary-rgb),.6); }
-.dark .lt-stop-warn { border-left-color: rgba(230,126,34,.65); }
+.dark .lt-stop-warn { border-left-color: rgba(var(--warning-rgb),.65); }
 .dark .lt-stops-empty { border-color: rgba(255,255,255,.14); }
-.dark .lt-stop-status-ok { background: rgba(var(--primary-rgb),.2); color: #5fcf8a; }
-.dark .lt-stop-status-warn { background: rgba(230,126,34,.22); color: #f0a35a; }
+.dark .lt-stop-status-ok { background: rgba(var(--primary-rgb),.2); color: rgb(var(--success-rgb)); }
+.dark .lt-stop-status-warn { background: rgba(var(--warning-rgb),.22); color: var(--warning); }
 .dark .lt-duration { color: rgba(255,255,255,.55); }
 .dark .lt-duration-icon { opacity: .8; }
-.dark .lt-dirty-badge { color: #5fcf8a; background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+.dark .lt-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
 </style>

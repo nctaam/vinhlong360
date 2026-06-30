@@ -10,11 +10,13 @@ export function useFilterUrl(filters: Record<string, Ref<string>>, defaults: Rec
   }
 
   function syncToUrl() {
-    const query: Record<string, string> = {}
+    const query: Record<string, string | undefined> = { ...route.query as Record<string, string> }
     for (const [key, ref] of Object.entries(filters)) {
       const defaultVal = defaults[key] || 'all'
       if (ref.value && ref.value !== defaultVal) {
         query[key] = ref.value
+      } else {
+        delete query[key]
       }
     }
     router.replace({ query })

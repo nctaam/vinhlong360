@@ -25,7 +25,7 @@
 
     <!-- Đã lưu (client-only, từ localStorage) -->
     <ClientOnly>
-      <section v-if="count > 0" class="block saved-section">
+      <section v-if="count > 0" class="block saved-section reveal">
         <div class="section-head">
           <h2>❤️ Đã lưu <span class="saved-count">({{ count }})</span></h2>
           <button type="button" class="btn btn-sm btn-ghost danger" @click="clearAll">Xóa tất cả</button>
@@ -37,11 +37,11 @@
             <span>{{ getTypeMeta(type).label }}</span>
           </div>
         </div>
-        <div class="scroll-row saved-row" role="region" aria-label="Mục đã lưu">
+        <div class="scroll-row saved-row" role="region" tabindex="0" aria-label="Mục đã lưu">
           <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
             <div v-if="fav.image" class="cover cover-img">
-              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" sizes="sm:100vw md:50vw lg:400px" />
-              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" />
+              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" sizes="sm:100vw md:50vw lg:400px" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.opacity = '.15' }" />
+              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
             </div>
             <div class="card-b">
               <span class="card-type">{{ getTypeMeta(fav.type).label }}</span>
@@ -57,7 +57,7 @@
     </ClientOnly>
 
     <!-- Region quick-picks -->
-    <section class="block band">
+    <section class="block band reveal">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -75,7 +75,7 @@
     </section>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Lịch trình có sẵn — đi ngay không cần lên kế hoạch</h2>
       <p>Mỗi lịch trình được thiết kế dựa trên kinh nghiệm thực tế, sắp xếp các điểm đến theo thứ tự hợp lý về khoảng cách và thời gian. Bạn chỉ cần chọn lịch trình phù hợp với số ngày đi, sở thích (văn hoá, ẩm thực, thiên nhiên) và phương tiện (xe máy, ô tô, xuồng). Mỗi điểm dừng đều có thông tin thực tế: giờ mở cửa, giá tham khảo, mẹo di chuyển.</p>
       <p>Có thể kết hợp nhiều lịch trình hoặc tuỳ chỉnh — bỏ bớt điểm dừng, thêm điểm mới, thay đổi thứ tự. Tất cả lịch trình đều miễn phí và có thể lưu vào tài khoản để xem lại khi đi.</p>
@@ -137,7 +137,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block reveal catalog-cross">
+    <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/du-lich" class="cross-card">
@@ -170,11 +170,7 @@ useReveal()
 const { favorites, byType, count, clear } = useFavorites()
 const { confirmDialog } = useConfirm()
 const recentSaved = computed(() => favorites.value.slice(0, 8))
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
-function getTypeMeta(type: string) {
-  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
-}
 
 async function clearAll() {
   if (await confirmDialog('Xóa tất cả mục đã lưu?', { danger: true, confirmText: 'Xóa' })) clear()

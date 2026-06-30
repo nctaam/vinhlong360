@@ -37,7 +37,7 @@
       <ClientOnly>
         <LazyAISearchAssist v-if="q" :query="q" />
         <template #fallback>
-          <div v-if="q" class="ai-loading ai-loading-padded" aria-hidden="true"><div class="spinner spinner-center"></div></div>
+          <div v-if="q" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý AI"><div class="spinner spinner-center"></div></div>
         </template>
       </ClientOnly>
     </NuxtErrorBoundary>
@@ -118,7 +118,7 @@
           </div>
           <div class="recent-grid">
             <NuxtLink v-for="r in recentItems" :key="r.id" :to="`/dia-diem/${r.id}`" class="recent-card">
-              <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" loading="lazy" decoding="async" />
+              <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" width="56" height="56" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
               <span v-else class="recent-img recent-placeholder" aria-hidden="true">{{ TYPE_META[r.type]?.emoji || '📍' }}</span>
               <span class="recent-name">{{ r.name }}</span>
               <span class="recent-type">{{ TYPE_META[r.type]?.label || r.type }}</span>
@@ -181,7 +181,7 @@
     </template>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross reveal">
+    <section class="block band catalog-cross reveal">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
@@ -402,7 +402,7 @@ useHead({
 /* Autocomplete suggestions */
 .search-input-wrap { position: relative; flex: 1; min-width: 0; }
 .search-suggestions {
-  position: absolute; top: 100%; left: 0; right: 0; z-index: 20;
+  position: absolute; top: 100%; left: 0; right: 0; z-index: var(--z-dropdown);
   margin: var(--space-1) 0 0; padding: var(--space-1); list-style: none;
   background: var(--card); border: .5px solid var(--line);
   border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);

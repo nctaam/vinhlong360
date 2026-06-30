@@ -72,7 +72,7 @@
     </section>
 
     <!-- Type sections -->
-    <section v-for="cat in typeSections" :key="cat.type" class="block reveal area-type-block">
+    <section v-for="(cat, ci) in typeSections" :key="cat.type" :class="['block', 'reveal', 'area-type-block', { band: ci % 2 === 1 }]">
       <div class="section-head">
         <h2>{{ cat.emoji }} {{ cat.label }}</h2>
         <button
@@ -124,7 +124,7 @@
     </EmptyState>
 
     <!-- Cross-links -->
-    <section v-if="areaMeta" class="block catalog-cross">
+    <section v-if="areaMeta" class="block band catalog-cross reveal">
       <h2>Khám phá thêm {{ areaMeta.name }}</h2>
       <div class="cross-links">
         <NuxtLink :to="`/du-lich?type=experience&mua=all`" class="cross-card">

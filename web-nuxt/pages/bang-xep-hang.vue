@@ -48,15 +48,10 @@
 </template>
 
 <script setup lang="ts">
-useReveal()
 const fetchFailed = ref(false)
 const { data, pending } = await useAsyncData('leaderboard',
   () => apiFetch<any>('/api/community/leaderboard?limit=50').catch(() => { fetchFailed.value = true; return { leaders: [] } }))
 const leaders = computed(() => data.value?.leaders || [])
-
-function levelIcon(level: number): string {
-  return ({ 1: '🌱', 2: '🤝', 3: '🌟', 4: '👑' } as Record<number, string>)[level] || '🌱'
-}
 
 useSeoMeta({
   title: 'Thành viên tích cực — Bảng xếp hạng — vinhlong360',

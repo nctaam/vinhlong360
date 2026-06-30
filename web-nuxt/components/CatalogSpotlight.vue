@@ -2,11 +2,11 @@
   <section v-if="pick" class="block reveal">
     <div class="cspot">
       <NuxtLink :to="`/dia-diem/${pick.id}`" class="cspot-visual" :style="{ backgroundImage: bg }" :aria-label="pick.name">
-        <span v-if="region" class="cspot-region">📍 {{ region }}</span>
+        <span v-if="region" class="cspot-region">{{ region }}</span>
         <span class="cspot-icon" v-html="icon" aria-hidden="true" />
       </NuxtLink>
       <div class="cspot-body">
-        <span class="cspot-kicker">{{ meta?.emoji }} {{ meta?.label }} · Nổi bật</span>
+        <span class="cspot-kicker">{{ meta?.label }} · Nổi bật</span>
         <h2>{{ pick.name }}</h2>
         <div class="cspot-badges">
           <span v-if="isPeak" class="cspot-badge cspot-badge-peak">Đang mùa</span>
@@ -72,7 +72,7 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot-visual::before {
   content: ""; position: absolute; inset: -18%; z-index: 0; pointer-events: none;
   background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.22) 0%, transparent 68%);
-  animation: cspot-glow 13s ease-in-out infinite alternate;
+  animation: cspot-glow 13s var(--ease-in-out) infinite alternate;
   will-change: transform;
 }
 @keyframes cspot-glow { 0% { transform: translate3d(0,0,0) scale(1); } 100% { transform: translate3d(7%,5%,0) scale(1.12); } }
@@ -101,7 +101,7 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 .cspot-badge-pop { background: var(--info-bg, rgba(59,130,246,.1)); color: var(--info, #2563eb); }
 .dark .cspot-badge-peak { background: rgba(var(--danger-rgb), .2); color: var(--error); }
 .dark .cspot-badge-year { background: rgba(var(--success-rgb), .2); color: var(--success); }
-.dark .cspot-badge-pop { background: rgba(100,181,246, .2); color: var(--info); }
+.dark .cspot-badge-pop { background: rgba(var(--blue-rgb), .2); color: var(--info); }
 .cspot-cta { align-self: flex-start; margin-top: var(--space-2); }
 @media (prefers-reduced-motion: reduce) { .cspot-visual::before { animation: none; } }
 </style>

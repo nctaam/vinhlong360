@@ -47,7 +47,7 @@
     <CatalogSpotlight :items="inSeasonItems" />
 
     <!-- Month selector -->
-    <section class="block">
+    <section class="block reveal">
       <div class="section-head">
         <h2>Chọn tháng</h2>
       </div>
@@ -101,7 +101,7 @@
     <!-- Type sections -->
     <template v-for="(cat, ci) in typeSections" :key="cat.type">
       <div v-if="ci > 0" class="type-section-divider" aria-hidden="true" />
-      <section class="block reveal">
+      <section :class="['block', 'reveal', { band: ci % 2 === 0 }]">
         <div class="section-eyebrow">{{ cat.emoji }} {{ cat.eyebrow }}</div>
         <div class="section-head">
           <h2>{{ cat.emoji }} {{ cat.label }}</h2>
@@ -199,7 +199,7 @@
     </EmptyState>
 
     <!-- Cross-links -->
-    <section class="block reveal catalog-cross">
+    <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
@@ -535,7 +535,7 @@ useHead(() => ({
 }
 .dark .season-badge.peak {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: #1a1a1a;
+  color: var(--on-accent);
   box-shadow: 0 1px 3px rgba(var(--accent-rgb), .6), 0 0 12px rgba(var(--accent-rgb), .25);
 }
 .dark .empty-type-card { background: rgba(var(--secondary-rgb), .07); border-color: rgba(var(--secondary-rgb), .22); }

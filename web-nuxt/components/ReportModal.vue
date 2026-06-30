@@ -113,7 +113,7 @@ async function submit() {
 .rm-head { flex-shrink: 0; }
 .rm-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }
 
-.rm-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+.rm-close { position: absolute; top: 10px; right: 12px; background: none; border: none; font-size: 1.6rem; line-height: 1; color: var(--muted); cursor: pointer; padding: var(--space-1) var(--space-2); border-radius: 8px; }
 .rm-close:hover { background: var(--bg-warm); color: var(--ink); }
 .rm-sheet h3 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 700; }
 .rm-sub { margin: 0 0 var(--space-4); font-size: .84rem; color: var(--muted); line-height: 1.45; }
@@ -122,11 +122,11 @@ async function submit() {
 .rm-chip {
   font-size: .82rem; padding: 7px 14px; border-radius: 20px; min-height: var(--touch-min);
   border: .5px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer;
-  transition: background .2s, border-color .2s, color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, border-color .2s, color .2s, transform .15s var(--ease-soft);
 }
 .rm-chip:hover { border-color: var(--primary, #219653); }
 .rm-chip:active { transform: scale(.96); }
-.rm-chip.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary, #219653); }
+.rm-chip.active { background: var(--primary, #219653); color: var(--on-primary); border-color: var(--primary, #219653); }
 .rm-chip:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
 .rm-textarea {
@@ -140,7 +140,7 @@ async function submit() {
 .rm-actions .btn { min-height: 44px; }
 
 .rm-fade-enter-active, .rm-fade-leave-active { transition: opacity .25s ease; }
-.rm-fade-enter-active .rm-sheet, .rm-fade-leave-active .rm-sheet { transition: transform .3s cubic-bezier(.2,1,.4,1); }
+.rm-fade-enter-active .rm-sheet, .rm-fade-leave-active .rm-sheet { transition: transform .3s var(--ease-soft); }
 .rm-fade-enter-from, .rm-fade-leave-to { opacity: 0; }
 .rm-fade-enter-from .rm-sheet, .rm-fade-leave-to .rm-sheet { transform: translateY(16px); }
 

@@ -351,7 +351,7 @@ onMounted(fetchDashboard)
 .dark .dash-error-state { background: rgba(var(--danger-rgb),.08); border-color: rgba(var(--danger-rgb),.15); }
 
 /* Signal freshly-loaded (vs stale) data: fade content in after fetch resolves */
-.dash-loaded { animation: dash-fade-in .4s ease-out both; }
+.dash-loaded { animation: dash-fade-in .4s var(--ease-out) both; }
 @keyframes dash-fade-in { from { opacity: .5; } to { opacity: 1; } }
 
 /* ── Primary stat cards ── */
@@ -363,7 +363,7 @@ onMounted(fetchDashboard)
   display: flex; align-items: center; gap: var(--space-4);
   background: var(--bg); border-radius: 14px; padding: var(--space-5);
   border: .5px solid var(--line);
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .dash-stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
 .dash-stat-card:active { transform: scale(.98); }
@@ -371,12 +371,12 @@ onMounted(fetchDashboard)
   width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-size: 1.3rem; flex-shrink: 0;
-  transition: transform .25s cubic-bezier(.2,1,.4,1);
+  transition: transform .25s var(--ease-soft);
 }
 .dash-stat-card:hover .dash-stat-icon { transform: scale(1.08); }
 .dash-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
 .dash-stat-label { font-size: .75rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
-.dash-delta { font-size: .7rem; font-weight: 600; color: var(--secondary); margin-left: 4px; }
+.dash-delta { font-size: .7rem; font-weight: 600; color: var(--secondary); margin-left: var(--space-1); }
 
 /* ── Partial-degradation banner ── */
 .dash-degraded {
@@ -395,7 +395,7 @@ onMounted(fetchDashboard)
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-4); border-radius: 10px;
   text-decoration: none; font-size: .88rem; font-weight: 500;
-  transition: transform .25s cubic-bezier(.2,1,.4,1), opacity .2s;
+  transition: transform .25s var(--ease-soft), opacity .2s;
 }
 .dash-alert:hover { transform: translateX(4px); }
 .dash-alert:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
@@ -428,12 +428,12 @@ onMounted(fetchDashboard)
 .dash-health-metrics b { color: var(--ink); font-weight: 600; }
 .dash-health-warn { color: rgb(var(--warning-rgb)) !important; }
 .dash-backup-btn {
-  display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 6px;
+  display: inline-block; margin-left: var(--space-2); padding: 2px 10px; border-radius: 6px;
   border: .5px solid var(--line); background: var(--bg); color: var(--primary-fg, #219653);
   font-size: .72rem; font-weight: 600; cursor: pointer; transition: background .2s;
 }
 .dash-backup-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb),.08); }
-.dash-backup-btn:disabled { opacity: .5; cursor: wait; }
+.dash-backup-btn:disabled { opacity: var(--opacity-disabled); cursor: wait; }
 .dark .dash-health { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 
 /* ── Entity completeness ── */
@@ -444,7 +444,7 @@ onMounted(fetchDashboard)
 .dash-comp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); font-size: .88rem; }
 .dash-comp-pct { font-weight: 800; font-size: 1.1rem; }
 .dash-comp-bar { height: 8px; background: rgba(142,142,147,.1); border-radius: 4px; overflow: hidden; }
-.dash-comp-fill { height: 100%; background: var(--primary, #219653); border-radius: 4px; transition: width .5s ease-out; }
+.dash-comp-fill { height: 100%; background: var(--primary, #219653); border-radius: 4px; transition: width .5s var(--ease-out); }
 .dash-comp-details { display: flex; gap: var(--space-4); margin-top: var(--space-3); font-size: .78rem; color: var(--muted); }
 .dash-orphan-link { color: inherit; text-decoration: none; border-bottom: 1px dashed rgb(var(--warning-rgb)); }
 .dash-orphan-link:hover { color: rgb(var(--warning-rgb)); }
@@ -459,7 +459,7 @@ onMounted(fetchDashboard)
   padding: var(--space-5) var(--space-3); border-radius: 14px;
   background: var(--bg); border: .5px solid var(--line);
   text-decoration: none; color: inherit; font-size: .85rem; font-weight: 500;
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .dash-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); background: color-mix(in oklab, var(--primary, #219653) 6%, var(--bg)); }
 .dash-action:active { transform: scale(.97); }
@@ -482,7 +482,7 @@ onMounted(fetchDashboard)
 .dash-donut-wrap { display: flex; flex-direction: column; align-items: center; gap: var(--space-4); position: relative; }
 .dash-donut { width: 160px; height: 160px; }
 .dash-donut-seg {
-  animation: dash-donut-in .6s cubic-bezier(.4,0,.2,1) both;
+  animation: dash-donut-in .6s var(--ease-standard) both;
   transform-origin: center;
 }
 @keyframes dash-donut-in {
@@ -499,7 +499,7 @@ onMounted(fetchDashboard)
 .dash-donut-legend {
   display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center;
 }
-.dash-legend-item { display: flex; align-items: center; gap: 4px; font-size: .72rem; }
+.dash-legend-item { display: flex; align-items: center; gap: var(--space-1); font-size: .72rem; }
 .dash-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dash-legend-name { color: var(--muted); }
 .dash-legend-pct { font-weight: 700; }
@@ -518,14 +518,14 @@ onMounted(fetchDashboard)
 }
 .dash-bar-fill {
   height: 100%; border-radius: 6px;
-  animation: dash-bar-grow .5s cubic-bezier(.4,0,.2,1) both;
+  animation: dash-bar-grow .5s var(--ease-standard) both;
 }
 @keyframes dash-bar-grow { from { width: 0 !important; } }
 .dash-bar-count { font-size: .82rem; font-weight: 700; text-align: right; }
 
 /* ── Refresh animation ── */
 .refresh-spin { display: inline-block; font-size: 1.3rem; line-height: 1; animation: admin-spin .6s linear infinite; }
-.admin-refresh:disabled { opacity: .55; cursor: not-allowed; }
+.admin-refresh:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 
 /* ── Dark mode ── */
 .dark .dash-stat-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }

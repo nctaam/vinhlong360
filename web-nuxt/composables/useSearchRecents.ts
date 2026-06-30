@@ -1,3 +1,5 @@
+interface RecentEntry { q: string; t: number }
+
 const RECENT_KEY = 'vl360_recent_searches'
 const MAX_RECENTS = 5
 const RECENT_TTL = 14 * 24 * 60 * 60 * 1000
@@ -16,8 +18,8 @@ export function useSearchRecents() {
         recentSearches.value = parsed.filter((s: unknown) => typeof s === 'string')
         return
       }
-      const valid = parsed.filter((r: any) => r?.t && now - r.t < RECENT_TTL)
-      recentSearches.value = valid.map((r: any) => r.q as string)
+      const valid = parsed.filter((r: RecentEntry) => r?.t && now - r.t < RECENT_TTL)
+      recentSearches.value = valid.map((r: RecentEntry) => r.q)
       if (valid.length < parsed.length) {
         try { localStorage.setItem(RECENT_KEY, JSON.stringify(valid)) } catch {}
       }
@@ -35,7 +37,7 @@ export function useSearchRecents() {
         if (Array.isArray(parsed)) {
           entries = typeof parsed[0] === 'string'
             ? parsed.map((q: string) => ({ q, t: Date.now() }))
-            : parsed.filter((r: any) => r?.q !== clean)
+            : parsed.filter((r: RecentEntry) => r?.q !== clean)
         }
       }
       entries.unshift({ q: clean, t: Date.now() })

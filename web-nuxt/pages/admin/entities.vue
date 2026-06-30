@@ -16,7 +16,7 @@
         <button v-if="search" type="button" class="ent-search-clear" aria-label="Xóa tìm kiếm" @click="clearSearch">&times;</button>
         <span v-if="searching" class="ent-searching" aria-live="polite">Đang tìm…</span>
       </div>
-      <select v-model="typeFilter" class="input admin-select-filter" @change="fetchEntities(true)">
+      <select v-model="typeFilter" class="input admin-select-filter" aria-label="Lọc theo loại entity" @change="fetchEntities(true)">
         <option value="">Tất cả loại</option>
         <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
       </select>
@@ -51,14 +51,14 @@
     </div>
     <template v-else>
       <div class="admin-table-wrap">
-      <table class="admin-table">
+      <table class="admin-table" aria-label="Danh sách entity">
         <thead>
           <tr>
-            <th class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
-            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('id')" @keydown.enter="toggleSort('id')" @keydown.space.prevent="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></th>
-            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('name')" @keydown.enter="toggleSort('name')" @keydown.space.prevent="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></th>
-            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('type')" @keydown.enter="toggleSort('type')" @keydown.space.prevent="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></th>
-            <th scope="col" class="ent-sortable" role="button" tabindex="0" @click="toggleSort('place_name')" @keydown.enter="toggleSort('place_name')" @keydown.space.prevent="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></th>
+            <th scope="col" class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
+            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></button></th>
+            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></button></th>
+            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></button></th>
+            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></button></th>
             <th scope="col"><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>
             <th scope="col">Thao tác</th>
           </tr>
@@ -70,18 +70,18 @@
             <td>
               <div class="ent-name-cell">
                 <div class="ent-thumb" v-if="e.images?.length">
-                  <img :src="e.images[0]" :alt="e.name" width="32" height="32" loading="lazy" @error="(ev) => ((ev.target as HTMLImageElement).style.display = 'none')" />
+                  <img :src="e.images[0]" :alt="e.name" width="32" height="32" loading="lazy" decoding="async" @error="(ev) => ((ev.target as HTMLImageElement).style.display = 'none')" />
                 </div>
                 <div class="ent-thumb ent-thumb-empty" v-else>&#128247;</div>
                 <template v-if="inlineEdit.id === e.id && inlineEdit.field === 'name'">
-                  <input v-model="inlineEdit.value" class="input ent-inline-input" @keyup.enter="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()" />
+                  <input v-model="inlineEdit.value" class="input ent-inline-input" :aria-label="`Sửa tên ${e.name}`" @keyup.enter="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()" />
                 </template>
                 <strong v-else class="ent-inline-label" @dblclick="startInline(e, 'name', e.name)">{{ e.name }}</strong>
               </div>
             </td>
             <td>
               <template v-if="inlineEdit.id === e.id && inlineEdit.field === 'type'">
-                <select v-model="inlineEdit.value" class="input ent-inline-select" @change="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()">
+                <select v-model="inlineEdit.value" class="input ent-inline-select" :aria-label="`Chọn loại cho ${e.name}`" @change="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()">
                   <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
                 </select>
               </template>
@@ -89,9 +89,9 @@
             </td>
             <td class="admin-td-muted">{{ e.place_name || '—' }}</td>
             <td class="ent-health-cell">
-              <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'"></span>
-              <span class="ent-dot" :class="e.images?.length ? 'dot-ok' : 'dot-miss'" :title="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'"></span>
-              <span class="ent-dot" :class="e.placeId ? 'dot-ok' : 'dot-miss'" :title="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'"></span>
+              <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" :aria-label="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" role="img">{{ e.summary ? '✓' : '✗' }}</span>
+              <span class="ent-dot" :class="e.images?.length ? 'dot-ok' : 'dot-miss'" :title="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'" :aria-label="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'" role="img">{{ e.images?.length ? '✓' : '✗' }}</span>
+              <span class="ent-dot" :class="e.placeId ? 'dot-ok' : 'dot-miss'" :title="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" :aria-label="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" role="img">{{ e.placeId ? '✓' : '✗' }}</span>
             </td>
             <td class="admin-actions">
               <button type="button" class="btn-success" @click="openEdit(e)" :aria-label="`Sửa ${e.name}`">Sửa</button>
@@ -137,13 +137,13 @@
           <legend class="ent-fieldset-legend">Thông tin cơ bản</legend>
           <div class="ent-field">
             <label class="form-label" for="ent-id">ID (slug)</label>
-            <input id="ent-id" v-model="form.id" class="input" :class="{ error: fieldErrors.id }" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editingEntity" @input="clearFieldError('id')" />
-            <span v-if="fieldErrors.id" class="form-error">{{ fieldErrors.id }}</span>
+            <input id="ent-id" v-model="form.id" class="input" :class="{ error: fieldErrors.id }" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editingEntity" :aria-invalid="!!fieldErrors.id" :aria-describedby="fieldErrors.id ? 'ent-id-err' : undefined" @input="clearFieldError('id')" />
+            <span v-if="fieldErrors.id" id="ent-id-err" class="form-error" role="alert">{{ fieldErrors.id }}</span>
           </div>
           <div class="ent-field">
             <label class="form-label" for="ent-name">Tên</label>
-            <input id="ent-name" v-model="form.name" class="input" :class="{ error: fieldErrors.name }" placeholder="Tên" aria-label="Tên entity" @input="clearFieldError('name'); checkDuplicate()" />
-            <span v-if="fieldErrors.name" class="form-error">{{ fieldErrors.name }}</span>
+            <input id="ent-name" v-model="form.name" class="input" :class="{ error: fieldErrors.name }" placeholder="Tên" aria-label="Tên entity" :aria-invalid="!!fieldErrors.name" :aria-describedby="fieldErrors.name ? 'ent-name-err' : undefined" @input="clearFieldError('name'); checkDuplicate()" />
+            <span v-if="fieldErrors.name" id="ent-name-err" class="form-error" role="alert">{{ fieldErrors.name }}</span>
             <div v-if="duplicates.length && !editingEntity" class="ent-dup-warn" role="alert">
               <strong>&#9888; Có thể trùng:</strong>
               <span v-for="d in duplicates" :key="d.id" class="ent-dup-item">{{ d.name }} <span class="ent-dup-type">({{ d.type }})</span></span>
@@ -215,7 +215,7 @@
           <div v-if="editingEntity" class="img-mgr">
             <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
             <div v-for="(img, i) in (form.images || [])" :key="i" class="img-row">
-              <img :src="img" :alt="`Ảnh ${i + 1}`" class="img-thumb" width="48" height="48" loading="lazy" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.3')" />
+              <img :src="img" :alt="`Ảnh ${i + 1}`" class="img-thumb" width="48" height="48" loading="lazy" decoding="async" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.3')" />
               <span class="img-url">{{ img }}</span>
               <button type="button" class="btn-danger btn-sm" @click="removeImage(i)">Xóa</button>
             </div>
@@ -509,22 +509,14 @@ function cloneEntity(e: Entity) {
 }
 
 function exportJSON() {
-  const blob = new Blob([JSON.stringify(entities.value, null, 2)], { type: 'application/json' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `entities-${new Date().toISOString().slice(0, 10)}.json`
-  a.click(); URL.revokeObjectURL(a.href)
+  downloadBlob(new Blob([JSON.stringify(entities.value, null, 2)], { type: 'application/json' }), `entities-${new Date().toISOString().slice(0, 10)}.json`)
 }
 function exportCSV() {
   const cols = ['id', 'name', 'type', 'placeId', 'summary']
   const esc = (v: string) => `"${String(v ?? '').replace(/"/g, '""')}"`
   const rows = entities.value.map(e => cols.map(c => esc((e as Record<string, any>)[c])).join(','))
   const csv = '﻿' + cols.join(',') + '\n' + rows.join('\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `entities-${new Date().toISOString().slice(0, 10)}.csv`
-  a.click(); URL.revokeObjectURL(a.href)
+  downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `entities-${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 // ── Quản lý quan hệ ──
@@ -738,7 +730,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-thumb {
   width: 32px; height: 32px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
   background: var(--bg-alt);
-  transition: transform .25s cubic-bezier(.2,1,.4,1), box-shadow .25s;
+  transition: transform .25s var(--ease-soft), box-shadow .25s;
 }
 .ent-name-cell:hover .ent-thumb { transform: scale(1.08); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
 .ent-thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -753,16 +745,20 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   font-size: .72rem; font-weight: 600; letter-spacing: .3px;
   text-transform: uppercase;
 }
-.type-badge[data-type="attraction"] { background: rgba(var(--primary-rgb),.1); color: #219653; }
-.type-badge[data-type="dish"] { background: rgba(230,126,34,.1); color: #e67e22; }
-.type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.1); color: #3478F6; }
-.type-badge[data-type="accommodation"] { background: rgba(175,82,222,.1); color: #AF52DE; }
-.type-badge[data-type="nature"] { background: rgba(52,199,89,.1); color: #34C759; }
-.type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.1); color: #c67a00; }
-.type-badge[data-type="craft_village"] { background: rgba(162,132,94,.1); color: #A2845E; }
-.type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.1); color: #D94F3D; }
-.type-badge[data-type="drink"] { background: rgba(0,199,190,.1); color: #00C7BE; }
-.type-badge[data-type="place"] { background: rgba(142,142,147,.1); color: #8E8E93; }
+.type-badge[data-type="attraction"] { background: rgba(var(--primary-rgb),.1); color: var(--success); }
+.type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
+.type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.1); color: rgb(var(--blue-rgb)); }
+.type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.1); color: rgb(var(--purple-rgb)); }
+.type-badge[data-type="nature"] { background: rgba(52,199,89,.1); color: rgb(52,199,89); }
+.type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
+.type-badge[data-type="craft_village"] { background: rgba(162,132,94,.1); color: rgb(162,132,94); }
+.type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.1); color: var(--error); }
+.type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.1); color: rgb(var(--teal-rgb)); }
+.type-badge[data-type="place"] { background: rgba(142,142,147,.1); color: var(--muted); }
+.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); color: #C084FC; }
+.dark .type-badge[data-type="nature"] { background: rgba(52,199,89,.15); color: #66BB6A; }
+.dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); color: #D4A574; }
+.dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); color: #5CE5DD; }
 
 /* ── Selected row ── */
 .row-selected td { background: rgba(var(--blue-rgb),.04); transition: background .2s; }
@@ -777,7 +773,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   padding: var(--space-3) var(--space-4);
   background: rgba(var(--blue-rgb),.06); border: .5px solid rgba(var(--blue-rgb),.2);
   border-radius: 10px; font-size: .88rem; font-weight: 500;
-  animation: bulk-slide-in .3s cubic-bezier(.2,1,.4,1);
+  animation: bulk-slide-in .3s var(--ease-soft);
 }
 @keyframes bulk-slide-in { from { opacity: 0; transform: translateY(-8px); } }
 
@@ -785,11 +781,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-mgr { border-top: .5px solid var(--line); padding-top: var(--space-3); margin-top: var(--space-1); }
 .img-row { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0; }
 .img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: 0 0 40px; border: .5px solid var(--line); transition: transform .2s var(--ease-out, ease); }
-.img-row:hover .img-thumb { transform: scale(1.06); }
+.img-row:hover .img-thumb { transform: scale(var(--img-hover-scale)); }
 .img-url { flex: 1; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── Search box (clear + searching feedback) ── */
-.btn-active-warn { background: rgba(var(--warning-rgb),.12) !important; border-color: #FF9F0A !important; color: #FF9F0A !important; font-weight: 600; }
+.btn-active-warn { background: rgba(var(--warning-rgb),.12) !important; border-color: var(--warning) !important; color: var(--warning) !important; font-weight: 600; }
 .ent-search-wrap { position: relative; display: flex; align-items: center; flex: 1 1 220px; min-width: 180px; }
 .ent-search-wrap .input { width: 100%; padding-right: 32px; }
 .ent-search-clear {
@@ -855,20 +851,20 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* ── Dark mode ── */
 .dark .type-badge[data-type="attraction"] { background: rgba(var(--primary-rgb),.15); }
-.dark .type-badge[data-type="dish"] { background: rgba(230,126,34,.15); color: #f0943a; }
+.dark .type-badge[data-type="dish"] { background: rgba(var(--warning-rgb),.15); color: var(--warning); }
 .dark .type-badge[data-type="product"] { background: rgba(var(--blue-rgb),.15); }
-.dark .type-badge[data-type="accommodation"] { background: rgba(175,82,222,.15); }
+.dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); }
 .dark .type-badge[data-type="nature"] { background: rgba(52,199,89,.15); }
-.dark .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.15); color: #ffb340; }
+.dark .type-badge[data-type="experience"] { background: rgba(var(--warning-rgb),.15); color: var(--accent-text); }
 .dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); }
-.dark .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.15); color: #ef7d6c; }
-.dark .type-badge[data-type="drink"] { background: rgba(0,199,190,.15); }
-.dark .type-badge[data-type="place"] { background: rgba(142,142,147,.18); color: #b0b0b5; }
+.dark .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.15); color: rgb(var(--danger-rgb)); }
+.dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); }
+.dark .type-badge[data-type="place"] { background: rgba(142,142,147,.18); color: var(--muted); }
 .dark .ent-name-cell:hover .ent-thumb { box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 .dark .row-selected td { background: rgba(var(--blue-rgb),.08); }
 .dark .bulk-bar { background: rgba(var(--blue-rgb),.08); border-color: rgba(var(--blue-rgb),.15); }
 .dark .img-thumb { border-color: rgba(255,255,255,.1); }
-.dark .ent-search-clear:hover { background: rgba(255,255,255,.08); color: #fff; }
+.dark .ent-search-clear:hover { background: rgba(255,255,255,.08); color: var(--ink); }
 .dark .admin-actions button:focus-visible,
 .dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg, #D98A6F); }
 /* ── Bulk relationship add ── */
@@ -898,35 +894,39 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Duplicate warning ── */
 .ent-dup-warn {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  padding: 8px 12px; border-radius: 8px; font-size: .82rem;
+  padding: var(--space-2) var(--space-3); border-radius: 8px; font-size: .82rem;
   background: rgba(var(--warning-rgb),.1); border: .5px solid rgba(var(--warning-rgb),.3);
-  color: #c67a00; animation: ent-fade-in .2s ease;
+  color: var(--warning); animation: ent-fade-in .2s ease;
 }
 .ent-dup-warn strong { white-space: nowrap; }
 .ent-dup-item { background: rgba(var(--warning-rgb),.12); padding: 2px 8px; border-radius: 100px; font-weight: 500; }
 .ent-dup-type { font-weight: 400; font-size: .72rem; opacity: .7; }
-.dark .ent-dup-warn { background: rgba(var(--warning-rgb),.08); border-color: rgba(var(--warning-rgb),.2); color: #ffb340; }
+.dark .ent-dup-warn { background: rgba(var(--warning-rgb),.08); border-color: rgba(var(--warning-rgb),.2); color: var(--accent-text); }
 
 /* ── Sortable columns ── */
-.ent-sortable { cursor: pointer; user-select: none; white-space: nowrap; }
-.ent-sortable:hover { color: var(--primary, #219653); }
+.ent-sortable { white-space: nowrap; }
+.ent-sort-btn { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; user-select: none; }
+.ent-sort-btn:hover { color: var(--primary, #219653); }
+.ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-xs, 4px); }
 .ent-sort-arrow { font-size: .65rem; opacity: .7; margin-left: 2px; }
 
 .ent-char-count { font-weight: 400; font-size: .78rem; color: var(--muted); transition: color .2s; }
-.ent-char-warn { color: #FF9F0A; font-weight: 600; }
-.ent-char-danger { color: #D94F3D; font-weight: 600; }
+.ent-char-warn { color: var(--warning); font-weight: 600; }
+.ent-char-danger { color: var(--error); font-weight: 600; }
 .ent-summary-preview { padding: .5rem .8rem; border: 1px solid var(--line); border-radius: 6px; min-height: 60px; font-size: .9rem; line-height: 1.6; white-space: pre-wrap; }
 
 /* ── Health indicator dots ── */
 .ent-health-cell { white-space: nowrap; }
 .ent-dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  margin-right: 3px; vertical-align: middle; transition: transform .15s, box-shadow .15s;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  margin-right: 2px; vertical-align: middle; transition: transform .15s, box-shadow .15s;
+  font-size: 9px; line-height: 1; color: var(--text-on-dark);
 }
 .ent-health-cell:hover .ent-dot { transform: scale(1.4); }
 .ent-health-cell:hover .dot-miss { box-shadow: 0 0 0 3px rgba(255,59,48,.15); }
-.dot-ok { background: #34C759; }
-.dot-miss { background: #FF3B30; opacity: .45; }
+.dot-ok { background: var(--success); }
+.dot-miss { background: var(--error); opacity: .45; }
 
 /* ── KBYG fields ── */
 .ent-kbyg-details { margin-top: var(--space-3); border: 1px solid var(--line); border-radius: 8px; }
@@ -934,7 +934,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-kbyg-summary:hover { background: rgba(0,0,0,.03); }
 .ent-kbyg-fields { padding: 0 14px 14px; display: flex; flex-direction: column; gap: var(--space-3); }
 .kbyg-amenity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
-.kbyg-amenity-check { display: flex; align-items: center; gap: 5px; font-size: .82rem; cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+.kbyg-amenity-check { display: flex; align-items: center; gap: 5px; font-size: .82rem; cursor: pointer; padding: var(--space-1) 6px; border-radius: 6px; }
 .kbyg-amenity-check:hover { background: rgba(0,0,0,.04); }
 .kbyg-amenity-check input[type="checkbox"] { accent-color: var(--primary); }
 .dark .ent-kbyg-summary:hover { background: rgba(255,255,255,.05); }

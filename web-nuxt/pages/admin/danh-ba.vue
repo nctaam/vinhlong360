@@ -14,26 +14,26 @@
       <div class="db-form-grid">
         <label class="db-field">
           <span class="db-field-label">Tên cơ quan *</span>
-          <input v-model="f.name" class="input" :class="{ 'db-input-error': formErrors.name }" required placeholder="UBND xã An Bình" :aria-invalid="!!formErrors.name" />
-          <span v-if="formErrors.name" class="db-field-error" role="alert">{{ formErrors.name }}</span>
+          <input v-model="f.name" class="input" :class="{ 'db-input-error': formErrors.name }" required placeholder="UBND xã An Bình" :aria-invalid="!!formErrors.name" :aria-describedby="formErrors.name ? 'db-err-name' : undefined" />
+          <span v-if="formErrors.name" id="db-err-name" class="db-field-error" role="alert">{{ formErrors.name }}</span>
         </label>
         <label class="db-field">
           <span class="db-field-label">Loại cơ quan *</span>
-          <select v-model="f.office_kind" class="input" :class="{ 'db-input-error': formErrors.office_kind }" required :aria-invalid="!!formErrors.office_kind">
+          <select v-model="f.office_kind" class="input" :class="{ 'db-input-error': formErrors.office_kind }" required :aria-invalid="!!formErrors.office_kind" :aria-describedby="formErrors.office_kind ? 'db-err-kind' : undefined">
             <option value="">— Chọn —</option>
             <option v-for="(m, k) in OFFICE_KIND" :key="k" :value="k">{{ m.emoji }} {{ m.label }}</option>
           </select>
-          <span v-if="formErrors.office_kind" class="db-field-error" role="alert">{{ formErrors.office_kind }}</span>
+          <span v-if="formErrors.office_kind" id="db-err-kind" class="db-field-error" role="alert">{{ formErrors.office_kind }}</span>
         </label>
         <label class="db-field">
           <span class="db-field-label">Xã / phường *</span>
-          <select v-model="f.placeId" class="input" :class="{ 'db-input-error': formErrors.placeId }" required :aria-invalid="!!formErrors.placeId">
+          <select v-model="f.placeId" class="input" :class="{ 'db-input-error': formErrors.placeId }" required :aria-invalid="!!formErrors.placeId" :aria-describedby="formErrors.placeId ? 'db-err-place' : undefined">
             <option value="">— Chọn —</option>
             <optgroup v-for="g in wardGroups" :key="g.area" :label="g.label">
               <option v-for="w in g.wards" :key="w.id" :value="w.id">{{ w.name }}</option>
             </optgroup>
           </select>
-          <span v-if="formErrors.placeId" class="db-field-error" role="alert">{{ formErrors.placeId }}</span>
+          <span v-if="formErrors.placeId" id="db-err-place" class="db-field-error" role="alert">{{ formErrors.placeId }}</span>
         </label>
         <label class="db-field">
           <span class="db-field-label">Số điện thoại</span>
@@ -49,8 +49,8 @@
         </label>
         <label class="db-field db-field-full">
           <span class="db-field-label">Nguồn (URL chính thống) *</span>
-          <input v-model="f.sourceUrl" class="input" :class="{ 'db-input-error': formErrors.sourceUrl, 'db-input-ok': sourceUrlValid }" required placeholder="https://...gov.vn/..." :aria-invalid="!!formErrors.sourceUrl" />
-          <span v-if="formErrors.sourceUrl" class="db-field-error" role="alert">{{ formErrors.sourceUrl }}</span>
+          <input v-model="f.sourceUrl" class="input" :class="{ 'db-input-error': formErrors.sourceUrl, 'db-input-ok': sourceUrlValid }" required placeholder="https://...gov.vn/..." :aria-invalid="!!formErrors.sourceUrl" :aria-describedby="formErrors.sourceUrl ? 'db-err-url' : undefined" />
+          <span v-if="formErrors.sourceUrl" id="db-err-url" class="db-field-error" role="alert">{{ formErrors.sourceUrl }}</span>
           <span v-else-if="f.sourceUrl && !sourceUrlValid" class="db-field-hint">Nên là URL chính thống .gov.vn (bắt đầu bằng https://)</span>
         </label>
       </div>
@@ -76,7 +76,7 @@
       </div>
       <template v-else>
         <div v-if="facilities.length" class="admin-table-wrap">
-          <table class="admin-table">
+          <table class="admin-table" aria-label="Danh bạ cơ sở">
             <thead><tr><th scope="col">Cơ quan</th><th scope="col">Liên hệ</th><th scope="col">Nguồn</th><th scope="col"><span class="sr-only">Thao tác</span></th></tr></thead>
             <tbody>
               <tr v-for="e in facilities" :key="e.id">
@@ -224,7 +224,7 @@ onMounted(loadFacilities)
 .db-form {
   background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
   padding: var(--space-5); margin-bottom: var(--space-6);
-  transition: box-shadow .3s cubic-bezier(.2,1,.4,1), border-color .3s;
+  transition: box-shadow .3s var(--ease-soft), border-color .3s;
 }
 .db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.06); border-color: rgba(var(--primary-rgb),.2); }
 .db-form-title { font-size: .95rem; font-weight: 600; margin: 0 0 var(--space-4); }
@@ -232,7 +232,7 @@ onMounted(loadFacilities)
   display: grid; grid-template-columns: 1fr 1fr;
   gap: var(--space-3); margin-bottom: var(--space-4);
 }
-.db-field { display: flex; flex-direction: column; gap: 4px; }
+.db-field { display: flex; flex-direction: column; gap: var(--space-1); }
 .db-field-label {
   font-size: .78rem; font-weight: 600; color: var(--muted);
   transition: color .2s;
@@ -243,7 +243,7 @@ onMounted(loadFacilities)
 /* ── Inline validation ── */
 .db-field-error {
   font-size: .74rem; font-weight: 500; color: var(--error, #D94F3D);
-  display: flex; align-items: center; gap: 4px;
+  display: flex; align-items: center; gap: var(--space-1);
 }
 .db-field-error::before { content: "\26A0"; font-size: .8em; }
 .db-field-hint { font-size: .74rem; color: var(--muted); }
@@ -286,7 +286,7 @@ onMounted(loadFacilities)
 /* ── Dirty / unsaved indicator (mirrors SettingsForm .sf-dirty-badge) ── */
 .sf-dirty-badge {
   display: inline-flex; align-items: center;
-  padding: 4px 10px; border-radius: 999px;
+  padding: var(--space-1) 10px; border-radius: 999px;
   font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
   background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
 }

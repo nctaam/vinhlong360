@@ -4,12 +4,12 @@
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
-        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" />
+        <img v-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         <UserCoverPlaceholder v-else />
         <div class="cover-scrim" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">
           <span v-if="profile.avatar" class="avatar avatar-xl">
-            <img :src="profile.avatar" :alt="profile.display_name" loading="lazy" decoding="async" width="96" height="96" />
+            <img :src="profile.avatar" :alt="profile.display_name" loading="lazy" decoding="async" width="96" height="96" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
           </span>
           <span v-else class="avatar avatar-xl">{{ initial }}</span>
         </div>
@@ -29,8 +29,8 @@
             <span v-else class="spinner spinner-sm" aria-label="Đang xử lý"></span>
           </button>
           <div v-if="isLoggedIn && !isSelf" class="profile-more-wrap" @keydown.escape="showMoreMenu = false">
-            <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Thêm" @click="showMoreMenu = !showMoreMenu">&#8226;&#8226;&#8226;</button>
-            <div v-if="showMoreMenu" class="profile-more-menu" @click="showMoreMenu = false">
+            <button type="button" class="btn btn-ghost btn-sm btn-icon" aria-label="Thêm" aria-haspopup="true" :aria-expanded="showMoreMenu" @click="showMoreMenu = !showMoreMenu">&#8226;&#8226;&#8226;</button>
+            <div v-if="showMoreMenu" class="profile-more-menu" @click.self="showMoreMenu = false">
               <button type="button" class="pm-item" @click="toggleBlock">{{ isBlocked ? 'Bỏ chặn' : 'Chặn người này' }}</button>
               <button type="button" class="pm-item pm-danger" @click="reportUser">Báo cáo</button>
             </div>
@@ -54,11 +54,11 @@
         <div class="profile-stats">
           <template v-if="!profile.is_private || isSelf">
             <div class="stat-item">
-              <strong>{{ profile.post_count || 0 }}</strong>
+              <strong><CountUp :value="profile.post_count || 0" /></strong>
               <span>bài viết</span>
             </div>
             <div class="stat-item">
-              <strong>{{ profile.review_count || 0 }}</strong>
+              <strong><CountUp :value="profile.review_count || 0" /></strong>
               <span>đánh giá</span>
             </div>
           </template>
@@ -99,21 +99,21 @@
         <p>🔒 Hồ sơ riêng tư — theo dõi để xem nội dung.</p>
       </div>
 
-      <div v-else class="profile-tabs">
-        <button type="button" :class="['chip', { active: tab === 'posts' }]" :aria-pressed="tab === 'posts'" @click="tab = 'posts'">Bài viết</button>
-        <button type="button" :class="['chip', { active: tab === 'reviews' }]" :aria-pressed="tab === 'reviews'" @click="tab = 'reviews'">Đánh giá</button>
-        <button type="button" v-if="isSelf" :class="['chip', { active: tab === 'saved' }]" :aria-pressed="tab === 'saved'" @click="tab = 'saved'">
+      <div v-else class="profile-tabs" role="tablist" aria-label="Nội dung người dùng">
+        <button type="button" role="tab" :class="['chip', { active: tab === 'posts' }]" :aria-selected="tab === 'posts'" @click="tab = 'posts'">Bài viết</button>
+        <button type="button" role="tab" :class="['chip', { active: tab === 'reviews' }]" :aria-selected="tab === 'reviews'" @click="tab = 'reviews'">Đánh giá</button>
+        <button type="button" role="tab" v-if="isSelf" :class="['chip', { active: tab === 'saved' }]" :aria-selected="tab === 'saved'" @click="tab = 'saved'">
           Đã lưu<ClientOnly><span v-if="savedCount > 0" class="tab-count">{{ savedCount }}</span></ClientOnly>
         </button>
       </div>
 
-      <div v-if="!profile.is_private" class="feed-main">
+      <div v-if="!profile.is_private" class="feed-main reveal">
         <!-- Đã lưu (self only, client-only — từ localStorage) -->
         <ClientOnly v-if="tab === 'saved'">
           <div v-if="favorites.length" class="saved-grid">
             <NuxtLink v-for="fav in favorites" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card saved-card">
               <div v-if="fav.image" class="cover cover-img">
-                <img :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" />
+                <img :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
               </div>
               <div class="card-b">
                 <span class="card-type">{{ getSavedTypeMeta(fav.type).label }}</span>
@@ -187,14 +187,14 @@
       <div v-if="followModalOpen" class="fm-overlay" @click.self="followModalOpen = false" @keydown.escape="followModalOpen = false">
         <div class="fm-dialog" role="dialog" aria-modal="true" aria-label="Danh sách theo dõi" tabindex="-1" ref="followDialogEl">
           <header class="fm-head">
-            <div class="fm-tabs">
-              <button type="button" :class="['fm-tab', { active: followModalTab === 'followers' }]" @click="followModalTab = 'followers'">Người theo dõi</button>
-              <button type="button" :class="['fm-tab', { active: followModalTab === 'following' }]" @click="followModalTab = 'following'">Đang theo dõi</button>
+            <div class="fm-tabs" role="tablist" aria-label="Danh sách theo dõi">
+              <button type="button" role="tab" :class="['fm-tab', { active: followModalTab === 'followers' }]" :aria-selected="followModalTab === 'followers'" @click="followModalTab = 'followers'">Người theo dõi</button>
+              <button type="button" role="tab" :class="['fm-tab', { active: followModalTab === 'following' }]" :aria-selected="followModalTab === 'following'" @click="followModalTab = 'following'">Đang theo dõi</button>
             </div>
             <button type="button" class="fm-close" aria-label="Đóng" @click="followModalOpen = false">&times;</button>
           </header>
           <div class="fm-body">
-            <div v-if="followLoadingList" class="fm-loading"><div class="spinner spinner-sm"></div></div>
+            <div v-if="followLoadingList" class="fm-loading" role="status" aria-label="Đang tải danh sách"><div class="spinner spinner-sm"></div></div>
             <template v-else>
               <ul v-if="followModalList.length" class="fm-list">
                 <li v-for="u in followModalList" :key="u.id">
@@ -274,10 +274,7 @@ const initial = computed(() => {
   return name.charAt(0).toUpperCase()
 })
 
-const joinDate = computed(() => {
-  if (!profile.value?.created_at) return ''
-  return new Date(profile.value.created_at).toLocaleDateString('vi-VN')
-})
+const joinDate = computed(() => formatDateVN(profile.value?.created_at))
 
 const profileCompletion = computed(() => {
   if (!profile.value) return 0
@@ -291,13 +288,7 @@ const filteredPosts = computed(() => {
   return posts.value
 })
 
-function getSavedTypeMeta(type: string) {
-  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
-}
-
-function levelIcon(level: number) {
-  return (['', '🌱', '🤝', '🌟', '👑'][level]) || '🌱'  // 1→4
-}
+const getSavedTypeMeta = getTypeMeta
 
 const displayName = computed(() => profile.value?.display_name || profile.value?.phone || 'Người dùng')
 const emptyHint = computed(() => {
@@ -320,50 +311,18 @@ async function fetchPosts() {
   loading.value = false
 }
 
-const pendingActions = reactive(new Set<string>())
+const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
 
-async function toggleLike(postId: string) {
-  if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
-  if (pendingActions.has(`like:${postId}`)) return
-  pendingActions.add(`like:${postId}`)
-  const post = posts.value.find(p => p.id === postId)
-  if (!post) { pendingActions.delete(`like:${postId}`); return }
-  post.user_liked = !post.user_liked
-  post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
-  try {
-    await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    post.user_liked = !post.user_liked
-    post.likes = (post.likes || 0) + (post.user_liked ? 1 : -1)
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể thích bài viết', 'error')
-  } finally { pendingActions.delete(`like:${postId}`) }
+function toggleLike(pid: string) {
+  const p = posts.value.find(x => x.id === pid)
+  if (p) _like(pid, p)
 }
-
-async function deletePost(postId: string) {
-  const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
-  if (!ok) return
-  try {
-    await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
-    posts.value = posts.value.filter(p => p.id !== postId)
-    showToast('Đã xoá bài viết', 'success')
-  } catch { showToast('Không thể xoá bài viết', 'error') }
+function toggleBookmark(pid: string) {
+  const p = posts.value.find(x => x.id === pid)
+  if (p) _bookmark(pid, p)
 }
-
-async function toggleBookmark(postId: string) {
-  if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
-  if (pendingActions.has(`bm:${postId}`)) return
-  pendingActions.add(`bm:${postId}`)
-  const post = posts.value.find(p => p.id === postId)
-  if (!post) { pendingActions.delete(`bm:${postId}`); return }
-  post.user_bookmarked = !post.user_bookmarked
-  try {
-    await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    post.user_bookmarked = !post.user_bookmarked
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể lưu bài viết', 'error')
-  } finally { pendingActions.delete(`bm:${postId}`) }
+function deletePost(pid: string) {
+  _delete(pid, () => { posts.value = posts.value.filter(x => x.id !== pid) })
 }
 
 
@@ -558,8 +517,8 @@ useSeoMeta({
 .profile-name-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .profile-name-row h1 { flex: 1; min-width: 0; }
 .profile-more-wrap { position: relative; }
-.btn-icon { min-width: 32px; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
-.profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: var(--z-dropdown); min-width: 160px; overflow: hidden; }
+.btn-icon { min-width: 44px; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
+.profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: var(--space-1); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: var(--z-dropdown); min-width: 160px; overflow: hidden; }
 .pm-item { display: block; width: 100%; text-align: left; padding: .6rem 1rem; border: none; background: none; font: inherit; font-size: var(--text-sm); color: var(--ink); cursor: pointer; transition: background .15s; }
 .pm-item:hover { background: var(--bg-alt); }
 .pm-danger { color: var(--danger, #c0392b); }
@@ -615,7 +574,7 @@ useSeoMeta({
 .profile-name-row .btn:active { transform: scale(.92); transition-duration: .08s; }
 .profile-name-row .btn[aria-busy="true"] { pointer-events: none; }
 /* Spinner contrast inside filled primary follow button */
-.profile-name-row .btn-primary .spinner-sm { border-color: rgba(255,255,255,.45); border-top-color: #fff; }
+.profile-name-row .btn-primary .spinner-sm { border-color: rgba(var(--text-on-dark-rgb),.45); border-top-color: var(--text-on-dark); }
 
 .profile-skeleton { margin-top: var(--space-2); }
 
@@ -637,7 +596,7 @@ useSeoMeta({
 @keyframes savedEnter { from { opacity: 0; transform: translateY(8px); } }
 .saved-cta { text-align: center; margin-top: var(--space-5); }
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
-.dark .tab-count { background: rgba(232,163,61,.2); color: var(--accent); }
+.dark .tab-count { background: rgba(var(--accent-rgb),.2); color: var(--accent); }
 
 /* Dark mode */
 .dark .profile-cover { border-color: var(--line); }

@@ -29,7 +29,7 @@
     <p class="result-link">Tìm lễ hội truyền thống? <NuxtLink to="/le-hoi">Xem trang Lễ hội →</NuxtLink></p>
 
     <!-- Upcoming -->
-    <section v-if="upcoming.length" class="block">
+    <section v-if="upcoming.length" class="block reveal">
       <div class="section-head">
         <h2>Sắp diễn ra</h2>
       </div>
@@ -98,7 +98,8 @@
       <span class="catalog-divider-text">Duyệt tất cả</span>
     </div>
 
-    <!-- Controls -->
+    <!-- Controls + Content -->
+    <section class="block reveal" aria-label="Duyệt tất cả sự kiện">
     <div class="controls">
       <div class="search-row">
         <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm sự kiện…" aria-label="Tìm sự kiện" />
@@ -144,7 +145,7 @@
           <div class="event-info">
             <span v-if="e.attributes?.category === 'mua'" class="cat-badge cat-mua">🌾 Mùa vụ</span>
             <h3>{{ e.name }}</h3>
-            <p v-if="e.summary" class="event-summary">{{ truncate(e.summary, 120) }}</p>
+            <p v-if="e.summary" class="event-summary">{{ truncateText(e.summary, 120) }}</p>
             <div class="event-meta">
               <span v-if="e.place_name" class="event-place">📍 {{ e.place_name }}</span>
               <span v-if="getArea(e)" class="event-area">{{ AREA_META[getArea(e)]?.emoji }} {{ AREA_META[getArea(e)]?.name }}</span>
@@ -152,8 +153,8 @@
             </div>
           </div>
           <div v-if="e.images?.length" class="event-thumb">
-            <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" sizes="160px" />
-            <img v-else :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" />
+            <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" sizes="160px" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.opacity = '.15' }" />
+            <img v-else :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
           </div>
           <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" @click.stop.prevent="downloadIcal(e)">📅</button>
         </NuxtLink>
@@ -194,16 +195,17 @@
                 :to="`/dia-diem/${ev.id}`"
                 class="cal-event-dot"
                 :title="ev.name"
-              >{{ truncate(ev.name, 18) }}</NuxtLink>
+              >{{ truncateText(ev.name, 18) }}</NuxtLink>
               <span v-if="cell.events.length > 2" class="cal-more">+{{ cell.events.length - 2 }}</span>
             </div>
           </div>
         </div>
       </div>
     </template>
+    </section>
 
     <!-- Cross-links -->
-    <section class="block reveal catalog-cross">
+    <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/le-hoi" class="cross-card">
@@ -234,7 +236,6 @@ import { lunarLabel, isLunarFirstDay, isLunarFull } from '~/composables/useLunar
 
 useReveal()
 const { f: pc } = usePageContent('su_kien')
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 const q = ref('')
 const areaFilter = ref('all')
@@ -306,139 +307,15 @@ const filtered = computed(() => {
   return list
 })
 
-function getArea(e: Entity): string {
-  return e.place_area || e.area || ''
-}
+const getArea = getEntityArea
 
-function getDateStart(e: Entity): Date | null {
-  const ds = e.attributes?.date_start
-  if (!ds) return null
-  const d = new Date(ds + 'T00:00:00')
-  return isNaN(d.getTime()) ? null : d
-}
+const formatMonth = formatEventMonth
+const formatDay = formatEventDay
+const dateRange = eventDateRange
 
-function formatMonth(e: Entity): string {
-  const d = getDateStart(e)
-  if (!d) {
-    const months = e.season?.months
-    if (months?.length) return `T${months[0]}`
-    return ''
-  }
-  return `Tg ${d.getMonth() + 1}`
-}
 
-function formatDay(e: Entity): string {
-  const d = getDateStart(e)
-  if (!d) return '—'
-  return String(d.getDate())
-}
 
-function dateRange(e: Entity): string {
-  const attrs = e.attributes || {}
-  const ds = attrs.date_start
-  if (!ds) return ''
-  const de = attrs.date_end || ds
-  const fmt = (s: string) => {
-    const d = new Date(s + 'T00:00:00')
-    if (isNaN(d.getTime())) return ''
-    return `${d.getDate()}/${d.getMonth() + 1}`
-  }
-  if (ds === de) return fmt(ds)
-  const f1 = fmt(ds)
-  const f2 = fmt(de)
-  return (f1 && f2) ? `${f1} – ${f2}` : f1
-}
-
-function truncate(s: string, n: number): string {
-  return s.length > n ? s.slice(0, n) + '…' : s
-}
-
-function downloadIcal(e: Entity) {
-  const attrs = e.attributes || {}
-  const ds = String(attrs.date_start || '').replace(/-/g, '')
-  if (!ds) return
-  const de = String(attrs.date_end || attrs.date_start || '').replace(/-/g, '')
-  const lines = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI',
-    'BEGIN:VEVENT',
-    `DTSTART;VALUE=DATE:${ds}`,
-    `DTEND;VALUE=DATE:${de}`,
-    `SUMMARY:${(e.name || '').replace(/[,;\\]/g, ' ')}`,
-    `DESCRIPTION:${(e.summary || '').slice(0, 200).replace(/\n/g, '\\n')}`,
-    `LOCATION:${(e.place_name || '').replace(/[,;\\]/g, ' ')}`,
-    `URL:https://vinhlong360.vn/dia-diem/${e.id}`,
-    'END:VEVENT', 'END:VCALENDAR',
-  ]
-  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${e.id}.ics`
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-// Calendar
-const today = new Date()
-const calMonth = ref(today.getMonth())
-const calYear = ref(today.getFullYear())
-
-const displayMonth = computed(() => {
-  let m = calMonth.value % 12
-  if (m < 0) m += 12
-  return m + 1
-})
-const displayYear = computed(() => {
-  return calYear.value + Math.floor(calMonth.value / 12)
-})
-
-watch(calMonth, (v) => {
-  if (v < 0) { calYear.value--; calMonth.value = v + 12 }
-  else if (v > 11) { calYear.value++; calMonth.value = v - 12 }
-})
-
-const calendarCells = computed(() => {
-  const y = displayYear.value
-  const m = displayMonth.value - 1
-  const firstDay = new Date(y, m, 1)
-  const lastDay = new Date(y, m + 1, 0)
-  const daysInMonth = lastDay.getDate()
-
-  let startDow = firstDay.getDay()
-  if (startDow === 0) startDow = 7
-  startDow--
-
-  const monthStart = `${y}-${String(m + 1).padStart(2, '0')}-01`
-  const monthEnd = `${y}-${String(m + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`
-  const dateMap = new Map<number, Entity[]>()
-  for (const e of allEvents.value) {
-    const attrs = e.attributes || {}
-    const ds = attrs.date_start
-    const de = attrs.date_end || ds
-    if (!ds || de < monthStart || ds > monthEnd) continue
-    const span = (new Date(de).getTime() - new Date(ds).getTime()) / 86400000
-    if (span > 30) continue
-    const from = Math.max(1, ds > monthStart ? parseInt(ds.slice(8), 10) : 1)
-    const to = Math.min(daysInMonth, de < monthEnd ? parseInt(de.slice(8), 10) : daysInMonth)
-    for (let d = from; d <= to; d++) {
-      const arr = dateMap.get(d)
-      if (arr) arr.push(e)
-      else dateMap.set(d, [e])
-    }
-  }
-
-  const cells: { day: number; isToday?: boolean; events?: Entity[]; lunar?: string; lunarFirst?: boolean; lunarMid?: boolean }[] = []
-  for (let i = 0; i < startDow; i++) cells.push({ day: 0 })
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate()
-    const lunar = lunarLabel(d, m + 1, y)
-    const lunarFirst = isLunarFirstDay(d, m + 1, y)
-    const lunarMid = isLunarFull(d, m + 1, y)
-    cells.push({ day: d, isToday, events: dateMap.get(d), lunar, lunarFirst, lunarMid })
-  }
-  return cells
-})
+const { today, calMonth, calYear, displayMonth, displayYear, calendarCells } = useEventCalendar(allEvents)
 
 useSeoMeta({
   title: () => pc('seo_title'),

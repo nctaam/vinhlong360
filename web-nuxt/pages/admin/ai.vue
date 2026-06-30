@@ -18,42 +18,42 @@
     <!-- Health Status -->
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="ai-icon" :style="{ background: statusBg, color: statusColor }">&#9889;</div>
+        <div class="stat-icon" :style="{ background: statusBg, color: statusColor }">&#9889;</div>
         <div>
           <div class="stat-value" :style="{ color: statusColor }">{{ health?.status || '—' }}</div>
           <div class="stat-label">Trạng thái</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-blue">&#128640;</div>
+        <div class="stat-icon si-blue">&#128640;</div>
         <div>
           <div class="stat-value">{{ health?.version || '—' }}</div>
           <div class="stat-label">Phiên bản</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-purple">&#129302;</div>
+        <div class="stat-icon si-purple">&#129302;</div>
         <div>
           <div class="stat-value ai-model-val">{{ health?.model || health?.llm_api || '—' }}</div>
           <div class="stat-label">Model / API</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-orange">&#128338;</div>
+        <div class="stat-icon si-orange">&#128338;</div>
         <div>
           <div class="stat-value">{{ uptime }}</div>
           <div class="stat-label">Uptime</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-green">&#127760;</div>
+        <div class="stat-icon si-green">&#127760;</div>
         <div>
           <div class="stat-value">{{ health?.entities || '—' }}</div>
           <div class="stat-label">Entities (KB)</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="ai-icon si-teal">&#128190;</div>
+        <div class="stat-icon si-teal">&#128190;</div>
         <div>
           <div class="stat-value">{{ health?.memory_mb || '—' }} MB</div>
           <div class="stat-label">Bộ nhớ</div>
@@ -66,7 +66,7 @@
       <h2 class="admin-section-title">Cache</h2>
       <div class="ai-cache-row">
         <div class="ai-ring-wrap">
-          <svg class="ai-ring" viewBox="0 0 80 80">
+          <svg class="ai-ring" viewBox="0 0 80 80" aria-hidden="true">
             <circle cx="40" cy="40" r="32" fill="none" stroke="var(--line)" stroke-width="8" opacity=".15" />
             <circle cx="40" cy="40" r="32" fill="none"
               :stroke="hitRate >= 70 ? '#219653' : hitRate >= 40 ? '#e67e22' : '#D94F3D'"
@@ -362,14 +362,6 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-subtitle { font-size: .82rem; color: var(--muted); margin-top: 2px; }
 
 /* ── Stat card icon ── */
-.stat-card { display: flex; align-items: center; gap: var(--space-4); }
-.ai-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem; flex-shrink: 0;
-  transition: transform .25s cubic-bezier(.2,1,.4,1);
-}
-.stat-card:hover .ai-icon { transform: scale(1.08); }
 .ai-model-val { font-size: .9rem; font-family: var(--font-mono, monospace); }
 
 /* ── Sections (card containers with left accent bar) ── */
@@ -391,7 +383,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-ring-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
 .ai-ring { width: 80px; height: 80px; transform: rotate(-90deg); }
-.ai-ring-fill { animation: ai-ring-in .8s cubic-bezier(.4,0,.2,1) both; }
+.ai-ring-fill { animation: ai-ring-in .8s var(--ease-standard) both; }
 @keyframes ai-ring-in { from { stroke-dasharray: 0 201; } }
 .ai-ring-center {
   position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -418,7 +410,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-dq-fill {
   height: 100%; border-radius: 5px;
-  animation: ai-dq-grow .6s cubic-bezier(.4,0,.2,1) both;
+  animation: ai-dq-grow .6s var(--ease-standard) both;
 }
 @keyframes ai-dq-grow { from { width: 0 !important; } }
 
@@ -444,7 +436,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-near-cap {
   border-color: var(--warning); background: rgba(var(--warning-rgb),.04);
   border-left-width: 4px; border-left-style: dashed;
-  animation: ai-near-cap-pulse 2s ease-in-out infinite;
+  animation: ai-near-cap-pulse 2s var(--ease-in-out) infinite;
 }
 @keyframes ai-near-cap-pulse {
   0%, 100% { border-left-color: var(--warning); }
@@ -457,14 +449,14 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-subsys {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 12px; border-radius: 100px;
+  padding: var(--space-1) var(--space-3); border-radius: 100px;
   font-size: .75rem; font-weight: 500;
 }
 .ai-subsys-dot {
   width: 6px; height: 6px; border-radius: 50%;
 }
 .ai-subsys-on { background: rgba(var(--primary-rgb),.06); color: var(--secondary); }
-.ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s ease-in-out infinite; }
+.ai-subsys-on .ai-subsys-dot { background: var(--secondary); animation: ai-sub-pulse 2.5s var(--ease-in-out) infinite; }
 .ai-subsys-off { background: rgba(var(--danger-rgb),.06); color: var(--error); }
 .ai-subsys-off .ai-subsys-dot { background: var(--error); opacity: .5; }
 @keyframes ai-sub-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -480,18 +472,18 @@ onMounted(() => { fetchHealth(); fetchCost() })
   padding: var(--space-4) var(--space-3); border-radius: 14px;
   background: var(--bg); border: .5px solid var(--line);
   cursor: pointer; font-size: .82rem; font-weight: 500; color: var(--ink);
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s, background .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s, background .3s;
 }
 .ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); }
 .ai-action-btn:active:not(:disabled) { transform: scale(.97); }
 .ai-action-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.ai-action-btn:disabled { opacity: .4; cursor: not-allowed; }
+.ai-action-btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .ai-action-icon { font-size: 1.4rem; }
 
 /* Primary actions — stronger visual weight */
 .ai-action-primary {
   background: var(--primary, #219653); border-color: var(--primary, #219653);
-  color: #fff; font-weight: 600;
+  color: var(--on-primary); font-weight: 600;
 }
 .ai-action-primary:hover:not(:disabled) {
   transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--primary-rgb),.28);
@@ -551,7 +543,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .dark .ai-subsys-off { background: rgba(var(--danger-rgb),.1); }
 .dark .ai-action-secondary { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); color: var(--ink); }
 .dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(0,0,0,.3); }
-.dark .ai-action-primary { color: #fff; }
+.dark .ai-action-primary { color: var(--ink); }
 .dark .ai-triage-box { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.3); }
 .dark .ai-triage-box.ai-triage-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); border-left-color: var(--error); }
 .dark .ai-trigger-result { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.2); }
@@ -560,7 +552,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .stat-card:hover .ai-icon { transform: none; }
+  .stat-card:hover .stat-icon { transform: none; }
   .ai-subsys-on .ai-subsys-dot { animation: none; }
   .ai-ring-fill { animation: none; }
   .ai-dq-fill { animation: none; }

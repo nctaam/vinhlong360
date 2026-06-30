@@ -58,7 +58,7 @@ onMounted(async () => {
 <style scoped>
 .ai-rec-skel {
   height: 260px; border-radius: var(--radius); background: var(--bg-warm);
-  animation: aiRecPulse 1.5s ease-in-out infinite;
+  animation: aiRecPulse 1.5s var(--ease-in-out) infinite;
 }
 @keyframes aiRecPulse { 0%, 100% { opacity: .5; } 50% { opacity: .85; } }
 @media (prefers-reduced-motion: reduce) { .ai-rec-skel { animation: none; } }

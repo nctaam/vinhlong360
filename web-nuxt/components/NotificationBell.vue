@@ -53,6 +53,8 @@ const { notifications, unreadCount, loading, fetchError, fetchNotifications, mar
 
 const open = ref(false)
 const retrying = ref(false)
+const triggerRef = ref<HTMLButtonElement>()
+const { onMenuKeydown: onDropdownKeydown } = useDropdown(open, '.notif-bell', { itemSelector: '.notif-item', triggerRef })
 
 function toggle() {
   open.value = !open.value
@@ -87,26 +89,8 @@ function goToNotif(n: Notification) {
 
 const { timeAgo } = useTimeAgo()
 
-const triggerRef = ref<HTMLButtonElement>()
-
-function onEsc(e: KeyboardEvent) {
-  if (e.key === 'Escape' && open.value) { open.value = false; triggerRef.value?.focus() }
-}
-function onClickOutside(e: MouseEvent) {
-  if (!(e.target as HTMLElement).closest('.notif-bell')) open.value = false
-}
-function onDropdownKeydown(e: KeyboardEvent) {
-  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
-  e.preventDefault()
-  const items = Array.from((e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('.notif-item'))
-  if (!items.length) return
-  const cur = items.indexOf(document.activeElement as HTMLElement)
-  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
-  items[next]?.focus()
-}
-
-onMounted(() => { startPolling(); document.addEventListener('keydown', onEsc); document.addEventListener('click', onClickOutside) })
-onUnmounted(() => { stopPolling(); document.removeEventListener('keydown', onEsc); document.removeEventListener('click', onClickOutside) })
+onMounted(() => startPolling())
+onUnmounted(() => stopPolling())
 </script>
 
 <style scoped>

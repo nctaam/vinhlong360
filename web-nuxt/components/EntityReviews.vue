@@ -39,7 +39,7 @@
       <div class="rf-images">
         <div v-if="formImages.length" class="rf-image-grid">
           <div v-for="(img, i) in formImages" :key="img" class="rf-image-thumb">
-            <img :src="img" :alt="`Ảnh đính kèm ${i + 1}`" loading="lazy" decoding="async" width="64" height="64" />
+            <img :src="img" :alt="`Ảnh đính kèm ${i + 1}`" loading="lazy" decoding="async" width="64" height="64" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
             <button type="button" class="rf-image-remove" :aria-label="`Xóa ảnh ${i + 1}`" @click="removeImage(i)">×</button>
           </div>
         </div>
@@ -86,6 +86,7 @@
         :key="r.id"
         :review="r"
         :owned="isOwner(r)"
+        :featured="r.id === featuredId"
         :deleting="deletingId === r.id"
         :delete-error="deleteErrorId === r.id ? deleteError : ''"
         @delete="deleteReview"
@@ -97,7 +98,7 @@
 
     <!-- Auto-load more on scroll -->
     <div v-if="hasMore" ref="sentinel" class="review-sentinel">
-      <div v-if="infiniteLoading" class="spinner spinner-sm"></div>
+      <div v-if="infiniteLoading" class="spinner spinner-sm" role="status" aria-label="Đang tải thêm đánh giá"></div>
     </div>
   </div>
 </template>
@@ -137,6 +138,12 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const deletingId = ref<string | number | null>(null)
 
 const hasMore = computed(() => reviews.value.length < total.value)
+
+const featuredId = computed(() => {
+  if (reviews.value.length < 3) return null
+  const best = reviews.value.reduce((a, b) => ((b.likes || 0) > (a.likes || 0) ? b : a), reviews.value[0])
+  return (best.likes || 0) >= 2 ? best.id : null
+})
 
 const filteredReviews = computed(() => {
   if (!selectedMentions.value.length) return reviews.value
@@ -287,9 +294,9 @@ onMounted(() => fetchReviews())
   width: 20px; height: 20px; line-height: 1;
   display: inline-flex; align-items: center; justify-content: center;
   border: none; border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, .6); color: var(--text-on-dark, #fff); font-size: 14px;
+  background: rgba(0, 0, 0, .6); color: var(--text-on-dark, #fff); font-size: var(--text-sm);
   cursor: pointer; padding: 0;
-  transition: background .15s cubic-bezier(.2, 1, .4, 1);
+  transition: background .15s var(--ease-soft);
 }
 .rf-image-remove:hover { background: rgba(0, 0, 0, .8); }
 .rf-image-remove:focus-visible { outline: 2px solid var(--brand, currentColor); outline-offset: 1px; }
@@ -298,7 +305,7 @@ onMounted(() => fetchReviews())
   min-height: 44px; padding-inline: var(--space-3);
   border: 1px dashed var(--line); border-radius: var(--radius-md);
   font-size: var(--text-sm); color: var(--muted); cursor: pointer; align-self: flex-start;
-  transition: border-color .15s cubic-bezier(.2, 1, .4, 1), color .15s cubic-bezier(.2, 1, .4, 1);
+  transition: border-color .15s var(--ease-soft), color .15s var(--ease-soft);
 }
 .rf-image-add:hover { border-color: var(--brand, var(--muted)); color: var(--ink, var(--muted)); }
 .rf-image-add:focus-within { outline: 2px solid var(--brand, currentColor); outline-offset: 2px; }
@@ -361,7 +368,7 @@ onMounted(() => fetchReviews())
 .ri-images { display: flex; gap: var(--space-2); margin-top: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
 .ri-images::-webkit-scrollbar { display: none; }
 .ri-images img { width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius-sm); flex-shrink: 0; cursor: pointer; scroll-snap-align: start; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
-.ri-images img:hover { transform: scale(1.05); box-shadow: var(--shadow-md); }
+.ri-images img:hover { transform: scale(var(--img-hover-scale)); box-shadow: var(--shadow-md); }
 .ri-images img:active { transform: scale(.96); transition-duration: .08s; }
 @media (prefers-reduced-motion: reduce) {
   .ri-images img:hover { transform: none; }

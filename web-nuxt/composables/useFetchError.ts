@@ -10,9 +10,7 @@ export function extractErrorMessage(e: unknown, fallback = 'Đã xảy ra lỗi'
     || fallback
 }
 
-export function isFetchError(e: unknown): e is FetchError {
-  return typeof e === 'object' && e !== null && ('response' in e || 'statusCode' in e)
-}
+export const getErrorDetail = extractErrorMessage
 
 export function getStatusCode(e: unknown): number | undefined {
   const err = e as FetchError

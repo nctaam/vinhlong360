@@ -23,7 +23,7 @@
 .chip.season.active { background: rgba(var(--primary-rgb), .88); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 .dark .chip.season.active { background: rgba(var(--primary-rgb), .75); }
 @media (max-width: 840px) {
-  .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
+  .chip-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-1); scroll-snap-type: x proximity; overscroll-behavior-x: contain; mask-image: linear-gradient(to right, #000 85%, transparent); -webkit-mask-image: linear-gradient(to right, #000 85%, transparent); }
   .chip-row::-webkit-scrollbar { display: none; }
   .chip-row:focus-within, .chip-row:hover { mask-image: none; -webkit-mask-image: none; }
   .chip-row .chip { scroll-snap-align: start; }
@@ -175,7 +175,7 @@
 /* ── Interest Nav (kham-pha page chips) ── */
 .interest-nav { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-5); }
 @media (max-width: 640px) {
-  .interest-nav { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; padding-bottom: 4px; }
+  .interest-nav { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; padding-bottom: var(--space-1); }
   .interest-nav::-webkit-scrollbar { display: none; }
   .interest-nav .chip { scroll-snap-align: start; flex-shrink: 0; }
 }
@@ -224,6 +224,7 @@
   padding: var(--space-4) var(--space-5); border-radius: var(--radius-lg);
   background: linear-gradient(90deg, rgba(var(--accent-rgb), .12), transparent);
   border: .5px solid rgba(var(--accent-rgb), .25);
+  border-bottom: 1px solid rgba(var(--accent-rgb), .25);
   margin-bottom: var(--space-4);
   transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo);
 }
@@ -241,8 +242,6 @@
   transition: opacity .35s var(--ease-out-expo);
 }
 .seasonal-banner:hover .seasonal-banner-icon { filter: drop-shadow(0 2px 6px rgba(var(--primary-rgb), .25)); }
-/* ground the banner with a faint accent baseline */
-.seasonal-banner { border-bottom: 1px solid rgba(var(--accent-rgb), .25); }
 .seasonal-banner strong { font-size: var(--text-base); }
 .seasonal-banner p { margin: 0; font-size: var(--text-sm); color: var(--muted); }
 
@@ -335,15 +334,12 @@
 .dark .cross-card { background: var(--card); border-color: var(--line); }
 .dark .cross-card:hover { box-shadow: var(--shadow-md); border-color: rgba(255,255,255,.08); }
 .dark .quick-pick { background: var(--card); }
-.dark .quick-pick:hover { box-shadow: var(--shadow-md); border-color: rgba(255,255,255,.1); }
 .dark .catalog-hero.cat-season, .dark .catalog-hero.cat-directory, .dark .catalog-hero.cat-itinerary, .dark .catalog-hero.cat-community { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 .dark .seasonal-banner { background: linear-gradient(90deg, rgba(255,193,7,.06), transparent); border-color: rgba(255,193,7,.15); }
 .dark .search-row { background: var(--bg-alt); border-color: var(--line); }
 .dark .search-row:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .18); }
 .dark .chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .chip:hover { background: rgba(255,255,255,.06); }
-.dark .step-card { border-color: var(--line); }
-.dark .step-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.25); }
 .dark .step-note { color: var(--accent); }
 .dark .route-leg-info { background: rgba(255,255,255,.06); }
 .dark .transport-mode { background: var(--card); border-color: var(--line); }
@@ -598,6 +594,21 @@
 .dark .block.band {
   background-color: var(--bg-alt);
 }
+
+/* ── Stat card variant (profile / community stats) ── */
+.stat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: var(--space-3); }
+.stat-card {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
+  padding: var(--space-4) var(--space-3); border-radius: var(--radius-lg);
+  background: var(--card); border: .5px solid var(--line);
+  text-align: center;
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out-expo), border-color .3s var(--ease-out);
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.stat-card-value { font-size: var(--text-xl); font-weight: var(--weight-bold); color: var(--ink); }
+.stat-card-label { font-size: var(--text-xs); color: var(--muted); }
+.dark .stat-card { background: var(--bg-alt); }
+@media (prefers-reduced-motion: reduce) { .stat-card:hover { transform: none; } }
 
 /* ── Reduced motion (catalog shared) ── */
 @media (prefers-reduced-motion: reduce) {

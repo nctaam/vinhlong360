@@ -49,7 +49,6 @@
 </template>
 
 <script setup lang="ts">
-useReveal()
 const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()
@@ -152,7 +151,7 @@ useHead({
 .tb-icon { font-size: 1.25rem; flex-shrink: 0; line-height: 1.4; }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
 .tb-title { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
-.tb-group { font-size: .72rem; font-weight: 700; color: var(--primary, #219653); background: rgba(var(--primary-rgb, 33,150,83), .1); padding: 1px 6px; border-radius: 100px; margin-left: 4px; }
+.tb-group { font-size: .72rem; font-weight: 700; color: var(--primary, #219653); background: rgba(var(--primary-rgb, 33,150,83), .1); padding: 1px 6px; border-radius: 100px; margin-left: var(--space-1); }
 .tb-sub { font-size: var(--text-sm); color: var(--ink-700); }
 .tb-time { font-size: var(--text-xs); color: var(--muted); }
 .tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: .35rem; }

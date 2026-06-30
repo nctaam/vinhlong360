@@ -44,7 +44,7 @@
             <!-- Candidate is an external licensed URL (not yet re-hosted) -->
             <img
               :src="s.candidate_url" :alt="`Ứng viên ảnh cho ${s.entity_name || s.entity_id}`"
-              class="img-thumb" loading="lazy" referrerpolicy="no-referrer" width="200" height="150"
+              class="img-thumb" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="200" height="150"
               @error="onImgError"
             />
             <span class="img-conf" :class="confClass(s.match_confidence)">
@@ -110,7 +110,7 @@
           <div v-if="rejectingId === s.id" class="img-reject">
             <input
               v-model="rejectReason" type="text" class="img-reason-input"
-              placeholder="Lý do từ chối (tuỳ chọn)…"
+              placeholder="Lý do từ chối (tuỳ chọn)…" aria-label="Lý do từ chối ảnh"
               @keyup.enter="confirmReject(s.id)" @keyup.esc="cancelReject"
             />
             <div class="img-reject-btns">
@@ -281,16 +281,16 @@ onMounted(() => fetchQueue())
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
 }
 .img-tab {
-  display: inline-flex; align-items: center; gap: 6px; min-height: 38px;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
   padding: 7px 14px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
-  transition: background .2s, color .2s, border-color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, color .2s, border-color .2s, transform .15s var(--ease-soft);
 }
 .img-tab:hover { border-color: var(--primary, #219653); color: var(--ink); }
 .img-tab:active { transform: scale(.97); }
 .img-tab.active { background: var(--primary, #219653); color: var(--text-on-dark); border-color: var(--primary, #219653); }
 .img-tab:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.img-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 10px; background: rgba(0,0,0,.08); }
+.img-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 10px; background: rgba(var(--ink-rgb, 0,0,0),.08); }
 .img-tab.active .img-tab-count { background: rgba(255,255,255,.25); }
 
 /* ── Card grid ── */
@@ -313,7 +313,7 @@ onMounted(() => fetchQueue())
 .img-meta { padding: var(--space-3) var(--space-3) 0; display: flex; flex-direction: column; gap: 6px; }
 .img-entity { font-weight: 600; font-size: .9rem; color: var(--ink); line-height: 1.3; }
 .img-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.img-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 600; background: rgba(142,142,147,.1); color: var(--muted); }
+.img-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 600; background: rgba(var(--ink-rgb, 0,0,0),.06); color: var(--muted); }
 .img-lic-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .7rem; font-weight: 700; background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
 .img-lic-badge.lic-warn { background: rgba(var(--danger-rgb),.13); color: var(--error); }
 .img-detail { font-size: .76rem; color: var(--muted); line-height: 1.4; }
@@ -326,7 +326,7 @@ onMounted(() => fetchQueue())
 .img-actions .btn-success, .img-actions .btn-danger { flex: 1; }
 .img-status-final { padding: var(--space-3); margin-top: auto; }
 .img-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; }
-.ib-pending { background: rgba(var(--warning-rgb),.12); color: #C98A1A; }
+.ib-pending { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
 .ib-approved { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
 .ib-rejected { background: rgba(142,142,147,.15); color: var(--muted); }
 
@@ -335,8 +335,9 @@ onMounted(() => fetchQueue())
 .img-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
 .img-reject-btns { display: flex; gap: var(--space-2); }
 .img-reject-btns .btn-danger { flex: 1; }
-.btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
+.btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
+.btn-ghost-sm:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
 .img-load-more { margin-top: var(--space-5); }
 
@@ -349,9 +350,9 @@ onMounted(() => fetchQueue())
 
 /* ── Confidence bar (additive visual of match_confidence) ── */
 .img-conf-bar { height: 4px; border-radius: 100px; background: rgba(142,142,147,.18); overflow: hidden; }
-.img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s cubic-bezier(.2,1,.4,1); }
+.img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s var(--ease-soft); }
 .img-conf-bar.conf-high .img-conf-fill { background: var(--secondary-fg); }
-.img-conf-bar.conf-mid .img-conf-fill { background: #C98A1A; }
+.img-conf-bar.conf-mid .img-conf-fill { background: var(--warning); }
 .img-conf-bar.conf-low .img-conf-fill { background: var(--error); }
 
 /* ── Meta links row ── */

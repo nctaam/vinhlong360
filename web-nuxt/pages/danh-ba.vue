@@ -29,14 +29,15 @@
     </EmptyState>
 
     <!-- Region quick-picks -->
-    <section v-if="!placesError" class="block band">
+    <section v-if="!placesError" class="block band reveal">
       <div class="section-head">
         <h2>Chọn khu vực</h2>
       </div>
-      <div class="quick-picks" role="group" aria-label="Chọn khu vực">
+      <div class="quick-picks region-quick-picks" role="group" aria-label="Chọn khu vực">
         <button type="button"
           v-for="g in wardGroups" :key="g.area"
           :class="['quick-pick', { active: selectedArea === g.area }]"
+          :style="{ '--AREA-rgb': AREA_RGB[g.area] }"
           :aria-pressed="selectedArea === g.area"
           @click="selectedArea = selectedArea === g.area ? '' : g.area"
         >
@@ -48,7 +49,7 @@
     </section>
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Danh bạ hành chính — tìm nhanh liên hệ địa phương</h2>
       <p>Khi đến một vùng đất mới, việc biết số điện thoại và địa chỉ cơ quan hành chính địa phương là rất cần thiết — từ xin xác nhận tạm trú, hỏi thông tin quy hoạch, đến liên hệ công an khi cần hỗ trợ. Danh bạ này tổng hợp thông tin liên hệ UBND, công an và các cơ quan công vụ theo từng xã, phường trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh.</p>
       <p>Sau khi sáp nhập ba tỉnh thành một đơn vị hành chính mới, hệ thống xã/phường đang trong quá trình điều chỉnh. Thông tin trên đây được cập nhật liên tục nhưng có thể chưa phản ánh đầy đủ các thay đổi mới nhất — vui lòng kiểm chứng trực tiếp với cơ quan khi cần.</p>
@@ -122,7 +123,7 @@
     </template>
 
     <!-- Cross-links -->
-    <section class="block reveal catalog-cross">
+    <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/du-lich" class="cross-card">
@@ -147,8 +148,14 @@
 </template>
 
 <script setup lang="ts">
-import type { Place, Entity} from '~/types'
+import type { Place, Entity } from '~/types'
 import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
+
+const AREA_RGB: Record<string, string> = {
+  'vinh-long': 'var(--primary-rgb)',
+  'ben-tre': 'var(--secondary-rgb)',
+  'tra-vinh': 'var(--river-rgb)',
+}
 
 useReveal()
 const { f: pc } = usePageContent('danh_ba')

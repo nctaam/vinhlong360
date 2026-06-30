@@ -38,7 +38,7 @@
     <!-- Summary cards -->
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="tk-icon si-blue">&#128172;</div>
+        <div class="stat-icon si-blue">&#128172;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.total_queries ?? '—' }}</div>
           <div class="stat-label">Tổng truy vấn</div>
@@ -46,21 +46,21 @@
         <svg v-if="sparkPoints.length > 1" class="tk-spark" viewBox="0 0 80 24" preserveAspectRatio="none" role="img" aria-label="Xu hướng entity 30 ngày"><title>Trend</title><polyline :points="sparkPoints" fill="none" stroke="rgb(52,120,246)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
       </div>
       <div class="stat-card">
-        <div class="tk-icon si-purple">&#128161;</div>
+        <div class="stat-icon si-purple">&#128161;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ data.summary?.unique_queries ?? '—' }}</div>
           <div class="stat-label">Truy vấn khác nhau</div>
         </div>
       </div>
       <div class="stat-card" :class="{ 'status-warn': (data.gaps || []).length > 5 }">
-        <div class="tk-icon si-orange">&#128371;</div>
+        <div class="stat-icon si-orange">&#128371;</div>
         <div class="tk-stat-body">
           <div class="stat-value">{{ (data.gaps || []).length }}</div>
           <div class="stat-label">Knowledge gaps</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="tk-icon si-green">&#128176;</div>
+        <div class="stat-icon si-green">&#128176;</div>
         <div class="tk-stat-body">
           <div class="stat-value">
             {{ costTotal }}
@@ -222,11 +222,7 @@ function exportCSV() {
   for (const it of (data.value.top_entities || []) as Record<string, unknown>[])
     rows.push(['Entity', String(label(it)), String(count(it))])
   const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n')
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url; a.download = `analytics-${new Date().toISOString().slice(0, 10)}.csv`
-  a.click(); URL.revokeObjectURL(url)
+  downloadBlob(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), `analytics-${new Date().toISOString().slice(0, 10)}.csv`)
 }
 
 onMounted(fetchData)
@@ -238,13 +234,8 @@ onMounted(fetchData)
 .refresh-spin { display: inline-block; animation: admin-spin .6s linear infinite; }
 
 /* ── Stat card icon ── */
-.stat-card { display: flex; align-items: center; gap: var(--space-4); position: relative; overflow: hidden; }
 .tk-stat-body { flex: 1; min-width: 0; }
-.tk-icon {
-  width: 44px; height: 44px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.3rem; flex-shrink: 0;
-}
+.stat-icon { width: 44px; height: 44px; border-radius: 12px; font-size: 1.3rem; }
 
 /* ── Metric hierarchy (page-local override of shared .stat-card) ── */
 .stat-card .stat-value {
@@ -269,7 +260,7 @@ onMounted(fetchData)
   border-color: var(--warning, #e67e22);
   background: var(--warning-bg);
 }
-.stat-card.status-warn .tk-icon {
+.stat-card.status-warn .stat-icon {
   background: rgba(var(--warning-rgb),.18) !important;
   color: var(--warning, #e67e22) !important;
 }
@@ -291,7 +282,7 @@ onMounted(fetchData)
 .tk-panel {
   background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
   padding: var(--space-5); overflow: hidden;
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .tk-panel:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: rgba(var(--blue-rgb),.15); }
 
@@ -353,7 +344,7 @@ onMounted(fetchData)
   position: absolute; left: 0; top: 0; bottom: 0;
   border-radius: 6px; opacity: .07;
   background: var(--info);
-  animation: tk-bar-grow .5s cubic-bezier(.4,0,.2,1) both;
+  animation: tk-bar-grow .5s var(--ease-standard) both;
   pointer-events: none;
 }
 .tk-bar-warn { background: var(--warning); }
@@ -375,11 +366,12 @@ onMounted(fetchData)
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .tk-panel:hover { transform: none; }
+  .tk-bar-bg { animation: none; }
 }
 
 /* ── Dark mode ── */
 .dark .tk-panel {
-  background: rgb(46,46,50);
+  background: var(--bg-alt);
   border-color: rgba(255,255,255,.1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
 }
@@ -400,14 +392,14 @@ onMounted(fetchData)
 .tk-skeleton .stat-grid { margin-bottom: var(--space-8); }
 .tk-sk-card {
   height: 80px; border-radius: 14px; background: var(--line);
-  opacity: .4; animation: tk-skeleton-pulse 1.4s ease-in-out infinite;
+  opacity: .4; animation: tk-skeleton-pulse 1.4s var(--ease-in-out) infinite;
 }
 .tk-skeleton .tk-panels {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4);
 }
 .tk-sk-panel {
   height: 256px; border-radius: 14px; background: var(--line);
-  opacity: .3; animation: tk-skeleton-pulse 1.4s ease-in-out infinite;
+  opacity: .3; animation: tk-skeleton-pulse 1.4s var(--ease-in-out) infinite;
 }
 @keyframes tk-skeleton-pulse {
   0%, 100% { opacity: .4; }
@@ -441,7 +433,7 @@ onMounted(fetchData)
 .tk-chip {
   padding: 6px 14px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500;
-  cursor: pointer; transition: all .2s;
+  cursor: pointer; transition: background .2s, color .2s, border-color .2s;
 }
 .tk-chip:hover { border-color: var(--primary, #219653); color: var(--ink); }
 .tk-chip.active { background: var(--primary, #219653); color: var(--text-on-dark); border-color: var(--primary, #219653); }

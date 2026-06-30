@@ -23,7 +23,7 @@
             <span class="hf-body">
               <span class="hf-tag">✦ Gợi ý nổi bật</span>
               <span class="hf-title">{{ heroFeature.name }}</span>
-              <span v-if="hfRegion" class="hf-region">📍 {{ hfRegion }}</span>
+              <span v-if="hfRegion" class="hf-region">{{ hfRegion }}</span>
               <span class="hf-cta">Khám phá →</span>
             </span>
           </NuxtLink>
@@ -114,7 +114,7 @@
     </section>
 
     <!-- 3. Tinh hoa miền Tây — spotlight magazine + quán ngon rating -->
-    <section v-if="spotlight || topDishes.length" class="block reveal" aria-label="Tinh hoa miền Tây">
+    <section v-if="spotlight || topDishes.length" class="block reveal band" aria-label="Tinh hoa miền Tây">
       <div class="section-head">
         <div class="sh-text">
           <h2>Tinh hoa miền Tây</h2>
@@ -131,11 +131,11 @@
             :style="{ backgroundImage: spotBg }"
             :aria-label="spotlight.name"
           >
-            <span v-if="spotRegion" class="spot-region">📍 {{ spotRegion }}</span>
+            <span v-if="spotRegion" class="spot-region">{{ spotRegion }}</span>
             <span class="spot-icon" v-html="spotIcon" aria-hidden="true" />
           </NuxtLink>
           <div class="spot-body">
-            <span class="spot-kicker">{{ spotMeta?.emoji }} {{ spotMeta?.label }} · Nổi bật</span>
+            <span class="spot-kicker">{{ spotMeta?.label }} · Nổi bật</span>
             <h3 class="spot-name">{{ spotlight.name }}</h3>
             <p v-if="spotlight.summary" class="spot-sum">{{ spotlight.summary }}</p>
             <NuxtLink :to="`/dia-diem/${spotlight.id}`" class="btn btn-primary spot-cta">Khám phá ngay →</NuxtLink>
@@ -238,7 +238,7 @@
                 <div class="cm-meta">
                   <span v-if="p.likes">❤️ {{ p.likes }}</span>
                   <span v-if="p.comments_count || p.comment_count">💬 {{ p.comments_count || p.comment_count }}</span>
-                  <span v-if="p.entity_name" class="cm-place">📍 {{ p.entity_name }}</span>
+                  <span v-if="p.entity_name" class="cm-place">{{ p.entity_name }}</span>
                 </div>
               </div>
             </NuxtLink>
@@ -252,7 +252,7 @@
 
     <!-- 6. Cá nhân hóa — client-only (recently viewed + saved + AI recommendations) -->
     <ClientOnly>
-      <section v-if="recentlyViewed.length" class="block">
+      <section v-if="recentlyViewed.length" class="block reveal">
         <div class="section-head">
           <h2>Xem gần đây</h2>
         </div>
@@ -272,7 +272,7 @@
           </NuxtLink>
         </div>
       </section>
-      <section v-if="recentSaved.length" class="block">
+      <section v-if="recentSaved.length" class="block reveal">
         <div class="section-head">
           <h2>Đã lưu gần đây</h2>
           <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
@@ -329,7 +329,6 @@ const heroPills = computed(() => ss('homepage.hero_pills', DEFAULT_HERO_PILLS) a
 
 const { favorites } = useFavorites()
 const recentSaved = computed(() => favorites.value.slice(0, 4))
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 
 const { recentItems } = useRecentlyViewed()
 const recentlyViewed = computed(() => recentItems.value.slice(0, 6))
@@ -348,9 +347,7 @@ if (import.meta.client) {
     }
   })
 }
-function getFavTypeMeta(type: string) {
-  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
-}
+const getFavTypeMeta = getTypeMeta
 
 const ssrBase = import.meta.server ? 'https://vinhlong360.vn' : ''
 const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = await useAsyncData('homepage',
@@ -565,7 +562,7 @@ useHead({
 .home .hero-scrim {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(120% 95% at 88% 6%, rgba(232,163,61,.30) 0%, rgba(232,163,61,.07) 34%, transparent 60%),
+    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.30) 0%, rgba(var(--accent-rgb),.07) 34%, transparent 60%),
     radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.32) 0%, transparent 58%),
     linear-gradient(to top, rgba(var(--ink-rgb),.55) 0%, rgba(var(--ink-rgb),.06) 32%, transparent 55%);
 }
@@ -620,7 +617,7 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
     url('/img/hero.webp');
   background-size: cover; background-position: center;
   transform: scale(1.06);
-  animation: hero-kenburns 34s ease-in-out infinite alternate;
+  animation: hero-kenburns 34s var(--ease-in-out) infinite alternate;
   will-change: transform;
 }
 @media (max-width: 640px) {
@@ -877,7 +874,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%; z-index: -1;
   background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.16) 50%, transparent 100%);
   transform: translateX(0) skewX(-14deg);
-  animation: event-sheen 6.5s ease-in-out 1.2s infinite;
+  animation: event-sheen 6.5s var(--ease-in-out) 1.2s infinite;
   will-change: transform;
 }
 @keyframes event-sheen {
@@ -909,12 +906,12 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .event-mini .ec-info { gap: 2px; }
 .event-mini h3 { margin: 0; font-size: var(--text-sm); font-weight: var(--weight-semibold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ec-countdown {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: var(--space-1);
   font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--amber-700);
   background: rgba(154, 109, 30, .08); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
 }
 .ec-today { color: var(--error); }
-.ec-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--error); animation: pulse-dot 1.5s ease-in-out infinite; }
+.ec-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--error); animation: pulse-dot 1.5s var(--ease-in-out) infinite; }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.7); } }
 .happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); margin: var(--space-4) 0 var(--space-2); }
 .dark .happening-label { color: var(--primary-fg-strong); }
@@ -941,7 +938,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .spot-visual::before {
   content: ""; position: absolute; inset: -18%; z-index: 0;
   background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.24) 0%, transparent 68%);
-  animation: spot-glow 13s ease-in-out infinite alternate; pointer-events: none;
+  animation: spot-glow 13s var(--ease-in-out) infinite alternate; pointer-events: none;
   will-change: transform;
 }
 .spot-region, .spot-icon { position: relative; z-index: 1; }
@@ -991,19 +988,16 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dish-rating-badge {
   display: flex; align-items: center; gap: 3px; flex-shrink: 0;
   padding: var(--space-1) var(--space-2);
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: var(--accent-container);
   border-radius: var(--radius-sm); font-weight: var(--weight-extrabold);
 }
-.dish-star { color: #d97706; font-size: var(--text-sm); }
-.dish-score { color: #92400e; font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+.dish-star { color: var(--accent); font-size: var(--text-sm); }
+.dish-score { color: var(--on-accent-container); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
 .dish-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .dish-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dish-reviews { font-size: var(--text-xs); color: var(--muted); }
 .dish-arrow { color: var(--muted); font-size: var(--text-sm); flex-shrink: 0; transition: color .2s; }
 .dish-item:hover .dish-arrow { color: var(--primary-fg); }
-.dark .dish-rating-badge { background: linear-gradient(135deg, rgba(217,119,6,.2) 0%, rgba(217,119,6,.1) 100%); }
-.dark .dish-star { color: var(--accent, #fbbf24); }
-.dark .dish-score { color: var(--accent-text, #fcd34d); }
 .dark .dish-item { background: var(--card); border-color: var(--line); }
 .dark .dish-item:hover { border-color: rgba(255,255,255,.1); }
 
@@ -1032,9 +1026,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .hl-chip { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); min-height: 44px; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
 .hl-chip:hover { border-color: var(--primary-fg); }
 .hl-rank { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
-.hl-rank-1 { color: #d4a017; } .hl-rank-2 { color: #8a8d91; } .hl-rank-3 { color: #b07b4f; }
-.dark .hl-rank-1 { color: #ffd54f; } .dark .hl-rank-2 { color: #b0b3b8; } .dark .hl-rank-3 { color: #d4a574; }
-.hl-avatar { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: 11px; font-weight: var(--weight-semibold); }
+.hl-rank-1 { --rank-color: #d4a017; color: var(--rank-color); } .hl-rank-2 { --rank-color: #8a8d91; color: var(--rank-color); } .hl-rank-3 { --rank-color: #b07b4f; color: var(--rank-color); }
+.dark .hl-rank-1 { --rank-color: #ffd54f; } .dark .hl-rank-2 { --rank-color: #b0b3b8; } .dark .hl-rank-3 { --rank-color: #d4a574; }
+.hl-avatar { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: var(--text-2xs); font-weight: var(--weight-semibold); }
 .hl-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .hl-more { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-semibold); }
 .hl-more:hover { text-decoration: underline; }
@@ -1045,7 +1039,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cm-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .cm-img { aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-alt); }
 .cm-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease-out); }
-.cm-card:hover .cm-img img { transform: scale(1.04); }
+.cm-card:hover .cm-img img { transform: scale(var(--img-hover-scale)); }
 .cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
 .cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .cm-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: var(--text-xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
@@ -1099,7 +1093,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* ═══════════════════════════════════════════════════
    SKELETON + MISC
    ═══════════════════════════════════════════════════ */
-.sk-heading { height: 1.4rem; width: 180px; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: skShimmer 1.4s ease infinite; }
+.sk-heading { height: 1.4rem; width: 180px; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: skShimmer 1.4s var(--ease-out) infinite; }
 @keyframes skShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 .home .grid .card, .home .scroll-row .card { transition: transform .18s var(--ease-out), box-shadow .25s var(--ease-out); }
 
@@ -1120,9 +1114,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .dark .home .hero-scrim {
   background:
-    radial-gradient(120% 95% at 88% 6%, rgba(232,163,61,.22) 0%, rgba(232,163,61,.05) 34%, transparent 60%),
-    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.28) 0%, transparent 58%),
-    linear-gradient(to top, rgba(0,0,0,.62) 0%, rgba(0,0,0,.10) 34%, transparent 58%);
+    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.18) 0%, rgba(var(--accent-rgb),.04) 34%, transparent 60%),
+    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.22) 0%, transparent 58%),
+    linear-gradient(to top, rgba(0,0,0,.48) 0%, rgba(0,0,0,.06) 34%, transparent 58%);
 }
 .dark .home .hero-kicker { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.16); }
 .dark .home .hero-search { background: rgba(28,28,30,.5); border-color: rgba(255,255,255,.12); }
@@ -1137,7 +1131,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .chatbot-cta { background: linear-gradient(135deg, var(--card) 0%, rgba(255,255,255,.03) 100%); border-color: var(--line); }
 .dark .chatbot-cta:hover { border-color: rgba(255,255,255,.1); }
 .dark .hero-pill { background: var(--glass-medium); border-color: var(--border); }
-.dark .hero-stat-num { color: #fff; }
+.dark .hero-stat-num { color: var(--ink); }
 .dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.1) 0%, transparent 68%); }
 
 /* ═══════════════════════════════════════════════════
@@ -1159,6 +1153,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .hero-pill:hover, .hero-pill:active { transform: none; }
   .event-hero:hover, .event-mini:hover { transform: none; }
   .cm-card:hover, .cm-card:active { transform: none; }
+  .cm-card:hover .cm-img img { transform: none; }
   .chatbot-cta:hover { transform: none; }
   .chatbot-cta-btn:hover, .chatbot-cta-btn:active { transform: none; }
   .ec-live-dot { animation: none; }

@@ -35,7 +35,7 @@
           {{ typeLabel }}
         </span>
         <NuxtLink v-if="post.entity_id" :to="`/dia-diem/${post.entity_id}`" class="thread-entity">
-          {{ post.entity_emoji || '📍' }} {{ post.entity_name || post.entity_id }}
+          {{ post.entity_name || post.entity_id }}
         </NuxtLink>
       </div>
 
@@ -112,10 +112,13 @@
           :src="allImages[lbIdx]"
           class="lb-img"
           :alt="`Ảnh ${lbIdx + 1} / ${allImages.length}`"
+          loading="eager"
+          decoding="async"
           :style="lbDragStyle"
           @touchstart.passive="onLbTouchStart"
           @touchmove.passive="onLbTouchMove"
           @touchend="onLbTouchEnd"
+          @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')"
         />
         <button type="button" v-if="allImages.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
         <span class="lb-counter">{{ lbIdx + 1 }} / {{ allImages.length }}</span>
@@ -141,7 +144,6 @@ const emit = defineEmits<{
 }>()
 
 const { user: _authUser } = useAuth()
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
 const isOwner = computed(() =>
   !!_authUser.value?.id && String(props.post?.user_id) === String(_authUser.value.id))
 
@@ -151,59 +153,30 @@ const likePop = ref(false)
 const expanded = ref(false)
 const isLong = computed(() => (props.post.content || '').length > 280)
 
-// @-mention: escape nội dung rồi linkify các mention (an toàn — content đã escape,
-// href dựng từ id qua encodeURIComponent + type cố định).
-const contentHtml = computed(() => {
-  let html = escapeHtml(props.post.content || '')
-  const mentions = props.post.mentions
-  if (Array.isArray(mentions) && mentions.length) {
-    const sorted = [...mentions].sort((a, b) => (b?.label?.length || 0) - (a?.label?.length || 0))
-    for (const m of sorted) {
-      if (!m?.label || !m?.id || (m.type !== 'user' && m.type !== 'entity')) continue
-      const href = m.type === 'user'
-        ? `/nguoi-dung/${encodeURIComponent(m.id)}`
-        : `/dia-diem/${encodeURIComponent(m.id)}`
-      const token = '@' + escapeHtml(m.label)
-      html = html.split(token).join(`<a class="mention-link" href="${href}">${token}</a>`)
-    }
-  }
-  // Hashtag #tag → link feed theo chủ-đề (content đã escape; tag chỉ \w nên an toàn)
-  html = html.replace(/#(\w{1,30})/gu, (_m, tag) =>
-    `<a class="hashtag-link" href="/cong-dong?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`)
-  return html
-})
+const contentHtml = computed(() => linkifyContent(props.post.content || '', props.post.mentions))
 
 const typeLabels: Record<string, string> = {
-  review: '⭐ Đánh giá',
-  question: '❓ Hỏi đáp',
-  recommend: '👍 Gợi ý',
-  share: '📸 Chia sẻ',
+  review: 'Đánh giá',
+  question: 'Hỏi đáp',
+  recommend: 'Gợi ý',
+  share: 'Chia sẻ',
 }
 const typeLabel = computed(() => typeLabels[props.post?.post_type] || '')
 
-function onPostMenuKey(e: KeyboardEvent) {
-  if (e.key === 'Escape') { showMenu.value = false; return }
-  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
-  e.preventDefault()
-  const menu = (e.currentTarget as HTMLElement)
-  const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'))
-  if (!items.length) return
-  const cur = items.indexOf(document.activeElement as HTMLElement)
-  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
-  items[next]?.focus()
+function menuKeyHandler(closeRef: Ref<boolean>) {
+  return (e: KeyboardEvent) => {
+    if (e.key === 'Escape') { closeRef.value = false; return }
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+    e.preventDefault()
+    const items = Array.from((e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="menuitem"]'))
+    if (!items.length) return
+    const cur = items.indexOf(document.activeElement as HTMLElement)
+    const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
+    items[next]?.focus()
+  }
 }
-
-function onRepostMenuKey(e: KeyboardEvent) {
-  if (e.key === 'Escape') { repostMenu.value = false; return }
-  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
-  e.preventDefault()
-  const menu = (e.currentTarget as HTMLElement)
-  const items = Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"]'))
-  if (!items.length) return
-  const cur = items.indexOf(document.activeElement as HTMLElement)
-  const next = e.key === 'ArrowDown' ? (cur + 1) % items.length : (cur - 1 + items.length) % items.length
-  items[next]?.focus()
-}
+const onPostMenuKey = menuKeyHandler(showMenu)
+const onRepostMenuKey = menuKeyHandler(repostMenu)
 
 let likePopTimer: ReturnType<typeof setTimeout> | undefined
 function onLike() {

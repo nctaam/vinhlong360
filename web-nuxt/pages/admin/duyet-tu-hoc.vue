@@ -27,7 +27,7 @@
           <small class="admin-muted">Quay lại kiểm tra sau, hoặc tải nguồn dữ liệu để xem thống kê.</small>
         </div>
         <div v-else class="admin-table-wrap">
-          <table class="admin-table">
+          <table class="admin-table" aria-label="Entity tự học chờ duyệt">
             <thead><tr><th scope="col">Entity</th><th scope="col">Loại</th><th scope="col">Tin cậy</th><th scope="col">Nguồn</th><th scope="col">Thao tác</th></tr></thead>
             <tbody>
               <tr v-for="e in provisional" :key="e.id">
@@ -74,7 +74,7 @@
 
       <div v-if="sources.length" class="dth-sources">
         <div class="admin-table-wrap">
-          <table class="admin-table">
+          <table class="admin-table" aria-label="Nguồn dữ liệu tự học">
             <thead><tr><th scope="col">Nguồn</th><th scope="col">Số entity</th><th scope="col">URL mẫu</th></tr></thead>
             <tbody>
               <tr v-for="s in sources" :key="s.title">
@@ -154,12 +154,7 @@ async function exportJson() {
   exporting.value = true
   try {
     const data = await $fetch<Record<string, unknown>>('/admin-api/export', { method: 'POST', headers: authHeaders() })
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `vinhlong360-export-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(a.href)
+    downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), `vinhlong360-export-${new Date().toISOString().slice(0, 10)}.json`)
   } catch { showToast('Export lỗi', 'error') }
   exporting.value = false
 }
@@ -180,7 +175,7 @@ onMounted(loadProvisional)
   min-width: 24px; height: 24px; padding: 0 8px;
   border-radius: 100px; font-size: .72rem; font-weight: 700;
 }
-.dth-count-warn { background: rgba(var(--warning-rgb),.1); color: #c67a00; }
+.dth-count-warn { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
 
 .dth-summary { display: block; color: var(--muted); margin-top: 2px; font-size: .8rem; }
 .dth-type-badge {
@@ -195,8 +190,8 @@ onMounted(loadProvisional)
   min-width: 40px; padding: 2px 8px; border-radius: 100px;
   font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.dth-conf-high { background: rgba(var(--primary-rgb),.1); color: #1a7a43; }
-.dth-conf-low { background: rgba(var(--warning-rgb),.12); color: #c67a00; }
+.dth-conf-high { background: rgba(var(--primary-rgb),.1); color: var(--success); }
+.dth-conf-low { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
 
 /* ── Empty state ── */
 .dth-empty {
@@ -205,7 +200,7 @@ onMounted(loadProvisional)
   background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
 }
 .dth-empty-icon { font-size: 2rem; }
-.dth-empty p { margin: 0; font-weight: 500; color: #219653; }
+.dth-empty p { margin: 0; font-weight: 500; color: var(--success); }
 .dth-empty small { max-width: 500px; line-height: 1.5; }
 
 /* ── Tools grid ── */
@@ -218,12 +213,12 @@ onMounted(loadProvisional)
   padding: var(--space-5) var(--space-4); border-radius: 14px;
   background: var(--bg); border: .5px solid var(--line);
   cursor: pointer; text-align: center;
-  transition: transform .3s cubic-bezier(.2,1,.4,1), box-shadow .3s, border-color .3s;
+  transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
 .dth-tool-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: var(--primary); }
 .dth-tool-card:active:not(:disabled) { transform: scale(.97); }
 .dth-tool-card:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.dth-tool-card:disabled { opacity: .4; cursor: not-allowed; }
+.dth-tool-card:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .dth-tool-icon { font-size: 1.6rem; }
 .dth-tool-spinner {
   width: 22px; height: 22px; border-radius: 50%;
@@ -248,9 +243,9 @@ onMounted(loadProvisional)
 .dark .dth-empty { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dth-tool-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dth-tool-card:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(0,0,0,.4); }
-.dark .dth-conf-high { background: rgba(var(--primary-rgb),.18); color: #4ade80; }
-.dark .dth-conf-low { background: rgba(var(--warning-rgb),.14); color: #ffb340; }
+.dark .dth-conf-high { background: rgba(var(--primary-rgb),.18); color: rgb(var(--success-rgb)); }
+.dark .dth-conf-low { background: rgba(var(--warning-rgb),.14); color: var(--accent-text); }
 .dark .dth-tool-label { color: var(--ink); }
-.dark .dth-count-warn { background: rgba(var(--warning-rgb),.12); color: #ffb340; }
+.dark .dth-count-warn { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
 .dark .dth-type-badge { background: rgba(255,255,255,.06); }
 </style>

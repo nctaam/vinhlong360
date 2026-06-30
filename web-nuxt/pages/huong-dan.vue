@@ -6,7 +6,7 @@
         <div class="sidebar-search">
           <input v-model="search" type="search" enterkeyhint="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
         </div>
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav" aria-label="Mục lục hướng dẫn">
           <a href="#bat-dau" class="snav-link" :class="{ active: activeId === 'bat-dau' }" @click.prevent="scrollTo('bat-dau')">🚀 Bắt đầu nhanh</a>
           <template v-for="s in filteredSections" :key="s.id">
             <a :href="`#${s.id}`" class="snav-link" :class="{ active: activeId === s.id }" @click.prevent="scrollTo(s.id)">
@@ -35,7 +35,7 @@
       <!-- Mobile TOC -->
       <details class="mobile-toc reveal">
         <summary class="mobile-toc-toggle">📑 Mục lục ({{ sections.length + 3 }} phần)</summary>
-        <nav class="mobile-toc-nav">
+        <nav class="mobile-toc-nav" aria-label="Mục lục hướng dẫn">
           <a href="#bat-dau" @click.prevent="scrollTo('bat-dau')">🚀 Bắt đầu nhanh</a>
           <a v-for="s in sections" :key="s.id" :href="`#${s.id}`" @click.prevent="scrollTo(s.id)">{{ s.icon }} {{ s.title }}</a>
           <a href="#phim-tat" @click.prevent="scrollTo('phim-tat')">⌨️ Phím tắt</a>
@@ -178,7 +178,7 @@
       </section>
 
       <p v-if="search && !filteredSections.length" class="no-results reveal">
-        Không tìm thấy nội dung nào cho "{{ search }}". Thử từ khóa khác hoặc <a href="#" @click.prevent="search = ''">xóa bộ lọc</a>.
+        Không tìm thấy nội dung nào cho "{{ search }}". Thử từ khóa khác hoặc <button type="button" class="link-btn" @click="search = ''">xóa bộ lọc</button>.
       </p>
 
       <!-- ==================== PHÍM TẮT ==================== -->
@@ -186,9 +186,9 @@
         <h2>⌨️ Phím tắt & Thao tác nhanh</h2>
         <p class="section-intro">Các thao tác giúp sử dụng nhanh hơn trên máy tính và di động.</p>
         <div class="shortcut-table-wrap">
-          <table class="shortcut-table">
+          <table class="shortcut-table" aria-label="Phím tắt và thao tác nhanh">
             <thead>
-              <tr><th>Thao tác</th><th>Trên máy tính</th><th>Trên di động</th></tr>
+              <tr><th scope="col">Thao tác</th><th scope="col">Trên máy tính</th><th scope="col">Trên di động</th></tr>
             </thead>
             <tbody>
               <tr v-for="(sc, i) in shortcuts" :key="i">
@@ -1019,7 +1019,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .qs-step p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 /* Sections */
-.guide-section { margin-bottom: var(--space-8); scroll-margin-top: 80px; }
+.guide-section { margin-bottom: var(--space-8); scroll-margin-top: calc(var(--header-h) + 0.5rem); }
 .guide-section > h2 {
   font-size: var(--text-xl); font-weight: var(--weight-bold); margin: 0 0 var(--space-2);
   padding-bottom: var(--space-2); border-bottom: 2px solid var(--primary-fg);
@@ -1030,7 +1030,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .guide-topic {
   margin-bottom: var(--space-3); border: .5px solid var(--line);
   border-radius: var(--radius-xl); background: var(--card); overflow: hidden;
-  scroll-margin-top: 80px;
+  scroll-margin-top: calc(var(--header-h) + 0.5rem);
 }
 .topic-summary {
   display: flex; align-items: center; gap: var(--space-2);
@@ -1084,8 +1084,8 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   border-radius: var(--radius-lg); font-size: var(--text-sm);
 }
 .tip-box { background: rgba(var(--primary-rgb, 46, 125, 50), .06); border: .5px solid rgba(var(--primary-rgb, 46, 125, 50), .15); }
-.warn-box { background: rgba(255, 152, 0, .06); border: .5px solid rgba(255, 152, 0, .2); }
-.dyk-box { background: rgba(33, 150, 243, .06); border: .5px solid rgba(33, 150, 243, .15); }
+.warn-box { background: rgba(var(--warning-rgb), .06); border: .5px solid rgba(var(--warning-rgb), .2); }
+.dyk-box { background: rgba(var(--blue-rgb), .06); border: .5px solid rgba(var(--blue-rgb), .15); }
 .tip-line, .warn-line { margin: 0; line-height: var(--leading-relaxed); color: var(--ink); }
 .tip-line + .tip-line, .warn-line + .warn-line { margin-top: var(--space-2); }
 .dyk-box p { margin: 0; line-height: var(--leading-relaxed); }
@@ -1167,8 +1167,8 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .dark .qs-step { background: var(--bg-alt); }
 .dark .subtopic { background: rgba(255,255,255,.03); }
 .dark .tip-box { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.08); }
-.dark .warn-box { background: rgba(255, 152, 0, .05); border-color: rgba(255, 152, 0, .12); }
-.dark .dyk-box { background: rgba(33, 150, 243, .04); border-color: rgba(33, 150, 243, .1); }
+.dark .warn-box { background: rgba(var(--warning-rgb), .05); border-color: rgba(var(--warning-rgb), .12); }
+.dark .dyk-box { background: rgba(var(--blue-rgb), .04); border-color: rgba(var(--blue-rgb), .1); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

@@ -58,9 +58,6 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
-.cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: 4px; }
 .cs-view { color: var(--primary, #219653); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
 .cs-view:hover { text-decoration: underline; }
 .cs-form-wrap { max-width: 760px; }
@@ -72,13 +69,9 @@ onMounted(reload)
 .cs-help p { margin: 0; }
 .cs-help code { font-family: 'SF Mono', monospace; font-size: .76rem; color: var(--primary, #219653); }
 .cs-skeleton { max-width: 760px; }
-.cs-skel-item { height: 280px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s ease-in-out infinite; }
-@keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
-.cs-fade-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
-.cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
+.cs-skel-item { height: 280px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .dark .cs-help { background: rgba(var(--primary-rgb),.08); }
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }
-  .cs-fade-enter-active { transition: none; }
 }
 </style>

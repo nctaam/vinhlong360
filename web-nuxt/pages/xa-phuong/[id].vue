@@ -153,13 +153,7 @@ const route = useRoute()
 const router = useRouter()
 const id = computed(() => route.params.id as string)
 
-function goBack() {
-  if (import.meta.client && window.history.length > 1) {
-    router.back()
-  } else {
-    navigateTo('/danh-ba')
-  }
-}
+const goBack = () => goBackOr('/danh-ba')
 
 const fetchFailed = ref(false)
 const { data } = await useAsyncData(() => `ward-${id.value}`, async () => {

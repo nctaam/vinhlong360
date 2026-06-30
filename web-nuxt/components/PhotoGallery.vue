@@ -3,19 +3,29 @@ const props = withDefaults(defineProps<{
   images: string[]
   alt: string
   maxThumbs?: number
-}>(), { maxThumbs: 4 })
+  standalone?: boolean
+}>(), { maxThumbs: 4, standalone: false })
 
 const emit = defineEmits<{ 'open-lightbox': [index: number] }>()
 
 const carouselRef = ref<HTMLElement | null>(null)
 const activeSlide = ref(0)
+const lbOpen = ref(false)
+const lbStart = ref(0)
+
+function openLightbox(idx: number) {
+  if (props.standalone) {
+    lbStart.value = idx
+    lbOpen.value = true
+  } else {
+    emit('open-lightbox', idx)
+  }
+}
 
 const thumbImages = computed(() => props.images.slice(1, props.maxThumbs + 1))
 const extraCount = computed(() => Math.max(0, props.images.length - props.maxThumbs - 1))
 
-function isRemote(src: string) {
-  return /^https?:\/\//.test(src)
-}
+const isRemote = isRemoteUrl
 
 function onImgError(e: Event) {
   const img = e.target as HTMLImageElement
@@ -48,7 +58,7 @@ function goToSlide(idx: number) {
 
   <!-- Single image -->
   <div v-else-if="images.length === 1" class="pg-single">
-    <button type="button" class="pg-img-btn" @click="emit('open-lightbox', 0)" :aria-label="`Xem ảnh ${alt}`">
+    <button type="button" class="pg-img-btn" @click="openLightbox(0)" :aria-label="`Xem ảnh ${alt}`">
       <NuxtImg v-if="isRemote(images[0])" :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" sizes="sm:100vw md:100vw lg:960px" decoding="async" @error="onImgError" />
       <img v-else :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" decoding="async" @error="onImgError" />
     </button>
@@ -56,7 +66,7 @@ function goToSlide(idx: number) {
 
   <!-- Desktop: asymmetric grid -->
   <div v-else class="pg-grid" role="group" :aria-label="`Bộ ảnh ${alt}`">
-    <button type="button" class="pg-main" @click="emit('open-lightbox', 0)" :aria-label="`Ảnh chính — ${alt}`">
+    <button type="button" class="pg-main" @click="openLightbox(0)" :aria-label="`Ảnh chính — ${alt}`">
       <NuxtImg v-if="isRemote(images[0])" :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" sizes="sm:100vw md:60vw lg:640px" decoding="async" @error="onImgError" />
       <img v-else :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" decoding="async" @error="onImgError" />
     </button>
@@ -66,14 +76,14 @@ function goToSlide(idx: number) {
         :key="src"
         type="button"
         class="pg-thumb"
-        @click="emit('open-lightbox', i + 1)"
+        @click="openLightbox(i + 1)"
         :aria-label="`Ảnh ${i + 2} — ${alt}`"
       >
         <NuxtImg v-if="isRemote(src)" :src="src" alt="" aria-hidden="true" class="pg-thumb-img" loading="lazy" width="200" height="200" sizes="sm:60px md:80px lg:100px" decoding="async" @error="onImgError" />
         <img v-else :src="src" alt="" aria-hidden="true" class="pg-thumb-img" loading="lazy" width="200" height="200" decoding="async" @error="onImgError" />
       </button>
     </div>
-    <button v-if="images.length > 1" type="button" class="pg-show-all" @click="emit('open-lightbox', 0)">
+    <button v-if="images.length > 1" type="button" class="pg-show-all" @click="openLightbox(0)">
       <span class="pg-show-icon" aria-hidden="true">&#128247;</span>
       Xem {{ images.length }} ảnh
     </button>
@@ -87,7 +97,7 @@ function goToSlide(idx: number) {
         :key="src"
         type="button"
         class="pg-slide"
-        @click="emit('open-lightbox', i)"
+        @click="openLightbox(i)"
         :aria-label="`Ảnh ${i + 1} — ${alt}`"
       >
         <NuxtImg v-if="isRemote(src)" :src="src" :alt="i === 0 ? alt : ''" :aria-hidden="i > 0 ? 'true' : undefined" class="pg-slide-img" :loading="i === 0 ? 'eager' : 'lazy'" width="400" height="267" sizes="sm:100vw md:60vw lg:400px" decoding="async" @error="onImgError" />
@@ -106,6 +116,8 @@ function goToSlide(idx: number) {
     </div>
     <span v-else class="pg-counter">{{ activeSlide + 1 }}/{{ images.length }}</span>
   </div>
+
+  <ImageLightbox v-if="standalone && images.length" v-model="lbOpen" :images="images" :start-index="lbStart" />
 </template>
 
 <style scoped>
@@ -174,7 +186,7 @@ function goToSlide(idx: number) {
   display: block;
   transition: transform .3s var(--ease-out, ease);
 }
-.pg-main:hover .pg-main-img { transform: scale(1.03); }
+.pg-main:hover .pg-main-img { transform: scale(var(--img-hover-scale)); }
 
 .pg-thumbs {
   display: grid;
@@ -199,7 +211,7 @@ function goToSlide(idx: number) {
   display: block;
   transition: transform .3s var(--ease-out, ease);
 }
-.pg-thumb:hover .pg-thumb-img { transform: scale(1.05); }
+.pg-thumb:hover .pg-thumb-img { transform: scale(var(--img-hover-scale)); }
 
 /* "Xem X ảnh" pill */
 .pg-show-all {
@@ -292,5 +304,19 @@ function goToSlide(idx: number) {
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold, 600);
   }
+}
+.dark .pg-show-all {
+  background: rgba(0, 0, 0, 0.7);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+.dark .pg-show-all:hover { background: rgba(0, 0, 0, 0.8); }
+@media (prefers-reduced-motion: reduce) {
+  .pg-main .pg-main-img,
+  .pg-thumb-img { transition: none; }
+  .pg-main:hover .pg-main-img,
+  .pg-thumb:hover .pg-thumb-img { transform: none; }
+  .pg-show-all:hover { transform: none; }
+  .pg-dot { transition: none; }
 }
 </style>

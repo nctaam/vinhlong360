@@ -23,6 +23,20 @@ const stars = computed(() => {
 
 const hasContact = computed(() => !!phone.value || !!zalo.value)
 const mapUrl = computed(() => `/ban-do?highlight=${encodeURIComponent(props.entity.id)}`)
+
+const copiedField = ref('')
+let copyTimer: ReturnType<typeof setTimeout> | null = null
+
+function copyText(text: string, field: string) {
+  if (!text || !import.meta.client) return
+  navigator.clipboard.writeText(text).then(() => {
+    copiedField.value = field
+    if (copyTimer) clearTimeout(copyTimer)
+    copyTimer = setTimeout(() => { copiedField.value = '' }, 1500)
+  }).catch(() => {})
+}
+
+onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 </script>
 
 <template>
@@ -36,16 +50,18 @@ const mapUrl = computed(() => `/ban-do?highlight=${encodeURIComponent(props.enti
       </div>
 
       <!-- Location -->
-      <div v-if="placeName" class="cw-row">
+      <button v-if="placeName" type="button" :class="['cw-row cw-copyable', { copied: copiedField === 'place' }]" :aria-label="`Sao chép địa chỉ: ${placeName}`" @click="copyText(placeName, 'place')">
         <span class="cw-icon" aria-hidden="true">📍</span>
         <span class="cw-text">{{ placeName }}</span>
-      </div>
+        <span class="cw-check" aria-hidden="true">✓</span>
+      </button>
 
       <!-- Hours -->
-      <div v-if="hours" class="cw-row">
+      <button v-if="hours" type="button" :class="['cw-row cw-copyable', { copied: copiedField === 'hours' }]" :aria-label="`Sao chép giờ mở cửa: ${hours}`" @click="copyText(hours, 'hours')">
         <span class="cw-icon" aria-hidden="true">🕒</span>
         <span class="cw-text">{{ hours }}</span>
-      </div>
+        <span class="cw-check" aria-hidden="true">✓</span>
+      </button>
 
       <hr v-if="hasContact" class="cw-divider" />
 
@@ -75,6 +91,7 @@ const mapUrl = computed(() => `/ban-do?highlight=${encodeURIComponent(props.enti
 .cw {
   position: sticky;
   top: calc(var(--header-height, 60px) + var(--space-4));
+  z-index: var(--z-sticky, 2);
   width: var(--contact-widget-width);
   background: var(--card);
   border-radius: var(--radius-xl, 16px);
@@ -108,7 +125,32 @@ const mapUrl = computed(() => `/ban-do?highlight=${encodeURIComponent(props.enti
   color: var(--ink);
 }
 .cw-icon { flex-shrink: 0; font-size: 1em; }
-.cw-text { line-height: 1.5; }
+.cw-text { line-height: 1.5; flex: 1; text-align: left; }
+
+/* Copyable rows */
+.cw-copyable {
+  background: none;
+  border: none;
+  padding: var(--space-2);
+  margin: calc(-1 * var(--space-2));
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background .2s var(--ease-out);
+  font: inherit;
+  width: calc(100% + var(--space-4));
+}
+.cw-copyable:hover { background: var(--bg-alt); }
+.cw-copyable:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cw-check {
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  color: var(--success, #16a34a);
+  opacity: 0;
+  transform: scale(.5);
+  transition: opacity .2s, transform .25s var(--ease-spring-gentle);
+}
+.cw-copyable.copied .cw-check { opacity: 1; transform: scale(1); }
+.cw-copyable.copied .cw-icon { opacity: .4; }
 
 /* Divider */
 .cw-divider {
@@ -143,7 +185,7 @@ const mapUrl = computed(() => `/ban-do?highlight=${encodeURIComponent(props.enti
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
-.cw-btn:active { transform: scale(0.97); }
+.cw-btn:active:not(:disabled) { transform: scale(0.97); }
 
 .cw-btn-primary {
   background: var(--primary);
@@ -205,5 +247,10 @@ const mapUrl = computed(() => `/ban-do?highlight=${encodeURIComponent(props.enti
     height: 48px;
     font-size: var(--text-sm);
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cw-btn { transition: none; }
+  .cw-btn:active:not(:disabled) { transform: none; }
+  .cw-check { transition: none; }
 }
 </style>

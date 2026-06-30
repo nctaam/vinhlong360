@@ -94,51 +94,39 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-back { font-size: .82rem; color: var(--muted); text-decoration: none; transition: color .15s; }
-.cs-back:hover { color: var(--primary, #219653); }
-.cs-subtitle { font-size: .82rem; color: var(--muted); margin-top: 4px; }
-.cs-form-wrap { max-width: 640px; }
-.cs-hint { font-size: .82rem; color: var(--muted); margin-bottom: var(--space-4); line-height: 1.4; }
-
 /* ── Skeleton ── */
 .cs-skeleton { max-width: 640px; display: flex; flex-direction: column; gap: 2px; }
-.cs-skel-item { height: 58px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s ease-in-out infinite; }
+.cs-skel-item { height: 58px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(2) { animation-delay: .1s; }
 .cs-skel-item:nth-child(3) { animation-delay: .2s; }
 .cs-skel-item:nth-child(4) { animation-delay: .3s; }
-@keyframes cs-pulse { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
-
-/* ── Fade transition ── */
-.cs-fade-enter-active { transition: opacity .3s cubic-bezier(.2,1,.4,1), transform .3s cubic-bezier(.2,1,.4,1); }
-.cs-fade-enter-from { opacity: 0; transform: translateY(6px); }
 
 .cs-save-row {
   display: flex; gap: var(--space-3); padding-top: var(--space-5);
   margin-top: var(--space-4); border-top: .5px solid var(--line);
 }
 .sf-save {
-  padding: 12px 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
-  background: var(--primary, #219653); color: #fff; border: none; cursor: pointer;
+  padding: var(--space-3) var(--space-7); border-radius: 12px; font-weight: 600; font-size: .88rem;
+  background: var(--primary, #219653); color: var(--on-primary); border: none; cursor: pointer;
   min-height: 44px;
-  transition: transform .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
+  transition: transform .2s var(--ease-soft), box-shadow .2s;
 }
 .sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }
 .sf-save:active:not(:disabled) { transform: scale(.97); }
 .sf-save:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.sf-save:disabled { opacity: .45; cursor: not-allowed; }
+.sf-save:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .sf-reset {
-  padding: 12px 20px; border-radius: 12px; font-size: .85rem; font-weight: 500;
+  padding: var(--space-3) var(--space-5); border-radius: 12px; font-size: .85rem; font-weight: 500;
   background: transparent; border: .5px solid var(--line); color: var(--muted); cursor: pointer;
   min-height: 44px;
-  transition: border-color .2s, color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: border-color .2s, color .2s, transform .15s var(--ease-soft);
 }
-.sf-reset:hover:not(:disabled) { border-color: #D94F3D; color: #D94F3D; }
+.sf-reset:hover:not(:disabled) { border-color: var(--error); color: var(--error); }
 .sf-reset:active:not(:disabled) { transform: scale(.97); }
-.sf-reset:focus-visible { outline: 2px solid #D94F3D; outline-offset: 2px; }
+.sf-reset:focus-visible { outline: 2px solid var(--error); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }
-  .cs-fade-enter-active { transition: none; }
   .sf-save:hover:not(:disabled), .sf-save:active:not(:disabled),
   .sf-reset:active:not(:disabled) { transform: none; }
 }

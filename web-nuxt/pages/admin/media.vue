@@ -51,7 +51,7 @@
     <div class="media-grid">
       <button v-for="item in items" :key="item.url + item.entity_id" type="button" class="media-card" :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item">
         <div class="media-img-wrap">
-          <img :src="item.url" :alt="item.entity_name" loading="lazy" decoding="async" @error="onImgError" />
+          <img :src="item.url" :alt="item.entity_name" width="400" height="300" loading="lazy" decoding="async" @error="onImgError" />
           <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
         </div>
         <div class="media-card-info">
@@ -70,13 +70,13 @@
 
     <!-- Preview modal -->
     <Transition name="modal-fade">
-    <div v-if="previewItem" ref="mediaModalRef" class="modal-overlay show" role="dialog" aria-modal="true" @click.self="previewItem = null">
+    <div v-if="previewItem" ref="mediaModalRef" class="modal-overlay show" role="dialog" aria-modal="true" :aria-label="`Xem ảnh ${previewItem.entity_name}`" @click.self="previewItem = null">
       <div class="modal admin-modal-lg">
         <div class="media-preview-header">
           <strong>{{ previewItem.entity_name }}</strong>
           <button type="button" class="btn btn-ghost btn-sm" @click="previewItem = null">Đóng</button>
         </div>
-        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" loading="lazy" />
+        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         <div class="media-preview-meta">
           <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank" rel="noopener">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>
           <div><strong>Credit:</strong> {{ previewItem.credit || 'Không có' }}</div>
@@ -204,7 +204,8 @@ onMounted(fetchMedia)
   transition: background .2s, color .2s;
 }
 .media-tab:hover { border-color: var(--primary); color: var(--ink); }
-.media-tab.active { background: var(--primary, #219653); color: #fff; border-color: var(--primary); }
+.media-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.media-tab.active { background: var(--primary, #219653); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 
 .media-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -216,13 +217,14 @@ onMounted(fetchMedia)
   padding: 0; font: inherit; text-align: left; color: inherit;
 }
 .media-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.media-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .media-img-wrap { position: relative; aspect-ratio: 4/3; background: var(--bg-alt); overflow: hidden; }
 .media-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
 .media-dup-badge {
   position: absolute; top: 6px; right: 6px; padding: 2px 8px; border-radius: 100px;
   background: rgba(var(--warning-rgb, 255,159,10),.9); color: var(--text-on-dark, #fff); font-size: .7rem; font-weight: 700;
 }
-.media-card-info { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+.media-card-info { padding: var(--space-2) 10px; display: flex; flex-direction: column; gap: 2px; }
 .media-entity-name { font-weight: 600; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .media-entity-type { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
 .media-credit { font-size: .72rem; color: var(--primary-fg); }
@@ -237,6 +239,8 @@ onMounted(fetchMedia)
 .media-preview-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
 
 .stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
+.dark .media-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+.dark .media-tab { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 @media (max-width: 640px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
-@media (prefers-reduced-motion: reduce) { .media-card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .media-card:hover { transform: none; } .media-skeleton-img, .media-skeleton-line { animation: none; } }
 </style>

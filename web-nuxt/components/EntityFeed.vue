@@ -10,15 +10,15 @@
           <span class="ef-avatar">{{ (p.display_name || '?')[0].toUpperCase() }}</span>
           <div class="ef-body">
             <span class="ef-author">{{ p.display_name }}</span>
-            <p class="ef-text">{{ truncate(p.content, 120) }}</p>
+            <p class="ef-text">{{ truncateText(p.content, 120) }}</p>
             <span class="ef-meta">
               <span v-if="p.rating" class="ef-rating">{{ '⭐'.repeat(p.rating) }}</span>
               <span v-if="p.like_count">{{ p.like_count }} thích</span>
               <time :datetime="p.created_at">{{ timeAgo(p.created_at) }}</time>
             </span>
           </div>
-          <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" sizes="80px" />
-          <img v-else-if="firstImage(p)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" />
+          <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" sizes="80px" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.display = 'none' }" />
+          <img v-else-if="firstImage(p)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
         </NuxtLink>
       </li>
     </ul>
@@ -31,7 +31,7 @@
 <script setup lang="ts">
 const props = defineProps<{ entityId: string; entityName: string }>()
 const { timeAgo } = useTimeAgo()
-const isRemoteUrl = (url: string) => /^https?:\/\//.test(url)
+
 
 const posts = ref<any[]>([])
 const total = ref(0)
@@ -45,10 +45,7 @@ onMounted(async () => {
   } catch { /* non-critical */ } finally { loading.value = false }
 })
 
-function truncate(text: string, max: number): string {
-  if (!text || text.length <= max) return text || ''
-  return text.slice(0, max).replace(/\s+\S*$/, '') + '…'
-}
+
 
 function firstImage(p: any): string | null {
   if (Array.isArray(p.images) && p.images.length) return p.images[0]
@@ -90,11 +87,12 @@ function firstImage(p: any): string | null {
 
 .ef-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
 .ef-sk-item { display: flex; gap: var(--space-3); padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); }
-.ef-sk-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-alt); flex-shrink: 0; animation: skPulse 1.2s ease-in-out infinite; }
-.ef-sk-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
-.ef-sk-line { height: 10px; border-radius: 4px; background: var(--bg-alt); animation: skPulse 1.2s ease-in-out infinite; }
+.ef-sk-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--bg-alt); flex-shrink: 0; animation: skPulse 1.2s var(--ease-in-out) infinite; }
+.ef-sk-lines { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-top: var(--space-1); }
+.ef-sk-line { height: 10px; border-radius: 4px; background: var(--bg-alt); animation: skPulse 1.2s var(--ease-in-out) infinite; }
 .ef-sk-line.w60 { width: 60%; }
 .ef-sk-line.w90 { width: 90%; }
 .ef-sk-line.w40 { width: 40%; }
 @keyframes skPulse { 0%, 100% { opacity: .4; } 50% { opacity: .8; } }
+@media (prefers-reduced-motion: reduce) { .ef-sk-avatar, .ef-sk-line { animation: none; } }
 </style>

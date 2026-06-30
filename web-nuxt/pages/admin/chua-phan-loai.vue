@@ -43,10 +43,10 @@
       </div>
 
       <div v-if="items.length && filtered.length" class="admin-table-wrap cpl-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" aria-label="Entity chưa phân loại">
           <thead>
             <tr>
-              <th class="cpl-check-col">
+              <th scope="col" class="cpl-check-col">
                 <input
                   type="checkbox"
                   class="cpl-checkbox"
@@ -328,10 +328,10 @@ onMounted(load)
 }
 
 .cpl-place-select {
-  max-width: 220px; padding: 4px 8px; min-height: 44px;
+  max-width: 220px; padding: var(--space-1) var(--space-2); min-height: 44px;
   font-size: .82rem; border: .5px solid var(--line); border-radius: 8px;
   background: var(--bg); color: var(--ink); cursor: pointer;
-  transition: border-color .2s cubic-bezier(.2,1,.4,1), box-shadow .2s;
+  transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
 .cpl-place-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
 .cpl-place-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
@@ -352,7 +352,7 @@ onMounted(load)
 .cpl-bulk-progress {
   position: absolute; left: 0; bottom: 0; height: 2px;
   background: rgba(255,255,255,.85); border-radius: 0 1px 1px 0;
-  transition: width .2s cubic-bezier(.2,1,.4,1);
+  transition: width .2s var(--ease-soft);
 }
 
 /* ── Checkboxes ── */
@@ -385,7 +385,7 @@ onMounted(load)
 }
 .cpl-loadmore-fill {
   height: 100%; border-radius: 100px; background: var(--primary, #219653);
-  transition: width .25s cubic-bezier(.2,1,.4,1);
+  transition: width .25s var(--ease-soft);
 }
 .cpl-loadmore-info { font-size: .8rem; color: var(--muted); }
 

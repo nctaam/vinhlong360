@@ -10,12 +10,12 @@
           <span v-for="(_, i) in allImages.slice(0, 5)" :key="i" :class="['card-dot', { active: i === activeSlide }]" />
         </div>
       </template>
-      <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
+      <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
     <div v-else class="cover cover-img cover-generated" :class="`cat-${typeMeta.cat}`" :style="{ backgroundImage: placeholderBg }">
       <span class="cover-svg-icon" v-html="placeholderSvg" />
-      <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.emoji }} {{ typeMeta.label }}</span>
+      <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
     <div class="card-b">
@@ -85,7 +85,7 @@ const coverImage = computed(() => {
   if (Array.isArray(imgs) && imgs.length > 0) return imgs[0]
   return null
 })
-const isRemote = computed(() => typeof coverImage.value === 'string' && /^https?:\/\//.test(coverImage.value))
+const isRemote = computed(() => typeof coverImage.value === 'string' && isRemoteUrl(coverImage.value))
 const isYearRoundSeason = computed(() => !props.entity.season || isYearRound(props.entity.season))
 const seasonLabel = computed(() => seasonText(props.entity.season))
 const placeName = computed(() => props.entity.placeName || props.entity.place_name || '')
@@ -153,6 +153,7 @@ const ratingDisplay = computed(() => {
   100% { transform: scale(1); }
 }
 .card-save :deep(.save-active) { animation: heart-pop .3s; }
+@media (prefers-reduced-motion: reduce) { .card-save :deep(.save-active) { animation: none; } }
 /* Carousel arrows */
 .card-arrow {
   position: absolute;
@@ -187,7 +188,7 @@ const ratingDisplay = computed(() => {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   z-index: 3;
 }
 .card-dot {
@@ -201,7 +202,8 @@ const ratingDisplay = computed(() => {
   background: var(--text-on-dark, #fff);
   transform: scale(1.3);
 }
-.card-amenities { display: flex; align-items: center; gap: 2px; margin-top: .25rem; }
+.card-amenities { display: none; }
+.card-type { display: none; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
@@ -237,4 +239,10 @@ const ratingDisplay = computed(() => {
   background: currentColor;
   vertical-align: middle;
 }
+.dark .card-arrow {
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.dark .card-dot { background: rgba(255, 255, 255, 0.4); }
 </style>

@@ -3,9 +3,9 @@
     <TransitionGroup name="sl-list" tag="div" class="sl-items">
       <div v-for="(item, i) in localItems" :key="itemKey(item, i)" class="sl-item" :class="{ 'sl-item-editing': editingIndex === i }">
         <div class="sl-item-head">
-          <span class="sl-handle" aria-hidden="true" tabindex="0"
+          <button type="button" class="sl-handle"
             :aria-label="`Mục ${i + 1}. Shift+mũi tên lên/xuống để di chuyển`"
-            @keydown.up.shift.prevent="moveUp(i)" @keydown.down.shift.prevent="moveDown(i)">☰</span>
+            @keydown.up.shift.prevent="moveUp(i)" @keydown.down.shift.prevent="moveDown(i)">☰</button>
           <div class="sl-item-content">
             <template v-if="editingIndex === i">
               <div class="sl-edit-fields">
@@ -41,8 +41,10 @@
               <div v-for="(child, ci) in item.children" :key="`child-${ci}-${child.label}`" class="sl-child-item">
                 <span class="sl-child-bullet" aria-hidden="true">›</span>
                 <input :value="child.label" placeholder="Label" class="sl-edit-input sl-child-input"
+                  :aria-label="`Label mục con ${ci + 1}`"
                   @input="updateChild(i, ci, 'label', ($event.target as HTMLInputElement).value)" />
                 <input :value="child.to" placeholder="/path" class="sl-edit-input sl-child-input"
+                  :aria-label="`Đường dẫn mục con ${ci + 1}`"
                   @input="updateChild(i, ci, 'to', ($event.target as HTMLInputElement).value)" />
                 <button type="button" class="sl-btn sl-btn-remove" @click="removeChild(i, ci)" aria-label="Xoá mục con">✕</button>
               </div>
@@ -159,16 +161,17 @@ function addChild(parentIdx: number) {
 
 .sl-item {
   background: var(--bg); border: .5px solid var(--line); border-radius: 12px;
-  transition: box-shadow .3s cubic-bezier(.2,1,.4,1), border-color .3s;
+  transition: box-shadow .3s var(--ease-soft), border-color .3s;
 }
 .sl-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,.05); }
 .sl-item-editing { border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.08); }
 
 .sl-item-head {
   display: flex; align-items: center; gap: var(--space-3);
-  padding: 12px 14px; min-height: 44px;
+  padding: var(--space-3) 14px; min-height: 44px;
 }
 .sl-handle {
+  background: none; border: none; padding: 0; font: inherit;
   color: var(--muted); font-size: .85rem; cursor: grab; user-select: none;
   width: 20px; text-align: center; opacity: .5; border-radius: 6px;
   transition: opacity .2s;
@@ -186,12 +189,12 @@ function addChild(parentIdx: number) {
 .sl-item-label { font-size: .88rem; font-weight: 500; }
 .sl-item-sub { display: block; font-size: .75rem; color: var(--muted); margin-top: 2px; }
 
-.sl-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.sl-actions { display: flex; gap: var(--space-1); flex-shrink: 0; }
 .sl-btn {
   min-width: 44px; min-height: 44px; border-radius: 8px;
   border: .5px solid var(--line); background: var(--bg);
   font-size: .72rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background .2s cubic-bezier(.2,1,.4,1), color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s var(--ease-soft), color .2s, transform .15s var(--ease-soft);
 }
 .sl-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary-fg); }
 .sl-btn:active:not(:disabled) { transform: scale(.9); }
@@ -201,10 +204,10 @@ function addChild(parentIdx: number) {
 .sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb, 217,79,61), .06); color: var(--danger, #D94F3D); }
 
 .sl-edit-fields { display: flex; flex-direction: column; gap: var(--space-3); }
-.sl-edit-group { display: flex; flex-direction: column; gap: 4px; }
+.sl-edit-group { display: flex; flex-direction: column; gap: var(--space-1); }
 .sl-edit-label { font-size: .72rem; font-weight: 500; color: var(--muted); text-transform: capitalize; }
 .sl-edit-input {
-  padding: 8px 12px; border: .5px solid var(--line); border-radius: 10px;
+  padding: var(--space-2) var(--space-3); border: .5px solid var(--line); border-radius: 10px;
   font-size: .85rem; background: var(--bg); color: var(--ink);
   min-height: 44px;
   transition: border-color .2s, box-shadow .2s;
@@ -225,36 +228,37 @@ function addChild(parentIdx: number) {
 .sl-child-bullet { color: var(--muted); font-size: 1.1rem; font-weight: 600; width: 12px; text-align: center; flex-shrink: 0; }
 .sl-child-input { flex: 1; }
 .sl-add-child {
-  align-self: flex-start; padding: 8px 14px; border-radius: 10px;
+  align-self: flex-start; padding: var(--space-2) 14px; border-radius: 10px;
   font-size: .8rem; font-weight: 500; color: var(--primary, #219653);
   background: rgba(var(--primary-rgb),.06); border: none; cursor: pointer;
   min-height: 44px;
-  transition: background .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, transform .15s var(--ease-soft);
 }
 .sl-add-child:hover { background: rgba(var(--primary-rgb), .1); }
 .sl-add-child:active { transform: scale(.97); }
+.sl-add-child:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
 .sl-add {
   padding: 14px; border-radius: 12px;
   border: 1.5px dashed var(--line); background: transparent;
   font-size: .88rem; font-weight: 500; color: var(--primary, #219653);
   cursor: pointer; min-height: 44px;
-  transition: background .2s cubic-bezier(.2,1,.4,1), border-color .2s, transform .15s;
+  transition: background .2s var(--ease-soft), border-color .2s, transform .15s;
 }
 .sl-add:hover { background: rgba(var(--primary-rgb),.04); border-color: var(--primary, #219653); }
 .sl-add:active { transform: scale(.98); }
 .sl-add:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 
 /* ── List transitions ── */
-.sl-list-enter-active { transition: all .3s cubic-bezier(.2,1,.4,1); }
-.sl-list-leave-active { transition: all .2s ease-in; }
+.sl-list-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
+.sl-list-leave-active { transition: opacity .2s var(--ease-standard-accel),transform .2s var(--ease-standard-accel); }
 .sl-list-enter-from { opacity: 0; transform: translateY(-8px); }
 .sl-list-leave-to { opacity: 0; transform: scale(.96); }
-.sl-list-move { transition: transform .3s cubic-bezier(.2,1,.4,1); }
+.sl-list-move { transition: transform .3s var(--ease-soft); }
 
 /* ── Expand transition ── */
-.sl-expand-enter-active { transition: all .3s cubic-bezier(.2,1,.4,1); }
-.sl-expand-leave-active { transition: all .15s ease-in; }
+.sl-expand-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
+.sl-expand-leave-active { transition: opacity .15s var(--ease-standard-accel),transform .15s var(--ease-standard-accel); }
 .sl-expand-enter-from { opacity: 0; transform: translateY(-6px); }
 .sl-expand-leave-to { opacity: 0; }
 

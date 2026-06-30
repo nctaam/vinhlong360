@@ -114,13 +114,7 @@ const route = useRoute()
 const router = useRouter()
 const id = route.params.id as string
 
-function goBack() {
-  if (import.meta.client && window.history.length > 1) {
-    router.back()
-  } else {
-    navigateTo('/lich-trinh')
-  }
-}
+const goBack = () => goBackOr('/lich-trinh')
 
 const { openReport } = useReport()
 
@@ -467,7 +461,7 @@ if (itinerary.value && !itinerary.value.error) {
   color: var(--muted); border-radius: var(--radius-lg); font-size: var(--text-sm);
   background: linear-gradient(90deg, rgba(var(--primary-rgb),.06) 25%, rgba(var(--primary-rgb),.12) 50%, rgba(var(--primary-rgb),.06) 75%);
   background-size: 200% 100%;
-  animation: routeMapShimmer 1.5s ease-in-out infinite;
+  animation: routeMapShimmer 1.5s var(--ease-in-out) infinite;
 }
 @keyframes routeMapShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .route-map:hover { box-shadow: var(--shadow-md); }
@@ -477,7 +471,7 @@ if (itinerary.value && !itinerary.value.error) {
 .route-leg-info { background: var(--bg-alt); padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); transition: background .3s var(--ease-out); }
 
 /* Route loading shimmer */
-.route-loading { opacity: .6; animation: routePulse 1.5s ease-in-out infinite; }
+.route-loading { opacity: .6; animation: routePulse 1.5s var(--ease-in-out) infinite; }
 @keyframes routePulse { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
 /* Route total: prominent floating summary badge, pinned right */
 .route-total {
@@ -528,7 +522,7 @@ if (itinerary.value && !itinerary.value.error) {
   .itin-actions, .transport-mode-spaced, .route-map-section { display: none; }
   .step-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
   .step-card:hover { transform: none; }
-  .timeline { padding-left: 16px; }
+  .timeline { padding-left: var(--space-4); }
   .timeline::before { background: #999; }
 }
 </style>

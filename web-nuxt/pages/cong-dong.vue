@@ -114,7 +114,7 @@
 
             <div v-if="previewImages.length" class="img-preview-row">
               <div v-for="(src, i) in previewImages" :key="i" class="img-preview-item">
-                <img :src="src" :alt="`Ảnh đính kèm ${i + 1}`" width="120" height="120" loading="lazy" decoding="async" />
+                <img :src="src" :alt="`Ảnh đính kèm ${i + 1}`" width="120" height="120" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
                 <button type="button" class="remove" aria-label="Xóa ảnh" @click="removeImage(i)">&times;</button>
               </div>
             </div>
@@ -172,16 +172,16 @@
 
         <!-- Đang xem kết quả tìm -->
         <div v-if="searchMode" class="tag-banner" role="status">
-          <span>Kết quả cho <strong>“{{ searchQuery }}”</strong></span>
+          <span><strong>{{ displayPosts.length }}</strong> kết quả cho <strong>&ldquo;{{ searchQuery }}&rdquo;</strong></span>
           <button type="button" class="tag-clear" @click="clearSearch">✕ Bỏ tìm</button>
         </div>
 
         <!-- Main tabs -->
-        <div v-if="!searchMode" class="threads-filter" role="region" aria-label="Bộ lọc bảng tin">
-          <button type="button" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-pressed="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
-          <button type="button" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-pressed="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
-          <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'following' }]" :aria-pressed="activeTab === 'following'" @click="setTab('following')">Đang theo dõi</button>
-          <button type="button" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-pressed="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
+        <div v-if="!searchMode" class="threads-filter" role="tablist" aria-label="Bộ lọc bảng tin">
+          <button type="button" role="tab" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-selected="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
+          <button type="button" role="tab" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-selected="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
+          <button type="button" role="tab" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'following' }]" :aria-selected="activeTab === 'following'" @click="setTab('following')">Đang theo dõi</button>
+          <button type="button" role="tab" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-selected="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
             <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Đã lưu
           </button>
           <button type="button" class="threads-tab threads-refresh" :disabled="loading" aria-label="Tải lại bảng tin" @click="refreshFeed">
@@ -225,17 +225,17 @@
         </div>
 
         <!-- Post type filter (only for feed tabs, not bookmarks/search) -->
-        <div v-if="activeTab !== 'bookmarks' && !searchMode" class="type-filter-row" role="region" aria-label="Lọc loại bài viết">
-          <button type="button"
+        <div v-if="activeTab !== 'bookmarks' && !searchMode" class="type-filter-row" role="tablist" aria-label="Lọc loại bài viết">
+          <button type="button" role="tab"
             :class="['chip chip-filter', { active: filterType === '' }]"
-            :aria-pressed="filterType === ''"
+            :aria-selected="filterType === ''"
             @click="filterType = ''"
           >Tất cả</button>
-          <button type="button"
+          <button type="button" role="tab"
             v-for="pt in postTypes"
             :key="pt.value"
             :class="['chip chip-filter', { active: filterType === pt.value }]"
-            :aria-pressed="filterType === pt.value"
+            :aria-selected="filterType === pt.value"
             @click="filterType = pt.value"
           >{{ pt.label }}</button>
         </div>
@@ -326,7 +326,7 @@
 
       <aside class="threads-sidebar">
         <div class="sidebar-card sidebar-about">
-          <h3>Cộng đồng vinhlong360</h3>
+          <h2>Cộng đồng vinhlong360</h2>
           <p>Nơi chia sẻ trải nghiệm du lịch, đánh giá đặc sản và kết nối với cộng đồng yêu miền Tây.</p>
           <div class="sidebar-stats">
             <div class="sidebar-stat">
@@ -341,7 +341,7 @@
         </div>
 
         <div v-if="topMembers.length" class="sidebar-card">
-          <h3>Thành viên tích cực</h3>
+          <h2>Thành viên tích cực</h2>
           <ol class="leaderboard-list">
             <li v-for="(m, i) in topMembers" :key="m.id">
               <NuxtLink :to="`/nguoi-dung/${m.username || m.id}`" class="lb-row">
@@ -356,7 +356,7 @@
         </div>
 
         <div v-if="isLoggedIn && suggestedUsers.length" class="sidebar-card">
-          <h3>Có thể bạn quan tâm</h3>
+          <h2>Có thể bạn quan tâm</h2>
           <ul class="suggest-list">
             <li v-for="s in suggestedUsers" :key="s.id" class="suggest-row">
               <NuxtLink :to="`/nguoi-dung/${s.username || s.id}`" class="suggest-user">
@@ -371,7 +371,7 @@
         </div>
 
         <div v-if="trendingTags.length" class="sidebar-card">
-          <h3>Hashtag thịnh hành</h3>
+          <h2>Hashtag thịnh hành</h2>
           <div class="trending-tags">
             <NuxtLink
               v-for="t in trendingTags"
@@ -382,8 +382,8 @@
           </div>
         </div>
 
-        <div class="sidebar-card">
-          <h3>Cách tham gia</h3>
+        <div class="sidebar-card reveal">
+          <h2>Cách tham gia</h2>
           <ul class="sidebar-list">
             <li>
               <span class="sl-icon">📸</span>
@@ -405,7 +405,7 @@
         </div>
 
         <div class="sidebar-card sidebar-rules">
-          <h3>Quy tắc cộng đồng</h3>
+          <h2>Quy tắc cộng đồng</h2>
           <ol class="sidebar-rules-list">
             <li>Tôn trọng lẫn nhau</li>
             <li>Chia sẻ thông tin chính xác</li>
@@ -438,7 +438,6 @@ const MAX_CHARS = 500
 
 const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
-const { confirmDialog } = useConfirm()
 const { repost } = useRepost()
 function repostPost(postId: string) {
   repost(postId, () => { activeTab.value = 'latest'; fetchFeed(true) })
@@ -464,8 +463,17 @@ const activeTab = ref<'latest' | 'trending' | 'following' | 'bookmarks'>('latest
 const sort = computed(() => activeTab.value === 'trending' ? 'trending' : 'latest')
 const filterType = ref('')
 const activeTag = ref(String(route.query.tag || '').toLowerCase())
-watch(() => route.query.tag, (t) => { activeTag.value = String(t || '').toLowerCase(); fetchFeed(true) })
-function clearTag() { activeTag.value = ''; router.replace({ query: {} }); fetchFeed(true) }
+useFilterUrl({ tab: activeTab, type: filterType }, { tab: 'latest', type: '' })
+watch(() => route.query.tag, (t) => {
+  const newTag = String(t || '').toLowerCase()
+  if (newTag !== activeTag.value) { activeTag.value = newTag; fetchFeed(true) }
+})
+function clearTag() {
+  activeTag.value = ''
+  const { tag: _, ...rest } = route.query
+  router.replace({ query: rest })
+  fetchFeed(true)
+}
 const page = ref(1)
 const posts = ref<Entity[]>([])
 const hasMore = ref(false)
@@ -693,6 +701,7 @@ function setTab(tab: 'latest' | 'trending' | 'following' | 'bookmarks') {
   } else {
     fetchFeed(true)
   }
+  nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
 }
 
 async function fetchFeed(reset = false) {
@@ -890,66 +899,22 @@ function _copies(postId: string) {
   return [...posts.value, ...bookmarks.value, ...searchResults.value].filter(p => p.id === postId)
 }
 
-const pendingActions = reactive(new Set<string>())
+const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
 
-async function toggleLike(postId: string) {
-  if (!isLoggedIn.value) {
-    showToast('Đăng nhập để thích bài viết', 'info')
-    return
-  }
-  if (pendingActions.has(`like:${postId}`)) return
-  pendingActions.add(`like:${postId}`)
-  const copies = _copies(postId)
-  const flip = () => copies.forEach(p => {
-    p.user_liked = !p.user_liked
-    p.likes = (p.likes || 0) + (p.user_liked ? 1 : -1)
+function toggleLike(postId: string) {
+  _like(postId, _copies(postId))
+}
+function toggleBookmark(postId: string) {
+  _bookmark(postId, _copies(postId), () => {
+    if (!sessionBookmarked.value) sessionBookmarked.value = true
   })
-  flip()
-  try {
-    await $fetch(`/api/posts/${postId}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    flip()
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể thích bài viết', 'error')
-  } finally { pendingActions.delete(`like:${postId}`) }
 }
-
-async function toggleBookmark(postId: string) {
-  if (!isLoggedIn.value) {
-    showToast('Đăng nhập để lưu bài viết', 'info')
-    return
-  }
-  if (pendingActions.has(`bm:${postId}`)) return
-  pendingActions.add(`bm:${postId}`)
-  const copies = _copies(postId)
-  const wasBookmarked = copies[0]?.user_bookmarked
-  copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
-  try {
-    await $fetch(`/api/posts/${postId}/bookmark`, { method: 'POST', headers: authHeaders() })
-    if (!wasBookmarked && copies[0]?.user_bookmarked) {
-      showToast('Đã lưu bài viết', 'success')
-      if (!sessionBookmarked.value) sessionBookmarked.value = true
-    }
-  } catch (e: unknown) {
-    copies.forEach(p => { p.user_bookmarked = !p.user_bookmarked })
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể lưu bài viết', 'error')
-  } finally { pendingActions.delete(`bm:${postId}`) }
-}
-
-async function deletePost(postId: string) {
-  const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
-  if (!ok) return
-  try {
-    await $fetch(`/api/posts/${postId}`, { method: 'DELETE', headers: authHeaders() })
+function deletePost(postId: string) {
+  _delete(postId, () => {
     posts.value = posts.value.filter(p => p.id !== postId)
     bookmarks.value = bookmarks.value.filter(p => p.id !== postId)
     searchResults.value = searchResults.value.filter(p => p.id !== postId)
-    showToast('Đã xoá bài viết', 'success')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể xoá bài viết', 'error')
-  }
+  })
 }
 
 function goToPost(postId: string) {
@@ -1037,6 +1002,7 @@ useHead({
 .community-search:focus-within { border-color: var(--primary); }
 .cs-icon { color: var(--muted); flex-shrink: 0; }
 .cs-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .35rem 0; }
+.cs-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .cs-input::placeholder { color: var(--muted); }
 .cs-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; }
 .cs-clear:hover { color: var(--ink); }
@@ -1046,7 +1012,7 @@ useHead({
 .lb-row:hover { background: var(--bg-alt); }
 .lb-rank { flex-shrink: 0; width: 18px; text-align: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
 .lb-rank-1 { color: var(--lb-gold, #d4a017); } .lb-rank-2 { color: var(--lb-silver, #8a8d91); } .lb-rank-3 { color: var(--lb-bronze, #b07b4f); }
-.lb-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-size: 11px; font-weight: var(--weight-semibold); flex-shrink: 0; }
+.lb-avatar { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-size: var(--text-2xs); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .lb-name { flex: 1; min-width: 0; font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lb-points { flex-shrink: 0; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); }
 .sidebar-more { display: inline-block; font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; }
@@ -1077,6 +1043,7 @@ useHead({
   resize: none; outline: none; font-family: inherit;
   min-height: 44px; padding: 0;
 }
+.compose-input:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .compose-input::placeholder { color: var(--muted); }
 .threads-compose {
   transition: background .3s var(--ease-out), border-color .3s var(--ease-out), border-radius .3s var(--ease-out), box-shadow .3s var(--ease-out-expo);
@@ -1198,7 +1165,7 @@ useHead({
 }
 .sidebar-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border, var(--ink)); }
 .sidebar-card:focus-within { border-color: var(--border, var(--ink)); }
-.sidebar-card h3 { margin: 0 0 var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-bold); }
+.sidebar-card h2 { margin: 0 0 var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-bold); }
 .sidebar-card p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 .sidebar-stats { display: flex; gap: var(--space-4); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
@@ -1260,7 +1227,7 @@ useHead({
 .img-preview-item { position: relative; width: 64px; height: 64px; border-radius: var(--radius-sm); overflow: hidden; transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .img-preview-item:hover { transform: scale(1.08); box-shadow: var(--shadow-sm); }
 .img-preview-item img { width: 100%; height: 100%; object-fit: cover; }
-.img-preview-item .remove { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--overlay-dark); color: var(--text-on-dark, #fff); border: none; cursor: pointer; font-size: .7rem; display: flex; align-items: center; justify-content: center; transition: background .2s, transform .25s var(--ease-spring-gentle); }
+.img-preview-item .remove { position: absolute; top: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--overlay-dark); color: var(--text-on-dark, #fff); border: none; cursor: pointer; font-size: .7rem; display: flex; align-items: center; justify-content: center; padding: var(--space-2); box-sizing: content-box; transition: background .2s, transform .25s var(--ease-spring-gentle); }
 .img-preview-item .remove:hover { background: var(--error); transform: scale(1.1); }
 .img-preview-item .remove:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 1px; }
 @keyframes fadeIn { from { opacity: 0; } }
@@ -1314,12 +1281,12 @@ useHead({
 .dark .bm-dismiss:hover { background: rgba(255,255,255,.08); }
 .dark .sidebar-stat:hover { background: rgba(255,255,255,.03); }
 .dark .sidebar-list li:hover { background: rgba(255,255,255,.03); }
-.dark .report-entity-card { background: rgba(232,163,61,.08); border-color: rgba(232,163,61,.22); }
+.dark .report-entity-card { background: rgba(var(--accent-rgb),.08); border-color: rgba(var(--accent-rgb),.22); }
 .dark .compose-attach:hover { background: rgba(255,255,255,.08); }
-.dark .threads-compose { background: rgba(232,163,61,.06); }
-.dark .threads-compose:focus-within { background: rgba(232,163,61,.1); }
+.dark .threads-compose { background: rgba(var(--accent-rgb),.06); }
+.dark .threads-compose:focus-within { background: rgba(var(--accent-rgb),.1); }
 .dark .threads-filter { background: var(--surface-translucent, rgba(0,0,0,.72)); }
-.dark .sidebar-rules-list li::before { background: rgba(232,163,61,.2); color: var(--accent); }
+.dark .sidebar-rules-list li::before { background: rgba(var(--accent-rgb),.2); color: var(--accent); }
 .dark .lb-rank-1 { --lb-gold: #f0c040; } .dark .lb-rank-2 { --lb-silver: #b0b3b8; } .dark .lb-rank-3 { --lb-bronze: #d4975a; }
 
 .mobile-discovery { display: none; }
@@ -1336,9 +1303,9 @@ useHead({
   .md-label { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-500); white-space: nowrap; min-width: 52px; }
   .md-scroll { display: flex; gap: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-block: 2px; }
   .md-scroll::-webkit-scrollbar { display: none; }
-  .md-tag { font-size: .8rem; padding: 4px 10px; border-radius: var(--radius-full); background: var(--surface-2); color: var(--accent); white-space: nowrap; text-decoration: none; font-weight: 500; }
+  .md-tag { font-size: .8rem; padding: var(--space-1) 10px; border-radius: var(--radius-full); background: var(--surface-2); color: var(--accent); white-space: nowrap; text-decoration: none; font-weight: 500; }
   .md-tag:hover { background: var(--accent); color: var(--text-on-dark, #fff); }
-  .md-member { display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: var(--radius-full); background: var(--surface-2); text-decoration: none; white-space: nowrap; }
+  .md-member { display: flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--surface-2); text-decoration: none; white-space: nowrap; }
   .md-name { font-size: .78rem; color: var(--ink-800); }
   .dark .md-tag { background: var(--surface-3); }
   .dark .md-member { background: var(--surface-3); }
@@ -1369,6 +1336,7 @@ useHead({
   .momentum-fade-enter-active,
   .momentum-fade-leave-active { transition: none; }
   .bm-dismiss:active { transform: none; }
+  .threads-refresh .spinning { animation: none; }
 }
 .onboard-follows { width: 100%; margin-bottom: var(--space-3); text-align: left; }
 .onboard-title { font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-2); color: var(--muted); }
@@ -1376,5 +1344,5 @@ useHead({
 .onboard-user { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--bg-alt); }
 .onboard-info { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; color: inherit; font-weight: 500; }
 .onboard-name { font-size: var(--text-sm); }
-.btn-xs { padding: 4px 10px; font-size: .72rem; border-radius: var(--radius-sm); }
+.btn-xs { padding: var(--space-1) 10px; font-size: .72rem; border-radius: var(--radius-sm); }
 </style>

@@ -32,7 +32,7 @@
     <CatalogSpotlight :items="allOcop" />
 
     <!-- Star breakdown quick-picks -->
-    <section v-if="starStats.length" class="block">
+    <section v-if="starStats.length" class="block reveal">
       <div class="section-head">
         <h2>Xếp hạng sao</h2>
       </div>
@@ -181,7 +181,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block reveal catalog-cross">
+    <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
@@ -296,7 +296,7 @@ const fiveStarHighlights = computed(() =>
 )
 
 function countByArea(key: string) {
-  return allOcop.value.filter((e: Entity) => (e.place_area || e.area) === key).length
+  return allOcop.value.filter((e: Entity) => getEntityArea(e) === key).length
 }
 
 function scrollToGrid() {
@@ -328,7 +328,7 @@ const filtered = computed(() => {
   }
 
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: Entity) => (e.place_area || e.area) === areaFilter.value)
+    list = list.filter((e: Entity) => getEntityArea(e) === areaFilter.value)
   }
 
   if (seasonFilter.value !== 'all') {

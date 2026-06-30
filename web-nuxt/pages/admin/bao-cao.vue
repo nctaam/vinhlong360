@@ -54,10 +54,10 @@
       </div>
 
       <div class="admin-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" aria-label="Danh sách báo cáo vi phạm">
           <thead>
             <tr>
-              <th class="rpt-th-check">
+              <th scope="col" class="rpt-th-check">
                 <input
                   type="checkbox" class="rpt-checkbox" aria-label="Chọn tất cả (chờ xử lý) trên trang"
                   :checked="allPageSelected" :indeterminate.prop="somePageSelected && !allPageSelected"
@@ -135,7 +135,7 @@
         <span v-if="infoOpen" class="rpt-open-badge">{{ infoOpen }} chưa xử lý</span>
       </div>
       <div class="admin-table-wrap">
-        <table class="admin-table">
+        <table class="admin-table" aria-label="Thông tin vi phạm">
           <thead><tr><th scope="col">Loại</th><th scope="col">Đối tượng</th><th scope="col">Lý do</th><th scope="col">Trạng thái</th><th scope="col">Ngày</th><th scope="col">Thao tác</th></tr></thead>
           <tbody>
             <tr v-for="r in infoReports" :key="r.ts" :style="{ opacity: (r.status || 'open') === 'open' ? 1 : .5 }">
@@ -365,9 +365,7 @@ function targetLink(report: Record<string, unknown>) {
   return ''
 }
 
-function formatDate(d: string) {
-  return d ? new Date(d).toLocaleDateString('vi-VN') : ''
-}
+const formatDate = formatDateVN
 
 onMounted(() => fetchAll())
 </script>
@@ -383,7 +381,7 @@ onMounted(() => fetchAll())
 .rpt-open-badge {
   display: inline-flex; align-items: center; padding: 2px 10px;
   border-radius: 100px; font-size: .72rem; font-weight: 600;
-  background: rgba(var(--warning-rgb),.1); color: #c67a00;
+  background: rgba(var(--warning-rgb),.1); color: var(--warning);
 }
 
 /* ── Status badges ── */
@@ -396,8 +394,8 @@ onMounted(() => fetchAll())
 .status-pending::before, .status-resolved::before, .status-dismissed::before {
   content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
 }
-.status-pending { background: rgba(var(--warning-rgb),.08); color: #c67a00; }
-.status-pending::before { background: var(--warning); animation: rpt-pulse 2s ease-in-out infinite; }
+.status-pending { background: rgba(var(--warning-rgb),.08); color: var(--warning); }
+.status-pending::before { background: var(--warning); animation: rpt-pulse 2s var(--ease-in-out) infinite; }
 .status-resolved { background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg); }
 .status-resolved::before { background: var(--secondary-fg); }
 .status-dismissed { background: rgba(142,142,147,.08); color: var(--muted); }
@@ -413,11 +411,11 @@ onMounted(() => fetchAll())
 .rpt-filter-label { font-size: .72rem; font-weight: 600; color: var(--muted); margin-right: 2px; }
 .rpt-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  min-height: 44px; padding: 4px 12px;
+  min-height: 44px; padding: var(--space-1) var(--space-3);
   border: 1px solid var(--border); border-radius: 100px;
   background: var(--surface, #fff); color: var(--text, #1d1d1f);
   font-size: .78rem; font-weight: 500; cursor: pointer;
-  transition: background .2s, border-color .2s, color .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, border-color .2s, color .2s, transform .2s var(--ease-soft);
 }
 .rpt-chip:hover { border-color: var(--primary, #0071e3); }
 .rpt-chip:active { transform: scale(.96); }
@@ -430,7 +428,7 @@ onMounted(() => fetchAll())
   content: ''; position: absolute; left: 50%; bottom: -7px;
   width: 5px; height: 5px; border-radius: 50%;
   background: var(--primary, #0071e3); transform: translateX(-50%);
-  animation: rpt-dot-in .25s cubic-bezier(.2,1,.4,1);
+  animation: rpt-dot-in .25s var(--ease-soft);
 }
 @keyframes rpt-dot-in { from { opacity: 0; transform: translate(-50%, -3px); } to { opacity: 1; transform: translate(-50%, 0); } }
 .rpt-chip:focus-visible { outline: 2px solid var(--primary, #0071e3); outline-offset: 2px; }
@@ -449,7 +447,7 @@ onMounted(() => fetchAll())
   padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
   border: 1px solid var(--primary, #0071e3); border-radius: var(--radius, 12px);
   background: rgba(0,113,227,.06);
-  animation: rpt-slide-in .25s cubic-bezier(.2,1,.4,1);
+  animation: rpt-slide-in .25s var(--ease-soft);
 }
 @keyframes rpt-slide-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 .rpt-bulk-summary { display: inline-flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
@@ -476,7 +474,7 @@ onMounted(() => fetchAll())
 .rpt-reason-cell { max-width: 360px; }
 .rpt-reason-full { white-space: normal; word-break: break-word; line-height: 1.45; }
 .rpt-reason-toggle {
-  margin-top: 4px; padding: 0; border: none; background: none;
+  margin-top: var(--space-1); padding: 0; border: none; background: none;
   color: var(--primary, #0071e3); font-size: .72rem; font-weight: 600; cursor: pointer;
 }
 .rpt-reason-toggle:hover { text-decoration: underline; }
@@ -494,7 +492,7 @@ onMounted(() => fetchAll())
   border: 1px solid var(--border); border-radius: 100px;
   background: var(--surface, #fff); color: var(--text, #1d1d1f);
   font-size: .82rem; font-weight: 600; cursor: pointer;
-  transition: background .2s, border-color .2s, transform .2s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, border-color .2s, transform .2s var(--ease-soft);
 }
 .rpt-loadmore:hover { border-color: var(--primary, #0071e3); }
 .rpt-loadmore:active { transform: scale(.97); }
@@ -507,25 +505,26 @@ onMounted(() => fetchAll())
   .rpt-chip:active, .rpt-loadmore:active { transform: none; }
   .rpt-bulkbar { animation: none; }
   .rpt-chip.active::after { animation: none; }
+  .refresh-spin { animation: none; }
 }
 
 /* ── Dark ── */
-.dark .status-pending { background: rgba(var(--warning-rgb),.12); color: #ffb340; }
+.dark .status-pending { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
 .dark .status-resolved { background: rgba(var(--primary-rgb),.12); }
 .dark .status-dismissed { background: rgba(255,255,255,.06); }
-.dark .rpt-open-badge { background: rgba(var(--warning-rgb),.12); color: #ffb340; }
+.dark .rpt-open-badge { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
 .dark .rpt-chip { background: rgba(255,255,255,.04); }
 .dark .rpt-chip-count { background: rgba(255,255,255,.1); }
 .dark .rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); }
-.dark .rpt-bulkbar { background: rgba(0,113,227,.16); border-color: rgba(64,156,255,.55); }
-.dark .rpt-bulk-count { color: #67adff; }
+.dark .rpt-bulkbar { background: rgba(var(--blue-rgb),.16); border-color: rgba(var(--blue-rgb),.55); }
+.dark .rpt-bulk-count { color: rgb(var(--blue-rgb)); }
 .dark .rpt-bulk-hint { color: rgba(255,255,255,.55); }
 .dark .rpt-row-selected { background: rgba(0,113,227,.1); }
 .dark .rpt-loadmore { background: rgba(255,255,255,.04); }
 /* dark-mode contrast: brighter primary so toggle/chip-dot reach WCAG AA */
-.dark .rpt-reason-toggle { color: #67adff; }
+.dark .rpt-reason-toggle { color: rgb(var(--blue-rgb)); }
 .dark .rpt-chip.active { box-shadow: 0 2px 8px rgba(0,0,0,.35); }
-.dark .rpt-chip.active::after { background: #67adff; }
+.dark .rpt-chip.active::after { background: rgb(var(--blue-rgb)); }
 
 /* fix 4 — keep header visually separated on scroll within this page's tables */
 .admin-table th { box-shadow: 0 2px 4px rgba(0,0,0,.04); }

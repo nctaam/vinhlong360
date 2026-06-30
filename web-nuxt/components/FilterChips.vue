@@ -98,4 +98,7 @@ function toggle(key: string) {
   font-weight: var(--weight-normal, 400);
 }
 .fc-chip.active .fc-count { opacity: 0.85; }
+@media (prefers-reduced-motion: reduce) {
+  .fc-chip { transition: none; }
+}
 </style>

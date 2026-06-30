@@ -24,7 +24,7 @@
             </div>
           </template>
         </nav>
-        <SearchAutocomplete class="topbar-search" />
+        <LazySearchAutocomplete class="topbar-search" />
         <div class="auth-area">
           <ClientOnly>
             <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
@@ -36,8 +36,8 @@
             </template>
           </ClientOnly>
           <template v-if="isLoggedIn">
-            <NotificationBell />
-            <UserMenu />
+            <LazyNotificationBell />
+            <LazyUserMenu />
           </template>
           <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
         </div>
@@ -63,7 +63,7 @@
     </main>
 
     <LazyAuthModal :visible="showAuth" @close="showAuth = false" />
-    <ConfirmDialog />
+    <LazyConfirmDialog />
     <ClientOnly>
       <ScrollToTop />
     </ClientOnly>
@@ -72,7 +72,7 @@
       <LazyOnboardingSheet />
       <LazyJourneyBar />
       <LazyReportModal />
-      <ToastContainer />
+      <LazyToastContainer />
     </ClientOnly>
 
     <footer class="site-footer" role="contentinfo">
@@ -103,7 +103,7 @@
           <p class="disclaimer">{{ ss('footer.disclaimer', 'Thông tin mùa vụ, giá & địa điểm mang tính tham khảo — vui lòng xác nhận với địa phương trước khi sử dụng.') }}</p>
           <div class="footer-bottom-row">
             <p>{{ ss('footer.copyright', '© 2024–2026 vinhlong360') }}</p>
-            <nav class="footer-legal">
+            <nav class="footer-legal" aria-label="Pháp lý">
               <NuxtLink v-for="link in footerLegalLinks" :key="link.to" :to="link.to">{{ link.label }}</NuxtLink>
             </nav>
           </div>
@@ -151,7 +151,7 @@ const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: s
   { label: 'Lịch trình', children: [
     { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
     { to: '/tao-lich-trinh', label: 'Tạo lịch trình' },
-    { to: '/lich-trinh', label: 'Đã lưu ❤️' },
+    { to: '/lich-trinh', label: 'Đã lưu' },
   ] },
   { label: 'Cộng đồng', to: '/cong-dong' },
 ]
@@ -176,13 +176,13 @@ const DEFAULT_FOOTER_COLUMNS = [
     { to: '/huong-dan', label: 'Hướng dẫn sử dụng' },
   ] },
   { title: 'Khu vực', links: [
-    { to: '/khu-vuc/vinh-long', label: '🍊 Vĩnh Long' },
-    { to: '/khu-vuc/ben-tre', label: '🥥 Bến Tre' },
-    { to: '/khu-vuc/tra-vinh', label: '🛕 Trà Vinh' },
+    { to: '/khu-vuc/vinh-long', label: 'Vĩnh Long' },
+    { to: '/khu-vuc/ben-tre', label: 'Bến Tre' },
+    { to: '/khu-vuc/tra-vinh', label: 'Trà Vinh' },
   ] },
   { title: 'Dành cho cơ sở', links: [
-    { to: '/lien-he?ref=claim', label: '🏷️ Đăng ký quản lý trang' },
-    { to: '/lien-he', label: '🤝 Hợp tác quảng bá' },
+    { to: '/lien-he?ref=claim', label: 'Đăng ký quản lý trang' },
+    { to: '/lien-he', label: 'Hợp tác quảng bá' },
   ] },
 ]
 const footerColumns = computed(() => ss('footer.columns', DEFAULT_FOOTER_COLUMNS) as typeof DEFAULT_FOOTER_COLUMNS)

@@ -1,5 +1,6 @@
 <template>
-  <div :class="['modal-overlay', { show: visible }]" @click.self="close">
+  <Transition name="modal-fade">
+  <div v-if="visible" class="modal-overlay show" @click.self="close">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" ref="modalEl">
       <div class="modal-head">
         <h2 id="auth-modal-title">{{ modalTitle }}</h2>
@@ -138,6 +139,7 @@
       </div>
     </div>
   </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">

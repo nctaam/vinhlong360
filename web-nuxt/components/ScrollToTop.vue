@@ -54,9 +54,6 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .fade-enter-from { opacity: 0; transform: translateY(8px) scale(.9); }
 .fade-leave-to { opacity: 0; transform: translateY(4px) scale(.95); }
 
-/* Dark mode */
-.dark .scroll-top { background: var(--glass-bg-heavy); border-color: var(--line); color: var(--primary-fg); }
-
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .scroll-top:hover { transform: none; }

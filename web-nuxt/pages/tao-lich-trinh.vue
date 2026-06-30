@@ -190,7 +190,6 @@
 
 <script setup lang="ts">
 import type { Itinerary, Entity} from '~/types'
-useReveal()
 import { TYPE_META, CARD_TYPES } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
 
@@ -297,9 +296,6 @@ const pickerResults = computed(() => {
   return list.slice(0, 50)
 })
 
-function getTypeMeta(type: string) {
-  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
-}
 
 // F4: dùng chuẩn chung normalizeCoords (validate + hoán đổi lat/lng đảo)
 function extractCoords(entity: Entity): [number, number] | null {
@@ -470,9 +466,7 @@ function sharePlan(idx: number) {
   }
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('vi-VN')
-}
+const formatDate = formatDateVN
 
 let routeTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -706,6 +700,7 @@ useHead({
 .stop-card-actions button { min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
 .stop-card-actions button:hover { background: var(--bg-warm); }
 .stop-card-actions button:active { transform: scale(.88); transition-duration: .08s; }
+.stop-card-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dark .picker-item:hover { background: var(--glass-light); }
 .dark .stop-card { background: var(--card); border-color: var(--line); }
 .dark .stop-card-actions button:hover { background: rgba(255,255,255,.06); }

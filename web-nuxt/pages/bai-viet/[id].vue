@@ -60,7 +60,7 @@
                 </li>
               </ul>
             </div>
-            <button type="button" class="btn btn-primary btn-sm compose-send" :disabled="!commentText.trim() || submitting" @click="submitComment">
+            <button type="button" class="btn btn-primary btn-sm compose-send" aria-label="Gửi bình luận" :disabled="!commentText.trim() || submitting" @click="submitComment">
               <svg v-if="!submitting" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4z"/></svg>
               <span v-else class="spinner spinner-sm"></span>
             </button>
@@ -129,10 +129,10 @@
       <!-- Related posts -->
       <ClientOnly>
         <div v-if="relatedPosts.length" class="related-section">
-          <h3 class="related-title">Bài viết liên quan</h3>
+          <h2 class="related-title">Bài viết liên quan</h2>
           <div class="related-grid">
             <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="`/bai-viet/${rp.id}`" class="related-card">
-              <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" />
+              <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
               <div class="related-body">
                 <span class="related-author">{{ rp.display_name }}</span>
                 <p class="related-text">{{ (rp.content || '').slice(0, 80) }}{{ (rp.content || '').length > 80 ? '…' : '' }}</p>
@@ -169,21 +169,11 @@ const route = useRoute()
 const postId = computed(() => route.params.id as string)
 const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
-const { confirmDialog } = useConfirm()
+
 const { repost, quote } = useRepost()
 
-// Linkify @-mention + #hashtag trong bình luận (content escape trước → an toàn v-html)
-function renderComment(c: any): string {
-  let html = escapeHtml(c?.content || '')
-  const mentions = Array.isArray(c?.mentions) ? [...c.mentions].sort((a, b) => (b?.label?.length || 0) - (a?.label?.length || 0)) : []
-  for (const m of mentions) {
-    if (!m?.label || !m?.id || (m.type !== 'user' && m.type !== 'entity')) continue
-    const href = m.type === 'user' ? `/nguoi-dung/${encodeURIComponent(m.id)}` : `/dia-diem/${encodeURIComponent(m.id)}`
-    const token = '@' + escapeHtml(m.label)
-    html = html.split(token).join(`<a class="mention-link" href="${href}">${token}</a>`)
-  }
-  html = html.replace(/#(\w{1,30})/gu, (_m, tag) => `<a class="hashtag-link" href="/cong-dong?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`)
-  return html
+function renderComment(c: { content?: string; mentions?: Array<{ label?: string; id?: string; type?: string }> }): string {
+  return linkifyContent(c?.content || '', c?.mentions)
 }
 const { reportPost } = useReport()
 const { show: showToast } = useToast()
@@ -227,17 +217,8 @@ async function setBestAnswer(commentId: string) {
     showToast('Không thể chọn, thử lại', 'error')
   }
 }
-async function deletePost() {
-  const ok = await confirmDialog('Bạn có chắc muốn xoá bài viết này? Hành động không thể hoàn tác.', { confirmText: 'Xoá', danger: true })
-  if (!ok) return
-  try {
-    await $fetch(`/api/posts/${postId.value}`, { method: 'DELETE', headers: authHeaders() })
-    showToast('Đã xoá bài viết', 'success')
-    navigateTo('/cong-dong')
-  } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể xoá bài viết', 'error')
-  }
+function deletePost() {
+  _delete(postId.value, () => navigateTo('/cong-dong'))
 }
 
 const composeRef = ref<HTMLElement>()
@@ -360,36 +341,13 @@ async function submitComment() {
   submitting.value = false
 }
 
-const pendingActions = reactive(new Set<string>())
+const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
 
-async function toggleLike(id: string) {
-  if (!isLoggedIn.value) { showToast('Đăng nhập để thích bài viết', 'info'); return }
-  if (!post.value || pendingActions.has('like')) return
-  pendingActions.add('like')
-  post.value.user_liked = !post.value.user_liked
-  post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
-  try {
-    await $fetch(`/api/posts/${id}/like`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    post.value.user_liked = !post.value.user_liked
-    post.value.likes = (post.value.likes || 0) + (post.value.user_liked ? 1 : -1)
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể thích bài viết', 'error')
-  } finally { pendingActions.delete('like') }
+function toggleLike(id: string) {
+  if (post.value) _like(id, post.value)
 }
-
-async function toggleBookmark(id: string) {
-  if (!isLoggedIn.value) { showToast('Đăng nhập để lưu bài viết', 'info'); return }
-  if (!post.value || pendingActions.has('bookmark')) return
-  pendingActions.add('bookmark')
-  post.value.user_bookmarked = !post.value.user_bookmarked
-  try {
-    await $fetch(`/api/posts/${id}/bookmark`, { method: 'POST', headers: authHeaders() })
-  } catch (e: unknown) {
-    post.value.user_bookmarked = !post.value.user_bookmarked
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast('Không thể lưu bài viết', 'error')
-  } finally { pendingActions.delete('bookmark') }
+function toggleBookmark(id: string) {
+  if (post.value) _bookmark(id, post.value)
 }
 
 const { timeAgo } = useTimeAgo()
@@ -513,7 +471,7 @@ useHead({
 .thread-subreply { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-left: var(--space-2); border-left: 2px solid var(--line); }
 .subreply-body { flex: 1; min-width: 0; }
 .subreply-body .comment-reply-btn { margin-top: .25rem; }
-.avatar-xs { width: 26px; height: 26px; font-size: 11px; }
+.avatar-xs { width: 26px; height: 26px; font-size: var(--text-2xs); }
 .reply-context { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-xs); color: var(--ink-700); background: var(--bg-alt); border-radius: var(--radius-sm); padding: .3rem .6rem; margin-bottom: var(--space-2); }
 .reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; }
 .reply-context-x:hover { color: var(--ink); }
@@ -556,6 +514,7 @@ useHead({
 }
 .compose-input-sm::placeholder { color: var(--ink-tertiary, var(--muted)); }
 .compose-input-sm:focus { border-bottom-color: var(--primary-fg); box-shadow: none; }
+.compose-input-sm:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .compose-send {
   width: 44px; height: 44px; min-height: 44px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-full);

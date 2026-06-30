@@ -12,42 +12,42 @@
 
     <div v-if="summary" class="stat-grid dq-stats">
       <div class="stat-card">
-        <div class="dq-icon si-blue">&#127760;</div>
+        <div class="stat-icon si-blue">&#127760;</div>
         <div>
           <div class="stat-value">{{ summary.data?.public_entities || 0 }}</div>
           <div class="stat-label">Entity public</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon si-orange">&#128218;</div>
+        <div class="stat-icon si-orange">&#128218;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_source || 0 }}</div>
           <div class="stat-label">Thiếu nguồn</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon si-orange">&#128205;</div>
+        <div class="stat-icon si-orange">&#128205;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_location || 0 }}</div>
           <div class="stat-label">Thiếu tọa độ</div>
         </div>
       </div>
       <div class="stat-card warn">
-        <div class="dq-icon si-orange">&#127963;</div>
+        <div class="stat-icon si-orange">&#127963;</div>
         <div>
           <div class="stat-value">{{ summary.data?.missing_place_id_non_place || 0 }}</div>
           <div class="stat-label">Thiếu placeId</div>
         </div>
       </div>
       <div class="stat-card ok">
-        <div class="dq-icon si-green">&#9989;</div>
+        <div class="stat-icon si-green">&#9989;</div>
         <div>
           <div class="stat-value">{{ summary.candidates?.auto_apply || 0 }}</div>
           <div class="stat-label">Có thể auto-apply</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="dq-icon si-purple">&#128065;</div>
+        <div class="stat-icon si-purple">&#128065;</div>
         <div>
           <div class="stat-value">{{ summary.candidates?.needs_review || 0 }}</div>
           <div class="stat-label">Cần duyệt</div>
@@ -111,7 +111,7 @@
     </div>
 
     <div class="admin-table-wrap dq-table-wrap">
-      <table class="admin-table dq-table">
+      <table class="admin-table dq-table" aria-label="Chất lượng dữ liệu">
         <thead>
           <tr>
             <th scope="col" class="dq-th-checkbox"></th>
@@ -471,14 +471,8 @@ onMounted(() => refreshAll())
 </script>
 
 <style scoped>
-.dq-stats .stat-card { display: flex; align-items: center; gap: var(--space-4); }
 .dq-stats .stat-card.warn .stat-value { color: var(--warning, #e67e22); }
 .dq-stats .stat-card.ok .stat-value { color: var(--primary, #219653); }
-.dq-icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; flex-shrink: 0;
-}
 .dq-th-checkbox { width: 42px; }
 .dq-th-sev { width: 64px; }
 .dq-cache-info { margin: var(--space-3) 0 0; color: var(--muted); font-size: .88rem; }
@@ -492,7 +486,7 @@ onMounted(() => refreshAll())
 /* Severity / status badges (derived from existing bucket / record_type data) */
 .dq-sev-badge, .dq-status-badge { display: inline-flex; align-items: center; justify-content: center; font-size: .68rem; font-weight: 700; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
 .dq-sev-success { background: rgba(var(--primary-rgb),.12); color: var(--primary, #219653); }
-.dq-sev-warning { background: rgba(var(--warning-rgb),.14); color: #C77700; }
+.dq-sev-warning { background: rgba(var(--warning-rgb),.14); color: var(--warning); }
 .dq-sev-error { background: rgba(var(--danger-rgb),.12); color: var(--error, #D94F3D); }
 .dq-sev-neutral { background: rgba(142,142,147,.14); color: var(--muted); }
 
@@ -503,13 +497,13 @@ onMounted(() => refreshAll())
 .dq-apply-result--warn { border-color: var(--warning, #e67e22); background: var(--warning-bg, rgba(230,126,34,.08)); }
 .dq-apply-result-head { display: flex; align-items: center; gap: var(--space-2); }
 .dq-apply-result-icon { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 999px; background: rgba(var(--primary-rgb),.14); color: var(--primary, #219653); font-size: .8rem; }
-.dq-apply-result--warn .dq-apply-result-icon { background: rgba(230,126,34,.16); color: var(--warning, #e67e22); }
+.dq-apply-result--warn .dq-apply-result-icon { background: rgba(var(--warning-rgb),.16); color: var(--warning, #e67e22); }
 .dq-apply-result-head strong { font-size: .95rem; }
 .dq-apply-result-stats { display: flex; gap: var(--space-4); font-size: .85rem; color: var(--muted); }
 .dq-apply-result-stat b { color: var(--ink, #1c1c1e); font-variant-numeric: tabular-nums; }
 .dq-apply-result-meta { display: flex; align-items: center; gap: var(--space-2); font-size: .8rem; color: var(--muted); flex-wrap: wrap; }
 .dq-mono { font-family: var(--font-mono, ui-monospace, monospace); font-size: .76rem; word-break: break-all; }
-.dq-copy-btn { font-size: .72rem; padding: 2px 8px; min-height: 28px; border: .5px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+.dq-copy-btn { font-size: .72rem; padding: 2px 8px; min-height: 44px; border: .5px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
 .dq-copy-btn:hover { color: var(--primary, #219653); border-color: var(--primary, #219653); }
 .dq-copy-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
 .dq-table-wrap { margin-top: var(--space-3); }
@@ -523,13 +517,13 @@ onMounted(() => refreshAll())
 .dq-history { margin-top: var(--space-8); }
 .dq-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-3); }
 .dq-section-head h2 { margin: 0; font-size: 1.1rem; }
-.dq-section-head p { margin: 4px 0 0; color: var(--muted); }
+.dq-section-head p { margin: var(--space-1) 0 0; color: var(--muted); }
 .dq-history-empty { padding: var(--space-4); border: .5px dashed var(--line); border-radius: var(--radius-sm); color: var(--muted); }
 .dq-history-list { display: grid; gap: var(--space-3); }
 .dq-history-card {
   padding: var(--space-4); border: .5px solid var(--line); border-radius: 14px;
   background: var(--card); box-shadow: var(--shadow-xs);
-  transition: transform .25s cubic-bezier(.2,1,.4,1), box-shadow .25s, border-color .25s;
+  transition: transform .25s var(--ease-soft), box-shadow .25s, border-color .25s;
 }
 .dq-history-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
 .dq-history-card--apply { border-left: 3px solid var(--primary, #219653); }
@@ -560,10 +554,10 @@ onMounted(() => refreshAll())
 .dark .dq-diff-item:hover { background: rgba(var(--blue-rgb),.08); }
 .dark .dq-select-all { color: var(--ink, #e5e5e7); }
 .dark .dq-apply-result { background: rgba(var(--primary-rgb),.1); color: var(--ink, #e5e5e7); }
-.dark .dq-apply-result--warn { background: rgba(230,126,34,.12); }
+.dark .dq-apply-result--warn { background: rgba(var(--warning-rgb),.12); }
 .dark .dq-apply-result-stat b { color: var(--ink, #e5e5e7); }
 .dark .dq-page-info { color: var(--ink, #e5e5e7); }
-.dark .dq-sev-warning { color: #FFB340; }
+.dark .dq-sev-warning { color: var(--accent-text); }
 .dark .dq-copy-btn { border-color: rgba(255,255,255,.12); }
 
 @media (max-width: 780px) {

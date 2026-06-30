@@ -9,7 +9,7 @@
 /* ── Shared components ── */
 
 /* ScrollToTop */
-.dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); }
+.dark .scroll-top { background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border-color: var(--line); box-shadow: var(--shadow-md); color: var(--primary-fg); }
 .dark .scroll-top:hover { box-shadow: var(--shadow-lg); }
 
 /* ShareButton */
@@ -26,7 +26,7 @@
 /* SearchAutocomplete — lift type/place label contrast on dark surfaces
    (base uses --primary-fg / --muted which can dip below 4.5:1 on dark hover) */
 .dark .ac-type { color: rgba(255,255,255,.75); font-weight: var(--weight-semibold); }
-.dark .ac-place { color: rgba(255,255,255,.55); }
+.dark .ac-place { color: rgba(255,255,255,.7); }
 
 /* ── 404 catch-all ([...slug]) ── */
 .dark .nf-search input { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); color: var(--ink); }
@@ -86,7 +86,6 @@
 .dark .season-badge { background: rgba(0,0,0,.7); }
 
 /* ── Community (cong-dong) ── */
-.dark .create-post:focus-within { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12); }
 .dark .sidebar-card:hover { box-shadow: var(--shadow-md); }
 .dark .report-entity-card { background: rgba(255,255,255,.04); }
 
@@ -99,7 +98,7 @@
 .dark .contact-card { border-color: rgba(255,255,255,.08); }
 .dark .contact-card:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-lg); }
 .dark .card-claim { background: color-mix(in srgb, var(--accent) 6%, var(--card)); border-color: rgba(255,255,255,.12); }
-.dark .card-note { color: rgba(255,255,255,.4) !important; }
+.dark .card-note { color: rgba(255,255,255,.6) !important; }
 
 /* ── Profile (nguoi-dung/[id]) ── */
 .dark .profile-cover { border-color: rgba(255,255,255,.06); }

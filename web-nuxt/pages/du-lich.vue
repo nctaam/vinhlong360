@@ -33,7 +33,7 @@
     </section>
 
     <!-- Category sections -->
-    <section v-for="cat in categories" :key="cat.type" class="block reveal">
+    <section v-for="(cat, ci) in categories" :key="cat.type" :class="['block', 'reveal', { band: ci % 2 === 0 }]">
       <div class="section-head">
         <h2>{{ cat.emoji }} {{ cat.label }}</h2>
         <button type="button" class="see-all" @click="typeFilter = cat.type; scrollToGrid()">{{ cat.items.length }} kết quả →</button>
@@ -74,7 +74,7 @@
     </div>
 
     <!-- Full filterable grid -->
-    <section ref="gridSection" class="block" aria-label="Duyệt tất cả du lịch">
+    <section ref="gridSection" class="block reveal" aria-label="Duyệt tất cả du lịch">
       <div class="controls">
         <div class="search-row">
           <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong du lịch…" aria-label="Tìm kiếm" />
@@ -133,7 +133,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross" aria-label="Khám phá thêm">
+    <section class="block band catalog-cross reveal" aria-label="Khám phá thêm">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
@@ -197,7 +197,7 @@ const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'M
 const viewMode = ref('grid')
 const gridSection = ref<HTMLElement | null>(null)
 
-useFilterUrl({ type: typeFilter, mua: seasonFilter, sort: sortBy }, { type: 'all', mua: 'all', sort: 'relevant' })
+useFilterUrl({ q, type: typeFilter, mua: seasonFilter, sort: sortBy }, { q: '', type: 'all', mua: 'all', sort: 'relevant' })
 const { sortByRegion } = useRegionPref()
 
 onMounted(() => {

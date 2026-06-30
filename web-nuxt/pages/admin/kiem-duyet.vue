@@ -25,19 +25,19 @@
     <!-- Stats row -->
     <div class="stat-grid">
       <div class="stat-card" :class="{ 'status-warn': (modStats.pending || 0) > 0 }">
-        <div class="mod-icon si-orange">&#9203;</div>
+        <div class="stat-icon si-orange">&#9203;</div>
         <div><div class="stat-value">{{ modStats.pending || 0 }}</div><div class="stat-label">Chờ duyệt</div></div>
       </div>
       <div class="stat-card" :class="{ 'status-error': (modStats.flagged || 0) > 0 }">
-        <div class="mod-icon si-danger">&#9873;</div>
+        <div class="stat-icon si-danger">&#9873;</div>
         <div><div class="stat-value">{{ modStats.flagged || 0 }}</div><div class="stat-label">Gắn cờ</div></div>
       </div>
       <div class="stat-card status-ok">
-        <div class="mod-icon si-green">&#9989;</div>
+        <div class="stat-icon si-green">&#9989;</div>
         <div><div class="stat-value">{{ modStats.approved || 0 }}</div><div class="stat-label">Đã duyệt</div></div>
       </div>
       <div class="stat-card">
-        <div class="mod-icon" style="background: rgba(142,142,147,.12); color: var(--muted);">&#10060;</div>
+        <div class="stat-icon si-muted">&#10060;</div>
         <div><div class="stat-value">{{ modStats.rejected || 0 }}</div><div class="stat-label">Từ chối</div></div>
       </div>
     </div>
@@ -70,7 +70,7 @@
 
     <!-- Queue table -->
     <div class="admin-table-wrap">
-    <table class="admin-table">
+    <table class="admin-table" aria-label="Hàng đợi kiểm duyệt">
       <thead>
         <tr>
           <th scope="col" class="admin-th-check"><input type="checkbox" :checked="allBatchSelected" @change="toggleBatchAll" aria-label="Chọn tất cả" /></th>
@@ -121,7 +121,7 @@
                 </div>
                 <input
                   v-model="rejectReason" type="text" class="mod-reason-input"
-                  placeholder="Hoặc nhập lý do khác…" autocomplete="off"
+                  placeholder="Hoặc nhập lý do khác…" aria-label="Lý do từ chối" autocomplete="off"
                   @keyup.enter="confirmReject(p.id)" @keyup.esc="cancelReject"
                 />
                 <button type="button" class="btn-danger" :disabled="acting === p.id" @click="confirmReject(p.id)">
@@ -168,7 +168,7 @@
         </div>
         <div class="mod-preview-body">{{ previewPost.content }}</div>
         <div v-if="previewPost.images?.length" class="mod-preview-images">
-          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" width="200" height="150" />
+          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" decoding="async" width="200" height="150" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         </div>
         <!-- Moderation notes -->
         <div class="mod-notes-section">
@@ -176,12 +176,12 @@
           <div v-if="previewPost.moderation_notes?.length" class="mod-notes-list">
             <div v-for="(n, i) in previewPost.moderation_notes" :key="i" class="mod-note-item">
               <span class="mod-note-text">{{ n.text }}</span>
-              <time class="mod-note-time">{{ formatDate(n.at) }}</time>
+              <time class="mod-note-time" :datetime="n.at">{{ formatDate(n.at) }}</time>
             </div>
           </div>
           <div v-else class="mod-notes-empty">Chưa có ghi chú</div>
           <div class="mod-note-add">
-            <input v-model="newNote" type="text" class="mod-note-input" placeholder="Thêm ghi chú…" autocomplete="off" @keyup.enter="addNote(previewPost.id)" />
+            <input v-model="newNote" type="text" class="mod-note-input" placeholder="Thêm ghi chú…" aria-label="Thêm ghi chú kiểm duyệt" autocomplete="off" @keyup.enter="addNote(previewPost.id)" />
             <button type="button" class="btn btn-sm btn-outline" :disabled="!newNote.trim() || noteSaving" @click="addNote(previewPost.id)">Thêm</button>
           </div>
         </div>
@@ -384,9 +384,7 @@ async function fetchStats() {
   } catch { /* ignore */ }
 }
 
-function formatDate(d: string) {
-  return d ? new Date(d).toLocaleDateString('vi-VN') : ''
-}
+const formatDate = formatDateVN
 
 const focusIdx = ref(-1)
 const focusedPost = computed(() => queue.value[focusIdx.value] || null)
@@ -457,7 +455,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
   padding: 7px 14px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
-  transition: background .2s, color .2s, border-color .2s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: background .2s, color .2s, border-color .2s, transform .15s var(--ease-soft);
 }
 .mod-tab:hover { border-color: var(--primary, #219653); color: var(--ink); }
 .mod-tab:active { transform: scale(.97); }
@@ -466,15 +464,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 100px; background: var(--line); color: var(--muted); }
 .mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: var(--text-on-dark); }
 
-/* ── Stat card icon ── */
-.stat-card { display: flex; align-items: center; gap: var(--space-4); }
-.mod-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; transition: transform .25s cubic-bezier(.2,1,.4,1); }
-.stat-card:hover .mod-icon { transform: scale(1.08); }
 /* Urgency accent for queue cards with pending/flagged items (dashboard-at-a-glance) */
 .stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
 .stat-card.status-error { border-left: 4px solid var(--error, #D94F3D); }
-.stat-card.status-warn .mod-icon,
-.stat-card.status-error .mod-icon { font-size: 1.3rem; font-weight: 700; }
+.stat-card.status-warn .stat-icon,
+.stat-card.status-error .stat-icon { font-size: 1.3rem; font-weight: 700; }
 
 /* ── Author cell ── */
 .mod-author { display: flex; align-items: center; gap: var(--space-3); }
@@ -484,7 +478,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Content cell ── */
 .mod-content-cell { max-width: 420px; }
 .mod-content-truncate { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.mod-expand { display: inline-block; margin-top: 4px; background: none; border: none; padding: 0; color: var(--primary-fg, #219653); font-size: .76rem; font-weight: 600; cursor: pointer; }
+.mod-expand { display: inline-block; margin-top: var(--space-1); background: none; border: none; padding: 0; color: var(--primary-fg, #219653); font-size: .76rem; font-weight: 600; cursor: pointer; }
 .mod-expand:hover { text-decoration: underline; }
 .mod-expand:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; border-radius: 4px; }
 
@@ -495,7 +489,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Type + status badges ── */
 .mod-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .72rem; font-weight: 600; background: rgba(142,142,147,.08); color: var(--muted); }
 .mod-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
-.mb-pending { background: rgba(var(--warning-rgb),.12); color: #C98A1A; }
+.mb-pending { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
 .mb-flagged { background: rgba(var(--danger-rgb),.13); color: var(--error); }
 .mb-approved { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
 .mb-rejected { background: rgba(142,142,147,.15); color: var(--muted); }
@@ -508,24 +502,24 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* Inline action spinner (reuses global admin-spin keyframe) */
 .mod-btn-spin { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: admin-spin .6s linear infinite; }
-.mod-reason-presets { display: flex; flex-wrap: wrap; gap: 4px; width: 100%; }
+.mod-reason-presets { display: flex; flex-wrap: wrap; gap: var(--space-1); width: 100%; }
 .mod-reason-chip {
-  padding: 4px 10px; border-radius: 100px; border: .5px solid var(--line);
+  padding: var(--space-1) 10px; border-radius: 100px; border: .5px solid var(--line);
   background: var(--bg); font-size: .76rem; font-weight: 500; color: var(--muted);
-  cursor: pointer; transition: all .15s;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
 }
 .mod-reason-chip:hover { border-color: var(--error); color: var(--error); }
 .mod-reason-chip.active { background: rgba(var(--danger-rgb),.12); border-color: var(--error); color: var(--error); font-weight: 600; }
-.mod-reason-input { flex: 1; min-width: 200px; padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
+.mod-reason-input { flex: 1; min-width: 200px; padding: 9px var(--space-3); border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
 .mod-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
-.btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
+.btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
 .mod-empty-action {
   background: none; border: .5px solid var(--line); border-radius: 8px;
   padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--primary, #219653);
   cursor: pointer; min-height: 44px;
-  transition: border-color .25s, background .25s, transform .15s cubic-bezier(.2,1,.4,1);
+  transition: border-color .25s, background .25s, transform .15s var(--ease-soft);
 }
 .mod-empty-action:hover { border-color: var(--primary, #219653); background: rgba(var(--primary-rgb),.04); }
 .mod-empty-action:active { transform: scale(.96); }
@@ -533,7 +527,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 @media (prefers-reduced-motion: reduce) { .mod-empty-action:active { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .stat-card:hover .mod-icon { transform: none; }
+  .stat-card:hover .stat-icon { transform: none; }
   .mod-tab:active { transform: none; }
   .mod-btn-spin { animation: none; }
 }

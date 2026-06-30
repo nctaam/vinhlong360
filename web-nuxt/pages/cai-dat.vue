@@ -32,7 +32,7 @@
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
           <button type="button" class="sf-avatar-preview" aria-label="Thay đổi ảnh đại diện" @click="($refs.avatarInput as HTMLInputElement)?.click()">
-            <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" width="96" height="96" decoding="async" />
+            <img v-if="avatarPreview || user?.avatar_url" :src="avatarPreview || user?.avatar_url!" alt="Avatar" class="sf-avatar-img" width="96" height="96" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
             <AvatarPlaceholder v-else :initial="user?.display_name?.[0]?.toUpperCase()" />
             <span class="sf-avatar-overlay">&#128247;</span>
           </button>
@@ -48,7 +48,7 @@
 
         <div class="sf-cover-section">
           <button type="button" class="sf-cover-preview" aria-label="Thay đổi ảnh bìa" @click="($refs.coverInput as HTMLInputElement)?.click()">
-            <img v-if="coverPreview || user?.cover_url" :src="coverPreview || user?.cover_url!" alt="Ảnh bìa" class="sf-cover-img" width="640" height="160" decoding="async" />
+            <img v-if="coverPreview || user?.cover_url" :src="coverPreview || user?.cover_url!" alt="Ảnh bìa" class="sf-cover-img" width="640" height="160" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
             <div v-else class="sf-cover-placeholder">
               <span>Thêm ảnh bìa</span>
             </div>
@@ -87,6 +87,7 @@
               v-model="username"
               type="text"
               class="sf-input sf-username-input"
+              aria-label="Username"
               maxlength="30"
               minlength="3"
               pattern="[a-z][a-z0-9._-]*"
@@ -150,7 +151,7 @@
 
       <div class="settings-card card">
         <h2>Phiên đăng nhập</h2>
-        <div v-if="sessionsLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
+        <div v-if="sessionsLoading" class="sf-loading" role="status" aria-label="Đang tải phiên"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="sessions.length" class="sessions-list">
           <div v-for="s in sessions" :key="s.id" :class="['session-item', { current: s.is_current }]">
             <div class="session-info">
@@ -166,7 +167,7 @@
 
       <div class="settings-card card">
         <h2>Lịch sử đăng nhập</h2>
-        <div v-if="loginHistoryLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
+        <div v-if="loginHistoryLoading" class="sf-loading" role="status" aria-label="Đang tải lịch sử"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="loginHistory.length" class="sessions-list">
           <div v-for="h in loginHistory" :key="h.id" :class="['session-item', { 'login-fail': !h.success }]">
             <div class="session-info">
@@ -184,7 +185,7 @@
     <div v-if="activeTab === 'thong-bao'" id="panel-thong-bao" class="settings-card card" role="tabpanel" aria-labelledby="tab-thong-bao">
       <h2>Tùy chọn thông báo</h2>
       <p class="sf-hint sf-hint-spaced">Chọn loại thông báo bạn muốn nhận.</p>
-      <div v-if="notifPrefsLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
+      <div v-if="notifPrefsLoading" class="sf-loading" role="status" aria-label="Đang tải tùy chọn"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="notif-prefs">
         <label v-for="np in NOTIF_TYPES" :key="np.key" class="notif-pref-item">
           <div class="notif-pref-info">
@@ -222,7 +223,7 @@
     <!-- Tab: Quyền riêng tư -->
     <div v-if="activeTab === 'rieng-tu'" id="panel-rieng-tu" class="settings-card card" role="tabpanel" aria-labelledby="tab-rieng-tu">
       <h2>Quyền riêng tư</h2>
-      <div v-if="privacyLoading" class="sf-loading"><div class="spinner spinner-sm"></div> Đang tải...</div>
+      <div v-if="privacyLoading" class="sf-loading" role="status" aria-label="Đang tải cài đặt"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="settings-form">
         <div class="sf-field">
           <span class="sf-label">Ai xem được hồ sơ?</span>
@@ -239,7 +240,7 @@
             </button>
           </div>
         </div>
-        <label class="notif-pref-item" @click.prevent="setPrivacy('show_activity', !privacy.show_activity)">
+        <label class="notif-pref-item">
           <div class="notif-pref-info">
             <span class="notif-pref-icon">📊</span>
             <div>
@@ -247,9 +248,9 @@
               <span class="sf-hint">Cho người khác xem bạn đã thích, bình luận gì gần đây.</span>
             </div>
           </div>
-          <input type="checkbox" class="toggle" :checked="privacy.show_activity" />
+          <input type="checkbox" class="toggle" :checked="privacy.show_activity" @change="setPrivacy('show_activity', !privacy.show_activity)" />
         </label>
-        <label class="notif-pref-item" @click.prevent="setPrivacy('show_saved', !privacy.show_saved)">
+        <label class="notif-pref-item">
           <div class="notif-pref-info">
             <span class="notif-pref-icon">💾</span>
             <div>
@@ -257,7 +258,7 @@
               <span class="sf-hint">Cho người khác xem địa điểm bạn đã lưu.</span>
             </div>
           </div>
-          <input type="checkbox" class="toggle" :checked="privacy.show_saved" />
+          <input type="checkbox" class="toggle" :checked="privacy.show_saved" @change="setPrivacy('show_saved', !privacy.show_saved)" />
         </label>
       </div>
     </div>
@@ -850,5 +851,9 @@ onUnmounted(() => {
   .settings-tab { padding: .5rem .65rem; font-size: .8rem; }
   .sf-input { font-size: 16px; }
   .sf-username-prefix { font-size: .75rem; padding: .65rem .4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-tab, .settings-tab-icon, .sf-input, .toggle, .toggle::after,
+  .notif-pref-item, .theme-btn { transition: none; }
 }
 </style>

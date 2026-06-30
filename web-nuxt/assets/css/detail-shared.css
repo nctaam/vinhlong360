@@ -43,7 +43,7 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 
 /* Legacy gallery (kept for backward compat, hidden when cover has images) */
 .detail-gallery .detail-img { cursor: pointer; transition: opacity .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
-.detail-gallery .detail-img:hover { opacity: .85; transform: scale(1.02); }
+.detail-gallery .detail-img:hover { opacity: .85; transform: scale(var(--img-hover-scale)); }
 .detail-gallery .detail-img:active { transform: scale(.97); transition-duration: .08s; }
 
 /* Lightbox (dùng bởi ImageGallery + PostCard) */
@@ -68,13 +68,13 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 
 /* Map (trang ban-do) */
 .map-filters { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3); }
-@media (max-width: 840px) { .map-filters { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-1); } .map-filters::-webkit-scrollbar { display: none; } }
+@media (max-width: 840px) {
+  .map-filters { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: var(--space-1); }
+  .map-filters::-webkit-scrollbar { display: none; }
+}
 #mapContainer { height: 560px; border-radius: var(--radius); overflow: hidden; border: .5px solid var(--line); background: var(--map-bg); box-shadow: var(--shadow-sm); }
 @media (max-width: 768px) { #mapContainer { height: 400px; } }
 @media (max-width: 480px) { #mapContainer { height: 300px; } }
-.map-legend { display: flex; gap: var(--space-5); margin-top: var(--space-3); font-size: var(--text-sm); color: var(--muted); flex-wrap: wrap; }
-.ml-item { display: flex; align-items: center; gap: var(--space-2); }
-.ml-item i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; }
 
 /* Dark variants */
 .dark .breadcrumb li:last-child { color: var(--ink); }

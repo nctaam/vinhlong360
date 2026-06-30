@@ -108,4 +108,7 @@ const mentionChips = computed(() => {
 
 .er-mentions { margin-bottom: var(--space-5); }
 .er-mentions-title { font-size: var(--text-sm); font-weight: var(--weight-semibold, 600); color: var(--ink); margin: 0 0 var(--space-2); }
+@media (prefers-reduced-motion: reduce) {
+  .er-dist-fill { transition: none; }
+}
 </style>

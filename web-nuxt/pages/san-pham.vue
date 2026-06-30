@@ -84,7 +84,7 @@
     </div>
 
     <!-- Full filterable grid -->
-    <section ref="gridSection" class="block" aria-label="Duyệt tất cả sản phẩm">
+    <section ref="gridSection" class="block reveal" aria-label="Duyệt tất cả sản phẩm">
       <div class="controls">
         <div class="search-row">
           <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm trong sản phẩm…" aria-label="Tìm sản phẩm" />
@@ -141,7 +141,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block catalog-cross" aria-label="Khám phá thêm">
+    <section class="block band catalog-cross reveal" aria-label="Khám phá thêm">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/ocop" class="cross-card">
@@ -187,7 +187,7 @@ const sortLabels: Record<string, string> = { popular: 'Phổ biến', newest: 'M
 const viewMode = ref('grid')
 const gridSection = ref<HTMLElement | null>(null)
 
-useFilterUrl({ mua: seasonFilter, sort: sortBy }, { mua: String(currentMonth), sort: 'relevant' })
+useFilterUrl({ q, mua: seasonFilter, sort: sortBy }, { q: '', mua: String(currentMonth), sort: 'relevant' })
 const { sortByRegion } = useRegionPref()
 
 onMounted(() => {

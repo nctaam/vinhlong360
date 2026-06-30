@@ -33,7 +33,7 @@
     <CatalogSpotlight :items="allEntities" />
 
     <!-- Quick picks by region -->
-    <section class="block band">
+    <section class="block band reveal">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -70,7 +70,7 @@
     />
 
     <!-- Editorial -->
-    <section class="page-article reveal">
+    <section v-once class="page-article reveal">
       <h2>Ở đâu khi đi miền Tây?</h2>
       <p>Lưu trú ở Vĩnh Long, Bến Tre và Trà Vinh mang đến những trải nghiệm rất khác so với khách sạn thành phố. Đây là vùng đất của homestay nhà vườn — nơi bạn ngủ trong căn nhà gỗ giữa vườn trái cây, thức dậy với tiếng chim hót và hương hoa bưởi. Nhiều chỗ ở nằm trên cù lao, phải đi đò hoặc xuồng mới tới — chính sự cách biệt ấy tạo nên sự yên tĩnh đặc trưng.</p>
 
@@ -125,7 +125,7 @@
     </section>
 
     <!-- Cross-links -->
-    <section class="block reveal catalog-cross">
+    <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/lich-trinh" class="cross-card">
@@ -179,7 +179,7 @@ const allEntities = computed(() => {
 const areaCountMap = computed(() => {
   const counts: Record<string, number> = {}
   for (const e of allEntities.value) {
-    const area = e.place_area || e.area || ''
+    const area = getEntityArea(e)
     if (area) counts[area] = (counts[area] || 0) + 1
   }
   return counts
@@ -241,7 +241,7 @@ const filtered = computed(() => {
   let list = allEntities.value
 
   if (areaFilter.value !== 'all') {
-    list = list.filter((e: Entity) => (e.place_area || e.area) === areaFilter.value)
+    list = list.filter((e: Entity) => getEntityArea(e) === areaFilter.value)
   }
 
   if (q.value.trim()) {
