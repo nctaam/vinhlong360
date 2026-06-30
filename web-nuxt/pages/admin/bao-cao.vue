@@ -365,9 +365,7 @@ function targetLink(report: Record<string, unknown>) {
   return ''
 }
 
-function formatDate(d: string) {
-  return d ? new Date(d).toLocaleDateString('vi-VN') : ''
-}
+const formatDate = formatDateVN
 
 onMounted(() => fetchAll())
 </script>

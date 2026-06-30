@@ -469,9 +469,7 @@ function sharePlan(idx: number) {
   }
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('vi-VN')
-}
+const formatDate = formatDateVN
 
 let routeTimer: ReturnType<typeof setTimeout> | null = null
 

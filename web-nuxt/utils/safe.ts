@@ -101,6 +101,12 @@ export function eventDateRange(e: EventLike): string {
   return (f1 && f2) ? `${f1} – ${f2}` : f1
 }
 
+/** Format an ISO date string to Vietnamese locale (dd/mm/yyyy). */
+export function formatDateVN(d?: string | null): string {
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('vi-VN')
+}
+
 /** Build a dialable tel: href, stripping dots/spaces/parens (keeps leading +). */
 export function telHref(phone?: string | null): string {
   if (!phone) return '#'

@@ -388,9 +388,7 @@ async function changeRole(id: string, role: string) {
   }
 }
 
-function formatDate(d: string) {
-  return d ? new Date(d).toLocaleDateString('vi-VN') : ''
-}
+const formatDate = formatDateVN
 
 function csvCell(v: unknown) {
   const s = String(v ?? '')

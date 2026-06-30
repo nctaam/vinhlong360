@@ -384,9 +384,7 @@ async function fetchStats() {
   } catch { /* ignore */ }
 }
 
-function formatDate(d: string) {
-  return d ? new Date(d).toLocaleDateString('vi-VN') : ''
-}
+const formatDate = formatDateVN
 
 const focusIdx = ref(-1)
 const focusedPost = computed(() => queue.value[focusIdx.value] || null)

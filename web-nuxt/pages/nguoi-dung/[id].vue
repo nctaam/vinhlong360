@@ -274,10 +274,7 @@ const initial = computed(() => {
   return name.charAt(0).toUpperCase()
 })
 
-const joinDate = computed(() => {
-  if (!profile.value?.created_at) return ''
-  return new Date(profile.value.created_at).toLocaleDateString('vi-VN')
-})
+const joinDate = computed(() => formatDateVN(profile.value?.created_at))
 
 const profileCompletion = computed(() => {
   if (!profile.value) return 0
