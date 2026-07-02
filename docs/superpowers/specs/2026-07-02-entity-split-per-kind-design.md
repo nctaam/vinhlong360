@@ -100,7 +100,15 @@ best_time TEXT, highlight TEXT` — nullable, backfill từ JSONB.
 > drop-in systemd (kill-switch = xoá dòng + restart): 4/4 entity BYTE-IDENTICAL
 > trước/sau flip (gồm 2 case uncoercible). Deviation ghi nhận: legacy string-số
 > trong JSONB ("4") đọc ra kiểu chuẩn (4) — chủ đích.
-> **Còn C3:** dọn typed keys khỏi JSONB — chờ ≥1 tuần ổn định + chủ duyệt (§B1).
+> **C3 ✅ XONG 2026-07-02 (chủ ra lệnh sớm hơn cửa sổ ≥1 tuần — bù bằng thiết kế
+> strip-SO-SÁNH + backup db-pre-c3-* + chuỗi chứng minh):** strip-on-write khi flag
+> ON (JSONB lưu tail-only); cleanup một-lần xoá 7.220 key/1.728 entity (= đúng tập
+> parity đã verify — cross-validation tự nhiên); 39 key uncoercible/itinerary ở lại;
+> idempotent (dry-run 2 = 0); cold-boot 200; 4/4 entity đọc byte-identical trước/sau;
+> sort=rating (consumer SQL thô duy nhất) chuyển sang cột CTI + COALESCE.
+> **RÀNG BUỘC MỚI: rollback = restore backup, KHÔNG còn là tắt flag** (JSONB không
+> còn typed keys). Flag ENTITY_DETAILS_TABLES từ giờ coi như bắt buộc-ON trên prod.
+> **DỰ ÁN TÁCH ENTITY HOÀN TẤT TOÀN BỘ (GĐ-A + GĐ-B + GĐ-C1/2/3).**
 
 > **C1 (dual-write) ✅ + DEPLOYED:** `agent/entity_details.py` mới (logic tập trung,
 > database.py chỉ 4 hook: initialize/upsert/_bulk_load/delete); mirror ghi-là-chính
