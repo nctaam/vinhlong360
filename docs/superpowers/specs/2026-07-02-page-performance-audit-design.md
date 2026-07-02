@@ -62,6 +62,27 @@ Bảng before/after CWV; xác nhận không regression trang khác.
 - Deploy phẫu thuật (frontend build; backend chỉ khi cần, chỉ file trong phạm vi).
 - Đo lường = read-only, an toàn.
 
+## Kết quả (cập nhật 2026-07-02)
+
+**Audit (đa-agent) → site ĐÃ tối ưu tốt, không P0/P1.** Bundle lành mạnh: maplibre 1MB
+lazy (chỉ 4 trang map), entry JS ~92KB gz, entry.css ~27KB brotli, không thư viện JS nặng
+eager, code-split đúng, admin `ssr:false`. → đây là pass tinh chỉnh.
+
+**Wave 1 ĐÃ LÀM + DEPLOY + VERIFY (2026-07-02):**
+- **[Win lớn nhất] nginx gzip cho response proxied**: `/etc/nginx/nginx.conf` thiếu
+  `gzip_proxied any;` → mọi `/api/*` JSON không nén. Đã bật (backup + `nginx -t` + reload)
+  + sync vào repo `nginx.conf`. Kết quả: `/api/homepage` **59.4KB → 13.3KB trên dây (−78%)**;
+  toàn bộ API/JSON + HTML SSR proxied giờ đều nén. Lợi ích mọi trang.
+- **Lazy-defer** `AuthModal/ConfirmDialog/ScrollToTop` trong `layouts/default.vue` → chunk
+  async riêng, khỏi entry graph.
+
+**Wave 2/3 — CHƯA làm (giá trị thấp / rủi ro, chờ chủ chọn):**
+- W2: tách khối CSS route-scoped khỏi base.css (~5KB brotli, có rủi ro unstyled); phục vụ
+  `/_nuxt` tĩnh trực tiếp từ nginx (offload Node — cần mount `.output/public`).
+- W3: nén lại `og-default.jpg` (363KB→~100KB, chỉ ảnh hưởng social crawler); tidy @nuxt/image
+  screens/AVIF; EntityCard `priority` prop (hoãn tới khi có ảnh entity thật).
+- Fonts: 1 agent audit trả stub — chưa xác nhận; Inter self-host, nhiều khả năng ổn.
+
 ## Rủi ro
 - Đĩa đầy làm build/deploy fail → dọn dẹp trước mỗi wave; cân nhắc dọn `.output` cũ, node_modules cache.
 - Cây WIP lớn → chỉ commit file trong phạm vi (explicit `git add`).
