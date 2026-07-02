@@ -18,7 +18,7 @@
       </div>
       <select v-model="typeFilter" class="input admin-select-filter" aria-label="Lọc theo loại entity" @change="fetchEntities(true)">
         <option value="">Tất cả loại</option>
-        <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+        <option v-for="t in types" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
       </select>
       <button type="button" class="btn btn-outline btn-sm" :class="{ 'btn-active-warn': orphansOnly }" @click="orphansOnly = !orphansOnly; fetchEntities(true)">
         {{ orphansOnly ? '&#10003; Mồ côi' : 'Mồ côi' }}
@@ -27,6 +27,30 @@
       <button type="button" class="btn btn-outline btn-sm" :title="`Tải JSON (${entities.length} entity trang này)`" @click="exportJSON">&#x2B73; JSON ({{ entities.length }})</button>
       <button type="button" class="btn btn-outline btn-sm" :title="`Tải CSV (${entities.length} entity trang này)`" @click="exportCSV">&#x2B73; CSV ({{ entities.length }})</button>
     </div>
+
+    <!-- Phase 2: tổng quan theo danh mục (7 nhóm chủ trên 17 type) -->
+    <details v-if="kindGroups.length" class="ent-kinds-panel">
+      <summary class="ent-kinds-summary">
+        📊 Tổng quan theo danh mục
+        <span class="ent-kinds-total">{{ kindGrandTotal.toLocaleString('vi-VN') }} entity</span>
+      </summary>
+      <div class="ent-kinds-grid">
+        <div v-for="k in kindGroups" :key="k.kind" class="ent-kind-card">
+          <div class="ent-kind-head">
+            <span class="ent-kind-emoji" aria-hidden="true">{{ k.emoji }}</span>
+            <span class="ent-kind-label">{{ k.label }}</span>
+            <span class="ent-kind-count">{{ k.total }}</span>
+          </div>
+          <div class="ent-kind-types">
+            <button v-for="t in k.types" :key="t.type" type="button"
+              class="ent-kind-chip" :class="{ active: typeFilter === t.type }"
+              :title="`Lọc: ${t.label} (${t.count})`" @click="filterByType(t.type)">
+              {{ t.emoji }} {{ t.label }} <span class="ent-kind-chip-n">{{ t.count }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </details>
 
     <div v-if="selected.size" class="bulk-bar">
       <span>Đã chọn {{ selected.size }}</span>
@@ -363,6 +387,25 @@ async function fetchEntitySchema() {
     const r = await $fetch<{ types: Record<string, TypeSchema> }>('/admin-api/entity-schema', { headers: authHeaders() })
     entitySchemas.value = r.types || {}
   } catch { /* form falls back to core fields only */ }
+}
+
+// ── Phase 2: kind overview (7 owner categories over the 17 raw types) ──
+interface KindTypeCount { type: string; label: string; emoji: string; count: number }
+interface KindGroup { kind: string; label: string; emoji: string; total: number; types: KindTypeCount[] }
+const kindGroups = ref<KindGroup[]>([])
+const kindGrandTotal = ref(0)
+async function fetchKinds() {
+  try {
+    const r = await $fetch<{ kinds: KindGroup[]; grand_total: number }>('/admin-api/entity-kinds', { headers: authHeaders() })
+    kindGroups.value = (r.kinds || []).filter(k => k.total > 0)
+    kindGrandTotal.value = r.grand_total || 0
+  } catch { /* overview panel simply hidden */ }
+}
+function filterByType(t: string) {
+  typeFilter.value = t
+  page.value = 1
+  fetchEntities(true)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 // Fields for the current form.type, grouped by their `group` label (preserves order).
@@ -826,6 +869,7 @@ onMounted(() => {
   if (route.query.orphans === '1') orphansOnly.value = true
   if (typeof route.query.q === 'string' && route.query.q) search.value = route.query.q
   fetchEntitySchema()
+  fetchKinds()
   fetchEntities()
   if (route.query.create === '1') openCreate()
   window.addEventListener('keydown', onKeydown)
@@ -944,6 +988,25 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-typed-fieldset .ent-fieldset-legend { padding: 0 var(--space-2); }
 .ent-typed-hint { font-weight: 400; color: var(--muted); font-size: .78rem; }
 .ent-typed-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); }
+
+/* Phase 2: kind overview panel */
+.ent-kinds-panel { border: 1px solid var(--line); border-radius: 10px; margin-bottom: var(--space-4); background: var(--card); }
+.ent-kinds-summary { cursor: pointer; padding: var(--space-3); font-weight: 600; font-size: .9rem; display: flex; align-items: center; gap: var(--space-2); list-style: none; }
+.ent-kinds-summary::-webkit-details-marker { display: none; }
+.ent-kinds-summary::before { content: '▸'; transition: transform .15s; color: var(--muted); }
+.ent-kinds-panel[open] .ent-kinds-summary::before { transform: rotate(90deg); }
+.ent-kinds-total { margin-left: auto; font-weight: 400; color: var(--muted); font-size: .8rem; }
+.ent-kinds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-3); padding: 0 var(--space-3) var(--space-3); }
+.ent-kind-card { border: 1px solid var(--line); border-radius: 8px; padding: var(--space-2) var(--space-3); background: var(--bg-alt); }
+.ent-kind-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
+.ent-kind-emoji { font-size: 1.1rem; }
+.ent-kind-label { font-weight: 600; font-size: .85rem; }
+.ent-kind-count { margin-left: auto; font-weight: 700; color: var(--primary); font-size: .9rem; }
+.ent-kind-types { display: flex; flex-wrap: wrap; gap: 4px; }
+.ent-kind-chip { border: 1px solid var(--line); background: var(--card); border-radius: 100px; padding: 2px 8px; font-size: .74rem; cursor: pointer; color: var(--ink-700); transition: background .12s, border-color .12s, color .12s; }
+.ent-kind-chip:hover { border-color: var(--primary); color: var(--ink); }
+.ent-kind-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.ent-kind-chip-n { opacity: .7; font-weight: 600; }
 
 /* ── Row action buttons: consistent sizing + 44px touch + focus ── */
 .admin-actions { display: flex; gap: var(--space-1); align-items: center; }
