@@ -24,33 +24,36 @@
             </div>
           </template>
         </nav>
-        <LazySearchAutocomplete class="topbar-search" />
+        <SearchAutocomplete class="topbar-search" />
         <div class="auth-area">
-          <ClientOnly>
+          <template v-if="clientReady">
             <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
               <span v-if="colorMode.value === 'dark'" aria-hidden="true">☀️</span>
               <span v-else aria-hidden="true">🌙</span>
             </button>
-            <template #fallback>
-              <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối">🌙</button>
-            </template>
-          </ClientOnly>
-          <ClientOnly>
             <template v-if="isLoggedIn">
               <LazyNotificationBell />
               <LazyUserMenu />
             </template>
+            <span v-else-if="hasAuthSession" class="auth-user auth-user-snapshot" aria-label="Tài khoản">
+              <span class="avatar avatar-sm">{{ headerInitial }}</span>
+              <span class="auth-user-name">{{ headerDisplayName }}</span>
+            </span>
             <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
-            <template #fallback>
-              <button type="button" class="auth-btn">Đăng nhập</button>
-            </template>
-          </ClientOnly>
+          </template>
+          <template v-else>
+            <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối">🌙</button>
+            <span class="auth-user auth-user-snapshot auth-user-loading" aria-hidden="true">
+              <span class="avatar avatar-sm">?</span>
+              <span class="auth-user-name">Tài khoản</span>
+            </span>
+          </template>
         </div>
       </div>
     </header>
 
     <Transition name="banner-slide">
-      <div v-if="showBeta" class="beta-banner">
+      <div v-if="clientReady && showBeta" class="beta-banner">
         <div class="beta-inner">
           <span class="beta-icon">{{ ss('announcements.icon', '🚧') }}</span>
           <p><strong>{{ ss('announcements.text', 'Trang đang trong giai đoạn xây dựng.') }}</strong> {{ ss('announcements.subtext', 'Một số tính năng có thể chưa hoàn thiện hoặc thay đổi. Cảm ơn bạn đã ghé thăm!') }}</p>
@@ -59,26 +62,22 @@
       </div>
     </Transition>
 
-    <noscript>
-      <div class="noscript-banner">Trang web này cần JavaScript để hoạt động. Vui lòng bật JavaScript trong trình duyệt.</div>
-    </noscript>
+    <noscript class="noscript-banner">Trang web này cần JavaScript để hoạt động. Vui lòng bật JavaScript trong trình duyệt.</noscript>
 
     <main id="main-content" role="main" tabindex="-1">
       <slot />
     </main>
 
-    <LazyAuthModal :visible="showAuth" @close="showAuth = false" />
-    <LazyConfirmDialog />
-    <ClientOnly>
-      <ScrollToTop />
-    </ClientOnly>
-    <LazyChatWidget />
-    <ClientOnly>
+    <template v-if="clientReady">
+      <LazyAuthModal :visible="showAuth" @close="showAuth = false" />
+      <LazyConfirmDialog />
+      <LazyScrollToTop />
+      <LazyChatWidget />
       <LazyOnboardingSheet />
       <LazyJourneyBar />
       <LazyReportModal />
       <LazyToastContainer />
-    </ClientOnly>
+    </template>
 
     <footer class="site-footer" role="contentinfo">
       <div class="footer-inner">
@@ -120,19 +119,24 @@
 
 <script setup lang="ts">
 const route = useRoute()
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, user } = useAuth()
 const colorMode = useColorMode()
 const { get: ss } = useSiteSettings()
+const hasAuthSession = computed(() => isLoggedIn.value)
+const headerDisplayName = computed(() => user.value?.display_name || user.value?.phone || 'Tài khoản')
+const headerInitial = computed(() => headerDisplayName.value ? headerDisplayName.value.charAt(0).toUpperCase() : '?')
 function toggleColorMode() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
 const { open: showAuth } = useAuthModal()
 useSeasonTheme()
 const mobileNav = ref(false)
+const clientReady = ref(false)
 const bannerEnabled = computed(() => ss('announcements.enabled', true))
 const showBeta = ref(false)
 const LS_BETA = 'vl360_beta_dismissed'
 onMounted(() => {
+  clientReady.value = true
   if (bannerEnabled.value && localStorage.getItem(LS_BETA) !== '1') showBeta.value = true
   if (route.query.login === 'admin') showAuth.value = true
 })
@@ -157,7 +161,7 @@ const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: s
   { label: 'Lịch trình', children: [
     { to: '/lich-trinh', label: 'Lịch trình gợi ý' },
     { to: '/tao-lich-trinh', label: 'Tạo lịch trình' },
-    { to: '/lich-trinh', label: 'Đã lưu' },
+    { to: '/da-luu', label: 'Đã lưu' },
   ] },
   { label: 'Cộng đồng', to: '/cong-dong' },
 ]
@@ -279,6 +283,7 @@ function onNavKeydown(e: KeyboardEvent) {
   ).filter(el => el.offsetParent !== null)
   if (!focusable.length) return
   const first = focusable[0], last = focusable[focusable.length - 1]
+  if (!first || !last) return
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
 }
