@@ -7,6 +7,7 @@ Chạy trên SQLite tạm, không đụng DB thật.
 """
 
 import json
+import inspect
 import sys
 from pathlib import Path
 
@@ -17,6 +18,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from database import (  # noqa: E402
     Database,
+    PG_REQUIRED_COLUMNS,
+    PG_REQUIRED_SCHEMA_VERSION,
+    PG_REQUIRED_TABLES,
     _validate_place_level,
     _coords_in_region,
     _coerce_iso_date,
@@ -61,6 +65,32 @@ def test_initialize_creates_core_tables(db):
         names = {r[0] for r in conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
     assert {"entities", "relationships", "itineraries", "feedback", "query_log"} <= names
+
+def test_pg_initialize_verifies_schema_before_legacy_repair_code():
+    """Postgres startup must be migration-driven, not runtime schema repair."""
+    src = inspect.getsource(Database.initialize)
+    pg_branch = src.split("if self._use_pg:", 1)[1].split("conn.executescript", 1)[0]
+    assert "self._verify_pg_schema(conn)" in src
+    assert src.index("self._verify_pg_schema(conn)") < src.index("ALTER TABLE")
+    assert "ALTER TABLE" not in pg_branch
+    assert "CREATE INDEX" not in pg_branch
+    verify_src = inspect.getsource(Database._verify_pg_schema)
+    assert "ALTER TABLE" not in verify_src
+    assert "CREATE INDEX" not in verify_src
+
+def test_pg_schema_contract_tracks_latest_release_tables():
+    # 62 = GĐ-B/C entity split (059 repair chain, 060 universal cols, 061 CTI, 062 vá):
+    # replay PG trắng + prod đều ở 62 (2026-07-02).
+    assert PG_REQUIRED_SCHEMA_VERSION == 62
+    assert {"schema_version", "admin_audit_events", "shared_rate_limits", "request_idempotency_keys"} <= PG_REQUIRED_TABLES
+    assert {"entity_changes", "site_settings_history"} <= PG_REQUIRED_TABLES
+    assert {f"entity_{k}_details" for k in
+            ("place", "food", "product", "lodging", "event",
+             "experience", "facility", "person", "adminplace")} <= PG_REQUIRED_TABLES
+    assert {"key", "hits", "expires_at", "updated_at"} <= PG_REQUIRED_COLUMNS["shared_rate_limits"]
+    assert {"key", "first_seen_at", "expires_at", "meta"} <= PG_REQUIRED_COLUMNS["request_idempotency_keys"]
+    assert "bucket" not in PG_REQUIRED_COLUMNS["shared_rate_limits"]
+    assert "response_json" not in PG_REQUIRED_COLUMNS["request_idempotency_keys"]
 
 
 # ── Entity CRUD + JSON round-trip ──
@@ -144,12 +174,15 @@ def test_add_relationship_dedup(db):
 
 def test_itinerary_roundtrip(db):
     it = {"id": "it1", "title": "1 ngày Vĩnh Long", "area": "vinh-long",
-          "duration": "1 ngày", "summary": "x", "stops": [{"name": "A"}, {"name": "B"}]}
+          "areas": ["vinh-long", "ben-tre"], "duration": "1 ngày", "summary": "x",
+          "stops": [{"name": "A"}, {"name": "B"}]}
     db.upsert_itinerary(it)
     got = db.get_itinerary("it1")
     assert got["title"] == "1 ngày Vĩnh Long"
+    assert got["areas"] == ["vinh-long", "ben-tre"]
     assert isinstance(got["stops"], list) and len(got["stops"]) == 2
     assert {i["id"] for i in db.list_itineraries()} == {"it1"}
+    assert {i["id"] for i in db.list_itineraries(area="ben-tre")} == {"it1"}
 
 
 # ── migrate_from_json ──
@@ -212,7 +245,7 @@ def test_replace_from_json_roundtrip_with_rels_itins(db, tmp_path, monkeypatch):
     data = {
         "entities": [_entity(eid="a"), _entity(eid="b")],
         "relationships": [{"from": "a", "to": "b", "type": "near"}],
-        "itineraries": [{"id": "it1", "title": "T", "area": "vinh-long", "stops": [{"name": "A"}]}],
+        "itineraries": [{"id": "it1", "title": "T", "area": "vinh-long", "areas": ["vinh-long", "ben-tre"], "stops": [{"name": "A"}]}],
     }
     p = tmp_path / "data.json"
     p.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
@@ -222,6 +255,7 @@ def test_replace_from_json_roundtrip_with_rels_itins(db, tmp_path, monkeypatch):
     assert db.all_relationships() == [{"from": "a", "to": "b", "type": "near"}]
     its = db.all_itineraries()
     assert len(its) == 1 and its[0]["id"] == "it1"
+    assert its[0]["areas"] == ["vinh-long", "ben-tre"]
 
 
 def test_replace_from_json_atomic_rollback(db, tmp_path, monkeypatch):

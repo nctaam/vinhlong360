@@ -23,72 +23,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agent"))
-from entity_schemas import ENTITY_SCHEMAS, KIND_OF_TYPE, _coerce  # noqa: E402
+from entity_schemas import KIND_OF_TYPE  # noqa: E402
+# Nguồn sự thật ánh xạ + coercion: agent/entity_details.py (GĐ-C dual-write dùng chung).
+from entity_details import (  # noqa: E402
+    INT_COLUMNS, JSONB_COLUMNS, KEY_MAP, KIND_TABLE, UNIVERSAL, split_typed,
+)
 
-UNIVERSAL = ["address", "phone", "website", "hours", "price_range",
-             "sub_category", "best_time", "highlight"]
-KEY_MAP = {"view": "view_note", "architectural_style": "architecture_style"}
-KIND_TABLE = {
-    "place": "entity_place_details",
-    "food": "entity_food_details",
-    "product": "entity_product_details",
-    "lodging": "entity_lodging_details",
-    "event": "entity_event_details",
-    "experience": "entity_experience_details",
-    "facility": "entity_facility_details",
-    "person": "entity_person_details",
-    "admin_place": "entity_adminplace_details",
-}
-# Cột INTEGER trong 061 — float lẻ (4.5) vào đây là dữ liệu rác → bỏ qua.
-INT_COLUMNS = {"founding_year", "scenic_rating", "review_count", "ocop_star",
-               "households", "star_rating", "rooms", "month", "duration_days",
-               "birth_year", "death_year", "population"}
-# Cột JSONB trong 061 (widget tags).
-JSONB_COLUMNS = {"ingredients", "amenities", "merged_from"}
-
-
-def typed_values(etype: str, attrs: dict) -> tuple[dict, dict, list[str]]:
-    """→ (universal {key: str}, detail {column: value}, skipped [key=value])."""
-    schema = ENTITY_SCHEMAS.get(etype) or {"fields": []}
-    uni: dict = {}
-    det: dict = {}
-    skipped: list[str] = []
-    for f in schema["fields"]:
-        key = f["key"]
-        if key not in attrs:
-            continue
-        raw = attrs[key]
-        if raw in (None, "", [], {}):
-            continue
-        coerced, ok = _coerce(raw, f["widget"])
-        if not ok or coerced in (None, "", [], {}):
-            skipped.append(f"{key}={raw!r}")
-            continue
-        if key in UNIVERSAL:
-            uni[key] = coerced if isinstance(coerced, str) else str(coerced)
-            continue
-        col = KEY_MAP.get(key, key)
-        if col in INT_COLUMNS:
-            # Widget select trả string ("3" cho ocop_star) — nhận string số.
-            if isinstance(coerced, bool):
-                skipped.append(f"{key}={raw!r}")
-                continue
-            if isinstance(coerced, str):
-                try:
-                    coerced = float(coerced.strip().replace(",", "."))
-                except ValueError:
-                    skipped.append(f"{key}={raw!r}")
-                    continue
-            if isinstance(coerced, float):
-                if not coerced.is_integer():
-                    skipped.append(f"{key}={raw!r}")
-                    continue
-                coerced = int(coerced)
-            if not isinstance(coerced, int):
-                skipped.append(f"{key}={raw!r}")
-                continue
-        det[col] = coerced
-    return uni, det, skipped
+typed_values = split_typed  # alias giữ tương thích parity script/test
 
 
 def main() -> int:

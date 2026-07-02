@@ -44,6 +44,51 @@ RELATIONSHIP_TYPE_PRIORITY = {
     "near": 9,
 }
 
+import entity_details as _entity_details
+
+PG_REQUIRED_TABLES = {
+    "entities",
+    "relationships",
+    "itineraries",
+    "users",
+    "posts",
+    "comments",
+    "saved_entities",
+    "site_settings",
+    "schema_version",
+    "admin_audit_events",
+    "shared_rate_limits",
+    "request_idempotency_keys",
+    "quality_metric_snapshots",
+    # GĐ-B/C entity split (migration 059-062)
+    "entity_changes",
+    "site_settings_history",
+    "entity_place_details",
+    "entity_food_details",
+    "entity_product_details",
+    "entity_lodging_details",
+    "entity_event_details",
+    "entity_experience_details",
+    "entity_facility_details",
+    "entity_person_details",
+    "entity_adminplace_details",
+}
+
+PG_REQUIRED_COLUMNS = {
+    "entities": {"id", "type", "name", "status", "verified", "coordinates", "attributes", "images"},
+    "itineraries": {"id", "title", "area", "areas", "stops"},
+    "users": {"id", "phone", "password_hash", "username", "role", "is_active"},
+    "posts": {"id", "user_id", "entity_id", "content", "moderation_status", "deleted_at", "is_draft"},
+    "saved_entities": {"id", "user_id", "entity_id", "kind", "snapshot", "created_at"},
+    "admin_audit_events": {"actor", "actor_scopes", "request_id", "before_json", "after_json"},
+    "shared_rate_limits": {"key", "hits", "expires_at", "updated_at"},
+    "request_idempotency_keys": {"key", "first_seen_at", "expires_at", "meta"},
+    "quality_metric_snapshots": {"metric_key", "metric_value", "created_at"},
+    "schema_version": {"component", "version", "migration", "updated_at"},
+}
+
+PG_REQUIRED_SCHEMA_VERSION = 62
+
 if USE_PG:
     import psycopg2
     import psycopg2.extras
@@ -75,6 +120,14 @@ def _validate_place_level(entity: dict):
         entity["level"] = "xa"
 
 
+def _normalize_itinerary_areas(value) -> list[str]:
+    if isinstance(value, list):
+        return [str(area) for area in value if area]
+    if isinstance(value, str):
+        return [part.strip() for part in value.split(",") if part.strip()]
+    return []
+
+
 def _coords_in_region(c) -> bool:
     """True nếu [lat, lng] nằm trong vùng 3 tỉnh. Toạ độ ngoài vùng = geocode sai → loại."""
     try:
@@ -82,6 +135,9 @@ def _coords_in_region(c) -> bool:
     except (TypeError, IndexError, ValueError):
         return False
     return _REGION_BBOX[0] <= lat <= _REGION_BBOX[1] and _REGION_BBOX[2] <= lng <= _REGION_BBOX[3]
+
+def _env_truthy(name: str, default: str = "false") -> bool:
+    return os.environ.get(name, default).strip().lower() in ("1", "true", "yes", "on")
 
 
 # ══════════════════════════════════════════════════
@@ -214,8 +270,101 @@ class Database:
             return row
         return dict(row)
 
+    def _verify_pg_schema(self, conn) -> None:
+        """Verify PostgreSQL schema at startup without mutating it."""
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute(
+            """
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'public'
+            """
+        )
+        tables = {row["table_name"] for row in cur.fetchall()}
+        missing_tables = sorted(PG_REQUIRED_TABLES - tables)
+
+        missing_columns: list[str] = []
+        for table, columns in PG_REQUIRED_COLUMNS.items():
+            if table not in tables:
+                continue
+            cur.execute(
+                """
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = %s
+                """,
+                (table,),
+            )
+            existing = {row["column_name"] for row in cur.fetchall()}
+            for column in sorted(columns - existing):
+                missing_columns.append(f"{table}.{column}")
+
+        schema_version = 0
+        if "schema_version" in tables:
+            cur.execute(
+                "SELECT COALESCE(MAX(version), 0) AS version FROM schema_version WHERE component = %s",
+                ("agent",),
+            )
+            row = cur.fetchone() or {}
+            schema_version = int(row.get("version") or 0)
+
+        issues: list[str] = []
+        if missing_tables:
+            issues.append("missing tables: " + ", ".join(missing_tables))
+        if missing_columns:
+            issues.append("missing columns: " + ", ".join(missing_columns))
+        if schema_version < PG_REQUIRED_SCHEMA_VERSION:
+            issues.append(f"schema_version agent={schema_version}, expected >= {PG_REQUIRED_SCHEMA_VERSION}")
+
+        if not issues:
+            return
+
+        message = (
+            "PostgreSQL schema is not ready for this release: "
+            + "; ".join(issues)
+            + ". Run scripts/apply_migrations.py before starting the agent."
+        )
+        if _env_truthy("VL360_ALLOW_PG_SCHEMA_DRIFT"):
+            logger.warning("%s Continuing because VL360_ALLOW_PG_SCHEMA_DRIFT is enabled.", message)
+            return
+        raise RuntimeError(message)
+
+    def pg_schema_status(self) -> dict:
+        """Return a non-mutating schema readiness snapshot for health checks."""
+        if not self._use_pg:
+            return {
+                "backend": "sqlite",
+                "ok": True,
+                "schema_version": None,
+                "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+            }
+
+        try:
+            with self._conn() as conn:
+                self._verify_pg_schema(conn)
+                row = self._fetchone(
+                    conn,
+                    "SELECT COALESCE(MAX(version), 0) AS version FROM schema_version WHERE component = %s",
+                    ("agent",),
+                )
+                version = int((row or {}).get("version") or 0)
+            return {
+                "backend": "postgresql",
+                "ok": version >= PG_REQUIRED_SCHEMA_VERSION,
+                "schema_version": version,
+                "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+            }
+        except Exception as exc:  # noqa: BLE001 - health endpoint should report, not crash
+            return {
+                "backend": "postgresql",
+                "ok": False,
+                "schema_version": 0,
+                "required_schema_version": PG_REQUIRED_SCHEMA_VERSION,
+                "error": f"{type(exc).__name__}: {exc}",
+            }
+
     def initialize(self):
-        """Create tables if they don't exist (SQLite only; PG uses init.sql)."""
+        """Create SQLite tables or verify PostgreSQL schema."""
         if self._initialized:
             return
         with self._lock:
@@ -224,49 +373,9 @@ class Database:
 
             if self._use_pg:
                 with self._conn() as conn:
-                    cur = conn.cursor()
-                    cur.execute("SELECT 1 FROM entities LIMIT 1")
-                    for col, coldef in [("status", "TEXT"), ("verified", "INTEGER DEFAULT 1")]:
-                        cur.execute(
-                            "SELECT 1 FROM information_schema.columns "
-                            "WHERE table_name='entities' AND column_name=%s", (col,)
-                        )
-                        if not cur.fetchone():
-                            cur.execute(f"ALTER TABLE entities ADD COLUMN {col} {coldef}")
-                    for idx_sql in [
-                        "CREATE INDEX IF NOT EXISTS idx_entities_area ON entities(area)",
-                        "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
-                        "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
-                        "CREATE INDEX IF NOT EXISTS idx_follows_follower ON follows(follower_id)",
-                        "CREATE INDEX IF NOT EXISTS idx_follows_target ON follows(target_id, target_type)",
-                        "CREATE INDEX IF NOT EXISTS idx_posts_user ON posts(user_id, moderation_status)",
-                        "CREATE INDEX IF NOT EXISTS idx_posts_entity ON posts(entity_id, moderation_status)",
-                        "CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id, moderation_status)",
-                        "CREATE INDEX IF NOT EXISTS idx_likes_user ON likes(user_id, post_id)",
-                        "CREATE INDEX IF NOT EXISTS idx_bookmarks_user ON bookmarks(user_id, post_id)",
-                        "CREATE INDEX IF NOT EXISTS idx_entity_ratings ON entity_ratings(entity_id)",
-                        "CREATE INDEX IF NOT EXISTS idx_posts_feed ON posts(moderation_status, created_at DESC)",
-                        "CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC)",
-                        "CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC)",
-                        "CREATE INDEX IF NOT EXISTS idx_posts_hashtags ON posts USING GIN(hashtags)",
-                        "CREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(token)",
-                        "CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id, expires_at DESC)",
-                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(lower(username)) WHERE username IS NOT NULL",
-                        "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone_number) WHERE phone_number IS NOT NULL",
-                        "CREATE INDEX IF NOT EXISTS idx_entity_changes_entity ON entity_changes(entity_id)",
-                        "CREATE INDEX IF NOT EXISTS idx_entities_type_area ON entities(type, area)",
-                        "CREATE INDEX IF NOT EXISTS idx_relationships_type ON relationships(type)",
-                        "CREATE INDEX IF NOT EXISTS idx_comments_user ON comments(user_id)",
-                        "CREATE INDEX IF NOT EXISTS idx_posts_user_draft ON posts(user_id, is_draft)",
-                        "CREATE INDEX IF NOT EXISTS idx_user_hidden_posts_user ON user_hidden_posts(user_id, post_id)",
-                    ]:
-                        try:
-                            cur.execute(idx_sql)
-                        except Exception as e:
-                            logger.debug("Index creation skipped: %s — %s", idx_sql[:60], e)
-                    conn.commit()
-                self._initialized = True
-                return
+                    self._verify_pg_schema(conn)
+                    self._initialized = True
+                    return
 
             with self._conn() as conn:
                 conn.executescript("""
@@ -312,6 +421,7 @@ class Database:
                         id TEXT PRIMARY KEY,
                         title TEXT NOT NULL,
                         area TEXT,
+                        areas TEXT DEFAULT '[]',
                         duration TEXT,
                         summary TEXT DEFAULT '',
                         stops TEXT DEFAULT '[]',
@@ -366,6 +476,10 @@ class Database:
                             conn.execute(f"ALTER TABLE entities ADD COLUMN {col}")
                         except sqlite3.OperationalError:
                             pass
+                    try:
+                        conn.execute("ALTER TABLE itineraries ADD COLUMN areas TEXT DEFAULT '[]'")
+                    except sqlite3.OperationalError:
+                        pass
                     for idx_sql in [
                         "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
                         "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
@@ -374,6 +488,9 @@ class Database:
                             conn.execute(idx_sql)
                         except sqlite3.OperationalError:
                             pass
+
+                # GĐ-C: DDL parity SQLite — 8 cột phổ quát + 9 bảng CTI (PG do migrations sở hữu)
+                _entity_details.ensure_schema_sqlite(conn)
 
             self._initialized = True
 
@@ -473,6 +590,10 @@ class Database:
                         (entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
                 except sqlite3.OperationalError:
                     logger.debug("FTS5 insert skipped for entity %s", entity["id"])
+            # GĐ-C dual-write: cột phổ quát + bảng CTI phản chiếu attrs (cùng transaction).
+            _entity_details.sync_entity_details(
+                conn, self._use_pg, entity["id"], entity["type"],
+                attrs_val if isinstance(attrs_val, dict) else {})
 
     def update_description(self, entity_id: str, description: str):
         """Update only the description field (won't be overwritten by upsert_entity)."""
@@ -509,6 +630,8 @@ class Database:
             cur = self._execute(conn, f"DELETE FROM entities WHERE id = {ph}", (entity_id,))
             self._execute(conn, f"DELETE FROM relationships WHERE from_id = {ph} OR to_id = {ph}",
                           (entity_id, entity_id))
+            # GĐ-C: dọn detail rows (PG có FK CASCADE; SQLite dev thường không bật pragma FK)
+            _entity_details.delete_entity_details(conn, self._use_pg, entity_id)
             if not self._use_pg:
                 try:
                     conn.execute("DELETE FROM entities_fts WHERE id = ?", (entity_id,))
@@ -938,24 +1061,25 @@ class Database:
         self.initialize()
         ph = self._ph
         stops = json.dumps(itinerary.get("stops", []), ensure_ascii=False)
+        areas = json.dumps(_normalize_itinerary_areas(itinerary.get("areas")), ensure_ascii=False)
         with self._conn() as conn:
             if self._use_pg:
                 self._execute(conn, f"""
-                    INSERT INTO itineraries (id, title, area, duration, summary, stops)
-                    VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph})
+                    INSERT INTO itineraries (id, title, area, areas, duration, summary, stops)
+                    VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})
                     ON CONFLICT (id) DO UPDATE SET
-                        title = EXCLUDED.title, area = EXCLUDED.area,
+                        title = EXCLUDED.title, area = EXCLUDED.area, areas = EXCLUDED.areas,
                         duration = EXCLUDED.duration, summary = EXCLUDED.summary,
                         stops = EXCLUDED.stops
                 """, (
-                    itinerary["id"], itinerary["title"], itinerary.get("area"),
+                    itinerary["id"], itinerary["title"], itinerary.get("area"), areas,
                     itinerary.get("duration"), itinerary.get("summary", ""), stops))
             else:
                 conn.execute("""
-                    INSERT OR REPLACE INTO itineraries (id, title, area, duration, summary, stops)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT OR REPLACE INTO itineraries (id, title, area, areas, duration, summary, stops)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    itinerary["id"], itinerary["title"], itinerary.get("area"),
+                    itinerary["id"], itinerary["title"], itinerary.get("area"), areas,
                     itinerary.get("duration"), itinerary.get("summary", ""), stops))
 
     def get_itinerary(self, itin_id: str) -> dict | None:
@@ -970,7 +1094,13 @@ class Database:
         ph = self._ph
         with self._conn() as conn:
             if area:
-                rows = self._fetchall(conn, f"SELECT * FROM itineraries WHERE area = {ph} LIMIT {ph} OFFSET {ph}", (area, limit, offset))
+                area_token = f'%"{area}"%'
+                areas_expr = "areas::text" if self._use_pg else "areas"
+                rows = self._fetchall(
+                    conn,
+                    f"SELECT * FROM itineraries WHERE area = {ph} OR {areas_expr} LIKE {ph} LIMIT {ph} OFFSET {ph}",
+                    (area, area_token, limit, offset),
+                )
             else:
                 rows = self._fetchall(conn, f"SELECT * FROM itineraries LIMIT {ph} OFFSET {ph}", (limit, offset))
             return [self._parse_itinerary(r) for r in rows]
@@ -1172,7 +1302,9 @@ class Database:
         itin_rows = []
         for it in data.get("itineraries", []):
             itin_rows.append((
-                it["id"], it["title"], it.get("area"), it.get("duration"),
+                it["id"], it["title"], it.get("area"),
+                json.dumps(_normalize_itinerary_areas(it.get("areas")), ensure_ascii=False),
+                it.get("duration"),
                 it.get("summary", ""), json.dumps(it.get("stops", []), ensure_ascii=False),
             ))
 
@@ -1187,8 +1319,8 @@ class Database:
                 "INSERT INTO relationships (from_id, to_id, type) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
                 rel_rows)
             cur.executemany(
-                "INSERT INTO itineraries (id, title, area, duration, summary, stops) "
-                "VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING",
+                "INSERT INTO itineraries (id, title, area, areas, duration, summary, stops) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING",
                 itin_rows)
             stored = self._fetchone(conn, "SELECT COUNT(*) as c FROM relationships")["c"]
         else:
@@ -1205,9 +1337,16 @@ class Database:
             conn.executemany(
                 "INSERT OR IGNORE INTO relationships (from_id, to_id, type) VALUES (?, ?, ?)", rel_rows)
             conn.executemany(
-                "INSERT OR REPLACE INTO itineraries (id, title, area, duration, summary, stops) "
-                "VALUES (?, ?, ?, ?, ?, ?)", itin_rows)
+                "INSERT OR REPLACE INTO itineraries (id, title, area, areas, duration, summary, stops) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)", itin_rows)
             stored = conn.execute("SELECT COUNT(*) as c FROM relationships").fetchone()["c"]
+
+        # GĐ-C dual-write: phản chiếu typed attrs của TOÀN BỘ entities vừa nạp vào
+        # cột phổ quát + bảng CTI — cùng transaction với DELETE+INSERT (F1 atomic).
+        for entity in data.get("entities", []):
+            _entity_details.sync_entity_details(
+                conn, self._use_pg, entity["id"], entity["type"],
+                entity.get("attributes") or {})
 
         return {
             "status": "migrated",
@@ -1381,13 +1520,14 @@ class Database:
 
     def _parse_itinerary(self, row) -> dict:
         d = self._row_to_dict(row)
-        if not self._use_pg:
-            if d.get("stops") and isinstance(d["stops"], str):
+        for field in ("stops", "areas"):
+            if d.get(field) and isinstance(d[field], str):
                 try:
-                    d["stops"] = json.loads(d["stops"])
+                    d[field] = json.loads(d[field])
                 except (json.JSONDecodeError, ValueError, TypeError):
-                    logger.warning("Corrupt JSON in itinerary %s stops", d.get("id"))
-                    d["stops"] = []
+                    logger.warning("Corrupt JSON in itinerary %s %s", d.get("id"), field)
+                    d[field] = []
+        d["areas"] = _normalize_itinerary_areas(d.get("areas"))
         return d
 
 
