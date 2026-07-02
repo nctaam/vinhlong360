@@ -152,7 +152,7 @@
           <div class="ent-field">
             <label class="form-label" for="ent-type">Loại</label>
             <select id="ent-type" v-model="form.type" class="input" aria-label="Loại entity">
-              <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+              <option v-for="t in types" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
             </select>
           </div>
           <div class="ent-field">
@@ -169,6 +169,23 @@
             <button type="button" class="btn btn-ghost btn-sm" @click="previewSummary = !previewSummary">{{ previewSummary ? 'Sửa' : 'Xem trước' }}</button>
           </div>
           </fieldset>
+
+          <!-- Trường theo loại (content-model registry) -->
+          <fieldset v-for="grp in currentSchemaGroups" :key="grp.legend" class="ent-fieldset ent-typed-fieldset">
+            <legend class="ent-fieldset-legend">
+              {{ entitySchemas[form.type]?.emoji }} {{ grp.legend }}
+              <span class="ent-typed-hint">— {{ entitySchemas[form.type]?.label }}</span>
+            </legend>
+            <div class="ent-typed-grid">
+              <AdminSchemaField
+                v-for="f in grp.fields" :key="f.key"
+                :field="f"
+                :model-value="typedAttrs[f.key]"
+                @update:model-value="(v: unknown) => (typedAttrs[f.key] = v)"
+              />
+            </div>
+          </fieldset>
+
           <!-- KBYG — Know Before You Go -->
           <details class="ent-kbyg-details">
             <summary class="admin-label ent-kbyg-summary">🎒 Biết trước khi đi (KBYG)</summary>
@@ -293,6 +310,89 @@ const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
 const { timeAgo } = useTimeAgo()
 
+interface EntityForm {
+  id: string
+  name: string
+  type: string
+  placeId: string
+  summary: string
+  images: string[]
+  attributes?: Record<string, unknown>
+}
+
+interface EntityListResponse {
+  entities?: Entity[]
+  total?: number
+}
+
+interface AdminRelationship {
+  from_id: string
+  to_id: string
+  type: string
+  target_name?: string
+  source_name?: string
+}
+
+interface EntityHistoryRecord {
+  id: string | number
+  field: string
+  new_value?: string
+  created_at: string
+}
+
+interface EntityImagesResponse {
+  images?: string[]
+}
+
+const EMPTY_ENTITY_FORM: EntityForm = { id: '', name: '', type: 'experience', placeId: '', summary: '', images: [] }
+
+// ── Content-model registry (per-type typed fields) ──
+interface SchemaFieldDef {
+  key: string; label: string; widget: string; required?: boolean
+  options?: (string | number)[]; help?: string; placeholder?: string
+  group?: string; min?: number; max?: number; step?: number
+}
+interface TypeSchema { type: string; label: string; emoji: string; kind: string; fields: SchemaFieldDef[] }
+const entitySchemas = ref<Record<string, TypeSchema>>({})
+// typed attribute values bound to the per-type form (separate from bespoke tail)
+const typedAttrs = ref<Record<string, unknown>>({})
+
+async function fetchEntitySchema() {
+  if (Object.keys(entitySchemas.value).length) return
+  try {
+    const r = await $fetch<{ types: Record<string, TypeSchema> }>('/admin-api/entity-schema', { headers: authHeaders() })
+    entitySchemas.value = r.types || {}
+  } catch { /* form falls back to core fields only */ }
+}
+
+// Fields for the current form.type, grouped by their `group` label (preserves order).
+const currentSchemaGroups = computed(() => {
+  const s = entitySchemas.value[form.value.type]
+  if (!s || !s.fields?.length) return [] as { legend: string; fields: SchemaFieldDef[] }[]
+  const groups: { legend: string; fields: SchemaFieldDef[] }[] = []
+  const byLegend = new Map<string, SchemaFieldDef[]>()
+  for (const f of s.fields) {
+    const g = f.group || 'Chi tiết'
+    if (!byLegend.has(g)) { byLegend.set(g, []); groups.push({ legend: g, fields: byLegend.get(g)! }) }
+    byLegend.get(g)!.push(f)
+  }
+  return groups
+})
+const currentSchemaKeys = computed(() => (entitySchemas.value[form.value.type]?.fields || []).map(f => f.key))
+
+// Load the schema-defined attribute values off an entity's attributes into typedAttrs.
+function initTypedAttrs(attrs?: Record<string, unknown>) {
+  const a = attrs || {}
+  const next: Record<string, unknown> = {}
+  for (const k of currentSchemaKeys.value) {
+    if (a[k] !== undefined) next[k] = a[k]
+  }
+  typedAttrs.value = next
+}
+
+// When the admin switches type inside the form, re-seed typed fields from any
+// existing values so nothing already entered is lost.
+watch(() => form.value.type, () => { initTypedAttrs(typedAttrs.value) })
 
 const types = Object.keys(TYPE_META)
 const search = ref('')
@@ -305,9 +405,9 @@ const totalEntities = ref(0)
 const showModal = ref(false)
 const modalRef = ref<HTMLElement | null>(null)
 useModalA11y(showModal, modalRef, { onClose: () => { showModal.value = false } })
-const editingEntity = ref<Record<string, unknown> | null>(null)
+const editingEntity = ref<Entity | null>(null)
 const placesList = ref<{ id: string; name: string; area?: string }[]>([])
-const form = ref<Record<string, unknown>>({})
+const form = ref<EntityForm>({ ...EMPTY_ENTITY_FORM })
 const selected = ref<Set<string>>(new Set())
 const loading = ref(true)
 const acting = ref<string | null>(null)
@@ -450,9 +550,9 @@ async function fetchEntities(reset = false) {
     if (search.value) params.set('q', search.value)
     if (typeFilter.value) params.set('type', typeFilter.value)
     if (orphansOnly.value) params.set('orphans_only', 'true')
-    const res = await $fetch<Record<string, unknown>>(`/admin-api/entities?${params}`, { headers: authHeaders() })
-    entities.value = res.entities || res || []
-    totalEntities.value = (res as any).total ?? entities.value.length
+    const res = await $fetch<EntityListResponse | Entity[]>(`/admin-api/entities?${params}`, { headers: authHeaders() })
+    entities.value = Array.isArray(res) ? res : (res.entities || [])
+    totalEntities.value = Array.isArray(res) ? entities.value.length : (res.total ?? entities.value.length)
     loadError.value = false
   } catch {
     loadError.value = true
@@ -476,10 +576,11 @@ async function _focusModal() {
 
 function openCreate() {
   editingEntity.value = null
-  form.value = { id: '', name: '', type: 'experience', placeId: '', summary: '', images: [] }
+  form.value = { ...EMPTY_ENTITY_FORM }
   newImage.value = ''
   fieldErrors.value = {}
   initKbyg()
+  initTypedAttrs()
   showModal.value = true
   _focusModal()
 }
@@ -492,6 +593,7 @@ function openEdit(e: Entity) {
   newRel.value = { to_id: '', type: 'related_to' }
   fieldErrors.value = {}
   initKbyg((e as any).attributes)
+  initTypedAttrs((e as any).attributes)
   fetchRels(e.id)
   fetchEntityHistory(e.id)
   showModal.value = true
@@ -504,6 +606,7 @@ function cloneEntity(e: Entity) {
   newImage.value = ''
   fieldErrors.value = {}
   initKbyg((e as any).attributes)
+  initTypedAttrs((e as any).attributes)
   showModal.value = true
   _focusModal()
 }
@@ -521,12 +624,12 @@ function exportCSV() {
 
 // ── Quản lý quan hệ ──
 const relTypes = ['related_to', 'near', 'produced_in', 'located_in', 'associated_with', 'part_of', 'hosts']
-const rels = ref<Entity[]>([])
+const rels = ref<AdminRelationship[]>([])
 const newRel = ref<{ to_id: string; type: string }>({ to_id: '', type: 'related_to' })
 async function fetchRels(id: string) {
   rels.value = []
   try {
-    const r = await $fetch<Entity>(`/api/entities/${id}/relationships?limit=100`)
+    const r = await $fetch<{ relationships?: AdminRelationship[] }>(`/api/entities/${id}/relationships?limit=100`)
     rels.value = r.relationships || []
   } catch { showToast('Không tải được quan hệ', 'error') }
 }
@@ -541,7 +644,7 @@ async function addRel() {
     showToast('Đã thêm quan hệ', 'success')
   } catch (e: unknown) { showToast(getErrorDetail(e, 'Thêm quan hệ lỗi (id đích tồn tại?)'), 'error') }
 }
-async function removeRel(r: Record<string, unknown>) {
+async function removeRel(r: AdminRelationship) {
   if (!await confirmDialog(`Xóa quan hệ "${r.type}" → ${r.target_name || r.to_id}?`, { danger: true })) return
   const params = new URLSearchParams({ from_id: r.from_id, to_id: r.to_id, type: r.type })
   try {
@@ -570,15 +673,15 @@ async function addBulkRels() {
   bulkRelSaving.value = false
 }
 
-const entityHistory = ref<any[]>([])
+const entityHistory = ref<EntityHistoryRecord[]>([])
 async function fetchEntityHistory(id: string) {
   entityHistory.value = []
   try {
-    const r = await $fetch<{ history: any[] }>(`/admin-api/entities/${id}/history`, { headers: authHeaders() })
+    const r = await $fetch<{ history: EntityHistoryRecord[] }>(`/admin-api/entities/${id}/history`, { headers: authHeaders() })
     entityHistory.value = r.history || []
   } catch { /* ignore — table may not exist yet */ }
 }
-function truncVal(v: string): string {
+function truncVal(v?: string): string {
   if (!v) return '(trống)'
   return v.length > 60 ? v.slice(0, 57) + '…' : v
 }
@@ -608,7 +711,15 @@ async function saveEntity() {
   saving.value = true
   try {
     const body = { ...form.value }
-    const existingAttrs = (editingEntity.value as any)?.attributes || (body.attributes as Record<string, unknown>) || {}
+    const existingAttrs = { ...((editingEntity.value as any)?.attributes || (body.attributes as Record<string, unknown>) || {}) }
+    // Overlay typed schema fields for the current type. A cleared field
+    // (undefined / '' / empty array) is removed; the bespoke tail is preserved.
+    for (const k of currentSchemaKeys.value) {
+      const v = typedAttrs.value[k]
+      const empty = v === undefined || v === '' || (Array.isArray(v) && v.length === 0)
+      if (empty) delete existingAttrs[k]
+      else existingAttrs[k] = v
+    }
     body.attributes = mergeKbygIntoAttrs(existingAttrs)
     if (editingEntity.value) {
       await $fetch(`/admin-api/entities/${form.value.id}`, { method: 'PUT', headers: authHeaders(), body })
@@ -632,7 +743,7 @@ async function addImage() {
   const url = newImage.value.trim()
   if (!url || !editingEntity.value) return
   try {
-    const r = await $fetch<Record<string, unknown>>(`/admin-api/entities/${form.value.id}/images`, {
+    const r = await $fetch<EntityImagesResponse>(`/admin-api/entities/${form.value.id}/images`, {
       method: 'POST', headers: authHeaders(), body: { url } })
     form.value.images = r.images || form.value.images
     newImage.value = ''
@@ -642,7 +753,7 @@ async function removeImage(idx: number) {
   if (!editingEntity.value) return
   if (!await confirmDialog('Xóa ảnh này?', { danger: true })) return
   try {
-    const r = await $fetch<Record<string, unknown>>(`/admin-api/entities/${form.value.id}/images/${idx}`, {
+    const r = await $fetch<EntityImagesResponse>(`/admin-api/entities/${form.value.id}/images/${idx}`, {
       method: 'DELETE', headers: authHeaders() })
     form.value.images = r.images ?? form.value.images.filter((_: unknown, i: number) => i !== idx)
   } catch { showToast('Xóa ảnh lỗi', 'error') }
@@ -714,6 +825,7 @@ onMounted(() => {
   const route = useRoute()
   if (route.query.orphans === '1') orphansOnly.value = true
   if (typeof route.query.q === 'string' && route.query.q) search.value = route.query.q
+  fetchEntitySchema()
   fetchEntities()
   if (route.query.create === '1') openCreate()
   window.addEventListener('keydown', onKeydown)
@@ -828,6 +940,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-field .form-error { margin-top: 2px; }
 .ent-fieldset { border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
 .ent-fieldset-legend { font-weight: 600; font-size: .88rem; color: var(--ink); padding: 0; margin-bottom: var(--space-1); }
+.ent-typed-fieldset { border: 1px solid var(--line); border-radius: 10px; padding: var(--space-3); margin-top: var(--space-3); background: var(--bg-alt); }
+.ent-typed-fieldset .ent-fieldset-legend { padding: 0 var(--space-2); }
+.ent-typed-hint { font-weight: 400; color: var(--muted); font-size: .78rem; }
+.ent-typed-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); }
 
 /* ── Row action buttons: consistent sizing + 44px touch + focus ── */
 .admin-actions { display: flex; gap: var(--space-1); align-items: center; }
