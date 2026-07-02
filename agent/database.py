@@ -374,6 +374,9 @@ class Database:
             if self._use_pg:
                 with self._conn() as conn:
                     self._verify_pg_schema(conn)
+                    # GĐ-C C2: nạp cache detail khi flip đọc bật (đổi flag = restart)
+                    if _entity_details.reads_enabled():
+                        _entity_details.load_detail_cache(conn, True)
                     self._initialized = True
                     return
 
@@ -491,6 +494,9 @@ class Database:
 
                 # GĐ-C: DDL parity SQLite — 8 cột phổ quát + 9 bảng CTI (PG do migrations sở hữu)
                 _entity_details.ensure_schema_sqlite(conn)
+                # GĐ-C C2: nạp cache detail khi flip đọc bật (đổi flag = restart)
+                if _entity_details.reads_enabled():
+                    _entity_details.load_detail_cache(conn, False)
 
             self._initialized = True
 
@@ -594,6 +600,12 @@ class Database:
             _entity_details.sync_entity_details(
                 conn, self._use_pg, entity["id"], entity["type"],
                 attrs_val if isinstance(attrs_val, dict) else {})
+
+    def reload_entity_details_cache(self) -> int:
+        """GĐ-C C2: nạp lại cache detail-rows (test + vận hành sau khi sửa DB tay)."""
+        self.initialize()
+        with self._conn() as conn:
+            return _entity_details.load_detail_cache(conn, self._use_pg)
 
     def update_description(self, entity_id: str, description: str):
         """Update only the description field (won't be overwritten by upsert_entity)."""
@@ -1515,6 +1527,10 @@ class Database:
                     d[field] = json.loads(d[field])
                 except (json.JSONDecodeError, ValueError, TypeError):
                     logger.warning("Corrupt JSON in entity %s field %s", d.get("id"), field)
+        # GĐ-C C2: flag ON → attributes dựng lại từ cột (thắng) + fallback JSONB + tail
+        if _entity_details.reads_enabled():
+            d["attributes"] = _entity_details.rebuild_attributes(
+                d.get("type") or "", d.get("attributes"), d)
         _normalize_entity_timestamps(d)
         return d
 

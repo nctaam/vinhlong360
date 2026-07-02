@@ -16,6 +16,8 @@ JSONB vẫn là nguồn sự thật cho mọi đường đọc (flip đọc = C2
 from __future__ import annotations
 
 import json
+import os
+from decimal import Decimal
 from typing import Any
 
 from entity_schemas import ENTITY_SCHEMAS, KIND_OF_TYPE, _coerce
@@ -154,6 +156,7 @@ def sync_entity_details(conn, is_pg: bool, entity_id: str, etype: str,
     cols = KIND_COLUMNS[kind]
     if not det:
         _exec(conn, is_pg, f"DELETE FROM {table} WHERE entity_id = {ph}", [entity_id])
+        _cache_put(entity_id, None)
         return
     values = [_db_value(c, det.get(c), is_pg) for c in cols]
     collist = ", ".join(cols)
@@ -165,6 +168,7 @@ def sync_entity_details(conn, is_pg: bool, entity_id: str, etype: str,
     else:
         sql = f"INSERT OR REPLACE INTO {table} (entity_id, {collist}) VALUES ({phs})"
     _exec(conn, is_pg, sql, [entity_id, *values])
+    _cache_put(entity_id, det)
 
 
 def delete_entity_details(conn, is_pg: bool, entity_id: str) -> None:
@@ -173,6 +177,7 @@ def delete_entity_details(conn, is_pg: bool, entity_id: str) -> None:
     ph = "%s" if is_pg else "?"
     for table in KIND_TABLE.values():
         _exec(conn, is_pg, f"DELETE FROM {table} WHERE entity_id = {ph}", [entity_id])
+    _cache_put(entity_id, None)
 
 
 def _sqlite_type(col: str) -> str:
@@ -183,6 +188,107 @@ def _sqlite_type(col: str) -> str:
     if col in BOOL_COLUMNS:
         return "INTEGER"
     return "TEXT"  # JSONB_COLUMNS lưu JSON text trên SQLite
+
+
+# ── C2: flip ĐỌC sau flag ENTITY_DETAILS_TABLES ─────────────────────────────
+# Cache detail-rows nạp 1 lần lúc initialize (9 bảng ~1.6k dòng, vài trăm KB);
+# sync/delete giữ cache tươi khi ghi. Đổi flag = restart service (chuẩn env var).
+
+_DETAIL_CACHE: dict[str, dict] | None = None
+
+_SCHEMA_KEYS: dict[str, list[str]] = {
+    etype: [f["key"] for f in schema["fields"]]
+    for etype, schema in ENTITY_SCHEMAS.items()
+}
+
+
+def reads_enabled() -> bool:
+    return os.environ.get("ENTITY_DETAILS_TABLES", "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def reset_detail_cache() -> None:
+    global _DETAIL_CACHE
+    _DETAIL_CACHE = None
+
+
+def _norm_col_value(col: str, v: Any) -> Any:
+    if v is None:
+        return None
+    if col in BOOL_COLUMNS:
+        return bool(v)
+    if col in JSONB_COLUMNS and isinstance(v, str):
+        try:
+            return json.loads(v)
+        except (json.JSONDecodeError, ValueError):
+            return None
+    if isinstance(v, Decimal):
+        f = float(v)
+        return int(f) if f.is_integer() else f
+    return v
+
+
+def load_detail_cache(conn, is_pg: bool) -> int:
+    """Nạp toàn bộ 9 bảng CTI vào cache {entity_id: {col: giá_trị_python}}."""
+    global _DETAIL_CACHE
+    cache: dict[str, dict] = {}
+    for table in KIND_TABLE.values():
+        if is_pg:
+            cur = conn.cursor()
+            cur.execute(f"SELECT * FROM {table}")
+            raw_rows = cur.fetchall()
+            cols = [c[0] for c in cur.description]
+            rows = [r if isinstance(r, dict) else dict(zip(cols, r)) for r in raw_rows]
+        else:
+            fetched = conn.execute(f"SELECT * FROM {table}").fetchall()
+            rows = [{k: r[k] for k in r.keys()} for r in fetched]
+        for r in rows:
+            eid = r.pop("entity_id")
+            cache[eid] = {c: _norm_col_value(c, v) for c, v in r.items() if v is not None}
+    _DETAIL_CACHE = cache
+    return len(cache)
+
+
+def _cache_put(entity_id: str, det: dict | None) -> None:
+    """sync/delete gọi để giữ cache tươi (det = giá trị python từ split_typed)."""
+    if _DETAIL_CACHE is None:
+        return
+    if det:
+        _DETAIL_CACHE[entity_id] = dict(det)
+    else:
+        _DETAIL_CACHE.pop(entity_id, None)
+
+
+def rebuild_attributes(etype: str, attrs: Any, entity_row: dict) -> Any:
+    """Flag ON: dựng lại attributes — CỘT THẮNG khi có giá trị; fallback JSONB thô
+    (bảo toàn giá trị uncoercible như 'Thế kỷ 19'); tail (bespoke + KBYG) nguyên
+    vẹn; giữ đúng thứ tự key gốc. Legacy string-số ("4") được chuẩn hoá kiểu
+    theo cột (4) — thay đổi chủ đích, ghi trong spec."""
+    if not isinstance(attrs, dict):
+        return attrs
+    schema_keys = _SCHEMA_KEYS.get(etype)
+    if not schema_keys:
+        return attrs
+    detail = (_DETAIL_CACHE or {}).get(entity_row.get("id") or "", {})
+
+    def col_value(key: str) -> Any:
+        if key in UNIVERSAL:
+            return entity_row.get(key)
+        return detail.get(KEY_MAP.get(key, key))
+
+    key_set = set(schema_keys)
+    out: dict = {}
+    for k, v in attrs.items():
+        if k in key_set:
+            cv = col_value(k)
+            out[k] = cv if cv is not None else v
+        else:
+            out[k] = v
+    for k in schema_keys:  # key chỉ có ở cột (thế giới hậu-C3 sau khi dọn JSONB)
+        if k not in out:
+            cv = col_value(k)
+            if cv is not None:
+                out[k] = cv
+    return out
 
 
 def ensure_schema_sqlite(conn) -> None:
