@@ -421,6 +421,7 @@ from entity_schemas import (
     all_schemas as _all_schemas,
     kind_of as _kind_of,
     KIND_META as _KIND_META,
+    KIND_OF_TYPE as _KIND_OF_TYPE,
     ENTITY_SCHEMAS as _ENTITY_SCHEMAS,
 )
 VALID_TYPES = _valid_types()
@@ -550,6 +551,7 @@ class DataQualityDecisionRequest(BaseModel):
             description="Returns a paginated list of all entities for admin management. Supports filtering by type, area, search query, and orphan detection.")
 async def list_entities(
     type: Optional[str] = Query(None, max_length=50),
+    kind: Optional[str] = Query(None, max_length=30),
     area: Optional[str] = Query(None, max_length=100),
     q: Optional[str] = Query(None, max_length=200),
     include_places: bool = False,
@@ -559,8 +561,29 @@ async def list_entities(
 ):
     """Danh sách entities với filter — đọc từ database."""
     def _query():
+        # GĐ-A: `kind` mở rộng thành các type thành viên qua registry (type cụ thể vẫn ưu tiên).
+        kind_types: list[str] | None = None
+        if kind and not type:
+            kind_types = sorted(t for t, k in _KIND_OF_TYPE.items() if k == kind)
+            if not kind_types:
+                return {"total": 0, "offset": offset, "limit": limit, "entities": []}
         if q or orphans_only:
             all_matches = db.search_entities(q=q, entity_type=type, area=area, limit=2000, offset=0) if q else db.list_entities(entity_type=type, area=area, limit=2000, offset=0)
+            if kind_types:
+                _kt = set(kind_types)
+                all_matches = [e for e in all_matches if e.get("type") in _kt]
+        elif kind_types:
+            merged: list[dict] = []
+            for t in kind_types:
+                if t == "place":
+                    # list_entities mặc định không trả place — lấy trực tiếp (giống nhánh include_places).
+                    with db._conn() as conn:
+                        place_rows = db._fetchall(conn, "SELECT * FROM entities WHERE type = 'place' ORDER BY name LIMIT 1000", ())
+                    merged.extend(db._parse_entity(r) for r in place_rows)
+                else:
+                    merged.extend(db.list_entities(entity_type=t, area=area, limit=2000, offset=0) or [])
+            merged.sort(key=lambda e: (e.get("name") or ""))
+            all_matches = merged
         else:
             all_matches = None
             results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
