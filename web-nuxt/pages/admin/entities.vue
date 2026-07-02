@@ -522,10 +522,6 @@ function initTypedAttrs(attrs?: Record<string, unknown>) {
   typedAttrs.value = next
 }
 
-// When the admin switches type inside the form, re-seed typed fields from any
-// existing values so nothing already entered is lost.
-watch(() => form.value.type, () => { initTypedAttrs(typedAttrs.value) })
-
 const types = Object.keys(TYPE_META)
 const search = ref('')
 const typeFilter = ref('')
@@ -541,6 +537,13 @@ const editingEntity = ref<Entity | null>(null)
 const placesList = ref<{ id: string; name: string; area?: string }[]>([])
 const form = ref<EntityForm>({ ...EMPTY_ENTITY_FORM })
 const selected = ref<Set<string>>(new Set())
+
+// When the admin switches type inside the form, re-seed typed fields from any
+// existing values so nothing already entered is lost.
+// LƯU Ý VỊ TRÍ (bug 2026-07-02): watch() chạy GETTER ngay khi tạo để thu dependency
+// → phải đứng SAU `const form` — đặt trước là TDZ "Cannot access 'form' before
+// initialization" giết setup cả trang (Nuxt 500 client, mọi biến thể ?kind=).
+watch(() => form.value.type, () => { initTypedAttrs(typedAttrs.value) })
 
 // GĐ-A: chế độ xem theo nhóm (?kind=) — cột/bộ lọc đặc thù (utils/adminKinds)
 const route = useRoute()
