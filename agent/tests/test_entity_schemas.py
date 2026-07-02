@@ -103,3 +103,31 @@ class TestAdminIntegration:
             pytest.skip("admin import unavailable")
         e = EntityCreate(id="craft_village_x", name="X", type="craft_village")
         assert e.id == "craft_village_x"
+
+
+class TestKindMapping:
+    """Phase 2: the derived kind (owner-category) layer over the 17 raw types."""
+
+    def test_every_type_maps_to_exactly_one_kind(self):
+        for t in es.valid_types():
+            k = es.kind_of(t)
+            assert isinstance(k, str) and k in es.KIND_META
+
+    def test_owner_categories_present(self):
+        # The 7 owner categories the project cares about must all exist as kinds.
+        for k in ("place", "product", "lodging", "event", "experience", "itinerary"):
+            assert k in es.KIND_META
+
+    def test_festival_folds_into_event(self):
+        # 'festival' has no dedicated type; events carry it (lunar_date). event->event kind.
+        assert es.kind_of("event") == "event"
+
+    def test_tourism_place_vs_admin_place_distinct(self):
+        # administrative 'place' (wards) is a different kind from tourism destinations.
+        assert es.kind_of("place") == "admin_place"
+        assert es.kind_of("attraction") == "place"
+        assert es.kind_of("nature") == "place"
+
+    def test_food_kind_groups_eateries(self):
+        for t in ("dish", "drink", "restaurant", "cafe"):
+            assert es.kind_of(t) == "food"

@@ -415,7 +415,14 @@ def _sanitize(text: str) -> str:
 # (agent/entity_schemas.py) — single source of truth so adding a type touches one
 # file, not many (DoD-7). This fixes the old TYPE_META(17) vs VALID_TYPES(13)
 # mismatch where restaurant/cafe/drink/place/itinerary 422'd on save.
-from entity_schemas import valid_types as _valid_types, validate_attributes as _validate_attributes, all_schemas as _all_schemas
+from entity_schemas import (
+    valid_types as _valid_types,
+    validate_attributes as _validate_attributes,
+    all_schemas as _all_schemas,
+    kind_of as _kind_of,
+    KIND_META as _KIND_META,
+    ENTITY_SCHEMAS as _ENTITY_SCHEMAS,
+)
 VALID_TYPES = _valid_types()
 
 class EntityUpdate(BaseModel):
@@ -592,6 +599,48 @@ async def list_entities(
                     e["area"] = place_map[pid].get("area") or e.get("area")
 
         return {"total": total, "offset": offset, "limit": limit, "entities": items}
+    return await asyncio.to_thread(_query)
+
+
+@router.get("/entity-kinds",
+            summary="Entity counts grouped by owner category (kind)",
+            description="Returns the 7 owner-facing categories (kinds) as a derived view over the 17 raw "
+                        "types, with per-kind totals and per-type breakdown. Phase 2 of the content-model — "
+                        "a reporting/grouping layer; nothing is stored, `type` stays the storage discriminator.")
+async def entity_kinds():
+    """Đếm entity theo danh mục chủ (kind) — lớp gộp phái sinh trên 17 type."""
+    def _query():
+        by_type = db.count_entities()  # {type: count}, excludes 'place'
+        # place (administrative) counted separately since count_entities excludes it
+        with db._conn() as conn:
+            row = db._fetchone(conn, "SELECT COUNT(*) c FROM entities WHERE type = 'place'", ())
+        place_count = (db._row_to_dict(row) or {}).get("c", 0) if row else 0
+        by_type = dict(by_type)
+        if place_count:
+            by_type["place"] = place_count
+
+        # Group into kinds, preserving KIND_META order.
+        buckets: dict[str, list] = {k: [] for k in _KIND_META}
+        for t, cnt in by_type.items():
+            k = _kind_of(t)
+            meta = _ENTITY_SCHEMAS.get(t, {})
+            buckets.setdefault(k, []).append({
+                "type": t,
+                "label": meta.get("label", t),
+                "emoji": meta.get("emoji", "📍"),
+                "count": cnt,
+            })
+        kinds = []
+        for k, km in _KIND_META.items():
+            items = sorted(buckets.get(k, []), key=lambda x: -x["count"])
+            kinds.append({
+                "kind": k,
+                "label": km["label"],
+                "emoji": km["emoji"],
+                "total": sum(i["count"] for i in items),
+                "types": items,
+            })
+        return {"kinds": kinds, "grand_total": sum(by_type.values())}
     return await asyncio.to_thread(_query)
 
 
