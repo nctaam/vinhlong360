@@ -112,6 +112,33 @@ chuỗi storage/R2 ảnh UGC, load/concurrency test (PG pool vs max_connections 
 CVE dependency (pip/npm audit), 9 task scheduler không-LLM (§B7), tuân thủ B6/introduce-only,
 CWV/a11y đo lại thực tế.
 
+## VÒNG 2 (cùng ngày, tối) — 8 vùng chưa phủ: ĐÃ AUDIT + 8 FIX SHIP CÙNG NGÀY
+
+Điểm vùng: notifications 8.0 (không IDOR, CSRF/rate-limit phủ 100% mutation) ·
+seo 7.5 · bot-gateway 7.0 (fail-closed, không expose port; rủi ro Zalo đều latent) ·
+dependency 7.0 (npm 1 low dev-only/936 pkg; 4 advisory Python exploitability thấp) ·
+concurrency 6.5 · llm-guardrails 6.5 (**§B8 verify SẠCH**: double-gate opt-in+cap+
+kill-switch đúng chuẩn) · storage 6.0 · **scheduler 4.5**.
+
+**Phát hiện nặng nhất: 4/10 task bảo trì DB chết 100% từ trước tới nay**
+(`import database as db` — module không có `_use_pg` → AttributeError bị nuốt):
+session/OTP không bao giờ purge, **cam kết xoá tài khoản sau 30 ngày KHÔNG thực thi**,
+reminder RSVP chết; kèm retry hot-loop ~5.760 dòng ERROR/ngày khi task fail bền vững.
+
+**8 fix ship + verify prod cùng tối** (commit AUDIT2): filter secret khỏi
+/api/site-settings (latent leak llm.api_key, 0/60 key oan) · 4 task scheduler sống lại
+(tick đầu 0 lỗi) · hot-loop + cột moderation_status · executor 5→16 thread (trần
+5 chat đồng thời tê liệt API) · require_idempotency hết blocking loop · deploy.sh
+restart vl-bot + backup web/media + cổng search · SEO snapshot TTL 300s (hết query
+1780 entity mỗi pageview; ~25ms) + 3 test SEO stale-mock xanh lại (file 249/249) ·
+record_usage wiring (budget guardrail hết là đồ giả).
+
+**Defer (đủ điều kiện thì làm):** R2/media prod (cần secret — chủ), requirements.lock
++ nâng 3 pin Python, MemoryHigh systemd + tune PG, Zalo verify-signature sai spec
+(latent — sửa khi bật OA), Telegram polling auto-restart, N+1 fan-out follower,
+demo-noindex đang MỞ index toàn bộ (chủ xác nhận chủ đích?), anti-injection tool
+output. Chi tiết: transcript workflow wf_0b6cbd61.
+
 ## Đính chính của người phản biện (đã tiếp thu)
 
 Claim "search 500 NGAY LÚC NÀY" của bản tổng hợp ban đầu là suy luận chưa có bằng chứng trực
