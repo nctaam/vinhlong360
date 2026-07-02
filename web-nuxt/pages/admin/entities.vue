@@ -52,6 +52,9 @@
       </div>
     </details>
 
+    <!-- GĐ-A: dashboard độ đầy đủ dữ liệu theo nhóm -->
+    <LazyAdminKindCompleteness v-if="currentKind" :kind="currentKind.kind" @edit="onCompletenessEdit" />
+
     <!-- GĐ-A: chip lọc nhanh theo nhóm -->
     <div v-if="currentKind?.chips.length" class="ent-chip-row" role="group" aria-label="Lọc nhanh theo nhóm">
       <button v-for="ch in currentKind.chips" :key="ch.key" type="button"
@@ -63,6 +66,29 @@
 
     <div v-if="selected.size" class="bulk-bar">
       <span>Đã chọn {{ selected.size }}</span>
+      <template v-if="currentKind">
+        <select v-model="bulkField" class="input bulk-assign-field" aria-label="Chọn trường để gán hàng loạt">
+          <option value="">Gán trường…</option>
+          <option v-for="c in bulkFields" :key="c.key" :value="c.key">{{ c.label }}</option>
+        </select>
+        <template v-if="bulkFieldDef">
+          <select v-if="bulkFieldDef.widget === 'select'" v-model="bulkValue" class="input bulk-assign-value" aria-label="Giá trị gán">
+            <option value="">(xóa giá trị)</option>
+            <option v-for="o in bulkFieldDef.options" :key="o" :value="o">{{ o }}</option>
+          </select>
+          <select v-else-if="bulkFieldDef.widget === 'bool'" v-model="bulkValue" class="input bulk-assign-value" aria-label="Giá trị gán">
+            <option value="true">Có</option>
+            <option value="false">Không</option>
+            <option value="">(xóa)</option>
+          </select>
+          <input v-else v-model="bulkValue" class="input bulk-assign-value"
+            :type="bulkFieldDef.widget === 'number' ? 'number' : 'text'"
+            placeholder="Giá trị (trống = xóa)" aria-label="Giá trị gán" @keyup.enter="applyBulkAssign" />
+          <button type="button" class="btn btn-primary btn-sm" :disabled="bulkAssignBusy" @click="applyBulkAssign">
+            {{ bulkAssignBusy ? `Đang gán ${bulkProgress}…` : `Gán cho ${selected.size}` }}
+          </button>
+        </template>
+      </template>
       <button type="button" class="btn-danger" :disabled="bulkBusy" @click="bulkDelete">Xóa đã chọn</button>
       <button type="button" class="btn btn-outline btn-sm" @click="selected = new Set()">Bỏ chọn</button>
     </div>
@@ -123,8 +149,26 @@
             </td>
             <td class="admin-td-muted">{{ e.place_name || '—' }}</td>
             <td v-for="c in currentKind?.columns || []" :key="c.key" class="ent-kind-cell">
-              <span v-if="c.widget === 'bool'">{{ ((e as any).attributes || {})[c.key] ? '✓' : '—' }}</span>
-              <span v-else>{{ ((e as any).attributes || {})[c.key] ?? '—' }}</span>
+              <button v-if="c.widget === 'bool'" type="button" class="ent-bool-toggle"
+                :aria-label="`Bật/tắt ${c.label} cho ${e.name}`" @click="toggleBoolAttr(e, c.key)">
+                {{ ((e as any).attributes || {})[c.key] ? '✓' : '—' }}
+              </button>
+              <template v-else-if="inlineEdit.id === e.id && inlineEdit.field === 'attr:' + c.key">
+                <select v-if="c.widget === 'select'" v-model="inlineEdit.value" class="input ent-inline-select"
+                  :aria-label="`Sửa ${c.label}`" @change="saveInline(e)" @keyup.escape="inlineEdit.id = ''"
+                  @vue:mounted="(vn: any) => vn.el?.focus()">
+                  <option value="">(xóa)</option>
+                  <option v-for="o in c.options" :key="o" :value="o">{{ o }}</option>
+                </select>
+                <input v-else v-model="inlineEdit.value" class="input ent-inline-input"
+                  :type="c.widget === 'number' ? 'number' : 'text'" :aria-label="`Sửa ${c.label}`"
+                  @keyup.enter="saveInline(e)" @keyup.escape="inlineEdit.id = ''"
+                  @vue:mounted="(vn: any) => vn.el?.focus()" />
+              </template>
+              <span v-else class="ent-inline-label" :title="`Nhấp đúp để sửa ${c.label}`"
+                @dblclick="startInline(e, 'attr:' + c.key, String(((e as any).attributes || {})[c.key] ?? ''))">
+                {{ ((e as any).attributes || {})[c.key] ?? '—' }}
+              </span>
             </td>
             <td class="ent-health-cell">
               <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" :aria-label="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" role="img">{{ e.summary ? '✓' : '✗' }}</span>
@@ -520,6 +564,69 @@ watch(() => route.query.kind, () => {
   typeFilter.value = ''
   fetchEntities(true)
 })
+// GĐ-A: gán trường hàng loạt cho các entity đã chọn (đi qua PUT sẵn có → giữ validate + audit log)
+const UNIVERSAL_BULK: { key: string; label: string; widget: 'text' | 'number' | 'select' | 'bool'; options?: string[] }[] = [
+  { key: 'address', label: 'Địa chỉ', widget: 'text' },
+  { key: 'phone', label: 'Điện thoại', widget: 'text' },
+  { key: 'website', label: 'Website', widget: 'text' },
+  { key: 'hours', label: 'Giờ mở cửa', widget: 'text' },
+  { key: 'price_range', label: 'Khoảng giá', widget: 'text' },
+  { key: 'sub_category', label: 'Phân loại', widget: 'text' },
+  { key: 'best_time', label: 'Thời điểm đẹp', widget: 'text' },
+  { key: 'highlight', label: 'Điểm nhấn', widget: 'text' },
+]
+const bulkField = ref('')
+const bulkValue = ref('')
+const bulkAssignBusy = ref(false)
+const bulkProgress = ref('')
+const bulkFields = computed(() => {
+  if (!currentKind.value) return []
+  const kindKeys = new Set(currentKind.value.columns.map(c => c.key))
+  return [...currentKind.value.columns, ...UNIVERSAL_BULK.filter(u => !kindKeys.has(u.key))]
+})
+const bulkFieldDef = computed(() => bulkFields.value.find(c => c.key === bulkField.value) || null)
+async function applyBulkAssign() {
+  const def = bulkFieldDef.value
+  if (!def || !selected.value.size || bulkAssignBusy.value) return
+  if (selected.value.size > 100) { showToast('Tối đa 100 entity mỗi lần gán', 'error'); return }
+  let value: unknown = bulkValue.value
+  if (def.widget === 'number') value = bulkValue.value === '' ? '' : Number(bulkValue.value)
+  if (def.widget === 'bool') value = bulkValue.value === '' ? '' : bulkValue.value === 'true'
+  bulkAssignBusy.value = true
+  const ids = [...selected.value]
+  const errs: string[] = []
+  let done = 0
+  for (const id of ids) {
+    const e = entities.value.find(x => x.id === id)
+    if (!e) continue
+    const attrs: Record<string, unknown> = { ...((e as Record<string, any>).attributes || {}) }
+    if (value === '' || value === null || value === undefined) delete attrs[def.key]
+    else attrs[def.key] = value
+    try {
+      await $fetch(`/admin-api/entities/${id}`, { method: 'PUT', headers: authHeaders(),
+        body: { id: e.id, name: e.name, type: e.type, placeId: e.placeId || '', summary: e.summary || '', attributes: attrs } })
+      ;(e as Record<string, any>).attributes = attrs
+    } catch { errs.push(e.name) }
+    done += 1
+    bulkProgress.value = `${done}/${ids.length}`
+  }
+  bulkAssignBusy.value = false
+  bulkProgress.value = ''
+  showToast(errs.length
+    ? `Gán xong nhưng lỗi ${errs.length}: ${errs.slice(0, 3).join(', ')}${errs.length > 3 ? '…' : ''}`
+    : `Đã gán "${def.label}" cho ${ids.length - errs.length} entity`, errs.length ? 'warning' : 'success')
+  selected.value = new Set()
+  bulkField.value = ''
+  bulkValue.value = ''
+}
+
+async function onCompletenessEdit(id: string) {
+  let e = entities.value.find(x => x.id === id)
+  if (!e) {
+    try { e = await $fetch<Entity>(`/admin-api/entities/${id}`, { headers: authHeaders() }) } catch { return }
+  }
+  if (e) openEdit(e)
+}
 const loading = ref(true)
 const acting = ref<string | null>(null)
 const saving = ref(false)
@@ -649,6 +756,32 @@ function startInline(e: Entity, field: string, value: string) {
 
 async function saveInline(e: Entity) {
   const { field, value } = inlineEdit.value
+  // GĐ-A: inline edit cột attribute đặc thù theo nhóm (field dạng 'attr:<key>')
+  if (field.startsWith('attr:')) {
+    const key = field.slice(5)
+    const def = currentKind.value?.columns.find(c => c.key === key)
+    const attrs: Record<string, unknown> = { ...((e as Record<string, any>).attributes || {}) }
+    const trimmed = value.trim()
+    if (!trimmed) {
+      delete attrs[key]
+    } else if (def?.widget === 'number') {
+      const n = Number(trimmed.replace(',', '.'))
+      if (Number.isNaN(n)) { showToast('Giá trị phải là số', 'error'); return }
+      attrs[key] = n
+    } else {
+      attrs[key] = trimmed
+    }
+    try {
+      await $fetch(`/admin-api/entities/${e.id}`, { method: 'PUT', headers: authHeaders(),
+        body: { id: e.id, name: e.name, type: e.type, placeId: e.placeId || '', summary: e.summary || '', attributes: attrs } })
+      ;(e as Record<string, any>).attributes = attrs
+      showToast('Đã cập nhật', 'success')
+      inlineEdit.value.id = ''
+    } catch (err: unknown) {
+      showToast(getErrorDetail(err, 'Lỗi khi cập nhật'), 'error')
+    }
+    return
+  }
   if (!value.trim()) { inlineEdit.value.id = ''; return }
   try {
     const body: Record<string, unknown> = { id: e.id, name: e.name, type: e.type, placeId: e.placeId || '', summary: e.summary || '' }
@@ -657,6 +790,19 @@ async function saveInline(e: Entity) {
     ;(e as Record<string, any>)[field] = value.trim()
     showToast('Đã cập nhật', 'success')
     inlineEdit.value.id = ''
+  } catch (err: unknown) {
+    showToast(getErrorDetail(err, 'Lỗi khi cập nhật'), 'error')
+  }
+}
+
+async function toggleBoolAttr(e: Entity, key: string) {
+  const attrs: Record<string, unknown> = { ...((e as Record<string, any>).attributes || {}) }
+  attrs[key] = !attrs[key]
+  try {
+    await $fetch(`/admin-api/entities/${e.id}`, { method: 'PUT', headers: authHeaders(),
+      body: { id: e.id, name: e.name, type: e.type, placeId: e.placeId || '', summary: e.summary || '', attributes: attrs } })
+    ;(e as Record<string, any>).attributes = attrs
+    showToast('Đã cập nhật', 'success')
   } catch (err: unknown) {
     showToast(getErrorDetail(err, 'Lỗi khi cập nhật'), 'error')
   }
@@ -1154,6 +1300,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-chip-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0; align-items: center; }
 .ent-chip-note { font-size: .8rem; color: var(--ink-700); }
 .ent-kind-cell { font-size: .85rem; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ent-bool-toggle { background: none; border: 1px solid var(--line); border-radius: 6px; padding: 2px 10px; cursor: pointer; font-size: .85rem; color: var(--ink); }
+.ent-bool-toggle:hover { border-color: var(--primary); }
+.bulk-assign-field, .bulk-assign-value { max-width: 170px; font-size: .84rem; padding: 4px 8px; }
 
 /* Phase 1c: season editor + advanced JSON */
 .ent-season-hint { margin: 0 0 var(--space-2); }

@@ -2074,7 +2074,8 @@ class TestAdminBugFixes:
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         idx = src.find("def list_entities")
         assert idx != -1
-        block = src[idx:idx+2500]
+        # Window 4000: list_entities grew legitimately (GĐ-A kind branch) — assertion unchanged.
+        block = src[idx:idx+4000]
         assert "count_entities_filtered" in block, \
             "Non-search path must use count_entities_filtered for accurate pagination total"
 
