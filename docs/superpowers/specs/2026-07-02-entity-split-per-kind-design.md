@@ -92,7 +92,16 @@ best_time TEXT, highlight TEXT` — nullable, backfill từ JSONB.
    exit≠0 nếu lệch; chạy cả local SQLite + prod PG.
 5. Test §B4: schema test mỗi bảng + backfill round-trip test.
 
-### GĐ-C — Flip nguồn sự thật (feature flag `ENTITY_DETAILS_TABLES=true`)
+### GĐ-C — Flip nguồn sự thật (feature flag `ENTITY_DETAILS_TABLES=true`) — 🟡 C1 XONG 2026-07-02
+
+> **C1 (dual-write) ✅ + DEPLOYED:** `agent/entity_details.py` mới (logic tập trung,
+> database.py chỉ 4 hook: initialize/upsert/_bulk_load/delete); mirror ghi-là-chính
+> cùng transaction; SQLite DDL parity (dev đủ 8 cột + 9 bảng); PG_REQUIRED 58→62.
+> Verify: 5 test SQLite + no-op re-upsert 3 kind trên prod → parity vẫn 0 lệch/7220;
+> test_database.py xanh 102/102 (giảm 1 file đỏ baseline). Từ giờ MỌI đường ghi
+> entity giữ bảng CTI đồng bộ vĩnh viễn — không còn nguy cơ snapshot chết.
+> **Còn lại:** C2 = flip ĐỌC sau flag (contract test viết TRƯỚC) → theo dõi ≥1 tuần
+> → C3 = dọn typed keys khỏi JSONB (chủ duyệt riêng, §B1).
 1. DAL: `get_entity`/`get_entities_batch`/search enrich đọc JOIN extension khi flag bật —
    dựng lại `attributes` dict ĐÚNG shape cũ (typed keys từ cột + tail từ JSONB).
 2. Ghi: admin create/update ghi cột/bảng CTI (typed) + JSONB (tail); `_bulk_load`/
