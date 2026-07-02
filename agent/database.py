@@ -538,6 +538,11 @@ class Database:
         if coords_val and not _coords_in_region(coords_val):
             coords_val = None
         updated = entity.get("updatedAt", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+        # GĐ-C3: khi flip đọc bật, JSONB lưu TAIL-ONLY (typed keys sống ở cột — sync
+        # cùng transaction bên dưới đảm bảo cột khớp; uncoercible ở lại JSONB).
+        attrs_store = (_entity_details.strip_synced_keys(entity["type"], attrs_val)
+                       if _entity_details.reads_enabled() and isinstance(attrs_val, dict)
+                       else attrs_val)
 
         with self._conn() as conn:
             if self._use_pg:
@@ -562,7 +567,7 @@ class Database:
                     entity.get("placeId"),
                     entity.get("confidence", 1.0),
                     json.dumps(season_val, ensure_ascii=False) if season_val else None,
-                    json.dumps(attrs_val, ensure_ascii=False),
+                    json.dumps(attrs_store, ensure_ascii=False),
                     json.dumps(source_val, ensure_ascii=False),
                     json.dumps(images_val, ensure_ascii=False),
                     updated,
@@ -582,7 +587,7 @@ class Database:
                     entity.get("placeId"),
                     entity.get("confidence", 1.0),
                     json.dumps(season_val, ensure_ascii=False) if season_val else None,
-                    json.dumps(attrs_val, ensure_ascii=False),
+                    json.dumps(attrs_store, ensure_ascii=False),
                     json.dumps(source_val, ensure_ascii=False),
                     json.dumps(images_val, ensure_ascii=False),
                     updated,
@@ -759,19 +764,23 @@ class Database:
         params.extend([limit, offset])
 
         updated_col = 'e."updatedAt"' if self._use_pg else "e.updatedAt"
+        join = ""
         if sort == "name":
             order = "e.name ASC"
         elif sort == "rating":
+            # GĐ-C3: rating giờ sống ở cột CTI; COALESCE với JSONB legacy để chạy
+            # đúng mọi trạng thái (prod sau dọn, prod trước dọn, dev cột trống).
+            join = "LEFT JOIN entity_food_details fd ON fd.entity_id = e.id"
             if self._use_pg:
-                order = "(e.attributes->>'rating')::float DESC NULLS LAST"
+                order = "COALESCE(fd.rating, (e.attributes->>'rating')::float) DESC NULLS LAST"
             else:
-                order = "json_extract(e.attributes, '$.rating') DESC"
+                order = "COALESCE(fd.rating, json_extract(e.attributes, '$.rating')) DESC"
         else:
             order = f"{updated_col} DESC"
 
         with self._conn() as conn:
             rows = self._fetchall(conn, f"""
-                SELECT e.* FROM entities e WHERE {where}
+                SELECT e.* FROM entities e {join} WHERE {where}
                 ORDER BY {order} LIMIT {ph} OFFSET {ph}
             """, params)
             return [self._parse_entity(r) for r in rows]
@@ -1283,17 +1292,22 @@ class Database:
         commit) — để replace_from_json gói DELETE+INSERT trong 1 transaction (F1 atomic).
         SQLite + PostgreSQL dùng chung cấu trúc; SQL theo từng backend (copy từ upsert_*)."""
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        # GĐ-C3: flip đọc bật → JSONB lưu tail-only (sync bên dưới điền cột cùng transaction)
+        _strip = _entity_details.reads_enabled()
         entity_rows, fts_rows = [], []
         for entity in data.get("entities", []):
             season_val = entity.get("season")
             coords_val = entity.get("coordinates")
+            attrs_raw = entity.get("attributes", {})
+            attrs_store = (_entity_details.strip_synced_keys(entity["type"], attrs_raw)
+                           if _strip and isinstance(attrs_raw, dict) else attrs_raw)
             entity_rows.append((
                 entity["id"], entity["type"], entity["name"],
                 entity.get("summary", ""), entity.get("description", ""),
                 entity.get("placeId"),
                 entity.get("confidence", 1.0),
                 json.dumps(season_val, ensure_ascii=False) if season_val else None,
-                json.dumps(entity.get("attributes", {}), ensure_ascii=False),
+                json.dumps(attrs_store, ensure_ascii=False),
                 json.dumps(entity.get("source", {}), ensure_ascii=False),
                 json.dumps(entity.get("images", []), ensure_ascii=False),
                 entity.get("updatedAt", now),

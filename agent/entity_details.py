@@ -190,6 +190,42 @@ def _sqlite_type(col: str) -> str:
     return "TEXT"  # JSONB_COLUMNS lưu JSON text trên SQLite
 
 
+# ── C3: strip typed keys khỏi JSONB (cột là nguồn sự thật duy nhất) ─────────
+
+def mapped_keys(etype: str, attrs: dict | None) -> set[str]:
+    """Các key GỐC trong attrs đã được split_typed ánh xạ thành công vào cột
+    (uni + det). Key uncoercible/tail KHÔNG nằm trong đây."""
+    uni, det, _ = split_typed(etype, attrs or {})
+    out = set(uni.keys())
+    schema = ENTITY_SCHEMAS.get(etype) or {"fields": []}
+    for f in schema["fields"]:
+        key = f["key"]
+        if key in (attrs or {}) and KEY_MAP.get(key, key) in det:
+            out.add(key)
+    return out
+
+
+def strip_synced_keys(etype: str, attrs: dict | None) -> dict:
+    """JSONB lưu trữ = attrs TRỪ các key đã sync vào cột (đường GHI, cùng
+    transaction với sync nên cột chắc chắn khớp). Tail + uncoercible ở lại."""
+    attrs = attrs or {}
+    synced = mapped_keys(etype, attrs)
+    return {k: v for k, v in attrs.items() if k not in synced}
+
+
+def norm_value(v: Any) -> Any:
+    """Chuẩn hoá để so sánh cột ↔ JSONB (cleanup so-sánh-trước-khi-xoá)."""
+    if v is None:
+        return None
+    if isinstance(v, Decimal):
+        v = float(v)
+    if isinstance(v, float) and v.is_integer():
+        return int(v)
+    if isinstance(v, str):
+        return v.strip()
+    return v
+
+
 # ── C2: flip ĐỌC sau flag ENTITY_DETAILS_TABLES ─────────────────────────────
 # Cache detail-rows nạp 1 lần lúc initialize (9 bảng ~1.6k dòng, vài trăm KB);
 # sync/delete giữ cache tươi khi ghi. Đổi flag = restart service (chuẩn env var).

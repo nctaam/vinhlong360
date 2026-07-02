@@ -83,16 +83,9 @@ def main() -> int:
                     mismatches.append(f"{e['id']}.{col}: cột={actual!r} ≠ jsonb={expected!r}")
             elif _norm(actual) != _norm(expected):
                 mismatches.append(f"{e['id']}.{col}: cột={actual!r} ≠ jsonb={expected!r}")
-        # Chiều ngược: cột có giá trị nhưng JSONB (coerce-được) không mong đợi
-        for col, actual in drow.items():
-            if col == "entity_id" or actual is None:
-                continue
-            if col not in det:
-                mismatches.append(f"{e['id']}.{col}: cột={actual!r} nhưng jsonb không có giá trị hợp lệ")
-        for key in UNIVERSAL:
-            actual = e.get(key)
-            if actual is not None and key not in uni:
-                mismatches.append(f"{e['id']}.{key}: cột={actual!r} nhưng jsonb không có giá trị hợp lệ")
+        # HẬU-C3: JSONB lưu tail-only — key VẮNG trong JSONB là by-design (đã dọn),
+        # KHÔNG phải lệch. Chỉ XUNG ĐỘT giá trị (key tồn tại trong JSONB nhưng khác
+        # cột) mới là lệch — đã được kiểm ở chiều thuận phía trên.
 
     print(f"parity: {checked} giá trị đối chiếu, {len(mismatches)} lệch / {len(entities)} entity")
     for line in mismatches[:20]:
