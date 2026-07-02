@@ -92,7 +92,15 @@ best_time TEXT, highlight TEXT` — nullable, backfill từ JSONB.
    exit≠0 nếu lệch; chạy cả local SQLite + prod PG.
 5. Test §B4: schema test mỗi bảng + backfill round-trip test.
 
-### GĐ-C — Flip nguồn sự thật (feature flag `ENTITY_DETAILS_TABLES=true`) — 🟡 C1 XONG 2026-07-02
+### GĐ-C — Flip nguồn sự thật (feature flag `ENTITY_DETAILS_TABLES=true`) — ✅ C1+C2 LIVE 2026-07-02
+
+> **C2 (flip đọc) ✅ LIVE PROD:** cache detail 9 bảng nạp lúc initialize (sync/delete
+> giữ tươi); `rebuild_attributes` = cột thắng + fallback JSONB thô + tail nguyên vẹn
+> + giữ thứ tự key. Contract test viết TRƯỚC (7 case, cụm 152 xanh). Prod bật qua
+> drop-in systemd (kill-switch = xoá dòng + restart): 4/4 entity BYTE-IDENTICAL
+> trước/sau flip (gồm 2 case uncoercible). Deviation ghi nhận: legacy string-số
+> trong JSONB ("4") đọc ra kiểu chuẩn (4) — chủ đích.
+> **Còn C3:** dọn typed keys khỏi JSONB — chờ ≥1 tuần ổn định + chủ duyệt (§B1).
 
 > **C1 (dual-write) ✅ + DEPLOYED:** `agent/entity_details.py` mới (logic tập trung,
 > database.py chỉ 4 hook: initialize/upsert/_bulk_load/delete); mirror ghi-là-chính
