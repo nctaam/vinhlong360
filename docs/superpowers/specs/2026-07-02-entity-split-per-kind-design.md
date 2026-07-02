@@ -47,7 +47,12 @@ best_time TEXT, highlight TEXT` — nullable, backfill từ JSONB.
 
 ## Giai đoạn
 
-### GĐ-A — Tách giao diện AdminCP (không đụng DB, giá trị ngay)
+### GĐ-A — Tách giao diện AdminCP (không đụng DB, giá trị ngay) — ✅ XONG + DEPLOYED 2026-07-02
+
+> Hoàn thành đủ 7 task (commits GĐA.1→GĐA.6+7), 6 test backend mới xanh, build FE pass,
+> deploy prod verify: search 200, 2 endpoint mới 401 (auth-gate), bundle chứa đủ 3 tính năng.
+> Lưu ý thực thi: test brittle `test_entity_list_pagination_uses_count` (cửa sổ soi source
+> 2500 ký tự) nới lên 4000 vì `list_entities` dài ra hợp lệ — assertion giữ nguyên.
 1. **Backend (additive):** `GET /admin/entities` thêm param `kind` (expand types qua
    `KIND_OF_TYPE`); endpoint mới `GET /admin/entity-completeness?kind=` — % điền từng trường
    (8 trường base + trường registry của kind + ảnh/mùa/tọa độ thật) + top-N entity thiếu
