@@ -70,7 +70,13 @@ best_time TEXT, highlight TEXT` — nullable, backfill từ JSONB.
 7. Refactor nhẹ: phần nào của `entities.vue` (1.234 dòng) tách được thành component
    (`KindColumns`, `CompletenessPanel`, `BulkBar`) thì tách — không nhân bản trang.
 
-### GĐ-B — Nền móng DB (additive, CHƯA đổi hành vi đọc/ghi)
+### GĐ-B — Nền móng DB (additive, CHƯA đổi hành vi đọc/ghi) — 🟡 SCHEMA XONG 2026-07-02
+
+> Bước 0 ✅ (4 chỗ đứt — thêm 1 chỗ mới phát hiện khi replay: trigger DELETE đụng NEW
+> ở init.sql:366; replay PG trắng 0 lỗi; prod áp 059, backup db-pre-mig059-*).
+> Bước 1-2 ✅ (060+061 replay sạch + prod version=61, 9 bảng CTI owner vl360).
+> Còn lại: backfill + parity script (bước 3-4) + SQLite parity trong database.py
+> (chờ triage WIP hoặc gộp vào GĐ-C vì cùng phải sửa database.py).
 0. **Tiền đề bắt buộc:** sửa chuỗi migration đứt 3 chỗ (audit 2026-07-02): init.sql
    (posts.deleted_at), migration 059 = reviewer_note bị 029 che + `entity_changes` +
    `site_settings_history` trên PG + vào `PG_REQUIRED_TABLES`; **replay-test init.sql +
