@@ -27,9 +27,16 @@
 
         <div class="nav-group">
           <span class="nav-group-label" v-if="!sidebarCollapsed">Nội dung</span>
-          <NuxtLink to="/admin/entities" :class="{ active: route.path === '/admin/entities' }" :title="sidebarCollapsed ? 'Entities' : undefined">
+          <NuxtLink to="/admin/entities" :class="{ active: route.path === '/admin/entities' && !route.query.kind }" :title="sidebarCollapsed ? 'Tất cả entities' : undefined">
             <span class="nav-icon">&#128203;</span>
-            <span class="nav-text" v-if="!sidebarCollapsed">Entities</span>
+            <span class="nav-text" v-if="!sidebarCollapsed">Tất cả entities</span>
+          </NuxtLink>
+          <NuxtLink v-for="k in ADMIN_KINDS" :key="k.kind" class="nav-sub"
+            :to="{ path: '/admin/entities', query: { kind: k.kind } }"
+            :class="{ active: route.path === '/admin/entities' && route.query.kind === k.kind }"
+            :title="sidebarCollapsed ? k.label : undefined">
+            <span class="nav-icon">{{ k.emoji }}</span>
+            <span class="nav-text" v-if="!sidebarCollapsed">{{ k.label }}</span>
           </NuxtLink>
           <NuxtLink to="/admin/chua-phan-loai" :class="{ active: route.path === '/admin/chua-phan-loai' }" :title="sidebarCollapsed ? 'Chưa phân loại' : undefined">
             <span class="nav-icon">&#128205;</span>
@@ -129,8 +136,9 @@
 </template>
 
 <script setup lang="ts">
+import { ADMIN_KINDS } from '~/utils/adminKinds'
 const route = useRoute()
-const { user, fetchMe, token, authHeaders } = useAuth()
+const { user, fetchMe, authHeaders } = useAuth()
 const { prefs, setPref } = useAdminPrefs()
 const sidebarCollapsed = computed({
   get: () => prefs.value.sidebarCollapsed,
@@ -140,7 +148,7 @@ const badges = ref<Record<string, number>>({ moderation: 0, images: 0, unclassif
 
 async function loadBadges() {
   try {
-    const data = await $fetch<Record<string, number>>('/admin/badge-counts', { headers: authHeaders() })
+    const data = await $fetch<Record<string, number>>('/admin-api/badge-counts', { headers: authHeaders() })
     badges.value = data
   } catch { /* ignore */ }
 }
@@ -181,7 +189,7 @@ let badgeInterval: ReturnType<typeof setInterval> | undefined
 function _badgeTick() { if (!document.hidden) loadBadges() }
 function _onVisChange() { if (!document.hidden) loadBadges() }
 onMounted(async () => {
-  if (!user.value && token.value) await fetchMe()
+  if (!user.value) await fetchMe()
   if (window.innerWidth < 1024) sidebarCollapsed.value = true
   loadBadges()
   badgeInterval = setInterval(_badgeTick, 60_000)
@@ -274,6 +282,8 @@ onUnmounted(() => {
   box-shadow: inset 4px 0 0 var(--accent, #f5c518);
   transition: box-shadow .2s, background .2s, color .25s;
 }
+.admin-nav a.nav-sub { padding-left: calc(var(--space-4) + 14px); font-size: .86em; opacity: .92; }
+.collapsed .admin-nav a.nav-sub { padding-left: var(--space-2); }
 .nav-icon { font-size: 1.05rem; flex-shrink: 0; width: 24px; text-align: center; transition: transform .35s var(--ease-soft); }
 .admin-nav a:hover .nav-icon { transform: scale(1.1); }
 .nav-text { white-space: nowrap; overflow: hidden; transition: opacity .2s; }
