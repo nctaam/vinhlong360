@@ -175,9 +175,10 @@
           </div>
           <div class="ent-field">
             <label class="form-label" for="ent-type">Loại</label>
-            <select id="ent-type" v-model="form.type" class="input" aria-label="Loại entity">
+            <select id="ent-type" v-model="form.type" class="input" aria-label="Loại entity" :disabled="!!editingEntity">
               <option v-for="t in types" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
             </select>
+            <span v-if="editingEntity" class="sf-help">Đổi loại: sửa nhanh ô "Loại" ngay trên bảng (an toàn cho thuộc tính).</span>
           </div>
           <div class="ent-field">
             <label class="form-label" for="ent-place">Place ID (xã/phường)</label>
@@ -209,6 +210,24 @@
               />
             </div>
           </fieldset>
+
+          <!-- Mùa (season) — tháng có mặt + cao điểm -->
+          <details class="ent-kbyg-details">
+            <summary class="admin-label ent-kbyg-summary">🗓️ Mùa / thời điểm ({{ seasonMonths.length }} tháng<span v-if="seasonPeak.length">, {{ seasonPeak.length }} cao điểm</span>)</summary>
+            <div class="ent-kbyg-fields">
+              <p class="sf-help ent-season-hint">Bấm mỗi tháng để chuyển: không → có mùa → cao điểm → tắt.</p>
+              <div class="ent-season-grid" role="group" aria-label="Chọn tháng theo mùa">
+                <button v-for="(lbl, i) in MONTH_LABELS" :key="i" type="button"
+                  :class="['ent-season-cell', `ent-season-${monthState(i + 1)}`]"
+                  :aria-label="`Tháng ${lbl}: ${monthState(i + 1) === 'peak' ? 'cao điểm' : monthState(i + 1) === 'in' ? 'có mùa' : 'không'}`"
+                  @click="cycleMonth(i + 1)">T{{ lbl }}</button>
+              </div>
+              <div class="ent-season-legend">
+                <span><i class="ent-season-swatch ent-season-in"></i> Có mùa</span>
+                <span><i class="ent-season-swatch ent-season-peak"></i> Cao điểm</span>
+              </div>
+            </div>
+          </details>
 
           <!-- KBYG — Know Before You Go -->
           <details class="ent-kbyg-details">
@@ -249,6 +268,17 @@
                 <label class="form-label" for="kbyg-checklist">Checklist chuẩn bị (mỗi dòng = 1 item, để trống = mặc định theo loại)</label>
                 <textarea id="kbyg-checklist" v-model="kbygChecklist" class="input admin-textarea" rows="2" placeholder="VD: Kem chống nắng&#10;Tiền mặt&#10;Nón"></textarea>
               </div>
+            </div>
+          </details>
+
+          <!-- Thuộc tính nâng cao (bespoke tail — không có trong schema/KBYG) -->
+          <details class="ent-kbyg-details">
+            <summary class="admin-label ent-kbyg-summary">🧩 Thuộc tính nâng cao (JSON)</summary>
+            <div class="ent-kbyg-fields">
+              <p class="sf-help">Các thuộc tính đặc thù không có ô riêng (vd sac_phong, deity_worshipped…). Sửa trực tiếp JSON — các trường đã có ô riêng ở trên sẽ được giữ tách biệt.</p>
+              <textarea v-model="advancedJson" class="input admin-textarea ent-advanced-json" rows="6" spellcheck="false"
+                placeholder='{&#10;  "sac_phong": "…",&#10;  "custom_key": "…"&#10;}' @input="advancedError = ''"></textarea>
+              <span v-if="advancedError" class="form-error" role="alert">{{ advancedError }}</span>
             </div>
           </details>
 
@@ -524,6 +554,7 @@ function initKbyg(attrs?: Record<string, unknown>) {
   kbygChecklist.value = Array.isArray(a.checklist) ? (a.checklist as string[]).join('\n') : ''
 }
 
+const KBYG_KEYS = ['kbyg_tips', 'golden_hours', 'peak_days', 'crowd_level', 'amenity_badges', 'checklist']
 function mergeKbygIntoAttrs(attrs: Record<string, unknown>): Record<string, unknown> {
   const result = { ...attrs }
   const tips = kbygTips.value.split('\n').map(s => s.trim()).filter(Boolean)
@@ -535,6 +566,41 @@ function mergeKbygIntoAttrs(attrs: Record<string, unknown>): Record<string, unkn
   const checklist = kbygChecklist.value.split('\n').map(s => s.trim()).filter(Boolean)
   if (checklist.length) result.checklist = checklist; else delete result.checklist
   return result
+}
+
+// ── Season editor (top-level `season` field: {months, peak}) ──
+const MONTH_LABELS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+const seasonMonths = ref<number[]>([])  // months present (in-season, incl. peak)
+const seasonPeak = ref<number[]>([])    // subset: peak months
+const seasonTouched = ref(false)        // only send `season` if the admin edited it
+function initSeason(season?: { months?: number[]; peak?: number[] } | null) {
+  seasonMonths.value = Array.isArray(season?.months) ? [...season!.months] : []
+  seasonPeak.value = Array.isArray(season?.peak) ? [...season!.peak] : []
+  seasonTouched.value = false
+}
+function monthState(m: number): 'off' | 'in' | 'peak' {
+  if (seasonPeak.value.includes(m)) return 'peak'
+  if (seasonMonths.value.includes(m)) return 'in'
+  return 'off'
+}
+function cycleMonth(m: number) {
+  seasonTouched.value = true
+  const st = monthState(m)
+  if (st === 'off') { seasonMonths.value = [...seasonMonths.value, m].sort((a, b) => a - b) }
+  else if (st === 'in') { seasonPeak.value = [...seasonPeak.value, m].sort((a, b) => a - b) }
+  else { seasonMonths.value = seasonMonths.value.filter(x => x !== m); seasonPeak.value = seasonPeak.value.filter(x => x !== m) }
+}
+
+// ── Advanced attributes editor (the bespoke tail: keys not in schema, not KBYG) ──
+const advancedJson = ref('')
+const advancedError = ref('')
+function initAdvanced(attrs?: Record<string, unknown>) {
+  advancedError.value = ''
+  const a = attrs || {}
+  const managed = new Set([...currentSchemaKeys.value, ...KBYG_KEYS])
+  const tail: Record<string, unknown> = {}
+  for (const [k, v] of Object.entries(a)) if (!managed.has(k)) tail[k] = v
+  advancedJson.value = Object.keys(tail).length ? JSON.stringify(tail, null, 2) : ''
 }
 
 const inlineEdit = ref<{ id: string; field: string; value: string }>({ id: '', field: '', value: '' })
@@ -617,18 +683,22 @@ async function _focusModal() {
   })
 }
 
-function openCreate() {
+async function openCreate() {
+  await fetchEntitySchema()  // guarantee currentSchemaKeys is populated before partitioning
   editingEntity.value = null
   form.value = { ...EMPTY_ENTITY_FORM }
   newImage.value = ''
   fieldErrors.value = {}
   initKbyg()
   initTypedAttrs()
+  initSeason()
+  initAdvanced()
   showModal.value = true
   _focusModal()
 }
 
-function openEdit(e: Entity) {
+async function openEdit(e: Entity) {
+  await fetchEntitySchema()  // avoid the schema-load race that could drop typed fields on save
   editingEntity.value = e
   form.value = { id: e.id, name: e.name, type: e.type, placeId: e.placeId || '', summary: e.summary || '',
                  images: Array.isArray(e.images) ? [...e.images] : [] }
@@ -637,19 +707,24 @@ function openEdit(e: Entity) {
   fieldErrors.value = {}
   initKbyg((e as any).attributes)
   initTypedAttrs((e as any).attributes)
+  initSeason((e as any).season)
+  initAdvanced((e as any).attributes)
   fetchRels(e.id)
   fetchEntityHistory(e.id)
   showModal.value = true
   _focusModal()
 }
 
-function cloneEntity(e: Entity) {
+async function cloneEntity(e: Entity) {
+  await fetchEntitySchema()
   editingEntity.value = null
   form.value = { id: '', name: `${e.name} (bản sao)`, type: e.type, placeId: e.placeId || '', summary: e.summary || '', images: [] }
   newImage.value = ''
   fieldErrors.value = {}
   initKbyg((e as any).attributes)
   initTypedAttrs((e as any).attributes)
+  initSeason((e as any).season)
+  initAdvanced((e as any).attributes)
   showModal.value = true
   _focusModal()
 }
@@ -751,12 +826,31 @@ async function saveEntity() {
     showToast(Object.values(fieldErrors.value)[0] || 'Vui lòng kiểm tra biểu mẫu', 'error')
     return
   }
+  // Advanced (bespoke-tail) JSON must parse before we touch anything.
+  let advancedObj: Record<string, unknown> = {}
+  if (advancedJson.value.trim()) {
+    try {
+      const parsed = JSON.parse(advancedJson.value)
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error('not-object')
+      advancedObj = parsed
+    } catch {
+      advancedError.value = 'JSON không hợp lệ — kiểm tra lại dấu ngoặc/nháy.'
+      showToast('Thuộc tính nâng cao: JSON không hợp lệ', 'error')
+      return
+    }
+  }
+  advancedError.value = ''
   saving.value = true
   try {
-    const body = { ...form.value }
+    const body: Record<string, any> = { ...form.value }
     const existingAttrs = { ...((editingEntity.value as any)?.attributes || (body.attributes as Record<string, unknown>) || {}) }
+    const managed = new Set([...currentSchemaKeys.value, ...KBYG_KEYS])
+    // Advanced editor is authoritative for the bespoke tail (non-managed keys):
+    // drop existing tail keys, then apply the edited JSON (so removals stick).
+    for (const k of Object.keys(existingAttrs)) if (!managed.has(k)) delete existingAttrs[k]
+    for (const [k, v] of Object.entries(advancedObj)) if (!managed.has(k)) existingAttrs[k] = v
     // Overlay typed schema fields for the current type. A cleared field
-    // (undefined / '' / empty array) is removed; the bespoke tail is preserved.
+    // (undefined / '' / empty array) is removed.
     for (const k of currentSchemaKeys.value) {
       const v = typedAttrs.value[k]
       const empty = v === undefined || v === '' || (Array.isArray(v) && v.length === 0)
@@ -764,6 +858,12 @@ async function saveEntity() {
       else existingAttrs[k] = v
     }
     body.attributes = mergeKbygIntoAttrs(existingAttrs)
+    // Season (top-level): only send if the admin actually edited it — otherwise
+    // omit so the backend preserves the existing value (no empty-season churn,
+    // no clobbering legacy shapes). peak ⊆ months guaranteed by the UI.
+    if (seasonTouched.value) {
+      body.season = { months: [...seasonMonths.value], peak: [...seasonPeak.value] }
+    }
     if (editingEntity.value) {
       await $fetch(`/admin-api/entities/${form.value.id}`, { method: 'PUT', headers: authHeaders(), body })
       showToast('Đã cập nhật entity', 'success')
@@ -1007,6 +1107,19 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-kind-chip:hover { border-color: var(--primary); color: var(--ink); }
 .ent-kind-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .ent-kind-chip-n { opacity: .7; font-weight: 600; }
+
+/* Phase 1c: season editor + advanced JSON */
+.ent-season-hint { margin: 0 0 var(--space-2); }
+.ent-season-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.ent-season-cell { padding: 6px 0; border: 1px solid var(--line); border-radius: 6px; background: var(--card); font-size: .78rem; font-weight: 600; cursor: pointer; color: var(--ink-700); transition: background .12s, color .12s, border-color .12s; }
+.ent-season-cell.ent-season-in { background: color-mix(in srgb, var(--primary) 22%, var(--card)); color: var(--ink); border-color: var(--primary); }
+.ent-season-cell.ent-season-peak { background: var(--primary); color: #fff; border-color: var(--primary); }
+.ent-season-legend { display: flex; gap: var(--space-4); margin-top: var(--space-2); font-size: .76rem; color: var(--ink-700); }
+.ent-season-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.ent-season-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.ent-season-swatch.ent-season-in { background: color-mix(in srgb, var(--primary) 22%, var(--card)); border: 1px solid var(--primary); }
+.ent-season-swatch.ent-season-peak { background: var(--primary); }
+.ent-advanced-json { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: .8rem; }
 
 /* ── Row action buttons: consistent sizing + 44px touch + focus ── */
 .admin-actions { display: flex; gap: var(--space-1); align-items: center; }
