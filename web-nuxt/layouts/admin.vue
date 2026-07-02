@@ -13,8 +13,8 @@
       </div>
 
       <nav class="admin-nav" aria-label="Menu quản trị">
-        <div class="nav-group">
-          <span class="nav-group-label" v-if="!sidebarCollapsed">Tổng quan</span>
+        <div class="admin-nav-group">
+          <span class="admin-nav-group-label" v-if="!sidebarCollapsed">Tổng quan</span>
           <NuxtLink to="/admin" :class="{ active: route.path === '/admin' }" :title="sidebarCollapsed ? 'Dashboard' : undefined">
             <span class="nav-icon">&#128202;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Dashboard</span>
@@ -25,8 +25,8 @@
           </NuxtLink>
         </div>
 
-        <div class="nav-group">
-          <span class="nav-group-label" v-if="!sidebarCollapsed">Nội dung</span>
+        <div class="admin-nav-group">
+          <span class="admin-nav-group-label" v-if="!sidebarCollapsed">Nội dung</span>
           <NuxtLink to="/admin/entities" :class="{ active: route.path === '/admin/entities' && !route.query.kind }" :title="sidebarCollapsed ? 'Tất cả entities' : undefined">
             <span class="nav-icon">&#128203;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Tất cả entities</span>
@@ -61,8 +61,8 @@
           </NuxtLink>
         </div>
 
-        <div class="nav-group">
-          <span class="nav-group-label" v-if="!sidebarCollapsed">Cộng đồng</span>
+        <div class="admin-nav-group">
+          <span class="admin-nav-group-label" v-if="!sidebarCollapsed">Cộng đồng</span>
           <NuxtLink to="/admin/kiem-duyet" :class="{ active: route.path === '/admin/kiem-duyet' }" :title="sidebarCollapsed ? 'Kiểm duyệt' : undefined">
             <span class="nav-icon">&#128737;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Kiểm duyệt</span>
@@ -84,8 +84,8 @@
           </NuxtLink>
         </div>
 
-        <div class="nav-group">
-          <span class="nav-group-label" v-if="!sidebarCollapsed">Hệ thống</span>
+        <div class="admin-nav-group">
+          <span class="admin-nav-group-label" v-if="!sidebarCollapsed">Hệ thống</span>
           <NuxtLink to="/admin/duyet-tu-hoc" :class="{ active: route.path === '/admin/duyet-tu-hoc' }" :title="sidebarCollapsed ? 'Duyệt & Tools' : undefined">
             <span class="nav-icon">&#129514;</span>
             <span class="nav-text" v-if="!sidebarCollapsed">Duyệt & Tools</span>
@@ -259,8 +259,8 @@ onUnmounted(() => {
 .admin-nav::-webkit-scrollbar { width: 4px; }
 .admin-nav::-webkit-scrollbar-track { background: transparent; }
 .admin-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
-.nav-group { margin-bottom: var(--space-2); }
-.nav-group-label {
+.admin-nav-group { margin-bottom: var(--space-2); }
+.admin-nav-group-label {
   display: block; font-size: .65rem; font-weight: 600;
   text-transform: uppercase; letter-spacing: 1.5px;
   color: rgba(255,255,255,.3); padding: var(--space-2) var(--space-3) var(--space-1);
@@ -528,7 +528,7 @@ onUnmounted(() => {
 
 /* ── Dark mode ── */
 .dark .admin-sidebar { background: var(--bg); border-right-color: rgba(255,255,255,.08); }
-.dark .nav-group-label { color: rgba(255,255,255,.35); }
+.dark .admin-nav-group-label { color: rgba(255,255,255,.35); }
 .dark .admin-nav a { color: rgba(255,255,255,.65); }
 .dark .admin-nav a:hover { color: var(--ink); background: rgba(255,255,255,.12); }
 .dark .admin-nav a.active { background: rgba(255,255,255,.14); color: var(--ink); box-shadow: inset 4px 0 0 var(--primary-fg, #D98A6F); }
@@ -594,8 +594,8 @@ onUnmounted(() => {
     -webkit-mask-image: linear-gradient(to right, #000 90%, transparent);
   }
   .admin-nav:hover, .admin-nav:focus-within { mask-image: none; -webkit-mask-image: none; }
-  .nav-group { display: contents; }
-  .nav-group-label { display: none; }
+  .admin-nav-group { display: contents; }
+  .admin-nav-group-label { display: none; }
   .admin-nav a { padding: var(--space-2) var(--space-3); font-size: .78rem; white-space: nowrap; scroll-snap-align: start; min-height: 44px; }
   .nav-text { display: inline !important; }
   .admin-nav a.active { box-shadow: none; background: rgba(255,255,255,.15); }
