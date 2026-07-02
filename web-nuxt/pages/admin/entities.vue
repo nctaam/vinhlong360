@@ -2,7 +2,7 @@
   <div>
     <div class="admin-head-row">
       <div>
-        <h1>Quản lý Entities</h1>
+        <h1>{{ currentKind ? `${currentKind.emoji} ${currentKind.label}` : 'Quản lý Entities' }}</h1>
         <p class="ent-subtitle">{{ entities.length ? `${entities.length} kết quả` : '' }}</p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchEntities()">
@@ -17,8 +17,8 @@
         <span v-if="searching" class="ent-searching" aria-live="polite">Đang tìm…</span>
       </div>
       <select v-model="typeFilter" class="input admin-select-filter" aria-label="Lọc theo loại entity" @change="fetchEntities(true)">
-        <option value="">Tất cả loại</option>
-        <option v-for="t in types" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
+        <option value="">{{ currentKind ? `Cả nhóm ${currentKind.label}` : 'Tất cả loại' }}</option>
+        <option v-for="t in kindTypes" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
       </select>
       <button type="button" class="btn btn-outline btn-sm" :class="{ 'btn-active-warn': orphansOnly }" @click="orphansOnly = !orphansOnly; fetchEntities(true)">
         {{ orphansOnly ? '&#10003; Mồ côi' : 'Mồ côi' }}
@@ -52,6 +52,15 @@
       </div>
     </details>
 
+    <!-- GĐ-A: chip lọc nhanh theo nhóm -->
+    <div v-if="currentKind?.chips.length" class="ent-chip-row" role="group" aria-label="Lọc nhanh theo nhóm">
+      <button v-for="ch in currentKind.chips" :key="ch.key" type="button"
+        class="ent-kind-chip" :class="{ active: activeChips.has(ch.key) }" @click="toggleChip(ch.key)">
+        {{ ch.label }}
+      </button>
+      <span v-if="activeChips.size" class="ent-chip-note">{{ chipFiltered.length }}/{{ entities.length }} khớp</span>
+    </div>
+
     <div v-if="selected.size" class="bulk-bar">
       <span>Đã chọn {{ selected.size }}</span>
       <button type="button" class="btn-danger" :disabled="bulkBusy" @click="bulkDelete">Xóa đã chọn</button>
@@ -83,6 +92,7 @@
             <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></button></th>
             <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></button></th>
             <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></button></th>
+            <th v-for="c in currentKind?.columns || []" :key="c.key" scope="col">{{ c.label }}</th>
             <th scope="col"><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>
             <th scope="col">Thao tác</th>
           </tr>
@@ -112,6 +122,10 @@
               <span v-else class="type-badge ent-inline-label" :data-type="e.type" @dblclick="startInline(e, 'type', e.type)">{{ e.type }}</span>
             </td>
             <td class="admin-td-muted">{{ e.place_name || '—' }}</td>
+            <td v-for="c in currentKind?.columns || []" :key="c.key" class="ent-kind-cell">
+              <span v-if="c.widget === 'bool'">{{ ((e as any).attributes || {})[c.key] ? '✓' : '—' }}</span>
+              <span v-else>{{ ((e as any).attributes || {})[c.key] ?? '—' }}</span>
+            </td>
             <td class="ent-health-cell">
               <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" :aria-label="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" role="img">{{ e.summary ? '✓' : '✗' }}</span>
               <span class="ent-dot" :class="e.images?.length ? 'dot-ok' : 'dot-miss'" :title="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'" :aria-label="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'" role="img">{{ e.images?.length ? '✓' : '✗' }}</span>
@@ -124,7 +138,7 @@
             </td>
           </tr>
           <tr v-if="!sortedEntities.length">
-            <td colspan="7" class="admin-empty-row">
+            <td :colspan="7 + (currentKind?.columns.length || 0)" class="admin-empty-row">
               <div class="ent-empty">
                 <span class="ent-empty-icon">&#128269;</span>
                 <template v-if="search">
@@ -176,7 +190,7 @@
           <div class="ent-field">
             <label class="form-label" for="ent-type">Loại</label>
             <select id="ent-type" v-model="form.type" class="input" aria-label="Loại entity" :disabled="!!editingEntity">
-              <option v-for="t in types" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
+              <option v-for="t in kindTypes" :key="t" :value="t">{{ TYPE_META[t]?.emoji || '' }} {{ TYPE_META[t]?.label || t }}</option>
             </select>
             <span v-if="editingEntity" class="sf-help">Đổi loại: sửa nhanh ô "Loại" ngay trên bảng (an toàn cho thuộc tính).</span>
           </div>
@@ -356,6 +370,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { TYPE_META } from '~/composables/useConstants'
+import { ADMIN_KINDS } from '~/utils/adminKinds'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Quản lý Entity — Admin' })
 
@@ -482,6 +497,29 @@ const editingEntity = ref<Entity | null>(null)
 const placesList = ref<{ id: string; name: string; area?: string }[]>([])
 const form = ref<EntityForm>({ ...EMPTY_ENTITY_FORM })
 const selected = ref<Set<string>>(new Set())
+
+// GĐ-A: chế độ xem theo nhóm (?kind=) — cột/bộ lọc đặc thù (utils/adminKinds)
+const route = useRoute()
+const currentKind = computed(() => ADMIN_KINDS.find(k => k.kind === String(route.query.kind || '')) || null)
+const kindTypes = computed(() => currentKind.value ? currentKind.value.types : types)
+const activeChips = ref<Set<string>>(new Set())
+function toggleChip(key: string) {
+  const s = new Set(activeChips.value)
+  if (s.has(key)) s.delete(key)
+  else s.add(key)
+  activeChips.value = s
+}
+const chipFiltered = computed(() => {
+  if (!currentKind.value || !activeChips.value.size) return entities.value
+  const chips = currentKind.value.chips.filter(c => activeChips.value.has(c.key))
+  return entities.value.filter(e => chips.every(c => c.test(e)))
+})
+watch(() => route.query.kind, () => {
+  selected.value = new Set()
+  activeChips.value = new Set()
+  typeFilter.value = ''
+  fetchEntities(true)
+})
 const loading = ref(true)
 const acting = ref<string | null>(null)
 const saving = ref(false)
@@ -504,10 +542,10 @@ function sortArrow(key: string): string {
   return sortDir.value === 'asc' ? '▲' : '▼'
 }
 const sortedEntities = computed(() => {
-  if (!sortKey.value) return entities.value
+  if (!sortKey.value) return chipFiltered.value
   const k = sortKey.value
   const dir = sortDir.value === 'asc' ? 1 : -1
-  return [...entities.value].sort((a, b) => {
+  return [...chipFiltered.value].sort((a, b) => {
     const va = String((a as Record<string, any>)[k] || '').toLowerCase()
     const vb = String((b as Record<string, any>)[k] || '').toLowerCase()
     return va < vb ? -dir : va > vb ? dir : 0
@@ -658,6 +696,7 @@ async function fetchEntities(reset = false) {
     const params = new URLSearchParams({ limit: String(limit), offset: String((page.value - 1) * limit) })
     if (search.value) params.set('q', search.value)
     if (typeFilter.value) params.set('type', typeFilter.value)
+    else if (currentKind.value) params.set('kind', currentKind.value.kind)
     if (orphansOnly.value) params.set('orphans_only', 'true')
     const res = await $fetch<EntityListResponse | Entity[]>(`/admin-api/entities?${params}`, { headers: authHeaders() })
     entities.value = Array.isArray(res) ? res : (res.entities || [])
@@ -687,6 +726,9 @@ async function openCreate() {
   await fetchEntitySchema()  // guarantee currentSchemaKeys is populated before partitioning
   editingEntity.value = null
   form.value = { ...EMPTY_ENTITY_FORM }
+  if (currentKind.value && !currentKind.value.types.includes(String(form.value.type))) {
+    form.value.type = currentKind.value.types[0]
+  }
   newImage.value = ''
   fieldErrors.value = {}
   initKbyg()
@@ -1107,6 +1149,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-kind-chip:hover { border-color: var(--primary); color: var(--ink); }
 .ent-kind-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .ent-kind-chip-n { opacity: .7; font-weight: 600; }
+
+/* GĐ-A: chip lọc nhanh theo nhóm + ô cột đặc thù */
+.ent-chip-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-3) 0; align-items: center; }
+.ent-chip-note { font-size: .8rem; color: var(--ink-700); }
+.ent-kind-cell { font-size: .85rem; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Phase 1c: season editor + advanced JSON */
 .ent-season-hint { margin: 0 0 var(--space-2); }
