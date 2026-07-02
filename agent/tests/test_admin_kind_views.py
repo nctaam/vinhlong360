@@ -61,3 +61,18 @@ def test_completeness_food_shape():
 
 def test_completeness_requires_kind():
     assert client.get("/admin/entity-completeness", headers=H).status_code == 422
+
+
+# ── Runtime tests cho 2 endpoint từng 500 trên prod vì bug chỉ lộ lúc CHẠY
+#    (db.escape_like không tồn tại — module-vs-instance; test soi-source không bắt được) ──
+def test_check_duplicate_endpoint_runs():
+    r = client.get("/admin/entities/check-duplicate?name=chùa", headers=H)
+    assert r.status_code == 200
+    assert "duplicates" in r.json()
+
+
+def test_unclassified_endpoint_runs_with_search():
+    r = client.get("/admin/unclassified?limit=5&q=chua", headers=H)
+    assert r.status_code == 200
+    body = r.json()
+    assert "total" in body and "entities" in body

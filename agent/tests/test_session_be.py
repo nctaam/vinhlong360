@@ -1531,7 +1531,8 @@ class TestPhase10LikeEscape:
         """Admin duplicate check escapes LIKE wildcards."""
         admin_src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         idx = admin_src.find("def check_duplicate")
-        block = admin_src[idx:idx + 500]
+        # Window 900: hàm dài ra hợp lệ (fix dialect PG 2026-07-02) — assertion giữ nguyên.
+        block = admin_src[idx:idx + 900]
         assert "escape_like" in block
         assert "ESCAPE" in block
 
@@ -1539,7 +1540,8 @@ class TestPhase10LikeEscape:
         """Admin unclassified search escapes LIKE wildcards."""
         admin_src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         idx = admin_src.find("def list_unclassified")
-        block = admin_src[idx:idx + 800]
+        # Window 1200: hàm dài ra hợp lệ (fix dialect PG 2026-07-02) — assertion giữ nguyên.
+        block = admin_src[idx:idx + 1200]
         assert "escape_like" in block
         assert "ESCAPE" in block
 

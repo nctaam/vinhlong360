@@ -763,11 +763,12 @@ async def check_duplicate(name: str = Query(..., min_length=2, max_length=200)):
     name_lower = name.lower().strip()
     if len(name_lower) < 2:
         return {"duplicates": []}
-    pattern = f"%{db.escape_like(name_lower)}%"
+    pattern = f"%{_escape_like(name_lower)}%"
     def _query():
         with db._conn() as conn:
+            # db._ph: ? chỉ đúng SQLite — trên PG (psycopg2) phải %s (500 trên prod)
             rows = db._fetchall(conn,
-                "SELECT id, name, type FROM entities WHERE type != 'place' AND LOWER(name) LIKE ? ESCAPE '\\' LIMIT 5",
+                f"SELECT id, name, type FROM entities WHERE type != 'place' AND LOWER(name) LIKE {db._ph} ESCAPE '\\' LIMIT 5",
                 (pattern,))
         dups = []
         for r in rows:
@@ -986,16 +987,21 @@ async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = 
                             q: Optional[str] = Query(None, max_length=200)):
     """Entity nội dung CHƯA gán xã/phường (placeId rỗng) — để admin gán đúng (lấp nợ placeId)."""
     ql = (q or "").lower().strip()
-    base = "FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')"
+    # PG folds identifier không nháy về lowercase → "placeid" not exist (cột tạo
+    # là "placeId" quoted). Placeholder cũng phải theo db._ph (?/%s) — bug 500
+    # trên prod PG, dev SQLite không thấy (case-insensitive + dùng ?).
+    _pid = '"placeId"' if db._use_pg else "placeId"
+    ph = db._ph
+    base = f"FROM entities WHERE type != 'place' AND ({_pid} IS NULL OR {_pid} = '')"
     params: list = []
     if ql:
-        base += " AND LOWER(name) LIKE ? ESCAPE '\\'"
-        params.append(f"%{db.escape_like(ql)}%")
+        base += f" AND LOWER(name) LIKE {ph} ESCAPE '\\'"
+        params.append(f"%{_escape_like(ql)}%")
     def _query():
         with db._conn() as conn:
             cnt = db._fetchone(conn, f"SELECT COUNT(*) as c {base}", tuple(params))
             total = db._row_to_dict(cnt)["c"] if cnt else 0
-            rows = db._fetchall(conn, f"SELECT id, name, type, area, summary {base} ORDER BY name LIMIT ? OFFSET ?",
+            rows = db._fetchall(conn, f"SELECT id, name, type, area, summary {base} ORDER BY name LIMIT {ph} OFFSET {ph}",
                                 tuple(params) + (limit, offset))
         out = []
         for r in rows:
@@ -2266,13 +2272,25 @@ async def admin_stats():
                 total_entities += d["c"]
 
         with db._conn() as c2:
-            comp = db._fetchone(c2, """
+            # PG: images là JSONB (so sánh với '' bắt PG parse '' thành JSON → 500);
+            # placeId phải quoted. SQLite: images là TEXT — giữ nguyên so sánh chuỗi.
+            if db._use_pg:
+                comp_sql = """
+                SELECT COUNT(*) as total,
+                       SUM(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) as has_summary,
+                       SUM(CASE WHEN images IS NOT NULL AND jsonb_typeof(images) = 'array' AND jsonb_array_length(images) > 0 THEN 1 ELSE 0 END) as has_images,
+                       SUM(CASE WHEN "placeId" IS NOT NULL AND "placeId" != '' THEN 1 ELSE 0 END) as has_place
+                FROM entities WHERE type != 'place'
+                """
+            else:
+                comp_sql = """
                 SELECT COUNT(*) as total,
                        SUM(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) as has_summary,
                        SUM(CASE WHEN images IS NOT NULL AND images != '' AND images != '[]' THEN 1 ELSE 0 END) as has_images,
                        SUM(CASE WHEN placeId IS NOT NULL AND placeId != '' THEN 1 ELSE 0 END) as has_place
                 FROM entities WHERE type != 'place'
-            """, ())
+                """
+            comp = db._fetchone(c2, comp_sql, ())
             cd = db._row_to_dict(comp) if comp else {}
             comp_total = cd.get("total", 0)
             has_summary = cd.get("has_summary", 0)
@@ -2856,7 +2874,8 @@ async def badge_counts():
         except Exception:
             logger.debug("Badge image queue count failed", exc_info=True)
         with db._conn() as conn2:
-            unc_row = db._fetchone(conn2, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')", ())
+            _pid = '"placeId"' if db._use_pg else "placeId"
+            unc_row = db._fetchone(conn2, f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND ({_pid} IS NULL OR {_pid} = '')", ())
             counts["unclassified"] = db._row_to_dict(unc_row)["c"] if unc_row else 0
         try:
             import kb_curation
@@ -2911,7 +2930,8 @@ async def dashboard_alerts():
         except Exception:
             logger.debug("Alert image queue count failed", exc_info=True)
         with db._conn() as conn2:
-            unc_row = db._fetchone(conn2, "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND (placeId IS NULL OR placeId = '')", ())
+            _pid = '"placeId"' if db._use_pg else "placeId"
+            unc_row = db._fetchone(conn2, f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND ({_pid} IS NULL OR {_pid} = '')", ())
             unc_count = db._row_to_dict(unc_row)["c"] if unc_row else 0
         if unc_count:
             alerts.append({"type": "unclassified", "count": unc_count, "label": f"{unc_count} entity chưa phân loại", "icon": "📍", "link": "/admin/chua-phan-loai", "priority": 5})
