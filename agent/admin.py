@@ -21,7 +21,7 @@ import sys
 import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, Depends, UploadFile, File
 from fastapi.responses import StreamingResponse
@@ -78,20 +78,252 @@ _audit_lock = threading.Lock()
 from config import settings as _cfg
 _AUDIT_MAX_LINES = _cfg.AUDIT_MAX_LINES
 
+ADMIN_ROLE_SCOPES: dict[str, set[str]] = {
+    "moderator": {"moderation.manager"},
+    "admin": {"content.editor", "moderation.manager", "ops.deploy", "settings.admin", "security.admin"},
+    "superadmin": {"*"},
+}
 
-def _log_admin_audit(actor: str, method: str, path: str, ip: str) -> None:
+ADMIN_SCOPE_RULES: tuple[tuple[str, str], ...] = (
+    ("/admin/users", "security.admin"),
+    ("/admin/audit-log", "security.admin"),
+    ("/admin/activity-feed", "security.admin"),
+    ("/admin/user-engagement", "security.admin"),
+    ("/admin/user-growth", "security.admin"),
+    ("/admin/site-settings", "settings.admin"),
+    ("/admin/site-settings-history", "settings.admin"),
+    ("/admin/llm-config", "settings.admin"),
+    ("/admin/backup-trigger", "ops.deploy"),
+    ("/admin/system-health", "ops.deploy"),
+    ("/admin/ops-summary", "ops.deploy"),
+    ("/admin/cost-overview", "ops.deploy"),
+    ("/admin/analytics-overview", "ops.deploy"),
+    ("/admin/search-analytics", "ops.deploy"),
+    ("/admin/trigger-learn", "ops.deploy"),
+    ("/admin/ai", "ops.deploy"),
+    ("/admin/export", "ops.deploy"),
+    ("/admin/notifications/cleanup", "ops.deploy"),
+    ("/admin/cleanup-orphan-refs", "ops.deploy"),
+    ("/admin/moderation", "moderation.manager"),
+    ("/admin/reports", "moderation.manager"),
+    ("/admin/info-reports", "moderation.manager"),
+    ("/admin/appeals", "moderation.manager"),
+    ("/admin/comments", "moderation.manager"),
+    ("/admin/posts", "moderation.manager"),
+    ("/admin/qa-queue", "moderation.manager"),
+    ("/admin/content/search", "moderation.manager"),
+    ("/admin/content-stats", "moderation.manager"),
+    ("/admin/entities", "content.editor"),
+    ("/admin/unclassified", "content.editor"),
+    ("/admin/itineraries", "content.editor"),
+    ("/admin/relationships", "content.editor"),
+    ("/admin/data-quality", "content.editor"),
+    ("/admin/stale-queue", "content.editor"),
+    ("/admin/completeness", "content.editor"),
+    ("/admin/contact-funnel", "content.editor"),
+    ("/admin/collections", "content.editor"),
+    ("/admin/image-suggestions", "content.editor"),
+    ("/admin/featured", "content.editor"),
+    ("/admin/media", "content.editor"),
+    ("/admin/provisional", "content.editor"),
+    ("/admin/sources", "content.editor"),
+    ("/admin/claims", "content.editor"),
+    ("/admin/announcements", "content.editor"),
+)
+
+def _coerce_scope_list(value: Any) -> set[str]:
+    if isinstance(value, str):
+        return {part.strip() for part in value.split(",") if part.strip()}
+    if isinstance(value, (list, tuple, set)):
+        return {str(part).strip() for part in value if str(part).strip()}
+    return set()
+
+def admin_scopes_for_user(user: dict | None) -> list[str]:
+    """Return RBAC scopes for an admin actor. admin-key/superadmin receive wildcard."""
+    if user is None:
+        return ["*"]
+    scopes = set(ADMIN_ROLE_SCOPES.get(str(user.get("role") or "user"), set()))
+    for field in ("admin_scopes", "scopes", "permissions"):
+        scopes.update(_coerce_scope_list(user.get(field)))
+    if "*" in scopes:
+        return ["*"]
+    return sorted(scopes)
+
+def _ensure_admin_scope(request: Request | None, scope: str) -> None:
+    scopes = set(getattr(getattr(request, "state", None), "admin_scopes", []) or [])
+    if "*" in scopes or scope in scopes:
+        return
+    raise HTTPException(403, f"Thieu quyen admin: {scope}")
+
+def _normalize_admin_path(path: str) -> str:
+    normalized = "/" + (path or "").split("?", 1)[0].strip("/")
+    if normalized.startswith("/admin-api/"):
+        normalized = "/admin/" + normalized[len("/admin-api/"):]
+    return normalized.rstrip("/") or "/admin"
+
+def _admin_required_scope_for_path(path: str) -> str | None:
+    normalized = _normalize_admin_path(path)
+    for prefix, scope in ADMIN_SCOPE_RULES:
+        if normalized == prefix or normalized.startswith(prefix + "/"):
+            return scope
+    return None
+
+def _has_admin_entry_scope(user: dict | None) -> bool:
+    scopes = set(admin_scopes_for_user(user))
+    return "*" in scopes or bool(scopes & {"content.editor", "moderation.manager", "ops.deploy", "settings.admin", "security.admin"})
+
+def _admin_actor_context(request: Request | None, actor: str) -> dict[str, Any]:
+    user = getattr(getattr(request, "state", None), "admin_user", None) if request is not None else None
+    scopes = getattr(getattr(request, "state", None), "admin_scopes", None) if request is not None else None
+    request_id = ""
+    if request is not None:
+        request_id = request.headers.get("x-request-id") or request.headers.get("x-correlation-id") or ""
+    return {
+        "actor": actor,
+        "actor_role": (user or {}).get("role") if user else ("admin-key" if actor == "admin-key" else ""),
+        "actor_scopes": list(scopes or admin_scopes_for_user(user)),
+        "request_id": request_id,
+    }
+
+def _ensure_admin_audit_events_table(conn) -> None:
+    db._execute(conn, """
+        CREATE TABLE IF NOT EXISTS admin_audit_events (
+            id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            actor        TEXT NOT NULL,
+            actor_role   TEXT,
+            actor_scopes TEXT[] DEFAULT ARRAY[]::TEXT[],
+            method       TEXT NOT NULL,
+            path         TEXT NOT NULL,
+            request_id   TEXT,
+            ip           TEXT,
+            reason       TEXT,
+            before_json  JSONB,
+            after_json   JSONB,
+            meta         JSONB DEFAULT '{}'::JSONB
+        )
+    """, ())
+    db._execute(conn, "CREATE INDEX IF NOT EXISTS idx_admin_audit_events_created_at ON admin_audit_events(created_at DESC)", ())
+
+def _log_admin_audit_db(record: dict[str, Any]) -> None:
+    if not getattr(db, "_use_pg", False):
+        return
+    try:
+        with db._conn() as conn:
+            _ensure_admin_audit_events_table(conn)
+            db._execute(conn, """
+                INSERT INTO admin_audit_events
+                    (actor, actor_role, actor_scopes, method, path, request_id, ip, reason, before_json, after_json, meta)
+                VALUES
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb)
+            """, (
+                record.get("actor") or "unknown",
+                record.get("actor_role") or None,
+                record.get("actor_scopes") or [],
+                record.get("method") or "",
+                record.get("path") or "",
+                record.get("request_id") or None,
+                record.get("ip") or None,
+                record.get("reason") or None,
+                json.dumps(record.get("before"), ensure_ascii=False) if record.get("before") is not None else None,
+                json.dumps(record.get("after"), ensure_ascii=False) if record.get("after") is not None else None,
+                json.dumps(record.get("meta") or {}, ensure_ascii=False),
+            ))
+    except Exception:
+        logger.debug("Admin audit DB write skipped; JSONL fallback remains active", exc_info=True)
+
+def _query_admin_audit_db(
+    limit: int,
+    method: str | None = None,
+    q: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+) -> dict[str, Any] | None:
+    if not getattr(db, "_use_pg", False):
+        return None
+    try:
+        conditions: list[str] = []
+        params: list[Any] = []
+        if method:
+            conditions.append("method = %s")
+            params.append(method.upper())
+        if q:
+            conditions.append("(LOWER(path) LIKE %s OR LOWER(actor) LIKE %s)")
+            like = f"%{_escape_like(q.lower())}%"
+            params.extend([like, like])
+        if date_from:
+            conditions.append("created_at::date >= %s::date")
+            params.append(date_from)
+        if date_to:
+            conditions.append("created_at::date <= %s::date")
+            params.append(date_to)
+        where_sql = f" WHERE {' AND '.join(conditions)}" if conditions else ""
+        with db._conn() as conn:
+            total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM admin_audit_events{where_sql}", tuple(params))
+            rows = db._fetchall(conn, f"""
+                SELECT created_at, actor, actor_role, actor_scopes, method, path, request_id, ip, reason, meta
+                FROM admin_audit_events
+                {where_sql}
+                ORDER BY created_at DESC
+                LIMIT %s
+            """, tuple(params + [limit]))
+        entries = []
+        for row in rows or []:
+            item = db._row_to_dict(row)
+            ts = item.get("created_at")
+            entries.append({
+                "ts": ts.isoformat(timespec="seconds") if hasattr(ts, "isoformat") else str(ts or ""),
+                "actor": item.get("actor"),
+                "actor_role": item.get("actor_role"),
+                "actor_scopes": item.get("actor_scopes") or [],
+                "method": item.get("method"),
+                "path": item.get("path"),
+                "request_id": item.get("request_id"),
+                "ip": item.get("ip"),
+                "reason": item.get("reason"),
+                "meta": item.get("meta") or {},
+            })
+        total = int(db._row_to_dict(total_row).get("c") or 0) if total_row else len(entries)
+        return {"entries": entries, "total": total, "source": "db"}
+    except Exception:
+        logger.debug("Admin audit DB read unavailable; falling back to JSONL", exc_info=True)
+        return None
+
+
+def _log_admin_audit(
+    actor: str,
+    method: str,
+    path: str,
+    ip: str,
+    request: Request | None = None,
+    *,
+    before: Any = None,
+    after: Any = None,
+    reason: str | None = None,
+    meta: dict[str, Any] | None = None,
+) -> None:
     """P2-7: ghi nhật ký thao tác admin (ai/làm-gì/khi-nào) — JSONL nhẹ, không chặn request."""
+    rec = {
+        "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "method": method,
+        "path": path,
+        "ip": ip,
+        "before": before,
+        "after": after,
+        "reason": reason,
+        "meta": meta or {},
+        **_admin_actor_context(request, actor),
+    }
     try:
         with _audit_lock:
             _AUDIT_FILE.parent.mkdir(parents=True, exist_ok=True)
-            rec = {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), "actor": actor,
-                   "method": method, "path": path, "ip": ip}
             with open(_AUDIT_FILE, "a", encoding="utf-8") as f:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
             _audit_cache["mtime"] = 0.0
             _maybe_rotate_audit()
     except Exception:
         logger.exception("Failed to write admin audit log")
+    _log_admin_audit_db(rec)
 
 
 def _maybe_rotate_audit() -> None:
@@ -110,7 +342,7 @@ def _maybe_rotate_audit() -> None:
         logger.exception("Audit log rotation failed")
 
 
-async def require_admin(request: Request):
+async def require_admin(request: Request, required_scope_override: str | None = None):
     """FastAPI dependency: verify admin auth + rate limit (+ audit log mọi mutation)."""
     # Rate limit
     client_ip = get_client_ip(request)
@@ -119,18 +351,49 @@ async def require_admin(request: Request):
         raise HTTPException(429, detail="Quá nhiều yêu cầu. Vui lòng thử lại sau.", headers={"Retry-After": str(rate_info["retry_after"])})
     # Auth: allow server-side admin key or a logged-in admin user from the frontend.
     actor = None
+    user = None
     if verify_admin_key(request):
         actor = "admin-key"
     else:
         user = await get_current_user(request)
-        if user and user.get("role") == "admin":
+        if user and _has_admin_entry_scope(user):
             actor = f"user:{user.get('id')}"
     if not actor:
         raise HTTPException(401, detail="Xác thực admin không hợp lệ. Sử dụng X-Admin-Key hoặc phiên làm việc admin.")
-    request.state.admin_user = user if actor != "admin-key" else None
+    admin_user = user if actor != "admin-key" else None
+    request.state.admin_user = admin_user
+    request.state.admin_actor = actor
+    request.state.admin_scopes = admin_scopes_for_user(admin_user)
+    required_scope = required_scope_override or _admin_required_scope_for_path(request.url.path)
+    request.state.admin_required_scope = required_scope
+    if required_scope:
+        _ensure_admin_scope(request, required_scope)
+    if admin_user is not None:
+        request.state.user = admin_user
+    if admin_user is not None and request.method in ("POST", "PUT", "DELETE", "PATCH"):
+        await require_csrf(request)
     # P2-7: audit các thao tác THAY ĐỔI (đọc/GET không log để tránh nhiễu)
     if request.method in ("POST", "PUT", "DELETE", "PATCH"):
-        _log_admin_audit(actor, request.method, request.url.path, client_ip)
+        _log_admin_audit(actor, request.method, request.url.path, client_ip, request=request)
+
+async def require_admin_scope(request: Request, scope: str):
+    """Verify admin auth and require an explicit RBAC scope for non-admin routes."""
+    await require_admin(request, required_scope_override=scope)
+
+def _require_admin_actor_id(request: Request | None) -> str:
+    """Return the authenticated admin user id for actions that need user attribution."""
+    if request is None:
+        raise HTTPException(403, "Thao tác này cần phiên admin")
+    user = getattr(request.state, "admin_user", None) or getattr(request.state, "user", None)
+    if not user or not user.get("id"):
+        raise HTTPException(403, "Thao tác này cần phiên admin")
+    return str(user["id"])
+
+def _admin_actor_label(request: Request | None) -> str:
+    if request is None:
+        return "admin-key"
+    user = getattr(request.state, "admin_user", None) or getattr(request.state, "user", None)
+    return f"user:{user.get('id')}" if user and user.get("id") else "admin-key"
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -148,9 +411,12 @@ def _sanitize(text: str) -> str:
     text = _re.sub(r'<script[^>]*>.*?</script>', '', text, flags=_re.IGNORECASE | _re.DOTALL)
     return text.strip()
 
-VALID_TYPES = {"experience", "product", "dish", "craft_village", "attraction",
-               "accommodation", "person", "event", "history", "nature", "economy",
-               "facility", "organization"}  # GĐ13: facility=cơ quan công vụ, organization=HTX/cơ sở
+# Entity types + per-type attribute schemas come from the content-model registry
+# (agent/entity_schemas.py) — single source of truth so adding a type touches one
+# file, not many (DoD-7). This fixes the old TYPE_META(17) vs VALID_TYPES(13)
+# mismatch where restaurant/cafe/drink/place/itinerary 422'd on save.
+from entity_schemas import valid_types as _valid_types, validate_attributes as _validate_attributes, all_schemas as _all_schemas
+VALID_TYPES = _valid_types()
 
 class EntityUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=200)
@@ -207,7 +473,7 @@ class EntityUpdate(BaseModel):
 
 
 class EntityCreate(BaseModel):
-    id: str = Field(..., min_length=2, max_length=100, pattern=r'^[a-z0-9\-]+$')
+    id: str = Field(..., min_length=2, max_length=100, pattern=r'^[a-z0-9_\-]+$')  # allow underscore (align w/ FE + existing slugs)
     type: str
     name: str = Field(..., min_length=1, max_length=200)
     placeId: str | None = Field(None, max_length=100)
@@ -265,6 +531,12 @@ class EntityCreate(BaseModel):
 class DataQualityApplyRequest(BaseModel):
     candidate_ids: list[str] | None = Field(None, max_length=500)
     dry_run: bool = True
+
+class DataQualityDecisionRequest(BaseModel):
+    candidate_ids: list[str] = Field(..., min_length=1, max_length=200)
+    decision: str = Field(..., pattern="^(approve|reject|defer)$")
+    note: str = Field("", max_length=1000)
+    apply: bool = False
 
 @router.get("/entities",
             summary="List entities (admin)",
@@ -386,6 +658,11 @@ async def update_entity(entity_id: str, update: EntityUpdate):
         old_snapshot = {k: v for k, v in existing.items()}
         updates = update.model_dump(exclude_none=True)
         existing.update(updates)
+        # Typed, non-destructive validation against the type's content-model schema:
+        # coerces known fields (number/bool/tags), preserves the bespoke tail, and
+        # surfaces warnings (missing-required / bad-enum) without blocking the save.
+        norm_attrs, warnings = _validate_attributes(existing.get("type", ""), existing.get("attributes"))
+        existing["attributes"] = norm_attrs
         existing["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         db.upsert_entity(existing)
         db.log_entity_changes(entity_id, old_snapshot, existing)
@@ -394,7 +671,7 @@ async def update_entity(entity_id: str, update: EntityUpdate):
         invalidate_entity_cache(entity_id)
         if existing.get("type") == "place":
             invalidate_place_cache()
-        return {"status": "updated", "entity": existing}
+        return {"status": "updated", "entity": existing, "warnings": warnings}
     return await asyncio.to_thread(_query)
 
 
@@ -409,6 +686,15 @@ async def get_entity_history(entity_id: str, limit: int = Query(50, ge=1, le=200
     return await asyncio.to_thread(_query)
 
 
+@router.get("/entity-schema",
+            summary="Get entity content-model schema",
+            description="Returns the per-type field schema registry that drives the AdminCP typed forms, "
+                        "validation, and display. Single source of truth (agent/entity_schemas.py).")
+async def get_entity_schema():
+    """Content-model registry: per-type fields + owner-category (kind) mapping."""
+    return _all_schemas()
+
+
 @router.post("/entities", status_code=201,
              summary="Create entity",
              description="Creates a new entity. Returns 409 if an entity with the same ID already exists.")
@@ -419,6 +705,8 @@ async def create_entity(entity: EntityCreate):
             raise HTTPException(409, "Entity đã tồn tại")
         payload = entity.model_dump()
         src = payload.pop("source", None) or {"title": "admin", "method": "manual"}
+        norm_attrs, warnings = _validate_attributes(payload.get("type", ""), payload.get("attributes"))
+        payload["attributes"] = norm_attrs
         new_entity = {
             **payload,
             "source": src,
@@ -426,7 +714,7 @@ async def create_entity(entity: EntityCreate):
         }
         db.upsert_entity(new_entity)
         _sync_kb()
-        return {"status": "created", "entity": new_entity}
+        return {"status": "created", "entity": new_entity, "warnings": warnings}
     return await asyncio.to_thread(_query)
 
 
@@ -574,6 +862,10 @@ async def list_unclassified(limit: int = Query(50, ge=1, le=500), offset: int = 
 class AssignPlaceRequest(BaseModel):
     place_id: Optional[str] = Field(None, max_length=100)
 
+class BulkAssignPlaceRequest(BaseModel):
+    entity_ids: list[str] = Field(..., min_length=1, max_length=200)
+    place_id: Optional[str] = Field(None, max_length=100)
+
 
 @router.post("/entities/{entity_id}/place",
              summary="Assign place to entity",
@@ -601,6 +893,36 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
 
 # ── Itinerary CRUD ──
 
+@router.post("/entities/bulk-place",
+             summary="Bulk assign place to entities",
+             description="Assigns or removes a commune/ward placeId for many entities in one admin action.")
+async def bulk_assign_place(body: BulkAssignPlaceRequest):
+    ids = [validate_path_id(entity_id, "entity_id") for entity_id in body.entity_ids]
+    def _query():
+        pid = body.place_id or None
+        place = None
+        if pid:
+            place = db.get_entity(pid)
+            if not place or place.get("type") != "place":
+                raise HTTPException(400, "place_id không phải xã/phường hợp lệ")
+        assigned: list[str] = []
+        errors: list[dict[str, str]] = []
+        for entity_id in ids:
+            entity = db.get_entity(entity_id)
+            if not entity:
+                errors.append({"id": entity_id, "error": "Entity không tồn tại"})
+                continue
+            if pid and place:
+                entity["area"] = place.get("area") or entity.get("area")
+            entity["placeId"] = pid
+            entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            db.upsert_entity(entity)
+            assigned.append(entity_id)
+        if assigned:
+            _sync_kb()
+        return {"success": True, "assigned": len(assigned), "assigned_ids": assigned, "errors": errors}
+    return await asyncio.to_thread(_query)
+
 @router.get("/itineraries",
             summary="List itineraries",
             description="Returns all itineraries, optionally filtered by area.")
@@ -622,17 +944,30 @@ async def get_itinerary_admin(itin_id: str):
 class ItineraryCreate(BaseModel):
     id: str = Field(..., min_length=1, max_length=100)
     title: str = Field(..., min_length=1, max_length=300)
+    summary: str | None = Field(None, max_length=2000)
     description: str | None = Field(None, max_length=2000)
+    duration: str | None = Field(None, max_length=100)
+    stops: list | None = Field(None, max_length=50)
     days: list | None = Field(None, max_length=30)
     area: str | None = Field(None, max_length=100)
+    areas: list[str] | None = Field(None, max_length=10)
     tags: list[str] | None = Field(None, max_length=50)
 
 class ItineraryUpdate(BaseModel):
     title: str | None = Field(None, min_length=1, max_length=300)
+    summary: str | None = Field(None, max_length=2000)
     description: str | None = Field(None, max_length=2000)
+    duration: str | None = Field(None, max_length=100)
+    stops: list | None = Field(None, max_length=50)
     days: list | None = Field(None, max_length=30)
     area: str | None = Field(None, max_length=100)
+    areas: list[str] | None = Field(None, max_length=10)
     tags: list[str] | None = Field(None, max_length=50)
+
+def _normalize_itinerary_payload(data: dict) -> dict:
+    if data.get("description") and not data.get("summary"):
+        data["summary"] = data["description"]
+    return data
 
 class RelationshipCreate(BaseModel):
     from_id: str = Field(..., min_length=1, max_length=100)
@@ -653,7 +988,7 @@ class RelationshipBulkCreate(BaseModel):
              description="Creates a new itinerary with title, description, days, area, and tags.")
 async def create_itinerary(body: ItineraryCreate):
     def _query():
-        data = body.model_dump(exclude_none=True)
+        data = _normalize_itinerary_payload(body.model_dump(exclude_none=True))
         db.upsert_itinerary(data)
     await asyncio.to_thread(_query)
     return {"status": "created", "id": body.id}
@@ -664,7 +999,11 @@ async def create_itinerary(body: ItineraryCreate):
 async def update_itinerary(itin_id: str, body: ItineraryUpdate):
     itin_id = validate_path_id(itin_id, "itin_id")
     def _query():
-        data = body.model_dump(exclude_none=True)
+        data = _normalize_itinerary_payload(body.model_dump(exclude_none=True))
+        existing = db.get_itinerary(itin_id)
+        if not existing:
+            raise HTTPException(404, "Lộ trình không tồn tại")
+        data = {**existing, **data}
         data["id"] = itin_id
         db.upsert_itinerary(data)
     await asyncio.to_thread(_query)
@@ -796,7 +1135,29 @@ async def data_quality_apply(body: DataQualityApplyRequest):
             summary="Get data quality apply history",
             description="Returns the history of applied data quality batches, ordered by most recent first.")
 async def data_quality_history(limit: int = Query(20, ge=1, le=200)):
-    return await asyncio.to_thread(data_quality.load_apply_history, limit=limit)
+    result = await asyncio.to_thread(data_quality.load_apply_history, limit=limit)
+    decisions = await asyncio.to_thread(data_quality.load_decision_history, limit=limit)
+    result["decisions"] = decisions.get("decisions", [])
+    result["decision_total"] = decisions.get("total", 0)
+    return result
+
+@router.post("/data-quality/decision",
+             summary="Record data quality review decision",
+             description="Records approve, reject, or defer decisions for data-quality candidates. Approved candidates can optionally be applied immediately.")
+async def data_quality_decision(body: DataQualityDecisionRequest, request: Request):
+    reviewer = _require_admin_actor_id(request)
+    try:
+        result = await asyncio.to_thread(
+            data_quality.decide_candidates,
+            body.candidate_ids,
+            decision=body.decision,
+            note=body.note,
+            reviewer=reviewer,
+            apply=body.apply,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return result
 
 @router.post("/data-quality/rollback/{batch_id}",
              summary="Rollback data quality batch",
@@ -1310,8 +1671,7 @@ async def admin_review_response(post_id: str, body: ReviewResponseBody, request:
     require_pg()
     post_id = validate_path_id(post_id, "post_id")
     ph = db._ph
-    user = request.state.user if hasattr(request.state, "user") else None
-    responder_id = str(user["id"]) if user else None
+    responder_id = _require_admin_actor_id(request)
     def _query():
         with db._conn() as conn:
             post = db._fetchone(conn, f"SELECT user_id, post_type FROM posts WHERE id::text = {ph}", (post_id,))
@@ -1477,6 +1837,22 @@ def _assert_public_url(url: str) -> None:
             raise HTTPException(400, "Host ảnh trỏ địa chỉ nội bộ — từ chối (SSRF)")
 
 
+def _fetch_public_url(url: str, headers: dict[str, str], timeout: int = 25, max_redirects: int = 5):
+    """Fetch a public URL while re-validating every redirect target."""
+    import httpx
+    from urllib.parse import urljoin
+
+    current_url = url
+    for _ in range(max_redirects + 1):
+        _assert_public_url(current_url)
+        resp = httpx.get(current_url, headers=headers, timeout=timeout, follow_redirects=False)
+        if 300 <= resp.status_code < 400 and resp.headers.get("location"):
+            current_url = urljoin(str(resp.url), resp.headers["location"])
+            continue
+        _assert_public_url(str(resp.url))
+        return resp
+    raise HTTPException(400, "URL ảnh chuyển hướng quá nhiều lần")
+
 @router.post("/image-suggestions/{suggestion_id}/approve",
              summary="Approve an image suggestion",
              description="Approves a pending image suggestion: downloads, re-encodes to WebP, uploads to storage, and attaches to the entity with license credits.")
@@ -1505,13 +1881,14 @@ async def approve_image_suggestion(suggestion_id: str):
     candidate_url = s["candidate_url"]
     await asyncio.to_thread(_assert_public_url, candidate_url)  # P0-13: chặn SSRF tới host nội bộ
     try:
-        import httpx
         headers = {"User-Agent": "vinhlong360-image-review/1.0 (+https://vinhlong360.vn)"}
         resp = await run_in_threadpool(
-            lambda: httpx.get(candidate_url, headers=headers, timeout=25, follow_redirects=True)
+            lambda: _fetch_public_url(candidate_url, headers=headers, timeout=25)
         )
         resp.raise_for_status()
         data = resp.content
+    except HTTPException:
+        raise
     except Exception as e:  # noqa: BLE001 — network/404 → 502 with retry note
         logger.warning("Suggestion image fetch failed for %s: %s", candidate_url, e)
         raise HTTPException(502, "Không tải được ảnh nguồn, vui lòng thử lại sau")
@@ -1823,6 +2200,260 @@ async def admin_stats():
     return await asyncio.to_thread(_query)
 
 
+def _latest_backup_info() -> dict:
+    backup_dir = ROOT / "scratch" / "backups"
+    if not backup_dir.exists():
+        return {"ready": False, "latest": None, "count": 0, "size_mb": 0}
+    dirs = sorted([p for p in backup_dir.iterdir() if p.is_dir()], key=lambda p: p.name, reverse=True)
+    if not dirs:
+        return {"ready": False, "latest": None, "count": 0, "size_mb": 0}
+    latest = dirs[0]
+    size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1)
+    return {"ready": True, "latest": latest.name, "count": len(dirs), "size_mb": size_mb}
+
+def _data_quality_ops_snapshot() -> dict:
+    queue_path = data_quality.BURST_DIR / data_quality.QUEUE_FILE
+    counts = {"auto_apply": 0, "needs_review": 0, "reject": 0}
+    stream_counts = {}
+    cache = {"exists": queue_path.exists(), "path": str(queue_path)}
+    policy = {}
+    if queue_path.exists():
+        try:
+            queue = json.loads(queue_path.read_text(encoding="utf-8-sig"))
+            for bucket in counts:
+                counts[bucket] = len(queue.get(bucket, []) or [])
+            stream_counts = queue.get("stream_counts", {}) or {}
+            policy = queue.get("policy", {}) or {}
+            stat = queue_path.stat()
+            cache.update({
+                "size_bytes": stat.st_size,
+                "modified_at": datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(timespec="seconds"),
+            })
+        except Exception:
+            logger.debug("ops data-quality queue read failed", exc_info=True)
+            cache["error"] = "read_failed"
+    decisions = _safe(lambda: data_quality.load_decision_history(limit=20), {"total": 0, "decisions": []})
+    return {
+        "counts": counts,
+        "total": sum(counts.values()),
+        "stream_counts": stream_counts,
+        "cache": cache,
+        "policy": policy,
+        "decision_total": decisions.get("total", 0),
+        "recent_decisions": decisions.get("decisions", [])[:5],
+    }
+
+_QUALITY_TREND_KEYS = (
+    "quality_score_avg",
+    "image_coverage_pct",
+    "place_coords_coverage_pct",
+    "image_missing_credit",
+    "image_missing_license",
+    "image_missing_source",
+    "duplicate_source_urls",
+    "self_citation_pct",
+)
+
+def _quality_trend_ops_snapshot() -> dict:
+    empty = {
+        "available": False,
+        "latest": {},
+        "delta_7d": {},
+        "budget_failures": [],
+        "sample_count": 0,
+        "last_recorded_at": None,
+    }
+    if not db._use_pg:
+        return empty
+
+    def _meta(value):
+        if isinstance(value, dict):
+            return value
+        if isinstance(value, str):
+            try:
+                parsed = json.loads(value)
+                return parsed if isinstance(parsed, dict) else {}
+            except Exception:
+                return {}
+        return {}
+
+    try:
+        with db._conn() as conn:
+            latest_rows = db._fetchall(conn, """
+                SELECT DISTINCT ON (metric_key)
+                    metric_key, metric_value, metric_unit, metadata, created_at
+                FROM quality_metric_snapshots
+                WHERE metric_key = ANY(%s)
+                ORDER BY metric_key, created_at DESC
+            """, (list(_QUALITY_TREND_KEYS),))
+            baseline_rows = db._fetchall(conn, """
+                SELECT DISTINCT ON (metric_key)
+                    metric_key, metric_value, created_at
+                FROM quality_metric_snapshots
+                WHERE metric_key = ANY(%s)
+                  AND created_at <= NOW() - INTERVAL '7 days'
+                ORDER BY metric_key, created_at DESC
+            """, (list(_QUALITY_TREND_KEYS),))
+            count_row = db._fetchone(conn, """
+                SELECT COUNT(*) AS c
+                FROM quality_metric_snapshots
+                WHERE created_at > NOW() - INTERVAL '30 days'
+            """, ())
+    except Exception:
+        logger.debug("ops quality trend read failed", exc_info=True)
+        return empty
+
+    latest: dict[str, dict] = {}
+    budget_failures: list[dict] = []
+    last_recorded_at = None
+    for row in latest_rows:
+        item = db._row_to_dict(row)
+        key = str(item.get("metric_key"))
+        value = float(item.get("metric_value") or 0)
+        created = item.get("created_at")
+        created_iso = created.isoformat(timespec="seconds") if hasattr(created, "isoformat") else str(created or "")
+        meta = _meta(item.get("metadata"))
+        latest[key] = {
+            "value": round(value, 2),
+            "unit": item.get("metric_unit") or "count",
+            "created_at": created_iso,
+        }
+        if created_iso and (not last_recorded_at or created_iso > last_recorded_at):
+            last_recorded_at = created_iso
+        budget = meta.get("budget") if isinstance(meta, dict) else None
+        if isinstance(budget, dict) and budget.get("ok") is False:
+            budget_failures.append({
+                "metric_key": key,
+                "value": round(value, 2),
+                "expected": budget.get("expected"),
+                "op": budget.get("op"),
+                "severity": budget.get("severity") or "error",
+            })
+
+    baseline = {str(db._row_to_dict(row).get("metric_key")): float(db._row_to_dict(row).get("metric_value") or 0) for row in baseline_rows}
+    delta_7d = {
+        key: round(item["value"] - baseline[key], 2)
+        for key, item in latest.items()
+        if key in baseline
+    }
+    return {
+        "available": bool(latest),
+        "latest": latest,
+        "delta_7d": delta_7d,
+        "budget_failures": budget_failures,
+        "sample_count": int(db._row_to_dict(count_row).get("c") or 0) if count_row else 0,
+        "last_recorded_at": last_recorded_at,
+    }
+
+@router.get("/ops-summary",
+            summary="Get AdminCP operations summary",
+            description="Returns release/deploy readiness, queue backlog, data-quality budgets, audit freshness, cost budget, and rollback readiness for the admin cockpit.")
+async def ops_summary():
+    """Ops cockpit snapshot: lightweight, read-only, no background jobs."""
+    def _query():
+        deploy_path = ROOT / "scripts" / "deploy.sh"
+        gate_path = ROOT / "scripts" / "release_gate.ps1"
+        deploy_text = deploy_path.read_text(encoding="utf-8", errors="ignore") if deploy_path.exists() else ""
+        gate_text = gate_path.read_text(encoding="utf-8", errors="ignore") if gate_path.exists() else ""
+        migrations = sorted((ROOT / "agent" / "migrations").glob("*.sql"))
+        backup = _latest_backup_info()
+        dq = _data_quality_ops_snapshot()
+        quality_trend = _quality_trend_ops_snapshot()
+
+        moderation = {"pending": 0, "flagged": 0, "reports": 0, "appeals": 0, "oldest_pending_hours": None}
+        if db._use_pg:
+            with db._conn() as conn:
+                pending = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
+                flagged = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'flagged'", ())
+                reports = db._fetchone(conn, "SELECT COUNT(*) as c FROM reports WHERE status = 'pending'", ())
+                appeals = db._fetchone(conn, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
+                oldest = db._fetchone(conn, """
+                    SELECT EXTRACT(EPOCH FROM (NOW() - MIN(created_at))) / 3600 as h
+                    FROM posts WHERE moderation_status IN ('pending','review','flagged')
+                """, ())
+            moderation.update({
+                "pending": int(db._row_to_dict(pending)["c"] if pending else 0),
+                "flagged": int(db._row_to_dict(flagged)["c"] if flagged else 0),
+                "reports": int(db._row_to_dict(reports)["c"] if reports else 0),
+                "appeals": int(db._row_to_dict(appeals)["c"] if appeals else 0),
+                "oldest_pending_hours": round(float(db._row_to_dict(oldest).get("h") or 0), 1) if oldest else None,
+            })
+
+        audit = {"jsonl_exists": _AUDIT_FILE.exists(), "db_available": False, "source": "jsonl", "recent_entries": 0, "last_ts": None}
+        db_audit = _query_admin_audit_db(100)
+        if db_audit is not None:
+            audit["db_available"] = True
+            audit["source"] = "db"
+            audit["recent_entries"] = min(int(db_audit.get("total") or 0), 100)
+            entries = db_audit.get("entries") or []
+            if entries:
+                audit["last_ts"] = entries[0].get("ts")
+        if _AUDIT_FILE.exists():
+            try:
+                lines = [l for l in _AUDIT_FILE.read_text(encoding="utf-8").splitlines() if l.strip()]
+                if not audit["db_available"]:
+                    audit["recent_entries"] = min(len(lines), 100)
+                    if lines:
+                        audit["last_ts"] = json.loads(lines[-1]).get("ts")
+            except Exception:
+                logger.debug("ops audit read failed", exc_info=True)
+
+        cost = _safe(lambda: _get_cost_report(), {}) if _HAS_COST else {}
+        schema_status = db.pg_schema_status()
+        shared_controls = {
+            "rate_limit_enabled": os.environ.get("VL360_SHARED_RATE_LIMIT", "true").strip().lower() not in {"0", "false", "no", "off"},
+            "idempotency_enabled": os.environ.get("VL360_SHARED_IDEMPOTENCY", "true").strip().lower() not in {"0", "false", "no", "off"},
+            "tables_ready": bool(schema_status.get("ok")),
+        }
+        deploy_ready = all([
+            "VL360_DEPLOY_HOST" in deploy_text,
+            "/health/ready" in deploy_text,
+            "exit 1" in deploy_text,
+        ])
+        gate_ready = all(token in gate_text for token in ("test_qa_fixes.py", "vue-tsc", "smoke_e2e_chrome.mjs", "check_migration_gate.py", "quality_budget.py"))
+        release_state = {
+            "gate_script": gate_path.exists(),
+            "gate_covers_backend_frontend_e2e": gate_ready,
+            "deploy_script": deploy_path.exists(),
+            "deploy_host_env_configured": bool(os.environ.get("VL360_DEPLOY_HOST")),
+            "deploy_health_blocking": deploy_ready,
+            "latest_migration": migrations[-1].name if migrations else None,
+            "migration_count": len(migrations),
+            "schema_ok": bool(schema_status.get("ok")),
+            "schema_version": schema_status.get("schema_version"),
+            "required_schema_version": schema_status.get("required_schema_version"),
+        }
+        queue_backlog = {
+            "moderation": moderation["pending"] + moderation["flagged"],
+            "reports": moderation["reports"],
+            "appeals": moderation["appeals"],
+            "data_quality": dq["total"],
+        }
+        rollback = {
+            "backup_ready": backup["ready"],
+            "latest_backup": backup["latest"],
+            "backup_count": backup["count"],
+            "backup_size_mb": backup["size_mb"],
+            "restore_drill_documented": (ROOT / "docs" / "deployment-guide.md").exists(),
+            "restore_drill_script": (ROOT / "scripts" / "restore_drill.py").exists(),
+        }
+        quality_budget_ok = not quality_trend.get("budget_failures")
+        status = "ok" if gate_ready and deploy_ready and backup["ready"] and schema_status.get("ok") and quality_budget_ok else "attention"
+        return {
+            "status": status,
+            "release": release_state,
+            "schema": schema_status,
+            "shared_controls": shared_controls,
+            "queues": queue_backlog,
+            "moderation_sla": moderation,
+            "data_quality": dq,
+            "quality_trend": quality_trend,
+            "audit": audit,
+            "cost": cost,
+            "rollback": rollback,
+        }
+    return await asyncio.to_thread(_query)
+
 @router.get("/user-engagement",
             summary="Get user engagement metrics",
             description="Returns engagement metrics over a configurable period: active posters, commenters, likers, retention rate, and daily active users.")
@@ -1985,12 +2616,35 @@ async def media_gallery(
                     images = json.loads(images)
                 except Exception:
                     images = []
+            attrs = e.get("attributes") or {}
+            if isinstance(attrs, str):
+                try:
+                    attrs = json.loads(attrs)
+                except Exception:
+                    attrs = {}
+            image_credits = attrs.get("image_credits") if isinstance(attrs, dict) else []
+            credits_by_url: dict[str, dict] = {}
+            if isinstance(image_credits, list):
+                for credit_meta in image_credits:
+                    if not isinstance(credit_meta, dict):
+                        continue
+                    credit_url = credit_meta.get("url")
+                    if credit_url:
+                        credits_by_url[str(credit_url)] = credit_meta
             for img in images:
-                url = img.get("url") or img if isinstance(img, str) else img.get("url", "")
+                url = img if isinstance(img, str) else img.get("url", "")
                 if not url:
                     continue
-                credit = img.get("credit") or img.get("author") or "" if isinstance(img, dict) else ""
-                license_info = img.get("license", "") if isinstance(img, dict) else ""
+                credit_meta = credits_by_url.get(url, {})
+                credit = ""
+                license_info = ""
+                if isinstance(img, dict):
+                    credit = img.get("credit") or img.get("author") or ""
+                    license_info = img.get("license", "")
+                if not credit:
+                    credit = credit_meta.get("author") or credit_meta.get("credit") or ""
+                if not license_info:
+                    license_info = credit_meta.get("license") or ""
                 item = {
                     "url": url,
                     "entity_id": e.get("id", ""),
@@ -1998,6 +2652,8 @@ async def media_gallery(
                     "entity_type": e.get("type", ""),
                     "credit": credit,
                     "license": license_info,
+                    "source": credit_meta.get("source") or "",
+                    "source_url": credit_meta.get("source_url") or "",
                 }
                 media_items.append(item)
                 url_usage.setdefault(url, []).append(e.get("id", ""))
@@ -2045,6 +2701,9 @@ async def badge_counts():
                 row = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review','flagged')", ())
                 if row:
                     counts["moderation"] = db._row_to_dict(row)["c"]
+                report_row = db._fetchone(conn, "SELECT COUNT(*) as c FROM reports WHERE status = 'pending'", ())
+                if report_row:
+                    counts["reports"] += db._row_to_dict(report_row)["c"]
         try:
             counts["images"] = _imgq.status_counts().get("pending", 0)
         except Exception:
@@ -2061,7 +2720,7 @@ async def badge_counts():
         if _INFO_REPORTS_FILE.exists():
             try:
                 lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").strip().split("\n")
-                counts["reports"] = sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
+                counts["reports"] += sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
             except Exception:
                 logger.debug("Badge reports file parse failed", exc_info=True)
         return counts
@@ -2077,12 +2736,15 @@ async def dashboard_alerts():
         alerts: list[dict] = []
         flagged = 0
         pending_mod = 0
+        open_reports = 0
         if db._use_pg:
             with db._conn() as conn:
                 mod = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('flagged')", ())
                 flagged = db._row_to_dict(mod)["c"] if mod else 0
                 mod2 = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
                 pending_mod = db._row_to_dict(mod2)["c"] if mod2 else 0
+                report_row = db._fetchone(conn, "SELECT COUNT(*) as c FROM reports WHERE status = 'pending'", ())
+                open_reports += db._row_to_dict(report_row)["c"] if report_row else 0
         if flagged:
             alerts.append({"type": "flagged", "count": flagged, "label": f"{flagged} bài viết bị gắn cờ", "icon": "🚩", "link": "/admin/kiem-duyet?tab=flagged", "priority": 1})
         if pending_mod:
@@ -2090,11 +2752,11 @@ async def dashboard_alerts():
         if _INFO_REPORTS_FILE.exists():
             try:
                 lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").strip().split("\n")
-                open_reports = sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
-                if open_reports:
-                    alerts.append({"type": "reports", "count": open_reports, "label": f"{open_reports} báo sai chưa xử lý", "icon": "⚠️", "link": "/admin/bao-cao", "priority": 3})
+                open_reports += sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
             except Exception:
                 logger.debug("Alert reports file parse failed", exc_info=True)
+        if open_reports:
+            alerts.append({"type": "reports", "count": open_reports, "label": f"{open_reports} báo cáo chưa xử lý", "icon": "⚠️", "link": "/admin/bao-cao", "priority": 3})
         try:
             img_pending = _imgq.status_counts().get("pending", 0)
             if img_pending:
@@ -2119,7 +2781,7 @@ async def dashboard_alerts():
                 appeal_row = db._fetchone(conn3, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
             appeal_count = db._row_to_dict(appeal_row)["c"] if appeal_row else 0
             if appeal_count:
-                alerts.append({"type": "appeals", "count": appeal_count, "label": f"{appeal_count} khiếu nại chờ xử lý", "icon": "📩", "link": "/admin/khieu-nai", "priority": 2})
+                alerts.append({"type": "appeals", "count": appeal_count, "label": f"{appeal_count} khiếu nại chờ xử lý", "icon": "📩", "link": "/admin/kiem-duyet", "priority": 2})
         except Exception:
             logger.debug("Alert appeals count failed", exc_info=True)
         alerts.sort(key=lambda a: a["priority"])
@@ -2133,6 +2795,10 @@ async def dashboard_alerts():
 async def activity_feed(limit: int = Query(10, ge=1, le=50)):
     """10 admin actions gần nhất từ audit JSONL."""
     def _query():
+        db_audit = _query_admin_audit_db(limit)
+        if db_audit is not None:
+            logger.debug("Activity feed served from admin audit DB")
+            return {"actions": db_audit.get("entries", []), "source": "db"}
         if not _AUDIT_FILE.exists():
             return {"actions": []}
         try:
@@ -2503,6 +3169,8 @@ async def batch_moderation(body: BatchModerationBody, request: Request):
     check_rate(rl_key, 10, 60, "Thao tác quá nhanh")
     if body.action not in ("approve", "reject"):
         raise HTTPException(400, "action must be 'approve' or 'reject'")
+    if body.action == "reject" and not body.reason.strip():
+        raise HTTPException(400, "reason is required when rejecting posts")
     if not body.post_ids or len(body.post_ids) > 100:
         raise HTTPException(400, "post_ids: 1-100 items")
     status = "approved" if body.action == "approve" else "rejected"
@@ -2598,7 +3266,7 @@ async def feature_post(post_id: str, request: Request):
     """Admin: toggle feature a post at the top of its entity page."""
     require_pg()
     post_id = validate_path_id(post_id, "post_id")
-    admin_id = str(request.state.user["id"]) if hasattr(request, "state") and hasattr(request.state, "user") else None
+    admin_id = _require_admin_actor_id(request)
 
     def _query():
         ph = db._ph
@@ -2903,7 +3571,7 @@ class AppealDecisionBody(BaseModel):
 async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
     require_pg()
     appeal_id = validate_path_id(appeal_id, "appeal_id")
-    admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
+    admin_id = _require_admin_actor_id(request)
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -2920,7 +3588,7 @@ async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisi
                 SET status = 'approved', reviewer_note = {ph},
                     reviewer_id = {ph}::uuid, reviewed_at = NOW()
                 WHERE id::text = {ph}
-            """, (body.note.strip() or None, str(admin_id) if admin_id else None, appeal_id))
+            """, (body.note.strip() or None, admin_id, appeal_id))
             db._execute(conn, f"""
                 UPDATE posts SET moderation_status = 'approved' WHERE id::text = {ph}
             """, (str(rd["post_id"]),))
@@ -2941,7 +3609,7 @@ async def approve_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisi
 async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisionBody(), request: Request = None):
     require_pg()
     appeal_id = validate_path_id(appeal_id, "appeal_id")
-    admin_id = request.state.user["id"] if hasattr(request, "state") and hasattr(request.state, "user") else None
+    admin_id = _require_admin_actor_id(request)
     def _query():
         ph = db._ph
         with db._conn() as conn:
@@ -2958,7 +3626,7 @@ async def reject_appeal(appeal_id: str, body: AppealDecisionBody = AppealDecisio
                 SET status = 'rejected', reviewer_note = {ph},
                     reviewer_id = {ph}::uuid, reviewed_at = NOW()
                 WHERE id::text = {ph}
-            """, (body.note.strip() or None, str(admin_id) if admin_id else None, appeal_id))
+            """, (body.note.strip() or None, admin_id, appeal_id))
         _log_mod_action("appeal", appeal_id, "rejected", body.note.strip() or None)
         try:
             note_msg = f" Lý do: {body.note.strip()}" if body.note.strip() else ""
@@ -3023,7 +3691,7 @@ async def admin_list_comments(
 
 @router.delete("/comments/{comment_id}",
                summary="Delete a comment",
-               description="Force-deletes a comment by ID and decrements the parent post comment count.")
+               description="Force-deletes a comment by ID and recalculates the parent post comment count.")
 async def admin_delete_comment(comment_id: str, request: Request):
     """Admin force-delete a comment."""
     comment_id = validate_path_id(comment_id, "comment_id")
@@ -3039,9 +3707,12 @@ async def admin_delete_comment(comment_id: str, request: Request):
                 raise HTTPException(404, "Bình luận không tồn tại")
             rd = db._row_to_dict(row)
             db._execute(conn, f"""
-                UPDATE posts SET comment_count = GREATEST(comment_count - 1, 0)
+                UPDATE posts
+                SET comment_count = (
+                    SELECT COUNT(*) FROM comments WHERE post_id = {ph}::uuid
+                )
                 WHERE id = {ph}::uuid
-            """, (str(rd["post_id"]),))
+            """, (str(rd["post_id"]), str(rd["post_id"])))
         _log_mod_action("comment", comment_id, "deleted")
         return rd
 
@@ -3172,13 +3843,14 @@ async def search_analytics(days: int = Query(7, ge=1, le=90)):
             summary="List user reports",
             description="Returns a paginated list of user reports with filtering by status, target type, reporter, and target user.")
 async def get_reports(
-    status: str = Query("pending", pattern="^(pending|resolved|dismissed)$"),
+    status: str = Query("pending", pattern="^(all|pending|resolved|dismissed)$"),
     target_type: str = Query(None, pattern="^(post|comment|user|entity)$"),
     reporter_id: str = Query(None, max_length=64),
     target_user_id: str = Query(None, max_length=64),
     page: int = Query(1, ge=1, le=1000),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=500),
 ):
+    require_pg()
     if reporter_id:
         reporter_id = validate_path_id(reporter_id, "reporter_id")
     if target_user_id:
@@ -3187,23 +3859,28 @@ async def get_reports(
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
-            where = f"r.status = {ph}"
-            params = [status]
+            conditions = []
+            params = []
+            if status != "all":
+                conditions.append(f"r.status = {ph}")
+                params.append(status)
             if target_type:
-                where += f" AND r.target_type = {ph}"
+                conditions.append(f"r.target_type = {ph}")
                 params.append(target_type)
             if reporter_id:
-                where += f" AND r.reporter_id::text = {ph}"
+                conditions.append(f"r.reporter_id::text = {ph}")
                 params.append(reporter_id)
             if target_user_id:
-                where += f" AND r.target_type = 'user' AND r.target_id = {ph}"
+                conditions.append("r.target_type = 'user'")
+                conditions.append(f"r.target_id = {ph}")
                 params.append(target_user_id)
+            where = " AND ".join(conditions) if conditions else "1=1"
             params.extend([limit, offset])
             rows = db._fetchall(conn, f"""
-                SELECT r.id, r.target_type, r.target_id, r.reason, r.details,
+                SELECT r.id, r.target_type, r.target_id, r.reason, to_jsonb(r)->>'details' AS details,
                        r.reporter_id, r.status, r.created_at, u.display_name as reporter_name
                 FROM reports r
-                JOIN users u ON u.id = r.reporter_id
+                LEFT JOIN users u ON u.id = r.reporter_id
                 WHERE {where}
                 ORDER BY r.created_at DESC
                 LIMIT {ph} OFFSET {ph}
@@ -3323,6 +4000,9 @@ async def get_audit_log(
 ):
     """P2-7: nhật ký thao tác admin (mutation), mới nhất trước. Hỗ trợ filter server-side."""
     def _query():
+        db_audit = _query_admin_audit_db(limit, method=method, q=q, date_from=date_from, date_to=date_to)
+        if db_audit is not None:
+            return db_audit
         if not _AUDIT_FILE.exists():
             return {"entries": [], "total": 0}
         try:
@@ -3468,10 +4148,14 @@ async def list_users(
     limit: int = Query(20, ge=1, le=100),
     search: str = Query("", max_length=100),
     role_filter: Optional[str] = Query(None, pattern="^(user|moderator|admin)$"),
+    q: Optional[str] = Query(None, max_length=100),
+    offset: Optional[int] = Query(None, ge=0, le=100000),
 ):
     require_pg()
     ph = db._ph
-    offset = (page - 1) * limit
+    if q and not search:
+        search = q
+    actual_offset = offset if offset is not None else (page - 1) * limit
     conditions = ["1=1"]
     params = []
     if search:
@@ -3483,7 +4167,7 @@ async def list_users(
         params.append(role_filter)
     where = " AND ".join(conditions)
     count_params = list(params)
-    params.extend([limit, offset])
+    params.extend([limit, actual_offset])
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn, f"""
@@ -3516,6 +4200,8 @@ async def list_users(
                 "post_count": r.get("post_count", 0),
             } for r in [db._row_to_dict(row) for row in rows]],
             "total": db._row_to_dict(total)["c"] if total else 0,
+            "page": page if offset is None else (actual_offset // limit) + 1,
+            "limit": limit,
             "role_counts": role_counts,
         }
     return await asyncio.to_thread(_query)
@@ -3747,17 +4433,39 @@ async def bulk_unban_users(body: BulkUserAction):
 @router.post("/users/{user_id}/role",
              summary="Set user role",
              description="Assign a role (user, moderator, or admin) to a user. Banned users cannot be assigned roles.")
-async def set_user_role(user_id: str, role: str = Query(..., pattern="^(user|moderator|admin)$")):
+async def set_user_role(request: Request, user_id: str, role: str = Query(..., pattern="^(user|moderator|admin)$")):
+    require_pg()
+    _ensure_admin_scope(request, "security.admin")
     user_id = validate_path_id(user_id, "user_id")
+    admin_user = getattr(request.state, "admin_user", None)
+    if admin_user and str(admin_user.get("id")) == user_id:
+        raise HTTPException(400, "Không thể tự đổi role chính mình")
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
+            target = db._fetchone(conn, f"SELECT id, is_active, role FROM users WHERE id::text = {ph}", (user_id,))
             if not target:
                 raise HTTPException(404, "Không tìm thấy người dùng")
             td = db._row_to_dict(target)
             if not td["is_active"]:
                 raise HTTPException(400, "Không thể gán quyền cho tài khoản đã bị ban")
+            target_role = td.get("role") or "user"
+            admin_role = (admin_user or {}).get("role") if admin_user else "admin-key"
+            if admin_user and admin_role != "superadmin":
+                if role == "admin" and target_role != "admin":
+                    raise HTTPException(403, "Chỉ superadmin hoặc admin key mới được cấp quyền admin")
+                if target_role == "admin" and role != "admin":
+                    raise HTTPException(403, "Chỉ superadmin hoặc admin key mới được đổi quyền admin khác")
+            if target_role == "admin" and role != "admin":
+                remaining = db._fetchone(conn, f"""
+                    SELECT COUNT(*) as c FROM users
+                    WHERE COALESCE(role, 'user') = 'admin'
+                      AND is_active = TRUE
+                      AND id::text <> {ph}
+                """, (user_id,))
+                remaining_count = db._row_to_dict(remaining)["c"] if remaining else 0
+                if remaining_count <= 0:
+                    raise HTTPException(400, "Không thể hạ quyền admin cuối cùng")
             db._execute(conn, f"""
                 UPDATE users SET role = {ph} WHERE id::text = {ph}
             """, (role, user_id))
@@ -3776,7 +4484,7 @@ class AdminUserNote(BaseModel):
 async def add_user_note(user_id: str, body: AdminUserNote, request: Request):
     """Admin: add internal note to a user profile."""
     user_id = validate_path_id(user_id, "user_id")
-    admin_id = str(request.state.user["id"]) if hasattr(request, "state") and hasattr(request.state, "user") else None
+    admin_id = _require_admin_actor_id(request)
 
     def _query():
         ph = db._ph
@@ -3966,16 +4674,17 @@ class SettingUpdate(BaseModel):
 @router.put("/site-settings/{key:path}",
             summary="Update a site setting",
             description="Update the value of a single site setting by its key path.")
-async def admin_update_setting(key: str, body: SettingUpdate):
+async def admin_update_setting(key: str, body: SettingUpdate, request: Request):
     """Update a single setting value."""
     if not _SETTING_KEY_RE.match(key):
         raise HTTPException(400, detail="Tên cài đặt không hợp lệ")
     if not db._use_pg:
         raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
+    actor = _admin_actor_label(request)
     def _query():
-        ok = site_settings.upsert(key, body.value)
+        ok = site_settings.upsert(key, body.value, actor=actor)
         if not ok:
-            raise HTTPException(500, detail="Không thể cập nhật cài đặt")
+            raise HTTPException(404, detail="Không tìm thấy cài đặt")
     await asyncio.to_thread(_query)
     return {"success": True, "key": key}
 
@@ -3987,18 +4696,18 @@ class BulkSettingUpdate(BaseModel):
 @router.post("/site-settings/bulk",
              summary="Bulk update site settings",
              description="Update multiple site settings at once. Accepts a map of key-value pairs.")
-async def admin_bulk_update_settings(body: BulkSettingUpdate):
+async def admin_bulk_update_settings(body: BulkSettingUpdate, request: Request):
     """Batch update multiple settings at once."""
     if not db._use_pg:
         raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
-    count = await asyncio.to_thread(site_settings.bulk_upsert, body.updates)
+    count = await asyncio.to_thread(site_settings.bulk_upsert, body.updates, actor=_admin_actor_label(request))
     return {"success": True, "updated": count}
 
 
 @router.post("/site-settings/reset/{category}",
              summary="Reset category settings to defaults",
              description="Reset all site settings in a category back to their default values.")
-async def admin_reset_category(category: str):
+async def admin_reset_category(category: str, request: Request):
     """Reset all settings in a category to their defaults."""
     if not _SETTING_KEY_RE.match(category):
         raise HTTPException(400, detail="Tên danh mục không hợp lệ")
@@ -4006,9 +4715,37 @@ async def admin_reset_category(category: str):
         raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
     def _query():
         from seed_site_settings import DEFAULTS
-        return site_settings.reset_category(category, DEFAULTS)
+        return site_settings.reset_category(category, DEFAULTS, actor=_admin_actor_label(request))
     count = await asyncio.to_thread(_query)
     return {"success": True, "reset": count}
+
+@router.get("/site-settings-history",
+            summary="Get site settings change history",
+            description="Returns recent setting changes, optionally filtered by category or key.")
+async def admin_site_settings_history(
+    category: Optional[str] = Query(None, max_length=100),
+    key: Optional[str] = Query(None, max_length=200),
+    limit: int = Query(50, ge=1, le=200),
+):
+    if category and not _SETTING_KEY_RE.match(category):
+        raise HTTPException(400, detail="Tên danh mục không hợp lệ")
+    if key and not _SETTING_KEY_RE.match(key):
+        raise HTTPException(400, detail="Tên cài đặt không hợp lệ")
+    if not db._use_pg:
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
+    return await asyncio.to_thread(site_settings.load_history, category=category, key=key, limit=limit)
+
+@router.post("/site-settings-history/{history_id}/rollback",
+             summary="Rollback a site setting change",
+             description="Restores a setting value from a previous history snapshot.")
+async def admin_site_settings_rollback(history_id: str, request: Request):
+    history_id = validate_path_id(history_id, "history_id")
+    if not db._use_pg:
+        raise HTTPException(503, detail="Cài đặt site yêu cầu PostgreSQL")
+    ok = await asyncio.to_thread(site_settings.rollback_history, history_id, actor=_admin_actor_label(request))
+    if not ok:
+        raise HTTPException(404, detail="Không tìm thấy snapshot")
+    return {"success": True, "rolled_back": history_id}
 
 
 # ══════════════════════════════════════════════════
