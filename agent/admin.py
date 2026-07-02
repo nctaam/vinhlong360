@@ -667,6 +667,81 @@ async def entity_kinds():
     return await asyncio.to_thread(_query)
 
 
+@router.get("/entity-completeness",
+            summary="Data completeness per kind",
+            description="Per-kind field-fill percentages (universal + registry fields) plus the entities "
+                        "missing the most data. Read-only reporting for the per-kind AdminCP views (GĐ-A).")
+async def entity_completeness(kind: str = Query(..., max_length=30), worst: int = Query(20, ge=1, le=100)):
+    """% điền từng trường + entity thiếu nhiều nhất — dashboard làm giàu dữ liệu theo nhóm."""
+    def _query():
+        kind_types = sorted(t for t, k in _KIND_OF_TYPE.items() if k == kind)
+        if not kind_types:
+            return {"kind": kind, "total": 0, "fields": [], "worst": []}
+        ents: list[dict] = []
+        for t in kind_types:
+            if t == "place":
+                with db._conn() as conn:
+                    rows = db._fetchall(conn, "SELECT * FROM entities WHERE type = 'place' ORDER BY name LIMIT 1000", ())
+                ents.extend(db._parse_entity(r) for r in rows)
+            else:
+                ents.extend(db.list_entities(entity_type=t, limit=2000, offset=0) or [])
+        if not ents:
+            return {"kind": kind, "total": 0, "fields": [], "worst": []}
+
+        UNIVERSAL = [("address", "Địa chỉ"), ("phone", "Điện thoại"), ("website", "Website"),
+                     ("hours", "Giờ mở cửa"), ("price_range", "Khoảng giá"),
+                     ("sub_category", "Phân loại"), ("best_time", "Thời điểm đẹp"), ("highlight", "Điểm nhấn")]
+
+        def has(e: dict, key: str) -> bool:
+            a = e.get("attributes") or {}
+            if key == "season":
+                s = e.get("season") or {}
+                return bool(s.get("months") or s.get("best"))
+            if key == "images":
+                return bool(e.get("images"))
+            if key == "coords_real":
+                return bool(e.get("coordinates")) and not a.get("coords_approximate")
+            if key == "summary_100":
+                return len(str(e.get("summary") or "")) >= 100
+            return a.get(key) not in (None, "", [], {})
+
+        fields: list[dict] = []
+        missing_map: dict[str, list[str]] = {e["id"]: [] for e in ents}
+        universal_keys = [k for k, _ in UNIVERSAL] + ["season", "images", "coords_real", "summary_100"]
+        labels = dict(UNIVERSAL)
+        labels.update({"season": "Mùa", "images": "Ảnh", "coords_real": "Tọa độ thật",
+                       "summary_100": "Tóm tắt ≥100 ký tự"})
+        for key in universal_keys:
+            filled = sum(1 for e in ents if has(e, key))
+            fields.append({"key": key, "label": labels[key], "scope": "chung",
+                           "filled": filled, "pct": round(100 * filled / len(ents), 1)})
+            for e in ents:
+                if not has(e, key):
+                    missing_map[e["id"]].append(key)
+        seen = set(universal_keys)
+        for t in kind_types:
+            schema = _ENTITY_SCHEMAS.get(t) or {}
+            t_ents = [e for e in ents if e["type"] == t]
+            if not t_ents:
+                continue
+            for f in schema.get("fields", []):
+                key = f["key"]
+                if key in seen:
+                    continue
+                filled = sum(1 for e in t_ents if has(e, key))
+                fields.append({"key": key, "label": f["label"], "scope": schema.get("label", t),
+                               "filled": filled, "pct": round(100 * filled / len(t_ents), 1)})
+                for e in t_ents:
+                    if not has(e, key):
+                        missing_map[e["id"]].append(key)
+        by_id = {e["id"]: e for e in ents}
+        worst_list = sorted(missing_map.items(), key=lambda kv: -len(kv[1]))[:worst]
+        return {"kind": kind, "total": len(ents), "fields": fields,
+                "worst": [{"id": i, "name": by_id[i]["name"], "type": by_id[i]["type"],
+                           "missing": m, "missing_count": len(m)} for i, m in worst_list if m]}
+    return await asyncio.to_thread(_query)
+
+
 @router.get("/entities/places",
             summary="List places for dropdown",
             description="Returns a list of place entities (xa/phuong) for use in admin dropdown selectors.")

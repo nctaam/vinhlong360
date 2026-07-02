@@ -45,3 +45,19 @@ def test_type_param_still_works_unchanged():
     r = client.get("/admin/entities?type=product&limit=5", headers=H)
     assert r.status_code == 200
     assert all(e["type"] == "product" for e in r.json()["entities"])
+
+
+def test_completeness_food_shape():
+    r = client.get("/admin/entity-completeness?kind=food", headers=H)
+    assert r.status_code == 200
+    b = r.json()
+    assert b["kind"] == "food" and b["total"] > 0
+    keys = {f["key"] for f in b["fields"]}
+    assert {"address", "phone", "season", "images", "price_range"} <= keys
+    for f in b["fields"]:
+        assert 0 <= f["pct"] <= 100
+    assert b["worst"] and "missing" in b["worst"][0]
+
+
+def test_completeness_requires_kind():
+    assert client.get("/admin/entity-completeness", headers=H).status_code == 422
