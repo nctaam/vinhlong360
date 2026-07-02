@@ -76,9 +76,19 @@ eager, code-split đúng, admin `ssr:false`. → đây là pass tinh chỉnh.
 - **Lazy-defer** `AuthModal/ConfirmDialog/ScrollToTop` trong `layouts/default.vue` → chunk
   async riêng, khỏi entry graph.
 
-**Wave 2/3 — CHƯA làm (giá trị thấp / rủi ro, chờ chủ chọn):**
-- W2: tách khối CSS route-scoped khỏi base.css (~5KB brotli, có rủi ro unstyled); phục vụ
-  `/_nuxt` tĩnh trực tiếp từ nginx (offload Node — cần mount `.output/public`).
+**Wave 2 — nginx phục vụ `/_nuxt` tĩnh ĐÃ LÀM + VERIFY (2026-07-02):**
+- Thêm `location /_nuxt/ { root .../public; gzip_static on; Cache-Control public,
+  max-age=31536000, immutable; try_files $uri @node; }` + `location @node` (fallback
+  proxy) vào `/etc/nginx/sites-enabled/vinhlong360`. Asset JS/CSS (content-hashed,
+  immutable) giờ phục vụ TRỰC TIẾP từ nginx (`X-Served-By: nginx-static`, gzip qua
+  `.gz` precompiled) → offload Node 1CPU. `try_files … @node` đảm bảo AN TOÀN: thiếu
+  file → fallback proxy, không bao giờ vỡ site. Verify: asset 200 + header đúng; file
+  không tồn tại → @node 404; home 200. Backup: `/root/nginx-backups/`.
+- Bài học: KHÔNG để file `.bak` trong `sites-enabled/` (nginx load → duplicate server);
+  và `if nginx -t | tail` che exit code — kiểm `nginx -t` KHÔNG qua pipe.
+
+**Wave 2/3 còn lại — CHƯA làm (giá trị thấp / rủi ro, chờ chủ chọn):**
+- W2: tách khối CSS route-scoped khỏi base.css (~5KB brotli, có rủi ro unstyled).
 - W3: nén lại `og-default.jpg` (363KB→~100KB, chỉ ảnh hưởng social crawler); tidy @nuxt/image
   screens/AVIF; EntityCard `priority` prop (hoãn tới khi có ảnh entity thật).
 - Fonts: 1 agent audit trả stub — chưa xác nhận; Inter self-host, nhiều khả năng ổn.
