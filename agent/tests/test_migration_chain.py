@@ -88,20 +88,43 @@ def test_061_has_9_cti_tables_with_fk_and_owner():
     assert "VALUES ('agent', 61," in MIG_061
 
 
-def test_061_columns_cover_registry_typed_fields():
-    """Mọi trường typed trong registry (trừ 8 cột phổ quát) phải có cột trong 061."""
+def test_registry_typed_fields_have_column_in_right_table():
+    """Mọi trường typed trong registry (trừ 8 cột phổ quát) phải có cột trong
+    ĐÚNG bảng CTI của kind — kiểm per-table (containment toàn file từng che mất
+    việc entity_experience_details thiếu `admission` vì bảng place cũng có nó).
+    Nguồn schema = 061 + các migration vá sau (062+)."""
     import sys
     sys.path.insert(0, str(ROOT / "agent"))
     from entity_schemas import ENTITY_SCHEMAS, KIND_OF_TYPE
-    covered_kinds = {"place", "food", "product", "lodging", "event",
-                     "experience", "facility", "person", "admin_place"}
+    kind_to_table = {
+        "place": "entity_place_details", "food": "entity_food_details",
+        "product": "entity_product_details", "lodging": "entity_lodging_details",
+        "event": "entity_event_details", "experience": "entity_experience_details",
+        "facility": "entity_facility_details", "person": "entity_person_details",
+        "admin_place": "entity_adminplace_details",
+    }
+    # Gom schema hiệu lực của từng bảng: CREATE block trong 061 + mọi
+    # "ALTER TABLE <t> ADD COLUMN" trong các migration >= 062.
+    later = "".join(
+        p.read_text(encoding="utf-8")
+        for p in sorted((ROOT / "agent" / "migrations").glob("*.sql"))
+        if p.name[:3].isdigit() and int(p.name[:3]) >= 62
+    )
+    table_cols: dict[str, str] = {}
+    for t in kind_to_table.values():
+        block = re.search(rf"CREATE TABLE IF NOT EXISTS {t}\s*\((.*?)\n\);", MIG_061, re.S)
+        assert block, f"061 thiếu bảng {t}"
+        alters = "".join(re.findall(rf"ALTER TABLE {t} ADD COLUMN IF NOT EXISTS (\w+)", later))
+        table_cols[t] = block.group(1) + " " + alters
     universal = set(UNIVERSAL)
     for etype, schema in ENTITY_SCHEMAS.items():
-        if KIND_OF_TYPE.get(etype) not in covered_kinds:
+        kind = KIND_OF_TYPE.get(etype)
+        if kind not in kind_to_table:
             continue  # itinerary có bảng riêng; other (organization/economy) chỉ dùng bộ chung
         for f in schema["fields"]:
             key = f["key"]
             if key in universal:
                 continue
             col = KEY_TO_COLUMN.get(key, key)
-            assert col in MIG_061, f"061 thiếu cột {col} (registry {etype}.{key})"
+            assert re.search(rf"\b{col}\b", table_cols[kind_to_table[kind]]), \
+                f"Bảng {kind_to_table[kind]} thiếu cột {col} (registry {etype}.{key})"
