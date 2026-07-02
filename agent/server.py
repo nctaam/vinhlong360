@@ -829,6 +829,13 @@ def start_search_index_build(background: bool = True):
 @asynccontextmanager
 async def lifespan(app):
     """Khởi động background scheduler và preload data."""
+    # Audit vòng 2 fix #4: default executor trên 1 vCPU = min(32, cpu+4) = 5 thread,
+    # mỗi phiên /chat giữ 1 thread 30-120s → 5 chat đồng thời là toàn bộ API
+    # (auth lookup cũng tranh pool này) tê liệt. Nới lên 16 (I/O-bound là chính).
+    from concurrent.futures import ThreadPoolExecutor
+    asyncio.get_running_loop().set_default_executor(
+        ThreadPoolExecutor(max_workers=int(os.environ.get("EXECUTOR_MAX_WORKERS", "16")),
+                           thread_name_prefix="vl-exec"))
     knowledge._ensure()
     # Load autocorrect entity names
     if HAS_AUTOCORRECT:
@@ -948,9 +955,14 @@ async def _http_exception_handler(request: Request, exc: HTTPException):
 async def _global_exception_handler(request: Request, exc: Exception):
     exc_name = type(exc).__name__
     if exc_name in ("OperationalError", "InterfaceError", "DatabaseError", "PoolTimeout"):
-        logger.error("Database connection error on %s %s: %s", request.method, request.url.path, exc_name)
+        logger.error("Database connection error",
+                     method=request.method, path=request.url.path,
+                     error_type=exc_name, error=str(exc)[:300])
         return _error_response(503, "Dịch vụ tạm gián đoạn, vui lòng thử lại sau.", request)
-    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    logger.error("Unhandled error",
+                 method=request.method, path=request.url.path,
+                 error_type=exc_name, error=str(exc)[:300],
+                 traceback=traceback.format_exc()[-4000:])
     return _error_response(500, "Lỗi hệ thống.", request)
 
 app.include_router(admin_router)
@@ -1019,6 +1031,14 @@ _BODY_LIMITS = {
     "/chat": 10_240,                # 10KB for chat messages
     "/auth/avatar": MAX_BODY_SIZE,  # 1MB for avatar upload
 }
+_STREAMING_REQUEST_PATHS = {"/chat", "/chat/stream", "/api/notifications/stream"}
+_NO_TIMEOUT_STREAM_PATHS = {"/api/notifications/stream"}
+
+def _is_streaming_request_path(path: str) -> bool:
+    return path in _STREAMING_REQUEST_PATHS
+
+def _is_request_timeout_exempt(path: str) -> bool:
+    return path in _NO_TIMEOUT_STREAM_PATHS
 
 @app.middleware("http")
 async def limit_request_size(request: Request, call_next):
@@ -1091,11 +1111,15 @@ async def track_response_time(request: Request, call_next):
     from middleware import _request_id_var
     _request_id_var.set(req_id)
 
-    is_streaming = request.url.path in ("/chat", "/chat/stream")
+    path = request.url.path
+    is_streaming = _is_streaming_request_path(path)
     timeout_s = 120 if is_streaming else 30
 
     try:
-        response = await asyncio.wait_for(call_next(request), timeout=timeout_s)
+        if _is_request_timeout_exempt(path):
+            response = await call_next(request)
+        else:
+            response = await asyncio.wait_for(call_next(request), timeout=timeout_s)
         duration_ms = (time.time() - start) * 1000
         endpoint = f"{request.method} {request.url.path}"
         response_tracker.record(endpoint, duration_ms, response.status_code)
@@ -1109,7 +1133,19 @@ async def track_response_time(request: Request, call_next):
         response.headers["X-Response-Time"] = f"{duration_ms:.0f}ms"
         if "Cache-Control" not in response.headers:
             path = request.url.path
-            if path.startswith(("/auth/", "/api/posts", "/api/comments", "/admin/")):
+            if path.startswith((
+                "/auth/",
+                "/admin/",
+                "/api/posts",
+                "/api/comments",
+                "/api/notifications",
+                "/api/me",
+                "/api/saved",
+                "/api/my-plans",
+                "/api/following",
+                "/api/blocked-users",
+                "/api/notification-preferences",
+            )):
                 response.headers["Cache-Control"] = "no-store"
             elif path.startswith(("/seo/", "/api/entities", "/api/transparency")):
                 response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=300"
@@ -1985,6 +2021,9 @@ async def chat(req: ChatRequest, request: Request):
             # Estimate tokens from message + reply when no response object
             est_in = token_counter.estimate_tokens(corrected_message)
             est_out = token_counter.estimate_tokens(reply)
+            # Audit vòng 2 fix #8: record_usage để check_budget (guardrails) có số thật
+            if HAS_GUARDRAILS:
+                guardrail_budget.record_usage(session_id, est_in + est_out)
             cost_attribution.record(session_id, corrected_message[:200], "chat", None, get_model(),
                                      {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
                                      token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
@@ -2367,6 +2406,9 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     try:
                         est_in = token_counter.estimate_tokens(message)
                         est_out = token_counter.estimate_tokens(full_text)
+                        # Audit vòng 2 fix #8: đồng bộ với đường non-stream
+                        if HAS_GUARDRAILS:
+                            guardrail_budget.record_usage(sid, est_in + est_out)
                         cost_attribution.record(sid, message[:200], "stream", None, get_model(),
                                                  {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
                                                  token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
@@ -2498,6 +2540,10 @@ async def reload_data(request: Request):
     # "Reload KB" trong admin UI luôn bị 401).
     authed = verify_admin_key(request)
     if not authed:
+        from admin import require_admin_scope
+        await require_admin_scope(request, "ops.deploy")
+        authed = True
+    if not authed:
         try:
             from auth_middleware import get_current_user
             _u = await get_current_user(request)
@@ -2573,13 +2619,11 @@ def _health_core() -> tuple:
 
 @app.get("/health")
 async def health():
-    overall, db_ok, llm_status = await asyncio.to_thread(_health_core)
+    overall, _, _ = await asyncio.to_thread(_health_core)
     return {
         "status": overall,
         "time": datetime.now(timezone.utc).isoformat(),
         "entities": len(knowledge._entities),
-        "db": db_ok,
-        "llm": llm_status,
     }
 
 
@@ -2665,22 +2709,36 @@ async def health_details(request: Request):
     await require_admin(request)
     return await _health_detail()
 
+@app.get("/health/internal")
+async def health_internal(request: Request):
+    from admin import require_admin
+    await require_admin(request)
+    return await _health_detail()
+
 
 @app.get("/health/ready")
 async def readiness_probe():
     """Lightweight readiness probe for load balancers / orchestrators."""
     def _probe():
         from database import db as _db
-        checks = {"knowledge": len(knowledge._entities) > 0}
+        data_source = getattr(knowledge, "_data_source", None) or "unknown"
+        entity_count = len(getattr(knowledge, "_entities", None) or {})
+        checks = {
+            "knowledge": entity_count > 0,
+            "data_source": data_source == "db" if getattr(_db, "_use_pg", False) else data_source in {"db", "json"},
+        }
         try:
             with _db._conn() as conn:
                 _db._fetchone(conn, "SELECT 1", ())
             checks["database"] = True
         except Exception:
             checks["database"] = False
+        schema = _db.pg_schema_status()
+        checks["schema"] = bool(schema.get("ok"))
+        checks["schema_version"] = schema
         return checks
     checks = await asyncio.to_thread(_probe)
-    ready = all(checks.values())
+    ready = all(value for key, value in checks.items() if key != "schema_version")
     return JSONResponse(
         status_code=200 if ready else 503,
         content={"ready": ready, "checks": checks},
@@ -2848,9 +2906,8 @@ async def system_learning(request: Request):
 @app.post("/system/learning/run", tags=["System"])
 async def trigger_learning(request: Request):
     """Trigger 1 vòng lặp tự học SAU cổng fitness (admin only, eval-gated)."""
-    from middleware import verify_admin_key
-    if not verify_admin_key(request):
-        return JSONResponse(status_code=403, content={"error": "forbidden"})
+    from admin import require_admin_scope
+    await require_admin_scope(request, "ops.deploy")
     try:
         from self_evolve import guarded_evolve
         from learn_loop import run_full_cycle
@@ -3146,8 +3203,8 @@ async def client_error(req: ClientErrorRequest, request: Request):
 async def system_client_errors(request: Request, limit: int = Query(50, ge=1, le=500)):
     """Admin xem lỗi frontend gần đây (lọc source=client từ StructuredLogger).
     Gate bằng admin key (giống các /system/* khác ở production)."""
-    if not verify_admin_key(request):
-        return JSONResponse(status_code=403, content={"error": "forbidden"})
+    from admin import require_admin_scope
+    await require_admin_scope(request, "ops.deploy")
     limit = max(1, min(limit, 200))
     rows = logger.recent(limit * 4, level="error")
     client_rows = [r for r in rows if r.get("source") == "client"]
@@ -3174,9 +3231,8 @@ async def welcome_message(session_id: str = ""):
 async def build_vectors(request: Request):
     """Build/rebuild vector embeddings index."""
     # GĐ4.2: rebuild nặng -> chỉ admin (chống DoS compute ẩn danh).
-    from middleware import verify_admin_key
-    if not verify_admin_key(request):
-        return JSONResponse(status_code=403, content={"error": "forbidden"})
+    from admin import require_admin_scope
+    await require_admin_scope(request, "ops.deploy")
     if not HAS_VECTOR:
         return JSONResponse(status_code=501, content={"error": "Vector search module not available"})
     def _build():
@@ -3193,7 +3249,9 @@ async def vector_stats(request: Request):
     return {"available": True, **embedding_store.stats()}
 
 @app.get("/vectors/search")
-async def vector_search_endpoint(q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=100)):
+async def vector_search_endpoint(request: Request, q: str = Query(..., max_length=200), limit: int = Query(10, ge=1, le=100)):
+    from admin import require_admin_scope
+    await require_admin_scope(request, "ops.deploy")
     if not HAS_VECTOR:
         raise HTTPException(503, detail="Vector search not available")
     def _search():
@@ -3305,9 +3363,8 @@ async def freshness_candidates_endpoint(request: Request, limit: int = Query(20,
 async def image_recognize_endpoint(request: Request):
     # GĐ4.2: mỗi call là 1 lượt LLM vision (tốn tiền) -> chỉ admin để chặn drain ví ẩn danh.
     # (Frontend hiện không dùng. Mở cho user đã xác thực + rate-limit khi cần — Backlog.)
-    from middleware import verify_admin_key
-    if not verify_admin_key(request):
-        return JSONResponse(status_code=403, content={"error": "forbidden"})
+    from admin import require_admin_scope
+    await require_admin_scope(request, "ops.deploy")
     if not HAS_IMAGE_RECOGNITION:
         return JSONResponse(status_code=501, content={"error": "Image recognition not available"})
     content_type = request.headers.get("content-type", "")
@@ -3316,8 +3373,9 @@ async def image_recognize_endpoint(request: Request):
         file = form.get("file")
         if not file:
             return JSONResponse(status_code=400, content={"error": "No file uploaded"})
-        file_bytes = await file.read()
-        if len(file_bytes) > 10 * 1024 * 1024:
+        max_bytes = 10 * 1024 * 1024
+        file_bytes = await file.read(max_bytes + 1)
+        if len(file_bytes) > max_bytes:
             return JSONResponse(status_code=413, content={"error": "Image too large (max 10MB)"})
         filename = getattr(file, "filename", "image.jpg")
         ct = getattr(file, "content_type", "image/jpeg")
@@ -3516,9 +3574,8 @@ async def dynamic_agents_report(request: Request):
 async def dynamic_agents_create(req: DynamicAgentCreateRequest, request: Request):
     # P0-12: chặn tạo agent không-auth (system_prompt_addon + tool_whitelist do client kiểm
     # soát → prompt-injection/đốt LLM budget nếu mở). Bắt buộc X-Admin-Key.
-    from middleware import verify_admin_key
-    if not verify_admin_key(request):
-        return JSONResponse(status_code=403, content={"error": "forbidden"})
+    from admin import require_admin_scope
+    await require_admin_scope(request, "ops.deploy")
     if not HAS_DYNAMIC_AGENTS:
         raise HTTPException(503, detail="Dynamic agents not available")
     spec = agent_factory.create_agent(

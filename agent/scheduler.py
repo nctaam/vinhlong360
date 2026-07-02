@@ -190,6 +190,10 @@ class ScheduledTask:
                                           self.name, self.timeout, backoff,
                                           self._consecutive_failures, _MAX_RETRIES + 1)
                 else:
+                    # Hết retry: PHẢI đặt next_run_after — thiếu nó should_run() luôn
+                    # True → task fail bền vững chạy lại MỖI tick 60s (hot-loop,
+                    # ~5.760 dòng ERROR/ngày — audit vòng 2 fix #3).
+                    self.next_run_after = time.time() + self.interval
                     _sched_logger.error("Task timed out: %s (%ds) — %d consecutive failures",
                                         self.name, self.timeout, self._consecutive_failures)
                 return
@@ -212,6 +216,8 @@ class ScheduledTask:
                 _sched_logger.warning("Task failed: %s (attempt %d/%d), retry in %ds — %s",
                                       self.name, self._consecutive_failures, _MAX_RETRIES + 1, backoff, e)
             else:
+                # Cùng lý do trên: "waiting normal interval" chỉ đúng khi thật sự đặt lịch chờ.
+                self.next_run_after = time.time() + self.interval
                 _sched_logger.error("Task failed: %s — %d consecutive failures, waiting normal interval — %s\n%s",
                                     self.name, self._consecutive_failures, e, traceback.format_exc())
         finally:
@@ -338,11 +344,11 @@ def task_admin_digest():
         from database import db
         ph = db._ph
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM posts WHERE status = {ph}", ("pending",))
+            row = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM posts WHERE moderation_status = {ph}", ("pending",))
             if row and row["c"]:
                 parts.append(f"• 🧐 Chờ duyệt: {row['c']}")
     except Exception as e:
-        _sched_logger.debug("digest moderation check skipped: %s", e)
+        _sched_logger.warning("digest moderation check skipped: %s", e)
 
     # Cảnh báo ngân sách: nếu agent tự động bật, báo mức dùng LLM/cap (free, không gọi LLM).
     try:
@@ -642,7 +648,7 @@ def task_kb_promotion():
 def task_notification_cleanup():
     """Prune notifications older than 90 days and read notifications older than 30 days."""
     try:
-        import database as db
+        from database import db
         if not db._use_pg:
             return
         with db._conn() as conn:
@@ -656,7 +662,7 @@ def task_notification_cleanup():
 def task_event_reminders():
     """Send reminder notifications to users who RSVP'd to events happening within 24h."""
     try:
-        import database as db_mod
+        from database import db as db_mod
         if not db_mod._use_pg:
             return
         from notifications import create_notification
@@ -709,7 +715,7 @@ def task_event_reminders():
 def task_session_cleanup():
     """Purge expired user_sessions, otp_sessions, and sessions of deleted users."""
     try:
-        import database as db
+        from database import db
         if not db._use_pg:
             return
         with db._conn() as conn:
@@ -763,7 +769,7 @@ def task_session_cleanup():
 def task_moderation_auto_escalation():
     """Auto-approve pending posts older than 48h (solo admin can't review everything)."""
     try:
-        import database as db
+        from database import db
         if not db._use_pg:
             return
         with db._conn() as conn:

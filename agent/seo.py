@@ -1,9 +1,9 @@
 """
 vinhlong360 SEO endpoints: JSON-LD, sitemap.xml, robots.txt.
 
-The SEO layer reads from web/data.json because that file remains the
-moderated public source of truth. Helpers are intentionally defensive so
-older coordinate/source shapes do not break structured data endpoints.
+PostgreSQL is the production source of truth. Helpers are intentionally
+defensive so older coordinate/source shapes do not break structured data
+endpoints, and local development can still fall back to web/data.json.
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ import json
 import logging
 import re
 import threading
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,10 @@ AREA_NAMES = {
     "vinh-long": "Vĩnh Long",
     "ben-tre": "Bến Tre",
     "tra-vinh": "Trà Vinh",
+}
+ITINERARY_AREA_NAMES = {
+    **AREA_NAMES,
+    "lien-vung": "Liên vùng Vĩnh Long - Bến Tre - Trà Vinh",
 }
 
 TYPE_SCHEMA = {
@@ -212,6 +217,41 @@ def _load() -> dict[str, Any]:
     return _data
 
 
+# Audit vòng 2 fix #7: _load_db_data chạy trên MỖI request /seo/jsonld (trang detail
+# SSR await nó mọi pageview) — query cả 1780 entity + rels + itins mỗi lần. Cache
+# snapshot TTL 300s (đồng bộ TTL sitemap cache); dữ liệu SEO không cần real-time.
+_db_snapshot: dict[str, Any] | None = None
+_db_snapshot_ts: float = 0.0
+_db_snapshot_lock = threading.Lock()
+_DB_SNAPSHOT_TTL = 300.0
+
+
+def _load_db_data() -> dict[str, Any] | None:
+    """Load SEO data from the DB in the same rough shape as web/data.json."""
+    global _db_snapshot, _db_snapshot_ts
+    if _db_snapshot is not None and (time.time() - _db_snapshot_ts) < _DB_SNAPSHOT_TTL:
+        return _db_snapshot
+    try:
+        from database import db
+        entities = db.all_entities()
+        if not entities:
+            return None
+        snapshot = {
+            "entities": entities,
+            "relationships": db.all_relationships(),
+            "itineraries": db.all_itineraries(),
+        }
+        with _db_snapshot_lock:
+            _db_snapshot = snapshot
+            _db_snapshot_ts = time.time()
+        return snapshot
+    except Exception:  # noqa: BLE001 - JSON fallback remains useful in dev
+        logger.debug("SEO DB load failed; falling back to data.json", exc_info=True)
+        return None
+
+def _load_seo_data() -> dict[str, Any]:
+    return _load_db_data() or _load()
+
 _by_id_lock = threading.Lock()
 
 
@@ -336,6 +376,63 @@ def _same_as_values(entity: dict[str, Any]) -> list[str]:
     return values
 
 
+LICENSE_URL_ALIASES = {
+    "cc by 4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "cc-by-4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "cc by-sa 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "cc-by-sa-4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "cc0": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "cc0 1.0": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "cc0-1.0": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "public domain": "https://creativecommons.org/publicdomain/mark/1.0/",
+}
+
+def _image_url(value: Any) -> str | None:
+    if isinstance(value, str) and value.startswith("http"):
+        return value
+    if isinstance(value, dict):
+        url = value.get("url") or value.get("src") or value.get("contentUrl")
+        if isinstance(url, str) and url.startswith("http"):
+            return url
+    return None
+
+def _normalise_license_url(value: Any) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    raw = value.strip()
+    if _is_valid_url(raw):
+        return raw
+    token = re.sub(r"\s+", " ", raw.replace("_", " ").strip().lower())
+    token = token.removeprefix("license:").strip()
+    return LICENSE_URL_ALIASES.get(token)
+
+def _image_credit_for_url(attrs: dict[str, Any], img_url: str, raw_image: Any = None) -> dict[str, Any]:
+    if isinstance(raw_image, dict):
+        direct = {
+            "author": raw_image.get("author") or raw_image.get("credit"),
+            "credit": raw_image.get("credit"),
+            "license": raw_image.get("license"),
+            "source": raw_image.get("source"),
+            "source_url": raw_image.get("source_url") or raw_image.get("sourceUrl"),
+        }
+        if any(v for v in direct.values()):
+            return {k: v for k, v in direct.items() if v}
+
+    credits = attrs.get("image_credits")
+    if isinstance(credits, list):
+        for item in credits:
+            if isinstance(item, dict) and str(item.get("url") or "") == img_url:
+                return item
+
+    return {
+        "author": attrs.get("image_author") or attrs.get("image_credit"),
+        "credit": attrs.get("image_credit"),
+        "license": attrs.get("image_license"),
+        "source": attrs.get("image_source"),
+        "source_url": attrs.get("image_source_url"),
+    }
+
+
 def _build_image_objects(
     images: Any, entity_name: str, attrs: dict[str, Any]
 ) -> list[dict[str, Any]]:
@@ -349,12 +446,15 @@ def _build_image_objects(
     """
     if not isinstance(images, list):
         images = [images] if images else []
-    author = attrs.get("image_author") or attrs.get("image_credit")
-    license_url = attrs.get("image_license")
     out: list[dict[str, Any]] = []
-    for idx, img_url in enumerate(images):
-        if not isinstance(img_url, str) or not img_url.startswith("http"):
+    for idx, raw_image in enumerate(images):
+        img_url = _image_url(raw_image)
+        if not img_url:
             continue
+        credit_meta = _image_credit_for_url(attrs, img_url, raw_image)
+        author = credit_meta.get("author") or credit_meta.get("credit")
+        license_url = _normalise_license_url(credit_meta.get("license"))
+        source_url = credit_meta.get("source_url")
         obj: dict[str, Any] = {
             "@type": "ImageObject",
             "url": img_url,
@@ -366,6 +466,8 @@ def _build_image_objects(
             obj["copyrightHolder"] = author.strip()
         if isinstance(license_url, str) and license_url.strip():
             obj["license"] = license_url.strip()
+        if isinstance(source_url, str) and _is_valid_url(source_url):
+            obj["creditText"] = source_url.strip()
         out.append({k: v for k, v in obj.items() if v not in (None, "", [], {})})
     return out
 
@@ -818,18 +920,19 @@ def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str,
         ld["duration"] = duration
     area = itinerary.get("area")
     if area:
+        area_name = ITINERARY_AREA_NAMES.get(area, area)
         ld["touristType"] = "Sightseeing"
         ld["contentLocation"] = {
             "@type": "Place",
-            "name": AREA_NAMES.get(area, area),
-            "address": {"@type": "PostalAddress", "addressCountry": "VN", "addressRegion": AREA_NAMES.get(area, area)},
+            "name": area_name,
+            "address": {"@type": "PostalAddress", "addressCountry": "VN", "addressRegion": area_name},
         }
     stops = itinerary.get("stops") or []
     sub_trips: list[dict[str, Any]] = []
     for idx, stop in enumerate(stops):
         if not isinstance(stop, dict):
             continue
-        ref = stop.get("entityId") or stop.get("id")
+        ref = stop.get("entityId") or stop.get("entity_id") or stop.get("id")
         stop_entity = by_id.get(str(ref)) if ref else None
         stop_name = (stop_entity.get("name") if stop_entity else None) or stop.get("name") or str(ref or f"Stop {idx + 1}")
         st_type = TYPE_SCHEMA.get(str(stop_entity.get("type")), "TouristAttraction") if stop_entity else "TouristAttraction"
@@ -899,7 +1002,7 @@ def build_area_jsonld(area_slug: str, data: dict[str, Any] | None = None) -> dic
             summary="Area JSON-LD",
             description="Returns TouristDestination JSON-LD for a geographic area (vinh-long, ben-tre, tra-vinh). Includes contained entities up to 50.")
 def area_jsonld(area_slug: str):
-    data = _load()
+    data = _load_seo_data()
     result = build_area_jsonld(area_slug, data)
     if not result:
         raise HTTPException(status_code=404, detail="not found")
@@ -910,7 +1013,7 @@ def area_jsonld(area_slug: str):
             summary="Itinerary JSON-LD",
             description="Returns TouristTrip JSON-LD for a specific itinerary. Includes stops as an ItemList with linked entities.")
 def itinerary_jsonld(itinerary_id: str):
-    data = _load()
+    data = _load_seo_data()
     by_id = _by_id(data)
     for it in data.get("itineraries", []):
         if isinstance(it, dict) and str(it.get("id")) == itinerary_id:
@@ -922,10 +1025,10 @@ def itinerary_jsonld(itinerary_id: str):
             summary="Entity JSON-LD",
             description="Returns schema.org JSON-LD for a single entity. Includes type-specific fields, breadcrumb, FAQ, geo, ratings, and relationships.")
 def entity_jsonld(entity_id: str):
-    data = _load()
+    data = _load_seo_data()
     by_id = _by_id(data)
     entity = by_id.get(entity_id)
-    if not entity:
+    if not entity or not _is_public(entity):
         raise HTTPException(status_code=404, detail="not found")
     entity_ld = build_entity_jsonld(entity, by_id, relationships=data.get("relationships", []))
     faq = build_faq_jsonld(entity)
@@ -1121,6 +1224,11 @@ def sitemap_media():
         if not isinstance(imgs, list) or not imgs:
             continue
         ename = xml_escape(entity.get("name") or str(entity["id"]))
+        attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+        area = entity.get("area")
+        geo_tag = ""
+        if isinstance(area, str) and area in AREA_NAMES:
+            geo_tag = f"<image:geo_location>{xml_escape(AREA_NAMES[area])}</image:geo_location>"
         summary = entity.get("summary")
         caption_tag = ""
         if isinstance(summary, str) and summary.strip():
@@ -1129,12 +1237,19 @@ def sitemap_media():
         loc = _entity_url(str(entity["id"]))
         tags = ""
         for img in imgs[:20]:
-            if isinstance(img, str) and img.startswith("http"):
-                tags += (f"\n    <image:image>"
-                         f"<image:loc>{xml_escape(img)}</image:loc>"
-                         f"<image:title>{ename}</image:title>"
-                         f"{caption_tag}"
-                         f"</image:image>")
+            img_url = _image_url(img)
+            if not img_url:
+                continue
+            credit_meta = _image_credit_for_url(attrs, img_url, img)
+            license_url = _normalise_license_url(credit_meta.get("license"))
+            license_tag = f"<image:license>{xml_escape(license_url)}</image:license>" if license_url else ""
+            tags += (f"\n    <image:image>"
+                     f"<image:loc>{xml_escape(img_url)}</image:loc>"
+                     f"<image:title>{ename}</image:title>"
+                     f"{caption_tag}"
+                     f"{geo_tag}"
+                     f"{license_tag}"
+                     f"</image:image>")
         if tags:
             urls.append(f"  <url>\n    <loc>{xml_escape(loc)}</loc>{tags}\n  </url>")
 

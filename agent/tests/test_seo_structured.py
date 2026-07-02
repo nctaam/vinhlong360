@@ -154,6 +154,30 @@ def test_image_object_skips_non_http_values():
     assert out == []
 
 
+def test_image_object_reads_per_url_image_credits():
+    entity = {
+        "id": "lang-nghe",
+        "name": "Lang nghe",
+        "type": "craft_village",
+        "images": ["https://cdn.example.com/a.webp"],
+        "attributes": {
+            "image_credits": [
+                {
+                    "url": "https://cdn.example.com/a.webp",
+                    "author": "Tran A",
+                    "license": "CC BY-SA 4.0",
+                    "source_url": "https://commons.wikimedia.org/wiki/File:A.webp",
+                }
+            ]
+        },
+    }
+    ld = seo.build_entity_jsonld(entity, {})
+    img = ld["image"][0]
+    assert img["author"] == "Tran A"
+    assert img["license"] == "https://creativecommons.org/licenses/by-sa/4.0/"
+    assert img["creditText"] == "https://commons.wikimedia.org/wiki/File:A.webp"
+
+
 # ── TYPE_SCHEMA coverage ────────────────────────────────────────────────────
 
 
@@ -384,6 +408,7 @@ def test_sitemap_excludes_provisional(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     monkeypatch.setattr(seo, "_sitemap_cache", None)
     monkeypatch.setattr(seo, "_data_mtime_ns", 0)
     resp = seo.sitemap()
@@ -645,10 +670,44 @@ def test_media_sitemap_includes_image_title(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     resp = seo.sitemap_media()
     xml = resp.body.decode()
     assert "<image:title>Test Entity</image:title>" in xml
     assert "<image:loc>https://example.com/img.jpg</image:loc>" in xml
+
+
+def test_media_sitemap_includes_license_from_image_credits(monkeypatch):
+    data = {
+        "entities": [
+            {
+                "id": "e1",
+                "name": "Test Entity",
+                "type": "attraction",
+                "area": "vinh-long",
+                "images": ["https://example.com/img.jpg"],
+                "attributes": {
+                    "image_credits": [
+                        {
+                            "url": "https://example.com/img.jpg",
+                            "license": "CC BY 4.0",
+                            "author": "Photo Author",
+                            "source_url": "https://commons.wikimedia.org/wiki/File:Img.jpg",
+                        }
+                    ]
+                },
+            },
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
+    xml = seo.sitemap_media().body.decode()
+    assert "<image:license>https://creativecommons.org/licenses/by/4.0/</image:license>" in xml
+    assert f"<image:geo_location>{seo.AREA_NAMES['vinh-long']}</image:geo_location>" in xml
+    return
+    assert "<image:geo_location>VÄ©nh Long</image:geo_location>" in xml
 
 
 def test_media_sitemap_excludes_non_public(monkeypatch):
@@ -661,6 +720,7 @@ def test_media_sitemap_excludes_non_public(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     resp = seo.sitemap_media()
     xml = resp.body.decode()
     assert "/dia-diem/e1" in xml
@@ -819,6 +879,7 @@ def test_entity_jsonld_endpoint_includes_faq(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     monkeypatch.setattr(seo, "_by_id_cache", None)
     result = seo.entity_jsonld("with-tip")
     assert "@graph" in result
@@ -1185,6 +1246,7 @@ def test_entity_jsonld_endpoint_passes_relationships(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     monkeypatch.setattr(seo, "_by_id_cache", None)
     result = seo.entity_jsonld("x")
     assert "relatedLink" in result
@@ -1264,6 +1326,7 @@ def test_sitemap_xml_special_chars_in_id(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     monkeypatch.setattr(seo, "_sitemap_cache", None)
     monkeypatch.setattr(seo, "_data_mtime_ns", 0)
     resp = seo.sitemap()
@@ -1283,6 +1346,18 @@ def test_itinerary_jsonld_with_entity_ref_and_name():
     ld = seo.build_itinerary_jsonld(it, by_id)
     assert ld["itinerary"]["itemListElement"][0]["item"]["name"] == "Cam sành"
 
+
+def test_itinerary_jsonld_accepts_entity_id_stop_key():
+    it = {
+        "id": "snake-stop",
+        "title": "Snake",
+        "stops": [{"entity_id": "cam", "name": "Override Name"}],
+    }
+    by_id = {"cam": {"id": "cam", "name": "Cam sành", "type": "product"}}
+    ld = seo.build_itinerary_jsonld(it, by_id)
+    item = ld["itinerary"]["itemListElement"][0]["item"]
+    assert item["name"] == "Cam sành"
+    assert item["@id"].endswith("/dia-diem/cam")
 
 def test_build_entity_jsonld_multiple_same_as():
     entity = {
@@ -1350,11 +1425,19 @@ def test_itinerary_jsonld_location_area():
     assert ld["touristType"] == "Sightseeing"
 
 
+def test_itinerary_jsonld_location_lien_vung_label():
+    it = {"id": "lv-it", "title": "Liên vùng", "area": "lien-vung", "stops": []}
+    ld = seo.build_itinerary_jsonld(it, {})
+    label = "Liên vùng Vĩnh Long - Bến Tre - Trà Vinh"
+    assert ld["contentLocation"]["name"] == label
+    assert ld["contentLocation"]["address"]["addressRegion"] == label
+
 def test_area_jsonld_all_three_areas():
     for slug in ["vinh-long", "ben-tre", "tra-vinh"]:
         ld = seo.build_area_jsonld(slug)
         assert ld is not None
         assert ld["@type"] == "TouristDestination"
+    assert seo.build_area_jsonld("lien-vung") is None
 
 
 def test_faq_jsonld_all_four_question_types():
@@ -1610,6 +1693,7 @@ def test_sitemap_deduplicates_entity_urls(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     monkeypatch.setattr(seo, "_sitemap_cache", None)
     monkeypatch.setattr(seo, "_data_mtime_ns", 0)
     resp = seo.sitemap()
@@ -1786,6 +1870,7 @@ def test_entity_jsonld_endpoint_without_faq_returns_single(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     monkeypatch.setattr(seo, "_by_id_cache", None)
     result = seo.entity_jsonld("no-faq")
     assert "@graph" not in result
@@ -2115,6 +2200,7 @@ def test_event_no_capacity_when_string():
 def test_sitemap_has_xhtml_namespace(monkeypatch):
     data = {"entities": [], "relationships": [], "itineraries": []}
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     monkeypatch.setattr(seo, "_sitemap_cache", None)
     monkeypatch.setattr(seo, "_data_mtime_ns", 0)
     resp = seo.sitemap()
@@ -2204,6 +2290,7 @@ def test_sitemap_media_has_caption(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     resp = seo.sitemap_media()
     xml = resp.body.decode()
     assert "<image:caption>Beautiful place in VL</image:caption>" in xml
@@ -2309,6 +2396,7 @@ def test_sitemap_media_no_caption_without_summary(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     resp = seo.sitemap_media()
     xml = resp.body.decode()
     assert "<image:caption>" not in xml
@@ -2321,6 +2409,7 @@ def test_sitemap_url_has_hreflang(monkeypatch):
         "itineraries": [],
     }
     monkeypatch.setattr(seo, "_load", lambda: data)
+    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
     monkeypatch.setattr(seo, "_sitemap_cache", None)
     monkeypatch.setattr(seo, "_data_mtime_ns", 0)
     resp = seo.sitemap()

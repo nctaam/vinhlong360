@@ -32,12 +32,14 @@ Input validation:
       ...
 """
 
+import asyncio
 import hashlib
 import hmac
 import logging
 import os
 import re
 import secrets
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +90,7 @@ def require_role(*roles: str):
 
 _CSRF_SECRET = os.environ.get("CSRF_SECRET", "")
 if not _CSRF_SECRET:
-    if os.environ.get("ENVIRONMENT") == "production":
+    if os.environ.get("ENVIRONMENT", "").lower() in {"production", "prod", "prd"}:
         raise RuntimeError("CSRF_SECRET is required in production")
     _CSRF_SECRET = secrets.token_hex(32)
 
@@ -135,9 +137,16 @@ async def require_csrf(request: Request) -> None:
 
     session_token = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
     if not session_token:
+        session_token = request.cookies.get("vl360_token", "")
+    if not session_token:
         session_token = request.cookies.get("session_token", "")
     if not session_token:
-        return
+        session_token = request.cookies.get("token", "")
+    if not session_token:
+        from middleware import security_logger, get_client_ip
+        ip = get_client_ip(request)
+        security_logger.csrf_failure(ip, endpoint=str(request.url.path))
+        raise HTTPException(403, "CSRF token không hợp lệ")
 
     if not _validate_csrf(request, session_token):
         from middleware import security_logger, get_client_ip
@@ -1053,19 +1062,19 @@ def validate_content_type(
 def get_secure_cookie_params(is_production: bool = False) -> dict:
     """Return secure cookie parameters for session cookies.
 
-    Production: Secure + HttpOnly + SameSite=Lax + __Host- prefix
-    Development: HttpOnly + SameSite=Lax (no Secure for localhost)
+    Production: Secure + HttpOnly + SameSite=Lax for vinhlong360.vn.
+    Development: HttpOnly + SameSite=Lax (no Secure for localhost).
     """
     base = {
         "httponly": True,
         "samesite": "lax",
         "path": "/",
-        "max_age": 86400 * 7,  # 7 days
+        "max_age": 86400 * 30,
     }
     if is_production:
         base["secure"] = True
         base["samesite"] = "lax"
-        base["domain"] = ".vinhlong360.com"
+        base["domain"] = ".vinhlong360.vn"
     return base
 
 
@@ -1093,6 +1102,8 @@ def build_rate_limit_headers(
 # ══════════════════════════════════════════════════
 
 _ALLOWED_ORIGINS = frozenset({
+    "https://vinhlong360.vn",
+    "https://www.vinhlong360.vn",
     "https://vinhlong360.com",
     "https://www.vinhlong360.com",
     "http://localhost:3000",
@@ -1101,6 +1112,7 @@ _ALLOWED_ORIGINS = frozenset({
 })
 
 _ALLOWED_ORIGIN_PATTERNS = [
+    re.compile(r'^https://[\w-]+\.vinhlong360\.vn$'),
     re.compile(r'^https://[\w-]+\.vinhlong360\.com$'),
     re.compile(r'^https://vinhlong360-[\w-]+\.vercel\.app$'),
 ]
@@ -1207,6 +1219,87 @@ def validate_token_structure(token: str) -> dict:
 _seen_idempotency_keys: dict[str, float] = {}
 _dedup_lock = _Lock()
 _DEDUP_WINDOW = 300  # 5 minutes
+_IDEMPOTENCY_PG_FAIL_UNTIL = 0.0
+_IDEMPOTENCY_PG_GC_LAST = 0.0
+
+
+def _idempotency_pg_enabled() -> bool:
+    value = os.environ.get("VL360_SHARED_IDEMPOTENCY", "true").strip().lower()
+    return value not in {"0", "false", "no", "off"}
+
+
+def _mark_idempotency_pg_failed(exc: Exception) -> None:
+    global _IDEMPOTENCY_PG_FAIL_UNTIL
+    with _dedup_lock:
+        _IDEMPOTENCY_PG_FAIL_UNTIL = _time.time() + 60
+    logger.debug("Shared PG idempotency disabled briefly: %s", exc, exc_info=True)
+
+
+def _should_gc_idempotency_pg(now: float) -> bool:
+    global _IDEMPOTENCY_PG_GC_LAST
+    if now - _IDEMPOTENCY_PG_GC_LAST < 60:
+        return False
+    _IDEMPOTENCY_PG_GC_LAST = now
+    return True
+
+
+def _first_seen_timestamp(value) -> float:
+    if hasattr(value, "timestamp"):
+        return float(value.timestamp())
+    return float(value)
+
+
+def _check_idempotency_pg(key: str) -> dict | None:
+    if (
+        not _idempotency_pg_enabled()
+        or not getattr(db, "_use_pg", False)
+        or _time.time() < _IDEMPOTENCY_PG_FAIL_UNTIL
+    ):
+        return None
+
+    now = _time.time()
+    expires_at = datetime.fromtimestamp(now + _DEDUP_WINDOW, timezone.utc)
+    try:
+        with db._conn() as conn:
+            if _should_gc_idempotency_pg(now):
+                db._execute(conn, "DELETE FROM request_idempotency_keys WHERE expires_at < NOW()")
+            row = db._fetchone(
+                conn,
+                """
+                INSERT INTO request_idempotency_keys(key, expires_at)
+                VALUES (%s, %s)
+                ON CONFLICT (key) DO NOTHING
+                RETURNING first_seen_at
+                """,
+                (key, expires_at),
+            )
+            if row is not None:
+                first = row["first_seen_at"] if isinstance(row, dict) else row[0]
+                return {"is_duplicate": False, "first_seen": _first_seen_timestamp(first)}
+            existing = db._fetchone(
+                conn,
+                "SELECT first_seen_at FROM request_idempotency_keys WHERE key = %s AND expires_at >= NOW()",
+                (key,),
+            )
+            if existing is not None:
+                first = existing["first_seen_at"] if isinstance(existing, dict) else existing[0]
+                return {"is_duplicate": True, "first_seen": _first_seen_timestamp(first)}
+            db._execute(
+                conn,
+                """
+                INSERT INTO request_idempotency_keys(key, expires_at)
+                VALUES (%s, %s)
+                ON CONFLICT (key) DO UPDATE
+                SET first_seen_at = NOW(),
+                    expires_at = EXCLUDED.expires_at,
+                    meta = '{}'::JSONB
+                """,
+                (key, expires_at),
+            )
+            return {"is_duplicate": False, "first_seen": now}
+    except Exception as exc:  # noqa: BLE001
+        _mark_idempotency_pg_failed(exc)
+        return None
 
 
 def check_idempotency(key: str) -> dict:
@@ -1216,6 +1309,10 @@ def check_idempotency(key: str) -> dict:
     """
     if not key:
         return {"is_duplicate": False, "first_seen": None}
+
+    pg_result = _check_idempotency_pg(key)
+    if pg_result is not None:
+        return pg_result
 
     now = _time.time()
     with _dedup_lock:
@@ -1243,15 +1340,20 @@ async def require_idempotency(request: Request) -> None:
     user = await _get_current_user_or_none(request)
     if user:
         key = f"{user['id']}:{key}"
-    result = check_idempotency(key)
+    # Audit vòng 2 fix #5: check_idempotency mở PG connection sync (connect_timeout=5)
+    # — gọi thẳng trên event loop là PG chậm sẽ đứng cả server. Đẩy xuống thread.
+    result = await asyncio.to_thread(check_idempotency, key)
     if result["is_duplicate"]:
         raise HTTPException(409, "Yêu cầu trùng lặp (idempotency key đã được xử lý)")
 
 
 def _reset_idempotency():
     """Test-only."""
+    global _IDEMPOTENCY_PG_FAIL_UNTIL, _IDEMPOTENCY_PG_GC_LAST
     with _dedup_lock:
         _seen_idempotency_keys.clear()
+        _IDEMPOTENCY_PG_FAIL_UNTIL = 0.0
+        _IDEMPOTENCY_PG_GC_LAST = 0.0
 
 
 # ══════════════════════════════════════════════════
