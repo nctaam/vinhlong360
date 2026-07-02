@@ -36,11 +36,43 @@ CREATE TABLE IF NOT EXISTS entities (
     "parentId"  TEXT,
     "legacyArea" TEXT,
     "updatedAt" TEXT,
+    status      TEXT,
+    verified    INTEGER DEFAULT 1,
     created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_entities_type ON entities(type);
 CREATE INDEX IF NOT EXISTS idx_entities_placeid ON entities("placeId");
+CREATE INDEX IF NOT EXISTS idx_entities_public_type_area_updated
+    ON entities(type, area, "updatedAt" DESC, id)
+    WHERE type <> 'place'
+      AND (status IS NULL OR status <> 'provisional')
+      AND (verified IS NULL OR verified <> 0);
+CREATE INDEX IF NOT EXISTS idx_entities_public_area_updated
+    ON entities(area, "updatedAt" DESC, id)
+    WHERE type <> 'place'
+      AND (status IS NULL OR status <> 'provisional')
+      AND (verified IS NULL OR verified <> 0);
+CREATE INDEX IF NOT EXISTS idx_entities_public_place_updated
+    ON entities("placeId", "updatedAt" DESC, id)
+    WHERE type <> 'place'
+      AND "placeId" IS NOT NULL
+      AND (status IS NULL OR status <> 'provisional')
+      AND (verified IS NULL OR verified <> 0);
+CREATE INDEX IF NOT EXISTS idx_entities_public_coordinates
+    ON entities(type, area)
+    WHERE type <> 'place'
+      AND coordinates IS NOT NULL
+      AND (status IS NULL OR status <> 'provisional')
+      AND (verified IS NULL OR verified <> 0);
+CREATE INDEX IF NOT EXISTS idx_entities_public_events_updated
+    ON entities("updatedAt" DESC, id)
+    WHERE type = 'event'
+      AND (status IS NULL OR status <> 'provisional')
+      AND (verified IS NULL OR verified <> 0);
+CREATE INDEX IF NOT EXISTS idx_entities_season_gin
+    ON entities USING gin(season jsonb_path_ops)
+    WHERE season IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_entities_name_trgm ON entities USING gin(name gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_entities_summary_trgm ON entities USING gin(summary gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_entities_name_unaccent ON entities USING gin(f_unaccent(lower(name)) gin_trgm_ops);
@@ -60,6 +92,7 @@ CREATE TABLE IF NOT EXISTS itineraries (
     id         TEXT PRIMARY KEY,
     title      TEXT NOT NULL,
     area       TEXT,
+    areas      JSONB DEFAULT '[]',
     duration   TEXT,
     summary    TEXT DEFAULT '',
     stops      JSONB DEFAULT '[]',
@@ -102,7 +135,7 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_url    TEXT,
     username      TEXT,
     bio           TEXT DEFAULT '',
-    role          TEXT DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin')),
+    role          TEXT DEFAULT 'user' CHECK (role IN ('user', 'moderator', 'admin', 'superadmin')),
     is_active     BOOLEAN DEFAULT TRUE,
     consent_at    TIMESTAMPTZ,
     consent_version TEXT,
@@ -156,6 +189,9 @@ CREATE TABLE IF NOT EXISTS posts (
     comment_count     INTEGER DEFAULT 0,
     mentions          JSONB DEFAULT '[]',
     hashtags          JSONB DEFAULT '[]',
+    -- deleted_at thuộc baseline vì index idx_posts_review_entity_recent_public bên dưới
+    -- tham chiếu nó NGAY trong file này (migration 051 ALTER IF NOT EXISTS = no-op khi replay).
+    deleted_at        TIMESTAMPTZ DEFAULT NULL,
     created_at        TIMESTAMPTZ DEFAULT NOW(),
     updated_at        TIMESTAMPTZ DEFAULT NOW()
 );
@@ -167,6 +203,11 @@ CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_type ON posts(post_type);
 CREATE INDEX IF NOT EXISTS idx_posts_content_trgm ON posts USING GIN (lower(content) gin_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_posts_content_unaccent ON posts USING GIN (f_unaccent(lower(content)) gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_posts_review_entity_recent_public
+    ON posts(entity_id, created_at DESC)
+    WHERE post_type = 'review'
+      AND moderation_status = 'approved'
+      AND deleted_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS comments (
     id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -206,8 +247,10 @@ CREATE TABLE IF NOT EXISTS entity_ratings (
 -- (entity ids are slugs). `snapshot` keeps a lightweight copy (name/type/image)
 -- so a new device can render saved cards without N detail fetches.
 CREATE TABLE IF NOT EXISTS saved_entities (
+    id         UUID DEFAULT uuid_generate_v4(),
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     entity_id  TEXT NOT NULL,
+    kind       TEXT DEFAULT 'entity' CHECK (kind IN ('entity', 'itinerary')),
     snapshot   JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (user_id, entity_id)
@@ -317,10 +360,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Tách 2 trigger: PG cấm WHEN tham chiếu NEW trên trigger có DELETE
+-- (DELETE chỉ có OLD). Hàm update_entity_ratings xử lý cả hai qua TG_OP.
 CREATE OR REPLACE TRIGGER trg_entity_ratings
-    AFTER INSERT OR UPDATE OR DELETE ON posts
+    AFTER INSERT OR UPDATE ON posts
     FOR EACH ROW
-    WHEN (NEW IS NULL OR NEW.post_type = 'review')
+    WHEN (NEW.post_type = 'review')
+    EXECUTE FUNCTION update_entity_ratings();
+
+CREATE OR REPLACE TRIGGER trg_entity_ratings_del
+    AFTER DELETE ON posts
+    FOR EACH ROW
+    WHEN (OLD.post_type = 'review')
     EXECUTE FUNCTION update_entity_ratings();
 
 -- Update post like_count
@@ -398,3 +449,76 @@ CREATE TABLE IF NOT EXISTS user_visits (
     PRIMARY KEY (user_id, entity_id)
 );
 CREATE INDEX IF NOT EXISTS idx_user_visits_user ON user_visits(user_id, status);
+
+-- Append-only admin audit store used by AdminCP RBAC/audit workflows.
+CREATE TABLE IF NOT EXISTS admin_audit_events (
+    id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    actor        TEXT NOT NULL,
+    actor_role   TEXT,
+    actor_scopes TEXT[] DEFAULT ARRAY[]::TEXT[],
+    method       TEXT NOT NULL,
+    path         TEXT NOT NULL,
+    request_id   TEXT,
+    ip           TEXT,
+    reason       TEXT,
+    before_json  JSONB,
+    after_json   JSONB,
+    meta         JSONB DEFAULT '{}'::JSONB
+);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_events_created_at
+    ON admin_audit_events(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_events_actor
+    ON admin_audit_events(actor, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_events_path
+    ON admin_audit_events(path, created_at DESC);
+
+-- Shared rate-limit and idempotency stores for multi-worker deploys.
+CREATE TABLE IF NOT EXISTS shared_rate_limits (
+    key        TEXT PRIMARY KEY,
+    hits       DOUBLE PRECISION[] NOT NULL DEFAULT ARRAY[]::DOUBLE PRECISION[],
+    expires_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_shared_rate_limits_expires_at
+    ON shared_rate_limits(expires_at);
+
+CREATE TABLE IF NOT EXISTS request_idempotency_keys (
+    key           TEXT PRIMARY KEY,
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at    TIMESTAMPTZ NOT NULL,
+    meta          JSONB NOT NULL DEFAULT '{}'::JSONB
+);
+CREATE INDEX IF NOT EXISTS idx_request_idempotency_keys_expires_at
+    ON request_idempotency_keys(expires_at);
+
+CREATE TABLE IF NOT EXISTS quality_metric_snapshots (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    metric_key TEXT NOT NULL,
+    metric_value DOUBLE PRECISION NOT NULL,
+    metric_unit TEXT DEFAULT 'count',
+    source TEXT DEFAULT 'quality_budget',
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_quality_metric_snapshots_key_time
+    ON quality_metric_snapshots(metric_key, created_at DESC);
+
+-- Migration baseline marker. A fresh database must still run
+-- scripts/apply_migrations.py to reach the latest release schema.
+CREATE TABLE IF NOT EXISTS schema_version (
+  component  TEXT PRIMARY KEY,
+  version    INTEGER NOT NULL,
+  migration  TEXT NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+INSERT INTO schema_version(component, version, migration, updated_at)
+VALUES ('agent', 1, 'init.sql', NOW())
+ON CONFLICT (component) DO UPDATE SET
+  version = GREATEST(schema_version.version, EXCLUDED.version),
+  migration = CASE
+    WHEN EXCLUDED.version >= schema_version.version THEN EXCLUDED.migration
+    ELSE schema_version.migration
+  END,
+  updated_at = NOW();
