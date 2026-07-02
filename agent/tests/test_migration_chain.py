@@ -58,3 +58,50 @@ def test_059_owns_code_created_tables():
 def test_059_records_schema_version_59_monotonic():
     assert "VALUES ('agent', 59," in MIG_059
     assert "GREATEST(schema_version.version, EXCLUDED.version)" in MIG_059
+
+
+# ── GĐ-B: 060 cột phổ quát + 061 bảng CTI ──────────────────────────────────
+MIG_060 = (ROOT / "agent" / "migrations" / "060_entity_universal_columns.sql").read_text(encoding="utf-8")
+MIG_061 = (ROOT / "agent" / "migrations" / "061_entity_detail_tables.sql").read_text(encoding="utf-8")
+
+UNIVERSAL = ["address", "phone", "website", "hours", "price_range", "sub_category", "best_time", "highlight"]
+CTI_TABLES = [
+    "entity_place_details", "entity_food_details", "entity_product_details",
+    "entity_lodging_details", "entity_event_details", "entity_experience_details",
+    "entity_facility_details", "entity_person_details", "entity_adminplace_details",
+]
+# Ánh xạ khóa registry -> tên cột khác (phải khớp comment trong 061 + backfill script)
+KEY_TO_COLUMN = {"view": "view_note", "architectural_style": "architecture_style"}
+
+
+def test_060_adds_all_universal_columns():
+    for col in UNIVERSAL:
+        assert f"ADD COLUMN IF NOT EXISTS {col}" in MIG_060, f"060 thiếu cột {col}"
+    assert "VALUES ('agent', 60," in MIG_060
+
+
+def test_061_has_9_cti_tables_with_fk_and_owner():
+    for t in CTI_TABLES:
+        assert f"CREATE TABLE IF NOT EXISTS {t}" in MIG_061, f"061 thiếu bảng {t}"
+        assert f"ALTER TABLE {t} OWNER TO vl360" in MIG_061, f"061 thiếu OWNER cho {t}"
+    assert MIG_061.count("REFERENCES entities(id) ON DELETE CASCADE") == len(CTI_TABLES)
+    assert "VALUES ('agent', 61," in MIG_061
+
+
+def test_061_columns_cover_registry_typed_fields():
+    """Mọi trường typed trong registry (trừ 8 cột phổ quát) phải có cột trong 061."""
+    import sys
+    sys.path.insert(0, str(ROOT / "agent"))
+    from entity_schemas import ENTITY_SCHEMAS, KIND_OF_TYPE
+    covered_kinds = {"place", "food", "product", "lodging", "event",
+                     "experience", "facility", "person", "admin_place"}
+    universal = set(UNIVERSAL)
+    for etype, schema in ENTITY_SCHEMAS.items():
+        if KIND_OF_TYPE.get(etype) not in covered_kinds:
+            continue  # itinerary có bảng riêng; other (organization/economy) chỉ dùng bộ chung
+        for f in schema["fields"]:
+            key = f["key"]
+            if key in universal:
+                continue
+            col = KEY_TO_COLUMN.get(key, key)
+            assert col in MIG_061, f"061 thiếu cột {col} (registry {etype}.{key})"
