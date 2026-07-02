@@ -58,8 +58,8 @@ phải pure TPT. Chỉ làm khi có trigger (xem Backlog).
 
 | Pha | Mục tiêu | Additive | Trạng thái |
 |----|----------|----------|-----------|
-| **1** | Registry field-schema/type + form AdminCP typed + validation + fix 2 bug | ✅ (no DDL) | **ĐANG LÀM** |
-| 2 | Lớp `kind` (7 danh mục) derived trên 17 type, group catalog/report | ✅ | chưa |
+| **1** | Registry field-schema/type + form AdminCP typed + validation + fix 2 bug | ✅ (no DDL) | **XONG + DEPLOYED** (2026-07-02) |
+| **2** | Lớp `kind` (7 danh mục) derived trên 17 type, group catalog/report | ✅ | **XONG + DEPLOYED** (2026-07-02) |
 | 3 | Bảng mở rộng `entity_<kind>` + generated columns (expand) | ✅ | chưa |
 | 4 | Backfill + parity test (idempotent, batched) | ✅ | chưa |
 | 5 | Read-switch sau config flag (soak 1-2 tuần, rollback = tắt flag) | ✅ | chưa |
