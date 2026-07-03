@@ -198,3 +198,35 @@ class TestProfilePointsExposed:
         import social
         src = inspect.getsource(social.get_user_profile)
         assert "if is_self else None" in src
+
+
+class TestActivityHeatmap:
+    """Task 6: GET /api/users/{user_id}/activity-heatmap — 365-day daily
+    activity counts (approved posts+reviews) for a GitHub-style grid."""
+
+    def test_heatmap_endpoint_exists(self):
+        import social
+        src = inspect.getsource(social.get_activity_heatmap)
+        assert "heatmap" in src.lower() or "activity" in src.lower()
+
+    def test_heatmap_groups_by_date(self):
+        import social
+        src = inspect.getsource(social.get_activity_heatmap)
+        assert "DATE(created_at)" in src or "DATE(p.created_at)" in src
+        assert "GROUP BY" in src
+
+    def test_heatmap_365_day_window(self):
+        import social
+        src = inspect.getsource(social.get_activity_heatmap)
+        assert "365 days" in src
+
+    def test_heatmap_only_approved(self):
+        import social
+        src = inspect.getsource(social.get_activity_heatmap)
+        assert "moderation_status = 'approved'" in src
+        assert "deleted_at IS NULL" in src
+
+    def test_heatmap_validates_path_id(self):
+        import social
+        src = inspect.getsource(social.get_activity_heatmap)
+        assert "validate_path_id" in src

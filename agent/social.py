@@ -3916,6 +3916,33 @@ async def get_user_timeline(
     return {"items": items, "total": total, "page": page, "has_more": offset + limit < total}
 
 
+@router.get("/users/{user_id}/activity-heatmap",
+            summary="365-day activity heatmap",
+            description="Số bài viết/đánh giá đã duyệt theo ngày trong 365 ngày qua (GitHub-style).")
+async def get_activity_heatmap(user_id: str, user=Depends(get_current_user)):
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT DATE(created_at) AS d, COUNT(*) AS c
+                FROM posts
+                WHERE user_id::text = {ph}
+                  AND moderation_status = 'approved' AND deleted_at IS NULL
+                  AND created_at > NOW() - INTERVAL '365 days'
+                GROUP BY DATE(created_at)
+                ORDER BY d
+            """, (user_id,))
+            return [db._row_to_dict(r) for r in rows]
+
+    rows = await asyncio.to_thread(_query)
+    days = [{"date": str(r["d"]), "count": int(r["c"])} for r in rows]
+    total = sum(d["count"] for d in days)
+    mx = max((d["count"] for d in days), default=0)
+    return {"days": days, "total": total, "max": mx}
+
+
 # ── Helpers for AI integration (called by tools.py) ──
 
 def get_community_reviews(entity_id: str, limit: int = 5) -> list[dict]:

@@ -170,7 +170,18 @@
         <p>🔒 Hồ sơ riêng tư — theo dõi để xem nội dung.</p>
       </div>
 
-      <div v-else class="profile-tabs" role="tablist" aria-label="Nội dung người dùng" @keydown="onProfileTabKeydown">
+      <section v-if="!profile.is_private && heatmap.length" class="heatmap-section">
+        <h3 class="heatmap-title">Hoạt động 1 năm qua · {{ heatmapTotal }} đóng góp</h3>
+        <div class="heatmap-grid">
+          <div v-for="(week, wi) in heatmapWeeks" :key="wi" class="hm-week">
+            <span v-for="(cell, di) in week" :key="di"
+                  class="hm-cell" :data-level="cell.level"
+                  :title="`${cell.date}: ${cell.count} đóng góp`" />
+          </div>
+        </div>
+      </section>
+
+      <div v-if="!profile.is_private" class="profile-tabs" role="tablist" aria-label="Nội dung người dùng" @keydown="onProfileTabKeydown">
         <button type="button" id="profile-tab-posts" role="tab" :class="['chip', { active: tab === 'posts' }]" :aria-selected="tab === 'posts'" aria-controls="profile-panel-posts" :tabindex="tab === 'posts' ? 0 : -1" @click="setProfileTab('posts')">Bài viết</button>
         <button type="button" id="profile-tab-reviews" role="tab" :class="['chip', { active: tab === 'reviews' }]" :aria-selected="tab === 'reviews'" aria-controls="profile-panel-reviews" :tabindex="tab === 'reviews' ? 0 : -1" @click="setProfileTab('reviews')">Đánh giá</button>
         <button type="button" id="profile-tab-timeline" role="tab" :class="['chip', { active: tab === 'timeline' }]" :aria-selected="tab === 'timeline'" aria-controls="profile-panel-timeline" :tabindex="tab === 'timeline' ? 0 : -1" @click="setProfileTab('timeline')">Hoạt động</button>
@@ -609,6 +620,46 @@ watch(tab, (t) => {
   if (t === 'timeline' && !timelineItems.value.length) loadTimeline()
 })
 
+// ── Bản đồ nhiệt hoạt động (365 ngày, kiểu GitHub) ──
+type HeatDay = { date: string; count: number }
+const heatmap = ref<HeatDay[]>([])
+const heatmapMax = ref(0)
+const heatmapTotal = ref(0)
+
+async function loadHeatmap() {
+  if (!profile.value) return
+  try {
+    const res = await $fetch<{ days: HeatDay[]; total: number; max: number }>(
+      `/api/users/${encodedProfileId.value}/activity-heatmap`, { headers: authHeaders() })
+    heatmap.value = res.days || []
+    heatmapMax.value = res.max || 0
+    heatmapTotal.value = res.total || 0
+  } catch { /* im lặng — heatmap chỉ là bổ sung */ }
+}
+
+// build 53 tuần cột × 7 ngày, level 0..4 theo count/max
+const heatmapWeeks = computed(() => {
+  const byDate = new Map(heatmap.value.map(d => [d.date, d.count]))
+  const cells: Array<{ date: string; count: number; level: number }> = []
+  const today = new Date()
+  const start = new Date(today); start.setDate(today.getDate() - 364)
+  // căn về Chủ nhật đầu tuần
+  start.setDate(start.getDate() - start.getDay())
+  const mx = heatmapMax.value || 1
+  for (let i = 0; i < 53 * 7; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i)
+    const iso = d.toISOString().slice(0, 10)
+    const count = byDate.get(iso) || 0
+    const level = count === 0 ? 0 : Math.min(4, Math.ceil(count / mx * 4))
+    cells.push({ date: iso, count, level })
+    if (d > today) break
+  }
+  // nhóm thành cột-tuần
+  const weeks: typeof cells[] = []
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7))
+  return weeks
+})
+
 const postsFetchFailed = ref(false)
 async function fetchPosts() {
   if (!profile.value || profile.value.is_private) {
@@ -890,6 +941,7 @@ onMounted(() => {
   fetchPosts()
   checkFollowing()
   checkBlocked()
+  loadHeatmap()
   if (isSelf.value) { loadUserStats(); loadAchievements() }
   if (tab.value === 'collections' && isSelf.value) fetchCollections()
 })
@@ -905,10 +957,14 @@ watch(userId, async () => {
   timelineItems.value = []
   timelinePage.value = 1
   timelineHasMore.value = true
+  heatmap.value = []
+  heatmapMax.value = 0
+  heatmapTotal.value = 0
   await refreshProfile()
   fetchPosts()
   checkFollowing()
   checkBlocked()
+  loadHeatmap()
 })
 
 useSeoMeta({
@@ -1133,4 +1189,15 @@ useSeoMeta({
 .tl-preview { margin: var(--space-1) 0 0; color: var(--muted); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tl-time { font-size: 0.8125rem; color: var(--muted); }
 .tl-rating { margin-left: var(--space-1); }
+
+/* Bản đồ nhiệt hoạt động (365 ngày, kiểu GitHub) */
+.heatmap-section { margin: var(--space-3) 0; }
+.heatmap-title { font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: var(--space-2); }
+.heatmap-grid { display: flex; gap: 3px; overflow-x: auto; padding-bottom: var(--space-1); }
+.hm-week { display: flex; flex-direction: column; gap: 3px; }
+.hm-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--line); }
+.hm-cell[data-level="1"] { background: color-mix(in srgb, var(--success) 30%, var(--line)); }
+.hm-cell[data-level="2"] { background: color-mix(in srgb, var(--success) 55%, transparent); }
+.hm-cell[data-level="3"] { background: color-mix(in srgb, var(--success) 78%, transparent); }
+.hm-cell[data-level="4"] { background: var(--success); }
 </style>
