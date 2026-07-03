@@ -141,6 +141,13 @@ class TestActivityTimeline:
         src = inspect.getsource(social.get_user_timeline)
         assert "404" in src
 
+    def test_timeline_applies_prod_seed_post_filter(self):
+        # Wave 2 review fix: get_user_posts/get_user_reviews đều splice
+        # _prod_seed_post_filter để loại bài seed/test admin trên prod —
+        # timeline (UNION 2 nhánh post+review) đã thiếu filter này.
+        src = inspect.getsource(social.get_user_timeline)
+        assert "_prod_seed_post_filter" in src
+
 
 class TestBadgeProgress:
     """Task 4: GET /api/me/badge-progress — all 10 badges with earned status
@@ -199,6 +206,19 @@ class TestFollowingFeedEnhancement:
         src = inspect.getsource(social.get_friend_reviews)
         assert "_block_sql" in src
         assert "_mute_sql" in src
+
+    def test_friend_reviews_applies_prod_seed_post_filter(self):
+        # Wave 2 review fix: get_following_feed đã có _prod_seed_post_filter,
+        # friend-reviews (siblings cùng tab "Đang theo dõi") thì thiếu.
+        src = inspect.getsource(social.get_friend_reviews)
+        assert "_prod_seed_post_filter" in src
+
+    def test_friend_reviews_excludes_hidden_posts(self):
+        # Wave 2 review fix: get_following_feed loại post viewer đã ẩn qua
+        # user_hidden_posts — friend-reviews thiếu filter này nên review đã
+        # ẩn có thể lọt lại vào tab "Đang theo dõi".
+        src = inspect.getsource(social.get_friend_reviews)
+        assert "user_hidden_posts" in src
 
     def test_friend_saves_endpoint_exists(self):
         src = inspect.getsource(social.get_friend_saves)

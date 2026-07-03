@@ -1070,6 +1070,11 @@ async def get_friend_reviews(
     ph = db._ph
     bc, bc_p = _block_sql(user, "p.user_id")
     mc, mc_p = _mute_sql(user, "p.user_id")
+    # Đồng bộ với get_following_feed (dòng ~1024): loại bài viewer đã ẩn +
+    # bài seed/test admin trên prod — 2 filter này bị thiếu ở đây khiến review
+    # đã ẩn/bài seed lọt lại vào tab "Đang theo dõi".
+    hidden_cond = f"AND p.id NOT IN (SELECT post_id FROM user_hidden_posts WHERE user_id = {ph}::uuid)"
+    seed_filter, seed_params = _prod_seed_post_filter("p")
 
     def _query():
         with db._conn() as conn:
@@ -1085,9 +1090,11 @@ async def get_friend_reviews(
                   AND p.user_id IN (SELECT target_id::uuid FROM follows
                                     WHERE follower_id = {ph}::uuid AND target_type='user')
                   {bc} {mc}
+                  {hidden_cond}
+                  {seed_filter}
                 ORDER BY p.created_at DESC
                 LIMIT {ph}
-            """, (uid, *bc_p, *mc_p, limit))
+            """, (uid, *bc_p, *mc_p, uid, *seed_params, limit))
             return rows
     rows = await asyncio.to_thread(_query)
     reviews = []
@@ -3801,6 +3808,11 @@ async def get_user_timeline(
 
             bc, bc_p = _block_sql(user, "p.user_id")
             mc, mc_p = _mute_sql(user, "p.user_id")
+            # Đồng bộ với get_user_posts/get_user_reviews (dòng ~3684/3730):
+            # thiếu filter này khiến bài seed/test admin lọt vào tab timeline
+            # trên prod. Splice vào CẢ 2 nhánh post/review của UNION — nhánh
+            # follow không đụng bảng posts nên không cần.
+            seed_filter, seed_params = _prod_seed_post_filter("p")
 
             timeline_sql = f"""
                 (SELECT 'post' AS type, p.created_at, p.id::text AS ref_id,
@@ -3810,7 +3822,7 @@ async def get_user_timeline(
                  FROM posts p
                  LEFT JOIN entities e ON e.id = p.entity_id
                  WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
-                       AND p.deleted_at IS NULL AND p.post_type != 'review' {bc} {mc})
+                       AND p.deleted_at IS NULL AND p.post_type != 'review' {bc} {mc} {seed_filter})
                 UNION ALL
                 (SELECT 'review' AS type, p.created_at, p.id::text AS ref_id,
                         LEFT(p.content, 200) AS content, p.post_type,
@@ -3819,7 +3831,7 @@ async def get_user_timeline(
                  FROM posts p
                  LEFT JOIN entities e ON e.id = p.entity_id
                  WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
-                       AND p.deleted_at IS NULL AND p.post_type = 'review' {bc} {mc})
+                       AND p.deleted_at IS NULL AND p.post_type = 'review' {bc} {mc} {seed_filter})
                 UNION ALL
                 (SELECT 'follow' AS type, f.created_at, f.target_id AS ref_id,
                         NULL AS content, NULL AS post_type,
@@ -3832,7 +3844,11 @@ async def get_user_timeline(
                 ORDER BY created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """
-            params = (user_id, *bc_p, *mc_p, user_id, *bc_p, *mc_p, user_id, limit, offset)
+            params = (
+                user_id, *bc_p, *mc_p, *seed_params,
+                user_id, *bc_p, *mc_p, *seed_params,
+                user_id, limit, offset,
+            )
             rows = db._fetchall(conn, timeline_sql, params)
 
             count_sql = f"""
