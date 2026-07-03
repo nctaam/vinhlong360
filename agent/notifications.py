@@ -365,6 +365,7 @@ _NOTIF_TYPE_TO_PREF = {
     "claim_approved": "pref_system",
     "claim_rejected": "pref_system",
     "digest": "pref_system",
+    "achievement": "pref_system",
 }
 
 

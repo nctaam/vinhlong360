@@ -42,3 +42,71 @@ class TestLoginStreak:
     def test_login_password_calls_streak_update(self):
         src = inspect.getsource(auth.login_password)
         assert "_update_login_streak" in src
+
+
+class TestAchievementSystem:
+    def test_achievements_module_imports(self):
+        import achievements
+        assert hasattr(achievements, "ACHIEVEMENTS")
+        assert hasattr(achievements, "check_achievements")
+        assert hasattr(achievements, "router")
+
+    def test_fifteen_achievements_defined(self):
+        import achievements
+        assert len(achievements.ACHIEVEMENTS) == 15
+        ids = {a["id"] for a in achievements.ACHIEVEMENTS}
+        for expected in ("first_post", "review_master", "explorer_5", "social_50",
+                         "helpful_5", "streak_7", "veteran_6m", "allrounder"):
+            assert expected in ids
+
+    def test_each_achievement_has_required_fields(self):
+        import achievements
+        for a in achievements.ACHIEVEMENTS:
+            for f in ("id", "name", "icon", "category", "target", "metric"):
+                assert f in a, f"{a.get('id')} missing {f}"
+
+    def test_compute_metrics_covers_all_metric_keys(self):
+        import achievements
+        src = inspect.getsource(achievements._compute_metrics)
+        for key in ("posts", "reviews", "photos", "visits", "areas",
+                    "followers", "best_answers", "account_age_days", "login_streak"):
+            assert key in src
+
+    def test_best_answers_counts_comment_author(self):
+        import achievements
+        src = inspect.getsource(achievements._compute_metrics)
+        assert "best_answer_id" in src
+        assert "comments" in src
+
+    def test_check_achievements_awards_and_dedupes(self):
+        import achievements
+        src = inspect.getsource(achievements.check_achievements)
+        assert "user_achievements" in src
+        assert "ON CONFLICT" in src
+
+    def test_check_achievements_notify_flag(self):
+        import achievements
+        sig = inspect.signature(achievements.check_achievements)
+        assert "notify" in sig.parameters
+
+    def test_check_achievements_creates_notification(self):
+        import achievements
+        src = inspect.getsource(achievements.check_achievements)
+        assert "create_notification" in src
+        assert "achievement" in src
+
+    def test_endpoint_requires_auth_and_awards_on_read(self):
+        import achievements
+        src = inspect.getsource(achievements.get_my_achievements)
+        assert "require_user" in src
+        assert "check_achievements" in src
+        assert "notify=False" in src
+
+    def test_allrounder_checks_categories(self):
+        import achievements
+        src = inspect.getsource(achievements.check_achievements)
+        assert "category" in src or "categories" in src
+
+    def test_notif_type_registered(self):
+        import notifications
+        assert notifications._NOTIF_TYPE_TO_PREF.get("achievement") == "pref_system"
