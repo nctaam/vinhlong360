@@ -201,6 +201,20 @@
           <button type="button" class="tag-clear" @click="clearSearch">✕ Bỏ tìm</button>
         </div>
 
+        <!-- Người dùng tìm thấy -->
+        <div v-if="searchUsers.length && searchQuery" class="search-users-section">
+          <h3 class="section-label">Người dùng</h3>
+          <div class="search-users-grid">
+            <NuxtLink v-for="u in searchUsers" :key="u.id" :to="userPath(u.username || u.id)" class="search-user-card card">
+              <AvatarPlaceholder :initial="(u.display_name || '?').charAt(0)" :src="u.avatar_url" :size="40" />
+              <div class="suc-info">
+                <strong>{{ u.display_name }}</strong>
+                <span class="suc-meta">{{ u.post_count }} bài viết</span>
+              </div>
+            </NuxtLink>
+          </div>
+        </div>
+
         <!-- Main tabs -->
         <div v-if="!searchMode && !ugcUnavailable" class="threads-filter-bar">
           <div class="threads-filter" role="tablist" aria-label="Bộ lọc bảng tin" @keydown="onFeedTabKeydown">
@@ -1001,6 +1015,21 @@ function loadMore() {
 }
 
 // ── Tìm bài viết ──
+const searchUsers = ref<Array<{ id: string; display_name: string; avatar_url: string; username: string; post_count: number }>>([])
+
+async function fetchSearchUsers(query: string) {
+  if (!query || query.length < 2) { searchUsers.value = []; return }
+  try {
+    const res = await $fetch<{ users: typeof searchUsers.value }>('/api/search/users', {
+      params: { q: query, page: 1 },
+      headers: authHeaders(),
+    })
+    searchUsers.value = (res.users || []).slice(0, 5)
+  } catch {
+    searchUsers.value = []
+  }
+}
+
 async function fetchSearch(reset = false) {
   if (reset) { searchPage.value = 1; searchResults.value = [] }
   searchLoading.value = true
@@ -1026,6 +1055,7 @@ function runSearch() {
   if (q.length < 2) { showToast('Nhập ít nhất 2 ký tự để tìm kiếm', 'info'); return }
   searchQuery.value = q
   syncCommunitySearchQuery(q)
+  fetchSearchUsers(q)
   fetchSearch(true)
 }
 
@@ -1033,6 +1063,7 @@ function clearSearch() {
   searchInput.value = ''
   searchQuery.value = ''
   searchResults.value = []
+  searchUsers.value = []
   syncCommunitySearchQuery('')
 }
 
@@ -1629,6 +1660,15 @@ useHead({
 .dark .lb-rank-1 { --lb-gold: #f0c040; } .dark .lb-rank-2 { --lb-silver: #b0b3b8; } .dark .lb-rank-3 { --lb-bronze: #d4975a; }
 
 .mobile-discovery { display: none; }
+
+/* ── User search results ── */
+.search-users-section { margin-bottom: var(--space-4); }
+.search-users-grid { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); }
+.search-user-card { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); min-width: 180px; flex-shrink: 0; text-decoration: none; }
+.suc-info { min-width: 0; }
+.suc-info strong { display: block; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.suc-meta { font-size: 0.75rem; color: var(--muted); }
+.section-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); margin: 0 0 var(--space-2); text-transform: uppercase; letter-spacing: 0.04em; }
 
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }
