@@ -3513,12 +3513,12 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
         with db._conn() as conn:
             if _is_uuid:
                 profile = db._fetchone(conn, f"""
-                    SELECT id, display_name, avatar_url, cover_url, bio, username, created_at
+                    SELECT id, display_name, avatar_url, cover_url, bio, username, created_at, login_streak
                     FROM users WHERE id::text = {ph} AND is_active = TRUE
                 """, (user_id,))
             else:
                 profile = db._fetchone(conn, f"""
-                    SELECT id, display_name, avatar_url, cover_url, bio, username, created_at
+                    SELECT id, display_name, avatar_url, cover_url, bio, username, created_at, login_streak
                     FROM users WHERE lower(username) = {ph} AND is_active = TRUE
                 """, (user_id.lower(),))
 
@@ -3662,6 +3662,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             "show_activity": show_activity,
             "show_saved": show_saved,
             "view_count_7d": view_count_7d,
+            "login_streak": int(profile.get("login_streak") or 0) if is_self else None,
             "viewer_relationship": {
                 "is_following": viewer_following,
                 "is_blocked": viewer_blocked,

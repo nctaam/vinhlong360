@@ -59,6 +59,15 @@
             {{ b.icon }} {{ b.label }}
           </span>
         </div>
+        <div v-if="profile.reputation" class="xp-bar-wrap">
+          <div class="xp-bar"><div class="xp-fill" :style="{ width: xpProgress.pct + '%' }" /></div>
+          <span class="xp-label">
+            {{ xpProgress.max ? 'Cấp tối đa' : `Còn ${xpProgress.toNext} điểm lên cấp` }}
+          </span>
+        </div>
+        <div v-if="isSelf && (profile.login_streak ?? 0) > 0" class="streak-chip">
+          🔥 {{ profile.login_streak }} ngày liên tiếp
+        </div>
         <details v-if="isSelf && achievements.length" class="badge-showcase" open>
           <summary class="bs-title">Thành tích ({{ achievementsEarned }}/{{ achievements.length }})</summary>
           <div v-for="cat in achievementCategories" :key="cat.key" class="bs-cat">
@@ -509,6 +518,17 @@ const activitySummary = computed(() => {
   }
   return `${totalContributions.value} đóng góp công khai`
 })
+// Cấp danh tiếng: 1 (<20đ), 2 (20-79đ), 3 (80-199đ), 4 (200+đ) — social.py _level_for().
+const LEVEL_THRESHOLDS = [0, 20, 80, 200]
+const xpProgress = computed(() => {
+  const pts = profile.value?.reputation?.points ?? 0
+  const lvl = profile.value?.reputation?.level ?? 1
+  if (lvl >= 4) return { pct: 100, toNext: 0, max: true }
+  const lo = LEVEL_THRESHOLDS[lvl - 1] ?? 0
+  const hi = LEVEL_THRESHOLDS[lvl] ?? 20
+  const pct = Math.min(100, Math.round((pts - lo) / (hi - lo) * 100))
+  return { pct, toNext: Math.max(0, hi - pts), max: false }
+})
 const visibleProfileTabs = computed<ProfileTab[]>(() => {
   const tabs: ProfileTab[] = ['posts', 'reviews', 'timeline']
   if (isSelf.value) tabs.push('saved', 'collections')
@@ -907,6 +927,11 @@ useSeoMeta({
 .rep-level:hover { filter: brightness(1.1); }
 .rep-level[data-level="4"] { background: color-mix(in srgb, gold 28%, var(--bg-alt)); }
 .rep-badge { font-size: var(--text-xs); padding: .2rem .55rem; border-radius: 999px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
+.xp-bar-wrap { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
+.xp-bar { flex: 1; height: 6px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: var(--radius-full); transition: width var(--duration-slow) var(--ease-out); }
+.xp-label { font-size: var(--text-2xs); color: var(--muted); white-space: nowrap; }
+.streak-chip { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--warning) 12%, transparent); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
 .profile-loading { text-align: center; padding: var(--space-5) 0; }
 .profile-loading .spinner { margin: 0 auto; }
 

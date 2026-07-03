@@ -162,3 +162,39 @@ class TestAchievementHooks:
         src = inspect.getsource(auth.reset_password_otp)
         assert "_update_login_streak" in src
         assert "check_achievements" in src
+
+
+class TestProfilePointsExposed:
+    """Task 5: profile response must expose reputation.points (XP bar) and
+    login_streak (self-only, streak chip) — both consumed client-side on
+    nguoi-dung/[id].vue."""
+
+    def test_profile_exposes_points(self):
+        # get_user_profile doesn't spell "points" itself — it passes the
+        # whole `reputation` dict through by reference, and _reputation()
+        # (social.py) puts "points" in that dict. Assert the pass-through
+        # wiring instead of a literal substring that will never appear here.
+        import social
+        src = inspect.getsource(social.get_user_profile)
+        assert '"reputation": reputation' in src
+        rep_src = inspect.getsource(social._reputation)
+        assert '"points"' in rep_src
+
+    def test_profile_exposes_login_streak(self):
+        import social
+        src = inspect.getsource(social.get_user_profile)
+        assert "login_streak" in src
+
+    def test_profile_selects_login_streak_column(self):
+        # login_streak must be in the SELECT, not just referenced later —
+        # otherwise profile["login_streak"] would KeyError.
+        import social
+        src = inspect.getsource(social.get_user_profile)
+        assert "SELECT id, display_name" in src
+        assert "login_streak" in src.split("SELECT id, display_name")[1].split("\n")[0]
+
+    def test_profile_gates_login_streak_on_is_self(self):
+        # Streak is self-only (privacy: don't leak another user's streak).
+        import social
+        src = inspect.getsource(social.get_user_profile)
+        assert "if is_self else None" in src
