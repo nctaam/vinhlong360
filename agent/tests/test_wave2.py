@@ -217,3 +217,65 @@ class TestFollowingFeedEnhancement:
         # Không hiện lại chính-mình trong danh sách "được lưu bởi bạn bè".
         src = inspect.getsource(social.get_friend_saves)
         assert "!=" in src
+
+
+class TestWeeklyDigest:
+    """Task 8: Weekly activity digest — scheduler task sends an in-app
+    notification once per week summarizing each active user's new followers,
+    likes, and posts. Registered as a ScheduledTask (7-day interval,
+    run_immediately=False so it doesn't fire on every server restart)."""
+
+    def test_weekly_digest_function_exists(self):
+        import scheduler
+        assert callable(scheduler.task_weekly_digest)
+
+    def test_weekly_digest_registered_in_tasks(self):
+        import scheduler
+        names = [t.name for t in scheduler.TASKS]
+        assert "weekly-digest" in names
+
+    def test_weekly_digest_registered_with_weekly_interval_and_not_immediate(self):
+        import scheduler
+        task = next(t for t in scheduler.TASKS if t.name == "weekly-digest")
+        assert task.interval == 7 * 24 * 3600
+        # run_immediately=False → next_run_after scheduled in the future, not 0.
+        assert task.next_run_after > 0
+
+    def test_weekly_digest_uses_create_notification(self):
+        import scheduler
+        src = inspect.getsource(scheduler.task_weekly_digest)
+        assert "create_notification" in src
+
+    def test_weekly_digest_queries_weekly_stats(self):
+        import scheduler
+        src = inspect.getsource(scheduler.task_weekly_digest)
+        assert "7 days" in src or "7 day" in src or "INTERVAL" in src
+
+    def test_weekly_digest_does_not_reference_nonexistent_last_active_at_column(self):
+        # last_active_at was never added to the users table (verified against
+        # init.sql + every migration) — using it would crash the task at
+        # runtime with UndefinedColumn. Guard against reintroducing it.
+        import scheduler
+        src = inspect.getsource(scheduler.task_weekly_digest)
+        assert "last_active_at" not in src
+
+    def test_weekly_digest_filters_active_non_deleted_users(self):
+        import scheduler
+        src = inspect.getsource(scheduler.task_weekly_digest)
+        assert "is_active" in src
+        assert "deleted_at IS NULL" in src
+
+    def test_weekly_digest_guards_postgres_only(self):
+        # UGC tables (users/posts/follows) are Postgres-only per
+        # architecture-decisions.md — sibling tasks (task_event_reminders,
+        # task_notification_cleanup) all guard with `if not db._use_pg: return`.
+        import scheduler
+        src = inspect.getsource(scheduler.task_weekly_digest)
+        assert "_use_pg" in src
+
+    def test_weekly_digest_skips_users_with_no_activity(self):
+        # Don't send an empty/noise notification to users with zero new
+        # followers, likes, and posts this week.
+        import scheduler
+        src = inspect.getsource(scheduler.task_weekly_digest)
+        assert "continue" in src

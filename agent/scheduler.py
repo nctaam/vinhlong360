@@ -796,6 +796,81 @@ def task_ratelimit_gc():
         _sched_logger.error("Rate-limit GC error: %s", e)
 
 
+def task_weekly_digest():
+    """Weekly activity digest — in-app notification summarizing each user's week.
+    Runs every 7 days. Generates one notification per active user with stats
+    (new followers, likes received, posts published), skipping users with no
+    activity this week to avoid empty-notification noise."""
+    try:
+        from database import db
+        if not db._use_pg:
+            return
+        from notifications import create_notification
+        ph = db._ph
+        with db._conn() as conn:
+            # NOTE: users has no last-activity column (verified against init.sql +
+            # all migrations) — filter on is_active/deleted_at only, and rely on
+            # the zero-activity skip below to avoid notifying dormant accounts.
+            active_users = db._fetchall(conn, """
+                SELECT id, display_name FROM users
+                WHERE is_active = TRUE AND deleted_at IS NULL
+            """, ())
+            if not active_users:
+                _sched_logger.info("weekly-digest: no active users")
+                return
+
+            sent = 0
+            for user_row in active_users:
+                u = db._row_to_dict(user_row)
+                uid = str(u["id"])
+                name = u.get("display_name") or "bạn"
+
+                stats = db._fetchone(conn, f"""
+                    SELECT
+                        (SELECT COUNT(*) FROM follows
+                         WHERE target_type='user' AND target_id={ph}
+                           AND created_at > NOW() - INTERVAL '7 days') AS new_followers,
+                        (SELECT COALESCE(SUM(like_count), 0) FROM posts
+                         WHERE user_id::text = {ph}
+                           AND moderation_status='approved' AND deleted_at IS NULL
+                           AND created_at > NOW() - INTERVAL '7 days') AS week_likes,
+                        (SELECT COUNT(*) FROM posts
+                         WHERE user_id::text = {ph}
+                           AND moderation_status='approved' AND deleted_at IS NULL
+                           AND created_at > NOW() - INTERVAL '7 days') AS week_posts
+                """, (uid, uid, uid))
+                s = db._row_to_dict(stats) if stats else {}
+                new_followers = int(s.get("new_followers") or 0)
+                week_likes = int(s.get("week_likes") or 0)
+                week_posts = int(s.get("week_posts") or 0)
+
+                if new_followers == 0 and week_likes == 0 and week_posts == 0:
+                    continue
+
+                parts = []
+                if new_followers > 0:
+                    parts.append(f"+{new_followers} người theo dõi mới")
+                if week_likes > 0:
+                    parts.append(f"{week_likes} lượt thích")
+                if week_posts > 0:
+                    parts.append(f"{week_posts} bài viết")
+
+                body = ", ".join(parts) + ". Tiếp tục chia sẻ nhé!"
+                create_notification(
+                    user_id=uid,
+                    notif_type="digest",
+                    title=f"Tuần này của {name}",
+                    body=body,
+                    ref_type="digest",
+                    ref_id=None,
+                )
+                sent += 1
+
+            _sched_logger.info("weekly-digest: sent digests to %d/%d active users", sent, len(active_users))
+    except Exception as exc:
+        _sched_logger.error("weekly-digest error: %s", exc)
+
+
 TASKS = [
     ScheduledTask("auto-learn",     task_auto_learn,            interval_seconds=AUTO_LEARN_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 3h (env)
     ScheduledTask("relationships",  task_relationship_discovery, interval_seconds=12 * 3600, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 12h
@@ -819,6 +894,7 @@ TASKS = [
     ScheduledTask("learning-loop",    task_learning_loop,         interval_seconds=LEARNING_LOOP_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),   # 1h (env)
     ScheduledTask("kb-promotion",     task_kb_promotion,          interval_seconds=PROMOTION_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 6h (env)
     ScheduledTask("continuous-discovery", task_continuous_discovery, interval_seconds=DISCOVERY_INTERVAL, enabled=AUTONOMOUS_TASKS_ENABLED, run_immediately=SCHEDULER_RUN_STARTUP_TASKS),  # 1h adaptive 30m–6h (env)
+    ScheduledTask("weekly-digest", task_weekly_digest, interval_seconds=7 * 24 * 3600, run_immediately=False),  # 7d — in-app activity summary
 ]
 
 _scheduler_thread = None
