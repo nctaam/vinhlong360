@@ -143,6 +143,10 @@
             <strong>{{ userStats.collections || 0 }}</strong>
             <span>danh sách</span>
           </div>
+          <div v-if="profile.view_count_7d != null" class="pa-stat">
+            <strong>{{ profile.view_count_7d }}</strong>
+            <span>lượt xem tuần này</span>
+          </div>
         </div>
       </div>
 
