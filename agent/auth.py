@@ -553,6 +553,7 @@ async def verify_otp(body: OTPVerify, request: Request):
     )
 
     await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
+    await asyncio.to_thread(_update_login_streak, str(user["id"]))
 
     return {
         "success": True,
@@ -651,6 +652,7 @@ async def login_password(body: PasswordLogin, request: Request):
     )
 
     await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
+    await asyncio.to_thread(_update_login_streak, str(user["id"]))
 
     return {
         "success": True,
@@ -1160,6 +1162,32 @@ def _log_login(phone: str, method: str, success: bool, request: Request, user_id
             """, (user_id, _mask_phone(phone), method, success, ip, ua))
     except Exception as e:
         logger.warning("Failed to log login for %s: %s", _mask_phone(phone), e)
+
+
+def _update_login_streak(user_id: str) -> int:
+    """Cập nhật chuỗi đăng nhập liên tiếp. Trả về streak mới (0 nếu lỗi).
+    - Cùng ngày (last_login_date = today): giữ nguyên (không tính 2 lần/ngày).
+    - Hôm qua (today - 1): +1.
+    - Cách >1 ngày hoặc lần đầu: reset về 1.
+    Nuốt lỗi (không chặn đăng nhập), giống _log_login."""
+    try:
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                UPDATE users SET
+                    login_streak = CASE
+                        WHEN last_login_date = CURRENT_DATE THEN login_streak
+                        WHEN last_login_date = CURRENT_DATE - INTERVAL '1 day' THEN login_streak + 1
+                        ELSE 1
+                    END,
+                    last_login_date = CURRENT_DATE
+                WHERE id::text = {ph}
+                RETURNING login_streak
+            """, (user_id,))
+            return int(db._row_to_dict(row)["login_streak"]) if row else 0
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Failed to update login streak for %s: %s", user_id, e)
+        return 0
 
 
 @router.get("/login-history",
