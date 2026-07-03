@@ -25,8 +25,20 @@ class TestTwoFactorCrypto:
         assert twofactor.verify_totp(s, code) is True
 
     def test_verify_totp_rejects_wrong_code(self):
+        import pyotp
         s = twofactor.generate_secret()
-        assert twofactor.verify_totp(s, "000000") is False or twofactor.verify_totp(s, "123456") is False
+        real = pyotp.TOTP(s).now()
+        # a definitely-wrong 6-digit code is rejected (avoid a 1-in-1e6 collision with `real`)
+        wrong = "000000" if real != "000000" else "111111"
+        assert twofactor.verify_totp(s, wrong) is False
+        # a current code from a DIFFERENT secret must not validate against `s`
+        other = pyotp.TOTP(twofactor.generate_secret()).now()
+        if other != real:
+            assert twofactor.verify_totp(s, other) is False
+        # malformed inputs (non-digit / wrong length) are rejected
+        assert twofactor.verify_totp(s, "abcdef") is False
+        assert twofactor.verify_totp(s, "12345") is False
+        assert twofactor.verify_totp(s, "") is False
 
     def test_provisioning_uri_shape(self):
         uri = twofactor.provisioning_uri("JBSWY3DPEHPK3PXP", "0901234567")
