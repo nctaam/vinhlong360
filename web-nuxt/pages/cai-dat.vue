@@ -213,6 +213,42 @@
       </div>
 
       <div class="settings-card card">
+        <h2>Xác thực 2 bước (2FA)</h2>
+        <div v-if="twoFALoading" class="sf-loading" role="status" aria-label="Đang tải trạng thái 2FA"><div class="spinner spinner-sm"></div> Đang tải...</div>
+        <template v-else-if="recoveryCodes.length">
+          <p class="sf-hint">Lưu các mã khôi phục này ở nơi an toàn — mỗi mã dùng một lần khi mất thiết bị.</p>
+          <ul class="recovery-list"><li v-for="c in recoveryCodes" :key="c"><code>{{ c }}</code></li></ul>
+          <div class="rc-actions">
+            <button type="button" class="btn btn-secondary btn-sm" @click="copyRecoveryCodes">Sao chép</button>
+            <button type="button" class="btn btn-secondary btn-sm" @click="downloadRecoveryCodes">Tải xuống</button>
+            <button type="button" class="btn btn-ghost btn-sm" @click="recoveryCodes = []">Đã lưu, đóng</button>
+          </div>
+        </template>
+        <template v-else-if="twoFA.enabled">
+          <p class="sf-hint">✅ Đã bật. Còn {{ twoFA.recovery_remaining }} mã khôi phục.</p>
+          <label class="sf-field">
+            <span class="sf-label">Nhập mã để tắt 2FA</span>
+            <input v-model="disableCode" type="text" inputmode="numeric" class="sf-input" placeholder="Mã 6 số hoặc mã khôi phục" />
+          </label>
+          <button type="button" class="btn btn-danger-text btn-sm" @click="disable2FA">Tắt xác thực 2 bước</button>
+        </template>
+        <template v-else-if="setupData">
+          <p class="sf-hint">Quét mã QR bằng Google Authenticator / Authy, rồi nhập mã 6 số.</p>
+          <img :src="setupData.qr" alt="QR 2FA" class="qr-img" width="180" height="180" />
+          <p class="sf-hint">Hoặc nhập khoá thủ công: <code>{{ setupData.secret }}</code></p>
+          <label class="sf-field">
+            <span class="sf-label">Mã xác nhận</span>
+            <input v-model="setupCode" type="text" inputmode="numeric" maxlength="6" class="sf-input" />
+          </label>
+          <button type="button" class="btn btn-primary btn-sm" @click="confirm2FASetup">Xác nhận &amp; bật</button>
+        </template>
+        <template v-else>
+          <p class="sf-hint">Thêm một lớp bảo vệ: yêu cầu mã từ ứng dụng xác thực khi đăng nhập.</p>
+          <button type="button" class="btn btn-primary btn-sm" @click="begin2FASetup">Bật xác thực 2 bước</button>
+        </template>
+      </div>
+
+      <div class="settings-card card">
         <h2>Phiên đăng nhập</h2>
         <div v-if="sessionsLoading" class="sf-loading" role="status" aria-label="Đang tải phiên"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="sessions.length" class="sessions-list">
@@ -229,6 +265,20 @@
         <p v-if="hiddenSystemSessions" class="sf-hint session-system-note">
           Đã ẩn {{ hiddenSystemSessions }} phiên hệ thống để danh sách chỉ còn các phiên người dùng cần quản lý.
         </p>
+      </div>
+
+      <div v-if="twoFA.enabled" class="settings-card card">
+        <h2>Thiết bị tin cậy</h2>
+        <div v-if="trustedDevices.length" class="sessions-list">
+          <div v-for="d in trustedDevices" :key="d.id" class="session-item">
+            <div class="session-info">
+              <span class="session-ua">{{ d.device_name || 'Thiết bị' }}</span>
+              <span class="sf-hint">{{ d.ip }} &middot; {{ timeAgo(d.last_used_at) }}</span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm btn-danger-text" @click="removeTrustedDevice(d.id)">Xoá</button>
+          </div>
+        </div>
+        <p v-else class="sf-hint">Chưa có thiết bị tin cậy nào.</p>
       </div>
 
       <div class="settings-card card">
@@ -476,7 +526,7 @@ async function onTabKeydown(e: KeyboardEvent) {
 function lazyLoadTab(key: TabKey) {
   if (tabLoaded.has(key)) return
   tabLoaded.add(key)
-  if (key === 'bao-mat') { loadSessions(); loadLoginHistory() }
+  if (key === 'bao-mat') { loadSessions(); loadLoginHistory(); load2FAStatus(); loadTrustedDevices() }
   else if (key === 'rieng-tu') loadPrivacy()
   else if (key === 'chan') loadBlocked()
   else if (key === 'tat-tieng') loadMutedUsers()
@@ -719,6 +769,72 @@ async function loadLoginHistory() {
     loginHistory.value = res.history || []
   } catch { /* ignore */ }
   loginHistoryLoading.value = false
+}
+
+// ── 2FA ──
+const twoFA = ref<{ enabled: boolean; recovery_remaining: number }>({ enabled: false, recovery_remaining: 0 })
+const twoFALoading = ref(true)
+const setupData = ref<{ secret: string; otpauth_uri: string; qr: string } | null>(null)
+const setupCode = ref('')
+const recoveryCodes = ref<string[]>([])
+const disableCode = ref('')
+const trustedDevices = ref<any[]>([])
+
+async function load2FAStatus() {
+  twoFALoading.value = true
+  try {
+    twoFA.value = await $fetch('/auth/2fa/status', { headers: authHeaders() })
+  } catch { /* ignore */ }
+  twoFALoading.value = false
+}
+async function begin2FASetup() {
+  try { setupData.value = await $fetch('/auth/2fa/setup', { method: 'POST', headers: authHeaders() }) }
+  catch (e: unknown) { if (getStatusCode(e) === 401) { handleSessionExpired(); return } showToast(extractErrorMessage(e, 'Không thể bắt đầu thiết lập'), 'error') }
+}
+async function confirm2FASetup() {
+  try {
+    const res = await $fetch<{ recovery_codes: string[] }>('/auth/2fa/verify-setup', { method: 'POST', headers: authHeaders(), body: { code: setupCode.value } })
+    recoveryCodes.value = res.recovery_codes || []
+    setupData.value = null
+    setupCode.value = ''
+    showToast('Đã bật xác thực 2 bước', 'success')
+    await load2FAStatus()
+  } catch (e: unknown) { if (getStatusCode(e) === 401) { handleSessionExpired(); return } showToast(extractErrorMessage(e, 'Mã không đúng'), 'error') }
+}
+async function disable2FA() {
+  try {
+    await $fetch('/auth/2fa/disable', { method: 'POST', headers: authHeaders(), body: { code: disableCode.value } })
+    disableCode.value = ''
+    recoveryCodes.value = []
+    showToast('Đã tắt xác thực 2 bước', 'success')
+    await load2FAStatus()
+    await loadTrustedDevices()
+  } catch (e: unknown) { if (getStatusCode(e) === 401) { handleSessionExpired(); return } showToast(extractErrorMessage(e, 'Mã không đúng'), 'error') }
+}
+async function loadTrustedDevices() {
+  try {
+    const r = await $fetch<{ devices: any[] }>('/auth/trusted-devices', { headers: authHeaders() })
+    trustedDevices.value = r.devices || []
+  } catch { /* ignore */ }
+}
+async function removeTrustedDevice(id: string) {
+  try {
+    await $fetch(`/auth/trusted-devices/${encodeURIComponent(id)}`, { method: 'DELETE', headers: authHeaders() })
+    trustedDevices.value = trustedDevices.value.filter(d => d.id !== id)
+    showToast('Đã xoá thiết bị', 'success')
+  } catch (e: unknown) { if (getStatusCode(e) === 401) { handleSessionExpired(); return } showToast('Không thể xoá thiết bị', 'error') }
+}
+function copyRecoveryCodes() {
+  navigator.clipboard.writeText(recoveryCodes.value.join('\n')).then(() => showToast('Đã sao chép mã khôi phục', 'success')).catch(() => showToast('Không thể sao chép', 'error'))
+}
+function downloadRecoveryCodes() {
+  const blob = new Blob([recoveryCodes.value.join('\n')], { type: 'text/plain' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'vinhlong360-recovery-codes.txt'
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 const privacy = ref({ profile_visibility: 'public', show_activity: true, show_saved: true })
@@ -1071,6 +1187,10 @@ onUnmounted(() => {
 .session-ua { font-weight: 600; font-size: .9rem; }
 .session-badge { font-size: .75rem; font-weight: 600; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); padding: .15rem .5rem; border-radius: var(--radius-full); }
 .session-system-note { margin: .75rem 0 0; padding: .65rem .75rem; border-radius: var(--radius-md); background: var(--bg-alt); }
+.recovery-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-1); margin: var(--space-2) 0; }
+.recovery-list code { font-size: var(--text-sm); letter-spacing: 0.05em; }
+.rc-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.qr-img { display: block; margin: var(--space-2) 0; border-radius: var(--radius-sm); background: #fff; padding: var(--space-2); }
 .settings-danger { border-color: rgba(192,57,43,.2); border-left: 3px solid var(--error, #c0392b); }
 .danger-actions { display: flex; flex-direction: column; gap: .75rem; }
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
