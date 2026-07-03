@@ -334,6 +334,22 @@
       <p v-else class="sf-hint">Bạn chưa chặn ai.</p>
     </div>
 
+    <!-- Tab: Người tắt tiếng -->
+    <div v-if="activeTab === 'tat-tieng'" id="panel-tat-tieng" class="settings-card card" role="tabpanel" aria-labelledby="tab-tat-tieng">
+      <h2>Người bị tắt tiếng</h2>
+      <p class="sf-hint sf-hint-spaced">Bài viết và bình luận của người bị tắt tiếng sẽ ẩn khỏi bảng tin của bạn, nhưng họ vẫn có thể xem nội dung của bạn.</p>
+      <div v-if="mutedLoading" class="sf-hint">Đang tải...</div>
+      <div v-else-if="mutedUsers.length" class="sessions-list">
+        <div v-for="m in mutedUsers" :key="m.id" class="session-item">
+          <div class="session-info">
+            <NuxtLink :to="userPath(m.username || m.id)" class="session-ua">{{ m.display_name || 'Người dùng' }}</NuxtLink>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" @click="unmuteUser(m.id, m.display_name)">Bỏ tắt tiếng</button>
+        </div>
+      </div>
+      <p v-else class="sf-hint">Bạn chưa tắt tiếng ai.</p>
+    </div>
+
     <!-- Tab: Dữ liệu & pháp lý -->
     <div v-if="activeTab === 'du-lieu'" id="panel-du-lieu" class="settings-card card" role="tabpanel" aria-labelledby="tab-du-lieu">
       <h2>Dữ liệu & pháp lý</h2>
@@ -407,6 +423,7 @@ const TABS = [
   { key: 'giao-dien', label: 'Giao diện', icon: '🎨' },
   { key: 'rieng-tu', label: 'Riêng tư', icon: '🔒' },
   { key: 'chan', label: 'Chặn', icon: '\u{1F6AB}' },
+  { key: 'tat-tieng', label: 'Tắt tiếng', icon: '\u{1F507}' },
   { key: 'du-lieu', label: 'Dữ liệu', icon: '📋' },
   { key: 'nguy-hiem', label: 'Nguy hiểm', icon: '⚠️' },
 ] as const
@@ -452,6 +469,7 @@ function lazyLoadTab(key: TabKey) {
   if (key === 'bao-mat') { loadSessions(); loadLoginHistory() }
   else if (key === 'rieng-tu') loadPrivacy()
   else if (key === 'chan') loadBlocked()
+  else if (key === 'tat-tieng') loadMutedUsers()
   else if (key === 'thong-bao') loadNotifPrefs()
 }
 
@@ -734,6 +752,29 @@ async function unblockUser(id: string, name: string) {
   } catch (e: unknown) {
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể bỏ chặn', 'error')
+  }
+}
+
+const mutedUsers = ref<any[]>([])
+const mutedLoading = ref(true)
+
+async function loadMutedUsers() {
+  mutedLoading.value = true
+  try {
+    const res = await $fetch<{ muted: any[] }>('/api/muted-users', { headers: authHeaders() })
+    mutedUsers.value = res.muted || []
+  } catch { /* ignore */ }
+  mutedLoading.value = false
+}
+
+async function unmuteUser(id: string, name: string) {
+  try {
+    await $fetch(`/api/mute/${id}`, { method: 'POST', headers: { ...authHeaders(), 'x-csrf-token': csrf.value } })
+    mutedUsers.value = mutedUsers.value.filter(u => u.id !== id)
+    showToast(`Đã bỏ tắt tiếng ${name || 'người dùng'}`, 'success')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast('Không thể bỏ tắt tiếng', 'error')
   }
 }
 
