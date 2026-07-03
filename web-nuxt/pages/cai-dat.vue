@@ -982,7 +982,7 @@ onUnmounted(() => {
 .settings-page { max-width: 920px; margin: 0 auto; }
 .settings-title { font-size: 1.5rem; margin: 0 0 1rem; }
 .settings-overview {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: var(--space-3); margin-bottom: var(--space-5);
 }
 .settings-overview-item {
