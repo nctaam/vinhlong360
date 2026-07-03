@@ -495,6 +495,19 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
             )
         await asyncio.to_thread(_notify_follow)
 
+        # Thành tích tính cho người ĐƯỢC follow (target_id, số follower vừa
+        # tăng), không phải người bấm follow. Inline closure (không import
+        # social từ notifications) để tránh vòng import — social.py đã
+        # import từ notifications.py.
+        def _check_follow_achievements_bg(uid=target_id):
+            try:
+                from achievements import check_achievements
+                with db._conn() as conn:
+                    check_achievements(conn, uid, notify=True)
+            except Exception as e:  # noqa: BLE001
+                logger.warning("achievement check failed for %s: %s", uid, e)
+        asyncio.create_task(asyncio.to_thread(_check_follow_achievements_bg))
+
     return {"following": following}
 
 

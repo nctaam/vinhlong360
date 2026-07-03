@@ -555,6 +555,15 @@ async def verify_otp(body: OTPVerify, request: Request):
     await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
     await asyncio.to_thread(_update_login_streak, str(user["id"]))
 
+    def _ach_bg(uid=str(user["id"])):
+        try:
+            from achievements import check_achievements
+            with db._conn() as conn:
+                check_achievements(conn, uid, notify=True)
+        except Exception:
+            pass
+    asyncio.create_task(asyncio.to_thread(_ach_bg))
+
     return {
         "success": True,
         "token": token,
@@ -653,6 +662,15 @@ async def login_password(body: PasswordLogin, request: Request):
 
     await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
     await asyncio.to_thread(_update_login_streak, str(user["id"]))
+
+    def _ach_bg(uid=str(user["id"])):
+        try:
+            from achievements import check_achievements
+            with db._conn() as conn:
+                check_achievements(conn, uid, notify=True)
+        except Exception:
+            pass
+    asyncio.create_task(asyncio.to_thread(_ach_bg))
 
     return {
         "success": True,
@@ -766,6 +784,17 @@ async def reset_password_otp(body: ResetPasswordOTP, request: Request, _csrf=Dep
 
     user = await asyncio.to_thread(_verify_and_reset)
     await asyncio.to_thread(_log_login, phone, "password_reset", True, request, str(user["id"]))
+    await asyncio.to_thread(_update_login_streak, str(user["id"]))
+
+    def _ach_bg(uid=str(user["id"])):
+        try:
+            from achievements import check_achievements
+            with db._conn() as conn:
+                check_achievements(conn, uid, notify=True)
+        except Exception:
+            pass
+    asyncio.create_task(asyncio.to_thread(_ach_bg))
+
     return {"success": True, "message": "Đã đặt lại mật khẩu. Vui lòng đăng nhập lại."}
 
 

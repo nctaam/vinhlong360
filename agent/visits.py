@@ -76,6 +76,20 @@ async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(r
                 ON CONFLICT (user_id, entity_id) DO UPDATE SET status = EXCLUDED.status, created_at = NOW()
             """, (str(user["id"]), body.entity_id, body.status))
     await asyncio.to_thread(_query)
+
+    if body.status == "visited":
+        # Fire-and-forget: chỉ tính thành tích khi thật sự "đã đi" (không
+        # phải "muốn đi"). Inline closure (không import social) để tránh
+        # phụ thuộc chéo module không cần thiết trong visits.py.
+        def _check_visit_achievements_bg(uid=str(user["id"])):
+            try:
+                from achievements import check_achievements
+                with db._conn() as conn:
+                    check_achievements(conn, uid, notify=True)
+            except Exception:
+                pass
+        asyncio.create_task(asyncio.to_thread(_check_visit_achievements_bg))
+
     return {"status": body.status}
 
 

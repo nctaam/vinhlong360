@@ -418,6 +418,7 @@ async def create_post(body: CreatePost, user=Depends(require_user), _csrf=Depend
                 except Exception:
                     logger.exception("Failed to notify repost to user %s", orig_author_id)
         await asyncio.to_thread(_notify_post)
+        asyncio.create_task(asyncio.to_thread(_check_achievements_bg, str(user["id"])))
 
     _invalidate_social_caches()
     result = _enrich_post(post, user)
@@ -580,6 +581,8 @@ async def publish_draft(draft_id: str, user=Depends(require_user), _csrf=Depends
 
     post = await asyncio.to_thread(_publish)
     log_moderation("post", str(post["id"]), mod_result["status"], mod_result, auto=True)
+    if mod_result["status"] == "approved":
+        asyncio.create_task(asyncio.to_thread(_check_achievements_bg, str(user["id"])))
     _invalidate_social_caches()
     return {"post": _enrich_post(post, user)}
 
@@ -2549,14 +2552,20 @@ async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(requi
             if str(d["user_id"]) != str(user["id"]):
                 raise HTTPException(403, "Chỉ người hỏi mới chọn được câu trả lời hay")
             if body.comment_id:
-                c = db._fetchone(conn, f"SELECT 1 FROM comments WHERE id::text = {ph} AND post_id::text = {ph}",
+                c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND post_id::text = {ph}",
                                  (body.comment_id, post_id))
                 if not c:
                     raise HTTPException(400, "Bình luận không thuộc bài này")
                 db._execute(conn, f"UPDATE posts SET best_answer_id = {ph}::uuid WHERE id::text = {ph}", (body.comment_id, post_id))
+                return str(db._row_to_dict(c)["user_id"])
             else:
                 db._execute(conn, f"UPDATE posts SET best_answer_id = NULL WHERE id::text = {ph}", (post_id,))
-    await asyncio.to_thread(_query)
+                return None
+    comment_author_id = await asyncio.to_thread(_query)
+    if body.comment_id and comment_author_id:
+        # Người được cộng thành tích là tác giả bình luận (người trả lời hữu
+        # ích), KHÔNG phải user["id"] (chủ bài viết đang chọn câu trả lời).
+        asyncio.create_task(asyncio.to_thread(_check_achievements_bg, comment_author_id))
     return {"best_answer_id": body.comment_id}
 
 
@@ -3476,6 +3485,20 @@ def _log_profile_view_threaded(viewer_id: str, viewed_id: str):
             _log_profile_view(conn, viewer_id, viewed_id)
     except Exception:
         logger.warning("Failed to log profile view %s -> %s", viewer_id, viewed_id, exc_info=True)
+
+
+def _check_achievements_bg(user_id: str):
+    """Fire-and-forget achievement check với thông báo. Nuốt lỗi để không
+    chặn hành động chính (giống _log_profile_view_threaded). Dùng qua
+    asyncio.create_task(asyncio.to_thread(_check_achievements_bg, user_id))
+    sau các hành động tính vào chỉ số thành tích (đăng bài, follow, best
+    answer, ghé thăm, đăng nhập)."""
+    try:
+        from achievements import check_achievements
+        with db._conn() as conn:
+            check_achievements(conn, user_id, notify=True)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("achievement check failed for %s: %s", user_id, e)
 
 
 @router.get("/users/{user_id}",

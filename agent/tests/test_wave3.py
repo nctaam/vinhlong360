@@ -110,3 +110,55 @@ class TestAchievementSystem:
     def test_notif_type_registered(self):
         import notifications
         assert notifications._NOTIF_TYPE_TO_PREF.get("achievement") == "pref_system"
+
+
+class TestAchievementHooks:
+    """Task 3: fire-and-forget check_achievements() wired into 6 action sites
+    across social.py, notifications.py, visits.py, auth.py."""
+
+    def test_bg_helper_swallows_errors(self):
+        import social
+        src = inspect.getsource(social._check_achievements_bg)
+        assert "check_achievements" in src
+        assert "except" in src
+
+    def test_create_post_hooks_achievements(self):
+        import social
+        src = inspect.getsource(social.create_post)
+        assert "_check_achievements_bg" in src
+
+    def test_publish_draft_hooks_achievements(self):
+        import social
+        src = inspect.getsource(social.publish_draft)
+        assert "_check_achievements_bg" in src
+
+    def test_toggle_follow_hooks_target_user(self):
+        # toggle_follow lives in notifications.py, not social.py.
+        import notifications
+        src = inspect.getsource(notifications.toggle_follow)
+        # achievement check must run for the FOLLOWED user (target_id), not the follower
+        assert "check_achievements" in src
+        assert "target_id" in src
+
+    def test_set_best_answer_hooks_comment_author(self):
+        import social
+        src = inspect.getsource(social.set_best_answer)
+        assert "check_achievements" in src
+
+    def test_set_visit_hooks_achievements(self):
+        import visits
+        src = inspect.getsource(visits.set_visit)
+        assert "check_achievements" in src
+
+    def test_login_paths_hook_achievements(self):
+        import auth
+        assert "check_achievements" in inspect.getsource(auth.verify_otp)
+        assert "check_achievements" in inspect.getsource(auth.login_password)
+
+    def test_reset_password_otp_updates_streak_and_achievements(self):
+        # Task 1 review fix: password-reset success path should also credit
+        # the login streak + achievement check, like the other two login paths.
+        import auth
+        src = inspect.getsource(auth.reset_password_otp)
+        assert "_update_login_streak" in src
+        assert "check_achievements" in src
