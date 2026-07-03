@@ -338,7 +338,7 @@
     <div v-if="activeTab === 'tat-tieng'" id="panel-tat-tieng" class="settings-card card" role="tabpanel" aria-labelledby="tab-tat-tieng">
       <h2>Người bị tắt tiếng</h2>
       <p class="sf-hint sf-hint-spaced">Bài viết và bình luận của người bị tắt tiếng sẽ ẩn khỏi bảng tin của bạn, nhưng họ vẫn có thể xem nội dung của bạn.</p>
-      <div v-if="mutedLoading" class="sf-hint">Đang tải...</div>
+      <div v-if="mutedLoading" class="sf-loading" role="status"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else-if="mutedUsers.length" class="sessions-list">
         <div v-for="m in mutedUsers" :key="m.id" class="session-item">
           <div class="session-info">
