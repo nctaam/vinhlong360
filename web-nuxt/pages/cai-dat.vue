@@ -27,6 +27,16 @@
         <strong>{{ sessionsSummary }}</strong>
         <NuxtLink to="#bao-mat" class="so-link" @click.prevent="setTab('bao-mat')">Quản lý</NuxtLink>
       </div>
+      <div class="settings-overview-item">
+        <span class="so-label">Thông báo</span>
+        <strong>{{ notifSummary }}</strong>
+        <NuxtLink to="#thong-bao" class="so-link" @click.prevent="setTab('thong-bao')">Tùy chỉnh</NuxtLink>
+      </div>
+      <div class="settings-overview-item">
+        <span class="so-label">Quyền riêng tư</span>
+        <strong>{{ privacySummary }}</strong>
+        <NuxtLink to="#rieng-tu" class="so-link" @click.prevent="setTab('rieng-tu')">Xem</NuxtLink>
+      </div>
     </div>
     <div class="settings-hash-anchors" aria-hidden="true">
       <span v-for="t in TABS" :id="t.key" :key="`anchor-${t.key}`"></span>
@@ -531,6 +541,10 @@ onMounted(async () => {
   }
   lazyLoadTab(activeTab.value)
   if (!user.value) return
+  // Pre-fetch notif prefs + privacy so the overview cards can show a summary
+  // immediately instead of only once those tabs are clicked.
+  lazyLoadTab('thong-bao')
+  lazyLoadTab('rieng-tu')
   try {
     const res = await $fetch<Record<string, any>>(`/api/users/${user.value.id}`, { headers: authHeaders() })
     const u = res?.user ?? res
@@ -719,6 +733,12 @@ async function loadPrivacy() {
   privacyLoading.value = false
 }
 
+const privacySummary = computed(() => {
+  if (!tabLoaded.has('rieng-tu')) return 'Chưa kiểm tra'
+  const labels: Record<string, string> = { public: 'Công khai', followers: 'Người theo dõi', private: 'Riêng tư' }
+  return labels[privacy.value.profile_visibility] || 'Công khai'
+})
+
 async function setPrivacy(key: string, value: any) {
   const prev = { ...privacy.value }
   ;(privacy.value as any)[key] = value
@@ -797,6 +817,13 @@ async function loadNotifPrefs() {
   } catch { /* defaults stay */ }
   notifPrefsLoading.value = false
 }
+
+const notifSummary = computed(() => {
+  if (!tabLoaded.has('thong-bao')) return 'Chưa kiểm tra'
+  const on = Object.values(notifPrefs.value).filter(v => v === true).length
+  const total = Object.keys(notifPrefs.value).length || 5
+  return `${on}/${total} loại bật`
+})
 
 async function toggleNotifPref(prefKey: string) {
   const prev = notifPrefs.value[prefKey] ?? false
