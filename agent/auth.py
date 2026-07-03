@@ -502,6 +502,13 @@ async def _finish_login(user: dict, phone: str, method: str, request: Request, r
     ip = get_client_ip(request)
     ua = request.headers.get("user-agent", "")[:500]
     await asyncio.to_thread(_create_session_atomic, str(user["id"]), _hash_token(token), ua, ip, expires.isoformat())
+    # ORDER MATTERS: this must run before the history-write call below — it
+    # queries for a PRIOR successful login with the same ip/ua. Running it
+    # after (or racing it via create_task) risks the just-written current-login
+    # row self-matching, so the alert would never fire. await = deterministic
+    # ordering, not a race. The helper swallows its own errors, so it can never
+    # block login regardless.
+    await asyncio.to_thread(_check_suspicious_login, str(user["id"]), ip, ua, user.get("display_name") or "")
     await asyncio.to_thread(_log_login, phone, method, True, request, str(user["id"]))
     await asyncio.to_thread(_update_login_streak, str(user["id"]))
     _set_session_cookie(response, request, token)
@@ -1297,6 +1304,40 @@ def _log_login(phone: str, method: str, success: bool, request: Request, user_id
             """, (user_id, _mask_phone(phone), method, success, ip, ua))
     except Exception as e:
         logger.warning("Failed to log login for %s: %s", _mask_phone(phone), e)
+
+
+def _check_suspicious_login(user_id: str, ip: str, ua: str, display_name: str = ""):
+    """Nếu IP+UA này chưa từng đăng nhập thành công (90 ngày) → thông báo bảo mật.
+    Fire-and-forget, nuốt lỗi (không bao giờ chặn đăng nhập). Cố ý KHÔNG gắn danh
+    tính 'người thực hiện' cho thông báo này (security_alert không có tác nhân xã
+    hội — nếu gắn sẽ vô tình kích hoạt lọc chặn/ẩn vốn chỉ dành cho thông báo xã hội).
+
+    QUAN TRỌNG về thứ tự gọi: hàm này phải chạy TRƯỚC bước ghi lịch sử đăng nhập
+    hiện tại — nếu không, truy vấn bên dưới sẽ tự khớp với chính hàng vừa ghi
+    (cùng ip/ua) và cảnh báo sẽ không bao giờ kích hoạt."""
+    try:
+        ph = db._ph
+        with db._conn() as conn:
+            seen = db._fetchone(conn, f"""
+                SELECT 1 FROM login_history
+                WHERE user_id = {ph}::uuid AND success = TRUE
+                  AND (ip = {ph} OR user_agent = {ph})
+                  AND created_at > NOW() - INTERVAL '90 days'
+                LIMIT 1
+            """, (user_id, ip, ua))
+        if seen:
+            return  # thiết bị/mạng đã biết
+        from notifications import create_notification
+        device = _short_ua(ua)
+        create_notification(
+            user_id=user_id,
+            notif_type="security_alert",
+            title="🔐 Đăng nhập mới",
+            body=f"Đăng nhập mới từ {device} (IP {_mask_ip(ip)}). Nếu không phải bạn, hãy đổi mật khẩu ngay.",
+            ref_type="login_history",
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("suspicious-login check failed for %s: %s", user_id, e)
 
 
 def _update_login_streak(user_id: str) -> int:

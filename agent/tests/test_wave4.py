@@ -186,3 +186,45 @@ class TestTrustedDevices:
 
     def test_trusted_cleanup_registered(self):
         assert "trusted_devices" in inspect.getsource(auth.cleanup_expired_data)
+
+
+class TestSuspiciousLogin:
+    def test_helper_exists_and_queries_history(self):
+        src = inspect.getsource(auth._check_suspicious_login)
+        assert "login_history" in src
+        assert "create_notification" in src
+        assert "security_alert" in src
+
+    def test_helper_swallows_errors(self):
+        src = inspect.getsource(auth._check_suspicious_login)
+        assert "except" in src
+
+    def test_no_actor_id_passed(self):
+        # security_alert must NOT pass actor_id (no social actor)
+        src = inspect.getsource(auth._check_suspicious_login)
+        assert "actor_id" not in src
+
+    def test_hooked_in_finish_login(self):
+        # single hook site: _finish_login (covers direct logins + post-2FA logins)
+        assert "_check_suspicious_login" in inspect.getsource(auth._finish_login)
+
+    def test_not_mapped_in_notif_prefs(self):
+        # security_alert must stay unmapped in _NOTIF_TYPE_TO_PREF so it is
+        # always delivered (non-suppressible) — see notifications._user_wants_notif.
+        import notifications
+        assert "security_alert" not in notifications._NOTIF_TYPE_TO_PREF
+
+    def test_check_runs_before_log_login_in_finish_login(self):
+        # Ordering guard: _log_login (which INSERTS the current login row) must
+        # not have already run by the time _check_suspicious_login's query would
+        # see it, otherwise the current row always self-matches and the alert
+        # never fires. Concretely: _check_suspicious_login must be scheduled
+        # BEFORE the _log_login call in _finish_login's source order.
+        src = inspect.getsource(auth._finish_login)
+        check_idx = src.index("_check_suspicious_login")
+        log_idx = src.index("_log_login")
+        assert check_idx < log_idx, (
+            "_check_suspicious_login must be launched before _log_login runs, "
+            "else the just-inserted current-login row self-matches and the "
+            "suspicious-login alert can never fire"
+        )
