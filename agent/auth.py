@@ -1706,11 +1706,22 @@ async def twofa_verify(body: _TwoFAVerify, request: Request, response: Response)
     if not user:
         raise HTTPException(400, "Không tìm thấy tài khoản")
 
-    def _consume():
+    # Điểm tiêu thụ nguyên tử: DELETE...RETURNING là nơi DUY NHẤT quyết định ai
+    # thắng cuộc đua. _load_challenge() (FOR UPDATE SKIP LOCKED) đã COMMIT và
+    # nhả khoá hàng trước khi _check() chạy trên connection khác, nên hai request
+    # đồng thời cùng challenge_id/mã hợp lệ đều có thể lọt qua _load_challenge +
+    # _check. Postgres tự khoá hàng theo thứ tự cho DELETE: chỉ một request nhận
+    # được hàng qua RETURNING (rowcount=1), request còn lại nhận 0 hàng → phải
+    # dừng TRƯỚC _finish_login để không tạo hai session từ một challenge dùng-một-lần.
+    def _consume() -> bool:
         ph = db._ph
         with db._conn() as conn:
-            db._execute(conn, f"DELETE FROM pending_2fa WHERE id = {ph}", (challenge["id"],))
-    await asyncio.to_thread(_consume)
+            row = db._fetchone(conn, f"DELETE FROM pending_2fa WHERE id = {ph} RETURNING id", (challenge["id"],))
+            return bool(row)
+    consumed = await asyncio.to_thread(_consume)
+    if not consumed:
+        # Request khác đã tiêu thụ challenge này trước (race) — KHÔNG tạo session.
+        raise HTTPException(400, "Phiên xác thực không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.")
 
     # body.remember_device: CHẤP NHẬN nhưng CHƯA xử lý ở Task 3 — Task 4 sẽ gọi
     # _remember_trusted_device ở đây (ghi trusted_devices + set cookie thiết bị tin cậy).

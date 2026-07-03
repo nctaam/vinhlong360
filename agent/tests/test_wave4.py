@@ -142,3 +142,18 @@ class TestTwoFactorLoginGate:
 
     def test_pending_2fa_cleanup_registered(self):
         assert "pending_2fa" in inspect.getsource(auth.cleanup_expired_data)
+
+    def test_consume_is_atomic_delete_returning(self):
+        # Race-condition fix: the DELETE must be the single atomic consumption
+        # point (DELETE ... RETURNING), and its result must gate _finish_login —
+        # otherwise two concurrent requests with the same challenge_id + valid
+        # code could both pass _load_challenge/_check and each create a session
+        # from one single-use challenge.
+        src = inspect.getsource(auth.twofa_verify)
+        assert "RETURNING" in src
+        assert "DELETE FROM pending_2fa" in src
+        assert "_finish_login" in src
+        # _finish_login must be reachable only after the consume result is checked.
+        consume_idx = src.index("_consume")
+        finish_idx = src.rindex("_finish_login")
+        assert consume_idx < finish_idx
