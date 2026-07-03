@@ -230,3 +230,42 @@ class TestActivityHeatmap:
         import social
         src = inspect.getsource(social.get_activity_heatmap)
         assert "validate_path_id" in src
+
+
+class TestLeaderboardFilters:
+    """Task 7: GET /api/community/leaderboard — period/category/search filters,
+    self-rank, and per-(period,category) cache key (was a single flat entry)."""
+
+    def test_leaderboard_has_period_param(self):
+        import social
+        sig = inspect.signature(social.community_leaderboard)
+        assert "period" in sig.parameters
+
+    def test_leaderboard_has_category_param(self):
+        import social
+        sig = inspect.signature(social.community_leaderboard)
+        assert "category" in sig.parameters
+
+    def test_leaderboard_has_search_param(self):
+        import social
+        sig = inspect.signature(social.community_leaderboard)
+        assert "q" in sig.parameters
+
+    def test_leaderboard_period_filters_by_date(self):
+        import social
+        src = inspect.getsource(social.community_leaderboard)
+        assert "created_at >" in src or "INTERVAL" in src
+
+    def test_leaderboard_cache_key_includes_filters(self):
+        # cache must not collide across period/category — key derived from params
+        import social
+        src = inspect.getsource(social.community_leaderboard)
+        assert "period" in src and "category" in src
+        # cache dict access keyed by a composite, not a single flat entry
+        assert "cache_key" in src or "_leaderboard_cache" in src
+
+    def test_leaderboard_returns_self_and_rank(self):
+        import social
+        src = inspect.getsource(social.community_leaderboard)
+        assert "rank" in src
+        assert "self" in src

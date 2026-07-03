@@ -28,6 +28,7 @@ from moderation import moderate_content, moderate_content_enhanced, log_moderati
 from notifications import create_notification
 from storage import storage
 from ratelimit import check_rate, check_rate_ip
+from text_utils import normalize_name
 
 logger = logging.getLogger("social")
 
@@ -1561,7 +1562,7 @@ _leaderboard_lock = asyncio.Lock()
 
 def _invalidate_social_caches():
     _trending_cache["ts"] = 0.0
-    _leaderboard_cache["ts"] = 0.0
+    _leaderboard_cache.clear()
 
 _TRENDING_PERIOD_DAYS = {"7d": 7, "14d": 14, "30d": 30, "90d": 90}
 
@@ -1702,28 +1703,36 @@ async def hashtag_posts(
     posts = [_format_post(p) for p in posts]
     return {"tag": tag, "posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
+_leaderboard_cache: dict = {}  # cache_key -> {"ts": float, "data": [...]}
+_LEADERBOARD_PERIOD_DAYS = {"7d": 7, "30d": 30}
+_LEADERBOARD_SORT_KEY = {"posts": "posts", "reviews": "reviews", "photos": "photos", "total": "points"}
 
-_leaderboard_cache: dict = {"ts": 0.0, "data": None}
+def _leaderboard_fresh(cache_key: str):
+    import time as _t
+    c = _leaderboard_cache.get(cache_key)
+    return c if c and _t.time() - c["ts"] < _cfg.TRENDING_CACHE_TTL else None
 
 @router.get("/community/leaderboard",
             summary="Get community leaderboard",
-            description="Ranked list of top contributors by reputation points (reviews, posts, photos, followers, places, likes). Anti-inflation scoring with diminishing returns.")
-async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depends(get_current_user)):
+            description="Ranked list of top contributors by reputation points. Anti-inflation scoring with diminishing returns. Supports period/category filters, search, self-rank.")
+async def community_leaderboard(limit: int = Query(10, ge=1, le=50), period: str = Query("all", pattern="^(7d|30d|all)$"), category: str = Query("total", pattern="^(posts|reviews|photos|total)$"), q: str = Query("", max_length=100), user=Depends(get_current_user)):
     """Bảng xếp hạng: thành viên tích cực theo điểm danh-tiếng (1 query gộp)."""
-    import time as _t
-    now = _t.time()
     ph = db._ph
     bc, bc_p = _block_sql(user)
     mc, mc_p = _mute_sql(user)
-    has_personal_filter = bool(bc or mc)
-    if not has_personal_filter and _leaderboard_cache["data"] is not None and now - _leaderboard_cache["ts"] < _cfg.TRENDING_CACHE_TTL:
-        return {"leaders": _leaderboard_cache["data"][:limit]}
+    q = q.strip()
+    cache_key = f"{period}:{category}"
+    has_personal_filter = bool(bc or mc) or bool(q)
+    if not has_personal_filter and (c := _leaderboard_fresh(cache_key)):
+        return _self_ranked_result(c["data"], limit, user)
 
     async with _leaderboard_lock:
-        # Re-check after acquiring lock
-        now = _t.time()
-        if not has_personal_filter and _leaderboard_cache["data"] is not None and now - _leaderboard_cache["ts"] < _cfg.TRENDING_CACHE_TTL:
-            return {"leaders": _leaderboard_cache["data"][:limit]}
+        if not has_personal_filter and (c := _leaderboard_fresh(cache_key)):
+            return _self_ranked_result(c["data"], limit, user)
+        import time as _t
+        pdays = _LEADERBOARD_PERIOD_DAYS.get(period)
+        period_clause = f"AND p.created_at > NOW() - CAST({ph} AS INTERVAL)" if pdays else ""
+        period_p = [f"{pdays} days"] if pdays else []
 
         def _query():
             with db._conn() as conn:
@@ -1738,6 +1747,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                            COALESCE(SUM(p.like_count), 0) AS likes
                     FROM users u
                     LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                                          {period_clause}
                     LEFT JOIN (SELECT f.target_id, COUNT(*) c FROM follows f
                                  JOIN users fu ON fu.id = f.follower_id
                                  WHERE f.target_type='user'
@@ -1749,7 +1759,7 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                     GROUP BY u.id, u.display_name, u.avatar_url, u.username, fc.c
                     HAVING COUNT(p.id) > 0
                     LIMIT 500
-                """, tuple([*bc_p, *mc_p]))
+                """, tuple([*period_p, *bc_p, *mc_p]))
         rows = await asyncio.to_thread(_query)
 
         leaders = []
@@ -1769,13 +1779,28 @@ async def community_leaderboard(limit: int = Query(10, ge=1, le=50), user=Depend
                 "id": str(d["id"]), "display_name": d["display_name"], "avatar_url": d.get("avatar_url"),
                 "username": d.get("username"),
                 "points": points, "level": level, "level_label": label,
-                "posts": posts, "reviews": reviews,
+                "posts": posts, "reviews": reviews, "photos": photos,
             })
-        leaders.sort(key=lambda x: x["points"], reverse=True)
+        sort_key = _LEADERBOARD_SORT_KEY.get(category, "points")
+        leaders.sort(key=lambda x: x.get(sort_key, x["points"]), reverse=True)
         if not has_personal_filter:
-            _leaderboard_cache["ts"] = _t.time()
-            _leaderboard_cache["data"] = leaders
-        return {"leaders": leaders[:limit]}
+            _leaderboard_cache[cache_key] = {"ts": _t.time(), "data": leaders}
+
+        if q:
+            needle = normalize_name(q)
+            leaders = [ld for ld in leaders if needle in normalize_name(ld["display_name"] or "")]
+        return _self_ranked_result(leaders, limit, user)
+
+
+def _self_ranked_result(leaders: list, limit: int, user: dict | None) -> dict:
+    """Gán rank 1-based trên TOÀN BỘ danh-sách đã sort, rồi cắt top-N để hiển-thị
+    và tìm entry đầy-đủ của chính user (kể cả khi ngoài top-N) cho phần self."""
+    ranked = [{**ld, "rank": i + 1} for i, ld in enumerate(leaders)]
+    self_entry = None
+    if user:
+        uid = str(user["id"])
+        self_entry = next((ld for ld in ranked if ld["id"] == uid), None)
+    return {"leaders": ranked[:limit], "self": self_entry}
 
 
 @router.get("/users/{user_id}/following",
