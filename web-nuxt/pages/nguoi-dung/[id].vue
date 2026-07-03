@@ -110,6 +110,28 @@
         </div>
       </div>
 
+      <div v-if="isSelf && Object.keys(userStats).length" class="profile-analytics card reveal">
+        <h3 class="pa-title">Tổng quan hoạt động</h3>
+        <div class="pa-grid">
+          <div class="pa-stat">
+            <strong>{{ userStats.likes_received || 0 }}</strong>
+            <span>lượt thích nhận</span>
+          </div>
+          <div class="pa-stat">
+            <strong>{{ userStats.reactions_received || 0 }}</strong>
+            <span>reactions nhận</span>
+          </div>
+          <div class="pa-stat">
+            <strong>{{ userStats.entities_reviewed || 0 }}</strong>
+            <span>nơi đã đánh giá</span>
+          </div>
+          <div class="pa-stat">
+            <strong>{{ userStats.collections || 0 }}</strong>
+            <span>danh sách</span>
+          </div>
+        </div>
+      </div>
+
       <div v-if="profile.is_private" class="profile-private-notice">
         <p>🔒 Hồ sơ riêng tư — theo dõi để xem nội dung.</p>
       </div>
@@ -546,6 +568,18 @@ async function checkFollowing() {
   } catch { /* non-critical */ }
 }
 
+// ── Thống kê hoạt động (chỉ hồ sơ của mình) ──
+const userStats = ref<Record<string, number>>({})
+const statsLoading = ref(false)
+async function loadUserStats() {
+  if (!isSelf.value) return
+  statsLoading.value = true
+  try {
+    userStats.value = await $fetch<Record<string, number>>('/api/me/stats', { headers: authHeaders() })
+  } catch { /* non-critical */ }
+  statsLoading.value = false
+}
+
 function setProfileTab(next: ProfileTab) {
   tab.value = normalizeVisibleProfileTab(next)
 }
@@ -695,6 +729,7 @@ onMounted(() => {
   fetchPosts()
   checkFollowing()
   checkBlocked()
+  if (isSelf.value) loadUserStats()
   if (tab.value === 'collections' && isSelf.value) fetchCollections()
 })
 
@@ -894,4 +929,11 @@ useSeoMeta({
 @keyframes pc-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
 .pc-hint { font-size: .72rem; color: var(--muted); padding: 2px 8px; border: 1px solid var(--border-input); border-radius: var(--radius-full); }
+
+.profile-analytics { padding: var(--space-4); margin-bottom: var(--space-4); }
+.pa-title { font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: var(--space-3); }
+.pa-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); text-align: center; }
+.pa-stat strong { display: block; font-size: 1.25rem; color: var(--ink); }
+.pa-stat span { font-size: .75rem; color: var(--muted); }
+@media (max-width: 520px) { .pa-grid { grid-template-columns: repeat(2, 1fr); } }
 </style>
