@@ -1,19 +1,20 @@
 <template>
   <article class="thread-post" :class="{ 'has-replies': hasReplies }">
     <div class="thread-left">
-      <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.username || post.user_id}`" class="thread-avatar-link">
-        <span v-if="post.avatar" class="avatar thread-avatar">
-          <img :src="post.avatar" :alt="post.display_name" loading="lazy" decoding="async" width="40" height="40" @error="(e) => ((e.target as HTMLImageElement).style.display = 'none')" />
+      <NuxtLink v-if="post.user_id" :to="userPath(post.username || post.user_id)" class="thread-avatar-link">
+        <span class="avatar thread-avatar">
+          <AvatarPlaceholder :src="post.avatar" :initial="authorInitial" :alt="post.display_name" />
         </span>
-        <span v-else class="avatar thread-avatar">{{ authorInitial }}</span>
       </NuxtLink>
-      <span v-else class="avatar thread-avatar">{{ authorInitial }}</span>
+      <span v-else class="avatar thread-avatar">
+        <AvatarPlaceholder :initial="authorInitial" />
+      </span>
       <div v-if="hasReplies" class="thread-line"></div>
     </div>
 
     <div class="thread-right">
       <div class="thread-head">
-        <NuxtLink v-if="post.user_id" :to="`/nguoi-dung/${post.username || post.user_id}`" class="thread-author">
+        <NuxtLink v-if="post.user_id" :to="userPath(post.username || post.user_id)" class="thread-author">
           {{ post.display_name || post.phone || 'Người dùng' }}
         </NuxtLink>
         <span v-else class="thread-author">{{ post.display_name || 'Người dùng' }}</span>
@@ -34,7 +35,7 @@
         <span v-if="post.post_type && post.post_type !== 'share'" :class="['thread-type-badge', `type-${post.post_type}`]">
           {{ typeLabel }}
         </span>
-        <NuxtLink v-if="post.entity_id" :to="`/dia-diem/${post.entity_id}`" class="thread-entity">
+        <NuxtLink v-if="post.entity_id" :to="entityPath(post.entity_id)" class="thread-entity">
           {{ post.entity_name || post.entity_id }}
         </NuxtLink>
       </div>
@@ -50,7 +51,7 @@
         </button>
       </div>
 
-      <NuxtLink v-if="post.repost" :to="`/bai-viet/${post.repost.id}`" class="thread-repost-embed">
+      <NuxtLink v-if="post.repost" :to="postPath(post.repost.id)" class="thread-repost-embed">
         <template v-if="post.repost.content">
           <span class="tre-head">🔁 <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
           <span class="tre-content">{{ post.repost.content }}</span>
@@ -98,7 +99,7 @@
         </button>
       </div>
 
-      <NuxtLink v-if="post.comments_count" :to="`/bai-viet/${post.id}`" class="thread-reply-hint">
+      <NuxtLink v-if="post.comments_count" :to="postPath(post.id)" class="thread-reply-hint">
         {{ post.comments_count }} bình luận
       </NuxtLink>
     </div>
@@ -188,8 +189,10 @@ function onLike() {
   }
 }
 
-function onImgError(e: Event) {
-  const el = e.target as HTMLImageElement
+function onImgError(e: Event | string) {
+  if (typeof e === 'string') return
+  const el = e.target as HTMLImageElement | null
+  if (!el) return
   el.style.opacity = '.15'
   el.alt = 'Không tải được ảnh'
 }
@@ -204,7 +207,7 @@ async function confirmDelete() {
 }
 
 async function sharePost() {
-  const url = `${window.location.origin}/bai-viet/${props.post.id}`
+  const url = `${window.location.origin}${postPath(props.post.id)}`
   const text = props.post.content?.slice(0, 100) || 'Bài viết từ cộng đồng vinhlong360'
   if (navigator.share) {
     try { await navigator.share({ title: 'vinhlong360', text, url }) } catch {}
@@ -223,7 +226,11 @@ const authorInitial = computed(() => {
   return name.charAt(0).toUpperCase()
 })
 
-const allImages = computed(() => props.post?.images || [])
+const allImages = computed<string[]>(() =>
+  Array.isArray(props.post?.images)
+    ? props.post.images.filter((src: unknown): src is string => typeof src === 'string' && src.length > 0)
+    : []
+)
 const displayImages = computed(() => allImages.value.slice(0, 4))
 const extraCount = computed(() => Math.max(0, allImages.value.length - 4))
 
@@ -237,7 +244,7 @@ const imgLayoutClass = computed(() => {
 
 const lbOpen = ref(false)
 const lbIdx = ref(0)
-const lbEl = ref<HTMLElement>()
+const lbEl = ref<HTMLElement | null>(null)
 
 function openLightbox(i: number) {
   lbIdx.value = i
@@ -262,13 +269,17 @@ const lbDragStyle = computed(() => {
 })
 
 function onLbTouchStart(e: TouchEvent) {
-  lbTouchX.value = e.touches[0].clientX
+  const touch = e.touches[0]
+  if (!touch) return
+  lbTouchX.value = touch.clientX
   lbTouchDX.value = 0
   lbSwiping.value = true
 }
 function onLbTouchMove(e: TouchEvent) {
   if (!lbSwiping.value) return
-  lbTouchDX.value = e.touches[0].clientX - lbTouchX.value
+  const touch = e.touches[0]
+  if (!touch) return
+  lbTouchDX.value = touch.clientX - lbTouchX.value
 }
 function onLbTouchEnd() {
   if (Math.abs(lbTouchDX.value) > 80) {
