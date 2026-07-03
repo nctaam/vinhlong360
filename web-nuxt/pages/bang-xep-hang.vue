@@ -6,6 +6,17 @@
       <p>Xếp hạng theo điểm danh tiếng — đánh giá, bài viết, ảnh và lượt theo dõi. <NuxtLink to="/huong-dan-thanh-vien" class="bxh-guide-link">Cách tính điểm?</NuxtLink></p>
     </header>
 
+    <div class="bxh-filters">
+      <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm thành viên…" aria-label="Tìm thành viên" class="bxh-search" />
+      <FilterChips :filters="periodFilters" :model-value="[period]" single-select
+        @update:model-value="v => period = ((v[0] as any) || 'all')" />
+      <FilterChips :filters="categoryFilters" :model-value="[category]" single-select
+        @update:model-value="v => category = ((v[0] as any) || 'total')" />
+    </div>
+    <div v-if="selfEntry" class="bxh-self">
+      Hạng của bạn: <strong>#{{ selfEntry.rank }}</strong> · {{ selfEntry.points }} điểm
+    </div>
+
     <SkeletonList v-if="pending" :count="6" />
 
     <EmptyState
@@ -29,7 +40,7 @@
     </EmptyState>
 
     <ol v-else class="bxh-list">
-      <li v-for="(m, i) in leaders" :key="m.id" class="bxh-item">
+      <li v-for="(m, i) in leaders" :key="m.id" class="bxh-item" :class="{ 'is-self': m.id === currentUser?.id }">
         <NuxtLink :to="`/nguoi-dung/${m.username || m.id}`" class="bxh-row">
           <span class="bxh-rank" :class="`bxh-rank-${i + 1}`">{{ i + 1 }}</span>
           <span class="avatar bxh-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
@@ -49,9 +60,33 @@
 
 <script setup lang="ts">
 const fetchFailed = ref(false)
-const { data, pending } = await useAsyncData('leaderboard',
-  () => apiFetch<any>('/api/community/leaderboard?limit=50').catch(() => { fetchFailed.value = true; return { leaders: [] } }))
+const period = ref<'7d' | '30d' | 'all'>('all')
+const category = ref<'total' | 'posts' | 'reviews' | 'photos'>('total')
+const q = ref('')
+const { user: currentUser } = useAuth()
+
+const periodFilters = [
+  { key: 'all', label: 'Tất cả' },
+  { key: '30d', label: 'Tháng này' },
+  { key: '7d', label: 'Tuần này' },
+]
+const categoryFilters = [
+  { key: 'total', label: 'Tổng hợp' },
+  { key: 'reviews', label: 'Đánh giá' },
+  { key: 'posts', label: 'Bài viết' },
+  { key: 'photos', label: 'Ảnh' },
+]
+
+const { data, pending, refresh } = await useAsyncData('leaderboard',
+  () => apiFetch<any>(`/api/community/leaderboard?limit=50&period=${period.value}&category=${category.value}&q=${encodeURIComponent(q.value)}`)
+    .catch(() => { fetchFailed.value = true; return { leaders: [], self: null } }),
+  { watch: [period, category] })
+
+const { debounced: debouncedRefresh } = useDebounce(() => refresh(), 350)
+watch(q, () => debouncedRefresh())
+
 const leaders = computed(() => data.value?.leaders || [])
+const selfEntry = computed(() => data.value?.self || null)
 
 useSeoMeta({
   title: 'Thành viên tích cực — Bảng xếp hạng — vinhlong360',
@@ -83,7 +118,11 @@ useHead({
 .bxh-head p { color: var(--muted); margin: 0; }
 .bxh-guide-link { color: var(--primary-fg); font-weight: var(--weight-medium); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 2px; transition: text-decoration-color .2s; }
 .bxh-guide-link:hover { text-decoration-color: var(--primary-fg); }
+.bxh-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
+.bxh-search { flex: 1 1 200px; padding: var(--space-2) var(--space-3); border: 1px solid var(--border-input); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); }
+.bxh-self { padding: var(--space-2) var(--space-3); background: color-mix(in srgb, var(--primary) 8%, transparent); border-radius: var(--radius-sm); margin-bottom: var(--space-2); font-size: var(--text-sm); }
 .bxh-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.bxh-list li.is-self .bxh-row { outline: 2px solid var(--primary); outline-offset: -1px; }
 .bxh-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); min-height: 56px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
 .bxh-row:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
 .bxh-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
