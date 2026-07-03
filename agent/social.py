@@ -3575,13 +3575,16 @@ async def get_user_timeline(
     user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
     offset = (page - 1) * limit
+    viewer_id = str(user["id"]) if user else None
 
     def _query():
         with db._conn() as conn:
             # Không có cột users.is_private — độ hiển thị hồ sơ nằm ở
-            # user_privacy.profile_visibility (giống get_user_profile).
+            # user_privacy.profile_visibility (3 tier: public/followers/private,
+            # giống get_user_profile). Lấy giá trị thô thay vì rút gọn thành bool
+            # để còn phân biệt được tier 'followers'.
             target = db._fetchone(conn, f"""
-                SELECT u.id, COALESCE(pv.profile_visibility, 'public') = 'private' AS is_private
+                SELECT u.id, COALESCE(pv.profile_visibility, 'public') AS profile_visibility
                 FROM users u
                 LEFT JOIN user_privacy pv ON pv.user_id = u.id
                 WHERE u.id::text = {ph} AND u.is_active = TRUE AND u.deleted_at IS NULL
@@ -3589,9 +3592,43 @@ async def get_user_timeline(
             if not target:
                 return None, 0
             target = db._row_to_dict(target)
-            is_self = user and str(user["id"]) == str(target["id"])
-            if target.get("is_private") and not is_self:
+            resolved_id = str(target["id"])
+            is_self = bool(viewer_id) and viewer_id == resolved_id
+            is_private = target.get("profile_visibility") == "private"
+
+            if not is_self and viewer_id:
+                # Chặn 2 chiều — mirror get_user_profile (dòng ~3350-3357): SQL
+                # text 2 nhánh OR trông giống hệt nhau nhưng param bind khác vị trí
+                # (viewer_id, resolved_id, resolved_id, viewer_id) nên vẫn đúng
+                # 2 chiều (viewer chặn target HOẶC target chặn viewer).
+                is_blocked = db._fetchone(conn, f"""
+                    SELECT 1 FROM blocks
+                    WHERE (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                       OR (blocker_id = {ph}::uuid AND blocked_id = {ph}::uuid)
+                """, (viewer_id, resolved_id, resolved_id, viewer_id))
+                if is_blocked:
+                    return [], 0
+
+            if is_private and not is_self:
                 return [], 0
+
+            is_follower = False
+            if not is_self and target.get("profile_visibility") == "followers" and viewer_id:
+                frow = db._fetchone(conn, f"""
+                    SELECT 1 FROM follows
+                    WHERE follower_id = {ph}::uuid AND target_type = 'user' AND target_id = {ph}
+                """, (viewer_id, resolved_id))
+                is_follower = frow is not None
+            if target.get("profile_visibility") == "followers" and not is_self and not is_follower:
+                return [], 0
+
+            if not is_self:
+                privacy_hidden = _check_show_activity(resolved_id, viewer_id)
+                if privacy_hidden:
+                    return [], 0
+
+            bc, bc_p = _block_sql(user, "p.user_id")
+            mc, mc_p = _mute_sql(user, "p.user_id")
 
             timeline_sql = f"""
                 (SELECT 'post' AS type, p.created_at, p.id::text AS ref_id,
@@ -3601,7 +3638,7 @@ async def get_user_timeline(
                  FROM posts p
                  LEFT JOIN entities e ON e.id = p.entity_id
                  WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
-                       AND p.deleted_at IS NULL AND p.post_type != 'review')
+                       AND p.deleted_at IS NULL AND p.post_type != 'review' {bc} {mc})
                 UNION ALL
                 (SELECT 'review' AS type, p.created_at, p.id::text AS ref_id,
                         LEFT(p.content, 200) AS content, p.post_type,
@@ -3610,7 +3647,7 @@ async def get_user_timeline(
                  FROM posts p
                  LEFT JOIN entities e ON e.id = p.entity_id
                  WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
-                       AND p.deleted_at IS NULL AND p.post_type = 'review')
+                       AND p.deleted_at IS NULL AND p.post_type = 'review' {bc} {mc})
                 UNION ALL
                 (SELECT 'follow' AS type, f.created_at, f.target_id AS ref_id,
                         NULL AS content, NULL AS post_type,
@@ -3623,7 +3660,7 @@ async def get_user_timeline(
                 ORDER BY created_at DESC
                 LIMIT {ph} OFFSET {ph}
             """
-            params = (user_id, user_id, user_id, limit, offset)
+            params = (user_id, *bc_p, *mc_p, user_id, *bc_p, *mc_p, user_id, limit, offset)
             rows = db._fetchall(conn, timeline_sql, params)
 
             count_sql = f"""
