@@ -59,6 +59,20 @@
             {{ b.icon }} {{ b.label }}
           </span>
         </div>
+        <details v-if="isSelf && badgeProgress.length" class="badge-showcase" open>
+          <summary class="bs-title">Thành tích ({{ earnedBadgeCount }}/{{ badgeProgress.length }})</summary>
+          <div class="bs-grid">
+            <div v-for="b in badgeProgress" :key="b.id" :class="['bs-card', { earned: b.earned }]">
+              <span class="bs-icon" aria-hidden="true">{{ b.icon }}</span>
+              <span class="bs-label">{{ b.label }}</span>
+              <div v-if="!b.earned" class="bs-progress">
+                <div class="bs-bar"><div class="bs-fill" :style="{ width: Math.min(100, (b.current / b.target) * 100) + '%' }"></div></div>
+                <span class="bs-hint">{{ b.hint || `${b.current}/${b.target}` }}</span>
+              </div>
+              <span v-else class="bs-earned-label">Đã đạt</span>
+            </div>
+          </div>
+        </details>
         <div class="profile-stats">
           <template v-if="!profile.is_private || isSelf">
             <div class="stat-item">
@@ -652,6 +666,19 @@ async function loadUserStats() {
   statsLoading.value = false
 }
 
+// ── Huy hiệu + tiến độ (chỉ hồ sơ của mình) ──
+type BadgeProgress = { id: string; label: string; icon: string; earned: boolean; current: number; target: number; hint?: string }
+const badgeProgress = ref<BadgeProgress[]>([])
+const earnedBadgeCount = computed(() => badgeProgress.value.filter(b => b.earned).length)
+
+async function loadBadgeProgress() {
+  if (!isSelf.value) return
+  try {
+    const res = await $fetch<{ badges: BadgeProgress[] }>('/api/me/badge-progress', { headers: authHeaders() })
+    badgeProgress.value = res.badges || []
+  } catch { /* non-critical */ }
+}
+
 function setProfileTab(next: ProfileTab) {
   tab.value = normalizeVisibleProfileTab(next)
 }
@@ -801,7 +828,7 @@ onMounted(() => {
   fetchPosts()
   checkFollowing()
   checkBlocked()
-  if (isSelf.value) loadUserStats()
+  if (isSelf.value) { loadUserStats(); loadBadgeProgress() }
   if (tab.value === 'collections' && isSelf.value) fetchCollections()
 })
 
@@ -840,6 +867,21 @@ useSeoMeta({
 .rep-badge { font-size: var(--text-xs); padding: .2rem .55rem; border-radius: 999px; background: var(--bg-alt); border: 1px solid var(--border); color: var(--ink-700); }
 .profile-loading { text-align: center; padding: var(--space-5) 0; }
 .profile-loading .spinner { margin: 0 auto; }
+
+/* Huy hiệu + tiến độ (badge showcase, chỉ hồ sơ của mình) */
+.badge-showcase { margin: var(--space-3) 0; }
+.bs-title { font-weight: var(--weight-semibold); font-size: var(--text-sm); cursor: pointer; padding: var(--space-2) 0; color: var(--ink); }
+.bs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
+.bs-card { padding: var(--space-2); border-radius: var(--radius); border: 1px solid var(--line); text-align: center; background: var(--surface); }
+.bs-card:not(.earned) { opacity: .6; }
+.bs-card.earned { border-color: var(--primary); }
+.bs-icon { font-size: 1.5rem; display: block; margin-bottom: var(--space-1); }
+.bs-label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
+.bs-progress { margin-top: var(--space-1); }
+.bs-bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bs-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width .3s ease; }
+.bs-hint { font-size: var(--text-xs); color: var(--muted); }
+.bs-earned-label { font-size: var(--text-xs); color: var(--success); font-weight: var(--weight-medium); }
 
 .profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); box-shadow: var(--shadow-lg, var(--shadow-md)); }
 .cover-img { width: 100%; height: 200px; object-fit: cover; display: block; background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: coverShimmer 1.4s ease infinite; }

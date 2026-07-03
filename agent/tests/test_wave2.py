@@ -140,3 +140,33 @@ class TestActivityTimeline:
     def test_timeline_404_for_missing_user(self):
         src = inspect.getsource(social.get_user_timeline)
         assert "404" in src
+
+
+class TestBadgeProgress:
+    """Task 4: GET /api/me/badge-progress — all 10 badges with earned status
+    and current/target progress toward the ones not yet earned."""
+
+    def test_badge_progress_endpoint_exists(self):
+        src = inspect.getsource(social.get_badge_progress)
+        assert "badge" in src.lower()
+
+    def test_badge_progress_returns_all_badges(self):
+        src = inspect.getsource(social.get_badge_progress)
+        for badge_id in ("first_review", "review_master", "photographer", "explorer",
+                         "popular", "quality", "allrounder", "traveler", "local", "veteran"):
+            assert badge_id in src
+
+    def test_badge_progress_has_current_and_target(self):
+        src = inspect.getsource(social.get_badge_progress)
+        assert "current" in src
+        assert "target" in src
+
+    def test_badge_progress_requires_auth(self):
+        # Dùng require_user (không phải get_current_user) — badge tiến độ là
+        # dữ liệu riêng tư của người dùng, không công khai như timeline.
+        src = inspect.getsource(social.get_badge_progress)
+        assert "Depends(require_user)" in src
+
+    def test_badge_progress_marks_earned_flag(self):
+        src = inspect.getsource(social.get_badge_progress)
+        assert "earned" in src

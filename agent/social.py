@@ -3273,6 +3273,75 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
             "photos": photos, "followers": followers, "places": places, "likes": likes}
 
 
+@router.get("/me/badge-progress",
+            summary="Badge progress for current user",
+            description="Returns all badges with current progress and target thresholds — earned ones flagged, unearned ones show current/target for a progress bar.")
+async def get_badge_progress(user=Depends(require_user)):
+    uid = str(user["id"])
+    ph = db._ph
+
+    def _query():
+        with db._conn() as conn:
+            post_stats = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS posts,
+                       COUNT(*) FILTER (WHERE post_type = 'review') AS reviews,
+                       COUNT(*) FILTER (WHERE (CASE WHEN jsonb_typeof(images)='array'
+                           THEN jsonb_array_length(images) ELSE 0 END) > 0) AS photos,
+                       COUNT(DISTINCT entity_id) FILTER (WHERE entity_id IS NOT NULL) AS places,
+                       COALESCE(SUM(like_count), 0) AS likes
+                FROM posts WHERE user_id::text = {ph}
+                AND moderation_status = 'approved' AND deleted_at IS NULL
+            """, (uid,))
+            ps = db._row_to_dict(post_stats) if post_stats else {}
+            reviews = int(ps.get("reviews") or 0)
+            photos = int(ps.get("photos") or 0)
+            places = int(ps.get("places") or 0)
+            likes = int(ps.get("likes") or 0)
+
+            follower_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) c FROM follows
+                WHERE target_type='user' AND target_id={ph}
+            """, (uid,))
+            followers = int(db._row_to_dict(follower_row).get("c", 0)) if follower_row else 0
+
+            visit_row = db._fetchone(conn, f"""
+                SELECT COUNT(*) AS visits,
+                       COUNT(DISTINCT e.area) FILTER (WHERE e.area IS NOT NULL) AS areas,
+                       (SELECT EXTRACT(DAY FROM NOW() - created_at)::int FROM users WHERE id::text = {ph}) AS age_days
+                FROM user_visits uv LEFT JOIN entities e ON e.id = uv.entity_id
+                WHERE uv.user_id::text = {ph} AND uv.status = 'visited'
+            """, (uid, uid))
+            vd = db._row_to_dict(visit_row) if visit_row else {}
+            visits = int(vd.get("visits") or 0)
+            areas = int(vd.get("areas") or 0)
+            age_days = int(vd.get("age_days") or 0)
+
+            return reviews, photos, places, likes, followers, visits, areas, age_days
+
+    reviews, photos, places, likes, followers, visits, areas, age_days = await asyncio.to_thread(_query)
+
+    badge_defs = [
+        {"id": "first_review", "label": "Đánh giá đầu tiên", "icon": "✍️", "current": reviews, "target": 1},
+        {"id": "review_master", "label": "Bậc thầy đánh giá", "icon": "⭐", "current": reviews, "target": 25},
+        {"id": "photographer", "label": "Nhiếp ảnh cộng đồng", "icon": "📸", "current": photos, "target": 10},
+        {"id": "explorer", "label": "Người khám phá", "icon": "🧭", "current": places, "target": 10},
+        {"id": "popular", "label": "Được yêu thích", "icon": "💛", "current": followers, "target": 20},
+        {"id": "quality", "label": "Nội dung chất lượng", "icon": "🏆", "current": likes, "target": 50},
+        {"id": "allrounder", "label": "Đa năng", "icon": "🌟",
+         "current": min(places // 3, reviews // 5, photos // 3),
+         "target": 1,
+         "hint": f"Cần: {max(0, 3 - places)} nơi, {max(0, 5 - reviews)} đánh giá, {max(0, 3 - photos)} ảnh"},
+        {"id": "traveler", "label": "Lữ khách", "icon": "🎒", "current": visits, "target": 10},
+        {"id": "local", "label": "Người địa phương", "icon": "🏡", "current": areas, "target": 3},
+        {"id": "veteran", "label": "Thành viên kỳ cựu", "icon": "🎖️", "current": age_days, "target": 180},
+    ]
+
+    for b in badge_defs:
+        b["earned"] = b["current"] >= b["target"]
+
+    return {"badges": badge_defs}
+
+
 def _log_profile_view(conn, viewer_id: str, viewed_id: str):
     """Ghi 1 lượt xem hồ sơ, dedup theo (viewer, viewed, ngày). Bỏ qua tự-xem.
     `conn` do caller mở/đóng — hàm này KHÔNG tự quản connection để tái dùng
