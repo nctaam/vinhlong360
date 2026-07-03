@@ -789,7 +789,7 @@ async function loadMutedUsers() {
 
 async function unmuteUser(id: string, name: string) {
   try {
-    await $fetch(`/api/mute/${id}`, { method: 'POST', headers: { ...authHeaders(), 'x-csrf-token': csrf.value } })
+    await $fetch(`/api/mute/${encodeURIComponent(id)}`, { method: 'POST', headers: authHeaders() })
     mutedUsers.value = mutedUsers.value.filter(u => u.id !== id)
     showToast(`Đã bỏ tắt tiếng ${name || 'người dùng'}`, 'success')
   } catch (e: unknown) {

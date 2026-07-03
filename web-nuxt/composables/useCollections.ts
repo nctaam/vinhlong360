@@ -21,7 +21,7 @@ export function useCollections() {
   async function fetchCollections() {
     loading.value = true
     try {
-      const res = await $fetch<{ collections: UserCollection[] }>('/me/collections', { headers: authHeaders() })
+      const res = await $fetch<{ collections: UserCollection[] }>('/api/me/collections', { headers: authHeaders() })
       collections.value = res.collections || []
     } catch (e: unknown) {
       if (getStatusCode(e) === 401) { handleSessionExpired(); return }
@@ -33,7 +33,7 @@ export function useCollections() {
 
   async function createCollection(name: string, description = '', isPublic = true) {
     try {
-      const res = await $fetch<{ collection: UserCollection }>('/me/collections', {
+      const res = await $fetch<{ collection: UserCollection }>('/api/me/collections', {
         method: 'POST',
         headers: authHeaders(),
         body: { name, description, is_public: isPublic },
@@ -49,7 +49,7 @@ export function useCollections() {
 
   async function deleteCollection(id: string) {
     try {
-      await $fetch(`/me/collections/${encodeURIComponent(id)}`, {
+      await $fetch(`/api/me/collections/${encodeURIComponent(id)}`, {
         method: 'DELETE',
         headers: authHeaders(),
       })
@@ -63,7 +63,7 @@ export function useCollections() {
 
   async function addToCollection(collectionId: string, postId: string) {
     try {
-      await $fetch(`/me/collections/${encodeURIComponent(collectionId)}/items`, {
+      await $fetch(`/api/me/collections/${encodeURIComponent(collectionId)}/items`, {
         method: 'POST',
         headers: authHeaders(),
         query: { post_id: postId },
@@ -79,7 +79,7 @@ export function useCollections() {
 
   async function removeFromCollection(collectionId: string, postId: string) {
     try {
-      await $fetch(`/me/collections/${encodeURIComponent(collectionId)}/items/${encodeURIComponent(postId)}`, {
+      await $fetch(`/api/me/collections/${encodeURIComponent(collectionId)}/items/${encodeURIComponent(postId)}`, {
         method: 'DELETE',
         headers: authHeaders(),
       })
