@@ -170,3 +170,50 @@ class TestBadgeProgress:
     def test_badge_progress_marks_earned_flag(self):
         src = inspect.getsource(social.get_badge_progress)
         assert "earned" in src
+
+
+class TestFollowingFeedEnhancement:
+    """Task 7: GET /api/feed/friend-reviews + /api/feed/friend-saves — recent
+    review/save activity from users the caller follows, surfaced in the
+    community page's "Đang theo dõi" tab."""
+
+    def test_friend_reviews_endpoint_exists(self):
+        src = inspect.getsource(social.get_friend_reviews)
+        assert "review" in src.lower()
+
+    def test_friend_reviews_filters_by_followed_users(self):
+        src = inspect.getsource(social.get_friend_reviews)
+        assert "follows" in src
+        assert "target_type" in src
+
+    def test_friend_reviews_requires_auth(self):
+        src = inspect.getsource(social.get_friend_reviews)
+        assert "Depends(require_user)" in src
+
+    def test_friend_reviews_excludes_unapproved_and_deleted(self):
+        src = inspect.getsource(social.get_friend_reviews)
+        assert "moderation_status" in src
+        assert "deleted_at IS NULL" in src
+
+    def test_friend_reviews_applies_block_and_mute_filters(self):
+        src = inspect.getsource(social.get_friend_reviews)
+        assert "_block_sql" in src
+        assert "_mute_sql" in src
+
+    def test_friend_saves_endpoint_exists(self):
+        src = inspect.getsource(social.get_friend_saves)
+        assert "bookmark" in src.lower() or "save" in src.lower()
+
+    def test_friend_saves_filters_by_followed_users(self):
+        src = inspect.getsource(social.get_friend_saves)
+        assert "follows" in src
+        assert "target_type" in src
+
+    def test_friend_saves_requires_auth(self):
+        src = inspect.getsource(social.get_friend_saves)
+        assert "Depends(require_user)" in src
+
+    def test_friend_saves_excludes_own_saves(self):
+        # Không hiện lại chính-mình trong danh sách "được lưu bởi bạn bè".
+        src = inspect.getsource(social.get_friend_saves)
+        assert "!=" in src

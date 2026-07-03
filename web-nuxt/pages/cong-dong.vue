@@ -287,6 +287,32 @@
           >{{ pt.label }}</button>
         </div>
 
+        <!-- Bạn bè: hoạt động gần đây (chỉ tab "Đang theo dõi") -->
+        <template v-if="activeTab === 'following' && isLoggedIn">
+          <div v-if="friendReviews.length" class="friend-activity-section">
+            <h3 class="section-label">Bạn bè đã đánh giá</h3>
+            <div class="friend-reviews-scroll">
+              <div v-for="r in friendReviews" :key="r.id" class="friend-review-card card">
+                <div class="fr-header">
+                  <span class="avatar avatar-sm"><AvatarPlaceholder :initial="(r.user.display_name || '?').charAt(0)" :src="r.user.avatar_url" /></span>
+                  <span class="fr-name">{{ r.user.display_name }}</span>
+                </div>
+                <p class="fr-entity">{{ r.entity_name }}<span v-if="r.rating" class="fr-rating"> {{ '⭐'.repeat(Math.min(r.rating, 5)) }}</span></p>
+                <p v-if="r.content" class="fr-preview">{{ r.content }}</p>
+              </div>
+            </div>
+          </div>
+          <div v-if="friendSaves.length" class="friend-activity-section">
+            <h3 class="section-label">Được lưu bởi bạn bè</h3>
+            <div class="friend-saves-scroll">
+              <NuxtLink v-for="s in friendSaves" :key="s.entity_id" :to="entityPath(s.entity_id)" class="friend-save-chip">
+                {{ s.entity_name }}
+                <span class="fs-by">bởi {{ s.user.display_name }}</span>
+              </NuxtLink>
+            </div>
+          </div>
+        </template>
+
         <!-- Posts -->
         <SkeletonGrid v-if="(loading || bookmarksLoading || searchLoading) && !displayPosts.length" :count="3" />
 
@@ -645,6 +671,33 @@ const bookmarkBannerDismissed = ref(false)
 const showBookmarkMomentum = computed(() =>
   sessionBookmarked.value && !bookmarkBannerDismissed.value && activeTab.value !== 'bookmarks'
 )
+
+// ── Bạn bè: hoạt động gần đây (chỉ tab "Đang theo dõi") ──
+type FriendReview = {
+  id: string
+  content: string
+  rating: number | null
+  entity_name: string
+  user: { display_name: string; avatar_url: string }
+}
+type FriendSave = {
+  entity_id: string
+  entity_name: string
+  user: { display_name: string; avatar_url: string }
+}
+const friendReviews = ref<FriendReview[]>([])
+const friendSaves = ref<FriendSave[]>([])
+
+async function loadFriendActivity() {
+  try {
+    const [reviews, saves] = await Promise.all([
+      $fetch<{ reviews: FriendReview[] }>('/api/feed/friend-reviews', { params: { limit: 5 }, headers: authHeaders() }),
+      $fetch<{ saves: FriendSave[] }>('/api/feed/friend-saves', { params: { limit: 5 }, headers: authHeaders() }),
+    ])
+    friendReviews.value = reviews.reviews || []
+    friendSaves.value = saves.saves || []
+  } catch { /* widget phụ — im lặng nếu lỗi, không chặn feed chính */ }
+}
 
 type PostListResponse = {
   posts?: Post[]
@@ -1108,6 +1161,12 @@ watch(activeTab, (tab) => {
   if (normalized === 'bookmarks' && filterType.value) setFilterType('')
 })
 
+watch(activeTab, (newTab) => {
+  if (newTab === 'following' && isLoggedIn.value && !friendReviews.value.length) {
+    loadFriendActivity()
+  }
+})
+
 watch(isLoggedIn, (loggedIn) => {
   if (loggedIn) {
     loadSuggested()
@@ -1307,6 +1366,10 @@ onMounted(() => {
   fetchReportEntity()
   normalizeCommunityRouteState()
   refreshFeed()
+  // Vào thẳng ?tab=following (link chia sẻ, back/forward) — activeTab đã là
+  // 'following' TRƯỚC KHI watch(activeTab, …) bên dưới kịp đăng ký (useFilterUrl
+  // gán ref đồng bộ lúc setup), nên watcher sẽ không bắt được lần đổi tab đó.
+  if (activeTab.value === 'following' && isLoggedIn.value) loadFriendActivity()
   loadCommunityStats()
   loadTrendingTags()
   loadLeaderboard()
@@ -1669,6 +1732,18 @@ useHead({
 .suc-info strong { display: block; font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
 .suc-meta { font-size: 0.75rem; color: var(--muted); }
 .section-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); margin: 0 0 var(--space-2); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ── Bạn bè: hoạt động gần đây (tab "Đang theo dõi") ── */
+.friend-activity-section { margin-bottom: var(--space-4); }
+.friend-reviews-scroll, .friend-saves-scroll { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); }
+.friend-review-card { min-width: 220px; max-width: 280px; flex-shrink: 0; padding: var(--space-2); }
+.fr-header { display: flex; align-items: center; gap: var(--space-1); margin-bottom: var(--space-1); }
+.fr-name { font-size: 0.8125rem; font-weight: 500; color: var(--ink); }
+.fr-entity { font-size: 0.875rem; font-weight: 600; margin: 0; }
+.fr-rating { font-size: 0.75rem; }
+.fr-preview { font-size: 0.8125rem; color: var(--muted); margin: var(--space-1) 0 0; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.friend-save-chip { display: inline-flex; flex-direction: column; padding: var(--space-1) var(--space-2); border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); text-decoration: none; font-size: 0.875rem; font-weight: 500; color: var(--ink); white-space: nowrap; }
+.fs-by { font-size: 0.75rem; color: var(--muted); font-weight: 400; }
 
 @media (max-width: 820px) {
   .threads-layout { grid-template-columns: 1fr; }

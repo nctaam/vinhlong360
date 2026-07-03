@@ -1058,6 +1058,109 @@ async def get_following_feed(
             "has_more": offset + limit < total_c}
 
 
+@router.get("/feed/friend-reviews",
+            summary="Recent reviews from followed users",
+            description="Returns the most recent reviews posted by users the caller follows, for the community 'Đang theo dõi' tab.")
+async def get_friend_reviews(
+    limit: int = Query(5, ge=1, le=20),
+    user=Depends(require_user),
+):
+    """Đánh giá gần đây từ những NGƯỜI mình theo dõi (không phải địa điểm)."""
+    uid = str(user["id"])
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+
+    def _query():
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT p.id, LEFT(p.content, 150) AS content, p.rating, p.created_at,
+                       u.display_name, u.avatar_url, u.username,
+                       e.name AS entity_name, e.type AS entity_type
+                FROM posts p
+                JOIN users u ON u.id = p.user_id
+                LEFT JOIN entities e ON e.id = p.entity_id
+                WHERE p.post_type = 'review' AND p.moderation_status = 'approved'
+                  AND p.deleted_at IS NULL
+                  AND p.user_id IN (SELECT target_id::uuid FROM follows
+                                    WHERE follower_id = {ph}::uuid AND target_type='user')
+                  {bc} {mc}
+                ORDER BY p.created_at DESC
+                LIMIT {ph}
+            """, (uid, *bc_p, *mc_p, limit))
+            return rows
+    rows = await asyncio.to_thread(_query)
+    reviews = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        reviews.append({
+            "id": str(d["id"]),
+            "content": d.get("content") or "",
+            "rating": d.get("rating"),
+            "created_at": str(d["created_at"]),
+            "user": {"display_name": d.get("display_name"), "avatar_url": d.get("avatar_url"), "username": d.get("username")},
+            "entity_name": d.get("entity_name"),
+            "entity_type": d.get("entity_type"),
+        })
+    return {"reviews": reviews}
+
+
+@router.get("/feed/friend-saves",
+            summary="Recent saves by followed users",
+            description="Returns entities recently saved (favorited) by users the caller follows, for the community 'Đang theo dõi' tab.")
+async def get_friend_saves(
+    limit: int = Query(5, ge=1, le=20),
+    user=Depends(require_user),
+):
+    """Địa điểm gần đây được LƯU (saved_entities) bởi những người mình theo dõi.
+
+    Dùng `saved_entities` (favorites đồng bộ tài khoản) chứ không phải
+    `bookmarks` (bookmark BÀI VIẾT) — bookmarks không có cột entity_id nên
+    không thể join thẳng sang entities.
+    """
+    uid = str(user["id"])
+    ph = db._ph
+    bc, bc_p = _block_sql(user, "s.user_id")
+
+    def _query():
+        with db._conn() as conn:
+            # DISTINCT ON (entity_id) chỉ khử-trùng-lặp entity (giữ save mới nhất
+            # /entity) — nó KHÔNG sắp toàn bộ kết quả theo created_at. Nếu LIMIT áp
+            # trực tiếp lên DISTINCT ON, thứ tự cắt sẽ theo entity_id (bảng chữ cái)
+            # chứ không theo "mới lưu gần đây" → phải bọc subquery rồi ORDER BY +
+            # LIMIT lại ở ngoài.
+            rows = db._fetchall(conn, f"""
+                SELECT entity_id, name, entity_type, display_name, avatar_url, created_at
+                FROM (
+                    SELECT DISTINCT ON (s.entity_id) s.entity_id, e.name, e.type AS entity_type,
+                           u.display_name, u.avatar_url, s.created_at
+                    FROM saved_entities s
+                    JOIN users u ON u.id = s.user_id
+                    JOIN entities e ON e.id = s.entity_id
+                    WHERE s.user_id IN (SELECT target_id::uuid FROM follows
+                                        WHERE follower_id = {ph}::uuid AND target_type='user')
+                      AND s.user_id != {ph}::uuid
+                      {bc}
+                    ORDER BY s.entity_id, s.created_at DESC
+                ) latest_per_entity
+                ORDER BY created_at DESC
+                LIMIT {ph}
+            """, (uid, uid, *bc_p, limit))
+            return rows
+    rows = await asyncio.to_thread(_query)
+    saves = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        saves.append({
+            "entity_id": str(d["entity_id"]),
+            "entity_name": d.get("name"),
+            "entity_type": d.get("entity_type"),
+            "user": {"display_name": d.get("display_name"), "avatar_url": d.get("avatar_url")},
+            "created_at": str(d["created_at"]),
+        })
+    return {"saves": saves}
+
+
 _TRENDING_POSTS_WINDOWS = {"24h": 1, "7d": 7, "30d": 30}
 
 
