@@ -3273,6 +3273,32 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
             "photos": photos, "followers": followers, "places": places, "likes": likes}
 
 
+def _log_profile_view(conn, viewer_id: str, viewed_id: str):
+    """Ghi 1 lượt xem hồ sơ, dedup theo (viewer, viewed, ngày). Bỏ qua tự-xem.
+    `conn` do caller mở/đóng — hàm này KHÔNG tự quản connection để tái dùng
+    được trong cả request path lẫn fire-and-forget task riêng."""
+    if viewer_id == viewed_id:
+        return
+    ph = db._ph
+    db._execute(conn, f"""
+        INSERT INTO profile_views (viewer_id, viewed_id, viewed_date)
+        VALUES ({ph}::uuid, {ph}::uuid, CURRENT_DATE)
+        ON CONFLICT (viewer_id, viewed_id, viewed_date) DO NOTHING
+    """, (viewer_id, viewed_id))
+
+
+def _log_profile_view_threaded(viewer_id: str, viewed_id: str):
+    """Mở connection riêng + gọi _log_profile_view — chạy trong asyncio.to_thread
+    từ 1 task fire-and-forget, KHÔNG chặn request path chính của
+    get_user_profile. Swallow lỗi vì đây chỉ là số liệu phụ, không được phép
+    làm hỏng response profile chính."""
+    try:
+        with db._conn() as conn:
+            _log_profile_view(conn, viewer_id, viewed_id)
+    except Exception:
+        logger.warning("Failed to log profile view %s -> %s", viewer_id, viewed_id, exc_info=True)
+
+
 @router.get("/users/{user_id}",
             summary="Get user profile",
             description="Retrieve a user's public profile by UUID or username. Includes stats, reputation, badges, privacy settings, and viewer relationship status (following/blocked/muted).")
@@ -3366,6 +3392,12 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     result = await asyncio.to_thread(_query)
     vis, profile, is_self, is_follower, reputation, following_row, posts_n, reviews_n, privacy, viewer_following, viewer_blocked, viewer_muted = result
 
+    resolved_id = str(profile["id"])
+    if viewer_id and not is_self and vis != "blocked":
+        # Fire-and-forget: KHÔNG await trong request path — log lượt xem
+        # chạy song song, không làm chậm response profile chính.
+        asyncio.create_task(asyncio.to_thread(_log_profile_view_threaded, viewer_id, resolved_id))
+
     if vis == "blocked":
         return {
             "user": {
@@ -3398,6 +3430,17 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     show_activity = privacy["show_activity"] if privacy else True
     show_saved = privacy["show_saved"] if privacy else True
 
+    view_count_7d = None
+    if is_self:
+        def _get_view_count():
+            with db._conn() as conn:
+                row = db._fetchone(conn, f"""
+                    SELECT COUNT(DISTINCT viewer_id) AS c FROM profile_views
+                    WHERE viewed_id = {ph}::uuid AND viewed_date >= CURRENT_DATE - INTERVAL '7 days'
+                """, (resolved_id,))
+                return db._row_to_dict(row)["c"] if row else 0
+        view_count_7d = await asyncio.to_thread(_get_view_count)
+
     return {
         "user": {
             "id": str(profile["id"]),
@@ -3416,6 +3459,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
             "reputation": reputation,
             "show_activity": show_activity,
             "show_saved": show_saved,
+            "view_count_7d": view_count_7d,
             "viewer_relationship": {
                 "is_following": viewer_following,
                 "is_blocked": viewer_blocked,
