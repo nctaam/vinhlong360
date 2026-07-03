@@ -121,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Place, Entity } from '~/types'
+import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Chưa phân loại — Admin' })
@@ -148,13 +148,17 @@ const bulkPick = ref('')
 const bulkBusy = ref(false)
 const bulkProgress = ref({ done: 0, total: 0 })
 
-const { data: places } = await useAsyncData('cpl-places', () => apiFetch<Place[]>('/api/places').catch(() => []))
+const { data: places } = await useAsyncData('cpl-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[chua-phan-loai] places fetch failed', err); return [] }))
 const wardGroups = computed(() => {
-  const wards = (places.value || []).filter((p: Entity) => ADMIN_LEVELS.includes(p.level))
-  return Object.keys(AREA_META).map(area => ({
-    area, label: AREA_META[area].name,
-    wards: wards.filter((w: Entity) => w.area === area).sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi')),
-  })).filter(g => g.wards.length)
+  const wards = (places.value || []).filter(p => ADMIN_LEVELS.includes(p.level || ''))
+  return Object.keys(AREA_META).map(area => {
+    const meta = AREA_META[area]
+    return {
+      area,
+      label: meta?.name || area,
+      wards: wards.filter(w => w.area === area).sort((a, b) => a.name.localeCompare(b.name, 'vi')),
+    }
+  }).filter(g => g.wards.length)
 })
 
 // Distinct entity types over the loaded list, with counts
@@ -249,7 +253,6 @@ async function assign(e: Entity) {
   }
 }
 
-// Bulk assign: loop the existing single-item endpoint (no bulk endpoint exists yet).
 async function assignBulk() {
   if (bulkBusy.value) return
   const pid = bulkPick.value
@@ -257,26 +260,27 @@ async function assignBulk() {
   if (!pid || !ids.length) return
   bulkBusy.value = true
   bulkProgress.value = { done: 0, total: ids.length }
-  let ok = 0
-  let fail = 0
-  for (const id of ids) {
-    const e = items.value.find(x => x.id === id)
-    if (!e) { bulkProgress.value = { ...bulkProgress.value, done: bulkProgress.value.done + 1 }; continue }
-    try {
-      await $fetch(`/admin-api/entities/${id}/place`, { method: 'POST', headers: authHeaders(), body: { place_id: pid } })
+  try {
+    const res = await $fetch<{ assigned?: number; assigned_ids?: string[]; errors?: { id: string; error: string }[] }>('/admin-api/entities/bulk-place', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: { entity_ids: ids, place_id: pid },
+    })
+    for (const id of res.assigned_ids || []) {
       removeItem(id)
-      ok++
-    } catch {
-      fail++
     }
-    bulkProgress.value = { ...bulkProgress.value, done: bulkProgress.value.done + 1 }
+    bulkProgress.value = { done: ids.length, total: ids.length }
+    const ok = res.assigned || 0
+    const fail = res.errors?.length || 0
+    if (fail === 0) showToast(`Đã gán ${ok} entity`, 'success')
+    else if (ok === 0) showToast(`Gán thất bại (${fail})`, 'error')
+    else showToast(`Đã gán ${ok}, thất bại ${fail}`, 'warning')
+  } catch (err: unknown) {
+    showToast(getErrorDetail(err, 'Gán hàng loạt thất bại'), 'error')
   }
   bulkBusy.value = false
   bulkPick.value = ''
   bulkProgress.value = { done: 0, total: 0 }
-  if (fail === 0) showToast(`Đã gán ${ok} entity`, 'success')
-  else if (ok === 0) showToast(`Gán thất bại (${fail})`, 'error')
-  else showToast(`Đã gán ${ok}, thất bại ${fail}`, 'warning')
 }
 
 // Remove an assigned item from the list + all transient state.

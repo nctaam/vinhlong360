@@ -1348,7 +1348,7 @@ async def stale_queue(
     def _query():
         now = datetime.now(timezone.utc)
         cutoff = now - timedelta(days=threshold_days)
-        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        entities = knowledge._entities if getattr(knowledge, "_entities", None) else {}
         results = []
         for eid, e in entities.items():
             if e.get("type") == "place":
@@ -1424,7 +1424,7 @@ async def stale_mark_reviewed(entity_id: str):
 async def completeness_overview():
     """Tổng quan hoàn thiện: % entities có source+images+placeId+summary."""
     def _query():
-        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        entities = knowledge._entities if getattr(knowledge, "_entities", None) else {}
         total = 0
         has_source = 0
         has_images = 0
@@ -1466,7 +1466,7 @@ async def completeness_details(
 ):
     """Per-entity completeness scores with filter."""
     def _query():
-        entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        entities = knowledge._entities if getattr(knowledge, "_entities", None) else {}
         results = []
         for eid, e in entities.items():
             if e.get("type") == "place":
@@ -1631,7 +1631,7 @@ async def contact_funnel(
                 counts[eid]["total"] += 1
                 total += 1
         entities_list = []
-        ent_dict = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        ent_dict = knowledge._entities if getattr(knowledge, "_entities", None) else {}
         for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
             e = ent_dict.get(eid, {})
             entities_list.append({
@@ -1680,7 +1680,7 @@ async def contact_funnel_export(days: int = Query(30, ge=1, le=365)):
                         counts[eid] = {"zalo": 0, "phone": 0, "website": 0, "map": 0, "total": 0}
                     counts[eid][action] = counts[eid].get(action, 0) + 1
                     counts[eid]["total"] += 1
-        ent_dict = knowledge._entities if hasattr(knowledge, "_entities") else {}
+        ent_dict = knowledge._entities if getattr(knowledge, "_entities", None) else {}
         yield "entity_id,name,zalo,phone,website,map,total\n"
         for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
             name = (ent_dict.get(eid, {}).get("name") or eid).replace(",", " ")

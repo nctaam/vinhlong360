@@ -83,7 +83,7 @@ def test_apply_candidates_dry_run_only_evidence_auto_apply(tmp_path, monkeypatch
     result = dq.apply_candidates(dry_run=True)
 
     assert result["applied_count"] == 2  # source + coordinates có evidence; placeId bị loại
-    assert result["backup"] is None
+    assert result["errors"] == []
     assert {item["field"] for item in result["applied"]} == {"source", "coordinates"}
     # dry_run: DB KHÔNG bị thay đổi
     assert tdb.get_entity("e1").get("source") in ({}, None, [])

@@ -822,7 +822,7 @@ function checkDuplicate() {
     try {
       const res = await $fetch<{ duplicates: typeof duplicates.value }>(`/admin-api/entities/check-duplicate?name=${encodeURIComponent(name)}`, { headers: authHeaders() })
       duplicates.value = res.duplicates || []
-    } catch { duplicates.value = [] }
+    } catch (err) { console.error('[entities] duplicate check failed', err); duplicates.value = [] }
   }, 400)
 }
 

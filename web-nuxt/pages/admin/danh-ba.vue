@@ -88,7 +88,7 @@
                   <span v-if="attr(e,'phone')">{{ attr(e,'phone') }}</span>
                   <small v-if="attr(e,'address')" class="db-meta">{{ attr(e,'address') }}</small>
                 </td>
-                <td class="admin-td-muted"><small>{{ e.source?.url || e.source?.title || '—' }}</small></td>
+                <td class="admin-td-muted"><small>{{ sourceLabel(e) }}</small></td>
                 <td>
                   <button type="button" class="btn-danger btn-sm db-del-btn" :disabled="deleting === e.id" :aria-label="`Xóa ${e.name}`" @click="del(e)">{{ deleting === e.id ? 'Đang xóa...' : 'Xóa' }}</button>
                 </td>
@@ -107,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity, Place } from '~/types'
+import type { Entity } from '~/types'
 import { AREA_META, OFFICE_KIND } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Danh bạ — Admin' })
@@ -147,19 +147,27 @@ function validate(): boolean {
   return Object.keys(errs).length === 0
 }
 
-const { data: places } = await useAsyncData('adb-places', () => apiFetch<Place[]>('/api/places').catch(() => []))
-const placeById = computed(() => Object.fromEntries((places.value || []).map((p: Entity) => [p.id, p])))
+const { data: places } = await useAsyncData('adb-places', () => apiFetch<Entity[]>('/api/places').catch((err) => { showToast?.('Không tải được danh sách xã/phường', 'error'); console.error('[danh-ba] places fetch failed', err); return [] }))
+const placeById = computed<Record<string, Entity>>(() => Object.fromEntries((places.value || []).map(p => [p.id, p])))
 const wardGroups = computed(() => {
-  const wards = (places.value || []).filter((p: Entity) => ADMIN_LEVELS.includes(p.level))
-  return Object.keys(AREA_META).map(area => ({
-    area, label: AREA_META[area].name,
-    wards: wards.filter((w: Entity) => w.area === area).sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi')),
-  })).filter(g => g.wards.length)
+  const wards = (places.value || []).filter(p => ADMIN_LEVELS.includes(p.level || ''))
+  return Object.keys(AREA_META).map(area => {
+    const meta = AREA_META[area]
+    return {
+      area,
+      label: meta?.name || area,
+      wards: wards.filter(w => w.area === area).sort((a, b) => a.name.localeCompare(b.name, 'vi')),
+    }
+  }).filter(g => g.wards.length)
 })
 
 function attr(e: any, k: string) { return (e.attributes || {})[k] || '' }
 function kindLabel(e: Entity) { return (OFFICE_KIND[attr(e, 'office_kind')] || OFFICE_KIND.khac)?.label || '' }
-function placeName(e: Entity) { return placeById.value[e.placeId]?.name || '' }
+function placeName(e: Entity) { return e.placeId ? placeById.value[e.placeId]?.name || '' : '' }
+function sourceLabel(e: Entity): string {
+  const source = Array.isArray(e.source) ? e.source[0] : e.source
+  return source?.url || source?.name || '—'
+}
 
 function slugify(s: string) {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'd')

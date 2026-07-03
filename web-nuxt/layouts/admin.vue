@@ -127,7 +127,19 @@
           </template>
         </nav>
       </div>
-      <slot />
+      <NuxtErrorBoundary>
+        <slot />
+        <template #error="{ error, clearError }">
+          <div class="admin-error-panel">
+            <h2>Trang gặp lỗi</h2>
+            <pre class="admin-error-detail">{{ error }}</pre>
+            <div class="admin-error-actions">
+              <button type="button" class="btn btn-primary" @click="clearError">Thử lại</button>
+              <NuxtLink to="/admin" class="btn" @click="clearError">Về Dashboard</NuxtLink>
+            </div>
+          </div>
+        </template>
+      </NuxtErrorBoundary>
     </main>
     <ClientOnly><LazyCommandPalette /></ClientOnly>
     <ClientOnly><LazyToastContainer /></ClientOnly>
@@ -643,4 +655,17 @@ onUnmounted(() => {
   z-index: var(--z-sticky); max-width: 260px; white-space: normal; line-height: 1.4;
 }
 .admin-help:hover::after, .admin-help:focus::after { opacity: 1; }
+
+.admin-error-panel {
+  max-width: 600px; margin: 3rem auto; padding: 2rem;
+  background: var(--surface); border: 1px solid var(--danger, #c00);
+  border-radius: var(--radius-lg, 12px); text-align: center;
+}
+.admin-error-panel h2 { color: var(--danger, #c00); margin: 0 0 1rem; }
+.admin-error-detail {
+  text-align: left; font-size: .8rem; max-height: 200px; overflow: auto;
+  background: var(--surface-alt, #f5f5f5); padding: .75rem; border-radius: var(--radius, 8px);
+  margin-bottom: 1.5rem; white-space: pre-wrap; word-break: break-word;
+}
+.admin-error-actions { display: flex; gap: .75rem; justify-content: center; }
 </style>
