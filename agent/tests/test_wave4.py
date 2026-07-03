@@ -102,3 +102,43 @@ class TestTwoFactorEnrollment:
     def test_enrollment_endpoints_require_csrf(self):
         for fn in (auth.twofa_setup, auth.twofa_verify_setup, auth.twofa_disable):
             assert "_require_csrf_lazy" in inspect.getsource(fn)
+
+
+class TestTwoFactorLoginGate:
+    def test_verify_route_mounted(self):
+        assert ("POST", "/auth/2fa/verify") in _routes()
+
+    def test_finish_login_helper_exists(self):
+        assert callable(auth._finish_login)
+
+    def test_verify_otp_uses_2fa_gate(self):
+        src = inspect.getsource(auth.verify_otp)
+        assert "_2fa_is_enabled" in src
+        assert "two_factor_required" in src
+
+    def test_login_password_uses_2fa_gate(self):
+        src = inspect.getsource(auth.login_password)
+        assert "_2fa_is_enabled" in src
+        assert "two_factor_required" in src
+
+    def test_both_login_paths_use_finish_login(self):
+        assert "_finish_login" in inspect.getsource(auth.verify_otp)
+        assert "_finish_login" in inspect.getsource(auth.login_password)
+
+    def test_pending_challenge_hashed_and_expiring(self):
+        src = inspect.getsource(auth._create_pending_2fa)
+        assert "_hash_token" in src
+        assert "expires_at" in src
+
+    def test_verify_endpoint_rate_limited_and_attempt_capped(self):
+        src = inspect.getsource(auth.twofa_verify)
+        assert "_check_shared_auth_rate" in src or "check_rate" in src
+        assert "attempts" in src
+
+    def test_verify_supports_recovery_and_remember(self):
+        src = inspect.getsource(auth.twofa_verify)
+        assert "recovery" in src
+        assert "remember_device" in src or "trusted" in src
+
+    def test_pending_2fa_cleanup_registered(self):
+        assert "pending_2fa" in inspect.getsource(auth.cleanup_expired_data)

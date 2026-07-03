@@ -764,7 +764,11 @@ class TestSecurityPosture:
         assert "_DUMMY_HASH" in src, "Missing dummy hash for timing oracle protection"
         idx = src.find("def login_password")
         assert idx > 0
-        block = src[idx:idx + 1200]
+        # Bounded by the next top-level async def (not a fixed char count) — robust
+        # to unrelated growth earlier in the function (e.g. rate-limit calls added
+        # by other in-flight changes, or the Wave 4 2FA gate added later in the body).
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 5000]
         assert "_verify_password" in block and "_DUMMY_HASH" in block, \
             "login_password must call _verify_password with dummy hash for non-existent users"
 
@@ -1069,7 +1073,10 @@ class TestSecurityPosture:
         assert "OTP_VERIFY_PHONE_LIMIT" in src, "Missing per-phone OTP rate limit"
         idx = src.find("async def verify_otp(")
         assert idx > 0
-        block = src[idx:idx+800]
+        # Bounded by the next top-level async def (not a fixed char count) — robust
+        # to unrelated growth earlier in the function.
+        end = src.find("\nasync def ", idx + 1)
+        block = src[idx:end] if end != -1 else src[idx:idx + 5000]
         assert "_otp_verify_phone_rate" in block, "verify_otp must check per-phone rate limit"
 
     def test_health_check_includes_llm_status(self):

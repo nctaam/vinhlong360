@@ -1619,26 +1619,44 @@ class TestPhase10PaginationConsistency:
 
 
 class TestPhase11SessionLimit:
-    """Phase 11: max concurrent session enforcement."""
+    """Phase 11: max concurrent session enforcement.
+
+    Wave 4 Task 3 extracted the session-create+cookie+log+streak+achievement
+    sequence (previously duplicated inline in both verify_otp and login_password)
+    into a shared `_finish_login` helper, called from both endpoints' non-2FA
+    success path. `_create_session_atomic` is therefore no longer a literal
+    substring of verify_otp's/login_password's own source block — it now lives
+    in `_finish_login`. These tests are updated to check the same real property
+    (session-limit enforcement is reachable from both login paths) through the
+    new call chain: verify_otp/login_password -> _finish_login -> _create_session_atomic.
+    """
 
     def test_verify_otp_enforces_session_limit(self):
-        """verify_otp calls _create_session_atomic which enforces session limit."""
+        """verify_otp's success path reaches _create_session_atomic via _finish_login."""
         src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
         assert "def _create_session_atomic" in src
         assert "MAX_CONCURRENT_SESSIONS" in src
         idx = src.find("def verify_otp")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 5000]
-        assert "_create_session_atomic" in block
+        assert "_finish_login" in block
+        finish_idx = src.find("async def _finish_login")
+        finish_end = src.find("\n@router.post", finish_idx + 1)
+        finish_block = src[finish_idx:finish_end] if finish_end != -1 else src[finish_idx:finish_idx + 3000]
+        assert "_create_session_atomic" in finish_block
 
     def test_login_password_enforces_session_limit(self):
-        """login_password calls _create_session_atomic which enforces session limit."""
+        """login_password's success path reaches _create_session_atomic via _finish_login."""
         src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
         assert "def _create_session_atomic" in src
         idx = src.find("def login_password")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 5000]
-        assert "_create_session_atomic" in block
+        assert "_finish_login" in block
+        finish_idx = src.find("async def _finish_login")
+        finish_end = src.find("\n@router.post", finish_idx + 1)
+        finish_block = src[finish_idx:finish_end] if finish_end != -1 else src[finish_idx:finish_idx + 3000]
+        assert "_create_session_atomic" in finish_block
 
 
 class TestPhase11BlockFollow:

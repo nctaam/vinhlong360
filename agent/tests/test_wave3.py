@@ -36,12 +36,16 @@ class TestLoginStreak:
         assert "except" in src
 
     def test_verify_otp_calls_streak_update(self):
-        src = inspect.getsource(auth.verify_otp)
-        assert "_update_login_streak" in src
+        # Wave 4 Task 3: session-finalize (incl. streak update) was extracted into
+        # a shared _finish_login helper, called from verify_otp's non-2FA success
+        # path. Check both links of the chain rather than the (no-longer-present)
+        # literal call in verify_otp's own source.
+        assert "_finish_login" in inspect.getsource(auth.verify_otp)
+        assert "_update_login_streak" in inspect.getsource(auth._finish_login)
 
     def test_login_password_calls_streak_update(self):
-        src = inspect.getsource(auth.login_password)
-        assert "_update_login_streak" in src
+        assert "_finish_login" in inspect.getsource(auth.login_password)
+        assert "_update_login_streak" in inspect.getsource(auth._finish_login)
 
 
 class TestAchievementSystem:
@@ -151,9 +155,13 @@ class TestAchievementHooks:
         assert "check_achievements" in src
 
     def test_login_paths_hook_achievements(self):
+        # Wave 4 Task 3: the achievement check (_ach_bg background task) now lives
+        # inside the shared _finish_login helper, called from both login paths'
+        # non-2FA success branch — not inline in verify_otp/login_password anymore.
         import auth
-        assert "check_achievements" in inspect.getsource(auth.verify_otp)
-        assert "check_achievements" in inspect.getsource(auth.login_password)
+        assert "_finish_login" in inspect.getsource(auth.verify_otp)
+        assert "_finish_login" in inspect.getsource(auth.login_password)
+        assert "check_achievements" in inspect.getsource(auth._finish_login)
 
     def test_reset_password_otp_updates_streak_and_achievements(self):
         # Task 1 review fix: password-reset success path should also credit

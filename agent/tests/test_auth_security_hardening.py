@@ -616,16 +616,30 @@ class TestSessionFixationPrevention:
     """Verify session management prevents fixation attacks."""
 
     def test_login_generates_new_token(self):
-        """Login must generate a fresh token, not reuse an existing one."""
+        """Login must generate a fresh token, not reuse an existing one.
+
+        Wave 4 Task 3: token generation now lives in the shared _finish_login
+        helper (called from login_password's non-2FA success path) rather than
+        inline in login_password itself.
+        """
         import auth
         src = inspect.getsource(auth.login_password)
-        assert "_generate_token" in src, "login must generate a new session token"
+        assert "_finish_login" in src, "login must reach the session-creation helper"
+        assert "_generate_token" in inspect.getsource(auth._finish_login), \
+            "login must generate a new session token"
 
     def test_verify_otp_generates_new_token(self):
-        """OTP verification must generate a fresh session token."""
+        """OTP verification must generate a fresh session token.
+
+        Wave 4 Task 3: token generation now lives in the shared _finish_login
+        helper (called from verify_otp's non-2FA success path) rather than
+        inline in verify_otp itself.
+        """
         import auth
         src = inspect.getsource(auth.verify_otp)
-        assert "_generate_token" in src, "verify_otp must generate a new session token"
+        assert "_finish_login" in src, "verify_otp must reach the session-creation helper"
+        assert "_generate_token" in inspect.getsource(auth._finish_login), \
+            "verify_otp must generate a new session token"
 
     def test_set_password_revokes_other_sessions(self):
         """Password change should revoke other sessions."""

@@ -203,16 +203,23 @@ class TestSessionTokenHashing:
 
     def test_session_insert_uses_hash_not_plaintext(self):
         """Verify that the auth module's DB INSERT for sessions uses _hash_token.
-        This is a code-level contract check (not a runtime DB test)."""
+        This is a code-level contract check (not a runtime DB test).
+
+        Wave 4 Task 3: the session INSERT (via _create_session_atomic) now lives
+        in the shared _finish_login helper, called from both verify_otp's and
+        login_password's non-2FA success path — not inline in either anymore.
+        """
         import inspect
         import auth
-        # The verify_otp and login_password functions should call _hash_token
         verify_src = inspect.getsource(auth.verify_otp)
         login_src = inspect.getsource(auth.login_password)
-        assert "_hash_token(token)" in verify_src, \
-            "verify_otp must hash the token before storing in DB"
-        assert "_hash_token(token)" in login_src, \
-            "login_password must hash the token before storing in DB"
+        assert "_finish_login" in verify_src, \
+            "verify_otp must reach the session-creation helper"
+        assert "_finish_login" in login_src, \
+            "login_password must reach the session-creation helper"
+        finish_src = inspect.getsource(auth._finish_login)
+        assert "_hash_token(token)" in finish_src, \
+            "_finish_login must hash the token before storing in DB"
 
     def test_session_lookup_uses_hash(self):
         """Verify that _get_current_user_or_none looks up by hashed token."""

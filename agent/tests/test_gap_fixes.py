@@ -1160,7 +1160,7 @@ class TestWriteEndpointRateLimits:
                 if name in self._EXEMPT:
                     continue
                 src = inspect.getsource(fn)
-                if "check_rate" not in src and "_otp_rate" not in src and "_login_ip_rate" not in src and "_check_phone_ip_rate" not in src and "_otp_verify_ip_rate" not in src:
+                if "check_rate" not in src and "_otp_rate" not in src and "_login_ip_rate" not in src and "_check_phone_ip_rate" not in src and "_otp_verify_ip_rate" not in src and "_tfa_verify_ip_rate" not in src:
                     missing.append(name)
         return missing
 

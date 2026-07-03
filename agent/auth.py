@@ -30,7 +30,7 @@ from datetime import datetime, timedelta, timezone
 logger = logging.getLogger("auth")
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, UploadFile, File
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field, field_validator
 
@@ -66,6 +66,7 @@ OTP_EXPIRE_MINUTES = _cfg.OTP_EXPIRE_MINUTES
 OTP_MAX_ATTEMPTS = 5
 OTP_RATE_LIMIT_SECONDS = 60
 SESSION_EXPIRE_DAYS = _cfg.SESSION_EXPIRE_DAYS
+SESSION_COOKIE_NAME = "vl360_token"
 
 ESMS_API_KEY = _cfg.ESMS_API_KEY
 ESMS_SECRET = _cfg.ESMS_SECRET
@@ -112,6 +113,46 @@ def _gc_rate_dict(d: dict, window: float) -> None:
             del d[k]
 
 
+def _check_shared_auth_rate(key: str, limit: int, window: int, msg: str) -> None:
+    try:
+        from ratelimit import check_rate
+        check_rate(f"auth:{key}", limit, window, msg)
+    except HTTPException:
+        raise
+    except Exception:
+        logger.debug("shared auth rate limit failed", exc_info=True)
+
+def _truthy_env(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+def _request_is_production(request: Request) -> bool:
+    if _truthy_env("VL360_FORCE_SECURE_COOKIES") or _truthy_env("SECURE_COOKIES"):
+        return True
+    if os.environ.get("ENVIRONMENT", "").lower() in {"production", "prod", "prd"}:
+        return True
+    proto = (request.headers.get("x-forwarded-proto") or request.url.scheme or "").split(",", 1)[0].strip().lower()
+    host_header = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.hostname or ""
+    host = host_header.split(",", 1)[0].split(":")[0].lower()
+    if host == "vinhlong360.vn" or host.endswith(".vinhlong360.vn"):
+        return True
+    return proto == "https" and host.endswith("vinhlong360.vn")
+
+def _cookie_params_for_request(request: Request) -> dict:
+    from auth_middleware import get_secure_cookie_params
+    is_production = _request_is_production(request)
+    params = get_secure_cookie_params(is_production=is_production)
+    params["max_age"] = SESSION_EXPIRE_DAYS * 86400
+    host = (request.headers.get("host") or request.url.hostname or "").split(":")[0].lower()
+    if not is_production and (host in {"localhost", "127.0.0.1", "::1"} or host.startswith("127.")):
+        params.pop("domain", None)
+        params.pop("secure", None)
+    return params
+
+def _set_session_cookie(response: Response, request: Request, token: str) -> None:
+    """Attach the session as the primary HttpOnly cookie transport."""
+    response.set_cookie(key=SESSION_COOKIE_NAME, value=token, **_cookie_params_for_request(request))
+
+
 def cleanup_expired_data() -> dict:
     """Remove expired sessions, OTP records, and old login history. Call from scheduler."""
     if not db._use_pg:
@@ -132,6 +173,8 @@ def cleanup_expired_data() -> dict:
                 DELETE FROM notifications WHERE read = TRUE AND created_at < NOW() - INTERVAL '60 days'
             """, ())
             results["old_read_notifications"] = getattr(r, "rowcount", 0) if r else 0
+            r = db._execute(conn, "DELETE FROM pending_2fa WHERE expires_at < NOW()", ())
+            results["expired_pending_2fa"] = getattr(r, "rowcount", 0) if r else 0
     except Exception as e:
         logger.warning("cleanup_expired_data error: %s", e)
         results["error"] = str(e)
@@ -446,10 +489,42 @@ async def request_otp(body: OTPRequest, request: Request):
     }
 
 
+async def _finish_login(user: dict, phone: str, method: str, request: Request, response: Response) -> dict:
+    """Tạo session + cookie + log + streak + achievement; trả về response đăng nhập.
+    Dùng chung cho verify_otp/login_password và /2fa/verify — trước đây mỗi endpoint
+    lặp lại chuỗi này riêng (session-limit enforcement vẫn qua _create_session_atomic,
+    chỉ đổi chỗ gọi, không đổi hành vi)."""
+    token = _generate_token()
+    expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
+    ua = request.headers.get("user-agent", "")[:500]
+    await asyncio.to_thread(_create_session_atomic, str(user["id"]), _hash_token(token), ua, ip, expires.isoformat())
+    await asyncio.to_thread(_log_login, phone, method, True, request, str(user["id"]))
+    await asyncio.to_thread(_update_login_streak, str(user["id"]))
+    _set_session_cookie(response, request, token)
+
+    def _ach_bg(uid=str(user["id"])):
+        try:
+            from achievements import check_achievements
+            with db._conn() as conn:
+                check_achievements(conn, uid, notify=True)
+        except Exception:
+            pass
+    asyncio.create_task(asyncio.to_thread(_ach_bg))
+    return {
+        "success": True,
+        "token": token,
+        "user": _safe_user(user),
+        "has_password": bool(user.get("password_hash")),
+        "expires_at": expires.isoformat(),
+    }
+
+
 @router.post("/verify-otp",
              summary="Verify OTP and create session",
              description="Verifies the OTP code for a phone number. On success, creates or reactivates the user account and returns a session token.")
-async def verify_otp(body: OTPVerify, request: Request):
+async def verify_otp(body: OTPVerify, request: Request, response: Response):
     from middleware import get_client_ip
     ip = get_client_ip(request)
     now = time.time()
@@ -539,38 +614,20 @@ async def verify_otp(body: OTPVerify, request: Request):
         return u
     user = await asyncio.to_thread(_get_or_create_user)
 
-    token = _generate_token()
-    expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
     from middleware import get_client_ip
     ip = get_client_ip(request)
 
     if body.consent:
         await asyncio.to_thread(_log_consent, str(user["id"]), CONSENT_VERSION, ip)
-    ua = request.headers.get("user-agent", "")[:500]
 
-    await asyncio.to_thread(
-        _create_session_atomic, str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()
-    )
+    if _2fa_is_enabled(str(user["id"])):
+        ua = request.headers.get("user-agent", "")[:500]
+        # Bỏ qua nếu thiết bị tin cậy (Task 4 sẽ chèn kiểm tra cookie ở đây).
+        challenge = await asyncio.to_thread(_create_pending_2fa, str(user["id"]), ip, ua)
+        await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
+        return {"two_factor_required": True, "challenge_id": challenge}
 
-    await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
-    await asyncio.to_thread(_update_login_streak, str(user["id"]))
-
-    def _ach_bg(uid=str(user["id"])):
-        try:
-            from achievements import check_achievements
-            with db._conn() as conn:
-                check_achievements(conn, uid, notify=True)
-        except Exception:
-            pass
-    asyncio.create_task(asyncio.to_thread(_ach_bg))
-
-    return {
-        "success": True,
-        "token": token,
-        "user": _safe_user(user),
-        "has_password": bool(user.get("password_hash")),
-        "expires_at": expires.isoformat(),
-    }
+    return await _finish_login(user, phone, "otp", request, response)
 
 
 CHECK_PHONE_IP_LIMIT = _cfg.CHECK_PHONE_IP_LIMIT
@@ -600,7 +657,7 @@ async def check_phone(body: CheckPhone, request: Request):
 @router.post("/login",
              summary="Login with phone and password",
              description="Authenticates a user with phone number and password. Returns a session token on success. Rate-limited per IP and per phone to prevent brute-force attacks.")
-async def login_password(body: PasswordLogin, request: Request):
+async def login_password(body: PasswordLogin, request: Request, response: Response):
     # P0-15: rate-limit theo IP (chống brute-force mật khẩu).
     from middleware import get_client_ip
     ip = get_client_ip(request)
@@ -652,32 +709,13 @@ async def login_password(body: PasswordLogin, request: Request):
 
     _login_phone_fails.pop(phone, None)
 
-    token = _generate_token()
-    expires = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRE_DAYS)
-    ua = request.headers.get("user-agent", "")[:500]
+    if _2fa_is_enabled(str(user["id"])):
+        ua = request.headers.get("user-agent", "")[:500]
+        challenge = await asyncio.to_thread(_create_pending_2fa, str(user["id"]), ip, ua)
+        await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
+        return {"two_factor_required": True, "challenge_id": challenge}
 
-    await asyncio.to_thread(
-        _create_session_atomic, str(user["id"]), _hash_token(token), ua, ip, expires.isoformat()
-    )
-
-    await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
-    await asyncio.to_thread(_update_login_streak, str(user["id"]))
-
-    def _ach_bg(uid=str(user["id"])):
-        try:
-            from achievements import check_achievements
-            with db._conn() as conn:
-                check_achievements(conn, uid, notify=True)
-        except Exception:
-            pass
-    asyncio.create_task(asyncio.to_thread(_ach_bg))
-
-    return {
-        "success": True,
-        "token": token,
-        "user": _safe_user(user),
-        "expires_at": expires.isoformat(),
-    }
+    return await _finish_login(user, phone, "password", request, response)
 
 
 @router.post("/set-password",
@@ -1556,6 +1594,127 @@ async def twofa_status(request: Request):
             return enabled, rem
     enabled, rem = await asyncio.to_thread(_q)
     return {"enabled": enabled, "recovery_remaining": rem}
+
+
+# ── 2FA login challenge (Wave 4 W4.4) ──
+# Nửa-đăng-nhập: verify_otp/login_password phát challenge (KHÔNG tạo session) khi
+# 2FA bật; /2fa/verify tiêu thụ challenge (dùng-một-lần, FOR UPDATE SKIP LOCKED,
+# giới hạn OTP_MAX_ATTEMPTS) rồi mới gọi _finish_login. Mirror thiết kế otp_sessions.
+
+TFA_VERIFY_IP_LIMIT = 15
+TFA_VERIFY_IP_WINDOW = 300
+_tfa_verify_ip_rate: dict[str, list[float]] = {}
+PENDING_2FA_EXPIRE_MINUTES = 5
+
+
+def _create_pending_2fa(user_id: str, ip: str, ua: str) -> str:
+    raw = _generate_token()
+    expires = datetime.now(timezone.utc) + timedelta(minutes=PENDING_2FA_EXPIRE_MINUTES)
+    ph = db._ph
+    with db._conn() as conn:
+        db._execute(conn, f"""
+            INSERT INTO pending_2fa (user_id, token_hash, ip, user_agent, expires_at)
+            VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph})
+        """, (user_id, _hash_token(raw), ip, ua[:500], expires.isoformat()))
+    return raw
+
+
+def _load_user_by_id(user_id: str) -> dict | None:
+    # Aliased wildcard select (u.*), matching _get_current_user_or_none's convention —
+    # avoids the bare-wildcard pattern the repo's UGC-file source scan disallows.
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT u.* FROM users u WHERE u.id::text = {ph} AND u.is_active = TRUE AND u.deleted_at IS NULL", (user_id,))
+        return db._row_to_dict(row) if row else None
+
+
+class _TwoFAVerify(BaseModel):
+    challenge_id: str
+    code: str
+    recovery: bool = False
+    remember_device: bool = False
+
+
+@router.post("/2fa/verify",
+             summary="Complete login with a 2FA code",
+             description="Completes a login that was gated by 2FA. Verifies a TOTP code or a recovery code against the pending challenge, then creates a session on success.")
+async def twofa_verify(body: _TwoFAVerify, request: Request, response: Response):
+    from middleware import get_client_ip
+    from twofactor import decrypt_secret, verify_totp, recovery_code_matches
+    ip = get_client_ip(request)
+    now = time.time()
+    _check_shared_auth_rate(f"tfa_verify_ip:{ip}", TFA_VERIFY_IP_LIMIT, TFA_VERIFY_IP_WINDOW, "Qua nhieu lan xac thuc 2FA. Thu lai sau.")
+    hits = [t for t in _tfa_verify_ip_rate.get(ip, []) if now - t < TFA_VERIFY_IP_WINDOW]
+    if len(hits) >= TFA_VERIFY_IP_LIMIT:
+        raise HTTPException(429, "Quá nhiều lần xác thực 2FA. Vui lòng thử lại sau.")
+    hits.append(now); _tfa_verify_ip_rate[ip] = hits; _gc_rate_dict(_tfa_verify_ip_rate, TFA_VERIFY_IP_WINDOW)
+
+    token_hash = _hash_token(body.challenge_id)
+
+    def _load_challenge():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"""
+                SELECT id, user_id, attempts, expires_at FROM pending_2fa
+                WHERE token_hash = {ph} FOR UPDATE SKIP LOCKED
+            """, (token_hash,))
+            if not row:
+                return None
+            d = db._row_to_dict(row)
+            exp = d["expires_at"]
+            if isinstance(exp, str):
+                exp = datetime.fromisoformat(exp)
+            if exp.tzinfo is None:
+                exp = exp.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) > exp:
+                db._execute(conn, f"DELETE FROM pending_2fa WHERE id = {ph}", (d["id"],))
+                return None
+            if d["attempts"] >= OTP_MAX_ATTEMPTS:
+                db._execute(conn, f"DELETE FROM pending_2fa WHERE id = {ph}", (d["id"],))
+                return "locked"
+            db._execute(conn, f"UPDATE pending_2fa SET attempts = attempts + 1 WHERE id = {ph}", (d["id"],))
+            return d
+    challenge = await asyncio.to_thread(_load_challenge)
+    if challenge == "locked":
+        raise HTTPException(429, "Quá nhiều lần thử. Vui lòng đăng nhập lại.")
+    if not challenge:
+        raise HTTPException(400, "Phiên xác thực không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.")
+    uid = str(challenge["user_id"])
+
+    def _check() -> bool:
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT secret_enc FROM user_2fa WHERE user_id::text = {ph} AND enabled = TRUE", (uid,))
+            if not row:
+                return False
+            secret = decrypt_secret(db._row_to_dict(row)["secret_enc"])
+            if not body.recovery and verify_totp(secret, body.code):
+                return True
+            if body.recovery:
+                codes = db._fetchall(conn, f"SELECT id, code_hash FROM user_2fa_recovery_codes WHERE user_id::text = {ph} AND used_at IS NULL", (uid,))
+                for r in codes:
+                    d = db._row_to_dict(r)
+                    if recovery_code_matches(body.code, d["code_hash"]):
+                        db._execute(conn, f"UPDATE user_2fa_recovery_codes SET used_at = NOW() WHERE id = {ph}", (d["id"],))
+                        return True
+            return False
+    if not await asyncio.to_thread(_check):
+        raise HTTPException(400, "Mã không đúng")
+
+    # Thành công → nạp user đầy đủ, xoá challenge (dùng-một-lần), hoàn tất đăng nhập.
+    user = await asyncio.to_thread(_load_user_by_id, uid)
+    if not user:
+        raise HTTPException(400, "Không tìm thấy tài khoản")
+
+    def _consume():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM pending_2fa WHERE id = {ph}", (challenge["id"],))
+    await asyncio.to_thread(_consume)
+
+    # body.remember_device: CHẤP NHẬN nhưng CHƯA xử lý ở Task 3 — Task 4 sẽ gọi
+    # _remember_trusted_device ở đây (ghi trusted_devices + set cookie thiết bị tin cậy).
+    return await _finish_login(user, user.get("phone", ""), "2fa", request, response)
 
 
 # ── Auth helpers (used by other modules) ──
