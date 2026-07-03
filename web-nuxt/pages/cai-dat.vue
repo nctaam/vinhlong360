@@ -5,20 +5,42 @@
     <div v-if="!isLoggedIn" class="settings-guest card">
       <h1>Cài đặt</h1>
       <p>Bạn cần đăng nhập để chỉnh sửa hồ sơ.</p>
-      <button type="button" class="btn btn-primary" @click="() => openAuth()">Đăng nhập</button>
+      <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
     </div>
 
     <template v-else>
     <h1 class="settings-title">Cài đặt</h1>
 
+    <div class="settings-overview" aria-label="Tổng quan tài khoản">
+      <div class="settings-overview-item">
+        <span class="so-label">Hồ sơ</span>
+        <strong>{{ settingsProfileCompletion }}%</strong>
+        <div class="so-bar" aria-hidden="true"><span :style="{ width: settingsProfileCompletion + '%' }"></span></div>
+      </div>
+      <div class="settings-overview-item">
+        <span class="so-label">Bảo mật</span>
+        <strong>{{ hasPassword ? 'Đã có mật khẩu' : 'Cần đặt mật khẩu' }}</strong>
+        <NuxtLink to="#bao-mat" class="so-link" @click.prevent="setTab('bao-mat')">Kiểm tra</NuxtLink>
+      </div>
+      <div class="settings-overview-item">
+        <span class="so-label">Phiên đăng nhập</span>
+        <strong>{{ sessionsSummary }}</strong>
+        <NuxtLink to="#bao-mat" class="so-link" @click.prevent="setTab('bao-mat')">Quản lý</NuxtLink>
+      </div>
+    </div>
+    <div class="settings-hash-anchors" aria-hidden="true">
+      <span v-for="t in TABS" :id="t.key" :key="`anchor-${t.key}`"></span>
+    </div>
+
     <!-- Tab navigation -->
-    <nav class="settings-tabs" role="tablist" aria-label="Cài đặt">
+    <nav class="settings-tabs" role="tablist" aria-label="Cài đặt" aria-orientation="horizontal" @keydown="onTabKeydown">
       <button
         v-for="t in TABS" :key="t.key" type="button" role="tab"
         :id="`tab-${t.key}`"
         class="settings-tab" :class="{ active: activeTab === t.key }"
         :aria-selected="activeTab === t.key"
         :aria-controls="`panel-${t.key}`"
+        :tabindex="activeTab === t.key ? 0 : -1"
         @click="setTab(t.key)"
       >
         <span class="settings-tab-icon" aria-hidden="true">{{ t.icon }}</span>
@@ -27,7 +49,7 @@
     </nav>
 
     <!-- Tab: Hồ sơ -->
-    <div v-show="activeTab === 'ho-so'" :id="`panel-ho-so`" class="settings-card card" role="tabpanel" aria-labelledby="tab-ho-so">
+    <div v-show="activeTab === 'ho-so'" id="panel-ho-so" class="settings-card card" role="tabpanel" aria-labelledby="tab-ho-so" :hidden="activeTab !== 'ho-so'" :tabindex="activeTab === 'ho-so' ? 0 : -1">
       <h2>Hồ sơ cá nhân</h2>
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
@@ -73,7 +95,7 @@
           <span class="sf-label">Username <span class="sf-hint">— không thể thay đổi</span></span>
           <div class="sf-username-row">
             <span class="sf-username-prefix">vinhlong360.vn/nguoi-dung/</span>
-            <input type="text" class="sf-input sf-username-input sf-readonly" :value="user?.username || '—'" readonly tabindex="0" />
+            <input type="text" class="sf-input sf-username-input sf-readonly" :value="user?.username || user?.id || '—'" readonly tabindex="0" />
           </div>
         </div>
 
@@ -142,7 +164,7 @@
             <span v-if="saving" class="spinner spinner-sm" aria-hidden="true"></span>
             {{ saving ? 'Đang lưu…' : 'Lưu thay đổi' }}
           </button>
-          <NuxtLink v-if="user" :to="`/nguoi-dung/${user.username || user.id}`" class="btn btn-ghost">Xem hồ sơ</NuxtLink>
+          <NuxtLink v-if="user" :to="userPath(user.username || user.id)" class="btn btn-ghost">Xem hồ sơ</NuxtLink>
         </div>
       </form>
     </div>
@@ -160,6 +182,12 @@
           <label class="sf-field">
             <span class="sf-label">{{ hasPassword ? 'Mật khẩu mới' : 'Đặt mật khẩu' }}</span>
             <input v-model="newPw" type="password" class="sf-input" minlength="6" autocomplete="new-password" required />
+            <div v-if="newPw" class="pw-strength" aria-live="polite">
+              <div class="pw-bar">
+                <span v-for="i in 4" :key="i" :class="['pw-segment', { filled: i <= pwStrength.score }]" :style="i <= pwStrength.score ? { background: pwStrength.color } : {}"></span>
+              </div>
+              <span class="pw-label" :style="{ color: pwStrength.color }">{{ pwStrength.label }}</span>
+            </div>
           </label>
           <label class="sf-field">
             <span class="sf-label">Xác nhận mật khẩu</span>
@@ -188,6 +216,9 @@
           </div>
         </div>
         <p v-else class="sf-hint">Không có phiên nào.</p>
+        <p v-if="hiddenSystemSessions" class="sf-hint session-system-note">
+          Đã ẩn {{ hiddenSystemSessions }} phiên hệ thống để danh sách chỉ còn các phiên người dùng cần quản lý.
+        </p>
       </div>
 
       <div class="settings-card card">
@@ -295,7 +326,7 @@
       <div v-else-if="blockedUsers.length" class="sessions-list">
         <div v-for="b in blockedUsers" :key="b.id" class="session-item">
           <div class="session-info">
-            <NuxtLink :to="`/nguoi-dung/${b.username || b.id}`" class="session-ua">{{ b.display_name || 'Người dùng' }}</NuxtLink>
+            <NuxtLink :to="userPath(b.username || b.id)" class="session-ua">{{ b.display_name || 'Người dùng' }}</NuxtLink>
           </div>
           <button type="button" class="btn btn-ghost btn-sm" @click="unblockUser(b.id, b.display_name)">Bỏ chặn</button>
         </div>
@@ -363,8 +394,6 @@ watch(isLoggedIn, (v) => { if (!v) navigateTo('/') })
 function setColorMode(mode: 'light' | 'dark' | 'system') {
   colorModeState.preference = mode
 }
-const route = useRoute()
-
 useHead({
   title: 'Cài đặt',
   meta: [{ name: 'robots', content: 'noindex,nofollow' }],
@@ -384,14 +413,38 @@ const TABS = [
 type TabKey = typeof TABS[number]['key']
 
 const validKeys = new Set(TABS.map(t => t.key))
-const hashKey = route.hash?.slice(1)
-const activeTab = ref<TabKey>(validKeys.has(hashKey as TabKey) ? (hashKey as TabKey) : 'ho-so')
+const activeTab = ref<TabKey>('ho-so')
 
 const tabLoaded = reactive(new Set<TabKey>())
-function setTab(key: TabKey) {
+async function setTab(key: TabKey): Promise<boolean> {
+  if (activeTab.value === key) return true
+  if (activeTab.value === 'ho-so' && isDirty.value) {
+    const ok = await confirm('Bạn có thay đổi hồ sơ chưa lưu. Rời tab bây giờ sẽ giữ dữ liệu trên màn hình nhưng chưa cập nhật lên hệ thống.', {
+      title: 'Rời tab Hồ sơ?',
+      confirmText: 'Rời tab',
+    })
+    if (!ok) return false
+  }
   activeTab.value = key
   if (import.meta.client) window.history.replaceState(null, '', `#${key}`)
   lazyLoadTab(key)
+  return true
+}
+async function onTabKeydown(e: KeyboardEvent) {
+  const keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End']
+  if (!keys.includes(e.key)) return
+  e.preventDefault()
+  const current = TABS.findIndex(t => t.key === activeTab.value)
+  const nextIndex = e.key === 'Home'
+    ? 0
+    : e.key === 'End'
+      ? TABS.length - 1
+      : e.key === 'ArrowRight'
+        ? (current + 1) % TABS.length
+        : (current - 1 + TABS.length) % TABS.length
+  const nextKey = TABS[nextIndex]!.key
+  const changed = await setTab(nextKey)
+  if (changed) nextTick(() => document.getElementById(`tab-${nextKey}`)?.focus())
 }
 function lazyLoadTab(key: TabKey) {
   if (tabLoaded.has(key)) return
@@ -454,6 +507,11 @@ async function onAvatarChange(e: Event) {
 
 // Prefill bio from the public profile (User type doesn't carry bio).
 onMounted(async () => {
+  const hash = window.location.hash.slice(1) as TabKey
+  if (hash && validKeys.has(hash)) {
+    activeTab.value = hash
+  }
+  lazyLoadTab(activeTab.value)
   if (!user.value) return
   try {
     const res = await $fetch<Record<string, any>>(`/api/users/${user.value.id}`, { headers: authHeaders() })
@@ -464,15 +522,47 @@ onMounted(async () => {
     if (u?.email) { email.value = u.email; savedEmail.value = u.email }
     if (u?.contact_info) { contactInfo.value = u.contact_info; savedContactInfo.value = u.contact_info }
   } catch { /* prefill is best-effort */ }
-  lazyLoadTab(activeTab.value)
 })
 
 const currentPw = ref('')
 const newPw = ref('')
 const confirmPw = ref('')
 const savingPw = ref(false)
+
+const COMMON_PASSWORDS = new Set([
+  '123456', 'password', '12345678', 'qwerty', 'abc123', 'monkey', 'master',
+  '111111', '123123', 'letmein', 'dragon', 'baseball', 'iloveyou', 'trustno1',
+  'sunshine', 'princess', 'football', 'shadow', 'superman', 'michael',
+])
+
+const pwStrength = computed(() => {
+  const pw = newPw.value
+  if (!pw) return { score: 0, label: '', color: '' }
+  if (COMMON_PASSWORDS.has(pw.toLowerCase())) return { score: 1, label: 'Rất yếu', color: 'var(--error)' }
+  let score = 0
+  if (pw.length >= 8) score++
+  if (pw.length >= 12) score++
+  if (pw.length >= 16) score++
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++
+  if (/\d/.test(pw)) score++
+  if (/[^a-zA-Z0-9]/.test(pw)) score++
+  const level = score <= 2 ? 1 : score <= 3 ? 2 : score <= 4 ? 3 : 4
+  const labels = ['', 'Yếu', 'Trung bình', 'Mạnh', 'Rất mạnh']
+  const colors = ['', 'var(--error)', 'var(--warning)', 'var(--success)', 'var(--primary)']
+  return { score: level, label: labels[level], color: colors[level] }
+})
 const hasPassword = computed(() => user.value?.has_password === true)
 const hasPasswordKnown = computed(() => typeof user.value?.has_password === 'boolean')
+const settingsProfileCompletion = computed(() => {
+  const checks = [
+    Boolean(displayName.value || fullName.value),
+    Boolean(user.value?.avatar_url),
+    Boolean(user.value?.cover_url),
+    Boolean(bio.value.trim()),
+    Boolean(email.value.trim() || contactInfo.value.trim()),
+  ]
+  return Math.round((checks.filter(Boolean).length / checks.length) * 100)
+})
 
 async function savePassword() {
   if (hasPassword.value && !currentPw.value) {
@@ -505,25 +595,44 @@ async function savePassword() {
 
 const sessions = ref<any[]>([])
 const sessionsLoading = ref(true)
+const hiddenSystemSessions = ref(0)
 
 async function loadSessions() {
   sessionsLoading.value = true
   try {
-    const res = await $fetch<{ sessions: any[] }>('/auth/sessions', { headers: authHeaders() })
-    sessions.value = res.sessions || []
+    const res = await $fetch<{ sessions: any[]; hidden_internal_count?: number }>('/auth/sessions', { headers: authHeaders() })
+    const visible = []
+    let hidden = Number(res.hidden_internal_count || 0)
+    for (const session of res.sessions || []) {
+      if (!session.is_current && isInternalUA(session.user_agent)) hidden += 1
+      else visible.push(session)
+    }
+    sessions.value = visible
+    hiddenSystemSessions.value = hidden
   } catch { /* ignore */ }
   sessionsLoading.value = false
 }
 
+function isInternalUA(ua: string): boolean {
+  return /(python|urllib|httpx|aiohttp|curl|wget|healthcheck|uptime|node|undici|node-fetch)/i.test(ua || '')
+}
+
 function shortUA(ua: string): string {
   if (!ua) return 'Không rõ'
-  if (/(python|urllib|httpx|aiohttp|curl|wget|healthcheck|uptime)/i.test(ua)) return 'Phiên hệ thống'
+  if (isInternalUA(ua)) return 'Phiên hệ thống'
   if (ua.includes('Mobile')) return 'Di động'
   if (ua.includes('Windows')) return 'Windows'
   if (ua.includes('Mac')) return 'macOS'
   if (ua.includes('Linux')) return 'Linux'
   return ua.slice(0, 30)
 }
+
+const sessionsSummary = computed(() => {
+  if (!tabLoaded.has('bao-mat')) return 'Chưa kiểm tra'
+  if (sessionsLoading.value) return 'Đang kiểm tra'
+  const suffix = hiddenSystemSessions.value ? ` · ẩn ${hiddenSystemSessions.value} phiên hệ thống` : ''
+  return `${sessions.value.length} phiên${suffix}`
+})
 
 async function revokeSession(id: string) {
   try {
@@ -772,18 +881,29 @@ function onBeforeUnload(e: BeforeUnloadEvent) {
 }
 function onPopState() {
   const hash = window.location.hash.slice(1) as TabKey
-  if (hash && TABS.some(t => t.key === hash)) activeTab.value = hash
+  if (hash && TABS.some(t => t.key === hash)) {
+    activeTab.value = hash
+    lazyLoadTab(hash)
+  }
+}
+function syncHashTabSoon() {
+  onPopState()
+  nextTick(onPopState)
+  window.setTimeout(onPopState, 250)
 }
 onMounted(() => {
   if (import.meta.client) {
     window.addEventListener('beforeunload', onBeforeUnload)
     window.addEventListener('popstate', onPopState)
+    window.addEventListener('hashchange', onPopState)
+    syncHashTabSoon()
   }
 })
 onUnmounted(() => {
   if (import.meta.client) {
     window.removeEventListener('beforeunload', onBeforeUnload)
     window.removeEventListener('popstate', onPopState)
+    window.removeEventListener('hashchange', onPopState)
   }
   if (avatarPreview.value?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview.value)
   if (coverPreview.value?.startsWith('blob:')) URL.revokeObjectURL(coverPreview.value)
@@ -791,8 +911,24 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.settings-page { max-width: 640px; margin: 0 auto; }
+.settings-page { max-width: 920px; margin: 0 auto; }
 .settings-title { font-size: 1.5rem; margin: 0 0 1rem; }
+.settings-overview {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3); margin-bottom: var(--space-5);
+}
+.settings-overview-item {
+  min-height: 112px; padding: 1rem; border: 1px solid var(--line);
+  border-radius: var(--radius-lg); background: var(--card);
+  display: flex; flex-direction: column; gap: .45rem;
+}
+.so-label { color: var(--ink-700); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.settings-overview-item strong { font-size: 1rem; line-height: 1.25; }
+.so-link { margin-top: auto; color: var(--accent); font-weight: 700; font-size: .82rem; text-decoration: none; }
+.so-bar { height: 7px; border-radius: var(--radius-full); background: var(--bg-alt); overflow: hidden; }
+.so-bar span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .3s var(--ease-out); }
+.settings-hash-anchors { position: relative; height: 0; overflow: hidden; }
+.settings-hash-anchors span { position: absolute; top: -96px; width: 1px; height: 1px; }
 .settings-card, .settings-guest { padding: 1.5rem; }
 .settings-guest h1 { margin: 0 0 1.25rem; font-size: 1.5rem; }
 .settings-guest p { color: var(--ink-700); margin-bottom: 1rem; }
@@ -829,6 +965,10 @@ onUnmounted(() => {
 .sf-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 33,150,83), .15); background: var(--card); }
 .sf-textarea { resize: vertical; min-height: 90px; }
 .sf-error { color: var(--danger, #c0392b); font-size: .85rem; }
+.pw-strength { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
+.pw-bar { display: flex; gap: 3px; flex: 1; max-width: 160px; }
+.pw-segment { height: 4px; flex: 1; border-radius: 2px; background: var(--line); transition: background .2s; }
+.pw-label { font-size: .75rem; font-weight: 500; min-width: 80px; }
 .sf-success { color: var(--accent, #219653); font-size: .85rem; }
 .sf-loading { display: flex; align-items: center; gap: var(--space-2); color: var(--ink-700); font-size: .85rem; padding: var(--space-4) 0; }
 .sf-hint-spaced { margin-bottom: var(--space-4); }
@@ -862,6 +1002,7 @@ onUnmounted(() => {
 .session-info { flex: 1; display: flex; flex-direction: column; gap: .15rem; }
 .session-ua { font-weight: 600; font-size: .9rem; }
 .session-badge { font-size: .75rem; font-weight: 600; color: var(--accent); background: color-mix(in oklab, var(--accent) 12%, transparent); padding: .15rem .5rem; border-radius: var(--radius-full); }
+.session-system-note { margin: .75rem 0 0; padding: .65rem .75rem; border-radius: var(--radius-md); background: var(--bg-alt); }
 .settings-danger { border-color: rgba(192,57,43,.2); border-left: 3px solid var(--error, #c0392b); }
 .danger-actions { display: flex; flex-direction: column; gap: .75rem; }
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
@@ -930,10 +1071,13 @@ onUnmounted(() => {
 .dark .notif-pref-item { border-color: var(--line); }
 .dark .notif-pref-item:hover { background: var(--bg-alt); }
 .dark .sf-readonly { background: var(--bg); }
+.dark .settings-overview-item { background: var(--bg-alt); border-color: var(--line); }
+.dark .so-bar { background: var(--bg); }
 
 /* ── Mobile ── */
 @media (max-width: 600px) {
   .settings-page { padding: var(--space-4) var(--space-3); }
+  .settings-overview { grid-template-columns: 1fr; }
   .settings-card, .settings-guest { padding: var(--space-4); }
   .sf-avatar-section { flex-direction: column; align-items: flex-start; }
   .danger-item { flex-direction: column; align-items: flex-start; gap: .5rem; }
