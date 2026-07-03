@@ -61,7 +61,7 @@
         </div>
 
         <!-- Create post (Threads style) -->
-        <div v-if="isLoggedIn && !ugcUnavailable" ref="composeEl" class="threads-compose" role="form" aria-label="Viết bài mới">
+        <div v-if="isLoggedIn && !ugcUnavailable" id="compose" ref="composeEl" class="threads-compose" role="form" aria-label="Viết bài mới">
           <div class="compose-left">
             <span class="avatar thread-avatar">{{ userInitial }}</span>
           </div>
@@ -119,6 +119,17 @@
               </div>
             </div>
 
+            <div v-if="!quotingPost" class="schedule-option">
+              <label class="schedule-toggle">
+                <input type="checkbox" v-model="schedulePost" class="cd-toggle" />
+                <span>Lên lịch đăng bài</span>
+              </label>
+              <div v-if="schedulePost" class="schedule-picker">
+                <input type="datetime-local" v-model="scheduledAt" class="cd-input" :min="minScheduleDate" required aria-label="Thời gian đăng bài" />
+                <span class="cd-hint">Bài sẽ tự động đăng vào thời gian này.</span>
+              </div>
+            </div>
+
             <div class="compose-footer">
               <div class="compose-footer-left">
                 <label class="compose-attach" title="Thêm ảnh">
@@ -136,8 +147,8 @@
                   {{ newContent.length }}/{{ MAX_CHARS }}
                 </span>
               </div>
-              <button type="button" class="btn btn-primary btn-sm" :disabled="!canSubmit || posting" @click="submitPost">
-                {{ posting ? 'Đang đăng…' : 'Đăng' }}
+              <button type="button" class="btn btn-primary btn-sm" :disabled="!canSubmit || posting || (schedulePost && !scheduledAt)" @click="submitPost">
+                {{ posting ? (schedulePost ? 'Đang lên lịch…' : 'Đang đăng…') : (schedulePost ? 'Lên lịch' : 'Đăng') }}
               </button>
             </div>
           </div>
@@ -149,9 +160,23 @@
           </div>
           <div class="guest-content">
             <p>Có trải nghiệm muốn chia sẻ?</p>
-            <button type="button" class="btn btn-outline btn-sm" @click="openAuth">Đăng nhập</button>
+            <button type="button" class="btn btn-outline btn-sm" @click="openAuth()">Đăng nhập</button>
           </div>
         </div>
+
+        <!-- Bài đã lên lịch -->
+        <details v-if="isLoggedIn && scheduledPosts.length" class="scheduled-section">
+          <summary class="scheduled-summary">📅 Bài đã lên lịch ({{ scheduledPosts.length }})</summary>
+          <div class="scheduled-list">
+            <div v-for="sp in scheduledPosts" :key="sp.id" class="scheduled-item">
+              <p>{{ sp.content?.slice(0, 100) }}{{ (sp.content?.length || 0) > 100 ? '...' : '' }}</p>
+              <div class="scheduled-meta">
+                <time :datetime="sp.scheduled_at">{{ new Date(sp.scheduled_at).toLocaleString('vi-VN') }}</time>
+                <button type="button" class="btn btn-ghost btn-sm scheduled-cancel" @click="cancelScheduled(sp.id)">Hủy</button>
+              </div>
+            </div>
+          </div>
+        </details>
 
         <!-- Tìm bài viết -->
         <div v-if="!ugcUnavailable" class="community-search" role="search">
@@ -177,14 +202,23 @@
         </div>
 
         <!-- Main tabs -->
-        <div v-if="!searchMode && !ugcUnavailable" class="threads-filter" role="tablist" aria-label="Bộ lọc bảng tin">
-          <button type="button" role="tab" :class="['threads-tab', { active: activeTab === 'latest' }]" :aria-selected="activeTab === 'latest'" @click="setTab('latest')">Mới nhất</button>
-          <button type="button" role="tab" :class="['threads-tab', { active: activeTab === 'trending' }]" :aria-selected="activeTab === 'trending'" @click="setTab('trending')">Nổi bật</button>
-          <button type="button" role="tab" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'following' }]" :aria-selected="activeTab === 'following'" @click="setTab('following')">Đang theo dõi</button>
-          <button type="button" role="tab" v-if="isLoggedIn" :class="['threads-tab', { active: activeTab === 'bookmarks' }]" :aria-selected="activeTab === 'bookmarks'" @click="setTab('bookmarks')">
-            <svg class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>Đã lưu
-          </button>
-          <button type="button" class="threads-tab threads-refresh" :disabled="loading" aria-label="Tải lại bảng tin" @click="refreshFeed">
+        <div v-if="!searchMode && !ugcUnavailable" class="threads-filter-bar">
+          <div class="threads-filter" role="tablist" aria-label="Bộ lọc bảng tin" @keydown="onFeedTabKeydown">
+            <button
+              v-for="tab in visibleFeedTabs"
+              :key="tab.key"
+              type="button"
+              role="tab"
+              :class="['threads-tab', { active: activeTab === tab.key }]"
+              :aria-selected="activeTab === tab.key"
+              :tabindex="activeTab === tab.key ? 0 : -1"
+              :data-tab="tab.key"
+              @click="setTab(tab.key)"
+            >
+              <svg v-if="tab.key === 'bookmarks'" class="icon-inline" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>{{ tab.label }}
+            </button>
+          </div>
+          <button type="button" class="threads-refresh" :disabled="loading" aria-label="Tải lại bảng tin" @click="refreshFeed">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" :class="{ spinning: loading }"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           </button>
         </div>
@@ -208,7 +242,7 @@
               <NuxtLink
                 v-for="m in topMembers.slice(0, 5)"
                 :key="m.id"
-                :to="`/nguoi-dung/${m.username || m.id}`"
+                :to="userPath(m.username || m.id)"
                 class="md-member"
               >
                 <span class="avatar avatar-xs">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
@@ -225,18 +259,17 @@
         </div>
 
         <!-- Post type filter (only for feed tabs, not bookmarks/search) -->
-        <div v-if="activeTab !== 'bookmarks' && !searchMode" class="type-filter-row" role="tablist" aria-label="Lọc loại bài viết">
-          <button type="button" role="tab"
-            :class="['chip chip-filter', { active: filterType === '' }]"
-            :aria-selected="filterType === ''"
-            @click="filterType = ''"
-          >Tất cả</button>
-          <button type="button" role="tab"
-            v-for="pt in postTypes"
-            :key="pt.value"
+        <div v-if="activeTab !== 'bookmarks' && !searchMode" class="type-filter-row" role="tablist" aria-label="Lọc loại bài viết" @keydown="onTypeFilterKeydown">
+          <button
+            v-for="pt in filterTypeOptions"
+            :key="pt.value || 'all'"
+            type="button"
+            role="tab"
             :class="['chip chip-filter', { active: filterType === pt.value }]"
             :aria-selected="filterType === pt.value"
-            @click="filterType = pt.value"
+            :tabindex="filterType === pt.value ? 0 : -1"
+            :data-type="pt.value || 'all'"
+            @click="setFilterType(pt.value)"
           >{{ pt.label }}</button>
         </div>
 
@@ -255,7 +288,7 @@
             @report="reportPost"
             @repost="repostPost"
             @quote="startQuote"
-            @edit="(id) => navigateTo(`/bai-viet/${id}?edit=1`)"
+            @edit="(id) => navigateTo(`${postPath(id)}?edit=1`)"
             @delete="deletePost"
           />
         </TransitionGroup>
@@ -294,7 +327,7 @@
               <p class="onboard-title">Gợi ý theo dõi</p>
               <div class="onboard-list">
                 <div v-for="s in suggestedUsers.slice(0, 5)" :key="s.id" class="onboard-user">
-                  <NuxtLink :to="`/nguoi-dung/${s.username || s.id}`" class="onboard-info">
+                  <NuxtLink :to="userPath(s.username || s.id)" class="onboard-info">
                     <span class="avatar avatar-sm">{{ (s.display_name || '?').charAt(0).toUpperCase() }}</span>
                     <span class="onboard-name">{{ s.display_name }}</span>
                   </NuxtLink>
@@ -318,7 +351,7 @@
             <button type="button" class="btn btn-primary btn-sm" @click="focusComposer">Viết bài đầu tiên</button>
           </template>
           <template v-else #actions>
-            <button type="button" class="btn btn-primary btn-sm" @click="openAuth">Đăng nhập để chia sẻ</button>
+            <button type="button" class="btn btn-primary btn-sm" @click="openAuth()">Đăng nhập để chia sẻ</button>
           </template>
         </EmptyState>
 
@@ -350,7 +383,7 @@
           <h2>Thành viên tích cực</h2>
           <ol class="leaderboard-list">
             <li v-for="(m, i) in topMembers" :key="m.id">
-              <NuxtLink :to="`/nguoi-dung/${m.username || m.id}`" class="lb-row">
+              <NuxtLink :to="userPath(m.username || m.id)" class="lb-row">
                 <span class="lb-rank" :class="`lb-rank-${i + 1}`">{{ i + 1 }}</span>
                 <span class="avatar lb-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
                 <span class="lb-name">{{ m.display_name }}</span>
@@ -365,7 +398,7 @@
           <h2>Có thể bạn quan tâm</h2>
           <ul class="suggest-list">
             <li v-for="s in suggestedUsers" :key="s.id" class="suggest-row">
-              <NuxtLink :to="`/nguoi-dung/${s.username || s.id}`" class="suggest-user">
+              <NuxtLink :to="userPath(s.username || s.id)" class="suggest-user">
                 <span class="avatar suggest-avatar">{{ (s.display_name || '?').charAt(0).toUpperCase() }}</span>
                 <span class="suggest-name">{{ s.display_name }}</span>
               </NuxtLink>
@@ -436,7 +469,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Post, Entity} from '~/types'
+import type { Post, Entity } from '~/types'
 useReveal()
 const { f: pc } = usePageContent('cong_dong')
 
@@ -452,12 +485,32 @@ const route = useRoute()
 const router = useRouter()
 
 const { show: showToast } = useToast()
+const { trackEvent } = useUserEvents()
 const postTypes = [
   { value: 'share', label: '📸 Chia sẻ' },
   { value: 'review', label: '⭐ Đánh giá' },
   { value: 'question', label: '❓ Hỏi đáp' },
   { value: 'recommend', label: '👍 Gợi ý' },
 ]
+type FeedTab = 'latest' | 'trending' | 'following' | 'bookmarks'
+type PostTypeValue = '' | 'share' | 'review' | 'question' | 'recommend'
+
+const feedTabs: Array<{ key: FeedTab; label: string; requiresAuth?: boolean }> = [
+  { key: 'latest', label: 'Mới nhất' },
+  { key: 'trending', label: 'Nổi bật' },
+  { key: 'following', label: 'Đang theo dõi', requiresAuth: true },
+  { key: 'bookmarks', label: 'Đã lưu', requiresAuth: true },
+]
+const privateFeedTabs = new Set<FeedTab>(['following', 'bookmarks'])
+const postTypeValues = new Set(postTypes.map(pt => pt.value))
+
+function firstQueryValue(value: unknown) {
+  return Array.isArray(value) ? String(value[0] || '') : String(value || '')
+}
+
+function normalizeTagQuery(value: unknown) {
+  return firstQueryValue(value).trim().replace(/^#/, '').toLowerCase()
+}
 
 const userInitial = computed(() => {
   const name = user.value?.display_name || user.value?.phone || '?'
@@ -465,15 +518,48 @@ const userInitial = computed(() => {
 })
 
 // ── Tabs & filtering ──
-const activeTab = ref<'latest' | 'trending' | 'following' | 'bookmarks'>('latest')
+const activeTab = ref<FeedTab>('latest')
 const sort = computed(() => activeTab.value === 'trending' ? 'trending' : 'latest')
-const filterType = ref('')
-const activeTag = ref(String(route.query.tag || '').toLowerCase())
-useFilterUrl({ tab: activeTab, type: filterType }, { tab: 'latest', type: '' })
+const filterType = ref<PostTypeValue>('')
+const activeTag = ref(normalizeTagQuery(route.query.tag))
+const visibleFeedTabs = computed(() => feedTabs.filter(tab => !tab.requiresAuth || isLoggedIn.value))
+const filterTypeOptions = computed<Array<{ value: PostTypeValue; label: string }>>(() => [
+  { value: '', label: 'Tất cả' },
+  ...postTypes.map(pt => ({ value: pt.value as PostTypeValue, label: pt.label })),
+])
+const { syncToUrl: syncFeedFiltersToUrl } = useFilterUrl({ tab: activeTab, type: filterType }, { tab: 'latest', type: '' })
+
+function isFeedTab(value: unknown): value is FeedTab {
+  return typeof value === 'string' && feedTabs.some(tab => tab.key === value)
+}
+function isPrivateFeedTab(value: unknown) {
+  return isFeedTab(value) && privateFeedTabs.has(value)
+}
+function normalizeFeedTab(value: unknown): FeedTab {
+  if (!isFeedTab(value)) return 'latest'
+  if (privateFeedTabs.has(value) && !isLoggedIn.value) return 'latest'
+  return value
+}
+function normalizeFilterType(value: unknown): PostTypeValue {
+  const next = typeof value === 'string' ? value : ''
+  return (next === '' || postTypeValues.has(next)) ? next as PostTypeValue : ''
+}
+function normalizeCommunityRouteState() {
+  const nextTab = normalizeFeedTab(activeTab.value)
+  const nextType = activeTab.value === 'bookmarks' ? '' : normalizeFilterType(filterType.value)
+  let changed = false
+  if (nextTab !== activeTab.value) { activeTab.value = nextTab; changed = true }
+  if (nextType !== filterType.value) { filterType.value = nextType; changed = true }
+  if (changed) syncFeedFiltersToUrl()
+}
+normalizeCommunityRouteState()
+
 watch(() => route.query.tag, (t) => {
-  const newTag = String(t || '').toLowerCase()
+  const newTag = normalizeTagQuery(t)
   if (newTag !== activeTag.value) { activeTag.value = newTag; fetchFeed(true) }
 })
+watch(() => route.query.q, () => applyRouteSearchQuery())
+watch(() => route.query.compose, () => focusComposerFromRoute())
 function clearTag() {
   activeTag.value = ''
   const { tag: _, ...rest } = route.query
@@ -481,7 +567,7 @@ function clearTag() {
   fetchFeed(true)
 }
 const page = ref(1)
-const posts = ref<Entity[]>([])
+const posts = ref<Post[]>([])
 const hasMore = ref(false)
 const loading = ref(false)
 const feedError = ref(false)
@@ -490,7 +576,7 @@ let feedAbort: AbortController | null = null
 // ── Tìm bài viết cộng đồng ──
 const searchInput = ref('')
 const searchQuery = ref('')          // truy vấn đang áp dụng (rỗng = không ở chế-độ tìm)
-const searchResults = ref<Entity[]>([])
+const searchResults = ref<Post[]>([])
 const searchPage = ref(1)
 const searchHasMore = ref(false)
 const searchLoading = ref(false)
@@ -504,8 +590,37 @@ const previewImages = ref<string[]>([])
 const charRatio = computed(() => newContent.value.length / MAX_CHARS)
 const quotingPost = ref<Record<string, any> | null>(null)
 
+// ── Lên lịch đăng bài ──
+const schedulePost = ref(false)
+const scheduledAt = ref('')
+const minScheduleDate = computed(() => {
+  const d = new Date()
+  d.setMinutes(d.getMinutes() + 10)
+  return d.toISOString().slice(0, 16)
+})
+const scheduledPosts = ref<any[]>([])
+
+async function loadScheduledPosts() {
+  if (!isLoggedIn.value) return
+  try {
+    const res = await $fetch<{ scheduled: any[] }>('/api/scheduled', { headers: authHeaders() })
+    scheduledPosts.value = res.scheduled || []
+  } catch { /* im lặng — mục lên lịch không quan trọng bằng bảng tin chính */ }
+}
+
+async function cancelScheduled(id: string) {
+  try {
+    await $fetch(`/api/scheduled/${encodePathId(id)}`, { method: 'DELETE', headers: authHeaders() })
+    scheduledPosts.value = scheduledPosts.value.filter(s => s.id !== id)
+    showToast('Đã hủy lịch đăng', 'success')
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast('Không thể hủy lịch đăng', 'error')
+  }
+}
+
 // ── Bookmarks ──
-const bookmarks = ref<Entity[]>([])
+const bookmarks = ref<Post[]>([])
 const bookmarksLoading = ref(false)
 const bookmarksPage = ref(1)
 const bookmarksHasMore = ref(false)
@@ -517,6 +632,26 @@ const showBookmarkMomentum = computed(() =>
   sessionBookmarked.value && !bookmarkBannerDismissed.value && activeTab.value !== 'bookmarks'
 )
 
+type PostListResponse = {
+  posts?: Post[]
+  bookmarks?: Post[]
+  has_more?: boolean
+}
+const { filterCommunityPosts, mergeCommunityPosts } = useCommunityPostFilters<Post>()
+
+function extractPostArray(res: unknown, preferredKey: 'posts' | 'bookmarks' = 'posts') {
+  const payload = res as PostListResponse | Post[] | null | undefined
+  if (Array.isArray(payload)) return payload
+  if (Array.isArray(payload?.[preferredKey])) return payload[preferredKey] || []
+  if (Array.isArray((payload as PostListResponse | undefined)?.posts)) return (payload as PostListResponse).posts || []
+  return []
+}
+
+function responseHasMore(res: unknown, rawPosts: Post[]) {
+  const hasMoreValue = (res as PostListResponse | undefined)?.has_more
+  return typeof hasMoreValue === 'boolean' ? hasMoreValue : rawPosts.length === 20
+}
+
 // ── Feed stats: số THẬT từ server (không phải đếm 20 bài đã tải) ──
 const communityStats = ref<{ posts: number; reviews: number; members: number } | null>(null)
 const feedStats = computed(() => ({
@@ -524,7 +659,7 @@ const feedStats = computed(() => ({
   reviewCount: communityStats.value?.reviews ?? '—',
 }))
 async function loadCommunityStats() {
-  try { communityStats.value = await $fetch('/api/community/stats') } catch { /* giữ '—' */ }
+  try { communityStats.value = await $fetch<{ posts: number; reviews: number; members: number }>('/api/community/stats' as string) } catch { /* giữ '—' */ }
 }
 
 // ── Hashtag thịnh hành (sidebar khám phá) ──
@@ -537,7 +672,7 @@ async function loadTrendingTags() {
 }
 
 // ── Bảng xếp hạng đóng góp (sidebar top 5) ──
-const topMembers = ref<{ id: string; display_name: string; points: number }[]>([])
+const topMembers = ref<{ id: string; display_name: string; points: number; username?: string }[]>([])
 async function loadLeaderboard() {
   try {
     const res = await $fetch<{ leaders: any[] }>('/api/community/leaderboard?limit=5')
@@ -547,19 +682,38 @@ async function loadLeaderboard() {
 
 // ── Gợi ý người để theo dõi (logged-in) ──
 const suggestedUsers = ref<any[]>([])
+function normalizeSuggestedUsers(users: any[]) {
+  const seen = new Set<string>()
+  const selfId = String(user.value?.id || '')
+  return users.filter((item) => {
+    const id = String(item?.id || '')
+    if (!id || id === selfId || seen.has(id) || item.is_following || item._following) return false
+    seen.add(id)
+    return true
+  })
+}
 async function loadSuggested() {
-  if (!isLoggedIn.value) return
+  if (!isLoggedIn.value) { suggestedUsers.value = []; return }
   try {
     const res = await $fetch<{ users: any[] }>('/api/community/suggested-follows?limit=5', { headers: authHeaders() })
-    suggestedUsers.value = res.users || []
-  } catch { /* ẩn card nếu lỗi */ }
+    suggestedUsers.value = normalizeSuggestedUsers(res.users || [])
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) handleSessionExpired()
+  }
 }
 async function followSuggested(s: any) {
+  if (!isLoggedIn.value) { openAuth(); return }
+  if (s._following) return
   s._following = true
   try {
     await $fetch(`/api/follow/user/${s.id}`, { method: 'POST', headers: authHeaders() })
+    suggestedUsers.value = suggestedUsers.value.filter(item => item.id !== s.id)
     showToast(`Đã theo dõi ${s.display_name}`, 'success')
-  } catch { s._following = false; showToast('Không thể theo dõi', 'error') }
+  } catch (e: unknown) {
+    s._following = false
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    showToast('Không thể theo dõi', 'error')
+  }
 }
 
 // ── Display posts (with type filter) ──
@@ -577,8 +731,9 @@ const canLoadMore = computed(() => {
 })
 
 // ── Report entity ──
-const reportEntityId = computed(() => String(route.query.report || ''))
-const reportEntity = ref<Record<string, unknown> | null>(null)
+const reportEntityId = computed(() => firstQueryValue(route.query.report).trim())
+type ReportEntity = Entity & { quality?: Entity['quality'] & { has_source?: boolean } }
+const reportEntity = ref<ReportEntity | null>(null)
 const reportReason = ref('')
 const reportSubmitting = ref(false)
 const reportReasons = ['Thiếu nguồn xác minh', 'Tọa độ chưa đúng', 'Sai địa chỉ/khu vực', 'Nội dung cần cập nhật']
@@ -601,6 +756,7 @@ const canSubmit = computed(() => {
 
 const loadSentinel = ref<HTMLElement | null>(null)
 let loadObserver: IntersectionObserver | null = null
+let suppressFilterFetch = false
 
 // ── Composer focus (from empty-state CTA) ──
 const composeEl = ref<HTMLElement | null>(null)
@@ -616,9 +772,11 @@ async function startQuote(postId: string) {
   if (!isLoggedIn.value) { openAuth(() => startQuote(postId)); return }
   let p: any = posts.value.find((x: any) => x.id === postId)
   if (!p) {
-    try { const r = await $fetch<any>(`/api/posts/${postId}`, { headers: authHeaders() }); p = r?.post } catch { /* post may be deleted */ }
+    try { const r = await $fetch<any>(`/api/posts/${encodePathId(postId)}`, { headers: authHeaders() }); p = r?.post } catch { /* post may be deleted */ }
   }
   quotingPost.value = p || { id: postId, content: '(Bài viết không khả dụng)' }
+  schedulePost.value = false
+  scheduledAt.value = ''
   activeTab.value = 'latest'
   focusComposer()
 }
@@ -697,21 +855,77 @@ function removeImage(idx: number) {
   previewImages.value.splice(idx, 1)
 }
 
-function setTab(tab: 'latest' | 'trending' | 'following' | 'bookmarks') {
+function focusFeedTab(tab: FeedTab) {
+  if (typeof document === 'undefined') return
+  nextTick(() => document.querySelector<HTMLElement>(`.threads-filter [data-tab="${tab}"]`)?.focus())
+}
+
+function focusTypeFilter(value: PostTypeValue) {
+  if (typeof document === 'undefined') return
+  const key = value || 'all'
+  nextTick(() => document.querySelector<HTMLElement>(`.type-filter-row [data-type="${key}"]`)?.focus())
+}
+
+function nextIndex(current: number, total: number, key: string) {
+  if (key === 'Home') return 0
+  if (key === 'End') return total - 1
+  if (key === 'ArrowRight' || key === 'ArrowDown') return (current + 1) % total
+  if (key === 'ArrowLeft' || key === 'ArrowUp') return (current - 1 + total) % total
+  return current
+}
+
+function onFeedTabKeydown(e: KeyboardEvent) {
+  if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return
+  const tabs = visibleFeedTabs.value.map(tab => tab.key)
+  if (!tabs.length) return
+  e.preventDefault()
+  const current = Math.max(0, tabs.indexOf(normalizeFeedTab(activeTab.value)))
+  const tab = tabs[nextIndex(current, tabs.length, e.key)] || 'latest'
+  setTab(tab)
+  focusFeedTab(tab)
+}
+
+function onTypeFilterKeydown(e: KeyboardEvent) {
+  if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return
+  const options = filterTypeOptions.value.map(option => option.value)
+  e.preventDefault()
+  const current = Math.max(0, options.indexOf(normalizeFilterType(filterType.value)))
+  const value = options[nextIndex(current, options.length, e.key)] || ''
+  setFilterType(value)
+  focusTypeFilter(value)
+}
+
+function setFilterType(value: PostTypeValue) {
+  filterType.value = normalizeFilterType(value)
+}
+
+function setTab(tab: FeedTab) {
+  if (isPrivateFeedTab(tab) && !isLoggedIn.value) {
+    activeTab.value = 'latest'
+    openAuth()
+    return
+  }
+  const nextTab = normalizeFeedTab(tab)
   if (searchMode.value) clearSearch()
-  if (activeTab.value === tab) return
+  if (activeTab.value === nextTab) return
   feedAbort?.abort()
-  activeTab.value = tab
+  activeTab.value = nextTab
+  suppressFilterFetch = true
   filterType.value = ''
-  if (tab === 'bookmarks') {
+  nextTick(() => { suppressFilterFetch = false })
+  if (nextTab === 'bookmarks') {
     if (!bookmarks.value.length) fetchBookmarks(true)
   } else {
     fetchFeed(true)
   }
-  nextTick(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
+  nextTick(() => {
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
 }
 
 async function fetchFeed(reset = false) {
+  normalizeCommunityRouteState()
+  if (activeTab.value === 'bookmarks') { await fetchBookmarks(reset); return }
   if (reset) { page.value = 1; posts.value = []; feedError.value = false }
   feedAbort?.abort()
   feedAbort = new AbortController()
@@ -725,18 +939,14 @@ async function fetchFeed(reset = false) {
           if (activeTag.value) params.set('tag', activeTag.value)
           return `/api/feed?${params}`
         })()
-    const res = await $fetch<{ posts: Post[] }>(url, {
+    const res = await $fetch<PostListResponse>(url, {
       headers: authHeaders(),
       signal: feedAbort.signal,
     })
-    const newPosts = res.posts || res || []
-    if (reset) {
-      posts.value = newPosts
-    } else {
-      const existing = new Set(posts.value.map(p => p.id))
-      posts.value.push(...newPosts.filter(p => !existing.has(p.id)))
-    }
-    hasMore.value = newPosts.length === 20
+    const rawPosts = extractPostArray(res)
+    const newPosts = filterCommunityPosts(rawPosts)
+    posts.value = reset ? newPosts : mergeCommunityPosts(posts.value, newPosts)
+    hasMore.value = responseHasMore(res, rawPosts)
   } catch (e: unknown) {
     if (e instanceof DOMException && e.name === 'AbortError') return
     const status = (e as any)?.response?.status || (e as any)?.status || (e as any)?.statusCode
@@ -746,29 +956,28 @@ async function fetchFeed(reset = false) {
     }
     if (reset && !posts.value.length) feedError.value = true
     showToast(reset ? 'Không thể tải bảng tin' : 'Không thể tải thêm', 'error')
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 async function fetchBookmarks(reset = false) {
   if (reset) { bookmarksPage.value = 1; bookmarks.value = [] }
   bookmarksLoading.value = true
   try {
-    const res = await $fetch<{ bookmarks: Post[] }>(`/api/me/bookmarks?page=${bookmarksPage.value}&limit=20`, {
+    const res = await $fetch<PostListResponse>(`/api/me/bookmarks?page=${bookmarksPage.value}&limit=20`, {
       headers: authHeaders(),
     })
-    const newPosts = res.bookmarks || res.posts || res || []
-    if (reset) {
-      bookmarks.value = newPosts
-    } else {
-      const existing = new Set(bookmarks.value.map(p => p.id))
-      bookmarks.value.push(...newPosts.filter(p => !existing.has(p.id)))
-    }
-    bookmarksHasMore.value = newPosts.length === 20
-  } catch {
+    const rawPosts = extractPostArray(res, 'bookmarks')
+    const newPosts = filterCommunityPosts(rawPosts)
+    bookmarks.value = reset ? newPosts : mergeCommunityPosts(bookmarks.value, newPosts)
+    bookmarksHasMore.value = responseHasMore(res, rawPosts)
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể tải bài viết đã lưu', 'error')
+  } finally {
+    bookmarksLoading.value = false
   }
-  bookmarksLoading.value = false
 }
 
 function refreshFeed() {
@@ -796,24 +1005,27 @@ async function fetchSearch(reset = false) {
   if (reset) { searchPage.value = 1; searchResults.value = [] }
   searchLoading.value = true
   try {
-    const res = await $fetch<{ posts: Post[] }>(
+    const res = await $fetch<PostListResponse>(
       `/api/search/posts?q=${encodeURIComponent(searchQuery.value)}&page=${searchPage.value}`,
       { headers: authHeaders() },
     )
-    const newPosts = res.posts || []
-    if (reset) searchResults.value = newPosts
-    else searchResults.value.push(...newPosts)
-    searchHasMore.value = newPosts.length === 20
-  } catch {
+    const rawPosts = extractPostArray(res)
+    const newPosts = filterCommunityPosts(rawPosts)
+    searchResults.value = reset ? newPosts : mergeCommunityPosts(searchResults.value, newPosts)
+    searchHasMore.value = responseHasMore(res, rawPosts)
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể tìm bài viết', 'error')
+  } finally {
+    searchLoading.value = false
   }
-  searchLoading.value = false
 }
 
 function runSearch() {
   const q = searchInput.value.trim()
   if (q.length < 2) { showToast('Nhập ít nhất 2 ký tự để tìm kiếm', 'info'); return }
   searchQuery.value = q
+  syncCommunitySearchQuery(q)
   fetchSearch(true)
 }
 
@@ -821,17 +1033,120 @@ function clearSearch() {
   searchInput.value = ''
   searchQuery.value = ''
   searchResults.value = []
+  syncCommunitySearchQuery('')
 }
 
-watch(filterType, () => {
-  if (activeTab.value !== 'bookmarks') fetchFeed(true)
+function syncCommunitySearchQuery(q: string) {
+  if (!import.meta.client) return
+  const query = { ...route.query }
+  const term = q.trim()
+  if (term) query.q = term
+  else delete query.q
+  if (firstQueryValue(route.query.q) === firstQueryValue(query.q)) return
+  router.replace({ query }).catch(() => {})
+}
+
+function applyRouteSearchQuery() {
+  const q = firstQueryValue(route.query.q).trim()
+  if (q.length < 2) {
+    if (searchQuery.value) {
+      searchInput.value = ''
+      searchQuery.value = ''
+      searchResults.value = []
+    }
+    return
+  }
+  if (q === searchQuery.value) return
+  searchInput.value = q
+  searchQuery.value = q
+  fetchSearch(true)
+}
+
+function focusComposerFromRoute() {
+  const composeIntent = firstQueryValue(route.query.compose).trim().toLowerCase()
+  if (composeIntent !== 'draft' && route.hash !== '#compose') return
+  nextTick(() => {
+    composeEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    composeInputEl.value?.focus()
+  })
+}
+
+watch(activeTab, (tab) => {
+  const normalized = normalizeFeedTab(tab)
+  if (normalized !== tab) { activeTab.value = normalized; return }
+  if (normalized === 'bookmarks' && filterType.value) setFilterType('')
 })
+
+watch(isLoggedIn, (loggedIn) => {
+  if (loggedIn) {
+    loadSuggested()
+    loadScheduledPosts()
+    return
+  }
+  suggestedUsers.value = []
+  scheduledPosts.value = []
+  if (isPrivateFeedTab(activeTab.value)) setTab('latest')
+})
+
+watch(filterType, (value) => {
+  const normalized = normalizeFilterType(value)
+  if (normalized !== value) { filterType.value = normalized; return }
+  if (suppressFilterFetch || searchMode.value || activeTab.value === 'bookmarks') return
+  fetchFeed(true)
+})
+
+if (import.meta.client) {
+  watch([activeTab, filterType, activeTag], ([tab, type, tag]) => {
+    trackEvent('community_view', {
+      context: 'community',
+      metadata: { tab, type, tag },
+    }, { dedupeMs: 30_000 })
+  })
+}
+
+function resetComposer() {
+  newContent.value = ''
+  newType.value = 'share'
+  imageFiles.value = []
+  previewImages.value = []
+  clearDraft()
+  resetMention()
+  quotingPost.value = null
+  schedulePost.value = false
+  scheduledAt.value = ''
+}
+
+async function submitScheduledPost() {
+  const draftBody: Record<string, any> = {
+    content: newContent.value.trim(),
+    post_type: newType.value,
+  }
+  if (previewImages.value.length) draftBody.images = previewImages.value
+  const { draft } = await $fetch<{ draft: { id: string } }>('/api/drafts', {
+    method: 'POST',
+    headers: authHeaders(),
+    body: draftBody,
+  })
+  const isoScheduledAt = new Date(scheduledAt.value).toISOString()
+  await $fetch(`/api/drafts/${encodePathId(draft.id)}/schedule?scheduled_at=${encodeURIComponent(isoScheduledAt)}`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  resetComposer()
+  showToast('Đã lên lịch đăng bài', 'success')
+  await loadScheduledPosts()
+}
 
 async function submitPost() {
   if (!canSubmit.value) return
+  if (schedulePost.value && !scheduledAt.value) return
   if (draftTimer) { clearTimeout(draftTimer); draftTimer = null }
   posting.value = true
   try {
+    if (schedulePost.value) {
+      await submitScheduledPost()
+      return
+    }
     const body: Record<string, any> = {
       content: newContent.value.trim(),
       post_type: newType.value,
@@ -848,34 +1163,29 @@ async function submitPost() {
       headers: authHeaders(),
       body,
     })
-    newContent.value = ''
-    newType.value = 'share'
-    imageFiles.value = []
-    previewImages.value = []
-    clearDraft()
-    resetMention()
     const wasQuote = !!quotingPost.value
-    quotingPost.value = null
+    resetComposer()
     showToast(wasQuote ? 'Đã đăng trích dẫn 🔁' : 'Đã đăng bài viết', 'success')
     activeTab.value = 'latest'
     await fetchFeed(true)
   } catch (e: unknown) {
-    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
-    showToast(extractErrorMessage(e, 'Gửi bài thất bại — vui lòng thử lại'), 'error')
+    if (getStatusCode(e) === 401) handleSessionExpired()
+    else showToast(extractErrorMessage(e, schedulePost.value ? 'Không thể lên lịch — vui lòng thử lại' : 'Gửi bài thất bại — vui lòng thử lại'), 'error')
+  } finally {
+    posting.value = false
   }
-  posting.value = false
 }
 
 async function fetchReportEntity() {
   reportEntity.value = null
   if (!reportEntityId.value) return
   try {
-    reportEntity.value = await $fetch<Entity>(`/api/entities/${reportEntityId.value}`)
+    reportEntity.value = await $fetch<Entity>(`/api/entities/${encodeURIComponent(reportEntityId.value)}`)
     if (!reportReason.value) {
       reportReason.value = reportEntity.value?.quality?.has_source ? 'Nội dung cần cập nhật' : 'Thiếu nguồn xác minh'
     }
   } catch {
-    reportEntity.value = { id: reportEntityId.value, name: reportEntityId.value }
+    reportEntity.value = { id: reportEntityId.value, type: 'unknown', name: reportEntityId.value } as ReportEntity
   }
 }
 
@@ -930,7 +1240,7 @@ function deletePost(postId: string) {
 }
 
 function goToPost(postId: string) {
-  navigateTo(`/bai-viet/${postId}`)
+  navigateTo(postPath(postId))
 }
 
 watch(reportEntityId, () => fetchReportEntity())
@@ -955,16 +1265,24 @@ function onClickOutsideMention(e: MouseEvent) {
 
 onMounted(() => {
   document.addEventListener('click', onClickOutsideMention)
+  trackEvent('community_view', {
+    context: 'community',
+    metadata: { tab: activeTab.value, type: filterType.value, tag: activeTag.value },
+  })
   const draft = loadDraft()
   if (draft && draft.content) { newContent.value = draft.content; newType.value = draft.postType }
+  applyRouteSearchQuery()
+  focusComposerFromRoute()
   fetchReportEntity()
-  fetchFeed(true)
+  normalizeCommunityRouteState()
+  refreshFeed()
   loadCommunityStats()
   loadTrendingTags()
   loadLeaderboard()
   loadSuggested()
+  loadScheduledPosts()
   // Trích dẫn từ trang khác điều hướng tới: ?quote=<post_id>
-  const q = String(route.query.quote || '')
+  const q = firstQueryValue(route.query.quote).trim()
   if (q) {
     startQuote(q)
     const { quote, ...rest } = route.query
@@ -1095,14 +1413,16 @@ useHead({
 .guest-content p { margin: 0; color: var(--muted); font-size: var(--text-sm); flex: 1; }
 
 /* ── Filter tabs ── */
-.threads-filter {
-  display: flex; border-bottom: .5px solid var(--line);
+.threads-filter-bar {
+  display: flex; align-items: stretch;
+  border-bottom: .5px solid var(--line);
   margin-top: var(--space-5);
   position: sticky; top: 78px; z-index: 20;
   background: var(--surface-translucent, var(--bg));
   backdrop-filter: var(--glass, saturate(160%) blur(12px));
   -webkit-backdrop-filter: var(--glass, saturate(160%) blur(12px));
 }
+.threads-filter { display: flex; flex: 1; min-width: 0; }
 .threads-tab {
   flex: 1; text-align: center; padding: var(--space-3) var(--space-4);
   background: none; border: none; border-bottom: 2px solid transparent;
@@ -1122,8 +1442,15 @@ useHead({
 .threads-tab.active { color: var(--ink); border-bottom-color: transparent; }
 .threads-tab.active::after { transform: scaleX(1); }
 .dark .threads-tab.active { color: var(--ink); }
-.threads-refresh { margin-left: auto; padding: .5rem; border-bottom: none; }
-.threads-refresh::after { display: none; }
+.threads-refresh {
+  flex-shrink: 0; width: 44px; min-height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: .5rem; background: none; border: none;
+  color: var(--muted); cursor: pointer;
+  transition: color .25s var(--ease-out), background .25s var(--ease-out);
+}
+.threads-refresh:hover { color: var(--ink); background: var(--overlay-subtle); }
+.threads-refresh:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .threads-refresh svg { display: block; }
 .threads-refresh .spinning { animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -1297,7 +1624,7 @@ useHead({
 .dark .compose-attach:hover { background: rgba(255,255,255,.08); }
 .dark .threads-compose { background: rgba(var(--accent-rgb),.06); }
 .dark .threads-compose:focus-within { background: rgba(var(--accent-rgb),.1); }
-.dark .threads-filter { background: var(--surface-translucent, rgba(0,0,0,.72)); }
+.dark .threads-filter-bar { background: var(--surface-translucent, rgba(0,0,0,.72)); }
 .dark .sidebar-rules-list li::before { background: rgba(var(--accent-rgb),.2); color: var(--accent); }
 .dark .lb-rank-1 { --lb-gold: #f0c040; } .dark .lb-rank-2 { --lb-silver: #b0b3b8; } .dark .lb-rank-3 { --lb-bronze: #d4975a; }
 
@@ -1357,4 +1684,35 @@ useHead({
 .onboard-info { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; color: inherit; font-weight: 500; }
 .onboard-name { font-size: var(--text-sm); }
 .btn-xs { padding: var(--space-1) 10px; font-size: .72rem; border-radius: var(--radius-sm); }
+
+/* ── Lên lịch đăng bài ── */
+.schedule-option { margin-top: var(--space-1); }
+.schedule-toggle { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; font-size: var(--text-sm); color: var(--ink); width: fit-content; }
+.schedule-picker { margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-1); align-items: flex-start; }
+.cd-toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; margin: 0; }
+.cd-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, #fff); border-radius: 50%; transition: transform .3s var(--ease-spring-gentle); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.cd-toggle:checked { background: var(--accent, var(--primary)); }
+.cd-toggle:checked::after { transform: translateX(18px); }
+.cd-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cd-input {
+  padding: var(--space-2) var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md);
+  background: var(--bg-alt); color: var(--ink); font-size: var(--text-sm); font-family: inherit; min-height: 44px;
+}
+.cd-input:focus-visible { outline: none; border-color: var(--accent, var(--primary)); box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 33,150,83), .15); }
+.cd-hint { font-size: var(--text-xs); color: var(--muted); }
+
+.scheduled-section { margin-bottom: var(--space-4); }
+.scheduled-summary { cursor: pointer; font-weight: var(--weight-semibold); color: var(--primary-fg); padding: var(--space-2) 0; list-style: none; }
+.scheduled-summary::-webkit-details-marker { display: none; }
+.scheduled-summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+.scheduled-list { display: flex; flex-direction: column; gap: var(--space-2); padding-top: var(--space-2); }
+.scheduled-item { padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-md); }
+.scheduled-item p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); overflow-wrap: anywhere; }
+.scheduled-meta { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--muted); }
+.scheduled-cancel { color: var(--error); padding: var(--space-1) var(--space-2); min-height: 32px; }
+.scheduled-cancel:hover { background: rgba(var(--error-rgb, 220,38,38), .08); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-toggle, .cd-toggle::after { transition: none; }
+}
 </style>
