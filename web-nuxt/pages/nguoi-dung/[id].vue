@@ -42,6 +42,14 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
           </button>
         </div>
+        <div class="profile-meta-row" aria-label="Thông tin nhanh">
+          <span v-if="profileHandle" class="profile-handle">{{ profileHandle }}</span>
+          <span :class="['profile-chip', profile.is_private ? 'is-private' : 'is-public']">
+            {{ profile.is_private ? 'Hồ sơ riêng tư' : 'Hồ sơ công khai' }}
+          </span>
+          <span v-if="isSelf" class="profile-chip is-self">Hồ sơ của bạn</span>
+          <span v-else-if="isFollowing" class="profile-chip is-following">Đang theo dõi</span>
+        </div>
         <p v-if="profile.bio" class="profile-bio">{{ profile.bio }}</p>
         <div v-if="profile.reputation" class="profile-reputation">
           <NuxtLink to="/huong-dan-thanh-vien" class="rep-level" :data-level="profile.reputation.level" title="Xem hướng dẫn cấp bậc">
@@ -76,6 +84,14 @@
             <span>tham gia</span>
           </div>
         </div>
+        <div class="profile-insight" aria-live="polite">
+          <div class="profile-insight-copy">
+            <span>Tổng quan</span>
+            <strong>{{ activitySummary }}</strong>
+          </div>
+          <NuxtLink v-if="isSelf" to="/cai-dat" class="profile-insight-link">Cập nhật hồ sơ</NuxtLink>
+          <NuxtLink v-else to="/cong-dong" class="profile-insight-link">Xem cộng đồng</NuxtLink>
+        </div>
       </div>
 
       <div v-if="isSelf && profileCompletion < 100" class="profile-completion">
@@ -88,7 +104,6 @@
           <span v-if="!profile.display_name" class="pc-hint">Thêm tên hiển thị</span>
           <span v-if="!profile.avatar" class="pc-hint">Thêm ảnh đại diện</span>
           <span v-if="!profile.cover_url" class="pc-hint">Thêm ảnh bìa</span>
-          <span v-if="!profile.username" class="pc-hint">Chọn tên người dùng</span>
           <span v-if="!profile.bio" class="pc-hint">Viết giới thiệu</span>
           <span v-if="(profile.post_count || 0) === 0" class="pc-hint">Đăng bài đầu tiên</span>
           <span v-if="(profile.review_count || 0) === 0" class="pc-hint">Viết đánh giá</span>
@@ -99,19 +114,22 @@
         <p>🔒 Hồ sơ riêng tư — theo dõi để xem nội dung.</p>
       </div>
 
-      <div v-else class="profile-tabs" role="tablist" aria-label="Nội dung người dùng">
-        <button type="button" role="tab" :class="['chip', { active: tab === 'posts' }]" :aria-selected="tab === 'posts'" @click="tab = 'posts'">Bài viết</button>
-        <button type="button" role="tab" :class="['chip', { active: tab === 'reviews' }]" :aria-selected="tab === 'reviews'" @click="tab = 'reviews'">Đánh giá</button>
-        <button type="button" role="tab" v-if="isSelf" :class="['chip', { active: tab === 'saved' }]" :aria-selected="tab === 'saved'" @click="tab = 'saved'">
+      <div v-else class="profile-tabs" role="tablist" aria-label="Nội dung người dùng" @keydown="onProfileTabKeydown">
+        <button type="button" id="profile-tab-posts" role="tab" :class="['chip', { active: tab === 'posts' }]" :aria-selected="tab === 'posts'" aria-controls="profile-panel-posts" :tabindex="tab === 'posts' ? 0 : -1" @click="setProfileTab('posts')">Bài viết</button>
+        <button type="button" id="profile-tab-reviews" role="tab" :class="['chip', { active: tab === 'reviews' }]" :aria-selected="tab === 'reviews'" aria-controls="profile-panel-reviews" :tabindex="tab === 'reviews' ? 0 : -1" @click="setProfileTab('reviews')">Đánh giá</button>
+        <button type="button" id="profile-tab-saved" role="tab" v-if="isSelf" :class="['chip', { active: tab === 'saved' }]" :aria-selected="tab === 'saved'" aria-controls="profile-panel-saved" :tabindex="tab === 'saved' ? 0 : -1" @click="setProfileTab('saved')">
           Đã lưu<ClientOnly><span v-if="savedCount > 0" class="tab-count">{{ savedCount }}</span></ClientOnly>
+        </button>
+        <button type="button" id="profile-tab-collections" role="tab" v-if="isSelf" :class="['chip', { active: tab === 'collections' }]" :aria-selected="tab === 'collections'" aria-controls="profile-panel-collections" :tabindex="tab === 'collections' ? 0 : -1" @click="setProfileTab('collections')">
+          Danh sách<ClientOnly><span v-if="collectionsCount > 0" class="tab-count">{{ collectionsCount }}</span></ClientOnly>
         </button>
       </div>
 
-      <div v-if="!profile.is_private" class="feed-main reveal">
+      <div v-if="!profile.is_private" class="feed-main reveal" role="tabpanel" :id="activePanelId" :aria-labelledby="activeTabId" tabindex="0">
         <!-- Đã lưu (self only, client-only — từ localStorage) -->
-        <ClientOnly v-if="tab === 'saved'">
+        <ClientOnly v-if="tab === 'saved' && isSelf">
           <div v-if="favorites.length" class="saved-grid">
-            <NuxtLink v-for="fav in favorites" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card saved-card">
+            <NuxtLink v-for="fav in favorites" :key="fav.id" :to="savedItemPath(fav)" class="card saved-card">
               <div v-if="fav.image" class="cover cover-img">
                 <img :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
               </div>
@@ -136,6 +154,62 @@
           </EmptyState>
         </ClientOnly>
 
+        <!-- Danh sách (collections, self only, client-only — dữ liệu từ server) -->
+        <ClientOnly v-else-if="tab === 'collections' && isSelf">
+          <div v-if="collectionsLoading" class="collections-loading" role="status" aria-label="Đang tải"><div class="spinner spinner-sm"></div> Đang tải...</div>
+          <template v-else>
+            <div class="collections-header">
+              <button type="button" class="btn btn-primary btn-sm" @click="showCreateCollection = true">+ Tạo danh sách</button>
+            </div>
+            <div v-if="userCollections.length" class="saved-grid">
+              <div v-for="c in userCollections" :key="c.id" class="card saved-card">
+                <div class="card-b">
+                  <span class="card-type">{{ c.is_public ? 'Công khai' : 'Riêng tư' }}</span>
+                  <h3>{{ c.name }}</h3>
+                  <p v-if="c.description" class="place">{{ c.description }}</p>
+                  <p class="place">{{ c.item_count || 0 }} bài viết</p>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm btn-danger-text" @click="handleDeleteCollection(c.id, c.name)">Xóa</button>
+              </div>
+            </div>
+            <EmptyState
+              v-else
+              icon="🗂️"
+              title="Chưa có danh sách nào"
+              message="Tạo danh sách để sắp xếp bài viết yêu thích theo chủ đề."
+              hint="Nhấn “+ Tạo danh sách” để bắt đầu."
+            />
+          </template>
+
+          <!-- Tạo danh sách mới -->
+          <Transition name="modal-fade">
+            <div v-if="showCreateCollection" class="modal-overlay show" @click.self="closeCreateCollection">
+              <div class="modal" role="dialog" aria-modal="true" aria-labelledby="create-collection-title" ref="createCollectionModalEl">
+                <div class="modal-head">
+                  <h2 id="create-collection-title">Tạo danh sách mới</h2>
+                  <button type="button" class="modal-close" aria-label="Đóng" @click="closeCreateCollection">✕</button>
+                </div>
+                <div class="modal-body">
+                  <form @submit.prevent="handleCreateCollection">
+                    <label class="sf-field">
+                      <span class="sf-label">Tên</span>
+                      <input v-model="newCollectionName" type="text" class="sf-input" maxlength="100" required placeholder="VD: Quán ngon Vĩnh Long" />
+                    </label>
+                    <label class="sf-field">
+                      <span class="sf-label">Mô tả (không bắt buộc)</span>
+                      <textarea v-model="newCollectionDesc" class="sf-input" maxlength="300" rows="2"></textarea>
+                    </label>
+                    <div class="sf-actions">
+                      <button type="button" class="btn btn-ghost" @click="closeCreateCollection">Hủy</button>
+                      <button type="submit" class="btn btn-primary" :disabled="creatingCollection || !newCollectionName.trim()">{{ creatingCollection ? 'Đang tạo...' : 'Tạo' }}</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </ClientOnly>
+
         <template v-else>
           <TransitionGroup name="post-list" tag="div">
             <PostCard
@@ -143,12 +217,12 @@
               :key="post.id"
               :post="post"
               @like="toggleLike"
-              @comment="id => navigateTo(`/bai-viet/${id}`)"
+              @comment="id => navigateTo(postPath(id))"
               @bookmark="toggleBookmark"
               @report="reportPost"
               @repost="repost"
               @quote="quote"
-              @edit="(id) => navigateTo(`/bai-viet/${id}?edit=1`)"
+              @edit="(id) => navigateTo(`${postPath(id)}?edit=1`)"
               @delete="deletePost"
             />
           </TransitionGroup>
@@ -180,6 +254,7 @@
     <EmptyState v-else-if="profileFetchFailed" icon="⚠️" tone="error" title="Không thể tải trang" message="Lỗi kết nối. Vui lòng thử lại.">
       <button type="button" class="btn btn-outline btn-sm" @click="refreshProfile()">Thử lại</button>
     </EmptyState>
+    <EmptyState v-else-if="profileNotFound" icon="👤" title="Không tìm thấy người dùng" message="Hồ sơ này không tồn tại hoặc đã được đổi tên." />
     <EmptyState v-else message="Không tìm thấy người dùng." />
 
     <!-- Modal danh sách theo dõi -->
@@ -198,7 +273,7 @@
             <template v-else>
               <ul v-if="followModalList.length" class="fm-list">
                 <li v-for="u in followModalList" :key="u.id">
-                  <NuxtLink :to="`/nguoi-dung/${u.username || u.id}`" class="fm-user" @click="followModalOpen = false">
+                  <NuxtLink :to="userPath(u.username || u.id)" class="fm-user" @click="followModalOpen = false">
                     <span class="avatar fm-avatar">{{ (u.display_name || '?').charAt(0).toUpperCase() }}</span>
                     <span class="fm-name">{{ u.display_name }}</span>
                   </NuxtLink>
@@ -230,17 +305,29 @@ type ProfileView = Record<string, any> & {
   follower_count?: number
   following_count?: number
 }
+type ProfilePayload = {
+  profile: ProfileView | null
+  status: 'ok' | 'not-found' | 'error'
+}
+type ProfileTab = 'posts' | 'reviews' | 'saved' | 'collections'
 useReveal()
 const route = useRoute()
-const userId = computed(() => route.params.id as string)
+const userId = computed(() => {
+  const id = route.params.id
+  return Array.isArray(id) ? String(id[0] || '') : String(id || '')
+})
 const { user: currentUser, isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { show: showToast } = useToast()
 const { reportPost, openReport } = useReport()
 const { repost, quote } = useRepost()
+const { filterCommunityPosts } = useCommunityPostFilters<any>()
 
-const validProfileTabs = new Set(['posts', 'reviews', 'saved'])
-const initialTab = route.query.tab as string
-const tab = ref(validProfileTabs.has(initialTab) ? initialTab : 'posts')
+const validProfileTabs = new Set<ProfileTab>(['posts', 'reviews', 'saved', 'collections'])
+function normalizeProfileTab(value: unknown): ProfileTab {
+  const raw = Array.isArray(value) ? value[0] : value
+  return validProfileTabs.has(raw as ProfileTab) ? raw as ProfileTab : 'posts'
+}
+const tab = ref<ProfileTab>(normalizeProfileTab(route.query.tab))
 const posts = ref<any[]>([])
 const { favorites, count: savedCount } = useFavorites()
 const loading = ref(true)
@@ -248,33 +335,81 @@ const isFollowing = ref(false)
 const followLoading = ref(false)
 const followerCount = ref<number | null>(null)
 
-const profileFetchFailed = ref(false)
-const { data: profile, refresh: refreshProfile } = await useAsyncData<ProfileView | null>(`user-${route.params.id}`, async () => {
-  try {
-    profileFetchFailed.value = false
-    const res = await apiFetch<Record<string, any>>(`/api/users/${userId.value}`, { headers: authHeaders() })
-    const u = (res?.user ?? res) as Record<string, any> | null
-    if (!u) return null
-    const mapped = {
-      ...u,
-      avatar: u.avatar_url ?? u.avatar ?? null,
-      post_count: u.stats?.posts ?? u.post_count ?? 0,
-      review_count: u.stats?.reviews ?? u.review_count ?? 0,
-      follower_count: u.stats?.followers ?? 0,
-      following_count: u.stats?.following ?? 0,
-    }
-    return mapped
-  } catch {
-    profileFetchFailed.value = true
-    return null
-  }
-})
-if (import.meta.server && !profile.value && !profileFetchFailed.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy người dùng' })
+// ── Danh sách (collections) ──
+const { collections: userCollections, loading: collectionsLoading, fetchCollections, createCollection, deleteCollection } = useCollections()
+const collectionsCount = computed(() => userCollections.value.length)
+const showCreateCollection = ref(false)
+const newCollectionName = ref('')
+const newCollectionDesc = ref('')
+const creatingCollection = ref(false)
+const createCollectionModalEl = ref<HTMLElement | null>(null)
+useModalA11y(showCreateCollection, createCollectionModalEl, { onClose: () => { showCreateCollection.value = false } })
+
+function closeCreateCollection() {
+  showCreateCollection.value = false
 }
 
+async function handleCreateCollection() {
+  if (!newCollectionName.value.trim() || creatingCollection.value) return
+  creatingCollection.value = true
+  try {
+    await createCollection(newCollectionName.value.trim(), newCollectionDesc.value.trim())
+    showCreateCollection.value = false
+    newCollectionName.value = ''
+    newCollectionDesc.value = ''
+  } catch { /* toast đã hiển thị trong composable */ }
+  creatingCollection.value = false
+}
+
+async function handleDeleteCollection(id: string, name: string) {
+  const ok = await confirmDialog(`Xoá danh sách "${name}"? Hành động không thể hoàn tác.`, { title: 'Xoá danh sách?', confirmText: 'Xoá', danger: true })
+  if (!ok) return
+  try { await deleteCollection(id) } catch { /* toast đã hiển thị trong composable */ }
+}
+
+watch(tab, (t) => {
+  if (t === 'collections' && isSelf.value && !userCollections.value.length) fetchCollections()
+})
+
+function mapProfileView(u: Record<string, any>): ProfileView {
+  const stats = u.stats || {}
+  return {
+    ...u,
+    avatar: u.avatar_url ?? u.avatar ?? null,
+    post_count: stats.posts ?? u.post_count ?? 0,
+    review_count: stats.reviews ?? u.review_count ?? 0,
+    follower_count: stats.followers ?? u.follower_count ?? 0,
+    following_count: stats.following ?? u.following_count ?? 0,
+  }
+}
+
+const { data: profileState, refresh: refreshProfile } = await useAsyncData<ProfilePayload>(`public-user-${userId.value}`, async () => {
+  const lookup = userId.value.trim()
+  if (!lookup) return { profile: null, status: 'not-found' }
+  try {
+    const res = await apiFetch<Record<string, any>>(`/api/users/${encodeURIComponent(lookup)}`, { headers: authHeaders() })
+    const u = (res?.user ?? res) as Record<string, any> | null
+    if (!u || (!u.id && !u.username)) return { profile: null, status: 'not-found' }
+    return { profile: mapProfileView(u), status: 'ok' }
+  } catch (e: unknown) {
+    return { profile: null, status: getStatusCode(e) === 404 ? 'not-found' : 'error' }
+  }
+}, {
+  default: (): ProfilePayload => ({ profile: null, status: 'error' }),
+})
+
+const profilePayload = computed(() => profileState.value as ProfilePayload | null | undefined)
+const profile = computed(() => profilePayload.value?.profile ?? null)
+const profileLoadStatus = computed(() => profilePayload.value?.status ?? 'error')
+const profileFetchFailed = computed(() => profileLoadStatus.value === 'error')
+const profileNotFound = computed(() => profileLoadStatus.value === 'not-found')
+if (import.meta.server && profileNotFound.value) setResponseStatus(404)
+
+const profileSlug = computed(() => profile.value?.username || userId.value)
+const publicProfilePath = computed(() => `/nguoi-dung/${encodeURIComponent(profileSlug.value)}`)
+
 useHead({
-  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/nguoi-dung/${profile.value?.username || userId.value}`) }]),
+  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(publicProfilePath.value) }]),
   meta: [{ name: 'robots', content: 'noindex,follow' }],
 })
 
@@ -285,7 +420,28 @@ const isSelf = computed(() => {
   return String(me.id) === profileId.value || (!!profileUsername && me.username === profileUsername) || me.username === userId.value
 })
 const profileId = computed(() => String(profile.value?.id || userId.value))
+const encodedProfileId = computed(() => encodeURIComponent(profileId.value))
 const displayFollowerCount = computed(() => followerCount.value ?? profile.value?.follower_count ?? 0)
+const profileHandle = computed(() => profile.value?.username ? `@${profile.value.username}` : '')
+const totalContributions = computed(() => (profile.value?.post_count || 0) + (profile.value?.review_count || 0))
+const activitySummary = computed(() => {
+  if (totalContributions.value === 0) {
+    return isSelf.value ? 'Bắt đầu chia sẻ trải nghiệm đầu tiên' : 'Thành viên mới, chưa có đóng góp công khai'
+  }
+  return `${totalContributions.value} đóng góp công khai`
+})
+const visibleProfileTabs = computed<ProfileTab[]>(() => {
+  const tabs: ProfileTab[] = ['posts', 'reviews']
+  if (isSelf.value) tabs.push('saved', 'collections')
+  return tabs
+})
+const activeTabId = computed(() => `profile-tab-${tab.value}`)
+const activePanelId = computed(() => `profile-panel-${tab.value}`)
+
+function normalizeVisibleProfileTab(value: unknown): ProfileTab {
+  const next = normalizeProfileTab(value)
+  return (next === 'saved' || next === 'collections') && !isSelf.value ? 'posts' : next
+}
 
 const initial = computed(() => {
   const name = profile.value?.display_name || profile.value?.phone || '?'
@@ -297,7 +453,7 @@ const joinDate = computed(() => formatDateVN(profile.value?.created_at))
 const profileCompletion = computed(() => {
   if (!profile.value) return 0
   const p = profile.value
-  const checks = [p.display_name, p.avatar, p.bio, p.username, p.cover_url, (p.post_count || 0) > 0, (p.review_count || 0) > 0]
+  const checks = [p.display_name, p.avatar, p.bio, p.cover_url, (p.post_count || 0) > 0, (p.review_count || 0) > 0]
   return Math.round((checks.filter(Boolean).length / checks.length) * 100)
 })
 
@@ -316,17 +472,24 @@ const emptyHint = computed(() => {
 
 const postsFetchFailed = ref(false)
 async function fetchPosts() {
+  if (!profile.value || profile.value.is_private) {
+    posts.value = []
+    loading.value = false
+    return
+  }
   loading.value = true
   postsFetchFailed.value = false
   try {
-    const res = await $fetch<Record<string, unknown>>(`/api/users/${profileId.value}/posts?limit=50`, { headers: authHeaders() })
+    const res = await $fetch<Record<string, unknown>>(`/api/users/${encodedProfileId.value}/posts?limit=50`, { headers: authHeaders() })
     const list = res?.posts
-    posts.value = Array.isArray(list) ? list : []
-  } catch {
+    posts.value = Array.isArray(list) ? filterCommunityPosts(list as any[]) : []
+  } catch (e: unknown) {
     postsFetchFailed.value = true
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể tải bài viết', 'error')
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
@@ -351,17 +514,19 @@ const followLists = ref<{ followers: any[] | null; following: any[] | null }>({ 
 const followLoadingList = ref(false)
 const followModalList = computed(() => followLists.value[followModalTab.value] || [])
 async function loadFollowList(which: 'followers' | 'following') {
+  if (!profile.value) return
   if (followLists.value[which]) return  // đã tải (cache)
   followLoadingList.value = true
   try {
-    const res = await $fetch<any>(`/api/users/${profileId.value}/${which}`, { headers: authHeaders() })
+    const res = await $fetch<any>(`/api/users/${encodedProfileId.value}/${which}`, { headers: authHeaders() })
     followLists.value[which] = res.users || []
   } catch (e: unknown) {
     followLists.value[which] = []
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể tải danh sách', 'error')
+  } finally {
+    followLoadingList.value = false
   }
-  followLoadingList.value = false
 }
 const followDialogEl = ref<HTMLElement | null>(null)
 function closeFollowModal() { followModalOpen.value = false }
@@ -374,11 +539,34 @@ function openFollowModal(tab: 'followers' | 'following') {
 watch(followModalTab, (t) => loadFollowList(t))
 
 async function checkFollowing() {
-  if (!isLoggedIn.value) return
+  if (!isLoggedIn.value || !profile.value) return
   try {
-    const res = await $fetch<{ following: boolean }>(`/api/follow/check/user/${profileId.value}`, { headers: authHeaders() })
+    const res = await $fetch<{ following: boolean }>(`/api/follow/check/user/${encodedProfileId.value}`, { headers: authHeaders() })
     isFollowing.value = res.following
   } catch { /* non-critical */ }
+}
+
+function setProfileTab(next: ProfileTab) {
+  tab.value = normalizeVisibleProfileTab(next)
+}
+
+function onProfileTabKeydown(event: KeyboardEvent) {
+  const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End']
+  if (!keys.includes(event.key)) return
+  event.preventDefault()
+  const tabs = visibleProfileTabs.value
+  const current = Math.max(0, tabs.indexOf(tab.value))
+  const firstTab = tabs[0] || 'posts'
+  const lastTab = tabs[tabs.length - 1] || firstTab
+  const next: ProfileTab = event.key === 'Home'
+    ? firstTab
+    : event.key === 'End'
+      ? lastTab
+      : event.key === 'ArrowRight'
+        ? tabs[(current + 1) % tabs.length] || firstTab
+        : tabs[(current - 1 + tabs.length) % tabs.length] || firstTab
+  setProfileTab(next)
+  nextTick(() => document.getElementById(`profile-tab-${next}`)?.focus())
 }
 
 watch(tab, (t) => {
@@ -388,28 +576,48 @@ watch(tab, (t) => {
   navigateTo({ path: route.path, query }, { replace: true })
 })
 
+watch(() => route.query.tab, (value) => {
+  const next = normalizeVisibleProfileTab(value)
+  if (next !== tab.value) setProfileTab(next)
+})
+
+watch([isSelf, tab], ([self, active]) => {
+  if (!self && (active === 'saved' || active === 'collections')) tab.value = 'posts'
+}, { immediate: true })
+
 async function toggleFollow() {
   if (!isLoggedIn.value) { showToast('Đăng nhập để theo dõi', 'info'); return }
+  if (!profile.value) return
   followLoading.value = true
   const was = isFollowing.value
   isFollowing.value = !was
   followerCount.value = Math.max(0, displayFollowerCount.value + (was ? -1 : 1))
   try {
-    await $fetch(`/api/follow/user/${profileId.value}`, { method: 'POST', headers: authHeaders() })
+    await $fetch(`/api/follow/user/${encodedProfileId.value}`, { method: 'POST', headers: authHeaders() })
     followLists.value = { followers: null, following: null }
   } catch (e: unknown) {
     isFollowing.value = was
     followerCount.value = Math.max(0, displayFollowerCount.value + (was ? 1 : -1))
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast('Không thể theo dõi', 'error')
+  } finally {
+    followLoading.value = false
   }
-  followLoading.value = false
 }
 
 // ── Block / Report ──
 const showMoreMenu = ref(false)
 const isBlocked = ref(false)
 const { confirmDialog } = useConfirm()
+
+function syncViewerRelationship(p: ProfileView | null) {
+  const relationship = p?.viewer_relationship || {}
+  if (typeof relationship.is_following === 'boolean') isFollowing.value = relationship.is_following
+  if (typeof relationship.is_blocked === 'boolean') isBlocked.value = relationship.is_blocked
+  followerCount.value = null
+}
+
+watch(profile, syncViewerRelationship, { immediate: true })
 
 function onClickOutsideMore(e: MouseEvent) {
   const wrap = (e.target as HTMLElement)?.closest('.profile-more-wrap')
@@ -424,7 +632,7 @@ watch(showMoreMenu, (v) => {
 onUnmounted(() => document.removeEventListener('click', onClickOutsideMore))
 
 async function checkBlocked() {
-  if (!isLoggedIn.value || isSelf.value) return
+  if (!isLoggedIn.value || isSelf.value || !profile.value) return
   try {
     const res = await $fetch<{ blocked: any[] }>('/api/blocked-users', { headers: authHeaders() })
     isBlocked.value = (res.blocked || []).some(u => u.id === profileId.value)
@@ -432,9 +640,10 @@ async function checkBlocked() {
 }
 
 async function toggleBlock() {
+  if (!profile.value) return
   if (isBlocked.value) {
     try {
-      await $fetch(`/api/block/${profileId.value}`, { method: 'POST', headers: authHeaders() })
+      await $fetch(`/api/block/${encodedProfileId.value}`, { method: 'POST', headers: authHeaders() })
       isBlocked.value = false
       showToast('Đã bỏ chặn', 'success')
     } catch (e: unknown) {
@@ -453,7 +662,7 @@ async function toggleBlock() {
   )
   if (!ok) return
   try {
-    await $fetch(`/api/block/${profileId.value}`, { method: 'POST', headers: authHeaders() })
+    await $fetch(`/api/block/${encodedProfileId.value}`, { method: 'POST', headers: authHeaders() })
     isBlocked.value = true
     if (isFollowing.value) { isFollowing.value = false; followerCount.value = Math.max(0, displayFollowerCount.value - 1) }
     showToast('Đã chặn người dùng', 'success')
@@ -464,12 +673,13 @@ async function toggleBlock() {
 }
 
 function reportUser() {
+  if (!profile.value) return
   showMoreMenu.value = false
   openReport('user', profileId.value)
 }
 
 async function shareProfile() {
-  const url = `${window.location.origin}/nguoi-dung/${profile.value?.username || userId.value}`
+  const url = `${window.location.origin}${publicProfilePath.value}`
   const name = profile.value?.display_name || 'Người dùng'
   if (navigator.share) {
     try { await navigator.share({ title: `${name} — vinhlong360`, url }) } catch {}
@@ -485,6 +695,7 @@ onMounted(() => {
   fetchPosts()
   checkFollowing()
   checkBlocked()
+  if (tab.value === 'collections' && isSelf.value) fetchCollections()
 })
 
 watch(userId, async () => {
@@ -536,6 +747,13 @@ useSeoMeta({
 .user-profile-page { max-width: 680px; margin: 0 auto; }
 .profile-name-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .profile-name-row h1 { flex: 1; min-width: 0; }
+.profile-meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
+.profile-handle { color: var(--muted); font-size: var(--text-sm); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
+.profile-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--space-3); border-radius: var(--radius-full); border: 1px solid var(--line); background: var(--card); color: var(--ink-700); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.profile-chip.is-public { border-color: color-mix(in srgb, var(--success, #2e7d5b) 28%, var(--line)); color: var(--success, #2e7d5b); }
+.profile-chip.is-private { border-color: color-mix(in srgb, var(--warning, #b7791f) 28%, var(--line)); color: var(--warning, #b7791f); }
+.profile-chip.is-self,
+.profile-chip.is-following { background: color-mix(in srgb, var(--primary) 10%, var(--card)); border-color: color-mix(in srgb, var(--primary) 30%, var(--line)); color: var(--primary); }
 .profile-more-wrap { position: relative; }
 .btn-icon { min-width: 44px; padding: .3rem .5rem; letter-spacing: 2px; font-weight: 700; }
 .profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: var(--space-1); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: var(--z-dropdown); min-width: 160px; overflow: hidden; }
@@ -554,6 +772,12 @@ useSeoMeta({
 .stat-item strong { font-size: var(--text-lg); font-weight: var(--weight-bold); user-select: all; }
 .stat-item span { font-size: var(--text-xs); color: var(--muted); }
 .stat-clickable { cursor: pointer; font: inherit; }
+.profile-insight { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: color-mix(in srgb, var(--bg-warm) 82%, var(--card)); }
+.profile-insight-copy { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+.profile-insight-copy span { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: .04em; }
+.profile-insight-copy strong { color: var(--ink); font-size: var(--text-sm); line-height: var(--leading-snug); overflow-wrap: anywhere; }
+.profile-insight-link { flex: 0 0 auto; color: var(--primary); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-decoration: none; }
+.profile-insight-link:hover { text-decoration: underline; }
 
 /* Modal follower/following */
 .fm-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
@@ -618,6 +842,24 @@ useSeoMeta({
 .saved-cta .btn:active { transform: scale(.97); transition-duration: .08s; }
 .dark .tab-count { background: rgba(var(--accent-rgb),.2); color: var(--accent); }
 
+/* Danh sách (collections) tab */
+.collections-header { display: flex; justify-content: flex-end; margin-bottom: var(--space-4); }
+.collections-loading { display: flex; align-items: center; gap: var(--space-2); justify-content: center; padding: var(--space-8) 0; color: var(--muted); font-size: var(--text-sm); }
+.saved-card .card-b .place { overflow-wrap: break-word; word-break: break-word; }
+.btn-danger-text { align-self: flex-start; margin: 0 var(--space-4) var(--space-4); color: var(--danger, #c0392b); }
+.btn-danger-text:hover:not(:disabled) { background: rgba(192,57,43,.08); color: var(--danger, #c0392b); }
+
+/* Create-collection modal form (mirrors .sf-* in cai-dat.vue / SettingsForm.vue — scoped styles don't leak across components) */
+.sf-field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.sf-label { font-weight: var(--weight-semibold); font-size: var(--text-sm); color: var(--ink); }
+.sf-input {
+  width: 100%; padding: var(--space-3); border: 1px solid var(--border-input, var(--line)); border-radius: var(--radius-md);
+  background: var(--bg-alt); color: var(--ink); font: inherit; font-size: var(--text-sm); resize: vertical;
+  transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
+}
+.sf-input:focus-visible { outline: none; border-color: var(--primary); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
+.sf-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-2); }
+
 /* Dark mode */
 .dark .profile-cover { border-color: var(--line); }
 .dark .profile-avatar-wrap .avatar { border-color: var(--bg-warm); }
@@ -629,6 +871,8 @@ useSeoMeta({
   .profile-name-row { flex-direction: column; align-items: flex-start; }
   .profile-name-row .btn:not(.btn-icon) { width: 100%; justify-content: center; }
   .profile-stats { gap: var(--space-3); flex-wrap: wrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .profile-insight { align-items: flex-start; flex-direction: column; }
+  .profile-insight-link { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
