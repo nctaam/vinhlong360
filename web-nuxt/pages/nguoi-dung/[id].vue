@@ -537,7 +537,7 @@ const xpProgress = computed(() => {
   if (lvl >= 4) return { pct: 100, toNext: 0, max: true }
   const lo = LEVEL_THRESHOLDS[lvl - 1] ?? 0
   const hi = LEVEL_THRESHOLDS[lvl] ?? 20
-  const pct = Math.min(100, Math.round((pts - lo) / (hi - lo) * 100))
+  const pct = Math.max(0, Math.min(100, Math.round((pts - lo) / (hi - lo) * 100)))
   return { pct, toNext: Math.max(0, hi - pts), max: false }
 })
 const visibleProfileTabs = computed<ProfileTab[]>(() => {

@@ -3943,7 +3943,7 @@ async def get_user_timeline(
 
 @router.get("/users/{user_id}/activity-heatmap",
             summary="365-day activity heatmap",
-            description="Số bài viết/đánh giá đã duyệt theo ngày trong 365 ngày qua (GitHub-style).")
+            description="Số đóng góp (bài đăng đã duyệt, gồm cả đánh giá) theo ngày trong 365 ngày qua (GitHub-style).")
 async def get_activity_heatmap(user_id: str, user=Depends(get_current_user)):
     user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
