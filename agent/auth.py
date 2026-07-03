@@ -175,6 +175,8 @@ def cleanup_expired_data() -> dict:
             results["old_read_notifications"] = getattr(r, "rowcount", 0) if r else 0
             r = db._execute(conn, "DELETE FROM pending_2fa WHERE expires_at < NOW()", ())
             results["expired_pending_2fa"] = getattr(r, "rowcount", 0) if r else 0
+            r = db._execute(conn, "DELETE FROM trusted_devices WHERE expires_at < NOW()", ())
+            results["expired_trusted_devices"] = getattr(r, "rowcount", 0) if r else 0
     except Exception as e:
         logger.warning("cleanup_expired_data error: %s", e)
         results["error"] = str(e)
@@ -521,6 +523,73 @@ async def _finish_login(user: dict, phone: str, method: str, request: Request, r
     }
 
 
+# ── Trusted devices (Wave 4 W4.5) ──
+# "Nhớ thiết bị này": opaque cookie token (raw gửi client, hash lưu DB) — cho phép
+# bỏ qua thử thách 2FA trên thiết bị đã tin cậy, tự hết hạn qua expires_at (90 ngày).
+# Mirror thiết kế session cookie (_hash_token) + pending_2fa (opaque token).
+
+TRUSTED_DEVICE_COOKIE_NAME = "vl360_trusted"
+TRUSTED_DEVICE_DAYS = 90
+
+
+def _trusted_cookie_params(request: Request) -> dict:
+    from auth_middleware import get_secure_cookie_params
+    is_prod = _request_is_production(request)
+    params = get_secure_cookie_params(is_production=is_prod)
+    params["max_age"] = TRUSTED_DEVICE_DAYS * 86400
+    host = (request.headers.get("host") or request.url.hostname or "").split(":")[0].lower()
+    if not is_prod and (host in {"localhost", "127.0.0.1", "::1"} or host.startswith("127.")):
+        params.pop("domain", None)
+        params.pop("secure", None)
+    return params
+
+
+def _short_ua(ua: str) -> str:
+    """Nhãn thiết bị thô từ User-Agent (đủ để người dùng nhận ra trong danh sách)."""
+    ua = ua or ""
+    for tok in ("iPhone", "iPad", "Android", "Windows", "Macintosh", "Linux"):
+        if tok in ua:
+            return tok
+    return "Thiết bị"
+
+
+async def _remember_trusted_device(user: dict, request: Request, response: Response) -> None:
+    """Ghi một hàng trusted_devices (hash token) + set cookie vl360_trusted (raw)."""
+    from middleware import get_client_ip
+    raw = _generate_token()
+    ip = get_client_ip(request)
+    ua = request.headers.get("user-agent", "")[:500]
+    expires = datetime.now(timezone.utc) + timedelta(days=TRUSTED_DEVICE_DAYS)
+
+    def _store():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO trusted_devices (user_id, token_hash, device_name, ip, user_agent, expires_at)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph}, {ph})
+            """, (str(user["id"]), _hash_token(raw), _short_ua(ua), ip, ua, expires.isoformat()))
+    await asyncio.to_thread(_store)
+    response.set_cookie(key=TRUSTED_DEVICE_COOKIE_NAME, value=raw, **_trusted_cookie_params(request))
+
+
+def _has_valid_trusted_device(user_id: str, request: Request) -> bool:
+    """Kiểm tra cookie vl360_trusted khớp hàng trusted_devices chưa hết hạn; cập nhật last_used_at."""
+    raw = request.cookies.get(TRUSTED_DEVICE_COOKIE_NAME, "")
+    if not raw:
+        return False
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            SELECT id FROM trusted_devices
+            WHERE user_id::text = {ph} AND token_hash = {ph} AND expires_at > NOW()
+        """, (user_id, _hash_token(raw)))
+        if not row:
+            return False
+        d = db._row_to_dict(row)
+        db._execute(conn, f"UPDATE trusted_devices SET last_used_at = NOW() WHERE id = {ph}", (d["id"],))
+        return True
+
+
 @router.post("/verify-otp",
              summary="Verify OTP and create session",
              description="Verifies the OTP code for a phone number. On success, creates or reactivates the user account and returns a session token.")
@@ -620,9 +689,8 @@ async def verify_otp(body: OTPVerify, request: Request, response: Response):
     if body.consent:
         await asyncio.to_thread(_log_consent, str(user["id"]), CONSENT_VERSION, ip)
 
-    if _2fa_is_enabled(str(user["id"])):
+    if _2fa_is_enabled(str(user["id"])) and not await asyncio.to_thread(_has_valid_trusted_device, str(user["id"]), request):
         ua = request.headers.get("user-agent", "")[:500]
-        # Bỏ qua nếu thiết bị tin cậy (Task 4 sẽ chèn kiểm tra cookie ở đây).
         challenge = await asyncio.to_thread(_create_pending_2fa, str(user["id"]), ip, ua)
         await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
         return {"two_factor_required": True, "challenge_id": challenge}
@@ -709,7 +777,7 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
 
     _login_phone_fails.pop(phone, None)
 
-    if _2fa_is_enabled(str(user["id"])):
+    if _2fa_is_enabled(str(user["id"])) and not await asyncio.to_thread(_has_valid_trusted_device, str(user["id"]), request):
         ua = request.headers.get("user-agent", "")[:500]
         challenge = await asyncio.to_thread(_create_pending_2fa, str(user["id"]), ip, ua)
         await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
@@ -1723,9 +1791,56 @@ async def twofa_verify(body: _TwoFAVerify, request: Request, response: Response)
         # Request khác đã tiêu thụ challenge này trước (race) — KHÔNG tạo session.
         raise HTTPException(400, "Phiên xác thực không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.")
 
-    # body.remember_device: CHẤP NHẬN nhưng CHƯA xử lý ở Task 3 — Task 4 sẽ gọi
-    # _remember_trusted_device ở đây (ghi trusted_devices + set cookie thiết bị tin cậy).
-    return await _finish_login(user, user.get("phone", ""), "2fa", request, response)
+    result = await _finish_login(user, user.get("phone", ""), "2fa", request, response)
+    if body.remember_device:
+        await _remember_trusted_device(user, request, response)
+    return result
+
+
+@router.get("/trusted-devices", summary="List trusted devices")
+async def list_trusted_devices(request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    uid = str(user["id"])
+
+    def _q():
+        ph = db._ph
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"""
+                SELECT id, device_name, ip, created_at, last_used_at, expires_at
+                FROM trusted_devices WHERE user_id::text = {ph} AND expires_at > NOW()
+                ORDER BY last_used_at DESC
+            """, (uid,))
+            out = []
+            for r in rows:
+                d = db._row_to_dict(r)
+                out.append({
+                    "id": str(d["id"]),
+                    "device_name": d.get("device_name"),
+                    "ip": _mask_ip(d.get("ip")),
+                    "created_at": str(d.get("created_at", "")),
+                    "last_used_at": str(d.get("last_used_at", "")),
+                })
+            return out
+    return {"devices": await asyncio.to_thread(_q)}
+
+
+@router.delete("/trusted-devices/{device_id}", summary="Remove a trusted device")
+async def delete_trusted_device(device_id: str, request: Request, _csrf=Depends(_require_csrf_lazy)):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    from auth_middleware import validate_path_id
+    device_id = validate_path_id(device_id, "device_id")
+    uid = str(user["id"])
+
+    def _del():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM trusted_devices WHERE id::text = {ph} AND user_id::text = {ph}", (device_id, uid))
+    await asyncio.to_thread(_del)
+    return {"success": True}
 
 
 # ── Auth helpers (used by other modules) ──

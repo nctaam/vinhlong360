@@ -157,3 +157,32 @@ class TestTwoFactorLoginGate:
         consume_idx = src.index("_consume")
         finish_idx = src.rindex("_finish_login")
         assert consume_idx < finish_idx
+
+
+class TestTrustedDevices:
+    def test_list_route_mounted(self):
+        assert ("GET", "/auth/trusted-devices") in _routes()
+
+    def test_delete_route_mounted(self):
+        pairs = _routes()
+        assert any(m == "DELETE" and p.startswith("/auth/trusted-devices/") for (m, p) in pairs)
+
+    def test_remember_hashes_token_and_sets_cookie(self):
+        src = inspect.getsource(auth._remember_trusted_device)
+        assert "_hash_token" in src
+        assert "vl360_trusted" in src or "set_cookie" in src
+
+    def test_skip_check_updates_last_used(self):
+        src = inspect.getsource(auth._has_valid_trusted_device)
+        assert "expires_at" in src
+        assert "last_used_at" in src
+
+    def test_login_gate_checks_trusted_device(self):
+        assert "_has_valid_trusted_device" in inspect.getsource(auth.verify_otp)
+        assert "_has_valid_trusted_device" in inspect.getsource(auth.login_password)
+
+    def test_delete_requires_csrf(self):
+        assert "_require_csrf_lazy" in inspect.getsource(auth.delete_trusted_device)
+
+    def test_trusted_cleanup_registered(self):
+        assert "trusted_devices" in inspect.getsource(auth.cleanup_expired_data)
