@@ -200,6 +200,56 @@
           <button type="button" class="otp-resend" @click="step = 'done'">Bỏ qua, để sau</button>
         </div>
 
+        <!-- Step: Two-factor authentication -->
+        <div v-else-if="step === 'twofactor'" class="otp-step">
+          <h3 tabindex="-1">Xác thực 2 bước</h3>
+          <template v-if="!useRecovery">
+            <p>Nhập mã 6 chữ số từ ứng dụng xác thực.</p>
+            <div class="form-group">
+              <input
+                v-model="totpCode"
+                class="input"
+                :class="{ error: error && step === 'twofactor' }"
+                :aria-invalid="!!(error && step === 'twofactor')"
+                type="text"
+                inputmode="numeric"
+                maxlength="6"
+                autocomplete="one-time-code"
+                aria-label="Mã xác thực 2 bước"
+                placeholder="123456"
+                @keyup.enter="verifyTwoFactorCode"
+              />
+            </div>
+          </template>
+          <template v-else>
+            <p>Nhập một mã khôi phục (dùng một lần).</p>
+            <div class="form-group">
+              <input
+                v-model="recoveryCode"
+                class="input"
+                :class="{ error: error && step === 'twofactor' }"
+                :aria-invalid="!!(error && step === 'twofactor')"
+                type="text"
+                autocomplete="off"
+                aria-label="Mã khôi phục"
+                placeholder="Mã khôi phục"
+                @keyup.enter="verifyTwoFactorCode"
+              />
+            </div>
+          </template>
+          <label class="consent-row">
+            <input v-model="rememberDevice" type="checkbox" class="consent-checkbox" />
+            <span>Tin cậy thiết bị này trong 90 ngày</span>
+          </label>
+          <p v-if="error" class="form-error" role="alert">{{ error }}</p>
+          <button type="button" class="btn btn-primary btn-full" :disabled="sending" @click="verifyTwoFactorCode">
+            {{ sending ? 'Đang xác minh…' : 'Xác nhận' }}
+          </button>
+          <button type="button" class="otp-resend" @click="error = ''; useRecovery = !useRecovery">
+            {{ useRecovery ? 'Dùng mã từ ứng dụng xác thực' : 'Dùng mã khôi phục' }}
+          </button>
+        </div>
+
         <!-- Step: Done -->
         <div v-else class="otp-step otp-done">
           <h3 tabindex="-1">{{ isNewAccount ? 'Đăng ký thành công!' : 'Đăng nhập thành công!' }}</h3>
@@ -216,10 +266,10 @@
 const props = defineProps<{ visible: boolean }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
-const { requestOtp, verifyOtp, checkPhone, login, setPassword } = useAuth()
+const { requestOtp, verifyOtp, checkPhone, login, setPassword, verifyTwoFactor } = useAuth()
 const { onLoginSuccess } = useAuthModal()
 
-const step = ref<'phone' | 'register' | 'password' | 'otp' | 'set-password' | 'done'>('phone')
+const step = ref<'phone' | 'register' | 'password' | 'otp' | 'set-password' | 'twofactor' | 'done'>('phone')
 watch(step, (v) => {
   if (v === 'done') onLoginSuccess()
   nextTick(() => modalEl.value?.querySelector<HTMLElement>('h3')?.focus())
@@ -246,6 +296,12 @@ const regPassword = ref('')
 const regPasswordConfirm = ref('')
 const usernameStatus = ref<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle')
 
+const challengeId = ref('')
+const totpCode = ref('')
+const recoveryCode = ref('')
+const useRecovery = ref(false)
+const rememberDevice = ref(false)
+
 const maxDob = computed(() => {
   const d = new Date()
   d.setFullYear(d.getFullYear() - 13)
@@ -255,6 +311,7 @@ const maxDob = computed(() => {
 const modalTitle = computed(() => {
   if (step.value === 'register') return 'Đăng ký'
   if (step.value === 'set-password') return 'Đặt mật khẩu'
+  if (step.value === 'twofactor') return 'Xác thực 2 bước'
   if (step.value === 'done') return 'Thành công'
   return 'Đăng nhập'
 })
@@ -278,6 +335,11 @@ function close() {
     regPassword.value = ''
     regPasswordConfirm.value = ''
     usernameStatus.value = 'idle'
+    challengeId.value = ''
+    totpCode.value = ''
+    recoveryCode.value = ''
+    useRecovery.value = false
+    rememberDevice.value = false
   }, 300)
 }
 
@@ -366,8 +428,13 @@ async function handleLogin() {
   sending.value = true
   error.value = ''
   try {
-    await login(phone.value, password.value)
-    step.value = 'done'
+    const res = await login(phone.value, password.value)
+    if (res.two_factor_required && res.challenge_id) {
+      challengeId.value = res.challenge_id
+      step.value = 'twofactor'
+    } else {
+      step.value = 'done'
+    }
   } catch (e: unknown) {
     error.value = (e as any).data?.detail || 'Số điện thoại hoặc mật khẩu không đúng'
   } finally {
@@ -421,7 +488,10 @@ async function verifyCode() {
       date_of_birth: regDob.value || undefined,
     } : undefined
     const res = await verifyOtp(phone.value, code, consent.value, registration)
-    if (res.error) {
+    if (res.two_factor_required && res.challenge_id) {
+      challengeId.value = res.challenge_id
+      step.value = 'twofactor'
+    } else if (res.error) {
       error.value = res.error
     } else if (isNewAccount.value) {
       step.value = 'done'
@@ -461,9 +531,36 @@ async function handleSetPassword() {
   }
 }
 
+async function verifyTwoFactorCode() {
+  const code = useRecovery.value ? recoveryCode.value.trim() : totpCode.value.trim()
+  if (!code) {
+    error.value = useRecovery.value ? 'Vui lòng nhập mã khôi phục' : 'Vui lòng nhập mã 6 chữ số'
+    return
+  }
+  sending.value = true
+  error.value = ''
+  try {
+    const res = await verifyTwoFactor(challengeId.value, code, {
+      recovery: useRecovery.value,
+      remember_device: rememberDevice.value,
+    })
+    if (res.error) {
+      error.value = res.error
+    } else {
+      step.value = 'done'
+    }
+  } catch (e: unknown) {
+    error.value = (e as any).data?.detail || 'Mã không đúng'
+    totpCode.value = ''
+    recoveryCode.value = ''
+  } finally {
+    sending.value = false
+  }
+}
+
 function onOtpInput(idx: number) {
-  otpDigits.value[idx] = otpDigits.value[idx].replace(/\D/g, '')
-  const val = otpDigits.value[idx]
+  const val = (otpDigits.value[idx] ?? '').replace(/\D/g, '')
+  otpDigits.value[idx] = val
   if (val && idx < 5) {
     otpRefs.value[idx + 1]?.focus()
   }
