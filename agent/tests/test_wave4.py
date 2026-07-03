@@ -55,3 +55,50 @@ class TestTwoFactorCrypto:
         assert len(set(codes)) == 8  # unique
         h = twofactor.hash_recovery_code(codes[0])
         assert h != codes[0] and len(h) == 64  # sha256 hex
+
+
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+import auth
+
+
+def _routes():
+    app = FastAPI(); app.include_router(auth.router)
+    pairs = set()
+    for r in app.routes:
+        for m in (getattr(r, "methods", None) or set()):
+            pairs.add((m, r.path))
+    return pairs
+
+
+class TestTwoFactorEnrollment:
+    def test_setup_route_mounted(self):
+        assert ("POST", "/auth/2fa/setup") in _routes()
+
+    def test_verify_setup_route_mounted(self):
+        assert ("POST", "/auth/2fa/verify-setup") in _routes()
+
+    def test_disable_route_mounted(self):
+        assert ("POST", "/auth/2fa/disable") in _routes()
+
+    def test_status_route_mounted(self):
+        assert ("GET", "/auth/2fa/status") in _routes()
+
+    def test_setup_stores_encrypted_secret(self):
+        src = inspect.getsource(auth.twofa_setup)
+        assert "encrypt_secret" in src
+        assert "enabled" in src  # inserted disabled
+
+    def test_verify_setup_enables_and_returns_recovery(self):
+        src = inspect.getsource(auth.twofa_verify_setup)
+        assert "verify_totp" in src
+        assert "generate_recovery_codes" in src
+        assert "hash_recovery_code" in src
+
+    def test_disable_requires_code(self):
+        src = inspect.getsource(auth.twofa_disable)
+        assert "verify_totp" in src or "recovery_code_matches" in src
+
+    def test_enrollment_endpoints_require_csrf(self):
+        for fn in (auth.twofa_setup, auth.twofa_verify_setup, auth.twofa_disable):
+            assert "_require_csrf_lazy" in inspect.getsource(fn)

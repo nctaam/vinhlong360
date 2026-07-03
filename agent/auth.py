@@ -1417,6 +1417,147 @@ async def export_user_data(request: Request):
     }
 
 
+# ── 2FA enrollment (Wave 4) ──
+# secret_enc luôn MÃ HOÁ (Fernet) — không bao giờ log/trả ra ngoài trừ /2fa/setup
+# (trả secret thô MỘT LẦN để quét QR/nhập tay — theo thiết kế). Mã khôi phục cũng
+# chỉ trả MỘT LẦN ở /2fa/verify-setup.
+
+def _get_2fa_row(user_id: str) -> dict | None:
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT user_id, secret_enc, enabled FROM user_2fa WHERE user_id::text = {ph}", (user_id,))
+        return db._row_to_dict(row) if row else None
+
+
+def _2fa_is_enabled(user_id: str) -> bool:
+    row = _get_2fa_row(user_id)
+    return bool(row and row.get("enabled"))
+
+
+@router.post("/2fa/setup",
+             summary="Begin 2FA enrollment",
+             description="Generates a new TOTP secret for the authenticated user and stores it encrypted (disabled) pending confirmation via /2fa/verify-setup.")
+async def twofa_setup(request: Request, _csrf=Depends(_require_csrf_lazy)):
+    from twofactor import generate_secret, provisioning_uri, qr_data_uri, encrypt_secret
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    uid = str(user["id"])
+    from ratelimit import check_rate
+    check_rate(f"2fa-setup:{uid}", 5, 600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    if _2fa_is_enabled(uid):
+        raise HTTPException(400, "2FA đã được bật")
+    secret = generate_secret()
+    account = user.get("phone") or user.get("username") or uid
+    enc = encrypt_secret(secret)
+
+    def _store():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"""
+                INSERT INTO user_2fa (user_id, secret_enc, enabled)
+                VALUES ({ph}::uuid, {ph}, FALSE)
+                ON CONFLICT (user_id) DO UPDATE SET secret_enc = EXCLUDED.secret_enc, enabled = FALSE, created_at = NOW(), verified_at = NULL
+            """, (uid, enc))
+    await asyncio.to_thread(_store)
+
+    uri = provisioning_uri(secret, str(account))
+    return {"secret": secret, "otpauth_uri": uri, "qr": qr_data_uri(uri)}
+
+
+class _TwoFACode(BaseModel):
+    code: str
+
+
+@router.post("/2fa/verify-setup",
+             summary="Confirm 2FA enrollment",
+             description="Confirms 2FA enrollment with a TOTP code from the authenticator app, enables 2FA, and returns one-time recovery codes.")
+async def twofa_verify_setup(body: _TwoFACode, request: Request, _csrf=Depends(_require_csrf_lazy)):
+    from twofactor import decrypt_secret, verify_totp, generate_recovery_codes, hash_recovery_code
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    uid = str(user["id"])
+    from ratelimit import check_rate
+    check_rate(f"2fa-verify-setup:{uid}", 5, 600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    row = _get_2fa_row(uid)
+    if not row:
+        raise HTTPException(400, "Chưa bắt đầu thiết lập 2FA")
+    if not verify_totp(decrypt_secret(row["secret_enc"]), body.code):
+        raise HTTPException(400, "Mã không đúng. Vui lòng thử lại")
+    codes = generate_recovery_codes(8)
+
+    def _enable():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"UPDATE user_2fa SET enabled = TRUE, verified_at = NOW() WHERE user_id::text = {ph}", (uid,))
+            db._execute(conn, f"DELETE FROM user_2fa_recovery_codes WHERE user_id::text = {ph}", (uid,))
+            for c in codes:
+                db._execute(conn, f"INSERT INTO user_2fa_recovery_codes (user_id, code_hash) VALUES ({ph}::uuid, {ph})", (uid, hash_recovery_code(c)))
+    await asyncio.to_thread(_enable)
+    return {"success": True, "recovery_codes": codes}
+
+
+@router.post("/2fa/disable",
+             summary="Disable 2FA",
+             description="Disables 2FA for the authenticated user after verifying a current TOTP code or an unused recovery code. Removes stored secret, recovery codes, and trusted devices.")
+async def twofa_disable(body: _TwoFACode, request: Request, _csrf=Depends(_require_csrf_lazy)):
+    from twofactor import decrypt_secret, verify_totp, recovery_code_matches
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    uid = str(user["id"])
+    from ratelimit import check_rate
+    check_rate(f"2fa-disable:{uid}", 5, 600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
+    row = _get_2fa_row(uid)
+    if not row or not row.get("enabled"):
+        raise HTTPException(400, "2FA chưa được bật")
+
+    def _check_code() -> bool:
+        if verify_totp(decrypt_secret(row["secret_enc"]), body.code):
+            return True
+        ph = db._ph
+        with db._conn() as conn:
+            rows = db._fetchall(conn, f"SELECT id, code_hash FROM user_2fa_recovery_codes WHERE user_id::text = {ph} AND used_at IS NULL", (uid,))
+            for r in rows:
+                d = db._row_to_dict(r)
+                if recovery_code_matches(body.code, d["code_hash"]):
+                    return True
+        return False
+    if not await asyncio.to_thread(_check_code):
+        raise HTTPException(400, "Mã không đúng")
+
+    def _disable():
+        ph = db._ph
+        with db._conn() as conn:
+            db._execute(conn, f"DELETE FROM user_2fa WHERE user_id::text = {ph}", (uid,))
+            db._execute(conn, f"DELETE FROM user_2fa_recovery_codes WHERE user_id::text = {ph}", (uid,))
+            db._execute(conn, f"DELETE FROM trusted_devices WHERE user_id::text = {ph}", (uid,))
+    await asyncio.to_thread(_disable)
+    return {"success": True}
+
+
+@router.get("/2fa/status", summary="2FA status for current user")
+async def twofa_status(request: Request):
+    user = await _get_current_user_or_none(request)
+    if not user:
+        raise HTTPException(401, "Chưa đăng nhập")
+    uid = str(user["id"])
+
+    def _q():
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT enabled FROM user_2fa WHERE user_id::text = {ph}", (uid,))
+            enabled = bool(db._row_to_dict(row).get("enabled")) if row else False
+            rem = 0
+            if enabled:
+                c = db._fetchone(conn, f"SELECT COUNT(*) c FROM user_2fa_recovery_codes WHERE user_id::text = {ph} AND used_at IS NULL", (uid,))
+                rem = int(db._row_to_dict(c).get("c", 0)) if c else 0
+            return enabled, rem
+    enabled, rem = await asyncio.to_thread(_q)
+    return {"enabled": enabled, "recovery_remaining": rem}
+
+
 # ── Auth helpers (used by other modules) ──
 
 _TOKEN_MAX_LEN = 128
