@@ -59,17 +59,24 @@
             {{ b.icon }} {{ b.label }}
           </span>
         </div>
-        <details v-if="isSelf && badgeProgress.length" class="badge-showcase" open>
-          <summary class="bs-title">Thành tích ({{ earnedBadgeCount }}/{{ badgeProgress.length }})</summary>
-          <div class="bs-grid">
-            <div v-for="b in badgeProgress" :key="b.id" :class="['bs-card', { earned: b.earned }]">
-              <span class="bs-icon" aria-hidden="true">{{ b.icon }}</span>
-              <span class="bs-label">{{ b.label }}</span>
-              <div v-if="!b.earned" class="bs-progress">
-                <div class="bs-bar"><div class="bs-fill" :style="{ width: Math.min(100, (b.current / b.target) * 100) + '%' }"></div></div>
-                <span class="bs-hint">{{ b.hint || `${b.current}/${b.target}` }}</span>
+        <details v-if="isSelf && achievements.length" class="badge-showcase" open>
+          <summary class="bs-title">Thành tích ({{ achievementsEarned }}/{{ achievements.length }})</summary>
+          <div v-for="cat in achievementCategories" :key="cat.key" class="bs-cat">
+            <h4 class="bs-cat-title">{{ cat.label }}</h4>
+            <div class="bs-grid">
+              <div v-for="a in cat.items" :key="a.id"
+                   class="bs-card" :class="{ 'bs-earned': a.earned, 'bs-locked': !a.earned }"
+                   :title="a.description">
+                <span class="bs-icon" aria-hidden="true">{{ a.icon }}</span>
+                <div class="bs-info">
+                  <strong class="bs-label">{{ a.name }}</strong>
+                  <span v-if="a.earned" class="bs-date">{{ a.unlocked_at ? timeAgo(a.unlocked_at) : 'Đã đạt' }}</span>
+                  <template v-else>
+                    <div class="bs-bar"><div class="bs-fill" :style="{ width: Math.min(100, Math.round(a.current / a.target * 100)) + '%' }"></div></div>
+                    <span class="bs-hint">Còn {{ Math.max(0, a.target - a.current) }} nữa</span>
+                  </template>
+                </div>
               </div>
-              <span v-else class="bs-earned-label">Đã đạt</span>
             </div>
           </div>
         </details>
@@ -683,6 +690,37 @@ async function loadBadgeProgress() {
   } catch { /* non-critical */ }
 }
 
+// ── Thành tích (achievement showcase, chỉ hồ sơ của mình) ──
+type Achievement = {
+  id: string; name: string; description: string; icon: string; category: string
+  current: number; target: number; earned: boolean; unlocked_at: string | null
+}
+const achievements = ref<Achievement[]>([])
+const achievementsEarned = ref(0)
+
+async function loadAchievements() {
+  if (!isSelf.value) return
+  try {
+    const res = await $fetch<{ achievements: Achievement[]; earned_count: number }>(
+      '/api/me/achievements', { headers: authHeaders() })
+    achievements.value = res.achievements || []
+    achievementsEarned.value = res.earned_count || 0
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    /* im lặng — showcase là bổ sung */
+  }
+}
+
+const achievementCategories = computed(() => {
+  const order: Array<[string, string]> = [
+    ['content', 'Nội dung'], ['explorer', 'Khám phá'],
+    ['social', 'Cộng đồng'], ['veteran', 'Kỳ cựu'], ['special', 'Đặc biệt'],
+  ]
+  return order
+    .map(([key, label]) => ({ key, label, items: achievements.value.filter(a => a.category === key) }))
+    .filter(c => c.items.length)
+})
+
 function setProfileTab(next: ProfileTab) {
   tab.value = normalizeVisibleProfileTab(next)
 }
@@ -832,7 +870,7 @@ onMounted(() => {
   fetchPosts()
   checkFollowing()
   checkBlocked()
-  if (isSelf.value) { loadUserStats(); loadBadgeProgress() }
+  if (isSelf.value) { loadUserStats(); loadAchievements() }
   if (tab.value === 'collections' && isSelf.value) fetchCollections()
 })
 
@@ -872,20 +910,23 @@ useSeoMeta({
 .profile-loading { text-align: center; padding: var(--space-5) 0; }
 .profile-loading .spinner { margin: 0 auto; }
 
-/* Huy hiệu + tiến độ (badge showcase, chỉ hồ sơ của mình) */
+/* Thành tích (achievement showcase, chỉ hồ sơ của mình) */
 .badge-showcase { margin: var(--space-3) 0; }
 .bs-title { font-weight: var(--weight-semibold); font-size: var(--text-sm); cursor: pointer; padding: var(--space-2) 0; color: var(--ink); }
+.bs-cat { margin-top: var(--space-3); }
+.bs-cat-title { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 var(--space-2); }
 .bs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
-.bs-card { padding: var(--space-2); border-radius: var(--radius); border: 1px solid var(--line); text-align: center; background: var(--surface); }
-.bs-card:not(.earned) { opacity: .6; }
-.bs-card.earned { border-color: var(--primary); }
-.bs-icon { font-size: 1.5rem; display: block; margin-bottom: var(--space-1); }
+.bs-card { display: flex; align-items: flex-start; gap: var(--space-2); padding: var(--space-2); border-radius: var(--radius); border: 1px solid var(--line); text-align: left; background: var(--surface); }
+.bs-card.bs-earned { border-color: var(--primary); }
+.bs-card.bs-locked { opacity: 0.55; }
+.bs-icon { font-size: 1.5rem; line-height: 1; flex-shrink: 0; }
+.bs-card.bs-locked .bs-icon { filter: grayscale(1); }
+.bs-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .bs-label { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
-.bs-progress { margin-top: var(--space-1); }
-.bs-bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
-.bs-fill { height: 100%; background: var(--primary); border-radius: 2px; transition: width .3s ease; }
-.bs-hint { font-size: var(--text-xs); color: var(--muted); }
-.bs-earned-label { font-size: var(--text-xs); color: var(--success); font-weight: var(--weight-medium); }
+.bs-bar { height: 4px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; margin-top: var(--space-1); }
+.bs-fill { height: 100%; background: var(--primary); border-radius: var(--radius-full); transition: width var(--duration-slow) var(--ease-out); }
+.bs-date { font-size: var(--text-2xs); color: var(--success); }
+.bs-hint { font-size: var(--text-2xs); color: var(--muted); }
 
 .profile-cover { position: relative; border-radius: var(--radius-xl, 20px); overflow: hidden; margin-bottom: calc(-1 * var(--space-8)); box-shadow: var(--shadow-lg, var(--shadow-md)); }
 .cover-img { width: 100%; height: 200px; object-fit: cover; display: block; background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: coverShimmer 1.4s ease infinite; }
