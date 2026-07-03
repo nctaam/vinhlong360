@@ -88,3 +88,55 @@ class TestProfileViewTracking:
     def test_view_count_uses_distinct_viewer_to_avoid_double_count(self):
         src = inspect.getsource(social.get_user_profile)
         assert "COUNT(DISTINCT viewer_id)" in src
+
+
+class TestActivityTimeline:
+    """Task 2: GET /api/users/{user_id}/timeline — union of posts, reviews,
+    and follows for a user's chronological activity feed."""
+
+    def test_timeline_endpoint_exists(self):
+        src = inspect.getsource(social.get_user_timeline)
+        assert "timeline" in src.lower()
+
+    def test_timeline_uses_union_query(self):
+        src = inspect.getsource(social.get_user_timeline)
+        assert "UNION ALL" in src
+
+    def test_timeline_respects_privacy(self):
+        src = inspect.getsource(social.get_user_timeline)
+        assert "is_private" in src
+
+    def test_timeline_has_pagination(self):
+        src = inspect.getsource(social.get_user_timeline)
+        assert "LIMIT" in src
+        assert "OFFSET" in src
+
+    def test_timeline_returns_typed_items(self):
+        src = inspect.getsource(social.get_user_timeline)
+        for item_type in ("post", "review", "follow"):
+            assert f"'{item_type}'" in src or f'"{item_type}"' in src
+
+    def test_timeline_validates_path_id(self):
+        # Bảo vệ path param user_id giống các endpoint /users/{user_id}/* khác.
+        src = inspect.getsource(social.get_user_timeline)
+        assert "validate_path_id" in src
+
+    def test_timeline_uses_optional_auth_dependency(self):
+        # Timeline công khai xem được (nếu không private) — auth optional,
+        # dùng get_current_user chứ không phải require_user.
+        src = inspect.getsource(social.get_user_timeline)
+        assert "Depends(get_current_user)" in src
+
+    def test_timeline_excludes_unapproved_and_deleted_posts(self):
+        src = inspect.getsource(social.get_user_timeline)
+        assert "moderation_status" in src
+        assert "deleted_at IS NULL" in src
+
+    def test_timeline_response_has_expected_top_level_keys(self):
+        src = inspect.getsource(social.get_user_timeline)
+        for key in ("items", "total", "page", "has_more"):
+            assert f'"{key}"' in src
+
+    def test_timeline_404_for_missing_user(self):
+        src = inspect.getsource(social.get_user_timeline)
+        assert "404" in src

@@ -3563,6 +3563,110 @@ async def get_user_reviews(
     return {"reviews": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
+@router.get("/users/{user_id}/timeline",
+            summary="User activity timeline",
+            description="Chronological timeline of a user's posts, reviews, and follows.")
+async def get_user_timeline(
+    user_id: str,
+    page: int = Query(1, ge=1, le=1000),
+    limit: int = Query(20, ge=1, le=50),
+    user=Depends(get_current_user),
+):
+    user_id = validate_path_id(user_id, "user_id")
+    ph = db._ph
+    offset = (page - 1) * limit
+
+    def _query():
+        with db._conn() as conn:
+            # Không có cột users.is_private — độ hiển thị hồ sơ nằm ở
+            # user_privacy.profile_visibility (giống get_user_profile).
+            target = db._fetchone(conn, f"""
+                SELECT u.id, COALESCE(pv.profile_visibility, 'public') = 'private' AS is_private
+                FROM users u
+                LEFT JOIN user_privacy pv ON pv.user_id = u.id
+                WHERE u.id::text = {ph} AND u.is_active = TRUE AND u.deleted_at IS NULL
+            """, (user_id,))
+            if not target:
+                return None, 0
+            target = db._row_to_dict(target)
+            is_self = user and str(user["id"]) == str(target["id"])
+            if target.get("is_private") and not is_self:
+                return [], 0
+
+            timeline_sql = f"""
+                (SELECT 'post' AS type, p.created_at, p.id::text AS ref_id,
+                        LEFT(p.content, 200) AS content, p.post_type,
+                        e.name AS entity_name, NULL AS target_name,
+                        p.like_count, NULL::int AS rating
+                 FROM posts p
+                 LEFT JOIN entities e ON e.id = p.entity_id
+                 WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
+                       AND p.deleted_at IS NULL AND p.post_type != 'review')
+                UNION ALL
+                (SELECT 'review' AS type, p.created_at, p.id::text AS ref_id,
+                        LEFT(p.content, 200) AS content, p.post_type,
+                        e.name AS entity_name, NULL AS target_name,
+                        p.like_count, p.rating
+                 FROM posts p
+                 LEFT JOIN entities e ON e.id = p.entity_id
+                 WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved'
+                       AND p.deleted_at IS NULL AND p.post_type = 'review')
+                UNION ALL
+                (SELECT 'follow' AS type, f.created_at, f.target_id AS ref_id,
+                        NULL AS content, NULL AS post_type,
+                        NULL AS entity_name,
+                        COALESCE(u2.display_name, u2.username, 'Người dùng') AS target_name,
+                        NULL AS like_count, NULL::int AS rating
+                 FROM follows f
+                 LEFT JOIN users u2 ON u2.id::text = f.target_id
+                 WHERE f.follower_id::text = {ph} AND f.target_type = 'user')
+                ORDER BY created_at DESC
+                LIMIT {ph} OFFSET {ph}
+            """
+            params = (user_id, user_id, user_id, limit, offset)
+            rows = db._fetchall(conn, timeline_sql, params)
+
+            count_sql = f"""
+                SELECT (
+                    (SELECT COUNT(*) FROM posts WHERE user_id::text = {ph}
+                     AND moderation_status = 'approved' AND deleted_at IS NULL)
+                    + (SELECT COUNT(*) FROM follows WHERE follower_id::text = {ph}
+                       AND target_type = 'user')
+                ) AS c
+            """
+            total_row = db._fetchone(conn, count_sql, (user_id, user_id))
+            total = db._row_to_dict(total_row)["c"] if total_row else 0
+            return rows, total
+
+    result = await asyncio.to_thread(_query)
+    if result[0] is None:
+        raise HTTPException(status_code=404, detail="Người dùng không tồn tại")
+
+    rows, total = result
+    items = []
+    for r in rows:
+        d = db._row_to_dict(r)
+        item = {"type": d["type"], "created_at": str(d["created_at"])}
+        if d["type"] in ("post", "review"):
+            item["data"] = {
+                "id": str(d["ref_id"]),
+                "content": d.get("content") or "",
+                "post_type": d.get("post_type"),
+                "entity_name": d.get("entity_name"),
+                "like_count": d.get("like_count") or 0,
+            }
+            if d["type"] == "review":
+                item["data"]["rating"] = d.get("rating")
+        elif d["type"] == "follow":
+            item["data"] = {
+                "target_id": str(d["ref_id"]),
+                "target_name": d.get("target_name") or "Người dùng",
+            }
+        items.append(item)
+
+    return {"items": items, "total": total, "page": page, "has_more": offset + limit < total}
+
+
 # ── Helpers for AI integration (called by tools.py) ──
 
 def get_community_reviews(entity_id: str, limit: int = 5) -> list[dict]:
