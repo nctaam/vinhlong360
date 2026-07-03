@@ -115,6 +115,9 @@
           </div>
         </div>
         <NuxtLink to="/" class="back-link">&#8592; Về trang chủ</NuxtLink>
+        <button type="button" class="dark-toggle" :title="isDark ? 'Chế độ sáng' : 'Chế độ tối'" @click="toggleDark">
+          {{ isDark ? '☀️' : '🌙' }}
+        </button>
       </div>
     </aside>
     <main id="admin-main" class="admin-main">
@@ -185,13 +188,23 @@ const ADMIN_PAGE_LABELS: Record<string, string> = {
 const currentPageLabel = computed(() => {
   const path = route.path
   if (path === '/admin' || path === '/admin/') return ''
+  if (path === '/admin/entities' && route.query.kind) {
+    const k = ADMIN_KINDS.find(kd => kd.kind === route.query.kind)
+    return k ? `${k.emoji} ${k.label}` : 'Entities'
+  }
   if (ADMIN_PAGE_LABELS[path]) return ADMIN_PAGE_LABELS[path]
-  // Nested routes (e.g. /admin/cai-dat/branding): match by longest known prefix
   const match = Object.keys(ADMIN_PAGE_LABELS)
     .filter(k => path.startsWith(k + '/'))
     .sort((a, b) => b.length - a.length)[0]
   return match ? ADMIN_PAGE_LABELS[match] : ''
 })
+
+const isDark = ref(false)
+function toggleDark() {
+  isDark.value = !isDark.value
+  document.documentElement.classList.toggle('dark', isDark.value)
+  try { localStorage.setItem('theme', isDark.value ? 'dark' : 'light') } catch {}
+}
 
 useHead({
   meta: [{ name: 'robots', content: 'noindex,nofollow' }],
@@ -203,6 +216,7 @@ function _onVisChange() { if (!document.hidden) loadBadges() }
 onMounted(async () => {
   if (!user.value) await fetchMe()
   if (window.innerWidth < 1024) sidebarCollapsed.value = true
+  isDark.value = document.documentElement.classList.contains('dark')
   loadBadges()
   badgeInterval = setInterval(_badgeTick, 60_000)
   document.addEventListener('visibilitychange', _onVisChange)
@@ -347,6 +361,12 @@ onUnmounted(() => {
 .back-link:hover { color: rgba(255,255,255,.85); transform: translateX(-2px); }
 .back-link:active { transform: translateX(0) scale(.95); transition-duration: .08s; }
 .back-link:focus-visible { outline: 2px solid var(--accent, #f5c518); outline-offset: 2px; border-radius: 4px; }
+.dark-toggle {
+  background: none; border: none; cursor: pointer; font-size: 1.1rem;
+  padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
+  transition: background .2s;
+}
+.dark-toggle:hover { background: rgba(255,255,255,.1); }
 
 /* ── Topbar breadcrumb ── */
 .admin-topbar {
@@ -612,6 +632,7 @@ onUnmounted(() => {
   .nav-text { display: inline !important; }
   .admin-nav a.active { box-shadow: none; background: rgba(255,255,255,.15); }
   .admin-sidebar-footer { display: none; }
+  .nav-sub { display: none; }
   .admin-main { padding: var(--space-4); }
   .admin-topbar { margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) var(--space-4); padding: var(--space-3) var(--space-4); }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }

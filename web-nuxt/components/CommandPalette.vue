@@ -41,6 +41,8 @@
 </template>
 
 <script setup lang="ts">
+import { ADMIN_KINDS } from '~/utils/adminKinds'
+
 const open = ref(false)
 const query = ref('')
 const active = ref(0)
@@ -48,28 +50,37 @@ const inputEl = ref<HTMLInputElement>()
 const paletteRef = ref<HTMLElement | null>(null)
 useModalA11y(open, paletteRef, { onClose: () => { open.value = false } })
 
-const PAGES = [
+function removeDiacritics(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D')
+}
+
+const PAGES: { icon: string; label: string; to: string; hint: string; search: string }[] = [
   { icon: '📊', label: 'Dashboard', to: '/admin', hint: 'Tổng quan' },
   { icon: '📈', label: 'Thống kê', to: '/admin/thong-ke', hint: 'Analytics' },
   { icon: '📋', label: 'Entities', to: '/admin/entities', hint: 'Quản lý nội dung' },
+  ...ADMIN_KINDS.map(k => ({
+    icon: k.emoji, label: k.label, to: `/admin/entities?kind=${k.kind}`, hint: k.types.join(', '),
+  })),
   { icon: '📍', label: 'Chưa phân loại', to: '/admin/chua-phan-loai', hint: 'Entity chưa gắn xã' },
   { icon: '🏛', label: 'Danh bạ HC', to: '/admin/danh-ba', hint: 'Hành chính' },
   { icon: '🗺', label: 'Lịch trình', to: '/admin/lich-trinh', hint: 'Tuyến đường' },
   { icon: '🔍', label: 'Chất lượng DL', to: '/admin/data-quality', hint: 'Data quality' },
+  { icon: '🖼', label: 'Thư viện ảnh', to: '/admin/media', hint: 'Media gallery' },
   { icon: '🛡', label: 'Kiểm duyệt', to: '/admin/kiem-duyet', hint: 'Moderation' },
   { icon: '📷', label: 'Duyệt ảnh', to: '/admin/duyet-anh', hint: 'Image review' },
   { icon: '👥', label: 'Users', to: '/admin/users', hint: 'Quản lý tài khoản' },
   { icon: '🚩', label: 'Báo cáo', to: '/admin/bao-cao', hint: 'Reports' },
   { icon: '🧪', label: 'Duyệt & Tools', to: '/admin/duyet-tu-hoc', hint: 'KB curation' },
   { icon: '🤖', label: 'Knowledge Agent', to: '/admin/ai', hint: 'AI chat' },
+  { icon: '📜', label: 'Nhật ký', to: '/admin/nhat-ky', hint: 'Audit log' },
   { icon: '⚙', label: 'Cài đặt', to: '/admin/cai-dat', hint: 'Site settings' },
   { icon: '🏠', label: 'Về trang chủ', to: '/', hint: 'Public site' },
-]
+].map(p => ({ ...p, search: removeDiacritics(`${p.label} ${p.hint}`).toLowerCase() }))
 
 const results = computed(() => {
   if (!query.value) return PAGES
-  const q = query.value.toLowerCase()
-  return PAGES.filter(p => p.label.toLowerCase().includes(q) || p.hint.toLowerCase().includes(q))
+  const q = removeDiacritics(query.value).toLowerCase()
+  return PAGES.filter(p => p.search.includes(q))
 })
 
 watch(query, () => { active.value = 0 })

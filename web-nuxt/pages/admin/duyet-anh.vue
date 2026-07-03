@@ -8,7 +8,7 @@
           chỉ ảnh được duyệt mới lên trang. Nhớ kiểm tra giấy phép trước khi duyệt.
         </p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchQueue">
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchQueue()">
         <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
       </button>
     </div>
@@ -39,7 +39,7 @@
       </div>
       <!-- Card grid: visual review needs the thumbnail front and centre -->
       <div v-if="queue.length" class="img-grid">
-        <div v-for="s in queue" :key="s.id" class="img-card">
+        <div v-for="(s, i) in queue" :key="s.id" class="img-card" :class="{ 'img-focused': i === focusIdx }">
           <div class="img-thumb-wrap">
             <!-- Candidate is an external licensed URL (not yet re-hosted) -->
             <img
@@ -266,7 +266,22 @@ async function refresh() {
   await fetchQueue()
 }
 
-onMounted(() => fetchQueue())
+const focusIdx = ref(-1)
+const focusedItem = computed(() => queue.value[focusIdx.value] || null)
+
+function onKeydown(e: KeyboardEvent) {
+  if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return
+  if (e.key === 'j') { focusIdx.value = Math.min(focusIdx.value + 1, queue.value.length - 1); e.preventDefault(); nextTick(() => document.querySelector('.img-focused')?.scrollIntoView({ block: 'nearest' })) }
+  else if (e.key === 'k') { focusIdx.value = Math.max(focusIdx.value - 1, 0); e.preventDefault(); nextTick(() => document.querySelector('.img-focused')?.scrollIntoView({ block: 'nearest' })) }
+  else if (e.key === 'a' && focusedItem.value && focusedItem.value.status !== 'approved') { approve(focusedItem.value.id); e.preventDefault() }
+  else if (e.key === 'r' && focusedItem.value && focusedItem.value.status !== 'rejected') { startReject(focusedItem.value.id); e.preventDefault() }
+}
+
+onMounted(() => {
+  fetchQueue()
+  window.addEventListener('keydown', onKeydown)
+})
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <style scoped>
@@ -297,7 +312,10 @@ onMounted(() => fetchQueue())
 .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-4); }
 .img-card {
   display: flex; flex-direction: column; border: .5px solid var(--line); border-radius: 14px;
-  background: var(--bg); overflow: hidden;
+  background: var(--bg); overflow: hidden; transition: box-shadow .15s;
+}
+.img-card.img-focused {
+  box-shadow: 0 0 0 2px var(--primary, #0071e3); border-color: var(--primary, #0071e3);
 }
 .img-thumb-wrap { position: relative; aspect-ratio: 4 / 3; background: var(--bg-alt, #f2f2f2); overflow: hidden; }
 .img-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }

@@ -60,6 +60,14 @@ def _sync_kb():
         cache.invalidate_all()
     except Exception:
         logger.warning("LLM cache invalidation failed after KB sync")
+    _invalidate_admin_caches()
+
+
+_admin_volatile_caches: list[dict] = []
+
+def _invalidate_admin_caches():
+    for c in _admin_volatile_caches:
+        c["data"] = None
 
 
 def _safe(fn, default):
@@ -1060,8 +1068,9 @@ async def bulk_assign_place(body: BulkAssignPlaceRequest):
                 raise HTTPException(400, "place_id không phải xã/phường hợp lệ")
         assigned: list[str] = []
         errors: list[dict[str, str]] = []
+        entities_map = db.get_entities_batch(ids) if ids else {}
         for entity_id in ids:
-            entity = db.get_entity(entity_id)
+            entity = entities_map.get(entity_id)
             if not entity:
                 errors.append({"id": entity_id, "error": "Entity không tồn tại"})
                 continue
@@ -2769,63 +2778,20 @@ async def media_gallery(
     limit: int = Query(50, ge=1, le=200),
     filter: str = Query("all", pattern="^(all|missing_credit|duplicate)$"),
 ):
-    """B6a: Central media gallery — flat list of all images across entities."""
+    """B6a: Central media gallery — cached extraction, avoids re-scanning all entities per page."""
     def _query():
-        entities = db.all_entities()
-        media_items = []
-        url_usage: dict[str, list[str]] = {}
-        for e in entities:
-            images = e.get("images") or []
-            if isinstance(images, str):
-                try:
-                    images = json.loads(images)
-                except Exception:
-                    images = []
-            attrs = e.get("attributes") or {}
-            if isinstance(attrs, str):
-                try:
-                    attrs = json.loads(attrs)
-                except Exception:
-                    attrs = {}
-            image_credits = attrs.get("image_credits") if isinstance(attrs, dict) else []
-            credits_by_url: dict[str, dict] = {}
-            if isinstance(image_credits, list):
-                for credit_meta in image_credits:
-                    if not isinstance(credit_meta, dict):
-                        continue
-                    credit_url = credit_meta.get("url")
-                    if credit_url:
-                        credits_by_url[str(credit_url)] = credit_meta
-            for img in images:
-                url = img if isinstance(img, str) else img.get("url", "")
-                if not url:
-                    continue
-                credit_meta = credits_by_url.get(url, {})
-                credit = ""
-                license_info = ""
-                if isinstance(img, dict):
-                    credit = img.get("credit") or img.get("author") or ""
-                    license_info = img.get("license", "")
-                if not credit:
-                    credit = credit_meta.get("author") or credit_meta.get("credit") or ""
-                if not license_info:
-                    license_info = credit_meta.get("license") or ""
-                item = {
-                    "url": url,
-                    "entity_id": e.get("id", ""),
-                    "entity_name": e.get("name", ""),
-                    "entity_type": e.get("type", ""),
-                    "credit": credit,
-                    "license": license_info,
-                    "source": credit_meta.get("source") or "",
-                    "source_url": credit_meta.get("source_url") or "",
-                }
-                media_items.append(item)
-                url_usage.setdefault(url, []).append(e.get("id", ""))
-
-        total_images = len(media_items)
-        no_credit_count = sum(1 for m in media_items if not m["credit"])
-        dup_count = sum(1 for u, ids in url_usage.items() if len(ids) > 1)
+        import time as _time
+        now = _time.time()
+        if _media_cache["data"] is None or (now - _media_cache["ts"]) > _MEDIA_TTL:
+            entities = db.all_entities()
+            _media_cache["data"] = _extract_media_items(entities)
+            _media_cache["ts"] = now
+        cached = _media_cache["data"]
+        media_items = list(cached["items"])
+        url_usage = cached["url_usage"]
+        total_images = cached["total_images"]
+        no_credit_count = cached["no_credit_count"]
+        dup_count = cached["dup_count"]
 
         if filter == "missing_credit":
             media_items = [m for m in media_items if not m["credit"]]
@@ -2853,13 +2819,80 @@ async def media_gallery(
         }
     return await asyncio.to_thread(_query)
 
+_media_cache: dict = {"ts": 0.0, "data": None}
+_admin_volatile_caches.append(_media_cache)
+_MEDIA_TTL = 120.0
+
+
+def _extract_media_items(entities: list) -> dict:
+    media_items = []
+    url_usage: dict[str, list[str]] = {}
+    for e in entities:
+        images = e.get("images") or []
+        if isinstance(images, str):
+            try:
+                images = json.loads(images)
+            except Exception:
+                images = []
+        attrs = e.get("attributes") or {}
+        if isinstance(attrs, str):
+            try:
+                attrs = json.loads(attrs)
+            except Exception:
+                attrs = {}
+        image_credits = attrs.get("image_credits") if isinstance(attrs, dict) else []
+        credits_by_url: dict[str, dict] = {}
+        if isinstance(image_credits, list):
+            for credit_meta in image_credits:
+                if not isinstance(credit_meta, dict):
+                    continue
+                credit_url = credit_meta.get("url")
+                if credit_url:
+                    credits_by_url[str(credit_url)] = credit_meta
+        for img in images:
+            url = img if isinstance(img, str) else img.get("url", "")
+            if not url:
+                continue
+            credit_meta = credits_by_url.get(url, {})
+            credit = ""
+            license_info = ""
+            if isinstance(img, dict):
+                credit = img.get("credit") or img.get("author") or ""
+                license_info = img.get("license", "")
+            if not credit:
+                credit = credit_meta.get("author") or credit_meta.get("credit") or ""
+            if not license_info:
+                license_info = credit_meta.get("license") or ""
+            media_items.append({
+                "url": url,
+                "entity_id": e.get("id", ""),
+                "entity_name": e.get("name", ""),
+                "entity_type": e.get("type", ""),
+                "credit": credit,
+                "license": license_info,
+                "source": credit_meta.get("source") or "",
+                "source_url": credit_meta.get("source_url") or "",
+            })
+            url_usage.setdefault(url, []).append(e.get("id", ""))
+    return {
+        "items": media_items,
+        "url_usage": url_usage,
+        "total_images": len(media_items),
+        "no_credit_count": sum(1 for m in media_items if not m["credit"]),
+        "dup_count": sum(1 for u, ids in url_usage.items() if len(ids) > 1),
+    }
+
 
 @router.get("/badge-counts",
             summary="Get admin dashboard badge counts",
             description="Returns lightweight counts for sidebar badges including moderation, images, unclassified entities, provisional items, and reports.")
 async def badge_counts():
-    """Lightweight counts cho sidebar badges — moderation/images/unclassified/provisional."""
+    """Lightweight counts cho sidebar badges — cached 60s to avoid repeated DB+JSONL parsing."""
     def _query():
+        import time as _time
+        now = _time.time()
+        if _badge_cache["data"] is not None and (now - _badge_cache["ts"]) < _BADGE_TTL:
+            return _badge_cache["data"]
         counts = {"moderation": 0, "images": 0, "unclassified": 0, "provisional": 0, "reports": 0}
         if db._use_pg:
             with db._conn() as conn:
@@ -2883,12 +2916,9 @@ async def badge_counts():
             counts["provisional"] = s.get("pending", 0)
         except Exception:
             logger.debug("Badge kb_curation stats failed", exc_info=True)
-        if _INFO_REPORTS_FILE.exists():
-            try:
-                lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").strip().split("\n")
-                counts["reports"] += sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
-            except Exception:
-                logger.debug("Badge reports file parse failed", exc_info=True)
+        counts["reports"] += _count_open_info_reports()
+        _badge_cache["data"] = counts
+        _badge_cache["ts"] = now
         return counts
     return await asyncio.to_thread(_query)
 
@@ -2915,12 +2945,7 @@ async def dashboard_alerts():
             alerts.append({"type": "flagged", "count": flagged, "label": f"{flagged} bài viết bị gắn cờ", "icon": "🚩", "link": "/admin/kiem-duyet?tab=flagged", "priority": 1})
         if pending_mod:
             alerts.append({"type": "moderation", "count": pending_mod, "label": f"{pending_mod} bài chờ duyệt", "icon": "📝", "link": "/admin/kiem-duyet", "priority": 2})
-        if _INFO_REPORTS_FILE.exists():
-            try:
-                lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").strip().split("\n")
-                open_reports += sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
-            except Exception:
-                logger.debug("Alert reports file parse failed", exc_info=True)
+        open_reports += _count_open_info_reports()
         if open_reports:
             alerts.append({"type": "reports", "count": open_reports, "label": f"{open_reports} báo cáo chưa xử lý", "icon": "⚠️", "link": "/admin/bao-cao", "priority": 3})
         try:
@@ -4127,6 +4152,31 @@ _INFO_REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 from notifications import create_notification
 from public_api import _jsonl_lock as _info_reports_lock
 
+_info_reports_cache: dict = {"mtime": 0.0, "count": 0}
+
+def _count_open_info_reports() -> int:
+    if not _INFO_REPORTS_FILE.exists():
+        return 0
+    try:
+        mtime = _INFO_REPORTS_FILE.stat().st_mtime
+    except OSError:
+        return 0
+    if mtime == _info_reports_cache["mtime"]:
+        return _info_reports_cache["count"]
+    try:
+        lines = _INFO_REPORTS_FILE.read_text(encoding="utf-8").strip().split("\n")
+        count = sum(1 for l in lines if l.strip() and json.loads(l).get("status", "open") == "open")
+    except Exception:
+        logger.debug("Info reports count failed", exc_info=True)
+        count = 0
+    _info_reports_cache["mtime"] = mtime
+    _info_reports_cache["count"] = count
+    return count
+
+_badge_cache: dict = {"ts": 0.0, "data": None}
+_admin_volatile_caches.append(_badge_cache)
+_BADGE_TTL = 60.0
+
 
 @router.get("/info-reports",
             summary="List information reports",
@@ -4159,7 +4209,8 @@ _audit_cache: dict = {"mtime": 0.0, "items": []}
             summary="Get admin audit log",
             description="Returns paginated audit log entries of admin actions. Supports filtering by HTTP method, search query, and date range.")
 async def get_audit_log(
-    limit: int = Query(200, ge=1, le=5000),
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0, le=100000),
     method: Optional[str] = Query(None, max_length=10),
     q: Optional[str] = Query(None, max_length=200),
     date_from: Optional[str] = Query(None, max_length=20),
@@ -4201,8 +4252,9 @@ async def get_audit_log(
             filtered = [e for e in filtered if (e.get("ts") or "")[:10] >= date_from]
         if date_to:
             filtered = [e for e in filtered if (e.get("ts") or "")[:10] <= date_to]
+        filtered.reverse()
         total = len(filtered)
-        return {"entries": list(reversed(filtered[-limit:])), "total": total}
+        return {"entries": filtered[offset:offset + limit], "total": total}
     return await asyncio.to_thread(_query)
 
 
