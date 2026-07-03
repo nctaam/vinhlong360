@@ -139,6 +139,7 @@
       <div v-else class="profile-tabs" role="tablist" aria-label="Nội dung người dùng" @keydown="onProfileTabKeydown">
         <button type="button" id="profile-tab-posts" role="tab" :class="['chip', { active: tab === 'posts' }]" :aria-selected="tab === 'posts'" aria-controls="profile-panel-posts" :tabindex="tab === 'posts' ? 0 : -1" @click="setProfileTab('posts')">Bài viết</button>
         <button type="button" id="profile-tab-reviews" role="tab" :class="['chip', { active: tab === 'reviews' }]" :aria-selected="tab === 'reviews'" aria-controls="profile-panel-reviews" :tabindex="tab === 'reviews' ? 0 : -1" @click="setProfileTab('reviews')">Đánh giá</button>
+        <button type="button" id="profile-tab-timeline" role="tab" :class="['chip', { active: tab === 'timeline' }]" :aria-selected="tab === 'timeline'" aria-controls="profile-panel-timeline" :tabindex="tab === 'timeline' ? 0 : -1" @click="setProfileTab('timeline')">Hoạt động</button>
         <button type="button" id="profile-tab-saved" role="tab" v-if="isSelf" :class="['chip', { active: tab === 'saved' }]" :aria-selected="tab === 'saved'" aria-controls="profile-panel-saved" :tabindex="tab === 'saved' ? 0 : -1" @click="setProfileTab('saved')">
           Đã lưu<ClientOnly><span v-if="savedCount > 0" class="tab-count">{{ savedCount }}</span></ClientOnly>
         </button>
@@ -231,6 +232,37 @@
             </div>
           </Transition>
         </ClientOnly>
+
+        <!-- Hoạt động (timeline — bài viết, đánh giá, theo dõi) -->
+        <template v-else-if="tab === 'timeline'">
+          <div v-if="timelineLoading && !timelineItems.length" class="profile-loading" role="status" aria-label="Đang tải">
+            <div class="spinner"></div>
+          </div>
+          <div v-else-if="timelineItems.length" class="timeline-feed">
+            <article v-for="item in timelineItems" :key="item.type + '-' + (item.data?.id || item.data?.target_id) + '-' + item.created_at" class="timeline-item">
+              <span class="tl-icon" aria-hidden="true">{{ timelineIcon(item.type) }}</span>
+              <div class="tl-body">
+                <p class="tl-text">
+                  <template v-if="item.type === 'post'">
+                    Đã đăng bài{{ item.data.entity_name ? ` về ${item.data.entity_name}` : '' }}
+                  </template>
+                  <template v-else-if="item.type === 'review'">
+                    Đã đánh giá <strong>{{ item.data.entity_name || 'địa điểm' }}</strong>
+                    <span v-if="item.data.rating" class="tl-rating">{{ '⭐'.repeat(Math.min(item.data.rating, 5)) }}</span>
+                  </template>
+                  <template v-else-if="item.type === 'follow'">
+                    Đã theo dõi <strong>{{ item.data.target_name }}</strong>
+                  </template>
+                </p>
+                <p v-if="item.data?.content" class="tl-preview">{{ item.data.content }}</p>
+                <time class="tl-time" :datetime="item.created_at">{{ timeAgo(item.created_at) }}</time>
+              </div>
+            </article>
+          </div>
+          <EmptyState v-else icon="📅" title="Chưa có hoạt động" message="Hoạt động sẽ hiện khi người dùng tương tác trên cộng đồng." />
+          <div v-if="timelineLoading && timelineItems.length" class="profile-loading" role="status"><div class="spinner"></div></div>
+          <div ref="timelineSentinel" style="height:1px" />
+        </template>
 
         <template v-else>
           <TransitionGroup name="post-list" tag="div">
@@ -331,7 +363,7 @@ type ProfilePayload = {
   profile: ProfileView | null
   status: 'ok' | 'not-found' | 'error'
 }
-type ProfileTab = 'posts' | 'reviews' | 'saved' | 'collections'
+type ProfileTab = 'posts' | 'reviews' | 'timeline' | 'saved' | 'collections'
 useReveal()
 const route = useRoute()
 const userId = computed(() => {
@@ -344,7 +376,7 @@ const { reportPost, openReport } = useReport()
 const { repost, quote } = useRepost()
 const { filterCommunityPosts } = useCommunityPostFilters<any>()
 
-const validProfileTabs = new Set<ProfileTab>(['posts', 'reviews', 'saved', 'collections'])
+const validProfileTabs = new Set<ProfileTab>(['posts', 'reviews', 'timeline', 'saved', 'collections'])
 function normalizeProfileTab(value: unknown): ProfileTab {
   const raw = Array.isArray(value) ? value[0] : value
   return validProfileTabs.has(raw as ProfileTab) ? raw as ProfileTab : 'posts'
@@ -453,7 +485,7 @@ const activitySummary = computed(() => {
   return `${totalContributions.value} đóng góp công khai`
 })
 const visibleProfileTabs = computed<ProfileTab[]>(() => {
-  const tabs: ProfileTab[] = ['posts', 'reviews']
+  const tabs: ProfileTab[] = ['posts', 'reviews', 'timeline']
   if (isSelf.value) tabs.push('saved', 'collections')
   return tabs
 })
@@ -490,6 +522,46 @@ const displayName = computed(() => profile.value?.display_name || profile.value?
 const emptyHint = computed(() => {
   if (isSelf.value) return 'Chia sẻ trải nghiệm của bạn với cộng đồng.'
   return `Theo dõi ${displayName.value} để nhận cập nhật mới.`
+})
+
+// ── Hoạt động (timeline — bài viết, đánh giá, theo dõi) ──
+const { timeAgo } = useTimeAgo()
+const timelineItems = ref<Array<{ type: string; created_at: string; data: Record<string, any> }>>([])
+const timelineLoading = ref(false)
+const timelinePage = ref(1)
+const timelineHasMore = ref(true)
+
+function timelineIcon(type: string): string {
+  switch (type) {
+    case 'post': return '✍️'
+    case 'review': return '⭐'
+    case 'follow': return '👥'
+    default: return '📌'
+  }
+}
+
+async function loadTimeline() {
+  if (timelineLoading.value || !timelineHasMore.value || !profile.value) return
+  timelineLoading.value = true
+  try {
+    const res = await $fetch<{ items: typeof timelineItems.value; has_more: boolean }>(`/api/users/${encodedProfileId.value}/timeline`, {
+      params: { page: timelinePage.value, limit: 20 },
+      headers: authHeaders(),
+    })
+    timelineItems.value.push(...(res.items || []))
+    timelineHasMore.value = res.has_more
+    timelinePage.value++
+  } catch {
+    /* im lặng bỏ qua — timeline chỉ là bổ sung */
+  } finally {
+    timelineLoading.value = false
+  }
+}
+
+const { sentinel: timelineSentinel } = useInfiniteScroll(loadTimeline, { enabled: computed(() => tab.value === 'timeline' && timelineHasMore.value) })
+
+watch(tab, (t) => {
+  if (t === 'timeline' && !timelineItems.value.length) loadTimeline()
 })
 
 const postsFetchFailed = ref(false)
@@ -741,6 +813,9 @@ watch(userId, async () => {
   isBlocked.value = false
   followerCount.value = null
   followLists.value = { followers: null, following: null }
+  timelineItems.value = []
+  timelinePage.value = 1
+  timelineHasMore.value = true
   await refreshProfile()
   fetchPosts()
   checkFollowing()
@@ -936,4 +1011,14 @@ useSeoMeta({
 .pa-stat strong { display: block; font-size: 1.25rem; color: var(--ink); }
 .pa-stat span { font-size: .75rem; color: var(--muted); }
 @media (max-width: 520px) { .pa-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* Hoạt động (timeline) tab */
+.timeline-feed { display: flex; flex-direction: column; gap: var(--space-2); }
+.timeline-item { display: flex; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); }
+.tl-icon { font-size: 1.25rem; flex-shrink: 0; width: 2rem; text-align: center; }
+.tl-body { flex: 1; min-width: 0; }
+.tl-text { margin: 0; color: var(--ink); font-size: 0.9375rem; }
+.tl-preview { margin: var(--space-1) 0 0; color: var(--muted); font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-time { font-size: 0.8125rem; color: var(--muted); }
+.tl-rating { margin-left: var(--space-1); }
 </style>
