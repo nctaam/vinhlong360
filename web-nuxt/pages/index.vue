@@ -90,7 +90,7 @@
     <!-- 1b. Khám phá nhanh — compact category grid (always visible for navigation) -->
     <section v-if="!homePending" class="block block-compact reveal">
       <nav class="cat-grid" aria-label="Khám phá theo chủ đề">
-        <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="`cat-tile-${cat.accent}`">
+        <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="`cat-tile-${cat.accent}`" :style="{ '--tile-img': `url(${cat.img})` }">
           <span class="cat-emoji" aria-hidden="true">{{ cat.emoji }}</span>
           <span class="cat-label">{{ cat.label }}</span>
           <span class="cat-hint">{{ cat.hint }}</span>
@@ -428,12 +428,12 @@ const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 
 const CATEGORY_LINKS = [
-  { emoji: '🌿', label: 'Du lịch', hint: 'vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences' },
-  { emoji: '🍲', label: 'Ẩm thực', hint: 'quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes' },
-  { emoji: '🎁', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products' },
-  { emoji: '🎭', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events' },
-  { emoji: '🏡', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '' },
-  { emoji: '🗺️', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas' },
+  { emoji: '🌿', label: 'Du lịch', hint: 'vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences', img: '/img/cat-du-lich.webp' },
+  { emoji: '🍲', label: 'Ẩm thực', hint: 'quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes', img: '/img/cat-am-thuc.webp' },
+  { emoji: '🎁', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products', img: '/img/cat-ocop.webp' },
+  { emoji: '🎭', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events', img: '/img/cat-le-hoi.webp' },
+  { emoji: '🏡', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '', img: '/img/cat-luu-tru.webp' },
+  { emoji: '🗺️', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas', img: '/img/cat-ban-do.webp' },
 ]
 const categoryLinks = computed(() => {
   return CATEGORY_LINKS.map(c => ({
@@ -1050,37 +1050,32 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3);
 }
 @media (min-width: 769px) { .cat-grid { grid-template-columns: repeat(6, 1fr); } }
+/* ── Klook/GYG-style image tiles: each category shows its own logical photo,
+   editorial label bottom-left over a scrim; small corner emoji as a wayfinding accent. ── */
 .cat-tile {
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-1);
-  padding: var(--space-4) var(--space-2);
-  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius);
-  text-decoration: none; color: var(--ink);
-  transition: transform .3s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .25s var(--ease-out);
+  display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 1px;
+  min-height: clamp(8.5rem, 7.5rem + 7vw, 12rem);
+  padding: var(--space-3);
+  color: #fff; text-decoration: none;
+  background-color: var(--card);
+  background-image: linear-gradient(to top, rgba(8,9,12,.86) 0%, rgba(8,9,12,.34) 46%, rgba(8,9,12,.05) 100%), var(--tile-img);
+  background-size: cover; background-position: center;
+  border-radius: var(--radius);
   position: relative; overflow: hidden;
+  transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
 }
-.cat-tile::before {
-  content: ""; position: absolute; inset: 0; opacity: 0;
-  transition: opacity .3s var(--ease-out); border-radius: inherit;
-}
-.cat-tile-leaf::before { background: linear-gradient(135deg, rgba(var(--primary-rgb),.06) 0%, transparent 60%); }
-.cat-tile-amber::before { background: linear-gradient(135deg, rgba(var(--accent-rgb),.06) 0%, transparent 60%); }
-.cat-tile-clay::before { background: linear-gradient(135deg, rgba(180,90,50,.06) 0%, transparent 60%); }
-.cat-tile-river::before { background: linear-gradient(135deg, rgba(50,120,180,.06) 0%, transparent 60%); }
-.cat-tile:hover::before { opacity: 1; }
-.cat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
-.cat-tile:active { transform: scale(.96); transition-duration: .1s; }
-.cat-tile:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.cat-emoji { font-size: 1.75rem; line-height: 1; }
-.cat-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: center; }
+.cat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.cat-tile:active { transform: scale(.97); transition-duration: .1s; }
+.cat-tile:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
+.cat-emoji { position: absolute; top: var(--space-2); left: var(--space-3); font-size: 1.2rem; line-height: 1; filter: drop-shadow(0 1px 4px rgba(0,0,0,.65)); }
+.cat-label { color: #fff; font-size: var(--text-base); font-weight: 700; text-align: left; text-shadow: 0 1px 8px rgba(0,0,0,.7); }
 .cat-hint {
-  min-height: 2.2em;
-  color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-snug);
-  text-align: center;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  min-height: 0; color: rgba(255,255,255,.82); font-size: var(--text-xs); line-height: var(--leading-snug);
+  text-align: left; text-shadow: 0 1px 5px rgba(0,0,0,.65);
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
 }
-.cat-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
-.dark .cat-tile { background: var(--card); border-color: var(--line); }
-.dark .cat-tile:hover { border-color: rgba(255,255,255,.1); }
+.cat-count { font-size: var(--text-xs); color: rgba(255,255,255,.8); text-shadow: 0 1px 4px rgba(0,0,0,.6); font-variant-numeric: tabular-nums; margin-top: 1px; }
+.dark .cat-tile { background-color: var(--card); }
 
 /* ═══════════════════════════════════════════════════
    SECTION RHYTHM
