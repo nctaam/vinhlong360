@@ -3552,7 +3552,8 @@ def _check_achievements_bg(user_id: str):
             summary="Get user profile",
             description="Retrieve a user's public profile by UUID or username. Includes stats, reputation, badges, privacy settings, and viewer relationship status (following/blocked/muted).")
 async def get_user_profile(user_id: str, user=Depends(get_current_user)):
-    user_id = validate_path_id(user_id, "user_id")
+    # NOTE: user_id may be a UUID OR a username slug — do NOT validate_path_id here
+    # (guarded by test_qa_fixes::TestUserProfileSlug). Resolution is parameterized.
     ph = db._ph
     _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
     viewer_id = str(user["id"]) if user else None
@@ -3729,7 +3730,8 @@ async def get_user_posts(
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
 ):
     user = await get_current_user(request)
-    user_id = validate_path_id(user_id, "user_id")
+    # NOTE: user_id may be a UUID OR a username slug — do NOT validate_path_id here
+    # (guarded by test_qa_fixes::TestUserProfileSlug). Resolution is parameterized.
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:

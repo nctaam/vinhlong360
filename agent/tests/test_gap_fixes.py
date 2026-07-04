@@ -1185,6 +1185,12 @@ class TestPathIdValidationSweep:
     def test_all_path_id_params_validated(self):
         import importlib
         import fastapi
+        # These public-profile endpoints accept a UUID *or* a username slug as user_id
+        # and MUST NOT validate_path_id it — that would fight the slug guard in
+        # test_qa_fixes::TestUserProfileSlug. Their UUID/username resolution is fully
+        # parameterized (id::text = %s OR lower(username) = %s), so there is no injection
+        # risk; a malformed id simply resolves to nothing and returns 404.
+        _slug_endpoints = {"get_user_profile", "get_user_posts"}
         missing = []
         for mod_name in self._MODULES:
             mod = importlib.import_module(mod_name)
@@ -1200,7 +1206,7 @@ class TestPathIdValidationSweep:
                 fn = route.endpoint
                 src = inspect.getsource(fn)
                 for param in path_params:
-                    if "validate_path_id" not in src and param != "target_id":
+                    if "validate_path_id" not in src and param != "target_id" and fn.__name__ not in _slug_endpoints:
                         missing.append(f"{mod_name}:{fn.__name__} param={param}")
         assert not missing, f"Endpoints with unvalidated path ID params: {missing}"
 
