@@ -991,7 +991,8 @@ async def get_entity_relationships(
             rel_type=type, include_near=include_near, return_total=True,
         )
         rels = _filter_public_relationships(rels)
-        t = len(rels)
+        # `t` giữ tổng thật từ DB (return_total=True) cho pagination — KHÔNG ghi đè
+        # bằng len(trang đã lọc) (sẽ đếm thiếu, client dừng phân trang sớm).
         return {"entity_id": entity_id, "total": t, "limit": limit,
                 "offset": offset, "relationships": rels}
     result = await asyncio.to_thread(_query)
@@ -1096,7 +1097,8 @@ async def get_entity(
             return None
         rels, rel_total = db.get_relationships(entity_id, limit=relationship_limit, return_total=True)
         rels = _filter_public_relationships(rels)
-        rel_total = len(rels)
+        # rel_total giữ tổng thật từ DB (return_total=True) — KHÔNG ghi đè bằng
+        # len(trang đã lọc) để pagination quan hệ không đếm thiếu.
         e["relationship_total"] = rel_total
         e["relationships"] = rels
         _enrich_entity_place(e)
