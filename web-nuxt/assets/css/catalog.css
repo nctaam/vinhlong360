@@ -108,7 +108,7 @@
   .catalog-hero-icon { font-size: 1.8rem; }
 }
 /* H1 lớn hơn, editorial (đồng-nhất với hero trang chủ) */
-.catalog-hero h1 { margin: 0 0 var(--space-2); font-size: clamp(1.6rem, 4.2vw, 2.4rem); line-height: 1.12; font-weight: var(--weight-extrabold); letter-spacing: var(--tracking-tight); }
+.catalog-hero h1 { margin: 0 0 var(--space-2); font-family: var(--font-editorial); font-size: clamp(1.7rem, 4.4vw, 2.6rem); line-height: 1.1; font-weight: 600; letter-spacing: var(--tracking-tight); }
 .catalog-hero p { margin: 0; color: var(--muted); font-size: var(--text-base); line-height: var(--leading-relaxed); max-width: 600px; }
 .catalog-stats {
   display: flex; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4);
@@ -567,11 +567,18 @@
   border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);
 }
 .page-article h2 {
-  font-size: var(--text-lg); font-weight: var(--weight-bold);
+  font-family: var(--font-editorial);
+  font-size: var(--text-xl); font-weight: 600;
   margin: var(--space-6) 0 var(--space-3); letter-spacing: var(--tracking-tight);
-  color: var(--ink);
+  line-height: var(--leading-tight); color: var(--ink);
 }
 .page-article h2:first-child { margin-top: 0; }
+/* Editorial signature: drop-cap on the lead paragraph of each article intro */
+.page-article > p:first-of-type::first-letter {
+  font-family: var(--font-editorial); font-weight: 700;
+  float: left; font-size: 3.1em; line-height: .78;
+  padding: .04em .1em 0 0; color: var(--primary-fg);
+}
 .page-article p {
   color: var(--ink); font-size: var(--text-base);
   line-height: var(--leading-relaxed); margin: 0 0 var(--space-3);
