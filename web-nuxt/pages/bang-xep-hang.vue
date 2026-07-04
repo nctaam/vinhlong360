@@ -41,8 +41,8 @@
 
     <ol v-else class="bxh-list">
       <li v-for="(m, i) in leaders" :key="m.id" class="bxh-item" :class="{ 'is-self': m.id === currentUser?.id }">
-        <NuxtLink :to="`/nguoi-dung/${m.username || m.id}`" class="bxh-row">
-          <span class="bxh-rank" :class="`bxh-rank-${i + 1}`">{{ i + 1 }}</span>
+        <NuxtLink :to="userPath(m.username || m.id)" class="bxh-row">
+          <span class="bxh-rank" :class="`bxh-rank-${Number(i) + 1}`">{{ Number(i) + 1 }}</span>
           <span class="avatar bxh-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
           <span class="bxh-main">
             <span class="bxh-name">{{ m.display_name }}</span>

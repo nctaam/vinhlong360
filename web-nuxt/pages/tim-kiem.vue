@@ -71,7 +71,7 @@
       <section v-if="userResults.length" class="block search-section reveal">
         <div class="section-head"><h2>Người dùng</h2></div>
         <div class="people-list">
-          <NuxtLink v-for="u in userResults" :key="u.id" :to="`/nguoi-dung/${u.username || u.id}`" class="person-chip">
+          <NuxtLink v-for="u in userResults" :key="u.id" :to="userPath(u.username || u.id)" class="person-chip">
             <span class="avatar person-avatar">{{ (u.display_name || '?').charAt(0).toUpperCase() }}</span>
             <span class="person-name">{{ u.display_name }}</span>
             <span v-if="u.post_count" class="person-meta">{{ u.post_count }} bài</span>
@@ -83,7 +83,7 @@
       <section v-if="postResults.length" class="block search-section reveal">
         <div class="section-head"><h2>Bài viết cộng đồng</h2></div>
         <div class="search-post-list">
-          <NuxtLink v-for="p in postResults" :key="p.id" :to="`/bai-viet/${p.id}`" class="search-post-item">
+          <NuxtLink v-for="p in postResults" :key="p.id" :to="postPath(p.id)" class="search-post-item">
             <div class="spi-head">
               <strong>{{ p.display_name || 'Người dùng' }}</strong>
               <span v-if="p.post_type_label" class="spi-type">{{ p.post_type_label }}</span>
@@ -92,6 +92,18 @@
           </NuxtLink>
         </div>
       </section>
+
+      <NuxtErrorBoundary v-if="results.length || postResults.length || userResults.length">
+        <ClientOnly>
+          <LazySmartRecommendations context="search" :query="q" title="Gợi ý tiếp theo" :limit="6" />
+        </ClientOnly>
+      </NuxtErrorBoundary>
+      <JourneyActionRail
+        v-if="searchNextActions.length"
+        :actions="searchNextActions"
+        title="Bước tiếp theo"
+        compact
+      />
 
       <!-- Không có kết quả nào -->
       <template v-if="!results.length && !postResults.length && !userResults.length">
@@ -103,9 +115,14 @@
         </EmptyState>
         <NuxtErrorBoundary>
           <ClientOnly>
-            <LazyAIRecommendations title="Gợi ý cho bạn" :limit="6" />
+            <LazySmartRecommendations context="search" :query="q" title="Gợi ý cho bạn" :limit="6" />
           </ClientOnly>
         </NuxtErrorBoundary>
+        <JourneyActionRail
+          :actions="zeroResultActions"
+          title="Có thể đi tiếp theo hướng này"
+          compact
+        />
       </template>
     </template>
 
@@ -117,7 +134,7 @@
             <h2>Đã xem gần đây</h2>
           </div>
           <div class="recent-grid">
-            <NuxtLink v-for="r in recentItems" :key="r.id" :to="`/dia-diem/${r.id}`" class="recent-card">
+            <NuxtLink v-for="r in recentItems" :key="r.id" :to="entityPath(r.id)" class="recent-card">
               <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" width="56" height="56" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
               <span v-else class="recent-img recent-placeholder" aria-hidden="true">{{ TYPE_META[r.type]?.emoji || '📍' }}</span>
               <span class="recent-name">{{ r.name }}</span>
@@ -207,36 +224,51 @@
 
 <script setup lang="ts">
 import { TYPE_META } from '~/composables/useConstants'
+import { useJourneyActions } from '~/composables/useJourneyActions'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
+const { trackSearch } = useUserEvents()
+const { searchAll, fetchEntitySuggestions } = useUnifiedSearch()
+const { searchRecoveryActions, searchSuccessActions } = useJourneyActions()
 const route = useRoute()
-const q = computed(() => (route.query.q as string) || '')
+function firstQueryValue(value: unknown) {
+  return Array.isArray(value) ? String(value[0] || '') : String(value || '')
+}
+const q = computed(() => firstQueryValue(route.query.q))
 const searchInput = ref(q.value)
 
 const { data, error: searchError, status } = await useAsyncData(
   'search-results',
-  () => q.value ? apiFetch<any>(`/api/entities?q=${encodeURIComponent(q.value)}&limit=100`) : Promise.resolve({ entities: [] }),
+  () => q.value ? searchAll(q.value, 100) : Promise.resolve({ entities: [], posts: [], users: [], totals: { entities: 0, posts: 0, users: 0 } }),
   { watch: [q] }
 )
 const searching = computed(() => status.value === 'pending' && !!q.value)
 
-const results = computed(() => data.value?.entities || [])
+const results = computed(() => data.value?.entities || data.value?.results || [])
 const hasError = computed(() => !!searchError.value)
+const postResults = computed(() => (data.value?.posts || []).slice(0, 6))
+const userResults = computed(() => (data.value?.users || []).slice(0, 8))
+const totalSearchResults = computed(() => results.value.length + postResults.value.length + userResults.value.length)
+const searchNextActions = computed(() => q.value && totalSearchResults.value ? searchSuccessActions(q.value, results.value.length) : [])
+const zeroResultActions = computed(() => q.value ? searchRecoveryActions(q.value) : [])
 
-// Tìm hợp nhất: bài viết cộng đồng + người dùng (song song, không chặn entity).
-const { data: extra } = await useAsyncData(
-  'search-extra',
-  () => q.value
-    ? Promise.all([
-        apiFetch<any>(`/api/search/posts?q=${encodeURIComponent(q.value)}`).catch(() => ({ posts: [] })),
-        apiFetch<any>(`/api/search/users?q=${encodeURIComponent(q.value)}`).catch(() => ({ users: [] })),
-      ]).then(([p, u]) => ({ posts: (p.posts || []).slice(0, 6), users: (u.users || []).slice(0, 8) }))
-    : Promise.resolve({ posts: [], users: [] }),
-  { watch: [q] },
-)
-const postResults = computed(() => extra.value?.posts || [])
-const userResults = computed(() => extra.value?.users || [])
+if (import.meta.client) {
+  watch([q, results, postResults, userResults], ([term, entityList, postList, userList]) => {
+    if (!term.trim() || searching.value) return
+    const total = entityList.length + postList.length + userList.length
+    trackSearch(term, {
+      context: 'search',
+      metadata: {
+        result_count: entityList.length,
+        post_count: postList.length,
+        user_count: userList.length,
+        total_result_count: total,
+        zero_result: total === 0,
+      },
+    })
+  }, { flush: 'post' })
+}
 
 // SERPs-style type distribution badges (e.g. 5 Trải nghiệm · 4 Đặc sản · 3 Lưu trú).
 const typeBreakdown = computed(() => {
@@ -258,6 +290,7 @@ const typeBreakdown = computed(() => {
 function doSearch() {
   sugClose()
   if (searchInput.value.trim()) {
+    trackSearch(searchInput.value, { context: 'search_submit' })
     navigateTo(`/tim-kiem?q=${encodeURIComponent(searchInput.value.trim())}`)
   }
 }
@@ -285,9 +318,9 @@ function onTypeahead() {
     const ctrl = new AbortController()
     sugAbort = ctrl
     try {
-      const res = await $fetch<any>(`/api/entities?q=${encodeURIComponent(term)}&limit=5`, { signal: ctrl.signal })
+      const res = await fetchEntitySuggestions(term, 5, { signal: ctrl.signal })
       if (ctrl.signal.aborted) return
-      suggestions.value = res.entities || []
+      suggestions.value = res || []
       sugIdx.value = -1
       showSuggestions.value = suggestions.value.length > 0
     } catch { if (!ctrl.signal.aborted) { suggestions.value = []; showSuggestions.value = false } }
@@ -307,7 +340,7 @@ let blurTimer: ReturnType<typeof setTimeout> | null = null
 function sugBlur() { blurTimer = setTimeout(sugClose, 150) }
 function goToSuggestion(s: any) {
   sugClose()
-  navigateTo(`/dia-diem/${s.id}`)
+  navigateTo(entityPath(s.id))
 }
 function onEnter() {
   if (showSuggestions.value && sugIdx.value >= 0 && sugIdx.value < suggestions.value.length) {

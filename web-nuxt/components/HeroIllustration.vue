@@ -35,7 +35,10 @@ onMounted(() => {
   const el = root.value
   if (!el) return
   const io = new IntersectionObserver(
-    ([entry]) => el.classList.toggle('is-offscreen', !entry.isIntersecting),
+    ([entry]) => {
+      if (!entry) return
+      el.classList.toggle('is-offscreen', !entry.isIntersecting)
+    },
     { rootMargin: '120px' },
   )
   io.observe(el)
@@ -160,6 +163,8 @@ onMounted(() => {
   inset: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  contain: paint;
   pointer-events: none;
 }
 /* Parametric motif variants: muted line-art that reads on light bg; white on dark. */

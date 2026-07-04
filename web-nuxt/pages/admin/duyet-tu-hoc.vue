@@ -98,8 +98,14 @@ const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
 
+interface DataSourceSummary {
+  title: string
+  count: number
+  sample_url?: string
+}
+
 const provisional = ref<Entity[]>([])
-const sources = ref<Record<string, unknown>[]>([])
+const sources = ref<DataSourceSummary[]>([])
 const exporting = ref(false)
 const loading = ref(true)
 const loadError = ref(false)
@@ -143,9 +149,10 @@ async function reject(e: Entity) {
 async function loadSources() {
   loadingSources.value = true
   try {
-    const r = await $fetch<Record<string, unknown>>('/admin-api/sources', { headers: authHeaders() })
-    sources.value = Object.entries((r.sources || {}) as Record<string, Record<string, unknown>>).map(([title, v]) => ({ title, ...v }))
-      .sort((a: any, b: any) => b.count - a.count)
+    const r = await $fetch<{ sources?: Record<string, Omit<DataSourceSummary, 'title'>> }>('/admin-api/sources', { headers: authHeaders() })
+    sources.value = Object.entries(r.sources || {})
+      .map(([title, v]) => ({ title, count: Number(v.count) || 0, sample_url: v.sample_url }))
+      .sort((a, b) => b.count - a.count)
   } catch { showToast('Tải nguồn lỗi', 'error') }
   loadingSources.value = false
 }

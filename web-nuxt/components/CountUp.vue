@@ -6,8 +6,9 @@
 const props = defineProps<{ value: string | number }>()
 const raw = String(props.value)
 const m = raw.match(/^([\d.,]+)(.*)$/)
-const target = m ? parseInt(m[1].replace(/[.,]/g, ''), 10) : NaN
-const suffix = m ? m[2] : ''
+const numericPart = m?.[1]
+const target = numericPart ? parseInt(numericPart.replace(/[.,]/g, ''), 10) : NaN
+const suffix = m?.[2] ?? ''
 
 const text = ref(raw)          // mặc-định = giá-trị cuối (đúng cho SSR/hydrate)
 const el = ref<HTMLElement | null>(null)

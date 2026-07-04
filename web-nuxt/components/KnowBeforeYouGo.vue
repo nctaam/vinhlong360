@@ -108,8 +108,9 @@ const amenities = computed(() => {
     if (attrs.value[key]) result.push({ key, ...meta })
   }
   if (attrs.value.family_friendly) {
-    if (!result.some(r => r.key === 'kid_friendly')) {
-      result.push({ key: 'kid_friendly', ...AMENITY_MAP.kid_friendly })
+    const kidFriendly = AMENITY_MAP.kid_friendly
+    if (kidFriendly && !result.some(r => r.key === 'kid_friendly')) {
+      result.push({ key: 'kid_friendly', ...kidFriendly })
     }
   }
   return result

@@ -35,7 +35,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         try { main.focus({ preventScroll: true }) } catch { main.focus() }
       }
 
-      const title = (document.title || '').split('|')[0].trim() || document.title
+      const title = ((document.title || '').split('|')[0] || '').trim() || document.title
       if (title) {
         const a = ensureAnnouncer()
         // Clear then set on the next frame so the SR re-announces even when the

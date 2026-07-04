@@ -142,7 +142,7 @@
       <nav class="admin-pagination" role="navigation" aria-label="Phân trang">
         <button type="button" :disabled="page <= 1" @click="page--; fetchUsers()">&#8592; Trước</button>
         <span class="admin-page-info">Trang {{ page }}</span>
-        <button type="button" :disabled="users.length < limit" @click="page++; fetchUsers()">Sau &#8594;</button>
+        <button type="button" :disabled="!hasNextPage" @click="page++; fetchUsers()">Sau &#8594;</button>
       </nav>
     </template>
 
@@ -208,16 +208,40 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
+import type { Post, User } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Người dùng — Admin' })
 
 const { authHeaders, user: currentUser } = useAuth()
 const { show: showToast } = useToast()
+
+interface AdminUser extends User {
+  role?: 'user' | 'moderator' | 'admin' | string
+  is_banned?: boolean
+  created_at?: string
+}
+
+interface AdminUsersResponse {
+  users?: AdminUser[]
+  total?: number
+  role_counts?: Record<string, number>
+}
+
+interface AdminUserProfile extends User {
+  reputation?: {
+    points?: number
+  }
+  stats?: {
+    posts?: number
+    reviews?: number
+  }
+}
+
 const search = ref('')
 const page = ref(1)
 const limit = 30
-const users = ref<Entity[]>([])
+const users = ref<AdminUser[]>([])
+const totalUsers = ref(0)
 const loading = ref(true)
 const acting = ref<string | null>(null)
 
@@ -259,9 +283,6 @@ const ROLE_ORDER: Record<string, number> = { user: 0, moderator: 1, admin: 2 }
 
 const displayedUsers = computed(() => {
   let list = users.value.slice()
-  if (roleFilter.value !== 'all') {
-    list = list.filter(u => ((u as any).role || 'user') === roleFilter.value)
-  }
   const dir = sortDir.value === 'asc' ? 1 : -1
   const key = sortKey.value
   list.sort((a: any, b: any) => {
@@ -282,26 +303,28 @@ const displayedUsers = computed(() => {
 
 const serverRoleCounts = ref<Record<string, number>>({})
 const roleCounts = computed(() => {
-  if (serverRoleCounts.value && Object.keys(serverRoleCounts.value).length) {
+  if (Object.keys(serverRoleCounts.value).length) {
     return { user: serverRoleCounts.value.user || 0, moderator: serverRoleCounts.value.moderator || 0, admin: serverRoleCounts.value.admin || 0 }
   }
-  const c: Record<'user' | 'moderator' | 'admin', number> = { user: 0, moderator: 0, admin: 0 }
-  users.value.forEach((u: any) => {
-    const r = (u.role || 'user') as 'user' | 'moderator' | 'admin'
+  const c = { user: 0, moderator: 0, admin: 0 }
+  for (const u of users.value) {
+    const r = ((u as any).role || 'user') as keyof typeof c
     if (r in c) c[r]++
     else c.user++
-  })
+  }
   return c
 })
 
 const subtitle = computed(() => {
-  if (!users.value.length) return ''
+  if (!users.value.length && !totalUsers.value) return ''
   const total = users.value.length
-  const shown = displayedUsers.value.length
-  return shown === total
-    ? `${total} user trên trang này`
-    : `${shown}/${total} user trên trang này`
+  const start = total ? (page.value - 1) * limit + 1 : 0
+  const end = (page.value - 1) * limit + total
+  const grandTotal = totalUsers.value || total
+  return `${start}-${end} / ${grandTotal} user`
 })
+
+const hasNextPage = computed(() => page.value * limit < totalUsers.value)
 
 function toggleSort(key: SortKey) {
   if (sortKey.value === key) {
@@ -329,16 +352,19 @@ function debounceFetch() {
   debounceTimer = setTimeout(() => fetchUsers(true), 300)
 }
 onUnmounted(() => { if (debounceTimer) clearTimeout(debounceTimer) })
+watch(roleFilter, () => fetchUsers(true))
 
 async function fetchUsers(reset = false) {
   if (reset) page.value = 1
   loading.value = true
   try {
-    const params = new URLSearchParams({ limit: String(limit), offset: String((page.value - 1) * limit) })
-    if (search.value) params.set('q', search.value)
-    const res = await $fetch<Record<string, unknown>>(`/admin-api/users?${params}`, { headers: authHeaders() })
-    users.value = res.users || res || []
-    if ((res as any).role_counts) serverRoleCounts.value = (res as any).role_counts
+    const params = new URLSearchParams({ limit: String(limit), page: String(page.value) })
+    if (search.value) params.set('search', search.value)
+    if (roleFilter.value !== 'all') params.set('role_filter', roleFilter.value)
+    const res = await $fetch<AdminUsersResponse | AdminUser[]>(`/admin-api/users?${params}`, { headers: authHeaders() })
+    users.value = Array.isArray(res) ? res : (res.users || [])
+    totalUsers.value = Array.isArray(res) ? users.value.length : (res.total ?? users.value.length)
+    if (!Array.isArray(res) && res.role_counts) serverRoleCounts.value = res.role_counts
   } catch {
     showToast('Không thể tải danh sách user', 'error')
   } finally {
@@ -379,8 +405,9 @@ async function changeRole(id: string, role: string) {
   acting.value = id
   try {
     await $fetch(`/admin-api/users/${id}/role`, { method: 'POST', headers: authHeaders(), query: { role } })
+    const u = users.value.find((u: any) => u.id === id)
+    if (u) (u as any).role = role
     showToast(`Đã đổi role thành ${role}`, 'success')
-    await fetchUsers()
   } catch (e: unknown) {
     showToast(getErrorDetail(e, 'Lỗi khi đổi role'), 'error')
   } finally {
@@ -409,26 +436,26 @@ function exportCSV() {
 }
 
 // ── User detail drawer ──
-const detailUser = ref<any | null>(null)
+const detailUser = ref<AdminUser | null>(null)
 const drawerRef = ref<HTMLElement | null>(null)
 const drawerOpen = computed(() => !!detailUser.value)
 useModalA11y(drawerOpen, drawerRef, { onClose: () => { detailUser.value = null } })
-const detailProfile = ref<any | null>(null)
-const detailPosts = ref<any[]>([])
+const detailProfile = ref<AdminUserProfile | null>(null)
+const detailPosts = ref<Post[]>([])
 const detailPostsLoading = ref(false)
 
-async function openDetail(u: any) {
+async function openDetail(u: AdminUser) {
   detailUser.value = u
   detailProfile.value = null
   detailPosts.value = []
   detailPostsLoading.value = true
   try {
     const [profileRes, postsRes] = await Promise.all([
-      $fetch<any>(`/api/users/${u.id}`, { headers: authHeaders() }).catch(() => null),
-      $fetch<any>(`/api/users/${u.id}/posts?limit=10`, { headers: authHeaders() }).catch(() => null),
+      $fetch<{ user?: AdminUserProfile } | AdminUserProfile>(`/api/users/${u.id}`, { headers: authHeaders() }).catch(() => null),
+      $fetch<{ posts?: Post[] }>(`/api/users/${u.id}/posts?limit=10`, { headers: authHeaders() }).catch(() => null),
     ])
     if (profileRes) {
-      const p = profileRes.user || profileRes
+      const p = ((profileRes as { user?: AdminUserProfile }).user || profileRes) as AdminUserProfile
       detailProfile.value = {
         ...p,
         post_count: p.stats?.posts ?? p.post_count ?? 0,

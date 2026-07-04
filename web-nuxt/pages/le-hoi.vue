@@ -34,7 +34,7 @@
       <div class="scroll-row" role="region" aria-label="Lễ hội sắp diễn ra" tabindex="0">
         <NuxtLink
           v-for="e in upcoming" :key="e.id"
-          :to="`/dia-diem/${e.id}`"
+          :to="entityPath(e.id)"
           class="event-row"
         >
           <div class="event-date-badge lehoi-badge">
@@ -114,14 +114,14 @@
         :model-value="[statusFilter]"
         single-select
         aria-label="Lọc theo trạng thái"
-        @update:model-value="v => statusFilter = v.length ? v[0] : 'all'"
+        @update:model-value="v => statusFilter = v[0] || 'all'"
       />
       <FilterChips
         :filters="areaFilterOptions"
         :model-value="[areaFilter]"
         single-select
         aria-label="Lọc theo khu vực"
-        @update:model-value="v => areaFilter = v.length ? v[0] : 'all'"
+        @update:model-value="v => areaFilter = v[0] || 'all'"
       />
     </div>
 
@@ -142,7 +142,7 @@
       <div v-if="filtered.length" class="event-list">
         <NuxtLink
           v-for="e in filtered" :key="e.id"
-          :to="`/dia-diem/${e.id}`"
+          :to="entityPath(e.id)"
           class="event-row"
         >
           <div class="event-date-badge lehoi-badge">
@@ -161,8 +161,8 @@
             </div>
           </div>
           <div v-if="e.images?.length" class="event-thumb">
-            <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="(ev: Event) => { const t = ev.target as HTMLImageElement; t.style.display = 'none' }" />
-            <img v-else :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="(ev) => { const t = ev.target as HTMLImageElement; t.style.display = 'none' }" />
+            <NuxtImg v-if="isRemoteUrl(e.images[0] || '')" :src="e.images[0] || ''" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="hideImageError" />
+            <img v-else :src="e.images[0] || ''" :alt="e.name" loading="lazy" decoding="async" width="80" height="60" @error="hideImageError" />
           </div>
           <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" @click.stop.prevent="downloadIcal(e)">📅</button>
         </NuxtLink>
@@ -200,7 +200,7 @@
             <div v-if="cell.events?.length" class="cal-events">
               <NuxtLink
                 v-for="ev in cell.events.slice(0, 2)" :key="ev.id"
-                :to="`/dia-diem/${ev.id}`"
+                :to="entityPath(ev.id)"
                 class="cal-event-dot lehoi-dot"
                 :title="ev.name"
               >{{ truncateText(ev.name, 18) }}</NuxtLink>
@@ -273,8 +273,24 @@ const { data, error: fetchError } = await useAsyncData('festivals', () =>
   apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')
 )
 
+function categoryTokens(e: Entity) {
+  const raw = (e.attributes as any)?.category_array || (e.attributes as any)?.category
+  const list = Array.isArray(raw) ? raw : String(raw || '').split(/[;,|]/)
+  return list.map(v => String(v).trim().toLowerCase()).filter(Boolean)
+}
+
+function eventStart(e: Entity) {
+  const attrs = e.attributes as any
+  return attrs?.date_start_iso || attrs?.date_start || ''
+}
+
+function eventEnd(e: Entity) {
+  const attrs = e.attributes as any
+  return attrs?.date_end_iso || attrs?.date_end || eventStart(e)
+}
+
 const allEvents = computed(() =>
-  (data.value?.events || []).filter((e: Entity) => (e.attributes?.category) === 'le-hoi')
+  (data.value?.events || []).filter((e: Entity) => categoryTokens(e).includes('le-hoi'))
 )
 
 const areaCounts = computed(() => {
@@ -285,7 +301,7 @@ const areaCounts = computed(() => {
   }
   return Object.entries(AREA_META)
     .filter(([key]) => counts[key])
-    .map(([key, meta]) => ({ key, name: meta.name, count: counts[key] }))
+    .map(([key, meta]) => ({ key, name: meta.name, count: counts[key] || 0 }))
 })
 
 function countByArea(key: string) {
@@ -296,10 +312,10 @@ const upcoming = computed(() => {
   const now = new Date().toISOString().slice(0, 10)
   return allEvents.value
     .filter((e: Entity) => {
-      const ds = e.attributes?.date_start
+      const ds = eventStart(e)
       return ds && ds >= now
     })
-    .sort((a: Entity, b: Entity) => (a.attributes?.date_start || '').localeCompare(b.attributes?.date_start || ''))
+    .sort((a: Entity, b: Entity) => eventStart(a).localeCompare(eventStart(b)))
     .slice(0, 6)
 })
 
@@ -324,13 +340,19 @@ const formatMonth = formatEventMonth
 const formatDay = formatEventDay
 const dateRange = eventDateRange
 
+function hideImageError(ev: Event | string) {
+  if (typeof ev === 'string') return
+  const target = ev.target as HTMLImageElement | null
+  if (target) target.style.display = 'none'
+}
+
 const todayStr = new Date().toISOString().slice(0, 10)
 
 function eventStatus(e: Entity): '' | 'now' | 'soon' {
   const attrs = e.attributes || {}
-  const ds = attrs.date_start
+  const ds = eventStart(e)
   if (!ds) return ''
-  const de = attrs.date_end || ds
+  const de = eventEnd(e) || ds
   if (todayStr >= ds && todayStr <= de) return 'now'
   if (ds > todayStr) {
     const days = Math.round((new Date(ds + 'T00:00:00').getTime() - new Date(todayStr + 'T00:00:00').getTime()) / 86400000)
@@ -359,9 +381,9 @@ const festivalListSchema = computed(() => {
     item: {
       '@type': 'Event',
       name: e.name,
-      ...(e.attributes?.date_start ? { startDate: e.attributes.date_start } : {}),
-      ...(e.attributes?.date_end ? { endDate: e.attributes.date_end } : {}),
-      url: `https://vinhlong360.vn/dia-diem/${e.id}`,
+      ...(eventStart(e) ? { startDate: eventStart(e) } : {}),
+      ...(eventEnd(e) ? { endDate: eventEnd(e) } : {}),
+      url: `https://vinhlong360.vn${entityPath(e.id)}`,
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
       ...(e.place_name ? { location: { '@type': 'Place', name: e.place_name } } : {}),
     },

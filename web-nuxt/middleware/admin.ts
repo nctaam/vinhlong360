@@ -1,7 +1,7 @@
 export default defineNuxtRouteMiddleware(async () => {
-  const { user, fetchMe, token } = useAuth()
+  const { user, fetchMe } = useAuth()
 
-  if (!user.value && token.value) {
+  if (!user.value) {
     await fetchMe()
   }
 
@@ -9,7 +9,7 @@ export default defineNuxtRouteMiddleware(async () => {
     return navigateTo('/?login=admin')
   }
 
-  if (user.value.role !== 'admin') {
+  if (!['admin', 'superadmin'].includes(user.value.role || '')) {
     return navigateTo('/')
   }
 })

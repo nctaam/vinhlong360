@@ -9,7 +9,7 @@
     <div v-if="!isLoggedIn" class="tb-guest">
       <EmptyState icon="🔔" title="Đăng nhập để xem thông báo" message="Theo dõi lượt thích, bình luận, trả lời và người theo dõi mới.">
         <template #actions>
-          <button type="button" class="btn btn-primary btn-sm" @click="openAuth">Đăng nhập</button>
+          <button type="button" class="btn btn-primary btn-sm" @click="openAuth()">Đăng nhập</button>
         </template>
       </EmptyState>
     </div>
@@ -31,7 +31,14 @@
       <template v-else>
         <ul class="tb-list">
           <li v-for="n in filtered" :key="n.id">
-            <button type="button" :class="['tb-item', { unread: !n.is_read }]" @click="open(n)">
+            <div
+              :class="['tb-item', { unread: !n.is_read }]"
+              role="button"
+              tabindex="0"
+              @click="open(n)"
+              @keydown.enter.prevent="open(n)"
+              @keydown.space.prevent="open(n)"
+            >
               <span class="tb-icon" aria-hidden="true">{{ icon(n) }}</span>
               <span class="tb-body">
                 <span class="tb-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
@@ -40,7 +47,7 @@
               </span>
               <span v-if="!n.is_read" class="tb-dot" role="status" aria-label="Chưa đọc" title="Chưa đọc"></span>
               <button type="button" class="tb-dismiss" aria-label="Xóa thông báo" @click.stop="dismiss(n)">✕</button>
-            </button>
+            </div>
           </li>
         </ul>
         <LoadMoreButton v-if="hasMore" :loading="loadingMore" @load="loadMore" />
@@ -89,7 +96,8 @@ async function load() {
   loading.value = true
   fetchError.value = false
   try {
-    const res = await $fetch<any>(`/api/notifications?limit=${PAGE_SIZE}`, { headers: authHeaders() })
+    const params = new URLSearchParams({ limit: String(PAGE_SIZE) })
+    const res = await $fetch<any>(`/api/notifications?${params}`, { headers: authHeaders() })
     items.value = res.notifications || []
     hasMore.value = (res.notifications || []).length >= PAGE_SIZE
   } catch (e: unknown) {
@@ -99,13 +107,17 @@ async function load() {
 }
 
 async function loadMore() {
+  if (loadingMore.value) return
   loadingMore.value = true
   try {
-    const res = await $fetch<any>(`/api/notifications?limit=${PAGE_SIZE}&offset=${items.value.length}`, { headers: authHeaders() })
+    const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(items.value.length) })
+    const res = await $fetch<any>(`/api/notifications?${params}`, { headers: authHeaders() })
     const more = res.notifications || []
     items.value.push(...more)
     hasMore.value = more.length >= PAGE_SIZE
-  } catch { /* non-critical */ } finally { loadingMore.value = false }
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) handleSessionExpired()
+  } finally { loadingMore.value = false }
 }
 
 function icon(n: any): string {
@@ -119,27 +131,54 @@ function icon(n: any): string {
 
 async function open(n: any) {
   if (!n.is_read) {
+    const wasRead = n.is_read
     n.is_read = true
-    try { await $fetch(`/api/notifications/${n.id}/read`, { method: 'POST', headers: authHeaders() }) } catch { /* ignore */ }
+    try {
+      await $fetch(`/api/notifications/${encodePathId(n.id)}/read`, { method: 'POST', headers: authHeaders() })
+    } catch (e: unknown) {
+      n.is_read = wasRead
+      if (getStatusCode(e) === 401) handleSessionExpired()
+    }
   }
-  if (n.ref_type === 'post' && n.ref_id) navigateTo(`/bai-viet/${n.ref_id}`)
-  else if (n.ref_type === 'entity' && n.ref_id) navigateTo(`/dia-diem/${n.ref_id}`)
-  else if (n.ref_type === 'user' && n.ref_id) navigateTo(`/nguoi-dung/${n.ref_id}`)
+  const target = notificationTargetPath(n)
+  if (target) navigateTo(target)
 }
 
 async function readAll() {
+  const previous = items.value.map(n => ({ n, is_read: n.is_read }))
   items.value.forEach(n => { n.is_read = true })
-  try { await $fetch('/api/notifications/read-all', { method: 'POST', headers: authHeaders() }) } catch { /* ignore */ }
+  try {
+    await $fetch('/api/notifications/read-all', { method: 'POST', headers: authHeaders() })
+  } catch (e: unknown) {
+    previous.forEach(p => { p.n.is_read = p.is_read })
+    if (getStatusCode(e) === 401) handleSessionExpired()
+  }
 }
 
 async function dismiss(n: any) {
   const idx = items.value.indexOf(n)
   items.value = items.value.filter(x => x.id !== n.id)
-  try { await $fetch(`/api/notifications/${n.id}`, { method: 'DELETE', headers: authHeaders() }) }
-  catch { items.value.splice(idx, 0, n) }
+  try {
+    await $fetch(`/api/notifications/${encodePathId(n.id)}`, { method: 'DELETE', headers: authHeaders() })
+  } catch (e: unknown) {
+    if (idx >= 0) items.value.splice(idx, 0, n)
+    if (getStatusCode(e) === 401) handleSessionExpired()
+  }
 }
 
 onMounted(load)
+
+watch(isLoggedIn, (loggedIn) => {
+  if (loggedIn) {
+    load()
+  } else {
+    items.value = []
+    hasMore.value = false
+    loading.value = false
+    loadingMore.value = false
+    fetchError.value = false
+  }
+})
 
 useHead({
   title: 'Thông báo — vinhlong360',
@@ -155,6 +194,7 @@ useHead({
 .tb-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
 .tb-item { display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; text-align: left; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); cursor: pointer; transition: background .2s var(--ease-out), border-color .2s var(--ease-out); }
 .tb-item:hover { background: var(--bg-alt); }
+.tb-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .tb-item.unread { border-color: var(--primary); background: rgba(var(--primary-rgb), .04); }
 .tb-icon { font-size: 1.25rem; flex-shrink: 0; line-height: 1.4; }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }

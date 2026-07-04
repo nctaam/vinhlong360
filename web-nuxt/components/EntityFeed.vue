@@ -6,7 +6,7 @@
     </div>
     <ul class="ef-list">
       <li v-for="p in posts" :key="p.id" class="ef-item">
-        <NuxtLink :to="`/bai-viet/${p.id}`" class="ef-link">
+        <NuxtLink :to="postPath(p.id)" class="ef-link">
           <span class="ef-avatar">{{ (p.display_name || '?')[0].toUpperCase() }}</span>
           <div class="ef-body">
             <span class="ef-author">{{ p.display_name }}</span>
@@ -17,12 +17,12 @@
               <time :datetime="p.created_at">{{ timeAgo(p.created_at) }}</time>
             </span>
           </div>
-          <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" sizes="80px" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.display = 'none' }" />
-          <img v-else-if="firstImage(p)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
+          <NuxtImg v-if="firstImage(p) && isRemoteUrl(firstImage(p)!)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" sizes="80px" @error="hideImage" />
+          <img v-else-if="firstImage(p)" :src="firstImage(p)!" :alt="`Ảnh bài viết của ${p.display_name || 'người dùng'}`" class="ef-thumb" loading="lazy" decoding="async" width="80" height="80" @error="hideImage" />
         </NuxtLink>
       </li>
     </ul>
-    <NuxtLink v-if="total > posts.length" :to="`/cong-dong?entity=${entityId}`" class="ef-more">
+    <NuxtLink v-if="total > posts.length" :to="communityEntityPath" class="ef-more">
       Xem tất cả {{ total }} bài viết
     </NuxtLink>
   </section>
@@ -36,10 +36,12 @@ const { timeAgo } = useTimeAgo()
 const posts = ref<any[]>([])
 const total = ref(0)
 const loading = ref(true)
+const communityEntityPath = computed(() => `/cong-dong?entity=${encodeURIComponent(props.entityId)}`)
 
 onMounted(async () => {
   try {
-    const res = await $fetch<any>(`/api/entities/${props.entityId}/feed?limit=5`)
+    const params = new URLSearchParams({ limit: '5' })
+    const res = await $fetch<any>(`/api/entities/${encodePathId(props.entityId)}/feed?${params}`)
     posts.value = res.posts || []
     total.value = res.total || 0
   } catch { /* non-critical */ } finally { loading.value = false }
@@ -50,6 +52,12 @@ onMounted(async () => {
 function firstImage(p: any): string | null {
   if (Array.isArray(p.images) && p.images.length) return p.images[0]
   return null
+}
+
+function hideImage(payload: Event | string) {
+  if (typeof payload === 'string') return
+  const img = payload.target
+  if (img instanceof HTMLImageElement) img.style.display = 'none'
 }
 </script>
 

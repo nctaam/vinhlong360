@@ -67,13 +67,13 @@
           </div>
         </div>
         <div v-else class="thread-comment-guest">
-          <button type="button" class="guest-reply-link" @click="openAuth">Đăng nhập để trả lời</button>
+          <button type="button" class="guest-reply-link" @click="openAuth()">Đăng nhập để trả lời</button>
         </div>
 
         <!-- Comment items as thread replies -->
         <div v-for="(c, idx) in comments" :key="c.id" class="thread-reply">
           <div class="thread-left">
-            <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.username || c.author?.id}`" class="thread-avatar-link">
+            <NuxtLink v-if="c.author?.id" :to="userPath(c.author?.username || c.author?.id)" class="thread-avatar-link">
               <span class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
             </NuxtLink>
             <span v-else class="avatar thread-avatar avatar-sm">{{ (c.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
@@ -81,7 +81,7 @@
           </div>
           <div class="thread-right">
             <div class="thread-head">
-              <NuxtLink v-if="c.author?.id" :to="`/nguoi-dung/${c.author?.username || c.author?.id}`" class="thread-author">
+              <NuxtLink v-if="c.author?.id" :to="userPath(c.author?.username || c.author?.id)" class="thread-author">
                 {{ c.author?.display_name || 'Người dùng' }}
               </NuxtLink>
               <span v-else class="thread-author">{{ c.author?.display_name || 'Người dùng' }}</span>
@@ -96,13 +96,13 @@
 
             <!-- Replies lồng (threaded, 1 cấp) -->
             <div v-for="r in (c.replies || [])" :key="r.id" class="thread-subreply">
-              <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.username || r.author?.id}`" class="thread-avatar-link">
+              <NuxtLink v-if="r.author?.id" :to="userPath(r.author?.username || r.author?.id)" class="thread-avatar-link">
                 <span class="avatar thread-avatar avatar-xs">{{ (r.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
               </NuxtLink>
               <span v-else class="avatar thread-avatar avatar-xs">{{ (r.author?.display_name || '?').charAt(0).toUpperCase() }}</span>
               <div class="subreply-body">
                 <div class="thread-head">
-                  <NuxtLink v-if="r.author?.id" :to="`/nguoi-dung/${r.author?.username || r.author?.id}`" class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</NuxtLink>
+                  <NuxtLink v-if="r.author?.id" :to="userPath(r.author?.username || r.author?.id)" class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</NuxtLink>
                   <span v-else class="thread-author">{{ r.author?.display_name || 'Người dùng' }}</span>
                   <time class="thread-time" :datetime="r.created_at">{{ timeAgo(r.created_at) }}</time>
                 </div>
@@ -131,7 +131,7 @@
         <div v-if="relatedPosts.length" class="related-section">
           <h2 class="related-title">Bài viết liên quan</h2>
           <div class="related-grid">
-            <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="`/bai-viet/${rp.id}`" class="related-card">
+            <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="postPath(rp.id)" class="related-card">
               <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
               <div class="related-body">
                 <span class="related-author">{{ rp.display_name }}</span>
@@ -163,10 +163,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Post, Entity} from '~/types'
+import type { Comment, Post, User } from '~/types'
 useReveal()
 const route = useRoute()
-const postId = computed(() => route.params.id as string)
+const postId = computed(() => normalizeRouteParam(route.params.id))
+const encodedPostId = computed(() => encodePathId(postId.value))
 const { isLoggedIn, authHeaders, user, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 
@@ -177,13 +178,30 @@ function renderComment(c: { content?: string; mentions?: Array<{ label?: string;
 }
 const { reportPost } = useReport()
 const { show: showToast } = useToast()
+const { trackEvent } = useUserEvents()
 
 const commentText = ref('')
-const comments = ref<Entity[]>([])
+
+interface ThreadComment extends Comment {
+  author?: User
+  mentions?: Array<{ label?: string; id?: string; type?: string }>
+  parent_id?: string
+  replies?: ThreadComment[]
+}
+
+interface PostDetailResponse {
+  post?: Post
+}
+
+interface CommentsResponse {
+  comments?: ThreadComment[]
+}
+
+const comments = ref<ThreadComment[]>([])
 const submitting = ref(false)
 const loading = ref(true)
 const commentError = ref(false)
-const replyingTo = ref<any | null>(null)
+const replyingTo = ref<ThreadComment | null>(null)
 
 // @-mention trong ô bình luận (dùng composable chung)
 const commentInputEl = ref<HTMLInputElement | null>(null)
@@ -209,7 +227,7 @@ async function setBestAnswer(commentId: string) {
   const prev = bestAnswerId.value
   bestAnswerId.value = commentId
   try {
-    await $fetch(`/api/posts/${postId.value}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
+    await $fetch(`/api/posts/${encodedPostId.value}/best-answer`, { method: 'POST', headers: authHeaders(), body: { comment_id: commentId } })
     showToast('Đã chọn câu trả lời hay', 'success')
   } catch (e: unknown) {
     bestAnswerId.value = prev
@@ -245,7 +263,7 @@ async function saveEdit() {
   if (editContent.value.trim().length < 10 || editSaving.value) return
   editSaving.value = true
   try {
-    const res = await $fetch<any>(`/api/posts/${postId.value}`, {
+    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}`, {
       method: 'PATCH', headers: authHeaders(), body: { content: editContent.value.trim() },
     })
     if (post.value && res.post) {
@@ -258,12 +276,13 @@ async function saveEdit() {
   } catch (e: unknown) {
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast(extractErrorMessage(e, 'Không thể lưu bài viết'), 'error')
+  } finally {
+    editSaving.value = false
   }
-  editSaving.value = false
 }
 
 // ── Threaded reply ──
-function startReply(c: any) {
+function startReply(c: ThreadComment) {
   if (!isLoggedIn.value) { openAuth(() => startReply(c)); return }
   replyingTo.value = c
   scrollToCompose()
@@ -276,12 +295,13 @@ const userInitial = computed(() => {
 })
 
 const postFetchFailed = ref(false)
-const { data: post, pending, refresh: refreshPost } = await useAsyncData(`post-${route.params.id}`, async () => {
+const { data: post, pending, refresh: refreshPost } = await useAsyncData(`post-${postId.value}`, async (): Promise<Post | null> => {
   try {
     postFetchFailed.value = false
-    const res = await apiFetch<Post>(`/api/posts/${postId.value}`, { headers: authHeaders() })
-    return res?.post || res
-  } catch {
+    const res = await apiFetch<PostDetailResponse | Post>(`/api/posts/${encodedPostId.value}`, { headers: authHeaders() })
+    return (res as PostDetailResponse).post || (res as Post)
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) handleSessionExpired()
     postFetchFailed.value = true
     return null
   }
@@ -291,16 +311,30 @@ if (import.meta.server && !post.value && !postFetchFailed.value) {
 }
 bestAnswerId.value = (post.value as any)?.best_answer_id ?? null
 
+function trackCurrentPost() {
+  if (!post.value) return
+  trackEvent('post_view', {
+    context: 'community',
+    entity_id: post.value.entity_id,
+    entity_name: post.value.entity_name,
+    metadata: {
+      post_id: postId.value,
+      post_type: post.value.post_type,
+    },
+  }, { dedupeMs: 60_000 })
+}
+
 async function fetchComments() {
   loading.value = true
   commentError.value = false
   try {
-    const res = await $fetch<Post>(`/api/posts/${postId.value}/comments`)
-    comments.value = res.comments || res || []
+    const res = await $fetch<CommentsResponse | ThreadComment[]>(`/api/posts/${encodedPostId.value}/comments`)
+    comments.value = Array.isArray(res) ? res : (res.comments || [])
   } catch {
     commentError.value = true
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
 async function submitComment() {
@@ -314,16 +348,17 @@ async function submitComment() {
       // Threading 1 cấp: gắn vào bình-luận-gốc (cha của reply, hoặc chính nó nếu là top-level)
       body.parent_id = t.parent_id || t.id
       // Trả lời 1 reply → @mention tác-giả để giữ ngữ cảnh trong nhánh phẳng
-      if (t.parent_id && t.author?.id && t.author?.display_name) {
-        const label = t.author.display_name
+      const replyAuthor = t.author
+      if (t.parent_id && replyAuthor?.id && replyAuthor.display_name) {
+        const label = replyAuthor.display_name
         if (!body.content.includes(`@${label}`)) body.content = `@${label} ${body.content}`
-        if (!mentions.some(x => x.type === 'user' && x.id === t.author.id)) {
-          mentions.push({ type: 'user', id: t.author.id, label })
+        if (!mentions.some(x => x.type === 'user' && x.id === replyAuthor.id)) {
+          mentions.push({ type: 'user', id: replyAuthor.id, label })
         }
       }
     }
     if (mentions.length) body.mentions = mentions
-    await $fetch(`/api/posts/${postId.value}/comments`, {
+    await $fetch(`/api/posts/${encodedPostId.value}/comments`, {
       method: 'POST',
       headers: authHeaders(),
       body,
@@ -337,8 +372,9 @@ async function submitComment() {
   } catch (e: unknown) {
     if (getStatusCode(e) === 401) { handleSessionExpired(); return }
     showToast(extractErrorMessage(e, 'Gửi bình luận thất bại — vui lòng thử lại'), 'error')
+  } finally {
+    submitting.value = false
   }
-  submitting.value = false
 }
 
 const { toggleLike: _like, toggleBookmark: _bookmark, deletePost: _delete } = usePostActions()
@@ -355,7 +391,8 @@ const { timeAgo } = useTimeAgo()
 const relatedPosts = ref<any[]>([])
 async function fetchRelated() {
   try {
-    const res = await $fetch<any>(`/api/posts/${postId.value}/related?limit=4`)
+    const params = new URLSearchParams({ limit: '4' })
+    const res = await $fetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
     relatedPosts.value = res.posts || []
   } catch { /* non-critical */ }
 }
@@ -377,6 +414,7 @@ onMounted(() => {
   if (import.meta.client) window.addEventListener('beforeunload', onBeforeUnload)
   fetchComments()
   fetchRelated()
+  trackCurrentPost()
   // mở editor khi điều hướng từ trang khác: /bai-viet/{id}?edit=1 (chủ bài)
   if (route.query.edit === '1' && isLoggedIn.value && post.value
       && String((post.value as any).user_id) === String(user.value?.id)) {
@@ -389,7 +427,7 @@ onUnmounted(() => {
   if (import.meta.client) window.removeEventListener('beforeunload', onBeforeUnload)
 })
 
-watch(postId, () => {
+watch(postId, async () => {
   comments.value = []
   relatedPosts.value = []
   loading.value = true
@@ -397,12 +435,15 @@ watch(postId, () => {
   replyingTo.value = null
   commentText.value = ''
   bestAnswerId.value = null
+  await refreshPost()
+  bestAnswerId.value = (post.value as any)?.best_answer_id ?? null
   fetchComments()
   fetchRelated()
+  trackCurrentPost()
 })
 
 useHead({
-  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(`/bai-viet/${postId.value}`) }]),
+  link: computed(() => [{ rel: 'canonical', href: canonicalUrl(postPath(postId.value)) }]),
   meta: [{ name: 'robots', content: 'noindex,follow' }],
 })
 
@@ -424,12 +465,12 @@ useHead({
       '@context': 'https://schema.org',
       '@type': p.post_type === 'review' ? 'Review' : 'Article',
       headline: postTitle, description: postDesc,
-      url: `https://vinhlong360.vn/bai-viet/${postId.value}`,
+      url: `https://vinhlong360.vn${postPath(postId.value)}`,
       datePublished: p.created_at,
       dateModified: p.updated_at || p.created_at,
       author: {
         '@type': 'Person', name: p.display_name || 'Người dùng',
-        ...(p.user_id ? { url: `https://vinhlong360.vn/nguoi-dung/${p.user_id}` } : {}),
+        ...(p.user_id ? { url: `https://vinhlong360.vn${userPath(p.user_id)}` } : {}),
       },
       publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
     }

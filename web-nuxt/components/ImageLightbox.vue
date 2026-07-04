@@ -71,14 +71,18 @@ const dragStyle = computed(() => {
 
 function onTouchStart(e: TouchEvent) {
   if (!e.touches.length) return
-  touchStartX = e.touches[0].clientX
+  const touch = e.touches[0]
+  if (!touch) return
+  touchStartX = touch.clientX
   touchDX.value = 0
   pendingDX = 0
   swiping.value = true
 }
 function onTouchMove(e: TouchEvent) {
   if (!swiping.value || !e.touches.length) return
-  pendingDX = e.touches[0].clientX - touchStartX
+  const touch = e.touches[0]
+  if (!touch) return
+  pendingDX = touch.clientX - touchStartX
   if (!dragRafId) {
     dragRafId = requestAnimationFrame(() => { touchDX.value = pendingDX; dragRafId = 0 })
   }

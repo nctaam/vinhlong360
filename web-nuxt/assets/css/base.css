@@ -824,6 +824,9 @@ a.thread-author:hover { color: var(--primary-fg); }
   .profile-avatar-wrap { left: var(--space-4); bottom: -32px; }
   .profile-avatar-wrap .avatar-xl { width: 72px; height: 72px; font-size: 1.5rem; }
 }
+@media (max-width: 640px) {
+  .topbar-search { display: none; }
+}
 @media (max-width: 520px) {
   .step { grid-template-columns: 1fr; gap: var(--space-1); }
   .step-time { padding-top: 0; }

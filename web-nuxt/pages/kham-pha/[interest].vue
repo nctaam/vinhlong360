@@ -120,11 +120,12 @@ useReveal()
 const route = useRoute()
 const interest = route.params.interest as string
 
-if (!INTEREST_META[interest]) {
+const resolvedInterestMeta = INTEREST_META[interest]
+if (!resolvedInterestMeta) {
   throw createError({ statusCode: 404, statusMessage: 'Chủ đề không tồn tại' })
 }
 
-const interestMeta = computed(() => INTEREST_META[interest])
+const interestMeta = computed(() => resolvedInterestMeta)
 
 // SIGNATURE 1: per-interest tint token — drives the hero wash, icon halo,
 // intro card and cross-link ribbon so each interest feels like its own
@@ -148,7 +149,7 @@ const areaFilter = ref('all')
 const typeFilter = ref('all')
 useFilterUrl({ vung: areaFilter, loai: typeFilter }, { vung: 'all', loai: 'all' })
 
-const interestTypes = INTEREST_META[interest].types
+const interestTypes = resolvedInterestMeta.types
 
 const { data, error: fetchError } = await useAsyncData(`interest-${interest}`, () =>
   apiFetch<{ entities: Entity[]; total: number }>(`/api/entities?type=${interestTypes.join(',')}&limit=500`)

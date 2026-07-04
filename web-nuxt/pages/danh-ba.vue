@@ -98,10 +98,10 @@
           <div v-if="attr(f, 'address')" class="fac-row">📍 {{ attr(f, 'address') }}</div>
           <div v-if="attr(f, 'phone')" class="fac-row">📞 <a :href="telHref(attr(f, 'phone'))">{{ attr(f, 'phone') }}</a></div>
           <div v-if="attr(f, 'hours')" class="fac-row">🕒 {{ attr(f, 'hours') }}</div>
-          <footer v-if="f.source?.url || f.updatedAt" class="fac-src">
+          <footer v-if="sourceUrl(f) || f.updatedAt" class="fac-src">
             <span v-if="isOfficialSource(f)" class="fac-verified" title="Nguồn chính thống">✓</span>
-            Nguồn: <a v-if="f.source?.url" :href="f.source.url" target="_blank" rel="nofollow noopener">{{ f.source?.title || 'nguồn' }}</a>
-            <span v-else>{{ f.source?.title }}</span>
+            Nguồn: <a v-if="sourceUrl(f)" :href="sourceUrl(f)" target="_blank" rel="nofollow noopener">{{ sourceName(f) || 'nguồn' }}</a>
+            <span v-else>{{ sourceName(f) }}</span>
             <time v-if="f.updatedAt" :datetime="f.updatedAt"> · cập nhật {{ relativeUpdated(f.updatedAt) }}</time>
           </footer>
           <button type="button" class="fac-report" :disabled="reported[f.id]" :aria-expanded="reportingId === f.id" :aria-controls="`report-${f.id}`" @click="openReport(f)">
@@ -148,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Place, Entity } from '~/types'
+import type { Entity, EntitySource } from '~/types'
 import { OFFICE_KIND, AREA_META } from '~/composables/useConstants'
 
 const AREA_RGB: Record<string, string> = {
@@ -164,7 +164,7 @@ const { show: showToast } = useToast()
 const ADMIN_LEVELS = ['phuong', 'xa']  // danh-bạ chỉ xã/phường (124), KHÔNG gộp cấp tỉnh
 const route = useRoute()
 
-const { data: places, error: placesError } = await useAsyncData('dir-places', () => apiFetch<Place[]>('/api/places'))
+const { data: places, error: placesError } = await useAsyncData('dir-places', () => apiFetch<Entity[]>('/api/places'))
 
 const areaFromQuery = computed(() => {
   const a = route.query.area as string
@@ -181,17 +181,21 @@ watch(selectedArea, () => {
 const wardGroups = computed(() => {
   const grouped: Record<string, Entity[]> = {}
   for (const p of (places.value || [])) {
-    if (!ADMIN_LEVELS.includes(p.level) || !AREA_META[p.area]) continue
-    if (!grouped[p.area]) grouped[p.area] = []
-    grouped[p.area].push(p)
+    const area = p.area
+    if (!p.level || !ADMIN_LEVELS.includes(p.level) || !area || !AREA_META[area]) continue
+    if (!grouped[area]) grouped[area] = []
+    grouped[area].push(p)
   }
   return Object.keys(AREA_META)
     .filter(area => grouped[area]?.length)
-    .map(area => ({
-      area,
-      label: AREA_META[area].name,
-      wards: grouped[area].sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi')),
-    }))
+    .map(area => {
+      const meta = AREA_META[area]
+      return {
+        area,
+        label: meta?.name || area,
+        wards: (grouped[area] || []).sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi')),
+      }
+    })
 })
 
 const filteredGroups = computed(() => {
@@ -206,12 +210,26 @@ const facilities = ref<Entity[]>([])
 const facilitiesError = ref(false)
 const loading = ref(false)
 
-function attr(f: Entity, k: string) { return (f.attributes || {})[k] }
-function kindMeta(f: Entity) { return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac }
+function attr(f: Entity, k: string): string {
+  const value = (f.attributes || {})[k]
+  return typeof value === 'string' ? value : value == null ? '' : String(value)
+}
+function kindMeta(f: Entity): { emoji: string; label: string } {
+  return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac || { emoji: '🏛️', label: 'Cơ quan' }
+}
+function primarySource(f: Entity): EntitySource | undefined {
+  return Array.isArray(f.source) ? f.source[0] : f.source
+}
+function sourceUrl(f: Entity): string {
+  return primarySource(f)?.url || ''
+}
+function sourceName(f: Entity): string {
+  return primarySource(f)?.name || ''
+}
 
 // Only flag as verified when the source URL is a genuine official gov domain — never fabricate trust (Track-H)
 function isOfficialSource(f: Entity) {
-  const url = f.source?.url || ''
+  const url = sourceUrl(f)
   return /\.gov\.vn(\/|$|\?|#)/i.test(url)
 }
 // Relative "x ngày trước"; falls back to the raw stored value if unparseable

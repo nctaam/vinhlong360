@@ -486,7 +486,7 @@ async function fetchEntitySchema() {
   try {
     const r = await $fetch<{ types: Record<string, TypeSchema> }>('/admin-api/entity-schema', { headers: authHeaders() })
     entitySchemas.value = r.types || {}
-  } catch { /* form falls back to core fields only */ }
+  } catch { showToast('Không tải được schema loại entity', 'warning') }
 }
 
 // ── Phase 2: kind overview (7 owner categories over the 17 raw types) ──
@@ -499,7 +499,7 @@ async function fetchKinds() {
     const r = await $fetch<{ kinds: KindGroup[]; grand_total: number }>('/admin-api/entity-kinds', { headers: authHeaders() })
     kindGroups.value = (r.kinds || []).filter(k => k.total > 0)
     kindGrandTotal.value = r.grand_total || 0
-  } catch { /* overview panel simply hidden */ }
+  } catch { showToast('Không tải được tổng quan danh mục', 'warning') }
 }
 function filterByType(t: string) {
   typeFilter.value = t
@@ -854,8 +854,11 @@ function clearSearch() {
 }
 onUnmounted(() => { if (debounceTimer) clearTimeout(debounceTimer); if (dupTimer) clearTimeout(dupTimer) })
 
+let _fetchInFlight = false
 async function fetchEntities(reset = false) {
+  if (_fetchInFlight) return
   if (reset) page.value = 1
+  _fetchInFlight = true
   loading.value = true
   try {
     const params = new URLSearchParams({ limit: String(limit.value), offset: String((page.value - 1) * limit.value) })
@@ -873,13 +876,14 @@ async function fetchEntities(reset = false) {
   }
   loading.value = false
   searching.value = false
+  _fetchInFlight = false
 }
 
 async function _focusModal() {
   if (!placesList.value.length) {
     try {
       placesList.value = await $fetch<{ id: string; name: string; area?: string }[]>('/admin-api/entities/places', { headers: authHeaders() })
-    } catch { /* ignore */ }
+    } catch { showToast('Không tải được danh sách xã/phường', 'warning') }
   }
   nextTick(() => {
     const el = document.getElementById(editingEntity.value ? 'ent-name' : 'ent-id')
@@ -1189,9 +1193,7 @@ onMounted(() => {
   const route = useRoute()
   if (route.query.orphans === '1') orphansOnly.value = true
   if (typeof route.query.q === 'string' && route.query.q) search.value = route.query.q
-  fetchEntitySchema()
-  fetchKinds()
-  fetchEntities()
+  Promise.all([fetchEntitySchema(), fetchKinds(), fetchEntities()])
   if (route.query.create === '1') openCreate()
   window.addEventListener('keydown', onKeydown)
 })
@@ -1326,7 +1328,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-kind-types { display: flex; flex-wrap: wrap; gap: 4px; }
 .ent-kind-chip { border: 1px solid var(--line); background: var(--card); border-radius: 100px; padding: 2px 8px; font-size: .74rem; cursor: pointer; color: var(--ink-700); transition: background .12s, border-color .12s, color .12s; }
 .ent-kind-chip:hover { border-color: var(--primary); color: var(--ink); }
-.ent-kind-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.ent-kind-chip.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 .ent-kind-chip-n { opacity: .7; font-weight: 600; }
 
 /* GĐ-A: chip lọc nhanh theo nhóm + ô cột đặc thù */
@@ -1356,6 +1358,15 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .admin-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 @media (max-width: 768px) {
   .admin-actions button { min-height: 44px; }
+  .ent-typed-grid { grid-template-columns: 1fr; }
+  .admin-toolbar { flex-direction: column; align-items: stretch; }
+  .ent-search-wrap { flex-basis: 100%; }
+  .ent-inline-label:focus-visible { outline: 1px dashed var(--primary); outline-offset: 2px; border-radius: 4px; }
+}
+@media (max-width: 520px) {
+  .ent-season-grid { grid-template-columns: repeat(3, 1fr); }
+  .bulk-bar { flex-direction: column; align-items: stretch; }
+  .bulk-assign-field, .bulk-assign-value { max-width: 100%; width: 100%; }
 }
 
 /* ── Pagination hint ── */

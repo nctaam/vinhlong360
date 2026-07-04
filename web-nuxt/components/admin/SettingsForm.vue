@@ -40,8 +40,8 @@
           @update:items="localValues[field.key] = $event"
         >
           <template #display="{ item }">
-            <span class="sf-rep-label">{{ item[field.itemSchema[0].field] || '(chưa đặt tên)' }}</span>
-            <span v-if="field.itemSchema[1]" class="sf-rep-sub">{{ item[field.itemSchema[1].field] }}</span>
+            <span class="sf-rep-label">{{ item[repeaterField(field, 0)] || '(chưa đặt tên)' }}</span>
+            <span v-if="repeaterField(field, 1, '')" class="sf-rep-sub">{{ item[repeaterField(field, 1, '')] }}</span>
           </template>
           <template #edit-fields="{ item, update }">
             <div v-for="s in field.itemSchema" :key="s.field" class="sf-rep-field">
@@ -63,7 +63,7 @@
 
       <template v-else-if="field.input_type === 'url'">
         <input :id="`sf-${field.key}`" type="url" v-model="localValues[field.key]" class="sf-input" placeholder="https://..." />
-        <img v-if="localValues[field.key] && isImageUrl(localValues[field.key])" :src="localValues[field.key]" class="sf-url-preview" alt="Preview" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+        <img v-if="asString(localValues[field.key]) && isImageUrl(asString(localValues[field.key]))" :src="asString(localValues[field.key])" class="sf-url-preview" alt="Preview" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
       </template>
 
       <template v-else>
@@ -81,6 +81,17 @@
       </button>
       <span v-if="isDirty && !saving" class="sf-dirty-badge" role="status">Chưa lưu</span>
     </div>
+    <div v-if="history.length" class="sf-history" aria-label="Lịch sử thay đổi">
+      <div class="sf-history-head">
+        <strong>Lịch sử gần đây</strong>
+        <button type="button" class="btn-ghost-sm" :disabled="historyLoading" @click="loadHistory">Tải lại</button>
+      </div>
+      <div v-for="h in history" :key="h.id" class="sf-history-row">
+        <span class="sf-history-main">{{ h.setting_key }} · {{ historyActionLabel(h.action) }}</span>
+        <time class="sf-history-time" :datetime="h.created_at">{{ formatDate(h.created_at) }}</time>
+        <button type="button" class="btn-outline sf-history-rollback" :disabled="saving" @click="rollbackHistory(h.id)">Rollback</button>
+      </div>
+    </div>
   </form>
 </template>
 
@@ -88,7 +99,7 @@
 interface RepeaterItemField {
   field: string
   label: string
-  input_type?: 'text' | 'textarea'
+  input_type?: string
   default?: string
 }
 interface SettingField {
@@ -112,6 +123,14 @@ function repeaterTemplate(f: SettingField): Record<string, string> {
   const t: Record<string, string> = {}
   for (const s of f.itemSchema || []) t[s.field] = s.default ?? ''
   return t
+}
+
+function repeaterField(f: SettingField, index: number, fallback = 'label'): string {
+  return f.itemSchema?.[index]?.field ?? fallback
+}
+
+function asString(value: unknown): string {
+  return typeof value === 'string' ? value : ''
 }
 
 const props = defineProps<{
@@ -138,6 +157,8 @@ const saving = ref(false)
 const localValues = ref<Record<string, any>>({})
 const jsonTexts = ref<Record<string, string>>({})
 const jsonErrors = ref<Record<string, string>>({})
+const history = ref<any[]>([])
+const historyLoading = ref(false)
 // Snapshot of values at load/save time, used purely for dirty-state display.
 // Does NOT participate in the save/data path.
 const initialSnapshot = ref<string>('{}')
@@ -189,10 +210,11 @@ const changedCount = computed(() => {
 })
 
 watch(() => [props.fields, props.objectValue], initValues, { immediate: true })
+watch(() => [props.category, props.objectKey], () => loadHistory(), { immediate: true })
 
 function validateJson(key: string): boolean {
   try {
-    const parsed = JSON.parse(jsonTexts.value[key])
+    const parsed = JSON.parse(jsonTexts.value[key] ?? '')
     localValues.value[key] = parsed
     jsonErrors.value[key] = ''
     return true
@@ -249,6 +271,7 @@ async function onSave() {
     }
     initialSnapshot.value = snapshotOf(localValues.value, jsonTexts.value)
     showToast('Đã lưu cài đặt', 'success')
+    await loadHistory()
     emit('saved')
   } catch (e: unknown) {
     showToast(extractErrorMessage(e, 'Lỗi khi lưu'), 'error')
@@ -276,6 +299,7 @@ async function onReset() {
         body: { value: {} },
       })
       showToast('Đã đặt lại về mặc định', 'success')
+      await loadHistory()
       emit('saved')
     } catch (e: unknown) {
       showToast(extractErrorMessage(e, 'Lỗi'), 'error')
@@ -291,12 +315,52 @@ async function onReset() {
       headers: authHeaders(),
     })
     showToast('Đã đặt lại về mặc định', 'success')
+    await loadHistory()
     emit('saved')
   } catch (e: unknown) {
     showToast(extractErrorMessage(e, 'Lỗi'), 'error')
   }
   saving.value = false
 }
+
+function historyActionLabel(action?: string) {
+  if (action === 'rollback') return 'rollback'
+  if (action === 'reset') return 'reset'
+  if (action === 'bulk_update') return 'cập nhật'
+  return action || 'cập nhật'
+}
+
+async function loadHistory() {
+  historyLoading.value = true
+  try {
+    const params = new URLSearchParams({ limit: '5' })
+    if (props.objectKey) params.set('key', props.objectKey)
+    else params.set('category', props.category)
+    const res = await $fetch<{ history?: any[] }>(`/admin-api/site-settings-history?${params}`, { headers: authHeaders() })
+    history.value = res.history || []
+  } catch {
+    history.value = []
+  } finally {
+    historyLoading.value = false
+  }
+}
+
+async function rollbackHistory(id: string) {
+  if (!await confirmDialog('Rollback cài đặt này về snapshot trước đó?', { danger: true })) return
+  saving.value = true
+  try {
+    await $fetch(`/admin-api/site-settings-history/${id}/rollback`, { method: 'POST', headers: authHeaders() })
+    showToast('Đã rollback cài đặt', 'success')
+    await loadHistory()
+    emit('saved')
+  } catch (e: unknown) {
+    showToast(extractErrorMessage(e, 'Không thể rollback'), 'error')
+  } finally {
+    saving.value = false
+  }
+}
+
+const formatDate = formatDateVN
 </script>
 
 <style scoped>
@@ -429,6 +493,24 @@ async function onReset() {
   font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
   background: rgba(var(--primary-rgb), .1); border: .5px solid rgba(var(--primary-rgb), .25);
 }
+.sf-history {
+  display: grid; gap: var(--space-2);
+  padding: var(--space-3); border: .5px solid var(--line);
+  border-radius: 10px; background: var(--bg-alt, #f8faf9);
+}
+.sf-history-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3); color: var(--ink);
+}
+.sf-history-head strong { font-size: .84rem; }
+.sf-history-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--space-3); align-items: center;
+  padding: var(--space-2) 0; border-top: .5px solid var(--line);
+}
+.sf-history-main { min-width: 0; font-size: .8rem; font-weight: 600; color: var(--ink); word-break: break-word; }
+.sf-history-time { font-size: .74rem; color: var(--muted); white-space: nowrap; }
+.sf-history-rollback { min-height: 34px; padding: 6px 10px; border-radius: 8px; font-size: .76rem; }
 
 /* ── Dark ── */
 .dark .sf-input, .dark .sf-textarea { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
@@ -438,6 +520,7 @@ async function onReset() {
 .dark .sf-toggle-track { background: rgba(255,255,255,.15); }
 .dark .sf-toggle-thumb { box-shadow: 0 1px 4px rgba(0,0,0,.35); }
 .dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+.dark .sf-history { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.08); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
@@ -446,5 +529,12 @@ async function onReset() {
   .sf-save:hover:not(:disabled), .sf-save:active:not(:disabled),
   .sf-reset:active:not(:disabled), .sf-color-clear:active { transform: none; }
   .sf-spinner { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .sf-actions { flex-direction: column; align-items: stretch; }
+  .sf-history-row { grid-template-columns: 1fr; gap: var(--space-1); }
+  .sf-history-time { white-space: normal; }
+  .sf-history-rollback { justify-self: start; }
 }
 </style>

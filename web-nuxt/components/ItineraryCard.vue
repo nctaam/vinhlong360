@@ -43,15 +43,23 @@ const props = defineProps<{
 
 const imgErr = ref(false)
 // thumbnail theo vùng (tái dùng minh họa category) — đa dạng + hợp chủ đề từng tỉnh
-const AREA_IMG: Record<string, string> = { 'vinh-long': 'place', 'ben-tre': 'nature', 'tra-vinh': 'history' }
+const AREA_IMG: Record<string, string> = { 'vinh-long': 'place', 'ben-tre': 'nature', 'tra-vinh': 'history', 'lien-vung': 'itinerary' }
 const coverSrc = computed(() => `/img/cat/${AREA_IMG[props.itinerary.area] || 'itinerary'}.jpg`)
 // Deterministic per-itinerary placeholder fallback — seeded by id.
 const placeholderBg = computed(() => generateCategoryPlaceholder(props.itinerary.id, 'itinerary'))
 const placeholderSvg = computed(() => generateCategoryIcon('itinerary'))
 
+const itineraryAreas = computed(() => Array.isArray(props.itinerary.areas) ? props.itinerary.areas.filter(Boolean) : [])
 const areaMeta = computed(() => AREA_META[props.itinerary.area] || { emoji: '📍', name: props.itinerary.area })
 const areaEmoji = computed(() => areaMeta.value.emoji)
-const areaName = computed(() => areaMeta.value.name)
+const areaName = computed(() => {
+  const primary = areaMeta.value.name
+  const extra = itineraryAreas.value
+    .filter((key: string) => key !== props.itinerary.area)
+    .map((key: string) => AREA_META[key]?.name)
+    .filter(Boolean)
+  return extra.length ? `${primary} + ${extra.join(', ')}` : primary
+})
 // stop count drives the curated-trip indicator badge (duration + stops)
 const stopCount = computed(() => props.itinerary.stops?.length ?? props.itinerary.days?.reduce((n: number, d: any) => n + (d.stops?.length || 0), 0) ?? 0)
 </script>

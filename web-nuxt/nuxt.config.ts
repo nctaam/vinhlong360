@@ -14,7 +14,6 @@ export default defineNuxtConfig({
   fonts: {
     defaults: { weights: [400, 600, 700, 800], subsets: ['vietnamese', 'latin', 'latin-ext'] },
     families: [{ name: 'Inter', provider: 'google' }],
-    display: 'swap',
   },
 
   // Ảnh: provider weserv (miễn phí, transcode WebP off-VPS) — KHÔNG dùng IPX
@@ -86,8 +85,8 @@ export default defineNuxtConfig({
         // Add `js` to <html> BEFORE first paint so the JS-gated .reveal rule
         // (html.js .reveal { opacity:0 }) only ever hides content when JS is
         // present — no flash-of-hidden, and full visibility when JS is off/slow.
-        { children: "document.documentElement.classList.add('js')", tagPosition: 'head' },
-        { innerHTML: "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}", type: 'text/javascript' },
+        { innerHTML: "document.documentElement.classList.add('js')", tagPosition: 'head' },
+        { innerHTML: "if('serviceWorker' in navigator&&location.protocol==='https:'&&!['localhost','127.0.0.1','::1'].includes(location.hostname)){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}", type: 'text/javascript' },
         {
           type: 'application/ld+json',
           innerHTML: JSON.stringify({
@@ -160,6 +159,7 @@ export default defineNuxtConfig({
     '/weather/**': { proxy: `${apiBase}/weather/**` },
     '/admin-api/**': { proxy: `${apiBase}/admin/**` },
     '/health': { proxy: `${apiBase}/health` },
+    '/health/**': { proxy: `${apiBase}/health/**` },
     '/reload': { proxy: `${apiBase}/reload` },
     '/recommend': { proxy: `${apiBase}/recommend` },
     '/freshness/**': { proxy: `${apiBase}/freshness/**` },
@@ -197,9 +197,10 @@ export default defineNuxtConfig({
       cache: { driver: 'memory' },
     },
     prerender: {
+      // /cong-dong is auth-aware (composer, private tabs), so keep it dynamic SSR.
       routes: ['/', '/du-lich', '/san-pham', '/ocop', '/le-hoi', '/luu-tru',
                '/lich-trinh', '/su-kien', '/theo-mua', '/ban-do', '/danh-ba',
-               '/lien-he', '/cong-dong',
+               '/lien-he',
                '/gioi-thieu', '/chinh-sach-bao-mat', '/dieu-khoan-su-dung'],  // P1-18 SEO
       crawlLinks: false,
     },

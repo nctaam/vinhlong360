@@ -38,9 +38,9 @@
           </div>
         </div>
         <div class="scroll-row saved-row" role="region" tabindex="0" aria-label="Mục đã lưu">
-          <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
+          <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="savedItemPath(fav)" class="card">
             <div v-if="fav.image" class="cover cover-img">
-              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" sizes="sm:100vw md:50vw lg:400px" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.opacity = '.15' }" />
+              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" sizes="sm:100vw md:50vw lg:400px" @error="fadeImageError" />
               <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
             </div>
             <div class="card-b">
@@ -171,6 +171,11 @@ const { favorites, byType, count, clear } = useFavorites()
 const { confirmDialog } = useConfirm()
 const recentSaved = computed(() => favorites.value.slice(0, 8))
 
+function fadeImageError(ev: Event | string) {
+  if (typeof ev === 'string') return
+  const target = ev.target as HTMLImageElement | null
+  if (target) target.style.opacity = '.15'
+}
 
 async function clearAll() {
   if (await confirmDialog('Xóa tất cả mục đã lưu?', { danger: true, confirmText: 'Xóa' })) clear()
@@ -190,24 +195,25 @@ const { data: itineraries, error: fetchError } = await useAsyncData('itineraries
 )
 
 const areaCounts = computed(() => {
-  const counts: Record<string, number> = {}
-  for (const it of (itineraries.value || [])) {
-    const area = (it as any).area || ''
-    if (area) counts[area] = (counts[area] || 0) + 1
-  }
   return Object.entries(AREA_META)
-    .filter(([key]) => counts[key])
-    .map(([key, meta]) => ({ key, name: meta.name, count: counts[key] }))
+    .map(([key, meta]) => ({ key, name: meta.name, count: countByArea(key) }))
+    .filter(item => item.count > 0)
 })
 
+function itineraryMatchesArea(it: Itinerary, key: string) {
+  if (it.area === key) return true
+  const areas = Array.isArray(it.areas) ? it.areas : []
+  return areas.includes(key)
+}
+
 function countByArea(key: string) {
-  return (itineraries.value || []).filter((it: Itinerary) => it.area === key).length
+  return (itineraries.value || []).filter((it: Itinerary) => itineraryMatchesArea(it, key)).length
 }
 
 const filtered = computed(() => {
   const list = itineraries.value || []
   if (areaFilter.value === 'all') return list
-  return list.filter((it: Itinerary) => it.area === areaFilter.value)
+  return list.filter((it: Itinerary) => itineraryMatchesArea(it, areaFilter.value))
 })
 
 const emptyMessage = computed(() => {

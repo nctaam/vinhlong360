@@ -59,8 +59,17 @@
       Queue cache: {{ summary.cache.modified_at || 'unknown' }}
     </p>
 
+    <JourneyActionRail
+      v-if="dataQualityQueueActions.length"
+      :actions="dataQualityQueueActions"
+      title="Ưu tiên quality queue"
+      subtitle="Xử lý theo evidence, review load và lỗ hổng dữ liệu đang ảnh hưởng tới public trust."
+      aria-label="Hành động ưu tiên trong quality queue"
+      compact
+    />
+
     <div class="dq-toolbar">
-      <select v-model="kind" class="input" aria-label="Lọc theo loại" @change="fetchCandidates(true)">
+      <select v-model="kind" class="input" aria-label="Lọc theo loại" @change="applyFilters">
         <option value="">Tất cả loại</option>
         <option value="source">Nguồn</option>
         <option value="location">Tọa độ</option>
@@ -68,7 +77,7 @@
         <option value="accuracy">Accuracy</option>
         <option value="relationship">Relationship</option>
       </select>
-      <select v-model="bucket" class="input" aria-label="Lọc theo trạng thái" @change="fetchCandidates(true)">
+      <select v-model="bucket" class="input" aria-label="Lọc theo trạng thái" @change="applyFilters">
         <option value="needs_review">Cần duyệt</option>
         <option value="auto_apply">Auto-apply</option>
         <option value="reject">Reject</option>
@@ -110,6 +119,9 @@
       <div v-if="applyResult.backup" class="dq-apply-result-meta">Backup: <code class="dq-mono">{{ applyResult.backup }}</code></div>
     </div>
 
+    <div v-if="loading && !candidates.length" class="dq-skeleton" role="status" aria-label="Đang tải danh sách candidate">
+      <div v-for="i in 6" :key="i" class="dq-skel-row"><div class="skel skel-check"></div><div class="skel skel-sev"></div><div class="skel skel-entity"></div><div class="skel skel-field"></div><div class="skel skel-value"></div></div>
+    </div>
     <div class="admin-table-wrap dq-table-wrap">
       <table class="admin-table dq-table" aria-label="Chất lượng dữ liệu">
         <thead>
@@ -121,6 +133,7 @@
             <th scope="col">Đề xuất</th>
             <th scope="col">Evidence</th>
             <th scope="col">Lý do</th>
+            <th scope="col">Quyết định</th>
           </tr>
         </thead>
         <tbody>
@@ -156,9 +169,17 @@
               <span v-if="!(c.evidence_urls || []).length">—</span>
             </td>
             <td>{{ c.reason || c.status || '—' }}</td>
+            <td class="dq-actions-cell">
+              <span v-if="c.decision" class="dq-decision-badge" :class="`dq-decision-${c.decision}`">{{ decisionLabel(c.decision) }}</span>
+              <div v-if="c.bucket !== 'auto_apply'" class="dq-row-actions">
+                <button type="button" class="btn btn-success btn-sm" :disabled="decisionBusy === c.candidate_id" @click="decideCandidate(c, 'approve')">Duyệt & apply</button>
+                <button type="button" class="btn btn-outline btn-sm" :disabled="decisionBusy === c.candidate_id" @click="decideCandidate(c, 'defer')">Hoãn</button>
+                <button type="button" class="btn btn-danger btn-sm" :disabled="decisionBusy === c.candidate_id" @click="decideCandidate(c, 'reject')">Loại</button>
+              </div>
+            </td>
           </tr>
           <tr v-if="!loading && !candidates.length">
-            <td colspan="7" class="dq-empty-cell">
+            <td colspan="8" class="dq-empty-cell">
               <div class="admin-empty-state">
                 <div class="admin-empty-state-icon">{{ hasActiveFilters ? '🔍' : '✓' }}</div>
                 <div class="admin-empty-state-text">{{ hasActiveFilters ? 'Không có vấn đề' : 'Chất lượng dữ liệu tốt' }}</div>
@@ -167,7 +188,7 @@
             </td>
           </tr>
           <tr v-if="loading">
-            <td colspan="7" class="admin-empty-row">Đang tải dữ liệu…</td>
+            <td colspan="8" class="admin-empty-row">Đang tải dữ liệu…</td>
           </tr>
         </tbody>
       </table>
@@ -235,40 +256,179 @@
           </div>
         </article>
       </div>
+      <div v-if="decisionHistory.length" class="dq-decision-history">
+        <div class="dq-subsection-head">
+          <h3>Quyết định review gần đây</h3>
+          <small>{{ decisionHistory.length }} quyết định mới nhất</small>
+        </div>
+        <article v-for="d in decisionHistory" :key="d.batch_id" class="dq-decision-card">
+          <div class="dq-decision-card-head">
+            <span class="dq-decision-badge" :class="`dq-decision-${d.decision}`">{{ decisionLabel(d.decision) }}</span>
+            <strong>{{ (d.candidate_ids || []).length }} candidate</strong>
+            <time v-if="d.decided_at" :datetime="d.decided_at">{{ d.decided_at }}</time>
+          </div>
+          <p class="dq-decision-meta">
+            <span v-if="d.apply">Đã apply sau khi duyệt</span>
+            <span v-if="d.reviewer">Reviewer: {{ d.reviewer }}</span>
+            <span v-if="(d.missing_candidate_ids || []).length">Thiếu: {{ (d.missing_candidate_ids || []).length }}</span>
+          </p>
+          <p v-if="d.note" class="dq-decision-note">{{ d.note }}</p>
+        </article>
+      </div>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
+import { useJourneyActions } from '~/composables/useJourneyActions'
+
+interface DataQualitySummary {
+  data?: {
+    public_entities?: number
+    missing_source?: number
+    missing_location?: number
+    missing_place_id_non_place?: number
+  }
+  candidates?: {
+    auto_apply?: number
+    needs_review?: number
+    reject?: number
+  }
+  cache?: {
+    exists?: boolean
+    modified_at?: string
+  }
+}
+
+interface DataQualityCandidate {
+  candidate_id: string
+  entity_id: string
+  bucket: string
+  decision?: 'approve' | 'reject' | 'defer' | string
+  decision_note?: string
+  decision_at?: string
+  field: string
+  suggested_value?: unknown
+  evidence_urls?: string[]
+  reason?: string
+  status?: string
+}
+
+interface DataQualityApplyResult {
+  dry_run?: boolean
+  applied_count?: number
+  skipped_count?: number
+  batch_id?: string
+  backup?: string
+}
+
+interface DataQualityChange {
+  candidate_id: string
+  entity_id?: string
+  entity_name?: string
+  field?: string
+  before?: unknown
+  after?: unknown
+}
+
+interface DataQualitySkipped {
+  candidate_id: string
+  entity_id?: string
+  field?: string
+  reason?: string
+  duplicate_of?: string
+}
+
+interface DataQualityHistoryRecord {
+  batch_id: string
+  record_type: 'apply' | 'rollback' | string
+  applied_at?: string
+  rolled_back_at?: string
+  applied_count?: number
+  restored_changes?: number
+  skipped_count?: number
+  backup?: string
+  restored_from?: string
+  changes?: DataQualityChange[]
+  skipped?: DataQualitySkipped[]
+}
+
+interface DataQualityDecisionRecord {
+  batch_id: string
+  decision: string
+  decided_at?: string
+  reviewer?: string
+  note?: string
+  apply?: boolean
+  candidate_ids?: string[]
+  missing_candidate_ids?: string[]
+}
+
+interface DataQualityReviewResponse {
+  candidates?: DataQualityCandidate[]
+  total?: number
+}
+
+interface DataQualityHistoryResponse {
+  history?: DataQualityHistoryRecord[]
+  decisions?: DataQualityDecisionRecord[]
+}
+
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Chất lượng dữ liệu — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
+const route = useRoute()
+const router = useRouter()
+const { dataQualityQueueActions: buildDataQualityQueueActions } = useJourneyActions()
 
-const summary = ref<Record<string, unknown> | null>(null)
-const candidates = ref<Entity[]>([])
+const summary = ref<DataQualitySummary | null>(null)
+const candidates = ref<DataQualityCandidate[]>([])
 const selectedIds = ref<string[]>([])
-const applyResult = ref<Record<string, unknown> | null>(null)
-const kind = ref('')
-const bucket = ref('needs_review')
+const applyResult = ref<DataQualityApplyResult | null>(null)
+const kind = ref(queryValue(route.query.kind))
+const bucket = ref(normalizeBucketQuery(route.query.bucket, 'needs_review'))
 const total = ref(0)
 const offset = ref(0)
 const limit = 100
 const loading = ref(false)
 const applying = ref(false)
-const history = ref<Entity[]>([])
+const decisionBusy = ref('')
+const history = ref<DataQualityHistoryRecord[]>([])
+const decisionHistory = ref<DataQualityDecisionRecord[]>([])
 const historyLoading = ref(false)
 const rollingBack = ref('')
 
 const copiedBatch = ref(false)
 
-const autoApplyIds = computed(() => selectedIds.value.filter((id) => candidates.value.some((c) => c.candidate_id === id && c.bucket === 'auto_apply')))
+const autoApplySet = computed(() => new Set(candidates.value.filter(c => c.bucket === 'auto_apply').map(c => c.candidate_id)))
+const autoApplyIds = computed(() => selectedIds.value.filter(id => autoApplySet.value.has(id)))
 const hasActiveFilters = computed(() => !!kind.value || !!bucket.value)
 const pageAutoApplyIds = computed(() => candidates.value.filter((c) => c.bucket === 'auto_apply').map((c) => c.candidate_id))
 const allPageAutoSelected = computed(() => pageAutoApplyIds.value.length > 0 && pageAutoApplyIds.value.every((id) => selectedIds.value.includes(id)))
+const dataQualityQueueActions = computed(() => buildDataQualityQueueActions({
+  autoApply: summary.value?.candidates?.auto_apply ?? 0,
+  needsReview: summary.value?.candidates?.needs_review ?? 0,
+  reject: summary.value?.candidates?.reject ?? 0,
+  missingSource: summary.value?.data?.missing_source ?? 0,
+  missingLocation: summary.value?.data?.missing_location ?? 0,
+  missingPlaceId: summary.value?.data?.missing_place_id_non_place ?? 0,
+  selectedAuto: autoApplyIds.value.length,
+  bucket: bucket.value,
+}))
+
+function queryValue(value: unknown) {
+  const v = Array.isArray(value) ? value[0] : value
+  return typeof v === 'string' ? v : ''
+}
+
+function normalizeBucketQuery(value: unknown, fallback = '') {
+  const v = queryValue(value)
+  if (v === 'all') return ''
+  return v || fallback
+}
 
 function bucketSeverity(b?: string) {
   if (b === 'auto_apply') return 'success'
@@ -280,6 +440,13 @@ function bucketLabel(b?: string) {
   if (b === 'auto_apply') return 'Auto'
   if (b === 'reject') return 'Loại'
   return 'Duyệt'
+}
+
+function decisionLabel(d?: string) {
+  if (d === 'approve') return 'Đã duyệt'
+  if (d === 'reject') return 'Đã loại'
+  if (d === 'defer') return 'Đã hoãn'
+  return d || ''
 }
 
 function reasonSeverity(reason?: string) {
@@ -310,9 +477,24 @@ async function copyBatch(batchId: string) {
   }
 }
 
+function applyFilters() {
+  const query = { ...route.query, kind: kind.value || undefined, bucket: bucket.value || 'all' }
+  router.replace({ query }).catch(() => {})
+  fetchCandidates(true)
+}
+
+watch(() => [route.query.kind, route.query.bucket], ([kindQuery, bucketQuery]) => {
+  const nextKind = queryValue(kindQuery)
+  const nextBucket = normalizeBucketQuery(bucketQuery, 'needs_review')
+  if (nextKind === kind.value && nextBucket === bucket.value) return
+  kind.value = nextKind
+  bucket.value = nextBucket
+  fetchCandidates(true)
+})
+
 async function fetchSummary(refresh = false) {
   try {
-    summary.value = await $fetch<Record<string, unknown>>('/admin-api/data-quality/summary', {
+    summary.value = await $fetch<DataQualitySummary>('/admin-api/data-quality/summary', {
       headers: authHeaders(),
       query: refresh ? { refresh: true } : {},
     })
@@ -326,7 +508,7 @@ async function fetchCandidates(reset = false, refresh = false) {
   loading.value = true
   applyResult.value = null
   try {
-    const res = await $fetch<Record<string, unknown>>('/admin-api/data-quality/review', {
+    const res = await $fetch<DataQualityReviewResponse>('/admin-api/data-quality/review', {
       headers: authHeaders(),
       query: {
         kind: kind.value || undefined,
@@ -356,11 +538,12 @@ async function refreshAll(refresh = false) {
 async function fetchHistory() {
   historyLoading.value = true
   try {
-    const res = await $fetch<Record<string, unknown>>('/admin-api/data-quality/history', {
+    const res = await $fetch<DataQualityHistoryResponse>('/admin-api/data-quality/history', {
       headers: authHeaders(),
       query: { limit: 20 },
     })
     history.value = res.history || []
+    decisionHistory.value = res.decisions || []
   } catch (e: unknown) {
     showToast(getErrorDetail(e, 'Không thể tải lịch sử apply'), 'error')
   }
@@ -371,7 +554,7 @@ async function runApply(dryRun: boolean) {
   if (!autoApplyIds.value.length || applying.value) return
   applying.value = true
   try {
-    applyResult.value = await $fetch<Record<string, unknown>>('/admin-api/data-quality/apply', {
+    applyResult.value = await $fetch<DataQualityApplyResult>('/admin-api/data-quality/apply', {
       method: 'POST',
       headers: authHeaders(),
       body: { candidate_ids: autoApplyIds.value, dry_run: dryRun },
@@ -390,10 +573,10 @@ async function dryRunSelected() {
 }
 
 function applyFieldBreakdown() {
+  const byId = new Map(candidates.value.map(c => [c.candidate_id, c]))
   const counts: Record<string, number> = {}
   for (const id of autoApplyIds.value) {
-    const c = candidates.value.find((x) => x.candidate_id === id)
-    const f = c?.field || 'khác'
+    const f = byId.get(id)?.field || 'khác'
     counts[f] = (counts[f] || 0) + 1
   }
   return Object.entries(counts).map(([f, n]) => `  • ${f}: ${n}`).join('\n')
@@ -403,17 +586,52 @@ async function applySelected() {
   const n = autoApplyIds.value.length
   if (!n) return
   const msg = [
-    `Áp dụng ${n} candidate evidence-only vào web/data.json.`,
+    `Áp dụng ${n} candidate evidence-only vào dữ liệu hệ thống.`,
     '',
     'Theo field:',
     applyFieldBreakdown(),
     '',
-    'Thao tác này ghi trực tiếp vào dữ liệu public và KHÔNG thể hoàn tác tự động (chỉ rollback thủ công bằng backup).',
+    'Hệ thống sẽ ghi snapshot theo batch để có thể rollback từ lịch sử apply nếu cần.',
     '',
     `Xác nhận apply ${n} candidate?`,
   ].join('\n')
   if (!await confirmDialog(msg, { danger: true })) return
   await runApply(false)
+}
+
+async function decideCandidate(c: DataQualityCandidate, decision: 'approve' | 'reject' | 'defer') {
+  if (decisionBusy.value) return
+  const labels = { approve: 'duyệt và apply', reject: 'loại', defer: 'hoãn' }
+  const danger = decision === 'approve' || decision === 'reject'
+  const msg = decision === 'approve'
+    ? `Duyệt và apply candidate ${c.candidate_id} vào dữ liệu hệ thống?`
+    : `Xác nhận ${labels[decision]} candidate ${c.candidate_id}?`
+  if (!await confirmDialog(msg, { danger })) return
+  decisionBusy.value = c.candidate_id
+  try {
+    const res = await $fetch<{ apply_result?: DataQualityApplyResult }>('/admin-api/data-quality/decision', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: {
+        candidate_ids: [c.candidate_id],
+        decision,
+        apply: decision === 'approve',
+      },
+    })
+    c.decision = decision
+    if (res.apply_result) applyResult.value = res.apply_result
+    if (decision === 'approve' && Number(res.apply_result?.applied_count || 0) > 0) {
+      candidates.value = candidates.value.filter((item) => item.candidate_id !== c.candidate_id)
+      selectedIds.value = selectedIds.value.filter((id) => id !== c.candidate_id)
+      total.value = Math.max(0, total.value - 1)
+    }
+    showToast(decision === 'approve' ? 'Đã duyệt và apply candidate' : `Đã ${labels[decision]} candidate`, 'success')
+    await Promise.all([fetchSummary(decision === 'approve'), fetchHistory()])
+  } catch (e: unknown) {
+    showToast(getErrorDetail(e, 'Không thể ghi quyết định'), 'error')
+  } finally {
+    decisionBusy.value = ''
+  }
 }
 
 async function rollbackBatch(batchId: string) {
@@ -491,6 +709,20 @@ onMounted(() => refreshAll())
 .dq-sev-neutral { background: rgba(142,142,147,.14); color: var(--muted); }
 
 .dq-evidence-more { display: inline-block; font-size: .72rem; font-weight: 600; color: var(--muted); cursor: help; }
+.dq-actions-cell { min-width: 180px; }
+.dq-row-actions {
+  display: flex; flex-wrap: wrap; gap: var(--space-1);
+  align-items: center; margin-top: var(--space-1);
+}
+.dq-row-actions .btn { min-height: 32px; padding: 5px 8px; font-size: .72rem; line-height: 1.2; }
+.dq-decision-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 8px; border-radius: 999px; font-size: .68rem;
+  font-weight: 700; white-space: nowrap; border: .5px solid transparent;
+}
+.dq-decision-approve { background: rgba(var(--primary-rgb),.12); color: var(--primary, #219653); border-color: rgba(var(--primary-rgb),.24); }
+.dq-decision-reject { background: rgba(var(--danger-rgb),.1); color: var(--error, #D94F3D); border-color: rgba(var(--danger-rgb),.22); }
+.dq-decision-defer { background: rgba(var(--warning-rgb),.13); color: var(--warning, #e67e22); border-color: rgba(var(--warning-rgb),.24); }
 
 /* Apply result status card */
 .dq-apply-result { background: var(--bg-alt, #f3fbf5); border: .5px solid var(--primary, #219653); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm, 10px); color: var(--ink, #1c1c1e); display: grid; gap: var(--space-2); }
@@ -520,6 +752,16 @@ onMounted(() => refreshAll())
 .dq-section-head p { margin: var(--space-1) 0 0; color: var(--muted); }
 .dq-history-empty { padding: var(--space-4); border: .5px dashed var(--line); border-radius: var(--radius-sm); color: var(--muted); }
 .dq-history-list { display: grid; gap: var(--space-3); }
+.dq-decision-history { display: grid; gap: var(--space-2); margin-top: var(--space-5); }
+.dq-subsection-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.dq-subsection-head h3 { margin: 0; font-size: .95rem; }
+.dq-subsection-head small { color: var(--muted); }
+.dq-decision-card { padding: var(--space-3); border: .5px solid var(--line); border-radius: 10px; background: var(--bg-alt, #f8faf9); }
+.dq-decision-card-head { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.dq-decision-card-head strong { font-size: .84rem; color: var(--ink); }
+.dq-decision-card-head time { margin-left: auto; color: var(--muted); font-size: .75rem; }
+.dq-decision-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-2) 0 0; color: var(--muted); font-size: .78rem; }
+.dq-decision-note { margin: var(--space-2) 0 0; color: var(--ink); font-size: .82rem; line-height: 1.45; }
 .dq-history-card {
   padding: var(--space-4); border: .5px solid var(--line); border-radius: 14px;
   background: var(--card); box-shadow: var(--shadow-xs);
@@ -552,6 +794,7 @@ onMounted(() => refreshAll())
 .dark .dq-history-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
 .dark .dq-diff-item { background: rgba(255,255,255,.03); }
 .dark .dq-diff-item:hover { background: rgba(var(--blue-rgb),.08); }
+.dark .dq-decision-card { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.08); }
 .dark .dq-select-all { color: var(--ink, #e5e5e7); }
 .dark .dq-apply-result { background: rgba(var(--primary-rgb),.1); color: var(--ink, #e5e5e7); }
 .dark .dq-apply-result--warn { background: rgba(var(--warning-rgb),.12); }
@@ -564,6 +807,18 @@ onMounted(() => refreshAll())
   .admin-page-head { flex-direction: column; }
   .dq-toolbar .input { flex: 1 1 150px; }
   .dq-section-head, .dq-history-card-head { flex-direction: column; }
+  .dq-decision-card-head time { margin-left: 0; width: 100%; }
   .dq-diff-item { grid-template-columns: 1fr; }
 }
+
+/* ── Skeleton loading ── */
+.dq-skeleton { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4) 0; }
+.dq-skel-row { display: flex; gap: var(--space-3); padding: var(--space-2) 0; }
+.dq-skeleton .skel { height: 14px; border-radius: 6px; background: var(--line, #e5e5ea); animation: dqSkelPulse 1.2s ease-in-out infinite; }
+.skel-check { width: 18px; }
+.skel-sev { width: 50px; }
+.skel-entity { width: 120px; }
+.skel-field { width: 70px; }
+.skel-value { flex: 1; max-width: 200px; }
+@keyframes dqSkelPulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
 </style>

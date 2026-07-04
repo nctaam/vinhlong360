@@ -12,6 +12,7 @@ export function useInfiniteScroll(
       if (!sentinel.value) return
       observer = new IntersectionObserver(
         async ([entry]) => {
+          if (!entry) return
           if (!entry.isIntersecting || loading.value) return
           if (options?.enabled && !options.enabled.value) return
           loading.value = true

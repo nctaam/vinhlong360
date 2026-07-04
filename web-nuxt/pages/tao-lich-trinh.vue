@@ -38,7 +38,7 @@
           single-select
           class="chip-row-spaced"
           aria-label="Nguồn"
-          @update:model-value="v => sourceTab = v.length ? v[0] : 'all'"
+          @update:model-value="v => sourceTab = v[0] || 'all'"
         />
         <div class="search-row search-row-spaced">
           <input v-model="searchQ" type="search" enterkeyhint="search" aria-label="Tìm điểm đến" placeholder="Tìm điểm đến, đặc sản, lưu trú…" />
@@ -50,27 +50,24 @@
           single-select
           class="chip-row-spaced"
           aria-label="Lọc theo loại"
-          @update:model-value="v => typeFilter = v.length ? v[0] : 'all'"
+          @update:model-value="v => typeFilter = v[0] || 'all'"
         />
         <div class="picker-list">
-          <div
+          <button
             v-for="e in pickerResults"
             :key="e.id"
+            type="button"
             :class="['picker-item', { adding: addingId === e.id }]"
-            role="button"
-            tabindex="0"
             @click="addStop(e)"
-            @keydown.enter="addStop(e)"
-            @keydown.space.prevent="addStop(e)"
           >
             <span class="picker-emoji">{{ getTypeMeta(e.type).emoji }}</span>
             <div class="picker-info">
               <strong :title="e.name">{{ e.name }}</strong>
               <small>{{ e.place_name || '' }} · {{ getTypeMeta(e.type).label }}</small>
             </div>
-            <button type="button" class="btn btn-sm btn-ghost" title="Thêm vào lịch trình">+</button>
-          </div>
-          <p v-if="fetchError" class="empty picker-empty">⚠️ Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('planner-entities')">Thử lại</button></p>
+            <span class="btn btn-sm btn-ghost" aria-hidden="true">+</span>
+          </button>
+          <p v-if="fetchError" class="empty picker-empty">⚠️ Không thể tải danh sách. <button type="button" class="btn btn-outline btn-sm" @click="refreshPicker()">Thử lại</button></p>
           <div v-else-if="sourceTab === 'saved' && !favCount" class="premium-empty-state">
             <EmptyState icon="❤️" title="Chưa có điểm đã lưu" message="Nhấn hình trái tim ở các điểm đến để lưu lại, rồi quay lại đây thêm vào lịch trình." />
           </div>
@@ -189,18 +186,22 @@
 </template>
 
 <script setup lang="ts">
-import type { Itinerary, Entity} from '~/types'
-import { TYPE_META, CARD_TYPES } from '~/composables/useConstants'
+import type { Entity } from '~/types'
+import type { EntityListResponse } from '~/types/api'
+import { usePublicApi } from '~/composables/usePublicApi'
+import { TYPE_META, CARD_TYPES, getTypeMeta } from '~/composables/useConstants'
 import { fetchRoute, formatDistance, formatDuration, type TransportMode, type RouteResult } from '~/composables/useRouting'
 
 const LS_PLANS = 'vl360_plans'
+const route = useRoute()
+const router = useRouter()
 
 interface PlanStop {
   id: string
   name: string
   type: string
   place_name?: string
-  coords?: [number, number]
+  coords: [number, number] | null
   time: string
   notes: string
 }
@@ -210,6 +211,7 @@ interface SavedPlan {
   title: string
   stops: PlanStop[]
   savedAt: string
+  is_public?: boolean
 }
 
 const { favorites: favList, count: favCount } = useFavorites()
@@ -218,11 +220,19 @@ const { isLoggedIn, authHeaders } = useAuth()
 const routeError = ref(false)   // OSRM không tính được route (≥2 điểm có toạ độ)
 const planBusy = ref(-1)
 
-const TYPES = CARD_TYPES as readonly string[]
-const typeChips = TYPES.map(t => ({
-  value: t,
-  label: `${TYPE_META[t].emoji} ${TYPE_META[t].label}`,
-}))
+type PlannerType = (typeof CARD_TYPES)[number]
+const TYPES = CARD_TYPES as readonly PlannerType[]
+const typeChips = TYPES.map((t) => {
+  const meta = TYPE_META[t] ?? getTypeMeta(t)
+  return {
+    value: t,
+    label: `${meta.emoji} ${meta.label}`,
+  }
+})
+
+function isPlannerType(type: string): type is PlannerType {
+  return (TYPES as readonly string[]).includes(type)
+}
 
 const transportModes = [
   { value: 'driving' as TransportMode, icon: '🚗', label: 'Ô tô' },
@@ -230,9 +240,10 @@ const transportModes = [
   { value: 'foot' as TransportMode, icon: '🚶', label: 'Đi bộ' },
 ]
 
-const sourceTab = ref('all')
+const sourceTab = ref(normalizeRouteParam(route.query.source as any) === 'saved' ? 'saved' : 'all')
 const searchQ = ref('')
 const typeFilter = ref('all')
+const publicApi = usePublicApi()
 
 const sourceTabOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
@@ -258,33 +269,51 @@ const MAX_STOPS = 20
 let savePulseTimer: ReturnType<typeof setTimeout> | null = null
 
 const { createMap: createNDAMap } = useNDAMap()
-let mapInstance: unknown = null
-let maplibre: unknown = null
-let markers: unknown[] = []
+let mapInstance: any = null
+let maplibre: any = null
+let markers: any[] = []
 
-const { data, error: fetchError } = await useAsyncData('planner-entities', () =>
-  apiFetch<{ entities: Entity[] }>('/api/entities?limit=700')
-)
+const plannerQueryKey = computed(() => [
+  sourceTab.value,
+  searchQ.value.trim(),
+  typeFilter.value,
+].join('|'))
+
+const emptyEntityList = (): EntityListResponse => ({ total: 0, entities: [] })
+
+const { data, error: fetchError, refresh: refreshPicker } = await useAsyncData<EntityListResponse>('planner-entities', () => {
+  if (sourceTab.value !== 'all') return Promise.resolve(emptyEntityList())
+  return publicApi.listEntities({
+    q: searchQ.value.trim() || undefined,
+    type: typeFilter.value !== 'all' ? typeFilter.value : undefined,
+    fields: 'minimal',
+    limit: 50,
+    offset: 0,
+  })
+}, {
+  watch: [plannerQueryKey],
+  default: emptyEntityList,
+})
 
 const allEntities = computed(() => {
   const raw = data.value
   if (!raw) return []
-  return (raw.entities || []).filter((e: Entity) => TYPES.includes(e.type))
+  return (raw.entities || []).filter((e: Entity) => isPlannerType(e.type))
 })
 
 const pickerResults = computed(() => {
   let list: Entity[]
 
   if (sourceTab.value === 'saved') {
-    list = favList.value.map(f => ({ id: f.id, name: f.name, type: f.type, place_name: f.place_name, summary: f.summary, coordinates: f.coordinates }))
+    list = favList.value.map(f => {
+      const fav = f as any
+      return { id: fav.id, name: fav.name, type: fav.type, place_name: fav.place_name, summary: fav.summary, coordinates: fav.coordinates }
+    })
   } else {
     list = allEntities.value
-    if (typeFilter.value !== 'all') {
-      list = list.filter((e: Entity) => e.type === typeFilter.value)
-    }
   }
 
-  if (searchQ.value.trim()) {
+  if (sourceTab.value === 'saved' && searchQ.value.trim()) {
     const query = searchQ.value.toLowerCase()
     list = list.filter((e: Entity) =>
       (e.name || '').toLowerCase().includes(query) ||
@@ -308,12 +337,12 @@ async function addStop(entity: Entity) {
     nextTick(() => { stopAnnounce.value = `Tối đa ${MAX_STOPS} điểm.` })
     return
   }
-  const stop = reactive({
+  const stop = reactive<PlanStop>({
     id: entity.id,
     name: entity.name,
     type: entity.type,
     place_name: entity.place_name,
-    coords: extractCoords(entity) as [number, number] | null,
+    coords: extractCoords(entity),
     time: '',
     notes: '',
   })
@@ -327,7 +356,7 @@ async function addStop(entity: Entity) {
   // stop can be routed/mapped. Falls back silently (stop still listed) on error.
   if (!stop.coords && entity.id) {
     try {
-      const res = await $fetch<Record<string, any>>(`/api/entities/${encodeURIComponent(entity.id)}`)
+      const res = await publicApi.getEntity(entity.id)
       const c = normalizeCoords(res?.coordinates)
       if (c) stop.coords = c
     } catch { /* coords stay null */ }
@@ -345,7 +374,9 @@ function moveStop(idx: number, dir: number) {
   const target = idx + dir
   if (target < 0 || target >= stops.value.length) return
   const temp = stops.value[idx]
-  stops.value[idx] = stops.value[target]
+  const targetStop = stops.value[target]
+  if (!temp || !targetStop) return
+  stops.value[idx] = targetStop
   stops.value[target] = temp
   stopAnnounce.value = ''
   nextTick(() => { stopAnnounce.value = `${temp.name} chuyển sang vị trí ${target + 1}.` })
@@ -401,6 +432,7 @@ function persistLocal(plans: SavedPlan[]) {
 async function loadPlan(idx: number) {
   if (stops.value.length && !await confirmDialog('Thay thế lịch trình đang tạo bằng bản đã lưu?', { confirmText: 'Thay thế' })) return
   const plan = savedPlans.value[idx]
+  if (!plan) return
   planTitle.value = plan.title
   stops.value = JSON.parse(JSON.stringify(plan.stops))
 }
@@ -422,6 +454,55 @@ async function deletePlan(idx: number) {
 }
 
 const { show: showToast } = useToast()
+const pendingAddId = ref(normalizeRouteParam(route.query.add as any))
+const autoAddedFromQuery = ref(false)
+
+function clearPlannerAddQuery() {
+  if (!route.query.add) return
+  const query = { ...route.query }
+  delete query.add
+  router.replace({ query, hash: route.hash }).catch(() => {})
+}
+
+watch(() => route.query.add, (value) => {
+  const next = normalizeRouteParam(value as any)
+  if (next === pendingAddId.value) return
+  pendingAddId.value = next
+  autoAddedFromQuery.value = false
+})
+
+async function resolvePlannerEntity(id: string) {
+  const cached = allEntities.value.find((e: Entity) => e.id === id)
+  if (cached) return cached
+  try {
+    return await publicApi.getEntity(id)
+  } catch {
+    return null
+  }
+}
+
+watch([allEntities, pendingAddId], async () => {
+  if (autoAddedFromQuery.value || !pendingAddId.value) return
+  const requestedId = pendingAddId.value
+  autoAddedFromQuery.value = true
+  const entity = await resolvePlannerEntity(requestedId)
+  if (!entity) {
+    showToast('Khong tim thay diem de them vao lich trinh', 'error')
+    pendingAddId.value = ''
+    clearPlannerAddQuery()
+    return
+  }
+  if (stops.value.some(s => s.id === entity.id)) {
+    showToast(`"${entity.name}" da co trong lich trinh`, 'info')
+    pendingAddId.value = ''
+    clearPlannerAddQuery()
+    return
+  }
+  await addStop(entity)
+  pendingAddId.value = ''
+  clearPlannerAddQuery()
+  showToast(`Đã thêm "${entity.name}" vào lịch trình`, 'success')
+}, { immediate: true })
 
 async function publishPlan(idx: number) {
   const plan = savedPlans.value[idx]
@@ -444,6 +525,7 @@ async function publishPlan(idx: number) {
 
 function sharePlan(idx: number) {
   const plan = savedPlans.value[idx]
+  if (!plan) return
   const legs = routeResult.value?.legs || []
   const text = `${plan.title}\n\n` + plan.stops.map((s, i) => {
     let line = `${i + 1}. ${s.name}${s.time ? ` (${s.time})` : ''}${s.notes ? ` — ${s.notes}` : ''}`
@@ -495,6 +577,23 @@ let pendingUpdate = false
 let lastRouteResult: RouteResult | null = null
 let updatingMap = false
 
+type IndexedStopWithCoords = PlanStop & { idx: number; coords: [number, number] }
+
+function hasCoords(stop: PlanStop & { idx: number }): stop is IndexedStopWithCoords {
+  return Array.isArray(stop.coords) &&
+    Number.isFinite(stop.coords[0]) &&
+    Number.isFinite(stop.coords[1])
+}
+
+function fitMapToCoords(coords: [number, number][]) {
+  const first = coords[0]
+  if (!first || !mapInstance || !maplibre) return
+  const bounds = coords
+    .slice(1)
+    .reduce((b: any, c) => b.extend(c), new maplibre.LngLatBounds(first, first))
+  mapInstance.fitBounds(bounds, { padding: 40 })
+}
+
 async function updateMap(result: RouteResult | null) {
   if (!import.meta.client) return
   lastRouteResult = result
@@ -528,7 +627,7 @@ async function updateMap(result: RouteResult | null) {
 
   const stopsWithCoords = stops.value
     .map((s, i) => ({ ...s, idx: i }))
-    .filter(s => s.coords)
+    .filter(hasCoords)
   if (!stopsWithCoords.length) return
 
   stopsWithCoords.forEach((s) => {
@@ -537,14 +636,16 @@ async function updateMap(result: RouteResult | null) {
     el.className = 'route-marker'
     el.innerHTML = `<div class="rm-num">${num}</div>`
     const marker = new maplibre.Marker({ element: el })
-      .setLngLat([s.coords![1], s.coords![0]])
+      .setLngLat([s.coords[1], s.coords[0]])
       .setPopup(new maplibre.Popup({ offset: 25 }).setHTML(`<strong>${num}. ${escapeHtml(s.name)}</strong>`))
       .addTo(mapInstance)
     markers.push(marker)
   })
 
   if (result?.geometry?.length) {
-    const coords = result.geometry.map((p: [number, number]) => [p[1], p[0]])
+    const coords = result.geometry
+      .map((p: [number, number]) => [p[1], p[0]] as [number, number])
+      .filter(([lng, lat]) => Number.isFinite(lng) && Number.isFinite(lat))
     mapInstance.addSource('route', {
       type: 'geojson',
       data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords } },
@@ -555,18 +656,10 @@ async function updateMap(result: RouteResult | null) {
       source: 'route',
       paint: { 'line-color': '#2563eb', 'line-width': 4, 'line-opacity': 0.8 },
     })
-    const bounds = coords.reduce(
-      (b: { extend: (c: number[]) => typeof b }, c: number[]) => b.extend(c),
-      new maplibre.LngLatBounds(coords[0], coords[0])
-    )
-    mapInstance.fitBounds(bounds, { padding: 40 })
+    fitMapToCoords(coords)
   } else {
-    const coords = stopsWithCoords.map(s => [s.coords![1], s.coords![0]])
-    const bounds = coords.reduce(
-      (b: { extend: (c: number[]) => typeof b }, c: number[]) => b.extend(c),
-      new maplibre.LngLatBounds(coords[0], coords[0])
-    )
-    mapInstance.fitBounds(bounds, { padding: 40 })
+    const coords = stopsWithCoords.map(s => [s.coords[1], s.coords[0]] as [number, number])
+    fitMapToCoords(coords)
   }
 
   } finally { updatingMap = false }
@@ -660,6 +753,7 @@ useHead({
 .picker-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: var(--radius-sm); }
 .picker-list::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 .picker-item {
+  width: 100%; border: 0; background: transparent; color: inherit; font: inherit; text-align: left;
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3); border-radius: var(--radius-sm);
   cursor: pointer;

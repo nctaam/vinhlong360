@@ -91,7 +91,7 @@
           :model-value="[typeFilter]"
           single-select
           aria-label="Lọc theo loại"
-          @update:model-value="v => typeFilter = v.length ? v[0] : 'all'"
+          @update:model-value="v => typeFilter = v[0] || 'all'"
         />
         <p class="control-label">Theo tháng</p>
         <FilterChips
@@ -99,7 +99,7 @@
           :model-value="[seasonFilter]"
           single-select
           aria-label="Lọc theo tháng"
-          @update:model-value="v => seasonFilter = v.length ? v[0] : 'all'"
+          @update:model-value="v => seasonFilter = v[0] || 'all'"
         />
         <div v-if="activeFilterCount > 0" class="filter-status">
           <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
@@ -173,10 +173,13 @@ import { inSeason, relevanceScore } from '~/composables/useSeason'
 useReveal()
 const { f: pc } = usePageContent('du_lich')
 const TYPES = TOURISM_TYPES as readonly string[]
+function typeMeta(type: string) {
+  return TYPE_META[type] || { emoji: '📍', label: type, cat: type }
+}
 
 const typeChips = TYPES.map(t => ({
   value: t,
-  label: `${TYPE_META[t].emoji} ${TYPE_META[t].label}`,
+  label: `${typeMeta(t).emoji} ${typeMeta(t).label}`,
 }))
 
 const q = ref('')
@@ -189,7 +192,7 @@ const typeFilterOptions = computed(() => [
 ])
 const seasonFilterOptions = computed(() => [
   { key: 'all', label: 'Tất cả' },
-  ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: MONTH_ABBR[i] })),
+  ...Array.from({ length: 12 }, (_, i) => ({ key: String(i + 1), label: MONTH_ABBR[i] || String(i + 1) })),
   { key: 'flood', label: 'Mùa nước nổi', icon: '🌊' },
 ])
 const sortBy = ref('relevant')
@@ -226,7 +229,7 @@ const stats = computed(() => {
   for (const e of allEntities.value) counts[e.type] = (counts[e.type] || 0) + 1
   return TYPES
     .filter(t => counts[t])
-    .map(t => ({ label: TYPE_META[t].label, count: counts[t] }))
+    .map(t => ({ label: typeMeta(t).label, count: counts[t] || 0 }))
 })
 
 const featured = computed(() => {
@@ -247,8 +250,8 @@ const categories = computed(() => {
   return TYPES
     .map(t => ({
       type: t,
-      emoji: TYPE_META[t].emoji,
-      label: TYPE_META[t].label,
+      emoji: typeMeta(t).emoji,
+      label: typeMeta(t).label,
       desc: CATEGORY_DESC[t] || '',
       items: allEntities.value.filter((e: Entity) => e.type === t),
     }))

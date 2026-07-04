@@ -141,14 +141,41 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Thống kê — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 
-const data = ref<Record<string, unknown>>({})
+interface AnalyticsDatum {
+  query?: string
+  q?: string
+  name?: string
+  id?: string
+  count?: number
+  hits?: number
+  n?: number
+}
+
+interface AnalyticsOverview {
+  summary?: {
+    total_queries?: number
+    unique_queries?: number
+  }
+  popular?: AnalyticsDatum[]
+  gaps?: AnalyticsDatum[]
+  top_entities?: AnalyticsDatum[]
+  daily?: Array<{ queries?: number }>
+  costs?: {
+    available?: boolean
+    total_cost?: number | string
+    total?: number | string
+    monthly?: { spent?: number | string }
+    daily?: { spent?: number | string }
+  }
+}
+
+const data = ref<AnalyticsOverview>({})
 const loading = ref(true)
 const loadError = ref(false)
 
@@ -166,7 +193,7 @@ function setRange(days: number) {
 }
 
 const sparkPoints = computed(() => {
-  const daily = ((data.value?.daily || []) as Array<{ queries?: number }>).slice().reverse()
+  const daily = (data.value.daily || []).slice().reverse()
   if (daily.length < 2) return ''
   const vals = daily.map(d => d.queries || 0)
   const max = Math.max(...vals, 1)
@@ -174,24 +201,24 @@ const sparkPoints = computed(() => {
   return vals.map((v, i) => `${((i / (vals.length - 1)) * w).toFixed(1)},${(h - (v / max) * (h - 2) - 1).toFixed(1)}`).join(' ')
 })
 
-function label(it: Record<string, unknown>) { return it?.query ?? it?.q ?? it?.name ?? String(it) }
-function count(it: Record<string, unknown>) { return it?.count ?? it?.hits ?? it?.n ?? '' }
-function barPct(it: Record<string, unknown>, list: unknown) {
-  const arr = (list || []) as Record<string, unknown>[]
+function label(it: AnalyticsDatum) { return it.query ?? it.q ?? it.name ?? String(it) }
+function count(it: AnalyticsDatum) { return it.count ?? it.hits ?? it.n ?? '' }
+function barPct(it: AnalyticsDatum, list?: AnalyticsDatum[]) {
+  const arr = list || []
   const max = Math.max(...arr.map(x => Number(count(x)) || 0), 1)
   return Math.round(((Number(count(it)) || 0) / max) * 100)
 }
 
 const costTotal = computed(() => {
-  const c = (data.value?.costs || {}) as Record<string, unknown>
+  const c = data.value.costs || {}
   if (c.available === false) return '—'
-  const v = c.total_cost ?? c.total ?? (c.monthly as Record<string, unknown>)?.spent ?? (c.daily as Record<string, unknown>)?.spent
+  const v = c.total_cost ?? c.total ?? c.monthly?.spent ?? c.daily?.spent
   return v != null ? (typeof v === 'number' ? v.toLocaleString('vi-VN') : v) : '—'
 })
 
 // Scope label for the cost card — derived from which field supplied the value (no extra backend data)
 const costScope = computed(() => {
-  const c = (data.value?.costs || {}) as Record<string, unknown>
+  const c = data.value.costs || {}
   if (c.available === false) return ''
   if (c.total_cost != null || c.total != null) return ''
   if ((c.monthly as Record<string, unknown>)?.spent != null) return 'tháng'
@@ -204,7 +231,7 @@ async function fetchData() {
   loadError.value = false
   try {
     const params = rangeDays.value ? `?days=${rangeDays.value}` : ''
-    data.value = await $fetch<Record<string, unknown>>(`/admin-api/analytics-overview${params}`, { headers: authHeaders() })
+    data.value = await $fetch<AnalyticsOverview>(`/admin-api/analytics-overview${params}`, { headers: authHeaders() })
   } catch (e: unknown) {
     loadError.value = true
     showToast(getErrorDetail(e, 'Không thể tải thống kê'), 'error')
@@ -215,11 +242,11 @@ async function fetchData() {
 
 function exportCSV() {
   const rows: string[][] = [['Danh mục', 'Truy vấn/Entity', 'Lượt']]
-  for (const it of (data.value.popular || []) as Record<string, unknown>[])
+  for (const it of data.value.popular || [])
     rows.push(['Phổ biến', String(label(it)), String(count(it))])
-  for (const it of (data.value.gaps || []) as Record<string, unknown>[])
+  for (const it of data.value.gaps || [])
     rows.push(['Knowledge gap', String(label(it)), String(count(it))])
-  for (const it of (data.value.top_entities || []) as Record<string, unknown>[])
+  for (const it of data.value.top_entities || [])
     rows.push(['Entity', String(label(it)), String(count(it))])
   const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n')
   downloadBlob(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }), `analytics-${new Date().toISOString().slice(0, 10)}.csv`)

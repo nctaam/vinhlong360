@@ -131,7 +131,7 @@
           :model-value="[starFilterStr]"
           single-select
           aria-label="Lọc theo hạng sao"
-          @update:model-value="v => starFilterStr = v.length ? v[0] : '0'"
+          @update:model-value="v => starFilterStr = v[0] || '0'"
         />
         <p class="control-label">Khu vực</p>
         <FilterChips
@@ -139,7 +139,7 @@
           :model-value="[areaFilter]"
           single-select
           aria-label="Lọc theo khu vực"
-          @update:model-value="v => areaFilter = v.length ? v[0] : 'all'"
+          @update:model-value="v => areaFilter = v[0] || 'all'"
         />
         <p class="control-label">Theo tháng</p>
         <FilterChips
@@ -147,7 +147,7 @@
           :model-value="[seasonFilter]"
           single-select
           aria-label="Lọc theo tháng"
-          @update:model-value="v => seasonFilter = v.length ? v[0] : 'all'"
+          @update:model-value="v => seasonFilter = v[0] || 'all'"
         />
         <div v-if="activeFilterCount > 0" class="filter-status">
           <span class="filter-count">{{ activeFilterCount }} bộ lọc</span>
@@ -279,7 +279,7 @@ const allOcop = computed(() => {
 })
 
 function getStars(e: Entity): number {
-  return parseInt(e.attributes?.ocop) || 0
+  return parseInt(String(e.attributes?.ocop || ''), 10) || 0
 }
 
 const starStats = computed(() => {
@@ -288,7 +288,7 @@ const starStats = computed(() => {
     const s = getStars(e)
     if (s >= 3) counts[s] = (counts[s] || 0) + 1
   }
-  return [5, 4, 3].filter(s => counts[s]).map(s => ({ stars: s, count: counts[s] }))
+  return [5, 4, 3].filter(s => counts[s]).map(s => ({ stars: s, count: counts[s] || 0 }))
 })
 
 const fiveStarHighlights = computed(() =>

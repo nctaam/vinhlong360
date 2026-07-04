@@ -44,6 +44,7 @@ export const AREA_META: Record<string, { name: string; emoji: string; blurb: str
   'vinh-long': { name: 'Vĩnh Long', emoji: '🍊', blurb: 'Miệt vườn cam sành, khoai lang, bưởi Năm Roi và làng gốm Mang Thít.' },
   'ben-tre': { name: 'Bến Tre', emoji: '🥥', blurb: 'Xứ dừa: kẹo dừa, mật hoa dừa, bưởi da xanh và những rẫy dừa bạt ngàn.' },
   'tra-vinh': { name: 'Trà Vinh', emoji: '🛕', blurb: 'Văn hóa Khmer: ao Bà Om, chùa cổ, dừa sáp Cầu Kè và bún nước lèo.' },
+  'lien-vung': { name: 'Liên vùng', emoji: '🧭', blurb: 'Tuyến kết nối nhiều điểm đến giữa Vĩnh Long, Bến Tre và Trà Vinh.' },
 }
 
 // Interest landing pages (/kham-pha/<slug>). Overridable via metadata.interests.

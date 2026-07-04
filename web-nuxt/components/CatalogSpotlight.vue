@@ -1,7 +1,7 @@
 <template>
   <section v-if="pick" class="block reveal">
     <div class="cspot">
-      <NuxtLink :to="`/dia-diem/${pick.id}`" class="cspot-visual" :style="{ backgroundImage: bg }" :aria-label="pick.name">
+      <NuxtLink :to="entityPath(pick.id)" class="cspot-visual" :style="{ backgroundImage: bg }" :aria-label="pick.name">
         <span v-if="region" class="cspot-region">{{ region }}</span>
         <span class="cspot-icon" v-html="icon" aria-hidden="true" />
       </NuxtLink>
@@ -14,7 +14,7 @@
           <span v-if="relCount >= 3" class="cspot-badge cspot-badge-pop">{{ relCount }} liên kết</span>
         </div>
         <p v-if="pick.summary" class="cspot-sum">{{ pick.summary }}</p>
-        <NuxtLink :to="`/dia-diem/${pick.id}`" class="btn btn-primary cspot-cta">Khám phá ngay →</NuxtLink>
+        <NuxtLink :to="entityPath(pick.id)" class="btn btn-primary cspot-cta">Khám phá ngay →</NuxtLink>
       </div>
     </div>
   </section>

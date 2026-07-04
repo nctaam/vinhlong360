@@ -5,126 +5,196 @@
     <div v-if="!isLoggedIn" class="cp-guest card">
       <h1>Tài khoản</h1>
       <p>Đăng nhập để xem bảng điều khiển tài khoản.</p>
-      <button type="button" class="btn btn-primary" @click="openAuth">Đăng nhập</button>
+      <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
     </div>
 
     <template v-else>
-      <!-- Header with avatar + name -->
-      <div class="cp-header">
-        <NuxtLink :to="`/nguoi-dung/${user?.username || user?.id}`" class="cp-avatar-link">
-          <img v-if="user?.avatar_url" :src="user.avatar_url" alt="" class="cp-avatar" width="64" height="64" loading="lazy" />
-          <span v-else class="cp-avatar-fallback"><AvatarPlaceholder :initial="user?.display_name?.[0]?.toUpperCase()" /></span>
+      <section class="cp-hero">
+        <NuxtLink :to="profileUrl" class="cp-avatar-link" aria-label="Xem hồ sơ công khai">
+          <img v-if="profileData.avatar_url" :src="profileData.avatar_url" alt="" class="cp-avatar" width="80" height="80" loading="lazy" />
+          <span v-else class="cp-avatar-fallback"><AvatarPlaceholder :initial="initial" /></span>
         </NuxtLink>
-        <div class="cp-header-info">
-          <h1 class="cp-name">{{ user?.display_name || 'Người dùng' }}</h1>
+        <div class="cp-identity">
+          <p class="cp-kicker">Trung tâm tài khoản</p>
+          <h1 class="cp-name">{{ displayName }}</h1>
           <p v-if="user?.username" class="cp-username">@{{ user.username }}</p>
-        </div>
-      </div>
-
-      <!-- Stats row -->
-      <div v-if="stats" class="cp-stats">
-        <div class="cp-stat">
-          <span class="cp-stat-val">{{ counts?.posts ?? 0 }}</span>
-          <span class="cp-stat-label">Bài viết</span>
-        </div>
-        <div class="cp-stat">
-          <span class="cp-stat-val">{{ stats?.reviews ?? 0 }}</span>
-          <span class="cp-stat-label">Đánh giá</span>
-        </div>
-        <div class="cp-stat">
-          <span class="cp-stat-val">{{ stats?.followers ?? 0 }}</span>
-          <span class="cp-stat-label">Người theo dõi</span>
-        </div>
-        <div class="cp-stat">
-          <span class="cp-stat-val">{{ stats?.following ?? 0 }}</span>
-          <span class="cp-stat-label">Đang theo dõi</span>
-        </div>
-        <div class="cp-stat">
-          <span class="cp-stat-val">{{ counts?.bookmarks ?? 0 }}</span>
-          <span class="cp-stat-label">Đã lưu</span>
-        </div>
-        <div class="cp-stat">
-          <span class="cp-stat-val">{{ stats?.likes_received ?? 0 }}</span>
-          <span class="cp-stat-label">Lượt thích nhận</span>
-        </div>
-      </div>
-      <div v-else class="cp-stats-skeleton">
-        <div v-for="i in 6" :key="i" class="skeleton-box cp-stat-skel"></div>
-      </div>
-
-      <!-- Quick links grid -->
-      <div class="cp-grid">
-        <NuxtLink v-if="user" :to="`/nguoi-dung/${user.username || user.id}`" class="cp-card card">
-          <span class="cp-card-icon">👤</span>
-          <span class="cp-card-title">Trang cá nhân</span>
-          <span class="cp-card-desc">Xem hồ sơ công khai</span>
-        </NuxtLink>
-        <NuxtLink to="/thong-bao" class="cp-card card">
-          <span class="cp-card-icon">🔔</span>
-          <span class="cp-card-title">Thông báo</span>
-          <span v-if="counts?.unread_notifications" class="cp-card-badge">{{ counts.unread_notifications }}</span>
-          <span class="cp-card-desc">{{ counts?.unread_notifications ? `${counts.unread_notifications} chưa đọc` : 'Không có mới' }}</span>
-        </NuxtLink>
-        <NuxtLink to="/da-luu" class="cp-card card">
-          <span class="cp-card-icon">💾</span>
-          <span class="cp-card-title">Đã lưu</span>
-          <span class="cp-card-desc">{{ counts?.bookmarks ?? 0 }} địa điểm lưu</span>
-        </NuxtLink>
-        <NuxtLink to="/cong-dong" class="cp-card card">
-          <span class="cp-card-icon">✍️</span>
-          <span class="cp-card-title">Bài viết</span>
-          <span class="cp-card-desc">{{ counts?.posts ?? 0 }} bài · {{ counts?.drafts ?? 0 }} nháp</span>
-        </NuxtLink>
-        <NuxtLink to="/lich-trinh" class="cp-card card">
-          <span class="cp-card-icon">🗺️</span>
-          <span class="cp-card-title">Lịch trình</span>
-          <span class="cp-card-desc">Xem và tạo lịch trình</span>
-        </NuxtLink>
-        <NuxtLink to="/cai-dat" class="cp-card card">
-          <span class="cp-card-icon">⚙️</span>
-          <span class="cp-card-title">Cài đặt</span>
-          <span class="cp-card-desc">Hồ sơ, bảo mật, giao diện</span>
-        </NuxtLink>
-      </div>
-
-      <!-- Recent activity -->
-      <div class="cp-section">
-        <h2>Hoạt động gần đây</h2>
-        <div v-if="activityLoading" class="cp-activity-loading">
-          <div v-for="i in 4" :key="i" class="skeleton-box cp-activity-skel"></div>
-        </div>
-        <div v-else-if="activity.length" class="cp-activity-list">
-          <component :is="activityLink(a) ? 'a' : 'div'" v-for="a in activity" :key="`${a.action}-${a.ref_id}-${a.created_at}`"
-            :href="activityLink(a) || undefined"
-            :class="['cp-activity-item', { 'cp-activity-link': !!activityLink(a) }]"
-            @click.prevent="activityLink(a) && navigateTo(activityLink(a)!)"
-          >
-            <span class="cp-activity-icon">{{ actionIcon(a.action) }}</span>
-            <div class="cp-activity-body">
-              <span class="cp-activity-text">{{ actionLabel(a) }}</span>
-              <span class="cp-activity-time">{{ timeAgo(a.created_at) }}</span>
-            </div>
-          </component>
-          <button v-if="activityHasMore" type="button" class="btn btn-ghost btn-sm cp-load-more" :disabled="activityLoadingMore" @click="loadMoreActivity">
-            {{ activityLoadingMore ? 'Đang tải…' : 'Xem thêm hoạt động' }}
-          </button>
-        </div>
-        <div v-else class="cp-onboarding">
-          <p class="cp-empty-hint">Chưa có hoạt động nào.</p>
-          <div class="cp-onboarding-actions">
-            <NuxtLink to="/cong-dong" class="btn btn-primary btn-sm">✍️ Viết bài đầu tiên</NuxtLink>
-            <NuxtLink to="/dia-diem" class="btn btn-ghost btn-sm">🗺️ Khám phá địa điểm</NuxtLink>
+          <div class="cp-status-row">
+            <span :class="['cp-pill', hasPassword ? 'ok' : 'warn']">{{ hasPassword ? 'Đã bảo vệ bằng mật khẩu' : 'Cần đặt mật khẩu' }}</span>
+            <span class="cp-pill">Hồ sơ {{ profileCompletion }}%</span>
+            <span v-if="counts.unread_notifications" class="cp-pill warn">{{ counts.unread_notifications }} thông báo mới</span>
+          </div>
+          <div class="cp-hero-actions">
+            <NuxtLink :to="primaryAction.to" class="btn btn-primary btn-sm">{{ primaryAction.label }}</NuxtLink>
+            <NuxtLink to="/cai-dat" class="btn btn-ghost btn-sm">Cài đặt</NuxtLink>
           </div>
         </div>
+        <div class="cp-score" aria-label="Điểm sẵn sàng tài khoản">
+          <span class="cp-score-value">{{ accountScore }}</span>
+          <span class="cp-score-label">{{ accountLevel }}</span>
+        </div>
+      </section>
+
+      <div v-if="fetchIssue" class="cp-alert" role="status">
+        <span>Chưa tải đủ dữ liệu tài khoản. Một vài chỉ số có thể đang tạm thời chưa chính xác.</span>
+        <button type="button" class="btn btn-ghost btn-sm" :disabled="accountRefreshing" @click="loadAccountData">
+          {{ accountRefreshing ? 'Đang thử lại...' : 'Thử lại' }}
+        </button>
       </div>
+
+      <JourneyActionRail
+        v-if="userCpJourneyActions.length"
+        :actions="userCpJourneyActions"
+        title="Việc nên làm ngay"
+        subtitle="Ưu tiên theo bảo mật, độ hoàn thiện hồ sơ, dữ liệu đã lưu và tín hiệu cộng đồng của bạn."
+        aria-label="Hành động ưu tiên trong trung tâm tài khoản"
+        compact
+      />
+
+      <section class="cp-summary-grid" aria-label="Tổng quan tài khoản">
+        <article class="cp-panel">
+          <div class="cp-panel-head">
+            <span>
+              <strong>Hoàn thiện hồ sơ</strong>
+              <small>{{ completedProfileChecks }}/{{ profileChecks.length }} mục đã xong</small>
+            </span>
+            <NuxtLink to="/cai-dat#ho-so" class="cp-mini-link">Cập nhật</NuxtLink>
+          </div>
+          <div class="cp-progress" role="progressbar" aria-label="Tiến độ hoàn thiện hồ sơ" :aria-valuenow="profileCompletion" aria-valuemin="0" aria-valuemax="100"><span :style="{ width: profileCompletion + '%' }"></span></div>
+          <div class="cp-checks">
+            <NuxtLink v-for="item in profileChecks" :key="item.key" :to="item.to" :class="['cp-check', { done: item.done }]">
+              <span aria-hidden="true">{{ item.done ? '✓' : '•' }}</span>{{ item.label }}
+            </NuxtLink>
+          </div>
+        </article>
+
+        <article class="cp-panel">
+          <div class="cp-panel-head">
+            <span>
+              <strong>Sức khỏe bảo mật</strong>
+              <small>{{ securitySummary }}</small>
+            </span>
+            <NuxtLink to="/cai-dat#bao-mat" class="cp-mini-link">Kiểm tra</NuxtLink>
+          </div>
+          <div class="cp-checks">
+            <span v-for="item in securityChecks" :key="item.key" :class="['cp-check', { done: item.done }]">
+              <span aria-hidden="true">{{ item.done ? '✓' : '•' }}</span>{{ item.label }}
+            </span>
+          </div>
+        </article>
+
+        <article class="cp-panel">
+          <div class="cp-panel-head">
+            <span>
+              <strong>Việc nên làm tiếp</strong>
+              <small>{{ nextActions.length }} gợi ý phù hợp</small>
+            </span>
+          </div>
+          <div class="cp-action-list">
+            <NuxtLink v-for="item in nextActions" :key="item.to + item.label" :to="item.to" class="cp-action-item">
+              <span class="cp-action-icon" aria-hidden="true">{{ item.icon }}</span>
+              <span>{{ item.label }}</span>
+            </NuxtLink>
+            <div v-if="!nextActions.length" class="cp-done-state">
+              Hồ sơ đang ở trạng thái tốt. Bạn có thể tiếp tục khám phá và lưu thêm điểm đến.
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="cp-stats" aria-label="Số liệu tài khoản">
+        <div v-for="item in statItems" :key="item.label" class="cp-stat">
+          <span class="cp-stat-val">{{ formatNumber(item.value) }}</span>
+          <span class="cp-stat-label">{{ item.label }}</span>
+        </div>
+      </section>
+
+      <section class="cp-workspace" aria-label="Không gian làm việc">
+        <NuxtLink v-for="item in workspaceLinks" :key="item.to" :to="item.to" class="cp-card">
+          <span class="cp-card-icon" aria-hidden="true">{{ item.icon }}</span>
+          <span class="cp-card-title">{{ item.title }}</span>
+          <span class="cp-card-desc">{{ item.desc }}</span>
+          <span v-if="item.badge" class="cp-card-badge">{{ item.badge }}</span>
+        </NuxtLink>
+      </section>
+
+      <section class="cp-main-grid">
+        <article class="cp-section">
+          <div class="cp-section-head">
+            <h2>Hoạt động gần đây</h2>
+            <NuxtLink to="/cong-dong" class="cp-mini-link">Cộng đồng</NuxtLink>
+          </div>
+          <div v-if="activityLoading" class="cp-activity-loading">
+            <div v-for="i in 4" :key="i" class="skeleton-box cp-activity-skel"></div>
+          </div>
+          <div v-else-if="activity.length" class="cp-activity-list">
+            <template v-for="a in activity" :key="`${a.action}-${a.ref_id}-${a.created_at}`">
+              <NuxtLink v-if="activityLink(a)" :to="activityLink(a)!" class="cp-activity-item cp-activity-link">
+                <span class="cp-activity-icon" aria-hidden="true">{{ actionIcon(a.action) }}</span>
+                <span class="cp-activity-body">
+                  <span class="cp-activity-text">{{ actionLabel(a) }}</span>
+                  <span class="cp-activity-time">{{ timeAgo(a.created_at) }}</span>
+                </span>
+              </NuxtLink>
+              <div v-else class="cp-activity-item">
+                <span class="cp-activity-icon" aria-hidden="true">{{ actionIcon(a.action) }}</span>
+                <span class="cp-activity-body">
+                  <span class="cp-activity-text">{{ actionLabel(a) }}</span>
+                  <span class="cp-activity-time">{{ timeAgo(a.created_at) }}</span>
+                </span>
+              </div>
+            </template>
+            <button v-if="activityHasMore" type="button" class="btn btn-ghost btn-sm cp-load-more" :disabled="activityLoadingMore" @click="loadMoreActivity">
+              {{ activityLoadingMore ? 'Đang tải...' : 'Xem thêm hoạt động' }}
+            </button>
+          </div>
+          <div v-else class="cp-empty-state">
+            <p>Chưa có hoạt động nào.</p>
+            <div class="cp-empty-actions">
+              <NuxtLink to="/cong-dong" class="btn btn-primary btn-sm">Viết bài đầu tiên</NuxtLink>
+              <NuxtLink to="/dia-diem" class="btn btn-ghost btn-sm">Khám phá địa điểm</NuxtLink>
+            </div>
+          </div>
+        </article>
+
+        <aside class="cp-side-panel" aria-label="Dữ liệu của bạn">
+          <h2>Dữ liệu của bạn</h2>
+          <div class="cp-data-list">
+            <NuxtLink to="/da-luu" class="cp-data-row">
+              <span>Địa điểm đã lưu</span>
+              <strong>{{ counts.bookmarks ?? 0 }}</strong>
+            </NuxtLink>
+            <NuxtLink to="/thong-bao" class="cp-data-row">
+              <span>Thông báo chưa đọc</span>
+              <strong>{{ counts.unread_notifications ?? 0 }}</strong>
+            </NuxtLink>
+            <NuxtLink to="/cong-dong" class="cp-data-row">
+              <span>Bản nháp</span>
+              <strong>{{ counts.drafts ?? 0 }}</strong>
+            </NuxtLink>
+          </div>
+          <NuxtLink to="/cai-dat#du-lieu" class="btn btn-secondary btn-sm cp-wide-btn">Xuất dữ liệu</NuxtLink>
+        </aside>
+      </section>
+
+      <ClientOnly>
+        <LazySmartRecommendations context="home" title="Gợi ý phù hợp với bạn" :limit="4" />
+      </ClientOnly>
     </template>
   </section>
 </template>
 
 <script setup lang="ts">
-const { user, isLoggedIn, authHeaders } = useAuth()
+import type { User } from '~/types'
+import { useJourneyActions } from '~/composables/useJourneyActions'
+
+type Counts = Partial<Record<'posts' | 'drafts' | 'bookmarks' | 'unread_notifications', number>>
+type Stats = Partial<Record<'reviews' | 'followers' | 'following' | 'likes_received', number>>
+type ActivityItem = { action: string; ref_id?: string; ref_type?: string; created_at: string; content?: string }
+
+const { user, isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()
+const { userCpJourneyActions: buildUserCpJourneyActions } = useJourneyActions()
 
 useHead({
   title: 'Tài khoản',
@@ -132,41 +202,173 @@ useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/tai-khoan') }],
 })
 
-const counts = ref<Record<string, number> | null>(null)
-const stats = ref<Record<string, number> | null>(null)
-const activity = ref<any[]>([])
+const counts = ref<Counts>({})
+const stats = ref<Stats>({})
+const activity = ref<ActivityItem[]>([])
+const profileDetail = ref<Partial<User>>({})
 const activityLoading = ref(true)
 const activityHasMore = ref(false)
 const activityLoadingMore = ref(false)
+const accountRefreshing = ref(false)
+const fetchIssue = ref(false)
 const ACTIVITY_PAGE = 10
 
-onMounted(async () => {
-  if (!isLoggedIn.value) return
-  const headers = authHeaders()
-  const [c, s, a] = await Promise.allSettled([
-    $fetch<Record<string, number>>('/api/me/counts', { headers }),
-    $fetch<Record<string, number>>('/api/me/stats', { headers }),
-    $fetch<{ items: any[] }>(`/api/me/activity?limit=${ACTIVITY_PAGE}`, { headers }),
-  ])
-  if (c.status === 'fulfilled') counts.value = c.value
-  if (s.status === 'fulfilled') stats.value = s.value
-  if (a.status === 'fulfilled') {
-    const items = (a.value as any).items || []
-    activity.value = items
-    activityHasMore.value = items.length >= ACTIVITY_PAGE
-  }
-  activityLoading.value = false
+const profileData = computed(() => ({ ...(user.value || {}), ...profileDetail.value } as Partial<User>))
+const displayName = computed(() => profileData.value.display_name || profileData.value.full_name || 'Người dùng')
+const initial = computed(() => displayName.value.charAt(0).toUpperCase())
+const profileUrl = computed(() => userPath(user.value?.username || user.value?.id))
+const hasPassword = computed(() => user.value?.has_password === true)
+
+const profileChecks = computed(() => {
+  const u = profileData.value
+  return [
+    { key: 'name', label: 'Tên hiển thị', done: Boolean(u.display_name || u.full_name), to: '/cai-dat#ho-so' },
+    { key: 'avatar', label: 'Ảnh đại diện', done: Boolean(u.avatar_url || u.avatar), to: '/cai-dat#ho-so' },
+    { key: 'cover', label: 'Ảnh bìa', done: Boolean(u.cover_url), to: '/cai-dat#ho-so' },
+    { key: 'bio', label: 'Giới thiệu', done: Boolean(u.bio), to: '/cai-dat#ho-so' },
+    { key: 'contact', label: 'Liên hệ', done: Boolean(u.email || u.contact_info), to: '/cai-dat#ho-so' },
+    { key: 'post', label: 'Bài viết đầu tiên', done: (counts.value.posts ?? 0) > 0, to: '/cong-dong' },
+    { key: 'review', label: 'Đánh giá đầu tiên', done: (stats.value.reviews ?? 0) > 0, to: '/du-lich' },
+  ]
 })
+const completedProfileChecks = computed(() => profileChecks.value.filter(i => i.done).length)
+const profileCompletion = computed(() => Math.round((completedProfileChecks.value / profileChecks.value.length) * 100))
+
+const securityChecks = computed(() => [
+  { key: 'password', label: 'Mật khẩu', done: hasPassword.value },
+  { key: 'sessions', label: 'Dữ liệu tài khoản tải ổn định', done: !fetchIssue.value },
+  { key: 'privacy', label: 'Có kiểm soát riêng tư', done: true },
+])
+const completedSecurityChecks = computed(() => securityChecks.value.filter(i => i.done).length)
+const securitySummary = computed(() => `${completedSecurityChecks.value}/${securityChecks.value.length} lớp ổn định`)
+const accountScore = computed(() => Math.round((profileCompletion.value * 0.65) + ((completedSecurityChecks.value / securityChecks.value.length) * 35)))
+const accountLevel = computed(() => accountScore.value >= 85 ? 'sẵn sàng' : accountScore.value >= 60 ? 'đang tốt' : 'cần hoàn thiện')
+
+const nextActions = computed(() => {
+  const actions: Array<{ icon: string; label: string; to: string }> = []
+  const u = profileData.value
+  if (!hasPassword.value) actions.push({ icon: '🔒', label: 'Bảo vệ tài khoản bằng mật khẩu', to: '/cai-dat#bao-mat' })
+  if (!(u.display_name || u.full_name)) actions.push({ icon: '✍️', label: 'Cập nhật tên hiển thị', to: '/cai-dat#ho-so' })
+  if (!u.avatar_url) actions.push({ icon: '👤', label: 'Thêm ảnh đại diện', to: '/cai-dat#ho-so' })
+  if (!u.cover_url) actions.push({ icon: '🖼️', label: 'Thêm ảnh bìa', to: '/cai-dat#ho-so' })
+  if (!u.bio) actions.push({ icon: '✍️', label: 'Viết giới thiệu ngắn', to: '/cai-dat#ho-so' })
+  if ((counts.value.posts ?? 0) === 0) actions.push({ icon: '📝', label: 'Chia sẻ bài đầu tiên', to: '/cong-dong' })
+  if ((counts.value.bookmarks ?? 0) === 0) actions.push({ icon: '📍', label: 'Lưu địa điểm muốn đi', to: '/du-lich' })
+  return actions.slice(0, 4)
+})
+const primaryAction = computed(() => nextActions.value[0] || { icon: '✓', label: 'Xem hồ sơ', to: profileUrl.value })
+const userCpJourneyActions = computed(() => buildUserCpJourneyActions({
+  hasPassword: hasPassword.value,
+  profileCompletion: profileCompletion.value,
+  bookmarks: counts.value.bookmarks ?? 0,
+  posts: counts.value.posts ?? 0,
+  drafts: counts.value.drafts ?? 0,
+  unreadNotifications: counts.value.unread_notifications ?? 0,
+  fetchIssue: fetchIssue.value,
+}))
+
+const statItems = computed(() => [
+  { label: 'Bài viết', value: counts.value.posts ?? 0 },
+  { label: 'Đánh giá', value: stats.value.reviews ?? 0 },
+  { label: 'Người theo dõi', value: stats.value.followers ?? 0 },
+  { label: 'Đang theo dõi', value: stats.value.following ?? 0 },
+  { label: 'Đã lưu', value: counts.value.bookmarks ?? 0 },
+  { label: 'Lượt thích nhận', value: stats.value.likes_received ?? 0 },
+])
+
+const workspaceLinks = computed(() => [
+  { icon: '👤', title: 'Trang cá nhân', desc: 'Xem hồ sơ công khai', to: profileUrl.value },
+  { icon: '🔔', title: 'Thông báo', desc: (counts.value.unread_notifications ?? 0) ? 'Có cập nhật mới' : 'Không có mới', to: '/thong-bao', badge: counts.value.unread_notifications || '' },
+  { icon: '💾', title: 'Đã lưu', desc: `${counts.value.bookmarks ?? 0} mục đã lưu`, to: '/da-luu' },
+  { icon: '✍️', title: 'Bài viết', desc: `${counts.value.posts ?? 0} bài · ${counts.value.drafts ?? 0} nháp`, to: '/cong-dong' },
+  { icon: '🗺️', title: 'Lịch trình', desc: 'Tạo và xem kế hoạch', to: '/lich-trinh' },
+  { icon: '⚙️', title: 'Cài đặt', desc: 'Hồ sơ, bảo mật, dữ liệu', to: '/cai-dat' },
+])
+
+let accountLoadSeq = 0
+
+function resetAccountData() {
+  accountLoadSeq++
+  counts.value = {}
+  stats.value = {}
+  activity.value = []
+  profileDetail.value = {}
+  activityHasMore.value = false
+  activityLoading.value = false
+  activityLoadingMore.value = false
+  accountRefreshing.value = false
+  fetchIssue.value = false
+}
+
+function resultStatusCode(result: PromiseSettledResult<unknown>) {
+  return result.status === 'rejected' ? getStatusCode(result.reason) : null
+}
+
+if (import.meta.client) {
+  watch(() => isLoggedIn.value ? user.value?.id : null, async (id) => {
+    if (!id) { resetAccountData(); return }
+    await loadAccountData()
+  }, { immediate: true })
+}
+
+async function loadAccountData() {
+  if (!isLoggedIn.value) { resetAccountData(); return }
+  const seq = ++accountLoadSeq
+  accountRefreshing.value = true
+  if (!activity.value.length) activityLoading.value = true
+  const headers = authHeaders()
+  const profileKey = user.value?.username || user.value?.id
+  try {
+    const results = await Promise.allSettled([
+      $fetch<Record<string, number>>('/api/me/counts', { headers }),
+      $fetch<Record<string, number>>('/api/me/stats', { headers }),
+      $fetch<{ items: ActivityItem[] }>(`/api/me/activity?limit=${ACTIVITY_PAGE}`, { headers }),
+      profileKey ? $fetch<{ user?: Partial<User> } & Partial<User>>(`/api/users/${encodeURIComponent(profileKey)}`, { headers }) : Promise.resolve({}),
+    ])
+    if (seq !== accountLoadSeq) return
+    if (results.some(result => resultStatusCode(result) === 401)) {
+      handleSessionExpired()
+      resetAccountData()
+      return
+    }
+    const [c, s, a, p] = results
+    fetchIssue.value = results.some(r => r.status === 'rejected')
+    if (c.status === 'fulfilled') counts.value = c.value || {}
+    if (s.status === 'fulfilled') stats.value = s.value || {}
+    if (a.status === 'fulfilled') {
+      const items = a.value.items || []
+      activity.value = items
+      activityHasMore.value = items.length >= ACTIVITY_PAGE
+    }
+    if (p.status === 'fulfilled') {
+      const payload = p.value as ({ user?: Partial<User> } & Partial<User>)
+      profileDetail.value = (payload.user || payload || {}) as Partial<User>
+    }
+  } finally {
+    if (seq === accountLoadSeq) {
+      activityLoading.value = false
+      accountRefreshing.value = false
+    }
+  }
+}
 
 async function loadMoreActivity() {
   activityLoadingMore.value = true
   try {
-    const res = await $fetch<{ items: any[] }>(`/api/me/activity?limit=${ACTIVITY_PAGE}&offset=${activity.value.length}`, { headers: authHeaders() })
+    const res = await $fetch<{ items: ActivityItem[] }>(`/api/me/activity?limit=${ACTIVITY_PAGE}&offset=${activity.value.length}`, { headers: authHeaders() })
     const items = res.items || []
     activity.value.push(...items)
     activityHasMore.value = items.length >= ACTIVITY_PAGE
-  } catch { /* non-critical */ }
-  activityLoadingMore.value = false
+  } catch (e: unknown) {
+    if (getStatusCode(e) === 401) { handleSessionExpired(); return }
+    fetchIssue.value = true
+  } finally {
+    activityLoadingMore.value = false
+  }
+}
+
+function formatNumber(value: number | undefined) {
+  return new Intl.NumberFormat('vi-VN').format(value ?? 0)
 }
 
 function actionIcon(action: string) {
@@ -174,27 +376,27 @@ function actionIcon(action: string) {
   return icons[action] || '📌'
 }
 
-function activityLink(a: any): string | null {
-  if (a.ref_type === 'post' && a.ref_id) return `/bai-viet/${a.ref_id}`
-  if (a.ref_type === 'entity' && a.ref_id) return `/dia-diem/${a.ref_id}`
-  if (a.ref_type === 'user' && a.ref_id) return `/nguoi-dung/${a.ref_id}`
+function activityLink(a: ActivityItem): string | null {
+  if (a.ref_type === 'post' && a.ref_id) return postPath(a.ref_id)
+  if (a.ref_type === 'entity' && a.ref_id) return entityPath(a.ref_id)
+  if (a.ref_type === 'user' && a.ref_id) return userPath(a.ref_id)
   return null
 }
 
-function actionLabel(a: any) {
+function actionLabel(a: ActivityItem) {
   const types: Record<string, string> = {
     post: 'Đã đăng bài viết',
     comment: 'Đã bình luận',
     like: 'Đã thích một bài viết',
-    bookmark: 'Đã lưu một bài viết',
+    bookmark: a.ref_type === 'entity' ? 'Đã lưu một địa điểm' : 'Đã lưu một bài viết',
     review: 'Đã đánh giá',
     follow: 'Đã theo dõi',
     mention: 'Được nhắc đến',
     repost: 'Đã chia sẻ lại',
   }
-  let label = types[a.action] || `${a.action}`
+  let label = types[a.action] || a.action
   if (a.content) {
-    const preview = a.content.length > 60 ? a.content.slice(0, 60) + '…' : a.content
+    const preview = a.content.length > 60 ? `${a.content.slice(0, 60)}...` : a.content
     label += `: "${preview}"`
   }
   return label
@@ -202,87 +404,107 @@ function actionLabel(a: any) {
 </script>
 
 <style scoped>
-.cp-page { max-width: 720px; margin: 0 auto; }
+.cp-page { max-width: 1040px; margin: 0 auto; }
 .cp-guest { padding: 2rem; text-align: center; }
 .cp-guest h1 { margin: 0 0 1rem; font-size: 1.5rem; }
 .cp-guest p { color: var(--ink-700); margin-bottom: 1rem; }
 
-/* Header */
-.cp-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
-.cp-avatar-link { flex-shrink: 0; }
-.cp-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--line); }
-.cp-avatar-fallback { display: block; width: 64px; height: 64px; border-radius: 50%; overflow: hidden; }
-.cp-name { margin: 0; font-size: 1.4rem; }
-.cp-username { margin: .15rem 0 0; color: var(--ink-700); font-size: .9rem; }
+.cp-hero {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1rem;
+  align-items: center; margin-bottom: 1rem; padding: 1.25rem;
+  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card);
+}
+.cp-avatar-link { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; display: block; }
+.cp-avatar, .cp-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: block; }
+.cp-kicker { margin: 0 0 .2rem; color: var(--ink-700); font-size: .82rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.cp-name { margin: 0; font-size: clamp(1.35rem, 2vw, 1.9rem); }
+.cp-username { margin: .15rem 0 0; color: var(--ink-700); }
+.cp-status-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+.cp-pill { display: inline-flex; align-items: center; min-height: 28px; padding: .2rem .65rem; border: 1px solid var(--line); border-radius: var(--radius-full); font-size: .78rem; color: var(--ink-700); background: var(--bg-alt); }
+.cp-pill.ok { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 35%, var(--line)); }
+.cp-pill.warn { color: var(--danger, #c0392b); border-color: rgba(192,57,43,.25); }
+.cp-hero-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .85rem; }
+.cp-score { width: 92px; height: 92px; border-radius: 50%; display: grid; place-content: center; text-align: center; border: 8px solid color-mix(in oklab, var(--accent) 55%, var(--line)); background: var(--bg-alt); }
+.cp-score-value { font-size: 1.45rem; font-weight: 800; line-height: 1; }
+.cp-score-label { font-size: .72rem; color: var(--ink-700); margin-top: .2rem; }
+.cp-alert {
+  display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+  margin-bottom: 1rem; padding: .75rem .9rem; border: 1px solid rgba(var(--danger-rgb, 217,79,61), .22);
+  border-radius: var(--radius-md); background: color-mix(in oklab, var(--error-container, #fff3f0) 70%, var(--card));
+  color: var(--ink);
+}
+.cp-alert span { font-size: .86rem; line-height: 1.4; }
 
-/* Stats */
-.cp-stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: var(--space-3); margin-bottom: 1.5rem;
-  padding: 1rem; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg);
+.cp-summary-grid, .cp-workspace, .cp-main-grid { display: grid; gap: 1rem; }
+.cp-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 1rem; }
+.cp-panel, .cp-section, .cp-side-panel, .cp-card, .cp-stats {
+  border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card);
 }
-.cp-stat { text-align: center; }
-.cp-stat-val { display: block; font-size: 1.25rem; font-weight: 700; color: var(--ink); }
-.cp-stat-label { font-size: .78rem; color: var(--ink-700); }
-.cp-stats-skeleton { display: flex; gap: var(--space-3); margin-bottom: 1.5rem; }
-.cp-stat-skel { height: 52px; flex: 1; border-radius: var(--radius-md); }
+.cp-panel { padding: 1rem; }
+.cp-panel-head, .cp-section-head { display: flex; justify-content: space-between; gap: .75rem; align-items: flex-start; margin-bottom: .75rem; }
+.cp-panel-head strong, .cp-section-head h2, .cp-side-panel h2 { display: block; margin: 0; font-size: 1rem; }
+.cp-panel-head small { display: block; color: var(--ink-700); font-size: .78rem; margin-top: .15rem; }
+.cp-mini-link { color: var(--accent); text-decoration: none; font-weight: 600; font-size: .82rem; white-space: nowrap; }
+.cp-progress { height: 8px; border-radius: var(--radius-full); overflow: hidden; background: var(--bg-alt); margin-bottom: .75rem; }
+.cp-progress span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .35s var(--ease-out); }
+.cp-checks, .cp-action-list, .cp-data-list { display: flex; flex-direction: column; gap: .45rem; }
+.cp-check { display: flex; align-items: center; gap: .45rem; color: var(--ink-700); font-size: .84rem; text-decoration: none; border-radius: var(--radius-sm); }
+.cp-check:hover { color: var(--ink); }
+.cp-check:focus-visible, .cp-mini-link:focus-visible, .cp-action-item:focus-visible, .cp-data-row:focus-visible, .cp-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cp-check.done { color: var(--ink); }
+.cp-check.done span { color: var(--accent); font-weight: 800; }
+.cp-action-item, .cp-data-row { display: flex; align-items: center; justify-content: space-between; gap: .65rem; padding: .55rem .65rem; border-radius: var(--radius-md); text-decoration: none; color: var(--ink); background: var(--bg-alt); }
+.cp-action-item:hover, .cp-data-row:hover { background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
+.cp-action-icon { font-size: 1rem; }
+.cp-done-state { padding: .75rem; border-radius: var(--radius-md); background: var(--bg-alt); color: var(--ink-700); font-size: .84rem; line-height: 1.45; }
 
-/* Quick links grid */
-.cp-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--space-3); margin-bottom: 1.5rem;
-}
-.cp-card {
-  display: flex; flex-direction: column; gap: .25rem;
-  padding: 1rem; text-decoration: none; color: var(--ink);
-  transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out);
-  position: relative;
-}
+.cp-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5rem; padding: .85rem; margin-bottom: 1rem; }
+.cp-stat { text-align: center; padding: .25rem; }
+.cp-stat-val { display: block; font-size: 1.15rem; font-weight: 800; color: var(--ink); }
+.cp-stat-label { font-size: .76rem; color: var(--ink-700); }
+
+.cp-workspace { grid-template-columns: repeat(6, minmax(0, 1fr)); margin-bottom: 1rem; }
+.cp-card { min-height: 118px; padding: .9rem; text-decoration: none; color: var(--ink); position: relative; display: flex; flex-direction: column; gap: .25rem; transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 .cp-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.cp-card-icon { font-size: 1.5rem; }
-.cp-card-title { font-weight: 600; font-size: .95rem; }
-.cp-card-desc { font-size: .8rem; color: var(--ink-700); }
-.cp-card-badge {
-  position: absolute; top: .6rem; right: .6rem;
-  background: var(--error, #e53e3e); color: #fff;
-  font-size: .7rem; font-weight: 700; padding: 1px 6px;
-  border-radius: var(--radius-full);
-}
+.cp-card-icon { font-size: 1.35rem; }
+.cp-card-title { font-weight: 700; font-size: .93rem; }
+.cp-card-desc { font-size: .78rem; color: var(--ink-700); line-height: 1.35; }
+.cp-card-badge { position: absolute; top: .55rem; right: .55rem; background: var(--danger, #c0392b); color: #fff; font-size: .7rem; font-weight: 800; padding: 1px 6px; border-radius: var(--radius-full); }
 
-/* Activity */
-.cp-section { margin-bottom: 2rem; }
-.cp-section h2 { font-size: 1.1rem; margin: 0 0 .75rem; padding-bottom: .5rem; border-bottom: 1px solid var(--line); }
-.cp-activity-list { display: flex; flex-direction: column; gap: .5rem; }
-.cp-activity-item {
-  display: flex; gap: .6rem; align-items: flex-start;
-  padding: .6rem .75rem; border-radius: var(--radius-md);
-  border: 1px solid var(--line); background: var(--card);
-}
-.cp-activity-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: .1rem; }
-.cp-activity-body { flex: 1; min-width: 0; }
-.cp-activity-text { display: block; font-size: .88rem; color: var(--ink); line-height: 1.4; }
-.cp-activity-time { font-size: .78rem; color: var(--ink-700); }
-.cp-activity-link { cursor: pointer; text-decoration: none; color: inherit; }
-.cp-activity-link:hover { background: var(--bg-alt); border-color: var(--primary); }
+.cp-main-grid { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
+.cp-section, .cp-side-panel { padding: 1rem; }
+.cp-activity-list { display: flex; flex-direction: column; gap: .55rem; }
+.cp-activity-item { display: flex; gap: .65rem; align-items: flex-start; padding: .7rem .8rem; border-radius: var(--radius-md); border: 1px solid var(--line); background: var(--bg-alt); color: inherit; text-decoration: none; }
+.cp-activity-link:hover { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 8%, var(--bg-alt)); }
+.cp-activity-icon { font-size: 1.05rem; flex-shrink: 0; }
+.cp-activity-body { min-width: 0; }
+.cp-activity-text { display: block; font-size: .88rem; line-height: 1.4; }
+.cp-activity-time { display: block; font-size: .76rem; color: var(--ink-700); margin-top: .1rem; }
 .cp-activity-loading { display: flex; flex-direction: column; gap: .5rem; }
-.cp-activity-skel { height: 48px; border-radius: var(--radius-md); }
-.cp-load-more { width: 100%; margin-top: var(--space-3); }
-.cp-empty-hint { color: var(--ink-700); font-size: .9rem; }
-.cp-onboarding { text-align: center; padding: 1.5rem 1rem; }
-.cp-onboarding-actions { display: flex; gap: var(--space-2); justify-content: center; margin-top: .75rem; flex-wrap: wrap; }
+.cp-activity-skel { height: 50px; border-radius: var(--radius-md); }
+.cp-load-more, .cp-wide-btn { width: 100%; margin-top: .75rem; }
+.cp-empty-state { text-align: center; padding: 1.5rem .75rem; color: var(--ink-700); }
+.cp-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: .75rem; }
+.cp-data-row strong { font-variant-numeric: tabular-nums; }
 
-/* Dark */
-.dark .cp-stats { background: var(--bg-alt); border-color: var(--line); }
-.dark .cp-activity-item { background: var(--bg-alt); border-color: var(--line); }
+.dark .cp-hero, .dark .cp-panel, .dark .cp-section, .dark .cp-side-panel, .dark .cp-card, .dark .cp-stats { background: var(--bg-alt); border-color: var(--line); }
+.dark .cp-action-item, .dark .cp-data-row, .dark .cp-activity-item, .dark .cp-score { background: var(--bg); }
 
-/* Mobile */
+@media (max-width: 860px) {
+  .cp-summary-grid, .cp-main-grid { grid-template-columns: 1fr; }
+  .cp-workspace { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cp-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 @media (max-width: 600px) {
-  .cp-grid { grid-template-columns: repeat(2, 1fr); }
-  .cp-stats { grid-template-columns: repeat(3, 1fr); }
-  .cp-header { gap: .75rem; }
-  .cp-name { font-size: 1.15rem; }
+  .cp-hero { grid-template-columns: auto 1fr; }
+  .cp-hero-actions .btn { flex: 1 1 130px; justify-content: center; }
+  .cp-score { grid-column: 1 / -1; width: 100%; height: auto; border-radius: var(--radius-md); border-width: 1px; padding: .75rem; display: block; }
+  .cp-alert { flex-direction: column; align-items: stretch; }
+  .cp-workspace { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cp-card { min-height: 108px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cp-card { transition: none; }
+  .cp-card, .cp-progress span { transition: none; }
+  .cp-card:hover { transform: none; }
 }
 </style>

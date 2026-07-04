@@ -101,7 +101,7 @@
           :model-value="[seasonFilter]"
           single-select
           aria-label="Lọc theo tháng"
-          @update:model-value="v => seasonFilter = v.length ? v[0] : 'all'"
+          @update:model-value="v => seasonFilter = v[0] || 'all'"
         />
         <FilterChips
           :filters="[{ key: 'ocop', label: 'Chỉ sản phẩm OCOP', icon: '⭐' }]"

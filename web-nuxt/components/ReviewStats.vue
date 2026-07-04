@@ -59,7 +59,10 @@ const ratingDistribution = computed(() => {
   const counts = [0, 0, 0, 0, 0]
   for (const r of props.reviews) {
     const s = Math.round(r.rating || 0)
-    if (s >= 1 && s <= 5) counts[s - 1]++
+    if (s >= 1 && s <= 5) {
+      const idx = s - 1
+      counts[idx] = (counts[idx] ?? 0) + 1
+    }
   }
   return counts
 })

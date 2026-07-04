@@ -60,6 +60,15 @@
       <p class="sr-only" id="map-instructions">Sử dụng phím +/- để phóng to/thu nhỏ. Kéo chuột hoặc dùng phím mũi tên để di chuyển bản đồ. Nhấp vào điểm đánh dấu để xem thông tin chi tiết.</p>
       <div ref="mapEl" id="mapContainer" v-show="!mapLoadError && !fetchError" role="application" aria-label="Bản đồ tương tác du lịch Vĩnh Long" aria-describedby="map-instructions" tabindex="0"></div>
       <div aria-live="polite" class="sr-only">{{ popupAnnouncement }}</div>
+      <section v-if="visibleListPins.length" class="map-list-fallback" aria-label="Danh sách địa điểm trên bản đồ">
+        <NuxtLink v-for="pin in visibleListPins" :key="pin.id" :to="entityPath(pin.id)" class="map-list-card">
+          <span class="map-list-emoji" aria-hidden="true">{{ pin.emoji || getTypeMeta(pin.type).emoji }}</span>
+          <span class="map-list-copy">
+            <strong>{{ pin.name }}</strong>
+            <small>{{ pin.place_name || getTypeMeta(pin.type).label }}</small>
+          </span>
+        </NuxtLink>
+      </section>
       <template #fallback>
         <div id="mapContainer" class="map-fallback" role="status" aria-label="Đang tải bản đồ">
           <div class="spinner"></div>
@@ -70,8 +79,24 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
 import { getTypeMeta } from '~/composables/useConstants'
+
+type MapPin = {
+  id: string
+  name: string
+  type: string
+  lat: number
+  lng: number
+  emoji?: string
+  category_color?: string
+  rating?: number
+  review_count?: number
+  place_name?: string
+  place_area?: string
+  area?: string
+  confidence?: number
+  coords_approximate?: boolean
+}
 
 const MARKER_COLORS: Record<string, string> = {
   experience: '#2D7D46',
@@ -99,8 +124,27 @@ const typeFilters = [
 ]
 
 const route = useRoute()
+const router = useRouter()
+const { favorites } = useFavorites()
 type MapFilterOption = { key: string; label: string; icon?: string }
-const activeTypes = ref(new Set(['all']))
+function firstQueryValue(value: unknown) {
+  return Array.isArray(value) ? String(value[0] || '') : String(value || '')
+}
+function normalizeTypeQuery(value: unknown) {
+  const allowed = new Set(typeFilters.map(f => f.value))
+  const raw = firstQueryValue(value)
+  const parts = raw.split(',').map(v => v.trim()).filter(v => allowed.has(v) && v !== 'all')
+  return parts.length ? new Set(parts) : new Set(['all'])
+}
+const activeTypes = ref(normalizeTypeQuery(route.query.type))
+const savedMode = computed(() => firstQueryValue(route.query.source).trim().toLowerCase() === 'saved')
+const mapSearchQuery = computed(() => firstQueryValue(route.query.q).trim().toLocaleLowerCase('vi-VN'))
+const areaQuery = computed(() => firstQueryValue(route.query.vung).trim() || firstQueryValue(route.query.area).trim())
+const savedPinIds = computed(() => new Set(
+  favorites.value
+    .map((item: any) => String(item?.id || '').trim())
+    .filter(Boolean)
+))
 
 const typeFilterOptions: MapFilterOption[] = typeFilters.map(f => {
   const parts = f.label.match(/^(\S+)\s+(.+)$/)
@@ -121,6 +165,7 @@ function onTypeFilterChange(v: string[]) {
     }
   }
   if (updateRaf) cancelAnimationFrame(updateRaf)
+  syncMapRoute()
   updateRaf = requestAnimationFrame(() => { updateRaf = null; updateMarkers() })
 }
 
@@ -137,15 +182,47 @@ function toggleType(type: string) {
     activeTypes.value = next
   }
   if (updateRaf) cancelAnimationFrame(updateRaf)
+  syncMapRoute()
   updateRaf = requestAnimationFrame(() => { updateRaf = null; updateMarkers() })
 }
+
+function activeTypeQuery() {
+  return activeTypes.value.has('all') ? '' : [...activeTypes.value].join(',')
+}
+
+function syncMapRoute() {
+  if (!import.meta.client) return
+  const query = { ...route.query }
+  const type = activeTypeQuery()
+  if (type) query.type = type
+  else delete query.type
+  if (firstQueryValue(route.query.type) === firstQueryValue(query.type)) return
+  router.replace({ query }).catch(() => {})
+}
+
+watch(() => route.query.type, (value) => {
+  const next = normalizeTypeQuery(value)
+  if ([...next].join(',') === [...activeTypes.value].join(',')) return
+  activeTypes.value = next
+})
 
 const mapEl = ref<HTMLElement | null>(null)
 const { createMap } = useNDAMap()
 
-const { data, error: fetchError } = await useAsyncData('map-entities', () =>
-  apiFetch<{ entities: Entity[] }>('/api/entities?limit=700')
+const mapPinApiPath = computed(() => {
+  const params = new URLSearchParams()
+  const type = activeTypeQuery()
+  if (type) params.set('type', type)
+  if (areaQuery.value) params.set('area', areaQuery.value)
+  const qs = params.toString()
+  return `/api/map-pins${qs ? `?${qs}` : ''}`
+})
+const { data, error: fetchError } = await useAsyncData(
+  computed(() => `map-pins-${activeTypeQuery() || 'all'}-${areaQuery.value || 'all'}`),
+  () => apiFetch<MapPin[]>(mapPinApiPath.value),
+  { watch: [mapPinApiPath] }
 )
+const mapPins = computed(() => Array.isArray(data.value) ? data.value : [])
 
 let mapInited = false
 let mapRef: any = null  // GĐ10.2: tham chiếu map để cập nhật source khi lọc
@@ -158,7 +235,7 @@ function esc(s: string) {
 // Inputs phải đã esc() trước khi truyền vào (color là literal hex an toàn).
 function popupHTML(emoji: string, name: string, label: string, color: string, id: string) {
   const labelLine = label ? `<small style="display:block;color:var(--muted,#666);margin-top:2px">${label}</small>` : ''
-  const linkLine = id ? `<a href="/dia-diem/${id}" style="display:inline-block;margin-top:6px;font-weight:600">Xem chi tiết →</a>` : ''
+  const linkLine = id ? `<a href="${entityPath(id)}" style="display:inline-block;margin-top:6px;font-weight:600">Xem chi tiết →</a>` : ''
   return `<div style="display:flex;gap:8px;border-left:4px solid ${color};padding-left:8px"><div style="font-size:1.15rem;line-height:1.2">${emoji}</div><div style="min-width:0"><strong style="display:block">${name}</strong>${labelLine}${linkLine}</div></div>`
 }
 
@@ -167,32 +244,55 @@ function popupHTML(emoji: string, name: string, label: string, color: string, id
 // GĐ10.2: dựng GeoJSON từ entity đã lọc (thay 700 DOM marker bằng nguồn GeoJSON + clustering).
 const visibleCount = ref(0)
 const visibleLabel = computed(() =>
-  activeTypes.value.has('all')
+  savedMode.value
+    ? `${visibleCount.value} địa điểm đã lưu`
+    : activeTypes.value.has('all')
     ? `${visibleCount.value} địa điểm`
     : `${visibleCount.value} địa điểm phù hợp`
 )
 function buildGeoJSON() {
-  const show = activeTypes.value
   const features: Record<string, unknown>[] = []
-  for (const e of (data.value?.entities || [])) {
-    if (!(show.has('all') || show.has(e.type))) continue
-    const coords = normalizeCoords(e.coordinates)
-    if (!coords) continue
-    const [lat, lng] = coords
+  for (const e of filteredPins.value) {
+    const lat = Number(e.lat)
+    const lng = Number(e.lng)
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue
     const meta = getTypeMeta(e.type)
     features.push({
       type: 'Feature',
       geometry: { type: 'Point', coordinates: [lng, lat] },
       properties: {
         id: e.id, name: e.name, etype: e.type,
-        emoji: meta.emoji, label: meta.label || e.type,
-        color: MARKER_COLORS[e.type] || '#9C3D22',
+        emoji: e.emoji || meta.emoji, label: meta.label || e.type,
+        color: e.category_color || MARKER_COLORS[e.type] || '#9C3D22',
       },
     })
   }
   visibleCount.value = features.length
   return { type: 'FeatureCollection', features }
 }
+
+const filteredPins = computed(() => {
+  const show = activeTypes.value
+  const q = mapSearchQuery.value
+  return mapPins.value.filter((e: MapPin) => {
+    const matchesQuery = !q || [
+      e.name,
+      e.type,
+      e.place_name,
+      e.place_area,
+      e.area,
+    ].some(part => String(part || '').toLocaleLowerCase('vi-VN').includes(q))
+    return (
+      (!savedMode.value || savedPinIds.value.has(String(e.id))) &&
+      (show.has('all') || show.has(e.type)) &&
+      (!areaQuery.value || e.place_area === areaQuery.value || e.area === areaQuery.value) &&
+      matchesQuery &&
+      Number.isFinite(Number(e.lat)) &&
+      Number.isFinite(Number(e.lng))
+    )
+  })
+})
+const visibleListPins = computed(() => filteredPins.value.slice(0, 24))
 
 function updateMarkers() {
   const src = mapRef?.getSource?.('entities')
@@ -202,6 +302,11 @@ function updateMarkers() {
 // Seed result-meta đếm số điểm ngay khi có dữ liệu (trước khi map style load xong),
 // tránh nháy "0 địa điểm" trong pill. Chỉ chạy client (pill nằm trong ClientOnly).
 onMounted(() => { buildGeoJSON() })
+
+watch(filteredPins, () => {
+  buildGeoJSON()
+  updateMarkers()
+})
 
 const popupAnnouncement = ref('')
 const mapLoadError = ref(false)
@@ -301,11 +406,11 @@ watch(mapEl, async (el) => {
     }
 
     // Focus 1 điểm khi đến từ trang chi tiết (?id hoặc ?lat&lng) — thay vì chỉ hiện bản đồ chung
-    const fid = route.query.id as string | undefined
-    let flat = parseFloat(route.query.lat as string)
-    let flng = parseFloat(route.query.lng as string)
-    const fent = fid ? (data.value?.entities || []).find((e: Entity) => e.id === fid) : null
-    if (fent) { const c = normalizeCoords(fent.coordinates ?? (fent as any).coords); if (c) { flat = c[0]; flng = c[1] } }
+    const fid = firstQueryValue(route.query.id) || undefined
+    let flat = parseFloat(firstQueryValue(route.query.lat))
+    let flng = parseFloat(firstQueryValue(route.query.lng))
+    const fent = fid ? mapPins.value.find((e: MapPin) => e.id === fid) : null
+    if (fent) { flat = Number(fent.lat); flng = Number(fent.lng) }
     if (isFinite(flat) && isFinite(flng)) {
       map.flyTo({ center: [flng, flat], zoom: 15 })
       const m: any = fent ? getTypeMeta(fent.type) : { emoji: '📍' }
@@ -396,9 +501,34 @@ onBeforeUnmount(() => {
 
 /* Controls panel spacing for the filter/result row. */
 .map-filters { margin-bottom: var(--space-4); }
+.map-list-fallback {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.map-list-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 56px;
+  padding: var(--space-2) var(--space-3);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+}
+.map-list-card:hover { border-color: var(--primary); background: var(--bg-warm); }
+.map-list-emoji { font-size: var(--text-lg); flex-shrink: 0; }
+.map-list-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.map-list-copy strong,
+.map-list-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.map-list-copy small { color: var(--muted); font-size: var(--text-xs); }
 
 /* Dark mode: keep a visible hairline + deeper ambient hover shadow. */
 .dark #mapContainer { border-color: var(--line); box-shadow: var(--shadow-lg); }
+.dark .map-list-card { background: var(--bg-alt); }
 .dark #mapContainer:hover {
   box-shadow:
     0 8px 28px -8px rgba(var(--primary-rgb), .34),

@@ -1,8 +1,11 @@
 <template>
-  <NuxtLink :to="`/dia-diem/${entity.id}`" :class="['card', `cat-${typeMeta.cat}`]">
+  <article :class="['card', `cat-${typeMeta.cat}`]">
     <div v-if="coverImage && !imgError" class="cover cover-img">
-      <NuxtImg v-if="isRemote" :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" sizes="sm:100vw md:50vw lg:400px" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
-      <img v-else :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
+      <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`">
+        <NuxtImg v-if="isRemote" :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" sizes="sm:100vw md:50vw lg:400px" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
+        <img v-else :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
+        <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.label }}</span>
+      </NuxtLink>
       <template v-if="allImages.length > 1">
         <button v-if="activeSlide > 0" type="button" class="card-arrow card-arrow-prev" aria-label="Ảnh trước" @click.prevent="activeSlide--">‹</button>
         <button v-if="activeSlide < allImages.length - 1" type="button" class="card-arrow card-arrow-next" aria-label="Ảnh sau" @click.prevent="activeSlide++">›</button>
@@ -10,15 +13,16 @@
           <span v-for="(_, i) in allImages.slice(0, 5)" :key="i" :class="['card-dot', { active: i === activeSlide }]" />
         </div>
       </template>
-      <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.label }}</span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
     <div v-else class="cover cover-img cover-generated" :class="`cat-${typeMeta.cat}`" :style="{ backgroundImage: placeholderBg }">
-      <span class="cover-svg-icon" v-html="placeholderSvg" />
-      <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.label }}</span>
+      <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`">
+        <span class="cover-svg-icon" v-html="placeholderSvg" />
+        <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.label }}</span>
+      </NuxtLink>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
-    <div class="card-b">
+    <NuxtLink :to="cardPath" class="card-b card-body-link">
       <span class="card-type">{{ typeMeta.label }}</span>
       <h3 class="card-name">{{ entity.name }}</h3>
       <p class="summary">{{ cardSummary }}</p>
@@ -43,8 +47,8 @@
         <span v-else class="badge season">{{ seasonLabel }}</span>
         <span v-if="entity.attributes?.ocop" :class="['badge', 'ocop', { 'ocop-5': ocopStars === 5, 'ocop-4': ocopStars === 4, 'ocop-3': ocopStars === 3 }]">⭐ {{ entity.attributes.ocop }}</span>
       </div>
-    </div>
-  </NuxtLink>
+    </NuxtLink>
+  </article>
 </template>
 
 <script lang="ts">
@@ -72,6 +76,7 @@ const props = defineProps<{
 
 const imgError = ref(false)
 const activeSlide = ref(0)
+const cardPath = computed(() => entityPath(props.entity.id))
 const typeMeta = computed(() => TYPE_META[props.entity.type] || { emoji: '•', label: props.entity.type, cat: 'place' })
 const allImages = computed(() => {
   const imgs = props.entity.images
@@ -146,6 +151,23 @@ const ratingDisplay = computed(() => {
 :deep(.card) { contain: content; }
 /* 3:2 aspect ratio for card images */
 .cover-img { aspect-ratio: 3 / 2; height: auto; }
+.card-cover-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.card-cover-link:focus-visible,
+.card-body-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+.card-body-link {
+  color: inherit;
+  text-decoration: none;
+}
 /* Heart pop animation */
 @keyframes heart-pop {
   0% { transform: scale(1); }

@@ -9,6 +9,11 @@ interface CalendarCell {
   lunarMid?: boolean
 }
 
+function dateAttr(attrs: Entity['attributes'] | undefined, key: string): string | null {
+  const value = attrs?.[key]
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : null
+}
+
 export function useEventCalendar(events: Ref<Entity[]>) {
   const today = new Date()
   const calMonth = ref(today.getMonth())
@@ -44,9 +49,10 @@ export function useEventCalendar(events: Ref<Entity[]>) {
     const dateMap = new Map<number, Entity[]>()
     for (const e of events.value) {
       const attrs = e.attributes || {}
-      const ds = attrs.date_start
-      const de = attrs.date_end || ds
-      if (!ds || de < monthStart || ds > monthEnd) continue
+      const ds = dateAttr(attrs, 'date_start')
+      if (!ds) continue
+      const de = dateAttr(attrs, 'date_end') || ds
+      if (de < monthStart || ds > monthEnd) continue
       const span = (new Date(de).getTime() - new Date(ds).getTime()) / 86400000
       if (span > 30) continue
       const from = Math.max(1, ds > monthStart ? parseInt(ds.slice(8), 10) : 1)

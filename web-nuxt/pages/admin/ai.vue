@@ -105,14 +105,14 @@
         <div class="ai-dq-bar-wrap">
           <div class="ai-dq-bar-label">
             <span>Coverage</span>
-            <span class="ai-dq-bar-pct" :style="{ color: health.data_quality.coverage_pct >= 80 ? 'var(--success)' : 'var(--warning)' }">{{ health.data_quality.coverage_pct }}%</span>
+            <span class="ai-dq-bar-pct" :style="{ color: dataQualityCoverage >= 80 ? 'var(--success)' : 'var(--warning)' }">{{ dataQualityCoverage }}%</span>
           </div>
           <div class="ai-dq-track">
-            <div class="ai-dq-fill" :style="{ width: health.data_quality.coverage_pct + '%', background: health.data_quality.coverage_pct >= 80 ? 'var(--success)' : 'var(--warning)' }"></div>
+            <div class="ai-dq-fill" :style="{ width: dataQualityCoverage + '%', background: dataQualityCoverage >= 80 ? 'var(--success)' : 'var(--warning)' }"></div>
           </div>
         </div>
         <div class="ai-metric">
-          <span class="ai-metric-val">{{ health.data_quality.missing_summary }}</span>
+          <span class="ai-metric-val">{{ missingSummary }}</span>
           <span class="ai-metric-lbl">Thiếu summary</span>
         </div>
       </div>
@@ -218,7 +218,41 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
+interface AgentHealth {
+  status?: string
+  version?: string
+  model?: string
+  llm_api?: string
+  uptime_seconds?: number
+  entities?: number
+  memory_mb?: number
+  cache?: { size?: number; hits?: number; misses?: number }
+  data_quality?: { coverage_pct?: number; missing_summary?: number }
+  response_times?: { avg_ms?: number; p95_ms?: number; total?: number }
+  errors?: { total?: number; recent?: number }
+  [key: string]: any
+}
+
+interface CostOverview {
+  llm?: { available?: boolean; total_cost_usd?: number }
+  agent_budget?: {
+    enabled?: boolean
+    used_today?: number
+    cap_per_day?: number
+    remaining_today?: number
+  }
+}
+
+interface TriggerLearnResponse {
+  message?: string
+}
+
+interface TriageResponse {
+  ok?: boolean
+  suggestion?: string
+  note?: string
+  context?: string
+}
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'AI Quản lý — Admin' })
 const { authHeaders } = useAuth()
@@ -232,7 +266,7 @@ async function refreshAll() {
   refreshing.value = false
 }
 
-const health = ref<Record<string, unknown> | null>(null)
+const health = ref<AgentHealth | null>(null)
 const healthError = ref(false)
 const triggerLoading = ref(false)
 const triggerResult = ref('')
@@ -258,11 +292,16 @@ const uptime = computed(() => {
 })
 
 const hitRate = computed(() => {
-  const c = health.value?.cache as Record<string, number> | undefined
+  const c = health.value?.cache
   if (!c) return 0
-  const total = (c.hits || 0) + (c.misses || 0)
-  return total ? Math.round((c.hits / total) * 100) : 0
+  const hits = c.hits || 0
+  const misses = c.misses || 0
+  const total = hits + misses
+  return total ? Math.round((hits / total) * 100) : 0
 })
+
+const dataQualityCoverage = computed(() => Number(health.value?.data_quality?.coverage_pct ?? 0))
+const missingSummary = computed(() => Number(health.value?.data_quality?.missing_summary ?? 0))
 
 const subsystems = computed(() => {
   if (!health.value) return {}
@@ -277,15 +316,15 @@ const subsystems = computed(() => {
 })
 
 async function fetchHealth() {
-  try { health.value = await $fetch<Record<string, unknown>>('/health'); healthError.value = false } catch { healthError.value = true; showToast('Không kết nối được agent', 'error') }
+  try { health.value = await $fetch<AgentHealth>('/health'); healthError.value = false } catch { healthError.value = true; showToast('Không kết nối được agent', 'error') }
 }
 
 async function triggerLearn() {
   triggerLoading.value = true
   triggerResult.value = ''
   try {
-    const res = await $fetch<Record<string, unknown>>('/admin-api/trigger-learn', { method: 'POST', headers: authHeaders() })
-    triggerResult.value = (res.message as string) || 'Learning triggered successfully'
+    const res = await $fetch<TriggerLearnResponse>('/admin-api/trigger-learn', { method: 'POST', headers: authHeaders() })
+    triggerResult.value = res.message || 'Learning triggered successfully'
   } catch (e: unknown) {
     triggerResult.value = 'Error: ' + getErrorDetail(e, 'failed')
   } finally {
@@ -293,13 +332,16 @@ async function triggerLearn() {
   }
 }
 
-const cost = ref<Record<string, unknown> | null>(null)
+const cost = ref<CostOverview | null>(null)
 const agentNearCap = computed(() => {
-  const b = cost.value?.agent_budget as Record<string, number> | undefined
-  return b?.enabled && b.remaining_today <= Math.max(1, Math.floor(b.cap_per_day / 5))
+  const b = cost.value?.agent_budget
+  if (!b?.enabled) return false
+  const remaining = b.remaining_today ?? b.cap_per_day ?? 0
+  const cap = b.cap_per_day ?? 0
+  return remaining <= Math.max(1, Math.floor(cap / 5))
 })
 async function fetchCost() {
-  try { cost.value = await $fetch<Record<string, unknown>>('/admin-api/cost-overview', { headers: authHeaders() }) } catch { showToast('Không tải được chi phí', 'error') }
+  try { cost.value = await $fetch<CostOverview>('/admin-api/cost-overview', { headers: authHeaders() }) } catch { showToast('Không tải được chi phí', 'error') }
 }
 
 const triageLoading = ref(false)
@@ -308,7 +350,7 @@ async function triage() {
   triageLoading.value = true
   triageOut.value = ''
   try {
-    const r = await $fetch<Record<string, unknown>>('/admin-api/ai/triage', { method: 'POST', headers: authHeaders() })
+    const r = await $fetch<TriageResponse>('/admin-api/ai/triage', { method: 'POST', headers: authHeaders() })
     triageOut.value = r.ok
       ? `${r.suggestion}`
       : `${r.note || 'LLM lỗi'}\n\n${r.context || ''}`

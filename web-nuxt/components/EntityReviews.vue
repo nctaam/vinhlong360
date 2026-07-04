@@ -111,7 +111,7 @@ const props = defineProps<{
   entityName?: string
 }>()
 
-const { user, authHeaders } = useAuth()
+const { user, authHeaders, handleSessionExpired } = useAuth()
 const { confirmDialog } = useConfirm()
 const { openAuth } = useAuthModal()
 
@@ -136,12 +136,16 @@ const uploadError = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
 const deletingId = ref<string | number | null>(null)
+const helpfulPending = reactive(new Set<string>())
+const encodedEntityId = computed(() => encodePathId(props.entityId))
 
 const hasMore = computed(() => reviews.value.length < total.value)
 
 const featuredId = computed(() => {
   if (reviews.value.length < 3) return null
-  const best = reviews.value.reduce((a, b) => ((b.likes || 0) > (a.likes || 0) ? b : a), reviews.value[0])
+  const [first, ...rest] = reviews.value
+  if (!first) return null
+  const best = rest.reduce((a, b) => ((b.likes || 0) > (a.likes || 0) ? b : a), first)
   return (best.likes || 0) >= 2 ? best.id : null
 })
 
@@ -160,11 +164,21 @@ function isOwner(r: Review) {
 
 async function toggleHelpful(r: Review) {
   if (!user.value) { openAuth(() => toggleHelpful(r)); return }
-  const flip = () => { r.user_liked = !r.user_liked; r.likes = (r.likes || 0) + (r.user_liked ? 1 : -1) }
-  flip()
+  const reviewId = encodePathId(r.id)
+  if (!reviewId || helpfulPending.has(reviewId)) return
+  helpfulPending.add(reviewId)
+  const previous = { user_liked: r.user_liked, likes: r.likes }
+  r.user_liked = !r.user_liked
+  r.likes = Math.max(0, (r.likes || 0) + (r.user_liked ? 1 : -1))
   try {
-    await $fetch(`/api/posts/${r.id}/like`, { method: 'POST', headers: authHeaders() })
-  } catch { flip() }
+    await $fetch(`/api/posts/${reviewId}/like`, { method: 'POST', headers: authHeaders() })
+  } catch (e: unknown) {
+    r.user_liked = previous.user_liked
+    r.likes = previous.likes
+    if (getStatusCode(e) === 401) handleSessionExpired()
+  } finally {
+    helpfulPending.delete(reviewId)
+  }
 }
 
 async function onPickImage(e: Event) {
@@ -193,11 +207,16 @@ async function onPickImage(e: Event) {
     })
     if (res.url) formImages.value.push(res.url)
   } catch (err: unknown) {
+    if (getStatusCode(err) === 401) {
+      handleSessionExpired()
+      return
+    }
     const e = err as { data?: { detail?: string }; message?: string }
     uploadError.value = e.data?.detail || e.message || 'Tải ảnh thất bại'
+  } finally {
+    uploadingImage.value = false
+    input.value = ''
   }
-  uploadingImage.value = false
-  input.value = ''
 }
 
 function removeImage(i: number) {
@@ -210,37 +229,51 @@ async function deleteReview(r: Review) {
   deletingId.value = r.id
   deleteError.value = ''
   deleteErrorId.value = ''
+  const reviewId = encodePathId(r.id)
+  if (!reviewId) {
+    deletingId.value = null
+    return
+  }
   try {
-    await $fetch(`/api/posts/${r.id}`, {
+    await $fetch(`/api/posts/${reviewId}`, {
       method: 'DELETE',
       headers: authHeaders(),
     })
     page.value = 1
     await fetchReviews()
   } catch (err: unknown) {
+    if (getStatusCode(err) === 401) {
+      handleSessionExpired()
+      return
+    }
     const e = err as { data?: { detail?: string }; message?: string }
     deleteError.value = e.data?.detail || e.message || 'Xóa thất bại'
     deleteErrorId.value = r.id
+  } finally {
+    deletingId.value = null
   }
-  deletingId.value = null
 }
 
 async function fetchReviews(append = false) {
   loading.value = true
+  fetchFailed.value = false
   try {
-    const res = await $fetch<ReviewFeedResponse>(`/api/entities/${props.entityId}/feed?page=${page.value}&limit=10`)
+    const params = new URLSearchParams({ page: String(page.value), limit: '10' })
+    const res = await $fetch<ReviewFeedResponse>(`/api/entities/${encodedEntityId.value}/feed?${params}`)
     if (append) {
-      reviews.value.push(...(res.posts || []))
+      const seen = new Set(reviews.value.map(r => String(r.id)))
+      reviews.value.push(...(res.posts || []).filter(r => !seen.has(String(r.id))))
     } else {
       reviews.value = res.posts || []
     }
     rating.value = res.rating || { avg: 0, count: 0 }
     total.value = res.total || 0
   } catch { fetchFailed.value = true }
-  loading.value = false
+  finally { loading.value = false }
 }
 
 function loadMore() {
+  if (loading.value || !hasMore.value) return
   page.value++
   fetchReviews(true)
 }
@@ -268,9 +301,14 @@ async function submitReview() {
     page.value = 1
     await fetchReviews()
   } catch (e: unknown) {
+    if (getStatusCode(e) === 401) {
+      handleSessionExpired()
+      return
+    }
     submitError.value = extractErrorMessage(e, 'Gửi thất bại')
+  } finally {
+    submitting.value = false
   }
-  submitting.value = false
 }
 
 onMounted(() => fetchReviews())

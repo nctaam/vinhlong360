@@ -10,9 +10,9 @@
       </p>
       <ol class="sp-stops">
         <li v-for="(s, i) in plan.stops" :key="i" class="sp-stop">
-          <span class="sp-num">{{ i + 1 }}</span>
+          <span class="sp-num">{{ Number(i) + 1 }}</span>
           <div class="sp-stop-body">
-            <NuxtLink v-if="s.id" :to="`/dia-diem/${s.id}`" class="sp-stop-name">{{ s.name }}</NuxtLink>
+            <NuxtLink v-if="s.id" :to="entityPath(s.id)" class="sp-stop-name">{{ s.name }}</NuxtLink>
             <strong v-else class="sp-stop-name">{{ s.name }}</strong>
             <small v-if="s.place_name" class="sp-stop-place">📍 {{ s.place_name }}</small>
             <small v-if="s.time" class="sp-stop-time">🕒 {{ s.time }}</small>
@@ -32,11 +32,12 @@
 
 <script setup lang="ts">
 const route = useRoute()
-const planId = String(route.params.id || '')
+const planId = normalizeRouteParam(route.params.id)
+const encodedPlanId = encodePathId(planId)
 
 const { data: plan, status } = await useAsyncData(`shared-plan-${planId}`, async () => {
   try {
-    const res = await apiFetch<{ plan: any }>(`/api/shared-plans/${encodeURIComponent(planId)}`)
+    const res = await apiFetch<{ plan: any }>(`/api/shared-plans/${encodedPlanId}`)
     return res?.plan ?? null
   } catch {
     return null
@@ -51,7 +52,7 @@ useSeoMeta({
   description: () => plan.value ? `Lịch trình ${plan.value.stops?.length || 0} điểm tại Vĩnh Long` : 'Lịch trình cộng đồng chia sẻ',
   robots: 'noindex,follow',
 })
-useHead({ link: [{ rel: 'canonical', href: canonicalUrl(`/lich-trinh-chia-se/${planId}`) }] })
+useHead({ link: [{ rel: 'canonical', href: canonicalUrl(`/lich-trinh-chia-se/${encodedPlanId}`) }] })
 </script>
 
 <style scoped>

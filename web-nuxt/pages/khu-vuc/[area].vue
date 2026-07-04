@@ -149,7 +149,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Place, Entity} from '~/types'
+import type { Entity} from '~/types'
 import { AREA_META, CARD_TYPES, TYPE_META } from '~/composables/useConstants'
 
 useReveal()
@@ -169,10 +169,10 @@ const areaTint = { '--AREA-rgb': AREA_RGB[areaKey] || 'var(--primary-rgb)' }
 
 const [{ data, error: fetchError }, { data: placesData }] = await Promise.all([
   useAsyncData(`area-${areaKey}`, () =>
-    apiFetch<any>(`/api/entities?area=${areaKey}&limit=200`)
+    apiFetch<{ entities?: Entity[] }>(`/api/entities?area=${areaKey}&limit=200`)
   ),
   useAsyncData(`area-wards-${areaKey}`, () =>
-    apiFetch<Place[]>('/api/places').catch(() => [])
+    apiFetch<Entity[]>('/api/places').catch(() => [])
   ),
 ])
 
@@ -204,7 +204,7 @@ const areaEditorial = computed(() => AREA_EDITORIAL[areaKey])
 const ADMIN_LEVELS = ['phuong', 'xa', 'tinh']
 const wards = computed(() =>
   (placesData.value || [])
-    .filter((p: Entity) => p.area === areaKey && ADMIN_LEVELS.includes(p.level))
+    .filter((p: Entity) => p.area === areaKey && ADMIN_LEVELS.includes(p.level || ''))
     .sort((a: Entity, b: Entity) => a.name.localeCompare(b.name, 'vi'))
 )
 
@@ -219,8 +219,8 @@ const entityGroups = computed(() => {
   const groups: Record<string, Entity[]> = {}
   const withImages: Entity[] = []
   for (const e of entities.value) {
-    if (!groups[e.type]) groups[e.type] = []
-    groups[e.type].push(e)
+    const group = groups[e.type] || (groups[e.type] = [])
+    group.push(e)
     if (e.images?.length) withImages.push(e)
   }
   return { groups, withImages }
@@ -229,7 +229,7 @@ const entityGroups = computed(() => {
 const typeStats = computed(() =>
   (CARD_TYPES as readonly string[])
     .filter(t => entityGroups.value.groups[t]?.length)
-    .map(t => ({ type: t, label: TYPE_META[t]?.label || t, count: entityGroups.value.groups[t].length }))
+    .map(t => ({ type: t, label: TYPE_META[t]?.label || t, count: (entityGroups.value.groups[t] || []).length }))
 )
 
 const showCount = ref(24)
@@ -245,7 +245,7 @@ const typeSections = computed(() =>
       type: t,
       emoji: TYPE_META[t]?.emoji || '📍',
       label: TYPE_META[t]?.label || t,
-      items: entityGroups.value.groups[t],
+      items: entityGroups.value.groups[t] || [],
     }))
 )
 

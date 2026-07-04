@@ -9,6 +9,14 @@ export interface EntitySource {
   date?: string
 }
 
+export interface EntitySourceFreshness {
+  source_title?: string | null
+  source_url?: string | null
+  updated_at?: string | null
+  days_since_update?: number | null
+  freshness_status?: 'fresh' | 'aging' | 'stale' | 'unknown' | string
+}
+
 export interface EntitySeason {
   months?: number[]
   peak?: number[]
@@ -26,6 +34,49 @@ export interface EntityRelationship {
   distance_km?: number
 }
 
+export interface EntityAttributes extends Record<string, any> {
+  address?: string
+  phone?: string
+  website?: string
+  zalo?: string
+  hours?: string
+  price?: string
+  fee?: string
+  area_km2?: string | number
+  population?: string | number
+  office_kind?: string
+  coords_approximate?: boolean
+  amenities?: string[] | string
+  price_range?: string
+  atmosphere?: string
+  famous_for?: string
+  significance?: string
+  highlight?: string
+  booking_note?: string
+  best_time?: string
+  transport?: string
+  parking?: string
+  travel_tips?: string[] | string
+  suggested_duration?: string
+  suitable_for?: string[] | string
+  family_friendly?: boolean
+  must_order?: string[] | string
+  signature_dish?: string
+  best_dish?: string
+  specialty?: string[] | string
+  ingredients?: string[] | string
+  ocop?: string | number
+}
+
+export interface EntityQuality extends Record<string, unknown> {
+  has_source?: boolean
+  source_title?: string
+  source_url?: string
+  source_tier?: string
+  verified_at?: string
+  confidence_reason?: string
+}
+
 export interface Entity {
   id: string
   type: string
@@ -35,11 +86,12 @@ export interface Entity {
   place_name?: string
   confidence?: number
   season?: EntitySeason
-  attributes?: Record<string, string | number | boolean | string[]>
+  attributes?: EntityAttributes
   source?: EntitySource[]
   images?: string[]
   image_urls?: string[]
   image?: string
+  image_credits?: { author?: string; license?: string }[]
   coordinates?: Coordinates | [number, number] | null
   updatedAt?: string
   area?: string
@@ -51,7 +103,9 @@ export interface Entity {
   description?: string
   relationship_total?: number
   relationships?: EntityRelationship[]
-  quality?: Record<string, unknown>
+  quality?: EntityQuality
+  source_freshness?: EntitySourceFreshness
+  verified?: boolean
 }
 
 export interface Relationship {
@@ -61,11 +115,17 @@ export interface Relationship {
 }
 
 export interface ItineraryStop {
-  entity_id: string
+  entityId?: string
+  entity_id?: string
+  id?: string
+  type?: string
   name?: string
+  summary?: string
   duration?: string
+  time?: string
   note?: string
   order?: number
+  coordinates?: Coordinates | [number, number] | null
 }
 
 export interface ItineraryDay {
@@ -77,15 +137,20 @@ export interface ItineraryDay {
 export interface Itinerary {
   id: string
   title: string
+  name?: string
   slug?: string
   summary?: string
+  description?: string
   days: ItineraryDay[]
+  stops?: ItineraryStop[]
   tags?: string[]
   duration?: string
   difficulty?: string
   region?: string
   area?: string
+  areas?: string[]
   updatedAt?: string
+  error?: string | boolean
 }
 
 export interface User {

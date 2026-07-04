@@ -49,15 +49,19 @@
         <div
           v-for="(term, i) in recentSearches"
           :key="'r-' + i"
-          class="ac-item ac-recent"
-          :id="'ac-opt-' + i"
-          :class="{ highlighted: i === highlightIndex }"
-          role="option"
-          :aria-selected="i === highlightIndex"
-          @mousedown.prevent="useRecent(term)"
+          class="ac-recent-row"
         >
           <span class="ac-emoji">🕐</span>
-          <span class="ac-info"><span class="ac-name">{{ term }}</span></span>
+          <div
+            class="ac-item ac-recent"
+            :id="'ac-opt-' + i"
+            :class="{ highlighted: i === highlightIndex }"
+            role="option"
+            :aria-selected="i === highlightIndex"
+            @mousedown.prevent="useRecent(term)"
+          >
+            <span class="ac-info"><span class="ac-name">{{ term }}</span></span>
+          </div>
           <button type="button" class="ac-remove-recent" @mousedown.stop.prevent="removeRecent(i)" aria-label="Xóa khỏi lịch sử">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -68,7 +72,7 @@
       <NuxtLink
         v-for="(item, i) in suggestions"
         :key="item.id"
-        :to="`/dia-diem/${item.id}`"
+        :to="entityPath(item.id)"
         class="ac-item"
         :id="'ac-opt-' + (recentOffset + i)"
         :class="{ highlighted: recentOffset + i === highlightIndex }"
@@ -150,6 +154,7 @@ let loadingTimer: ReturnType<typeof setTimeout> | null = null
 const inputEl = ref<HTMLInputElement | null>(null)
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 let fetchAbort: AbortController | null = null
+const { fetchEntitySuggestions } = useUnifiedSearch()
 
 const { recentSearches, loadRecents, saveRecent, removeRecent, clearRecents } = useSearchRecents()
 
@@ -209,8 +214,8 @@ async function fetchSuggestions(q: string) {
   if (loadingTimer) clearTimeout(loadingTimer)
   loadingTimer = setTimeout(() => { if (loading.value) showLoading.value = true }, 150)
   try {
-    const data = await $fetch<any>(`/api/entities?q=${encodeURIComponent(q)}&limit=5`, { signal: ctrl.signal })
-    if (!ctrl.signal.aborted) { suggestions.value = data?.entities || []; fetchFailed.value = false }
+    const data = await fetchEntitySuggestions(q, 5, { signal: ctrl.signal })
+    if (!ctrl.signal.aborted) { suggestions.value = data || []; fetchFailed.value = false }
   } catch {
     if (!ctrl.signal.aborted) { suggestions.value = []; fetchFailed.value = true }
   }
@@ -255,6 +260,11 @@ function scrollHighlightedIntoView() {
 }
 
 function moveDown() {
+  if (totalItems.value <= 0) {
+    highlightIndex.value = -1
+    showDropdown.value = true
+    return
+  }
   const max = totalItems.value - 1
   highlightIndex.value = highlightIndex.value < max ? highlightIndex.value + 1 : 0
   showDropdown.value = true
@@ -262,6 +272,10 @@ function moveDown() {
 }
 
 function moveUp() {
+  if (totalItems.value <= 0) {
+    highlightIndex.value = -1
+    return
+  }
   const max = totalItems.value - 1
   highlightIndex.value = highlightIndex.value > 0 ? highlightIndex.value - 1 : max
   scrollHighlightedIntoView()
@@ -271,20 +285,22 @@ function goTo(item: Entity) {
   saveRecent(item.name)
   close()
   query.value = ''
-  navigateTo(`/dia-diem/${item.id}`)
+  navigateTo(entityPath(item.id))
 }
 
 function onSubmit() {
   const q = query.value.trim()
   if (!q) {
     if (highlightIndex.value >= 0 && highlightIndex.value < recentSearches.value.length) {
-      useRecent(recentSearches.value[highlightIndex.value])
+      const recent = recentSearches.value[highlightIndex.value]
+      if (recent) useRecent(recent)
     }
     return
   }
 
   if (highlightIndex.value >= recentOffset.value && highlightIndex.value < recentOffset.value + suggestions.value.length) {
-    goTo(suggestions.value[highlightIndex.value - recentOffset.value])
+    const item = suggestions.value[highlightIndex.value - recentOffset.value]
+    if (item) goTo(item)
     return
   }
 
@@ -328,6 +344,24 @@ if (import.meta.client) {
 .ac-dropdown :deep(.ac-item.highlighted) {
   border-left: 3px solid var(--primary);
   padding-left: calc(var(--space-4) - 3px);
+}
+.ac-recent-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.ac-recent-row > .ac-emoji {
+  flex: 0 0 auto;
+  padding-left: var(--space-4);
+}
+.ac-recent-row > .ac-item {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.ac-remove-recent {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 /* dark overrides for .ac-type / .ac-place moved to dark-overrides.css —

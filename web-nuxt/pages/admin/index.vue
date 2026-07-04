@@ -107,6 +107,63 @@
       </div>
     </div>
 
+    <!-- Ops cockpit -->
+    <div v-if="ops" class="dash-ops" role="group" aria-label="Ops cockpit">
+      <div class="dash-ops-head">
+        <div>
+          <strong>Ops cockpit</strong>
+          <p>Release, queue, quality budget và rollback readiness</p>
+        </div>
+        <span :class="['dash-ops-status', ops.status === 'ok' ? 'ok' : 'attention']">{{ ops.status || 'attention' }}</span>
+      </div>
+      <div class="dash-ops-grid">
+        <div class="dash-ops-cell">
+          <span class="dash-ops-label">Release gate</span>
+          <b>{{ ops.release?.gate_covers_backend_frontend_e2e ? 'OK' : 'Cần kiểm tra' }}</b>
+          <small>Migration: {{ ops.release?.latest_migration || 'n/a' }}</small>
+        </div>
+        <div class="dash-ops-cell">
+          <span class="dash-ops-label">Deploy</span>
+          <b>{{ ops.release?.deploy_health_blocking ? 'Health-blocking' : 'Chưa khóa đủ' }}</b>
+          <small>{{ ops.release?.deploy_host_env_configured ? 'Host env đã đặt' : 'Thiếu VL360_DEPLOY_HOST' }}</small>
+        </div>
+        <div class="dash-ops-cell">
+          <span class="dash-ops-label">Queue backlog</span>
+          <b>{{ opsQueueTotal }}</b>
+          <small>Moderation {{ ops.queues?.moderation || 0 }} · DQ {{ ops.queues?.data_quality || 0 }}</small>
+        </div>
+        <div class="dash-ops-cell">
+          <span class="dash-ops-label">Rollback</span>
+          <b>{{ ops.rollback?.backup_ready ? 'Sẵn sàng' : 'Thiếu backup' }}</b>
+          <small>{{ ops.rollback?.latest_backup || 'chưa có bản gần nhất' }}</small>
+        </div>
+        <div class="dash-ops-cell">
+          <span class="dash-ops-label">Schema</span>
+          <b>{{ ops.release?.schema_ok ? 'Đồng bộ' : 'Cần migrate' }}</b>
+          <small>v{{ ops.release?.schema_version || 0 }}/{{ ops.release?.required_schema_version || '?' }}</small>
+        </div>
+        <div class="dash-ops-cell">
+          <span class="dash-ops-label">Quality trend</span>
+          <b>{{ formatQualityTrend(ops.quality_trend) }}</b>
+          <small>{{ formatQualityTrendDetail(ops.quality_trend) }}</small>
+        </div>
+        <div class="dash-ops-cell">
+          <span class="dash-ops-label">Write guards</span>
+          <b>{{ ops.shared_controls?.tables_ready ? 'DB-backed' : 'Fallback' }}</b>
+          <small>Rate {{ ops.shared_controls?.rate_limit_enabled ? 'on' : 'off' }} · Idem {{ ops.shared_controls?.idempotency_enabled ? 'on' : 'off' }}</small>
+        </div>
+      </div>
+    </div>
+
+    <JourneyActionRail
+      v-if="adminOpsActions.length"
+      :actions="adminOpsActions"
+      title="Ưu tiên vận hành"
+      subtitle="Xếp hạng theo health, release gate, rollback readiness và hàng đợi cần xử lý."
+      aria-label="Hành động ưu tiên cho AdminCP"
+      compact
+    />
+
     <!-- Entity completeness -->
     <div v-if="stats.completeness" class="dash-completeness">
       <div class="dash-comp-header">
@@ -220,15 +277,92 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
+import { useJourneyActions } from '~/composables/useJourneyActions'
+
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Bảng điều khiển — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
-const stats = ref<Record<string, unknown>>({})
+const { adminOpsActions: buildAdminOpsActions } = useJourneyActions()
+
+interface DashboardBackup {
+  last?: string
+  size_mb?: number
+  count?: number
+}
+
+interface DashboardCompleteness {
+  pct: number
+  has_summary: number
+  has_images: number
+  has_place: number
+  total: number
+  orphans?: number
+}
+
+interface DashboardStats {
+  total_entities?: number
+  entities_week?: number
+  total_places?: number
+  total_relationships?: number
+  total_itineraries?: number
+  total_users?: number
+  users_week?: number
+  total_posts?: number
+  posts_week?: number
+  backup?: DashboardBackup
+  completeness?: DashboardCompleteness
+  by_type?: Record<string, number>
+}
+
+interface DashboardHealth {
+  status?: string
+  version?: string
+  uptime_seconds: number
+  memory_mb?: number
+  llm_api?: string
+  data_quality?: {
+    coverage_pct?: number
+  }
+}
+
+interface DashboardOps {
+  status?: string
+  release?: {
+    gate_covers_backend_frontend_e2e?: boolean
+    deploy_health_blocking?: boolean
+    deploy_host_env_configured?: boolean
+    latest_migration?: string
+    schema_ok?: boolean
+    schema_version?: number
+    required_schema_version?: number
+  }
+  schema?: Record<string, unknown>
+  shared_controls?: {
+    rate_limit_enabled?: boolean
+    idempotency_enabled?: boolean
+    tables_ready?: boolean
+  }
+  queues?: Record<string, number>
+  rollback?: {
+    backup_ready?: boolean
+    latest_backup?: string | null
+  }
+  quality_trend?: {
+    available?: boolean
+    latest?: Record<string, { value?: number; unit?: string; created_at?: string }>
+    delta_7d?: Record<string, number>
+    budget_failures?: Array<{ metric_key?: string; value?: number; expected?: number; op?: string }>
+    sample_count?: number
+    last_recorded_at?: string | null
+  }
+}
+
+const stats = ref<DashboardStats>({})
 const alerts = ref<Array<{ type: string; count: number; label: string; icon: string; link: string; priority: number }>>([])
-const health = ref<Record<string, any> | null>(null)
+const health = ref<DashboardHealth | null>(null)
+const ops = ref<DashboardOps | null>(null)
 const recentActivity = ref<Array<{ method: string; path: string; ts: string }>>([])
 const loading = ref(true)
 const loadError = ref(false)
@@ -249,6 +383,25 @@ function formatUptime(s: number): string {
   if (d > 0) return `${d}d ${h}h`
   if (h > 0) return `${h}h ${m}m`
   return `${m}m`
+}
+
+function formatQualityTrend(trend?: DashboardOps['quality_trend']): string {
+  if (!trend?.available) return 'Chưa có snapshot'
+  const score = trend.latest?.quality_score_avg?.value
+  if (typeof score === 'number') return `${score.toFixed(1)}/100`
+  const failures = trend.budget_failures?.length || 0
+  return failures ? `${failures} budget fail` : 'Đang theo dõi'
+}
+
+function formatQualityTrendDetail(trend?: DashboardOps['quality_trend']): string {
+  if (!trend?.available) return 'Chạy quality_budget --record-db'
+  const delta = trend.delta_7d?.quality_score_avg
+  const failures = trend.budget_failures?.length || 0
+  const parts: string[] = []
+  if (typeof delta === 'number') parts.push(`7 ngày ${delta >= 0 ? '+' : ''}${delta.toFixed(1)}`)
+  if (failures) parts.push(`${failures} budget cần xử lý`)
+  if (!parts.length && trend.sample_count) parts.push(`${trend.sample_count} snapshot 30 ngày`)
+  return parts.join(' · ') || 'Ổn định'
 }
 
 function timeAgo(ts: string): string {
@@ -322,6 +475,20 @@ const donutSegments = computed(() => {
   })
 })
 
+const opsQueueTotal = computed(() => {
+  const queues = ops.value?.queues || {}
+  return Object.values(queues).reduce((sum, value) => sum + (Number(value) || 0), 0)
+})
+const adminOpsActions = computed(() => buildAdminOpsActions({
+  healthStatus: health.value?.status,
+  releaseGateOk: ops.value?.release?.gate_covers_backend_frontend_e2e,
+  deployHealthBlocking: ops.value?.release?.deploy_health_blocking,
+  deployHostConfigured: ops.value?.release?.deploy_host_env_configured,
+  rollbackReady: ops.value?.rollback?.backup_ready,
+  queues: ops.value?.queues,
+  dataQualityCoverage: health.value?.data_quality?.coverage_pct,
+}))
+
 const DEGRADED = Symbol('degraded')
 
 async function fetchDashboard() {
@@ -329,20 +496,23 @@ async function fetchDashboard() {
   loadError.value = false
   partialDegraded.value = false
   try {
-    const [s, a, h, auditRes] = await Promise.all([
-      $fetch<Record<string, unknown>>('/admin-api/stats', { headers: authHeaders() }),
+    const [s, a, h, opsRes, auditRes] = await Promise.all([
+      $fetch<DashboardStats>('/admin-api/stats', { headers: authHeaders() }),
       $fetch<{ alerts: typeof alerts.value }>('/admin-api/dashboard-alerts', { headers: authHeaders() }).catch(() => DEGRADED),
-      $fetch<Record<string, any>>('/api/health').catch(() => DEGRADED),
+      $fetch<DashboardHealth>('/health/internal', { headers: authHeaders() }).catch(() => DEGRADED),
+      $fetch<DashboardOps>('/admin-api/ops-summary', { headers: authHeaders() }).catch(() => DEGRADED),
       $fetch<{ entries: any[] }>('/admin-api/audit-log?limit=10', { headers: authHeaders() }).catch(() => DEGRADED),
     ])
     stats.value = s
     if (a !== DEGRADED) alerts.value = (a as { alerts: typeof alerts.value }).alerts
-    if (h !== DEGRADED) health.value = h as Record<string, any>
+    if (h !== DEGRADED) health.value = h as DashboardHealth
+    if (opsRes !== DEGRADED) ops.value = opsRes as DashboardOps
     if (auditRes !== DEGRADED) recentActivity.value = (auditRes as { entries: any[] }).entries || []
     const degradedParts: string[] = []
     if (a === DEGRADED) degradedParts.push('cảnh báo')
     if (h === DEGRADED) degradedParts.push('trạng thái agent')
     if (auditRes === DEGRADED) degradedParts.push('nhật ký')
+    if (opsRes === DEGRADED) degradedParts.push('ops cockpit')
     partialDegraded.value = degradedParts.length > 0
     degradedDetail.value = degradedParts.join(', ')
   } catch {
@@ -617,4 +787,29 @@ onMounted(fetchDashboard)
 .activity-label { color: var(--ink); font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .activity-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: .7rem; }
 .activity-time { color: var(--muted); font-size: .72rem; white-space: nowrap; }
+.dash-ops {
+  background: var(--bg); border: .5px solid var(--line); border-radius: 14px;
+  padding: var(--space-4) var(--space-5); margin-bottom: var(--space-6);
+}
+.dash-ops-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.dash-ops-head strong { display: block; font-size: .92rem; }
+.dash-ops-head p { margin: 2px 0 0; color: var(--muted); font-size: .78rem; }
+.dash-ops-status {
+  padding: 3px 9px; border-radius: 999px; font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .02em;
+}
+.dash-ops-status.ok { background: rgba(var(--secondary-rgb, 33,150,83), .12); color: var(--secondary, #219653); }
+.dash-ops-status.attention { background: rgba(var(--warning-rgb), .12); color: rgb(var(--warning-rgb)); }
+.dash-ops-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+.dash-ops-cell {
+  min-width: 0; display: flex; flex-direction: column; gap: 3px;
+  padding: var(--space-3); border: .5px solid var(--line); border-radius: 10px;
+  background: rgba(142,142,147,.06);
+}
+.dash-ops-cell b { font-size: .9rem; color: var(--ink); }
+.dash-ops-cell small, .dash-ops-label { color: var(--muted); font-size: .75rem; overflow-wrap: anywhere; }
+.dash-ops-label { font-weight: 650; text-transform: uppercase; letter-spacing: .02em; }
+.dark .dash-ops { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+@media (max-width: 900px) { .dash-ops-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .dash-ops-grid { grid-template-columns: 1fr; } }
 </style>

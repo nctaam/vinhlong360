@@ -9,7 +9,7 @@
       <NuxtLink to="/tai-khoan" class="dropdown-item" role="menuitem" @click="open = false">
         📊 Tài khoản
       </NuxtLink>
-      <NuxtLink v-if="user" :to="`/nguoi-dung/${user.username || user.id}`" class="dropdown-item" role="menuitem" @click="open = false">
+      <NuxtLink v-if="user" :to="userPath(user.username || user.id)" class="dropdown-item" role="menuitem" @click="open = false">
         👤 Trang cá nhân
       </NuxtLink>
       <NuxtLink to="/thong-bao" class="dropdown-item" role="menuitem" @click="open = false">

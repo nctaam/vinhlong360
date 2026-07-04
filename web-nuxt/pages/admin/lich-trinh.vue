@@ -13,7 +13,9 @@
       <input v-model="searchText" class="input" style="max-width: 260px" placeholder="Tìm lịch trình…" aria-label="Tìm lịch trình" />
     </div>
 
-    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải lịch trình"><div class="spinner"></div></div>
+    <div v-if="loading" class="lt-skeleton" role="status" aria-label="Đang tải lịch trình">
+      <div v-for="i in 5" :key="i" class="lt-skel-row"><div class="skel skel-id"></div><div class="skel skel-name"></div><div class="skel skel-area"></div><div class="skel skel-dur"></div><div class="skel skel-stops"></div></div>
+    </div>
     <div v-else-if="loadError" class="admin-empty">
       <p>Không tải được danh sách lịch trình.</p>
       <button type="button" class="btn btn-secondary" @click="fetchItineraries">Thử lại</button>
@@ -34,8 +36,14 @@
           <tbody>
             <tr v-for="it in filteredItineraries" :key="it.id">
               <td class="admin-td-id">{{ it.id }}</td>
-              <td><strong>{{ it.name }}</strong></td>
-              <td><span v-if="it.area" class="lt-area-badge">{{ it.area }}</span><span v-else class="admin-td-muted">—</span></td>
+              <td><strong>{{ itineraryDisplayName(it) }}</strong></td>
+              <td>
+                <div class="lt-area-cell">
+                  <span v-if="it.area" class="lt-area-badge">{{ areaLabel(it.area) }}</span>
+                  <span v-if="coverageLabel(it)" class="lt-coverage-badge">{{ coverageLabel(it) }}</span>
+                  <span v-if="!it.area && !coverageLabel(it)" class="admin-td-muted">—</span>
+                </div>
+              </td>
               <td>
                 <span v-if="it.duration" class="lt-duration"><span class="lt-duration-icon" aria-hidden="true">&#128338;</span> {{ it.duration }}</span>
                 <span v-else class="admin-td-muted">—</span>
@@ -44,8 +52,8 @@
                 <span class="lt-stops-badge">{{ it.stops?.length || 0 }}</span>
               </td>
               <td class="admin-actions">
-                <button type="button" class="btn-success lt-row-btn" :aria-label="`Sửa lịch trình ${it.name}`" @click="openEdit(it)">Sửa</button>
-                <button type="button" class="btn-danger lt-row-btn" :aria-label="`Xóa lịch trình ${it.name}`" :disabled="acting === it.id" @click="deleteItinerary(it.id)">Xóa</button>
+                <button type="button" class="btn-success lt-row-btn" :aria-label="`Sửa lịch trình ${itineraryDisplayName(it)}`" @click="openEdit(it)">Sửa</button>
+                <button type="button" class="btn-danger lt-row-btn" :aria-label="`Xóa lịch trình ${itineraryDisplayName(it)}`" :disabled="acting === it.id" @click="deleteItinerary(it.id)">Xóa</button>
               </td>
             </tr>
             <tr v-if="!filteredItineraries.length">
@@ -70,7 +78,17 @@
         <div class="modal-body admin-form-col">
           <input v-model="form.id" class="input" placeholder="ID (slug)" aria-label="ID (slug)" :disabled="!!editing" />
           <input v-model="form.name" class="input" placeholder="Tên lịch trình" aria-label="Tên lịch trình" />
-          <input v-model="form.area" class="input" placeholder="Khu vực (vinh-long / ben-tre / tra-vinh)" aria-label="Khu vực" />
+          <select v-model="form.area" class="input" aria-label="Khu vực chính">
+            <option value="">Chọn khu vực chính</option>
+            <option v-for="area in itineraryAreaOptions" :key="area.key" :value="area.key">{{ area.label }}</option>
+          </select>
+          <fieldset class="lt-area-picker">
+            <legend>Vùng bao phủ</legend>
+            <label v-for="area in coverageAreaOptions" :key="area.key" class="lt-area-check">
+              <input v-model="form.areas" type="checkbox" :value="area.key" />
+              <span>{{ area.label }}</span>
+            </label>
+          </fieldset>
           <input v-model="form.duration" class="input" placeholder="Thời gian (VD: 1 ngày)" aria-label="Thời gian" />
           <textarea v-model="form.description" class="input admin-textarea" placeholder="Mô tả" aria-label="Mô tả lịch trình" rows="3"></textarea>
 
@@ -128,35 +146,91 @@
 
 <script setup lang="ts">
 import type { Itinerary } from '~/types'
+import { AREA_META } from '~/composables/useConstants'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Lịch trình — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
+
+interface ItineraryForm {
+  id: string
+  name: string
+  area: string
+  areas: string[]
+  duration: string
+  description: string
+}
+
+interface ItinerariesResponse {
+  itineraries?: Itinerary[]
+}
+
+const EMPTY_ITINERARY_FORM: ItineraryForm = { id: '', name: '', area: '', areas: [], duration: '', description: '' }
+
 const itineraries = ref<Itinerary[]>([])
 const searchText = ref('')
+const itineraryAreaOptions = computed(() => Object.entries(AREA_META).map(([key, meta]) => ({ key, label: `${meta.emoji} ${meta.name}` })))
+const coverageAreaOptions = computed(() => itineraryAreaOptions.value.filter(area => area.key !== 'lien-vung'))
 const filteredItineraries = computed(() => {
   const q = searchText.value.toLowerCase().trim()
   if (!q) return itineraries.value
-  return itineraries.value.filter(it => (it.name || '').toLowerCase().includes(q) || (it.area || '').toLowerCase().includes(q) || it.id.toLowerCase().includes(q))
+  return itineraries.value.filter((it) => {
+    const text = [
+      itineraryDisplayName(it),
+      it.area || '',
+      areaLabel(it.area || ''),
+      ...(it.areas || []),
+      ...(it.areas || []).map(areaLabel),
+      it.id,
+    ].join(' ').toLowerCase()
+    return text.includes(q)
+  })
 })
 const showModal = ref(false)
 const ltModalRef = ref<HTMLElement | null>(null)
 useModalA11y(showModal, ltModalRef, { onClose: () => { showModal.value = false } })
-const editing = ref<Record<string, unknown> | null>(null)
-const form = ref<Record<string, unknown>>({})
+const editing = ref<Itinerary | null>(null)
+const form = ref<ItineraryForm>({ ...EMPTY_ITINERARY_FORM })
 const stopsJson = ref('[]')
 const loading = ref(true)
 const loadError = ref(false)
 const acting = ref<string | null>(null)
 const saving = ref(false)
 
+function areaLabel(area?: string) {
+  if (!area) return ''
+  return AREA_META[area]?.name || area
+}
+
+function normalizeAreas(values: unknown[]): string[] {
+  const allowed = new Set(coverageAreaOptions.value.map(area => area.key))
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const value of values) {
+    const area = typeof value === 'string' ? value.trim() : ''
+    if (!area || !allowed.has(area) || seen.has(area)) continue
+    seen.add(area)
+    out.push(area)
+  }
+  return out
+}
+
+function itineraryDisplayName(it: Itinerary) {
+  return it.name || it.title || it.id
+}
+
+function coverageLabel(it: Itinerary) {
+  const areas = normalizeAreas(it.areas || [])
+  return areas.length ? areas.map(areaLabel).join(', ') : ''
+}
+
 // Visual stop editor state. Each row keeps the known fields plus _key (UI) and
 // _extra (any unrecognised keys from the original stop, preserved on save).
 interface StopRow {
   _key: number
-  _idKey: 'id' | 'entityId'
+  _idKey: 'id' | 'entityId' | 'entity_id'
   _extra: Record<string, unknown>
   time: string
   entityId: string
@@ -178,7 +252,7 @@ function onEntityInput(e: Event) {
     try {
       const res = await $fetch<{ entities: any[] }>(`/admin-api/entities?q=${encodeURIComponent(val)}&limit=12`, { headers: authHeaders() })
       entitySuggestions.value = (res.entities || []).map((ent: any) => ({ id: ent.id, name: ent.name, type: ent.type || '' }))
-    } catch { /* ignore */ }
+    } catch { entitySuggestions.value = [] }
   }, 300)
 }
 
@@ -203,11 +277,13 @@ function buildSnapshot(): string {
 }
 const isDirty = computed(() => buildSnapshot() !== initialSnapshot.value)
 
-const KNOWN_STOP_KEYS = ['time', 'id', 'entityId', 'name', 'note']
+const KNOWN_STOP_KEYS = ['time', 'id', 'entityId', 'entity_id', 'name', 'note']
 
 function toStopRow(raw: unknown): StopRow {
   const s = (raw && typeof raw === 'object') ? raw as Record<string, unknown> : {}
-  const idKey: 'id' | 'entityId' = ('entityId' in s && !('id' in s)) ? 'entityId' : 'id'
+  const idKey: 'id' | 'entityId' | 'entity_id' =
+    ('entityId' in s && !('id' in s)) ? 'entityId' :
+    ('entity_id' in s && !('id' in s)) ? 'entity_id' : 'id'
   const extra: Record<string, unknown> = {}
   for (const k of Object.keys(s)) {
     if (!KNOWN_STOP_KEYS.includes(k)) extra[k] = s[k]
@@ -217,14 +293,14 @@ function toStopRow(raw: unknown): StopRow {
     _idKey: idKey,
     _extra: extra,
     time: typeof s.time === 'string' ? s.time : (s.time == null ? '' : String(s.time)),
-    entityId: String((s.entityId ?? s.id ?? '') as string),
+    entityId: String((s.entityId ?? s.entity_id ?? s.id ?? '') as string),
     name: typeof s.name === 'string' ? s.name : (s.name == null ? '' : String(s.name)),
     note: typeof s.note === 'string' ? s.note : (s.note == null ? '' : String(s.note)),
   }
 }
 
 // Serialize a row back to the backend stop shape, preserving the original id key
-// (id vs entityId) and any unknown keys, and omitting empty optional fields.
+// (id/entityId/entity_id) and any unknown keys, and omitting empty optional fields.
 function fromStopRow(r: StopRow): Record<string, unknown> {
   const out: Record<string, unknown> = { ...r._extra }
   const time = r.time.trim()
@@ -285,8 +361,8 @@ async function fetchItineraries() {
   loading.value = true
   loadError.value = false
   try {
-    const res = await $fetch<Record<string, unknown>>('/admin-api/itineraries', { headers: authHeaders() })
-    itineraries.value = (res.itineraries || res || []) as Itinerary[]
+    const res = await $fetch<ItinerariesResponse | Itinerary[]>('/admin-api/itineraries', { headers: authHeaders() })
+    itineraries.value = Array.isArray(res) ? res : (res.itineraries || [])
   } catch {
     loadError.value = true
     showToast('Không thể tải danh sách lịch trình', 'error')
@@ -297,7 +373,7 @@ async function fetchItineraries() {
 
 function openCreate() {
   editing.value = null
-  form.value = { id: '', name: '', area: '', duration: '', description: '' }
+  form.value = { ...EMPTY_ITINERARY_FORM }
   stops.value = []
   stopsJson.value = '[]'
   jsonMode.value = false
@@ -307,7 +383,14 @@ function openCreate() {
 
 function openEdit(it: Itinerary) {
   editing.value = it
-  form.value = { id: it.id, name: it.name, area: it.area || '', duration: it.duration || '', description: it.description || '' }
+  form.value = {
+    id: it.id,
+    name: it.name || it.title || '',
+    area: it.area || it.region || '',
+    areas: normalizeAreas(it.areas || []),
+    duration: it.duration || '',
+    description: it.description || it.summary || '',
+  }
   const rawStops = it.stops || []
   stops.value = rowsFromStops(rawStops)
   stopsJson.value = JSON.stringify(rawStops, null, 2)
@@ -326,7 +409,22 @@ async function save() {
   } else {
     stopsPayload = stops.value.map(fromStopRow)
   }
-  const body = { ...form.value, stops: stopsPayload }
+  const primaryArea = form.value.area.trim()
+  const areas = normalizeAreas([
+    ...form.value.areas,
+    primaryArea !== 'lien-vung' ? primaryArea : '',
+  ])
+  const summary = form.value.description.trim()
+  const body = {
+    id: form.value.id.trim(),
+    title: form.value.name.trim(),
+    area: primaryArea || undefined,
+    areas,
+    duration: form.value.duration.trim() || undefined,
+    description: summary,
+    summary,
+    stops: stopsPayload,
+  }
   saving.value = true
   try {
     if (editing.value) {
@@ -396,6 +494,28 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .dark .lt-area-badge { background: rgba(var(--blue-rgb),.12); }
 .dark .lt-area-badge:hover { background: rgba(var(--blue-rgb),.2); }
 .dark .lt-stops-badge { background: rgba(var(--primary-rgb),.15); }
+
+.lt-area-cell { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.lt-coverage-badge {
+  display: inline-flex; align-items: center; max-width: 220px;
+  padding: 2px 8px; border-radius: 8px; font-size: .7rem;
+  color: var(--muted); background: rgba(var(--primary-rgb), .06);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lt-area-picker {
+  border: 1px solid var(--border, rgba(0,0,0,.12));
+  border-radius: 10px; padding: 10px 12px; margin: 0;
+  display: flex; flex-wrap: wrap; gap: 8px 12px;
+}
+.lt-area-picker legend {
+  padding: 0 4px; color: var(--muted); font-size: .78rem; font-weight: 700;
+}
+.lt-area-check {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .82rem; color: var(--text);
+}
+.lt-area-check input { width: 16px; height: 16px; accent-color: var(--primary); }
+.dark .lt-coverage-badge { background: rgba(var(--primary-rgb), .12); }
 
 /* --- Visual stops editor --- */
 .lt-stops-head {
@@ -527,4 +647,15 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 .dark .lt-duration { color: rgba(255,255,255,.55); }
 .dark .lt-duration-icon { opacity: .8; }
 .dark .lt-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
+
+/* ── Skeleton loading ── */
+.lt-skeleton { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4) 0; }
+.lt-skel-row { display: flex; gap: var(--space-3); padding: var(--space-2) 0; }
+.skel { height: 14px; border-radius: 6px; background: var(--line, #e5e5ea); animation: ltSkelPulse 1.2s ease-in-out infinite; }
+.skel-id { width: 60px; }
+.skel-name { flex: 1; max-width: 200px; }
+.skel-area { width: 80px; }
+.skel-dur { width: 70px; }
+.skel-stops { width: 40px; }
+@keyframes ltSkelPulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
 </style>

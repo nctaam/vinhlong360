@@ -36,7 +36,7 @@
       <div class="scroll-row" role="region" aria-label="Sự kiện sắp diễn ra" tabindex="0">
         <NuxtLink
           v-for="e in upcoming" :key="e.id"
-          :to="`/dia-diem/${e.id}`"
+          :to="entityPath(e.id)"
           class="event-row"
         >
           <div class="event-date-badge">
@@ -135,7 +135,7 @@
       <div v-if="filtered.length" class="event-list">
         <NuxtLink
           v-for="e in filtered" :key="e.id"
-          :to="`/dia-diem/${e.id}`"
+          :to="entityPath(e.id)"
           class="event-row"
         >
           <div class="event-date-badge">
@@ -153,8 +153,8 @@
             </div>
           </div>
           <div v-if="e.images?.length" class="event-thumb">
-            <NuxtImg v-if="isRemoteUrl(e.images[0])" :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" sizes="160px" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.opacity = '.15' }" />
-            <img v-else :src="e.images[0]" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+            <NuxtImg v-if="isRemoteUrl(e.images[0] || '')" :src="e.images[0] || ''" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" sizes="160px" @error="fadeEventImageError" />
+            <img v-else :src="e.images[0] || ''" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" @error="fadeEventImageError" />
           </div>
           <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" @click.stop.prevent="downloadIcal(e)">📅</button>
         </NuxtLink>
@@ -192,7 +192,7 @@
             <div v-if="cell.events?.length" class="cal-events">
               <NuxtLink
                 v-for="ev in cell.events.slice(0, 2)" :key="ev.id"
-                :to="`/dia-diem/${ev.id}`"
+                :to="entityPath(ev.id)"
                 class="cal-event-dot"
                 :title="ev.name"
               >{{ truncateText(ev.name, 18) }}</NuxtLink>
@@ -246,16 +246,16 @@ useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', tran
 
 const todayStr = new Date().toISOString().slice(0, 10)
 function eventStatus(e: Entity): 'upcoming' | 'past' | '' {
-  const ds = e.attributes?.date_start
+  const ds = e.attributes?.date_start_iso || e.attributes?.date_start
   if (!ds) return ''
-  const de = e.attributes?.date_end || ds
+  const de = e.attributes?.date_end_iso || e.attributes?.date_end || ds
   if (todayStr > de) return 'past'
   if (ds >= todayStr) return 'upcoming'
   return ''
 }
 
 const { data, error: fetchError } = await useAsyncData('events', () =>
-  apiFetch<{ events: Entity[] }>('/api/events?limit=200')
+  apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')
 )
 
 const allEvents = computed(() =>
@@ -274,7 +274,7 @@ const areaCountMap = computed(() => {
 const areaCounts = computed(() =>
   Object.entries(AREA_META)
     .filter(([key]) => areaCountMap.value[key])
-    .map(([key, meta]) => ({ key, name: meta.name, count: areaCountMap.value[key] }))
+    .map(([key, meta]) => ({ key, name: meta.name, count: areaCountMap.value[key] || 0 }))
 )
 
 function countByArea(key: string) {
@@ -285,10 +285,10 @@ const upcoming = computed(() => {
   const now = new Date().toISOString().slice(0, 10)
   return allEvents.value
     .filter((e: Entity) => {
-      const ds = e.attributes?.date_start
+      const ds = e.attributes?.date_start_iso || e.attributes?.date_start
       return ds && ds >= now
     })
-    .sort((a: Entity, b: Entity) => (a.attributes?.date_start || '').localeCompare(b.attributes?.date_start || ''))
+    .sort((a: Entity, b: Entity) => (a.attributes?.date_start_iso || a.attributes?.date_start || '').localeCompare(b.attributes?.date_start_iso || b.attributes?.date_start || ''))
     .slice(0, 6)
 })
 
@@ -313,6 +313,11 @@ const formatMonth = formatEventMonth
 const formatDay = formatEventDay
 const dateRange = eventDateRange
 
+function fadeEventImageError(ev: Event | string) {
+  if (typeof ev === 'string') return
+  const target = ev.target as HTMLImageElement | null
+  if (target) target.style.opacity = '.15'
+}
 
 
 const { today, calMonth, calYear, displayMonth, displayYear, calendarCells } = useEventCalendar(allEvents)
@@ -332,7 +337,7 @@ const eventListSchema = computed(() => {
       name: e.name,
       ...(e.attributes?.date_start ? { startDate: e.attributes.date_start } : {}),
       ...(e.attributes?.date_end ? { endDate: e.attributes.date_end } : {}),
-      url: `https://vinhlong360.vn/dia-diem/${e.id}`,
+      url: `https://vinhlong360.vn${entityPath(e.id)}`,
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
       ...(e.place_name ? { location: { '@type': 'Place', name: e.place_name } } : {}),
     },

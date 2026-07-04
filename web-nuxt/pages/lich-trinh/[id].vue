@@ -1,6 +1,6 @@
 <template>
   <section v-if="itinerary" class="page">
-    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itinerary.title || itinerary.name }]">
+    <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: itineraryTitle }]">
       <template #before>
         <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
           <span aria-hidden="true">←</span>
@@ -12,7 +12,7 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
         <div>
-          <h1>{{ itinerary.title || itinerary.name }}</h1>
+          <h1>{{ itineraryTitle }}</h1>
           <p>{{ areaMeta.emoji }} {{ areaMeta.name }} · {{ itinerary.duration }} · {{ itinerary.stops?.length || 0 }} điểm dừng</p>
         </div>
       </div>
@@ -22,7 +22,7 @@
     <div class="itin-actions">
       <ClientOnly>
         <SaveButton :entity="itinerarySaveShape" :show-label="true" />
-        <ShareButton :title="itinerary.title || itinerary.name" :text="itinerary.summary || itinerary.description" />
+        <ShareButton :title="itineraryTitle" :text="itinerary.summary || itinerary.description" />
         <button type="button" class="btn btn-ghost btn-sm" aria-label="Báo cáo lịch trình" @click="openReport('entity', id)">🚩 Báo cáo</button>
       </ClientOnly>
         <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline btn-sm">+ Tự tạo lịch trình</NuxtLink>
@@ -44,14 +44,14 @@
     </ClientOnly>
 
     <ol class="timeline">
-      <template v-for="(stop, idx) in (itinerary.stops || [])" :key="stop.id || idx">
+      <template v-for="(stop, idx) in (itinerary.stops || [])" :key="stopIdentity(stop) || idx">
         <li class="step">
           <span class="step-time">{{ stop.time || '' }}</span>
           <div :class="['step-card', stop.type ? `cat-${catClass(stop.type)}` : '']">
             <span class="step-emoji" aria-hidden="true">{{ typeEmoji(stop.type) }}</span>
             <div class="step-content">
               <h3>
-                <NuxtLink v-if="stop.id" :to="`/dia-diem/${stop.id}`" class="stop-link">{{ stop.name || stop.id }}</NuxtLink>
+                <NuxtLink v-if="stopIdentity(stop)" :to="entityPath(stopIdentity(stop))" class="stop-link">{{ stop.name || stopIdentity(stop) }}</NuxtLink>
                 <span v-else>{{ stop.name || 'Điểm dừng' }}</span>
               </h3>
               <span v-if="stop.type" class="step-type-label">{{ typeLabel(stop.type) }}</span>
@@ -112,22 +112,27 @@ useReveal()
 
 const route = useRoute()
 const router = useRouter()
-const id = route.params.id as string
+const id = normalizeRouteParam(route.params.id)
+const encodedId = encodePathId(id)
 
 const goBack = () => goBackOr('/lich-trinh')
 
 const { openReport } = useReport()
 
 const { data: itinerary, error: fetchError, status } = await useAsyncData(`itinerary-${id}`, () =>
-  apiFetch<Itinerary>(`/api/itineraries/${id}`)
+  apiFetch<Itinerary>(`/api/itineraries/${encodedId}`)
 )
 const pending = computed(() => status.value === 'pending')
+const itineraryTitle = computed(() => itinerary.value?.title || itinerary.value?.name || 'Lịch trình')
 
 if (import.meta.server && fetchError.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy lịch trình' })
 }
 
-const areaMeta = computed(() => AREA_META[itinerary.value?.area] || { emoji: '📍', name: itinerary.value?.area || '' })
+const areaMeta = computed(() => {
+  const area = itinerary.value?.area
+  return (area ? AREA_META[area] : null) || { emoji: '📍', name: area || '' }
+})
 
 const itinerarySaveShape = computed(() => ({
   id: `itinerary-${id}`,
@@ -137,16 +142,23 @@ const itinerarySaveShape = computed(() => ({
   images: [] as string[],
 }))
 
-function typeEmoji(type: string) {
+function typeEmoji(type?: string) {
+  if (!type) return '📍'
   return TYPE_META[type]?.emoji || '📍'
 }
 
-function typeLabel(type: string) {
+function typeLabel(type?: string) {
+  if (!type) return ''
   return TYPE_META[type]?.label || type
 }
 
-function catClass(type: string) {
+function catClass(type?: string) {
+  if (!type) return 'place'
   return TYPE_META[type]?.cat || 'place'
+}
+
+function stopIdentity(stop: any): string {
+  return String(stop?.id || stop?.entityId || stop?.entity_id || '')
 }
 
 // --- Route map & routing ---
@@ -167,8 +179,9 @@ const routeLegs = computed<Record<number, RouteLeg>>(() => {
   const coordIdxs = stopsWithCoords.value.map(s => s.idx)
   for (let i = 0; i < routeResult.value.legs.length; i++) {
     const stopIdx = coordIdxs[i]
-    if (stopIdx !== undefined) {
-      map[stopIdx] = routeResult.value.legs[i]
+    const leg = routeResult.value.legs[i]
+    if (stopIdx !== undefined && leg) {
+      map[stopIdx] = leg
     }
   }
   return map
@@ -183,9 +196,9 @@ interface StopCoord {
 const stopsWithCoords = ref<StopCoord[]>([])
 
 const { createMap: createNDAMap } = useNDAMap()
-let mapInstance: unknown = null
-let maplibre: unknown = null
-let markers: unknown[] = []
+let mapInstance: any = null
+let maplibre: any = null
+let markers: any[] = []
 
 // F3: dùng chuẩn chung normalizeCoords (validate hữu hạn + tự hoán đổi lat/lng đảo)
 function extractCoords(raw: any): [number, number] | null {
@@ -199,9 +212,11 @@ function loadCoords() {
   const results: StopCoord[] = []
   for (let i = 0; i < stops.length; i++) {
     const s = stops[i]
+    if (!s) continue
     const coords = extractCoords(s.coordinates)
+    const stopId = s.id || s.entityId || s.entity_id || ''
     if (coords) {
-      results.push({ name: s.name || s.id, idx: i, coords })
+      results.push({ name: s.name || stopId, idx: i, coords })
     }
   }
 
@@ -337,11 +352,16 @@ if (itinerary.value && !itinerary.value.error) {
   if (it.stops?.length) {
     ld.itinerary = {
       '@type': 'ItemList',
-      itemListElement: it.stops.map((s: Record<string, unknown>, i: number) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: s.name || s.id,
-      })),
+      itemListElement: it.stops.map((s, i: number) => {
+        const stopId = stopIdentity(s)
+        const item: Record<string, any> = {
+          '@type': 'ListItem',
+          position: i + 1,
+          name: s.name || stopId || `Diem dung ${i + 1}`,
+        }
+        if (stopId) item.item = canonicalUrl(entityPath(stopId))
+        return item
+      }),
     }
   }
   const breadcrumb = {

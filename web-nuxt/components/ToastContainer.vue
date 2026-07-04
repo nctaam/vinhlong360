@@ -18,7 +18,8 @@ const { toasts, dismiss } = useToast()
 
 function onEscDismiss(e: KeyboardEvent) {
   if (e.key === 'Escape' && toasts.value.length) {
-    dismiss(toasts.value[toasts.value.length - 1].id)
+    const last = toasts.value[toasts.value.length - 1]
+    if (last) dismiss(last.id)
   }
 }
 onMounted(() => document.addEventListener('keydown', onEscDismiss))

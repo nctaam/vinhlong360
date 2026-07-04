@@ -24,11 +24,14 @@ function openLightbox(idx: number) {
 
 const thumbImages = computed(() => props.images.slice(1, props.maxThumbs + 1))
 const extraCount = computed(() => Math.max(0, props.images.length - props.maxThumbs - 1))
+const firstImage = computed(() => props.images[0] ?? '')
 
 const isRemote = isRemoteUrl
 
-function onImgError(e: Event) {
+function onImgError(e: Event | string) {
+  if (typeof e === 'string') return
   const img = e.target as HTMLImageElement
+  if (!(img instanceof HTMLImageElement)) return
   img.style.opacity = '0.15'
   img.style.objectFit = 'contain'
 }
@@ -59,16 +62,16 @@ function goToSlide(idx: number) {
   <!-- Single image -->
   <div v-else-if="images.length === 1" class="pg-single">
     <button type="button" class="pg-img-btn" @click="openLightbox(0)" :aria-label="`Xem ảnh ${alt}`">
-      <NuxtImg v-if="isRemote(images[0])" :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" sizes="sm:100vw md:100vw lg:960px" decoding="async" @error="onImgError" />
-      <img v-else :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" decoding="async" @error="onImgError" />
+      <NuxtImg v-if="isRemote(firstImage)" :src="firstImage" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" sizes="sm:100vw md:100vw lg:960px" decoding="async" @error="onImgError" />
+      <img v-else :src="firstImage" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" decoding="async" @error="onImgError" />
     </button>
   </div>
 
   <!-- Desktop: asymmetric grid -->
   <div v-else class="pg-grid" role="group" :aria-label="`Bộ ảnh ${alt}`">
     <button type="button" class="pg-main" @click="openLightbox(0)" :aria-label="`Ảnh chính — ${alt}`">
-      <NuxtImg v-if="isRemote(images[0])" :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" sizes="sm:100vw md:60vw lg:640px" decoding="async" @error="onImgError" />
-      <img v-else :src="images[0]" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" decoding="async" @error="onImgError" />
+      <NuxtImg v-if="isRemote(firstImage)" :src="firstImage" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" sizes="sm:100vw md:60vw lg:640px" decoding="async" @error="onImgError" />
+      <img v-else :src="firstImage" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" decoding="async" @error="onImgError" />
     </button>
     <div class="pg-thumbs">
       <button

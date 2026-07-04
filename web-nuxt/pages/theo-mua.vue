@@ -245,11 +245,27 @@ import { TYPE_META } from '~/composables/useConstants'
 useReveal()
 const { f: pc } = usePageContent('theo_mua')
 const { relevanceScore, seasonText } = useSeason()
+const route = useRoute()
+const router = useRouter()
 
-const month = ref(new Date().getMonth() + 1)
+function monthFromQuery(value: unknown): number | null {
+  const raw = Array.isArray(value) ? value[0] : value
+  const n = Number.parseInt(String(raw || ''), 10)
+  return n >= 1 && n <= 12 ? n : null
+}
+
+const month = ref(monthFromQuery(route.query.mua) || new Date().getMonth() + 1)
 const resultsSection = ref<HTMLElement | null>(null)
 
-watch(month, () => {
+watch(() => route.query.mua, (value) => {
+  const nextMonth = monthFromQuery(value)
+  if (nextMonth && nextMonth !== month.value) month.value = nextMonth
+})
+
+watch(month, (m) => {
+  if (monthFromQuery(route.query.mua) !== m) {
+    router.replace({ query: { ...route.query, mua: String(m) } })
+  }
   nextTick(() => resultsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 })
 

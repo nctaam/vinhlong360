@@ -41,12 +41,12 @@
               <div v-for="(child, ci) in item.children" :key="`child-${ci}-${child.label}`" class="sl-child-item">
                 <span class="sl-child-bullet" aria-hidden="true">›</span>
                 <input :value="child.label" placeholder="Label" class="sl-edit-input sl-child-input"
-                  :aria-label="`Label mục con ${ci + 1}`"
-                  @input="updateChild(i, ci, 'label', ($event.target as HTMLInputElement).value)" />
+                  :aria-label="`Label mục con ${indexLabel(ci)}`"
+                  @input="updateChild(i, indexNumber(ci), 'label', ($event.target as HTMLInputElement).value)" />
                 <input :value="child.to" placeholder="/path" class="sl-edit-input sl-child-input"
-                  :aria-label="`Đường dẫn mục con ${ci + 1}`"
-                  @input="updateChild(i, ci, 'to', ($event.target as HTMLInputElement).value)" />
-                <button type="button" class="sl-btn sl-btn-remove" @click="removeChild(i, ci)" aria-label="Xoá mục con">✕</button>
+                  :aria-label="`Đường dẫn mục con ${indexLabel(ci)}`"
+                  @input="updateChild(i, indexNumber(ci), 'to', ($event.target as HTMLInputElement).value)" />
+                <button type="button" class="sl-btn sl-btn-remove" @click="removeChild(i, indexNumber(ci))" aria-label="Xoá mục con">✕</button>
               </div>
             </TransitionGroup>
             <button type="button" class="sl-add-child" @click="addChild(i)">+ Thêm mục con</button>
@@ -86,6 +86,14 @@ const editingIndex = ref<number | null>(null)
 
 function itemKey(item: any, i: number): string {
   return `${item[props.labelField] || item.label || item.title || ''}-${i}`
+}
+
+function indexNumber(index: string | number): number {
+  return typeof index === 'number' ? index : Number(index)
+}
+
+function indexLabel(index: string | number): number {
+  return indexNumber(index) + 1
 }
 
 watch(() => props.items, (val) => {

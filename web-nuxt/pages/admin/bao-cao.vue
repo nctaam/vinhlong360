@@ -10,7 +10,9 @@
       </button>
     </div>
 
-    <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải báo cáo"><div class="spinner"></div></div>
+    <div v-if="loading" class="rpt-skeleton" role="status" aria-label="Đang tải báo cáo">
+      <div v-for="i in 6" :key="i" class="rpt-skel-row"><div class="skel skel-who"></div><div class="skel skel-type"></div><div class="skel skel-obj"></div><div class="skel skel-reason"></div><div class="skel skel-status"></div></div>
+    </div>
     <template v-else>
       <!-- ── Filter chips ── -->
       <div class="rpt-filters">
@@ -161,15 +163,41 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
+interface AdminReport {
+  id: string
+  status: string
+  reporter_name?: string
+  reporter_phone?: string
+  target_type?: string
+  ref_type?: string
+  target_id?: string
+  ref_id?: string
+  reason?: string
+  created_at?: string
+}
+
+interface InfoReport {
+  ts: string
+  status?: string
+  target_type?: string
+  target_id?: string
+  reason?: string
+  detail?: string
+}
+
+type AdminReportsResponse = { reports?: AdminReport[] } | AdminReport[]
+interface InfoReportsResponse {
+  reports?: InfoReport[]
+  open?: number
+}
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Báo cáo — Admin' })
 
 const { authHeaders } = useAuth()
 const { show: showToast } = useToast()
 const { confirmDialog } = useConfirm()
-const reports = ref<Entity[]>([])
-const infoReports = ref<Entity[]>([])
+const reports = ref<AdminReport[]>([])
+const infoReports = ref<InfoReport[]>([])
 const infoOpen = ref(0)
 const loading = ref(true)
 const acting = ref<string | null>(null)
@@ -198,22 +226,36 @@ const typeChips = [
   { value: 'user', label: 'Người dùng' },
 ] as const
 
-function reportType(r: Record<string, unknown>) {
+function reportType(r: AdminReport) {
   return r.target_type || r.ref_type || ''
 }
 // "open" chip maps to the backend "pending" status for main reports
-function matchStatus(r: Record<string, unknown>, f: string) {
+function matchStatus(r: AdminReport, f: string) {
   if (f === 'all') return true
   if (f === 'open') return r.status === 'pending'
   return r.status === f
 }
-function countByStatus(f: string) {
-  return reports.value.filter(r => matchStatus(r, f)).length
-}
-function countByType(f: string) {
-  if (f === 'all') return reports.value.length
-  return reports.value.filter(r => reportType(r) === f).length
-}
+const statusCounts = computed(() => {
+  const m: Record<string, number> = { all: 0, open: 0, resolved: 0, dismissed: 0 }
+  for (const r of reports.value) {
+    m.all++
+    if (r.status === 'pending') m.open++
+    else if (r.status === 'resolved') m.resolved++
+    else m.dismissed++
+  }
+  return m
+})
+const typeCounts = computed(() => {
+  const m: Record<string, number> = { all: 0, entity: 0, post: 0, user: 0 }
+  for (const r of reports.value) {
+    m.all++
+    const t = reportType(r)
+    if (t in m) m[t]++
+  }
+  return m
+})
+function countByStatus(f: string) { return statusCounts.value[f] ?? 0 }
+function countByType(f: string) { return typeCounts.value[f] ?? 0 }
 
 const filteredReports = computed(() =>
   reports.value.filter(r => matchStatus(r, statusFilter.value)
@@ -226,7 +268,7 @@ const hasMore = computed(() => visibleCount.value < filteredReports.value.length
 watch([statusFilter, typeFilter], () => { visibleCount.value = PAGE_SIZE })
 
 // ── Reason expand ──
-function isLongReason(reason: string) {
+function isLongReason(reason?: string) {
   return !!reason && reason.length > REASON_LIMIT
 }
 function toggleExpand(id: string) {
@@ -237,7 +279,7 @@ function toggleExpand(id: string) {
 
 // ── Selection (only pending reports are selectable) ──
 const pageSelectableIds = computed(() =>
-  pagedReports.value.filter(r => r.status === 'pending').map(r => r.id as string))
+  pagedReports.value.filter(r => r.status === 'pending').map(r => r.id))
 const allPageSelected = computed(() =>
   pageSelectableIds.value.length > 0 && pageSelectableIds.value.every(id => selectedIds.value.has(id)))
 const somePageSelected = computed(() =>
@@ -282,13 +324,13 @@ async function fetchAll() {
 
 async function fetchInfoReports() {
   try {
-    const res = await $fetch<Record<string, unknown>>('/admin-api/info-reports?limit=200', { headers: authHeaders() })
+    const res = await $fetch<InfoReportsResponse>('/admin-api/info-reports?limit=200', { headers: authHeaders() })
     infoReports.value = res.reports || []
     infoOpen.value = res.open ?? 0
   } catch { showToast('Không thể tải danh sách báo sai', 'error') }
 }
 
-async function infoAction(r: Record<string, unknown>, status: string) {
+async function infoAction(r: InfoReport, status: string) {
   if (status === 'dismissed' && !await confirmDialog('Bỏ qua báo sai này?', { danger: true })) return
   if (status === 'resolved' && !await confirmDialog('Đánh dấu đã xử lý?')) return
   infoActing.value = r.ts
@@ -300,10 +342,10 @@ async function infoAction(r: Record<string, unknown>, status: string) {
   infoActing.value = null
 }
 
-function infoStatus(s: string) {
+function infoStatus(s?: string) {
   return s === 'resolved' ? 'Đã xử lý' : s === 'dismissed' ? 'Bỏ qua' : 'Chưa xử lý'
 }
-function infoLink(r: Record<string, unknown>) {
+function infoLink(r: InfoReport) {
   const id = r.target_id
   if (!id) return ''
   if (r.target_type === 'post') return `/bai-viet/${id}`
@@ -313,10 +355,10 @@ function infoLink(r: Record<string, unknown>) {
 
 async function fetchReports() {
   try {
-    const res = await $fetch<Record<string, unknown>>('/admin-api/reports', { headers: authHeaders() })
-    reports.value = res.reports || res || []
+    const res = await $fetch<AdminReportsResponse>('/admin-api/reports?status=all&limit=200', { headers: authHeaders() })
+    reports.value = Array.isArray(res) ? res : (res.reports || [])
     // drop selections for reports no longer pending (e.g. just resolved/dismissed)
-    const pending = new Set(reports.value.filter(r => r.status === 'pending').map(r => r.id as string))
+    const pending = new Set(reports.value.filter(r => r.status === 'pending').map(r => r.id))
     selectedIds.value = new Set([...selectedIds.value].filter(id => pending.has(id)))
   } catch {
     showToast('Không thể tải báo cáo', 'error')
@@ -349,13 +391,13 @@ async function dismiss(id: string) {
   acting.value = null
 }
 
-function statusLabel(status: string) {
+function statusLabel(status?: string) {
   if (status === 'pending') return 'Chờ xử lý'
   if (status === 'resolved') return 'Đã xử lý'
   return 'Bỏ qua'
 }
 
-function targetLink(report: Record<string, unknown>) {
+function targetLink(report: AdminReport) {
   const type = report.target_type || report.ref_type
   const id = report.target_id || report.ref_id
   if (!id) return ''
@@ -529,4 +571,15 @@ onMounted(() => fetchAll())
 /* fix 4 — keep header visually separated on scroll within this page's tables */
 .admin-table th { box-shadow: 0 2px 4px rgba(0,0,0,.04); }
 .dark .admin-table th { box-shadow: 0 2px 6px rgba(0,0,0,.35); }
+
+/* ── Skeleton loading ── */
+.rpt-skeleton { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4) 0; }
+.rpt-skel-row { display: flex; gap: var(--space-3); padding: var(--space-2) 0; }
+.skel { height: 14px; border-radius: 6px; background: var(--line, #e5e5ea); animation: rptSkelPulse 1.2s ease-in-out infinite; }
+.skel-who { width: 100px; }
+.skel-type { width: 60px; }
+.skel-obj { width: 80px; }
+.skel-reason { flex: 1; max-width: 200px; }
+.skel-status { width: 70px; }
+@keyframes rptSkelPulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
 </style>

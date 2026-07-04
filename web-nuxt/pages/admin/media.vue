@@ -5,7 +5,7 @@
         <h1>Thư viện ảnh</h1>
         <p class="media-subtitle">Tất cả hình ảnh từ các entity — lọc trùng lặp, thiếu credit</p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchMedia">
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchMedia()">
         <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
       </button>
     </div>

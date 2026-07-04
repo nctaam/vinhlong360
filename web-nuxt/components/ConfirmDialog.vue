@@ -33,7 +33,9 @@ function trapFocus(e: KeyboardEvent) {
   const box = (e.currentTarget as HTMLElement)
   const focusable = Array.from(box.querySelectorAll<HTMLElement>('button:not([disabled]), [tabindex]:not([tabindex="-1"])'))
   if (!focusable.length) return
-  const first = focusable[0], last = focusable[focusable.length - 1]
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  if (!first || !last) return
   if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
 }

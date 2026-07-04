@@ -5,7 +5,7 @@
         <h1>Kiểm duyệt</h1>
         <p class="mod-subtitle">Duyệt bài viết cộng đồng (gồm bài bị gắn cờ tự động)</p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchQueue">
+      <button type="button" class="admin-refresh" :disabled="loading" @click="fetchQueue()">
         <span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới
       </button>
     </div>
@@ -63,6 +63,7 @@
     <!-- Batch action bar -->
     <div v-if="batchSelected.size" class="bulk-bar">
       <span>Đã chọn {{ batchSelected.size }}</span>
+      <input v-model="batchRejectReason" class="mod-batch-reason" type="text" placeholder="Lý do khi từ chối hàng loạt" aria-label="Lý do từ chối hàng loạt" />
       <button type="button" class="btn-success" :disabled="batchBusy" @click="batchAction('approve')">Duyệt tất cả</button>
       <button type="button" class="btn-danger" :disabled="batchBusy" @click="batchAction('reject')">Từ chối tất cả</button>
       <button type="button" class="btn btn-outline btn-sm" @click="batchSelected = new Set()">Bỏ chọn</button>
@@ -168,7 +169,7 @@
         </div>
         <div class="mod-preview-body">{{ previewPost.content }}</div>
         <div v-if="previewPost.images?.length" class="mod-preview-images">
-          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${i+1}`" loading="lazy" decoding="async" width="200" height="150" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${Number(i) + 1}`" loading="lazy" decoding="async" width="200" height="150" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
         </div>
         <!-- Moderation notes -->
         <div class="mod-notes-section">
@@ -247,6 +248,7 @@ const rejectingId = ref<string | null>(null)
 const rejectReason = ref('')
 const batchSelected = ref<Set<string>>(new Set())
 const batchBusy = ref(false)
+const batchRejectReason = ref('')
 const newNote = ref('')
 const noteSaving = ref(false)
 
@@ -256,11 +258,17 @@ function toggleBatchAll() { if (allBatchSelected.value) { batchSelected.value = 
 
 async function batchAction(action: 'approve' | 'reject') {
   if (batchBusy.value || acting.value) return
+  const reason = batchRejectReason.value.trim()
+  if (action === 'reject' && !reason) {
+    showToast('Nhập lý do từ chối hàng loạt', 'error')
+    return
+  }
   batchBusy.value = true
   try {
-    await $fetch('/admin-api/moderation/batch', { method: 'POST', headers: authHeaders(), body: { post_ids: [...batchSelected.value], action } })
+    await $fetch('/admin-api/moderation/batch', { method: 'POST', headers: authHeaders(), body: { post_ids: [...batchSelected.value], action, reason } })
     showToast(`${batchSelected.value.size} bài đã ${action === 'approve' ? 'duyệt' : 'từ chối'}`, 'success')
     batchSelected.value = new Set()
+    batchRejectReason.value = ''
     fetchQueue()
     fetchStats()
   } catch { showToast('Lỗi batch moderation', 'error') } finally {
@@ -512,6 +520,21 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-reason-chip.active { background: rgba(var(--danger-rgb),.12); border-color: var(--error); color: var(--error); font-weight: 600; }
 .mod-reason-input { flex: 1; min-width: 200px; padding: 9px var(--space-3); border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
 .mod-reason-input:focus { outline: none; border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1); }
+.mod-batch-reason {
+  flex: 1;
+  min-width: 220px;
+  padding: 8px 12px;
+  border: .5px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: .84rem;
+}
+.mod-batch-reason:focus {
+  outline: none;
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.1);
+}
 .btn-ghost-sm { background: none; border: none; color: var(--muted); font-size: .82rem; cursor: pointer; padding: var(--space-2) var(--space-3); border-radius: 8px; }
 .btn-ghost-sm:hover { background: var(--bg-alt); color: var(--ink); }
 
@@ -550,4 +573,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-note-add { display: flex; gap: var(--space-2); }
 .mod-note-input { flex: 1; padding: 7px 12px; border: .5px solid var(--line); border-radius: 8px; font-size: .82rem; background: var(--bg); color: var(--ink); }
 .mod-note-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1); }
+
+@media (max-width: 520px) {
+  .mod-tabs { gap: var(--space-1); }
+  .mod-tab { padding: 6px 10px; font-size: .75rem; min-height: 40px; }
+}
 </style>

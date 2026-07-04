@@ -96,7 +96,7 @@
       single-select
       class="dd-filters"
       aria-label="Lọc theo loại"
-      @update:model-value="v => setType(v.length ? v[0] : 'all')"
+      @update:model-value="v => setType(v[0] || 'all')"
     />
 
     <FilterChips
@@ -105,7 +105,7 @@
       single-select
       class="dd-filters dd-areas"
       aria-label="Lọc theo khu vực"
-      @update:model-value="v => setArea(v.length ? v[0] : 'all')"
+      @update:model-value="v => setArea(v[0] || 'all')"
     />
 
     <p v-if="!pending" class="dd-count" aria-live="polite">
@@ -121,7 +121,7 @@
       tone="error"
     >
       <template #actions>
-        <button type="button" class="btn btn-primary btn-sm" @click="refresh">Thử lại</button>
+        <button type="button" class="btn btn-primary btn-sm" @click="refresh()">Thử lại</button>
       </template>
     </EmptyState>
 

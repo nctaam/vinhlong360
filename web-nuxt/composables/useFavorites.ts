@@ -2,6 +2,7 @@ interface FavoriteItem {
   id: string
   name: string
   type: string
+  kind?: 'entity' | 'post' | 'itinerary'
   place_name?: string
   place_area?: string
   summary?: string
@@ -22,6 +23,7 @@ function isValidFavorite(v: unknown): v is FavoriteItem {
 export function useFavorites() {
   const favorites = useState<FavoriteItem[]>('favorites', () => [])
   const { isLoggedIn, authHeaders } = useAuth()
+  const { trackSave } = useUserEvents()
 
   function load() {
     if (loaded || import.meta.server) return
@@ -83,14 +85,17 @@ export function useFavorites() {
   function toggle(entity: Record<string, any>) {
     const idx = favorites.value.findIndex(f => f.id === entity.id)
     if (idx >= 0) {
+      const removed = favorites.value[idx]
       favorites.value.splice(idx, 1)
       persist()
       pushRemove(entity.id)
+      if (removed) trackSave(removed, false)
     } else {
       const item: FavoriteItem = {
         id: entity.id,
         name: entity.name,
         type: entity.type,
+        kind: entity.kind || (entity.type === 'itinerary' ? 'itinerary' : 'entity'),
         place_name: entity.place_name,
         place_area: entity.place_area || entity.area,
         summary: entity.summary,
@@ -100,15 +105,18 @@ export function useFavorites() {
       favorites.value.unshift(item)
       persist()
       pushAdd(item)
+      trackSave(item, true)
     }
   }
 
   function remove(id: string) {
     const idx = favorites.value.findIndex(f => f.id === id)
     if (idx >= 0) {
+      const removed = favorites.value[idx]
       favorites.value.splice(idx, 1)
       persist()
       pushRemove(id)
+      if (removed) trackSave(removed, false)
     }
   }
 

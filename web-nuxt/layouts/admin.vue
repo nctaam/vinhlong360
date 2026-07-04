@@ -445,7 +445,7 @@ onUnmounted(() => {
   color: var(--muted); border-bottom: .5px solid var(--line);
   text-transform: uppercase; letter-spacing: .5px;
   position: sticky; top: 0; z-index: 2;
-  box-shadow: 0 2px 4px rgba(0,0,0,.02);
+  box-shadow: 0 2px 4px rgba(0,0,0,.03);
 }
 .admin-table td { padding: var(--space-3) var(--space-4); border-bottom: .5px solid var(--line); font-size: .88rem; }
 .admin-table tbody tr { transition: background .25s var(--ease-standard); }

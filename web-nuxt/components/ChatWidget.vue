@@ -77,7 +77,7 @@ const defaultSuggestionsByRoute: Record<string, string[]> = {
   default: ['Lịch trình 1 ngày không cần đặt trước', 'Đặc sản nổi tiếng?', 'Đi đâu cuối tuần này?'],
 }
 
-const contextSuggestions = computed(() => {
+const contextSuggestions = computed<string[]>(() => {
   const p = route.path
   // Empty/unset setting → use the inline default map (so seeding {} is safe).
   const cfg = ss('chat.suggestions_by_route', {}) as Record<string, string[]>
@@ -89,15 +89,15 @@ const contextSuggestions = computed(() => {
     if (key === 'default') continue
     const matches = key.endsWith('/') ? p.startsWith(key) : (p === key || p.startsWith(key + '/'))
     if (matches && key.length > bestLen) {
-      best = map[key]
+      best = map[key] ?? null
       bestLen = key.length
     }
   }
-  return best ?? map.default ?? defaultSuggestionsByRoute.default
+  return best ?? map.default ?? defaultSuggestionsByRoute.default ?? []
 })
 
 const suggestions = ref<string[]>([])
-const activeSuggestions = computed(() => suggestions.value.length ? suggestions.value : (messages.value.length === 0 ? contextSuggestions.value : []))
+const activeSuggestions = computed<string[]>(() => suggestions.value.length ? suggestions.value : (messages.value.length === 0 ? contextSuggestions.value : []))
 const streaming = ref(false)
 const streamText = ref('')
 const abortCtrl = ref<AbortController | null>(null)  // P1-1: cho phép dừng/timeout SSE

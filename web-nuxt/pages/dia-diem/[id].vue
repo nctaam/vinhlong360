@@ -50,19 +50,19 @@
           </ClientOnly>
         </div>
       </div>
-      <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="entity.images.length === 1 ? 'Xem ảnh' : `Xem ${entity.images.length} ảnh`" @click="openCoverLightbox">
+      <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="entityImages.length === 1 ? 'Xem ảnh' : `Xem ${entityImages.length} ảnh`" @click="openCoverLightbox()">
         <span class="dc-photo-icon" aria-hidden="true">&#128247;</span>
-        {{ entity.images.length === 1 ? 'Xem ảnh' : `${entity.images.length} ảnh` }}
+        {{ entityImages.length === 1 ? 'Xem ảnh' : `${entityImages.length} ảnh` }}
       </button>
-      <div v-if="hasEntityImages && entity.images.length > 1" class="dc-thumbs">
-        <template v-for="(src, i) in entity.images.slice(0, 4)" :key="src">
+      <div v-if="hasEntityImages && entityImages.length > 1" class="dc-thumbs">
+        <template v-for="(src, i) in entityImages.slice(0, 4)" :key="src">
           <button type="button" class="dc-thumb-btn" :class="{ active: i === 0 }" :aria-label="`Xem ảnh ${i + 1} của ${entity.name}`" @click="openCoverLightbox(i)">
-            <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" class="dc-thumb" loading="lazy" width="56" height="40" sizes="56px" decoding="async" @error="(ev: Event) => { (ev.target as HTMLImageElement).style.display = 'none' }" />
-            <img v-else :src="src" :alt="`${entity.name} - ${i + 1}`" class="dc-thumb" loading="lazy" width="56" height="40" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
+            <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" class="dc-thumb" loading="lazy" width="56" height="40" sizes="56px" decoding="async" @error="hideImage" />
+            <img v-else :src="src" :alt="`${entity.name} - ${i + 1}`" class="dc-thumb" loading="lazy" width="56" height="40" decoding="async" @error="hideImage" />
           </button>
         </template>
-        <button type="button" v-if="entity.images.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entity.images.length - 4} ảnh`" @click="openCoverLightbox(4)">
-          +{{ entity.images.length - 4 }}
+        <button type="button" v-if="entityImages.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entityImages.length - 4} ảnh`" @click="openCoverLightbox(4)">
+          +{{ entityImages.length - 4 }}
         </button>
       </div>
       <small v-if="imageCredit" class="dc-credit">{{ imageCredit }}</small>
@@ -70,14 +70,14 @@
 
     <!-- Photo Gallery (asymmetric grid for 2+ images) -->
     <LazyPhotoGallery
-      v-if="hasEntityImages && entity.images.length >= 2"
-      :images="entity.images"
+      v-if="hasEntityImages && entityImages.length >= 2"
+      :images="entityImages"
       :alt="entity.name"
       class="detail-gallery"
       @open-lightbox="openCoverLightbox"
     />
 
-    <LazyImageLightbox v-if="entity?.images?.length" v-model="lightboxOpen" :images="entity.images" :start-index="lbIndex" />
+    <LazyImageLightbox v-if="entityImages.length" v-model="lightboxOpen" :images="entityImages" :start-index="lbIndex" />
 
     <!-- Body -->
     <div class="detail-body">
@@ -189,7 +189,7 @@
             <li v-for="rel in relationships" :key="`${rel.target_id}-${rel.rel_type}`">
               <span class="rel-label">{{ rel.label }}</span>
               <span class="rel-main">
-                <NuxtLink :to="`/dia-diem/${rel.target_id}`">{{ rel.target_name }}</NuxtLink>
+                <NuxtLink :to="entityPath(rel.target_id)">{{ rel.target_name }}</NuxtLink>
                 <small v-if="rel.distance_km" class="rel-distance">{{ rel.distance_km }} km</small>
               </span>
             </li>
@@ -238,7 +238,7 @@
         <!-- AI Recommendations -->
         <NuxtErrorBoundary>
           <ClientOnly>
-            <LazyAIRecommendations :entity-id="id" :title="ss('labels.detail.recommendations_title', 'Bạn cũng có thể thích')" :limit="4" />
+            <LazySmartRecommendations context="entity" :entity-id="id" :title="ss('labels.detail.recommendations_title', 'Bạn cũng có thể thích')" :limit="4" />
             <template #fallback><div class="detail-skeleton"><div class="sk-grid"><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div></div></div></template>
           </ClientOnly>
         </NuxtErrorBoundary>
@@ -382,6 +382,28 @@
         </div>
 
         <!-- Liên hệ trực tiếp (showcase — KHÔNG đặt hàng/giỏ hàng/thanh toán on-site) -->
+        <section v-if="trustVisible" class="trust-card" aria-labelledby="trust-card-title">
+          <div class="trust-card-head">
+            <h2 id="trust-card-title">Độ tin cậy dữ liệu</h2>
+            <span :class="['trust-status', trustStatusTone]">{{ trustStatusLabel }}</span>
+          </div>
+          <dl class="trust-list">
+            <div>
+              <dt>Nguồn</dt>
+              <dd>
+                <a v-if="trustSourceUrl" :href="safeUrl(trustSourceUrl)" target="_blank" rel="noopener nofollow">{{ trustSourceTitle }}</a>
+                <span v-else>{{ trustSourceTitle }}</span>
+              </dd>
+            </div>
+            <div>
+              <dt>Cập nhật</dt>
+              <dd>{{ trustUpdatedLabel }}</dd>
+            </div>
+          </dl>
+          <p class="trust-note">{{ trustNote }}</p>
+          <NuxtLink class="trust-report" :to="reportUrl">Báo sai hoặc bổ sung nguồn</NuxtLink>
+        </section>
+
         <div v-if="entity.attributes?.phone || zaloLink || buyContactUrl" class="contact-row">
           <a v-if="entity.attributes?.phone" class="ns-action contact-cta" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`">📞 {{ ss('labels.detail.cta_call', 'Gọi') }}</a>
           <a v-if="zaloLink" class="ns-action contact-cta" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 {{ ss('labels.detail.cta_zalo', 'Zalo') }}</a>
@@ -402,7 +424,7 @@
           <h2 class="ns-title">{{ ss('labels.detail.next_steps_title', 'Bước tiếp theo') }}</h2>
           <!-- Save affordance lives in the hero (SaveButton) — avoid a second, divergent toggle here.
                Next step is the active-planning CTA, labeled to distinguish it from "save for later". -->
-        <NuxtLink to="/tao-lich-trinh" no-prefetch class="ns-action">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
+        <NuxtLink :to="planAddUrl" no-prefetch class="ns-action">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
           <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action">🏡 {{ ss('labels.detail.next_find_stay', 'Tìm chỗ ở gần đây') }}</NuxtLink>
         <NuxtLink :to="mapUrl" no-prefetch class="ns-action">🗺️ {{ ss('labels.detail.next_view_map', 'Xem trên bản đồ') }}</NuxtLink>
           <NuxtLink to="/tuyen-duong" class="ns-action">🛤️ {{ ss('labels.detail.next_route', 'Tuyến đường gợi ý') }}</NuxtLink>
@@ -417,7 +439,7 @@
       <a v-if="entity.attributes?.phone" class="scta-phone" :href="telHref(entity.attributes.phone)" aria-label="Gọi điện thoại">📞 Gọi</a>
       <a v-if="zaloLink" class="scta-zalo" :href="zaloLink" target="_blank" rel="nofollow noopener" aria-label="Nhắn Zalo">💬 Zalo</a>
       <NuxtLink v-if="hasCoords" class="scta-map" :to="mapUrl" aria-label="Xem trên bản đồ">🗺️ Bản đồ</NuxtLink>
-      <NuxtLink v-if="!hasStickyContact" to="/tao-lich-trinh" no-prefetch class="scta-plan" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
+      <NuxtLink v-if="!hasStickyContact" :to="planAddUrl" no-prefetch class="scta-plan" aria-label="Thêm vào lịch trình">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
     </div>
   </section>
   <section v-else-if="fetchError" class="page">
@@ -430,7 +452,7 @@
       :tone="fetchError.statusCode === 404 ? undefined : 'error'"
     >
       <template #actions>
-        <button v-if="fetchError.statusCode !== 404" type="button" class="btn btn-primary" @click="refreshEntity">Thử lại</button>
+        <button v-if="fetchError.statusCode !== 404" type="button" class="btn btn-primary" @click="refreshEntity()">Thử lại</button>
         <NuxtLink to="/du-lich" class="btn btn-primary">Khám phá điểm đến</NuxtLink>
         <NuxtLink to="/" class="btn btn-ghost">Về trang chủ</NuxtLink>
       </template>
@@ -458,7 +480,8 @@ const { get: ss } = useSiteSettings()
 
 const route = useRoute()
 const router = useRouter()
-const id = computed(() => String(route.params.id || ''))
+const id = computed(() => normalizeRouteParam(route.params.id))
+const encodedId = computed(() => encodePathId(id.value))
 
 // ── Đã-đi/Muốn-đi + theo-dõi địa-điểm (Tier-1 MXH) ──
 const { isLoggedIn, authHeaders } = useAuth()
@@ -529,8 +552,16 @@ async function toggleFollowPlace() {
 }
 
 const { track: trackRecent } = useRecentlyViewed()
+const { trackEntityView } = useUserEvents()
+
+function trackCurrentEntity() {
+  if (!entity.value) return
+  trackRecent(entity.value)
+  trackEntityView(entity.value, 'entity')
+}
+
 onMounted(async () => {
-  if (entity.value) trackRecent(entity.value)
+  trackCurrentEntity()
   if (!isLoggedIn.value) return
   const tasks: Promise<void>[] = [
     $fetch<{ status: string | null }>(`/api/me/visits/check/${encodeURIComponent(id.value)}`, { headers: authHeaders() })
@@ -546,13 +577,22 @@ onMounted(async () => {
   }
   await Promise.all(tasks)
 })
+
 const RELATIONSHIP_BATCH_SIZE = 24
 
 const goBack = () => goBackOr('/du-lich')
 
 const { data: entity, error: fetchError, refresh: refreshEntity } = await useAsyncData(
   computed(() => `entity-${id.value}`),
-  () => apiFetch<Entity>(`/api/entities/${id.value}`),
+  () => apiFetch<Entity>(`/api/entities/${encodedId.value}`),
+  { watch: [id], deep: false }
+)
+
+type JsonLdPayload = Record<string, unknown> | Record<string, unknown>[]
+
+const { data: backendJsonLd } = await useAsyncData(
+  computed(() => `entity-jsonld-${id.value}`),
+  () => apiFetch<JsonLdPayload>(`/seo/jsonld/${encodedId.value}`).catch(() => null),
   { watch: [id], deep: false }
 )
 
@@ -561,6 +601,8 @@ const { data: entity, error: fetchError, refresh: refreshEntity } = await useAsy
 if (import.meta.server && fetchError.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy nội dung' })
 }
+
+watch(() => entity.value?.id, () => trackCurrentEntity())
 
 const typeMeta = computed(() => {
   if (!entity.value) return { emoji: '•', label: '', cat: 'place' }
@@ -572,13 +614,15 @@ const areaName = computed(() => {
   return AREA_META[area]?.name || area || ''
 })
 
-const hasEntityImages = computed(() => {
+const entityImages = computed(() => {
   const imgs = entity.value?.images
-  return Array.isArray(imgs) && imgs.length > 0
+  return Array.isArray(imgs) ? imgs.filter(Boolean) : []
 })
+const hasEntityImages = computed(() => entityImages.value.length > 0)
 
 const coverImage = computed(() => {
-  if (hasEntityImages.value) return entity.value!.images[0]
+  const first = entityImages.value[0]
+  if (first) return first
   return `/img/cat/${typeMeta.value.cat}.jpg`
 })
 
@@ -587,15 +631,22 @@ const imageCredit = computed(() => {
   const credits = entity.value?.image_credits
   if (!Array.isArray(credits) || !credits.length) return ''
   const c = credits[0]
+  if (!c) return ''
   return c.author ? `${c.author} · ${c.license || 'CC'}` : ''
 })
 
 const lightboxOpen = ref(false)
 const lbIndex = ref(0)
 function openCoverLightbox(idx = 0) {
-  if (!entity.value?.images?.length) return
+  if (!entityImages.value.length) return
   lbIndex.value = typeof idx === 'number' ? idx : 0
   lightboxOpen.value = true
+}
+
+function hideImage(payload: Event | string) {
+  if (typeof payload === 'string') return
+  const img = payload.target
+  if (img instanceof HTMLImageElement) img.style.display = 'none'
 }
 
 const TYPE_BREADCRUMB: Record<string, string> = {
@@ -603,7 +654,10 @@ const TYPE_BREADCRUMB: Record<string, string> = {
   dish: '/du-lich', craft_village: '/du-lich', accommodation: '/luu-tru',
   organization: '/danh-ba', place: '/xa-phuong',
 }
-const typeBreadcrumbUrl = computed(() => TYPE_BREADCRUMB[entity.value?.type] || '/du-lich')
+const typeBreadcrumbUrl = computed(() => {
+  const type = entity.value?.type
+  return type ? (TYPE_BREADCRUMB[type] || '/du-lich') : '/du-lich'
+})
 
 const seasonLabel = computed(() => seasonText(entity.value?.season))
 
@@ -625,10 +679,10 @@ const descriptionSections = computed<DescSection[]>(() => {
     const h3 = block.match(/^###\s+(.+)$/)
     if (h3) {
       if (current.paragraphs.length || current.heading) sections.push(current)
-      current = { level: 3, heading: h3[1], paragraphs: [] }
+      current = { level: 3, heading: h3[1] ?? '', paragraphs: [] }
     } else if (h2) {
       if (current.paragraphs.length || current.heading) sections.push(current)
-      current = { level: 2, heading: h2[1], paragraphs: [] }
+      current = { level: 2, heading: h2[1] ?? '', paragraphs: [] }
     } else {
       current.paragraphs.push(block)
     }
@@ -684,6 +738,7 @@ const mapUrl = computed(() => {
   const base = `/ban-do?id=${encodeURIComponent(id.value)}`
   return c ? `${base}&lat=${c[0]}&lng=${c[1]}` : base
 })
+const planAddUrl = computed(() => `/tao-lich-trinh?add=${encodeURIComponent(id.value)}`)
 const hasHighlights = computed(() => !!(entity.value?.attributes?.phone || zaloLink.value || entity.value?.attributes?.hours || priceText.value || addressText.value || hasCoords.value))
 const hasVisitFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.hours || a?.price || a?.fee || a?.suggested_duration || a?.transport) })
 const hasContactFacts = computed(() => { const a = entity.value?.attributes; return !!(a?.phone || a?.address || (a?.coords_approximate && hasCoords.value) || a?.website) })
@@ -734,20 +789,46 @@ const foodSpecialties = computed(() => {
 
 const reportUrl = computed(() => `/cong-dong?report=${encodeURIComponent(id.value)}`)
 
+const sourceFreshness = computed(() => entity.value?.source_freshness)
+const trustSourceUrl = computed(() => sourceFreshness.value?.source_url || entity.value?.quality?.source_url || '')
+const trustSourceTitle = computed(() => sourceFreshness.value?.source_title || entity.value?.quality?.source_title || (trustSourceUrl.value ? 'Nguồn tham khảo' : 'Chưa có nguồn công khai'))
+const trustUpdatedAt = computed(() => sourceFreshness.value?.updated_at || entity.value?.quality?.verified_at || entity.value?.updatedAt || '')
+const trustUpdatedLabel = computed(() => trustUpdatedAt.value ? formatDateVN(trustUpdatedAt.value) : 'Chưa rõ')
+const trustStatus = computed(() => sourceFreshness.value?.freshness_status || 'unknown')
+const trustStatusLabel = computed(() => {
+  if (trustStatus.value === 'fresh') return 'Mới cập nhật'
+  if (trustStatus.value === 'aging') return 'Cần kiểm tra định kỳ'
+  if (trustStatus.value === 'stale') return 'Có thể đã cũ'
+  return 'Chưa rõ'
+})
+const trustStatusTone = computed(() => {
+  if (trustStatus.value === 'fresh') return 'fresh'
+  if (trustStatus.value === 'aging') return 'aging'
+  if (trustStatus.value === 'stale') return 'stale'
+  return 'unknown'
+})
+const trustNote = computed(() => {
+  if (trustStatus.value === 'fresh') return 'Thông tin này có tín hiệu cập nhật gần đây.'
+  if (trustStatus.value === 'aging') return 'Thông tin vẫn dùng được nhưng nên kiểm tra lại nếu bạn sắp đi.'
+  if (trustStatus.value === 'stale') return 'Thông tin có thể đã cũ; hãy báo sai nếu bạn thấy khác thực tế.'
+  return 'Hệ thống chưa có đủ tín hiệu nguồn/ngày cập nhật cho mục này.'
+})
+const trustVisible = computed(() => !!entity.value)
+
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
 
 const ocopStars = computed(() => {
   const ocop = entity.value?.attributes?.ocop || ''
-  const num = parseInt(ocop) || 0
+  const num = parseInt(String(ocop), 10) || 0
   return Math.min(num, 5)
 })
 
-const relationshipRows = ref<Entity[]>([])
+const relationshipRows = ref<Record<string, any>[]>([])
 const relationshipTotal = ref(0)
 const loadingRelationships = ref(false)
 
 watch(entity, (next) => {
-  relationshipRows.value = Array.isArray(next?.relationships) ? [...next.relationships] : []
+  relationshipRows.value = Array.isArray(next?.relationships) ? next.relationships.map(rel => ({ ...rel })) : []
   relationshipTotal.value = Number(next?.relationship_total ?? relationshipRows.value.length) || relationshipRows.value.length
 }, { immediate: true })
 
@@ -797,7 +878,7 @@ async function loadMoreRelationships() {
   loadingRelationships.value = true
   relError.value = ''
   try {
-    const response = await $fetch<{ total?: number; relationships?: Record<string, any>[] }>(`/api/entities/${currentId}/relationships`, {
+    const response = await $fetch<{ total?: number; relationships?: Record<string, any>[] }>(`/api/entities/${encodePathId(currentId)}/relationships`, {
       query: {
         limit: RELATIONSHIP_BATCH_SIZE,
         offset: relationshipRows.value.length,
@@ -853,14 +934,14 @@ useSeoMeta({
 })
 
 // JSON-LD + canonical: rebuilt reactively via computed
-const jsonLdScripts = computed(() => {
+const fallbackJsonLdScripts = computed(() => {
   const e = entity.value
   if (!e) return []
 
   const ldType = TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
   const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
 
-  const entityUrl = `${SITE_URL}/dia-diem/${e.id}`
+  const entityUrl = `${SITE_URL}${entityPath(e.id)}`
   const ld: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': ldType,
@@ -1010,6 +1091,20 @@ const jsonLdScripts = computed(() => {
   return scripts
 })
 
+function normalizeJsonLdPayload(payload: JsonLdPayload | null | undefined) {
+  if (!payload) return []
+  return (Array.isArray(payload) ? payload : [payload]).filter(Boolean)
+}
+
+const backendJsonLdScripts = computed(() => normalizeJsonLdPayload(backendJsonLd.value).map(item => ({
+  type: 'application/ld+json',
+  innerHTML: safeJsonLd(item),
+})))
+
+const jsonLdScripts = computed(() => {
+  return backendJsonLdScripts.value
+})
+
 useHead({
   link: [{ rel: 'canonical', href: () => entity.value ? entityDetailUrl(entity.value.id) : canonicalUrl('/dia-diem') }],
   script: jsonLdScripts,
@@ -1043,6 +1138,69 @@ useHead({
 }
 .fact-copy:hover { color: var(--primary-fg); background: rgba(var(--primary-rgb), .08); }
 .fact-copy:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+.trust-card {
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.trust-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.trust-card h2 {
+  margin: 0;
+  font-size: var(--text-base);
+}
+.trust-status {
+  flex: 0 0 auto;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  border: 1px solid var(--line);
+}
+.trust-status.fresh { color: var(--success, #16803c); background: rgba(22, 128, 60, .08); border-color: rgba(22, 128, 60, .22); }
+.trust-status.aging { color: #8a5b00; background: rgba(245, 158, 11, .1); border-color: rgba(245, 158, 11, .24); }
+.trust-status.stale { color: var(--error, #b42318); background: rgba(180, 35, 24, .08); border-color: rgba(180, 35, 24, .2); }
+.trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
+.trust-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+.trust-list > div {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: var(--space-2);
+}
+.trust-list dt {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.trust-list dd {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+.trust-note {
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+.trust-report {
+  display: inline-flex;
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
 
 /* Hide old contact-row on desktop when ContactWidget is present */
 @media (min-width: 768px) {

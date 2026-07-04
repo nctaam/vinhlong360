@@ -188,7 +188,7 @@ const areaCountMap = computed(() => {
 const areaCounts = computed(() =>
   Object.entries(AREA_META)
     .filter(([key]) => areaCountMap.value[key])
-    .map(([key, meta]) => ({ key, name: meta.name, count: areaCountMap.value[key] }))
+    .map(([key, meta]) => ({ key, name: meta.name, count: areaCountMap.value[key] || 0 }))
 )
 
 function countByArea(key: string) {

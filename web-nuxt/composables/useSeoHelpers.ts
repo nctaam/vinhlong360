@@ -14,7 +14,7 @@ export function safeJsonLd(obj: unknown): string {
 }
 
 export function canonicalUrl(path = '/') {
-  const clean = path.split('#')[0].split('?')[0] || '/'
+  const clean = path.split('#')[0]?.split('?')[0] || '/'
   const normalized = clean.startsWith('/') ? clean : `/${clean}`
   return `${SITE_URL}${normalized === '/' ? '' : normalized}`
 }

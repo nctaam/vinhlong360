@@ -82,9 +82,8 @@ function notifIcon(n: Notification): string {
 function goToNotif(n: Notification) {
   open.value = false
   if (!n.is_read) markRead(n.id)
-  if (n.ref_type === 'post' && n.ref_id) navigateTo(`/bai-viet/${n.ref_id}`)
-  else if (n.ref_type === 'entity' && n.ref_id) navigateTo(`/dia-diem/${n.ref_id}`)
-  else if (n.ref_type === 'user' && n.ref_id) navigateTo(`/nguoi-dung/${n.ref_id}`)
+  const target = notificationTargetPath(n)
+  if (target) navigateTo(target)
 }
 
 const { timeAgo } = useTimeAgo()

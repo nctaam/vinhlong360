@@ -9,24 +9,28 @@
         <div class="hero-main hero-enter">
           <span class="hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span>{{ ss('homepage.hero_kicker', 'Du lịch & Đặc sản Vĩnh Long') }}</span>
           <h1>{{ seasonalTagline }}</h1>
-          <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Trải nghiệm miệt vườn, đặc sản theo mùa, lễ hội truyền thống — tất cả trong một bản đồ.') }}</p>
-          <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm: chôm chôm, kẹo dừa, cù lao An Bình…')" />
+          <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
+          <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')" />
           <div class="hero-pills">
             <NuxtLink v-for="pill in heroPills" :key="pill.to" :to="pill.to" class="hero-pill">{{ pill.emoji }} {{ pill.label }}</NuxtLink>
           </div>
         </div>
         <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
-          <NuxtLink :to="`/dia-diem/${heroFeature.id}`" class="hf-card">
-            <span class="hf-thumb" :class="`cat-${hfMeta?.cat}`" :style="{ backgroundImage: hfBg }" aria-hidden="true">
+          <div class="hf-card">
+            <NuxtLink :to="entityPath(heroFeature.id)" class="hf-thumb" :class="`cat-${hfMeta?.cat}`" :style="{ backgroundImage: hfBg }" :aria-label="`Xem ${heroFeature.name}`">
               <span class="hf-thumb-icon" v-html="hfIcon" />
-            </span>
+            </NuxtLink>
             <span class="hf-body">
-              <span class="hf-tag">✦ Gợi ý nổi bật</span>
-              <span class="hf-title">{{ heroFeature.name }}</span>
+              <span class="hf-tag">{{ heroFeatureReason }}</span>
+              <NuxtLink :to="entityPath(heroFeature.id)" class="hf-title">{{ heroFeature.name }}</NuxtLink>
               <span v-if="hfRegion" class="hf-region">{{ hfRegion }}</span>
-              <span class="hf-cta">Khám phá →</span>
+              <span v-if="heroFeature.summary" class="hf-summary">{{ heroFeature.summary }}</span>
+              <span class="hf-actions">
+                <NuxtLink :to="entityPath(heroFeature.id)" class="hf-action hf-action-primary">Khám phá</NuxtLink>
+                <NuxtLink :to="plannerAddPath(heroFeature.id)" no-prefetch class="hf-action">Thêm vào lịch trình</NuxtLink>
+              </span>
             </span>
-          </NuxtLink>
+          </div>
         </aside>
       </div>
       <div v-if="statsItems.length" class="hero-stats" role="group" aria-label="Thống kê nổi bật">
@@ -36,6 +40,37 @@
         </div>
       </div>
     </section>
+
+    <!-- 1a. Bắt đầu hành trình — data-driven decision layer -->
+    <section v-if="homeDecisionCards.length" class="block block-compact reveal home-decision" aria-label="Bắt đầu hành trình">
+      <div class="decision-shell">
+        <div class="decision-copy">
+          <span class="decision-kicker">Gợi ý nhanh</span>
+          <h2>Hôm nay bạn muốn bắt đầu thế nào?</h2>
+          <p>Dựa trên mùa, sự kiện và nội dung đang nổi bật để đưa bạn tới đúng luồng tiếp theo.</p>
+        </div>
+        <div class="decision-grid">
+          <NuxtLink v-for="card in homeDecisionCards" :key="card.to" :to="card.to" class="decision-card" :class="`decision-${card.tone}`">
+            <span class="decision-icon" aria-hidden="true">{{ card.icon }}</span>
+            <span class="decision-body">
+              <span class="decision-label">{{ card.eyebrow }}</span>
+              <span class="decision-title">{{ card.title }}</span>
+              <span class="decision-text">{{ card.text }}</span>
+            </span>
+            <span class="decision-cta">{{ card.cta }} <span aria-hidden="true">→</span></span>
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <JourneyActionRail
+      v-if="!homePending && homeJourneyActions.length"
+      :actions="homeJourneyActions"
+      title="Bước tiếp theo phù hợp"
+      subtitle="Decision engine ưu tiên theo mục đã lưu, nội dung vừa xem, lịch gần nhất và tín hiệu cộng đồng."
+      aria-label="Gợi ý hành trình trên trang chủ"
+      compact
+    />
 
     <!-- Degraded/empty fallback -->
     <section v-if="homeFailed" class="block reveal">
@@ -58,7 +93,8 @@
         <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="`cat-tile-${cat.accent}`">
           <span class="cat-emoji" aria-hidden="true">{{ cat.emoji }}</span>
           <span class="cat-label">{{ cat.label }}</span>
-          <span class="cat-count" v-if="cat.count">{{ cat.count }}+</span>
+          <span class="cat-hint">{{ cat.hint }}</span>
+          <span class="cat-count" v-if="cat.countLabel">{{ cat.countLabel }}</span>
         </NuxtLink>
       </nav>
     </section>
@@ -74,7 +110,7 @@
       </div>
 
       <div v-if="upcomingEvents.length" class="happening-feature">
-        <NuxtLink :to="`/dia-diem/${upcomingEvents[0].id}`" class="event-hero">
+        <NuxtLink :to="entityPath(upcomingEvents[0].id)" class="event-hero">
           <div class="eh-date">
             <span class="eh-day">{{ formatEventDay(upcomingEvents[0]) }}</span>
             <span class="eh-month">{{ formatEventMonth(upcomingEvents[0]) }}</span>
@@ -90,7 +126,7 @@
           </div>
         </NuxtLink>
         <div v-if="upcomingEvents.length > 1" class="happening-rest">
-          <NuxtLink v-for="ev in upcomingEvents.slice(1, 4)" :key="ev.id" :to="`/dia-diem/${ev.id}`" class="event-mini">
+          <NuxtLink v-for="ev in upcomingEvents.slice(1, 4)" :key="ev.id" :to="entityPath(ev.id)" class="event-mini">
             <div class="ec-date ec-date-sm">
               <span class="ec-day">{{ formatEventDay(ev) }}</span>
               <span class="ec-month">{{ formatEventMonth(ev) }}</span>
@@ -125,7 +161,7 @@
       <div class="tinh-hoa">
         <div v-if="spotlight" class="spotlight">
           <NuxtLink
-            :to="`/dia-diem/${spotlight.id}`"
+            :to="entityPath(spotlight.id)"
             class="spot-visual"
             :class="`cat-${spotMeta?.cat}`"
             :style="{ backgroundImage: spotBg }"
@@ -138,14 +174,14 @@
             <span class="spot-kicker">{{ spotMeta?.label }} · Nổi bật</span>
             <h3 class="spot-name">{{ spotlight.name }}</h3>
             <p v-if="spotlight.summary" class="spot-sum">{{ spotlight.summary }}</p>
-            <NuxtLink :to="`/dia-diem/${spotlight.id}`" class="btn btn-primary spot-cta">Khám phá ngay →</NuxtLink>
+            <NuxtLink :to="entityPath(spotlight.id)" class="btn btn-primary spot-cta">Khám phá ngay →</NuxtLink>
           </div>
         </div>
 
         <div v-if="topDishes.length" class="top-dishes">
           <h3 class="dishes-heading">⭐ Quán ngon nổi bật</h3>
           <div class="dishes-list">
-            <NuxtLink v-for="d in topDishes" :key="d.id" :to="`/dia-diem/${d.id}`" class="dish-item">
+            <NuxtLink v-for="d in topDishes" :key="d.id" :to="entityPath(d.id)" class="dish-item">
               <span class="dish-rating-badge">
                 <span class="dish-star">★</span>
                 <span class="dish-score">{{ formatRating(d.attributes?.rating || 0) }}</span>
@@ -215,15 +251,15 @@
           </div>
           <div v-if="topMembers.length" class="home-leaders">
             <span class="hl-label">🏆 Tích cực nhất:</span>
-            <NuxtLink v-for="(m, i) in topMembers" :key="m.id" :to="`/nguoi-dung/${m.username || m.id}`" class="hl-chip">
-              <span class="hl-rank" :class="`hl-rank-${i + 1}`">{{ i + 1 }}</span>
+            <NuxtLink v-for="(m, i) in topMembers" :key="m.id" :to="userPath(m.username || m.id)" class="hl-chip">
+              <span class="hl-rank" :class="`hl-rank-${Number(i) + 1}`">{{ Number(i) + 1 }}</span>
               <span class="hl-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
               <span class="hl-name">{{ m.display_name }}</span>
             </NuxtLink>
             <NuxtLink to="/bang-xep-hang" class="hl-more">Bảng xếp hạng →</NuxtLink>
           </div>
           <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
-            <NuxtLink v-for="p in communityPosts" :key="p.id" :to="`/bai-viet/${p.id}`" class="cm-card">
+            <NuxtLink v-for="p in communityPosts" :key="p.id" :to="postPath(p.id)" class="cm-card">
               <div v-if="p.images && p.images.length && p.images[0]" class="cm-img">
                 <NuxtImg v-if="isRemoteUrl(p.images[0])" :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" @error="onImgError" />
                 <img v-else :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" @error="onImgError" />
@@ -257,7 +293,7 @@
           <h2>Xem gần đây</h2>
         </div>
         <div class="scroll-row" role="region" aria-label="Xem gần đây" tabindex="0">
-          <NuxtLink v-for="rv in recentlyViewed" :key="rv.id" :to="`/dia-diem/${rv.id}`" class="card card-mini">
+          <NuxtLink v-for="rv in recentlyViewed" :key="rv.id" :to="entityPath(rv.id)" class="card card-mini">
             <div v-if="rv.image" class="cover cover-img">
               <NuxtImg v-if="isRemoteUrl(rv.image)" :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" sizes="sm:50vw md:33vw lg:320px" @error="onImgError" />
               <img v-else :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" @error="onImgError" />
@@ -275,10 +311,10 @@
       <section v-if="recentSaved.length" class="block reveal">
         <div class="section-head">
           <h2>Đã lưu gần đây</h2>
-          <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
+          <NuxtLink class="see-all" to="/da-luu">Xem tất cả →</NuxtLink>
         </div>
         <div class="scroll-row" role="region" aria-label="Đã lưu gần đây" tabindex="0">
-          <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="`/dia-diem/${fav.id}`" class="card">
+          <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="savedItemPath(fav)" class="card">
             <div v-if="fav.image" class="cover cover-img">
               <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" sizes="sm:100vw md:50vw lg:480px" @error="onImgError" />
               <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" @error="onImgError" />
@@ -292,7 +328,7 @@
         </div>
       </section>
       <NuxtErrorBoundary>
-        <LazyAIRecommendations title="Có thể bạn quan tâm" :limit="4" />
+        <LazySmartRecommendations context="home" title="Có thể bạn quan tâm" :limit="4" />
       </NuxtErrorBoundary>
     </ClientOnly>
 
@@ -313,19 +349,31 @@
 import type { Entity } from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
+import { useJourneyActions } from '~/composables/useJourneyActions'
 
 useReveal()
 const { get: ss } = useSiteSettings()
 
 const DEFAULT_HERO_PILLS = [
-  { emoji: '🗓️', label: 'Cuối tuần 2N1Đ', to: '/lich-trinh' },
-  { emoji: '🍲', label: 'Ẩm thực', to: '/kham-pha/am-thuc' },
-  { emoji: '🎁', label: 'Quà OCOP', to: '/ocop' },
+  { emoji: '📍', label: 'Gần tôi', to: '/ban-do?near=1' },
+  { emoji: '🍲', label: 'Ăn gì hôm nay', to: '/kham-pha/am-thuc' },
+  { emoji: '🗓️', label: 'Đi 2N1Đ', to: '/lich-trinh' },
   { emoji: '🌿', label: 'Miệt vườn', to: '/du-lich' },
-  { emoji: '🎭', label: 'Lễ hội', to: '/le-hoi' },
   { emoji: '🗺️', label: 'Bản đồ', to: '/ban-do' },
+  { emoji: '🎁', label: 'Đặc sản làm quà', to: '/ocop' },
 ]
 const heroPills = computed(() => ss('homepage.hero_pills', DEFAULT_HERO_PILLS) as typeof DEFAULT_HERO_PILLS)
+const { homepageDecisionActions } = useJourneyActions()
+
+type HomeDecisionCard = {
+  icon: string
+  eyebrow: string
+  title: string
+  text: string
+  to: string
+  cta: string
+  tone: 'event' | 'season' | 'planner' | 'food' | 'map'
+}
 
 const { favorites } = useFavorites()
 const recentSaved = computed(() => favorites.value.slice(0, 4))
@@ -349,17 +397,15 @@ if (import.meta.client) {
 }
 const getFavTypeMeta = getTypeMeta
 
-const ssrBase = import.meta.server ? 'https://vinhlong360.vn' : ''
 const { data: homeData, error: homeError, pending: homePending, refresh: refreshHome } = await useAsyncData('homepage',
-  () => $fetch<Record<string, unknown>>('/api/homepage', ssrBase ? { baseURL: ssrBase } : {}))
+  () => apiFetch<any>('/api/homepage'))
 
-const fetchOpts = ssrBase ? { baseURL: ssrBase } : {}
 const { data: communityData } = await useAsyncData('home-community', async () => {
   const [feed, cstats, lb, tags] = await Promise.all([
-    $fetch<any>('/api/feed?limit=10', fetchOpts).catch(() => ({ posts: [] })),
-    $fetch<any>('/api/community/stats', fetchOpts).catch(() => null),
-    $fetch<any>('/api/community/leaderboard?limit=3', fetchOpts).catch(() => ({ leaders: [] })),
-    $fetch<any>('/api/community/trending-tags?limit=8', fetchOpts).catch(() => ({ tags: [] })),
+    apiFetch<any>('/api/feed?limit=10').catch(() => ({ posts: [] })),
+    apiFetch<any>('/api/community/stats').catch(() => null),
+    apiFetch<any>('/api/community/leaderboard?limit=3').catch(() => ({ leaders: [] })),
+    apiFetch<any>('/api/community/trending-tags?limit=8').catch(() => ({ tags: [] })),
   ])
   const posts = (feed.posts || [])
     .filter((p: any) => ((p.content || '').trim().length > 0) || (p.images && p.images.length))
@@ -379,21 +425,20 @@ const topDishes = computed(() => homeData.value?.top_dishes || [])
 const trending = computed(() => homeData.value?.trending || [])
 const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
-const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá miệt vườn theo cách của người bản địa')
+const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 
 const CATEGORY_LINKS = [
-  { emoji: '🌿', label: 'Du lịch', to: '/du-lich', accent: 'leaf', countKey: 'experiences' },
-  { emoji: '🍲', label: 'Ẩm thực', to: '/kham-pha/am-thuc', accent: 'amber', countKey: '' },
-  { emoji: '🎁', label: 'OCOP', to: '/ocop', accent: 'clay', countKey: 'products' },
-  { emoji: '🎭', label: 'Lễ hội', to: '/le-hoi', accent: 'river', countKey: '' },
-  { emoji: '🏡', label: 'Lưu trú', to: '/luu-tru', accent: 'leaf', countKey: '' },
-  { emoji: '🗺️', label: 'Bản đồ', to: '/ban-do', accent: 'river', countKey: '' },
+  { emoji: '🌿', label: 'Du lịch', hint: 'vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences' },
+  { emoji: '🍲', label: 'Ẩm thực', hint: 'quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes' },
+  { emoji: '🎁', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products' },
+  { emoji: '🎭', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events' },
+  { emoji: '🏡', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '' },
+  { emoji: '🗺️', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas' },
 ]
 const categoryLinks = computed(() => {
-  const s = stats.value as any
   return CATEGORY_LINKS.map(c => ({
     ...c,
-    count: c.countKey && s ? s[c.countKey] : null,
+    countLabel: categoryMetric(c.countKey),
   }))
 })
 
@@ -429,8 +474,14 @@ const hfRegion = computed(() => {
   const meta = (AREA_META as Record<string, { name: string }>)[String(a)]
   return meta ? meta.name : ''
 })
+const heroFeatureReason = computed(() => {
+  if (!heroFeature.value) return 'Gợi ý nổi bật'
+  const label = hfMeta.value?.label || 'Điểm đến'
+  return hfRegion.value ? `${label} tại ${hfRegion.value}` : `${label} nổi bật`
+})
 
 const stats = computed(() => homeData.value?.stats || null)
+const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
 const statsItems = computed(() => {
   const s = stats.value
   if (!s) return []
@@ -439,6 +490,92 @@ const statsItems = computed(() => {
   if (s.places) items.push({ value: s.places, label: 'Xã phường' })
   if (s.itineraries) items.push({ value: s.itineraries, label: 'Lịch trình' })
   return items
+})
+
+const firstUpcomingEvent = computed<any>(() => upcomingEvents.value[0] || null)
+const firstSeasonal = computed<any>(() => seasonal.value[0] || null)
+const firstDish = computed<any>(() => topDishes.value[0] || null)
+const homeDecisionCards = computed<HomeDecisionCard[]>(() => {
+  const cards: HomeDecisionCard[] = []
+  const ev = firstUpcomingEvent.value
+  if (ev) {
+    cards.push({
+      icon: '🎭',
+      eyebrow: eventCountdownLabel(ev),
+      title: 'Có lịch gần nhất',
+      text: ev.name,
+      to: entityPath(ev.id),
+      cta: 'Xem sự kiện',
+      tone: 'event',
+    })
+  }
+
+  const seasonalPick = firstSeasonal.value
+  if (seasonalPick) {
+    cards.push({
+      icon: '🌿',
+      eyebrow: `Tháng ${currentMonth.value}`,
+      title: 'Đang vào mùa',
+      text: seasonalPick.name,
+      to: `/theo-mua?mua=${encodeURIComponent(String(currentMonth.value))}`,
+      cta: 'Xem theo mùa',
+      tone: 'season',
+    })
+  }
+
+  if (heroFeature.value) {
+    cards.push({
+      icon: '🧭',
+      eyebrow: heroFeatureReason.value,
+      title: 'Bắt đầu lịch trình',
+      text: heroFeature.value.name,
+      to: plannerAddPath(heroFeature.value.id),
+      cta: 'Thêm điểm này',
+      tone: 'planner',
+    })
+  }
+
+  const dish = firstDish.value
+  if (dish) {
+    cards.push({
+      icon: '🍲',
+      eyebrow: dish.attributes?.rating ? `${formatRating(dish.attributes.rating)} điểm` : 'Ẩm thực',
+      title: 'Ăn gì hôm nay',
+      text: dish.name,
+      to: '/kham-pha/am-thuc?sort=rating',
+      cta: 'Xem quán ngon',
+      tone: 'food',
+    })
+  }
+
+  if (cards.length < 4) {
+    cards.push({
+      icon: '🗺️',
+      eyebrow: `${Object.keys(areaCounts.value).length || 3} khu vực`,
+      title: 'Mở bản đồ khám phá',
+      text: 'Lọc điểm đến theo vùng, loại hình và vị trí gần bạn.',
+      to: '/ban-do',
+      cta: 'Mở bản đồ',
+      tone: 'map',
+    })
+  }
+
+  return cards.slice(0, 4)
+})
+
+const homeJourneyActions = computed(() => {
+  const ev = firstUpcomingEvent.value
+  return homepageDecisionActions({
+    isLoggedIn: isLoggedIn.value,
+    savedCount: favorites.value.length,
+    recentCount: recentItems.value.length,
+    currentMonth: currentMonth.value,
+    heroFeatureName: heroFeature.value?.name,
+    heroFeaturePlannerPath: heroFeature.value ? plannerAddPath(heroFeature.value.id) : '',
+    upcomingEventName: ev?.name,
+    upcomingEventPath: ev?.id ? entityPath(ev.id) : '',
+    communityPostCount: communityPosts.value.length,
+  })
 })
 
 const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length || trending.value.length || communityPosts.value.length))
@@ -458,12 +595,37 @@ function formatEventMonth(ev: any) {
   return isNaN(m) || m === 0 ? '' : `Th${m}`
 }
 
+function eventCountdownLabel(ev: any) {
+  if (ev?.days_until === 0) return 'Hôm nay'
+  if (ev?.days_until === 1) return 'Ngày mai'
+  if (typeof ev?.days_until === 'number') return `Còn ${ev.days_until} ngày`
+  return 'Sắp diễn ra'
+}
+
 function formatRating(rating: number | string): string {
   const n = Number(rating)
   return n > 0 ? n.toFixed(1) : 'Mới'
 }
 
-function onImgError(e: Event) {
+function plannerAddPath(id: string | number) {
+  return `/tao-lich-trinh?add=${encodeURIComponent(String(id))}`
+}
+
+function categoryMetric(key: string) {
+  if (!key) return ''
+  if (key === 'experiences') return experiences.value.length ? `${experiences.value.length} gợi ý` : ''
+  if (key === 'dishes') return topDishes.value.length ? `${topDishes.value.length} nổi bật` : ''
+  if (key === 'products') return productsAll.value.length ? `${productsAll.value.length} gợi ý` : ''
+  if (key === 'events') return upcomingEvents.value.length ? `${upcomingEvents.value.length} sắp tới` : ''
+  if (key === 'areas') {
+    const count = Object.keys(areaCounts.value).length
+    return count ? `${count} vùng` : ''
+  }
+  return ''
+}
+
+function onImgError(e: Event | string) {
+  if (typeof e === 'string') return
   const img = e.target as HTMLImageElement
   img.style.display = 'none'
 }
@@ -498,7 +660,7 @@ const eventListSchema = computed(() => {
       name: ev.name,
       startDate: ev.attributes?.date_start,
       endDate: ev.attributes?.date_end || ev.attributes?.date_start,
-      url: `https://vinhlong360.vn/dia-diem/${ev.id}`,
+      url: `https://vinhlong360.vn${entityPath(ev.id)}`,
       eventStatus: 'https://schema.org/EventScheduled',
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
       location: { '@type': 'Place', name: ev.place_name || 'Vĩnh Long', address: { '@type': 'PostalAddress', addressRegion: areaName(ev.area || ev.place_area) || 'Vĩnh Long', addressCountry: 'VN' } },
@@ -558,19 +720,24 @@ useHead({
 /* ═══════════════════════════════════════════════════
    HERO — layered depth, Ken Burns, cinematic entrance
    ═══════════════════════════════════════════════════ */
-.home .hero { isolation: isolate; }
+.home .hero {
+  isolation: isolate;
+  padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
+}
 .home .hero-scrim {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(120% 95% at 88% 6%, rgba(var(--accent-rgb),.30) 0%, rgba(var(--accent-rgb),.07) 34%, transparent 60%),
-    radial-gradient(90% 70% at 6% 100%, rgba(var(--primary-rgb),.32) 0%, transparent 58%),
-    linear-gradient(to top, rgba(var(--ink-rgb),.55) 0%, rgba(var(--ink-rgb),.06) 32%, transparent 55%);
+    linear-gradient(100deg, rgba(var(--ink-rgb),.28) 0%, rgba(var(--ink-rgb),.12) 42%, transparent 74%),
+    radial-gradient(86% 72% at 84% 8%, rgba(var(--accent-rgb),.18) 0%, rgba(var(--accent-rgb),.04) 36%, transparent 64%),
+    radial-gradient(86% 66% at 6% 100%, rgba(var(--primary-rgb),.20) 0%, transparent 58%),
+    linear-gradient(to top, rgba(var(--ink-rgb),.46) 0%, rgba(var(--ink-rgb),.08) 34%, transparent 58%);
 }
 .home .hero-inner { z-index: 1; }
 
 /* Hero asymmetric layout: ≥920px two columns */
 @media (min-width: 920px) {
   .home .hero-inner { display: grid; grid-template-columns: minmax(0, 1.32fr) minmax(280px, 0.8fr); gap: var(--space-10); align-items: center; }
+  .home .hero-feature { align-self: end; padding-bottom: var(--space-2); }
 }
 /* Mobile: hero feature as compact inline card (NOT hidden) */
 @media (max-width: 919px) {
@@ -582,30 +749,45 @@ useHead({
 .hf-card {
   display: flex; gap: var(--space-4); align-items: center;
   padding: var(--space-4);
-  background: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.10);
   backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px);
-  border: .5px solid rgba(255,255,255,.28);
+  border: .5px solid rgba(255,255,255,.22);
   border-radius: var(--radius-lg);
   color: var(--text-on-dark, #fff); text-decoration: none;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 10px 30px rgba(0,0,0,.16);
+  opacity: .92;
   transition: transform .4s var(--ease-spring-gentle), box-shadow .4s var(--ease-out-expo), background .3s var(--ease-out);
 }
-.hf-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.18); box-shadow: var(--shadow-xl); }
+.hf-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.16); box-shadow: var(--shadow-lg); opacity: 1; }
 .hf-card:active { transform: scale(.99); transition-duration: .1s; }
-.hf-card:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
 .hf-thumb {
-  flex: 0 0 86px; height: 86px; border-radius: var(--radius-md);
+  flex: 0 0 76px; height: 76px; border-radius: var(--radius-md);
   background-size: cover; background-position: center;
   position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
+  color: var(--text-on-dark, #fff);
+  text-decoration: none;
 }
+.hf-thumb:focus-visible, .hf-title:focus-visible, .hf-action:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
 .hf-thumb-icon { width: 46px; height: 46px; opacity: .85; filter: drop-shadow(0 2px 6px rgba(0,0,0,.22)); }
 .hf-thumb-icon :deep(svg), .hf-thumb-icon svg { width: 100%; height: 100%; display: block; }
 .hf-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .hf-tag { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; color: var(--accent); }
-.hf-title { font-size: var(--text-lg); font-weight: var(--weight-bold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hf-title { color: inherit; text-decoration: none; font-size: var(--text-lg); font-weight: var(--weight-bold); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hf-title:hover { text-decoration: underline; text-underline-offset: 3px; }
 .hf-region { font-size: var(--text-xs); opacity: .88; }
-.hf-cta { font-size: var(--text-sm); font-weight: var(--weight-semibold); margin-top: var(--space-1); }
+.hf-summary { color: rgba(255,255,255,.78); font-size: var(--text-xs); line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hf-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.hf-action {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 38px; padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,.14); border: .5px solid rgba(255,255,255,.24);
+  color: var(--text-on-dark, #fff); text-decoration: none;
+  font-size: var(--text-xs); font-weight: var(--weight-bold);
+}
+.hf-action:hover { background: rgba(255,255,255,.22); }
+.hf-action-primary { background: rgba(var(--accent-rgb), .28); border-color: rgba(var(--accent-rgb), .48); color: var(--text-on-dark, #fff); }
 html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation: hero-rise .7s var(--ease-out-expo) .5s forwards; }
 
 /* Ken Burns */
@@ -613,7 +795,7 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
 .home .hero-kenburns {
   position: absolute; inset: 0; z-index: 0;
   background-image:
-    linear-gradient(105deg, rgba(var(--ink-rgb),.86) 0%, rgba(var(--ink-rgb),.52) 46%, rgba(var(--ink-rgb),.12) 100%),
+    linear-gradient(105deg, rgba(var(--ink-rgb),.80) 0%, rgba(var(--ink-rgb),.42) 46%, rgba(var(--ink-rgb),.08) 100%),
     url('/img/hero.webp');
   background-size: cover; background-position: center;
   transform: scale(1.06);
@@ -623,7 +805,7 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
 @media (max-width: 640px) {
   .home .hero-kenburns {
     background-image:
-      linear-gradient(105deg, rgba(var(--ink-rgb),.86) 0%, rgba(var(--ink-rgb),.52) 46%, rgba(var(--ink-rgb),.12) 100%),
+      linear-gradient(105deg, rgba(var(--ink-rgb),.82) 0%, rgba(var(--ink-rgb),.48) 46%, rgba(var(--ink-rgb),.12) 100%),
       url('/img/hero-mobile.webp');
   }
 }
@@ -659,10 +841,12 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
 
 /* Display headline */
 .home .hero h1 {
-  font-size: clamp(2.15rem, 6.2vw, 3.6rem);
-  letter-spacing: -1.4px; line-height: 1.05;
+  font-size: clamp(2.1rem, 5.6vw, 3.35rem);
+  letter-spacing: 0; line-height: 1.06;
   text-shadow: 0 1px 6px rgba(0,0,0,.34);
   position: relative; display: inline-block;
+  max-width: 720px;
+  text-wrap: balance;
 }
 .home .hero h1::after {
   content: ""; display: block;
@@ -695,15 +879,31 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* Premium search capsule */
 .home .hero-search {
   padding: var(--space-1);
-  background: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.14);
   backdrop-filter: saturate(180%) blur(10px); -webkit-backdrop-filter: saturate(180%) blur(10px);
-  border: .5px solid rgba(255,255,255,.22);
+  border: .5px solid rgba(255,255,255,.30);
   border-radius: calc(var(--radius-md) + var(--space-1));
   box-shadow: 0 8px 30px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.12);
   transition: box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
 }
+.home .hero .hero-ac::before {
+  content: "";
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  z-index: 2;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  color: var(--primary-fg);
+  opacity: .9;
+  pointer-events: none;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='none' stroke='black' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round' d='m21 21-4.34-4.34M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='none' stroke='black' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round' d='m21 21-4.34-4.34M10.8 18a7.2 7.2 0 1 1 0-14.4 7.2 7.2 0 0 1 0 14.4Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
 .home .hero-search:focus-within {
-  border-color: rgba(var(--accent-rgb), .6);
+  border-color: rgba(var(--accent-rgb), .72);
   box-shadow: 0 12px 40px rgba(0,0,0,.22), 0 0 0 4px rgba(var(--accent-rgb), .22);
   transform: translateY(-1px);
 }
@@ -712,7 +912,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .hero .hero-ac { align-items: center; }
 .home .hero .hero-ac input {
   flex: 1; width: 100%;
-  padding: var(--space-4) 42px var(--space-4) var(--space-5);
+  padding: var(--space-4) 48px var(--space-4) 54px;
   border-color: transparent; background: var(--card);
 }
 .home .hero .hero-ac .ac-dropdown { text-align: left; }
@@ -721,15 +921,20 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .hero-pills { display: flex; gap: var(--space-2); margin-top: var(--space-5); flex-wrap: wrap; }
 .hero-pill {
   display: inline-flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-2) var(--space-5);
-  background: var(--overlay-light);
+  padding: var(--space-2) var(--space-4);
+  background: rgba(255,255,255,.16);
   backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px);
-  border: .5px solid rgba(255,255,255,.3); border-radius: var(--radius-full);
+  border: .5px solid rgba(255,255,255,.26); border-radius: var(--radius-full);
   color: var(--text-on-dark, #fff); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+  box-shadow: 0 4px 16px rgba(0,0,0,.10);
   transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
   min-height: 44px;
 }
-.hero-pill:hover { background: rgba(255,255,255,.3); transform: translateY(-2px); }
+.hero-pill:first-child {
+  background: rgba(var(--accent-rgb), .26);
+  border-color: rgba(var(--accent-rgb), .46);
+}
+.hero-pill:hover { background: rgba(255,255,255,.28); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.16); }
 .hero-pill:active { transform: scale(.95); transition-duration: .1s; }
 .hero-pill:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
 @media (max-width: 480px) {
@@ -744,8 +949,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   position: relative; z-index: 1;
   display: flex; justify-content: center; gap: var(--space-8);
   padding: var(--space-3) var(--space-4);
-  margin: var(--space-4) auto 0;
-  max-width: 480px;
+  margin: var(--space-5) auto max(var(--space-2), env(safe-area-inset-bottom));
+  max-width: min(520px, calc(100% - var(--space-8)));
   background: rgba(255,255,255,.10);
   backdrop-filter: saturate(180%) blur(10px); -webkit-backdrop-filter: saturate(180%) blur(10px);
   border: .5px solid rgba(255,255,255,.18);
@@ -758,7 +963,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .hero-stat-num {
   font-size: var(--text-lg); font-weight: var(--weight-extrabold);
-  color: var(--text-on-dark, #fff); letter-spacing: var(--tracking-tight);
+  color: var(--text-on-dark, #fff); letter-spacing: 0;
 }
 .hero-stat-label {
   font-size: .6rem; color: rgba(255,255,255,.7);
@@ -769,6 +974,75 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .hero-stat-num { font-size: var(--text-base); }
   .hero-stat-label { font-size: .55rem; }
   .hero-stat + .hero-stat::before { display: none; }
+}
+
+/* Decision layer */
+.home-decision { padding-top: var(--space-8); }
+.decision-shell {
+  display: grid; grid-template-columns: minmax(220px, .48fr) minmax(0, 1fr);
+  gap: var(--space-5); align-items: stretch;
+}
+.decision-copy {
+  display: flex; flex-direction: column; justify-content: center;
+  min-width: 0; padding: var(--space-1) 0;
+}
+.decision-kicker {
+  width: fit-content; padding: 3px var(--space-2);
+  border-radius: var(--radius-full);
+  background: rgba(var(--primary-rgb), .08); color: var(--primary-fg);
+  font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em;
+}
+.decision-copy h2 {
+  margin: var(--space-2) 0 0;
+  font-size: clamp(1.15rem, 2vw, 1.55rem);
+  line-height: var(--leading-snug); letter-spacing: 0;
+}
+.decision-copy p {
+  margin: var(--space-2) 0 0; color: var(--muted);
+  font-size: var(--text-sm); line-height: var(--leading-relaxed);
+}
+.decision-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3);
+}
+.decision-card {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3);
+  align-items: start;
+  min-height: 132px; padding: var(--space-4);
+  border: .5px solid var(--line); border-radius: 8px;
+  background: var(--card); color: var(--ink); text-decoration: none;
+  transition: transform .28s var(--ease-spring-gentle), box-shadow .28s var(--ease-out), border-color .25s var(--ease-out);
+}
+.decision-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
+.decision-card:active { transform: scale(.98); transition-duration: .1s; }
+.decision-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.decision-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 8px;
+  background: var(--bg-alt); font-size: 1.35rem;
+}
+.decision-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.decision-label { color: var(--primary-fg); font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; }
+.decision-title { font-size: var(--text-base); font-weight: var(--weight-bold); line-height: var(--leading-snug); }
+.decision-text {
+  color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-snug);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.decision-cta {
+  grid-column: 2; align-self: end;
+  color: var(--primary-fg); font-size: var(--text-sm); font-weight: var(--weight-bold);
+}
+.decision-event .decision-icon { background: rgba(217,79,61,.10); }
+.decision-season .decision-icon { background: rgba(var(--primary-rgb), .10); }
+.decision-planner .decision-icon { background: rgba(50,120,180,.10); }
+.decision-food .decision-icon { background: rgba(var(--accent-rgb), .14); }
+.decision-map .decision-icon { background: rgba(80,120,170,.10); }
+@media (max-width: 860px) {
+  .decision-shell { grid-template-columns: 1fr; }
+  .decision-copy { max-width: 680px; }
+}
+@media (max-width: 560px) {
+  .decision-grid { grid-template-columns: 1fr; }
+  .decision-card { min-height: 118px; }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -800,6 +1074,12 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cat-tile:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .cat-emoji { font-size: 1.75rem; line-height: 1; }
 .cat-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); text-align: center; }
+.cat-hint {
+  min-height: 2.2em;
+  color: var(--muted); font-size: var(--text-xs); line-height: var(--leading-snug);
+  text-align: center;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
 .cat-count { font-size: var(--text-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 .dark .cat-tile { background: var(--card); border-color: var(--line); }
 .dark .cat-tile:hover { border-color: rgba(255,255,255,.1); }

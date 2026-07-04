@@ -15,10 +15,10 @@ export default defineNuxtPlugin(async () => {
   // a non-essential enhancement; on any error the maps keep their defaults.
   try {
     const { data } = await useAsyncData('site-settings',
-      () => $fetch<Record<string, unknown>>('/api/site-settings'),
+      () => apiFetch<Record<string, unknown>>('/api/site-settings'),
       { server: true, default: () => ({}) },
     )
-    const s = data.value || {}
+    const s = (data.value || {}) as Record<string, unknown>
     applySiteOverrides({
       typeOverrides: s['categories.type_overrides'],
       areaOverrides: s['categories.area_overrides'],

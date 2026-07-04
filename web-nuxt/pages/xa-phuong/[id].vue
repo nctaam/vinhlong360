@@ -149,17 +149,35 @@ import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
 
 useReveal()
 
+interface WardOverviewCounts {
+  tourism?: number
+  lodging?: number
+  products?: number
+  facilities?: number
+  [key: string]: number | undefined
+}
+
+interface WardOverviewResponse {
+  place: Entity
+  tourism?: Entity[]
+  lodging?: Entity[]
+  products?: Entity[]
+  facilities?: Entity[]
+  counts?: WardOverviewCounts
+}
+
 const route = useRoute()
 const router = useRouter()
-const id = computed(() => route.params.id as string)
+const id = computed(() => normalizeRouteParam(route.params.id))
+const encodedId = computed(() => encodePathId(id.value))
 
 const goBack = () => goBackOr('/danh-ba')
 
 const fetchFailed = ref(false)
-const { data, refresh: refreshWard } = await useAsyncData(`ward-${route.params.id}`, async () => {
+const { data, refresh: refreshWard } = await useAsyncData(`ward-${id.value}`, async () => {
   try {
     fetchFailed.value = false
-    return await apiFetch<Record<string, unknown>>(`/api/places/${id.value}/overview`)
+    return await apiFetch<WardOverviewResponse>(`/api/places/${encodedId.value}/overview`)
   } catch {
     fetchFailed.value = true
     return null
@@ -169,7 +187,10 @@ if (import.meta.server && !data.value?.place && !fetchFailed.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy xã/phường' })
 }
 
-const areaMeta = computed(() => AREA_META[data.value?.place?.area] || { name: '', emoji: '📍', blurb: '' })
+const areaMeta = computed(() => {
+  const area = data.value?.place?.area
+  return (area ? AREA_META[area] : null) || { name: '', emoji: '📍', blurb: '' }
+})
 
 // Region-keyed decorative hero motif (inline SVG, no external/copyrighted assets)
 const MOTIFS: Record<string, string> = {
@@ -177,7 +198,7 @@ const MOTIFS: Record<string, string> = {
   'ben-tre': '<svg viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M150 95 V40"/><path d="M150 42 Q120 30 95 36"/><path d="M150 42 Q180 30 200 38"/><path d="M150 45 Q125 48 105 62"/><path d="M150 45 Q178 50 195 64"/><path d="M150 40 Q150 22 152 8"/></g></svg>',
   'tra-vinh': '<svg viewBox="0 0 200 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#fff" stroke-width="2"><ellipse cx="100" cy="60" rx="10" ry="26"/><ellipse cx="100" cy="60" rx="10" ry="26" transform="rotate(40 100 60)"/><ellipse cx="100" cy="60" rx="10" ry="26" transform="rotate(-40 100 60)"/><ellipse cx="100" cy="60" rx="10" ry="26" transform="rotate(75 100 60)"/><ellipse cx="100" cy="60" rx="10" ry="26" transform="rotate(-75 100 60)"/></g></svg>',
 }
-const heroMotif = computed(() => MOTIFS[data.value?.place?.area as string] || MOTIFS['vinh-long'])
+const heroMotif = computed(() => MOTIFS[data.value?.place?.area || ''] || MOTIFS['vinh-long'])
 const attrs = computed(() => data.value?.place?.attributes || {})
 const hasStats = computed(() => !!(attrs.value.area_km2 || attrs.value.population))
 const totalContent = computed(() => {
@@ -191,12 +212,17 @@ const mapUrl = computed(() => {
   return `/ban-do?lat=${c[0]}&lng=${c[1]}&zoom=15`
 })
 
-function formatPop(n: number) {
-  return n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n)
+function formatPop(n: number | string) {
+  const value = typeof n === 'number' ? n : Number(n)
+  if (!Number.isFinite(value)) return String(n)
+  return value >= 1000 ? (value / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(value)
 }
 
 function attr(f: Entity, k: string) { return (f.attributes || {})[k] }
-function kindMeta(f: Entity) { return OFFICE_KIND[attr(f, 'office_kind')] || OFFICE_KIND.khac }
+function kindMeta(f: Entity) {
+  const key = String(attr(f, 'office_kind') || '')
+  return OFFICE_KIND[key] || OFFICE_KIND.khac || { emoji: '🏢', label: 'Cơ quan' }
+}
 
 const allWardEntities = computed<Entity[]>(() => {
   const d = data.value
@@ -215,7 +241,7 @@ useSeoMeta({
 })
 useHead(() => {
   const place = data.value?.place
-  if (!place) return { link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${id.value}`) }] }
+  if (!place) return { link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${encodedId.value}`) }] }
 
   const adminLd: Record<string, any> = {
     '@context': 'https://schema.org', '@type': 'AdministrativeArea',
@@ -233,7 +259,7 @@ useHead(() => {
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: 'https://vinhlong360.vn/' },
       ...(place.area ? [{ '@type': 'ListItem', position: 2, name: areaMeta.value.name, item: `https://vinhlong360.vn/khu-vuc/${place.area}` }] : []),
-      { '@type': 'ListItem', position: place.area ? 3 : 2, name: place.name, item: `https://vinhlong360.vn/xa-phuong/${id.value}` },
+      { '@type': 'ListItem', position: place.area ? 3 : 2, name: place.name, item: `https://vinhlong360.vn/xa-phuong/${encodedId.value}` },
     ],
   }
 
@@ -255,14 +281,14 @@ useHead(() => {
           '@type': 'ListItem',
           position: i + 1,
           name: e.name,
-          url: `https://vinhlong360.vn/dia-diem/${e.id}`,
+          url: `https://vinhlong360.vn${entityPath(e.id)}`,
         })),
       }),
     })
   }
 
   return {
-    link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${id.value}`) }],
+    link: [{ rel: 'canonical', href: canonicalUrl(`/xa-phuong/${encodedId.value}`) }],
     script: scripts,
   }
 })
