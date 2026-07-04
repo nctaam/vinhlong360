@@ -25,8 +25,8 @@ def test_migration_gate_static_contracts_pass_current_repo():
     errors = [issue for issue in issues if issue.severity == "error"]
 
     assert errors == []
-    assert stats["latest"] == "058_itinerary_areas_schema.sql"
-    assert stats["latest_schema_version"] == 58
+    assert stats["latest"] == "067_trusted_devices.sql"
+    assert stats["latest_schema_version"] == 67
 
 def test_shared_rate_limit_and_idempotency_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "056_shared_rate_idempotency.sql").read_text(encoding="utf-8")
@@ -71,9 +71,16 @@ def test_http_only_cookie_auth_migration_contracts():
     assert "httponly" in auth_middleware
     assert ".vinhlong360.vn" in auth_middleware
     assert "production\", \"prod\", \"prd\"" in auth_middleware
+    # verify_otp / login_password establish the session cookie via the shared
+    # _finish_login helper (Wave 4 2FA refactor); refresh_token sets it directly.
+    # Accept either form, then assert _finish_login itself sets the cookie so the
+    # indirection stays an honest cookie-setting path (contract preserved, not weakened).
     for fn in ("verify_otp", "login_password", "refresh_token"):
         block = auth[auth.index(f"async def {fn}") : auth.index("async def", auth.index(f"async def {fn}") + 10)]
-        assert "_set_session_cookie" in block
+        assert "_set_session_cookie" in block or "_finish_login" in block
+    _fl = auth.index("def _finish_login")
+    _fl_end = min((x for x in (auth.find("\nasync def", _fl + 10), auth.find("\ndef ", _fl + 10)) if x > 0), default=len(auth))
+    assert "_set_session_cookie" in auth[_fl:_fl_end]
     for fn in ("reset_password_otp", "logout", "deactivate_account", "delete_account"):
         block = auth[auth.index(f"async def {fn}") : auth.index("async def", auth.index(f"async def {fn}") + 10)]
         assert "_clear_session_cookie" in block
@@ -192,7 +199,7 @@ def test_perf_quality_trend_migration_contracts_exist():
     ):
         assert token in migration
     assert "quality_metric_snapshots" in init_sql
-    assert "PG_REQUIRED_SCHEMA_VERSION = 58" in database
+    assert "PG_REQUIRED_SCHEMA_VERSION = 62" in database
 
 def test_itinerary_areas_schema_migration_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "058_itinerary_areas_schema.sql").read_text(encoding="utf-8")
@@ -227,7 +234,7 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
     pending_after_legacy_baseline = [m.path.name for m in migrations if m.version > runner.LEGACY_BASELINE_VERSION]
 
     assert runner.LEGACY_BASELINE_VERSION == 52
-    assert migrations[-1].path.name == "058_itinerary_areas_schema.sql"
+    assert migrations[-1].path.name == "067_trusted_devices.sql"
     assert pending_after_legacy_baseline == [
         "053_saved_kind_superadmin.sql",
         "054_admin_audit_events.sql",
@@ -235,6 +242,15 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
         "056_shared_rate_idempotency.sql",
         "057_perf_quality_trends.sql",
         "058_itinerary_areas_schema.sql",
+        "059_repair_migration_chain.sql",
+        "060_entity_universal_columns.sql",
+        "061_entity_detail_tables.sql",
+        "062_experience_admission.sql",
+        "063_profile_views.sql",
+        "064_login_streak.sql",
+        "065_achievements.sql",
+        "066_two_factor_auth.sql",
+        "067_trusted_devices.sql",
     ]
 
 def test_chrome_smoke_redacts_sensitive_urls():
