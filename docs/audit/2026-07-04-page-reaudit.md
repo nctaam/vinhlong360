@@ -48,5 +48,9 @@
 - **2026-07-04 (commit 8f4c423) — 2 P1 đã sửa + build xanh (6.06MB):**
   - P1-a: `--danger: var(--error)` alias trong block light+dark của `variables.css` → mọi `var(--danger)`/`var(--danger,#hex)` giờ resolve về màu error đúng + dark-adapt (xác nhận `--danger:var(--error)` có trong built CSS). Sửa mis-render `admin/ai.vue` + fallback lệch brand ở `cai-dat`/`tai-khoan`/`dia-diem/index`.
   - P1-b: `dia-diem/[id].vue` `.trust-status.aging` → `var(--warning)`/`--warning-bg`/`--warning-border` (dark parity).
-- **P2/P3: chưa sửa — để backlog.** Các P2 đáng làm tiếp (theo thứ tự giá trị/rủi ro): catalog un-paginated (D5, perf, có pattern sẵn), admin nhat-ky/media loadError+retry (D9), `/huong-dan` vào nav (D10), security-tab `:disabled` (D2), bulk bỏ 116 fallback token admin (D6), og:image per-catalog (D8). UGC noindex (D8) = **chủ quyết**.
-- **Deploy:** chưa — quyết định riêng của chủ. 2 fix P1 là CSS-only, đã build; sẽ ride lần deploy `--frontend` kế tiếp.
+- **2026-07-04 — P2/P3 batch qua SDD (build xanh mỗi commit):**
+  - **AF1 (commit cd69da5)** — catalog client-pagination: `du-lich`/`theo-mua`/`san-pham`/`ocop`/`kham-pha[interest]` render `visibleCount` slice + "Xem thêm" thay vì cả 200-500 card (D5 P2).
+  - **AF3 (commit 0d1937d)** — bỏ **116 fallback token cũ** `var(--primary,#219653)`/`(#0071e3)`/`(--accent,#f5c518)` khắp 28 file (D6 P2).
+  - **AF4 (commit 52fab49)** — nav "Cộng đồng" thành group nổi `/huong-dan` + `/bang-xep-hang` (D10); admin dark-toggle `aria-label`; PhotoGallery dot `tabindex=-1`; entities `<th>` `aria-sort` (D3).
+- **CÒN BACKLOG (chưa làm):** security-tab `:disabled` chống double-submit (D2 P2); **AF2** admin `nhat-ky`/`media` loadError+retry + `data-quality` skeleton + `ai` empty-state (D9 P2); **AF5** type-scale sweep ~510 rem→`--text-*` user-system pages (D1 P3); ItineraryCard `<NuxtImg>` + og:image per-catalog (D5/D8 P3); `dia-diem`/`lich-trinh` SSR-404 mislabel + cong-dong first-load skeleton (D9 P3); hardcoded status-color tokenize (D6 P3). **UGC noindex (D8) = chủ quyết.**
+- **Deploy:** chưa — quyết định riêng của chủ. Tất cả fix (P1 + AF1/AF3/AF4) là FE, đã build; ride lần deploy `--frontend` kế tiếp.
