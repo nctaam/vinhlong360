@@ -722,25 +722,25 @@ useHead({
    ═══════════════════════════════════════════════════ */
 .home .hero {
   isolation: isolate;
-  min-height: 84vh;
-  min-height: clamp(30rem, 84svh, 52rem);
+  min-height: 62vh;
+  min-height: clamp(24rem, 62svh, 40rem);
   display: flex; flex-direction: column; justify-content: flex-end;
-  padding-bottom: max(var(--space-7), env(safe-area-inset-bottom));
+  padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
 }
 /* Cinematic scrim — a clean bottom-up wash (no coloured "glow" radials, which read AI-ish),
    anchoring an editorial masthead composition to the lower-left. */
 .home .hero-scrim {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
-    linear-gradient(to top, rgba(8,9,12,.88) 0%, rgba(8,9,12,.54) 24%, rgba(8,9,12,.18) 52%, transparent 80%),
-    linear-gradient(103deg, rgba(8,9,12,.58) 0%, rgba(8,9,12,.16) 46%, transparent 70%);
+    linear-gradient(to top, rgba(8,9,12,.80) 0%, rgba(8,9,12,.38) 24%, rgba(8,9,12,.06) 52%, transparent 74%),
+    linear-gradient(103deg, rgba(8,9,12,.48) 0%, rgba(8,9,12,.10) 46%, transparent 70%);
 }
 /* Tactile grain over the image — the antidote to the flat "AI-gradient" look.
    Small tiled SVG the browser rasterises once; subtle overlay. */
 .home .hero::after {
   content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background-image: var(--grain); background-size: 120px 120px;
-  opacity: .09; mix-blend-mode: overlay;
+  opacity: .05;
 }
 .home .hero-inner {
   position: relative; z-index: 1;
