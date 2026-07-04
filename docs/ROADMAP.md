@@ -141,13 +141,13 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 
 **Tiên quyết:** DoD-3. **Bất biến:** B6 (bản quyền), B8 (free-tier).
 
-- [ ] **8.1** Cấu hình object storage **Cloudflare R2** qua `storage.py` (S3 endpoint/keys). → *Verify:* upload thử 1 ảnh trả URL. *Nghiệm thu:* lưu ảnh ~0đ.
-- [ ] **8.2** Script ingest: Wikimedia Commons + Wikipedia summary theo `entity.name`+area → đề xuất ảnh cover; lưu kèm `image_credits` (CC attribution). **Chỉ nguồn cấp phép.** → *Verify:* chạy thử N entity nổi tiếng có ảnh + credit. *Nghiệm thu:* không dùng ảnh cào bản quyền (B6).
-- [ ] **8.3** Pipeline tối ưu: Pillow → WebP 3 cỡ (400/800/1600), strip EXIF, tên file theo slug; ghi vào `entity["images"]`. → *Verify:* ảnh hiển thị responsive. *Nghiệm thu:* ảnh nhẹ, CLS ổn.
-- [ ] **8.4** Endpoint admin **upload file** cho ảnh entity (hiện chỉ URL — `admin.py:430`) + duyệt ảnh UGC gắn vào entity. → *Nghiệm thu:* admin tự thêm ảnh.
-- [ ] **8.5** SEO ảnh: `og:image` mặc định toàn site + override per-entity; nâng `image` → `ImageObject` (license) ở `seo.py:226` & `dia-diem/[id].vue:394`; **hiện thực image sitemap** (`seo.py:86` đang dead). Cập nhật `docs/api-contract.md` thêm `images`. → *Verify:* share preview có ảnh; sitemap ảnh hợp lệ. *Nghiệm thu:* ảnh được index.
+- [x] **8.1** Object storage **Cloudflare R2** qua `storage.py` (S3 endpoint/keys). → *Nghiệm thu:* lưu ảnh ~0đ. ✅ DONE + deployed 2026-06-20 (prod `backend: r2`; CDN `cdn.vinhlong360.vn` phục vụ WebP 200).
+- [!] **8.2** ~~Ingest Wikimedia/Wikipedia~~ → **SUPERSEDED (chủ chốt):** dự án dùng **CHỈ ảnh AI-gen** (`cx/gpt-5.5-image`, sạch bản quyền) — KHÔNG Wikimedia/stock/UGC. Việc *sinh ảnh nội dung cho entity* chuyển xuống Cổng DoD-8. (xem [[feedback-no-wikimedia-images]])
+- [x] **8.3** Pipeline WebP 3 cỡ (400/800/1600), strip EXIF, slug filename → `entity["images"]`. → *Nghiệm thu:* ảnh nhẹ, CLS ổn. ✅ `storage.py:upload_image_set` (Pillow).
+- [x] **8.4** Endpoint admin **upload file** cho ảnh entity + duyệt ảnh UGC. → *Nghiệm thu:* admin tự thêm ảnh. ✅ `admin.py` POST `/entities/{id}/images` (add-by-url) + `/entities/{id}/images/upload` (multipart UploadFile).
+- [x] **8.5** SEO ảnh: `og:image` + `ImageObject` (license) + **image sitemap**. → *Nghiệm thu:* ảnh được index. ✅ `seo.py` ImageObject[] + `GET /sitemap-media.xml` **phục vụ 200 trên prod** (backlog "404 nginx" đã hết hiệu lực).
 
-**🚦 Cổng DoD-8:** ≥ vài trăm entity nổi bật có ảnh hợp lệ + credit; og:image hoạt động; image sitemap hợp lệ; không ảnh vi phạm bản quyền.
+**🚦 Cổng DoD-8:** ≥ vài trăm entity nổi bật có ảnh hợp lệ + credit; og:image hoạt động; image sitemap hợp lệ; không ảnh vi phạm bản quyền. **[CODE XONG — còn NỘI DUNG]:** đường ống R2 + WebP + endpoint upload + og:image + image sitemap đều DONE & verified (2026-07-04). Phần chưa đạt = *sinh ảnh AI cho từng entity* (nút thắt nội dung, CHỈ `cx/gpt-5.5-image`; helper `scripts/gen_image.py`). Cần **chủ dự án duyệt dùng image API** + là việc chạy dần, không phải task code.
 
 ---
 
