@@ -27,6 +27,10 @@
     <div v-if="loading" class="audit-skeleton" role="status" aria-label="Đang tải nhật ký">
       <div v-for="i in 8" :key="i" class="skel-row"><div class="skel skel-ts"></div><div class="skel skel-method"></div><div class="skel skel-path"></div><div class="skel skel-actor"></div></div>
     </div>
+    <div v-else-if="loadError" class="admin-empty">
+      <p>Không tải được nhật ký.</p>
+      <button type="button" class="btn btn-secondary" @click="fetchLog()">Thử lại</button>
+    </div>
     <template v-else>
       <div class="audit-summary">{{ total }} mục{{ total > entries.length ? ` · trang ${page}/${totalPages}` : '' }}</div>
 
@@ -75,6 +79,7 @@ const { show: showToast } = useToast()
 const entries = ref<any[]>([])
 const total = ref(0)
 const loading = ref(true)
+const loadError = ref(false)
 const search = ref('')
 const methodFilter = ref('')
 const dateFrom = ref('')
@@ -86,6 +91,7 @@ let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 async function fetchLog() {
   loading.value = true
+  loadError.value = false
   try {
     const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String((page.value - 1) * PAGE_SIZE) })
     if (methodFilter.value) params.set('method', methodFilter.value)
@@ -95,7 +101,7 @@ async function fetchLog() {
     const res = await $fetch<{ entries: any[]; total: number }>(`/admin-api/audit-log?${params}`, { headers: authHeaders() })
     entries.value = res.entries || []
     total.value = res.total || 0
-  } catch { showToast('Không thể tải nhật ký', 'error') }
+  } catch { loadError.value = true; showToast('Không thể tải nhật ký', 'error') }
   loading.value = false
 }
 

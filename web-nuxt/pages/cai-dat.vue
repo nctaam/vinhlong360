@@ -230,7 +230,7 @@
             <span class="sf-label">Nhập mã để tắt 2FA</span>
             <input v-model="disableCode" type="text" inputmode="numeric" class="sf-input" placeholder="Mã 6 số hoặc mã khôi phục" />
           </label>
-          <button type="button" class="btn btn-danger-text btn-sm" @click="disable2FA">Tắt xác thực 2 bước</button>
+          <button type="button" class="btn btn-danger-text btn-sm" :disabled="securityBusy" @click="withBusy(() => disable2FA())">Tắt xác thực 2 bước</button>
         </template>
         <template v-else-if="setupData">
           <p class="sf-hint">Quét mã QR bằng Google Authenticator / Authy, rồi nhập mã 6 số.</p>
@@ -240,11 +240,11 @@
             <span class="sf-label">Mã xác nhận</span>
             <input v-model="setupCode" type="text" inputmode="numeric" maxlength="6" class="sf-input" />
           </label>
-          <button type="button" class="btn btn-primary btn-sm" @click="confirm2FASetup">Xác nhận &amp; bật</button>
+          <button type="button" class="btn btn-primary btn-sm" :disabled="securityBusy" @click="withBusy(() => confirm2FASetup())">Xác nhận &amp; bật</button>
         </template>
         <template v-else>
           <p class="sf-hint">Thêm một lớp bảo vệ: yêu cầu mã từ ứng dụng xác thực khi đăng nhập.</p>
-          <button type="button" class="btn btn-primary btn-sm" @click="begin2FASetup">Bật xác thực 2 bước</button>
+          <button type="button" class="btn btn-primary btn-sm" :disabled="securityBusy" @click="withBusy(() => begin2FASetup())">Bật xác thực 2 bước</button>
         </template>
       </div>
 
@@ -258,7 +258,7 @@
               <span class="sf-hint">{{ s.ip_address }} &middot; {{ timeAgo(s.created_at) }}</span>
             </div>
             <span v-if="s.is_current" class="session-badge">Hiện tại</span>
-            <button v-else type="button" class="btn btn-ghost btn-sm btn-danger-text" @click="revokeSession(s.id)">Thu hồi</button>
+            <button v-else type="button" class="btn btn-ghost btn-sm btn-danger-text" :disabled="securityBusy" @click="withBusy(() => revokeSession(s.id))">Thu hồi</button>
           </div>
         </div>
         <p v-else class="sf-hint">Không có phiên nào.</p>
@@ -275,7 +275,7 @@
               <span class="session-ua">{{ d.device_name || 'Thiết bị' }}</span>
               <span class="sf-hint">{{ d.ip }} &middot; {{ timeAgo(d.last_used_at) }}</span>
             </div>
-            <button type="button" class="btn btn-ghost btn-sm btn-danger-text" @click="removeTrustedDevice(d.id)">Xoá</button>
+            <button type="button" class="btn btn-ghost btn-sm btn-danger-text" :disabled="securityBusy" @click="withBusy(() => removeTrustedDevice(d.id))">Xoá</button>
           </div>
         </div>
         <p v-else class="sf-hint">Chưa có thiết bị tin cậy nào.</p>
@@ -388,7 +388,7 @@
           <div class="session-info">
             <NuxtLink :to="userPath(b.username || b.id)" class="session-ua">{{ b.display_name || 'Người dùng' }}</NuxtLink>
           </div>
-          <button type="button" class="btn btn-ghost btn-sm" @click="unblockUser(b.id, b.display_name)">Bỏ chặn</button>
+          <button type="button" class="btn btn-ghost btn-sm" :disabled="securityBusy" @click="withBusy(() => unblockUser(b.id, b.display_name))">Bỏ chặn</button>
         </div>
       </div>
       <p v-else class="sf-hint">Bạn chưa chặn ai.</p>
@@ -404,7 +404,7 @@
           <div class="session-info">
             <NuxtLink :to="userPath(m.username || m.id)" class="session-ua">{{ m.display_name || 'Người dùng' }}</NuxtLink>
           </div>
-          <button type="button" class="btn btn-ghost btn-sm" @click="unmuteUser(m.id, m.display_name)">Bỏ tắt tiếng</button>
+          <button type="button" class="btn btn-ghost btn-sm" :disabled="securityBusy" @click="withBusy(() => unmuteUser(m.id, m.display_name))">Bỏ tắt tiếng</button>
         </div>
       </div>
       <p v-else class="sf-hint">Bạn chưa tắt tiếng ai.</p>
@@ -544,6 +544,9 @@ const savedBio = ref('')
 const savedEmail = ref(email.value)
 const savedContactInfo = ref(contactInfo.value)
 const saving = ref(false)
+// Guard security-tab action buttons against double-submit while an async op runs.
+const securityBusy = ref(false)
+async function withBusy(fn: () => unknown) { if (securityBusy.value) return; securityBusy.value = true; try { await fn() } finally { securityBusy.value = false } }
 const nameError = ref('')
 
 const uploadingAvatar = ref(false)

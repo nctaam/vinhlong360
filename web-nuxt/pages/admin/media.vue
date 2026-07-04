@@ -40,6 +40,10 @@
         </div>
       </div>
     </div>
+    <div v-else-if="loadError" class="admin-empty-state">
+      <div class="admin-empty-state-text">Không tải được thư viện ảnh.</div>
+      <button type="button" class="btn btn-secondary" @click="fetchMedia()">Thử lại</button>
+    </div>
     <template v-else>
 
     <div v-if="!items.length" class="admin-empty-state">
@@ -113,6 +117,7 @@ const stats = ref<any>(null)
 const total = ref(0)
 const page = ref(1)
 const loading = ref(true)
+const loadError = ref(false)
 const filter = ref('all')
 const previewItem = ref<any>(null)
 const mediaModalRef = ref<HTMLElement | null>(null)
@@ -126,12 +131,13 @@ const loadingMore = ref(false)
 async function fetchMedia(append = false) {
   if (append) loadingMore.value = true
   else loading.value = true
+  if (!append) loadError.value = false
   try {
     const res = await $fetch<any>(`/admin-api/media?page=${page.value}&limit=50&filter=${filter.value}`, { headers: authHeaders() })
     items.value = append ? [...items.value, ...(res.items || [])] : (res.items || [])
     total.value = res.total || 0
     stats.value = res.stats || null
-  } catch { showToast('Không thể tải thư viện ảnh', 'error') }
+  } catch { if (!append) loadError.value = true; showToast('Không thể tải thư viện ảnh', 'error') }
   loading.value = false
   loadingMore.value = false
 }
