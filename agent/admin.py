@@ -30,6 +30,7 @@ from pydantic import BaseModel, Field, field_validator
 import data_quality
 import knowledge
 import analytics
+import text_utils
 
 logger = logging.getLogger("admin")
 import site_settings
@@ -85,6 +86,7 @@ _audit_lock = threading.Lock()
 
 from config import settings as _cfg
 _AUDIT_MAX_LINES = _cfg.AUDIT_MAX_LINES
+_AUDIT_MAX_BYTES = 10 * 1024 * 1024  # B5b: rotate cũng khi file > 10MB (không chỉ khi vượt số dòng)
 
 ADMIN_ROLE_SCOPES: dict[str, set[str]] = {
     "moderator": {"moderation.manager"},
@@ -102,6 +104,7 @@ ADMIN_SCOPE_RULES: tuple[tuple[str, str], ...] = (
     ("/admin/site-settings-history", "settings.admin"),
     ("/admin/llm-config", "settings.admin"),
     ("/admin/backup-trigger", "ops.deploy"),
+    ("/admin/backup-status", "ops.deploy"),
     ("/admin/system-health", "ops.deploy"),
     ("/admin/ops-summary", "ops.deploy"),
     ("/admin/cost-overview", "ops.deploy"),
@@ -335,16 +338,26 @@ def _log_admin_audit(
 
 
 def _maybe_rotate_audit() -> None:
+    # B5b: rotate khi dòng > _AUDIT_MAX_LINES HOẶC file > _AUDIT_MAX_BYTES (OR — giữ cap dòng cũ).
     try:
         if not _AUDIT_FILE.exists():
             return
         lines = _AUDIT_FILE.read_text(encoding="utf-8").splitlines()
-        if len(lines) <= _AUDIT_MAX_LINES:
+        over_count = len(lines) > _AUDIT_MAX_LINES
+        over_size = _AUDIT_FILE.stat().st_size > _AUDIT_MAX_BYTES
+        if not (over_count or over_size):
+            return
+        # Giữ tối đa _AUDIT_MAX_LINES dòng (như cũ); nếu chỉ vượt vì dung lượng (dòng dài,
+        # ít dòng) thì cắt còn một nửa để đảm bảo dung lượng thực sự giảm.
+        keep = min(_AUDIT_MAX_LINES, len(lines))
+        if over_size and not over_count:
+            keep = min(keep, max(1, len(lines) // 2))
+        if keep >= len(lines):
             return
         archive = _AUDIT_FILE.with_suffix(f".{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}.jsonl")
-        archive.write_text("\n".join(lines[:-_AUDIT_MAX_LINES]) + "\n", encoding="utf-8")
+        archive.write_text("\n".join(lines[:-keep]) + "\n", encoding="utf-8")
         tmp = _AUDIT_FILE.with_suffix(".tmp")
-        tmp.write_text("\n".join(lines[-_AUDIT_MAX_LINES:]) + "\n", encoding="utf-8")
+        tmp.write_text("\n".join(lines[-keep:]) + "\n", encoding="utf-8")
         tmp.replace(_AUDIT_FILE)
     except Exception:
         logger.exception("Audit log rotation failed")
@@ -767,22 +780,32 @@ async def list_places():
             summary="Check entity name duplicate",
             description="Checks for existing entities with similar names using case-insensitive substring matching. Returns up to 5 matches.")
 async def check_duplicate(name: str = Query(..., min_length=2, max_length=200)):
-    """Kiểm tra entity trùng tên (substring match, case-insensitive)."""
+    """Kiểm tra entity trùng tên (substring, case-insensitive + B2c: không phân biệt dấu)."""
     name_lower = name.lower().strip()
     if len(name_lower) < 2:
         return {"duplicates": []}
     pattern = f"%{_escape_like(name_lower)}%"
+    norm_needle = text_utils.normalize_name(name)
     def _query():
         with db._conn() as conn:
             # db._ph: ? chỉ đúng SQLite — trên PG (psycopg2) phải %s (500 trên prod)
-            rows = db._fetchall(conn,
-                f"SELECT id, name, type FROM entities WHERE type != 'place' AND LOWER(name) LIKE {db._ph} ESCAPE '\\' LIMIT 5",
-                (pattern,))
+            if db._use_pg:
+                # f_unaccent (migration 015) đã có index — OR thêm để bắt biến thể có/không dấu.
+                sql = (f"SELECT id, name, type FROM entities WHERE type != 'place' AND "
+                       f"(LOWER(name) LIKE {db._ph} ESCAPE '\\' OR f_unaccent(LOWER(name)) LIKE f_unaccent({db._ph}) ESCAPE '\\') LIMIT 20")
+                rows = db._fetchall(conn, sql, (pattern, pattern))
+            else:
+                rows = db._fetchall(conn,
+                    f"SELECT id, name, type FROM entities WHERE type != 'place' AND LOWER(name) LIKE {db._ph} ESCAPE '\\' LIMIT 20",
+                    (pattern,))
         dups = []
         for r in rows:
             d = db._row_to_dict(r)
             dups.append({"id": d["id"], "name": d["name"], "type": d.get("type", "")})
-        return {"duplicates": dups}
+        if not db._use_pg:
+            # SQLite fallback: không có unaccent() — lọc bổ sung bằng normalize_name trong Python.
+            dups = [d for d in dups if norm_needle in text_utils.normalize_name(d["name"])]
+        return {"duplicates": dups[:5]}
     return await asyncio.to_thread(_query)
 
 
@@ -2259,8 +2282,11 @@ async def toggle_featured(entity_id: str, request: Request):
 @router.get("/stats",
             summary="Get admin dashboard statistics",
             description="Returns detailed statistics including entity counts by type, completeness scores, weekly deltas, and backup info.")
-async def admin_stats():
-    """Thống kê chi tiết cho admin."""
+async def admin_stats(compare_days: int = Query(7, ge=1, le=90)):
+    """Thống kê chi tiết cho admin.
+
+    B1d: compare_days cho phép đổi cửa sổ so-sánh (mặc định 7 → giữ nguyên output cũ).
+    """
     def _query():
         db.initialize()
         ph = db._ph
@@ -2320,12 +2346,15 @@ async def admin_stats():
             "pct": round((has_summary + has_images + has_place) / (comp_total * 3) * 100, 1) if comp_total else 0,
         }
 
+        # B1d: cửa sổ so-sánh cấu hình được qua compare_days (mặc định 7 ngày — giữ nguyên hành vi cũ).
+        interval_pg = f"{compare_days} days"
+
         deltas = {}
         if db._use_pg:
             try:
                 with db._conn() as pg:
-                    users_week = db._fetchone(pg, "SELECT COUNT(*) as c FROM users WHERE created_at > NOW() - INTERVAL '7 days'", ())
-                    posts_week = db._fetchone(pg, "SELECT COUNT(*) as c FROM posts WHERE created_at > NOW() - INTERVAL '7 days'", ())
+                    users_week = db._fetchone(pg, f"SELECT COUNT(*) as c FROM users WHERE created_at > NOW() - CAST({ph} AS INTERVAL)", (interval_pg,))
+                    posts_week = db._fetchone(pg, f"SELECT COUNT(*) as c FROM posts WHERE created_at > NOW() - CAST({ph} AS INTERVAL)", (interval_pg,))
                     total_users = db._fetchone(pg, "SELECT COUNT(*) as c FROM users", ())
                     total_posts = db._fetchone(pg, "SELECT COUNT(*) as c FROM posts", ())
                 deltas = {
@@ -2339,11 +2368,14 @@ async def admin_stats():
 
         entities_week = 0
         try:
-            week_sql = ("SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= NOW() - INTERVAL '7 days'"
-                        if db._use_pg else
-                        "SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', '-7 days')")
+            if db._use_pg:
+                week_sql = f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= NOW() - CAST({ph} AS INTERVAL)"
+                week_params = (interval_pg,)
+            else:
+                week_sql = f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', {ph})"
+                week_params = (f"-{compare_days} days",)
             with db._conn() as c3:
-                ew = db._fetchone(c3, week_sql, ())
+                ew = db._fetchone(c3, week_sql, week_params)
                 entities_week = db._row_to_dict(ew)["c"] if ew else 0
         except Exception:
             logger.debug("Stats entities_week query failed", exc_info=True)
@@ -2384,6 +2416,15 @@ def _latest_backup_info() -> dict:
     latest = dirs[0]
     size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1)
     return {"ready": True, "latest": latest.name, "count": len(dirs), "size_mb": size_mb}
+
+
+@router.get("/backup-status",
+            summary="Get latest backup status",
+            description="Returns a thin snapshot of the latest local backup (readiness, name, count, size) — same info already surfaced inside /admin/stats and /admin/ops-summary, exposed standalone for lightweight polling.")
+async def backup_status():
+    """B5c: route mỏng bọc _latest_backup_info() — không thêm logic mới."""
+    return {"backup": await asyncio.to_thread(_latest_backup_info)}
+
 
 def _data_quality_ops_snapshot() -> dict:
     queue_path = data_quality.BURST_DIR / data_quality.QUEUE_FILE

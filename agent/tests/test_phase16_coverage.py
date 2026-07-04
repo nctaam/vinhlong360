@@ -1516,7 +1516,9 @@ class TestDeepScanBatch5:
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         idx = src.find("def _maybe_rotate_audit")
         assert idx > 0
-        block = src[idx:idx+800]
+        # Window 1300: hàm dài ra hợp lệ (B5b — thêm OR-điều-kiện dung lượng >10MB,
+        # 2026-07-04) — assertion giữ nguyên, chỉ cơ chế atomic-write (.tmp/.replace) không đổi.
+        block = src[idx:idx+1300]
         assert ".tmp" in block, "Rotation must use temp file for atomic write"
         assert ".replace(" in block, "Rotation must use replace() for atomic swap"
 
