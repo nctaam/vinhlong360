@@ -1198,7 +1198,10 @@ class TestMediumFixesBatch2:
         assert "threading.Lock()" in src, "Must use threading.Lock for audit log"
         idx = src.find("def _log_admin_audit(")
         assert idx > 0
-        block = src[idx:idx+400]
+        # Scan the whole function body (bounded by the next top-level def/decorator);
+        # the with-_audit_lock block sits past a fixed 400-char window as the fn grew.
+        end = min((x for x in (src.find("\n@", idx + 10), src.find("\nasync def ", idx + 10), src.find("\ndef ", idx + 10)) if x > 0), default=len(src))
+        block = src[idx:end]
         assert "_audit_lock" in block, "_log_admin_audit must use _audit_lock"
 
     def test_update_post_optional_content(self):
@@ -1275,10 +1278,15 @@ class TestMediumFixesBatch2:
         """site_settings upsert must limit value size."""
         src = (Path(__file__).resolve().parent.parent / "site_settings.py").read_text(encoding="utf-8")
         assert "_MAX_VALUE_SIZE" in src, "site_settings must define _MAX_VALUE_SIZE"
+        # The size check was factored into the _json_value() helper which raises when
+        # a serialized value exceeds _MAX_VALUE_SIZE; the helper enforces the limit.
+        assert "_json_value" in src and "> _MAX_VALUE_SIZE" in src, \
+            "_json_value must raise when value exceeds _MAX_VALUE_SIZE"
         idx = src.find("def upsert(")
         assert idx > 0
-        block = src[idx:idx+400]
-        assert "_MAX_VALUE_SIZE" in block, "upsert must check _MAX_VALUE_SIZE"
+        end = min((x for x in (src.find("\n@", idx + 10), src.find("\nasync def ", idx + 10), src.find("\ndef ", idx + 10)) if x > 0), default=len(src))
+        block = src[idx:end]
+        assert "_json_value(" in block, "upsert must run value through _json_value (size-limit gate)"
 
     def test_smart_rank_get_popularity_holds_lock(self):
         """get_popularity must return inside the lock to prevent race condition."""
@@ -1532,15 +1540,31 @@ class TestDeepScanBatch5:
         assert ".replace(" in block, "JSONL rotation must use replace() for atomic swap"
 
     def test_database_has_feed_index(self):
-        """Database must have composite index for feed query performance."""
-        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
-        assert "idx_posts_feed" in src, \
+        """Database must have composite index for feed query performance.
+
+        Posts is a Postgres-only UGC table, so its indexes live in the migrations
+        directory (database.py only owns the SQLite knowledge-table indexes — see
+        CLAUDE.md §1.3 'PG do migrations sở hữu'). The covering index for feed
+        queries (WHERE moderation_status ORDER BY created_at DESC) is
+        idx_posts_status_created in 020_feed_performance_indexes.sql.
+        """
+        migrations = (Path(__file__).resolve().parent.parent / "migrations").glob("*.sql")
+        all_sql = "\n".join(p.read_text(encoding="utf-8") for p in migrations)
+        assert "idx_posts_status_created" in all_sql and \
+            "posts(moderation_status, created_at DESC)" in all_sql, \
             "Must have composite index on posts(moderation_status, created_at) for feed performance"
 
     def test_database_has_notification_index(self):
-        """Database must have index on notifications for user query performance."""
-        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
-        assert "idx_notifications_user" in src, \
+        """Database must have index on notifications for user query performance.
+
+        notifications is Postgres-only; its index lives in the migrations directory.
+        The covering index is idx_notifications_user_id on
+        notifications(user_id, created_at DESC) in 016_performance_indexes.sql.
+        """
+        migrations = (Path(__file__).resolve().parent.parent / "migrations").glob("*.sql")
+        all_sql = "\n".join(p.read_text(encoding="utf-8") for p in migrations)
+        assert "idx_notifications_user_id" in all_sql and \
+            "notifications(user_id, created_at DESC)" in all_sql, \
             "Must have index on notifications(user_id, created_at) for notification queries"
 
 
@@ -1864,7 +1888,10 @@ class TestModerationNotifications:
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
         idx = src.find("async def batch_moderation(")
         assert idx > 0
-        block = src[idx:idx+1600]
+        # Scan the whole function body; the per-post create_notification call in the
+        # loop sits just past a fixed 1600-char window as the fn grew.
+        end = min((x for x in (src.find("\n@", idx + 10), src.find("\nasync def ", idx + 10), src.find("\ndef ", idx + 10)) if x > 0), default=len(src))
+        block = src[idx:end]
         assert "create_notification(" in block, \
             "batch_moderation must call create_notification for each affected post"
         assert "RETURNING id, user_id" in block, \
@@ -1945,7 +1972,11 @@ class TestSchedulerOverlapGuard:
     def test_run_sets_and_clears_flag(self):
         src = (Path(__file__).resolve().parent.parent / "scheduler.py").read_text(encoding="utf-8")
         idx = src.find("def run(self)")
-        block = src[idx:idx+3000]
+        # Scan the whole method body (bounded by the next method or top-level def);
+        # the finally: self._is_running = False sits past a fixed 3000-char window
+        # after the retry/backoff branches were added to run().
+        end = min((x for x in (src.find("\n    def ", idx + 10), src.find("\n    async def ", idx + 10), src.find("\ndef ", idx + 10), src.find("\nclass ", idx + 10)) if x > 0), default=len(src))
+        block = src[idx:end]
         assert "self._is_running = True" in block, \
             "run() must set _is_running = True at start"
         assert "self._is_running = False" in block, \
@@ -2060,23 +2091,35 @@ class TestAdminBugFixes:
 
     def test_audit_cache_invalidated_on_write(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def _log_admin_audit")
+        # Target the file-writing _log_admin_audit( — NOT _log_admin_audit_db (the DB
+        # sink, which src.find("def _log_admin_audit") would match first). The cache
+        # invalidation lives in the file writer, past a fixed 900-char window.
+        idx = src.find("def _log_admin_audit(")
         assert idx != -1
-        block = src[idx:idx+900]
+        end = min((x for x in (src.find("\n@", idx + 10), src.find("\nasync def ", idx + 10), src.find("\ndef ", idx + 10)) if x > 0), default=len(src))
+        block = src[idx:end]
         assert '_audit_cache["mtime"]' in block and "= 0" in block, \
             "_log_admin_audit must invalidate audit cache after write"
 
     def test_media_gallery_stats_computed_before_filter(self):
         src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
+        # media_gallery was refactored: the full-list count is computed in the module-
+        # level helper _extract_media_items as total_images=len(media_items) (BEFORE any
+        # filtering), cached, then read by media_gallery before the filter is applied.
+        helper_idx = src.find("def _extract_media_items")
+        assert helper_idx != -1, "media_gallery must delegate extraction to _extract_media_items"
+        assert '"total_images": len(media_items)' in src, \
+            "_extract_media_items must compute total_images over the FULL unfiltered list"
+        # In media_gallery, total_images is read from the pre-filter cache before filtering.
         idx = src.find("def media_gallery")
         assert idx != -1
         block = src[idx:idx+2500]
-        total_idx = block.find("total_images = len(media_items)")
+        total_idx = block.find('total_images = cached["total_images"]')
         filter_idx = block.find('if filter == "missing_credit"')
-        assert total_idx != -1, "media_gallery must compute total_images before filtering"
+        assert total_idx != -1, "media_gallery must read pre-filter total_images from cache"
         assert filter_idx != -1
         assert total_idx < filter_idx, \
-            "total_images must be computed BEFORE filter is applied"
+            "total_images must be read BEFORE the filter is applied"
 
     def test_entity_list_pagination_uses_count(self):
         """Non-search entity list must use count_entities_filtered for total, not len(results)."""
@@ -2131,7 +2174,10 @@ class TestAdminBugFixes:
         src = (Path(__file__).resolve().parent.parent / "public_api.py").read_text(encoding="utf-8")
         idx = src.find("async def search(")
         assert idx != -1
-        block = src[idx:idx+800]
+        # Scan the whole endpoint body; the safe_q = re.sub(r"<[^>]+>", "", q) sanitizer
+        # (echoed back as "q" in the payload) sits just past a fixed 800-char window.
+        end = min((x for x in (src.find("\n@", idx + 10), src.find("\nasync def ", idx + 10), src.find("\ndef ", idx + 10)) if x > 0), default=len(src))
+        block = src[idx:end]
         assert "re.sub" in block or "_strip_html" in block or "html.escape" in block, \
             "Search endpoint must sanitize q before returning"
 
