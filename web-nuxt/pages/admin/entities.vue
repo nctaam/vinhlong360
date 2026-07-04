@@ -538,7 +538,12 @@ const search = ref('')
 const typeFilter = ref('')
 const orphansOnly = ref(false)
 const page = ref(1)
-const limit = 30
+// B8b: seed pageSize/entityTypeFilter from persisted admin prefs; persist changes back.
+const { prefs: adminPrefs, setPref: setAdminPref } = useAdminPrefs()
+const limit = ref(adminPrefs.value.pageSize || 30)
+if (adminPrefs.value.entityTypeFilter) typeFilter.value = adminPrefs.value.entityTypeFilter
+watch(limit, v => setAdminPref('pageSize', v))
+watch(typeFilter, v => setAdminPref('entityTypeFilter', v))
 const entities = ref<Entity[]>([])
 const totalEntities = ref(0)
 const showModal = ref(false)
@@ -853,7 +858,7 @@ async function fetchEntities(reset = false) {
   if (reset) page.value = 1
   loading.value = true
   try {
-    const params = new URLSearchParams({ limit: String(limit), offset: String((page.value - 1) * limit) })
+    const params = new URLSearchParams({ limit: String(limit.value), offset: String((page.value - 1) * limit.value) })
     if (search.value) params.set('q', search.value)
     if (typeFilter.value) params.set('type', typeFilter.value)
     else if (currentKind.value) params.set('kind', currentKind.value.kind)
