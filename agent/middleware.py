@@ -170,12 +170,26 @@ class _StructuredLogBridge(logging.Handler):
         self._slogger.log(level, msg, module=record.name)
 
 
+class _SSEAccessLogFilter(logging.Filter):
+    """Keep long-lived notification SSE handshakes out of access logs."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.name != "uvicorn.access":
+            return True
+        try:
+            msg = record.getMessage()
+        except Exception:
+            msg = str(record.msg)
+        return "/api/notifications/stream" not in msg
+
+
 # Singleton
 logger = StructuredLogger()
 
 # Bridge: all Python loggers → structured JSONL
 _bridge = _StructuredLogBridge(logger)
 logging.getLogger().addHandler(_bridge)
+logging.getLogger("uvicorn.access").addFilter(_SSEAccessLogFilter())
 
 
 # ══════════════════════════════════════════════════

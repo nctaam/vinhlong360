@@ -118,6 +118,7 @@ def test_cost_endpoints_require_admin(client_mocked):
     """GĐ4.2: /image/recognize (LLM vision) + /vectors/build (rebuild nặng) chặn ẩn danh."""
     assert client_mocked.post("/image/recognize", json={"image": "x"}).status_code == 401
     assert client_mocked.post("/vectors/build").status_code == 401
+    assert client_mocked.get("/vectors/search?q=test").status_code == 401
 
 
 def test_reload_requires_admin_and_reads_db(client_mocked):

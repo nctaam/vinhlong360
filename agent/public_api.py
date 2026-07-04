@@ -13,10 +13,11 @@ import json
 import logging
 import math
 import re
+import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,37 @@ def _is_public(e: dict) -> bool:
     chưa kiểm chứng (auto-learned). Quarantine cho public display — KB chat vẫn dùng,
     nhưng trang công khai KHÔNG show nội dung tự-học chưa duyệt (tránh cảm giác nghiệp dư)."""
     return e.get("status") != "provisional" and e.get("verified") is not False
+
+
+def _get_public_entity(entity_id: str) -> Optional[dict]:
+    entity = db.get_entity(entity_id)
+    if not entity or not _is_public(entity):
+        return None
+    return entity
+
+
+def _itinerary_stop_entity_id(stop) -> str:
+    if isinstance(stop, str):
+        return stop
+    if isinstance(stop, dict):
+        return str(stop.get("entityId") or stop.get("entity_id") or stop.get("id") or "")
+    return ""
+
+
+def _itinerary_coverage_areas(itinerary: dict) -> set[str]:
+    areas = {str(area) for area in (itinerary.get("areas") or []) if area}
+    primary = itinerary.get("area")
+    if primary and (primary != "lien-vung" or not areas):
+        areas.add(str(primary))
+    return areas
+
+
+def _filter_public_relationships(rels: list[dict]) -> list[dict]:
+    other_ids = [r.get("other_id") for r in rels if r.get("other_id")]
+    if not other_ids:
+        return rels
+    batch = db.get_entities_batch(other_ids)
+    return [r for r in rels if _is_public(batch.get(r.get("other_id"), {}))]
 
 
 def _build_source_freshness(entity: dict) -> dict:
@@ -131,6 +163,7 @@ def invalidate_place_cache():
 # admin xem qua /admin/reports để xử lý (takedown/sửa). KHÔNG dùng DB/dịch vụ trả phí.
 REPORTS_FILE = Path(__file__).resolve().parent / "data" / "reports.jsonl"
 SEARCH_LOG_FILE = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
+USER_EVENTS_FILE = Path(__file__).resolve().parent / "data" / "user_events.jsonl"
 _VALID_TARGET_TYPES = {"facility", "entity", "post", "comment", "other"}
 
 _JSONL_MAX_LINES = 5000
@@ -162,6 +195,7 @@ def _log_search_query(q: str, entity_type: str | None, area: str | None, total: 
             "type": entity_type,
             "area": area,
             "results": total,
+            "zero_result": int(total or 0) == 0,
         }, ensure_ascii=False)
         with _jsonl_lock:
             SEARCH_LOG_FILE.parent.mkdir(exist_ok=True)
@@ -171,6 +205,523 @@ def _log_search_query(q: str, entity_type: str | None, area: str | None, total: 
     except Exception:
         logger.debug("search log write failed", exc_info=True)
 
+
+_VALID_USER_EVENT_TYPES = {
+    "entity_view", "search", "save_add", "save_remove", "visit_mark",
+    "community_view", "post_view", "map_focus", "itinerary_view",
+}
+_VALID_RECOMMENDATION_CONTEXTS = {"home", "entity", "search", "saved", "map", "itinerary", "community"}
+_EVENT_WEIGHTS = {
+    "save_add": 5.0,
+    "visit_mark": 4.0,
+    "entity_view": 2.2,
+    "map_focus": 1.8,
+    "itinerary_view": 1.8,
+    "search": 1.4,
+    "community_view": 1.0,
+    "post_view": 1.0,
+    "save_remove": -2.0,
+}
+_INTEREST_RULES: dict[str, dict[str, Any]] = {
+    "food": {
+        "label": "Ẩm thực",
+        "types": {"dish", "restaurant", "cafe", "drink"},
+        "terms": ("am thuc", "mon", "quan", "banh", "bun", "lau", "ca", "che", "an", "uong"),
+    },
+    "local_products": {
+        "label": "Đặc sản & OCOP",
+        "types": {"product"},
+        "terms": ("ocop", "dac san", "qua", "mua", "trai cay", "dua", "buoi", "cam", "keo"),
+    },
+    "garden": {
+        "label": "Miệt vườn",
+        "types": {"experience", "nature"},
+        "terms": ("vuon", "miet vuon", "song nuoc", "cu lao", "trai cay", "sinh thai"),
+    },
+    "culture": {
+        "label": "Văn hóa",
+        "types": {"attraction", "history", "event"},
+        "terms": ("chua", "le hoi", "di tich", "van hoa", "khmer", "lich su"),
+    },
+    "craft": {
+        "label": "Làng nghề",
+        "types": {"craft_village", "organization"},
+        "terms": ("lang nghe", "gom", "thu cong", "co so", "htx", "san xuat"),
+    },
+    "stay": {
+        "label": "Lưu trú",
+        "types": {"accommodation"},
+        "terms": ("luu tru", "homestay", "khach san", "nghi dem", "resort"),
+    },
+}
+
+
+class UserEventIn(BaseModel):
+    event_type: str = Field(max_length=40)
+    context: Optional[str] = Field(None, max_length=40)
+    entity_id: Optional[str] = Field(None, max_length=200)
+    entity_type: Optional[str] = Field(None, max_length=60)
+    entity_name: Optional[str] = Field(None, max_length=300)
+    area: Optional[str] = Field(None, max_length=120)
+    query: Optional[str] = Field(None, max_length=200)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+def _fold_text(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    if not text:
+        return ""
+    normalized = unicodedata.normalize("NFD", text)
+    return "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
+
+
+def _clean_short_text(value: Any, max_len: int = 200) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    return text[:max_len]
+
+
+def _safe_event_metadata(value: Any) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        return {}
+    out: dict[str, Any] = {}
+    for key, raw in list(value.items())[:12]:
+        k = _clean_short_text(key, 50)
+        if not k or k.startswith("__"):
+            continue
+        if isinstance(raw, (str, int, float, bool)) or raw is None:
+            out[k] = raw if not isinstance(raw, str) else raw[:300]
+        elif isinstance(raw, (list, tuple)):
+            out[k] = [str(x)[:120] for x in raw[:8]]
+        elif isinstance(raw, dict):
+            out[k] = {str(sk)[:50]: str(sv)[:120] for sk, sv in list(raw.items())[:8]}
+        else:
+            out[k] = str(raw)[:120]
+    return out
+
+
+def _entity_area(entity: dict | None) -> str:
+    if not entity:
+        return ""
+    return str(entity.get("place_area") or entity.get("area") or entity.get("legacyArea") or "").strip()
+
+
+def _interest_hits_from_text(text: str, entity_type: str | None = None) -> Counter:
+    folded = _fold_text(text)
+    hits: Counter = Counter()
+    for key, rule in _INTEREST_RULES.items():
+        if entity_type and entity_type in rule["types"]:
+            hits[key] += 3
+        for term in rule["terms"]:
+            folded_term = _fold_text(term)
+            if folded_term and folded_term in folded:
+                hits[key] += 1
+    return hits
+
+
+def _interest_hits_from_entity(entity: dict | None) -> Counter:
+    if not entity:
+        return Counter()
+    attrs = entity.get("attributes") or {}
+    attr_text = " ".join(str(v) for v in attrs.values() if isinstance(v, (str, int, float)))
+    text = " ".join([
+        str(entity.get("name") or ""),
+        str(entity.get("summary") or ""),
+        str(entity.get("description") or ""),
+        attr_text,
+    ])
+    return _interest_hits_from_text(text, entity.get("type"))
+
+
+def _label_for_interest(key: str) -> str:
+    rule = _INTEREST_RULES.get(key) or {}
+    return str(rule.get("label") or key)
+
+
+def _log_user_event(user_id: str, body: UserEventIn, request: Request) -> None:
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "user_id": str(user_id),
+        "event_type": body.event_type,
+        "context": body.context,
+        "entity_id": body.entity_id,
+        "entity_type": body.entity_type,
+        "entity_name": body.entity_name,
+        "area": body.area,
+        "query": body.query,
+        "metadata": _safe_event_metadata(body.metadata),
+        "ip_hash": hashlib.sha256(get_client_ip(request).encode("utf-8")).hexdigest()[:16],
+    }
+    with _jsonl_lock:
+        USER_EVENTS_FILE.parent.mkdir(exist_ok=True)
+        with open(USER_EVENTS_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        _maybe_rotate_jsonl(USER_EVENTS_FILE)
+
+
+def _read_user_events(user_id: str, limit: int = 300) -> list[dict]:
+    try:
+        if not USER_EVENTS_FILE.exists():
+            return []
+        rows: list[dict] = []
+        for line in reversed(USER_EVENTS_FILE.read_text(encoding="utf-8").splitlines()):
+            if not line.strip():
+                continue
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if str(item.get("user_id")) != str(user_id):
+                continue
+            rows.append(item)
+            if len(rows) >= limit:
+                break
+        return rows
+    except Exception:
+        logger.debug("user event read failed", exc_info=True)
+        return []
+
+
+def _load_user_signal_entities(user_id: str, limit: int = 80) -> list[tuple[dict, str]]:
+    if not db._use_pg:
+        return []
+    ph = db._ph
+    uid = str(user_id)
+    signals: list[tuple[dict, str]] = []
+    try:
+        with db._conn() as conn:
+            saved_rows = db._fetchall(conn, f"""
+                SELECT e.* FROM saved_entities s
+                JOIN entities e ON e.id = s.entity_id
+                WHERE s.user_id = {ph}::uuid
+                  AND COALESCE(e.status, '') != 'provisional'
+                  AND (e.verified IS NULL OR e.verified != 0)
+                ORDER BY s.created_at DESC
+                LIMIT {ph}
+            """, (uid, limit // 2))
+            visit_rows = db._fetchall(conn, f"""
+                SELECT e.* FROM user_visits v
+                JOIN entities e ON e.id = v.entity_id
+                WHERE v.user_id = {ph}::uuid
+                  AND COALESCE(e.status, '') != 'provisional'
+                  AND (e.verified IS NULL OR e.verified != 0)
+                ORDER BY v.created_at DESC
+                LIMIT {ph}
+            """, (uid, limit // 2))
+        for row in saved_rows:
+            ent = db._parse_entity(row)
+            if ent and _is_public(ent):
+                signals.append((ent, "saved"))
+        for row in visit_rows:
+            ent = db._parse_entity(row)
+            if ent and _is_public(ent):
+                signals.append((ent, "visit"))
+    except Exception:
+        logger.debug("user signal entity query failed", exc_info=True)
+    return signals
+
+
+def _top_counter(counter: Counter, limit: int = 5, labels: dict[str, str] | None = None) -> list[dict]:
+    items = []
+    for key, score in counter.most_common(limit):
+        if not key or score <= 0:
+            continue
+        item = {"key": key, "score": round(float(score), 2)}
+        if labels:
+            item["label"] = labels.get(key, key)
+        items.append(item)
+    return items
+
+
+def _build_user_interest_profile(user_id: str, query: str | None = None, context_entity: dict | None = None) -> dict:
+    interest_scores: Counter = Counter()
+    type_scores: Counter = Counter()
+    area_scores: Counter = Counter()
+    recent_entity_ids: list[str] = []
+    recent_intents: list[dict] = []
+    events = _read_user_events(user_id)
+
+    event_entity_ids = [str(e.get("entity_id")) for e in events if e.get("entity_id")]
+    event_entities = db.get_entities_batch(event_entity_ids[:80]) if event_entity_ids else {}
+
+    for event in events:
+        etype = str(event.get("event_type") or "")
+        weight = float(_EVENT_WEIGHTS.get(etype, 1.0))
+        if weight == 0:
+            continue
+        entity_id = str(event.get("entity_id") or "")
+        entity = event_entities.get(entity_id) if entity_id else None
+        if entity and _is_public(entity):
+            type_scores[str(entity.get("type") or "")] += weight
+            if area := _entity_area(entity):
+                area_scores[area] += weight
+            interest_scores.update({k: v * weight for k, v in _interest_hits_from_entity(entity).items()})
+            if entity_id and entity_id not in recent_entity_ids:
+                recent_entity_ids.append(entity_id)
+        else:
+            entity_type = _clean_short_text(event.get("entity_type"), 60)
+            if entity_type:
+                type_scores[entity_type] += weight
+            if area := _clean_short_text(event.get("area"), 120):
+                area_scores[area] += weight
+            text = " ".join(str(event.get(k) or "") for k in ("entity_name", "query", "context"))
+            interest_scores.update({k: v * weight for k, v in _interest_hits_from_text(text, entity_type).items()})
+        if len(recent_intents) < 8:
+            recent_intents.append({
+                "event_type": etype,
+                "context": event.get("context"),
+                "entity_id": entity_id or None,
+                "query": event.get("query"),
+            })
+
+    for entity, source in _load_user_signal_entities(user_id):
+        weight = 5.0 if source == "saved" else 4.0
+        type_scores[str(entity.get("type") or "")] += weight
+        if area := _entity_area(entity):
+            area_scores[area] += weight
+        interest_scores.update({k: v * weight for k, v in _interest_hits_from_entity(entity).items()})
+        eid = str(entity.get("id") or "")
+        if eid and eid not in recent_entity_ids:
+            recent_entity_ids.append(eid)
+
+    if query:
+        interest_scores.update(_interest_hits_from_text(query))
+    if context_entity:
+        type_scores[str(context_entity.get("type") or "")] += 2
+        if area := _entity_area(context_entity):
+            area_scores[area] += 2
+        interest_scores.update({k: v * 1.5 for k, v in _interest_hits_from_entity(context_entity).items()})
+
+    signal_count = len(events) + len(recent_entity_ids)
+    labels = {key: _label_for_interest(key) for key in _INTEREST_RULES}
+    return {
+        "interests": _top_counter(interest_scores, labels=labels),
+        "areas": _top_counter(area_scores),
+        "types": _top_counter(type_scores),
+        "interest_scores": dict(interest_scores),
+        "area_scores": dict(area_scores),
+        "type_scores": dict(type_scores),
+        "recent_entity_ids": recent_entity_ids[:30],
+        "recent_intents": recent_intents,
+        "confidence": round(min(1.0, signal_count / 20), 2),
+        "signal_count": signal_count,
+    }
+
+
+def _profile_next_actions(profile: dict) -> list[dict]:
+    interests = [item.get("key") for item in profile.get("interests", [])]
+    actions = []
+    if "food" in interests:
+        actions.append({"label": "Lưu quán muốn thử", "to": "/kham-pha/am-thuc"})
+    if "local_products" in interests:
+        actions.append({"label": "Tìm quà đặc sản", "to": "/ocop"})
+    if "garden" in interests:
+        actions.append({"label": "Lên lịch trình miệt vườn", "to": "/lich-trinh"})
+    if "culture" in interests or "craft" in interests:
+        actions.append({"label": "Khám phá văn hóa bản địa", "to": "/kham-pha/van-hoa"})
+    if not actions:
+        actions.append({"label": "Mở bản đồ khám phá", "to": "/ban-do"})
+    return actions[:3]
+
+
+def _candidate_card(entity: dict, reasons: list[str]) -> dict:
+    return {
+        "id": entity.get("id"),
+        "name": entity.get("name", ""),
+        "type": entity.get("type", ""),
+        "place": entity.get("place", ""),
+        "place_name": entity.get("place_name"),
+        "place_area": entity.get("place_area") or entity.get("area"),
+        "summary": (entity.get("summary") or "")[:240],
+        "images": (entity.get("images") or [])[:2],
+        "attributes": {
+            "rating": (entity.get("attributes") or {}).get("rating"),
+            "review_count": (entity.get("attributes") or {}).get("review_count"),
+        },
+        "recommendation_reasons": reasons[:2],
+        "quality_score": entity_quality(entity),
+    }
+
+
+def _score_candidate(entity: dict, profile: dict, context: str, current: dict | None, query: str) -> tuple[float, list[str]]:
+    score = 0.0
+    reasons: list[str] = []
+    entity_type = str(entity.get("type") or "")
+    area = _entity_area(entity)
+    attrs = entity.get("attributes") or {}
+    type_score = float(profile.get("type_scores", {}).get(entity_type, 0) or 0)
+    area_score = float(profile.get("area_scores", {}).get(area, 0) or 0)
+    if type_score > 0:
+        score += min(type_score * 2.4, 28)
+        reasons.append("Hợp với nhóm nội dung bạn quan tâm")
+    if area_score > 0:
+        score += min(area_score * 1.8, 18)
+        reasons.append("Cùng khu vực bạn hay xem")
+
+    hits = _interest_hits_from_entity(entity)
+    for key, hit_score in hits.items():
+        pref = float(profile.get("interest_scores", {}).get(key, 0) or 0)
+        if pref > 0 and hit_score > 0:
+            score += min(pref * 0.8 + hit_score, 20)
+            label = _label_for_interest(key)
+            if label and len(reasons) < 2:
+                reasons.append(f"Khớp sở thích {label.lower()}")
+
+    if current:
+        if entity_type and entity_type == current.get("type"):
+            score += 10
+            reasons.append("Cùng chủ đề với nơi đang xem")
+        if area and area == _entity_area(current):
+            score += 7
+            reasons.append("Gần mạch khám phá hiện tại")
+
+    folded_query = _fold_text(query)
+    if folded_query:
+        haystack = _fold_text(" ".join([str(entity.get("name") or ""), str(entity.get("summary") or "")]))
+        if folded_query in haystack:
+            score += 18
+            reasons.append("Liên quan trực tiếp tới tìm kiếm")
+
+    if entity.get("images"):
+        score += 2
+    try:
+        score += min(float(attrs.get("rating") or 0), 5)
+        score += min(float(attrs.get("review_count") or 0) / 20, 4)
+    except (TypeError, ValueError):
+        pass
+    if entity.get("id") in set(profile.get("recent_entity_ids") or []) and context not in {"saved", "entity"}:
+        score -= 6
+    return score, list(dict.fromkeys(reasons))[:3]
+
+
+def _contextual_recommendations(user_id: str, context: str, entity_id: str | None, query: str, limit: int) -> dict:
+    current = _get_public_entity(entity_id) if entity_id else None
+    profile = _build_user_interest_profile(user_id, query=query, context_entity=current)
+    candidates: dict[str, dict] = {}
+
+    def add_many(items: list[dict] | None):
+        for item in items or []:
+            if not item or not _is_public(item):
+                continue
+            eid = str(item.get("id") or "")
+            if not eid or eid == entity_id or eid in candidates:
+                continue
+            candidates[eid] = item
+
+    if current:
+        add_many(db.search_entities(entity_type=current.get("type"), area=_entity_area(current) or None, limit=60, public_only=True))
+        add_many(db.list_entities(entity_type=current.get("type"), limit=60, public_only=True, sort="rating"))
+    if query:
+        add_many(db.search_entities(q=query, limit=80, public_only=True))
+
+    top_types = [item["key"] for item in profile.get("types", []) if item.get("key") and item.get("key") != "place"][:4]
+    top_areas = [item["key"] for item in profile.get("areas", []) if item.get("key")][:3]
+    for entity_type in top_types:
+        if top_areas:
+            for area in top_areas:
+                add_many(db.search_entities(entity_type=entity_type, area=area, limit=30, public_only=True))
+        add_many(db.list_entities(entity_type=entity_type, limit=40, public_only=True, sort="rating"))
+
+    if not candidates:
+        add_many(db.list_entities(limit=120, public_only=True, sort="rating"))
+    else:
+        add_many(db.list_entities(limit=80, public_only=True, sort="rating"))
+
+    scored = []
+    for entity in candidates.values():
+        score, reasons = _score_candidate(entity, profile, context, current, query)
+        if not reasons:
+            reasons = ["Được cộng đồng quan tâm"]
+        scored.append((score, entity, reasons))
+    scored.sort(key=lambda x: (-x[0], str(x[1].get("name") or "")))
+
+    selected = [entity for _, entity, _ in scored[:limit]]
+    if selected:
+        _enrich_place(selected)
+    items = [_candidate_card(entity, reasons) for _, entity, reasons in scored[:limit]]
+    return {
+        "context": context,
+        "items": items,
+        "reasons": {item["id"]: item.get("recommendation_reasons", []) for item in items if item.get("id")},
+        "profile": {
+            "interests": profile.get("interests", []),
+            "areas": profile.get("areas", []),
+            "types": profile.get("types", []),
+            "confidence": profile.get("confidence", 0),
+            "signal_count": profile.get("signal_count", 0),
+        },
+    }
+
+
+@router.post("/me/events",
+             status_code=202,
+             dependencies=[Depends(require_pg)],
+             summary="Track a user experience event",
+             description="Stores a bounded first-party event for personalized recommendations. Requires login and CSRF.")
+async def track_user_event(body: UserEventIn, request: Request, user=Depends(require_user), _csrf=Depends(require_csrf)):
+    from ratelimit import check_rate
+    event_type = (body.event_type or "").strip().lower()
+    if event_type not in _VALID_USER_EVENT_TYPES:
+        raise HTTPException(400, "event_type khong hop le")
+    body.event_type = event_type
+    body.context = _clean_short_text(body.context, 40)
+    if body.context and body.context not in _VALID_RECOMMENDATION_CONTEXTS and body.context != "search_submit":
+        body.context = "home"
+    if body.entity_id:
+        body.entity_id = validate_path_id(body.entity_id, "entity_id")
+    body.entity_type = _clean_short_text(body.entity_type, 60)
+    body.entity_name = _clean_short_text(body.entity_name, 300)
+    body.area = _clean_short_text(body.area, 120)
+    body.query = _clean_short_text(body.query, 200)
+    check_rate(f"user-event:{user['id']}", 120, 300, "Too many events")
+    await asyncio.to_thread(_log_user_event, str(user["id"]), body, request)
+    return {"accepted": True}
+
+
+@router.get("/me/insights",
+            dependencies=[Depends(require_pg)],
+            summary="Get current user interest profile",
+            description="Returns lightweight interest, area, and next-action insights inferred from saved items, visits, and recent events.")
+async def get_my_insights(response: Response, user=Depends(require_user)):
+    response.headers["Cache-Control"] = "no-store"
+    profile = await asyncio.to_thread(_build_user_interest_profile, str(user["id"]))
+    return {
+        "interests": profile.get("interests", []),
+        "areas": profile.get("areas", []),
+        "types": profile.get("types", []),
+        "recent_intents": profile.get("recent_intents", []),
+        "confidence": profile.get("confidence", 0),
+        "signal_count": profile.get("signal_count", 0),
+        "next_actions": _profile_next_actions(profile),
+    }
+
+
+@router.get("/me/recommendations/contextual",
+            dependencies=[Depends(require_pg)],
+            summary="Get contextual user recommendations",
+            description="Returns personalized entity recommendations with short reasons for a page context such as home, entity detail, search, saved, map, or itinerary.")
+async def contextual_recommendations(
+    request: Request,
+    response: Response,
+    context: str = Query("home", max_length=40),
+    entity_id: Optional[str] = Query(None, max_length=200),
+    q: str = Query("", max_length=200),
+    limit: int = Query(6, ge=1, le=20),
+    user=Depends(require_user),
+):
+    from ratelimit import check_rate
+    context = (context or "home").strip().lower()
+    if context not in _VALID_RECOMMENDATION_CONTEXTS:
+        context = "home"
+    if entity_id:
+        entity_id = validate_path_id(entity_id, "entity_id")
+    q = (q or "").strip()[:200]
+    check_rate(f"contextual-rec:{user['id']}", 60, 300, "Too many recommendation requests")
+    response.headers["Cache-Control"] = "private, max-age=30"
+    return await asyncio.to_thread(_contextual_recommendations, str(user["id"]), context, entity_id, q, limit)
 
 import site_settings
 
@@ -244,6 +795,143 @@ def _to_minimal(entity: dict) -> dict:
     out["review_count"] = attrs.get("review_count", 0)
     return out
 
+def _first_entity_image(entity: dict) -> str:
+    images = entity.get("images") or entity.get("image_urls") or []
+    if isinstance(images, str):
+        try:
+            images = json.loads(images)
+        except (json.JSONDecodeError, ValueError, TypeError):
+            images = []
+    if isinstance(images, list):
+        for item in images:
+            if isinstance(item, str) and item:
+                return item
+            if isinstance(item, dict) and item.get("url"):
+                return str(item["url"])
+    image = entity.get("image")
+    return str(image) if image else ""
+
+def _entity_card_shape(entity: dict, *, score: float | None = None, reason_vi: str = "") -> dict:
+    area = entity.get("place_area") or entity.get("area") or entity.get("legacyArea") or ""
+    place = entity.get("place") or entity.get("place_name") or ""
+    image = _first_entity_image(entity)
+    images = entity.get("images") if isinstance(entity.get("images"), list) else []
+    if image and image not in images:
+        images = [image, *images]
+    return {
+        "id": entity.get("id"),
+        "name": entity.get("name", ""),
+        "type": entity.get("type", ""),
+        "summary": entity.get("summary", ""),
+        "image": image,
+        "images": images[:2],
+        "place": place,
+        "place_name": entity.get("place_name") or place,
+        "place_area": area,
+        "area": area,
+        "score": round(float(score or 0), 4),
+        "reason_vi": reason_vi,
+    }
+
+def _similar_reason_vi(reason: str) -> str:
+    raw = str(reason or "")
+    if "related" in raw:
+        return "Lien quan trong ban do tri thuc"
+    if "same_ward" in raw:
+        return "Gan nhau trong cung xa phuong"
+    if "same_area" in raw:
+        return "Cung khu vuc kham pha"
+    if "shared_tags" in raw:
+        return "Co chu de trai nghiem gan nhau"
+    if "same_type" in raw:
+        return "Cung nhom noi dung"
+    return "Phu hop de kham pha tiep"
+
+def _compact_user_result(row: dict) -> dict:
+    return {
+        "id": str(row.get("id", "")),
+        "display_name": row.get("display_name"),
+        "avatar_url": row.get("avatar_url"),
+        "username": row.get("username"),
+        "post_count": int(row.get("post_count") or 0),
+    }
+
+def _search_posts_for_contract(q: str, user: dict | None, limit: int) -> tuple[list[dict], int]:
+    if not db._use_pg or len((q or "").strip()) < 2:
+        return [], 0
+    from database import escape_like
+    from social import (
+        _POST_COLS, _block_sql, _mute_sql, _prod_seed_post_filter,
+        _format_post, _enrich_all,
+    )
+    stripped = q.strip()
+    ph = db._ph
+    pattern = "%" + escape_like(stripped.lower()) + "%"
+    bc, bc_p = _block_sql(user, "p.user_id")
+    mc, mc_p = _mute_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
+    with db._conn() as conn:
+        rows = db._fetchall(conn, f"""
+            SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
+                   e.name as entity_name, e.type as entity_type
+            FROM posts p
+            JOIN users u ON u.id = p.user_id
+            LEFT JOIN entities e ON e.id = p.entity_id
+            WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+              AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
+              {bc} {mc} {seed_filter}
+            ORDER BY p.created_at DESC
+            LIMIT {ph}
+        """, (pattern, *bc_p, *mc_p, *seed_params, limit))
+        total_row = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM posts p
+            WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
+              AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
+              {bc} {mc} {seed_filter}
+        """, (pattern, *bc_p, *mc_p, *seed_params))
+    posts = [_format_post(db._row_to_dict(r)) for r in rows]
+    try:
+        _enrich_all(posts, user)
+    except Exception:
+        logger.debug("search post enrich failed", exc_info=True)
+    total = db._row_to_dict(total_row)["c"] if total_row else 0
+    return posts, int(total or 0)
+
+def _search_users_for_contract(q: str, user: dict | None, limit: int) -> tuple[list[dict], int]:
+    if not db._use_pg or len((q or "").strip()) < 2:
+        return [], 0
+    from database import escape_like
+    from social import _block_sql, _mute_sql
+    stripped = q.strip()
+    ph = db._ph
+    pattern = "%" + escape_like(stripped.lower()) + "%"
+    bc, bc_p = _block_sql(user)
+    mc, mc_p = _mute_sql(user, "u.id")
+    params: list = [pattern] + bc_p + mc_p + [limit]
+    count_params: list = [pattern] + bc_p + mc_p
+    with db._conn() as conn:
+        total_row = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM users u
+            WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
+              AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph}) ESCAPE '\\'
+              {bc} {mc}
+        """, tuple(count_params))
+        rows = db._fetchall(conn, f"""
+            SELECT u.id, u.display_name, u.avatar_url, u.username,
+                   COUNT(p.id) AS post_count
+            FROM users u
+            LEFT JOIN posts p ON p.user_id = u.id AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+            WHERE u.is_active = TRUE AND u.deleted_at IS NULL AND u.display_name IS NOT NULL
+              AND f_unaccent(lower(u.display_name)) LIKE f_unaccent({ph}) ESCAPE '\\'
+              {bc} {mc}
+            GROUP BY u.id, u.display_name, u.avatar_url, u.username
+            ORDER BY post_count DESC, u.display_name
+            LIMIT {ph}
+        """, tuple(params))
+    users = [_compact_user_result(db._row_to_dict(r)) for r in rows if db._row_to_dict(r).get("display_name")]
+    total = db._row_to_dict(total_row)["c"] if total_row else 0
+    return users, int(total or 0)
+
 
 @router.get("/entities",
             summary="List entities",
@@ -295,13 +983,15 @@ async def get_entity_relationships(
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
     validate_path_id(entity_id, "entity_id")
     def _query():
-        e = db.get_entity(entity_id)
+        e = _get_public_entity(entity_id)
         if not e:
             return None
         rels, t = db.get_relationships(
             entity_id, limit=limit, offset=offset,
             rel_type=type, include_near=include_near, return_total=True,
         )
+        rels = _filter_public_relationships(rels)
+        t = len(rels)
         return {"entity_id": entity_id, "total": t, "limit": limit,
                 "offset": offset, "relationships": rels}
     result = await asyncio.to_thread(_query)
@@ -386,6 +1076,8 @@ async def get_entity(
 ):
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
+    if not await asyncio.to_thread(_get_public_entity, entity_id):
+        return JSONResponse(status_code=404, content={"error": "not_found"})
     cache_key = f"{entity_id}:{relationship_limit}"
     now = _time.time()
     cached = _entity_cache.get(cache_key)
@@ -399,10 +1091,12 @@ async def get_entity(
         return cached[1]
 
     def _query():
-        e = db.get_entity(entity_id)
+        e = _get_public_entity(entity_id)
         if not e:
             return None
         rels, rel_total = db.get_relationships(entity_id, limit=relationship_limit, return_total=True)
+        rels = _filter_public_relationships(rels)
+        rel_total = len(rels)
         e["relationship_total"] = rel_total
         e["relationships"] = rels
         _enrich_entity_place(e)
@@ -435,7 +1129,7 @@ async def get_entity_stats(entity_id: str, response: Response):
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     ph = db._ph
     def _query():
-        e = db.get_entity(entity_id)
+        e = _get_public_entity(entity_id)
         if not e:
             return None
         with db._conn() as conn:
@@ -487,7 +1181,7 @@ async def get_entity_rating_breakdown(entity_id: str, response: Response):
     ph = db._ph
 
     def _query():
-        e = db.get_entity(entity_id)
+        e = _get_public_entity(entity_id)
         if not e:
             return None
         with db._conn() as conn:
@@ -544,6 +1238,8 @@ async def get_entity_reviews(
     validate_path_id(entity_id, "entity_id")
     require_pg()
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
+    if not await asyncio.to_thread(_get_public_entity, entity_id):
+        return JSONResponse(status_code=404, content={"error": "not_found"})
     ph = db._ph
     offset = (page - 1) * limit
     uid = str(user["id"]) if user else None
@@ -811,11 +1507,16 @@ async def get_itinerary(itin_id: str, response: Response):
         it = db.get_itinerary(itin_id)
         if not it:
             return None
-        stop_ids = [s.get("id", "") for s in it.get("stops", []) if s.get("id")]
+        stop_ids = [sid for sid in (_itinerary_stop_entity_id(s) for s in it.get("stops", [])) if sid]
         entities = db.get_entities_batch(stop_ids)
         for stop in it.get("stops", []):
-            entity = entities.get(stop.get("id", ""))
+            if not isinstance(stop, dict):
+                continue
+            stop_id = _itinerary_stop_entity_id(stop)
+            entity = entities.get(stop_id)
             if entity:
+                stop.setdefault("id", stop_id)
+                stop.setdefault("entityId", stop_id)
                 stop["name"] = entity["name"]
                 if not stop.get("summary"):
                     stop["summary"] = entity.get("summary", "")
@@ -829,9 +1530,45 @@ async def get_itinerary(itin_id: str, response: Response):
     return result
 
 
+def _normalize_text(value: Any) -> str:
+    """Accent-insensitive fold for lexical ranking (delegates to _fold_text; đ→d for VN)."""
+    return _fold_text(value).replace("đ", "d")
+
+
+def _rank_search_entities(items: list[dict], query: str) -> list[dict]:
+    qn = _normalize_text(query)
+    terms = [t for t in qn.split() if t]
+    ranked = []
+    for idx, item in enumerate(items):
+        name = _normalize_text(item.get("name", ""))
+        summary = _normalize_text(item.get("summary", ""))
+        score = 0.0
+        reason = "confidence"
+        if qn and name == qn:
+            score += 100
+            reason = "exact_name"
+        elif qn and name.startswith(qn):
+            score += 80
+            reason = "name_prefix"
+        elif terms and all(term in name for term in terms):
+            score += 65
+            reason = "name_terms"
+        elif qn and qn in name:
+            score += 55
+            reason = "name_contains"
+        elif terms and all(term in summary for term in terms):
+            score += 35
+            reason = "summary_terms"
+        score += float(item.get("confidence") or 0) * 10
+        copy = dict(item)
+        copy["_search_meta"] = {"score": round(score, 2), "reason": reason, "rank_source": "lexical"}
+        ranked.append((score, idx, copy))
+    ranked.sort(key=lambda row: (-row[0], row[1]))
+    return [item for _score, _idx, item in ranked]
+
 @router.get("/search",
-            summary="Search entities",
-            description="Full-text search across entities with optional type and area filters. Rate-limited to 30 requests per minute per IP. Logs queries for analytics.")
+            summary="Unified public search",
+            description="Searches entities, community posts, and users with one contract. Keeps legacy results/total fields for existing clients.")
 async def search(
     request: Request,
     response: Response,
@@ -839,16 +1576,42 @@ async def search(
     type: Optional[str] = Query(None, max_length=50),
     area: Optional[str] = Query(None, max_length=100),
     limit: int = Query(20, ge=1, le=100),
+    user=Depends(get_current_user),
 ):
     from ratelimit import check_rate
     check_rate(f"search:{get_client_ip(request)}", 30, 60, "Tìm kiếm quá nhanh. Vui lòng thử lại sau.")
-    results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, area=area, limit=limit)
+    entity_limit = min(limit, 100)
+    social_limit = min(max(3, limit // 3), 10)
+    results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, area=area, limit=entity_limit, public_only=True)
     await asyncio.to_thread(_enrich_place, results)
-    total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q)
+    results = _rank_search_entities(results, q)
+    total = await asyncio.to_thread(db.count_entities_filtered, entity_type=type, area=area, q=q, public_only=True)
     safe_q = re.sub(r"<[^>]+>", "", q)
+    posts, post_total = await asyncio.to_thread(_search_posts_for_contract, safe_q, user, social_limit)
+    users, user_total = await asyncio.to_thread(_search_users_for_contract, safe_q, user, social_limit)
+    suggestions = [
+        {"kind": "entity", "id": e.get("id"), "label": e.get("name"), "type": e.get("type"), "to": f"/dia-diem/{e.get('id')}"}
+        for e in results[:5]
+    ] + [
+        {"kind": "post", "id": p.get("id"), "label": (p.get("content") or "")[:80], "type": p.get("post_type"), "to": f"/bai-viet/{p.get('id')}"}
+        for p in posts[:3]
+    ] + [
+        {"kind": "user", "id": u.get("username") or u.get("id"), "label": u.get("display_name"), "type": "user", "to": f"/nguoi-dung/{u.get('username') or u.get('id')}"}
+        for u in users[:3]
+    ]
     await asyncio.to_thread(_log_search_query, safe_q, type, area, total)
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=10"
-    return {"q": safe_q, "total": total, "results": results}
+    return {
+        "q": safe_q,
+        "total": total,
+        "results": results,
+        "entities": results,
+        "posts": posts,
+        "users": users,
+        "suggestions": suggestions[:12],
+        "totals": {"entities": total, "posts": post_total, "users": user_total},
+        "filters": {"q": safe_q, "type": type, "area": area, "limit": limit},
+    }
 
 
 @router.get("/autocomplete",
@@ -944,16 +1707,24 @@ _TOURISM_TYPES = {"experience", "attraction", "dish", "nature", "craft_village",
                   "history", "accommodation", "event"}
 
 
+def _parse_event_iso_date(attrs: dict, *keys: str):
+    for key in keys:
+        raw = attrs.get(key)
+        if not raw:
+            continue
+        try:
+            return datetime.strptime(str(raw), "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            continue
+    return None
+
 def _event_is_past(e: dict) -> bool:
-    """True if event has date_end and it's already passed."""
+    """True if an event's reliable end/start date is already passed."""
     attrs = e.get("attributes") or {}
-    date_end = attrs.get("date_end")
-    if not date_end:
+    event_date = _parse_event_iso_date(attrs, "date_end_iso", "date_end", "date_start_iso", "date_start")
+    if not event_date:
         return False
-    try:
-        return datetime.strptime(date_end, "%Y-%m-%d").date() < datetime.now(timezone.utc).date()
-    except (ValueError, TypeError):
-        return False
+    return event_date < datetime.now(timezone.utc).date()
 
 
 _GENERIC_NAMES = {"tắm sông", "đi ghe", "đi đò", "tham quan", "du lịch",
@@ -1135,10 +1906,7 @@ async def homepage_curated(response: Response):
         it_score = 0.0
         stops = it.get("stops") or []
         for stop in stops:
-            if isinstance(stop, str):
-                eid = stop
-            else:
-                eid = stop.get("entity_id") or stop.get("id", "")
+            eid = _itinerary_stop_entity_id(stop)
             matched = next((e for e in public if e["id"] == eid), None)
             if matched:
                 if _in_season(matched):
@@ -1159,16 +1927,25 @@ async def homepage_curated(response: Response):
         it["_score"] = it_score
     all_itineraries.sort(key=lambda x: x.get("_score", 0), reverse=True)
     seen_areas: set[str] = set()
+    selected_itinerary_ids: set[str] = set()
     itineraries = []
     for it in all_itineraries:
-        a = it.get("area", "")
-        if a and a in seen_areas and len(itineraries) < 3:
+        coverage = _itinerary_coverage_areas(it)
+        if coverage and coverage <= seen_areas and len(itineraries) < 3:
             continue
         itineraries.append(it)
-        if a:
-            seen_areas.add(a)
+        if it.get("id"):
+            selected_itinerary_ids.add(str(it["id"]))
+        seen_areas.update(coverage)
         if len(itineraries) >= 4:
             break
+    if len(itineraries) < 4:
+        for it in all_itineraries:
+            if it.get("id") and str(it["id"]) in selected_itinerary_ids:
+                continue
+            itineraries.append(it)
+            if len(itineraries) >= 4:
+                break
     for it in itineraries:
         it.pop("_score", None)
 
@@ -1185,18 +1962,18 @@ async def homepage_curated(response: Response):
 
     # Seasonal tagline
     _TAGLINES = {
-        1: "Tết Nguyên đán — không khí miệt vườn ngập sắc xuân",
-        2: "Mùa xuân miệt vườn — trái cây đầu mùa đang chín",
-        3: "Tháng 3 lễ hội đình làng — khám phá văn hóa cổ truyền",
-        4: "Mùa Chôl Chnăm Thmây — lễ hội Khmer sôi động",
-        5: "Mùa trái cây bắt đầu — chôm chôm, sầu riêng, măng cụt",
-        6: "Mùa trái cây đang chín rộ — miệt vườn ngọt lịm",
-        7: "Giữa mùa trái cây — vườn trái cây mở cửa đón khách",
-        8: "Mùa Vu Lan — lễ hội lồng đèn sắp đến",
-        9: "Trung thu miệt vườn — lồng đèn và bánh dân gian",
-        10: "Mùa Ok Om Bok — đua ghe ngo sôi động miền Tây",
-        11: "Cuối năm — khám phá làng nghề và đặc sản Tết",
-        12: "Mùa Tết đang đến — đặc sản và quà tặng miệt vườn",
+        1: "Sắc xuân Vĩnh Long bên sông và vườn Tết",
+        2: "Đầu xuân ghé vườn, thử đặc sản mới",
+        3: "Tháng lễ hội đình làng và nếp xưa Nam Bộ",
+        4: "Chôl Chnăm Thmây rộn ràng phum sóc",
+        5: "Trái ngọt đầu mùa, hành trình miệt vườn bắt đầu",
+        6: "Vườn chín rộ, đặc sản địa phương lên hương",
+        7: "Mùa miệt vườn đang mở cửa",
+        8: "Vu Lan bên sông, chùa cổ và món chay",
+        9: "Trung thu miền Tây, đèn lồng và bánh dân gian",
+        10: "Ok Om Bok rộn ràng, ghe ngo trên dòng nước",
+        11: "Cuối năm ghé làng nghề, chọn quà đặc sản",
+        12: "Mùa Tết đang về, tìm quà ngon Vĩnh Long",
     }
     # A7: admin can override taglines via site_settings (homepage.seasonal_taglines:
     # a {"<month>": "<text>"} object). Falls back to defaults; {} on SQLite.
@@ -1209,7 +1986,7 @@ async def homepage_curated(response: Response):
         logger.warning("Failed to load seasonal taglines override", exc_info=True)
         seasonal_tagline = ""
     if not seasonal_tagline:
-        seasonal_tagline = _TAGLINES.get(month, "Khám phá miệt vườn theo cách của người bản địa")
+        seasonal_tagline = _TAGLINES.get(month, "Khám phá Vĩnh Long theo cách của người bản địa")
 
     # Top dishes by rating (social proof for "Tinh hoa" section)
     dishes_pool = [e for e in public
@@ -1277,6 +2054,12 @@ _TYPE_META = {
     "organization": {"emoji": "\U0001f3e2", "color": "#546E7A"},
     "facility": {"emoji": "\U0001f3e5", "color": "#1976D2"},
 }
+_TYPE_META.update({
+    "restaurant": {"emoji": "\U0001f37d\ufe0f", "color": "#C75C2E"},
+    "cafe": {"emoji": "\u2615", "color": "#8D6E63"},
+    "place": {"emoji": "\U0001f4cd", "color": "#546E7A"},
+    "itinerary": {"emoji": "\U0001f5fa\ufe0f", "color": "#4A6FA5"},
+})
 
 _map_pins_cache: dict = {"data": None, "filters": None, "ts": 0.0}
 _MAP_PINS_TTL = 120
@@ -1326,12 +2109,16 @@ async def get_map_pins(
                 "category_color": meta["color"],
                 "rating": attrs.get("rating"),
                 "review_count": attrs.get("review_count", 0),
+                "confidence": e.get("confidence"),
+                "coords_approximate": bool(attrs.get("coords_approximate")),
+                "area": e.get("area") or attrs.get("area"),
             }
             pid = e.get("placeId")
             if pid:
                 p = _get_place(pid)
                 if p:
                     pin["place_name"] = p["name"]
+                    pin["place_area"] = p.get("area")
             pins.append(pin)
         return pins
 
@@ -1368,27 +2155,23 @@ async def list_events(
         attrs = e.get("attributes") or {}
         if attrs.get("category") == "mua":
             return False
-        ds = attrs.get("date_start")
+        ds_date = _parse_event_iso_date(attrs, "date_start_iso", "date_start")
+        if not ds_date:
+            return False
         attr_month = attrs.get("month")
-        if ds and attr_month and isinstance(attr_month, (int, float)):
-            try:
-                d = datetime.strptime(ds, "%Y-%m-%d").date()
-                if int(attr_month) != d.month:
-                    return False
-            except (ValueError, TypeError):
-                pass
+        if attr_month and isinstance(attr_month, (int, float)) and int(attr_month) != ds_date.month:
+            return False
+        attrs["date_start_iso"] = attrs.get("date_start_iso") or ds_date.isoformat()
+        e["date_reliable"] = True
         return True
 
     events = [e for e in events if _date_reliable(e)]
 
     def _sort_key(e):
         attrs = e.get("attributes") or {}
-        ds = attrs.get("date_start")
+        ds = _parse_event_iso_date(attrs, "date_start_iso", "date_start")
         if ds:
-            try:
-                return (0, datetime.strptime(ds, "%Y-%m-%d").date())
-            except (ValueError, TypeError):
-                pass
+            return (0, ds)
         s = (e.get("season") or {}).get("months") or []
         if s:
             first = min(s)
@@ -1517,7 +2300,7 @@ async def get_entity_gallery(entity_id: str, response: Response):
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
 
-    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    entity = await asyncio.to_thread(_get_public_entity, entity_id)
     if not entity:
         return JSONResponse(status_code=404, content={"error": "not_found"})
 
@@ -1614,16 +2397,16 @@ async def get_review_stats(entity_id: str, response: Response):
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
 
+    entity = await asyncio.to_thread(_get_public_entity, entity_id)
+    if not entity:
+        return JSONResponse(status_code=404, content={"error": "not_found"})
+
     now = _time.time()
     cached = _REVIEW_STATS_CACHE.get(entity_id)
     if cached and now - cached[0] < _REVIEW_STATS_TTL:
         return cached[1]
 
     _empty = {"avg": 0, "count": 0, "distribution": {}, "mentions": []}
-
-    entity = await asyncio.to_thread(db.get_entity, entity_id)
-    if not entity:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
 
     if not db._use_pg:
         return _empty
@@ -1695,6 +2478,8 @@ async def get_similar_entities(
     """U-29: Rule-based similar entity recommendations (no ML)."""
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
+    if not await asyncio.to_thread(_get_public_entity, entity_id):
+        return JSONResponse(status_code=404, content={"error": "not_found"})
 
     now = _time.time()
     cache_key = f"{entity_id}:{limit}"
@@ -1707,7 +2492,7 @@ async def get_similar_entities(
         try:
             import knowledge
             knowledge._ensure()
-            entities_map = knowledge._entities
+            entities_map = {eid: e for eid, e in knowledge._entities.items() if _is_public(e)}
             rels = knowledge._relationships if hasattr(knowledge, "_relationships") else []
         except Exception:
             logger.warning("Knowledge load failed for recommendations", exc_info=True)
@@ -1715,11 +2500,23 @@ async def get_similar_entities(
         if entity_id not in entities_map:
             return None
         from recommender import recommend_by_entity
-        return recommend_by_entity(entity_id, entities_map, rels, limit=limit)
+        raw_items = recommend_by_entity(entity_id, entities_map, rels, limit=limit)
+        entity_ids = [str(item.get("id")) for item in raw_items if item.get("id")]
+        full_entities = db.get_entities_batch(entity_ids) if entity_ids else {}
+        if full_entities:
+            _enrich_place(list(full_entities.values()))
+        cards: list[dict] = []
+        for item in raw_items:
+            candidate = full_entities.get(str(item.get("id"))) or entities_map.get(str(item.get("id"))) or item
+            reason_vi = _similar_reason_vi(str(item.get("reason") or ""))
+            card = _entity_card_shape(candidate, score=float(item.get("score") or 0), reason_vi=reason_vi)
+            card["reason"] = item.get("reason", "")
+            cards.append(card)
+        return cards
 
     result = await asyncio.to_thread(_compute)
     if result is None:
-        entity = await asyncio.to_thread(db.get_entity, entity_id)
+        entity = await asyncio.to_thread(_get_public_entity, entity_id)
         if not entity:
             return JSONResponse(status_code=404, content={"error": "not_found"})
         return {"entity_id": entity_id, "similar": []}
@@ -1743,7 +2540,7 @@ async def get_nearby_entities(
 ):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     validate_path_id(entity_id, "entity_id")
-    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    entity = await asyncio.to_thread(_get_public_entity, entity_id)
     if not entity:
         raise HTTPException(404, "Entity không tồn tại")
     center = entity.get("coordinates")
@@ -1789,7 +2586,7 @@ async def get_entity_qa(
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
 
-    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    entity = await asyncio.to_thread(_get_public_entity, entity_id)
     if not entity:
         return JSONResponse(status_code=404, content={"error": "not_found"})
 
@@ -1930,7 +2727,7 @@ async def submit_entity_claim(entity_id: str, payload: EntityClaimIn, request: R
     from ratelimit import check_rate
     check_rate(f"claim:{user['id']}", 3, 86400, "Chỉ được gửi 3 yêu cầu xác nhận/ngày.")
     uid = str(user["id"])
-    entity = await asyncio.to_thread(db.get_entity, entity_id)
+    entity = await asyncio.to_thread(_get_public_entity, entity_id)
     if not entity:
         raise HTTPException(404, "Entity không tồn tại")
     ph = db._ph
@@ -1981,7 +2778,7 @@ async def feed_new_since(
         new_entities = []
         entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
         for eid, e in entities.items():
-            if e.get("type") == "place":
+            if e.get("type") == "place" or not _is_public(e):
                 continue
             updated = e.get("updatedAt") or e.get("created_at")
             if not updated:
@@ -2394,7 +3191,7 @@ async def entity_search(
     offset = (page - 1) * limit
     all_entities = await asyncio.to_thread(
         db.search_entities, q=q or None, entity_type=entity_type, area=area,
-        limit=500
+        limit=500, public_only=True
     )
     if has_image is True:
         all_entities = [e for e in all_entities if e.get("images")]
@@ -2459,7 +3256,7 @@ async def transparency_report(response: Response):
 # ── Health (alias for /health under /api prefix) ────────────────────────
 @router.get("/health", tags=["health"],
             summary="System health check",
-            description="Returns system health status including DB connectivity and entity count. Alias for /health under the /api prefix.")
+            description="Returns minimal public liveness status and entity count. Detailed diagnostics are available through admin-only health endpoints.")
 async def api_health():
     from server import health
     data = await health()

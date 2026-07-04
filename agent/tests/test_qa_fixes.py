@@ -17,6 +17,8 @@ import server
 import social
 import moderation
 import admin
+import saved
+import plans
 
 
 class TestPaginationBounds:
@@ -108,6 +110,23 @@ class TestSystemGateAlwaysOn:
         assert "404" in src
 
 
+class TestPublicHealthMinimal:
+    """Public health must stay liveness-only; diagnostics are admin-only."""
+
+    def test_health_does_not_expose_db_or_llm_fields(self):
+        src = inspect.getsource(server.health)
+        assert '"db"' not in src
+        assert '"llm"' not in src
+
+    def test_api_health_docs_point_to_admin_diagnostics(self):
+        for route in public_api.router.routes:
+            if getattr(route, "path", "") == "/api/health":
+                assert "minimal public liveness" in (route.description or "")
+                assert "admin-only" in (route.description or "")
+                break
+        else:
+            raise AssertionError("/api/health route not found")
+
 class TestCheckPhonePrivacy:
     """Finding-008: /auth/check-phone must not reveal has_password."""
 
@@ -176,6 +195,10 @@ class TestSessionListCleanup:
         assert "_is_internal_session" in src
         assert "hidden_internal_count" in src
 
+    def test_node_sessions_are_internal(self):
+        assert auth._is_internal_session("node", "157.15.1.2") is True
+        assert auth._is_internal_session("undici", "157.15.1.2") is True
+
 class TestProductionFeedCleanup:
     """Regression: production community feed hides known seed/test posts."""
 
@@ -183,8 +206,50 @@ class TestProductionFeedCleanup:
         src = inspect.getsource(social.get_feed)
         assert "_prod_seed_post_filter" in src
 
+    def test_seed_filter_checks_repost_snapshots(self):
+        src = inspect.getsource(social._prod_seed_post_filter)
+        assert "repost_snapshot" in src
+        assert "coalesce" in src
+
     def test_following_feed_filters_seed_posts(self):
         src = inspect.getsource(social.get_following_feed)
+        assert "_prod_seed_post_filter" in src
+
+    def test_trending_feed_filters_seed_posts(self):
+        src = inspect.getsource(social.trending_posts)
+        assert "_prod_seed_post_filter" in src
+
+class TestHomepageHeroCopy:
+    """Hero copy should stay intent-led and avoid repeated fruit/vườn phrasing."""
+
+    def test_monthly_tagline_copy_is_concise(self):
+        src = inspect.getsource(public_api.homepage_curated)
+        assert "Mùa miệt vườn đang mở cửa" in src
+        assert "Giữa mùa trái cây — vườn trái cây mở cửa đón khách" not in src
+        assert "Khám phá Vĩnh Long theo cách của người bản địa" in src
+
+    def test_explore_feed_filters_seed_posts(self):
+        src = inspect.getsource(social.explore_feed)
+        assert "_prod_seed_post_filter" in src
+
+    def test_search_posts_filters_seed_posts(self):
+        src = inspect.getsource(social.search_posts)
+        assert "_prod_seed_post_filter" in src
+
+    def test_bookmarks_filter_seed_posts(self):
+        src = inspect.getsource(social.get_my_bookmarks)
+        assert "_prod_seed_post_filter" in src
+
+    def test_user_profile_posts_filter_seed_posts(self):
+        src = inspect.getsource(social.get_user_posts)
+        assert "_prod_seed_post_filter" in src
+
+    def test_user_profile_reviews_filter_seed_posts(self):
+        src = inspect.getsource(social.get_user_reviews)
+        assert "_prod_seed_post_filter" in src
+
+    def test_community_stats_filters_seed_posts(self):
+        src = inspect.getsource(social.community_stats)
         assert "_prod_seed_post_filter" in src
 
 class TestReputationLikeCount:
@@ -259,6 +324,32 @@ class TestItineraryPagination:
         src = inspect.getsource(public_api.list_itineraries)
         assert "ge=1" in src
 
+    def test_itinerary_stop_entity_id_accepts_all_stop_key_shapes(self):
+        assert public_api._itinerary_stop_entity_id({"entityId": "a"}) == "a"
+        assert public_api._itinerary_stop_entity_id({"entity_id": "b"}) == "b"
+        assert public_api._itinerary_stop_entity_id({"id": "c"}) == "c"
+        assert public_api._itinerary_stop_entity_id("d") == "d"
+
+    def test_itinerary_detail_and_homepage_use_stop_id_helper(self):
+        detail_src = inspect.getsource(public_api.get_itinerary)
+        home_src = inspect.getsource(public_api.homepage_curated)
+        assert "_itinerary_stop_entity_id" in detail_src
+        assert "_itinerary_stop_entity_id" in home_src
+        assert "_itinerary_coverage_areas" in home_src
+
+    def test_admin_itinerary_update_merges_existing_payload(self):
+        src = inspect.getsource(admin.update_itinerary)
+        assert "db.get_itinerary" in src
+        assert "{**existing, **data}" in src
+        assert "_normalize_itinerary_payload" in src
+
+    def test_admin_itinerary_models_keep_editor_fields(self):
+        create_fields = admin.ItineraryCreate.model_fields
+        update_fields = admin.ItineraryUpdate.model_fields
+        for field in ("summary", "duration", "stops", "areas"):
+            assert field in create_fields
+            assert field in update_fields
+
 
 class TestCommentThreadAssembly:
     """Finding-035: comments must page top-level first, then fetch replies."""
@@ -272,6 +363,11 @@ class TestCommentThreadAssembly:
         assert "parent_id" in src
         assert "IN (" in src or "IN(" in src
 
+
+    def test_create_comment_only_replies_to_root_approved_comment(self):
+        src = inspect.getsource(social.create_comment)
+        assert "parent_id IS NULL" in src
+        assert "moderation_status = 'approved'" in src
 
 class TestTransactionalCTALint:
     """Finding-021: transactional CTA wording must be detected."""
@@ -322,6 +418,111 @@ class TestOrphanRefCleanup:
         assert "user_visits" in src
         assert "event_rsvp" in src
 
+
+class TestUserOwnedDataIntegrity:
+    """Saved entities and user plans should not create orphaned or over-quota data."""
+
+    def test_saved_upsert_validates_entity_public(self):
+        src = inspect.getsource(saved._upsert)
+        assert "validate_path_id" in src
+        assert "_entity_is_public" in src
+        assert "skip_missing" in src
+
+    def test_merge_saved_skips_missing_entities(self):
+        src = inspect.getsource(saved.merge_saved)
+        assert "skip_missing=True" in src
+
+    def test_merge_plans_enforces_max_plans(self):
+        src = inspect.getsource(plans.merge_plans)
+        assert "pg_advisory_xact_lock" in src
+        assert "MAX_PLANS" in src
+        assert "ORDER BY created_at ASC" in src
+
+class TestPersonalizationFoundation:
+    """Contextual personalization must be first-party, guarded, and reusable."""
+
+    def test_public_api_exposes_personalization_routes(self):
+        paths = {getattr(route, "path", "") for route in public_api.router.routes}
+        assert "/api/me/events" in paths
+        assert "/api/me/insights" in paths
+        assert "/api/me/recommendations/contextual" in paths
+
+    def test_user_event_route_is_guarded_and_csrf_protected(self):
+        src = inspect.getsource(public_api.track_user_event)
+        assert "Depends(require_pg)" in src
+        assert "Depends(require_user)" in src
+        assert "Depends(require_csrf)" in src
+        assert "check_rate" in src
+        assert "validate_path_id" in src
+
+    def test_interest_profile_uses_existing_user_signals(self):
+        src = inspect.getsource(public_api._load_user_signal_entities)
+        assert "saved_entities" in src
+        assert "user_visits" in src
+        assert "COALESCE(e.status" in src
+        assert "e.verified" in src
+
+    def test_contextual_recommendations_have_fallback_and_reasons(self):
+        src = inspect.getsource(public_api._contextual_recommendations)
+        assert "db.list_entities" in src
+        assert "_score_candidate" in src
+        assert "recommendation_reasons" in inspect.getsource(public_api._candidate_card)
+
+class TestPublicEntityVisibility:
+    """Public entity endpoints must apply the same visibility rule as listings."""
+
+    def test_entity_detail_checks_visibility_before_cache(self):
+        src = inspect.getsource(public_api.get_entity)
+        assert "_get_public_entity" in src
+        assert src.find("_get_public_entity") < src.find("_entity_cache")
+
+    def test_entity_related_endpoints_use_public_entity(self):
+        for fn in (
+            public_api.get_entity_relationships,
+            public_api.get_entity_stats,
+            public_api.get_entity_rating_breakdown,
+            public_api.get_entity_reviews,
+            public_api.get_entity_gallery,
+            public_api.get_review_stats,
+            public_api.get_similar_entities,
+            public_api.get_nearby_entities,
+            public_api.get_entity_qa,
+            public_api.submit_entity_claim,
+        ):
+            assert "_get_public_entity" in inspect.getsource(fn)
+
+    def test_feed_new_since_filters_non_public_entities(self):
+        src = inspect.getsource(public_api.feed_new_since)
+        assert "_is_public" in src
+
+    def test_advanced_entity_search_is_public_only(self):
+        src = inspect.getsource(public_api.entity_search)
+        assert "public_only=True" in src
+
+class TestUnifiedSearchAndRecommendationContracts:
+    """Public discovery contracts should stay unified across SERP, topbar and recommendations."""
+
+    def test_public_search_returns_unified_payload(self):
+        src = inspect.getsource(public_api.search)
+        assert "user=Depends(get_current_user)" in src
+        assert "_search_posts_for_contract" in src
+        assert "_search_users_for_contract" in src
+        assert '"entities"' in src
+        assert '"posts"' in src
+        assert '"users"' in src
+        assert '"suggestions"' in src
+        assert '"totals"' in src
+        assert '"results"' in src
+
+    def test_similar_entities_use_entity_card_shape(self):
+        src = inspect.getsource(public_api.get_similar_entities)
+        card_src = inspect.getsource(public_api._entity_card_shape)
+        assert "_entity_card_shape" in src
+        assert "_similar_reason_vi" in src
+        assert '"image"' in card_src
+        assert '"area"' in card_src
+        assert '"score"' in card_src
+        assert '"reason_vi"' in card_src
 
 class TestReputationAntiSybil:
     """Finding-020: reputation ignores followers from accounts < 7 days old."""

@@ -1619,12 +1619,40 @@ class TestUnifiedErrorResponse:
         import server
         src = inspect.getsource(server._global_exception_handler)
         assert "_error_response" in src
+        assert "logger.exception" not in src
+        assert 'logger.error("Unhandled error"' in src
 
     def test_timeout_uses_error_response(self):
         import server
         src = inspect.getsource(server.track_response_time)
         assert "_error_response(504" in src
         assert "_error_response(500" in src
+
+    def test_notification_sse_is_timeout_exempt(self):
+        import server
+        assert "/api/notifications/stream" in server._STREAMING_REQUEST_PATHS
+        assert "/api/notifications/stream" in server._NO_TIMEOUT_STREAM_PATHS
+        src = inspect.getsource(server.track_response_time)
+        assert "_is_request_timeout_exempt(path)" in src
+        assert "await call_next(request)" in src
+
+    def test_auth_accepts_nuxt_cookie_name(self):
+        import auth
+        import auth_middleware
+        src = inspect.getsource(auth._extract_token)
+        csrf_src = inspect.getsource(auth_middleware.require_csrf)
+        assert "vl360_token" in src
+        assert "vl360_token" in csrf_src
+
+    def test_notification_sse_sends_initial_keepalive(self):
+        import notifications
+        src = inspect.getsource(notifications.notification_stream)
+        assert 'yield ": connected\\n\\n"' in src
+
+    def test_notification_sse_prefers_cookie_over_query_token(self):
+        import notifications
+        src = inspect.getsource(notifications.notification_stream)
+        assert "_extract_token(request) or token" in src
 
 
 # ── P1: Token rotation ──
@@ -2771,6 +2799,12 @@ class TestStructuredLogBridge:
         assert '"ERROR"' in cls_src
         assert '"CRITICAL"' in cls_src
         assert '"DEBUG"' in cls_src
+
+    def test_notification_sse_access_log_filter_exists(self):
+        src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")
+        assert "class _SSEAccessLogFilter" in src
+        assert 'logging.getLogger("uvicorn.access").addFilter' in src
+        assert '"/api/notifications/stream" not in msg' in src
 
     def test_structured_logger_has_warning_alias(self):
         src = (AGENT_DIR / "middleware.py").read_text(encoding="utf-8")

@@ -33,6 +33,7 @@ class SavedItem(BaseModel):
     id: str = Field(max_length=200)
     name: Optional[str] = Field(None, max_length=300)
     type: Optional[str] = Field(None, max_length=50)
+    kind: Optional[str] = Field("entity", max_length=20)
     place_name: Optional[str] = Field(None, max_length=300)
     place_area: Optional[str] = Field(None, max_length=100)
     summary: Optional[str] = Field(None, max_length=1000)
@@ -41,6 +42,17 @@ class SavedItem(BaseModel):
 
 class MergeBody(BaseModel):
     items: list[SavedItem] = Field(default_factory=list, max_length=500)
+
+
+def _entity_is_public(conn, entity_id: str) -> bool:
+    ph = db._ph
+    row = db._fetchone(conn, f"""
+        SELECT 1 FROM entities
+        WHERE id = {ph}
+          AND COALESCE(status, '') != 'provisional'
+          AND (verified IS NULL OR verified != 0)
+    """, (entity_id,))
+    return bool(row)
 
 
 def _row_item(row) -> dict:
@@ -54,7 +66,10 @@ def _row_item(row) -> dict:
             snap = {}
     if not isinstance(snap, dict):
         snap = {}
-    return {"id": d["entity_id"], **snap, "savedAt": str(d.get("created_at") or "")}
+    kind = str(snap.get("kind") or snap.get("type") or "entity").lower()
+    if str(d.get("entity_id") or "").startswith("itinerary-"):
+        kind = "itinerary"
+    return {"id": d["entity_id"], **snap, "kind": kind, "savedAt": str(d.get("created_at") or "")}
 
 
 def _list(conn, uid: str) -> list[dict]:
@@ -66,14 +81,24 @@ def _list(conn, uid: str) -> list[dict]:
     return [_row_item(r) for r in rows]
 
 
-def _upsert(conn, uid: str, item: SavedItem) -> None:
+def _upsert(conn, uid: str, item: SavedItem, *, skip_missing: bool = False) -> bool:
     ph = db._ph
+    item.id = validate_path_id(item.id, "entity_id")
+    item_kind = (item.kind or ("itinerary" if item.type == "itinerary" else "entity")).strip().lower()
+    if item_kind not in {"entity", "itinerary"}:
+        item_kind = "entity"
+    item.kind = item_kind
+    if item_kind == "entity" and not _entity_is_public(conn, item.id):
+        if skip_missing:
+            return False
+        raise HTTPException(404, "Äá»‹a Ä‘iá»ƒm khÃ´ng tá»“n táº¡i hoáº·c chÆ°a cÃ´ng khai")
     snap = item.model_dump(exclude={"id"}, exclude_none=True)
     db._execute(conn, f"""
         INSERT INTO saved_entities (user_id, entity_id, snapshot)
         VALUES ({ph}::uuid, {ph}, {ph}::jsonb)
         ON CONFLICT (user_id, entity_id) DO UPDATE SET snapshot = EXCLUDED.snapshot
     """, (uid, item.id, json.dumps(snap, ensure_ascii=False)))
+    return True
 
 
 @router.get("",
@@ -134,13 +159,13 @@ async def merge_saved(body: MergeBody, user=Depends(require_user), _csrf=Depends
             db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"saved:{uid}",))
             for it in items:
                 if it.id:
-                    _upsert(conn, uid, it)
+                    _upsert(conn, uid, it, skip_missing=True)
             cnt_row = db._fetchone(conn, f"SELECT COUNT(*) c FROM saved_entities WHERE user_id = {ph}::uuid", (uid,))
             total = int(db._row_to_dict(cnt_row)["c"]) if cnt_row else 0
             if total > MAX_SAVED:
                 db._execute(conn, f"""
-                    DELETE FROM saved_entities WHERE id IN (
-                        SELECT id FROM saved_entities
+                    DELETE FROM saved_entities WHERE (user_id, entity_id) IN (
+                        SELECT user_id, entity_id FROM saved_entities
                         WHERE user_id = {ph}::uuid
                         ORDER BY created_at ASC
                         LIMIT {ph}

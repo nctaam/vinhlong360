@@ -116,6 +116,10 @@ class TestHealthEndpointMinimal:
         src = inspect.getsource(server.health_details)
         assert "require_admin" in src
 
+    def test_health_internal_requires_admin(self):
+        src = inspect.getsource(server.health_internal)
+        assert "require_admin" in src
+
     def test_health_slo_requires_admin(self):
         src = inspect.getsource(server.slo_metrics)
         assert "require_admin" in src

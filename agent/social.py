@@ -90,8 +90,16 @@ def _prod_seed_post_filter(alias: str = "p") -> tuple[str, list]:
     if not _cfg.is_production:
         return "", []
     ph = db._ph
-    clauses = [f"lower({alias}.content) NOT LIKE {ph}" for _ in _PROD_TEST_POST_PHRASES]
-    return " AND " + " AND ".join(clauses), [f"%{phrase}%" for phrase in _PROD_TEST_POST_PHRASES]
+    clauses = []
+    params = []
+    for phrase in _PROD_TEST_POST_PHRASES:
+        clauses.append(
+            f"(lower(coalesce({alias}.content, '')) NOT LIKE {ph} "
+            f"AND lower(coalesce({alias}.repost_snapshot::text, '')) NOT LIKE {ph})"
+        )
+        pattern = f"%{phrase}%"
+        params.extend([pattern, pattern])
+    return " AND " + " AND ".join(clauses), params
 
 POST_TYPES = ("review", "share", "recommend", "question")
 ENTITY_LINK_REQUIRED = ("review",)  # These types must link to an entity
@@ -1187,6 +1195,7 @@ async def trending_posts(
     ph = db._ph
     bc, bc_p = _block_sql(user, "p.user_id")
     mc, mc_p = _mute_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
     interval_param = f"{days} days"
     def _query():
         with db._conn() as conn:
@@ -1194,8 +1203,8 @@ async def trending_posts(
                 SELECT COUNT(*) as cnt FROM posts p
                 WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND p.created_at > NOW() - CAST({ph} AS INTERVAL)
-                  {bc} {mc}
-            """, (interval_param, *bc_p, *mc_p))
+                  {bc} {mc} {seed_filter}
+            """, (interval_param, *bc_p, *mc_p, *seed_params))
             total = db._row_to_dict(total_row).get("cnt", 0) if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -1205,11 +1214,11 @@ async def trending_posts(
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND p.created_at > NOW() - CAST({ph} AS INTERVAL)
-                  {bc} {mc}
+                  {bc} {mc} {seed_filter}
                 ORDER BY (p.like_count * 2 + p.comment_count * 3) DESC,
                          p.created_at DESC
                 LIMIT {ph}
-            """, (interval_param, *bc_p, *mc_p, limit))
+            """, (interval_param, *bc_p, *mc_p, *seed_params, limit))
             return total, rows
     total, rows = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
@@ -1227,6 +1236,7 @@ async def explore_feed(
     ph = db._ph
     bc, bc_p = _block_sql(user, "p.user_id")
     mc, mc_p = _mute_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
     offset = (page - 1) * limit
     uid = str(user["id"]) if user else None
     exclude_following = ""
@@ -1246,8 +1256,8 @@ async def explore_feed(
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND p.created_at > NOW() - INTERVAL '90 days'
-                  {exclude_following} {bc} {mc}
-            """, (*exclude_params, *bc_p, *mc_p))
+                  {exclude_following} {bc} {mc} {seed_filter}
+            """, (*exclude_params, *bc_p, *mc_p, *seed_params))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -1258,12 +1268,12 @@ async def explore_feed(
                 WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND p.created_at > NOW() - INTERVAL '90 days'
                   {exclude_following}
-                  {bc} {mc}
+                  {bc} {mc} {seed_filter}
                 ORDER BY (p.like_count * 2 + p.comment_count * 3 +
                           CASE WHEN p.post_type = 'review' AND p.rating >= 4 THEN 5 ELSE 0 END) DESC,
                          p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (*exclude_params, *bc_p, *mc_p, limit, offset))
+            """, (*exclude_params, *bc_p, *mc_p, *seed_params, limit, offset))
             return rows, total
     rows, total = await asyncio.to_thread(_query)
     posts = [_format_post(db._row_to_dict(r)) for r in rows]
@@ -1293,6 +1303,7 @@ async def search_posts(
     pattern = "%" + escape_like(stripped.lower()) + "%"
     bc, bc_p = _block_sql(user, "p.user_id")
     mc, mc_p = _mute_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
 
     def _query():
         with db._conn() as conn:
@@ -1304,15 +1315,15 @@ async def search_posts(
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL
                   AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
-                {bc} {mc}
+                {bc} {mc} {seed_filter}
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (pattern, *bc_p, *mc_p, limit, offset))
+            """, (pattern, *bc_p, *mc_p, *seed_params, limit, offset))
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL AND f_unaccent(lower(p.content)) LIKE f_unaccent({ph}) ESCAPE '\\'
-                {bc} {mc}
-            """, (pattern, *bc_p, *mc_p))
+                {bc} {mc} {seed_filter}
+            """, (pattern, *bc_p, *mc_p, *seed_params))
         return rows, total
     rows, total = await asyncio.to_thread(_query)
 
@@ -1394,9 +1405,10 @@ async def community_stats(response: Response):
     def _c(row):
         return int(db._row_to_dict(row)["c"]) if row else 0
     def _query():
+        seed_filter, seed_params = _prod_seed_post_filter("p")
         with db._conn() as conn:
-            posts = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE moderation_status='approved' AND deleted_at IS NULL")
-            reviews = db._fetchone(conn, "SELECT COUNT(*) c FROM posts WHERE post_type='review' AND moderation_status='approved' AND deleted_at IS NULL")
+            posts = db._fetchone(conn, f"SELECT COUNT(*) c FROM posts p WHERE moderation_status='approved' AND deleted_at IS NULL {seed_filter}", tuple(seed_params))
+            reviews = db._fetchone(conn, f"SELECT COUNT(*) c FROM posts p WHERE post_type='review' AND moderation_status='approved' AND deleted_at IS NULL {seed_filter}", tuple(seed_params))
             members = db._fetchone(conn, "SELECT COUNT(*) c FROM users WHERE is_active=TRUE")
         return {"posts": _c(posts), "reviews": _c(reviews), "members": _c(members)}
     return await asyncio.to_thread(_query)
@@ -2198,7 +2210,11 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
                 raise HTTPException(400, "Bài viết đã đạt giới hạn bình luận")
             if body.parent_id:
                 parent_ok = db._fetchone(conn, f"""
-                    SELECT 1 FROM comments WHERE id::text = {ph} AND post_id::text = {ph}
+                    SELECT 1 FROM comments
+                    WHERE id::text = {ph}
+                      AND post_id::text = {ph}
+                      AND parent_id IS NULL
+                      AND moderation_status = 'approved'
                 """, (body.parent_id, post_id))
                 if not parent_ok:
                     raise HTTPException(400, "Bình luận gốc không thuộc bài viết này")
@@ -2886,13 +2902,15 @@ async def get_my_bookmarks(
     ph = db._ph
     offset = (page - 1) * limit
     uid = str(user["id"])
+    seed_filter, seed_params = _prod_seed_post_filter("p")
     def _query():
         with db._conn() as conn:
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM bookmarks b
                 JOIN posts p ON p.id = b.post_id
                 WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
-            """, (uid,))
+                {seed_filter}
+            """, (uid, *seed_params))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -2902,9 +2920,10 @@ async def get_my_bookmarks(
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE b.user_id = {ph}::uuid AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
+                {seed_filter}
                 ORDER BY b.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (uid, limit, offset))
+            """, (uid, *seed_params, limit, offset))
             return rows, total
     rows, total = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]
@@ -3307,8 +3326,9 @@ async def pin_post_to_profile(post_id: str, user=Depends(require_user), _csrf=De
 async def upload_image(file: UploadFile = File(...), user=Depends(require_user), _csrf=Depends(require_csrf), _idem=Depends(require_idempotency)):
     check_rate(f"upload:{user['id']}", RL_UPLOAD_LIMIT, RL_UPLOAD_WINDOW,
                "Bạn tải ảnh quá nhanh. Vui lòng đợi chút rồi thử lại.")
-    data = await file.read()
-    if len(data) > 5 * 1024 * 1024:
+    max_bytes = 5 * 1024 * 1024
+    data = await file.read(max_bytes + 1)
+    if len(data) > max_bytes:
         raise HTTPException(400, "Ảnh tối đa 5MB")
 
     # Không tin Content-Type client gửi — kiểm magic-byte thật (chặn SVG-script/polyglot).
@@ -3717,13 +3737,14 @@ async def get_user_posts(
         if privacy_hidden:
             return {"posts": [], "total": 0, "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
-                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc}
-            """, (uid, *bc_p))
+                WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc} {seed_filter}
+            """, (uid, *bc_p, *seed_params))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -3732,10 +3753,10 @@ async def get_user_posts(
                 JOIN users u ON u.id = p.user_id
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.user_id::text = {ph} AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
-                {bc}
+                {bc} {seed_filter}
                 ORDER BY COALESCE(p.is_pinned, FALSE) DESC, p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (uid, *bc_p, limit, offset))
+            """, (uid, *bc_p, *seed_params, limit, offset))
             return rows, total
     rows, total = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]
@@ -3762,14 +3783,15 @@ async def get_user_reviews(
         if privacy_hidden:
             return {"reviews": [], "total": 0, "page": page, "has_more": False}
     bc, bc_p = _block_sql(user, "p.user_id")
+    seed_filter, seed_params = _prod_seed_post_filter("p")
     offset = (page - 1) * limit
     def _query():
         with db._conn() as conn:
             total_row = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM posts p
                 WHERE p.user_id::text = {ph} AND p.post_type = 'review'
-                  AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc}
-            """, (uid, *bc_p))
+                  AND p.moderation_status = 'approved' AND p.deleted_at IS NULL {bc} {seed_filter}
+            """, (uid, *bc_p, *seed_params))
             total = db._row_to_dict(total_row)["c"] if total_row else 0
             rows = db._fetchall(conn, f"""
                 SELECT {_POST_COLS}, u.display_name, u.avatar_url, u.username,
@@ -3779,10 +3801,10 @@ async def get_user_reviews(
                 LEFT JOIN entities e ON e.id = p.entity_id
                 WHERE p.user_id::text = {ph} AND p.post_type = 'review'
                   AND p.moderation_status = 'approved' AND p.deleted_at IS NULL
-                {bc}
+                {bc} {seed_filter}
                 ORDER BY p.created_at DESC
                 LIMIT {ph} OFFSET {ph}
-            """, (uid, *bc_p, limit, offset))
+            """, (uid, *bc_p, *seed_params, limit, offset))
             return rows, total
     rows, total = await asyncio.to_thread(_query)
     posts = [db._row_to_dict(r) for r in rows]

@@ -620,11 +620,13 @@ async def list_entities(
 
         if orphans_only:
             with db._conn() as conn:
-                rows = db._fetchall(conn,
-                    "SELECT from_id AS eid FROM relationships UNION SELECT to_id FROM relationships", ())
-                rel_ids = {db._row_to_dict(r)["eid"] for r in rows}
+                orphan_rows = db._fetchall(conn,
+                    "SELECT id FROM entities WHERE type != 'place' "
+                    "AND id NOT IN (SELECT from_id FROM relationships) "
+                    "AND id NOT IN (SELECT to_id FROM relationships)", ())
+                orphan_ids = {db._row_to_dict(r)["id"] for r in orphan_rows}
             if all_matches is not None:
-                all_matches = [e for e in all_matches if e.get("type") != "place" and e["id"] not in rel_ids]
+                all_matches = [e for e in all_matches if e["id"] in orphan_ids]
 
         if all_matches is not None:
             total = len(all_matches)
@@ -699,13 +701,12 @@ async def entity_completeness(kind: str = Query(..., max_length=30), worst: int 
         if not kind_types:
             return {"kind": kind, "total": 0, "fields": [], "worst": []}
         ents: list[dict] = []
-        for t in kind_types:
-            if t == "place":
-                with db._conn() as conn:
-                    rows = db._fetchall(conn, "SELECT * FROM entities WHERE type = 'place' ORDER BY name LIMIT 1000", ())
-                ents.extend(db._parse_entity(r) for r in rows)
-            else:
-                ents.extend(db.list_entities(entity_type=t, limit=2000, offset=0) or [])
+        with db._conn() as conn:
+            placeholders = ", ".join("?" for _ in kind_types)
+            rows = db._fetchall(conn,
+                f"SELECT * FROM entities WHERE type IN ({placeholders}) ORDER BY name LIMIT 2000",
+                tuple(kind_types))
+            ents = [db._parse_entity(r) for r in rows]
         if not ents:
             return {"kind": kind, "total": 0, "fields": [], "worst": []}
 
@@ -732,13 +733,16 @@ async def entity_completeness(kind: str = Query(..., max_length=30), worst: int 
         labels = dict(UNIVERSAL)
         labels.update({"season": "Mùa", "images": "Ảnh", "coords_real": "Tọa độ thật",
                        "summary_100": "Tóm tắt ≥100 ký tự"})
-        for key in universal_keys:
-            filled = sum(1 for e in ents if has(e, key))
-            fields.append({"key": key, "label": labels[key], "scope": "chung",
-                           "filled": filled, "pct": round(100 * filled / len(ents), 1)})
-            for e in ents:
-                if not has(e, key):
+        filled_counts = {k: 0 for k in universal_keys}
+        for e in ents:
+            for key in universal_keys:
+                if has(e, key):
+                    filled_counts[key] += 1
+                else:
                     missing_map[e["id"]].append(key)
+        for key in universal_keys:
+            fields.append({"key": key, "label": labels[key], "scope": "chung",
+                           "filled": filled_counts[key], "pct": round(100 * filled_counts[key] / len(ents), 1)})
         seen = set(universal_keys)
         for t in kind_types:
             schema = _ENTITY_SCHEMAS.get(t) or {}
@@ -3263,17 +3267,21 @@ async def export_posts_csv(
 async def list_sources():
     """Liệt kê tất cả nguồn dữ liệu."""
     def _query():
-        all_entities = db.list_entities(limit=10000)
-        sources = {}
-        for e in all_entities:
-            if e.get("type") == "place":
+        with db._conn() as conn:
+            rows = db._fetchall(conn,
+                "SELECT source FROM entities WHERE type != 'place' AND source IS NOT NULL AND source != ''",
+                ())
+        sources: dict = {}
+        for r in rows:
+            raw = db._row_to_dict(r).get("source", "")
+            if not raw:
                 continue
-            src = e.get("source", {})
+            src = raw
             if isinstance(src, str):
                 try:
                     src = json.loads(src)
                 except Exception:
-                    src = {}
+                    continue
             if isinstance(src, dict):
                 key = src.get("title", "unknown")
                 if key not in sources:

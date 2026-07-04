@@ -15,6 +15,7 @@ Endpoints:
 import asyncio
 import json
 import logging
+import os
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -271,10 +272,13 @@ async def _next_event_id() -> int:
 
 @router.get("/notifications/stream",
             summary="SSE notification stream",
-            description="Server-Sent Events stream for real-time notifications. Authenticates via query token. Supports Last-Event-ID for missed event recovery.")
+            description="Server-Sent Events stream for real-time notifications. Authenticates via auth cookie or legacy query token. Supports Last-Event-ID for missed event recovery.")
 async def notification_stream(request: Request, token: str = Query(None, max_length=200)):
-    from auth import _hash_token
-    if not token:
+    from auth import _extract_token, _hash_token
+    session_token = _extract_token(request)
+    if not session_token and token and os.environ.get("ENVIRONMENT", "").lower() not in {"production", "prod", "prd"}:
+        session_token = token
+    if not session_token:
         raise HTTPException(401, "Yêu cầu token xác thực")
     def _check_token():
         with db._conn() as conn:
@@ -282,7 +286,7 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
                 SELECT u.id FROM user_sessions s
                 JOIN users u ON u.id = s.user_id
                 WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
-            """, (_hash_token(token),))
+            """, (_hash_token(session_token),))
     row = await asyncio.to_thread(_check_token)
     if not row:
         raise HTTPException(401, "Token không hợp lệ")
@@ -320,6 +324,7 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
 
     async def event_generator():
         try:
+            yield ": connected\n\n"
             for m in missed:
                 md = db._row_to_dict(m)
                 eid = await _next_event_id()

@@ -7,8 +7,10 @@ luận/upload ảnh). Login/OTP đã có limit riêng trong auth.py.
     check_rate(f"post:{user_id}", limit=10, window=600)   # raise HTTPException(429) nếu vượt
 """
 import logging
+import os
 import threading
 import time
+from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
@@ -18,6 +20,9 @@ _rl_lock = threading.Lock()
 
 # key -> list[timestamp] (chỉ giữ trong cửa sổ hiện tại)
 _buckets: dict[str, list[float]] = {}
+_SHARED_PG_FAIL_UNTIL = 0.0
+_SHARED_PG_GC_LAST = 0.0
+_SHARED_PG_FAIL_LOCK = threading.Lock()
 _MAX_KEYS = 50_000  # chặn phình bộ nhớ vô hạn (đủ lớn cho <10k user × vài loại key)
 
 
@@ -25,9 +30,104 @@ def _now() -> float:
     return time.time()
 
 
+def _shared_rate_pg_enabled() -> bool:
+    value = os.environ.get("VL360_SHARED_RATE_LIMIT", "true").strip().lower()
+    return value not in {"0", "false", "no", "off"}
+
+
+def _mark_shared_pg_failed(exc: Exception) -> None:
+    global _SHARED_PG_FAIL_UNTIL
+    with _SHARED_PG_FAIL_LOCK:
+        _SHARED_PG_FAIL_UNTIL = time.time() + 60
+    logger.debug("Shared PG rate limit disabled briefly: %s", exc, exc_info=True)
+
+
+def _shared_pg_db():
+    if not _shared_rate_pg_enabled() or time.time() < _SHARED_PG_FAIL_UNTIL:
+        return None
+    try:
+        from database import db
+        if not getattr(db, "_use_pg", False):
+            return None
+        return db
+    except Exception as exc:  # noqa: BLE001
+        _mark_shared_pg_failed(exc)
+        return None
+
+
+def _should_gc_shared_pg(now: float) -> bool:
+    global _SHARED_PG_GC_LAST
+    if now - _SHARED_PG_GC_LAST < 60:
+        return False
+    _SHARED_PG_GC_LAST = now
+    return True
+
+
+def _check_rate_pg(key: str, limit: int, window: int, msg: str) -> bool:
+    db = _shared_pg_db()
+    if db is None:
+        return False
+    now = _now()
+    cutoff = now - window
+    expires_at = datetime.fromtimestamp(now + window, timezone.utc)
+    try:
+        with db._conn() as conn:
+            db._execute(conn, "SELECT pg_advisory_xact_lock(hashtext(%s)::bigint)", (f"rl:{key}",))
+            if _should_gc_shared_pg(now):
+                db._execute(conn, "DELETE FROM shared_rate_limits WHERE expires_at < NOW()")
+            row = db._fetchone(conn, "SELECT hits FROM shared_rate_limits WHERE key = %s", (key,))
+            raw_hits = row["hits"] if isinstance(row, dict) and row.get("hits") is not None else []
+            hits = [float(t) for t in raw_hits if float(t) > cutoff]
+            if len(hits) >= limit:
+                retry_after = int(window - (now - hits[0])) + 1
+                db._execute(
+                    conn,
+                    """
+                    INSERT INTO shared_rate_limits(key, hits, expires_at, updated_at)
+                    VALUES (%s, %s, %s, NOW())
+                    ON CONFLICT (key) DO UPDATE
+                    SET hits = EXCLUDED.hits,
+                        expires_at = EXCLUDED.expires_at,
+                        updated_at = NOW()
+                    """,
+                    (key, hits, expires_at),
+                )
+                raise HTTPException(
+                    429,
+                    msg,
+                    headers={
+                        "Retry-After": str(max(1, retry_after)),
+                        "X-RateLimit-Limit": str(limit),
+                        "X-RateLimit-Remaining": "0",
+                        "X-RateLimit-Reset": str(int(hits[0] + window)),
+                    },
+                )
+            hits.append(now)
+            db._execute(
+                conn,
+                """
+                INSERT INTO shared_rate_limits(key, hits, expires_at, updated_at)
+                VALUES (%s, %s, %s, NOW())
+                ON CONFLICT (key) DO UPDATE
+                SET hits = EXCLUDED.hits,
+                    expires_at = EXCLUDED.expires_at,
+                    updated_at = NOW()
+                """,
+                (key, hits, expires_at),
+            )
+        return True
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        _mark_shared_pg_failed(exc)
+        return False
+
+
 def check_rate(key: str, limit: int, window: int,
                msg: str = "Bạn thao tác quá nhanh. Vui lòng thử lại sau.") -> None:
     """Ghi nhận 1 lượt cho `key`; raise HTTPException(429) nếu đã đạt `limit` trong `window` giây."""
+    if _check_rate_pg(key, limit, window, msg):
+        return
     now = _now()
     with _rl_lock:
         hits = [t for t in _buckets.get(key, []) if now - t < window]
@@ -420,7 +520,7 @@ def gc_all() -> dict:
 
 def _reset() -> None:
     """Chỉ dùng trong test."""
-    global _load_multiplier
+    global _load_multiplier, _SHARED_PG_FAIL_UNTIL, _SHARED_PG_GC_LAST
     _buckets.clear()
     _violations.clear()
     _ip_global.clear()
@@ -434,6 +534,8 @@ def _reset() -> None:
     _penalty_violations.clear()
     _sliding_counters.clear()
     _rl_callbacks.clear()
+    _SHARED_PG_FAIL_UNTIL = 0.0
+    _SHARED_PG_GC_LAST = 0.0
 
 
 # ── Penalty box (temporary IP ban after severe violations) ──

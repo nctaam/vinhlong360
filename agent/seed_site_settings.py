@@ -150,23 +150,23 @@ DEFAULTS: dict[str, dict] = {
 
     # ── Homepage ──
     "homepage.hero_subtitle": {
-        "value": "Trải nghiệm miệt vườn sông nước, đặc sản theo mùa, OCOP, làng nghề, và lịch trình gợi ý — tất cả ở một nơi.",
+        "value": "Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.",
         "category": "homepage", "label": "Hero subtitle", "input_type": "textarea",
         "description": "Dòng mô tả dưới thanh tìm kiếm trang chủ",
     },
     "homepage.search_placeholder": {
-        "value": "Tìm: chôm chôm, kẹo dừa, homestay Cái Bè…",
+        "value": "Tìm điểm đến, món ngon, lịch trình…",
         "category": "homepage", "label": "Placeholder tìm kiếm", "input_type": "text",
         "description": "Placeholder cho ô tìm kiếm trang chủ",
     },
     "homepage.hero_pills": {
         "value": [
-            {"emoji": "🍊", "label": "Trái cây", "to": "/kham-pha/trai-cay"},
-            {"emoji": "🏡", "label": "Homestay", "to": "/kham-pha/homestay"},
-            {"emoji": "🛶", "label": "Sông nước", "to": "/kham-pha/song-nuoc"},
-            {"emoji": "🧁", "label": "Đặc sản", "to": "/san-pham"},
-            {"emoji": "🎭", "label": "Lễ hội", "to": "/le-hoi"},
+            {"emoji": "📍", "label": "Gần tôi", "to": "/ban-do?near=1"},
+            {"emoji": "🍲", "label": "Ăn gì hôm nay", "to": "/kham-pha/am-thuc"},
+            {"emoji": "🗓️", "label": "Đi 2N1Đ", "to": "/lich-trinh"},
+            {"emoji": "🌿", "label": "Miệt vườn", "to": "/du-lich"},
             {"emoji": "🗺️", "label": "Bản đồ", "to": "/ban-do"},
+            {"emoji": "🎁", "label": "Đặc sản làm quà", "to": "/ocop"},
         ],
         "category": "homepage", "label": "Quick pills", "input_type": "json",
         "description": "Các nút nhanh dưới hero (mảng JSON gồm emoji, label, to)",

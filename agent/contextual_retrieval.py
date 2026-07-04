@@ -654,7 +654,7 @@ def search_health() -> dict:
     """Quick readiness probe for the search pipeline."""
     return {
         "bm25_ready": bm25._built,
-        "bm25_doc_count": len(bm25._doc_lengths) if bm25._built else 0,
+        "bm25_doc_count": len(bm25._doc_lens) if bm25._built else 0,
         "contextual_loaded": contextual._loaded,
         "contextual_doc_count": len(contextual._cache) if contextual._loaded else 0,
         "embedding_store_ready": embedding_store is not None,

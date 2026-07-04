@@ -139,9 +139,22 @@ async def merge_plans(body: MergeBody, user=Depends(require_user), _csrf=Depends
     incoming = (body.plans or [])[:MAX_PLANS]
     def _query():
         with db._conn() as conn:
+            ph = db._ph
+            db._execute(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (f"plan:{uid}",))
             for p in incoming:
                 if p.stops:
                     _insert(conn, uid, p)
+            cnt_row = db._fetchone(conn, f"SELECT COUNT(*) c FROM user_plans WHERE user_id = {ph}::uuid", (uid,))
+            total = int(db._row_to_dict(cnt_row)["c"]) if cnt_row else 0
+            if total > MAX_PLANS:
+                db._execute(conn, f"""
+                    DELETE FROM user_plans WHERE id IN (
+                        SELECT id FROM user_plans
+                        WHERE user_id = {ph}::uuid
+                        ORDER BY created_at ASC
+                        LIMIT {ph}
+                    )
+                """, (uid, total - MAX_PLANS))
             return {"plans": _list(conn, uid)}
     return await asyncio.to_thread(_query)
 

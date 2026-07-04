@@ -152,6 +152,16 @@ def _set_session_cookie(response: Response, request: Request, token: str) -> Non
     """Attach the session as the primary HttpOnly cookie transport."""
     response.set_cookie(key=SESSION_COOKIE_NAME, value=token, **_cookie_params_for_request(request))
 
+def _clear_session_cookie(response: Response, request: Request) -> None:
+    params = _cookie_params_for_request(request)
+    domain = params.get("domain")
+    secure = bool(params.get("secure", False))
+    samesite = params.get("samesite", "lax")
+    for name in (SESSION_COOKIE_NAME, "token", "session_token"):
+        response.delete_cookie(key=name, path="/", domain=domain, secure=secure, httponly=True, samesite=samesite)
+        if domain:
+            response.delete_cookie(key=name, path="/", secure=secure, httponly=True, samesite=samesite)
+
 
 def cleanup_expired_data() -> dict:
     """Remove expired sessions, OTP records, and old login history. Call from scheduler."""
@@ -205,6 +215,7 @@ def _is_internal_session(user_agent: str | None, ip: str | None) -> bool:
     internal_ua_markers = (
         "python-urllib", "python-requests", "httpx", "aiohttp",
         "curl/", "wget/", "healthcheck", "uptime",
+        "node", "undici", "node-fetch",
     )
     if any(marker in ua for marker in internal_ua_markers):
         return True
@@ -444,6 +455,11 @@ async def _send_sms(phone: str, message: str) -> bool:
 async def request_otp(body: OTPRequest, request: Request):
     phone = body.phone
 
+    from middleware import get_client_ip
+    ip = get_client_ip(request)
+    _check_shared_auth_rate(f"otp_phone:{phone}", 1, OTP_RATE_LIMIT_SECONDS, "Vui long doi truoc khi gui lai OTP")
+    _check_shared_auth_rate(f"otp_ip:{ip}", OTP_IP_LIMIT, OTP_IP_WINDOW, "Qua nhieu yeu cau OTP tu IP nay. Vui long thu lai sau.")
+
     now = time.time()
     last = _otp_rate.get(phone, 0)
     if now - last < OTP_RATE_LIMIT_SECONDS:
@@ -452,8 +468,6 @@ async def request_otp(body: OTPRequest, request: Request):
 
     # GĐ4.7: chặn SMS-pump theo IP. SEC-002: dùng get_client_ip (chỉ tin XFF từ
     # TRUSTED_PROXIES) — tránh giả mạo X-Forwarded-For để vượt rate-limit.
-    from middleware import get_client_ip
-    ip = get_client_ip(request)
     hits = [t for t in _otp_ip_rate.get(ip, []) if now - t < OTP_IP_WINDOW]
     if len(hits) >= OTP_IP_LIMIT:
         raise HTTPException(429, "Quá nhiều yêu cầu OTP từ IP này. Vui lòng thử lại sau.")
@@ -604,6 +618,9 @@ async def verify_otp(body: OTPVerify, request: Request, response: Response):
     from middleware import get_client_ip
     ip = get_client_ip(request)
     now = time.time()
+    phone = _normalize_phone(body.phone)
+    _check_shared_auth_rate(f"otp_verify_ip:{ip}", OTP_VERIFY_IP_LIMIT, OTP_VERIFY_IP_WINDOW, "Qua nhieu lan xac thuc OTP tu IP nay. Vui long thu lai sau.")
+    _check_shared_auth_rate(f"otp_verify_phone:{phone}", OTP_VERIFY_PHONE_LIMIT, OTP_VERIFY_PHONE_WINDOW, "Qua nhieu lan nhap OTP cho so nay. Vui long yeu cau ma moi sau 5 phut.")
     hits = [t for t in _otp_verify_ip_rate.get(ip, []) if now - t < OTP_VERIFY_IP_WINDOW]
     if len(hits) >= OTP_VERIFY_IP_LIMIT:
         raise HTTPException(429, "Quá nhiều lần xác thực OTP từ IP này. Vui lòng thử lại sau.")
@@ -611,7 +628,6 @@ async def verify_otp(body: OTPVerify, request: Request, response: Response):
     _otp_verify_ip_rate[ip] = hits
     _gc_rate_dict(_otp_verify_ip_rate, OTP_VERIFY_IP_WINDOW)
 
-    phone = _normalize_phone(body.phone)
     phone_hits = [t for t in _otp_verify_phone_rate.get(phone, []) if now - t < OTP_VERIFY_PHONE_WINDOW]
     if len(phone_hits) >= OTP_VERIFY_PHONE_LIMIT:
         raise HTTPException(429, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
@@ -717,6 +733,7 @@ async def check_phone(body: CheckPhone, request: Request):
     from middleware import get_client_ip
     ip = get_client_ip(request)
     now = time.time()
+    _check_shared_auth_rate(f"check_phone_ip:{ip}", CHECK_PHONE_IP_LIMIT, CHECK_PHONE_IP_WINDOW, "Qua nhieu yeu cau. Vui long thu lai sau.")
     hits = [t for t in _check_phone_ip_rate.get(ip, []) if now - t < CHECK_PHONE_IP_WINDOW]
     if len(hits) >= CHECK_PHONE_IP_LIMIT:
         raise HTTPException(429, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
@@ -737,6 +754,7 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
     from middleware import get_client_ip
     ip = get_client_ip(request)
     now = time.time()
+    _check_shared_auth_rate(f"login_ip:{ip}", LOGIN_IP_LIMIT, LOGIN_IP_WINDOW, "Qua nhieu lan dang nhap. Vui long thu lai sau.")
     hits = [t for t in _login_ip_rate.get(ip, []) if now - t < LOGIN_IP_WINDOW]
     if len(hits) >= LOGIN_IP_LIMIT:
         raise HTTPException(429, "Quá nhiều lần đăng nhập. Vui lòng thử lại sau.")
@@ -755,6 +773,7 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
     if not user or not user.get("password_hash"):
         # Constant-time: always run PBKDF2 to prevent timing oracle
         await asyncio.to_thread(_verify_password, body.password, _DUMMY_HASH)
+        _check_shared_auth_rate(f"login_phone_fail:{phone}", LOGIN_PHONE_LIMIT, LOGIN_PHONE_WINDOW, "Tai khoan tam khoa do dang nhap sai nhieu lan. Thu lai sau 15 phut.")
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
         _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
@@ -767,6 +786,7 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
 
     matched, is_legacy = await asyncio.to_thread(_verify_password, body.password, user["password_hash"], _return_legacy=True)
     if not matched:
+        _check_shared_auth_rate(f"login_phone_fail:{phone}", LOGIN_PHONE_LIMIT, LOGIN_PHONE_WINDOW, "Tai khoan tam khoa do dang nhap sai nhieu lan. Thu lai sau 15 phut.")
         phone_hits.append(now)
         _login_phone_fails[phone] = phone_hits
         _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
@@ -832,10 +852,13 @@ async def set_password(body: SetPassword, request: Request, _csrf=Depends(_requi
 @router.post("/reset-password-otp",
              summary="Reset password via OTP",
              description="Resets the user's password by verifying an OTP code. Revokes all existing sessions, requiring the user to log in again with the new password.")
-async def reset_password_otp(body: ResetPasswordOTP, request: Request, _csrf=Depends(_require_csrf_lazy)):
+async def reset_password_otp(body: ResetPasswordOTP, request: Request, response: Response, _csrf=Depends(_require_csrf_lazy)):
     from middleware import get_client_ip
     ip = get_client_ip(request)
     now = time.time()
+    phone = _normalize_phone(body.phone)
+    _check_shared_auth_rate(f"otp_verify_ip:{ip}", OTP_VERIFY_IP_LIMIT, OTP_VERIFY_IP_WINDOW, "Qua nhieu lan xac thuc OTP tu IP nay. Vui long thu lai sau.")
+    _check_shared_auth_rate(f"otp_verify_phone:{phone}", OTP_VERIFY_PHONE_LIMIT, OTP_VERIFY_PHONE_WINDOW, "Qua nhieu lan nhap OTP cho so nay. Vui long yeu cau ma moi sau 5 phut.")
     hits = [t for t in _otp_verify_ip_rate.get(ip, []) if now - t < OTP_VERIFY_IP_WINDOW]
     if len(hits) >= OTP_VERIFY_IP_LIMIT:
         raise HTTPException(429, "Quá nhiều lần xác thực OTP từ IP này. Vui lòng thử lại sau.")
@@ -843,7 +866,6 @@ async def reset_password_otp(body: ResetPasswordOTP, request: Request, _csrf=Dep
     _otp_verify_ip_rate[ip] = hits
     _gc_rate_dict(_otp_verify_ip_rate, OTP_VERIFY_IP_WINDOW)
 
-    phone = _normalize_phone(body.phone)
     phone_hits = [t for t in _otp_verify_phone_rate.get(phone, []) if now - t < OTP_VERIFY_PHONE_WINDOW]
     if len(phone_hits) >= OTP_VERIFY_PHONE_LIMIT:
         raise HTTPException(429, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
@@ -908,30 +930,33 @@ async def reset_password_otp(body: ResetPasswordOTP, request: Request, _csrf=Dep
             pass
     asyncio.create_task(asyncio.to_thread(_ach_bg))
 
+    _clear_session_cookie(response, request)
     return {"success": True, "message": "Đã đặt lại mật khẩu. Vui lòng đăng nhập lại."}
 
 
 @router.post("/logout",
              summary="Logout current session",
              description="Invalidates the current session token. Returns success even if no valid session exists.")
-async def logout(request: Request, _csrf=Depends(_require_csrf_lazy)):
+async def logout(request: Request, response: Response, _csrf=Depends(_require_csrf_lazy)):
     from ratelimit import check_rate
     from middleware import get_client_ip
     check_rate(f"logout:{get_client_ip(request)}", 10, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
     token = _extract_token(request)
     if not token:
+        _clear_session_cookie(response, request)
         return {"success": True}
     def _query():
         with db._conn() as conn:
             db._execute(conn, f"DELETE FROM user_sessions WHERE token = {db._ph}", (_hash_token(token),))
     await asyncio.to_thread(_query)
+    _clear_session_cookie(response, request)
     return {"success": True}
 
 
 @router.post("/refresh",
              summary="Refresh session token",
              description="Rotates the session token by issuing a new token and revoking the old one. Extends the session expiry.")
-async def refresh_token(request: Request, _csrf=Depends(_require_csrf_lazy)):
+async def refresh_token(request: Request, response: Response, _csrf=Depends(_require_csrf_lazy)):
     """Rotate session token — issue new token, revoke old. Reduces compromise window."""
     from ratelimit import check_rate
     from middleware import get_client_ip
@@ -957,6 +982,7 @@ async def refresh_token(request: Request, _csrf=Depends(_require_csrf_lazy)):
     if not result:
         raise HTTPException(401, "Session không hợp lệ hoặc đã hết hạn")
 
+    _set_session_cookie(response, request, new_token)
     return {
         "success": True,
         "token": new_token,
@@ -1053,7 +1079,7 @@ async def get_csrf(request: Request):
 @router.post("/deactivate",
              summary="Deactivate account",
              description="Deactivates the authenticated user's account and revokes all sessions. The account can be reactivated by logging in again via OTP.")
-async def deactivate_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
+async def deactivate_account(request: Request, response: Response, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -1068,13 +1094,14 @@ async def deactivate_account(request: Request, _csrf=Depends(_require_csrf_lazy)
         with db._conn() as conn:
             db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
     await asyncio.to_thread(_query)
+    _clear_session_cookie(response, request)
     return {"success": True, "message": "Tài khoản đã bị vô hiệu hóa. Đăng nhập lại bằng OTP để kích hoạt."}
 
 
 @router.delete("/account",
                summary="Schedule account deletion",
                description="Schedules the authenticated user's account for permanent deletion after a grace period. Revokes all sessions. Logging in via OTP within the grace period cancels deletion.")
-async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
+async def delete_account(request: Request, response: Response, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
@@ -1092,6 +1119,7 @@ async def delete_account(request: Request, _csrf=Depends(_require_csrf_lazy)):
             """, (uid,))
             db._execute(conn, f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}", (uid,))
     await asyncio.to_thread(_query)
+    _clear_session_cookie(response, request)
     return {
         "success": True,
         "status": "scheduled",
@@ -1901,9 +1929,10 @@ def _extract_token(request: Request) -> str | None:
         if 16 <= len(t) <= _TOKEN_MAX_LEN:
             return t
         return None
-    t = request.cookies.get("token")
-    if t and 16 <= len(t) <= _TOKEN_MAX_LEN:
-        return t
+    for cookie_name in ("vl360_token", "token", "session_token"):
+        t = request.cookies.get(cookie_name)
+        if t and 16 <= len(t) <= _TOKEN_MAX_LEN:
+            return t
     return None
 
 

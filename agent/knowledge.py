@@ -7,6 +7,7 @@ cho Knowledge Agent (tương đương store.js phía Python).
 
 import json
 import logging
+import os
 import re
 import threading
 import unicodedata
@@ -70,7 +71,7 @@ _data_source = None
 
 
 def _load():
-    """DB-primary với fallback an toàn về data.json (chat không bao giờ chết vì DB)."""
+    """DB-primary; production PostgreSQL must fail hard instead of masking drift."""
     global _data_source
     try:
         entities, relationships, itineraries = _load_from_db()
@@ -78,6 +79,14 @@ def _load():
             _data_source = "db"
             return entities, relationships, itineraries
     except Exception as exc:  # noqa: BLE001 - degrade gracefully
+        env = os.environ.get("ENVIRONMENT", "development").strip().lower()
+        database_url = os.environ.get("DATABASE_URL", "")
+        allow_json_fallback = os.environ.get("VL360_ALLOW_JSON_FALLBACK", "").strip().lower() in {"1", "true", "yes", "on"}
+        if database_url.startswith("postgresql") and env == "production" and not allow_json_fallback:
+            _data_source = "db_error"
+            logger.error("Production DB load failed; refusing data.json fallback (%s: %s)",
+                         type(exc).__name__, exc)
+            raise
         logger.warning("DB load failed (%s: %s); falling back to data.json",
                        type(exc).__name__, exc)
     _data_source = "json"
@@ -234,6 +243,7 @@ AREA_META = {
     "vinh-long": {"name": "Vĩnh Long", "emoji": "🍊"},
     "ben-tre": {"name": "Bến Tre", "emoji": "🥥"},
     "tra-vinh": {"name": "Trà Vinh", "emoji": "🛕"},
+    "lien-vung": {"name": "Liên vùng", "emoji": "🧭"},
 }
 
 
@@ -419,7 +429,7 @@ def list_itineraries(area: str = None) -> list[dict]:
     _ensure()
     out = list(_itineraries.values())
     if area:
-        out = [it for it in out if it.get("area") == area]
+        out = [it for it in out if it.get("area") == area or area in (it.get("areas") or [])]
     return out
 
 
