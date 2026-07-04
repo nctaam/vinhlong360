@@ -762,13 +762,13 @@ useHead({
 .hf-card {
   display: flex; gap: var(--space-4); align-items: center;
   padding: var(--space-4);
-  background: rgba(255,255,255,.10);
-  backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px);
-  border: .5px solid rgba(255,255,255,.22);
-  border-radius: var(--radius-lg);
+  background: rgba(255,255,255,.07);
+  backdrop-filter: saturate(160%) blur(6px); -webkit-backdrop-filter: saturate(160%) blur(6px);
+  border: .5px solid rgba(255,255,255,.14);
+  border-radius: var(--radius-md);
   color: var(--text-on-dark, #fff); text-decoration: none;
-  box-shadow: 0 10px 30px rgba(0,0,0,.16);
-  opacity: .92;
+  box-shadow: 0 4px 18px rgba(0,0,0,.14);
+  opacity: 1;
   transition: transform .4s var(--ease-spring-gentle), box-shadow .4s var(--ease-out-expo), background .3s var(--ease-out);
 }
 .hf-card:hover { transform: translateY(-4px); background: rgba(255,255,255,.16); box-shadow: var(--shadow-lg); opacity: 1; }

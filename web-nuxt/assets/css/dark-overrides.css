@@ -130,8 +130,8 @@
    hero-stats (→ hairline contents-strip) and cat-tile (→ per-category PHOTO tiles) were
    rebuilt: they must NOT get a dark `background` override — the shorthand erases the tile
    image (leaving a blank dark box) and boxes the contents-strip. Their own rules handle dark. */
-.dark .hf-card { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.38); }
-.dark .hf-card:hover { background: rgba(255,255,255,.30); }
+.dark .hf-card { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20); }
+.dark .hf-card:hover { background: rgba(255,255,255,.16); }
 
 /* Section headings */
 .dark .home .section-head h2 { color: var(--ink); }
