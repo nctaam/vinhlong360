@@ -174,7 +174,7 @@
     <section v-if="ranked.length" class="block reveal">
       <div class="grid">
         <div
-          v-for="(e, i) in ranked" :key="e.id"
+          v-for="(e, i) in visibleRanked" :key="e.id"
           class="season-item"
           :style="{ animationDelay: `${Math.min(i, 11) * 50}ms` }"
         >
@@ -184,6 +184,14 @@
           <small class="season-when"><span aria-hidden="true">📅</span>{{ seasonText(e.season) }}</small>
         </div>
       </div>
+      <button
+        v-if="visibleCount < ranked.length"
+        type="button"
+        class="btn btn-ghost catalog-more"
+        @click="visibleCount += PAGE_SIZE"
+      >
+        Xem thêm ({{ ranked.length - visibleCount }} còn lại)
+      </button>
     </section>
     <EmptyState
       v-else-if="data"
@@ -266,6 +274,7 @@ watch(month, (m) => {
   if (monthFromQuery(route.query.mua) !== m) {
     router.replace({ query: { ...route.query, mua: String(m) } })
   }
+  visibleCount.value = PAGE_SIZE
   nextTick(() => resultsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 })
 
@@ -307,6 +316,15 @@ const ranked = computed(() =>
     .filter((e: Entity) => score(e) >= 2)
     .sort((a: Entity, b: Entity) => (score(b) || 0) - (score(a) || 0)),
 )
+
+// Client-side pagination: bound hydration cost on the full "Tất cả đang mùa"
+// grid (perf audit P2). First PAGE_SIZE render on the server for SEO/first-
+// paint; "Xem thêm" reveals more without a refetch. Reset happens in the
+// existing watch(month, ...) above, since month is the only filter here.
+const PAGE_SIZE = 24
+const visibleCount = ref(PAGE_SIZE)
+const visibleRanked = computed(() => ranked.value.slice(0, visibleCount.value))
+
 const inSeasonItems = computed(() => wedge.value.filter((e: Entity) => isInSeason(e)))
 const allPeakItems = computed(() => wedge.value.filter((e: Entity) => isPeak(e)))
 const peakCount = computed(() => allPeakItems.value.length)

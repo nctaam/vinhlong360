@@ -79,9 +79,17 @@
     </EmptyState>
     <SkeletonGrid v-else-if="!data" :count="6" />
     <div v-else-if="filtered.length" ref="gridEl" class="grid int-grid">
-      <EntityCard v-for="e in filtered" :key="e.id" :entity="e" />
+      <EntityCard v-for="e in visible" :key="e.id" :entity="e" />
     </div>
     <EmptyState v-else message="Không tìm thấy kết quả phù hợp." />
+    <button
+      v-if="filtered.length && visibleCount < filtered.length"
+      type="button"
+      class="btn btn-ghost catalog-more"
+      @click="visibleCount += PAGE_SIZE"
+    >
+      Xem thêm ({{ filtered.length - visibleCount }} còn lại)
+    </button>
     </section>
 
     <!-- Cross-links -->
@@ -183,6 +191,14 @@ const filtered = computed(() => {
   return list
 })
 
+// Client-side pagination: bound hydration cost on the full filterable grid
+// (perf audit P2). First PAGE_SIZE render on the server for SEO/first-paint;
+// "Xem thêm" reveals more without a refetch. Reset happens in the existing
+// watch([areaFilter, typeFilter], ...) below.
+const PAGE_SIZE = 24
+const visibleCount = ref(PAGE_SIZE)
+const visible = computed(() => filtered.value.slice(0, visibleCount.value))
+
 // SIGNATURE 2: a short, data-driven narrative of what this collection holds —
 // built only from real counts (no fabricated facts; Track-H safe).
 const collectionNarrative = computed(() => {
@@ -204,6 +220,7 @@ function scrollToResults() {
 }
 let _filtersTouched = false
 watch([areaFilter, typeFilter], () => {
+  visibleCount.value = PAGE_SIZE
   // skip the initial URL-sync run; only react to genuine user changes
   if (!_filtersTouched) { _filtersTouched = true; return }
   nextTick(scrollToResults)

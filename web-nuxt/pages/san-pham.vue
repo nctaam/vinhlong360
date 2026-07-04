@@ -128,7 +128,7 @@
       </EmptyState>
       <SkeletonGrid v-else-if="!data" :count="6" />
       <div v-else-if="filtered.length" :class="viewMode === 'list' ? 'list-view' : 'grid'">
-        <EntityCard v-for="e in filtered" :key="e.id" :entity="e" :season-filter="seasonFilter" />
+        <EntityCard v-for="e in visible" :key="e.id" :entity="e" :season-filter="seasonFilter" />
       </div>
       <EmptyState v-else icon="🍊" title="Không tìm thấy sản phẩm" message="Thử chọn tháng khác hoặc bỏ bộ lọc OCOP.">
         <template #actions>
@@ -138,6 +138,14 @@
           <NuxtLink to="/theo-mua" class="btn btn-outline">🗓️ Theo mùa</NuxtLink>
         </template>
       </EmptyState>
+      <button
+        v-if="filtered.length && visibleCount < filtered.length"
+        type="button"
+        class="btn btn-ghost catalog-more"
+        @click="visibleCount += PAGE_SIZE"
+      >
+        Xem thêm ({{ filtered.length - visibleCount }} còn lại)
+      </button>
     </section>
 
     <!-- Cross-links -->
@@ -284,6 +292,15 @@ const filtered = computed(() => {
   }
   return sortByRegion(list)
 })
+
+// Client-side pagination: bound hydration cost on the full filtered grid
+// (perf audit P2). First PAGE_SIZE render on the server for SEO/first-paint;
+// "Xem thêm" reveals more without a refetch. Resets whenever a filter/search/
+// sort input changes so the visible window always starts from the top.
+const PAGE_SIZE = 24
+const visibleCount = ref(PAGE_SIZE)
+const visible = computed(() => filtered.value.slice(0, visibleCount.value))
+watch([q, seasonFilter, ocopOnly, sortBy], () => { visibleCount.value = PAGE_SIZE })
 
 useSeoMeta({
   title: () => pc('seo_title'),

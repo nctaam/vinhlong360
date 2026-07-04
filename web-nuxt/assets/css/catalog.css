@@ -180,6 +180,10 @@
   .interest-nav .chip { scroll-snap-align: start; flex-shrink: 0; }
 }
 
+/* ── Catalog "load more" (client-paginate the full filterable grid so
+   hydration is bounded to PAGE_SIZE cards at a time — perf audit P2) ── */
+.catalog-more { display: block; margin: var(--space-5) auto 0; }
+
 /* ── Catalog Divider ── */
 .catalog-divider {
   display: flex; align-items: center; gap: var(--space-4);
