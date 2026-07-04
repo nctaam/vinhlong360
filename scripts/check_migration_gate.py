@@ -13,8 +13,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATIONS = ROOT / "agent" / "migrations"
-LATEST_SCHEMA_VERSION = 58
-LATEST_MIGRATION = "058_itinerary_areas_schema.sql"
+LATEST_SCHEMA_VERSION = 67
+LATEST_MIGRATION = "067_trusted_devices.sql"
 
 
 @dataclass
