@@ -27,6 +27,7 @@ export default defineNuxtConfig({
   },
 
   css: [
+    '~/assets/css/fonts.css',
     '~/assets/css/variables.css',
     '~/assets/css/base.css',
     '~/assets/css/components.css',

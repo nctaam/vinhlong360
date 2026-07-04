@@ -305,6 +305,29 @@ if (areaMeta) {
    Sits below the text/stats (catalog-hero-inner / catalog-stats are z-index 1
    per catalog.css). Decorative only. */
 .area-hero { --AREA-rgb: var(--primary-rgb); }
+
+/* ── SIGNATURE: cinematic per-region hero photo (logic-matched — each region shows its own
+   signature scene: VL gạch gốm + miệt vườn · Bến Tre xứ dừa · Trà Vinh chùa Khmer).
+   Only the 3 regions that have an AI-gen image; strong scrim + white text keeps copy legible. ── */
+.cat-area-vinh-long, .cat-area-ben-tre, .cat-area-tra-vinh {
+  min-height: clamp(19rem, 44vh, 30rem);
+  display: flex; flex-direction: column; justify-content: flex-end;
+  color: #fff; border: none;
+  background-image: var(--scrim-hero), var(--area-img);
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+}
+.cat-area-vinh-long { --area-img: url(/img/area-vinh-long.jpg); }
+.cat-area-ben-tre   { --area-img: url(/img/area-ben-tre.jpg); }
+.cat-area-tra-vinh  { --area-img: url(/img/area-tra-vinh.jpg); }
+.cat-area-vinh-long .area-hero-bloom, .cat-area-ben-tre .area-hero-bloom, .cat-area-tra-vinh .area-hero-bloom { display: none; }
+.cat-area-vinh-long h1, .cat-area-ben-tre h1, .cat-area-tra-vinh h1 { color: #fff; text-shadow: 0 2px 22px rgba(0,0,0,.5); }
+.cat-area-vinh-long p, .cat-area-ben-tre p, .cat-area-tra-vinh p { color: rgba(255,255,255,.92); text-shadow: 0 1px 10px rgba(0,0,0,.4); }
+.cat-area-vinh-long .catalog-hero-icon, .cat-area-ben-tre .catalog-hero-icon, .cat-area-tra-vinh .catalog-hero-icon { filter: drop-shadow(0 2px 8px rgba(0,0,0,.5)); }
+.cat-area-vinh-long .area-stats .stat-num, .cat-area-ben-tre .area-stats .stat-num, .cat-area-tra-vinh .area-stats .stat-num { color: #fff; }
+.cat-area-vinh-long .area-stats .stat-label, .cat-area-ben-tre .area-stats .stat-label, .cat-area-tra-vinh .area-stats .stat-label { color: rgba(255,255,255,.82); }
+.cat-area-vinh-long .area-stats .stat-item, .cat-area-ben-tre .area-stats .stat-item, .cat-area-tra-vinh .area-stats .stat-item { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.26); }
+.cat-area-vinh-long .area-stats .stat-item:hover, .cat-area-ben-tre .area-stats .stat-item:hover, .cat-area-tra-vinh .area-stats .stat-item:hover { background: rgba(255,255,255,.22); }
+
 .area-hero-bloom {
   position: absolute;
   inset: 0;
