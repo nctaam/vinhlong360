@@ -90,7 +90,7 @@
     <!-- 1b. Khám phá nhanh — compact category grid (always visible for navigation) -->
     <section v-if="!homePending" class="block block-compact reveal">
       <nav class="cat-grid" aria-label="Khám phá theo chủ đề">
-        <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="`cat-tile-${cat.accent}`" :style="{ '--tile-img': `url(${cat.img})` }">
+        <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="[`cat-tile-${cat.accent}`, `ct-${cat.key}`]">
           <span class="cat-emoji" aria-hidden="true">{{ cat.emoji }}</span>
           <span class="cat-label">{{ cat.label }}</span>
           <span class="cat-hint">{{ cat.hint }}</span>
@@ -428,12 +428,12 @@ const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 
 const CATEGORY_LINKS = [
-  { emoji: '🌿', label: 'Du lịch', hint: 'vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences', img: '/img/cat-du-lich.webp' },
-  { emoji: '🍲', label: 'Ẩm thực', hint: 'quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes', img: '/img/cat-am-thuc.webp' },
-  { emoji: '🎁', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products', img: '/img/cat-ocop.webp' },
-  { emoji: '🎭', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events', img: '/img/cat-le-hoi.webp' },
-  { emoji: '🏡', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '', img: '/img/cat-luu-tru.webp' },
-  { emoji: '🗺️', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas', img: '/img/cat-ban-do.webp' },
+  { emoji: '🌿', label: 'Du lịch', hint: 'vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences', key: 'du-lich' },
+  { emoji: '🍲', label: 'Ẩm thực', hint: 'quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes', key: 'am-thuc' },
+  { emoji: '🎁', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products', key: 'ocop' },
+  { emoji: '🎭', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events', key: 'le-hoi' },
+  { emoji: '🏡', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '', key: 'luu-tru' },
+  { emoji: '🗺️', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas', key: 'ban-do' },
 ]
 const categoryLinks = computed(() => {
   return CATEGORY_LINKS.map(c => ({
@@ -1076,6 +1076,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .cat-count { font-size: var(--text-xs); color: rgba(255,255,255,.8); text-shadow: 0 1px 4px rgba(0,0,0,.6); font-variant-numeric: tabular-nums; margin-top: 1px; }
 .dark .cat-tile { background-color: var(--card); }
+/* Per-category tile image via static class (NOT inline :style — that custom-prop caused an
+   SSR hydration mismatch that broke the scroll-reveal observer). */
+.ct-du-lich { --tile-img: url(/img/cat-du-lich.webp); }
+.ct-am-thuc { --tile-img: url(/img/cat-am-thuc.webp); }
+.ct-ocop    { --tile-img: url(/img/cat-ocop.webp); }
+.ct-le-hoi  { --tile-img: url(/img/cat-le-hoi.webp); }
+.ct-luu-tru { --tile-img: url(/img/cat-luu-tru.webp); }
+.ct-ban-do  { --tile-img: url(/img/cat-ban-do.webp); }
 
 /* ═══════════════════════════════════════════════════
    SECTION RHYTHM
