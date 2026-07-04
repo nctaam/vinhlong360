@@ -159,11 +159,30 @@ cd /opt/vinhlong360
 # Restore code
 tar -xzf backups/pre-deploy-YYYYMMDD-HHMMSS.tar.gz
 
-# Restore database
-psql "$DATABASE_URL" < backups/db-pre-deploy-YYYYMMDD-HHMMSS.sql
+# Restore database from deploy custom dump
+pg_restore --clean --if-exists --no-owner --no-privileges \
+  --dbname "$DATABASE_URL" backups/db-pre-deploy-YYYYMMDD-HHMMSS.dump
 
 # Restart
 systemctl restart vl-agent vl-nuxt
+```
+
+### Restore drill
+
+Run this after major deploys or at least monthly. It does not touch the live
+database: it creates a temporary database, restores the latest `.dump`, runs the
+migration gate, checks core row counts, then drops the temporary database.
+
+```bash
+cd /opt/vinhlong360
+set -a; . ./.env; set +a
+./venv/bin/python scripts/restore_drill.py --backup-dir backups
+```
+
+Keep the temporary restored database only when investigating an incident:
+
+```bash
+./venv/bin/python scripts/restore_drill.py --backup-dir backups --keep-db
 ```
 
 ## Hard-Won Gotchas
@@ -211,6 +230,7 @@ See `.env.example` for the full list. Critical ones:
 | `ADMIN_API_KEY` | Yes | Strong random (`secrets.token_urlsafe(32)`) |
 | `DATABASE_URL` | Yes | `postgresql://vl360:PASSWORD@localhost:5432/vinhlong360` |
 | `CORS_ORIGINS` | Yes | `https://vinhlong360.vn,https://www.vinhlong360.vn` |
+| `VL360_FORCE_SECURE_COOKIES` | Recommended behind VPS proxy | Set `true` when TLS terminates at Nginx so auth cookies are always `Secure` on `vinhlong360.vn` even if the app sees local HTTP. |
 | `TELEGRAM_BOT_TOKEN` | Optional | For admin bot + digest |
 | `ADMIN_TELEGRAM_IDS` | Optional | Comma-separated chat IDs for bot access |
 | `SCHEDULER_ENABLED` | Recommended | `true` for background tasks |
@@ -231,10 +251,10 @@ See `.env.example` for the full list. Critical ones:
 
 ## Backup Strategy
 
-- **Automatic:** Every deploy creates `backups/pre-deploy-*.tar.gz` + `backups/db-pre-deploy-*.sql`
+- **Automatic:** Every deploy creates `backups/pre-deploy-*.tar.gz` + `backups/db-pre-deploy-*.dump`
 - **Rotation:** Keeps 6 newest auto-backups per type
 - **Manual:** `python scripts/backup_data.py` creates `scratch/backups/<timestamp>/` with data.json + manifest
 - **Database:** `pg_dump` via deploy script; also possible manually:
   ```bash
-  pg_dump "$DATABASE_URL" -f /tmp/manual-backup.sql
+  pg_dump -Fc "$DATABASE_URL" -f /tmp/manual-backup.dump
   ```

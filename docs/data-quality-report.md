@@ -309,24 +309,23 @@ Two batches of Nominatim geocoding (50 entities each):
 
 | Code | Count | Notes |
 |------|-------|-------|
-| `relationship_fanout` | 1 | Pre-existing: 1 entity with >120 direct relationships |
+| — | 0 | Release gate currently reports no blocking data-quality errors |
 
 ## Warnings
 
 | Code | Count | Notes |
 |------|-------|-------|
-| `near_asymmetric` | 4990 | By design — system handles bidirectionality automatically |
-| `coordinate_clusters` | 196 clusters (1347 entities) | Ward/province centroids; 36 geocoded in pass 9 |
-| `itinerary_area_mismatch` | 57 | Multi-province itineraries legitimately cross areas |
-| `rel_type_singletons` | 26 | Rare but valid relationship combos |
-| `summary_short` | 0 | All summaries ≥50 chars |
-| `missing_location` | 6 | 6 non-place entities without coordinates |
-| `missing_place_id` | 1 | ben-xe-mien-tay-hcm (HCM, outside VL+BT+TV scope) |
-| `data_js_unknown_shape` | 1 | web/data.js format — cosmetic |
+| — | 0 | Release gate currently reports no data-quality warnings |
+
+Tracked non-warning metrics:
+- `near_one_way_edges`: 4916 one-way `near` edges; runtime indexes `near` bidirectionally.
+- `coordinate_clusters`: 196 total clusters; `coordinate_clusters_precise`: 0 after marking centroid-derived non-place coordinates as approximate.
+- `itinerary_area_mismatches`: 0 after adding route coverage metadata via `areas` and `lien-vung`.
+- `rel_type_singletons`: 26 rare but valid relationship combos, tracked as graph entropy.
 
 ## Entities Missing Images (QA-18)
 
-**All 1731 entities have `images: []`** — 0% image coverage.
+**Image coverage remains 0.0% for public non-place entities** in the current validator report.
 
 Images should be generated via `scripts/gen_image.py` using the `cx/gpt-5.5-image` API. No stock photos (Pexels/Unsplash), UGC, or Wikimedia images per project policy.
 
@@ -358,7 +357,7 @@ Deep geographic analysis detected **159 entities** whose coordinates fell clearl
 
 ## Entities with Approximate Coordinates (QA-19)
 
-**~1347 entities share coordinates** (detected by coordinate clustering) — these are at ward/province centroids or placeId fallback rather than exact geocoding. 36 entities geocoded to street-level in pass 9.
+**1339 entities share coordinates** in the current validator report. Precise duplicate clusters are now 0; centroid-derived non-place coordinates are marked with `coords_approximate=true` instead of being treated as exact geocoding.
 
 | Source | Count |
 |--------|-------|

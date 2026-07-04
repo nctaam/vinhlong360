@@ -74,6 +74,18 @@ Redis
     - `coords_approximate=true` flag for centroid-derived coordinates.
     - Frontend shows "Gần đúng" badge when approximate.
 
+15. **PostgreSQL schema changes are migration-only** (2026-07-02).
+    - FastAPI startup verifies the required PostgreSQL schema but does not run `ALTER TABLE` or create indexes.
+    - Deploys must run `scripts/apply_migrations.py` before restarting `vl-agent`.
+    - `schema_version` is the release gate source for production readiness. Legacy databases without `schema_version` are treated as baseline 052, then migrations 053+ are applied by the runner.
+    - `VL360_ALLOW_PG_SCHEMA_DRIFT=true` is an emergency bypass only; it must not be used as a normal deploy path.
+
+16. **AdminCP uses route-level RBAC scopes** (2026-07-02).
+    - Admin entry is based on scopes, not only coarse roles.
+    - `moderator` can enter only moderation-scoped routes; content, settings, ops, and security routes require their respective scopes.
+    - `admin` keeps the full standard scope set; `superadmin` and admin-key receive wildcard access.
+    - New AdminCP endpoints must map to one of: `content.editor`, `moderation.manager`, `ops.deploy`, `settings.admin`, `security.admin`, or be deliberately dashboard/read-only.
+
 ## Non-goals (updated)
 
 - ~~Rewrite the whole backend.~~ Stable; incremental improvement only.
