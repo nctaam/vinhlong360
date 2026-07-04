@@ -174,6 +174,15 @@
   /* ── Typography scale (Apple HIG-inspired, base 16px) ── */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-display: var(--font-sans);
+  /* ── Editorial / cinematic layer (used by the discovery-journey pages via editorial.css).
+     Display = a serif with full Vietnamese support. System-serif for now (CWV-perfect, no
+     download); can be swapped for a self-hosted display serif later (owner/§4 step). ── */
+  --font-editorial: Georgia, 'Noto Serif', 'Times New Roman', serif;
+  --scrim-hero: linear-gradient(to top, rgba(8, 9, 12, .84) 0%, rgba(8, 9, 12, .40) 46%, rgba(8, 9, 12, .10) 100%);
+  --measure-read: 68ch;              /* editorial body measure */
+  --space-editorial: clamp(3rem, 2rem + 5vw, 6rem); /* vertical rhythm between story sections */
+  --ease-cinematic: cubic-bezier(.22, 1, .36, 1);
+  --dur-kenburns: 20s;
   --text-2xs:  0.6875rem; /* 11 — badges, metadata labels (fixed, no scaling) */
   --text-xs:   clamp(0.75rem, 0.7256rem + 0.122vw, 0.8125rem);    /* 12→13 */
   --text-sm:   clamp(0.875rem, 0.8262rem + 0.2439vw, 1rem);       /* 14→16 */
