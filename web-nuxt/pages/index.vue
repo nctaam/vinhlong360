@@ -839,13 +839,15 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
   100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
 }
 
-/* Display headline */
+/* Display headline — editorial serif, cinematic scale */
 .home .hero h1 {
-  font-size: clamp(2.1rem, 5.6vw, 3.35rem);
-  letter-spacing: 0; line-height: 1.06;
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  font-size: clamp(2.35rem, 6vw, 3.9rem);
+  letter-spacing: -.012em; line-height: 1.04;
   text-shadow: 0 1px 6px rgba(0,0,0,.34);
   position: relative; display: inline-block;
-  max-width: 720px;
+  max-width: 760px;
   text-wrap: balance;
 }
 .home .hero h1::after {
@@ -856,7 +858,7 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
   box-shadow: 0 2px 10px rgba(var(--accent-rgb), .45);
   transform-origin: left center;
 }
-.home .hero-sub { font-size: var(--text-lg); opacity: .95; max-width: 640px; margin: var(--space-4) 0 0; text-shadow: 0 1px 8px rgba(0,0,0,.22); }
+.home .hero-sub { font-family: var(--font-editorial); font-size: clamp(1.08rem, 1rem + .5vw, 1.3rem); line-height: 1.5; opacity: .95; max-width: 600px; margin: var(--space-4) 0 0; text-shadow: 0 1px 8px rgba(0,0,0,.22); }
 .dark .home .hero-sub { opacity: 1; font-weight: 400; }
 
 /* Cinematic entrance */
@@ -1088,8 +1090,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
    SECTION RHYTHM
    ═══════════════════════════════════════════════════ */
 .home .section-head h2 {
-  font-size: var(--text-xl); font-weight: var(--weight-bold);
-  letter-spacing: -.015em; line-height: var(--leading-snug);
+  font-family: var(--font-editorial);
+  font-size: var(--text-2xl); font-weight: 600;
+  letter-spacing: -.01em; line-height: var(--leading-tight);
   position: relative; padding-left: var(--space-4);
 }
 .home .section-head h2::before {
