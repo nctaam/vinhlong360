@@ -462,7 +462,7 @@ const SPOT_CAT_PHOTO: Record<string, string> = {
   product: '/img/cat-ocop.webp', dish: '/img/cat-am-thuc.webp',
   event: '/img/cat-le-hoi.webp', stay: '/img/cat-luu-tru.webp',
 }
-const spotPhoto = computed(() => SPOT_CAT_PHOTO[spotMeta.value?.cat || ''] || '/img/cat-du-lich.webp')
+const spotPhoto = computed(() => spotlight.value?.images?.[0] || SPOT_CAT_PHOTO[spotMeta.value?.cat || ''] || '/img/cat-du-lich.webp')
 const spotBgCss = computed(() => spotlight.value
   ? `linear-gradient(to top, rgba(18,20,24,.55) 0%, rgba(18,20,24,.10) 45%, rgba(18,20,24,.32) 100%), url(${spotPhoto.value})`
   : '')
