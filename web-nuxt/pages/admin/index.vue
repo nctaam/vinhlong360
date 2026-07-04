@@ -113,11 +113,12 @@
         <strong>Chất lượng entity</strong>
         <span class="dash-comp-pct">{{ stats.completeness.pct }}%</span>
       </div>
-      <div class="dash-comp-bar"><div class="dash-comp-fill" :style="{ width: stats.completeness.pct + '%' }"></div></div>
+      <div v-for="seg in completenessSegments" :key="seg.key" class="dash-comp-seg">
+        <span class="dcs-label">{{ seg.label }}</span>
+        <div class="dcs-bar"><div class="dcs-fill" :style="{ width: seg.pct + '%', background: seg.color }"></div></div>
+        <span class="dcs-val">{{ seg.count }}/{{ stats.completeness.total }}</span>
+      </div>
       <div class="dash-comp-details">
-        <span>Tóm tắt: {{ stats.completeness.has_summary }}/{{ stats.completeness.total }}</span>
-        <span>Ảnh: {{ stats.completeness.has_images }}/{{ stats.completeness.total }}</span>
-        <span>Phường/xã: {{ stats.completeness.has_place }}/{{ stats.completeness.total }}</span>
         <NuxtLink v-if="stats.completeness.orphans" to="/admin/entities?orphans=1" class="dash-orphan-link">Mồ côi: <b class="dash-orphan-count">{{ stats.completeness.orphans }}</b></NuxtLink>
       </div>
     </div>
@@ -128,7 +129,10 @@
       <div class="dash-activity">
         <div v-for="(a, i) in recentActivity" :key="i" class="activity-row">
           <span :class="['activity-method', a.method?.toLowerCase()]">{{ a.method }}</span>
-          <span class="activity-path">{{ a.path }}</span>
+          <span class="activity-main">
+            <span class="activity-label">{{ activityLabel(a) }}</span>
+            <span class="activity-path">{{ a.method }} {{ a.path }}</span>
+          </span>
           <span class="activity-time">{{ timeAgo(a.ts) }}</span>
         </div>
       </div>
@@ -255,12 +259,39 @@ function timeAgo(ts: string): string {
   return `${Math.floor(diff / 86400)} ngày trước`
 }
 
+function activityLabel(a: { method: string; path: string }): string {
+  const p = (a.path || '').replace('/admin-api', '').replace('/admin', '')
+  const m = (a.method || '').toUpperCase()
+  const seg = (p.split('?')[0] || '').split('/').filter(Boolean) // e.g. ['entities','xyz']
+  const res = seg[0] || ''
+  const NOUN: Record<string, string> = {
+    entities: 'địa điểm', relationships: 'quan hệ', moderation: 'kiểm duyệt',
+    users: 'người dùng', itineraries: 'lịch trình', media: 'ảnh', settings: 'cài đặt',
+    'site-settings': 'cài đặt', backup: 'backup', 'backup-trigger': 'backup',
+  }
+  const noun = NOUN[res] || res || 'mục'
+  const VERB: Record<string, string> = { POST: 'Tạo', PUT: 'Sửa', PATCH: 'Sửa', DELETE: 'Xoá', GET: 'Xem' }
+  const verb = VERB[m] || m
+  return `${verb} ${noun}`
+}
+
 const TYPE_COLORS: Record<string, string> = {
   attraction: '#219653', dish: '#FF9F0A', product: '#3478F6',
   accommodation: '#AF52DE', nature: '#34C759', experience: '#FF9500',
   craft_village: '#A6822A', event: '#FF3B30', drink: '#30B0C7',
   facility: '#8E8E93',
 }
+
+const completenessSegments = computed(() => {
+  const c = stats.value?.completeness
+  if (!c || !c.total) return []
+  const pct = (n: number) => Math.round((n / c.total) * 100)
+  return [
+    { key: 'summary', label: 'Tóm tắt', count: c.has_summary, pct: pct(c.has_summary), color: 'var(--primary)' },
+    { key: 'images', label: 'Ảnh', count: c.has_images, pct: pct(c.has_images), color: 'var(--success)' },
+    { key: 'place', label: 'Phường-xã', count: c.has_place, pct: pct(c.has_place), color: 'var(--warning)' },
+  ]
+})
 
 const totalByType = computed(() => {
   const bt = (stats.value.by_type || {}) as Record<string, number>
@@ -443,8 +474,11 @@ onMounted(fetchDashboard)
 }
 .dash-comp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-2); font-size: .88rem; }
 .dash-comp-pct { font-weight: 800; font-size: 1.1rem; }
-.dash-comp-bar { height: 8px; background: rgba(142,142,147,.1); border-radius: 4px; overflow: hidden; }
-.dash-comp-fill { height: 100%; background: var(--primary, #219653); border-radius: 4px; transition: width .5s var(--ease-out); }
+.dash-comp-seg { display: grid; grid-template-columns: 72px 1fr 56px; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
+.dcs-label { font-size: var(--text-xs); color: var(--muted); }
+.dcs-bar { height: 8px; background: var(--line); border-radius: var(--radius-full); overflow: hidden; }
+.dcs-fill { height: 100%; border-radius: var(--radius-full); transition: width .4s var(--ease-out, ease); }
+.dcs-val { font-size: var(--text-2xs); color: var(--muted); text-align: right; }
 .dash-comp-details { display: flex; gap: var(--space-4); margin-top: var(--space-3); font-size: .78rem; color: var(--muted); }
 .dash-orphan-link { color: inherit; text-decoration: none; border-bottom: 1px dashed rgb(var(--warning-rgb)); }
 .dash-orphan-link:hover { color: rgb(var(--warning-rgb)); }
@@ -579,6 +613,8 @@ onMounted(fetchDashboard)
 .activity-method.post { background: rgba(var(--secondary-rgb),.15); color: var(--secondary); }
 .activity-method.put, .activity-method.patch { background: rgba(var(--warning-rgb),.15); color: rgb(var(--warning-rgb)); }
 .activity-method.delete { background: rgba(var(--red-rgb),.15); color: rgb(var(--red-rgb)); }
-.activity-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+.activity-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.activity-label { color: var(--ink); font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.activity-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: .7rem; }
 .activity-time { color: var(--muted); font-size: .72rem; white-space: nowrap; }
 </style>
