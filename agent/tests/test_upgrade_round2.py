@@ -1330,7 +1330,7 @@ class TestSubmitEntityClaim:
 
     def test_checks_entity_exists(self):
         src = inspect.getsource(__import__("public_api").submit_entity_claim)
-        assert "get_entity" in src
+        assert "_get_public_entity" in src  # existence check → raises 404 if the entity is missing
         assert "404" in src
 
     def test_prevents_duplicate(self):
@@ -2542,7 +2542,9 @@ class TestAdminCommentList:
     def test_delete_decrements_comment_count(self):
         src = inspect.getsource(__import__("admin").admin_delete_comment)
         assert "comment_count" in src
-        assert "GREATEST" in src
+        # comment_count is kept correct by an authoritative recount (SELECT COUNT(*)),
+        # which can never go negative — stronger than GREATEST(count - 1, 0).
+        assert "SELECT COUNT(*) FROM comments" in src
 
     def test_delete_logs_mod_action(self):
         src = inspect.getsource(__import__("admin").admin_delete_comment)

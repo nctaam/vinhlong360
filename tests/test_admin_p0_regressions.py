@@ -55,7 +55,9 @@ def test_image_suggestion_fetch_revalidates_redirect_targets():
 
 
 def test_media_gallery_reads_entity_image_credits():
-    src = inspect.getsource(admin.media_gallery)
+    # The credit-reading logic (image_credits -> credits_by_url -> author/license) lives
+    # in the _extract_media_items helper that media_gallery calls to build the gallery.
+    src = inspect.getsource(admin._extract_media_items)
     assert "image_credits" in src
     assert "credits_by_url" in src
     assert 'credit_meta.get("author")' in src

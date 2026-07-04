@@ -55,5 +55,7 @@ def test_saved_pg_guard():
 def test_saved_item_snapshot_trims_id_and_nones():
     item = saved.SavedItem(id="homestay-x", name="Homestay X", type="accommodation")
     snap = item.model_dump(exclude={"id"}, exclude_none=True)
-    assert snap == {"name": "Homestay X", "type": "accommodation"}
+    # SavedItem carries a first-class kind field (default "entity") from the saved-entities
+    # kind work, so the trimmed snapshot legitimately includes it alongside name/type.
+    assert snap == {"kind": "entity", "name": "Homestay X", "type": "accommodation"}
     assert "id" not in snap
