@@ -1577,6 +1577,8 @@ def _get_2fa_row(user_id: str) -> dict | None:
 
 
 def _2fa_is_enabled(user_id: str) -> bool:
+    if not _cfg.TWO_FACTOR_ENABLED:
+        return False
     row = _get_2fa_row(user_id)
     return bool(row and row.get("enabled"))
 
@@ -1589,6 +1591,8 @@ async def twofa_setup(request: Request, _csrf=Depends(_require_csrf_lazy)):
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    if not _cfg.TWO_FACTOR_ENABLED:
+        raise HTTPException(403, "Xác thực 2 bước chưa được kích hoạt.")
     uid = str(user["id"])
     from ratelimit import check_rate
     check_rate(f"2fa-setup:{uid}", 5, 600, "Thao tác quá nhanh. Vui lòng thử lại sau.")
@@ -1624,6 +1628,8 @@ async def twofa_verify_setup(body: _TwoFACode, request: Request, _csrf=Depends(_
     user = await _get_current_user_or_none(request)
     if not user:
         raise HTTPException(401, "Chưa đăng nhập")
+    if not _cfg.TWO_FACTOR_ENABLED:
+        raise HTTPException(403, "Xác thực 2 bước chưa được kích hoạt.")
     uid = str(user["id"])
     from ratelimit import check_rate
     check_rate(f"2fa-verify-setup:{uid}", 5, 600, "Thao tác quá nhanh. Vui lòng thử lại sau.")

@@ -67,6 +67,9 @@ class Settings(BaseSettings):
     AUTONOMOUS_AGENT_MAX_CALLS_PER_DAY: int = 20
     SCHEDULER_ENABLE_AUTONOMOUS_TASKS: bool = False
 
+    # ── 2FA (Wave 4) ── kill-switch: OFF until TOTP_ENC_KEY is set by the owner
+    TWO_FACTOR_ENABLED: bool = False
+
     # ── Cost limits ──
     COST_DAILY_LIMIT: float = 10.0
     COST_MONTHLY_LIMIT: float = 200.0

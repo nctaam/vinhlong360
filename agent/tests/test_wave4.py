@@ -228,3 +228,64 @@ class TestSuspiciousLogin:
             "else the just-inserted current-login row self-matches and the "
             "suspicious-login alert can never fire"
         )
+
+
+class TestTwoFactorKillSwitch:
+    # Wave 4 2FA must ship DARK by default: a global flag gates enrollment and
+    # the login challenge so nobody can enable 2FA (and hit the "undecryptable
+    # secret if ADMIN_API_KEY rotates" risk) until the owner sets TOTP_ENC_KEY
+    # and flips the flag on.
+
+    def test_config_has_two_factor_enabled_flag(self):
+        import config
+        assert hasattr(config.Settings, "model_fields")
+        assert "TWO_FACTOR_ENABLED" in config.Settings.model_fields
+
+    def test_flag_defaults_to_false(self):
+        import config
+        assert config.settings.TWO_FACTOR_ENABLED is False
+
+    def test_2fa_is_enabled_short_circuits_on_flag(self):
+        src = inspect.getsource(auth._2fa_is_enabled)
+        assert "TWO_FACTOR_ENABLED" in src
+        # the flag check must be the very first statement in the function body,
+        # i.e. it appears before the row lookup that follows it.
+        flag_idx = src.index("TWO_FACTOR_ENABLED")
+        lookup_idx = src.index("_get_2fa_row")
+        assert flag_idx < lookup_idx, (
+            "TWO_FACTOR_ENABLED must be checked before _get_2fa_row is consulted, "
+            "so the flag is a true short-circuit choke point"
+        )
+
+    def test_2fa_is_enabled_returns_false_when_flag_off(self, monkeypatch):
+        monkeypatch.setattr(auth._cfg, "TWO_FACTOR_ENABLED", False)
+        # even if a row would otherwise say enabled, the flag must win first —
+        # patch the row lookup to prove the short-circuit never reaches it.
+        monkeypatch.setattr(auth, "_get_2fa_row", lambda uid: {"enabled": True})
+        assert auth._2fa_is_enabled("any-user-id") is False
+
+    def test_setup_checks_flag_and_403s(self):
+        src = inspect.getsource(auth.twofa_setup)
+        assert "TWO_FACTOR_ENABLED" in src
+        assert "403" in src
+
+    def test_verify_setup_checks_flag_and_403s(self):
+        src = inspect.getsource(auth.twofa_verify_setup)
+        assert "TWO_FACTOR_ENABLED" in src
+        assert "403" in src
+
+    def test_disable_and_status_remain_ungated(self):
+        # A user must always be able to turn 2FA off / check status, even
+        # while the feature is dark — nobody will have it enabled, but any
+        # stray row must remain manageable.
+        assert "TWO_FACTOR_ENABLED" not in inspect.getsource(auth.twofa_disable)
+        assert "TWO_FACTOR_ENABLED" not in inspect.getsource(auth.twofa_status)
+
+    def test_verify_endpoint_not_separately_gated(self):
+        # /2fa/verify is unreachable once the login gate never issues a
+        # challenge while the flag is off — no need to double-gate it.
+        assert "TWO_FACTOR_ENABLED" not in inspect.getsource(auth.twofa_verify)
+
+    def test_trusted_device_endpoints_not_gated(self):
+        assert "TWO_FACTOR_ENABLED" not in inspect.getsource(auth._remember_trusted_device)
+        assert "TWO_FACTOR_ENABLED" not in inspect.getsource(auth._has_valid_trusted_device)
