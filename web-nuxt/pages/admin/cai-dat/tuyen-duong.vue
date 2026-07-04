@@ -58,7 +58,7 @@ onMounted(reload)
 </script>
 
 <style scoped>
-.cs-view { color: var(--primary, #219653); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
+.cs-view { color: var(--primary); text-decoration: none; margin-left: 6px; font-family: 'SF Mono', monospace; font-size: .78rem; }
 .cs-view:hover { text-decoration: underline; }
 .cs-form-wrap { max-width: 760px; }
 .cs-help {
@@ -67,7 +67,7 @@ onMounted(reload)
   font-size: .82rem; color: var(--muted); line-height: 1.5;
 }
 .cs-help p { margin: 0; }
-.cs-help code { font-family: 'SF Mono', monospace; font-size: .76rem; color: var(--primary, #219653); }
+.cs-help code { font-family: 'SF Mono', monospace; font-size: .76rem; color: var(--primary); }
 .cs-skeleton { max-width: 760px; }
 .cs-skel-item { height: 280px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .dark .cs-help { background: rgba(var(--primary-rgb),.08); }

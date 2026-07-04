@@ -61,7 +61,7 @@ onMounted(reload)
   font-family: 'SF Mono', 'Cascadia Code', monospace; font-size: .78rem; color: var(--ink);
   overflow-x: auto;
 }
-.cs-help-keys code { font-family: 'SF Mono', monospace; font-size: .75rem; color: var(--primary, #219653); }
+.cs-help-keys code { font-family: 'SF Mono', monospace; font-size: .75rem; color: var(--primary); }
 .cs-skel-tall { height: 120px; }
 .dark .cs-help { background: rgba(var(--primary-rgb),.08); }
 .dark .cs-help pre { background: var(--card, #2c2c2e); }

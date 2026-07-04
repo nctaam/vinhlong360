@@ -412,7 +412,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   position: relative;
   background: var(--card, #fff);
   border: .5px solid var(--line);
-  border-left: 4px solid var(--primary, #219653);
+  border-left: 4px solid var(--primary);
   border-radius: 14px;
   padding: var(--space-5);
   box-shadow: 0 1px 3px rgba(0,0,0,.04);
@@ -518,18 +518,18 @@ onMounted(() => { fetchHealth(); fetchCost() })
 }
 .ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); }
 .ai-action-btn:active:not(:disabled) { transform: scale(.97); }
-.ai-action-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.ai-action-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .ai-action-btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .ai-action-icon { font-size: 1.4rem; }
 
 /* Primary actions — stronger visual weight */
 .ai-action-primary {
-  background: var(--primary, #219653); border-color: var(--primary, #219653);
+  background: var(--primary); border-color: var(--primary);
   color: var(--on-primary); font-weight: 600;
 }
 .ai-action-primary:hover:not(:disabled) {
   transform: translateY(-3px); box-shadow: 0 6px 20px rgba(var(--primary-rgb),.28);
-  border-color: var(--primary, #219653);
+  border-color: var(--primary);
 }
 /* Secondary action — outline style */
 .ai-action-secondary { background: var(--bg); }
@@ -578,7 +578,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-cost-note strong { color: var(--ink); }
 
 /* ── Dark mode ── */
-.dark .ai-section { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); border-left-color: var(--primary, #219653); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+.dark .ai-section { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); border-left-color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
 .dark .ai-dq-track { background: rgba(255,255,255,.06); }
 .dark .ai-metric { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); }
 .dark .ai-subsys-on { background: rgba(var(--primary-rgb),.1); }

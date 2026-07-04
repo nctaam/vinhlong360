@@ -455,7 +455,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-session-ok { color: var(--secondary-fg); }
 .mod-session-rej { color: var(--error); }
 .mod-focused td { background: rgba(var(--primary-rgb),.06) !important; }
-.mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--primary, #219653); }
+.mod-focused td:first-child { box-shadow: inset 3px 0 0 var(--primary); }
 
 /* ── Status tabs ── */
 .mod-tabs { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
@@ -465,10 +465,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   background: var(--bg); color: var(--muted); font-size: .82rem; font-weight: 500; cursor: pointer;
   transition: background .2s, color .2s, border-color .2s, transform .15s var(--ease-soft);
 }
-.mod-tab:hover { border-color: var(--primary, #219653); color: var(--ink); }
+.mod-tab:hover { border-color: var(--primary); color: var(--ink); }
 .mod-tab:active { transform: scale(.97); }
-.mod-tab.active { background: var(--primary, #219653); color: var(--text-on-dark); border-color: var(--primary, #219653); }
-.mod-tab:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.mod-tab.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
+.mod-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .mod-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 100px; background: var(--line); color: var(--muted); }
 .mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: var(--text-on-dark); }
 
@@ -486,9 +486,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Content cell ── */
 .mod-content-cell { max-width: 420px; }
 .mod-content-truncate { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.mod-expand { display: inline-block; margin-top: var(--space-1); background: none; border: none; padding: 0; color: var(--primary-fg, #219653); font-size: .76rem; font-weight: 600; cursor: pointer; }
+.mod-expand { display: inline-block; margin-top: var(--space-1); background: none; border: none; padding: 0; color: var(--primary-fg); font-size: .76rem; font-weight: 600; cursor: pointer; }
 .mod-expand:hover { text-decoration: underline; }
-.mod-expand:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; border-radius: 4px; }
+.mod-expand:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
 
 /* Keyboard affordance: highlight the row whose action button is focused (mirrors tr:hover) */
 .admin-table tbody tr:focus-within td { background: rgba(0,0,0,.04); }
@@ -540,13 +540,13 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 .mod-empty-action {
   background: none; border: .5px solid var(--line); border-radius: 8px;
-  padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--primary, #219653);
+  padding: 7px 14px; font-size: .82rem; font-weight: 500; color: var(--primary);
   cursor: pointer; min-height: 44px;
   transition: border-color .25s, background .25s, transform .15s var(--ease-soft);
 }
-.mod-empty-action:hover { border-color: var(--primary, #219653); background: rgba(var(--primary-rgb),.04); }
+.mod-empty-action:hover { border-color: var(--primary); background: rgba(var(--primary-rgb),.04); }
 .mod-empty-action:active { transform: scale(.96); }
-.mod-empty-action:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.mod-empty-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .mod-empty-action:active { transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {

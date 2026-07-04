@@ -338,7 +338,7 @@ onMounted(load)
   transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
 .cpl-place-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
-.cpl-place-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
+.cpl-place-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
 
 /* ── Bulk bar ── */
 .cpl-bulk-bar {
@@ -348,7 +348,7 @@ onMounted(load)
   border: .5px solid rgba(var(--primary-rgb),.2); border-top: 1px solid rgba(var(--primary-rgb),.3);
   border-radius: 12px;
 }
-.cpl-bulk-count { font-size: .82rem; font-weight: 600; color: var(--primary, #219653); }
+.cpl-bulk-count { font-size: .82rem; font-weight: 600; color: var(--primary); }
 .cpl-bulk-clear { margin-left: auto; }
 
 /* Progress bar along bottom edge of the bulk-apply button */
@@ -362,11 +362,11 @@ onMounted(load)
 /* ── Checkboxes ── */
 .cpl-check-col { width: 44px; text-align: center; }
 .cpl-checkbox {
-  width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary, #219653);
+  width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);
   /* expand hit area to WCAG 2.5.5 (44px) without growing the visual box */
   padding: 13px; margin: -13px; box-sizing: content-box;
 }
-.cpl-checkbox:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; border-radius: 3px; }
+.cpl-checkbox:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 3px; }
 .cpl-row-selected { background: rgba(var(--primary-rgb),.05); }
 
 /* ── Row density + scan-friendly hover (page-scoped; does not touch shared .admin-table rules) ── */
@@ -375,7 +375,7 @@ onMounted(load)
 .cpl-table-wrap :deep(.admin-table) tbody tr td:first-child { position: relative; }
 .cpl-table-wrap :deep(.admin-table) tbody tr:hover td:first-child::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
-  background: var(--primary, #219653);
+  background: var(--primary);
 }
 
 /* ── Load more ── */
@@ -388,13 +388,13 @@ onMounted(load)
   background: rgba(120,120,128,.16); overflow: hidden;
 }
 .cpl-loadmore-fill {
-  height: 100%; border-radius: 100px; background: var(--primary, #219653);
+  height: 100%; border-radius: 100px; background: var(--primary);
   transition: width .25s var(--ease-soft);
 }
 .cpl-loadmore-info { font-size: .8rem; color: var(--muted); }
 
 /* ── Empty states (use shared .admin-empty-state; tint icon by intent) ── */
-.cpl-empty-done .admin-empty-state-icon { color: var(--primary, #219653); opacity: .85; }
+.cpl-empty-done .admin-empty-state-icon { color: var(--primary); opacity: .85; }
 .cpl-empty-miss .admin-empty-state-icon { color: var(--muted); }
 
 /* ── Responsive: reflow toolbar on narrow viewports ── */

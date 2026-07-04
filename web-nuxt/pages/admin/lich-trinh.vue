@@ -616,7 +616,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 
 /* Table-row action buttons: comfortable touch target + clear focus ring. */
 .lt-row-btn { min-height: 44px; }
-.lt-row-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.lt-row-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* Duration cell: isolate the clock glyph so it can be tuned per theme. */
 .lt-duration-icon { opacity: .65; }
@@ -628,7 +628,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
   margin-right: auto;
   display: inline-flex; align-items: center;
   padding: var(--space-1) 10px; border-radius: 999px;
-  font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
+  font-size: .72rem; font-weight: 600; color: var(--primary);
   background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
 }
 

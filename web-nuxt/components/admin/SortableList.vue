@@ -172,7 +172,7 @@ function addChild(parentIdx: number) {
   transition: box-shadow .3s var(--ease-soft), border-color .3s;
 }
 .sl-item:hover { box-shadow: 0 2px 12px rgba(0,0,0,.05); }
-.sl-item-editing { border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.08); }
+.sl-item-editing { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.08); }
 
 .sl-item-head {
   display: flex; align-items: center; gap: var(--space-3);
@@ -185,7 +185,7 @@ function addChild(parentIdx: number) {
   transition: opacity .2s;
 }
 .sl-item:hover .sl-handle { opacity: 1; }
-.sl-handle:focus-visible { opacity: 1; outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.sl-handle:focus-visible { opacity: 1; outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .sl-empty {
   text-align: center; padding: var(--space-5) var(--space-3);
@@ -206,9 +206,9 @@ function addChild(parentIdx: number) {
 }
 .sl-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary-fg); }
 .sl-btn:active:not(:disabled) { transform: scale(.9); }
-.sl-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 1px; }
+.sl-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 .sl-btn:disabled { opacity: .25; cursor: not-allowed; }
-.sl-btn-edit:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary, #219653); }
+.sl-btn-edit:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary); }
 .sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb, 217,79,61), .06); color: var(--danger, #D94F3D); }
 
 .sl-edit-fields { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -221,7 +221,7 @@ function addChild(parentIdx: number) {
   transition: border-color .2s, box-shadow .2s;
 }
 .sl-edit-input:focus {
-  outline: none; border-color: var(--primary, #219653);
+  outline: none; border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.1);
 }
 
@@ -237,25 +237,25 @@ function addChild(parentIdx: number) {
 .sl-child-input { flex: 1; }
 .sl-add-child {
   align-self: flex-start; padding: var(--space-2) 14px; border-radius: 10px;
-  font-size: .8rem; font-weight: 500; color: var(--primary, #219653);
+  font-size: .8rem; font-weight: 500; color: var(--primary);
   background: rgba(var(--primary-rgb),.06); border: none; cursor: pointer;
   min-height: 44px;
   transition: background .2s, transform .15s var(--ease-soft);
 }
 .sl-add-child:hover { background: rgba(var(--primary-rgb), .1); }
 .sl-add-child:active { transform: scale(.97); }
-.sl-add-child:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.sl-add-child:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 .sl-add {
   padding: 14px; border-radius: 12px;
   border: 1.5px dashed var(--line); background: transparent;
-  font-size: .88rem; font-weight: 500; color: var(--primary, #219653);
+  font-size: .88rem; font-weight: 500; color: var(--primary);
   cursor: pointer; min-height: 44px;
   transition: background .2s var(--ease-soft), border-color .2s, transform .15s;
 }
-.sl-add:hover { background: rgba(var(--primary-rgb),.04); border-color: var(--primary, #219653); }
+.sl-add:hover { background: rgba(var(--primary-rgb),.04); border-color: var(--primary); }
 .sl-add:active { transform: scale(.98); }
-.sl-add:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.sl-add:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── List transitions ── */
 .sl-list-enter-active { transition: opacity .3s var(--ease-soft), transform .3s var(--ease-soft); }
@@ -272,7 +272,7 @@ function addChild(parentIdx: number) {
 
 /* ── Dark ── */
 .dark .sl-item { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .sl-item-editing { border-color: var(--primary, #219653); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.15); }
+.dark .sl-item-editing { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.15); }
 .dark .sl-btn { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .sl-edit-input { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
 .dark .sl-add { border-color: rgba(255,255,255,.1); }

@@ -1132,7 +1132,7 @@ onUnmounted(() => {
   transition: color .2s, border-color .2s;
 }
 .settings-tab:hover { color: var(--ink); }
-.settings-tab.active { color: var(--accent, var(--primary, #219653)); border-bottom-color: var(--accent, var(--primary, #219653)); font-weight: 600; }
+.settings-tab.active { color: var(--accent, var(--primary)); border-bottom-color: var(--accent, var(--primary)); font-weight: 600; }
 .settings-tab.active .settings-tab-icon { transform: scale(1.15); }
 .settings-tab:focus-visible { outline: 2px solid var(--accent, var(--primary)); outline-offset: -2px; border-radius: 4px; }
 .settings-tab-icon { font-size: 1rem; transition: transform .25s var(--ease-spring-gentle, cubic-bezier(.2,1,.4,1)); }
@@ -1153,7 +1153,7 @@ onUnmounted(() => {
 .pw-bar { display: flex; gap: 3px; flex: 1; max-width: 160px; }
 .pw-segment { height: 4px; flex: 1; border-radius: 2px; background: var(--line); transition: background .2s; }
 .pw-label { font-size: .75rem; font-weight: 500; min-width: 80px; }
-.sf-success { color: var(--accent, #219653); font-size: .85rem; }
+.sf-success { color: var(--accent); font-size: .85rem; }
 .sf-loading { display: flex; align-items: center; gap: var(--space-2); color: var(--ink-700); font-size: .85rem; padding: var(--space-4) 0; }
 .sf-hint-spaced { margin-bottom: var(--space-4); }
 .sf-username-row { display: flex; align-items: center; gap: 0; border: 1px solid var(--border-input); border-radius: var(--radius-md); overflow: hidden; }

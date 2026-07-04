@@ -177,9 +177,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   font-size: .8rem; font-weight: 500; line-height: 1;
   transition: transform .2s var(--ease-soft), border-color .2s, background .2s, box-shadow .2s;
 }
-.cs-chip:hover { border-color: var(--primary, #219653); color: var(--primary, #219653); transform: translateY(-1px); }
+.cs-chip:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
 .cs-chip:active { transform: scale(.96); transition-duration: .08s; }
-.cs-chip:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.cs-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Search row ── */
 .cs-search-row { margin-bottom: var(--space-5); }
@@ -195,8 +195,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .cs-search-input::placeholder { color: var(--muted); }
 .cs-search-input:focus-visible {
-  outline: none; border-color: var(--primary, #219653);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary, #219653) 18%, transparent);
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 18%, transparent);
 }
 .cs-search-count {
   position: absolute; right: 14px; font-size: .72rem; color: var(--muted);
@@ -234,12 +234,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cs-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0,0,0,.06);
-  border-color: var(--primary, #219653);
+  border-color: var(--primary);
 }
 .cs-card:active { transform: scale(.98); }
 .cs-card:focus-visible {
-  outline: 2px solid var(--primary, #219653); outline-offset: 2px;
-  box-shadow: 0 0 0 5px color-mix(in oklab, var(--primary, #219653) 14%, transparent);
+  outline: 2px solid var(--primary); outline-offset: 2px;
+  box-shadow: 0 0 0 5px color-mix(in oklab, var(--primary) 14%, transparent);
 }
 .cs-icon { font-size: 1.8rem; flex-shrink: 0; width: 40px; text-align: center; }
 .cs-card div { flex: 1; min-width: 0; }

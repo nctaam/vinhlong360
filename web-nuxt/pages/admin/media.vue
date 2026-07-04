@@ -205,7 +205,7 @@ onMounted(fetchMedia)
 }
 .media-tab:hover { border-color: var(--primary); color: var(--ink); }
 .media-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.media-tab.active { background: var(--primary, #219653); color: var(--text-on-dark, #fff); border-color: var(--primary); }
+.media-tab.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); }
 
 .media-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

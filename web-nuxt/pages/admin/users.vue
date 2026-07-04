@@ -481,7 +481,7 @@ onMounted(() => fetchUsers())
   cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
 .usr-filter-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
-.usr-filter-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
+.usr-filter-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
 
 /* ── Sortable column headers ── */
 .usr-sort-th {
@@ -492,9 +492,9 @@ onMounted(() => fetchUsers())
   cursor: pointer; white-space: nowrap;
   transition: background .2s var(--ease-soft), color .2s;
 }
-.usr-sort-th:hover { background: var(--primary-light, rgba(var(--primary-rgb),.08)); color: var(--primary, #219653); }
-.usr-sort-th:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.usr-sort-th.usr-sort-active { color: var(--primary, #219653); }
+.usr-sort-th:hover { background: var(--primary-light, rgba(var(--primary-rgb),.08)); color: var(--primary); }
+.usr-sort-th:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.usr-sort-th.usr-sort-active { color: var(--primary); }
 .usr-sort-arrow {
   display: inline-block; min-width: .7em; font-size: .8em;
   transition: transform .25s var(--ease-soft);
@@ -507,7 +507,7 @@ onMounted(() => fetchUsers())
 .usr-cell { display: flex; align-items: center; gap: var(--space-3); }
 .usr-avatar {
   width: 32px; height: 32px; border-radius: 50%;
-  background: var(--primary-light, rgba(var(--primary-rgb),.12)); color: var(--primary, #219653);
+  background: var(--primary-light, rgba(var(--primary-rgb),.12)); color: var(--primary);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: .78rem; flex-shrink: 0;
   text-transform: uppercase;
@@ -523,7 +523,7 @@ onMounted(() => fetchUsers())
   cursor: pointer; transition: border-color .2s var(--ease-soft), box-shadow .2s;
 }
 .usr-role-select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.1); }
-.usr-role-select:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; box-shadow: none; }
+.usr-role-select:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: none; }
 
 /* ── Status badges with dot ── */
 .usr-status {
@@ -554,16 +554,16 @@ onMounted(() => fetchUsers())
   cursor: pointer;
   transition: border-color .2s var(--ease-soft), color .2s, background .2s;
 }
-.usr-rolecount:hover { border-color: var(--primary, #219653); color: var(--primary, #219653); }
-.usr-rolecount:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
-.usr-rolecount.active { border-color: var(--primary, #219653); color: var(--primary, #219653); background: var(--primary-light, rgba(var(--primary-rgb),.08)); }
+.usr-rolecount:hover { border-color: var(--primary); color: var(--primary); }
+.usr-rolecount:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.usr-rolecount.active { border-color: var(--primary); color: var(--primary); background: var(--primary-light, rgba(var(--primary-rgb),.08)); }
 .usr-rolecount-n {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; padding: 0 5px; height: 18px;
   font-size: .7rem; font-weight: 700; border-radius: 100px;
   background: var(--line); color: var(--ink);
 }
-.usr-rolecount.active .usr-rolecount-n { background: var(--primary, #219653); color: var(--on-primary); }
+.usr-rolecount.active .usr-rolecount-n { background: var(--primary); color: var(--on-primary); }
 
 /* ── Inline confirm row (ban/unban) ── */
 .usr-confirm-row td { background: var(--bg-alt); }
@@ -581,12 +581,12 @@ onMounted(() => fetchUsers())
   transition: background .25s, color .25s, border-color .25s, transform .35s var(--ease-soft), box-shadow .25s;
 }
 .usr-confirm-actions button:active { transform: scale(.95); transition-duration: .08s; }
-.usr-confirm-actions button:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.usr-confirm-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .usr-confirm-actions button:disabled { opacity: var(--opacity-disabled); cursor: default; }
 .usr-confirm-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
 .usr-confirm-actions .btn-danger:hover { background: var(--error, #D94F3D); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
-.usr-confirm-actions .btn-success { color: var(--primary, #219653); border-color: var(--primary, #219653); }
-.usr-confirm-actions .btn-success:hover { background: var(--primary, #219653); color: var(--on-primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
+.usr-confirm-actions .btn-success { color: var(--primary); border-color: var(--primary); }
+.usr-confirm-actions .btn-success:hover { background: var(--primary); color: var(--on-primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 .usr-confirm-cancel:hover { background: var(--bg-alt); }
 
 /* ── Loading skeleton rows ── */

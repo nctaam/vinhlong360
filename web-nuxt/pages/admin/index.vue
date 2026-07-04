@@ -609,7 +609,7 @@ onMounted(fetchDashboard)
 .dash-all-clear {
   display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4);
   border-radius: 10px; margin-bottom: var(--space-8); font-size: .88rem; font-weight: 500;
-  background: rgba(var(--primary-rgb),.08); color: var(--primary, #219653); border: .5px solid rgba(var(--primary-rgb),.15);
+  background: rgba(var(--primary-rgb),.08); color: var(--primary); border: .5px solid rgba(var(--primary-rgb),.15);
 }
 
 /* ── System health ── */
@@ -630,7 +630,7 @@ onMounted(fetchDashboard)
 .dash-health-warn { color: rgb(var(--warning-rgb)) !important; }
 .dash-backup-btn {
   display: inline-block; margin-left: var(--space-2); padding: 2px 10px; border-radius: 6px;
-  border: .5px solid var(--line); background: var(--bg); color: var(--primary-fg, #219653);
+  border: .5px solid var(--line); background: var(--bg); color: var(--primary-fg);
   font-size: .72rem; font-weight: 600; cursor: pointer; transition: background .2s;
 }
 .dash-backup-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb),.08); }
@@ -665,9 +665,9 @@ onMounted(fetchDashboard)
   text-decoration: none; color: inherit; font-size: .85rem; font-weight: 500;
   transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
-.dash-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); background: color-mix(in oklab, var(--primary, #219653) 6%, var(--bg)); }
+.dash-action:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); background: color-mix(in oklab, var(--primary) 6%, var(--bg)); }
 .dash-action:active { transform: scale(.97); }
-.dash-action:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.dash-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dash-action-icon { font-size: 1.5rem; }
 
 /* ── Charts ── */
@@ -737,7 +737,7 @@ onMounted(fetchDashboard)
 .dark .dash-alert.warn { background: rgba(var(--warning-rgb),.08); color: var(--accent); border-color: rgba(var(--warning-rgb),.15); }
 .dark .dash-alert.error { background: rgba(var(--danger-rgb),.08); color: rgb(var(--red-rgb)); border-color: rgba(var(--danger-rgb),.15); }
 .dark .dash-action { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .dash-action:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,.3); background: color-mix(in oklab, var(--primary, #219653) 12%, var(--card, #2c2c2e)); }
+.dark .dash-action:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,.3); background: color-mix(in oklab, var(--primary) 12%, var(--card, #2c2c2e)); }
 .dark .admin-refresh:disabled { border-color: rgba(255,255,255,.12); }
 .dark .dash-chart-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
 .dark .dash-chart-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.2); }
@@ -798,7 +798,7 @@ onMounted(fetchDashboard)
   padding: 3px 9px; border-radius: 999px; font-size: .72rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: .02em;
 }
-.dash-ops-status.ok { background: rgba(var(--secondary-rgb, 33,150,83), .12); color: var(--secondary, #219653); }
+.dash-ops-status.ok { background: rgba(var(--secondary-rgb, 33,150,83), .12); color: var(--secondary); }
 .dash-ops-status.attention { background: rgba(var(--warning-rgb), .12); color: rgb(var(--warning-rgb)); }
 .dash-ops-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
 .dash-ops-cell {

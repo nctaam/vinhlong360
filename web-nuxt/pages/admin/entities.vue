@@ -1440,7 +1440,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 /* ── Sortable columns ── */
 .ent-sortable { white-space: nowrap; }
 .ent-sort-btn { background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer; user-select: none; }
-.ent-sort-btn:hover { color: var(--primary, #219653); }
+.ent-sort-btn:hover { color: var(--primary); }
 .ent-sort-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-xs, 4px); }
 .ent-sort-arrow { font-size: .65rem; opacity: .7; margin-left: 2px; }
 

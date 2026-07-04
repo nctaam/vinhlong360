@@ -224,12 +224,12 @@ onMounted(loadProvisional)
 }
 .dth-tool-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: var(--primary); }
 .dth-tool-card:active:not(:disabled) { transform: scale(.97); }
-.dth-tool-card:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.dth-tool-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dth-tool-card:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 .dth-tool-icon { font-size: 1.6rem; }
 .dth-tool-spinner {
   width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid rgba(var(--primary-rgb),.2); border-top-color: var(--primary, #219653);
+  border: 2px solid rgba(var(--primary-rgb),.2); border-top-color: var(--primary);
   animation: dth-spin .7s linear infinite;
 }
 @keyframes dth-spin { to { transform: rotate(360deg); } }
@@ -237,7 +237,7 @@ onMounted(loadProvisional)
 .dth-tool-card small { font-size: .75rem; color: var(--muted); }
 
 .dth-sources { margin-top: var(--space-3); }
-.dth-source-count { font-weight: 700; color: var(--primary, #219653); }
+.dth-source-count { font-weight: 700; color: var(--primary); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

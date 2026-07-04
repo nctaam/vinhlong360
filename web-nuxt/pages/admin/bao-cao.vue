@@ -459,21 +459,21 @@ onMounted(() => fetchAll())
   font-size: .78rem; font-weight: 500; cursor: pointer;
   transition: background .2s, border-color .2s, color .2s, transform .2s var(--ease-soft);
 }
-.rpt-chip:hover { border-color: var(--primary, #0071e3); }
+.rpt-chip:hover { border-color: var(--primary); }
 .rpt-chip:active { transform: scale(.96); }
 .rpt-chip.active {
-  background: var(--primary, #0071e3); border-color: var(--primary, #0071e3); color: var(--text-on-dark);
+  background: var(--primary); border-color: var(--primary); color: var(--text-on-dark);
   position: relative; box-shadow: 0 2px 8px rgba(0,113,227,.22);
 }
 /* subtle affordance dot under the active chip */
 .rpt-chip.active::after {
   content: ''; position: absolute; left: 50%; bottom: -7px;
   width: 5px; height: 5px; border-radius: 50%;
-  background: var(--primary, #0071e3); transform: translateX(-50%);
+  background: var(--primary); transform: translateX(-50%);
   animation: rpt-dot-in .25s var(--ease-soft);
 }
 @keyframes rpt-dot-in { from { opacity: 0; transform: translate(-50%, -3px); } to { opacity: 1; transform: translate(-50%, 0); } }
-.rpt-chip:focus-visible { outline: 2px solid var(--primary, #0071e3); outline-offset: 2px; }
+.rpt-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .rpt-chip-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px;
@@ -487,13 +487,13 @@ onMounted(() => fetchAll())
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4); margin-bottom: var(--space-3);
-  border: 1px solid var(--primary, #0071e3); border-radius: var(--radius, 12px);
+  border: 1px solid var(--primary); border-radius: var(--radius, 12px);
   background: rgba(0,113,227,.06);
   animation: rpt-slide-in .25s var(--ease-soft);
 }
 @keyframes rpt-slide-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 .rpt-bulk-summary { display: inline-flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
-.rpt-bulk-count { font-size: .82rem; font-weight: 600; color: var(--primary, #0071e3); }
+.rpt-bulk-count { font-size: .82rem; font-weight: 600; color: var(--primary); }
 .rpt-bulk-hint { font-size: .74rem; color: var(--muted); }
 .rpt-bulk-actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 /* make the primary bulk action more prominent than the secondary ones */
@@ -504,12 +504,12 @@ onMounted(() => fetchAll())
   transition: color .2s;
 }
 .rpt-bulk-clear:hover { color: var(--text, #1d1d1f); }
-.rpt-bulk-clear:focus-visible { outline: 2px solid var(--primary, #0071e3); outline-offset: 2px; }
+.rpt-bulk-clear:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Checkboxes / selected row ── */
 .rpt-th-check, .rpt-td-check { width: 36px; text-align: center; }
-.rpt-checkbox { width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary, #0071e3); padding: 13px; margin: -13px; box-sizing: content-box; }
-.rpt-checkbox:focus-visible { outline: 2px solid var(--primary, #0071e3); outline-offset: 2px; }
+.rpt-checkbox { width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary); padding: 13px; margin: -13px; box-sizing: content-box; }
+.rpt-checkbox:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .rpt-row-selected { background: rgba(0,113,227,.05); }
 
 /* ── Expandable reason ── */
@@ -517,10 +517,10 @@ onMounted(() => fetchAll())
 .rpt-reason-full { white-space: normal; word-break: break-word; line-height: 1.45; }
 .rpt-reason-toggle {
   margin-top: var(--space-1); padding: 0; border: none; background: none;
-  color: var(--primary, #0071e3); font-size: .72rem; font-weight: 600; cursor: pointer;
+  color: var(--primary); font-size: .72rem; font-weight: 600; cursor: pointer;
 }
 .rpt-reason-toggle:hover { text-decoration: underline; }
-.rpt-reason-toggle:focus-visible { outline: 2px solid var(--primary, #0071e3); outline-offset: 2px; border-radius: 4px; }
+.rpt-reason-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
 .rpt-reason-chevron { font-size: .8rem; line-height: 1; margin-left: 2px; }
 
 /* ── Pager ── */
@@ -536,9 +536,9 @@ onMounted(() => fetchAll())
   font-size: .82rem; font-weight: 600; cursor: pointer;
   transition: background .2s, border-color .2s, transform .2s var(--ease-soft);
 }
-.rpt-loadmore:hover { border-color: var(--primary, #0071e3); }
+.rpt-loadmore:hover { border-color: var(--primary); }
 .rpt-loadmore:active { transform: scale(.97); }
-.rpt-loadmore:focus-visible { outline: 2px solid var(--primary, #0071e3); outline-offset: 2px; }
+.rpt-loadmore:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

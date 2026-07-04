@@ -245,7 +245,7 @@ onMounted(loadFacilities)
   font-size: .78rem; font-weight: 600; color: var(--muted);
   transition: color .2s;
 }
-.db-field:focus-within .db-field-label { color: var(--primary, #219653); }
+.db-field:focus-within .db-field-label { color: var(--primary); }
 .db-field-full { grid-column: 1 / -1; }
 
 /* ── Inline validation ── */
@@ -269,7 +269,7 @@ onMounted(loadFacilities)
 
 /* ── Delete button: touch target + focus-visible ── */
 .db-del-btn { border: none; min-height: 44px; }
-.db-del-btn:focus-visible { outline: 2px solid var(--primary, #219653); outline-offset: 2px; }
+.db-del-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Screen-reader-only ── */
 .db-sr-only {
@@ -295,7 +295,7 @@ onMounted(loadFacilities)
 .sf-dirty-badge {
   display: inline-flex; align-items: center;
   padding: var(--space-1) 10px; border-radius: 999px;
-  font-size: .72rem; font-weight: 600; color: var(--primary, #219653);
+  font-size: .72rem; font-weight: 600; color: var(--primary);
   background: rgba(var(--primary-rgb),.1); border: .5px solid rgba(var(--primary-rgb),.25);
 }
 
