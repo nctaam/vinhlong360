@@ -143,10 +143,10 @@
 .story-block__media img { width: 100%; height: 100%; object-fit: cover; }
 .story-block figcaption { font-family: var(--font-sans); font-size: var(--text-xs); color: var(--muted); margin-top: var(--space-2); }
 
-/* ── Scroll reveal (JS toggles .is-visible via useScrollReveal) ─────────────── */
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s var(--ease-cinematic), transform .7s var(--ease-cinematic); }
-.reveal.is-visible { opacity: 1; transform: none; }
-.reveal.reveal--sm { transform: translateY(14px); }
+/* Scroll reveal: the journey pages REUSE the existing global `.reveal` system
+   (base.css lines ~266-287 + composables/useReveal.ts). Do NOT redefine `.reveal`
+   here — that clashes with base.css and can hide content. Pages call useReveal()
+   and put class `reveal` on sections (the observer adds `.revealed`). */
 
 /* ── "Read next" narrative handoff between journey pages ────────────────────── */
 .read-next { margin: var(--space-editorial) 0 0; }
@@ -155,8 +155,5 @@
 /* ── Motion safety: honour reduced-motion + no-JS fallback ──────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .cine-hero__media.is-kb { animation: none; }
-  .reveal { opacity: 1; transform: none; transition: none; }
   .chapter-sticky { position: static; }
 }
-/* If JS never runs, don't leave revealed content invisible. */
-.no-js .reveal { opacity: 1; transform: none; }
