@@ -118,6 +118,7 @@
             <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></button></th>
             <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></button></th>
             <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></button></th>
+            <th scope="col">Place ID</th>
             <th v-for="c in currentKind?.columns || []" :key="c.key" scope="col">{{ c.label }}</th>
             <th scope="col"><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>
             <th scope="col">Thao tác</th>
@@ -148,6 +149,12 @@
               <span v-else class="type-badge ent-inline-label" :data-type="e.type" @dblclick="startInline(e, 'type', e.type)">{{ e.type }}</span>
             </td>
             <td class="admin-td-muted">{{ e.place_name || '—' }}</td>
+            <td>
+              <template v-if="inlineEdit.id === e.id && inlineEdit.field === 'placeId'">
+                <input v-model="inlineEdit.value" class="input ent-inline-input" :aria-label="`Sửa Place ID cho ${e.name}`" list="ent-places-list" @keyup.enter="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()" />
+              </template>
+              <span v-else class="ent-inline-label" :title="`Nhấp đúp để sửa Place ID`" @dblclick="startInline(e, 'placeId', e.placeId || '')">{{ e.placeId || '—' }}</span>
+            </td>
             <td v-for="c in currentKind?.columns || []" :key="c.key" class="ent-kind-cell">
               <button v-if="c.widget === 'bool'" type="button" class="ent-bool-toggle"
                 :aria-label="`Bật/tắt ${c.label} cho ${e.name}`" @click="toggleBoolAttr(e, c.key)">
@@ -182,7 +189,7 @@
             </td>
           </tr>
           <tr v-if="!sortedEntities.length">
-            <td :colspan="7 + (currentKind?.columns.length || 0)" class="admin-empty-row">
+            <td :colspan="8 + (currentKind?.columns.length || 0)" class="admin-empty-row">
               <div class="ent-empty">
                 <span class="ent-empty-icon">&#128269;</span>
                 <template v-if="search">
@@ -248,7 +255,7 @@
           <div class="ent-field">
             <label class="form-label" for="ent-summary">Tóm tắt <span class="ent-char-count" :class="{ 'ent-char-warn': (form.summary || '').length > 400, 'ent-char-danger': (form.summary || '').length > 450 }">{{ (form.summary || '').length }}/500</span></label>
             <textarea v-if="!previewSummary" id="ent-summary" v-model="form.summary" class="input admin-textarea" placeholder="Tóm tắt" aria-label="Tóm tắt" rows="3" maxlength="500"></textarea>
-            <div v-else class="ent-summary-preview" v-text="form.summary"></div>
+            <div v-else class="ent-summary-preview" v-html="mdLite(form.summary)"></div>
             <button type="button" class="btn btn-ghost btn-sm" @click="previewSummary = !previewSummary">{{ previewSummary ? 'Sửa' : 'Xem trước' }}</button>
           </div>
           </fieldset>
@@ -393,8 +400,11 @@
           <strong class="admin-label">Lịch sử thay đổi ({{ entityHistory.length }})</strong>
           <div v-for="h in entityHistory" :key="h.id" class="ent-history-item">
             <span class="ent-history-field">{{ h.field }}</span>
-            <span class="ent-history-arrow">&rarr;</span>
-            <span class="ent-history-val" :title="h.new_value">{{ truncVal(h.new_value) }}</span>
+            <span class="ent-history-diff">
+              <del v-if="h.old_value" :title="h.old_value">{{ truncVal(h.old_value) }}</del>
+              <span class="ent-history-arrow">&rarr;</span>
+              <ins :title="h.new_value">{{ truncVal(h.new_value) }}</ins>
+            </span>
             <span class="ent-history-time">{{ timeAgo(h.created_at) }}</span>
           </div>
         </div>
@@ -449,6 +459,7 @@ interface AdminRelationship {
 interface EntityHistoryRecord {
   id: string | number
   field: string
+  old_value?: string | null
   new_value?: string
   created_at: string
 }
@@ -1073,6 +1084,20 @@ async function saveEntity() {
 // ── Quản lý ảnh entity (chỉ khi đang sửa) ──
 const newImage = ref('')
 const previewSummary = ref(false)
+// Markdown-lite preview for tóm tắt: HTML-escapes FIRST, then applies a fixed
+// whitelist (**bold**, *italic*, line breaks). Because escaping happens before
+// any tag injection, the result only ever contains the 3 whitelisted tags —
+// safe to render with v-html (no raw HTML/script from the admin's input can
+// survive the escape step).
+function mdLite(src: string): string {
+  const esc = (src || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+  return esc
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>')
+    .replace(/\n/g, '<br>')
+}
 async function addImage() {
   const url = newImage.value.trim()
   if (!url || !editingEntity.value) return
@@ -1373,7 +1398,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-history-item:last-child { border-bottom: none; }
 .ent-history-field { font-weight: 600; color: var(--ink); min-width: 70px; }
 .ent-history-arrow { color: var(--muted); flex-shrink: 0; }
-.ent-history-val { color: var(--primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+.ent-history-diff { display: inline-flex; align-items: baseline; gap: var(--space-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px; }
+.ent-history-diff del { color: var(--error); text-decoration: line-through; }
+.ent-history-diff ins { color: var(--success); text-decoration: none; }
 .ent-history-time { color: var(--muted); font-size: .75rem; margin-left: auto; white-space: nowrap; }
 
 /* ── Inline edit ── */
