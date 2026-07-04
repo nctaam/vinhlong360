@@ -83,7 +83,9 @@
 .dc-credit { position: absolute; bottom: var(--space-1); left: var(--space-5); z-index: 3; font-size: .72rem; color: rgba(255,255,255,.78); font-style: italic; }
 
 .detail-body { max-width: var(--maxw); margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-8); display: grid; grid-template-columns: 1fr 320px; gap: var(--space-8); align-items: start; }
-.detail-main .lead { font-size: var(--text-lg); margin-top: 0; line-height: var(--leading-relaxed); }
+.detail-main .lead { font-size: var(--text-lg); margin-top: 0; line-height: var(--leading-relaxed); max-width: var(--measure-read); }
+/* Editorial feature opening: drop-cap on the lead's first letter */
+.detail-main .lead::first-letter { font-family: var(--font-editorial); font-weight: 700; float: left; font-size: 3.1em; line-height: .78; padding: .04em .12em 0 0; color: var(--primary-fg); }
 
 .entity-description, .detail-main > :nth-child(n+4) { content-visibility: auto; contain-intrinsic-size: auto 300px; }
 .entity-description { margin: var(--space-5) 0 var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
@@ -254,8 +256,8 @@
 .dark .pt-item { background: var(--card); }
 
 /* ── Highlight tagline ── */
-.entity-highlight { margin: var(--space-4) 0 var(--space-2); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--primary-rgb), .02) 100%); border-left: 3px solid var(--primary); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
-.entity-highlight p { margin: 0; font-size: var(--text-base); font-style: italic; line-height: var(--leading-relaxed); color: var(--ink-secondary); }
+.entity-highlight { margin: var(--space-5) 0 var(--space-3); padding: var(--space-4) var(--space-5); background: linear-gradient(135deg, rgba(var(--primary-rgb), .06) 0%, rgba(var(--primary-rgb), .02) 100%); border-left: 3px solid var(--primary); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.entity-highlight p { margin: 0; font-family: var(--font-editorial); font-size: clamp(1.2rem, 1.05rem + .7vw, 1.6rem); font-style: italic; line-height: var(--leading-snug); color: var(--ink); text-wrap: balance; }
 .dark .entity-highlight { background: linear-gradient(135deg, rgba(var(--primary-rgb), .12) 0%, rgba(var(--primary-rgb), .04) 100%); }
 
 /* ── Best time callout ── */
