@@ -99,6 +99,7 @@
   --warning-bg: rgba(230, 126, 34, .08);
   --warning-border: rgba(230, 126, 34, .25);
   --error: #D94F3D;
+  --danger: var(--error); /* alias: --danger was undefined; pages use var(--danger)/(--danger,#hex) */
   --error-bg: rgba(217, 79, 61, .08);
   --error-border: rgba(217, 79, 61, .25);
   --save-red: #dc2626;
@@ -504,6 +505,7 @@
   --warning: #f0a050;
   --warning-bg: rgba(240, 160, 80, .12);
   --error: #FF6961;
+  --danger: var(--error); /* alias (dark) — keeps var(--danger) on the dark error color */
   --error-bg: rgba(255, 105, 97, .12);
   --save-red: #FF6961;
   --save-red-bg: rgba(255, 105, 97, .12);

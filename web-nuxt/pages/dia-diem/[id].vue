@@ -1166,7 +1166,7 @@ useHead({
   border: 1px solid var(--line);
 }
 .trust-status.fresh { color: var(--success, #16803c); background: rgba(22, 128, 60, .08); border-color: rgba(22, 128, 60, .22); }
-.trust-status.aging { color: #8a5b00; background: rgba(245, 158, 11, .1); border-color: rgba(245, 158, 11, .24); }
+.trust-status.aging { color: var(--warning); background: var(--warning-bg); border-color: var(--warning-border); }
 .trust-status.stale { color: var(--error, #b42318); background: rgba(180, 35, 24, .08); border-color: rgba(180, 35, 24, .2); }
 .trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
 .trust-list {
