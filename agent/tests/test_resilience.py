@@ -2298,18 +2298,26 @@ class TestSelfEvalLogging:
     """self_eval must have a logger and log retrieval_eval failures."""
 
     def test_has_logger(self):
-        with patch.dict(sys.modules, {"knowledge": MagicMock(
-            _ensure=MagicMock(), _normalize_vn=MagicMock(return_value=""),
-            _entities={},
-        )}):
-            import importlib
+        import importlib
+        try:
+            with patch.dict(sys.modules, {"knowledge": MagicMock(
+                _ensure=MagicMock(), _normalize_vn=MagicMock(return_value=""),
+                _entities={},
+            )}):
+                if "self_eval" in sys.modules:
+                    importlib.reload(sys.modules["self_eval"])
+                else:
+                    import self_eval
+                mod = sys.modules["self_eval"]
+                assert hasattr(mod, "logger")
+                assert mod.logger.name == "self_eval"
+        finally:
+            # The reload above rebinds self_eval.knowledge to the MagicMock; reload once
+            # more now that the REAL knowledge module is restored in sys.modules, so we
+            # don't leak a stubbed _normalize_vn (which returns "") into later tests — it
+            # silently broke self_eval dup detection (test_self_evolve::test_duplicate_detection).
             if "self_eval" in sys.modules:
                 importlib.reload(sys.modules["self_eval"])
-            else:
-                import self_eval
-            mod = sys.modules["self_eval"]
-            assert hasattr(mod, "logger")
-            assert mod.logger.name == "self_eval"
 
 
 class TestMCPServerLogging:
