@@ -174,10 +174,14 @@
   /* ── Typography scale (Apple HIG-inspired, base 16px) ── */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-display: var(--font-sans);
-  /* ── Editorial / cinematic layer (used by the discovery-journey pages via editorial.css).
-     Display = a serif with full Vietnamese support. System-serif for now (CWV-perfect, no
-     download); can be swapped for a self-hosted display serif later (owner/§4 step). ── */
-  --font-editorial: Georgia, 'Noto Serif', 'Times New Roman', serif;
+  /* ── Editorial / cinematic layer. Display = a DISTINCTIVE humanist old-style serif
+     (Palatino/Iowan family — more character than Georgia) via a zero-download system stack,
+     research-backed (modern-font-stacks). Vietnamese-safe: Palatino Linotype / Georgia /
+     Noto Serif / Times all carry full VN diacritics, and browsers do per-glyph fallback. ── */
+  --font-editorial: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, 'Noto Serif', 'Times New Roman', serif;
+  /* Tactile grain (SVG fractalNoise, grayscale, tileable 120px) — the antidote to the
+     flat "AI-gradient" look. Small tile the browser rasterizes once; overlay at low opacity. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
   --scrim-hero: linear-gradient(to top, rgba(8, 9, 12, .84) 0%, rgba(8, 9, 12, .40) 46%, rgba(8, 9, 12, .10) 100%);
   --measure-read: 68ch;              /* editorial body measure */
   --space-editorial: clamp(3rem, 2rem + 5vw, 6rem); /* vertical rhythm between story sections */

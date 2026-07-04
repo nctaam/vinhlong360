@@ -12,7 +12,7 @@
           <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
           <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')" />
           <div class="hero-pills">
-            <NuxtLink v-for="pill in heroPills" :key="pill.to" :to="pill.to" class="hero-pill">{{ pill.emoji }} {{ pill.label }}</NuxtLink>
+            <NuxtLink v-for="pill in heroPills" :key="pill.to" :to="pill.to" class="hero-pill">{{ pill.label }}</NuxtLink>
           </div>
         </div>
         <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
@@ -722,17 +722,30 @@ useHead({
    ═══════════════════════════════════════════════════ */
 .home .hero {
   isolation: isolate;
-  padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
+  min-height: 84vh;
+  min-height: clamp(30rem, 84svh, 52rem);
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding-bottom: max(var(--space-7), env(safe-area-inset-bottom));
 }
+/* Cinematic scrim — a clean bottom-up wash (no coloured "glow" radials, which read AI-ish),
+   anchoring an editorial masthead composition to the lower-left. */
 .home .hero-scrim {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
-    linear-gradient(100deg, rgba(var(--ink-rgb),.28) 0%, rgba(var(--ink-rgb),.12) 42%, transparent 74%),
-    radial-gradient(86% 72% at 84% 8%, rgba(var(--accent-rgb),.18) 0%, rgba(var(--accent-rgb),.04) 36%, transparent 64%),
-    radial-gradient(86% 66% at 6% 100%, rgba(var(--primary-rgb),.20) 0%, transparent 58%),
-    linear-gradient(to top, rgba(var(--ink-rgb),.46) 0%, rgba(var(--ink-rgb),.08) 34%, transparent 58%);
+    linear-gradient(to top, rgba(8,9,12,.88) 0%, rgba(8,9,12,.54) 24%, rgba(8,9,12,.18) 52%, transparent 80%),
+    linear-gradient(103deg, rgba(8,9,12,.58) 0%, rgba(8,9,12,.16) 46%, transparent 70%);
 }
-.home .hero-inner { z-index: 1; }
+/* Tactile grain over the image — the antidote to the flat "AI-gradient" look.
+   Small tiled SVG the browser rasterises once; subtle overlay. */
+.home .hero::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: var(--grain); background-size: 120px 120px;
+  opacity: .09; mix-blend-mode: overlay;
+}
+.home .hero-inner {
+  position: relative; z-index: 1;
+  width: min(100% - 2 * var(--space-5), 1180px); margin-inline: auto;
+}
 
 /* Hero asymmetric layout: ≥920px two columns */
 @media (min-width: 920px) {
@@ -815,24 +828,22 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
 }
 
 /* Kicker */
+/* Editorial dateline eyebrow — a hairline rule + wide-tracked caps, not a glass badge/pill */
 .home .hero-kicker {
-  display: inline-flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
-  margin-bottom: var(--space-4);
-  background: rgba(255,255,255,.12);
-  backdrop-filter: saturate(180%) blur(8px); -webkit-backdrop-filter: saturate(180%) blur(8px);
-  border: .5px solid rgba(255,255,255,.28); border-radius: var(--radius-full);
-  color: var(--text-on-dark, #fff);
-  font-size: var(--text-xs); font-weight: var(--weight-semibold);
-  letter-spacing: .04em; text-transform: uppercase;
-  text-shadow: 0 1px 2px rgba(0,0,0,.25);
+  display: inline-flex; align-items: center; gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  color: rgba(255,255,255,.88);
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: .24em; text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0,0,0,.45);
 }
-.home .hero-kicker-dot {
-  width: 7px; height: 7px; border-radius: 50%;
+.home .hero-kicker::before {
+  content: ""; flex: 0 0 auto;
+  width: clamp(26px, 6vw, 54px); height: 1.5px;
   background: var(--accent);
-  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .55);
-  animation: hero-dot-pulse 2.4s var(--ease-out) infinite;
 }
+.home .hero-kicker-dot { display: none; }
 @keyframes hero-dot-pulse {
   0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .55); }
   70% { box-shadow: 0 0 0 7px rgba(var(--accent-rgb), 0); }
@@ -840,23 +851,16 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
 }
 
 /* Display headline — editorial serif, cinematic scale */
+/* Masthead headline — oversized editorial serif, tight measure so it wraps into a
+   strong multi-line block (no decorative accent bar under it — that reads templated). */
 .home .hero h1 {
   font-family: var(--font-editorial);
   font-weight: 600;
-  font-size: clamp(2.35rem, 6vw, 3.9rem);
-  letter-spacing: -.012em; line-height: 1.04;
-  text-shadow: 0 1px 6px rgba(0,0,0,.34);
-  position: relative; display: inline-block;
-  max-width: 760px;
+  font-size: clamp(2.6rem, 3.4rem + 3.2vw, 5.4rem);
+  letter-spacing: -.02em; line-height: .98;
+  text-shadow: 0 2px 28px rgba(0,0,0,.42);
+  max-width: 15ch;
   text-wrap: balance;
-}
-.home .hero h1::after {
-  content: ""; display: block;
-  width: clamp(56px, 14vw, 112px); height: 4px;
-  margin-top: var(--space-4); border-radius: var(--radius-full);
-  background: linear-gradient(90deg, var(--accent) 0%, var(--primary-light) 100%);
-  box-shadow: 0 2px 10px rgba(var(--accent-rgb), .45);
-  transform-origin: left center;
 }
 .home .hero-sub { font-family: var(--font-editorial); font-size: clamp(1.08rem, 1rem + .5vw, 1.3rem); line-height: 1.5; opacity: .95; max-width: 600px; margin: var(--space-4) 0 0; text-shadow: 0 1px 8px rgba(0,0,0,.22); }
 .dark .home .hero-sub { opacity: 1; font-weight: 400; }
@@ -920,62 +924,54 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .hero .hero-ac .ac-dropdown { text-align: left; }
 
 /* Hero pills */
-.hero-pills { display: flex; gap: var(--space-2); margin-top: var(--space-5); flex-wrap: wrap; }
+/* Editorial "quick index" — tracked text links with a hairline underline, not glass chips */
+.hero-pills { display: flex; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-6); flex-wrap: wrap; }
 .hero-pill {
-  display: inline-flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: rgba(255,255,255,.16);
-  backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px);
-  border: .5px solid rgba(255,255,255,.26); border-radius: var(--radius-full);
-  color: var(--text-on-dark, #fff); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-  box-shadow: 0 4px 16px rgba(0,0,0,.10);
-  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
-  min-height: 44px;
+  display: inline-flex; align-items: center;
+  color: rgba(255,255,255,.9); text-decoration: none;
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600;
+  letter-spacing: .01em;
+  min-height: 40px; padding: var(--space-1) 0;
+  border-bottom: 1.5px solid rgba(255,255,255,.32);
+  text-shadow: 0 1px 3px rgba(0,0,0,.4);
+  transition: color .3s var(--ease-out), border-color .3s var(--ease-out);
 }
-.hero-pill:first-child {
-  background: rgba(var(--accent-rgb), .26);
-  border-color: rgba(var(--accent-rgb), .46);
-}
-.hero-pill:hover { background: rgba(255,255,255,.28); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.16); }
-.hero-pill:active { transform: scale(.95); transition-duration: .1s; }
-.hero-pill:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
+.hero-pill:hover { color: #fff; border-color: var(--accent); }
+.hero-pill:active { color: rgba(255,255,255,.7); }
+.hero-pill:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
 @media (max-width: 480px) {
-  .hero-pills { gap: var(--space-2); margin-top: var(--space-4); }
-  .hero-pill { padding-left: var(--space-3); padding-right: var(--space-3); }
+  .hero-pills { gap: var(--space-2) var(--space-4); margin-top: var(--space-5); }
 }
 
 /* ═══════════════════════════════════════════════════
    HERO STATS — inline strip at bottom of hero
    ═══════════════════════════════════════════════════ */
+/* Editorial "contents" strip — hairline-ruled meta line, left-aligned: serif numerals +
+   tracked-caps labels. Replaces the centred glass stat-banner (a documented AI tell). */
 .hero-stats {
   position: relative; z-index: 1;
-  display: flex; justify-content: center; gap: var(--space-8);
-  padding: var(--space-3) var(--space-4);
-  margin: var(--space-5) auto max(var(--space-2), env(safe-area-inset-bottom));
-  max-width: min(520px, calc(100% - var(--space-8)));
-  background: rgba(255,255,255,.10);
-  backdrop-filter: saturate(180%) blur(10px); -webkit-backdrop-filter: saturate(180%) blur(10px);
-  border: .5px solid rgba(255,255,255,.18);
-  border-radius: var(--radius-full);
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: var(--space-2) var(--space-5);
+  margin: var(--space-6) 0 0;
+  padding: var(--space-4) 0 0;
+  border-top: 1px solid rgba(255,255,255,.20);
+  max-width: 640px;
 }
-.hero-stat { display: flex; flex-direction: column; align-items: center; gap: 1px; position: relative; }
-.hero-stat + .hero-stat::before {
-  content: ""; position: absolute; left: calc(-1 * var(--space-4)); top: 50%;
-  transform: translateY(-50%); width: 1px; height: 22px; background: rgba(255,255,255,.25);
-}
+.hero-stat { display: inline-flex; align-items: baseline; gap: var(--space-2); }
 .hero-stat-num {
-  font-size: var(--text-lg); font-weight: var(--weight-extrabold);
-  color: var(--text-on-dark, #fff); letter-spacing: 0;
+  font-family: var(--font-editorial);
+  font-size: var(--text-xl); font-weight: 600;
+  color: #fff; letter-spacing: -.01em;
+  text-shadow: 0 1px 8px rgba(0,0,0,.4);
 }
 .hero-stat-label {
-  font-size: .6rem; color: rgba(255,255,255,.7);
-  font-weight: var(--weight-medium); text-transform: uppercase; letter-spacing: .03em;
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs); color: rgba(255,255,255,.72);
+  font-weight: 700; text-transform: uppercase; letter-spacing: .16em;
 }
 @media (max-width: 480px) {
-  .hero-stats { gap: var(--space-5); }
-  .hero-stat-num { font-size: var(--text-base); }
-  .hero-stat-label { font-size: .55rem; }
-  .hero-stat + .hero-stat::before { display: none; }
+  .hero-stats { gap: var(--space-2) var(--space-4); }
+  .hero-stat-num { font-size: var(--text-lg); }
 }
 
 /* Decision layer */
