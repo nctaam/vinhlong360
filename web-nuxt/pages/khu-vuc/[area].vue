@@ -316,9 +316,9 @@ if (areaMeta) {
   background-image: var(--scrim-hero), var(--area-img);
   background-size: cover; background-position: center; background-repeat: no-repeat;
 }
-.cat-area-vinh-long { --area-img: url(/img/area-vinh-long.jpg); }
-.cat-area-ben-tre   { --area-img: url(/img/area-ben-tre.jpg); }
-.cat-area-tra-vinh  { --area-img: url(/img/area-tra-vinh.jpg); }
+.cat-area-vinh-long { --area-img: url(/img/area-vinh-long.webp); }
+.cat-area-ben-tre   { --area-img: url(/img/area-ben-tre.webp); }
+.cat-area-tra-vinh  { --area-img: url(/img/area-tra-vinh.webp); }
 .cat-area-vinh-long .area-hero-bloom, .cat-area-ben-tre .area-hero-bloom, .cat-area-tra-vinh .area-hero-bloom { display: none; }
 .cat-area-vinh-long h1, .cat-area-ben-tre h1, .cat-area-tra-vinh h1 { color: #fff; text-shadow: 0 2px 22px rgba(0,0,0,.5); }
 .cat-area-vinh-long p, .cat-area-ben-tre p, .cat-area-tra-vinh p { color: rgba(255,255,255,.92); text-shadow: 0 1px 10px rgba(0,0,0,.4); }
