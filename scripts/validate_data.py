@@ -42,6 +42,10 @@ BOILERPLATE_SUMMARY = re.compile(
 )
 
 BAD_SENTENCE_JOIN = re.compile(r"(?<=[a-zA-ZÀ-ỹ])\.(?=[a-zà-ỹ])")
+SAFE_DOT_TOKEN = re.compile(
+    r"\b(?:Co\.opmart|TP\.HCM|[\w-]+\.(?:vn|com(?:\.vn)?|net|org|edu|gov))\b",
+    re.IGNORECASE,
+)
 TEXT_QUALITY_FIELDS = ("summary", "desc", "description")
 MAX_REASONABLE_TEXT_LEN = 1500
 
@@ -57,6 +61,76 @@ def has_adjacent_repeated_sentence(text: str) -> bool:
             return True
         previous = normalized
     return False
+
+def has_bad_sentence_join(text: str) -> bool:
+    masked = SAFE_DOT_TOKEN.sub(lambda m: m.group(0).replace(".", " "), text)
+    return BAD_SENTENCE_JOIN.search(masked) is not None
+
+def is_external_gateway(entity: dict[str, Any]) -> bool:
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    return bool(attrs.get("external_gateway"))
+
+def image_url(value: Any) -> str:
+    if isinstance(value, str) and value.startswith("http"):
+        return value
+    if isinstance(value, dict):
+        url = value.get("url") or value.get("src") or value.get("contentUrl")
+        if isinstance(url, str) and url.startswith("http"):
+            return url
+    return ""
+
+def image_credit_for_url(entity: dict[str, Any], img_url: str, raw_image: Any = None) -> dict[str, Any]:
+    if isinstance(raw_image, dict):
+        direct = {
+            "author": raw_image.get("author") or raw_image.get("credit"),
+            "credit": raw_image.get("credit"),
+            "license": raw_image.get("license"),
+            "source": raw_image.get("source"),
+            "source_url": raw_image.get("source_url") or raw_image.get("sourceUrl"),
+        }
+        if any(direct.values()):
+            return {k: v for k, v in direct.items() if v}
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    credits = attrs.get("image_credits")
+    if isinstance(credits, list):
+        for item in credits:
+            if isinstance(item, dict) and str(item.get("url") or "") == img_url:
+                return item
+    return {
+        "author": attrs.get("image_author") or attrs.get("image_credit"),
+        "credit": attrs.get("image_credit"),
+        "license": attrs.get("image_license"),
+        "source": attrs.get("image_source"),
+        "source_url": attrs.get("image_source_url"),
+    }
+
+def has_approximate_coordinates(entity: dict[str, Any]) -> bool:
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    return bool(attrs.get("coords_approximate"))
+
+def itinerary_declared_areas(itinerary: dict[str, Any]) -> set[str] | None:
+    """Return allowed stop areas. None means an intentionally cross-region route."""
+    declared: set[str] = set()
+    raw_areas = itinerary.get("areas")
+    if isinstance(raw_areas, list):
+        declared.update(str(area) for area in raw_areas if area)
+    elif isinstance(raw_areas, str) and raw_areas.strip():
+        declared.update(part.strip() for part in raw_areas.split(",") if part.strip())
+
+    area = itinerary.get("area")
+    if area and area != "lien-vung":
+        declared.add(str(area))
+    elif area == "lien-vung" and not declared:
+        return None
+
+    return declared
+
+def itinerary_stop_ref(stop: Any) -> str:
+    if isinstance(stop, str):
+        return stop
+    if isinstance(stop, dict):
+        return str(stop.get("entityId") or stop.get("entity_id") or stop.get("id") or "")
+    return ""
 
 VALID_ENTITY_TYPES = {
     "attraction", "place", "dish", "drink", "product", "itinerary",
@@ -173,6 +247,7 @@ def entity_quality_score(entity: dict[str, Any]) -> int:
     etype_raw = entity.get("type")
     is_place = etype_raw == "place"
     is_itinerary = etype_raw == "itinerary"
+    external_gateway = is_external_gateway(entity)
 
     summary_val = entity.get("summary")
     if not summary_val:
@@ -186,17 +261,17 @@ def entity_quality_score(entity: dict[str, Any]) -> int:
         elif len(s) > 500:
             score -= 3
 
-    if not is_itinerary and not entity.get("coordinates") and not entity.get("coords"):
+    if not is_itinerary and not external_gateway and not entity.get("coordinates") and not entity.get("coords"):
         score -= 15
 
     source = entity.get("source")
     if not source or (isinstance(source, list) and len(source) == 0):
         score -= 10
 
-    if not is_place and not is_itinerary and not entity.get("placeId"):
+    if not is_place and not is_itinerary and not external_gateway and not entity.get("placeId"):
         score -= 10
 
-    if not is_place and not is_itinerary and not entity.get("area"):
+    if not is_place and not is_itinerary and not external_gateway and not entity.get("area"):
         score -= 5
 
     imgs = entity.get("images")
@@ -312,6 +387,10 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
     text_bad_sentence_join = 0
     text_excessive_length = 0
     has_images_non_place = 0
+    image_total = 0
+    image_missing_credit = 0
+    image_missing_license = 0
+    image_missing_source = 0
     name_too_short = 0
     name_too_long = 0
     invalid_source_urls = 0
@@ -347,6 +426,8 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             unknown_type_count += 1
             unknown_types_seen.add(str(entity_type))
         is_place = entity_type == "place"
+        is_itinerary = entity_type == "itinerary"
+        external_gateway = is_external_gateway(entity)
         summary_val = entity.get("summary")
         if not summary_val:
             missing_summary += 1
@@ -365,9 +446,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 missing_source_non_place += 1
         if source is not None and not isinstance(source, list):
             source_not_list += 1
-        if not is_place and not entity.get("placeId"):
+        if not is_place and not is_itinerary and not external_gateway and not entity.get("placeId"):
             missing_place_id += 1
-        if not is_place and not entity.get("area"):
+        if not is_place and not is_itinerary and not external_gateway and not entity.get("area"):
             missing_area_non_place += 1
 
         season = entity.get("season")
@@ -398,10 +479,28 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             timestamp_inversions += 1
 
         # DI-009: image coverage (non-place only)
+        valid_images: list[tuple[str, Any]] = []
+        imgs = entity.get("images")
+        if isinstance(imgs, list):
+            for raw_img in imgs:
+                url = image_url(raw_img)
+                if url:
+                    valid_images.append((url, raw_img))
         if not is_place:
-            imgs = entity.get("images")
-            if isinstance(imgs, list) and any(isinstance(i, str) and i.startswith("http") for i in imgs):
+            if valid_images:
                 has_images_non_place += 1
+        for img_url, raw_img in valid_images:
+            image_total += 1
+            credit_meta = image_credit_for_url(entity, img_url, raw_img)
+            credit = credit_meta.get("author") or credit_meta.get("credit")
+            license_value = credit_meta.get("license")
+            source_value = credit_meta.get("source_url") or credit_meta.get("source")
+            if not (isinstance(credit, str) and credit.strip()):
+                image_missing_credit += 1
+            if not (isinstance(license_value, str) and license_value.strip()):
+                image_missing_license += 1
+            if not (isinstance(source_value, str) and source_value.strip()):
+                image_missing_source += 1
 
         # DI-010: summary quality tiers
         if isinstance(summary_val, str) and summary_val.strip():
@@ -424,7 +523,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         ]
         if any(len(text) > MAX_REASONABLE_TEXT_LEN for text in text_values):
             text_excessive_length += 1
-        if any(BAD_SENTENCE_JOIN.search(text) for text in text_values):
+        if any(has_bad_sentence_join(text) for text in text_values):
             text_bad_sentence_join += 1
         if any(has_adjacent_repeated_sentence(text) for text in text_values):
             text_repeated_sentence += 1
@@ -495,7 +594,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
                 invalid_coordinates += 1
         elif coords is not None and normalized_coordinates(coords) is None:
             invalid_coordinates += 1
-        elif coords is None and legacy is None:
+        elif coords is None and legacy is None and not is_itinerary:
             missing_location += 1
             if is_place:
                 missing_location_place += 1
@@ -707,9 +806,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         if not isinstance(it, dict):
             continue
         for stop in (it.get("stops") or []):
-            if not isinstance(stop, dict):
-                continue
-            ref = stop.get("entityId") or stop.get("id")
+            ref = itinerary_stop_ref(stop)
             if ref and str(ref) not in id_set:
                 dangling_stops += 1
     if dangling_stops:
@@ -725,7 +822,7 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             itinerary_empty_stops += 1
         elif len(stops) > 20:
             itinerary_excessive_stops += 1
-    # DI-006: near asymmetry — if A→B near exists, B→A should also exist
+    # DI-006: near relationships are stored canonically; runtime indexes them bidirectionally.
     near_edges: set[tuple[str, str]] = set()
     for rel in relationships:
         if not isinstance(rel, dict):
@@ -734,41 +831,48 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
             s, d = str(rel_source(rel) or ""), str(rel_target(rel) or "")
             if s and d:
                 near_edges.add((s, d))
-    near_asymmetric = sum(1 for s, d in near_edges if (d, s) not in near_edges)
+    near_one_way_edges = sum(1 for s, d in near_edges if (d, s) not in near_edges)
+    near_reciprocal_pairs = sum(1 for s, d in near_edges if s < d and (d, s) in near_edges)
 
-    # DI-007: coordinate clustering — entities sharing exact same coordinates
-    coord_buckets: dict[tuple[float, float], list[str]] = defaultdict(list)
+    # DI-007: coordinate clustering. Approximate centroids are allowed; precise duplicates are suspicious.
+    coord_buckets: dict[tuple[float, float], list[tuple[str, bool]]] = defaultdict(list)
     for entity in entities:
         if not isinstance(entity, dict) or not entity.get("id"):
             continue
         c = normalized_coordinates(entity.get("coordinates"))
         if c:
-            coord_buckets[(c[0], c[1])].append(str(entity["id"]))
-    coord_clusters = sum(1 for ids in coord_buckets.values() if len(ids) > 1)
-    coord_clustered_entities = sum(len(ids) for ids in coord_buckets.values() if len(ids) > 1)
+            coord_buckets[(c[0], c[1])].append((str(entity["id"]), has_approximate_coordinates(entity)))
+    coord_clusters = sum(1 for rows in coord_buckets.values() if len(rows) > 1)
+    coord_clustered_entities = sum(len(rows) for rows in coord_buckets.values() if len(rows) > 1)
+    coord_clusters_approximate = sum(1 for rows in coord_buckets.values() if len(rows) > 1 and all(is_approx for _id, is_approx in rows))
+    coord_clustered_entities_approximate = sum(len(rows) for rows in coord_buckets.values() if len(rows) > 1 and all(is_approx for _id, is_approx in rows))
+    coord_clusters_precise = sum(1 for rows in coord_buckets.values() if sum(1 for _id, is_approx in rows if not is_approx) > 1)
+    coord_clustered_entities_precise = sum(
+        sum(1 for _id, is_approx in rows if not is_approx)
+        for rows in coord_buckets.values()
+        if sum(1 for _id, is_approx in rows if not is_approx) > 1
+    )
 
     # DI-012: itinerary-stop area mismatch
     itinerary_area_mismatches = 0
     for it in itineraries:
         if not isinstance(it, dict):
             continue
-        it_area = it.get("area")
-        if not it_area:
+        declared_areas = itinerary_declared_areas(it)
+        if declared_areas == set():
             continue
         for stop in (it.get("stops") or []):
-            if not isinstance(stop, dict):
-                continue
-            ref = stop.get("entityId") or stop.get("id")
+            ref = itinerary_stop_ref(stop)
             if not ref:
                 continue
             stop_entity = entity_by_id.get(str(ref))
             if not stop_entity:
                 continue
             stop_area = effective_area(stop_entity)
-            if stop_area and stop_area != it_area:
+            if stop_area and declared_areas is not None and stop_area not in declared_areas:
                 itinerary_area_mismatches += 1
 
-    # DI-013: relationship type singleton combos
+    # DI-013: relationship type singleton combos are tracked as entropy, not warnings.
     rel_type_triple_counts: Counter[tuple[str, str, str]] = Counter()
     for rel in relationships:
         if not isinstance(rel, dict):
@@ -787,16 +891,18 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         issues.append(Issue("error", "relationship_fanout", f"{high_fanout_count} entities have more than {MAX_DIRECT_RELATIONSHIPS} direct relationships"))
     if duplicate_rel_count:
         issues.append(Issue("warning", "duplicate_relationships", f"{duplicate_rel_count} duplicate relationship keys found"))
-    if near_asymmetric:
-        issues.append(Issue("warning", "near_asymmetric", f"{near_asymmetric} near relationships are one-way (A→B exists but B→A does not)"))
-    if coord_clusters:
-        issues.append(Issue("warning", "coordinate_clusters", f"{coord_clusters} coordinate clusters ({coord_clustered_entities} entities share exact same coordinates)"))
+    if coord_clusters_precise:
+        issues.append(Issue("warning", "coordinate_clusters_precise", f"{coord_clusters_precise} precise coordinate clusters ({coord_clustered_entities_precise} precise entities share exact same coordinates)"))
     if timestamp_inversions:
         issues.append(Issue("warning", "timestamp_inversions", f"{timestamp_inversions} entities have updatedAt before created_at"))
+    if image_missing_credit:
+        issues.append(Issue("warning", "image_missing_credit", f"{image_missing_credit} image URLs have no author/credit metadata"))
+    if image_missing_license:
+        issues.append(Issue("warning", "image_missing_license", f"{image_missing_license} image URLs have no license metadata"))
+    if image_missing_source:
+        issues.append(Issue("warning", "image_missing_source", f"{image_missing_source} image URLs have no source metadata"))
     if itinerary_area_mismatches:
         issues.append(Issue("warning", "itinerary_area_mismatch", f"{itinerary_area_mismatches} itinerary stops reference entities outside the itinerary's declared area"))
-    if rel_type_singletons:
-        issues.append(Issue("warning", "rel_type_singletons", f"{rel_type_singletons} relationship (src_type, rel, dst_type) combos appear only once"))
     if summary_short:
         issues.append(Issue("warning", "summary_short", f"{summary_short} entities have summary < 50 chars"))
     if summary_long:
@@ -900,11 +1006,20 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         "low_confidence": low_confidence_count,
         "empty_attributes_non_place": empty_attrs_non_place,
         "place_coords_coverage_pct": place_coords_pct,
-        "near_asymmetric": near_asymmetric,
+        "near_one_way_edges": near_one_way_edges,
+        "near_reciprocal_pairs": near_reciprocal_pairs,
         "coordinate_clusters": coord_clusters,
         "coordinate_clustered_entities": coord_clustered_entities,
+        "coordinate_clusters_approximate": coord_clusters_approximate,
+        "coordinate_clustered_entities_approximate": coord_clustered_entities_approximate,
+        "coordinate_clusters_precise": coord_clusters_precise,
+        "coordinate_clustered_entities_precise": coord_clustered_entities_precise,
         "timestamp_inversions": timestamp_inversions,
         "image_coverage_pct": round(100 * has_images_non_place / max(sum(1 for e in entities if isinstance(e, dict) and e.get("type") != "place"), 1), 1),
+        "image_total": image_total,
+        "image_missing_credit": image_missing_credit,
+        "image_missing_license": image_missing_license,
+        "image_missing_source": image_missing_source,
         "summary_short": summary_short,
         "summary_long": summary_long,
         "text_repeated_sentence": text_repeated_sentence,
@@ -1011,10 +1126,9 @@ def validate(data: dict[str, Any], data_path: Path) -> tuple[list[Issue], dict[s
         if not isinstance(it, dict):
             continue
         for stop in (it.get("stops") or []):
-            if isinstance(stop, dict):
-                ref = stop.get("entityId") or stop.get("id")
-                if ref:
-                    referenced_ids.add(str(ref))
+            ref = itinerary_stop_ref(stop)
+            if ref:
+                referenced_ids.add(str(ref))
     orphan_count = sum(
         1 for e in entities
         if isinstance(e, dict) and e.get("type") != "place" and e.get("id")
@@ -1068,13 +1182,25 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
         "low_confidence",
         "empty_attributes_non_place",
         "place_coords_coverage_pct",
-        "near_asymmetric",
+        "near_one_way_edges",
+        "near_reciprocal_pairs",
         "coordinate_clusters",
         "coordinate_clustered_entities",
+        "coordinate_clusters_approximate",
+        "coordinate_clustered_entities_approximate",
+        "coordinate_clusters_precise",
+        "coordinate_clustered_entities_precise",
         "timestamp_inversions",
         "image_coverage_pct",
+        "image_total",
+        "image_missing_credit",
+        "image_missing_license",
+        "image_missing_source",
         "summary_short",
         "summary_long",
+        "text_repeated_sentence",
+        "text_bad_sentence_join",
+        "text_excessive_length",
         "itinerary_area_mismatches",
         "rel_type_singletons",
         "name_too_short",

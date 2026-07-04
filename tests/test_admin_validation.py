@@ -129,7 +129,9 @@ def test_valid_types_set():
 
 
 def test_require_admin_accepts_admin_key() -> None:
-    request = make_request({"X-Admin-Key": "test-admin-key"})
+    from middleware import ADMIN_API_KEY
+
+    request = make_request({"X-Admin-Key": ADMIN_API_KEY})
 
     assert asyncio.run(admin_module.require_admin(request)) is None
 

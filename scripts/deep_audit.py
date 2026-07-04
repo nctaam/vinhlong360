@@ -10,22 +10,29 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "web" / "data.json"
+SCRIPTS_DIR = ROOT / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+from validate_data import (  # noqa: E402
+    VALID_ENTITY_TYPES,
+    has_approximate_coordinates,
+    is_external_gateway,
+    itinerary_stop_ref,
+    normalized_coordinates,
+    rel_source,
+    rel_target,
+    rel_type,
+)
 
 # Bbox chặt cho 3 tỉnh (VL + BT + TV)
 LAT_MIN, LAT_MAX = 9.2, 10.65
 LNG_MIN, LNG_MAX = 105.6, 106.95
 
-VALID_TYPES = {
-    "place", "product", "attraction", "experience", "dish",
-    "accommodation", "craft_village", "nature", "history",
-    "event", "person", "organization", "itinerary",
-}
+VALID_TYPES = set(VALID_ENTITY_TYPES)
 
 # Types lạ cần gộp
-TYPE_REMAP = {
-    "drink": "product",
-    "economy": "organization",
-}
+TYPE_REMAP = {}
 
 VALID_AREAS = {"vinh-long", "ben-tre", "tra-vinh"}
 
@@ -46,22 +53,7 @@ def save(data):
 
 
 def norm_coords(val):
-    if isinstance(val, str):
-        try: val = json.loads(val)
-        except (ValueError, json.JSONDecodeError): return None
-    if isinstance(val, dict):
-        lat = val.get("lat", val.get("latitude"))
-        lng = val.get("lng", val.get("lon", val.get("longitude")))
-        val = [lat, lng]
-    if not isinstance(val, (list, tuple)) or len(val) != 2:
-        return None
-    try:
-        lat, lng = float(val[0]), float(val[1])
-    except (TypeError, ValueError):
-        return None
-    if -90 <= lat <= 90 and -180 <= lng <= 180:
-        return [lat, lng]
-    return None
+    return normalized_coordinates(val)
 
 
 def haversine(a, b):
@@ -115,13 +107,6 @@ def main():
     for t, c in sorted(type_counts.items(), key=lambda x: -x[1]):
         marker = " ❌ INVALID" if t in invalid_types else (" → "+TYPE_REMAP[t] if t in remap_types else "")
         print(f"  {t}: {c}{marker}")
-    if remap_types:
-        for e in entities:
-            if e.get("type") in TYPE_REMAP:
-                old = e["type"]
-                e["type"] = TYPE_REMAP[old]
-                fixes.append(f"type {e['id']}: {old} → {e['type']}")
-
     # ── 2. AREA VALIDATION ──
     print("\n── 2. Area validation ──")
     bad_area = []
@@ -146,8 +131,10 @@ def main():
     print("\n── 3. Coordinates ──")
     no_coords = []
     out_bbox = []
-    suspiciously_same = defaultdict(list)
+    coord_buckets = defaultdict(list)
     for e in entities:
+        if e.get("type") == "itinerary" or is_external_gateway(e):
+            continue
         c = norm_coords(e.get("coordinates") or e.get("coords"))
         if not c:
             no_coords.append(e["id"])
@@ -156,31 +143,39 @@ def main():
         if not (LAT_MIN <= lat <= LAT_MAX and LNG_MIN <= lng <= LNG_MAX):
             out_bbox.append((e["id"], e["name"], lat, lng))
         key = f"{lat:.4f},{lng:.4f}"
-        suspiciously_same[key].append(e["id"])
+        coord_buckets[key].append((e["id"], has_approximate_coordinates(e)))
 
-    dup_coords = {k: v for k, v in suspiciously_same.items() if len(v) > 3}
+    dup_coords_approx = {k: v for k, v in coord_buckets.items() if len(v) > 3 and all(is_approx for _eid, is_approx in v)}
+    dup_coords_precise = {
+        k: [eid for eid, is_approx in v if not is_approx]
+        for k, v in coord_buckets.items()
+        if len([eid for eid, is_approx in v if not is_approx]) > 3
+    }
     print(f"  Missing coordinates: {len(no_coords)}")
     print(f"  Out of tight bbox: {len(out_bbox)}")
-    print(f"  Suspicious same-coord clusters (>3 entities): {len(dup_coords)}")
-    for coord, eids in sorted(dup_coords.items(), key=lambda x: -len(x[1]))[:5]:
+    print(f"  Approx same-coord clusters (>3 entities): {len(dup_coords_approx)}")
+    print(f"  Precise same-coord clusters (>3 entities): {len(dup_coords_precise)}")
+    for coord, eids in sorted(dup_coords_precise.items(), key=lambda x: -len(x[1]))[:5]:
         names = [by_id[eid]["name"] for eid in eids[:4] if eid in by_id]
         print(f"    {coord} ({len(eids)} entities): {', '.join(names)}...")
 
     # ── 4. NEAR RELATIONSHIP AUDIT ──
     print("\n── 4. Near relationships ──")
-    near_rels = [r for r in rels if (r.get("type") or r.get("rel_type")) == "near"]
+    near_rels = [r for r in rels if rel_type(r) == "near"]
     near_no_coords = []
     near_too_far = []
     near_self = []
-    near_dup = Counter()
+    near_directed = Counter()
+    near_edges = set()
 
     for r in near_rels:
-        src = str(r.get("from") or r.get("from_id") or r.get("source_id") or "")
-        dst = str(r.get("to") or r.get("to_id") or r.get("target_id") or "")
+        src = str(rel_source(r) or "")
+        dst = str(rel_target(r) or "")
         if src == dst:
             near_self.append(r)
             continue
-        near_dup[(min(src,dst), max(src,dst))] += 1
+        near_directed[(src, dst)] += 1
+        near_edges.add((src, dst))
         se = by_id.get(src)
         de = by_id.get(dst)
         if not se or not de:
@@ -194,22 +189,24 @@ def main():
         if dist > 50:
             near_too_far.append((r, dist, se["name"], de["name"]))
 
-    near_dups_found = sum(1 for c in near_dup.values() if c > 1)
+    near_dups_found = sum(c - 1 for c in near_directed.values() if c > 1)
+    near_reciprocal_pairs = sum(1 for s, d in near_edges if s < d and (d, s) in near_edges)
     print(f"  Total near: {len(near_rels)}")
     print(f"  Missing coords (either side): {len(near_no_coords)} → SHOULD DELETE")
     print(f"  Too far (>50km): {len(near_too_far)} → SHOULD DELETE")
     print(f"  Self-referencing: {len(near_self)} → SHOULD DELETE")
-    print(f"  Duplicate pairs: {near_dups_found}")
+    print(f"  Duplicate directed edges: {near_dups_found} -> SHOULD DELETE")
+    print(f"  Reciprocal near pairs: {near_reciprocal_pairs} -> runtime-safe")
     for r, dist, sn, dn in near_too_far[:5]:
         print(f"    {sn} ↔ {dn}: {dist:.1f}km")
 
     # ── 5. PRODUCED_IN CROSS-AREA ──
     print("\n── 5. produced_in relationships ──")
-    pi_rels = [r for r in rels if (r.get("type") or r.get("rel_type")) == "produced_in"]
+    pi_rels = [r for r in rels if rel_type(r) == "produced_in"]
     pi_cross = []
     for r in pi_rels:
-        src = str(r.get("from") or r.get("from_id") or r.get("source_id") or "")
-        dst = str(r.get("to") or r.get("to_id") or r.get("target_id") or "")
+        src = str(rel_source(r) or "")
+        dst = str(rel_target(r) or "")
         se, de = by_id.get(src), by_id.get(dst)
         if not se or not de: continue
         sa = se.get("area") or ""
@@ -225,9 +222,9 @@ def main():
     print("\n── 6. Duplicate relationships ──")
     rel_keys = Counter()
     for r in rels:
-        src = str(r.get("from") or r.get("from_id") or r.get("source_id") or "")
-        dst = str(r.get("to") or r.get("to_id") or r.get("target_id") or "")
-        kind = str(r.get("type") or r.get("rel_type") or "")
+        src = str(rel_source(r) or "")
+        dst = str(rel_target(r) or "")
+        kind = str(rel_type(r) or "")
         rel_keys[(src, dst, kind)] += 1
     dup_rels = {k: v for k, v in rel_keys.items() if v > 1}
     print(f"  Duplicate rel triples: {len(dup_rels)}")
@@ -241,8 +238,8 @@ def main():
     print("\n── 7. Broken references ──")
     broken = []
     for r in rels:
-        src = str(r.get("from") or r.get("from_id") or r.get("source_id") or "")
-        dst = str(r.get("to") or r.get("to_id") or r.get("target_id") or "")
+        src = str(rel_source(r) or "")
+        dst = str(rel_target(r) or "")
         if src not in by_id or dst not in by_id:
             broken.append((src, dst))
     print(f"  Broken references: {len(broken)}")
@@ -290,7 +287,7 @@ def main():
     for it in itineraries:
         stops = it.get("stops", [])
         for stop in stops:
-            eid = stop.get("entityId") or stop.get("entity_id")
+            eid = itinerary_stop_ref(stop)
             if eid and str(eid) not in by_id:
                 itin_broken_stops += 1
                 print(f"  Itinerary '{it.get('title',it.get('name','?'))}': stop '{eid}' not found")
@@ -327,7 +324,7 @@ def main():
     print(f"  Fuzzy name dups: {len(fuzzy_dups)}")
     print(f"  TOTAL RELS TO DELETE: {to_delete}")
 
-    if args.fix and to_delete > 0:
+    if args.fix and (to_delete > 0 or remap_types):
         print(f"\n── APPLYING FIXES ──")
         # Build set of rels to remove
         remove_set = set()
@@ -341,9 +338,9 @@ def main():
         # Remove duplicates (keep first occurrence)
         seen_keys = set()
         for r in rels:
-            src = str(r.get("from") or r.get("from_id") or r.get("source_id") or "")
-            dst = str(r.get("to") or r.get("to_id") or r.get("target_id") or "")
-            kind = str(r.get("type") or r.get("rel_type") or "")
+            src = str(rel_source(r) or "")
+            dst = str(rel_target(r) or "")
+            kind = str(rel_type(r) or "")
             key = (src, dst, kind)
             if key in seen_keys:
                 remove_set.add(id(r))
@@ -355,8 +352,12 @@ def main():
         after = len(data["relationships"])
         print(f"  Relationships: {before} → {after} (removed {before - after})")
 
-        # Type remaps already applied above
         if remap_types:
+            for e in entities:
+                if e.get("type") in TYPE_REMAP:
+                    old = e["type"]
+                    e["type"] = TYPE_REMAP[old]
+                    fixes.append(f"type {e['id']}: {old} -> {e['type']}")
             print(f"  Types remapped: {sum(remap_types.values())}")
 
         save(data)

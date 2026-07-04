@@ -65,7 +65,7 @@ async function fetchJson(url, options = {}) {
   const res = await fetch(url, options)
   if (!res.ok) {
     const text = await res.text().catch(() => '')
-    throw new Error(`${options.method || 'GET'} ${url} -> ${res.status} ${text.slice(0, 160)}`)
+    throw new Error(`${options.method || 'GET'} ${redactSensitiveUrl(url)} -> ${res.status} ${text.slice(0, 160)}`)
   }
   return res.json()
 }
@@ -176,9 +176,87 @@ function absoluteUrl(route) {
   return new URL(route, baseUrl).toString()
 }
 
+function redactSensitiveUrl(input) {
+  const raw = String(input || '')
+  try {
+    const url = new URL(raw)
+    for (const key of ['token', 'access_token', 'auth', 'authorization', 'session', 'session_token', 'vl360_token', 'code']) {
+      if (url.searchParams.has(key)) url.searchParams.set(key, '[redacted]')
+    }
+    return url.toString()
+  } catch {
+    return raw.replace(/([?&](?:token|access_token|auth|authorization|session|session_token|vl360_token|code)=)[^&#\s]+/gi, '$1[redacted]')
+  }
+}
+
+function redactSensitiveText(input) {
+  return redactSensitiveUrl(String(input || '')).replace(/\bBearer\s+[A-Za-z0-9._~+/=-]{16,}/g, 'Bearer [redacted]')
+}
+
 function summarizeConsole(params) {
   const args = (params.args || []).map(arg => arg.value || arg.description || arg.type).join(' ')
-  return `${params.type}: ${args}`.slice(0, 500)
+  return redactSensitiveText(`${params.type}: ${args}`).slice(0, 500)
+}
+
+function isSameOriginNuxtAsset(url) {
+  try {
+    const parsed = new URL(url)
+    const base = new URL(baseUrl)
+    return parsed.origin === base.origin && parsed.pathname.startsWith('/_nuxt/')
+  } catch {
+    return false
+  }
+}
+
+async function probeSameOriginAsset(url) {
+  if (!isSameOriginNuxtAsset(url)) return false
+  try {
+    let res = await fetch(url, { method: 'HEAD' })
+    if (res.status === 405) res = await fetch(url, { method: 'GET' })
+    return res.status > 0 && res.status < 500
+  } catch {
+    return false
+  }
+}
+
+const routeContracts = [
+  {
+    name: 'search input',
+    match: route => route === '/tim-kiem',
+    selectors: ['.cat-search', 'input[type="search"]', 'button.btn-primary'],
+  },
+  {
+    name: 'map explorer',
+    match: route => route === '/ban-do',
+    selectors: ['.cat-map', '#mapContainer'],
+  },
+  {
+    name: 'saved workspace',
+    match: route => route === '/da-luu',
+    selectors: ['.saved-page', '.saved-guest, .saved-header'],
+  },
+  {
+    name: 'planner workspace',
+    match: route => route === '/tao-lich-trinh',
+    selectors: ['.planner-picker', '.planner-builder', 'input[type="search"]'],
+  },
+]
+
+async function runRouteContract(cdp, route, routeFailures) {
+  const contract = routeContracts.find(item => item.match(route))
+  if (!contract) return
+  const expression = `(${JSON.stringify(contract.selectors)}).filter(s=>!document.querySelector(s))`
+  const result = await cdp.send('Runtime.evaluate', {
+    expression,
+    returnByValue: true,
+  }).catch(err => {
+    routeFailures.push(`route contract ${contract.name} failed to evaluate: ${err.message}`)
+    return null
+  })
+  const missing = result?.result?.value || []
+  if (Array.isArray(missing) && missing.length) {
+    routeFailures.push(`route contract ${contract.name} missing selectors: ${missing.join(', ')}`)
+  }
 }
 
 async function main() {
@@ -220,22 +298,28 @@ async function main() {
 
     for (const route of routes) {
       const routeFailures = []
+      const routeAssetFailures = []
       const offConsole = cdp.on('Runtime.consoleAPICalled', params => {
         if (['error', 'assert'].includes(params.type)) routeFailures.push(`console ${summarizeConsole(params)}`)
       })
       const offException = cdp.on('Runtime.exceptionThrown', params => {
-        routeFailures.push(`exception ${(params.exceptionDetails?.text || params.exceptionDetails?.exception?.description || '').slice(0, 500)}`)
+        routeFailures.push(`exception ${redactSensitiveText(params.exceptionDetails?.text || params.exceptionDetails?.exception?.description || '').slice(0, 500)}`)
       })
       const offLog = cdp.on('Log.entryAdded', params => {
         if (params.entry?.level === 'error') {
           const entry = params.entry
-          const suffix = entry.url ? ` (${entry.url}${entry.networkRequestId ? ` #${entry.networkRequestId}` : ''})` : ''
-          routeFailures.push(`log ${entry.text}${suffix}`)
+          const suffix = entry.url ? ` (${redactSensitiveUrl(entry.url)}${entry.networkRequestId ? ` #${entry.networkRequestId}` : ''})` : ''
+          const failure = `log ${redactSensitiveText(entry.text)}${suffix}`
+          if (String(entry.text || '').includes('net::ERR_FAILED') && entry.url && isSameOriginNuxtAsset(entry.url)) {
+            routeAssetFailures.push({ url: entry.url, failure })
+          } else {
+            routeFailures.push(failure)
+          }
         }
       })
       const offResponse = cdp.on('Network.responseReceived', params => {
         const status = params.response?.status || 0
-        if (status >= 500) routeFailures.push(`HTTP ${status} ${params.response.url}`)
+        if (status >= 500) routeFailures.push(`HTTP ${status} ${redactSensitiveUrl(params.response.url)}`)
       })
 
       const load = cdp.waitFor('Page.loadEventFired', 20000).catch(err => {
@@ -251,6 +335,10 @@ async function main() {
       }).catch(() => ({ result: { value: '' } }))
       if (String(title.result?.value || '').match(/\b500\b|Internal Server Error/i)) {
         routeFailures.push(`document title looks like an error: ${title.result.value}`)
+      }
+      await runRouteContract(cdp, route, routeFailures)
+      for (const item of routeAssetFailures) {
+        if (!(await probeSameOriginAsset(item.url))) routeFailures.push(item.failure)
       }
 
       offConsole()

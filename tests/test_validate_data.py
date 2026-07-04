@@ -286,6 +286,23 @@ def test_validate_no_dangling_when_stops_valid(tmp_path: Path) -> None:
     assert "dangling_itinerary_stops" not in {issue.code for issue in issues}
 
 
+def test_validate_accepts_entity_id_itinerary_stop_key(tmp_path: Path) -> None:
+    """Snake_case stop refs should behave the same as entityId/id."""
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-1", "name": "Test", "area": "vinh-long", "stops": [{"entity_id": "a"}]},
+        ],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["itinerary_area_mismatches"] == 0
+    assert "dangling_itinerary_stops" not in {issue.code for issue in issues}
+
 def test_validate_ignores_stops_without_entity_ref(tmp_path: Path) -> None:
     """Free-text stops (no entityId/id) should not trigger dangling error."""
     data = {
@@ -490,8 +507,8 @@ def test_validate_flags_level_name_mismatch(tmp_path: Path) -> None:
     assert "level_name_mismatch" in codes
 
 
-def test_validate_flags_near_asymmetric(tmp_path: Path) -> None:
-    """One-way near relationships should be flagged."""
+def test_validate_tracks_one_way_near_edges_as_runtime_supported_stats(tmp_path: Path) -> None:
+    """One-way near relationships are OK because runtime indexes near bidirectionally."""
     data = {
         "entities": [
             {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
@@ -505,11 +522,11 @@ def test_validate_flags_near_asymmetric(tmp_path: Path) -> None:
 
     issues, stats = validate_data.validate(data, tmp_path / "data.json")
 
-    assert stats["near_asymmetric"] == 1
-    assert "near_asymmetric" in {issue.code for issue in issues}
+    assert stats["near_one_way_edges"] == 1
+    assert "near_asymmetric" not in {issue.code for issue in issues}
 
 
-def test_validate_no_near_asymmetric_when_reciprocal(tmp_path: Path) -> None:
+def test_validate_tracks_reciprocal_near_pairs(tmp_path: Path) -> None:
     data = {
         "entities": [
             {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
@@ -524,7 +541,8 @@ def test_validate_no_near_asymmetric_when_reciprocal(tmp_path: Path) -> None:
 
     issues, stats = validate_data.validate(data, tmp_path / "data.json")
 
-    assert stats["near_asymmetric"] == 0
+    assert stats["near_one_way_edges"] == 0
+    assert stats["near_reciprocal_pairs"] == 1
 
 
 def test_validate_flags_coordinate_clusters(tmp_path: Path) -> None:
@@ -543,7 +561,28 @@ def test_validate_flags_coordinate_clusters(tmp_path: Path) -> None:
 
     assert stats["coordinate_clusters"] == 1
     assert stats["coordinate_clustered_entities"] == 2
-    assert "coordinate_clusters" in {issue.code for issue in issues}
+    assert stats["coordinate_clusters_precise"] == 1
+    assert stats["coordinate_clustered_entities_precise"] == 2
+    assert "coordinate_clusters_precise" in {issue.code for issue in issues}
+
+def test_validate_allows_approximate_coordinate_clusters(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "a", "type": "attraction", "name": "A", "summary": "A", "area": "vinh-long",
+             "coordinates": [10.25, 106.0], "attributes": {"coords_approximate": True}},
+            {"id": "b", "type": "restaurant", "name": "B", "summary": "B", "area": "vinh-long",
+             "coordinates": [10.25, 106.0], "attributes": {"coords_approximate": True}},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["coordinate_clusters"] == 1
+    assert stats["coordinate_clusters_approximate"] == 1
+    assert stats["coordinate_clusters_precise"] == 0
+    assert "coordinate_clusters_precise" not in {issue.code for issue in issues}
 
 
 def test_validate_no_coord_clusters_when_unique(tmp_path: Path) -> None:
@@ -646,6 +685,43 @@ def test_validate_image_coverage_zero(tmp_path: Path) -> None:
     assert stats["image_coverage_pct"] == 0.0
 
 
+def test_validate_image_legal_metadata_stats(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {
+                "id": "a",
+                "type": "attraction",
+                "name": "A",
+                "summary": "A",
+                "area": "vinh-long",
+                "coordinates": [10.25, 106.0],
+                "images": ["https://example.com/a.jpg", "https://example.com/b.jpg"],
+                "attributes": {
+                    "image_credits": [
+                        {
+                            "url": "https://example.com/a.jpg",
+                            "author": "Photo A",
+                            "license": "CC BY 4.0",
+                            "source_url": "https://commons.wikimedia.org/wiki/File:A.jpg",
+                        }
+                    ]
+                },
+            }
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+
+    issues, stats = validate_data.validate(data, tmp_path / "data.json")
+    codes = {issue.code for issue in issues}
+
+    assert stats["image_total"] == 2
+    assert stats["image_missing_credit"] == 1
+    assert stats["image_missing_license"] == 1
+    assert stats["image_missing_source"] == 1
+    assert {"image_missing_credit", "image_missing_license", "image_missing_source"}.issubset(codes)
+
+
 # ── Summary quality (DI-010) ─────────────────────────────────────────────
 
 
@@ -736,7 +812,44 @@ def test_validate_no_itinerary_area_mismatch_when_matching(tmp_path: Path) -> No
 # ── Relationship type singletons (DI-013) ────────────────────────────────
 
 
-def test_validate_flags_rel_type_singletons(tmp_path: Path) -> None:
+def test_validate_no_itinerary_area_mismatch_when_declared_multi_area(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "stop-bt", "type": "attraction", "name": "Stop BT", "summary": "S",
+             "area": "ben-tre", "coordinates": [10.25, 106.0]},
+            {"id": "stop-vl", "type": "attraction", "name": "Stop VL", "summary": "S",
+             "area": "vinh-long", "coordinates": [10.26, 106.01]},
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-bt", "area": "ben-tre", "areas": ["ben-tre", "vinh-long"],
+             "stops": [{"entityId": "stop-bt"}, {"entityId": "stop-vl"}]},
+        ],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["itinerary_area_mismatches"] == 0
+
+def test_validate_lien_vung_itinerary_allows_cross_region_stops(tmp_path: Path) -> None:
+    data = {
+        "entities": [
+            {"id": "stop-bt", "type": "attraction", "name": "Stop BT", "summary": "S",
+             "area": "ben-tre", "coordinates": [10.25, 106.0]},
+            {"id": "stop-tv", "type": "attraction", "name": "Stop TV", "summary": "S",
+             "area": "tra-vinh", "coordinates": [9.95, 106.35]},
+        ],
+        "relationships": [],
+        "itineraries": [
+            {"id": "it-lv", "area": "lien-vung", "stops": [{"entityId": "stop-bt"}, {"entityId": "stop-tv"}]},
+        ],
+    }
+
+    _issues, stats = validate_data.validate(data, tmp_path / "data.json")
+
+    assert stats["itinerary_area_mismatches"] == 0
+
+def test_validate_tracks_rel_type_singletons_without_warning(tmp_path: Path) -> None:
     data = {
         "entities": [
             {"id": "a", "type": "product", "name": "A", "summary": "A", "area": "vinh-long", "coordinates": [10.25, 106.0]},
@@ -751,7 +864,7 @@ def test_validate_flags_rel_type_singletons(tmp_path: Path) -> None:
     issues, stats = validate_data.validate(data, tmp_path / "data.json")
 
     assert stats["rel_type_singletons"] >= 1
-    assert "rel_type_singletons" in {issue.code for issue in issues}
+    assert "rel_type_singletons" not in {issue.code for issue in issues}
 
 
 def test_validate_no_rel_singletons_with_common_types(tmp_path: Path) -> None:
