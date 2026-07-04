@@ -2496,10 +2496,18 @@ class TestPerformanceOptimizations:
         assert "LIMIT" in reply_block
 
     def test_missing_indexes_added(self):
-        src = (AGENT_DIR / "database.py").read_text(encoding="utf-8")
-        assert "idx_entity_changes_entity" in src
-        assert "idx_entities_type_area" in src
-        assert "idx_relationships_type" in src
+        # Index coverage for hot query paths. Indexes live across database.py (base
+        # schema) AND agent/migrations/*.sql (later additive indexes), so check both.
+        # The exact names evolved: entity type+area filtering is served by the composite
+        # partial index idx_entities_public_type_area_updated (migration 057), which
+        # supersedes a bare (type, area) index; relationship traversal is served by the
+        # from/to indexes (a type-only index is low-value since queries scope by endpoint).
+        schema = (AGENT_DIR / "database.py").read_text(encoding="utf-8")
+        for mig in sorted((AGENT_DIR / "migrations").glob("*.sql")):
+            schema += mig.read_text(encoding="utf-8")
+        assert "idx_entity_changes_entity" in schema            # entity change-history lookups
+        assert "idx_entities_public_type_area_updated" in schema  # entity type+area filtering
+        assert "idx_relationships_from" in schema and "idx_relationships_to" in schema  # rel traversal
 
     def test_feed_uses_enrich_all(self):
         src = inspect.getsource(__import__("social").get_feed)
