@@ -1820,6 +1820,7 @@ def _self_ranked_result(leaders: list, limit: int, user: dict | None) -> dict:
             description="Paginated list of users that the specified user is following. Returns public profile info for each followed user.")
 async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
     """Danh sách NGƯỜI mà user này đang theo dõi (hồ-sơ công-khai)."""
+    user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
@@ -1854,6 +1855,7 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
             description="Paginated list of users following the specified user. Returns public profile info for each follower.")
 async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
     """Danh sách NGƯỜI đang theo dõi user này (hồ-sơ công-khai)."""
+    user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
@@ -3550,6 +3552,7 @@ def _check_achievements_bg(user_id: str):
             summary="Get user profile",
             description="Retrieve a user's public profile by UUID or username. Includes stats, reputation, badges, privacy settings, and viewer relationship status (following/blocked/muted).")
 async def get_user_profile(user_id: str, user=Depends(get_current_user)):
+    user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
     _is_uuid = len(user_id) == 36 and user_id.count("-") == 4
     viewer_id = str(user["id"]) if user else None
@@ -3726,6 +3729,7 @@ async def get_user_posts(
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
 ):
     user = await get_current_user(request)
+    user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:
@@ -3773,6 +3777,7 @@ async def get_user_reviews(
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
 ):
     user = await get_current_user(request)
+    user_id = validate_path_id(user_id, "user_id")
     ph = db._ph
     uid = await asyncio.to_thread(_resolve_user_id, user_id)
     if not uid:

@@ -1909,6 +1909,7 @@ async def delete_trusted_device(device_id: str, request: Request, _csrf=Depends(
     from auth_middleware import validate_path_id
     device_id = validate_path_id(device_id, "device_id")
     uid = str(user["id"])
+    check_rate(f"trusted_del:{uid}", 20, 300, "Thao tác quá nhanh. Vui lòng đợi.")
 
     def _del():
         ph = db._ph
