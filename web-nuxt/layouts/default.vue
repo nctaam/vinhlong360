@@ -163,7 +163,11 @@ const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: s
     { to: '/tao-lich-trinh', label: 'Tạo lịch trình' },
     { to: '/da-luu', label: 'Đã lưu' },
   ] },
-  { label: 'Cộng đồng', to: '/cong-dong' },
+  { label: 'Cộng đồng', children: [
+    { to: '/cong-dong', label: 'Bảng tin cộng đồng' },
+    { to: '/bang-xep-hang', label: 'Bảng xếp hạng' },
+    { to: '/huong-dan', label: 'Hướng dẫn sử dụng' },
+  ] },
 ]
 const navGroups = computed(() => ss('navigation.nav_groups', DEFAULT_NAV_GROUPS) as typeof DEFAULT_NAV_GROUPS)
 

@@ -114,10 +114,10 @@
         <thead>
           <tr>
             <th scope="col" class="admin-th-check"><input type="checkbox" :checked="allSelected" @change="toggleAll" aria-label="Chọn tất cả" /></th>
-            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></button></th>
-            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></button></th>
-            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></button></th>
-            <th scope="col" class="ent-sortable"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'id' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('id')">ID <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('id') }}</span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('name')">Tên <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('name') }}</span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'type' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('type')">Loại <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('type') }}</span></button></th>
+            <th scope="col" class="ent-sortable" :aria-sort="sortKey === 'place_name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'"><button type="button" class="ent-sort-btn" @click="toggleSort('place_name')">Địa điểm <span class="ent-sort-arrow" aria-hidden="true">{{ sortArrow('place_name') }}</span></button></th>
             <th scope="col">Place ID</th>
             <th v-for="c in currentKind?.columns || []" :key="c.key" scope="col">{{ c.label }}</th>
             <th scope="col"><span title="Tóm tắt / Ảnh / Địa điểm">Chất lượng</span><span class="admin-help" data-tip="● xanh = có, ● đỏ = thiếu. Thứ tự: Tóm tắt · Ảnh · Địa điểm" tabindex="0" role="img" aria-label="Giải thích chất lượng">?</span></th>

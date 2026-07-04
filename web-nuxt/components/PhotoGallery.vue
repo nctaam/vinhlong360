@@ -112,6 +112,7 @@ function goToSlide(idx: number) {
         v-for="(_, i) in images"
         :key="i"
         type="button"
+        tabindex="-1"
         :class="['pg-dot', { active: i === activeSlide }]"
         :aria-label="`Ảnh ${i + 1}`"
         @click="goToSlide(i)"

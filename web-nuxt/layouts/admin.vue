@@ -115,7 +115,7 @@
           </div>
         </div>
         <NuxtLink to="/" class="back-link">&#8592; Về trang chủ</NuxtLink>
-        <button type="button" class="dark-toggle" :title="isDark ? 'Chế độ sáng' : 'Chế độ tối'" @click="toggleDark">
+        <button type="button" class="dark-toggle" :aria-label="isDark ? 'Chế độ sáng' : 'Chế độ tối'" :title="isDark ? 'Chế độ sáng' : 'Chế độ tối'" @click="toggleDark">
           {{ isDark ? '☀️' : '🌙' }}
         </button>
       </div>
