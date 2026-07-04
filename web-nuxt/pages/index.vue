@@ -49,17 +49,19 @@
           <h2>Hôm nay bạn muốn bắt đầu thế nào?</h2>
           <p>Dựa trên mùa, sự kiện và nội dung đang nổi bật để đưa bạn tới đúng luồng tiếp theo.</p>
         </div>
-        <div class="decision-grid">
-          <NuxtLink v-for="card in homeDecisionCards" :key="card.to" :to="card.to" class="decision-card" :class="`decision-${card.tone}`">
-            <span class="decision-icon" aria-hidden="true">{{ card.icon }}</span>
-            <span class="decision-body">
-              <span class="decision-label">{{ card.eyebrow }}</span>
-              <span class="decision-title">{{ card.title }}</span>
-              <span class="decision-text">{{ card.text }}</span>
-            </span>
-            <span class="decision-cta">{{ card.cta }} <span aria-hidden="true">→</span></span>
-          </NuxtLink>
-        </div>
+        <ol class="decision-index">
+          <li v-for="(card, i) in homeDecisionCards" :key="card.to" class="dx-row">
+            <NuxtLink :to="card.to" class="dx-item" :class="`dx-${card.tone}`">
+              <span class="dx-num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
+              <span class="dx-main">
+                <span class="dx-eyebrow">{{ card.eyebrow }}</span>
+                <span class="dx-title">{{ card.title }}</span>
+                <span class="dx-text">{{ card.text }}</span>
+              </span>
+              <span class="dx-go" aria-hidden="true">→</span>
+            </NuxtLink>
+          </li>
+        </ol>
       </div>
     </section>
 
@@ -163,12 +165,10 @@
           <NuxtLink
             :to="entityPath(spotlight.id)"
             class="spot-visual"
-            :class="`cat-${spotMeta?.cat}`"
-            :style="{ backgroundImage: spotBg }"
+            :style="{ backgroundImage: spotBgCss }"
             :aria-label="spotlight.name"
           >
             <span v-if="spotRegion" class="spot-region">{{ spotRegion }}</span>
-            <span class="spot-icon" v-html="spotIcon" aria-hidden="true" />
           </NuxtLink>
           <div class="spot-body">
             <span class="spot-kicker">{{ spotMeta?.label }} · Nổi bật</span>
@@ -455,8 +455,17 @@ const spotlight = computed<any>(() => {
 })
 const spotId = computed(() => spotlight.value?.id)
 const spotMeta = computed(() => spotlight.value ? (TYPE_META[spotlight.value.type] || { emoji: '📍', label: spotlight.value.type, cat: 'place' }) : null)
-const spotBg = computed(() => spotlight.value && spotMeta.value ? generateCategoryPlaceholder(spotlight.value.id, spotMeta.value.cat) : '')
-const spotIcon = computed(() => spotMeta.value ? generateCategoryIcon(spotMeta.value.cat) : '')
+// Real AI-photo backdrop keyed off the spotlight's category — robust to spotlight
+// rotation (no per-entity generation). Replaces the flat gradient + centered leaf icon.
+const SPOT_CAT_PHOTO: Record<string, string> = {
+  place: '/img/cat-du-lich.webp', experience: '/img/cat-du-lich.webp',
+  product: '/img/cat-ocop.webp', dish: '/img/cat-am-thuc.webp',
+  event: '/img/cat-le-hoi.webp', stay: '/img/cat-luu-tru.webp',
+}
+const spotPhoto = computed(() => SPOT_CAT_PHOTO[spotMeta.value?.cat || ''] || '/img/cat-du-lich.webp')
+const spotBgCss = computed(() => spotlight.value
+  ? `linear-gradient(to top, rgba(18,20,24,.55) 0%, rgba(18,20,24,.10) 45%, rgba(18,20,24,.32) 100%), url(${spotPhoto.value})`
+  : '')
 const spotRegion = computed(() => {
   const a = spotlight.value?.area || spotlight.value?.attributes?.area || spotlight.value?.attributes?.province
   if (!a) return ''
@@ -999,48 +1008,62 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   margin: var(--space-2) 0 0; color: var(--muted);
   font-size: var(--text-sm); line-height: var(--leading-relaxed);
 }
-.decision-grid {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3);
+/* Editorial numbered index — the old uniform card-grid read as generic/AI-slop.
+   This is conceptually a table-of-contents for the page: big serif numerals,
+   hairline rules, no boxes, no emoji-in-box. */
+.decision-index {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--space-8); row-gap: 0;
+  margin: 0; padding: 0; list-style: none;
+  border-top: 1px solid var(--line);
 }
-.decision-card {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3);
-  align-items: start;
-  min-height: 132px; padding: var(--space-4);
-  border: .5px solid var(--line); border-radius: 8px;
-  background: var(--card); color: var(--ink); text-decoration: none;
-  transition: transform .28s var(--ease-spring-gentle), box-shadow .28s var(--ease-out), border-color .25s var(--ease-out);
+.dx-row { margin: 0; }
+.dx-item {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center; gap: var(--space-4);
+  padding: var(--space-4) var(--space-1);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink); text-decoration: none;
+  transition: background .3s var(--ease-out);
 }
-.decision-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
-.decision-card:active { transform: scale(.98); transition-duration: .1s; }
-.decision-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.decision-icon {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 40px; height: 40px; border-radius: 8px;
-  background: var(--bg-alt); font-size: 1.35rem;
+.dx-item:hover { background: var(--bg-warm); }
+.dx-item:active { background: var(--bg-alt); }
+.dx-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.dx-num {
+  font-family: var(--font-editorial);
+  font-size: clamp(2rem, 1.3rem + 2.2vw, 2.9rem); line-height: 1;
+  font-weight: 500; letter-spacing: -.02em; font-variant-numeric: tabular-nums;
+  color: var(--tone, var(--muted)); opacity: .4;
+  transition: opacity .3s var(--ease-out);
 }
-.decision-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.decision-label { color: var(--primary-fg); font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; }
-.decision-title { font-size: var(--text-base); font-weight: var(--weight-bold); line-height: var(--leading-snug); }
-.decision-text {
+.dx-item:hover .dx-num { opacity: 1; }
+.dx-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dx-eyebrow {
+  font-size: .68rem; font-weight: var(--weight-bold);
+  text-transform: uppercase; letter-spacing: .09em; color: var(--tone, var(--accent-text));
+}
+.dx-title { font-size: var(--text-base); font-weight: var(--weight-bold); line-height: var(--leading-snug); }
+.dx-text {
   color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-snug);
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.decision-cta {
-  grid-column: 2; align-self: end;
-  color: var(--primary-fg); font-size: var(--text-sm); font-weight: var(--weight-bold);
+.dx-go {
+  color: var(--tone, var(--primary-fg)); font-size: 1.1rem; font-weight: var(--weight-bold);
+  transform: translateX(-3px); opacity: .5;
+  transition: transform .3s var(--ease-spring-gentle), opacity .3s var(--ease-out);
 }
-.decision-event .decision-icon { background: rgba(217,79,61,.10); }
-.decision-season .decision-icon { background: rgba(var(--primary-rgb), .10); }
-.decision-planner .decision-icon { background: rgba(50,120,180,.10); }
-.decision-food .decision-icon { background: rgba(var(--accent-rgb), .14); }
-.decision-map .decision-icon { background: rgba(80,120,170,.10); }
+.dx-item:hover .dx-go { transform: translateX(2px); opacity: 1; }
+.dx-event   { --tone: #d1503f; }
+.dx-season  { --tone: var(--primary-fg); }
+.dx-planner { --tone: #3f7fb4; }
+.dx-food    { --tone: var(--accent-text, #c0872e); }
+.dx-map     { --tone: #4a78aa; }
 @media (max-width: 860px) {
   .decision-shell { grid-template-columns: 1fr; }
   .decision-copy { max-width: 680px; }
 }
 @media (max-width: 560px) {
-  .decision-grid { grid-template-columns: 1fr; }
-  .decision-card { min-height: 118px; }
+  .decision-index { grid-template-columns: 1fr; column-gap: 0; }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1214,29 +1237,11 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .spot-visual {
   position: relative; min-height: 300px;
   background-size: cover; background-position: center;
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden; text-decoration: none; isolation: isolate;
+  display: block; overflow: hidden; text-decoration: none; isolation: isolate;
+  transition: transform .6s var(--ease-out-expo);
 }
-.spot-visual::before {
-  content: ""; position: absolute; inset: -18%; z-index: 0;
-  background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.24) 0%, transparent 68%);
-  animation: spot-glow 13s var(--ease-in-out) infinite alternate; pointer-events: none;
-  will-change: transform;
-}
-.spot-region, .spot-icon { position: relative; z-index: 1; }
-@keyframes spot-glow {
-  0%   { transform: translate3d(0, 0, 0) scale(1); opacity: .9; }
-  100% { transform: translate3d(7%, 5%, 0) scale(1.12); opacity: 1; }
-}
-@media (max-width: 760px) { .spot-visual { min-height: 180px; } }
-.spot-icon {
-  width: 150px; height: 150px; opacity: .88; color: var(--text-on-dark, #fff);
-  filter: drop-shadow(0 4px 16px rgba(0,0,0,.28));
-  transition: transform .6s var(--ease-out-expo); pointer-events: none;
-}
-.spot-icon :deep(svg), .spot-icon svg { width: 100%; height: 100%; display: block; }
-.spot-visual:hover .spot-icon { transform: scale(1.07) rotate(-2deg); }
-@media (max-width: 760px) { .spot-icon { width: 96px; height: 96px; } }
+.spotlight:hover .spot-visual { transform: scale(1.03); }
+@media (max-width: 760px) { .spot-visual { min-height: 200px; } }
 .spot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
   padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5);
@@ -1441,8 +1446,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .chatbot-cta-btn:hover, .chatbot-cta-btn:active { transform: none; }
   .ec-live-dot { animation: none; }
   .sk-heading { animation: none; }
-  .spot-visual::before { animation: none; }
-  .spot-visual:hover .spot-icon { transform: none; }
+  .spotlight:hover .spot-visual { transform: none; }
   .dish-item:hover, .dish-item:active { transform: none; }
   .cat-tile:hover, .cat-tile:active { transform: none; }
 }
