@@ -1652,7 +1652,11 @@ class TestUnifiedErrorResponse:
     def test_notification_sse_prefers_cookie_over_query_token(self):
         import notifications
         src = inspect.getsource(notifications.notification_stream)
-        assert "_extract_token(request) or token" in src
+        # Cookie is the PRIMARY token source; the legacy query token is honoured only
+        # as a non-production fallback (never trusted in prod) — stricter than a plain
+        # "cookie or query" and must not regress to query-first.
+        assert "session_token = _extract_token(request)" in src
+        assert 'not in {"production", "prod", "prd"}' in src
 
 
 # ── P1: Token rotation ──
@@ -1772,7 +1776,10 @@ class TestETagSupport:
     def test_etag_cached_with_entity(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
         idx = src.index("async def get_entity(")
-        fn_src = src[idx:idx+2000]
+        # scan the whole function (to the next top-level def/decorator) rather than an
+        # arbitrary char window — the cache write moved past a fixed cutoff as get_entity grew.
+        end = min((x for x in (src.find("\n@", idx+10), src.find("\nasync def ", idx+10), src.find("\ndef ", idx+10)) if x > 0), default=len(src))
+        fn_src = src[idx:end]
         assert "_entity_cache[cache_key]" in fn_src
         assert "etag" in fn_src.lower()
 
@@ -1989,7 +1996,8 @@ class TestAsyncBlockingFixes:
     def test_readiness_probe_async(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
         idx = src.index("async def readiness_probe():")
-        fn_src = src[idx:idx+500]
+        end = min((x for x in (src.find("\n@", idx+10), src.find("\nasync def ", idx+10), src.find("\ndef ", idx+10)) if x > 0), default=len(src))
+        fn_src = src[idx:end]
         assert "asyncio.to_thread" in fn_src
 
     def test_vector_search_async(self):
@@ -2121,7 +2129,8 @@ class TestSecurityFixes:
     def test_sse_loop_captured_in_stream(self):
         src = (AGENT_DIR / "notifications.py").read_text(encoding="utf-8")
         idx = src.index("async def notification_stream")
-        fn_src = src[idx:idx+1500]
+        end = min((x for x in (src.find("\n@", idx+10), src.find("\nasync def ", idx+10), src.find("\ndef ", idx+10)) if x > 0), default=len(src))
+        fn_src = src[idx:end]
         assert "_sse_loop" in fn_src
         assert "get_running_loop" in fn_src
 
@@ -2135,7 +2144,8 @@ class TestSecurityFixes:
     def test_community_stats_filters_deleted(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
         idx = src.index("async def community_stats(")
-        fn_src = src[idx:idx+500]
+        end = min((x for x in (src.find("\n@", idx+10), src.find("\nasync def ", idx+10), src.find("\ndef ", idx+10)) if x > 0), default=len(src))
+        fn_src = src[idx:end]
         assert "deleted_at IS NULL" in fn_src
 
 

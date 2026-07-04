@@ -56,11 +56,17 @@ class TestSettings:
             Settings(ENVIRONMENT="production", LLM_API_KEY="", LLM_BASE_URL="u",
                      ADMIN_API_KEY="a", JWT_SECRET="j", DATABASE_URL="postgresql://x")
 
-    def test_production_missing_jwt_secret_fails(self):
+    def test_production_missing_jwt_secret_is_allowed(self):
+        # JWT_SECRET is intentionally OPTIONAL in production. Sessions are cookie-based
+        # (not JWT-signed), and twofactor.py reads JWT_SECRET only as an optional
+        # fallback for the TOTP encryption key (TOTP_ENC_KEY > JWT_SECRET > ADMIN_API_KEY),
+        # so the app boots fine without it. Requiring it would gate deploys on a key the
+        # app does not need. An empty JWT_SECRET in production must therefore NOT raise.
         from config import Settings
-        with pytest.raises(ValueError, match="JWT_SECRET"):
-            Settings(ENVIRONMENT="production", LLM_API_KEY="k", LLM_BASE_URL="u",
+        s = Settings(ENVIRONMENT="production", LLM_API_KEY="k", LLM_BASE_URL="u",
                      ADMIN_API_KEY="a", JWT_SECRET="", DATABASE_URL="postgresql://x")
+        assert s.JWT_SECRET == ""
+        assert s.is_production is True
 
     def test_production_missing_database_url_fails(self):
         from config import Settings
