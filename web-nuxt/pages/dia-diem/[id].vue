@@ -15,9 +15,9 @@
     </nav>
 
     <!-- Cover + Hero Image -->
-    <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': coverImage }]">
-      <NuxtImg v-if="coverImage && isRemoteUrl(coverImage)" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" :aria-label="hasEntityImages ? `Xem ảnh ${entity.name}` : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" @keydown.space.prevent="hasEntityImages && openCoverLightbox(0)" />
-      <img v-else-if="coverImage" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" :aria-label="hasEntityImages ? `Xem ảnh ${entity.name}` : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" @keydown.space.prevent="hasEntityImages && openCoverLightbox(0)" />
+    <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': hasEntityImages }]" :style="!hasEntityImages ? { backgroundImage: heroPlaceholderBg } : undefined">
+      <NuxtImg v-if="hasEntityImages && isRemoteUrl(coverImage)" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" :aria-label="hasEntityImages ? `Xem ảnh ${entity.name}` : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" @keydown.space.prevent="hasEntityImages && openCoverLightbox(0)" />
+      <img v-else-if="hasEntityImages" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" :aria-label="hasEntityImages ? `Xem ảnh ${entity.name}` : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" @keydown.space.prevent="hasEntityImages && openCoverLightbox(0)" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
       <div class="dc-inner">
@@ -27,7 +27,9 @@
             <span aria-hidden="true">⭐</span> OCOP {{ entity.attributes.ocop }}
           </span>
         </span>
+        <span v-if="heroDateline" class="dc-eyebrow">{{ heroDateline }}</span>
         <h1>{{ entity.name }}</h1>
+        <p v-if="heroHook" class="dc-hook">{{ heroHook }}</p>
         <p v-if="entity.place_name" class="dc-place"><NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="dc-place-link">{{ entity.place_name }}</NuxtLink><template v-else>{{ entity.place_name }}</template></p>
         <div class="dc-actions">
           <ClientOnly>
@@ -66,6 +68,7 @@
         </button>
       </div>
       <small v-if="imageCredit" class="dc-credit">{{ imageCredit }}</small>
+      <small v-else-if="!hasEntityImages" class="dc-nophoto-note">Ảnh minh hoạ theo tông màu đặc trưng — chưa có ảnh thật cho địa điểm này.</small>
     </div>
 
     <!-- Photo Gallery (asymmetric grid for 2+ images) -->
@@ -472,6 +475,8 @@
 import type { Entity } from '~/types'
 import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstants'
 import { seasonText } from '~/composables/useSeason'
+import { generateCategoryPlaceholder } from '~/composables/useCategoryPlaceholder'
+import { entityStoryTeaser } from '~/composables/useEntityStory'
 
 useReveal()
 const { progress } = useScrollProgress()
@@ -624,6 +629,20 @@ const coverImage = computed(() => {
   const first = entityImages.value[0]
   if (first) return first
   return `/img/cat/${typeMeta.value.cat}.jpg`
+})
+
+// No-photo "phù sa" hero: per-entity hash-seeded gradient (same system as EntityCard),
+// promoted to full-bleed hero scale. Replaces the flat shared /img/cat/*.jpg fallback.
+const heroPlaceholderBg = computed(() =>
+  entity.value ? generateCategoryPlaceholder(entity.value.id, typeMeta.value.cat) : '')
+// Editorial dateline eyebrow: "{TYPE} · {AREA}" (area from the page's own resolver).
+const heroDateline = computed(() =>
+  areaName.value ? `${typeMeta.value.label} · ${areaName.value}` : typeMeta.value.label)
+// Cover-story hook (one line): highlight → famous_for → first sentence of description.
+const heroHook = computed(() => {
+  if (!entity.value) return ''
+  const t = entityStoryTeaser(entity.value)
+  return t && t !== entity.value.name ? t : ''
 })
 
 
@@ -1211,5 +1230,37 @@ useHead({
 @media (max-width: 767px) {
   /* Hide existing sticky-cta-bar since ContactWidget provides mobile bottom bar */
   .sticky-cta-bar { display: none; }
+}
+
+/* ── Cover-story hero layer (Wave 2): dateline eyebrow + hook + phù-sa no-photo hero ── */
+.detail-cover .dc-eyebrow {
+  display: inline-block; margin-bottom: var(--space-2);
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .92); padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, .38);
+}
+.detail-cover .dc-hook {
+  margin: var(--space-2) 0 var(--space-1); max-width: 42ch;
+  font-family: var(--font-editorial); font-style: italic; font-weight: 500;
+  font-size: var(--text-lg); line-height: 1.4; color: rgba(255, 255, 255, .95);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .38);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* No-photo entities: the per-entity gradient (inline bg) fills the hero; grain adds print texture */
+.detail-cover:not(.has-cover-img) { background-size: cover; background-position: center; }
+.detail-cover:not(.has-cover-img)::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: var(--grain); background-size: 168px 168px; opacity: .09;
+}
+.detail-cover:not(.has-cover-img) .dc-inner { position: relative; z-index: 2; }
+.dc-nophoto-note {
+  position: absolute; right: var(--space-4); bottom: var(--space-3); z-index: 2;
+  font-size: var(--text-2xs); color: rgba(255, 255, 255, .82);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .5); max-width: 58%; text-align: right; line-height: 1.3;
+}
+@media (max-width: 640px) {
+  .detail-cover .dc-hook { font-size: var(--text-base); max-width: 100%; }
+  .dc-nophoto-note { max-width: 72%; }
 }
 </style>
