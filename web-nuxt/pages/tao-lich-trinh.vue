@@ -2,14 +2,12 @@
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Lịch trình', to: '/lich-trinh' }, { label: 'Tạo lịch trình' }]" />
 
-    <!-- Hero -->
+    <!-- Hero: chrome-only CE pass — masthead eyebrow + serif H1, builder/picker logic untouched -->
     <section class="catalog-hero cat-itinerary">
-      <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">📋</span>
-        <div>
-          <h1>Tạo lịch trình</h1>
-          <p>Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.</p>
-        </div>
+      <div class="catalog-hero-inner planner-hero-inner">
+        <span class="dateline-eyebrow">Sổ tay hành trình · Vĩnh Long · Bến Tre · Trà Vinh</span>
+        <h1>Tạo lịch trình</h1>
+        <p>Lập kế hoạch chuyến đi của bạn — chọn điểm đến, sắp xếp thứ tự và lưu lại.</p>
       </div>
     </section>
 
@@ -158,14 +156,14 @@
         <!-- Route map -->
         <ClientOnly>
           <div v-if="stops.length >= 2" class="route-map-section">
-            <h3>Bản đồ lộ trình</h3>
+            <h3 class="sediment-head">Bản đồ lộ trình</h3>
             <div ref="routeMapEl" class="route-map"></div>
           </div>
         </ClientOnly>
 
         <!-- Saved itineraries -->
         <div v-if="savedPlans.length" class="saved-plans">
-          <h3>Lịch trình đã lưu</h3>
+          <h3 class="sediment-head">Lịch trình đã lưu</h3>
           <div v-for="(plan, pi) in savedPlans" :key="pi" class="saved-plan-item">
             <button type="button" class="saved-plan-info saved-plan-btn" @click="loadPlan(pi)">
               <strong>{{ plan.title || 'Lịch trình chưa đặt tên' }}</strong>
@@ -741,6 +739,43 @@ useHead({
 </script>
 
 <style scoped>
+/* ── Masthead: chrome-only CE consistency pass (builder/picker logic untouched) ──
+   .dateline-eyebrow is defined locally (not global — same convention as
+   tim-kiem.vue/ban-do.vue's scoped copies) per this unit's edit boundary. */
+.planner-hero-inner { display: flex; flex-direction: column; align-items: flex-start; }
+.planner-hero-inner .dateline-eyebrow {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: .5px solid var(--line);
+  width: 100%;
+}
+.dark .planner-hero-inner .dateline-eyebrow { border-bottom-color: var(--line); }
+
+/* ── Section heads (h3): reuse the shared sediment-tick recipe from
+   components.css, which only targets h2 — scoped h3 variant, same gradient,
+   so "Bản đồ lộ trình" / "Lịch trình đã lưu" read as the same publication as
+   the rest of the site without touching global CSS or the heading hierarchy. */
+h3.sediment-head {
+  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
+  position: relative; padding-left: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+h3.sediment-head::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark h3.sediment-head::before {
+  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
+
 .builder-title-wrap { position: relative; flex: 1; min-width: 0; }
 .title-counter { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: var(--text-xs); color: var(--muted); pointer-events: none; }
 .title-counter.warn { color: var(--error, #d32); font-weight: var(--weight-semibold); }

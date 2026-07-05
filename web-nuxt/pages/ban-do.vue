@@ -2,14 +2,12 @@
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Bản đồ' }]" />
 
-    <!-- Hero -->
+    <!-- Hero: chrome-only CE pass — masthead eyebrow + serif H1, map internals untouched -->
     <section class="catalog-hero cat-map">
-      <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🗺️</span>
-        <div>
-          <h1>Bản đồ</h1>
-          <p>Khám phá trực quan hàng trăm điểm đến trên bản đồ tương tác — lọc theo loại hình để tìm nhanh.</p>
-        </div>
+      <div class="catalog-hero-inner map-hero-inner">
+        <span class="dateline-eyebrow">Bản đồ sống · Vĩnh Long · Bến Tre · Trà Vinh</span>
+        <h1>Bản đồ</h1>
+        <p>Khám phá trực quan hàng trăm điểm đến trên bản đồ tương tác — lọc theo loại hình để tìm nhanh.</p>
       </div>
     </section>
 
@@ -466,6 +464,25 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* ── Masthead: chrome-only CE consistency pass (map internals untouched) ──
+   .dateline-eyebrow is defined locally (not global — same convention as
+   tim-kiem.vue's scoped copy) per this unit's edit boundary. */
+.map-hero-inner { display: flex; flex-direction: column; align-items: flex-start; }
+.map-hero-inner .dateline-eyebrow {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: .5px solid var(--line);
+  width: 100%;
+}
+.dark .map-hero-inner .dateline-eyebrow { border-bottom-color: var(--line); }
+
 #mapContainer {
   height: 65vh; height: 65dvh; min-height: 400px;
   border-radius: var(--radius-lg, 16px);
