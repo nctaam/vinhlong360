@@ -6,11 +6,15 @@
     </button>
 
     <Transition name="notif-drop">
-      <div v-if="open" class="notif-dropdown" role="region" aria-label="Thông báo" @keydown="onDropdownKeydown">
+      <div v-if="open" class="notif-dropdown notif-dropdown-editorial" role="region" aria-label="Thông báo" @keydown="onDropdownKeydown">
         <div class="notif-header">
-          <strong>Thông báo</strong>
+          <div class="notif-header-text">
+            <span class="notif-eyebrow">Sổ tay của bạn</span>
+            <strong class="notif-title">Thông báo</strong>
+          </div>
           <button type="button" v-if="unreadCount > 0" class="notif-mark-read" @click="doMarkRead">Đọc tất cả</button>
         </div>
+        <span class="notif-rule" aria-hidden="true"></span>
         <div class="notif-list">
           <button type="button"
             v-for="n in notifications"
@@ -93,6 +97,24 @@ onUnmounted(() => stopPolling())
 </script>
 
 <style scoped>
+/* ── Editorial masthead (visual reskin only — polling/keydown/item logic untouched) ── */
+.notif-dropdown-editorial .notif-header { border-bottom: none; padding-bottom: var(--space-2); }
+.notif-header-text { min-width: 0; }
+.notif-eyebrow {
+  display: block; margin-bottom: 2px;
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.notif-title {
+  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
+  font-size: var(--text-base);
+}
+.notif-rule {
+  display: block; height: 2px; border-radius: 2px;
+  margin: 0 var(--space-4) var(--space-2);
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .notif-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .notif-see-all { display: block; text-align: center; padding: var(--space-3); border-top: .5px solid var(--line); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); text-decoration: none; }
 .notif-see-all:hover { background: var(--bg-alt); }
 .notif-error { text-align: center; padding: var(--space-5); color: var(--muted); font-size: .88rem; display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }

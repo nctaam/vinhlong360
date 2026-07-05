@@ -2,14 +2,18 @@
   <Transition name="modal-fade">
   <div v-if="visible" class="modal-overlay show" @click.self="close">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" ref="modalEl">
-      <div class="modal-head">
-        <h2 id="auth-modal-title">{{ modalTitle }}</h2>
+      <div class="modal-head modal-head-editorial">
+        <div class="modal-head-text">
+          <span class="modal-eyebrow">Vinhlong360 · Sổ tay hành trình</span>
+          <h2 id="auth-modal-title">{{ modalTitle }}</h2>
+        </div>
         <button type="button" class="modal-close" aria-label="Đóng" @click="close">✕</button>
       </div>
+      <span class="modal-rule" aria-hidden="true"></span>
       <div class="modal-body">
         <!-- Step 1: Phone -->
         <div v-if="step === 'phone'" class="otp-step">
-          <h3 tabindex="-1">Nhập số điện thoại</h3>
+          <h3 tabindex="-1" class="step-label">Nhập số điện thoại</h3>
           <p>Nhập SĐT để đăng nhập hoặc tạo tài khoản mới.</p>
           <div class="form-group">
             <input
@@ -41,7 +45,7 @@
 
         <!-- Step: Register (new user fills info before OTP) -->
         <div v-else-if="step === 'register'" class="otp-step">
-          <h3 tabindex="-1">Tạo tài khoản</h3>
+          <h3 tabindex="-1" class="step-label">Tạo tài khoản</h3>
           <p>Hoàn tất thông tin để đăng ký cho {{ phone }}</p>
           <div class="form-group">
             <label class="form-label">Họ và tên <span class="required">*</span></label>
@@ -110,7 +114,7 @@
 
         <!-- Step: Password login (returning user) -->
         <div v-else-if="step === 'password'" class="otp-step">
-          <h3 tabindex="-1">Nhập mật khẩu</h3>
+          <h3 tabindex="-1" class="step-label">Nhập mật khẩu</h3>
           <p>Đăng nhập cho {{ phone }}</p>
           <div class="form-group">
             <input
@@ -136,7 +140,7 @@
 
         <!-- Step: OTP input -->
         <div v-else-if="step === 'otp'" class="otp-step">
-          <h3 tabindex="-1">Nhập mã OTP</h3>
+          <h3 tabindex="-1" class="step-label">Nhập mã OTP</h3>
           <p>Đã gửi mã tới {{ phone }}</p>
           <div class="otp-input">
             <input
@@ -167,7 +171,7 @@
 
         <!-- Step: Set password (after first OTP login without password) -->
         <div v-else-if="step === 'set-password'" class="otp-step">
-          <h3 tabindex="-1">Đặt mật khẩu</h3>
+          <h3 tabindex="-1" class="step-label">Đặt mật khẩu</h3>
           <p>Tạo mật khẩu để lần sau đăng nhập nhanh hơn (không cần OTP).</p>
           <div class="form-group">
             <input
@@ -202,7 +206,7 @@
 
         <!-- Step: Two-factor authentication -->
         <div v-else-if="step === 'twofactor'" class="otp-step">
-          <h3 tabindex="-1">Xác thực 2 bước</h3>
+          <h3 tabindex="-1" class="step-label">Xác thực 2 bước</h3>
           <template v-if="!useRecovery">
             <p>Nhập mã 6 chữ số từ ứng dụng xác thực.</p>
             <div class="form-group">
@@ -252,7 +256,7 @@
 
         <!-- Step: Done -->
         <div v-else class="otp-step otp-done">
-          <h3 tabindex="-1">{{ isNewAccount ? 'Đăng ký thành công!' : 'Đăng nhập thành công!' }}</h3>
+          <h3 tabindex="-1" class="step-label">{{ isNewAccount ? 'Đăng ký thành công!' : 'Đăng nhập thành công!' }}</h3>
           <p>Chào mừng bạn đến với vinhlong360.</p>
           <button type="button" class="btn btn-primary btn-full" @click="close">Đóng</button>
         </div>
@@ -590,6 +594,29 @@ function onOtpPaste(e: ClipboardEvent) {
 </script>
 
 <style scoped>
+/* ── Editorial masthead (visual reskin only — logic/focus untouched) ── */
+.modal-head-editorial { align-items: flex-start; }
+.modal-head-text { min-width: 0; }
+.modal-eyebrow {
+  display: block; margin-bottom: var(--space-1);
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.modal-head-editorial #auth-modal-title {
+  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
+  margin: 0;
+}
+/* tri-province hairline — quiet rule beneath the masthead, echoes card-rule/sediment-tick */
+.modal-rule {
+  display: block; height: 2px; border-radius: 2px;
+  margin: 0 var(--space-6) var(--space-2);
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .modal-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+/* step eyebrow — small-caps label above each step's own heading, restrained */
+.step-label {
+  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.005em;
+}
 .consent-row { display: flex; gap: var(--space-3); align-items: flex-start; margin: var(--space-3) 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); cursor: pointer; padding: var(--space-3); border-radius: var(--radius-md); transition: background .3s var(--ease-out); }
 .consent-row:hover { background: var(--bg-alt); }
 .consent-checkbox { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; }

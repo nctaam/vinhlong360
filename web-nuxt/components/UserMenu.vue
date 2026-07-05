@@ -5,25 +5,26 @@
       <span class="auth-user-name">{{ displayName }}</span>
     </button>
     <Transition name="menu-pop">
-    <div v-if="open" ref="menuRef" class="dropdown-menu show" role="menu" @keydown="onMenuKeydown">
+    <div v-if="open" ref="menuRef" class="dropdown-menu show menu-editorial" role="menu" @keydown="onMenuKeydown">
+      <span class="menu-eyebrow">Sổ tay của bạn</span>
       <NuxtLink to="/tai-khoan" class="dropdown-item" role="menuitem" @click="open = false">
-        📊 Tài khoản
+        <span class="menu-icon" aria-hidden="true">📊</span> Tài khoản
       </NuxtLink>
       <NuxtLink v-if="user" :to="userPath(user.username || user.id)" class="dropdown-item" role="menuitem" @click="open = false">
-        👤 Trang cá nhân
+        <span class="menu-icon" aria-hidden="true">👤</span> Trang cá nhân
       </NuxtLink>
       <NuxtLink to="/thong-bao" class="dropdown-item" role="menuitem" @click="open = false">
-        🔔 Thông báo
+        <span class="menu-icon" aria-hidden="true">🔔</span> Thông báo
         <span v-if="unreadCount" class="menu-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
       </NuxtLink>
       <NuxtLink to="/da-luu" class="dropdown-item" role="menuitem" @click="open = false">
-        💾 Đã lưu
+        <span class="menu-icon" aria-hidden="true">💾</span> Đã lưu
       </NuxtLink>
       <NuxtLink to="/cai-dat" class="dropdown-item" role="menuitem" @click="open = false">
-        ⚙️ Cài đặt
+        <span class="menu-icon" aria-hidden="true">⚙️</span> Cài đặt
       </NuxtLink>
-      <div class="dropdown-divider"></div>
-      <button type="button" class="dropdown-item" role="menuitem" @click="doLogout">🚪 Đăng xuất</button>
+      <span class="menu-rule" aria-hidden="true"></span>
+      <button type="button" class="dropdown-item" role="menuitem" @click="doLogout"><span class="menu-icon" aria-hidden="true">🚪</span> Đăng xuất</button>
     </div>
     </Transition>
   </div>
@@ -67,4 +68,20 @@ async function doLogout() {
   margin-left: auto;
   line-height: 1.3;
 }
+/* ── Editorial reskin — masthead eyebrow + quiet icon rail + tri-province rule ── */
+.menu-editorial { padding-top: var(--space-1); }
+.menu-eyebrow {
+  display: block;
+  padding: var(--space-2) 14px var(--space-1);
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+/* emoji restrained into a quiet fixed-width rail, not "loose emoji next to text" */
+.menu-icon { display: inline-flex; width: 1.25em; justify-content: center; opacity: .85; }
+.menu-rule {
+  display: block; height: 2px; border-radius: 2px;
+  margin: var(--space-1) 14px;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .menu-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 </style>
