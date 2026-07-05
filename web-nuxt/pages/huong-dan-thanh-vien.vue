@@ -5,15 +5,16 @@
     <header class="guide-hero">
       <span class="guide-hero-icon" aria-hidden="true">🏅</span>
       <div>
+        <p class="dateline-eyebrow">SỔ TAY CỘNG ĐỒNG · CẤP BẬC &amp; HUY HIỆU</p>
         <h1>Hướng dẫn thành viên</h1>
         <p>Tìm hiểu hệ thống cấp bậc, điểm danh tiếng và huy hiệu trên vinhlong360.</p>
       </div>
     </header>
 
     <!-- Levels -->
-    <section class="guide-section reveal">
+    <section class="guide-section reveal sediment-head">
       <h2>Hệ thống cấp bậc</h2>
-      <p class="guide-intro">Cấp bậc phản ánh mức độ đóng góp tổng thể của bạn. Điểm được tính từ nhiều hoạt động — không thể đạt cấp cao chỉ bằng một loại đóng góp duy nhất.</p>
+      <p class="guide-intro editorial-body">Cấp bậc phản ánh mức độ đóng góp tổng thể của bạn. Điểm được tính từ nhiều hoạt động — không thể đạt cấp cao chỉ bằng một loại đóng góp duy nhất.</p>
       <div class="level-grid">
         <div v-for="lv in levels" :key="lv.level" class="level-card" :class="`level-${lv.level}`">
           <span class="lv-icon" aria-hidden="true">{{ lv.icon }}</span>
@@ -27,9 +28,9 @@
     </section>
 
     <!-- Points -->
-    <section class="guide-section reveal">
+    <section class="guide-section reveal sediment-head">
       <h2>Cách tính điểm danh tiếng</h2>
-      <p class="guide-intro">Điểm được tính tự động từ các đóng góp đã duyệt. Để tránh lạm phát, mỗi loại hoạt động có <strong>giới hạn tối đa</strong> — điểm giảm dần khi số lượng tăng lên.</p>
+      <p class="guide-intro editorial-body">Điểm được tính tự động từ các đóng góp đã duyệt. Để tránh lạm phát, mỗi loại hoạt động có <strong>giới hạn tối đa</strong> — điểm giảm dần khi số lượng tăng lên.</p>
       <div class="points-table-wrap" role="region" aria-label="Bảng tính điểm danh tiếng" tabindex="0">
         <table class="points-table">
           <thead>
@@ -63,9 +64,9 @@
     </section>
 
     <!-- Badges -->
-    <section class="guide-section reveal">
+    <section class="guide-section reveal sediment-head">
       <h2>Huy hiệu</h2>
-      <p class="guide-intro">Huy hiệu ghi nhận thành tích cụ thể. Chúng được trao tự động khi bạn đạt đủ điều kiện.</p>
+      <p class="guide-intro editorial-body">Huy hiệu ghi nhận thành tích cụ thể. Chúng được trao tự động khi bạn đạt đủ điều kiện.</p>
       <div class="badge-grid">
         <div v-for="b in badges" :key="b.id" class="badge-card">
           <span class="badge-icon" aria-hidden="true">{{ b.icon }}</span>
@@ -78,7 +79,7 @@
     </section>
 
     <!-- Tips -->
-    <section class="guide-section reveal">
+    <section class="guide-section reveal sediment-head">
       <h2>Mẹo tăng điểm hiệu quả</h2>
       <div class="tips-list">
         <div v-for="(tip, i) in tips" :key="i" class="tip-item">
@@ -178,7 +179,19 @@ useHead({
   border-radius: var(--radius-xl); border: .5px solid var(--line);
 }
 .guide-hero-icon { font-size: 2.5rem; flex-shrink: 0; }
-.guide-hero h1 { margin: 0 0 var(--space-1); font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
+/* Local page masthead eyebrow — small-caps dateline, matches the site's
+   area/ward eyebrow pattern but scoped here (not promoted global). */
+.dateline-eyebrow {
+  font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  color: var(--muted); margin: 0 0 var(--space-1); padding-left: var(--space-3);
+  position: relative;
+}
+.dateline-eyebrow::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: var(--space-2); height: 1.5px; background: var(--primary);
+}
+.guide-hero h1 { margin: 0 0 var(--space-1); font-family: var(--font-editorial); font-size: var(--text-2xl); font-weight: 600; letter-spacing: var(--tracking-tight); }
 .guide-hero p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
 
 /* Sections */

@@ -3,13 +3,16 @@
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cài đặt' }]" />
 
     <div v-if="!isLoggedIn" class="settings-guest card">
+      <p class="dateline-eyebrow">QUẦY TIẾP TÂN</p>
       <h1>Cài đặt</h1>
       <p>Bạn cần đăng nhập để chỉnh sửa hồ sơ.</p>
       <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
     </div>
 
     <template v-else>
+    <p class="dateline-eyebrow">QUẦY TIẾP TÂN</p>
     <h1 class="settings-title">Cài đặt</h1>
+    <p class="settings-dek">Nơi giữ chìa khoá cho hồ sơ của bạn — đổi mật khẩu, bật bảo mật hai lớp, hoặc chọn ai được xem những gì bạn chia sẻ.</p>
 
     <div class="settings-overview" aria-label="Tổng quan tài khoản">
       <div class="settings-overview-item">
@@ -59,7 +62,7 @@
     </nav>
 
     <!-- Tab: Hồ sơ -->
-    <div v-show="activeTab === 'ho-so'" id="panel-ho-so" class="settings-card card" role="tabpanel" aria-labelledby="tab-ho-so" :hidden="activeTab !== 'ho-so'" :tabindex="activeTab === 'ho-so' ? 0 : -1">
+    <div v-show="activeTab === 'ho-so'" id="panel-ho-so" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-ho-so" :hidden="activeTab !== 'ho-so'" :tabindex="activeTab === 'ho-so' ? 0 : -1">
       <h2>Hồ sơ cá nhân</h2>
       <form class="settings-form" @submit.prevent="save">
         <div class="sf-avatar-section">
@@ -181,7 +184,7 @@
 
     <!-- Tab: Bảo mật -->
     <div v-if="activeTab === 'bao-mat'" id="panel-bao-mat" role="tabpanel" aria-labelledby="tab-bao-mat">
-      <div class="settings-card card">
+      <div class="settings-card card sediment-head">
         <h2>Mật khẩu</h2>
         <p v-if="hasPasswordKnown && !hasPassword" class="sf-hint">Bạn chưa đặt mật khẩu. Đặt mật khẩu để đăng nhập nhanh hơn.</p>
         <form class="settings-form" @submit.prevent="savePassword">
@@ -212,7 +215,7 @@
         </form>
       </div>
 
-      <div class="settings-card card">
+      <div class="settings-card card sediment-head">
         <h2>Xác thực 2 bước (2FA)</h2>
         <div v-if="twoFALoading" class="sf-loading" role="status" aria-label="Đang tải trạng thái 2FA"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <template v-else-if="recoveryCodes.length">
@@ -248,7 +251,7 @@
         </template>
       </div>
 
-      <div class="settings-card card">
+      <div class="settings-card card sediment-head">
         <h2>Phiên đăng nhập</h2>
         <div v-if="sessionsLoading" class="sf-loading" role="status" aria-label="Đang tải phiên"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="sessions.length" class="sessions-list">
@@ -267,7 +270,7 @@
         </p>
       </div>
 
-      <div v-if="twoFA.enabled" class="settings-card card">
+      <div v-if="twoFA.enabled" class="settings-card card sediment-head">
         <h2>Thiết bị tin cậy</h2>
         <div v-if="trustedDevices.length" class="sessions-list">
           <div v-for="d in trustedDevices" :key="d.id" class="session-item">
@@ -281,7 +284,7 @@
         <p v-else class="sf-hint">Chưa có thiết bị tin cậy nào.</p>
       </div>
 
-      <div class="settings-card card">
+      <div class="settings-card card sediment-head">
         <h2>Lịch sử đăng nhập</h2>
         <div v-if="loginHistoryLoading" class="sf-loading" role="status" aria-label="Đang tải lịch sử"><div class="spinner spinner-sm"></div> Đang tải...</div>
         <div v-else-if="loginHistory.length" class="sessions-list">
@@ -298,7 +301,7 @@
     </div>
 
     <!-- Tab: Thông báo -->
-    <div v-if="activeTab === 'thong-bao'" id="panel-thong-bao" class="settings-card card" role="tabpanel" aria-labelledby="tab-thong-bao">
+    <div v-if="activeTab === 'thong-bao'" id="panel-thong-bao" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-thong-bao">
       <h2>Tùy chọn thông báo</h2>
       <p class="sf-hint sf-hint-spaced">Chọn loại thông báo bạn muốn nhận.</p>
       <div v-if="notifPrefsLoading" class="sf-loading" role="status" aria-label="Đang tải tùy chọn"><div class="spinner spinner-sm"></div> Đang tải...</div>
@@ -317,7 +320,7 @@
     </div>
 
     <!-- Tab: Giao diện -->
-    <div v-if="activeTab === 'giao-dien'" id="panel-giao-dien" class="settings-card card" role="tabpanel" aria-labelledby="tab-giao-dien">
+    <div v-if="activeTab === 'giao-dien'" id="panel-giao-dien" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-giao-dien">
       <h2>Giao diện</h2>
       <div class="sf-field">
         <span class="sf-label">Chế độ màu</span>
@@ -337,7 +340,7 @@
     </div>
 
     <!-- Tab: Quyền riêng tư -->
-    <div v-if="activeTab === 'rieng-tu'" id="panel-rieng-tu" class="settings-card card" role="tabpanel" aria-labelledby="tab-rieng-tu">
+    <div v-if="activeTab === 'rieng-tu'" id="panel-rieng-tu" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-rieng-tu">
       <h2>Quyền riêng tư</h2>
       <div v-if="privacyLoading" class="sf-loading" role="status" aria-label="Đang tải cài đặt"><div class="spinner spinner-sm"></div> Đang tải...</div>
       <div v-else class="settings-form">
@@ -380,7 +383,7 @@
     </div>
 
     <!-- Tab: Người chặn -->
-    <div v-if="activeTab === 'chan'" id="panel-chan" class="settings-card card" role="tabpanel" aria-labelledby="tab-chan">
+    <div v-if="activeTab === 'chan'" id="panel-chan" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-chan">
       <h2>Người bị chặn</h2>
       <div v-if="blockedLoading" class="sf-hint">Đang tải...</div>
       <div v-else-if="blockedUsers.length" class="sessions-list">
@@ -395,7 +398,7 @@
     </div>
 
     <!-- Tab: Người tắt tiếng -->
-    <div v-if="activeTab === 'tat-tieng'" id="panel-tat-tieng" class="settings-card card" role="tabpanel" aria-labelledby="tab-tat-tieng">
+    <div v-if="activeTab === 'tat-tieng'" id="panel-tat-tieng" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-tat-tieng">
       <h2>Người bị tắt tiếng</h2>
       <p class="sf-hint sf-hint-spaced">Bài viết và bình luận của người bị tắt tiếng sẽ ẩn khỏi bảng tin của bạn, nhưng họ vẫn có thể xem nội dung của bạn.</p>
       <div v-if="mutedLoading" class="sf-loading" role="status"><div class="spinner spinner-sm"></div> Đang tải...</div>
@@ -411,7 +414,7 @@
     </div>
 
     <!-- Tab: Dữ liệu & pháp lý -->
-    <div v-if="activeTab === 'du-lieu'" id="panel-du-lieu" class="settings-card card" role="tabpanel" aria-labelledby="tab-du-lieu">
+    <div v-if="activeTab === 'du-lieu'" id="panel-du-lieu" class="settings-card card sediment-head" role="tabpanel" aria-labelledby="tab-du-lieu">
       <h2>Dữ liệu & pháp lý</h2>
 
       <div class="dl-section">
@@ -437,7 +440,7 @@
     </div>
 
     <!-- Tab: Nguy hiểm -->
-    <div v-if="activeTab === 'nguy-hiem'" id="panel-nguy-hiem" class="settings-card card settings-danger" role="tabpanel" aria-labelledby="tab-nguy-hiem">
+    <div v-if="activeTab === 'nguy-hiem'" id="panel-nguy-hiem" class="settings-card card settings-danger sediment-head" role="tabpanel" aria-labelledby="tab-nguy-hiem">
       <h2>Vùng nguy hiểm</h2>
       <div class="danger-actions">
         <div class="danger-item">
@@ -1099,7 +1102,18 @@ onUnmounted(() => {
 
 <style scoped>
 .settings-page { max-width: 920px; margin: 0 auto; }
-.settings-title { font-size: 1.5rem; margin: 0 0 1rem; }
+
+/* Local page masthead eyebrow — small-caps dateline + hairline tick, matches
+   the site's area/ward eyebrow pattern but scoped here (not promoted global). */
+.dateline-eyebrow {
+  display: flex; align-items: center; gap: .4rem; margin: 0 0 .35rem;
+  font-family: var(--font-sans); font-size: .78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--ink-700);
+}
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--primary); flex-shrink: 0; }
+
+.settings-title { font-family: var(--font-editorial); font-weight: 600; font-size: 1.6rem; margin: 0 0 .4rem; }
+.settings-dek { color: var(--ink-700); font-size: .92rem; max-width: 56ch; margin: 0 0 var(--space-5); line-height: var(--leading-relaxed); }
 .settings-overview {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: var(--space-3); margin-bottom: var(--space-5);
@@ -1117,7 +1131,7 @@ onUnmounted(() => {
 .settings-hash-anchors { position: relative; height: 0; overflow: hidden; }
 .settings-hash-anchors span { position: absolute; top: -96px; width: 1px; height: 1px; }
 .settings-card, .settings-guest { padding: 1.5rem; }
-.settings-guest h1 { margin: 0 0 1.25rem; font-size: 1.5rem; }
+.settings-guest h1 { margin: 0 0 1.25rem; font-family: var(--font-editorial); font-weight: 600; font-size: 1.5rem; }
 .settings-guest p { color: var(--ink-700); margin-bottom: 1rem; }
 
 /* ── Tabs ── */

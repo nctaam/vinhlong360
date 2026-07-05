@@ -12,18 +12,18 @@
       </div>
     </section>
 
-    <p class="legal-updated">Cập nhật: {{ doc.updated_date }}</p>
-    <div class="legal-body" v-html="introHtml"></div>
+    <p class="dateline-eyebrow">HỒ SƠ PHÁP LÝ · CẬP NHẬT {{ doc.updated_date }}</p>
+    <div class="legal-body editorial-body drop-cap" v-html="introHtml"></div>
 
     <section
       v-for="(s, i) in doc.sections"
       :key="i"
-      class="legal-section reveal"
+      class="legal-section reveal sediment-head"
     >
       <span class="about-section-num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
       <div class="about-section-content">
         <h2>{{ stripNum(s.heading) }}</h2>
-        <div class="legal-body" v-html="mdLite(s.body)"></div>
+        <div class="legal-body editorial-body" v-html="mdLite(s.body)"></div>
       </div>
     </section>
   </section>
@@ -77,7 +77,24 @@ useHead({
 }
 
 .legal-page h1 { font-size: var(--text-3xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); color: var(--primary-fg-strong); margin-bottom: var(--space-1); }
-.legal-updated { color: var(--ink-tertiary, var(--muted)); font-size: var(--text-sm); margin-bottom: var(--space-6); }
+
+/* Local page masthead eyebrow — small-caps dateline, matches the site's
+   area/ward eyebrow pattern but scoped here (not promoted global). */
+.dateline-eyebrow {
+  font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  color: var(--muted); margin: 0 0 var(--space-6); padding-left: var(--space-3);
+  position: relative;
+}
+.dateline-eyebrow::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: var(--space-2); height: 1.5px; background: var(--primary);
+}
+
+/* Legal prose gets the measured reading width + relaxed leading; the intro
+   paragraph (drop-cap) is the one lede moment on an otherwise plain-spoken page. */
+.legal-body.editorial-body { margin-bottom: 0; }
+.legal-body.drop-cap { margin-bottom: var(--space-2); }
 
 /* ── Section rhythm: number badge + content zone ──────────────────── */
 .legal-section {
@@ -108,9 +125,13 @@ useHead({
 }
 
 /* ── Body typography ──────────────────────────────────────────────── */
-.legal-page :deep(p) { font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
+/* .editorial-body already sets the reading font-size/measure/leading on the
+   wrapping .legal-body div (see above); these :deep(p)/:deep(li) rules only
+   need to supply color + list layout, not re-set a smaller font-size that
+   would fight the editorial measure. */
+.legal-page :deep(p) { color: var(--ink-secondary, var(--ink)); }
 .legal-page :deep(ul) { padding-inline-start: var(--space-5); }
-.legal-page :deep(li) { margin: var(--space-2) 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); }
+.legal-page :deep(li) { margin: var(--space-2) 0; color: var(--ink-secondary, var(--ink)); }
 .legal-page :deep(a) { color: var(--primary-fg); font-weight: var(--weight-semibold); text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out); }
 .legal-page :deep(a:hover) { text-decoration-color: var(--primary-fg); }
 .legal-page :deep(a:focus-visible) { outline: 2px solid var(--primary); outline-offset: 2px; }

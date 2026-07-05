@@ -3,6 +3,7 @@
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tài khoản' }]" />
 
     <div v-if="!isLoggedIn" class="cp-guest card">
+      <p class="dateline-eyebrow">HỒ SƠ HÀNH TRÌNH</p>
       <h1>Tài khoản</h1>
       <p>Đăng nhập để xem bảng điều khiển tài khoản.</p>
       <button type="button" class="btn btn-primary" @click="openAuth()">Đăng nhập</button>
@@ -15,7 +16,7 @@
           <span v-else class="cp-avatar-fallback"><AvatarPlaceholder :initial="initial" /></span>
         </NuxtLink>
         <div class="cp-identity">
-          <p class="cp-kicker">Trung tâm tài khoản</p>
+          <p class="cp-kicker dateline-eyebrow">Trung tâm tài khoản</p>
           <h1 class="cp-name">{{ displayName }}</h1>
           <p v-if="user?.username" class="cp-username">@{{ user.username }}</p>
           <div class="cp-status-row">
@@ -118,7 +119,7 @@
       </section>
 
       <section class="cp-main-grid">
-        <article class="cp-section">
+        <article class="cp-section sediment-head">
           <div class="cp-section-head">
             <h2>Hoạt động gần đây</h2>
             <NuxtLink to="/cong-dong" class="cp-mini-link">Cộng đồng</NuxtLink>
@@ -156,7 +157,7 @@
           </div>
         </article>
 
-        <aside class="cp-side-panel" aria-label="Dữ liệu của bạn">
+        <aside class="cp-side-panel sediment-head" aria-label="Dữ liệu của bạn">
           <h2>Dữ liệu của bạn</h2>
           <div class="cp-data-list">
             <NuxtLink to="/da-luu" class="cp-data-row">
@@ -406,8 +407,18 @@ function actionLabel(a: ActivityItem) {
 <style scoped>
 .cp-page { max-width: 1040px; margin: 0 auto; }
 .cp-guest { padding: 2rem; text-align: center; }
-.cp-guest h1 { margin: 0 0 1rem; font-size: 1.5rem; }
+.cp-guest h1 { margin: 0 0 1rem; font-family: var(--font-editorial); font-size: 1.5rem; font-weight: 600; }
 .cp-guest p { color: var(--ink-700); margin-bottom: 1rem; }
+.cp-guest .dateline-eyebrow { justify-content: center; }
+
+/* Local page masthead eyebrow — small-caps dateline + hairline tick, matches
+   the site's area/ward eyebrow pattern but scoped here (not promoted global). */
+.dateline-eyebrow {
+  display: flex; align-items: center; gap: .4rem;
+  font-family: var(--font-sans); font-size: .78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--ink-700);
+}
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--primary); flex-shrink: 0; }
 
 .cp-hero {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1rem;
@@ -417,7 +428,7 @@ function actionLabel(a: ActivityItem) {
 .cp-avatar-link { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; display: block; }
 .cp-avatar, .cp-avatar-fallback { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; display: block; }
 .cp-kicker { margin: 0 0 .2rem; color: var(--ink-700); font-size: .82rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-.cp-name { margin: 0; font-size: clamp(1.35rem, 2vw, 1.9rem); }
+.cp-name { margin: 0; font-family: var(--font-editorial); font-weight: 600; font-size: clamp(1.35rem, 2vw, 1.9rem); }
 .cp-username { margin: .15rem 0 0; color: var(--ink-700); }
 .cp-status-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
 .cp-pill { display: inline-flex; align-items: center; min-height: 28px; padding: .2rem .65rem; border: 1px solid var(--line); border-radius: var(--radius-full); font-size: .78rem; color: var(--ink-700); background: var(--bg-alt); }
