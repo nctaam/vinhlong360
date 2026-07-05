@@ -169,9 +169,9 @@ describe('UserCP regressions', () => {
     expect(page).toContain('Hôm nay bạn muốn bắt đầu thế nào?')
     expect(page).toContain('plannerAddPath(heroFeature.id)')
     expect(page).toContain('to: `/theo-mua?mua=${encodeURIComponent(String(currentMonth.value))}`')
-    expect(page).toContain('decision-card')
+    expect(page).toContain('dx-item')
     expect(page).toContain('cat-hint')
-    expect(page).toContain('letter-spacing: 0; line-height: 1.06;')
+    expect(page).toContain('letter-spacing: -.02em; line-height: .98;')
     expect(page).not.toContain('letter-spacing: -1.4px')
   })
 
