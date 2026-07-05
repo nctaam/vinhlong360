@@ -7,8 +7,9 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
         <div>
-          <h1>Lịch trình</h1>
-          <p>Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.</p>
+          <span class="itin-eyebrow">Lịch trình gợi ý · 3 khu vực</span>
+          <h1 class="day-arc-title">Chọn một ngày ở miền Tây</h1>
+          <p>Có ngày chỉ cần nửa buổi ở miệt vườn, có ngày cần trọn ba hôm để đi hết một khúc sông. Chọn nhịp ngày phù hợp — phần còn lại, tụi mình đã sắp sẵn.</p>
         </div>
       </div>
       <div v-if="itineraries?.length" class="catalog-stats">
@@ -20,6 +21,19 @@
           <CountUp :value="a.count" class="stat-num" />
           <span class="stat-label">{{ a.name }}</span>
         </div>
+      </div>
+
+      <!-- Signature: day-arc strip — dawn→noon→dusk gradient with 4 fixed
+           time-of-day marks. Thesis visual: "chọn một hình dạng ngày phù hợp
+           với bạn" made literal before a single word of copy is read.
+           Horizontal + time-of-day axis — distinct from tuyen-duong's vertical
+           per-card .route-rail (which plots a path, not a day's rhythm). -->
+      <div class="day-arc day-arc-strip" role="img" aria-label="Dải màu tượng trưng nhịp một ngày: sáng sớm, trưa, chiều, hoàng hôn">
+        <span class="day-arc-track" aria-hidden="true"></span>
+        <span v-for="m in DAY_MARKS" :key="m.key" class="day-arc-mark" :style="{ left: m.pct + '%' }">
+          <span class="day-arc-glyph" aria-hidden="true">{{ m.glyph }}</span>
+          <span class="day-arc-label">{{ m.label }}</span>
+        </span>
       </div>
     </section>
 
@@ -55,6 +69,26 @@
         </div>
       </section>
     </ClientOnly>
+
+    <!-- NEW: pace picker — "how much time do you have" before "which province" -->
+    <section class="block band reveal">
+      <div class="section-head">
+        <h2 class="sediment-head">Chọn theo nhịp ngày</h2>
+      </div>
+      <div class="pace-chips" role="group" aria-label="Lọc theo nhịp ngày">
+        <button type="button" :class="['pace-chip', { active: paceFilter === 'all' }]" :aria-pressed="paceFilter === 'all'" @click="paceFilter = 'all'">Tất cả nhịp</button>
+        <button type="button"
+          v-for="p in PACE_DEFS" :key="p.key"
+          :class="['pace-chip', { active: paceFilter === p.key }]"
+          :aria-pressed="paceFilter === p.key"
+          @click="paceFilter = paceFilter === p.key ? 'all' : p.key"
+        >
+          <span class="pace-chip-glyph" aria-hidden="true">{{ p.glyph }}</span>
+          <span class="pace-chip-label">{{ p.label }}</span>
+          <span class="pace-chip-count">{{ countByPace(p.key) }}</span>
+        </button>
+      </div>
+    </section>
 
     <!-- Region quick-picks -->
     <section class="block band reveal">
@@ -119,9 +153,23 @@
         </template>
       </EmptyState>
       <SkeletonGrid v-else-if="!itineraries" :count="4" />
-      <div v-else-if="filtered.length" class="grid itin">
-        <ItineraryCard v-for="it in filtered" :key="it.id" :itinerary="it" />
-      </div>
+      <!-- "Shelves of days" — grouped by pace when browsing everything, so
+           scanning feels like a shelf of curated days rather than a database
+           table. A single-pace filter already narrows the list, so it stays
+           one flat grid there (no redundant single-shelf header). -->
+      <template v-else-if="filtered.length">
+        <div v-if="paceFilter === 'all'" class="pace-shelves">
+          <div v-for="shelf in paceShelves" :key="shelf.key" class="pace-shelf">
+            <p class="pace-shelf-kicker">{{ shelf.glyph }} {{ shelf.label }}</p>
+            <div class="grid itin">
+              <ItineraryCard v-for="it in shelf.items" :key="it.id" :itinerary="it" />
+            </div>
+          </div>
+        </div>
+        <div v-else class="grid itin">
+          <ItineraryCard v-for="it in filtered" :key="it.id" :itinerary="it" />
+        </div>
+      </template>
       <div v-else class="block empty-state itin-empty">
         <EmptyState icon="🗺️" title="Khám phá từ vùng khác" :message="emptyMessage">
           <template #actions>
@@ -182,13 +230,51 @@ async function clearAll() {
 }
 
 const areaFilter = ref('all')
+const paceFilter = ref('all')
 const gridSection = ref<HTMLElement | null>(null)
 
 watch(areaFilter, () => {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 })
 
-useFilterUrl({ vung: areaFilter }, { vung: 'all' })
+useFilterUrl({ vung: areaFilter, nhip: paceFilter }, { vung: 'all', nhip: 'all' })
+
+// ── Day-arc strip (signature ambient device, §10) — 4 fixed time-of-day
+// marks, no per-stop data on the list page (that's the detail page's job).
+const DAY_MARKS = [
+  { key: 'dawn', glyph: '🌅', label: 'Sáng sớm', pct: 6 },
+  { key: 'noon', glyph: '☀️', label: 'Trưa', pct: 37 },
+  { key: 'afternoon', glyph: '🌤️', label: 'Chiều', pct: 68 },
+  { key: 'dusk', glyph: '🌇', label: 'Hoàng hôn', pct: 94 },
+]
+
+// ── Pace chips — "how much time do you have" as the first filter axis,
+// computed client-side from itinerary.duration string heuristics (no schema
+// change, per B2/additive-first).
+const PACE_DEFS = [
+  { key: 'half', glyph: '🌤️', label: 'Nửa ngày' },
+  { key: 'full', glyph: '☀️', label: 'Trọn ngày' },
+  { key: 'multi', glyph: '🌅', label: 'Nhiều ngày' },
+] as const
+type PaceKey = typeof PACE_DEFS[number]['key']
+
+function paceOf(it: Itinerary): PaceKey {
+  const d = (it.duration || '').toLowerCase()
+  if (d.includes('nửa')) return 'half'
+  const numbers = d.match(/\d+/g)?.map(Number) || []
+  const maxDays = numbers.length ? Math.max(...numbers) : 1
+  if (maxDays >= 2 || d.includes('đêm')) return 'multi'
+  if (!d) {
+    // No duration text at all — fall back to stop count as a proxy.
+    const stopCount = it.stops?.length || 0
+    return stopCount > 6 ? 'multi' : 'full'
+  }
+  return 'full'
+}
+
+function countByPace(key: PaceKey) {
+  return (itineraries.value || []).filter((it: Itinerary) => paceOf(it) === key).length
+}
 
 const { data: itineraries, error: fetchError } = await useAsyncData('itineraries', () =>
   apiFetch<any[]>('/api/itineraries')
@@ -211,9 +297,17 @@ function countByArea(key: string) {
 }
 
 const filtered = computed(() => {
-  const list = itineraries.value || []
-  if (areaFilter.value === 'all') return list
-  return list.filter((it: Itinerary) => itineraryMatchesArea(it, areaFilter.value))
+  let list = itineraries.value || []
+  if (areaFilter.value !== 'all') list = list.filter((it: Itinerary) => itineraryMatchesArea(it, areaFilter.value))
+  if (paceFilter.value !== 'all') list = list.filter((it: Itinerary) => paceOf(it) === (paceFilter.value as PaceKey))
+  return list
+})
+
+// Grouped "shelves of days" for the all-pace browse view (§3 list-page layout).
+const paceShelves = computed(() => {
+  return PACE_DEFS
+    .map(p => ({ ...p, items: filtered.value.filter((it: Itinerary) => paceOf(it) === p.key) }))
+    .filter(shelf => shelf.items.length > 0)
 })
 
 const emptyMessage = computed(() => {
@@ -270,6 +364,78 @@ useHead(() => ({
 </script>
 
 <style scoped>
+/* ══════════════════════════════════════════════════════════════════════
+   Day-arc strip — signature moment (§10). Dawn→noon→dusk gradient with 4
+   fixed time-of-day marks, sitting under the masthead as an ambient thesis
+   visual: "chọn một hình dạng ngày phù hợp với bạn" made literal. Horizontal
+   axis reads time-of-day, distinct from tuyen-duong's vertical per-card
+   .route-rail (which plots a route path). Reused populated on the detail
+   page's hero as .day-arc-hero (real per-stop dots).
+   ══════════════════════════════════════════════════════════════════════ */
+/* Local eyebrow — events.css's shared .dateline-eyebrow is page-scoped to
+   le-hoi/su-kien only (not global), so this page carries its own copy of the
+   same recipe rather than importing shared CSS out of scope. */
+.itin-eyebrow {
+  display: block; font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: var(--weight-bold);
+  text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted);
+  margin: 0 0 var(--space-2);
+}
+.day-arc-title { font-family: var(--font-editorial); }
+.day-arc { position: relative; margin-top: var(--space-6); height: 56px; }
+.day-arc-track {
+  position: absolute; left: 0; right: 0; top: 18px; height: 3px; border-radius: var(--radius-full);
+  background: linear-gradient(90deg,
+    var(--river-600) 0%,
+    color-mix(in srgb, var(--river-600) 40%, var(--amber-600) 60%) 30%,
+    var(--amber-600) 50%,
+    color-mix(in srgb, var(--amber-600) 45%, var(--clay-600) 55%) 72%,
+    var(--clay-600) 100%);
+  /* one-time left-to-right draw-on, "a day unfolding" (§5) */
+  transform-origin: left center;
+  animation: dayArcDraw .6s var(--ease-out-expo) both;
+  animation-delay: .1s;
+}
+@keyframes dayArcDraw { from { transform: scaleX(0); } }
+.day-arc-mark { position: absolute; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.day-arc-glyph {
+  display: flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; font-size: .78rem; line-height: 1;
+  background: var(--card); border-radius: 50%; box-shadow: var(--shadow-xs);
+}
+.day-arc-label { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); white-space: nowrap; }
+.dark .day-arc-glyph { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+
+/* ── Pace chips — "how much time do you have," the first filter axis ── */
+.pace-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.pace-chip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-full);
+  border: .5px solid var(--line); background: var(--card); color: var(--ink);
+  font-size: var(--text-sm); font-weight: var(--weight-medium); cursor: pointer;
+  transition: transform .3s var(--ease-spring-gentle), background .25s var(--ease-out), border-color .25s var(--ease-out), box-shadow .25s var(--ease-out);
+}
+.pace-chip-glyph { font-size: var(--text-base); line-height: 1; }
+.pace-chip-count { font-size: var(--text-2xs); color: var(--muted); font-variant-numeric: tabular-nums; }
+.pace-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); border-color: var(--border); }
+.pace-chip:active { transform: scale(.96); transition-duration: .08s; }
+.pace-chip.active { background: var(--secondary); border-color: var(--secondary); color: var(--text-on-dark, #fff); }
+.pace-chip.active .pace-chip-count { color: rgba(255,255,255,.85); }
+.dark .pace-chip { background: var(--card); border-color: var(--line); }
+.dark .pace-chip.active { background: var(--secondary); border-color: var(--secondary); }
+
+/* ── Pace shelves — "shelves of days" grouping when browsing all paces ── */
+.pace-shelves { display: flex; flex-direction: column; gap: var(--space-8); }
+.pace-shelf-kicker {
+  font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: 600;
+  margin: 0 0 var(--space-4); position: relative; padding-left: var(--space-4);
+}
+.pace-shelf-kicker::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .pace-shelf-kicker::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+
 .saved-section { margin-bottom: var(--space-4); padding-bottom: var(--space-6); border-bottom: .5px solid var(--line); }
 .saved-count { font-weight: var(--weight-normal); color: var(--muted); font-size: var(--text-base); }
 .saved-cta { text-align: center; margin-top: var(--space-4); }
@@ -323,5 +489,13 @@ useHead(() => ({
   .saved-cta .btn:active { transform: none; }
   .block-cta .btn:active { transform: none; }
   .catalog-hero .stat-item:hover { transform: none; }
+  .day-arc-track { animation: none; transform: none; }
+  .pace-chip:hover { transform: none; }
+  .pace-chip:active { transform: none; }
+}
+
+@media (max-width: 640px) {
+  .day-arc-label { display: none; }
+  .day-arc { height: 40px; }
 }
 </style>

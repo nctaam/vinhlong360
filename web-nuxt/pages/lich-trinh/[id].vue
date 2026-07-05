@@ -12,8 +12,24 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
         <div>
+          <span class="itin-eyebrow">{{ areaMeta.emoji }} {{ areaMeta.name }} · {{ itinerary.duration }}</span>
           <h1>{{ itineraryTitle }}</h1>
-          <p>{{ areaMeta.emoji }} {{ areaMeta.name }} · {{ itinerary.duration }} · {{ itinerary.stops?.length || 0 }} điểm dừng</p>
+          <p>{{ itinerary.stops?.length || 0 }} điểm dừng — hình dạng một ngày trọn vẹn, từ sương sớm mặt sông tới lúc nắng ngả màu mật ong.</p>
+        </div>
+      </div>
+
+      <!-- Signature: sun-arc rail — populated hero version of the day-arc
+           strip (lich-trinh/index.vue). Real per-stop dots positioned by
+           parsed stop.time along the dawn→dusk gradient: before reading a
+           single stop, the shape of the day is visible (front-loaded
+           morning, siesta gap at noon, golden-hour finish — §2/§10). -->
+      <div v-if="sunArcDots.length" class="day-arc day-arc-hero" role="img" :aria-label="`Hình dạng ngày: ${sunArcDots.length} điểm dừng từ sáng tới tối`">
+        <span class="day-arc-track" aria-hidden="true"></span>
+        <span v-for="(d, i) in sunArcDots" :key="i" class="day-arc-dot" :style="{ left: d.pct + '%' }" :title="d.name">
+          <span class="day-arc-dot-num" aria-hidden="true">{{ i + 1 }}</span>
+        </span>
+        <div class="day-arc-legend" aria-hidden="true">
+          <span>🌅 Sáng sớm</span><span>☀️ Trưa</span><span>🌇 Hoàng hôn</span>
         </div>
       </div>
     </section>
@@ -45,6 +61,13 @@
 
     <ol class="timeline">
       <template v-for="(stop, idx) in (itinerary.stops || [])" :key="stopIdentity(stop) || idx">
+        <!-- Chapter divider — "chapters of the day," inserted the first time
+             a stop crosses into a new time-of-day band (§3: Buổi sáng / Buổi
+             trưa / Buổi chiều). Quiet hairline + serif label, not a full
+             section break; reuses the .sediment-head recipe's tick colors. -->
+        <li v-if="isNewChapter(idx)" class="timeline-chapter" :key="'chapter-' + idx" aria-hidden="true">
+          <span class="tc-label">{{ CHAPTER_LABEL[stopChapters[idx]!] }}</span>
+        </li>
         <li class="step">
           <span class="step-time">{{ stop.time || '' }}</span>
           <div :class="['step-card', stop.type ? `cat-${catClass(stop.type)}` : '']">
@@ -56,15 +79,18 @@
               </h3>
               <span v-if="stop.type" class="step-type-label">{{ typeLabel(stop.type) }}</span>
               <p v-if="stop.summary" class="summary">{{ stop.summary }}</p>
-              <p v-if="stop.note" class="step-note">{{ stop.note }}</p>
+              <p v-if="stop.note" class="step-note-callout"><span class="tnc-glyph" aria-hidden="true">☞</span>{{ stop.note }}</p>
             </div>
           </div>
         </li>
-        <!-- Route leg info between stops -->
+        <!-- Route leg info between stops — extended into a narrative bridge:
+             not just a distance stat, but a whisper of what's coming next
+             (§5/§7: "1.2km · 15 phút → tới Chợ nổi Cái Bè"). -->
         <li v-if="idx < (itinerary.stops || []).length - 1 && routeLegs[idx]" class="route-leg" :key="'leg-' + idx">
           <div class="route-leg-line"></div>
           <div class="route-leg-info">
             {{ formatDistance(routeLegs[idx].distance) }} · {{ formatDuration(routeLegs[idx].duration) }}
+            <span v-if="nextStopName(idx)" class="route-leg-next"> → tới {{ nextStopName(idx) }}</span>
           </div>
         </li>
       </template>
@@ -159,6 +185,82 @@ function catClass(type?: string) {
 
 function stopIdentity(stop: any): string {
   return String(stop?.id || stop?.entityId || stop?.entity_id || '')
+}
+
+// ── Time-of-day parsing (signature moment, §10 sun-arc rail + timeline
+// chaptering). `stop.time` is free Vietnamese text — literal clock times
+// ("06:30", "6h sáng"), period labels ("Sáng sớm", "Trưa", "Hoàng hôn"), and
+// multi-day/weekday prefixes ("Ngày 2 – Chiều", "CN – Sáng"), plus non-time
+// labels ("Mua quà", "Tráng miệng"). We resolve each to an hour-of-day (0–24)
+// for positioning along the dawn→dusk gradient — real per-stop math, not
+// decorative (§7 premium cue).
+const PERIOD_HOUR: Record<string, number> = {
+  'sáng sớm': 5.5, 'sớm': 5.5, 'bình minh': 5.5,
+  'giữa sáng': 8.5, 'sáng': 7.5,
+  'trưa': 11.5,
+  'xế chiều': 15.5, 'xế': 15,
+  'chiều': 14.5,
+  'hoàng hôn': 17.5,
+  'tối': 19, 'đêm': 20.5,
+  'mua quà': 16, 'tráng miệng': 13,
+}
+function parseStopHour(timeStr?: string): number | null {
+  if (!timeStr) return null
+  // Strip a leading "Ngày N – " / "CN – " / "Thứ 7 – " day/weekday prefix —
+  // the time-of-day tail is what matters for the sun-arc position.
+  const tail = timeStr.split('–').pop()?.trim().toLowerCase() || timeStr.trim().toLowerCase()
+  const clockMatch = tail.match(/(\d{1,2})[:h](\d{2})?/)
+  if (clockMatch) {
+    const h = Number(clockMatch[1])
+    const m = clockMatch[2] ? Number(clockMatch[2]) : 0
+    if (h >= 0 && h <= 24) return h + m / 60
+  }
+  for (const key of Object.keys(PERIOD_HOUR)) {
+    if (tail.includes(key)) return PERIOD_HOUR[key]
+  }
+  return null
+}
+
+// Chapter boundaries mirror the sun-arc's dawn/noon/dusk bands (§3 detail-page
+// layout: "Buổi sáng" / "Buổi trưa" / "Buổi chiều" dividers before 11:00 /
+// 11:00–14:00 / after 14:00).
+function stopChapter(hour: number | null): 'morning' | 'noon' | 'afternoon' | null {
+  if (hour === null) return null
+  if (hour < 11) return 'morning'
+  if (hour < 14) return 'noon'
+  return 'afternoon'
+}
+const CHAPTER_LABEL: Record<string, string> = { morning: 'Buổi sáng', noon: 'Buổi trưa', afternoon: 'Buổi chiều' }
+
+const stopHours = computed(() => (itinerary.value?.stops || []).map(s => parseStopHour(s.time)))
+const stopChapters = computed(() => stopHours.value.map(h => stopChapter(h)))
+// Only render a chapter divider the FIRST time a chapter is seen, in order —
+// turns one long list into 2-3 legible "chapters of the day."
+function isNewChapter(idx: number) {
+  const ch = stopChapters.value[idx]
+  if (!ch) return false
+  return stopChapters.value.slice(0, idx).every(prev => prev !== ch)
+}
+
+// Sun-arc rail dot positions (0–100%) — real per-stop time when available,
+// even spread as a graceful fallback so the rail still reads meaningfully
+// with zero timed stops.
+const sunArcDots = computed(() => {
+  const stops = itinerary.value?.stops || []
+  const hours = stopHours.value
+  const known = hours.filter((h): h is number => h !== null)
+  return stops.map((s, i) => {
+    const h = hours[i]
+    const pct = h !== null
+      ? Math.min(98, Math.max(2, ((h - 5) / 15) * 100)) // 5:00–20:00 span → 0–100%
+      : (known.length ? (i / Math.max(1, stops.length - 1)) * 100 : 50)
+    return { name: s.name || stopIdentity(s), pct }
+  })
+})
+const nextStopName = (idx: number) => {
+  const stops = itinerary.value?.stops || []
+  const next = stops[idx + 1]
+  return next ? (next.name || stopIdentity(next)) : ''
 }
 
 // --- Route map & routing ---
@@ -388,6 +490,64 @@ if (itinerary.value && !itinerary.value.error) {
 <style src="~/assets/css/detail.css"></style>
 
 <style scoped>
+/* ══════════════════════════════════════════════════════════════════════
+   Sun-arc rail — signature moment (§10). Populated hero version of the
+   day-arc strip on lich-trinh/index.vue: real per-stop dots positioned by
+   parsed stop.time along a dawn→dusk gradient. Shows the SHAPE of the day
+   before a single stop is read. Horizontal + time-of-day axis — distinct
+   from tuyen-duong's vertical per-card .route-rail (a route path, not a
+   day's rhythm).
+   ══════════════════════════════════════════════════════════════════════ */
+/* Local eyebrow — events.css's shared .dateline-eyebrow is page-scoped to
+   le-hoi/su-kien only (not global), so this page carries its own copy of the
+   same recipe rather than importing shared CSS out of scope. */
+.itin-eyebrow {
+  display: block; font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: var(--weight-bold);
+  text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted);
+  margin: 0 0 var(--space-2);
+}
+.day-arc { position: relative; margin-top: var(--space-6); }
+.day-arc-hero { height: 64px; }
+.day-arc-track {
+  position: absolute; left: 0; right: 0; top: 22px; height: 3px; border-radius: var(--radius-full);
+  background: linear-gradient(90deg,
+    var(--river-600) 0%,
+    color-mix(in srgb, var(--river-600) 40%, var(--amber-600) 60%) 30%,
+    var(--amber-600) 50%,
+    color-mix(in srgb, var(--amber-600) 45%, var(--clay-600) 55%) 72%,
+    var(--clay-600) 100%);
+  /* one-time left-to-right draw-on, "a day unfolding" */
+  transform-origin: left center;
+  animation: dayArcDraw .6s var(--ease-out-expo) both;
+  animation-delay: .1s;
+}
+@keyframes dayArcDraw { from { transform: scaleX(0); } }
+.day-arc-dot {
+  position: absolute; top: 14px; transform: translateX(-50%);
+  display: flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--card); color: var(--primary-fg);
+  box-shadow: 0 0 0 2px var(--primary-fg) inset, var(--shadow-xs);
+  font-size: var(--text-2xs); font-weight: var(--weight-bold); font-variant-numeric: tabular-nums;
+  cursor: default;
+  animation: dayArcDotIn .4s var(--ease-out) both;
+  transition: transform .25s var(--ease-spring-gentle);
+}
+.day-arc-dot:hover { transform: translateX(-50%) scale(1.18); }
+.day-arc-dot:nth-child(2) { animation-delay: .18s; }
+.day-arc-dot:nth-child(3) { animation-delay: .22s; }
+.day-arc-dot:nth-child(4) { animation-delay: .26s; }
+.day-arc-dot:nth-child(5) { animation-delay: .30s; }
+.day-arc-dot:nth-child(n+6) { animation-delay: .34s; }
+@keyframes dayArcDotIn { from { opacity: 0; transform: translateX(-50%) translateY(4px); } }
+.day-arc-dot-num { line-height: 1; }
+.day-arc-legend {
+  position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between;
+  font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  font-weight: var(--weight-semibold);
+}
+.dark .day-arc-dot { background: var(--card); box-shadow: 0 0 0 2px var(--primary-fg) inset, 0 1px 3px rgba(0,0,0,.4); }
+
 .itin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-4) 0; }
 .itin-actions .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .itin-actions .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
@@ -426,6 +586,24 @@ if (itinerary.value && !itinerary.value.error) {
   background: linear-gradient(180deg, var(--primary-fg) 0%, rgba(var(--primary-rgb), .35) 100%);
   opacity: .4;
 }
+/* ── Timeline chapter divider — "chapters of the day" (§3). Quiet hairline +
+   small serif label, reusing the sediment-head tick recipe so it reads as
+   the same editorial system as the rest of the site, not a new device. ── */
+.timeline-chapter { position: relative; margin: var(--space-6) 0 var(--space-3); padding-left: var(--space-1); }
+.timeline-chapter:first-child { margin-top: 0; }
+.tc-label {
+  position: relative; display: inline-flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-editorial); font-size: var(--text-2xs); font-weight: 600;
+  text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--muted);
+  padding-left: var(--space-3);
+}
+.tc-label::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: .95em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .tc-label::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+
 .step { position: relative; }
 /* Connector dot anchoring each step to the spine */
 .step::before {
@@ -462,9 +640,27 @@ if (itinerary.value && !itinerary.value.error) {
 /* Summary contrast lift in dark mode */
 .dark .step-card .summary { color: rgba(255,255,255,.72); }
 
+/* ── Note callout — respectful etiquette/context notes (§8: chùa Khmer,
+   seasonal caveats) surfaced as a warm amber-tinted aside instead of plain
+   gray text, so a cultural note reads as considered, not an afterthought. ── */
+.step-note-callout {
+  display: flex; align-items: flex-start; gap: var(--space-2);
+  margin: var(--space-2) 0 0; padding: var(--space-2) var(--space-3);
+  background: color-mix(in srgb, var(--amber-600) 10%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--amber-600) 55%, transparent);
+  border-radius: var(--radius-sm); font-size: var(--text-sm); line-height: var(--leading-normal);
+  color: var(--ink);
+}
+.tnc-glyph { flex-shrink: 0; color: var(--amber-600); font-size: var(--text-sm); line-height: 1.4; }
+.dark .step-note-callout { background: color-mix(in srgb, var(--amber-500) 14%, transparent); border-left-color: color-mix(in srgb, var(--amber-500) 55%, transparent); }
+.dark .tnc-glyph { color: var(--amber-500); }
+
 .route-leg { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) 0 var(--space-2) var(--space-6); }
 .route-leg-line { width: 2px; height: 20px; background: var(--line); border-radius: 1px; transition: background .3s var(--ease-out); }
 .route-leg-info { font-size: var(--text-xs); color: var(--muted); }
+/* Narrative bridge — the next stop's name whispered inline, so a distance
+   stat becomes a handoff between two moments in the day (§5/§7). */
+.route-leg-next { color: var(--primary-fg); font-weight: var(--weight-medium); }
 
 .route-map-section { margin-top: var(--space-6); }
 /* Branded accent on the map section title */
@@ -540,12 +736,21 @@ if (itinerary.value && !itinerary.value.error) {
   .transport-mode .chip:active { transform: none; }
   .route-loading { animation: none; }
   .route-map-loading { animation: none; background: var(--bg-alt); }
+  .day-arc-track { animation: none; transform: none; }
+  .day-arc-dot { animation: none; }
+  .day-arc-dot:hover { transform: translateX(-50%); }
+}
+@media (max-width: 640px) {
+  .day-arc-legend { display: none; }
+  .day-arc-hero { height: 44px; }
 }
 @media print {
-  .itin-actions, .transport-mode-spaced, .route-map-section { display: none; }
+  .itin-actions, .transport-mode-spaced, .route-map-section, .day-arc-hero { display: none; }
   .step-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
   .step-card:hover { transform: none; }
   .timeline { padding-left: var(--space-4); }
   .timeline::before { background: #999; }
+  .timeline-chapter { break-after: avoid; }
+  .step-note-callout { background: none; border-left: 2px solid #999; }
 }
 </style>
