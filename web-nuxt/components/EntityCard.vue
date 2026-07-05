@@ -4,7 +4,7 @@
       <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`">
         <NuxtImg v-if="isRemote" :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" sizes="sm:100vw md:50vw lg:400px" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
         <img v-else :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
-        <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.label }}</span>
+        <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
       </NuxtLink>
       <template v-if="allImages.length > 1">
         <button v-if="activeSlide > 0" type="button" class="card-arrow card-arrow-prev" aria-label="Ảnh trước" @click.prevent="activeSlide--">‹</button>
@@ -16,16 +16,18 @@
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
     <div v-else class="cover cover-img cover-generated" :class="`cat-${typeMeta.cat}`" :style="{ backgroundImage: placeholderBg }">
+      <span class="cover-grain" aria-hidden="true"></span>
       <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`">
         <span class="cover-svg-icon" v-html="placeholderSvg" />
-        <span class="cover-tag" :class="`cat-${typeMeta.cat}`">{{ typeMeta.label }}</span>
+        <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
       </NuxtLink>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
     <NuxtLink :to="cardPath" class="card-b card-body-link">
-      <span class="card-type">{{ typeMeta.label }}</span>
+      <span class="card-dateline">{{ dateline }}</span>
       <h3 class="card-name">{{ entity.name }}</h3>
-      <p class="summary">{{ cardSummary }}</p>
+      <span class="card-rule" aria-hidden="true"></span>
+      <p class="summary card-teaser">{{ storyTeaser }}</p>
       <p v-if="placeName" class="place">{{ placeName }}</p>
       <div v-if="cardMeta" class="card-meta">
         <span v-if="cardMeta.price" class="cm-item">💰 {{ cardMeta.price }}</span>
@@ -68,6 +70,7 @@ const AMENITY_ICONS: Record<string, { icon: string; label: string }> = {
 import { TYPE_META } from '~/composables/useConstants'
 import { isYearRound, seasonText, relevanceScore } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
+import { entityStoryTeaser, entityDateline } from '~/composables/useEntityStory'
 
 const props = defineProps<{
   entity: Record<string, any>
@@ -103,6 +106,8 @@ const cardSummary = computed(() => {
   }
   return props.entity.summary || ''
 })
+const storyTeaser = computed(() => entityStoryTeaser(props.entity) || cardSummary.value)
+const dateline = computed(() => entityDateline(props.entity, typeMeta.value.label))
 const cardMeta = computed(() => {
   const a = props.entity.attributes
   if (!a) return null
@@ -225,7 +230,30 @@ const ratingDisplay = computed(() => {
   transform: scale(1.3);
 }
 .card-amenities { display: none; }
+/* ── Story Card (Wave 1 keystone) — editorial treatment on every grid card ── */
 .card-type { display: none; }
+.card-name { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; }
+/* dateline eyebrow — small-caps, hairline accent, NOT a solid pill */
+.card-dateline {
+  display: inline-block; margin-bottom: 2px;
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+/* the on-cover dateline stays legible on imagery — keep the readable chip form there */
+.cover-dateline { text-transform: uppercase; letter-spacing: .08em; }
+/* tri-province "sediment" rule between name and teaser (card-scale sediment tick) */
+.card-rule {
+  display: block; width: 26px; height: 2px; border-radius: 2px; margin: 5px 0 6px;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .card-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.card-teaser { color: var(--muted); }
+/* grain overlay turns the flat placeholder gradient into an intentional illustration */
+.cover-grain {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background-image: var(--grain); background-size: 120px 120px; opacity: .06;
+}
+.dark .cover-grain { opacity: .09; }
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }

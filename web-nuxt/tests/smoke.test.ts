@@ -305,6 +305,12 @@ describe('UserCP regressions', () => {
     expect(entityCard).toContain('<article :class="[\'card\'')
     expect(entityCard).toContain('class="card-cover-link"')
     expect(entityCard).not.toContain('<NuxtLink :to="entityPath(entity.id)" :class="[\'card\'')
+    // Story Card (Wave 1 keystone): serif name, dateline eyebrow, tri-province rule, story teaser, grain
+    expect(entityCard).toContain('entityStoryTeaser')
+    expect(entityCard).toContain('class="card-rule"')
+    expect(entityCard).toContain('card-dateline')
+    expect(entityCard).toContain('cover-grain')
+    expect(entityCard).toContain('font-family: var(--font-editorial)')
     expect(src('components/NotificationBell.vue')).toContain('notificationTargetPath(n)')
     expect(src('pages/thong-bao.vue')).toContain('notificationTargetPath(n)')
     expect(src('pages/thong-bao.vue')).toContain('encodePathId(n.id)')
