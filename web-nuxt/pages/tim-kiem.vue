@@ -2,36 +2,33 @@
   <section class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Tìm kiếm' }]" />
 
-    <!-- Hero -->
-    <section class="catalog-hero cat-search">
-      <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">🔍</span>
-        <div>
-          <h1>{{ pc('hero_title') }}</h1>
-          <p>{{ pc('hero_subtitle') }}</p>
+    <!-- Hero: masthead + hero-scale input, sediment tick as the search's vertical accent -->
+    <section class="catalog-hero cat-search search-hero">
+      <span class="dateline-eyebrow">Tìm kiếm · Vĩnh Long · Bến Tre · Trà Vinh</span>
+      <h1>{{ pc('hero_title') }}</h1>
+      <p class="search-ticker-line" aria-live="off">
+        <span class="search-ticker-word" :key="tickerIdx">{{ tickerPhrase }}<span class="search-ticker-q">?</span></span>
+      </p>
+
+      <div class="search-row search-row-spaced search-row-hero" :class="{ error: hasError }" role="search" aria-label="Tìm kiếm địa điểm">
+        <div class="search-input-wrap" role="combobox" :aria-expanded="showSuggestions" aria-haspopup="listbox" aria-owns="search-suggestions">
+          <input v-model="searchInput" type="search" enterkeyhint="search" :placeholder="inputPlaceholder" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" autocomplete="off" aria-autocomplete="list" :aria-activedescendant="activeSuggestionId" @input="onTypeahead" @keyup.enter="onEnter" @keydown.down.prevent="sugNext" @keydown.up.prevent="sugPrev" @keydown.escape="sugClose" @focus="inputFocused = true" @blur="onInputBlur" />
+          <div v-if="sugLoading" class="sug-loading" aria-hidden="true"><span class="spinner spinner-xs"></span></div>
+          <Transition name="sug-fade">
+            <ul v-if="showSuggestions && suggestions.length" id="search-suggestions" class="search-suggestions" role="listbox" aria-label="Gợi ý tìm kiếm">
+              <li v-for="(s, i) in suggestions" :key="s.id" :id="`sug-${s.id}`" role="option" :aria-selected="i === sugIdx" :class="['sug-item', `sug-cat-${TYPE_META[s.type]?.cat || 'place'}`, { active: i === sugIdx }]" @mousedown.prevent="goToSuggestion(s)">
+                <span class="sug-name">{{ s.name }}</span>
+                <span v-if="s.place_name" class="sug-place">{{ s.place_name }}</span>
+              </li>
+              <li id="sug-search-all" class="sug-item sug-all" role="option" :aria-selected="sugIdx === suggestions.length" :class="{ active: sugIdx === suggestions.length }" @mousedown.prevent="doSearch">
+                Tìm tất cả „{{ searchInput.trim() }}"
+              </li>
+            </ul>
+          </Transition>
         </div>
+        <button type="button" class="btn btn-primary" @click="doSearch">Tìm</button>
       </div>
     </section>
-
-    <div class="search-row search-row-spaced" :class="{ error: hasError }" role="search" aria-label="Tìm kiếm địa điểm">
-      <div class="search-input-wrap" role="combobox" :aria-expanded="showSuggestions" aria-haspopup="listbox" aria-owns="search-suggestions">
-        <input v-model="searchInput" type="search" enterkeyhint="search" placeholder="Tìm đặc sản, trải nghiệm…" aria-label="Tìm kiếm" :aria-invalid="hasError || undefined" autocomplete="off" aria-autocomplete="list" :aria-activedescendant="activeSuggestionId" @input="onTypeahead" @keyup.enter="onEnter" @keydown.down.prevent="sugNext" @keydown.up.prevent="sugPrev" @keydown.escape="sugClose" @blur="sugBlur" />
-        <div v-if="sugLoading" class="sug-loading" aria-hidden="true"><span class="spinner spinner-xs"></span></div>
-        <Transition name="sug-fade">
-          <ul v-if="showSuggestions && suggestions.length" id="search-suggestions" class="search-suggestions" role="listbox" aria-label="Gợi ý tìm kiếm">
-            <li v-for="(s, i) in suggestions" :key="s.id" :id="`sug-${s.id}`" role="option" :aria-selected="i === sugIdx" :class="['sug-item', { active: i === sugIdx }]" @mousedown.prevent="goToSuggestion(s)">
-              <span class="sug-emoji" aria-hidden="true">{{ TYPE_META[s.type]?.emoji || '📍' }}</span>
-              <span class="sug-name">{{ s.name }}</span>
-              <span v-if="s.place_name" class="sug-place">{{ s.place_name }}</span>
-            </li>
-            <li id="sug-search-all" class="sug-item sug-all" role="option" :aria-selected="sugIdx === suggestions.length" :class="{ active: sugIdx === suggestions.length }" @mousedown.prevent="doSearch">
-              🔍 Tìm tất cả "{{ searchInput.trim() }}"
-            </li>
-          </ul>
-        </Transition>
-      </div>
-      <button type="button" class="btn btn-primary" @click="doSearch">Tìm</button>
-    </div>
 
     <NuxtErrorBoundary>
       <ClientOnly>
@@ -43,46 +40,33 @@
     </NuxtErrorBoundary>
 
     <SkeletonGrid v-if="searching" :count="6" />
-    <EmptyState v-else-if="hasError" icon="⚠️" title="Lỗi tìm kiếm" message="Không thể tải kết quả. Vui lòng thử lại.">
-      <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('search-results')">Thử lại</button>
+    <EmptyState v-else-if="hasError" title="Lỗi tìm kiếm" message="Không thể tải kết quả. Vui lòng thử lại.">
+      <template #actions>
+        <button type="button" class="btn btn-outline btn-sm" @click="refreshNuxtData('search-results')">Thử lại</button>
+      </template>
     </EmptyState>
     <template v-else-if="q">
       <!-- Địa điểm / sản phẩm -->
       <template v-if="results.length">
-        <div class="result-summary" aria-live="polite">
-          <p class="result-meta">
-            <strong class="result-query">"{{ q }}"</strong>
-            <span class="result-count">{{ results.length }} địa điểm</span>
-          </p>
-          <ul v-if="typeBreakdown.length" class="result-types" aria-label="Phân loại kết quả">
-            <li v-for="t in typeBreakdown" :key="t.type" class="result-type-badge">
-              <span aria-hidden="true">{{ t.emoji }}</span>
-              <span>{{ t.label }}</span>
-              <span class="result-type-count">{{ t.count }}</span>
-            </li>
-          </ul>
-        </div>
+        <p class="result-strap" aria-live="polite">
+          <span class="result-strap-query">„{{ q }}"</span> — {{ resultStrapLine }}
+        </p>
         <div class="grid">
           <EntityCard v-for="e in results" :key="e.id" :entity="e" />
         </div>
       </template>
 
-      <!-- Người dùng -->
-      <section v-if="userResults.length" class="block search-section reveal">
-        <div class="section-head"><h2>Người dùng</h2></div>
-        <div class="people-list">
+      <!-- Cũng có trong cộng đồng: người dùng + bài viết, thứ yếu so với kết quả địa điểm -->
+      <section v-if="userResults.length || postResults.length" class="block search-section-secondary reveal">
+        <div class="section-head sediment-head"><h2>Cũng có trong cộng đồng</h2></div>
+        <div v-if="userResults.length" class="people-list">
           <NuxtLink v-for="u in userResults" :key="u.id" :to="userPath(u.username || u.id)" class="person-chip">
             <span class="avatar person-avatar">{{ (u.display_name || '?').charAt(0).toUpperCase() }}</span>
             <span class="person-name">{{ u.display_name }}</span>
             <span v-if="u.post_count" class="person-meta">{{ u.post_count }} bài</span>
           </NuxtLink>
         </div>
-      </section>
-
-      <!-- Bài viết cộng đồng -->
-      <section v-if="postResults.length" class="block search-section reveal">
-        <div class="section-head"><h2>Bài viết cộng đồng</h2></div>
-        <div class="search-post-list">
+        <div v-if="postResults.length" class="search-post-list">
           <NuxtLink v-for="p in postResults" :key="p.id" :to="postPath(p.id)" class="search-post-item">
             <div class="spi-head">
               <strong>{{ p.display_name || 'Người dùng' }}</strong>
@@ -105,9 +89,9 @@
         compact
       />
 
-      <!-- Không có kết quả nào -->
+      <!-- Không có kết quả nào — đây là khoảnh khắc phục hồi, không phải ngõ cụt -->
       <template v-if="!results.length && !postResults.length && !userResults.length">
-        <EmptyState icon="🔍" title="Không tìm thấy kết quả" message="Thử từ khóa khác hoặc khám phá danh mục bên dưới.">
+        <EmptyState title="Chưa thấy đúng ý bạn" message="Nhưng biết đâu những gợi ý dưới đây lại hợp — phù sa vẫn còn nhiều thứ để kể.">
           <template #actions>
             <NuxtLink to="/du-lich" class="btn btn-outline">Khám phá du lịch</NuxtLink>
             <NuxtLink to="/san-pham" class="btn btn-outline">Xem sản phẩm</NuxtLink>
@@ -115,7 +99,7 @@
         </EmptyState>
         <NuxtErrorBoundary>
           <ClientOnly>
-            <LazySmartRecommendations context="search" :query="q" title="Gợi ý cho bạn" :limit="6" />
+            <LazySmartRecommendations context="search" :query="q" title="Có phải bạn muốn tìm…" :limit="6" />
           </ClientOnly>
         </NuxtErrorBoundary>
         <JourneyActionRail
@@ -126,17 +110,40 @@
       </template>
     </template>
 
-    <!-- Quick explore when no query -->
+    <!-- Trước khi gõ: tầng khám phá — trọng tâm thật sự của trang này -->
     <template v-if="!q">
+      <!-- Row A: Đang được hỏi nhiều — chip tĩnh, đã tuyển chọn -->
+      <section class="block reveal">
+        <div class="section-head sediment-head"><h2>Đang được hỏi nhiều</h2></div>
+        <div class="scroll-row trending-row">
+          <button
+            v-for="(chip, i) in trendingChips"
+            :key="i"
+            type="button"
+            class="trending-chip"
+            @click="goTrending(chip)"
+          >
+            <span class="trending-dot" aria-hidden="true"></span>
+            <span>{{ chip }}</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Row B: gợi ý đáng chú ý — recommendation engine sẵn có (context hợp lệ, không tự chế) -->
+      <NuxtErrorBoundary>
+        <ClientOnly>
+          <LazySmartRecommendations context="search" title="Đáng chú ý lúc này" :limit="3" />
+        </ClientOnly>
+      </NuxtErrorBoundary>
+
+      <!-- Row C: Tiếp tục nơi bạn dừng lại — filmstrip, không phải lưới phẳng -->
       <ClientOnly>
         <section v-if="recentItems.length" class="block reveal">
-          <div class="section-head">
-            <h2>Đã xem gần đây</h2>
-          </div>
-          <div class="recent-grid">
+          <div class="section-head sediment-head"><h2>Tiếp tục nơi bạn dừng lại</h2></div>
+          <div class="scroll-row recent-filmstrip">
             <NuxtLink v-for="r in recentItems" :key="r.id" :to="entityPath(r.id)" class="recent-card">
               <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" width="56" height="56" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
-              <span v-else class="recent-img recent-placeholder" aria-hidden="true">{{ TYPE_META[r.type]?.emoji || '📍' }}</span>
+              <span v-else class="recent-img recent-placeholder" aria-hidden="true" :style="{ backgroundImage: categoryPlaceholderBg(r.id, TYPE_META[r.type]?.cat) }"><span class="recent-placeholder-glyph" v-html="categoryGlyph(TYPE_META[r.type]?.cat)"></span></span>
               <span class="recent-name">{{ r.name }}</span>
               <span class="recent-type">{{ TYPE_META[r.type]?.label || r.type }}</span>
             </NuxtLink>
@@ -144,53 +151,29 @@
         </section>
       </ClientOnly>
 
+      <!-- Row D: Khám phá theo chủ đề — glyph thay emoji, cùng ngôn ngữ với EntityCard -->
       <section class="block reveal">
-        <div class="section-head">
-          <h2>Khám phá theo danh mục</h2>
-        </div>
+        <div class="section-head sediment-head"><h2>Khám phá theo chủ đề</h2></div>
         <div class="quick-picks">
-          <NuxtLink to="/du-lich" class="quick-pick">
-            <span class="quick-pick-icon">🌿</span>
-            <span class="quick-pick-label">Du lịch</span>
-          </NuxtLink>
-          <NuxtLink to="/san-pham" class="quick-pick">
-            <span class="quick-pick-icon">🍊</span>
-            <span class="quick-pick-label">Đặc sản</span>
-          </NuxtLink>
-          <NuxtLink to="/luu-tru" class="quick-pick">
-            <span class="quick-pick-icon">🏡</span>
-            <span class="quick-pick-label">Lưu trú</span>
-          </NuxtLink>
-          <NuxtLink to="/ocop" class="quick-pick">
-            <span class="quick-pick-icon">⭐</span>
-            <span class="quick-pick-label">OCOP</span>
-          </NuxtLink>
-          <NuxtLink to="/le-hoi" class="quick-pick">
-            <span class="quick-pick-icon">🎊</span>
-            <span class="quick-pick-label">Lễ hội</span>
-          </NuxtLink>
-          <NuxtLink to="/lich-trinh" class="quick-pick">
-            <span class="quick-pick-icon">🗓️</span>
-            <span class="quick-pick-label">Lịch trình</span>
+          <NuxtLink v-for="qp in quickPicks" :key="qp.to" :to="qp.to" class="quick-pick">
+            <span class="quick-pick-icon" :style="{ backgroundImage: categoryPlaceholderBg(qp.to, qp.cat) }">
+              <span class="quick-pick-glyph" v-html="categoryGlyph(qp.cat)"></span>
+            </span>
+            <span class="quick-pick-label">{{ qp.label }}</span>
           </NuxtLink>
         </div>
       </section>
 
       <section class="block reveal">
-        <div class="section-head">
-          <h2>Tìm theo khu vực</h2>
-        </div>
+        <div class="section-head sediment-head"><h2>Tìm theo khu vực</h2></div>
         <div class="quick-picks">
           <NuxtLink to="/khu-vuc/vinh-long" class="quick-pick">
-            <span class="quick-pick-icon">🍊</span>
             <span class="quick-pick-label">Vĩnh Long</span>
           </NuxtLink>
           <NuxtLink to="/khu-vuc/ben-tre" class="quick-pick">
-            <span class="quick-pick-icon">🥥</span>
             <span class="quick-pick-label">Bến Tre</span>
           </NuxtLink>
           <NuxtLink to="/khu-vuc/tra-vinh" class="quick-pick">
-            <span class="quick-pick-icon">🛕</span>
             <span class="quick-pick-label">Trà Vinh</span>
           </NuxtLink>
         </div>
@@ -225,6 +208,7 @@
 <script setup lang="ts">
 import { TYPE_META } from '~/composables/useConstants'
 import { useJourneyActions } from '~/composables/useJourneyActions'
+import { generateCategoryIcon, generateCategoryPlaceholder } from '~/composables/useCategoryPlaceholder'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
@@ -232,6 +216,65 @@ const { trackSearch } = useUserEvents()
 const { searchAll, fetchEntitySuggestions } = useUnifiedSearch()
 const { searchRecoveryActions, searchSuccessActions } = useJourneyActions()
 const route = useRoute()
+
+// Same pairing EntityCard uses: glyph (currentColor/white-watermark strokes) is only
+// legible over its matching seeded gradient — never drop the glyph on a bare card.
+function categoryGlyph(cat?: string) {
+  return generateCategoryIcon(cat || 'place')
+}
+function categoryPlaceholderBg(seedId: string, cat?: string) {
+  return generateCategoryPlaceholder(seedId, cat || 'place')
+}
+
+// Câu hỏi thật, đặc trưng miền Tây — danh sách tĩnh đã tuyển chọn (không gọi LLM,
+// không backend trending — đúng tinh thần §B8: đây là copy trình bày, không phải
+// dữ liệu sống). Dùng làm cả ticker hero lẫn placeholder input khi rảnh gõ.
+const TICKER_PHRASES = [
+  'bún nước lèo ở đâu chuẩn vị Khmer',
+  'mùa này bưởi Năm Roi ngọt chưa',
+  'ngủ đêm giữa vườn dừa, ở đâu',
+  'chợ nổi Cái Bè còn họp giờ nào',
+  'dừa xiêm Bến Tre uống tại vườn',
+  'đờn ca tài tử nghe ở đâu',
+  'cù lao nào yên tĩnh nhất',
+]
+const tickerIdx = ref(0)
+const tickerPhrase = computed(() => TICKER_PHRASES[tickerIdx.value % TICKER_PHRASES.length])
+const inputFocused = ref(false)
+const inputPlaceholder = computed(() =>
+  inputFocused.value || searchInput.value ? 'Tìm đặc sản, trải nghiệm…' : `${tickerPhrase.value}…`
+)
+let tickerTimer: ReturnType<typeof setInterval> | null = null
+onMounted(() => {
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+  tickerTimer = setInterval(() => { tickerIdx.value++ }, 4000)
+})
+onBeforeUnmount(() => { if (tickerTimer) clearInterval(tickerTimer) })
+
+// Row A — "Đang được hỏi nhiều": chip tĩnh dẫn thẳng vào một câu tìm kiếm thật.
+const trendingChips = [
+  'bún nước lèo',
+  'bưởi Năm Roi',
+  'homestay vườn dừa',
+  'chợ nổi Cái Bè',
+  'dừa sáp Cầu Kè',
+  'đờn ca tài tử',
+]
+function goTrending(term: string) {
+  trackSearch(term, { context: 'search_trending' })
+  navigateTo(`/tim-kiem?q=${encodeURIComponent(term)}`)
+}
+
+// Row D — "Khám phá theo chủ đề": cat khớp CATEGORY_HUE/generateCategoryIcon để
+// glyph + màu đồng nhất với EntityCard placeholder trên toàn site.
+const quickPicks = [
+  { to: '/du-lich', label: 'Du lịch', cat: 'nature' },
+  { to: '/san-pham', label: 'Đặc sản', cat: 'product' },
+  { to: '/luu-tru', label: 'Lưu trú', cat: 'accommodation' },
+  { to: '/ocop', label: 'OCOP', cat: 'craft' },
+  { to: '/le-hoi', label: 'Lễ hội', cat: 'event' },
+  { to: '/lich-trinh', label: 'Lịch trình', cat: 'itinerary' },
+]
 function firstQueryValue(value: unknown) {
   return Array.isArray(value) ? String(value[0] || '') : String(value || '')
 }
@@ -270,7 +313,8 @@ if (import.meta.client) {
   }, { flush: 'post' })
 }
 
-// SERPs-style type distribution badges (e.g. 5 Trải nghiệm · 4 Đặc sản · 3 Lưu trú).
+// Type distribution — real counts from the actual result set, used to compose
+// the curatorial strap-line (e.g. "4 món ăn, 3 điểm đến và 1 lễ hội").
 const typeBreakdown = computed(() => {
   const counts = new Map<string, number>()
   for (const e of results.value as any[]) {
@@ -282,9 +326,23 @@ const typeBreakdown = computed(() => {
       type,
       count,
       label: TYPE_META[type]?.label || type,
-      emoji: TYPE_META[type]?.emoji || '📍',
     }))
     .sort((a, b) => b.count - a.count)
+})
+
+// Narrator's-voice strap-line — reframes the SERP meta line as a curated sentence.
+// Built purely from typeBreakdown (real data), never invented counts.
+function pluralLabel(label: string, count: number) {
+  return `${count} ${label.toLowerCase()}`
+}
+const resultStrapLine = computed(() => {
+  const n = results.value.length
+  if (!n) return ''
+  const parts = typeBreakdown.value.map(t => pluralLabel(t.label, t.count))
+  if (parts.length <= 1) return `phù sa mang về ${parts[0] || `${n} kết quả`} quanh câu hỏi này.`
+  const last = parts[parts.length - 1]
+  const head = parts.slice(0, -1).join(', ')
+  return `phù sa mang về ${head} và ${last} quanh câu hỏi này.`
 })
 
 function doSearch() {
@@ -338,6 +396,7 @@ function sugPrev() {
 function sugClose() { showSuggestions.value = false; sugIdx.value = -1 }
 let blurTimer: ReturnType<typeof setTimeout> | null = null
 function sugBlur() { blurTimer = setTimeout(sugClose, 150) }
+function onInputBlur() { inputFocused.value = false; sugBlur() }
 function goToSuggestion(s: any) {
   sugClose()
   navigateTo(entityPath(s.id))
@@ -389,26 +448,28 @@ useHead({
 .sug-loading { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 .fetch-error { color: var(--error); text-align: center; padding: var(--space-5); }
 
-/* Result summary header (SERPs-style query echo + type breakdown) */
-.result-summary { margin-bottom: var(--space-4); }
-.result-meta { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-sm); color: var(--muted); margin-bottom: var(--space-2); }
-.result-query { color: var(--ink); font-weight: var(--weight-semibold); }
-.result-count { color: var(--muted); }
-.result-types { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; padding: 0; margin: 0; }
-.result-type-badge {
-  display: inline-flex; align-items: center; gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  background: var(--bg-alt); border: .5px solid var(--line);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink);
+/* Result strap-line — narrator's-voice reframe of the old SERP meta line + type-badge row. */
+.result-strap {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  color: var(--ink-700);
 }
-.result-type-count { color: var(--primary-fg); font-weight: var(--weight-semibold); }
+.result-strap-query { color: var(--ink); font-weight: var(--weight-semibold); font-style: normal; }
+.dark .result-strap { color: var(--ink-tertiary); }
+.dark .result-strap-query { color: var(--ink); }
 
 /* Search input error feedback */
 .search-row.error input { border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--error-rgb, 217, 79, 61), .12); }
 
-/* Unified search: người dùng + bài viết */
+/* Unified search: người dùng + bài viết — secondary strip, smaller than the primary entity grid */
 .search-section { margin-top: var(--space-5); }
+.search-section-secondary { padding-top: var(--space-6); padding-bottom: var(--space-3); }
+.search-section-secondary .section-head { margin-bottom: var(--space-4); }
+.search-section-secondary .section-head h2 { font-size: var(--text-lg); }
+.search-section-secondary .people-list { margin-bottom: var(--space-3); }
 .people-list { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .person-chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
 .person-chip:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
@@ -428,8 +489,18 @@ useHead({
 .quick-pick:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-fg); background: rgba(var(--primary-rgb), .04); }
 .quick-pick:active { transform: scale(.97); transition-duration: .08s; }
 .quick-pick:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.quick-pick-icon { font-size: var(--text-2xl); transition: transform .35s var(--ease-spring-gentle); }
-.quick-pick:hover .quick-pick-icon { transform: scale(1.15); }
+/* Glyph swap: same pairing EntityCard uses — seeded gradient swatch (generateCategoryPlaceholder)
+   behind the white-watermark glyph (generateCategoryIcon), never the bare glyph alone (its fills
+   are translucent-white, illegible without the saturated backdrop). Small size, rounded tile. */
+.quick-pick-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: var(--radius-md);
+  background-size: cover; background-position: center;
+  transition: transform .35s var(--ease-spring-gentle);
+}
+.quick-pick-glyph { display: inline-flex; width: 24px; height: 24px; color: rgba(255,255,255,.85); }
+.quick-pick-glyph :deep(svg) { width: 100%; height: 100%; }
+.quick-pick:hover .quick-pick-icon { transform: scale(1.1); }
 .quick-pick-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
 
 /* Autocomplete suggestions */
@@ -445,10 +516,17 @@ useHead({
   display: flex; align-items: center; gap: var(--space-2);
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
   cursor: pointer; font-size: var(--text-sm); color: var(--ink);
-  transition: background .15s;
+  border-left: 3px solid transparent;
+  transition: background .15s, border-color .15s;
 }
 .sug-item:hover, .sug-item.active { background: var(--bg-alt); }
-.sug-emoji { flex-shrink: 0; }
+/* Category-color left-border strip — turns the dropdown into a tiny preview of the
+   tri-province palette (leaf/amber/river/clay family) instead of a plain emoji list. */
+.sug-cat-nature, .sug-cat-experience { border-left-color: var(--secondary); }
+.sug-cat-dish, .sug-cat-product, .sug-cat-craft, .sug-cat-economy { border-left-color: var(--accent-dark); }
+.sug-cat-attraction, .sug-cat-history, .sug-cat-place, .sug-cat-facility, .sug-cat-org { border-left-color: var(--river-600); }
+.sug-cat-accommodation { border-left-color: var(--clay-400); }
+.sug-cat-event, .sug-cat-person { border-left-color: var(--clay-600); }
 .sug-name { font-weight: var(--weight-medium); }
 .sug-place { color: var(--muted); font-size: var(--text-xs); margin-left: auto; flex-shrink: 0; }
 .sug-all { color: var(--primary-fg); font-weight: var(--weight-semibold); border-top: .5px solid var(--line); margin-top: var(--space-1); padding-top: var(--space-2); }
@@ -468,6 +546,117 @@ useHead({
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .12);
 }
 
+/* ── Masthead: search is a mid-conversation moment, not an empty box ──
+   .dateline-eyebrow is defined locally (not imported from assets/css/events.css,
+   which is opted-in per-page only by le-hoi.vue/su-kien.vue) — same convention as the
+   dateline eyebrow used elsewhere, kept scoped here per this unit's edit boundary. */
+.search-hero { display: flex; flex-direction: column; }
+.search-hero .dateline-eyebrow {
+  position: relative;
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: .5px solid var(--line);
+}
+.search-hero h1 { max-width: 18ch; }
+
+/* Ticker — murmur distinct from the authoritative serif h1: sans, italic-ish via
+   letter-spacing/opacity, small, muted. Cross-fades every 4s (JS index-cycle), freezes
+   under reduced-motion (interval never starts — see script onMounted guard). */
+.search-ticker-line {
+  margin: var(--space-2) 0 var(--space-6);
+  font-family: var(--font-sans);
+  font-style: italic;
+  font-size: var(--text-base);
+  color: var(--muted);
+  min-height: 1.4em;
+}
+.search-ticker-word {
+  display: inline-block;
+  animation: tickerIn .5s var(--ease-out) both;
+}
+.search-ticker-q { opacity: .6; margin-left: 1px; }
+@keyframes tickerIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Hero-scale input: oversized, sits on a hairline underline (not a boxed input), sediment
+   tick to the left as the vertical accent echoing the section-head signature. */
+.search-row-hero {
+  position: relative;
+  padding-left: var(--space-4);
+  max-width: 640px;
+}
+.search-row-hero::before {
+  content: "";
+  position: absolute; left: 0; top: 2px; bottom: 2px;
+  width: 4px; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .search-row-hero::before {
+  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
+.search-row-hero .search-input-wrap input {
+  font-size: var(--text-2xl);
+  font-style: normal;
+  padding: var(--space-2) 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--line);
+  border-radius: 0;
+  box-shadow: none !important;
+}
+.search-row-hero .search-input-wrap input::placeholder {
+  font-style: italic;
+  color: var(--muted);
+  opacity: .75;
+}
+.search-row-hero .search-input-wrap input:focus-visible {
+  border-bottom-color: var(--primary-fg);
+  box-shadow: none;
+}
+@media (max-width: 640px) {
+  .search-row-hero { padding-left: var(--space-3); max-width: none; }
+  .search-row-hero .search-input-wrap input { font-size: var(--text-xl); }
+  .search-ticker-line { font-size: var(--text-sm); }
+}
+
+/* Row A: trending chips — reuses .scroll-row (catalog.css) for snap + edge-mask. */
+.trending-chip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  flex: 0 0 auto; padding: var(--space-2) var(--space-4);
+  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-full);
+  font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink);
+  cursor: pointer; white-space: nowrap;
+  transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle), background .25s var(--ease-out);
+}
+.trending-chip:hover { border-color: var(--primary-fg); transform: translateY(-1px); background: rgba(var(--primary-rgb), .04); }
+.trending-chip:active { transform: scale(.97); transition-duration: .08s; }
+.trending-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.trending-row > * { flex: 0 0 auto; }
+/* "Hot right now" dot — reuses the same restrained pulse token as EntityCard's peak-dot,
+   settles after one breathing cycle rather than looping forever (motion-budget discipline). */
+.trending-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-dark);
+  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .5);
+  animation: trendingPulse 2.4s var(--ease-out) 1;
+}
+@keyframes trendingPulse {
+  0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .5); }
+  70% { box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+}
+.dark .trending-chip { background: var(--bg-alt); border-color: var(--line); }
+.dark .trending-chip:hover { border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.04); }
+
 /* Grid results stagger */
 .grid { animation: fadeInGrid .4s var(--ease-out) both; }
 @keyframes fadeInGrid { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -475,15 +664,12 @@ useHead({
 /* Dark mode */
 .dark .quick-pick { background: var(--bg-alt); border-color: var(--line); }
 .dark .quick-pick:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); background: rgba(255,255,255,.04); }
-.dark .result-meta { color: var(--ink-tertiary); }
-.dark .result-query { color: var(--ink); }
-.dark .result-type-badge { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); }
 .dark .fetch-error { color: var(--error); }
 
 /* Recently viewed */
-.recent-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: var(--space-3);
-}
+/* Row C filmstrip — narrower flex-basis than the shared .scroll-row default (260px is
+   sized for entity cards; recent-card is a small tile), reusing .scroll-row's snap+edge-mask. */
+.recent-filmstrip > * { flex: 0 0 128px; }
 .recent-card {
   display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
   padding: var(--space-3); background: var(--card); border: .5px solid var(--line);
@@ -496,16 +682,20 @@ useHead({
 .recent-img {
   width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover;
 }
+/* Same EntityCard pairing: seeded gradient (inline style) + white-watermark glyph on top. */
 .recent-placeholder {
   display: flex; align-items: center; justify-content: center;
-  background: var(--bg-alt); font-size: var(--text-xl);
+  background-size: cover; background-position: center;
 }
+.recent-placeholder-glyph { display: inline-flex; width: 28px; height: 28px; color: rgba(255,255,255,.85); }
+.recent-placeholder-glyph :deep(svg) { width: 100%; height: 100%; }
 .recent-name { font-size: var(--text-xs); font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
 .recent-type { font-size: 10px; color: var(--muted); }
 .dark .recent-card { background: var(--bg-alt); border-color: var(--line); }
 .dark .recent-card:hover { border-color: rgba(255,255,255,.15); }
 
-/* Reduced motion */
+/* Reduced motion — ticker interval itself never starts (see onMounted guard in script);
+   these rules cover the remaining CSS-driven motion so nothing depends on JS alone. */
 @media (prefers-reduced-motion: reduce) {
   .quick-pick:hover { transform: none; }
   .quick-pick:active { transform: none; }
@@ -513,5 +703,9 @@ useHead({
   .recent-card:hover { transform: none; }
   .recent-card:active { transform: none; }
   .grid { animation: none; opacity: 1; transform: none; }
+  .search-ticker-word { animation: none; opacity: 1; transform: none; }
+  .trending-dot { animation: none; box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+  .trending-chip:hover { transform: none; }
+  .trending-chip:active { transform: none; }
 }
 </style>
