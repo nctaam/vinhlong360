@@ -191,7 +191,11 @@ ready=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://127.0.0.1:83
 # Bài học incident 2026-07-02: search 500 nhiều ngày mà /health vẫn 200 —
 # endpoint lõi PHẢI nằm trong cổng verify, deploy hỏng search không được pass.
 search=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "http://127.0.0.1:8360/api/search?q=deploy-check" || echo 000)
-printf "  home=%s\n  agent_health=%s\n  agent_ready=%s\n  search=%s\n" "$home" "$agent" "$ready" "$search"
+# Bài học outage 2026-07-05: build với API_BASE=public làm nitro proxy /api/** loop → 500
+# CHỈ trên endpoint đi qua public proxy (nginx→nitro); home/ vẫn 200 vì nitro serve trực tiếp.
+# PHẢI check PUBLIC /api/homepage (qua proxy) để bắt vòng lặp proxy này, không chỉ localhost.
+pub_api=$(curl -s -o /dev/null -w "%{http_code}" --max-time 12 https://vinhlong360.vn/api/homepage || echo 000)
+printf "  home=%s\n  agent_health=%s\n  agent_ready=%s\n  search=%s\n  public_api_homepage=%s\n" "$home" "$agent" "$ready" "$search" "$pub_api"
 journalctl -u vl-agent --since "2 min ago" -p err --no-pager | tail -5 || true
-[ "$home" = 200 ] && [ "$agent" = 200 ] && [ "$ready" = 200 ] && [ "$search" = 200 ]'
+[ "$home" = 200 ] && [ "$agent" = 200 ] && [ "$ready" = 200 ] && [ "$search" = 200 ] && [ "$pub_api" = 200 ]'
 echo "==> deploy $TS DONE. Rollback: backups/pre-deploy-$TS.tar.gz + backups/db-pre-deploy-$TS.dump"
