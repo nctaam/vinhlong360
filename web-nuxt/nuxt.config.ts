@@ -37,6 +37,7 @@ export default defineNuxtConfig({
     // detail-shared.css = phần dùng-chung (breadcrumb/highlights/lightbox/map) GIỮ global.
     '~/assets/css/detail-shared.css',
     '~/assets/css/catalog.css',
+    '~/assets/css/editorial.css',   // drop-cap / pull-quote / editorial-body — small (6.4KB), site-wide editorial typography
     // events.css KHÔNG global: chỉ le-hoi.vue + su-kien.vue dùng (xem <style src> trong 2 page đó)
     // → bỏ ~10.5KB khỏi entry.css mọi trang. Verify usage: scratch/analyze_css.py.
     '~/assets/css/dark-overrides.css',
