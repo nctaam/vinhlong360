@@ -1213,7 +1213,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   opacity: .5;
 }
 .dark .home .block + .block::before { opacity: .62; }
-.home .block { padding-top: var(--space-16); padding-bottom: var(--space-8); content-visibility: auto; contain-intrinsic-size: auto 480px; }
+/* Even vertical rhythm: every section shares the same symmetric padding as .block-compact
+   (32/32) so the gap between ANY two sections is a uniform 64px — was 64px top / 32px bottom,
+   giving 96px gaps between blocks vs 64px between compacts (the uneven, oversized whitespace). */
+.home .block { padding-top: var(--space-8); padding-bottom: var(--space-8); content-visibility: auto; contain-intrinsic-size: auto 480px; }
 .home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-8); }
 .home .block.band { background: var(--bg-warm); background-image: var(--season-hero-gradient); border-radius: var(--radius-xl); padding-inline: var(--space-6); }
 .home .block.band + .block::before, .home .block + .block.band::before { display: none; }

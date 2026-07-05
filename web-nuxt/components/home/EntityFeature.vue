@@ -194,6 +194,14 @@ if (props.priority) {
   margin-top: var(--space-2);
 }
 
+/* Desktop: the body column (masthead + lede + 3 cards + CTA) is taller than a 16:9 photo,
+   so a centered image floats with whitespace above + below it. Stretch the photo to fill the
+   column height instead (aspect-ratio yields to the stretched height) — no dead space beside it. */
+@media (min-width: 761px) {
+  .ef { align-items: stretch; }
+  .ef-visual { aspect-ratio: auto; }
+}
+
 /* ── Stack to 1 column under 760px ── */
 @media (max-width: 760px) {
   .ef { grid-template-columns: 1fr; gap: var(--space-5); }
