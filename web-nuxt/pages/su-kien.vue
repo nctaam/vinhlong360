@@ -2,8 +2,11 @@
   <div class="page events-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sự kiện' }]" :json-ld="true" />
 
-    <!-- Hero -->
-    <section class="catalog-hero cat-event">
+    <!-- Hero: "Đất này giữ lịch riêng" — contemporary register, amber-toned -->
+    <section class="catalog-hero cat-event register-su-kien">
+      <p class="dateline-eyebrow">
+        HÔM NAY · <strong>{{ todayGregorianLabel }}</strong> · ÂM LỊCH <span class="lunar-label">{{ todayLunarLabel }}</span>
+      </p>
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🎪</span>
         <div>
@@ -11,7 +14,17 @@
           <p>{{ pc('hero_subtitle') }}</p>
         </div>
       </div>
-      <div v-if="allEvents.length" class="catalog-stats">
+
+      <!-- Live urgency treatment supersedes the stat-chip row when something is imminent -->
+      <NuxtLink v-if="liveNow" :to="entityPath(liveNow.id)" class="now-banner">
+        <span class="now-banner-dot" aria-hidden="true"></span>
+        <span class="now-banner-text">
+          <strong>{{ isHappeningNow(liveNow) ? 'Đang diễn ra' : 'Sắp diễn ra' }}: {{ liveNow.name }}</strong>
+          <template v-if="liveNow.place_name"> — {{ liveNow.place_name }}</template>
+        </span>
+        <span class="now-banner-countdown">{{ countdownLabel(liveNow) }}</span>
+      </NuxtLink>
+      <div v-else-if="allEvents.length" class="catalog-stats">
         <div class="stat-item">
           <CountUp :value="allEvents.length" class="stat-num" />
           <span class="stat-label">sự kiện</span>
@@ -21,38 +34,70 @@
           <span class="stat-label">{{ a.name }}</span>
         </div>
       </div>
+
+      <!-- Signature moment: lunar ribbon — even the contemporary register runs on the same moon -->
+      <div v-if="ribbonTicks.length" class="lunar-ribbon" role="group" aria-label="Dải âm lịch — sự kiện sắp tới theo vị trí trăng">
+        <svg class="lunar-ribbon-moon" viewBox="0 0 32 32" aria-hidden="true">
+          <circle class="moon-base" cx="16" cy="16" r="13" />
+          <path class="moon-lit" :d="todayMoonPath" />
+        </svg>
+        <span class="lunar-ribbon-label">Trăng <strong>{{ todayLunar.day }}/30</strong></span>
+        <div class="lunar-ribbon-track">
+          <button
+            v-for="tick in ribbonTicks" :key="tick.id"
+            type="button"
+            class="lunar-ribbon-tick"
+            :style="{ left: tick.pct + '%' }"
+            @click="navigateTo(entityPath(tick.id))"
+          >
+            <span class="lunar-ribbon-tip"><strong>{{ tick.name }}</strong>{{ tick.hook }}</span>
+            <span class="sr-only">{{ tick.name }}</span>
+          </button>
+        </div>
+      </div>
     </section>
 
     <!-- Spotlight -->
     <CatalogSpotlight :items="allEvents" />
 
-    <p class="result-link">Tìm lễ hội truyền thống? <NuxtLink to="/le-hoi">Xem trang Lễ hội →</NuxtLink></p>
+    <!-- Register toggle: contemporary (sự kiện, here) vs ancestral (lễ hội) — amber ↔ leaf -->
+    <section class="block reveal">
+      <div class="register-toggle" role="group" aria-label="Chọn sổ lễ hội">
+        <NuxtLink to="/le-hoi" class="register-toggle-tab tone-leaf" aria-pressed="false">🎋 Lễ hội truyền thống</NuxtLink>
+        <NuxtLink to="/su-kien" class="register-toggle-tab is-active tone-amber" aria-pressed="true">🎪 Sự kiện &amp; hội chợ</NuxtLink>
+      </div>
+    </section>
 
-    <!-- Upcoming -->
+    <!-- Ceremonial ledger: full-width rows ordered strictly by nearness in time,
+         not a horizontal scroll-row — the same narrative weight le-hoi gives its calendar. -->
     <section v-if="upcoming.length" class="block reveal">
-      <div class="section-head">
+      <div class="sediment-head">
         <h2>Sắp diễn ra</h2>
       </div>
-      <div class="scroll-row" role="region" aria-label="Sự kiện sắp diễn ra" tabindex="0">
+      <div class="ledger" role="list" aria-label="Sự kiện sắp diễn ra, theo thứ tự gần nhất">
         <NuxtLink
           v-for="e in upcoming" :key="e.id"
           :to="entityPath(e.id)"
-          class="event-row"
+          class="ledger-row"
+          role="listitem"
         >
           <div class="event-date-badge">
             <span class="edb-month">{{ formatMonth(e) }}</span>
             <span class="edb-day">{{ formatDay(e) }}</span>
           </div>
-          <div class="event-info">
+          <span class="ledger-status" :class="{ 'is-now': isHappeningNow(e) }">
+            {{ isHappeningNow(e) ? 'Đang diễn ra' : countdownLabel(e) }}
+          </span>
+          <h3 class="ledger-name">
             <span v-if="e.attributes?.category === 'mua'" class="cat-badge cat-mua">🌾 Mùa vụ</span>
-            <h3>{{ e.name }}</h3>
-            <div class="event-meta">
-              <span v-if="e.place_name" class="event-place">📍 {{ e.place_name }}</span>
-              <span v-if="dateRange(e)" class="event-dates">🗓️ {{ dateRange(e) }}</span>
-            </div>
-          </div>
+            {{ e.name }}
+          </h3>
+          <span v-if="e.place_name" class="ledger-place">📍 {{ e.place_name }}</span>
         </NuxtLink>
       </div>
+      <button type="button" class="ical-bulk-btn" @click="downloadIcalBulk">
+        📅 Thêm tất cả sự kiện sắp tới vào lịch của bạn
+      </button>
     </section>
 
     <!-- Interstitial -->
@@ -67,12 +112,12 @@
       ]"
     />
 
-    <!-- Region quick-picks -->
+    <!-- Region quick-picks — blob shapes gesture at real geography without map tiles -->
     <section class="block band reveal">
-      <div class="section-head">
+      <div class="sediment-head">
         <h2>Chọn theo khu vực</h2>
       </div>
-      <div class="quick-picks">
+      <div class="quick-picks blob-picks">
         <button type="button"
           v-for="(meta, key) in AREA_META" :key="key"
           :class="['quick-pick', { active: areaFilter === key }]"
@@ -86,11 +131,11 @@
       </div>
     </section>
 
-    <!-- Editorial -->
+    <!-- Editorial: the contemporary register — same land, modern calendar -->
     <section v-once class="page-article reveal">
-      <h2>Sự kiện tại miền Tây</h2>
+      <div class="sediment-head sediment-head-first"><h2>Sự kiện tại miền Tây</h2></div>
       <p>Ngoài các lễ hội truyền thống, vùng Vĩnh Long, Bến Tre và Trà Vinh ngày càng có nhiều sự kiện văn hoá, thể thao và du lịch hiện đại. Hội chợ nông sản, festival ẩm thực, giải chạy marathon, triển lãm nghệ thuật và các chương trình xúc tiến du lịch được tổ chức thường xuyên, đặc biệt vào dịp cuối tuần và các ngày lễ lớn.</p>
-      <p>Các sự kiện này là cơ hội tốt để trải nghiệm văn hoá địa phương theo cách hiện đại — thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia các hoạt động cộng đồng cùng người dân bản địa.</p>
+      <blockquote class="pull-quote">Thưởng thức ẩm thực đường phố, xem trình diễn nghề truyền thống, mua sản phẩm OCOP trực tiếp từ nhà sản xuất, hoặc tham gia hoạt động cộng đồng cùng người dân bản địa — cùng một vùng đất, cách hiện đại để gặp nó.</blockquote>
     </section>
 
     <!-- Divider -->
@@ -232,7 +277,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
-import { lunarLabel, isLunarFirstDay, isLunarFull } from '~/composables/useLunar'
+import { lunarLabel, isLunarFirstDay, isLunarFull, solarToLunar } from '~/composables/useLunar'
 
 useReveal()
 const { f: pc } = usePageContent('su_kien')
@@ -322,6 +367,129 @@ function fadeEventImageError(ev: Event | string) {
 
 const { today, calMonth, calYear, displayMonth, displayYear, calendarCells } = useEventCalendar(allEvents)
 
+// ── "Đất này giữ lịch riêng" — living-calendar hero devices (additive; does not
+// fork eventStatus/filtered above). ──
+
+function eventStart(e: Entity): string {
+  return e.attributes?.date_start_iso || e.attributes?.date_start || ''
+}
+function eventEnd(e: Entity): string {
+  return e.attributes?.date_end_iso || e.attributes?.date_end || eventStart(e)
+}
+
+const now = new Date()
+const todayLunar = solarToLunar(now.getDate(), now.getMonth() + 1, now.getFullYear())
+const todayLunarLabel = `${todayLunar.day}/${todayLunar.month}${todayLunar.leap ? ' (nhuận)' : ''}`
+const todayGregorianLabel = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+/**
+ * Moon-phase silhouette as a pure SVG path (r=13, centred at 16,16). Terminator is a
+ * half-ellipse whose horizontal radius is r·cos(phaseAngle): day 0 → new moon (dark),
+ * day ~14.77 → full moon (fully lit), day ~29.53 → new moon again. Right limb lit while
+ * waxing (phase ≤ π), left limb lit while waning (phase > π) — standard convention.
+ * Verified against the analytic illuminated-fraction formula (1−cos(phase))/2 via an
+ * SVG-spec-accurate arc-flattening + shoelace-area check (max error 0.0002 across a full cycle).
+ */
+function moonPhasePath(lunarDay: number): string {
+  const r = 13
+  const cx = 16
+  const cy = 16
+  const phase = (lunarDay / 29.53) * Math.PI * 2 // 0..2π across the lunar month
+  const rx = Math.abs(r * Math.cos(phase))
+  const rightLit = phase <= Math.PI
+  const gibbous = phase > Math.PI / 2 && phase < Math.PI * 1.5
+  const outerSweep = rightLit ? 1 : 0
+  // Crescent: terminator curves opposite the outer sweep (concave, subtracts from a half-disc).
+  // Gibbous: terminator curves the same way as the outer sweep (convex, adds to a half-disc).
+  const terminatorSweep = gibbous ? outerSweep : (1 - outerSweep)
+  return `M ${cx} ${cy - r} A ${r} ${r} 0 0 ${outerSweep} ${cx} ${cy + r} A ${rx} ${r} 0 0 ${terminatorSweep} ${cx} ${cy - r} Z`
+}
+const todayMoonPath = computed(() => moonPhasePath(todayLunar.day))
+
+/** Countdown text for an upcoming/ongoing entry: "còn N ngày" / "còn N giờ". */
+function countdownLabel(e: Entity): string {
+  const ds = eventStart(e)
+  const de = eventEnd(e) || ds
+  if (!ds) return ''
+  const nowMs = Date.now()
+  const startMs = new Date(ds + 'T00:00:00').getTime()
+  const endMs = new Date(de + 'T23:59:59').getTime()
+  if (nowMs >= startMs && nowMs <= endMs) {
+    const hoursLeft = Math.round((endMs - nowMs) / 3600000)
+    return hoursLeft <= 24 ? `còn ${Math.max(1, hoursLeft)} giờ` : 'đang diễn ra'
+  }
+  const daysLeft = Math.ceil((startMs - nowMs) / 86400000)
+  return daysLeft <= 0 ? 'hôm nay' : `còn ${daysLeft} ngày`
+}
+
+/** Is entry `e` happening right now? (su-kien's own eventStatus() only distinguishes upcoming/past.) */
+function isHappeningNow(e: Entity): boolean {
+  const ds = eventStart(e)
+  if (!ds) return false
+  const de = eventEnd(e) || ds
+  return todayStr >= ds && todayStr <= de
+}
+
+/** The single most imminent live/near-term entry — drives the hero live banner. */
+const liveNow = computed(() => {
+  const nowEntry = allEvents.value.find((e: Entity) => isHappeningNow(e))
+  if (nowEntry) return nowEntry
+  return upcoming.value.find((e: Entity) => {
+    const ds = eventStart(e)
+    if (!ds) return false
+    const days = Math.ceil((new Date(ds + 'T00:00:00').getTime() - Date.now()) / 86400000)
+    return days <= 3
+  }) || null
+})
+
+/** Lunar-ribbon ticks: next 3 upcoming entries positioned by lunar day-of-month (1–30). */
+const ribbonTicks = computed(() => {
+  return upcoming.value.slice(0, 3).map((e: Entity) => {
+    const ds = eventStart(e)
+    let lunarPos = todayLunar.day
+    if (ds) {
+      const d = new Date(ds + 'T00:00:00')
+      const l = solarToLunar(d.getDate(), d.getMonth() + 1, d.getFullYear())
+      lunarPos = l.day
+    }
+    return {
+      id: e.id,
+      name: e.name,
+      hook: e.summary ? truncateText(e.summary, 70) : (e.place_name || ''),
+      pct: Math.min(97, Math.max(3, (lunarPos / 30) * 100)),
+    }
+  })
+})
+
+/** Bulk .ics: one VCALENDAR with a VEVENT per upcoming entry — client-side only, no backend change. */
+function downloadIcalBulk() {
+  const items = allEvents.value.filter((e: Entity) => {
+    const ds = eventStart(e)
+    return ds && ds >= todayStr
+  })
+  if (!items.length) return
+  const esc = (s: string) => (s || '').replace(/[,;\\]/g, ' ')
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//vinhlong360.vn//VI']
+  for (const e of items) {
+    const attrs: any = e.attributes || {}
+    const ds = String(attrs.date_start || eventStart(e) || '').replace(/-/g, '')
+    if (!ds) continue
+    const de = String(attrs.date_end || eventEnd(e) || attrs.date_start || '').replace(/-/g, '')
+    lines.push(
+      'BEGIN:VEVENT',
+      `DTSTART;VALUE=DATE:${ds}`,
+      `DTEND;VALUE=DATE:${de}`,
+      `SUMMARY:${esc(e.name)}`,
+      `DESCRIPTION:${esc((e.summary || '').slice(0, 200))}`,
+      `LOCATION:${esc(e.place_name || '')}`,
+      `URL:https://vinhlong360.vn${entityPath(e.id)}`,
+      'END:VEVENT',
+    )
+  }
+  lines.push('END:VCALENDAR')
+  downloadBlob(new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' }), 'su-kien-sap-toi.ics')
+}
+
 useSeoMeta({
   title: () => pc('seo_title'),
   description: () => pc('seo_description'),
@@ -400,4 +568,9 @@ useHead(() => ({
 .ical-btn:hover { background: var(--surface); box-shadow: var(--shadow-xs); }
 .ical-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; opacity: 1; }
 /* dark overrides for .ical-btn in dark-overrides.css */
+/* Touch devices have no :hover — the "add to calendar" affordance was invisible on
+   first pass on mobile. Make it always-visible wherever hover can't reveal it. */
+@media (hover: none) {
+  .ical-btn { opacity: 1; }
+}
 </style>

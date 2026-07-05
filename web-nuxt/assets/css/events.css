@@ -1,3 +1,393 @@
+/* ══════════════════════════════════════════════════════════════════════
+   "Đất này giữ lịch riêng" — living-calendar system shared by su-kien.vue
+   + le-hoi.vue. Signature moment = .lunar-ribbon (moon phase + upcoming
+   ticks). Register hue: leaf = lễ hội (ancestral), amber = sự kiện
+   (contemporary) — reuses existing --secondary/--accent tokens, no new hex.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Wrapping the first .page-article heading in a <div class="sediment-head"> shifts it
+   out of the :first-child slot that catalog.css's `.page-article h2:first-child` used
+   to zero-margin — restore that here so the sediment-tick heading doesn't gain a stray
+   top gap above the article card's own padding. */
+.page-article > .sediment-head-first:first-child h2 { margin-top: 0; }
+
+/* ── Dateline eyebrow (hero) — "HÔM NAY · dd.mm.yyyy · ÂM LỊCH d/m" ── */
+.dateline-eyebrow {
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: .5px solid var(--line);
+}
+.dateline-eyebrow strong { color: var(--ink); }
+.dateline-eyebrow .lunar-label { font-size: inherit; text-transform: none; letter-spacing: normal; }
+
+/* ── Lunar ribbon (hero signature moment) ── */
+.lunar-ribbon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: var(--card);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-xs);
+}
+.lunar-ribbon-moon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+.lunar-ribbon-moon circle.moon-base { fill: var(--bg-alt); }
+.lunar-ribbon-moon path.moon-lit { fill: var(--accent-dark); }
+.dark .lunar-ribbon-moon circle.moon-base { fill: rgba(255,255,255,.08); }
+.dark .lunar-ribbon-moon path.moon-lit { fill: var(--amber-500); }
+
+.lunar-ribbon-label {
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.lunar-ribbon-label strong { color: var(--ink); font-weight: var(--weight-bold); }
+
+.lunar-ribbon-track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--river-600), var(--amber-600) 52%, var(--clay-600));
+  border-radius: var(--radius-full);
+  opacity: .55;
+}
+.dark .lunar-ribbon-track { background: linear-gradient(90deg, #74ABB5, var(--amber-500) 52%, var(--clay-400)); }
+
+.lunar-ribbon-tick {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--card);
+  border: 2px solid var(--primary-fg);
+  cursor: pointer;
+  padding: 0;
+  transition: transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out);
+}
+.lunar-ribbon-tick:hover,
+.lunar-ribbon-tick:focus-visible {
+  transform: translate(-50%, -50%) scale(1.35);
+  box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .16);
+  outline: none;
+}
+.lunar-ribbon-tick:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.dark .lunar-ribbon-tick { background: var(--bg-alt); }
+
+/* Tooltip card revealed on hover/focus of a ribbon tick — information-scent device */
+.lunar-ribbon-tip {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  min-width: 180px;
+  max-width: 240px;
+  background: var(--card);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--ink-secondary);
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .18s var(--ease-out), transform .18s var(--ease-out);
+  z-index: 4;
+}
+.lunar-ribbon-tip strong { display: block; font-family: var(--font-editorial); font-size: var(--text-sm); color: var(--ink); margin-bottom: 2px; }
+.lunar-ribbon-tick:hover .lunar-ribbon-tip,
+.lunar-ribbon-tick:focus-visible .lunar-ribbon-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 640px) {
+  .lunar-ribbon { flex-wrap: wrap; }
+  .lunar-ribbon-label { order: -1; width: 100%; }
+  .lunar-ribbon-tip { max-width: 60vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lunar-ribbon-tick:hover,
+  .lunar-ribbon-tick:focus-visible { transform: translate(-50%, -50%); }
+  .lunar-ribbon-tip { transition: none; }
+}
+
+/* ── Live "đang diễn ra" banner — supersedes stat-chips when something is ≤3 days out ── */
+.now-banner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(var(--secondary-rgb), .1);
+  border: .5px solid rgba(var(--secondary-rgb), .3);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  text-decoration: none;
+  transition: box-shadow .25s var(--ease-out), transform .25s var(--ease-spring-gentle);
+}
+.now-banner:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.register-su-kien .now-banner {
+  background: rgba(var(--accent-rgb), .12);
+  border-color: rgba(var(--accent-rgb), .32);
+}
+.dark .now-banner { background: rgba(var(--secondary-rgb), .16); border-color: rgba(var(--secondary-rgb), .4); }
+.dark .register-su-kien .now-banner { background: rgba(var(--accent-rgb), .16); border-color: rgba(var(--accent-rgb), .4); }
+
+.now-banner-dot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-full);
+  background: var(--secondary-fg, var(--secondary));
+  animation: now-banner-pulse 2.2s var(--ease-out-expo) infinite;
+}
+.register-su-kien .now-banner-dot {
+  background: var(--accent-dark);
+  animation-name: now-banner-pulse-amber;
+}
+@keyframes now-banner-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), .4); }
+  50% { box-shadow: 0 0 0 6px rgba(var(--secondary-rgb), 0); }
+}
+@keyframes now-banner-pulse-amber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .4); }
+  50% { box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0); }
+}
+.now-banner-text { flex: 1; min-width: 0; font-size: var(--text-sm); }
+.now-banner-text strong { font-family: var(--font-editorial); font-weight: 600; }
+.now-banner-countdown {
+  flex-shrink: 0;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--secondary-fg, var(--secondary));
+  white-space: nowrap;
+}
+.register-su-kien .now-banner-countdown { color: var(--accent-dark); }
+
+@media (prefers-reduced-motion: reduce) {
+  .now-banner-dot { animation: none; }
+  .now-banner:hover { transform: none; }
+}
+
+/* ── Ceremonial ledger (vertical, full-width rows) replaces the horizontal scroll-row ── */
+.ledger {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ledger-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--card);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--ink);
+  text-decoration: none;
+  transition: var(--transition-card);
+}
+.ledger-row:hover { transform: translateX(4px); box-shadow: var(--shadow-md); border-color: var(--border); }
+.ledger-row:active { transform: scale(.99); transition-duration: .1s; }
+.ledger-status {
+  flex-shrink: 0;
+  width: 108px;
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+}
+.ledger-status.is-now { color: var(--secondary-fg, var(--secondary)); }
+.ledger-status.is-soon { color: var(--accent-dark); }
+.register-su-kien .ledger-status.is-now { color: var(--accent-dark); }
+.ledger-name {
+  flex: 2;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  font-size: var(--text-base);
+  line-height: var(--leading-snug);
+}
+.ledger-place {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .ledger-row { flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+  .ledger-status { width: auto; }
+  .ledger-place { flex-basis: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ledger-row:hover { transform: none; }
+  .ledger-row:active { transform: none; }
+}
+
+/* ── Register toggle (leaf ↔ amber tab switch, replaces soft cross-link) ── */
+.register-toggle {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-1);
+  background: var(--bg-alt);
+  border-radius: var(--radius-full);
+  width: fit-content;
+  max-width: 100%;
+}
+.register-toggle-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  min-height: 44px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .25s var(--ease-out), color .25s var(--ease-out), box-shadow .25s var(--ease-out);
+}
+.register-toggle-tab:hover { color: var(--ink); }
+.register-toggle-tab.is-active {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-xs);
+}
+.register-toggle-tab.is-active.tone-leaf { color: var(--secondary-fg, var(--secondary)); }
+.register-toggle-tab.is-active.tone-amber { color: var(--accent-dark); }
+.register-toggle-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.dark .register-toggle { background: rgba(255,255,255,.05); }
+.dark .register-toggle-tab.is-active { background: var(--card); }
+
+/* ── Etiquette callout ("Đi lễ hội — cần biết gì?") ── */
+.etiquette-box {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-4) var(--space-5);
+  background: rgba(var(--secondary-rgb), .07);
+  border-left: 3px solid rgba(var(--secondary-rgb), .4);
+  border-radius: var(--radius-md);
+}
+.etiquette-box p { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); color: var(--ink-secondary); }
+.etiquette-box strong { color: var(--ink); }
+.dark .etiquette-box { background: rgba(var(--secondary-rgb), .12); border-left-color: rgba(var(--secondary-rgb), .5); }
+
+/* ── ical bulk-subscribe button ── */
+.ical-bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  min-height: 44px;
+  background: var(--card);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .25s var(--ease-spring-gentle);
+}
+.ical-bulk-btn:hover { box-shadow: var(--shadow-xs); transform: translateY(-1px); }
+.ical-bulk-btn:active { transform: scale(.97); }
+.ical-bulk-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.dark .ical-bulk-btn { background: var(--bg-alt); border-color: var(--line); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ical-bulk-btn:hover { transform: none; }
+  .ical-bulk-btn:active { transform: none; }
+}
+
+/* ── Off-season mini-preview (upgrade of the plain apology text) ── */
+.offseason-preview {
+  margin: var(--space-3) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.offseason-preview-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-secondary);
+}
+.offseason-preview-item strong { font-family: var(--font-editorial); color: var(--ink); font-weight: 600; }
+
+/* ── Region blob quick-picks (geographic gesture, no map tiles) ──
+   Static shape difference, not motion — border-radius isn't listed in .quick-pick's
+   own transition (catalog.css), so the hover shape-change already snaps instantly;
+   no reduced-motion override needed here (nothing to disable). */
+.quick-picks.blob-picks .quick-pick:nth-child(1) { border-radius: 42% 58% 61% 39% / 45% 42% 58% 55%; }
+.quick-picks.blob-picks .quick-pick:nth-child(2) { border-radius: 55% 45% 40% 60% / 38% 55% 45% 62%; }
+.quick-picks.blob-picks .quick-pick:nth-child(3) { border-radius: 48% 52% 55% 45% / 58% 40% 60% 42%; }
+.quick-picks.blob-picks .quick-pick:hover { border-radius: var(--radius-lg); }
+
+/* ── Register hue-shift (leaf = lễ hội/ancestral, amber = sự kiện/contemporary).
+   le-hoi.vue and su-kien.vue are separate routes (not a single page with a live
+   register switch), so .register-le-hoi/.register-su-kien are static per-route
+   modifiers, not an animated transition target — .register-le-hoi is the default
+   leaf voice (rules above key off the ABSENCE of .register-su-kien);
+   .register-su-kien is the explicit amber override on su-kien.vue's hero. Both
+   classes exist so the convention is documented at the DOM level. ── */
+
+/* ── Carved-numeral date badge upgrade (temple-stone numerals, not a UI chip digit) ── */
+.edb-day { font-family: var(--font-editorial); font-weight: 600; }
+
+/* ── Unified lunar-label voice (was scattered plain italic sans) ── */
+.lunar-label {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-2xs);
+  color: var(--secondary-fg, var(--secondary));
+}
+.register-su-kien .lunar-label { color: var(--accent-dark); }
+.dark .lunar-label { color: var(--secondary); }
+.dark .register-su-kien .lunar-label { color: var(--accent); }
+
 /* ── Event list ── */
 .event-list {
   display: flex;
@@ -71,16 +461,6 @@
 .cat-mua {
   background: rgba(var(--secondary-rgb), .1);
   color: var(--secondary);
-}
-
-.result-link {
-  font-size: var(--text-sm);
-  color: var(--ink-tertiary);
-  margin-bottom: var(--space-3);
-}
-.result-link a {
-  color: var(--primary-fg);
-  font-weight: var(--weight-semibold);
 }
 
 .event-info { flex: 1; min-width: 0; }
@@ -258,7 +638,10 @@
   padding-inline-start: var(--space-1);
 }
 
-/* ── Lunar date ── */
+/* ── Lunar date — promoted from a 9px afterthought to the page's one
+   distinctive, consistently-voiced typographic device (serif italic,
+   per docs/.../08-events.md §4). Reuses .lunar-label so hero ribbon,
+   ledger and calendar cell all speak the same lunar "font". ── */
 .cal-day-row {
   display: flex;
   align-items: baseline;
@@ -266,18 +649,23 @@
   margin-bottom: 2px;
 }
 .cal-lunar {
-  font-size: 9px;
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: 11px;
   color: var(--ink-tertiary);
-  opacity: .7;
+  opacity: .85;
+  transition: color .2s var(--ease-out), opacity .2s var(--ease-out);
 }
+.cal-cell:not(.cal-empty):hover .cal-lunar { color: var(--secondary-fg, var(--secondary)); opacity: 1; }
+.register-su-kien .cal-cell:not(.cal-empty):hover .cal-lunar { color: var(--accent-dark); }
 .cal-lunar.lunar-first {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--error);
   font-weight: var(--weight-semibold);
   opacity: 1;
 }
 .cal-lunar.lunar-mid {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--accent-dark);
   font-weight: var(--weight-semibold);
   opacity: 1;
@@ -285,6 +673,10 @@
 /* Tiny markers distinguish the two lunar anchor days at a glance. */
 .cal-lunar.lunar-first::before { content: '•'; margin-inline-end: 1px; }
 .cal-lunar.lunar-mid::before { content: '◯'; margin-inline-end: 1px; font-size: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cal-lunar { transition: none; }
+}
 
 /* ── Dark mode (events) ── */
 .dark .event-row { border-color: var(--line); }
@@ -306,6 +698,9 @@
 .dark .lehoi-badge { background: rgba(var(--primary-rgb), .88); }
 /* Soften the date-badge inset scrim on dark so it doesn't read as a hard line. */
 .dark .event-date-badge { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 -2px 4px rgba(0, 0, 0, .28), var(--shadow-xs); }
+.dark .lunar-ribbon { background: var(--card); border-color: var(--line); }
+.dark .ledger-row { border-color: var(--line); }
+.dark .ledger-row:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
 
 /* ── Responsive: tablet ── */
 @media (min-width: 769px) and (max-width: 1024px) {
@@ -348,5 +743,6 @@
 /* ── Responsive: ultra-small phones ── */
 @media (max-width: 380px) {
   .cal-cell { min-height: 64px; font-size: 0.75rem; }
-  .cal-lunar { font-size: 8px; }
+  .cal-lunar { font-size: 9px; }
+  .cal-lunar.lunar-first, .cal-lunar.lunar-mid { font-size: 10px; }
 }
