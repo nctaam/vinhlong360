@@ -30,13 +30,13 @@
             </span>
           </div>
         </aside>
+        <nav v-if="heroRegions.length" class="hero-regions" aria-label="Khám phá theo vùng">
+          <span class="hr-lead">Ba vùng đất</span>
+          <span class="hr-links">
+            <NuxtLink v-for="r in heroRegions" :key="r.to" :to="r.to" class="hr-link">{{ r.name }}</NuxtLink>
+          </span>
+        </nav>
       </div>
-      <nav v-if="heroRegions.length" class="hero-regions" aria-label="Khám phá theo vùng">
-        <span class="hr-lead">Ba vùng đất</span>
-        <span class="hr-links">
-          <NuxtLink v-for="r in heroRegions" :key="r.to" :to="r.to" class="hr-link">{{ r.name }}</NuxtLink>
-        </span>
-      </nav>
     </section>
 
     <!-- 1a. Bắt đầu hành trình — data-driven decision layer -->
@@ -1010,8 +1010,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* Hero foot strip — three-province region entry. Aligned to the SAME container width as
    .hero-inner (was edge-flush → "1605+" collided with the viewport edge = the misalignment). */
 .hero-regions {
-  position: relative; z-index: 1;
-  width: min(100% - 2 * var(--space-5), 1180px); margin: var(--space-6) auto 0;
+  grid-column: 1 / -1; /* span the full hero grid row → content starts at the masthead column (aligned) */
+  margin-top: var(--space-5);
   padding-top: var(--space-4);
   border-top: 1px solid rgba(255,255,255,.20);
   display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-5);
