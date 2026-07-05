@@ -31,12 +31,12 @@
           </div>
         </aside>
       </div>
-      <div v-if="statsItems.length" class="hero-stats" role="group" aria-label="Thống kê nổi bật">
-        <div class="hero-stat" v-for="s in statsItems" :key="s.label">
-          <span class="hero-stat-num"><CountUp :value="s.value" /></span>
-          <span class="hero-stat-label">{{ s.label }}</span>
-        </div>
-      </div>
+      <nav v-if="heroRegions.length" class="hero-regions" aria-label="Khám phá theo vùng">
+        <span class="hr-lead">Ba vùng đất</span>
+        <span class="hr-links">
+          <NuxtLink v-for="r in heroRegions" :key="r.to" :to="r.to" class="hr-link">{{ r.name }}</NuxtLink>
+        </span>
+      </nav>
     </section>
 
     <!-- 1a. Bắt đầu hành trình — data-driven decision layer -->
@@ -564,15 +564,11 @@ const heroFeatureReason = computed(() => {
 
 const stats = computed(() => homeData.value?.stats || null)
 const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
-const statsItems = computed(() => {
-  const s = stats.value
-  if (!s) return []
-  const items: { value: string | number; label: string }[] = []
-  if (s.entities) items.push({ value: s.entities + '+', label: 'Điểm đến & Đặc sản' })
-  if (s.places) items.push({ value: s.places, label: 'Xã phường' })
-  if (s.itineraries) items.push({ value: s.itineraries, label: 'Lịch trình' })
-  return items
-})
+// Hero foot strip: the three merged provinces as region entry points (replaces the old
+// stat counter, which read as a generic proof-banner and sat outside the content container).
+const HERO_REGION_KEYS = ['vinh-long', 'ben-tre', 'tra-vinh']
+const heroRegions = computed(() =>
+  HERO_REGION_KEYS.map(k => ({ name: (AREA_META as Record<string, { name: string }>)[k]?.name || k, to: `/khu-vuc/${k}` })))
 
 const firstUpcomingEvent = computed<any>(() => upcomingEvents.value[0] || null)
 const firstSeasonal = computed<any>(() => seasonal.value[0] || null)
@@ -1011,30 +1007,31 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
    ═══════════════════════════════════════════════════ */
 /* Editorial "contents" strip — hairline-ruled meta line, left-aligned: serif numerals +
    tracked-caps labels. Replaces the centred glass stat-banner (a documented AI tell). */
-.hero-stats {
+/* Hero foot strip — three-province region entry. Aligned to the SAME container width as
+   .hero-inner (was edge-flush → "1605+" collided with the viewport edge = the misalignment). */
+.hero-regions {
   position: relative; z-index: 1;
-  display: flex; flex-wrap: wrap; align-items: baseline;
-  gap: var(--space-2) var(--space-5);
-  margin: var(--space-6) 0 0;
-  padding: var(--space-4) 0 0;
+  width: min(100% - 2 * var(--space-5), 1180px); margin: var(--space-6) auto 0;
+  padding-top: var(--space-4);
   border-top: 1px solid rgba(255,255,255,.20);
-  max-width: 640px;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-5);
+  color: #fff;
 }
-.hero-stat { display: inline-flex; align-items: baseline; gap: var(--space-2); }
-.hero-stat-num {
-  font-family: var(--font-editorial);
-  font-size: var(--text-xl); font-weight: 600;
-  color: #fff; letter-spacing: -.01em;
+.hr-lead {
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .16em; color: rgba(255,255,255,.72);
+}
+.hr-links { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-5); }
+.hr-link {
+  font-family: var(--font-editorial); font-size: var(--text-xl); font-weight: 600;
+  color: #fff; letter-spacing: -.01em; text-decoration: none;
   text-shadow: 0 1px 8px rgba(0,0,0,.4);
 }
-.hero-stat-label {
-  font-family: var(--font-sans);
-  font-size: var(--text-2xs); color: rgba(255,255,255,.72);
-  font-weight: 700; text-transform: uppercase; letter-spacing: .16em;
-}
+.hr-link:hover { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--accent); }
+.hr-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 3px; }
 @media (max-width: 480px) {
-  .hero-stats { gap: var(--space-2) var(--space-4); }
-  .hero-stat-num { font-size: var(--text-lg); }
+  .hero-regions { gap: var(--space-1) var(--space-4); }
+  .hr-link { font-size: var(--text-lg); }
 }
 
 /* Decision layer */
@@ -1567,7 +1564,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .event-card:hover { border-color: rgba(255,255,255,.2); }
 .dark .chatbot-cta { background: linear-gradient(135deg, var(--surface-container) 0%, rgba(255,255,255,.06) 100%); border-color: rgba(255,255,255,.12); }
 .dark .chatbot-cta:hover { border-color: rgba(255,255,255,.2); }
-.dark .hero-stat-num { color: var(--ink); }
 .dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.14) 0%, transparent 68%); }
 
 /* ═══════════════════════════════════════════════════
