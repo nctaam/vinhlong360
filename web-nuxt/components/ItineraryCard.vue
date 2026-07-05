@@ -42,9 +42,23 @@ const props = defineProps<{
 }>()
 
 const imgErr = ref(false)
-// thumbnail theo vùng (tái dùng minh họa category) — đa dạng + hợp chủ đề từng tỉnh
-const AREA_IMG: Record<string, string> = { 'vinh-long': 'place', 'ben-tre': 'nature', 'tra-vinh': 'history', 'lien-vung': 'itinerary' }
-const coverSrc = computed(() => `/img/cat/${AREA_IMG[props.itinerary.area] || 'itinerary'}.jpg`)
+// Cover = real AI-gen Mekong photo per former province (was flat /img/cat/*.jpg illustrations that
+// repeated — every "liên vùng" trip showed the same itinerary.jpg). Multi-region/unknown trips
+// rotate deterministically by id so adjacent cards show different real photos.
+const AREA_PHOTO: Record<string, string> = {
+  'vinh-long': '/img/area-vinh-long.webp',
+  'ben-tre': '/img/area-ben-tre.webp',
+  'tra-vinh': '/img/area-tra-vinh.webp',
+}
+const ROVING = ['/img/area-vinh-long.webp', '/img/area-ben-tre.webp', '/img/area-tra-vinh.webp', '/img/cat-du-lich.webp']
+const coverSrc = computed(() => {
+  const direct = AREA_PHOTO[props.itinerary.area]
+  if (direct) return direct
+  const id = String(props.itinerary.id || props.itinerary.title || '')
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  return ROVING[h % ROVING.length]
+})
 // Deterministic per-itinerary placeholder fallback — seeded by id.
 const placeholderBg = computed(() => generateCategoryPlaceholder(props.itinerary.id, 'itinerary'))
 const placeholderSvg = computed(() => generateCategoryIcon('itinerary'))
