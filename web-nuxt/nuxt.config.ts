@@ -182,6 +182,11 @@ export default defineNuxtConfig({
     optimizeDeps: {
       exclude: ['maplibre-gl'],
     },
+    // Diagnostic-only: build with HYDRATION_DEBUG=1 to make the PROD bundle log the exact
+    // node + server/client diff for hydration mismatches (off by default → no prod cost).
+    define: {
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: process.env.HYDRATION_DEBUG === '1' ? 'true' : 'false',
+    },
   },
 
   devServer: {
