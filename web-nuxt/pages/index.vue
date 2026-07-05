@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <!-- 1. Hero — dynamic tagline + search + quick-pick pills + stats inline -->
+    <!-- 1. Hero — dynamic tagline + search + stats inline -->
     <section class="hero" aria-label="Giới thiệu">
       <div class="hero-kenburns" aria-hidden="true"></div>
       <HeroIllustration />
@@ -11,9 +11,6 @@
           <h1>{{ seasonalTagline }}</h1>
           <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
           <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')" />
-          <div class="hero-pills">
-            <NuxtLink v-for="pill in heroPills" :key="pill.to" :to="pill.to" class="hero-pill">{{ pill.label }}</NuxtLink>
-          </div>
         </div>
         <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
           <div class="hf-card">
@@ -72,8 +69,8 @@
       <JourneyActionRail
         v-if="!homePending && homeJourneyActions.length"
         :actions="homeJourneyActions"
-        title="Bước tiếp theo phù hợp"
-        subtitle="Decision engine ưu tiên theo mục đã lưu, nội dung vừa xem, lịch gần nhất và tín hiệu cộng đồng."
+        title="Tiếp tục hành trình của bạn"
+        subtitle="Từ những gì bạn đã lưu và vừa xem."
         aria-label="Gợi ý hành trình trên trang chủ"
         compact
       />
@@ -151,7 +148,7 @@
       <div v-if="seasonal.length" class="happening-section">
         <p class="happening-label">🔥 Đang vào mùa tháng {{ currentMonth }}</p>
         <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa" tabindex="0">
-          <EntityCard v-for="e in seasonal" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
+          <EntityCard v-for="e in seasonalList" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
         </div>
       </div>
     </section>
@@ -161,7 +158,7 @@
       <EntityFeature
         image="/img/features/trai-nghiem.webp"
         v-bind="FEATURE_EXPERIENCE"
-        :thumbs="experiences.slice(0, 3)"
+        :thumbs="experienceThumbs"
         side="left"
         :priority="true"
       />
@@ -194,10 +191,10 @@
           </div>
         </div>
 
-        <div v-if="topDishes.length" class="top-dishes">
+        <div v-if="topDishesList.length" class="top-dishes">
           <h3 class="dishes-heading">⭐ Quán ngon nổi bật</h3>
           <div class="dishes-list">
-            <NuxtLink v-for="d in topDishes" :key="d.id" :to="entityPath(d.id)" class="dish-item">
+            <NuxtLink v-for="d in topDishesList" :key="d.id" :to="entityPath(d.id)" class="dish-item">
               <span class="dish-rating-badge">
                 <span class="dish-star">★</span>
                 <span class="dish-score">{{ formatRating(d.attributes?.rating || 0) }}</span>
@@ -228,7 +225,7 @@
       <EntityFeature
         image="/img/features/ocop.webp"
         v-bind="FEATURE_OCOP"
-        :thumbs="productsAll.slice(0, 3)"
+        :thumbs="ocopThumbs"
         side="right"
       />
     </section>
@@ -324,50 +321,29 @@
       </section>
     </ClientOnly>
 
-    <!-- 6. Cá nhân hóa — client-only (recently viewed + saved + AI recommendations) -->
+    <!-- 6. Dành cho bạn — one merged, image-tolerant personalization strip (client-only) -->
     <ClientOnly>
-      <section v-if="recentlyViewed.length" class="block block-compact reveal">
+      <section v-if="forYou.length" class="block block-compact reveal" aria-label="Dành cho bạn">
         <div class="section-head section-head-tight">
-          <h2 class="h2-tight">Xem gần đây</h2>
+          <div class="sh-text">
+            <h2 class="h2-tight">Dành cho bạn</h2>
+            <p class="sh-sub">Nội dung bạn vừa xem, đã lưu và gợi ý theo bạn.</p>
+          </div>
         </div>
-        <div class="scroll-row" role="region" aria-label="Xem gần đây" tabindex="0">
-          <NuxtLink v-for="rv in recentlyViewed" :key="rv.id" :to="entityPath(rv.id)" class="card card-mini">
-            <div v-if="rv.image" class="cover cover-img">
-              <NuxtImg v-if="isRemoteUrl(rv.image)" :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" sizes="sm:50vw md:33vw lg:320px" @error="onImgError" />
-              <img v-else :src="rv.image" :alt="rv.name" loading="lazy" decoding="async" width="320" height="180" @error="onImgError" />
-            </div>
-            <div v-else class="cover cover-img cover-generated" :class="`cat-${getFavTypeMeta(rv.type).cat}`" :style="{ backgroundImage: genPlaceholder(rv.id, getFavTypeMeta(rv.type).cat) }">
-              <span class="cover-svg-icon" v-html="genIcon(getFavTypeMeta(rv.type).cat)" />
-            </div>
-            <div class="card-b">
-              <span class="card-type">{{ getFavTypeMeta(rv.type).label }}</span>
-              <h3>{{ rv.name }}</h3>
-            </div>
+        <div class="scroll-row for-you-row" role="region" aria-label="Dành cho bạn" tabindex="0">
+          <NuxtLink v-for="item in forYou" :key="item.id" :to="item.to" class="fy-chip">
+            <span class="fy-thumb" :class="`cat-${getFavTypeMeta(item.type).cat}`">
+              <NuxtImg v-if="item.image && isRemoteUrl(item.image)" :src="item.image" :alt="item.name" loading="lazy" decoding="async" width="64" height="64" sizes="64px" @error="onImgError" />
+              <img v-else-if="item.image" :src="item.image" :alt="item.name" loading="lazy" decoding="async" width="64" height="64" @error="onImgError" />
+              <span v-else class="fy-icon" v-html="genIcon(getFavTypeMeta(item.type).cat)" />
+            </span>
+            <span class="fy-body">
+              <span class="fy-type">{{ getFavTypeMeta(item.type).label }}</span>
+              <span class="fy-name">{{ item.name }}</span>
+            </span>
           </NuxtLink>
         </div>
       </section>
-      <section v-if="recentSaved.length" class="block block-compact reveal">
-        <div class="section-head section-head-tight">
-          <h2 class="h2-tight">Đã lưu gần đây</h2>
-          <NuxtLink class="see-all" to="/da-luu">Xem tất cả →</NuxtLink>
-        </div>
-        <div class="scroll-row" role="region" aria-label="Đã lưu gần đây" tabindex="0">
-          <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="savedItemPath(fav)" class="card">
-            <div v-if="fav.image" class="cover cover-img">
-              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" sizes="sm:100vw md:50vw lg:480px" @error="onImgError" />
-              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="480" height="192" @error="onImgError" />
-            </div>
-            <div class="card-b">
-              <span class="card-type">{{ getFavTypeMeta(fav.type).label }}</span>
-              <h3>{{ fav.name }}</h3>
-              <p v-if="fav.place_name" class="place">{{ fav.place_name }}</p>
-            </div>
-          </NuxtLink>
-        </div>
-      </section>
-      <NuxtErrorBoundary>
-        <LazySmartRecommendations context="home" title="Có thể bạn quan tâm" :limit="4" />
-      </NuxtErrorBoundary>
     </ClientOnly>
 
     <!-- 7. Chatbot CTA -->
@@ -394,15 +370,6 @@ import StorySpread from '~/components/home/StorySpread.vue'
 useReveal()
 const { get: ss } = useSiteSettings()
 
-const DEFAULT_HERO_PILLS = [
-  { emoji: '📍', label: 'Gần tôi', to: '/ban-do?near=1' },
-  { emoji: '🍲', label: 'Ăn gì hôm nay', to: '/kham-pha/am-thuc' },
-  { emoji: '🗓️', label: 'Đi 2N1Đ', to: '/lich-trinh' },
-  { emoji: '🌿', label: 'Miệt vườn', to: '/du-lich' },
-  { emoji: '🗺️', label: 'Bản đồ', to: '/ban-do' },
-  { emoji: '🎁', label: 'Đặc sản làm quà', to: '/ocop' },
-]
-const heroPills = computed(() => ss('homepage.hero_pills', DEFAULT_HERO_PILLS) as typeof DEFAULT_HERO_PILLS)
 const { homepageDecisionActions } = useJourneyActions()
 
 // Editorial photo-led feature copy (EntityFeature block). Contact/discover CTA only —
@@ -444,11 +411,24 @@ type HomeDecisionCard = {
 }
 
 const { favorites } = useFavorites()
-const recentSaved = computed(() => favorites.value.slice(0, 4))
 
 const { recentItems } = useRecentlyViewed()
-const recentlyViewed = computed(() => recentItems.value.slice(0, 6))
-const genPlaceholder = generateCategoryPlaceholder
+const { enabled: ff } = useFeature()
+const contextualRec = useContextualRecommendations({ context: 'home', limit: 8 })
+const forYou = computed(() => {
+  const seen = new Set<string>()
+  const out: { id: string; name: string; type: string; image: string; to: string }[] = []
+  const push = (id: any, name: any, type: any, image: any, to: string) => {
+    const key = String(id ?? '')
+    if (!key || !name || seen.has(key)) return
+    seen.add(key)
+    out.push({ id: key, name, type: type || 'place', image: image || '', to })
+  }
+  recentItems.value.forEach((rv: any) => push(rv.id, rv.name, rv.type, rv.image, entityPath(rv.id)))
+  favorites.value.forEach((fav: any) => push(fav.id, fav.name, fav.type, fav.image, savedItemPath(fav)))
+  if (ff('ai_recommendations')) contextualRec.items.value.forEach((e: any) => push(e.id, e.name, e.type, e.images?.[0], entityPath(e.id)))
+  return out.slice(0, 8)
+})
 const genIcon = generateCategoryIcon
 
 const { isLoggedIn } = useAuth()
@@ -587,6 +567,19 @@ const statsItems = computed(() => {
 const firstUpcomingEvent = computed<any>(() => upcomingEvents.value[0] || null)
 const firstSeasonal = computed<any>(() => seasonal.value[0] || null)
 const firstDish = computed<any>(() => topDishes.value[0] || null)
+// De-dup: entities already shown in the top zone (hero + decision index) or the spotlight
+// band are excluded from the downstream grids so no "current" entity repeats. Pure computeds
+// → SSR/CSR identical.
+const experienceThumbs = computed(() =>
+  experiences.value.filter((e: any) => e.id !== heroFeature.value?.id && e.id !== spotId.value).slice(0, 3))
+const ocopThumbs = computed(() =>
+  productsAll.value.filter((p: any) => p.id !== spotId.value).slice(0, 3))
+const topDishesList = computed(() =>
+  topDishes.value.filter((d: any) => d.id !== firstDish.value?.id))
+const seasonalList = computed(() => {
+  const rest = seasonal.value.filter((e: any) => e.id !== firstSeasonal.value?.id)
+  return rest.length ? rest : seasonal.value
+})
 const homeDecisionCards = computed<HomeDecisionCard[]>(() => {
   const cards: HomeDecisionCard[] = []
   const ev = firstUpcomingEvent.value
@@ -612,18 +605,6 @@ const homeDecisionCards = computed<HomeDecisionCard[]>(() => {
       to: `/theo-mua?mua=${encodeURIComponent(String(currentMonth.value))}`,
       cta: 'Xem theo mùa',
       tone: 'season',
-    })
-  }
-
-  if (heroFeature.value) {
-    cards.push({
-      icon: '🧭',
-      eyebrow: heroFeatureReason.value,
-      title: 'Bắt đầu lịch trình',
-      text: heroFeature.value.name,
-      to: plannerAddPath(heroFeature.value.id),
-      cta: 'Thêm điểm này',
-      tone: 'planner',
     })
   }
 
@@ -655,20 +636,12 @@ const homeDecisionCards = computed<HomeDecisionCard[]>(() => {
   return cards.slice(0, 4)
 })
 
-const homeJourneyActions = computed(() => {
-  const ev = firstUpcomingEvent.value
-  return homepageDecisionActions({
-    isLoggedIn: isLoggedIn.value,
-    savedCount: favorites.value.length,
-    recentCount: recentItems.value.length,
-    currentMonth: currentMonth.value,
-    heroFeatureName: heroFeature.value?.name,
-    heroFeaturePlannerPath: heroFeature.value ? plannerAddPath(heroFeature.value.id) : '',
-    upcomingEventName: ev?.name,
-    upcomingEventPath: ev?.id ? entityPath(ev.id) : '',
-    communityPostCount: communityPosts.value.length,
-  })
-})
+const homeJourneyActions = computed(() => homepageDecisionActions({
+  isLoggedIn: isLoggedIn.value,
+  savedCount: favorites.value.length,
+  recentCount: recentItems.value.length,
+  currentMonth: currentMonth.value,
+}))
 
 const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length || trending.value.length || communityPosts.value.length))
 const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomeContent.value)))
@@ -963,7 +936,6 @@ html.js .home .hero-enter > .hero-kicker { animation-delay: .05s; }
 html.js .home .hero-enter > h1 { animation-delay: .14s; }
 html.js .home .hero-enter > .hero-sub { animation-delay: .24s; }
 html.js .home .hero-enter > .hero-search { animation-delay: .34s; }
-html.js .home .hero-enter > .hero-pills { animation-delay: .44s; }
 @keyframes hero-rise {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
@@ -1014,26 +986,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   border-color: transparent; background: var(--card);
 }
 .home .hero .hero-ac .ac-dropdown { text-align: left; }
-
-/* Hero pills */
-/* Editorial "quick index" — tracked text links with a hairline underline, not glass chips */
-.hero-pills { display: flex; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-6); flex-wrap: wrap; }
-.hero-pill {
-  display: inline-flex; align-items: center;
-  color: rgba(255,255,255,.9); text-decoration: none;
-  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600;
-  letter-spacing: .01em;
-  min-height: 40px; padding: var(--space-1) 0;
-  border-bottom: 1.5px solid rgba(255,255,255,.32);
-  text-shadow: 0 1px 3px rgba(0,0,0,.4);
-  transition: color .3s var(--ease-out), border-color .3s var(--ease-out);
-}
-.hero-pill:hover { color: #fff; border-color: var(--accent); }
-.hero-pill:active { color: rgba(255,255,255,.7); }
-.hero-pill:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
-@media (max-width: 480px) {
-  .hero-pills { gap: var(--space-2) var(--space-4); margin-top: var(--space-5); }
-}
 
 /* ═══════════════════════════════════════════════════
    HERO STATS — inline strip at bottom of hero
@@ -1569,7 +1521,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .event-card:hover { border-color: rgba(255,255,255,.2); }
 .dark .chatbot-cta { background: linear-gradient(135deg, var(--surface-container) 0%, rgba(255,255,255,.06) 100%); border-color: rgba(255,255,255,.12); }
 .dark .chatbot-cta:hover { border-color: rgba(255,255,255,.2); }
-.dark .hero-pill { background: rgba(255,255,255,.24); border-color: rgba(255,255,255,.40); }
 .dark .hero-stat-num { color: var(--ink); }
 .dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.14) 0%, transparent 68%); }
 
@@ -1577,7 +1528,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
    REDUCED TRANSPARENCY / MOTION
    ═══════════════════════════════════════════════════ */
 @media (prefers-reduced-transparency: reduce) {
-  .hero-pill { backdrop-filter: none; background: rgba(255,255,255,.3); }
   .home .hero-kicker { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0,0,0,.4); }
   .home .hero-search { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0,0,0,.35); }
 }
@@ -1589,7 +1539,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   html.js .home .hero-feature { opacity: 1; transform: none; animation: none; }
   .hf-card:hover { transform: none; }
   .event-hero::before { animation: none; opacity: 0; }
-  .hero-pill:hover, .hero-pill:active { transform: none; }
   .event-hero:hover, .event-mini:hover { transform: none; }
   .cm-card:hover, .cm-card:active { transform: none; }
   .cm-card:hover .cm-img img { transform: none; }
@@ -1600,10 +1549,37 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .spotlight:hover .spot-visual { transform: none; }
   .dish-item:hover, .dish-item:active { transform: none; }
   .cat-tile:hover, .cat-tile:active { transform: none; }
+  .fy-chip:hover, .fy-chip:active { transform: none; }
 }
 
-/* Recently viewed cards — compact */
-.card.card-mini { min-width: 160px; max-width: 200px; }
-.card.card-mini .cover { aspect-ratio: 16/10; }
-.card.card-mini h3 { font-size: .85rem; }
+/* ═══════════════════════════════════════════════════
+   DÀNH CHO BẠN — merged personalization strip (chips)
+   ═══════════════════════════════════════════════════ */
+.for-you-row { align-items: stretch; }
+.fy-chip {
+  display: flex; align-items: center; gap: var(--space-3);
+  flex: 0 0 auto; width: 15rem;
+  padding: var(--space-3); min-height: 48px;
+  background: var(--card); border: .5px solid var(--line); border-radius: var(--radius);
+  text-decoration: none; color: var(--ink);
+  transition: transform .25s var(--ease-spring-gentle), box-shadow .25s var(--ease-out), border-color .25s var(--ease-out);
+}
+.fy-chip:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
+.fy-chip:active { transform: translateY(-1px) scale(.98); transition-duration: .1s; }
+.fy-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.fy-thumb {
+  flex: 0 0 60px; width: 60px; height: 60px;
+  border-radius: var(--radius-sm); overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-alt);
+}
+.fy-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.fy-icon { width: 30px; height: 30px; opacity: .8; color: var(--muted); }
+.fy-icon :deep(svg) { width: 100%; height: 100%; }
+.fy-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fy-type { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; color: var(--accent-text, var(--primary-fg)); }
+.fy-name { font-size: var(--text-sm); font-weight: var(--weight-bold); line-height: var(--leading-snug); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dark .fy-chip { background: var(--card); border-color: var(--line); }
+.dark .fy-chip:hover { border-color: rgba(255,255,255,.1); }
+.dark .fy-thumb { background: rgba(255,255,255,.06); }
 </style>

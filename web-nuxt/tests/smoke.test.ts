@@ -158,9 +158,6 @@ describe('UserCP regressions', () => {
     const page = src('pages/index.vue')
     expect(page).toContain('Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp')
     expect(page).toContain('Tìm điểm đến, món ngon, lịch trình…')
-    expect(page).toContain("label: 'Gần tôi'")
-    expect(page).toContain("label: 'Ăn gì hôm nay'")
-    expect(page).toContain("to: '/ban-do?near=1'")
     expect(page).toContain('.home .hero .hero-ac::before')
     expect(page).toContain('homeDecisionCards')
     expect(page).toContain('homeJourneyActions')
@@ -173,6 +170,8 @@ describe('UserCP regressions', () => {
     expect(page).toContain('cat-hint')
     expect(page).toContain('letter-spacing: -.02em; line-height: .98;')
     expect(page).not.toContain('letter-spacing: -1.4px')
+    expect(page).toContain('Dành cho bạn')
+    expect(page).toContain('for-you-row')
   })
 
   it('default layout mounts client widgets after hydration', () => {
@@ -382,7 +381,7 @@ describe('UserCP regressions', () => {
     expect(smart).toContain('smart-rec-reason')
     expect(smart).toContain('reasonFor')
 
-    expect(src('pages/index.vue')).toContain('LazySmartRecommendations context="home"')
+    expect(src('pages/index.vue')).toContain("useContextualRecommendations({ context: 'home', limit: 8 })")
     expect(src('pages/tai-khoan.vue')).toContain('LazySmartRecommendations context="home"')
     expect(src('pages/dia-diem/[id].vue')).toContain('trackEntityView')
     expect(src('pages/dia-diem/[id].vue')).toContain('LazySmartRecommendations context="entity"')
