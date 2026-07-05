@@ -2,16 +2,25 @@
   <div class="page contact-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Liên hệ' }]" />
 
-    <!-- Hero -->
-    <section class="catalog-hero cat-contact">
-      <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">📬</span>
-        <div>
-          <h1>{{ pc('hero_title') }}</h1>
-          <p>{{ pc('hero_subtitle') }}</p>
-        </div>
+    <!-- Brand masthead — same river→clay wash family as Giới thiệu. -->
+    <section class="brand-masthead contact-masthead">
+      <div class="bm-inner">
+        <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Liên hệ</p>
+        <h1>{{ pc('hero_title') }}</h1>
+        <p class="bm-sub">{{ pc('hero_subtitle') }}</p>
+        <p class="bm-sla"><span aria-hidden="true">●</span> Thường trả lời trong 24–48 giờ — hai người đọc từng tin nhắn, không phải chatbot.</p>
       </div>
+      <svg class="bm-motif" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+        <path d="M44 30c-10 6-16 18-14 30 2 13 12 22 25 24" fill="none" stroke-width="1.6" stroke-linecap="round" />
+        <rect x="52" y="20" width="28" height="50" rx="6" fill="none" stroke-width="1.6" />
+        <line x1="60" y1="60" x2="72" y2="60" stroke-width="1.6" stroke-linecap="round" />
+        <circle cx="66" cy="24" r="9" fill="none" stroke-width="1.4" />
+      </svg>
     </section>
+
+    <blockquote class="pull-quote contact-quote">
+      Chúng tôi không bán tour. Chúng tôi giới thiệu vùng đất.
+    </blockquote>
 
     <div class="contact-cards">
       <section v-if="isClaim" class="contact-card card-claim">
@@ -56,7 +65,7 @@
     </div>
 
     <!-- Cross-links -->
-    <section class="block band catalog-cross reveal">
+    <section class="block band catalog-cross reveal sediment-head">
       <h2>Xem thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/cong-dong" class="cross-card">
@@ -133,6 +142,57 @@ useHead({
 
 <style scoped>
 .contact-page { max-width: 760px; }
+
+/* ── Brand masthead — same river→clay wash family as Giới thiệu; each
+   page keeps its own scoped copy (no shared component per unit scope). ── */
+.brand-masthead {
+  position: relative;
+  overflow: clip;
+  isolation: isolate;
+  margin: 0 calc(-1 * var(--space-5)) var(--space-6);
+  padding: var(--space-8) var(--space-5) var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  background:
+    var(--grain),
+    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb), .16) 120%);
+  background-blend-mode: overlay, normal;
+}
+.bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
+.bm-eyebrow {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  color: var(--primary-fg-strong); margin: 0 0 var(--space-3);
+}
+.bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
+.brand-masthead h1 {
+  font-family: var(--font-editorial); font-weight: 600;
+  font-size: clamp(1.9rem, 1.55rem + 1.8vw, 2.7rem);
+  line-height: var(--leading-tight); letter-spacing: var(--tracking-tight);
+  color: var(--ink); margin: 0 0 var(--space-2); text-wrap: balance;
+}
+.bm-sub {
+  font-family: var(--font-editorial); font-style: italic;
+  font-size: clamp(1rem, .92rem + .4vw, 1.2rem);
+  line-height: var(--leading-snug); color: var(--ink-secondary, var(--muted));
+  margin: 0 0 var(--space-3); max-width: 46ch;
+}
+/* Response-time SLA badge — published up front, not buried in card copy. */
+.bm-sla {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-sans); font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  color: var(--secondary-fg); margin: 0;
+}
+.bm-sla span { color: var(--leaf-600); font-size: .55rem; }
+.bm-motif { width: clamp(80px, 8vw + 40px, 128px); height: auto; flex-shrink: 0; color: var(--clay-400); opacity: .85; }
+.bm-motif path, .bm-motif rect, .bm-motif line, .bm-motif circle { stroke: currentColor; fill: none; }
+
+.contact-quote {
+  max-width: var(--measure-read);
+  margin: 0 auto var(--space-8);
+}
 
 .contact-cards {
   display: flex;
@@ -222,6 +282,11 @@ useHead({
   .card-general, .card-partner { grid-column: span 3; }
   .card-report, .card-privacy { grid-column: span 3; }
 }
+@media (max-width: 600px) {
+  .brand-masthead { flex-direction: column; text-align: center; padding-block: var(--space-6); }
+  .bm-inner { max-width: none; }
+  .bm-sla { display: inline-flex; }
+}
 
 /* Focus & accessibility */
 .contact-card a:focus-visible, .card-action .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: var(--radius-sm); }
@@ -230,6 +295,12 @@ useHead({
 .card-action .btn:active { transform: scale(.96); transition-duration: .08s; }
 
 /* Dark mode */
+.dark .brand-masthead {
+  background:
+    var(--grain),
+    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(255,255,255,.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+}
+.dark .bm-motif { color: var(--clay-400); opacity: .7; }
 .dark .contact-card { background: var(--bg-alt); border-color: var(--line); }
 .dark .contact-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
 .dark .card-report:hover, .dark .card-privacy:hover { box-shadow: var(--shadow-xs); border-color: var(--line); }

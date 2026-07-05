@@ -24,12 +24,18 @@
     <section class="guide-main">
       <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Hướng dẫn sử dụng' }]" />
 
-      <header class="guide-hero">
-        <span class="guide-hero-icon" aria-hidden="true">📖</span>
-        <div>
+      <header class="brand-masthead guide-hero">
+        <div class="bm-inner">
+          <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Cẩm nang</p>
           <h1>Hướng dẫn sử dụng</h1>
-          <p>Cẩm nang đầy đủ mọi tính năng trên vinhlong360 — từ tìm kiếm, bản đồ, lịch trình đến cộng đồng và quản lý tài khoản.</p>
+          <p class="bm-sub">Cẩm nang đầy đủ mọi tính năng trên vinhlong360 — từ tìm kiếm, bản đồ, lịch trình đến cộng đồng và quản lý tài khoản.</p>
         </div>
+        <svg class="bm-motif" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+          <path d="M24 26h72v70a4 4 0 0 1-4 4H28a4 4 0 0 1-4-4Z" fill="none" stroke-width="1.6" stroke-linejoin="round" />
+          <line x1="60" y1="26" x2="60" y2="100" stroke-width="1.4" />
+          <circle cx="60" cy="18" r="14" fill="none" stroke-width="1.4" />
+          <path d="M60 8v20M50 18h20M53 11l14 14M67 11 53 25" stroke-width="1" />
+        </svg>
       </header>
 
       <!-- Mobile TOC -->
@@ -49,8 +55,8 @@
       </div>
 
       <!-- ==================== BẮT ĐẦU NHANH ==================== -->
-      <section id="bat-dau" class="guide-section guide-quickstart reveal">
-        <h2>🚀 Bắt đầu nhanh</h2>
+      <section id="bat-dau" class="guide-section guide-quickstart reveal sediment-head">
+        <h2><span class="gs-icon" aria-hidden="true">🚀</span>Bắt đầu nhanh</h2>
         <p class="section-intro">Lần đầu dùng vinhlong360? Chỉ cần 5 bước để khám phá đầy đủ.</p>
         <ol class="quickstart-steps">
           <li>
@@ -105,8 +111,8 @@
       </section>
 
       <!-- ==================== SECTIONS ==================== -->
-      <section v-for="s in filteredSections" :key="s.id" :id="s.id" class="guide-section reveal">
-        <h2>{{ s.title }}</h2>
+      <section v-for="s in filteredSections" :key="s.id" :id="s.id" class="guide-section reveal sediment-head">
+        <h2><span class="gs-icon" aria-hidden="true">{{ s.icon }}</span>{{ s.title }}</h2>
         <p class="section-intro">{{ s.intro }}</p>
 
         <!-- Topics -->
@@ -182,8 +188,8 @@
       </p>
 
       <!-- ==================== PHÍM TẮT ==================== -->
-      <section id="phim-tat" class="guide-section reveal">
-        <h2>⌨️ Phím tắt & Thao tác nhanh</h2>
+      <section id="phim-tat" class="guide-section reveal sediment-head">
+        <h2><span class="gs-icon" aria-hidden="true">⌨️</span>Phím tắt & Thao tác nhanh</h2>
         <p class="section-intro">Các thao tác giúp sử dụng nhanh hơn trên máy tính và di động.</p>
         <div class="shortcut-table-wrap">
           <table class="shortcut-table" aria-label="Phím tắt và thao tác nhanh">
@@ -202,8 +208,8 @@
       </section>
 
       <!-- ==================== KHẮC PHỤC SỰ CỐ ==================== -->
-      <section id="khac-phuc" class="guide-section reveal">
-        <h2>🔧 Khắc phục sự cố</h2>
+      <section id="khac-phuc" class="guide-section reveal sediment-head">
+        <h2><span class="gs-icon" aria-hidden="true">🔧</span>Khắc phục sự cố</h2>
         <p class="section-intro">Gặp vấn đề khi sử dụng? Thử các giải pháp dưới đây trước khi liên hệ hỗ trợ.</p>
 
         <details v-for="issue in troubleshooting" :key="issue.title" class="guide-topic" open>
@@ -994,16 +1000,34 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 /* Mobile TOC + search */
 .mobile-toc, .mobile-search { display: none; }
 
-/* Hero */
-.guide-hero {
-  display: flex; align-items: center; gap: var(--space-4);
-  padding: var(--space-6); margin-bottom: var(--space-6);
-  background: linear-gradient(135deg, rgba(var(--primary-rgb, 46, 125, 50), .08) 0%, var(--bg-warm) 100%);
+/* Hero — brand-masthead treatment: river→clay wash, serif h1, SVG cẩm-nang
+   motif, unique to this page family (matches Giới thiệu/Liên hệ masthead). */
+.guide-hero.brand-masthead {
+  position: relative; overflow: clip; isolation: isolate;
+  display: flex; align-items: center; gap: var(--space-6);
+  padding: var(--space-7) var(--space-6); margin-bottom: var(--space-6);
+  background:
+    var(--grain),
+    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb, 46, 125, 50), .14) 120%);
+  background-blend-mode: overlay, normal;
   border-radius: var(--radius-xl); border: .5px solid var(--line);
 }
-.guide-hero-icon { font-size: 2.5rem; flex-shrink: 0; }
-.guide-hero h1 { margin: 0 0 var(--space-1); font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
-.guide-hero p { margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); }
+.bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
+.bm-eyebrow {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  color: var(--primary-fg-strong); margin: 0 0 var(--space-2);
+}
+.bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
+.guide-hero h1 {
+  font-family: var(--font-editorial); font-weight: 600;
+  margin: 0 0 var(--space-1); font-size: var(--text-2xl); letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+}
+.bm-sub { margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); max-width: 60ch; }
+.bm-motif { width: clamp(64px, 6vw + 36px, 104px); height: auto; flex-shrink: 0; color: var(--clay-400); opacity: .8; }
+.bm-motif path, .bm-motif line, .bm-motif circle { stroke: currentColor; fill: none; }
 
 /* Quickstart */
 .quickstart-steps { list-style: none; padding: 0; margin: 0 0 var(--space-4); counter-reset: none; }
@@ -1018,12 +1042,15 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .qs-step strong { display: block; margin-bottom: var(--space-1); font-size: var(--text-sm); }
 .qs-step p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
-/* Sections */
+/* Sections — h2 typography (serif + tick) now comes from .sediment-head;
+   keep only spacing/rule here. */
 .guide-section { margin-bottom: var(--space-8); scroll-margin-top: calc(var(--header-h) + 0.5rem); }
 .guide-section > h2 {
-  font-size: var(--text-xl); font-weight: var(--weight-bold); margin: 0 0 var(--space-2);
-  padding-bottom: var(--space-2); border-bottom: 2px solid var(--primary-fg);
+  display: flex; align-items: center;
+  font-size: var(--text-xl); margin: 0 0 var(--space-2);
+  padding-bottom: var(--space-2); border-bottom: .5px solid var(--line);
 }
+.gs-icon { font-size: 1.15em; margin-right: var(--space-2); line-height: 1; }
 .section-intro { color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin: 0 0 var(--space-5); }
 
 /* Topics (collapsible) */
@@ -1162,7 +1189,13 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .guide-updated { text-align: center; color: var(--ink-tertiary); font-size: var(--text-xs); margin-top: var(--space-6); }
 
 /* Dark */
-.dark .guide-hero, .dark .guide-cta { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
+.dark .guide-cta { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
+.dark .guide-hero.brand-masthead {
+  background:
+    var(--grain),
+    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(255,255,255,.02) 55%, rgba(var(--primary-rgb, 46, 125, 50), .1) 120%);
+}
+.dark .bm-motif { color: var(--clay-400); opacity: .65; }
 .dark .guide-topic { background: var(--bg-alt); }
 .dark .qs-step { background: var(--bg-alt); }
 .dark .subtopic { background: rgba(255,255,255,.03); }
@@ -1179,6 +1212,8 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 @media print {
   .guide-sidebar, .mobile-toc, .mobile-search, .guide-cta, .topic-chevron, .see-also { display: none; }
   .guide-layout { display: block; max-width: 100%; }
+  .guide-hero.brand-masthead { background: none; border: none; padding: 0; }
+  .bm-motif { display: none; }
   .guide-topic { border: none; break-inside: avoid; }
   .guide-topic[open] > .topic-summary, .topic-summary { pointer-events: none; }
   .topic-body { display: block !important; }
@@ -1207,6 +1242,8 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   .mobile-toc-nav a:hover { background: var(--bg-warm); }
   .guide-layout { padding: var(--space-3); }
   .guide-hero { flex-direction: column; text-align: center; padding: var(--space-5); }
+  .guide-hero .bm-inner { max-width: none; }
+  .bm-eyebrow { justify-content: center; }
   .qs-step { flex-direction: column; align-items: center; text-align: center; }
   .guide-topic { border-radius: var(--radius-lg); }
   .topic-body { padding: 0 var(--space-3) var(--space-3); }
