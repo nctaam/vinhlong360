@@ -151,6 +151,17 @@
       </div>
     </section>
 
+    <!-- 2b. Feature — photo-led editorial block (Trải nghiệm miệt vườn) -->
+    <section class="block reveal" aria-label="Trải nghiệm nổi bật">
+      <EntityFeature
+        image="/img/features/trai-nghiem.webp"
+        v-bind="FEATURE_EXPERIENCE"
+        :thumbs="experiences.slice(0, 3)"
+        side="left"
+        :priority="true"
+      />
+    </section>
+
     <!-- 3. Nổi bật — spotlight magazine + quán ngon rating -->
     <section v-if="spotlight || topDishes.length" class="block reveal band" aria-label="Nổi bật">
       <div class="section-head">
@@ -350,6 +361,7 @@ import type { Entity } from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { useJourneyActions } from '~/composables/useJourneyActions'
+import EntityFeature from '~/components/home/EntityFeature.vue'
 
 useReveal()
 const { get: ss } = useSiteSettings()
@@ -364,6 +376,16 @@ const DEFAULT_HERO_PILLS = [
 ]
 const heroPills = computed(() => ss('homepage.hero_pills', DEFAULT_HERO_PILLS) as typeof DEFAULT_HERO_PILLS)
 const { homepageDecisionActions } = useJourneyActions()
+
+// Editorial photo-led feature copy (EntityFeature block). Contact/discover CTA only —
+// never an order/price form, per project invariants.
+const FEATURE_EXPERIENCE = {
+  kicker: 'Trải nghiệm',
+  title: 'Miệt vườn mở cửa đón bạn',
+  lede: 'Chèo xuồng qua rạch dừa, hái trái tại vườn, nghe đờn ca giữa cù lao — những ngày chậm rãi rất Nam Bộ.',
+  ctaText: 'Khám phá trải nghiệm',
+  ctaTo: '/du-lich',
+}
 
 type HomeDecisionCard = {
   icon: string
