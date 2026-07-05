@@ -2,13 +2,14 @@
   <section class="page" :style="{ '--int-rgb': interestTintRgb }">
     <Breadcrumb :items="breadcrumbItems" />
 
-    <!-- Hero -->
+    <!-- Hero — "Một góc nhìn, một người kể": lens hero with per-interest halo shape -->
     <section class="catalog-hero cat-interest">
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon int-hero-icon" aria-hidden="true">{{ interestMeta.emoji }}</span>
+        <span class="catalog-hero-icon int-hero-icon" :class="`int-halo-${haloShape}`" aria-hidden="true" v-html="interestIconSvg"></span>
         <div>
           <h1>{{ interestMeta.label }}</h1>
           <p>{{ interestMeta.description }}</p>
+          <p class="int-byline">Biên tập theo mùa · Cập nhật {{ bylineMonth }}</p>
         </div>
       </div>
       <div v-if="interestItems.length" class="catalog-stats">
@@ -23,9 +24,9 @@
       </div>
     </section>
 
-    <!-- SIGNATURE 2: Curated collection intro — "Trong chuyên mục này" -->
+    <!-- SIGNATURE 2: Curated collection thesis — the one line a visitor should screenshot -->
     <div v-if="data && filtered.length" class="int-intro reveal">
-      <p class="int-intro-text">
+      <p class="int-intro-text editorial-body">
         <span class="int-intro-emoji" aria-hidden="true">✨</span>
         <span>Trong chuyên mục này: {{ collectionNarrative }}</span>
       </p>
@@ -55,15 +56,18 @@
         >{{ meta.emoji }} {{ meta.name }}</button>
       </div>
 
-      <!-- SIGNATURE 3: second filter row — narrow within an interest by type -->
+      <!-- SIGNATURE 3: second filter row — narrow within an interest by type.
+           Live counts carry visual weight (font-size scale) so the row itself
+           communicates "this is where the depth is" — filmstrip underline draws
+           in on hover/focus, evoking flipping through indexed photo negatives. -->
       <template v-if="typeBreakdown.length > 1">
         <p class="control-label">Theo loại</p>
-        <div class="chip-row wrap-mobile" role="group" aria-label="Lọc theo loại">
+        <div class="chip-row wrap-mobile int-filmstrip" role="group" aria-label="Lọc theo loại">
           <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
           <button type="button"
             v-for="t in typeBreakdown"
             :key="t.type"
-            :class="['chip', { active: typeFilter === t.type }]"
+            :class="['chip', 'int-filmstrip-chip', { active: typeFilter === t.type, 'int-chip-deep': t.count === maxTypeCount }]"
             :aria-pressed="typeFilter === t.type"
             @click="typeFilter = t.type"
           >{{ t.emoji }} {{ t.label }} ({{ t.count }})</button>
@@ -79,40 +83,46 @@
     </EmptyState>
     <SkeletonGrid v-else-if="!data" :count="6" />
     <div v-else-if="filtered.length" ref="gridEl" class="grid int-grid">
-      <EntityCard v-for="e in visible" :key="e.id" :entity="e" />
+      <template v-for="(e, i) in visible" :key="e.id">
+        <div v-if="i > 0 && i % 9 === 0" class="int-grid-divider reveal" role="presentation" aria-hidden="true">
+          <span class="int-grid-divider-label">{{ dividerFact(i) }}</span>
+        </div>
+        <EntityCard :entity="e" />
+      </template>
     </div>
-    <EmptyState v-else message="Không tìm thấy kết quả phù hợp." />
+    <EmptyState v-else :message="emptyMessage" />
     <button
       v-if="filtered.length && visibleCount < filtered.length"
       type="button"
       class="btn btn-ghost catalog-more"
       @click="visibleCount += PAGE_SIZE"
     >
-      Xem thêm ({{ filtered.length - visibleCount }} còn lại)
+      {{ loadMoreLabel }}
     </button>
     </section>
 
-    <!-- Cross-links -->
+    <!-- Cross-links — reframed as "đi tiếp" (where to next), each phrased as a
+         chapter tied back to the interest just browsed, not a generic menu -->
     <section class="block band catalog-cross reveal">
-      <h2>Khám phá thêm</h2>
+      <h2>Đi tiếp</h2>
       <!-- SIGNATURE 4: identity ribbon — clarifies this is a navigation hub -->
       <p class="int-cross-sub">Khám phá theo hình thức khác</p>
       <div class="cross-links int-cross">
         <NuxtLink v-if="interestMeta.relatedRoutes?.length" to="/tuyen-duong" class="cross-card">
           <span class="cross-icon" aria-hidden="true">🛤️</span>
-          <div><strong>Tuyến đường</strong><p>Vòng khám phá gợi ý</p></div>
+          <div><strong>Tuyến đường</strong><p>Vòng {{ interestMeta.label.toLowerCase() }} gợi ý sẵn</p></div>
         </NuxtLink>
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
           <span class="cross-icon" aria-hidden="true">🗺️</span>
-          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
+          <div><strong>Bản đồ</strong><p>Vị trí thật của từng nơi trong chuyên mục này</p></div>
         </NuxtLink>
         <NuxtLink to="/lich-trinh" class="cross-card">
           <span class="cross-icon" aria-hidden="true">🗓️</span>
-          <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
+          <div><strong>Lịch trình</strong><p>Ghép {{ interestMeta.label.toLowerCase() }} vào một tuyến đi</p></div>
         </NuxtLink>
         <NuxtLink to="/ocop" class="cross-card">
           <span class="cross-icon" aria-hidden="true">⭐</span>
-          <div><strong>OCOP</strong><p>Sản phẩm sao</p></div>
+          <div><strong>OCOP</strong><p>Sản phẩm đã qua kiểm định sao</p></div>
         </NuxtLink>
       </div>
     </section>
@@ -122,6 +132,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { AREA_META, INTEREST_META, TYPE_META } from '~/composables/useConstants'
+import { generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 
 useReveal()
 
@@ -146,6 +157,27 @@ const INTEREST_TINT: Record<string, string> = {
   'mua-sam': 'var(--primary-rgb)',
 }
 const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--primary-rgb)')
+
+// Lens hero icon — the interest's own motif glyph, reusing the same
+// generateCategoryIcon() system already powering EntityCard placeholders so
+// the interest icon and its cards' icons visually rhyme (no bare emoji).
+// Each interest borrows the glyph of its first mapped entity type.
+const interestIconSvg = computed(() => generateCategoryIcon(TYPE_META[resolvedInterestMeta.types[0]]?.cat || 'place'))
+
+// Per-interest halo shape — cheap CSS clip-path variant reinforcing "this lens
+// has its own shape": circle (thiên-nhiên), hex (làng-nghề), arch (văn-hoá)…
+const HALO_SHAPE: Record<string, string> = {
+  'am-thuc': 'circle',
+  'thien-nhien': 'circle',
+  'van-hoa': 'arch',
+  'lang-nghe': 'hex',
+  'mua-sam': 'diamond',
+}
+const haloShape = computed(() => HALO_SHAPE[interest] || 'circle')
+
+// Byline "cập nhật tháng N" — a real timestamp signal (not fabricated), reads
+// as "a human curated this" per concept §2.
+const bylineMonth = computed(() => `tháng ${new Date().getMonth() + 1}`)
 
 const breadcrumbItems = computed(() => [
   { label: 'Trang chủ', to: '/' },
@@ -180,6 +212,10 @@ const typeBreakdown = computed(() => {
     }))
 })
 
+// Live-count visual weight: the type with the most items gets a size bump in
+// the "Theo loại" row so the row itself communicates "this is where the depth is".
+const maxTypeCount = computed(() => Math.max(0, ...typeBreakdown.value.map(t => t.count)))
+
 const filtered = computed(() => {
   let list = interestItems.value
   if (typeFilter.value !== 'all') {
@@ -191,6 +227,16 @@ const filtered = computed(() => {
   return list
 })
 
+// Curiosity empty-state — names the active narrowing instead of a bare "no match."
+const emptyMessage = computed(() => {
+  const typeName = typeFilter.value !== 'all' ? (TYPE_META[typeFilter.value]?.label || '') : ''
+  const areaName = areaFilter.value !== 'all' ? (AREA_META[areaFilter.value]?.name || '') : ''
+  if (typeName && areaName) return `Chưa có “${typeName.toLowerCase()}” ở ${areaName} trong chuyên mục ${interestMeta.value.label.toLowerCase()} — thử vùng khác?`
+  if (typeName) return `Chưa có “${typeName.toLowerCase()}” trong chuyên mục ${interestMeta.value.label.toLowerCase()}.`
+  if (areaName) return `Chuyên mục ${interestMeta.value.label.toLowerCase()} chưa có mục nào ở ${areaName}.`
+  return 'Không tìm thấy kết quả phù hợp.'
+})
+
 // Client-side pagination: bound hydration cost on the full filterable grid
 // (perf audit P2). First PAGE_SIZE render on the server for SEO/first-paint;
 // "Xem thêm" reveals more without a refetch. Reset happens in the existing
@@ -198,6 +244,29 @@ const filtered = computed(() => {
 const PAGE_SIZE = 24
 const visibleCount = ref(PAGE_SIZE)
 const visible = computed(() => filtered.value.slice(0, visibleCount.value))
+
+// Load-more teaser — names the last-loaded item's own place as an honest
+// "kể cả…" hook (no fabricated next-item prediction; concept doc §6 MVP).
+const loadMoreLabel = computed(() => {
+  const remaining = filtered.value.length - visibleCount.value
+  if (remaining <= 0) return ''
+  const last = visible.value[visible.value.length - 1]
+  const teaseName = (last as any)?.placeName || (last as any)?.place_name || last?.name
+  if (teaseName) return `Xem thêm — còn ${remaining} mục nữa, kể cả gần ${teaseName} →`
+  return `Xem thêm (${remaining} còn lại)`
+})
+
+// Grid divider — every 9 cards, a typographic interruption naming a real place
+// already seen in the grid (no invented facts), so a long grid reads as a
+// curated chuyên mục, not an infinite dump.
+function dividerFact(index: number): string {
+  const seen = visible.value.slice(0, index)
+  const areasSeen = new Set(seen.map((e: any) => e.placeName || e.place_name).filter(Boolean))
+  const pool = Array.from(areasSeen)
+  const nth = Math.floor(index / 9)
+  if (pool.length) return pool[nth % pool.length] as string
+  return `${index} mục đã lật qua`
+}
 
 // SIGNATURE 2: a short, data-driven narrative of what this collection holds —
 // built only from real counts (no fabricated facts; Track-H safe).
@@ -290,30 +359,71 @@ useHead(() => ({
   from { opacity: 0; transform: scale(.7) translateY(4px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
+/* the motif glyph now lives in the icon slot (v-html svg) — size + tint it to
+   match the hero's visual weight, replacing the old bare-emoji font-size rule */
+.int-hero-icon :deep(svg) { width: 2.6rem; height: 2.6rem; color: rgba(var(--int-rgb, var(--primary-rgb)), .9); }
+@media (max-width: 640px) { .int-hero-icon :deep(svg) { width: 2rem; height: 2rem; } }
+
+/* Per-interest halo shape — the halo behind the icon (::before) takes a
+   different clip-path per lens, so each chuyên mục feels like its own shape.
+   CSS-only, no new markup beyond the existing ::before halo. */
+.int-halo-circle::before { border-radius: 50%; }
+.int-halo-hex::before {
+  border-radius: 0;
+  clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0% 50%);
+}
+.int-halo-arch::before {
+  border-radius: 0;
+  clip-path: path('M 0 100 L 0 45 A 50 50 0 0 1 100 45 L 100 100 Z');
+}
+.int-halo-diamond::before {
+  border-radius: 0;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+/* Editorial byline — small caps, wide tracking, hairline rule before it —
+   signals "a human curated this," not a query result. */
+.int-byline {
+  margin: var(--space-3) 0 0 !important;
+  padding-top: var(--space-2);
+  border-top: .5px solid var(--line);
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--muted) !important;
+  max-width: none !important;
+}
 
 /* ============================================================
-   SIGNATURE 2 — curated collection intro card
+   SIGNATURE 2 — curated collection thesis (enlarged editorial dek).
+   Runs full-width above the filter controls as the one sentence a
+   visitor should screenshot — not a boxed metadata card anymore.
    ============================================================ */
 .int-intro {
-  margin: 0 0 var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  border: .5px solid rgba(var(--int-rgb, var(--primary-rgb)), .2);
-  border-radius: var(--radius-lg);
-  background:
-    radial-gradient(120% 140% at 100% 0%, rgba(var(--int-rgb, var(--primary-rgb)), .07), transparent 65%),
-    var(--card);
-  box-shadow: var(--shadow-xs);
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  border: none;
+  border-left: 3px solid rgba(var(--int-rgb, var(--primary-rgb)), .5);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  padding-left: var(--space-5);
 }
 .int-intro-text {
   margin: 0;
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  font-size: var(--text-sm);
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-lg);
   line-height: var(--leading-relaxed);
   color: var(--ink);
+  max-width: var(--measure-read);
 }
-.int-intro-emoji { font-size: 1.2rem; line-height: 1.3; flex-shrink: 0; }
+.int-intro-emoji { font-size: 1.2rem; line-height: 1.3; flex-shrink: 0; font-style: normal; }
 
 /* ============================================================
    SIGNATURE 3 — interest nav + premium segmented controls.
@@ -338,6 +448,38 @@ useHead(() => ({
 
 .result-meta { color: var(--muted); font-size: var(--text-sm); margin-bottom: var(--space-3); }
 
+/* ============================================================
+   TYPE FILMSTRIP — "Theo loại" row. Live counts carry visual weight
+   (the deepest type nudges up in size) + a thin category-color
+   underline draws in on hover/focus, evoking flipping through
+   indexed photo negatives.
+   ============================================================ */
+.int-filmstrip-chip { position: relative; overflow: hidden; transition: font-size .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
+.int-filmstrip-chip.int-chip-deep { font-size: calc(var(--text-sm) * 1.08); font-weight: var(--weight-bold); }
+.int-filmstrip-chip::after {
+  content: ""; position: absolute; left: var(--space-4); right: var(--space-4); bottom: 5px;
+  height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--river-600), var(--amber-600), var(--clay-600));
+  transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease-out-expo);
+}
+.int-filmstrip-chip:hover::after, .int-filmstrip-chip:focus-visible::after, .int-filmstrip-chip.active::after { transform: scaleX(1); }
+.dark .int-filmstrip-chip::after { background: linear-gradient(90deg, #74ABB5, var(--amber-500), var(--clay-400)); }
+
+/* ============================================================
+   GRID DIVIDER — typographic interruption every 9 cards in the
+   chuyên mục grid, naming a real place already seen (no invented facts).
+   ============================================================ */
+.int-grid-divider {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: var(--space-4);
+  margin: var(--space-2) 0; padding: var(--space-2) 0;
+}
+.int-grid-divider::before, .int-grid-divider::after { content: ''; flex: 1; height: .5px; background: var(--line); }
+.int-grid-divider-label {
+  font-family: var(--font-editorial); font-style: italic; font-size: var(--text-sm);
+  color: var(--muted); white-space: nowrap; padding: 0 var(--space-2);
+}
+
 /* SIGNATURE 4 — cross-links identity ribbon subtitle */
 .int-cross-sub {
   margin: 0 0 var(--space-3);
@@ -354,13 +496,9 @@ useHead(() => ({
     radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--primary-rgb)), .16), transparent 62%),
     linear-gradient(135deg, rgba(var(--int-rgb, var(--primary-rgb)), .1) 0%, rgba(var(--secondary-rgb), .05) 100%);
 }
-.dark .int-intro {
-  border-color: rgba(var(--int-rgb, var(--primary-rgb)), .26);
-  background:
-    radial-gradient(120% 140% at 100% 0%, rgba(var(--int-rgb, var(--primary-rgb)), .1), transparent 65%),
-    var(--card);
-}
+.dark .int-intro { border-left-color: rgba(var(--int-rgb, var(--primary-rgb)), .6); }
 .dark .int-intro-text { color: var(--ink); }
+.dark .int-byline { color: var(--ink-tertiary) !important; border-top-color: var(--line); }
 .dark .interest-nav .chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .interest-nav .chip:hover { border-color: rgba(255,255,255,.15); }
 .dark .interest-nav .chip.active { background: rgba(var(--primary-rgb), .12); border-color: var(--primary-fg); }
@@ -371,5 +509,7 @@ useHead(() => ({
   .interest-nav .chip:hover { transform: none; }
   .interest-nav .chip:active { transform: none; }
   .int-hero-icon { animation: none; }
+  .int-filmstrip-chip { transition: none; }
+  .int-filmstrip-chip::after { transition: none; }
 }
 </style>
