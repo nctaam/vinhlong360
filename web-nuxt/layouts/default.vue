@@ -317,3 +317,41 @@ onUnmounted(() => {
 })
 
 </script>
+
+<style scoped>
+/* ── Chrome editorial pass (Wave 6): footer as the publication's colophon ── */
+/* Phù-sa crown — the river→amber→clay signature hairline across the footer top */
+.site-footer { position: relative; }
+.site-footer::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 1;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 50%, var(--clay-600) 100%);
+  opacity: .55;
+}
+.dark .site-footer::before {
+  background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 50%, var(--clay-400) 100%);
+  opacity: .65;
+}
+/* Footer column headings → serif section labels with a small phù-sa tick */
+.footer-col h4 {
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  font-size: var(--text-base);
+  position: relative;
+  padding-left: var(--space-3);
+}
+.footer-col h4::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 1em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .footer-col h4::before {
+  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
+/* Tagline → editorial serif italic, reads like a masthead motto */
+.footer-brand p {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+</style>
