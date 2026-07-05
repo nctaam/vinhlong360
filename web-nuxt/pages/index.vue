@@ -1057,7 +1057,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dx-item:hover .dx-num { opacity: 1; }
 .dx-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .dx-eyebrow {
-  font-size: .68rem; font-weight: var(--weight-bold);
+  font-size: var(--text-2xs); font-weight: var(--weight-bold);
   /* A11Y: meta labels at ~11px need ≥4.5:1 — the light per-card tone failed (3.89), so use the
      neutral muted ink (5.38) here; the tone stays on the numeral + arrow. */
   text-transform: uppercase; letter-spacing: .09em; color: var(--muted);
@@ -1310,7 +1310,11 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 
 /* Top dishes */
 .dishes-heading { font-size: var(--text-lg); font-weight: var(--weight-bold); margin: 0 0 var(--space-3); }
-.dishes-list { display: flex; flex-direction: column; gap: var(--space-2); }
+/* Two columns from tablet up so the featured-eatery board fills the width instead of
+   a lonely stack of full-width rows — matters most when the spotlight beside/above it is
+   absent (no entity with a real photo qualifies), which is the common live state. */
+.dishes-list { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
+@media (min-width: 640px) { .dishes-list { grid-template-columns: 1fr 1fr; } }
 .dish-item {
   display: flex; align-items: center; gap: var(--space-3);
   padding: var(--space-3) var(--space-4); min-height: 48px;
