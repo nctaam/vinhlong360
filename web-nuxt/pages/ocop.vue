@@ -2,12 +2,19 @@
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm', to: '/san-pham' }, { label: 'OCOP' }]" />
 
-    <!-- Hero -->
-    <section class="catalog-hero cat-ocop">
+    <!-- Hero — "Sổ vàng" (the ledger opens; calmer/formal, structurally distinct
+         from san-pham's market hero — kills the twin-collision, concept §2) -->
+    <section class="catalog-hero cat-ocop ledger-hero">
+      <div class="guilloche-texture" aria-hidden="true"></div>
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">⭐</span>
+        <div class="wax-seal" :aria-label="`Hạng cao nhất: ${topStarTier} sao`" role="img">
+          <span class="wax-seal-notches" aria-hidden="true"></span>
+          <span class="wax-seal-star" aria-hidden="true">★{{ topStarTier }}</span>
+        </div>
         <div>
+          <p class="ledger-kicker">Chứng nhận quốc gia · Mỗi xã một sản phẩm</p>
           <h1>{{ pc('hero_title') }}</h1>
+          <p class="ledger-dek">{{ allOcop.length }} sản phẩm, từ 3 đến 5 sao — mỗi ngôi sao là một vòng kiểm định đã qua.</p>
           <p>{{ pc('hero_subtitle') }}</p>
           <div class="hero-creds">
             <span class="hero-cred hero-cred-seal">🏅 Chuẩn OCOP <em>Nhà nước</em></span>
@@ -16,7 +23,7 @@
           </div>
         </div>
       </div>
-      <div v-if="allOcop.length" class="catalog-stats">
+      <div v-if="allOcop.length" class="catalog-stats ledger-stats">
         <div class="stat-item">
           <CountUp :value="allOcop.length" class="stat-num" />
           <span class="stat-label">sản phẩm OCOP</span>
@@ -31,32 +38,30 @@
     <!-- Spotlight nổi bật -->
     <CatalogSpotlight :items="allOcop" />
 
-    <!-- Star breakdown quick-picks -->
-    <section v-if="starStats.length" class="block reveal">
-      <div class="section-head">
-        <h2>Xếp hạng sao</h2>
-      </div>
-      <div class="quick-picks">
-        <button type="button"
-          v-for="s in starStats" :key="s.stars"
-          :class="['quick-pick', { active: starFilter === s.stars }]"
-          :aria-pressed="starFilter === s.stars"
-          @click="starFilter = starFilter === s.stars ? 0 : s.stars; scrollToGrid()"
-        >
-          <span class="quick-pick-icon">{{ '⭐'.repeat(s.stars) }}</span>
-          <span class="quick-pick-label">{{ s.stars }} sao</span>
-          <span class="quick-pick-count">{{ s.count }} sản phẩm</span>
-        </button>
-      </div>
-    </section>
+    <!-- Star-rank quick-jump — subordinate to the ledger bands below, not equal rank -->
+    <nav v-if="starStats.length" class="block reveal star-jump" aria-label="Nhảy nhanh tới hạng sao">
+      <button type="button"
+        v-for="s in starStats" :key="s.stars"
+        :class="['star-jump-btn', { active: starFilter === s.stars }]"
+        :aria-pressed="starFilter === s.stars"
+        @click="starFilter = starFilter === s.stars ? 0 : s.stars; scrollToGrid()"
+      >
+        <span class="quick-pick-icon">{{ '⭐'.repeat(s.stars) }}</span>
+        <span class="quick-pick-label">{{ s.stars }} sao</span>
+        <span class="quick-pick-count">{{ s.count }} sản phẩm</span>
+      </button>
+    </nav>
 
-    <!-- Featured 5-star -->
-    <section v-if="fiveStarHighlights.length" class="block reveal">
-      <div class="section-head">
-        <h2>⭐ Nổi bật 5 sao</h2>
+    <!-- Star-rank ledger — structural centerpiece (concept §3/§10): a descending
+         5→4→3 honor ledger that gets visually lighter/smaller as you scroll —
+         you feel the hierarchy of trust through layout weight before reading a
+         word. Bands reveal top-down staggered (5 first, 3 last). -->
+    <section v-if="fiveStarHighlights.length" class="block reveal ocop-band ocop-band--5" data-stagger="0">
+      <div class="section-head sediment-head">
+        <h2>⭐ Bậc 5 sao</h2>
         <button type="button" class="see-all" @click="starFilter = 5; scrollToGrid()">Xem tất cả →</button>
       </div>
-      <p class="section-desc">Sản phẩm đạt chuẩn cao nhất — 5 sao OCOP, chất lượng vượt trội.</p>
+      <p class="section-desc">Bậc cao nhất, hiếm nhất — sản phẩm đã chứng minh được cả chất lượng lẫn khả năng vươn xa.</p>
       <div class="honor-banner">
         <span class="honor-banner-icon" aria-hidden="true">👑</span>
         <span class="honor-banner-text">Danh sách vinh dự</span>
@@ -66,8 +71,31 @@
       </div>
     </section>
 
-    <!-- Region quick-picks -->
-    <section class="block band reveal">
+    <section v-if="fourStarHighlights.length" class="block reveal ocop-band ocop-band--4" data-stagger="1">
+      <div class="section-head sediment-head">
+        <h2>Bậc 4 sao</h2>
+        <button type="button" class="see-all" @click="starFilter = 4; scrollToGrid()">Xem tất cả →</button>
+      </div>
+      <p class="section-desc">Chất lượng cao, bao bì chuyên nghiệp — đã có câu chuyện sản phẩm rõ ràng.</p>
+      <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 4 sao" tabindex="0">
+        <EntityCard v-for="e in fourStarHighlights" :key="e.id" :entity="e" />
+      </div>
+    </section>
+
+    <section v-if="threeStarHighlights.length" class="block reveal ocop-band ocop-band--3" data-stagger="2">
+      <div class="section-head sediment-head">
+        <h2>Bậc 3 sao</h2>
+        <button type="button" class="see-all" @click="starFilter = 3; scrollToGrid()">Xem tất cả →</button>
+      </div>
+      <p class="section-desc">Mức cơ bản — đạt tiêu chuẩn an toàn thực phẩm, nhãn mác rõ ràng.</p>
+      <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP 3 sao" tabindex="0">
+        <EntityCard v-for="e in threeStarHighlights" :key="e.id" :entity="e" />
+      </div>
+    </section>
+
+    <!-- Region quick-picks (kept, but visually quieter — subordinate to the
+         star ledger above, not equal rank; concept §3 step 4) -->
+    <section class="block band reveal region-picks-subordinate">
       <div class="section-head">
         <h2>Chọn theo khu vực</h2>
       </div>
@@ -95,16 +123,16 @@
       :links="[{ to: '/san-pham', label: 'Tất cả sản phẩm' }, { to: '/theo-mua', label: 'Theo mùa vụ' }]"
     />
 
-    <!-- Editorial -->
-    <section v-once class="page-article reveal">
-      <h2>OCOP là gì?</h2>
+    <!-- Editorial — drop-cap (auto via .page-article) + pull-quote (concept §4/§9) -->
+    <section v-once class="page-article editorial-body reveal">
+      <h2 class="sediment-head">OCOP là gì?</h2>
       <p>OCOP (One Commune One Product — Mỗi xã Một sản phẩm) là chương trình quốc gia nhằm phát triển kinh tế nông thôn thông qua việc nâng cao chất lượng và giá trị sản phẩm địa phương. Mỗi xã, phường xác định một hoặc vài sản phẩm thế mạnh, được hỗ trợ chuẩn hoá quy trình sản xuất, bao bì, truy xuất nguồn gốc và kết nối thị trường.</p>
 
-      <h2>Hệ thống xếp hạng sao</h2>
+      <h2 class="sediment-head">Hệ thống xếp hạng sao</h2>
       <p>Sản phẩm OCOP được đánh giá theo thang 5 sao bởi hội đồng cấp tỉnh và trung ương. <strong>3 sao</strong> là mức cơ bản — sản phẩm đạt tiêu chuẩn an toàn thực phẩm, có nhãn mác rõ ràng. <strong>4 sao</strong> yêu cầu chất lượng cao hơn, bao bì chuyên nghiệp, có câu chuyện sản phẩm và khả năng mở rộng thị trường. <strong>5 sao</strong> là cấp quốc gia — rất hiếm, dành cho sản phẩm xuất sắc có tiềm năng xuất khẩu.</p>
-      <p>Khi bạn thấy nhãn OCOP trên sản phẩm, bạn biết sản phẩm đó đã qua quy trình đánh giá nghiêm ngặt, có nguồn gốc rõ ràng và chất lượng được kiểm chứng — không phải tự phong hay tự gắn nhãn.</p>
+      <blockquote class="pull-quote">Khi bạn thấy nhãn OCOP trên sản phẩm, bạn biết sản phẩm đó đã qua quy trình đánh giá nghiêm ngặt, có nguồn gốc rõ ràng và chất lượng được kiểm chứng — không phải tự phong hay tự gắn nhãn.</blockquote>
 
-      <h2>OCOP vùng Vĩnh Long, Bến Tre, Trà Vinh</h2>
+      <h2 class="sediment-head">OCOP vùng Vĩnh Long, Bến Tre, Trà Vinh</h2>
       <p>Ba tỉnh thuộc top đầu cả nước về số lượng sản phẩm OCOP, nhờ lợi thế nông nghiệp phong phú. Bến Tre dẫn đầu với các sản phẩm từ dừa: dầu dừa nguyên chất, kẹo dừa, thạch dừa, mỹ phẩm từ dừa. Vĩnh Long nổi bật với bưởi Năm Roi, nem chua Lai Vung, gạch gốm Mang Thít. Trà Vinh đóng góp các đặc sản Khmer như bánh tét lá cẩm, dừa sáp và mắm prohok.</p>
     </section>
 
@@ -126,13 +154,15 @@
           </select>
         </div>
         <p class="control-label">Hạng sao</p>
-        <FilterChips
-          :filters="starFilterOptions"
-          :model-value="[starFilterStr]"
-          single-select
-          aria-label="Lọc theo hạng sao"
-          @update:model-value="v => starFilterStr = v[0] || '0'"
-        />
+        <div :class="['star-filter-wrap', { 'star-filter-flash': starJustJumped }]">
+          <FilterChips
+            :filters="starFilterOptions"
+            :model-value="[starFilterStr]"
+            single-select
+            aria-label="Lọc theo hạng sao"
+            @update:model-value="v => starFilterStr = v[0] || '0'"
+          />
+        </div>
         <p class="control-label">Khu vực</p>
         <FilterChips
           :filters="areaFilterOptions"
@@ -194,7 +224,7 @@
       <div class="cross-links">
         <NuxtLink to="/san-pham" class="cross-card">
           <span class="cross-icon" aria-hidden="true">🍊</span>
-          <div><strong>Đặc sản</strong><p>Tất cả sản phẩm</p></div>
+          <div><strong>Đặc sản</strong><p>Còn {{ otherProductsCount }} đặc sản khác chưa có sao</p></div>
         </NuxtLink>
         <NuxtLink to="/theo-mua" class="cross-card">
           <span class="cross-icon" aria-hidden="true">📅</span>
@@ -286,6 +316,15 @@ const allOcop = computed(() => {
   return (raw.entities || []).filter((e: Entity) => e.attributes?.ocop)
 })
 
+// Total catalog size (san-pham.vue's full scope) minus the certified subset —
+// resolves the "why two pages exist" confusion on the cross-link (concept §6):
+// this page is the OCOP subset, san-pham is everything.
+const otherProductsCount = computed(() => {
+  const raw = data.value
+  if (!raw) return 0
+  return (raw.entities || []).length - allOcop.value.length
+})
+
 function getStars(e: Entity): number {
   return parseInt(String(e.attributes?.ocop || ''), 10) || 0
 }
@@ -302,6 +341,16 @@ const starStats = computed(() => {
 const fiveStarHighlights = computed(() =>
   allOcop.value.filter(e => getStars(e) >= 5).slice(0, 8)
 )
+const fourStarHighlights = computed(() =>
+  allOcop.value.filter(e => getStars(e) === 4).slice(0, 8)
+)
+const threeStarHighlights = computed(() =>
+  allOcop.value.filter(e => getStars(e) === 3).slice(0, 8)
+)
+
+// Wax-seal emblem shows the highest certified tier present in the ledger —
+// falls back to 5 (the program ceiling) if the dataset is still loading.
+const topStarTier = computed(() => starStats.value[0]?.stars || 5)
 
 function countByArea(key: string) {
   return allOcop.value.filter((e: Entity) => getEntityArea(e) === key).length
@@ -310,6 +359,21 @@ function countByArea(key: string) {
 function scrollToGrid() {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
+
+// Closes the loop between "I clicked 5-star" and "I see why the grid changed"
+// (concept §5): briefly flash the grid's star-rank chip whenever the star
+// filter changes via a band/jump click, guiding the eye to what moved.
+const starJustJumped = ref(false)
+let starFlashTimer: ReturnType<typeof setTimeout> | undefined
+watch(starFilter, () => {
+  starJustJumped.value = false
+  nextTick(() => {
+    starJustJumped.value = true
+    clearTimeout(starFlashTimer)
+    starFlashTimer = setTimeout(() => { starJustJumped.value = false }, 900)
+  })
+})
+onUnmounted(() => clearTimeout(starFlashTimer))
 
 const activeFilterCount = computed(() => {
   let n = 0
@@ -616,5 +680,185 @@ useHead(() => ({
 @media (max-width: 600px) {
   .list-view :deep(.card) { flex-direction: column; }
   .list-view :deep(.cover) { width: 100%; min-height: 140px; aspect-ratio: 16/9; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   "Sổ vàng OCOP" — signature moment: wax-seal emblem + descending 5→4→3
+   star-ledger bands that get visually lighter/smaller as you scroll.
+   Scoped to this page only; calmer/formal register than san-pham's market
+   hero — kills the "twin collision" (concept 06-products.md §2/§10).
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Guilloché texture — fine wavy-line certificate engraving, echoing "official
+   seal" WITHOUT a literal seal clipart. Inline SVG tile, ~4% opacity. */
+.ledger-hero { position: relative; }
+.guilloche-texture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .045;
+  background-repeat: repeat;
+  background-size: 64px 64px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%239C3D22' stroke-width='1'%3E%3Cpath d='M0 32 Q16 8 32 32 T64 32'/%3E%3Cpath d='M0 16 Q16 -8 32 16 T64 16'/%3E%3Cpath d='M0 48 Q16 24 32 48 T64 48'/%3E%3C/g%3E%3C/svg%3E");
+}
+.dark .guilloche-texture { opacity: .06; }
+
+/* Wax-seal emblem — pure CSS circular seal, no image asset. Radial-gradient
+   disc + notched clip-path edge + inset shadow for depth, showing the
+   highest certified tier present. One-time "stamp" settle on first paint. */
+.wax-seal {
+  position: relative;
+  flex-shrink: 0;
+  width: clamp(64px, 6vw + 40px, 84px);
+  height: clamp(64px, 6vw + 40px, 84px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 34% 30%, rgba(var(--secondary-rgb), .95), rgba(var(--primary-rgb), .9) 72%);
+  clip-path: polygon(
+    50% 0%, 61% 7%, 74% 3%, 82% 13%, 95% 15%, 96% 28%, 100% 38%,
+    92% 48%, 100% 58%, 96% 68%, 95% 81%, 82% 83%, 74% 93%, 61% 89%,
+    50% 100%, 39% 89%, 26% 93%, 18% 83%, 5% 81%, 4% 68%, 0% 58%,
+    8% 48%, 0% 38%, 4% 28%, 5% 15%, 18% 13%, 26% 3%, 39% 7%
+  );
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .28), 0 4px 14px -6px rgba(var(--primary-rgb), .5);
+  animation: seal-stamp .4s var(--ease-spring-gentle) both;
+}
+.wax-seal-notches {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, .4);
+}
+.wax-seal-star {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  font-size: clamp(1.1rem, .6vw + 1rem, 1.35rem);
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+  letter-spacing: -.01em;
+}
+@keyframes seal-stamp {
+  0% { transform: scale(.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.dark .wax-seal { box-shadow: inset 0 2px 6px rgba(0, 0, 0, .4), 0 4px 14px -6px rgba(var(--primary-rgb), .35); }
+
+/* Kicker / dek — calmer, more formal register than san-pham's market voice */
+.catalog-hero-inner p.ledger-kicker {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--secondary-fg, var(--secondary));
+  margin: 0 0 var(--space-2);
+}
+.dark .catalog-hero-inner p.ledger-kicker { color: var(--secondary-fg); }
+.catalog-hero-inner p.ledger-dek {
+  font-family: var(--font-editorial);
+  font-size: clamp(1rem, .94rem + .3vw, 1.1rem);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  max-width: 58ch;
+  margin: var(--space-2) 0 0;
+}
+
+/* Stats row — same sediment-tick visual language as san-pham's, applied
+   identically so both pages still feel like one publication (§0 luận đề). */
+.ledger-stats { position: relative; padding-left: var(--space-4); }
+.ledger-stats::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 1.6em;
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .ledger-stats::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+
+/* Star-rank quick-jump nav — compact, subordinate to the ledger bands below */
+.star-jump { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.star-jump-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-full);
+  background: var(--card);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
+}
+.star-jump-btn:hover { border-color: var(--primary-fg); }
+.star-jump-btn.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
+.star-jump-btn .quick-pick-icon { font-size: .85rem; }
+.star-jump-btn .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
+
+/* Descending star-ledger bands — border weight + glow + numeral size decrease
+   5→4→3, so trust hierarchy reads through layout weight before a word is
+   read (signature moment, concept §10). Reuses EntityCard unchanged. */
+.ocop-band { border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-6); }
+.ocop-band--5 {
+  border: 1px solid rgba(var(--accent-rgb), .35);
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), .07), transparent 65%);
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), .08), var(--shadow-sm);
+}
+.ocop-band--5 .section-head h2 {
+  font-size: clamp(1.6rem, 1.3rem + 1vw, 2.1rem);
+}
+.ocop-band--4 {
+  border: .5px solid rgba(var(--accent-rgb), .2);
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), .035), transparent 65%);
+  padding: var(--space-5);
+}
+.ocop-band--4 .section-head h2 { font-size: var(--text-xl); }
+.ocop-band--3 {
+  border: .5px solid var(--line);
+  background: none;
+  padding: var(--space-4) var(--space-5);
+  box-shadow: none;
+}
+.ocop-band--3 .section-head h2 { font-size: var(--text-lg); }
+.dark .ocop-band--5 { background: linear-gradient(180deg, rgba(var(--accent-rgb), .1), transparent 65%); }
+.dark .ocop-band--4 { background: linear-gradient(180deg, rgba(var(--accent-rgb), .05), transparent 65%); }
+
+/* Explicit top-down stagger reinforcement (5 settles first, 3 last) — modest
+   nudge on top of each band's own independent scroll-triggered reveal. */
+.ocop-band[data-stagger="0"].reveal.revealed { animation-delay: 0s; }
+.ocop-band[data-stagger="1"].reveal.revealed { animation-delay: .1s; }
+.ocop-band[data-stagger="2"].reveal.revealed { animation-delay: .2s; }
+
+/* Region quick-picks visually quieter/subordinate to the star ledger above */
+.region-picks-subordinate .section-head h2 { font-size: var(--text-lg); }
+.region-picks-subordinate { opacity: .92; }
+
+/* Star-filter chip highlight-flash — closes the loop between "I clicked
+   5-star" and "I see why the grid changed" (concept §5). */
+.star-filter-wrap { border-radius: var(--radius-lg); transition: box-shadow .3s var(--ease-out); }
+.star-filter-flash { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .35); animation: star-filter-glow .9s var(--ease-out) both; }
+@keyframes star-filter-glow {
+  0% { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .5); }
+  100% { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0); }
+}
+.dark .star-filter-flash { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .4); }
+
+@media (prefers-reduced-motion: reduce) {
+  .wax-seal { animation: none; }
+  .ocop-band[data-stagger].reveal.revealed { animation-delay: 0s; }
+  .star-filter-flash { animation: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .3); }
+}
+
+@media (max-width: 640px) {
+  .ocop-band { padding: var(--space-4); }
+  .ocop-band--4 { padding: var(--space-4); }
+  .ocop-band--3 { padding: var(--space-3) var(--space-4); }
 }
 </style>

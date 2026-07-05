@@ -2,16 +2,25 @@
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Sản phẩm' }]" />
 
-    <!-- Hero -->
-    <section class="catalog-hero cat-product" aria-label="Giới thiệu sản phẩm">
+    <!-- Hero — "Phiên chợ đang họp" (month-alive market masthead; signature moment) -->
+    <section class="catalog-hero cat-product market-hero" aria-label="Giới thiệu sản phẩm">
+      <div class="woven-texture" aria-hidden="true"></div>
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🍊</span>
         <div>
+          <p class="market-kicker">Phiên chợ · Tháng {{ currentMonth }}</p>
           <h1>{{ pc('hero_title') }}</h1>
-          <p>{{ pc('hero_subtitle') }}</p>
+          <p class="market-dek">Tháng {{ currentMonth }}, {{ inSeasonCount }} loại đặc sản đang chính vụ — ngon nhất, rẻ nhất, đúng lúc.</p>
+          <p class="market-subtitle">{{ pc('hero_subtitle') }}</p>
+          <div v-if="seasonalHighlights.length" class="market-pulse" aria-hidden="true">
+            <span
+              v-for="(e, i) in seasonalHighlights.slice(0, 4)" :key="e.id"
+              class="market-basket" :style="{ '--basket-hue': String(hashHue(e.id)), animationDelay: `${i * 90}ms` }"
+            ></span>
+          </div>
         </div>
       </div>
-      <div v-if="allEntities.length" class="catalog-stats">
+      <div v-if="allEntities.length" class="catalog-stats market-stats">
         <div class="stat-item">
           <CountUp :value="allEntities.length" class="stat-num" />
           <span class="stat-label">sản phẩm</span>
@@ -30,31 +39,30 @@
     <!-- Spotlight nổi bật (magazine, dùng-chung) -->
     <CatalogSpotlight :items="allEntities" />
 
-    <!-- Đang vào mùa -->
-    <section v-if="seasonalHighlights.length" class="block band reveal">
+    <!-- Đang vào mùa — promoted above OCOP teaser: season is this page's spine -->
+    <section v-if="seasonalHighlights.length" class="block band reveal market-shelf">
       <div class="seasonal-banner seasonal-banner-live">
         <span class="seasonal-banner-icon" aria-hidden="true">🔥</span>
         <div>
-          <strong>Tháng {{ currentMonth }} — đang vào mùa</strong>
-          <p>Những sản phẩm đang chính vụ, ngon nhất thời điểm này.</p>
+          <strong>Chợ phiên tháng này</strong>
+          <p>Trái chín đúng độ, người vườn vừa hái, chưa kịp nguội hơi đất.</p>
         </div>
         <span class="seasonal-banner-month" aria-hidden="true">Tháng {{ currentMonth }}</span>
       </div>
       <div class="scroll-row" role="region" aria-label="Đặc sản đang mùa" tabindex="0">
-        <EntityCard v-for="e in seasonalHighlights" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
+        <EntityCard v-for="e in seasonalHighlights" :key="e.id" :entity="e" :season-filter="String(currentMonth)" class="market-card" />
       </div>
     </section>
 
-    <!-- OCOP Spotlight -->
-    <section v-if="ocopHighlights.length" class="block reveal">
-      <div class="section-head">
-        <h2>⭐ Sản phẩm OCOP</h2>
-        <button type="button" class="see-all" @click="ocopOnly = true; scrollToGrid()">Xem tất cả →</button>
-      </div>
-      <p class="section-desc">Sản phẩm đạt chuẩn OCOP — Mỗi xã một sản phẩm, chất lượng được chứng nhận.</p>
-      <div class="scroll-row" role="region" aria-label="Sản phẩm OCOP nổi bật" tabindex="0">
-        <EntityCard v-for="e in ocopHighlights" :key="e.id" :entity="e" />
-      </div>
+    <!-- OCOP teaser — slim signpost outward to /ocop, not a competing deep-dive -->
+    <section v-if="ocopCount" class="block reveal ocop-teaser-strip">
+      <NuxtLink to="/ocop" class="ocop-teaser-link">
+        <span class="ocop-teaser-icon" aria-hidden="true">⭐</span>
+        <span class="ocop-teaser-copy">
+          Trong {{ allEntities.length }} đặc sản này, <strong>{{ ocopCount }} món</strong> đã có sao OCOP — xem sổ vàng
+        </span>
+        <span class="ocop-teaser-arrow" aria-hidden="true">→</span>
+      </NuxtLink>
     </section>
 
     <!-- Interstitial -->
@@ -65,16 +73,17 @@
       :links="[{ to: '/theo-mua', label: 'Xem theo mùa' }, { to: '/ocop', label: 'Sản phẩm OCOP' }]"
     />
 
-    <!-- Editorial -->
-    <section v-once class="page-article reveal">
-      <h2>Đặc sản vùng sông nước</h2>
+    <!-- Editorial — drop-cap (auto via .page-article) + pull-quote (concept §4) -->
+    <section v-once class="page-article editorial-body reveal">
+      <h2 class="sediment-head">Đặc sản vùng sông nước</h2>
       <p>Đồng bằng sông Cửu Long là vựa trái cây và nông sản lớn nhất cả nước. Riêng Vĩnh Long, Bến Tre và Trà Vinh đóng góp hàng chục loại đặc sản mang đậm bản sắc vùng miệt vườn: bưởi Năm Roi vỏ mỏng ruột ngọt, kẹo dừa Bến Tre dẻo thơm, nem chua Lai Vung chua cay đậm đà, hay bánh tráng Mỹ Lồng giòn rụm nướng than.</p>
-      <p>Mỗi sản phẩm gắn liền với một vùng đất, một mùa vụ và một câu chuyện sản xuất riêng. Nhiều sản phẩm đã được chứng nhận OCOP (Mỗi xã Một sản phẩm) — đạt tiêu chuẩn chất lượng quốc gia từ 3 đến 5 sao.</p>
+      <blockquote class="pull-quote">Mỗi sản phẩm gắn liền với một vùng đất, một mùa vụ và một câu chuyện sản xuất riêng.</blockquote>
+      <p>Nhiều sản phẩm đã được chứng nhận OCOP (Mỗi xã Một sản phẩm) — đạt tiêu chuẩn chất lượng quốc gia từ 3 đến 5 sao.</p>
 
-      <h2>Mua gì, tháng nào?</h2>
+      <h2 class="sediment-head">Mua gì, tháng nào?</h2>
       <p>Trái cây miền Tây có tính mùa vụ rõ rệt. <strong>Tháng 5–7</strong> là mùa sầu riêng, măng cụt, chôm chôm — thời điểm trái ngon nhất và giá tốt nhất. <strong>Tháng 8–10</strong> là mùa bưởi và cam, cũng là lúc mùa nước nổi mang về cá linh, bông điên điển. <strong>Tháng 12–2</strong> là mùa dưa hấu, dưa lê phục vụ Tết Nguyên đán. Dừa và các sản phẩm từ dừa (kẹo, dầu, nước cốt) có quanh năm.</p>
 
-      <h2>Sản phẩm OCOP</h2>
+      <h2 class="sediment-head">Sản phẩm OCOP</h2>
       <p>Chương trình OCOP đánh giá và xếp hạng sản phẩm địa phương theo 5 bậc sao. Sản phẩm 3 sao đạt tiêu chuẩn cơ bản, 4 sao có chất lượng cao với bao bì chuyên nghiệp, và 5 sao là cấp quốc gia — hiếm và rất uy tín. Khi mua sản phẩm OCOP, bạn biết chắc sản phẩm đã qua kiểm định chất lượng, có truy xuất nguồn gốc và hỗ trợ sinh kế cho nông dân bản địa.</p>
     </section>
 
@@ -95,7 +104,15 @@
             <option value="name">Tên A-Z</option>
           </select>
         </div>
-        <p class="control-label">Theo tháng</p>
+        <div class="control-label-row">
+          <p class="control-label">Theo tháng</p>
+          <button
+            v-if="seasonFilter !== String(currentMonth)"
+            type="button"
+            class="season-reset-chip"
+            @click="seasonFilter = String(currentMonth)"
+          >⟲ tháng này</button>
+        </div>
         <FilterChips
           :filters="seasonFilterOptions"
           :model-value="[seasonFilter]"
@@ -154,7 +171,7 @@
       <div class="cross-links">
         <NuxtLink to="/ocop" class="cross-card">
           <span class="cross-icon" aria-hidden="true">⭐</span>
-          <div><strong>OCOP</strong><p>Sản phẩm đạt chuẩn</p></div>
+          <div><strong>OCOP</strong><p>{{ ocopCount }} sản phẩm OCOP</p></div>
         </NuxtLink>
         <NuxtLink to="/theo-mua" class="cross-card">
           <span class="cross-icon" aria-hidden="true">📅</span>
@@ -229,11 +246,15 @@ const seasonalHighlights = computed(() => {
     .slice(0, 8)
 })
 
-const ocopHighlights = computed(() => {
-  return allEntities.value
-    .filter((e: Entity) => e.attributes?.ocop)
-    .slice(0, 8)
-})
+// Deterministic hash → hue for the market-pulse basket swatches (mirrors the
+// id-seeded placeholder-gradient pattern already used by EntityCard — same
+// entity always reads the same colour, no new data/schema needed).
+function hashHue(id: string | number): number {
+  const s = String(id)
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
+  return h % 360
+}
 
 function scrollToGrid() {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
@@ -475,5 +496,156 @@ useHead(() => ({
 @media (max-width: 600px) {
   .list-view :deep(.card) { flex-direction: column; }
   .list-view :deep(.cover) { width: 100%; min-height: 140px; aspect-ratio: 16/9; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   "Chợ phiên miệt vườn" — signature moment: month-alive hero + woven-basket
+   market texture. Scoped to this page only; kills the "twin collision" with
+   ocop.vue's calmer ledger register (concept 06-products.md §2/§10).
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Woven cần xé/thúng basket motif — culturally specific hexagonal reed-weave,
+   NOT generic wicker clipart. Inline SVG tile, ~4% opacity, amber/leaf tones. */
+.market-hero { position: relative; }
+.woven-texture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .05;
+  background-repeat: repeat;
+  background-size: 46px 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='40' viewBox='0 0 46 40'%3E%3Cg fill='none' stroke='%23C4872A' stroke-width='1.4'%3E%3Cpath d='M0 10 L11.5 3 L23 10 L23 24 L11.5 31 L0 24 Z'/%3E%3Cpath d='M23 10 L34.5 3 L46 10 L46 24 L34.5 31 L23 24 Z'/%3E%3Cpath d='M11.5 31 L23 38 L34.5 31'/%3E%3Cpath d='M11.5 -9 L23 -2 L34.5 -9'/%3E%3C/g%3E%3C/svg%3E");
+}
+.dark .woven-texture { opacity: .07; }
+
+/* Kicker / dek — editorial dateline voice, ties hero to the real calendar month */
+.catalog-hero-inner p.market-kicker {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--accent-dark, var(--amber-600));
+  margin: 0 0 var(--space-2);
+}
+.dark .catalog-hero-inner p.market-kicker { color: var(--amber-500); }
+.catalog-hero-inner p.market-dek {
+  font-family: var(--font-editorial);
+  font-size: clamp(1rem, .94rem + .3vw, 1.1rem);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  max-width: 56ch;
+  margin: var(--space-2) 0 0;
+}
+.catalog-hero-inner p.market-subtitle { color: var(--muted); margin-top: var(--space-1); }
+
+/* Market-pulse strip — 4 tiny woven-basket swatches previewing what's in season
+   below. One-shot gentle scale settle on load, then still (motion budget §4.1). */
+.market-pulse {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.market-basket {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-sm) var(--radius-sm) 40% 40%;
+  background: linear-gradient(160deg, hsl(var(--basket-hue) 62% 62%), hsl(var(--basket-hue) 55% 44%));
+  border: 1px solid rgba(0, 0, 0, .08);
+  animation: basket-settle .5s var(--ease-spring-gentle) both;
+}
+.dark .market-basket { border-color: rgba(255, 255, 255, .12); }
+@keyframes basket-settle {
+  0% { transform: scale(.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Stats row restyled onto the sediment-tick section-head visual language
+   (river→amber→clay tick) — echoes .sediment-head without misapplying that
+   class to non-<h2> markup. */
+.market-stats { position: relative; padding-left: var(--space-4); }
+.market-stats::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 1.6em;
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .market-stats::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+
+/* Seasonal rail restyled as a "chợ phiên" horizontal shelf — subtle warm
+   market-stall backdrop band, CSS gradient only, not an image. */
+.market-shelf {
+  background-image:
+    linear-gradient(180deg, rgba(var(--accent-rgb), .05) 0%, transparent 60%),
+    var(--season-hero-gradient);
+}
+
+/* Droplet-shadow hover ripple on seasonal-rail cards only (scoped class, not
+   global) — evokes sông nước without literal water GIFs. Colour-only under RM. */
+.market-card :deep(.card) { transition: box-shadow .4s var(--ease-out-expo); }
+.market-card:hover :deep(.card) {
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--river-rgb), .18), 0 14px 28px -16px rgba(var(--river-rgb), .3);
+}
+
+/* Month-filter quick-reset chip — turns the filter UI into a curiosity loop:
+   explore other months, always one tap back to "what's fresh now". */
+.control-label-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.control-label-row .control-label { margin: var(--space-4) 0 var(--space-2); }
+.season-reset-chip {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  color: var(--accent-dark, var(--amber-600));
+  background: rgba(var(--accent-rgb), .1);
+  border: 1px solid rgba(var(--accent-rgb), .4);
+  border-radius: var(--radius-full);
+  padding: var(--space-05) var(--space-3);
+  cursor: pointer;
+  transition: background .2s var(--ease-out), transform .2s var(--ease-spring);
+}
+.season-reset-chip:hover { background: rgba(var(--accent-rgb), .18); }
+.season-reset-chip:active { transform: scale(.94); }
+.dark .season-reset-chip { color: var(--amber-500); background: rgba(var(--accent-rgb), .14); border-color: rgba(var(--accent-rgb), .5); }
+
+/* OCOP teaser strip — slim signpost outward to /ocop (not a competing
+   deep-dive rail); information-scent card, contact-only site, no CTA verb. */
+.ocop-teaser-strip { padding-block: 0; }
+.ocop-teaser-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, rgba(var(--secondary-rgb), .06), transparent);
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color .25s var(--ease-out), box-shadow .25s var(--ease-out), transform .2s var(--ease-spring-gentle);
+}
+.ocop-teaser-link:hover {
+  border-color: rgba(var(--secondary-rgb), .5);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+.ocop-teaser-icon { font-size: 1.3rem; flex-shrink: 0; }
+.ocop-teaser-copy { flex: 1; font-size: var(--text-sm); color: var(--muted); }
+.ocop-teaser-copy strong { color: var(--ink); font-weight: var(--weight-semibold); }
+.ocop-teaser-arrow { color: var(--secondary-fg, var(--secondary)); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.dark .ocop-teaser-link { background: linear-gradient(90deg, rgba(var(--secondary-rgb), .1), transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .market-basket { animation: none; opacity: 1; transform: none; }
+  .season-reset-chip:active { transform: none; }
+  .ocop-teaser-link:hover { transform: none; }
+}
+
+@media (max-width: 640px) {
+  .market-pulse { margin-top: var(--space-3); }
+  .ocop-teaser-link { padding: var(--space-3) var(--space-4); }
 }
 </style>
