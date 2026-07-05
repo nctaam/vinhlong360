@@ -484,7 +484,10 @@ describe('UserCP regressions', () => {
     const admin = src('pages/admin/lich-trinh.vue')
     expect(constants).toContain("'lien-vung'")
     expect(card).toContain('itineraryAreas')
-    expect(card).toContain("'lien-vung': 'itinerary'")
+    // Covers now use real per-area Mekong photos (AREA_PHOTO) with a deterministic
+    // ROVING fallback for lien-vung / multi-region trips (was a flat 'lien-vung':'itinerary' map).
+    expect(card).toContain('AREA_PHOTO')
+    expect(card).toContain('ROVING')
     expect(page).toContain('itineraryMatchesArea')
     expect(page).toContain('areas.includes(key)')
     expect(admin).toContain('form.areas')

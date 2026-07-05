@@ -826,6 +826,15 @@ a.thread-author:hover { color: var(--primary-fg); }
 }
 @media (max-width: 640px) {
   .topbar-search { display: none; }
+  /* Header row is now just brand + hamburger + auth-area. Tighten chrome so all three
+     fit ≤360px without overflowing — base was 20px gap + 20px pad + full-size logo/button,
+     which measured 427px wide at 375px and got clipped by body overflow-x:hidden. */
+  .topbar-inner { gap: var(--space-2); padding-inline: var(--space-3); }
+  .brand .logo { font-size: 1.15rem; }
+  /* Out-specify the base .auth-area/.auth-btn rules in components.css (loaded later,
+     so an equal-specificity override here would lose on source order). */
+  .topbar .auth-area { gap: var(--space-2); }
+  .topbar .auth-btn { padding: var(--space-2) 12px; font-size: .82rem; }
 }
 @media (max-width: 520px) {
   .step { grid-template-columns: 1fr; gap: var(--space-1); }
