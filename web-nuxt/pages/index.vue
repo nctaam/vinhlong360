@@ -211,6 +211,13 @@
       </div>
     </section>
 
+    <!-- 3a. Story spread — full-bleed signature moment -->
+    <StorySpread
+      image="/img/spread/song-nuoc.webp"
+      srcset="/img/spread/song-nuoc-640.webp 640w, /img/spread/song-nuoc-1024.webp 1024w, /img/spread/song-nuoc.webp 1536w"
+      v-bind="SPREAD"
+    />
+
     <!-- 3b. Đang được quan tâm — trending entities -->
     <section v-if="trending.length" class="block reveal" aria-label="Đang được quan tâm">
       <div class="section-head">
@@ -362,6 +369,7 @@ import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { useJourneyActions } from '~/composables/useJourneyActions'
 import EntityFeature from '~/components/home/EntityFeature.vue'
+import StorySpread from '~/components/home/StorySpread.vue'
 
 useReveal()
 const { get: ss } = useSiteSettings()
@@ -385,6 +393,16 @@ const FEATURE_EXPERIENCE = {
   lede: 'Chèo xuồng qua rạch dừa, hái trái tại vườn, nghe đờn ca giữa cù lao — những ngày chậm rãi rất Nam Bộ.',
   ctaText: 'Khám phá trải nghiệm',
   ctaTo: '/du-lich',
+}
+
+// Full-bleed signature moment (StorySpread). Discover-only CTA — never an order/price
+// form, per project invariants.
+const SPREAD = {
+  kicker: 'Vĩnh Long',
+  title: 'Nơi vườn chạm sông',
+  subtitle: 'Ba vùng đất — Vĩnh Long, Bến Tre, Trà Vinh — một miền phù sa, trái ngọt và những phiên chợ nổi.',
+  ctaText: 'Khám phá vùng đất',
+  ctaTo: '/ban-do',
 }
 
 type HomeDecisionCard = {
