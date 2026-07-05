@@ -72,10 +72,11 @@ $SSH "$VPS" 'systemctl is-active vl-agent vl-nuxt >/dev/null && echo "services u
 # 1. Build frontend (local)
 if [ "$DO_FRONTEND" = 1 ] && [ "$DO_BUILD" = 1 ]; then
   echo "==> building web-nuxt (npm run build)"
-  # Prerender against the LIVE prod API (not the default localhost:8360, which is down at
-  # build time → would bake an empty skeleton and cause a persistent SSR↔client hydration
-  # mismatch). Baking real data = matching hydration + real SEO/first-paint. Overridable.
-  ( cd web-nuxt && API_BASE="${API_BASE:-https://vinhlong360.vn}" NODE_OPTIONS="--max-old-space-size=4096" npm run build )
+  # NOTE: do NOT set API_BASE to the public URL here. `apiBase` (nuxt.config) bakes BOTH the
+  # prerender fetch AND the runtime routeRule proxy targets — pointing it at the public URL
+  # makes the runtime nitro proxy /api/** → nginx → nitro (infinite loop → 500 outage).
+  # Keep the localhost:8360 default so the runtime proxy hits the real backend.
+  ( cd web-nuxt && NODE_OPTIONS="--max-old-space-size=4096" npm run build )
 fi
 
 # 2. Pack tarballs (local)
