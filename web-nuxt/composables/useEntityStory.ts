@@ -13,6 +13,16 @@ function firstSentence(s: string): string {
   return (m || t).trim()
 }
 
+// Many auto-imported summaries are literally "{name} — {address}". The name already
+// shows as the card <h3>, so drop a leading, full-name + separator prefix to avoid the echo.
+function stripLeadingName(teaser: string, name: string): string {
+  const nm = (name || '').trim()
+  if (!nm || teaser.length <= nm.length) return teaser
+  const esc = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const out = teaser.replace(new RegExp('^' + esc + '\\s*[—:·-]\\s*'), '').trim()
+  return out || teaser
+}
+
 /** One-line story hook. '' when nothing usable. Provenance-prefixed for product/craft_village. */
 export function entityStoryTeaser(entity: Record<string, any>): string {
   const a = entity?.attributes || {}
@@ -20,6 +30,7 @@ export function entityStoryTeaser(entity: Record<string, any>): string {
   if (!teaser) teaser = firstSentence(entity?.description || '')
   if (!teaser) teaser = (entity?.summary || '').toString().trim()
   if (!teaser) return ''
+  teaser = stripLeadingName(teaser, entity?.name || '')
   // provenance-first (place before price/anything): prefix maker/place if not already named
   if (PROVENANCE_TYPES.has(entity?.type)) {
     const place = (entity?.place_name || entity?.placeName || a.origin || a.maker || '').toString().trim()

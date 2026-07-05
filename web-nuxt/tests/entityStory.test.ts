@@ -14,6 +14,16 @@ describe('entityStoryTeaser', () => {
     expect(entityStoryTeaser({ type: 'attraction', summary: 'Chỉ có summary.' })).toBe('Chỉ có summary.')
     expect(entityStoryTeaser({ type: 'attraction' })).toBe('')
   })
+  it('strips a leading duplicate of the entity name (auto-imported "{name} — {addr}" summaries)', () => {
+    expect(entityStoryTeaser({ type: 'dish', name: 'Catimo Coffee', summary: 'Catimo Coffee — Góc Trần Đại Nghĩa, P. 4' }))
+      .toBe('Góc Trần Đại Nghĩa, P. 4')
+    // name that itself contains a hyphen must still strip cleanly at the real separator
+    expect(entityStoryTeaser({ type: 'dish', name: 'Mèo Ú Kitchen - Món Nhật', summary: 'Mèo Ú Kitchen - Món Nhật — Hẻm 1 Hoàng Thái' }))
+      .toBe('Hẻm 1 Hoàng Thái')
+    // no false strip when the teaser only starts with a similar word
+    expect(entityStoryTeaser({ type: 'dish', name: 'Phở', description: 'Phở bò tái nạm đậm đà.' }))
+      .toBe('Phở bò tái nạm đậm đà.')
+  })
   it('prefixes provenance (place) for product/craft_village, before any price', () => {
     expect(entityStoryTeaser({ type: 'product', attributes: { highlight: 'Ngọt thanh' }, place_name: 'Vườn bưởi Bình Minh' }))
       .toBe('Vườn bưởi Bình Minh — Ngọt thanh')
