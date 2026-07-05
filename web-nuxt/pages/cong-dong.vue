@@ -2,33 +2,33 @@
   <section class="page threads-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng' }]" />
 
-    <!-- Social proof hero -->
-    <section class="catalog-hero cat-community" aria-label="Cộng đồng vinhlong360">
-      <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">💬</span>
-        <div>
-          <h1>{{ pc('hero_title') }}</h1>
-          <p>Chia sẻ trải nghiệm, đánh giá đặc sản và kết nối với cộng đồng yêu miền Tây.</p>
-        </div>
-      </div>
-      <div v-if="communityStats" class="catalog-stats">
-        <div class="stat-item">
-          <CountUp :value="communityStats.posts" class="stat-num" />
-          <span class="stat-label">bài viết</span>
-        </div>
-        <div class="stat-item">
-          <CountUp :value="communityStats.reviews" class="stat-num" />
-          <span class="stat-label">đánh giá</span>
-        </div>
-        <div class="stat-item">
-          <CountUp :value="communityStats.members" class="stat-num" />
-          <span class="stat-label">thành viên</span>
-        </div>
-      </div>
+    <!-- Sổ tay hôm nay — masthead sống, không phải catalog-hero -->
+    <section class="almanac-masthead" aria-label="Cộng đồng vinhlong360">
+      <p class="almanac-eyebrow">
+        <span v-if="hasFreshPost" class="almanac-pulse" aria-hidden="true"></span>
+        CỘNG ĐỒNG · SỔ TAY MIỀN TÂY HÔM NAY · {{ todayLabel }}
+      </p>
+      <h1 class="almanac-title">{{ pc('hero_title', almanacHeadline) }}</h1>
+      <p v-if="communityStats" class="almanac-stats">
+        <CountUp :value="communityStats.posts" class="almanac-num" />&nbsp;CHUYỆN ĐÃ KỂ
+        <span class="almanac-dot" aria-hidden="true">·</span>
+        <CountUp :value="communityStats.reviews" class="almanac-num" />&nbsp;ĐÁNH GIÁ THẬT
+        <span class="almanac-dot" aria-hidden="true">·</span>
+        <CountUp :value="communityStats.members" class="almanac-num" />&nbsp;NGƯỜI MIỀN TÂY
+      </p>
+      <div class="sediment-divider" aria-hidden="true"></div>
     </section>
 
     <div class="threads-layout">
       <div class="threads-feed">
+
+        <!-- Vệt phù sa mới — bài đăng trong phiên này, im lặng cho tới khi có tín hiệu -->
+        <button
+          v-if="showNewPostHint"
+          type="button"
+          class="new-post-thread-hint"
+          @click="scrollToNewest"
+        >Vừa có chuyện mới — cuộn lên xem ↑</button>
 
         <!-- Report entity (if from ?report=id) -->
         <div v-if="reportEntityId" class="report-entity-card">
@@ -404,7 +404,8 @@
       </div>
 
       <aside class="threads-sidebar">
-        <div class="sidebar-card sidebar-about">
+        <div class="sidebar-card sidebar-about reveal">
+          <p class="sidebar-kicker">Đôi lời</p>
           <h2>Cộng đồng vinhlong360</h2>
           <p>Nơi chia sẻ trải nghiệm du lịch, đánh giá đặc sản và kết nối với cộng đồng yêu miền Tây.</p>
           <div class="sidebar-stats">
@@ -419,7 +420,20 @@
           </div>
         </div>
 
-        <div v-if="topMembers.length" class="sidebar-card">
+        <div v-if="recentMentions.length" class="sidebar-card reveal">
+          <p class="sidebar-kicker">Đang được nhắc tới</p>
+          <h2>Nhắc tới gần đây</h2>
+          <ul class="mention-list">
+            <li v-for="m in recentMentions" :key="m.entity_id">
+              <NuxtLink :to="entityPath(m.entity_id)" class="mention-link">
+                {{ m.entity_name }}<span class="mention-count">{{ m.count }} lượt kể</span>
+              </NuxtLink>
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="topMembers.length" class="sidebar-card reveal">
+          <p class="sidebar-kicker">Bảng xếp hạng</p>
           <h2>Thành viên tích cực</h2>
           <ol class="leaderboard-list">
             <li v-for="(m, i) in topMembers" :key="m.id">
@@ -434,7 +448,8 @@
           <NuxtLink to="/bang-xep-hang" class="sidebar-more">Xem bảng xếp hạng →</NuxtLink>
         </div>
 
-        <div v-if="isLoggedIn && suggestedUsers.length" class="sidebar-card">
+        <div v-if="isLoggedIn && suggestedUsers.length" class="sidebar-card reveal">
+          <p class="sidebar-kicker">Gợi ý kết bạn</p>
           <h2>Có thể bạn quan tâm</h2>
           <ul class="suggest-list">
             <li v-for="s in suggestedUsers" :key="s.id" class="suggest-row">
@@ -449,7 +464,8 @@
           </ul>
         </div>
 
-        <div v-if="trendingTags.length" class="sidebar-card">
+        <div v-if="trendingTags.length" class="sidebar-card reveal">
+          <p class="sidebar-kicker">Chủ đề đang bàn</p>
           <h2>Hashtag thịnh hành</h2>
           <div class="trending-tags">
             <NuxtLink
@@ -462,6 +478,7 @@
         </div>
 
         <div class="sidebar-card reveal">
+          <p class="sidebar-kicker">Nhập cuộc</p>
           <h2>Cách tham gia</h2>
           <ul class="sidebar-list">
             <li>
@@ -483,7 +500,8 @@
           </ul>
         </div>
 
-        <div class="sidebar-card sidebar-rules">
+        <div class="sidebar-card sidebar-rules reveal">
+          <p class="sidebar-kicker">Giữ nếp</p>
           <h2>Quy tắc cộng đồng</h2>
           <ol class="sidebar-rules-list">
             <li>Tôn trọng lẫn nhau</li>
@@ -789,6 +807,64 @@ const displayPosts = computed(() => {
   if (activeTab.value === 'bookmarks') return bookmarks.value
   if (!filterType.value) return posts.value
   return posts.value.filter(p => p.post_type === filterType.value)
+})
+
+// ── Sổ tay hôm nay — masthead sống động (thuần trình bày lại dữ liệu đã có, không API mới) ──
+const todayLabel = computed(() =>
+  new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' }),
+)
+
+// Bài mới nhất trong feed 'latest' — nguồn cho cả H1 động và tín hiệu "vừa có bài mới".
+const latestPost = computed(() => posts.value[0])
+
+const almanacHeadline = computed(() => {
+  const p = latestPost.value
+  if (p?.entity_name) return `Hôm nay, ai đó vừa kể chuyện về ${p.entity_name}.`
+  if (p?.display_name) return `Hôm nay, ${p.display_name} vừa kể một chuyện mới.`
+  return 'Chuyện kể mỗi ngày của người miền sông nước.'
+})
+
+// "Vừa có bài mới" — chỉ tính bài đăng trong 10 phút gần nhất, không phải bài cũ tải lại.
+const hasFreshPost = computed(() => {
+  const p = latestPost.value
+  if (!p?.created_at) return false
+  const ageMs = Date.now() - new Date(p.created_at).getTime()
+  return ageMs >= 0 && ageMs < 10 * 60 * 1000
+})
+
+// Vệt phù sa "bài mới": xuất hiện khi bài đầu feed đổi SAU lần tải đầu tiên của phiên
+// (không phải mọi lần feed rỗng→có, tránh hiện ngay khi mới vào trang).
+const sessionFirstPostId = ref<string | null>(null)
+const newestSeenPostId = ref<string | null>(null)
+const newPostHintDismissed = ref(false)
+watch(() => posts.value[0]?.id, (id) => {
+  if (!id) return
+  if (sessionFirstPostId.value === null) { sessionFirstPostId.value = id; newestSeenPostId.value = id; return }
+  if (id !== newestSeenPostId.value) { newestSeenPostId.value = id; newPostHintDismissed.value = false }
+})
+const showNewPostHint = computed(() =>
+  activeTab.value === 'latest' && !searchMode.value &&
+  !newPostHintDismissed.value &&
+  !!newestSeenPostId.value && newestSeenPostId.value !== sessionFirstPostId.value,
+)
+function scrollToNewest() {
+  newPostHintDismissed.value = true
+  if (typeof window === 'undefined') return
+  const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ top: 0, behavior: prefersReduced ? 'auto' : 'smooth' })
+}
+
+// "Nhắc tới gần đây" — địa danh được nhắc nhiều nhất trong feed đã tải (client-side tally,
+// không gọi API mới). Cầu nối UGC → catalog.
+const recentMentions = computed(() => {
+  const tally = new Map<string, { entity_id: string; entity_name: string; count: number }>()
+  for (const p of posts.value) {
+    if (!p.entity_id || !p.entity_name) continue
+    const existing = tally.get(p.entity_id)
+    if (existing) existing.count++
+    else tally.set(p.entity_id, { entity_id: p.entity_id, entity_name: p.entity_name, count: 1 })
+  }
+  return [...tally.values()].sort((a, b) => b.count - a.count).slice(0, 4)
 })
 
 const canLoadMore = computed(() => {
@@ -1421,6 +1497,120 @@ useHead({
 </script>
 
 <style scoped>
+/* ═══════════════════════════════════════════════════════════════════════
+   "Sổ tay hôm nay" — masthead (thay catalog-hero.cat-community)
+   Editorial dateline + H1 động + dòng số liệu serif "phát hành" + tick phù sa.
+   Không Ken Burns/parallax (không có ảnh hero) — chuyển động duy nhất là
+   pulse-dot "vừa có bài mới", một nhịp, không loop-mãi.
+   ═══════════════════════════════════════════════════════════════════════ */
+.almanac-masthead { padding-top: var(--space-2); padding-bottom: var(--space-5); }
+.almanac-eyebrow {
+  display: flex; align-items: center; gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  color: var(--muted);
+}
+/* Micro-signal "có bài mới" — dot tĩnh mặc định, chỉ nảy một nhịp ngắn khi bài
+   trong feed thực sự mới (<10 phút), không phải banner, không loop vô tận. */
+.almanac-pulse {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: var(--leaf-600);
+  animation: almanac-pulse-once 1.6s var(--ease-out-expo) 1;
+}
+@keyframes almanac-pulse-once {
+  0% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), .5); }
+  70% { box-shadow: 0 0 0 6px rgba(var(--secondary-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--secondary-rgb), 0); }
+}
+.dark .almanac-pulse { background: var(--secondary); }
+.almanac-title {
+  font-family: var(--font-editorial); font-weight: 600;
+  font-size: var(--text-3xl); line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight); text-wrap: balance;
+  margin: 0 0 var(--space-4); color: var(--ink);
+  max-width: 42ch;
+}
+/* Dòng "phát hành" — serif oldstyle numerals, hairline · phân cách, KHÔNG box/pill/card. */
+.almanac-stats {
+  margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: .1em .5em;
+  font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600;
+  letter-spacing: .03em; text-transform: uppercase; color: var(--muted);
+}
+.almanac-num {
+  font-family: var(--font-editorial); font-variant-numeric: oldstyle-nums tabular-nums;
+  font-size: var(--text-lg); font-weight: 600; letter-spacing: 0; text-transform: none;
+  color: var(--ink);
+}
+.almanac-dot { color: var(--clay-600); font-weight: 700; }
+.dark .almanac-dot { color: var(--clay-400); }
+/* Tick phù sa dưới masthead — ranh giới "biên tập" / "cộng đồng sống" bên dưới.
+   Reuse chính xác pattern .home .block + .block::before (3-hairline river→amber→clay). */
+.sediment-divider {
+  position: relative; margin-top: var(--space-5); height: 7px;
+  background:
+    linear-gradient(90deg, transparent, var(--river-600) 26%, var(--river-600) 74%, transparent) top/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--amber-600) 30%, var(--amber-600) 70%, transparent) center/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--clay-600) 26%, var(--clay-600) 74%, transparent) bottom/100% 1.5px no-repeat;
+  opacity: .5;
+}
+.dark .sediment-divider { opacity: .62; }
+@media (prefers-reduced-motion: reduce) {
+  .almanac-pulse { animation: none; box-shadow: none; }
+}
+@media (max-width: 640px) {
+  .almanac-title { font-size: var(--text-2xl); }
+  .almanac-stats { font-size: var(--text-xs); }
+}
+
+/* ── Vệt phù sa mới — hairline river→amber, click-to-scroll, session-only ── */
+.new-post-thread-hint {
+  display: block; width: 100%; margin: 0 0 var(--space-4); padding: var(--space-2) var(--space-3);
+  border: none; border-radius: var(--radius-md); cursor: pointer; text-align: center;
+  font-family: var(--font-sans); font-size: var(--text-xs); font-weight: 600;
+  letter-spacing: .02em; color: var(--muted);
+  background:
+    linear-gradient(90deg, transparent, var(--river-600) 15%, var(--amber-600) 85%, transparent) bottom/100% 1.5px no-repeat,
+    rgba(var(--accent-rgb), .05);
+  transition: color .25s var(--ease-out), background-color .25s var(--ease-out);
+  animation: hint-settle .4s var(--ease-out-expo) both;
+}
+.new-post-thread-hint:hover { color: var(--ink); background-color: rgba(var(--accent-rgb), .09); }
+.new-post-thread-hint:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+@keyframes hint-settle { from { opacity: 0; transform: translateY(-4px); } }
+.dark .new-post-thread-hint { background-color: rgba(var(--accent-rgb), .08); }
+.dark .new-post-thread-hint:hover { background-color: rgba(var(--accent-rgb), .13); }
+@media (prefers-reduced-motion: reduce) {
+  .new-post-thread-hint { animation: none; }
+}
+
+/* ── Section rhythm — khoảng thở giữa compose/search/tabs và feed bên dưới ── */
+.threads-filter-bar { margin-bottom: var(--space-2); }
+.mobile-discovery,
+.type-filter-row { margin-top: var(--space-2); }
+.threads-compose,
+.threads-compose-guest { margin-bottom: var(--space-2); }
+
+/* ── Sidebar kicker — serif-italic, đọc như "được biên tập" chứ không tự sinh ──
+   (selector .sidebar-card p.sidebar-kicker: thắng specificity so với .sidebar-card p) */
+.sidebar-card p.sidebar-kicker {
+  margin: 0 0 var(--space-1); font-family: var(--font-editorial); font-style: italic;
+  font-weight: 600; font-size: var(--text-2xs); letter-spacing: var(--tracking-caps);
+  text-transform: uppercase; color: var(--muted);
+}
+
+/* ── Nhắc tới gần đây — cầu nối UGC → catalog, tally client-side từ posts đã tải ── */
+.mention-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.mention-link {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2);
+  padding: var(--space-1) var(--space-2); border-radius: var(--radius-md);
+  text-decoration: none; color: var(--ink); font-size: var(--text-sm); font-weight: 500;
+  transition: background .2s var(--ease-out);
+}
+.mention-link:hover { background: var(--bg-alt); }
+.mention-count { flex-shrink: 0; font-size: var(--text-2xs); color: var(--muted); white-space: nowrap; }
+.dark .mention-link:hover { background: rgba(255,255,255,.04); }
+
 /* @-mention dropdown: styles dùng chung đã chuyển sang assets/css/components.css */
 .community-search { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); padding: .35rem .5rem .35rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-full); }
 .community-search:focus-within { border-color: var(--primary); }
