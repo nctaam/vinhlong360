@@ -11,6 +11,7 @@
           <h1>{{ seasonalTagline }}</h1>
           <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
           <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')" />
+          <NuxtLink to="/ban-do?near=1" class="hero-nearby"><span aria-hidden="true">📍</span> Tìm quanh tôi</NuxtLink>
         </div>
         <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
           <div class="hf-card">
@@ -328,11 +329,12 @@
 
     <!-- 6. Dành cho bạn — one merged, image-tolerant personalization strip (client-only) -->
     <ClientOnly>
-      <section v-if="forYou.length" class="block block-compact reveal" aria-label="Dành cho bạn">
+      <section v-if="forYou.length" class="block block-compact reveal" :aria-label="hasPersonalSignal ? 'Dành cho bạn' : 'Gợi ý khám phá'">
         <div class="section-head section-head-tight">
           <div class="sh-text">
-            <h2 class="h2-tight">Dành cho <em class="ac-clay">bạn</em></h2>
-            <p class="sh-sub">Nội dung bạn vừa xem, đã lưu và gợi ý theo bạn.</p>
+            <h2 v-if="hasPersonalSignal" class="h2-tight">Dành cho <em class="ac-clay">bạn</em></h2>
+            <h2 v-else class="h2-tight">Gợi ý <em class="ac-clay">khám phá</em></h2>
+            <p class="sh-sub">{{ hasPersonalSignal ? 'Nội dung bạn vừa xem, đã lưu và gợi ý theo bạn.' : 'Điểm đến &amp; đặc sản đang được nhiều người quan tâm.' }}</p>
           </div>
         </div>
         <div class="scroll-row for-you-row" role="region" aria-label="Dành cho bạn" tabindex="0">
@@ -420,6 +422,9 @@ const { favorites } = useFavorites()
 const { recentItems } = useRecentlyViewed()
 const { enabled: ff } = useFeature()
 const contextualRec = useContextualRecommendations({ context: 'home', limit: 8 })
+// Only call the strip "Dành cho bạn" (For You) when there's a real personal signal; otherwise
+// it's a popular fallback → relabel to "Gợi ý khám phá" so the heading doesn't over-promise.
+const hasPersonalSignal = computed(() => recentItems.value.length > 0 || favorites.value.length > 0)
 const forYou = computed(() => {
   const seen = new Set<string>()
   const out: { id: string; name: string; type: string; image: string; to: string }[] = []
@@ -863,7 +868,7 @@ useHead({
 .hf-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
 .hf-action {
   display: inline-flex; align-items: center; justify-content: center;
-  min-height: 38px; padding: var(--space-2) var(--space-3);
+  min-height: 44px; padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-full);
   background: rgba(255,255,255,.14); border: .5px solid rgba(255,255,255,.24);
   color: var(--text-on-dark, #fff); text-decoration: none;
@@ -991,6 +996,15 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   border-color: transparent; background: var(--card);
 }
 .home .hero .hero-ac .ac-dropdown { text-align: left; }
+/* Single "near me" quick-entry under search (restores the intent lost when hero pills were cut). */
+.home .hero-nearby {
+  display: inline-flex; align-items: center; gap: .35em;
+  margin-top: var(--space-3); min-height: 44px;
+  color: rgba(255,255,255,.92); font-size: var(--text-sm); font-weight: var(--weight-bold);
+  text-decoration: none; text-shadow: 0 1px 6px rgba(0,0,0,.35);
+}
+.home .hero-nearby:hover { text-decoration: underline; text-underline-offset: 3px; }
+.home .hero-nearby:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 4px; }
 
 /* ═══════════════════════════════════════════════════
    HERO STATS — inline strip at bottom of hero
@@ -1080,7 +1094,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dx-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .dx-eyebrow {
   font-size: .68rem; font-weight: var(--weight-bold);
-  text-transform: uppercase; letter-spacing: .09em; color: var(--tone, var(--accent-text));
+  /* A11Y: meta labels at ~11px need ≥4.5:1 — the light per-card tone failed (3.89), so use the
+     neutral muted ink (5.38) here; the tone stays on the numeral + arrow. */
+  text-transform: uppercase; letter-spacing: .09em; color: var(--muted);
 }
 .dx-title { font-size: var(--text-base); font-weight: var(--weight-bold); line-height: var(--leading-snug); }
 .dx-text {

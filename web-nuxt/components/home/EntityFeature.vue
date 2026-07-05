@@ -129,8 +129,9 @@ if (props.priority) {
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: .14em;
-  color: var(--accent-text);
+  color: #8a5b10; /* A11Y: deeper ochre-amber ≥4.5:1 on the warm bg (was --accent-text 4.48) */
 }
+.dark .ef-kicker { color: var(--amber-500); } /* lighter amber for contrast on dark */
 .ef-kicker-rule {
   width: 1.7em;
   height: 2px;

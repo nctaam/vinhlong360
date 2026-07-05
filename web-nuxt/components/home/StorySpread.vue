@@ -1,5 +1,5 @@
 <template>
-  <section class="spread" ref="sectionEl" aria-labelledby="spread-title">
+  <section class="spread" aria-labelledby="spread-title">
     <div class="spread-img" ref="imgEl">
       <img
         :src="image"
@@ -11,14 +11,6 @@
       />
     </div>
     <div class="spread-scrim" aria-hidden="true" />
-    <!-- Chữ ký: "Ba dòng sông hội tụ" — sông Tiền/Hậu/Cổ Chiên vẽ dần khi cuộn tới,
-         gặp nhau sau tiêu đề. Một khoảnh khắc táo bạo duy nhất; nơi khác giữ tĩnh. -->
-    <svg class="spread-rivers" viewBox="0 0 1200 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <path pathLength="1" d="M-60,150 C 250,115 450,250 600,250 C 780,250 980,360 1260,330" />
-      <path pathLength="1" d="M-60,250 C 230,250 440,250 600,250 C 780,250 980,250 1260,250" />
-      <path pathLength="1" d="M-60,350 C 250,385 450,250 600,250 C 780,250 980,140 1260,170" />
-      <circle class="river-node" cx="600" cy="250" r="3.2" />
-    </svg>
     <div class="spread-copy">
       <span class="spread-kicker">{{ kicker }}</span>
       <h2 id="spread-title" class="spread-title">
@@ -58,25 +50,6 @@ const titleParts = computed(() => {
 
 const imgEl = ref<HTMLElement | null>(null)
 useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.12 })
-
-// River-line signature draws in once when the spread scrolls into view. No-JS/SSR shows the
-// lines already drawn (CSS default); prefers-reduced-motion freezes them (no draw). Observer
-// disconnects after firing once.
-const sectionEl = ref<HTMLElement | null>(null)
-let riverObserver: IntersectionObserver | null = null
-onMounted(() => {
-  const el = sectionEl.value
-  if (!el) return
-  if (!('IntersectionObserver' in window)) { el.classList.add('rivers-drawn'); return }
-  riverObserver = new IntersectionObserver((entries) => {
-    if (entries.some(e => e.isIntersecting)) {
-      el.classList.add('rivers-drawn')
-      riverObserver?.disconnect()
-    }
-  }, { threshold: 0.25 })
-  riverObserver.observe(el)
-})
-onUnmounted(() => riverObserver?.disconnect())
 </script>
 
 <style scoped>
@@ -173,43 +146,11 @@ onUnmounted(() => riverObserver?.disconnect())
   margin-top: var(--space-2);
 }
 
-/* ── River-line signature — the one bold moment (draws on scroll) ── */
-.spread-rivers {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, .22)); /* soft glow so the lines read on bright water */
-}
-.spread-rivers path {
-  fill: none;
-  stroke: rgba(255, 255, 255, .52);
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 0; /* SSR / no-JS: already drawn */
-}
-.spread-rivers .river-node { fill: rgba(255, 255, 255, .72); }
-/* JS present: hide the lines until the spread scrolls in, then stroke them on (staggered). */
-html.js .spread:not(.rivers-drawn) .spread-rivers path { stroke-dashoffset: 1; }
-html.js .spread:not(.rivers-drawn) .spread-rivers .river-node { opacity: 0; }
-.spread.rivers-drawn .spread-rivers path {
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset 2.4s var(--ease-out, cubic-bezier(.16, 1, .3, 1));
-}
-.spread.rivers-drawn .spread-rivers path:nth-child(2) { transition-delay: .18s; }
-.spread.rivers-drawn .spread-rivers path:nth-child(3) { transition-delay: .36s; }
-.spread.rivers-drawn .spread-rivers .river-node { opacity: 1; transition: opacity .7s ease .95s; }
-
-/* ── Reduced motion: freeze Ken Burns, parallax, AND the river draw ── */
+/* ── Reduced motion: freeze both Ken Burns and parallax ── */
 @media (prefers-reduced-motion: reduce) {
   .spread-img {
     animation: none;
     transform: none;
   }
-  html.js .spread .spread-rivers path { stroke-dashoffset: 0 !important; transition: none !important; }
-  html.js .spread .spread-rivers .river-node { opacity: 1 !important; transition: none !important; }
 }
 </style>
