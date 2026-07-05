@@ -158,37 +158,19 @@ export function useJourneyActions() {
   }): JourneyAction[] {
     const savedCount = positiveNumber(input.savedCount)
     const recentCount = positiveNumber(input.recentCount)
-    const communityPostCount = positiveNumber(input.communityPostCount)
     const actions: JourneyAction[] = []
 
+    // Personal-only: the editorial "what's on now" lives in the decision index (index.vue).
+    // This rail is strictly the returning-user's own resume points — no event/heroFeature/
+    // map/community echoes (those duplicated the index). Empty for anon/first-timers → hidden.
     if (input.isLoggedIn && savedCount > 0) {
       actions.push({
         id: 'home-continue-saved',
         icon: '💾',
         label: 'Tiếp tục từ mục đã lưu',
-        text: `${savedCount} mục đã lưu có thể gom thành lịch trình hoặc xem trên bản đồ.`,
+        text: `${savedCount} mục đã lưu có thể gom thành lịch trình.`,
         to: '/tao-lich-trinh?source=saved',
         tone: 'planner',
-      })
-    } else if (input.heroFeaturePlannerPath) {
-      actions.push({
-        id: 'home-start-planner',
-        icon: '🧭',
-        label: 'Biến gợi ý thành lịch trình',
-        text: input.heroFeatureName ? `Thêm ${input.heroFeatureName} vào kế hoạch hôm nay.` : 'Chọn điểm nổi bật và lập lịch trình ngay.',
-        to: input.heroFeaturePlannerPath,
-        tone: 'planner',
-      })
-    }
-
-    if (input.upcomingEventPath) {
-      actions.push({
-        id: 'home-event',
-        icon: '🎭',
-        label: 'Canh lịch gần nhất',
-        text: input.upcomingEventName || 'Xem sự kiện và lễ hội sắp diễn ra.',
-        to: input.upcomingEventPath,
-        tone: 'primary',
       })
     }
 
@@ -197,33 +179,13 @@ export function useJourneyActions() {
         id: 'home-recent',
         icon: '🕘',
         label: 'Nối tiếp điểm vừa xem',
-        text: `${recentCount} nội dung gần đây có thể dùng để so sánh trước khi lưu.`,
-        to: '/dia-diem',
+        text: `${recentCount} nội dung gần đây, mở lại để so sánh trước khi lưu.`,
+        to: '/da-luu?tab=recent',
         tone: 'neutral',
       })
     }
 
-    actions.push({
-      id: 'home-map',
-      icon: '🗺️',
-      label: 'Quyết định bằng bản đồ',
-      text: `Lọc điểm đến theo vùng, loại hình và mùa tháng ${input.currentMonth}.`,
-      to: '/ban-do',
-      tone: 'map',
-    })
-
-    if (communityPostCount > 0) {
-      actions.push({
-        id: 'home-community',
-        icon: '💬',
-        label: 'Xem cộng đồng đang nói gì',
-        text: `${communityPostCount} bài mới giúp kiểm chứng trải nghiệm thực tế.`,
-        to: '/cong-dong',
-        tone: 'community',
-      })
-    }
-
-    return actions.slice(0, 3)
+    return actions.slice(0, 2)
   }
 
   function userCpJourneyActions(input: {
