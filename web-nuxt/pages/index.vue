@@ -396,7 +396,7 @@ const FEATURE_OCOP = {
 const SPREAD = {
   kicker: 'Vĩnh Long',
   title: 'Nơi vườn chạm sông',
-  subtitle: 'Ba vùng đất — Vĩnh Long, Bến Tre, Trà Vinh — một miền phù sa, trái ngọt và những phiên chợ nổi.',
+  subtitle: 'Vĩnh Long mới — một miền phù sa Cửu Long, trái ngọt bốn mùa và những phiên chợ nổi.',
   ctaText: 'Khám phá vùng đất',
   ctaTo: '/ban-do',
 }
