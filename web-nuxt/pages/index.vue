@@ -158,6 +158,8 @@
       <EntityFeature
         image="/img/features/trai-nghiem.webp"
         v-bind="FEATURE_EXPERIENCE"
+        accent="mở cửa"
+        accent-tone="leaf"
         :thumbs="experienceThumbs"
         side="left"
         :priority="true"
@@ -218,6 +220,7 @@
       image="/img/spread/song-nuoc.webp"
       srcset="/img/spread/song-nuoc-640.webp 640w, /img/spread/song-nuoc-1024.webp 1024w, /img/spread/song-nuoc.webp 1536w"
       v-bind="SPREAD"
+      title-accent="chạm sông"
     />
 
     <!-- 3a2. Feature — photo-led editorial block (Đặc sản OCOP), mirrored -->
@@ -225,6 +228,8 @@
       <EntityFeature
         image="/img/features/ocop.webp"
         v-bind="FEATURE_OCOP"
+        accent="làm quà"
+        accent-tone="amber"
         :thumbs="ocopThumbs"
         side="right"
       />

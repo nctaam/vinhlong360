@@ -4,8 +4,11 @@
       <div class="ef-img" ref="imgEl" :style="{ backgroundImage: `url(${image})` }" />
     </NuxtLink>
     <div class="ef-body">
-      <span class="ef-kicker">{{ kicker }}</span>
-      <h2 class="ef-title">{{ title }}</h2>
+      <span class="ef-kicker"><i class="ef-kicker-rule" aria-hidden="true" />{{ kicker }}</span>
+      <h2 class="ef-title">
+        <template v-if="titleParts">{{ titleParts.before }}<em :class="`ef-ac-${accentTone}`">{{ titleParts.accent }}</em>{{ titleParts.after }}</template>
+        <template v-else>{{ title }}</template>
+      </h2>
       <p class="ef-lede">{{ lede }}</p>
       <div v-if="thumbs?.length" class="ef-thumbs">
         <EntityCard v-for="t in thumbs.slice(0, 3)" :key="t.id" :entity="t" />
@@ -28,9 +31,23 @@ const props = withDefaults(defineProps<{
   thumbs?: Entity[]
   side?: 'left' | 'right'
   priority?: boolean
+  /** Optional word/phrase within `title` to set in italic Fraunces, tinted by one province. */
+  accent?: string
+  accentTone?: 'clay' | 'leaf' | 'river' | 'amber'
 }>(), {
   side: 'left',
   priority: false,
+  accent: '',
+  accentTone: 'clay',
+})
+
+// Split the masthead into before / accent / after so the "voice word" can be italicised
+// without HTML in the prop. Falls back to the plain title when accent is absent/not found.
+const titleParts = computed(() => {
+  if (!props.accent) return null
+  const i = props.title.indexOf(props.accent)
+  if (i < 0) return null
+  return { before: props.title.slice(0, i), accent: props.accent, after: props.title.slice(i + props.accent.length) }
 })
 
 const imgEl = ref<HTMLElement | null>(null)
@@ -104,12 +121,23 @@ if (props.priority) {
   min-width: 0;
 }
 .ef-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: .6em;
   font-family: var(--font-sans);
   font-size: var(--text-xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: .14em;
   color: var(--accent-text);
+}
+.ef-kicker-rule {
+  width: 1.7em;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: .55;
+  flex: 0 0 auto;
 }
 .ef-title {
   margin: 0;
@@ -121,6 +149,20 @@ if (props.priority) {
   color: var(--ink);
   text-wrap: balance;
 }
+/* Italic "voice word" — real Fraunces italic, tinted by one of the three provinces. */
+.ef-title em {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 600;
+}
+.ef-ac-clay  { color: var(--clay-600); }
+.ef-ac-leaf  { color: var(--leaf-700); }
+.ef-ac-river { color: var(--river-600); }
+.ef-ac-amber { color: var(--amber-700); }
+.dark .ef-ac-clay  { color: var(--clay-400); }
+.dark .ef-ac-leaf  { color: #64BE93; }
+.dark .ef-ac-river { color: #74ABB5; }
+.dark .ef-ac-amber { color: var(--amber-500); }
 .ef-lede {
   margin: 0;
   max-width: var(--measure-read, 68ch);

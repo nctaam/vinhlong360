@@ -21,7 +21,10 @@
     </svg>
     <div class="spread-copy">
       <span class="spread-kicker">{{ kicker }}</span>
-      <h2 id="spread-title" class="spread-title">{{ title }}</h2>
+      <h2 id="spread-title" class="spread-title">
+        <template v-if="titleParts">{{ titleParts.before }}<em class="spread-accent">{{ titleParts.accent }}</em>{{ titleParts.after }}</template>
+        <template v-else>{{ title }}</template>
+      </h2>
       <p class="spread-sub">{{ subtitle }}</p>
       <NuxtLink v-if="ctaTo" :to="ctaTo" class="btn btn-primary spread-cta">{{ ctaText }} →</NuxtLink>
     </div>
@@ -29,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   image: string
   srcset?: string
   kicker: string
@@ -37,10 +40,20 @@ withDefaults(defineProps<{
   subtitle: string
   ctaText?: string
   ctaTo?: string
+  /** Optional word/phrase in `title` to italicise (warm tint, reads on the dark scrim). */
+  titleAccent?: string
 }>(), {
   srcset: '',
   ctaText: '',
   ctaTo: '',
+  titleAccent: '',
+})
+
+const titleParts = computed(() => {
+  if (!props.titleAccent) return null
+  const i = props.title.indexOf(props.titleAccent)
+  if (i < 0) return null
+  return { before: props.title.slice(0, i), accent: props.titleAccent, after: props.title.slice(i + props.titleAccent.length) }
 })
 
 const imgEl = ref<HTMLElement | null>(null)
@@ -142,6 +155,12 @@ onUnmounted(() => riverObserver?.disconnect())
   text-wrap: balance;
   text-shadow: 0 2px 24px rgba(0, 0, 0, .35);
 }
+.spread-title em {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 600;
+}
+.spread-accent { color: #F1CE93; } /* warm light amber — reads as the voice word on the dark scrim */
 .spread-sub {
   margin: 0;
   font-family: var(--font-editorial);
@@ -162,16 +181,17 @@ onUnmounted(() => riverObserver?.disconnect())
   width: 100%;
   height: 100%;
   pointer-events: none;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, .22)); /* soft glow so the lines read on bright water */
 }
 .spread-rivers path {
   fill: none;
-  stroke: rgba(255, 255, 255, .42);
-  stroke-width: 1.4;
+  stroke: rgba(255, 255, 255, .52);
+  stroke-width: 1.7;
   stroke-linecap: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 0; /* SSR / no-JS: already drawn */
 }
-.spread-rivers .river-node { fill: rgba(255, 255, 255, .6); }
+.spread-rivers .river-node { fill: rgba(255, 255, 255, .72); }
 /* JS present: hide the lines until the spread scrolls in, then stroke them on (staggered). */
 html.js .spread:not(.rivers-drawn) .spread-rivers path { stroke-dashoffset: 1; }
 html.js .spread:not(.rivers-drawn) .spread-rivers .river-node { opacity: 0; }
