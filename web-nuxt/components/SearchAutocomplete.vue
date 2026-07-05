@@ -30,7 +30,7 @@
       <!-- Initial-state hint: categories when no query (and no recents) -->
       <div v-if="!query.trim() && !recentSearches.length" class="ac-hint-section">
         <div class="ac-hint-head">
-          <span class="ac-hint-icon" aria-hidden="true">🧭</span>
+          <span class="ac-hint-tick" aria-hidden="true"></span>
           <span class="ac-hint-title">Tìm theo danh mục</span>
         </div>
         <div class="ac-chips">
@@ -339,11 +339,17 @@ if (import.meta.client) {
 <style scoped>
 /* ── Keyboard navigation indicator (iOS-style focus accent) ────────────────
    Stronger visual distinction for the highlighted item than bg-alt alone, and
-   guaranteed 44px touch targets on mobile. */
+   guaranteed 44px touch targets on mobile. Tri-province hairline (river→amber→
+   clay) instead of a flat solid line — same accent language as sediment-tick
+   section-heads elsewhere, at zero added motion/latency. */
 .ac-dropdown :deep(.ac-item) { min-height: 44px; }
 .ac-dropdown :deep(.ac-item.highlighted) {
-  border-left: 3px solid var(--primary);
+  border-left: 3px solid;
+  border-image: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%) 1;
   padding-left: calc(var(--space-4) - 3px);
+}
+.dark .ac-dropdown :deep(.ac-item.highlighted) {
+  border-image: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%) 1;
 }
 .ac-recent-row {
   display: flex;
@@ -374,7 +380,18 @@ if (import.meta.client) {
 /* ── Initial-state category hint ───────────────────────────────────────────*/
 .ac-hint-section { padding: var(--space-3) var(--space-4) var(--space-4); }
 .ac-hint-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
-.ac-hint-icon { font-size: 1.1rem; }
+/* Tri-province tick (river→amber→clay) — same sediment-head idiom as section
+   headings elsewhere, scaled to a small-caps label instead of an <h2>. */
+.ac-hint-tick {
+  flex-shrink: 0;
+  width: 3px;
+  height: .85em;
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .ac-hint-tick {
+  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
 .ac-hint-title {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
   color: var(--muted); text-transform: uppercase; letter-spacing: .04em;

@@ -42,6 +42,8 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 <template>
   <aside class="cw" aria-label="Liên hệ">
     <div class="cw-inner">
+      <span class="cw-eyebrow">Liên hệ</span>
+
       <!-- Rating -->
       <div v-if="rating" class="cw-rating">
         <span class="cw-stars" aria-hidden="true">{{ stars }}</span>
@@ -63,18 +65,18 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
         <span class="cw-check" aria-hidden="true">✓</span>
       </button>
 
-      <hr v-if="hasContact" class="cw-divider" />
+      <div v-if="hasContact" class="cw-divider" role="presentation"></div>
 
       <!-- CTA buttons -->
       <div class="cw-ctas">
         <a v-if="zalo" :href="`https://zalo.me/${zalo}`" target="_blank" rel="noopener" class="cw-btn cw-btn-primary" :aria-label="`Nhắn Zalo cho ${entity.name}`">
-          💬 Nhắn Zalo
+          <span class="cw-icon" aria-hidden="true">💬</span> Nhắn Zalo
         </a>
         <a v-if="phone" :href="`tel:${phone}`" class="cw-btn cw-btn-secondary" :aria-label="`Gọi điện cho ${entity.name}`">
-          📞 Gọi điện
+          <span class="cw-icon" aria-hidden="true">📞</span> Gọi điện
         </a>
         <NuxtLink v-if="!hasContact" :to="mapUrl" class="cw-btn cw-btn-secondary">
-          📍 Xem bản đồ
+          <span class="cw-icon" aria-hidden="true">📍</span> Xem bản đồ
         </NuxtLink>
       </div>
 
@@ -106,15 +108,25 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   gap: var(--space-3);
 }
 
-/* Rating */
+/* Eyebrow — quiet serif label, "sổ tay liên hệ" identity for the widget */
+.cw-eyebrow {
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  font-size: var(--text-xs);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Rating — a quiet boast, tabular-nums, not a KPI stat */
 .cw-rating {
   display: flex;
   align-items: baseline;
   gap: var(--space-1h);
 }
 .cw-stars { color: var(--accent); font-size: var(--text-lg); letter-spacing: -1px; }
-.cw-score { font-size: var(--text-lg); font-weight: var(--weight-bold, 700); color: var(--ink); }
-.cw-count { font-size: var(--text-sm); color: var(--muted); }
+.cw-score { font-size: var(--text-lg); font-weight: var(--weight-bold, 700); color: var(--ink); font-variant-numeric: tabular-nums; }
+.cw-count { font-size: var(--text-sm); color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* Info rows */
 .cw-row {
@@ -124,7 +136,14 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   font-size: var(--text-sm);
   color: var(--ink);
 }
-.cw-icon { flex-shrink: 0; font-size: 1em; }
+.cw-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .9em;
+  line-height: 1;
+}
 .cw-text { line-height: 1.5; flex: 1; text-align: left; }
 
 /* Copyable rows */
@@ -144,7 +163,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 .cw-check {
   flex-shrink: 0;
   font-size: var(--text-xs);
-  color: var(--success, #16a34a);
+  color: var(--success);
   opacity: 0;
   transform: scale(.5);
   transition: opacity .2s, transform .25s var(--ease-spring-gentle);
@@ -152,11 +171,16 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 .cw-copyable.copied .cw-check { opacity: 1; transform: scale(1); }
 .cw-copyable.copied .cw-icon { opacity: .4; }
 
-/* Divider */
+/* Divider — tri-province hairline (river→amber→clay), the widget's sediment-thread beat */
 .cw-divider {
-  border: none;
-  border-top: var(--detail-divider);
+  height: 1px;
   margin: var(--space-1) 0;
+  background: linear-gradient(90deg, var(--river-600), var(--amber-600) 52%, var(--clay-600));
+  opacity: .5;
+}
+.dark .cw-divider {
+  background: linear-gradient(90deg, #74ABB5, var(--amber-500) 52%, var(--clay-400));
+  opacity: .6;
 }
 
 /* CTA buttons */
@@ -177,8 +201,8 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   font-weight: var(--weight-semibold, 600);
   text-decoration: none;
   cursor: pointer;
-  transition: background 200ms, transform 200ms, box-shadow 200ms;
-  border: none;
+  transition: background 200ms, transform 200ms, box-shadow 200ms, border-color 200ms;
+  border: 1px solid transparent;
   min-height: 44px;
 }
 .cw-btn:focus-visible {
@@ -196,13 +220,15 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
   box-shadow: var(--shadow-sm);
 }
 
+/* Secondary — hairline + ghost fill, not a solid box (anti-slop: hairline over heavy border+shadow) */
 .cw-btn-secondary {
-  background: rgba(var(--primary-rgb), 0.08);
+  background: rgba(var(--primary-rgb), 0.06);
   color: var(--primary);
-  border: 1px solid rgba(var(--primary-rgb), 0.2);
+  border-color: rgba(var(--primary-rgb), 0.22);
 }
 .cw-btn-secondary:hover {
-  background: rgba(var(--primary-rgb), 0.14);
+  background: rgba(var(--primary-rgb), 0.11);
+  border-color: rgba(var(--primary-rgb), 0.32);
 }
 
 /* Website link */
@@ -234,6 +260,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
     border-bottom: none;
   }
 
+  .cw-eyebrow,
   .cw-rating,
   .cw-row,
   .cw-divider,
