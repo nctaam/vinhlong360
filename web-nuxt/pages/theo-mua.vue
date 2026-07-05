@@ -2,8 +2,9 @@
   <div class="page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Theo mùa' }]" />
 
-    <!-- Hero -->
-    <section class="catalog-hero cat-season">
+    <!-- Hero — retints per quarter (class q-* on the section itself) so
+         scrubbing the ring changes the whole hero's color temperature. -->
+    <section class="catalog-hero cat-season" :class="'q-' + seasonQuarter.key">
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" :key="seasonEmoji" aria-hidden="true">{{ seasonEmoji }}</span>
         <div>
@@ -12,17 +13,30 @@
         </div>
       </div>
 
-      <!-- Signature: season moment indicator -->
+      <!-- Signature: season-ring, now the actual navigational device — a
+           12-notch annular calendar. Clicking a notch IS the month picker;
+           .month-grid below stays as a compact secondary/mobile fallback. -->
       <div class="season-moment">
-        <div class="season-ring" :class="'q-' + seasonQuarter.key" aria-hidden="true">
-          <span class="season-ring-emoji">{{ seasonEmoji }}</span>
+        <div class="season-ring-wrap">
+          <div class="season-ring" :class="'q-' + seasonQuarter.key" role="group" aria-label="Chọn tháng trên vòng mùa">
+            <button
+              v-for="m in 12" :key="m" type="button"
+              class="ring-notch"
+              :class="{ 'is-current': m === month }"
+              :style="{ '--notch-angle': (m - 1) * 30 + 'deg' }"
+              :aria-pressed="m === month"
+              :aria-label="'Tháng ' + m"
+              @click="month = m"
+            ><span class="ring-notch-tick" aria-hidden="true" /></button>
+            <span class="season-ring-emoji" aria-hidden="true">{{ seasonEmoji }}</span>
+          </div>
         </div>
         <div class="season-moment-text">
-          <strong>Tháng {{ month }} — {{ seasonQuarter.tag }}</strong>
+          <strong>Tháng {{ month }} — <em>{{ seasonQuarter.tag }}</em></strong>
           <p>{{ seasonQuarter.note }}</p>
         </div>
         <div v-if="inSeasonItems.length" class="season-moment-pill">
-          <span class="smp-num">{{ inSeasonItems.length }}</span>
+          <CountUp :value="inSeasonItems.length" class="smp-num" />
           <span class="smp-label">mục đang mùa</span>
         </div>
       </div>
@@ -46,10 +60,12 @@
     <!-- Spotlight nổi bật (entity đang mùa có summary dài nhất) -->
     <CatalogSpotlight :items="inSeasonItems" />
 
-    <!-- Month selector -->
+    <!-- Month selector — the ring above is now the primary control; this grid
+         stays as a compact, scannable fallback (mobile / no-JS-hover users). -->
     <section class="block reveal">
-      <div class="section-head">
+      <div class="section-head sediment-head">
         <h2>Chọn tháng</h2>
+        <span class="see-all-count">hoặc bấm vào vòng mùa ở trên</span>
       </div>
       <div class="month-grid">
         <button type="button"
@@ -103,8 +119,8 @@
       <div v-if="ci > 0" class="type-section-divider" aria-hidden="true" />
       <section :class="['block', 'reveal', { band: ci % 2 === 0 }]">
         <div class="section-eyebrow">{{ cat.emoji }} {{ cat.eyebrow }}</div>
-        <div class="section-head">
-          <h2>{{ cat.emoji }} {{ cat.label }}</h2>
+        <div class="section-head sediment-head">
+          <h2>{{ cat.label }}</h2>
           <span class="see-all-count">{{ cat.items.length }} mục</span>
         </div>
         <p class="section-desc">{{ cat.desc }}</p>
@@ -154,15 +170,40 @@
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
-      <h2>Khí hậu miền Tây và du lịch theo mùa</h2>
+      <div class="sediment-head"><h2>Khí hậu miền Tây và du lịch theo mùa</h2></div>
       <p>Vùng đồng bằng sông Cửu Long có khí hậu nhiệt đới gió mùa với hai mùa rõ rệt. <strong>Mùa khô</strong> (tháng 12–4) trời nắng ấm, ít mưa, nhiệt độ 25–32°C — đây là thời gian lý tưởng nhất để du lịch, đạp xe và tham quan làng nghề. <strong>Mùa mưa</strong> (tháng 5–11) có những cơn mưa rào buổi chiều nhưng sáng thường còn nắng đẹp, và đây lại là mùa trái cây rộ nhất.</p>
 
-      <h2>Mùa nước nổi — trải nghiệm độc đáo</h2>
+      <div class="sediment-head"><h2>Mùa nước nổi — trải nghiệm độc đáo</h2></div>
       <p>Từ tháng 8 đến tháng 11, nước từ thượng nguồn Mekong đổ về làm mực nước sông dâng cao, tràn vào đồng ruộng. Đây không phải thiên tai mà là nhịp sống tự nhiên mang phù sa màu mỡ cho vụ lúa kế tiếp. Mùa nước nổi mang đến những đặc sản mùa vụ không đâu có: cá linh non kho mía, bông điên điển xào tỏi, lẩu mắm bông súng, chuột đồng quay lu.</p>
       <p>Đi xuồng giữa đồng nước mênh mông, hái bông điên điển vàng rực hay tát mương bắt cá là trải nghiệm chỉ có trong vài tháng ngắn ngủi mỗi năm — và chỉ ở miền Tây.</p>
 
-      <h2>Lịch mùa vụ tóm tắt</h2>
-      <p><strong>Tháng 1–3:</strong> Dưa hấu, quýt, mùa khô đẹp trời. <strong>Tháng 4–5:</strong> Đầu mùa mưa, xoài, mít bắt đầu chín. <strong>Tháng 5–7:</strong> Cao điểm trái cây — sầu riêng, măng cụt, chôm chôm, vú sữa. <strong>Tháng 8–11:</strong> Mùa nước nổi, cá linh, bông điên điển. <strong>Tháng 12:</strong> Mùa khô trở lại, bưởi Năm Roi chín vàng, thời tiết mát mẻ nhất năm.</p>
+      <div class="sediment-head"><h2>Mười hai tháng, một nhịp sông</h2></div>
+      <p class="timeline-caption">Cuộn để xem tháng nào có gì — vệt sáng đánh dấu tháng {{ month }}, tháng bạn đang đứng trên vòng quay này.</p>
+
+      <!-- NEW: season timeline — turns the closing almanac summary into a
+           visual instrument that echoes the ring's logic in linear form
+           (§1.3), rather than leaving it buried in plain prose. -->
+      <div class="season-timeline" role="img" :aria-label="`Lịch mùa vụ 12 tháng, hiện đang ở tháng ${month}`">
+        <div class="stl-track">
+          <button
+            v-for="m in 12" :key="m" type="button"
+            class="stl-cell"
+            :class="['q-' + quarterOf(m).key, { 'is-now': m === month }]"
+            :aria-pressed="m === month"
+            :aria-label="'Tháng ' + m + ' — ' + quarterOf(m).tag"
+            @click="month = m"
+          >
+            <span class="stl-m">T{{ m }}</span>
+          </button>
+        </div>
+        <div class="stl-legend">
+          <span v-for="q in QUARTER_LEGEND" :key="q.key" class="stl-legend-item">
+            <span class="stl-swatch" :class="'q-' + q.key" aria-hidden="true" />{{ q.tag }}
+          </span>
+        </div>
+      </div>
+
+      <p class="season-almanac-summary"><strong>Tháng 1–3:</strong> Dưa hấu, quýt, mùa khô đẹp trời. <strong>Tháng 4–5:</strong> Đầu mùa mưa, xoài, mít bắt đầu chín. <strong>Tháng 5–7:</strong> Cao điểm trái cây — sầu riêng, măng cụt, chôm chôm, vú sữa. <strong>Tháng 8–11:</strong> Mùa nước nổi, cá linh, bông điên điển. <strong>Tháng 12:</strong> Mùa khô trở lại, bưởi Năm Roi chín vàng, thời tiết mát mẻ nhất năm.</p>
     </section>
 
     <!-- Divider -->
@@ -280,15 +321,21 @@ watch(month, (m) => {
 
 const seasonEmoji = computed(() => SEASON_EMOJIS[month.value - 1] || '📅')
 
-/* Mekong quarters → mood label + note (evocative, not factual claims). */
-const seasonQuarter = computed(() => {
-  const m = month.value
+/* Mekong quarters → mood label + note (evocative, not factual claims).
+   Extracted to a pure fn so both the hero ring (current month) and the
+   season-timeline band (all 12 months) share one source of truth. */
+function quarterOf(m: number) {
   if (m >= 1 && m <= 3) return { key: 'spring', tag: 'mùa xuân miệt vườn', note: 'Tiết trời mát mẻ, hợp đạp xe nhà vườn và chèo xuồng sông nước.' }
   if (m >= 4 && m <= 5) return { key: 'bloom', tag: 'đầu mùa nắng', note: 'Vườn cây rộn ràng vào vụ — thời điểm dạo chơi, ngắm cảnh dễ chịu.' }
   if (m >= 6 && m <= 8) return { key: 'summer', tag: 'cao điểm mùa hè', note: 'Nắng vàng rực rỡ, nhiều đặc sản vào chính vụ nhất trong năm.' }
   if (m >= 9 && m <= 10) return { key: 'harvest', tag: 'mùa thu hoạch', note: 'Đồng quê trĩu quả, hợp trải nghiệm miệt vườn và thưởng thức tại chỗ.' }
   return { key: 'flood', tag: 'mùa nước nổi', note: 'Sông nước mênh mang — mùa của những trải nghiệm đặc trưng miền Tây.' }
-})
+}
+const seasonQuarter = computed(() => quarterOf(month.value))
+
+/* Legend for the season-timeline band — one entry per distinct quarter key,
+   in calendar order (T1 first). Static: quarter boundaries don't change. */
+const QUARTER_LEGEND = [1, 4, 6, 9, 11].map(m => quarterOf(m))
 
 const heroSubtitle = computed(() =>
   `${seasonQuarter.value.note} Khám phá các mục đang mùa, ngon nhất ngay lúc này.`,
@@ -431,14 +478,18 @@ useHead(() => ({
   margin-top: var(--space-4); padding-top: var(--space-4);
   border-top: .5px solid rgba(var(--primary-rgb), .15);
 }
+.season-ring-wrap { flex-shrink: 0; }
+/* Signature: the ring IS the month-picker — a 12-notch annular instrument,
+   not a decorative badge. Enlarged from the original 80px badge so it reads
+   as the hero's primary control; .month-grid below remains the compact
+   fallback (§1.2 "collapsing decoration and function into one object"). */
 .season-ring {
-  width: 80px; height: 80px; border-radius: 50%;
+  width: 108px; height: 108px; border-radius: 50%;
   position: relative; display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
   box-shadow: inset 0 0 0 1px rgba(var(--primary-rgb), .12);
 }
 .season-ring::after {
-  content: ''; position: absolute; inset: 9px; border-radius: 50%;
+  content: ''; position: absolute; inset: 13px; border-radius: 50%;
   background: var(--card);
 }
 .season-ring-emoji { position: relative; z-index: 1; font-size: 2.2rem; line-height: 1; }
@@ -447,7 +498,43 @@ useHead(() => ({
 .season-ring.q-summer  { background: conic-gradient(var(--accent), color-mix(in srgb, var(--accent) 35%, transparent), var(--accent)); }
 .season-ring.q-harvest { background: conic-gradient(var(--accent), var(--tertiary), var(--accent)); }
 .season-ring.q-flood   { background: conic-gradient(var(--tertiary), color-mix(in srgb, var(--tertiary) 35%, transparent), var(--tertiary)); }
+/* Water quarter reads as water, not a flat gradient: a faint wave-line
+   texture rides on top of the flood conic-gradient (§1.8 cultural cue). */
+.season-ring.q-flood {
+  background-image:
+    conic-gradient(var(--tertiary), color-mix(in srgb, var(--tertiary) 35%, transparent), var(--tertiary)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M0 10 Q10 6 20 10 T40 10' stroke='white' stroke-opacity='.35' fill='none'/%3E%3Cpath d='M0 26 Q10 22 20 26 T40 26' stroke='white' stroke-opacity='.25' fill='none'/%3E%3C/svg%3E");
+  background-size: cover, 24px 24px;
+}
+
+/* 12 hairline ticks on the ring's outer edge — reads as a precision
+   instrument, not a colored donut (§1.7). Each notch is a real <button>,
+   individually rotated + pushed out to its own clock position (NOT a
+   full-circle overlapping hit-target — that would stack all 12 buttons on
+   top of each other and only let the last one in DOM order receive clicks).
+   A generous 26px circular hit-target keeps the 44px-ish tap-target intent
+   even though the visible tick itself is a thin 2px sliver. */
+.ring-notch {
+  position: absolute; z-index: 2; left: 50%; top: 50%;
+  width: 26px; height: 26px; margin: -13px 0 0 -13px;
+  background: none; border: none; padding: 0; cursor: pointer; border-radius: 50%;
+  transform: rotate(var(--notch-angle)) translateY(-43px);
+  -webkit-tap-highlight-color: transparent;
+}
+.ring-notch-tick {
+  position: absolute; left: 50%; top: 2px; width: 2px; height: 9px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, .55);
+  border-radius: var(--radius-full);
+  transition: height .2s var(--ease-out), background .2s var(--ease-out);
+}
+.ring-notch:hover .ring-notch-tick,
+.ring-notch:focus-visible .ring-notch-tick { height: 13px; background: #fff; }
+.ring-notch.is-current .ring-notch-tick { height: 13px; width: 3px; background: var(--card); box-shadow: 0 0 0 1px rgba(0, 0, 0, .12); }
+.ring-notch:focus-visible { outline: 2px solid var(--card); outline-offset: 1px; }
+
 .season-moment-text strong { display: block; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
+.season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--primary-fg); }
 .season-moment-text p { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 .season-moment-pill {
   display: inline-flex; flex-direction: column; align-items: center;
@@ -456,6 +543,32 @@ useHead(() => ({
 }
 .smp-num { font-size: 1.5rem; font-weight: var(--weight-bold); color: var(--ink); line-height: 1.1; }
 .smp-label { font-size: var(--text-xs); color: var(--muted); white-space: nowrap; }
+
+/* Hero retinting per quarter (§1.2) — scrubbing the ring changes the whole
+   hero's color temperature, not just an emoji. Cross-fades via `transition`
+   on `background` so a month change reads as a 400–600ms wash, not a pop.
+   Layers on top of catalog.css's base .cat-season gradient (not replacing
+   the shared component — additive override scoped to this page). */
+.catalog-hero.cat-season {
+  transition: background 550ms var(--ease-out-expo, ease);
+}
+/* --sediment-teal-rgb: rgb() of --river-600 (#33646E) — the sediment/water
+   teal used site-wide for the "nước" register (EntityHeroPlaceholder wash,
+   sediment-tick top stop). NOT --river-rgb (that token is the unrelated
+   indigo used for .cat-accommodation elsewhere — a pre-existing naming
+   collision in variables.css; using it here would send the wrong cultural
+   signal for "mùa nước nổi"). */
+.catalog-hero.cat-season { --sediment-teal-rgb: 51, 100, 110; }
+.catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, var(--bg-warm) 100%); }
+.catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--secondary-rgb), .05) 100%); }
+.catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--accent-rgb), .14) 0%, var(--bg-warm) 100%); }
+.catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--sediment-teal-rgb), .06) 100%); }
+.catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .14) 0%, var(--bg-warm) 100%); }
+.dark .catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, rgba(255,255,255,.02) 100%); }
+.dark .catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--secondary-rgb), .06) 100%); }
+.dark .catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--accent-rgb), .14) 0%, rgba(255,255,255,.02) 100%); }
+.dark .catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--sediment-teal-rgb), .08) 100%); }
+.dark .catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .18) 0%, rgba(255,255,255,.02) 100%); }
 
 /* Signature: animated seasonal hero emoji */
 .catalog-hero-icon { animation: seasonal-bob 2.8s var(--ease-out) infinite; will-change: transform; }
@@ -558,6 +671,53 @@ useHead(() => ({
 
 .see-all-count { font-size: var(--text-sm); color: var(--muted); }
 
+/* ── Season article wrapper + timeline caption ──
+   catalog.css's `.page-article h2:first-child { margin-top: 0 }` no longer
+   matches once the first heading is wrapped in a .sediment-head div (the
+   div, not the h2, is now the first-child) — restore the zero-top-margin
+   here so wrapping the heading doesn't reintroduce a stray top gap. */
+.page-article > .sediment-head:first-child h2 { margin-top: 0; }
+.timeline-caption { color: var(--muted); font-size: var(--text-sm); margin-top: calc(-1 * var(--space-2)); }
+.season-almanac-summary { margin-top: var(--space-4); }
+
+/* ── NEW: season timeline — "Mười hai tháng, một nhịp sông" (§1.3) ──
+   A single horizontal bar spanning Jan→Dec, colored by quarter, with the
+   current month as a live marker. Linear echo of the ring's logic — a
+   second, calmer instrument (no looping motion of its own; the only
+   "live" cue is the static is-now ring, matching the ring's restraint). ── */
+.season-timeline { margin: var(--space-5) 0 var(--space-2); }
+.stl-track {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px;
+  border-radius: var(--radius-sm); overflow: hidden;
+}
+.stl-cell {
+  position: relative; aspect-ratio: 1 / 1.15; border: none; cursor: pointer;
+  display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px;
+  color: rgba(255, 255, 255, .82); font-size: var(--text-2xs); font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  transition: filter .2s var(--ease-out), transform .2s var(--ease-spring-gentle);
+}
+.stl-cell.q-spring  { background: var(--secondary); }
+.stl-cell.q-bloom   { background: color-mix(in srgb, var(--accent) 60%, var(--secondary)); }
+.stl-cell.q-summer  { background: var(--accent); }
+.stl-cell.q-harvest { background: color-mix(in srgb, var(--accent) 55%, var(--tertiary)); }
+.stl-cell.q-flood   { background: var(--tertiary); }
+.stl-cell:hover { filter: brightness(1.12); transform: translateY(-2px); }
+.stl-cell:focus-visible { outline: 2px solid var(--card); outline-offset: -3px; z-index: 1; }
+/* Current-month marker: a static ring, not a pulsing glow (one ambient/
+   viewport is already spent on the hero ring — this stays calm, per the
+   §3 golden rule). */
+.stl-cell.is-now { box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 4px rgba(0, 0, 0, .25); }
+.stl-cell.is-now .stl-m { font-weight: var(--weight-extrabold); }
+.stl-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin-top: var(--space-3); }
+.stl-legend-item { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); }
+.stl-swatch { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+.stl-swatch.q-spring  { background: var(--secondary); }
+.stl-swatch.q-bloom   { background: color-mix(in srgb, var(--accent) 60%, var(--secondary)); }
+.stl-swatch.q-summer  { background: var(--accent); }
+.stl-swatch.q-harvest { background: color-mix(in srgb, var(--accent) 55%, var(--tertiary)); }
+.stl-swatch.q-flood   { background: var(--tertiary); }
+
 /* ── Dark mode ─────────────────────────────── */
 .dark .season-moment { border-top-color: rgba(255, 255, 255, .1); }
 .dark .season-ring { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
@@ -576,22 +736,34 @@ useHead(() => ({
 .dark .b2b-callout { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1), transparent); border-color: rgba(var(--secondary-rgb), .25); }
 .dark .month-grid .quick-pick { background: var(--bg-alt); border-color: var(--line); }
 .dark .month-grid .quick-pick:hover { border-color: rgba(255, 255, 255, .15); }
+.dark .ring-notch-tick { background: rgba(255, 255, 255, .4); }
+.dark .ring-notch:hover .ring-notch-tick, .dark .ring-notch:focus-visible .ring-notch-tick { background: rgba(255, 255, 255, .85); }
+.dark .ring-notch.is-current .ring-notch-tick { background: var(--card); box-shadow: 0 0 0 1px rgba(255, 255, 255, .2); }
+.dark .stl-cell { color: rgba(255, 255, 255, .78); }
+.dark .stl-cell.is-now { box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 4px rgba(0, 0, 0, .4); }
 
 /* ── Responsive ────────────────────────────── */
 @media (max-width: 700px) {
   .season-moment { grid-template-columns: auto 1fr; }
-  .season-ring { width: 64px; height: 64px; }
+  .season-ring { width: 76px; height: 76px; }
+  .season-ring::after { inset: 10px; }
   .season-ring-emoji { font-size: 1.8rem; }
   .season-moment-pill { grid-column: 1 / -1; flex-direction: row; gap: var(--space-2); justify-content: center; }
+  /* Ring shrank 108→76px (radius 54→38px); re-anchor notches so ticks still
+     sit right on the smaller ring's edge instead of floating outside it. */
+  .ring-notch { width: 22px; height: 22px; margin: -11px 0 0 -11px; transform: rotate(var(--notch-angle)) translateY(-29px); }
 }
 @media (max-width: 640px) {
   .month-grid { grid-template-columns: repeat(3, 1fr); }
   .month-grid .quick-pick { padding: var(--space-5) var(--space-2); min-height: 48px; }
   .b2b-callout { grid-template-columns: auto 1fr; }
   .b2b-callout-link { grid-column: 1 / -1; justify-content: center; }
+  .stl-cell { font-size: 9px; }
+  .stl-legend { gap: var(--space-1) var(--space-3); }
 }
 @media (max-width: 480px) {
   .season-badge { font-size: .65rem; padding: 2px var(--space-2); top: var(--space-1); left: var(--space-1); }
+  .stl-track { gap: 2px; }
 }
 
 /* ── Reduced motion ────────────────────────── */
@@ -603,5 +775,9 @@ useHead(() => ({
   .season-item:hover .season-badge.peak { animation: none; }
   .b2b-callout-link { transition: none; }
   .b2b-callout-link:hover { transform: none; }
+  .catalog-hero.cat-season { transition: none; }
+  .ring-notch-tick { transition: none; }
+  .stl-cell { transition: none; }
+  .stl-cell:hover { transform: none; }
 }
 </style>
