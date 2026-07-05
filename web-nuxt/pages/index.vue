@@ -916,7 +916,11 @@ html.js .home .hero-feature { opacity: 0; transform: translateY(16px); animation
 .home .hero h1 {
   font-family: var(--font-editorial);
   font-weight: 600;
-  font-size: clamp(2.6rem, 3.4rem + 3.2vw, 5.4rem);
+  /* Genuinely fluid: ~47px @375 (was ~66px — the old 2.6rem min never triggered because
+     3.4rem+3.2vw stays ≥64px even at 320, so a 5-word tagline wrapped to 5 lines and pushed
+     the search + feature card below the mobile fold). Now ~47px→86px, wraps to ~3 lines on
+     phones, capped identically at 5.4rem on desktop. */
+  font-size: clamp(2.75rem, 1.6rem + 5.6vw, 5.4rem);
   letter-spacing: -.02em; line-height: .98;
   text-shadow: 0 2px 28px rgba(0,0,0,.42);
   max-width: 15ch;
