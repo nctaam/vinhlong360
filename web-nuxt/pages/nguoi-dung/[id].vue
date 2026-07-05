@@ -16,8 +16,9 @@
       </div>
 
       <div class="profile-info">
+        <p class="profile-eyebrow">Sổ hành trình thành viên</p>
         <div class="profile-name-row">
-          <h1>{{ profile.display_name || profile.phone || 'Người dùng' }}</h1>
+          <h1 class="profile-name">{{ profile.display_name || profile.phone || 'Người dùng' }}</h1>
           <button type="button"
             v-if="isLoggedIn && !isSelf"
             :class="['btn btn-sm', isFollowing ? 'btn-ghost' : 'btn-primary']"
@@ -65,8 +66,8 @@
             {{ xpProgress.max ? 'Cấp tối đa' : `Còn ${xpProgress.toNext} điểm lên cấp` }}
           </span>
         </div>
-        <div v-if="isSelf && (profile.login_streak ?? 0) > 0" class="streak-chip">
-          🔥 {{ profile.login_streak }} ngày liên tiếp
+        <div v-if="isSelf && (profile.login_streak ?? 0) > 0" class="streak-chip" :class="{ 'streak-milestone': isStreakMilestone }">
+          🔥 {{ profile.login_streak }} ngày liên tiếp ghé bến
         </div>
         <details v-if="isSelf && achievements.length" class="badge-showcase" open>
           <summary class="bs-title">Thành tích ({{ achievementsEarned }}/{{ achievements.length }})</summary>
@@ -89,6 +90,7 @@
             </div>
           </div>
         </details>
+        <div class="hairline-phusa" role="presentation" aria-hidden="true"></div>
         <div class="profile-stats">
           <template v-if="!profile.is_private || isSelf">
             <div class="stat-item">
@@ -171,12 +173,12 @@
       </div>
 
       <section v-if="!profile.is_private && heatmap.length" class="heatmap-section">
-        <h3 class="heatmap-title">Hoạt động 1 năm qua · {{ heatmapTotal }} đóng góp</h3>
+        <h3 class="heatmap-title">Bản đồ con nước · {{ heatmapTotal }} đóng góp trong 1 năm qua</h3>
         <div class="heatmap-grid">
           <div v-for="(week, wi) in heatmapWeeks" :key="wi" class="hm-week">
             <span v-for="(cell, di) in week" :key="di"
                   class="hm-cell" :data-level="cell.level"
-                  :title="`${cell.date}: ${cell.count} đóng góp`" />
+                  :title="cell.count ? `Ngày ${cell.date}: ${cell.count} đóng góp — như con nước lớn` : `Ngày ${cell.date}: chưa có đóng góp`" />
           </div>
         </div>
       </section>
@@ -539,6 +541,11 @@ const xpProgress = computed(() => {
   const hi = LEVEL_THRESHOLDS[lvl] ?? 20
   const pct = Math.max(0, Math.min(100, Math.round((pts - lo) / (hi - lo) * 100)))
   return { pct, toNext: Math.max(0, hi - pts), max: false }
+})
+// Mốc tuần (bội số của 7) — một nhấp nháy nhẹ DUY NHẤT lúc mount, không loop.
+const isStreakMilestone = computed(() => {
+  const days = profile.value?.login_streak ?? 0
+  return days > 0 && days % 7 === 0
 })
 const visibleProfileTabs = computed<ProfileTab[]>(() => {
   const tabs: ProfileTab[] = ['posts', 'reviews', 'timeline']
@@ -988,6 +995,13 @@ useSeoMeta({
 .xp-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: var(--radius-full); transition: width var(--duration-slow) var(--ease-out); }
 .xp-label { font-size: var(--text-2xs); color: var(--muted); white-space: nowrap; }
 .streak-chip { display: inline-flex; align-items: center; gap: var(--space-1); margin-top: var(--space-1); padding: var(--space-1) var(--space-2); background: color-mix(in srgb, var(--warning) 12%, transparent); border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--ink); }
+/* Mốc tuần (bội số của 7 ngày) — một nhấp nháy nhẹ DUY NHẤT lúc mount, không loop. */
+.streak-milestone { animation: streak-pulse-once 1.1s var(--ease-out) 1; }
+@keyframes streak-pulse-once {
+  0% { background: color-mix(in srgb, var(--warning) 12%, transparent); }
+  35% { background: color-mix(in srgb, var(--warning) 30%, transparent); }
+  100% { background: color-mix(in srgb, var(--warning) 12%, transparent); }
+}
 .profile-loading { text-align: center; padding: var(--space-5) 0; }
 .profile-loading .spinner { margin: 0 auto; }
 
@@ -1023,6 +1037,13 @@ useSeoMeta({
 
 .profile-info { padding-top: var(--space-10); }
 .user-profile-page { max-width: 680px; margin: 0 auto; }
+/* Masthead eyebrow — dateline caps above the name, echoes .cine-kicker tracking
+   without importing that hero-only class. */
+.profile-eyebrow {
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  color: var(--muted); margin: 0 0 var(--space-2);
+}
 .profile-name-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .profile-name-row h1 { flex: 1; min-width: 0; }
 .profile-meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
@@ -1039,8 +1060,19 @@ useSeoMeta({
 .pm-item:hover { background: var(--bg-alt); }
 .pm-danger { color: var(--danger, #c0392b); }
 .pm-danger:hover { background: rgba(192,57,43,.06); }
-.profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); margin: 0; text-wrap: balance; overflow-wrap: break-word; }
+.profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); letter-spacing: var(--tracking-tight); margin: 0; text-wrap: balance; overflow-wrap: break-word; }
+/* Tên riêng — serif (Fraunces), xứng đáng được "xưng danh" như tiêu đề địa điểm. */
+.profile-name { font-family: var(--font-editorial); font-weight: 600; }
 .profile-bio { color: var(--ink-secondary); font-size: var(--text-sm); line-height: var(--leading-relaxed); margin-top: var(--space-2); max-width: 640px; overflow-wrap: break-word; word-break: break-word; }
+/* Hairline phù-sa — river→amber→clay, thon 2 đầu. Ngăn khối "định danh" (tên,
+   bio, cấp bậc, XP) khỏi khối "bằng chứng" (stats), đúng công thức đã chuẩn
+   hoá (sediment-head/tc-label), không tự chế biến thể mới. */
+.hairline-phusa {
+  height: 2px; margin: var(--space-4) 0 0; border-radius: var(--radius-full);
+  background: linear-gradient(90deg, transparent 0%, var(--river-600) 15%, var(--amber-600) 50%, var(--clay-600) 85%, transparent 100%);
+  opacity: .55;
+}
+.dark .hairline-phusa { background: linear-gradient(90deg, transparent 0%, #74ABB5 15%, var(--amber-500) 50%, var(--clay-400) 85%, transparent 100%); }
 
 .profile-stats { display: flex; gap: var(--space-6); margin-top: var(--space-4); }
 .stat-item { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--bg-warm); border: .5px solid var(--line); border-radius: var(--radius-md); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), border-color .3s var(--ease-out); }
@@ -1162,6 +1194,7 @@ useSeoMeta({
   .pc-fill { animation: none; }
   .saved-grid > * { animation: none; }
   .cover-img { animation: none; }
+  .streak-milestone { animation: none; }
 }
 .profile-completion { padding: 0 var(--space-4); margin-bottom: var(--space-3); }
 .pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-1); }
