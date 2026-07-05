@@ -218,6 +218,16 @@
       v-bind="SPREAD"
     />
 
+    <!-- 3a2. Feature — photo-led editorial block (Đặc sản OCOP), mirrored -->
+    <section class="block reveal" aria-label="Đặc sản nổi bật">
+      <EntityFeature
+        image="/img/features/ocop.webp"
+        v-bind="FEATURE_OCOP"
+        :thumbs="productsAll.slice(0, 3)"
+        side="right"
+      />
+    </section>
+
     <!-- 3b. Đang được quan tâm — trending entities -->
     <section v-if="trending.length" class="block reveal" aria-label="Đang được quan tâm">
       <div class="section-head">
@@ -393,6 +403,14 @@ const FEATURE_EXPERIENCE = {
   lede: 'Chèo xuồng qua rạch dừa, hái trái tại vườn, nghe đờn ca giữa cù lao — những ngày chậm rãi rất Nam Bộ.',
   ctaText: 'Khám phá trải nghiệm',
   ctaTo: '/du-lich',
+}
+
+const FEATURE_OCOP = {
+  kicker: 'Đặc sản OCOP',
+  title: 'Mang cả miền Tây về làm quà',
+  lede: 'Dừa sáp Cầu Kè, kẹo dừa, mật ong rừng bần, gạo thơm — sản vật đạt sao OCOP, gói ghém vị quê.',
+  ctaText: 'Xem đặc sản OCOP',
+  ctaTo: '/ocop',
 }
 
 // Full-bleed signature moment (StorySpread). Discover-only CTA — never an order/price
