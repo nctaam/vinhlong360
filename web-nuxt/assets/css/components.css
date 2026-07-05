@@ -642,3 +642,17 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
   .sheet-feature:hover { background: none; }
   .sheet-feature:hover .sf-icon { transform: none; }
 }
+
+/* ── Shared phù-sa section head (Wave 1 foundation; pages opt in with .sediment-head) ── */
+.sediment-head h2, h2.sediment-head {
+  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
+  position: relative; padding-left: var(--space-4);
+}
+.sediment-head h2::before, h2.sediment-head::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .sediment-head h2::before, .dark h2.sediment-head::before {
+  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}

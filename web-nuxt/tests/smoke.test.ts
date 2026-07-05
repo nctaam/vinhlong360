@@ -201,6 +201,16 @@ describe('UserCP regressions', () => {
     expect(heroIllustration).toContain('contain: paint;')
   })
 
+  it('Wave-1 story foundation primitives exist', () => {
+    // shared phù-sa section head
+    expect(src('assets/css/components.css')).toContain('.sediment-head')
+    // no-photo hero placeholder component
+    const ehp = src('components/EntityHeroPlaceholder.vue')
+    expect(ehp).toContain('generateCategoryPlaceholder')
+    expect(ehp).toContain('ehp-motif')
+    expect(ehp).toContain('chưa có ảnh thật')
+  })
+
   it('does not register the service worker on local dev hosts', () => {
     const config = src('nuxt.config.ts')
     expect(config).toContain("location.protocol==='https:'")
