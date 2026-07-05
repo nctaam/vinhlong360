@@ -245,7 +245,11 @@
       </div>
     </section>
 
-    <!-- 5. Từ cộng đồng — compact + trending tags; else always-populated editorial story -->
+    <!-- 5. Từ cộng đồng — compact + trending tags; else always-populated editorial story.
+         ClientOnly: communityData is lazy → renders null at prerender but resolves into the
+         payload, so SSR (v-else story) ≠ client (v-if feed) = hydration mismatch. Rendering
+         this volatile below-fold region client-only removes the mismatch at its source. -->
+    <ClientOnly>
       <section v-if="communityPosts.length" class="block reveal" aria-label="Cộng đồng">
         <div class="section-head">
           <div class="sh-text">
@@ -313,6 +317,7 @@
           </div>
         </div>
       </section>
+    </ClientOnly>
 
     <!-- 6. Cá nhân hóa — client-only (recently viewed + saved + AI recommendations) -->
     <ClientOnly>
