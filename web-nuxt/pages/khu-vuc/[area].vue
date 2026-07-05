@@ -1,5 +1,5 @@
 <template>
-  <section class="page">
+  <section class="page ce-area">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: areaMeta?.name || 'Khu vực' }]" />
 
     <!-- Hero -->
@@ -8,6 +8,7 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">{{ areaMeta.emoji }}</span>
         <div>
+          <span class="area-eyebrow">Miền Tây · Cửu Long</span>
           <h1>{{ areaMeta.name }}</h1>
           <p>{{ areaMeta.blurb }}</p>
         </div>
@@ -74,7 +75,7 @@
     <!-- Type sections -->
     <section v-for="(cat, ci) in typeSections" :key="cat.type" :class="['block', 'reveal', 'area-type-block', { band: ci % 2 === 1 }]">
       <div class="section-head">
-        <h2>{{ cat.emoji }} {{ cat.label }}</h2>
+        <h2>{{ cat.label }}</h2>
         <button
           v-if="cat.items.length > 8"
           type="button"
@@ -315,6 +316,41 @@ if (areaMeta) {
   font-weight: 600;
   letter-spacing: -.015em;
 }
+/* ── CE2: editorial voice for the region guide (scoped to .ce-area / .area-hero) ── */
+/* Dateline eyebrow above the region name — wide-tracked caps + a hairline lead, like the home hero. */
+.area-hero .area-eyebrow {
+  display: inline-flex; align-items: center; gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: .22em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .9); text-shadow: 0 1px 3px rgba(0, 0, 0, .45);
+}
+.area-hero .area-eyebrow::before {
+  content: ""; width: clamp(22px, 5vw, 46px); height: 1.5px;
+  background: var(--accent, var(--amber-500));
+}
+/* Intro article: serif lede + a drop-cap on the opening paragraph — an editorial "cover essay". */
+.ce-area .page-article h2 { font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em; }
+.ce-area .page-article p {
+  font-family: var(--font-editorial);
+  font-size: clamp(1.05rem, 1rem + .35vw, 1.2rem); line-height: var(--leading-relaxed);
+}
+.ce-area .page-article p:first-of-type::first-letter {
+  font-family: var(--font-editorial); font-weight: 600;
+  float: left; font-size: 3.1em; line-height: .82; padding: .04em .12em 0 0; color: var(--primary);
+}
+/* Section heads: editorial serif + the vertical "sediment core" tick (river→amber→clay) — the same
+   phù-sa signature the homepage uses, so the region page speaks one voice. */
+.ce-area .section-head h2 {
+  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
+  position: relative; padding-left: var(--space-4);
+}
+.ce-area .section-head h2::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .ce-area .section-head h2::before { background: linear-gradient(180deg, var(--river-400, #74ABB5) 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 
 /* ── SIGNATURE: cinematic per-region hero photo (logic-matched — each region shows its own
    signature scene: VL gạch gốm + miệt vườn · Bến Tre xứ dừa · Trà Vinh chùa Khmer).

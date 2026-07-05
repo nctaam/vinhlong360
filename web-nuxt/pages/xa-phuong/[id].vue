@@ -14,7 +14,7 @@
     </EmptyState>
   </section>
 
-  <section v-else class="wp">
+  <section v-else class="wp ce-ward">
     <!-- Breadcrumb -->
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <button type="button" class="bc-back" aria-label="Quay lại" @click="goBack">
@@ -437,6 +437,17 @@ onUnmounted(() => {
 .sec-icon { font-size: var(--text-lg); }
 .cnt { color: rgba(var(--primary-rgb), .6); font-weight: var(--weight-medium); font-size: var(--text-sm); }
 .dark .cnt { color: rgba(var(--primary-rgb), .85); }
+/* ── CE3: unify the ward page under the phù-sa editorial voice (scoped .ce-ward) ── */
+/* Section heads already use the serif; add the vertical "sediment core" tick (river→amber→clay)
+   and retire the emoji sec-icon so the head reads as an editorial marker, not an app label. */
+.ce-ward .wp-sec h2 .sec-icon { display: none; }
+.ce-ward .wp-sec h2::before {
+  content: ""; flex: 0 0 auto; width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .ce-ward .wp-sec h2::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+/* Place intro reads as an editorial lede, matching the region + home voice. */
+.ce-ward .wp-summary { font-family: var(--font-editorial); font-size: clamp(1.02rem, .98rem + .3vw, 1.15rem); }
 .wp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--space-4); }
 
 /* Designed empty-state card */
