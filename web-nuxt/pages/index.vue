@@ -65,14 +65,19 @@
       </div>
     </section>
 
-    <JourneyActionRail
-      v-if="!homePending && homeJourneyActions.length"
-      :actions="homeJourneyActions"
-      title="Bước tiếp theo phù hợp"
-      subtitle="Decision engine ưu tiên theo mục đã lưu, nội dung vừa xem, lịch gần nhất và tín hiệu cộng đồng."
-      aria-label="Gợi ý hành trình trên trang chủ"
-      compact
-    />
+    <!-- ClientOnly: homeJourneyActions is personalized from client-only state (localStorage
+         favorites/recently-viewed + isLoggedIn) → SSR (anon/empty) ≠ client → hydration
+         mismatch that swapped nodes and broke the scroll-reveal observer. Client-only removes it. -->
+    <ClientOnly>
+      <JourneyActionRail
+        v-if="!homePending && homeJourneyActions.length"
+        :actions="homeJourneyActions"
+        title="Bước tiếp theo phù hợp"
+        subtitle="Decision engine ưu tiên theo mục đã lưu, nội dung vừa xem, lịch gần nhất và tín hiệu cộng đồng."
+        aria-label="Gợi ý hành trình trên trang chủ"
+        compact
+      />
+    </ClientOnly>
 
     <!-- Degraded/empty fallback -->
     <section v-if="homeFailed" class="block reveal">
