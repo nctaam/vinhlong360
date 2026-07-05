@@ -245,8 +245,8 @@
       </div>
     </section>
 
-    <!-- 5. Từ cộng đồng — compact + trending tags -->
-      <section v-if="communityPosts.length || communityStats" class="block reveal" aria-label="Cộng đồng">
+    <!-- 5. Từ cộng đồng — compact + trending tags; else always-populated editorial story -->
+      <section v-if="communityPosts.length" class="block reveal" aria-label="Cộng đồng">
         <div class="section-head">
           <div class="sh-text">
             <h2>Từ cộng đồng</h2>
@@ -298,6 +298,19 @@
         <div class="community-join">
           <span>Chia sẻ quán ngon, điểm đẹp, mẹo đi — góp một mảnh ghép cho bản đồ chung.</span>
           <NuxtLink to="/cong-dong" class="btn btn-outline">💬 Tham gia cộng đồng</NuxtLink>
+        </div>
+      </section>
+      <section v-else class="block reveal storyland" aria-label="Câu chuyện vùng đất">
+        <div class="storyland-card">
+          <div class="storyland-media">
+            <img src="/img/spread/song-nuoc.webp" alt="" loading="lazy" decoding="async" width="960" height="540" />
+          </div>
+          <div class="storyland-copy">
+            <span class="storyland-kicker">Câu chuyện vùng đất</span>
+            <h2 class="storyland-title">{{ currentStory.title }}</h2>
+            <p class="storyland-body">{{ currentStory.body }}</p>
+            <NuxtLink :to="currentStory.to" class="btn btn-outline storyland-cta">{{ currentStory.ctaText }} →</NuxtLink>
+          </div>
         </div>
       </section>
 
@@ -463,6 +476,17 @@ const topMembers = computed(() => communityData.value?.leaders || [])
 const trendingTags = computed(() => communityData.value?.tags || [])
 
 const currentMonth = computed(() => homeData.value?.month || (new Date().getMonth() + 1))
+
+// Câu chuyện vùng đất — always-populated editorial fallback when the community feed is
+// empty (rather than rendering nothing). Rotates deterministically by month so SSR/CSR
+// markup matches (no Date.now()/new Date() — would break hydration).
+const STORIES = [
+  { title: 'Ba dòng sông, một miền phù sa', body: 'Vĩnh Long, Bến Tre, Trà Vinh nối nhau bằng sông Tiền, sông Hậu và Cổ Chiên — nơi phù sa bồi nên những cù lao trái ngọt bốn mùa.', ctaText: 'Mở bản đồ vùng đất', to: '/ban-do' },
+  { title: 'Xứ dừa và những lò kẹo', body: 'Bến Tre — thủ phủ dừa của cả nước. Từ cơm dừa đến chỉ xơ, người dân biến cả cây dừa thành trăm nghề, trăm vị.', ctaText: 'Khám phá đặc sản', to: '/ocop' },
+  { title: 'Sắc màu Khmer bên dòng Cổ Chiên', body: 'Trà Vinh giữ hồn văn hóa Khmer Nam Bộ — những ngôi chùa vàng rực rỡ, lễ hội Ok Om Bok và ao Bà Om cổ kính giữa rừng dầu.', ctaText: 'Khám phá Trà Vinh', to: '/khu-vuc/tra-vinh' },
+]
+const currentStory = computed(() => STORIES[(currentMonth.value - 1) % STORIES.length])
+
 const seasonal = computed(() => homeData.value?.seasonal || [])
 const experiences = computed(() => homeData.value?.experiences || [])
 const productsAll = computed(() => homeData.value?.products || [])
@@ -1400,6 +1424,70 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .community-join .btn { flex-shrink: 0; }
 @media (max-width: 480px) { .community-join { flex-direction: column; text-align: center; gap: var(--space-3); } }
 .dark .community-join { background: var(--bg-alt); }
+
+/* ═══════════════════════════════════════════════════
+   STORYLAND — "Câu chuyện vùng đất": always-populated editorial
+   fallback shown when the community feed is empty. Premium editorial
+   treatment (serif title, reading measure), not a plain card.
+   ═══════════════════════════════════════════════════ */
+.storyland-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  align-items: center;
+  background: var(--card);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+}
+@media (min-width: 780px) {
+  .storyland-card { grid-template-columns: 1.05fr .95fr; gap: 0; }
+}
+.storyland-media {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--bg-alt);
+}
+@media (min-width: 780px) { .storyland-media { aspect-ratio: 4 / 3; height: 100%; } }
+.storyland-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.storyland-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-6) var(--space-7);
+}
+@media (min-width: 780px) { .storyland-copy { padding: var(--space-7); } }
+.storyland-kicker {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  color: var(--primary-fg);
+}
+.storyland-title {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 1.2rem + 1.6vw, 2.1rem);
+  line-height: var(--leading-tight);
+  letter-spacing: -.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.storyland-body {
+  margin: 0;
+  max-width: var(--measure-read);
+  font-family: var(--font-editorial);
+  font-size: clamp(1rem, .95rem + .3vw, 1.1rem);
+  line-height: var(--leading-relaxed);
+  color: var(--ink-700);
+}
+.storyland-cta { margin-top: var(--space-2); }
+.dark .storyland-card { background: var(--card); border-color: var(--line); }
+.dark .storyland-kicker { color: var(--primary-fg); }
 
 /* ═══════════════════════════════════════════════════
    CHATBOT CTA
