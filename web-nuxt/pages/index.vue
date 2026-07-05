@@ -228,24 +228,11 @@
       />
     </section>
 
-    <!-- 3b. Đang được quan tâm — trending entities -->
-    <section v-if="trending.length" class="block reveal" aria-label="Đang được quan tâm">
-      <div class="section-head">
+    <!-- 4. Lịch trình gợi ý — compact strip -->
+    <section v-if="itineraries.length" class="block block-compact reveal band" aria-label="Lịch trình gợi ý">
+      <div class="section-head section-head-tight">
         <div class="sh-text">
-          <h2>🔥 Đang được quan tâm</h2>
-          <p class="sh-sub">Điểm đến nhiều người tìm kiếm nhất tuần qua</p>
-        </div>
-      </div>
-      <div class="scroll-row" role="region" aria-label="Điểm đến đang hot" tabindex="0">
-        <EntityCard v-for="e in trending" :key="e.id" :entity="e" />
-      </div>
-    </section>
-
-    <!-- 4. Lịch trình gợi ý -->
-    <section v-if="itineraries.length" class="block reveal band" aria-label="Lịch trình gợi ý">
-      <div class="section-head">
-        <div class="sh-text">
-          <h2>Lịch trình gợi ý</h2>
+          <h2 class="h2-tight">Lịch trình gợi ý</h2>
           <p class="sh-sub">Hành trình 1–2 ngày, đi là có ngay</p>
         </div>
         <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
@@ -316,9 +303,9 @@
 
     <!-- 6. Cá nhân hóa — client-only (recently viewed + saved + AI recommendations) -->
     <ClientOnly>
-      <section v-if="recentlyViewed.length" class="block reveal">
-        <div class="section-head">
-          <h2>Xem gần đây</h2>
+      <section v-if="recentlyViewed.length" class="block block-compact reveal">
+        <div class="section-head section-head-tight">
+          <h2 class="h2-tight">Xem gần đây</h2>
         </div>
         <div class="scroll-row" role="region" aria-label="Xem gần đây" tabindex="0">
           <NuxtLink v-for="rv in recentlyViewed" :key="rv.id" :to="entityPath(rv.id)" class="card card-mini">
@@ -336,9 +323,9 @@
           </NuxtLink>
         </div>
       </section>
-      <section v-if="recentSaved.length" class="block reveal">
-        <div class="section-head">
-          <h2>Đã lưu gần đây</h2>
+      <section v-if="recentSaved.length" class="block block-compact reveal">
+        <div class="section-head section-head-tight">
+          <h2 class="h2-tight">Đã lưu gần đây</h2>
           <NuxtLink class="see-all" to="/da-luu">Xem tất cả →</NuxtLink>
         </div>
         <div class="scroll-row" role="region" aria-label="Đã lưu gần đây" tabindex="0">
@@ -1186,6 +1173,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 }
 .home .section-head .sh-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .home .sh-sub { padding-left: var(--space-4); margin: 0; font-size: var(--text-sm); font-weight: var(--weight-normal); color: var(--muted); line-height: var(--leading-snug); max-width: 62ch; }
+/* Tight variant — itineraries + personalization rows: smaller heading, less bottom margin,
+   so these secondary sections read as a compact strip rather than a full-weight section. */
+.home .section-head-tight { margin-bottom: var(--space-3); }
+.home .section-head-tight h2.h2-tight { font-size: var(--text-lg); }
 
 .home .block + .block { position: relative; }
 .home .block + .block::before {
