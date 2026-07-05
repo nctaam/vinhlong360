@@ -30,12 +30,6 @@
             </span>
           </div>
         </aside>
-        <nav v-if="heroRegions.length" class="hero-regions" aria-label="Khám phá theo vùng">
-          <span class="hr-lead">Ba vùng đất</span>
-          <span class="hr-links">
-            <NuxtLink v-for="r in heroRegions" :key="r.to" :to="r.to" class="hr-link">{{ r.name }}</NuxtLink>
-          </span>
-        </nav>
       </div>
     </section>
 
@@ -564,11 +558,6 @@ const heroFeatureReason = computed(() => {
 
 const stats = computed(() => homeData.value?.stats || null)
 const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
-// Hero foot strip: the three merged provinces as region entry points (replaces the old
-// stat counter, which read as a generic proof-banner and sat outside the content container).
-const HERO_REGION_KEYS = ['vinh-long', 'ben-tre', 'tra-vinh']
-const heroRegions = computed(() =>
-  HERO_REGION_KEYS.map(k => ({ name: (AREA_META as Record<string, { name: string }>)[k]?.name || k, to: `/khu-vuc/${k}` })))
 
 const firstUpcomingEvent = computed<any>(() => upcomingEvents.value[0] || null)
 const firstSeasonal = computed<any>(() => seasonal.value[0] || null)
@@ -1007,32 +996,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
    ═══════════════════════════════════════════════════ */
 /* Editorial "contents" strip — hairline-ruled meta line, left-aligned: serif numerals +
    tracked-caps labels. Replaces the centred glass stat-banner (a documented AI tell). */
-/* Hero foot strip — three-province region entry. Aligned to the SAME container width as
-   .hero-inner (was edge-flush → "1605+" collided with the viewport edge = the misalignment). */
-.hero-regions {
-  grid-column: 1 / -1; /* span the full hero grid row → content starts at the masthead column (aligned) */
-  margin-top: var(--space-5);
-  padding-top: var(--space-4);
-  border-top: 1px solid rgba(255,255,255,.20);
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-5);
-  color: #fff;
-}
-.hr-lead {
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  text-transform: uppercase; letter-spacing: .16em; color: rgba(255,255,255,.72);
-}
-.hr-links { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2) var(--space-5); }
-.hr-link {
-  font-family: var(--font-editorial); font-size: var(--text-xl); font-weight: 600;
-  color: #fff; letter-spacing: -.01em; text-decoration: none;
-  text-shadow: 0 1px 8px rgba(0,0,0,.4);
-}
-.hr-link:hover { text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--accent); }
-.hr-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 3px; }
-@media (max-width: 480px) {
-  .hero-regions { gap: var(--space-1) var(--space-4); }
-  .hr-link { font-size: var(--text-lg); }
-}
 
 /* Decision layer */
 .home-decision { padding-top: var(--space-8); }
