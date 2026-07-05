@@ -107,7 +107,7 @@
     <section v-if="upcomingEvents.length || seasonal.length" class="block reveal" aria-label="Sự kiện và lễ hội">
       <div class="section-head">
         <div class="sh-text">
-          <h2>Đang diễn ra</h2>
+          <h2>Đang <em class="ac-clay">diễn ra</em></h2>
           <p class="sh-sub">Sự kiện &amp; lễ hội sắp tới</p>
         </div>
         <NuxtLink class="see-all" to="/su-kien">Xem lịch →</NuxtLink>
@@ -168,7 +168,7 @@
     <section v-if="spotlight || topDishes.length" class="block reveal band" aria-label="Nổi bật">
       <div class="section-head">
         <div class="sh-text">
-          <h2>Nổi bật</h2>
+          <h2><em class="ac-river">Nổi bật</em></h2>
           <p class="sh-sub">Điểm đến &amp; quán ăn được cộng đồng yêu thích</p>
         </div>
       </div>
@@ -234,7 +234,7 @@
     <section v-if="itineraries.length" class="block block-compact reveal band" aria-label="Lịch trình gợi ý">
       <div class="section-head section-head-tight">
         <div class="sh-text">
-          <h2 class="h2-tight">Lịch trình gợi ý</h2>
+          <h2 class="h2-tight">Lịch trình <em class="ac-amber">gợi ý</em></h2>
           <p class="sh-sub">Hành trình 1–2 ngày, đi là có ngay</p>
         </div>
         <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
@@ -255,7 +255,7 @@
       <section v-if="communityPosts.length" class="block reveal" aria-label="Cộng đồng">
         <div class="section-head">
           <div class="sh-text">
-            <h2>Từ cộng đồng</h2>
+            <h2>Từ <em class="ac-leaf">cộng đồng</em></h2>
             <p class="sh-sub">Trải nghiệm thật, mẹo hay từ người đi trước</p>
           </div>
           <NuxtLink class="see-all" to="/cong-dong">Xem tất cả →</NuxtLink>
@@ -326,7 +326,7 @@
       <section v-if="forYou.length" class="block block-compact reveal" aria-label="Dành cho bạn">
         <div class="section-head section-head-tight">
           <div class="sh-text">
-            <h2 class="h2-tight">Dành cho bạn</h2>
+            <h2 class="h2-tight">Dành cho <em class="ac-clay">bạn</em></h2>
             <p class="sh-sub">Nội dung bạn vừa xem, đã lưu và gợi ý theo bạn.</p>
           </div>
         </div>
@@ -1155,8 +1155,23 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .section-head h2::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 4px; height: 1.05em; border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--accent) 0%, var(--primary) 100%);
+  /* "Lõi trầm tích" — cùng câu chuyện phù sa: river→amber→clay xếp lớp dọc. */
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
+/* Fraunces cất tiếng: chữ nghiêng "điểm nhấn" trong tiêu đề mục, tô theo 1 trong 3 tỉnh
+   (clay=Vĩnh Long · leaf=Bến Tre · river=Trà Vinh · amber=mùa/đặc sản). Tận dụng bộ chữ
+   editorial sẵn có thay vì dùng serif "phẳng". */
+.home .section-head h2 em, .home .storyland-title em, .home .spot-name em {
+  font-family: var(--font-editorial); font-style: italic; font-weight: 600;
+}
+.home .ac-clay  { color: var(--clay-600); }
+.home .ac-leaf  { color: var(--leaf-700); }
+.home .ac-river { color: var(--river-600); }
+.home .ac-amber { color: var(--amber-700); }
+.dark .home .ac-clay  { color: var(--clay-400); }
+.dark .home .ac-leaf  { color: #64BE93; }
+.dark .home .ac-river { color: #74ABB5; }
+.dark .home .ac-amber { color: var(--amber-500); }
 .home .section-head .sh-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .home .sh-sub { padding-left: var(--space-4); margin: 0; font-size: var(--text-sm); font-weight: var(--weight-normal); color: var(--muted); line-height: var(--leading-snug); max-width: 62ch; }
 /* Tight variant — itineraries + personalization rows: smaller heading, less bottom margin,
@@ -1167,9 +1182,16 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .block + .block { position: relative; }
 .home .block + .block::before {
   content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: min(100%, var(--maxw)); height: 1px;
-  background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .7;
+  width: min(100%, var(--maxw)); height: 7px;
+  /* Phù sa — dấu ấn chữ ký: ba dòng sông (sông Tiền/Hậu/Cổ Chiên) bồi thành lớp trầm tích.
+     3 hairline river→amber→clay, thon 2 đầu để không thành "gạch" cứng. */
+  background:
+    linear-gradient(90deg, transparent, var(--river-600) 26%, var(--river-600) 74%, transparent) top/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--amber-600) 30%, var(--amber-600) 70%, transparent) center/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--clay-600) 26%, var(--clay-600) 74%, transparent) bottom/100% 1.5px no-repeat;
+  opacity: .5;
 }
+.dark .home .block + .block::before { opacity: .62; }
 .home .block { padding-top: var(--space-16); padding-bottom: var(--space-8); content-visibility: auto; contain-intrinsic-size: auto 480px; }
 .home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-8); }
 .home .block.band { background: var(--bg-warm); background-image: var(--season-hero-gradient); border-radius: var(--radius-xl); padding-inline: var(--space-6); }
