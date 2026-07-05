@@ -305,6 +305,16 @@ if (areaMeta) {
    Sits below the text/stats (catalog-hero-inner / catalog-stats are z-index 1
    per catalog.css). Decorative only. */
 .area-hero { --AREA-rgb: var(--primary-rgb); }
+/* CE2 editorial hero refinement (scoped to region hero only — does NOT touch the shared
+   .catalog-hero used by /kham-pha): drop the emoji glyph — it's redundant decoration on a
+   real cinematic photo and reads app-y (an AI-slop tell) — and set the region name in the
+   editorial serif so this masthead speaks the same premium voice as the homepage hero. */
+.area-hero .catalog-hero-icon { display: none; }
+.area-hero .catalog-hero-inner h1 {
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  letter-spacing: -.015em;
+}
 
 /* ── SIGNATURE: cinematic per-region hero photo (logic-matched — each region shows its own
    signature scene: VL gạch gốm + miệt vườn · Bến Tre xứ dừa · Trà Vinh chùa Khmer).
