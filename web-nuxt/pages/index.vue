@@ -18,7 +18,7 @@
         <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
           <div class="hf-card">
             <NuxtLink :to="entityPath(heroFeature.id)" class="hf-thumb" :class="`cat-${hfMeta?.cat}`" :style="{ backgroundImage: hfBg }" :aria-label="`Xem ${heroFeature.name}`">
-              <span class="hf-thumb-icon" v-html="hfIcon" />
+              <span v-if="!heroFeature?.images?.length" class="hf-thumb-icon" v-html="hfIcon" />
             </NuxtLink>
             <span class="hf-body">
               <span class="hf-tag">{{ heroFeatureReason }}</span>
@@ -475,7 +475,11 @@ const spotRegion = computed(() => {
 
 const heroFeature = computed<any>(() => experiences.value.find((e: any) => e.id !== spotId.value) || spotlight.value || null)
 const hfMeta = computed(() => heroFeature.value ? (TYPE_META[heroFeature.value.type] || { emoji: '📍', label: heroFeature.value.type, cat: 'place' }) : null)
-const hfBg = computed(() => heroFeature.value && hfMeta.value ? generateCategoryPlaceholder(heroFeature.value.id, hfMeta.value.cat) : '')
+const hfBg = computed(() => {
+  const img = heroFeature.value?.images?.[0]
+  if (img) return `linear-gradient(to top, rgba(18,20,24,.42) 0%, rgba(18,20,24,.06) 45%, rgba(18,20,24,.22) 100%), url(${img})`
+  return heroFeature.value && hfMeta.value ? generateCategoryPlaceholder(heroFeature.value.id, hfMeta.value.cat) : ''
+})
 const hfIcon = computed(() => hfMeta.value ? generateCategoryIcon(hfMeta.value.cat) : '')
 const hfRegion = computed(() => {
   const a = heroFeature.value?.area || heroFeature.value?.attributes?.area || heroFeature.value?.attributes?.province
