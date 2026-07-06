@@ -140,10 +140,6 @@
           <span class="cross-icon" aria-hidden="true">🏡</span>
           <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
         </NuxtLink>
-        <NuxtLink :to="`/danh-ba?area=${areaKey}`" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏛️</span>
-          <div><strong>Danh bạ</strong><p>Hành chính xã/phường</p></div>
-        </NuxtLink>
       </div>
     </section>
   </section>

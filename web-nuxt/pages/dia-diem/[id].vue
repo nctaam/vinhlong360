@@ -97,7 +97,6 @@
           <a v-if="zaloLink" class="hl hl-action" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 Zalo</a>
           <NuxtLink v-if="hasCoords" class="hl hl-action" :to="mapUrl" :aria-label="`Xem ${entity.name} trên bản đồ`">🗺️ Bản đồ</NuxtLink>
           <span v-if="entity.attributes?.hours" class="hl"><span aria-hidden="true">🕒</span> {{ entity.attributes.hours }}</span>
-          <span v-if="priceText" class="hl"><span aria-hidden="true">💰</span> {{ priceText }}</span>
           <span v-if="addressText" class="hl"><span aria-hidden="true">📍</span> {{ addressText }}</span>
         </div>
         <p class="lead">{{ entity.summary }}</p>
@@ -371,21 +370,6 @@
               <span class="fact-ic" aria-hidden="true">💵</span>
               <span class="k">Mức giá</span>
               <span class="v">{{ entity.attributes.price_range }}</span>
-            </div>
-            <div v-if="entity.attributes?.atmosphere" class="fact">
-              <span class="fact-ic" aria-hidden="true">🌿</span>
-              <span class="k">Không gian</span>
-              <span class="v">{{ entity.attributes.atmosphere }}</span>
-            </div>
-            <div v-if="entity.attributes?.famous_for" class="fact">
-              <span class="fact-ic" aria-hidden="true">🏆</span>
-              <span class="k">Nổi tiếng với</span>
-              <span class="v">{{ entity.attributes.famous_for }}</span>
-            </div>
-            <div v-if="entity.attributes?.significance" class="fact">
-              <span class="fact-ic" aria-hidden="true">📜</span>
-              <span class="k">Ý nghĩa</span>
-              <span class="v">{{ entity.attributes.significance }}</span>
             </div>
           </div>
         </div>

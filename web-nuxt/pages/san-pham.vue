@@ -12,12 +12,6 @@
           <h1>{{ pc('hero_title') }}</h1>
           <p class="market-dek">Tháng {{ currentMonth }}, {{ inSeasonCount }} loại đặc sản đang chính vụ — ngon nhất, rẻ nhất, đúng lúc.</p>
           <p class="market-subtitle">{{ pc('hero_subtitle') }}</p>
-          <div v-if="seasonalHighlights.length" class="market-pulse" aria-hidden="true">
-            <span
-              v-for="(e, i) in seasonalHighlights.slice(0, 4)" :key="e.id"
-              class="market-basket" :style="{ '--basket-hue': String(hashHue(e.id)), animationDelay: `${i * 90}ms` }"
-            ></span>
-          </div>
         </div>
       </div>
       <div v-if="allEntities.length" class="catalog-stats market-stats">
@@ -245,16 +239,6 @@ const seasonalHighlights = computed(() => {
     .sort((a: Entity, b: Entity) => (relevanceScore(b, String(currentMonth)) || 0) - (relevanceScore(a, String(currentMonth)) || 0))
     .slice(0, 8)
 })
-
-// Deterministic hash → hue for the market-pulse basket swatches (mirrors the
-// id-seeded placeholder-gradient pattern already used by EntityCard — same
-// entity always reads the same colour, no new data/schema needed).
-function hashHue(id: string | number): number {
-  const s = String(id)
-  let h = 0
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
-  return h % 360
-}
 
 function scrollToGrid() {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
@@ -540,27 +524,6 @@ useHead(() => ({
 }
 .catalog-hero-inner p.market-subtitle { color: var(--muted); margin-top: var(--space-1); }
 
-/* Market-pulse strip — 4 tiny woven-basket swatches previewing what's in season
-   below. One-shot gentle scale settle on load, then still (motion budget §4.1). */
-.market-pulse {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
-}
-.market-basket {
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-sm) var(--radius-sm) 40% 40%;
-  background: linear-gradient(160deg, hsl(var(--basket-hue) 62% 62%), hsl(var(--basket-hue) 55% 44%));
-  border: 1px solid rgba(0, 0, 0, .08);
-  animation: basket-settle .5s var(--ease-spring-gentle) both;
-}
-.dark .market-basket { border-color: rgba(255, 255, 255, .12); }
-@keyframes basket-settle {
-  0% { transform: scale(.6); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
 /* Stats row restyled onto the sediment-tick section-head visual language
    (river→amber→clay tick) — echoes .sediment-head without misapplying that
    class to non-<h2> markup. */
@@ -639,13 +602,11 @@ useHead(() => ({
 .dark .ocop-teaser-link { background: linear-gradient(90deg, rgba(var(--secondary-rgb), .1), transparent); }
 
 @media (prefers-reduced-motion: reduce) {
-  .market-basket { animation: none; opacity: 1; transform: none; }
   .season-reset-chip:active { transform: none; }
   .ocop-teaser-link:hover { transform: none; }
 }
 
 @media (max-width: 640px) {
-  .market-pulse { margin-top: var(--space-3); }
   .ocop-teaser-link { padding: var(--space-3) var(--space-4); }
 }
 </style>

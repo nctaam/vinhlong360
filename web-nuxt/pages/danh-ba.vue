@@ -68,9 +68,7 @@
       </label>
     </section>
 
-    <p class="dir-disclaimer"><strong class="dir-disclaimer-mark" aria-hidden="true">⚠️</strong> Thông tin mang tính tham khảo và có thể thay đổi sau sắp xếp đơn vị hành chính —
-      vui lòng kiểm chứng với cơ quan trước khi sử dụng.
-      <NuxtLink to="/lien-he" class="dir-disclaimer-link">Báo thông tin sai</NuxtLink>.</p>
+    <p class="dir-report-link"><NuxtLink to="/lien-he">Báo thông tin sai</NuxtLink>.</p>
 
     <div v-if="!wardId" class="empty-hint">
       <span class="empty-hint-halo" aria-hidden="true"><span class="empty-hint-icon">🏘️</span></span>
@@ -337,10 +335,9 @@ useHead(() => ({
 .ward-pick .control-label { font-weight: var(--weight-semibold); }
 .ward-pick select { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-md); font-size: 1rem; min-height: 44px; background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
 .ward-pick select:focus-visible { outline: none; border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15), var(--shadow-xs); }
-.dir-disclaimer { background: rgba(var(--accent-rgb), .06); border: .5px solid rgba(var(--accent-rgb), .2); border-left: 2px solid var(--accent); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); margin: var(--space-6) 0 var(--space-5); line-height: var(--leading-relaxed); }
-.dir-disclaimer-mark { font-style: normal; }
-.dir-disclaimer-link { color: var(--primary-fg); font-weight: var(--weight-semibold); }
-.dir-disclaimer-link:hover { text-decoration: underline; }
+.dir-report-link { font-size: var(--text-sm); color: var(--muted); margin: var(--space-6) 0 var(--space-5); }
+.dir-report-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
+.dir-report-link a:hover { text-decoration: underline; }
 .fac-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
 /* Left accent = tri-province sediment gradient (::before bar, same technique
    as .sediment-head's h2 tick / .region-window.active), replacing the flat
@@ -406,7 +403,6 @@ useHead(() => ({
 /* Dark mode */
 .dark .fac { background: var(--bg-alt); border-color: var(--line); }
 .dark .fac:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
-.dark .dir-disclaimer { background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .15); border-left-color: var(--accent); }
 .dark .ward-pick select { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 .dark .ward-pick select:focus-visible { border-color: var(--primary-fg); }
 .dark .empty-hint { color: var(--muted); border-color: rgba(255,255,255,.08); background: radial-gradient(120% 100% at 50% 0%, rgba(var(--primary-rgb), .1), transparent 70%); }

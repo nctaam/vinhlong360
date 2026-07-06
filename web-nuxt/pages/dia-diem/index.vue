@@ -101,8 +101,8 @@
       </div>
     </div>
 
-    <p v-if="!pending" class="dd-count" aria-live="polite">
-      <strong>{{ total }}</strong> địa điểm<template v-if="qApplied"> cho “{{ qApplied }}”</template>
+    <p v-if="!pending && qApplied" class="dd-count" aria-live="polite">
+      <strong>{{ total }}</strong> địa điểm cho “{{ qApplied }}”
     </p>
 
     <SkeletonGrid v-if="pending && !items.length" :count="9" />
