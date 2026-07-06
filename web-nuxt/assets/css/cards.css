@@ -306,6 +306,17 @@
     0 18px 44px -18px rgba(0,0,0,.7);
 }
 
+/* ── Mobile perf: drop backdrop-filter on repeated in-scroll-flow glass ──
+   .cover-tag renders on every card cover in every grid/scroll-row — on
+   mobile that's a `saturate(180%) blur(20px)` re-rasterized per card per
+   scroll frame (GPU-expensive, causes scroll jank). Its bg is already a
+   near-opaque rgba(0,0,0,.45) scrim, so the blur was near-invisible over
+   it — removing it is a no-op visually but a real perf win. Desktop
+   (>640px) keeps the original --glass blur untouched. */
+@media (max-width: 640px) {
+  .cover-tag { backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+
 /* ── Reduced motion (cards) ── */
 @media (prefers-reduced-motion: reduce) {
   .card:hover { transform: none; }

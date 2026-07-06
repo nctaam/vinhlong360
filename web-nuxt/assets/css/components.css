@@ -414,6 +414,34 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 }
 .save-label { white-space: nowrap; }
 
+/* ── Mobile perf: drop backdrop-filter on repeated in-scroll-flow glass ──
+   .save-btn / .save-btn-sm appear on every card in every grid/scroll-row —
+   on mobile that's a saturate+blur re-rasterized per button per scroll
+   frame. Swap to a near-opaque solid bg so it still reads as a floating
+   pill without the blur cost. .saved states are already solid tokens
+   (--save-red-bg / --white) and are left untouched. Desktop (>640px)
+   keeps the original glass blur unchanged. */
+@media (max-width: 640px) {
+  .save-btn:not(.saved) {
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    background: var(--card);
+  }
+  .save-btn-sm:not(.saved) {
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    background: rgba(0, 0, 0, .6);
+  }
+  .save-btn-sm:not(.saved):hover { background: rgba(0, 0, 0, .72); }
+  /* Dark-mode parity: the "Dark mode (components)" block below sets
+     `.dark .save-btn:not(.save-btn-sm)` / `.dark .save-btn-sm` at the
+     same specificity (0-2-0) and later in source order, so without
+     these it would win back over the rules above and re-introduce a
+     translucent bg (esp. .save-btn-sm's rgba(255,255,255,.18), which
+     reads as see-through with the blur now gone). Re-assert opacity here. */
+  .dark .save-btn:not(.save-btn-sm):not(.saved) { background: var(--card); }
+  .dark .save-btn-sm:not(.saved) { background: rgba(0, 0, 0, .6); }
+  .dark .save-btn-sm:not(.saved):hover { background: rgba(0, 0, 0, .72); }
+}
+
 /* ── Search Autocomplete ── */
 .search-ac { position: relative; }
 .search-ac form { display: contents; }
