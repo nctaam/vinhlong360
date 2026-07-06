@@ -50,11 +50,11 @@
       </div>
     </article>
 
-    <!-- P0-5: Ban biên tập & phương pháp — tín hiệu Who/How (E-E-A-T), giọng trung thực. -->
-    <article id="ban-bien-tap" class="legal-section about-section reveal sediment-head tint-alt">
-      <span class="about-section-num" aria-hidden="true"><IconLine name="user" /></span>
+    <!-- P0-5: Ban biên tập & phương pháp — tín hiệu Who/How (E-E-A-T), giọng trung thực.
+         declutter-3 T8: numbered-section full-height → infobox compact; nội dung + id GIỮ 100%. -->
+    <article id="ban-bien-tap" class="editors-infobox reveal">
       <div class="about-section-content">
-        <h2>Ban biên tập &amp; phương pháp</h2>
+        <h2><IconLine name="user" /> Ban biên tập &amp; phương pháp</h2>
         <div class="legal-body">
           <p>Nội dung trên vinhlong360 do <strong>Ban biên tập vinhlong360</strong> tổng hợp từ nguồn công khai — cổng thông tin điện tử tỉnh/huyện, báo chính thống, tư liệu địa phương và Wikipedia có dẫn nguồn — rồi viết lại bằng giọng riêng, kèm trích dẫn và liên kết tới nguồn gốc. Chúng tôi không đăng lại nguyên văn tin bài.</p>
           <p><strong>Quy trình:</strong> tổng hợp nhiều nguồn → đối chiếu ít nhất hai nguồn cho mỗi dữ kiện cứng (năm, số liệu, danh hiệu) → biên tập theo giọng bản địa → gắn nguồn và ngày. Dữ kiện chỉ có một nguồn yếu sẽ bị loại thay vì phỏng đoán.</p>
@@ -64,26 +64,10 @@
       </div>
     </article>
 
-    <!-- Signature moment: the tri-province merge as the emotional subject, not a footnote. -->
-    <section class="province-band reveal" aria-labelledby="province-band-heading">
-      <h2 id="province-band-heading" class="sr-only">Ba vùng đất, một câu chuyện</h2>
-      <div class="pb-grain" aria-hidden="true"></div>
-      <div class="pb-glyphs">
-        <div class="pb-glyph">
-          <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M24 6c-3 8-10 10-10 20a10 10 0 0 0 20 0c0-10-7-12-10-20Z" fill="none" stroke-width="1.6" /><path d="M24 26v16" stroke-width="1.6" /></svg>
-          <p><strong>Vĩnh Long</strong> — sông nước, miệt vườn, làng nghề gốm đỏ.</p>
-        </div>
-        <div class="pb-glyph">
-          <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M24 8c6 4 6 10 2 14-4 4-4 8 0 12M24 8c-6 4-6 10-2 14 4 4 4 8 0 12" fill="none" stroke-width="1.6" /><path d="M14 34h20" stroke-width="1.6" /></svg>
-          <p><strong>Bến Tre</strong> — xứ dừa, cù lao giữa sông, đặc sản dừa.</p>
-        </div>
-        <div class="pb-glyph">
-          <svg viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M24 6 12 18h24Z" fill="none" stroke-width="1.6" stroke-linejoin="round" /><path d="M16 18v20h16V18M12 38h24" stroke-width="1.6" /></svg>
-          <p><strong>Trà Vinh</strong> — văn hoá Khmer, chùa cổ, ẩm thực giao thoa.</p>
-        </div>
-      </div>
-      <p class="pb-tagline">Sáp nhập trên bản đồ. Chưa từng sáp nhập trong lòng người.</p>
-    </section>
+    <!-- declutter-3 T8: province-band 3-glyph → sediment-divider (motif phù-sa giữ)
+         + 1 dòng narrative đắt nhất; 3 mệnh đề tỉnh đã có trong intro/sections. -->
+    <div class="sediment-divider" aria-hidden="true"></div>
+    <p class="merge-tagline reveal">Sáp nhập trên bản đồ. Chưa từng sáp nhập trong lòng người.</p>
 
     <!-- Closing band: About page should never dead-end. -->
     <section class="about-cta reveal">
@@ -280,42 +264,37 @@ useHead({
   font-weight: var(--weight-bold);
 }
 
-/* ── Signature moment: "Ba vùng, một câu chuyện" ──────────────────── */
-.province-band {
-  position: relative;
-  overflow: clip;
-  margin: var(--space-editorial) calc(-1 * var(--space-4)) var(--space-8);
-  padding: var(--space-8) var(--space-4);
-  background: linear-gradient(120deg, color-mix(in srgb, var(--river-600) 12%, transparent) 0%, var(--bg-warm) 50%, rgba(var(--primary-rgb), .14) 100%);
-  text-align: center;
+/* ── declutter-3 T8: province-band → sediment-divider + merge-tagline ─
+   (divider rule copy từ cong-dong — pattern 3-hairline river→amber→clay;
+   .editors-infobox = trình bày compact cho khối Ban-biên-tập, nội dung giữ) */
+.sediment-divider {
+  position: relative; margin-top: var(--space-8); height: 7px;
+  background:
+    linear-gradient(90deg, transparent, var(--river-600) 26%, var(--river-600) 74%, transparent) top/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--amber-600) 30%, var(--amber-600) 70%, transparent) center/100% 1px no-repeat,
+    linear-gradient(90deg, transparent, var(--clay-600) 26%, var(--clay-600) 74%, transparent) bottom/100% 1.5px no-repeat;
+  opacity: .5;
 }
-.pb-grain { position: absolute; inset: 0; background: var(--grain); opacity: .05; pointer-events: none; }
+.dark .sediment-divider { opacity: .62; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-.pb-glyphs {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-6);
-  max-width: 900px;
-  margin: 0 auto var(--space-6);
-}
-.pb-glyph {
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
-  opacity: 0; transform: translateY(8px);
-  transition: opacity .6s var(--ease-out), transform .6s var(--ease-out);
-}
-.province-band.revealed .pb-glyph { opacity: 1; transform: translateY(0); }
-.province-band.revealed .pb-glyph:nth-child(2) { transition-delay: 120ms; }
-.province-band.revealed .pb-glyph:nth-child(3) { transition-delay: 240ms; }
-.pb-glyph svg { width: 44px; height: 44px; color: var(--clay-600); }
-.pb-glyph svg path { stroke: currentColor; }
-.pb-glyph p { margin: 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); max-width: 26ch; }
-.pb-tagline {
-  position: relative;
+.merge-tagline {
   font-family: var(--font-editorial); font-style: italic; font-weight: 500;
   font-size: clamp(1.15rem, 1rem + .8vw, 1.5rem);
-  color: var(--ink); margin: 0; text-wrap: balance;
+  color: var(--ink); margin: var(--space-5) 0 var(--space-8); text-align: center; text-wrap: balance;
 }
+.editors-infobox {
+  margin: var(--space-8) 0;
+  padding: var(--space-5) var(--space-6);
+  background: var(--bg-warm);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.editors-infobox h2 {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-lg); margin: 0 0 var(--space-3);
+}
+.editors-infobox .legal-body p { font-size: var(--text-sm); }
+.dark .editors-infobox { background: var(--bg-alt); border-color: var(--line); }
 
 /* ── Closing CTA — About should never dead-end. ───────────────────── */
 .about-cta {
@@ -340,7 +319,6 @@ useHead({
 @media (min-width: 640px) {
   .legal-page { padding: 0 var(--space-5) var(--space-16); }
   .brand-masthead { margin-inline: calc(-1 * var(--space-5)); padding-inline: var(--space-8); }
-  .province-band { margin-inline: calc(-1 * var(--space-5)); padding-inline: var(--space-8); }
 }
 @media (max-width: 600px) {
   .about-section { flex-direction: column; gap: var(--space-2); }
@@ -359,15 +337,12 @@ useHead({
 .dark .highlight-badge { background: var(--bg-alt); border-color: var(--line); }
 .dark .about-section.tint-alt { background: rgba(255,255,255,.025); }
 .dark .mission-section { border-color: var(--secondary-fg); background: rgba(var(--secondary-rgb), .12); }
-.dark .province-band { background: linear-gradient(120deg, rgba(116, 171, 181, .08) 0%, rgba(255,255,255,.02) 50%, rgba(var(--primary-rgb), .1) 100%); }
-.dark .pb-glyph svg { color: var(--clay-400); }
 .dark .legal-page :deep(a) { text-decoration-color: transparent; }
 .dark .legal-page :deep(a:hover) { text-decoration-color: var(--primary-fg); }
 
 /* ── Reduced motion ───────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .bm-river, .bm-river--2 { animation: none; stroke-dasharray: none; }
-  .pb-glyph { transition: none; opacity: 1; transform: none; }
 }
 
 /* Reveal stagger + reduced-motion fallback are provided by the global
