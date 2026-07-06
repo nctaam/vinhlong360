@@ -648,7 +648,10 @@ useHead({
 .lehoi-status.status-now {
   background: rgba(var(--secondary-rgb), .14);
   color: var(--secondary-dark);
-  animation: lehoi-status-pulse 2.8s var(--ease-out-expo) infinite;
+  /* Settle-then-still: a multi-day festival can stay "Đang diễn ra" for days —
+     pulsing the whole time would blow the motion budget. Play the attention-cue
+     3× (~8.4s) on first paint, then rest still like every other settled badge. */
+  animation: lehoi-status-pulse 2.8s var(--ease-out-expo) 3;
 }
 .dark .lehoi-status.status-soon { background: rgba(var(--accent-rgb), .22); color: var(--accent); }
 .dark .lehoi-status.status-now { background: rgba(var(--secondary-rgb), .22); color: var(--secondary); }

@@ -31,7 +31,7 @@
     <!-- Region quick-picks -->
     <section v-if="!placesError" class="block band reveal">
       <div class="section-head">
-        <h2>Chọn khu vực</h2>
+        <h2 class="sediment-head">Chọn khu vực</h2>
       </div>
       <div class="quick-picks region-quick-picks" role="group" aria-label="Chọn khu vực">
         <button type="button"
@@ -50,7 +50,7 @@
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
-      <h2>Danh bạ hành chính — tìm nhanh liên hệ địa phương</h2>
+      <h2 class="sediment-head">Danh bạ hành chính — tìm nhanh liên hệ địa phương</h2>
       <p>Khi đến một vùng đất mới, việc biết số điện thoại và địa chỉ cơ quan hành chính địa phương là rất cần thiết — từ xin xác nhận tạm trú, hỏi thông tin quy hoạch, đến liên hệ công an khi cần hỗ trợ. Danh bạ này tổng hợp thông tin liên hệ UBND, công an và các cơ quan công vụ theo từng xã, phường trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh.</p>
       <p>Sau khi sáp nhập ba tỉnh thành một đơn vị hành chính mới, hệ thống xã/phường đang trong quá trình điều chỉnh. Thông tin trên đây được cập nhật liên tục nhưng có thể chưa phản ánh đầy đủ các thay đổi mới nhất — vui lòng kiểm chứng trực tiếp với cơ quan khi cần.</p>
     </section>
@@ -345,6 +345,7 @@ useHead(() => ({
 .fac { position: relative; border: .5px solid var(--line); border-left: 4px solid var(--secondary-fg); border-radius: var(--radius-lg); padding: var(--space-5); background: linear-gradient(180deg, rgba(var(--primary-rgb), .04), transparent 60%), var(--card); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); border-left-color: var(--secondary-fg); }
 .fac-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); margin-bottom: var(--space-2); }
+.fac strong { font-family: var(--font-editorial); font-weight: 600; }
 .fac-kind { align-self: flex-start; font-size: var(--text-xs); color: var(--primary-fg); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide, .04em); background: rgba(var(--primary-rgb), .12); border-radius: var(--radius-sm); padding: 2px var(--space-2); line-height: 1.5; }
 .fac-row { font-size: var(--text-sm); margin: 2px 0; }
 .fac-row a { transition: color .3s var(--ease-out); }
@@ -369,7 +370,23 @@ useHead(() => ({
 .fac-report-actions { display: flex; gap: var(--space-2); }
 .fac-skeleton { display: grid; gap: var(--space-3); }
 .fac-sk-item { border: .5px solid var(--line); border-left: 4px solid var(--secondary-fg); border-radius: var(--radius-lg); padding: var(--space-5); background: var(--card); display: flex; flex-direction: column; gap: var(--space-2); }
-.sk-bar { height: 10px; border-radius: var(--radius-sm); background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%); background-size: 200% 100%; animation: shimmer 1.6s infinite linear; }
+.sk-bar {
+  position: relative;
+  height: 10px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(110deg, var(--bg-alt) 30%, var(--card) 50%, var(--bg-alt) 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+  overflow: hidden;
+}
+/* Faint grain overlay — matches EntityCard's placeholder (.cover-grain) so the
+   loading moment forecasts "editorial illustration", not a flat AI-slop shimmer bar. */
+.sk-bar::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: var(--grain); background-size: 120px 120px; opacity: .06;
+}
+.dark .sk-bar::after { opacity: .09; }
 .sk-bar--badge { width: 70px; height: 16px; border-radius: var(--radius-sm); }
 .sk-bar--sm { width: 35%; }
 .sk-bar--lg { height: 14px; }

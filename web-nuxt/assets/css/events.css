@@ -465,8 +465,9 @@
 
 .event-info { flex: 1; min-width: 0; }
 .event-info h3 {
+  font-family: var(--font-editorial);
   font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
+  font-weight: 600;
   margin: 0 0 var(--space-1);
   line-height: var(--leading-snug);
 }

@@ -72,7 +72,7 @@
         <details v-if="isSelf && achievements.length" class="badge-showcase" open>
           <summary class="bs-title">Thành tích ({{ achievementsEarned }}/{{ achievements.length }})</summary>
           <div v-for="cat in achievementCategories" :key="cat.key" class="bs-cat">
-            <h4 class="bs-cat-title">{{ cat.label }}</h4>
+            <h3 class="bs-cat-title">{{ cat.label }}</h3>
             <div class="bs-grid">
               <div v-for="a in cat.items" :key="a.id"
                    class="bs-card" :class="{ 'bs-earned': a.earned, 'bs-locked': !a.earned }"

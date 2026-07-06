@@ -406,7 +406,7 @@
       <aside class="threads-sidebar">
         <div class="sidebar-card sidebar-about reveal">
           <p class="sidebar-kicker">Đôi lời</p>
-          <h2>Cộng đồng vinhlong360</h2>
+          <h2 class="sediment-head">Cộng đồng vinhlong360</h2>
           <p>Nơi chia sẻ trải nghiệm du lịch, đánh giá đặc sản và kết nối với cộng đồng yêu miền Tây.</p>
           <div class="sidebar-stats">
             <div class="sidebar-stat">
@@ -422,7 +422,7 @@
 
         <div v-if="recentMentions.length" class="sidebar-card reveal">
           <p class="sidebar-kicker">Đang được nhắc tới</p>
-          <h2>Nhắc tới gần đây</h2>
+          <h2 class="sediment-head">Nhắc tới gần đây</h2>
           <ul class="mention-list">
             <li v-for="m in recentMentions" :key="m.entity_id">
               <NuxtLink :to="entityPath(m.entity_id)" class="mention-link">
@@ -434,7 +434,7 @@
 
         <div v-if="topMembers.length" class="sidebar-card reveal">
           <p class="sidebar-kicker">Bảng xếp hạng</p>
-          <h2>Thành viên tích cực</h2>
+          <h2 class="sediment-head">Thành viên tích cực</h2>
           <ol class="leaderboard-list">
             <li v-for="(m, i) in topMembers" :key="m.id">
               <NuxtLink :to="userPath(m.username || m.id)" class="lb-row">
@@ -450,7 +450,7 @@
 
         <div v-if="isLoggedIn && suggestedUsers.length" class="sidebar-card reveal">
           <p class="sidebar-kicker">Gợi ý kết bạn</p>
-          <h2>Có thể bạn quan tâm</h2>
+          <h2 class="sediment-head">Có thể bạn quan tâm</h2>
           <ul class="suggest-list">
             <li v-for="s in suggestedUsers" :key="s.id" class="suggest-row">
               <NuxtLink :to="userPath(s.username || s.id)" class="suggest-user">
@@ -466,7 +466,7 @@
 
         <div v-if="trendingTags.length" class="sidebar-card reveal">
           <p class="sidebar-kicker">Chủ đề đang bàn</p>
-          <h2>Hashtag thịnh hành</h2>
+          <h2 class="sediment-head">Hashtag thịnh hành</h2>
           <div class="trending-tags">
             <NuxtLink
               v-for="t in trendingTags"
@@ -479,7 +479,7 @@
 
         <div class="sidebar-card reveal">
           <p class="sidebar-kicker">Nhập cuộc</p>
-          <h2>Cách tham gia</h2>
+          <h2 class="sediment-head">Cách tham gia</h2>
           <ul class="sidebar-list">
             <li>
               <span class="sl-icon">📸</span>
@@ -502,7 +502,7 @@
 
         <div class="sidebar-card sidebar-rules reveal">
           <p class="sidebar-kicker">Giữ nếp</p>
-          <h2>Quy tắc cộng đồng</h2>
+          <h2 class="sediment-head">Quy tắc cộng đồng</h2>
           <ol class="sidebar-rules-list">
             <li>Tôn trọng lẫn nhau</li>
             <li>Chia sẻ thông tin chính xác</li>

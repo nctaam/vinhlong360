@@ -149,17 +149,20 @@
       <div class="search-row">
         <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm sự kiện…" aria-label="Tìm sự kiện" />
       </div>
-      <div class="chip-row" role="group" aria-label="Lọc theo trạng thái">
-        <button type="button" :class="['chip', { active: statusFilter === 'all' }]" :aria-pressed="statusFilter === 'all'" @click="statusFilter = 'all'">Tất cả</button>
-        <button type="button" :class="['chip', { active: statusFilter === 'upcoming' }]" :aria-pressed="statusFilter === 'upcoming'" @click="statusFilter = statusFilter === 'upcoming' ? 'all' : 'upcoming'">📅 Sắp diễn ra</button>
-        <button type="button" :class="['chip', { active: statusFilter === 'past' }]" :aria-pressed="statusFilter === 'past'" @click="statusFilter = statusFilter === 'past' ? 'all' : 'past'">📋 Đã qua</button>
-      </div>
-      <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-        <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả vùng</button>
-        <button type="button" v-for="(meta, slug) in AREA_META" :key="slug" :class="['chip', { active: areaFilter === slug }]" :aria-pressed="areaFilter === slug" @click="areaFilter = slug">
-          {{ meta.emoji }} {{ meta.name }}
-        </button>
-      </div>
+      <FilterChips
+        :filters="statusFilterOptions"
+        :model-value="[statusFilter]"
+        single-select
+        aria-label="Lọc theo trạng thái"
+        @update:model-value="v => statusFilter = v[0] || 'all'"
+      />
+      <FilterChips
+        :filters="areaFilterOptions"
+        :model-value="[areaFilter]"
+        single-select
+        aria-label="Lọc theo khu vực"
+        @update:model-value="v => areaFilter = v[0] || 'all'"
+      />
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
@@ -288,6 +291,16 @@ const statusFilter = ref('all')
 const view = ref('list')
 
 useFilterUrl({ vung: areaFilter, trang_thai: statusFilter }, { vung: 'all', trang_thai: 'all' })
+
+const statusFilterOptions = [
+  { key: 'all', label: 'Tất cả' },
+  { key: 'upcoming', label: 'Sắp diễn ra', icon: '📅' },
+  { key: 'past', label: 'Đã qua', icon: '📋' },
+]
+const areaFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả vùng' },
+  ...Object.entries(AREA_META).map(([slug, m]) => ({ key: slug, label: m.name, icon: m.emoji })),
+])
 
 const todayStr = new Date().toISOString().slice(0, 10)
 function eventStatus(e: Entity): 'upcoming' | 'past' | '' {
