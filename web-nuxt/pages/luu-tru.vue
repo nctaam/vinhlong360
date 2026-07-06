@@ -113,16 +113,13 @@
           <input v-model="q" type="search" enterkeyhint="search" placeholder="Tìm nơi lưu trú…" aria-label="Tìm nơi lưu trú" />
         </div>
         <p class="control-label">Khu vực</p>
-        <div class="chip-row" role="group" aria-label="Lọc theo khu vực">
-          <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
-          <button type="button"
-            v-for="(meta, key) in AREA_META"
-            :key="key"
-            :class="['chip', { active: areaFilter === key }]"
-            :aria-pressed="areaFilter === key"
-            @click="areaFilter = key as string"
-          >{{ meta.emoji }} {{ meta.name }}</button>
-        </div>
+        <FilterChips
+          :filters="areaFilterOptions"
+          :model-value="[areaFilter]"
+          single-select
+          aria-label="Lọc theo khu vực"
+          @update:model-value="v => areaFilter = v[0] || 'all'"
+        />
       </div>
 
       <p class="result-meta" aria-live="polite">{{ filtered.length }} nơi lưu trú</p>
@@ -251,6 +248,12 @@ const areaCounts = computed(() =>
 function countByArea(key: string) {
   return areaCountMap.value[key] || 0
 }
+
+// FilterChips options for the grid's area filter (single-select, mirrors du-lich.vue's typeFilterOptions pattern)
+const areaFilterOptions = computed(() => [
+  { key: 'all', label: 'Tất cả' },
+  ...Object.entries(AREA_META).map(([key, meta]) => ({ key, label: `${meta.emoji} ${meta.name}` })),
+])
 
 // Data-driven accommodation type breakdown for hero confidence (no fabricated values):
 // prefer the accommodation_type attribute, fall back to inferring from the name.
@@ -544,7 +547,10 @@ useHead(() => ({
 .dark .stay-tile { background: var(--card); border-color: var(--line); }
 .dark .stay-tile:hover { border-color: rgba(255,255,255,.1); }
 
-@media (max-width: 900px) {
+@media (max-width: 900px) and (min-width: 601px) {
+  .stay-triad { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
   .stay-triad { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -573,7 +579,18 @@ useHead(() => ({
 .region-window:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(var(--river-rgb, var(--primary-rgb)), .4); }
 .region-window:active { transform: scale(.98); transition-duration: .08s; }
 .region-window:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.region-window.active { border-color: var(--tertiary, var(--primary)); background: rgba(var(--river-rgb, var(--primary-rgb)), .06); }
+/* Active state = tri-province gradient underline (river→amber→clay), matching
+   FilterChips.vue's ::after treatment, instead of a flat single-tone border. */
+.region-window.active { border-color: transparent; background: rgba(var(--river-rgb, var(--primary-rgb)), .06); }
+.region-window.active::after {
+  content: "";
+  position: absolute; left: var(--space-5); right: var(--space-5); bottom: 0;
+  height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .region-window.active::after {
+  background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
 .rw-motif { font-size: 1.6rem; transition: transform .35s var(--ease-spring-gentle); }
 .region-window:hover .rw-motif { transform: scale(1.12); }
 .rw-name {

@@ -342,8 +342,17 @@ useHead(() => ({
 .dir-disclaimer-link { color: var(--primary-fg); font-weight: var(--weight-semibold); }
 .dir-disclaimer-link:hover { text-decoration: underline; }
 .fac-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
-.fac { position: relative; border: .5px solid var(--line); border-left: 4px solid var(--secondary-fg); border-radius: var(--radius-lg); padding: var(--space-5); background: linear-gradient(180deg, rgba(var(--primary-rgb), .04), transparent 60%), var(--card); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
-.fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); border-left-color: var(--secondary-fg); }
+/* Left accent = tri-province sediment gradient (::before bar, same technique
+   as .sediment-head's h2 tick / .region-window.active), replacing the flat
+   single-tone border-left so each office entry reads as a considered
+   directory record, not a generic list row. */
+.fac { position: relative; overflow: hidden; border: .5px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-5); background: linear-gradient(180deg, rgba(var(--primary-rgb), .04), transparent 60%), var(--card); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
+.fac::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .fac::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.fac:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .fac-head { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); margin-bottom: var(--space-2); }
 .fac strong { font-family: var(--font-editorial); font-weight: 600; }
 .fac-kind { align-self: flex-start; font-size: var(--text-xs); color: var(--primary-fg); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-wide, .04em); background: rgba(var(--primary-rgb), .12); border-radius: var(--radius-sm); padding: 2px var(--space-2); line-height: 1.5; }
@@ -395,8 +404,8 @@ useHead(() => ({
 @media (prefers-reduced-motion: reduce) { .sk-bar { animation: none; } }
 
 /* Dark mode */
-.dark .fac { background: var(--bg-alt); border-color: var(--line); border-left-color: var(--secondary-fg); }
-.dark .fac:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); border-left-color: var(--secondary-fg); }
+.dark .fac { background: var(--bg-alt); border-color: var(--line); }
+.dark .fac:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
 .dark .dir-disclaimer { background: rgba(var(--accent-rgb), .08); border-color: rgba(var(--accent-rgb), .15); border-left-color: var(--accent); }
 .dark .ward-pick select { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 .dark .ward-pick select:focus-visible { border-color: var(--primary-fg); }

@@ -15,9 +15,18 @@
     <p class="dateline-eyebrow">HỒ SƠ PHÁP LÝ · CẬP NHẬT {{ doc.updated_date }}</p>
     <div class="legal-body editorial-body drop-cap" v-html="introHtml"></div>
 
+    <!-- Jump-link TOC — 6 sections cross-link each other elsewhere on the site;
+         without anchors a cross-link only ever lands on the page top. -->
+    <nav class="legal-toc" aria-label="Mục lục chính sách bảo mật">
+      <a v-for="(s, i) in doc.sections" :key="i" :href="`#legal-section-${i + 1}`" class="legal-toc-link">
+        {{ String(i + 1).padStart(2, '0') }}. {{ stripNum(s.heading) }}
+      </a>
+    </nav>
+
     <section
       v-for="(s, i) in doc.sections"
       :key="i"
+      :id="`legal-section-${i + 1}`"
       class="legal-section reveal sediment-head"
     >
       <span class="about-section-num" aria-hidden="true">{{ String(i + 1).padStart(2, '0') }}</span>
@@ -95,6 +104,27 @@ useHead({
    paragraph (drop-cap) is the one lede moment on an otherwise plain-spoken page. */
 .legal-body.editorial-body { margin-bottom: 0; }
 .legal-body.drop-cap { margin-bottom: var(--space-2); }
+
+/* ── Jump-link TOC — short reference list under the intro so a cross-link
+   from another legal doc (or within this one) lands on the referenced
+   section, not the page top. Anchor scroll-offset is handled globally by
+   base.css's :target { scroll-margin-top } rule (WCAG 2.4.11). ──────── */
+.legal-toc {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  margin: 0 0 var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border: .5px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-alt);
+}
+.legal-toc-link {
+  font-size: var(--text-sm); color: var(--primary-fg); font-weight: var(--weight-medium);
+  text-decoration-line: underline; text-decoration-color: transparent; text-underline-offset: 3px;
+  transition: text-decoration-color .3s var(--ease-out), color .3s var(--ease-out);
+}
+.legal-toc-link:hover { text-decoration-color: var(--primary-fg); }
+.legal-toc-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+.dark .legal-toc { background: var(--bg-alt); border-color: var(--line); }
 
 /* ── Section rhythm: number badge + content zone ──────────────────── */
 .legal-section {
