@@ -209,3 +209,14 @@
 - [ ] `cd agent && python -m pytest -q` — không đỏ thêm ngoài 6 PG-index pre-existing.
 - [ ] SSR-sweep 6 URL: `/`, `/dia-diem/cu-lao-my-hoa`, `/cong-dong`, `/theo-mua`, `/lien-he`, `/ban-do` — 200 + không anchor-đã-xoá nào còn.
 - [ ] Grep toàn `web-nuxt/assets/css` + SFC styles các class đã xoá — 0 orphan còn lại.
+
+---
+
+## KẾT QUẢ THỰC THI (2026-07-06)
+
+**18/19 task hoàn thành, 12 commit** (`3939aef`..`9f49c13`). Hai deviation có chủ đích, đều theo nguyên tắc của chính plan:
+- **T18b (theo-mua full-grid): KHÔNG cắt** — shelves cap 8 mục/loại; full-grid là listing đầy đủ duy nhất (paging) → cắt = mất truy cập mục 9+, fail deletion-test. Audit sai ở tail này.
+- **T19 (--surface-inverse): SKIP** — premise sai ở code hiện tại: `--chip-active-bg: var(--surface-inverse, var(--ink))` có fallback hoạt động cả 2 theme; không có bug để fix.
+- T3 seasonal-dedup: đã có sẵn trong code (no-op); chỉ xoá computed `trending`.
+
+**Kết đợt:** `npm run build` ✅ xanh · pytest ✅ 4213 passed (6 fail = TestPhase14PgIndexes pre-existing, thiếu Postgres) · SSR-sweep ✅ mọi trang đụng tới 200 + anchor cắt-mất/giữ-còn đạt (lưu ý: `/` có SWR 300s — verify phải cache-bust; phần tử ClientOnly không hiện trong SSR, verify bằng source) · orphan-grep ✅ (còn lại chỉ comment giải thích + `.guide-cta` của huong-dan.vue thuộc Đợt 3).
