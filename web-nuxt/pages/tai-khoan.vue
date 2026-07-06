@@ -102,13 +102,6 @@
         </article>
       </section>
 
-      <section class="cp-stats" aria-label="Số liệu tài khoản">
-        <div v-for="item in statItems" :key="item.label" class="cp-stat">
-          <span class="cp-stat-val">{{ formatNumber(item.value) }}</span>
-          <span class="cp-stat-label">{{ item.label }}</span>
-        </div>
-      </section>
-
       <section class="cp-workspace" aria-label="Không gian làm việc">
         <NuxtLink v-for="item in workspaceLinks" :key="item.to" :to="item.to" class="cp-card">
           <span class="cp-card-icon" aria-hidden="true">{{ item.icon }}</span>
@@ -199,7 +192,7 @@ const { userCpJourneyActions: buildUserCpJourneyActions } = useJourneyActions()
 
 useHead({
   title: 'Tài khoản',
-  meta: [{ name: 'robots', content: 'noindex,nofollow' }],
+  meta: [{ name: 'robots', content: 'noindex, follow' }],
   link: [{ rel: 'canonical', href: canonicalUrl('/tai-khoan') }],
 })
 
@@ -266,15 +259,6 @@ const userCpJourneyActions = computed(() => buildUserCpJourneyActions({
   unreadNotifications: counts.value.unread_notifications ?? 0,
   fetchIssue: fetchIssue.value,
 }))
-
-const statItems = computed(() => [
-  { label: 'Bài viết', value: counts.value.posts ?? 0 },
-  { label: 'Đánh giá', value: stats.value.reviews ?? 0 },
-  { label: 'Người theo dõi', value: stats.value.followers ?? 0 },
-  { label: 'Đang theo dõi', value: stats.value.following ?? 0 },
-  { label: 'Đã lưu', value: counts.value.bookmarks ?? 0 },
-  { label: 'Lượt thích nhận', value: stats.value.likes_received ?? 0 },
-])
 
 const workspaceLinks = computed(() => [
   { icon: '👤', title: 'Trang cá nhân', desc: 'Xem hồ sơ công khai', to: profileUrl.value },
@@ -367,10 +351,6 @@ async function loadMoreActivity() {
   }
 }
 
-function formatNumber(value: number | undefined) {
-  return new Intl.NumberFormat('vi-VN').format(value ?? 0)
-}
-
 function actionIcon(action: string) {
   const icons: Record<string, string> = { post: '✍️', comment: '💬', like: '❤️', bookmark: '💾', review: '⭐', follow: '👤', mention: '📣', repost: '🔁' }
   return icons[action] || '📌'
@@ -447,7 +427,7 @@ function actionLabel(a: ActivityItem) {
 
 .cp-summary-grid, .cp-workspace, .cp-main-grid { display: grid; gap: 1rem; }
 .cp-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 1rem; }
-.cp-panel, .cp-section, .cp-side-panel, .cp-card, .cp-stats {
+.cp-panel, .cp-section, .cp-side-panel, .cp-card {
   border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card);
 }
 .cp-panel { padding: 1rem; }
@@ -468,10 +448,6 @@ function actionLabel(a: ActivityItem) {
 .cp-action-icon { font-size: 1rem; }
 .cp-done-state { padding: .75rem; border-radius: var(--radius-md); background: var(--bg-alt); color: var(--ink-700); font-size: .84rem; line-height: 1.45; }
 
-.cp-stats { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5rem; padding: .85rem; margin-bottom: 1rem; }
-.cp-stat { text-align: center; padding: .25rem; }
-.cp-stat-val { display: block; font-size: 1.15rem; font-weight: 800; color: var(--ink); }
-.cp-stat-label { font-size: .76rem; color: var(--ink-700); }
 
 .cp-workspace { grid-template-columns: repeat(6, minmax(0, 1fr)); margin-bottom: 1rem; }
 .cp-card { min-height: 118px; padding: .9rem; text-decoration: none; color: var(--ink); position: relative; display: flex; flex-direction: column; gap: .25rem; transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
@@ -497,13 +473,12 @@ function actionLabel(a: ActivityItem) {
 .cp-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: .75rem; }
 .cp-data-row strong { font-variant-numeric: tabular-nums; }
 
-.dark .cp-hero, .dark .cp-panel, .dark .cp-section, .dark .cp-side-panel, .dark .cp-card, .dark .cp-stats { background: var(--bg-alt); border-color: var(--line); }
+.dark .cp-hero, .dark .cp-panel, .dark .cp-section, .dark .cp-side-panel, .dark .cp-card { background: var(--bg-alt); border-color: var(--line); }
 .dark .cp-action-item, .dark .cp-data-row, .dark .cp-activity-item, .dark .cp-score { background: var(--bg); }
 
 @media (max-width: 860px) {
   .cp-summary-grid, .cp-main-grid { grid-template-columns: 1fr; }
   .cp-workspace { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .cp-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
   .cp-hero { grid-template-columns: auto 1fr; }
