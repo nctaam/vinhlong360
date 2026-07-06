@@ -30,9 +30,8 @@
       </div>
     </section>
 
-    <!-- Spotlight nổi bật (magazine, dùng-chung) -->
-    <CatalogSpotlight :items="allEntities" />
-
+    <!-- declutter-3 T10: CatalogSpotlight đã bỏ — market-shelf mùa vụ thay vai khối tease
+         duy nhất trước grid (chốt spec-review). -->
     <!-- Đang vào mùa — promoted above OCOP teaser: season is this page's spine -->
     <section v-if="seasonalHighlights.length" class="block band reveal market-shelf">
       <div class="seasonal-banner seasonal-banner-live">
@@ -234,7 +233,8 @@ const seasonalHighlights = computed(() => {
   return allEntities.value
     .filter((e: Entity) => inSeason(e, String(currentMonth)))
     .sort((a: Entity, b: Entity) => (relevanceScore(b, String(currentMonth)) || 0) - (relevanceScore(a, String(currentMonth)) || 0))
-    .slice(0, 8)
+    // declutter-3 T10: 8→4 — shelf là khối tease duy nhất, không phải catalog thứ hai
+    .slice(0, 4)
 })
 
 function scrollToGrid() {
