@@ -347,16 +347,6 @@
       </section>
     </ClientOnly>
 
-    <!-- 7. Chatbot CTA -->
-    <section class="block block-compact reveal" aria-label="Trợ lý AI">
-      <div class="chatbot-cta">
-        <div class="chatbot-cta-inner">
-          <p class="chatbot-cta-text">{{ ss('homepage.chatbot_cta_title', 'Chưa biết đi đâu?') }}</p>
-          <p class="chatbot-cta-sub">{{ ss('homepage.chatbot_cta_text', 'Trợ lý AI sẵn sàng gợi ý lịch trình, món ăn, điểm đến phù hợp với bạn.') }}</p>
-        </div>
-        <button type="button" class="chatbot-cta-btn" @click="openChat"><IconLine name="message" /> Hỏi ngay</button>
-      </div>
-    </section>
   </div>
 </template>
 
@@ -484,7 +474,8 @@ const seasonal = computed(() => homeData.value?.seasonal || [])
 const experiences = computed(() => homeData.value?.experiences || [])
 const productsAll = computed(() => homeData.value?.products || [])
 const topDishes = computed(() => homeData.value?.top_dishes || [])
-const trending = computed(() => homeData.value?.trending || [])
+// (declutter-1: computed `trending` đã bỏ — không section nào render nó; đếm nó trong
+// hasHomeContent chỉ làm trang "có nội dung" mà không hiển thị gì.)
 const itineraries = computed(() => homeData.value?.itineraries || [])
 const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
@@ -636,7 +627,7 @@ const homeJourneyActions = computed(() => homepageDecisionActions({
   currentMonth: currentMonth.value,
 }))
 
-const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length || trending.value.length || communityPosts.value.length))
+const hasHomeContent = computed(() => !!(upcomingEvents.value.length || seasonal.value.length || itineraries.value.length || spotlight.value || topDishes.value.length || communityPosts.value.length))
 const homeFailed = computed(() => !homePending.value && (!!homeError.value || (!!homeData.value && !hasHomeContent.value)))
 const homeLoadingSkeleton = computed(() => !hasHomeContent.value && !homeFailed.value)
 onMounted(() => { if (homeError.value || !hasHomeContent.value) refreshHome() })
@@ -692,13 +683,6 @@ function areaName(slug: string | undefined): string {
   if (!slug) return ''
   const meta = (AREA_META as Record<string, { name: string }>)[slug]
   return meta ? meta.name : ''
-}
-
-function openChat() {
-  if (import.meta.client) {
-    const fab = document.querySelector('.chat-fab') as HTMLElement
-    if (fab) fab.click()
-  }
 }
 
 useSeoMeta({
@@ -1458,35 +1442,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .storyland-kicker { color: var(--primary-fg); }
 
 /* ═══════════════════════════════════════════════════
-   CHATBOT CTA
-   ═══════════════════════════════════════════════════ */
-.chatbot-cta {
-  display: flex; align-items: center; gap: var(--space-4);
-  padding: var(--space-5) var(--space-6);
-  background: linear-gradient(135deg, var(--bg-alt) 0%, var(--bg-warm) 100%);
-  border: .5px solid var(--line); border-radius: var(--radius);
-  transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
-}
-.chatbot-cta:hover { border-color: var(--border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-.chatbot-cta-inner { flex: 1; }
-.chatbot-cta-text { margin: 0; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
-.chatbot-cta-sub { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
-.chatbot-cta-btn {
-  padding: var(--space-3) var(--space-6); background: var(--primary);
-  color: var(--text-on-dark, #fff); border: none; border-radius: var(--radius-full);
-  font-size: var(--text-sm); font-weight: var(--weight-semibold); cursor: pointer;
-  min-height: 44px; white-space: nowrap;
-  transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out);
-}
-.chatbot-cta-btn:hover { background: var(--primary-dark, var(--primary)); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.chatbot-cta-btn:active { transform: scale(.95); transition-duration: .1s; }
-.chatbot-cta-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-@media (max-width: 480px) {
-  .chatbot-cta { flex-direction: column; text-align: center; gap: var(--space-3); }
-  .chatbot-cta-btn { width: 100%; }
-}
-
-/* ═══════════════════════════════════════════════════
    SKELETON + MISC
    ═══════════════════════════════════════════════════ */
 .sk-heading { height: 1.4rem; width: 180px; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--bg-alt) 25%, var(--line) 37%, var(--bg-alt) 63%); background-size: 400% 100%; animation: skShimmer 1.4s var(--ease-out) infinite; }
@@ -1523,8 +1478,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
 .dark .ec-countdown { color: var(--accent-text, #e0b366); }
 .dark .ec-today { color: var(--secondary-fg, #f0846f); }
-.dark .chatbot-cta { background: linear-gradient(135deg, var(--surface-container) 0%, rgba(255,255,255,.06) 100%); border-color: rgba(255,255,255,.12); }
-.dark .chatbot-cta:hover { border-color: rgba(255,255,255,.2); }
 
 /* ═══════════════════════════════════════════════════
    REDUCED TRANSPARENCY / MOTION
@@ -1544,8 +1497,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .event-hero:hover, .event-mini:hover { transform: none; }
   .cm-card:hover, .cm-card:active { transform: none; }
   .cm-card:hover .cm-img img { transform: none; }
-  .chatbot-cta:hover { transform: none; }
-  .chatbot-cta-btn:hover, .chatbot-cta-btn:active { transform: none; }
   .ec-live-dot { animation: none; }
   .sk-heading { animation: none; }
   .spotlight:hover .spot-visual { transform: none; }
