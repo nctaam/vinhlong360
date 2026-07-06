@@ -132,12 +132,13 @@ if (props.priority) {
   color: #8a5b10; /* A11Y: deeper ochre-amber ≥4.5:1 on the warm bg (was --accent-text 4.48) */
 }
 .dark .ef-kicker { color: var(--amber-500); } /* lighter amber for contrast on dark */
+/* phù-sa tick — unified with StorySpread's .spread-tick and .sediment-head so the
+   editorial blocks share one signature motif instead of a plain amber rule. */
 .ef-kicker-rule {
-  width: 1.7em;
-  height: 2px;
+  width: 1.9em;
+  height: 3px;
   border-radius: 2px;
-  background: currentColor;
-  opacity: .55;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-500) 52%, var(--clay-500, #C4694E) 100%);
   flex: 0 0 auto;
 }
 .ef-title {
