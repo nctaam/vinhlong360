@@ -374,6 +374,9 @@
           </div>
         </div>
 
+        <!-- P0-5: byline biên tập (Who) — always-on, ngoài trust-card -->
+        <p class="entity-byline"><IconLine name="user" /> {{ bylineText }} · <strong>Ban biên tập vinhlong360</strong> · <NuxtLink to="/gioi-thieu#ban-bien-tap">phương pháp biên tập</NuxtLink></p>
+
         <!-- Liên hệ trực tiếp (showcase — KHÔNG đặt hàng/giỏ hàng/thanh toán on-site) -->
         <section v-if="trustVisible" class="trust-card" aria-labelledby="trust-card-title">
           <div class="trust-card-head">
@@ -825,7 +828,15 @@ const trustNote = computed(() => {
   if (trustStatus.value === 'stale') return 'Thông tin có thể đã cũ; hãy báo sai nếu bạn thấy khác thực tế.'
   return 'Hệ thống chưa có đủ tín hiệu nguồn/ngày cập nhật cho mục này.'
 })
-const trustVisible = computed(() => !!entity.value)
+// P0-7: chỉ hiện trust-card khi CÓ nguồn công khai thật (đừng quảng cáo "chưa có nguồn").
+const trustVisible = computed(() => !!trustSourceUrl.value)
+
+// P0-5: byline biên tập (Who) — LUÔN hiện, mọi trang. Trung thực theo verifiedAt thật
+// (người đặt tay); hiện chưa entity nào có → mặc định "chưa kiểm chứng thực địa".
+const entityVerifiedAt = computed(() => entity.value?.verifiedAt || '')
+const bylineText = computed(() => entityVerifiedAt.value
+  ? `Biên tập & kiểm chứng thực địa · ${formatDateVN(entityVerifiedAt.value)}`
+  : 'Tổng hợp & biên tập từ nguồn công khai — chưa kiểm chứng thực địa')
 
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
 
@@ -1150,6 +1161,20 @@ useHead({
 }
 .fact-copy:hover { color: var(--primary-fg); background: rgba(var(--primary-rgb), .08); }
 .fact-copy:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+/* P0-5: editorial byline — subtle, honest "Who" line above the trust card. */
+.entity-byline {
+  display: flex;
+  align-items: center;
+  gap: .5em;
+  margin: var(--space-4) 0 var(--space-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--muted);
+}
+.entity-byline .line-icon { font-size: 1.1em; color: var(--muted); flex: 0 0 auto; }
+.entity-byline strong { font-weight: var(--weight-semibold); color: var(--ink); }
+.entity-byline a { color: var(--primary-fg); text-decoration: underline; text-underline-offset: 2px; }
 
 .trust-card {
   margin: var(--space-4) 0;

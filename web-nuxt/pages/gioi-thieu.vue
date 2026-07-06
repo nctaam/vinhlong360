@@ -50,6 +50,20 @@
       </div>
     </article>
 
+    <!-- P0-5: Ban biên tập & phương pháp — tín hiệu Who/How (E-E-A-T), giọng trung thực. -->
+    <article id="ban-bien-tap" class="legal-section about-section reveal sediment-head tint-alt">
+      <span class="about-section-num" aria-hidden="true"><IconLine name="user" /></span>
+      <div class="about-section-content">
+        <h2>Ban biên tập &amp; phương pháp</h2>
+        <div class="legal-body">
+          <p>Nội dung trên vinhlong360 do <strong>Ban biên tập vinhlong360</strong> tổng hợp từ nguồn công khai — cổng thông tin điện tử tỉnh/huyện, báo chính thống, tư liệu địa phương và Wikipedia có dẫn nguồn — rồi viết lại bằng giọng riêng, kèm trích dẫn và liên kết tới nguồn gốc. Chúng tôi không đăng lại nguyên văn tin bài.</p>
+          <p><strong>Quy trình:</strong> tổng hợp nhiều nguồn → đối chiếu ít nhất hai nguồn cho mỗi dữ kiện cứng (năm, số liệu, danh hiệu) → biên tập theo giọng bản địa → gắn nguồn và ngày. Dữ kiện chỉ có một nguồn yếu sẽ bị loại thay vì phỏng đoán.</p>
+          <p><strong>“Kiểm chứng thực địa”</strong> nghĩa là có người của ban biên tập tới tận nơi xác nhận. Hiện phần lớn mục <em>chưa</em> được kiểm chứng thực địa — điều này được ghi rõ ngay trên từng trang, và tụi mình chỉ đóng dấu ngày khi thực sự đã tới nơi. Ảnh minh hoạ có thể do AI dựng (được ghi nhãn), chưa phải ảnh chụp tại chỗ.</p>
+          <p>Thấy thông tin sai hoặc cần bổ sung nguồn? Mỗi trang đều có nút <em>“Báo sai hoặc bổ sung nguồn”</em>, hoặc <NuxtLink to="/lien-he">liên hệ với tụi mình</NuxtLink> — hai người đọc từng tin nhắn, không phải chatbot.</p>
+        </div>
+      </div>
+    </article>
+
     <!-- Signature moment: the tri-province merge as the emotional subject, not a footnote. -->
     <section class="province-band reveal" aria-labelledby="province-band-heading">
       <h2 id="province-band-heading" class="sr-only">Ba vùng đất, một câu chuyện</h2>
