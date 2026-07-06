@@ -2,7 +2,7 @@
   <div v-if="ff('ai_recommendations') && (loading || items.length)" class="ai-recommend">
     <div class="section-head sediment-head ai-rec-head">
       <h2>{{ title }}</h2>
-      <span class="ai-label"><span class="emoji-chip" aria-hidden="true">✨</span> AI gợi ý</span>
+      <span class="ai-label"><IconLine name="sparkles" class="emoji-chip" /> AI gợi ý</span>
     </div>
     <div v-if="loading" class="grid" aria-hidden="true">
       <div v-for="i in skelCount" :key="i" class="ai-rec-skel"></div>

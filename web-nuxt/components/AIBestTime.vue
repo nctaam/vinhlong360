@@ -1,6 +1,6 @@
 <template>
   <div class="ai-besttime">
-    <div class="ai-besttime-head sediment-head"><h3>Thời điểm tốt nhất</h3><span class="ai-label"><span class="emoji-chip" aria-hidden="true">✨</span> AI gợi ý</span></div>
+    <div class="ai-besttime-head sediment-head"><h3>Thời điểm tốt nhất</h3><span class="ai-label"><IconLine name="sparkles" class="emoji-chip" /> AI gợi ý</span></div>
     <button type="button" v-if="!result && !loading && !errored" class="ai-toggle-btn" @click="load">Xem gợi ý AI</button>
     <div v-else-if="loading" class="ai-loading" role="status" aria-label="Đang tải">
       <span class="ai-dot"></span><span class="ai-dot"></span><span class="ai-dot"></span>

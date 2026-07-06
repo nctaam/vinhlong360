@@ -2,13 +2,13 @@
   <ClientOnly>
     <div v-if="ff('chat_widget')" class="chat-widget">
       <button type="button" class="chat-fab" :class="{ open }" @click="open = !open" :aria-expanded="open" aria-label="Chat AI">
-        {{ open ? '✕' : '💬' }}
+        <IconLine :name="open ? 'x' : 'message'" />
       </button>
 
       <div ref="panelEl" class="chat-panel" :class="{ show: open }" role="dialog" aria-label="Chat hỏi đáp" aria-modal="true">
         <div class="chat-panel-head">
           <h3>{{ chatTitle }}</h3>
-          <button type="button" class="cp-close" aria-label="Đóng chat" @click="open = false">✕</button>
+          <button type="button" class="cp-close" aria-label="Đóng chat" @click="open = false"><IconLine name="x" /></button>
         </div>
 
         <div ref="messagesEl" class="chat-panel-msgs" aria-live="polite">

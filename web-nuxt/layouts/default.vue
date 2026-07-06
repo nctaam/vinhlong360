@@ -28,8 +28,8 @@
         <div class="auth-area">
           <template v-if="clientReady">
             <button type="button" class="theme-toggle" :aria-label="colorMode.value === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'" :title="colorMode.value === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'" @click="toggleColorMode">
-              <span v-if="colorMode.value === 'dark'" aria-hidden="true">☀️</span>
-              <span v-else aria-hidden="true">🌙</span>
+              <IconLine v-if="colorMode.value === 'dark'" name="sun" />
+              <IconLine v-else name="moon" />
             </button>
             <template v-if="isLoggedIn">
               <LazyNotificationBell />
@@ -42,7 +42,7 @@
             <button type="button" v-else class="auth-btn" @click="showAuth = true">Đăng nhập</button>
           </template>
           <template v-else>
-            <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối">🌙</button>
+            <button type="button" class="theme-toggle" aria-label="Đổi giao diện sáng/tối"><IconLine name="moon" /></button>
             <span class="auth-user auth-user-snapshot auth-user-loading" aria-hidden="true">
               <span class="avatar avatar-sm">?</span>
               <span class="auth-user-name">Tài khoản</span>

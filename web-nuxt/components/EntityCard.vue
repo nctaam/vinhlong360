@@ -47,7 +47,7 @@
         <span v-if="isPeak" class="badge peak"><span class="peak-dot" aria-hidden="true"></span> Đang mùa {{ peakLabel }}</span>
         <span v-if="isYearRoundSeason" class="badge year">Quanh năm</span>
         <span v-else class="badge season">{{ seasonLabel }}</span>
-        <span v-if="entity.attributes?.ocop" :class="['badge', 'ocop', { 'ocop-5': ocopStars === 5, 'ocop-4': ocopStars === 4, 'ocop-3': ocopStars === 3 }]">⭐ {{ entity.attributes.ocop }}</span>
+        <span v-if="entity.attributes?.ocop" :class="['badge', 'ocop', { 'ocop-5': ocopStars === 5, 'ocop-4': ocopStars === 4, 'ocop-3': ocopStars === 3 }]"><IconLine name="star" /> {{ entity.attributes.ocop }}</span>
       </div>
     </NuxtLink>
   </article>

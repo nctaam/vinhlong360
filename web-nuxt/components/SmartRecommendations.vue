@@ -5,7 +5,7 @@
         <h2>{{ title }}</h2>
         <p v-if="subtitle" class="sh-sub">{{ subtitle }}</p>
       </div>
-      <span class="ai-label"><span class="emoji-chip" aria-hidden="true">✨</span> AI gợi ý</span>
+      <span class="ai-label"><IconLine name="sparkles" class="emoji-chip" /> AI gợi ý</span>
     </div>
 
     <div v-if="loading" class="grid smart-rec-grid" aria-hidden="true">

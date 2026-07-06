@@ -40,7 +40,7 @@
             <button type="button" class="notif-retry" :disabled="retrying" @click="retryFetch">{{ retrying ? 'Đang thử…' : 'Thử lại' }}</button>
           </div>
           <div v-else-if="!notifications.length" class="notif-empty">
-            <span class="notif-empty-icon" aria-hidden="true">🔔</span>
+            <IconLine name="bell" class="notif-empty-icon" />
             <p>Chưa có thông báo</p>
           </div>
         </div>
