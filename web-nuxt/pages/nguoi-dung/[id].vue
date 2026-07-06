@@ -1073,7 +1073,7 @@ useSeoMeta({
 .fm-tab { flex: 1; padding: var(--space-3) var(--space-4); border: none; background: none; cursor: pointer; font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--muted); border-bottom: 2px solid transparent; transition: color .2s var(--ease-out), border-bottom-color .25s var(--ease-out); }
 .fm-tab:hover { color: var(--ink-secondary); }
 .fm-tab.active { color: var(--ink); border-bottom-color: var(--primary); }
-.fm-close { border: none; background: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); }
+.fm-close { border: none; background: none; font-size: 1.5rem; line-height: 1; cursor: pointer; color: var(--muted); padding: var(--space-2); min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .fm-body { overflow-y: auto; padding: var(--space-2); }
 .fm-loading { display: flex; justify-content: center; padding: var(--space-5); }
 .fm-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
@@ -1145,6 +1145,12 @@ useSeoMeta({
 }
 .sf-input:focus-visible { outline: none; border-color: var(--primary); background: var(--card); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
 .sf-actions { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-2); }
+/* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
+   threshold. Force 16px on mobile only for these real form fields (create-collection
+   name/description); desktop keeps --text-sm (14px→16px fluid scale) unchanged. */
+@media (max-width: 640px) {
+  .sf-input { font-size: 16px; }
+}
 
 /* Dark mode */
 .dark .profile-cover { border-color: var(--line); }

@@ -513,7 +513,7 @@ useHead({
 .subreply-body .comment-reply-btn { margin-top: .25rem; }
 .avatar-xs { width: 26px; height: 26px; font-size: var(--text-2xs); }
 .reply-context { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-xs); color: var(--ink-700); background: var(--bg-alt); border-radius: var(--radius-sm); padding: .3rem .6rem; margin-bottom: var(--space-2); }
-.reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; }
+.reply-context-x { background: none; border: none; color: var(--muted); font-size: 1.1rem; line-height: 1; cursor: pointer; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .reply-context-x:hover { color: var(--ink); }
 .thread-detail-page { max-width: 680px; margin: 0 auto; }
 .thread-detail { display: flex; flex-direction: column; }
@@ -555,6 +555,12 @@ useHead({
 .compose-input-sm::placeholder { color: var(--ink-tertiary, var(--muted)); }
 .compose-input-sm:focus { border-bottom-color: var(--primary-fg); box-shadow: none; }
 .compose-input-sm:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+/* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
+   threshold. Force 16px on mobile only for this real comment input; desktop keeps
+   --text-sm (14px→16px fluid scale) unchanged. */
+@media (max-width: 640px) {
+  .compose-input-sm { font-size: 16px; }
+}
 .compose-send {
   width: 44px; height: 44px; min-height: 44px; padding: 0;
   display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-full);

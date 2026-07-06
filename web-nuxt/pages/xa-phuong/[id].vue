@@ -518,6 +518,11 @@ onUnmounted(() => {
 /* Responsive */
 @media (max-width: 840px) {
   .wp-body { grid-template-columns: 1fr; gap: var(--space-4); }
+  /* min-width: 0 — grid items default to min-width:auto; without this the
+     nested .wp-grid EntityCard rows force .wp-main (and, through it, the
+     single .wp-body track) wider than the viewport, causing page-level
+     horizontal scroll on mobile. */
+  .wp-main { min-width: 0; }
   .wp-aside { position: static; margin-top: var(--space-6); }
   .wp-stats { gap: var(--space-4); }
 }

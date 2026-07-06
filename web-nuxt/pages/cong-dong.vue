@@ -1618,7 +1618,7 @@ useHead({
 .cs-input { flex: 1; min-width: 0; border: none; background: none; outline: none; color: var(--ink); font-size: var(--text-sm); padding: .35rem 0; }
 .cs-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .cs-input::placeholder { color: var(--muted); }
-.cs-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; }
+.cs-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .cs-clear:hover { color: var(--ink); }
 .cs-go { flex-shrink: 0; }
 .leaderboard-list { list-style: none; padding: 0; margin: 0 0 var(--space-2); display: flex; flex-direction: column; gap: var(--space-1); }
@@ -1645,7 +1645,12 @@ useHead({
 .tag-clear { border: none; background: none; color: var(--primary-fg); cursor: pointer; font-size: var(--text-sm); }
 .threads-page { max-width: 960px; margin: 0 auto; }
 .threads-layout { display: grid; grid-template-columns: 1fr 280px; gap: var(--space-6); align-items: start; }
-.threads-feed { display: flex; flex-direction: column; }
+/* min-width: 0 — grid items default to min-width:auto, which floors this track at its
+   content's intrinsic width (the 5 type-filter-row chips, ~430px) instead of shrinking to
+   the 1fr track size. That silently widened .threads-page/.threads-layout past the viewport
+   on mobile (~84px horizontal overflow at 375px) even though .type-filter-row already has
+   overflow-x:auto — the scroll never engaged because the container itself had grown to fit. */
+.threads-feed { display: flex; flex-direction: column; min-width: 0; }
 
 /* ── Compose (Threads style) ── */
 .threads-compose { display: flex; gap: var(--space-3); padding: var(--space-4) 0; border-bottom: .5px solid var(--line); }
@@ -1942,6 +1947,10 @@ useHead({
   .threads-feed { padding-inline: var(--space-1); }
   .threads-compose { padding-inline: var(--space-3); }
   .compose-input { min-height: 48px; font-size: var(--text-base); }
+  /* --text-sm clamps to ~14px under ~640px viewport — below the 16px iOS auto-zoom
+     threshold. Force 16px on mobile only for the two real text inputs that use it
+     (community search box, schedule datetime picker); desktop keeps --text-sm as-is. */
+  .cs-input, .cd-input { font-size: 16px; }
   .mobile-discovery { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2) var(--space-3); }
   .md-section { display: flex; align-items: center; gap: var(--space-2); }
   .md-label { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-500); white-space: nowrap; min-width: 52px; }
