@@ -112,14 +112,13 @@
         <!-- sr-only: when wp-main has zero content sections (no h2 rendered above),
              this keeps the sidebar's h3's from skipping straight from h1 (WCAG 1.3.1). -->
         <h2 class="sr-only">Thông tin liên hệ</h2>
-        <!-- Liên hệ cơ quan -->
-        <div class="wp-card">
+        <!-- Liên hệ cơ quan (declutter-3 T2: chỉ hiện khi có số thật — hết "Đang cập nhật" mơ hồ) -->
+        <div v-if="attrs.police_phone" class="wp-card">
           <h3>📞 Liên hệ khẩn cấp</h3>
           <div class="wp-contact">
             <div class="wp-contact-item wp-contact-main">
               <span class="wp-contact-label">👮 Công an {{ data.place.name }}</span>
-              <a v-if="attrs.police_phone" :href="telHref(attrs.police_phone)" class="wp-phone" :aria-label="`Gọi công an ${data.place.name}`">{{ attrs.police_phone }}</a>
-              <span v-else class="wp-phone-na">Đang cập nhật</span>
+              <a :href="telHref(attrs.police_phone)" class="wp-phone" :aria-label="`Gọi công an ${data.place.name}`">{{ attrs.police_phone }}</a>
             </div>
           </div>
         </div>
@@ -505,7 +504,6 @@ onUnmounted(() => {
 .wp-phone { font-size: var(--text-base); font-weight: var(--weight-bold); color: var(--primary-fg); min-height: 44px; padding: var(--space-2) var(--space-3); margin-inline-start: calc(var(--space-3) * -1); display: inline-flex; align-items: center; border-radius: var(--radius-sm); }
 .wp-phone:hover { text-decoration: underline; }
 .wp-phone:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.wp-phone-na { font-size: var(--text-sm); color: var(--muted); font-style: italic; }
 
 /* Facilities */
 .wp-fac-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
