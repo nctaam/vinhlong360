@@ -212,10 +212,10 @@
 
     <!-- 3a. Story spread — full-bleed signature moment -->
     <StorySpread
-      image="/img/spread/song-nuoc.webp"
-      srcset="/img/spread/song-nuoc-640.webp 640w, /img/spread/song-nuoc-1024.webp 1024w, /img/spread/song-nuoc.webp 1536w"
+      image="/img/spread/cu-lao-an-binh.webp"
+      srcset="/img/spread/cu-lao-an-binh-640.webp 640w, /img/spread/cu-lao-an-binh-1024.webp 1024w, /img/spread/cu-lao-an-binh.webp 1536w"
       v-bind="SPREAD"
-      image-alt="Miền sông nước miệt vườn Vĩnh Long — dừa nước ven rạch và ghe xuồng trên sông."
+      image-alt="Cù lao An Bình giữa sông Cổ Chiên lúc hoàng hôn — vườn cây trái và dừa nước ven bờ, chiếc xuồng gỗ đậu sát mé sông."
     />
 
     <!-- 3a2. Feature — photo-led editorial block (Đặc sản OCOP), mirrored -->
