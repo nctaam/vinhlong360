@@ -385,12 +385,11 @@ def test_accommodation_without_attrs_omits_enrichment():
 
 
 def test_sitemap_includes_all_public_entities(monkeypatch, sample_data):
-    # Give every non-place entity enough prose to clear the P0-1 index gate so
-    # this test asserts the public-inclusion contract; thin-page exclusion is
-    # covered by test_seo.py::test_sitemap_excludes_thin_entity_pages.
+    # Give every entity enough prose to clear the index gates so this test asserts
+    # the public-inclusion contract: non-place → P0-1 word gate; place → P1-5 ward
+    # summary gate (≥60 words). Thin-page exclusion is covered by dedicated tests.
     for _e in sample_data["entities"]:
-        if _e.get("type") != "place":
-            _e["summary"] = " ".join(["từ"] * 220)
+        _e["summary"] = " ".join(["từ"] * 220)
     monkeypatch.setattr(seo, "_load", lambda: sample_data)
     monkeypatch.setattr(seo, "_sitemap_cache", None)
     monkeypatch.setattr(seo, "_data_mtime_ns", 0)

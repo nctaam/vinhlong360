@@ -156,6 +156,16 @@ DETAIL_PRIORITY = {
     "itinerary": "0.6",
 }
 
+# P1-4: sitemap changefreq theo loại — di sản/tĩnh đổi hiếm (yearly), sự kiện đổi thường (weekly).
+DETAIL_CHANGEFREQ = {
+    "event": "weekly",
+    "dish": "monthly", "restaurant": "monthly", "cafe": "monthly", "drink": "monthly",
+    "product": "monthly", "accommodation": "monthly", "organization": "monthly",
+    "history": "yearly", "nature": "yearly", "attraction": "yearly",
+    "person": "yearly", "craft_village": "yearly", "facility": "yearly",
+    "place": "monthly", "itinerary": "monthly", "economy": "yearly",
+}
+
 CORE_PAGES = [
     ("/", "daily", "1.0"),
     ("/du-lich", "weekly", "0.9"),
@@ -1202,17 +1212,29 @@ def sitemap():
     for area in AREA_NAMES:
         urls.append(_url_xml(f"{SITE}/khu-vuc/{quote(area, safe='-_~')}", changefreq="weekly", priority="0.8"))
 
+    # P1-5: đếm con nội dung mỗi place — ward là HUB, giá trị đến từ children chứ không
+    # từ độ dài summary, nên gate riêng (không dùng is_index_worthy theo số từ).
+    _place_children: dict[str, int] = {}
+    for e in data.get("entities", []):
+        pid = e.get("placeId") if isinstance(e, dict) else None
+        if pid:
+            _place_children[str(pid)] = _place_children.get(str(pid), 0) + 1
+
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
             continue
         if not _is_public(entity):  # P0-1: keep provisional/unverified places out of the sitemap
             continue
-        place_lastmod = _safe_date(entity.get("updatedAt"), None)
+        # P1-5: bỏ ward mỏng (ít con VÀ summary ngắn) khỏi sitemap — hết thin-doorway.
+        children = _place_children.get(str(entity["id"]), 0)
+        summary_words = len(str(entity.get("summary") or "").split())
+        if children <= 1 and summary_words < 60:
+            continue
         urls.append(_url_xml(
             f"{SITE}/xa-phuong/{quote(str(entity['id']))}",
             changefreq="monthly",
             priority="0.6",
-            lastmod=place_lastmod,
+            lastmod=None,  # P1-4: bỏ lastmod=updatedAt (import date → freshness-gaming)
         ))
 
     seen: set[str] = set()
@@ -1227,9 +1249,9 @@ def sitemap():
         seen.add(loc)
         urls.append(_url_xml(
             loc,
-            changefreq="weekly",
+            changefreq=DETAIL_CHANGEFREQ.get(str(entity.get("type")), "monthly"),  # P1-4
             priority=DETAIL_PRIORITY.get(str(entity.get("type")), "0.5"),
-            lastmod=_safe_date(entity.get("updatedAt"), None),
+            lastmod=None,  # P1-4: bỏ lastmod=updatedAt (import date → freshness-gaming)
         ))
 
     for itinerary in data.get("itineraries", []):

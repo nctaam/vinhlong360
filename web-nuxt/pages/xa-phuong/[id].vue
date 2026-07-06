@@ -236,6 +236,12 @@ const allWardEntities = computed<Entity[]>(() => {
 const placeName = computed(() => data.value?.place?.name || 'Xã/Phường')
 useSeoMeta({
   ogType: 'article',
+  // P1-5: noindex,follow cho ward MỎNG (ít con VÀ summary ngắn) — hết thin-doorway;
+  // đồng bộ với ward-gate ở sitemap (agent/seo.py).
+  robots: () => {
+    const words = (data.value?.place?.summary || '').trim().split(/\s+/).filter(Boolean).length
+    return totalContent.value <= 1 && words < 60 ? 'noindex, follow' : undefined
+  },
   title: () => `${placeName.value} — du lịch, lưu trú, đặc sản & danh bạ | vinhlong360`,
   description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}.`,
   ogTitle: () => `${placeName.value} — vinhlong360`,

@@ -151,6 +151,46 @@ def test_sitemap_excludes_thin_entity_pages(tmp_path, monkeypatch):
     assert b"thin-entity" not in body
 
 
+def test_sitemap_changefreq_by_type_and_no_lastmod(tmp_path, monkeypatch):
+    import re
+    payload = {
+        "entities": [
+            {"id": "hist-1", "name": "H", "type": "history", "summary": _text(200), "updatedAt": "2026-06-12"},
+            {"id": "ev-1", "name": "E", "type": "event", "summary": _text(200), "updatedAt": "2026-06-12"},
+        ],
+        "relationships": [], "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    _reset_seo(monkeypatch, data_path)
+    xml = seo.sitemap().body.decode()
+    hist_block = re.search(r"<url>(?:(?!</url>).)*hist-1(?:(?!</url>).)*</url>", xml, re.S).group()
+    assert "<changefreq>yearly</changefreq>" in hist_block   # P1-4: static heritage type
+    ev_block = re.search(r"<url>(?:(?!</url>).)*ev-1(?:(?!</url>).)*</url>", xml, re.S).group()
+    assert "<changefreq>weekly</changefreq>" in ev_block     # P1-4: events change often
+    assert "<lastmod>" not in xml                            # P1-4: no misleading import-date lastmod
+
+
+def test_sitemap_thin_ward_excluded(tmp_path, monkeypatch):
+    payload = {
+        "entities": [
+            {"id": "thin-ward", "name": "TW", "type": "place", "summary": _text(20)},
+            {"id": "rich-ward", "name": "RW", "type": "place", "summary": _text(80)},
+            {"id": "hub-ward", "name": "HW", "type": "place", "summary": _text(10)},
+            {"id": "child-1", "name": "C1", "type": "dish", "placeId": "hub-ward", "summary": _text(200)},
+            {"id": "child-2", "name": "C2", "type": "dish", "placeId": "hub-ward", "summary": _text(200)},
+        ],
+        "relationships": [], "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    _reset_seo(monkeypatch, data_path)
+    body = seo.sitemap().body
+    assert b"/xa-phuong/thin-ward" not in body   # thin summary + no children → out (P1-5)
+    assert b"/xa-phuong/rich-ward" in body        # rich summary → in
+    assert b"/xa-phuong/hub-ward" in body         # thin summary but a hub (2 children) → in
+
+
 def test_sitemap_place_loop_skips_provisional(tmp_path, monkeypatch):
     payload = {
         "entities": [
