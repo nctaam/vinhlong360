@@ -6,7 +6,7 @@
     <section class="almanac-masthead" aria-label="Cộng đồng vinhlong360">
       <p class="almanac-eyebrow">
         <span v-if="hasFreshPost" class="almanac-pulse" aria-hidden="true"></span>
-        CỘNG ĐỒNG · SỔ TAY MIỀN TÂY HÔM NAY · {{ todayLabel }}
+        CỘNG ĐỒNG · SỔ TAY VĨNH LONG HÔM NAY · {{ todayLabel }}
       </p>
       <h1 class="almanac-title">{{ pc('hero_title', almanacHeadline) }}</h1>
       <p v-if="communityStats" class="almanac-stats">
@@ -14,7 +14,7 @@
         <span class="almanac-dot" aria-hidden="true">·</span>
         <CountUp :value="communityStats.reviews" class="almanac-num" />&nbsp;ĐÁNH GIÁ THẬT
         <span class="almanac-dot" aria-hidden="true">·</span>
-        <CountUp :value="communityStats.members" class="almanac-num" />&nbsp;NGƯỜI MIỀN TÂY
+        <CountUp :value="communityStats.members" class="almanac-num" />&nbsp;NGƯỜI VĨNH LONG
       </p>
       <div class="sediment-divider" aria-hidden="true"></div>
     </section>
@@ -343,7 +343,7 @@
         <EmptyState
           v-else-if="ugcUnavailable"
           icon="🚧" title="Cộng đồng sắp mở"
-          message="Tính năng cộng đồng đang được hoàn thiện. Bạn sẽ sớm có thể chia sẻ trải nghiệm, đánh giá địa điểm và kết nối với những người yêu miền Tây."
+          message="Tính năng cộng đồng đang được hoàn thiện. Bạn sẽ sớm có thể chia sẻ trải nghiệm, đánh giá địa điểm và kết nối với những người yêu Vĩnh Long."
         />
 
         <div v-else-if="feedError && !displayPosts.length" class="feed-error">
@@ -408,7 +408,7 @@
         <div class="sidebar-card sidebar-about reveal">
           <p class="sidebar-kicker">Đôi lời</p>
           <h2 class="sediment-head">Cộng đồng vinhlong360</h2>
-          <p>Nơi chia sẻ trải nghiệm du lịch, đánh giá đặc sản và kết nối với cộng đồng yêu miền Tây.</p>
+          <p>Nơi chia sẻ trải nghiệm du lịch, đánh giá đặc sản và kết nối với cộng đồng yêu Vĩnh Long.</p>
           <div class="sidebar-stats">
             <div class="sidebar-stat">
               <span class="stat-num">{{ feedStats.postCount }}</span>
@@ -886,7 +886,7 @@ const typePlaceholder = computed(() => {
   const map: Record<string, string> = {
     share: 'Kể về trải nghiệm du lịch của bạn…',
     review: 'Đánh giá một địa điểm, sản phẩm…',
-    question: 'Bạn muốn hỏi gì về miền Tây?',
+    question: 'Bạn muốn hỏi gì về Vĩnh Long?',
     recommend: 'Gợi ý một địa điểm, món ăn…',
   }
   return map[newType.value] || map.share

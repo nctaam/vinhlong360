@@ -8,7 +8,7 @@
         <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
         <div>
           <span class="itin-eyebrow">Lịch trình gợi ý · 3 khu vực</span>
-          <h1 class="day-arc-title">Chọn một ngày ở miền Tây</h1>
+          <h1 class="day-arc-title">Chọn một ngày ở Vĩnh Long</h1>
           <p>Có ngày chỉ cần nửa buổi ở miệt vườn, có ngày cần trọn ba hôm để đi hết một khúc sông. Chọn nhịp ngày phù hợp — phần còn lại, tụi mình đã sắp sẵn.</p>
         </div>
       </div>
@@ -193,7 +193,7 @@
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
           <span class="cross-icon" aria-hidden="true">🍊</span>
-          <div><strong>Đặc sản</strong><p>Mua quà miền Tây</p></div>
+          <div><strong>Đặc sản</strong><p>Mua quà Vĩnh Long</p></div>
         </NuxtLink>
       </div>
     </section>

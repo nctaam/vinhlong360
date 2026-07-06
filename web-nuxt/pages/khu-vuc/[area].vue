@@ -8,7 +8,7 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">{{ areaMeta.emoji }}</span>
         <div>
-          <span class="area-eyebrow">Miền Tây · Cửu Long</span>
+          <span class="area-eyebrow">Vĩnh Long · Cửu Long</span>
           <h1>{{ areaMeta.name }}</h1>
           <p>{{ areaMeta.blurb }}</p>
         </div>

@@ -140,7 +140,7 @@
     <!-- Editorial: le-hoi's strongest asset, elevated with pull-quote treatment
          so the strongest lines aren't buried in dense paragraph body text. -->
     <section v-once class="page-article reveal">
-      <div class="sediment-head sediment-head-first"><h2>Văn hoá lễ hội miền Tây</h2></div>
+      <div class="sediment-head sediment-head-first"><h2>Văn hoá lễ hội Vĩnh Long</h2></div>
       <p>Vùng đất Vĩnh Long, Bến Tre và Trà Vinh là nơi giao thoa của ba nền văn hoá: Kinh, Khmer và Hoa. Mỗi cộng đồng mang đến một hệ thống lễ hội riêng biệt, tạo nên bức tranh văn hoá đa dạng hiếm có trong cả nước.</p>
       <blockquote class="pull-quote">Từ đình miếu Kinh ven sông đến chùa Khmer tháp nhọn, từ hội quán Hoa rực rỡ đèn lồng đến giỗ kỵ danh nhân — lễ hội ở đây không chỉ là dịp vui mà là sợi dây kết nối cộng đồng qua nhiều thế hệ.</blockquote>
 

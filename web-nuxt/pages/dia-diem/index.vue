@@ -83,7 +83,7 @@
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
-      <div class="sediment-head"><h2>Khám phá toàn bộ điểm đến miền Tây</h2></div>
+      <div class="sediment-head"><h2>Khám phá toàn bộ điểm đến Vĩnh Long</h2></div>
       <div class="editorial-body drop-cap">
         <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh. Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp.</p>
       </div>

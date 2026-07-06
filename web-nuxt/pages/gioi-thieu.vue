@@ -7,7 +7,7 @@
       <div class="bm-inner">
         <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Về vinhlong360</p>
         <h1>{{ doc.title }}</h1>
-        <p class="bm-sub">Miền Tây không thiếu chỗ để đi. Cái thiếu là người kể cho bạn nghe vì sao nên ghé.</p>
+        <p class="bm-sub">Vĩnh Long không thiếu chỗ để đi. Cái thiếu là người kể cho bạn nghe vì sao nên ghé.</p>
       </div>
       <svg class="bm-motif" viewBox="0 0 160 120" aria-hidden="true" focusable="false">
         <path class="bm-river" d="M4 78 Q40 58 80 74 T156 66" fill="none" stroke-width="2" stroke-linecap="round" />
