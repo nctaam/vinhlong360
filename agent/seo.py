@@ -1051,6 +1051,54 @@ def _is_public(entity: dict[str, Any]) -> bool:
     return True
 
 
+# P0-1: index-eligibility thresholds. A detail page is only worth submitting to
+# search when it carries enough unique value; thin data-fragment pages stay out
+# of the sitemap (and are marked noindex,follow on-page) so the long tail can't
+# trip Google's "scaled content abuse" signal. Tune against real data.
+INDEX_MIN_WORDS = 100   # floor: below this a page is thin regardless of imagery
+INDEX_RICH_WORDS = 130  # index on text alone above this (summary + description)
+# Calibrated against web/data.json (2026-07): ~405 entity pages index, ~1200 thin
+# pages get noindex,follow — within the ~300-500 target. Raise for a stricter bar.
+
+
+def _page_word_count(entity: dict[str, Any]) -> int:
+    """Word count of the descriptive prose that actually renders on the detail
+    page: the summary lead plus the description body. The body is deduped when it
+    is a verbatim copy of the lead (which adds no content for the reader)."""
+    summary = entity.get("summary")
+    description = entity.get("description")
+    s = summary.strip() if isinstance(summary, str) else ""
+    d = description.strip() if isinstance(description, str) else ""
+    if d and d == s:
+        return len(s.split())
+    return len(s.split()) + len(d.split())
+
+
+def _has_real_image(entity: dict[str, Any]) -> bool:
+    """True if the entity carries at least one real (http) image URL."""
+    images = entity.get("images")
+    if not isinstance(images, list):
+        images = [images] if images else []
+    return any(_image_url(img) for img in images)
+
+
+def is_index_worthy(entity: dict[str, Any]) -> bool:
+    """P0-1 quality gate: whether an entity detail page should be indexed.
+
+    A public entity qualifies only when it carries substantial unique value —
+    at least ``INDEX_RICH_WORDS`` descriptive words, or ``INDEX_MIN_WORDS`` words
+    plus a real image. Everything thinner is kept out of the sitemap and marked
+    ``noindex, follow`` on-page, so the long tail of data-fragment pages cannot
+    dilute site-wide quality signals.
+    """
+    if not _is_public(entity):
+        return False
+    words = _page_word_count(entity)
+    if words >= INDEX_RICH_WORDS:
+        return True
+    return words >= INDEX_MIN_WORDS and _has_real_image(entity)
+
+
 def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[str, Any] | None:
     """ItemList JSON-LD for a catalog collection route, or None if unknown."""
     collection = COLLECTIONS.get(collection_type)
@@ -1157,6 +1205,8 @@ def sitemap():
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
             continue
+        if not _is_public(entity):  # P0-1: keep provisional/unverified places out of the sitemap
+            continue
         place_lastmod = _safe_date(entity.get("updatedAt"), None)
         urls.append(_url_xml(
             f"{SITE}/xa-phuong/{quote(str(entity['id']))}",
@@ -1169,7 +1219,7 @@ def sitemap():
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
             continue
-        if not _is_public(entity):  # P1-7: KHÔNG đưa entity provisional/chưa-verify vào sitemap
+        if not is_index_worthy(entity):  # P0-1: quality gate (subsumes _is_public) — thin pages stay out
             continue
         loc = _entity_url(str(entity["id"]))
         if loc in seen:

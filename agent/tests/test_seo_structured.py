@@ -385,6 +385,12 @@ def test_accommodation_without_attrs_omits_enrichment():
 
 
 def test_sitemap_includes_all_public_entities(monkeypatch, sample_data):
+    # Give every non-place entity enough prose to clear the P0-1 index gate so
+    # this test asserts the public-inclusion contract; thin-page exclusion is
+    # covered by test_seo.py::test_sitemap_excludes_thin_entity_pages.
+    for _e in sample_data["entities"]:
+        if _e.get("type") != "place":
+            _e["summary"] = " ".join(["từ"] * 220)
     monkeypatch.setattr(seo, "_load", lambda: sample_data)
     monkeypatch.setattr(seo, "_sitemap_cache", None)
     monkeypatch.setattr(seo, "_data_mtime_ns", 0)
@@ -401,7 +407,7 @@ def test_sitemap_includes_all_public_entities(monkeypatch, sample_data):
 def test_sitemap_excludes_provisional(monkeypatch):
     data = {
         "entities": [
-            {"id": "ok", "name": "OK", "type": "attraction"},
+            {"id": "ok", "name": "OK", "type": "attraction", "summary": " ".join(["từ"] * 220)},
             {"id": "prov", "name": "Provisional", "type": "attraction", "status": "provisional"},
         ],
         "relationships": [],
@@ -1320,7 +1326,8 @@ def test_sitemap_xml_special_chars_in_id(monkeypatch):
     """Entity IDs with special XML chars should be escaped in sitemap."""
     data = {
         "entities": [
-            {"id": "test&entity<>", "name": "Test", "type": "attraction"},
+            {"id": "test&entity<>", "name": "Test", "type": "attraction",
+             "summary": " ".join(["từ"] * 220)},
         ],
         "relationships": [],
         "itineraries": [],
@@ -1686,8 +1693,8 @@ def test_load_invalidates_by_id_cache_on_data_change(monkeypatch, tmp_path):
 def test_sitemap_deduplicates_entity_urls(monkeypatch):
     data = {
         "entities": [
-            {"id": "dup", "name": "Dup 1", "type": "attraction"},
-            {"id": "dup", "name": "Dup 2", "type": "dish"},
+            {"id": "dup", "name": "Dup 1", "type": "attraction", "summary": " ".join(["từ"] * 220)},
+            {"id": "dup", "name": "Dup 2", "type": "dish", "summary": " ".join(["từ"] * 220)},
         ],
         "relationships": [],
         "itineraries": [],
