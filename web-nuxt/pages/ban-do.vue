@@ -25,19 +25,6 @@
       </div>
     </ClientOnly>
 
-    <ClientOnly>
-      <div v-if="!activeTypes.has('all') && visibleCount === 0 && !mapLoadError && !fetchError" class="block map-empty-block">
-        <EmptyState
-          icon="🗺️"
-          title="Chưa có địa điểm nào"
-          message="Không có địa điểm thuộc loại đang lọc trên bản đồ. Thử bỏ bớt bộ lọc để xem thêm."
-        >
-          <template #actions>
-            <button type="button" class="btn btn-outline btn-sm" @click="toggleType('all')">Xem tất cả</button>
-          </template>
-        </EmptyState>
-      </div>
-    </ClientOnly>
     <div v-if="fetchError" class="block fetch-error">
       <EmptyState title="Không tải được dữ liệu" message="Không thể tải dữ liệu bản đồ. Vui lòng kiểm tra kết nối và thử lại." icon="🗺️" tone="error">
         <template #actions>
