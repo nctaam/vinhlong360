@@ -15,11 +15,17 @@
     </nav>
 
     <!-- Cover + Hero Image -->
-    <div :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': hasEntityImages }]" :style="!hasEntityImages ? { backgroundImage: heroPlaceholderBg } : undefined">
+    <div
+      :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': hasEntityImages }]"
+      :style="!hasEntityImages ? { backgroundImage: heroPlaceholderBg } : undefined"
+      :role="!hasEntityImages ? 'img' : undefined"
+      :aria-label="!hasEntityImages ? 'Ảnh minh hoạ theo tông màu ' + typeMeta.label : undefined"
+    >
       <NuxtImg v-if="hasEntityImages && isRemoteUrl(coverImage)" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" :aria-label="hasEntityImages ? `Xem ảnh ${entity.name}` : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" @keydown.space.prevent="hasEntityImages && openCoverLightbox(0)" />
       <img v-else-if="hasEntityImages" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" :aria-label="hasEntityImages ? `Xem ảnh ${entity.name}` : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" @keydown.space.prevent="hasEntityImages && openCoverLightbox(0)" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
+      <span v-if="!hasEntityImages" class="dc-motif" aria-hidden="true" v-html="heroMotifSvg"></span>
       <div class="dc-inner">
         <span class="dc-type-row">
           <span class="dc-type-chip"><span class="dc-emoji" aria-hidden="true">{{ typeMeta.emoji }}</span>{{ typeMeta.label }}</span>
@@ -128,7 +134,7 @@
 
         <!-- Lưu ý thực tế — Scenarios 2,3,6,9: practical tips for food/family/OCOP/delegation -->
         <div v-if="practicalTips.length" class="practical-tips reveal">
-          <h2 class="section-subtitle">📋 {{ ss('labels.detail.practical_tips_heading', 'Lưu ý thực tế') }}</h2>
+          <h2 class="section-subtitle sediment-head">📋 {{ ss('labels.detail.practical_tips_heading', 'Lưu ý thực tế') }}</h2>
           <ul class="pt-list">
             <li v-for="tip in practicalTips" :key="tip.icon" class="pt-item">
               <span class="pt-icon">{{ tip.icon }}</span>
@@ -154,7 +160,7 @@
 
         <!-- Food specialties (dish/product only) -->
         <div v-if="foodSpecialties.length" class="food-specialties reveal">
-          <h2 class="section-subtitle">🍽️ Nên thử</h2>
+          <h2 class="section-subtitle sediment-head">🍽️ Nên thử</h2>
           <ul class="fs-list">
             <li v-for="item in foodSpecialties" :key="item.label" class="fs-item">
               <span class="fs-icon" aria-hidden="true">{{ item.icon }}</span>
@@ -168,7 +174,7 @@
 
         <!-- Month strip -->
         <div v-if="entity.season?.months" class="season-block reveal">
-          <h2 class="section-subtitle">{{ ss('labels.detail.season_heading', 'Mùa vụ') }}</h2>
+          <h2 class="section-subtitle sediment-head">{{ ss('labels.detail.season_heading', 'Mùa vụ') }}</h2>
           <div class="month-strip" role="group" aria-label="Lịch mùa vụ theo tháng">
             <span
               v-for="m in 12"
@@ -187,7 +193,7 @@
 
         <!-- Relationships -->
         <div v-if="relationships.length" class="rel-block reveal">
-          <h2>{{ ss('labels.detail.relationships_heading', 'Liên kết') }}</h2>
+          <h2 class="sediment-head">{{ ss('labels.detail.relationships_heading', 'Liên kết') }}</h2>
           <ul class="rel-list">
             <li v-for="rel in relationships" :key="`${rel.target_id}-${rel.rel_type}`">
               <span class="rel-label">{{ rel.label }}</span>
@@ -270,7 +276,7 @@
           <span v-if="entity.attributes?.review_count" class="rd-count">({{ entity.attributes.review_count }} đánh giá)</span>
         </div>
 
-        <h2 class="facts-heading"><span class="facts-heading-icon" aria-hidden="true">📑</span>{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
+        <h2 class="facts-heading sediment-head"><span class="facts-heading-icon" aria-hidden="true">📑</span>{{ ss('labels.detail.info_heading', 'Thông tin') }}</h2>
         <div class="facts-card">
           <div class="fact-group">
             <h3 class="fg-label">Tổng quan</h3>
@@ -387,7 +393,7 @@
         <!-- Liên hệ trực tiếp (showcase — KHÔNG đặt hàng/giỏ hàng/thanh toán on-site) -->
         <section v-if="trustVisible" class="trust-card" aria-labelledby="trust-card-title">
           <div class="trust-card-head">
-            <h2 id="trust-card-title">Độ tin cậy dữ liệu</h2>
+            <h2 id="trust-card-title" class="sediment-head">Độ tin cậy dữ liệu</h2>
             <span :class="['trust-status', trustStatusTone]">{{ trustStatusLabel }}</span>
           </div>
           <dl class="trust-list">
@@ -424,7 +430,7 @@
 
         <!-- Contextual next steps -->
         <div class="next-steps">
-          <h2 class="ns-title">{{ ss('labels.detail.next_steps_title', 'Bước tiếp theo') }}</h2>
+          <h2 class="ns-title sediment-head">{{ ss('labels.detail.next_steps_title', 'Bước tiếp theo') }}</h2>
           <!-- Save affordance lives in the hero (SaveButton) — avoid a second, divergent toggle here.
                Next step is the active-planning CTA, labeled to distinguish it from "save for later". -->
         <NuxtLink :to="planAddUrl" no-prefetch class="ns-action">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
@@ -475,7 +481,7 @@
 import type { Entity } from '~/types'
 import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstants'
 import { seasonText } from '~/composables/useSeason'
-import { generateCategoryPlaceholder } from '~/composables/useCategoryPlaceholder'
+import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { entityStoryTeaser } from '~/composables/useEntityStory'
 
 useReveal()
@@ -635,6 +641,9 @@ const coverImage = computed(() => {
 // promoted to full-bleed hero scale. Replaces the flat shared /img/cat/*.jpg fallback.
 const heroPlaceholderBg = computed(() =>
   entity.value ? generateCategoryPlaceholder(entity.value.id, typeMeta.value.cat) : '')
+// Oversized off-centre category motif glyph (same watermark system as EntityHeroPlaceholder)
+// so the no-photo hero reads as an intentional editorial cover, not a bare gradient.
+const heroMotifSvg = computed(() => generateCategoryIcon(typeMeta.value.cat))
 // Editorial dateline eyebrow: "{TYPE} · {AREA}" (area from the page's own resolver).
 const heroDateline = computed(() =>
   areaName.value ? `${typeMeta.value.label} · ${areaName.value}` : typeMeta.value.label)
@@ -1184,9 +1193,9 @@ useHead({
   font-weight: var(--weight-semibold);
   border: 1px solid var(--line);
 }
-.trust-status.fresh { color: var(--success, #16803c); background: rgba(22, 128, 60, .08); border-color: rgba(22, 128, 60, .22); }
+.trust-status.fresh { color: var(--success); background: var(--success-bg); border-color: var(--success-border); }
 .trust-status.aging { color: var(--warning); background: var(--warning-bg); border-color: var(--warning-border); }
-.trust-status.stale { color: var(--error, #b42318); background: rgba(180, 35, 24, .08); border-color: rgba(180, 35, 24, .2); }
+.trust-status.stale { color: var(--error); background: var(--error-bg); border-color: var(--error-border); }
 .trust-status.unknown { color: var(--muted); background: var(--bg-warm); }
 .trust-list {
   display: grid;
@@ -1259,8 +1268,17 @@ useHead({
   font-size: var(--text-2xs); color: rgba(255, 255, 255, .82);
   text-shadow: 0 1px 3px rgba(0, 0, 0, .5); max-width: 58%; text-align: right; line-height: 1.3;
 }
+/* Oversized off-centre category motif watermark (no-photo hero only) — same visual
+   language as EntityHeroPlaceholder.vue's .ehp-motif. Sits behind .dc-inner (z-index 2)
+   and the existing .dc-overlay/.dc-vignette scrim, so hero text stays fully legible. */
+.dc-motif {
+  position: absolute; right: -4%; bottom: -10%; z-index: 1; pointer-events: none;
+  width: 42%; max-width: 300px; color: rgba(255, 255, 255, .5); opacity: .45;
+}
+.dc-motif :deep(svg) { width: 100%; height: auto; display: block; }
 @media (max-width: 640px) {
   .detail-cover .dc-hook { font-size: var(--text-base); max-width: 100%; }
   .dc-nophoto-note { max-width: 72%; }
+  .dc-motif { width: 56%; opacity: .3; }
 }
 </style>

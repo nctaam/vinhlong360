@@ -133,7 +133,7 @@
 
 /* OCOP highlight badge */
 .ocop-highlight {
-  background: linear-gradient(135deg, #fdf6e3 0%, #fbe7da 100%);
+  background: linear-gradient(135deg, var(--amber-100) 0%, var(--clay-50) 100%);
   border: 1px solid var(--clay-100);
   border-radius: var(--radius-md);
   padding: var(--space-4) var(--space-4);
@@ -222,7 +222,9 @@
   background: var(--accent);
   color: var(--ink-900);
   border-color: var(--accent);
-  animation: peakPulse 2.5s var(--ease-out) infinite;
+  /* Motion budget: settle after 3 pulses (~7.5s) instead of running for the page's
+     entire lifetime — still draws the eye to "rộ nhất" on scroll-into-view. */
+  animation: peakPulse 2.5s var(--ease-out) 3;
   font-weight: var(--weight-extrabold);
 }
 /* Cheaper repaint: pulse via transform+opacity (GPU) instead of box-shadow. */
