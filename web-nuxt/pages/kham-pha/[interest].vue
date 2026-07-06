@@ -39,7 +39,7 @@
         :to="`/kham-pha/${key}`"
         :class="['chip', { active: key === interest }]"
         :aria-current="key === interest ? 'page' : undefined"
-      >{{ meta.emoji }} {{ meta.label }}</NuxtLink>
+      ><IconLine :name="meta.icon" /> {{ meta.label }}</NuxtLink>
     </div>
 
     <section class="block reveal" aria-label="Duyệt tất cả">
@@ -54,7 +54,7 @@
           :class="['chip', { active: areaFilter === key }]"
           :aria-pressed="areaFilter === key"
           @click="areaFilter = key as string"
-        >{{ meta.emoji }} {{ meta.name }}</button>
+        ><IconLine :name="meta.icon" /> {{ meta.name }}</button>
       </div>
 
       <!-- SIGNATURE 3: second filter row — narrow within an interest by type.
@@ -71,7 +71,7 @@
             :class="['chip', 'int-filmstrip-chip', { active: typeFilter === t.type, 'int-chip-deep': t.count === maxTypeCount }]"
             :aria-pressed="typeFilter === t.type"
             @click="typeFilter = t.type"
-          >{{ t.emoji }} {{ t.label }} ({{ t.count }})</button>
+          ><IconLine :name="t.icon" /> {{ t.label }} ({{ t.count }})</button>
         </div>
       </template>
     </div>
@@ -209,6 +209,7 @@ const typeBreakdown = computed(() => {
       type: t,
       count: counts.get(t) || 0,
       emoji: TYPE_META[t]?.emoji || '•',
+      icon: TYPE_META[t]?.icon || 'pin',
       label: TYPE_META[t]?.label || t,
     }))
 })

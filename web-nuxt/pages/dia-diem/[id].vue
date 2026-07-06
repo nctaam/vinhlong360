@@ -28,9 +28,9 @@
       <span v-if="!hasEntityImages" class="dc-motif" aria-hidden="true" v-html="heroMotifSvg"></span>
       <div class="dc-inner">
         <span class="dc-type-row">
-          <span class="dc-type-chip"><span class="dc-emoji" aria-hidden="true">{{ typeMeta.emoji }}</span>{{ typeMeta.label }}</span>
+          <span class="dc-type-chip"><IconLine :name="typeMeta.icon" class="dc-emoji" />{{ typeMeta.label }}</span>
           <span v-if="entity.attributes?.ocop" class="dc-ocop-chip" :aria-label="`Sản phẩm OCOP ${entity.attributes.ocop}`">
-            <span aria-hidden="true">⭐</span> OCOP {{ entity.attributes.ocop }}
+            <IconLine name="star" /> OCOP {{ entity.attributes.ocop }}
           </span>
         </span>
         <span v-if="heroDateline" class="dc-eyebrow">{{ heroDateline }}</span>
@@ -280,7 +280,7 @@
           <div class="fact-group">
             <h3 class="fg-label">Tổng quan</h3>
             <div class="fact">
-              <span class="fact-ic" aria-hidden="true">{{ typeMeta.emoji }}</span>
+              <IconLine :name="typeMeta.icon" class="fact-ic" />
               <span class="k">{{ ss('labels.detail.fact_type', 'Loại') }}</span>
               <span class="v">{{ typeMeta.label }}</span>
             </div>

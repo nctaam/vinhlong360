@@ -1,66 +1,69 @@
 export interface TypeMeta {
   emoji: string
+  /** IconLine name — line-icon equivalent of `emoji` for template contexts. */
+  icon: string
   label: string
   cat: string
 }
 
 export const TYPE_META: Record<string, TypeMeta> = {
-  experience: { emoji: '🌾', label: 'Trải nghiệm', cat: 'experience' },
-  product: { emoji: '🍊', label: 'Đặc sản & OCOP', cat: 'product' },
-  dish: { emoji: '🍲', label: 'Ẩm thực', cat: 'dish' },
-  restaurant: { emoji: '🍽️', label: 'Quán ăn', cat: 'dish' },
-  cafe: { emoji: '☕', label: 'Quán cà phê', cat: 'dish' },
-  craft_village: { emoji: '🏺', label: 'Làng nghề', cat: 'craft' },
-  attraction: { emoji: '🛕', label: 'Tham quan', cat: 'attraction' },
-  accommodation: { emoji: '🏡', label: 'Lưu trú', cat: 'accommodation' },
-  organization: { emoji: '🏢', label: 'Cơ sở / HTX', cat: 'org' },
-  place: { emoji: '📍', label: 'Xã/Phường', cat: 'place' },
-  nature: { emoji: '🌿', label: 'Thiên nhiên', cat: 'nature' },
-  history: { emoji: '🏛️', label: 'Lịch sử', cat: 'history' },
-  event: { emoji: '🎉', label: 'Sự kiện', cat: 'event' },
-  economy: { emoji: '📊', label: 'Kinh tế', cat: 'economy' },
-  person: { emoji: '👤', label: 'Nhân vật', cat: 'person' },
-  drink: { emoji: '🥤', label: 'Đồ uống', cat: 'dish' },
-  itinerary: { emoji: '🗺️', label: 'Lịch trình', cat: 'itinerary' },
-  facility: { emoji: '🏛️', label: 'Cơ quan hành chính', cat: 'facility' },
+  experience: { emoji: '🌾', icon: 'sprout', label: 'Trải nghiệm', cat: 'experience' },
+  product: { emoji: '🍊', icon: 'fruit', label: 'Đặc sản & OCOP', cat: 'product' },
+  dish: { emoji: '🍲', icon: 'bowl', label: 'Ẩm thực', cat: 'dish' },
+  restaurant: { emoji: '🍽️', icon: 'bowl', label: 'Quán ăn', cat: 'dish' },
+  cafe: { emoji: '☕', icon: 'coffee', label: 'Quán cà phê', cat: 'dish' },
+  craft_village: { emoji: '🏺', icon: 'vase', label: 'Làng nghề', cat: 'craft' },
+  attraction: { emoji: '🛕', icon: 'landmark', label: 'Tham quan', cat: 'attraction' },
+  accommodation: { emoji: '🏡', icon: 'home', label: 'Lưu trú', cat: 'accommodation' },
+  organization: { emoji: '🏢', icon: 'building', label: 'Cơ sở / HTX', cat: 'org' },
+  place: { emoji: '📍', icon: 'pin', label: 'Xã/Phường', cat: 'place' },
+  nature: { emoji: '🌿', icon: 'leaf', label: 'Thiên nhiên', cat: 'nature' },
+  history: { emoji: '🏛️', icon: 'landmark', label: 'Lịch sử', cat: 'history' },
+  event: { emoji: '🎉', icon: 'calendar', label: 'Sự kiện', cat: 'event' },
+  economy: { emoji: '📊', icon: 'building', label: 'Kinh tế', cat: 'economy' },
+  person: { emoji: '👤', icon: 'user', label: 'Nhân vật', cat: 'person' },
+  drink: { emoji: '🥤', icon: 'cup', label: 'Đồ uống', cat: 'dish' },
+  itinerary: { emoji: '🗺️', icon: 'map', label: 'Lịch trình', cat: 'itinerary' },
+  facility: { emoji: '🏛️', icon: 'building', label: 'Cơ quan hành chính', cat: 'facility' },
 }
 
 export function getTypeMeta(type: string): TypeMeta {
-  return TYPE_META[type] || { emoji: '📍', label: type, cat: 'place' }
+  return TYPE_META[type] || { emoji: '📍', icon: 'pin', label: type, cat: 'place' }
 }
 
 // GĐ13.4: nhãn loại cơ quan công vụ (facility.attributes.office_kind) cho danh bạ hành chính.
-export const OFFICE_KIND: Record<string, { emoji: string; label: string }> = {
-  ubnd: { emoji: '🏛️', label: 'UBND xã/phường' },
-  cong_an: { emoji: '👮', label: 'Công an' },
-  y_te: { emoji: '🏥', label: 'Trạm y tế' },
-  truong_hoc: { emoji: '🏫', label: 'Trường học' },
-  buu_dien: { emoji: '📮', label: 'Bưu điện' },
-  tu_phap: { emoji: '⚖️', label: 'Tư pháp – Hộ tịch' },
-  khac: { emoji: '🏢', label: 'Cơ quan khác' },
+export const OFFICE_KIND: Record<string, { emoji: string; icon: string; label: string }> = {
+  ubnd: { emoji: '🏛️', icon: 'landmark', label: 'UBND xã/phường' },
+  cong_an: { emoji: '👮', icon: 'user', label: 'Công an' },
+  y_te: { emoji: '🏥', icon: 'building', label: 'Trạm y tế' },
+  truong_hoc: { emoji: '🏫', icon: 'building', label: 'Trường học' },
+  buu_dien: { emoji: '📮', icon: 'building', label: 'Bưu điện' },
+  tu_phap: { emoji: '⚖️', icon: 'building', label: 'Tư pháp – Hộ tịch' },
+  khac: { emoji: '🏢', icon: 'building', label: 'Cơ quan khác' },
 }
 
-export const AREA_META: Record<string, { name: string; emoji: string; blurb: string }> = {
-  'vinh-long': { name: 'Vĩnh Long', emoji: '🍊', blurb: 'Miệt vườn cam sành, khoai lang, bưởi Năm Roi và làng gốm Mang Thít.' },
-  'ben-tre': { name: 'Bến Tre', emoji: '🥥', blurb: 'Xứ dừa: kẹo dừa, mật hoa dừa, bưởi da xanh và những rẫy dừa bạt ngàn.' },
-  'tra-vinh': { name: 'Trà Vinh', emoji: '🛕', blurb: 'Văn hóa Khmer: ao Bà Om, chùa cổ, dừa sáp Cầu Kè và bún nước lèo.' },
-  'lien-vung': { name: 'Liên vùng', emoji: '🧭', blurb: 'Tuyến kết nối nhiều điểm đến giữa Vĩnh Long, Bến Tre và Trà Vinh.' },
+export const AREA_META: Record<string, { name: string; emoji: string; icon: string; blurb: string }> = {
+  'vinh-long': { name: 'Vĩnh Long', emoji: '🍊', icon: 'fruit', blurb: 'Miệt vườn cam sành, khoai lang, bưởi Năm Roi và làng gốm Mang Thít.' },
+  'ben-tre': { name: 'Bến Tre', emoji: '🥥', icon: 'leaf', blurb: 'Xứ dừa: kẹo dừa, mật hoa dừa, bưởi da xanh và những rẫy dừa bạt ngàn.' },
+  'tra-vinh': { name: 'Trà Vinh', emoji: '🛕', icon: 'landmark', blurb: 'Văn hóa Khmer: ao Bà Om, chùa cổ, dừa sáp Cầu Kè và bún nước lèo.' },
+  'lien-vung': { name: 'Liên vùng', emoji: '🧭', icon: 'compass', blurb: 'Tuyến kết nối nhiều điểm đến giữa Vĩnh Long, Bến Tre và Trà Vinh.' },
 }
 
 // Interest landing pages (/kham-pha/<slug>). Overridable via metadata.interests.
 export interface InterestDef {
   emoji: string
+  icon: string
   label: string
   description: string
   types: string[]
   relatedRoutes?: string[]
 }
 export const INTEREST_META: Record<string, InterestDef> = {
-  'am-thuc': { emoji: '🍲', label: 'Ẩm thực', description: 'Món ngon miền Tây — từ bún nước lèo, bánh xèo đến đặc sản trái cây theo mùa.', types: ['dish', 'product'], relatedRoutes: ['vong-am-thuc-mien-tay'] },
-  'thien-nhien': { emoji: '🌿', label: 'Thiên nhiên', description: 'Miệt vườn sông nước, cù lao xanh mát, vườn trái cây và đồng lúa bát ngàn.', types: ['experience', 'attraction'], relatedRoutes: ['vong-trai-cay-vinh-long', 'vong-mua-nuoc-noi'] },
-  'van-hoa': { emoji: '🛕', label: 'Văn hóa', description: 'Di tích lịch sử, chùa Khmer cổ, lễ hội truyền thống và đời sống bản địa.', types: ['attraction', 'craft_village'], relatedRoutes: ['vong-chua-khmer-tra-vinh'] },
-  'lang-nghe': { emoji: '🏺', label: 'Làng nghề', description: 'Gốm Mang Thít, kẹo dừa, chiếu lác, bánh tráng — nghề truyền thống hàng trăm năm.', types: ['craft_village', 'organization'], relatedRoutes: ['vong-lang-nghe-mang-thit'] },
-  'mua-sam': { emoji: '🛍️', label: 'Mua sắm & OCOP', description: 'Sản phẩm OCOP, đặc sản làm quà, trái cây tươi và hàng thủ công mỹ nghệ.', types: ['product'] },
+  'am-thuc': { emoji: '🍲', icon: 'bowl', label: 'Ẩm thực', description: 'Món ngon miền Tây — từ bún nước lèo, bánh xèo đến đặc sản trái cây theo mùa.', types: ['dish', 'product'], relatedRoutes: ['vong-am-thuc-mien-tay'] },
+  'thien-nhien': { emoji: '🌿', icon: 'leaf', label: 'Thiên nhiên', description: 'Miệt vườn sông nước, cù lao xanh mát, vườn trái cây và đồng lúa bát ngàn.', types: ['experience', 'attraction'], relatedRoutes: ['vong-trai-cay-vinh-long', 'vong-mua-nuoc-noi'] },
+  'van-hoa': { emoji: '🛕', icon: 'landmark', label: 'Văn hóa', description: 'Di tích lịch sử, chùa Khmer cổ, lễ hội truyền thống và đời sống bản địa.', types: ['attraction', 'craft_village'], relatedRoutes: ['vong-chua-khmer-tra-vinh'] },
+  'lang-nghe': { emoji: '🏺', icon: 'vase', label: 'Làng nghề', description: 'Gốm Mang Thít, kẹo dừa, chiếu lác, bánh tráng — nghề truyền thống hàng trăm năm.', types: ['craft_village', 'organization'], relatedRoutes: ['vong-lang-nghe-mang-thit'] },
+  'mua-sam': { emoji: '🛍️', icon: 'gift', label: 'Mua sắm & OCOP', description: 'Sản phẩm OCOP, đặc sản làm quà, trái cây tươi và hàng thủ công mỹ nghệ.', types: ['product'] },
 }
 
 export const CARD_TYPES = ['experience', 'product', 'dish', 'craft_village', 'attraction', 'accommodation', 'nature', 'history', 'event'] as const

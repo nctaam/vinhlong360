@@ -6,7 +6,7 @@
     <section v-if="areaMeta" class="catalog-hero area-hero" :class="'cat-area-' + areaKey" :style="areaTint">
       <span class="area-hero-bloom" aria-hidden="true"></span>
       <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">{{ areaMeta.emoji }}</span>
+        <IconLine :name="areaMeta.icon" class="catalog-hero-icon" />
         <div>
           <span class="area-eyebrow">Vĩnh Long · Cửu Long</span>
           <h1>{{ areaMeta.name }}</h1>

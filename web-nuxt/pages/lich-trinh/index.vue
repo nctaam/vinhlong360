@@ -46,7 +46,7 @@
         </div>
         <div class="journey-stats">
           <div v-for="(items, type) in byType" :key="type" class="js-item">
-            <span class="js-emoji">{{ getTypeMeta(type).emoji }}</span>
+            <IconLine :name="getTypeMeta(type).icon" class="js-emoji" />
             <strong>{{ items.length }}</strong>
             <span>{{ getTypeMeta(type).label }}</span>
           </div>
@@ -92,7 +92,7 @@
           :aria-pressed="areaFilter === key"
           @click="areaFilter = areaFilter === key ? 'all' : (key as string)"
         >
-          <span class="quick-pick-icon">{{ meta.emoji }}</span>
+          <IconLine :name="meta.icon" class="quick-pick-icon" />
           <span class="quick-pick-label">{{ meta.name }}</span>
           <span class="quick-pick-count">{{ countByArea(key as string) }} lịch trình</span>
         </button>
@@ -132,7 +132,7 @@
             :class="['chip', { active: areaFilter === key }]"
             :aria-pressed="areaFilter === key"
             @click="areaFilter = key as string"
-          >{{ meta.emoji }} {{ meta.name }}</button>
+          ><IconLine :name="meta.icon" /> {{ meta.name }}</button>
         </div>
       </div>
 

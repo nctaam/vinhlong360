@@ -35,7 +35,7 @@
         </div>
         <div class="ac-chips">
           <NuxtLink v-for="c in quickCategories" :key="c.to" :to="c.to" class="ac-chip" @mousedown.prevent="goCategory(c.to)" @keydown.enter.prevent="goCategory(c.to)" @keydown.space.prevent="goCategory(c.to)">
-            <span aria-hidden="true">{{ c.emoji }}</span> {{ c.label }}
+            <IconLine :name="c.icon" /> {{ c.label }}
           </NuxtLink>
         </div>
       </div>
@@ -117,7 +117,7 @@
         <p class="ac-empty-hint">Thử từ khóa khác, hoặc xem gợi ý theo danh mục:</p>
         <div class="ac-chips ac-empty-chips">
           <NuxtLink v-for="c in quickCategories" :key="c.to" :to="c.to" class="ac-chip" @mousedown.prevent="goCategory(c.to)" @keydown.enter.prevent="goCategory(c.to)" @keydown.space.prevent="goCategory(c.to)">
-            <span aria-hidden="true">{{ c.emoji }}</span> {{ c.label }}
+            <IconLine :name="c.icon" /> {{ c.label }}
           </NuxtLink>
         </div>
         <NuxtLink :to="`/tim-kiem?q=${encodeURIComponent(query.trim())}`" class="ac-empty-all" @mousedown.prevent="onSubmit">
@@ -159,10 +159,10 @@ const { fetchEntitySuggestions } = useUnifiedSearch()
 const { recentSearches, loadRecents, saveRecent, removeRecent, clearRecents } = useSearchRecents()
 
 const quickCategories = [
-  { to: '/du-lich', emoji: '🌿', label: 'Du lịch' },
-  { to: '/san-pham', emoji: '🍊', label: 'Đặc sản' },
-  { to: '/luu-tru', emoji: '🏡', label: 'Lưu trú' },
-  { to: '/ocop', emoji: '⭐', label: 'OCOP' },
+  { to: '/du-lich', icon: 'leaf', label: 'Du lịch' },
+  { to: '/san-pham', icon: 'fruit', label: 'Đặc sản' },
+  { to: '/luu-tru', icon: 'home', label: 'Lưu trú' },
+  { to: '/ocop', icon: 'star', label: 'OCOP' },
 ]
 
 function goCategory(to: string) {

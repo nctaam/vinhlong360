@@ -12,7 +12,7 @@
       <div class="catalog-hero-inner">
         <span class="catalog-hero-icon" aria-hidden="true">🗓️</span>
         <div>
-          <span class="itin-eyebrow">{{ areaMeta.emoji }} {{ areaMeta.name }} · {{ itinerary.duration }}</span>
+          <span class="itin-eyebrow"><IconLine :name="areaMeta.icon" /> {{ areaMeta.name }} · {{ itinerary.duration }}</span>
           <h1>{{ itineraryTitle }}</h1>
           <p>{{ itinerary.stops?.length || 0 }} điểm dừng — hình dạng một ngày trọn vẹn, từ sương sớm mặt sông tới lúc nắng ngả màu mật ong.</p>
         </div>

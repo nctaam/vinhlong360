@@ -122,7 +122,7 @@
           :aria-pressed="areaFilter === key"
           @click="areaFilter = areaFilter === key ? 'all' : (key as string)"
         >
-          <span class="quick-pick-icon">{{ meta.emoji }}</span>
+          <IconLine :name="meta.icon" class="quick-pick-icon" />
           <span class="quick-pick-label">{{ meta.name }}</span>
           <span class="quick-pick-count">{{ countByArea(key as string) }} lễ hội</span>
         </button>
@@ -216,9 +216,9 @@
             <h3>{{ e.name }}</h3>
             <p v-if="e.summary" class="event-summary">{{ truncateText(e.summary, 120) }}</p>
             <div class="event-meta">
-              <span v-if="e.place_name" class="event-place">📍 {{ e.place_name }}</span>
-              <span v-if="getArea(e)" class="event-area">{{ AREA_META[getArea(e)]?.emoji }} {{ AREA_META[getArea(e)]?.name }}</span>
-              <span v-if="dateRange(e)" class="event-dates">🗓️ {{ dateRange(e) }}</span>
+              <span v-if="e.place_name" class="event-place"><IconLine name="pin" /> {{ e.place_name }}</span>
+              <span v-if="getArea(e)" class="event-area"><IconLine :name="AREA_META[getArea(e)]?.icon || 'pin'" /> {{ AREA_META[getArea(e)]?.name }}</span>
+              <span v-if="dateRange(e)" class="event-dates"><IconLine name="calendar" /> {{ dateRange(e) }}</span>
               <span v-if="e.attributes?.lunar_date" class="lunar-label">🌙 {{ e.attributes.lunar_date }}</span>
             </div>
           </div>
