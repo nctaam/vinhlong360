@@ -101,7 +101,7 @@
           <div v-else-if="routeError" class="route-total" role="status">⚠️ Chưa tính được lộ trình (thử lại sau)</div>
         </div>
 
-        <p v-if="stops.length >= 20" class="max-stops-warn" role="status">Tối đa 20 điểm mỗi lịch trình.</p>
+        <p v-if="stops.length >= 20" class="max-stops-warn" role="status">Đã đạt tối đa 20 điểm mỗi lịch trình.</p>
         <span class="sr-only" aria-live="polite" aria-atomic="true">{{ stopAnnounce }}</span>
         <div v-if="!stops.length" class="builder-empty">
           <EmptyState message="Chưa có điểm nào. Chọn điểm đến từ danh sách bên trái để bắt đầu." />
