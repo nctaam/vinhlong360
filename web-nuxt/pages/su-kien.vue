@@ -92,7 +92,6 @@
             <span v-if="e.attributes?.category === 'mua'" class="cat-badge cat-mua">🌾 Mùa vụ</span>
             {{ e.name }}
           </h3>
-          <span v-if="e.place_name" class="ledger-place">📍 {{ e.place_name }}</span>
         </NuxtLink>
       </div>
       <button type="button" class="ical-bulk-btn" @click="downloadIcalBulk">
@@ -346,6 +345,9 @@ const upcoming = computed(() => {
       const ds = e.attributes?.date_start_iso || e.attributes?.date_start
       return ds && ds >= now
     })
+    // A6 declutter-2: ledger tôn trọng filter đang chọn (đồng bộ với grid).
+    .filter((e: Entity) => areaFilter.value === 'all' || getArea(e) === areaFilter.value)
+    .filter((e: Entity) => statusFilter.value === 'all' || eventStatus(e) === statusFilter.value)
     .sort((a: Entity, b: Entity) => (a.attributes?.date_start_iso || a.attributes?.date_start || '').localeCompare(b.attributes?.date_start_iso || b.attributes?.date_start || ''))
     .slice(0, 6)
 })

@@ -377,6 +377,10 @@ const upcoming = computed(() => {
       const ds = eventStart(e)
       return ds && ds >= now
     })
+    // A6 declutter-2: ledger tôn trọng filter đang chọn (trước đây tĩnh trong khi
+    // grid động — friction). Khi cả hai = 'all' hành vi y hệt cũ.
+    .filter((e: Entity) => areaFilter.value === 'all' || getArea(e) === areaFilter.value)
+    .filter((e: Entity) => statusFilter.value === 'all' || eventStatus(e) === statusFilter.value)
     .sort((a: Entity, b: Entity) => eventStart(a).localeCompare(eventStart(b)))
     .slice(0, 6)
 })
