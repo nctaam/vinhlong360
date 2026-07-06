@@ -34,8 +34,11 @@
         </div>
       </section>
 
+      <!-- declutter-2 A7: rail chỉ hiện ở EMPTY-state (builder khi trống trả
+           "Tìm điểm để lưu"/"Mở bộ lập lịch trình" — đúng vai onboarding); khi đã có
+           mục lưu, danh sách chính là nội dung, rail always-on là nhiễu. -->
       <JourneyActionRail
-        v-if="savedJourneyActions.length"
+        v-if="totalSaved === 0 && savedJourneyActions.length"
         :actions="savedJourneyActions"
         title="Việc nên làm tiếp"
         compact

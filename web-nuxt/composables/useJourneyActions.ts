@@ -188,94 +188,8 @@ export function useJourneyActions() {
     return actions.slice(0, 2)
   }
 
-  function userCpJourneyActions(input: {
-    hasPassword: boolean
-    profileCompletion: number
-    bookmarks: number
-    posts: number
-    drafts: number
-    unreadNotifications: number
-    fetchIssue: boolean
-  }): JourneyAction[] {
-    const actions: JourneyAction[] = []
-    const profileCompletion = Math.max(0, Math.min(100, Number(input.profileCompletion) || 0))
-    const bookmarks = positiveNumber(input.bookmarks)
-    const posts = positiveNumber(input.posts)
-    const drafts = positiveNumber(input.drafts)
-    const unread = positiveNumber(input.unreadNotifications)
-
-    if (input.fetchIssue) {
-      actions.push({
-        id: 'account-refresh',
-        icon: '↻',
-        label: 'Tải lại dữ liệu tài khoản',
-        text: 'Một phần dữ liệu chưa ổn định, nên kiểm tra lại trước khi thao tác tiếp.',
-        to: '/tai-khoan',
-        tone: 'warning',
-      })
-    }
-    if (unread > 0) {
-      actions.push({
-        id: 'account-notifications',
-        icon: '🔔',
-        label: 'Xử lý thông báo mới',
-        text: `${unread} thông báo chưa đọc có thể cần phản hồi.`,
-        to: '/thong-bao',
-        tone: 'primary',
-      })
-    }
-    if (!input.hasPassword) {
-      actions.push({
-        id: 'account-password',
-        icon: '🔒',
-        label: 'Đặt mật khẩu tài khoản',
-        text: 'Hoàn thiện lớp bảo vệ cơ bản trước khi dùng lâu dài.',
-        to: '/cai-dat#bao-mat',
-        tone: 'danger',
-      })
-    }
-    if (profileCompletion < 100) {
-      actions.push({
-        id: 'account-profile',
-        icon: '👤',
-        label: 'Hoàn thiện hồ sơ',
-        text: `Hồ sơ đang ở ${profileCompletion}%, bổ sung thông tin để tăng độ tin cậy.`,
-        to: '/cai-dat#ho-so',
-        tone: 'saved',
-      })
-    }
-    if (bookmarks > 0) {
-      actions.push({
-        id: 'account-plan-from-saved',
-        icon: '📋',
-        label: 'Tạo lịch trình từ đã lưu',
-        text: `${bookmarks} mục đã lưu sẵn sàng đưa vào kế hoạch.`,
-        to: '/tao-lich-trinh?source=saved',
-        tone: 'planner',
-      })
-    }
-    if (drafts > 0) {
-      actions.push({
-        id: 'account-drafts',
-        icon: '✍️',
-        label: 'Hoàn tất bản nháp',
-        text: `${drafts} bản nháp có thể hoàn thiện để chia sẻ với cộng đồng.`,
-        to: '/cong-dong?compose=draft#compose',
-        tone: 'community',
-      })
-    } else if (posts === 0) {
-      actions.push({
-        id: 'account-first-post',
-        icon: '✍️',
-        label: 'Chia sẻ bài đầu tiên',
-        text: 'Một trải nghiệm thật giúp hồ sơ sống động hơn.',
-        to: '/cong-dong',
-        tone: 'community',
-      })
-    }
-
-    return actions.slice(0, 3)
-  }
+  // (declutter-2 A7: builder userCpJourneyActions đã xoá — rail tai-khoan bị bỏ vì
+  // trùng panel "Việc nên làm tiếp"; builder không còn caller nào.)
 
   function adminOpsActions(input: {
     healthStatus?: string
@@ -444,7 +358,6 @@ export function useJourneyActions() {
     searchSuccessActions,
     savedWorkspaceActions,
     homepageDecisionActions,
-    userCpJourneyActions,
     adminOpsActions,
     dataQualityQueueActions,
   }

@@ -42,15 +42,7 @@
         </button>
       </div>
 
-      <JourneyActionRail
-        v-if="userCpJourneyActions.length"
-        :actions="userCpJourneyActions"
-        title="Việc nên làm ngay"
-        subtitle="Ưu tiên theo bảo mật, độ hoàn thiện hồ sơ, dữ liệu đã lưu và tín hiệu cộng đồng của bạn."
-        aria-label="Hành động ưu tiên trong trung tâm tài khoản"
-        compact
-      />
-
+      <!-- declutter-2 A7: rail đã bỏ — trùng panel "Việc nên làm tiếp" phía dưới. -->
       <section class="cp-summary-grid" aria-label="Tổng quan tài khoản">
         <article class="cp-panel">
           <div class="cp-panel-head">
@@ -179,7 +171,6 @@
 
 <script setup lang="ts">
 import type { User } from '~/types'
-import { useJourneyActions } from '~/composables/useJourneyActions'
 
 type Counts = Partial<Record<'posts' | 'drafts' | 'bookmarks' | 'unread_notifications', number>>
 type Stats = Partial<Record<'reviews' | 'followers' | 'following' | 'likes_received', number>>
@@ -188,7 +179,6 @@ type ActivityItem = { action: string; ref_id?: string; ref_type?: string; create
 const { user, isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
 const { timeAgo } = useTimeAgo()
-const { userCpJourneyActions: buildUserCpJourneyActions } = useJourneyActions()
 
 useHead({
   title: 'Tài khoản',
@@ -250,16 +240,6 @@ const nextActions = computed(() => {
   return actions.slice(0, 4)
 })
 const primaryAction = computed(() => nextActions.value[0] || { icon: '✓', label: 'Xem hồ sơ', to: profileUrl.value })
-const userCpJourneyActions = computed(() => buildUserCpJourneyActions({
-  hasPassword: hasPassword.value,
-  profileCompletion: profileCompletion.value,
-  bookmarks: counts.value.bookmarks ?? 0,
-  posts: counts.value.posts ?? 0,
-  drafts: counts.value.drafts ?? 0,
-  unreadNotifications: counts.value.unread_notifications ?? 0,
-  fetchIssue: fetchIssue.value,
-}))
-
 const workspaceLinks = computed(() => [
   { icon: '👤', title: 'Trang cá nhân', desc: 'Xem hồ sơ công khai', to: profileUrl.value },
   { icon: '🔔', title: 'Thông báo', desc: (counts.value.unread_notifications ?? 0) ? 'Có cập nhật mới' : 'Không có mới', to: '/thong-bao', badge: counts.value.unread_notifications || '' },

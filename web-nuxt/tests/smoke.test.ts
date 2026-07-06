@@ -78,8 +78,9 @@ describe('UserCP regressions', () => {
     expect(page).toContain('cp-alert')
     expect(page).toContain('profileCompletion')
     expect(page).toContain('nextActions')
-    expect(page).toContain('userCpJourneyActions')
-    expect(page).toContain('JourneyActionRail')
+    // declutter-2 A7 (§3.4 chủ đích): rail tai-khoan đã bỏ — trùng panel "Việc nên
+    // làm tiếp"; assertion cũ mã hoá UI đã bị spec-duyệt loại.
+    expect(page).not.toContain('userCpJourneyActions')
     expect(page).toContain('cp-summary-grid')
     expect(page).toContain('resetAccountData')
     expect(page).toContain('handleSessionExpired')
@@ -452,7 +453,6 @@ describe('UserCP regressions', () => {
     expect(dataQuality).toContain('normalizeBucketQuery(route.query.bucket')
     expect(dataQuality).toContain('JourneyActionRail')
     expect(journeyActions).toContain('homepageDecisionActions')
-    expect(journeyActions).toContain('userCpJourneyActions')
     expect(journeyActions).toContain('adminOpsActions')
     expect(journeyActions).toContain('dataQualityQueueActions')
   })
