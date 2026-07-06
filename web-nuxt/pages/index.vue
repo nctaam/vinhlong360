@@ -309,7 +309,7 @@
       <section v-else class="block reveal storyland" aria-label="Câu chuyện vùng đất">
         <div class="storyland-card">
           <div class="storyland-media">
-            <img src="/img/spread/song-nuoc.webp" alt="" loading="lazy" decoding="async" width="960" height="540" />
+            <NuxtImg src="/img/spread/song-nuoc.webp" alt="" loading="lazy" decoding="async" width="960" height="540" sizes="(min-width: 780px) 50vw, 100vw" format="webp" />
           </div>
           <div class="storyland-copy">
             <span class="storyland-kicker">Câu chuyện vùng đất</span>

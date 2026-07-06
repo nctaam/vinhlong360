@@ -132,7 +132,8 @@
           <h2 class="related-title">Bài viết liên quan</h2>
           <div class="related-grid">
             <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="postPath(rp.id)" class="related-card">
-              <img v-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
+              <NuxtImg v-if="rp.images?.[0] && isRemoteUrl(rp.images[0])" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" sizes="(max-width: 480px) 90vw, (max-width: 780px) 45vw, 300px" format="webp" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
+              <img v-else-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
               <div class="related-body">
                 <span class="related-author">{{ rp.display_name }}</span>
                 <p class="related-text">{{ (rp.content || '').slice(0, 80) }}{{ (rp.content || '').length > 80 ? '…' : '' }}</p>
