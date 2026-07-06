@@ -231,7 +231,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .quote-preview-body { display: flex; flex-direction: column; gap: .15rem; min-width: 0; flex: 1; }
 .qp-head { font-size: var(--text-sm); color: var(--ink-700); }
 .qp-content { font-size: var(--text-sm); color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.qp-remove { background: none; border: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 var(--space-1); border-radius: var(--radius-sm); }
+.qp-remove { background: none; border: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 var(--space-1); border-radius: var(--radius-sm); min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .qp-remove:hover { color: var(--ink); }
 /* @-mention dropdown (dùng chung: composer cong-dong + ô bình luận bai-viet) */
 .compose-mention-wrap, .comment-mention-wrap { position: relative; }
@@ -244,6 +244,7 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .mention-item {
   display: flex; align-items: center; gap: .5rem; padding: .45rem .55rem;
   border-radius: var(--radius-sm); cursor: pointer; font-size: var(--text-sm);
+  min-height: 44px;
 }
 .mention-item.active, .mention-item:hover { background: rgba(var(--primary-rgb), .08); }
 .mention-ic { flex-shrink: 0; }
@@ -493,26 +494,22 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .dark .sf-icon { background: rgba(255,255,255,.06); }
 .dark .sheet-feature:hover { background: rgba(255,255,255,.04); }
 .dark .sheet-close:hover { background: rgba(255,255,255,.08); }
-.dark .journey-bar { background: var(--glass-bg-heavy); border-color: rgba(255,255,255,.06); box-shadow: var(--shadow-lg); }
 .dark .btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,.06); }
 .dark .btn-outline { border-color: var(--primary-fg); }
 .dark .btn-outline:hover:not(:disabled) { background: var(--primary); }
 
-/* ── Journey Bar (floating) ── */
-.journey-bar { position: fixed; bottom: calc(var(--space-6) + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: var(--z-floating); background: var(--glass-bg-heavy); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); border: .5px solid var(--line); border-radius: var(--radius-full); padding: var(--space-2) var(--space-3) var(--space-2) var(--space-5); display: flex; align-items: center; gap: var(--space-4); box-shadow: var(--shadow-lg); animation: jbSlideUp .35s var(--ease-spring-gentle); }
-.jb-summary { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; font-size: var(--text-sm); color: var(--ink); white-space: nowrap; transition: opacity .2s var(--ease-out), transform .2s var(--ease-spring-gentle); }
-.jb-summary:hover { opacity: .8; }
-.jb-summary:active { transform: scale(.96); transition-duration: .08s; }
-.jb-heart { width: 20px; height: 20px; flex-shrink: 0; }
-.jb-actions { display: flex; gap: var(--space-2); }
-.jb-link { white-space: nowrap; }
-@keyframes jbSlideUp { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-@media (max-width: 480px) {
-  .journey-bar { bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); left: var(--space-3); right: var(--space-3); transform: none; border-radius: var(--radius-lg); flex-wrap: wrap; gap: var(--space-2) var(--space-3); justify-content: center; padding: var(--space-3); }
-  .jb-actions { flex: 1 1 100%; }
-  .jb-actions .jb-link { flex: 1; }
-  @keyframes jbSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-}
+/* ── Journey Bar (floating) ──
+   NOTE: .journey-bar has exactly one consumer, components/JourneyBar.vue, which
+   ships its own <style scoped> ruleset (full-width bottom bar, its own dark-mode
+   rule, its own ≤480px block). This old "centered floating pill" design was fully
+   shadowed by the scoped block's higher [data-v-xxx] specificity for every property
+   they both set — EXCEPT `transform` and `animation`, which the scoped block never
+   declares. Those two leaked through unopposed above the ≤480px breakpoint (this
+   block's own mobile query was the only place `transform` got reset to `none`),
+   so between ~480–820px the bar rendered translateX(-50%) shifted while ALSO
+   full-bleed (left:0;right:0 from the scoped rule) — i.e. shifted half its own
+   width off-screen. Removed entirely rather than patched: dead code, single
+   consumer, zero risk. Live styling now lives solely in JourneyBar.vue. */
 
 /* ── Supplementary hints (AI-powered, shown as subtle suggestions) ── */
 /* Căn giữa + max-width như .block — fix bug grid trải full-width văng mép trái ở desktop */
@@ -544,8 +541,14 @@ a.tag:hover, button.tag:hover, .tag[role="button"]:hover { filter: brightness(.9
 .ai-search-suggestions { padding: 0 var(--space-5) var(--space-4); display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
 /* ── Onboarding Sheet ── */
-.onboarding-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(0,0,0,.4); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; }
-.onboarding-sheet { position: relative; width: 100%; max-width: 480px; background: var(--card); border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: var(--space-8) var(--space-6) var(--space-6); box-shadow: var(--shadow-xl); border: .5px solid var(--line); border-bottom: none; display: flex; flex-direction: column; max-height: min(90vh, calc(100vh - 40px)); overflow: hidden; }
+/* .onboarding-overlay is a flex row with a single child, so that child's default
+   flex min-width:auto (content min-content size) can win over width:100% if any
+   descendant text has a wide unbreakable run (e.g. long CMS-edited copy via
+   useSiteSettings('onboarding') — see utils/onboardingContent.ts merge). min-width:0
+   forces it back to shrinkable, max-width:100vw is a hard backstop so the sheet can
+   never exceed the viewport, and overflow-wrap guards any unbreakable token inside. */
+.onboarding-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(0,0,0,.4); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; box-sizing: border-box; }
+.onboarding-sheet { position: relative; width: 100%; min-width: 0; max-width: min(480px, 100vw); box-sizing: border-box; background: var(--card); border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: var(--space-8) var(--space-6) var(--space-6); box-shadow: var(--shadow-xl); border: .5px solid var(--line); border-bottom: none; display: flex; flex-direction: column; max-height: min(90vh, calc(100vh - 40px)); overflow: hidden; overflow-wrap: break-word; }
 .sheet-close { position: absolute; top: var(--space-3); right: var(--space-3); background: var(--bg-alt); border: none; border-radius: var(--radius-full); width: 44px; height: 44px; font-size: 1.2rem; cursor: pointer; color: var(--muted); display: flex; align-items: center; justify-content: center; transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle), color .3s var(--ease-out); }
 .sheet-close:hover { background: var(--line); color: var(--ink); }
 .sheet-close:active { transform: scale(.9); transition-duration: .08s; }

@@ -781,7 +781,11 @@ a.thread-author:hover { color: var(--primary-fg); }
 
   /* Planner: stack picker above builder */
   .planner-layout { grid-template-columns: 1fr; }
-  .planner-picker { position: static; max-height: 400px; }
+  /* min-width: 0 — grid items default to min-width:auto, which lets the
+     FilterChips scroll-row's non-wrapping content (.fc-row) force this
+     track wider than the viewport instead of clipping via its own
+     overflow-x:auto. Without this the whole page gains horizontal scroll. */
+  .planner-picker { position: static; max-height: 400px; min-width: 0; }
 }
 
 /* ── Responsive: mobile + small tablet (≤820px) ── */
@@ -815,7 +819,8 @@ a.thread-author:hover { color: var(--primary-fg); }
   .feed-layout { grid-template-columns: 1fr; }
   .feed-sidebar { position: static; }
   .planner-layout { grid-template-columns: 1fr; }
-  .planner-picker { position: static; max-height: 400px; }
+  /* min-width: 0 — see matching comment in the 769–1024px block above. */
+  .planner-picker { position: static; max-height: 400px; min-width: 0; }
   .stop-card-fields { flex-direction: column; }
   .stop-time-input { width: 100%; }
   .post-images.img-grid-3 .post-img-wrap,
@@ -840,8 +845,18 @@ a.thread-author:hover { color: var(--primary-fg); }
   .step { grid-template-columns: 1fr; gap: var(--space-1); }
   .step-time { padding-top: 0; }
 }
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  select, textarea, input[type="text"], input[type="search"], input[type="tel"], input[type="email"], input[type="number"] { font-size: 16px; }
+@media (max-width: 640px) {
+  /* iOS Safari auto-zooms on focus for any text-entry control under 16px — jarring
+     on every page that has one. Floor covers all text-like input types (password
+     and type-less <input> were previously missing, so a bare <input> or a
+     <input type="password"> under 16px would still trigger the zoom). No mobile
+     input in this codebase intentionally sets a font-size above 16px (the shared
+     .input/.textarea/.select classes floor at var(--text-base), which clamps
+     1rem→1.125rem — already ≥16px), so a flat floor here never shrinks anything. */
+  input[type="text"], input[type="search"], input[type="tel"], input[type="email"],
+  input[type="password"], input[type="number"], input:not([type]), textarea, select {
+    font-size: 16px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
