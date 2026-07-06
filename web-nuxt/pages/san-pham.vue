@@ -177,7 +177,7 @@
         </NuxtLink>
         <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
           <span class="cross-icon" aria-hidden="true">🍲</span>
-          <div><strong>Ẩm thực</strong><p>Món ngon miền Tây</p></div>
+          <div><strong>Ẩm thực</strong><p>Món ngon Vĩnh Long</p></div>
         </NuxtLink>
       </div>
     </section>

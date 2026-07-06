@@ -9,7 +9,7 @@
       <div class="wake-hero-inner">
         <p class="wake-hero-eyebrow">ĐỒNG BẰNG SÔNG CỬU LONG · VĨNH LONG — BẾN TRE — TRÀ VINH</p>
         <h1 class="wake-hero-title">{{ pc('hero_title', 'Thức dậy giữa vườn, nghe chim trước khi nghe chuông báo thức.') }}</h1>
-        <p class="wake-hero-sub">{{ pc('hero_subtitle', 'Homestay nhà vườn, resort ven sông, khách sạn phố — chọn nơi bạn muốn mở mắt vào buổi sáng ở miền Tây.') }}</p>
+        <p class="wake-hero-sub">{{ pc('hero_subtitle', 'Homestay nhà vườn, resort ven sông, khách sạn phố — chọn nơi bạn muốn mở mắt vào buổi sáng ở Vĩnh Long.') }}</p>
       </div>
       <div v-if="allEntities.length" class="wake-hero-stats">
         <div class="stat-item">
@@ -90,7 +90,7 @@
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
-      <div class="sediment-head"><h2>Ở đâu khi đi miền Tây?</h2></div>
+      <div class="sediment-head"><h2>Ở đâu khi đi Vĩnh Long?</h2></div>
       <div class="editorial-body drop-cap">
         <p>Lưu trú ở Vĩnh Long, Bến Tre và Trà Vinh mang đến những trải nghiệm rất khác so với khách sạn thành phố. Đây là vùng đất của homestay nhà vườn — nơi bạn ngủ trong căn nhà gỗ giữa vườn trái cây, thức dậy với tiếng chim hót và hương hoa bưởi. Nhiều chỗ ở nằm trên cù lao, phải đi đò hoặc xuồng mới tới — chính sự cách biệt ấy tạo nên sự yên tĩnh đặc trưng.</p>
       </div>
@@ -158,7 +158,7 @@
         </NuxtLink>
         <NuxtLink to="/san-pham" class="cross-card">
           <span class="cross-icon" aria-hidden="true">🍊</span>
-          <div><strong>Đặc sản</strong><p>Mua quà miền Tây</p></div>
+          <div><strong>Đặc sản</strong><p>Mua quà Vĩnh Long</p></div>
         </NuxtLink>
       </div>
     </section>

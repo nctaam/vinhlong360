@@ -58,7 +58,7 @@
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
-      <div class="sediment-head route-article-head"><h2>Tự khám phá miền Tây bằng xe máy hoặc ô tô</h2></div>
+      <div class="sediment-head route-article-head"><h2>Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô</h2></div>
       <p>Các tuyến đường dưới đây được thiết kế cho người muốn <strong>tự đi</strong> — không cần tour, không cần hướng dẫn viên. Mỗi tuyến ghi rõ khoảng cách, thời gian di chuyển và các điểm dừng theo thứ tự hợp lý. Đường liên tỉnh giữa Vĩnh Long, Bến Tre và Trà Vinh phần lớn là đường nhựa tốt, phù hợp cả xe máy lẫn ô tô 4-7 chỗ.</p>
       <p>Nếu đi xe máy, ưu tiên khởi hành sáng sớm (trước 7h) để tránh nắng và tận dụng ánh sáng đẹp. Mang theo áo mưa — miền Tây hay có mưa rào chiều, đặc biệt từ tháng 6 đến tháng 11. Đường vào các làng nghề đôi khi hẹp và dốc cầu, chạy chậm khi qua khu dân cư.</p>
     </section>
@@ -142,7 +142,7 @@
     <!-- Cross-links -->
     <section class="block band catalog-cross reveal">
       <h2>Khám phá thêm</h2>
-      <p class="cross-sub">Tiếp tục hành trình miền Tây của bạn</p>
+      <p class="cross-sub">Tiếp tục hành trình Vĩnh Long của bạn</p>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
           <span class="cross-icon" aria-hidden="true">🗺️</span>
