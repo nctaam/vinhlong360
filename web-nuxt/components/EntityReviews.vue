@@ -35,7 +35,7 @@
       ></textarea>
 
       <!-- Image attach -->
-      <p v-if="!formImages.length" class="rf-photo-hint">📸 Thêm ảnh thật để giúp cộng đồng + nhận huy hiệu <strong>Nhiếp ảnh</strong></p>
+      <p v-if="!formImages.length" class="rf-photo-hint"><span class="rf-photo-icon" aria-hidden="true">📸</span> Thêm ảnh thật để giúp cộng đồng + nhận huy hiệu <strong>Nhiếp ảnh</strong></p>
       <div class="rf-images">
         <div v-if="formImages.length" class="rf-image-grid">
           <div v-for="(img, i) in formImages" :key="img" class="rf-image-thumb">
@@ -323,6 +323,14 @@ onMounted(() => fetchReviews())
 .review-sentinel { display: flex; justify-content: center; padding: var(--space-3) 0; min-height: 40px; }
 
 .rf-photo-hint { margin: var(--space-2) 0 0; font-size: var(--text-sm); color: var(--ink-700); }
+/* emoji lives in a small designed chip, never bare beside serif text (anti-slop) */
+.rf-photo-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.4em; height: 1.4em; margin-inline-end: var(--space-1);
+  border-radius: var(--radius-sm); background: var(--bg-warm, var(--bg-alt));
+  font-size: .85em; vertical-align: -0.25em;
+}
+.dark .rf-photo-icon { background: rgba(255, 255, 255, .06); }
 .rf-images { display: flex; flex-direction: column; gap: var(--space-2); margin-block: var(--space-2); }
 .rf-image-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .rf-image-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-md); overflow: hidden; border: .5px solid var(--line); }
@@ -370,7 +378,7 @@ onMounted(() => fetchReviews())
 <style>
 .reviews-section { margin-top: var(--space-8); }
 .reviews-header { display: flex; align-items: baseline; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
-.reviews-header h2 { font-size: var(--text-lg); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); margin: 0; }
+.reviews-header h2 { font-size: var(--text-xl); font-weight: var(--weight-semibold); letter-spacing: var(--tracking-tight); margin: 0; }
 .reviews-summary { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
 .review-count { color: var(--muted); }
 
@@ -398,7 +406,7 @@ onMounted(() => fetchReviews())
 .review-item:last-child { border-bottom: none; }
 .ri-head { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-2); }
 .ri-author { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; color: inherit; min-height: 44px; }
-.ri-author strong { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.ri-author strong { font-size: var(--text-sm); font-weight: var(--weight-semibold); font-family: var(--font-editorial); }
 .ri-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 .ri-avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: var(--secondary); color: var(--text-on-dark, #fff); display: flex; align-items: center; justify-content: center; font-weight: var(--weight-bold); font-size: var(--text-sm); }
 .ri-date { font-size: var(--text-xs); color: var(--muted); margin-inline-start: auto; }
