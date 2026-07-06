@@ -233,15 +233,10 @@
             <span class="tt-label"><IconLine name="flame" /> Trending:</span>
             <NuxtLink v-for="t in trendingTags" :key="t.tag" :to="`/cong-dong?tag=${encodeURIComponent(t.tag)}`" class="tt-chip">{{ t.tag }}</NuxtLink>
           </div>
-          <div v-if="topMembers.length" class="home-leaders">
-            <span class="hl-label"><IconLine name="trophy" /> Tích cực nhất:</span>
-            <NuxtLink v-for="(m, i) in topMembers" :key="m.id" :to="userPath(m.username || m.id)" class="hl-chip">
-              <span class="hl-rank" :class="`hl-rank-${Number(i) + 1}`">{{ Number(i) + 1 }}</span>
-              <span class="hl-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
-              <span class="hl-name">{{ m.display_name }}</span>
-            </NuxtLink>
-            <NuxtLink to="/bang-xep-hang" class="hl-more">Bảng xếp hạng →</NuxtLink>
-          </div>
+          <!-- declutter-3 T16 (B1-6): dàn chip leaderboard → 1 link teaser (đích /bang-xep-hang) -->
+          <p v-if="topMembers.length" class="home-leaders-teaser">
+            <IconLine name="trophy" /> <NuxtLink to="/bang-xep-hang">Xem thành viên tích cực →</NuxtLink>
+          </p>
           <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
             <NuxtLink v-for="p in communityPosts" :key="p.id" :to="postPath(p.id)" class="cm-card">
               <div v-if="p.images && p.images.length && p.images[0]" class="cm-img">
@@ -281,12 +276,13 @@
 
     <!-- 6. Dành cho bạn — one merged, image-tolerant personalization strip (client-only) -->
     <ClientOnly>
-      <section v-if="forYou.length" class="block block-compact reveal" :aria-label="hasPersonalSignal ? 'Dành cho bạn' : 'Gợi ý khám phá'">
+      <!-- declutter-3 T16 (B1-7): chỉ hiện khi CÓ tín hiệu cá nhân thật (đã xem/đã lưu) —
+           hết nhánh fallback "Gợi ý khám phá" đội lốt cá nhân hoá -->
+      <section v-if="hasPersonalSignal && forYou.length" class="block block-compact reveal" aria-label="Dành cho bạn">
         <div class="section-head section-head-tight">
           <div class="sh-text">
-            <h2 v-if="hasPersonalSignal" class="h2-tight">Dành cho <em class="ac-clay">bạn</em></h2>
-            <h2 v-else class="h2-tight">Gợi ý <em class="ac-clay">khám phá</em></h2>
-            <p class="sh-sub">{{ hasPersonalSignal ? 'Nội dung bạn vừa xem, đã lưu và gợi ý theo bạn.' : 'Điểm đến &amp; đặc sản đang được nhiều người quan tâm.' }}</p>
+            <h2 class="h2-tight">Dành cho <em class="ac-clay">bạn</em></h2>
+            <p class="sh-sub">Nội dung bạn vừa xem, đã lưu và gợi ý theo bạn.</p>
           </div>
         </div>
         <div class="scroll-row for-you-row" role="region" aria-label="Dành cho bạn" tabindex="0">
@@ -545,17 +541,8 @@ const homeDecisionCards = computed<HomeDecisionCard[]>(() => {
     })
   }
 
-  if (cards.length < 4) {
-    cards.push({
-      icon: '🗺️',
-      eyebrow: `${Object.keys(areaCounts.value).length || 3} khu vực`,
-      title: 'Mở bản đồ khám phá',
-      text: 'Lọc điểm đến theo vùng, loại hình và vị trí gần bạn.',
-      to: '/ban-do',
-      cta: 'Mở bản đồ',
-      tone: 'map',
-    })
-  }
+  // declutter-3 T16 (B1-8): bỏ card độn "Mở bản đồ" — hero đã có "Tìm quanh tôi" (/ban-do)
+  // render vô điều kiện; thiếu data thì decision-index ngắn lại một cách trung thực.
 
   return cards.slice(0, 4)
 })
@@ -1250,17 +1237,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .tt-chip { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); }
 .dark .tt-chip:hover { background: rgba(255,255,255,.1); }
 
-.home-leaders { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-4); }
-.hl-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
-.hl-chip { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); min-height: 44px; background: var(--bg-alt); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out); }
-.hl-chip:hover { border-color: var(--primary-fg); }
-.hl-rank { width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: var(--weight-bold); color: var(--muted); }
-.hl-rank-1 { --rank-color: #d4a017; color: var(--rank-color); } .hl-rank-2 { --rank-color: #8a8d91; color: var(--rank-color); } .hl-rank-3 { --rank-color: #b07b4f; color: var(--rank-color); }
-.dark .hl-rank-1 { --rank-color: #ffd54f; } .dark .hl-rank-2 { --rank-color: #b0b3b8; } .dark .hl-rank-3 { --rank-color: #d4a574; }
-.hl-avatar { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-size: var(--text-2xs); font-weight: var(--weight-semibold); }
-.hl-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
-.hl-more { font-size: var(--text-sm); color: var(--primary-fg); text-decoration: none; font-weight: var(--weight-semibold); }
-.hl-more:hover { text-decoration: underline; }
+/* declutter-3 T16 (B1-6): dàn chip leaderboard → 1 dòng teaser */
+.home-leaders-teaser { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-4); font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.home-leaders-teaser a { color: var(--primary-fg); text-decoration: none; }
+.home-leaders-teaser a:hover { text-decoration: underline; }
 
 .cm-card { display: flex; flex-direction: column; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-xs); text-decoration: none; color: var(--ink); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 .cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
