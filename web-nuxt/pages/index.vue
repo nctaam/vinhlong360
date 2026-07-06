@@ -11,7 +11,7 @@
           <h1>{{ seasonalTagline }}</h1>
           <p class="hero-sub">{{ ss('homepage.hero_subtitle', 'Tìm điểm đến, món ngon, lễ hội và lịch trình phù hợp cho chuyến đi Vĩnh Long hôm nay.') }}</p>
           <SearchAutocomplete class="hero-search hero-ac" :placeholder="ss('homepage.search_placeholder', 'Tìm điểm đến, món ngon, lịch trình…')" />
-          <NuxtLink to="/ban-do?near=1" class="hero-nearby"><span aria-hidden="true">📍</span> Tìm quanh tôi</NuxtLink>
+          <NuxtLink to="/ban-do?near=1" class="hero-nearby"><IconLine name="pin" /> Tìm quanh tôi</NuxtLink>
         </div>
         <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
           <div class="hf-card">
@@ -73,7 +73,7 @@
 
     <!-- Degraded/empty fallback -->
     <section v-if="homeFailed" class="block reveal">
-      <EmptyState icon="🌾" :tone="homeError ? 'error' : 'empty'" title="Đang cập nhật nội dung" :message="homeError ? 'Mạng chậm một chút rồi. Bạn thử tải lại giúp tụi mình nhé!' : 'Tụi mình đang bổ sung điểm đến và đặc sản cho khu vực này. Quay lại sau nhé!'">
+      <EmptyState :tone="homeError ? 'error' : 'empty'" title="Đang cập nhật nội dung" :message="homeError ? 'Mạng chậm một chút rồi. Bạn thử tải lại giúp tụi mình nhé!' : 'Tụi mình đang bổ sung điểm đến và đặc sản cho khu vực này. Quay lại sau nhé!'">
         <template #actions>
           <button v-if="homeError" type="button" class="btn btn-outline" @click="refreshHome()">Tải lại</button>
         </template>
@@ -90,7 +90,7 @@
     <section v-if="!homePending" class="block block-compact reveal">
       <nav class="cat-grid" aria-label="Khám phá theo chủ đề">
         <NuxtLink v-for="cat in categoryLinks" :key="cat.to" :to="cat.to" class="cat-tile" :class="[`cat-tile-${cat.accent}`, `ct-${cat.key}`]">
-          <span class="cat-emoji" aria-hidden="true">{{ cat.emoji }}</span>
+          <IconLine :name="cat.icon" class="cat-icon" />
           <span class="cat-label">{{ cat.label }}</span>
           <span class="cat-hint">{{ cat.hint }}</span>
           <span class="cat-count" v-if="cat.countLabel">{{ cat.countLabel }}</span>
@@ -115,9 +115,9 @@
             <span class="eh-month">{{ formatEventMonth(upcomingEvents[0]) }}</span>
           </div>
           <div class="eh-body">
-            <span class="eh-cat">{{ upcomingEvents[0].attributes?.category === 'le-hoi' ? '🎭 Lễ hội' : '📅 Sự kiện' }}</span>
+            <span class="eh-cat"><IconLine :name="upcomingEvents[0].attributes?.category === 'le-hoi' ? 'lantern' : 'calendar'" /> {{ upcomingEvents[0].attributes?.category === 'le-hoi' ? 'Lễ hội' : 'Sự kiện' }}</span>
             <h3>{{ upcomingEvents[0].name }}</h3>
-            <span v-if="upcomingEvents[0].attributes?.lunar_date" class="eh-lunar">🌙 {{ upcomingEvents[0].attributes.lunar_date }}</span>
+            <span v-if="upcomingEvents[0].attributes?.lunar_date" class="eh-lunar"><IconLine name="moon" /> {{ upcomingEvents[0].attributes.lunar_date }}</span>
             <span v-if="upcomingEvents[0].days_until != null" class="eh-countdown" :class="{ 'eh-today': upcomingEvents[0].days_until === 0 }">
               <span v-if="upcomingEvents[0].days_until === 0" class="ec-live-dot" aria-hidden="true"></span>
               {{ upcomingEvents[0].days_until === 0 ? 'Hôm nay!' : upcomingEvents[0].days_until === 1 ? 'Ngày mai' : `Còn ${upcomingEvents[0].days_until} ngày` }}
@@ -141,7 +141,7 @@
       </div>
 
       <div v-if="seasonal.length" class="happening-section">
-        <p class="happening-label">🔥 Đang vào mùa tháng {{ currentMonth }}</p>
+        <p class="happening-label"><IconLine name="flame" /> Đang vào mùa tháng {{ currentMonth }}</p>
         <div class="scroll-row" role="region" aria-label="Đặc sản theo mùa" tabindex="0">
           <EntityCard v-for="e in seasonalList" :key="e.id" :entity="e" :season-filter="String(currentMonth)" />
         </div>
@@ -204,7 +204,7 @@
             </NuxtLink>
           </div>
           <div class="block-cta">
-            <NuxtLink to="/kham-pha/am-thuc" class="btn btn-outline">🍲 Còn nhiều quán ngon nữa</NuxtLink>
+            <NuxtLink to="/kham-pha/am-thuc" class="btn btn-outline"><IconLine name="bowl" /> Còn nhiều quán ngon nữa</NuxtLink>
           </div>
         </div>
       </div>
@@ -243,7 +243,7 @@
         <ItineraryCard v-for="it in itineraries" :key="it.id" :itinerary="it" />
       </div>
       <div class="block-cta">
-        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline">📋 Tạo lịch trình riêng</NuxtLink>
+        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline"><IconLine name="list" /> Tạo lịch trình riêng</NuxtLink>
       </div>
     </section>
 
@@ -267,11 +267,11 @@
             · <strong>{{ communityStats.members }}</strong> thành viên
           </p>
           <div v-if="trendingTags.length" class="trending-tags">
-            <span class="tt-label">🔥 Trending:</span>
+            <span class="tt-label"><IconLine name="flame" /> Trending:</span>
             <NuxtLink v-for="t in trendingTags" :key="t.tag" :to="`/cong-dong?tag=${encodeURIComponent(t.tag)}`" class="tt-chip">{{ t.tag }}</NuxtLink>
           </div>
           <div v-if="topMembers.length" class="home-leaders">
-            <span class="hl-label">🏆 Tích cực nhất:</span>
+            <span class="hl-label"><IconLine name="trophy" /> Tích cực nhất:</span>
             <NuxtLink v-for="(m, i) in topMembers" :key="m.id" :to="userPath(m.username || m.id)" class="hl-chip">
               <span class="hl-rank" :class="`hl-rank-${Number(i) + 1}`">{{ Number(i) + 1 }}</span>
               <span class="hl-avatar">{{ (m.display_name || '?').charAt(0).toUpperCase() }}</span>
@@ -293,8 +293,8 @@
                 </div>
                 <p class="cm-content">{{ p.content }}</p>
                 <div class="cm-meta">
-                  <span v-if="p.likes">❤️ {{ p.likes }}</span>
-                  <span v-if="p.comments_count || p.comment_count">💬 {{ p.comments_count || p.comment_count }}</span>
+                  <span v-if="p.likes"><IconLine name="heart" /> {{ p.likes }}</span>
+                  <span v-if="p.comments_count || p.comment_count"><IconLine name="message" /> {{ p.comments_count || p.comment_count }}</span>
                   <span v-if="p.entity_name" class="cm-place">{{ p.entity_name }}</span>
                 </div>
               </div>
@@ -303,7 +303,7 @@
         </template>
         <div class="community-join">
           <span>Chia sẻ quán ngon, điểm đẹp, mẹo đi — góp một mảnh ghép cho bản đồ chung.</span>
-          <NuxtLink to="/cong-dong" class="btn btn-outline">💬 Tham gia cộng đồng</NuxtLink>
+          <NuxtLink to="/cong-dong" class="btn btn-outline"><IconLine name="message" /> Tham gia cộng đồng</NuxtLink>
         </div>
       </section>
       <section v-else class="block reveal storyland" aria-label="Câu chuyện vùng đất">
@@ -354,7 +354,7 @@
           <p class="chatbot-cta-text">{{ ss('homepage.chatbot_cta_title', 'Chưa biết đi đâu?') }}</p>
           <p class="chatbot-cta-sub">{{ ss('homepage.chatbot_cta_text', 'Trợ lý AI sẵn sàng gợi ý lịch trình, món ăn, điểm đến phù hợp với bạn.') }}</p>
         </div>
-        <button type="button" class="chatbot-cta-btn" @click="openChat">💬 Hỏi ngay</button>
+        <button type="button" class="chatbot-cta-btn" @click="openChat"><IconLine name="message" /> Hỏi ngay</button>
       </div>
     </section>
   </div>
@@ -490,12 +490,12 @@ const upcomingEvents = computed(() => homeData.value?.upcoming_events || [])
 const seasonalTagline = computed(() => homeData.value?.seasonal_tagline || 'Khám phá Vĩnh Long theo cách của người bản địa')
 
 const CATEGORY_LINKS = [
-  { emoji: '🌿', label: 'Du lịch', hint: 'vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences', key: 'du-lich' },
-  { emoji: '🍲', label: 'Ẩm thực', hint: 'quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes', key: 'am-thuc' },
-  { emoji: '🎁', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products', key: 'ocop' },
-  { emoji: '🎭', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events', key: 'le-hoi' },
-  { emoji: '🏡', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '', key: 'luu-tru' },
-  { emoji: '🗺️', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas', key: 'ban-do' },
+  { icon: 'leaf', label: 'Du lịch', hint: 'vườn, sông, làng nghề', to: '/du-lich', accent: 'leaf', countKey: 'experiences', key: 'du-lich' },
+  { icon: 'bowl', label: 'Ẩm thực', hint: 'quán ngon, món bản địa', to: '/kham-pha/am-thuc', accent: 'amber', countKey: 'dishes', key: 'am-thuc' },
+  { icon: 'gift', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products', key: 'ocop' },
+  { icon: 'lantern', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events', key: 'le-hoi' },
+  { icon: 'home', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '', key: 'luu-tru' },
+  { icon: 'map', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas', key: 'ban-do' },
 ]
 const categoryLinks = computed(() => {
   return CATEGORY_LINKS.map(c => ({
@@ -1105,7 +1105,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .cat-tile:active { transform: scale(.97); transition-duration: .1s; }
 .cat-tile:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
-.cat-emoji { position: absolute; top: var(--space-2); left: var(--space-3); font-size: 1.2rem; line-height: 1; filter: drop-shadow(0 1px 4px rgba(0,0,0,.65)); }
+.cat-icon { position: absolute; top: var(--space-2); left: var(--space-3); font-size: 1.35rem; color: #fff; filter: drop-shadow(0 1px 4px rgba(0,0,0,.7)); }
 .cat-label { color: #fff; font-size: var(--text-base); font-weight: 700; text-align: left; text-shadow: 0 1px 8px rgba(0,0,0,.7); }
 .cat-hint {
   min-height: 0; color: rgba(255,255,255,.82); font-size: var(--text-xs); line-height: var(--leading-snug);
