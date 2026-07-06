@@ -107,7 +107,10 @@ describe('UserCP regressions', () => {
     expect(page).toContain('JourneyActionRail')
     expect(page).toContain('refreshCurrentTab')
     expect(page).toContain('filteredEntities')
-    expect(page).toContain('savedItemPath(item)')
+    // da-luu delegates saved-card rendering to the shared SavedEntityCard component,
+    // which builds the entity link via savedItemPath (consolidated from 3 bespoke copies).
+    expect(page).toContain('SavedEntityCard')
+    expect(src('components/SavedEntityCard.vue')).toContain('savedItemPath(item)')
     expect(page).toContain('encodePathId')
     expect(page).toContain('URLSearchParams')
     expect(page).toContain('handleSessionExpired')

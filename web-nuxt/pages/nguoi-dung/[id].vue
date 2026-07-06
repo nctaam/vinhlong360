@@ -199,16 +199,7 @@
         <!-- Đã lưu (self only, client-only — từ localStorage) -->
         <ClientOnly v-if="tab === 'saved' && isSelf">
           <div v-if="favorites.length" class="saved-grid">
-            <NuxtLink v-for="fav in favorites" :key="fav.id" :to="savedItemPath(fav)" class="card saved-card">
-              <div v-if="fav.image" class="cover cover-img">
-                <img :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-              </div>
-              <div class="card-b">
-                <span class="card-type">{{ getSavedTypeMeta(fav.type).label }}</span>
-                <h3>{{ fav.name }}</h3>
-                <p v-if="fav.place_name" class="place">{{ fav.place_name }}</p>
-              </div>
-            </NuxtLink>
+            <SavedEntityCard v-for="fav in favorites" :key="fav.id" :item="fav" />
           </div>
           <div v-if="favorites.length" class="saved-cta">
             <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary btn-sm">📋 Tạo lịch trình từ danh sách đã lưu</NuxtLink>
@@ -578,8 +569,6 @@ const filteredPosts = computed(() => {
   if (tab.value === 'reviews') return posts.value.filter(p => p.post_type === 'review')
   return posts.value
 })
-
-const getSavedTypeMeta = getTypeMeta
 
 const displayName = computed(() => profile.value?.display_name || profile.value?.phone || 'Người dùng')
 const emptyHint = computed(() => {

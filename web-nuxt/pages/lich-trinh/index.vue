@@ -52,17 +52,7 @@
           </div>
         </div>
         <div class="scroll-row saved-row" role="region" tabindex="0" aria-label="Mục đã lưu">
-          <NuxtLink v-for="fav in recentSaved" :key="fav.id" :to="savedItemPath(fav)" class="card">
-            <div v-if="fav.image" class="cover cover-img">
-              <NuxtImg v-if="isRemoteUrl(fav.image)" :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" sizes="sm:100vw md:50vw lg:400px" @error="fadeImageError" />
-              <img v-else :src="fav.image" :alt="fav.name" loading="lazy" decoding="async" width="400" height="160" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-            </div>
-            <div class="card-b">
-              <span class="card-type">{{ getTypeMeta(fav.type).label }}</span>
-              <h3>{{ fav.name }}</h3>
-              <p v-if="fav.place_name" class="place">{{ fav.place_name }}</p>
-            </div>
-          </NuxtLink>
+          <SavedEntityCard v-for="fav in recentSaved" :key="fav.id" :item="fav" />
         </div>
         <div class="saved-cta">
           <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-primary">📋 Tạo lịch trình từ danh sách đã lưu</NuxtLink>
@@ -219,12 +209,6 @@ useReveal()
 const { favorites, byType, count, clear } = useFavorites()
 const { confirmDialog } = useConfirm()
 const recentSaved = computed(() => favorites.value.slice(0, 8))
-
-function fadeImageError(ev: Event | string) {
-  if (typeof ev === 'string') return
-  const target = ev.target as HTMLImageElement | null
-  if (target) target.style.opacity = '.15'
-}
 
 async function clearAll() {
   if (await confirmDialog('Xóa tất cả mục đã lưu?', { danger: true, confirmText: 'Xóa' })) clear()
