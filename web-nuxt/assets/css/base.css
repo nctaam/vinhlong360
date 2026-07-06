@@ -1,5 +1,12 @@
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+/* overflow-x:clip on the html scroll-root kills residual horizontal scroll from 100vw
+   full-bleed sections (StorySpread: width:100vw + margin-inline:calc(50%-50vw) overshoots by
+   the scrollbar width). `body` already has overflow-x:hidden but that clips the body box
+   without stopping the html viewport from scrolling; clip on html catches it. `clip` (not
+   `hidden`) does NOT create a scroll container → position:sticky still works. Wide content
+   scrolls in its own overflow-x:auto container, so the page never needs horizontal scroll.
+   Verified live on prod: homepage 5px → 0. */
+html { scroll-behavior: smooth; scroll-padding-top: 72px; overflow-x: clip; }
 html, body { margin: 0; padding: 0; }
 body { font-family: var(--font-sans); color: var(--ink); background: var(--bg); line-height: var(--leading-normal); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: 'cv11' 1; text-rendering: optimizeLegibility; -webkit-tap-highlight-color: transparent; overflow-x: hidden; transition: background .35s var(--ease-out), color .35s var(--ease-out); }
 body { accent-color: var(--primary); }
