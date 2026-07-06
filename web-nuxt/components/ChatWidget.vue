@@ -1,6 +1,6 @@
 <template>
   <ClientOnly>
-    <div v-if="ff('chat_widget')" class="chat-widget">
+    <div v-if="ff('chat_widget') && !isEntityDetail" class="chat-widget">
       <button type="button" class="chat-fab" :class="{ open }" @click="open = !open" :aria-expanded="open" aria-label="Chat AI">
         <IconLine :name="open ? 'x' : 'message'" />
       </button>
@@ -42,6 +42,9 @@
 
 <script setup lang="ts">
 const route = useRoute()
+// declutter-2 A4: ẩn FAB trên trang chi tiết entity — nơi đã có AITravelTips +
+// SmartRecommendations inline (2 khối AI đủ); route-name (không regex path — id có %2F).
+const isEntityDetail = computed(() => route.name === 'dia-diem-id')
 const { get: ss } = useSiteSettings()
 const { enabled: ff } = useFeature()
 const chatTitle = computed(() => ss('chat.title', 'Hỏi về Vĩnh Long'))
