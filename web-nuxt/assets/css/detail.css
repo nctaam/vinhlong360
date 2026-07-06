@@ -283,33 +283,7 @@
 .season-block { margin-top: var(--space-6); padding-top: var(--space-5); border-top: .5px solid var(--line); }
 .section-subtitle { font-size: var(--text-lg); font-weight: var(--weight-semibold); margin: 0 0 var(--space-2); }
 
-/* ── Contact row + claim CTA (was inline style) ── */
-.contact-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: var(--space-2);
-  margin: var(--space-3) 0 var(--space-3);
-}
-.contact-cta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-3) var(--space-3);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--bg-warm);
-  color: var(--ink);
-  font-weight: var(--weight-semibold);
-  font-size: var(--text-sm);
-  min-height: 44px;
-  text-decoration: none;
-  transition: background .3s var(--ease-out), border-color .3s var(--ease-out);
-  text-align: center;
-}
-.contact-cta:hover {
-  background: var(--line);
-  border-color: var(--primary-fg);
-}
+/* ── Claim CTA (was inline style) ── */
 .claim-cta {
   display: flex;
   align-items: center;
@@ -367,9 +341,6 @@
 @media (max-width: 840px) {
   .detail-body { grid-template-columns: 1fr; }
   .detail-aside { position: static; max-height: none; overflow-y: visible; margin-top: var(--space-6); padding-top: var(--space-6); border-top: .5px solid var(--line); }
-  /* Sticky CTA bar is the single source of truth for contact on mobile —
-     hide the duplicate sidebar contact-row to avoid showing Gọi/Zalo twice. */
-  .contact-row { display: none; }
 }
 @media (max-width: 768px) {
   .detail-cover h1 { font-size: var(--text-2xl); }
@@ -522,7 +493,7 @@
   .desc-content { max-height: none !important; overflow: visible; }
   .desc-content::after { display: none; }
   .desc-toggle { display: none; }
-  .contact-row, .contact-cta, .claim-cta { display: none; }
+  .claim-cta { display: none; }
   .next-steps, .quality-report { display: none; }
   .fact-copy { display: none; }
   .detail-cover { break-after: avoid; }

@@ -146,7 +146,9 @@
         </div>
 
         <!-- Best time callout -->
-        <div v-if="bestTimeText && !practicalTips.some(t => t.label === 'Thời điểm tốt nhất')" class="best-time-callout reveal">
+        <!-- declutter-1 T6: best_time chỉ render 1 chỗ (callout này); đã bỏ khỏi practicalTips
+             nên guard chống-trùng cũ không cần nữa. -->
+        <div v-if="bestTimeText" class="best-time-callout reveal">
           <span class="btc-icon" aria-hidden="true">🕐</span>
           <div class="btc-body">
             <strong>Thời điểm lý tưởng</strong>
@@ -400,11 +402,6 @@
           <NuxtLink class="trust-report" :to="reportUrl">Báo sai hoặc bổ sung nguồn</NuxtLink>
         </section>
 
-        <div v-if="entity.attributes?.phone || zaloLink || buyContactUrl" class="contact-row">
-          <a v-if="entity.attributes?.phone" class="ns-action contact-cta" :href="telHref(entity.attributes.phone)" :aria-label="`Gọi ${entity.name}`">📞 {{ ss('labels.detail.cta_call', 'Gọi') }}</a>
-          <a v-if="zaloLink" class="ns-action contact-cta" :href="zaloLink" target="_blank" rel="nofollow noopener" :aria-label="`Nhắn Zalo ${entity.name}`">💬 {{ ss('labels.detail.cta_zalo', 'Zalo') }}</a>
-          <a v-if="buyContactUrl" class="ns-action contact-cta" :href="buyContactUrl" target="_blank" rel="nofollow noopener" :aria-label="`Hỏi mua ${entity.name}`">🛒 {{ ss('labels.detail.cta_buy_contact', 'Hỏi mua trực tiếp') }}</a>
-        </div>
         <NuxtLink :to="claimUrl" class="ns-action claim-cta">🏷️ {{ ss('labels.detail.cta_claim', 'Đây là cơ sở của tôi — đăng ký quản lý') }}</NuxtLink>
 
         <NuxtLink class="quality-report" :to="reportUrl">{{ ss('labels.detail.cta_report', 'Báo sai dữ liệu') }}</NuxtLink>
@@ -421,6 +418,9 @@
           <!-- Save affordance lives in the hero (SaveButton) — avoid a second, divergent toggle here.
                Next step is the active-planning CTA, labeled to distinguish it from "save for later". -->
         <NuxtLink :to="planAddUrl" no-prefetch class="ns-action">📋 {{ ss('labels.detail.next_add_itinerary', 'Thêm vào lịch trình') }}</NuxtLink>
+          <!-- declutter-1 T5: buy-contact dời từ contact-row (đã bỏ — desktop bị CSS ẩn,
+               mobile ContactWidget che); ContactWidget không có kênh hỏi-mua nên giữ ở đây. -->
+          <a v-if="buyContactUrl" :href="buyContactUrl" target="_blank" rel="nofollow noopener" class="ns-action" :aria-label="`Hỏi mua ${entity.name}`">🛒 {{ ss('labels.detail.cta_buy_contact', 'Hỏi mua trực tiếp') }}</a>
           <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action">🏡 {{ ss('labels.detail.next_find_stay', 'Tìm chỗ ở gần đây') }}</NuxtLink>
         <NuxtLink :to="mapUrl" no-prefetch class="ns-action">🗺️ {{ ss('labels.detail.next_view_map', 'Xem trên bản đồ') }}</NuxtLink>
           <NuxtLink to="/tuyen-duong" class="ns-action">🛤️ {{ ss('labels.detail.next_route', 'Tuyến đường gợi ý') }}</NuxtLink>
@@ -777,7 +777,6 @@ const practicalTips = computed(() => {
   const tips: { icon: string; label: string; value: string }[] = []
   if (a.highlight) tips.push({ icon: '✨', label: 'Điểm nhấn', value: a.highlight })
   if (a.booking_note) tips.push({ icon: '📝', label: 'Đặt trước', value: a.booking_note })
-  if (a.best_time) tips.push({ icon: '⏰', label: 'Thời điểm tốt nhất', value: a.best_time })
   if (a.transport) tips.push({ icon: '🚗', label: 'Di chuyển', value: a.transport })
   if (a.fee) tips.push({ icon: '🎫', label: 'Phí vào cửa', value: a.fee })
   if (a.amenities) {
@@ -1250,10 +1249,6 @@ useHead({
   font-weight: var(--weight-semibold);
 }
 
-/* Hide old contact-row on desktop when ContactWidget is present */
-@media (min-width: 768px) {
-  .contact-row { display: none; }
-}
 
 /* On mobile, hide the desktop ContactWidget (it renders its own fixed bottom bar) */
 @media (max-width: 767px) {
