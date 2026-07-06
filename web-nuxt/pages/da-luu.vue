@@ -75,10 +75,14 @@
         <div v-else-if="filteredEntities.length" class="saved-grid">
           <div v-for="item in filteredEntities" :key="item.id" class="saved-entity card">
             <NuxtLink :to="savedItemPath(item)" class="saved-entity-link">
-              <img v-if="item.image" :src="item.image" :alt="item.name" class="saved-entity-img" width="120" height="80" loading="lazy" decoding="async" />
+              <span class="saved-entity-cover">
+                <img v-if="item.image" :src="item.image" :alt="item.name" class="saved-entity-img" width="120" height="80" loading="lazy" decoding="async" />
+                <span v-else class="saved-entity-img saved-entity-img-generated" aria-hidden="true"><span class="cover-grain"></span></span>
+              </span>
               <div class="saved-entity-info">
+                <span v-if="savedDateline(item)" class="saved-dateline">{{ savedDateline(item) }}</span>
                 <span class="saved-entity-name">{{ item.name }}</span>
-                <span v-if="item.type" class="saved-entity-type">{{ item.type }}</span>
+                <span class="saved-card-rule" aria-hidden="true"></span>
                 <span v-if="item.place_name" class="saved-entity-place">{{ item.place_name }}</span>
               </div>
             </NuxtLink>
@@ -152,6 +156,8 @@
 
 <script setup lang="ts">
 import { useJourneyActions } from '~/composables/useJourneyActions'
+import { TYPE_META } from '~/composables/useConstants'
+import { entityDateline } from '~/composables/useEntityStory'
 
 const { isLoggedIn, authHeaders, handleSessionExpired } = useAuth()
 const { openAuth } = useAuthModal()
@@ -262,6 +268,14 @@ function matchesSavedQuery(parts: Array<unknown>) {
   const q = normalizedQuery.value
   if (!q) return true
   return parts.some(part => String(part || '').toLocaleLowerCase('vi-VN').includes(q))
+}
+
+// "{TYPE LABEL} · {AREA}" eyebrow — same fallback chain as EntityCard's dateline,
+// applied to the thin saved-item snapshot (id/name/type/place_area/summary only).
+function savedDateline(item: Record<string, any>): string {
+  const label = TYPE_META[item?.type]?.label || item?.type || ''
+  if (!label) return ''
+  return entityDateline(item, label)
 }
 
 const filteredEntities = computed(() => savedEntities.value.filter(item => matchesSavedQuery([
@@ -476,17 +490,39 @@ async function removeItinerary(planId: string) {
 }
 .saved-tab.active .saved-tab-count { background: var(--primary-light, #f0e6df); color: var(--primary); }
 
-/* Entity grid */
+/* Entity grid — editorial parity with EntityCard's Story-Card treatment:
+   serif title, uppercase dateline eyebrow, tri-province card-rule, grain
+   overlay on the no-photo cover. Bespoke markup kept (not a swap to
+   EntityCard) because saved rows need a remove-button, not EntityCard's
+   own save/unsave SaveButton — stacking both would be redundant/confusing. */
 .saved-grid { display: flex; flex-direction: column; gap: .5rem; }
 .saved-entity { display: flex; align-items: center; padding: .5rem; gap: 0; }
 .saved-entity-link {
   display: flex; align-items: center; gap: .75rem; flex: 1; min-width: 0;
   text-decoration: none; color: var(--ink);
 }
-.saved-entity-img { width: 80px; height: 56px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
+.saved-entity-cover { position: relative; display: block; flex-shrink: 0; width: 80px; height: 56px; border-radius: var(--radius-md); overflow: hidden; }
+.saved-entity-img { display: block; width: 80px; height: 56px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
+.saved-entity-img-generated { position: relative; background: linear-gradient(160deg, rgba(var(--primary-rgb), .14) 0%, var(--bg-alt) 70%); }
+.saved-entity-img-generated .cover-grain {
+  position: absolute; inset: 0; background-image: var(--grain); background-size: 120px 120px; opacity: .06;
+}
+.dark .saved-entity-img-generated .cover-grain { opacity: .09; }
 .saved-entity-info { flex: 1; min-width: 0; }
-.saved-entity-name { display: block; font-weight: 600; font-size: .92rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.saved-entity-type { display: block; font-size: .78rem; color: var(--ink-700); }
+.saved-dateline {
+  display: block; margin-bottom: 1px;
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+.saved-entity-name {
+  display: block; font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
+  font-size: .95rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.saved-card-rule {
+  display: block; width: 22px; height: 2px; border-radius: 2px; margin: 3px 0 3px;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .saved-card-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .saved-entity-place { display: block; font-size: .78rem; color: var(--ink-700); }
 .saved-remove {
   flex-shrink: 0; width: 28px; height: 28px; border: none; background: none;
@@ -504,7 +540,7 @@ async function removeItinerary(planId: string) {
 .saved-load-more { margin-top: .75rem; width: 100%; }
 .saved-inline-warning {
   margin-bottom: .75rem; padding: .65rem .75rem; border-radius: var(--radius-md);
-  background: color-mix(in oklab, var(--accent-container, #fff7e6) 72%, var(--card));
+  background: color-mix(in oklab, var(--accent-container) 72%, var(--card));
   color: var(--ink-700); font-size: .85rem; line-height: 1.4;
 }
 
@@ -528,6 +564,6 @@ async function removeItinerary(planId: string) {
   .saved-tools { grid-template-columns: 1fr; }
   .saved-tools .btn { width: 100%; justify-content: center; }
   .saved-tab { padding: .5rem .6rem; font-size: .82rem; }
-  .saved-entity-img { width: 60px; height: 42px; }
+  .saved-entity-cover, .saved-entity-img { width: 60px; height: 42px; }
 }
 </style>

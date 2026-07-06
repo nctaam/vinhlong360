@@ -89,7 +89,9 @@
       </div>
     </section>
 
-    <!-- Refine bar — search + filters as one persistent control surface -->
+    <!-- Refine bar — search only. Area/type are already fully controllable via
+         the province-stamps + type-scroll-row above (signature pickers); this
+         bar no longer duplicates them with a second FilterChips pair. -->
     <div ref="gridAnchor" class="dd-refine">
       <div class="dd-search">
         <svg class="dd-search-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -97,24 +99,6 @@
         <button v-if="qApplied" type="button" class="dd-search-clear" aria-label="Xoá tìm" @click="clearQuery">&times;</button>
         <button type="button" class="btn btn-primary btn-sm" @click="applyQuery">Tìm</button>
       </div>
-
-      <FilterChips
-        :filters="typeFilterOptions"
-        :model-value="[typeFilter]"
-        single-select
-        class="dd-filters"
-        aria-label="Lọc theo loại"
-        @update:model-value="v => setType(v[0] || 'all')"
-      />
-
-      <FilterChips
-        :filters="areaFilterOptions"
-        :model-value="[areaFilter]"
-        single-select
-        class="dd-filters dd-areas"
-        aria-label="Lọc theo khu vực"
-        @update:model-value="v => setArea(v[0] || 'all')"
-      />
     </div>
 
     <p v-if="!pending" class="dd-count" aria-live="polite">
@@ -200,16 +184,6 @@ const qApplied = ref<string>(typeof route.query.q === 'string' ? route.query.q :
 const qInput = ref<string>(qApplied.value)
 
 const typeChips = CARD_TYPES.map(t => ({ value: t, emoji: TYPE_META[t]?.emoji || '📍', label: TYPE_META[t]?.label || t }))
-const areaChips = Object.entries(AREA_META).map(([slug, m]) => ({ slug, name: m.name, emoji: m.emoji }))
-
-const typeFilterOptions = computed(() => [
-  { key: 'all', label: 'Tất cả' },
-  ...typeChips.map(t => ({ key: t.value, label: t.label, icon: t.emoji })),
-])
-const areaFilterOptions = computed(() => [
-  { key: 'all', label: 'Toàn vùng' },
-  ...areaChips.map(a => ({ key: a.slug, label: a.name, icon: a.emoji })),
-])
 
 function buildUrl(offset: number) {
   const p = new URLSearchParams({ limit: String(PAGE), offset: String(offset) })
@@ -257,8 +231,6 @@ function syncUrlAndRefresh() {
   router.replace({ query })
   refresh()
 }
-function setType(t: string) { if (typeFilter.value !== t) { typeFilter.value = t; syncUrlAndRefresh() } }
-function setArea(a: string) { if (areaFilter.value !== a) { areaFilter.value = a; syncUrlAndRefresh() } }
 function pickArea(key: string) { areaFilter.value = areaFilter.value === key ? 'all' : key; syncUrlAndRefresh(); scrollToGrid() }
 function pickType(value: string) { typeFilter.value = typeFilter.value === value ? 'all' : value; syncUrlAndRefresh(); scrollToGrid() }
 let _qTimer: ReturnType<typeof setTimeout> | undefined
@@ -368,8 +340,6 @@ useHead({
 .dd-search-clear { border: none; background: none; color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; padding: 0 .25rem; }
 .dd-search-clear:hover { color: var(--ink); }
 
-.dd-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
-.dd-areas { margin-bottom: var(--space-4); }
 .dd-count { font-size: var(--text-sm); color: var(--muted); margin: 0 0 var(--space-4); }
 .dd-count strong { color: var(--ink); }
 
@@ -502,8 +472,10 @@ useHead({
 }
 
 /* ============================================================
-   REFINE BAR — sticky search+filter control surface (consolidates
-   the two FilterChips rows into one deliberate panel, header-style).
+   REFINE BAR — sticky search-only control surface. Area/type filtering
+   lives solely in the province-stamps + type-scroll-row above (the
+   signature pickers); this bar no longer duplicates them with a second
+   FilterChips pair, so it holds just the search field.
    ============================================================ */
 .dd-refine {
   position: sticky; top: 78px; z-index: var(--z-sticky, 100);
@@ -513,9 +485,7 @@ useHead({
   border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
   padding: var(--space-3); margin-bottom: var(--space-4);
 }
-.dd-refine .dd-search { margin-bottom: var(--space-3); }
-.dd-refine .dd-filters:last-child { margin-bottom: 0; }
-.dd-refine .dd-areas { margin-bottom: 0; }
+.dd-refine .dd-search { margin-bottom: 0; }
 .dark .dd-refine { background: var(--surface-translucent); border-color: var(--line); }
 
 /* ============================================================
