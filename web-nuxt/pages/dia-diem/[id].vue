@@ -1134,7 +1134,9 @@ const backendJsonLdScripts = computed(() => normalizeJsonLdPayload(backendJsonLd
 })))
 
 const jsonLdScripts = computed(() => {
-  return backendJsonLdScripts.value
+  // P1-3: nếu backend /seo/jsonld fail/rỗng → dùng fallback (BreadcrumbList + entity
+  // schema + FAQ) thay vì mất hết rich-result, chỉ còn WebSite toàn cục.
+  return backendJsonLdScripts.value.length ? backendJsonLdScripts.value : fallbackJsonLdScripts.value
 })
 
 useHead({

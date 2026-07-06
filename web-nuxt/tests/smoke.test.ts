@@ -350,12 +350,14 @@ describe('UserCP regressions', () => {
     expect(detail).toContain('Báo sai hoặc bổ sung nguồn')
   })
 
-  it('entity detail renders backend JSON-LD as the schema source of truth', () => {
+  it('entity detail uses backend JSON-LD first, then falls back on empty (P1-3 resilience)', () => {
+    // P1-3 (§3.4 chủ đích): trước đây khẳng định "backend-only" (cấm fallback) — nếu
+    // backend /seo/jsonld fail thì mất hết rich-result. Nay backend-first NHƯNG dùng
+    // fallbackJsonLdScripts khi rỗng để giữ BreadcrumbList + entity schema + FAQ.
     const detail = src('pages/dia-diem/[id].vue')
     expect(detail).toContain('/seo/jsonld/${encodedId.value}')
     expect(detail).toContain('backendJsonLdScripts')
-    expect(detail).toContain('return backendJsonLdScripts.value')
-    expect(detail).not.toContain('backendJsonLdScripts.value.length ? backendJsonLdScripts.value : fallbackJsonLdScripts.value')
+    expect(detail).toContain('backendJsonLdScripts.value.length ? backendJsonLdScripts.value : fallbackJsonLdScripts.value')
   })
 
   it('notification SSE uses cookie credentials without leaking bearer token in the URL', () => {
