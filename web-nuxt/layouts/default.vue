@@ -52,16 +52,6 @@
       </div>
     </header>
 
-    <Transition name="banner-slide">
-      <div v-if="clientReady && showBeta" class="beta-banner">
-        <div class="beta-inner">
-          <span class="beta-icon">{{ ss('announcements.icon', '🚧') }}</span>
-          <p><strong>{{ ss('announcements.text', 'Trang đang trong giai đoạn xây dựng.') }}</strong> {{ ss('announcements.subtext', 'Một số tính năng có thể chưa hoàn thiện hoặc thay đổi. Cảm ơn bạn đã ghé thăm!') }}</p>
-          <button type="button" class="beta-close" aria-label="Đóng thông báo" @click="dismissBeta">&times;</button>
-        </div>
-      </div>
-    </Transition>
-
     <noscript class="noscript-banner">Trang web này cần JavaScript để hoạt động. Vui lòng bật JavaScript trong trình duyệt.</noscript>
 
     <main id="main-content" role="main" tabindex="-1">
@@ -132,15 +122,12 @@ const { open: showAuth } = useAuthModal()
 useSeasonTheme()
 const mobileNav = ref(false)
 const clientReady = ref(false)
-const bannerEnabled = computed(() => ss('announcements.enabled', true))
-const showBeta = ref(false)
-const LS_BETA = 'vl360_beta_dismissed'
+// A3a declutter: beta-banner đã bỏ — OnboardingSheet là kênh truyền thông beta duy nhất
+// (hết 2 interrupt chồng nhau lần đầu vào). CMS key announcements.* không còn bề mặt render.
 onMounted(() => {
   clientReady.value = true
-  if (bannerEnabled.value && localStorage.getItem(LS_BETA) !== '1') showBeta.value = true
   if (route.query.login === 'admin') showAuth.value = true
 })
-function dismissBeta() { showBeta.value = false; localStorage.setItem(LS_BETA, '1') }
 
 const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: string; label: string }[] }> = [
   { label: 'Khám phá', children: [

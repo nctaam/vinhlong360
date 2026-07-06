@@ -458,54 +458,6 @@ html.js .reveal { opacity: 0; transform: translateY(30px) scale(.985); }
   .footer-bottom-row { flex-direction: column; align-items: flex-start; }
 }
 
-/* ── Beta banner ── */
-.beta-banner {
-  background: var(--amber-100);
-  border-bottom: .5px solid var(--amber-500);
-  color: var(--ink-900);
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
-  opacity: .85;
-}
-.dark .beta-banner {
-  background: rgba(var(--accent-rgb), .08);
-  border-color: rgba(var(--accent-rgb), .18);
-}
-.beta-inner {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-5);
-}
-.beta-icon { font-size: var(--text-sm); flex-shrink: 0; }
-.beta-inner p { margin: 0; flex: 1; }
-.beta-inner strong { font-weight: var(--weight-semibold); }
-.beta-close {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  font-size: 1.25rem;
-  line-height: 1;
-  color: var(--ink-900);
-  opacity: .5;
-  cursor: pointer;
-  padding: var(--space-1) var(--space-2);
-  min-width: 44px; min-height: 44px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: opacity .3s var(--ease-out), background .3s var(--ease-out), transform .35s var(--ease-spring-gentle);
-}
-.beta-close:hover { opacity: 1; background: rgba(var(--ink-rgb, 0,0,0),.06); }
-.beta-close:active { transform: scale(.88); transition-duration: .08s; }
-.beta-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.dark .beta-close { color: var(--sand-200); }
-.dark .beta-close:hover { background: var(--overlay-light); }
-.banner-slide-leave-active { transition: max-height .4s var(--ease-out), opacity .25s var(--ease-out), margin .4s var(--ease-out); overflow: hidden; }
-.banner-slide-leave-to { max-height: 0; opacity: 0; margin: 0; padding-top: 0; padding-bottom: 0; border-bottom-width: 0; }
-.banner-slide-leave-from { max-height: 80px; }
-
 /* ── Mobile nav backdrop ── */
 .nav-backdrop { display: none; }
 @media (max-width: 820px) {
@@ -986,7 +938,7 @@ a.thread-author:hover { color: var(--primary-fg); }
 /* ── Print ── */
 @media print {
   body { background: #fff; color: #000; }
-  .topbar, .site-footer, .skip-link, .scroll-top, .chat-widget, .beta-banner,
+  .topbar, .site-footer, .skip-link, .scroll-top, .chat-widget,
   .hero-search, .hero-pills, .auth-area, .feed-sidebar, .nav-toggle,
   .admin-sidebar, .thread-actions, .scroll-row,
   .journey-bar, .notif-bell, .onboarding-sheet, .toast-container { display: none !important; }
