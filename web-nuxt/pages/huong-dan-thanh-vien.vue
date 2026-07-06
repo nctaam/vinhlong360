@@ -214,10 +214,10 @@ useHead({
 .lv-req { font-size: var(--text-xs); color: var(--muted); }
 .lv-tag { font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--primary-fg); background: rgba(var(--primary-rgb, 46, 125, 50), .1); padding: .15rem .5rem; border-radius: var(--radius-full); white-space: nowrap; }
 
-.level-1 { --level-color: #8bc34a; border-left: 3px solid var(--level-color); }
-.level-2 { --level-color: #2196f3; border-left: 3px solid var(--level-color); }
-.level-3 { --level-color: #ff9800; border-left: 3px solid var(--level-color); }
-.level-4 { --level-color: #d4a017; border-left: 3px solid var(--level-color); }
+.level-1 { --level-color: var(--leaf-600); border-left: 3px solid var(--level-color); }
+.level-2 { --level-color: var(--river-600); border-left: 3px solid var(--level-color); }
+.level-3 { --level-color: var(--amber-500); border-left: 3px solid var(--level-color); }
+.level-4 { --level-color: var(--amber-700); border-left: 3px solid var(--level-color); }
 
 /* Points table */
 .points-table-wrap { overflow-x: auto; margin-bottom: var(--space-4); }
@@ -280,10 +280,10 @@ useHead({
 .dark .guide-hero { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 .dark .guide-note { background: var(--bg-alt); }
 .dark .guide-cta { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
-.dark .level-1 { --level-color: #a5d6a7; border-left-color: var(--level-color); }
-.dark .level-2 { --level-color: #64b5f6; border-left-color: var(--level-color); }
-.dark .level-3 { --level-color: #ffb74d; border-left-color: var(--level-color); }
-.dark .level-4 { --level-color: #ffd54f; border-left-color: var(--level-color); }
+.dark .level-1 { --level-color: var(--secondary-fg); border-left-color: var(--level-color); }
+.dark .level-2 { --level-color: var(--tertiary-fg); border-left-color: var(--level-color); }
+.dark .level-3 { --level-color: var(--accent-text); border-left-color: var(--level-color); }
+.dark .level-4 { --level-color: color-mix(in oklab, var(--amber-700) 70%, white); border-left-color: var(--level-color); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

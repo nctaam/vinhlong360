@@ -374,13 +374,13 @@ onUnmounted(() => {
 
 /* Hero */
 .wp-hero { border-radius: var(--radius-lg, 16px); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: var(--text-on-dark, #fff); position: relative; overflow: hidden; }
-.wp-hero.area-vinh-long { background: linear-gradient(135deg, #9C3D22 0%, #c0542e 50%, #d4764a 100%); }
-.wp-hero.area-ben-tre { background: linear-gradient(135deg, #1b7a3d 0%, #27944e 50%, #4bae6a 100%); }
-.wp-hero.area-tra-vinh { background: linear-gradient(135deg, #6b3fa0 0%, #8354b8 50%, #a070d0 100%); }
+.wp-hero.area-vinh-long { background: linear-gradient(135deg, var(--clay-600) 0%, color-mix(in srgb, var(--clay-600), var(--clay-400)) 50%, var(--clay-400) 100%); }
+.wp-hero.area-ben-tre { background: linear-gradient(135deg, var(--leaf-700) 0%, var(--leaf-600) 50%, color-mix(in srgb, var(--leaf-600) 65%, white) 100%); }
+.wp-hero.area-tra-vinh { background: linear-gradient(135deg, color-mix(in srgb, var(--river-600) 80%, black) 0%, var(--river-600) 50%, color-mix(in srgb, var(--river-600) 65%, white) 100%); }
 /* Dark mode: darken bottom stop for 4.5:1 AA on white text */
-.dark .wp-hero.area-vinh-long { background: linear-gradient(135deg, #5e2212 0%, #7a3119 50%, #7a2d1d 100%); }
-.dark .wp-hero.area-ben-tre { background: linear-gradient(135deg, #0b4520 0%, #135a2c 50%, #0d4921 100%); }
-.dark .wp-hero.area-tra-vinh { background: linear-gradient(135deg, #3a2070 0%, #4f3088 50%, #4a2763 100%); }
+.dark .wp-hero.area-vinh-long { background: linear-gradient(135deg, color-mix(in srgb, var(--clay-600) 75%, black) 0%, var(--clay-700) 50%, color-mix(in srgb, var(--clay-700) 88%, black) 100%); }
+.dark .wp-hero.area-ben-tre { background: linear-gradient(135deg, color-mix(in srgb, var(--leaf-700) 70%, black) 0%, color-mix(in srgb, var(--leaf-700) 85%, black) 50%, color-mix(in srgb, var(--leaf-700) 72%, black) 100%); }
+.dark .wp-hero.area-tra-vinh { background: linear-gradient(135deg, color-mix(in srgb, var(--river-600) 55%, black) 0%, color-mix(in srgb, var(--river-600) 70%, black) 50%, color-mix(in srgb, var(--river-600) 58%, black) 100%); }
 
 /* Cinematic scrim: lift text legibility + add owned-by-region radial glow */
 .wp-hero::before {

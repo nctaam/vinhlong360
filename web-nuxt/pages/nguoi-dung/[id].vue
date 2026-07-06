@@ -1058,7 +1058,7 @@ useSeoMeta({
 .profile-more-menu { position: absolute; right: 0; top: 100%; margin-top: var(--space-1); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: var(--z-dropdown); min-width: 160px; overflow: hidden; }
 .pm-item { display: block; width: 100%; text-align: left; padding: .6rem 1rem; border: none; background: none; font: inherit; font-size: var(--text-sm); color: var(--ink); cursor: pointer; transition: background .15s; }
 .pm-item:hover { background: var(--bg-alt); }
-.pm-danger { color: var(--danger, #c0392b); }
+.pm-danger { color: var(--danger); }
 .pm-danger:hover { background: rgba(192,57,43,.06); }
 .profile-info h1 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); letter-spacing: var(--tracking-tight); margin: 0; text-wrap: balance; overflow-wrap: break-word; }
 /* Tên riêng — serif (Fraunces), xứng đáng được "xưng danh" như tiêu đề địa điểm. */
@@ -1156,8 +1156,8 @@ useSeoMeta({
 .collections-header { display: flex; justify-content: flex-end; margin-bottom: var(--space-4); }
 .collections-loading { display: flex; align-items: center; gap: var(--space-2); justify-content: center; padding: var(--space-8) 0; color: var(--muted); font-size: var(--text-sm); }
 .saved-card .card-b .place { overflow-wrap: break-word; word-break: break-word; }
-.btn-danger-text { align-self: flex-start; margin: 0 var(--space-4) var(--space-4); color: var(--danger, #c0392b); }
-.btn-danger-text:hover:not(:disabled) { background: rgba(192,57,43,.08); color: var(--danger, #c0392b); }
+.btn-danger-text { align-self: flex-start; margin: 0 var(--space-4) var(--space-4); color: var(--danger); }
+.btn-danger-text:hover:not(:disabled) { background: rgba(192,57,43,.08); color: var(--danger); }
 
 /* Create-collection modal form (mirrors .sf-* in cai-dat.vue / SettingsForm.vue — scoped styles don't leak across components) */
 .sf-field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
