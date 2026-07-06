@@ -35,9 +35,8 @@
       </div>
     </section>
 
-    <!-- Spotlight nổi bật -->
-    <CatalogSpotlight :items="allOcop" />
-
+    <!-- declutter-3 T9: CatalogSpotlight đã bỏ — 3 star-band honor-roll là "what's great"
+         signal đặc trưng của trang này. -->
     <!-- Star-rank quick-jump — subordinate to the ledger bands below, not equal rank -->
     <nav v-if="starStats.length" class="block reveal star-jump" aria-label="Nhảy nhanh tới hạng sao">
       <button type="button"
@@ -647,12 +646,12 @@ useHead(() => ({
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-1) var(--space-3);
   border: .5px solid var(--line);
   border-radius: var(--radius-full);
   background: var(--card);
   cursor: pointer;
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   transition: border-color .2s var(--ease-out), background .2s var(--ease-out);
 }
 .star-jump-btn:hover { border-color: var(--primary-fg); }
