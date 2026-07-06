@@ -74,19 +74,19 @@
     </section>
 
     <!-- Interstitial -->
-    <CatalogInterstitial
-      fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, tất cả được xác minh và cập nhật liên tục."
-      icon="📊"
-      variant="warm"
-      :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/du-lich', label: 'Du lịch sinh thái' }]"
-    />
-
-    <!-- Editorial -->
+    <!-- Editorial (declutter-2 A2: interstitial inline vào mạch bài) -->
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Khám phá toàn bộ điểm đến Vĩnh Long</h2></div>
       <div class="editorial-body drop-cap">
         <p>Danh bạ địa điểm tổng hợp mọi điểm đến, trải nghiệm, sản phẩm, lưu trú và di tích trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh. Mỗi mục đều có thông tin thực tế: địa chỉ, số điện thoại, giờ mở cửa, giá tham khảo và mùa vụ phù hợp.</p>
       </div>
+
+      <CatalogInterstitial
+        fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 1.500 điểm đến, đặc sản và dịch vụ — từ cù lao xanh mát đến làng nghề trăm năm, tất cả được xác minh và cập nhật liên tục."
+        icon="📊"
+        variant="warm"
+        :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/du-lich', label: 'Du lịch sinh thái' }]"
+      />
     </section>
 
     <!-- Refine bar — search only. Area/type are already fully controllable via

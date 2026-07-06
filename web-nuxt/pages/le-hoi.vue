@@ -130,12 +130,8 @@
     </section>
 
     <!-- Interstitial -->
-    <CatalogInterstitial
-      fact="Vùng đất ba tỉnh là nơi giao thoa văn hoá Kinh – Khmer – Hoa, tạo nên hệ thống lễ hội đa dạng hiếm có trong cả nước."
-      icon="🎋"
-      variant="warm"
-      :links="[{ to: '/du-lich', label: 'Trải nghiệm du lịch' }, { to: '/ban-do', label: 'Xem trên bản đồ' }]"
-    />
+    <!-- declutter-2 A2: interstitial le-hoi SUPPRESS — fact trùng gần nguyên văn đoạn
+         mở editorial ngay dưới (duplication-test). -->
 
     <!-- Editorial: le-hoi's strongest asset, elevated with pull-quote treatment
          so the strongest lines aren't buried in dense paragraph body text. -->

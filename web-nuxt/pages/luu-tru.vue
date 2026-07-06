@@ -82,19 +82,15 @@
     </section>
 
     <!-- Interstitial -->
-    <CatalogInterstitial
-      fact="Homestay nhà vườn miền Tây là trải nghiệm đặc trưng — ngủ giữa vườn trái cây, thức dậy với tiếng chim và hương bưởi."
-      icon="🏡"
-      :links="[{ to: '/lich-trinh', label: 'Ghép lịch trình' }, { to: '/du-lich', label: 'Điểm du lịch gần' }]"
-    />
-
-    <!-- Editorial -->
+    <!-- Editorial (declutter-2 A2: interstitial inline vào mạch bài) -->
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Ở đâu khi đi Vĩnh Long?</h2></div>
       <div class="editorial-body drop-cap">
         <p>Lưu trú ở Vĩnh Long, Bến Tre và Trà Vinh mang đến những trải nghiệm rất khác so với khách sạn thành phố. Đây là vùng đất của homestay nhà vườn — nơi bạn ngủ trong căn nhà gỗ giữa vườn trái cây, thức dậy với tiếng chim hót và hương hoa bưởi. Nhiều chỗ ở nằm trên cù lao, phải đi đò hoặc xuồng mới tới — chính sự cách biệt ấy tạo nên sự yên tĩnh đặc trưng.</p>
       </div>
 
+      <!-- declutter-2 A2: interstitial luu-tru SUPPRESS — fact trùng gần nguyên văn
+           đoạn editorial ngay trên (duplication-test, như le-hoi). -->
       <aside class="booking-note">
         <p class="booking-note-kicker">Sổ tay đặt phòng</p>
         <p>Tết Nguyên đán, lễ 30/4–1/5 và hè (tháng 6–8) là mùa cao điểm — đặt trước 1–2 tuần. Ngày thường hầu như luôn còn phòng. Liên hệ trực tiếp qua điện thoại hoặc Zalo của chủ nhà thường được giá tốt hơn qua trung gian. Đi nhóm đông, nhiều homestay có giá ưu đãi hoặc bao trọn gói ăn ở + tour vườn.</p>

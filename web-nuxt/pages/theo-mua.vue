@@ -141,14 +141,6 @@
       </div>
     </section>
 
-    <!-- Interstitial -->
-    <CatalogInterstitial
-      fact="Mùa nước nổi (tháng 8–11) mang đến cá linh, bông điên điển, bông súng — những đặc sản chỉ có vài tháng mỗi năm."
-      icon="🌾"
-      variant="accent"
-      :links="[{ to: '/san-pham', label: 'Xem đặc sản' }, { to: '/kham-pha/am-thuc', label: 'Ẩm thực miền Tây' }]"
-    />
-
     <!-- B2B callout (§1.4: liên hệ/hỏi-giá only, no order form) -->
     <aside class="b2b-callout">
       <span class="b2b-callout-icon" aria-hidden="true">🤝</span>
@@ -167,6 +159,14 @@
       <div class="sediment-head"><h2>Mùa nước nổi — trải nghiệm độc đáo</h2></div>
       <p>Từ tháng 8 đến tháng 11, nước từ thượng nguồn Mekong đổ về làm mực nước sông dâng cao, tràn vào đồng ruộng. Đây không phải thiên tai mà là nhịp sống tự nhiên mang phù sa màu mỡ cho vụ lúa kế tiếp. Mùa nước nổi mang đến những đặc sản mùa vụ không đâu có: cá linh non kho mía, bông điên điển xào tỏi, lẩu mắm bông súng, chuột đồng quay lu.</p>
       <p>Đi xuồng giữa đồng nước mênh mông, hái bông điên điển vàng rực hay tát mương bắt cá là trải nghiệm chỉ có trong vài tháng ngắn ngủi mỗi năm — và chỉ ở miền Tây.</p>
+
+      <!-- declutter-2 A2: interstitial inline vào mạch bài (đặt đúng ngữ cảnh mùa-nước-nổi) -->
+      <CatalogInterstitial
+        fact="Mùa nước nổi (tháng 8–11) mang đến cá linh, bông điên điển, bông súng — những đặc sản chỉ có vài tháng mỗi năm."
+        icon="🌾"
+        variant="accent"
+        :links="[{ to: '/san-pham', label: 'Xem đặc sản' }, { to: '/kham-pha/am-thuc', label: 'Ẩm thực miền Tây' }]"
+      />
 
       <div class="sediment-head"><h2>Mười hai tháng, một nhịp sông</h2></div>
       <p class="timeline-caption">Cuộn để xem tháng nào có gì — vệt sáng đánh dấu tháng {{ month }}, tháng bạn đang đứng trên vòng quay này.</p>

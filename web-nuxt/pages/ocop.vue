@@ -97,17 +97,17 @@
          khu-vực trong controls (nhà của 3 tầng filter sao/khu-vực/tháng). -->
 
     <!-- Interstitial -->
-    <CatalogInterstitial
-      fact="Chương trình OCOP đã chứng nhận hàng trăm sản phẩm từ 3 tỉnh — mỗi sản phẩm đều qua đánh giá nghiêm ngặt về chất lượng và nguồn gốc."
-      icon="🏅"
-      variant="warm"
-      :links="[{ to: '/san-pham', label: 'Tất cả sản phẩm' }, { to: '/theo-mua', label: 'Theo mùa vụ' }]"
-    />
-
-    <!-- Editorial — drop-cap (auto via .page-article) + pull-quote (concept §4/§9) -->
+    <!-- Editorial — drop-cap + pull-quote (declutter-2 A2: interstitial inline vào mạch bài) -->
     <section v-once class="page-article editorial-body reveal">
       <h2 class="sediment-head">OCOP là gì?</h2>
       <p>OCOP (One Commune One Product — Mỗi xã Một sản phẩm) là chương trình quốc gia nhằm phát triển kinh tế nông thôn thông qua việc nâng cao chất lượng và giá trị sản phẩm địa phương. Mỗi xã, phường xác định một hoặc vài sản phẩm thế mạnh, được hỗ trợ chuẩn hoá quy trình sản xuất, bao bì, truy xuất nguồn gốc và kết nối thị trường.</p>
+
+      <CatalogInterstitial
+        fact="Chương trình OCOP đã chứng nhận hàng trăm sản phẩm từ 3 tỉnh — mỗi sản phẩm đều qua đánh giá nghiêm ngặt về chất lượng và nguồn gốc."
+        icon="🏅"
+        variant="warm"
+        :links="[{ to: '/san-pham', label: 'Tất cả sản phẩm' }, { to: '/theo-mua', label: 'Theo mùa vụ' }]"
+      />
 
       <h2 class="sediment-head">Hệ thống xếp hạng sao</h2>
       <p>Sản phẩm OCOP được đánh giá theo thang 5 sao bởi hội đồng cấp tỉnh và trung ương. <strong>3 sao</strong> là mức cơ bản — sản phẩm đạt tiêu chuẩn an toàn thực phẩm, có nhãn mác rõ ràng. <strong>4 sao</strong> yêu cầu chất lượng cao hơn, bao bì chuyên nghiệp, có câu chuyện sản phẩm và khả năng mở rộng thị trường. <strong>5 sao</strong> là cấp quốc gia — rất hiếm, dành cho sản phẩm xuất sắc có tiềm năng xuất khẩu.</p>

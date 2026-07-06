@@ -78,20 +78,20 @@
     </section>
 
     <!-- Interstitial -->
-    <CatalogInterstitial
-      fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 200 điểm du lịch sinh thái — phần lớn nằm trên các cù lao giữa sông Tiền và sông Hậu."
-      icon="🌊"
-      variant="warm"
-      :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/lich-trinh', label: 'Lịch trình gợi ý' }]"
-    />
-
-    <!-- Editorial -->
+    <!-- Editorial (declutter-2 A2: interstitial inline vào mạch bài, hết section rời) -->
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Vì sao chọn Vĩnh Long, Bến Tre, Trà Vinh?</h2></div>
       <div class="editorial-body drop-cap">
         <p>Ba tỉnh nằm ở trung tâm đồng bằng sông Cửu Long, nơi hệ thống sông Tiền và sông Hậu chia thành hàng chục nhánh nhỏ tạo nên mạng lưới kênh rạch chằng chịt. Đây là vùng đất của những cù lao xanh mát quanh năm — An Bình, Bình Hoà Phước, Minh, Ông Hổ — nơi cuộc sống vẫn giữ nhịp chậm rãi của miệt vườn Nam Bộ.</p>
         <p>Khác với các điểm du lịch đông đúc, khu vực này mang đến trải nghiệm gần gũi: chèo xuồng qua rạch dừa nước, đạp xe trên đường làng, tát mương bắt cá cùng nông dân, hoặc đơn giản là ngồi võng nghe chim hót trong vườn trái cây. Du khách không chỉ ngắm cảnh mà thực sự sống cùng nhịp sinh hoạt bản địa. Ở Trà Vinh, nhịp sống ấy còn mang thêm màu sắc Khmer — mái chùa vàng-đỏ giữa vườn dừa, tiếng chuông chùa hoà vào tiếng ghe máy trên sông.</p>
       </div>
+
+      <CatalogInterstitial
+        fact="Vĩnh Long, Bến Tre và Trà Vinh có hơn 200 điểm du lịch sinh thái — phần lớn nằm trên các cù lao giữa sông Tiền và sông Hậu."
+        icon="🌊"
+        variant="warm"
+        :links="[{ to: '/ban-do', label: 'Xem bản đồ' }, { to: '/lich-trinh', label: 'Lịch trình gợi ý' }]"
+      />
 
       <div class="sediment-head"><h2>Trải nghiệm theo mùa</h2></div>
       <div class="editorial-body">
