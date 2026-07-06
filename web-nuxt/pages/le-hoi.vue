@@ -178,13 +178,8 @@
         aria-label="Lọc theo trạng thái"
         @update:model-value="v => statusFilter = v[0] || 'all'"
       />
-      <FilterChips
-        :filters="areaFilterOptions"
-        :model-value="[areaFilter]"
-        single-select
-        aria-label="Lọc theo khu vực"
-        @update:model-value="v => areaFilter = v[0] || 'all'"
-      />
+      <!-- declutter-2 A5: FilterChips khu-vực đã bỏ — quick-picks blob (đầu trang, bind
+           cùng areaFilter) là 1 đường filter khu vực duy nhất. -->
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
@@ -326,10 +321,6 @@ const statusFilterOptions = [
   { key: 'now', label: 'Đang diễn ra', icon: '🔴' },
   { key: 'soon', label: 'Sắp khai mạc', icon: '🟡' },
 ]
-const areaFilterOptions = computed(() => [
-  { key: 'all', label: 'Tất cả vùng' },
-  ...Object.entries(AREA_META).map(([slug, m]) => ({ key: slug, label: m.name, icon: m.emoji })),
-])
 
 const { data, error: fetchError } = await useAsyncData('festivals', () =>
   apiFetch<{ events: Entity[] }>('/api/events?limit=200&include_past=true')

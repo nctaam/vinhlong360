@@ -155,13 +155,8 @@
         aria-label="Lọc theo trạng thái"
         @update:model-value="v => statusFilter = v[0] || 'all'"
       />
-      <FilterChips
-        :filters="areaFilterOptions"
-        :model-value="[areaFilter]"
-        single-select
-        aria-label="Lọc theo khu vực"
-        @update:model-value="v => areaFilter = v[0] || 'all'"
-      />
+      <!-- declutter-2 A5: FilterChips khu-vực đã bỏ — quick-picks blob là 1 đường
+           filter khu vực duy nhất. -->
     </div>
 
     <div class="view-toggle" role="group" aria-label="Chế độ hiển thị">
@@ -296,10 +291,6 @@ const statusFilterOptions = [
   { key: 'upcoming', label: 'Sắp diễn ra', icon: '📅' },
   { key: 'past', label: 'Đã qua', icon: '📋' },
 ]
-const areaFilterOptions = computed(() => [
-  { key: 'all', label: 'Tất cả vùng' },
-  ...Object.entries(AREA_META).map(([slug, m]) => ({ key: slug, label: m.name, icon: m.emoji })),
-])
 
 const todayStr = new Date().toISOString().slice(0, 10)
 function eventStatus(e: Entity): 'upcoming' | 'past' | '' {
