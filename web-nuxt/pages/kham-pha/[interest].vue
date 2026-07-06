@@ -24,14 +24,7 @@
       </div>
     </section>
 
-    <!-- SIGNATURE 2: Curated collection thesis — the one line a visitor should screenshot -->
-    <div v-if="data && filtered.length" class="int-intro reveal">
-      <p class="int-intro-text editorial-body">
-        <span class="int-intro-emoji" aria-hidden="true">✨</span>
-        <span>Trong chuyên mục này: {{ collectionNarrative }}</span>
-      </p>
-    </div>
-
+    <!-- declutter-3 T12: int-intro đã bỏ — hero dek nói cùng nội dung, đếm-mục là meta-noise -->
     <div class="interest-nav" role="navigation" aria-label="Các chủ đề khám phá">
       <NuxtLink
         v-for="(meta, key) in INTEREST_META"
@@ -44,8 +37,9 @@
 
     <section class="block reveal" aria-label="Duyệt tất cả">
     <h2 class="sr-only">Duyệt tất cả {{ interestMeta.label.toLowerCase() }}</h2>
+    <!-- declutter-3 T12: 2 hàng filter gộp 1 panel — bỏ 2 control-label rời, divider mảnh
+         ngăn 2 nhóm; ref areaFilter/typeFilter + hành vi giữ nguyên -->
     <div class="controls">
-      <p class="control-label">Khu vực</p>
       <div class="chip-row wrap-mobile" role="group" aria-label="Lọc theo khu vực">
         <button type="button" :class="['chip', { active: areaFilter === 'all' }]" :aria-pressed="areaFilter === 'all'" @click="areaFilter = 'all'">Tất cả</button>
         <button type="button"
@@ -62,7 +56,7 @@
            communicates "this is where the depth is" — filmstrip underline draws
            in on hover/focus, evoking flipping through indexed photo negatives. -->
       <template v-if="typeBreakdown.length > 1">
-        <p class="control-label">Theo loại</p>
+        <div class="controls-divider" aria-hidden="true"></div>
         <div class="chip-row wrap-mobile int-filmstrip" role="group" aria-label="Lọc theo loại">
           <button type="button" :class="['chip', { active: typeFilter === 'all' }]" :aria-pressed="typeFilter === 'all'" @click="typeFilter = 'all'">Tất cả</button>
           <button type="button"
@@ -270,16 +264,6 @@ function dividerFact(index: number): string {
   return `${index} mục đã lật qua`
 }
 
-// SIGNATURE 2: a short, data-driven narrative of what this collection holds —
-// built only from real counts (no fabricated facts; Track-H safe).
-const collectionNarrative = computed(() => {
-  const parts = typeBreakdown.value.map(t => `${t.count} ${t.label.toLowerCase()}`)
-  if (!parts.length) return interestMeta.value.description
-  if (parts.length === 1) return `${parts[0]} đang được tổng hợp ở khắp Vĩnh Long, Bến Tre và Trà Vinh.`
-  const last = parts.pop()
-  return `từ ${parts.join(', ')} đến ${last} — trải khắp Vĩnh Long, Bến Tre và Trà Vinh.`
-})
-
 // Polish: smooth scroll the results into view when a filter changes, so the
 // user is not left staring at the controls panel after narrowing.
 const gridEl = ref<HTMLElement | null>(null)
@@ -398,34 +382,8 @@ useHead(() => ({
   max-width: none !important;
 }
 
-/* ============================================================
-   SIGNATURE 2 — curated collection thesis (enlarged editorial dek).
-   Runs full-width above the filter controls as the one sentence a
-   visitor should screenshot — not a boxed metadata card anymore.
-   ============================================================ */
-.int-intro {
-  margin: 0 0 var(--space-5);
-  padding: 0;
-  border: none;
-  border-left: 3px solid rgba(var(--int-rgb, var(--primary-rgb)), .5);
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  padding-left: var(--space-5);
-}
-.int-intro-text {
-  margin: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  font-family: var(--font-editorial);
-  font-style: italic;
-  font-size: var(--text-lg);
-  line-height: var(--leading-relaxed);
-  color: var(--ink);
-  max-width: var(--measure-read);
-}
-.int-intro-emoji { font-size: 1.2rem; line-height: 1.3; flex-shrink: 0; font-style: normal; }
+/* declutter-3 T12: divider mảnh ngăn 2 nhóm chip trong 1 panel .controls */
+.controls-divider { border-top: .5px solid var(--line); margin-block: var(--space-2); }
 
 /* ============================================================
    SIGNATURE 3 — interest nav + premium segmented controls.
@@ -498,8 +456,6 @@ useHead(() => ({
     radial-gradient(140% 120% at 0% 0%, rgba(var(--int-rgb, var(--primary-rgb)), .16), transparent 62%),
     linear-gradient(135deg, rgba(var(--int-rgb, var(--primary-rgb)), .1) 0%, rgba(var(--secondary-rgb), .05) 100%);
 }
-.dark .int-intro { border-left-color: rgba(var(--int-rgb, var(--primary-rgb)), .6); }
-.dark .int-intro-text { color: var(--ink); }
 .dark .int-byline { color: var(--ink-tertiary) !important; border-top-color: var(--line); }
 .dark .interest-nav .chip { background: var(--bg-alt); border-color: var(--line); }
 .dark .interest-nav .chip:hover { border-color: rgba(255,255,255,.15); }
