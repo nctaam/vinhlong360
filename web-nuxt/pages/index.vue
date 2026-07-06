@@ -203,17 +203,9 @@
       image-alt="Cù lao An Bình giữa sông Cổ Chiên lúc hoàng hôn — vườn cây trái và dừa nước ven bờ, chiếc xuồng gỗ đậu sát mé sông."
     />
 
-    <!-- 3a2. Feature — photo-led editorial block (Đặc sản OCOP), mirrored -->
-    <section class="block reveal" aria-label="Đặc sản nổi bật">
-      <EntityFeature
-        image="/img/features/ocop.webp"
-        v-bind="FEATURE_OCOP"
-        accent="làm quà"
-        accent-tone="amber"
-        :thumbs="ocopThumbs"
-        side="right"
-      />
-    </section>
+    <!-- declutter-3 T16 (B1-5): EntityFeature #2 OCOP đã bỏ — 1 feature-block/trang là đủ
+         nhịp editorial; OCOP còn tile cat-grid + decision card + tinh-hoa. GIỮ feature #1
+         (Trải nghiệm, LCP priority). -->
 
     <!-- 4. Lịch trình gợi ý — compact strip -->
     <section v-if="itineraries.length" class="block block-compact reveal band" aria-label="Lịch trình gợi ý">
@@ -350,14 +342,6 @@ const FEATURE_EXPERIENCE = {
   lede: 'Chèo xuồng qua rạch dừa, hái trái tại vườn, nghe đờn ca giữa cù lao — những ngày chậm rãi rất Nam Bộ.',
   ctaText: 'Khám phá trải nghiệm',
   ctaTo: '/du-lich',
-}
-
-const FEATURE_OCOP = {
-  kicker: 'Đặc sản OCOP',
-  title: 'Mang cả miền Tây về làm quà',
-  lede: 'Dừa sáp Cầu Kè, kẹo dừa, mật ong rừng bần, gạo thơm — sản vật đạt sao OCOP, gói ghém vị quê.',
-  ctaText: 'Xem đặc sản OCOP',
-  ctaTo: '/ocop',
 }
 
 // Full-bleed signature moment (StorySpread). Discover-only CTA — never an order/price
@@ -526,8 +510,6 @@ const firstDish = computed<any>(() => topDishes.value[0] || null)
 // → SSR/CSR identical.
 const experienceThumbs = computed(() =>
   experiences.value.filter((e: any) => e.id !== heroFeature.value?.id && e.id !== spotId.value).slice(0, 3))
-const ocopThumbs = computed(() =>
-  productsAll.value.filter((p: any) => p.id !== spotId.value).slice(0, 3))
 const topDishesList = computed(() =>
   topDishes.value.filter((d: any) => d.id !== firstDish.value?.id))
 const seasonalList = computed(() => {
