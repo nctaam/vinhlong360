@@ -21,6 +21,7 @@
 
     <div class="threads-layout">
       <div class="threads-feed">
+        <h2 class="sr-only">Bảng tin cộng đồng</h2>
 
         <!-- Vệt phù sa mới — bài đăng trong phiên này, im lặng cho tới khi có tín hiệu -->
         <button

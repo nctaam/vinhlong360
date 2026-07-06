@@ -109,6 +109,9 @@
 
       <!-- Sidebar -->
       <aside class="wp-aside">
+        <!-- sr-only: when wp-main has zero content sections (no h2 rendered above),
+             this keeps the sidebar's h3's from skipping straight from h1 (WCAG 1.3.1). -->
+        <h2 class="sr-only">Thông tin liên hệ</h2>
         <!-- Liên hệ cơ quan -->
         <div class="wp-card">
           <h3>📞 Liên hệ khẩn cấp</h3>

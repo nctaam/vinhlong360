@@ -39,7 +39,7 @@ const props = withDefaults(defineProps<{
   hint?: string
   tone?: 'empty' | 'error'
   headingLevel?: 2 | 3 | 4
-}>(), { headingLevel: 3, tone: 'empty' })
+}>(), { headingLevel: 2, tone: 'empty' })
 
 const headingTag = computed(() => `h${props.headingLevel}`)
 </script>

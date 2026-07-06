@@ -1,6 +1,6 @@
 <template>
   <div class="ai-besttime">
-    <div class="ai-besttime-head sediment-head"><h4>Thời điểm tốt nhất</h4><span class="ai-label"><span class="emoji-chip" aria-hidden="true">✨</span> AI gợi ý</span></div>
+    <div class="ai-besttime-head sediment-head"><h3>Thời điểm tốt nhất</h3><span class="ai-label"><span class="emoji-chip" aria-hidden="true">✨</span> AI gợi ý</span></div>
     <button type="button" v-if="!result && !loading && !errored" class="ai-toggle-btn" @click="load">Xem gợi ý AI</button>
     <div v-else-if="loading" class="ai-loading" role="status" aria-label="Đang tải">
       <span class="ai-dot"></span><span class="ai-dot"></span><span class="ai-dot"></span>
@@ -67,9 +67,11 @@ function retry() {
 
 <style scoped>
 /* .sediment-head's shared rule (components.css) only targets h2; this panel's
-   heading is an h4 (unchanged from before — no markup-level change to
-   heading rank), so the tick + serif treatment is re-declared here for h4
-   scoped to this component only. Values mirror the shared h2 rule exactly. */
+   heading is an h3 (WCAG 1.3.1 fix: was h4, which skipped a level between the
+   preceding h2#trust-card-title and this panel — h3 matches the sibling AI
+   panel AITravelTips.vue's heading rank), so the tick + serif treatment is
+   re-declared here for h3 scoped to this component only. Values mirror the
+   shared h2 rule exactly. */
 .ai-besttime-head {
   display: flex;
   align-items: center;
@@ -77,7 +79,7 @@ function retry() {
   gap: var(--space-3);
   margin-bottom: var(--space-2);
 }
-.ai-besttime-head h4 {
+.ai-besttime-head h3 {
   font-family: var(--font-editorial);
   font-weight: 600;
   letter-spacing: -.01em;
@@ -85,13 +87,13 @@ function retry() {
   padding-left: var(--space-4);
   margin: 0;
 }
-.ai-besttime-head h4::before {
+.ai-besttime-head h3::before {
   content: "";
   position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 4px; height: 1.05em; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .ai-besttime-head h4::before {
+.dark .ai-besttime-head h3::before {
   background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 /* Quiet "AI-assisted" label — a hairline-bordered tag, not a decorative badge,

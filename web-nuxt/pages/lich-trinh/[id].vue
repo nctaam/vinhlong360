@@ -59,6 +59,9 @@
       </div>
     </ClientOnly>
 
+    <div class="sediment-head timeline-head">
+      <h2>Lịch trình chi tiết</h2>
+    </div>
     <ol class="timeline">
       <template v-for="(stop, idx) in (itinerary.stops || [])" :key="stopIdentity(stop) || idx">
         <!-- Chapter divider — "chapters of the day," inserted the first time
@@ -573,7 +576,9 @@ if (itinerary.value && !itinerary.value.error) {
 .transport-mode .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .transport-mode .chip:active { transform: scale(.95); transition-duration: .08s; }
 
-.timeline { list-style: none; margin: var(--space-5) 0 0; padding: 0 0 0 24px; position: relative; }
+/* Section head introducing the timeline (WCAG 1.3.1: was h1→h3, this restores h2) */
+.timeline-head { margin: var(--space-5) 0 var(--space-2); }
+.timeline { list-style: none; margin: 0; padding: 0 0 0 24px; position: relative; }
 /* Branded vertical journey spine */
 .timeline::before {
   content: "";

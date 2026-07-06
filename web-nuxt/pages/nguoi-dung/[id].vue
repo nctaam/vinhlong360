@@ -73,7 +73,7 @@
         <details v-if="isSelf && achievements.length" class="badge-showcase" open>
           <summary class="bs-title">Thành tích ({{ achievementsEarned }}/{{ achievements.length }})</summary>
           <div v-for="cat in achievementCategories" :key="cat.key" class="bs-cat">
-            <h3 class="bs-cat-title">{{ cat.label }}</h3>
+            <h2 class="bs-cat-title">{{ cat.label }}</h2>
             <div class="bs-grid">
               <div v-for="a in cat.items" :key="a.id"
                    class="bs-card" :class="{ 'bs-earned': a.earned, 'bs-locked': !a.earned }"
@@ -144,7 +144,7 @@
       </div>
 
       <div v-if="isSelf && Object.keys(userStats).length" class="profile-analytics card reveal">
-        <h3 class="pa-title">Tổng quan hoạt động</h3>
+        <h2 class="pa-title">Tổng quan hoạt động</h2>
         <div class="pa-grid">
           <div class="pa-stat">
             <strong>{{ userStats.likes_received || 0 }}</strong>
@@ -174,7 +174,7 @@
       </div>
 
       <section v-if="!profile.is_private && heatmap.length" class="heatmap-section">
-        <h3 class="heatmap-title">Bản đồ con nước · {{ heatmapTotal }} đóng góp trong 1 năm qua</h3>
+        <h2 class="heatmap-title">Bản đồ con nước · {{ heatmapTotal }} đóng góp trong 1 năm qua</h2>
         <div class="heatmap-grid">
           <div v-for="(week, wi) in heatmapWeeks" :key="wi" class="hm-week">
             <span v-for="(cell, di) in week" :key="di"

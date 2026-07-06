@@ -156,14 +156,14 @@
         <!-- Route map -->
         <ClientOnly>
           <div v-if="stops.length >= 2" class="route-map-section">
-            <h3 class="sediment-head">Bản đồ lộ trình</h3>
+            <h2 class="sediment-head">Bản đồ lộ trình</h2>
             <div ref="routeMapEl" class="route-map"></div>
           </div>
         </ClientOnly>
 
         <!-- Saved itineraries -->
         <div v-if="savedPlans.length" class="saved-plans">
-          <h3 class="sediment-head">Lịch trình đã lưu</h3>
+          <h2 class="sediment-head">Lịch trình đã lưu</h2>
           <div v-for="(plan, pi) in savedPlans" :key="pi" class="saved-plan-item">
             <button type="button" class="saved-plan-info saved-plan-btn" @click="loadPlan(pi)">
               <strong>{{ plan.title || 'Lịch trình chưa đặt tên' }}</strong>
@@ -758,23 +758,12 @@ useHead({
 }
 .dark .planner-hero-inner .dateline-eyebrow { border-bottom-color: var(--line); }
 
-/* ── Section heads (h3): reuse the shared sediment-tick recipe from
-   components.css, which only targets h2 — scoped h3 variant, same gradient,
-   so "Bản đồ lộ trình" / "Lịch trình đã lưu" read as the same publication as
-   the rest of the site without touching global CSS or the heading hierarchy. */
-h3.sediment-head {
-  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
-  position: relative; padding-left: var(--space-4);
-  margin-bottom: var(--space-3);
-}
-h3.sediment-head::before {
-  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 4px; height: 1.05em; border-radius: var(--radius-full);
-  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
-}
-.dark h3.sediment-head::before {
-  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
-}
+/* ── Section heads: WCAG 1.3.1 fix — these were h3.sediment-head with a
+   scoped override reusing the shared tick recipe, but the page had no h2 at
+   all, so h3 skipped straight from h1 with no h2 in between. Bumped the
+   markup to h2.sediment-head, which now matches components.css's global
+   `.sediment-head h2, h2.sediment-head` rule exactly (same gradient/spacing),
+   so the scoped h3 override above is no longer needed and was removed. */
 
 .builder-title-wrap { position: relative; flex: 1; min-width: 0; }
 .title-counter { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: var(--text-xs); color: var(--muted); pointer-events: none; }

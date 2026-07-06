@@ -48,6 +48,7 @@
     <template v-else-if="q">
       <!-- Địa điểm / sản phẩm -->
       <template v-if="results.length">
+        <h2 class="sr-only">Kết quả tìm kiếm cho "{{ q }}"</h2>
         <p class="result-strap" aria-live="polite">
           <span class="result-strap-query">„{{ q }}"</span> — {{ resultStrapLine }}
         </p>

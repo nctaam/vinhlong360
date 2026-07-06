@@ -134,7 +134,7 @@
             <!-- Sub-topics -->
             <div v-if="t.subtopics?.length" class="subtopics">
               <div v-for="sub in t.subtopics" :key="sub.title" class="subtopic">
-                <h4>{{ sub.title }}</h4>
+                <h3>{{ sub.title }}</h3>
                 <p>{{ sub.desc }}</p>
                 <ol v-if="sub.steps?.length" class="guide-steps guide-steps--sub">
                   <li v-for="(step, i) in sub.steps" :key="i">{{ step }}</li>
@@ -1102,7 +1102,9 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
   margin-bottom: var(--space-3); background: var(--bg-warm);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
-.subtopic > h4 { font-size: var(--text-sm); font-weight: var(--weight-bold); margin: 0 0 var(--space-1); }
+/* WCAG 1.3.1 fix: was h4, skipping h3 under the section's h2 — bumped to h3
+   (font-size/weight/margin unchanged, so no visual difference from the level bump). */
+.subtopic > h3 { font-size: var(--text-sm); font-weight: var(--weight-bold); margin: 0 0 var(--space-1); }
 .subtopic > p { font-size: var(--text-sm); color: var(--muted); margin: 0; line-height: var(--leading-relaxed); }
 
 /* Tip, Warn, DYK, See-also */

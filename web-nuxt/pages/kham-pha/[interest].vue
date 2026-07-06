@@ -43,6 +43,7 @@
     </div>
 
     <section class="block reveal" aria-label="Duyệt tất cả">
+    <h2 class="sr-only">Duyệt tất cả {{ interestMeta.label.toLowerCase() }}</h2>
     <div class="controls">
       <p class="control-label">Khu vực</p>
       <div class="chip-row wrap-mobile" role="group" aria-label="Lọc theo khu vực">

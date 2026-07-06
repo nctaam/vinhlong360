@@ -708,7 +708,10 @@ a.thread-author:hover { color: var(--primary-fg); }
 .stop-time-input:focus, .stop-note-input:focus { outline: none; border-color: var(--primary-fg); box-shadow: var(--focus-ring); }
 
 .saved-plans { margin-top: var(--space-8); }
-.saved-plans h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); }
+/* h2 covers tao-lich-trinh.vue (WCAG 1.3.1 fix: was h3 with no page h2 to nest
+   under); h3 kept for any other caller nesting this under a real h2. Same
+   size/weight/margin regardless of level so the level bump has no visual effect. */
+.saved-plans h2, .saved-plans h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); }
 .saved-plan-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg, 16px); margin-bottom: var(--space-2); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s; }
 .saved-plan-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .saved-plan-item:active { transform: scale(.97); transition-duration: .08s; }
@@ -731,7 +734,10 @@ a.thread-author:hover { color: var(--primary-fg); }
 .route-leg-info { font-size: .82rem; color: var(--primary-fg); font-weight: 600; background: var(--bg-warm); padding: 3px var(--space-3); border-radius: var(--radius-full); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
 .route-leg-info:hover { background: var(--bg-alt); transform: scale(1.03); }
 .route-map-section { margin-top: var(--space-6); }
-.route-map-section h3 { font-size: 1.05rem; margin: 0 0 var(--space-3); }
+/* h2 covers tao-lich-trinh.vue (WCAG 1.3.1 fix: was h3 with no page h2 to nest
+   under); h3 kept for lich-trinh/[id].vue, which nests this under its own h2
+   "Lịch trình chi tiết". Same size/margin regardless of level. */
+.route-map-section h2, .route-map-section h3 { font-size: 1.05rem; margin: 0 0 var(--space-3); }
 .route-map { height: 340px; border-radius: var(--radius); border: .5px solid var(--line); z-index: 0; }
 .route-marker .rm-num { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: var(--text-on-dark, #fff); font-weight: 800; font-size: .8rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--white, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.3); }
 
