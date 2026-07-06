@@ -51,11 +51,6 @@
         <button type="button" v-for="m in transportModes" :key="m.value" :class="['chip', { active: transportMode === m.value }]" :aria-pressed="transportMode === m.value" @click="switchMode(m.value)">
           {{ m.icon }} {{ m.label }}
         </button>
-        <div v-if="routeResult" class="route-total">
-          {{ formatDistance(routeResult.totalDistance) }} · {{ formatDuration(routeResult.totalDuration) }}
-        </div>
-        <div v-if="routeLoading" class="route-total route-loading">Đang tính...</div>
-        <div v-if="routeError && !routeLoading" class="route-total" role="status">Chưa tính được lộ trình. <button type="button" class="chip" @click="computeRoute">Thử lại</button></div>
       </div>
     </ClientOnly>
 
@@ -103,6 +98,13 @@
     <ClientOnly>
       <div v-if="stopsWithCoords.length >= 2" class="route-map-section reveal">
         <h3>Bản đồ lộ trình</h3>
+        <!-- declutter-3 T4: route-total dời từ panel transport-mode xuống đây —
+             số liệu lộ trình đứng cạnh bản đồ, hết tranh chỗ với chips phương tiện -->
+        <div v-if="routeResult" class="route-total">
+          {{ formatDistance(routeResult.totalDistance) }} · {{ formatDuration(routeResult.totalDuration) }}
+        </div>
+        <div v-if="routeLoading" class="route-total route-loading">Đang tính...</div>
+        <div v-if="routeError && !routeLoading" class="route-total" role="status">Chưa tính được lộ trình. <button type="button" class="chip" @click="computeRoute">Thử lại</button></div>
         <div class="route-map-wrap">
           <div v-if="routeLoading" class="route-map-loading" role="status">🗺️ Đang vẽ lộ trình…</div>
           <div ref="routeMapEl" class="route-map"></div>
@@ -699,7 +701,8 @@ if (itinerary.value && !itinerary.value.error) {
 @keyframes routePulse { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
 /* Route total: prominent floating summary badge, pinned right */
 .route-total {
-  margin-left: auto;
+  display: inline-block;
+  margin: 0 0 var(--space-3);
   font-size: var(--text-sm);
   color: var(--primary-fg);
   font-weight: var(--weight-bold);
