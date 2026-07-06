@@ -108,36 +108,21 @@
         <NuxtLink class="see-all" to="/su-kien">Xem lịch →</NuxtLink>
       </div>
 
-      <div v-if="upcomingEvents.length" class="happening-feature">
-        <NuxtLink :to="entityPath(upcomingEvents[0].id)" class="event-hero">
-          <div class="eh-date">
-            <span class="eh-day">{{ formatEventDay(upcomingEvents[0]) }}</span>
-            <span class="eh-month">{{ formatEventMonth(upcomingEvents[0]) }}</span>
+      <!-- declutter-3 T16 (B1-2): event-hero đã bỏ — event #1 sống ở decision card
+           "Có lịch gần nhất"; 3 mini giữ nhịp lịch, không lặp -->
+      <div v-if="upcomingEvents.length > 1" class="happening-rest">
+        <NuxtLink v-for="ev in upcomingEvents.slice(1, 4)" :key="ev.id" :to="entityPath(ev.id)" class="event-mini">
+          <div class="ec-date ec-date-sm">
+            <span class="ec-day">{{ formatEventDay(ev) }}</span>
+            <span class="ec-month">{{ formatEventMonth(ev) }}</span>
           </div>
-          <div class="eh-body">
-            <span class="eh-cat"><IconLine :name="upcomingEvents[0].attributes?.category === 'le-hoi' ? 'lantern' : 'calendar'" /> {{ upcomingEvents[0].attributes?.category === 'le-hoi' ? 'Lễ hội' : 'Sự kiện' }}</span>
-            <h3>{{ upcomingEvents[0].name }}</h3>
-            <span v-if="upcomingEvents[0].attributes?.lunar_date" class="eh-lunar"><IconLine name="moon" /> {{ upcomingEvents[0].attributes.lunar_date }}</span>
-            <span v-if="upcomingEvents[0].days_until != null" class="eh-countdown" :class="{ 'eh-today': upcomingEvents[0].days_until === 0 }">
-              <span v-if="upcomingEvents[0].days_until === 0" class="ec-live-dot" aria-hidden="true"></span>
-              {{ upcomingEvents[0].days_until === 0 ? 'Hôm nay!' : upcomingEvents[0].days_until === 1 ? 'Ngày mai' : `Còn ${upcomingEvents[0].days_until} ngày` }}
+          <div class="ec-info">
+            <h3>{{ ev.name }}</h3>
+            <span v-if="ev.days_until != null" class="ec-countdown" :class="{ 'ec-today': ev.days_until === 0 }">
+              {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
             </span>
           </div>
         </NuxtLink>
-        <div v-if="upcomingEvents.length > 1" class="happening-rest">
-          <NuxtLink v-for="ev in upcomingEvents.slice(1, 4)" :key="ev.id" :to="entityPath(ev.id)" class="event-mini">
-            <div class="ec-date ec-date-sm">
-              <span class="ec-day">{{ formatEventDay(ev) }}</span>
-              <span class="ec-month">{{ formatEventMonth(ev) }}</span>
-            </div>
-            <div class="ec-info">
-              <h3>{{ ev.name }}</h3>
-              <span v-if="ev.days_until != null" class="ec-countdown" :class="{ 'ec-today': ev.days_until === 0 }">
-                {{ ev.days_until === 0 ? 'Hôm nay!' : ev.days_until === 1 ? 'Ngày mai' : `Còn ${ev.days_until} ngày` }}
-              </span>
-            </div>
-          </NuxtLink>
-        </div>
       </div>
 
       <div v-if="seasonal.length" class="happening-section">
@@ -1175,41 +1160,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 /* ═══════════════════════════════════════════════════
    "ĐANG DIỄN RA" — events + seasonal
    ═══════════════════════════════════════════════════ */
-.happening-feature { display: grid; grid-template-columns: 1.5fr 1fr; gap: var(--space-4); align-items: stretch; }
-@media (max-width: 760px) { .happening-feature { grid-template-columns: 1fr; } }
-.event-hero {
-  display: flex; align-items: center; gap: var(--space-5);
-  padding: var(--space-6); border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(var(--primary-rgb), .96) 0%, rgba(var(--accent-rgb), .88) 100%);
-  color: var(--text-on-dark, #fff); text-decoration: none; box-shadow: var(--shadow-md);
-  transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo);
-  position: relative; overflow: hidden; isolation: isolate;
-}
-.event-hero::before {
-  content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 45%; z-index: -1;
-  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,.16) 50%, transparent 100%);
-  transform: translateX(0) skewX(-14deg);
-  animation: event-sheen 6.5s var(--ease-in-out) 1.2s infinite;
-  will-change: transform;
-}
-@keyframes event-sheen {
-  0%   { transform: translateX(0) skewX(-14deg); }
-  55%  { transform: translateX(420%) skewX(-14deg); }
-  100% { transform: translateX(420%) skewX(-14deg); }
-}
-.event-hero:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-.event-hero:active { transform: scale(.99); transition-duration: .1s; }
-.event-hero:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 3px; }
-.eh-date { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 88px; padding: var(--space-4); background: rgba(255,255,255,.2); border-radius: var(--radius-md); flex-shrink: 0; }
-.eh-day { font-size: var(--text-4xl); font-weight: var(--weight-extrabold); line-height: 1; font-variant-numeric: tabular-nums; }
-.eh-month { font-size: var(--text-sm); font-weight: var(--weight-semibold); opacity: .92; }
-.eh-body { min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-.eh-cat { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .04em; opacity: .9; }
-.eh-body h3 { margin: var(--space-1) 0; font-size: var(--text-2xl); font-weight: var(--weight-bold); letter-spacing: -.01em; line-height: var(--leading-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.eh-lunar { font-size: var(--text-sm); opacity: .9; }
-.eh-countdown { align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; margin-top: var(--space-1); padding: var(--space-1) var(--space-3); background: rgba(255,255,255,.22); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: var(--weight-bold); }
-.eh-today { background: rgba(255,255,255,.32); }
-.happening-rest { display: flex; flex-direction: column; gap: var(--space-2); justify-content: center; }
+/* declutter-3 T16 (B1-2): event-hero + .eh-* đã xoá; minis đứng riêng thành hàng 3 cột */
+.happening-rest { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
+@media (max-width: 760px) { .happening-rest { grid-template-columns: 1fr; } }
 .event-mini { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); min-height: 48px; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
 .event-mini:hover { border-color: var(--primary-fg); transform: translateX(2px); }
 .ec-date-sm { min-width: 46px; padding: var(--space-2); }
@@ -1226,8 +1179,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   background: rgba(154, 109, 30, .08); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full);
 }
 .ec-today { color: var(--error); }
-.ec-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--error); animation: pulse-dot 1.5s var(--ease-in-out) infinite; }
-@keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.7); } }
 .happening-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--primary-fg); margin: var(--space-4) 0 var(--space-2); }
 .dark .happening-label { color: var(--primary-fg-strong); }
 .happening-section { margin-top: var(--space-1); }
@@ -1414,11 +1365,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   .home .hero-kenburns { animation: none; transform: none; }
   html.js .home .hero-feature { opacity: 1; transform: none; animation: none; }
   .hf-card:hover { transform: none; }
-  .event-hero::before { animation: none; opacity: 0; }
-  .event-hero:hover, .event-mini:hover { transform: none; }
+  .event-mini:hover { transform: none; }
   .cm-card:hover, .cm-card:active { transform: none; }
   .cm-card:hover .cm-img img { transform: none; }
-  .ec-live-dot { animation: none; }
   .sk-heading { animation: none; }
   .spotlight:hover .spot-visual { transform: none; }
   .dish-item:hover, .dish-item:active { transform: none; }
