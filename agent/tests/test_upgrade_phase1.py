@@ -8,34 +8,43 @@ import pytest
 
 class TestSourceFreshness:
 
+    # P0-6: freshness_status now derives from verifiedAt (real field-verification
+    # date), NOT updatedAt (import timestamp). Fixtures updated to verifiedAt.
     def test_build_source_freshness_fresh(self):
         from datetime import datetime, timezone, timedelta
         from public_api import _build_source_freshness
         entity = {
-            "updatedAt": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat(),
+            "verifiedAt": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat(),
             "source": {"title": "Test", "url": "https://example.com"},
         }
         result = _build_source_freshness(entity)
         assert result["freshness_status"] == "fresh"
-        assert result["days_since_update"] is not None
-        assert result["days_since_update"] <= 31
+        assert result["days_since_verified"] is not None
+        assert result["days_since_verified"] <= 31
         assert result["source_title"] == "Test"
         assert result["source_url"] == "https://example.com"
 
     def test_build_source_freshness_aging(self):
         from datetime import datetime, timezone, timedelta
         from public_api import _build_source_freshness
-        entity = {"updatedAt": (datetime.now(timezone.utc) - timedelta(days=120)).isoformat()}
+        entity = {"verifiedAt": (datetime.now(timezone.utc) - timedelta(days=120)).isoformat()}
         result = _build_source_freshness(entity)
         assert result["freshness_status"] == "aging"
 
     def test_build_source_freshness_stale(self):
         from datetime import datetime, timezone, timedelta
         from public_api import _build_source_freshness
-        entity = {"updatedAt": (datetime.now(timezone.utc) - timedelta(days=200)).isoformat()}
+        entity = {"verifiedAt": (datetime.now(timezone.utc) - timedelta(days=200)).isoformat()}
         result = _build_source_freshness(entity)
         assert result["freshness_status"] == "stale"
-        assert result["days_since_update"] >= 200
+        assert result["days_since_verified"] >= 200
+
+    def test_updated_at_alone_is_unknown(self):
+        # P0-6: import date must NOT produce a "fresh" badge.
+        from datetime import datetime, timezone, timedelta
+        from public_api import _build_source_freshness
+        entity = {"updatedAt": (datetime.now(timezone.utc) - timedelta(days=5)).isoformat()}
+        assert _build_source_freshness(entity)["freshness_status"] == "unknown"
 
     def test_build_source_freshness_unknown(self):
         from public_api import _build_source_freshness
@@ -56,7 +65,8 @@ class TestSourceFreshness:
     def test_source_freshness_keys_complete(self):
         from public_api import _build_source_freshness
         result = _build_source_freshness({"updatedAt": "2025-01-01"})
-        expected_keys = {"source_title", "source_url", "updated_at", "days_since_update", "freshness_status"}
+        expected_keys = {"source_title", "source_url", "updated_at", "verified_at",
+                         "days_since_update", "days_since_verified", "freshness_status"}
         assert set(result.keys()) == expected_keys
 
 

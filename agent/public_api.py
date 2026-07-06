@@ -99,23 +99,32 @@ def _filter_public_relationships(rels: list[dict]) -> list[dict]:
     return [r for r in rels if _is_public(batch.get(r.get("other_id"), {}))]
 
 
+def _days_since(iso: str | None) -> int | None:
+    if not iso:
+        return None
+    try:
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        return (datetime.now(timezone.utc) - dt).days
+    except (ValueError, TypeError, AttributeError):
+        # naive date (no tz) → aware-minus-naive raises TypeError; treat as unknown
+        return None
+
+
 def _build_source_freshness(entity: dict) -> dict:
-    """Compute source freshness metadata for entity detail response."""
+    """Source freshness for entity detail. P0-6: freshness_status phản ánh NGÀY
+    KIỂM-CHỨNG-THỰC-ĐỊA thật (verifiedAt) — KHÔNG bao giờ dùng updatedAt (timestamp
+    import) — nên re-import hàng loạt không thể giả badge "mới kiểm chứng"."""
     from data_quality import source_info
     src = source_info(entity)
     updated_at = entity.get("updatedAt")
-    days_since = None
-    if updated_at:
-        try:
-            updated_dt = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
-            days_since = (datetime.now(timezone.utc) - updated_dt).days
-        except (ValueError, TypeError):
-            pass
-    if days_since is None:
+    verified_at = entity.get("verifiedAt")
+    days_since_update = _days_since(updated_at)
+    days_since_verified = _days_since(verified_at)
+    if days_since_verified is None:
         status = "unknown"
-    elif days_since <= 90:
+    elif days_since_verified <= 90:
         status = "fresh"
-    elif days_since <= 180:
+    elif days_since_verified <= 180:
         status = "aging"
     else:
         status = "stale"
@@ -123,7 +132,9 @@ def _build_source_freshness(entity: dict) -> dict:
         "source_title": src.get("title") or None,
         "source_url": src.get("url") or None,
         "updated_at": updated_at,
-        "days_since_update": days_since,
+        "verified_at": verified_at,
+        "days_since_update": days_since_update,
+        "days_since_verified": days_since_verified,
         "freshness_status": status,
     }
 

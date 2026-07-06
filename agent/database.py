@@ -1626,8 +1626,8 @@ def _normalize_entity_timestamps(d: dict) -> dict:
         coerced = _coerce_iso_date(explicit_verified)
         if coerced:
             d["verifiedAt"] = coerced
-    elif not d.get("verifiedAt") and d.get("updatedAt"):
-        d["verifiedAt"] = d["updatedAt"]
+    # P0-6: KHÔNG fallback verifiedAt = updatedAt. updatedAt là timestamp import;
+    # verifiedAt phải phản ánh ngày kiểm-chứng-thực-địa thật (người đặt) hoặc để trống.
 
     return d
 

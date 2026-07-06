@@ -503,12 +503,19 @@ class TestCoerceIsoDate:
 
 
 class TestNormalizeEntityTimestamps:
-    def test_sets_updated_and_verified(self):
+    def test_sets_updated_no_verified_fallback(self):
+        # P0-6: updatedAt is an IMPORT timestamp, not a field-verification date.
+        # verifiedAt must NOT fall back to it — else every page shows a fake
+        # "kiểm chứng thực địa" freshness. (Assertion flipped on purpose.)
         d = {"updatedAt": "2026-06-10", "created_at": "2026-06-09 12:00:00"}
         result = _normalize_entity_timestamps(d)
         assert result["updatedAt"].startswith("2026-06-10")
         assert result["updatedAt"].endswith("Z")
-        assert result["verifiedAt"] == result["updatedAt"]
+        assert result.get("verifiedAt") is None
+
+    def test_no_verifiedAt_fallback_when_only_updatedAt(self):
+        result = _normalize_entity_timestamps({"updatedAt": "2026-06-10"})
+        assert result.get("verifiedAt") is None
 
     def test_fallback_to_created_at(self):
         d = {"created_at": "2026-06-09 12:00:00"}
