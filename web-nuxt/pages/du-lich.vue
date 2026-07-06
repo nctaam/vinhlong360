@@ -65,15 +65,17 @@
 
     <!-- Category sections — season is the connective tissue: "here's what's
          good to do, and here's why now" -->
-    <section v-for="(cat, ci) in categories" :key="cat.type" :class="['block', 'reveal', { band: ci % 2 === 0 }]">
+    <section v-for="(cat, ci) in categories" :key="cat.key" :class="['block', 'reveal', { band: ci % 2 === 0 }]">
       <div class="sediment-head section-head">
         <h2>{{ cat.emoji }} {{ cat.label }}</h2>
-        <button type="button" class="see-all" @click="typeFilter = cat.type; scrollToGrid()">{{ cat.items.length }} kết quả →</button>
+        <div class="see-all-group">
+          <button v-for="f in cat.jumpFilters" :key="f.type" type="button" class="see-all" @click="typeFilter = f.type; scrollToGrid()">{{ f.text }}</button>
+        </div>
       </div>
       <p class="section-desc">{{ cat.desc }}</p>
       <p v-if="cat.seasonNote" class="season-note">{{ cat.seasonNote }}</p>
       <div class="scroll-row" role="region" :aria-label="cat.label" tabindex="0">
-        <EntityCard v-for="e in cat.items.slice(0, 8)" :key="e.id" :entity="e" />
+        <EntityCard v-for="e in cat.items.slice(0, 5)" :key="e.id" :entity="e" />
       </div>
     </section>
 
@@ -326,20 +328,47 @@ function categorySeasonNote(items: Entity[]): string {
     : `Đang đúng mùa — ${name} đang vào lúc đẹp nhất.`
 }
 
+// declutter-3 T15: 7 hàng type → 4 hero + 1 gộp "Tâm linh, lịch sử & thiên nhiên".
+// ACCOMMODATION rơi khỏi rows (đã có /luu-tru + chip đủ 7 loại trong FilterChips grid
+// + mode-dial hero). jumpFilters giữ hành vi filter TỪNG type ở section gộp.
+const HERO_ROW_TYPES = ['experience', 'attraction', 'craft_village', 'dish'] as const
+const MERGED_ROW = {
+  key: 'nature-history',
+  types: ['nature', 'history'] as const,
+  label: 'Tâm linh, lịch sử & thiên nhiên',
+  desc: 'Chùa Khmer, đình làng thời khẩn hoang và những mảng xanh ven sông — lớp trầm tích lặng nhất của vùng đất.',
+}
+
 const categories = computed(() => {
-  return TYPES
-    .map(t => {
-      const items = allEntities.value.filter((e: Entity) => e.type === t)
-      return {
-        type: t,
-        emoji: typeMeta(t).emoji,
-        label: typeMeta(t).label,
-        desc: CATEGORY_DESC[t] || '',
-        items,
-        seasonNote: categorySeasonNote(items),
-      }
+  const byType = (t: string) => allEntities.value.filter((e: Entity) => e.type === t)
+  const sections = HERO_ROW_TYPES.map(t => {
+    const items = byType(t)
+    return {
+      key: t as string,
+      emoji: typeMeta(t).emoji,
+      label: typeMeta(t).label,
+      desc: CATEGORY_DESC[t] || '',
+      items,
+      seasonNote: categorySeasonNote(items),
+      jumpFilters: [{ type: t as string, text: `${items.length} kết quả →` }],
+    }
+  })
+  const mergedItems = MERGED_ROW.types.flatMap(byType)
+  if (mergedItems.length) {
+    sections.push({
+      key: MERGED_ROW.key,
+      emoji: typeMeta('nature').emoji,
+      label: MERGED_ROW.label,
+      desc: MERGED_ROW.desc,
+      items: mergedItems,
+      seasonNote: categorySeasonNote(mergedItems),
+      jumpFilters: MERGED_ROW.types
+        .map(t => ({ t: t as string, n: byType(t).length }))
+        .filter(x => x.n > 0)
+        .map(x => ({ type: x.t, text: `${x.n} ${typeMeta(x.t).label.toLowerCase()} →` })),
     })
-    .filter(c => c.items.length > 0)
+  }
+  return sections.filter(c => c.items.length > 0)
 })
 
 function scrollToGrid() {
@@ -458,6 +487,9 @@ useHead(() => ({
 </script>
 
 <style scoped>
+/* declutter-3 T15: section gộp có 2 nút jump (thiên nhiên / lịch sử) */
+.see-all-group { display: inline-flex; gap: var(--space-1); flex-wrap: wrap; justify-content: flex-end; }
+
 .controls {
   position: sticky;
   top: 0;
