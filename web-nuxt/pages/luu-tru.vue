@@ -87,14 +87,12 @@
       <div class="sediment-head"><h2>Ở đâu khi đi Vĩnh Long?</h2></div>
       <div class="editorial-body drop-cap">
         <p>Lưu trú ở Vĩnh Long, Bến Tre và Trà Vinh mang đến những trải nghiệm rất khác so với khách sạn thành phố. Đây là vùng đất của homestay nhà vườn — nơi bạn ngủ trong căn nhà gỗ giữa vườn trái cây, thức dậy với tiếng chim hót và hương hoa bưởi. Nhiều chỗ ở nằm trên cù lao, phải đi đò hoặc xuồng mới tới — chính sự cách biệt ấy tạo nên sự yên tĩnh đặc trưng.</p>
+        <!-- declutter-3 T11: booking-note aside → inline vào mạch editorial (bỏ khung callout) -->
+        <p><strong>Tết Nguyên đán, lễ 30/4–1/5 và hè (tháng 6–8) là mùa cao điểm — đặt trước 1–2 tuần;</strong> ngày thường hầu như luôn còn phòng. Liên hệ thẳng điện thoại hoặc Zalo của chủ nhà thường được giá tốt hơn qua trung gian; đi nhóm đông, nhiều homestay bao trọn gói ăn ở lẫn tour vườn.</p>
       </div>
 
       <!-- declutter-2 A2: interstitial luu-tru SUPPRESS — fact trùng gần nguyên văn
            đoạn editorial ngay trên (duplication-test, như le-hoi). -->
-      <aside class="booking-note">
-        <p class="booking-note-kicker">Sổ tay đặt phòng</p>
-        <p>Tết Nguyên đán, lễ 30/4–1/5 và hè (tháng 6–8) là mùa cao điểm — đặt trước 1–2 tuần. Ngày thường hầu như luôn còn phòng. Liên hệ trực tiếp qua điện thoại hoặc Zalo của chủ nhà thường được giá tốt hơn qua trung gian. Đi nhóm đông, nhiều homestay có giá ưu đãi hoặc bao trọn gói ăn ở + tour vườn.</p>
-      </aside>
     </section>
 
     <!-- Divider -->
@@ -585,26 +583,4 @@ useHead(() => ({
   .region-window:hover .rw-motif { transform: none; }
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   BOOKING NOTE — "sổ tay đặt phòng" callout: reference content gets
-   reference-styling (bordered card), not H2 prose, to keep the page's
-   editorial rhythm from getting bogged down in logistics.
-   ══════════════════════════════════════════════════════════════════════ */
-.booking-note {
-  margin-top: var(--space-6);
-  padding: var(--space-5);
-  border: .5px solid var(--line);
-  border-left: 3px solid var(--tertiary, var(--primary));
-  border-radius: var(--radius-md);
-  background: var(--bg-alt);
-}
-.booking-note-kicker {
-  margin: 0 0 var(--space-2);
-  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase; color: var(--tertiary, var(--primary-fg));
-}
-.booking-note p:last-child {
-  margin: 0; color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-relaxed);
-}
-.dark .booking-note { background: var(--bg-alt); border-color: var(--line); }
 </style>
