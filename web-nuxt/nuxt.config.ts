@@ -73,6 +73,14 @@ export default defineNuxtConfig({
         { name: 'twitter:image', content: 'https://vinhlong360.vn/img/og-default.jpg' },
       ],
       link: [
+        // Preload the editorial-serif subsets the masthead (LCP element on every page) actually
+        // uses — Vietnamese headings need latin (base glyphs) + vietnamese (accents). Without this
+        // the browser only discovers the @font-face after CSS parse, so the serif h1 renders in the
+        // Palatino fallback then swaps (FOUT flash + metric shift). Only these 2 of the 6 subsets
+        // (skip latin-ext + italic — not above-the-fold on load). `crossorigin` required for the
+        // preload to match the woff2 fetch. Files are stable /fonts/*.woff2 (self-host, not hashed).
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/fraunces-latin.woff2', crossorigin: '' },
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/fraunces-vietnamese.woff2', crossorigin: '' },
         { rel: 'canonical', href: 'https://vinhlong360.vn' },
         { rel: 'preconnect', href: 'https://vinhlong360.vn' },
         { rel: 'dns-prefetch', href: '//vinhlong360.vn' },
