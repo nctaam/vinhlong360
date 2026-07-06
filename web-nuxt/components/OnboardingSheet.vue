@@ -5,8 +5,9 @@
         <div class="onboarding-sheet" role="dialog" aria-modal="true" aria-label="Chào mừng đến vinhlong360" ref="sheetEl">
           <button type="button" class="sheet-close" aria-label="Đóng" @click="dismiss">&times;</button>
           <div class="sheet-header">
-            <span class="sheet-emoji" aria-hidden="true">{{ ob.emoji }}</span>
-            <h2>{{ ob.title }}</h2>
+            <span class="sheet-emoji-chip" aria-hidden="true"><span class="sheet-emoji">{{ ob.emoji }}</span></span>
+            <h2 class="sheet-title">{{ ob.title }}</h2>
+            <span class="sheet-rule" aria-hidden="true"></span>
             <p>{{ ob.intro }}</p>
           </div>
           <div class="sheet-features">
@@ -52,3 +53,47 @@ function dismiss() {
   localStorage.setItem(LS_ONBOARDING, '1')
 }
 </script>
+
+<style scoped>
+/* Editorial reskin layered on top of the shared .onboarding-* rules in
+   assets/css/components.css (untouched — this component is their sole consumer,
+   so scoped rules here safely take precedence for this instance only).
+   Warm serif welcome + emoji-in-chip per the narrative system voice guide. */
+
+/* Emoji-in-chip, not bare — quiet phù-sa-tinted disc instead of a floating glyph */
+.sheet-emoji-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-3);
+  border-radius: var(--radius-full, 999px);
+  background: var(--bg-warm);
+}
+.sheet-emoji {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 0;
+  line-height: 1;
+}
+.dark .sheet-emoji-chip { background: rgba(255, 255, 255, 0.06); }
+
+/* Warm serif welcome title */
+.sheet-title {
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  letter-spacing: -.005em;
+}
+
+/* Tri-province hairline under the title — the card-scale sediment tick, quiet */
+.sheet-rule {
+  display: block;
+  width: 30px;
+  height: 2px;
+  border-radius: 2px;
+  margin: 0 auto var(--space-3);
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .sheet-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+</style>

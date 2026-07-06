@@ -23,12 +23,12 @@
           @click="navigate(item)"
           @mouseenter="active = i"
         >
-          <span class="cmd-icon">{{ item.icon }}</span>
+          <span class="cmd-icon-chip" aria-hidden="true"><span class="cmd-icon">{{ item.icon }}</span></span>
           <span class="cmd-label">{{ item.label }}</span>
           <span class="cmd-hint">{{ item.hint }}</span>
         </button>
         <div v-if="!results.length && query" class="cmd-empty">
-          <span>Không tìm thấy "{{ query }}"</span>
+          <span class="cmd-empty-query">Không tìm thấy "{{ query }}"</span>
           <span class="cmd-empty-hint">Thử: Entities, Kiểm duyệt, Users, Báo cáo…</span>
         </div>
       </div>
@@ -120,21 +120,46 @@ defineExpose({ open })
 
 <style scoped>
 .cmd-overlay { position: fixed; inset: 0; z-index: var(--z-lightbox); background: rgba(0,0,0,.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; }
-.cmd-palette { width: min(540px, 90vw); background: var(--bg, #fff); border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.2); overflow: hidden; }
+.cmd-palette {
+  width: min(540px, 90vw);
+  background: var(--bg, #fff);
+  border: .5px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  overflow: hidden;
+}
 .cmd-input { width: 100%; padding: 14px var(--space-5); border: none; outline: none; font-size: 1rem; background: transparent; color: var(--ink); }
 .cmd-input:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .cmd-input::placeholder { color: var(--muted); }
 .cmd-results { max-height: 360px; overflow-y: auto; border-top: .5px solid var(--line); }
-.cmd-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px var(--space-5); border: none; background: none; cursor: pointer; text-align: left; font: inherit; color: var(--ink); transition: background .15s var(--ease-out); }
-.cmd-item.active { background: rgba(var(--blue-rgb),.08); }
+.cmd-item {
+  position: relative;
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px var(--space-5); border: none; background: none; cursor: pointer; text-align: left; font: inherit; color: var(--ink); transition: background .15s var(--ease-out);
+}
+/* Active row: tri-province hairline accent instead of a flat colour wash — museum-label
+   register consistent with the Story Card rule, not an app-selection tint. */
+.cmd-item.active { background: rgba(var(--blue-rgb),.06); }
+.cmd-item.active::before {
+  content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 2px; border-radius: 2px;
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .cmd-item.active::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .cmd-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
-.cmd-icon { font-size: 1.1rem; flex-shrink: 0; width: 24px; text-align: center; }
+.cmd-icon-chip {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: var(--radius-full, 999px);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface-container, rgba(0,0,0,.04));
+}
+.dark .cmd-icon-chip { background: rgba(255,255,255,.06); }
+.cmd-icon { font-size: .95rem; line-height: 1; }
 .cmd-label { font-weight: 500; flex: 1; }
-.cmd-hint { font-size: .78rem; color: var(--muted); }
+.cmd-hint { font-size: .72rem; text-transform: uppercase; letter-spacing: var(--tracking-caps, .06em); color: var(--muted); }
 .cmd-empty { padding: var(--space-5); text-align: center; color: var(--muted); font-size: .9rem; display: flex; flex-direction: column; gap: 6px; }
+.cmd-empty-query { font-family: var(--font-editorial); }
 .cmd-empty-hint { font-size: .75rem; opacity: .6; }
 .cmd-footer { padding: var(--space-2) var(--space-5); border-top: .5px solid var(--line); font-size: .8rem; color: var(--muted); }
 .cmd-footer kbd { background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 4px; font-family: inherit; font-size: .75rem; }
+.dark .cmd-footer kbd { background: rgba(255,255,255,.08); }
 .cmd-fade-enter-active, .cmd-fade-leave-active { transition: opacity .15s; }
 .cmd-fade-enter-from, .cmd-fade-leave-to { opacity: 0; }
 /* dark overrides for .cmd-palette in dark-overrides.css */

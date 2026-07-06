@@ -51,12 +51,13 @@ function goToSlide(idx: number) {
 <template>
   <!-- No images: placeholder -->
   <div v-if="!images.length" class="pg-empty" role="img" :aria-label="alt">
+    <span class="pg-empty-grain" aria-hidden="true"></span>
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
       <rect width="48" height="48" rx="8" fill="currentColor" opacity="0.08"/>
       <path d="M16 32l6-8 4 5 6-10 6 13H10z" fill="currentColor" opacity="0.2"/>
       <circle cx="18" cy="18" r="3" fill="currentColor" opacity="0.25"/>
     </svg>
-    <span class="pg-empty-text">Chưa có ảnh</span>
+    <span class="pg-empty-text">Chưa có ảnh cho nơi này</span>
   </div>
 
   <!-- Single image -->
@@ -88,7 +89,7 @@ function goToSlide(idx: number) {
     </div>
     <button v-if="images.length > 1" type="button" class="pg-show-all" @click="openLightbox(0)">
       <span class="pg-show-icon" aria-hidden="true">&#128247;</span>
-      Xem {{ images.length }} ảnh
+      Xem trọn bộ {{ images.length }} ảnh
     </button>
   </div>
 
@@ -125,11 +126,14 @@ function goToSlide(idx: number) {
 </template>
 
 <style scoped>
-/* Placeholder */
+/* Placeholder — phù-sa treatment: gradient wash + grain overlay, same restraint as
+   the Story Card cover placeholder (anti-slop: flat gradient alone reads as unfinished). */
 .pg-empty {
+  position: relative;
   aspect-ratio: var(--gallery-main-ratio);
   width: 100%;
   border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
   background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.08), rgba(var(--secondary-rgb), 0.08));
   display: flex;
   flex-direction: column;
@@ -138,7 +142,13 @@ function goToSlide(idx: number) {
   gap: var(--space-2);
   color: var(--muted);
 }
-.pg-empty-text { font-size: var(--text-sm); }
+.pg-empty-grain {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: var(--grain); background-size: 120px 120px; opacity: .05;
+}
+.dark .pg-empty-grain { opacity: .08; }
+.pg-empty svg, .pg-empty-text { position: relative; z-index: 1; }
+.pg-empty-text { font-family: var(--font-editorial); font-size: var(--text-sm); }
 
 /* Single image */
 .pg-single { width: 100%; }
@@ -217,7 +227,7 @@ function goToSlide(idx: number) {
 }
 .pg-thumb:hover .pg-thumb-img { transform: scale(var(--img-hover-scale)); }
 
-/* "Xem X ảnh" pill */
+/* "Xem trọn bộ N ảnh" pill — hairline museum-label register, not an app badge */
 .pg-show-all {
   position: absolute;
   bottom: var(--space-3);
@@ -307,6 +317,7 @@ function goToSlide(idx: number) {
     color: var(--text-on-dark, #fff);
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold, 600);
+    font-variant-numeric: tabular-nums;
   }
 }
 .dark .pg-show-all {
