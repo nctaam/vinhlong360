@@ -1,14 +1,16 @@
 <template>
   <section v-if="hasContent" class="kbyg reveal">
-    <h2 class="kbyg-title">
-      <span class="kbyg-icon" aria-hidden="true">🎒</span>
-      Biết trước khi đi
-    </h2>
+    <div class="sediment-head kbyg-head">
+      <h2 class="kbyg-title">
+        <span class="emoji-chip" aria-hidden="true">🎒</span>
+        Biết trước khi đi
+      </h2>
+    </div>
 
     <!-- Amenity badges -->
     <div v-if="amenities.length" class="kbyg-badges">
       <span v-for="b in amenities" :key="b.key" class="kbyg-badge" :title="b.label">
-        <span class="kbyg-badge-icon" aria-hidden="true">{{ b.icon }}</span>
+        <span class="kbyg-badge-icon emoji-chip" aria-hidden="true">{{ b.icon }}</span>
         <span class="kbyg-badge-text">{{ b.label }}</span>
       </span>
     </div>
@@ -16,21 +18,21 @@
     <!-- Golden hours -->
     <div v-if="goldenHours || peakDays" class="kbyg-golden">
       <div v-if="goldenHours" class="kbyg-golden-item">
-        <span class="kbyg-golden-icon" aria-hidden="true">⏰</span>
+        <span class="kbyg-golden-icon emoji-chip" aria-hidden="true">⏰</span>
         <div>
           <strong>Giờ vàng</strong>
           <span>{{ goldenHours }}</span>
         </div>
       </div>
       <div v-if="peakDays" class="kbyg-golden-item">
-        <span class="kbyg-golden-icon" aria-hidden="true">📅</span>
+        <span class="kbyg-golden-icon emoji-chip" aria-hidden="true">📅</span>
         <div>
           <strong>Ngày đông</strong>
           <span>{{ peakDays }}</span>
         </div>
       </div>
       <div v-if="crowdLevel" class="kbyg-golden-item">
-        <span class="kbyg-golden-icon" aria-hidden="true">👥</span>
+        <span class="kbyg-golden-icon emoji-chip" aria-hidden="true">👥</span>
         <div>
           <strong>Mức đông</strong>
           <span>{{ crowdLevel }}</span>
@@ -41,14 +43,14 @@
     <!-- Tips -->
     <div v-if="tips.length" class="kbyg-tips">
       <div v-for="(tip, i) in tips" :key="i" class="kbyg-tip">
-        <span class="kbyg-tip-icon" aria-hidden="true">💡</span>
+        <span class="kbyg-tip-icon emoji-chip" aria-hidden="true">💡</span>
         <span>{{ tip }}</span>
       </div>
     </div>
 
     <!-- Checklist -->
     <div v-if="checklist.length" class="kbyg-checklist">
-      <h3 class="kbyg-checklist-title"><span aria-hidden="true">🧳</span> Nên chuẩn bị</h3>
+      <h3 class="kbyg-checklist-title"><span class="emoji-chip" aria-hidden="true">🧳</span> Nên chuẩn bị</h3>
       <ul class="kbyg-check-list">
         <li v-for="(item, i) in checklist" :key="i" class="kbyg-check-item">
           <span class="kbyg-check-box" aria-hidden="true">☐</span>
@@ -136,20 +138,46 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 </script>
 
 <style scoped>
+/* Editorial frame: hairline + faint grain replaces the flat tinted-box
+   idiom — reads as a printed sidebar note, not an app info-card. Grain
+   sits on its own low-opacity layer (matches EntityCard.vue/PhotoGallery.vue
+   convention) rather than tiling at full strength against --card. */
 .kbyg {
+  position: relative;
   margin: var(--space-6) 0;
   padding: var(--space-5);
-  background: linear-gradient(135deg, rgba(var(--blue-rgb), .04), rgba(var(--secondary-rgb), .04));
-  border: 1px solid rgba(var(--blue-rgb), .12);
-  border-radius: 16px;
+  background: var(--card, var(--bg));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
+.kbyg::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: var(--grain); background-size: 120px 120px; opacity: .05;
+}
+.kbyg-head, .kbyg-badges, .kbyg-golden, .kbyg-tips, .kbyg-checklist { position: relative; z-index: 1; }
+.kbyg-head { margin: 0 0 var(--space-4); }
 .kbyg-title {
   display: flex; align-items: center; gap: var(--space-2);
-  font-size: 1.1rem; font-weight: 700;
-  margin: 0 0 var(--space-4);
+  font-family: var(--font-editorial);
+  font-size: var(--text-lg); font-weight: 600;
+  margin: 0;
   color: var(--ink);
 }
-.kbyg-icon { font-size: 1.3rem; }
+
+/* Emoji-in-chip idiom (replicated locally per-component; see PostCard.vue
+   for the shared source pattern) — never a bare emoji beside serif text. */
+.emoji-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  padding: 0 .15em;
+  border-radius: var(--radius-sm);
+  background: var(--bg-alt);
+  font-size: .9em;
+  line-height: 1.4;
+}
 
 /* Amenity badges */
 .kbyg-badges {
@@ -158,14 +186,15 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 }
 .kbyg-badge {
   display: inline-flex; align-items: center; gap: var(--space-1);
-  padding: 5px 12px; border-radius: 100px;
+  padding: 5px 12px; border-radius: var(--radius-full);
   font-size: .8rem; font-weight: 500;
-  background: rgba(var(--blue-rgb), .08);
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
   color: var(--ink);
-  transition: background .2s, transform .15s ease;
+  transition: border-color .2s var(--ease-out, ease), transform .15s ease;
 }
-.kbyg-badge:hover { background: rgba(var(--blue-rgb), .14); transform: scale(1.04); }
-.kbyg-badge-icon { font-size: .9rem; }
+.kbyg-badge:hover { border-color: var(--amber-600); transform: scale(1.04); }
+.kbyg-badge-icon { font-size: .9rem; background: transparent; padding: 0; min-width: 0; }
 
 /* Golden hours */
 .kbyg-golden {
@@ -174,13 +203,13 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 }
 .kbyg-golden-item {
   display: flex; align-items: flex-start; gap: var(--space-2);
-  padding: 10px 14px; border-radius: 12px;
+  padding: 10px 14px; border-radius: var(--radius-md);
   background: rgba(var(--accent-rgb), .08);
   flex: 1 1 160px; min-width: 160px;
 }
 .kbyg-golden-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
 .kbyg-golden-item strong { display: block; font-size: .78rem; color: var(--muted); margin-bottom: 2px; }
-.kbyg-golden-item span { font-size: .88rem; }
+.kbyg-golden-item span { font-size: .88rem; font-variant-numeric: tabular-nums; }
 
 /* Tips */
 .kbyg-tips {
@@ -189,15 +218,16 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 }
 .kbyg-tip {
   display: flex; align-items: flex-start; gap: var(--space-2);
-  padding: var(--space-2) var(--space-3); border-radius: 10px;
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-md);
   background: rgba(var(--secondary-rgb), .06);
   font-size: .88rem; line-height: 1.45;
 }
 .kbyg-tip-icon { flex-shrink: 0; font-size: .9rem; margin-top: 1px; }
 
 /* Checklist */
-.kbyg-checklist { margin-top: var(--space-3); }
+.kbyg-checklist { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--line); }
 .kbyg-checklist-title {
+  display: flex; align-items: center; gap: var(--space-2);
   font-size: .9rem; font-weight: 600;
   margin: 0 0 var(--space-2);
   color: var(--ink);
@@ -213,12 +243,10 @@ const hasContent = computed(() => amenities.value.length > 0 || goldenHours.valu
 .kbyg-check-box { font-size: .7rem; opacity: .5; }
 
 /* Dark mode */
-.dark .kbyg {
-  background: linear-gradient(135deg, rgba(var(--blue-rgb), .06), rgba(var(--secondary-rgb), .06));
-  border-color: rgba(var(--blue-rgb), .18);
-}
-.dark .kbyg-badge { background: rgba(var(--blue-rgb), .14); }
-.dark .kbyg-badge:hover { background: rgba(var(--blue-rgb), .22); }
+.dark .kbyg { border-color: var(--line); }
+.dark .kbyg::before { opacity: .08; }
+.dark .kbyg-badge { border-color: var(--line); }
+.dark .kbyg-badge:hover { border-color: var(--amber-500); }
 .dark .kbyg-golden-item { background: rgba(var(--accent-rgb), .12); }
 .dark .kbyg-tip { background: rgba(var(--secondary-rgb), .1); }
 

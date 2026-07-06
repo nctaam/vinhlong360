@@ -1,6 +1,9 @@
 <template>
-  <section v-if="loading || posts.length" class="entity-feed">
-    <h3 class="ef-title">Cộng đồng chia sẻ về {{ entityName }}</h3>
+  <section v-if="loading || posts.length" class="entity-feed reveal">
+    <div class="sediment-head ef-head">
+      <h2 class="ef-title">Cộng đồng chia sẻ về {{ entityName }}</h2>
+    </div>
+    <span class="ef-rule" aria-hidden="true"></span>
     <div v-if="loading" class="ef-skeleton">
       <div v-for="i in 2" :key="i" class="ef-sk-item"><div class="ef-sk-avatar"></div><div class="ef-sk-lines"><div class="ef-sk-line w60"></div><div class="ef-sk-line w90"></div><div class="ef-sk-line w40"></div></div></div>
     </div>
@@ -12,8 +15,8 @@
             <span class="ef-author">{{ p.display_name }}</span>
             <p class="ef-text">{{ truncateText(p.content, 120) }}</p>
             <span class="ef-meta">
-              <span v-if="p.rating" class="ef-rating">{{ '⭐'.repeat(p.rating) }}</span>
-              <span v-if="p.like_count">{{ p.like_count }} thích</span>
+              <span v-if="p.rating" class="ef-rating emoji-chip" aria-hidden="true">{{ '⭐'.repeat(p.rating) }}</span>
+              <span v-if="p.like_count" class="ef-likes">{{ p.like_count }} thích</span>
               <time :datetime="p.created_at">{{ timeAgo(p.created_at) }}</time>
             </span>
           </div>
@@ -63,7 +66,41 @@ function hideImage(payload: Event | string) {
 
 <style scoped>
 .entity-feed { margin-top: var(--space-6); }
-.ef-title { font-size: var(--text-lg); font-weight: var(--weight-bold); margin: 0 0 var(--space-4); }
+.ef-head { margin: 0 0 var(--space-2); }
+.ef-title { font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: 600; margin: 0; }
+
+/* Tri-province sediment rule — same card-scale hairline idiom as
+   NearbyEntities.vue's .nb-rule / PostCard.vue's .thread-rule — separates
+   the section head from the list beneath it. */
+.ef-rule {
+  display: block;
+  width: 48px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  margin: 0 0 var(--space-3);
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .ef-rule {
+  background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
+
+/* Emoji-in-chip idiom (replicated locally; see PostCard.vue for the
+   shared source pattern) — houses the rating stars and any bare emoji
+   so they never float directly beside serif/body text. */
+.emoji-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  padding: 0 .3em;
+  border-radius: var(--radius-sm);
+  background: var(--bg-alt);
+  font-size: .85em;
+  line-height: 1.4;
+}
+.ef-rating { letter-spacing: -2px; }
+.ef-likes { font-variant-numeric: tabular-nums; }
+
 .ef-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .ef-link {
   display: flex; gap: var(--space-3); padding: var(--space-3);
@@ -80,8 +117,7 @@ function hideImage(payload: Event | string) {
 .ef-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
 .ef-author { font-weight: var(--weight-semibold); font-size: var(--text-sm); }
 .ef-text { margin: 0; font-size: var(--text-sm); color: var(--ink-secondary, var(--ink)); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.ef-meta { display: flex; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); flex-wrap: wrap; }
-.ef-rating { letter-spacing: -2px; }
+.ef-meta { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); flex-wrap: wrap; }
 .ef-thumb { width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
 .ef-more { display: block; text-align: center; padding: var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--primary-fg); text-decoration: none; border: .5px solid var(--line); border-radius: var(--radius-lg); margin-top: var(--space-2); transition: background .2s; }
 .ef-more:hover { background: rgba(var(--primary-rgb), .04); }
