@@ -202,3 +202,15 @@
 4. `preview_eval` chat-fab (Task 6) — ClientOnly không nằm trong SSR.
 5. Grep orphan cuối: `areaFilterOptions` (le-hoi/su-kien), `countByArea` (lich-trinh/ocop), `userCpJourneyActions`, `region-tagline`, class cross-card thừa — 0 mồ côi ngoài comment giải thích.
 6. Cập nhật mục "KẾT QUẢ THỰC THI" vào plan file + ghi chú vận hành A3b (DB prod) — KHÔNG tự ghi vào ROADMAP ngoài mục Backlog phát sinh nếu có việc mới.
+---
+
+## KẾT QUẢ THỰC THI ĐỢT 2 (2026-07-07)
+
+**8/8 task, 10 commit** (`d9a5ca3..c1533e3`). Điều chỉnh trong thực thi (đều theo nguyên tắc plan):
+- T5: gộp-2-rail SKIP (2 nhánh đã loại trừ nhau qua data — cosmetic, YAGNI).
+- T8: luu-tru chuyển từ inline → SUPPRESS (fact trùng gần nguyên văn đoạn editorial ngay trên — phát hiện khi verify); lich-trinh + su-kien GIỮ NGUYÊN (interstitial có v-if động, inline vào v-once sẽ freeze).
+- T7: prod DB override footer.columns (verified qua /api/site-settings) — cập nhật row qua AdminCP lúc deploy (vận hành, §4).
+
+**Kết đợt:** build ✅ (lần 1 fail transient, lần 2 sạch) · pytest 4213 passed (6 pre-existing PG) · SSR-sweep 10 URL trên server restart: 10/10 (2 false-positive đã giải trình: footer đọc CMS prod; "ngủ giữa vườn trái cây" là summary entity Homestay Út Trinh, không phải interstitial) · orphan-grep sạch (areaFilterOptions còn ở luu-tru/ocop là hợp lệ — đường filter duy nhất của trang).
+
+**GOTCHA MỚI:** Nitro SWR route-rules cache theo PATH, query-string KHÔNG bust — verify sau sửa phải restart dev server hoặc chờ revalidate; đừng tin ?vv= bust như Đợt 1 tưởng.
