@@ -1,17 +1,17 @@
 <template>
   <div class="ai-search-assist">
-    <button type="button" v-if="!aiReply && !loading && !errored" class="ai-toggle-btn" @click="load">✨ Gợi ý AI cho "{{ query }}"</button>
+    <button type="button" v-if="!aiReply && !loading && !errored" class="ai-toggle-btn ai-toggle-btn-emoji" @click="load"><span class="emoji-chip" aria-hidden="true">✨</span> Gợi ý AI cho "{{ query }}"</button>
     <div v-else-if="loading" class="ai-loading ai-loading-padded" role="status" aria-label="Đang tải gợi ý"><div class="spinner spinner-center"></div></div>
     <div v-else-if="errored" class="ai-error" role="status">
       <small>Không tải được gợi ý.</small>
       <button type="button" class="ai-retry-btn" @click="retry">Thử lại</button>
     </div>
     <template v-else>
-      <div class="ai-search-header">
-        <span>Gợi ý nhanh</span>
+      <div class="ai-search-header sediment-head">
+        <span class="ai-search-header-text"><span class="ai-search-h3">Gợi ý nhanh</span><span class="ai-label">AI gợi ý</span></span>
         <button type="button" class="ai-toggle-btn" :aria-expanded="expanded" @click="expanded = !expanded">{{ expanded ? 'Thu gọn' : 'Xem thêm' }}</button>
       </div>
-      <div v-if="expanded" class="ai-search-body" v-html="formatReply(aiReply)"></div>
+      <div v-if="expanded" class="ai-search-body editorial-body" v-html="formatReply(aiReply)"></div>
       <div v-if="suggestions.length && expanded" class="ai-search-suggestions">
         <NuxtLink v-for="s in suggestions" :key="s" :to="`/tim-kiem?q=${encodeURIComponent(s)}`" class="chip">{{ s }}</NuxtLink>
       </div>
@@ -103,6 +103,44 @@ watch(() => props.query, () => {
 </script>
 
 <style scoped>
+/* .ai-search-header's shared rule (components.css) styles its direct <span>
+   children as a bold label (font-weight:700); the heading text here is
+   re-wrapped as .ai-search-h3 (still a <span> — no heading rank existed to
+   preserve) so the sediment serif treatment can override that shared rule
+   (Vue's scoped attribute selector gives these class rules higher
+   specificity than the shared plain-descendant rule — no !important
+   needed). .sediment-head's shared tick targets h2 only, so the tick is
+   re-declared scoped to .ai-search-h3. */
+.ai-search-header-text { display: inline-flex; align-items: center; gap: var(--space-3); }
+.ai-search-h3 {
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  font-size: var(--text-base);
+  letter-spacing: -.01em;
+  position: relative;
+  padding-left: var(--space-4);
+  color: var(--ink);
+}
+.ai-search-h3::before {
+  content: "";
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .ai-search-h3::before {
+  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
+/* Quiet "AI-assisted" label — hairline tag, not a decorative badge; overrides
+   the shared bold-span styling since this is a secondary meta label. */
+.ai-label {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.ai-toggle-btn-emoji { display: inline-flex; align-items: center; gap: var(--space-2); }
 .ai-loading-padded { padding: var(--space-4); }
 .ai-disclaimer { margin: var(--space-2) 0 0; font-size: .75rem; color: var(--text-muted); }
 .ai-error { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3); font-size: var(--text-sm); color: var(--muted); }

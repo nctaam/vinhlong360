@@ -1,7 +1,8 @@
 <template>
   <div v-if="ff('ai_recommendations') && (loading || items.length)" class="ai-recommend">
-    <div class="section-head">
+    <div class="section-head sediment-head ai-rec-head">
       <h2>{{ title }}</h2>
+      <span class="ai-label"><span class="emoji-chip" aria-hidden="true">✨</span> AI gợi ý</span>
     </div>
     <div v-if="loading" class="grid" aria-hidden="true">
       <div v-for="i in skelCount" :key="i" class="ai-rec-skel"></div>
@@ -56,6 +57,21 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* h2 already gets the sediment tick from the shared .sediment-head rule
+   (components.css targets h2 globally) — only the quiet AI label needs
+   scoping here. */
+.ai-rec-head { align-items: baseline; }
+.ai-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
 .ai-rec-skel {
   height: 260px; border-radius: var(--radius); background: var(--bg-warm);
   animation: aiRecPulse 1.5s var(--ease-in-out) infinite;

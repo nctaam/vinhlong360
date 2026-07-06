@@ -1,10 +1,11 @@
 <template>
   <section v-if="visible" class="smart-rec">
-    <div class="section-head">
+    <div class="section-head sediment-head">
       <div class="sh-text">
         <h2>{{ title }}</h2>
         <p v-if="subtitle" class="sh-sub">{{ subtitle }}</p>
       </div>
+      <span class="ai-label"><span class="emoji-chip" aria-hidden="true">✨</span> AI gợi ý</span>
     </div>
 
     <div v-if="loading" class="grid smart-rec-grid" aria-hidden="true">
@@ -66,6 +67,22 @@ function reasonFor(id: string) {
 :global(.cp-page) .smart-rec {
   max-width: none;
   padding: 0;
+}
+/* h2 already gets the sediment tick from the shared .sediment-head rule
+   (components.css targets h2 globally) — only alignment + the quiet AI
+   label need scoping here. */
+.smart-rec .section-head { align-items: baseline; }
+.ai-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .smart-rec-grid {
   align-items: stretch;

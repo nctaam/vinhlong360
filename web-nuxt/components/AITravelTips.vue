@@ -1,8 +1,11 @@
 <template>
   <div class="ai-tips">
-    <button type="button" class="ai-tips-header" @click="toggle" :aria-expanded="expanded">
+    <button type="button" class="ai-tips-header sediment-head" @click="toggle" :aria-expanded="expanded">
       <h3>Gợi ý cho bạn</h3>
-      <span class="ai-toggle">{{ expanded ? '▲' : '▼' }}</span>
+      <span class="ai-tips-header-right">
+        <span class="ai-label"><span class="emoji-chip" aria-hidden="true">✨</span> AI gợi ý</span>
+        <span class="ai-toggle">{{ expanded ? '▲' : '▼' }}</span>
+      </span>
     </button>
     <div v-if="expanded" class="ai-tips-body">
       <div v-if="loading" class="ai-loading"><div class="spinner spinner-center"></div><small>Đang tạo gợi ý…</small></div>
@@ -11,7 +14,7 @@
         <button type="button" class="ai-retry-btn" @click="retryFetch">Thử lại</button>
       </div>
       <template v-else-if="tips">
-        <div class="ai-content" v-html="formatTips(tips)"></div>
+        <div class="ai-content editorial-body" v-html="formatTips(tips)"></div>
         <p class="ai-disclaimer">{{ disclaimerText }}</p>
       </template>
       <div v-else-if="fetched" class="ai-loading"><small>Không tạo được gợi ý lúc này.</small></div>
@@ -84,6 +87,39 @@ function retryFetch() {
 </script>
 
 <style scoped>
+/* .sediment-head's shared rule (components.css) only targets h2; this
+   panel's clickable header uses h3 (heading rank unchanged) — re-declare
+   the same serif + tick treatment scoped to this component only. */
+.ai-tips-header h3 {
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  letter-spacing: -.01em;
+  position: relative;
+  padding-left: var(--space-4);
+  margin: 0;
+}
+.ai-tips-header h3::before {
+  content: "";
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 1.05em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .ai-tips-header h3::before {
+  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
+.ai-tips-header-right { display: inline-flex; align-items: center; gap: var(--space-3); }
+/* Quiet "AI-assisted" label — hairline tag, not a decorative badge. */
+.ai-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
 .spinner-center { margin: 0 auto; }
 :deep(.tip-bullet) { color: var(--primary); }
 .ai-disclaimer { margin: var(--space-2) 0 0; font-size: .75rem; color: var(--text-muted); }
