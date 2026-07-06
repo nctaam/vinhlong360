@@ -392,7 +392,8 @@ const { timeAgo } = useTimeAgo()
 const relatedPosts = ref<any[]>([])
 async function fetchRelated() {
   try {
-    const params = new URLSearchParams({ limit: '4' })
+    // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
+    const params = new URLSearchParams({ limit: '2' })
     const res = await $fetch<any>(`/api/posts/${encodedPostId.value}/related?${params}`)
     relatedPosts.value = res.posts || []
   } catch { /* non-critical */ }
