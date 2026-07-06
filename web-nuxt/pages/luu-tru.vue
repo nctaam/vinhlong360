@@ -141,24 +141,13 @@
     </section>
 
     <!-- Cross-links -->
+    <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ Du-lịch — trùng interstitial links + nav) -->
     <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
-        <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
-          <div><strong>Lịch trình</strong><p>Ghép lưu trú vào kế hoạch đi</p></div>
-        </NuxtLink>
-        <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
-          <div><strong>Du lịch</strong><p>Trải nghiệm bản địa</p></div>
-        </NuxtLink>
-        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
-          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍊</span>
-          <div><strong>Đặc sản</strong><p>Mua quà Vĩnh Long</p></div>
+        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" :no-prefetch="c.noPrefetch" class="cross-card">
+          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
     </section>
@@ -296,6 +285,13 @@ const featured = computed(() => {
 function scrollToGrid() {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
+
+// declutter-2 A1: cross-links 3 card script-driven (bỏ Du-lịch — trùng interstitial links + nav).
+const relatedCatalogs = [
+  { to: '/lich-trinh', icon: '🗓️', label: 'Lịch trình', desc: 'Ghép lưu trú vào kế hoạch đi' },
+  { to: '/ban-do', icon: '🗺️', label: 'Bản đồ', desc: 'Xem trên bản đồ', noPrefetch: true },
+  { to: '/san-pham', icon: '🍊', label: 'Đặc sản', desc: 'Mua quà Vĩnh Long' },
+]
 
 const filtered = computed(() => {
   let list = allEntities.value

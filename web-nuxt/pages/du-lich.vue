@@ -181,25 +181,14 @@
       </button>
     </section>
 
-    <!-- Cross-links -->
+    <!-- Cross-links (declutter-2 A1: 4 hardcode → 3 từ mảng script; bỏ Bản-đồ — đã có
+         ở interstitial links + nav) -->
     <section class="block band catalog-cross reveal" aria-label="Khám phá thêm">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
-        <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍊</span>
-          <div><strong>Đặc sản</strong><p>Sản phẩm theo mùa</p></div>
-        </NuxtLink>
-        <NuxtLink to="/lich-trinh" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🗓️</span>
-          <div><strong>Lịch trình</strong><p>Tuyến đi sẵn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
-          <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/luu-tru" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏡</span>
-          <div><strong>Lưu trú</strong><p>Homestay, nhà vườn</p></div>
+        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
+          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
     </section>
@@ -243,6 +232,14 @@ const heroModes = [
 ]
 const activeModeKey = ref(heroModes[0]!.key)
 const activeMode = computed(() => heroModes.find(m => m.key === activeModeKey.value) || heroModes[0]!)
+
+// declutter-2 A1: cross-links cuối trang — 3 card, script-driven (bỏ Bản-đồ: đã có
+// ở interstitial links + nav chính).
+const relatedCatalogs = [
+  { to: '/san-pham', icon: '🍊', label: 'Đặc sản', desc: 'Sản phẩm theo mùa' },
+  { to: '/lich-trinh', icon: '🗓️', label: 'Lịch trình', desc: 'Tuyến đi sẵn' },
+  { to: '/luu-tru', icon: '🏡', label: 'Lưu trú', desc: 'Homestay, nhà vườn' },
+]
 
 // Bốn cách sống trong ngày — information-scent quad: one click to a
 // pre-filtered grid view (concept §3/§6). Maps to real cultural registers

@@ -159,25 +159,13 @@
       </button>
     </section>
 
-    <!-- Cross-links -->
+    <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ OCOP — trùng teaser-strip trên trang) -->
     <section class="block band catalog-cross reveal" aria-label="Khám phá thêm">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
-        <NuxtLink to="/ocop" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">⭐</span>
-          <div><strong>OCOP</strong><p>{{ ocopCount }} sản phẩm OCOP</p></div>
-        </NuxtLink>
-        <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">📅</span>
-          <div><strong>Theo mùa</strong><p>Lịch mùa vụ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
-          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍲</span>
-          <div><strong>Ẩm thực</strong><p>Món ngon Vĩnh Long</p></div>
+        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
+          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
     </section>
@@ -231,6 +219,14 @@ const allEntities = computed(() => {
 })
 
 const ocopCount = computed(() => allEntities.value.filter((e: Entity) => e.attributes?.ocop).length)
+
+// declutter-2 A1: cross-links 3 card script-driven (bỏ OCOP — teaser-strip trên trang
+// đã là tham chiếu OCOP nổi bật hơn).
+const relatedCatalogs = [
+  { to: '/theo-mua', icon: '📅', label: 'Theo mùa', desc: 'Lịch mùa vụ' },
+  { to: '/du-lich', icon: '🌿', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
+  { to: '/kham-pha/am-thuc', icon: '🍲', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
+]
 const inSeasonCount = computed(() => allEntities.value.filter((e: Entity) => inSeason(e, String(currentMonth))).length)
 
 const seasonalHighlights = computed(() => {

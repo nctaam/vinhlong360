@@ -199,25 +199,13 @@
       </button>
     </section>
 
-    <!-- Cross-links -->
+    <!-- Cross-links (declutter-2 A1: 4→3 script-driven; bỏ Theo-mùa — trùng interstitial links) -->
     <section class="block band reveal catalog-cross">
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
-        <NuxtLink to="/san-pham" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍊</span>
-          <div><strong>Đặc sản</strong><p>Còn {{ otherProductsCount }} đặc sản khác chưa có sao</p></div>
-        </NuxtLink>
-        <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">📅</span>
-          <div><strong>Theo mùa</strong><p>Lịch mùa vụ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/du-lich" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌿</span>
-          <div><strong>Du lịch</strong><p>Trải nghiệm miệt vườn</p></div>
-        </NuxtLink>
-        <NuxtLink to="/kham-pha/am-thuc" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🍲</span>
-          <div><strong>Ẩm thực</strong><p>Món ngon Vĩnh Long</p></div>
+        <NuxtLink v-for="c in relatedCatalogs" :key="c.to" :to="c.to" class="cross-card">
+          <span class="cross-icon" aria-hidden="true">{{ c.icon }}</span>
+          <div><strong>{{ c.label }}</strong><p>{{ c.desc }}</p></div>
         </NuxtLink>
       </div>
     </section>
@@ -292,6 +280,13 @@ const otherProductsCount = computed(() => {
   if (!raw) return 0
   return (raw.entities || []).length - allOcop.value.length
 })
+
+// declutter-2 A1: cross-links 3 card script-driven (bỏ Theo-mùa — trùng interstitial links).
+const relatedCatalogs = computed(() => [
+  { to: '/san-pham', icon: '🍊', label: 'Đặc sản', desc: `Còn ${otherProductsCount.value} đặc sản khác chưa có sao` },
+  { to: '/du-lich', icon: '🌿', label: 'Du lịch', desc: 'Trải nghiệm miệt vườn' },
+  { to: '/kham-pha/am-thuc', icon: '🍲', label: 'Ẩm thực', desc: 'Món ngon Vĩnh Long' },
+])
 
 function getStars(e: Entity): number {
   return parseInt(String(e.attributes?.ocop || ''), 10) || 0
