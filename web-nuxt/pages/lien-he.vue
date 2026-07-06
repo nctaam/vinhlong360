@@ -64,28 +64,6 @@
       </section>
     </div>
 
-    <!-- Cross-links -->
-    <section class="block band catalog-cross reveal sediment-head">
-      <h2>Xem thêm</h2>
-      <div class="cross-links">
-        <NuxtLink to="/cong-dong" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">💬</span>
-          <div><strong>Cộng đồng</strong><p>Hỏi đáp & chia sẻ</p></div>
-        </NuxtLink>
-        <NuxtLink to="/chinh-sach-bao-mat" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🔒</span>
-          <div><strong>Bảo mật</strong><p>Chính sách dữ liệu</p></div>
-        </NuxtLink>
-        <NuxtLink to="/dieu-khoan-su-dung" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">📄</span>
-          <div><strong>Điều khoản</strong><p>Điều khoản sử dụng</p></div>
-        </NuxtLink>
-        <NuxtLink to="/" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏠</span>
-          <div><strong>Trang chủ</strong><p>Về trang chủ</p></div>
-        </NuxtLink>
-      </div>
-    </section>
   </div>
 </template>
 
