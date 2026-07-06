@@ -96,7 +96,7 @@
           </div>
           <div class="footer-nav">
             <div v-for="col in footerColumns" :key="col.title" class="footer-col">
-              <h4>{{ col.title }}</h4>
+              <h2>{{ col.title }}</h2>
               <nav :aria-label="col.title">
                 <NuxtLink v-for="link in col.links" :key="link.to" :to="link.to">{{ link.label }}</NuxtLink>
               </nav>
@@ -332,19 +332,19 @@ onUnmounted(() => {
   opacity: .65;
 }
 /* Footer column headings → serif section labels with a small phù-sa tick */
-.footer-col h4 {
+.footer-col h2 {
   font-family: var(--font-editorial);
   font-weight: 600;
   font-size: var(--text-base);
   position: relative;
   padding-left: var(--space-3);
 }
-.footer-col h4::before {
+.footer-col h2::before {
   content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
   width: 3px; height: 1em; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
 }
-.dark .footer-col h4::before {
+.dark .footer-col h2::before {
   background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 /* Tagline → editorial serif italic, reads like a masthead motto */
