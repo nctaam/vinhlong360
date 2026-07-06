@@ -64,7 +64,6 @@
       <LazyScrollToTop />
       <LazyChatWidget />
       <LazyOnboardingSheet />
-      <LazyJourneyBar />
       <LazyToastContainer />
     </template>
 
