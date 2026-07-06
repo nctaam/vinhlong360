@@ -2,7 +2,10 @@
   <section class="page tb-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Thông báo' }]" />
     <header class="tb-head">
-      <h1>Thông báo</h1>
+      <div class="tb-head-text">
+        <p class="dateline-eyebrow">HỘP THƯ · SỔ TAY CỦA BẠN</p>
+        <h1>Thông báo</h1>
+      </div>
       <button v-if="isLoggedIn && items.some(n => !n.is_read)" type="button" class="btn btn-ghost btn-sm" @click="readAll">Đọc tất cả</button>
     </header>
 
@@ -30,24 +33,39 @@
       <EmptyState v-else-if="!filtered.length" icon="🔔" :title="filter === 'all' ? 'Chưa có thông báo' : 'Không có thông báo loại này'" :message="emptyHint" />
       <template v-else>
         <ul class="tb-list">
-          <li v-for="n in filtered" :key="n.id">
+          <li v-for="n in filtered" :key="n.id" :class="['tb-item', { unread: !n.is_read }]">
+            <NuxtLink
+              v-if="notificationTargetPath(n)"
+              :to="notificationTargetPath(n)!"
+              class="tb-item-link"
+              @click="markReadOnOpen(n)"
+            >
+              <span class="tb-icon-chip" aria-hidden="true">{{ icon(n) }}</span>
+              <span class="tb-body">
+                <span class="tb-item-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
+                <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
+                <time class="tb-time" :datetime="n.created_at">{{ timeAgo(n.created_at) }}</time>
+              </span>
+              <span v-if="!n.is_read" class="tb-dot" role="status" aria-label="Chưa đọc" title="Chưa đọc"></span>
+            </NuxtLink>
             <div
-              :class="['tb-item', { unread: !n.is_read }]"
+              v-else
+              class="tb-item-link"
               role="button"
               tabindex="0"
               @click="open(n)"
               @keydown.enter.prevent="open(n)"
               @keydown.space.prevent="open(n)"
             >
-              <span class="tb-icon" aria-hidden="true">{{ icon(n) }}</span>
+              <span class="tb-icon-chip" aria-hidden="true">{{ icon(n) }}</span>
               <span class="tb-body">
-                <span class="tb-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
+                <span class="tb-item-title">{{ n.title }}<span v-if="n.group_count > 1" class="tb-group"> +{{ n.group_count - 1 }}</span></span>
                 <span v-if="n.body" class="tb-sub">{{ n.body }}</span>
                 <time class="tb-time" :datetime="n.created_at">{{ timeAgo(n.created_at) }}</time>
               </span>
               <span v-if="!n.is_read" class="tb-dot" role="status" aria-label="Chưa đọc" title="Chưa đọc"></span>
-              <button type="button" class="tb-dismiss" aria-label="Xóa thông báo" @click.stop="dismiss(n)">✕</button>
             </div>
+            <button type="button" class="tb-dismiss" aria-label="Xóa thông báo" @click.stop="dismiss(n)">✕</button>
           </li>
         </ul>
         <LoadMoreButton v-if="hasMore" :loading="loadingMore" @load="loadMore" />
@@ -129,17 +147,20 @@ function icon(n: any): string {
   return '🔔'
 }
 
-async function open(n: any) {
-  if (!n.is_read) {
-    const wasRead = n.is_read
-    n.is_read = true
-    try {
-      await $fetch(`/api/notifications/${encodePathId(n.id)}/read`, { method: 'POST', headers: authHeaders() })
-    } catch (e: unknown) {
-      n.is_read = wasRead
-      if (getStatusCode(e) === 401) handleSessionExpired()
-    }
+async function markReadOnOpen(n: any) {
+  if (n.is_read) return
+  const wasRead = n.is_read
+  n.is_read = true
+  try {
+    await $fetch(`/api/notifications/${encodePathId(n.id)}/read`, { method: 'POST', headers: authHeaders() })
+  } catch (e: unknown) {
+    n.is_read = wasRead
+    if (getStatusCode(e) === 401) handleSessionExpired()
   }
+}
+
+async function open(n: any) {
+  await markReadOnOpen(n)
   const target = notificationTargetPath(n)
   if (target) navigateTo(target)
 }
@@ -189,28 +210,60 @@ useHead({
 
 <style scoped>
 .tb-page { max-width: 640px; margin: 0 auto; }
-.tb-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
-.tb-head h1 { margin: 0; }
+.tb-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); gap: var(--space-3); }
+.tb-head-text { min-width: 0; }
+.tb-head h1 { margin: 0; font-family: var(--font-editorial); font-weight: 600; }
+/* Local page masthead eyebrow — small-caps dateline + hairline tick, matches
+   the site's area/ward eyebrow pattern (tai-khoan.vue/cai-dat.vue) but scoped
+   here (not promoted global). */
+.dateline-eyebrow {
+  display: flex; align-items: center; gap: .4rem;
+  font-family: var(--font-sans); font-size: .78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--ink-700);
+  margin: 0 0 .25rem;
+}
+.dateline-eyebrow::before { content: ""; width: 14px; height: 1.5px; background: var(--primary); flex-shrink: 0; }
 .tb-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-.tb-item { display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; text-align: left; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); cursor: pointer; transition: background .2s var(--ease-out), border-color .2s var(--ease-out); }
+/* .tb-item is the card (li) — .tb-item-link is the inner "open notification"
+   affordance (NuxtLink or role=button div). Kept as siblings, not nested,
+   because .tb-dismiss is a real <button>: an <a href> must not contain other
+   interactive content per the HTML spec (see EntityCard's .card-save, which
+   sits alongside its NuxtLink for the same reason), so pulling the dismiss
+   button out avoids invalid nesting and any native-navigation ambiguity. */
+.tb-item { position: relative; display: flex; align-items: flex-start; gap: var(--space-3); width: 100%; padding: var(--space-3); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg); transition: background .2s var(--ease-out), border-color .2s var(--ease-out); }
 .tb-item:hover { background: var(--bg-alt); }
-.tb-item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .tb-item.unread { border-color: var(--primary); background: rgba(var(--primary-rgb), .04); }
-.tb-icon { font-size: 1.25rem; flex-shrink: 0; line-height: 1.4; }
+/* Tri-province sediment tick — left-edge hairline echo of the site-wide
+   river→amber→clay thread (same recipe as EntityCard .card-rule / PostCard
+   .thread-rule), so the notification list ties into the shared system. */
+.tb-item::before {
+  content: ""; position: absolute; left: 3px; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 22px; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.tb-item-link { display: flex; align-items: flex-start; gap: var(--space-3); flex: 1; min-width: 0; text-align: left; text-decoration: none; color: inherit; cursor: pointer; border-radius: var(--radius-sm); }
+.tb-item-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.tb-icon-chip {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
+  font-size: 1.05rem; line-height: 1; background: var(--bg-alt);
+}
+.tb-item.unread .tb-icon-chip { background: rgba(var(--primary-rgb), .12); }
 .tb-body { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
-.tb-title { font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--ink); }
+.tb-item-title { font-size: var(--text-sm); font-family: var(--font-editorial); font-weight: 600; color: var(--ink); }
 .tb-group { font-size: .72rem; font-weight: 700; color: var(--primary); background: rgba(var(--primary-rgb, 33,150,83), .1); padding: 1px 6px; border-radius: 100px; margin-left: var(--space-1); }
 .tb-sub { font-size: var(--text-sm); color: var(--ink-700); }
 .tb-time { font-size: var(--text-xs); color: var(--muted); }
 .tb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: .35rem; }
 .tb-dismiss {
-  flex-shrink: 0; width: 24px; height: 24px; border: none; background: none;
+  flex-shrink: 0; min-width: 44px; min-height: 44px; border: none; background: none;
   color: var(--ink-700); cursor: pointer; font-size: .75rem; border-radius: var(--radius-full);
   opacity: 0; transition: opacity .15s, background .15s, color .15s;
-  display: flex; align-items: center; justify-content: center; margin-top: .1rem;
+  display: flex; align-items: center; justify-content: center; align-self: center;
 }
-.tb-item:hover .tb-dismiss { opacity: 1; }
+.tb-item:hover .tb-dismiss, .tb-dismiss:focus-visible { opacity: 1; }
 .tb-dismiss:hover { background: var(--bg-alt); color: var(--error, #e53e3e); }
+.tb-dismiss:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .tb-guest { margin-top: var(--space-6); }
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }
 .tb-filters::-webkit-scrollbar { display: none; }
@@ -220,11 +273,16 @@ useHead({
 .dark .tb-item { background: var(--bg-alt); border-color: var(--line); }
 .dark .tb-item:hover { background: color-mix(in srgb, var(--bg-alt) 80%, var(--ink) 5%); }
 .dark .tb-item.unread { background: color-mix(in srgb, var(--primary) 8%, var(--bg-alt)); border-color: var(--primary); }
+.dark .tb-item::before { background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
+.dark .tb-icon-chip { background: rgba(255,255,255,.06); }
+.dark .tb-item.unread .tb-icon-chip { background: color-mix(in srgb, var(--primary) 18%, transparent); }
 
 /* ── Mobile ── */
 @media (max-width: 600px) {
   .tb-page { padding: var(--space-4) var(--space-3); }
   .tb-item { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
-  .tb-title { font-size: var(--text-xs); }
+  .tb-item-link { gap: var(--space-2); }
+  .tb-item::before { left: 2px; width: 2px; height: 18px; }
+  .tb-item-title { font-size: var(--text-xs); }
 }
 </style>
