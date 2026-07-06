@@ -80,24 +80,9 @@
       </div>
     </section>
 
-    <!-- Region quick-picks -->
-    <section class="block band reveal">
-      <div class="section-head">
-        <h2 class="sediment-head">Chọn theo khu vực</h2>
-      </div>
-      <div class="quick-picks">
-        <button type="button"
-          v-for="(meta, key) in AREA_META" :key="key"
-          :class="['quick-pick', { active: areaFilter === key }]"
-          :aria-pressed="areaFilter === key"
-          @click="areaFilter = areaFilter === key ? 'all' : (key as string)"
-        >
-          <IconLine :name="meta.icon" class="quick-pick-icon" />
-          <span class="quick-pick-label">{{ meta.name }}</span>
-          <span class="quick-pick-count">{{ countByArea(key as string) }} lịch trình</span>
-        </button>
-      </div>
-    </section>
+    <!-- declutter-2 A5 (chiều ngược): quick-picks khu-vực đã bỏ — trang này trục chính
+         là NHỊP NGÀY (pace-chips); chip-row khu vực trong controls là 1 đường filter
+         khu vực duy nhất. countByArea giữ (hero areaCounts dùng). -->
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">

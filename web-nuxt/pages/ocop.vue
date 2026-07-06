@@ -93,27 +93,8 @@
       </div>
     </section>
 
-    <!-- Region quick-picks (kept, but visually quieter — subordinate to the
-         star ledger above, not equal rank; concept §3 step 4) -->
-    <section class="block band reveal region-picks-subordinate">
-      <div class="section-head">
-        <h2>Chọn theo khu vực</h2>
-      </div>
-      <div class="quick-picks region-quick-picks">
-        <button type="button"
-          v-for="(meta, key) in AREA_META" :key="key"
-          :class="['quick-pick', 'region-pick', { active: areaFilter === key }]"
-          :style="{ '--AREA-rgb': REGION_RGB[key as string] || 'var(--primary-rgb)' }"
-          :aria-pressed="areaFilter === key"
-          @click="areaFilter = areaFilter === key ? 'all' : (key as string); scrollToGrid()"
-        >
-          <span class="quick-pick-icon">{{ meta.emoji }}</span>
-          <span class="quick-pick-label">{{ meta.name }}</span>
-          <span v-if="REGION_TAGLINE[key as string]" class="region-tagline">{{ REGION_TAGLINE[key as string] }}</span>
-          <span class="quick-pick-count">{{ countByArea(key as string) }} sản phẩm</span>
-        </button>
-      </div>
-    </section>
+    <!-- declutter-2 A5: region-picks đã bỏ — lớp discovery thứ 4 trùng FilterChips
+         khu-vực trong controls (nhà của 3 tầng filter sao/khu-vực/tháng). -->
 
     <!-- Interstitial -->
     <CatalogInterstitial
@@ -243,19 +224,6 @@
   </div>
 </template>
 
-<script lang="ts">
-const REGION_RGB: Record<string, string> = {
-  'vinh-long': 'var(--primary-rgb)',
-  'ben-tre': 'var(--secondary-rgb)',
-  'tra-vinh': 'var(--river-rgb)',
-}
-const REGION_TAGLINE: Record<string, string> = {
-  'vinh-long': 'Miệt vườn cam sành',
-  'ben-tre': 'Xứ dừa ngọt lành',
-  'tra-vinh': 'Đặc sản dừa sáp',
-}
-</script>
-
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
@@ -351,10 +319,6 @@ const threeStarHighlights = computed(() =>
 // Wax-seal emblem shows the highest certified tier present in the ledger —
 // falls back to 5 (the program ceiling) if the dataset is still loading.
 const topStarTier = computed(() => starStats.value[0]?.stars || 5)
-
-function countByArea(key: string) {
-  return allOcop.value.filter((e: Entity) => getEntityArea(e) === key).length
-}
 
 function scrollToGrid() {
   nextTick(() => gridSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
@@ -542,24 +506,6 @@ useHead(() => ({
 .honor-roll :deep(.card:hover) {
   box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--secondary-rgb), .2), 0 18px 40px -18px rgba(var(--secondary-rgb), .35);
   transform: translateY(-8px);
-}
-
-/* Premium region quick-picks with geo-provenance accent + tagline */
-.region-quick-picks .region-pick {
-  background: linear-gradient(135deg, rgba(var(--AREA-rgb), .06), transparent);
-}
-.region-quick-picks .region-pick:hover {
-  border-color: rgba(var(--AREA-rgb), .55);
-  box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--AREA-rgb), .3);
-}
-.region-quick-picks .region-pick.active {
-  border-color: rgba(var(--AREA-rgb), .9);
-  background: linear-gradient(135deg, rgba(var(--AREA-rgb), .12), transparent);
-}
-.region-tagline {
-  font-size: var(--text-xs);
-  color: var(--muted);
-  font-style: italic;
 }
 
 /* Filter panel labeled sections — clearer scannable groups (OCOP page only) */
@@ -754,8 +700,6 @@ useHead(() => ({
 .ocop-band[data-stagger="2"].reveal.revealed { animation-delay: .2s; }
 
 /* Region quick-picks visually quieter/subordinate to the star ledger above */
-.region-picks-subordinate .section-head h2 { font-size: var(--text-lg); }
-.region-picks-subordinate { opacity: .92; }
 
 /* Star-filter chip highlight-flash — closes the loop between "I clicked
    5-star" and "I see why the grid changed" (concept §5). */
