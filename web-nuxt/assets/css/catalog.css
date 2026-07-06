@@ -200,7 +200,20 @@
 }
 
 /* ── Cross-links (bottom of catalog pages) ── */
-.catalog-cross h2 { margin-bottom: var(--space-4); }
+/* Editorial: "Khám phá thêm" cross-link head gets serif + phù-sa tick across all 14 catalog pages (audit fix) */
+.catalog-cross h2 {
+  margin-bottom: var(--space-4);
+  font-family: var(--font-editorial); font-weight: 600; letter-spacing: -.01em;
+  position: relative; padding-left: var(--space-3);
+}
+.catalog-cross h2::before {
+  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 1em; border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .catalog-cross h2::before {
+  background: linear-gradient(180deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
 .cross-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-3); }
 .cross-card {
   display: flex; align-items: center; gap: var(--space-3);
