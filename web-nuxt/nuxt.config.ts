@@ -129,6 +129,12 @@ export default defineNuxtConfig({
     public: {
       apiBase,
       ndaMapKey: process.env.NDA_MAP_KEY || 'J2TnJ4JIEP3WTBnFwzVPAxTP7KKfW1OD',
+      // ⚠️ TẠM THỜI — chặn Google index TOÀN SITE trong giai đoạn hoàn thiện nội dung.
+      // Mặc định BẬT (noindex). Khi nội dung đủ chất & sẵn sàng công khai, đặt env
+      // NUXT_PUBLIC_SITE_NOINDEX=false rồi restart (KHÔNG cần đổi code/rebuild) để mở
+      // index — lúc đó cổng chọn-lọc per-page (P0-1 is_index_worthy) tự điều tiết.
+      // Cơ chế: server/middleware/noindex.ts phát X-Robots-Tag khi cờ này bật.
+      siteNoindex: process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false',
     },
   },
 
