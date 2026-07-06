@@ -18,7 +18,7 @@
           {{ post.display_name || post.phone || 'Người dùng' }}
         </NuxtLink>
         <span v-else class="thread-author">{{ post.display_name || 'Người dùng' }}</span>
-        <time class="thread-time" :datetime="post.created_at">{{ timeAgo(post.created_at) }}</time>
+        <time class="thread-time thread-dateline" :datetime="post.created_at">{{ timeAgo(post.created_at) }}</time>
         <button type="button" class="thread-more" aria-label="Tùy chọn bài viết" aria-haspopup="true" :aria-expanded="showMenu" @click="showMenu = !showMenu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
         </button>
@@ -31,7 +31,7 @@
         </Transition>
       </div>
 
-      <div class="thread-meta-row">
+      <div v-if="(post.post_type && post.post_type !== 'share') || post.entity_id" class="thread-meta-row">
         <span v-if="post.post_type && post.post_type !== 'share'" :class="['thread-type-badge', `type-${post.post_type}`]">
           {{ typeLabel }}
         </span>
@@ -39,6 +39,7 @@
           {{ post.entity_name || post.entity_id }}
         </NuxtLink>
       </div>
+      <span v-if="(post.post_type && post.post_type !== 'share') || post.entity_id" class="thread-rule" aria-hidden="true"></span>
 
       <div v-if="post.rating" class="thread-rating" role="img" :aria-label="`${post.rating} trên 5 sao`">
         <span v-for="s in 5" :key="s" :class="['star', { active: s <= post.rating }]" aria-hidden="true">★</span>
@@ -53,10 +54,10 @@
 
       <NuxtLink v-if="post.repost" :to="postPath(post.repost.id)" class="thread-repost-embed">
         <template v-if="post.repost.content">
-          <span class="tre-head">🔁 <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
+          <span class="tre-head"><span class="emoji-chip" aria-hidden="true">🔁</span> <strong>{{ post.repost.author || 'Người dùng' }}</strong></span>
           <span class="tre-content">{{ post.repost.content }}</span>
         </template>
-        <span v-else class="tre-deleted">🔁 Bài viết gốc đã bị xoá</span>
+        <span v-else class="tre-deleted"><span class="emoji-chip" aria-hidden="true">🔁</span> Bài viết gốc đã bị xoá</span>
       </NuxtLink>
 
       <div v-if="post.images?.length" class="thread-images" :class="imgLayoutClass">
@@ -87,8 +88,8 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           </button>
           <div v-if="repostMenu" class="thread-repost-menu" role="menu" aria-label="Đăng lại hoặc trích dẫn" @keydown="onRepostMenuKey">
-            <button type="button" role="menuitem" @click="$emit('repost', post.id); repostMenu = false">🔁 Đăng lại</button>
-            <button type="button" role="menuitem" @click="$emit('quote', post.id); repostMenu = false">✍️ Trích dẫn</button>
+            <button type="button" role="menuitem" @click="$emit('repost', post.id); repostMenu = false"><span class="emoji-chip" aria-hidden="true">🔁</span> Đăng lại</button>
+            <button type="button" role="menuitem" @click="$emit('quote', post.id); repostMenu = false"><span class="emoji-chip" aria-hidden="true">✍️</span> Trích dẫn</button>
           </div>
         </div>
         <button type="button" class="thread-act" aria-label="Chia sẻ" @click="sharePost">
@@ -319,4 +320,72 @@ const { timeAgo } = useTimeAgo()
 
 <style scoped>
 .tre-deleted { font-size: var(--text-sm); color: var(--muted); font-style: italic; }
+
+/* ── Editorial reskin (visual/typographic only — no logic touched) ──
+   Mirrors the shipped Story Card vocabulary (EntityCard.vue: card-dateline /
+   card-rule / font-editorial) so a community post reads as the same
+   publication, not a bolt-on app widget. Restraint: only the author name
+   gets display serif — the body stays plain and scannable. */
+
+/* Author name as quiet display type — a name, not a masthead */
+.thread-author {
+  font-family: var(--font-editorial);
+  font-weight: 600;
+  letter-spacing: -.005em;
+}
+
+/* Dateline — small-caps-ish quiet timestamp, museum-label register */
+.thread-dateline {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+}
+
+/* Tri-province sediment rule — card-scale hairline echo of the site-wide
+   river→amber→clay thread. Only renders when the meta-row above it has
+   content (type badge or linked entity), so plain posts stay clean. */
+.thread-rule {
+  display: block;
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  margin: var(--space-1) 0 var(--space-05);
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .thread-rule {
+  background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
+}
+
+/* Type badge — hairline top-border eyebrow (museum spec-tag) instead of a
+   solid app-badge pill; small-caps wide tracking per narrative-system §2.2. */
+.thread-type-badge {
+  background: none;
+  border-top: 2px solid currentColor;
+  border-radius: 0;
+  padding: var(--space-1) 0 0;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.thread-type-badge.type-review { color: var(--accent-text); }
+.thread-type-badge.type-question { color: var(--primary-fg); }
+.thread-type-badge.type-recommend { color: var(--secondary); }
+.thread-type-badge.type-share { color: var(--tertiary-fg); }
+
+/* Emoji-in-chip — never a bare emoji floating next to text; a small
+   rounded token keeps it decorative rather than reading as a stray glyph.
+   --bg-alt already remaps under .dark (variables.css), so this needs no
+   separate dark override to stay legible. */
+.emoji-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4em;
+  padding: 0 .15em;
+  border-radius: var(--radius-xs);
+  background: var(--bg-alt);
+  font-size: .9em;
+  line-height: 1.4;
+}
 </style>
