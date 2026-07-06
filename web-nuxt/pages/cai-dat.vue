@@ -14,33 +14,6 @@
     <h1 class="settings-title">Cài đặt</h1>
     <p class="settings-dek">Nơi giữ chìa khoá cho hồ sơ của bạn — đổi mật khẩu, bật bảo mật hai lớp, hoặc chọn ai được xem những gì bạn chia sẻ.</p>
 
-    <div class="settings-overview" aria-label="Tổng quan tài khoản">
-      <div class="settings-overview-item">
-        <span class="so-label">Hồ sơ</span>
-        <strong>{{ settingsProfileCompletion }}%</strong>
-        <div class="so-bar" aria-hidden="true"><span :style="{ width: settingsProfileCompletion + '%' }"></span></div>
-      </div>
-      <div class="settings-overview-item">
-        <span class="so-label">Bảo mật</span>
-        <strong>{{ hasPassword ? 'Đã có mật khẩu' : 'Cần đặt mật khẩu' }}</strong>
-        <NuxtLink to="#bao-mat" class="so-link" @click.prevent="setTab('bao-mat')">Kiểm tra</NuxtLink>
-      </div>
-      <div class="settings-overview-item">
-        <span class="so-label">Phiên đăng nhập</span>
-        <strong>{{ sessionsSummary }}</strong>
-        <NuxtLink to="#bao-mat" class="so-link" @click.prevent="setTab('bao-mat')">Quản lý</NuxtLink>
-      </div>
-      <div class="settings-overview-item">
-        <span class="so-label">Thông báo</span>
-        <strong>{{ notifSummary }}</strong>
-        <NuxtLink to="#thong-bao" class="so-link" @click.prevent="setTab('thong-bao')">Tùy chỉnh</NuxtLink>
-      </div>
-      <div class="settings-overview-item">
-        <span class="so-label">Quyền riêng tư</span>
-        <strong>{{ privacySummary }}</strong>
-        <NuxtLink to="#rieng-tu" class="so-link" @click.prevent="setTab('rieng-tu')">Xem</NuxtLink>
-      </div>
-    </div>
     <div class="settings-hash-anchors" aria-hidden="true">
       <span v-for="t in TABS" :id="t.key" :key="`anchor-${t.key}`"></span>
     </div>
@@ -641,17 +614,6 @@ const pwStrength = computed(() => {
 })
 const hasPassword = computed(() => user.value?.has_password === true)
 const hasPasswordKnown = computed(() => typeof user.value?.has_password === 'boolean')
-const settingsProfileCompletion = computed(() => {
-  const checks = [
-    Boolean(displayName.value || fullName.value),
-    Boolean(user.value?.avatar_url),
-    Boolean(user.value?.cover_url),
-    Boolean(bio.value.trim()),
-    Boolean(email.value.trim() || contactInfo.value.trim()),
-  ]
-  return Math.round((checks.filter(Boolean).length / checks.length) * 100)
-})
-
 async function savePassword() {
   if (hasPassword.value && !currentPw.value) {
     showToast('Vui lòng nhập mật khẩu hiện tại', 'error')
@@ -714,13 +676,6 @@ function shortUA(ua: string): string {
   if (ua.includes('Linux')) return 'Linux'
   return ua.slice(0, 30)
 }
-
-const sessionsSummary = computed(() => {
-  if (!tabLoaded.has('bao-mat')) return 'Chưa kiểm tra'
-  if (sessionsLoading.value) return 'Đang kiểm tra'
-  const suffix = hiddenSystemSessions.value ? ` · ẩn ${hiddenSystemSessions.value} phiên hệ thống` : ''
-  return `${sessions.value.length} phiên${suffix}`
-})
 
 async function revokeSession(id: string) {
   try {
@@ -855,12 +810,6 @@ async function loadPrivacy() {
   privacyLoading.value = false
 }
 
-const privacySummary = computed(() => {
-  if (!tabLoaded.has('rieng-tu')) return 'Chưa kiểm tra'
-  const labels: Record<string, string> = { public: 'Công khai', followers: 'Người theo dõi', private: 'Riêng tư' }
-  return labels[privacy.value.profile_visibility] || 'Công khai'
-})
-
 async function setPrivacy(key: string, value: any) {
   const prev = { ...privacy.value }
   ;(privacy.value as any)[key] = value
@@ -939,13 +888,6 @@ async function loadNotifPrefs() {
   } catch { /* defaults stay */ }
   notifPrefsLoading.value = false
 }
-
-const notifSummary = computed(() => {
-  if (!tabLoaded.has('thong-bao')) return 'Chưa kiểm tra'
-  const on = Object.values(notifPrefs.value).filter(v => v === true).length
-  const total = Object.keys(notifPrefs.value).length || 5
-  return `${on}/${total} loại bật`
-})
 
 async function toggleNotifPref(prefKey: string) {
   const prev = notifPrefs.value[prefKey] ?? false
@@ -1114,20 +1056,6 @@ onUnmounted(() => {
 
 .settings-title { font-family: var(--font-editorial); font-weight: 600; font-size: 1.6rem; margin: 0 0 .4rem; }
 .settings-dek { color: var(--ink-700); font-size: .92rem; max-width: 56ch; margin: 0 0 var(--space-5); line-height: var(--leading-relaxed); }
-.settings-overview {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--space-3); margin-bottom: var(--space-5);
-}
-.settings-overview-item {
-  min-height: 112px; padding: 1rem; border: 1px solid var(--line);
-  border-radius: var(--radius-lg); background: var(--card);
-  display: flex; flex-direction: column; gap: .45rem;
-}
-.so-label { color: var(--ink-700); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-.settings-overview-item strong { font-size: 1rem; line-height: 1.25; }
-.so-link { margin-top: auto; color: var(--accent); font-weight: 700; font-size: .82rem; text-decoration: none; }
-.so-bar { height: 7px; border-radius: var(--radius-full); background: var(--bg-alt); overflow: hidden; }
-.so-bar span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .3s var(--ease-out); }
 .settings-hash-anchors { position: relative; height: 0; overflow: hidden; }
 .settings-hash-anchors span { position: absolute; top: -96px; width: 1px; height: 1px; }
 .settings-card, .settings-guest { padding: 1.5rem; }
@@ -1274,13 +1202,10 @@ onUnmounted(() => {
 .dark .notif-pref-item { border-color: var(--line); }
 .dark .notif-pref-item:hover { background: var(--bg-alt); }
 .dark .sf-readonly { background: var(--bg); }
-.dark .settings-overview-item { background: var(--bg-alt); border-color: var(--line); }
-.dark .so-bar { background: var(--bg); }
 
 /* ── Mobile ── */
 @media (max-width: 600px) {
   .settings-page { padding: var(--space-4) var(--space-3); }
-  .settings-overview { grid-template-columns: 1fr; }
   .settings-card, .settings-guest { padding: var(--space-4); }
   .sf-avatar-section { flex-direction: column; align-items: flex-start; }
   .danger-item { flex-direction: column; align-items: flex-start; gap: .5rem; }
