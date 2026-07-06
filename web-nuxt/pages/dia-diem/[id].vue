@@ -402,9 +402,9 @@
           <NuxtLink class="trust-report" :to="reportUrl">Báo sai hoặc bổ sung nguồn</NuxtLink>
         </section>
 
-        <NuxtLink :to="claimUrl" class="ns-action claim-cta">🏷️ {{ ss('labels.detail.cta_claim', 'Đây là cơ sở của tôi — đăng ký quản lý') }}</NuxtLink>
-
-        <NuxtLink class="quality-report" :to="reportUrl">{{ ss('labels.detail.cta_report', 'Báo sai dữ liệu') }}</NuxtLink>
+        <!-- declutter-3 T17 (B5c/D12): đúng 1 kênh Báo sai mỗi trang — trust-card ưu tiên;
+             fallback này chỉ hiện khi entity KHÔNG có nguồn (trust-card ẩn) -->
+        <NuxtLink v-if="!trustVisible" class="quality-report" :to="reportUrl">{{ ss('labels.detail.cta_report', 'Báo sai dữ liệu') }}</NuxtLink>
 
         <NuxtErrorBoundary>
           <ClientOnly>
@@ -424,6 +424,8 @@
           <NuxtLink v-if="entity.type !== 'accommodation'" to="/luu-tru" class="ns-action">🏡 {{ ss('labels.detail.next_find_stay', 'Tìm chỗ ở gần đây') }}</NuxtLink>
         <NuxtLink :to="mapUrl" no-prefetch class="ns-action">🗺️ {{ ss('labels.detail.next_view_map', 'Xem trên bản đồ') }}</NuxtLink>
           <NuxtLink to="/tuyen-duong" class="ns-action">🛤️ {{ ss('labels.detail.next_route', 'Tuyến đường gợi ý') }}</NuxtLink>
+          <!-- declutter-3 T17 (B5e): claim-cta DỜI vào next-steps (di chuyển, không bỏ) -->
+          <NuxtLink :to="claimUrl" class="ns-action claim-cta">🏷️ {{ ss('labels.detail.cta_claim', 'Đây là cơ sở của tôi — đăng ký quản lý') }}</NuxtLink>
         </div>
       </aside>
     </div>
