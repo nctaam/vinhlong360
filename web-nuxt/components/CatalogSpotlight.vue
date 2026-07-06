@@ -6,15 +6,16 @@
         <span class="cspot-icon" v-html="icon" aria-hidden="true" />
       </NuxtLink>
       <div class="cspot-body">
-        <span class="cspot-kicker">{{ meta?.label }} · Nổi bật</span>
-        <h2>{{ pick.name }}</h2>
+        <span class="cspot-kicker">{{ meta?.label }} · Đáng chú ý</span>
+        <h2 class="cspot-h">{{ pick.name }}</h2>
+        <span class="cspot-rule" aria-hidden="true"></span>
         <div class="cspot-badges">
           <span v-if="isPeak" class="cspot-badge cspot-badge-peak">Đang mùa</span>
           <span v-else-if="isAllYear" class="cspot-badge cspot-badge-year">Quanh năm</span>
           <span v-if="relCount >= 3" class="cspot-badge cspot-badge-pop">{{ relCount }} liên kết</span>
         </div>
         <p v-if="pick.summary" class="cspot-sum">{{ pick.summary }}</p>
-        <NuxtLink :to="entityPath(pick.id)" class="btn btn-primary cspot-cta">Khám phá ngay →</NuxtLink>
+        <NuxtLink :to="entityPath(pick.id)" class="btn btn-primary cspot-cta">Đọc câu chuyện →</NuxtLink>
       </div>
     </div>
   </section>
@@ -92,16 +93,26 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 }
 @media (max-width: 760px) { .cspot-body { padding: var(--space-5); } }
 .cspot-kicker { font-size: var(--text-xs); font-weight: var(--weight-bold); text-transform: uppercase; letter-spacing: .05em; color: var(--primary-fg-strong); }
-.cspot-body h2 { margin: 0; font-size: clamp(1.4rem, 3vw, 2rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
+/* editorial title — serif, matching the Story Card idiom (§2 narrative system) instead of
+   the sans-serif magazine-panel heading this used before */
+.cspot-h { margin: 0; font-family: var(--font-editorial); font-weight: 600; font-size: clamp(1.4rem, 3vw, 2rem); line-height: var(--leading-snug); letter-spacing: -.01em; }
+/* tri-province rule — card-scale sediment tick between title and summary */
+.cspot-rule {
+  display: block; width: 30px; height: 2px; border-radius: 2px; margin: var(--space-2) 0 0;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .cspot-rule { background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%); }
 .cspot-sum { margin: 0; color: var(--text-muted); line-height: var(--leading-relaxed); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .cspot-badges { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-.cspot-badge { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); }
-.cspot-badge-peak { background: var(--error-bg, rgba(239,68,68,.12)); color: var(--error, #dc2626); }
-.cspot-badge-year { background: var(--success-bg, rgba(16,185,129,.12)); color: var(--success, #059669); }
-.cspot-badge-pop { background: var(--info-bg, rgba(59,130,246,.1)); color: var(--info, #2563eb); }
-.dark .cspot-badge-peak { background: rgba(var(--danger-rgb), .2); color: var(--error); }
-.dark .cspot-badge-year { background: rgba(var(--success-rgb), .2); color: var(--success); }
-.dark .cspot-badge-pop { background: rgba(var(--blue-rgb), .2); color: var(--info); }
+/* hairline outline badges (spec-tag idiom) instead of solid-fill pills — quieter, reads as
+   editorial metadata rather than app-notification chips */
+.cspot-badge { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: transparent; border: 1px solid currentColor; }
+.cspot-badge-peak { color: var(--clay-600); }
+.cspot-badge-year { color: var(--river-600); }
+.cspot-badge-pop { color: var(--amber-600); }
+.dark .cspot-badge-peak { color: var(--clay-400); }
+.dark .cspot-badge-year { color: #74ABB5; }
+.dark .cspot-badge-pop { color: var(--amber-500); }
 .cspot-cta { align-self: flex-start; margin-top: var(--space-2); }
 @media (prefers-reduced-motion: reduce) { .cspot-visual::before { animation: none; } }
 </style>

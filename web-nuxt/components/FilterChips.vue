@@ -69,6 +69,7 @@ function toggle(key: string) {
   color: var(--ink);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium, 500);
+  letter-spacing: .01em;
   cursor: pointer;
   transition: background-color 150ms, color 150ms, border-color 150ms;
   white-space: nowrap;
@@ -77,6 +78,7 @@ function toggle(key: string) {
 
 .fc-chip:hover {
   background: rgba(var(--primary-rgb), 0.06);
+  border-color: rgba(var(--primary-rgb), .3);
 }
 
 .fc-chip:focus-visible {
@@ -84,10 +86,22 @@ function toggle(key: string) {
   outline-offset: 2px;
 }
 
+/* active state = a hairline tri-province rule under the label instead of a heavier fill,
+   so the selected chip reads as "marked" rather than as a flat app-UI toggle */
 .fc-chip.active {
   background: var(--chip-active-bg);
   color: var(--chip-active-text);
   border-color: transparent;
+  position: relative;
+}
+.fc-chip.active::after {
+  content: "";
+  position: absolute; left: var(--space-3); right: var(--space-3); bottom: 3px;
+  height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+}
+.dark .fc-chip.active::after {
+  background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 
 .fc-icon { font-size: 1.1em; }
@@ -96,6 +110,7 @@ function toggle(key: string) {
   font-size: var(--text-xs);
   opacity: 0.7;
   font-weight: var(--weight-normal, 400);
+  font-variant-numeric: tabular-nums;
 }
 .fc-chip.active .fc-count { opacity: 0.85; }
 @media (prefers-reduced-motion: reduce) {

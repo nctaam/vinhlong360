@@ -1,6 +1,6 @@
 <template>
   <aside v-if="fact" class="interstitial reveal" :class="variant" role="complementary" :aria-label="ariaLabel">
-    <span class="interstitial-icon" aria-hidden="true">{{ icon }}</span>
+    <span class="interstitial-icon-chip" aria-hidden="true"><span class="interstitial-icon">{{ icon }}</span></span>
     <div class="interstitial-body">
       <p class="interstitial-text">{{ fact }}</p>
       <div v-if="links.length" class="interstitial-links">
@@ -38,6 +38,19 @@ const props = withDefaults(defineProps<{
   border: .5px solid var(--line);
   background: linear-gradient(135deg, rgba(var(--primary-rgb), .04), transparent);
   margin: var(--space-4) 0;
+  position: relative;
+  overflow: hidden;
+}
+/* tri-province hairline along the top edge — same "one ruled thread" idiom as the card
+   rule and sediment-head tick, so the mid-list interruption still reads as part of the
+   same publication rather than a bare highlight box */
+.interstitial::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);
+  opacity: .7;
+}
+.dark .interstitial::before {
+  background: linear-gradient(90deg, #74ABB5 0%, var(--amber-500) 52%, var(--clay-400) 100%);
 }
 .interstitial.warm {
   background: linear-gradient(135deg, rgba(var(--secondary-rgb), .06), rgba(var(--accent-rgb), .03));
@@ -47,20 +60,29 @@ const props = withDefaults(defineProps<{
   background: linear-gradient(135deg, rgba(var(--accent-rgb), .06), transparent);
   border-color: rgba(var(--accent-rgb), .15);
 }
+/* icon sits in its own quiet chip rather than bare beside the text — keeps the emoji from
+   reading as a slapped-on heading-marker next to the now-serif fact copy */
+.interstitial-icon-chip {
+  display: flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: var(--radius-full); flex-shrink: 0;
+  background: rgba(var(--primary-rgb), .07);
+}
+.dark .interstitial-icon-chip { background: rgba(255, 255, 255, .06); }
 .interstitial-icon {
-  font-size: 1.8rem;
+  font-size: 1.15rem;
   line-height: 1;
-  flex-shrink: 0;
 }
 .interstitial-body {
   min-width: 0;
 }
 .interstitial-text {
   margin: 0;
-  font-size: var(--text-sm);
+  font-family: var(--font-editorial);
+  font-size: var(--text-base);
   line-height: var(--leading-relaxed);
   color: var(--ink-secondary, var(--muted));
-  font-weight: var(--weight-medium);
+  font-weight: 500;
+  letter-spacing: -.005em;
 }
 .interstitial-links {
   display: flex;
@@ -114,8 +136,12 @@ const props = withDefaults(defineProps<{
     padding: var(--space-4);
     gap: var(--space-3);
   }
+  .interstitial-icon-chip {
+    width: 34px;
+    height: 34px;
+  }
   .interstitial-icon {
-    font-size: 1.5rem;
+    font-size: 1rem;
   }
 }
 
