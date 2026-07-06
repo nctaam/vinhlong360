@@ -48,14 +48,7 @@
       </div>
     </section>
 
-    <!-- Editorial -->
-    <section v-once class="page-article reveal">
-      <h2 class="sediment-head">Danh bạ hành chính — tìm nhanh liên hệ địa phương</h2>
-      <p>Khi đến một vùng đất mới, việc biết số điện thoại và địa chỉ cơ quan hành chính địa phương là rất cần thiết — từ xin xác nhận tạm trú, hỏi thông tin quy hoạch, đến liên hệ công an khi cần hỗ trợ. Danh bạ này tổng hợp thông tin liên hệ UBND, công an và các cơ quan công vụ theo từng xã, phường trên toàn vùng Vĩnh Long, Bến Tre và Trà Vinh.</p>
-      <p>Sau khi sáp nhập ba tỉnh thành một đơn vị hành chính mới, hệ thống xã/phường đang trong quá trình điều chỉnh. Thông tin trên đây được cập nhật liên tục nhưng có thể chưa phản ánh đầy đủ các thay đổi mới nhất — vui lòng kiểm chứng trực tiếp với cơ quan khi cần.</p>
-    </section>
-
-    <!-- Ward picker -->
+    <!-- Ward picker (declutter-1 T17: editorial trùng hero đã bỏ; caveat giữ thành footnote) -->
     <section ref="wardSection" class="block reveal">
       <label class="ward-pick">
         <span class="control-label">Chọn xã / phường:</span>
@@ -66,6 +59,7 @@
           </optgroup>
         </select>
       </label>
+      <p class="ward-caveat">Sau sáp nhập, hệ thống xã/phường đang điều chỉnh — thông tin có thể chưa đầy đủ, vui lòng kiểm chứng trực tiếp với cơ quan khi cần.</p>
     </section>
 
     <p class="dir-report-link"><NuxtLink to="/lien-he">Báo thông tin sai</NuxtLink>.</p>
@@ -335,6 +329,7 @@ useHead(() => ({
 .ward-pick .control-label { font-weight: var(--weight-semibold); }
 .ward-pick select { padding: var(--space-3); border: .5px solid var(--line); border-radius: var(--radius-md); font-size: 1rem; min-height: 44px; background: var(--bg-alt); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
 .ward-pick select:focus-visible { outline: none; border-color: var(--primary-fg); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .15), var(--shadow-xs); }
+.ward-caveat { margin: var(--space-2) 0 0; max-width: 60ch; font-size: var(--text-xs); color: var(--muted); line-height: var(--leading-relaxed); }
 .dir-report-link { font-size: var(--text-sm); color: var(--muted); margin: var(--space-6) 0 var(--space-5); }
 .dir-report-link a { color: var(--primary-fg); font-weight: var(--weight-semibold); }
 .dir-report-link a:hover { text-decoration: underline; }
