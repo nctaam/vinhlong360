@@ -65,7 +65,6 @@
       <LazyChatWidget />
       <LazyOnboardingSheet />
       <LazyJourneyBar />
-      <LazyReportModal />
       <LazyToastContainer />
     </template>
 

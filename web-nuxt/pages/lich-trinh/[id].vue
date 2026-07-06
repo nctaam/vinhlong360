@@ -132,6 +132,9 @@
   <div v-else class="page">
     <EmptyState message="Không tìm thấy lịch trình." />
   </div>
+
+  <!-- declutter-3 T14 (A3c): ReportModal page-level — trang này là 1 trong 2 consumer thật -->
+  <ClientOnly><LazyReportModal /></ClientOnly>
 </template>
 
 <script setup lang="ts">

@@ -160,6 +160,9 @@
         <NuxtLink to="/cong-dong" class="btn btn-outline btn-sm">Về Cộng đồng</NuxtLink>
       </EmptyState>
     </div>
+
+    <!-- declutter-3 T14 (A3c): ReportModal page-level — reportPost (PostCard @report) mở modal này -->
+    <ClientOnly><LazyReportModal /></ClientOnly>
   </section>
 </template>
 

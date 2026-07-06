@@ -456,6 +456,9 @@
     </Transition>
 
     <!-- Scroll to top — uses global ScrollToTop from layout -->
+
+    <!-- declutter-3 T14 (A3c): ReportModal page-level — reportPost (PostCard @report) mở modal này -->
+    <ClientOnly><LazyReportModal /></ClientOnly>
   </section>
 </template>
 

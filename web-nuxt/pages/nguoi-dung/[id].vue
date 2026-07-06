@@ -359,6 +359,9 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- declutter-3 T14 (A3c): ReportModal page-level — trang này là 1 trong 2 consumer thật -->
+    <ClientOnly><LazyReportModal /></ClientOnly>
   </section>
 </template>
 
