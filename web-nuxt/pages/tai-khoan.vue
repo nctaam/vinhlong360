@@ -22,7 +22,6 @@
           <div class="cp-status-row">
             <span :class="['cp-pill', hasPassword ? 'ok' : 'warn']">{{ hasPassword ? 'Đã bảo vệ bằng mật khẩu' : 'Cần đặt mật khẩu' }}</span>
             <span class="cp-pill">Hồ sơ {{ profileCompletion }}%</span>
-            <span v-if="counts.unread_notifications" class="cp-pill warn">{{ counts.unread_notifications }} thông báo mới</span>
           </div>
           <div class="cp-hero-actions">
             <NuxtLink :to="primaryAction.to" class="btn btn-primary btn-sm">{{ primaryAction.label }}</NuxtLink>
@@ -94,15 +93,8 @@
         </article>
       </section>
 
-      <section class="cp-workspace" aria-label="Không gian làm việc">
-        <NuxtLink v-for="item in workspaceLinks" :key="item.to" :to="item.to" class="cp-card">
-          <span class="cp-card-icon" aria-hidden="true">{{ item.icon }}</span>
-          <span class="cp-card-title">{{ item.title }}</span>
-          <span class="cp-card-desc">{{ item.desc }}</span>
-          <span v-if="item.badge" class="cp-card-badge">{{ item.badge }}</span>
-        </NuxtLink>
-      </section>
-
+      <!-- declutter-3 T5: cp-workspace 6 card đã bỏ — trùng side-panel "Dữ liệu của bạn"
+           (count) + nav (đích đến); side-panel là nguồn count duy nhất (chốt spec-review). -->
       <section class="cp-main-grid">
         <article class="cp-section sediment-head">
           <div class="cp-section-head">
@@ -240,15 +232,6 @@ const nextActions = computed(() => {
   return actions.slice(0, 4)
 })
 const primaryAction = computed(() => nextActions.value[0] || { icon: '✓', label: 'Xem hồ sơ', to: profileUrl.value })
-const workspaceLinks = computed(() => [
-  { icon: '👤', title: 'Trang cá nhân', desc: 'Xem hồ sơ công khai', to: profileUrl.value },
-  { icon: '🔔', title: 'Thông báo', desc: (counts.value.unread_notifications ?? 0) ? 'Có cập nhật mới' : 'Không có mới', to: '/thong-bao', badge: counts.value.unread_notifications || '' },
-  { icon: '💾', title: 'Đã lưu', desc: `${counts.value.bookmarks ?? 0} mục đã lưu`, to: '/da-luu' },
-  { icon: '✍️', title: 'Bài viết', desc: `${counts.value.posts ?? 0} bài · ${counts.value.drafts ?? 0} nháp`, to: '/cong-dong' },
-  { icon: '🗺️', title: 'Lịch trình', desc: 'Tạo và xem kế hoạch', to: '/lich-trinh' },
-  { icon: '⚙️', title: 'Cài đặt', desc: 'Hồ sơ, bảo mật, dữ liệu', to: '/cai-dat' },
-])
-
 let accountLoadSeq = 0
 
 function resetAccountData() {
@@ -405,9 +388,9 @@ function actionLabel(a: ActivityItem) {
 }
 .cp-alert span { font-size: .86rem; line-height: 1.4; }
 
-.cp-summary-grid, .cp-workspace, .cp-main-grid { display: grid; gap: 1rem; }
+.cp-summary-grid, .cp-main-grid { display: grid; gap: 1rem; }
 .cp-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 1rem; }
-.cp-panel, .cp-section, .cp-side-panel, .cp-card {
+.cp-panel, .cp-section, .cp-side-panel {
   border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card);
 }
 .cp-panel { padding: 1rem; }
@@ -420,7 +403,7 @@ function actionLabel(a: ActivityItem) {
 .cp-checks, .cp-action-list, .cp-data-list { display: flex; flex-direction: column; gap: .45rem; }
 .cp-check { display: flex; align-items: center; gap: .45rem; color: var(--ink-700); font-size: .84rem; text-decoration: none; border-radius: var(--radius-sm); }
 .cp-check:hover { color: var(--ink); }
-.cp-check:focus-visible, .cp-mini-link:focus-visible, .cp-action-item:focus-visible, .cp-data-row:focus-visible, .cp-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cp-check:focus-visible, .cp-mini-link:focus-visible, .cp-action-item:focus-visible, .cp-data-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .cp-check.done { color: var(--ink); }
 .cp-check.done span { color: var(--accent); font-weight: 800; }
 .cp-action-item, .cp-data-row { display: flex; align-items: center; justify-content: space-between; gap: .65rem; padding: .55rem .65rem; border-radius: var(--radius-md); text-decoration: none; color: var(--ink); background: var(--bg-alt); }
@@ -429,13 +412,6 @@ function actionLabel(a: ActivityItem) {
 .cp-done-state { padding: .75rem; border-radius: var(--radius-md); background: var(--bg-alt); color: var(--ink-700); font-size: .84rem; line-height: 1.45; }
 
 
-.cp-workspace { grid-template-columns: repeat(6, minmax(0, 1fr)); margin-bottom: 1rem; }
-.cp-card { min-height: 118px; padding: .9rem; text-decoration: none; color: var(--ink); position: relative; display: flex; flex-direction: column; gap: .25rem; transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
-.cp-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.cp-card-icon { font-size: 1.35rem; }
-.cp-card-title { font-weight: 700; font-size: .93rem; }
-.cp-card-desc { font-size: .78rem; color: var(--ink-700); line-height: 1.35; }
-.cp-card-badge { position: absolute; top: .55rem; right: .55rem; background: var(--danger); color: #fff; font-size: .7rem; font-weight: 800; padding: 1px 6px; border-radius: var(--radius-full); }
 
 .cp-main-grid { grid-template-columns: minmax(0, 1fr) 280px; align-items: start; }
 .cp-section, .cp-side-panel { padding: 1rem; }
@@ -453,23 +429,19 @@ function actionLabel(a: ActivityItem) {
 .cp-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-top: .75rem; }
 .cp-data-row strong { font-variant-numeric: tabular-nums; }
 
-.dark .cp-hero, .dark .cp-panel, .dark .cp-section, .dark .cp-side-panel, .dark .cp-card { background: var(--bg-alt); border-color: var(--line); }
+.dark .cp-hero, .dark .cp-panel, .dark .cp-section, .dark .cp-side-panel { background: var(--bg-alt); border-color: var(--line); }
 .dark .cp-action-item, .dark .cp-data-row, .dark .cp-activity-item, .dark .cp-score { background: var(--bg); }
 
 @media (max-width: 860px) {
   .cp-summary-grid, .cp-main-grid { grid-template-columns: 1fr; }
-  .cp-workspace { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
   .cp-hero { grid-template-columns: auto 1fr; }
   .cp-hero-actions .btn { flex: 1 1 130px; justify-content: center; }
   .cp-score { grid-column: 1 / -1; width: 100%; height: auto; border-radius: var(--radius-md); border-width: 1px; padding: .75rem; display: block; }
   .cp-alert { flex-direction: column; align-items: stretch; }
-  .cp-workspace { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .cp-card { min-height: 108px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cp-card, .cp-progress span { transition: none; }
-  .cp-card:hover { transform: none; }
+  .cp-progress span { transition: none; }
 }
 </style>
