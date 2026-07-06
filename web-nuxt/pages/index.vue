@@ -184,7 +184,7 @@
             <span class="spot-kicker">{{ spotMeta?.label }} · Nổi bật</span>
             <h3 class="spot-name">{{ spotlight.name }}</h3>
             <p v-if="spotlight.summary" class="spot-sum">{{ spotlight.summary }}</p>
-            <NuxtLink :to="entityPath(spotlight.id)" class="btn btn-primary spot-cta">Khám phá ngay →</NuxtLink>
+            <NuxtLink :to="entityPath(spotlight.id)" class="btn btn-primary spot-cta">Đọc câu chuyện {{ spotlight.name }} →</NuxtLink>
           </div>
         </div>
 
@@ -204,7 +204,7 @@
             </NuxtLink>
           </div>
           <div class="block-cta">
-            <NuxtLink to="/kham-pha/am-thuc" class="btn btn-outline">🍲 Xem tất cả quán ăn</NuxtLink>
+            <NuxtLink to="/kham-pha/am-thuc" class="btn btn-outline">🍲 Còn nhiều quán ngon nữa</NuxtLink>
           </div>
         </div>
       </div>
@@ -237,7 +237,7 @@
           <h2 class="h2-tight">Lịch trình <em class="ac-amber">gợi ý</em></h2>
           <p class="sh-sub">Hành trình 1–2 ngày, đi là có ngay</p>
         </div>
-        <NuxtLink class="see-all" to="/lich-trinh">Xem tất cả →</NuxtLink>
+        <NuxtLink class="see-all" to="/lich-trinh">Tìm hành trình khác →</NuxtLink>
       </div>
       <div class="scroll-row" role="region" aria-label="Lịch trình gợi ý" tabindex="0">
         <ItineraryCard v-for="it in itineraries" :key="it.id" :itinerary="it" />
@@ -258,7 +258,7 @@
             <h2>Từ <em class="ac-leaf">cộng đồng</em></h2>
             <p class="sh-sub">Trải nghiệm thật, mẹo hay từ người đi trước</p>
           </div>
-          <NuxtLink class="see-all" to="/cong-dong">Xem tất cả →</NuxtLink>
+          <NuxtLink class="see-all" to="/cong-dong">Đọc thêm chuyện người đi trước →</NuxtLink>
         </div>
         <template v-if="communityPosts.length">
           <p v-if="communityStats && (communityStats.posts || communityStats.reviews || communityStats.members)" class="community-stats-line">

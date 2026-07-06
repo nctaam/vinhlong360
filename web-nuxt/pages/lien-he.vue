@@ -24,7 +24,7 @@
 
     <div class="contact-cards">
       <section v-if="isClaim" class="contact-card card-claim">
-        <div class="card-icon" aria-hidden="true">🏷️</div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🏷️</span></div>
         <h2>Đăng ký quản lý trang</h2>
         <p>Bạn là chủ cơ sở kinh doanh, homestay, nhà vườn, hoặc điểm du lịch? Đăng ký để cập nhật thông tin, ảnh, giờ mở cửa và nhận đánh giá từ khách.</p>
         <div class="card-action">
@@ -34,7 +34,7 @@
       </section>
 
       <section class="contact-card card-general">
-        <div class="card-icon" aria-hidden="true">📬</div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">📬</span></div>
         <h2>Gửi yêu cầu</h2>
         <p>Mọi yêu cầu về nội dung, dữ liệu cá nhân, báo cáo vi phạm hoặc khiếu nại bản quyền.</p>
         <div class="card-action">
@@ -43,7 +43,7 @@
       </section>
 
       <section class="contact-card card-partner">
-        <div class="card-icon" aria-hidden="true">🤝</div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🤝</span></div>
         <h2>Hợp tác quảng bá</h2>
         <p>Đối tác du lịch, OCOP, cơ quan địa phương muốn giới thiệu sản phẩm, điểm đến trên vinhlong360.</p>
         <div class="card-action">
@@ -52,13 +52,13 @@
       </section>
 
       <section class="contact-card card-report">
-        <div class="card-icon" aria-hidden="true">🛡️</div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🛡️</span></div>
         <h2>Báo cáo vi phạm</h2>
         <p>Dùng nút <strong>Báo cáo</strong> ngay trên mỗi bài đăng/bình luận. Chúng tôi xử lý trong vòng 48 giờ.</p>
       </section>
 
       <section class="contact-card card-privacy">
-        <div class="card-icon" aria-hidden="true">🔒</div>
+        <div class="card-icon" aria-hidden="true"><span class="card-icon-glyph">🔒</span></div>
         <h2>Dữ liệu cá nhân</h2>
         <p>Theo <NuxtLink to="/chinh-sach-bao-mat">Chính sách bảo mật</NuxtLink>: truy cập/chỉnh sửa (10 ngày), rút đồng ý (15 ngày), xoá dữ liệu (20 ngày). Bạn cũng có thể tự xoá tài khoản trong phần tài khoản.</p>
       </section>
@@ -224,20 +224,38 @@ useHead({
 }
 .card-report:active, .card-privacy:active { transform: none; }
 
+/* Hairline chip, not a perfectly-centred emoji-in-a-circle (documented anti-slop tell):
+   asymmetric rounded-square with a sediment (river→clay) corner accent; the glyph itself
+   sits off-centre at reduced opacity, more "watermark" than "icon". */
 .card-icon {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, rgba(var(--primary-rgb), .08), rgba(var(--primary-rgb), .02) 70%);
-  font-size: var(--text-2xl);
-  line-height: 1;
+  align-items: flex-end;
+  justify-content: flex-start;
+  width: 48px;
+  height: 48px;
+  padding: 7px;
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 4px;
+  border: .5px solid var(--line);
+  background: var(--bg-warm);
   margin-bottom: var(--space-3);
-  transition: transform .35s var(--ease-spring-gentle), background .3s var(--ease-out);
+  overflow: clip;
+  transition: transform .35s var(--ease-spring-gentle), border-color .3s var(--ease-out);
 }
-.contact-card:hover .card-icon { transform: scale(1.1) rotate(-3deg); }
+.card-icon::before {
+  content: "";
+  position: absolute; top: 0; right: 0;
+  width: 3px; height: 15px;
+  background: linear-gradient(180deg, var(--river-600), var(--clay-600));
+  opacity: .7;
+}
+.card-icon-glyph {
+  font-size: var(--text-xl);
+  line-height: 1;
+  opacity: .68;
+  transform: translate(3px, 2px);
+}
+.contact-card:hover .card-icon { transform: translateY(-2px); border-color: var(--border); }
 .card-report:hover, .card-report:hover .card-icon, .card-privacy:hover, .card-privacy:hover .card-icon { transform: none; }
 
 .contact-card h2 {
@@ -307,8 +325,9 @@ useHead({
 .dark .card-claim { background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-color: rgba(var(--accent-rgb, 240,160,80), .35); }
 .dark .contact-card p { color: var(--ink-secondary); }
 .dark .contact-card h2 { color: var(--ink); }
-.dark .card-icon { background: radial-gradient(circle at 40% 40%, rgba(255,255,255,.07), rgba(255,255,255,.02) 70%); }
-.dark .card-claim .card-icon { background: radial-gradient(circle at 40% 40%, rgba(var(--accent-rgb, 240,160,80), .14), rgba(var(--accent-rgb, 240,160,80), .03) 70%); }
+.dark .card-icon { background: rgba(255,255,255,.04); border-color: var(--line); }
+.dark .contact-card:hover .card-icon { border-color: rgba(255,255,255,.16); }
+.dark .card-claim .card-icon { background: rgba(var(--accent-rgb, 240,160,80), .08); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

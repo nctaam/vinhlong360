@@ -153,7 +153,7 @@
 
       <!-- Row D: Khám phá theo chủ đề — glyph thay emoji, cùng ngôn ngữ với EntityCard -->
       <section class="block reveal">
-        <div class="section-head sediment-head"><h2>Khám phá theo chủ đề</h2></div>
+        <div class="section-head sediment-head"><h2>Bạn đang tò mò điều gì?</h2></div>
         <div class="quick-picks">
           <NuxtLink v-for="qp in quickPicks" :key="qp.to" :to="qp.to" class="quick-pick">
             <span class="quick-pick-icon" :style="{ backgroundImage: categoryPlaceholderBg(qp.to, qp.cat) }">
@@ -185,19 +185,27 @@
       <h2>Khám phá thêm</h2>
       <div class="cross-links">
         <NuxtLink to="/ban-do" class="cross-card" no-prefetch>
-          <span class="cross-icon" aria-hidden="true">🗺️</span>
+          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-ban-do', 'place') }">
+            <span class="quick-pick-glyph" v-html="categoryGlyph('place')"></span>
+          </span>
           <div><strong>Bản đồ</strong><p>Xem trên bản đồ</p></div>
         </NuxtLink>
         <NuxtLink to="/theo-mua" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🌸</span>
+          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-theo-mua', 'nature') }">
+            <span class="quick-pick-glyph" v-html="categoryGlyph('nature')"></span>
+          </span>
           <div><strong>Theo mùa</strong><p>Đúng mùa thưởng thức</p></div>
         </NuxtLink>
         <NuxtLink to="/cong-dong" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">💬</span>
+          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-cong-dong', 'person') }">
+            <span class="quick-pick-glyph" v-html="categoryGlyph('person')"></span>
+          </span>
           <div><strong>Cộng đồng</strong><p>Hỏi đáp & chia sẻ</p></div>
         </NuxtLink>
         <NuxtLink to="/danh-ba" class="cross-card">
-          <span class="cross-icon" aria-hidden="true">🏛️</span>
+          <span class="quick-pick-icon cross-glyph-icon" :style="{ backgroundImage: categoryPlaceholderBg('cross-danh-ba', 'org') }">
+            <span class="quick-pick-glyph" v-html="categoryGlyph('org')"></span>
+          </span>
           <div><strong>Danh bạ</strong><p>Hành chính xã/phường</p></div>
         </NuxtLink>
       </div>
@@ -502,6 +510,15 @@ useHead({
 .quick-pick-glyph :deep(svg) { width: 100%; height: 100%; }
 .quick-pick:hover .quick-pick-icon { transform: scale(1.1); }
 .quick-pick-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
+
+/* Cross-link band ("Khám phá thêm"): reuses the .quick-pick-icon/.quick-pick-glyph pairing
+   above instead of catalog.css's bare .cross-icon emoji (anti-slop tell — designed chip,
+   not a loose glyph next to serif). .cross-card itself stays untouched (shared catalog.css). */
+.cross-glyph-icon { flex-shrink: 0; }
+.cross-card:hover .cross-glyph-icon { transform: scale(1.1); }
+@media (prefers-reduced-motion: reduce) {
+  .cross-card:hover .cross-glyph-icon { transform: none; }
+}
 
 /* Autocomplete suggestions */
 .search-input-wrap { position: relative; flex: 1; min-width: 0; }
