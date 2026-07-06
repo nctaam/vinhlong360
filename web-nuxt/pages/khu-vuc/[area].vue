@@ -92,23 +92,20 @@
       </div>
     </section>
 
-    <!-- Wards -->
+    <!-- Wards — declutter-3 T12: thu gọn sau <details>, giữ toàn bộ link hub-spoke
+         /xa-phuong/* trong DOM cho crawler (SEO-caution, không xoá) -->
     <section v-if="wards.length" class="block band reveal">
-      <div class="section-head">
-        <h2>Xã / phường ({{ wards.length }})</h2>
-      </div>
-      <p class="section-desc">Mỗi xã/phường có trang riêng: du lịch · lưu trú · đặc sản · danh bạ hành chính.</p>
-      <div class="chip-row wrap-mobile area-wards">
-        <NuxtLink v-for="w in wards" :key="w.id" :to="`/xa-phuong/${w.id}`" class="chip">{{ w.name }}</NuxtLink>
-      </div>
+      <details class="wards-fold">
+        <summary class="wards-summary"><h2>Xã / phường ({{ wards.length }})</h2></summary>
+        <p class="section-desc">Mỗi xã/phường có trang riêng: du lịch · lưu trú · đặc sản · danh bạ hành chính.</p>
+        <div class="chip-row wrap-mobile area-wards">
+          <NuxtLink v-for="w in wards" :key="w.id" :to="`/xa-phuong/${w.id}`" class="chip">{{ w.name }}</NuxtLink>
+        </div>
+      </details>
     </section>
 
-    <!-- Divider -->
-    <div v-if="entities.length" class="catalog-divider">
-      <span class="catalog-divider-text">Tất cả {{ entities.length }} mục</span>
-    </div>
-
-    <!-- Full grid (progressive loading) -->
+    <!-- Full grid (progressive loading) — declutter-3 T12: bỏ catalog-divider "Tất cả N mục";
+         full grid GIỮ nguyên (D8: restaurant/cafe/place/facility ~430e chỉ có ở đây) -->
     <section v-if="entities.length" class="block reveal">
       <div class="grid">
         <EntityCard v-for="e in visibleEntities" :key="e.id" :entity="e" />
@@ -233,7 +230,7 @@ const showCount = ref(24)
 const visibleEntities = computed(() => entities.value.slice(0, showCount.value))
 function showMore() { showCount.value += 24 }
 
-const featured = computed(() => entityGroups.value.withImages.slice(0, 6))
+const featured = computed(() => entityGroups.value.withImages.slice(0, 4))
 
 const typeSections = computed(() =>
   (CARD_TYPES as readonly string[])
@@ -447,6 +444,14 @@ if (areaMeta) {
 }
 .see-all-toggle:active { transform: scale(.96); transition-duration: .08s; }
 .see-all-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+/* declutter-3 T12: wards thu gọn sau <details> — link vẫn trong DOM, đỡ nhiễu thị giác */
+.wards-summary { cursor: pointer; list-style: none; }
+.wards-summary::-webkit-details-marker { display: none; }
+.wards-summary::before { content: "▸ "; color: var(--muted); }
+details[open] > .wards-summary::before { content: "▾ "; }
+.wards-summary h2 { display: inline; }
+.wards-fold[open] .wards-summary { margin-bottom: var(--space-3); }
 
 /* ── POLISH: Ward chips wrap to a tap-friendly grid on mobile ─────────────
    On phones the shared .chip-row.wrap-mobile already wraps; here we lock the
