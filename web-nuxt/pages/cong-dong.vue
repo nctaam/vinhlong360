@@ -452,29 +452,6 @@
           </div>
         </div>
 
-        <div class="sidebar-card reveal">
-          <p class="sidebar-kicker">Nhập cuộc</p>
-          <h2 class="sediment-head">Cách tham gia</h2>
-          <ul class="sidebar-list">
-            <li>
-              <span class="sl-icon">📸</span>
-              <div><strong>Chia sẻ</strong><br><span class="sl-desc">Kể lại chuyến đi, khám phá của bạn</span></div>
-            </li>
-            <li>
-              <span class="sl-icon">⭐</span>
-              <div><strong>Đánh giá</strong><br><span class="sl-desc">Chấm điểm địa điểm, dịch vụ đã trải nghiệm</span></div>
-            </li>
-            <li>
-              <span class="sl-icon">❓</span>
-              <div><strong>Hỏi đáp</strong><br><span class="sl-desc">Đặt câu hỏi về 3 tỉnh VL–BT–TV</span></div>
-            </li>
-            <li>
-              <span class="sl-icon">👍</span>
-              <div><strong>Gợi ý</strong><br><span class="sl-desc">Giới thiệu nơi hay, món ngon cho mọi người</span></div>
-            </li>
-          </ul>
-        </div>
-
         <div class="sidebar-card sidebar-rules reveal">
           <p class="sidebar-kicker">Giữ nếp</p>
           <h2 class="sediment-head">Quy tắc cộng đồng</h2>
@@ -1745,13 +1722,6 @@ useHead({
 .sidebar-stat:hover .stat-num { color: var(--primary-fg); }
 .stat-label { font-size: var(--text-xs); color: var(--muted); }
 
-.sidebar-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
-.sidebar-list li { display: flex; gap: var(--space-3); align-items: flex-start; font-size: var(--text-sm); line-height: var(--leading-snug); padding: var(--space-2); border-radius: var(--radius-sm); transition: background .3s var(--ease-out), transform .35s var(--ease-spring-gentle); }
-.sidebar-list li:hover { background: var(--overlay-subtle); transform: translateX(2px); }
-.sl-icon { font-size: var(--text-lg); flex-shrink: 0; width: 24px; text-align: center; transition: transform .3s var(--ease-spring-gentle); }
-.sidebar-list li:hover .sl-icon { transform: scale(1.15); }
-.sl-desc { font-size: var(--text-xs); color: var(--muted); }
-.sidebar-list strong { font-weight: var(--weight-semibold); }
 
 .sidebar-rules-list {
   padding: 0; margin: 0; list-style: none;
@@ -1850,7 +1820,6 @@ useHead({
 .dark .bookmark-momentum { background: var(--card); border-color: rgba(255,255,255,.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
 .dark .bm-dismiss:hover { background: rgba(255,255,255,.08); }
 .dark .sidebar-stat:hover { background: rgba(255,255,255,.03); }
-.dark .sidebar-list li:hover { background: rgba(255,255,255,.03); }
 .dark .report-entity-card { background: rgba(var(--accent-rgb),.08); border-color: rgba(var(--accent-rgb),.22); }
 .dark .compose-attach:hover { background: rgba(255,255,255,.08); }
 .dark .threads-compose { background: rgba(var(--accent-rgb),.06); }
@@ -1907,8 +1876,6 @@ useHead({
   .fab-fade-leave-active { transition: none; }
   .sidebar-card { transition: none; }
   .sidebar-card:hover { transform: none; }
-  .sidebar-list li:hover { transform: none; }
-  .sidebar-list li:hover .sl-icon { transform: none; }
   .img-preview-item:hover { transform: none; }
   .compose-attach:hover { transform: none; }
   .compose-attach:active { transform: none; }
