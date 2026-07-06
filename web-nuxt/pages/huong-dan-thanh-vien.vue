@@ -92,15 +92,6 @@
       </div>
     </section>
 
-    <!-- CTA -->
-    <section class="guide-cta reveal">
-      <h2>Sẵn sàng đóng góp?</h2>
-      <p>Tham gia cộng đồng và bắt đầu chia sẻ trải nghiệm của bạn ngay hôm nay.</p>
-      <div class="cta-btns">
-        <NuxtLink to="/cong-dong" class="btn btn-primary">Tham gia cộng đồng</NuxtLink>
-        <NuxtLink to="/bang-xep-hang" class="btn btn-ghost">Xem bảng xếp hạng</NuxtLink>
-      </div>
-    </section>
   </section>
 </template>
 
@@ -266,20 +257,9 @@ useHead({
 .tip-item strong { display: block; margin-bottom: var(--space-1); }
 .tip-item p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
-/* CTA */
-.guide-cta {
-  text-align: center; padding: var(--space-8) var(--space-4);
-  background: linear-gradient(135deg, rgba(var(--primary-rgb, 46, 125, 50), .06) 0%, var(--bg-warm) 100%);
-  border-radius: var(--radius-xl); border: .5px solid var(--line);
-}
-.guide-cta h2 { border-bottom: none; padding-bottom: 0; font-size: var(--text-xl); }
-.guide-cta p { color: var(--muted); font-size: var(--text-sm); margin: var(--space-2) 0 var(--space-5); }
-.cta-btns { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
-
 /* Dark */
 .dark .guide-hero { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 .dark .guide-note { background: var(--bg-alt); }
-.dark .guide-cta { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 .dark .level-1 { --level-color: var(--secondary-fg); border-left-color: var(--level-color); }
 .dark .level-2 { --level-color: var(--tertiary-fg); border-left-color: var(--level-color); }
 .dark .level-3 { --level-color: var(--accent-text); border-left-color: var(--level-color); }
