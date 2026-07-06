@@ -393,6 +393,9 @@
               <span class="stat-label">đánh giá</span>
             </div>
           </div>
+          <!-- declutter-1 T9: card "Quy tắc cộng đồng" (duplicate nguyên văn
+               /huong-dan-thanh-vien) → 1 link tại đây -->
+          <NuxtLink to="/huong-dan-thanh-vien" class="sidebar-more">Xem quy tắc cộng đồng →</NuxtLink>
         </div>
 
         <div v-if="recentMentions.length" class="sidebar-card reveal">
@@ -452,16 +455,6 @@
           </div>
         </div>
 
-        <div class="sidebar-card sidebar-rules reveal">
-          <p class="sidebar-kicker">Giữ nếp</p>
-          <h2 class="sediment-head">Quy tắc cộng đồng</h2>
-          <ol class="sidebar-rules-list">
-            <li>Tôn trọng lẫn nhau</li>
-            <li>Chia sẻ thông tin chính xác</li>
-            <li>Không quảng cáo, spam</li>
-            <li>Bảo vệ quyền riêng tư</li>
-          </ol>
-        </div>
       </aside>
     </div>
 
@@ -1723,27 +1716,6 @@ useHead({
 .stat-label { font-size: var(--text-xs); color: var(--muted); }
 
 
-.sidebar-rules-list {
-  padding: 0; margin: 0; list-style: none;
-  counter-reset: rule-counter;
-  font-size: var(--text-sm); color: var(--ink-secondary);
-  display: flex; flex-direction: column; gap: var(--space-2);
-  line-height: var(--leading-relaxed);
-}
-.sidebar-rules-list li {
-  counter-increment: rule-counter;
-  display: flex; align-items: flex-start; gap: var(--space-2);
-}
-.sidebar-rules-list li::before {
-  content: counter(rule-counter);
-  flex-shrink: 0;
-  width: 20px; height: 20px; border-radius: var(--radius-full);
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: var(--text-xs); font-weight: var(--weight-bold);
-  background: rgba(var(--accent-rgb), .14); color: var(--accent-dark);
-  margin-top: 1px;
-}
-
 /* ── Report card ── */
 .report-entity-card {
   display: grid; gap: var(--space-3); margin-bottom: 0;
@@ -1825,7 +1797,6 @@ useHead({
 .dark .threads-compose { background: rgba(var(--accent-rgb),.06); }
 .dark .threads-compose:focus-within { background: rgba(var(--accent-rgb),.1); }
 .dark .threads-filter-bar { background: var(--surface-translucent, rgba(0,0,0,.72)); }
-.dark .sidebar-rules-list li::before { background: rgba(var(--accent-rgb),.2); color: var(--accent); }
 .dark .lb-rank-1 { --lb-gold: #f0c040; } .dark .lb-rank-2 { --lb-silver: #b0b3b8; } .dark .lb-rank-3 { --lb-bronze: #d4975a; }
 
 .mobile-discovery { display: none; }
