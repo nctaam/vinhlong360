@@ -676,17 +676,26 @@ const typeBreadcrumbUrl = computed(() => {
 
 const seasonLabel = computed(() => seasonText(entity.value?.season))
 
-const descriptionParagraphs = computed(() => {
+// P0-3: bỏ paragraph description đầu nếu chỉ lặp lại summary (đã render làm lead
+// phía trên) — giết double-print verbatim (description==summary / body in lại lead).
+const _normText = (s: unknown) => String(s ?? '').replace(/\s+/g, ' ').trim().toLowerCase()
+const descriptionBlocks = computed<string[]>(() => {
   const desc = entity.value?.description
   if (!desc || typeof desc !== 'string') return []
-  return desc.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0)
+  let blocks = desc.split(/\n\s*\n/).map(b => b.trim()).filter(b => b.length > 0)
+  const summary = entity.value?.summary
+  if (summary && blocks.length && _normText(blocks[0]) === _normText(summary)) {
+    blocks = blocks.slice(1)
+  }
+  return blocks
 })
+
+const descriptionParagraphs = computed(() => descriptionBlocks.value)
 
 interface DescSection { level: 0 | 2 | 3; heading: string; paragraphs: string[] }
 const descriptionSections = computed<DescSection[]>(() => {
-  const desc = entity.value?.description
-  if (!desc || typeof desc !== 'string') return []
-  const blocks = desc.split(/\n\s*\n/).map(b => b.trim()).filter(b => b.length > 0)
+  const blocks = descriptionBlocks.value
+  if (!blocks.length) return []
   const sections: DescSection[] = []
   let current: DescSection = { level: 0, heading: '', paragraphs: [] }
   for (const block of blocks) {
