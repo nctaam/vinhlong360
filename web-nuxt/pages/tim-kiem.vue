@@ -165,20 +165,8 @@
         </div>
       </section>
 
-      <section class="block reveal">
-        <div class="section-head sediment-head"><h2>Tìm theo khu vực</h2></div>
-        <div class="quick-picks">
-          <NuxtLink to="/khu-vuc/vinh-long" class="quick-pick">
-            <span class="quick-pick-label">Vĩnh Long</span>
-          </NuxtLink>
-          <NuxtLink to="/khu-vuc/ben-tre" class="quick-pick">
-            <span class="quick-pick-label">Bến Tre</span>
-          </NuxtLink>
-          <NuxtLink to="/khu-vuc/tra-vinh" class="quick-pick">
-            <span class="quick-pick-label">Trà Vinh</span>
-          </NuxtLink>
-        </div>
-      </section>
+      <!-- declutter-2 B4: Row E "Tìm theo khu vực" đã bỏ — 2 grid quick-picks xếp
+           chồng với Row D; intent khu-vực đã có ở footer + /khu-vuc/*. -->
     </template>
 
     <!-- Cross-links -->
