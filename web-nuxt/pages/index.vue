@@ -207,22 +207,8 @@
          nhịp editorial; OCOP còn tile cat-grid + decision card + tinh-hoa. GIỮ feature #1
          (Trải nghiệm, LCP priority). -->
 
-    <!-- 4. Lịch trình gợi ý — compact strip -->
-    <section v-if="itineraries.length" class="block block-compact reveal band" aria-label="Lịch trình gợi ý">
-      <div class="section-head section-head-tight">
-        <div class="sh-text">
-          <h2 class="h2-tight">Lịch trình <em class="ac-amber">gợi ý</em></h2>
-          <p class="sh-sub">Hành trình 1–2 ngày, đi là có ngay</p>
-        </div>
-        <NuxtLink class="see-all" to="/lich-trinh">Tìm hành trình khác →</NuxtLink>
-      </div>
-      <div class="scroll-row" role="region" aria-label="Lịch trình gợi ý" tabindex="0">
-        <ItineraryCard v-for="it in itineraries" :key="it.id" :itinerary="it" />
-      </div>
-      <div class="block-cta">
-        <NuxtLink to="/tao-lich-trinh" no-prefetch class="btn btn-outline"><IconLine name="list" /> Tạo lịch trình riêng</NuxtLink>
-      </div>
-    </section>
+    <!-- declutter-3 T16 (B1-4): strip "Lịch trình gợi ý" đã bỏ — thay bằng tile thứ 7
+         trong cat-grid (ct-lich-trinh); itineraries GIỮ trong hasHomeContent (degraded logic). -->
 
     <!-- 5. Từ cộng đồng — compact + trending tags; else always-populated editorial story.
          ClientOnly: communityData is lazy → renders null at prerender but resolves into the
@@ -440,6 +426,8 @@ const CATEGORY_LINKS = [
   { icon: 'gift', label: 'OCOP', hint: 'đặc sản làm quà', to: '/ocop', accent: 'clay', countKey: 'products', key: 'ocop' },
   { icon: 'lantern', label: 'Lễ hội', hint: 'lịch gần nhất', to: '/le-hoi', accent: 'river', countKey: 'events', key: 'le-hoi' },
   { icon: 'home', label: 'Lưu trú', hint: 'nghỉ lại theo khu vực', to: '/luu-tru', accent: 'leaf', countKey: '', key: 'luu-tru' },
+  // declutter-3 T16 (B1-4): tile thay strip "Lịch trình gợi ý" (section đã bỏ)
+  { icon: 'compass', label: 'Lịch trình', hint: 'gợi ý sẵn 1–3 ngày', to: '/lich-trinh', accent: 'amber', countKey: '', key: 'lich-trinh' },
   { icon: 'map', label: 'Bản đồ', hint: 'lọc theo vùng', to: '/ban-do', accent: 'river', countKey: 'areas', key: 'ban-do' },
 ]
 const categoryLinks = computed(() => {
@@ -1023,7 +1011,13 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cat-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3);
 }
-@media (min-width: 769px) { .cat-grid { grid-template-columns: repeat(6, 1fr); } }
+/* declutter-3 T16 (B1-4): 7 tile — mobile 3+3+1: tile cuối trải full hàng (chủ đích,
+   không orphan); desktop 4 cột, tile cuối span 2 → 2 hàng × 4 ô khít. */
+.cat-grid .cat-tile:last-child { grid-column: 1 / -1; }
+@media (min-width: 769px) {
+  .cat-grid { grid-template-columns: repeat(4, 1fr); }
+  .cat-grid .cat-tile:last-child { grid-column: span 2; }
+}
 /* ── Klook/GYG-style image tiles: each category shows its own logical photo,
    editorial label bottom-left over a scrim; small corner emoji as a wayfinding accent. ── */
 .cat-tile {
@@ -1057,6 +1051,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .ct-ocop    { --tile-img: url(/img/cat-ocop.webp); }
 .ct-le-hoi  { --tile-img: url(/img/cat-le-hoi.webp); }
 .ct-luu-tru { --tile-img: url(/img/cat-luu-tru.webp); }
+.ct-lich-trinh { --tile-img: url(/img/cat-lich-trinh.webp); }
 .ct-ban-do  { --tile-img: url(/img/cat-ban-do.webp); }
 
 /* ═══════════════════════════════════════════════════
