@@ -5,12 +5,51 @@
 /* Mobile-first baseline; scaled up on wider screens below. */
 .legal-page { max-width: 760px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-10); line-height: var(--leading-relaxed); }
 
-/* ── Hero (cat-org institutional motif) ────────────────────────────
-   .catalog-hero base styles (container, padding, icon, h1/p) come from
-   the global catalog.css; we only supply the institutional gradient. */
-.legal-hero { margin-bottom: var(--space-6); }
-.about-page .catalog-hero.cat-org {
-  background: linear-gradient(135deg, rgba(var(--secondary-rgb), .12) 0%, var(--bg-warm) 100%);
+/* ── Brand-masthead (declutter-3 T1: hero riêng .legal-hero/.cat-org đã bỏ —
+   2 trang pháp lý dùng cùng masthead với gioi-thieu/lien-he; rules copy theo
+   tiền lệ per-page của lien-he.vue:126-159 vì masthead chưa có file dùng chung). */
+.brand-masthead {
+  position: relative;
+  overflow: clip;
+  isolation: isolate;
+  margin: 0 calc(-1 * var(--space-5)) var(--space-6);
+  padding: var(--space-8) var(--space-5) var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  background:
+    var(--grain),
+    linear-gradient(120deg, color-mix(in srgb, var(--river-600) 14%, transparent) 0%, var(--bg-warm) 55%, rgba(var(--primary-rgb), .16) 120%);
+  background-blend-mode: overlay, normal;
+}
+.bm-inner { flex: 1 1 auto; min-width: 0; max-width: var(--measure-read); }
+.bm-eyebrow {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--tracking-caps);
+  color: var(--primary-fg-strong); margin: 0 0 var(--space-3);
+}
+.bm-tick { width: 14px; height: 1.5px; background: var(--accent, var(--amber-500)); flex-shrink: 0; }
+.brand-masthead h1 {
+  font-family: var(--font-editorial); font-weight: 600;
+  font-size: clamp(1.9rem, 1.55rem + 1.8vw, 2.7rem);
+  line-height: var(--leading-tight); letter-spacing: var(--tracking-tight);
+  color: var(--ink); margin: 0 0 var(--space-2); text-wrap: balance;
+}
+.bm-sub {
+  font-family: var(--font-editorial); font-style: italic;
+  font-size: clamp(1rem, .92rem + .4vw, 1.2rem);
+  line-height: var(--leading-snug); color: var(--ink-secondary, var(--muted));
+  margin: 0 0 var(--space-3); max-width: 46ch;
+}
+.dark .brand-masthead {
+  background:
+    var(--grain),
+    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(255,255,255,.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+}
+@media (max-width: 640px) {
+  .brand-masthead { flex-direction: column; text-align: center; padding-block: var(--space-6); }
+  .bm-inner { max-width: none; }
 }
 
 .legal-page h1 { font-size: var(--text-3xl); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); color: var(--primary-fg-strong); margin-bottom: var(--space-1); }

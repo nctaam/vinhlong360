@@ -1,18 +1,16 @@
 <template>
   <section class="legal-page about-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Điều khoản sử dụng' }]" />
-    <!-- Hero -->
-    <section class="catalog-hero cat-org legal-hero">
-      <div class="catalog-hero-inner">
-        <span class="catalog-hero-icon" aria-hidden="true">📋</span>
-        <div>
-          <h1>{{ doc.title }}</h1>
-          <p>{{ doc.seo_description }}</p>
-        </div>
+    <!-- Hero — brand-masthead dùng chung (declutter-3 T1: thống nhất với gioi-thieu,
+         bỏ catalog-hero cat-org lai tạp trên trang pháp lý) -->
+    <section class="brand-masthead about-masthead">
+      <div class="bm-inner">
+        <p class="bm-eyebrow"><span class="bm-tick" aria-hidden="true"></span>Hồ sơ pháp lý · Cập nhật {{ doc.updated_date }}</p>
+        <h1>{{ doc.title }}</h1>
+        <p class="bm-sub">{{ doc.seo_description }}</p>
       </div>
     </section>
 
-    <p class="dateline-eyebrow">HỒ SƠ PHÁP LÝ · CẬP NHẬT {{ doc.updated_date }}</p>
     <div class="legal-body editorial-body drop-cap" v-html="introHtml"></div>
 
     <!-- Jump-link TOC — 6 sections cross-link each other elsewhere on the site;
