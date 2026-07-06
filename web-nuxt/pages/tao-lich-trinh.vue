@@ -98,7 +98,7 @@
             {{ formatDistance(routeResult.totalDistance) }} · {{ formatDuration(routeResult.totalDuration) }}
           </div>
           <div v-if="routeLoading" class="route-total route-loading">Đang tính...</div>
-          <div v-else-if="routeError" class="route-total route-err" role="status">⚠️ Chưa tính được lộ trình (thử lại sau)</div>
+          <div v-else-if="routeError" class="route-total" role="status">⚠️ Chưa tính được lộ trình (thử lại sau)</div>
         </div>
 
         <p v-if="stops.length >= 20" class="max-stops-warn" role="status">Tối đa 20 điểm mỗi lịch trình.</p>

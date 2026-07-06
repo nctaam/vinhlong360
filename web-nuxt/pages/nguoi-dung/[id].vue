@@ -755,19 +755,6 @@ async function loadUserStats() {
   statsLoading.value = false
 }
 
-// ── Huy hiệu + tiến độ (chỉ hồ sơ của mình) ──
-type BadgeProgress = { id: string; label: string; icon: string; earned: boolean; current: number; target: number; hint?: string }
-const badgeProgress = ref<BadgeProgress[]>([])
-const earnedBadgeCount = computed(() => badgeProgress.value.filter(b => b.earned).length)
-
-async function loadBadgeProgress() {
-  if (!isSelf.value) return
-  try {
-    const res = await $fetch<{ badges: BadgeProgress[] }>('/api/me/badge-progress', { headers: authHeaders() })
-    badgeProgress.value = res.badges || []
-  } catch { /* non-critical */ }
-}
-
 // ── Thành tích (achievement showcase, chỉ hồ sơ của mình) ──
 type Achievement = {
   id: string; name: string; description: string; icon: string; category: string

@@ -175,18 +175,6 @@
 .fact .v { flex: 1; min-width: 0; font-weight: var(--weight-medium); color: var(--ink); }
 .fact-link { color: var(--primary-fg); font-weight: var(--weight-semibold); min-height: 44px; display: inline-flex; align-items: center; }
 .website-link { word-break: break-all; }
-.quality-panel { margin: var(--space-3) 0; padding: var(--space-3); border: .5px solid var(--leaf-100); background: var(--leaf-100); border-radius: var(--radius-md); font-size: var(--text-sm); transition: border-color .3s var(--ease-out), box-shadow .35s var(--ease-out-expo); }
-.quality-panel:hover { border-color: var(--secondary); box-shadow: var(--shadow-xs); }
-.quality-panel.needs-review { border-color: var(--clay-100); background: var(--clay-50); }
-.quality-panel.needs-review:hover { border-color: var(--accent-dark); }
-.quality-head { display: flex; align-items: center; gap: var(--space-2); color: var(--ink); }
-.quality-dot { width: 9px; height: 9px; border-radius: var(--radius-full); flex: 0 0 auto; }
-.quality-dot.ok { background: var(--secondary); }
-.quality-dot.warn { background: var(--warning); }
-.quality-source { display: block; margin-top: var(--space-2); color: var(--primary-fg); font-weight: var(--weight-bold); word-break: break-word; }
-.quality-note { margin: var(--space-2) 0 0; color: var(--muted); line-height: var(--leading-normal); }
-.quality-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
-.quality-tags span { padding: var(--space-1) var(--space-2); border-radius: var(--radius-full); background: var(--card); border: .5px solid var(--line); color: var(--muted); font-size: var(--text-xs); }
 .quality-report { display: inline-flex; align-items: center; margin-top: var(--space-3); color: var(--primary-fg); font-weight: var(--weight-bold); font-size: var(--text-sm); min-height: 44px; }
 .quality-report:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
@@ -345,65 +333,6 @@
 }
 
 
-/* ── P1: Provenance block (Nguồn · Cập nhật · Báo sai) — civic trust signal ── */
-.provenance-block {
-  margin-top: var(--space-3);
-  border: .5px solid var(--line);
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, rgba(185, 219, 198, .06) 0%, rgba(232, 163, 61, .03) 100%);
-  border-left: 3px solid var(--secondary);
-  font-size: var(--text-xs);
-  overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(var(--secondary-rgb), .1), var(--shadow-xs);
-  transition: box-shadow .35s var(--ease-out-expo);
-}
-.provenance-block:hover { box-shadow: 0 0 0 1px rgba(var(--secondary-rgb), .18), var(--shadow-sm); }
-.pb-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-}
-.pb-row + .pb-row,
-.provenance-block > .pb-report { border-top: .5px solid var(--line); }
-.pb-label {
-  flex: 0 0 64px;
-  color: var(--ink);
-  font-weight: var(--weight-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.7rem;
-}
-.pb-value { flex: 1; color: var(--ink); word-break: break-word; min-width: 0; }
-.pb-link {
-  color: var(--primary-fg);
-  font-weight: var(--weight-semibold);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  transition: color .3s var(--ease-out);
-}
-.pb-link:hover { color: var(--primary-hover); text-decoration: underline; }
-.pb-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-sm); }
-.pb-report {
-  width: 100%;
-  min-height: 44px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--primary-fg);
-  font: inherit;
-  font-weight: var(--weight-semibold);
-  text-align: left;
-  transition: background .3s var(--ease-out), color .3s var(--ease-out);
-}
-.pb-report:hover { background: var(--overlay-subtle); color: var(--primary-hover); }
-.pb-report:active { background: var(--line); transition-duration: .08s; }
-.pb-report:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
-.pb-icon { flex: 0 0 auto; }
-.pb-text { flex: 1; }
-
 /* ── Relationship list (hover highlight is on the li above, no extra borders needed) ── */
 
 @media (prefers-reduced-motion: reduce) {  .dc-bg { transition: opacity .3s; filter: none; }
@@ -421,7 +350,6 @@
   .pt-item:hover { transform: none; }
   .rel-list li:hover { transform: none; }
   .ocop-highlight:hover { transform: none; }
-  .provenance-block:hover { box-shadow: 0 0 0 1px rgba(var(--secondary-rgb), .1), var(--shadow-xs); }
   .dc-photo-btn:hover, .dc-photo-btn:active { transform: none; }
   .dc-thumb-more:hover, .dc-thumb-more:active { transform: none; }
   .desc-toggle:hover, .desc-toggle:active { transform: none; }
@@ -464,26 +392,6 @@
 /* ── Dark mode ── */
 .dark .ocop-highlight { background: linear-gradient(135deg, rgba(253,246,227,.08) 0%, rgba(251,231,218,.08) 100%); border-color: rgba(243,201,177,.2); }
 .dark .ocop-highlight strong { color: var(--primary-fg); }
-.dark .quality-panel { background: rgba(243,251,245,.06); border-color: rgba(185,219,198,.2); }
-.dark .quality-panel.needs-review { background: rgba(255,248,242,.06); border-color: rgba(243,201,177,.2); }
-.dark .provenance-block {
-  border-color: var(--line);
-  background: linear-gradient(135deg, rgba(75, 169, 125, .08) 0%, rgba(240, 160, 80, .03) 100%);
-  border-left-color: rgba(75, 169, 125, .55);
-}
-.dark .pb-row + .pb-row, .dark .provenance-block > .pb-report {
-  border-color: rgba(255, 255, 255, .05);
-}
-.dark .pb-label {
-  color: var(--muted);
-  font-weight: var(--weight-bold);
-}
-.dark .pb-report:hover {
-  background: rgba(255, 255, 255, .08);
-}
-.dark .pb-report:active {
-  background: rgba(255, 255, 255, .12);
-}
 .dark .ms-cell.on.peak { color: var(--ink-900); }
 .dark .detail-cover.has-cover-img .dc-overlay { background: linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.5) 40%, rgba(0,0,0,.18) 75%, rgba(0,0,0,.08) 100%); }
 .dark .practical-tips { border-color: var(--line); }
@@ -618,7 +526,6 @@
   .next-steps, .quality-report { display: none; }
   .fact-copy { display: none; }
   .detail-cover { break-after: avoid; }
-  .facts-grid { break-inside: avoid; }
   .detail-cover .dc-inner { color: #000; text-shadow: none; }
 }
 

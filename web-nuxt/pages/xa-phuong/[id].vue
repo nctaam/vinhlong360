@@ -71,7 +71,7 @@
         <!-- Tham quan nổi bật -->
         <section v-if="data.tourism?.length" class="wp-sec">
           <p class="wp-eyebrow">📍 Tham quan</p>
-          <h2><span class="sec-icon" aria-hidden="true">🗺️</span> Địa điểm tham quan <span class="cnt">({{ data.tourism.length }})</span></h2>
+          <h2>Địa điểm tham quan <span class="cnt">({{ data.tourism.length }})</span></h2>
           <div class="wp-grid grid">
             <EntityCard v-for="e in data.tourism" :key="e.id" :entity="e" />
           </div>
@@ -81,7 +81,7 @@
         <section v-if="data.lodging?.length" class="wp-sec reveal">
           <div class="wp-divider" aria-hidden="true"></div>
           <p class="wp-eyebrow">🏨 Nghỉ ngơi</p>
-          <h2><span class="sec-icon" aria-hidden="true">🏡</span> Lưu trú <span class="cnt">({{ data.lodging.length }})</span></h2>
+          <h2>Lưu trú <span class="cnt">({{ data.lodging.length }})</span></h2>
           <div class="wp-grid grid">
             <EntityCard v-for="e in data.lodging" :key="e.id" :entity="e" />
           </div>
@@ -91,7 +91,7 @@
         <section v-if="data.products?.length" class="wp-sec reveal">
           <div class="wp-divider" aria-hidden="true"></div>
           <p class="wp-eyebrow">🛍️ Đặc sản</p>
-          <h2><span class="sec-icon" aria-hidden="true">🍊</span> Đặc sản &amp; sản phẩm <span class="cnt">({{ data.products.length }})</span></h2>
+          <h2>Đặc sản &amp; sản phẩm <span class="cnt">({{ data.products.length }})</span></h2>
           <div class="wp-grid grid">
             <EntityCard v-for="e in data.products" :key="e.id" :entity="e" />
           </div>
@@ -434,13 +434,10 @@ onUnmounted(() => {
 .wp-divider { height: 0; border-top: .5px dashed var(--line); margin: var(--space-8) 0 var(--space-6); }
 .wp-eyebrow { font-size: var(--text-xs); font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--primary-fg); margin: 0 0 var(--space-1); }
 .wp-sec h2 { font-family: var(--font-editorial); font-size: var(--text-lg); font-weight: 600; letter-spacing: var(--tracking-tight); margin: 0 0 var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
-.sec-icon { font-size: var(--text-lg); }
 .cnt { color: rgba(var(--primary-rgb), .6); font-weight: var(--weight-medium); font-size: var(--text-sm); }
 .dark .cnt { color: rgba(var(--primary-rgb), .85); }
 /* ── CE3: unify the ward page under the phù-sa editorial voice (scoped .ce-ward) ── */
-/* Section heads already use the serif; add the vertical "sediment core" tick (river→amber→clay)
-   and retire the emoji sec-icon so the head reads as an editorial marker, not an app label. */
-.ce-ward .wp-sec h2 .sec-icon { display: none; }
+/* Section heads already use the serif; add the vertical "sediment core" tick (river→amber→clay). */
 .ce-ward .wp-sec h2::before {
   content: ""; flex: 0 0 auto; width: 4px; height: 1.05em; border-radius: var(--radius-full);
   background: linear-gradient(180deg, var(--river-600) 0%, var(--amber-600) 52%, var(--clay-600) 100%);

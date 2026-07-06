@@ -280,7 +280,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
-import { lunarLabel, isLunarFirstDay, isLunarFull, solarToLunar } from '~/composables/useLunar'
+import { solarToLunar } from '~/composables/useLunar'
 
 useReveal()
 const { f: pc } = usePageContent('su_kien')
@@ -378,7 +378,7 @@ function fadeEventImageError(ev: Event | string) {
 }
 
 
-const { today, calMonth, calYear, displayMonth, displayYear, calendarCells } = useEventCalendar(allEvents)
+const { calMonth, displayMonth, displayYear, calendarCells } = useEventCalendar(allEvents)
 
 // ── "Đất này giữ lịch riêng" — living-calendar hero devices (additive; does not
 // fork eventStatus/filtered above). ──
@@ -561,29 +561,4 @@ useHead(() => ({
 .catalog-hero.cat-event { background: linear-gradient(135deg, rgba(var(--accent-rgb, 255,193,7), .08) 0%, rgba(183, 110, 60, .06) 100%); }
 .dark .catalog-hero.cat-event { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 
-.event-row { position: relative; }
-.ical-btn {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-2);
-  cursor: pointer;
-  font-size: var(--text-sm);
-  opacity: 0;
-  transition: opacity .2s var(--ease-out), box-shadow .2s var(--ease-out);
-  z-index: 1;
-}
-.event-row:hover .ical-btn,
-.event-row:focus-within .ical-btn { opacity: 1; }
-.ical-btn:hover { background: var(--surface); box-shadow: var(--shadow-xs); }
-.ical-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; opacity: 1; }
-/* dark overrides for .ical-btn in dark-overrides.css */
-/* Touch devices have no :hover — the "add to calendar" affordance was invisible on
-   first pass on mobile. Make it always-visible wherever hover can't reveal it. */
-@media (hover: none) {
-  .ical-btn { opacity: 1; }
-}
 </style>

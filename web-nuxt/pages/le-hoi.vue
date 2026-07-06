@@ -302,7 +302,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { AREA_META } from '~/composables/useConstants'
-import { lunarLabel, isLunarFirstDay, isLunarFull, solarToLunar } from '~/composables/useLunar'
+import { solarToLunar } from '~/composables/useLunar'
 
 useReveal()
 const { f: pc } = usePageContent('le_hoi')
@@ -427,7 +427,7 @@ const STATUS_LABEL: Record<string, string> = { now: 'Đang diễn ra', soon: 'S�
 
 
 
-const { today, calMonth, calYear, displayMonth, displayYear, calendarCells } = useEventCalendar(allEvents)
+const { calMonth, displayMonth, displayYear, calendarCells } = useEventCalendar(allEvents)
 
 // ── "Đất này giữ lịch riêng" — living-calendar hero devices (additive; does not
 // fork eventStatus/filtered/categoryTokens above). ──
@@ -680,32 +680,4 @@ useHead({
   .lehoi-status.status-now { animation: none; }
 }
 
-.event-row { position: relative; }
-.ical-btn {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-1) var(--space-2);
-  cursor: pointer;
-  font-size: var(--text-sm);
-  opacity: 0;
-  transition: opacity .15s;
-  z-index: 1;
-}
-.event-row:hover .ical-btn,
-.event-row:focus-within .ical-btn {
-  opacity: 1;
-}
-.ical-btn:hover {
-  background: var(--surface);
-  box-shadow: var(--shadow-xs);
-}
-/* Touch devices have no :hover — the "add to calendar" affordance was invisible on
-   first pass on mobile. Make it always-visible wherever hover can't reveal it. */
-@media (hover: none) {
-  .ical-btn { opacity: 1; }
-}
 </style>

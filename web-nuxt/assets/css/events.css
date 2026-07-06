@@ -507,6 +507,36 @@
   to { opacity: 1; filter: blur(0); }
 }
 
+/* ── ical per-row button (was duplicated verbatim in le-hoi.vue + su-kien.vue
+   scoped styles; su-kien's copy had :focus-visible, le-hoi's did not — that
+   drift meant le-hoi's "Thêm vào lịch" button had no keyboard focus ring.
+   Reconciled to one shared copy so both routes get the focus ring. ── */
+.event-row { position: relative; }
+.ical-btn {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  opacity: 0;
+  transition: opacity .2s var(--ease-out), box-shadow .2s var(--ease-out);
+  z-index: 1;
+}
+.event-row:hover .ical-btn,
+.event-row:focus-within .ical-btn { opacity: 1; }
+.ical-btn:hover { background: var(--surface); box-shadow: var(--shadow-xs); }
+.ical-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; opacity: 1; }
+/* dark overrides for .ical-btn in dark-overrides.css */
+/* Touch devices have no :hover — the "add to calendar" affordance was invisible on
+   first pass on mobile. Make it always-visible wherever hover can't reveal it. */
+@media (hover: none) {
+  .ical-btn { opacity: 1; }
+}
+
 /* ── View toggle ── */
 .view-toggle {
   display: flex;

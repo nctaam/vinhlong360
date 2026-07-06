@@ -87,13 +87,9 @@ type MapPin = {
   lng: number
   emoji?: string
   category_color?: string
-  rating?: number
-  review_count?: number
   place_name?: string
   place_area?: string
   area?: string
-  confidence?: number
-  coords_approximate?: boolean
 }
 
 const MARKER_COLORS: Record<string, string> = {

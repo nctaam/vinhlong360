@@ -454,7 +454,6 @@ useHead({
 <style scoped>
 .search-row-spaced { margin-bottom: var(--space-5); }
 .sug-loading { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
-.fetch-error { color: var(--error); text-align: center; padding: var(--space-5); }
 
 /* Result strap-line — narrator's-voice reframe of the old SERP meta line + type-badge row. */
 .result-strap {
@@ -473,7 +472,6 @@ useHead({
 .search-row.error input { border-color: var(--error); box-shadow: 0 0 0 3px rgba(var(--error-rgb, 217, 79, 61), .12); }
 
 /* Unified search: người dùng + bài viết — secondary strip, smaller than the primary entity grid */
-.search-section { margin-top: var(--space-5); }
 .search-section-secondary { padding-top: var(--space-6); padding-bottom: var(--space-3); }
 .search-section-secondary .section-head { margin-bottom: var(--space-4); }
 .search-section-secondary .section-head h2 { font-size: var(--text-lg); }
@@ -681,7 +679,6 @@ useHead({
 /* Dark mode */
 .dark .quick-pick { background: var(--bg-alt); border-color: var(--line); }
 .dark .quick-pick:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); background: rgba(255,255,255,.04); }
-.dark .fetch-error { color: var(--error); }
 
 /* Recently viewed */
 /* Row C filmstrip — narrower flex-basis than the shared .scroll-row default (260px is

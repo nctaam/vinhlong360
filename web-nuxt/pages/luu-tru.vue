@@ -339,26 +339,6 @@ useHead(() => ({
 </script>
 
 <style scoped>
-/* Quick-pick supply count rendered as a secondary badge pill (Airbnb-style
-   "supply per region" cue). River-blue tint = accommodation category color. */
-.quick-pick-count {
-  align-self: center;
-  margin-top: var(--space-1);
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-full);
-  background: rgba(var(--river-rgb, var(--primary-rgb)), .12);
-  color: var(--tertiary, var(--primary-fg));
-  font-size: var(--text-xs);
-  font-weight: var(--weight-semibold);
-  line-height: 1.4;
-  transition: background .3s var(--ease-out);
-}
-.quick-pick.active .quick-pick-count,
-.quick-pick:hover .quick-pick-count {
-  background: rgba(var(--river-rgb, var(--primary-rgb)), .2);
-}
-/* dark overrides for .quick-pick-count in dark-overrides.css */
-
 /* Hero accommodation type breakdown — supply-by-category trust cue.
    Data-driven from typeCounts; only renders when data is present. */
 .catalog-type-breakdown {
@@ -388,7 +368,6 @@ useHead(() => ({
 /* dark overrides for .type-pill in dark-overrides.css */
 
 @media (prefers-reduced-motion: reduce) {
-  .quick-pick-count,
   .type-pill { transition: none; }
   .type-pill:hover { transform: none; }
 }

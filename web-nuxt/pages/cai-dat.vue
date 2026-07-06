@@ -1170,7 +1170,6 @@ onUnmounted(() => {
 .pw-bar { display: flex; gap: 3px; flex: 1; max-width: 160px; }
 .pw-segment { height: 4px; flex: 1; border-radius: 2px; background: var(--line); transition: background .2s; }
 .pw-label { font-size: .75rem; font-weight: 500; min-width: 80px; }
-.sf-success { color: var(--accent); font-size: .85rem; }
 .sf-loading { display: flex; align-items: center; gap: var(--space-2); color: var(--ink-700); font-size: .85rem; padding: var(--space-4) 0; }
 .sf-hint-spaced { margin-bottom: var(--space-4); }
 .sf-username-row { display: flex; align-items: center; gap: 0; border: 1px solid var(--border-input); border-radius: var(--radius-md); overflow: hidden; }
@@ -1213,7 +1212,6 @@ onUnmounted(() => {
 .danger-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .danger-item p { margin: 0; }
 .btn-danger-text { color: var(--danger) !important; }
-.blocked-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem; }
 .notif-prefs { display: flex; flex-direction: column; gap: .5rem; }
 .notif-pref-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem .8rem; border: 1px solid var(--border-input); border-radius: var(--radius-md); cursor: pointer; transition: background .2s; }
 .notif-pref-item:hover { background: var(--bg-warm); }
