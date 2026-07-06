@@ -70,7 +70,9 @@
         <div v-if="isSelf && (profile.login_streak ?? 0) > 0" class="streak-chip" :class="{ 'streak-milestone': isStreakMilestone }">
           🔥 {{ profile.login_streak }} ngày liên tiếp ghé bến
         </div>
-        <details v-if="isSelf && achievements.length" class="badge-showcase" open>
+        <!-- declutter-3 T6 (chủ duyệt 2026-07-06): showcase collapse mặc định — summary
+             "Thành tích (N/M)" chính là CTA mở; tính năng giữ nguyên. -->
+        <details v-if="isSelf && achievements.length" class="badge-showcase">
           <summary class="bs-title">Thành tích ({{ achievementsEarned }}/{{ achievements.length }})</summary>
           <div v-for="cat in achievementCategories" :key="cat.key" class="bs-cat">
             <h2 class="bs-cat-title">{{ cat.label }}</h2>
@@ -143,38 +145,17 @@
         </div>
       </div>
 
-      <div v-if="isSelf && Object.keys(userStats).length" class="profile-analytics card reveal">
-        <h2 class="pa-title">Tổng quan hoạt động</h2>
-        <div class="pa-grid">
-          <div class="pa-stat">
-            <strong>{{ userStats.likes_received || 0 }}</strong>
-            <span>lượt thích nhận</span>
-          </div>
-          <div class="pa-stat">
-            <strong>{{ userStats.reactions_received || 0 }}</strong>
-            <span>reactions nhận</span>
-          </div>
-          <div class="pa-stat">
-            <strong>{{ userStats.entities_reviewed || 0 }}</strong>
-            <span>nơi đã đánh giá</span>
-          </div>
-          <div class="pa-stat">
-            <strong>{{ userStats.collections || 0 }}</strong>
-            <span>danh sách</span>
-          </div>
-          <div v-if="profile.view_count_7d != null" class="pa-stat">
-            <strong>{{ profile.view_count_7d }}</strong>
-            <span>lượt xem tuần này</span>
-          </div>
-        </div>
-      </div>
+      <!-- declutter-3 T6: profile-analytics 5-stat đã bỏ — không actionable, trùng
+           một phần profile-stats phía trên. -->
 
       <div v-if="profile.is_private" class="profile-private-notice">
         <p>🔒 Hồ sơ riêng tư — theo dõi để xem nội dung.</p>
       </div>
 
-      <section v-if="!profile.is_private && heatmap.length" class="heatmap-section">
-        <h2 class="heatmap-title">Bản đồ con nước · {{ heatmapTotal }} đóng góp trong 1 năm qua</h2>
+      <!-- declutter-3 T6 (chủ duyệt 2026-07-06): heatmap collapse sau toggle — giữ
+           branding phù-sa "Bản đồ con nước" nguyên vẹn khi mở. -->
+      <details v-if="!profile.is_private && heatmap.length" class="heatmap-section">
+        <summary class="heatmap-title heatmap-summary">Bản đồ con nước · {{ heatmapTotal }} đóng góp trong 1 năm qua</summary>
         <div class="heatmap-grid">
           <div v-for="(week, wi) in heatmapWeeks" :key="wi" class="hm-week">
             <span v-for="(cell, di) in week" :key="di"
@@ -182,7 +163,7 @@
                   :title="cell.count ? `Ngày ${cell.date}: ${cell.count} đóng góp — như con nước lớn` : `Ngày ${cell.date}: chưa có đóng góp`" />
           </div>
         </div>
-      </section>
+      </details>
 
       <div v-if="!profile.is_private" class="profile-tabs" role="tablist" aria-label="Nội dung người dùng" @keydown="onProfileTabKeydown">
         <button type="button" id="profile-tab-posts" role="tab" :class="['chip', { active: tab === 'posts' }]" :aria-selected="tab === 'posts'" aria-controls="profile-panel-posts" :tabindex="tab === 'posts' ? 0 : -1" @click="setProfileTab('posts')">Bài viết</button>
@@ -733,18 +714,6 @@ async function checkFollowing() {
   } catch { /* non-critical */ }
 }
 
-// ── Thống kê hoạt động (chỉ hồ sơ của mình) ──
-const userStats = ref<Record<string, number>>({})
-const statsLoading = ref(false)
-async function loadUserStats() {
-  if (!isSelf.value) return
-  statsLoading.value = true
-  try {
-    userStats.value = await $fetch<Record<string, number>>('/api/me/stats', { headers: authHeaders() })
-  } catch { /* non-critical */ }
-  statsLoading.value = false
-}
-
 // ── Thành tích (achievement showcase, chỉ hồ sơ của mình) ──
 type Achievement = {
   id: string; name: string; description: string; icon: string; category: string
@@ -926,7 +895,7 @@ onMounted(() => {
   checkFollowing()
   checkBlocked()
   loadHeatmap()
-  if (isSelf.value) { loadUserStats(); loadAchievements() }
+  if (isSelf.value) { loadAchievements() }
   if (tab.value === 'collections' && isSelf.value) fetchCollections()
 })
 
@@ -1189,12 +1158,6 @@ useSeoMeta({
 .pc-hints { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
 .pc-hint { font-size: .72rem; color: var(--muted); padding: 2px 8px; border: 1px solid var(--border-input); border-radius: var(--radius-full); }
 
-.profile-analytics { padding: var(--space-4); margin-bottom: var(--space-4); }
-.pa-title { font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: var(--space-3); }
-.pa-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); text-align: center; }
-.pa-stat strong { display: block; font-size: 1.25rem; color: var(--ink); }
-.pa-stat span { font-size: .75rem; color: var(--muted); }
-@media (max-width: 520px) { .pa-grid { grid-template-columns: repeat(2, 1fr); } }
 
 /* Hoạt động (timeline) tab */
 .timeline-feed { display: flex; flex-direction: column; gap: var(--space-2); }
@@ -1209,6 +1172,11 @@ useSeoMeta({
 /* Bản đồ nhiệt hoạt động (365 ngày, kiểu GitHub) */
 .heatmap-section { margin: var(--space-3) 0; }
 .heatmap-title { font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: var(--space-2); }
+/* declutter-3 T6: heatmap trong <details> — summary là toggle */
+.heatmap-summary { cursor: pointer; list-style: none; }
+.heatmap-summary::-webkit-details-marker { display: none; }
+.heatmap-summary::before { content: "▸ "; display: inline-block; transition: transform .2s var(--ease-out); }
+details[open] > .heatmap-summary::before { content: "▾ "; }
 .heatmap-grid { display: flex; gap: 3px; overflow-x: auto; padding-bottom: var(--space-1); }
 .hm-week { display: flex; flex-direction: column; gap: 3px; }
 .hm-cell { width: 11px; height: 11px; border-radius: 2px; background: var(--line); }
