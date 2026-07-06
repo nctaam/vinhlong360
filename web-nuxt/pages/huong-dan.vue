@@ -13,7 +13,6 @@
               {{ s.icon }} {{ s.title }}
             </a>
           </template>
-          <a href="#phim-tat" class="snav-link" :class="{ active: activeId === 'phim-tat' }" @click.prevent="scrollTo('phim-tat')">⌨️ Phím tắt</a>
           <a href="#khac-phuc" class="snav-link" :class="{ active: activeId === 'khac-phuc' }" @click.prevent="scrollTo('khac-phuc')">🔧 Khắc phục sự cố</a>
         </nav>
         <p v-if="search && !filteredSections.length" class="sidebar-empty">Không tìm thấy mục nào.</p>
@@ -38,21 +37,19 @@
         </svg>
       </header>
 
-      <!-- Mobile TOC -->
+      <!-- Mobile TOC (declutter-3 T7: gộp search vào trong details — mobile 2 khối
+           xếp chồng → 1; desktop dùng sidebar. Số phần: sections + bắt-đầu + khắc-phục) -->
       <details class="mobile-toc reveal">
-        <summary class="mobile-toc-toggle">📑 Mục lục ({{ sections.length + 3 }} phần)</summary>
+        <summary class="mobile-toc-toggle">📑 Mục lục ({{ sections.length + 2 }} phần)</summary>
+        <div class="mobile-toc-search">
+          <input v-model="search" type="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
+        </div>
         <nav class="mobile-toc-nav" aria-label="Mục lục hướng dẫn">
           <a href="#bat-dau" @click.prevent="scrollTo('bat-dau')">🚀 Bắt đầu nhanh</a>
           <a v-for="s in sections" :key="s.id" :href="`#${s.id}`" @click.prevent="scrollTo(s.id)">{{ s.icon }} {{ s.title }}</a>
-          <a href="#phim-tat" @click.prevent="scrollTo('phim-tat')">⌨️ Phím tắt</a>
           <a href="#khac-phuc" @click.prevent="scrollTo('khac-phuc')">🔧 Khắc phục sự cố</a>
         </nav>
       </details>
-
-      <!-- Mobile search -->
-      <div class="mobile-search reveal">
-        <input v-model="search" type="search" placeholder="Tìm trong hướng dẫn..." aria-label="Tìm trong hướng dẫn" class="search-input" />
-      </div>
 
       <!-- ==================== BẮT ĐẦU NHANH ==================== -->
       <section id="bat-dau" class="guide-section guide-quickstart reveal sediment-head">
@@ -187,30 +184,13 @@
         Không tìm thấy nội dung nào cho "{{ search }}". Thử từ khóa khác hoặc <button type="button" class="link-btn" @click="search = ''">xóa bộ lọc</button>.
       </p>
 
-      <!-- ==================== PHÍM TẮT ==================== -->
-      <section id="phim-tat" class="guide-section reveal sediment-head">
-        <h2><span class="gs-icon" aria-hidden="true">⌨️</span>Phím tắt & Thao tác nhanh</h2>
-        <p class="section-intro">Các thao tác giúp sử dụng nhanh hơn trên máy tính và di động.</p>
-        <div class="shortcut-table-wrap">
-          <table class="shortcut-table" aria-label="Phím tắt và thao tác nhanh">
-            <thead>
-              <tr><th scope="col">Thao tác</th><th scope="col">Trên máy tính</th><th scope="col">Trên di động</th></tr>
-            </thead>
-            <tbody>
-              <tr v-for="(sc, i) in shortcuts" :key="i">
-                <td>{{ sc.action }}</td>
-                <td>{{ sc.desktop }}</td>
-                <td>{{ sc.mobile }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- ==================== KHẮC PHỤC SỰ CỐ ==================== -->
+      <!-- ==================== KHẮC PHỤC SỰ CỐ ====================
+           (declutter-3 T7: section Phím-tắt 11-hàng đã bỏ — thao tác đã rải trong
+           từng mục; giữ 3 mẹo trọng yếu inline dưới đây) -->
       <section id="khac-phuc" class="guide-section reveal sediment-head">
         <h2><span class="gs-icon" aria-hidden="true">🔧</span>Khắc phục sự cố</h2>
         <p class="section-intro">Gặp vấn đề khi sử dụng? Thử các giải pháp dưới đây trước khi liên hệ hỗ trợ.</p>
+        <p class="section-intro"><strong>Mẹo nhanh:</strong> phím <kbd>Esc</kbd> đóng lightbox/chat, phím <kbd>←</kbd> <kbd>→</kbd> (hoặc vuốt) chuyển ảnh, gõ <kbd>@</kbd> khi soạn bài để tag người/địa điểm.</p>
 
         <details v-for="issue in troubleshooting" :key="issue.title" class="guide-topic" open>
           <summary class="topic-summary">
@@ -237,15 +217,8 @@
         </div>
       </section>
 
-      <!-- ==================== CTA ==================== -->
-      <section class="guide-cta reveal">
-        <h2>Bắt đầu khám phá ngay!</h2>
-        <p>Mọi tính năng đều miễn phí. Không cần đăng ký để duyệt — chỉ cần tài khoản khi muốn đóng góp nội dung.</p>
-        <div class="cta-btns">
-          <NuxtLink to="/" class="btn btn-primary">Về trang chủ</NuxtLink>
-          <NuxtLink to="/huong-dan-thanh-vien" class="btn btn-ghost">Hệ thống cấp bậc & điểm</NuxtLink>
-        </div>
-      </section>
+      <!-- declutter-3 T7: CTA band đã bỏ — thay 1 dòng hỗ trợ -->
+      <p class="guide-support-line">Cần thêm giúp đỡ? <NuxtLink to="/lien-he">Liên hệ hỗ trợ</NuxtLink> · <NuxtLink to="/huong-dan-thanh-vien">Hệ thống cấp bậc &amp; điểm</NuxtLink></p>
 
       <p class="guide-updated">Cập nhật: {{ updatedDate }}</p>
     </section>
@@ -274,7 +247,7 @@ function scrollTo(id: string) {
 // Intersection Observer for active section tracking
 onMounted(() => {
   if (typeof IntersectionObserver === 'undefined') return
-  const ids = ['bat-dau', ...sections.map(s => s.id), 'phim-tat', 'khac-phuc']
+  const ids = ['bat-dau', ...sections.map(s => s.id), 'khac-phuc']
   const observer = new IntersectionObserver(
     entries => {
       for (const e of entries) {
@@ -906,21 +879,6 @@ const sections: Section[] = [
   },
 ]
 
-const shortcuts = [
-  { action: 'Tìm kiếm', desktop: 'Nhấn vào thanh tìm kiếm trên header', mobile: 'Nhấn biểu tượng 🔍 trên header' },
-  { action: 'Chuyển ảnh trong lightbox', desktop: 'Phím ← →', mobile: 'Vuốt trái/phải' },
-  { action: 'Đóng lightbox / modal / chat', desktop: 'Phím Esc', mobile: 'Nhấn nút ✕ hoặc vuốt xuống' },
-  { action: 'Chuyển dark mode', desktop: 'Nhấn ☀️/🌙 trên header', mobile: 'Nhấn ☀️/🌙 trên header' },
-  { action: 'Lưu yêu thích', desktop: 'Nhấn ❤️ trên trang chi tiết', mobile: 'Nhấn ❤️ trên trang chi tiết' },
-  { action: 'Tag người/địa điểm', desktop: 'Gõ @ khi soạn bài', mobile: 'Gõ @ khi soạn bài' },
-  { action: 'Gọi điện cho cơ sở', desktop: 'Nhấn SĐT (mở app gọi nếu có)', mobile: 'Nhấn SĐT → gọi trực tiếp' },
-  { action: 'Chat AI', desktop: 'Nhấn nút 💬 góc phải dưới', mobile: 'Nhấn nút 💬 góc phải dưới' },
-  { action: 'Cuộn lên đầu trang', desktop: 'Nhấn nút ⬆️ góc phải dưới', mobile: 'Nhấn nút ⬆️ góc phải dưới' },
-  { action: 'Zoom bản đồ', desktop: 'Cuộn chuột hoặc nút +/−', mobile: 'Chụm/mở 2 ngón tay' },
-  { action: 'Điều hướng bản đồ', desktop: 'Kéo chuột', mobile: 'Kéo 1 ngón tay' },
-  { action: 'Mở menu di động', desktop: '—', mobile: 'Nhấn ☰ góc phải trên' },
-]
-
 interface TroubleshootItem {
   symptom: string
   cause: string
@@ -997,8 +955,9 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .snav-link.active { background: rgba(var(--primary-rgb, 46, 125, 50), .1); color: var(--primary-fg); font-weight: var(--weight-semibold); }
 .sidebar-empty { font-size: var(--text-xs); color: var(--muted); padding: var(--space-2) var(--space-3); }
 
-/* Mobile TOC + search */
-.mobile-toc, .mobile-search { display: none; }
+/* Mobile TOC (declutter-3 T7: search gộp vào trong details) */
+.mobile-toc { display: none; }
+.mobile-toc-search { padding: var(--space-2) var(--space-3) var(--space-1); }
 
 /* Hero — brand-masthead treatment: river→clay wash, serif h1, SVG cẩm-nang
    motif, unique to this page family (matches Giới thiệu/Liên hệ masthead). */
@@ -1166,32 +1125,12 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .no-results { text-align: center; padding: var(--space-8); color: var(--muted); font-size: var(--text-sm); }
 .no-results a { color: var(--primary-fg); }
 
-/* Shortcuts table */
-.shortcut-table-wrap { overflow-x: auto; }
-.shortcut-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
-.shortcut-table th {
-  text-align: left; padding: var(--space-2) var(--space-3);
-  font-weight: var(--weight-semibold); color: var(--muted);
-  border-bottom: 1.5px solid var(--line); font-size: var(--text-xs);
-  text-transform: uppercase; letter-spacing: .04em;
-}
-.shortcut-table td { padding: var(--space-3); border-bottom: .5px solid var(--line); }
-.shortcut-table tbody tr:hover { background: var(--bg-warm); }
-
-/* CTA */
-.guide-cta {
-  text-align: center; padding: var(--space-8) var(--space-4); margin-top: var(--space-4);
-  background: linear-gradient(135deg, rgba(var(--primary-rgb, 46, 125, 50), .06) 0%, var(--bg-warm) 100%);
-  border-radius: var(--radius-xl); border: .5px solid var(--line);
-}
-.guide-cta h2 { border-bottom: none; padding-bottom: 0; font-size: var(--text-xl); }
-.guide-cta p { color: var(--muted); font-size: var(--text-sm); margin: var(--space-2) 0 var(--space-5); }
-.cta-btns { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
+.guide-support-line { text-align: center; color: var(--muted); font-size: var(--text-sm); margin-top: var(--space-6); }
+.guide-support-line a { color: var(--primary-fg); }
 
 .guide-updated { text-align: center; color: var(--ink-tertiary); font-size: var(--text-xs); margin-top: var(--space-6); }
 
 /* Dark */
-.dark .guide-cta { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
 .dark .guide-hero.brand-masthead {
   background:
     var(--grain),
@@ -1212,7 +1151,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 
 /* Print */
 @media print {
-  .guide-sidebar, .mobile-toc, .mobile-search, .guide-cta, .topic-chevron, .see-also { display: none; }
+  .guide-sidebar, .mobile-toc, .guide-support-line, .topic-chevron, .see-also { display: none; }
   .guide-layout { display: block; max-width: 100%; }
   .guide-hero.brand-masthead { background: none; border: none; padding: 0; }
   .bm-motif { display: none; }
@@ -1225,7 +1164,7 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 /* Mobile */
 @media (max-width: 900px) {
   .guide-sidebar { display: none; }
-  .mobile-toc, .mobile-search { display: block; margin-bottom: var(--space-4); }
+  .mobile-toc { display: block; margin-bottom: var(--space-4); }
   .mobile-toc { border: .5px solid var(--line); border-radius: var(--radius-xl); }
   .mobile-toc-toggle {
     padding: var(--space-3) var(--space-4); cursor: pointer; list-style: none;
