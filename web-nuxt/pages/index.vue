@@ -215,7 +215,7 @@
       image="/img/spread/song-nuoc.webp"
       srcset="/img/spread/song-nuoc-640.webp 640w, /img/spread/song-nuoc-1024.webp 1024w, /img/spread/song-nuoc.webp 1536w"
       v-bind="SPREAD"
-      title-accent="chạm sông"
+      image-alt="Miền sông nước miệt vườn Vĩnh Long — dừa nước ven rạch và ghe xuồng trên sông."
     />
 
     <!-- 3a2. Feature — photo-led editorial block (Đặc sản OCOP), mirrored -->
@@ -395,7 +395,7 @@ const FEATURE_OCOP = {
 const SPREAD = {
   kicker: 'Vĩnh Long',
   title: 'Nơi vườn chạm sông',
-  subtitle: 'Vĩnh Long mới — một miền phù sa Cửu Long, trái ngọt bốn mùa và những phiên chợ nổi.',
+  subtitle: 'Nơi sông Cổ Chiên ôm 4 cù lao An Bình — gốm đỏ Mang Thít, bưởi Năm Roi, chợ nổi Trà Ôn họp lúc tinh mơ.',
   ctaText: 'Khám phá vùng đất',
   ctaTo: '/ban-do',
 }
