@@ -37,13 +37,9 @@
         <h1>{{ entity.name }}</h1>
         <p v-if="heroHook" class="dc-hook">{{ heroHook }}</p>
         <p v-if="entity.place_name" class="dc-place"><NuxtLink v-if="entity.placeId" :to="`/xa-phuong/${entity.placeId}`" class="dc-place-link">{{ entity.place_name }}</NuxtLink><template v-else>{{ entity.place_name }}</template></p>
+        <!-- declutter-3 T17 (B5d): Save/Share dời về sidebar .aside-actions (additive-first,
+             verify xong mới xoá ở đây) — hero còn tối đa 3 nút hành-vi-chuyến-đi -->
         <div class="dc-actions">
-          <ClientOnly>
-            <SaveButton :entity="entity" :show-label="true" />
-          </ClientOnly>
-          <ClientOnly>
-            <ShareButton :title="entity.name" :text="entity.summary" />
-          </ClientOnly>
           <ClientOnly>
             <div class="dc-trip">
               <button v-if="entity.type === 'event'" type="button" :class="['trip-btn', { active: rsvpGoing }]" :aria-pressed="rsvpGoing" :disabled="actionPending" @click="toggleRsvp">
@@ -258,6 +254,15 @@
       <aside class="detail-aside" aria-label="Thông tin bổ sung">
         <!-- Contact Widget (sticky, replaces old contact-row on desktop) -->
         <LazyContactWidget :entity="entity" class="detail-contact-widget" />
+
+        <!-- declutter-3 T17 (B5d): Save/Share dời từ hero về sidebar (desktop) —
+             state sync qua useFavorites, cùng composable với JourneyBar -->
+        <ClientOnly>
+          <div class="aside-actions">
+            <SaveButton :entity="entity" :show-label="true" />
+            <ShareButton :title="entity.name" :text="entity.summary" />
+          </div>
+        </ClientOnly>
 
         <!-- OCOP highlight -->
         <div v-if="entity.attributes?.ocop" class="ocop-highlight">
@@ -781,10 +786,8 @@ const practicalTips = computed(() => {
   if (a.booking_note) tips.push({ icon: '📝', label: 'Đặt trước', value: a.booking_note })
   if (a.transport) tips.push({ icon: '🚗', label: 'Di chuyển', value: a.transport })
   if (a.fee) tips.push({ icon: '🎫', label: 'Phí vào cửa', value: a.fee })
-  if (a.amenities) {
-    const am = Array.isArray(a.amenities) ? a.amenities.join(', ') : a.amenities
-    tips.push({ icon: '✅', label: 'Tiện ích', value: am })
-  }
+  // declutter-3 T17 (A8 thu-scope D5): amenities 1 nguồn duy nhất = facts-card "Tiện ích"
+  // (bảng tham chiếu) — bỏ dòng lặp trong practical-tips.
   if (a.family_friendly || a.suitable_for?.includes('family'))
     tips.push({ icon: '👨‍👩‍👧‍👦', label: 'Gia đình', value: 'Phù hợp cho gia đình có trẻ em' })
   if (a.parking) tips.push({ icon: '🅿️', label: 'Đậu xe', value: a.parking })
@@ -1250,6 +1253,11 @@ useHead({
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
 }
+
+/* declutter-3 T17 (B5d): Save/Share dời từ hero về sidebar — 2 nút chia đều hàng.
+   Sidebar stack dưới article trên mobile nên mọi viewport đều với tới. */
+.aside-actions { display: flex; gap: var(--space-2); margin: var(--space-3) 0 var(--space-4); }
+.aside-actions > * { flex: 1; }
 
 
 /* On mobile, hide the desktop ContactWidget (it renders its own fixed bottom bar) */
