@@ -159,14 +159,14 @@ const DEFAULT_NAV_GROUPS: Array<{ label: string; to?: string; children?: { to: s
 const navGroups = computed(() => ss('navigation.nav_groups', DEFAULT_NAV_GROUPS) as typeof DEFAULT_NAV_GROUPS)
 
 const DEFAULT_FOOTER_COLUMNS = [
-  { title: 'Khám phá', links: [
+  // declutter-2 A3b: 7 link → 4 curated (ocop tới được từ san-pham + nav; luu-tru/su-kien
+  // có trong nav-group "Khám phá" topbar). CMS key footer.columns override được — DB prod
+  // cập nhật qua AdminCP lúc deploy (ghi chú vận hành trong plan).
+  { title: 'Gợi ý nhanh', links: [
     { to: '/du-lich', label: 'Du lịch & trải nghiệm' },
     { to: '/san-pham', label: 'Sản phẩm địa phương' },
-    { to: '/ocop', label: 'Sản phẩm OCOP' },
     { to: '/theo-mua', label: 'Đặc sản theo mùa' },
-    { to: '/luu-tru', label: 'Lưu trú' },
     { to: '/le-hoi', label: 'Lễ hội truyền thống' },
-    { to: '/su-kien', label: 'Sự kiện' },
   ] },
   { title: 'Công cụ', links: [
     { to: '/ban-do', label: 'Bản đồ' },

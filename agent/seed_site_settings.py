@@ -92,14 +92,13 @@ DEFAULTS: dict[str, dict] = {
     },
     "footer.columns": {
         "value": [
-            {"title": "Khám phá", "links": [
+            # declutter-2 A3b: 7 link -> 4 curated (đồng bộ DEFAULT_FOOTER_COLUMNS FE;
+            # DB prod đã seed thì cập nhật qua AdminCP lúc deploy — ghi chú vận hành).
+            {"title": "Gợi ý nhanh", "links": [
                 {"to": "/du-lich", "label": "Du lịch & trải nghiệm"},
                 {"to": "/san-pham", "label": "Sản phẩm địa phương"},
-                {"to": "/ocop", "label": "Sản phẩm OCOP"},
                 {"to": "/theo-mua", "label": "Đặc sản theo mùa"},
-                {"to": "/luu-tru", "label": "Lưu trú"},
                 {"to": "/le-hoi", "label": "Lễ hội truyền thống"},
-                {"to": "/su-kien", "label": "Sự kiện"},
             ]},
             {"title": "Công cụ", "links": [
                 {"to": "/ban-do", "label": "Bản đồ"},
