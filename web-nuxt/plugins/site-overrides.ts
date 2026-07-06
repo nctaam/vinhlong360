@@ -1,4 +1,5 @@
 import { applySiteOverrides } from '~/composables/useConstants'
+import { useSiteSettingsData } from '~/composables/useSiteSettings'
 
 /**
  * A1 — apply CMS metadata overrides (categories.*, metadata.office_kind) into
@@ -14,10 +15,7 @@ export default defineNuxtPlugin(async () => {
   // Never let a settings fetch failure stall or break app init — overrides are
   // a non-essential enhancement; on any error the maps keep their defaults.
   try {
-    const { data } = await useAsyncData('site-settings',
-      () => apiFetch<Record<string, unknown>>('/api/site-settings'),
-      { server: true, default: () => ({}) },
-    )
+    const { data } = await useSiteSettingsData()
     const s = (data.value || {}) as Record<string, unknown>
     applySiteOverrides({
       typeOverrides: s['categories.type_overrides'],
