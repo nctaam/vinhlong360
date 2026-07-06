@@ -35,10 +35,6 @@
           <strong>Tháng {{ month }} — <em>{{ seasonQuarter.tag }}</em></strong>
           <p>{{ seasonQuarter.note }}</p>
         </div>
-        <div v-if="inSeasonItems.length" class="season-moment-pill">
-          <CountUp :value="inSeasonItems.length" class="smp-num" />
-          <span class="smp-label">mục đang mùa</span>
-        </div>
       </div>
 
       <div v-if="inSeasonItems.length" class="catalog-stats">
@@ -531,13 +527,6 @@ useHead(() => ({
 .season-moment-text strong { display: block; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
 .season-moment-text strong em { font-family: var(--font-editorial); font-style: italic; font-weight: 500; color: var(--primary-fg); }
 .season-moment-text p { margin: var(--space-1) 0 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
-.season-moment-pill {
-  display: inline-flex; flex-direction: column; align-items: center;
-  padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
-  background: rgba(var(--accent-rgb), .12); flex-shrink: 0;
-}
-.smp-num { font-size: 1.5rem; font-weight: var(--weight-bold); color: var(--ink); line-height: 1.1; }
-.smp-label { font-size: var(--text-xs); color: var(--muted); white-space: nowrap; }
 
 /* Hero retinting per quarter (§1.2) — scrubbing the ring changes the whole
    hero's color temperature, not just an emoji. Cross-fades via `transition`
@@ -705,7 +694,6 @@ useHead(() => ({
 /* ── Dark mode ─────────────────────────────── */
 .dark .season-moment { border-top-color: rgba(255, 255, 255, .1); }
 .dark .season-ring { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
-.dark .season-moment-pill { background: rgba(var(--accent-rgb), .18); }
 .dark .season-badge {
   background: linear-gradient(135deg, rgba(0, 0, 0, .72), rgba(0, 0, 0, .82));
   color: var(--text-on-dark, #fff);
@@ -732,7 +720,6 @@ useHead(() => ({
   .season-ring { width: 76px; height: 76px; }
   .season-ring::after { inset: 10px; }
   .season-ring-emoji { font-size: 1.8rem; }
-  .season-moment-pill { grid-column: 1 / -1; flex-direction: row; gap: var(--space-2); justify-content: center; }
   /* Ring shrank 108→76px (radius 54→38px); re-anchor notches so ticks still
      sit right on the smaller ring's edge instead of floating outside it. */
   .ring-notch { width: 22px; height: 22px; margin: -11px 0 0 -11px; transform: rotate(var(--notch-angle)) translateY(-29px); }
