@@ -53,14 +53,14 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 
       <!-- Location -->
       <button v-if="placeName" type="button" :class="['cw-row cw-copyable', { copied: copiedField === 'place' }]" :aria-label="`Sao chép địa chỉ: ${placeName}`" @click="copyText(placeName, 'place')">
-        <span class="cw-icon" aria-hidden="true">📍</span>
+        <IconLine name="pin" class="cw-icon" />
         <span class="cw-text">{{ placeName }}</span>
         <span class="cw-check" aria-hidden="true">✓</span>
       </button>
 
       <!-- Hours -->
       <button v-if="hours" type="button" :class="['cw-row cw-copyable', { copied: copiedField === 'hours' }]" :aria-label="`Sao chép giờ mở cửa: ${hours}`" @click="copyText(hours, 'hours')">
-        <span class="cw-icon" aria-hidden="true">🕒</span>
+        <IconLine name="clock" class="cw-icon" />
         <span class="cw-text">{{ hours }}</span>
         <span class="cw-check" aria-hidden="true">✓</span>
       </button>
@@ -70,19 +70,19 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
       <!-- CTA buttons -->
       <div class="cw-ctas">
         <a v-if="zalo" :href="`https://zalo.me/${zalo}`" target="_blank" rel="noopener" class="cw-btn cw-btn-primary" :aria-label="`Nhắn Zalo cho ${entity.name}`">
-          <span class="cw-icon" aria-hidden="true">💬</span> Nhắn Zalo
+          <IconLine name="message" class="cw-icon" /> Nhắn Zalo
         </a>
         <a v-if="phone" :href="`tel:${phone}`" class="cw-btn cw-btn-secondary" :aria-label="`Gọi điện cho ${entity.name}`">
-          <span class="cw-icon" aria-hidden="true">📞</span> Gọi điện
+          <IconLine name="phone" class="cw-icon" /> Gọi điện
         </a>
         <NuxtLink v-if="!hasContact" :to="mapUrl" class="cw-btn cw-btn-secondary">
-          <span class="cw-icon" aria-hidden="true">📍</span> Xem bản đồ
+          <IconLine name="pin" class="cw-icon" /> Xem bản đồ
         </NuxtLink>
       </div>
 
       <!-- Website -->
       <a v-if="website" :href="website" target="_blank" rel="noopener" class="cw-website">
-        🌐 {{ website.replace(/^https?:\/\//, '').replace(/\/$/, '') }}
+<IconLine name="globe" /> {{ website.replace(/^https?:\/\//, '').replace(/\/$/, '') }}
       </a>
     </div>
   </aside>

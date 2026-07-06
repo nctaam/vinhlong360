@@ -8,23 +8,23 @@
     <div v-if="open" ref="menuRef" class="dropdown-menu show menu-editorial" role="menu" @keydown="onMenuKeydown">
       <span class="menu-eyebrow">Sổ tay của bạn</span>
       <NuxtLink to="/tai-khoan" class="dropdown-item" role="menuitem" @click="open = false">
-        <span class="menu-icon" aria-hidden="true">📊</span> Tài khoản
+        <IconLine name="user" class="menu-icon" /> Tài khoản
       </NuxtLink>
       <NuxtLink v-if="user" :to="userPath(user.username || user.id)" class="dropdown-item" role="menuitem" @click="open = false">
-        <span class="menu-icon" aria-hidden="true">👤</span> Trang cá nhân
+        <IconLine name="user" class="menu-icon" /> Trang cá nhân
       </NuxtLink>
       <NuxtLink to="/thong-bao" class="dropdown-item" role="menuitem" @click="open = false">
-        <span class="menu-icon" aria-hidden="true">🔔</span> Thông báo
+        <IconLine name="bell" class="menu-icon" /> Thông báo
         <span v-if="unreadCount" class="menu-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
       </NuxtLink>
       <NuxtLink to="/da-luu" class="dropdown-item" role="menuitem" @click="open = false">
-        <span class="menu-icon" aria-hidden="true">💾</span> Đã lưu
+        <IconLine name="bookmark" class="menu-icon" /> Đã lưu
       </NuxtLink>
       <NuxtLink to="/cai-dat" class="dropdown-item" role="menuitem" @click="open = false">
-        <span class="menu-icon" aria-hidden="true">⚙️</span> Cài đặt
+        <IconLine name="sliders" class="menu-icon" /> Cài đặt
       </NuxtLink>
       <span class="menu-rule" aria-hidden="true"></span>
-      <button type="button" class="dropdown-item" role="menuitem" @click="doLogout"><span class="menu-icon" aria-hidden="true">🚪</span> Đăng xuất</button>
+      <button type="button" class="dropdown-item" role="menuitem" @click="doLogout"><IconLine name="logout" class="menu-icon" /> Đăng xuất</button>
     </div>
     </Transition>
   </div>

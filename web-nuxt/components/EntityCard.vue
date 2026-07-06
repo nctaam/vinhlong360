@@ -30,8 +30,8 @@
       <p class="summary card-teaser">{{ storyTeaser }}</p>
       <p v-if="placeName" class="place">{{ placeName }}</p>
       <div v-if="cardMeta" class="card-meta">
-        <span v-if="cardMeta.price" class="cm-item">💰 {{ cardMeta.price }}</span>
-        <span v-if="cardMeta.hours" class="cm-item">🕒 {{ cardMeta.hours }}</span>
+        <span v-if="cardMeta.price" class="cm-item"><IconLine name="tag" /> {{ cardMeta.price }}</span>
+        <span v-if="cardMeta.hours" class="cm-item"><IconLine name="clock" /> {{ cardMeta.hours }}</span>
       </div>
       <div v-if="ratingDisplay" class="card-rating">
         <span class="cr-stars">{{ ratingDisplay.stars }}</span>

@@ -15,7 +15,7 @@
             <span class="ef-author">{{ p.display_name }}</span>
             <p class="ef-text">{{ truncateText(p.content, 120) }}</p>
             <span class="ef-meta">
-              <span v-if="p.rating" class="ef-rating emoji-chip" aria-hidden="true">{{ '⭐'.repeat(p.rating) }}</span>
+              <span v-if="p.rating" class="ef-rating" aria-hidden="true"><IconLine v-for="i in p.rating" :key="i" name="star" /></span>
               <span v-if="p.like_count" class="ef-likes">{{ p.like_count }} thích</span>
               <time :datetime="p.created_at">{{ timeAgo(p.created_at) }}</time>
             </span>

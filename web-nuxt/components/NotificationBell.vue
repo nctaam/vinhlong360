@@ -22,7 +22,7 @@
             :class="['notif-item', { unread: !n.is_read }]"
             @click="goToNotif(n)"
           >
-            <span class="notif-item-icon" aria-hidden="true">{{ notifIcon(n) }}</span>
+            <IconLine :name="notifIcon(n)" class="notif-item-icon" />
             <div class="notif-item-content">
               <div class="notif-item-title">{{ n.title }}</div>
               <div v-if="n.body" class="notif-item-body">{{ n.body }}</div>
@@ -75,12 +75,12 @@ function doMarkRead() {
 }
 
 function notifIcon(n: Notification): string {
-  if (n.type === 'like') return '❤️'
-  if (n.type === 'comment') return '💬'
-  if (n.type === 'follow') return '👤'
-  if (n.type === 'mention') return '📣'
-  if (n.type === 'repost') return '🔁'
-  return '🔔'
+  if (n.type === 'like') return 'heart'
+  if (n.type === 'comment') return 'message'
+  if (n.type === 'follow') return 'user'
+  if (n.type === 'mention') return 'megaphone'
+  if (n.type === 'repost') return 'repeat'
+  return 'bell'
 }
 
 function goToNotif(n: Notification) {

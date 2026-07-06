@@ -35,7 +35,7 @@
       ></textarea>
 
       <!-- Image attach -->
-      <p v-if="!formImages.length" class="rf-photo-hint"><span class="rf-photo-icon" aria-hidden="true">📸</span> Thêm ảnh thật để giúp cộng đồng + nhận huy hiệu <strong>Nhiếp ảnh</strong></p>
+      <p v-if="!formImages.length" class="rf-photo-hint"><IconLine name="camera" class="rf-photo-icon" /> Thêm ảnh thật để giúp cộng đồng + nhận huy hiệu <strong>Nhiếp ảnh</strong></p>
       <div class="rf-images">
         <div v-if="formImages.length" class="rf-image-grid">
           <div v-for="(img, i) in formImages" :key="img" class="rf-image-thumb">
