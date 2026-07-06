@@ -86,12 +86,7 @@
         <button type="button" class="btn btn-outline" @click="refreshNuxtData('season-entities')">Thử lại</button>
       </template>
     </EmptyState>
-    <ClientOnly>
-      <SkeletonGrid v-if="!data && !fetchError" :count="12" />
-      <template #fallback>
-        <SkeletonGrid v-if="!data && !fetchError" :count="12" />
-      </template>
-    </ClientOnly>
+    <SkeletonGrid v-if="!data && !fetchError" :count="12" />
 
     <!-- Peak highlights (honor row) -->
     <section ref="resultsSection" v-if="peakItems.length" class="block band reveal">
@@ -570,10 +565,6 @@ useHead(() => ({
 .dark .catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--sediment-teal-rgb), .08) 100%); }
 .dark .catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .18) 0%, rgba(255,255,255,.02) 100%); }
 
-/* Signature: animated seasonal hero emoji */
-.catalog-hero-icon { animation: seasonal-bob 2.8s var(--ease-out) infinite; will-change: transform; }
-@keyframes seasonal-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-
 /* Section eyebrow + dividers */
 .section-eyebrow {
   font-size: var(--text-xs); font-weight: var(--weight-semibold);
@@ -592,13 +583,6 @@ useHead(() => ({
   background: radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), .08), transparent 80%);
   z-index: -1; pointer-events: none;
 }
-.peak-banner .seasonal-banner-icon { animation: honor-spark 3s var(--ease-out) infinite; }
-@keyframes honor-spark {
-  0% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.12) rotate(180deg); }
-  100% { transform: scale(1) rotate(360deg); }
-}
-
 /* Stagger on month change / reveal */
 .scroll-row > .season-item,
 .grid > .season-item { animation: seasonItemIn .5s var(--ease-out-expo) both; }

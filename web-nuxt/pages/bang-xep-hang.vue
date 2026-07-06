@@ -2,7 +2,7 @@
   <section class="page bxh-page">
     <Breadcrumb :items="[{ label: 'Trang chủ', to: '/' }, { label: 'Cộng đồng', to: '/cong-dong' }, { label: 'Bảng xếp hạng' }]" />
     <header class="bxh-head">
-      <p class="bxh-eyebrow">Sổ vàng cộng đồng · {{ periodEyebrowLabel }}</p>
+      <p class="bxh-eyebrow">Sổ vàng cộng đồng</p>
       <h1 class="bxh-h1">Thành viên tích cực</h1>
       <p>Xếp hạng theo điểm danh tiếng — đánh giá, bài viết, ảnh và lượt theo dõi. <NuxtLink to="/huong-dan-thanh-vien" class="bxh-guide-link">Cách tính điểm?</NuxtLink></p>
     </header>
@@ -79,7 +79,6 @@
 
 <script setup lang="ts">
 useReveal()
-const fetchFailed = ref(false)
 const period = ref<'7d' | '30d' | 'all'>('all')
 const category = ref<'total' | 'posts' | 'reviews' | 'photos'>('total')
 const q = ref('')
@@ -96,12 +95,11 @@ const categoryFilters = [
   { key: 'posts', label: 'Bài viết' },
   { key: 'photos', label: 'Ảnh' },
 ]
-const periodEyebrowLabel = computed(() => period.value === '7d' ? 'cập nhật tuần này' : period.value === '30d' ? 'cập nhật tháng này' : 'cập nhật mọi thời điểm')
-
 const { data, pending, refresh } = await useAsyncData('leaderboard',
   () => apiFetch<any>(`/api/community/leaderboard?limit=50&period=${period.value}&category=${category.value}&q=${encodeURIComponent(q.value)}`)
-    .catch(() => { fetchFailed.value = true; return { leaders: [], self: null } }),
+    .catch(() => ({ leaders: [], self: null, failed: true })),
   { watch: [period, category] })
+const fetchFailed = computed(() => data.value?.failed === true)
 
 const { debounced: debouncedRefresh } = useDebounce(() => refresh(), 350)
 watch(q, () => debouncedRefresh())

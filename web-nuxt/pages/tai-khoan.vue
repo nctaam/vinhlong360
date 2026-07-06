@@ -238,7 +238,6 @@ const profileCompletion = computed(() => Math.round((completedProfileChecks.valu
 const securityChecks = computed(() => [
   { key: 'password', label: 'Mật khẩu', done: hasPassword.value },
   { key: 'sessions', label: 'Dữ liệu tài khoản tải ổn định', done: !fetchIssue.value },
-  { key: 'privacy', label: 'Có kiểm soát riêng tư', done: true },
 ])
 const completedSecurityChecks = computed(() => securityChecks.value.filter(i => i.done).length)
 const securitySummary = computed(() => `${completedSecurityChecks.value}/${securityChecks.value.length} lớp ổn định`)

@@ -361,7 +361,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
 import { TYPE_META, AREA_META } from '~/composables/useConstants'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { useJourneyActions } from '~/composables/useJourneyActions'
@@ -556,7 +555,6 @@ const heroFeatureReason = computed(() => {
   return hfRegion.value ? `${label} tại ${hfRegion.value}` : `${label} nổi bật`
 })
 
-const stats = computed(() => homeData.value?.stats || null)
 const areaCounts = computed<Record<string, number>>(() => homeData.value?.area_counts || {})
 
 const firstUpcomingEvent = computed<any>(() => upcomingEvents.value[0] || null)
@@ -995,12 +993,6 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .home .hero-nearby:hover { text-decoration: underline; text-underline-offset: 3px; }
 .home .hero-nearby:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 4px; }
 
-/* ═══════════════════════════════════════════════════
-   HERO STATS — inline strip at bottom of hero
-   ═══════════════════════════════════════════════════ */
-/* Editorial "contents" strip — hairline-ruled meta line, left-aligned: serif numerals +
-   tracked-caps labels. Replaces the centred glass stat-banner (a documented AI tell). */
-
 /* Decision layer */
 .home-decision { padding-top: var(--space-8); }
 .decision-shell {
@@ -1073,11 +1065,14 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   transition: transform .3s var(--ease-spring-gentle), opacity .3s var(--ease-out);
 }
 .dx-item:hover .dx-go { transform: translateX(2px); opacity: 1; }
-.dx-event   { --tone: #d1503f; }
+.dx-event   { --tone: var(--clay-600); }
 .dx-season  { --tone: var(--primary-fg); }
-.dx-planner { --tone: #3f7fb4; }
-.dx-food    { --tone: var(--accent-text, #c0872e); }
-.dx-map     { --tone: #4a78aa; }
+.dx-planner { --tone: var(--river-600); }
+.dx-food    { --tone: var(--amber-700); }
+.dx-map     { --tone: var(--river-600); }
+.dark .dx-event { --tone: var(--clay-400); }
+.dark .dx-planner, .dark .dx-map { --tone: #74ABB5; }
+.dark .dx-food { --tone: var(--amber-500); }
 @media (max-width: 860px) {
   .decision-shell { grid-template-columns: 1fr; }
   .decision-copy { max-width: 680px; }
@@ -1182,21 +1177,18 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
    giving 96px gaps between blocks vs 64px between compacts (the uneven, oversized whitespace). */
 .home .block { padding-top: var(--space-8); padding-bottom: var(--space-8); content-visibility: auto; contain-intrinsic-size: auto 480px; }
 .home .block-compact { padding-top: var(--space-8); padding-bottom: var(--space-8); }
-.home .block.band { background: var(--bg-warm); background-image: var(--season-hero-gradient); border-radius: var(--radius-xl); padding-inline: var(--space-6); }
-.home .block.band + .block::before, .home .block + .block.band::before { display: none; }
-.dark .home .block.band { background-color: var(--bg-alt); }
 .block-cta { text-align: center; margin-top: var(--space-4); }
 
 /* ═══════════════════════════════════════════════════
    SCROLL ROW
    ═══════════════════════════════════════════════════ */
-.scroll-row {
+.home .scroll-row {
   display: grid; gap: var(--space-5);
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
-@media (min-width: 769px) and (max-width: 1024px) { .scroll-row { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 769px) and (max-width: 1024px) { .home .scroll-row { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) {
-  .scroll-row {
+  .home .scroll-row {
     display: flex; gap: var(--space-3); overflow-x: auto;
     scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch; padding-bottom: var(--space-2);
@@ -1205,10 +1197,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
     mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 88%, transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 88%, transparent);
   }
-  .scroll-row::-webkit-scrollbar { display: none; }
-  .scroll-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-md); }
-  .scroll-row:hover, .scroll-row:focus-within { mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); }
-  .scroll-row > * { flex: 0 0 280px; scroll-snap-align: start; }
+  .home .scroll-row::-webkit-scrollbar { display: none; }
+  .home .scroll-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: var(--radius-md); }
+  .home .scroll-row:hover, .home .scroll-row:focus-within { mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-4), #000 100%); }
+  .home .scroll-row > * { flex: 0 0 280px; scroll-snap-align: start; }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1529,13 +1521,10 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .home .hero-search:focus-within { border-color: rgba(var(--accent-rgb), .7); }
 .dark .home .section-head h2::before { background: linear-gradient(180deg, var(--accent) 0%, var(--primary-fg) 100%); }
 .dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
-.dark .event-card { background: var(--surface-container); border-color: rgba(255,255,255,.12); }
 .dark .ec-countdown { color: var(--accent-text, #e0b366); }
 .dark .ec-today { color: var(--secondary-fg, #f0846f); }
-.dark .event-card:hover { border-color: rgba(255,255,255,.2); }
 .dark .chatbot-cta { background: linear-gradient(135deg, var(--surface-container) 0%, rgba(255,255,255,.06) 100%); border-color: rgba(255,255,255,.12); }
 .dark .chatbot-cta:hover { border-color: rgba(255,255,255,.2); }
-.dark .spot-visual::before { background: radial-gradient(46% 46% at 34% 30%, rgba(255,255,255,.14) 0%, transparent 68%); }
 
 /* ═══════════════════════════════════════════════════
    REDUCED TRANSPARENCY / MOTION

@@ -730,7 +730,7 @@ const sections: Section[] = [
         desc: 'Hệ thống điểm danh tiếng và cấp bậc khuyến khích đóng góp chất lượng.',
         subtopics: [
           { title: 'Bảng xếp hạng (/bang-xep-hang)', desc: 'Top thành viên theo điểm danh tiếng. Top 3 có huy chương vàng 🥇/bạc 🥈/đồng 🥉. Nhấn vào tên để xem hồ sơ.' },
-          { title: 'Bốn cấp bậc', desc: '🌱 Người mới (0-49 điểm), 🤝 Thành viên (50-199), 🌟 Đóng góp viên (200-499), 👑 Đại sứ (500+). Cấp hiện bên cạnh tên trên mọi bài viết.' },
+          { title: 'Bốn cấp bậc', desc: '🌱 Người mới (0-19 điểm), 🤝 Người đóng góp (20-79), 🌟 Đóng góp tích cực (80-199), 👑 Đại sứ (200+). Cấp hiện bên cạnh tên trên mọi bài viết.' },
           { title: 'Huy hiệu thành tích', desc: 'Huy hiệu đặc biệt cho thành tựu: Nhà đánh giá (25+ đánh giá), Nhiếp ảnh gia (20+ ảnh), Hướng dẫn viên (5+ câu trả lời hay)...' },
         ],
         link: '/huong-dan-thanh-vien', linkLabel: 'Xem chi tiết cấp bậc & điểm',
@@ -741,7 +741,7 @@ const sections: Section[] = [
       { q: 'Có xóa được bài đã đăng không?', a: 'Có. Nhấn menu (...) trên bài viết của mình → "Xóa". Bài xóa không khôi phục được.' },
       { q: 'Tại sao điểm không tăng khi đăng nhiều?', a: 'Điểm giảm dần theo số lượng cùng loại (diminishing returns). Để tăng nhanh: đa dạng hóa — viết đánh giá, đăng ảnh, khám phá địa điểm mới, trả lời câu hỏi.' },
       { q: 'Làm sao chặn người dùng gây phiền?', a: 'Vào trang hồ sơ người đó → nhấn "Chặn". Người bị chặn không xem được bài bạn, không bình luận, không theo dõi. Bạn cũng sẽ không thấy bài của họ.' },
-      { q: 'Bao lâu thì lên cấp "Đại sứ"?', a: 'Cần 500 điểm. Nếu đa dạng đóng góp (đánh giá + chia sẻ + ảnh + khám phá), trung bình 2-3 tháng hoạt động thường xuyên.' },
+      { q: 'Bao lâu thì lên cấp "Đại sứ"?', a: 'Cần 200 điểm. Nếu đa dạng đóng góp (đánh giá + chia sẻ + ảnh + khám phá), trung bình 2-3 tháng hoạt động thường xuyên.' },
     ],
   },
 
