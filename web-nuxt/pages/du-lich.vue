@@ -245,7 +245,7 @@ const relatedCatalogs = [
 const lifeRegisters = [
   { key: 'song-nuoc', kicker: 'SÔNG NƯỚC', line: 'Chèo xuồng qua rạch dừa nước lúc sáng sớm, khi sương còn chưa tan trên mặt kênh.', filterType: 'experience', motif: generateCategoryIcon('experience') },
   { key: 'miet-vuon', kicker: 'MIỆT VƯỜN', line: 'Ngồi võng nghe chim hót trong vườn trái cây, tự tay hái chôm chôm chín đỏ.', filterType: 'nature', motif: generateCategoryIcon('nature') },
-  { key: 'lang-nghe', kicker: 'LÀNG NGHỀ', line: 'Nghe tiếng khung dệt chiếu Định Yên, ngửi mùi kẹo dừa sên trên bếp than.', filterType: 'craft_village', motif: generateCategoryIcon('craft') },
+  { key: 'lang-nghe', kicker: 'LÀNG NGHỀ', line: 'Nghe tiếng khung dệt chiếu Cà Hom, ngửi mùi kẹo dừa sên trên bếp than.', filterType: 'craft_village', motif: generateCategoryIcon('craft') },
   { key: 'tam-linh', kicker: 'TÂM LINH · DI TÍCH', line: 'Mái chùa Khmer vàng-đỏ giữa vườn dừa, chuông chùa hoà vào tiếng ghe máy trên sông.', filterType: 'attraction', motif: generateCategoryIcon('attraction') },
 ]
 

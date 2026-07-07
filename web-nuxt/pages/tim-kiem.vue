@@ -232,7 +232,7 @@ const TICKER_PHRASES = [
   'bún nước lèo ở đâu chuẩn vị Khmer',
   'mùa này bưởi Năm Roi ngọt chưa',
   'ngủ đêm giữa vườn dừa, ở đâu',
-  'chợ nổi Cái Bè còn họp giờ nào',
+  'chợ nổi Trà Ôn còn họp giờ nào',
   'dừa xiêm Bến Tre uống tại vườn',
   'đờn ca tài tử nghe ở đâu',
   'cù lao nào yên tĩnh nhất',
@@ -255,7 +255,7 @@ const trendingChips = [
   'bún nước lèo',
   'bưởi Năm Roi',
   'homestay vườn dừa',
-  'chợ nổi Cái Bè',
+  'chợ nổi Trà Ôn',
   'dừa sáp Cầu Kè',
   'đờn ca tài tử',
 ]

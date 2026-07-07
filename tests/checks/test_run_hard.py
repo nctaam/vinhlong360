@@ -55,11 +55,11 @@ def test_skip_applies_only_to_soft(tmp_path):
 
 
 def test_registry_has_all_14_checks():
-    assert len(run_hard.ALL_CHECKS) == 17  # 12 module → 17 check objects (banned=3, fe=2, voice=2, complexity=2)
+    assert len(run_hard.ALL_CHECKS) == 19  # 12 module → 19 check objects (banned=3, schema=3, fe=2, voice=2, complexity=2)
     rules = {c.rule for c in run_hard.ALL_CHECKS}
     for r in ["R70.1", "R40.3", "R10.6", "R30.1", "R10.schema", "R20.5",
               "R10.7", "R30.3", "R30.2", "R60.1", "R60.4", "R50.2", "R10.9",
-              "R50.4", "R20.7", "R20.8", "R20.3"]:
+              "R50.4", "R20.7", "R20.8", "R20.3", "R10.3b", "R10.8"]:
         assert r in rules, r
 
 

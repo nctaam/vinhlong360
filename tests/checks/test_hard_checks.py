@@ -98,6 +98,55 @@ def test_data_schema_skips_when_not_staged(tmp_path):
     assert DataSchemaCheck(root=tmp_path).run(files=["agent/x.py"])["count"] == 0
 
 
+# ---------- R10.3b per-type required (SP2 T3) ----------
+
+def test_typed_required_catches_missing_person_role(tmp_path):
+    from checks.check_data_schema import DataTypedRequiredCheck
+
+    _mk_data(tmp_path, [
+        {"id": "p1", "type": "person", "name": "A", "summary": "s", "attributes": {}},
+        {"id": "p2", "type": "person", "name": "B", "summary": "s", "attributes": {"role": "nghệ nhân"}},
+        {"id": "d1", "type": "dish", "name": "C", "summary": "s", "attributes": {}},
+    ])
+    r = DataTypedRequiredCheck(root=tmp_path).run()
+    assert r["level"] == "hard-ratchet" and r["rule"] == "R10.3b"
+    assert r["count"] == 1 and "p1" in r["violations"][0]["msg"]
+
+
+def test_typed_required_skips_when_not_staged(tmp_path):
+    from checks.check_data_schema import DataTypedRequiredCheck
+
+    _mk_data(tmp_path, [{"id": "p1", "type": "person", "name": "A", "summary": "s", "attributes": {}}])
+    assert DataTypedRequiredCheck(root=tmp_path).run(files=["agent/x.py"])["count"] == 0
+
+
+# ---------- R10.8 RICH-source (SP2 T3) ----------
+
+RICH_TEXT = "chữ " * 140  # ≥130 từ → is_index_worthy
+
+
+def test_rich_source_catches_rich_entity_without_source(tmp_path):
+    from checks.check_data_schema import DataRichSourceCheck
+
+    _mk_data(tmp_path, [
+        {"id": "rich-0src", "type": "dish", "name": "A", "summary": "s", "description": RICH_TEXT, "source": []},
+        {"id": "rich-ok", "type": "dish", "name": "B", "summary": "s", "description": RICH_TEXT,
+         "source": [{"url": "https://example.org"}]},
+        {"id": "thin-0src", "type": "dish", "name": "C", "summary": "s", "description": "ngắn", "source": []},
+    ])
+    r = DataRichSourceCheck(root=tmp_path).run()
+    assert r["level"] == "hard-ratchet" and r["rule"] == "R10.8"
+    assert r["count"] == 1 and "rich-0src" in r["violations"][0]["msg"]
+
+
+def test_rich_source_skips_when_not_staged(tmp_path):
+    from checks.check_data_schema import DataRichSourceCheck
+
+    _mk_data(tmp_path, [{"id": "r", "type": "dish", "name": "A", "summary": "s",
+                         "description": RICH_TEXT, "source": []}])
+    assert DataRichSourceCheck(root=tmp_path).run(files=["agent/x.py"])["count"] == 0
+
+
 # ---------- api contract ----------
 
 def _git(root, *args):

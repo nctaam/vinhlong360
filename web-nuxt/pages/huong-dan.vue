@@ -567,7 +567,7 @@ const sections: Section[] = [
         icon: '🔗', title: 'Địa điểm liên quan & Lân cận',
         desc: 'Cuối trang chi tiết hiển thị hai phần gợi ý.',
         subtopics: [
-          { title: 'Địa điểm liên quan', desc: 'Các địa điểm có mối quan hệ — ví dụ: "Chợ nổi Cái Bè" liên quan đến "Cù lao An Bình" vì cùng tuyến tham quan. Quan hệ do dữ liệu hệ thống quyết định (hơn 9.500 mối quan hệ).' },
+          { title: 'Địa điểm liên quan', desc: 'Các địa điểm có mối quan hệ — ví dụ: "Chợ nổi Trà Ôn" liên quan đến "Cù lao Mây" vì cùng tuyến tham quan. Quan hệ do dữ liệu hệ thống quyết định (hơn 12.000 mối quan hệ).' },
           { title: 'Gần đây', desc: 'Các địa điểm khác trong cùng xã/phường hoặc trong bán kính gần — tiện để kết hợp khi đi.' },
         ],
       },
@@ -795,7 +795,7 @@ const sections: Section[] = [
         desc: 'Trợ lý AI hiểu về du lịch, ẩm thực, văn hóa vùng Vĩnh Long – Bến Tre – Trà Vinh. Hỏi bất cứ điều gì.',
         steps: ['Nhấn nút 💬 ở góc phải dưới màn hình (hiện trên mọi trang)', 'Cửa sổ chat mở ra với gợi ý câu hỏi (thay đổi theo trang bạn đang xem)', 'Gõ câu hỏi và nhấn Enter hoặc nút gửi', 'Trợ lý trả lời dạng streaming (từng chữ hiện ra)', 'Nhấn nút dừng nếu muốn ngắt giữa chừng', 'Nhấn nút 💬 lần nữa hoặc Esc để đóng'],
         subtopics: [
-          { title: 'Gợi ý theo ngữ cảnh', desc: 'Khi đang ở trang "Chợ nổi Cái Bè", gợi ý sẽ là: "Nên đi chợ nổi lúc mấy giờ?", "Có gì ăn ở đây?". Ở trang khác sẽ có gợi ý khác. Nhấn vào gợi ý để hỏi nhanh mà không cần gõ.' },
+          { title: 'Gợi ý theo ngữ cảnh', desc: 'Khi đang ở trang "Chợ nổi Trà Ôn", gợi ý sẽ là: "Nên đi chợ nổi lúc mấy giờ?", "Có gì ăn ở đây?". Ở trang khác sẽ có gợi ý khác. Nhấn vào gợi ý để hỏi nhanh mà không cần gõ.' },
           { title: 'Ví dụ câu hỏi hay', desc: '"Đi Vĩnh Long 2 ngày nên đi đâu?", "Món gì ngon ở Bến Tre?", "Mùa nước nổi có gì thú vị?", "So sánh homestay ở Cù lao An Bình", "Quà mang về từ Trà Vinh".' },
           { title: 'Giới hạn', desc: 'Trợ lý trả lời dựa trên dữ liệu trong hệ thống. Không có thông tin giá vé real-time, tình trạng phòng, hoặc thời tiết hiện tại.' },
         ],

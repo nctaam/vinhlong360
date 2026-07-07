@@ -24,6 +24,29 @@ from datetime import date
 TODAY = date.today().isoformat()
 
 
+def _apply_one_local_fix(conn, eid: str, row, field: str, new: str, execute: bool) -> None:
+    if field.startswith("attributes."):  # normalize dạng agent trả
+        field = "attr:" + field[len("attributes."):]
+    if field == "attributes":  # nguyên cột → MERGE vào attrs cũ (không drop tail)
+        attrs = json.loads(row["attributes"] or "{}")
+        attrs.update(json.loads(new))
+        if execute:
+            conn.execute("UPDATE entities SET attributes=?, updatedAt=? WHERE id=?",
+                         (json.dumps(attrs, ensure_ascii=False), TODAY, eid))
+    elif field == "coordinates":
+        val = None if new in ("null", "None", "") else new
+        if execute:
+            conn.execute("UPDATE entities SET coordinates=?, updatedAt=? WHERE id=?", (val, TODAY, eid))
+    elif field.startswith("attr:"):
+        attrs = json.loads(row["attributes"] or "{}")
+        attrs[field[5:]] = new
+        if execute:
+            conn.execute("UPDATE entities SET attributes=?, updatedAt=? WHERE id=?",
+                         (json.dumps(attrs, ensure_ascii=False), TODAY, eid))
+    elif execute:
+        conn.execute(f"UPDATE entities SET {field}=?, updatedAt=? WHERE id=?", (new, TODAY, eid))
+
+
 def apply_local_fixes(db_path: str, final_path: str, execute: bool) -> None:
     final = json.load(io.open(final_path, encoding="utf-8"))
     conn = sqlite3.connect(db_path)
@@ -37,30 +60,7 @@ def apply_local_fixes(db_path: str, final_path: str, execute: bool) -> None:
             print(f"  SKIP {eid}: không có trong local")
             continue
         for f in r["fixes"]:
-            field, new = f["field"], f["new_value"]
-            if field.startswith("attributes."):  # normalize dạng agent trả
-                field = "attr:" + field[len("attributes."):]
-            if field == "attributes":  # nguyên cột → MERGE vào attrs cũ (không drop tail)
-                attrs = json.loads(row["attributes"] or "{}")
-                attrs.update(json.loads(new))
-                if execute:
-                    conn.execute("UPDATE entities SET attributes=?, updatedAt=? WHERE id=?",
-                                 (json.dumps(attrs, ensure_ascii=False), TODAY, eid))
-                applied += 1
-                continue
-            if field == "coordinates":
-                val = None if new in ("null", "None", "") else new
-                if execute:
-                    conn.execute("UPDATE entities SET coordinates=?, updatedAt=? WHERE id=?", (val, TODAY, eid))
-            elif field.startswith("attr:"):
-                attrs = json.loads(row["attributes"] or "{}")
-                attrs[field[5:]] = new
-                if execute:
-                    conn.execute("UPDATE entities SET attributes=?, updatedAt=? WHERE id=?",
-                                 (json.dumps(attrs, ensure_ascii=False), TODAY, eid))
-            else:
-                if execute:
-                    conn.execute(f"UPDATE entities SET {field}=?, updatedAt=? WHERE id=?", (new, TODAY, eid))
+            _apply_one_local_fix(conn, eid, row, f["field"], f["new_value"], execute)
             applied += 1
     if execute:
         conn.commit()
@@ -95,46 +95,42 @@ def build_push_payload(db_path: str, final_path: str, out_path: str) -> None:
     print(f"push_payload: {len(rows)} entity → {out_path}")
 
 
-def apply_prod(changes_path: str, payload_path: str, execute: bool) -> None:
-    """Chạy TRÊN VPS: DELETE + itinerary patches + INSERT payload."""
-    import psycopg2
-    ch = json.load(io.open(changes_path, encoding="utf-8"))
-    payload = json.load(io.open(payload_path, encoding="utf-8"))
-    conn = psycopg2.connect(os.environ["DATABASE_URL"])
-    cur = conn.cursor()
-    # 1) DELETE
-    for eid in ch["delete_ids"]:
+def _prod_deletes(cur, ids: list[str], execute: bool) -> None:
+    for eid in ids:
         cur.execute("SELECT COUNT(*) FROM entities WHERE id=%s", (eid,))
         print(f"  DELETE {eid}: {'có' if cur.fetchone()[0] else 'KHÔNG'}")
         if execute:
             # PG dùng from_id/to_id (khác data.json from/to)
             cur.execute("DELETE FROM relationships WHERE from_id=%s OR to_id=%s", (eid, eid))
             cur.execute("DELETE FROM entities WHERE id=%s", (eid,))
-    # 2) itinerary patches (match old_value)
-    ok = skip = 0
-    for p in ch["patches"]:
-        field = p["field"]
-        if field.startswith("attr:"):
-            cur.execute("SELECT attributes::text FROM entities WHERE id=%s", (p["entity_id"],))
-            row = cur.fetchone()
-            attrs = json.loads(row[0]) if row and row[0] else {}
-            if attrs.get(field[5:]) != p["old_value"]:
-                skip += 1; print(f"  PATCH-SKIP {p['entity_id']}:{field}"); continue
-            attrs[field[5:]] = p["new_value"]
-            if execute:
-                cur.execute('UPDATE entities SET attributes=%s::jsonb, "updatedAt"=%s WHERE id=%s',
-                            (json.dumps(attrs, ensure_ascii=False), TODAY, p["entity_id"]))
-        else:
-            cur.execute(f"SELECT {field} FROM entities WHERE id=%s", (p["entity_id"],))
-            row = cur.fetchone()
-            if not row or row[0] != p["old_value"]:
-                skip += 1; print(f"  PATCH-SKIP {p['entity_id']}:{field}"); continue
-            if execute:
-                cur.execute(f'UPDATE entities SET {field}=%s, "updatedAt"=%s WHERE id=%s',
-                            (p["new_value"], TODAY, p["entity_id"]))
-        ok += 1
-    print(f"  patches: {ok} áp, {skip} skip")
-    # 3) INSERT payload — theo cột giao nhau giữa payload và bảng prod
+
+
+def _prod_patch_one(cur, p: dict, execute: bool) -> bool:
+    """Áp 1 patch match-old-value; trả True nếu áp được."""
+    field = p["field"]
+    if field.startswith("attr:"):
+        cur.execute("SELECT attributes::text FROM entities WHERE id=%s", (p["entity_id"],))
+        row = cur.fetchone()
+        attrs = json.loads(row[0]) if row and row[0] else {}
+        if attrs.get(field[5:]) != p["old_value"]:
+            return False
+        attrs[field[5:]] = p["new_value"]
+        if execute:
+            cur.execute('UPDATE entities SET attributes=%s::jsonb, "updatedAt"=%s WHERE id=%s',
+                        (json.dumps(attrs, ensure_ascii=False), TODAY, p["entity_id"]))
+        return True
+    cur.execute(f"SELECT {field} FROM entities WHERE id=%s", (p["entity_id"],))
+    row = cur.fetchone()
+    if not row or row[0] != p["old_value"]:
+        return False
+    if execute:
+        cur.execute(f'UPDATE entities SET {field}=%s, "updatedAt"=%s WHERE id=%s',
+                    (p["new_value"], TODAY, p["entity_id"]))
+    return True
+
+
+def _prod_insert(cur, payload: list[dict], execute: bool) -> None:
+    """INSERT theo cột giao nhau giữa payload và bảng prod."""
     cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name='entities'")
     prod_cols = {r[0] for r in cur.fetchall()}
     inserted = existed = 0
@@ -144,13 +140,31 @@ def apply_prod(changes_path: str, payload_path: str, execute: bool) -> None:
             existed += 1
             continue
         cols = [c for c in e.keys() if c in prod_cols and e[c] is not None]
-        vals = [e[c] for c in cols]
         if execute:
             ph = ", ".join(["%s"] * len(cols))
             col_sql = ", ".join(f'"{c}"' for c in cols)
-            cur.execute(f"INSERT INTO entities ({col_sql}) VALUES ({ph})", vals)
+            cur.execute(f"INSERT INTO entities ({col_sql}) VALUES ({ph})", [e[c] for c in cols])
         inserted += 1
     print(f"  INSERT: {inserted} mới, {existed} đã tồn tại")
+
+
+def apply_prod(changes_path: str, payload_path: str, execute: bool) -> None:
+    """Chạy TRÊN VPS: DELETE + itinerary patches + INSERT payload."""
+    import psycopg2
+    ch = json.load(io.open(changes_path, encoding="utf-8"))
+    payload = json.load(io.open(payload_path, encoding="utf-8"))
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
+    cur = conn.cursor()
+    _prod_deletes(cur, ch["delete_ids"], execute)
+    ok = skip = 0
+    for p in ch["patches"]:
+        if _prod_patch_one(cur, p, execute):
+            ok += 1
+        else:
+            skip += 1
+            print(f"  PATCH-SKIP {p['entity_id']}:{p['field']}")
+    print(f"  patches: {ok} áp, {skip} skip")
+    _prod_insert(cur, payload, execute)
     if execute:
         conn.commit()
         print("PROD: ĐÃ GHI.")

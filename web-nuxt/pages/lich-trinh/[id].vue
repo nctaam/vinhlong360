@@ -83,7 +83,7 @@
         </li>
         <!-- Route leg info between stops — extended into a narrative bridge:
              not just a distance stat, but a whisper of what's coming next
-             (§5/§7: "1.2km · 15 phút → tới Chợ nổi Cái Bè"). -->
+             (§5/§7: "1.2km · 15 phút → tới Chợ nổi Trà Ôn"). -->
         <li v-if="idx < (itinerary.stops || []).length - 1 && routeLegs[idx]" class="route-leg" :key="'leg-' + idx">
           <div class="route-leg-line"></div>
           <div class="route-leg-info">
