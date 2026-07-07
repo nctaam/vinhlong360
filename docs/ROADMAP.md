@@ -15,8 +15,8 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - 🛑 **H1. Pháp nhân + đăng ký NĐ147/2024** (Giấy xác nhận thông báo, hoặc Giấy phép MXH nếu ≥10k lượt/tháng hoặc >1k user thường xuyên). Cần doanh nghiệp/tổ chức VN; cá nhân thường không đứng tên được. **Đây là blocker launch lớn nhất.**
 - 🛑 **H2. Luật sư ICT/dữ liệu** rà: phân loại "MXH + trang tổng hợp" kết hợp; nghĩa vụ chuyển dữ liệu xuyên biên khi host nước ngoài.
 - 🛑 **H3. Cung cấp URL remote git** (để push) + quyết định nơi host (ưu tiên VN cho PDPL).
-- 🛑 **H4. Rotate/đặt giá trị secret thật** (`ADMIN_API_KEY`, `LLM_API_KEY`, `TELEGRAM_BOT_TOKEN`) — con người đặt giá trị, Claude chỉ chuẩn bị chỗ.
-- 🛑 **H5. Mua domain / DNS / verify Search Console (DNS TXT) / deploy public.**
+- 🛑 **H4. Rotate/đặt giá trị secret thật** (`ADMIN_API_KEY`, `LLM_API_KEY`, `TELEGRAM_BOT_TOKEN`) — con người đặt giá trị, Claude chỉ chuẩn bị chỗ. *(Cập nhật 2026-07-07: secret thật ĐÃ đặt trên prod bởi chủ dự án — mục này giờ chỉ còn nghĩa "rotate định kỳ"; lưu ý bẫy `TOTP_ENC_KEY` khi 2FA bật, xem CLAUDE.md §4.)*
+- 🛑 **H5. Mua domain / DNS / verify Search Console (DNS TXT) / deploy public.** *(Cập nhật 2026-07-07: domain vinhlong360.vn ĐÃ mua, prod ĐÃ live trên VPS Vultr — do chủ dự án tự thực hiện. Phần còn mở: verify Search Console; và ra-mắt-công-khai đúng nghĩa vẫn chờ H1/H2 pháp lý + đang noindex toàn site chủ động.)*
 
 ---
 
@@ -292,7 +292,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
   - **CỐ Ý KHÔNG LÀM:** error-helper-sweep (40+ site chạy đúng runtime), @nuxt/fonts-remove (no-op), catalog.css-split (rủi-ro>lợi ~6KB), hardcoded-colors 558 (admin-internal).
 - **(2026-06-22) 🔬 AUDIT SÂU 3 LƯỢT ĐA-AGENT → `docs/audit-findings-20260622.md`** (110 finding verified: 3 crit, 26 high, 46 med, 35 low + audit-3 scan-only). Đã FIX: ARCH-001 (province area). Lộ trình sửa đề xuất theo rủi-ro:
   - **P0 vận hành/bất-biến:** ✅CLP-01 memory_graph gate (§B8, +test) · ✅SEC-001 OTP leak · ✅SEC-002 XFF spoof · /graph no-auth = KHÔNG sửa (KB public theo thiết kế). CÒN: CONC-001 (sync OpenAI in event loop §4 — cần refactor async + test) · EH-01/02 generate_followups+json.loads no-timeout/guard.
-  - **P1 dữ liệu §1.4:** ✅admission_fee alias · ✅9 transposed coords (+49 ngoài-bbox → null) · ✅siết bbox validator. CÒN: 16 dup entity · 68 summary/37 address sai tỉnh · 169 orphan.
+  - **P1 dữ liệu §1.4:** ✅admission_fee alias · ✅9 transposed coords (+49 ngoài-bbox → null) · ✅siết bbox validator. CÒN: 16 dup entity · 169 orphan. ⚠️ **HUỶ mục "68 summary/37 address sai tỉnh" (2026-07-07):** quy tắc DF-02 đã ĐẢO NGƯỢC sau sáp nhập — "tỉnh Vĩnh Long" trong entity BT/TV cũ nay là cách gọi ĐÚNG; KHÔNG chạy lại. Việc đúng chiều nằm ở Backlog truth-sync bên dưới (campaign 513 text tỉnh-cũ).
   - **P2 DB/script:** ✅guard optimize_data.py + gỡ bịa produced_in. CÒN: replace_from_json atomic + description round-trip (test trước §B3) · ETL-03/04 migrate_sap_nhap+fix_audit_safe key.
   - **P3 perf/FE/deploy:** ✅maplibre lazy→build OOM fix→ĐÃ deploy FE note. CÒN: PG pool · N+1 places_in_area · FE null-safety coords (xa-phuong/lich-trinh) · SEO breadcrumb/ogImage/CWV.
   - **ĐÃ DEPLOY prod (2026-06-22):** 9 nhóm fix (f2e5658→7727b02) + resilience (15a372c) + dedup 2 entity (4f1dded) + DF-02 address-tỉnh-cũ 235 + 69 orphan-link (11e68ea). Data 1789e/9371r.
@@ -384,7 +384,7 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **[Data/§B7] 37 entity `type='place'` phân-loại nhầm** (ngân-hàng/quán ăn/bệnh-viện/bến-xe…, `level=None`) vẫn lọt `/api/places` thô (162 = 124 xã/phường thật + 37 cơ-sở + 1 tỉnh). **Số xã/phường CHÍNH-XÁC = 124** (chủ xác-nhận; 89 xã+35 phường). ✅ ĐÃ FIX hiển-thị (commit b97cff2): `get_stats.places` đếm `level IN (xa,phuong)`=124 + danh-ba bỏ 'tinh' → trang chủ & danh-bạ đều 124. ✅ **ĐÃ RECLASS (chủ duyệt, commit f07691f, deploy --replace 20260624-171921):** 12 quán/nhà-hàng→dish; 24→facility (y_te/buu_dien/cong_an/khac); Chùa Vạn Phước→attraction. `/api/places` sạch còn 125 (124 ward + 1 tỉnh); facilities hiện trong danh-bạ xã/phường (vd p-ben-tre có 5).
 - ✅ **[Med/Perf] ĐÃ FIX (commit 8a22845):** `get_relationships()` SQL-side filtering (rel_type/include_near vào WHERE thay vì Python-side); `return_total` bỏ `count_relationships()` thừa ở entity detail + relationships endpoint (3→2 DB calls); `get_entities_batch()` bỏ N+1 ở itinerary endpoint; `_enrich_place()` batch-warm cache thay N lần `get_entity()`.
 - ✅ **ĐÃ HARDEN (commit phiên 2026-06-24): 9 chỗ FE SSR-fetch → apiFetch** (dia-diem/[id], bai-viet/[id], xa-phuong/[id], nguoi-dung/[id], lich-trinh-chia-se/[id], NearbyEntities, tim-kiem×3) — đồng-bộ pattern chống silent-empty. CHỪA `site-overrides.ts`/`useSiteSettings.ts` (fallback graceful + chạy mọi-trang → +latency không đáng). Verify detail pages render 200. **CÒN [Low]:** chuyển 2 file site-settings nếu muốn tuyệt-đối đồng-bộ.
-- **[Low/SEO] `/sitemap-media.xml` + 4 child sitemap** 404 (backend seo.py có route nhưng nginx chưa proxy; robots.txt vẫn trỏ). Cần route nginx (§4).
+- ~~**[Low/SEO] `/sitemap-media.xml` + 4 child sitemap** 404~~ ĐÃ HẾT HIỆU LỰC (trùng 8.5: prod đã phục vụ 200 — gạch 2026-07-07, trước đó mục này mâu thuẫn với dòng 148).
 - ✅ **[Low] ĐÃ FIX (commit f0acf13):** `toggle_follow` guard entity tồn-tại trước khi follow (chống bản-ghi rác).
 - **[Content] ~42 entity mô tả mỏng (<120 ký tự)** — đã giảm từ 341→203→42 (2026-06-25): 41 place + 1 product. Place descriptions generated from child entities (đúng pattern). Còn lại cần chủ dự án bổ sung nội dung — KHÔNG bịa (§1.4).
 - ~~**[Low/Coupling] `export_data.py` dùng private DB methods**~~ ĐÃ XÓA: file bị dọn trong dead-code cleanup 2026-06-26.
@@ -397,4 +397,11 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **[Hỏi chủ] wards-row khu-vuc bỏ hẳn?**: Đợt 3 đã thu gọn thành <details> (giữ 124 link hub-spoke trong DOM cho crawler). Muốn xoá hẳn khỏi DOM cần chủ duyệt riêng (đánh đổi SEO hub-spoke).
 - **[Test-debt] 4 test đỏ-trên-main (không do declutter)**: 3× test_cost_tracker TestBudgetManagerCheckBudget (test dùng local-date, module đã UTC — commit 180a1fd; chỉ đỏ 00:00–07:00 VN) + 1× test_seo sitemap (mock entity mỏng bị cổng index P0-1 loại — test assert hành vi trước-gate). Cần sửa TEST theo hành vi mới.
 - **[A11y/Redesign] season-ring theo-mua tap-target <44px**: 12 notch trên vòng 76px mobile — hình học không cho phép 44px không-chồng-lấn (đo 11/12 tap sai khi nới). Muốn đạt chuẩn phải phóng vòng ≥170px (redesign hero). month-grid hiện là fallback a11y — GIỮ.
+
+### Backlog phát sinh — Truth-sync docs (2026-07-07, audit 89+6 finding)
+- **[P0/Data] Campaign sửa ~513 text 	ỉnh Bến Tre/Trà Vinh trong data** (hệ quả DF-02 chạy 06/2026, nay ngược chiều): rewrite CÓ NGỮ CẢNH (hiện-tại → 	ỉnh Vĩnh Long; lịch sử → thêm cũ/trước 7-2025), KHÔNG batch-replace mù. Bắt buộc: backup B1 + sửa trên DB (SoT) + đồng bộ prod PG + regenerate data.json. Cần plan riêng.
+- **[P1/Content] Sweep filler miền Tây trong copy site** (editorial du-lich/san-pham/theo-mua, eyebrow ĐBSCL · VL—BT—TV…): thay bằng đặc-thù-Vĩnh-Long theo playbook — đi cùng campaign trên.
+- **[P1/Infra] Tái lập export DB→data.json** (một chiều, có kiểm tra diff) — hiện data.json phân kỳ (1.730 vs 1.780) và không có cơ chế làm tươi ngoài POST /export tải tay.
+- **[P2/Test] 4 test đỏ-trên-main** (đã ghi ở backlog Declutter Đợt 3 — cost_tracker UTC-date + test_seo sau cổng index).
+- **[P2/Docs] b2g-pitch cần chủ duyệt lại TOÀN VĂN trước khi gửi bất kỳ đối tác nào** (đã sửa claim khống nhưng đây là tài liệu đối ngoại — CLAUDE.md §4).
 

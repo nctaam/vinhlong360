@@ -1,66 +1,60 @@
-# docs/ — Mục lục tài liệu
+# docs/ — Bản đồ tài liệu (có trạng thái)
 
-> Cập nhật: 2026-06-28. Tổng: 22 files docs/ + 20 files research/.
+> **STATUS (2026-07-07): active — nguồn định hướng tài liệu duy nhất.** Viết lại trong đợt truth-sync (audit đa-agent 89+6 finding). Quy tắc: tài liệu chỉ đạo phải có header `> STATUS:`; mọi thứ trong `archive/` là lịch sử — **KHÔNG làm theo** (CLAUDE.md §3.6). File này mâu thuẫn tài liệu khác → CLAUDE.md thắng, rồi tới file này.
 
 ---
 
 ## Bắt đầu từ đâu?
 
-| Bạn muốn | Đọc file |
-|-----------|----------|
-| **Hiểu dự án** | `ROADMAP.md` → `architecture-decisions.md` → `kien-truc-va-lo-trinh.md` |
-| **Code session FE** | `implementation-specs.md` §A (component specs, CSS vars, a11y gaps) |
-| **Code session BE** | `implementation-specs.md` §B (JSON-LD, SEO, middleware) |
-| **Viết/sửa content** | `implementation-specs.md` §C + `content-creation-guide.md` |
-| **Chạy session song song** | `parallel-session-guide.md` (template + checklist) |
-| **Deploy lên VPS** | `deployment-guide.md` |
+| Bạn muốn | Đọc |
+|-----------|-----|
+| **Hiểu luật chơi** | `../CLAUDE.md` (hiến pháp — định vị, bất biến, nguồn việc) |
+| **Hiểu kiến trúc** | `architecture-decisions.md` (ADR sống) |
+| **Nạp session mới** | `HANDOFF.md` |
+| **Việc dài hạn / backlog** | `ROADMAP.md` (sổ track + backlog — KHÔNG còn là danh sách tuần tự) |
+| **Code FE/BE** | `implementation-specs.md` + `api-contract.md` |
+| **Viết/sửa content** | `content-creation-guide.md` + `toi-uu-chong-ai-va-google-spam-playbook.md` |
+| **Deploy VPS** | `deployment-guide.md` + `deploy-runbook-waves-2fa-dark.md` |
 | **Setup dev local** | `developer-setup.md` |
-| **Nạp session mới (handoff)** | `HANDOFF.md` |
+| **Sự cố prod** | `incident-runbook.md` |
 
----
+## Tài liệu ACTIVE
 
-## Phân loại
+### Điều hành & kiến trúc
+- **`../CLAUDE.md`** — hiến pháp (truth-sync 2026-07-07)
+- **`ROADMAP.md`** — sổ track dài hạn + Backlog phát sinh (nhiều GĐ đã xong; Track-H = việc con người)
+- **`architecture-decisions.md`** — ADR: DB-as-SoT, Nuxt-only, PG UGC, ảnh AI-only, định vị, governance
+- **`api-contract.md`** — data shapes FastAPI ↔ Nuxt
+- **`ugc-postgres.md`** — decision record UGC = Postgres-only
+- **`entity-content-model.md`** — 17 type, STI-with-registry
+- **`don-vi-hanh-chinh-vinh-long.md`** — tham chiếu 124 xã/phường tỉnh MỚI (35p + 89x)
+- **`HANDOFF.md`** — onboarding session mới
 
-### Kiến trúc & quyết định (đọc 1 lần, tham khảo khi cần)
-- **`ROADMAP.md`** — Source of truth: task list + execution order
-- **`architecture-decisions.md`** — DB-as-SoT, Nuxt-only, PG UGC, coordinates
-- **`kien-truc-va-lo-trinh.md`** — Architecture deep-dive + data schema (Vietnamese)
-- **`api-contract.md`** — API data shapes giữa FastAPI ↔ Nuxt
-- **`ugc-postgres.md`** — Decision record: UGC/auth = Postgres-only
-- **`don-vi-hanh-chinh-vinh-long.md`** — 124 xã/phường reference
+### Vận hành
+- **`deployment-guide.md`**, **`deploy-runbook-waves-2fa-dark.md`** — deploy tarball/systemd (SSH hiện tại: root@, key vinhlong_vps)
+- **`developer-setup.md`** — dev local (⚠️ `--replace` chỉ cho fresh clone, backup trước)
+- **`security-hardening.md`** — posture + kế hoạch harden (khối SSH có TIỀN ĐỀ bắt buộc — đọc kỹ)
+- **`incident-runbook.md`** — ứng phó sự cố (⚠️ bẫy TOTP_ENC_KEY khi rotate)
+- **`module-activation-guide.md`** — trạng thái THẬT các module backend (HAS_* = try-import, phần lớn đang bật)
+- **`parallel-session-guide.md`** — chạy nhiều session song song
 
-### Implementation specs (đọc trước khi code)
-- **`implementation-specs.md`** — Tổng hợp specs actionable từ 3 nghiên cứu, chia theo FE/BE/Content
+### Nội dung & chiến lược
+- **`content-creation-guide.md`** — nhập entity, chuẩn chất lượng, ảnh AI-only
+- **`toi-uu-chong-ai-va-google-spam-playbook.md`** — playbook chống đọc-như-AI + chống Google spam (có marker mục đã ship)
+- **`b2g-pitch.md`** — template pitch B2G (⚠️ tài liệu đối ngoại: chủ dự án duyệt toàn văn trước khi gửi — CLAUDE.md §4)
 
-### Vận hành (ops)
-- **`deployment-guide.md`** — Tarball deploy flow, SSH keys, systemd
-- **`developer-setup.md`** — Local dev: Python, Node, Docker, env vars
-- **`monitoring-setup.md`** — Prometheus/Grafana/Loki/Sentry/Umami
-- **`security-hardening.md`** — Security posture assessment
-- **`incident-runbook.md`** — Data breach response (NĐ91/2025)
+### Nghiên cứu design (tham khảo, có mục bị override — xem header từng file)
+- **`design-rulebook.md`** — rulebook sống (đã sửa các rule mâu thuẫn thực tế ship)
+- **`design-guidelines-apple-google-figma.md`**, **`travel-platform-ux-research.md`** — reference values/pattern
+- **`implementation-specs.md`** — specs FE/BE/Content trích từ nghiên cứu
 
-### Hướng dẫn nội dung
-- **`content-creation-guide.md`** — Entity data entry, image policy, quality rules
-- **`module-activation-guide.md`** — 15 dormant modules + env flags
+### Nghiên cứu văn hoá (`research/`)
+- 4 báo cáo + 16 CSV/GeoJSON — corpus quý cho content. **Header giới hạn:** viết thời 3-tỉnh; KHÔNG dùng khung định vị/đơn vị hành chính cũ/khuyến nghị bán tour từ đây.
 
-### Nghiên cứu thiết kế (reference — specs đã trích vào implementation-specs.md)
-- **`design-guidelines-apple-google-figma.md`** (1384 dòng) — Apple HIG + M3 + Figma values
-- **`design-research-2026-06-27.md`** (1033 dòng) — Gap analysis vs Apple/M3/WCAG
-- **`travel-platform-ux-research.md`** (904 dòng) — UX 5 platforms du lịch
+### Specs & plans đang sống (`superpowers/`)
+- `specs/2026-07-06-ui-declutter-design.md` — ĐÃ THỰC THI XONG (3 plans kết quả cùng thư mục plans/)
+- `specs/redesign-concepts/00-16` — concept Ý TƯỞNG tiền-declutter: đọc cảnh báo đầu mỗi file trước khi thực thi bất kỳ sóng nào
+- `plans/` — plan + kết quả thực thi từng đợt (lịch sử thi công, tin được)
 
-### Nghiên cứu văn hóa-du lịch (`research/` subfolder)
-- 4 báo cáo phân tích (BVL corpus 194 bài, 6 tầng, 12 chiều, điểm đến chuyên sâu)
-- 14 CSV/GeoJSON data (tọa độ, tuyến, tài nguyên, nguồn)
-- Dùng cho: content enrichment, entity descriptions, itinerary creation
-
-### Báo cáo (point-in-time snapshots)
-- **`data-quality-report.md`** — Pass 6 (2026-06-28): score 90/100
-- **`audit-findings-20260622.md`** — 110 findings (phần lớn đã fix)
-- **`legacy-files-audit.md`** — web/ chỉ còn data.json/data.js/media/
-
-### Session song song
-- **`parallel-session-guide.md`** — 5 KP + template + checklist (all-in-one)
-
-### Chiến lược
-- **`HANDOFF.md`** — Onboarding prompt cho session mới
-- **`b2g-pitch.md`** — B2G partnership pitch template
+## `archive/` — KHÔNG làm theo
+25 file lịch sử (codex prompts, blueprints 01/07, audit/QA reports, kien-truc-va-lo-trinh gốc, monitoring-setup container...). Mỗi file có header ARCHIVED ghi rõ vì sao + điểm nguy hiểm. Xem `archive/README.md`.
