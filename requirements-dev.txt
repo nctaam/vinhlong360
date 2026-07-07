@@ -1,0 +1,4 @@
+# Dev/tooling deps cho chương trình chuẩn-hoá (KHÔNG cần ở prod runtime).
+# Cài: pip install -r requirements-dev.txt
+ruff>=0.15          # R20.1 lint gate (scripts/checks/check_ruff.py)
+pytest-cov>=7.0     # R20.4 coverage gate (scripts/checks/check_coverage.py — SP3 W4)

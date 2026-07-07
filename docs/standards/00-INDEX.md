@@ -13,7 +13,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R10.8 | RICH phải có source | hard-ratchet | check_data_schema | 0 | 10-data.md |
 | R10.9 | xuất xứ trong tỉnh (cấm Cái Bè/Lai Vung/Định Yên) | soft-ratchet | check_content_voice | 0 | 10-data.md |
 | R10.10 | đơn-vị-HC-cũ (huyện/thị xã X) trong giọng biên tập | pending-check (sweep riêng) | check_content_gates (class sẵn, chưa active) | ~1011 | 10-data.md |
-| R20.1 | ruff full = 0 | pending-check (SP3) | ruff | — | 20-backend.md |
+| R20.1 | ruff lint (E/F/W; style E402/E701/E702/E501/E741 ignore) | hard-ratchet | check_ruff | 80 | 20-backend.md |
 | R20.2 | cấm blocking-sync trong async | pending-check (SP3) | ruff ASYNC | — | 20-backend.md |
 | R20.3 | cấm bare-except mới | soft-ratchet | check_complexity | 0 | 20-backend.md |
 | R20.4 | coverage core≥80 / agent≥60 | pending-check (SP3) | pytest-cov | — | 20-backend.md |
@@ -41,7 +41,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R70.5 | apply-script phải --dry-run | quy-trình-ký | — | — | 70-ops.md |
 
 ## Pending-check có hạn
-- SP3: R20.1 ruff · R20.2 async · R20.4 coverage
+- SP3: R20.2 async · R20.4 coverage (R20.1 ruff ĐÃ BẬT)
 - SP4: R30.6 axe · R30.7 bundle
 
 ## Lệnh

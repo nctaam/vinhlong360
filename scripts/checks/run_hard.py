@@ -29,6 +29,7 @@ from checks.check_data_schema import CHECKS as schema  # noqa: E402
 from checks.check_doc_status import CHECKS as doc_status  # noqa: E402
 from checks.check_fe_tokens import CHECKS as fe_tokens  # noqa: E402
 from checks.check_links import CHECKS as links  # noqa: E402
+from checks.check_ruff import CHECKS as ruff_lint  # noqa: E402
 from checks.check_secrets import CHECKS as secrets  # noqa: E402
 from checks.check_test_pairing import CHECKS as pairing  # noqa: E402
 from checks.check_thin_content import CHECKS as thin  # noqa: E402
@@ -36,7 +37,7 @@ from checks.check_tinh_cu import CHECKS as tinh_cu  # noqa: E402
 
 ALL_CHECKS = (secrets + banned + schema + api_checks
               + tinh_cu + fe_tokens + doc_status + links
-              + voice + content_gates + thin + pairing + complexity)
+              + voice + content_gates + thin + pairing + complexity + ruff_lint)
 REGISTRY = {c.name: c for c in ALL_CHECKS}
 
 
