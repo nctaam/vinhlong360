@@ -102,4 +102,7 @@ class OldAdminCheck(_DataGate):
         return sum(len(OLD_ADMIN.findall(t)) for t in texts)
 
 
-CHECKS = [FormulaCheck(), SuperlativeCheck(), OldAdminCheck()]
+# R10.10 (OldAdminCheck) CHƯA active: 1011 nợ legacy "huyện X" (đa số địa chỉ cũ)
+# quá lớn cho SP6 — chờ sweep riêng có ngữ-cảnh như tinh-cu (pending-check). Giữ
+# class + test để bật khi làm sweep, KHÔNG đưa vào CHECKS (tránh tụt scorecard data-dim).
+CHECKS = [FormulaCheck(), SuperlativeCheck()]

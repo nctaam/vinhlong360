@@ -12,7 +12,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R10.3b | trường bắt buộc PER-TYPE (registry entity_schemas) | hard-ratchet | check_data_schema | 49 | 10-data.md |
 | R10.8 | RICH phải có source | hard-ratchet | check_data_schema | 0 | 10-data.md |
 | R10.9 | xuất xứ trong tỉnh (cấm Cái Bè/Lai Vung/Định Yên) | soft-ratchet | check_content_voice | 0 | 10-data.md |
-| R10.10 | đơn-vị-HC-cũ (huyện/thị xã X) trong giọng biên tập — freeze-forward, sweep sau | soft-ratchet | check_content_gates | 1011 | 10-data.md |
+| R10.10 | đơn-vị-HC-cũ (huyện/thị xã X) trong giọng biên tập | pending-check (sweep riêng) | check_content_gates (class sẵn, chưa active) | ~1011 | 10-data.md |
 | R20.1 | ruff full = 0 | pending-check (SP3) | ruff | — | 20-backend.md |
 | R20.2 | cấm blocking-sync trong async | pending-check (SP3) | ruff ASYNC | — | 20-backend.md |
 | R20.3 | cấm bare-except mới | soft-ratchet | check_complexity | 0 | 20-backend.md |
