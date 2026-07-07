@@ -14,6 +14,10 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):  # hook console Windows = cp1252
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from checks import common  # noqa: E402
 from checks.check_api_contract import CHECKS as api_checks  # noqa: E402
