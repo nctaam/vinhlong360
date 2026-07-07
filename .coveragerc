@@ -1,0 +1,16 @@
+# Coverage config — R20.4 (SP3 Backend). Loại test-files khỏi mẫu số để con số
+# TRUNG THỰC (nếu tính cả agent/tests/*.py thì bị thổi lên ~70% ảo; số source thật ~51%).
+[run]
+source = agent
+omit =
+    agent/tests/*
+    */tests/*
+    agent/scripts/*
+    */__pycache__/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    if TYPE_CHECKING:

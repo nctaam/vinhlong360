@@ -16,7 +16,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R20.1 | ruff lint (E/F/W; style E402/E701/E702/E501/E741 ignore) | hard-ratchet | check_ruff | 80 | 20-backend.md |
 | R20.2 | cấm blocking-sync trong async (ruff ASYNC) | hard-ratchet | check_ruff | 0 | 20-backend.md |
 | R20.3 | cấm bare-except mới | soft-ratchet | check_complexity | 0 | 20-backend.md |
-| R20.4 | coverage core≥80 / agent≥60 | pending-check (SP3) | pytest-cov | — | 20-backend.md |
+| R20.4 | coverage agent≥ngưỡng + core-4≥ngưỡng (ratchet nâng dần → agent 60/core 80) | soft-ratchet | check_coverage | 0 | 20-backend.md |
 | R20.5 | route ↔ api-contract cùng commit | hard | check_api_contract | 0 | 20-backend.md |
 | R20.6 | B3 test trước refactor | quy-trình-ký | — | — | 20-backend.md |
 | R20.7 | agent đổi ⇒ test staged cùng | soft-ratchet | check_test_pairing | 0 | 20-backend.md |
@@ -41,7 +41,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R70.5 | apply-script phải --dry-run | quy-trình-ký | — | — | 70-ops.md |
 
 ## Pending-check có hạn
-- SP3: R20.4 coverage (R20.1 ruff + R20.2 async ĐÃ BẬT)
+- (R20.1 ruff + R20.2 async + R20.4 coverage-gate ĐÃ BẬT; coverage nâng ngưỡng dần qua W4/W5)
 - SP4: R30.6 axe · R30.7 bundle
 
 ## Lệnh

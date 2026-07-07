@@ -1,0 +1,10 @@
+{
+  "_comment": "R20.4 ngưỡng coverage — RATCHET: chỉ được NÂNG, không hạ. Số ban đầu = grounding 2026-07-08 (agent 51.1%, database 78.5%, auth 25.6%, social 18.7%, server 21%), làm tròn xuống để margin. Đích SP3: agent 60, core 80 — nâng dần qua W4/W5.",
+  "agent": 50,
+  "core": {
+    "database.py": 78,
+    "auth.py": 25,
+    "social.py": 18,
+    "server.py": 20
+  }
+}
