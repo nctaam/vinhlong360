@@ -20,6 +20,11 @@
 
 ## Tài liệu ACTIVE
 
+### Tiêu chuẩn có răng (`standards/` — SP0/SP1, 2026-07-07)
+- **`standards/00-INDEX.md`** — bảng tổng 31 rule (tầng hard/ratchet/soft + module đo + baseline) & các lệnh
+- `standards/10-data.md` … `70-ops.md` — chuẩn từng chiều; `90-exceptions-log.md` — ngoại lệ đã ký + SKIP-log
+- Cơ chế: `scripts/install_hooks.py` (pre-commit chặn hard+ratchet) · `scripts/scorecard.py` (điểm/chiều, không được tụt) · `scripts/checks/baseline_tool.py` (nợ chuẩn) · `pre_merge_check` bước 6-8
+
 ### Điều hành & kiến trúc
 - **`../CLAUDE.md`** — hiến pháp (truth-sync 2026-07-07)
 - **`ROADMAP.md`** — sổ track dài hạn + Backlog phát sinh (nhiều GĐ đã xong; Track-H = việc con người)

@@ -38,6 +38,7 @@ MXH du lịch/OCOP/cộng đồng cho **tỉnh Vĩnh Long MỚI** (sáp nhập V
 4. Mỗi phiên bắt đầu: `python -m pytest -q` để biết baseline, đối chiếu danh sách fail-đã-biết.
 5. Giữ phạm vi: việc đáng làm ngoài phạm vi → ghi "Backlog phát sinh" cuối ROADMAP.md, KHÔNG tự làm.
 6. **Quy tắc tài liệu:** tài liệu chỉ đạo (plan/blueprint/guide) phải có header `> STATUS:` (active / done / obsolete / superseded-by X). Gặp doc không STATUS và có mùi lỗi thời (nhắc huyện, 3 tỉnh, Wikimedia, booking...) → coi là nghi vấn, đối chiếu file này trước khi làm theo.
+7. **Tiêu chuẩn có răng (từ 2026-07-07):** bộ chuẩn sống ở `docs/standards/` (INDEX = bảng tổng rule). Pre-commit hook chặn lớp hard + ratchet (nợ chuẩn không được TĂNG — baseline.json committed); `pre_merge_check` chặn thêm scorecard-tụt-điểm + plan-result thiếu. KHÔNG skip lớp hard; SKIP soft cần `SKIP_CHECKS` + `SKIP_REASON` (tự ghi 90-exceptions-log.md). Thao tác diện-rộng có chủ đích → cập nhật baseline TRONG CÙNG COMMIT kèm giải trình.
 
 ## 4. ĐIỀU KIỆN DỪNG — phải hỏi người, KHÔNG tự quyết
 
@@ -57,6 +58,8 @@ $env:BUILD_SEARCH_INDEXES='false'; $env:BACKGROUND_INDEX_BUILD='false'; $env:SCH
 python -m pytest -q                      # test (đối chiếu fail-đã-biết ở ROADMAP)
 python scripts/validate_data.py          # kiểm dữ liệu
 python scripts/backup_data.py            # BẮT BUỘC trước thao tác dữ liệu
+python scripts/install_hooks.py          # cài pre-commit tiêu chuẩn (1 lần/máy — docs/standards/)
+python scripts/scorecard.py              # đồng hồ world-class (điểm/chiều; không được tụt)
 cd web-nuxt; npm run dev                 # dev frontend (cổng 3000)
 cd web-nuxt; npm run build               # build frontend
 python scripts/gen_image.py --prompt "..." --out web-nuxt/public/img/x.webp   # ảnh AI (cần IMAGE_API_KEY)
