@@ -390,3 +390,11 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - ~~**[Low/Coupling] `export_data.py` dùng private DB methods**~~ ĐÃ XÓA: file bị dọn trong dead-code cleanup 2026-06-26.
 - **[Low/Safety] `freshness.py` ghi `refresh_queue.json` không atomic** — dùng `open("w")` trực tiếp, crash giữa chừng sẽ corrupt file. Nên chuyển sang pattern `.tmp` + `os.replace()`. (Phát hiện: backend-infra session 2026-06-26)
 - **[Arch/Deferred] Entity content-model — tách bảng vật lý per-type (CTI)**: deep-research 2026-07 (xem `docs/entity-content-model.md`) CHỐT giữ 1 bảng `entities` + registry (Pha 1 ĐÃ LÀM). Pha 3-6 (bảng mở rộng `entity_<kind>` qua expand-contract) **chỉ làm khi có trigger**: một type đồng thời (a) mọc bộ attribute lớn/quan-hệ/truy-vấn-độc-lập, (b) cần FK/CHECK DB-level app không phủ, (c) ghi đủ thường-xuyên. Chưa type nào đạt cả 3 → KHÔNG tách bảng bây giờ (vi phạm §2.2 + §B5). Câu hỏi mở cho chủ: gộp/tách `restaurant`+`cafe` (ăn uống), tách `place` hành chính, `festival` thành type riêng?
+
+### Backlog phát sinh — Declutter Đợt 3 (2026-07-07)
+- **[Content/Pipeline] KBYG data rỗng toàn cục**: golden_hours/kbyg_tips/checklist/amenity_badges = 0% trên 1730 entity — khối KnowBeforeYouGo hầu như không render. Cần pipeline content đổ data (A8a HOÃN vô hạn tới lúc đó).
+- **[Đo rồi mới cắt] chat-DAU + interstitial-CTR**: quyết định mở rộng ẩn ChatWidget sang detail khác (lich-trinh/xa-phuong/bai-viet) và số phận CatalogInterstitial cần số liệu sử dụng thật trước.
+- **[Hỏi chủ] wards-row khu-vuc bỏ hẳn?**: Đợt 3 đã thu gọn thành <details> (giữ 124 link hub-spoke trong DOM cho crawler). Muốn xoá hẳn khỏi DOM cần chủ duyệt riêng (đánh đổi SEO hub-spoke).
+- **[Test-debt] 4 test đỏ-trên-main (không do declutter)**: 3× test_cost_tracker TestBudgetManagerCheckBudget (test dùng local-date, module đã UTC — commit 180a1fd; chỉ đỏ 00:00–07:00 VN) + 1× test_seo sitemap (mock entity mỏng bị cổng index P0-1 loại — test assert hành vi trước-gate). Cần sửa TEST theo hành vi mới.
+- **[A11y/Redesign] season-ring theo-mua tap-target <44px**: 12 notch trên vòng 76px mobile — hình học không cho phép 44px không-chồng-lấn (đo 11/12 tap sai khi nới). Muốn đạt chuẩn phải phóng vòng ≥170px (redesign hero). month-grid hiện là fallback a11y — GIỮ.
+

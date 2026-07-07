@@ -321,3 +321,50 @@ Audit xong — toàn bộ anchor đã grep trên code hiện tại (nhánh `feat
 8. Ghi mục "KẾT QUẢ THỰC THI ĐỢT 3" vào plan file; việc phát sinh (pipeline data KBYG, đo chat-DAU/interstitial-CTR, wards-row bỏ hẳn) → "Backlog phát sinh" trong `docs/ROADMAP.md`, KHÔNG tự làm (§3.6).
 
 **Đường dẫn liên quan:** spec `C:\Code\vinhlong360\docs\superpowers\specs\2026-07-06-ui-declutter-design.md` · plan-result đợt trước `C:\Code\vinhlong360\docs\superpowers\plans\2026-07-06-declutter-dot1-trim.md`, `C:\Code\vinhlong360\docs\superpowers\plans\2026-07-07-declutter-dot2-shared.md` · file plan Đợt 3 đề xuất: `docs/superpowers/plans/2026-07-07-declutter-dot3-structural.md` (tạo khi thực thi).
+
+---
+
+## KẾT QUẢ THỰC THI ĐỢT 3 (2026-07-07, hoàn tất)
+
+**17/17 task xử lý — 12 commit trên `feat/declutter-dot2`** (nối tiếp 8 commit Đợt 2 cùng nhánh).
+
+### Task-by-task
+| Task | Kết quả |
+|---|---|
+| T1 legal masthead | ✅ 2 trang → brand-masthead (copy CSS per-page vì chưa có file chung) |
+| T2 xa-phuong khẩn cấp | ✅ gate `v-if=police_phone`, bỏ nhánh "Đang cập nhật" |
+| T3 bai-viet related 4→2 | ✅ (skeleton SKIP — YAGNI, block cuối trang) |
+| T4 lich-trinh route-total | ✅ dời xuống sau h3 "Bản đồ lộ trình" (trong ClientOnly — verify browser: total đứng ngay sau heading, transport panel sạch) |
+| T5 tai-khoan workspace | ✅ xoá section + computed + CSS (kể cả reduced-motion) |
+| T6 nguoi-dung collapse | ✅ showcase bỏ `open`; heatmap bọc `<details>` (verify browser: đóng mặc định, click mở, grid render); profile-analytics xoá |
+| T7 huong-dan | ✅ phím-tắt → mẹo-nhanh inline; CTA band → 1 dòng; mobile-search vào details TOC |
+| T8 gioi-thieu | ✅ province-band → sediment-divider + tagline; ban-bien-tap → editors-infobox (nội dung + id giữ 100%) |
+| T9 ocop | ✅ bỏ CatalogSpotlight + hạ token star-jump (xs, padding gọn) |
+| T10 san-pham | ✅ bỏ CatalogSpotlight + shelf slice 8→4 |
+| T11 luu-tru | ✅ booking-note inline vào editorial; **stay-triad SKIP có giải trình** (decision-device 3 kiểu ở distinct — pass deletion-test; 2-cột tạo orphan, bullet mất scanability) |
+| T12 khu-vuc + kham-pha | ✅ featured 6→4, bỏ catalog-divider, wards → `<details>` GIỮ 124 link DOM; int-intro xoá + 2 hàng filter → 1 panel divider mảnh (verify click: 336→126→51) |
+| T13 theo-mua | **GIỮ month-grid** — precheck a11y FAIL bằng đo thực nghiệm: nới notch 44px trên vòng 76px → 11/12 tap trúng SAI tháng (tâm kề nhau ~15px; wedge clip-path cũng chỉ đạt ~19.7px). Cần phóng vòng ≥170px = redesign hero, ngoài scope → month-grid là fallback a11y chính danh. Ghi backlog. |
+| T14 A3c | ✅ ReportModal page-level — **DEVIATION: 4 trang consumer thật** (grounding cũ sai: `reportPost` cũng mở modal → thêm cong-dong + bai-viet/[id], thiếu là hỏng kênh báo cáo NĐ147); JourneyBar → 10 trang planning, bỏ layout (verify: hiện /du-lich khi có mục lưu, vắng /tai-khoan + /dia-diem/[id] — khử xung đột sticky-cta) |
+| T15 du-lich | ✅ 7→4+1 gộp "Tâm linh, lịch sử & thiên nhiên" (2 nút jump giữ hành vi từng type), 8→5 card/row, editorial 4 H2→2 (mùa → mode-dial/season-note; di chuyển → 1 câu inline + link /ban-do) |
+| T16 homepage | ✅ 4 commit: (B1-2) event-hero bỏ — minis thành hàng 3 cột; (B1-5) EntityFeature OCOP bỏ, #1 giữ priority; (B1-4) strip lịch-trình → tile 7 cat-grid, **ảnh AI-gen mới `/img/cat-lich-trinh.webp`**, desktop repeat(4)+span2 = 2×4 khít (đo rects), mobile 3+3+full; (B1-6/7/8) leaderboard → teaser, for-you gate `hasPersonalSignal` (verify 2 nhánh), bỏ card độn bản đồ. B1-9 NO-OP (D2), reorder NO-OP (D1). |
+| T17 dia-diem | ✅ 2 commit: (B5c/D12) đúng-1-kênh Báo sai — `quality-report` v-if=!trustVisible (verify SSR 2 URL: có-nguồn 1/0, không-nguồn 0/1); (B5e) claim-cta → next-steps; (B5d) hero 6 nút→3, Save/Share → `.aside-actions` sidebar — **DEVIATION: không chèn sticky-cta-bar** (bar bị ẩn <768px vì ContactWidget có bottom-bar mobile riêng; chỉ sống 768–840px) — sidebar stack dưới article nên phủ mọi viewport (verify 375px + toggle + localStorage); (A8/D5) amenities 1 nguồn = facts-card (verify entity có amenities: tips hết dòng Tiện ích) |
+
+### Kết đợt
+1. **Build**: `npm run build` XANH (exit 0).
+2. **pytest**: 5304 passed / 31 skipped / 68 deselected / 1 xfailed. 10 fail = 6 TestPhase14PgIndexes (pre-existing, thiếu Postgres) + **4 fail KHÔNG do đợt này — đỏ y hệt trên main** (chứng minh bằng worktree main sạch):
+   - 3× `test_cost_tracker.py::TestBudgetManagerCheckBudget` — bug testcode: test dùng `datetime.now()` (local), module đã chuyển UTC (commit 180a1fd) → chỉ đỏ trong cửa sổ 00:00–07:00 VN khi 2 ngày lệch nhau (lúc chạy: local 07-07 06:55 / UTC 07-06 23:55).
+   - 1× `test_seo.py::test_sitemap_includes_all_public...` — test lỗi thời sau P0-1 cổng index: mock entity mỏng bị `is_index_worthy` loại khỏi sitemap (hành vi mới CHỦ ĐÍCH).
+   - Cả 4 cần sửa TEST theo hành vi mới → báo chủ dự án quyết (không tự sửa yếu assertion, §3.4).
+3. **SSR-sweep 14 URL (server restart)**: 12/14 pass thẳng; 6 flag còn lại đều false-positive/hợp lệ: san-pham `CatalogSpotlight` chỉ là `<link stylesheet>` dev-graph (template=0); ocop `honor-roll` gate `fiveStarHighlights.length` — data local không có 5 sao (star-jump vẫn 3); `aside-actions` + lich-trinh `route-total`/"Bản đồ lộ trình" nằm trong ClientOnly → verify browser pass.
+4. **Protected-sweep**: entity-byline=1 (2 URL), #ban-bien-tap=1, trust-card còn, đúng-1 kênh Báo sai/trang, breadcrumb, skip-link=3, StorySpread=1, decision-index=5 card ref, sediment-divider/merge-tagline=1, dc-nophoto-note nguyên source (gate !hasEntityImages đúng).
+5. **LCP**: preload hero ×2 (mobile/desktop) + fetchpriority=high ×2 + feature #1 trai-nghiem giữ priority.
+6. **ClientOnly evals**: JourneyBar policy ✅, for-you 2 nhánh ✅, Save/Share sidebar ✅ (desktop+375px), heatmap/showcase collapse ✅, ReportModal mở /lich-trinh + vắng /du-lich ✅, kham-pha 2 nhóm chip hoạt động ✅.
+7. **Orphan-grep 20 pattern**: 0 mồ côi (month-grid = giữ chủ đích T13; home-leaders = class teaser mới; shortcuts = admin ngoài scope).
+
+### Gotcha ghi nhận thêm (bổ sung memory)
+- Nitro SWR dev: restart XONG vẫn thấy HTML cũ trên browser → đó là **browser HTTP-cache**, không phải server; verify SSR bằng python urllib, đừng tin `location.href` reload.
+- Đo `getComputedStyle` ngay sau khi đổi style trong CÙNG eval = giá trị cũ (transition `all` chưa tick frame) — đo sau `setTimeout`.
+- Cảnh báo dev "`does not have a single root node`" xuất hiện khi HMR page component — kiểm template thật trước khi tin (cả index.vue lẫn du-lich.vue đều 1 root).
+
+### Backlog phát sinh → đã ghi `docs/ROADMAP.md` (mục Declutter Đợt 3 2026-07-07)
+KBYG data-pipeline · đo chat-DAU/interstitial-CTR · wards-row bỏ-hẳn cần chủ duyệt · season-ring 44px cần redesign hero · (mới) sửa 4 test đỏ-trên-main (cost_tracker UTC-date + test_seo sau cổng index).
