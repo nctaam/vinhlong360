@@ -79,6 +79,7 @@ class RegexCheck:
         neg_context: re.Pattern | None = NEG_DEFAULT,
         msg: str = "",
         root: Path | None = None,
+        count_matches: bool = False,  # True: đếm TỪNG match (file 1-dòng lớn như data.json); neg_context bị bỏ qua
     ):
         assert level in {"hard", "hard-ratchet", "soft-ratchet", "soft"}
         self.name, self.level, self.rule = name, level, rule
@@ -88,6 +89,7 @@ class RegexCheck:
         self.neg_context = neg_context
         self.msg = msg or f"vi phạm {rule}"
         self._root = root
+        self.count_matches = count_matches
 
     @property
     def root(self) -> Path:
@@ -116,6 +118,11 @@ class RegexCheck:
             try:
                 text = path.read_text(encoding="utf-8", errors="replace")
             except OSError:
+                continue
+            if self.count_matches:
+                for p in self.patterns:
+                    for _ in p.finditer(text):
+                        violations.append({"file": rel, "line": 0, "rule": self.rule, "msg": self.msg})
                 continue
             for i, line in enumerate(text.splitlines(), 1):
                 if self.neg_context is not None and self.neg_context.search(line):

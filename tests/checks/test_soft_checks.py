@@ -23,14 +23,15 @@ def _mk(tmp_path: Path, rel: str, text: str) -> Path:
 def test_content_voice_fillers_and_out_of_province(tmp_path):
     _mk(tmp_path, "web-nuxt/pages/x.vue", "<p>thiên đường miền Tây, chợ nổi Cái Bè</p>\n")
     results = {r["rule"]: r["count"] for r in (c.run() for c in voice_checks(root=tmp_path))}
-    assert results["R50.2"] == 1  # 1 dòng chứa filler
+    assert results["R50.2"] == 2  # per-match: thiên đường + miền Tây
     assert results["R10.9"] == 1  # Cái Bè
 
 
-def test_content_voice_scans_data_json(tmp_path):
-    _mk(tmp_path, "web/data.json", json.dumps({"entities": [{"summary": "must-see điểm đến lý tưởng"}]}, ensure_ascii=False))
+def test_content_voice_scans_data_json_per_match(tmp_path):
+    # data.json 1-dòng: đếm TỪNG match (2 filler = 2), không bị neg-context nuốt cả dòng
+    _mk(tmp_path, "web/data.json", json.dumps({"entities": [{"summary": "must-see điểm đến lý tưởng, KHÔNG liên quan"}]}, ensure_ascii=False))
     results = {r["rule"]: r["count"] for r in (c.run() for c in voice_checks(root=tmp_path))}
-    assert results["R50.2"] >= 1
+    assert results["R50.2"] == 2
 
 
 def test_thin_content_counts_under_threshold(tmp_path):

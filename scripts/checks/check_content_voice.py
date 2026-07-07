@@ -36,6 +36,7 @@ def build_checks(root: Path | None = None) -> list:
             exclude_paths=["web-nuxt/node_modules", "web/media"],
             msg="filler giọng generic — thay bằng đặc-thù Vĩnh Long (R50.2, playbook)",
             root=root,
+            count_matches=True,  # data.json 1-dòng: đếm từng match, không per-line
         ),
         RegexCheck(
             name="out_of_province", level="soft-ratchet", rule="R10.9",
@@ -45,6 +46,7 @@ def build_checks(root: Path | None = None) -> list:
             exclude_paths=["web-nuxt/node_modules", "web/media"],
             msg="địa danh NGOÀI tỉnh (Đồng Tháp/Tiền Giang cũ) — kiểm xuất xứ (R10.9)",
             root=root,
+            count_matches=True,
         ),
     ]
 
