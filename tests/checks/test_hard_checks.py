@@ -186,3 +186,12 @@ def test_api_contract_passes_non_route_change(tmp_path):
     _mk(repo, "agent/server.py", "x = 2\n")
     _git(repo, "add", "agent/server.py")
     assert ApiContractCheck(root=repo).run(files=["agent/server.py"])["count"] == 0
+
+
+def test_api_contract_survives_vietnamese_diff(tmp_path):
+    """Windows cp1252: diff UTF-8 tiếng Việt từng làm stdout=None → crash hook."""
+    repo = _mk_repo(tmp_path)
+    _mk(repo, "agent/server.py", 'x = 1\n# Trường học — bến phà Đình Khao, chợ nổi Trà Ôn ọp ẹp\n@router.get("/moi")\ndef moi(): ...\n')
+    _git(repo, "add", "agent/server.py")
+    r = ApiContractCheck(root=repo).run(files=["agent/server.py"])
+    assert r["count"] == 1  # route mới thiếu contract vẫn bị bắt, không crash

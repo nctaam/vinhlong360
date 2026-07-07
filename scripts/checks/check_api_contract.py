@@ -31,10 +31,12 @@ class ApiContractCheck:
         agent_py = [f for f in files if f.startswith("agent/") and f.endswith(".py")]
         if agent_py and CONTRACT not in files:
             for f in agent_py:
+                # encoding tường minh: Windows text=True decode cp1252 → chết
+                # reader-thread trên diff UTF-8 tiếng Việt (stdout thành None)
                 diff = subprocess.run(
                     ["git", "diff", "--cached", "-U0", "--", f],
-                    capture_output=True, text=True, cwd=str(self.root),
-                ).stdout
+                    capture_output=True, encoding="utf-8", errors="replace", cwd=str(self.root),
+                ).stdout or ""
                 changed_routes = [ln for ln in diff.splitlines() if ROUTE_RE.match(ln)]
                 if changed_routes:
                     violations.append({

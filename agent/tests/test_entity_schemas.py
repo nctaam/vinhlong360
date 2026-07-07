@@ -71,6 +71,15 @@ class TestValidateAttributes:
         assert any("accommodation_type" in w for w in warn)
         assert norm["address"] == "abc"
 
+    def test_office_kinds_extended_sp6(self):
+        """SP6: enum mở rộng cho facility ngoài-cơ-quan (quyết định chủ 2026-07-07)."""
+        for k in ("giao_thong", "ngan_hang", "vien_thong", "cua_hang"):
+            assert k in es.OFFICE_KINDS, f"OFFICE_KINDS thiếu {k}"
+        # giá trị mới hợp lệ qua validate (select-membership)
+        norm, warn = es.validate_attributes("facility", {"office_kind": "giao_thong"})
+        assert norm["office_kind"] == "giao_thong"
+        assert warn == []
+
     def test_unknown_type_is_noop(self):
         norm, warn = es.validate_attributes("no_such_type", {"a": 1})
         assert norm == {"a": 1}

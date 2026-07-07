@@ -90,7 +90,10 @@ HIGHLIGHT = _f("highlight", "Điểm nhấn", "textarea", group="Trải nghiệm
 HERITAGE_LEVELS = ["Di tích quốc gia đặc biệt", "Di tích quốc gia",
                    "Di tích cấp tỉnh", "Chưa xếp hạng"]
 ACCOM_TYPES = ["Khách sạn", "Homestay", "Nhà nghỉ", "Resort", "Nhà vườn", "Khác"]
-OFFICE_KINDS = ["ubnd", "cong_an", "y_te", "truong_hoc", "buu_dien", "tu_phap", "khac"]
+# SP6 2026-07-07: +4 mục cho facility ngoài-cơ-quan (bến xe/phà, ngân hàng/ATM,
+# viễn thông, cửa hàng) — trước đây 28/58 facility không có lựa chọn khớp.
+OFFICE_KINDS = ["ubnd", "cong_an", "y_te", "truong_hoc", "buu_dien", "tu_phap",
+                "giao_thong", "ngan_hang", "vien_thong", "cua_hang", "khac"]
 DIFFICULTY = ["Dễ", "Trung bình", "Khó"]
 
 
@@ -217,9 +220,9 @@ ENTITY_SCHEMAS: dict[str, dict] = {
         BESTTIME,
     ]},
     "facility": {"fields": [
-        _f("office_kind", "Loại cơ quan", "select", options=OFFICE_KINDS,
+        _f("office_kind", "Loại cơ quan / tiện ích", "select", options=OFFICE_KINDS,
            group="Cơ quan", required=True,
-           help="ubnd, cong_an, y_te, truong_hoc, buu_dien, tu_phap, khac"),
+           help="ubnd, cong_an, y_te, truong_hoc, buu_dien, tu_phap, giao_thong, ngan_hang, vien_thong, cua_hang, khac"),
         _f("address", "Địa chỉ", "text", group="Liên hệ & thực dụng"),
         _f("phone", "Điện thoại", "tel", group="Liên hệ & thực dụng"),
         _f("emergency_phone", "SĐT khẩn cấp", "tel", group="Liên hệ & thực dụng"),

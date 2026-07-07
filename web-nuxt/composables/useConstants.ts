@@ -39,6 +39,10 @@ export const OFFICE_KIND: Record<string, { emoji: string; icon: string; label: s
   truong_hoc: { emoji: '🏫', icon: 'building', label: 'Trường học' },
   buu_dien: { emoji: '📮', icon: 'building', label: 'Bưu điện' },
   tu_phap: { emoji: '⚖️', icon: 'building', label: 'Tư pháp – Hộ tịch' },
+  giao_thong: { emoji: '🚌', icon: 'compass', label: 'Bến xe – Bến phà – Bến tàu' },
+  ngan_hang: { emoji: '🏦', icon: 'building', label: 'Ngân hàng – ATM' },
+  vien_thong: { emoji: '📱', icon: 'building', label: 'Viễn thông – SIM' },
+  cua_hang: { emoji: '🛒', icon: 'building', label: 'Cửa hàng tiện ích' },
   khac: { emoji: '🏢', icon: 'building', label: 'Cơ quan khác' },
 }
 

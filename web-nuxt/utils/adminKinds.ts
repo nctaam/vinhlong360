@@ -36,7 +36,8 @@ const noSeason = (e: Record<string, any>) => !(e?.season?.months?.length || e?.s
 
 const HERITAGE_LEVELS = ['Di tích quốc gia đặc biệt', 'Di tích quốc gia', 'Di tích cấp tỉnh', 'Chưa xếp hạng']
 const ACCOM_TYPES = ['Khách sạn', 'Homestay', 'Nhà nghỉ', 'Resort', 'Nhà vườn', 'Khác']
-const OFFICE_KINDS = ['ubnd', 'cong_an', 'y_te', 'truong_hoc', 'buu_dien', 'tu_phap', 'khac']
+// SP6 2026-07-07: +4 mục facility ngoài-cơ-quan — khớp agent/entity_schemas.py OFFICE_KINDS
+const OFFICE_KINDS = ['ubnd', 'cong_an', 'y_te', 'truong_hoc', 'buu_dien', 'tu_phap', 'giao_thong', 'ngan_hang', 'vien_thong', 'cua_hang', 'khac']
 
 export const ADMIN_KINDS: KindDef[] = [
   {
