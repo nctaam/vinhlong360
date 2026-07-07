@@ -1,88 +1,96 @@
-# Spec: Chương trình "Chuẩn hoá trên world-class" — điều lệ + SP0/SP1
+# Spec: Chương trình "Chuẩn hoá trên world-class" — điều lệ + SP0/SP1 (bản khắt khe)
 
-> **STATUS (2026-07-07): active — design ĐÃ DUYỆT (Section A+B), spec chờ chủ dự án review.**
-- **Ngày:** 2026-07-07 · **Nguồn việc:** chỉ đạo trực tiếp chủ dự án ("chuẩn hoá sâu, đa chiều toàn dự án, level trên world-class")
-- **3 quyết định đã chốt qua brainstorm:** (1) nghĩa = **định nghĩa bộ chuẩn mới toàn diện** rồi migrate toàn dự án; (2) cơ chế ép = **hai tầng** (gate-cứng cho lớp nguy hiểm, report-only cho lớp mềm); (3) thứ tự = **nền tảng → yếu nhất trước**.
+> **STATUS (2026-07-07): active — design ĐÃ DUYỆT (Section A+B) + chỉ đạo bổ sung "cao hơn, khắt khe hơn, nghiêm khắc hơn"; spec v2 chờ chủ dự án review.**
+- **Ngày:** 2026-07-07 · **Nguồn việc:** chỉ đạo trực tiếp chủ dự án
+- **4 quyết định đã chốt:** (1) định nghĩa **bộ chuẩn mới toàn diện** rồi migrate toàn dự án; (2) cơ chế ép **hai tầng**; (3) thứ tự **nền tảng → yếu nhất trước**; (4) **mức nghiêm: khắt khe** — ratchet bắt buộc, số cứng, không đường thoát dễ dãi.
 
-## 1. Điều lệ chương trình (Section A — đã duyệt)
+## 0. Triết lý nghiêm khắc (mới — v2)
 
-7 sub-project, mỗi SP một chu trình **spec→plan→execute→kết-đợt** riêng, nhánh riêng, merge main khi xanh. Điểm dừng tự nhiên giữa các SP để chủ dự án xem/đổi hướng.
+1. **RATCHET — nợ chuẩn chỉ được GIẢM.** Mỗi rule có `baseline` (số vi phạm hiện tồn, commit vào `docs/standards/baseline.json`). Commit nào làm bất kỳ counter nào TĂNG — kể cả rule tầng soft — **bị chặn**. Nợ cũ được phép tồn tại có thời hạn; nợ mới = 0 khoan nhượng.
+2. **Điểm không được tụt.** `scorecard.py` chấm 0-100/chiều. Kết đợt nào có chiều TỤT điểm so với lần chấm trước → **không merge** (lưu lịch sử điểm trong `docs/standards/scorecard-history.jsonl`, committed).
+3. **Rule không máy-đo-được = không tồn tại**, trừ khi chủ dự án ký ngoại lệ TỪNG-RULE (ghi vào file chuẩn, có ngày + lý do). Không còn mặc định "checklist tay".
+4. **Không skip lớp hard.** `SKIP_CHECKS` chỉ áp dụng cho rule soft, bắt buộc kèm lý do, và ghi vào `docs/standards/90-exceptions-log.md` (COMMITTED — không phải log gitignore). Check hard sai → sửa check bằng commit riêng nêu lý do, không bypass.
+5. **Mốc điểm:** 90 = sàn world-class; **đích chương trình ≥95 cho mọi chiều đã kích hoạt**. Chiều chưa có check → hiển thị "chưa đo" và không được tính là đạt.
 
-| # | Sub-project | Nội dung cốt lõi | DoD (điểm dừng) |
-|---|---|---|---|
-| **SP0** | Bộ Tiêu chuẩn | `docs/standards/` — 1 file chuẩn/chiều, mỗi quy tắc có mốc tham chiếu + cách đo + tầng | Chủ duyệt bộ chuẩn; 100% quy tắc đo-được-bằng-máy hoặc checklist |
-| **SP1** | Cơ chế ép 2 tầng | `scripts/checks/*` + pre-commit hook + `scorecard.py` + mở rộng `pre_merge_check.py` | Demo commit vi phạm bị chặn thật; scorecard ra bảng điểm; mỗi check có test |
-| **SP2** | Data | Reconcile local↔prod (1.782 vs 1.730), shape export↔data.json, schema gate theo type, làm giàu trường 0% (season/hours/tips) THEO NGUỒN THẬT | Scorecard-data tăng; 0 entity vi phạm schema gate |
-| **SP6** | Content/copy | 253 "miền Tây" trong data (phân loại ngữ cảnh như campaign tỉnh-mới), thin-content ~1.300 trang noindex nâng dần theo giọng playbook, 22 tên riêng khi có nguồn | Phủ index-worthy tăng N% (chốt N ở spec SP6); copy đạt checklist giọng |
-| **SP3** | Backend | Backlog 127-finding còn lại, ruff lint+format, coverage floor module mù (B3), 4 test-debt | pytest fail-đã-biết → 0; ruff 0 lỗi |
-| **SP4** | Frontend/UI | Đồng nhất theo design-rulebook đã sửa: tokens, a11y, CWV budget, quét lệch chuẩn | Checker FE 0 vi phạm gate-cứng |
-| **SP5** | Docs/workflow | Lifecycle STATUS tự kiểm, template spec/plan chuẩn, plan-result bắt buộc | Checker docs 0 vi phạm |
+## 1. Điều lệ chương trình — 7 SP với DoD SỐ CỨNG
 
-**Nguyên tắc xuyên suốt:**
-1. Không phá bất biến CLAUDE.md §2; không dịch vụ trả phí (B8); không remote-CI — mọi cơ chế chạy local Windows + VPS.
-2. **Chuẩn không có cơ chế kiểm = không ban hành** (bài học 25 file archive). Mỗi quy tắc phải trả lời: máy kiểm được không? Nếu không → checklist nào, ai chạy, khi nào?
-3. Chuẩn khởi tạo từ tài sản có sẵn (design-rulebook, api-contract, playbook, CLAUDE.md, entity-content-model, các audit) — hệ thống hoá + nâng + gắn cách đo, không viết từ chân không.
-4. SP2-SP6 chỉ có scope-charter ở đây; spec chi tiết viết khi tới lượt (grounding lại lúc đó — tránh spec-thối như bài học declutter).
+Mỗi SP: chu trình spec→plan→execute→kết-đợt riêng, nhánh riêng, merge khi xanh; **kết đợt bắt buộc dán scorecard vào plan-result**. SP sau không khởi động khi SP trước chưa merge + chưa có gật đầu của chủ.
 
-## 2. SP0 — Bộ Tiêu chuẩn `docs/standards/` (Section B — đã duyệt)
+| # | Sub-project | DoD số cứng (điểm dừng) |
+|---|---|---|
+| **SP0** | Bộ Tiêu chuẩn `docs/standards/` | Chủ duyệt 8 file; **100% rule có check-module được nêu tên** (rule chưa có module → INDEX đánh dấu `pending-check` kèm hạn SP nào phải có); 0 rule "checklist tay" không có chữ ký ngoại lệ |
+| **SP1** | Cơ chế ép | Demo ≥3 kiểu commit vi phạm bị chặn thật (hard, ratchet-soft, api-contract); scorecard ra điểm 7 chiều; hook <5s (đo trong test); **100% check-module có test**; baseline.json + scorecard-history.jsonl khởi tạo |
+| **SP2** | Data | **100% entity pass schema-gate theo type; phân kỳ local↔prod = 0** (reconcile xong, 1 con số entity duy nhất); shape export ≡ data.json (round-trip test pass); occurrence từ-cấm trong data = 0 ngoài whitelist committed; mọi entity RICH (index-worthy) có ≥1 `source` URL |
+| **SP6** | Content | Filler-list trong data giảm ≥80% so baseline (253 "miền Tây" → ≤50, chỉ giữ văn-nói hợp lệ có whitelist); +100 entity từ noindex → index-worthy (viết theo checklist giọng, có nguồn); 22 tên riêng xử lý khi có nguồn — không có nguồn thì GIỮ, không bịa |
+| **SP3** | Backend | ruff full-ruleset (E,F,W,I,N,UP,B,S,C90; complexity ≤12) = **0 lỗi**; coverage: module core (database/auth/social/server-chat-path) **≥80%**, mọi module agent/ **≥60%** (ratchet +10/đợt từ baseline tới đích); test-debt 4 test đỏ-đã-biết = 0; pytest fail = chỉ còn nhóm cần-hạ-tầng (PG local) có marker skip-lý-do |
+| **SP4** | Frontend/UI | axe-core 0 violation mức serious+ trên 14 trang sweep; bundle budget per-route (đo baseline đầu SP4, đích ≤ baseline−10% và ≤200kB gz entry); LCP p75 ≤2.5s / CLS ≤0.05 (đo local 4x-slowdown); token-lệch = 0; emoji-chức-năng mới = 0 |
+| **SP5** | Docs/workflow | 100% docs-active có STATUS; **broken internal link = 0** (check_links mới); spec/plan sau ngày ban hành theo template chuẩn; kết-đợt thiếu plan-result = pre_merge chặn |
 
-**Cấu trúc:** 8 file, mỗi file ≤300 dòng, format thống nhất:
+**Nguyên tắc xuyên suốt (giữ từ v1):** không phá bất biến §2; không dịch vụ trả phí; không remote-CI; chuẩn khởi tạo từ tài sản có sẵn; SP2-SP6 grounding lại khi viết spec riêng.
+
+## 2. SP0 — `docs/standards/` (8 file + 2 file máy)
+
+Format từng file chuẩn (≤300 dòng):
 ```
 # <Chiều> — Tiêu chuẩn vinhlong360
 > STATUS (ngày): active — bản 1.0
-## Mốc tham chiếu  (chuẩn ngoài + tài sản nội bộ làm gốc)
-## Quy tắc          (R<chiều>.<số> — mỗi rule: phát biểu / tầng hard|soft / cách đo: check-module hoặc checklist)
-## Ngoại lệ đã duyệt (rule-id + phạm vi + ngày + lý do)
+## Mốc tham chiếu
+## Quy tắc   (R<chiều>.<số>: phát biểu / tầng hard|soft-ratchet / check-module / baseline-hiện-tại)
+## Ngoại lệ đã duyệt (rule-id + phạm vi + ngày + lý do + chữ ký "chủ dự án duyệt")
 ```
 
-| File | Mốc tham chiếu chính | Nguồn nội bộ khởi tạo |
+| File | Mốc tham chiếu | Nguồn nội bộ khởi tạo |
 |---|---|---|
-| `00-INDEX.md` | — | Bảng tổng: rule-id → tầng → check-module → trạng thái triển khai |
-| `10-data.md` | Schema.org, nguyên tắc anti-hallucination | entity-content-model (17 type), validate_data.py, §1.6 tên tỉnh, semantics verifiedAt/updatedAt, quy tắc nguồn |
-| `20-backend.md` | PEP8 + ruff, FastAPI best practices | api-contract.md, backend-audit 8 chiều, B3/B4; cấm blocking-sync trong async path, bare-except |
-| `30-frontend.md` | Vue style guide, WCAG 2.2 | CSS-thuần+tokens (cấm Tailwind), IconLine thay emoji-chức-năng, SSR-safety (ClientOnly cho volatile), tap-target ≥44px (trừ ngoại lệ season-ring đã ghi) |
-| `40-ui-design.md` | Apple HIG, M3 (values đã trích) | design-rulebook.md là NGUỒN — file này chỉ liệt phần GATE ĐƯỢC: màu ngoài palette, emoji functional mới, motif phù-sa, microcopy honesty (cấm claim xác-minh) |
-| `50-content.md` | E-E-A-T, playbook chống-AI-spam | Giọng đặc-thù-Vĩnh-Long, danh sách filler cấm, công thức-mở-bài cấm, ngưỡng độ dài theo cổng index thật (đọc từ agent/seo.py), quy tắc tên tỉnh trong content, xuất xứ đặc sản phải trong tỉnh |
-| `60-docs.md` | — | STATUS header bắt buộc, lifecycle active/done/obsolete/superseded, archive policy, template spec/plan, plan-result bắt buộc khi kết đợt |
-| `70-ops.md` | — | B1 backup trước data-ops, dry-run bắt buộc, tên service chuẩn (vl-agent/vl-nuxt/vl-bot), secrets không hardcode + bẫy TOTP_ENC_KEY, deploy theo HANDOFF runbook |
+| `00-INDEX.md` | — | Bảng tổng rule-id → tầng → module → baseline → trạng thái; danh sách `pending-check` có hạn |
+| `10-data.md` | Schema.org; anti-hallucination | entity-content-model 17 type; validate_data.py; §1.6 tên tỉnh; verifiedAt/updatedAt semantics; **xuất xứ đặc sản phải trong tỉnh**; RICH phải có nguồn |
+| `20-backend.md` | PEP8+ruff full, FastAPI | api-contract; BE-audit; cấm blocking-sync trong async, bare-except, print-debug; route mới ↔ contract cùng commit; TDD cho code mới (heuristic: agent/*.py đổi → tests/ phải đổi cùng commit, tầng soft-ratchet) |
+| `30-frontend.md` | Vue style guide, WCAG 2.2 AA | CSS-thuần+tokens (cấm Tailwind — hard); IconLine thay emoji-chức-năng (hard cho code mới); SSR-safety ClientOnly; tap-target ≥44 (ngoại lệ season-ring đã ký) |
+| `40-ui-design.md` | Apple HIG, M3 | design-rulebook là nguồn; phần GATE: màu ngoài palette (hard-ratchet), motif phù-sa, microcopy honesty (hard: cấm claim xác-minh) |
+| `50-content.md` | E-E-A-T, playbook | giọng đặc-thù-VL; filler-list cấm (hard cho template, ratchet cho data); công-thức-mở-bài cấm; ngưỡng độ dài = cổng index thật (đọc agent/seo.py); tên tỉnh trong content |
+| `60-docs.md` | — | STATUS bắt buộc (hard); lifecycle; archive policy; template spec/plan; plan-result bắt buộc; internal-link phải sống |
+| `70-ops.md` | — | B1 backup (hard: script data-ops phải gọi/nhắc backup); dry-run bắt buộc cho apply; tên service chuẩn; secrets (hard); bẫy TOTP |
+| `baseline.json` (máy) | — | counter vi phạm hiện tồn theo rule — nguồn sự thật của ratchet |
+| `90-exceptions-log.md` | — | nhật ký SKIP soft-rule (ai/khi/lý do) + ngoại lệ rule đã ký |
 
-**DoD SP0:** chủ dự án duyệt cả 8 file; `00-INDEX.md` không có rule nào thiếu cách-đo; các ngoại lệ hiện hành (parallax signature, season-ring 22px, hamburger-nav...) được ghi thành Ngoại-lệ-đã-duyệt thay vì vi phạm ngầm.
+**DoD SP0** như bảng §1.
 
-## 3. SP1 — Cơ chế ép hai tầng (Section B — đã duyệt)
+## 3. SP1 — Cơ chế ép (khắt khe hoá)
 
-**3.1 `scripts/checks/` — mỗi check 1 module, interface chung:**
-```python
-# def run(files: list[str] | None) -> CheckResult
-# CheckResult = {"check": str, "level": "hard"|"soft", "violations": [{"file", "line", "rule", "msg"}]}
-# files=None → quét toàn repo; files=[...] → chỉ staged (cho hook, nhanh)
-```
-Bộ khởi điểm (mở rộng dần theo SP0):
-- **hard** `check_secrets.py` — staged: pattern key/token/password hardcode; chặn stage file `.env`.
-- **hard** `check_data_schema.py` — khi `web/data.json` staged: parse + id duy nhất + type thuộc 17 enum + trường bắt buộc theo type (tái dùng logic validate_data.py).
-- **hard** `check_banned_claims.py` — staged `.vue/.ts/.md`: cấm THÊM MỚI "đã xác minh/đã được xác minh" (whitelist ngữ cảnh phủ định + file chuẩn/checklist nội bộ), cấm "Wikimedia/Pexels/Unsplash" như nguồn ảnh trong docs-active + code. (*docs-active* = mọi `.md` trong `docs/` NGOÀI `docs/archive/`, `docs/research/` và các dòng phủ-định/cảnh-báo — cùng định nghĩa với sweep truth-sync.)
-- **hard** `check_api_contract.py` — diff staged thêm/xoá `@router.`/`@app.` route trong agent/ mà `docs/api-contract.md` không staged cùng → chặn kèm hướng dẫn.
-- **soft** `check_fe_tokens.py` — màu hex/rgb ngoài tokens trong `.vue`; emoji-chức-năng mới ngoài string-context.
-- **soft** `check_doc_status.py` — docs/*.md active thiếu `> STATUS:`; doc active chứa từ-khoá lỗi-thời (huyện-làm-chuẩn, 3-tỉnh-hiện-hành...).
-- **soft** `check_content_voice.py` — filler-list từ `50-content.md` trong copy template FE.
-- **soft** `check_thin_content.py` — đếm entity dưới ngưỡng index-worthy (report xu hướng).
+**3.1 `scripts/checks/`** — interface chung như v1, thêm trường `count` để so baseline. Bộ khởi điểm **12 module**:
 
-**3.2 Hook:** `scripts/install_hooks.py` ghi `.git/hooks/pre-commit` (sh wrapper gọi `python scripts/checks/run_hard.py --staged`), idempotent, chạy được trên Git-Bash Windows. Ngân sách thời gian hook **<5 giây** (chỉ hard-checks, chỉ staged files). Thoát hiểm: `SKIP_CHECKS=<rule-id>` env (ghi log vào `.git/skip-checks.log`) — `--no-verify` vẫn bị CLAUDE.md §6 cấm dùng tuỳ tiện.
+| Module | Tầng | Chặn khi |
+|---|---|---|
+| `check_secrets.py` | **hard** | key/token/password hardcode; `.env` bị stage; entropy-string đáng ngờ trong code mới |
+| `check_data_schema.py` | **hard** | data.json staged: id trùng, type ngoài 17 enum, thiếu trường bắt buộc theo type, coords ngoài bbox |
+| `check_banned_claims.py` | **hard** | thêm mới "đã xác minh"/nguồn ảnh cấm (Wikimedia/Pexels/Unsplash) trong code + docs-active (docs-active = docs/ ngoài archive/ + research/, trừ dòng phủ-định/cảnh-báo) |
+| `check_api_contract.py` | **hard** | thêm/xoá route agent/ mà api-contract.md không staged cùng |
+| `check_tinh_cu.py` | **hard-ratchet** | counter "tỉnh Bến Tre\|Trà Vinh" (ngoài whitelist lịch-sử committed) tăng so baseline — chặn tái nhiễm sau campaign |
+| `check_fe_tokens.py` | **hard-ratchet** | màu hex/rgb ngoài tokens trong .vue tăng; emoji-chức-năng mới |
+| `check_doc_status.py` | **hard-ratchet** | docs-active thiếu STATUS tăng; từ-khoá lỗi-thời mới |
+| `check_links.py` | **hard-ratchet** | broken internal link (docs ↔ docs, docs → file, FE route chết trong copy) tăng |
+| `check_content_voice.py` | soft-ratchet | filler-list trong template FE + data (report + chặn tăng) |
+| `check_thin_content.py` | soft | entity dưới ngưỡng index (report xu hướng — SP6 kéo xuống) |
+| `check_test_pairing.py` | soft-ratchet | agent/*.py đổi mà tests/ không đổi cùng commit |
+| `check_complexity.py` | soft-ratchet | hàm Python complexity >12 tăng (tiền trạm ruff-C90 của SP3) |
 
-**3.3 `scripts/scorecard.py`:** chạy toàn bộ hard+soft trên cả repo → bảng điểm theo chiều (text + `--json`), exit code ≠0 khi có hard-violation. Là "đồng hồ world-class" chạy bất kỳ lúc nào; kết quả từng kỳ có thể dán vào plan-result.
+*(hard-ratchet = vi phạm tồn kho được phép theo baseline, nhưng MỌI mức tăng đều chặn commit — kể cả 1.)*
 
-**3.4 `pre_merge_check.py` mở rộng:** thêm bước `run_hard.py` toàn-repo + tóm tắt scorecard trước khi cho merge nhánh (giữ nguyên các bước hiện có).
+**3.2 Hook `pre-commit`** (`scripts/install_hooks.py`, idempotent, Git-Bash Windows): chạy hard + hard-ratchet trên staged + baseline-so-sánh; ngân sách <5s (đo trong test, fail test nếu vượt). `--no-verify` bị cấm bởi CLAUDE.md §6; `SKIP_CHECKS` **chỉ nhận rule soft**, bắt buộc `SKIP_REASON`, tự append vào `90-exceptions-log.md` — thiếu reason = hook từ chối.
 
-**Testing SP1:** mỗi check-module có test (fixture file vi phạm/không vi phạm); test hook = chạy run_hard trên fixture staged giả lập; demo end-to-end: 1 commit cố tình vi phạm bị chặn (ghi lại trong plan-result).
+**3.3 `scripts/scorecard.py`**: chấm 0-100/chiều từ counter các check (công thức ghi trong module, thô: 100 × (1 − nợ/baseline-gốc), floor 0); xuất text + `--json`; **tự append `scorecard-history.jsonl`**; exit ≠0 khi (a) có hard-violation, (b) bất kỳ chiều nào tụt so entry trước.
 
-**DoD SP1:** demo chặn thật; scorecard chạy ra số cho cả 7 chiều (chiều chưa có check → "chưa đo"); toàn bộ check có test; install idempotent; HANDOFF + docs/README cập nhật cách dùng.
+**3.4 `pre_merge_check.py` mở rộng**: các bước hiện có + run_hard toàn-repo + scorecard (chặn theo 3.3) + kiểm plan-result tồn tại cho nhánh có plan.
+
+**Testing SP1:** fixture vi phạm/sạch cho từng module; test đo thời gian hook; test ratchet (baseline N → commit tạo N+1 bị chặn, N−1 pass và baseline tự đề nghị hạ); demo end-to-end 3 kiểu chặn ghi vào plan-result.
 
 ## 4. Rủi ro & điều kiện dừng
 
-- **False-positive chặn oan** → mọi hard-check có whitelist + SKIP_CHECKS có log; rule gây >2 lần chặn oan/tuần → hạ xuống soft, ghi vào Ngoại lệ.
-- **Hook chậm** → chỉ staged + chỉ hard; đo thời gian trong test.
-- **Phình phạm vi** (Q1 đã chọn hướng sâu nhất) → chốt cứng: SP0+SP1 là MỘT đợt thực thi; SP2-SP6 không khởi động khi chưa merge SP0+SP1 và chưa được chủ gật cho SP kế tiếp.
-- Mâu thuẫn giữa chuẩn mới và bất biến §2 → bất biến thắng, dừng hỏi người (§4).
+- **Chặn oan:** rule gây >2 lần chặn-oan/tuần → hạ tầng bằng COMMIT sửa chuẩn + ghi 90-exceptions-log (không silent-skip). Bài học: nghiêm ở cơ chế, minh bạch ở điều chỉnh.
+- **Hook chậm:** chỉ staged; đo trong test; module nào >1s bị tách khỏi hook (chuyển pre_merge).
+- **Ratchet kẹt việc lớn:** thao tác diện rộng có chủ đích (campaign) được cập nhật baseline TRONG CÙNG COMMIT với thay đổi + dòng giải trình trong message — vẫn bị scorecard soi tụt-điểm ở pre_merge.
+- **Phình:** SP0+SP1 một đợt; SP kế cần gật đầu chủ.
+- Mâu thuẫn chuẩn mới ↔ bất biến §2 → bất biến thắng, dừng hỏi người.
 
-## 5. Ngoài phạm vi chương trình
+## 5. Ngoài phạm vi
 
-Tính năng mới, đổi kiến trúc (DB/framework), deploy public, pháp lý Track-H, remote CI/CD, dịch vụ trả phí.
+Tính năng mới, đổi kiến trúc, deploy public, Track-H, remote CI, dịch vụ trả phí.
