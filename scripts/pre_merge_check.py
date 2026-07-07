@@ -182,6 +182,46 @@ def check_new_deps(branches):
     return issues
 
 
+# ---------- SP1 (2026-07-07): 3 bước tiêu-chuẩn — run_hard, scorecard, plan-result ----------
+
+def _run_code(cmd: list, runner=None) -> tuple[int, str]:
+    """subprocess có returncode (helper run() cũ nuốt mất code)."""
+    fn = runner or (lambda c: subprocess.run(c, capture_output=True, text=True, encoding="utf-8", errors="replace"))
+    r = fn(cmd)
+    return r.returncode, (r.stdout or "") + (r.stderr or "")
+
+
+def check_standards_hard(branches, runner=None):
+    """6. run_hard --all: hard = 0 và ratchet không tăng (docs/standards/)."""
+    code, out = _run_code([sys.executable, "scripts/checks/run_hard.py", "--all"], runner)
+    if code != 0:
+        tail = "\n".join(f"    {ln}" for ln in out.strip().splitlines()[-12:])
+        return [f"  [standards] run_hard --all FAIL — vi phạm tiêu chuẩn sẽ crash chất lượng, REQUIRED sửa trước merge:\n{tail}"]
+    return []
+
+
+def check_scorecard(branches, runner=None):
+    """7. scorecard --no-append: không hard-violation, không chiều nào TỤT điểm."""
+    code, out = _run_code([sys.executable, "scripts/scorecard.py", "--no-append"], runner)
+    if code != 0:
+        tail = "\n".join(f"    {ln}" for ln in out.strip().splitlines()[-10:])
+        return [f"  [standards] scorecard FAIL (tụt điểm hoặc hard) — REQUIRED:\n{tail}"]
+    return []
+
+
+def check_plan_result(branches):
+    """8. Nhánh có plan trong docs/superpowers/plans/ → plan phải có mục KẾT QUẢ trước merge (R60.5)."""
+    issues = []
+    for branch in branches:
+        files = get_changed_files(branch)
+        plans = [f for f in files if f.startswith("docs/superpowers/plans/") and f.endswith(".md")]
+        for rel in plans:
+            content = run(f"git show {branch}:{rel}", check=False)
+            if content and "KẾT QUẢ" not in content:
+                issues.append(f"  [{branch}] {rel} chưa có mục 'KẾT QUẢ' (plan-result bắt buộc khi kết đợt — R60.5)")
+    return issues
+
+
 def main():
     branches = sys.argv[1:] or []
     if not branches:
@@ -202,6 +242,9 @@ def main():
         ("3. Config env vars mới vs prod?", check_config_env),
         ("4. Scope violations?", check_scope),
         ("5. Dependency mới?", check_new_deps),
+        ("6. Tiêu chuẩn run_hard --all?", check_standards_hard),
+        ("7. Scorecard không tụt điểm?", check_scorecard),
+        ("8. Plan-result đã ghi?", check_plan_result),
     ]
 
     total_issues = 0
