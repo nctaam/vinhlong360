@@ -405,3 +405,8 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **[P2/Test] 4 test đỏ-trên-main** (đã ghi ở backlog Declutter Đợt 3 — cost_tracker UTC-date + test_seo sau cổng index).
 - **[P2/Docs] b2g-pitch cần chủ duyệt lại TOÀN VĂN trước khi gửi bất kỳ đối tác nào** (đã sửa claim khống nhưng đây là tài liệu đối ngoại — CLAUDE.md §4).
 
+### Backlog phát sinh — SP6 Content (2026-07-07)
+- **[P1/Test-hygiene] test_kb_curation.py ghi fixture vào DB THẬT**: pytest full-suite tạo `prov-1`, `test-mutation-create`, `test-mutation-update` trong agent/data/vinhlong360.db (phát hiện khi SP6-T1 đếm 1776≠1773; đã xoá 3 fixture). Sửa test dùng tmp DB (pattern tests/test_export_data.py) — mỗi lần chạy pytest hiện lại đẻ rác vào SoT local.
+- **[P2/SEO] SP6.2 siết is_index_worthy lên 150 từ**: cần làm dày 159 trang dải 130-149 trước, tránh sitemap co đột ngột.
+- **[P2/Data] Đổi id chom-chom-binh-hoa-phuoc-rambutan → chom-chom-binh-hoa-phuoc** (slot đã trống sau xoá HOLD): ảnh hưởng URL/prerender/sitemap — task riêng.
+
