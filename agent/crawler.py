@@ -286,7 +286,7 @@ def crawl_all():
     with open(all_file, "w", encoding="utf-8") as f:
         json.dump(entities, f, ensure_ascii=False, indent=2)
 
-    print(f"\n═══ Hoàn tất ═══")
+    print("\n═══ Hoàn tất ═══")
     print(f"Crawled: {len(entities)}/{len(place_list)} địa điểm")
     print(f"Output: {OUTPUT_DIR}")
 

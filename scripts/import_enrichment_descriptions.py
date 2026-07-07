@@ -5,7 +5,9 @@ Reads JSONL files from agent/data/enrichment/, deduplicates by entity_id
 (latest record wins), and updates the `description` column in the DB.
 Only updates entities that currently have an empty description.
 """
-import json, sqlite3, sys
+import json
+import sqlite3
+import sys
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parent.parent
@@ -77,7 +79,7 @@ def main():
 
     conn.close()
 
-    print(f"\nResults:")
+    print("\nResults:")
     print(f"  Updated:   {updated}")
     print(f"  Skipped:   {skipped} (already had description)")
     print(f"  Not found: {not_found} (entity ID not in DB)")

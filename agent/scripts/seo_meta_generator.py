@@ -13,7 +13,12 @@ Also generates per-category and per-region landing page SEO.
 Output: agent/data/seo/ — JSON files for review + integration.
 """
 from __future__ import annotations
-import json, os, sys, time, threading, re
+import json
+import os
+import sys
+import time
+import threading
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -279,7 +284,7 @@ def main():
     with open(out, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
 
-    tprint(f"\n=== DONE ===")
+    tprint("\n=== DONE ===")
     tprint(f"Pages: {len(results['pages'])}/{len(PAGES)}")
     tprint(f"Regions: {len(results['regions'])}/{len(REGIONS)}")
     tprint(f"Categories: {len(results['categories'])}/{len(CATEGORIES)}")

@@ -267,7 +267,8 @@ class TestPermissionBoundary:
 class TestWebhookSignature:
     def test_valid_signature(self):
         from auth_middleware import verify_webhook_signature
-        import hashlib, hmac as _hmac
+        import hashlib
+        import hmac as _hmac
         secret = "webhook_secret_123"
         payload = b'{"event": "test"}'
         sig = _hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
@@ -282,7 +283,8 @@ class TestWebhookSignature:
 
     def test_github_style_prefix(self):
         from auth_middleware import verify_webhook_signature
-        import hashlib, hmac as _hmac
+        import hashlib
+        import hmac as _hmac
         secret = "my_secret"
         payload = b'{"action": "push"}'
         sig = "sha256=" + _hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
@@ -297,7 +299,8 @@ class TestWebhookSignature:
 
     def test_sha1_algorithm(self):
         from auth_middleware import verify_webhook_signature
-        import hashlib, hmac as _hmac
+        import hashlib
+        import hmac as _hmac
         secret = "secret"
         payload = b"body"
         sig = _hmac.new(secret.encode(), payload, hashlib.sha1).hexdigest()

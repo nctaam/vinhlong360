@@ -1000,7 +1000,7 @@ if __name__ == "__main__":
     _admin_state = (f"{len(ADMIN_TELEGRAM_IDS)} chat ID" if ADMIN_TELEGRAM_IDS
                     else "disabled (set ADMIN_TELEGRAM_IDS=<chat_id,...>)")
     print(f"  Admin TG: {_admin_state}{'' if ADMIN_API_KEY else '  ⚠ thiếu ADMIN_API_KEY'}")
-    print(f"  API:      http://localhost:8361")
+    print("  API:      http://localhost:8361")
     print("=" * 55)
 
     if not any([TELEGRAM_TOKEN and HAS_TELEGRAM, ZALO_OA_ID]):

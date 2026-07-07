@@ -17,7 +17,12 @@ Usage:
   python -u agent/scripts/mega_entity_deep.py --mode all
 """
 from __future__ import annotations
-import argparse, json, os, sys, time, warnings
+import argparse
+import json
+import os
+import sys
+import time
+import warnings
 warnings.filterwarnings("ignore", message=".*renamed.*ddgs.*")
 from pathlib import Path
 

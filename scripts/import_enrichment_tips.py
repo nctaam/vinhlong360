@@ -3,7 +3,9 @@
 
 Merges new tips into existing attributes JSON without overwriting existing values.
 """
-import json, sqlite3, sys
+import json
+import sqlite3
+import sys
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parent.parent
@@ -89,7 +91,7 @@ def main():
     conn.commit()
     conn.close()
 
-    print(f"\nResults:")
+    print("\nResults:")
     print(f"  Entities updated: {updated}")
     print(f"  Travel tips added: {tips_added}")
     print(f"  Best time added: {best_time_added}")

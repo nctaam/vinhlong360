@@ -4,7 +4,12 @@
 Chạy: python scripts/deep_audit.py [--fix]
   --fix: tự động sửa các vấn đề an toàn (xoá rel vô nghĩa, fix type lạ, etc.)
 """
-import json, math, sys, argparse, unicodedata, re
+import json
+import math
+import sys
+import argparse
+import unicodedata
+import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -309,12 +314,12 @@ def main():
             pid_area_conflict += 1
             print(f"  {e['id']}: area={ea} but placeId={pid} has area={pa}")
     if not pid_area_conflict:
-        print(f"  All consistent")
+        print("  All consistent")
 
     # ── SUMMARY ──
     print("\n" + "="*60)
     to_delete = len(near_no_coords) + len(near_too_far) + len(near_self) + len(pi_cross) + sum(v-1 for v in dup_rels.values())
-    print(f"TOTAL ISSUES FOUND:")
+    print("TOTAL ISSUES FOUND:")
     print(f"  Near rels without coords: {len(near_no_coords)}")
     print(f"  Near rels too far: {len(near_too_far)}")
     print(f"  Near self-ref: {len(near_self)}")
@@ -325,7 +330,7 @@ def main():
     print(f"  TOTAL RELS TO DELETE: {to_delete}")
 
     if args.fix and (to_delete > 0 or remap_types):
-        print(f"\n── APPLYING FIXES ──")
+        print("\n── APPLYING FIXES ──")
         # Build set of rels to remove
         remove_set = set()
         for r in near_no_coords + near_self:

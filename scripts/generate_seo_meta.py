@@ -220,7 +220,7 @@ def main() -> int:
             else 0
         )
 
-        print(f"[seo] SEO metadata generated")
+        print("[seo] SEO metadata generated")
         print(f"  entities: {stats['total_entities']}")
         print(f"  processed: {stats['processed']}")
         print(f"  slugs generated: {stats['slugs_generated']} ({pct_slug:.1f}%)")

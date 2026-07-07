@@ -5,7 +5,12 @@ Reads entities with empty description from the DB, calls LLM to generate
 a rich description, and writes it back to the DB. Processes in batches
 with rate limiting. Safe to re-run (skips entities that already have descriptions).
 """
-import json, os, sys, time, sqlite3, threading
+import json
+import os
+import sys
+import time
+import sqlite3
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 

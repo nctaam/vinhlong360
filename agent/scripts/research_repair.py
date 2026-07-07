@@ -206,7 +206,7 @@ def audit_gaps():
     if matrix_file.exists():
         matrix_count = len(matrix_file.read_text(encoding="utf-8").strip().split("\n")) - 1
 
-    tprint(f"\nSUMMARY:")
+    tprint("\nSUMMARY:")
     tprint(f"  Thematic: {thematic_missing} missing layer entries")
     tprint(f"  Assets: {asset_missing} missing angle entries")
     tprint(f"  Assets without adversarial: {len(assets_without_adversarial)}")

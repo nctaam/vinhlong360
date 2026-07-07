@@ -1553,7 +1553,7 @@ async def qa_queue(
     require_pg()
     ph = db._ph
     def _query():
-        conditions = [f"p.post_type = 'question'", f"p.moderation_status = 'approved'"]
+        conditions = ["p.post_type = 'question'", "p.moderation_status = 'approved'"]
         params: list = []
         if entity_id:
             conditions.append(f"p.entity_id::text = {ph}")
@@ -2704,7 +2704,7 @@ async def user_engagement_stats(days: int = Query(30, ge=1, le=365)):
                 WHERE p.created_at > NOW() - CAST({ph} AS INTERVAL)
                   AND u.created_at < NOW() - CAST({ph} AS INTERVAL)
             """, (interval_param, interval_param))
-            total_users = db._fetchone(conn, f"SELECT COUNT(*) as c FROM users WHERE is_active = TRUE", ())
+            total_users = db._fetchone(conn, "SELECT COUNT(*) as c FROM users WHERE is_active = TRUE", ())
             daily = db._fetchall(conn, f"""
                 SELECT DATE(created_at) as day, COUNT(DISTINCT user_id) as active_users
                 FROM posts WHERE created_at > NOW() - CAST({ph} AS INTERVAL)
@@ -2743,10 +2743,10 @@ async def user_growth(days: int = Query(30, ge=7, le=365)):
             """, (interval_param,))
             total = db._fetchone(conn, "SELECT COUNT(*) as c FROM users WHERE is_active = TRUE", ())
             deactivated = db._fetchone(conn, "SELECT COUNT(*) as c FROM users WHERE is_active = FALSE", ())
-            week_ago = db._fetchone(conn, f"""
+            week_ago = db._fetchone(conn, """
                 SELECT COUNT(*) as c FROM users WHERE created_at > NOW() - INTERVAL '7 days'
             """, ())
-            prev_week = db._fetchone(conn, f"""
+            prev_week = db._fetchone(conn, """
                 SELECT COUNT(*) as c FROM users
                 WHERE created_at > NOW() - INTERVAL '14 days'
                   AND created_at <= NOW() - INTERVAL '7 days'

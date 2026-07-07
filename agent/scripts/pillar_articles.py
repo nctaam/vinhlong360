@@ -16,7 +16,12 @@ Each article goes through 3 passes:
 Output: agent/data/articles/ — Markdown files, review queue.
 """
 from __future__ import annotations
-import json, os, sys, time, threading, re
+import json
+import os
+import sys
+import time
+import threading
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path

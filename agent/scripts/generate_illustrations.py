@@ -14,7 +14,11 @@ Output: web-nuxt/public/img/gen/ — ready to use.
 SECRET: Reads IMAGE_API_KEY from env — KHÔNG hardcode.
 """
 from __future__ import annotations
-import json, os, sys, time, subprocess
+import json
+import os
+import sys
+import time
+import subprocess
 from datetime import datetime
 from pathlib import Path
 

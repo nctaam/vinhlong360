@@ -9,7 +9,10 @@ Usage:
 
 Skips scripts that are already 100% done (via resume logic in each script).
 """
-import os, subprocess, sys, time
+import os
+import subprocess
+import sys
+import time
 from pathlib import Path
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -59,7 +62,7 @@ def run_script(name, desc):
 
 
 def main():
-    print(f"═══ MEGA RUN ALL ═══", flush=True)
+    print("═══ MEGA RUN ALL ═══", flush=True)
     print(f"  Scripts: {len(SCRIPTS)}", flush=True)
     print(f"  Started: {time.strftime('%Y-%m-%d %H:%M:%S')}", flush=True)
 

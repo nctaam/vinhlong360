@@ -1,5 +1,6 @@
 """Delete don-ca-tai-tu-vinh-long (year-round, not a specific event)."""
-import sys, io
+import sys
+import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.path.insert(0, ".")
 from database import db

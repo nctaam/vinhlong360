@@ -321,7 +321,7 @@ def main():
 
     if args.apply:
         print(f"[WARNING] APPLY mode — sẽ gọi LLM ({MODEL}) và sửa DB!")
-        print(f"[WARNING] Đảm bảo đã chạy: python scripts/backup_data.py")
+        print("[WARNING] Đảm bảo đã chạy: python scripts/backup_data.py")
         print()
 
     from database import db

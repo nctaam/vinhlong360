@@ -221,7 +221,7 @@ async def update_notification_preferences(body: NotifPrefsUpdate, user=Depends(r
     if not updates:
         raise HTTPException(400, "Không có gì để cập nhật")
     set_parts = [f"{k} = {ph}" for k in updates]
-    set_parts.append(f"updated_at = NOW()")
+    set_parts.append("updated_at = NOW()")
     vals = list(updates.values())
     vals.append(uid)
     def _query():

@@ -10,7 +10,12 @@ Usage:
   python -u agent/scripts/mega_persona.py --mode all --workers 3
 """
 from __future__ import annotations
-import argparse, json, os, sys, time, warnings
+import argparse
+import json
+import os
+import sys
+import time
+import warnings
 warnings.filterwarnings("ignore", message=".*renamed.*ddgs.*")
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path

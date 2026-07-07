@@ -11,7 +11,12 @@ For each high-value entity (confidence >= 0.7), generates:
 Output: agent/data/enrichment/ — JSONL per batch, review queue (NOT direct DB write).
 """
 from __future__ import annotations
-import json, os, sys, time, threading, re
+import json
+import os
+import sys
+import time
+import threading
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -184,7 +189,7 @@ def main():
     candidates = [e for e in entities if e.get("confidence", 0) >= 0.7]
     candidates.sort(key=lambda e: (-e.get("confidence", 0), e["name"]))
 
-    tprint(f"=== Entity Enrichment Engine ===")
+    tprint("=== Entity Enrichment Engine ===")
     tprint(f"Total entities: {len(entities)}, candidates (conf>=0.7): {len(candidates)}")
     tprint(f"Output: {RESULT_FILE}")
     tprint(f"Model: {LLM_MODEL}")

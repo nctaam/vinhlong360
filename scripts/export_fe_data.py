@@ -170,7 +170,7 @@ def main():
     types = export_types(entities)
 
     print(f"\n{'='*40}")
-    print(f"Export Summary")
+    print("Export Summary")
     print(f"{'='*40}")
     print(f"  Entities:  {len(index)}")
     print(f"  Areas:     {len(areas)}")

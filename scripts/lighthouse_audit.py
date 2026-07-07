@@ -84,7 +84,7 @@ def _run_lighthouse(
         ]
 
     print(f"[lighthouse] running audit on {url} ...")
-    print(f"[lighthouse] this may take 30-60 seconds")
+    print("[lighthouse] this may take 30-60 seconds")
 
     try:
         result = subprocess.run(

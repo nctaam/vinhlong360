@@ -19,7 +19,13 @@ Usage:
   python -u agent/scripts/mega_llm_burn.py --mode all --workers 8
 """
 from __future__ import annotations
-import argparse, json, os, sys, time, threading, warnings
+import argparse
+import json
+import os
+import sys
+import time
+import threading
+import warnings
 warnings.filterwarnings("ignore", message=".*renamed.*ddgs.*")
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path

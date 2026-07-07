@@ -10,7 +10,13 @@ SECRET: KHÔNG hardcode API key. Đọc từ env IMAGE_API_KEY (bắt buộc).
 
 Response là SSE; ảnh nằm trong field b64_json (lấy bản dài nhất = ảnh hoàn chỉnh).
 """
-import argparse, base64, json, os, re, sys, urllib.request
+import argparse
+import base64
+import json
+import os
+import re
+import sys
+import urllib.request
 
 API_BASE = os.environ.get("IMAGE_API_BASE", "http://localhost:20128")
 API_KEY = os.environ.get("IMAGE_API_KEY", "")

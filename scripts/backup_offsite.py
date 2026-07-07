@@ -99,7 +99,7 @@ def _upload(
         cmd.extend(["--endpoint-url", endpoint])
 
     if dry_run:
-        print(f"[offsite] DRY-RUN would execute:")
+        print("[offsite] DRY-RUN would execute:")
         print(f"  {' '.join(cmd)}")
         return True
 
@@ -119,7 +119,7 @@ def _upload(
             return False
         if result.stdout:
             print(f"  {result.stdout.strip()}")
-        print(f"[offsite] upload OK")
+        print("[offsite] upload OK")
         return True
     except subprocess.TimeoutExpired:
         print("[offsite] FAILED: upload timed out after 600s", file=sys.stderr)

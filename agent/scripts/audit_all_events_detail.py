@@ -1,5 +1,6 @@
 """Show all events with details for review."""
-import sys, io
+import sys
+import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.path.insert(0, ".")
 from database import db

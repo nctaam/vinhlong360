@@ -731,7 +731,7 @@ if __name__ == "__main__":
 
     # Format prompt
     prompt = format_confirmation_prompt(cf)
-    print(f"  [OK] Confirmation prompt:")
+    print("  [OK] Confirmation prompt:")
     for line in prompt.split("\n"):
         print(f"       {line}")
 
@@ -744,7 +744,7 @@ if __name__ == "__main__":
 
     # Cannot confirm again
     assert cfm.confirm(cf.confirmation_id) is None
-    print(f"  [OK] Double-confirm correctly rejected")
+    print("  [OK] Double-confirm correctly rejected")
 
     # Create another and reject it
     cf2 = cfm.create_confirmation(

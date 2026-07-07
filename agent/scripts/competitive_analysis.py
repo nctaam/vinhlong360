@@ -16,7 +16,12 @@ Each dimension runs through:
 Output: agent/data/competitive/ — detailed JSON reports.
 """
 from __future__ import annotations
-import json, os, sys, time, threading, re
+import json
+import os
+import sys
+import time
+import threading
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
@@ -404,7 +409,7 @@ def main():
     with open(out, "w", encoding="utf-8") as f:
         json.dump(all_results, f, ensure_ascii=False, indent=2)
 
-    tprint(f"\n=== DONE ===")
+    tprint("\n=== DONE ===")
     for aid, res in all_results.items():
         tprint(f"  {aid}: {len(res['layers'])} layers completed")
     tprint(f"Output: {out}")

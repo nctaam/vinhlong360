@@ -93,7 +93,8 @@ class TestTaskRegistry:
 
     def test_env_int_floor(self):
         """Values below the 5-minute floor fall back to default (safety)."""
-        import os, scheduler
+        import os
+        import scheduler
         os.environ["TEST_LEARN_IVL"] = "10"
         try:
             assert scheduler._env_int("TEST_LEARN_IVL", 999) == 999

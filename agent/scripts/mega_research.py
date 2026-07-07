@@ -22,7 +22,15 @@ Usage:
   python -u agent/scripts/mega_research.py --phase 1 --dry
 """
 from __future__ import annotations
-import argparse, json, os, re, sys, time, threading, random, warnings
+import argparse
+import json
+import os
+import re
+import sys
+import time
+import threading
+import random
+import warnings
 warnings.filterwarnings("ignore", message=".*renamed.*ddgs.*")
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
@@ -1089,7 +1097,7 @@ def phase12(llm: LLM, workers: int = 4, dry: bool = False):
     random.seed(42)
     if len(claims) > 500:
         claims = random.sample(claims, 500)
-        log(f"  Sampled 500")
+        log("  Sampled 500")
 
     def do(c):
         if c["key"] in done:

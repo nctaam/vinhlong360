@@ -11,7 +11,11 @@ Usage:
   python -u agent/scripts/mega_practical_run.py 2>&1
 """
 from __future__ import annotations
-import json, os, sys, time, warnings
+import json
+import os
+import sys
+import time
+import warnings
 warnings.filterwarnings("ignore", message=".*renamed.*ddgs.*")
 from pathlib import Path
 

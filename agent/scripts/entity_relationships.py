@@ -11,7 +11,12 @@ Builds a knowledge graph of relationships between entities:
 Output: agent/data/relationships/ — JSONL edges for knowledge graph.
 """
 from __future__ import annotations
-import json, os, sys, time, threading, re
+import json
+import os
+import sys
+import time
+import threading
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path

@@ -1,5 +1,7 @@
 """Full audit of all 78 events — check duplicates, date issues, data quality."""
-import sys, io, json
+import sys
+import io
+import json
 from collections import defaultdict
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.path.insert(0, ".")

@@ -175,11 +175,11 @@ def cleanup_expired_data() -> dict:
             results["expired_sessions"] = getattr(r, "rowcount", 0) if r else 0
             r = db._execute(conn, "DELETE FROM otp_sessions WHERE expires_at < NOW()", ())
             results["expired_otps"] = getattr(r, "rowcount", 0) if r else 0
-            r = db._execute(conn, f"""
+            r = db._execute(conn, """
                 DELETE FROM login_history WHERE created_at < NOW() - INTERVAL '90 days'
             """, ())
             results["old_login_history"] = getattr(r, "rowcount", 0) if r else 0
-            r = db._execute(conn, f"""
+            r = db._execute(conn, """
                 DELETE FROM notifications WHERE read = TRUE AND created_at < NOW() - INTERVAL '60 days'
             """, ())
             results["old_read_notifications"] = getattr(r, "rowcount", 0) if r else 0
@@ -1486,7 +1486,7 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
                     sets.append(f"show_saved = {ph}")
                     params.append(body.show_saved)
                 if sets:
-                    sets.append(f"updated_at = NOW()")
+                    sets.append("updated_at = NOW()")
                     params.append(uid)
                     db._execute(conn, f"UPDATE user_privacy SET {', '.join(sets)} WHERE user_id = {ph}::uuid", params)
             else:

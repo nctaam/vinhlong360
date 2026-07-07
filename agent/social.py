@@ -1659,7 +1659,7 @@ async def list_hashtags(
                     GROUP BY tag ORDER BY post_count DESC, tag
                     LIMIT {ph} OFFSET {ph}
                 """, (limit, offset))
-                total_row = db._fetchone(conn, f"""
+                total_row = db._fetchone(conn, """
                     SELECT COUNT(DISTINCT tag) AS c
                     FROM posts p, jsonb_array_elements_text(p.hashtags) AS tag
                     WHERE p.moderation_status = 'approved' AND p.deleted_at IS NULL

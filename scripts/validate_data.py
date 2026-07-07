@@ -1258,7 +1258,7 @@ def print_report(issues: list[Issue], stats: dict[str, Any]) -> None:
 
     gc = stats.get("graph_connectivity", {})
     if gc:
-        print(f"\nGraph connectivity:")
+        print("\nGraph connectivity:")
         print(f"  components: {gc.get('total_components', 0)}")
         print(f"  largest: {gc.get('largest_component', 0)}")
         print(f"  isolated: {gc.get('isolated_entities', 0)}")

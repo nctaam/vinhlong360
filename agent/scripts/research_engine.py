@@ -1109,9 +1109,9 @@ def main():
 
     phases = [args.phase] if args.phase is not None else [0, 1, 2, 3]
 
-    tprint(f"ULTRA Research Engine v3.1 (rate-limited)")
+    tprint("ULTRA Research Engine v3.1 (rate-limited)")
     tprint(f"Model: {args.model} | Workers: {args.workers} | Concurrent: {args.concurrent} | RPS: {args.rps}")
-    tprint(f"Depth: 15 dims × 10 layers + 5 skeptics + gap-5-rounds + cross-pollination + 105 pairs")
+    tprint("Depth: 15 dims × 10 layers + 5 skeptics + gap-5-rounds + cross-pollination + 105 pairs")
     tprint(f"Phases: {phases} | Output: {OUTPUT_DIR}")
 
     llm = LLMClient(model=args.model, rps=args.rps)

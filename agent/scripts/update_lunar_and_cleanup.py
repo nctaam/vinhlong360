@@ -2,7 +2,9 @@
 Add lunar_date to traditional festivals + delete unclear/duplicate events.
 Run on both local SQLite and Postgres (VPS).
 """
-import sys, io, json
+import sys
+import io
+import json
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 sys.path.insert(0, ".")
 from database import db

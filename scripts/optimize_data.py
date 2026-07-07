@@ -234,13 +234,13 @@ def fix_phones(db, apply=False):
             fixed += 1
         print(f"  APPLIED: normalized {fixed} phone numbers")
     else:
-        print(f"\n  DRY-RUN samples:")
+        print("\n  DRY-RUN samples:")
         for i in issues[:8]:
             arrow = f" -> {i['primary']}" if i["primary"] else " -> (needs manual)"
             print(f"    {i['id'][:45]:45s} {i['original'][:50]}{arrow}")
 
     if unfixable:
-        print(f"\n  Manual review needed:")
+        print("\n  Manual review needed:")
         for i in unfixable[:5]:
             print(f"    {i['id'][:45]:45s} {i['original'][:60]}")
 
@@ -315,13 +315,13 @@ def audit_summaries(db, apply=False):
     print(f"  Long (>500 chars): {len(issues['long'])}")
 
     if issues["short"]:
-        print(f"\n  Short summaries:")
+        print("\n  Short summaries:")
         for e in issues["short"][:5]:
             s = (e.get("summary") or "")[:60]
             print(f"    {e['id']:45s} ({len(e.get('summary',''))} chars) {s}")
 
     if issues["truncated"]:
-        print(f"\n  Truncated summaries:")
+        print("\n  Truncated summaries:")
         for e in issues["truncated"][:5]:
             s = (e.get("summary") or "")[-60:]
             print(f"    {e['id']:45s} ...{s}")
@@ -416,7 +416,7 @@ def fix_place_ids(db, apply=False):
             fixed += 1
         print(f"  APPLIED: assigned {fixed} placeIds")
     else:
-        print(f"\n  DRY-RUN samples:")
+        print("\n  DRY-RUN samples:")
         for e, place, d in assignable[:10]:
             print(f"    {e['id']:40s} -> {place['id']:25s} ({d:.1f}km)")
         if len(assignable) > 10:

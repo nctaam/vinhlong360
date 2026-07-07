@@ -380,7 +380,8 @@ _telegram_queue_lock = __import__("threading").Lock()
 def _send_telegram_admins(text: str) -> bool:
     """Gửi 1 tin Telegram tới mọi ADMIN_TELEGRAM_IDS (free, HTTP API).
     Retry 3 lần với backoff; nếu vẫn thất bại thì xếp hàng chờ retry sau."""
-    import os, time as _time
+    import os
+    import time as _time
     token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     ids = [x.strip() for x in os.environ.get("ADMIN_TELEGRAM_IDS", "").split(",") if x.strip()]
     if not token or not ids:

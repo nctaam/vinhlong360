@@ -278,7 +278,7 @@ def main():
         for issue in issues:
             all_issues[issue] = all_issues.get(issue, 0) + 1
 
-    print(f"\nTop issues:")
+    print("\nTop issues:")
     for issue, count in sorted(all_issues.items(), key=lambda x: -x[1])[:10]:
         print(f"  {issue:25s}  {count:5d}  ({count*100/total:.1f}%)")
 
