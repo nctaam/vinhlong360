@@ -3,8 +3,10 @@
 """scorecard — đồng hồ world-class (SP1).
 
 Điểm/chiều = 100 × (1 − nợ_hiện / nợ_gốc), floor 0; chiều không nợ gốc và nợ hiện = 0 → 100.
-nợ_gốc đóng băng ở entry ĐẦU TIÊN của docs/standards/scorecard-history.jsonl —
-điểm là TIẾN ĐỘ TRẢ NỢ so mốc ban hành, không phải lời tự khen.
+nợ_gốc đóng băng PER-RULE: nợ tại entry ĐẦU TIÊN rule đó xuất hiện trong
+docs/standards/scorecard-history.jsonl (mốc ban hành của từng rule — SP2: gate
+mới bật với nợ tồn đọng thì MỞ RỘNG mẫu số thay vì đánh sập điểm về 0, để tiến
+bộ đã trả không bị che). Điểm là TIẾN ĐỘ TRẢ NỢ, không phải lời tự khen.
 Đích chương trình ≥95/chiều (spec §0.5); sàn world-class = 90.
 
 Exit ≠ 0 khi: (a) có hard-violation, hoặc (b) bất kỳ chiều nào TỤT so entry trước.
@@ -80,11 +82,22 @@ def load_history(root: Path) -> list[dict]:
     return [json.loads(line) for line in p.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def origin_rule_debts(history: list[dict], current: dict) -> dict:
+    """Nợ gốc per-rule = entry đầu tiên rule xuất hiện; rule mới toanh = nợ hiện tại."""
+    seen: dict[str, int] = {}
+    for h in history:
+        for rule, n in (h.get("debts") or {}).items():
+            seen.setdefault(rule, n)
+    for rule, n in current.items():
+        seen.setdefault(rule, n)
+    return seen
+
+
 def run(checks: list, root: Path, append: bool = True) -> tuple[int, dict]:
     debts, hard = collect_debts(checks)
     cur = dim_debts(debts)
     history = load_history(root)
-    origin = history[0]["dim_debts"] if history else cur
+    origin = dim_debts(origin_rule_debts(history, debts))
     sc = scores(cur, {d: (v or 0) for d, v in origin.items()})
     prev = history[-1]["scores"] if history else None
     regressions = []
