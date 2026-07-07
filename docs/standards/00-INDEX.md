@@ -12,6 +12,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R10.3b | trường bắt buộc PER-TYPE (registry entity_schemas) | hard-ratchet | check_data_schema | 49 | 10-data.md |
 | R10.8 | RICH phải có source | hard-ratchet | check_data_schema | 0 | 10-data.md |
 | R10.9 | xuất xứ trong tỉnh (cấm Cái Bè/Lai Vung/Định Yên) | soft-ratchet | check_content_voice | 0 | 10-data.md |
+| R10.10 | đơn-vị-HC-cũ (huyện/thị xã X) trong giọng biên tập — freeze-forward, sweep sau | soft-ratchet | check_content_gates | 1011 | 10-data.md |
 | R20.1 | ruff full = 0 | pending-check (SP3) | ruff | — | 20-backend.md |
 | R20.2 | cấm blocking-sync trong async | pending-check (SP3) | ruff ASYNC | — | 20-backend.md |
 | R20.3 | cấm bare-except mới | soft-ratchet | check_complexity | 0 | 20-backend.md |
@@ -28,9 +29,10 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R30.6 | axe 0 serious+ | pending-check (SP4) | axe | — | 30-frontend.md |
 | R30.7 | bundle budget | pending-check (SP4) | build parse | — | 30-frontend.md |
 | R40.3 | cấm claim đã-xác-minh | hard | check_banned_claims | 0 | 40-ui-design.md |
-| R50.2 | filler giọng cấm | soft-ratchet | check_content_voice | 429 | 50-content.md |
-| R50.3 | cấm công thức mở bài | pending-check (SP6) | content_voice mở rộng | — | 50-content.md |
-| R50.4 | summary+desc ≥200 ký tự | soft | check_thin_content | 244 | 50-content.md |
+| R50.2 | filler giọng cấm (field-aware, bỏ source) | soft-ratchet | check_content_voice | 389 | 50-content.md |
+| R50.3 | cấm công thức mở bài + kết sáo | soft-ratchet | check_content_gates | 58 | 50-content.md |
+| R50.4 | summary+desc ≥200 ký tự | soft | check_thin_content | 245 | 50-content.md |
+| R50.7 | cấm superlative trơ (không số/năm/nguồn) | soft-ratchet | check_content_gates | 34 | 50-content.md |
 | R60.1 | docs-active có STATUS | hard-ratchet | check_doc_status | 29 | 60-docs.md |
 | R60.4 | internal link sống | hard-ratchet | check_links | 1 | 60-docs.md |
 | R60.5 | plan-result trước merge | hard (pre-merge) | pre_merge_check#8 | — | 60-docs.md |
@@ -41,7 +43,6 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 ## Pending-check có hạn
 - SP3: R20.1 ruff · R20.2 async · R20.4 coverage
 - SP4: R30.6 axe · R30.7 bundle
-- SP6: R50.3 công-thức-mở-bài
 
 ## Lệnh
 ```

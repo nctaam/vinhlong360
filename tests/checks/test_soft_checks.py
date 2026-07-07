@@ -34,6 +34,29 @@ def test_content_voice_scans_data_json_per_match(tmp_path):
     assert results["R50.2"] == 2
 
 
+def test_content_gates_formula_superlative_oldadmin(tmp_path):
+    _mk(tmp_path, "web/data.json", json.dumps({"entities": [
+        # formula mở bài (Tọa lạc) + superlative trơ ("nổi tiếng" không số) + huyện cũ
+        {"id": "a", "summary": "s", "description": "Tọa lạc ở huyện Long Hồ, chùa nổi tiếng linh thiêng."},
+        # "là một" đầu câu + kết sáo
+        {"id": "b", "summary": "s", "description": "Chợ X là một điểm giao thương. Hãy đến và cảm nhận."},
+        # SẠCH: mở bằng chi tiết + số (không superlative trơ), không huyện
+        {"id": "c", "summary": "s", "description": "Năm 1852 làng dựng đình bên sông Cổ Chiên, thờ Thành Hoàng."},
+    ]}, ensure_ascii=False))
+    from checks.check_content_gates import FormulaCheck, SuperlativeCheck, OldAdminCheck
+    assert FormulaCheck(root=tmp_path).run()["count"] == 3   # Tọa lạc + "là một" + Hãy đến
+    assert SuperlativeCheck(root=tmp_path).run()["count"] == 1  # "nổi tiếng" không số (câu 1852 có số → bỏ)
+    assert OldAdminCheck(root=tmp_path).run()["count"] == 1     # "huyện Long Hồ"
+
+
+def test_content_gates_skip_when_not_staged(tmp_path):
+    from checks.check_content_gates import FormulaCheck
+
+    _mk(tmp_path, "web/data.json", json.dumps({"entities": [
+        {"id": "a", "summary": "s", "description": "Tọa lạc ở đâu đó."}]}, ensure_ascii=False))
+    assert FormulaCheck(root=tmp_path).run(files=["agent/x.py"])["count"] == 0
+
+
 def test_content_voice_skips_source_titles(tmp_path):
     # SP6: filler trong tên bài NGUỒN (field source) là giọng của báo, KHÔNG tính;
     # nhưng filler trong summary/attributes (giọng biên tập) VẪN tính.
