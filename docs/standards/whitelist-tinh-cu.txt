@@ -85,3 +85,6 @@ xa-cho-lach	description
 xa-cho-lach	summary
 xa-hung-khanh-trung	description
 xa-hung-khanh-trung	summary
+bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh	name
+bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh	description
+bao-tang-van-hoa-dan-toc-khmer-tinh-tra-vinh	summary

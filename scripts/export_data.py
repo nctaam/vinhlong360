@@ -36,9 +36,21 @@ def _json_default(o):
     raise TypeError(f"Không serialize được {type(o).__name__}")
 
 
+# SP2 T2: DB-export phẳng-hoá 8 cột tiện-ích + dùng created_at — chuẩn hoá về shape data.json
+# (consumers giữ nguyên; round-trip test trong tests/test_export_data.py)
+FLAT_COLS = ("address", "phone", "website", "hours", "price_range", "sub_category", "best_time", "highlight")
+
+
+def normalize_entity_shape(e: dict) -> dict:
+    out = {k: v for k, v in e.items() if k not in FLAT_COLS}
+    if "createdAt" not in out and out.get("created_at") is not None:
+        out["createdAt"] = out["created_at"]
+    return out
+
+
 def build_payload(db) -> dict:
     return {
-        "entities": db.all_entities(),
+        "entities": [normalize_entity_shape(e) for e in db.all_entities()],
         "relationships": db.all_relationships(),
         "itineraries": db.all_itineraries(),
     }
