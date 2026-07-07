@@ -89,8 +89,9 @@ def run(files: list[str] | None, checks: list | None = None, root: Path | None =
             continue
         blocked = True
         messages.append(f"✖ RATCHET {b}")
-    for s in suggestions:
-        messages.append(f"↓ {s}")
+    if files is None:  # suggestions chỉ có nghĩa khi đếm TOÀN repo (--all)
+        for s in suggestions:
+            messages.append(f"↓ {s}")
     if not blocked:
         messages.append("✓ run_hard: sạch (hard=0, ratchet không tăng)")
     return (1 if blocked else 0), messages
