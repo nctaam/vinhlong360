@@ -34,6 +34,19 @@ def test_content_voice_scans_data_json_per_match(tmp_path):
     assert results["R50.2"] == 2
 
 
+def test_content_voice_skips_source_titles(tmp_path):
+    # SP6: filler trong tên bài NGUỒN (field source) là giọng của báo, KHÔNG tính;
+    # nhưng filler trong summary/attributes (giọng biên tập) VẪN tính.
+    _mk(tmp_path, "web/data.json", json.dumps({"entities": [{
+        "id": "x", "summary": "Chợ nổi họp lúc tinh mơ",
+        "attributes": {"best_time": "mùa nước nổi miền Tây", "coords_source": "OSM miền Tây"},
+        "source": [{"title": "Về miền Tây thăm chợ nổi Cái Bè", "url": "https://x.vn/mien-tay"}],
+    }]}, ensure_ascii=False))
+    results = {r["rule"]: r["count"] for r in (c.run() for c in voice_checks(root=tmp_path))}
+    assert results["R50.2"] == 1   # best_time đếm; source.title + coords_source KHÔNG
+    assert results["R10.9"] == 0   # "Cái Bè" chỉ trong source.title → bỏ
+
+
 def test_thin_content_counts_under_threshold(tmp_path):
     _mk(tmp_path, "web/data.json", json.dumps({"entities": [
         {"id": "a", "summary": "ngắn", "description": ""},

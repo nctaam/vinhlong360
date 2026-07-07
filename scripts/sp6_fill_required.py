@@ -60,6 +60,36 @@ def _norm(s: str) -> str:
     return (s or "").lower()
 
 
+def _match_office(name: str) -> str:
+    for k, pats in OFFICE_RULES:
+        if any(re.search(p, name) if "\\" in p else p in name for p in pats):
+            return k
+    return "khac"  # wifi công cộng, ca lạ → khac (vẫn ghi căn cứ)
+
+
+def _match_craft(name: str, desc: str):
+    hit = next(((p, v) for p, v in CRAFT_PATTERNS if p in name), None) or \
+          next(((p, v) for p, v in CRAFT_PATTERNS if p in desc), None)
+    if not hit:
+        return None
+    where = "name" if hit[0] in name else "description"
+    return hit[1], f"khớp cụm '{hit[0]}' trong {where}"
+
+
+def _propose_one(e: dict) -> tuple[dict | None, str | None]:
+    """Trả (fix, unresolved-note). Chỉ 1 trong 2 khác None."""
+    name, desc, etype = _norm(e.get("name")), _norm(e.get("description")), e.get("type")
+    if etype == "facility":
+        return {"id": e["id"], "field": "attr:office_kind", "value": _match_office(name),
+                "basis": f"name='{e.get('name')}'"}, None
+    if etype == "craft_village":
+        m = _match_craft(name, desc)
+        if m:
+            return {"id": e["id"], "field": "attr:specialty", "value": m[0], "basis": m[1]}, None
+        return None, e["id"]
+    return None, f"{e['id']} ({etype})"
+
+
 def propose(data_path: str, out_path: str) -> int:
     from entity_schemas import validate_attributes
 
@@ -67,31 +97,10 @@ def propose(data_path: str, out_path: str) -> int:
     fixes, unresolved = [], []
     for e in d["entities"]:
         _, warns = validate_attributes(e.get("type") or "", e.get("attributes") or {})
-        missing = [w for w in warns if "bắt buộc" in w]
-        if not missing:
+        if not any("bắt buộc" in w for w in warns):
             continue
-        name, desc = _norm(e.get("name")), _norm(e.get("description"))
-        etype = e.get("type")
-        if etype == "facility":
-            kind = None
-            for k, pats in OFFICE_RULES:
-                if any(re.search(p, name) if p.startswith("\\b") or "\\" in p else p in name for p in pats):
-                    kind = k
-                    break
-            if kind is None:  # wifi công cộng, ca lạ → khac (vẫn ghi căn cứ)
-                kind = "khac"
-            fixes.append({"id": e["id"], "field": "attr:office_kind", "value": kind,
-                          "basis": f"name='{e.get('name')}'"})
-        elif etype == "craft_village":
-            hit = next(((p, v) for p, v in CRAFT_PATTERNS if p in name), None) or \
-                  next(((p, v) for p, v in CRAFT_PATTERNS if p in desc), None)
-            if hit:
-                fixes.append({"id": e["id"], "field": "attr:specialty", "value": hit[1],
-                              "basis": f"khớp cụm '{hit[0]}' trong {'name' if hit[0] in name else 'description'}"})
-            else:
-                unresolved.append(e["id"])
-        else:
-            unresolved.append(f"{e['id']} ({etype}: {missing[0]})")
+        fix, note = _propose_one(e)
+        (fixes.append(fix) if fix else unresolved.append(note))
     for f in fixes:
         print(f"  {f['id']:<58} {f['field']:<22} = {f['value']:<14} | {f['basis'][:70]}")
     print(f"\npropose: {len(fixes)} fix | unresolved: {len(unresolved)} {unresolved[:5]}")
@@ -108,56 +117,70 @@ def _set_attr(attrs: dict, field: str, value: str) -> bool:
     return True
 
 
+def _apply_data(fixes: list, data_path: str, execute: bool) -> tuple[int, int]:
+    d = json.load(io.open(data_path, encoding="utf-8"))
+    idx = {e["id"]: e for e in d["entities"]}
+    ok = skip = 0
+    for f in fixes:
+        e = idx.get(f["id"])
+        if e is None:
+            skip += 1; continue
+        if _set_attr(e.setdefault("attributes", {}), f["field"], f["value"]):
+            ok += 1
+    if execute:
+        tmp = data_path + ".tmp"
+        io.open(tmp, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False))
+        os.replace(tmp, data_path)
+    return ok, skip
+
+
+def _apply_sqlite(fixes: list, db_path: str, execute: bool) -> tuple[int, int]:
+    import sqlite3
+    conn = sqlite3.connect(db_path); conn.row_factory = sqlite3.Row
+    ok = skip = 0
+    for f in fixes:
+        row = conn.execute("SELECT attributes FROM entities WHERE id=?", (f["id"],)).fetchone()
+        if row is None:
+            skip += 1; continue
+        attrs = json.loads(row["attributes"] or "{}")
+        if _set_attr(attrs, f["field"], f["value"]):
+            ok += 1
+            if execute:
+                conn.execute("UPDATE entities SET attributes=?, updatedAt=? WHERE id=?",
+                             (json.dumps(attrs, ensure_ascii=False), TODAY, f["id"]))
+    if execute:
+        conn.commit()
+    return ok, skip
+
+
+def _apply_pg(fixes: list, execute: bool) -> tuple[int, int]:
+    import psycopg2
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
+    cur = conn.cursor()
+    ok = skip = 0
+    for f in fixes:
+        cur.execute("SELECT attributes::text FROM entities WHERE id=%s", (f["id"],))
+        row = cur.fetchone()
+        if row is None:
+            skip += 1; continue
+        attrs = json.loads(row[0]) if row[0] else {}
+        if _set_attr(attrs, f["field"], f["value"]):
+            ok += 1
+            if execute:
+                cur.execute('UPDATE entities SET attributes=%s::jsonb, "updatedAt"=%s WHERE id=%s',
+                            (json.dumps(attrs, ensure_ascii=False), TODAY, f["id"]))
+    conn.commit() if execute else conn.rollback()
+    return ok, skip
+
+
 def apply(fixes_path: str, store: str, data_path: str = "", db_path: str = "", execute: bool = False) -> None:
     fixes = json.load(io.open(fixes_path, encoding="utf-8"))
-    ok = skip = 0
     if store == "data":
-        d = json.load(io.open(data_path, encoding="utf-8"))
-        idx = {e["id"]: e for e in d["entities"]}
-        for f in fixes:
-            e = idx.get(f["id"])
-            if e is None:
-                skip += 1; continue
-            attrs = e.setdefault("attributes", {})
-            ok += 1 if _set_attr(attrs, f["field"], f["value"]) else 0
-        if execute:
-            tmp = data_path + ".tmp"
-            io.open(tmp, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False))
-            os.replace(tmp, data_path)
+        ok, skip = _apply_data(fixes, data_path, execute)
     elif store == "sqlite":
-        import sqlite3
-        conn = sqlite3.connect(db_path); conn.row_factory = sqlite3.Row
-        for f in fixes:
-            row = conn.execute("SELECT attributes FROM entities WHERE id=?", (f["id"],)).fetchone()
-            if row is None:
-                skip += 1; continue
-            attrs = json.loads(row["attributes"] or "{}")
-            if _set_attr(attrs, f["field"], f["value"]):
-                ok += 1
-                if execute:
-                    conn.execute("UPDATE entities SET attributes=?, updatedAt=? WHERE id=?",
-                                 (json.dumps(attrs, ensure_ascii=False), TODAY, f["id"]))
-        if execute:
-            conn.commit()
-    elif store == "pg":
-        import psycopg2
-        conn = psycopg2.connect(os.environ["DATABASE_URL"])
-        cur = conn.cursor()
-        for f in fixes:
-            cur.execute("SELECT attributes::text FROM entities WHERE id=%s", (f["id"],))
-            row = cur.fetchone()
-            if row is None:
-                skip += 1; continue
-            attrs = json.loads(row[0]) if row[0] else {}
-            if _set_attr(attrs, f["field"], f["value"]):
-                ok += 1
-                if execute:
-                    cur.execute('UPDATE entities SET attributes=%s::jsonb, "updatedAt"=%s WHERE id=%s',
-                                (json.dumps(attrs, ensure_ascii=False), TODAY, f["id"]))
-        if execute:
-            conn.commit()
-        else:
-            conn.rollback()
+        ok, skip = _apply_sqlite(fixes, db_path, execute)
+    else:
+        ok, skip = _apply_pg(fixes, execute)
     print(f"{store}: {ok} áp, {skip} skip {'ĐÃ GHI' if execute else '(dry-run)'}")
 
 
