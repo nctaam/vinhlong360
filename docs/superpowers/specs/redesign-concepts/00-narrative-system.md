@@ -17,7 +17,7 @@
 
 ## 0. LUẬN ĐỀ TRUNG TÂM (enforce ở mọi nơi)
 
-> **Mỗi địa điểm, món ăn, sản phẩm, điểm đến, chỗ ở, lễ hội, làng nghề, cù lao — là một CÂU CHUYỆN**, kể sao cho người đọc *tò mò muốn đi Vĩnh Long (miền Tây) NGAY BÂY GIỜ.*
+> **Mỗi địa điểm, món ăn, sản phẩm, điểm đến, chỗ ở, lễ hội, làng nghề, cù lao — là một CÂU CHUYỆN**, kể sao cho người đọc *tò mò muốn đi Vĩnh Long NGAY BÂY GIỜ.*
 
 Ba hệ quả bắt buộc từ luận đề này:
 
@@ -124,7 +124,7 @@ Bộ pattern dùng chung khiến người ta *muốn click/cuộn/lật tiếp*.
 - **Ambient "sống":** đúng một per viewport (§3 quy tắc vàng). Pulse-ring "vừa thêm" = **một nhịp trên mount**, không loop. Wax-seal/stamp = một lần settle 400ms, không loop.
 - **CẤM:** auto-play video, particle/confetti, cursor-follow, looping shimmer/glow-mãi-mãi, stagger-animate-mọi-card.
 
-### 4.2 Gợi giác quan miền Tây qua thiết kế (không dùng media thật)
+### 4.2 Gợi giác quan sông nước Vĩnh Long qua thiết kế (không dùng media thật)
 Site không có audio; gợi giác quan bằng **motif + màu + chữ**, không bằng GIF/SFX:
 - **Sông nước:** sediment wash (river→amber→clay blur ngang), ripple `box-shadow` như giọt nước trên card (transition, không transform khi RM), hairline "dòng chảy" dọc.
 - **Phù sa / đất:** grain SVG overlay (giấy in), palette clay/leaf/river/amber trên nền sand — không bao giờ nền trắng thuần.
@@ -164,11 +164,11 @@ Site không có audio; gợi giác quan bằng **motif + màu + chữ**, không 
 - Hiện số 0 trần; tô vẽ/đánh bóng nội dung UGC của người thật.
 
 **6 dòng mẫu (model the voice):**
-1. *Hook món ăn:* "Nước lèo phải nấu từ mắm bò hóc để dậy mùi — không phải tô bún nào ở miền Tây cũng làm được vậy."
-2. *Subhead danh bạ:* "1.532 điểm đến đã xác minh, từ cù lao giữa sông đến quầy hàng trong hẻm nhỏ — Vĩnh Long, Bến Tre, Trà Vinh, không sót nơi nào."
+1. *Hook món ăn:* "Nước lèo phải nấu từ mắm bò hóc để dậy mùi — không phải tô bún nào cũng làm được vậy."
+2. *Subhead danh bạ:* "1.532 điểm đến được ban biên tập tổng hợp, từ cù lao giữa sông đến quầy hàng trong hẻm nhỏ — Vĩnh Long, Bến Tre, Trà Vinh, không sót nơi nào." *(CẤM chữ "đã xác minh" — verifiedAt ~0, CLAUDE.md §1.7)*
 3. *Why-now chip (mùa):* "🌾 Đang rộ mùa — chôm chôm ngọt nhất tháng này, còn khoảng 3 tuần."
 4. *Load-more teaser:* "Xem thêm — 41 nơi nữa, kể cả làng nghề gốm Mang Thít →"
-5. *Masthead cộng đồng (động):* "Hôm nay, ai đó vừa kể chuyện về một buổi sáng ở chợ nổi Cái Bè."
+5. *Masthead cộng đồng (động):* "Hôm nay, ai đó vừa kể chuyện về một buổi sáng ở chợ nổi Trà Ôn." *(Cái Bè NGOÀI tỉnh — Đồng Tháp; chợ nổi của tỉnh là Trà Ôn)*
 6. *Microcopy thật thà no-photo:* "Ảnh minh hoạ theo tông màu đặc trưng — vinhlong360 chưa có ảnh thật cho nơi này."
 
 ---
