@@ -289,3 +289,12 @@ class TestTwoFactorKillSwitch:
     def test_trusted_device_endpoints_not_gated(self):
         assert "TWO_FACTOR_ENABLED" not in inspect.getsource(auth._remember_trusted_device)
         assert "TWO_FACTOR_ENABLED" not in inspect.getsource(auth._has_valid_trusted_device)
+
+    def test_delete_trusted_device_imports_check_rate(self):
+        # Regression (SP3 F821): delete_trusted_device gọi check_rate nhưng
+        # THIẾU `from ratelimit import check_rate` trong hàm → NameError khi gọi
+        # endpoint DELETE /trusted-devices/{id}. Mọi endpoint auth khác import
+        # check_rate cục bộ ngay trước khi dùng; hàm này bị sót.
+        src = inspect.getsource(auth.delete_trusted_device)
+        assert "check_rate(" in src
+        assert "from ratelimit import check_rate" in src
