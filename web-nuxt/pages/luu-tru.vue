@@ -7,7 +7,7 @@
       <span class="wake-hero-sweep" aria-hidden="true"></span>
       <span class="wake-hero-grain" aria-hidden="true"></span>
       <div class="wake-hero-inner">
-        <p class="wake-hero-eyebrow">ĐỒNG BẰNG SÔNG CỬU LONG · VĨNH LONG — BẾN TRE — TRÀ VINH</p>
+        <p class="wake-hero-eyebrow">TỈNH VĨNH LONG · MIỆT VƯỜN — XỨ DỪA — ĐẤT CHÙA KHMER</p>
         <h1 class="wake-hero-title">{{ pc('hero_title', 'Thức dậy giữa vườn, nghe chim trước khi nghe chuông báo thức.') }}</h1>
         <p class="wake-hero-sub">{{ pc('hero_subtitle', 'Homestay nhà vườn, resort ven sông, khách sạn phố — chọn nơi bạn muốn mở mắt vào buổi sáng ở Vĩnh Long.') }}</p>
       </div>
@@ -311,9 +311,9 @@ const filtered = computed(() => {
 useSeoMeta({
   ogType: 'website',
   title: () => pc('seo_title') || 'Lưu trú Vĩnh Long, Bến Tre, Trà Vinh — vinhlong360',
-  description: () => pc('seo_description') || 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở miền Tây.',
+  description: () => pc('seo_description') || 'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
   ogTitle: () => pc('og_title') || 'Lưu trú — vinhlong360',
-  ogDescription: () => pc('og_description') || 'Tìm chỗ ở phù hợp cho chuyến đi miền Tây.',
+  ogDescription: () => pc('og_description') || 'Tìm chỗ ở phù hợp cho chuyến đi Vĩnh Long.',
 })
 
 useHead(() => ({
@@ -322,7 +322,7 @@ useHead(() => ({
     type: 'application/ld+json',
     innerHTML: safeJsonLd(itemListJsonLd(
       'Lưu trú Vĩnh Long, Bến Tre, Trà Vinh',
-      'Homestay, nhà vườn, khách sạn và nơi nghỉ ở miền Tây.',
+      'Homestay, nhà vườn, khách sạn và nơi nghỉ ở Vĩnh Long.',
       '/luu-tru',
       allEntities.value,
     )),

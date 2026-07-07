@@ -225,7 +225,7 @@ function categoryPlaceholderBg(seedId: string, cat?: string) {
   return generateCategoryPlaceholder(seedId, cat || 'place')
 }
 
-// Câu hỏi thật, đặc trưng miền Tây — danh sách tĩnh đã tuyển chọn (không gọi LLM,
+// Câu hỏi thật, đặc trưng Vĩnh Long — danh sách tĩnh đã tuyển chọn (không gọi LLM,
 // không backend trending — đúng tinh thần §B8: đây là copy trình bày, không phải
 // dữ liệu sống). Dùng làm cả ticker hero lẫn placeholder input khi rảnh gõ.
 const TICKER_PHRASES = [

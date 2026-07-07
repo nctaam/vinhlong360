@@ -284,7 +284,7 @@ watch([areaFilter, typeFilter], () => {
 })
 
 useSeoMeta({
-  title: `${interestMeta.value.emoji} ${interestMeta.value.label} — Khám phá miền Tây — vinhlong360`,
+  title: `${interestMeta.value.emoji} ${interestMeta.value.label} — Khám phá Vĩnh Long — vinhlong360`,
   description: interestMeta.value.description,
   ogTitle: `${interestMeta.value.label} — vinhlong360`,
   ogDescription: interestMeta.value.description,
@@ -298,7 +298,7 @@ useHead(() => ({
   script: [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify(itemListJsonLd(
-      `${interestMeta.value.label} — Khám phá miền Tây`,
+      `${interestMeta.value.label} — Khám phá Vĩnh Long`,
       interestMeta.value.description,
       `/kham-pha/${interest}`,
       filtered.value,

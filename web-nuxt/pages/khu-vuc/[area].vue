@@ -183,7 +183,7 @@ const AREA_EDITORIAL: Record<string, { title: string; paragraphs: string[] }> = 
   'ben-tre': {
     title: 'Bến Tre — xứ dừa ngàn năm',
     paragraphs: [
-      'Bến Tre được mệnh danh là "xứ dừa" với hơn 70.000 hecta dừa — lớn nhất cả nước. Toàn tỉnh là một hệ thống cù lao được bao bọc bởi sông Tiền và biển Đông, tạo nên cảnh quan sông nước đặc trưng nhất vùng Đồng bằng sông Cửu Long.',
+      'Bến Tre được mệnh danh là "xứ dừa" với hơn 70.000 hecta dừa — lớn nhất cả nước. Cả vùng là một hệ thống cù lao được bao bọc bởi sông Tiền và biển Đông, tạo nên cảnh quan sông nước đặc trưng bậc nhất đồng bằng.',
       'Du lịch Bến Tre xoay quanh trải nghiệm sông nước: chèo thuyền trên rạch dừa, thăm lò kẹo dừa, uống nước dừa tươi trong vườn, và nghỉ tại các homestay ven sông. Sản phẩm OCOP nổi bật của Bến Tre gồm kẹo dừa Bến Tre, rượu dừa, tinh dầu dừa và các sản phẩm thủ công từ gáo dừa.',
     ],
   },

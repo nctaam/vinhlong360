@@ -153,19 +153,19 @@
 
     <!-- Editorial -->
     <section v-once class="page-article reveal">
-      <div class="sediment-head"><h2>Khí hậu miền Tây và du lịch theo mùa</h2></div>
+      <div class="sediment-head"><h2>Khí hậu Vĩnh Long và du lịch theo mùa</h2></div>
       <p>Vùng đồng bằng sông Cửu Long có khí hậu nhiệt đới gió mùa với hai mùa rõ rệt. <strong>Mùa khô</strong> (tháng 12–4) trời nắng ấm, ít mưa, nhiệt độ 25–32°C — đây là thời gian lý tưởng nhất để du lịch, đạp xe và tham quan làng nghề. <strong>Mùa mưa</strong> (tháng 5–11) có những cơn mưa rào buổi chiều nhưng sáng thường còn nắng đẹp, và đây lại là mùa trái cây rộ nhất.</p>
 
       <div class="sediment-head"><h2>Mùa nước nổi — trải nghiệm độc đáo</h2></div>
       <p>Từ tháng 8 đến tháng 11, nước từ thượng nguồn Mekong đổ về làm mực nước sông dâng cao, tràn vào đồng ruộng. Đây không phải thiên tai mà là nhịp sống tự nhiên mang phù sa màu mỡ cho vụ lúa kế tiếp. Mùa nước nổi mang đến những đặc sản mùa vụ không đâu có: cá linh non kho mía, bông điên điển xào tỏi, lẩu mắm bông súng, chuột đồng quay lu.</p>
-      <p>Đi xuồng giữa đồng nước mênh mông, hái bông điên điển vàng rực hay tát mương bắt cá là trải nghiệm chỉ có trong vài tháng ngắn ngủi mỗi năm — và chỉ ở miền Tây.</p>
+      <p>Đi xuồng giữa đồng nước mênh mông, hái bông điên điển vàng rực hay tát mương bắt cá là trải nghiệm chỉ có trong vài tháng ngắn ngủi mỗi năm — và chỉ ở xứ ngập nước này.</p>
 
       <!-- declutter-2 A2: interstitial inline vào mạch bài (đặt đúng ngữ cảnh mùa-nước-nổi) -->
       <CatalogInterstitial
         fact="Mùa nước nổi (tháng 8–11) mang đến cá linh, bông điên điển, bông súng — những đặc sản chỉ có vài tháng mỗi năm."
         icon="🌾"
         variant="accent"
-        :links="[{ to: '/san-pham', label: 'Xem đặc sản' }, { to: '/kham-pha/am-thuc', label: 'Ẩm thực miền Tây' }]"
+        :links="[{ to: '/san-pham', label: 'Xem đặc sản' }, { to: '/kham-pha/am-thuc', label: 'Ẩm thực bản địa' }]"
       />
 
       <div class="sediment-head"><h2>Mười hai tháng, một nhịp sông</h2></div>
@@ -322,7 +322,7 @@ function quarterOf(m: number) {
   if (m >= 4 && m <= 5) return { key: 'bloom', tag: 'đầu mùa nắng', note: 'Vườn cây rộn ràng vào vụ — thời điểm dạo chơi, ngắm cảnh dễ chịu.' }
   if (m >= 6 && m <= 8) return { key: 'summer', tag: 'cao điểm mùa hè', note: 'Nắng vàng rực rỡ, nhiều đặc sản vào chính vụ nhất trong năm.' }
   if (m >= 9 && m <= 10) return { key: 'harvest', tag: 'mùa thu hoạch', note: 'Đồng quê trĩu quả, hợp trải nghiệm miệt vườn và thưởng thức tại chỗ.' }
-  return { key: 'flood', tag: 'mùa nước nổi', note: 'Sông nước mênh mang — mùa của những trải nghiệm đặc trưng miền Tây.' }
+  return { key: 'flood', tag: 'mùa nước nổi', note: 'Sông nước mênh mang — mùa của bông điên điển, cá linh non và những chuyến xuồng đồng.' }
 }
 const seasonQuarter = computed(() => quarterOf(month.value))
 

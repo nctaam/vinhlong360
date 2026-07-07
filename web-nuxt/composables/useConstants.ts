@@ -59,7 +59,7 @@ export interface InterestDef {
   relatedRoutes?: string[]
 }
 export const INTEREST_META: Record<string, InterestDef> = {
-  'am-thuc': { emoji: '🍲', icon: 'bowl', label: 'Ẩm thực', description: 'Món ngon miền Tây — từ bún nước lèo, bánh xèo đến đặc sản trái cây theo mùa.', types: ['dish', 'product'], relatedRoutes: ['vong-am-thuc-mien-tay'] },
+  'am-thuc': { emoji: '🍲', icon: 'bowl', label: 'Ẩm thực', description: 'Món ngon bản địa — từ bún nước lèo, bánh xèo đến đặc sản trái cây theo mùa.', types: ['dish', 'product'], relatedRoutes: ['vong-am-thuc-mien-tay'] },
   'thien-nhien': { emoji: '🌿', icon: 'leaf', label: 'Thiên nhiên', description: 'Miệt vườn sông nước, cù lao xanh mát, vườn trái cây và đồng lúa bát ngàn.', types: ['experience', 'attraction'], relatedRoutes: ['vong-trai-cay-vinh-long', 'vong-mua-nuoc-noi'] },
   'van-hoa': { emoji: '🛕', icon: 'landmark', label: 'Văn hóa', description: 'Di tích lịch sử, chùa Khmer cổ, lễ hội truyền thống và đời sống bản địa.', types: ['attraction', 'craft_village'], relatedRoutes: ['vong-chua-khmer-tra-vinh'] },
   'lang-nghe': { emoji: '🏺', icon: 'vase', label: 'Làng nghề', description: 'Gốm Mang Thít, kẹo dừa, chiếu lác, bánh tráng — nghề truyền thống hàng trăm năm.', types: ['craft_village', 'organization'], relatedRoutes: ['vong-lang-nghe-mang-thit'] },

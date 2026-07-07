@@ -7,7 +7,7 @@
       <span class="atlas-hero-grain" aria-hidden="true"></span>
       <span class="atlas-hero-motif" aria-hidden="true" v-html="activeMode.motif"></span>
       <div class="atlas-hero-inner">
-        <p class="atlas-hero-eyebrow">ĐỒNG BẰNG SÔNG CỬU LONG · VĨNH LONG — BẾN TRE — TRÀ VINH</p>
+        <p class="atlas-hero-eyebrow">TỈNH VĨNH LONG · MIỆT VƯỜN — XỨ DỪA — ĐẤT CHÙA KHMER</p>
         <h1 class="atlas-hero-title">
           <span class="atlas-hero-line1">{{ pc('hero_title', 'Ba tỉnh, một nhịp sông.') }}</span>
           <Transition name="mode-fade" mode="out-in">
@@ -84,7 +84,7 @@
     <section v-once class="page-article reveal">
       <div class="sediment-head"><h2>Vì sao chọn Vĩnh Long, Bến Tre, Trà Vinh?</h2></div>
       <div class="editorial-body drop-cap">
-        <p>Ba tỉnh nằm ở trung tâm đồng bằng sông Cửu Long, nơi hệ thống sông Tiền và sông Hậu chia thành hàng chục nhánh nhỏ tạo nên mạng lưới kênh rạch chằng chịt. Đây là vùng đất của những cù lao xanh mát quanh năm — An Bình, Bình Hoà Phước, Minh, Ông Hổ — nơi cuộc sống vẫn giữ nhịp chậm rãi của miệt vườn Nam Bộ.</p>
+        <p>Tỉnh Vĩnh Long mới — hợp nhất ba vùng đất Vĩnh Long, Bến Tre, Trà Vinh — nằm trọn giữa nơi sông Tiền và sông Hậu chia thành hàng chục nhánh nhỏ, tạo nên mạng lưới kênh rạch chằng chịt. Đây là vùng đất của những cù lao xanh mát quanh năm — An Bình, Bình Hoà Phước, Minh, Ông Hổ — nơi cuộc sống vẫn giữ nhịp chậm rãi của miệt vườn Nam Bộ.</p>
         <p>Khác với các điểm du lịch đông đúc, khu vực này mang đến trải nghiệm gần gũi: chèo xuồng qua rạch dừa nước, đạp xe trên đường làng, tát mương bắt cá cùng nông dân, hoặc đơn giản là ngồi võng nghe chim hót trong vườn trái cây. Du khách không chỉ ngắm cảnh mà thực sự sống cùng nhịp sinh hoạt bản địa. Ở Trà Vinh, nhịp sống ấy còn mang thêm màu sắc Khmer — mái chùa vàng-đỏ giữa vườn dừa, tiếng chuông chùa hoà vào tiếng ghe máy trên sông. Từ TP.HCM chỉ khoảng 2 giờ theo cao tốc Trung Lương – Mỹ Thuận là tới; trong vùng, xe máy hay chiếc xe đạp homestay cho mượn là cách hay nhất để len vào cù lao — <NuxtLink to="/ban-do">mở bản đồ</NuxtLink> rồi cứ để đường làng dẫn đi.</p>
       </div>
 
@@ -100,7 +100,7 @@
            rút thành 1 câu inline có link /ban-do cuối đoạn "Vì sao chọn" ở trên. -->
       <div class="sediment-head"><h2>Làng nghề trăm năm</h2></div>
       <div class="editorial-body">
-        <p>Vùng đất này nổi tiếng với những làng nghề tồn tại hàng trăm năm: gốm đỏ Mang Thít với hàng ngàn lò gạch dọc sông Cổ Chiên, kẹo dừa Bến Tre được làm thủ công từ nước cốt dừa tươi, chiếu lác Định Yên dệt từ cây lác mọc ven kênh, hay bánh tráng Mỹ Lồng nướng trên than hồng. Mỗi sản phẩm kể một câu chuyện về đời sống và tri thức của người miền Tây qua nhiều thế hệ.</p>
+        <p>Vùng đất này nổi tiếng với những làng nghề tồn tại hàng trăm năm: gốm đỏ Mang Thít với hàng ngàn lò gạch dọc sông Cổ Chiên, kẹo dừa Bến Tre được làm thủ công từ nước cốt dừa tươi, hoa kiểng Cái Mơn ươm trên đất cù lao Chợ Lách, hay bánh tráng Mỹ Lồng nướng trên than hồng. Mỗi sản phẩm kể một câu chuyện về đời sống và tri thức bản địa truyền qua nhiều thế hệ.</p>
       </div>
 
     </section>
@@ -226,7 +226,7 @@ const heroModes = [
   { key: 'trai-nghiem', emoji: '🌾', label: 'Trải nghiệm', line: 'Khám phá theo mùa nước, theo mùa trái, theo mùa lễ.', sub: 'Miệt vườn, cù lao, làng nghề trăm năm — khám phá theo mùa nước, mùa trái, mùa lễ hội.', motif: generateCategoryIcon('experience') },
   { key: 'am-thuc', emoji: '🍲', label: 'Ẩm thực', line: 'Một tô bún nước lèo, một mẻ bánh xèo mới đổ.', sub: 'Hương vị sông nước — món ăn nào cũng có một câu chuyện đứng sau nó.', motif: generateCategoryIcon('dish') },
   { key: 'lang-nghe', emoji: '🏺', label: 'Làng nghề', line: 'Tiếng lò gạch Mang Thít, mùi kẹo dừa mới sên.', sub: 'Gốm đỏ, kẹo dừa, chiếu lác, bánh tráng — nghề trăm năm vẫn còn đỏ lửa mỗi sáng.', motif: generateCategoryIcon('craft') },
-  { key: 'luu-tru', emoji: '🏡', label: 'Lưu trú', line: 'Một buổi sáng thức dậy giữa vườn trái cây.', sub: 'Homestay nhà vườn, resort ven sông — nơi bạn muốn mở mắt vào buổi sáng ở miền Tây.', motif: generateCategoryIcon('accommodation') },
+  { key: 'luu-tru', emoji: '🏡', label: 'Lưu trú', line: 'Một buổi sáng thức dậy giữa vườn trái cây.', sub: 'Homestay nhà vườn, resort ven sông — nơi bạn muốn mở mắt vào buổi sáng giữa miệt vườn.', motif: generateCategoryIcon('accommodation') },
 ]
 const activeModeKey = ref(heroModes[0]!.key)
 const activeMode = computed(() => heroModes.find(m => m.key === activeModeKey.value) || heroModes[0]!)
@@ -305,7 +305,7 @@ const CATEGORY_DESC: Record<string, string> = {
   experience: 'Chèo xuồng, đạp xe miệt vườn, tát mương bắt cá — trải nghiệm đời sống sông nước Nam Bộ.',
   attraction: 'Chùa cổ, di tích lịch sử, cù lao, vườn trái cây — những điểm đến đáng ghé nhất.',
   craft_village: 'Gốm Mang Thít, kẹo dừa, chiếu lác, bánh tráng — nghề truyền thống hàng trăm năm.',
-  dish: 'Bún nước lèo, bánh xèo, hủ tiếu, chả lụi — hương vị chỉ có ở miền Tây.',
+  dish: 'Bún nước lèo, bánh xèo, hủ tiếu, chả lụi — hương vị bản địa khó tìm nơi khác.',
   accommodation: 'Homestay nhà vườn, resort sông nước, nhà nghỉ dân dã — nơi lưu lại qua đêm.',
 }
 
@@ -472,7 +472,7 @@ useHead(() => ({
     type: 'application/ld+json',
     innerHTML: JSON.stringify(itemListJsonLd(
       'Du lịch Vĩnh Long, Bến Tre, Trà Vinh',
-      'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực miền Tây.',
+      'Trải nghiệm bản địa, điểm tham quan, lưu trú, làng nghề và ẩm thực Vĩnh Long.',
       '/du-lich',
       filtered.value,
     )),

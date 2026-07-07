@@ -299,7 +299,7 @@ useSeoMeta({
     : 'Danh bạ địa điểm — Vĩnh Long, Bến Tre, Trà Vinh — vinhlong360',
   description: () => 'Khám phá toàn bộ điểm đến, đặc sản OCOP, làng nghề, lưu trú và di tích của Vĩnh Long, Bến Tre, Trà Vinh. Lọc theo loại hình và khu vực.',
   ogTitle: 'Danh bạ địa điểm — vinhlong360',
-  ogDescription: 'Điểm đến, đặc sản, làng nghề, lưu trú và di tích miền Tây — tìm theo loại và khu vực.',
+  ogDescription: 'Điểm đến, đặc sản, làng nghề, lưu trú và di tích Vĩnh Long — tìm theo loại và khu vực.',
 })
 
 // JSON-LD: ItemList structured data for search engines

@@ -88,14 +88,14 @@ export const DEFAULT_ROUTES: RouteDef[] = [
   },
   {
     id: 'vong-am-thuc-mien-tay',
-    name: 'Vòng ẩm thực miền Tây',
+    name: 'Vòng ẩm thực bản địa',
     emoji: '🍲',
     area: 'vinh-long',
     duration: '1–2 ngày',
     distance: '~50 km',
-    description: 'Tour ẩm thực xuyên 3 tỉnh — từ bánh xèo Vĩnh Long, kẹo dừa Bến Tre đến bún nước lèo Trà Vinh.',
+    description: 'Vòng ẩm thực xuyên ba vùng đất — từ bánh xèo Vĩnh Long, kẹo dừa Bến Tre đến bún nước lèo Trà Vinh.',
     stops: [
-      { name: 'Quán cháo cá lóc Vĩnh Long', note: 'Bữa sáng đậm chất miền Tây' },
+      { name: 'Quán cháo cá lóc Vĩnh Long', note: 'Bữa sáng đậm chất Nam Bộ' },
       { name: 'Bánh xèo miệt vườn', note: 'Cuốn rau vườn, chấm nước mắm' },
       { name: 'Chợ Vĩnh Long', note: 'Ăn vặt: hủ tiếu, bánh tầm' },
       { name: 'Kẹo dừa Bến Tre', note: 'Nếm + mua về làm quà' },

@@ -63,19 +63,19 @@
          mạch editorial làm callout (props tĩnh, an toàn dưới v-once). -->
     <section v-once class="page-article editorial-body reveal">
       <h2 class="sediment-head">Đặc sản vùng sông nước</h2>
-      <p>Đồng bằng sông Cửu Long là vựa trái cây và nông sản lớn nhất cả nước. Riêng Vĩnh Long, Bến Tre và Trà Vinh đóng góp hàng chục loại đặc sản mang đậm bản sắc vùng miệt vườn: bưởi Năm Roi vỏ mỏng ruột ngọt, kẹo dừa Bến Tre dẻo thơm, dừa sáp Cầu Kè béo quánh hiếm có, hay bánh tráng Mỹ Lồng giòn rụm nướng than.</p>
+      <p>Đồng bằng sông Cửu Long là vựa trái cây và nông sản lớn nhất cả nước, và tỉnh Vĩnh Long — miệt vườn nằm trọn giữa hai nhánh sông Tiền, sông Hậu — góp vào đó hàng chục loại đặc sản mang đậm bản sắc: bưởi Năm Roi vỏ mỏng ruột ngọt, kẹo dừa Bến Tre dẻo thơm, dừa sáp Cầu Kè béo quánh hiếm có, hay bánh tráng Mỹ Lồng giòn rụm nướng than.</p>
       <blockquote class="pull-quote">Mỗi sản phẩm gắn liền với một vùng đất, một mùa vụ và một câu chuyện sản xuất riêng.</blockquote>
       <p>Nhiều sản phẩm đã được chứng nhận OCOP (Mỗi xã Một sản phẩm) — đạt tiêu chuẩn chất lượng quốc gia từ 3 đến 5 sao.</p>
 
       <CatalogInterstitial
-        fact="Ba tỉnh Vĩnh Long, Bến Tre, Trà Vinh là vựa trái cây lớn nhất ĐBSCL — mỗi mùa mang đến hương vị đặc trưng riêng."
+        fact="Tỉnh Vĩnh Long — hợp từ ba vùng đất Vĩnh Long, Bến Tre, Trà Vinh — là một trong những vựa trái cây lớn nhất đồng bằng, mỗi mùa mang một hương vị riêng."
         icon="🍊"
         variant="accent"
         :links="[{ to: '/theo-mua', label: 'Xem theo mùa' }, { to: '/ocop', label: 'Sản phẩm OCOP' }]"
       />
 
       <h2 class="sediment-head">Mua gì, tháng nào?</h2>
-      <p>Trái cây miền Tây có tính mùa vụ rõ rệt. <strong>Tháng 5–7</strong> là mùa sầu riêng, măng cụt, chôm chôm — thời điểm trái ngon nhất và giá tốt nhất. <strong>Tháng 8–10</strong> là mùa bưởi và cam, cũng là lúc mùa nước nổi mang về cá linh, bông điên điển. <strong>Tháng 12–2</strong> là mùa dưa hấu, dưa lê phục vụ Tết Nguyên đán. Dừa và các sản phẩm từ dừa (kẹo, dầu, nước cốt) có quanh năm.</p>
+      <p>Trái cây ở đây có tính mùa vụ rõ rệt. <strong>Tháng 5–7</strong> là mùa sầu riêng, măng cụt, chôm chôm — thời điểm trái ngon nhất và giá tốt nhất. <strong>Tháng 8–10</strong> là mùa bưởi và cam, cũng là lúc mùa nước nổi mang về cá linh, bông điên điển. <strong>Tháng 12–2</strong> là mùa dưa hấu, dưa lê phục vụ Tết Nguyên đán. Dừa và các sản phẩm từ dừa (kẹo, dầu, nước cốt) có quanh năm.</p>
 
       <h2 class="sediment-head">Sản phẩm OCOP</h2>
       <p>Chương trình OCOP đánh giá và xếp hạng sản phẩm địa phương theo 5 bậc sao. Sản phẩm 3 sao đạt tiêu chuẩn cơ bản, 4 sao có chất lượng cao với bao bì chuyên nghiệp, và 5 sao là cấp quốc gia — hiếm và rất uy tín. Khi mua sản phẩm OCOP, bạn biết chắc sản phẩm đã qua kiểm định chất lượng, có truy xuất nguồn gốc và hỗ trợ sinh kế cho nông dân bản địa.</p>

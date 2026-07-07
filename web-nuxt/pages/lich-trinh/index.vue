@@ -292,7 +292,7 @@ useSeoMeta({
   title: 'Lịch trình — vinhlong360',
   description: 'Tuyến tham quan Vĩnh Long, Bến Tre, Trà Vinh được thiết kế sẵn — chỉ cần chọn và đi. Hoặc tự tạo lịch trình cá nhân theo sở thích.',
   ogTitle: 'Lịch trình — vinhlong360',
-  ogDescription: 'Tuyến tham quan miền Tây được thiết kế sẵn — chỉ cần chọn và đi.',
+  ogDescription: 'Tuyến tham quan Vĩnh Long được thiết kế sẵn — chỉ cần chọn và đi.',
   ogImage: '/icons/icon-512.png',
 })
 useHead({

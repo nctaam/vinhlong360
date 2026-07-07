@@ -60,7 +60,7 @@
     <section v-once class="page-article reveal">
       <div class="sediment-head route-article-head"><h2>Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô</h2></div>
       <p>Các tuyến đường dưới đây được thiết kế cho người muốn <strong>tự đi</strong> — không cần tour, không cần hướng dẫn viên. Mỗi tuyến ghi rõ khoảng cách, thời gian di chuyển và các điểm dừng theo thứ tự hợp lý. Đường liên tỉnh giữa Vĩnh Long, Bến Tre và Trà Vinh phần lớn là đường nhựa tốt, phù hợp cả xe máy lẫn ô tô 4-7 chỗ.</p>
-      <p>Nếu đi xe máy, ưu tiên khởi hành sáng sớm (trước 7h) để tránh nắng và tận dụng ánh sáng đẹp. Mang theo áo mưa — miền Tây hay có mưa rào chiều, đặc biệt từ tháng 6 đến tháng 11. Đường vào các làng nghề đôi khi hẹp và dốc cầu, chạy chậm khi qua khu dân cư.</p>
+      <p>Nếu đi xe máy, ưu tiên khởi hành sáng sớm (trước 7h) để tránh nắng và tận dụng ánh sáng đẹp. Mang theo áo mưa — vùng này hay có mưa rào chiều, đặc biệt từ tháng 6 đến tháng 11. Đường vào các làng nghề đôi khi hẹp và dốc cầu, chạy chậm khi qua khu dân cư.</p>
 
       <!-- declutter-2 A2: interstitial inline vào mạch bài -->
       <CatalogInterstitial
@@ -223,10 +223,10 @@ function routeSeasonTag(r: RouteDef) {
 
 useSeoMeta({
   ogType: 'website',
-  title: () => pc('seo_title') || 'Tuyến đường gợi ý miền Tây — vinhlong360',
+  title: () => pc('seo_title') || 'Tuyến đường gợi ý Vĩnh Long — vinhlong360',
   description: () => pc('seo_description') || 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
   ogTitle: () => pc('og_title') || 'Tuyến đường gợi ý — vinhlong360',
-  ogDescription: () => pc('og_description') || 'Tự khám phá miền Tây bằng xe máy hoặc ô tô.',
+  ogDescription: () => pc('og_description') || 'Tự khám phá Vĩnh Long bằng xe máy hoặc ô tô.',
 })
 
 useHead(() => ({
@@ -236,7 +236,7 @@ useHead(() => ({
     innerHTML: safeJsonLd({
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
-      name: 'Tuyến đường gợi ý miền Tây',
+      name: 'Tuyến đường gợi ý Vĩnh Long',
       description: 'Các tuyến đường tự khám phá qua miệt vườn, làng nghề và văn hóa Vĩnh Long, Bến Tre, Trà Vinh.',
       url: 'https://vinhlong360.vn/tuyen-duong',
       mainEntity: {
