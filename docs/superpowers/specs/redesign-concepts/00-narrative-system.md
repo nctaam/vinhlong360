@@ -1,5 +1,16 @@
 # 00 — Hệ thống Tường thuật & Cảm quan hợp nhất
 
+> **STATUS (2026-07-07): active — đã truth-sync.** Creative-direction (luận đề, giọng, thiết bị tò mò) còn hiệu lực làm hướng tư duy; các mệnh đề "giữ/kept" về cấu trúc trang bị OVERRIDE bởi declutter — xem khối cảnh báo grounding ngay dưới.
+
+> ⚠️ **CẢNH BÁO GROUNDING (2026-07-07) — đọc trước khi thực thi bất kỳ concept nào (00–16).**
+> Toàn bộ concept trong thư mục này là tài liệu **Ý TƯỞNG**, viết 2026-07-05 — TRƯỚC 3 đợt declutter đã được chủ dự án duyệt và ship (đợt 1: `docs/superpowers/plans/2026-07-06-declutter-dot1-trim.md`; đợt 2: `.../2026-07-07-declutter-dot2-shared.md`; đợt 3 ship 2026-07-07: `.../2026-07-07-declutter-dot3-structural.md`). **Khi xung đột, declutter THẮNG concept.** Các khối concept ghi "giữ/kept" nhưng THỰC TẾ ĐÃ GỠ khỏi code:
+>
+> - **Home (`index.vue`):** section "Trợ lý AI" CTA cuối trang (B1-1, trùng ChatWidget FAB — bỏ từ đợt 1, commit `691e694`); event-hero lớn (B1-2); EntityFeature #2 OCOP (B1-5); strip "Lịch trình gợi ý" (B1-4); dàn chip leaderboard → 1 link teaser (B1-6) — xem các comment `declutter-3 T16` trong `web-nuxt/pages/index.vue`.
+> - **san-pham/ocop:** `CatalogSpotlight` đã bỏ ở CẢ HAI trang (T10/T9 — `san-pham.vue:33`, `ocop.vue:38`); region quick-picks đã bỏ ở ocop (đợt 2 A5 — `ocop.vue:95`).
+> - **kham-pha/[interest]:** int-intro đã xoá, 2 hàng filter rời → 1 panel hợp nhất (T12/B9).
+>
+> Hệ quả cho §6 Wave Sequencing bên dưới: Sóng 2 mục 6 ("Home spine" theo 01-home) và các spine trang khác mô tả cấu trúc TIỀN-declutter — mọi sóng thực thi sau này phải **re-ground trên code hiện tại** (đọc `index.vue`/`san-pham.vue`/`ocop.vue` + comment declutter) trước khi làm, và KHÔNG khôi phục khối đã cắt có chủ đích.
+
 *Creative-direction layer trên 16 concept trang lẻ (01–16). Đây là "hiến pháp kể chuyện" — nơi mọi trang lấy chung một luận đề, một giọng, một bộ thiết bị tò mò, một ngôn ngữ điện ảnh, để cả site đọc như MỘT ấn phẩm chứ không phải 52 template rời.*
 
 ---

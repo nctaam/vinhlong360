@@ -255,8 +255,8 @@ Organized by function — full list of 90+ admin endpoints:
 | GET | `/health` | No | Quick health (no external calls) |
 | GET | `/health/deep` | No | Deep health (LLM API check) |
 | POST | `/reload` | Admin | Hot-reload knowledge data |
-| GET | `/metrics` | Admin (prod) | Prometheus metrics |
-| GET | `/system/*` | Admin (prod) | ~25 monitoring endpoints (logs, errors, scheduler, circuit-breakers, costs, etc.) |
+| GET | `/metrics` | Admin (all envs) | Prometheus metrics (`X-Admin-Key`; 404 without it — gated in dev too) |
+| GET | `/system/*` | Admin (all envs) | ~25 monitoring endpoints (logs, errors, scheduler, circuit-breakers, costs, etc.) |
 
 ---
 
@@ -278,5 +278,5 @@ The data contract is healthy when:
 - **Public endpoints:** No auth required (read-only data).
 - **User endpoints:** Bearer token from `/auth/verify-otp` or `/auth/login`.
 - **Admin endpoints:** `X-Admin-Key` header matching `ADMIN_API_KEY` env var.
-- **System endpoints:** Gated by `gate_internal_endpoints` middleware (404 in prod without admin key).
+- **System endpoints:** Gated by `gate_internal_endpoints` middleware (404 without admin key — enforced in ALL environments, not just prod; `agent/server.py` `gate_internal_endpoints`).
 - **UGC endpoints:** Require Postgres — return 503 on SQLite (`_require_pg` guard).

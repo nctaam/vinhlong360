@@ -134,7 +134,7 @@
 ### A6. Pattern Library (từ travel-platform-ux-research §8)
 
 **ADOPT (áp dụng nguyên):**
-1. Content-first homepage (không hero banner lớn)
+1. ~~Content-first homepage (không hero banner lớn)~~ **[OVERRIDE 2026-07-07: hero masthead cinematic là signature đã duyệt + deploy — không quay lại content-first/carousel]**
 2. Asymmetric photo gallery (1 lớn + 4 nhỏ)
 3. Horizontal filter chips (pill-shaped, sticky)
 4. Detail page section order: media→title→facts→desc→amenities→map→reviews→similar→sticky CTA
@@ -192,7 +192,7 @@
 
 - Heading: dùng Hán-Việt (SEO value)
 - Body text: dùng thuần Việt
-- Câu < 15 từ, đoạn 3-4 câu max
+- ~~Câu < 15 từ, đoạn 3-4 câu max~~ **[OVERRIDE 2026-07-07: nhịp câu ĐA DẠNG (ngắn xen dài) — trần cứng 15-từ công thức hoá văn, ngược mục tiêu chống đọc-như-AI]**
 - Thay: tham quan→đi xem, ẩm thực→đồ ăn, lưu trú→nơi ở, giao thông→đi lại
 
 ### C2. Cognitive Accessibility (từ design-research §19.2-19.6)

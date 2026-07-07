@@ -1,6 +1,6 @@
 # Design Rulebook - vinhlong360
 
-> **STATUS (2026-07-07): active — đã truth-sync.** Rules remain in force EXCEPT where marked with an APPROVED EXCEPTION / PROJECT DECISION note (R4.3/R4.4/R4-AP2/R10.12 cinematic hero motion, R6 navigation, R11.12 noindex, R15.2 sentence rhythm) — those reflect owner-approved shipped decisions that override the original audit text.
+> **STATUS (2026-07-07): active — đã truth-sync.** Rules remain in force EXCEPT where marked with an APPROVED EXCEPTION / PROJECT DECISION note (R1.3 homepage hero, R4.3/R4.4/R4-AP2/R10.12 cinematic hero motion, R6 navigation, R11.12 noindex, R15.2 sentence rhythm) — those reflect owner-approved shipped decisions that override the original audit text.
 
 Audit date: 2026-06-29  
 Scope: Nuxt frontend, API-rendered content, JSON-LD, design tokens, accessibility, performance, Vietnamese travel UX.  
@@ -100,7 +100,7 @@ Source: BASE, A-LAYOUT, NNG.
 WHAT: Page sections use `--space-section` 64px desktop, 48px tablet, 32px mobile.  
 WHY: Serial-position and F-pattern scanning improve when sections are visually separated but still connected.  
 RECONCILE: Apple favors generous content margins; M3 compact classes reduce margins; use responsive semantic aliases.  
-CONTEXT: Homepage must show local categories without a huge landing hero; 32-64px rhythm keeps next content visible.  
+CONTEXT: 32-64px rhythm keeps next content visible. APPROVED EXCEPTION (2026-07-07): the original "no huge landing hero" clause is overridden — the homepage OPENS with the shipped, owner-approved cinematic hero masthead (`pages/index.vue`, see R4-AP2 exception); category access lives in the hero search + decision tiles below it. Do not strip the hero in a compliance pass.  
 VERIFY: `rg -n "section|home-section|block" web-nuxt/pages/index.vue web-nuxt/assets/css/*.css`.  
 EXCEPTION: Admin dashboards can use 24px vertical rhythm. DO/DON'T: `.section{padding-block:var(--space-section)}` / `.section{padding-block:120px}`.
 

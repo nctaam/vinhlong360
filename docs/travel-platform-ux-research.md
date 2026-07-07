@@ -549,6 +549,9 @@ Tat ca 5 nen tang co chung pattern nay cho detail page:
 ### 8.1 ADOPT (ap dung truc tiep)
 
 #### A1. Content-first Homepage
+
+> ⚠️ **OVERRIDE (2026-07-07): A1 đã bị vượt — KHÔNG áp dụng.** Trang chủ prod dùng hero masthead cinematic lớn (Ken Burns, `web-nuxt/pages/index.vue`) đã được chủ dự án duyệt deploy; đồng thời declutter đợt 3 đã cố tình gỡ CatalogSpotlight khỏi san-pham/ocop. Không "bỏ hero lớn" hay khôi phục carousel-sections theo mục này.
+
 - KHONG hero banner lon — di thang vao noi dung
 - Search bar noi bat (pill-shaped hoac rounded input)
 - Carousel sections voi heading + "Xem tat ca" link
@@ -647,6 +650,9 @@ Tat ca 5 nen tang co chung pattern nay cho detail page:
 - CTA style: Primary color, full-width, 48px height, pill radius
 
 #### B3. Trust Signals → Community Signals
+
+> ⚠️ **OVERRIDE (2026-07-07): CẤM badge "Địa điểm xác thực" từ cờ admin-verified.** Cờ `verified` trong DB chỉ là cờ publish (default 1); nguồn kiểm-chứng-thực-địa DUY NHẤT là `attributes.verifiedAt` — hiện ~0 entity có. Gắn badge xác thực từ cờ publish = tín hiệu trust giả hàng loạt, đúng loại spam-signal định vị đang chống. Các badge còn lại (OCOP sao, Top đánh giá, Cộng đồng gợi ý) vẫn hợp lệ vì dựa trên dữ liệu thật.
+
 - **Original**: "Guest favorite", "Superhost", "Verified" (Airbnb)
 - **Adapt cho vinhlong360**:
   - "OCOP 4 sao" / "OCOP 5 sao" — badge chinh thuc

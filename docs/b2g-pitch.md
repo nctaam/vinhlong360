@@ -1,6 +1,8 @@
 # B2G Partnership — Pitch Template
 
-> Ngày soạn: 27/06/2026 | Phiên bản: 1.0
+> **STATUS (2026-07-07): active — đã truth-sync.** Số liệu đối chiếu `web/data.json` 2026-07-07; mọi claim "đã xác minh" / "cập nhật tự động" đã gỡ theo chốt trust (CLAUDE.md §1.7) — kiểm chứng thực địa nay là hạng mục ĐỀ XUẤT HỢP TÁC (mục 2.1). KHÔNG thêm lại các claim này khi `verifiedAt` chưa phủ.
+
+> Ngày soạn: 27/06/2026 | Cập nhật: 07/07/2026 | Phiên bản: 1.1
 > Tài liệu nội bộ — template cho chủ dự án sử dụng khi tiếp cận đối tác cơ quan nhà nước
 > Cần điều chỉnh theo từng cơ quan cụ thể trước khi gửi
 
@@ -10,25 +12,25 @@
 
 ### Về dự án
 
-**vinhlong360.vn** là nền tảng thông tin du lịch, sản phẩm OCOP và cộng đồng phục vụ tỉnh mới sáp nhập từ Vĩnh Long, Bến Tre và Trà Vinh (theo Nghị quyết 1687/NQ-UBTVQH15).
+**vinhlong360.vn** là nền tảng thông tin du lịch, sản phẩm OCOP và cộng đồng phục vụ **tỉnh Vĩnh Long mới** — sáp nhập Vĩnh Long, Bến Tre, Trà Vinh theo Nghị quyết 1687/NQ-UBTVQH15, hiệu lực từ 1/7/2025 (mô hình chính quyền 2 cấp: tỉnh → xã/phường).
 
 ### Quy mô hiện tại
 
 | Chỉ số | Giá trị |
 |--------|---------|
-| Tổng thực thể (entity) | 1.753 |
-| Quan hệ dữ liệu | 8.415+ |
-| Loại entity | 15+ (quán ăn, điểm du lịch, sản phẩm OCOP, cơ sở hành chính, làng nghề, lưu trú...) |
-| Phủ sóng địa lý | 124 xã/phường thuộc 3 tỉnh |
+| Tổng thực thể (entity) | 1.730 |
+| Quan hệ dữ liệu | 12.200+ |
+| Loại entity | 17 (quán ăn, điểm du lịch, sản phẩm OCOP, cơ sở hành chính, làng nghề, lưu trú...) |
+| Phủ sóng địa lý | Toàn bộ 124 xã/phường của tỉnh Vĩnh Long mới (35 phường + 89 xã) |
 | Nền tảng | Web (SSR, SEO-friendly, mobile-first) |
 | Trợ lý AI | Chatbot trả lời 24/7, hiểu ngữ cảnh địa phương |
 
 ### Đặc điểm khác biệt
 
-- **Dữ liệu chính xác**: Không dùng dữ liệu bịa đặt. Mọi thông tin (địa chỉ, SĐT, mùa vụ) đều được xác minh trước khi đưa lên hệ thống.
-- **Chuẩn bị cho sáp nhập**: Đã mô hình hóa cấu trúc hành chính mới (124 đơn vị cấp xã/phường), sẵn sàng cập nhật khi có quyết định chính thức.
-- **Trí tuệ nhân tạo**: Chatbot AI hiểu ngữ cảnh miền Tây, trả lời câu hỏi du khách bằng tiếng Việt tự nhiên, 24/7.
-- **Cộng đồng xác minh**: Hệ thống xác thực OTP, kiểm duyệt nội dung, đánh giá từ người dùng thật.
+- **Dữ liệu có nguồn, không bịa đặt**: 1.730 thực thể được biên tập có ghi nguồn thu thập — phần lớn từ nguồn công khai (cổng tỉnh, báo địa phương, cổng du lịch...); trang hiển thị trích dẫn + link gốc khi có nguồn công khai (chưa phủ 100%, đang bổ sung dần); kênh "Báo sai dữ liệu" công khai trên từng trang để tiếp nhận đính chính. Kiểm chứng thực địa là hạng mục **đề xuất hợp tác** với cơ quan chủ quản — xem mục 2.1.
+- **Đã cập nhật theo sáp nhập**: cấu trúc hành chính 2 cấp (1 tỉnh → 124 xã/phường = 35 phường + 89 xã, không cấp huyện) theo Nghị quyết 1687/NQ-UBTVQH15 đã vận hành đầy đủ trên hệ thống từ 18/6/2026, gồm cả đợt 16 xã lên phường 09/06/2026.
+- **Trí tuệ nhân tạo**: Chatbot AI hiểu ngữ cảnh Vĩnh Long, trả lời câu hỏi du khách bằng tiếng Việt tự nhiên, 24/7.
+- **Cộng đồng xác thực**: Hệ thống xác thực OTP, kiểm duyệt nội dung, đánh giá từ người dùng thật.
 
 ---
 
@@ -36,22 +38,23 @@
 
 ### 2.1 Chuẩn hóa danh bạ hành chính
 
-- Danh bạ đầy đủ 124 đơn vị hành chính cấp xã/phường
-- Thông tin được chuẩn hóa: tên chính thức, địa chỉ, SĐT, giờ làm việc, dịch vụ
-- Có thể tìm kiếm bằng AI: "UBND xã Tân An Hội điện thoại bao nhiêu?" — chatbot trả lời ngay
-- Cập nhật tự động khi có thay đổi nhân sự, địa giới
+- Khung danh bạ phủ toàn bộ 124 đơn vị hành chính cấp xã/phường (35 phường + 89 xã) — mỗi đơn vị có trang riêng, sẵn sàng nạp dữ liệu
+- Trường thông tin chuẩn hóa: tên chính thức, địa chỉ, SĐT, giờ làm việc, dịch vụ. **Dữ liệu liên hệ thật của từng cơ quan chính là hạng mục đề xuất hợp tác** (nạp từ nguồn chính thống của tỉnh — tránh tự thu thập dễ sai, gây hại cho dân)
+- Khi có dữ liệu, tìm kiếm được bằng AI: "UBND xã Tân Long Hội điện thoại bao nhiêu?" — chatbot trả lời ngay
+- Quy trình cập nhật biên tập khi có thay đổi nhân sự, địa giới; kênh "Báo sai dữ liệu" công khai trên từng trang để tiếp nhận đính chính
+- **Đề xuất hợp tác kiểm chứng**: cơ quan chủ quản xác nhận thông tin đơn vị mình → hệ thống đóng dấu ngày kiểm chứng công khai trên trang (trường `verifiedAt`) — nâng danh bạ từ "biên tập từ nguồn công khai" lên "đã kiểm chứng bởi cơ quan chủ quản"
 
 ### 2.2 Quảng bá du lịch và sản phẩm OCOP
 
 - Mỗi sản phẩm OCOP có trang riêng với mô tả, hình ảnh, thông tin cơ sở sản xuất
 - Du khách tìm kiếm theo mùa vụ: "Đặc sản tháng 6" — hệ thống trả về sản phẩm đúng mùa
 - Lộ trình du lịch gợi ý bằng AI dựa trên sở thích, thời gian, vị trí
-- SEO tối ưu: xuất hiện trên Google khi du khách tìm "du lịch Vĩnh Long", "đặc sản Bến Tre"
+- Chuẩn SEO/SSR với cổng chất lượng nội dung per-trang — sẵn sàng xuất hiện trên Google với từ khóa "du lịch Vĩnh Long", "đặc sản Bến Tre" (site đang chủ động hoàn thiện nội dung trước khi mở index)
 
 ### 2.3 Chatbot AI trả lời du khách
 
 - Hoạt động 24/7, không cần nhân sự trực
-- Trả lời bằng tiếng Việt tự nhiên, hiểu ngữ cảnh miền Tây
+- Trả lời bằng tiếng Việt tự nhiên, hiểu ngữ cảnh địa phương Vĩnh Long
 - Có thể gợi ý quán ăn, điểm tham quan, lộ trình theo mùa
 - Tích hợp Zalo OA (nền tảng phổ biến nhất tại địa phương)
 - An toàn: hệ thống chống prompt injection, không trả lời ngoài phạm vi du lịch/cộng đồng
@@ -84,7 +87,7 @@
 | Nội dung | Trang giới thiệu cho từng sản phẩm OCOP với hình ảnh, thông tin cơ sở |
 | Tính năng | Tìm kiếm theo mùa, gợi ý sản phẩm liên quan |
 | Chiến dịch | 4 chiến dịch/năm theo mùa vụ (nếp, bưởi, dừa, chôm chôm...) |
-| SEO | Tối ưu từ khóa "OCOP [tên sản phẩm] [tên tỉnh]" |
+| SEO | Tối ưu từ khóa "OCOP [tên sản phẩm] Vĩnh Long" |
 | **Chi phí** | **500.000 - 1.000.000 VND/tháng** |
 
 ### Package C: Toàn diện (A + B + Custom branding)
@@ -125,9 +128,9 @@
 
 ### Dữ liệu
 
-- 1.753 thực thể đã xác minh
-- 8.415+ mối quan hệ (nearby, belongs_to, serves...)
-- Dữ liệu mùa vụ cho 75%+ sản phẩm và điểm du lịch
+- 1.730 thực thể biên tập có ghi nguồn thu thập; trích dẫn + link nguồn hiển thị trên trang khi có nguồn công khai (kiểm chứng thực địa: hạng mục đề xuất hợp tác — mục 2.1)
+- 12.208 mối quan hệ (nearby, belongs_to, serves...)
+- Dữ liệu mùa vụ gắn với toàn bộ sản phẩm và điểm du lịch
 - Knowledge graph cho gợi ý thông minh
 
 ---
@@ -170,4 +173,4 @@
 
 ---
 
-> *Tài liệu này là template nội bộ. Cần điều chỉnh nội dung, số liệu và thông tin liên hệ cụ thể cho từng cơ quan trước khi sử dụng. Giá có thể đàm phán tùy theo scope và ngân sách thực tế của đối tác.*
+> *Tài liệu này là template nội bộ. Cần điều chỉnh nội dung, số liệu và thông tin liên hệ cụ thể cho từng cơ quan trước khi sử dụng. Giá có thể đàm phán tùy theo scope và ngân sách thực tế của đối tác. Trước khi gửi: đối chiếu lại số liệu với `web/data.json`; TUYỆT ĐỐI không thêm lại claim "đã xác minh/kiểm chứng" khi `attributes.verifiedAt` chưa phủ (CLAUDE.md §1.7). Việc gửi tài liệu đối ngoại phải qua chủ dự án duyệt.*

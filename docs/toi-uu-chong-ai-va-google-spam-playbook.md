@@ -1,6 +1,9 @@
 <!-- Sinh bởi workflow vl360-anti-ai-spam-optimize (2026-07-06). 41 finding→31 verify→28 confirmed, 2 loại (snake-oil/bịa nguồn). Nguồn: Google Search Central spam-policies/helpful-content/E-E-A-T. -->
 
 # PLAYBOOK TỐI ƯU SÂU — vinhlong360.vn
+
+> **STATUS (2026-07-07): active — đã truth-sync.** Đã gắn marker trạng thái (✅ ship / ⏳ mở) cho từng hạng mục — nhiều mục ship NGAY 2026-07-06 (cùng ngày sinh playbook) + declutter đợt 1-3 (2026-07-06/07); các anchor `path:line` đo trước đợt ship nên nhiều anchor đã trôi — grep lại trước khi sửa tiếp. **Override:** mọi khuyến nghị ảnh UGC / ảnh chụp thật CTV (§7 bước 3-4, P1-8 bước 3, bảng §6 hàng "Ảnh thật") bị chốt ảnh AI-only của chủ dự án bác — KHÔNG thực thi; khuyến nghị chi tiết first-hand bằng TEXT vẫn hiệu lực. Lưu ý thêm: noindex TOÀN SITE đang bật chủ động từ 2026-07-06 (`NUXT_PUBLIC_SITE_NOINDEX`, commit `afd6f73`) — hàng rào tạm mạnh hơn cổng P0-1; chỉ mở khi chủ dự án quyết.
+
 ## "Độ đặc thù Vĩnh Long + trải nghiệm bản địa thật là thứ đồng thời đánh bại cả việc-bị-đọc-như-AI lẫn Google-spam"
 
 > Tài liệu chiến lược cho solo dev. Mọi khuyến nghị hợp lệ với chính sách Google (không lách), tôn trọng guardrail dự án (backup trước thao tác dữ liệu §B1, 1 task/commit §B5, không đăng nguyên văn báo §B6, ảnh chỉ AI-gen). Các phần đụng dữ liệu/noindex/gộp trang phải qua ROADMAP task + test trước khi sửa (§3, §B3/B4) — nếu ngoài roadmap thì ghi "Backlog phát sinh", KHÔNG big-bang.
@@ -39,8 +42,8 @@
 Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang giá trị thấp** mới là. Các trigger cụ thể site này đang chạm:
 1. **Mass-produced không chăm sóc riêng** — 408 trang nhà hàng/lưu trú mở câu y hệt "Nhà hàng tại [địa chỉ]. Phục vụ ẩm thực miền Tây..."; chỉ khác địa chỉ + 1 cụm filler → near-duplicate.
 2. **Unoriginal/lặp** — 113 trang description == summary; nhiều trang body in lại verbatim câu lead.
-3. **Phát đồng loạt vào index** — sitemap phát mọi entity qua `_is_public` (agent/seo.py:1043) mà KHÔNG có cổng chất lượng; site inherit `index,follow` toàn cục (nuxt.config.ts:60), 0 gating per-entity.
-4. **Freshness gaming (vô ý)** — 1.730 entity cùng `lastmod 2026-06-28` + `changefreq='weekly'` hardcoded (seo.py:1180); trust card hiện "Cập nhật 5/7/2026" đồng loạt = ngày import, không phải kiểm chứng thật.
+3. **Phát đồng loạt vào index** — sitemap phát mọi entity qua `_is_public` (agent/seo.py:1043) mà KHÔNG có cổng chất lượng; site inherit `index,follow` toàn cục (nuxt.config.ts:60), 0 gating per-entity. *(✅ đã vá 2026-07-06 — xem P0-1; hiện thêm noindex toàn site tạm thời.)*
+4. **Freshness gaming (vô ý)** — 1.730 entity cùng `lastmod 2026-06-28` + `changefreq='weekly'` hardcoded (seo.py:1180); trust card hiện "Cập nhật 5/7/2026" đồng loạt = ngày import, không phải kiểm chứng thật. *(✅ đã vá 2026-07-06 — xem P0-6 + P1-4.)*
 
 **Ngưỡng an toàn (self-assessment Google, phải trả "yes"):** mỗi trang index phải cung cấp "original information/analysis beyond the obvious", là trang "you'd want to bookmark/share/recommend", có "substantial value compared to other pages in search results". Trang chỉ là data-fragment (1 câu + toạ độ + list) → **noindex,follow hoặc gộp vào hub**, ĐỪNG index để "phủ SEO".
 
@@ -59,6 +62,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P0-1 · Cổng chất lượng trước index (sitemap + robots per-entity)** — effort M
+- **TRẠNG THÁI: ✅ ship MỘT PHẦN 2026-07-06 (`a452a9b`)** — `is_index_worthy` (≥130 từ, hoặc ≥100 từ + ảnh thật; đếm summary+description gộp, dedup body-trùng-lead) gate CẢ 2 vòng sitemap (entity + place); đo thật: 405 trang index / ~1.200 noindex — trong target 300-500. ⏳ CÒN MỞ: bước 3-4 (robots meta per-page trong dia-diem/[id].vue cùng ngưỡng) — hiện được noindex TOÀN SITE (`afd6f73`) phủ tạm; **PHẢI làm per-page robots trước khi mở `NUXT_PUBLIC_SITE_NOINDEX=false`.**
 - **Vấn đề:** sitemap phát mọi entity qua `_is_public` (seo.py:1043-1051, chỉ loại provisional/unverified — KHÔNG có gate số từ/ảnh/nguồn); trang entity inherit `index,follow` toàn cục (nuxt.config.ts:60), 0 gating per-page. → phát hàng nghìn trang mỏng đồng loạt.
 - **Bằng chứng:** vòng entity seo.py:1169-1183 chỉ check `_is_public`; dia-diem/[id].vue `useSeoMeta` KHÔNG set `robots`. Live: cả 5 trang kiểm đều trả `index,follow`.
 - **Vì sao:** đúng cờ đỏ "scaled" + thin kéo hạng CẢ site qua Helpful/Core.
@@ -74,6 +78,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P0-2 · Cụm 408 trang nhà hàng/lưu trú/cà phê — near-duplicate template** — effort L
+- **TRẠNG THÁI: ⏳ mở** — bước 1 (cổng) đã hưởng từ P0-1 (cụm 408 gần như bị loại sạch khỏi sitemap, restaurant còn 1); bước 2 (trang danh bạ gộp) + bước 3 (viết lại nội dung thật) chưa làm.
 - **Vấn đề:** 188 restaurant + 164 accom + 56 cafe; 407/408 <80 từ; 408/408 không ảnh. Khung câu "Nhà hàng tại [địa chỉ]. Phục vụ ẩm thực miền Tây..." lặp qua hàng trăm trang.
 - **Bằng chứng:** nha-hang-huong-sen / nha-hang-am-thuc-pho / nha-hang-sau-tu mở y hệt, chỉ khác địa chỉ + filler.
 - **Vì sao:** cụm rủi ro scaled-content LỚN NHẤT ("nearly identical content").
@@ -86,6 +91,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P0-3 · description == summary + body in lại verbatim câu lead** — effort M (guard) + L (viết lại)
+- **TRẠNG THÁI: ✅ guard template ship 2026-07-06 (`0c1a5ba`)** — bỏ paragraph description đầu nếu trùng summary (dia-diem/[id].vue). ⏳ CÒN MỞ: viết lại prose gốc cho nhóm A ~pure-duplicate.
 - **Vấn đề:** 113 entity description trùng khít summary; nhiều trang detail in câu lead 2 lần (người đọc thấy cùng câu ở hero + body).
 - **Bằng chứng:** dia-diem/[id].vue render summary làm `.lead` (dòng ~102) rồi description ngay dưới (~110/115). Ví dụ: quan-meo-u-kitchen, benh-vien-da-khoa-minh-duc-ben-tre hiện câu 2 lần. Nhóm khác (bao-tang-ben-tre) chỉ lặp câu-lead ở đầu body rồi có prose thật.
 - **CÁCH SỬA (2 nhóm):**
@@ -97,6 +103,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P0-4 · Filler "miền Tây" chung chung trên ≥6 template trang tĩnh** — effort M
+- **TRẠNG THÁI: ⏳ một phần** — vài trang đã đổi qua declutter + P1-6 (gioi-thieu, cong-dong, index OCOP/spread, su-kien); còn ~37 occurrence "miền Tây" trong web-nuxt (đo 2026-07-07: theo-mua, luu-tru, du-lich, pageManifest.ts, llms.txt...).
 - **Vấn đề:** filler ĐBSCL làm giọng mặc định trên nhiều trang, không phải một chỗ (35 occurrence / 11 file — verified).
 - **Bằng chứng:** index.vue:380 "những ngày chậm rãi rất Nam Bộ"; du-lich.vue:310/313 "sông nước Nam Bộ"/"chỉ có ở miền Tây"; luu-tru.vue:12; theo-mua.vue:327; su-kien.vue:136 "Sự kiện tại miền Tây"; utils/pageManifest.ts:54; public/llms.txt:7.
 - **Vì sao:** test "đổi tên tỉnh vẫn đúng" fail; DEFAULT dùng lại trên ≥6 template = near-duplicate voice → khớp scaled-content + "summarizing without adding value".
@@ -105,6 +112,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P0-5 · Không có byline/tác giả trên bất kỳ trang entity nào — fail câu "Who"** — effort M
+- **TRẠNG THÁI: ✅ ship 2026-07-06 (`851d8a0`)** — byline "Ban biên tập vinhlong360" (cấp tổ chức, không tên cá nhân — đúng ĐIỀU KIỆN DỪNG §4) + link "phương pháp biên tập" (/gioi-thieu#ban-bien-tap) trên mọi trang entity; phân loại trung thực theo `verifiedAt` thật.
 - **Vấn đề:** 0/1.730 entity có author/verified_by. Trust card chỉ có Nguồn + Cập nhật.
 - **Bằng chứng:** dia-diem/[id].vue grep 'author|byline|tác giả' chỉ trả 1 dòng (image credit, ~647). Live 5 trang: Author = None.
 - **Vì sao:** Google hỏi thẳng "Do pages carry a byline... lead to further information about the author?". Thiếu hoàn toàn trên 1.730 trang template = tín hiệu "mass-produced, individual pages don't get care" + thiếu trụ Trust.
@@ -117,6 +125,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P0-6 · Ngày "Cập nhật" đồng loạt + freshness "fresh" giả** — effort S
+- **TRẠNG THÁI: ✅ ship 2026-07-06 (`4f94078`)** — bỏ fallback `verifiedAt=updatedAt` (database.py); freshness chỉ tính từ ngày kiểm-chứng-thật (hiện 0 entity có → "Chưa rõ", không badge giả).
 - **Vấn đề:** trust card hiện "Cập nhật 5/7/2026" đồng loạt (= ngày build); `source_freshness.updated_at` derive từ `entity.updatedAt` (public_api.py) = timestamp import hàng loạt, không phải kiểm chứng người.
 - **Vì sao:** Google cảnh báo "changing the date... to make them seem fresh when content has not substantially changed".
 - **CÁCH SỬA:**
@@ -129,6 +138,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P0-7 · Trust card luôn render dù rỗng — quảng cáo sự thiếu tin cậy** — effort S
+- **TRẠNG THÁI: ✅ ship 2026-07-06 (`851d8a0`)** — `trustVisible = computed(() => !!trustSourceUrl.value)` đúng như đề xuất.
 - **Vấn đề:** `trustVisible = !!entity` → card LUÔN hiện; khi rỗng show "Chưa có nguồn công khai" / "Chưa rõ" ngay trên trang.
 - **Bằng chứng:** dia-diem/[id].vue:828, fallback dòng 806/808/826.
 - **CÁCH SỬA:** gate CHỈ theo nguồn thật: `const trustVisible = computed(() => !!trustSourceUrl.value)` (KHÔNG key vào `source_freshness.updated_at` vì luôn truthy → gate vô hiệu). Ẩn card trên subset không-nguồn, giữ trên ~58%+ có nguồn. Tuỳ chọn: làm mềm copy empty-state. **KHÔNG block chờ chiến dịch fill-source; KHÔNG blanket-gán cổng tỉnh chung cho entity chưa từng lấy nguồn ở đó** (misleading-attribution tệ hơn card vắng). Scope quyết định fill/noindex theo PROD data thật, không theo snapshot data.json cũ.
@@ -157,6 +167,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P1-3 · Fallback JSON-LD là dead code (rich-result fragile)** — effort S
+- **TRẠNG THÁI: ✅ ship 2026-07-06 (`2786aed`)** — theo Hướng B: backend-first + fallback khi backend rỗng (dia-diem/[id].vue), kèm cập nhật test có giải trình.
 - **Vấn đề:** `fallbackJsonLdScripts` (dia-diem/[id].vue:949-1104) định nghĩa đầy đủ nhưng `jsonLdScripts` (1116-1118) chỉ `return backendJsonLdScripts.value`. Backend call `.catch(() => null)` → nếu /seo/jsonld fail → mất BreadcrumbList + entity schema + FAQ, chỉ còn WebSite toàn cục.
 - **CÁCH SỬA (chọn 1, KÈM cập nhật test smoke.test.ts:358 có giải trình):**
   - **Hướng A (khuyến nghị):** XÓA dead code fallback; làm cứng backend — khi cache miss cho entity_id thì đọc live `db.get_entity` thay vì trả 404; đảm bảo endpoint không bao giờ trả rỗng cho entity public.
@@ -165,6 +176,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P1-4 · lastmod đồng nhất + changefreq='weekly' hardcoded** — effort M
+- **TRẠNG THÁI: ✅ ship 2026-07-06 (`483a5a2`)** — changefreq map theo type (DETAIL_CHANGEFREQ) + bỏ `lastmod=updatedAt` trên entity (lastmod=None).
 - **Bằng chứng:** seo.py:1180 hardcode `changefreq="weekly"`; `<lastmod>2026-06-28</lastmod>` × 1.730.
 - **CÁCH SỬA:**
   1. **NGAY:** map changefreq theo type. Entity tĩnh (history/nature/attraction/person/craft_village/dish/product) → 'monthly'/'yearly'; chỉ 'event' → cadence cao. Sửa 1 dòng.
@@ -175,6 +187,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P1-5 · 18 ward rỗng + summary ~24 từ vẫn index — thin doorway** — effort S
+- **TRẠNG THÁI: ✅ ship 2026-07-06 (`483a5a2`)** — robots `noindex,follow` cho ward mỏng trong xa-phuong/[id].vue (totalContent ≤1 VÀ summary <60 từ) + gate vòng place trong sitemap.
 - **Bằng chứng:** xa-phuong/[id].vue chỉ render `data.place.summary` (dòng 58) + map + grid; empty-state "Trang đang được xây dựng" (101-107) mà KHÔNG noindex; seo.py:1157-1166 phát tất cả 125 place không gate. Median ward summary 24 từ; 18/125 có 0 con; 33/125 ≤1 con.
 - **CÁCH SỬA (idiomatic — repo đã có tiền lệ noindex,follow ở tim-kiem/tai-khoan/nguoi-dung):**
   1. xa-phuong/[id].vue: `robots: () => (totalContent.value <= 1 && wordCount(summary) < 60) ? 'noindex,follow' : undefined` (dùng `totalContent` computed sẵn dòng 207-210, KHÔNG "all children").
@@ -185,6 +198,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P1-6 · Positioning: hero/eyebrow đóng khung ĐBSCL/3-tỉnh thay vì Vĩnh Long** — effort S/M
+- **TRẠNG THÁI: ⏳ một phần (xem trạng thái từng dòng ở bảng §5)** — gioi-thieu + cong-dong + index (OCOP/spread) + su-kien đã đổi (2026-07-06/07); du-lich.vue hero "Ba tỉnh, một nhịp sông" + eyebrow "ĐỒNG BẰNG SÔNG CỬU LONG" còn nguyên (verify 2026-07-07).
 - **Bằng chứng:** gioi-thieu.vue:10 "Miền Tây không thiếu chỗ để đi"; du-lich.vue:12 "Ba tỉnh, một nhịp sông" + eyebrow "ĐỒNG BẰNG SÔNG CỬU LONG"; cong-dong.vue:9 "SỔ TAY MIỀN TÂY" + "NGƯỜI MIỀN TÂY"; dia-diem/index.vue:86 "điểm đến miền Tây".
 - **CÁCH SỬA (theo NGỮ CẢNH, KHÔNG find-replace mù):**
   - Nhãn thương hiệu (title/H2/eyebrow/og) → "Vĩnh Long mới" + đưa Vĩnh Long lên chủ ngữ. du-lich.vue:12 → "Vĩnh Long mới: từ gạch gốm Mang Thít tới chùa Khmer Trà Vinh." eyebrow: bỏ "ĐBSCL ·", giữ "VĨNH LONG · BẾN TRE · TRÀ VINH".
@@ -195,6 +209,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P1-7 · Design: StorySpread stack 3 AI-slop tell + tái dùng 1 ảnh sông chung** — effort M
+- **TRẠNG THÁI: ✅ ship 2026-07-06 (`75ac7fa` + `9752ff2`)** — StorySpread v2 + ảnh AI-gen đặc thù đặt tên theo địa danh (`cu-lao-an-binh.webp`), hết reuse `song-nuoc.webp`.
 - **Bằng chứng:** StorySpread.vue:14-22 centered copy + serif-italic accent 1 từ (131-136) + `/img/spread/song-nuoc.webp` dùng 2 lần (index.vue:214, 311); subtitle "miền phù sa Cửu Long".
 - **CÁCH SỬA:**
   1. Layout: bỏ centered card → left-align trên grid bất đối xứng, title serif lớn overlap mép ảnh (z-index). Bỏ gimmick italic-1-từ, thay bằng tương phản scale/weight.
@@ -205,11 +220,12 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 ---
 
 **P1-8 · Design: ảnh AI ship với alt=tên-entity, không nhãn AI** — effort M
+- **TRẠNG THÁI: ⏳ mở** (alt/caption/nhãn AI chưa làm; riêng ý "thay ảnh thật/UGC" ở bước 3 đã bị chốt ảnh AI-only override — xem ghi chú tại chỗ).
 - **Bằng chứng:** EntityCard.vue:5-6 + dia-diem/[id].vue:24-25 `:alt="entity.name"`; entity có ảnh AI → KHÔNG có disclosure (trong khi no-photo CÓ nhãn honesty dòng 77).
 - **CÁCH SỬA (khung = trung thực + E-E-A-T + accessibility, KHÔNG "tránh phạt Google"):**
   1. Alt mô tả cảnh cụ thể-địa-phương (VD "Cù lao An Bình nhìn từ bến sông, hàng dừa nước và ghe chở trái cây") — trung thực, KHÔNG nhồi từ khoá, KHÔNG ngụ ý cảnh-thật-đã-xác-minh.
   2. Caption/credit AI trên cover: "Ảnh dựng bằng AI theo mô tả — minh hoạ, chưa phải ảnh chụp tại chỗ". Thêm nguồn `'ai_generated'` vào image_credits (types/index.ts:94), `imageCredit` render nhãn khi nguồn=AI.
-  3. **TUYỆT ĐỐI KHÔNG giả EXIF/credit/tác giả.** Ưu tiên thay ảnh thật/UGC cho flagship.
+  3. **TUYỆT ĐỐI KHÔNG giả EXIF/credit/tác giả.** ~~Ưu tiên thay ảnh thật/UGC cho flagship~~ — **BỎ (override 2026-07-07, chốt ảnh AI-only):** flagship vẫn dùng ảnh AI-gen kèm nhãn minh hoạ trung thực.
 
 ---
 
@@ -222,8 +238,8 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 - **[technical-seo]** Schema Product: bỏ `offers.availability:InStock` (model chỉ-giới-thiệu); Event free dùng `isAccessibleForFree:true` thay Offer price 0. **KHÔNG khai giá không có giao dịch thật** (structured-data spam).
 - **[eeat]** Bổ sung ≥2-3 chi tiết first-hand/entity index (giá+thời điểm ghi nhận, đỗ xe, giờ đông/vắng, tên dân gian dễ đi lố) + ≥1 nhược điểm trung thực. Nhân rộng công thức tép khô Mỹ Long.
 - **[design]** Grain overlay áp cho placeholder nhưng KHÔNG cho ảnh AI thật → thêm grain/duotone nhẹ lên ảnh AI (giữ CWV nhẹ, tiled data-URI).
-- **[design]** Emoji làm functional icon → thay bằng line-icon set khớp giọng terracotta/serif (repo đã có inline SVG); emoji chỉ giữ chỗ trang trí thưa.
-- **[design]** Gradient placeholder 96.5% → tăng hue jitter/2-3 archetype/category; gate flagship sang ảnh AI/UGC trước. Coi photo coverage là metric visual-quality chính.
+- **[design]** ✅ *ship 2026-07-06 (`33e125d`/`ee23983`/`7b83948`/`cc26b1e` — IconLine.vue ~37 icon, 3 đợt)* — Emoji làm functional icon → thay bằng line-icon set khớp giọng terracotta/serif (repo đã có inline SVG); emoji chỉ giữ chỗ trang trí thưa.
+- **[design]** Gradient placeholder 96.5% → tăng hue jitter/2-3 archetype/category; gate flagship sang ảnh AI-gen trước *(bỏ "UGC" — chốt ảnh AI-only)*. Coi photo coverage là metric visual-quality chính.
 
 ---
 
@@ -274,16 +290,16 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 
 **Nguyên tắc:** Vĩnh Long (mới) là THƯƠNG HIỆU/chủ ngữ; Bến Tre + Trà Vinh là PHẦN của Vĩnh Long mới, không phải "3 tỉnh ngang hàng" hay "một góc ĐBSCL".
 
-| Chỗ (path:line) | Hiện tại | Diễn đạt lại |
-|---|---|---|
-| gioi-thieu.vue:10 | "Miền Tây không thiếu chỗ để đi..." | "Từ lò gốm đỏ ven sông Cổ Chiên tới rặng dừa cù lao — Vĩnh Long mới có thứ đáng ghé ở từng khúc quanh. Việc của tụi mình là chỉ cho bạn khúc nào, vì sao." *(KHÔNG lặp bộ ba tỉnh đã có ở province-band dưới)* |
-| du-lich.vue:12 | "Ba tỉnh, một nhịp sông." | "Vĩnh Long mới: từ gạch gốm Mang Thít tới chùa Khmer Trà Vinh." |
-| du-lich.vue:10 eyebrow | "ĐỒNG BẰNG SÔNG CỬU LONG · VĨNH LONG—BẾN TRE—TRÀ VINH" | bỏ "ĐBSCL ·", giữ "VĨNH LONG · BẾN TRE · TRÀ VINH" |
-| cong-dong.vue:9,17 | "SỔ TAY MIỀN TÂY", "NGƯỜI MIỀN TÂY" | "SỔ TAY VĨNH LONG", "NGƯỜI VĨNH LONG" (đã trong working tree) |
-| dia-diem/index.vue:86 | "điểm đến miền Tây" | "điểm đến Vĩnh Long mới" |
-| index.vue:387 (OCOP title) | "Mang cả miền Tây về làm quà" | "Dừa sáp Cầu Kè, kẹo dừa Bến Tre — gói quà xứ này" |
-| index.vue:398 (SPREAD subtitle) | "một miền phù sa Cửu Long, trái ngọt bốn mùa và những phiên chợ nổi" | "Nơi sông Cổ Chiên tách nhánh ôm 4 cù lao An Bình — gốm đỏ Mang Thít, bưởi Năm Roi, chợ nổi Trà Ôn họp lúc tinh mơ." *(đã verify: Trà Ôn thuộc VL; KHÔNG gán Cái Bè)* |
-| su-kien.vue:136 | "Sự kiện tại miền Tây" | "Sự kiện ở Vĩnh Long, Bến Tre, Trà Vinh" |
+| Chỗ (path:line) | Hiện tại | Diễn đạt lại | Trạng thái (2026-07-07) |
+|---|---|---|---|
+| gioi-thieu.vue:10 | "Miền Tây không thiếu chỗ để đi..." | "Từ lò gốm đỏ ven sông Cổ Chiên tới rặng dừa cù lao — Vĩnh Long mới có thứ đáng ghé ở từng khúc quanh. Việc của tụi mình là chỉ cho bạn khúc nào, vì sao." *(KHÔNG lặp bộ ba tỉnh đã có ở province-band dưới)* | ✅ đã đổi 2026-07-06 thành "Vĩnh Long không thiếu chỗ để đi. Cái thiếu là người kể..." — bản ship khác đề xuất, GIỮ bản ship, đừng đè |
+| du-lich.vue:12 | "Ba tỉnh, một nhịp sông." | "Vĩnh Long mới: từ gạch gốm Mang Thít tới chùa Khmer Trà Vinh." | ⏳ còn nguyên |
+| du-lich.vue:10 eyebrow | "ĐỒNG BẰNG SÔNG CỬU LONG · VĨNH LONG—BẾN TRE—TRÀ VINH" | bỏ "ĐBSCL ·", giữ "VĨNH LONG · BẾN TRE · TRÀ VINH" | ⏳ còn nguyên |
+| cong-dong.vue:9,17 | "SỔ TAY MIỀN TÂY", "NGƯỜI MIỀN TÂY" | "SỔ TAY VĨNH LONG", "NGƯỜI VĨNH LONG" (đã trong working tree) | ✅ đã ship |
+| dia-diem/index.vue:86 | "điểm đến miền Tây" | "điểm đến Vĩnh Long mới" | ✅ đã đổi (còn "di tích miền Tây" trong ogDescription :302) |
+| index.vue:387 (OCOP title) | "Mang cả miền Tây về làm quà" | "Dừa sáp Cầu Kè, kẹo dừa Bến Tre — gói quà xứ này" | ✅ đã đổi |
+| index.vue:398 (SPREAD subtitle) | "một miền phù sa Cửu Long, trái ngọt bốn mùa và những phiên chợ nổi" | "Nơi sông Cổ Chiên tách nhánh ôm 4 cù lao An Bình — gốm đỏ Mang Thít, bưởi Năm Roi, chợ nổi Trà Ôn họp lúc tinh mơ." *(đã verify: Trà Ôn thuộc VL; KHÔNG gán Cái Bè)* | ✅ đã đổi (StorySpread v2) |
+| su-kien.vue:136 | "Sự kiện tại miền Tây" | "Sự kiện ở Vĩnh Long, Bến Tre, Trà Vinh" | ✅ đã đổi |
 
 **Từ khoá bản địa ưu tiên (thay "miền Tây"):** sông Cổ Chiên / Hàm Luông / Măng Thít, gốm đỏ Mang Thít, bánh tráng Mỹ Lồng, quýt/dừa sáp Cầu Kè, bưởi Năm Roi Bình Minh, cù lao An Bình / Bình Hòa Phước, phà Đình Khao, bún nước lèo (Khmer), chợ nổi Trà Ôn.
 
@@ -300,7 +316,7 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 | **Nguồn (citation)** | Trust (quan trọng nhất) | trust card + JSON-LD `citation` | trích đoạn+link §B6; ưu tiên history/di tích/OCOP |
 | **Nhãn AI (How)** | "Is AI-generation self-evident?" | caption ảnh AI; khối AITravelTips/SmartRecommendations | "Gợi ý tạo bằng AI, chưa kiểm chứng tại chỗ" |
 | **First-hand (Experience)** | "first-hand... visiting a place" | body entity | ≥2-3 chi tiết chỉ-người-đến-mới-biết + ≥1 nhược điểm |
-| **Ảnh thật** | bằng chứng Experience mạnh nhất | hero/card flagship | caption cụ thể; KHÔNG giả EXIF |
+| **Ảnh thật** | bằng chứng Experience mạnh nhất | hero/card flagship | **OVERRIDE 2026-07-07: KHÔNG thực thi — chốt ảnh AI-only.** Experience chứng minh bằng chi tiết first-hand dạng TEXT; caption cụ thể; KHÔNG giả EXIF |
 | **Trang "Về trang này" / phương pháp** | Who/How/Why | /gioi-thieu hoặc /tac-gia | mô tả quy trình biên tập THẬT |
 | **BreadcrumbList/TouristAttraction/FAQPage JSON-LD** | rich-result + AI-citation | per-entity, khớp UI on-page | chỉ markup field thật hiển thị |
 
@@ -317,10 +333,10 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 **Khung đúng:** ảnh KHÔNG phải tín hiệu-phạt độc lập theo policy Google — nó là MỘT cách thêm Experience. Rủi ro cốt lõi vẫn là ~1.600 trang thin. Vì vậy thứ tự:
 
 1. **TRƯỚC HẾT nâng depth per-page** cho entity flagship (đòn bẩy chính).
-2. **Ảnh AI-gen** (CHỈ cx/gpt-5.5-image §feedback — KHÔNG stock/Wikimedia/UGC-làm-nguồn-crawl) cho entity chủ lực + **caption trung thực + nhãn "minh hoạ AI"**. Đặt tên file theo địa danh cụ thể.
-3. **Mở đường UGC ảnh người dùng** — nguồn ảnh gốc hợp pháp mạnh nhất site được re-host (§B6). Lưu ý §NĐ147: xác thực SĐT trước khi cho đăng.
-4. **Ảnh thật do chủ dự án/CTV chụp** cho ~20-50 flagship — khác biệt lớn nhất, hợp pháp, chống-slop tự nhiên (bóng đổ thật, khiếm khuyết đời thực).
-5. **Entity chưa flagship + không ảnh + desc ngắn** → noindex tạm.
+2. **Ảnh AI-gen** (CHỈ cx/gpt-5.5-image qua `scripts/gen_image.py` — KHÔNG stock/Wikimedia/UGC dưới MỌI hình thức, theo chốt gốc của chủ dự án) cho entity chủ lực + **caption trung thực + nhãn "minh hoạ AI"**. Đặt tên file theo địa danh cụ thể.
+3. ~~**Mở đường UGC ảnh người dùng**~~ — **BỎ (override 2026-07-07):** chốt ảnh AI-only của chủ dự án cấm ảnh UGC phạm trù, không chỉ "UGC-làm-nguồn-crawl". Vẫn GIỮ phần hợp lệ: thu chi tiết first-hand từ cộng đồng bằng **TEXT** (giá thật, chỗ gửi xe, mùa nên đi) — Experience không cần ảnh.
+4. ~~**Ảnh thật do chủ dự án/CTV chụp** cho ~20-50 flagship~~ — **BỎ (override 2026-07-07):** cùng chốt ảnh AI-only. Nếu chủ dự án muốn giữ lập luận E-E-A-T "ảnh thật = Experience mạnh nhất" thì phải re-mở chốt ảnh một cách tường minh — cho tới lúc đó, flagship dùng ảnh AI-gen + nhãn minh hoạ.
+5. **Entity chưa flagship + không ảnh + desc ngắn** → noindex tạm. *(✅ đã đạt qua cổng P0-1 + noindex toàn site.)*
 
 **Ưu tiên đâu trước:** entity top-traffic/OCOP (dừa sáp Cầu Kè, gốm Mang Thít, bưởi Năm Roi, chùa Khmer, cù lao An Bình) → 1 ảnh signature/entity. GIỮ nhãn honesty "chưa có ảnh thật" (dòng 77) cho phần còn lại — đó là tín hiệu Trust tốt.
 
@@ -372,4 +388,4 @@ Số lượng trang KHÔNG phải điều kiện vi phạm. **TỶ LỆ trang gi
 - ❌ **llms.txt / nội dung riêng cho AI bot** — GEO "vẫn là SEO" (Google 2026); không cần.
 - ❌ **Blanket-gán cổng tỉnh chung** cho entity chưa từng lấy nguồn ở đó — misleading-attribution tệ hơn card trust vắng.
 
-**Files load-bearing đã verify:** `C:\Code\vinhlong360\agent\seo.py` (_is_public:1043, vòng entity:1169-1183 hardcode changefreq weekly:1180, vòng place không gate:1157-1166), `C:\Code\vinhlong360\web-nuxt\pages\dia-diem\[id].vue` (no robots meta; fallbackJsonLd dead code:949-1104; trustVisible:828), `C:\Code\vinhlong360\web-nuxt\pages\xa-phuong\[id].vue` (summary-only:58, empty-state không noindex:101-107), `C:\Code\vinhlong360\web-nuxt\nuxt.config.ts:60` (global index,follow). "miền Tây" = 35 occurrence / 11 file (verified).
+**Files load-bearing đã verify** *(anchor path:line đo 2026-07-06 TRƯỚC đợt ship P0/P1 + declutter đợt 1-3 — nhiều anchor/claim đã trôi: seo.py nay ĐÃ có gate `is_index_worthy` + changefreq theo type; dia-diem/[id].vue nay đã có byline, trustVisible gate theo nguồn, JSON-LD fallback — nhưng VẪN CHƯA có robots per-page; grep lại trước khi sửa tiếp)*: `C:\Code\vinhlong360\agent\seo.py` (_is_public:1043, vòng entity:1169-1183 hardcode changefreq weekly:1180, vòng place không gate:1157-1166), `C:\Code\vinhlong360\web-nuxt\pages\dia-diem\[id].vue` (no robots meta; fallbackJsonLd dead code:949-1104; trustVisible:828), `C:\Code\vinhlong360\web-nuxt\pages\xa-phuong\[id].vue` (summary-only:58, empty-state không noindex:101-107), `C:\Code\vinhlong360\web-nuxt\nuxt.config.ts:60` (global index,follow). "miền Tây" = 35 occurrence / 11 file (verified).

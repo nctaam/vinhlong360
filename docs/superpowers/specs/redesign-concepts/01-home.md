@@ -1,5 +1,7 @@
 # index.vue (Trang chủ) — "Sổ tay một chuyến đi chưa bắt đầu"
 
+> **STATUS (2026-07-07): active — đã truth-sync.** Concept Ý TƯỞNG viết TRƯỚC declutter — spine dưới đây tham chiếu các khối đã bị gỡ (event-hero, EntityFeature #2 OCOP, section "Hỏi trợ lý AI"...); đọc khối ⚠️ CẢNH BÁO GROUNDING đầu `00-narrative-system.md` và re-ground trên `index.vue` hiện tại trước khi thực thi; declutter thắng khi xung đột.
+
 > Grade hiện tại: 8.5/10. Chẩn đoán: premium ở phần trên (hero, EntityFeature, StorySpread đã cinematic-editorial), nhưng từ giữa trang trở xuống rơi về "lưới catalog phẳng" — `cat-grid`, `dx-item` decision list, `scroll-row` các card giống hệt nhau lặp lại 6 lần liên tiếp không có nhịp điệu biên tập. Trang chủ hiện đọc như MỘT trang landing được lắp từ 12 block độc lập, không như MỘT câu chuyện có mở-thân-kết. Mục tiêu của bản concept này: biến index.vue thành **một đường kể chuyện liên tục từ hero tới footer**, nơi mỗi block là một "trang" trong cuốn sổ tay hành trình, không phải một "widget" trên dashboard.
 
 ---

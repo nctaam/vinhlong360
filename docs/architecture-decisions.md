@@ -9,7 +9,7 @@ Status: Accepted — reflects decisions through 2026-07-07
 
 1. The **only** frontend is `web-nuxt` (Nuxt 4 SSR).
    - `web-astro` has been removed (commit 949c843).
-   - `web/` retains only `data.json` (tracked seed), `data.js` (legacy export), `admin*.html` (admin UI), and `media/`. These are candidates for removal in GĐ7.
+   - `web/` retains only `data.json` (tracked export/backup + prerender seed — **KEEP**, see decision 4), `data.js` (legacy export), and an empty `media/`. The `admin*.html` admin UI was removed in GĐ6.1 (replaced by `web-nuxt/pages/admin/`). Only `data.js` and `media/` remain removal candidates — `data.json` is NOT.
 
 2. The primary backend is the FastAPI application in `agent`.
    - New public API behavior should be implemented behind explicit routers/services.
@@ -88,10 +88,23 @@ Redis
     - `admin` keeps the full standard scope set; `superadmin` and admin-key receive wildcard access.
     - New AdminCP endpoints must map to one of: `content.editor`, `moderation.manager`, `ops.deploy`, `settings.admin`, `security.admin`, or be deliberately dashboard/read-only.
 
+17. **Images: AI-generated only** (owner decision, 2026-06-25).
+    - All site imagery is generated via `scripts/gen_image.py` (cx/gpt-5.5-image endpoint, `IMAGE_API_KEY`).
+    - No Wikimedia, no stock (Pexels/Unsplash), no UGC photos, no crawled gov/news images. Supersedes all earlier "licensed sources" guidance (ROADMAP 8.2 SUPERSEDED).
+    - AI images must not pose as real photos: keep the illustration label (`dc-nophoto-note`) until an entity has a real photo.
+
+18. **Positioning: Vĩnh-Long-specific content + deliberate noindex** (owner decision, 2026-07-06).
+    - The site is about the merged Vĩnh Long province — not generic "miền Tây/ĐBSCL" filler. Quality via local specificity (proper names, numbers, seasons, first-hand detail) + E-E-A-T, never detector evasion.
+    - Site-wide noindex is intentionally ON (`NUXT_PUBLIC_SITE_NOINDEX`); it opens only on the owner's call.
+
+19. **Work-source governance** (2026-07-07).
+    - Priority of work sources: (1) direct owner instruction in-session → (2) approved spec/plan in `docs/superpowers/` → (3) `docs/ROADMAP.md` backlog.
+    - ROADMAP is a long-term tracker + backlog, no longer a mandatory sequential task list. Docs under `docs/archive/` are history — never execute them.
+
 ## Non-goals (updated)
 
 - ~~Rewrite the whole backend.~~ Stable; incremental improvement only.
-- ~~Delete the static frontend immediately.~~ `web-astro` removed; `web/` legacy cleanup in GĐ7.
+- ~~Delete the static frontend immediately.~~ `web-astro` and `web/` legacy JS/HTML/admin pages removed; only the `data.json` export + `data.js` remain.
 - ~~Delete SQLite immediately.~~ SQLite kept as dev cache; UGC is Postgres-only.
 - Deploy to a public production environment without an explicit release step.
 - Rotate secrets automatically from code.

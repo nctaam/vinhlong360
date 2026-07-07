@@ -1,4 +1,7 @@
 # Nghiên cứu toàn diện: Apple HIG + Google Material Design 3 + Figma
+
+> **STATUS (2026-07-07): active — đã truth-sync.** Tham chiếu HIG/M3/Figma còn giá trị; riêng mọi khuyến nghị nạp Google Fonts (Be Vietnam Pro, preconnect fonts.googleapis) và Material Symbols trong doc này bị OVERRIDE — stack đã ship là font self-host + IconLine.vue, xem ghi chú ⚠️ tại D10.
+
 > Ngày: 2026-06-27 | Nguồn: developer.apple.com/design, design.google, help.figma.com
 > Mục đích: Tham chiếu thiết kế cho vinhlong360.vn (web-first, CSS thuần, solo dev)
 
@@ -1367,6 +1370,8 @@ Generally available 2025. Connects Figma to AI tools (Claude Code, Cursor, VS Co
 ```
 
 ## D10. Key Recommendations for vinhlong360
+
+> ⚠️ **OVERRIDE (2026-07-07): #1 và #3 ngược stack đã ship — KHÔNG làm theo.** Typography prod = Fraunces serif SELF-HOST (`web-nuxt/assets/css/fonts.css`, @font-face subset vi/latin) + system sans stack; icon = `web-nuxt/components/IconLine.vue` (~37 line-icon tự vẽ, thay emoji). Repo có 0 tham chiếu fonts.googleapis — rulebook R2.6 còn grep chuỗi này làm red-flag. Không thêm dependency font/icon bên thứ ba.
 
 1. **Font:** Be Vietnam Pro (Google Fonts, Vietnamese-optimized) + variable font subsetting
 2. **Font subsetting:** giảm 70%+ file size. `font-display: swap` cho CWV

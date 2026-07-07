@@ -2,12 +2,6 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "web",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "5173", "--directory", "web"],
-      "port": 5173
-    },
-    {
       "name": "agent",
       "runtimeExecutable": "python",
       "runtimeArgs": ["agent/server.py"],
@@ -18,12 +12,6 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["agent/bot_gateway.py"],
       "port": 8361
-    },
-    {
-      "name": "astro",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "web-astro"],
-      "port": 4360
     },
     {
       "name": "nuxt",

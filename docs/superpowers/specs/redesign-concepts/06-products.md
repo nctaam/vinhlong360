@@ -1,5 +1,7 @@
 # San-pham.vue (Đặc sản) + Ocop.vue — Deep Redesign Concept
 
+> **STATUS (2026-07-07): active — đã truth-sync.** Concept Ý TƯỞNG viết TRƯỚC declutter — các khối ghi "kept" (CatalogSpotlight, region quick-picks) đã bị gỡ khỏi cả 2 trang; đọc khối ⚠️ CẢNH BÁO GROUNDING đầu `00-narrative-system.md` và re-ground trên `san-pham.vue`/`ocop.vue` hiện tại trước khi thực thi; declutter thắng khi xung đột.
+
 *Unit 06 — Products + OCOP · prior grades: san-pham.vue 7.0, ocop.vue 7.5*
 
 > Grounding note: both pages currently share one hero skeleton (`.catalog-hero`), one grid unit (`EntityCard`), one spotlight (`CatalogSpotlight`), one interstitial (`CatalogInterstitial`) and near-identical `<script>` logic (filters, sort, pagination). CE (cinematic-editorial) currently exists only as a serif `<h1>` inside `.catalog-hero` — everything below the fold is still catalog-tier. This concept keeps the shared plumbing (DO NOT fork the filter/sort/pagination logic) but gives each page its own **CE-grade narrative skin**, and — critically — resolves the "twin motif collision": san-pham.vue and ocop.vue currently look like the same page with a different H1, and product/dish already share `cat-product`/`cat-dish` visual language in `EntityCard`. The fix is structural (see §1, §3, §11), not cosmetic.

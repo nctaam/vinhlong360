@@ -68,9 +68,9 @@ curl -v -H "Origin: https://evil.com" https://vinhlong360.vn/api/v1/entities
 
 ### 2.3 HTTPS enforcement — HIGH — ✅ implemented
 
-**Implemented:** HSTS header (`agent/auth_middleware.py:413`) + `Secure`/`HttpOnly`/`SameSite=Lax` cookies in production (`auth_middleware.py:1062-1078`), covered by `test_session_be.py`.
+**Implemented:** HSTS header (`agent/auth_middleware.py:413`) + `Secure`/`HttpOnly`/`SameSite=Lax` cookies in production (`auth_middleware.py:1062-1078`), covered by `test_session_be.py`. Shipped value is `max-age=31536000; includeSubDomains; preload` — differs from the 63072000 suggested below; both are acceptable, do NOT "re-fix".
 
-**Fix (agent/server.py):**
+**Fix (agent/server.py — original prescription, kept for history):**
 - Add HSTS middleware: `Strict-Transport-Security: max-age=63072000; includeSubDomains`
 - Set `Secure` flag on all session cookies
 - Set `SameSite=Lax` on cookies (prevents CSRF on cross-origin GET)
