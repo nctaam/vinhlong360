@@ -2782,7 +2782,7 @@ async def trigger_backup():
         remaining = int(_BACKUP_COOLDOWN - (now - _last_backup_time))
         raise HTTPException(429, f"Backup đã chạy gần đây. Thử lại sau {remaining} giây.")
     _last_backup_time = now
-    script = Path(__file__).resolve().parent.parent / "scripts" / "backup_data.py"
+    script = Path(__file__).resolve().parent.parent / "scripts" / "backup_data.py"  # noqa: ASYNC240 (dựng path rẻ; I/O thật bọc asyncio.to_thread bên dưới)
     if not script.exists():
         raise HTTPException(500, "Không tìm thấy script backup_data.py")
     def _run():
@@ -4042,7 +4042,7 @@ async def analytics_overview(days: int = Query(0, ge=0, le=365)):
             summary="Search term analytics",
             description="Analyzes search query logs and returns top queries, zero-result queries, and total search count for a given period.")
 async def search_analytics(days: int = Query(7, ge=1, le=90)):
-    search_log = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"
+    search_log = Path(__file__).resolve().parent / "data" / "search_queries.jsonl"  # noqa: ASYNC240 (dựng path rẻ; đọc file bọc asyncio.to_thread)
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     def _read():
         if not search_log.exists():

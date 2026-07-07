@@ -2390,7 +2390,7 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
     import hashlib as _hashlib
     from datetime import datetime as _dt, timezone as _tz
     from middleware import get_client_ip
-    reports_file = _Path(__file__).resolve().parent / "data" / "reports.jsonl"
+    reports_file = _Path(__file__).resolve().parent / "data" / "reports.jsonl"  # noqa: ASYNC240 (dựng path rẻ; ghi file bọc asyncio.to_thread)
     reason = body.reason.strip() if body.reason.strip() in _COMMENT_REPORT_REASONS else "other"
     record = {
         "ts": _dt.now(_tz.utc).isoformat(),

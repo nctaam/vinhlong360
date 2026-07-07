@@ -10,5 +10,6 @@ target-version = "py310"
 exclude = ["web-nuxt", ".nuxt", ".output", "node_modules", ".venv", "venv", "__pycache__"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W"]
+# ASYNC = R20.2 (cấm blocking-sync trong async); 0 vi phạm thật, 4 nit đã noqa.
+select = ["E", "F", "W", "ASYNC"]
 ignore = ["E402", "E701", "E702", "E501", "E741"]

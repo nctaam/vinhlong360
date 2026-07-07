@@ -854,7 +854,7 @@ async def lifespan(app):
     _draining = True
     logger.info("Server shutting down — draining in-flight requests")
     deadline = time.time() + 30
-    while _inflight > 0 and time.time() < deadline:
+    while _inflight > 0 and time.time() < deadline:  # noqa: ASYNC110 (shutdown-drain poll có deadline — Event không phù hợp vì đếm inflight giảm dần)
         await asyncio.sleep(0.5)
     if _inflight > 0:
         logger.warn("Force shutdown with in-flight requests", inflight=_inflight)

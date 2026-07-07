@@ -39,15 +39,19 @@ def find_ruff() -> list[str] | None:
     return None
 
 
-def run_ruff(root: Path, targets: list[str]) -> list[dict]:
-    """Trả list violation (dict ruff json) — [] nếu không target hoặc không có ruff."""
+def run_ruff(root: Path, targets: list[str], select: str | None = None) -> list[dict]:
+    """Trả list violation (dict ruff json) — [] nếu không target hoặc không có ruff.
+
+    select=None → dùng config pyproject.toml; select="ASYNC" → chỉ nhóm đó.
+    """
     if not targets:
         return []
     ruff = find_ruff()
     if not ruff:
         return []
+    extra = ["--select", select] if select else []
     proc = subprocess.run(
-        ruff + ["check", *targets, "--output-format", "json", "--quiet"],
+        ruff + ["check", *targets, *extra, "--output-format", "json", "--quiet"],
         capture_output=True, encoding="utf-8", errors="replace", cwd=str(root),
     )
     out = (proc.stdout or "").strip()
@@ -61,6 +65,7 @@ def run_ruff(root: Path, targets: list[str]) -> list[dict]:
 
 class RuffCheck:
     name, level, rule = "ruff_lint", "hard-ratchet", "R20.1"
+    select: str | None = None  # None = config pyproject.toml
 
     def __init__(self, root: Path | None = None):
         self._root = root
@@ -81,7 +86,7 @@ class RuffCheck:
 
     def run(self, files: list[str] | None = None) -> dict:
         targets = self._targets(files)
-        violations = run_ruff(self.root, targets)
+        violations = run_ruff(self.root, targets, select=self.select)
         out = [{"file": _norm(str(v.get("filename", ""))), "line": (v.get("location") or {}).get("row", 0),
                 "rule": self.rule, "msg": f'{v.get("code")}: {v.get("message", "")[:80]}'}
                for v in violations]
@@ -89,4 +94,11 @@ class RuffCheck:
                 "count": len(out), "violations": out}
 
 
-CHECKS = [RuffCheck()]
+class RuffAsyncCheck(RuffCheck):
+    """R20.2 — blocking-sync trong async (ruff ASYNC). Baseline 0 (đã đạt); ratchet
+    riêng để 1 blocking-async mới KHÔNG bị 'bù trừ' trong tổng R20.1."""
+    name, level, rule = "ruff_async", "hard-ratchet", "R20.2"
+    select = "ASYNC"
+
+
+CHECKS = [RuffCheck(), RuffAsyncCheck()]
