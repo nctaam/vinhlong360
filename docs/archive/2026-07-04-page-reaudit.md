@@ -1,5 +1,9 @@
 # Re-audit đa-chiều toàn bộ trang — Báo cáo (2026-07-04)
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Re-audit lịch sử 04/07. Khuyến nghị mở index trang UGC đã bị vượt bởi noindex toàn-site chủ động + cổng index P0-1.
+
+
 **Cách chạy:** 10 agent, mỗi agent 1 chiều quét toàn bộ 67 trang (`web-nuxt/pages/`), findings có bằng chứng file:line, P0/P1 orchestrator adversarial-verify. Rubric: `docs/superpowers/specs/2026-07-04-page-reevaluation-design.md`.
 
 ## Scorecard (trung bình ≈ **8.6/10**)

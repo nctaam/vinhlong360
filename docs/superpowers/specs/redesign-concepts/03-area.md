@@ -1,5 +1,8 @@
 # Region Guide — `khu-vuc/[area].vue` (Vĩnh Long / Bến Tre / Trà Vinh / Liên vùng)
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md.
+
+
 > Prior grade: **7.5**. Diagnosis: cinematic hero + editorial intro land well, then the page collapses into a repeated `EntityCard` grid — six sections that all look and feel identical (Featured → Type 1 → Type 2 → … → Wards → Full grid). There is no sense of *chapter*, no geography, no texture that differentiates Vĩnh Long from Bến Tre from Trà Vinh below the fold. This concept turns the region page into what it actually is: **a chapter of a book**, with its own dialect, its own map, its own rhythm — while every fix stays inside existing CSS-token/EntityCard/component machinery.
 
 ---

@@ -1,5 +1,8 @@
 # Community feed + post — `cong-dong.vue` (6.5) + `bai-viet/[id].vue` (7.0)
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md. **LƯU Ý RIÊNG:** ví dụ địa danh "chợ nổi Cái Bè" (:78) NGOÀI tỉnh — chợ nổi của tỉnh là Trà Ôn.
+
+
 > Đơn vị: **Cộng đồng** — bảng tin xã hội (Threads-clone hiện tại) + trang bài viết đơn (không gian đọc tốt nhất trong toàn site cho editorial type).
 > Bối cảnh: UGC còn non (ít bài, ít ảnh thật), nhưng đây là nơi NGƯỜI THẬT nói bằng giọng THẬT về miền Tây — thứ mà nội dung biên tập không thể giả được. Đây phải là nơi cảm thấy sống động và đáng tin nhất site, không phải bản sao Threads.
 

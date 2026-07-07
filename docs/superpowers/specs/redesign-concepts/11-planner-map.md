@@ -1,5 +1,8 @@
 # Planner + Map — `tao-lich-trinh.vue` (6.0) + `ban-do.vue` (6.0)
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md.
+
+
 > **Unit thesis in one line:** the map stops being a locator you consult and becomes a **surface you browse the Delta on**; the planner stops being a form with arrow-buttons and becomes **a river journey you physically assemble**, stop by stop, like beads on a string of nước ròng/nước lớn (tide).
 
 Both pages are **interaction-heavy utilities**, the opposite of the hero-driven entity pages. The CE language cannot just decorate them — it has to survive contact with drag handles, filter chips, popups, and live map tiles. The design problem here is: *how does an editorial, sediment-toned platform make a Leaflet/MapLibre canvas and a stateful list-builder feel like the same world as the cinematic hero pages, without breaking usability?* The answer is: **treat chrome (frames, controls, empty states, the route ribbon) as CE, and leave the map/interaction internals fast and legible.**

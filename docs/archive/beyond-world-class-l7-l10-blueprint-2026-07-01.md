@@ -1,5 +1,9 @@
 # Beyond world-class L7-L10 blueprint - vinhlong360 - 2026-07-01
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Blueprint chồng lấn (3/3). Điều kiện dùng AI lỏng hơn §B8 CLAUDE.md — nếu tái sử dụng ý tưởng phải áp lại 3 điều kiện cứng (opt-in + cap/ngày + kill-switch).
+
+
 ## 1. Direction
 
 The next level is not "more pages". The next level is turning vinhlong360 into a local intelligence platform: trusted knowledge, coherent journeys, measurable quality, and operations that can improve the product without guesswork.

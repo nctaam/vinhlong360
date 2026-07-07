@@ -1,5 +1,9 @@
 # Audit hiện trạng hệ thống — 2026-07-02
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Snapshot lịch sử 02/07. Mục "việc chưa làm" (vd tái lập export DB→data.json) đã chuyển vào ROADMAP.
+
+
 > Audit đa-agent (7 auditor song song + kiến trúc sư trưởng tổng hợp + phản biện độ đầy đủ),
 > mọi risk kèm bằng chứng `file:line` hoặc output lệnh. So với baseline audit tháng 6/2026
 > (BE 5.4/10, tổng thể 5.5/10). Người phản biện đánh giá độ tin cậy: **cao**.

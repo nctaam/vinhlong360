@@ -1,3 +1,5 @@
+> **STATUS (2026-07-07): ARCHIVED — Snapshot QA 2026-06-28 nằm sai chỗ (repo root) — archive 2026-07-07. Một phần "release blocker" đã fix từ lâu (vd /metrics đã gate sau X-Admin-Key). KHÔNG dùng làm danh sách việc hiện hành.**
+
 # QA Scorecard - vinhlong360
 
 Audit date: 2026-06-28

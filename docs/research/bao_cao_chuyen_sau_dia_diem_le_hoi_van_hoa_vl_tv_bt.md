@@ -1,5 +1,8 @@
 # Nghiên cứu chuyên sâu địa điểm, lễ hội và văn hóa Vĩnh Long - Trà Vinh - Bến Tre
 
+> **STATUS (2026-07-07): active có giới hạn — corpus văn hoá/du lịch còn nguyên giá trị tư liệu.** File viết THỜI 3 TỈNH RIÊNG (trước sáp nhập 07/2025 + trước định vị mới). KHÔNG dùng từ file này: (1) khung định vị "ĐBSCL/miền Tây/3 tên" — định vị hiện hành là Vĩnh-Long-tỉnh-mới (CLAUDE.md §1.6); (2) đơn vị hành chính huyện/tỉnh cũ — nay 1 tỉnh 2 cấp, 35 phường + 89 xã; (3) khuyến nghị bán tour/vé/combo — vi phạm mô hình CHỈ GIỚI THIỆU (CLAUDE.md §1.4); (4) nguồn ảnh ngoài — ảnh CHỈ AI-gen (§1.5). Đường dẫn "bộ file đầu ra" trong thân bài trỏ repo root là cũ — file thực nằm tại docs/research/.
+
+
 Ngày lập: 17/06/2026  
 Nền dữ liệu: 194 URL Báo Vĩnh Long giai đoạn 2025-2026 đã đọc ở báo cáo trước, cộng thêm đối chiếu nguồn chính thống/tham khảo về điểm đến, di tích, lễ hội.  
 Ghi chú: Nhiều bài năm 2026 dùng không gian hành chính “tỉnh Vĩnh Long” sau sắp xếp, nhưng báo cáo này giữ ba bản sắc địa phương **Vĩnh Long - Trà Vinh - Bến Tre** để phục vụ nghiên cứu du lịch, xây dựng nội dung và thiết kế sản phẩm.

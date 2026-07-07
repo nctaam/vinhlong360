@@ -1,4 +1,7 @@
 # Unit 14 — Profile · Leaderboard · Notifications · Saved
+
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md. **LƯU Ý RIÊNG:** copy "miền Tây" (:10) CẤM dùng.
+
 ### `nguoi-dung/[id].vue` (7.5) · `bang-xep-hang.vue` (6.0) · `thong-bao.vue` (4.5) · `da-luu.vue` (5.5)
 
 > Bốn trang này là **một hệ thống**, không phải bốn trang rời: hồ sơ là *danh tính*, bảng xếp hạng là *vị thế trong cộng đồng*, thông báo là *nhịp đập của mối quan hệ*, đã lưu là *bộ sưu tập hành trình của bạn*. Concept dưới đây thiết kế chúng như một dòng chảy — người dùng bước vào cộng đồng qua hồ sơ, được công nhận qua bảng xếp hạng, được nhắc nhở quay lại qua thông báo, và mang theo hành trình riêng của họ qua mục đã lưu.

@@ -1,5 +1,9 @@
 # Deep long-range 50-phase plan - vinhlong360 - 2026-07-01
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Blueprint 1 trong 3 bản chồng lấn cùng ngày 01/07, không được ROADMAP tham chiếu. Phase 28 chứa luồng ảnh Wikimedia (nay CẤM); Phase 29 nghiệm thu SEO-media vô nghĩa khi noindex toàn site đang bật.
+
+
 ## 1. Muc tieu
 
 Ke hoach nay di sau hon audit tung trang. No cham vao cac lop it thay nhung quyet dinh chat luong production: SSR/hydration, route cache, service worker, API contract, type debt, migration drift, RBAC, audit DB, data provenance, media license, observability, smoke E2E, deploy/rollback va SLO van hanh.

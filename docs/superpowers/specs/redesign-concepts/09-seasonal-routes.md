@@ -1,5 +1,8 @@
 # theo-mua.vue · tuyen-duong.vue · danh-ba.vue — Seasonal · Routes · Directory
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md.
+
+
 *A deep redesign concept for the "when / how / who-do-I-call" trio — the three utility spines that carry a visitor from curiosity to a real trip. Prior grades: theo-mùa 8.5 (has the season-ring, the site's best signature visual), tuyến-đường 7.0, danh-bạ 7.0 (strongest unmet market gap per user research).*
 
 ---

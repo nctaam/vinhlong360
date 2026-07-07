@@ -1,5 +1,8 @@
 # Account + Settings — `tai-khoan.vue` (Trung tâm tài khoản) + `cai-dat.vue` (Cài đặt)
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md.
+
+
 > Prior grade: 5.0 / 5.0. Diagnosis: deep functionally, flattest visually in the whole product — hardcoded off-brand hex fallbacks (`#c0392b`, `#f5f5f5`, `#dc2626`), zero motion beyond a hover-lift on 6 icon tiles, zero editorial voice, and a reward surface (profile completion, "account score," achievements-adjacent copy like "sẵn sàng / đang tốt / cần hoàn thiện") that computes real signal but presents it as a beige progress bar. This is the one place in the product where a real person sees *their own* name, *their own* number of bài viết, *their own* streak — and the design treats it like a SaaS admin panel.
 
 ---

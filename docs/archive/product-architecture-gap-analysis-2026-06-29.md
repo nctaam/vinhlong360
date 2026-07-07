@@ -1,5 +1,9 @@
 # Product Architecture Gap Analysis - vinhlong360
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Gap-analysis 402kb tự lập roadmap 122.5 person-day — không khả thi solo-dev và cạnh tranh nguồn-sự-thật với ROADMAP. G-10/U-10 (UGC photo pipeline) nay bị CẤM theo chốt ảnh AI-only. Nhiều gap đã xử lý qua các đợt 06-07/2026.
+
+
 
 > Date: 2026-06-29 | Role: Senior Product Architect | Scope: travel discovery/community showcase platform, web-only, Vietnamese-only, no booking/payment.
 

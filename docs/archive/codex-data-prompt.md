@@ -1,5 +1,9 @@
 # Codex Data Research Prompt — Forensic Data Verification & Content Truth Audit
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Prompt one-shot thời 3-tỉnh/tiền-migration. Bảng "Place Hierarchy — VẤN ĐỀ NGHIÊM TRỌNG" (dòng ~352-361) gán SAI cho cấu trúc ĐÚNG của tỉnh 2 cấp; danh mục 26 huyện làm chuẩn đối chiếu đã bãi bỏ; snapshot số liệu 2026-06-29 đã lệch. KHÔNG chạy lại nguyên văn.
+
+
 > Copy TOÀN BỘ nội dung bên dưới vào Codex task.
 > **Input:** toàn bộ codebase trên GitHub
 > **Output:** 1 file `docs/data-verification-report.md` — báo cáo xác minh sự thật + chiến lược dữ liệu

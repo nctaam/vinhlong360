@@ -1,5 +1,9 @@
 # Audit tung trang va chuc nang vinhlong360 - 2026-07-01
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Audit lịch sử 01/07. Batch P2 đề xuất pipeline upload ảnh license/UGC — nay bị CẤM (ảnh CHỈ AI-gen).
+
+
 ## 1. Pham vi va cach doc
 
 Audit nay dua tren route inventory, ma nguon Nuxt/FastAPI, cac tai lieu nghien cuu da co va ket qua smoke production gan nhat. Muc tieu khong phai them booking/payment/marketplace, ma lam he thong kham pha dia phuong dang tin, nhanh, logic, de van hanh va de mo rong.

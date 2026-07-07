@@ -1,5 +1,9 @@
 # Codex Design Research Prompt — Deep Study 3 Sources
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Prompt one-shot. Ví dụ GEO/citation dạy theo đơn vị huyện đã bãi bỏ; kiến trúc hub-spoke "trang huyện" không còn.
+
+
 > Copy TOÀN BỘ nội dung bên dưới vào Codex task.
 > **Input:** 3 URLs + toàn bộ codebase trên GitHub
 > **Output:** 1 file `docs/design-rulebook.md` — bộ quy tắc thiết kế CỨNG cho mọi session Claude Desktop

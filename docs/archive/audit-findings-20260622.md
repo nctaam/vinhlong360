@@ -1,5 +1,9 @@
 # Audit findings vinhlong360 — 2026-06-22 (3 lượt quét sâu đa-agent)
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> CẢNH BÁO ĐẶC BIỆT: quy tắc DF-02 (batch-replace "tỉnh Vĩnh Long" trong entity BT/TV) và FIX của ETL-04 là quy tắc ĐẢO NGƯỢC sau sáp nhập tỉnh — CẤM chạy lại; hệ quả của lần chạy cũ (513 text "tỉnh Bến Tre/Trà Vinh" trong data) đang chờ campaign sửa có ngữ cảnh (xem ROADMAP Backlog). ETL-06 khuyến nghị pipeline Wikimedia — script đã xoá + nguồn bị cấm.
+
+
 Tổng verified: 110 (audit-1: 44, audit-2: 66) | crit 3, high 26, med 46, low 35
 
 > Mỗi finding qua scan→verify đối-kháng (model sonnet). GS-02 (88 ward BT/TV → vinh-long) là DƯƠNG-TÍNH-GIẢ (sau sáp nhập đúng). Audit-3 critical .env-leak cũng GIẢ (đã verify: .env gitignore đúng).

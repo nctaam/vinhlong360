@@ -1,5 +1,7 @@
 # Design Rulebook - vinhlong360
 
+> **STATUS (2026-07-07): active — đã truth-sync.** Rules remain in force EXCEPT where marked with an APPROVED EXCEPTION / PROJECT DECISION note (R4.3/R4.4/R4-AP2/R10.12 cinematic hero motion, R6 navigation, R11.12 noindex, R15.2 sentence rhythm) — those reflect owner-approved shipped decisions that override the original audit text.
+
 Audit date: 2026-06-29  
 Scope: Nuxt frontend, API-rendered content, JSON-LD, design tokens, accessibility, performance, Vietnamese travel UX.  
 Rule style: every rule is written for an AI coding assistant to apply automatically before writing code.
@@ -497,18 +499,18 @@ Source: WCAG 2.3.3, A-MOTION, M3-MOTION.
 WHAT: Every nontrivial animation has `prefers-reduced-motion: reduce` fallback to fade/instant.  
 WHY: Motion can trigger vestibular discomfort and cognitive overload.  
 RECONCILE: Apple says reduce, not remove all feedback; use opacity/state changes.  
-CONTEXT: Travel users may already be moving in vehicles; avoid parallax and large slides.  
+CONTEXT: Travel users may already be moving in vehicles; avoid parallax on dense grids and large slides.  
 VERIFY: `rg -n "prefers-reduced-motion" web-nuxt`.  
-EXCEPTION: Essential loading progress remains but without shimmer motion. DO/DON'T: `@media(prefers-reduced-motion:reduce){*{animation:none}}` / parallax with no fallback.
+EXCEPTION: Essential loading progress remains but without shimmer motion. APPROVED EXCEPTION (2026-07-07): hero Ken Burns + parallax are the shipped cinematic signature (`pages/index.vue` `.hero-kenburns`, `composables/useParallax.ts` no-op on reduce, `assets/css/editorial.css`); both switch off fully under `prefers-reduced-motion` — do not strip them in compliance passes. DO/DON'T: `@media(prefers-reduced-motion:reduce){*{animation:none}}` / parallax with no fallback.
 
 ### R4.4 Entrance duration [BASELINE+] [depth: 2-source]
 Source: M3-MOTION, BASE.  
-WHAT: Small UI entrance 150-250ms; page/section entrance 300-500ms; never exceed 800ms.  
+WHAT: Small UI entrance 150-250ms; page/section entrance 300-500ms; never exceed 800ms for interaction/entrance motion.  
 WHY: Doherty Threshold rewards quick feedback; long motion delays perceived control.  
 RECONCILE: M3 duration tokens and web.dev responsiveness agree.  
 CONTEXT: Users checking directions or phone numbers should not wait for decorative animation.  
 VERIFY: `rg -n "([8-9][0-9]{2}|[1-9][0-9]{3})ms|\\.8s|1s" web-nuxt --glob "*.css" --glob "*.vue"`.  
-EXCEPTION: Skeleton shimmer loop is 1.5s because it signals loading, not interaction. DO/DON'T: `animation:fade var(--dur-medium2)` / `animation:hero 1400ms`.
+EXCEPTION: Skeleton shimmer loop is 1.5s because it signals loading, not interaction. APPROVED EXCEPTION (2026-07-07): ambient cinematic loops are exempt from the cap — hero Ken Burns runs 20-34s (`--dur-kenburns` in `assets/css/variables.css`, `.hero-kenburns` in `pages/index.vue`), reduced-motion gated; the 800ms ceiling applies to interaction feedback and entrances only. DO/DON'T: `animation:fade var(--dur-medium2)` / `animation:hero 1400ms` on an entrance.
 
 ### R4.5 Press feedback [BASELINE+] [depth: 3-source]
 Source: M3-STATE, A-HIG Buttons, NNG Fitts.  
@@ -601,7 +603,7 @@ If interaction confirms input -> 50-150ms; if it changes view -> 150-300ms; if i
 #### R4 Anti-patterns
 
 - R4-AP1: `transition: all`. Consequence: accidental layout animation. Root: shortcut CSS. Fix: list properties.
-- R4-AP2: Parallax/large slide on travel pages. Consequence: nausea and slow paint. Root: marketing design habit. Fix: subtle opacity/transform.
+- R4-AP2: Parallax/large slide on dense grids and content lists. Consequence: nausea and slow paint. Root: marketing design habit. Fix: subtle opacity/transform. APPROVED EXCEPTION (2026-07-07): hero/EntityFeature/StorySpread Ken Burns + parallax are the shipped, owner-approved cinematic signature — fully disabled under `prefers-reduced-motion` (`useParallax.ts` no-op, `animation:none` blocks) — do NOT remove.
 - R4-AP3: Full-page spinner. Consequence: no structure, higher abandonment. Root: API-first loading. Fix: skeletons.
 
 #### R4 Checklist
@@ -824,14 +826,14 @@ Check 44px controls, no booking/payment labels, no nested interactive elements, 
 
 ## R6 Navigation
 
-### R6.1 Mobile bottom navigation [BASELINE+] [depth: consensus]
-Source: A-HIG Tab bars, M3 navigation bar, NNG.  
-WHAT: Compact viewport primary nav uses bottom bar with 3-5 items and labels.  
-WHY: Thumb reach and recognition improve for frequent destinations.  
-RECONCILE: Apple max 5 tabs; M3 bottom nav supports compact classes.  
-CONTEXT: Suggested items: Trang chu, Kham pha, Cong dong, Lich trinh, Tai khoan.  
-VERIFY: `rg -n "bottom-nav|mobile-nav|tabbar|navigation" web-nuxt`.  
-EXCEPTION: Admin layout uses sidebar/topbar. DO/DON'T: 5 labelled items / hamburger-only public nav.
+### R6.1 Mobile primary navigation [PROJECT DECISION 2026-07-07] [depth: consensus]
+Source: A-HIG Tab bars, M3 navigation bar, NNG; overridden by shipped project decision.  
+WHAT: The chosen, shipped standard is top nav + hamburger drawer on compact viewports (`layouts/default.vue` `.nav-toggle` opens the drawer); a bottom tab bar is NOT used anywhere and must not be added without owner approval.  
+WHY: This nav architecture survived multiple UX audit rounds and was kept; adding a second nav system is a large structural change nobody approved.  
+RECONCILE: Apple/M3 favor bottom bars generically, but newer project specs (e.g. `docs/superpowers/specs/2026-07-06-ux-scenario-matrix.md`) treat the hamburger/drawer nav as the mobile PASS criterion.  
+CONTEXT: Core destinations (Trang chu, Kham pha, Cong dong, Lich trinh, Tai khoan) live in the top nav + drawer.  
+VERIFY: `rg -n "nav-toggle" web-nuxt/layouts/default.vue` (present) and `rg -n "bottom-nav|tabbar" web-nuxt` (no component matches expected).  
+EXCEPTION: Admin layout uses sidebar/topbar. DO/DON'T: keep top nav + drawer consistent / add a bottom tab bar in a compliance pass.
 
 ### R6.2 Medium navigation rail [BASELINE+] [depth: 2-source]
 Source: M3-LAYOUT, A-HIG sidebars.  
@@ -916,11 +918,11 @@ EXCEPTION: External links do not use aria-current. DO/DON'T: `<NuxtLink aria-cur
 
 #### R6 Decision Tree
 
-Compact -> bottom nav; medium -> rail/top hybrid; expanded -> visible top/drawer; detail -> breadcrumb; long nav -> footer grouping; search page -> route query state.
+Compact -> top nav + hamburger drawer (project decision, see R6.1); medium -> rail/top hybrid; expanded -> visible top/drawer; detail -> breadcrumb; long nav -> footer grouping; search page -> route query state.
 
 #### R6 Anti-patterns
 
-- R6-AP1: Hamburger-only mobile public nav. Consequence: hidden core paths. Root: desktop-first nav. Fix: bottom nav.
+- R6-AP1: OVERRIDDEN (2026-07-07) — hamburger + top nav IS the chosen shipped standard (see R6.1); do not "fix" it with a bottom nav. Keep drawer item order stable and core paths near the top of the drawer instead.
 - R6-AP2: Too many top-level links. Consequence: Hick's Law overload. Root: taxonomy exposed as nav. Fix: group categories.
 - R6-AP3: No current state. Consequence: disorientation. Root: visual-only routing. Fix: `aria-current`.
 
@@ -1313,7 +1315,7 @@ EXCEPTION: Brand names remain unchanged. DO/DON'T: `<html lang="vi">` / missing 
 
 ### R10.12 Motion sensitivity [BASELINE+] [depth: consensus]
 Source: WCAG 2.3.3, A-MOTION, M3-MOTION.  
-WHAT: Support `prefers-reduced-motion`; no flashing, parallax, or forced large movement.  
+WHAT: Support `prefers-reduced-motion`; no flashing or forced large movement; parallax only within the approved reduced-motion-gated cinematic layer (see R4-AP2 approved exception).  
 WHY: Motion can cause vestibular symptoms and distraction.  
 RECONCILE: See R4; accessibility makes it mandatory.  
 CONTEXT: Users in moving vehicles may be more sensitive.  
@@ -1475,14 +1477,14 @@ CONTEXT: Say "Mua dep: thang 3-5" if true, not "Sap het cho".
 VERIFY: `rg -n "countdown|sap het|dang xem|urgency|limited" web-nuxt content app`.  
 EXCEPTION: Real event date deadline with source. DO/DON'T: real festival dates / fake countdown.
 
-### R11.12 Canonical/noindex hygiene [BASELINE+] [depth: 2-source]
-Source: GSC canonical/noindex, BASE.  
-WHAT: Index public canonical pages; noindex admin/search states if thin/duplicative; canonicalize filtered lists.  
-WHY: Prevents duplicate/low-value pages from polluting search.  
+### R11.12 Canonical/noindex hygiene [PROJECT DECISION 2026-07-07] [depth: 2-source]
+Source: GSC canonical/noindex, BASE; overridden by shipped indexing strategy.  
+WHAT: Indexability is NOT "index every public page" — it goes through the P0-1 quality gate `is_index_worthy()` (`agent/seo.py`): only entities passing it get index + sitemap, thin pages stay noindex. On top of that, site-wide noindex is currently ON deliberately (`NUXT_PUBLIC_SITE_NOINDEX` defaults to true in `nuxt.config.ts`; `server/middleware/noindex.ts` emits X-Robots-Tag) while content matures — ONLY the project owner flips it off. Canonicalize filtered lists; noindex admin/search states.  
+WHY: Mass-indexing thin, unverified content is exactly the Google-spam risk the positioning avoids.  
 RECONCILE: Search UX state can exist without all combinations indexed.  
-CONTEXT: `/tim-kiem?q=...` may be noindex; category pages indexable.  
-VERIFY: `rg -n "canonical|noindex|robots" web-nuxt`.  
-EXCEPTION: Curated static search landing can index. DO/DON'T: canonical category / index every filter query.
+CONTEXT: `/tim-kiem?q=...` may be noindex; category pages become indexable once the site-wide flag is opened and they pass the gate.  
+VERIFY: `rg -n "canonical|noindex|robots|siteNoindex" web-nuxt`.  
+EXCEPTION: Curated static search landing can index (once site-wide noindex is lifted). DO/DON'T: keep the deliberate noindex + per-page gate / "fix" the site-wide noindex flag or middleware in a compliance pass.
 
 #### R11 GEO Guide
 
@@ -1815,14 +1817,14 @@ CONTEXT: vinhlong360 is local guide, not luxury hotel concierge.
 VERIFY: content grep `rg -n "quy khach|anh/chị|mày|tao|booking|checkout" web-nuxt content docs`.  
 EXCEPTION: Legal documents may use formal language. DO/DON'T: "Ban co the goi dien..." / "Quy khach vui long...".
 
-### R15.2 Heading vs body language [BASELINE+] [depth: 2-source]
-Source: BASE Vietnamese SEO, GSC.  
-WHAT: Headings may use Han-Viet SEO terms; body explains in plain Vietnamese sentences under 15 words.  
-WHY: Balances search intent and readability.  
-RECONCILE: SEO vocabulary and cognitive accessibility both matter.  
-CONTEXT: Heading "Am thuc Vinh Long"; body can say "Nhung mon ngon nen thu".  
-VERIFY: manual content review; lint long sentences where feasible.  
-EXCEPTION: Proper names remain exact. DO/DON'T: SEO heading + plain body / jargon everywhere.
+### R15.2 Heading vs body language [AMENDED 2026-07-07] [depth: 2-source]
+Source: BASE Vietnamese SEO, GSC; amended for anti-AI editorial voice.  
+WHAT: Headings may use Han-Viet SEO terms; body explains in plain Vietnamese with VARIED sentence rhythm — short sentences interleaved with longer 20-35-word ones. No mechanical word-count cap for prose/story content: uniformly short sentences read machine-generated, the exact tell the editorial voice fights. A ~15-word ceiling applies to UI microcopy (labels, tooltips, empty states) only.  
+WHY: Balances search intent, readability, and a human editorial cadence (see `viet-content-optimizer` skill: alternate short and long sentences, never uniform length).  
+RECONCILE: SEO vocabulary and cognitive accessibility both matter; so does not sounding like AI slop.  
+CONTEXT: Heading "Am thuc Vinh Long"; body can say "Nhung mon ngon nen thu" and follow with a longer sensory sentence.  
+VERIFY: manual content review; flag monotonous sentence length, not a hard cap.  
+EXCEPTION: Proper names remain exact. DO/DON'T: SEO heading + plain body with mixed-length sentences / jargon everywhere or every sentence the same clipped length.
 
 ### R15.3 Button labels [BASELINE+] [depth: 3-source]
 Source: A-HIG Writing, M3 content, NNG.  

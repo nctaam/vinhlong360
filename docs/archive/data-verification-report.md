@@ -1,5 +1,9 @@
 # Data Verification Report — vinhlong360
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Báo cáo verify nguồn lịch sử (snapshot 06/2026). Chính sách gọi-tên-tỉnh ở dòng ~62 (nguồn 2026 gọi vùng BT/TV cũ là "tỉnh Vĩnh Long" = ĐÚNG) vẫn là chính sách hiện hành — đã đưa vào CLAUDE.md §1.6.
+
+
 > Forensic audit: xác minh sự thật, phát hiện hallucination, đảm bảo data integrity.  
 > Cập nhật: 2026-06-29
 

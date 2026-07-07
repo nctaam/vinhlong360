@@ -1,5 +1,8 @@
 # Discovery Listings — `dia-diem/index.vue` ("Danh bạ địa điểm") + `kham-pha/[interest].vue` ("Khám phá theo chủ đề")
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md. **LƯU Ý RIÊNG:** empty-state "thử Bến Tre" (mô hình 3 tỉnh) và "quán ăn miền Tây" (:122) là copy CẤM dùng.
+
+
 > Prior grades: dia-diem/index.vue **6.0** · kham-pha/[interest].vue **6.5**
 > Diagnosis: these are the two broadest browse surfaces on the site — and they currently read as **database screens with a nice hero glued on top**. The CE (cinematic-editorial) language stops at `.catalog-hero`; everything below (filter rows, grid, "Xem thêm") is bare utility. Filters are redundant across the two pages (type × area appears twice, worded differently). The grid unit (EntityCard) is undifferentiated — every card in Vĩnh Long looks like every card in Trà Vinh, whether it's a 400-year-old chùa Khmer or a bag of dried longan. **The job of this redesign is to make the act of browsing itself feel like wandering a market street or drifting down a kênh — full of small surprising turns — rather than paging through a spreadsheet with pretty chips.**
 

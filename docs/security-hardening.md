@@ -1,7 +1,7 @@
 # Security Hardening Guide — vinhlong360
 
-> Date: 2026-06-27 | Status: Draft — implements Phase 0 of upgrade-plan.md
-> Audience: Solo dev / future contributors
+> **STATUS (2026-07-07): active — đã truth-sync.** §2 "Critical Fixes" are all implemented (marked ✅ below); guardrails/PII masking are ACTIVE (the old "dormant / HAS_GUARDRAILS flag" description was wrong — HAS_* are try-import Python vars, see `docs/module-activation-guide.md`); §3.4 SSH hardening now carries a mandatory-prerequisite warning.
+> Date: 2026-06-27 | Audience: Solo dev / future contributors
 
 ---
 
@@ -13,8 +13,8 @@ The platform already ships several strong security features. These should be pre
 
 | Feature | Implementation | Status |
 |---------|---------------|--------|
-| Prompt injection detection | 30+ regex patterns (Vietnamese + English) in guardrails module | Production-ready (dormant, flag `HAS_GUARDRAILS`) |
-| PII masking | Strips phone numbers, email, CCCD, bank accounts from LLM context | Production-ready (dormant, flag `HAS_GUARDRAILS`) |
+| Prompt injection detection | 30+ regex patterns (Vietnamese + English) in guardrails module | **Active** (live on chat path — `HAS_GUARDRAILS` is a try-import Python var, always `True`; not an env flag) |
+| PII masking | Strips phone numbers, email, CCCD, bank accounts from LLM context | **Active** (same guardrails module, fail-closed at `server.py:1784`) |
 | OTP rate limiting | Multi-layer: per-phone, per-IP, global per-minute cap | Active |
 | CSRF tokens | Server-side token validation on auth endpoints | Active |
 | Server-side sessions | Session store with max concurrent sessions per user (`MAX_SESSIONS_PER_USER`) | Active |
@@ -26,11 +26,13 @@ The platform already ships several strong security features. These should be pre
 
 ---
 
-## 2. Critical Fixes Required (agent/ session scope)
+## 2. Critical Fixes — ALL IMPLEMENTED ✅ (verified in code 2026-07-07)
 
-These require code changes in `agent/` and are tracked in Phase 0.1 of upgrade-plan.md.
+These were tracked in Phase 0.1 of upgrade-plan.md and have since landed. **Do not re-fix** — the auth surface is sensitive and covered by tests; verify against the code references below instead.
 
-### 2.1 Session fixation — CRITICAL
+### 2.1 Session fixation — CRITICAL — ✅ implemented
+
+**Implemented:** session tokens are server-generated (`secrets.token_urlsafe(48)`, `agent/auth.py:379`); client-provided IDs are never trusted.
 
 **Problem:** If the server accepts a session ID provided by the client without regeneration, an attacker can fixate a victim's session.
 
@@ -46,7 +48,9 @@ curl -v -b "session_id=attacker-chosen-id" https://vinhlong360.vn/health
 # Response Set-Cookie header must contain a NEW server-generated UUID
 ```
 
-### 2.2 CORS fail-closed — HIGH
+### 2.2 CORS fail-closed — HIGH — ✅ implemented
+
+**Implemented:** `agent/server.py:905-914` — safe default origin list, localhost origins stripped in production, never falls back to `"*"`.
 
 **Problem:** If `CORS_ORIGINS` env var is empty or unset, the fallback behavior must be deny-all, not allow-all.
 
@@ -62,14 +66,18 @@ curl -v -b "session_id=attacker-chosen-id" https://vinhlong360.vn/health
 curl -v -H "Origin: https://evil.com" https://vinhlong360.vn/api/v1/entities
 ```
 
-### 2.3 HTTPS enforcement — HIGH
+### 2.3 HTTPS enforcement — HIGH — ✅ implemented
+
+**Implemented:** HSTS header (`agent/auth_middleware.py:413`) + `Secure`/`HttpOnly`/`SameSite=Lax` cookies in production (`auth_middleware.py:1062-1078`), covered by `test_session_be.py`.
 
 **Fix (agent/server.py):**
 - Add HSTS middleware: `Strict-Transport-Security: max-age=63072000; includeSubDomains`
 - Set `Secure` flag on all session cookies
 - Set `SameSite=Lax` on cookies (prevents CSRF on cross-origin GET)
 
-### 2.4 Password login rate limiting — MEDIUM
+### 2.4 Password login rate limiting — MEDIUM — ✅ implemented (core)
+
+**Implemented:** per-identifier (phone/username/email) lockout in `agent/auth_middleware.py:932-991` — `LOCKOUT_THRESHOLD` (5 fails in `LOCKOUT_WINDOW` 5 min) → `LOCKOUT_DURATION` 15-min lockout. Not implemented: the 10-fail/1-hour escalation + Telegram alert (nice-to-have).
 
 **Problem:** Current rate limiting is per-IP. Attackers behind shared IPs (VPNs, ISPs) can still brute-force specific phone numbers.
 
@@ -148,6 +156,8 @@ real_ip_header CF-Connecting-IP;
 
 ### 3.4 SSH hardening
 
+> ⚠️ **TIỀN ĐỀ BẮT BUỘC — đọc trước khi áp khối config dưới.** Toàn bộ flow deploy hiện tại SSH bằng **root@66.42.57.202** (key `vinhlong_vps`): `scripts/deploy.sh` (qua `VL360_DEPLOY_HOST`), `scripts/pre_merge_check.py`, mọi runbook. **User `deploy` CHƯA tồn tại trên VPS.** Áp nguyên văn `PermitRootLogin no` + `AllowUsers deploy` rồi restart sshd = **tự khoá mình khỏi VPS** (chỉ cứu được qua console Vultr) và deploy.sh chết. Thứ tự bắt buộc TRƯỚC khi đổi sshd_config: (1) tạo user `deploy` (`useradd -m -G sudo deploy`), (2) chép `~/.ssh/authorized_keys` của root sang `/home/deploy/.ssh/` (đúng owner/chmod 600), (3) đổi `VL360_DEPLOY_HOST` + mọi chỗ hardcode `root@` sang `deploy@`, (4) **test SSH bằng `deploy@` ở một phiên song song, giữ phiên root đang mở**, rồi mới sửa sshd_config + `systemctl restart sshd`.
+
 ```bash
 # /etc/ssh/sshd_config
 PasswordAuthentication no
@@ -183,7 +193,9 @@ Default fail2ban config bans IPs after 5 failed SSH attempts for 10 minutes.
 
 1. Generate new key: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
 2. Update `.env` on VPS
-3. Restart affected service: `sudo systemctl restart vl360-agent`
+3. Restart affected service: `systemctl restart vl-agent` (unit names: `vl-agent`, `vl-nuxt`, `vl-bot` — not "vl360-agent")
+
+> ⚠️ **Bẫy rotate ADMIN_API_KEY:** khoá mã hoá TOTP fallback về `ADMIN_API_KEY` khi chưa đặt `TOTP_ENC_KEY` (`agent/twofactor.py`). Nếu 2FA đã bật mà rotate ADMIN_API_KEY khi chưa đặt `TOTP_ENC_KEY` → toàn bộ TOTP secret không giải mã được, user 2FA bị khoá vĩnh viễn. Đặt `TOTP_ENC_KEY` TRƯỚC khi bật 2FA và trước mọi lần rotate.
 4. Verify `/health` returns 200
 5. Invalidate old key (provider dashboard)
 
@@ -248,9 +260,9 @@ Verification: replay the chain, recompute each HMAC, compare. Any tampered entry
 
 ### Phase 0 — Before public launch
 
-- [ ] Session fixation fix (server-side ID generation)
-- [ ] CORS fail-closed (deny all when CORS_ORIGINS empty)
-- [ ] HSTS middleware + Secure cookie flag
+- [x] Session fixation fix (server-side ID generation) — done, §2.1
+- [x] CORS fail-closed (no `"*"` fallback) — done, §2.2
+- [x] HSTS middleware + Secure cookie flag — done, §2.3
 - [ ] Admin endpoint IP whitelist in nginx
 - [ ] CSP nonce-based (replace unsafe-inline)
 - [ ] Cloudflare proxy enabled (DNS proxied)
@@ -262,8 +274,8 @@ Verification: replay the chain, recompute each HMAC, compare. Any tampered entry
 
 ### Phase 1 — First month of operation
 
-- [ ] Enable `HAS_GUARDRAILS=true` (PII masking + injection detection)
-- [ ] Per-phone rate limiting on OTP endpoints
+- [x] Guardrails (PII masking + injection detection) — already ACTIVE; `HAS_GUARDRAILS` is a try-import Python var, not an env flag (setting it in `.env` is a no-op)
+- [x] Per-phone rate limiting on OTP endpoints — done, §2.4
 - [ ] HMAC-chained audit logging
 - [ ] First secret rotation (ADMIN_API_KEY, LLM_API_KEY)
 - [ ] Cloudflare rate limiting rule active

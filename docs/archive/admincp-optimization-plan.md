@@ -1,5 +1,9 @@
 # Phương án tối ưu AdminCP — 2026-07-02
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Kế hoạch ĐÃ THỰC THI xong (AdminCP CMS v2, Đợt 1+2). Giữ làm lịch sử.
+
+
 > Nền bằng chứng: 2 vòng audit hệ thống cùng ngày + 3 sự cố prod trong ngày (dashboard
 > 500 SQL-dialect, sidebar vỡ class-collision, entities 500 TDZ — đều ở AdminCP, đều
 > không lưới nào bắt) + recon 3-agent kiểm kê 32 trang / 10.002 dòng FE admin,

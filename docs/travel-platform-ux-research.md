@@ -1,4 +1,7 @@
 # Nghien cuu UX 5 nen tang du lich hang dau
+
+> **STATUS (2026-07-07): active — đã truth-sync.** Nghiên cứu gốc giữ nguyên giá trị tham khảo; riêng A1 (content-first homepage) và B3 (badge "Địa điểm xác thực") bị OVERRIDE — xem ghi chú ⚠️ tại chỗ, KHÔNG thực thi 2 mục đó nguyên văn.
+
 > Ngay: 2026-06-27 | Phuong phap: 5 agent doc lap browse + phan tich 10 chieu | Ap dung cho: vinhlong360 (showcase-only, KHONG booking)
 
 ---

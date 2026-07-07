@@ -1,5 +1,8 @@
 # Itineraries — Lịch trình
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md. **LƯU Ý RIÊNG:** hook "một ngày ở miền Tây" (:15,:23,:89,:102) là filler CẤM — thay bằng đặc thù Vĩnh Long.
+
+
 **Pages covered:** `lich-trinh/index.vue` (list, grade 6.0) · `lich-trinh/[id].vue` (detail, grade 7.0 — current best "journey" moment on the site) · `lich-trinh-chia-se/[id].vue` (shared plan, grade 3.0 — weakest page on the site)
 
 **Thesis for this unit:** *A trip is a story with a shape.* An itinerary is not a checklist of stops with times attached — it is a **day unfolding**: morning light on the river, the heat of midday under a vườn canopy, the specific hush of a Khmer chùa at dusk. The list page should feel like a shelf of possible mornings-to-come; the detail page should read like a day already lived, waiting for you to step into it; and the shared-plan page — right now an unstyled orphan — is a stranger's postcard and must be dressed to represent the whole platform in a single, unbranded-feeling glance.

@@ -1,5 +1,9 @@
 # Legacy Files Audit — `web/`
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Audit legacy đã hoàn thành — web-astro/ + web/ legacy đã xoá xong.
+
+
 Date: 2026-06-27
 
 ## Current State

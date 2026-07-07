@@ -1,5 +1,8 @@
 # Entity Detail Page — `dia-diem/[id].vue` (flagship redesign)
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md. **LƯU Ý RIÊNG:** phần lớn "opportunity" của file này ĐÃ SHIP (Wave 2, commit 8ab3dac: phù-sa hero, dateline eyebrow, hook fallback-chain) — đừng lập kế hoạch làm lại.
+
+
 > Prior grade: **7.0**. Current file: `web-nuxt/pages/dia-diem/[id].vue` (1216 lines) + `web-nuxt/assets/css/detail.css` + `KnowBeforeYouGo.vue`, `ContactWidget.vue`, `PhotoGallery.vue`, `JourneyActionRail.vue`.
 > This is the single highest-leverage page in the product: every one of the ~1730 entities (destination, dish, product, craft village, accommodation, experience, event, organization) resolves here. It is also the page where the platform's central promise — **"every place is a story"** — is currently least true. Today it reads as a well-organized *spec sheet* (facts card, tips list, season strip) with a photo bolted on top. The redesign turns it into a **short film / cover story**: the entity as a character with a season, a maker, a ritual, and a reason you must go now.
 

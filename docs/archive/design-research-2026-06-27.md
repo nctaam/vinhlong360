@@ -1,4 +1,8 @@
 # Nghiên cứu Design System — Apple HIG + Material Design 3 + Figma + WCAG 2.2
+
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Nghiên cứu lịch sử: measurements/component-spec còn tham khảo được, NHƯNG chỉ đạo 53-task wave + §18.3 migrate palette XANH LÁ đã obsolete (bản sắc clay-primary đã ship). Không thực thi task từ file này.
+
 > Ngày: 2026-06-27 | Cập nhật: Round 3 world-class research | Mục đích: Gap analysis + component specs + world-class patterns → task cho 3 session branches
 
 ---

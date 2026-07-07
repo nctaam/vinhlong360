@@ -1,5 +1,9 @@
 # vinhlong360 — Kiến trúc & Lộ trình
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Tài liệu TẦM NHÌN GỐC 2025 — di tích: §4 mô tả stack không tồn tại (Next.js/n8n/pgvector), doanh thu hoa hồng booking (nay CẤM), "nhân rộng sang BT/TV" (đã sáp nhập), số hành chính cũ. Kiến trúc sống = docs/architecture-decisions.md + CLAUDE.md.
+
+
 > Đồ thị tri thức địa phương (Local Knowledge Graph) cho tỉnh Vĩnh Long, có lớp truy vấn AI bằng ngôn ngữ tự nhiên. Mục tiêu dài hạn: một "Digital Twin" của đời sống địa phương — du lịch, nông sản, OCOP, làng nghề, doanh nghiệp, sự kiện. Mục tiêu ngắn hạn: một sản phẩm hẹp, hữu ích ngay, để graph lớn lên như sản phẩm phụ.
 
 ---

@@ -1,5 +1,9 @@
 # Codex Feature Research Prompt — Deep Functional Audit
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Prompt one-shot. Nhiều đề xuất xây trên cấp huyện đã bãi bỏ; ràng buộc C5 tự khoét ngoại lệ ảnh UGC — nay bị CẤM (ảnh CHỈ AI-gen).
+
+
 > Copy TOÀN BỘ nội dung bên dưới vào Codex task.
 > **Input:** 6 URLs + toàn bộ codebase trên GitHub
 > **Output:** 1 file `docs/feature-audit-report.md` — báo cáo nghiên cứu chức năng so sánh + đề xuất nâng cấp

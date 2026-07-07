@@ -1,5 +1,7 @@
 # Developer Setup Guide
 
+> **STATUS (2026-07-07): active — đã truth-sync.** Setup steps remain valid; §3 now restricts `database.py --replace` to fresh clones only (backup first per CLAUDE.md B1/B7).
+
 Get vinhlong360 running locally for development.
 
 ## Requirements
@@ -57,8 +59,15 @@ The `.env.example` has `DATABASE_URL=postgresql://vl360:change_me@localhost:5432
 
 ## 3. Seed the Database
 
+> ⚠️ **`--replace` is for a FRESH CLONE only** (no existing DB, or a DB you are happy to discard).
+> The DB is the source of truth and carries AdminCP write-through edits that `data.json` does not —
+> on an existing DB, `--replace` overwrites those edits with the (diverged) `data.json` snapshot.
+> If your DB has any edits: run `python scripts/backup_data.py` FIRST. See CLAUDE.md invariants
+> **B1** (snapshot before any data operation) and **B7** (`--replace` is a destructive op — never
+> run it without explicit instruction + backup).
+
 ```bash
-# Import data.json into SQLite (for knowledge-base dev without Postgres)
+# Fresh clone only: import data.json into SQLite (knowledge-base dev without Postgres)
 python agent/database.py --replace
 # This creates agent/data/vinhlong360.db
 
@@ -202,4 +211,4 @@ curl -X POST http://localhost:8360/chat \
 | `OperationalError: database locked` | SQLite concurrency limit; use PostgreSQL for UGC |
 | Nuxt build OOM | Set `NODE_OPTIONS=--max-old-space-size=4096` |
 | Tests fail on `test_config` | Missing `.env`; ensure `LLM_API_KEY` is set |
-| `DESTRUCTIVE_OPS_LOCKED` error | Set `ALLOW_DESTRUCTIVE_DB_REPLACE=1` for `--replace` |
+| `DESTRUCTIVE_OPS_LOCKED` error | The lock is intentional (CLAUDE.md B7). Only bypass with `ALLOW_DESTRUCTIVE_DB_REPLACE=1` on a fresh clone or after `python scripts/backup_data.py` |

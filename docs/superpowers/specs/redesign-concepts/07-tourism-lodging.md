@@ -1,5 +1,8 @@
 # Tourism Hub + Lodging — `du-lich.vue` (umbrella magazine) + `luu-tru.vue` ("wake up on the river")
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md. **LƯU Ý RIÊNG:** copy "buổi sáng ở miền Tây" (:44) CẤM dùng.
+
+
 > Prior grades: du-lich 7.5/10 (umbrella hub), luu-tru 7.0/10.
 > Both are currently **catalog-tier**: `.catalog-hero` banner → `CatalogSpotlight` → horizontal `EntityCard` rows → editorial text block → filterable grid. Cinematic-editorial (CE) language exists only as a design *system* (tokens, fonts, phù-sa motif) — neither page's hero nor body actually wears it yet. This concept brings CE all the way through both pages and treats `EntityCard` as the keystone fix that lifts every catalog page at once.
 

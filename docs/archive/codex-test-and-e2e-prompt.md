@@ -1,5 +1,9 @@
 # Codex Test Automation & Deep E2E Browser Prompt — vinhlong360
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Prompt one-shot. Fixture hardcode slug đã chết (phuong-1-tp-vinh-long, cam-sanh-vinh-long...) — phường hiện có id dạng p-*.
+
+
 > Copy TOÀN BỘ nội dung bên dưới (từ "---" đầu tiên đến hết) vào Codex task.
 > **Prerequisite:** repo phải push lên GitHub. Codex cần đọc TOÀN BỘ source code.
 > **Branch:** tạo nhánh `codex-test-e2e` từ `main`.

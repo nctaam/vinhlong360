@@ -1,5 +1,8 @@
 # Kế hoạch Redesign Cinematic + Premium — Toàn bộ trang Public
 
+> **STATUS (2026-07-07): superseded một phần bởi declutter 3 đợt.** Section chatbot-CTA homepage (dòng ~86) đã bị XOÁ (declutter B1-1) — đừng dựng lại. Trang liên hệ: KHÔNG claim "Con người thật/SLA X giờ" (không kiểm chứng được, solo dev, byline cấp tổ chức). Concepts con: xem cảnh báo trong redesign-concepts/00-narrative-system.md.
+
+
 > **Nguồn:** Audit 36 trang public (5 agent song song, 2026-07-05) + bối cảnh hệ thống thiết kế đã triển khai (CE1–CE3). Thực thi qua skill **frontend-design**, verify bằng preview-probe, deploy theo đợt.
 > **Mục tiêu:** Nâng TẤT CẢ trang public lên một giọng **cinematic-editorial** nhất quán, premium — không phá vỡ tính năng, không thêm chi phí, ảnh chỉ AI-gen.
 

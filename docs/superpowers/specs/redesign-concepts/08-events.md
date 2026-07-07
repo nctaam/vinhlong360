@@ -1,5 +1,8 @@
 # Events + Festivals — `su-kien.vue` (6.5) + `le-hoi.vue` (7.0)
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md. **LƯU Ý RIÊNG:** hero dek "lịch sống của ba tỉnh" (:25) CẤM dùng — viết theo một-tỉnh.
+
+
 > Unit verdict up front: **merge into one page, two registers.** Today these are ~90%-identical shells (same `/api/events`, same `.event-row`/`.cal-*` CSS, same controls, same cross-links) wearing two icons (🎪 vs 🎋). Maintaining two near-duplicate catalog pages is itself an anti-pattern for a solo dev, and it also *dilutes* the one genuinely strong asset the unit has: `le-hoi.vue`'s cultural-authenticity writing (Kinh–Khmer–Hoa, Ok Om Bok, Lễ Nghinh Ông). The redesign below proposes **one route, `/su-kien`, with an internal `Lễ hội truyền thống` vs `Sự kiện & hội chợ` toggle** (URL-addressable via `?loai=le-hoi`), so the two content classes live side by side instead of forking the codebase. Everything below is written against that merged model, with a fallback note on how to apply the same ideas if the two pages must stay physically separate.
 
 ---

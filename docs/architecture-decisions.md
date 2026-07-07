@@ -1,7 +1,9 @@
 # VinhLong360 Architecture Decisions
 
-Date: 2026-06-12 (updated 2026-06-27)
-Status: Accepted — reflects decisions through GĐ13
+> **STATUS (2026-07-07): active — đã truth-sync.** Decision 1's `web/` inventory corrected (`admin*.html` removed in GĐ6.1; `data.json` is a kept export, not a removal candidate); decisions 17–19 added (AI-only images, Vĩnh-Long-specific positioning + noindex, work-source governance).
+
+Date: 2026-06-12 (updated 2026-07-07)
+Status: Accepted — reflects decisions through 2026-07-07
 
 ## Decisions
 

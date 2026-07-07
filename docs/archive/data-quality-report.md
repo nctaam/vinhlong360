@@ -1,5 +1,9 @@
 # Data Quality Report
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Báo cáo lịch sử. LƯU Ý: pass "Wrong province in BT/TV" (302 rewrite) được thực thi theo quy tắc tiền-định-vị-mới — kết quả nay là SAI (tỉnh BT/TV đã giải thể); campaign sửa ngược có ngữ cảnh nằm ở ROADMAP Backlog. Điểm 90/100 không so sánh được với trust-score 63.7 của data-verification-report (phương pháp khác nhau).
+
+
 Generated: 2026-06-29 (updated — pass 10 complete)
 Source: `web/data.json` (1739 entities, 12357 relationships, 33 itineraries)
 Tool: `python scripts/validate_data.py`

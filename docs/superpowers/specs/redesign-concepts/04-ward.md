@@ -1,5 +1,8 @@
 # xa-phuong/[id].vue — Hồ sơ Xã/Phường ("Ward/Commune Profile")
 
+> **STATUS (2026-07-07): concept Ý TƯỞNG — KHÔNG thực thi nguyên văn.** Viết TRƯỚC declutter 3 đợt (ship 2026-07-07) và TRƯỚC chốt định vị 2026-07-06. Khi xung đột: code hiện tại + CLAUDE.md thắng. Trước khi thực thi bất kỳ mục nào: (1) dẹp mọi copy "miền Tây / ba tỉnh" — dùng khung tỉnh-Vĩnh-Long-mới; (2) KHÔNG dùng địa danh ngoài tỉnh (Cái Bè, Lai Vung… thuộc Đồng Tháp); (3) KHÔNG claim "đã xác minh"/quy mô đội ngũ; (4) re-ground line-number trên code hiện tại. Cảnh báo đầy đủ: 00-narrative-system.md.
+
+
 *Prior grade: 7.0. 124 wards, mostly imageless. This is the single most-repeated "place" template on the whole site — it stands in for the everyday geography of the merged tỉnh: a commune is where 99% of residents and most content actually lives, versus the glamorous few dozen "điểm đến" pages. The brief: make a small, ordinary, often-photo-less commune feel like a place with a soul, not a database row.*
 
 ---

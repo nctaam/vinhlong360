@@ -1,5 +1,8 @@
 # Hồ sơ chiến lược nghiên cứu đa chiều văn hóa - du lịch Vĩnh Long, Trà Vinh, Bến Tre
 
+> **STATUS (2026-07-07): active có giới hạn — corpus văn hoá/du lịch còn nguyên giá trị tư liệu.** File viết THỜI 3 TỈNH RIÊNG (trước sáp nhập 07/2025 + trước định vị mới). KHÔNG dùng từ file này: (1) khung định vị "ĐBSCL/miền Tây/3 tên" — định vị hiện hành là Vĩnh-Long-tỉnh-mới (CLAUDE.md §1.6); (2) đơn vị hành chính huyện/tỉnh cũ — nay 1 tỉnh 2 cấp, 35 phường + 89 xã; (3) khuyến nghị bán tour/vé/combo — vi phạm mô hình CHỈ GIỚI THIỆU (CLAUDE.md §1.4); (4) nguồn ảnh ngoài — ảnh CHỈ AI-gen (§1.5). Đường dẫn "bộ file đầu ra" trong thân bài trỏ repo root là cũ — file thực nằm tại docs/research/.
+
+
 Ngày lập: 17/06/2026  
 Phạm vi: nghiên cứu bàn giấy từ nguồn công khai, mở rộng từ corpus 194 bài Báo Vĩnh Long và bộ 6 tầng nguồn đã tạo.  
 Mục tiêu: chuyển nghiên cứu nguồn thành luận cứ phát triển sản phẩm, tuyến, truyền thông, bảo tồn và vận hành.

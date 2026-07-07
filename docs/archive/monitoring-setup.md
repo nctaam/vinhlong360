@@ -1,5 +1,9 @@
 # Monitoring Stack Setup Guide — vinhlong360
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Guide viết cho stack container + Prometheus/Grafana + Sentry cloud KHÔNG tồn tại trên prod (systemd trên VPS 1GB, chỉ postgres trong Docker; Sentry vi phạm B8). Monitoring thật: StructuredLogger + admin metrics sau X-Admin-Key.
+
+
 > Date: 2026-06-27 | Status: Reference — implements Phase 3.3 of upgrade-plan.md
 > Audience: Solo dev / ops
 > Budget: $0 (all free-tier or self-hosted)

@@ -1,5 +1,9 @@
 # World-class completion blueprint - vinhlong360 - 2026-07-01
 
+> **STATUS (2026-07-07): ARCHIVED — Tài liệu LỊCH SỬ đã archive (truth-sync 2026-07-07). KHÔNG làm theo chỉ dẫn trong file này — đối chiếu CLAUDE.md + docs/README.md.**
+> Blueprint chồng lấn (2/3). Chẩn đoán code-infra đã bị vượt bởi re-audit 04/07 + chốt "bottleneck = content/ảnh"; license-gate đa nguồn media đã chết tiền đề (ảnh CHỈ AI-gen).
+
+
 ## 1. Cau tra loi ngan
 
 Co the dao sau hon nua. Tang sau nhat khong phai them nhieu trang hon, ma la bien vinhlong360 tu "mot web app day tinh nang" thanh "mot he thong kham pha dia phuong dang tin, co tri nho, co quy trinh van hanh, co do luong, co kha nang tu cai thien".
