@@ -46,6 +46,7 @@
 ### Nội dung & chiến lược
 - **`content-creation-guide.md`** — nhập entity, chuẩn chất lượng, ảnh AI-only
 - **`toi-uu-chong-ai-va-google-spam-playbook.md`** — playbook chống đọc-như-AI + chống Google spam (có marker mục đã ship)
+- **`claude-desktop/`** — 3 file dán vào Claude Desktop (about-me / my-company / anti-ai-writing-style), SINH TỪ CLAUDE.md + playbook §4; nguồn đổi thì sinh lại, không sửa lệch hai nơi
 - **`b2g-pitch.md`** — template pitch B2G (⚠️ tài liệu đối ngoại: chủ dự án duyệt toàn văn trước khi gửi — CLAUDE.md §4)
 
 ### Nghiên cứu design (tham khảo, có mục bị override — xem header từng file)
