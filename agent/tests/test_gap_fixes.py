@@ -511,6 +511,28 @@ class TestDeleteCommentAdminPermission:
         assert "parent_id" in src
 
 
+class TestCommentSoftDelete:
+    """SP3 W6.1: delete_comment soft-delete (deleted_at), KHÔNG hard-DELETE
+    vĩnh viễn reply con của người khác. Migration 068 thêm comments.deleted_at."""
+
+    def test_delete_comment_uses_soft_delete(self):
+        src = inspect.getsource(__import__("social").delete_comment)
+        assert "UPDATE comments SET deleted_at" in src
+        assert "DELETE FROM comments" not in src  # hết hard-delete (mất-UGC)
+
+    def test_comment_listing_filters_deleted(self):
+        src = inspect.getsource(__import__("social").get_comments)
+        assert "deleted_at IS NULL" in src
+
+    def test_migration_068_adds_deleted_at(self):
+        import os
+        p = os.path.join(os.path.dirname(inspect.getsourcefile(__import__("social"))),
+                         "migrations", "068_comments_deleted_at.sql")
+        assert os.path.exists(p)
+        sql = open(p, encoding="utf-8").read()
+        assert "ADD COLUMN IF NOT EXISTS deleted_at" in sql
+
+
 class TestReactionEnrichmentComprehensive:
     """All post-returning endpoints call _enrich_reactions."""
 

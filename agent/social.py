@@ -1535,7 +1535,7 @@ async def user_activity(limit: int = Query(30, ge=1, le=100), user=Depends(requi
             """, (uid, limit))
             comments = db._fetchall(conn, f"""
                 SELECT 'comment' as action, c.id as ref_id, c.content, 'comment' as post_type, c.created_at
-                FROM comments c WHERE c.user_id = {ph}::uuid
+                FROM comments c WHERE c.user_id = {ph}::uuid AND c.deleted_at IS NULL
                 ORDER BY c.created_at DESC LIMIT {ph}
             """, (uid, limit))
             likes = db._fetchall(conn, f"""
@@ -2139,7 +2139,7 @@ async def get_comments(
                 FROM comments c
                 JOIN users u ON u.id = c.user_id
                 WHERE c.post_id::text = {ph} AND c.parent_id IS NULL
-                  AND c.moderation_status = 'approved'
+                  AND c.moderation_status = 'approved' AND c.deleted_at IS NULL
                 {bc} {mc}
                 ORDER BY c.created_at ASC
                 LIMIT {ph} OFFSET {ph}
@@ -2156,7 +2156,7 @@ async def get_comments(
                 JOIN users u ON u.id = c.user_id
                 WHERE c.post_id::text = {ph}
                   AND c.parent_id::text IN ({id_placeholders})
-                  AND c.moderation_status = 'approved'
+                  AND c.moderation_status = 'approved' AND c.deleted_at IS NULL
                 {bc} {mc}
                 ORDER BY c.created_at ASC
                 LIMIT 500
@@ -2207,7 +2207,7 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
                 if is_blocked:
                     raise HTTPException(403, "Không thể bình luận bài viết này")
             db._fetchone(conn, f"SELECT pg_advisory_xact_lock(hashtext({ph}))", (post_id,))
-            cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM comments WHERE post_id::text = {ph}", (post_id,))
+            cnt = db._fetchone(conn, f"SELECT COUNT(*) c FROM comments WHERE post_id::text = {ph} AND deleted_at IS NULL", (post_id,))
             if cnt and int(db._row_to_dict(cnt)["c"]) >= MAX_COMMENTS_PER_POST:
                 raise HTTPException(400, "Bài viết đã đạt giới hạn bình luận")
             if body.parent_id:
@@ -2217,6 +2217,7 @@ async def create_comment(post_id: str, body: CreateComment, user=Depends(require
                       AND post_id::text = {ph}
                       AND parent_id IS NULL
                       AND moderation_status = 'approved'
+                      AND deleted_at IS NULL
                 """, (body.parent_id, post_id))
                 if not parent_ok:
                     raise HTTPException(400, "Bình luận gốc không thuộc bài viết này")
@@ -2296,7 +2297,7 @@ async def edit_comment(comment_id: str, body: EditComment, user=Depends(require_
     COMMENT_EDIT_WINDOW_HOURS = _cfg.COMMENT_EDIT_WINDOW_HOURS
     def _check():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT user_id, created_at FROM comments WHERE id::text = {ph}", (comment_id,))
+            row = db._fetchone(conn, f"SELECT user_id, created_at FROM comments WHERE id::text = {ph} AND deleted_at IS NULL", (comment_id,))
             if not row:
                 raise HTTPException(404, "Bình luận không tồn tại")
             rd = db._row_to_dict(row)
@@ -2340,17 +2341,19 @@ async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depe
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT user_id, post_id FROM comments WHERE id::text = {ph}", (comment_id,))
+            row = db._fetchone(conn, f"SELECT user_id, post_id FROM comments WHERE id::text = {ph} AND deleted_at IS NULL", (comment_id,))
             if not row:
                 raise HTTPException(404, "Bình luận không tồn tại")
             rd = db._row_to_dict(row)
             if str(rd["user_id"]) != uid and user.get("role") not in ("admin", "moderator"):
                 raise HTTPException(403, "Bạn chỉ có thể xóa bình luận của mình")
             db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'comment' AND ref_id = {ph}", (comment_id,))
-            child_count = db._fetchone(conn, f"SELECT COUNT(*) as c FROM comments WHERE parent_id::text = {ph}", (comment_id,))
+            # Soft-delete: SP3 W6.1 — trước đây hard-DELETE xóa vĩnh viễn reply con
+            # của người khác. Nay UPDATE deleted_at (reply con giữ lại, recoverable).
+            child_count = db._fetchone(conn, f"SELECT COUNT(*) as c FROM comments WHERE parent_id::text = {ph} AND deleted_at IS NULL", (comment_id,))
             children = int(db._row_to_dict(child_count)["c"]) if child_count else 0
-            db._execute(conn, f"DELETE FROM comments WHERE parent_id::text = {ph}", (comment_id,))
-            db._execute(conn, f"DELETE FROM comments WHERE id::text = {ph}", (comment_id,))
+            db._execute(conn, f"UPDATE comments SET deleted_at = NOW() WHERE parent_id::text = {ph} AND deleted_at IS NULL", (comment_id,))
+            db._execute(conn, f"UPDATE comments SET deleted_at = NOW() WHERE id::text = {ph}", (comment_id,))
             db._execute(conn, f"""
                 UPDATE posts SET comment_count = GREATEST(comment_count - {ph}::int, 0) WHERE id::text = {ph}
             """, (1 + children, str(rd["post_id"])))
@@ -2378,7 +2381,7 @@ async def report_comment(comment_id: str, body: ReportCommentBody, request: Requ
     uid = str(user["id"])
     def _check():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (comment_id,))
+            row = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND deleted_at IS NULL", (comment_id,))
             if not row:
                 raise HTTPException(404, "Bình luận không tồn tại")
             rd = db._row_to_dict(row)
@@ -2595,7 +2598,7 @@ async def set_best_answer(post_id: str, body: BestAnswerBody, user=Depends(requi
             if str(d["user_id"]) != str(user["id"]):
                 raise HTTPException(403, "Chỉ người hỏi mới chọn được câu trả lời hay")
             if body.comment_id:
-                c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND post_id::text = {ph}",
+                c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND post_id::text = {ph} AND deleted_at IS NULL",
                                  (body.comment_id, post_id))
                 if not c:
                     raise HTTPException(400, "Bình luận không thuộc bài này")
@@ -2726,7 +2729,7 @@ async def toggle_comment_like(comment_id: str, user=Depends(require_user), _csrf
     uid = str(user["id"])
     def _query():
         with db._conn() as conn:
-            c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph}", (comment_id,))
+            c = db._fetchone(conn, f"SELECT user_id FROM comments WHERE id::text = {ph} AND deleted_at IS NULL", (comment_id,))
             if not c:
                 raise HTTPException(404, "Bình luận không tồn tại")
             cd = db._row_to_dict(c)
@@ -3248,7 +3251,7 @@ async def pin_comment(post_id: str, comment_id: str = Query(..., max_length=100)
             if str(post_d["user_id"]) != uid:
                 raise HTTPException(403, "Chỉ tác giả bài viết mới có thể ghim bình luận")
             comment = db._fetchone(conn, f"""
-                SELECT id FROM comments WHERE id::text = {ph} AND post_id::text = {ph}
+                SELECT id FROM comments WHERE id::text = {ph} AND post_id::text = {ph} AND deleted_at IS NULL
             """, (comment_id, post_id))
             if not comment:
                 raise HTTPException(404, "Không tìm thấy bình luận trong bài này")
