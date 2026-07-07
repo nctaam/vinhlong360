@@ -284,7 +284,7 @@ A photograph of [tên entity], [vị trí cụ thể — xã/phường thật], 
 - [ ] Checklist chung (ở trên)
 - [ ] Specialty (món đặc trưng) đã điền
 - [ ] Khoảng giá đã điền (nếu có)
-- [ ] SĐT đã xác minh (nếu có)
+- [ ] SĐT đối chiếu nguồn chính thống (nếu có)
 - [ ] Giờ mở cửa (nếu có)
 - [ ] Địa chỉ đầy đủ
 

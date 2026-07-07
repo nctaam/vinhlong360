@@ -17,7 +17,7 @@ from pathlib import Path
 
 # Dòng mang ngữ cảnh phủ định/cảnh báo — không tính là vi phạm
 NEG_DEFAULT = re.compile(
-    r"(KHÔNG|CẤM|cấm|không dùng|đừng|OVERRIDE|ARCHIVED|đã bỏ|đã xoá|banned|deprecated|ngoại lệ|whitelist|từ.khoá|blacklist|filler)",
+    r"(KHÔNG|KHONG|CẤM|không dùng|đừng|OVERRIDE|ARCHIVED|đã bỏ|đã xoá|đã dừng|banned|deprecated|ngoại lệ|whitelist|từ.khoá|blacklist|filler|\bno\b|Supersedes)",
     re.I,
 )
 

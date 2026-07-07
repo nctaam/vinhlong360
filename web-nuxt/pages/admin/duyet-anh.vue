@@ -4,8 +4,8 @@
       <div>
         <h1>Duyệt ảnh</h1>
         <p class="img-subtitle">
-          Ứng viên ảnh từ nguồn cấp phép (Wikimedia/Commons). Khớp tên tự động sai ~50% —
-          chỉ ảnh được duyệt mới lên trang. Nhớ kiểm tra giấy phép trước khi duyệt.
+          Ứng viên ảnh tồn đọng từ pipeline cũ — pipeline đã DỪNG, ảnh mới CHỈ AI-gen (CLAUDE.md §1.5).
+          Khớp tên tự động sai ~50% — chỉ ảnh được duyệt mới lên trang; kiểm giấy phép trước khi duyệt.
         </p>
       </div>
       <button type="button" class="admin-refresh" :disabled="loading" @click="fetchQueue()">

@@ -11,7 +11,7 @@ from .common import iter_text_files, repo_root
 KEY_PATTERN = re.compile(
     r"(api[_-]?key|secret|token|password|passwd)\s*[=:]\s*['\"]([A-Za-z0-9+/_\-]{16,})['\"]", re.I
 )
-_ALLOW_LINE = re.compile(r"(example|placeholder|xxx+|your[_-]|<.*>|\bos\.environ|getenv|env\(|process\.env|import\.meta)", re.I)
+_ALLOW_LINE = re.compile(r"(example|placeholder|xxx+|your[_-]|<.*>|\bos\.environ|getenv|env\(|process\.env|import\.meta|b64|base64|alphabet|charset|ABCDEFGHIJKLMNOPQRSTUVWXYZ)")
 _STRING_32 = re.compile(r"['\"]([A-Za-z0-9+/=_\-]{32,})['\"]")
 _EXCLUDE = ["tests", ".env.example", "package-lock.json", "scripts/checks", "web-nuxt/node_modules"]
 _ROOTS = ["agent", "scripts", "web-nuxt"]

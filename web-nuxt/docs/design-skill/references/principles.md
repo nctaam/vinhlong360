@@ -67,7 +67,7 @@ Content comes first. Chrome is minimal.
 ### Imagery
 - Mekong delta: river, green orchards, terracotta tiles, golden sunlight
 - Avoid generic tropical stock → specifically Tây Nam Bộ
-- Copyright: Wikimedia / UGC / Pexels-Unsplash licensed only (B6)
+- Copyright: AI-generated only (CLAUDE.md §1.5) — no stock, no Wikimedia, no UGC photos
 
 ### Naming
 - Vietnamese entity names: title case with diacritics ("Nhà Cổ Cai Cường")

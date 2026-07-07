@@ -1,8 +1,9 @@
 """
 vinhlong360 — image suggestion REVIEW QUEUE (P2, review-gated).
 
-Human-in-the-loop store for image candidates harvested by ingest scripts
-(Wikimedia/Commons). NOTHING is auto-published: fuzzy name-matching is wrong
+Human-in-the-loop store for LEGACY image candidates (old ingest pipeline —
+now STOPPED/banned; new images are AI-generated only, CLAUDE.md §1.5).
+NOTHING is auto-published: fuzzy name-matching is wrong
 ~50% of the time, so every candidate waits in `pending` until an admin approves
 or rejects it on /admin/duyet-anh.
 
