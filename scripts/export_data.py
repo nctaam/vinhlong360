@@ -29,6 +29,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 DEFAULT_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "web", "data.json")
 
 
+def _json_default(o):
+    """PG trả datetime cho cột timestamp (SQLite trả string) — ISO-hoá khi dump."""
+    if hasattr(o, "isoformat"):
+        return o.isoformat()
+    raise TypeError(f"Không serialize được {type(o).__name__}")
+
+
 def build_payload(db) -> dict:
     return {
         "entities": db.all_entities(),
@@ -56,8 +63,8 @@ def diff_summary(payload: dict, out_path: str) -> dict:
     removed = [i for i in old_idx if i not in new_idx]
     changed = []
     for i in new_idx:
-        if i in old_idx and json.dumps(new_idx[i], sort_keys=True, ensure_ascii=False) != json.dumps(
-            old_idx[i], sort_keys=True, ensure_ascii=False
+        if i in old_idx and json.dumps(new_idx[i], sort_keys=True, ensure_ascii=False, default=_json_default) != json.dumps(
+            old_idx[i], sort_keys=True, ensure_ascii=False, default=_json_default
         ):
             changed.append(i)
     return {
@@ -85,7 +92,7 @@ def export(db, out_path: str, dry_run: bool = False) -> dict:
     fd, tmp_path = tempfile.mkstemp(prefix=".export-", suffix=".json", dir=out_dir)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False)
+            json.dump(payload, f, ensure_ascii=False, default=_json_default)
         os.replace(tmp_path, out_path)
     finally:
         if os.path.exists(tmp_path):

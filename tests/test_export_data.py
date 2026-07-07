@@ -106,6 +106,21 @@ def test_export_dry_run_diffs_against_existing(tmp_db, tmp_path):
     assert json.loads(out.read_text(encoding="utf-8")) == old
 
 
+def test_export_serializes_datetime_from_pg_backend(tmp_db, tmp_path, monkeypatch):
+    """PG trả datetime cho timestamp — export không được nổ TypeError."""
+    from datetime import datetime
+
+    from export_data import export
+
+    ents = tmp_db.all_entities()
+    ents[0]["createdAt"] = datetime(2026, 7, 7, 10, 30)
+    monkeypatch.setattr(tmp_db, "all_entities", lambda: ents)
+    out = tmp_path / "out.json"
+    export(tmp_db, str(out), dry_run=False)
+    data = json.loads(out.read_text(encoding="utf-8"))
+    assert data["entities"][0]["createdAt"] == "2026-07-07T10:30:00"
+
+
 def test_export_overwrite_preserves_valid_json_on_success(tmp_db, tmp_path):
     from export_data import export
 
