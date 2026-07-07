@@ -25,7 +25,6 @@ Tham khảo: Agentic RAG Survey 2026 (arXiv:2501.09136v4)
 """
 
 import heapq
-import json
 import logging
 import re
 import unicodedata

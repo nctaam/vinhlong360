@@ -2,11 +2,9 @@
 Tests for admin.py — admin API input validation and security.
 """
 
-import json
 import re
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 import pytest
 

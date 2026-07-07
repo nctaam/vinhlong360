@@ -13,7 +13,6 @@ import json
 import logging
 import os
 import re
-from datetime import datetime, timezone
 
 import httpx
 
@@ -681,7 +680,6 @@ def check_content_entropy(content: str) -> dict:
     encoding = "none"
     if entropy > 5.9:
         # Check if it looks like base64
-        import re as _re
         b64_chars = sum(1 for c in content if c in
                         'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=')
         if b64_chars / length > 0.9:

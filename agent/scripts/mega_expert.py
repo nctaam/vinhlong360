@@ -43,7 +43,6 @@ import json
 import os
 import sys
 import time
-import threading
 import warnings
 warnings.filterwarnings("ignore", message=".*renamed.*ddgs.*")
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -63,8 +62,7 @@ try:
 except Exception:
     pass
 
-from mega_research import (LLM, read_jsonl, append_jsonl, load_entities,
-                           log, utc, PROVINCE, _cfg_io)
+from mega_research import (LLM, read_jsonl, append_jsonl, log, utc, _cfg_io)
 
 SYS_EXPERT = """Bạn là CHUYÊN GIA ĐẦU NGÀNH — cấp tiến sĩ, giáo sư — về lĩnh vực được hỏi.
 Bạn am hiểu sâu sắc vùng ĐBSCL (Vĩnh Long, Bến Tre, Trà Vinh).

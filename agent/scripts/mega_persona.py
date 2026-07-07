@@ -34,8 +34,7 @@ try:
 except Exception:
     pass
 
-from mega_research import (LLM, read_jsonl, append_jsonl, load_entities,
-                           log, utc, PROVINCE, _cfg_io)
+from mega_research import (LLM, read_jsonl, append_jsonl, log, utc, _cfg_io)
 
 
 SYS_JOURNEY = """Bạn là UX RESEARCHER + TRAVEL CONSULTANT cấp cao.

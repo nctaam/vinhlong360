@@ -15,7 +15,6 @@ Output: scratch/seo-audit-{date}.csv
 import argparse
 import csv
 import json
-import os
 import re
 import sys
 from datetime import datetime

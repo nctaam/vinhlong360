@@ -20,7 +20,7 @@ import time
 import threading
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 AGENT_DIR = Path(__file__).resolve().parent.parent

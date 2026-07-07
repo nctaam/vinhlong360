@@ -15,7 +15,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # by importing the module carefully.
 
 # Import models via exec to avoid full server init
-import importlib
 import os
 
 os.environ.setdefault("LLM_API_KEY", "test-key")

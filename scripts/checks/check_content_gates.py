@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 
 from .check_content_voice import _authored_texts
-from .common import RegexCheck, _norm, repo_root
+from .common import _norm, repo_root
 
 DATA_REL = "web/data.json"
 

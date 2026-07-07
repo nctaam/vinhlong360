@@ -1,6 +1,5 @@
 # agent/tests/test_wave4.py
 import inspect
-import pytest
 
 import twofactor
 
@@ -58,7 +57,6 @@ class TestTwoFactorCrypto:
 
 
 from fastapi import FastAPI
-from fastapi.testclient import TestClient
 import auth
 
 

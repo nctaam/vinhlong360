@@ -73,9 +73,8 @@ from seo import router as seo_router
 from social import router as social_router
 from tools import TOOLS, SYSTEM_PROMPT
 from middleware import (
-    logger, chat_limiter, stream_limiter, admin_limiter, report_limiter,
+    logger, chat_limiter, stream_limiter, report_limiter,
     response_tracker, error_tracker, generate_request_id, get_client_ip,
-    verify_admin_key,
 )
 from itinerary_gen import generate_itinerary
 from scheduler import start_scheduler, stop_scheduler, scheduler_status, sync_data_json_to_js

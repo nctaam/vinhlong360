@@ -16,7 +16,6 @@ Thread-safe, stdlib only.
 """
 
 import hashlib
-import json
 import logging
 import re
 import time

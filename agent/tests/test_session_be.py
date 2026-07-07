@@ -10,7 +10,6 @@ Design: same as test_writepaths_*.py —
 
 import json
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -193,7 +192,6 @@ def test_admin_activity_feed_reads_jsonl(tmp_path, monkeypatch):
 
     app = FastAPI()
     app.include_router(admin.router)
-    from unittest.mock import AsyncMock
     app.dependency_overrides[admin.require_admin] = lambda: "test"
     client = TestClient(app)
 
@@ -644,7 +642,6 @@ def test_get_security_headers_dev_no_hsts():
 
 def test_body_limits_defined():
     """Verify per-endpoint body limits exist in server config."""
-    import inspect
     # Can't import server.py without LLM_API_KEY, so check the source file
     src = (Path(__file__).parent.parent / "server.py").read_text(encoding="utf-8")
     assert "_BODY_LIMITS" in src
@@ -708,7 +705,7 @@ def test_map_pins_filters_no_coords():
 def test_map_pins_type_filter():
     """Comma-separated type filter passes entity_types to DB."""
     import public_api
-    from unittest.mock import patch, call
+    from unittest.mock import patch
     filtered = [
         {"id": "a", "name": "A", "type": "dish", "coordinates": [10.25, 106.01],
          "attributes": {}, "placeId": None},
@@ -2160,7 +2157,7 @@ class TestPhase14RatelimitGC:
         assert "freed" in result
 
     def test_gc_all_cleans_expired(self):
-        from ratelimit import _buckets, gc_all, _now
+        from ratelimit import _buckets, gc_all
         import time
         _buckets["test_gc_expired"] = [time.time() - 7200]
         result = gc_all()

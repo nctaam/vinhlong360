@@ -9,12 +9,10 @@ security checks. All tests are pure-logic (no DB, no LLM, no network).
 """
 
 import hashlib
-import hmac
 import inspect
 import sys
-import time
 from pathlib import Path
-from unittest.mock import MagicMock, AsyncMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 

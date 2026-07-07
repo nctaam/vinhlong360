@@ -768,7 +768,7 @@ async def list_muted_users(page: int = Query(1, ge=1, le=100), limit: int = Quer
 
 def _group_notifications(notifs: list[dict]) -> list[dict]:
     """Group same (type, ref_type, ref_id) within 24h. Latest becomes the group representative."""
-    from datetime import datetime, timedelta
+    from datetime import datetime
     groups: dict[str, dict] = {}
     result = []
     for n in notifs:

@@ -21,7 +21,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
 
 # Default thresholds (Google CWV "good" thresholds)
 DEFAULT_LCP_MS = 2500       # Largest Contentful Paint (ms)

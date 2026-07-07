@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 import time
 from datetime import datetime, timezone
@@ -268,9 +267,9 @@ def main():
     tprint("=" * 70)
 
     from agent.scripts.research_engine import (
-        LLMClient, build_corpus, read_jsonl as engine_read_jsonl,
+        LLMClient, read_jsonl as engine_read_jsonl,
         run_thematic_ultra, run_cross_pollination,
-        run_asset_ultra, run_crosslink_ultra, OUTPUT_DIR as ENGINE_OUTPUT_DIR
+        run_asset_ultra, run_crosslink_ultra
     )
 
     llm = LLMClient(model=args.model, rps=args.rps)

@@ -3,7 +3,6 @@ Phase 16-17+ test coverage: tools.py schema validation, seo.py helpers,
 moderation auto-escalation, cross-module consistency, path validation,
 rate limiting, SELECT * removal, query param constraints.
 """
-import json
 import sys
 from pathlib import Path
 
@@ -356,15 +355,14 @@ class TestCrossModuleConsistency:
         assert hasattr(settings, "MAX_COMMENTS_PER_POST")
 
     def test_ratelimit_functions_importable(self):
-        from ratelimit import check_rate, check_rate_ip, gc_all, is_rate_limited, _reset
+        from ratelimit import check_rate, gc_all, _reset
         assert callable(check_rate)
         assert callable(gc_all)
         assert callable(_reset)
 
     def test_auth_middleware_dependencies_importable(self):
         from auth_middleware import (
-            get_current_user, require_user, require_csrf,
-            require_idempotency, validate_path_id,
+            require_idempotency,
         )
         import inspect
         assert inspect.iscoroutinefunction(require_idempotency)
@@ -854,8 +852,6 @@ class TestSecurityPosture:
 
     def test_pydantic_field_constraints_on_string_inputs(self):
         """All user-facing Pydantic str fields should have Field(max_length=...) to prevent oversized payloads."""
-        from pydantic import Field as PydanticField
-        import inspect
 
         # Models that accept user/admin string input
         from auth import OTPRequest, OTPVerify, PasswordLogin, SetPassword, CheckPhone, ProfileUpdate, PrivacyUpdate
@@ -960,7 +956,6 @@ class TestSecurityPosture:
 
     def test_timezone_aware_datetime(self):
         """Production modules must use datetime.now(timezone.utc), not naive datetime.now()."""
-        import re
         from pathlib import Path
         critical_modules = ["admin", "auth", "middleware", "server", "database", "analytics", "cost_tracker", "social", "public_api", "proactive", "realtime", "mcp_server", "scheduler"]
         for mod in critical_modules:
@@ -971,7 +966,6 @@ class TestSecurityPosture:
 
     def test_storage_path_traversal_protection(self):
         """Storage module must validate paths stay within LOCAL_MEDIA_DIR."""
-        from storage import Storage
         src = (Path(__file__).resolve().parent.parent / "storage.py").read_text(encoding="utf-8")
         assert "is_relative_to" in src, "storage.py must use is_relative_to() for path traversal protection"
         assert src.count("is_relative_to") >= 2, "Both _put and delete must check is_relative_to"
@@ -1154,7 +1148,7 @@ class TestMediumFixesBatch2:
         """Scheduler retry: success resets counter, failure increments with backoff."""
         import time as _time
         sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-        from scheduler import ScheduledTask, _MAX_RETRIES, _RETRY_BACKOFF_BASE
+        from scheduler import ScheduledTask
 
         call_count = 0
         def _failing_task():

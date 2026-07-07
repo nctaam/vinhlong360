@@ -21,7 +21,6 @@ and capped tightly; turn it on when the API supports prompt caching.
 import json
 import os
 import re
-import sys
 import unicodedata
 from pathlib import Path
 from threading import Lock

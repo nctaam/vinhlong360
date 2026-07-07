@@ -12,13 +12,11 @@ Advanced security layer tests — Round 4 depth:
 All tests are pure-logic (no DB, no LLM, no network).
 """
 
-import asyncio
 import base64
 import json
 import sys
 import time
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -62,7 +60,7 @@ class TestAccountLockout:
         assert is_account_locked("fresh_user") is False
 
     def test_clear_login_failures(self):
-        from auth_middleware import record_login_failure, clear_login_failures, is_account_locked, LOCKOUT_THRESHOLD
+        from auth_middleware import record_login_failure, clear_login_failures, LOCKOUT_THRESHOLD
         ident = "cleared_user"
         for _ in range(LOCKOUT_THRESHOLD - 1):
             record_login_failure(ident)
@@ -78,7 +76,7 @@ class TestAccountLockout:
         assert is_account_locked("user_b") is False
 
     def test_remaining_attempts_decreases(self):
-        from auth_middleware import record_login_failure, LOCKOUT_THRESHOLD, _reset_lockouts
+        from auth_middleware import record_login_failure, _reset_lockouts
         _reset_lockouts()
         r1 = record_login_failure("counter_user")
         r2 = record_login_failure("counter_user")

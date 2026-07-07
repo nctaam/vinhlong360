@@ -20,7 +20,6 @@ Persistence: atomic writes (ghi .tmp roi rename).
 
 import json
 import logging
-import re
 import statistics
 import time
 from collections import defaultdict

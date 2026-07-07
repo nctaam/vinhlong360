@@ -11,7 +11,6 @@ Tạo lịch trình tùy chỉnh dựa trên:
 Output: lịch trình chi tiết với thời gian, điểm dừng, ghi chú, ăn uống.
 """
 
-import json
 import logging
 
 import knowledge

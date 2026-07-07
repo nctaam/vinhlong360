@@ -31,7 +31,6 @@ from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 

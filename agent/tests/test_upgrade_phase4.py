@@ -1,6 +1,5 @@
 """Tests for Phase 4 upgrade cards: U-28, U-26, U-15, U-20."""
 import inspect
-import re
 from pathlib import Path
 import pytest
 

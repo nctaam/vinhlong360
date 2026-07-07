@@ -20,7 +20,6 @@ All writes go to web/data.json and trigger knowledge.reload().
 
 import json
 import logging
-import sys
 from pathlib import Path
 
 logger = logging.getLogger(__name__)

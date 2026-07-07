@@ -1,7 +1,5 @@
 """Tests for Phase 2 upgrade cards: U-08, U-29, U-25, U-12."""
 import inspect
-import math
-import pytest
 
 
 # ── U-08: Field-level report/correction CTA ──────────────────────────

@@ -7,9 +7,8 @@ Postgres-only (UGC parity); 503 ở SQLite dev. Mỗi plan = {title, stops[]}.
 import asyncio
 import json
 import logging
-from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
 
 from auth_middleware import require_user, require_csrf, validate_path_id

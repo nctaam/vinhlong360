@@ -1,6 +1,5 @@
 """Tests cho feature_flags.py — FeatureRegistry + env-var override."""
 
-import os
 import sys
 from pathlib import Path
 

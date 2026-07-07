@@ -1,6 +1,5 @@
 """Integration test suite — verify all 21 upgrade cards are properly wired."""
 import inspect
-import re
 from pathlib import Path
 import pytest
 

@@ -15,7 +15,6 @@ import json
 import logging
 import os
 import sys
-import time
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path

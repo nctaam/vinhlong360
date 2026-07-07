@@ -13,7 +13,6 @@ Tính năng:
 """
 
 import logging
-import re
 import unicodedata
 from threading import Lock
 

@@ -1,7 +1,5 @@
 """Tests for Phase 3 upgrade cards: U-17, U-24, U-22, BE-10, BE-5."""
 import inspect
-import re
-import pytest
 
 
 # ── U-17: Stale content admin queue ─────────────────────────────────

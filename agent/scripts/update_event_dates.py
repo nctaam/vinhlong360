@@ -4,7 +4,6 @@ Lunar anchor: 1/1 Bính Ngọ = 2026-02-17
 T1=02-17 T2=03-18 T3=04-17 T4=05-16 T5=06-15
 T6=07-14 T7=08-13 T8=09-11 T9=10-11 T10=11-09
 """
-import json
 import sys
 sys.path.insert(0, ".")
 from database import db

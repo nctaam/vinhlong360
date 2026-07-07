@@ -19,12 +19,10 @@ Mỗi user có 1 profile persistent qua sessions.
 
 import base64
 import json
-import hashlib
 import logging
 import os
 import re
 import time
-from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock, RLock

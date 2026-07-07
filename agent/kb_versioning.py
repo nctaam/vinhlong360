@@ -12,7 +12,6 @@ Old snapshots are pruned (keep last N). All writes are atomic.
 import json
 import logging
 import shutil
-import sys
 from pathlib import Path
 
 logger = logging.getLogger(__name__)

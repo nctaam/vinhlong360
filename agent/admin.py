@@ -1688,7 +1688,6 @@ async def contact_funnel(
             description="Exports contact funnel data as a downloadable CSV file with per-entity interaction counts.")
 async def contact_funnel_export(days: int = Query(30, ge=1, le=365)):
     """Export contact funnel dạng CSV."""
-    import io
 
     def _generate():
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
@@ -3145,7 +3144,6 @@ async def reject_provisional(entity_id: str):
              description="Exports all entities, relationships, and itineraries as a streaming JSON file to avoid memory issues.")
 async def export_data():
     """Export toàn bộ entities từ DB — streaming JSON để không OOM."""
-    import io
 
     def _generate():
         yield '{"entities":['

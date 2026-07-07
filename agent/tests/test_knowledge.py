@@ -2,7 +2,6 @@
 Tests for knowledge.py — the core knowledge base layer.
 """
 
-import json
 import sys
 from pathlib import Path
 from unittest.mock import patch

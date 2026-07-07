@@ -22,7 +22,6 @@ shape, so the loop keeps learning during API outages.
 import json
 import logging
 import re
-import sys
 import unicodedata
 from pathlib import Path
 from threading import Lock

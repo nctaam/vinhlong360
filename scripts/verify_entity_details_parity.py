@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agent"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from entity_schemas import KIND_OF_TYPE  # noqa: E402
 from backfill_entity_details import (  # noqa: E402
-    KIND_TABLE, JSONB_COLUMNS, UNIVERSAL, typed_values,
+    KIND_TABLE, JSONB_COLUMNS, typed_values,
 )
 
 

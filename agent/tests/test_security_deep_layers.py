@@ -17,10 +17,7 @@ All tests are pure-logic (no DB, no LLM, no network).
 
 import asyncio
 import sys
-import time
-import math
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -706,7 +703,6 @@ class TestRequestAnomalyDetection:
 
     def test_random_data_high_entropy(self):
         from middleware import request_anomaly
-        import string
         # Simulate random-looking data
         payload = "aZ3kR9mN2qW8eT5yU1iO4pL7jH0gF6dS"
         result = request_anomaly.check_payload_entropy(payload * 3)

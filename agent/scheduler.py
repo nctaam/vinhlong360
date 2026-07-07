@@ -15,7 +15,6 @@ Hoặc import và gọi start_scheduler() từ server.
 import json
 import logging
 import os
-import re
 import subprocess
 import sys
 import time
@@ -496,7 +495,7 @@ def task_autonomous_agent():
 def task_cache_warmup():
     """Warm semantic cache with popular and seasonal queries."""
     try:
-        from semantic_cache import cache_warmer, multi_tier_cache
+        from semantic_cache import cache_warmer
         month = datetime.now(_VN_TZ).month
         seasonal = cache_warmer.get_seasonal_queries(month)
         _sched_logger.info("Cache warmup: %d seasonal queries for month %d", len(seasonal), month)

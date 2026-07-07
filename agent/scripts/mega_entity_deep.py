@@ -18,7 +18,6 @@ Usage:
 """
 from __future__ import annotations
 import argparse
-import json
 import os
 import sys
 import time
@@ -41,7 +40,7 @@ except Exception:
     pass
 
 from mega_research import (LLM, read_jsonl, append_jsonl, load_entities,
-                           log, utc, PROVINCE, _cfg_io)
+                           log, utc, _cfg_io)
 
 
 SYS_ENTITY = """Bạn là CHUYÊN GIA ĐỊA PHƯƠNG ĐẦU NGÀNH về vùng ĐBSCL (Vĩnh Long, Bến Tre, Trà Vinh).

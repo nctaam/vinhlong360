@@ -22,7 +22,6 @@ import os
 import re
 import time
 import uuid
-from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from threading import Lock

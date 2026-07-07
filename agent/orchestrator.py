@@ -18,9 +18,9 @@ import logging
 import re
 import threading
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 import unicodedata
 
 logger = logging.getLogger(__name__)
@@ -464,7 +464,6 @@ class Orchestrator:
             category     : str   -- detected query category
             fallback     : bool  -- True if we fell back to GeneralAgent
         """
-        import json  # local import to keep top-level lightweight
 
         category, agent = self.route(message)
         handoff_log.record(session_id, message, category, agent)

@@ -10,7 +10,6 @@ Cache: mỗi API response cache 30 phút để tránh rate limit.
 Fallback: nếu API không khả dụng, dùng seasonal data có sẵn.
 """
 
-import json
 import logging
 import os
 import time

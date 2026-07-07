@@ -33,7 +33,6 @@ import re
 import sys
 import time
 from collections import defaultdict
-from datetime import datetime
 from pathlib import Path
 from threading import Lock
 from typing import Optional
@@ -45,7 +44,7 @@ if sys.stdout.encoding != "utf-8":
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Request
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -982,7 +981,6 @@ def create_bot_app() -> FastAPI:
 # ======================================================================
 
 if __name__ == "__main__":
-    import asyncio
     import threading
 
     import uvicorn

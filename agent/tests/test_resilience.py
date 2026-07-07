@@ -110,7 +110,6 @@ class TestLLMTimeout:
     def test_generate_followups_has_timeout(self):
         """generate_followups() must pass timeout to LLM call."""
         # We test this by checking server.py source for timeout in generate_followups
-        import inspect
         server_path = AGENT_DIR / "server.py"
         source = server_path.read_text(encoding="utf-8")
         # Find generate_followups function and check it has timeout
@@ -830,7 +829,6 @@ class TestContextualRetrievalResilience:
     def test_contextual_cache_load_corrupt_file_no_crash(self):
         """ContextualRetrieval must handle corrupt cache file gracefully."""
         from contextual_retrieval import ContextualRetrieval, CONTEXTUAL_FILE
-        import tempfile
 
         cr = ContextualRetrieval()
         cr._loaded = False
@@ -2185,7 +2183,6 @@ class TestKBCurationLogging:
 
     def test_reload_failure_logged(self):
         import kb_curation
-        import logging
 
         with patch.object(kb_curation, "logger") as mock_log:
             # Force an import error inside _reload
@@ -2307,7 +2304,7 @@ class TestSelfEvalLogging:
                 if "self_eval" in sys.modules:
                     importlib.reload(sys.modules["self_eval"])
                 else:
-                    import self_eval
+                    pass
                 mod = sys.modules["self_eval"]
                 assert hasattr(mod, "logger")
                 assert mod.logger.name == "self_eval"
@@ -2337,7 +2334,7 @@ class TestMCPServerLogging:
                 if "mcp_server" in sys.modules:
                     importlib.reload(sys.modules["mcp_server"])
                 else:
-                    import mcp_server
+                    pass
                 mod = sys.modules["mcp_server"]
                 assert hasattr(mod, "logger")
         except Exception:

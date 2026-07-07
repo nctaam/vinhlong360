@@ -1537,7 +1537,7 @@ class TestRequestIdPropagation:
             _request_id_var.reset(token)
 
     def test_contextvar_empty_omits_req_id(self):
-        from middleware import _request_id_var, StructuredLogger
+        from middleware import StructuredLogger
         sl = StructuredLogger(name="test_reqid2", max_entries=100)
         sl.log("info", "test without req_id")
         assert "req_id" not in sl._buffer[-1]
@@ -1598,7 +1598,6 @@ class TestUnifiedErrorResponse:
     def test_error_response_includes_request_id(self):
         from server import _error_response
         from starlette.requests import Request
-        from starlette.testclient import TestClient
         scope = {"type": "http", "method": "GET", "path": "/test", "headers": [], "query_string": b""}
         req = Request(scope)
         req.state.request_id = "test-rid-456"

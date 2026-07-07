@@ -2,7 +2,6 @@
 Tests for experience_memory.py — ReasoningBank-lite strategy memory.
 """
 
-import json
 import sys
 from pathlib import Path
 

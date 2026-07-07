@@ -1,6 +1,5 @@
 import urllib.request
 import json
-import sys
 
 r = urllib.request.urlopen("http://localhost:8360/api/homepage")
 d = json.loads(r.read())

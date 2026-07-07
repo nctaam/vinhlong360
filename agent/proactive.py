@@ -16,7 +16,6 @@ Output: danh sách proactive suggestions inject vào responses.
 
 import json
 import logging
-import time
 from datetime import datetime, timedelta, timezone
 
 _VN_TZ = timezone(timedelta(hours=7))

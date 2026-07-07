@@ -1,6 +1,5 @@
 """Tests for Phase 1 upgrade cards: U-02, U-07, U-04, U-09."""
 import inspect
-import sys
 import pytest
 
 

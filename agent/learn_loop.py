@@ -31,7 +31,6 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from threading import Lock
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if sys.stdout.encoding != "utf-8":

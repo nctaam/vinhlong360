@@ -217,7 +217,7 @@ class TestModerationThresholds:
     """The auto-decision boundaries that drive every post's moderation_status."""
 
     def test_below_approve_threshold(self):
-        from moderation import AUTO_APPROVE_THRESHOLD, QUEUE_THRESHOLD
+        from moderation import AUTO_APPROVE_THRESHOLD
         # score < 0.3 → approved
         assert _decide(AUTO_APPROVE_THRESHOLD - 0.01) == "approved"
 

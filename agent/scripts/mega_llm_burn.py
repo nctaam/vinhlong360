@@ -24,7 +24,6 @@ import json
 import os
 import sys
 import time
-import threading
 import warnings
 warnings.filterwarnings("ignore", message=".*renamed.*ddgs.*")
 from concurrent.futures import ThreadPoolExecutor, as_completed

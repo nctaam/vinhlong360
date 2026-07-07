@@ -24,17 +24,12 @@ Usage:
 """
 from __future__ import annotations
 import argparse
-import json
 import os
-import re
 import sys
 import time
-import threading
 import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 warnings.filterwarnings("ignore", message=".*renamed.*ddgs.*")
 

@@ -4,7 +4,6 @@ Unit test offline; 1 endpoint test pg_only (hạ limit qua monkeypatch).
 """
 import sys
 import uuid
-import json
 from pathlib import Path
 
 import pytest
