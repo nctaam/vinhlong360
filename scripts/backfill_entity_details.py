@@ -25,8 +25,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agent"))
 from entity_schemas import KIND_OF_TYPE  # noqa: E402
 # Nguồn sự thật ánh xạ + coercion: agent/entity_details.py (GĐ-C dual-write dùng chung).
-from entity_details import (  # noqa: E402
-    JSONB_COLUMNS, KIND_TABLE, split_typed,
+from entity_details import (  # noqa: E402,F401  (INT_COLUMNS/KEY_MAP/UNIVERSAL re-export cho test_backfill_entity_details)
+    INT_COLUMNS, JSONB_COLUMNS, KEY_MAP, KIND_TABLE, UNIVERSAL, split_typed,
 )
 
 typed_values = split_typed  # alias giữ tương thích parity script/test
