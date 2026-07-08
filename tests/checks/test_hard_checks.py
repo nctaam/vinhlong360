@@ -195,3 +195,20 @@ def test_api_contract_survives_vietnamese_diff(tmp_path):
     _git(repo, "add", "agent/server.py")
     r = ApiContractCheck(root=repo).run(files=["agent/server.py"])
     assert r["count"] == 1  # route mới thiếu contract vẫn bị bắt, không crash
+
+
+def test_net_route_changes_ignores_moved_route():
+    """Extract-method dời decorator: cùng route ở CẢ +/- → net rỗng (hết false-positive)."""
+    from checks.check_api_contract import _net_route_changes
+    diff = ('-@router.get("/homepage",\n'
+            '+@router.get("/homepage",\n'
+            '-@router.get("/entities/{id}/gallery",\n'
+            '+@router.get("/entities/{id}/gallery",\n')
+    assert _net_route_changes(diff) == set()
+
+
+def test_net_route_changes_flags_real_add_and_method_change():
+    from checks.check_api_contract import _net_route_changes
+    assert _net_route_changes('+@router.post("/new")\n') == {"POST /new"}
+    # đổi method cùng path = đổi hợp đồng → bắt cả 2 chiều
+    assert _net_route_changes('-@router.get("/x")\n+@router.post("/x")\n') == {"GET /x", "POST /x"}

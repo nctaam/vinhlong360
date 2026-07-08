@@ -8,8 +8,25 @@ from pathlib import Path
 
 from .common import repo_root
 
-ROUTE_RE = re.compile(r"^[+-]\s*@(router|app)\.(get|post|put|delete|patch)\(")
+ROUTE_RE = re.compile(
+    r"""^([+-])\s*@(?:router|app)\.(get|post|put|delete|patch)\(\s*["']([^"']+)["']""")
 CONTRACT = "docs/api-contract.md"
+
+
+def _net_route_changes(diff: str) -> set[str]:
+    """Route THÊM/XOÁ thật (net) từ staged diff. Extract-method chỉ DỜI vị trí
+    decorator → route xuất hiện ở CẢ dòng `-` lẫn `+` với path y hệt → triệt tiêu
+    (symmetric difference). Chỉ còn add/xoá path thật hoặc đổi method."""
+    added: set[str] = set()
+    removed: set[str] = set()
+    for ln in diff.splitlines():
+        m = ROUTE_RE.match(ln)
+        if not m:
+            continue
+        sign, method, path = m.group(1), m.group(2), m.group(3)
+        key = f"{method.upper()} {path}"
+        (added if sign == "+" else removed).add(key)
+    return added ^ removed
 
 
 class ApiContractCheck:
@@ -37,11 +54,12 @@ class ApiContractCheck:
                     ["git", "diff", "--cached", "-U0", "--", f],
                     capture_output=True, encoding="utf-8", errors="replace", cwd=str(self.root),
                 ).stdout or ""
-                changed_routes = [ln for ln in diff.splitlines() if ROUTE_RE.match(ln)]
-                if changed_routes:
+                net = _net_route_changes(diff)
+                if net:
                     violations.append({
                         "file": f, "line": 0, "rule": self.rule,
-                        "msg": f"{len(changed_routes)} route thêm/xoá nhưng {CONTRACT} không staged cùng commit",
+                        "msg": f"{len(net)} route thêm/xoá thật ({', '.join(sorted(net))}) "
+                               f"nhưng {CONTRACT} không staged cùng commit",
                     })
         return self._result(violations)
 
