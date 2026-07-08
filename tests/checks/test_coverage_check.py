@@ -50,3 +50,19 @@ def test_meets_thresholds_pass(tmp_path):
     thr = {"agent": 60, "core": {"database.py": 80}}
     _write(tmp_path, cov, thr)
     assert CoverageCheck(root=tmp_path).run()["count"] == 0
+
+
+def test_sibling_basename_does_not_shadow_core_module(tmp_path):
+    # Regression: mcp_server.py (0%) KHÔNG được che server.py (21.5%) — bug _pct
+    # endswith lỏng trả nhầm 0% → false-positive vi phạm. Basename phải khớp CHÍNH XÁC.
+    cov = {
+        "totals": {"percent_covered": 61.0},
+        "files": {
+            "agent/mcp_server.py": {"summary": {"percent_covered": 0.0}},
+            "agent/server.py": {"summary": {"percent_covered": 21.5}},
+        },
+    }
+    thr = {"agent": 60, "core": {"server.py": 20}}
+    _write(tmp_path, cov, thr)
+    # server.py 21.5% > 20% → KHÔNG vi phạm (nếu _pct che nhầm mcp_server 0% → sẽ fail)
+    assert CoverageCheck(root=tmp_path).run()["count"] == 0

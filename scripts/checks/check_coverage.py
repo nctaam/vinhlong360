@@ -23,10 +23,12 @@ CORE = ("database.py", "auth.py", "social.py", "server.py")
 
 
 def _pct(files: dict, suffix: str) -> float | None:
-    """% covered cho file có tên kết thúc bằng suffix (agent/database.py...)."""
+    """% covered cho core-module theo basename CHÍNH XÁC (agent/server.py).
+    Phải khớp đúng tên file, KHÔNG endswith lỏng — nếu không `mcp_server.py`
+    (basename khác) sẽ che `server.py` và trả nhầm 0%."""
     for name, data in files.items():
         n = name.replace("\\", "/")
-        if n.endswith("/" + suffix) or n.endswith(suffix):
+        if n.rsplit("/", 1)[-1] == suffix:
             return (data.get("summary") or {}).get("percent_covered", 0.0)
     return None
 
