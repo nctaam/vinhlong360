@@ -1,10 +1,16 @@
 {
-  "_comment": "R20.4 ngưỡng coverage — RATCHET: chỉ được NÂNG, không hạ. Số ban đầu = grounding 2026-07-08 (agent 51.1%, database 78.5%, auth 25.6%, social 18.7%, server 21%), làm tròn xuống để margin. Đích SP3: agent 60, core 80 — nâng dần qua W4/W5.",
-  "agent": 50,
+  "_comment": "R20.4 ngưỡng coverage — RATCHET: chỉ NÂNG, không hạ. Đo 2026-07-08 sau SP3-W4/W5 (agent 55.2%). Core: database 80.5 (đạt target SP3), auth/social/server chặn ở PG-infra (không nâng được local — cần Postgres). 6 module PG-free đã test THẬT (recommender 97 / freshness 99 / site_settings 100 / itinerary_gen 100 / visits 94 / notifications 31), khoá floor để chống regress. Aspirational SP3: agent 60 / core 80 — còn nghẽn PG.",
+  "agent": 55,
   "core": {
-    "database.py": 78,
+    "database.py": 80,
     "auth.py": 25,
     "social.py": 18,
-    "server.py": 20
+    "server.py": 21,
+    "recommender.py": 95,
+    "freshness.py": 97,
+    "site_settings.py": 98,
+    "itinerary_gen.py": 98,
+    "visits.py": 90,
+    "notifications.py": 30
   }
 }
