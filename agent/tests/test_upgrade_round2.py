@@ -1138,12 +1138,17 @@ class TestDashboardAlertsAppeals:
     """Dashboard alerts include pending appeals count."""
 
     def test_alerts_check_appeals(self):
-        src = inspect.getsource(__import__("admin").dashboard_alerts)
+        # The appeals alert was extracted into _dashboard_alerts_appeals (complexity refactor);
+        # dashboard_alerts still wires it.
+        _admin = __import__("admin")
+        assert "_dashboard_alerts_appeals" in inspect.getsource(_admin.dashboard_alerts)  # wiring
+        src = inspect.getsource(_admin.dashboard_alerts) + inspect.getsource(_admin._dashboard_alerts_appeals)
         assert "moderation_appeals" in src
         assert '"appeals"' in src
 
     def test_appeals_alert_priority(self):
-        src = inspect.getsource(__import__("admin").dashboard_alerts)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.dashboard_alerts) + inspect.getsource(_admin._dashboard_alerts_appeals)
         assert "khiếu nại" in src
 
 
@@ -1831,23 +1836,30 @@ class TestAdminSystemHealth:
         assert "size_mb" in src
 
     def test_checks_postgres(self):
-        src = inspect.getsource(__import__("admin").system_health)
+        # Postgres stats extracted into _system_health_pg (complexity refactor); system_health
+        # still wires it. Combine both sources for the assertions.
+        _admin = __import__("admin")
+        assert "_system_health_pg" in inspect.getsource(_admin.system_health)  # wiring
+        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
         assert "postgres" in src
         assert "tables" in src
 
     def test_counts_table_rows(self):
-        src = inspect.getsource(__import__("admin").system_health)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
         assert "users" in src
         assert "posts" in src
         assert "comments" in src
 
     def test_active_sessions(self):
-        src = inspect.getsource(__import__("admin").system_health)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
         assert "active_sessions" in src
         assert "expires_at" in src
 
     def test_db_size(self):
-        src = inspect.getsource(__import__("admin").system_health)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
         assert "pg_database_size" in src
 
 
@@ -2270,7 +2282,11 @@ class TestAdminUserDetail:
         assert "pending" in src
 
     def test_returns_follow_stats(self):
-        src = inspect.getsource(__import__("admin").admin_user_detail)
+        # The stats dict was extracted into _admin_user_detail_stats (complexity refactor);
+        # admin_user_detail still wires it.
+        _admin = __import__("admin")
+        assert "_admin_user_detail_stats" in inspect.getsource(_admin.admin_user_detail)  # wiring
+        src = inspect.getsource(_admin.admin_user_detail) + inspect.getsource(_admin._admin_user_detail_stats)
         assert '"following"' in src
         assert '"followers"' in src
 
@@ -2279,7 +2295,8 @@ class TestAdminUserDetail:
         assert "_mask" in src
 
     def test_includes_session_count(self):
-        src = inspect.getsource(__import__("admin").admin_user_detail)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.admin_user_detail) + inspect.getsource(_admin._admin_user_detail_stats)
         assert "active_sessions" in src
 
     def test_404_for_missing_user(self):
@@ -3092,12 +3109,16 @@ class TestEnhancedSystemHealth:
         assert "/admin/system-health" in paths
 
     def test_includes_uptime(self):
-        src = inspect.getsource(__import__("admin").system_health)
+        # Server stats extracted into _system_health_server (complexity refactor).
+        _admin = __import__("admin")
+        assert "_system_health_server" in inspect.getsource(_admin.system_health)  # wiring
+        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_server)
         assert "uptime_seconds" in src
         assert "uptime_human" in src
 
     def test_includes_pid(self):
-        src = inspect.getsource(__import__("admin").system_health)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_server)
         assert "pid" in src
 
     def test_includes_storage(self):
@@ -3106,11 +3127,13 @@ class TestEnhancedSystemHealth:
         assert "jsonl_size_mb" in src
 
     def test_includes_pending_moderation(self):
-        src = inspect.getsource(__import__("admin").system_health)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
         assert "pending_moderation" in src
 
     def test_includes_open_reports(self):
-        src = inspect.getsource(__import__("admin").system_health)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
         assert "open_reports" in src
 
     def test_format_uptime_helper(self):
@@ -3120,7 +3143,8 @@ class TestEnhancedSystemHealth:
         assert _format_uptime(300) == "5m"
 
     def test_includes_more_pg_tables(self):
-        src = inspect.getsource(__import__("admin").system_health)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.system_health) + inspect.getsource(_admin._system_health_pg)
         assert "reports" in src
         assert "announcements" in src
 
@@ -4202,18 +4226,18 @@ class TestAdminUserDetailEnriched:
 
     def test_includes_reports_against(self):
         import admin
-        src = inspect.getsource(admin.admin_user_detail)
+        src = inspect.getsource(admin.admin_user_detail) + inspect.getsource(admin._admin_user_detail_stats)
         assert "reports_against" in src
 
     def test_includes_blocking_stats(self):
         import admin
-        src = inspect.getsource(admin.admin_user_detail)
+        src = inspect.getsource(admin.admin_user_detail) + inspect.getsource(admin._admin_user_detail_stats)
         assert '"blocking"' in src
         assert '"blocked_by"' in src
 
     def test_includes_muted_count(self):
         import admin
-        src = inspect.getsource(admin.admin_user_detail)
+        src = inspect.getsource(admin.admin_user_detail) + inspect.getsource(admin._admin_user_detail_stats)
         assert '"muted_users"' in src
 
     def test_includes_reputation(self):

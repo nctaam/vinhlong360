@@ -137,11 +137,15 @@ class TestAchievementHooks:
 
     def test_toggle_follow_hooks_target_user(self):
         # toggle_follow lives in notifications.py, not social.py.
+        # Side effects (notify + achievement check) moved into the extracted
+        # `_run_follow_side_effects` helper (behaviour-preserving extract-method).
         import notifications
         src = inspect.getsource(notifications.toggle_follow)
+        assert "_run_follow_side_effects" in src  # wiring assert
+        helper_src = inspect.getsource(notifications._run_follow_side_effects)
         # achievement check must run for the FOLLOWED user (target_id), not the follower
-        assert "check_achievements" in src
-        assert "target_id" in src
+        assert "check_achievements" in helper_src
+        assert "target_id" in helper_src
 
     def test_set_best_answer_hooks_comment_author(self):
         import social

@@ -1290,8 +1290,12 @@ class TestPhase8BlockEnforcement:
         """Follow notification passes actor_id for block check."""
         import inspect
         import notifications
+        # The follow notification moved into the extracted `_run_follow_side_effects`
+        # helper (behaviour-preserving extract-method); toggle_follow wires to it.
         src = inspect.getsource(notifications.toggle_follow)
-        assert "actor_id=" in src
+        assert "_run_follow_side_effects" in src  # wiring assert
+        helper_src = inspect.getsource(notifications._run_follow_side_effects)
+        assert "actor_id=" in helper_src
 
     def test_entity_type_cap(self):
         """Entity type filter caps at 10 types to prevent abuse."""

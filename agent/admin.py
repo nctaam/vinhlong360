@@ -216,6 +216,21 @@ def _ensure_admin_audit_events_table(conn) -> None:
     """, ())
     db._execute(conn, "CREATE INDEX IF NOT EXISTS idx_admin_audit_events_created_at ON admin_audit_events(created_at DESC)", ())
 
+def _admin_audit_insert_params(record: dict[str, Any]) -> tuple:
+    return (
+        record.get("actor") or "unknown",
+        record.get("actor_role") or None,
+        record.get("actor_scopes") or [],
+        record.get("method") or "",
+        record.get("path") or "",
+        record.get("request_id") or None,
+        record.get("ip") or None,
+        record.get("reason") or None,
+        json.dumps(record.get("before"), ensure_ascii=False) if record.get("before") is not None else None,
+        json.dumps(record.get("after"), ensure_ascii=False) if record.get("after") is not None else None,
+        json.dumps(record.get("meta") or {}, ensure_ascii=False),
+    )
+
 def _log_admin_audit_db(record: dict[str, Any]) -> None:
     if not getattr(db, "_use_pg", False):
         return
@@ -227,21 +242,48 @@ def _log_admin_audit_db(record: dict[str, Any]) -> None:
                     (actor, actor_role, actor_scopes, method, path, request_id, ip, reason, before_json, after_json, meta)
                 VALUES
                     (%s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb)
-            """, (
-                record.get("actor") or "unknown",
-                record.get("actor_role") or None,
-                record.get("actor_scopes") or [],
-                record.get("method") or "",
-                record.get("path") or "",
-                record.get("request_id") or None,
-                record.get("ip") or None,
-                record.get("reason") or None,
-                json.dumps(record.get("before"), ensure_ascii=False) if record.get("before") is not None else None,
-                json.dumps(record.get("after"), ensure_ascii=False) if record.get("after") is not None else None,
-                json.dumps(record.get("meta") or {}, ensure_ascii=False),
-            ))
+            """, _admin_audit_insert_params(record))
     except Exception:
         logger.debug("Admin audit DB write skipped; JSONL fallback remains active", exc_info=True)
+
+def _admin_audit_db_filters(
+    method: str | None,
+    q: str | None,
+    date_from: str | None,
+    date_to: str | None,
+) -> tuple[list[str], list[Any]]:
+    conditions: list[str] = []
+    params: list[Any] = []
+    if method:
+        conditions.append("method = %s")
+        params.append(method.upper())
+    if q:
+        conditions.append("(LOWER(path) LIKE %s OR LOWER(actor) LIKE %s)")
+        like = f"%{_escape_like(q.lower())}%"
+        params.extend([like, like])
+    if date_from:
+        conditions.append("created_at::date >= %s::date")
+        params.append(date_from)
+    if date_to:
+        conditions.append("created_at::date <= %s::date")
+        params.append(date_to)
+    return conditions, params
+
+def _admin_audit_row_to_entry(row) -> dict[str, Any]:
+    item = db._row_to_dict(row)
+    ts = item.get("created_at")
+    return {
+        "ts": ts.isoformat(timespec="seconds") if hasattr(ts, "isoformat") else str(ts or ""),
+        "actor": item.get("actor"),
+        "actor_role": item.get("actor_role"),
+        "actor_scopes": item.get("actor_scopes") or [],
+        "method": item.get("method"),
+        "path": item.get("path"),
+        "request_id": item.get("request_id"),
+        "ip": item.get("ip"),
+        "reason": item.get("reason"),
+        "meta": item.get("meta") or {},
+    }
 
 def _query_admin_audit_db(
     limit: int,
@@ -253,21 +295,7 @@ def _query_admin_audit_db(
     if not getattr(db, "_use_pg", False):
         return None
     try:
-        conditions: list[str] = []
-        params: list[Any] = []
-        if method:
-            conditions.append("method = %s")
-            params.append(method.upper())
-        if q:
-            conditions.append("(LOWER(path) LIKE %s OR LOWER(actor) LIKE %s)")
-            like = f"%{_escape_like(q.lower())}%"
-            params.extend([like, like])
-        if date_from:
-            conditions.append("created_at::date >= %s::date")
-            params.append(date_from)
-        if date_to:
-            conditions.append("created_at::date <= %s::date")
-            params.append(date_to)
+        conditions, params = _admin_audit_db_filters(method, q, date_from, date_to)
         where_sql = f" WHERE {' AND '.join(conditions)}" if conditions else ""
         with db._conn() as conn:
             total_row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM admin_audit_events{where_sql}", tuple(params))
@@ -278,22 +306,7 @@ def _query_admin_audit_db(
                 ORDER BY created_at DESC
                 LIMIT %s
             """, tuple(params + [limit]))
-        entries = []
-        for row in rows or []:
-            item = db._row_to_dict(row)
-            ts = item.get("created_at")
-            entries.append({
-                "ts": ts.isoformat(timespec="seconds") if hasattr(ts, "isoformat") else str(ts or ""),
-                "actor": item.get("actor"),
-                "actor_role": item.get("actor_role"),
-                "actor_scopes": item.get("actor_scopes") or [],
-                "method": item.get("method"),
-                "path": item.get("path"),
-                "request_id": item.get("request_id"),
-                "ip": item.get("ip"),
-                "reason": item.get("reason"),
-                "meta": item.get("meta") or {},
-            })
+        entries = [_admin_audit_row_to_entry(row) for row in rows or []]
         total = int(db._row_to_dict(total_row).get("c") or 0) if total_row else len(entries)
         return {"entries": entries, "total": total, "source": "db"}
     except Exception:
@@ -363,13 +376,26 @@ def _maybe_rotate_audit() -> None:
         logger.exception("Audit log rotation failed")
 
 
-async def require_admin(request: Request, required_scope_override: str | None = None):
-    """FastAPI dependency: verify admin auth + rate limit (+ audit log mọi mutation)."""
-    # Rate limit
+def _require_admin_rate_limit(request: Request) -> str:
+    """Enforce admin rate limit; return client_ip on success, else raise 429."""
     client_ip = get_client_ip(request)
     allowed, rate_info = admin_limiter.is_allowed(client_ip)
     if not allowed:
         raise HTTPException(429, detail="Quá nhiều yêu cầu. Vui lòng thử lại sau.", headers={"Retry-After": str(rate_info["retry_after"])})
+    return client_ip
+
+async def _require_admin_mutation_side_effects(request: Request, actor: str, admin_user, client_ip: str) -> None:
+    """CSRF + audit for mutating admin methods (extracted from require_admin)."""
+    if admin_user is not None and request.method in ("POST", "PUT", "DELETE", "PATCH"):
+        await require_csrf(request)
+    # P2-7: audit các thao tác THAY ĐỔI (đọc/GET không log để tránh nhiễu)
+    if request.method in ("POST", "PUT", "DELETE", "PATCH"):
+        _log_admin_audit(actor, request.method, request.url.path, client_ip, request=request)
+
+async def require_admin(request: Request, required_scope_override: str | None = None):
+    """FastAPI dependency: verify admin auth + rate limit (+ audit log mọi mutation)."""
+    # Rate limit
+    client_ip = _require_admin_rate_limit(request)
     # Auth: allow server-side admin key or a logged-in admin user from the frontend.
     actor = None
     user = None
@@ -391,11 +417,7 @@ async def require_admin(request: Request, required_scope_override: str | None = 
         _ensure_admin_scope(request, required_scope)
     if admin_user is not None:
         request.state.user = admin_user
-    if admin_user is not None and request.method in ("POST", "PUT", "DELETE", "PATCH"):
-        await require_csrf(request)
-    # P2-7: audit các thao tác THAY ĐỔI (đọc/GET không log để tránh nhiễu)
-    if request.method in ("POST", "PUT", "DELETE", "PATCH"):
-        _log_admin_audit(actor, request.method, request.url.path, client_ip, request=request)
+    await _require_admin_mutation_side_effects(request, actor, admin_user, client_ip)
 
 async def require_admin_scope(request: Request, scope: str):
     """Verify admin auth and require an explicit RBAC scope for non-admin routes."""
@@ -588,45 +610,9 @@ async def list_entities(
             kind_types = sorted(t for t, k in _KIND_OF_TYPE.items() if k == kind)
             if not kind_types:
                 return {"total": 0, "offset": offset, "limit": limit, "entities": []}
-        if q or orphans_only:
-            all_matches = db.search_entities(q=q, entity_type=type, area=area, limit=2000, offset=0) if q else db.list_entities(entity_type=type, area=area, limit=2000, offset=0)
-            if kind_types:
-                _kt = set(kind_types)
-                all_matches = [e for e in all_matches if e.get("type") in _kt]
-        elif kind_types:
-            merged: list[dict] = []
-            for t in kind_types:
-                if t == "place":
-                    # list_entities mặc định không trả place — lấy trực tiếp (giống nhánh include_places).
-                    with db._conn() as conn:
-                        place_rows = db._fetchall(conn, "SELECT * FROM entities WHERE type = 'place' ORDER BY name LIMIT 1000", ())
-                    merged.extend(db._parse_entity(r) for r in place_rows)
-                else:
-                    merged.extend(db.list_entities(entity_type=t, area=area, limit=2000, offset=0) or [])
-            merged.sort(key=lambda e: (e.get("name") or ""))
-            all_matches = merged
-        else:
-            all_matches = None
-            results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
-
-        if include_places:
-            with db._conn() as conn:
-                place_rows = db._fetchall(conn, "SELECT * FROM entities WHERE type = 'place' ORDER BY name LIMIT 1000", ())
-            places = [db._parse_entity(r) for r in place_rows]
-            if all_matches is not None:
-                all_matches = all_matches + places
-            else:
-                results = results + places
-
-        if orphans_only:
-            with db._conn() as conn:
-                orphan_rows = db._fetchall(conn,
-                    "SELECT id FROM entities WHERE type != 'place' "
-                    "AND id NOT IN (SELECT from_id FROM relationships) "
-                    "AND id NOT IN (SELECT to_id FROM relationships)", ())
-                orphan_ids = {db._row_to_dict(r)["id"] for r in orphan_rows}
-            if all_matches is not None:
-                all_matches = [e for e in all_matches if e["id"] in orphan_ids]
+        all_matches, results = _list_entities_fetch(type, area, q, orphans_only, kind_types, limit, offset)
+        all_matches, results = _list_entities_add_places(include_places, all_matches, results)
+        all_matches = _list_entities_filter_orphans(orphans_only, all_matches)
 
         if all_matches is not None:
             total = len(all_matches)
@@ -635,17 +621,73 @@ async def list_entities(
             total = db.count_entities_filtered(entity_type=type, area=area)
             items = results
 
-        place_ids = list({e["placeId"] for e in items if e.get("placeId")})
-        if place_ids:
-            place_map = db.get_entities_batch(place_ids)
-            for e in items:
-                pid = e.get("placeId")
-                if pid and pid in place_map:
-                    e["place_name"] = place_map[pid]["name"]
-                    e["area"] = place_map[pid].get("area") or e.get("area")
-
+        _list_entities_attach_place_names(items)
         return {"total": total, "offset": offset, "limit": limit, "entities": items}
     return await asyncio.to_thread(_query)
+
+
+def _list_entities_fetch_place_rows() -> list[dict]:
+    with db._conn() as conn:
+        place_rows = db._fetchall(conn, "SELECT * FROM entities WHERE type = 'place' ORDER BY name LIMIT 1000", ())
+    return [db._parse_entity(r) for r in place_rows]
+
+
+def _list_entities_fetch(type, area, q, orphans_only, kind_types, limit, offset):
+    """Return (all_matches, results) per the filter combination; `results` only set when unfiltered."""
+    results = None
+    if q or orphans_only:
+        all_matches = db.search_entities(q=q, entity_type=type, area=area, limit=2000, offset=0) if q else db.list_entities(entity_type=type, area=area, limit=2000, offset=0)
+        if kind_types:
+            _kt = set(kind_types)
+            all_matches = [e for e in all_matches if e.get("type") in _kt]
+    elif kind_types:
+        merged: list[dict] = []
+        for t in kind_types:
+            if t == "place":
+                # list_entities mặc định không trả place — lấy trực tiếp (giống nhánh include_places).
+                merged.extend(_list_entities_fetch_place_rows())
+            else:
+                merged.extend(db.list_entities(entity_type=t, area=area, limit=2000, offset=0) or [])
+        merged.sort(key=lambda e: (e.get("name") or ""))
+        all_matches = merged
+    else:
+        all_matches = None
+        results = db.list_entities(entity_type=type, area=area, limit=limit, offset=offset)
+    return all_matches, results
+
+
+def _list_entities_add_places(include_places, all_matches, results):
+    if include_places:
+        places = _list_entities_fetch_place_rows()
+        if all_matches is not None:
+            all_matches = all_matches + places
+        else:
+            results = results + places
+    return all_matches, results
+
+
+def _list_entities_filter_orphans(orphans_only, all_matches):
+    if orphans_only:
+        with db._conn() as conn:
+            orphan_rows = db._fetchall(conn,
+                "SELECT id FROM entities WHERE type != 'place' "
+                "AND id NOT IN (SELECT from_id FROM relationships) "
+                "AND id NOT IN (SELECT to_id FROM relationships)", ())
+            orphan_ids = {db._row_to_dict(r)["id"] for r in orphan_rows}
+        if all_matches is not None:
+            all_matches = [e for e in all_matches if e["id"] in orphan_ids]
+    return all_matches
+
+
+def _list_entities_attach_place_names(items) -> None:
+    place_ids = list({e["placeId"] for e in items if e.get("placeId")})
+    if place_ids:
+        place_map = db.get_entities_batch(place_ids)
+        for e in items:
+            pid = e.get("placeId")
+            if pid and pid in place_map:
+                e["place_name"] = place_map[pid]["name"]
+                e["area"] = place_map[pid].get("area") or e.get("area")
 
 
 @router.get("/entity-kinds",
@@ -700,71 +742,85 @@ async def entity_completeness(kind: str = Query(..., max_length=30), worst: int 
         kind_types = sorted(t for t, k in _KIND_OF_TYPE.items() if k == kind)
         if not kind_types:
             return {"kind": kind, "total": 0, "fields": [], "worst": []}
-        ents: list[dict] = []
-        with db._conn() as conn:
-            placeholders = ", ".join("?" for _ in kind_types)
-            rows = db._fetchall(conn,
-                f"SELECT * FROM entities WHERE type IN ({placeholders}) ORDER BY name LIMIT 2000",
-                tuple(kind_types))
-            ents = [db._parse_entity(r) for r in rows]
+        ents = _completeness_fetch_ents(kind_types)
         if not ents:
             return {"kind": kind, "total": 0, "fields": [], "worst": []}
 
-        UNIVERSAL = [("address", "Địa chỉ"), ("phone", "Điện thoại"), ("website", "Website"),
-                     ("hours", "Giờ mở cửa"), ("price_range", "Khoảng giá"),
-                     ("sub_category", "Phân loại"), ("best_time", "Thời điểm đẹp"), ("highlight", "Điểm nhấn")]
-
-        def has(e: dict, key: str) -> bool:
-            a = e.get("attributes") or {}
-            if key == "season":
-                s = e.get("season") or {}
-                return bool(s.get("months") or s.get("best"))
-            if key == "images":
-                return bool(e.get("images"))
-            if key == "coords_real":
-                return bool(e.get("coordinates")) and not a.get("coords_approximate")
-            if key == "summary_100":
-                return len(str(e.get("summary") or "")) >= 100
-            return a.get(key) not in (None, "", [], {})
-
         fields: list[dict] = []
         missing_map: dict[str, list[str]] = {e["id"]: [] for e in ents}
-        universal_keys = [k for k, _ in UNIVERSAL] + ["season", "images", "coords_real", "summary_100"]
-        labels = dict(UNIVERSAL)
-        labels.update({"season": "Mùa", "images": "Ảnh", "coords_real": "Tọa độ thật",
-                       "summary_100": "Tóm tắt ≥100 ký tự"})
-        filled_counts = {k: 0 for k in universal_keys}
-        for e in ents:
-            for key in universal_keys:
-                if has(e, key):
-                    filled_counts[key] += 1
-                else:
-                    missing_map[e["id"]].append(key)
-        for key in universal_keys:
-            fields.append({"key": key, "label": labels[key], "scope": "chung",
-                           "filled": filled_counts[key], "pct": round(100 * filled_counts[key] / len(ents), 1)})
-        seen = set(universal_keys)
-        for t in kind_types:
-            schema = _ENTITY_SCHEMAS.get(t) or {}
-            t_ents = [e for e in ents if e["type"] == t]
-            if not t_ents:
-                continue
-            for f in schema.get("fields", []):
-                key = f["key"]
-                if key in seen:
-                    continue
-                filled = sum(1 for e in t_ents if has(e, key))
-                fields.append({"key": key, "label": f["label"], "scope": schema.get("label", t),
-                               "filled": filled, "pct": round(100 * filled / len(t_ents), 1)})
-                for e in t_ents:
-                    if not has(e, key):
-                        missing_map[e["id"]].append(key)
+        seen = _completeness_universal_fields(ents, fields, missing_map)
+        _completeness_registry_fields(ents, kind_types, seen, fields, missing_map)
         by_id = {e["id"]: e for e in ents}
         worst_list = sorted(missing_map.items(), key=lambda kv: -len(kv[1]))[:worst]
         return {"kind": kind, "total": len(ents), "fields": fields,
                 "worst": [{"id": i, "name": by_id[i]["name"], "type": by_id[i]["type"],
                            "missing": m, "missing_count": len(m)} for i, m in worst_list if m]}
     return await asyncio.to_thread(_query)
+
+
+_COMPLETENESS_UNIVERSAL = [("address", "Địa chỉ"), ("phone", "Điện thoại"), ("website", "Website"),
+                          ("hours", "Giờ mở cửa"), ("price_range", "Khoảng giá"),
+                          ("sub_category", "Phân loại"), ("best_time", "Thời điểm đẹp"), ("highlight", "Điểm nhấn")]
+
+
+def _completeness_has(e: dict, key: str) -> bool:
+    a = e.get("attributes") or {}
+    if key == "season":
+        s = e.get("season") or {}
+        return bool(s.get("months") or s.get("best"))
+    if key == "images":
+        return bool(e.get("images"))
+    if key == "coords_real":
+        return bool(e.get("coordinates")) and not a.get("coords_approximate")
+    if key == "summary_100":
+        return len(str(e.get("summary") or "")) >= 100
+    return a.get(key) not in (None, "", [], {})
+
+
+def _completeness_fetch_ents(kind_types: list[str]) -> list[dict]:
+    with db._conn() as conn:
+        placeholders = ", ".join("?" for _ in kind_types)
+        rows = db._fetchall(conn,
+            f"SELECT * FROM entities WHERE type IN ({placeholders}) ORDER BY name LIMIT 2000",
+            tuple(kind_types))
+        return [db._parse_entity(r) for r in rows]
+
+
+def _completeness_universal_fields(ents, fields, missing_map) -> set[str]:
+    """Append universal-field stats to `fields`, update `missing_map`, return the seen key set."""
+    universal_keys = [k for k, _ in _COMPLETENESS_UNIVERSAL] + ["season", "images", "coords_real", "summary_100"]
+    labels = dict(_COMPLETENESS_UNIVERSAL)
+    labels.update({"season": "Mùa", "images": "Ảnh", "coords_real": "Tọa độ thật",
+                   "summary_100": "Tóm tắt ≥100 ký tự"})
+    filled_counts = {k: 0 for k in universal_keys}
+    for e in ents:
+        for key in universal_keys:
+            if _completeness_has(e, key):
+                filled_counts[key] += 1
+            else:
+                missing_map[e["id"]].append(key)
+    for key in universal_keys:
+        fields.append({"key": key, "label": labels[key], "scope": "chung",
+                       "filled": filled_counts[key], "pct": round(100 * filled_counts[key] / len(ents), 1)})
+    return set(universal_keys)
+
+
+def _completeness_registry_fields(ents, kind_types, seen, fields, missing_map) -> None:
+    for t in kind_types:
+        schema = _ENTITY_SCHEMAS.get(t) or {}
+        t_ents = [e for e in ents if e["type"] == t]
+        if not t_ents:
+            continue
+        for f in schema.get("fields", []):
+            key = f["key"]
+            if key in seen:
+                continue
+            filled = sum(1 for e in t_ents if _completeness_has(e, key))
+            fields.append({"key": key, "label": f["label"], "scope": schema.get("label", t),
+                           "filled": filled, "pct": round(100 * filled / len(t_ents), 1)})
+            for e in t_ents:
+                if not _completeness_has(e, key):
+                    missing_map[e["id"]].append(key)
 
 
 @router.get("/entities/places",
@@ -1084,6 +1140,25 @@ async def assign_place(entity_id: str, body: AssignPlaceRequest):
 @router.post("/entities/bulk-place",
              summary="Bulk assign place to entities",
              description="Assigns or removes a commune/ward placeId for many entities in one admin action.")
+def _bulk_assign_entities(ids, pid, place):
+    """Assign pid to each id in ids; return (assigned_ids, errors)."""
+    assigned: list[str] = []
+    errors: list[dict[str, str]] = []
+    entities_map = db.get_entities_batch(ids) if ids else {}
+    for entity_id in ids:
+        entity = entities_map.get(entity_id)
+        if not entity:
+            errors.append({"id": entity_id, "error": "Entity không tồn tại"})
+            continue
+        if pid and place:
+            entity["area"] = place.get("area") or entity.get("area")
+        entity["placeId"] = pid
+        entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        db.upsert_entity(entity)
+        assigned.append(entity_id)
+    return assigned, errors
+
+
 async def bulk_assign_place(body: BulkAssignPlaceRequest):
     ids = [validate_path_id(entity_id, "entity_id") for entity_id in body.entity_ids]
     def _query():
@@ -1093,20 +1168,7 @@ async def bulk_assign_place(body: BulkAssignPlaceRequest):
             place = db.get_entity(pid)
             if not place or place.get("type") != "place":
                 raise HTTPException(400, "place_id không phải xã/phường hợp lệ")
-        assigned: list[str] = []
-        errors: list[dict[str, str]] = []
-        entities_map = db.get_entities_batch(ids) if ids else {}
-        for entity_id in ids:
-            entity = entities_map.get(entity_id)
-            if not entity:
-                errors.append({"id": entity_id, "error": "Entity không tồn tại"})
-                continue
-            if pid and place:
-                entity["area"] = place.get("area") or entity.get("area")
-            entity["placeId"] = pid
-            entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-            db.upsert_entity(entity)
-            assigned.append(entity_id)
+        assigned, errors = _bulk_assign_entities(ids, pid, place)
         if assigned:
             _sync_kb()
         return {"success": True, "assigned": len(assigned), "assigned_ids": assigned, "errors": errors}
@@ -1387,51 +1449,65 @@ async def stale_queue(
         entities = knowledge._entities if getattr(knowledge, "_entities", None) else {}
         results = []
         for eid, e in entities.items():
-            if e.get("type") == "place":
-                continue
-            if entity_type and e.get("type") != entity_type:
-                continue
-            updated = e.get("updatedAt") or e.get("created_at")
-            days_since = None
-            if updated:
-                try:
-                    dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
-                    days_since = (now - dt).days
-                except (ValueError, TypeError):
-                    days_since = 9999
-            else:
-                days_since = 9999
-            is_stale = days_since >= threshold_days
-            attrs = e.get("attributes") or {}
-            missing = []
-            if not e.get("source"):
-                missing.append("source")
-            if not e.get("images"):
-                missing.append("images")
-            if not e.get("coordinates"):
-                missing.append("coordinates")
-            if not attrs.get("phone"):
-                missing.append("phone")
-            if not e.get("summary"):
-                missing.append("summary")
-            if missing_field and missing_field not in missing:
-                continue
-            if not is_stale and not missing:
-                continue
-            results.append({
-                "id": eid,
-                "name": e.get("name"),
-                "type": e.get("type"),
-                "area": e.get("area"),
-                "days_since_update": days_since,
-                "is_stale": is_stale,
-                "missing_fields": missing,
-                "stale_reviewed_at": attrs.get("stale_reviewed_at"),
-            })
+            record = _stale_entity_record(eid, e, now, threshold_days, entity_type, missing_field)
+            if record is not None:
+                results.append(record)
         results.sort(key=lambda x: -(x["days_since_update"] or 0))
         total = len(results)
         return {"items": results[offset:offset + limit], "total": total}
     return await asyncio.to_thread(_query)
+
+
+def _stale_days_since(updated, now) -> int:
+    if updated:
+        try:
+            dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
+            return (now - dt).days
+        except (ValueError, TypeError):
+            return 9999
+    return 9999
+
+
+def _stale_missing_fields(e, attrs) -> list[str]:
+    missing = []
+    if not e.get("source"):
+        missing.append("source")
+    if not e.get("images"):
+        missing.append("images")
+    if not e.get("coordinates"):
+        missing.append("coordinates")
+    if not attrs.get("phone"):
+        missing.append("phone")
+    if not e.get("summary"):
+        missing.append("summary")
+    return missing
+
+
+def _stale_entity_record(eid, e, now, threshold_days, entity_type, missing_field):
+    """Evaluate one entity for the stale queue; return its record dict or None to skip."""
+    if e.get("type") == "place":
+        return None
+    if entity_type and e.get("type") != entity_type:
+        return None
+    updated = e.get("updatedAt") or e.get("created_at")
+    days_since = _stale_days_since(updated, now)
+    is_stale = days_since >= threshold_days
+    attrs = e.get("attributes") or {}
+    missing = _stale_missing_fields(e, attrs)
+    if missing_field and missing_field not in missing:
+        return None
+    if not is_stale and not missing:
+        return None
+    return {
+        "id": eid,
+        "name": e.get("name"),
+        "type": e.get("type"),
+        "area": e.get("area"),
+        "days_since_update": days_since,
+        "is_stale": is_stale,
+        "missing_fields": missing,
+        "stale_reviewed_at": attrs.get("stale_reviewed_at"),
+    }
 
 
 @router.post("/stale-queue/{entity_id}/mark-reviewed",
@@ -1505,36 +1581,49 @@ async def completeness_details(
         entities = knowledge._entities if getattr(knowledge, "_entities", None) else {}
         results = []
         for eid, e in entities.items():
-            if e.get("type") == "place":
-                continue
-            if entity_type and e.get("type") != entity_type:
-                continue
-            q = data_quality.entity_quality(e)
-            has_imgs = bool(e.get("images"))
-            has_summ = bool(e.get("summary"))
-            if missing == "source" and q["has_source"]:
-                continue
-            elif missing == "images" and has_imgs:
-                continue
-            elif missing == "place" and q["has_place"]:
-                continue
-            elif missing == "summary" and has_summ:
-                continue
-            results.append({
-                "id": eid,
-                "name": e.get("name"),
-                "type": e.get("type"),
-                "score": q["score"],
-                "has_source": q["has_source"],
-                "has_images": has_imgs,
-                "has_place": q["has_place"],
-                "has_summary": has_summ,
-                "missing": q["missing"] + ([] if has_imgs else ["images"]) + ([] if has_summ else ["summary"]),
-            })
+            record = _completeness_detail_record(eid, e, missing, entity_type)
+            if record is not None:
+                results.append(record)
         results.sort(key=lambda x: x["score"])
         total = len(results)
         return {"items": results[offset:offset + limit], "total": total}
     return await asyncio.to_thread(_query)
+
+
+def _completeness_detail_missing_hit(missing, q, has_imgs, has_summ) -> bool:
+    """True when this entity should be skipped for the active `missing` filter."""
+    if missing == "source" and q["has_source"]:
+        return True
+    elif missing == "images" and has_imgs:
+        return True
+    elif missing == "place" and q["has_place"]:
+        return True
+    elif missing == "summary" and has_summ:
+        return True
+    return False
+
+
+def _completeness_detail_record(eid, e, missing, entity_type):
+    if e.get("type") == "place":
+        return None
+    if entity_type and e.get("type") != entity_type:
+        return None
+    q = data_quality.entity_quality(e)
+    has_imgs = bool(e.get("images"))
+    has_summ = bool(e.get("summary"))
+    if _completeness_detail_missing_hit(missing, q, has_imgs, has_summ):
+        return None
+    return {
+        "id": eid,
+        "name": e.get("name"),
+        "type": e.get("type"),
+        "score": q["score"],
+        "has_source": q["has_source"],
+        "has_images": has_imgs,
+        "has_place": q["has_place"],
+        "has_summary": has_summ,
+        "missing": q["missing"] + ([] if has_imgs else ["images"]) + ([] if has_summ else ["summary"]),
+    }
 
 
 # ── Q&A quality queue (U-24) ──
@@ -1635,52 +1724,68 @@ async def contact_funnel(
     """Thống kê click vào thông tin liên hệ — zalo/phone/website/map."""
     def _query():
         cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-        counts: dict[str, dict[str, int]] = {}
-        total = 0
         if not CONTACT_VIEWS_FILE.exists():
             return {"entities": [], "period_days": days, "total_contacts": 0}
         if CONTACT_VIEWS_FILE.stat().st_size > 20 * 1024 * 1024:
             return {"entities": [], "period_days": days, "total_contacts": 0, "warning": "Log quá lớn, cần rotation"}
-        with open(CONTACT_VIEWS_FILE, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    rec = json.loads(line)
-                except (json.JSONDecodeError, ValueError):
-                    continue
-                ts_str = rec.get("ts", "")
-                try:
-                    ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
-                except (ValueError, TypeError):
-                    continue
-                if ts < cutoff:
-                    continue
-                eid = rec.get("entity_id", "")
-                if entity_id and eid != entity_id:
-                    continue
-                action = rec.get("action", "other")
-                if eid not in counts:
-                    counts[eid] = {"zalo": 0, "phone": 0, "website": 0, "map": 0, "total": 0}
-                counts[eid][action] = counts[eid].get(action, 0) + 1
-                counts[eid]["total"] += 1
-                total += 1
-        entities_list = []
-        ent_dict = knowledge._entities if getattr(knowledge, "_entities", None) else {}
-        for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
-            e = ent_dict.get(eid, {})
-            entities_list.append({
-                "id": eid,
-                "name": e.get("name", eid),
-                "zalo": c["zalo"],
-                "phone": c["phone"],
-                "website": c["website"],
-                "map": c["map"],
-                "total": c["total"],
-            })
+        counts, total = _contact_funnel_tally(cutoff, entity_id)
+        entities_list = _contact_funnel_entities(counts)
         return {"entities": entities_list, "period_days": days, "total_contacts": total}
     return await asyncio.to_thread(_query)
+
+
+def _contact_funnel_accumulate(rec, cutoff, entity_id, counts) -> bool:
+    """Fold one log record into `counts`; return True if it counted, False if skipped."""
+    ts_str = rec.get("ts", "")
+    try:
+        ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return False
+    if ts < cutoff:
+        return False
+    eid = rec.get("entity_id", "")
+    if entity_id and eid != entity_id:
+        return False
+    action = rec.get("action", "other")
+    if eid not in counts:
+        counts[eid] = {"zalo": 0, "phone": 0, "website": 0, "map": 0, "total": 0}
+    counts[eid][action] = counts[eid].get(action, 0) + 1
+    counts[eid]["total"] += 1
+    return True
+
+
+def _contact_funnel_tally(cutoff, entity_id):
+    counts: dict[str, dict[str, int]] = {}
+    total = 0
+    with open(CONTACT_VIEWS_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except (json.JSONDecodeError, ValueError):
+                continue
+            if _contact_funnel_accumulate(rec, cutoff, entity_id, counts):
+                total += 1
+    return counts, total
+
+
+def _contact_funnel_entities(counts):
+    entities_list = []
+    ent_dict = knowledge._entities if getattr(knowledge, "_entities", None) else {}
+    for eid, c in sorted(counts.items(), key=lambda x: -x[1]["total"]):
+        e = ent_dict.get(eid, {})
+        entities_list.append({
+            "id": eid,
+            "name": e.get("name", eid),
+            "zalo": c["zalo"],
+            "phone": c["phone"],
+            "website": c["website"],
+            "map": c["map"],
+            "total": c["total"],
+        })
+    return entities_list
 
 
 @router.get("/contact-funnel/export",
@@ -2005,6 +2110,11 @@ async def create_image_suggestion_batch(body: ImageSuggestionBatch):
     return await asyncio.to_thread(_query)
 
 
+def _is_blocked_ip(ip) -> bool:
+    return (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved
+            or ip.is_multicast or ip.is_unspecified)
+
+
 def _assert_public_url(url: str) -> None:
     """P0-13: chặn SSRF — chỉ http(s) tới host phân giải ra IP CÔNG KHAI
     (chặn 169.254.169.254, localhost, 10/172.16/192.168, link-local…)."""
@@ -2020,8 +2130,7 @@ def _assert_public_url(url: str) -> None:
         raise HTTPException(400, "Không phân giải được host ảnh")
     for info in infos:
         ip = ipaddress.ip_address(info[4][0])
-        if (ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved
-                or ip.is_multicast or ip.is_unspecified):
+        if _is_blocked_ip(ip):
             raise HTTPException(400, "Host ảnh trỏ địa chỉ nội bộ — từ chối (SSRF)")
 
 
@@ -2040,6 +2149,48 @@ def _fetch_public_url(url: str, headers: dict[str, str], timeout: int = 25, max_
         _assert_public_url(str(resp.url))
         return resp
     raise HTTPException(400, "URL ảnh chuyển hướng quá nhiều lần")
+
+async def _approve_fetch_image_data(candidate_url, run_in_threadpool, max_image_size):
+    """Fetch + validate the candidate image bytes for approve_image_suggestion."""
+    try:
+        headers = {"User-Agent": "vinhlong360-image-review/1.0 (+https://vinhlong360.vn)"}
+        resp = await run_in_threadpool(
+            lambda: _fetch_public_url(candidate_url, headers=headers, timeout=25)
+        )
+        resp.raise_for_status()
+        data = resp.content
+    except HTTPException:
+        raise
+    except Exception as e:  # noqa: BLE001 — network/404 → 502 with retry note
+        logger.warning("Suggestion image fetch failed for %s: %s", candidate_url, e)
+        raise HTTPException(502, "Không tải được ảnh nguồn, vui lòng thử lại sau")
+
+    if not data or len(data) > max_image_size:
+        raise HTTPException(400, f"Ảnh nguồn rỗng hoặc quá lớn (tối đa {max_image_size // 1024 // 1024}MB)")
+    return data
+
+
+def _approve_attach_credits(entity, cover, s, candidate_url):
+    """Append the license/author/source credit for the uploaded cover URL; return credits list."""
+    attrs = entity.get("attributes") or {}
+    if not isinstance(attrs, dict):
+        attrs = {}
+    credits = attrs.get("image_credits")
+    if not isinstance(credits, list):
+        credits = []
+    credits.append({
+        "url": cover,
+        "license": s.get("license") or "",
+        "author": s.get("author") or "",
+        "source": s.get("source") or "",
+        "source_url": candidate_url,
+        "wp_title": s.get("wp_title") or "",
+        "added_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+    })
+    attrs["image_credits"] = credits
+    entity["attributes"] = attrs
+    return credits
+
 
 @router.post("/image-suggestions/{suggestion_id}/approve",
              summary="Approve an image suggestion",
@@ -2068,21 +2219,7 @@ async def approve_image_suggestion(suggestion_id: str):
     # Fetch the candidate from its licensed source (Commons etc.). Bounded + guarded.
     candidate_url = s["candidate_url"]
     await asyncio.to_thread(_assert_public_url, candidate_url)  # P0-13: chặn SSRF tới host nội bộ
-    try:
-        headers = {"User-Agent": "vinhlong360-image-review/1.0 (+https://vinhlong360.vn)"}
-        resp = await run_in_threadpool(
-            lambda: _fetch_public_url(candidate_url, headers=headers, timeout=25)
-        )
-        resp.raise_for_status()
-        data = resp.content
-    except HTTPException:
-        raise
-    except Exception as e:  # noqa: BLE001 — network/404 → 502 with retry note
-        logger.warning("Suggestion image fetch failed for %s: %s", candidate_url, e)
-        raise HTTPException(502, "Không tải được ảnh nguồn, vui lòng thử lại sau")
-
-    if not data or len(data) > MAX_IMAGE_SIZE:
-        raise HTTPException(400, f"Ảnh nguồn rỗng hoặc quá lớn (tối đa {MAX_IMAGE_SIZE // 1024 // 1024}MB)")
+    data = await _approve_fetch_image_data(candidate_url, run_in_threadpool, MAX_IMAGE_SIZE)
 
     try:
         urls = await run_in_threadpool(storage.upload_image_set, data, "entities", s["entity_id"])
@@ -2096,23 +2233,7 @@ async def approve_image_suggestion(suggestion_id: str):
     entity["images"] = images
 
     # B6: persist license + author + source alongside the uploaded URL.
-    attrs = entity.get("attributes") or {}
-    if not isinstance(attrs, dict):
-        attrs = {}
-    credits = attrs.get("image_credits")
-    if not isinstance(credits, list):
-        credits = []
-    credits.append({
-        "url": cover,
-        "license": s.get("license") or "",
-        "author": s.get("author") or "",
-        "source": s.get("source") or "",
-        "source_url": candidate_url,
-        "wp_title": s.get("wp_title") or "",
-        "added_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-    })
-    attrs["image_credits"] = credits
-    entity["attributes"] = attrs
+    credits = _approve_attach_credits(entity, cover, s, candidate_url)
     entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     db.upsert_entity(entity)
 
@@ -2148,57 +2269,64 @@ _server_start_time = __import__("time").time()
 @router.get("/system-health",
             summary="Get system health status",
             description="Returns system health information including SQLite/Postgres status, server uptime, memory usage, and storage metrics.")
+def _system_health_server(result, os, _t) -> None:
+    result["server"]["uptime_seconds"] = int(_t.time() - _server_start_time)
+    result["server"]["uptime_human"] = _format_uptime(int(_t.time() - _server_start_time))
+    result["server"]["pid"] = os.getpid()
+    try:
+        import psutil
+        proc = psutil.Process(os.getpid())
+        result["server"]["memory_mb"] = round(proc.memory_info().rss / 1024 / 1024, 1)
+    except (ImportError, Exception):
+        result["server"]["memory_mb"] = -1
+
+
+def _system_health_pg(result) -> None:
+    with db._conn() as conn:
+        tables = ["users", "posts", "comments", "likes", "follows",
+                   "notifications", "blocks", "sessions", "user_visits",
+                   "reports", "saved_entities", "announcements"]
+        pg_tables = {}
+        for t in tables:
+            try:
+                row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM {t}", ())
+                pg_tables[t] = db._row_to_dict(row)["c"] if row else 0
+            except Exception:
+                pg_tables[t] = -1
+        result["postgres"]["tables"] = pg_tables
+        try:
+            size_row = db._fetchone(conn, """
+                SELECT pg_database_size(current_database()) as s
+            """, ())
+            result["postgres"]["size_mb"] = round(db._row_to_dict(size_row)["s"] / 1024 / 1024, 2) if size_row else 0
+        except Exception:
+            result["postgres"]["size_mb"] = -1
+        active_row = db._fetchone(conn, """
+            SELECT COUNT(*) as c FROM sessions WHERE expires_at > NOW()
+        """, ())
+        result["postgres"]["active_sessions"] = db._row_to_dict(active_row)["c"] if active_row else 0
+        pending_row = db._fetchone(conn, """
+            SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'pending'
+        """, ())
+        result["postgres"]["pending_moderation"] = db._row_to_dict(pending_row)["c"] if pending_row else 0
+        open_reports = db._fetchone(conn, """
+            SELECT COUNT(*) as c FROM reports WHERE status = 'pending'
+        """, ())
+        result["postgres"]["open_reports"] = db._row_to_dict(open_reports)["c"] if open_reports else 0
+
+
 async def system_health():
     import os
     import time as _t
     def _query():
         result = {"sqlite": {}, "postgres": {}, "server": {}}
-        result["server"]["uptime_seconds"] = int(_t.time() - _server_start_time)
-        result["server"]["uptime_human"] = _format_uptime(int(_t.time() - _server_start_time))
-        result["server"]["pid"] = os.getpid()
-        try:
-            import psutil
-            proc = psutil.Process(os.getpid())
-            result["server"]["memory_mb"] = round(proc.memory_info().rss / 1024 / 1024, 1)
-        except (ImportError, Exception):
-            result["server"]["memory_mb"] = -1
-
+        _system_health_server(result, os, _t)
         db_path = os.path.join(os.path.dirname(__file__), "data", "knowledge.db")
         if os.path.exists(db_path):
             result["sqlite"]["size_mb"] = round(os.path.getsize(db_path) / 1024 / 1024, 2)
             result["sqlite"]["entities"] = sum(db.count_entities().values())
         if db._use_pg:
-            with db._conn() as conn:
-                tables = ["users", "posts", "comments", "likes", "follows",
-                           "notifications", "blocks", "sessions", "user_visits",
-                           "reports", "saved_entities", "announcements"]
-                pg_tables = {}
-                for t in tables:
-                    try:
-                        row = db._fetchone(conn, f"SELECT COUNT(*) as c FROM {t}", ())
-                        pg_tables[t] = db._row_to_dict(row)["c"] if row else 0
-                    except Exception:
-                        pg_tables[t] = -1
-                result["postgres"]["tables"] = pg_tables
-                try:
-                    size_row = db._fetchone(conn, """
-                        SELECT pg_database_size(current_database()) as s
-                    """, ())
-                    result["postgres"]["size_mb"] = round(db._row_to_dict(size_row)["s"] / 1024 / 1024, 2) if size_row else 0
-                except Exception:
-                    result["postgres"]["size_mb"] = -1
-                active_row = db._fetchone(conn, """
-                    SELECT COUNT(*) as c FROM sessions WHERE expires_at > NOW()
-                """, ())
-                result["postgres"]["active_sessions"] = db._row_to_dict(active_row)["c"] if active_row else 0
-                pending_row = db._fetchone(conn, """
-                    SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'pending'
-                """, ())
-                result["postgres"]["pending_moderation"] = db._row_to_dict(pending_row)["c"] if pending_row else 0
-                open_reports = db._fetchone(conn, """
-                    SELECT COUNT(*) as c FROM reports WHERE status = 'pending'
-                """, ())
-                result["postgres"]["open_reports"] = db._row_to_dict(open_reports)["c"] if open_reports else 0
+            _system_health_pg(result)
         data_dir = Path(__file__).resolve().parent / "data"
         jsonl_files = list(data_dir.glob("*.jsonl"))
         result["storage"] = {
@@ -2294,60 +2422,11 @@ async def admin_stats(compare_days: int = Query(7, ge=1, le=90)):
         db.initialize()
         ph = db._ph
         with db._conn() as conn:
-            type_rows = db._fetchall(conn, "SELECT type, COUNT(*) as c FROM entities GROUP BY type", ())
             rel_count = db._fetchone(conn, "SELECT COUNT(*) as c FROM relationships", ())
             itin_count = db._fetchone(conn, "SELECT COUNT(*) as c FROM itineraries", ())
 
-        by_type = {}
-        total_entities = 0
-        total_places = 0
-        for r in type_rows:
-            d = db._row_to_dict(r)
-            if d["type"] == "place":
-                total_places = d["c"]
-            else:
-                by_type[d["type"]] = d["c"]
-                total_entities += d["c"]
-
-        with db._conn() as c2:
-            # PG: images là JSONB (so sánh với '' bắt PG parse '' thành JSON → 500);
-            # placeId phải quoted. SQLite: images là TEXT — giữ nguyên so sánh chuỗi.
-            if db._use_pg:
-                comp_sql = """
-                SELECT COUNT(*) as total,
-                       SUM(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) as has_summary,
-                       SUM(CASE WHEN images IS NOT NULL AND jsonb_typeof(images) = 'array' AND jsonb_array_length(images) > 0 THEN 1 ELSE 0 END) as has_images,
-                       SUM(CASE WHEN "placeId" IS NOT NULL AND "placeId" != '' THEN 1 ELSE 0 END) as has_place
-                FROM entities WHERE type != 'place'
-                """
-            else:
-                comp_sql = """
-                SELECT COUNT(*) as total,
-                       SUM(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) as has_summary,
-                       SUM(CASE WHEN images IS NOT NULL AND images != '' AND images != '[]' THEN 1 ELSE 0 END) as has_images,
-                       SUM(CASE WHEN placeId IS NOT NULL AND placeId != '' THEN 1 ELSE 0 END) as has_place
-                FROM entities WHERE type != 'place'
-                """
-            comp = db._fetchone(c2, comp_sql, ())
-            cd = db._row_to_dict(comp) if comp else {}
-            comp_total = cd.get("total", 0)
-            has_summary = cd.get("has_summary", 0)
-            has_images = cd.get("has_images", 0)
-            has_place = cd.get("has_place", 0)
-            orphan_row = db._fetchone(c2, """
-                SELECT COUNT(*) as c FROM entities
-                WHERE type != 'place'
-                  AND id NOT IN (SELECT DISTINCT from_id FROM relationships UNION SELECT DISTINCT to_id FROM relationships)
-            """, ())
-            orphan_count = db._row_to_dict(orphan_row)["c"] if orphan_row else 0
-        completeness = {
-            "total": comp_total,
-            "has_summary": has_summary,
-            "has_images": has_images,
-            "has_place": has_place,
-            "orphans": orphan_count,
-            "pct": round((has_summary + has_images + has_place) / (comp_total * 3) * 100, 1) if comp_total else 0,
-        }
+        by_type, total_entities, total_places = _admin_stats_entity_counts()
+        completeness = _admin_stats_completeness()
 
         # B1d: cửa sổ so-sánh cấu hình được qua compare_days (mặc định 7 ngày — giữ nguyên hành vi cũ).
         interval_pg = f"{compare_days} days"
@@ -2369,31 +2448,8 @@ async def admin_stats(compare_days: int = Query(7, ge=1, le=90)):
             except Exception:
                 logger.debug("Stats PG deltas query failed", exc_info=True)
 
-        entities_week = 0
-        try:
-            if db._use_pg:
-                week_sql = f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= NOW() - CAST({ph} AS INTERVAL)"
-                week_params = (interval_pg,)
-            else:
-                week_sql = f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', {ph})"
-                week_params = (f"-{compare_days} days",)
-            with db._conn() as c3:
-                ew = db._fetchone(c3, week_sql, week_params)
-                entities_week = db._row_to_dict(ew)["c"] if ew else 0
-        except Exception:
-            logger.debug("Stats entities_week query failed", exc_info=True)
-
-        backup_info = None
-        try:
-            backup_dir = Path(__file__).resolve().parent.parent / "scratch" / "backups"
-            if backup_dir.exists():
-                dirs = sorted(backup_dir.iterdir(), key=lambda p: p.name, reverse=True)
-                if dirs:
-                    latest = dirs[0]
-                    size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1)
-                    backup_info = {"last": latest.name, "size_mb": size_mb, "count": len(dirs)}
-        except Exception:
-            logger.debug("Stats backup info scan failed", exc_info=True)
+        entities_week = _admin_stats_entities_week(ph, interval_pg, compare_days)
+        backup_info = _admin_stats_backup_info()
 
         return {
             "total_entities": total_entities,
@@ -2407,6 +2463,96 @@ async def admin_stats(compare_days: int = Query(7, ge=1, le=90)):
             **deltas,
         }
     return await asyncio.to_thread(_query)
+
+
+def _admin_stats_entity_counts():
+    with db._conn() as conn:
+        type_rows = db._fetchall(conn, "SELECT type, COUNT(*) as c FROM entities GROUP BY type", ())
+    by_type = {}
+    total_entities = 0
+    total_places = 0
+    for r in type_rows:
+        d = db._row_to_dict(r)
+        if d["type"] == "place":
+            total_places = d["c"]
+        else:
+            by_type[d["type"]] = d["c"]
+            total_entities += d["c"]
+    return by_type, total_entities, total_places
+
+
+def _admin_stats_completeness():
+    with db._conn() as c2:
+        # PG: images là JSONB (so sánh với '' bắt PG parse '' thành JSON → 500);
+        # placeId phải quoted. SQLite: images là TEXT — giữ nguyên so sánh chuỗi.
+        if db._use_pg:
+            comp_sql = """
+            SELECT COUNT(*) as total,
+                   SUM(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) as has_summary,
+                   SUM(CASE WHEN images IS NOT NULL AND jsonb_typeof(images) = 'array' AND jsonb_array_length(images) > 0 THEN 1 ELSE 0 END) as has_images,
+                   SUM(CASE WHEN "placeId" IS NOT NULL AND "placeId" != '' THEN 1 ELSE 0 END) as has_place
+            FROM entities WHERE type != 'place'
+            """
+        else:
+            comp_sql = """
+            SELECT COUNT(*) as total,
+                   SUM(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) as has_summary,
+                   SUM(CASE WHEN images IS NOT NULL AND images != '' AND images != '[]' THEN 1 ELSE 0 END) as has_images,
+                   SUM(CASE WHEN placeId IS NOT NULL AND placeId != '' THEN 1 ELSE 0 END) as has_place
+            FROM entities WHERE type != 'place'
+            """
+        comp = db._fetchone(c2, comp_sql, ())
+        cd = db._row_to_dict(comp) if comp else {}
+        comp_total = cd.get("total", 0)
+        has_summary = cd.get("has_summary", 0)
+        has_images = cd.get("has_images", 0)
+        has_place = cd.get("has_place", 0)
+        orphan_row = db._fetchone(c2, """
+            SELECT COUNT(*) as c FROM entities
+            WHERE type != 'place'
+              AND id NOT IN (SELECT DISTINCT from_id FROM relationships UNION SELECT DISTINCT to_id FROM relationships)
+        """, ())
+        orphan_count = db._row_to_dict(orphan_row)["c"] if orphan_row else 0
+    return {
+        "total": comp_total,
+        "has_summary": has_summary,
+        "has_images": has_images,
+        "has_place": has_place,
+        "orphans": orphan_count,
+        "pct": round((has_summary + has_images + has_place) / (comp_total * 3) * 100, 1) if comp_total else 0,
+    }
+
+
+def _admin_stats_entities_week(ph, interval_pg, compare_days) -> int:
+    entities_week = 0
+    try:
+        if db._use_pg:
+            week_sql = f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= NOW() - CAST({ph} AS INTERVAL)"
+            week_params = (interval_pg,)
+        else:
+            week_sql = f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND created_at >= datetime('now', {ph})"
+            week_params = (f"-{compare_days} days",)
+        with db._conn() as c3:
+            ew = db._fetchone(c3, week_sql, week_params)
+            entities_week = db._row_to_dict(ew)["c"] if ew else 0
+    except Exception:
+        logger.debug("Stats entities_week query failed", exc_info=True)
+    return entities_week
+
+
+def _admin_stats_backup_info():
+    backup_info = None
+    try:
+        backup_dir = Path(__file__).resolve().parent.parent / "scratch" / "backups"
+        if backup_dir.exists():
+            dirs = sorted(backup_dir.iterdir(), key=lambda p: p.name, reverse=True)
+            if dirs:
+                latest = dirs[0]
+                size_mb = round(sum(f.stat().st_size for f in latest.rglob("*") if f.is_file()) / 1048576, 1)
+                backup_info = {"last": latest.name, "size_mb": size_mb, "count": len(dirs)}
+    except Exception:
+        logger.debug("Stats backup info scan failed", exc_info=True)
+    return backup_info
 
 
 def _latest_backup_info() -> dict:
@@ -2472,6 +2618,83 @@ _QUALITY_TREND_KEYS = (
     "self_citation_pct",
 )
 
+def _quality_trend_meta(value):
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+            return parsed if isinstance(parsed, dict) else {}
+        except Exception:
+            return {}
+    return {}
+
+
+def _quality_trend_fetch_rows():
+    """Return (latest_rows, baseline_rows, count_row) or None on failure/no-pg."""
+    with db._conn() as conn:
+        latest_rows = db._fetchall(conn, """
+            SELECT DISTINCT ON (metric_key)
+                metric_key, metric_value, metric_unit, metadata, created_at
+            FROM quality_metric_snapshots
+            WHERE metric_key = ANY(%s)
+            ORDER BY metric_key, created_at DESC
+        """, (list(_QUALITY_TREND_KEYS),))
+        baseline_rows = db._fetchall(conn, """
+            SELECT DISTINCT ON (metric_key)
+                metric_key, metric_value, created_at
+            FROM quality_metric_snapshots
+            WHERE metric_key = ANY(%s)
+              AND created_at <= NOW() - INTERVAL '7 days'
+            ORDER BY metric_key, created_at DESC
+        """, (list(_QUALITY_TREND_KEYS),))
+        count_row = db._fetchone(conn, """
+            SELECT COUNT(*) AS c
+            FROM quality_metric_snapshots
+            WHERE created_at > NOW() - INTERVAL '30 days'
+        """, ())
+    return latest_rows, baseline_rows, count_row
+
+
+def _quality_trend_budget_failure(meta, key, value):
+    """Return a budget-failure dict for this metric, or None when the budget is met/absent."""
+    budget = meta.get("budget") if isinstance(meta, dict) else None
+    if isinstance(budget, dict) and budget.get("ok") is False:
+        return {
+            "metric_key": key,
+            "value": round(value, 2),
+            "expected": budget.get("expected"),
+            "op": budget.get("op"),
+            "severity": budget.get("severity") or "error",
+        }
+    return None
+
+
+def _quality_trend_process_latest(latest_rows):
+    """Return (latest, budget_failures, last_recorded_at) from the latest snapshot rows."""
+    latest: dict[str, dict] = {}
+    budget_failures: list[dict] = []
+    last_recorded_at = None
+    for row in latest_rows:
+        item = db._row_to_dict(row)
+        key = str(item.get("metric_key"))
+        value = float(item.get("metric_value") or 0)
+        created = item.get("created_at")
+        created_iso = created.isoformat(timespec="seconds") if hasattr(created, "isoformat") else str(created or "")
+        meta = _quality_trend_meta(item.get("metadata"))
+        latest[key] = {
+            "value": round(value, 2),
+            "unit": item.get("metric_unit") or "count",
+            "created_at": created_iso,
+        }
+        if created_iso and (not last_recorded_at or created_iso > last_recorded_at):
+            last_recorded_at = created_iso
+        failure = _quality_trend_budget_failure(meta, key, value)
+        if failure is not None:
+            budget_failures.append(failure)
+    return latest, budget_failures, last_recorded_at
+
+
 def _quality_trend_ops_snapshot() -> dict:
     empty = {
         "available": False,
@@ -2484,69 +2707,13 @@ def _quality_trend_ops_snapshot() -> dict:
     if not db._use_pg:
         return empty
 
-    def _meta(value):
-        if isinstance(value, dict):
-            return value
-        if isinstance(value, str):
-            try:
-                parsed = json.loads(value)
-                return parsed if isinstance(parsed, dict) else {}
-            except Exception:
-                return {}
-        return {}
-
     try:
-        with db._conn() as conn:
-            latest_rows = db._fetchall(conn, """
-                SELECT DISTINCT ON (metric_key)
-                    metric_key, metric_value, metric_unit, metadata, created_at
-                FROM quality_metric_snapshots
-                WHERE metric_key = ANY(%s)
-                ORDER BY metric_key, created_at DESC
-            """, (list(_QUALITY_TREND_KEYS),))
-            baseline_rows = db._fetchall(conn, """
-                SELECT DISTINCT ON (metric_key)
-                    metric_key, metric_value, created_at
-                FROM quality_metric_snapshots
-                WHERE metric_key = ANY(%s)
-                  AND created_at <= NOW() - INTERVAL '7 days'
-                ORDER BY metric_key, created_at DESC
-            """, (list(_QUALITY_TREND_KEYS),))
-            count_row = db._fetchone(conn, """
-                SELECT COUNT(*) AS c
-                FROM quality_metric_snapshots
-                WHERE created_at > NOW() - INTERVAL '30 days'
-            """, ())
+        latest_rows, baseline_rows, count_row = _quality_trend_fetch_rows()
     except Exception:
         logger.debug("ops quality trend read failed", exc_info=True)
         return empty
 
-    latest: dict[str, dict] = {}
-    budget_failures: list[dict] = []
-    last_recorded_at = None
-    for row in latest_rows:
-        item = db._row_to_dict(row)
-        key = str(item.get("metric_key"))
-        value = float(item.get("metric_value") or 0)
-        created = item.get("created_at")
-        created_iso = created.isoformat(timespec="seconds") if hasattr(created, "isoformat") else str(created or "")
-        meta = _meta(item.get("metadata"))
-        latest[key] = {
-            "value": round(value, 2),
-            "unit": item.get("metric_unit") or "count",
-            "created_at": created_iso,
-        }
-        if created_iso and (not last_recorded_at or created_iso > last_recorded_at):
-            last_recorded_at = created_iso
-        budget = meta.get("budget") if isinstance(meta, dict) else None
-        if isinstance(budget, dict) and budget.get("ok") is False:
-            budget_failures.append({
-                "metric_key": key,
-                "value": round(value, 2),
-                "expected": budget.get("expected"),
-                "op": budget.get("op"),
-                "severity": budget.get("severity") or "error",
-            })
+    latest, budget_failures, last_recorded_at = _quality_trend_process_latest(latest_rows)
 
     baseline = {str(db._row_to_dict(row).get("metric_key")): float(db._row_to_dict(row).get("metric_value") or 0) for row in baseline_rows}
     delta_7d = {
@@ -2563,6 +2730,50 @@ def _quality_trend_ops_snapshot() -> dict:
         "last_recorded_at": last_recorded_at,
     }
 
+def _ops_moderation_snapshot() -> dict:
+    moderation = {"pending": 0, "flagged": 0, "reports": 0, "appeals": 0, "oldest_pending_hours": None}
+    if db._use_pg:
+        with db._conn() as conn:
+            pending = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
+            flagged = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'flagged'", ())
+            reports = db._fetchone(conn, "SELECT COUNT(*) as c FROM reports WHERE status = 'pending'", ())
+            appeals = db._fetchone(conn, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
+            oldest = db._fetchone(conn, """
+                SELECT EXTRACT(EPOCH FROM (NOW() - MIN(created_at))) / 3600 as h
+                FROM posts WHERE moderation_status IN ('pending','review','flagged')
+            """, ())
+        moderation.update({
+            "pending": int(db._row_to_dict(pending)["c"] if pending else 0),
+            "flagged": int(db._row_to_dict(flagged)["c"] if flagged else 0),
+            "reports": int(db._row_to_dict(reports)["c"] if reports else 0),
+            "appeals": int(db._row_to_dict(appeals)["c"] if appeals else 0),
+            "oldest_pending_hours": round(float(db._row_to_dict(oldest).get("h") or 0), 1) if oldest else None,
+        })
+    return moderation
+
+
+def _ops_audit_snapshot() -> dict:
+    audit = {"jsonl_exists": _AUDIT_FILE.exists(), "db_available": False, "source": "jsonl", "recent_entries": 0, "last_ts": None}
+    db_audit = _query_admin_audit_db(100)
+    if db_audit is not None:
+        audit["db_available"] = True
+        audit["source"] = "db"
+        audit["recent_entries"] = min(int(db_audit.get("total") or 0), 100)
+        entries = db_audit.get("entries") or []
+        if entries:
+            audit["last_ts"] = entries[0].get("ts")
+    if _AUDIT_FILE.exists():
+        try:
+            lines = [l for l in _AUDIT_FILE.read_text(encoding="utf-8").splitlines() if l.strip()]
+            if not audit["db_available"]:
+                audit["recent_entries"] = min(len(lines), 100)
+                if lines:
+                    audit["last_ts"] = json.loads(lines[-1]).get("ts")
+        except Exception:
+            logger.debug("ops audit read failed", exc_info=True)
+    return audit
+
+
 @router.get("/ops-summary",
             summary="Get AdminCP operations summary",
             description="Returns release/deploy readiness, queue backlog, data-quality budgets, audit freshness, cost budget, and rollback readiness for the admin cockpit.")
@@ -2578,43 +2789,8 @@ async def ops_summary():
         dq = _data_quality_ops_snapshot()
         quality_trend = _quality_trend_ops_snapshot()
 
-        moderation = {"pending": 0, "flagged": 0, "reports": 0, "appeals": 0, "oldest_pending_hours": None}
-        if db._use_pg:
-            with db._conn() as conn:
-                pending = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status IN ('pending','review')", ())
-                flagged = db._fetchone(conn, "SELECT COUNT(*) as c FROM posts WHERE moderation_status = 'flagged'", ())
-                reports = db._fetchone(conn, "SELECT COUNT(*) as c FROM reports WHERE status = 'pending'", ())
-                appeals = db._fetchone(conn, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
-                oldest = db._fetchone(conn, """
-                    SELECT EXTRACT(EPOCH FROM (NOW() - MIN(created_at))) / 3600 as h
-                    FROM posts WHERE moderation_status IN ('pending','review','flagged')
-                """, ())
-            moderation.update({
-                "pending": int(db._row_to_dict(pending)["c"] if pending else 0),
-                "flagged": int(db._row_to_dict(flagged)["c"] if flagged else 0),
-                "reports": int(db._row_to_dict(reports)["c"] if reports else 0),
-                "appeals": int(db._row_to_dict(appeals)["c"] if appeals else 0),
-                "oldest_pending_hours": round(float(db._row_to_dict(oldest).get("h") or 0), 1) if oldest else None,
-            })
-
-        audit = {"jsonl_exists": _AUDIT_FILE.exists(), "db_available": False, "source": "jsonl", "recent_entries": 0, "last_ts": None}
-        db_audit = _query_admin_audit_db(100)
-        if db_audit is not None:
-            audit["db_available"] = True
-            audit["source"] = "db"
-            audit["recent_entries"] = min(int(db_audit.get("total") or 0), 100)
-            entries = db_audit.get("entries") or []
-            if entries:
-                audit["last_ts"] = entries[0].get("ts")
-        if _AUDIT_FILE.exists():
-            try:
-                lines = [l for l in _AUDIT_FILE.read_text(encoding="utf-8").splitlines() if l.strip()]
-                if not audit["db_available"]:
-                    audit["recent_entries"] = min(len(lines), 100)
-                    if lines:
-                        audit["last_ts"] = json.loads(lines[-1]).get("ts")
-            except Exception:
-                logger.debug("ops audit read failed", exc_info=True)
+        moderation = _ops_moderation_snapshot()
+        audit = _ops_audit_snapshot()
 
         cost = _safe(lambda: _get_cost_report(), {}) if _HAS_COST else {}
         schema_status = db.pg_schema_status()
@@ -2868,56 +3044,75 @@ _admin_volatile_caches.append(_media_cache)
 _MEDIA_TTL = 120.0
 
 
+def _media_parse_json_field(value, default):
+    """Coerce a possibly-JSON-string field to a Python value; fall back to `default`."""
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except Exception:
+            return default
+    return value
+
+
+def _media_credits_by_url(image_credits) -> dict[str, dict]:
+    credits_by_url: dict[str, dict] = {}
+    if isinstance(image_credits, list):
+        for credit_meta in image_credits:
+            if not isinstance(credit_meta, dict):
+                continue
+            credit_url = credit_meta.get("url")
+            if credit_url:
+                credits_by_url[str(credit_url)] = credit_meta
+    return credits_by_url
+
+
+def _media_resolve_credit(img, credit_meta):
+    """Resolve (credit, license_info) for one image from inline + registry metadata."""
+    credit = ""
+    license_info = ""
+    if isinstance(img, dict):
+        credit = img.get("credit") or img.get("author") or ""
+        license_info = img.get("license", "")
+    if not credit:
+        credit = credit_meta.get("author") or credit_meta.get("credit") or ""
+    if not license_info:
+        license_info = credit_meta.get("license") or ""
+    return credit, license_info
+
+
+def _media_item_from_image(img, e, credits_by_url):
+    """Build one media-gallery item from an image + its credit metadata; None if no URL."""
+    url = img if isinstance(img, str) else img.get("url", "")
+    if not url:
+        return None
+    credit_meta = credits_by_url.get(url, {})
+    credit, license_info = _media_resolve_credit(img, credit_meta)
+    return {
+        "url": url,
+        "entity_id": e.get("id", ""),
+        "entity_name": e.get("name", ""),
+        "entity_type": e.get("type", ""),
+        "credit": credit,
+        "license": license_info,
+        "source": credit_meta.get("source") or "",
+        "source_url": credit_meta.get("source_url") or "",
+    }
+
+
 def _extract_media_items(entities: list) -> dict:
     media_items = []
     url_usage: dict[str, list[str]] = {}
     for e in entities:
-        images = e.get("images") or []
-        if isinstance(images, str):
-            try:
-                images = json.loads(images)
-            except Exception:
-                images = []
-        attrs = e.get("attributes") or {}
-        if isinstance(attrs, str):
-            try:
-                attrs = json.loads(attrs)
-            except Exception:
-                attrs = {}
+        images = _media_parse_json_field(e.get("images") or [], [])
+        attrs = _media_parse_json_field(e.get("attributes") or {}, {})
         image_credits = attrs.get("image_credits") if isinstance(attrs, dict) else []
-        credits_by_url: dict[str, dict] = {}
-        if isinstance(image_credits, list):
-            for credit_meta in image_credits:
-                if not isinstance(credit_meta, dict):
-                    continue
-                credit_url = credit_meta.get("url")
-                if credit_url:
-                    credits_by_url[str(credit_url)] = credit_meta
+        credits_by_url = _media_credits_by_url(image_credits)
         for img in images:
-            url = img if isinstance(img, str) else img.get("url", "")
-            if not url:
+            item = _media_item_from_image(img, e, credits_by_url)
+            if item is None:
                 continue
-            credit_meta = credits_by_url.get(url, {})
-            credit = ""
-            license_info = ""
-            if isinstance(img, dict):
-                credit = img.get("credit") or img.get("author") or ""
-                license_info = img.get("license", "")
-            if not credit:
-                credit = credit_meta.get("author") or credit_meta.get("credit") or ""
-            if not license_info:
-                license_info = credit_meta.get("license") or ""
-            media_items.append({
-                "url": url,
-                "entity_id": e.get("id", ""),
-                "entity_name": e.get("name", ""),
-                "entity_type": e.get("type", ""),
-                "credit": credit,
-                "license": license_info,
-                "source": credit_meta.get("source") or "",
-                "source_url": credit_meta.get("source_url") or "",
-            })
-            url_usage.setdefault(url, []).append(e.get("id", ""))
+            media_items.append(item)
+            url_usage.setdefault(item["url"], []).append(e.get("id", ""))
     return {
         "items": media_items,
         "url_usage": url_usage,
@@ -2992,37 +3187,53 @@ async def dashboard_alerts():
         open_reports += _count_open_info_reports()
         if open_reports:
             alerts.append({"type": "reports", "count": open_reports, "label": f"{open_reports} báo cáo chưa xử lý", "icon": "⚠️", "link": "/admin/bao-cao", "priority": 3})
-        try:
-            img_pending = _imgq.status_counts().get("pending", 0)
-            if img_pending:
-                alerts.append({"type": "images", "count": img_pending, "label": f"{img_pending} ảnh chờ duyệt", "icon": "🖼️", "link": "/admin/duyet-anh", "priority": 4})
-        except Exception:
-            logger.debug("Alert image queue count failed", exc_info=True)
-        with db._conn() as conn2:
-            _pid = '"placeId"' if db._use_pg else "placeId"
-            unc_row = db._fetchone(conn2, f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND ({_pid} IS NULL OR {_pid} = '')", ())
-            unc_count = db._row_to_dict(unc_row)["c"] if unc_row else 0
-        if unc_count:
-            alerts.append({"type": "unclassified", "count": unc_count, "label": f"{unc_count} entity chưa phân loại", "icon": "📍", "link": "/admin/chua-phan-loai", "priority": 5})
-        try:
-            import kb_curation
-            s = kb_curation.stats()
-            prov = s.get("pending", 0)
-            if prov:
-                alerts.append({"type": "provisional", "count": prov, "label": f"{prov} entity chờ xét duyệt", "icon": "🔬", "link": "/admin/duyet-tu-hoc", "priority": 6})
-        except Exception:
-            logger.debug("Alert kb_curation stats failed", exc_info=True)
-        try:
-            with db._conn() as conn3:
-                appeal_row = db._fetchone(conn3, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
-            appeal_count = db._row_to_dict(appeal_row)["c"] if appeal_row else 0
-            if appeal_count:
-                alerts.append({"type": "appeals", "count": appeal_count, "label": f"{appeal_count} khiếu nại chờ xử lý", "icon": "📩", "link": "/admin/kiem-duyet", "priority": 2})
-        except Exception:
-            logger.debug("Alert appeals count failed", exc_info=True)
+        _dashboard_alerts_images(alerts)
+        _dashboard_alerts_unclassified(alerts)
+        _dashboard_alerts_provisional(alerts)
+        _dashboard_alerts_appeals(alerts)
         alerts.sort(key=lambda a: a["priority"])
         return {"alerts": alerts[:5]}
     return await asyncio.to_thread(_query)
+
+
+def _dashboard_alerts_images(alerts) -> None:
+    try:
+        img_pending = _imgq.status_counts().get("pending", 0)
+        if img_pending:
+            alerts.append({"type": "images", "count": img_pending, "label": f"{img_pending} ảnh chờ duyệt", "icon": "🖼️", "link": "/admin/duyet-anh", "priority": 4})
+    except Exception:
+        logger.debug("Alert image queue count failed", exc_info=True)
+
+
+def _dashboard_alerts_unclassified(alerts) -> None:
+    with db._conn() as conn2:
+        _pid = '"placeId"' if db._use_pg else "placeId"
+        unc_row = db._fetchone(conn2, f"SELECT COUNT(*) as c FROM entities WHERE type != 'place' AND ({_pid} IS NULL OR {_pid} = '')", ())
+        unc_count = db._row_to_dict(unc_row)["c"] if unc_row else 0
+    if unc_count:
+        alerts.append({"type": "unclassified", "count": unc_count, "label": f"{unc_count} entity chưa phân loại", "icon": "📍", "link": "/admin/chua-phan-loai", "priority": 5})
+
+
+def _dashboard_alerts_provisional(alerts) -> None:
+    try:
+        import kb_curation
+        s = kb_curation.stats()
+        prov = s.get("pending", 0)
+        if prov:
+            alerts.append({"type": "provisional", "count": prov, "label": f"{prov} entity chờ xét duyệt", "icon": "🔬", "link": "/admin/duyet-tu-hoc", "priority": 6})
+    except Exception:
+        logger.debug("Alert kb_curation stats failed", exc_info=True)
+
+
+def _dashboard_alerts_appeals(alerts) -> None:
+    try:
+        with db._conn() as conn3:
+            appeal_row = db._fetchone(conn3, "SELECT COUNT(*) as c FROM moderation_appeals WHERE status = 'pending'", ())
+        appeal_count = db._row_to_dict(appeal_row)["c"] if appeal_row else 0
+        if appeal_count:
+            alerts.append({"type": "appeals", "count": appeal_count, "label": f"{appeal_count} khiếu nại chờ xử lý", "icon": "📩", "link": "/admin/kiem-duyet", "priority": 2})
+    except Exception:
+        logger.debug("Alert appeals count failed", exc_info=True)
 
 
 @router.get("/activity-feed",
@@ -3400,6 +3611,24 @@ class BatchModerationBody(BaseModel):
 @router.post("/moderation/batch",
              summary="Batch moderate multiple posts",
              description="Approve or reject multiple posts at once. Notifies each author and logs moderation actions.")
+def _batch_mod_notify(rows, status, reason) -> None:
+    """Notify each affected post author of the batch moderation result."""
+    if status == "approved":
+        title = "Bài viết của bạn đã được duyệt"
+        notif_body = None
+    else:
+        title = "Bài viết của bạn đã bị từ chối"
+        notif_body = f"Lý do: {reason}" if reason else None
+    for r in rows:
+        rd = db._row_to_dict(r)
+        try:
+            create_notification(str(rd["user_id"]), "moderation", title,
+                                body=notif_body,
+                                ref_type="post", ref_id=str(rd["id"]))
+        except Exception:
+            logger.exception("Failed to notify batch moderation %s", rd["id"])
+
+
 async def batch_moderation(body: BatchModerationBody, request: Request):
     require_pg()
     from ratelimit import check_rate
@@ -3427,20 +3656,7 @@ async def batch_moderation(body: BatchModerationBody, request: Request):
             updated = len(rows)
         for pid in body.post_ids:
             _log_mod_action("post", pid, status, reason)
-        if status == "approved":
-            title = "Bài viết của bạn đã được duyệt"
-            notif_body = None
-        else:
-            title = "Bài viết của bạn đã bị từ chối"
-            notif_body = f"Lý do: {reason}" if reason else None
-        for r in rows:
-            rd = db._row_to_dict(r)
-            try:
-                create_notification(str(rd["user_id"]), "moderation", title,
-                                    body=notif_body,
-                                    ref_type="post", ref_id=str(rd["id"]))
-            except Exception:
-                logger.exception("Failed to notify batch moderation %s", rd["id"])
+        _batch_mod_notify(rows, status, reason)
         return updated
     updated = await asyncio.to_thread(_query)
     return {"success": True, "updated": updated, "requested": len(body.post_ids)}
@@ -4270,39 +4486,53 @@ async def get_audit_log(
             return db_audit
         if not _AUDIT_FILE.exists():
             return {"entries": [], "total": 0}
-        try:
-            mtime = _AUDIT_FILE.stat().st_mtime
-        except OSError:
-            mtime = 0.0
-        with _audit_lock:
-            if mtime != _audit_cache["mtime"]:
-                raw_items = []
-                with open(_AUDIT_FILE, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if not line:
-                            continue
-                        try:
-                            raw_items.append(json.loads(line))
-                        except json.JSONDecodeError:
-                            continue
-                _audit_cache["mtime"] = mtime
-                _audit_cache["items"] = raw_items
-            items = list(_audit_cache["items"])
-        filtered = items
-        if method:
-            filtered = [e for e in filtered if e.get("method") == method.upper()]
-        if q:
-            q_lower = q.lower()
-            filtered = [e for e in filtered if q_lower in (e.get("path") or "").lower() or q_lower in (e.get("actor") or "").lower()]
-        if date_from:
-            filtered = [e for e in filtered if (e.get("ts") or "")[:10] >= date_from]
-        if date_to:
-            filtered = [e for e in filtered if (e.get("ts") or "")[:10] <= date_to]
+        items = _audit_log_load_items()
+        filtered = _audit_log_filter(items, method, q, date_from, date_to)
         filtered.reverse()
         total = len(filtered)
         return {"entries": filtered[offset:offset + limit], "total": total}
     return await asyncio.to_thread(_query)
+
+
+def _audit_log_load_items() -> list:
+    """Load audit JSONL entries via the mtime-keyed cache; return a fresh list copy."""
+    try:
+        mtime = _AUDIT_FILE.stat().st_mtime
+    except OSError:
+        mtime = 0.0
+    with _audit_lock:
+        if mtime != _audit_cache["mtime"]:
+            raw_items = []
+            with open(_AUDIT_FILE, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        raw_items.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+            _audit_cache["mtime"] = mtime
+            _audit_cache["items"] = raw_items
+        return list(_audit_cache["items"])
+
+
+def _audit_log_filter_q(items, q) -> list:
+    q_lower = q.lower()
+    return [e for e in items if q_lower in (e.get("path") or "").lower() or q_lower in (e.get("actor") or "").lower()]
+
+
+def _audit_log_filter(items, method, q, date_from, date_to) -> list:
+    filtered = items
+    if method:
+        filtered = [e for e in filtered if e.get("method") == method.upper()]
+    if q:
+        filtered = _audit_log_filter_q(filtered, q)
+    if date_from:
+        filtered = [e for e in filtered if (e.get("ts") or "")[:10] >= date_from]
+    if date_to:
+        filtered = [e for e in filtered if (e.get("ts") or "")[:10] <= date_to]
+    return filtered
 
 
 class ReportActionRequest(BaseModel):
@@ -4406,6 +4636,33 @@ async def ai_triage():
     return await asyncio.to_thread(_query)
 
 
+def _list_users_where(ph, search, role_filter):
+    """Build the users WHERE clause + params for the admin list, honoring search/role filters."""
+    conditions = ["1=1"]
+    params = []
+    if search:
+        search_esc = _escape_like(search)
+        conditions.append(f"(display_name ILIKE {ph} ESCAPE '\\' OR phone LIKE {ph} ESCAPE '\\')")
+        params.extend([f"%{search_esc}%", f"%{search_esc}%"])
+    if role_filter:
+        conditions.append(f"COALESCE(role, 'user') = {ph}")
+        params.append(role_filter)
+    return " AND ".join(conditions), params
+
+
+def _list_users_role_counts() -> dict:
+    role_counts = {}
+    try:
+        with db._conn() as conn2:
+            rc_rows = db._fetchall(conn2, "SELECT COALESCE(role, 'user') as role, COUNT(*) as c FROM users GROUP BY COALESCE(role, 'user')", ())
+        for rc in rc_rows:
+            d = db._row_to_dict(rc)
+            role_counts[d["role"]] = d["c"]
+    except Exception:
+        logger.debug("Role counts query failed", exc_info=True)
+    return role_counts
+
+
 @router.get("/users",
             summary="List all users",
             description="Returns a paginated list of users with post counts. Supports search by name or phone, and filtering by role.")
@@ -4422,16 +4679,7 @@ async def list_users(
     if q and not search:
         search = q
     actual_offset = offset if offset is not None else (page - 1) * limit
-    conditions = ["1=1"]
-    params = []
-    if search:
-        search_esc = _escape_like(search)
-        conditions.append(f"(display_name ILIKE {ph} ESCAPE '\\' OR phone LIKE {ph} ESCAPE '\\')")
-        params.extend([f"%{search_esc}%", f"%{search_esc}%"])
-    if role_filter:
-        conditions.append(f"COALESCE(role, 'user') = {ph}")
-        params.append(role_filter)
-    where = " AND ".join(conditions)
+    where, params = _list_users_where(ph, search, role_filter)
     count_params = list(params)
     params.extend([limit, actual_offset])
     def _query():
@@ -4446,15 +4694,7 @@ async def list_users(
             total = db._fetchone(conn, f"""
                 SELECT COUNT(*) as c FROM users WHERE {where}
             """, count_params)
-        role_counts = {}
-        try:
-            with db._conn() as conn2:
-                rc_rows = db._fetchall(conn2, "SELECT COALESCE(role, 'user') as role, COUNT(*) as c FROM users GROUP BY COALESCE(role, 'user')", ())
-            for rc in rc_rows:
-                d = db._row_to_dict(rc)
-                role_counts[d["role"]] = d["c"]
-        except Exception:
-            logger.debug("Role counts query failed", exc_info=True)
+        role_counts = _list_users_role_counts()
         return {
             "users": [{
                 "id": str(r["id"]),
@@ -4544,17 +4784,7 @@ async def admin_user_detail(user_id: str):
             """, (user_id,))
             rep = db._row_to_dict(reputation).get("reputation_score", 0) if reputation else 0
 
-            last_login = None
-            try:
-                ll = db._fetchone(conn, f"""
-                    SELECT created_at FROM login_history
-                    WHERE user_id = {ph}::uuid AND success = TRUE
-                    ORDER BY created_at DESC LIMIT 1
-                """, (user_id,))
-                if ll:
-                    last_login = str(db._row_to_dict(ll)["created_at"])
-            except Exception:
-                logger.debug("login_history query failed for user %s", user_id, exc_info=True)
+            last_login = _admin_user_last_login(conn, ph, user_id)
 
             last_post = db._fetchone(conn, f"""
                 SELECT created_at FROM posts
@@ -4562,26 +4792,46 @@ async def admin_user_detail(user_id: str):
                 ORDER BY created_at DESC LIMIT 1
             """, (user_id,))
 
-        return {
-            "user": ud,
-            "stats": {
-                "posts": ps,
-                "comments": db._row_to_dict(comment_count)["c"] if comment_count else 0,
-                "following": fs.get("following", 0),
-                "followers": fs.get("followers", 0),
-                "active_sessions": db._row_to_dict(session_count)["c"] if session_count else 0,
-                "reports_filed": db._row_to_dict(report_count)["c"] if report_count else 0,
-                "reports_against": db._row_to_dict(reported_count)["c"] if reported_count else 0,
-                "blocking": blk.get("blocking", 0),
-                "blocked_by": blk.get("blocked_by", 0),
-                "muted_users": db._row_to_dict(mute_count)["c"] if mute_count else 0,
-                "reputation_score": rep,
-                "last_login": last_login,
-                "last_post_at": str(db._row_to_dict(last_post)["created_at"]) if last_post else None,
-            },
-        }
+        stats = _admin_user_detail_stats(
+            ps, comment_count, fs, session_count, report_count, reported_count,
+            blk, mute_count, rep, last_login, last_post)
+        return {"user": ud, "stats": stats}
 
     return await asyncio.to_thread(_query)
+
+
+def _admin_user_last_login(conn, ph, user_id):
+    last_login = None
+    try:
+        ll = db._fetchone(conn, f"""
+            SELECT created_at FROM login_history
+            WHERE user_id = {ph}::uuid AND success = TRUE
+            ORDER BY created_at DESC LIMIT 1
+        """, (user_id,))
+        if ll:
+            last_login = str(db._row_to_dict(ll)["created_at"])
+    except Exception:
+        logger.debug("login_history query failed for user %s", user_id, exc_info=True)
+    return last_login
+
+
+def _admin_user_detail_stats(ps, comment_count, fs, session_count, report_count,
+                             reported_count, blk, mute_count, rep, last_login, last_post):
+    return {
+        "posts": ps,
+        "comments": db._row_to_dict(comment_count)["c"] if comment_count else 0,
+        "following": fs.get("following", 0),
+        "followers": fs.get("followers", 0),
+        "active_sessions": db._row_to_dict(session_count)["c"] if session_count else 0,
+        "reports_filed": db._row_to_dict(report_count)["c"] if report_count else 0,
+        "reports_against": db._row_to_dict(reported_count)["c"] if reported_count else 0,
+        "blocking": blk.get("blocking", 0),
+        "blocked_by": blk.get("blocked_by", 0),
+        "muted_users": db._row_to_dict(mute_count)["c"] if mute_count else 0,
+        "reputation_score": rep,
+        "last_login": last_login,
+        "last_post_at": str(db._row_to_dict(last_post)["created_at"]) if last_post else None,
+    }
 
 
 @router.post("/users/{user_id}/ban",
@@ -4696,6 +4946,29 @@ async def bulk_unban_users(body: BulkUserAction):
     return {"success": True, "unbanned_count": len(unbanned), "unbanned_ids": unbanned}
 
 
+def _assert_role_change_allowed(admin_user, admin_role, role, target_role) -> None:
+    """Privilege-boundary guard: only superadmin/admin-key may grant/change the admin role."""
+    if admin_user and admin_role != "superadmin":
+        if role == "admin" and target_role != "admin":
+            raise HTTPException(403, "Chỉ superadmin hoặc admin key mới được cấp quyền admin")
+        if target_role == "admin" and role != "admin":
+            raise HTTPException(403, "Chỉ superadmin hoặc admin key mới được đổi quyền admin khác")
+
+
+def _assert_not_last_admin(conn, ph, user_id, role, target_role) -> None:
+    """Prevent demoting the last remaining active admin."""
+    if target_role == "admin" and role != "admin":
+        remaining = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM users
+            WHERE COALESCE(role, 'user') = 'admin'
+              AND is_active = TRUE
+              AND id::text <> {ph}
+        """, (user_id,))
+        remaining_count = db._row_to_dict(remaining)["c"] if remaining else 0
+        if remaining_count <= 0:
+            raise HTTPException(400, "Không thể hạ quyền admin cuối cùng")
+
+
 @router.post("/users/{user_id}/role",
              summary="Set user role",
              description="Assign a role (user, moderator, or admin) to a user. Banned users cannot be assigned roles.")
@@ -4717,21 +4990,8 @@ async def set_user_role(request: Request, user_id: str, role: str = Query(..., p
                 raise HTTPException(400, "Không thể gán quyền cho tài khoản đã bị ban")
             target_role = td.get("role") or "user"
             admin_role = (admin_user or {}).get("role") if admin_user else "admin-key"
-            if admin_user and admin_role != "superadmin":
-                if role == "admin" and target_role != "admin":
-                    raise HTTPException(403, "Chỉ superadmin hoặc admin key mới được cấp quyền admin")
-                if target_role == "admin" and role != "admin":
-                    raise HTTPException(403, "Chỉ superadmin hoặc admin key mới được đổi quyền admin khác")
-            if target_role == "admin" and role != "admin":
-                remaining = db._fetchone(conn, f"""
-                    SELECT COUNT(*) as c FROM users
-                    WHERE COALESCE(role, 'user') = 'admin'
-                      AND is_active = TRUE
-                      AND id::text <> {ph}
-                """, (user_id,))
-                remaining_count = db._row_to_dict(remaining)["c"] if remaining else 0
-                if remaining_count <= 0:
-                    raise HTTPException(400, "Không thể hạ quyền admin cuối cùng")
+            _assert_role_change_allowed(admin_user, admin_role, role, target_role)
+            _assert_not_last_admin(conn, ph, user_id, role, target_role)
             db._execute(conn, f"""
                 UPDATE users SET role = {ph} WHERE id::text = {ph}
             """, (role, user_id))
@@ -5081,6 +5341,13 @@ async def admin_cleanup_notifications(days: int = Query(90, ge=7, le=365)):
     return {"success": True, "deleted": deleted, "days": days}
 
 
+def _orphan_entity_ids(rows, valid_ids) -> list:
+    """Return entity_ids from `rows` that are not present in `valid_ids` (dict/tuple-row safe)."""
+    def _eid(r):
+        return r[0] if not hasattr(r, 'keys') else db._row_to_dict(r)["entity_id"]
+    return [_eid(r) for r in rows if _eid(r) not in valid_ids]
+
+
 @router.post("/cleanup-orphan-refs",
              summary="Clean up orphaned entity references",
              description="Remove UGC records that reference entity IDs no longer present in the knowledge base.")
@@ -5101,9 +5368,7 @@ async def admin_cleanup_orphan_entity_refs():
             for table in tables:
                 try:
                     rows = db._fetchall(conn, f"SELECT DISTINCT entity_id FROM {table}", ())
-                    orphan_ids = [r[0] if not hasattr(r, 'keys') else db._row_to_dict(r)["entity_id"]
-                                  for r in rows
-                                  if (r[0] if not hasattr(r, 'keys') else db._row_to_dict(r)["entity_id"]) not in valid_ids]
+                    orphan_ids = _orphan_entity_ids(rows, valid_ids)
                     if orphan_ids:
                         placeholders = ",".join(ph for _ in orphan_ids)
                         cur = db._execute(conn, f"DELETE FROM {table} WHERE entity_id IN ({placeholders})", tuple(orphan_ids))
@@ -5433,8 +5698,8 @@ async def delete_announcement(announcement_id: str):
 
 
 # ── Route ordering fix ───────────────────────────────────────────────────
-def _fix_admin_route_order():
-    """Ensure static sub-paths match before parameterized catch-alls."""
+def _find_shadowed_routes() -> set:
+    """Static paths that sit under a parameterized base and would be shadowed by it."""
     param_bases = {}
     shadowed = set()
     for r in router.routes:
@@ -5447,6 +5712,25 @@ def _fix_admin_route_order():
             for base in param_bases:
                 if path.startswith(base + "/"):
                     shadowed.add(path)
+    return shadowed
+
+
+def _reorder_static_routes(static_routes, other_routes) -> None:
+    """Insert each static route just before the parameterized route that would shadow it."""
+    for s in reversed(static_routes):
+        spath = getattr(s, "path", "")
+        for i, r in enumerate(other_routes):
+            rpath = getattr(r, "path", "")
+            if "{" in rpath:
+                base = rpath.split("{")[0].rstrip("/")
+                if spath.startswith(base + "/"):
+                    other_routes.insert(i, s)
+                    break
+
+
+def _fix_admin_route_order():
+    """Ensure static sub-paths match before parameterized catch-alls."""
+    shadowed = _find_shadowed_routes()
     if not shadowed:
         return
     static_routes = []
@@ -5457,15 +5741,7 @@ def _fix_admin_route_order():
             static_routes.append(r)
         else:
             other_routes.append(r)
-    for s in reversed(static_routes):
-        spath = getattr(s, "path", "")
-        for i, r in enumerate(other_routes):
-            rpath = getattr(r, "path", "")
-            if "{" in rpath:
-                base = rpath.split("{")[0].rstrip("/")
-                if spath.startswith(base + "/"):
-                    other_routes.insert(i, s)
-                    break
+    _reorder_static_routes(static_routes, other_routes)
     router.routes[:] = other_routes
 
 _fix_admin_route_order()

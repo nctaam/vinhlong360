@@ -274,20 +274,13 @@ async def _next_event_id() -> int:
             summary="SSE notification stream",
             description="Server-Sent Events stream for real-time notifications. Authenticates via auth cookie or legacy query token. Supports Last-Event-ID for missed event recovery.")
 async def notification_stream(request: Request, token: str = Query(None, max_length=200)):
-    from auth import _extract_token, _hash_token
+    from auth import _extract_token
     session_token = _extract_token(request)
     if not session_token and token and os.environ.get("ENVIRONMENT", "").lower() not in {"production", "prod", "prd"}:
         session_token = token
     if not session_token:
         raise HTTPException(401, "Yêu cầu token xác thực")
-    def _check_token():
-        with db._conn() as conn:
-            return db._fetchone(conn, f"""
-                SELECT u.id FROM user_sessions s
-                JOIN users u ON u.id = s.user_id
-                WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
-            """, (_hash_token(session_token),))
-    row = await asyncio.to_thread(_check_token)
+    row = await asyncio.to_thread(_query_sse_session, session_token)
     if not row:
         raise HTTPException(401, "Token không hợp lệ")
     uid = str(db._row_to_dict(row)["id"])
@@ -295,42 +288,20 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
     last_event_id = request.headers.get("Last-Event-ID")
     missed = []
     if last_event_id:
-        def _fetch_missed():
-            with db._conn() as conn:
-                return db._fetchall(conn, f"""
-                    SELECT id, type, title, body, ref_type, ref_id, created_at
-                    FROM notifications
-                    WHERE user_id = {db._ph}::uuid AND is_read = FALSE
-                      AND created_at > NOW() - INTERVAL '5 minutes'
-                    ORDER BY created_at ASC LIMIT 50
-                """, (uid,))
-        missed = await asyncio.to_thread(_fetch_missed)
+        missed = await asyncio.to_thread(_fetch_missed_sse, uid)
 
     global _sse_loop
     if _sse_loop is None:
         _sse_loop = asyncio.get_running_loop()
 
     queue: asyncio.Queue = asyncio.Queue(maxsize=50)
-    async with _sse_lock:
-        with _sse_thread_lock:
-            subs = _sse_subscribers.setdefault(uid, [])
-            if len(subs) >= _SSE_MAX_PER_USER:
-                evicted = subs.pop(0)
-                try:
-                    evicted.put_nowait(None)
-                except asyncio.QueueFull:
-                    pass
-            subs.append(queue)
+    await _register_sse_subscriber(uid, queue)
 
     async def event_generator():
         try:
             yield ": connected\n\n"
-            for m in missed:
-                md = db._row_to_dict(m)
-                eid = await _next_event_id()
-                payload = {k: str(md[k]) if md.get(k) is not None else None for k in ("id", "type", "title", "body", "ref_type", "ref_id")}
-                payload["created_at"] = str(md["created_at"]) if md.get("created_at") is not None else ""
-                yield f"id: {eid}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
+            async for chunk in _replay_missed_sse(missed):
+                yield chunk
             while True:
                 if await request.is_disconnected():
                     break
@@ -343,16 +314,63 @@ async def notification_stream(request: Request, token: str = Query(None, max_len
                 except asyncio.TimeoutError:
                     yield ": keepalive\n\n"
         finally:
-            async with _sse_lock:
-                with _sse_thread_lock:
-                    subs = _sse_subscribers.get(uid, [])
-                    if queue in subs:
-                        subs.remove(queue)
-                    if not subs:
-                        _sse_subscribers.pop(uid, None)
+            await _unregister_sse_subscriber(uid, queue)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+async def _register_sse_subscriber(uid: str, queue: "asyncio.Queue"):
+    async with _sse_lock:
+        with _sse_thread_lock:
+            subs = _sse_subscribers.setdefault(uid, [])
+            if len(subs) >= _SSE_MAX_PER_USER:
+                evicted = subs.pop(0)
+                try:
+                    evicted.put_nowait(None)
+                except asyncio.QueueFull:
+                    pass
+            subs.append(queue)
+
+
+def _query_sse_session(session_token: str):
+    from auth import _hash_token
+    with db._conn() as conn:
+        return db._fetchone(conn, f"""
+            SELECT u.id FROM user_sessions s
+            JOIN users u ON u.id = s.user_id
+            WHERE s.token = {db._ph} AND s.expires_at > NOW() AND u.is_active = TRUE
+        """, (_hash_token(session_token),))
+
+
+def _fetch_missed_sse(uid: str):
+    with db._conn() as conn:
+        return db._fetchall(conn, f"""
+            SELECT id, type, title, body, ref_type, ref_id, created_at
+            FROM notifications
+            WHERE user_id = {db._ph}::uuid AND is_read = FALSE
+              AND created_at > NOW() - INTERVAL '5 minutes'
+            ORDER BY created_at ASC LIMIT 50
+        """, (uid,))
+
+
+async def _replay_missed_sse(missed):
+    for m in missed:
+        md = db._row_to_dict(m)
+        eid = await _next_event_id()
+        payload = {k: str(md[k]) if md.get(k) is not None else None for k in ("id", "type", "title", "body", "ref_type", "ref_id")}
+        payload["created_at"] = str(md["created_at"]) if md.get("created_at") is not None else ""
+        yield f"id: {eid}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+async def _unregister_sse_subscriber(uid: str, queue: "asyncio.Queue"):
+    async with _sse_lock:
+        with _sse_thread_lock:
+            subs = _sse_subscribers.get(uid, [])
+            if queue in subs:
+                subs.remove(queue)
+            if not subs:
+                _sse_subscribers.pop(uid, None)
 
 
 _NOTIF_TYPE_TO_PREF = {
@@ -463,34 +481,44 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
         if await asyncio.to_thread(_check_block):
             raise HTTPException(403, "Không thể follow người dùng này")
 
-    ph = db._ph
     uid = str(user["id"])
-    _MAX_FOLLOW_USER = 500
-    _MAX_FOLLOW_ENTITY = 1000
-    def _toggle():
-        with db._conn() as conn:
-            deleted = db._fetchone(conn, f"""
-                DELETE FROM follows
-                WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
-                RETURNING 1
-            """, (uid, target_type, target_id))
-            if deleted:
-                return False
-            cap = _MAX_FOLLOW_USER if target_type == "user" else _MAX_FOLLOW_ENTITY
-            cnt = db._fetchone(conn, f"""
-                SELECT COUNT(*) as c FROM follows
-                WHERE follower_id = {ph}::uuid AND target_type = {ph}
-            """, (uid, target_type))
-            if cnt and db._row_to_dict(cnt)["c"] >= cap:
-                raise HTTPException(400, f"Đã đạt giới hạn follow ({cap})")
-            db._execute(conn, f"""
-                INSERT INTO follows (follower_id, target_type, target_id)
-                VALUES ({ph}::uuid, {ph}, {ph})
-                ON CONFLICT DO NOTHING
-            """, (uid, target_type, target_id))
-            return True
-    following = await asyncio.to_thread(_toggle)
+    following = await asyncio.to_thread(_toggle_follow_row, uid, target_type, target_id)
 
+    await _run_follow_side_effects(user, target_id, target_type, following)
+
+    return {"following": following}
+
+
+_MAX_FOLLOW_USER = 500
+_MAX_FOLLOW_ENTITY = 1000
+
+
+def _toggle_follow_row(uid: str, target_type: str, target_id: str) -> bool:
+    ph = db._ph
+    with db._conn() as conn:
+        deleted = db._fetchone(conn, f"""
+            DELETE FROM follows
+            WHERE follower_id = {ph}::uuid AND target_type = {ph} AND target_id = {ph}
+            RETURNING 1
+        """, (uid, target_type, target_id))
+        if deleted:
+            return False
+        cap = _MAX_FOLLOW_USER if target_type == "user" else _MAX_FOLLOW_ENTITY
+        cnt = db._fetchone(conn, f"""
+            SELECT COUNT(*) as c FROM follows
+            WHERE follower_id = {ph}::uuid AND target_type = {ph}
+        """, (uid, target_type))
+        if cnt and db._row_to_dict(cnt)["c"] >= cap:
+            raise HTTPException(400, f"Đã đạt giới hạn follow ({cap})")
+        db._execute(conn, f"""
+            INSERT INTO follows (follower_id, target_type, target_id)
+            VALUES ({ph}::uuid, {ph}, {ph})
+            ON CONFLICT DO NOTHING
+        """, (uid, target_type, target_id))
+        return True
+
+
+async def _run_follow_side_effects(user, target_id: str, target_type: str, following: bool):
     if following and target_type == "user":
         def _notify_follow():
             create_notification(
@@ -512,8 +540,6 @@ async def toggle_follow(target_type: str, target_id: str, user=Depends(require_u
             except Exception as e:  # noqa: BLE001
                 logger.warning("achievement check failed for %s: %s", uid, e)
         asyncio.create_task(asyncio.to_thread(_check_follow_achievements_bg))
-
-    return {"following": following}
 
 
 @router.get("/follow/check/{target_type}/{target_id}",

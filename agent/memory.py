@@ -108,6 +108,48 @@ def _decrypt(ciphertext: str) -> str:
 #  HOT MEMORY — Working Memory (per session)
 # ══════════════════════════════════════════════════
 
+def _hot_extract_interests(hot: "HotMemory", text_lower: str):
+    """Interest-keyword detection block extracted from HotMemory._extract_preferences."""
+    interest_keywords = {
+        "ẩm thực": ["ăn", "món", "đặc sản", "ẩm thực", "quán", "nhà hàng"],
+        "lịch sử": ["lịch sử", "di tích", "bảo tàng", "nhân vật", "chiến tranh"],
+        "thiên nhiên": ["thiên nhiên", "sông", "vườn", "cây", "chim", "sinh thái"],
+        "văn hóa": ["chùa", "lễ hội", "văn hóa", "khmer", "truyền thống"],
+        "mua sắm": ["mua", "đặc sản", "quà", "ocop", "sản phẩm"],
+    }
+    for interest, keywords in interest_keywords.items():
+        if any(kw in text_lower for kw in keywords):
+            hot.detected_preferences.setdefault("interests", set()).add(interest)
+
+
+def _hot_extract_budget(hot: "HotMemory", text_lower: str):
+    """Budget-signal detection block extracted from HotMemory._extract_preferences."""
+    if any(w in text_lower for w in ["tiết kiệm", "rẻ", "bình dân", "giá rẻ"]):
+        hot.detected_preferences["budget"] = "thấp"
+    elif any(w in text_lower for w in ["sang trọng", "cao cấp", "resort", "luxury"]):
+        hot.detected_preferences["budget"] = "cao"
+
+
+def _hot_extract_group_type(hot: "HotMemory", text_lower: str):
+    """Group-type detection block extracted from HotMemory._extract_preferences."""
+    if any(w in text_lower for w in ["gia đình", "con nhỏ", "trẻ em"]):
+        hot.detected_preferences["group_type"] = "gia đình"
+    elif any(w in text_lower for w in ["đôi", "couple", "lãng mạn"]):
+        hot.detected_preferences["group_type"] = "cặp đôi"
+    elif any(w in text_lower for w in ["nhóm", "bạn bè", "group"]):
+        hot.detected_preferences["group_type"] = "nhóm bạn"
+
+
+def _hot_extract_areas(hot: "HotMemory", text_lower: str):
+    """Area-mention detection block extracted from HotMemory._extract_preferences."""
+    if "vĩnh long" in text_lower or "vinh long" in text_lower:
+        hot.areas_mentioned.add("vinh-long")
+    if "bến tre" in text_lower or "ben tre" in text_lower:
+        hot.areas_mentioned.add("ben-tre")
+    if "trà vinh" in text_lower or "tra vinh" in text_lower:
+        hot.areas_mentioned.add("tra-vinh")
+
+
 class HotMemory:
     """
     Working memory cho 1 session.
@@ -173,40 +215,10 @@ class HotMemory:
     def _extract_preferences(self, text: str):
         """Phát hiện preferences từ tin nhắn user."""
         text_lower = text.lower()
-
-        # Interests
-        interest_keywords = {
-            "ẩm thực": ["ăn", "món", "đặc sản", "ẩm thực", "quán", "nhà hàng"],
-            "lịch sử": ["lịch sử", "di tích", "bảo tàng", "nhân vật", "chiến tranh"],
-            "thiên nhiên": ["thiên nhiên", "sông", "vườn", "cây", "chim", "sinh thái"],
-            "văn hóa": ["chùa", "lễ hội", "văn hóa", "khmer", "truyền thống"],
-            "mua sắm": ["mua", "đặc sản", "quà", "ocop", "sản phẩm"],
-        }
-        for interest, keywords in interest_keywords.items():
-            if any(kw in text_lower for kw in keywords):
-                self.detected_preferences.setdefault("interests", set()).add(interest)
-
-        # Budget
-        if any(w in text_lower for w in ["tiết kiệm", "rẻ", "bình dân", "giá rẻ"]):
-            self.detected_preferences["budget"] = "thấp"
-        elif any(w in text_lower for w in ["sang trọng", "cao cấp", "resort", "luxury"]):
-            self.detected_preferences["budget"] = "cao"
-
-        # Group type
-        if any(w in text_lower for w in ["gia đình", "con nhỏ", "trẻ em"]):
-            self.detected_preferences["group_type"] = "gia đình"
-        elif any(w in text_lower for w in ["đôi", "couple", "lãng mạn"]):
-            self.detected_preferences["group_type"] = "cặp đôi"
-        elif any(w in text_lower for w in ["nhóm", "bạn bè", "group"]):
-            self.detected_preferences["group_type"] = "nhóm bạn"
-
-        # Areas
-        if "vĩnh long" in text_lower or "vinh long" in text_lower:
-            self.areas_mentioned.add("vinh-long")
-        if "bến tre" in text_lower or "ben tre" in text_lower:
-            self.areas_mentioned.add("ben-tre")
-        if "trà vinh" in text_lower or "tra vinh" in text_lower:
-            self.areas_mentioned.add("tra-vinh")
+        _hot_extract_interests(self, text_lower)
+        _hot_extract_budget(self, text_lower)
+        _hot_extract_group_type(self, text_lower)
+        _hot_extract_areas(self, text_lower)
 
     def _compress(self):
         """Nén messages cũ thành summary."""
@@ -569,6 +581,138 @@ def memory_health_check() -> dict:
 #  MEMORY EXTRACTOR — Automatic fact extraction
 # ══════════════════════════════════════════════════
 
+def _pref_extract_food(extractor: "MemoryExtractor", message: str, results: list[dict]):
+    """Food-preference block extracted from MemoryExtractor.extract_preferences."""
+    for m in extractor._FOOD_PATTERNS.finditer(message):
+        value = m.group(1).strip().rstrip(".,!?")
+        if len(value) >= 2:
+            results.append({"type": "food", "value": value, "confidence": 0.8})
+
+
+def _pref_extract_area_patterns(extractor: "MemoryExtractor", message: str, results: list[dict]):
+    """Area-pattern block extracted from MemoryExtractor.extract_preferences."""
+    for m in extractor._AREA_PATTERNS.finditer(message):
+        value = m.group(1).strip().rstrip(".,!?")
+        if len(value) >= 2:
+            results.append({"type": "area", "value": value, "confidence": 0.7})
+
+
+def _pref_extract_known_areas(extractor: "MemoryExtractor", msg_lower: str, results: list[dict]):
+    """Known-area-name block extracted from MemoryExtractor.extract_preferences."""
+    for area in extractor._KNOWN_AREAS:
+        if area in msg_lower:
+            results.append({"type": "area", "value": area, "confidence": 0.6})
+
+
+def _pref_extract_activity(extractor: "MemoryExtractor", message: str, results: list[dict]):
+    """Activity-preference block extracted from MemoryExtractor.extract_preferences."""
+    for m in extractor._ACTIVITY_PATTERNS.finditer(message):
+        # The pattern captures the activity verb phrase itself in group(0)
+        full_match = m.group(0).strip().rstrip(".,!?")
+        trailing = m.group(1).strip().rstrip(".,!?") if m.group(1) else ""
+        value = full_match if not trailing else full_match
+        if len(value) >= 4:
+            results.append({"type": "activity", "value": value, "confidence": 0.75})
+
+
+def _pref_extract_budget(extractor: "MemoryExtractor", msg_lower: str, results: list[dict]):
+    """Budget-signal block extracted from MemoryExtractor.extract_preferences."""
+    for budget_level, keywords in extractor._BUDGET_KEYWORDS.items():
+        if any(kw in msg_lower for kw in keywords):
+            results.append({"type": "budget", "value": budget_level, "confidence": 0.85})
+
+
+def _pref_extract_travel_style(extractor: "MemoryExtractor", msg_lower: str, results: list[dict]):
+    """Travel-style block extracted from MemoryExtractor.extract_preferences."""
+    for style, keywords in extractor._TRAVEL_STYLE_KEYWORDS.items():
+        if any(kw in msg_lower for kw in keywords):
+            results.append({"type": "travel_style", "value": style, "confidence": 0.85})
+
+
+def _pref_dedupe(results: list[dict]) -> list[dict]:
+    """Deduplicate-by-(type,value) block extracted from MemoryExtractor.extract_preferences."""
+    seen: set[tuple[str, str]] = set()
+    deduped: list[dict] = []
+    for pref in results:
+        key = (pref["type"], pref["value"].lower())
+        if key not in seen:
+            seen.add(key)
+            deduped.append(pref)
+    return deduped
+
+
+def _load_knowledge_entities() -> dict:
+    """Lazy-import knowledge entities block extracted from MemoryExtractor.on_conversation_turn."""
+    try:
+        try:
+            import knowledge as _knowledge
+        except ImportError:
+            from agent import knowledge as _knowledge
+        _knowledge._ensure()
+        return _knowledge._entities or {}
+    except Exception as e:
+        logger.debug("Failed to load knowledge entities for memory extraction: %s", e)
+        return {}
+
+
+def _apply_preferences_to_profile(profile: "UserProfile", preferences: list[dict]):
+    """Preference-persistence block extracted from MemoryExtractor.on_conversation_turn."""
+    for pref in preferences:
+        ptype = pref["type"]
+        value = pref["value"]
+
+        if ptype == "food":
+            fact_str = f"Ẩm thực: {value}"
+            if fact_str not in profile.semantic_facts:
+                profile.semantic_facts.append(fact_str)
+
+        elif ptype == "area":
+            normalized = value.lower().replace(" ", "-")
+            if normalized not in profile.preferred_areas:
+                profile.preferred_areas.append(normalized)
+
+        elif ptype == "activity":
+            fact_str = f"Hoạt động: {value}"
+            if fact_str not in profile.semantic_facts:
+                profile.semantic_facts.append(fact_str)
+
+        elif ptype == "budget":
+            profile.budget_preference = value
+
+        elif ptype == "travel_style":
+            profile.group_type = value
+
+
+def _track_discussed_entities(
+    profile: "UserProfile",
+    entities_discussed: list[str],
+    mentioned_entities: list[str],
+    knowledge_entities: dict,
+):
+    """Entity-tracking block extracted from MemoryExtractor.on_conversation_turn."""
+    all_entities = list(set(entities_discussed + mentioned_entities))
+    for eid in all_entities:
+        entity_name = knowledge_entities.get(eid, {}).get("name", eid)
+        if not any(v["id"] == eid for v in profile.visited_entities):
+            profile.visited_entities.append({
+                "id": eid,
+                "name": entity_name,
+                "ts": datetime.now(timezone.utc).isoformat(),
+            })
+
+
+def _store_facts_to_profile(profile: "UserProfile", facts: list[dict]):
+    """Fact-persistence + trim block extracted from MemoryExtractor.on_conversation_turn."""
+    for fact in facts:
+        fact_str = f"{fact['subject']} [{fact['relation']}] {fact['object']}"
+        if fact_str not in profile.semantic_facts:
+            profile.semantic_facts.append(fact_str)
+
+    # Trim semantic_facts to keep only latest 50
+    if len(profile.semantic_facts) > 50:
+        profile.semantic_facts = profile.semantic_facts[-50:]
+
+
 class MemoryExtractor:
     """
     Pattern-based fact and preference extraction from conversations.
@@ -645,52 +789,26 @@ class MemoryExtractor:
         combined_lower = combined.lower()
 
         # Food preferences (from user message only — those are the user's words)
-        for m in self._FOOD_PATTERNS.finditer(message):
-            value = m.group(1).strip().rstrip(".,!?")
-            if len(value) >= 2:
-                results.append({"type": "food", "value": value, "confidence": 0.8})
+        _pref_extract_food(self, message, results)
 
         # Area interests
-        for m in self._AREA_PATTERNS.finditer(message):
-            value = m.group(1).strip().rstrip(".,!?")
-            if len(value) >= 2:
-                results.append({"type": "area", "value": value, "confidence": 0.7})
+        _pref_extract_area_patterns(self, message, results)
 
         # Also detect known area names mentioned directly
         msg_lower = message.lower()
-        for area in self._KNOWN_AREAS:
-            if area in msg_lower:
-                results.append({"type": "area", "value": area, "confidence": 0.6})
+        _pref_extract_known_areas(self, msg_lower, results)
 
         # Activity preferences
-        for m in self._ACTIVITY_PATTERNS.finditer(message):
-            # The pattern captures the activity verb phrase itself in group(0)
-            full_match = m.group(0).strip().rstrip(".,!?")
-            trailing = m.group(1).strip().rstrip(".,!?") if m.group(1) else ""
-            value = full_match if not trailing else full_match
-            if len(value) >= 4:
-                results.append({"type": "activity", "value": value, "confidence": 0.75})
+        _pref_extract_activity(self, message, results)
 
         # Budget signals
-        for budget_level, keywords in self._BUDGET_KEYWORDS.items():
-            if any(kw in msg_lower for kw in keywords):
-                results.append({"type": "budget", "value": budget_level, "confidence": 0.85})
+        _pref_extract_budget(self, msg_lower, results)
 
         # Travel style
-        for style, keywords in self._TRAVEL_STYLE_KEYWORDS.items():
-            if any(kw in msg_lower for kw in keywords):
-                results.append({"type": "travel_style", "value": style, "confidence": 0.85})
+        _pref_extract_travel_style(self, msg_lower, results)
 
         # Deduplicate by (type, value)
-        seen: set[tuple[str, str]] = set()
-        deduped: list[dict] = []
-        for pref in results:
-            key = (pref["type"], pref["value"].lower())
-            if key not in seen:
-                seen.add(key)
-                deduped.append(pref)
-
-        return deduped
+        return _pref_dedupe(results)
 
     def extract_entities_mentioned(
         self, message: str, reply: str, entities: dict
@@ -777,16 +895,7 @@ class MemoryExtractor:
         Returns a summary dict of what was extracted (useful for logging/debug).
         """
         # Lazy-import knowledge entities to avoid circular imports
-        try:
-            try:
-                import knowledge as _knowledge
-            except ImportError:
-                from agent import knowledge as _knowledge
-            _knowledge._ensure()
-            knowledge_entities = _knowledge._entities or {}
-        except Exception as e:
-            logger.debug("Failed to load knowledge entities for memory extraction: %s", e)
-            knowledge_entities = {}
+        knowledge_entities = _load_knowledge_entities()
 
         # 1. Extract preferences
         preferences = self.extract_preferences(message, reply)
@@ -806,51 +915,15 @@ class MemoryExtractor:
                 profile = cold_memory.get_profile(user_id)
 
                 # Update preferences
-                for pref in preferences:
-                    ptype = pref["type"]
-                    value = pref["value"]
-
-                    if ptype == "food":
-                        fact_str = f"Ẩm thực: {value}"
-                        if fact_str not in profile.semantic_facts:
-                            profile.semantic_facts.append(fact_str)
-
-                    elif ptype == "area":
-                        normalized = value.lower().replace(" ", "-")
-                        if normalized not in profile.preferred_areas:
-                            profile.preferred_areas.append(normalized)
-
-                    elif ptype == "activity":
-                        fact_str = f"Hoạt động: {value}"
-                        if fact_str not in profile.semantic_facts:
-                            profile.semantic_facts.append(fact_str)
-
-                    elif ptype == "budget":
-                        profile.budget_preference = value
-
-                    elif ptype == "travel_style":
-                        profile.group_type = value
+                _apply_preferences_to_profile(profile, preferences)
 
                 # Track discussed entities
-                all_entities = list(set(entities_discussed + mentioned_entities))
-                for eid in all_entities:
-                    entity_name = knowledge_entities.get(eid, {}).get("name", eid)
-                    if not any(v["id"] == eid for v in profile.visited_entities):
-                        profile.visited_entities.append({
-                            "id": eid,
-                            "name": entity_name,
-                            "ts": datetime.now(timezone.utc).isoformat(),
-                        })
+                _track_discussed_entities(
+                    profile, entities_discussed, mentioned_entities, knowledge_entities
+                )
 
                 # Store extracted facts as semantic facts
-                for fact in facts:
-                    fact_str = f"{fact['subject']} [{fact['relation']}] {fact['object']}"
-                    if fact_str not in profile.semantic_facts:
-                        profile.semantic_facts.append(fact_str)
-
-                # Trim semantic_facts to keep only latest 50
-                if len(profile.semantic_facts) > 50:
-                    profile.semantic_facts = profile.semantic_facts[-50:]
+                _store_facts_to_profile(profile, facts)
 
                 cold_memory._save_all()
 

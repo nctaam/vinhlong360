@@ -98,7 +98,13 @@ def test_admin_cookie_auth_requires_csrf_for_mutations():
     notifications = (ROOT / "agent" / "notifications.py").read_text(encoding="utf-8")
 
     require_admin_block = admin[admin.index("async def require_admin") : admin.index("async def require_admin_scope")]
-    assert "await require_csrf(request)" in require_admin_block
+    # Refactor (complexity ≤12): require_csrf + audit side-effects dời sang
+    # _require_admin_mutation_side_effects, require_admin GỌI nó (move-not-delete —
+    # CSRF-cho-mutation vẫn bắt buộc). Giữ nguyên cả 2 assertion bảo mật.
+    assert "_require_admin_mutation_side_effects(request" in require_admin_block  # wiring
+    _se_idx = admin.index("def _require_admin_mutation_side_effects")
+    side_effects_block = admin[_se_idx : _se_idx + 1600]
+    assert "await require_csrf(request)" in side_effects_block
     assert "actor = \"admin-key\"" in require_admin_block
     for prefix in (
         "/api/notifications",

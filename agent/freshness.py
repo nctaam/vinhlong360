@@ -115,6 +115,59 @@ def _is_knowledge_entity(entity: dict) -> bool:
 #  1. check_freshness
 # ══════════════════════════════════════════════════
 
+def _staleness_reason(entity: dict, cutoff: datetime, now: datetime) -> str | None:
+    """Compute the staleness reason for one entity (None if fresh)."""
+    date_str = _get_date_field(entity)
+    if date_str:
+        dt = _parse_date(date_str)
+        if dt and dt < cutoff:
+            age_days = (now - dt).days
+            return f"Stale: last updated {age_days} days ago ({date_str})"
+        return None
+    return "Stale: no update date recorded"
+
+
+def _missing_fields_reason(entity: dict) -> str | None:
+    """Compute the missing-critical-fields reason for one entity (None if complete)."""
+    missing = []
+    if not entity.get("summary"):
+        missing.append("summary")
+    if not _get_location_field(entity):
+        missing.append("location (ward_id/placeId)")
+    if not _get_source_value(entity):
+        missing.append("source")
+    if missing:
+        return f"Missing fields: {', '.join(missing)}"
+    return None
+
+
+def _entity_reasons(entity: dict, cutoff: datetime, now: datetime) -> list[str]:
+    """Gather all freshness issue reasons for a single entity, in order."""
+    reasons: list[str] = []
+
+    # --- Staleness check ---
+    stale_reason = _staleness_reason(entity, cutoff, now)
+    if stale_reason:
+        reasons.append(stale_reason)
+
+    # --- Low confidence ---
+    confidence = entity.get("confidence")
+    if confidence is not None and confidence < DEFAULT_MIN_CONFIDENCE:
+        reasons.append(f"Low confidence: {confidence}")
+
+    # --- Missing critical fields ---
+    missing_reason = _missing_fields_reason(entity)
+    if missing_reason:
+        reasons.append(missing_reason)
+
+    # --- Short summary ---
+    summary = entity.get("summary", "")
+    if summary and len(summary) < DEFAULT_MIN_SUMMARY_LEN:
+        reasons.append(f"Short summary: only {len(summary)} chars")
+
+    return reasons
+
+
 def check_freshness(entities: dict, max_age_days: int = DEFAULT_MAX_AGE_DAYS) -> dict:
     """
     Analyze all entities for staleness, low confidence, and missing data.
@@ -145,38 +198,7 @@ def check_freshness(entities: dict, max_age_days: int = DEFAULT_MAX_AGE_DAYS) ->
     for entity in knowledge:
         eid = entity.get("id", "unknown")
         name = entity.get("name", eid)
-        reasons: list[str] = []
-
-        # --- Staleness check ---
-        date_str = _get_date_field(entity)
-        if date_str:
-            dt = _parse_date(date_str)
-            if dt and dt < cutoff:
-                age_days = (now - dt).days
-                reasons.append(f"Stale: last updated {age_days} days ago ({date_str})")
-        else:
-            reasons.append("Stale: no update date recorded")
-
-        # --- Low confidence ---
-        confidence = entity.get("confidence")
-        if confidence is not None and confidence < DEFAULT_MIN_CONFIDENCE:
-            reasons.append(f"Low confidence: {confidence}")
-
-        # --- Missing critical fields ---
-        missing = []
-        if not entity.get("summary"):
-            missing.append("summary")
-        if not _get_location_field(entity):
-            missing.append("location (ward_id/placeId)")
-        if not _get_source_value(entity):
-            missing.append("source")
-        if missing:
-            reasons.append(f"Missing fields: {', '.join(missing)}")
-
-        # --- Short summary ---
-        summary = entity.get("summary", "")
-        if summary and len(summary) < DEFAULT_MIN_SUMMARY_LEN:
-            reasons.append(f"Short summary: only {len(summary)} chars")
+        reasons = _entity_reasons(entity, cutoff, now)
 
         # --- Tally ---
         if reasons:
@@ -266,13 +288,8 @@ def auto_refresh_candidates(entities: dict, limit: int = 20) -> list[dict]:
 #  3. freshness_report
 # ══════════════════════════════════════════════════
 
-def freshness_report(entities: dict) -> str:
-    """Generate a human-readable freshness report."""
-    result = check_freshness(entities)
-    total = result["total"]
-    if total == 0:
-        return "No knowledge entities found."
-
+def _report_overview_lines(result: dict, total: int) -> list[str]:
+    """Build the header + overview stats block for the report."""
     lines = []
     lines.append("=" * 60)
     lines.append("  CONTENT FRESHNESS REPORT")
@@ -293,18 +310,16 @@ def freshness_report(entities: dict) -> str:
     lines.append(f"  Incomplete:        {result['incomplete']:>4}  ({pct_inc:.1f}%)")
     lines.append(f"  Issues found:      {len(result['issues']):>4}")
     lines.append("")
+    return lines
 
-    if not result["issues"]:
-        lines.append("  All entities are fresh and complete!")
-        lines.append("")
-        return "\n".join(lines)
 
-    # --- Group by issue type ---
+def _group_report_items(issues: list[dict]) -> tuple[list, list, list]:
+    """Split issue reasons into (stale, low_confidence, incomplete) item tuples."""
     stale_items = []
     low_conf_items = []
     incomplete_items = []
 
-    for issue in result["issues"]:
+    for issue in issues:
         for reason in issue["reasons"]:
             if reason.startswith("Stale"):
                 stale_items.append((issue["id"], issue["name"], reason))
@@ -313,49 +328,65 @@ def freshness_report(entities: dict) -> str:
             elif reason.startswith("Missing") or reason.startswith("Short summary"):
                 incomplete_items.append((issue["id"], issue["name"], reason))
 
-    if stale_items:
-        lines.append("-" * 60)
-        lines.append(f"  STALE ENTITIES ({len(stale_items)})")
-        lines.append("-" * 60)
-        for eid, name, reason in stale_items[:30]:
-            lines.append(f"    [{eid}] {name}")
-            lines.append(f"      -> {reason}")
-        if len(stale_items) > 30:
-            lines.append(f"    ... and {len(stale_items) - 30} more")
-        lines.append("")
+    return stale_items, low_conf_items, incomplete_items
 
-    if low_conf_items:
-        lines.append("-" * 60)
-        lines.append(f"  LOW CONFIDENCE ({len(low_conf_items)})")
-        lines.append("-" * 60)
-        for eid, name, reason in low_conf_items[:20]:
-            lines.append(f"    [{eid}] {name}")
-            lines.append(f"      -> {reason}")
-        if len(low_conf_items) > 20:
-            lines.append(f"    ... and {len(low_conf_items) - 20} more")
-        lines.append("")
 
-    if incomplete_items:
-        lines.append("-" * 60)
-        lines.append(f"  INCOMPLETE ENTITIES ({len(incomplete_items)})")
-        lines.append("-" * 60)
-        for eid, name, reason in incomplete_items[:20]:
-            lines.append(f"    [{eid}] {name}")
-            lines.append(f"      -> {reason}")
-        if len(incomplete_items) > 20:
-            lines.append(f"    ... and {len(incomplete_items) - 20} more")
+def _report_section_lines(title: str, items: list, cap: int) -> list[str]:
+    """Render one issue section (header + up to `cap` items + overflow note)."""
+    if not items:
+        return []
+    lines = []
+    lines.append("-" * 60)
+    lines.append(f"  {title} ({len(items)})")
+    lines.append("-" * 60)
+    for eid, name, reason in items[:cap]:
+        lines.append(f"    [{eid}] {name}")
+        lines.append(f"      -> {reason}")
+    if len(items) > cap:
+        lines.append(f"    ... and {len(items) - cap} more")
+    lines.append("")
+    return lines
+
+
+def _report_candidate_lines(entities: dict) -> list[str]:
+    """Render the top refresh candidates block."""
+    candidates = auto_refresh_candidates(entities, limit=10)
+    if not candidates:
+        return []
+    lines = []
+    lines.append("-" * 60)
+    lines.append("  TOP REFRESH CANDIDATES")
+    lines.append("-" * 60)
+    for i, c in enumerate(candidates, 1):
+        hits_label = f" ({c['hits']} queries)" if c["hits"] else ""
+        lines.append(f"    {i:>2}. [{c['id']}] {c['name']}{hits_label}")
+    lines.append("")
+    return lines
+
+
+def freshness_report(entities: dict) -> str:
+    """Generate a human-readable freshness report."""
+    result = check_freshness(entities)
+    total = result["total"]
+    if total == 0:
+        return "No knowledge entities found."
+
+    lines = _report_overview_lines(result, total)
+
+    if not result["issues"]:
+        lines.append("  All entities are fresh and complete!")
         lines.append("")
+        return "\n".join(lines)
+
+    # --- Group by issue type ---
+    stale_items, low_conf_items, incomplete_items = _group_report_items(result["issues"])
+
+    lines.extend(_report_section_lines("STALE ENTITIES", stale_items, 30))
+    lines.extend(_report_section_lines("LOW CONFIDENCE", low_conf_items, 20))
+    lines.extend(_report_section_lines("INCOMPLETE ENTITIES", incomplete_items, 20))
 
     # --- Refresh recommendations ---
-    candidates = auto_refresh_candidates(entities, limit=10)
-    if candidates:
-        lines.append("-" * 60)
-        lines.append("  TOP REFRESH CANDIDATES")
-        lines.append("-" * 60)
-        for i, c in enumerate(candidates, 1):
-            hits_label = f" ({c['hits']} queries)" if c["hits"] else ""
-            lines.append(f"    {i:>2}. [{c['id']}] {c['name']}{hits_label}")
-        lines.append("")
+    lines.extend(_report_candidate_lines(entities))
 
     lines.append("=" * 60)
     return "\n".join(lines)

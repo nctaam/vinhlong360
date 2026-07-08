@@ -1879,13 +1879,13 @@ class TestModerationNotifications:
             "reject_post notification must include the rejection reason"
 
     def test_batch_moderation_calls_notification(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("async def batch_moderation(")
-        assert idx > 0
-        # Scan the whole function body; the per-post create_notification call in the
-        # loop sits just past a fixed 1600-char window as the fn grew.
-        end = min((x for x in (src.find("\n@", idx + 10), src.find("\nasync def ", idx + 10), src.find("\ndef ", idx + 10)) if x > 0), default=len(src))
-        block = src[idx:end]
+        import inspect
+        import admin as admin_mod
+        # The per-post create_notification fan-out was extracted into the _batch_mod_notify
+        # helper (complexity refactor); batch_moderation still wires it and keeps the
+        # RETURNING id, user_id fetch. Combine both sources for the assertions.
+        block = inspect.getsource(admin_mod.batch_moderation) + inspect.getsource(admin_mod._batch_mod_notify)
+        assert "_batch_mod_notify" in inspect.getsource(admin_mod.batch_moderation)  # wiring
         assert "create_notification(" in block, \
             "batch_moderation must call create_notification for each affected post"
         assert "RETURNING id, user_id" in block, \
@@ -2066,10 +2066,12 @@ class TestAdminBugFixes:
             "moderation_queue total must use _row_to_dict"
 
     def test_search_pagination_correct_total(self):
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def list_entities")
-        assert idx != -1
-        block = src[idx:idx+2000]
+        import inspect
+        import admin as admin_mod
+        # The bounded-cap search fetch was extracted into _list_entities_fetch (complexity
+        # refactor); list_entities still wires it and uses all_matches for the total.
+        block = inspect.getsource(admin_mod.list_entities) + inspect.getsource(admin_mod._list_entities_fetch)
+        assert "_list_entities_fetch" in inspect.getsource(admin_mod.list_entities)  # wiring
         assert "limit=10000" in block or "limit=5000" in block or "limit=2000" in block, \
             "search path must fetch matches with bounded cap for correct total count"
         assert "all_matches" in block, \
@@ -2136,10 +2138,12 @@ class TestAdminBugFixes:
 
     def test_user_search_like_escaped(self):
         """Admin user search must escape LIKE wildcards in search term."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def list_users")
-        assert idx != -1
-        block = src[idx:idx+1500]
+        import inspect
+        import admin as admin_mod
+        # The user-search WHERE clause was extracted into _list_users_where (complexity
+        # refactor); list_users still wires it. Combine both sources for the assertions.
+        block = inspect.getsource(admin_mod.list_users) + inspect.getsource(admin_mod._list_users_where)
+        assert "_list_users_where" in inspect.getsource(admin_mod.list_users)  # wiring
         assert "_escape_like" in block or "escape_like" in block, \
             "list_users search must escape LIKE wildcards"
         assert "ESCAPE" in block, \

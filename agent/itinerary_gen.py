@@ -77,6 +77,40 @@ def generate_itinerary(
     areas = areas or ["vinh-long", "ben-tre", "tra-vinh"]
 
     # 1. Thu thập candidates
+    candidates = _collect_candidates(interests, areas, month, budget)
+
+    # Sort by score
+    candidates.sort(key=lambda c: c["score"], reverse=True)
+
+    # 2. Phân bổ stops theo ngày
+    stops_per_day = 5 if days == 1 else 4
+    total_stops = stops_per_day * days
+    selected = _select_diverse(candidates, total_stops, areas, days)
+
+    # 3. Xây dựng lịch trình
+    day_plans = _build_day_plans(days, stops_per_day, selected, candidates, month)
+
+    # 4. Tips
+    tips = _gen_tips(interests, areas, month, budget)
+
+    # Title
+    title = _build_title(days, interests, areas)
+
+    return {
+        "title": title,
+        "days": days,
+        "areas": areas,
+        "interests": interests,
+        "month": month,
+        "budget": budget,
+        "day_plans": day_plans,
+        "tips": tips,
+        "total_stops": sum(len(d["stops"]) for d in day_plans),
+    }
+
+
+def _collect_candidates(interests: list, areas: list, month: int, budget: str) -> list:
+    """Thu thập & chấm điểm candidates khớp interests/areas."""
     target_types = set()
     for interest in interests:
         target_types.update(INTEREST_MAP.get(interest, INTEREST_MAP["tong_hop"]))
@@ -95,48 +129,18 @@ def generate_itinerary(
         score = _score_entity(e, month, budget, area, areas)
         candidates.append({"entity": e, "place": p, "area": area, "score": score})
 
-    # Sort by score
-    candidates.sort(key=lambda c: c["score"], reverse=True)
+    return candidates
 
-    # 2. Phân bổ stops theo ngày
-    stops_per_day = 5 if days == 1 else 4
-    total_stops = stops_per_day * days
-    selected = _select_diverse(candidates, total_stops, areas, days)
 
-    # 3. Xây dựng lịch trình
+def _build_day_plans(days: int, stops_per_day: int, selected: list, candidates: list, month: int) -> list:
+    """Xây dựng day_plans từ danh sách entity đã chọn."""
     day_plans = []
     idx = 0
     for d in range(days):
-        day_stops = []
         day_entities = selected[idx:idx + stops_per_day]
         idx += stops_per_day
 
-        # Phân bổ thời gian trong ngày
-        current_time = 8 * 60  # 8:00 AM (in minutes)
-        for i, item in enumerate(day_entities):
-            e = item["entity"]
-            etype = e["type"]
-
-            # Thêm bữa ăn
-            if current_time >= 11.5 * 60 and not any(s.get("is_meal") for s in day_stops if s.get("time_min", 0) > 11 * 60):
-                meal = _find_meal(candidates, item["area"], [s["entity"]["id"] for s in day_stops])
-                if meal:
-                    day_stops.append({
-                        "time": _fmt_time(current_time),
-                        "time_min": current_time,
-                        "entity": _entity_summary(meal["entity"]),
-                        "note": "🍜 Nghỉ trưa & thưởng thức đặc sản",
-                        "is_meal": True,
-                    })
-                    current_time += 60
-
-            day_stops.append({
-                "time": _fmt_time(current_time),
-                "time_min": current_time,
-                "entity": _entity_summary(e),
-                "note": _gen_note(e, month),
-            })
-            current_time += VISIT_DURATION.get(etype, 60) + 30  # + di chuyển
+        day_stops = _build_day_stops(day_entities, candidates, month)
 
         day_plans.append({
             "day": d + 1,
@@ -144,26 +148,49 @@ def generate_itinerary(
             "stops": [{k: v for k, v in s.items() if k != "time_min"} for s in day_stops],
         })
 
-    # 4. Tips
-    tips = _gen_tips(interests, areas, month, budget)
+    return day_plans
 
-    # Title
+
+def _build_day_stops(day_entities: list, candidates: list, month: int) -> list:
+    """Phân bổ thời gian & chèn bữa ăn cho 1 ngày."""
+    day_stops = []
+    # Phân bổ thời gian trong ngày
+    current_time = 8 * 60  # 8:00 AM (in minutes)
+    for i, item in enumerate(day_entities):
+        e = item["entity"]
+        etype = e["type"]
+
+        # Thêm bữa ăn
+        if current_time >= 11.5 * 60 and not any(s.get("is_meal") for s in day_stops if s.get("time_min", 0) > 11 * 60):
+            meal = _find_meal(candidates, item["area"], [s["entity"]["id"] for s in day_stops])
+            if meal:
+                day_stops.append({
+                    "time": _fmt_time(current_time),
+                    "time_min": current_time,
+                    "entity": _entity_summary(meal["entity"]),
+                    "note": "🍜 Nghỉ trưa & thưởng thức đặc sản",
+                    "is_meal": True,
+                })
+                current_time += 60
+
+        day_stops.append({
+            "time": _fmt_time(current_time),
+            "time_min": current_time,
+            "entity": _entity_summary(e),
+            "note": _gen_note(e, month),
+        })
+        current_time += VISIT_DURATION.get(etype, 60) + 30  # + di chuyển
+
+    return day_stops
+
+
+def _build_title(days: int, interests: list, areas: list) -> str:
+    """Tạo tiêu đề lịch trình."""
     area_names = [knowledge.AREA_META.get(a, {}).get("name", a) for a in areas]
     interest_labels = {"am_thuc": "ẩm thực", "lich_su": "lịch sử", "thien_nhien": "thiên nhiên",
                        "van_hoa": "văn hóa", "mua_sam": "mua sắm", "tham_quan": "tham quan", "tong_hop": "tổng hợp"}
     interest_text = " & ".join(interest_labels.get(i, i) for i in interests[:2])
-
-    return {
-        "title": f"Lịch trình {days} ngày {interest_text} — {', '.join(area_names[:2])}",
-        "days": days,
-        "areas": areas,
-        "interests": interests,
-        "month": month,
-        "budget": budget,
-        "day_plans": day_plans,
-        "tips": tips,
-        "total_stops": sum(len(d["stops"]) for d in day_plans),
-    }
+    return f"Lịch trình {days} ngày {interest_text} — {', '.join(area_names[:2])}"
 
 
 def _score_entity(e: dict, month: int, budget: str, area: str, preferred_areas: list) -> float:
@@ -202,6 +229,24 @@ def _score_entity(e: dict, month: int, budget: str, area: str, preferred_areas: 
     return score
 
 
+def _pick_best_candidate(areas: list, area_pools: dict, used_ids: set, used_day_types: set):
+    """Chọn candidate tốt nhất (chưa dùng) qua các area, phạt loại đã có trong ngày."""
+    best = None
+    for area in areas:
+        pool = area_pools.get(area, [])
+        for c in pool:
+            eid = c["entity"]["id"]
+            etype = c["entity"]["type"]
+            if eid in used_ids:
+                continue
+            # Đa dạng loại trong cùng ngày
+            type_penalty = -3 if etype in used_day_types else 0
+            adjusted = c["score"] + type_penalty
+            if not best or adjusted > best[1]:
+                best = (c, adjusted)
+    return best
+
+
 def _select_diverse(candidates: list, total: int, areas: list, days: int) -> list:
     """Chọn entities đa dạng (khu vực, loại)."""
     selected = []
@@ -217,19 +262,7 @@ def _select_diverse(candidates: list, total: int, areas: list, days: int) -> lis
             used_types_per_day[day_num] = set()
 
         # Ưu tiên khu vực chưa đủ
-        best = None
-        for area in areas:
-            pool = area_pools.get(area, [])
-            for c in pool:
-                eid = c["entity"]["id"]
-                etype = c["entity"]["type"]
-                if eid in used_ids:
-                    continue
-                # Đa dạng loại trong cùng ngày
-                type_penalty = -3 if etype in used_types_per_day.get(day_num, set()) else 0
-                adjusted = c["score"] + type_penalty
-                if not best or adjusted > best[1]:
-                    best = (c, adjusted)
+        best = _pick_best_candidate(areas, area_pools, used_ids, used_types_per_day.get(day_num, set()))
 
         if best:
             selected.append(best[0])

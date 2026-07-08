@@ -36,7 +36,11 @@ class TestStaleQueue:
         assert "timedelta" in src
 
     def test_stale_queue_response_shape(self):
-        src = inspect.getsource(__import__("admin").stale_queue)
+        # Per-entity record building was extracted into _stale_entity_record (complexity
+        # refactor); stale_queue still wires it, so read both sources together.
+        _admin = __import__("admin")
+        assert "_stale_entity_record" in inspect.getsource(_admin.stale_queue)  # wiring
+        src = inspect.getsource(_admin.stale_queue) + inspect.getsource(_admin._stale_entity_record)
         assert '"items"' in src
         assert '"total"' in src
         assert '"days_since_update"' in src
@@ -49,9 +53,19 @@ class TestStaleQueue:
         assert "days_since_update" in src
 
     def test_stale_queue_skips_place_entities(self):
-        src = inspect.getsource(__import__("admin").stale_queue)
+        # The place-skip guard moved into _stale_entity_record, which now returns None to
+        # signal "skip" (complexity refactor); stale_queue drops None records instead of
+        # `continue`-ing inside the loop. Assert the guard still keys off "place" and the
+        # helper skips via `return None`.
+        _admin = __import__("admin")
+        rec_src = inspect.getsource(_admin._stale_entity_record)
+        src = inspect.getsource(_admin.stale_queue) + rec_src
         assert '"place"' in src
-        assert "continue" in src
+        assert "return None" in rec_src
+        # behavior guard: a place entity is skipped (record is None)
+        import datetime as _dt
+        assert _admin._stale_entity_record(
+            "p1", {"type": "place"}, _dt.datetime.now(_dt.timezone.utc), 180, None, None) is None
 
     def test_stale_mark_reviewed_validates_path(self):
         src = inspect.getsource(__import__("admin").stale_mark_reviewed)
@@ -154,7 +168,15 @@ class TestContactFunnel:
         assert "entity_id" in src
 
     def test_contact_funnel_reads_jsonl(self):
-        src = inspect.getsource(__import__("admin").contact_funnel)
+        # JSONL parsing/aggregation was extracted into _contact_funnel_tally /
+        # _contact_funnel_accumulate / _contact_funnel_entities (complexity refactor);
+        # contact_funnel still wires them, so read the combined source.
+        _admin = __import__("admin")
+        assert "_contact_funnel_tally" in inspect.getsource(_admin.contact_funnel)  # wiring
+        src = (inspect.getsource(_admin.contact_funnel)
+               + inspect.getsource(_admin._contact_funnel_tally)
+               + inspect.getsource(_admin._contact_funnel_accumulate)
+               + inspect.getsource(_admin._contact_funnel_entities))
         assert "contact_views.jsonl" in src or "CONTACT_VIEWS_FILE" in src
         assert "json.loads" in src
 
@@ -165,7 +187,11 @@ class TestContactFunnel:
         assert '"total_contacts"' in src
 
     def test_contact_funnel_aggregates_actions(self):
-        src = inspect.getsource(__import__("admin").contact_funnel)
+        _admin = __import__("admin")
+        src = (inspect.getsource(_admin.contact_funnel)
+               + inspect.getsource(_admin._contact_funnel_tally)
+               + inspect.getsource(_admin._contact_funnel_accumulate)
+               + inspect.getsource(_admin._contact_funnel_entities))
         assert '"zalo"' in src
         assert '"phone"' in src
         assert '"website"' in src
@@ -177,11 +203,13 @@ class TestContactFunnel:
         assert "entity_id,name,zalo,phone,website,map,total" in src
 
     def test_contact_funnel_sorts_by_total(self):
-        src = inspect.getsource(__import__("admin").contact_funnel)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.contact_funnel) + inspect.getsource(_admin._contact_funnel_entities)
         assert 'key=lambda x: -x[1]["total"]' in src
 
     def test_contact_funnel_filters_by_cutoff(self):
-        src = inspect.getsource(__import__("admin").contact_funnel)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.contact_funnel) + inspect.getsource(_admin._contact_funnel_accumulate)
         assert "cutoff" in src
         assert "ts < cutoff" in src
 
@@ -221,7 +249,11 @@ class TestCompletenessEndpoint:
         assert "entity_type" in src
 
     def test_completeness_details_response_shape(self):
-        src = inspect.getsource(__import__("admin").completeness_details)
+        # Per-entity record building moved into _completeness_detail_record (complexity
+        # refactor); completeness_details still wires it.
+        _admin = __import__("admin")
+        assert "_completeness_detail_record" in inspect.getsource(_admin.completeness_details)  # wiring
+        src = inspect.getsource(_admin.completeness_details) + inspect.getsource(_admin._completeness_detail_record)
         assert '"items"' in src
         assert '"total"' in src
         assert '"score"' in src

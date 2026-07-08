@@ -92,9 +92,13 @@ class TestSSEReconnection:
         assert "Last-Event-ID" in src
 
     def test_stream_fetches_missed_notifications(self):
+        # `is_read = FALSE` moved into the extracted `_fetch_missed_sse` helper
+        # (behaviour-preserving extract-method); notification_stream wires to it.
         src = inspect.getsource(__import__("notifications").notification_stream)
         assert "missed" in src
-        assert "is_read = FALSE" in src
+        assert "_fetch_missed_sse" in src  # wiring assert
+        helper_src = inspect.getsource(__import__("notifications")._fetch_missed_sse)
+        assert "is_read = FALSE" in helper_src
 
     def test_stream_includes_event_ids(self):
         src = inspect.getsource(__import__("notifications").notification_stream)
@@ -109,8 +113,11 @@ class TestSSEReconnection:
         assert inspect.iscoroutinefunction(notifications._next_event_id)
 
     def test_missed_limited_to_5_minutes(self):
+        # 5-minute window moved into the extracted `_fetch_missed_sse` helper.
         src = inspect.getsource(__import__("notifications").notification_stream)
-        assert "5 minutes" in src or "INTERVAL" in src
+        assert "_fetch_missed_sse" in src  # wiring assert
+        helper_src = inspect.getsource(__import__("notifications")._fetch_missed_sse)
+        assert "5 minutes" in helper_src or "INTERVAL" in helper_src
 
 
 # ── Moderation history per post ──
@@ -395,23 +402,35 @@ class TestFollowCountLimit:
     """Follow toggle enforces maximum follow count per type."""
 
     def test_follow_has_count_check(self):
+        # Follow-cap logic moved into the extracted `_toggle_follow_row` helper
+        # (behaviour-preserving extract-method); toggle_follow wires to it.
         src = inspect.getsource(__import__("notifications").toggle_follow)
-        assert "COUNT(*)" in src
-        assert "cap" in src or "_MAX_FOLLOW" in src
+        assert "_toggle_follow_row" in src  # wiring assert
+        helper_src = inspect.getsource(__import__("notifications")._toggle_follow_row)
+        assert "COUNT(*)" in helper_src
+        assert "cap" in helper_src or "_MAX_FOLLOW" in helper_src
 
     def test_follow_user_cap_500(self):
-        src = inspect.getsource(__import__("notifications").toggle_follow)
-        assert "_MAX_FOLLOW_USER" in src
-        assert "500" in src
+        import notifications
+        src = inspect.getsource(notifications.toggle_follow)
+        assert "_toggle_follow_row" in src  # wiring assert
+        helper_src = inspect.getsource(notifications._toggle_follow_row)
+        assert "_MAX_FOLLOW_USER" in helper_src
+        assert notifications._MAX_FOLLOW_USER == 500
 
     def test_follow_entity_cap_1000(self):
-        src = inspect.getsource(__import__("notifications").toggle_follow)
-        assert "_MAX_FOLLOW_ENTITY" in src
-        assert "1000" in src
+        import notifications
+        src = inspect.getsource(notifications.toggle_follow)
+        assert "_toggle_follow_row" in src  # wiring assert
+        helper_src = inspect.getsource(notifications._toggle_follow_row)
+        assert "_MAX_FOLLOW_ENTITY" in helper_src
+        assert notifications._MAX_FOLLOW_ENTITY == 1000
 
     def test_follow_cap_raises_400(self):
         src = inspect.getsource(__import__("notifications").toggle_follow)
-        assert "giới hạn follow" in src
+        assert "_toggle_follow_row" in src  # wiring assert
+        helper_src = inspect.getsource(__import__("notifications")._toggle_follow_row)
+        assert "giới hạn follow" in helper_src
 
 
 class TestClearAllNotifications:
@@ -474,12 +493,18 @@ class TestAdminUserDetailActivity:
     """admin_user_detail returns last_login and last_post_at."""
 
     def test_queries_login_history(self):
-        src = inspect.getsource(__import__("admin").admin_user_detail)
+        # last-login lookup extracted into _admin_user_last_login; stats dict into
+        # _admin_user_detail_stats (complexity refactor). admin_user_detail wires both.
+        _admin = __import__("admin")
+        assert "_admin_user_last_login" in inspect.getsource(_admin.admin_user_detail)  # wiring
+        src = inspect.getsource(_admin.admin_user_detail) + inspect.getsource(_admin._admin_user_last_login)
         assert "login_history" in src
         assert "success = TRUE" in src
 
     def test_returns_last_login(self):
-        src = inspect.getsource(__import__("admin").admin_user_detail)
+        _admin = __import__("admin")
+        assert "_admin_user_detail_stats" in inspect.getsource(_admin.admin_user_detail)  # wiring
+        src = inspect.getsource(_admin.admin_user_detail) + inspect.getsource(_admin._admin_user_detail_stats)
         assert '"last_login"' in src
 
     def test_queries_last_post(self):
@@ -487,11 +512,13 @@ class TestAdminUserDetailActivity:
         assert "ORDER BY created_at DESC LIMIT 1" in src
 
     def test_returns_last_post_at(self):
-        src = inspect.getsource(__import__("admin").admin_user_detail)
+        _admin = __import__("admin")
+        src = inspect.getsource(_admin.admin_user_detail) + inspect.getsource(_admin._admin_user_detail_stats)
         assert '"last_post_at"' in src
 
     def test_login_history_handles_missing_table(self):
-        src = inspect.getsource(__import__("admin").admin_user_detail)
+        # The login_history query is guarded by try/except inside _admin_user_last_login.
+        src = inspect.getsource(__import__("admin")._admin_user_last_login)
         idx = src.find("login_history")
         pre = src[max(0, idx-100):idx]
         assert "try" in pre or "except" in pre
@@ -2147,10 +2174,13 @@ class TestSecurityFixes:
         assert "file.read(MAX_IMAGE_SIZE" in fn_src
 
     def test_dashboard_alerts_connection_safety(self):
-        src = (AGENT_DIR / "admin.py").read_text(encoding="utf-8")
-        idx = src.index("async def dashboard_alerts(")
-        fn_src = src[idx:idx+3000]
-        assert "conn3" in fn_src
+        # The appeals query (which opens its own conn3) was extracted into the
+        # _dashboard_alerts_appeals helper (complexity refactor); it still uses a
+        # dedicated connection. dashboard_alerts wires the helper.
+        import inspect
+        import admin as admin_mod
+        assert "_dashboard_alerts_appeals" in inspect.getsource(admin_mod.dashboard_alerts)  # wiring
+        assert "conn3" in inspect.getsource(admin_mod._dashboard_alerts_appeals)
 
     def test_mention_search_imports_db(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
@@ -2650,12 +2680,18 @@ class TestSSEPayloadNoneHandling:
     """SSE notification payload must use 'is not None' to avoid dropping falsy values."""
 
     def test_sse_missed_uses_is_not_none(self):
+        # Missed-payload building moved into the extracted `_replay_missed_sse`
+        # helper (behaviour-preserving); notification_stream wires to it.
         src = inspect.getsource(__import__("notifications").notification_stream)
-        assert "is not None" in src
+        assert "_replay_missed_sse" in src  # wiring assert
+        helper_src = inspect.getsource(__import__("notifications")._replay_missed_sse)
+        assert "is not None" in helper_src
 
     def test_sse_created_at_not_str_none(self):
         src = inspect.getsource(__import__("notifications").notification_stream)
+        helper_src = inspect.getsource(__import__("notifications")._replay_missed_sse)
         assert 'str(md.get("created_at", ""))' not in src
+        assert 'str(md.get("created_at", ""))' not in helper_src
 
     def test_user_reviews_early_return_has_total(self):
         src = inspect.getsource(__import__("social").get_user_reviews)

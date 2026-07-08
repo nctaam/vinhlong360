@@ -449,17 +449,20 @@ class TestBE10Completeness:
         assert ("GET", "/admin/stats") in pairs
 
     def test_completeness_fields_in_stats_source(self):
-        src = inspect.getsource(admin.admin_stats)
+        # Completeness computation extracted into _admin_stats_completeness (complexity
+        # refactor); admin_stats still wires it.
+        assert "_admin_stats_completeness" in inspect.getsource(admin.admin_stats)  # wiring
+        src = inspect.getsource(admin.admin_stats) + inspect.getsource(admin._admin_stats_completeness)
         for field in ("total", "has_summary", "has_images", "has_place", "orphans", "pct"):
             assert f'"{field}"' in src, f"Missing completeness field: {field}"
 
     def test_completeness_pct_calculation(self):
-        src = inspect.getsource(admin.admin_stats)
+        src = inspect.getsource(admin.admin_stats) + inspect.getsource(admin._admin_stats_completeness)
         assert "round(" in src
         assert "comp_total * 3" in src or "* 100" in src
 
     def test_completeness_excludes_places(self):
-        src = inspect.getsource(admin.admin_stats)
+        src = inspect.getsource(admin.admin_stats) + inspect.getsource(admin._admin_stats_completeness)
         assert "type != 'place'" in src
 
 
@@ -541,7 +544,10 @@ class TestBE12BatchModeration:
         assert "400" in src
 
     def test_batch_moderation_sends_notifications(self):
-        src = inspect.getsource(admin.batch_moderation)
+        # Notification fan-out extracted into _batch_mod_notify (complexity refactor);
+        # batch_moderation still wires it.
+        assert "_batch_mod_notify" in inspect.getsource(admin.batch_moderation)  # wiring
+        src = inspect.getsource(admin.batch_moderation) + inspect.getsource(admin._batch_mod_notify)
         assert "create_notification" in src
 
     def test_batch_moderation_logs_mod_action(self):
@@ -564,17 +570,21 @@ class TestBE13OrphanDetection:
         assert "orphans_only" in sig.parameters
 
     def test_orphans_filter_logic(self):
-        src = inspect.getsource(admin.list_entities)
+        # Orphan filtering extracted into _list_entities_filter_orphans (complexity refactor);
+        # list_entities still wires it.
+        assert "_list_entities_filter_orphans" in inspect.getsource(admin.list_entities)  # wiring
+        src = inspect.getsource(admin.list_entities) + inspect.getsource(admin._list_entities_filter_orphans)
         assert "orphans_only" in src
         assert "relationships" in src.lower()
 
     def test_orphan_count_in_stats_source(self):
-        src = inspect.getsource(admin.admin_stats)
+        # Orphan count computation lives in _admin_stats_completeness (complexity refactor).
+        src = inspect.getsource(admin.admin_stats) + inspect.getsource(admin._admin_stats_completeness)
         assert '"orphans"' in src
         assert "orphan_count" in src
 
     def test_orphan_sql_excludes_relationship_entities(self):
-        src = inspect.getsource(admin.admin_stats)
+        src = inspect.getsource(admin.admin_stats) + inspect.getsource(admin._admin_stats_completeness)
         assert "NOT IN" in src
         assert "relationships" in src
 
