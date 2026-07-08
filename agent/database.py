@@ -140,6 +140,219 @@ def _env_truthy(name: str, default: str = "false") -> bool:
     return os.environ.get(name, default).strip().lower() in ("1", "true", "yes", "on")
 
 
+# ── Shared WHERE-clause builders (extract-method từ search/list/count để giảm complexity;
+#    di chuyển NGUYÊN VĂN từng khối, mutate conditions/params tại chỗ, giữ đúng thứ tự gọi) ──
+
+def _pg_missing_columns(cur, tables: set) -> list:
+    """Quét cột thiếu theo PG_REQUIRED_COLUMNS (extract nguyên văn từ _verify_pg_schema)."""
+    missing_columns: list[str] = []
+    for table, columns in PG_REQUIRED_COLUMNS.items():
+        if table not in tables:
+            continue
+        cur.execute(
+            """
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = 'public' AND table_name = %s
+                """,
+            (table,),
+        )
+        existing = {row["column_name"] for row in cur.fetchall()}
+        for column in sorted(columns - existing):
+            missing_columns.append(f"{table}.{column}")
+    return missing_columns
+
+
+def _pg_schema_issues(missing_tables: list, missing_columns: list, schema_version: int) -> list:
+    """Dựng danh sách issue (extract nguyên văn từ _verify_pg_schema)."""
+    issues: list[str] = []
+    if missing_tables:
+        issues.append("missing tables: " + ", ".join(missing_tables))
+    if missing_columns:
+        issues.append("missing columns: " + ", ".join(missing_columns))
+    if schema_version < PG_REQUIRED_SCHEMA_VERSION:
+        issues.append(f"schema_version agent={schema_version}, expected >= {PG_REQUIRED_SCHEMA_VERSION}")
+    return issues
+
+
+_COORD_INVALID = object()  # sentinel: decode thất bại → _parse_coordinates trả None
+
+
+def _coord_decode_str(value):
+    """Giải tối đa 4 lớp JSON-string (extract nguyên văn từ _parse_coordinates).
+    Trả _COORD_INVALID nếu gặp string rỗng / JSON hỏng (caller → None)."""
+    current = value
+    for _ in range(4):
+        if not isinstance(current, str):
+            break
+        text = current.strip()
+        if not text:
+            return _COORD_INVALID
+        try:
+            current = json.loads(text)
+        except Exception:
+            return _COORD_INVALID
+    return current
+
+
+def _coord_normalize_latlng(lat: float, lng: float) -> list[float] | None:
+    """Chuẩn hoá thứ tự lat/lng theo dải hợp lệ (extract nguyên văn)."""
+    if -90 <= lat <= 90 and -180 <= lng <= 180:
+        return [lat, lng]
+    if -180 <= lat <= 180 and -90 <= lng <= 90:
+        return [lng, lat]
+    return None
+
+
+def _append_public_only(conditions: list) -> None:
+    conditions.append("(e.status IS NULL OR e.status != 'provisional')")
+    conditions.append("(e.verified IS NULL OR e.verified != 0)")
+
+
+def _append_type_filter(conditions: list, params: list, ph: str,
+                        entity_types, entity_type) -> None:
+    if entity_types:
+        placeholders = ", ".join([ph] * len(entity_types))
+        conditions.append(f"e.type IN ({placeholders})")
+        params.extend(entity_types)
+    elif entity_type:
+        conditions.append(f"e.type = {ph}")
+        params.append(entity_type)
+
+
+def _append_area_filter(conditions: list, params: list, ph: str,
+                        use_pg: bool, area) -> None:
+    place_col = 'e."placeId"' if use_pg else "e.placeId"
+    conditions.append(f"""
+                (e.area = {ph} OR {place_col} IN (
+                    SELECT id FROM entities WHERE type = 'place' AND area = {ph}
+                ))
+            """)
+    params.extend([area, area])
+
+
+def _append_q_filter(conditions: list, params: list, ph: str,
+                     use_pg: bool, q: str) -> None:
+    if use_pg:
+        # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
+        conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\')")
+        q_esc = escape_like(q.lower())
+        params.extend([f"%{q_esc}%", f"%{q_esc}%"])
+    else:
+        conditions.append(f"(e.name LIKE {ph} ESCAPE '\\' OR e.summary LIKE {ph} ESCAPE '\\')")
+        q_esc = escape_like(q)
+        params.extend([f"%{q_esc}%", f"%{q_esc}%"])
+
+
+_ATTR_ALIASES = {
+    "open_hours": "hours", "opening_hours": "hours",
+    "operating_hours": "hours", "open_on": "hours",
+    "foodyRating": "rating", "foodyComments": "review_count",
+    "bestTime": "best_time", "best_time_to_visit": "best_time",
+    "priceRange": "price_range", "bestSeason": "season_note",
+    "checkin": "check_in", "checkout": "check_out",
+    "highlights": "highlight", "booking": "booking_note",
+    "admission_fee": "admission", "location": "address",
+}
+
+
+def _extract_rel_triple(rel: dict):
+    """Rút (from, to, type) từ 1 quan hệ, chấp nhận alias (extract nguyên văn)."""
+    s = rel.get("from") or rel.get("from_id") or rel.get("source_id")
+    t = rel.get("to") or rel.get("to_id") or rel.get("target_id")
+    rt = rel.get("type") or rel.get("rel_type")
+    return s, t, rt
+
+
+def _build_bulk_entity_rows(entities, strip: bool, now: str):
+    """Dựng (entity_rows, fts_rows) cho executemany (extract nguyên văn từ _bulk_load)."""
+    entity_rows, fts_rows = [], []
+    for entity in entities:
+        season_val = entity.get("season")
+        coords_val = entity.get("coordinates")
+        attrs_raw = entity.get("attributes", {})
+        attrs_store = (_entity_details.strip_synced_keys(entity["type"], attrs_raw)
+                       if strip and isinstance(attrs_raw, dict) else attrs_raw)
+        entity_rows.append((
+            entity["id"], entity["type"], entity["name"],
+            entity.get("summary", ""), entity.get("description", ""),
+            entity.get("placeId"),
+            entity.get("confidence", 1.0),
+            json.dumps(season_val, ensure_ascii=False) if season_val else None,
+            json.dumps(attrs_store, ensure_ascii=False),
+            json.dumps(entity.get("source", {}), ensure_ascii=False),
+            json.dumps(entity.get("images", []), ensure_ascii=False),
+            entity.get("updatedAt", now),
+            json.dumps(coords_val) if coords_val else None,
+            entity.get("area"), entity.get("level"), entity.get("parentId"),
+            entity.get("legacyArea"),
+        ))
+        fts_rows.append((entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
+    return entity_rows, fts_rows
+
+
+def _build_bulk_rel_rows(rels):
+    """Dựng rel_rows đã lọc (extract nguyên văn từ _bulk_load)."""
+    rel_rows = []
+    for rel in rels:
+        s, t, rt = _extract_rel_triple(rel)
+        if s and t and rt:
+            rel_rows.append((s, t, rt))
+    return rel_rows
+
+
+def _build_bulk_itin_rows(itineraries):
+    """Dựng itin_rows (extract nguyên văn từ _bulk_load)."""
+    itin_rows = []
+    for it in itineraries:
+        itin_rows.append((
+            it["id"], it["title"], it.get("area"),
+            json.dumps(_normalize_itinerary_areas(it.get("areas")), ensure_ascii=False),
+            it.get("duration"),
+            it.get("summary", ""), json.dumps(it.get("stops", []), ensure_ascii=False),
+        ))
+    return itin_rows
+
+
+def _normalize_source_val(source_val):
+    """Normalize source to list[dict] on write (extract nguyên văn từ upsert_entity)."""
+    if isinstance(source_val, str):
+        return [{"url": source_val}] if source_val.startswith("http") else [{"name": source_val}] if source_val else []
+    elif isinstance(source_val, dict):
+        return [source_val] if source_val else []
+    elif not isinstance(source_val, list):
+        return []
+    return source_val
+
+
+def _normalize_upsert_fields(entity: dict):
+    """Chuẩn hoá các field trước khi ghi entity (extract nguyên văn từ upsert_entity).
+    Trả (season_val, attrs_val, source_val, images_val, coords_val, updated, attrs_store)."""
+    season_val = entity.get("season")
+    attrs_val = entity.get("attributes", {})
+    source_val = entity.get("source", {})
+    # Normalize attribute key aliases on write
+    if isinstance(attrs_val, dict):
+        attrs_val = {_ATTR_ALIASES.get(k, k): v for k, v in attrs_val.items()}
+    # Normalize source to list[dict] on write
+    source_val = _normalize_source_val(source_val)
+    images_val = entity.get("images", [])
+    # GĐ-audit: chấp nhận alias legacy "coords" để ETL/auto_learn không mất toạ độ
+    # đã geocode (nhiều path ghi entity["coords"] thay vì "coordinates").
+    coords_val = entity.get("coordinates") or entity.get("coords")
+    # Guard geocode: bỏ toạ độ NGOÀI vùng VL+Bến Tre+Trà Vinh (crawler/geocoder hay
+    # khớp nhầm tên → pin sai tỉnh). Thà null còn hơn sai (xem fix data 2026-06-14).
+    if coords_val and not _coords_in_region(coords_val):
+        coords_val = None
+    updated = entity.get("updatedAt", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+    # GĐ-C3: khi flip đọc bật, JSONB lưu TAIL-ONLY (typed keys sống ở cột — sync
+    # cùng transaction bên dưới đảm bảo cột khớp; uncoercible ở lại JSONB).
+    attrs_store = (_entity_details.strip_synced_keys(entity["type"], attrs_val)
+                   if _entity_details.reads_enabled() and isinstance(attrs_val, dict)
+                   else attrs_val)
+    return season_val, attrs_val, source_val, images_val, coords_val, updated, attrs_store
+
+
 # ══════════════════════════════════════════════════
 #  DATABASE CLASS
 # ══════════════════════════════════════════════════
@@ -282,22 +495,7 @@ class Database:
         )
         tables = {row["table_name"] for row in cur.fetchall()}
         missing_tables = sorted(PG_REQUIRED_TABLES - tables)
-
-        missing_columns: list[str] = []
-        for table, columns in PG_REQUIRED_COLUMNS.items():
-            if table not in tables:
-                continue
-            cur.execute(
-                """
-                SELECT column_name
-                FROM information_schema.columns
-                WHERE table_schema = 'public' AND table_name = %s
-                """,
-                (table,),
-            )
-            existing = {row["column_name"] for row in cur.fetchall()}
-            for column in sorted(columns - existing):
-                missing_columns.append(f"{table}.{column}")
+        missing_columns = _pg_missing_columns(cur, tables)
 
         schema_version = 0
         if "schema_version" in tables:
@@ -308,14 +506,7 @@ class Database:
             row = cur.fetchone() or {}
             schema_version = int(row.get("version") or 0)
 
-        issues: list[str] = []
-        if missing_tables:
-            issues.append("missing tables: " + ", ".join(missing_tables))
-        if missing_columns:
-            issues.append("missing columns: " + ", ".join(missing_columns))
-        if schema_version < PG_REQUIRED_SCHEMA_VERSION:
-            issues.append(f"schema_version agent={schema_version}, expected >= {PG_REQUIRED_SCHEMA_VERSION}")
-
+        issues = _pg_schema_issues(missing_tables, missing_columns, schema_version)
         if not issues:
             return
 
@@ -381,7 +572,14 @@ class Database:
                     return
 
             with self._conn() as conn:
-                conn.executescript("""
+                self._init_sqlite_schema(conn)
+
+            self._initialized = True
+
+    def _init_sqlite_schema(self, conn) -> None:
+        """Tạo bảng/index SQLite + migration cột (extract nguyên văn từ initialize —
+        nhánh SQLite duy nhất, KHÔNG chạy cho PostgreSQL). Không tự commit."""
+        conn.executescript("""
                     CREATE TABLE IF NOT EXISTS entities (
                         id TEXT PRIMARY KEY,
                         type TEXT NOT NULL,
@@ -462,43 +660,41 @@ class Database:
                     CREATE INDEX IF NOT EXISTS idx_query_log_created ON query_log(created_at);
                 """)
 
-                try:
-                    conn.execute("""
+        try:
+            conn.execute("""
                         CREATE VIRTUAL TABLE IF NOT EXISTS entities_fts USING fts5(
                             id, name, summary, type,
                             content=entities,
                             content_rowid=rowid
                         )
                     """)
+        except sqlite3.OperationalError:
+            logger.debug("FTS5 not available, full-text search disabled")
+
+        if not self._use_pg:
+            for col in ("status TEXT", "verified INTEGER DEFAULT 1"):
+                try:
+                    conn.execute(f"ALTER TABLE entities ADD COLUMN {col}")
                 except sqlite3.OperationalError:
-                    logger.debug("FTS5 not available, full-text search disabled")
+                    pass
+            try:
+                conn.execute("ALTER TABLE itineraries ADD COLUMN areas TEXT DEFAULT '[]'")
+            except sqlite3.OperationalError:
+                pass
+            for idx_sql in [
+                "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
+                "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
+            ]:
+                try:
+                    conn.execute(idx_sql)
+                except sqlite3.OperationalError:
+                    pass
 
-                if not self._use_pg:
-                    for col in ("status TEXT", "verified INTEGER DEFAULT 1"):
-                        try:
-                            conn.execute(f"ALTER TABLE entities ADD COLUMN {col}")
-                        except sqlite3.OperationalError:
-                            pass
-                    try:
-                        conn.execute("ALTER TABLE itineraries ADD COLUMN areas TEXT DEFAULT '[]'")
-                    except sqlite3.OperationalError:
-                        pass
-                    for idx_sql in [
-                        "CREATE INDEX IF NOT EXISTS idx_entities_status ON entities(status)",
-                        "CREATE INDEX IF NOT EXISTS idx_entities_verified ON entities(verified)",
-                    ]:
-                        try:
-                            conn.execute(idx_sql)
-                        except sqlite3.OperationalError:
-                            pass
-
-                # GĐ-C: DDL parity SQLite — 8 cột phổ quát + 9 bảng CTI (PG do migrations sở hữu)
-                _entity_details.ensure_schema_sqlite(conn)
-                # GĐ-C C2: nạp cache detail khi flip đọc bật (đổi flag = restart)
-                if _entity_details.reads_enabled():
-                    _entity_details.load_detail_cache(conn, False)
-
-            self._initialized = True
+        # GĐ-C: DDL parity SQLite — 8 cột phổ quát + 9 bảng CTI (PG do migrations sở hữu)
+        _entity_details.ensure_schema_sqlite(conn)
+        # GĐ-C C2: nạp cache detail khi flip đọc bật (đổi flag = restart)
+        if _entity_details.reads_enabled():
+            _entity_details.load_detail_cache(conn, False)
 
     # ── Entity CRUD ──
 
@@ -506,47 +702,22 @@ class Database:
         """Insert or update an entity."""
         self.initialize()
         _validate_place_level(entity)
-        season_val = entity.get("season")
-        attrs_val = entity.get("attributes", {})
-        source_val = entity.get("source", {})
-        # Normalize attribute key aliases on write
-        if isinstance(attrs_val, dict):
-            _ATTR_ALIASES = {
-                "open_hours": "hours", "opening_hours": "hours",
-                "operating_hours": "hours", "open_on": "hours",
-                "foodyRating": "rating", "foodyComments": "review_count",
-                "bestTime": "best_time", "best_time_to_visit": "best_time",
-                "priceRange": "price_range", "bestSeason": "season_note",
-                "checkin": "check_in", "checkout": "check_out",
-                "highlights": "highlight", "booking": "booking_note",
-                "admission_fee": "admission", "location": "address",
-            }
-            attrs_val = {_ATTR_ALIASES.get(k, k): v for k, v in attrs_val.items()}
-        # Normalize source to list[dict] on write
-        if isinstance(source_val, str):
-            source_val = [{"url": source_val}] if source_val.startswith("http") else [{"name": source_val}] if source_val else []
-        elif isinstance(source_val, dict):
-            source_val = [source_val] if source_val else []
-        elif not isinstance(source_val, list):
-            source_val = []
-        images_val = entity.get("images", [])
-        # GĐ-audit: chấp nhận alias legacy "coords" để ETL/auto_learn không mất toạ độ
-        # đã geocode (nhiều path ghi entity["coords"] thay vì "coordinates").
-        coords_val = entity.get("coordinates") or entity.get("coords")
-        # Guard geocode: bỏ toạ độ NGOÀI vùng VL+Bến Tre+Trà Vinh (crawler/geocoder hay
-        # khớp nhầm tên → pin sai tỉnh). Thà null còn hơn sai (xem fix data 2026-06-14).
-        if coords_val and not _coords_in_region(coords_val):
-            coords_val = None
-        updated = entity.get("updatedAt", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
-        # GĐ-C3: khi flip đọc bật, JSONB lưu TAIL-ONLY (typed keys sống ở cột — sync
-        # cùng transaction bên dưới đảm bảo cột khớp; uncoercible ở lại JSONB).
-        attrs_store = (_entity_details.strip_synced_keys(entity["type"], attrs_val)
-                       if _entity_details.reads_enabled() and isinstance(attrs_val, dict)
-                       else attrs_val)
+        season_val, attrs_val, source_val, images_val, coords_val, updated, attrs_store = \
+            _normalize_upsert_fields(entity)
 
         with self._conn() as conn:
-            if self._use_pg:
-                self._execute(conn, """
+            self._write_entity_row(conn, entity, season_val, attrs_store,
+                                   source_val, images_val, coords_val, updated)
+            # GĐ-C dual-write: cột phổ quát + bảng CTI phản chiếu attrs (cùng transaction).
+            _entity_details.sync_entity_details(
+                conn, self._use_pg, entity["id"], entity["type"],
+                attrs_val if isinstance(attrs_val, dict) else {})
+
+    def _write_entity_row(self, conn, entity, season_val, attrs_store,
+                          source_val, images_val, coords_val, updated) -> None:
+        """Ghi 1 hàng entities (extract nguyên văn từ upsert_entity, per-backend SQL)."""
+        if self._use_pg:
+            self._execute(conn, """
                     INSERT INTO entities
                     (id, type, name, summary, description, "placeId", confidence, season, attributes, source, images, "updatedAt",
                      coordinates, area, level, "parentId", "legacyArea")
@@ -562,49 +733,45 @@ class Database:
                         level = EXCLUDED.level, "parentId" = EXCLUDED."parentId",
                         "legacyArea" = EXCLUDED."legacyArea"
                 """, (
-                    entity["id"], entity["type"], entity["name"],
-                    entity.get("summary", ""), entity.get("description", ""),
-                    entity.get("placeId"),
-                    entity.get("confidence", 1.0),
-                    json.dumps(season_val, ensure_ascii=False) if season_val else None,
-                    json.dumps(attrs_store, ensure_ascii=False),
-                    json.dumps(source_val, ensure_ascii=False),
-                    json.dumps(images_val, ensure_ascii=False),
-                    updated,
-                    json.dumps(coords_val) if coords_val else None,
-                    entity.get("area"), entity.get("level"), entity.get("parentId"),
-                    entity.get("legacyArea"),
-                ))
-            else:
-                conn.execute("""
+                entity["id"], entity["type"], entity["name"],
+                entity.get("summary", ""), entity.get("description", ""),
+                entity.get("placeId"),
+                entity.get("confidence", 1.0),
+                json.dumps(season_val, ensure_ascii=False) if season_val else None,
+                json.dumps(attrs_store, ensure_ascii=False),
+                json.dumps(source_val, ensure_ascii=False),
+                json.dumps(images_val, ensure_ascii=False),
+                updated,
+                json.dumps(coords_val) if coords_val else None,
+                entity.get("area"), entity.get("level"), entity.get("parentId"),
+                entity.get("legacyArea"),
+            ))
+        else:
+            conn.execute("""
                     INSERT OR REPLACE INTO entities
                     (id, type, name, summary, description, placeId, confidence, season, attributes, source, images, updatedAt,
                      coordinates, area, level, parentId, legacyArea)
                     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 """, (
-                    entity["id"], entity["type"], entity["name"],
-                    entity.get("summary", ""), entity.get("description", ""),
-                    entity.get("placeId"),
-                    entity.get("confidence", 1.0),
-                    json.dumps(season_val, ensure_ascii=False) if season_val else None,
-                    json.dumps(attrs_store, ensure_ascii=False),
-                    json.dumps(source_val, ensure_ascii=False),
-                    json.dumps(images_val, ensure_ascii=False),
-                    updated,
-                    json.dumps(coords_val) if coords_val else None,
-                    entity.get("area"), entity.get("level"), entity.get("parentId"),
-                    entity.get("legacyArea"),
-                ))
-                try:
-                    conn.execute(
-                        "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",
-                        (entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
-                except sqlite3.OperationalError:
-                    logger.debug("FTS5 insert skipped for entity %s", entity["id"])
-            # GĐ-C dual-write: cột phổ quát + bảng CTI phản chiếu attrs (cùng transaction).
-            _entity_details.sync_entity_details(
-                conn, self._use_pg, entity["id"], entity["type"],
-                attrs_val if isinstance(attrs_val, dict) else {})
+                entity["id"], entity["type"], entity["name"],
+                entity.get("summary", ""), entity.get("description", ""),
+                entity.get("placeId"),
+                entity.get("confidence", 1.0),
+                json.dumps(season_val, ensure_ascii=False) if season_val else None,
+                json.dumps(attrs_store, ensure_ascii=False),
+                json.dumps(source_val, ensure_ascii=False),
+                json.dumps(images_val, ensure_ascii=False),
+                updated,
+                json.dumps(coords_val) if coords_val else None,
+                entity.get("area"), entity.get("level"), entity.get("parentId"),
+                entity.get("legacyArea"),
+            ))
+            try:
+                conn.execute(
+                    "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",
+                    (entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
+            except sqlite3.OperationalError:
+                logger.debug("FTS5 insert skipped for entity %s", entity["id"])
 
     def reload_entity_details_cache(self) -> int:
         """GĐ-C C2: nạp lại cache detail-rows (test + vận hành sau khi sửa DB tay)."""
@@ -668,39 +835,18 @@ class Database:
         params = []
 
         if public_only:
-            conditions.append("(e.status IS NULL OR e.status != 'provisional')")
-            conditions.append("(e.verified IS NULL OR e.verified != 0)")
-        if entity_types:
-            placeholders = ", ".join([ph] * len(entity_types))
-            conditions.append(f"e.type IN ({placeholders})")
-            params.extend(entity_types)
-        elif entity_type:
-            conditions.append(f"e.type = {ph}")
-            params.append(entity_type)
+            _append_public_only(conditions)
+        _append_type_filter(conditions, params, ph, entity_types, entity_type)
 
         if area:
-            place_col = 'e."placeId"' if self._use_pg else "e.placeId"
-            conditions.append(f"""
-                (e.area = {ph} OR {place_col} IN (
-                    SELECT id FROM entities WHERE type = 'place' AND area = {ph}
-                ))
-            """)
-            params.extend([area, area])
+            _append_area_filter(conditions, params, ph, self._use_pg, area)
 
         if month is not None:
             conditions.append(self._month_condition())
             params.append(self._month_param(month))
 
         if q:
-            if self._use_pg:
-                # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
-                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\')")
-                q_esc = escape_like(q.lower())
-                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
-            else:
-                conditions.append(f"(e.name LIKE {ph} ESCAPE '\\' OR e.summary LIKE {ph} ESCAPE '\\')")
-                q_esc = escape_like(q)
-                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
+            _append_q_filter(conditions, params, ph, self._use_pg, q)
 
         where = " AND ".join(conditions)
         params.append(limit)
@@ -739,23 +885,10 @@ class Database:
         conditions = ["e.type != 'place'"]
         params = []
         if public_only:
-            conditions.append("(e.status IS NULL OR e.status != 'provisional')")
-            conditions.append("(e.verified IS NULL OR e.verified != 0)")
-        if entity_types:
-            placeholders = ", ".join([ph] * len(entity_types))
-            conditions.append(f"e.type IN ({placeholders})")
-            params.extend(entity_types)
-        elif entity_type:
-            conditions.append(f"e.type = {ph}")
-            params.append(entity_type)
+            _append_public_only(conditions)
+        _append_type_filter(conditions, params, ph, entity_types, entity_type)
         if area:
-            place_col = 'e."placeId"' if self._use_pg else "e.placeId"
-            conditions.append(f"""
-                (e.area = {ph} OR {place_col} IN (
-                    SELECT id FROM entities WHERE type = 'place' AND area = {ph}
-                ))
-            """)
-            params.extend([area, area])
+            _append_area_filter(conditions, params, ph, self._use_pg, area)
         if month is not None:
             conditions.append(self._month_condition())
             params.append(self._month_param(month))
@@ -796,36 +929,15 @@ class Database:
         params = []
 
         if public_only:
-            conditions.append("(e.status IS NULL OR e.status != 'provisional')")
-            conditions.append("(e.verified IS NULL OR e.verified != 0)")
-        if entity_types:
-            placeholders = ", ".join([ph] * len(entity_types))
-            conditions.append(f"e.type IN ({placeholders})")
-            params.extend(entity_types)
-        elif entity_type:
-            conditions.append(f"e.type = {ph}")
-            params.append(entity_type)
+            _append_public_only(conditions)
+        _append_type_filter(conditions, params, ph, entity_types, entity_type)
         if month is not None:
             conditions.append(self._month_condition())
             params.append(self._month_param(month))
         if area:
-            place_col = 'e."placeId"' if self._use_pg else "e.placeId"
-            conditions.append(f"""
-                (e.area = {ph} OR {place_col} IN (
-                    SELECT id FROM entities WHERE type = 'place' AND area = {ph}
-                ))
-            """)
-            params.extend([area, area])
+            _append_area_filter(conditions, params, ph, self._use_pg, area)
         if q:
-            if self._use_pg:
-                # không phân-biệt-dấu (f_unaccent + functional GIN trgm index, migration 015)
-                conditions.append(f"(f_unaccent(lower(e.name)) LIKE f_unaccent({ph}) ESCAPE '\\' OR f_unaccent(lower(e.summary)) LIKE f_unaccent({ph}) ESCAPE '\\')")
-                q_esc = escape_like(q.lower())
-                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
-            else:
-                conditions.append(f"(e.name LIKE {ph} ESCAPE '\\' OR e.summary LIKE {ph} ESCAPE '\\')")
-                q_esc = escape_like(q)
-                params.extend([f"%{q_esc}%", f"%{q_esc}%"])
+            _append_q_filter(conditions, params, ph, self._use_pg, q)
 
         where = " AND ".join(conditions)
         with self._conn() as conn:
@@ -916,17 +1028,9 @@ class Database:
             logger.warning("Cache invalidation failed for %s / %s", from_id, to_id, exc_info=True)
 
     def _parse_coordinates(self, value) -> list[float] | None:
-        current = value
-        for _ in range(4):
-            if not isinstance(current, str):
-                break
-            text = current.strip()
-            if not text:
-                return None
-            try:
-                current = json.loads(text)
-            except Exception:
-                return None
+        current = _coord_decode_str(value)
+        if current is _COORD_INVALID:
+            return None
         if isinstance(current, dict):
             lat = current.get("lat", current.get("latitude"))
             lng = current.get("lng", current.get("lon", current.get("longitude")))
@@ -938,11 +1042,7 @@ class Database:
             lng = float(current[1])
         except (TypeError, ValueError):
             return None
-        if -90 <= lat <= 90 and -180 <= lng <= 180:
-            return [lat, lng]
-        if -180 <= lat <= 180 and -90 <= lng <= 90:
-            return [lng, lat]
-        return None
+        return _coord_normalize_latlng(lat, lng)
 
     def _haversine_km(self, left: list[float] | None, right: list[float] | None) -> float | None:
         if not left or not right:
@@ -1011,6 +1111,22 @@ class Database:
                 LIMIT {_FETCH_CAP}
             """, tuple(params))
 
+        relationships, entity_area = self._rows_to_relationships(rows, entity_id)
+
+        relationships.sort(key=lambda rel: self._relationship_sort_key(rel, entity_id, entity_area))
+        total = len(relationships)
+        offset = max(int(offset or 0), 0)
+        if offset:
+            relationships = relationships[offset:]
+        if limit is not None:
+            relationships = relationships[:max(int(limit), 0)]
+        if return_total:
+            return relationships, total
+        return relationships
+
+    def _rows_to_relationships(self, rows, entity_id: str):
+        """Chuyển hàng join thành list quan hệ chuẩn hoá (extract nguyên văn từ
+        get_relationships). Trả (relationships, entity_area)."""
         entity_area = ""
         relationships = []
         for row in rows:
@@ -1049,17 +1165,7 @@ class Database:
             if distance is not None:
                 item["distance_km"] = round(distance, 1)
             relationships.append(item)
-
-        relationships.sort(key=lambda rel: self._relationship_sort_key(rel, entity_id, entity_area))
-        total = len(relationships)
-        offset = max(int(offset or 0), 0)
-        if offset:
-            relationships = relationships[offset:]
-        if limit is not None:
-            relationships = relationships[:max(int(limit), 0)]
-        if return_total:
-            return relationships, total
-        return relationships
+        return relationships, entity_area
 
     def count_relationships(self, entity_id: str, *, rel_type: str | None = None, include_near: bool = True) -> int:
         self.initialize()
@@ -1214,20 +1320,13 @@ class Database:
             data = json.load(f)
 
         entities_count = 0
-        rels_count = 0
         its_count = 0
 
         for e in data.get("entities", []):
             self.upsert_entity(e)
             entities_count += 1
 
-        for r in data.get("relationships", []):
-            source_id = r.get("from") or r.get("from_id") or r.get("source_id")
-            target_id = r.get("to") or r.get("to_id") or r.get("target_id")
-            rel_type = r.get("type") or r.get("rel_type")
-            if source_id and target_id and rel_type:
-                self.add_relationship(source_id, target_id, rel_type)
-                rels_count += 1
+        rels_count = self._migrate_relationships(data.get("relationships", []))
 
         for it in data.get("itineraries", []):
             self.upsert_itinerary(it)
@@ -1241,20 +1340,20 @@ class Database:
             "backend": "postgresql" if self._use_pg else "sqlite",
         }
 
+    def _migrate_relationships(self, rels) -> int:
+        """Import quan hệ (extract nguyên văn từ migrate_from_json). Trả số đã thêm."""
+        rels_count = 0
+        for r in rels:
+            source_id, target_id, rel_type = _extract_rel_triple(r)
+            if source_id and target_id and rel_type:
+                self.add_relationship(source_id, target_id, rel_type)
+                rels_count += 1
+        return rels_count
+
     def replace_from_json(self, json_path: str) -> dict:
         """Replace knowledge tables from data.json, backing up SQLite first."""
         self.initialize()
-
-        # GĐ0.5: khoá replace trong giai đoạn ổn định. Migrate có chủ đích (GĐ3.3) dùng
-        # ALLOW_DESTRUCTIVE_DB_REPLACE=1 để vượt; mở khoá hẳn ở GĐ3.8.
-        if os.environ.get("DESTRUCTIVE_OPS_LOCKED", "1") == "1" and os.environ.get("ALLOW_DESTRUCTIVE_DB_REPLACE") != "1":
-            raise RuntimeError(
-                "replace_from_json bị khoá (DESTRUCTIVE_OPS_LOCKED=1). "
-                "Đặt ALLOW_DESTRUCTIVE_DB_REPLACE=1 cho migrate có chủ đích (GĐ3.3)."
-            )
-
-        if self._use_pg and os.environ.get("ALLOW_DESTRUCTIVE_DB_REPLACE") != "1":
-            raise RuntimeError("Refusing to replace PostgreSQL data without ALLOW_DESTRUCTIVE_DB_REPLACE=1")
+        self._guard_destructive_replace()
 
         with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
@@ -1267,15 +1366,7 @@ class Database:
         # Crash giữa chừng → rollback → data CŨ còn nguyên (KHÔNG để DB rỗng). Trước đây
         # PG xoá ở transaction này rồi nạp ở migrate_from_json (transaction KHÁC) → không atomic.
         with self._conn() as conn:
-            self._execute(conn, "DELETE FROM relationships")
-            self._execute(conn, "DELETE FROM itineraries")
-            if not self._use_pg:
-                try:
-                    conn.execute("DELETE FROM entities_fts")
-                except sqlite3.OperationalError:
-                    logger.debug("FTS5 clear skipped (table may not exist)")
-            self._execute(conn, "DELETE FROM entities")
-
+            self._clear_knowledge_tables(conn)
             result = self._bulk_load(conn, data)
             if result.get("relationships_dropped", 0) > 0:
                 logger.warning("replace_from_json: %d quan he trung (from,to,type) bi bo khi luu "
@@ -1287,6 +1378,30 @@ class Database:
             result["backup"] = backup_path
         return result
 
+    def _guard_destructive_replace(self) -> None:
+        """Chặn replace khi khoá / thiếu cờ (extract nguyên văn từ replace_from_json)."""
+        # GĐ0.5: khoá replace trong giai đoạn ổn định. Migrate có chủ đích (GĐ3.3) dùng
+        # ALLOW_DESTRUCTIVE_DB_REPLACE=1 để vượt; mở khoá hẳn ở GĐ3.8.
+        if os.environ.get("DESTRUCTIVE_OPS_LOCKED", "1") == "1" and os.environ.get("ALLOW_DESTRUCTIVE_DB_REPLACE") != "1":
+            raise RuntimeError(
+                "replace_from_json bị khoá (DESTRUCTIVE_OPS_LOCKED=1). "
+                "Đặt ALLOW_DESTRUCTIVE_DB_REPLACE=1 cho migrate có chủ đích (GĐ3.3)."
+            )
+
+        if self._use_pg and os.environ.get("ALLOW_DESTRUCTIVE_DB_REPLACE") != "1":
+            raise RuntimeError("Refusing to replace PostgreSQL data without ALLOW_DESTRUCTIVE_DB_REPLACE=1")
+
+    def _clear_knowledge_tables(self, conn) -> None:
+        """Xoá các bảng tri thức trong transaction hiện tại (extract nguyên văn)."""
+        self._execute(conn, "DELETE FROM relationships")
+        self._execute(conn, "DELETE FROM itineraries")
+        if not self._use_pg:
+            try:
+                conn.execute("DELETE FROM entities_fts")
+            except sqlite3.OperationalError:
+                logger.debug("FTS5 clear skipped (table may not exist)")
+        self._execute(conn, "DELETE FROM entities")
+
     def _bulk_load(self, conn, data: dict) -> dict:
         """Nạp entities+relationships+itineraries vào DB trên CONNECTION đã cho (không tự
         commit) — để replace_from_json gói DELETE+INSERT trong 1 transaction (F1 atomic).
@@ -1294,46 +1409,31 @@ class Database:
         now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         # GĐ-C3: flip đọc bật → JSONB lưu tail-only (sync bên dưới điền cột cùng transaction)
         _strip = _entity_details.reads_enabled()
-        entity_rows, fts_rows = [], []
+        entity_rows, fts_rows = _build_bulk_entity_rows(data.get("entities", []), _strip, now)
+        rel_rows = _build_bulk_rel_rows(data.get("relationships", []))
+        itin_rows = _build_bulk_itin_rows(data.get("itineraries", []))
+
+        stored = self._bulk_insert_rows(conn, entity_rows, fts_rows, rel_rows, itin_rows)
+
+        # GĐ-C dual-write: phản chiếu typed attrs của TOÀN BỘ entities vừa nạp vào
+        # cột phổ quát + bảng CTI — cùng transaction với DELETE+INSERT (F1 atomic).
         for entity in data.get("entities", []):
-            season_val = entity.get("season")
-            coords_val = entity.get("coordinates")
-            attrs_raw = entity.get("attributes", {})
-            attrs_store = (_entity_details.strip_synced_keys(entity["type"], attrs_raw)
-                           if _strip and isinstance(attrs_raw, dict) else attrs_raw)
-            entity_rows.append((
-                entity["id"], entity["type"], entity["name"],
-                entity.get("summary", ""), entity.get("description", ""),
-                entity.get("placeId"),
-                entity.get("confidence", 1.0),
-                json.dumps(season_val, ensure_ascii=False) if season_val else None,
-                json.dumps(attrs_store, ensure_ascii=False),
-                json.dumps(entity.get("source", {}), ensure_ascii=False),
-                json.dumps(entity.get("images", []), ensure_ascii=False),
-                entity.get("updatedAt", now),
-                json.dumps(coords_val) if coords_val else None,
-                entity.get("area"), entity.get("level"), entity.get("parentId"),
-                entity.get("legacyArea"),
-            ))
-            fts_rows.append((entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
+            _entity_details.sync_entity_details(
+                conn, self._use_pg, entity["id"], entity["type"],
+                entity.get("attributes") or {})
 
-        rel_rows = []
-        for rel in data.get("relationships", []):
-            s = rel.get("from") or rel.get("from_id") or rel.get("source_id")
-            t = rel.get("to") or rel.get("to_id") or rel.get("target_id")
-            rt = rel.get("type") or rel.get("rel_type")
-            if s and t and rt:
-                rel_rows.append((s, t, rt))
+        return {
+            "status": "migrated",
+            "entities": len(entity_rows),
+            "relationships": len(rel_rows),
+            "relationships_stored": stored,
+            "relationships_dropped": len(rel_rows) - stored,
+            "itineraries": len(itin_rows),
+            "backend": "postgresql" if self._use_pg else "sqlite",
+        }
 
-        itin_rows = []
-        for it in data.get("itineraries", []):
-            itin_rows.append((
-                it["id"], it["title"], it.get("area"),
-                json.dumps(_normalize_itinerary_areas(it.get("areas")), ensure_ascii=False),
-                it.get("duration"),
-                it.get("summary", ""), json.dumps(it.get("stops", []), ensure_ascii=False),
-            ))
-
+    def _bulk_insert_rows(self, conn, entity_rows, fts_rows, rel_rows, itin_rows) -> int:
+        """executemany theo backend (extract nguyên văn từ _bulk_load). Trả số quan hệ đã lưu."""
         if self._use_pg:
             cur = conn.cursor()
             cur.executemany(
@@ -1366,23 +1466,7 @@ class Database:
                 "INSERT OR REPLACE INTO itineraries (id, title, area, areas, duration, summary, stops) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?)", itin_rows)
             stored = conn.execute("SELECT COUNT(*) as c FROM relationships").fetchone()["c"]
-
-        # GĐ-C dual-write: phản chiếu typed attrs của TOÀN BỘ entities vừa nạp vào
-        # cột phổ quát + bảng CTI — cùng transaction với DELETE+INSERT (F1 atomic).
-        for entity in data.get("entities", []):
-            _entity_details.sync_entity_details(
-                conn, self._use_pg, entity["id"], entity["type"],
-                entity.get("attributes") or {})
-
-        return {
-            "status": "migrated",
-            "entities": len(entity_rows),
-            "relationships": len(rel_rows),
-            "relationships_stored": stored,
-            "relationships_dropped": len(rel_rows) - stored,
-            "itineraries": len(itin_rows),
-            "backend": "postgresql" if self._use_pg else "sqlite",
-        }
+        return stored
 
     def backup(self, backup_path: str = None) -> str:
         """Create a backup (SQLite only; PG uses pg_dump)."""

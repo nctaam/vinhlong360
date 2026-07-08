@@ -113,6 +113,18 @@ def _gc_rate_dict(d: dict, window: float) -> None:
             del d[k]
 
 
+def _enforce_local_rate(store: dict, key: str, limit: int, window: int, msg: str) -> None:
+    """Cửa sổ trượt in-memory: lọc hit cũ, chặn nếu vượt limit, ghi hit mới + gc.
+    Trích nguyên văn mẫu lặp ở nhiều endpoint (comprehension + guard + append + gc)."""
+    now = time.time()
+    hits = [t for t in store.get(key, []) if now - t < window]
+    if len(hits) >= limit:
+        raise HTTPException(429, msg)
+    hits.append(now)
+    store[key] = hits
+    _gc_rate_dict(store, window)
+
+
 def _check_shared_auth_rate(key: str, limit: int, window: int, msg: str) -> None:
     try:
         from ratelimit import check_rate
@@ -167,7 +179,6 @@ def cleanup_expired_data() -> dict:
     """Remove expired sessions, OTP records, and old login history. Call from scheduler."""
     if not db._use_pg:
         return {"skipped": True}
-    ph = db._ph
     results = {}
     try:
         with db._conn() as conn:
@@ -191,6 +202,11 @@ def cleanup_expired_data() -> dict:
         logger.warning("cleanup_expired_data error: %s", e)
         results["error"] = str(e)
     return results
+
+
+def _rows_to_dicts(rows) -> list:
+    """Chuyển danh sách hàng DB → list[dict] (gom comprehension lặp lại ở export)."""
+    return [db._row_to_dict(r) for r in rows]
 
 
 def _mask_phone(phone: str) -> str:
@@ -611,100 +627,108 @@ def _has_valid_trusted_device(user_id: str, request: Request) -> bool:
         return True
 
 
+def _consume_verified_otp(conn, phone: str, hashed_code: str) -> dict:
+    """Xác thực OTP mới nhất chưa dùng cho `phone` trên connection cho trước, tăng
+    attempts/đánh dấu verified như logic gốc. Trích chung cho verify-otp và
+    reset-password-otp (trước đây lặp nguyên văn) — không đổi hành vi/thứ tự."""
+    row = db._fetchone(conn, f"""
+        SELECT id, code, expires_at, attempts, phone FROM otp_sessions
+        WHERE phone = {db._ph} AND verified = FALSE
+        ORDER BY created_at DESC LIMIT 1
+        FOR UPDATE SKIP LOCKED
+    """, (phone,))
+    if not row:
+        raise HTTPException(400, "Không tìm thấy OTP. Vui lòng yêu cầu mã mới")
+    otp = db._row_to_dict(row)
+    if isinstance(otp.get("expires_at"), str):
+        exp = datetime.fromisoformat(otp["expires_at"])
+    else:
+        exp = otp["expires_at"]
+    if exp.tzinfo is None:
+        exp = exp.replace(tzinfo=timezone.utc)
+    if datetime.now(timezone.utc) > exp:
+        raise HTTPException(400, "OTP đã hết hạn. Vui lòng yêu cầu mã mới")
+    attempts = otp.get("attempts", 0) + 1
+    if attempts > OTP_MAX_ATTEMPTS:
+        raise HTTPException(429, "Quá nhiều lần thử. Vui lòng yêu cầu mã mới")
+    if not hmac.compare_digest(otp["code"], hashed_code):
+        db._execute(conn, f"""
+            UPDATE otp_sessions SET attempts = {db._ph} WHERE id::text = {db._ph}
+        """, (attempts, str(otp["id"])))
+        raise HTTPException(400, f"OTP không đúng. Còn {OTP_MAX_ATTEMPTS - attempts} lần thử")
+    db._execute(conn, f"""
+        UPDATE otp_sessions SET verified = TRUE WHERE id::text = {db._ph}
+    """, (str(otp["id"]),))
+    return otp
+
+
+def _register_new_user(phone: str, body: "OTPVerify") -> dict:
+    """Tạo user mới từ luồng verify-otp (yêu cầu consent). Trích nguyên văn từ
+    nhánh 'chưa có tài khoản' của _get_or_create_user — không đổi hành vi."""
+    if not body.consent:
+        raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
+    reg_kwargs = {}
+    if body.full_name:
+        reg_kwargs["full_name"] = _html.escape(body.full_name.strip()[:100])
+    if body.username:
+        uname = body.username.strip().lower()
+        if len(uname) >= 3 and re.match(r'^[a-z][a-z0-9._-]*$', uname):
+            with db._conn() as conn:
+                dup = db._fetchone(conn,
+                    f"SELECT id FROM users WHERE lower(username) = {db._ph}", (uname,))
+            if dup:
+                raise HTTPException(409, "Username đã được sử dụng")
+            reg_kwargs["username"] = uname
+    if body.password:
+        pwd = body.password
+        if len(pwd) < 8:
+            raise HTTPException(400, "Mật khẩu phải từ 8 ký tự trở lên")
+        reg_kwargs["password_hash"] = _hash_password(pwd)
+    if body.date_of_birth:
+        reg_kwargs["date_of_birth"] = body.date_of_birth
+    return db.create_user(phone, consent_version=CONSENT_VERSION, **reg_kwargs)
+
+
+def _reactivate_user(u: dict) -> dict:
+    """Kích hoạt lại tài khoản đã tắt/đã lên lịch xoá khi đăng nhập lại qua OTP."""
+    updates = {}
+    if not u.get("is_active", True):
+        updates["is_active"] = True
+    if u.get("deleted_at"):
+        updates["deleted_at"] = None
+        updates["is_active"] = True
+    if updates:
+        db.update_user(str(u["id"]), **updates)
+        u.update(updates)
+    return u
+
+
+def _get_or_create_user(phone: str, body: "OTPVerify") -> dict:
+    u = db.get_user_by_phone(phone)
+    if not u:
+        return _register_new_user(phone, body)
+    return _reactivate_user(u)
+
+
 @router.post("/verify-otp",
              summary="Verify OTP and create session",
              description="Verifies the OTP code for a phone number. On success, creates or reactivates the user account and returns a session token.")
 async def verify_otp(body: OTPVerify, request: Request, response: Response):
     from middleware import get_client_ip
     ip = get_client_ip(request)
-    now = time.time()
     phone = _normalize_phone(body.phone)
     _check_shared_auth_rate(f"otp_verify_ip:{ip}", OTP_VERIFY_IP_LIMIT, OTP_VERIFY_IP_WINDOW, "Qua nhieu lan xac thuc OTP tu IP nay. Vui long thu lai sau.")
     _check_shared_auth_rate(f"otp_verify_phone:{phone}", OTP_VERIFY_PHONE_LIMIT, OTP_VERIFY_PHONE_WINDOW, "Qua nhieu lan nhap OTP cho so nay. Vui long yeu cau ma moi sau 5 phut.")
-    hits = [t for t in _otp_verify_ip_rate.get(ip, []) if now - t < OTP_VERIFY_IP_WINDOW]
-    if len(hits) >= OTP_VERIFY_IP_LIMIT:
-        raise HTTPException(429, "Quá nhiều lần xác thực OTP từ IP này. Vui lòng thử lại sau.")
-    hits.append(now)
-    _otp_verify_ip_rate[ip] = hits
-    _gc_rate_dict(_otp_verify_ip_rate, OTP_VERIFY_IP_WINDOW)
-
-    phone_hits = [t for t in _otp_verify_phone_rate.get(phone, []) if now - t < OTP_VERIFY_PHONE_WINDOW]
-    if len(phone_hits) >= OTP_VERIFY_PHONE_LIMIT:
-        raise HTTPException(429, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
-    phone_hits.append(now)
-    _otp_verify_phone_rate[phone] = phone_hits
-    _gc_rate_dict(_otp_verify_phone_rate, OTP_VERIFY_PHONE_WINDOW)
+    _enforce_local_rate(_otp_verify_ip_rate, ip, OTP_VERIFY_IP_LIMIT, OTP_VERIFY_IP_WINDOW, "Quá nhiều lần xác thực OTP từ IP này. Vui lòng thử lại sau.")
+    _enforce_local_rate(_otp_verify_phone_rate, phone, OTP_VERIFY_PHONE_LIMIT, OTP_VERIFY_PHONE_WINDOW, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
     hashed = _hash_otp(body.code.strip())
 
     def _verify():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                SELECT id, code, expires_at, attempts, phone FROM otp_sessions
-                WHERE phone = {db._ph} AND verified = FALSE
-                ORDER BY created_at DESC LIMIT 1
-                FOR UPDATE SKIP LOCKED
-            """, (phone,))
-            if not row:
-                raise HTTPException(400, "Không tìm thấy OTP. Vui lòng yêu cầu mã mới")
-            otp = db._row_to_dict(row)
-            if isinstance(otp.get("expires_at"), str):
-                exp = datetime.fromisoformat(otp["expires_at"])
-            else:
-                exp = otp["expires_at"]
-            if exp.tzinfo is None:
-                exp = exp.replace(tzinfo=timezone.utc)
-            if datetime.now(timezone.utc) > exp:
-                raise HTTPException(400, "OTP đã hết hạn. Vui lòng yêu cầu mã mới")
-            attempts = otp.get("attempts", 0) + 1
-            if attempts > OTP_MAX_ATTEMPTS:
-                raise HTTPException(429, "Quá nhiều lần thử. Vui lòng yêu cầu mã mới")
-            if not hmac.compare_digest(otp["code"], hashed):
-                db._execute(conn, f"""
-                    UPDATE otp_sessions SET attempts = {db._ph} WHERE id::text = {db._ph}
-                """, (attempts, str(otp["id"])))
-                raise HTTPException(400, f"OTP không đúng. Còn {OTP_MAX_ATTEMPTS - attempts} lần thử")
-            db._execute(conn, f"""
-                UPDATE otp_sessions SET verified = TRUE WHERE id::text = {db._ph}
-            """, (str(otp["id"]),))
+            _consume_verified_otp(conn, phone, hashed)
     await asyncio.to_thread(_verify)
 
-    def _get_or_create_user():
-        u = db.get_user_by_phone(phone)
-        if not u:
-            if not body.consent:
-                raise HTTPException(400, "Vui lòng đồng ý Điều khoản sử dụng và Chính sách bảo mật")
-            reg_kwargs = {}
-            if body.full_name:
-                reg_kwargs["full_name"] = _html.escape(body.full_name.strip()[:100])
-            if body.username:
-                uname = body.username.strip().lower()
-                if len(uname) >= 3 and re.match(r'^[a-z][a-z0-9._-]*$', uname):
-                    with db._conn() as conn:
-                        dup = db._fetchone(conn,
-                            f"SELECT id FROM users WHERE lower(username) = {db._ph}", (uname,))
-                    if dup:
-                        raise HTTPException(409, "Username đã được sử dụng")
-                    reg_kwargs["username"] = uname
-            if body.password:
-                pwd = body.password
-                if len(pwd) < 8:
-                    raise HTTPException(400, "Mật khẩu phải từ 8 ký tự trở lên")
-                reg_kwargs["password_hash"] = _hash_password(pwd)
-            if body.date_of_birth:
-                reg_kwargs["date_of_birth"] = body.date_of_birth
-            u = db.create_user(phone, consent_version=CONSENT_VERSION, **reg_kwargs)
-        else:
-            updates = {}
-            if not u.get("is_active", True):
-                updates["is_active"] = True
-            if u.get("deleted_at"):
-                updates["deleted_at"] = None
-                updates["is_active"] = True
-            if updates:
-                db.update_user(str(u["id"]), **updates)
-                u.update(updates)
-        return u
-    user = await asyncio.to_thread(_get_or_create_user)
+    user = await asyncio.to_thread(_get_or_create_user, phone, body)
 
     from middleware import get_client_ip
     ip = get_client_ip(request)
@@ -755,12 +779,7 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
     ip = get_client_ip(request)
     now = time.time()
     _check_shared_auth_rate(f"login_ip:{ip}", LOGIN_IP_LIMIT, LOGIN_IP_WINDOW, "Qua nhieu lan dang nhap. Vui long thu lai sau.")
-    hits = [t for t in _login_ip_rate.get(ip, []) if now - t < LOGIN_IP_WINDOW]
-    if len(hits) >= LOGIN_IP_LIMIT:
-        raise HTTPException(429, "Quá nhiều lần đăng nhập. Vui lòng thử lại sau.")
-    hits.append(now)
-    _login_ip_rate[ip] = hits
-    _gc_rate_dict(_login_ip_rate, LOGIN_IP_WINDOW)
+    _enforce_local_rate(_login_ip_rate, ip, LOGIN_IP_LIMIT, LOGIN_IP_WINDOW, "Quá nhiều lần đăng nhập. Vui lòng thử lại sau.")
 
     phone = _normalize_phone(body.phone)
 
@@ -855,55 +874,16 @@ async def set_password(body: SetPassword, request: Request, _csrf=Depends(_requi
 async def reset_password_otp(body: ResetPasswordOTP, request: Request, response: Response, _csrf=Depends(_require_csrf_lazy)):
     from middleware import get_client_ip
     ip = get_client_ip(request)
-    now = time.time()
     phone = _normalize_phone(body.phone)
     _check_shared_auth_rate(f"otp_verify_ip:{ip}", OTP_VERIFY_IP_LIMIT, OTP_VERIFY_IP_WINDOW, "Qua nhieu lan xac thuc OTP tu IP nay. Vui long thu lai sau.")
     _check_shared_auth_rate(f"otp_verify_phone:{phone}", OTP_VERIFY_PHONE_LIMIT, OTP_VERIFY_PHONE_WINDOW, "Qua nhieu lan nhap OTP cho so nay. Vui long yeu cau ma moi sau 5 phut.")
-    hits = [t for t in _otp_verify_ip_rate.get(ip, []) if now - t < OTP_VERIFY_IP_WINDOW]
-    if len(hits) >= OTP_VERIFY_IP_LIMIT:
-        raise HTTPException(429, "Quá nhiều lần xác thực OTP từ IP này. Vui lòng thử lại sau.")
-    hits.append(now)
-    _otp_verify_ip_rate[ip] = hits
-    _gc_rate_dict(_otp_verify_ip_rate, OTP_VERIFY_IP_WINDOW)
-
-    phone_hits = [t for t in _otp_verify_phone_rate.get(phone, []) if now - t < OTP_VERIFY_PHONE_WINDOW]
-    if len(phone_hits) >= OTP_VERIFY_PHONE_LIMIT:
-        raise HTTPException(429, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
-    phone_hits.append(now)
-    _otp_verify_phone_rate[phone] = phone_hits
-    _gc_rate_dict(_otp_verify_phone_rate, OTP_VERIFY_PHONE_WINDOW)
+    _enforce_local_rate(_otp_verify_ip_rate, ip, OTP_VERIFY_IP_LIMIT, OTP_VERIFY_IP_WINDOW, "Quá nhiều lần xác thực OTP từ IP này. Vui lòng thử lại sau.")
+    _enforce_local_rate(_otp_verify_phone_rate, phone, OTP_VERIFY_PHONE_LIMIT, OTP_VERIFY_PHONE_WINDOW, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
     hashed_code = _hash_otp(body.code.strip())
 
     def _verify_and_reset():
         with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                SELECT id, code, expires_at, attempts, phone FROM otp_sessions
-                WHERE phone = {db._ph} AND verified = FALSE
-                ORDER BY created_at DESC LIMIT 1
-                FOR UPDATE SKIP LOCKED
-            """, (phone,))
-            if not row:
-                raise HTTPException(400, "Không tìm thấy OTP. Vui lòng yêu cầu mã mới")
-            otp = db._row_to_dict(row)
-            if isinstance(otp.get("expires_at"), str):
-                exp = datetime.fromisoformat(otp["expires_at"])
-            else:
-                exp = otp["expires_at"]
-            if exp.tzinfo is None:
-                exp = exp.replace(tzinfo=timezone.utc)
-            if datetime.now(timezone.utc) > exp:
-                raise HTTPException(400, "OTP đã hết hạn. Vui lòng yêu cầu mã mới")
-            attempts = otp.get("attempts", 0) + 1
-            if attempts > OTP_MAX_ATTEMPTS:
-                raise HTTPException(429, "Quá nhiều lần thử. Vui lòng yêu cầu mã mới")
-            if not hmac.compare_digest(otp["code"], hashed_code):
-                db._execute(conn, f"""
-                    UPDATE otp_sessions SET attempts = {db._ph} WHERE id::text = {db._ph}
-                """, (attempts, str(otp["id"])))
-                raise HTTPException(400, f"OTP không đúng. Còn {OTP_MAX_ATTEMPTS - attempts} lần thử")
-            db._execute(conn, f"""
-                UPDATE otp_sessions SET verified = TRUE WHERE id::text = {db._ph}
-            """, (str(otp["id"]),))
+            _consume_verified_otp(conn, phone, hashed_code)
 
             user = db.get_user_by_phone(phone)
             if not user:
@@ -1128,6 +1108,35 @@ async def delete_account(request: Request, response: Response, _csrf=Depends(_re
     }
 
 
+async def _persist_profile_fields(user_id: str, fields: dict) -> dict:
+    """Ghi các trường hồ sơ đã kiểm duyệt xuống DB (trích nguyên văn khối try/except)."""
+    try:
+        return await asyncio.to_thread(lambda: db.update_user(user_id, **fields))
+    except Exception:
+        logger.exception("Profile update failed")
+        raise HTTPException(500, "Cập nhật hồ sơ thất bại")
+
+
+async def _profile_apply_full_name(body: "ProfileUpdate", fields: dict) -> None:
+    """Kiểm duyệt + escape họ tên (trích nguyên văn nhánh full_name của update_profile)."""
+    from moderation import moderate_content
+    fname = body.full_name.strip()[:100]
+    if fname and len(fname) < 2:
+        raise HTTPException(400, "Họ tên phải từ 2 ký tự trở lên")
+    mod = await moderate_content(fname)
+    if mod["status"] == "flagged":
+        raise HTTPException(400, "Họ tên chứa nội dung không phù hợp")
+    fields["full_name"] = _html.escape(fname) if fname else None
+
+
+def _profile_apply_email(body: "ProfileUpdate", fields: dict) -> None:
+    """Validate email (trích nguyên văn nhánh email của update_profile)."""
+    email_val = body.email.strip()[:200]
+    if email_val and not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email_val):
+        raise HTTPException(400, "Email không hợp lệ")
+    fields["email"] = email_val if email_val else None
+
+
 @router.put("/profile",
             summary="Update user profile",
             description="Updates the authenticated user's display name, bio, and/or username. Content is moderated and HTML-escaped. Returns the updated profile.")
@@ -1149,13 +1158,7 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
             raise HTTPException(400, "Tên hiển thị chứa nội dung không phù hợp")
         fields["display_name"] = _html.escape(name)
     if body.full_name is not None:
-        fname = body.full_name.strip()[:100]
-        if fname and len(fname) < 2:
-            raise HTTPException(400, "Họ tên phải từ 2 ký tự trở lên")
-        mod = await moderate_content(fname)
-        if mod["status"] == "flagged":
-            raise HTTPException(400, "Họ tên chứa nội dung không phù hợp")
-        fields["full_name"] = _html.escape(fname) if fname else None
+        await _profile_apply_full_name(body, fields)
     if body.bio is not None:
         bio_text = body.bio.strip()[:300]
         if bio_text:
@@ -1164,19 +1167,12 @@ async def update_profile(body: ProfileUpdate, request: Request, _csrf=Depends(_r
                 raise HTTPException(400, "Tiểu sử chứa nội dung không phù hợp")
         fields["bio"] = _html.escape(bio_text)
     if body.email is not None:
-        email_val = body.email.strip()[:200]
-        if email_val and not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email_val):
-            raise HTTPException(400, "Email không hợp lệ")
-        fields["email"] = email_val if email_val else None
+        _profile_apply_email(body, fields)
     if body.contact_info is not None:
         fields["contact_info"] = _html.escape(body.contact_info.strip()[:500])
 
     if fields:
-        try:
-            user = await asyncio.to_thread(lambda: db.update_user(str(user["id"]), **fields))
-        except Exception as e:
-            logger.exception("Profile update failed")
-            raise HTTPException(500, "Cập nhật hồ sơ thất bại")
+        user = await _persist_profile_fields(str(user["id"]), fields)
 
     return {"user": _safe_user(user)}
 
@@ -1455,6 +1451,32 @@ async def get_privacy(request: Request):
     return await asyncio.to_thread(_query)
 
 
+def _upsert_privacy(uid: str, body: "PrivacyUpdate") -> None:
+    ph = db._ph
+    with db._conn() as conn:
+        existing = db._fetchone(conn, f"SELECT 1 FROM user_privacy WHERE user_id = {ph}::uuid", (uid,))
+        if existing:
+            sets, params = [], []
+            if body.profile_visibility is not None:
+                sets.append(f"profile_visibility = {ph}")
+                params.append(body.profile_visibility)
+            if body.show_activity is not None:
+                sets.append(f"show_activity = {ph}")
+                params.append(body.show_activity)
+            if body.show_saved is not None:
+                sets.append(f"show_saved = {ph}")
+                params.append(body.show_saved)
+            if sets:
+                sets.append("updated_at = NOW()")
+                params.append(uid)
+                db._execute(conn, f"UPDATE user_privacy SET {', '.join(sets)} WHERE user_id = {ph}::uuid", params)
+        else:
+            db._execute(conn, f"""
+                INSERT INTO user_privacy (user_id, profile_visibility, show_activity, show_saved)
+                VALUES ({ph}::uuid, {ph}, {ph}, {ph})
+            """, (uid, body.profile_visibility or "public", body.show_activity if body.show_activity is not None else True, body.show_saved if body.show_saved is not None else True))
+
+
 @router.put("/privacy",
             summary="Update privacy settings",
             description="Updates the authenticated user's privacy settings. Supports profile visibility (public/followers/private), activity visibility, and saved items visibility.")
@@ -1469,32 +1491,7 @@ async def update_privacy(body: PrivacyUpdate, request: Request, _csrf=Depends(_r
     if body.profile_visibility and body.profile_visibility not in valid_vis:
         raise HTTPException(400, f"profile_visibility phải là một trong: {', '.join(valid_vis)}")
 
-    def _query():
-        ph = db._ph
-        uid = str(user["id"])
-        with db._conn() as conn:
-            existing = db._fetchone(conn, f"SELECT 1 FROM user_privacy WHERE user_id = {ph}::uuid", (uid,))
-            if existing:
-                sets, params = [], []
-                if body.profile_visibility is not None:
-                    sets.append(f"profile_visibility = {ph}")
-                    params.append(body.profile_visibility)
-                if body.show_activity is not None:
-                    sets.append(f"show_activity = {ph}")
-                    params.append(body.show_activity)
-                if body.show_saved is not None:
-                    sets.append(f"show_saved = {ph}")
-                    params.append(body.show_saved)
-                if sets:
-                    sets.append("updated_at = NOW()")
-                    params.append(uid)
-                    db._execute(conn, f"UPDATE user_privacy SET {', '.join(sets)} WHERE user_id = {ph}::uuid", params)
-            else:
-                db._execute(conn, f"""
-                    INSERT INTO user_privacy (user_id, profile_visibility, show_activity, show_saved)
-                    VALUES ({ph}::uuid, {ph}, {ph}, {ph})
-                """, (uid, body.profile_visibility or "public", body.show_activity if body.show_activity is not None else True, body.show_saved if body.show_saved is not None else True))
-    await asyncio.to_thread(_query)
+    await asyncio.to_thread(_upsert_privacy, str(user["id"]), body)
     return await get_privacy(request)
 
 
@@ -1570,16 +1567,16 @@ async def export_user_data(request: Request):
                 ORDER BY created_at DESC LIMIT {_EXPORT_CAP}
             """, (uid,))
         return {
-            "posts": [db._row_to_dict(r) for r in posts],
-            "comments": [db._row_to_dict(r) for r in comments],
-            "likes": [db._row_to_dict(r) for r in likes],
-            "bookmarks": [db._row_to_dict(r) for r in bookmarks],
-            "follows": [db._row_to_dict(r) for r in follows],
-            "visits": [db._row_to_dict(r) for r in visits],
-            "reactions": [db._row_to_dict(r) for r in reactions],
-            "collections": [db._row_to_dict(r) for r in collections],
-            "blocks": [db._row_to_dict(r) for r in blocks],
-            "mutes": [db._row_to_dict(r) for r in mutes],
+            "posts": _rows_to_dicts(posts),
+            "comments": _rows_to_dicts(comments),
+            "likes": _rows_to_dicts(likes),
+            "bookmarks": _rows_to_dicts(bookmarks),
+            "follows": _rows_to_dicts(follows),
+            "visits": _rows_to_dicts(visits),
+            "reactions": _rows_to_dicts(reactions),
+            "collections": _rows_to_dicts(collections),
+            "blocks": _rows_to_dicts(blocks),
+            "mutes": _rows_to_dicts(mutes),
         }
 
     ugc = await asyncio.to_thread(_query)
@@ -1771,6 +1768,55 @@ def _load_user_by_id(user_id: str) -> dict | None:
         return db._row_to_dict(row) if row else None
 
 
+def _load_pending_2fa(token_hash: str):
+    """Nạp + tiêu thụ-một-lần bộ đếm challenge pending_2fa (FOR UPDATE SKIP LOCKED).
+    Trích nguyên văn nested _load_challenge của twofa_verify — không đổi hành vi.
+    Trả None (không hợp lệ/hết hạn), "locked" (quá số lần), hoặc dict challenge."""
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            SELECT id, user_id, attempts, expires_at FROM pending_2fa
+            WHERE token_hash = {ph} FOR UPDATE SKIP LOCKED
+        """, (token_hash,))
+        if not row:
+            return None
+        d = db._row_to_dict(row)
+        exp = d["expires_at"]
+        if isinstance(exp, str):
+            exp = datetime.fromisoformat(exp)
+        if exp.tzinfo is None:
+            exp = exp.replace(tzinfo=timezone.utc)
+        if datetime.now(timezone.utc) > exp:
+            db._execute(conn, f"DELETE FROM pending_2fa WHERE id = {ph}", (d["id"],))
+            return None
+        if d["attempts"] >= OTP_MAX_ATTEMPTS:
+            db._execute(conn, f"DELETE FROM pending_2fa WHERE id = {ph}", (d["id"],))
+            return "locked"
+        db._execute(conn, f"UPDATE pending_2fa SET attempts = attempts + 1 WHERE id = {ph}", (d["id"],))
+        return d
+
+
+def _verify_2fa_code(uid: str, body: "_TwoFAVerify", decrypt_secret, verify_totp, recovery_code_matches) -> bool:
+    """Kiểm tra mã TOTP hoặc mã khôi phục cho user 2FA đã bật. Trích nguyên văn
+    nested _check của twofa_verify — không đổi hành vi (kể cả đánh dấu used_at)."""
+    ph = db._ph
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"SELECT secret_enc FROM user_2fa WHERE user_id::text = {ph} AND enabled = TRUE", (uid,))
+        if not row:
+            return False
+        secret = decrypt_secret(db._row_to_dict(row)["secret_enc"])
+        if not body.recovery and verify_totp(secret, body.code):
+            return True
+        if body.recovery:
+            codes = db._fetchall(conn, f"SELECT id, code_hash FROM user_2fa_recovery_codes WHERE user_id::text = {ph} AND used_at IS NULL", (uid,))
+            for r in codes:
+                d = db._row_to_dict(r)
+                if recovery_code_matches(body.code, d["code_hash"]):
+                    db._execute(conn, f"UPDATE user_2fa_recovery_codes SET used_at = NOW() WHERE id = {ph}", (d["id"],))
+                    return True
+        return False
+
+
 class _TwoFAVerify(BaseModel):
     challenge_id: str
     code: str
@@ -1785,63 +1831,19 @@ async def twofa_verify(body: _TwoFAVerify, request: Request, response: Response)
     from middleware import get_client_ip
     from twofactor import decrypt_secret, verify_totp, recovery_code_matches
     ip = get_client_ip(request)
-    now = time.time()
     _check_shared_auth_rate(f"tfa_verify_ip:{ip}", TFA_VERIFY_IP_LIMIT, TFA_VERIFY_IP_WINDOW, "Qua nhieu lan xac thuc 2FA. Thu lai sau.")
-    hits = [t for t in _tfa_verify_ip_rate.get(ip, []) if now - t < TFA_VERIFY_IP_WINDOW]
-    if len(hits) >= TFA_VERIFY_IP_LIMIT:
-        raise HTTPException(429, "Quá nhiều lần xác thực 2FA. Vui lòng thử lại sau.")
-    hits.append(now); _tfa_verify_ip_rate[ip] = hits; _gc_rate_dict(_tfa_verify_ip_rate, TFA_VERIFY_IP_WINDOW)
+    _enforce_local_rate(_tfa_verify_ip_rate, ip, TFA_VERIFY_IP_LIMIT, TFA_VERIFY_IP_WINDOW, "Quá nhiều lần xác thực 2FA. Vui lòng thử lại sau.")
 
     token_hash = _hash_token(body.challenge_id)
 
-    def _load_challenge():
-        ph = db._ph
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"""
-                SELECT id, user_id, attempts, expires_at FROM pending_2fa
-                WHERE token_hash = {ph} FOR UPDATE SKIP LOCKED
-            """, (token_hash,))
-            if not row:
-                return None
-            d = db._row_to_dict(row)
-            exp = d["expires_at"]
-            if isinstance(exp, str):
-                exp = datetime.fromisoformat(exp)
-            if exp.tzinfo is None:
-                exp = exp.replace(tzinfo=timezone.utc)
-            if datetime.now(timezone.utc) > exp:
-                db._execute(conn, f"DELETE FROM pending_2fa WHERE id = {ph}", (d["id"],))
-                return None
-            if d["attempts"] >= OTP_MAX_ATTEMPTS:
-                db._execute(conn, f"DELETE FROM pending_2fa WHERE id = {ph}", (d["id"],))
-                return "locked"
-            db._execute(conn, f"UPDATE pending_2fa SET attempts = attempts + 1 WHERE id = {ph}", (d["id"],))
-            return d
-    challenge = await asyncio.to_thread(_load_challenge)
+    challenge = await asyncio.to_thread(_load_pending_2fa, token_hash)
     if challenge == "locked":
         raise HTTPException(429, "Quá nhiều lần thử. Vui lòng đăng nhập lại.")
     if not challenge:
         raise HTTPException(400, "Phiên xác thực không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.")
     uid = str(challenge["user_id"])
 
-    def _check() -> bool:
-        ph = db._ph
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT secret_enc FROM user_2fa WHERE user_id::text = {ph} AND enabled = TRUE", (uid,))
-            if not row:
-                return False
-            secret = decrypt_secret(db._row_to_dict(row)["secret_enc"])
-            if not body.recovery and verify_totp(secret, body.code):
-                return True
-            if body.recovery:
-                codes = db._fetchall(conn, f"SELECT id, code_hash FROM user_2fa_recovery_codes WHERE user_id::text = {ph} AND used_at IS NULL", (uid,))
-                for r in codes:
-                    d = db._row_to_dict(r)
-                    if recovery_code_matches(body.code, d["code_hash"]):
-                        db._execute(conn, f"UPDATE user_2fa_recovery_codes SET used_at = NOW() WHERE id = {ph}", (d["id"],))
-                        return True
-            return False
-    if not await asyncio.to_thread(_check):
+    if not await asyncio.to_thread(_verify_2fa_code, uid, body, decrypt_secret, verify_totp, recovery_code_matches):
         raise HTTPException(400, "Mã không đúng")
 
     # Thành công → nạp user đầy đủ, xoá challenge (dùng-một-lần), hoàn tất đăng nhập.

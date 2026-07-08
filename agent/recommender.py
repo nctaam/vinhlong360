@@ -142,6 +142,83 @@ def _build_relationship_index(relationships: list[dict]) -> dict[str, set[str]]:
 #  1. Content-Based Filtering
 # ══════════════════════════════════════════════════
 
+def _score_tag_similarity(
+    source_tags: set[str], candidate: dict
+) -> tuple[float, list[str]]:
+    """Factor 2: Jaccard-like tag similarity between source and candidate."""
+    cand_tags = _get_tags(candidate)
+    if not (source_tags and cand_tags):
+        return 0.0, []
+    intersection = len(source_tags & cand_tags)
+    union = len(source_tags | cand_tags)
+    if union <= 0:
+        return 0.0, []
+    tag_sim = intersection / union
+    reasons: list[str] = []
+    if intersection > 0:
+        reasons.append(f"shared_tags({intersection})")
+    return W_SHARED_TAGS * tag_sim, reasons
+
+
+def _score_area_match(
+    source_area: str | None,
+    source_ward: str | None,
+    candidate: dict,
+    entities: dict,
+) -> tuple[float, list[str]]:
+    """Factor 3: Same area (+ same ward bonus) between source and candidate."""
+    cand_area = _get_area(candidate, entities)
+    if not (source_area and cand_area and source_area == cand_area):
+        return 0.0, []
+    score = W_SAME_AREA
+    reasons = ["same_area"]
+    # Extra boost for same ward
+    cand_ward = _get_ward_id(candidate)
+    if source_ward and cand_ward and source_ward == cand_ward:
+        score += 0.05
+        reasons.append("same_ward")
+    return score, reasons
+
+
+def _score_entity_candidate(
+    eid: str,
+    candidate: dict,
+    source_type,
+    source_tags: set[str],
+    source_area: str | None,
+    source_ward: str | None,
+    related_ids: set[str],
+    entities: dict,
+) -> tuple[float, list[str]]:
+    """Score a single candidate against the source entity (content-based)."""
+    score = 0.0
+    reasons: list[str] = []
+
+    # Factor 1: Same type
+    if candidate.get("type") == source_type:
+        score += W_SAME_TYPE
+        reasons.append("same_type")
+
+    # Factor 2: Shared tags (Jaccard-like)
+    tag_score, tag_reasons = _score_tag_similarity(source_tags, candidate)
+    score += tag_score
+    reasons.extend(tag_reasons)
+
+    # Factor 3: Same area
+    area_score, area_reasons = _score_area_match(
+        source_area, source_ward, candidate, entities
+    )
+    score += area_score
+    reasons.extend(area_reasons)
+
+    # Factor 4: Relationship exists
+    if eid in related_ids:
+        score += W_RELATIONSHIP
+        reasons.append("related")
+
+    return score, reasons
+
+
 def recommend_by_entity(
     entity_id: str,
     entities: dict,
@@ -186,40 +263,10 @@ def recommend_by_entity(
         if not _is_content_entity(candidate):
             continue
 
-        score = 0.0
-        reasons: list[str] = []
-
-        # Factor 1: Same type
-        if candidate.get("type") == source_type:
-            score += W_SAME_TYPE
-            reasons.append("same_type")
-
-        # Factor 2: Shared tags (Jaccard-like)
-        cand_tags = _get_tags(candidate)
-        if source_tags and cand_tags:
-            intersection = len(source_tags & cand_tags)
-            union = len(source_tags | cand_tags)
-            if union > 0:
-                tag_sim = intersection / union
-                score += W_SHARED_TAGS * tag_sim
-                if intersection > 0:
-                    reasons.append(f"shared_tags({intersection})")
-
-        # Factor 3: Same area
-        cand_area = _get_area(candidate, entities)
-        if source_area and cand_area and source_area == cand_area:
-            score += W_SAME_AREA
-            reasons.append("same_area")
-            # Extra boost for same ward
-            cand_ward = _get_ward_id(candidate)
-            if source_ward and cand_ward and source_ward == cand_ward:
-                score += 0.05
-                reasons.append("same_ward")
-
-        # Factor 4: Relationship exists
-        if eid in related_ids:
-            score += W_RELATIONSHIP
-            reasons.append("related")
+        score, reasons = _score_entity_candidate(
+            eid, candidate, source_type, source_tags,
+            source_area, source_ward, related_ids, entities,
+        )
 
         if score > 0:
             scored.append((score, candidate, reasons))
@@ -242,6 +289,70 @@ def recommend_by_entity(
 # ══════════════════════════════════════════════════
 #  2. User-Profile Recommendations
 # ══════════════════════════════════════════════════
+
+def _score_user_entity(
+    eid: str,
+    entity: dict,
+    interest_types: set[str],
+    preferred_areas: set[str],
+    visited: set[str],
+    entities: dict,
+) -> tuple[float, list[str]]:
+    """Score a single entity against a user profile (personalized)."""
+    score = 0.0
+    reasons: list[str] = []
+
+    # Factor 1: Matches interests
+    if interest_types and entity.get("type") in interest_types:
+        score += W_INTEREST_MATCH
+        reasons.append("matches_interest")
+
+    # Factor 2: In preferred area
+    if preferred_areas:
+        area = _get_area(entity, entities)
+        if area and area in preferred_areas:
+            score += W_PREFERRED_AREA
+            reasons.append("preferred_area")
+
+    # Factor 3: Not yet visited bonus
+    if eid not in visited:
+        score += W_NOT_VISITED_BONUS
+        reasons.append("not_visited")
+
+    # Factor 4: Popularity proxy (confidence score)
+    confidence = entity.get("confidence", 0)
+    if confidence > 0:
+        score += W_POPULARITY * min(confidence, 1.0)
+        if confidence >= 0.8:
+            reasons.append("high_confidence")
+
+    return score, reasons
+
+
+def _diversify_user_results(
+    scored: list[tuple[float, dict, list[str]]], limit: int
+) -> list[dict]:
+    """Apply diversity constraint (max 3 per type) and build result dicts."""
+    type_counts: dict[str, int] = defaultdict(int)
+    diversified: list[dict] = []
+
+    for sc, entity, reasons in scored:
+        etype = entity.get("type", "")
+        if type_counts[etype] >= 3:
+            continue
+        type_counts[etype] += 1
+        diversified.append({
+            "id": entity["id"],
+            "name": entity.get("name", ""),
+            "type": etype,
+            "score": round(sc, 4),
+            "reason": ", ".join(reasons),
+        })
+        if len(diversified) >= limit:
+            break
+
+    return diversified
+
 
 def recommend_for_user(
     user_profile: dict,
@@ -288,32 +399,9 @@ def recommend_for_user(
         if not _is_content_entity(entity):
             continue
 
-        score = 0.0
-        reasons: list[str] = []
-
-        # Factor 1: Matches interests
-        if interest_types and entity.get("type") in interest_types:
-            score += W_INTEREST_MATCH
-            reasons.append("matches_interest")
-
-        # Factor 2: In preferred area
-        if preferred_areas:
-            area = _get_area(entity, entities)
-            if area and area in preferred_areas:
-                score += W_PREFERRED_AREA
-                reasons.append("preferred_area")
-
-        # Factor 3: Not yet visited bonus
-        if eid not in visited:
-            score += W_NOT_VISITED_BONUS
-            reasons.append("not_visited")
-
-        # Factor 4: Popularity proxy (confidence score)
-        confidence = entity.get("confidence", 0)
-        if confidence > 0:
-            score += W_POPULARITY * min(confidence, 1.0)
-            if confidence >= 0.8:
-                reasons.append("high_confidence")
+        score, reasons = _score_user_entity(
+            eid, entity, interest_types, preferred_areas, visited, entities
+        )
 
         if score > 0:
             scored.append((score, entity, reasons))
@@ -321,61 +409,19 @@ def recommend_for_user(
     # Sort descending
     scored.sort(key=lambda x: (x[0], x[1].get("confidence", 0)), reverse=True)
 
-    # Diversity constraint: max 3 per entity type
-    type_counts: dict[str, int] = defaultdict(int)
-    diversified: list[dict] = []
-
-    for sc, entity, reasons in scored:
-        etype = entity.get("type", "")
-        if type_counts[etype] >= 3:
-            continue
-        type_counts[etype] += 1
-        diversified.append({
-            "id": entity["id"],
-            "name": entity.get("name", ""),
-            "type": etype,
-            "score": round(sc, 4),
-            "reason": ", ".join(reasons),
-        })
-        if len(diversified) >= limit:
-            break
-
-    return diversified
+    return _diversify_user_results(scored, limit)
 
 
 # ══════════════════════════════════════════════════
 #  3. Trending Recommendations
 # ══════════════════════════════════════════════════
 
-def recommend_trending(
-    analytics_data: dict,
-    entities: dict,
-    limit: int = 10,
-) -> list[dict]:
+def _compute_recency_boost(queries: list[dict]) -> dict[str, float]:
+    """Compute recency-weighted activity boost from query timestamps.
+
+    NOTE: preserves original behavior — the returned boost is not read back
+    into scoring; the loop is kept verbatim for side-effect parity.
     """
-    Recommend entities based on popularity with recency decay.
-
-    analytics_data expected keys:
-      - entity_hits: dict[str, int]          (total hit counts)
-      - queries: list[dict]                  (recent queries with timestamps)
-
-    Scoring:
-      - Base popularity: log2(hits + 1)
-      - Recency boost: recent hits (last 7 days) get 2x weight
-      - Fresh discovery bonus: entities with low total hits but recent activity
-
-    Args:
-        analytics_data: Analytics dict (from analytics._load()).
-        entities: Dict mapping entity_id -> entity dict.
-        limit: Max recommendations.
-
-    Returns:
-        Ranked list mixing popular and fresh discoveries.
-    """
-    entity_hits = analytics_data.get("entity_hits", {})
-    queries = analytics_data.get("queries", [])
-
-    # Calculate recency-weighted scores
     now = time.time()
     week_seconds = 7 * 24 * 3600
 
@@ -398,7 +444,13 @@ def recommend_trending(
             recent_boost["__recent_activity__"] = max(
                 recent_boost["__recent_activity__"], decay
             )
+    return recent_boost
 
+
+def _score_trending_entities(
+    entity_hits: dict, entities: dict
+) -> list[tuple[float, dict, list[str]]]:
+    """Score each hit entity by popularity (log), freshness, and confidence."""
     scored: list[tuple[float, dict, list[str]]] = []
     max_hits = max(entity_hits.values()) if entity_hits else 1
 
@@ -429,9 +481,13 @@ def recommend_trending(
 
         scored.append((pop_score, entity, reasons))
 
-    # Sort and split into popular + fresh
-    scored.sort(key=lambda x: x[0], reverse=True)
+    return scored
 
+
+def _mix_trending_results(
+    scored: list[tuple[float, dict, list[str]]], limit: int
+) -> list[tuple[float, dict, list[str]]]:
+    """Mix 60% popular / 40% fresh discoveries, then fill remaining slots."""
     # Mix: 60% popular, 40% fresh discoveries
     popular = [item for item in scored if "popular" in item[2] or "fresh_discovery" not in " ".join(item[2])]
     fresh = [item for item in scored if "fresh_discovery" in item[2]]
@@ -450,6 +506,47 @@ def recommend_trending(
                 used_ids.add(item[1]["id"])
                 if len(mixed) >= limit:
                     break
+
+    return mixed
+
+
+def recommend_trending(
+    analytics_data: dict,
+    entities: dict,
+    limit: int = 10,
+) -> list[dict]:
+    """
+    Recommend entities based on popularity with recency decay.
+
+    analytics_data expected keys:
+      - entity_hits: dict[str, int]          (total hit counts)
+      - queries: list[dict]                  (recent queries with timestamps)
+
+    Scoring:
+      - Base popularity: log2(hits + 1)
+      - Recency boost: recent hits (last 7 days) get 2x weight
+      - Fresh discovery bonus: entities with low total hits but recent activity
+
+    Args:
+        analytics_data: Analytics dict (from analytics._load()).
+        entities: Dict mapping entity_id -> entity dict.
+        limit: Max recommendations.
+
+    Returns:
+        Ranked list mixing popular and fresh discoveries.
+    """
+    entity_hits = analytics_data.get("entity_hits", {})
+    queries = analytics_data.get("queries", [])
+
+    # Calculate recency-weighted scores
+    _compute_recency_boost(queries)
+
+    scored = _score_trending_entities(entity_hits, entities)
+
+    # Sort and split into popular + fresh
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    mixed = _mix_trending_results(scored, limit)
 
     # Re-sort final list by score
     mixed.sort(key=lambda x: x[0], reverse=True)
@@ -601,6 +698,81 @@ def recommend(context: dict) -> dict:
         return _recommend_impl(context)
 
 
+def _apply_content_based(
+    context: dict, entities: dict, relationships: list[dict], limit: int
+) -> tuple[bool, list[dict]]:
+    """Strategy 1: content-based (if entity_id provided). Returns (triggered, results)."""
+    entity_id = context.get("entity_id")
+    if not (entity_id and entity_id in entities):
+        return False, []
+    results = recommend_by_entity(entity_id, entities, relationships, limit=limit)
+    # Weight these results (primary signal when viewing an entity)
+    for r in results:
+        r["_source"] = "content_based"
+        r["score"] = r["score"] * 1.2  # Boost content-based when entity context exists
+    return True, results
+
+
+def _apply_user_profile(
+    context: dict, entities: dict, limit: int
+) -> tuple[bool, list[dict]]:
+    """Strategy 2: user-profile (if user_profile provided). Returns (triggered, results)."""
+    user_profile = context.get("user_profile")
+    if not user_profile:
+        return False, []
+    results = recommend_for_user(user_profile, entities, limit=limit)
+    for r in results:
+        r["_source"] = "user_profile"
+    return True, results
+
+
+def _apply_trending(
+    context: dict, entities: dict, limit: int
+) -> tuple[bool, list[dict]]:
+    """Strategy 3: trending (if analytics_data provided). Returns (triggered, results)."""
+    analytics_data = context.get("analytics_data")
+    if not analytics_data:
+        return False, []
+    results = recommend_trending(analytics_data, entities, limit=limit)
+    for r in results:
+        r["_source"] = "trending"
+        r["score"] = r["score"] * 0.15  # Normalize trending scores down
+    return True, results
+
+
+def _apply_contextual(
+    context: dict, entities: dict, limit: int
+) -> tuple[bool, list[dict]]:
+    """Strategy 4: contextual (if time/weather context provided). Returns (triggered, results)."""
+    month = context.get("month")
+    time_of_day = context.get("time_of_day")
+    weather = context.get("weather")
+    if not (month and (time_of_day or weather)):
+        return False, []
+    tod = time_of_day or "afternoon"
+    w = weather or "sunny"
+    results = recommend_contextual(month, tod, w, entities, limit=limit)
+    for r in results:
+        r["_source"] = "contextual"
+    return True, results
+
+
+def _apply_contextual_fallback(entities: dict, limit: int) -> list[dict]:
+    """Fallback: contextual with the current month/hour bucket."""
+    now = datetime.now(timezone.utc)
+    hour = now.hour
+    if hour < 12:
+        tod = "morning"
+    elif hour < 17:
+        tod = "afternoon"
+    else:
+        tod = "evening"
+    results = recommend_contextual(now.month, tod, "sunny", entities, limit=limit)
+    for r in results:
+        r["_source"] = "contextual_fallback"
+    return results
+
+
 def _recommend_impl(context: dict) -> dict:
     """Internal implementation — called under lock."""
     entities = context.get("entities", {})
@@ -613,63 +785,22 @@ def _recommend_impl(context: dict) -> dict:
     strategies_used: list[str] = []
     all_results: list[dict] = []
 
-    # 1. Content-based (if entity_id provided)
-    entity_id = context.get("entity_id")
-    if entity_id and entity_id in entities:
-        results = recommend_by_entity(entity_id, entities, relationships, limit=limit)
-        # Weight these results (primary signal when viewing an entity)
-        for r in results:
-            r["_source"] = "content_based"
-            r["score"] = r["score"] * 1.2  # Boost content-based when entity context exists
-        all_results.extend(results)
-        strategies_used.append("content_based")
-
-    # 2. User-profile (if user_profile provided)
-    user_profile = context.get("user_profile")
-    if user_profile:
-        results = recommend_for_user(user_profile, entities, limit=limit)
-        for r in results:
-            r["_source"] = "user_profile"
-        all_results.extend(results)
-        strategies_used.append("user_profile")
-
-    # 3. Trending (if analytics_data provided)
-    analytics_data = context.get("analytics_data")
-    if analytics_data:
-        results = recommend_trending(analytics_data, entities, limit=limit)
-        for r in results:
-            r["_source"] = "trending"
-            r["score"] = r["score"] * 0.15  # Normalize trending scores down
-        all_results.extend(results)
-        strategies_used.append("trending")
-
-    # 4. Contextual (if time/weather context provided)
-    month = context.get("month")
-    time_of_day = context.get("time_of_day")
-    weather = context.get("weather")
-    if month and (time_of_day or weather):
-        tod = time_of_day or "afternoon"
-        w = weather or "sunny"
-        results = recommend_contextual(month, tod, w, entities, limit=limit)
-        for r in results:
-            r["_source"] = "contextual"
-        all_results.extend(results)
-        strategies_used.append("contextual")
+    # Ordered strategy pipeline: each returns (triggered, results); a strategy
+    # is recorded as used whenever its context guard fires, even if empty.
+    pipeline = [
+        ("content_based", _apply_content_based(context, entities, relationships, limit)),
+        ("user_profile", _apply_user_profile(context, entities, limit)),
+        ("trending", _apply_trending(context, entities, limit)),
+        ("contextual", _apply_contextual(context, entities, limit)),
+    ]
+    for name, (triggered, results) in pipeline:
+        if triggered:
+            all_results.extend(results)
+            strategies_used.append(name)
 
     # Fallback: if no strategy matched, do contextual with current month
     if not strategies_used:
-        now = datetime.now(timezone.utc)
-        hour = now.hour
-        if hour < 12:
-            tod = "morning"
-        elif hour < 17:
-            tod = "afternoon"
-        else:
-            tod = "evening"
-        results = recommend_contextual(now.month, tod, "sunny", entities, limit=limit)
-        for r in results:
-            r["_source"] = "contextual_fallback"
-        all_results.extend(results)
+        all_results.extend(_apply_contextual_fallback(entities, limit))
         strategies_used.append("contextual_fallback")
 
     # ── Merge & Deduplicate ──

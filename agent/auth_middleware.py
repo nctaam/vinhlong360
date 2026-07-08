@@ -487,6 +487,45 @@ import ipaddress as _ipaddress
 _SSRF_BLOCKED_SCHEMES = frozenset({"file", "ftp", "gopher", "ldap", "dict", "telnet"})
 
 
+_SSRF_METADATA_PATTERNS = (
+    "169.254.169.254",  # AWS/GCP metadata
+    "metadata.google.internal",
+    "metadata.azure.com",
+    "100.100.100.200",  # Alibaba
+)
+
+
+def _ssrf_scheme_reason(url_lower: str) -> str | None:
+    """Return blocked-scheme reason for a dangerous URL scheme, else None."""
+    for scheme in _SSRF_BLOCKED_SCHEMES:
+        if url_lower.startswith(f"{scheme}://") or url_lower.startswith(f"{scheme}:"):
+            return f"blocked_scheme:{scheme}"
+    return None
+
+
+def _ssrf_metadata_reason(url_lower: str) -> str | None:
+    """Return 'cloud_metadata' if URL targets a cloud metadata endpoint, else None."""
+    for meta in _SSRF_METADATA_PATTERNS:
+        if meta in url_lower:
+            return "cloud_metadata"
+    return None
+
+
+def _ssrf_host_reason(hostname: str) -> str | None:
+    """Return an SSRF reason for a private/loopback/internal host, else None."""
+    try:
+        addr = _ipaddress.ip_address(hostname)
+        if addr.is_private or addr.is_loopback or addr.is_reserved or addr.is_link_local:
+            return "private_ip"
+    except ValueError:
+        # hostname is a domain name — check known dangerous patterns
+        if hostname in ("localhost", "127.0.0.1", "0.0.0.0", "::1"):
+            return "loopback"
+        if hostname.endswith(".internal") or hostname.endswith(".local"):
+            return "internal_domain"
+    return None
+
+
 def validate_url_safe(url: str) -> dict:
     """Validate a user-supplied URL is safe to fetch (SSRF prevention).
 
@@ -500,20 +539,13 @@ def validate_url_safe(url: str) -> dict:
     url_lower = url.strip().lower()
 
     # Block dangerous schemes
-    for scheme in _SSRF_BLOCKED_SCHEMES:
-        if url_lower.startswith(f"{scheme}://") or url_lower.startswith(f"{scheme}:"):
-            return {"safe": False, "reason": f"blocked_scheme:{scheme}"}
+    scheme_reason = _ssrf_scheme_reason(url_lower)
+    if scheme_reason:
+        return {"safe": False, "reason": scheme_reason}
 
     # Block cloud metadata endpoints
-    _metadata_patterns = [
-        "169.254.169.254",  # AWS/GCP metadata
-        "metadata.google.internal",
-        "metadata.azure.com",
-        "100.100.100.200",  # Alibaba
-    ]
-    for meta in _metadata_patterns:
-        if meta in url_lower:
-            return {"safe": False, "reason": "cloud_metadata"}
+    if _ssrf_metadata_reason(url_lower):
+        return {"safe": False, "reason": "cloud_metadata"}
 
     # Extract hostname (simple parsing — handles http(s)://host:port/path)
     import urllib.parse as _urlparse
@@ -528,16 +560,9 @@ def validate_url_safe(url: str) -> dict:
         return {"safe": False, "reason": "no_hostname"}
 
     # Check if hostname resolves to private/reserved IP
-    try:
-        addr = _ipaddress.ip_address(hostname)
-        if addr.is_private or addr.is_loopback or addr.is_reserved or addr.is_link_local:
-            return {"safe": False, "reason": "private_ip"}
-    except ValueError:
-        # hostname is a domain name — check known dangerous patterns
-        if hostname in ("localhost", "127.0.0.1", "0.0.0.0", "::1"):
-            return {"safe": False, "reason": "loopback"}
-        if hostname.endswith(".internal") or hostname.endswith(".local"):
-            return {"safe": False, "reason": "internal_domain"}
+    host_reason = _ssrf_host_reason(hostname)
+    if host_reason:
+        return {"safe": False, "reason": host_reason}
 
     return {"safe": True, "reason": ""}
 
@@ -646,6 +671,36 @@ _KEYBOARD_SEQUENCES = [
 ]
 
 
+def _password_keyboard_sequence(password: str, issues: list) -> None:
+    """Flag keyboard-sequence substrings (mutates issues)."""
+    for seq in _KEYBOARD_SEQUENCES:
+        if seq in password.lower():
+            issues.append("keyboard_sequence")
+            break
+
+
+def _password_charset_size(has_lower: bool, has_upper: bool, has_digit: bool, has_special: bool) -> int:
+    """Sum the alphabet size implied by the present character classes."""
+    charset_size = 0
+    if has_lower: charset_size += 26
+    if has_upper: charset_size += 26
+    if has_digit: charset_size += 10
+    if has_special: charset_size += 32
+    return charset_size
+
+
+def _password_entropy_score(password: str, charset_size: int, issues: list) -> int:
+    """Entropy-based score bonus + low_entropy flag (mutates issues). Returns bonus."""
+    bonus = 0
+    if charset_size > 0:
+        entropy = len(password) * _math.log2(charset_size)
+        if entropy >= 50:
+            bonus += 1
+        if entropy < 28:
+            issues.append("low_entropy")
+    return bonus
+
+
 def check_password_strength(password: str) -> dict:
     """Evaluate password strength.
 
@@ -666,10 +721,7 @@ def check_password_strength(password: str) -> dict:
         issues.append("common_password")
         return {"strong": False, "score": 0, "issues": issues}
 
-    for seq in _KEYBOARD_SEQUENCES:
-        if seq in password.lower():
-            issues.append("keyboard_sequence")
-            break
+    _password_keyboard_sequence(password, issues)
 
     has_lower = bool(re.search(r'[a-z]', password))
     has_upper = bool(re.search(r'[A-Z]', password))
@@ -682,17 +734,8 @@ def check_password_strength(password: str) -> dict:
     if char_classes < 2:
         issues.append("low_variety")
 
-    charset_size = 0
-    if has_lower: charset_size += 26
-    if has_upper: charset_size += 26
-    if has_digit: charset_size += 10
-    if has_special: charset_size += 32
-    if charset_size > 0:
-        entropy = len(password) * _math.log2(charset_size)
-        if entropy >= 50:
-            score += 1
-        if entropy < 28:
-            issues.append("low_entropy")
+    charset_size = _password_charset_size(has_lower, has_upper, has_digit, has_special)
+    score += _password_entropy_score(password, charset_size, issues)
 
     # Repeating characters
     if re.search(r'(.)\1{3,}', password):
@@ -796,6 +839,50 @@ _IMAGE_MAGIC_BYTES = {
 }
 
 
+def _check_upload_filename(filename: str, clean_name: str, issues: list) -> None:
+    """Path/length checks on the filename (mutates issues)."""
+    if clean_name != filename:
+        issues.append("path_in_filename")
+
+    if len(clean_name) > _MAX_FILENAME_LENGTH:
+        issues.append("filename_too_long")
+
+
+def _check_upload_extension(clean_name: str, issues: list) -> None:
+    """Dangerous-extension + double-extension checks (mutates issues)."""
+    # Check extension
+    ext = ""
+    if "." in clean_name:
+        ext = "." + clean_name.rsplit(".", 1)[-1].lower()
+
+    if ext in _DANGEROUS_EXTENSIONS:
+        issues.append(f"dangerous_extension:{ext}")
+
+    # Double extension attack (e.g., image.php.jpg → still dangerous)
+    parts = clean_name.lower().split(".")
+    if len(parts) > 2:
+        for p in parts[1:-1]:
+            if f".{p}" in _DANGEROUS_EXTENSIONS:
+                issues.append("double_extension_attack")
+                break
+
+
+def _check_upload_magic_bytes(content_type: str, file_header: bytes, issues: list) -> None:
+    """Magic-byte validation against declared content-type (mutates issues)."""
+    if not (file_header and content_type in _ALLOWED_IMAGE_TYPES):
+        return
+    matched_type = None
+    for magic, mime in _IMAGE_MAGIC_BYTES.items():
+        if file_header[:len(magic)] == magic:
+            matched_type = mime
+            break
+    if matched_type is None:
+        issues.append("magic_bytes_mismatch")
+    elif content_type and matched_type != content_type:
+        if not (content_type == "image/webp" and file_header[:4] == b'RIFF'):
+            issues.append("content_type_mismatch")
+
+
 def validate_file_upload(
     filename: str,
     content_type: str = "",
@@ -814,27 +901,8 @@ def validate_file_upload(
 
     # Sanitize filename
     clean_name = filename.replace("\\", "/").split("/")[-1]
-    if clean_name != filename:
-        issues.append("path_in_filename")
-
-    if len(clean_name) > _MAX_FILENAME_LENGTH:
-        issues.append("filename_too_long")
-
-    # Check extension
-    ext = ""
-    if "." in clean_name:
-        ext = "." + clean_name.rsplit(".", 1)[-1].lower()
-
-    if ext in _DANGEROUS_EXTENSIONS:
-        issues.append(f"dangerous_extension:{ext}")
-
-    # Double extension attack (e.g., image.php.jpg → still dangerous)
-    parts = clean_name.lower().split(".")
-    if len(parts) > 2:
-        for p in parts[1:-1]:
-            if f".{p}" in _DANGEROUS_EXTENSIONS:
-                issues.append("double_extension_attack")
-                break
+    _check_upload_filename(filename, clean_name, issues)
+    _check_upload_extension(clean_name, issues)
 
     # Null byte in filename
     if "\x00" in filename or "%00" in filename:
@@ -849,17 +917,7 @@ def validate_file_upload(
         issues.append(f"file_too_large:{file_size}")
 
     # Magic byte validation (if header provided)
-    if file_header and content_type in _ALLOWED_IMAGE_TYPES:
-        matched_type = None
-        for magic, mime in _IMAGE_MAGIC_BYTES.items():
-            if file_header[:len(magic)] == magic:
-                matched_type = mime
-                break
-        if matched_type is None:
-            issues.append("magic_bytes_mismatch")
-        elif content_type and matched_type != content_type:
-            if not (content_type == "image/webp" and file_header[:4] == b'RIFF'):
-                issues.append("content_type_mismatch")
+    _check_upload_magic_bytes(content_type, file_header, issues)
 
     safe = not issues
     return {"safe": safe, "issues": issues}
@@ -1146,6 +1204,43 @@ import base64 as _base64
 import json as _json
 
 
+def _jwt_decode_segment(segment: str):
+    """Base64url-decode + JSON-parse one JWT segment. Raises on failure."""
+    padding = 4 - len(segment) % 4
+    seg_b64 = segment + "=" * padding
+    return _json.loads(_base64.urlsafe_b64decode(seg_b64))
+
+
+def _jwt_header_issues(header: dict, issues: list) -> None:
+    """Flag alg-none / missing-typ issues from a JWT header (mutates issues)."""
+    alg = header.get("alg", "")
+    if alg.lower() == "none":
+        issues.append("alg_none_attack")
+    if alg in ("HS256",) and header.get("typ") != "JWT":
+        issues.append("missing_typ")
+
+    # Dangerous algorithms
+    if alg in ("HS384", "HS512"):
+        pass  # acceptable
+    elif alg in ("RS256", "RS384", "RS512", "ES256", "ES384", "ES512"):
+        pass  # asymmetric — good
+    elif alg == "HS256":
+        pass  # common, acceptable
+
+
+def _jwt_expiry_issues(claims: dict, issues: list) -> None:
+    """Flag expiry issues (expired / invalid_exp / no_expiry) (mutates issues)."""
+    exp = claims.get("exp")
+    if exp:
+        try:
+            if float(exp) < _time.time():
+                issues.append("token_expired")
+        except (ValueError, TypeError):
+            issues.append("invalid_exp")
+    else:
+        issues.append("no_expiry")
+
+
 def validate_token_structure(token: str) -> dict:
     """Validate JWT-like token structure (without verifying signature).
 
@@ -1164,46 +1259,22 @@ def validate_token_structure(token: str) -> dict:
 
     # Check header
     try:
-        padding = 4 - len(parts[0]) % 4
-        header_b64 = parts[0] + "=" * padding
-        header = _json.loads(_base64.urlsafe_b64decode(header_b64))
+        header = _jwt_decode_segment(parts[0])
     except Exception:
         logger.debug("JWT inspect: invalid header encoding", exc_info=True)
         return {"valid": False, "issues": ["invalid_header"], "claims": {}}
 
-    alg = header.get("alg", "")
-    if alg.lower() == "none":
-        issues.append("alg_none_attack")
-    if alg in ("HS256",) and header.get("typ") != "JWT":
-        issues.append("missing_typ")
-
-    # Dangerous algorithms
-    if alg in ("HS384", "HS512"):
-        pass  # acceptable
-    elif alg in ("RS256", "RS384", "RS512", "ES256", "ES384", "ES512"):
-        pass  # asymmetric — good
-    elif alg == "HS256":
-        pass  # common, acceptable
+    _jwt_header_issues(header, issues)
 
     # Check payload
     try:
-        padding = 4 - len(parts[1]) % 4
-        payload_b64 = parts[1] + "=" * padding
-        claims = _json.loads(_base64.urlsafe_b64decode(payload_b64))
+        claims = _jwt_decode_segment(parts[1])
     except Exception:
         logger.debug("JWT inspect: invalid payload encoding", exc_info=True)
         return {"valid": False, "issues": ["invalid_payload"], "claims": {}}
 
     # Check expiry
-    exp = claims.get("exp")
-    if exp:
-        try:
-            if float(exp) < _time.time():
-                issues.append("token_expired")
-        except (ValueError, TypeError):
-            issues.append("invalid_exp")
-    else:
-        issues.append("no_expiry")
+    _jwt_expiry_issues(claims, issues)
 
     return {
         "valid": not issues,
@@ -1442,7 +1513,9 @@ def validate_api_key_format(api_key: str, key_type: str = "generic") -> dict:
 #  IP ACCESS LIST (allow/deny)
 # ══════════════════════════════════════════════════
 
-import ipaddress as _ipaddress
+# NOTE: `_ipaddress` already imported at module top (SSRF section). The
+# duplicate re-import here was redundant (ruff F811) — removed; the
+# module-level binding stays in scope for check_ip_access below.
 
 _ip_allowlist: set[str] = set()
 _ip_denylist: set[str] = set()

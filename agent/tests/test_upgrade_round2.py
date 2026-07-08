@@ -213,10 +213,17 @@ class TestResetPasswordOTP:
         assert m.phone == "0901234567"
 
     def test_verifies_otp_before_reset(self):
-        src = inspect.getsource(__import__("auth").reset_password_otp)
+        # Refactor (complexity ≤12): the OTP-row verification (SELECT otp_sessions +
+        # mark verified) was extracted verbatim into the shared _consume_verified_otp
+        # helper, called at the top of reset_password_otp's _verify_and_reset before
+        # the password write. Check the wiring + that the contract lives in the helper.
+        import auth
+        src = inspect.getsource(auth.reset_password_otp)
         assert "_hash_otp" in src
-        assert "otp_sessions" in src
-        assert "verified = TRUE" in src
+        assert "_consume_verified_otp" in src
+        helper_src = inspect.getsource(auth._consume_verified_otp)
+        assert "otp_sessions" in helper_src
+        assert "verified = TRUE" in helper_src
 
     def test_uses_parameterized_queries(self):
         src = inspect.getsource(__import__("auth").reset_password_otp)
@@ -2068,10 +2075,17 @@ class TestEntityMapSearch:
         assert "400" in src or "must be" in src
 
     def test_filters_by_coordinates(self):
-        src = inspect.getsource(__import__("public_api").entities_map_search)
-        assert "coordinates" in src
-        assert "lat" in src
-        assert "lng" in src
+        # Extract-method refactor: the lat/lng bbox test moved out of
+        # entities_map_search into module-level _coords_in_bbox; the outer function
+        # still reads e["coordinates"] and delegates the containment check.
+        import public_api
+        outer = inspect.getsource(public_api.entities_map_search)
+        assert "coordinates" in outer
+        # wiring: entities_map_search still delegates the bbox test to the helper.
+        assert "_coords_in_bbox" in outer
+        bbox_src = inspect.getsource(public_api._coords_in_bbox)
+        assert "lat" in bbox_src
+        assert "lng" in bbox_src
 
     def test_supports_type_filter(self):
         src = inspect.getsource(__import__("public_api").entities_map_search)
@@ -2082,7 +2096,12 @@ class TestEntityMapSearch:
         assert '"bbox"' in src
 
     def test_returns_entity_fields(self):
-        src = inspect.getsource(__import__("public_api").entities_map_search)
+        # Extract-method refactor: the result dict shape moved out of
+        # entities_map_search into module-level _map_search_shape.
+        import public_api
+        # wiring: entities_map_search still delegates result shaping to the helper.
+        assert "_map_search_shape" in inspect.getsource(public_api.entities_map_search)
+        src = inspect.getsource(public_api._map_search_shape)
         assert '"name"' in src
         assert '"type"' in src
         assert '"coordinates"' in src
@@ -2931,12 +2950,22 @@ class TestPopularEntities:
         assert "area" in src
 
     def test_returns_rating_info(self):
-        src = inspect.getsource(__import__("public_api").popular_entities)
+        # Extract-method refactor: the response dict shape moved out of
+        # popular_entities into module-level _shape_popular_entity.
+        import public_api
+        # wiring: popular_entities still delegates result shaping to the helper.
+        assert "_shape_popular_entity" in inspect.getsource(public_api.popular_entities)
+        src = inspect.getsource(public_api._shape_popular_entity)
         assert "rating_count" in src
         assert "rating_avg" in src
 
     def test_returns_quality_score(self):
-        src = inspect.getsource(__import__("public_api").popular_entities)
+        # Extract-method refactor: the "quality_score" response field moved out of
+        # popular_entities into module-level _shape_popular_entity.
+        import public_api
+        # wiring: popular_entities still delegates result shaping to the helper.
+        assert "_shape_popular_entity" in inspect.getsource(public_api.popular_entities)
+        src = inspect.getsource(public_api._shape_popular_entity)
         assert "quality_score" in src
 
     def test_has_rate_limit(self):
@@ -2944,7 +2973,12 @@ class TestPopularEntities:
         assert "check_rate" in src
 
     def test_scoring_uses_reviews(self):
-        src = inspect.getsource(__import__("public_api").popular_entities)
+        # Extract-method refactor: the popularity scoring formula moved out of
+        # popular_entities into module-level _score_popular_entity.
+        import public_api
+        # wiring: popular_entities still delegates scoring to the helper.
+        assert "_score_popular_entity" in inspect.getsource(public_api.popular_entities)
+        src = inspect.getsource(public_api._score_popular_entity)
         assert "rating_count" in src
         assert "score" in src
 

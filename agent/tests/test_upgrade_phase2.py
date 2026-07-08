@@ -48,7 +48,12 @@ class TestSimilarRecommendations:
         assert "/api/entities/{entity_id}/similar" in paths
 
     def test_similar_uses_recommender(self):
-        src = inspect.getsource(__import__("public_api").get_similar_entities)
+        # Extract-method refactor: the recommend_by_entity call moved out of
+        # get_similar_entities into module-level _compute_similar_entities.
+        import public_api
+        # wiring: the endpoint still delegates to the helper (move, not delete).
+        assert "_compute_similar_entities" in inspect.getsource(public_api.get_similar_entities)
+        src = inspect.getsource(public_api._compute_similar_entities)
         assert "recommend_by_entity" in src
 
     def test_similar_has_cache(self):
@@ -88,7 +93,12 @@ class TestWardDayPlan:
         assert "entities_by_place" in src
 
     def test_day_plan_type_diversity(self):
-        src = inspect.getsource(__import__("public_api").place_day_plan)
+        # Extract-method refactor: the type-dedup loop moved out of place_day_plan
+        # into module-level _select_day_plan_candidates.
+        import public_api
+        # wiring: place_day_plan still delegates candidate selection to the helper.
+        assert "_select_day_plan_candidates" in inspect.getsource(public_api.place_day_plan)
+        src = inspect.getsource(public_api._select_day_plan_candidates)
         assert "seen_types" in src
         assert "if t in seen_types" in src
 
@@ -119,7 +129,12 @@ class TestWardDayPlan:
         assert '"total_duration_min"' in src
 
     def test_day_plan_stop_shape(self):
-        src = inspect.getsource(__import__("public_api").place_day_plan)
+        # Extract-method refactor: the per-stop dict shape moved out of place_day_plan
+        # into module-level _build_day_plan_stops.
+        import public_api
+        # wiring: place_day_plan still delegates stop-building to the helper.
+        assert "_build_day_plan_stops" in inspect.getsource(public_api.place_day_plan)
+        src = inspect.getsource(public_api._build_day_plan_stops)
         assert '"entity_id"' in src
         assert '"name"' in src
         assert '"type"' in src
@@ -137,7 +152,12 @@ class TestWardDayPlan:
         assert _haversine_km([10.0, 105.0], None) == 999.0
 
     def test_day_plan_sorts_by_proximity(self):
-        src = inspect.getsource(__import__("public_api").place_day_plan)
+        # Extract-method refactor: the proximity sort (sorted + _haversine_km) moved
+        # out of place_day_plan into module-level _select_day_plan_candidates.
+        import public_api
+        # wiring: place_day_plan still delegates candidate selection to the helper.
+        assert "_select_day_plan_candidates" in inspect.getsource(public_api.place_day_plan)
+        src = inspect.getsource(public_api._select_day_plan_candidates)
         assert "_haversine_km" in src
         assert "sorted" in src
 

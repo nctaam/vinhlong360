@@ -131,7 +131,11 @@ class TestTwoFactorLoginGate:
     def test_verify_endpoint_rate_limited_and_attempt_capped(self):
         src = inspect.getsource(auth.twofa_verify)
         assert "_check_shared_auth_rate" in src or "check_rate" in src
-        assert "attempts" in src
+        # Refactor (complexity ≤12): the pending-challenge load + attempt-cap was
+        # extracted verbatim into the module-level _load_pending_2fa helper, which
+        # twofa_verify calls. Check the attempt-cap in the helper (+ that it's wired).
+        assert "_load_pending_2fa" in src
+        assert "attempts" in inspect.getsource(auth._load_pending_2fa)
 
     def test_verify_supports_recovery_and_remember(self):
         src = inspect.getsource(auth.twofa_verify)

@@ -249,6 +249,19 @@ _FINGERPRINT_THRESHOLD = 3  # 3+ identical posts in 1h = raid
 _fingerprint_lock = _Lock()
 
 
+def _gc_tracking(store: dict, cutoff: float, cap: int) -> None:
+    """Evict empty/stale keys from an in-memory tracking dict when it grows past cap.
+
+    A key is dead if it has no entries, or its most recent entry's timestamp
+    (element [0] of the last tuple) is older than cutoff. Caller holds the lock.
+    """
+    if len(store) > cap:
+        dead = [k for k, v in store.items()
+                if not v or v[-1][0] < cutoff]
+        for k in dead:
+            del store[k]
+
+
 def _normalize_for_fingerprint(content: str) -> str:
     """Normalize content for fingerprint comparison.
 
@@ -569,6 +582,83 @@ _LEGITIMATE_HOSTS = frozenset({
 })
 
 
+def _url_parse_host_path(url: str):
+    """Parse url into (hostname, path). Returns None on parse failure."""
+    import urllib.parse as _urlparse
+    try:
+        parsed = _urlparse.urlparse(url if '://' in url else f"http://{url}")
+        hostname = (parsed.hostname or "").lower()
+        path = parsed.path or ""
+    except (ValueError, AttributeError):
+        return None
+    return hostname, path
+
+
+def _url_domain_signals(hostname: str, path: str) -> list[tuple[float, str]]:
+    """Score signals from hostname/path patterns (TLD, phishing, brand)."""
+    signals: list[tuple[float, str]] = []
+
+    # Check suspicious TLDs
+    for tld in _PHISHING_TLD:
+        if hostname.endswith(tld):
+            signals.append((0.5, f"suspicious_tld:{tld}"))
+            break
+
+    # Phishing domain patterns
+    for pat in _PHISHING_DOMAIN_PATTERNS:
+        if pat.search(hostname):
+            signals.append((0.7, "phishing_domain_pattern"))
+            break
+
+    # Brand impersonation in URL
+    full = hostname + path
+    for pat in _BRAND_IMPERSONATION:
+        if pat.search(full):
+            signals.append((0.6, "brand_impersonation"))
+            break
+
+    return signals
+
+
+def _url_host_signals(hostname: str, url: str) -> list[tuple[float, str]]:
+    """Score signals from host structure (subdomains, IP, credential, IDN)."""
+    signals: list[tuple[float, str]] = []
+
+    # Excessive subdomains (more than 3 levels = suspicious)
+    parts = hostname.split(".")
+    if len(parts) > 4:
+        signals.append((0.4, "excessive_subdomains"))
+
+    # IP address as hostname
+    try:
+        import ipaddress as _ipa
+        _ipa.ip_address(hostname)
+        signals.append((0.5, "ip_as_hostname"))
+    except (ValueError, TypeError):
+        pass
+
+    # @ symbol in URL (credential phishing: http://legit.com@evil.com)
+    if "@" in url:
+        signals.append((0.7, "credential_in_url"))
+
+    # Homograph attack (non-ASCII in domain)
+    if any(ord(c) > 127 for c in hostname):
+        signals.append((0.6, "idn_homograph"))
+
+    return signals
+
+
+def _url_risk_level(score: float) -> str:
+    """Classify a numeric risk score into a risk-level label."""
+    if score >= 0.7:
+        return "high"
+    if score >= 0.4:
+        return "medium"
+    if score > 0:
+        return "low"
+    return "safe"
+
+
 def analyze_url_deep(url: str) -> dict:
     """Deep phishing/malicious URL analysis.
 
@@ -577,77 +667,25 @@ def analyze_url_deep(url: str) -> dict:
     if not url:
         return {"risk_score": 0.0, "reasons": [], "risk_level": "safe"}
 
-    import urllib.parse as _urlparse
     reasons = []
     score = 0.0
 
-    try:
-        parsed = _urlparse.urlparse(url if '://' in url else f"http://{url}")
-        hostname = (parsed.hostname or "").lower()
-        path = parsed.path or ""
-    except (ValueError, AttributeError):
+    parsed = _url_parse_host_path(url)
+    if parsed is None:
         return {"risk_score": 0.8, "reasons": ["unparseable_url"], "risk_level": "high"}
+    hostname, path = parsed
 
     # Skip analysis for legitimate domains
     if hostname in _LEGITIMATE_HOSTS:
         return {"risk_score": 0.0, "reasons": [], "risk_level": "safe"}
 
-    # Check suspicious TLDs
-    for tld in _PHISHING_TLD:
-        if hostname.endswith(tld):
-            score = max(score, 0.5)
-            reasons.append(f"suspicious_tld:{tld}")
-            break
+    for sig_score, reason in (_url_domain_signals(hostname, path)
+                              + _url_host_signals(hostname, url)):
+        score = max(score, sig_score)
+        reasons.append(reason)
 
-    # Phishing domain patterns
-    for pat in _PHISHING_DOMAIN_PATTERNS:
-        if pat.search(hostname):
-            score = max(score, 0.7)
-            reasons.append("phishing_domain_pattern")
-            break
-
-    # Brand impersonation in URL
-    full = hostname + path
-    for pat in _BRAND_IMPERSONATION:
-        if pat.search(full):
-            score = max(score, 0.6)
-            reasons.append("brand_impersonation")
-            break
-
-    # Excessive subdomains (more than 3 levels = suspicious)
-    parts = hostname.split(".")
-    if len(parts) > 4:
-        score = max(score, 0.4)
-        reasons.append("excessive_subdomains")
-
-    # IP address as hostname
-    try:
-        import ipaddress as _ipa
-        _ipa.ip_address(hostname)
-        score = max(score, 0.5)
-        reasons.append("ip_as_hostname")
-    except (ValueError, TypeError):
-        pass
-
-    # @ symbol in URL (credential phishing: http://legit.com@evil.com)
-    if "@" in url:
-        score = max(score, 0.7)
-        reasons.append("credential_in_url")
-
-    # Homograph attack (non-ASCII in domain)
-    if any(ord(c) > 127 for c in hostname):
-        score = max(score, 0.6)
-        reasons.append("idn_homograph")
-
-    risk_level = "safe"
-    if score >= 0.7:
-        risk_level = "high"
-    elif score >= 0.4:
-        risk_level = "medium"
-    elif score > 0:
-        risk_level = "low"
-
-    return {"risk_score": round(score, 3), "reasons": reasons, "risk_level": risk_level}
+    return {"risk_score": round(score, 3), "reasons": reasons,
+            "risk_level": _url_risk_level(score)}
 
 
 # ══════════════════════════════════════════════════
@@ -706,6 +744,15 @@ _COORD_BEHAVIOR_WINDOW = 300  # 5 minutes
 _COORD_BEHAVIOR_THRESHOLD = 3  # 3+ users posting identical content = coordinated
 
 
+def _coord_score(unique_users: int, unique_ips: int) -> float:
+    """Coordinated-behavior score; SAME-IP posts (sockpuppets) get a bonus."""
+    if unique_users <= 1:
+        return 0.0
+    # Higher score if posts come from SAME IP (sockpuppets)
+    same_ip_bonus = 0.3 if unique_ips == 1 else 0.0
+    return min(1.0, (unique_users / _COORD_BEHAVIOR_THRESHOLD) * 0.6 + same_ip_bonus)
+
+
 def detect_coordinated_behavior(content: str, user_id: str, ip: str = "") -> dict:
     """Detect coordinated inauthentic behavior (sockpuppet/bot networks).
 
@@ -732,18 +779,10 @@ def detect_coordinated_behavior(content: str, user_id: str, ip: str = "") -> dic
         unique_users = len({u for _, u, _ in entries})
         unique_ips = len({i for _, _, i in entries if i})
 
-        # GC
-        if len(_coord_behavior) > 50_000:
-            cutoff = now - _COORD_BEHAVIOR_WINDOW
-            dead = [k for k, v in _coord_behavior.items()
-                    if not v or v[-1][0] < cutoff]
-            for k in dead:
-                del _coord_behavior[k]
+        _gc_tracking(_coord_behavior, now - _COORD_BEHAVIOR_WINDOW, 50_000)
 
     is_coord = unique_users >= _COORD_BEHAVIOR_THRESHOLD
-    # Higher score if posts come from SAME IP (sockpuppets)
-    same_ip_bonus = 0.3 if unique_users > 1 and unique_ips == 1 else 0.0
-    score = min(1.0, (unique_users / _COORD_BEHAVIOR_THRESHOLD) * 0.6 + same_ip_bonus) if unique_users > 1 else 0.0
+    score = _coord_score(unique_users, unique_ips)
 
     return {
         "is_coordinated": is_coord,
@@ -840,6 +879,23 @@ _ZERO_WIDTH_CHARS = frozenset({
 })
 
 
+def _is_leet_dense(content: str) -> bool:
+    """True if l33tspeak-mapped chars make up >30% of alpha+leet chars."""
+    leet_count = sum(1 for c in content if c in _LEET_MAP)
+    alpha_count = sum(1 for c in content if c.isalpha())
+    return alpha_count > 0 and leet_count / max(1, alpha_count + leet_count) > 0.3
+
+
+def _has_mixed_script(content: str) -> bool:
+    """True if any word > 3 chars mixes Latin and Cyrillic scripts."""
+    for word in content.split():
+        has_latin = any('A' <= c <= 'z' for c in word)
+        has_cyrillic = any('Ѐ' <= c <= 'ӿ' for c in word)
+        if has_latin and has_cyrillic and len(word) > 3:
+            return True
+    return False
+
+
 def detect_text_obfuscation(content: str) -> dict:
     """Detect text obfuscation techniques used to bypass filters.
 
@@ -864,21 +920,14 @@ def detect_text_obfuscation(content: str) -> dict:
         score = max(score, 0.4)
 
     # L33tspeak density
-    leet_count = sum(1 for c in content if c in _LEET_MAP)
-    alpha_count = sum(1 for c in content if c.isalpha())
-    if alpha_count > 0 and leet_count / max(1, alpha_count + leet_count) > 0.3:
+    if _is_leet_dense(content):
         techniques.append("leetspeak")
         score = max(score, 0.4)
 
     # Mixed script (Cyrillic + Latin in same word)
-    words = content.split()
-    for word in words:
-        has_latin = any('A' <= c <= 'z' for c in word)
-        has_cyrillic = any('Ѐ' <= c <= 'ӿ' for c in word)
-        if has_latin and has_cyrillic and len(word) > 3:
-            techniques.append("mixed_script")
-            score = max(score, 0.6)
-            break
+    if _has_mixed_script(content):
+        techniques.append("mixed_script")
+        score = max(score, 0.6)
 
     # Fullwidth characters (ｈｅｌｌｏ)
     fullwidth_count = sum(1 for c in content if '！' <= c <= '～')
@@ -950,13 +999,7 @@ def check_targeted_harassment(
 
         count = len(entries)
 
-        # GC
-        if len(_harassment_tracking) > 100_000:
-            cutoff = now - _HARASSMENT_WINDOW
-            dead = [k for k, v in _harassment_tracking.items()
-                    if not v or v[-1][0] < cutoff]
-            for k in dead:
-                del _harassment_tracking[k]
+        _gc_tracking(_harassment_tracking, now - _HARASSMENT_WINDOW, 100_000)
 
     is_harassment = count >= _HARASSMENT_THRESHOLD
     score = min(1.0, count / _HARASSMENT_THRESHOLD) * 0.8 if count > 1 else 0.0
@@ -1147,13 +1190,7 @@ def check_edit_abuse(
 
         edit_count = len(versions)
 
-        # GC
-        if len(_content_versions) > 50_000:
-            cutoff = now - _DIFF_WINDOW
-            dead = [k for k, v in _content_versions.items()
-                    if not v or v[-1][0] < cutoff]
-            for k in dead:
-                del _content_versions[k]
+        _gc_tracking(_content_versions, now - _DIFF_WINDOW, 50_000)
 
     # Calculate edit velocity (edits per minute)
     if edit_count >= 2:
@@ -1221,6 +1258,68 @@ def detect_language_anomaly(content: str) -> dict:
     }
 
 
+def _enhanced_extra_signals(content: str, user_id: str, ip: str) -> dict:
+    """Deep-layer signals for the enhanced pipeline (spam_v2, duplicate,
+    coordinated behavior, URL analysis, content entropy).
+
+    Returns {score, reasons, spam_v2_hit, high_entropy}. Extracted so the
+    top-level pipeline stays readable; ordering of reasons is preserved.
+    """
+    reasons = []
+    score = 0.0
+
+    # Extended spam patterns
+    spam_v2 = _check_spam_patterns_v2(content)
+    if spam_v2["score"] > 0:
+        score = max(score, spam_v2["score"])
+        reasons.extend(spam_v2["reasons"])
+
+    # Duplicate detection
+    if content and len(content) >= 20:
+        dup = check_content_duplicate(content, user_id)
+        if dup["is_duplicate"]:
+            score = max(score, 0.7)
+            reasons.append(f"duplicate:count={dup['count']}")
+
+    # Coordinated behavior
+    if user_id:
+        coord = detect_coordinated_behavior(content, user_id, ip)
+        if coord["is_coordinated"]:
+            score = max(score, coord["score"])
+            reasons.append(f"coordinated:users={coord['unique_users']}")
+
+    # URL deep analysis
+    urls = _URL_PATTERN.findall(content or "")
+    for url in urls[:5]:
+        url_result = analyze_url_deep(url)
+        if url_result["risk_level"] in ("high", "medium"):
+            score = max(score, url_result["risk_score"])
+            reasons.extend(url_result["reasons"])
+
+    # Content entropy
+    ent = check_content_entropy(content)
+    if ent["is_suspicious"]:
+        score = max(score, 0.4)
+        reasons.append(f"high_entropy:{ent['encoding_likely']}")
+
+    return {
+        "score": score,
+        "reasons": reasons,
+        "spam_v2_hit": spam_v2["score"] > 0,
+        "high_entropy": ent["is_suspicious"],
+    }
+
+
+def _enhanced_status(final_score: float, trust: str) -> str:
+    """Map a merged score to a moderation status using trust-adjusted thresholds."""
+    approve_thresh, queue_thresh = adjust_thresholds_for_trust(trust)
+    if final_score < approve_thresh:
+        return "approved"
+    if final_score < queue_thresh:
+        return "pending"
+    return "flagged"
+
+
 async def moderate_content_enhanced(
     content: str, user_id: str = "", ip: str = "",
     image_urls: list[str] = None,
@@ -1248,39 +1347,10 @@ async def moderate_content_enhanced(
         extra_score = max(extra_score, homo["score"])
         extra_reasons.append(f"homoglyphs:{homo['count']}")
 
-    # Extended spam patterns
-    spam_v2 = _check_spam_patterns_v2(content)
-    if spam_v2["score"] > 0:
-        extra_score = max(extra_score, spam_v2["score"])
-        extra_reasons.extend(spam_v2["reasons"])
-
-    # Duplicate detection
-    if content and len(content) >= 20:
-        dup = check_content_duplicate(content, user_id)
-        if dup["is_duplicate"]:
-            extra_score = max(extra_score, 0.7)
-            extra_reasons.append(f"duplicate:count={dup['count']}")
-
-    # Coordinated behavior
-    if user_id:
-        coord = detect_coordinated_behavior(content, user_id, ip)
-        if coord["is_coordinated"]:
-            extra_score = max(extra_score, coord["score"])
-            extra_reasons.append(f"coordinated:users={coord['unique_users']}")
-
-    # URL deep analysis
-    urls = _URL_PATTERN.findall(content or "")
-    for url in urls[:5]:
-        url_result = analyze_url_deep(url)
-        if url_result["risk_level"] in ("high", "medium"):
-            extra_score = max(extra_score, url_result["risk_score"])
-            extra_reasons.extend(url_result["reasons"])
-
-    # Content entropy
-    ent = check_content_entropy(content)
-    if ent["is_suspicious"]:
-        extra_score = max(extra_score, 0.4)
-        extra_reasons.append(f"high_entropy:{ent['encoding_likely']}")
+    # Deep layers: spam_v2 + duplicate + coordinated + URL + entropy
+    deep = _enhanced_extra_signals(content, user_id, ip)
+    extra_score = max(extra_score, deep["score"])
+    extra_reasons.extend(deep["reasons"])
 
     # Text obfuscation (zero-width, leetspeak, fullwidth, visual tricks)
     obf = detect_text_obfuscation(content)
@@ -1301,14 +1371,7 @@ async def moderate_content_enhanced(
 
     # Re-evaluate status with trust level
     trust = get_user_trust_level(user_id)
-    approve_thresh, queue_thresh = adjust_thresholds_for_trust(trust)
-
-    if final_score < approve_thresh:
-        status = "approved"
-    elif final_score < queue_thresh:
-        status = "pending"
-    else:
-        status = "flagged"
+    status = _enhanced_status(final_score, trust)
 
     return {
         **base_result,
@@ -1319,9 +1382,9 @@ async def moderate_content_enhanced(
         "deep_layers": {
             "xss": xss["has_xss"],
             "homoglyphs": homo["has_homoglyphs"],
-            "spam_v2": spam_v2["score"] > 0,
+            "spam_v2": deep["spam_v2_hit"],
             "coordinated": user_id and detect_coordinated_behavior(content, user_id, ip).get("is_coordinated", False),
-            "high_entropy": ent["is_suspicious"],
+            "high_entropy": deep["high_entropy"],
         },
     }
 

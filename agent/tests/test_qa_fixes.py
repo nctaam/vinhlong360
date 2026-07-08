@@ -223,10 +223,14 @@ class TestHomepageHeroCopy:
     """Hero copy should stay intent-led and avoid repeated fruit/vườn phrasing."""
 
     def test_monthly_tagline_copy_is_concise(self):
-        src = inspect.getsource(public_api.homepage_curated)
-        assert "Mùa miệt vườn đang mở cửa" in src
-        assert "Giữa mùa trái cây — vườn trái cây mở cửa đón khách" not in src
-        assert "Khám phá Vĩnh Long theo cách của người bản địa" in src
+        # Refactor: taglines moved from homepage_curated into the module-level
+        # constant _HOMEPAGE_TAGLINES + resolver _resolve_seasonal_tagline
+        # (extract-method, behavior identical).
+        taglines = " ".join(public_api._HOMEPAGE_TAGLINES.values())
+        resolver_src = inspect.getsource(public_api._resolve_seasonal_tagline)
+        assert "Mùa miệt vườn đang mở cửa" in taglines
+        assert "Giữa mùa trái cây — vườn trái cây mở cửa đón khách" not in taglines
+        assert "Khám phá Vĩnh Long theo cách của người bản địa" in resolver_src
 
     def test_explore_feed_filters_seed_posts(self):
         src = inspect.getsource(social.explore_feed)
@@ -331,11 +335,15 @@ class TestItineraryPagination:
         assert public_api._itinerary_stop_entity_id("d") == "d"
 
     def test_itinerary_detail_and_homepage_use_stop_id_helper(self):
+        # Refactor: homepage itinerary scoring/selection moved from
+        # homepage_curated into module-level helpers (extract-method, behavior
+        # identical). The stop-id + coverage helpers are now called there.
         detail_src = inspect.getsource(public_api.get_itinerary)
-        home_src = inspect.getsource(public_api.homepage_curated)
+        home_src = inspect.getsource(public_api._score_one_itinerary)
+        coverage_src = inspect.getsource(public_api._pick_diverse_itineraries)
         assert "_itinerary_stop_entity_id" in detail_src
         assert "_itinerary_stop_entity_id" in home_src
-        assert "_itinerary_coverage_areas" in home_src
+        assert "_itinerary_coverage_areas" in coverage_src
 
     def test_admin_itinerary_update_merges_existing_payload(self):
         src = inspect.getsource(admin.update_itinerary)
@@ -463,8 +471,12 @@ class TestPersonalizationFoundation:
         assert "e.verified" in src
 
     def test_contextual_recommendations_have_fallback_and_reasons(self):
+        # Refactor: candidate gathering moved into _gather_recommendation_candidates
+        # (extract-method, behavior identical); scoring still called from
+        # _contextual_recommendations.
         src = inspect.getsource(public_api._contextual_recommendations)
-        assert "db.list_entities" in src
+        gather_src = inspect.getsource(public_api._gather_recommendation_candidates)
+        assert "db.list_entities" in gather_src
         assert "_score_candidate" in src
         assert "recommendation_reasons" in inspect.getsource(public_api._candidate_card)
 
@@ -492,7 +504,9 @@ class TestPublicEntityVisibility:
             assert "_get_public_entity" in inspect.getsource(fn)
 
     def test_feed_new_since_filters_non_public_entities(self):
-        src = inspect.getsource(public_api.feed_new_since)
+        # Refactor: entity collection moved into _collect_new_entities
+        # (extract-method, behavior identical); the _is_public filter lives there.
+        src = inspect.getsource(public_api._collect_new_entities)
         assert "_is_public" in src
 
     def test_advanced_entity_search_is_public_only(self):
@@ -515,7 +529,9 @@ class TestUnifiedSearchAndRecommendationContracts:
         assert '"results"' in src
 
     def test_similar_entities_use_entity_card_shape(self):
-        src = inspect.getsource(public_api.get_similar_entities)
+        # Refactor: card building moved into _build_similar_cards (extract-method,
+        # behavior identical); it calls _entity_card_shape + _similar_reason_vi.
+        src = inspect.getsource(public_api._build_similar_cards)
         card_src = inspect.getsource(public_api._entity_card_shape)
         assert "_entity_card_shape" in src
         assert "_similar_reason_vi" in src

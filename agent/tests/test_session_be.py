@@ -1496,10 +1496,11 @@ class TestPhase9TimingAndRace:
     def test_otp_select_for_update(self):
         """OTP verification uses SELECT ... FOR UPDATE to prevent race conditions."""
         auth_src = (Path(__file__).resolve().parent.parent / "auth.py").read_text(encoding="utf-8")
-        idx = auth_src.find("def _verify():")
-        if idx == -1:
-            idx = auth_src.find("def _verify(")
-        block = auth_src[idx:idx + 400]
+        # Refactor: OTP-row verify (SELECT ... FOR UPDATE) dời sang _consume_verified_otp,
+        # được reset_password_otp gọi (move-not-delete).
+        assert "_consume_verified_otp" in auth_src  # wiring
+        idx = auth_src.find("def _consume_verified_otp(")
+        block = auth_src[idx:idx + 900]  # docstring dài → FOR UPDATE ở ~517 char
         assert "FOR UPDATE" in block
 
 
@@ -1519,8 +1520,12 @@ class TestPhase10LikeEscape:
         """search_entities escapes LIKE wildcards in user query."""
         import database
         src = Path(database.__file__).read_text(encoding="utf-8")
-        idx = src.find("def search_entities")
-        block = src[idx:idx + 2000]
+        # Refactor: q-filter (escape_like + ESCAPE) dời sang _append_q_filter,
+        # được search_entities gọi (move-not-delete).
+        se_block = src[src.find("def search_entities"):src.find("def search_entities") + 2000]
+        assert "_append_q_filter" in se_block  # wiring
+        idx = src.find("def _append_q_filter")
+        block = src[idx:idx + 1500]
         assert "escape_like" in block
         assert "ESCAPE" in block
 

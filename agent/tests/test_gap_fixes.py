@@ -978,23 +978,25 @@ class TestAggregateRatingDedup:
     """Second aggregateRating block must not overwrite the first (UGC-based)."""
 
     def test_fallback_guarded_by_not_in_ld(self):
-        src = inspect.getsource(__import__("seo").build_entity_jsonld)
-        assert '"aggregateRating" not in ld' in src
+        # Refactor R20.8: guard dời sang seo._jsonld_ratings (build_entity_jsonld gọi nó).
+        seo = __import__("seo")
+        assert "_jsonld_ratings" in inspect.getsource(seo.build_entity_jsonld)
+        assert '"aggregateRating" not in ld' in inspect.getsource(seo._jsonld_ratings)
 
     def test_fallback_uses_ratingCount_not_reviewCount(self):
-        src = inspect.getsource(__import__("seo").build_entity_jsonld)
-        lines = src.split("\n")
-        fallback_block = False
-        for line in lines:
-            if '"aggregateRating" not in ld' in line:
-                fallback_block = True
-            if fallback_block and "reviewCount" in line:
-                pytest.fail("Fallback aggregateRating should use ratingCount, not reviewCount")
-            if fallback_block and "ratingCount" in line:
-                break
+        # Refactor R20.8: fallback dời sang seo._jsonld_rating_fallback — phải emit
+        # ratingCount (qua _rating_dict), KHÔNG được lộ reviewCount ra schema.
+        seo = __import__("seo")
+        src = inspect.getsource(seo._jsonld_rating_fallback)
+        assert "reviewCount" not in src
+        assert "_rating_dict" in src  # _rating_dict phát "ratingCount"
+        assert "ratingCount" in inspect.getsource(seo._rating_dict)
 
     def test_ugc_rating_block_still_exists(self):
-        src = inspect.getsource(__import__("seo").build_entity_jsonld)
+        # Refactor R20.8: block avg_rating/rating_count dời sang _jsonld_rating_primary.
+        seo = __import__("seo")
+        assert "_jsonld_ratings" in inspect.getsource(seo.build_entity_jsonld)
+        src = inspect.getsource(seo._jsonld_rating_primary)
         assert "avg_rating" in src
         assert "rating_count" in src
 

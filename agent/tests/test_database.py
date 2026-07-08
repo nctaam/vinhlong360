@@ -67,13 +67,23 @@ def test_initialize_creates_core_tables(db):
     assert {"entities", "relationships", "itineraries", "feedback", "query_log"} <= names
 
 def test_pg_initialize_verifies_schema_before_legacy_repair_code():
-    """Postgres startup must be migration-driven, not runtime schema repair."""
+    """Postgres startup must be migration-driven, not runtime schema repair.
+
+    Refactor 2026-07-08: nhánh tạo-bảng/repair SQLite tách sang
+    Database._init_sqlite_schema (extract-method giảm complexity). initialize()
+    ở nhánh PG chỉ verify; ALTER TABLE / CREATE INDEX phải KHÔNG xuất hiện trong
+    initialize() nữa (đã dời sang helper SQLite-only).
+    """
     src = inspect.getsource(Database.initialize)
-    pg_branch = src.split("if self._use_pg:", 1)[1].split("conn.executescript", 1)[0]
     assert "self._verify_pg_schema(conn)" in src
-    assert src.index("self._verify_pg_schema(conn)") < src.index("ALTER TABLE")
-    assert "ALTER TABLE" not in pg_branch
-    assert "CREATE INDEX" not in pg_branch
+    # Nhánh PG (initialize) chỉ verify — tuyệt đối không repair schema lúc chạy
+    assert "ALTER TABLE" not in src
+    assert "CREATE INDEX" not in src
+    assert "conn.executescript" not in src
+    # Code tạo bảng/repair sống trong helper SQLite-only, KHÔNG chạy cho PG
+    sqlite_src = inspect.getsource(Database._init_sqlite_schema)
+    assert "if not self._use_pg:" in sqlite_src
+    assert "ALTER TABLE" in sqlite_src
     verify_src = inspect.getsource(Database._verify_pg_schema)
     assert "ALTER TABLE" not in verify_src
     assert "CREATE INDEX" not in verify_src

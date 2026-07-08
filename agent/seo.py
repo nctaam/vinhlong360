@@ -363,6 +363,23 @@ def _safe_date(value: Any, fallback: str | None = None) -> str | None:
     return fallback
 
 
+def _same_as_source_maps(entity: dict[str, Any], values: list[str]) -> None:
+    source = entity.get("source")
+    if isinstance(source, list):
+        source = source[0] if source else None
+    if isinstance(source, dict):
+        maps_url = source.get("maps")
+        if _is_valid_url(maps_url) and str(maps_url) not in values:
+            values.append(str(maps_url))
+
+
+def _same_as_socials(attrs: dict[str, Any], values: list[str]) -> None:
+    for key in ("facebook", "zalo_url"):
+        social = attrs.get(key) if attrs else None
+        if _is_valid_url(social) and str(social) not in values:
+            values.append(str(social))
+
+
 def _same_as_values(entity: dict[str, Any]) -> list[str]:
     values: list[str] = []
     attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
@@ -372,17 +389,8 @@ def _same_as_values(entity: dict[str, Any]) -> list[str]:
     _title, source_url = _source_info(entity)
     if source_url and source_url not in values:
         values.append(source_url)
-    source = entity.get("source")
-    if isinstance(source, list):
-        source = source[0] if source else None
-    if isinstance(source, dict):
-        maps_url = source.get("maps")
-        if _is_valid_url(maps_url) and str(maps_url) not in values:
-            values.append(str(maps_url))
-    for key in ("facebook", "zalo_url"):
-        social = attrs.get(key) if attrs else None
-        if _is_valid_url(social) and str(social) not in values:
-            values.append(str(social))
+    _same_as_source_maps(entity, values)
+    _same_as_socials(attrs, values)
     return values
 
 
@@ -416,17 +424,25 @@ def _normalise_license_url(value: Any) -> str | None:
     token = token.removeprefix("license:").strip()
     return LICENSE_URL_ALIASES.get(token)
 
+def _image_credit_direct(raw_image: Any) -> dict[str, Any] | None:
+    if not isinstance(raw_image, dict):
+        return None
+    direct = {
+        "author": raw_image.get("author") or raw_image.get("credit"),
+        "credit": raw_image.get("credit"),
+        "license": raw_image.get("license"),
+        "source": raw_image.get("source"),
+        "source_url": raw_image.get("source_url") or raw_image.get("sourceUrl"),
+    }
+    if any(v for v in direct.values()):
+        return {k: v for k, v in direct.items() if v}
+    return None
+
+
 def _image_credit_for_url(attrs: dict[str, Any], img_url: str, raw_image: Any = None) -> dict[str, Any]:
-    if isinstance(raw_image, dict):
-        direct = {
-            "author": raw_image.get("author") or raw_image.get("credit"),
-            "credit": raw_image.get("credit"),
-            "license": raw_image.get("license"),
-            "source": raw_image.get("source"),
-            "source_url": raw_image.get("source_url") or raw_image.get("sourceUrl"),
-        }
-        if any(v for v in direct.values()):
-            return {k: v for k, v in direct.items() if v}
+    direct = _image_credit_direct(raw_image)
+    if direct is not None:
+        return direct
 
     credits = attrs.get("image_credits")
     if isinstance(credits, list):
@@ -462,24 +478,30 @@ def _build_image_objects(
         if not img_url:
             continue
         credit_meta = _image_credit_for_url(attrs, img_url, raw_image)
-        author = credit_meta.get("author") or credit_meta.get("credit")
-        license_url = _normalise_license_url(credit_meta.get("license"))
-        source_url = credit_meta.get("source_url")
-        obj: dict[str, Any] = {
-            "@type": "ImageObject",
-            "url": img_url,
-            "contentUrl": img_url,
-            "name": f"{entity_name} — {idx + 1}" if entity_name else None,
-        }
-        if isinstance(author, str) and author.strip():
-            obj["author"] = author.strip()
-            obj["copyrightHolder"] = author.strip()
-        if isinstance(license_url, str) and license_url.strip():
-            obj["license"] = license_url.strip()
-        if isinstance(source_url, str) and _is_valid_url(source_url):
-            obj["creditText"] = source_url.strip()
+        obj = _image_object(img_url, entity_name, idx, credit_meta)
         out.append({k: v for k, v in obj.items() if v not in (None, "", [], {})})
     return out
+
+
+def _image_object(img_url: str, entity_name: str, idx: int,
+                  credit_meta: dict[str, Any]) -> dict[str, Any]:
+    author = credit_meta.get("author") or credit_meta.get("credit")
+    license_url = _normalise_license_url(credit_meta.get("license"))
+    source_url = credit_meta.get("source_url")
+    obj: dict[str, Any] = {
+        "@type": "ImageObject",
+        "url": img_url,
+        "contentUrl": img_url,
+        "name": f"{entity_name} — {idx + 1}" if entity_name else None,
+    }
+    if isinstance(author, str) and author.strip():
+        obj["author"] = author.strip()
+        obj["copyrightHolder"] = author.strip()
+    if isinstance(license_url, str) and license_url.strip():
+        obj["license"] = license_url.strip()
+    if isinstance(source_url, str) and _is_valid_url(source_url):
+        obj["creditText"] = source_url.strip()
+    return obj
 
 
 def _build_breadcrumb(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -984,6 +1006,75 @@ def _parse_duration(value: Any) -> str | None:
     return None
 
 
+def _itinerary_duration(itinerary: dict[str, Any]) -> str | None:
+    days = itinerary.get("days")
+    duration = _parse_duration(itinerary.get("duration"))
+    if not duration and isinstance(days, int) and days > 0:
+        duration = f"P{days}D"
+    return duration
+
+
+def _itinerary_area(ld: dict[str, Any], itinerary: dict[str, Any]) -> None:
+    area = itinerary.get("area")
+    if area:
+        area_name = ITINERARY_AREA_NAMES.get(area, area)
+        ld["touristType"] = "Sightseeing"
+        ld["contentLocation"] = {
+            "@type": "Place",
+            "name": area_name,
+            "address": {"@type": "PostalAddress", "addressCountry": "VN", "addressRegion": area_name},
+        }
+
+
+def _itinerary_stop_type(stop_entity: dict[str, Any] | None) -> str:
+    if stop_entity:
+        return TYPE_SCHEMA.get(str(stop_entity.get("type")), "TouristAttraction")
+    return "TouristAttraction"
+
+
+def _itinerary_stop(stop: Any, idx: int, by_id: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+    if not isinstance(stop, dict):
+        return None
+    ref = stop.get("entityId") or stop.get("entity_id") or stop.get("id")
+    stop_entity = by_id.get(str(ref)) if ref else None
+    stop_name = (stop_entity.get("name") if stop_entity else None) or stop.get("name") or str(ref or f"Stop {idx + 1}")
+    st: dict[str, Any] = {"@type": _itinerary_stop_type(stop_entity), "name": stop_name}
+    if stop_entity and stop_entity.get("id"):
+        st["url"] = _entity_url(str(stop_entity["id"]))
+        st["@id"] = _entity_url(str(stop_entity["id"]))
+    if stop.get("time"):
+        st["description"] = stop["time"]
+    return st
+
+
+def _itinerary_stops(ld: dict[str, Any], itinerary: dict[str, Any],
+                     by_id: dict[str, dict[str, Any]]) -> None:
+    stops = itinerary.get("stops") or []
+    sub_trips: list[dict[str, Any]] = []
+    for idx, stop in enumerate(stops):
+        st = _itinerary_stop(stop, idx, by_id)
+        if st is not None:
+            sub_trips.append(st)
+    if sub_trips:
+        ld["itinerary"] = {
+            "@type": "ItemList",
+            "numberOfItems": len(sub_trips),
+            "itemListElement": [
+                {"@type": "ListItem", "position": i + 1, "item": st}
+                for i, st in enumerate(sub_trips)
+            ],
+        }
+
+
+def _itinerary_dates(ld: dict[str, Any], itinerary: dict[str, Any]) -> None:
+    date_modified = _safe_date(itinerary.get("updatedAt"))
+    if date_modified:
+        ld["dateModified"] = date_modified
+    date_created = _safe_date(itinerary.get("created_at"))
+    if date_created:
+        ld["dateCreated"] = date_created
+
+
 def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str, Any]]) -> dict[str, Any]:
     iid = str(itinerary.get("id"))
     ld: dict[str, Any] = {
@@ -996,52 +1087,12 @@ def build_itinerary_jsonld(itinerary: dict[str, Any], by_id: dict[str, dict[str,
     }
     if itinerary.get("summary"):
         ld["description"] = itinerary["summary"]
-    days = itinerary.get("days")
-    duration = _parse_duration(itinerary.get("duration"))
-    if not duration and isinstance(days, int) and days > 0:
-        duration = f"P{days}D"
+    duration = _itinerary_duration(itinerary)
     if duration:
         ld["duration"] = duration
-    area = itinerary.get("area")
-    if area:
-        area_name = ITINERARY_AREA_NAMES.get(area, area)
-        ld["touristType"] = "Sightseeing"
-        ld["contentLocation"] = {
-            "@type": "Place",
-            "name": area_name,
-            "address": {"@type": "PostalAddress", "addressCountry": "VN", "addressRegion": area_name},
-        }
-    stops = itinerary.get("stops") or []
-    sub_trips: list[dict[str, Any]] = []
-    for idx, stop in enumerate(stops):
-        if not isinstance(stop, dict):
-            continue
-        ref = stop.get("entityId") or stop.get("entity_id") or stop.get("id")
-        stop_entity = by_id.get(str(ref)) if ref else None
-        stop_name = (stop_entity.get("name") if stop_entity else None) or stop.get("name") or str(ref or f"Stop {idx + 1}")
-        st_type = TYPE_SCHEMA.get(str(stop_entity.get("type")), "TouristAttraction") if stop_entity else "TouristAttraction"
-        st: dict[str, Any] = {"@type": st_type, "name": stop_name}
-        if stop_entity and stop_entity.get("id"):
-            st["url"] = _entity_url(str(stop_entity["id"]))
-            st["@id"] = _entity_url(str(stop_entity["id"]))
-        if stop.get("time"):
-            st["description"] = stop["time"]
-        sub_trips.append(st)
-    if sub_trips:
-        ld["itinerary"] = {
-            "@type": "ItemList",
-            "numberOfItems": len(sub_trips),
-            "itemListElement": [
-                {"@type": "ListItem", "position": i + 1, "item": st}
-                for i, st in enumerate(sub_trips)
-            ],
-        }
-    date_modified = _safe_date(itinerary.get("updatedAt"))
-    if date_modified:
-        ld["dateModified"] = date_modified
-    date_created = _safe_date(itinerary.get("created_at"))
-    if date_created:
-        ld["dateCreated"] = date_created
+    _itinerary_area(ld, itinerary)
+    _itinerary_stops(ld, itinerary, by_id)
+    _itinerary_dates(ld, itinerary)
     ld["isPartOf"] = {"@id": f"{SITE}/#website"}
     return {k: v for k, v in ld.items() if v not in (None, "", [], {})}
 
@@ -1183,13 +1234,7 @@ def is_index_worthy(entity: dict[str, Any]) -> bool:
     return words >= INDEX_MIN_WORDS and _has_real_image(entity)
 
 
-def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[str, Any] | None:
-    """ItemList JSON-LD for a catalog collection route, or None if unknown."""
-    collection = COLLECTIONS.get(collection_type)
-    if not collection:
-        return None
-    types = collection["types"]
-    require_attr = collection.get("require_attr")
+def _collection_items(data: dict[str, Any], types: Any, require_attr: Any) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     for e in data.get("entities", []):
         if not isinstance(e, dict) or e.get("type") not in types or not e.get("id"):
@@ -1209,20 +1254,32 @@ def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[
             conf = 0.5
         return (-conf, str(e.get("name") or ""))
     items.sort(key=_sort_key)
-    items = items[:100]
+    return items[:100]
 
-    elements: list[dict[str, Any]] = []
-    for idx, e in enumerate(items):
-        element: dict[str, Any] = {
-            "@type": "ListItem",
-            "position": idx + 1,
-            "name": e.get("name") or str(e.get("id")),
-            "url": _entity_url(str(e.get("id"))),
-        }
-        summary = e.get("summary")
-        if isinstance(summary, str) and summary.strip():
-            element["description"] = summary.strip()[:200]
-        elements.append(element)
+
+def _collection_element(e: dict[str, Any], idx: int) -> dict[str, Any]:
+    element: dict[str, Any] = {
+        "@type": "ListItem",
+        "position": idx + 1,
+        "name": e.get("name") or str(e.get("id")),
+        "url": _entity_url(str(e.get("id"))),
+    }
+    summary = e.get("summary")
+    if isinstance(summary, str) and summary.strip():
+        element["description"] = summary.strip()[:200]
+    return element
+
+
+def build_collection_jsonld(collection_type: str, data: dict[str, Any]) -> dict[str, Any] | None:
+    """ItemList JSON-LD for a catalog collection route, or None if unknown."""
+    collection = COLLECTIONS.get(collection_type)
+    if not collection:
+        return None
+    types = collection["types"]
+    require_attr = collection.get("require_attr")
+    items = _collection_items(data, types, require_attr)
+
+    elements: list[dict[str, Any]] = [_collection_element(e, idx) for idx, e in enumerate(items)]
 
     collection_url = f"{SITE}/{collection_type}"
     return {
@@ -1262,30 +1319,18 @@ def _url_xml(loc: str, *, changefreq: str, priority: str, lastmod: str | None = 
     return "\n".join(parts)
 
 
-@router.get("/sitemap.xml", response_class=Response,
-            summary="XML Sitemap",
-            description="Returns the XML sitemap for search engine crawlers. Includes core pages, area pages, entity detail pages, and itineraries with lastmod dates.")
-def sitemap():
-    global _sitemap_cache
-    data = _load()
-    now = datetime.now(UTC).strftime("%Y-%m-%d")
-    mtime_ns = _data_mtime_ns or 0
-    data_key = id(data)
-    if _sitemap_cache and _sitemap_cache[0] == mtime_ns and _sitemap_cache[1] == data_key and _sitemap_cache[2] == now:
-        return Response(
-            content=_sitemap_cache[3],
-            media_type="application/xml",
-            headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=600"},
-        )
+def _sitemap_static_urls() -> list[str]:
     urls: list[str] = []
-
     for path, changefreq, priority in CORE_PAGES:
         urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority))
     for path, changefreq, priority in GUIDE_PAGES:
         urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority))
     for area in AREA_NAMES:
         urls.append(_url_xml(f"{SITE}/khu-vuc/{quote(area, safe='-_~')}", changefreq="weekly", priority="0.8"))
+    return urls
 
+
+def _sitemap_place_children(data: dict[str, Any]) -> dict[str, int]:
     # P1-5: đếm con nội dung mỗi place — ward là HUB, giá trị đến từ children chứ không
     # từ độ dài summary, nên gate riêng (không dùng is_index_worthy theo số từ).
     _place_children: dict[str, int] = {}
@@ -1293,14 +1338,18 @@ def sitemap():
         pid = e.get("placeId") if isinstance(e, dict) else None
         if pid:
             _place_children[str(pid)] = _place_children.get(str(pid), 0) + 1
+    return _place_children
 
+
+def _sitemap_place_urls(data: dict[str, Any], place_children: dict[str, int]) -> list[str]:
+    urls: list[str] = []
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
             continue
         if not _is_public(entity):  # P0-1: keep provisional/unverified places out of the sitemap
             continue
         # P1-5: bỏ ward mỏng (ít con VÀ summary ngắn) khỏi sitemap — hết thin-doorway.
-        children = _place_children.get(str(entity["id"]), 0)
+        children = place_children.get(str(entity["id"]), 0)
         summary_words = len(str(entity.get("summary") or "").split())
         if children <= 1 and summary_words < 60:
             continue
@@ -1310,7 +1359,11 @@ def sitemap():
             priority="0.6",
             lastmod=None,  # P1-4: bỏ lastmod=updatedAt (import date → freshness-gaming)
         ))
+    return urls
 
+
+def _sitemap_detail_urls(data: dict[str, Any]) -> list[str]:
+    urls: list[str] = []
     seen: set[str] = set()
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
@@ -1327,7 +1380,11 @@ def sitemap():
             priority=DETAIL_PRIORITY.get(str(entity.get("type")), "0.5"),
             lastmod=None,  # P1-4: bỏ lastmod=updatedAt (import date → freshness-gaming)
         ))
+    return urls
 
+
+def _sitemap_itinerary_urls(data: dict[str, Any]) -> list[str]:
+    urls: list[str] = []
     for itinerary in data.get("itineraries", []):
         if not isinstance(itinerary, dict) or not itinerary.get("id"):
             continue
@@ -1337,6 +1394,35 @@ def sitemap():
             priority="0.7",
             lastmod=_safe_date(itinerary.get("updatedAt"), None),
         ))
+    return urls
+
+
+def _sitemap_response(content: str) -> Response:
+    return Response(
+        content=content,
+        media_type="application/xml",
+        headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=600"},
+    )
+
+
+@router.get("/sitemap.xml", response_class=Response,
+            summary="XML Sitemap",
+            description="Returns the XML sitemap for search engine crawlers. Includes core pages, area pages, entity detail pages, and itineraries with lastmod dates.")
+def sitemap():
+    global _sitemap_cache
+    data = _load()
+    now = datetime.now(UTC).strftime("%Y-%m-%d")
+    mtime_ns = _data_mtime_ns or 0
+    data_key = id(data)
+    if _sitemap_cache and _sitemap_cache[0] == mtime_ns and _sitemap_cache[1] == data_key and _sitemap_cache[2] == now:
+        return _sitemap_response(_sitemap_cache[3])
+
+    urls: list[str] = []
+    urls.extend(_sitemap_static_urls())
+    place_children = _sitemap_place_children(data)
+    urls.extend(_sitemap_place_urls(data, place_children))
+    urls.extend(_sitemap_detail_urls(data))
+    urls.extend(_sitemap_itinerary_urls(data))
 
     if len(urls) > 50000:
         logger.warning("Sitemap has %d URLs, truncating to 50000 (Google limit)", len(urls))
@@ -1346,58 +1432,74 @@ def sitemap():
     xml += "\n".join(urls)
     xml += "\n</urlset>"
     _sitemap_cache = (mtime_ns, data_key, now, xml)
-    return Response(
-        content=xml,
-        media_type="application/xml",
-        headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=600"},
-    )
+    return _sitemap_response(xml)
 
 
 @router.get("/sitemap-media.xml", response_class=Response,
             summary="Image Sitemap",
             description="Returns an image sitemap for Google Images indexing. Lists entity detail URLs with their associated image URLs, titles, and captions.")
+def _media_image_tag(img: Any, attrs: dict[str, Any], ename: str,
+                     caption_tag: str, geo_tag: str) -> str:
+    img_url = _image_url(img)
+    if not img_url:
+        return ""
+    credit_meta = _image_credit_for_url(attrs, img_url, img)
+    license_url = _normalise_license_url(credit_meta.get("license"))
+    license_tag = f"<image:license>{xml_escape(license_url)}</image:license>" if license_url else ""
+    return (f"\n    <image:image>"
+            f"<image:loc>{xml_escape(img_url)}</image:loc>"
+            f"<image:title>{ename}</image:title>"
+            f"{caption_tag}"
+            f"{geo_tag}"
+            f"{license_tag}"
+            f"</image:image>")
+
+
+def _media_geo_tag(entity: dict[str, Any]) -> str:
+    area = entity.get("area")
+    if isinstance(area, str) and area in AREA_NAMES:
+        return f"<image:geo_location>{xml_escape(AREA_NAMES[area])}</image:geo_location>"
+    return ""
+
+
+def _media_caption_tag(entity: dict[str, Any]) -> str:
+    summary = entity.get("summary")
+    if isinstance(summary, str) and summary.strip():
+        cap = summary.strip()[:200]
+        return f"<image:caption>{xml_escape(cap)}</image:caption>"
+    return ""
+
+
+def _media_entity_url(entity: Any) -> str | None:
+    if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
+        return None
+    if not _is_public(entity):
+        return None
+    imgs = entity.get("images")
+    if not isinstance(imgs, list) or not imgs:
+        return None
+    ename = xml_escape(entity.get("name") or str(entity["id"]))
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    geo_tag = _media_geo_tag(entity)
+    caption_tag = _media_caption_tag(entity)
+    loc = _entity_url(str(entity["id"]))
+    tags = ""
+    for img in imgs[:20]:
+        tags += _media_image_tag(img, attrs, ename, caption_tag, geo_tag)
+    if tags:
+        return f"  <url>\n    <loc>{xml_escape(loc)}</loc>{tags}\n  </url>"
+    return None
+
+
 def sitemap_media():
     """GĐ8.5: image sitemap — entity detail URLs with their image(s) so Google
     Images can index them. Auto-populates as entities gain images (GĐ8.2/8.4)."""
     data = _load()
     urls: list[str] = []
     for entity in data.get("entities", []):
-        if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
-            continue
-        if not _is_public(entity):
-            continue
-        imgs = entity.get("images")
-        if not isinstance(imgs, list) or not imgs:
-            continue
-        ename = xml_escape(entity.get("name") or str(entity["id"]))
-        attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
-        area = entity.get("area")
-        geo_tag = ""
-        if isinstance(area, str) and area in AREA_NAMES:
-            geo_tag = f"<image:geo_location>{xml_escape(AREA_NAMES[area])}</image:geo_location>"
-        summary = entity.get("summary")
-        caption_tag = ""
-        if isinstance(summary, str) and summary.strip():
-            cap = summary.strip()[:200]
-            caption_tag = f"<image:caption>{xml_escape(cap)}</image:caption>"
-        loc = _entity_url(str(entity["id"]))
-        tags = ""
-        for img in imgs[:20]:
-            img_url = _image_url(img)
-            if not img_url:
-                continue
-            credit_meta = _image_credit_for_url(attrs, img_url, img)
-            license_url = _normalise_license_url(credit_meta.get("license"))
-            license_tag = f"<image:license>{xml_escape(license_url)}</image:license>" if license_url else ""
-            tags += (f"\n    <image:image>"
-                     f"<image:loc>{xml_escape(img_url)}</image:loc>"
-                     f"<image:title>{ename}</image:title>"
-                     f"{caption_tag}"
-                     f"{geo_tag}"
-                     f"{license_tag}"
-                     f"</image:image>")
-        if tags:
-            urls.append(f"  <url>\n    <loc>{xml_escape(loc)}</loc>{tags}\n  </url>")
+        url_block = _media_entity_url(entity)
+        if url_block:
+            urls.append(url_block)
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += ('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '

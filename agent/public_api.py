@@ -157,18 +157,23 @@ _PRACTICAL_FACTS_KEYS = [
 ]
 
 
-def _build_practical_facts(entity: dict) -> dict:
-    """U-07: Extract standardized practical info from entity attributes."""
-    attrs = entity.get("attributes") or {}
-    facts = {}
-    for key in _PRACTICAL_FACTS_KEYS:
-        facts[key] = attrs.get(key)
+def _apply_practical_fact_fallbacks(facts: dict, attrs: dict) -> None:
+    """U-07: fill standardized keys from alternate attribute names when missing."""
     if facts["hours"] is None:
         facts["hours"] = attrs.get("open_hours") or attrs.get("opening_hours")
     if facts["admission_fee"] is None:
         facts["admission_fee"] = attrs.get("admission") or attrs.get("ticket_price")
     if facts["price_range"] is None:
         facts["price_range"] = attrs.get("price") or attrs.get("gia")
+
+
+def _build_practical_facts(entity: dict) -> dict:
+    """U-07: Extract standardized practical info from entity attributes."""
+    attrs = entity.get("attributes") or {}
+    facts = {}
+    for key in _PRACTICAL_FACTS_KEYS:
+        facts[key] = attrs.get(key)
+    _apply_practical_fact_fallbacks(facts, attrs)
     has_any = any(v is not None for v in facts.values())
     facts["_completeness"] = sum(1 for v in facts.values() if v is not None and v != "_completeness")
     return facts if has_any else facts
@@ -458,17 +463,38 @@ def _top_counter(counter: Counter, limit: int = 5, labels: dict[str, str] | None
     return items
 
 
-def _build_user_interest_profile(user_id: str, query: str | None = None, context_entity: dict | None = None) -> dict:
-    interest_scores: Counter = Counter()
-    type_scores: Counter = Counter()
-    area_scores: Counter = Counter()
-    recent_entity_ids: list[str] = []
-    recent_intents: list[dict] = []
-    events = _read_user_events(user_id)
+class _InterestAccumulator:
+    """Mutable scratch state shared by the interest-profile passes (extract-method
+    helper — behavior identical to the previous inline Counters/lists)."""
 
-    event_entity_ids = [str(e.get("entity_id")) for e in events if e.get("entity_id")]
-    event_entities = db.get_entities_batch(event_entity_ids[:80]) if event_entity_ids else {}
+    def __init__(self) -> None:
+        self.interest_scores: Counter = Counter()
+        self.type_scores: Counter = Counter()
+        self.area_scores: Counter = Counter()
+        self.recent_entity_ids: list[str] = []
+        self.recent_intents: list[dict] = []
 
+
+def _apply_event_entity(acc: "_InterestAccumulator", entity: dict, entity_id: str, weight: float) -> None:
+    acc.type_scores[str(entity.get("type") or "")] += weight
+    if area := _entity_area(entity):
+        acc.area_scores[area] += weight
+    acc.interest_scores.update({k: v * weight for k, v in _interest_hits_from_entity(entity).items()})
+    if entity_id and entity_id not in acc.recent_entity_ids:
+        acc.recent_entity_ids.append(entity_id)
+
+
+def _apply_event_fallback(acc: "_InterestAccumulator", event: dict, weight: float) -> None:
+    entity_type = _clean_short_text(event.get("entity_type"), 60)
+    if entity_type:
+        acc.type_scores[entity_type] += weight
+    if area := _clean_short_text(event.get("area"), 120):
+        acc.area_scores[area] += weight
+    text = " ".join(str(event.get(k) or "") for k in ("entity_name", "query", "context"))
+    acc.interest_scores.update({k: v * weight for k, v in _interest_hits_from_text(text, entity_type).items()})
+
+
+def _apply_events_to_profile(acc: "_InterestAccumulator", events: list[dict], event_entities: dict) -> None:
     for event in events:
         etype = str(event.get("event_type") or "")
         weight = float(_EVENT_WEIGHTS.get(etype, 1.0))
@@ -477,46 +503,56 @@ def _build_user_interest_profile(user_id: str, query: str | None = None, context
         entity_id = str(event.get("entity_id") or "")
         entity = event_entities.get(entity_id) if entity_id else None
         if entity and _is_public(entity):
-            type_scores[str(entity.get("type") or "")] += weight
-            if area := _entity_area(entity):
-                area_scores[area] += weight
-            interest_scores.update({k: v * weight for k, v in _interest_hits_from_entity(entity).items()})
-            if entity_id and entity_id not in recent_entity_ids:
-                recent_entity_ids.append(entity_id)
+            _apply_event_entity(acc, entity, entity_id, weight)
         else:
-            entity_type = _clean_short_text(event.get("entity_type"), 60)
-            if entity_type:
-                type_scores[entity_type] += weight
-            if area := _clean_short_text(event.get("area"), 120):
-                area_scores[area] += weight
-            text = " ".join(str(event.get(k) or "") for k in ("entity_name", "query", "context"))
-            interest_scores.update({k: v * weight for k, v in _interest_hits_from_text(text, entity_type).items()})
-        if len(recent_intents) < 8:
-            recent_intents.append({
+            _apply_event_fallback(acc, event, weight)
+        if len(acc.recent_intents) < 8:
+            acc.recent_intents.append({
                 "event_type": etype,
                 "context": event.get("context"),
                 "entity_id": entity_id or None,
                 "query": event.get("query"),
             })
 
+
+def _apply_signals_to_profile(acc: "_InterestAccumulator", user_id: str) -> None:
     for entity, source in _load_user_signal_entities(user_id):
         weight = 5.0 if source == "saved" else 4.0
-        type_scores[str(entity.get("type") or "")] += weight
+        acc.type_scores[str(entity.get("type") or "")] += weight
         if area := _entity_area(entity):
-            area_scores[area] += weight
-        interest_scores.update({k: v * weight for k, v in _interest_hits_from_entity(entity).items()})
+            acc.area_scores[area] += weight
+        acc.interest_scores.update({k: v * weight for k, v in _interest_hits_from_entity(entity).items()})
         eid = str(entity.get("id") or "")
-        if eid and eid not in recent_entity_ids:
-            recent_entity_ids.append(eid)
+        if eid and eid not in acc.recent_entity_ids:
+            acc.recent_entity_ids.append(eid)
 
+
+def _apply_query_and_context(acc: "_InterestAccumulator", query: str | None, context_entity: dict | None) -> None:
     if query:
-        interest_scores.update(_interest_hits_from_text(query))
+        acc.interest_scores.update(_interest_hits_from_text(query))
     if context_entity:
-        type_scores[str(context_entity.get("type") or "")] += 2
+        acc.type_scores[str(context_entity.get("type") or "")] += 2
         if area := _entity_area(context_entity):
-            area_scores[area] += 2
-        interest_scores.update({k: v * 1.5 for k, v in _interest_hits_from_entity(context_entity).items()})
+            acc.area_scores[area] += 2
+        acc.interest_scores.update({k: v * 1.5 for k, v in _interest_hits_from_entity(context_entity).items()})
 
+
+def _build_user_interest_profile(user_id: str, query: str | None = None, context_entity: dict | None = None) -> dict:
+    acc = _InterestAccumulator()
+    events = _read_user_events(user_id)
+
+    event_entity_ids = [str(e.get("entity_id")) for e in events if e.get("entity_id")]
+    event_entities = db.get_entities_batch(event_entity_ids[:80]) if event_entity_ids else {}
+
+    _apply_events_to_profile(acc, events, event_entities)
+    _apply_signals_to_profile(acc, user_id)
+    _apply_query_and_context(acc, query, context_entity)
+
+    interest_scores = acc.interest_scores
+    type_scores = acc.type_scores
+    area_scores = acc.area_scores
+    recent_entity_ids = acc.recent_entity_ids
+    recent_intents = acc.recent_intents
     signal_count = len(events) + len(recent_entity_ids)
     labels = {key: _label_for_interest(key) for key in _INTEREST_RULES}
     return {
@@ -568,6 +604,50 @@ def _candidate_card(entity: dict, reasons: list[str]) -> dict:
     }
 
 
+def _score_interest_hits(entity: dict, profile: dict, reasons: list[str]) -> float:
+    score = 0.0
+    hits = _interest_hits_from_entity(entity)
+    for key, hit_score in hits.items():
+        pref = float(profile.get("interest_scores", {}).get(key, 0) or 0)
+        if pref > 0 and hit_score > 0:
+            score += min(pref * 0.8 + hit_score, 20)
+            label = _label_for_interest(key)
+            if label and len(reasons) < 2:
+                reasons.append(f"Khớp sở thích {label.lower()}")
+    return score
+
+
+def _score_current_context(entity_type: str, area: str, current: dict | None, reasons: list[str]) -> float:
+    score = 0.0
+    if current:
+        if entity_type and entity_type == current.get("type"):
+            score += 10
+            reasons.append("Cùng chủ đề với nơi đang xem")
+        if area and area == _entity_area(current):
+            score += 7
+            reasons.append("Gần mạch khám phá hiện tại")
+    return score
+
+
+def _score_query_and_attrs(entity: dict, attrs: dict, query: str, reasons: list[str]) -> float:
+    score = 0.0
+    folded_query = _fold_text(query)
+    if folded_query:
+        haystack = _fold_text(" ".join([str(entity.get("name") or ""), str(entity.get("summary") or "")]))
+        if folded_query in haystack:
+            score += 18
+            reasons.append("Liên quan trực tiếp tới tìm kiếm")
+
+    if entity.get("images"):
+        score += 2
+    try:
+        score += min(float(attrs.get("rating") or 0), 5)
+        score += min(float(attrs.get("review_count") or 0) / 20, 4)
+    except (TypeError, ValueError):
+        pass
+    return score
+
+
 def _score_candidate(entity: dict, profile: dict, context: str, current: dict | None, query: str) -> tuple[float, list[str]]:
     score = 0.0
     reasons: list[str] = []
@@ -583,74 +663,57 @@ def _score_candidate(entity: dict, profile: dict, context: str, current: dict | 
         score += min(area_score * 1.8, 18)
         reasons.append("Cùng khu vực bạn hay xem")
 
-    hits = _interest_hits_from_entity(entity)
-    for key, hit_score in hits.items():
-        pref = float(profile.get("interest_scores", {}).get(key, 0) or 0)
-        if pref > 0 and hit_score > 0:
-            score += min(pref * 0.8 + hit_score, 20)
-            label = _label_for_interest(key)
-            if label and len(reasons) < 2:
-                reasons.append(f"Khớp sở thích {label.lower()}")
+    score += _score_interest_hits(entity, profile, reasons)
+    score += _score_current_context(entity_type, area, current, reasons)
+    score += _score_query_and_attrs(entity, attrs, query, reasons)
 
-    if current:
-        if entity_type and entity_type == current.get("type"):
-            score += 10
-            reasons.append("Cùng chủ đề với nơi đang xem")
-        if area and area == _entity_area(current):
-            score += 7
-            reasons.append("Gần mạch khám phá hiện tại")
-
-    folded_query = _fold_text(query)
-    if folded_query:
-        haystack = _fold_text(" ".join([str(entity.get("name") or ""), str(entity.get("summary") or "")]))
-        if folded_query in haystack:
-            score += 18
-            reasons.append("Liên quan trực tiếp tới tìm kiếm")
-
-    if entity.get("images"):
-        score += 2
-    try:
-        score += min(float(attrs.get("rating") or 0), 5)
-        score += min(float(attrs.get("review_count") or 0) / 20, 4)
-    except (TypeError, ValueError):
-        pass
     if entity.get("id") in set(profile.get("recent_entity_ids") or []) and context not in {"saved", "entity"}:
         score -= 6
     return score, list(dict.fromkeys(reasons))[:3]
 
 
-def _contextual_recommendations(user_id: str, context: str, entity_id: str | None, query: str, limit: int) -> dict:
-    current = _get_public_entity(entity_id) if entity_id else None
-    profile = _build_user_interest_profile(user_id, query=query, context_entity=current)
-    candidates: dict[str, dict] = {}
+def _add_candidates(candidates: dict[str, dict], items: list[dict] | None, entity_id: str | None) -> None:
+    for item in items or []:
+        if not item or not _is_public(item):
+            continue
+        eid = str(item.get("id") or "")
+        if not eid or eid == entity_id or eid in candidates:
+            continue
+        candidates[eid] = item
 
-    def add_many(items: list[dict] | None):
-        for item in items or []:
-            if not item or not _is_public(item):
-                continue
-            eid = str(item.get("id") or "")
-            if not eid or eid == entity_id or eid in candidates:
-                continue
-            candidates[eid] = item
 
-    if current:
-        add_many(db.search_entities(entity_type=current.get("type"), area=_entity_area(current) or None, limit=60, public_only=True))
-        add_many(db.list_entities(entity_type=current.get("type"), limit=60, public_only=True, sort="rating"))
-    if query:
-        add_many(db.search_entities(q=query, limit=80, public_only=True))
-
+def _add_profile_type_candidates(candidates: dict[str, dict], profile: dict, entity_id: str | None) -> None:
     top_types = [item["key"] for item in profile.get("types", []) if item.get("key") and item.get("key") != "place"][:4]
     top_areas = [item["key"] for item in profile.get("areas", []) if item.get("key")][:3]
     for entity_type in top_types:
         if top_areas:
             for area in top_areas:
-                add_many(db.search_entities(entity_type=entity_type, area=area, limit=30, public_only=True))
-        add_many(db.list_entities(entity_type=entity_type, limit=40, public_only=True, sort="rating"))
+                _add_candidates(candidates, db.search_entities(entity_type=entity_type, area=area, limit=30, public_only=True), entity_id)
+        _add_candidates(candidates, db.list_entities(entity_type=entity_type, limit=40, public_only=True, sort="rating"), entity_id)
+
+
+def _gather_recommendation_candidates(profile: dict, current: dict | None, entity_id: str | None, query: str) -> dict[str, dict]:
+    candidates: dict[str, dict] = {}
+
+    if current:
+        _add_candidates(candidates, db.search_entities(entity_type=current.get("type"), area=_entity_area(current) or None, limit=60, public_only=True), entity_id)
+        _add_candidates(candidates, db.list_entities(entity_type=current.get("type"), limit=60, public_only=True, sort="rating"), entity_id)
+    if query:
+        _add_candidates(candidates, db.search_entities(q=query, limit=80, public_only=True), entity_id)
+
+    _add_profile_type_candidates(candidates, profile, entity_id)
 
     if not candidates:
-        add_many(db.list_entities(limit=120, public_only=True, sort="rating"))
+        _add_candidates(candidates, db.list_entities(limit=120, public_only=True, sort="rating"), entity_id)
     else:
-        add_many(db.list_entities(limit=80, public_only=True, sort="rating"))
+        _add_candidates(candidates, db.list_entities(limit=80, public_only=True, sort="rating"), entity_id)
+    return candidates
+
+
+def _contextual_recommendations(user_id: str, context: str, entity_id: str | None, query: str, limit: int) -> dict:
+    current = _get_public_entity(entity_id) if entity_id else None
+    profile = _build_user_interest_profile(user_id, query=query, context_entity=current)
+    candidates = _gather_recommendation_candidates(profile, current, entity_id, query)
 
     scored = []
     for entity in candidates.values():
@@ -770,6 +833,20 @@ def _get_place(place_id: str) -> dict | None:
     with _place_cache_lock:
         return _place_cache.get(place_id)
 
+def _apply_cached_place(e: dict) -> None:
+    explicit_area = e.get("area")
+    pid = e.get("placeId")
+    if pid:
+        with _place_cache_lock:
+            p = _place_cache.get(pid)
+        if p:
+            e["place_name"] = p["name"]
+            e["place_area"] = explicit_area or p.get("area")
+    elif explicit_area:
+        e["place_area"] = explicit_area
+    e["quality"] = entity_quality(e)
+
+
 def _enrich_place(entities: list[dict]):
     with _place_cache_lock:
         uncached = {e["placeId"] for e in entities if e.get("placeId") and e["placeId"] not in _place_cache}
@@ -779,17 +856,7 @@ def _enrich_place(entities: list[dict]):
             for pid, place in batch.items():
                 _place_cache[pid] = {"name": place["name"], "area": place.get("area")}
     for e in entities:
-        explicit_area = e.get("area")
-        pid = e.get("placeId")
-        if pid:
-            with _place_cache_lock:
-                p = _place_cache.get(pid)
-            if p:
-                e["place_name"] = p["name"]
-                e["place_area"] = explicit_area or p.get("area")
-        elif explicit_area:
-            e["place_area"] = explicit_area
-        e["quality"] = entity_quality(e)
+        _apply_cached_place(e)
 
 def _enrich_entity_place(entity: dict):
     pid = entity.get("placeId")
@@ -1031,7 +1098,6 @@ async def get_featured_entities(response: Response):
     def _query():
         if not db._use_pg:
             return {"featured": []}
-        ph = db._ph
         with db._conn() as conn:
             rows = db._fetchall(conn, """
                 SELECT entity_id, sort_order FROM featured_entities
@@ -1247,6 +1313,30 @@ async def get_entity_rating_breakdown(entity_id: str, response: Response):
     return result
 
 
+def _shape_review_row(rd: dict) -> dict:
+    images = rd.get("images", [])
+    if isinstance(images, str):
+        try:
+            images = json.loads(images)
+        except (json.JSONDecodeError, ValueError, TypeError):
+            images = []
+    return {
+        "id": str(rd["id"]),
+        "content": rd["content"],
+        "rating": rd.get("rating"),
+        "images": images,
+        "like_count": rd.get("like_count", 0),
+        "comment_count": rd.get("comment_count", 0),
+        "created_at": str(rd.get("created_at", "")),
+        "author": {
+            "id": str(rd.get("user_id", "")),
+            "display_name": rd.get("display_name", ""),
+            "username": rd.get("username"),
+            "avatar_url": rd.get("avatar_url"),
+        },
+    }
+
+
 @router.get("/entities/{entity_id}/reviews",
             summary="Get entity reviews",
             description="Returns paginated user reviews for an entity with sorting, rating filter, distribution, and the current user's own review if logged in.")
@@ -1313,30 +1403,7 @@ async def get_entity_reviews(
     td = db._row_to_dict(total_row) if total_row else {}
     total = td.get("c", 0)
     distribution = {str(db._row_to_dict(r).get("rating", 0)): db._row_to_dict(r).get("cnt", 0) for r in dist_rows}
-    reviews = []
-    for r in rows:
-        rd = db._row_to_dict(r)
-        images = rd.get("images", [])
-        if isinstance(images, str):
-            try:
-                images = json.loads(images)
-            except (json.JSONDecodeError, ValueError, TypeError):
-                images = []
-        reviews.append({
-            "id": str(rd["id"]),
-            "content": rd["content"],
-            "rating": rd.get("rating"),
-            "images": images,
-            "like_count": rd.get("like_count", 0),
-            "comment_count": rd.get("comment_count", 0),
-            "created_at": str(rd.get("created_at", "")),
-            "author": {
-                "id": str(rd.get("user_id", "")),
-                "display_name": rd.get("display_name", ""),
-                "username": rd.get("username"),
-                "avatar_url": rd.get("avatar_url"),
-            },
-        })
+    reviews = [_shape_review_row(db._row_to_dict(r)) for r in rows]
     result = {
         "reviews": reviews,
         "total": total,
@@ -1456,6 +1523,38 @@ def _haversine_km(a: list | None, b: list | None) -> float:
     return 6371.0 * 2 * math.asin(math.sqrt(h))
 
 
+def _select_day_plan_candidates(ents: list[dict], center) -> list[dict]:
+    seen_types: set = set()
+    candidates = []
+    for e in sorted(ents, key=lambda x: _haversine_km(center, x.get("coordinates"))):
+        t = e.get("type")
+        if t in seen_types or t == "place":
+            continue
+        seen_types.add(t)
+        candidates.append(e)
+        if len(candidates) >= len(_DAY_PLAN_SLOTS):
+            break
+    if not candidates and ents:
+        candidates = ents[:len(_DAY_PLAN_SLOTS)]
+    return candidates
+
+
+def _build_day_plan_stops(candidates: list[dict]) -> list[dict]:
+    stops = []
+    for i, e in enumerate(candidates):
+        slot = _DAY_PLAN_SLOTS[i] if i < len(_DAY_PLAN_SLOTS) else _DAY_PLAN_SLOTS[-1]
+        stops.append({
+            "entity_id": e["id"],
+            "name": e.get("name"),
+            "type": e.get("type"),
+            "suggested_time": slot["start"],
+            "time_of_day": slot["label"],
+            "visit_duration_min": slot["duration_min"],
+            "coordinates": e.get("coordinates"),
+        })
+    return stops
+
+
 @router.get("/places/{place_id}/day-plan",
             summary="Get place day plan",
             description="Returns a suggested one-day itinerary for a ward/commune with diverse entity types ordered by proximity. Includes time slots and durations.")
@@ -1469,30 +1568,8 @@ async def place_day_plan(place_id: str, response: Response):
             return None
         ents = db.entities_by_place(place_id)
         center = p.get("coordinates")
-        seen_types: set = set()
-        candidates = []
-        for e in sorted(ents, key=lambda x: _haversine_km(center, x.get("coordinates"))):
-            t = e.get("type")
-            if t in seen_types or t == "place":
-                continue
-            seen_types.add(t)
-            candidates.append(e)
-            if len(candidates) >= len(_DAY_PLAN_SLOTS):
-                break
-        if not candidates and ents:
-            candidates = ents[:len(_DAY_PLAN_SLOTS)]
-        stops = []
-        for i, e in enumerate(candidates):
-            slot = _DAY_PLAN_SLOTS[i] if i < len(_DAY_PLAN_SLOTS) else _DAY_PLAN_SLOTS[-1]
-            stops.append({
-                "entity_id": e["id"],
-                "name": e.get("name"),
-                "type": e.get("type"),
-                "suggested_time": slot["start"],
-                "time_of_day": slot["label"],
-                "visit_duration_min": slot["duration_min"],
-                "coordinates": e.get("coordinates"),
-            })
+        candidates = _select_day_plan_candidates(ents, center)
+        stops = _build_day_plan_stops(candidates)
         total_min = sum(s["visit_duration_min"] for s in stops)
         return {
             "place": {"id": p["id"], "name": p.get("name"), "area": p.get("area")},
@@ -1559,6 +1636,27 @@ def _normalize_text(value: Any) -> str:
     return _fold_text(value).replace("đ", "d")
 
 
+def _name_match_score(name: str, qn: str, terms: list[str]) -> tuple[float, str] | None:
+    if qn and name == qn:
+        return 100.0, "exact_name"
+    if qn and name.startswith(qn):
+        return 80.0, "name_prefix"
+    if terms and all(term in name for term in terms):
+        return 65.0, "name_terms"
+    if qn and qn in name:
+        return 55.0, "name_contains"
+    return None
+
+
+def _lexical_match_score(name: str, summary: str, qn: str, terms: list[str]) -> tuple[float, str]:
+    name_match = _name_match_score(name, qn, terms)
+    if name_match is not None:
+        return name_match
+    if terms and all(term in summary for term in terms):
+        return 35.0, "summary_terms"
+    return 0.0, "confidence"
+
+
 def _rank_search_entities(items: list[dict], query: str) -> list[dict]:
     qn = _normalize_text(query)
     terms = [t for t in qn.split() if t]
@@ -1566,23 +1664,7 @@ def _rank_search_entities(items: list[dict], query: str) -> list[dict]:
     for idx, item in enumerate(items):
         name = _normalize_text(item.get("name", ""))
         summary = _normalize_text(item.get("summary", ""))
-        score = 0.0
-        reason = "confidence"
-        if qn and name == qn:
-            score += 100
-            reason = "exact_name"
-        elif qn and name.startswith(qn):
-            score += 80
-            reason = "name_prefix"
-        elif terms and all(term in name for term in terms):
-            score += 65
-            reason = "name_terms"
-        elif qn and qn in name:
-            score += 55
-            reason = "name_contains"
-        elif terms and all(term in summary for term in terms):
-            score += 35
-            reason = "summary_terms"
+        score, reason = _lexical_match_score(name, summary, qn, terms)
         score += float(item.get("confidence") or 0) * 10
         copy = dict(item)
         copy["_search_meta"] = {"score": round(score, 2), "reason": reason, "rank_source": "lexical"}
@@ -1797,6 +1879,21 @@ def _dedup_by_name(entities: list[dict], limit: int) -> list[dict]:
     return result
 
 
+def _diverse_should_skip(e, t, a, nk, pid, type_counts, area_counts, seen_keys,
+                         seen_place_ids, exclude_ids, max_per_type, max_per_area) -> bool:
+    if exclude_ids and e["id"] in exclude_ids:
+        return True
+    if type_counts.get(t, 0) >= max_per_type:
+        return True
+    if area_counts.get(a, 0) >= max_per_area:
+        return True
+    if any(nk in sk or sk in nk for sk in seen_keys if len(nk) > 3 and len(sk) > 3):
+        return True
+    if pid and pid in seen_place_ids:
+        return True
+    return False
+
+
 def _diverse_pick(entities: list[dict], max_per_type: int = 2,
                   max_per_area: int = 4, limit: int = 8,
                   exclude_ids: set | None = None) -> list[dict]:
@@ -1806,19 +1903,12 @@ def _diverse_pick(entities: list[dict], max_per_type: int = 2,
     seen_keys: set[str] = set()
     seen_place_ids: set[str] = set()
     for e in entities:
-        if exclude_ids and e["id"] in exclude_ids:
-            continue
         t = e["type"]
         a = e.get("place_area") or "unknown"
-        if type_counts.get(t, 0) >= max_per_type:
-            continue
-        if area_counts.get(a, 0) >= max_per_area:
-            continue
         nk = _name_key(e["name"])
         pid = e.get("placeId") or ""
-        if any(nk in sk or sk in nk for sk in seen_keys if len(nk) > 3 and len(sk) > 3):
-            continue
-        if pid and pid in seen_place_ids:
+        if _diverse_should_skip(e, t, a, nk, pid, type_counts, area_counts, seen_keys,
+                                seen_place_ids, exclude_ids, max_per_type, max_per_area):
             continue
         result.append(e)
         type_counts[t] = type_counts.get(t, 0) + 1
@@ -1831,60 +1921,17 @@ def _diverse_pick(entities: list[dict], max_per_type: int = 2,
     return result
 
 
-@router.get("/homepage",
-            summary="Get curated homepage feed",
-            description="Returns the curated homepage with seasonal picks, diverse experiences, products, top dishes, trending entities, upcoming events, itineraries, and area counts. Cached for 2 minutes.")
-async def homepage_curated(response: Response):
-    """Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped."""
-    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
-    month = datetime.now(timezone.utc).month
+def _entity_in_season(e: dict, month: int) -> bool:
+    s = e.get("season")
+    if not s or not isinstance(s, dict):
+        return False
+    months = s.get("months") or []
+    if len(months) >= 11:
+        return False
+    return month in months or month in (s.get("peak") or [])
 
-    global _homepage_rebuilding
-    _now = _time.time()
-    cache_fresh = (_homepage_cache["data"] is not None and _homepage_cache["month"] == month
-                   and _now - _homepage_cache["ts"] < _HOMEPAGE_TTL)
-    if cache_fresh:
-        return _homepage_cache["data"]
-    if _homepage_lock.locked() and _homepage_cache["data"] is not None:
-        return _homepage_cache["data"]
-    async with _homepage_lock:
-        cache_fresh = (_homepage_cache["data"] is not None and _homepage_cache["month"] == month
-                       and _time.time() - _homepage_cache["ts"] < _HOMEPAGE_TTL)
-        if cache_fresh:
-            return _homepage_cache["data"]
-        _homepage_rebuilding = True
 
-    all_ents = await asyncio.to_thread(db.list_entities, limit=5000, offset=0, public_only=True)
-    public = [e for e in all_ents if not _event_is_past(e)]
-    await asyncio.to_thread(_enrich_place, public)
-
-    for e in public:
-        e["_score"] = _homepage_score(e, month)
-
-    # Seasonal: entities actually in season this month (not year-round)
-    def _in_season(e):
-        s = e.get("season")
-        if not s or not isinstance(s, dict):
-            return False
-        months = s.get("months") or []
-        if len(months) >= 11:
-            return False
-        return month in months or month in (s.get("peak") or [])
-
-    seasonal_pool = [e for e in public
-                     if e["type"] in ("product", "experience", "dish")
-                     and _in_season(e)]
-    seasonal_pool.sort(key=lambda e: e["_score"], reverse=True)
-    seasonal = _dedup_by_name(seasonal_pool, limit=4)
-
-    seasonal_ids = {e["id"] for e in seasonal}
-
-    # Upcoming events (next 30 days, sorted by date_start)
-    # Only show events with reliable dates: must have lunar_date OR
-    # consistent month field. Exclude cat=mua (seasonal, not event).
-    today = datetime.now(timezone.utc).date()
-    from datetime import timedelta
-    cutoff = today + timedelta(days=30)
+def _select_upcoming_events(public: list[dict], today, cutoff) -> list[dict]:
     upcoming_pool = []
     for e in public:
         if e["type"] != "event":
@@ -1908,7 +1955,184 @@ async def homepage_curated(response: Response):
             e["_days_until"] = (d - today).days
             upcoming_pool.append(e)
     upcoming_pool.sort(key=lambda x: x.get("_days_until", 999))
-    upcoming_events = upcoming_pool[:3]
+    return upcoming_pool[:3]
+
+
+def _score_one_itinerary(it: dict, public: list[dict], month: int) -> float:
+    it_score = 0.0
+    stops = it.get("stops") or []
+    for stop in stops:
+        eid = _itinerary_stop_entity_id(stop)
+        matched = next((e for e in public if e["id"] == eid), None)
+        if matched:
+            if _entity_in_season(matched, month):
+                it_score += 2.0
+            if matched.get("images"):
+                it_score += 0.5
+    dur = it.get("duration") or ""
+    if dur:
+        m = re.search(r"(\d+)", str(dur))
+        if m:
+            try:
+                d = int(m.group(1))
+                if 1 <= d <= 3:
+                    it_score += 1.0
+            except (ValueError, TypeError):
+                pass
+    return it_score
+
+
+def _pick_diverse_itineraries(all_itineraries: list[dict]) -> tuple[list[dict], set[str]]:
+    seen_areas: set[str] = set()
+    selected_itinerary_ids: set[str] = set()
+    itineraries: list[dict] = []
+    for it in all_itineraries:
+        coverage = _itinerary_coverage_areas(it)
+        if coverage and coverage <= seen_areas and len(itineraries) < 3:
+            continue
+        itineraries.append(it)
+        if it.get("id"):
+            selected_itinerary_ids.add(str(it["id"]))
+        seen_areas.update(coverage)
+        if len(itineraries) >= 4:
+            break
+    return itineraries, selected_itinerary_ids
+
+
+def _fill_remaining_itineraries(itineraries: list[dict], all_itineraries: list[dict], selected_itinerary_ids: set[str]) -> None:
+    if len(itineraries) >= 4:
+        return
+    for it in all_itineraries:
+        if it.get("id") and str(it["id"]) in selected_itinerary_ids:
+            continue
+        itineraries.append(it)
+        if len(itineraries) >= 4:
+            break
+
+
+def _select_homepage_itineraries(all_itineraries: list[dict], public: list[dict], month: int) -> list[dict]:
+    for it in all_itineraries:
+        it["_score"] = _score_one_itinerary(it, public, month)
+    all_itineraries.sort(key=lambda x: x.get("_score", 0), reverse=True)
+    itineraries, selected_itinerary_ids = _pick_diverse_itineraries(all_itineraries)
+    _fill_remaining_itineraries(itineraries, all_itineraries, selected_itinerary_ids)
+    for it in itineraries:
+        it.pop("_score", None)
+    return itineraries
+
+
+def _compute_homepage_area_counts(public: list[dict]) -> dict[str, int]:
+    card_types = {"product", "dish", "drink", "experience", "attraction", "nature",
+                  "craft_village", "history", "accommodation", "event"}
+    area_counts: dict[str, int] = {}
+    for e in public:
+        a = e.get("place_area") or e.get("area")
+        if e["type"] in card_types and a:
+            area_counts[a] = area_counts.get(a, 0) + 1
+    return area_counts
+
+
+_HOMEPAGE_TAGLINES = {
+    1: "Sắc xuân Vĩnh Long bên sông và vườn Tết",
+    2: "Đầu xuân ghé vườn, thử đặc sản mới",
+    3: "Tháng lễ hội đình làng và nếp xưa Nam Bộ",
+    4: "Chôl Chnăm Thmây rộn ràng phum sóc",
+    5: "Trái ngọt đầu mùa, hành trình miệt vườn bắt đầu",
+    6: "Vườn chín rộ, đặc sản địa phương lên hương",
+    7: "Mùa miệt vườn đang mở cửa",
+    8: "Vu Lan bên sông, chùa cổ và món chay",
+    9: "Trung thu miền Tây, đèn lồng và bánh dân gian",
+    10: "Ok Om Bok rộn ràng, ghe ngo trên dòng nước",
+    11: "Cuối năm ghé làng nghề, chọn quà đặc sản",
+    12: "Mùa Tết đang về, tìm quà ngon Vĩnh Long",
+}
+
+
+def _resolve_seasonal_tagline(month: int) -> str:
+    # A7: admin can override taglines via site_settings (homepage.seasonal_taglines:
+    # a {"<month>": "<text>"} object). Falls back to defaults; {} on SQLite.
+    seasonal_tagline = ""
+    try:
+        _ov = site_settings.get_all_public().get("homepage.seasonal_taglines")
+        if isinstance(_ov, dict):
+            seasonal_tagline = _ov.get(str(month)) or _ov.get(month) or ""
+    except Exception:
+        logger.warning("Failed to load seasonal taglines override", exc_info=True)
+        seasonal_tagline = ""
+    if not seasonal_tagline:
+        seasonal_tagline = _HOMEPAGE_TAGLINES.get(month, "Khám phá Vĩnh Long theo cách của người bản địa")
+    return seasonal_tagline
+
+
+def _select_top_dishes(public: list[dict]) -> list[dict]:
+    dishes_pool = [e for e in public
+                   if e["type"] == "dish"
+                   and isinstance((e.get("attributes") or {}).get("rating"), (int, float))
+                   and (e.get("attributes") or {}).get("review_count", 0) >= 3]
+    dishes_pool.sort(key=lambda e: (
+        (e.get("attributes") or {}).get("rating", 0),
+        (e.get("attributes") or {}).get("review_count", 0),
+    ), reverse=True)
+    return _dedup_by_name(dishes_pool, limit=6)
+
+
+def _build_homepage_trending(public: list[dict]) -> list[dict]:
+    from proactive import get_trending_entities
+    trending_raw = get_trending_entities(limit=6)
+    trending = []
+    for t in trending_raw:
+        ent = next((e for e in public if e["id"] == t["id"]), None)
+        if ent:
+            item = {k: ent[k] for k in ("id", "name", "type", "summary", "images", "place_name", "place_area") if k in ent}
+            item["hit_count"] = t["hit_count"]
+            trending.append(item)
+    return trending
+
+
+def _homepage_cache_hit(month: int) -> dict | None:
+    _now = _time.time()
+    cache_fresh = (_homepage_cache["data"] is not None and _homepage_cache["month"] == month
+                   and _now - _homepage_cache["ts"] < _HOMEPAGE_TTL)
+    if cache_fresh:
+        return _homepage_cache["data"]
+    if _homepage_lock.locked() and _homepage_cache["data"] is not None:
+        return _homepage_cache["data"]
+    return None
+
+
+def _finalize_homepage_sections(sections: list[list[dict]], upcoming_events: list[dict]) -> None:
+    for section in sections:
+        for e in section:
+            e.pop("_score", None)
+    for e in upcoming_events:
+        e.pop("_score", None)
+        e["days_until"] = e.pop("_days_until", None)
+
+
+async def _build_homepage_payload(month: int) -> dict:
+    all_ents = await asyncio.to_thread(db.list_entities, limit=5000, offset=0, public_only=True)
+    public = [e for e in all_ents if not _event_is_past(e)]
+    await asyncio.to_thread(_enrich_place, public)
+
+    for e in public:
+        e["_score"] = _homepage_score(e, month)
+
+    # Seasonal: entities actually in season this month (not year-round)
+    seasonal_pool = [e for e in public
+                     if e["type"] in ("product", "experience", "dish")
+                     and _entity_in_season(e, month)]
+    seasonal_pool.sort(key=lambda e: e["_score"], reverse=True)
+    seasonal = _dedup_by_name(seasonal_pool, limit=4)
+
+    seasonal_ids = {e["id"] for e in seasonal}
+
+    # Upcoming events (next 30 days, sorted by date_start)
+    # Only show events with reliable dates: must have lunar_date OR
+    # consistent month field. Exclude cat=mua (seasonal, not event).
+    today = datetime.now(timezone.utc).date()
+    from datetime import timedelta
+    cutoff = today + timedelta(days=30)
+    upcoming_events = _select_upcoming_events(public, today, cutoff)
 
     upcoming_ids = {e["id"] for e in upcoming_events}
     exclude_from_exp = seasonal_ids | upcoming_ids
@@ -1926,123 +2150,24 @@ async def homepage_curated(response: Response):
 
     # Itineraries: score by seasonal relevance + area diversity
     all_itineraries = await asyncio.to_thread(db.list_itineraries)
-    for it in all_itineraries:
-        it_score = 0.0
-        stops = it.get("stops") or []
-        for stop in stops:
-            eid = _itinerary_stop_entity_id(stop)
-            matched = next((e for e in public if e["id"] == eid), None)
-            if matched:
-                if _in_season(matched):
-                    it_score += 2.0
-                if matched.get("images"):
-                    it_score += 0.5
-        dur = it.get("duration") or ""
-        if dur:
-            import re
-            m = re.search(r"(\d+)", str(dur))
-            if m:
-                try:
-                    d = int(m.group(1))
-                    if 1 <= d <= 3:
-                        it_score += 1.0
-                except (ValueError, TypeError):
-                    pass
-        it["_score"] = it_score
-    all_itineraries.sort(key=lambda x: x.get("_score", 0), reverse=True)
-    seen_areas: set[str] = set()
-    selected_itinerary_ids: set[str] = set()
-    itineraries = []
-    for it in all_itineraries:
-        coverage = _itinerary_coverage_areas(it)
-        if coverage and coverage <= seen_areas and len(itineraries) < 3:
-            continue
-        itineraries.append(it)
-        if it.get("id"):
-            selected_itinerary_ids.add(str(it["id"]))
-        seen_areas.update(coverage)
-        if len(itineraries) >= 4:
-            break
-    if len(itineraries) < 4:
-        for it in all_itineraries:
-            if it.get("id") and str(it["id"]) in selected_itinerary_ids:
-                continue
-            itineraries.append(it)
-            if len(itineraries) >= 4:
-                break
-    for it in itineraries:
-        it.pop("_score", None)
+    itineraries = _select_homepage_itineraries(all_itineraries, public, month)
 
     stats = await asyncio.to_thread(db.stats)
 
     # Area counts for region tiles
-    card_types = {"product", "dish", "drink", "experience", "attraction", "nature",
-                  "craft_village", "history", "accommodation", "event"}
-    area_counts: dict[str, int] = {}
-    for e in public:
-        a = e.get("place_area") or e.get("area")
-        if e["type"] in card_types and a:
-            area_counts[a] = area_counts.get(a, 0) + 1
+    area_counts = _compute_homepage_area_counts(public)
 
-    # Seasonal tagline
-    _TAGLINES = {
-        1: "Sắc xuân Vĩnh Long bên sông và vườn Tết",
-        2: "Đầu xuân ghé vườn, thử đặc sản mới",
-        3: "Tháng lễ hội đình làng và nếp xưa Nam Bộ",
-        4: "Chôl Chnăm Thmây rộn ràng phum sóc",
-        5: "Trái ngọt đầu mùa, hành trình miệt vườn bắt đầu",
-        6: "Vườn chín rộ, đặc sản địa phương lên hương",
-        7: "Mùa miệt vườn đang mở cửa",
-        8: "Vu Lan bên sông, chùa cổ và món chay",
-        9: "Trung thu miền Tây, đèn lồng và bánh dân gian",
-        10: "Ok Om Bok rộn ràng, ghe ngo trên dòng nước",
-        11: "Cuối năm ghé làng nghề, chọn quà đặc sản",
-        12: "Mùa Tết đang về, tìm quà ngon Vĩnh Long",
-    }
-    # A7: admin can override taglines via site_settings (homepage.seasonal_taglines:
-    # a {"<month>": "<text>"} object). Falls back to defaults; {} on SQLite.
-    seasonal_tagline = ""
-    try:
-        _ov = site_settings.get_all_public().get("homepage.seasonal_taglines")
-        if isinstance(_ov, dict):
-            seasonal_tagline = _ov.get(str(month)) or _ov.get(month) or ""
-    except Exception:
-        logger.warning("Failed to load seasonal taglines override", exc_info=True)
-        seasonal_tagline = ""
-    if not seasonal_tagline:
-        seasonal_tagline = _TAGLINES.get(month, "Khám phá Vĩnh Long theo cách của người bản địa")
+    seasonal_tagline = _resolve_seasonal_tagline(month)
 
     # Top dishes by rating (social proof for "Tinh hoa" section)
-    dishes_pool = [e for e in public
-                   if e["type"] == "dish"
-                   and isinstance((e.get("attributes") or {}).get("rating"), (int, float))
-                   and (e.get("attributes") or {}).get("review_count", 0) >= 3]
-    dishes_pool.sort(key=lambda e: (
-        (e.get("attributes") or {}).get("rating", 0),
-        (e.get("attributes") or {}).get("review_count", 0),
-    ), reverse=True)
-    top_dishes = _dedup_by_name(dishes_pool, limit=6)
+    top_dishes = _select_top_dishes(public)
 
-    for section in [seasonal, experiences, products, top_dishes]:
-        for e in section:
-            e.pop("_score", None)
-
-    for e in upcoming_events:
-        e.pop("_score", None)
-        e["days_until"] = e.pop("_days_until", None)
+    _finalize_homepage_sections([seasonal, experiences, products, top_dishes], upcoming_events)
 
     # Trending: entities with highest chat/search hit counts
-    from proactive import get_trending_entities
-    trending_raw = get_trending_entities(limit=6)
-    trending = []
-    for t in trending_raw:
-        ent = next((e for e in public if e["id"] == t["id"]), None)
-        if ent:
-            item = {k: ent[k] for k in ("id", "name", "type", "summary", "images", "place_name", "place_area") if k in ent}
-            item["hit_count"] = t["hit_count"]
-            trending.append(item)
+    trending = _build_homepage_trending(public)
 
-    result = {
+    return {
         "seasonal": seasonal,
         "experiences": experiences,
         "products": products,
@@ -2055,6 +2180,28 @@ async def homepage_curated(response: Response):
         "upcoming_events": upcoming_events,
         "seasonal_tagline": seasonal_tagline,
     }
+
+
+@router.get("/homepage",
+            summary="Get curated homepage feed",
+            description="Returns the curated homepage with seasonal picks, diverse experiences, products, top dishes, trending entities, upcoming events, itineraries, and area counts. Cached for 2 minutes.")
+async def homepage_curated(response: Response):
+    """Curated homepage: smart-scored, type/area diverse, seasonal-aware, deduped."""
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
+    month = datetime.now(timezone.utc).month
+
+    global _homepage_rebuilding
+    hit = _homepage_cache_hit(month)
+    if hit is not None:
+        return hit
+    async with _homepage_lock:
+        cache_fresh = (_homepage_cache["data"] is not None and _homepage_cache["month"] == month
+                       and _time.time() - _homepage_cache["ts"] < _HOMEPAGE_TTL)
+        if cache_fresh:
+            return _homepage_cache["data"]
+        _homepage_rebuilding = True
+
+    result = await _build_homepage_payload(month)
     _homepage_cache.update(month=month, data=result, ts=_time.time())
     _homepage_rebuilding = False
     return result
@@ -2089,6 +2236,40 @@ _map_pins_cache: dict = {"data": None, "filters": None, "ts": 0.0}
 _MAP_PINS_TTL = 120
 
 
+def _build_map_pin(e: dict) -> dict | None:
+    coords = e.get("coordinates")
+    if not coords or not isinstance(coords, (list, tuple)) or len(coords) < 2:
+        return None
+    try:
+        lat, lng = float(coords[0]), float(coords[1])
+    except (TypeError, ValueError, IndexError):
+        return None
+    etype = e.get("type", "")
+    meta = _TYPE_META.get(etype, {"emoji": "\U0001f4cd", "color": "#9E9E9E"})
+    attrs = e.get("attributes") or {}
+    pin = {
+        "id": e["id"],
+        "name": e["name"],
+        "type": etype,
+        "lat": lat,
+        "lng": lng,
+        "emoji": meta["emoji"],
+        "category_color": meta["color"],
+        "rating": attrs.get("rating"),
+        "review_count": attrs.get("review_count", 0),
+        "confidence": e.get("confidence"),
+        "coords_approximate": bool(attrs.get("coords_approximate")),
+        "area": e.get("area") or attrs.get("area"),
+    }
+    pid = e.get("placeId")
+    if pid:
+        p = _get_place(pid)
+        if p:
+            pin["place_name"] = p["name"]
+            pin["place_area"] = p.get("area")
+    return pin
+
+
 @router.get("/map-pins",
             summary="Get map pins",
             description="Returns lightweight map pin data for all entities with coordinates. Includes emoji, color, rating, and place name. Filterable by type and area.")
@@ -2113,42 +2294,45 @@ async def get_map_pins(
         all_ents = db.list_entities(limit=5000, offset=0, area=area, public_only=True, entity_types=type_filters)
         pins = []
         for e in all_ents:
-            coords = e.get("coordinates")
-            if not coords or not isinstance(coords, (list, tuple)) or len(coords) < 2:
-                continue
-            try:
-                lat, lng = float(coords[0]), float(coords[1])
-            except (TypeError, ValueError, IndexError):
-                continue
-            etype = e.get("type", "")
-            meta = _TYPE_META.get(etype, {"emoji": "\U0001f4cd", "color": "#9E9E9E"})
-            attrs = e.get("attributes") or {}
-            pin = {
-                "id": e["id"],
-                "name": e["name"],
-                "type": etype,
-                "lat": lat,
-                "lng": lng,
-                "emoji": meta["emoji"],
-                "category_color": meta["color"],
-                "rating": attrs.get("rating"),
-                "review_count": attrs.get("review_count", 0),
-                "confidence": e.get("confidence"),
-                "coords_approximate": bool(attrs.get("coords_approximate")),
-                "area": e.get("area") or attrs.get("area"),
-            }
-            pid = e.get("placeId")
-            if pid:
-                p = _get_place(pid)
-                if p:
-                    pin["place_name"] = p["name"]
-                    pin["place_area"] = p.get("area")
-            pins.append(pin)
+            pin = _build_map_pin(e)
+            if pin is not None:
+                pins.append(pin)
         return pins
 
     result = await asyncio.to_thread(_query)
     _map_pins_cache.update(data=result, filters=cache_key, ts=_now)
     return result
+
+
+def _event_date_reliable(e: dict) -> bool:
+    # Exclude seasonal items (cat=mua) and events with unreliable dates
+    attrs = e.get("attributes") or {}
+    if attrs.get("category") == "mua":
+        return False
+    ds_date = _parse_event_iso_date(attrs, "date_start_iso", "date_start")
+    if not ds_date:
+        return False
+    attr_month = attrs.get("month")
+    if attr_month and isinstance(attr_month, (int, float)) and int(attr_month) != ds_date.month:
+        return False
+    attrs["date_start_iso"] = attrs.get("date_start_iso") or ds_date.isoformat()
+    e["date_reliable"] = True
+    return True
+
+
+def _event_sort_key(e: dict, today):
+    attrs = e.get("attributes") or {}
+    ds = _parse_event_iso_date(attrs, "date_start_iso", "date_start")
+    if ds:
+        return (0, ds)
+    s = (e.get("season") or {}).get("months") or []
+    if s:
+        first = min(s)
+        d = datetime(today.year, first, 1).date()
+        if d < today:
+            d = datetime(today.year + 1, first, 1).date()
+        return (1, d)
+    return (2, datetime(today.year, 12, 31).date())
 
 
 @router.get("/events",
@@ -2174,38 +2358,8 @@ async def list_events(
     if not include_past:
         events = [e for e in events if not _event_is_past(e)]
 
-    # Exclude seasonal items (cat=mua) and events with unreliable dates
-    def _date_reliable(e):
-        attrs = e.get("attributes") or {}
-        if attrs.get("category") == "mua":
-            return False
-        ds_date = _parse_event_iso_date(attrs, "date_start_iso", "date_start")
-        if not ds_date:
-            return False
-        attr_month = attrs.get("month")
-        if attr_month and isinstance(attr_month, (int, float)) and int(attr_month) != ds_date.month:
-            return False
-        attrs["date_start_iso"] = attrs.get("date_start_iso") or ds_date.isoformat()
-        e["date_reliable"] = True
-        return True
-
-    events = [e for e in events if _date_reliable(e)]
-
-    def _sort_key(e):
-        attrs = e.get("attributes") or {}
-        ds = _parse_event_iso_date(attrs, "date_start_iso", "date_start")
-        if ds:
-            return (0, ds)
-        s = (e.get("season") or {}).get("months") or []
-        if s:
-            first = min(s)
-            d = datetime(today.year, first, 1).date()
-            if d < today:
-                d = datetime(today.year + 1, first, 1).date()
-            return (1, d)
-        return (2, datetime(today.year, 12, 31).date())
-
-    events.sort(key=_sort_key)
+    events = [e for e in events if _event_date_reliable(e)]
+    events.sort(key=lambda e: _event_sort_key(e, today))
     return {"total": len(events), "events": events[:limit]}
 
 
@@ -2312,17 +2466,7 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
 
 # ── Entity gallery (entity images + review images) ───────────────────
 
-@router.get("/entities/{entity_id}/gallery",
-            summary="Get entity image gallery",
-            description="Returns all images for an entity including editorial images and user review photos with credits and alt text.")
-async def get_entity_gallery(entity_id: str, response: Response):
-    validate_path_id(entity_id, "entity_id")
-    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
-
-    entity = await asyncio.to_thread(_get_public_entity, entity_id)
-    if not entity:
-        return _err(404, "not_found")
-
+def _gallery_editorial_images(entity: dict) -> list[dict]:
     images: list[dict] = []
     attrs = entity.get("attributes") or {}
     default_credit = attrs.get("image_credit", "AI-generated")
@@ -2335,6 +2479,41 @@ async def get_entity_gallery(entity_id: str, response: Response):
                 "width": None,
                 "height": None,
             })
+    return images
+
+
+def _append_review_gallery_images(images: list[dict], review_rows: list[dict], entity_name: str) -> None:
+    for row in review_rows:
+        review_imgs = row.get("images") or []
+        if isinstance(review_imgs, str):
+            try:
+                review_imgs = json.loads(review_imgs)
+            except (json.JSONDecodeError, ValueError):
+                continue
+        credit = row.get("display_name", "Người dùng")
+        for url in review_imgs:
+            if isinstance(url, str) and url:
+                images.append({
+                    "url": url,
+                    "alt": f"{entity_name} — ảnh đánh giá",
+                    "credit": credit,
+                    "width": None,
+                    "height": None,
+                })
+
+
+@router.get("/entities/{entity_id}/gallery",
+            summary="Get entity image gallery",
+            description="Returns all images for an entity including editorial images and user review photos with credits and alt text.")
+async def get_entity_gallery(entity_id: str, response: Response):
+    validate_path_id(entity_id, "entity_id")
+    response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"
+
+    entity = await asyncio.to_thread(_get_public_entity, entity_id)
+    if not entity:
+        return _err(404, "not_found")
+
+    images = _gallery_editorial_images(entity)
 
     if db._use_pg:
         ph = db._ph
@@ -2354,23 +2533,7 @@ async def get_entity_gallery(entity_id: str, response: Response):
 
         try:
             review_rows = await asyncio.to_thread(_review_images)
-            for row in review_rows:
-                review_imgs = row.get("images") or []
-                if isinstance(review_imgs, str):
-                    try:
-                        review_imgs = json.loads(review_imgs)
-                    except (json.JSONDecodeError, ValueError):
-                        continue
-                credit = row.get("display_name", "Người dùng")
-                for url in review_imgs:
-                    if isinstance(url, str) and url:
-                        images.append({
-                            "url": url,
-                            "alt": f"{entity['name']} — ảnh đánh giá",
-                            "credit": credit,
-                            "width": None,
-                            "height": None,
-                        })
+            _append_review_gallery_images(images, review_rows, entity["name"])
         except Exception:
             logger.exception("gallery review-images query failed for %s", entity_id)
 
@@ -2486,6 +2649,37 @@ _similar_cache: OrderedDict[str, tuple[float, list]] = OrderedDict()
 _SIMILAR_TTL = 300  # 5 min cache
 
 
+def _build_similar_cards(raw_items: list[dict], full_entities: dict, entities_map: dict) -> list[dict]:
+    cards: list[dict] = []
+    for item in raw_items:
+        candidate = full_entities.get(str(item.get("id"))) or entities_map.get(str(item.get("id"))) or item
+        reason_vi = _similar_reason_vi(str(item.get("reason") or ""))
+        card = _entity_card_shape(candidate, score=float(item.get("score") or 0), reason_vi=reason_vi)
+        card["reason"] = item.get("reason", "")
+        cards.append(card)
+    return cards
+
+
+def _compute_similar_entities(entity_id: str, limit: int) -> list[dict] | None:
+    try:
+        import knowledge
+        knowledge._ensure()
+        entities_map = {eid: e for eid, e in knowledge._entities.items() if _is_public(e)}
+        rels = knowledge._relationships if hasattr(knowledge, "_relationships") else []
+    except Exception:
+        logger.warning("Knowledge load failed for recommendations", exc_info=True)
+        return None
+    if entity_id not in entities_map:
+        return None
+    from recommender import recommend_by_entity
+    raw_items = recommend_by_entity(entity_id, entities_map, rels, limit=limit)
+    entity_ids = [str(item.get("id")) for item in raw_items if item.get("id")]
+    full_entities = db.get_entities_batch(entity_ids) if entity_ids else {}
+    if full_entities:
+        _enrich_place(list(full_entities.values()))
+    return _build_similar_cards(raw_items, full_entities, entities_map)
+
+
 @router.get("/entities/{entity_id}/similar",
             summary="Get similar entities",
             description="Returns rule-based similar entity recommendations based on type, area, and relationship graph. No ML required. Cached for 5 minutes.")
@@ -2507,33 +2701,7 @@ async def get_similar_entities(
         _similar_cache.move_to_end(cache_key)
         return {"entity_id": entity_id, "similar": cached[1]}
 
-    def _compute():
-        try:
-            import knowledge
-            knowledge._ensure()
-            entities_map = {eid: e for eid, e in knowledge._entities.items() if _is_public(e)}
-            rels = knowledge._relationships if hasattr(knowledge, "_relationships") else []
-        except Exception:
-            logger.warning("Knowledge load failed for recommendations", exc_info=True)
-            return None
-        if entity_id not in entities_map:
-            return None
-        from recommender import recommend_by_entity
-        raw_items = recommend_by_entity(entity_id, entities_map, rels, limit=limit)
-        entity_ids = [str(item.get("id")) for item in raw_items if item.get("id")]
-        full_entities = db.get_entities_batch(entity_ids) if entity_ids else {}
-        if full_entities:
-            _enrich_place(list(full_entities.values()))
-        cards: list[dict] = []
-        for item in raw_items:
-            candidate = full_entities.get(str(item.get("id"))) or entities_map.get(str(item.get("id"))) or item
-            reason_vi = _similar_reason_vi(str(item.get("reason") or ""))
-            card = _entity_card_shape(candidate, score=float(item.get("score") or 0), reason_vi=reason_vi)
-            card["reason"] = item.get("reason", "")
-            cards.append(card)
-        return cards
-
-    result = await asyncio.to_thread(_compute)
+    result = await asyncio.to_thread(_compute_similar_entities, entity_id, limit)
     if result is None:
         entity = await asyncio.to_thread(_get_public_entity, entity_id)
         if not entity:
@@ -2776,6 +2944,27 @@ async def submit_entity_claim(entity_id: str, payload: EntityClaimIn, request: R
 # ── What's-new feed (U-15) ────────────────────────────────────────────
 
 
+def _collect_new_entities(entities: dict, since_dt, limit: int) -> list[dict]:
+    new_entities = []
+    for eid, e in entities.items():
+        if e.get("type") == "place" or not _is_public(e):
+            continue
+        updated = e.get("updatedAt") or e.get("created_at")
+        if not updated:
+            continue
+        try:
+            dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            continue
+        if dt >= since_dt:
+            new_entities.append({
+                "id": eid, "name": e.get("name"), "type": e.get("type"),
+                "area": e.get("area"), "updated_at": str(updated),
+            })
+    new_entities.sort(key=lambda x: x["updated_at"], reverse=True)
+    return new_entities[:limit]
+
+
 @router.get("/feed/new-since",
             summary="Get new content since timestamp",
             description="Returns entities and posts created or updated since a given ISO datetime. Useful for incremental feed updates.")
@@ -2794,25 +2983,8 @@ async def feed_new_since(
 
     def _query():
         import knowledge
-        new_entities = []
         entities = knowledge._entities if hasattr(knowledge, "_entities") else {}
-        for eid, e in entities.items():
-            if e.get("type") == "place" or not _is_public(e):
-                continue
-            updated = e.get("updatedAt") or e.get("created_at")
-            if not updated:
-                continue
-            try:
-                dt = datetime.fromisoformat(str(updated).replace("Z", "+00:00"))
-            except (ValueError, TypeError):
-                continue
-            if dt >= since_dt:
-                new_entities.append({
-                    "id": eid, "name": e.get("name"), "type": e.get("type"),
-                    "area": e.get("area"), "updated_at": str(updated),
-                })
-        new_entities.sort(key=lambda x: x["updated_at"], reverse=True)
-        new_entities = new_entities[:limit]
+        new_entities = _collect_new_entities(entities, since_dt, limit)
         new_posts = []
         if _db._use_pg:
             with _db._conn() as conn:
@@ -2918,6 +3090,26 @@ async def list_active_announcements(response: Response, limit: int = Query(10, g
 
 # ── Entity Map Search (bounding box) ────────────────────────────────────
 
+def _coords_in_bbox(lat, lng, north, south, east, west) -> bool:
+    if not (south <= lat <= north):
+        return False
+    if west <= east:
+        return west <= lng <= east
+    return lng >= west or lng <= east
+
+
+def _map_search_shape(e: dict, coords: list) -> dict:
+    return {
+        "id": e.get("id"),
+        "name": e.get("name"),
+        "type": e.get("type"),
+        "coordinates": coords,
+        "place": e.get("place"),
+        "summary": (e.get("summary") or "")[:150],
+        "images": (e.get("images") or [])[:1],
+    }
+
+
 @router.get("/entities/map",
             summary="Search entities by bounding box",
             description="Returns entities within a geographic bounding box for map display. Supports entity type filter. Returns coordinates, summary, and first image.")
@@ -2941,26 +3133,11 @@ async def entities_map_search(
             coords = e.get("coordinates")
             if not coords or not isinstance(coords, list) or len(coords) < 2:
                 continue
-            lat, lng = coords[0], coords[1]
-            if not (south <= lat <= north):
+            if not _coords_in_bbox(coords[0], coords[1], north, south, east, west):
                 continue
-            if west <= east:
-                if not (west <= lng <= east):
-                    continue
-            else:
-                if not (lng >= west or lng <= east):
-                    continue
             if entity_type and e.get("type") != entity_type:
                 continue
-            results.append({
-                "id": e.get("id"),
-                "name": e.get("name"),
-                "type": e.get("type"),
-                "coordinates": coords,
-                "place": e.get("place"),
-                "summary": (e.get("summary") or "")[:150],
-                "images": (e.get("images") or [])[:1],
-            })
+            results.append(_map_search_shape(e, coords))
             if len(results) >= limit:
                 break
         return results
@@ -3134,6 +3311,38 @@ async def compare_entities(
 
 # ── Popular entities by type ─────────────────────────────────────────
 
+def _filter_popular_entities(all_entities: list[dict], entity_type: str | None, area: str | None) -> list[dict]:
+    if entity_type:
+        all_entities = [e for e in all_entities if e.get("type") == entity_type]
+    if area:
+        all_entities = [e for e in all_entities
+                       if area.lower() in (e.get("place", "") or "").lower()
+                       or area.lower() in (e.get("area", "") or "").lower()]
+    return all_entities
+
+
+def _score_popular_entity(e: dict) -> float:
+    rc = e.get("rating_count", 0) or 0
+    avg = e.get("rating_avg", 0) or 0
+    has_img = 1 if e.get("images") else 0
+    eq = entity_quality(e)
+    eq_score = eq.get("score", 0) if isinstance(eq, dict) else eq
+    return rc * 2 + avg * 3 + has_img * 5 + eq_score * 0.1
+
+
+def _shape_popular_entity(e: dict) -> dict:
+    return {
+        "id": e["id"], "name": e.get("name", ""),
+        "type": e.get("type", ""),
+        "place": e.get("place", ""),
+        "summary": (e.get("summary") or "")[:200],
+        "images": e.get("images", [])[:2],
+        "rating_count": e.get("rating_count", 0) or 0,
+        "rating_avg": round(float(e.get("rating_avg", 0) or 0), 1),
+        "quality_score": entity_quality(e),
+    }
+
+
 @router.get("/entities/popular",
             summary="Get popular entities",
             description="Returns entities ranked by a composite popularity score based on review count, rating, images, and quality. Filterable by type and area.")
@@ -3151,36 +3360,10 @@ async def popular_entities(
 
     def _query():
         all_entities = db.list_entities(limit=5000, public_only=True)
-        if entity_type:
-            all_entities = [e for e in all_entities if e.get("type") == entity_type]
-        if area:
-            all_entities = [e for e in all_entities
-                           if area.lower() in (e.get("place", "") or "").lower()
-                           or area.lower() in (e.get("area", "") or "").lower()]
-
-        scored = []
-        for e in all_entities:
-            rc = e.get("rating_count", 0) or 0
-            avg = e.get("rating_avg", 0) or 0
-            has_img = 1 if e.get("images") else 0
-            eq = entity_quality(e)
-            eq_score = eq.get("score", 0) if isinstance(eq, dict) else eq
-            score = rc * 2 + avg * 3 + has_img * 5 + eq_score * 0.1
-            scored.append((score, e))
+        all_entities = _filter_popular_entities(all_entities, entity_type, area)
+        scored = [(_score_popular_entity(e), e) for e in all_entities]
         scored.sort(key=lambda x: -x[0])
-        return [
-            {
-                "id": e["id"], "name": e.get("name", ""),
-                "type": e.get("type", ""),
-                "place": e.get("place", ""),
-                "summary": (e.get("summary") or "")[:200],
-                "images": e.get("images", [])[:2],
-                "rating_count": e.get("rating_count", 0) or 0,
-                "rating_avg": round(float(e.get("rating_avg", 0) or 0), 1),
-                "quality_score": entity_quality(e),
-            }
-            for _, e in scored[:limit]
-        ]
+        return [_shape_popular_entity(e) for _, e in scored[:limit]]
 
     results = await asyncio.to_thread(_query)
     response.headers["Cache-Control"] = "public, max-age=120, stale-while-revalidate=300"

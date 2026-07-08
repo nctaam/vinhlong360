@@ -150,12 +150,23 @@ class TestWhatsNewFeed:
         assert "moderation_status = 'approved'" in src
 
     def test_limits_results(self):
-        src = inspect.getsource(__import__("public_api").feed_new_since)
-        assert "LIMIT" in src
-        assert "[:limit]" in src
+        # Extract-method refactor: the entity slice "[:limit]" moved out of
+        # feed_new_since into module-level _collect_new_entities; the SQL "LIMIT"
+        # (posts query) stayed in feed_new_since.
+        import public_api
+        feed_src = inspect.getsource(public_api.feed_new_since)
+        # wiring: feed_new_since still delegates entity collection to the helper.
+        assert "_collect_new_entities" in feed_src
+        assert "LIMIT" in feed_src
+        assert "[:limit]" in inspect.getsource(public_api._collect_new_entities)
 
     def test_skips_place_entities(self):
-        src = inspect.getsource(__import__("public_api").feed_new_since)
+        # Extract-method refactor: the place-type skip moved out of feed_new_since
+        # into module-level _collect_new_entities.
+        import public_api
+        # wiring: feed_new_since still delegates entity collection to the helper.
+        assert "_collect_new_entities" in inspect.getsource(public_api.feed_new_since)
+        src = inspect.getsource(public_api._collect_new_entities)
         assert '"place"' in src
 
 
