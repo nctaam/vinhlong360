@@ -205,5 +205,8 @@ class TestAggregateRatingGating:
         assert ld["aggregateRating"]["ratingValue"] == 4.2
 
     def test_gating_uses_constant_in_source(self):
-        src = inspect.getsource(__import__("seo").build_entity_jsonld)
+        # Gating aggregateRating dời sang helper _jsonld_rating_primary/_fallback
+        # (refactor R20.8 build_entity_jsonld); hằng phải còn được dùng ở đó.
+        seo = __import__("seo")
+        src = inspect.getsource(seo._jsonld_rating_primary) + inspect.getsource(seo._jsonld_rating_fallback)
         assert "AGGREGATE_RATING_MIN_COUNT" in src

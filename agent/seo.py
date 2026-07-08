@@ -525,22 +525,251 @@ def _build_breadcrumb(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]) 
     }
 
 
-def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]], *, relationships: list[dict[str, Any]] | None = None) -> dict[str, Any]:
-    schema_type = TYPE_SCHEMA.get(str(entity.get("type")), "Thing")
-    entity_id = str(entity.get("id"))
-    area = _entity_area(entity, by_id)
-    place = by_id.get(str(entity.get("placeId"))) if entity.get("placeId") else None
-    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
-    source_title, source_url = _source_info(entity)
+def _jsonld_attraction(ld: dict[str, Any], attrs: dict[str, Any]) -> None:
+    if attrs.get("admission") is not None:
+        free = str(attrs["admission"]).strip().lower() in ("0", "free", "miễn phí", "")
+        ld["isAccessibleForFree"] = free
+    if attrs.get("tourist_type"):
+        ld["touristType"] = attrs["tourist_type"]
 
-    ld: dict[str, Any] = {
-        "@context": "https://schema.org",
-        "@type": schema_type,
-        "@id": _entity_url(entity_id),
-        "name": entity.get("name") or entity_id,
-        "url": _entity_url(entity_id),
-    }
 
+def _jsonld_product(ld: dict[str, Any], attrs: dict[str, Any], entity_id: str) -> None:
+    if attrs.get("price"):
+        price_digits = re.sub(r"[^0-9]", "", str(attrs["price"]))
+        price_value = price_digits if price_digits else str(attrs["price"])
+        if price_value.strip():
+            ld["offers"] = {
+                "@type": "Offer",
+                "price": price_value,
+                "priceCurrency": "VND",
+                "availability": "https://schema.org/InStock",
+                "url": _entity_url(entity_id),
+            }
+    if attrs.get("ocop"):
+        ld["brand"] = {"@type": "Brand", "name": f"OCOP {attrs['ocop']}"}
+    if attrs.get("material"):
+        ld["material"] = attrs["material"]
+    ld["countryOfOrigin"] = {"@type": "Country", "name": "Việt Nam"}
+
+
+def _jsonld_food(ld: dict[str, Any], schema_type: str, attrs: dict[str, Any]) -> None:
+    cuisine = attrs.get("specialty") or attrs.get("food_type")
+    if schema_type == "Recipe":
+        if cuisine:
+            ld["recipeCuisine"] = cuisine
+        return
+    if cuisine:
+        ld["servesCuisine"] = cuisine
+    if attrs.get("price_range"):
+        ld["priceRange"] = attrs["price_range"]
+
+
+def _jsonld_lodging(ld: dict[str, Any], attrs: dict[str, Any]) -> None:
+    star = attrs.get("star_rating") or attrs.get("stars")
+    if star is not None:
+        ld["starRating"] = {"@type": "Rating", "ratingValue": str(star)}
+    if attrs.get("price_range"):
+        ld["priceRange"] = attrs["price_range"]
+    if attrs.get("check_in"):
+        ld["checkinTime"] = attrs["check_in"]
+    if attrs.get("check_out"):
+        ld["checkoutTime"] = attrs["check_out"]
+    if attrs.get("rooms"):
+        try:
+            ld["numberOfRooms"] = int(attrs["rooms"])
+        except (TypeError, ValueError):
+            pass
+    amenities = attrs.get("amenities")
+    if isinstance(amenities, list) and amenities:
+        ld["amenityFeature"] = [
+            {"@type": "LocationFeatureSpecification", "name": a}
+            for a in amenities if a
+        ]
+
+
+def _jsonld_event_location(ld: dict[str, Any], place: dict[str, Any] | None, coordinates: Any) -> None:
+    if not (place or coordinates):
+        return
+    loc: dict[str, Any] = {"@type": "Place"}
+    if place:
+        loc["name"] = place.get("name")
+    if ld.get("address"):
+        loc["address"] = ld["address"]
+    if coordinates:
+        loc["geo"] = ld["geo"]
+    ld["location"] = loc
+
+
+def _jsonld_event(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, Any],
+                  place: dict[str, Any] | None, coordinates: Any) -> None:
+    # P1-6: data thực dùng date_start/date_end (public_api) — trước chỉ đọc startDate camelCase
+    date_value = (attrs.get("startDate") or attrs.get("date_start")
+                  or attrs.get("date") or entity.get("startDate"))
+    if date_value:
+        ld["startDate"] = date_value
+    end_value = attrs.get("endDate") or attrs.get("date_end") or entity.get("endDate")
+    if end_value:
+        ld["endDate"] = end_value
+    ld["eventStatus"] = "https://schema.org/EventScheduled"
+    ld["eventAttendanceMode"] = "https://schema.org/OfflineEventAttendanceMode"
+    if attrs.get("organizer"):
+        ld["organizer"] = {"@type": "Organization", "name": attrs["organizer"]}
+    _jsonld_event_location(ld, place, coordinates)
+    capacity = attrs.get("capacity")
+    if isinstance(capacity, int) and capacity > 0:
+        ld["maximumAttendeeCapacity"] = capacity
+
+
+def _jsonld_type_fields(ld: dict[str, Any], schema_type: str, entity: dict[str, Any],
+                        attrs: dict[str, Any], entity_id: str,
+                        place: dict[str, Any] | None, coordinates: Any) -> None:
+    """Dispatcher trường JSON-LD đặc thù theo schema_type (tách từ build_entity_jsonld — R20.8)."""
+    if attrs.get("ocop"):
+        ld["identifier"] = {"@type": "PropertyValue", "propertyID": "OCOP", "value": str(attrs["ocop"])}
+    if schema_type == "TouristAttraction":
+        _jsonld_attraction(ld, attrs)
+    elif schema_type == "Product":
+        _jsonld_product(ld, attrs, entity_id)
+    elif schema_type in ("Recipe", "FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
+        _jsonld_food(ld, schema_type, attrs)
+    elif schema_type == "LodgingBusiness":
+        _jsonld_lodging(ld, attrs)
+    elif schema_type == "Event":
+        _jsonld_event(ld, entity, attrs, place, coordinates)
+    elif schema_type == "Person" and attrs.get("role"):
+        ld["jobTitle"] = attrs["role"]
+    if schema_type == "LocalBusiness" and str(entity.get("type")) == "craft_village":
+        ld["additionalType"] = "https://schema.org/TouristAttraction"
+
+
+def _jsonld_place_containment(ld: dict[str, Any], entity: dict[str, Any],
+                              by_id: dict[str, dict[str, Any]], entity_id: str) -> None:
+    """Place: containedInPlace (cha) + containsPlace (con công khai, tối đa 30)."""
+    ld["additionalType"] = "AdministrativeArea"
+    parent_id = entity.get("parentId")
+    if parent_id:
+        parent = by_id.get(str(parent_id))
+        if parent:
+            ld["containedInPlace"] = {
+                "@type": "Place",
+                "name": parent.get("name") or str(parent_id),
+                "url": _entity_url(str(parent_id)),
+            }
+    contained: list[dict[str, Any]] = []
+    for e in by_id.values():
+        if not isinstance(e, dict) or e.get("type") == "place":
+            continue
+        if str(e.get("placeId")) == entity_id and _is_public(e):
+            contained.append({
+                "@type": TYPE_SCHEMA.get(str(e.get("type")), "Thing"),
+                "name": e.get("name") or str(e.get("id")),
+                "url": _entity_url(str(e["id"])),
+            })
+        if len(contained) >= 30:
+            break
+    if contained:
+        ld["containsPlace"] = contained
+
+
+def _rel_peer(rel: Any, entity_id: str, by_id: dict[str, dict[str, Any]]) -> str | None:
+    """ID entity đối diện trong 1 quan hệ (nếu đầu kia có trong by_id), else None."""
+    if not isinstance(rel, dict):
+        return None
+    src = str(rel.get("from") or rel.get("from_id") or "")
+    dst = str(rel.get("to") or rel.get("to_id") or "")
+    if src == entity_id and dst in by_id:
+        return dst
+    if dst == entity_id and src in by_id:
+        return src
+    return None
+
+
+def _jsonld_related_links(ld: dict[str, Any], entity_id: str,
+                          by_id: dict[str, dict[str, Any]],
+                          relationships: list[dict[str, Any]]) -> None:
+    """relatedLink: URL các entity liên quan (tối đa 10, khử trùng)."""
+    related_urls: list[str] = []
+    for rel in relationships:
+        peer = _rel_peer(rel, entity_id, by_id)
+        if peer:
+            url = _entity_url(peer)
+            if url not in related_urls:
+                related_urls.append(url)
+        if len(related_urls) >= 10:
+            break
+    if related_urls:
+        ld["relatedLink"] = related_urls
+
+
+def _rating_dict(value: float, count: int) -> dict[str, Any]:
+    return {"@type": "AggregateRating", "ratingValue": value, "bestRating": 5, "ratingCount": count}
+
+
+def _jsonld_rating_primary(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, Any]) -> None:
+    avg_rating = attrs.get("avg_rating") or entity.get("avg_rating")
+    rating_count = attrs.get("rating_count") or entity.get("rating_count")
+    if avg_rating is None or not rating_count:
+        return
+    try:
+        rv = float(avg_rating)
+        rc = int(rating_count)
+    except (ValueError, TypeError):
+        return
+    if 1.0 <= rv <= 5.0 and rc >= AGGREGATE_RATING_MIN_COUNT:
+        ld["aggregateRating"] = _rating_dict(round(rv, 1), rc)
+
+
+def _jsonld_rating_fallback(ld: dict[str, Any], attrs: dict[str, Any]) -> None:
+    rating_val = attrs.get("rating")
+    if not isinstance(rating_val, (int, float)) or not (0 < rating_val <= 5):
+        return
+    review_count = attrs.get("review_count")
+    rc_attr = int(review_count) if isinstance(review_count, int) and review_count > 0 else 0
+    if rc_attr >= AGGREGATE_RATING_MIN_COUNT:
+        ld["aggregateRating"] = _rating_dict(round(float(rating_val), 1), rc_attr)
+
+
+def _jsonld_ratings(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, Any]) -> None:
+    """aggregateRating: ưu tiên avg_rating/rating_count (entity/attrs), fallback attrs.rating."""
+    _jsonld_rating_primary(ld, entity, attrs)
+    if "aggregateRating" not in ld:
+        _jsonld_rating_fallback(ld, attrs)
+
+
+def _jsonld_season(ld: dict[str, Any], entity: dict[str, Any]) -> None:
+    """additionalProperty: mùa vụ / mùa cao điểm từ entity.season."""
+    season = entity.get("season")
+    if not isinstance(season, dict):
+        return
+    months = season.get("months")
+    peak = season.get("peak")
+    MONTH_NAMES = {1: "Tháng 1", 2: "Tháng 2", 3: "Tháng 3", 4: "Tháng 4",
+                   5: "Tháng 5", 6: "Tháng 6", 7: "Tháng 7", 8: "Tháng 8",
+                   9: "Tháng 9", 10: "Tháng 10", 11: "Tháng 11", 12: "Tháng 12"}
+    props: list[dict[str, Any]] = []
+    if isinstance(months, list) and months:
+        props.append({
+            "@type": "PropertyValue",
+            "propertyID": "seasonMonths",
+            "name": "Mùa vụ",
+            "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(months) if isinstance(m, int)),
+        })
+    if isinstance(peak, list) and peak:
+        props.append({
+            "@type": "PropertyValue",
+            "propertyID": "peakSeason",
+            "name": "Mùa cao điểm",
+            "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(peak) if isinstance(m, int)),
+        })
+    if props:
+        existing = ld.get("additionalProperty")
+        if isinstance(existing, list):
+            existing.extend(props)
+        else:
+            ld["additionalProperty"] = props
+
+
+def _jsonld_base(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, Any]) -> None:
     if entity.get("summary"):
         ld["description"] = entity["summary"]
     if entity.get("images"):
@@ -550,12 +779,13 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
         if image_objects:
             ld["image"] = image_objects
 
-    coordinates = parse_coordinates(entity.get("coordinates") or entity.get("coords"))
+
+def _jsonld_location(ld: dict[str, Any], coordinates: Any, area: str | None,
+                     place: dict[str, Any] | None, attrs: dict[str, Any]) -> None:
     if coordinates:
         lat, lng = coordinates
         ld["geo"] = {"@type": "GeoCoordinates", "latitude": lat, "longitude": lng}
         ld["hasMap"] = f"https://www.google.com/maps?q={lat},{lng}"
-
     if area or place or attrs.get("address"):
         address: dict[str, Any] = {"@type": "PostalAddress", "addressCountry": "VN"}
         if attrs.get("address"):
@@ -566,110 +796,21 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
             address["addressRegion"] = AREA_NAMES.get(area, area)
         ld["address"] = address
 
+
+def _jsonld_sources(ld: dict[str, Any], entity: dict[str, Any],
+                    source_title: str | None, source_url: str | None) -> None:
     same_as = _same_as_values(entity)
     if same_as:
         ld["sameAs"] = same_as if len(same_as) > 1 else same_as[0]
     if source_url:
         ld["citation"] = {"@type": "CreativeWork", "name": source_title or source_url, "url": source_url}
 
+
+def _jsonld_contact(ld: dict[str, Any], attrs: dict[str, Any]) -> None:
     if attrs.get("phone"):
         ld["telephone"] = attrs["phone"]
     if attrs.get("hours"):
         ld["openingHours"] = attrs["hours"]
-
-    if schema_type == "TouristAttraction":
-        if attrs.get("admission") is not None:
-            free = str(attrs["admission"]).strip().lower() in ("0", "free", "miễn phí", "")
-            ld["isAccessibleForFree"] = free
-        if attrs.get("tourist_type"):
-            ld["touristType"] = attrs["tourist_type"]
-
-    if attrs.get("ocop"):
-        ld["identifier"] = {"@type": "PropertyValue", "propertyID": "OCOP", "value": str(attrs["ocop"])}
-
-    if schema_type == "Product":
-        if attrs.get("price"):
-            price_digits = re.sub(r"[^0-9]", "", str(attrs["price"]))
-            price_value = price_digits if price_digits else str(attrs["price"])
-            if price_value.strip():
-                ld["offers"] = {
-                    "@type": "Offer",
-                    "price": price_value,
-                    "priceCurrency": "VND",
-                    "availability": "https://schema.org/InStock",
-                    "url": _entity_url(entity_id),
-                }
-        if attrs.get("ocop"):
-            ld["brand"] = {"@type": "Brand", "name": f"OCOP {attrs['ocop']}"}
-        if attrs.get("material"):
-            ld["material"] = attrs["material"]
-        ld["countryOfOrigin"] = {"@type": "Country", "name": "Việt Nam"}
-
-    if schema_type == "Recipe":
-        cuisine = attrs.get("specialty") or attrs.get("food_type")
-        if cuisine:
-            ld["recipeCuisine"] = cuisine
-    elif schema_type in ("FoodEstablishment", "Restaurant", "CafeOrCoffeeShop"):
-        cuisine = attrs.get("specialty") or attrs.get("food_type")
-        if cuisine:
-            ld["servesCuisine"] = cuisine
-        if attrs.get("price_range"):
-            ld["priceRange"] = attrs["price_range"]
-
-    if schema_type == "LodgingBusiness":
-        star = attrs.get("star_rating") or attrs.get("stars")
-        if star is not None:
-            ld["starRating"] = {"@type": "Rating", "ratingValue": str(star)}
-        if attrs.get("price_range"):
-            ld["priceRange"] = attrs["price_range"]
-        if attrs.get("check_in"):
-            ld["checkinTime"] = attrs["check_in"]
-        if attrs.get("check_out"):
-            ld["checkoutTime"] = attrs["check_out"]
-        if attrs.get("rooms"):
-            try:
-                ld["numberOfRooms"] = int(attrs["rooms"])
-            except (TypeError, ValueError):
-                pass
-        amenities = attrs.get("amenities")
-        if isinstance(amenities, list) and amenities:
-            ld["amenityFeature"] = [
-                {"@type": "LocationFeatureSpecification", "name": a}
-                for a in amenities if a
-            ]
-
-    if schema_type == "Event":
-        # P1-6: data thực dùng date_start/date_end (public_api) — trước chỉ đọc startDate camelCase
-        date_value = (attrs.get("startDate") or attrs.get("date_start")
-                      or attrs.get("date") or entity.get("startDate"))
-        if date_value:
-            ld["startDate"] = date_value
-        end_value = attrs.get("endDate") or attrs.get("date_end") or entity.get("endDate")
-        if end_value:
-            ld["endDate"] = end_value
-        ld["eventStatus"] = "https://schema.org/EventScheduled"
-        ld["eventAttendanceMode"] = "https://schema.org/OfflineEventAttendanceMode"
-        if attrs.get("organizer"):
-            ld["organizer"] = {"@type": "Organization", "name": attrs["organizer"]}
-        if place or coordinates:
-            loc: dict[str, Any] = {"@type": "Place"}
-            if place:
-                loc["name"] = place.get("name")
-            if ld.get("address"):
-                loc["address"] = ld["address"]
-            if coordinates:
-                loc["geo"] = ld["geo"]
-            ld["location"] = loc
-        capacity = attrs.get("capacity")
-        if isinstance(capacity, int) and capacity > 0:
-            ld["maximumAttendeeCapacity"] = capacity
-
-    if schema_type == "Person" and attrs.get("role"):
-        ld["jobTitle"] = attrs["role"]
-
-    if schema_type == "LocalBusiness" and str(entity.get("type")) == "craft_village":
-        ld["additionalType"] = "https://schema.org/TouristAttraction"
-
     phone = attrs.get("phone")
     if isinstance(phone, str) and phone.strip():
         ld["telephone"] = phone.strip()
@@ -680,69 +821,8 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if isinstance(opening, str) and opening.strip():
         ld["openingHours"] = opening.strip()
 
-    if schema_type == "Place":
-        ld["additionalType"] = "AdministrativeArea"
-        parent_id = entity.get("parentId")
-        if parent_id:
-            parent = by_id.get(str(parent_id))
-            if parent:
-                ld["containedInPlace"] = {
-                    "@type": "Place",
-                    "name": parent.get("name") or str(parent_id),
-                    "url": _entity_url(str(parent_id)),
-                }
-        contained: list[dict[str, Any]] = []
-        for e in by_id.values():
-            if not isinstance(e, dict) or e.get("type") == "place":
-                continue
-            if str(e.get("placeId")) == entity_id and _is_public(e):
-                contained.append({
-                    "@type": TYPE_SCHEMA.get(str(e.get("type")), "Thing"),
-                    "name": e.get("name") or str(e.get("id")),
-                    "url": _entity_url(str(e["id"])),
-                })
-            if len(contained) >= 30:
-                break
-        if contained:
-            ld["containsPlace"] = contained
 
-    if relationships:
-        related_urls: list[str] = []
-        for rel in relationships:
-            if not isinstance(rel, dict):
-                continue
-            src = str(rel.get("from") or rel.get("from_id") or "")
-            dst = str(rel.get("to") or rel.get("to_id") or "")
-            peer: str | None = None
-            if src == entity_id and dst in by_id:
-                peer = dst
-            elif dst == entity_id and src in by_id:
-                peer = src
-            if peer:
-                url = _entity_url(peer)
-                if url not in related_urls:
-                    related_urls.append(url)
-            if len(related_urls) >= 10:
-                break
-        if related_urls:
-            ld["relatedLink"] = related_urls
-
-    avg_rating = attrs.get("avg_rating") or entity.get("avg_rating")
-    rating_count = attrs.get("rating_count") or entity.get("rating_count")
-    if avg_rating is not None and rating_count:
-        try:
-            rv = float(avg_rating)
-            rc = int(rating_count)
-            if 1.0 <= rv <= 5.0 and rc >= AGGREGATE_RATING_MIN_COUNT:
-                ld["aggregateRating"] = {
-                    "@type": "AggregateRating",
-                    "ratingValue": round(rv, 1),
-                    "bestRating": 5,
-                    "ratingCount": rc,
-                }
-        except (ValueError, TypeError):
-            pass
-
+def _jsonld_dates(ld: dict[str, Any], entity: dict[str, Any]) -> None:
     date_modified = _safe_date(entity.get("updatedAt"))
     if date_modified:
         ld["dateModified"] = date_modified
@@ -750,48 +830,8 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if date_created:
         ld["dateCreated"] = date_created
 
-    season = entity.get("season")
-    if isinstance(season, dict):
-        months = season.get("months")
-        peak = season.get("peak")
-        MONTH_NAMES = {1: "Tháng 1", 2: "Tháng 2", 3: "Tháng 3", 4: "Tháng 4",
-                       5: "Tháng 5", 6: "Tháng 6", 7: "Tháng 7", 8: "Tháng 8",
-                       9: "Tháng 9", 10: "Tháng 10", 11: "Tháng 11", 12: "Tháng 12"}
-        props: list[dict[str, Any]] = []
-        if isinstance(months, list) and months:
-            props.append({
-                "@type": "PropertyValue",
-                "propertyID": "seasonMonths",
-                "name": "Mùa vụ",
-                "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(months) if isinstance(m, int)),
-            })
-        if isinstance(peak, list) and peak:
-            props.append({
-                "@type": "PropertyValue",
-                "propertyID": "peakSeason",
-                "name": "Mùa cao điểm",
-                "value": ", ".join(MONTH_NAMES.get(m, str(m)) for m in sorted(peak) if isinstance(m, int)),
-            })
-        if props:
-            existing = ld.get("additionalProperty")
-            if isinstance(existing, list):
-                existing.extend(props)
-            else:
-                ld["additionalProperty"] = props
 
-    if "aggregateRating" not in ld:
-        rating_val = attrs.get("rating")
-        review_count = attrs.get("review_count")
-        if isinstance(rating_val, (int, float)) and 0 < rating_val <= 5:
-            rc_attr = int(review_count) if isinstance(review_count, int) and review_count > 0 else 0
-            if rc_attr >= AGGREGATE_RATING_MIN_COUNT:
-                ld["aggregateRating"] = {
-                    "@type": "AggregateRating",
-                    "ratingValue": round(float(rating_val), 1),
-                    "bestRating": 5,
-                    "ratingCount": rc_attr,
-                }
-
+def _jsonld_keywords(ld: dict[str, Any], entity: dict[str, Any], area: str | None) -> None:
     kw_parts: list[str] = []
     entity_name = entity.get("name")
     if entity_name:
@@ -805,6 +845,9 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     if kw_parts:
         ld["keywords"] = ", ".join(kw_parts)
 
+
+def _jsonld_meta(ld: dict[str, Any], entity: dict[str, Any],
+                 by_id: dict[str, dict[str, Any]], entity_id: str) -> None:
     ld["mainEntityOfPage"] = {
         "@type": "WebPage",
         "@id": _entity_url(entity_id),
@@ -815,6 +858,37 @@ def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]]
     ld["isPartOf"] = {"@id": f"{SITE}/#website"}
     ld["breadcrumb"] = _build_breadcrumb(entity, by_id)
 
+
+def build_entity_jsonld(entity: dict[str, Any], by_id: dict[str, dict[str, Any]], *, relationships: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    schema_type = TYPE_SCHEMA.get(str(entity.get("type")), "Thing")
+    entity_id = str(entity.get("id"))
+    area = _entity_area(entity, by_id)
+    place = by_id.get(str(entity.get("placeId"))) if entity.get("placeId") else None
+    attrs = entity.get("attributes") if isinstance(entity.get("attributes"), dict) else {}
+    source_title, source_url = _source_info(entity)
+    coordinates = parse_coordinates(entity.get("coordinates") or entity.get("coords"))
+
+    ld: dict[str, Any] = {
+        "@context": "https://schema.org",
+        "@type": schema_type,
+        "@id": _entity_url(entity_id),
+        "name": entity.get("name") or entity_id,
+        "url": _entity_url(entity_id),
+    }
+    _jsonld_base(ld, entity, attrs)
+    _jsonld_location(ld, coordinates, area, place, attrs)
+    _jsonld_sources(ld, entity, source_title, source_url)
+    _jsonld_type_fields(ld, schema_type, entity, attrs, entity_id, place, coordinates)
+    _jsonld_contact(ld, attrs)
+    if schema_type == "Place":
+        _jsonld_place_containment(ld, entity, by_id, entity_id)
+    if relationships:
+        _jsonld_related_links(ld, entity_id, by_id, relationships)
+    _jsonld_ratings(ld, entity, attrs)
+    _jsonld_dates(ld, entity)
+    _jsonld_season(ld, entity)
+    _jsonld_keywords(ld, entity, area)
+    _jsonld_meta(ld, entity, by_id, entity_id)
     return {key: value for key, value in ld.items() if value not in (None, "", [], {})}
 
 
