@@ -533,6 +533,25 @@ class TestCommentSoftDelete:
         assert "ADD COLUMN IF NOT EXISTS deleted_at" in sql
 
 
+class TestErrorShapeStandardized:
+    """SP3 W6.2: mọi lỗi trả {detail, request_id} (không còn {error} bypass).
+    public_api dùng _err(), server dùng _error_response() → đồng nhất với
+    HTTPException handler. Chặn tái diễn."""
+
+    def test_no_error_key_bypass(self):
+        import os
+        d = os.path.dirname(inspect.getsourcefile(__import__("social")))
+        for fn in ("public_api.py", "server.py"):
+            src = open(os.path.join(d, fn), encoding="utf-8").read()
+            assert 'content={"error"' not in src, f"{fn} còn JSONResponse({{error}}) bypass"
+
+    def test_err_helper_returns_detail(self):
+        import public_api
+        r = public_api._err(404, "not_found")
+        import json
+        assert json.loads(bytes(r.body).decode())["detail"] == "not_found"
+
+
 class TestReactionEnrichmentComprehensive:
     """All post-returning endpoints call _enrich_reactions."""
 
@@ -2495,7 +2514,9 @@ class TestCommentCountSync:
     def test_delete_comment_decrements_count(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
         idx = src.index("async def delete_comment(")
-        fn = src[idx:idx+1500]
+        # window 2500: W6.1 soft-delete thêm comment giải thích đẩy UPDATE posts
+        # xuống quá 1500 ký tự; logic count vẫn còn nguyên.
+        fn = src[idx:idx+2500]
         assert "comment_count" in fn
         assert "GREATEST" in fn
 

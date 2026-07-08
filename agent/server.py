@@ -1049,7 +1049,7 @@ async def limit_request_size(request: Request, call_next):
         try:
             size = int(content_length)
         except ValueError:
-            return JSONResponse(status_code=400, content={"error": "Invalid Content-Length header"})
+            return _error_response(400, "Invalid Content-Length header")
         path = request.url.path
         limit = MAX_BODY_SIZE
         for prefix, plimit in _BODY_LIMITS.items():
@@ -1057,8 +1057,7 @@ async def limit_request_size(request: Request, call_next):
                 limit = plimit
                 break
         if size > limit:
-            return JSONResponse(status_code=413,
-                                content={"error": f"Request body too large (max {limit // 1024}KB)"})
+            return _error_response(413, f"Request body too large (max {limit // 1024}KB)")
     return await call_next(request)
 
 
@@ -1770,11 +1769,10 @@ async def chat(req: ChatRequest, request: Request):
     allowed, rate_info = chat_limiter.is_allowed(client_ip)
     if not allowed:
         logger.warn("Rate limited", ip=client_ip, endpoint="/chat")
-        return JSONResponse(
-            status_code=429,
-            content={"error": "Quá nhiều yêu cầu. Vui lòng thử lại sau.", "retry_after": rate_info["retry_after"]},
-            headers={"Retry-After": str(rate_info["retry_after"])},
-        )
+        _resp = _error_response(429, "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
+                                retry_after=rate_info["retry_after"])
+        _resp.headers["Retry-After"] = str(rate_info["retry_after"])
+        return _resp
 
     session_id = req.session_id or str(uuid.uuid4())[:8]
     user_id = session_id  # For now, session_id = user_id
@@ -2552,8 +2550,7 @@ async def reload_data(request: Request):
         except Exception:
             authed = False
     if not authed:
-        return JSONResponse(status_code=403, content={"error": "forbidden",
-                            "detail": "Cần X-Admin-Key hoặc phiên admin"})
+        return _error_response(403, "Cần X-Admin-Key hoặc phiên admin")
 
     def _reload_blocking():
         # GĐ11.4: toàn bộ phần nặng (reload DB + rebuild index + sync) chạy trong thread
@@ -2783,7 +2780,7 @@ async def metrics_endpoint(request: Request):
     from admin import require_admin
     await require_admin(request)
     if not HAS_METRICS:
-        return JSONResponse(status_code=501, content={"error": "Metrics module not available"})
+        return _error_response(501, "Metrics module not available")
     set_gauge("cache_size", len(cache._cache) if hasattr(cache, '_cache') else 0)
     set_gauge("entities_total", len(knowledge._entities))
     from fastapi.responses import Response
@@ -2917,7 +2914,7 @@ async def trigger_learning(request: Request):
                 "reason": summary["reason"], "before": summary["before"], "after": summary["after"]}
     except Exception as e:
         logger.error("learning-loop error: %s", e)
-        return JSONResponse(status_code=500, content={"error": "Internal server error"})
+        return _error_response(500, "Internal server error")
 
 
 @app.get("/system/self-evolution", tags=["System"])
@@ -3029,7 +3026,7 @@ async def save_checkpoint(req: CheckpointSaveRequest, request: Request):
     from admin import require_admin
     await require_admin(request)
     if not HAS_CHECKPOINTS:
-        return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
+        return _error_response(501, "Checkpoints not available")
     cp_id = checkpoint_manager.save_checkpoint(
         session_id=req.session_id,
         messages=req.messages,
@@ -3046,10 +3043,10 @@ async def resume_checkpoint(checkpoint_id: str, request: Request):
     from admin import require_admin
     await require_admin(request)
     if not HAS_CHECKPOINTS:
-        return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
+        return _error_response(501, "Checkpoints not available")
     result = checkpoint_manager.resume_from(checkpoint_id)
     if result is None:
-        return JSONResponse(status_code=404, content={"error": "Checkpoint not found"})
+        return _error_response(404, "Checkpoint not found")
     messages, agent_state = result
     return {"messages": messages, "agent_state": agent_state}
 
@@ -3073,10 +3070,10 @@ async def confirm_action(confirmation_id: str, request: Request):
     from admin import require_admin
     await require_admin(request)
     if not HAS_CHECKPOINTS:
-        return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
+        return _error_response(501, "Checkpoints not available")
     params = confirmation_manager.confirm(confirmation_id)
     if params is None:
-        return JSONResponse(status_code=404, content={"error": "Confirmation not found or expired"})
+        return _error_response(404, "Confirmation not found or expired")
     return {"confirmed": True, "params": params}
 
 
@@ -3086,7 +3083,7 @@ async def reject_action(confirmation_id: str, request: Request):
     from admin import require_admin
     await require_admin(request)
     if not HAS_CHECKPOINTS:
-        return JSONResponse(status_code=501, content={"error": "Checkpoints not available"})
+        return _error_response(501, "Checkpoints not available")
     body = await request.json() if request.headers.get("content-type") == "application/json" else {}
     reason = body.get("reason", "")
     confirmation_manager.reject(confirmation_id, reason)
@@ -3144,7 +3141,7 @@ async def user_feedback(req: FeedbackRequest, request: Request):
     client_ip = get_client_ip(request)
     allowed, _ = chat_limiter.is_allowed(f"fb:{client_ip}")
     if not allowed:
-        return JSONResponse(status_code=429, content={"error": "Too many requests"})
+        return _error_response(429, "Too many requests")
 
     user_id = req.user_id or req.session_id or "anonymous"
     query = req.query
@@ -3235,7 +3232,7 @@ async def build_vectors(request: Request):
     from admin import require_admin_scope
     await require_admin_scope(request, "ops.deploy")
     if not HAS_VECTOR:
-        return JSONResponse(status_code=501, content={"error": "Vector search module not available"})
+        return _error_response(501, "Vector search module not available")
     def _build():
         knowledge._ensure()
         return embedding_store.build_index(knowledge._entities)
@@ -3367,17 +3364,17 @@ async def image_recognize_endpoint(request: Request):
     from admin import require_admin_scope
     await require_admin_scope(request, "ops.deploy")
     if not HAS_IMAGE_RECOGNITION:
-        return JSONResponse(status_code=501, content={"error": "Image recognition not available"})
+        return _error_response(501, "Image recognition not available")
     content_type = request.headers.get("content-type", "")
     if "multipart" in content_type:
         form = await request.form()
         file = form.get("file")
         if not file:
-            return JSONResponse(status_code=400, content={"error": "No file uploaded"})
+            return _error_response(400, "No file uploaded")
         max_bytes = 10 * 1024 * 1024
         file_bytes = await file.read(max_bytes + 1)
         if len(file_bytes) > max_bytes:
-            return JSONResponse(status_code=413, content={"error": "Image too large (max 10MB)"})
+            return _error_response(413, "Image too large (max 10MB)")
         filename = getattr(file, "filename", "image.jpg")
         ct = getattr(file, "content_type", "image/jpeg")
         result = process_upload(file_bytes, filename, ct)
@@ -3386,10 +3383,10 @@ async def image_recognize_endpoint(request: Request):
         body = await request.json()
         image_b64 = body.get("image")
         if not image_b64:
-            return JSONResponse(status_code=400, content={"error": "No image data"})
+            return _error_response(400, "No image data")
         # Limit base64 image size to ~10MB (13.3M base64 chars)
         if len(image_b64) > 13_400_000:
-            return JSONResponse(status_code=413, content={"error": "Image too large (max 10MB)"})
+            return _error_response(413, "Image too large (max 10MB)")
         knowledge._ensure()
         result = recognize_image(image_b64, knowledge._entities)
         return result

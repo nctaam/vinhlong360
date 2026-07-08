@@ -31,6 +31,17 @@ from auth_middleware import validate_path_id, require_pg, require_user, require_
 
 router = APIRouter(prefix="/api", tags=["public"])
 
+
+def _err(status_code: int, detail: str, **extra) -> JSONResponse:
+    """Error-shape chuẩn (SP3 W6.2): {detail, ...} — đồng nhất với
+    server._error_response và HTTPException handler. Trước đây public_api trả
+    {error: code} bypass handler; nay dùng detail (FE dựa HTTP status, không đọc
+    error-code — đã verify grep web-nuxt)."""
+    body: dict = {"detail": detail}
+    body.update(extra)
+    return JSONResponse(status_code=status_code, content=body)
+
+
 from collections import OrderedDict
 import threading as _threading
 
@@ -1008,7 +1019,7 @@ async def get_entity_relationships(
                 "offset": offset, "relationships": rels}
     result = await asyncio.to_thread(_query)
     if not result:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
     return result
 
 
@@ -1089,7 +1100,7 @@ async def get_entity(
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
     if not await asyncio.to_thread(_get_public_entity, entity_id):
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
     cache_key = f"{entity_id}:{relationship_limit}"
     now = _time.time()
     cached = _entity_cache.get(cache_key)
@@ -1119,7 +1130,7 @@ async def get_entity(
         return e
     entity = await asyncio.to_thread(_query)
     if not entity:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
 
     etag = f'W/"{hashlib.md5(json.dumps(entity, sort_keys=True, default=str).encode()).hexdigest()[:16]}"'
     response.headers["ETag"] = etag
@@ -1179,7 +1190,7 @@ async def get_entity_stats(entity_id: str, response: Response):
         }
     result = await asyncio.to_thread(_query)
     if not result:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
     return result
 
 
@@ -1232,7 +1243,7 @@ async def get_entity_rating_breakdown(entity_id: str, response: Response):
 
     result = await asyncio.to_thread(_query)
     if not result:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
     return result
 
 
@@ -1252,7 +1263,7 @@ async def get_entity_reviews(
     require_pg()
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
     if not await asyncio.to_thread(_get_public_entity, entity_id):
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
     ph = db._ph
     offset = (page - 1) * limit
     uid = str(user["id"]) if user else None
@@ -1416,7 +1427,7 @@ async def place_overview(place_id: str, response: Response):
         }
     result = await asyncio.to_thread(_query)
     if not result:
-        return JSONResponse(status_code=404, content={"error": "not_found", "detail": "Không phải xã/phường"})
+        return _err(404, "Không phải xã/phường")
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=60"
     return result
 
@@ -1492,7 +1503,7 @@ async def place_day_plan(place_id: str, response: Response):
 
     result = await asyncio.to_thread(_query)
     if not result:
-        return JSONResponse(status_code=404, content={"error": "not_found", "detail": "Không phải xã/phường"})
+        return _err(404, "Không phải xã/phường")
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=60"
     return result
 
@@ -1539,7 +1550,7 @@ async def get_itinerary(itin_id: str, response: Response):
         return it
     result = await asyncio.to_thread(_query)
     if not result:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
     return result
 
 
@@ -2221,11 +2232,8 @@ async def submit_report(payload: ReportIn, request: Request):
     ip = get_client_ip(request)
     allowed, info = report_limiter.is_allowed(ip)
     if not allowed:
-        return JSONResponse(
-            status_code=429,
-            content={"error": "rate_limited", "retry_after": info.get("retry_after", 60),
-                     "message": "Bạn gửi quá nhiều báo cáo. Vui lòng thử lại sau."},
-        )
+        return _err(429, "Bạn gửi quá nhiều báo cáo. Vui lòng thử lại sau.",
+                    retry_after=info.get("retry_after", 60))
     target_type = payload.target_type if payload.target_type in _VALID_TARGET_TYPES else "other"
     report_field = payload.field if payload.field and payload.field in _REPORT_FIELD_OPTIONS else None
     record = {
@@ -2249,7 +2257,7 @@ async def submit_report(payload: ReportIn, request: Request):
         await asyncio.to_thread(_write)
     except OSError:
         logger.exception("Failed to write report to %s", REPORTS_FILE)
-        return JSONResponse(status_code=500, content={"error": "store_failed"})
+        return _err(500, "store_failed")
     return {"ok": True, "message": "Đã ghi nhận. Cảm ơn bạn đã góp ý — chúng tôi sẽ kiểm tra."}
 
 
@@ -2277,10 +2285,8 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
     ip = get_client_ip(request)
     allowed, info = report_limiter.is_allowed(ip)
     if not allowed:
-        return JSONResponse(
-            status_code=429,
-            content={"error": "rate_limited", "retry_after": info.get("retry_after", 60)},
-        )
+        return _err(429, "Bạn gửi quá nhiều yêu cầu. Vui lòng thử lại sau.",
+                    retry_after=info.get("retry_after", 60))
     record = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "target_id": entity_id,
@@ -2300,7 +2306,7 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
         await asyncio.to_thread(_write)
     except OSError:
         logger.exception("Failed to write stale report")
-        return JSONResponse(status_code=500, content={"error": "store_failed"})
+        return _err(500, "store_failed")
     return {"ok": True, "message": "Đã ghi nhận — chúng tôi sẽ kiểm tra và cập nhật."}
 
 
@@ -2315,7 +2321,7 @@ async def get_entity_gallery(entity_id: str, response: Response):
 
     entity = await asyncio.to_thread(_get_public_entity, entity_id)
     if not entity:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
 
     images: list[dict] = []
     attrs = entity.get("attributes") or {}
@@ -2412,7 +2418,7 @@ async def get_review_stats(entity_id: str, response: Response):
 
     entity = await asyncio.to_thread(_get_public_entity, entity_id)
     if not entity:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
 
     now = _time.time()
     cached = _REVIEW_STATS_CACHE.get(entity_id)
@@ -2492,7 +2498,7 @@ async def get_similar_entities(
     validate_path_id(entity_id, "entity_id")
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
     if not await asyncio.to_thread(_get_public_entity, entity_id):
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
 
     now = _time.time()
     cache_key = f"{entity_id}:{limit}"
@@ -2531,7 +2537,7 @@ async def get_similar_entities(
     if result is None:
         entity = await asyncio.to_thread(_get_public_entity, entity_id)
         if not entity:
-            return JSONResponse(status_code=404, content={"error": "not_found"})
+            return _err(404, "not_found")
         return {"entity_id": entity_id, "similar": []}
 
     _similar_cache[cache_key] = (now, result)
@@ -2601,7 +2607,7 @@ async def get_entity_qa(
 
     entity = await asyncio.to_thread(_get_public_entity, entity_id)
     if not entity:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
 
     ph = db._ph
     offset = (page - 1) * limit
@@ -2718,7 +2724,7 @@ async def track_contact_view(
         await asyncio.to_thread(_write)
     except OSError:
         logger.exception("Failed to write contact view log")
-        return JSONResponse(status_code=500, content={"error": "store_failed"})
+        return _err(500, "store_failed")
     return {"ok": True}
 
 
@@ -2784,7 +2790,7 @@ async def feed_new_since(
     try:
         since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
     except (ValueError, TypeError):
-        return JSONResponse(status_code=400, content={"error": "invalid_date", "detail": "since phải là ISO datetime"})
+        return _err(400, "since phải là ISO datetime")
 
     def _query():
         import knowledge
@@ -2878,7 +2884,7 @@ async def get_collection_by_slug(slug: str, response: Response):
         return col
     result = await asyncio.to_thread(_query)
     if not result:
-        return JSONResponse(status_code=404, content={"error": "not_found"})
+        return _err(404, "not_found")
     return result
 
 
