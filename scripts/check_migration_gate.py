@@ -12,8 +12,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATIONS = ROOT / "agent" / "migrations"
-LATEST_SCHEMA_VERSION = 67
-LATEST_MIGRATION = "067_trusted_devices.sql"
+LATEST_SCHEMA_VERSION = 68
+LATEST_MIGRATION = "068_comments_deleted_at.sql"
 
 
 @dataclass

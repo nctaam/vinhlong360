@@ -1940,7 +1940,7 @@ class TestCommentParentValidation:
     def test_parent_check_before_insert(self):
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         idx = src.find("async def create_comment(")
-        block = src[idx:idx+2500]
+        block = src[idx:idx+3500]  # W6.1: soft-delete filter đẩy INSERT ra ngoài window 2500 cũ
         parent_check_idx = block.find("Bình luận gốc không thuộc bài viết này")
         insert_idx = block.find("INSERT INTO comments")
         assert parent_check_idx > 0, "Must have parent-post validation error message"

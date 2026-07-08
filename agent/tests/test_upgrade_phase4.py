@@ -136,7 +136,8 @@ class TestWhatsNewFeed:
     def test_validates_since_date(self):
         src = inspect.getsource(__import__("public_api").feed_new_since)
         assert "fromisoformat" in src
-        assert "invalid_date" in src
+        # W6.2 chuẩn-hoá error-shape: bỏ code "invalid_date", validate vẫn trả 400 {detail}
+        assert "_err(400" in src
 
     def test_returns_entities_and_posts(self):
         src = inspect.getsource(__import__("public_api").feed_new_since)
