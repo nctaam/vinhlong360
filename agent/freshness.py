@@ -86,13 +86,20 @@ def _get_source_value(entity: dict) -> str | None:
 
 
 def _parse_date(date_str: str) -> datetime | None:
-    """Parse date string in common formats."""
-    for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%S.%f"):
-        try:
-            return datetime.strptime(date_str, fmt)
-        except ValueError:
-            continue
-    return None
+    """Parse date → tz-aware (UTC). Xử lý ISO-8601 có offset ('...Z', '+07:00' —
+    format CHÍNH trong data.json: 1694/1749 date) lẫn 3 format naive cũ.
+
+    Trước đây trả naive: date-only parseable → so với `cutoff` aware gây
+    `TypeError` → /freshness/check & /freshness/report CRASH 500 (55 entity
+    date-only); còn '...Z' thì strptime không nuốt → None → staleness câm lặng
+    cho 1694 entity. Nay chuẩn-hoá aware, staleness đúng toàn dataset (bug SP3-W5)."""
+    if not date_str:
+        return None
+    try:  # fromisoformat nuốt cả 3 format naive cũ lẫn ISO-offset ('...Z')
+        dt = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return None
 
 
 def _is_knowledge_entity(entity: dict) -> bool:
