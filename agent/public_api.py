@@ -24,6 +24,11 @@ logger = logging.getLogger(__name__)
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
+from api_schemas import (  # W6.3: response_model (extra="allow" — không strip field FE)
+    AreasResponse, AutocompleteResponse, CollectionsResponse, CompareResponse,
+    EntityListResponse, EntityMapResponse, EntityTypesResponse, EventsResponse,
+    FeaturedResponse, PopularResponse, SearchResponse, TrendingResponse,
+)
 from database import db
 from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
@@ -1022,7 +1027,7 @@ def _search_users_for_contract(q: str, user: dict | None, limit: int) -> tuple[l
     return users, int(total or 0)
 
 
-@router.get("/entities",
+@router.get("/entities", response_model=EntityListResponse,
             summary="List entities",
             description="Returns a paginated list of public entities. Supports filtering by type, area, search query, month, and sorting by rating/name/newest.")
 async def list_entities(
@@ -1090,7 +1095,7 @@ async def get_entity_relationships(
     return result
 
 
-@router.get("/featured",
+@router.get("/featured", response_model=FeaturedResponse,
             summary="Get featured entities",
             description="Returns up to 20 editorially featured entities sorted by display order. Includes basic entity info and images.")
 async def get_featured_entities(response: Response):
@@ -1123,7 +1128,7 @@ async def get_featured_entities(response: Response):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/entity-types",
+@router.get("/entity-types", response_model=EntityTypesResponse,
             summary="List entity types",
             description="Returns all entity types with their counts, ordered by frequency. Cached for 1 hour.")
 async def entity_types(response: Response):
@@ -1136,7 +1141,7 @@ async def entity_types(response: Response):
     return {"types": result, "total": sum(t["count"] for t in result)}
 
 
-@router.get("/areas",
+@router.get("/areas", response_model=AreasResponse,
             summary="List areas with places",
             description="Returns all administrative areas grouped with their places (wards/communes). Cached for 1 hour.")
 async def list_areas(response: Response):
@@ -1672,7 +1677,7 @@ def _rank_search_entities(items: list[dict], query: str) -> list[dict]:
     ranked.sort(key=lambda row: (-row[0], row[1]))
     return [item for _score, _idx, item in ranked]
 
-@router.get("/search",
+@router.get("/search", response_model=SearchResponse,
             summary="Unified public search",
             description="Searches entities, community posts, and users with one contract. Keeps legacy results/total fields for existing clients.")
 async def search(
@@ -1720,7 +1725,7 @@ async def search(
     }
 
 
-@router.get("/autocomplete",
+@router.get("/autocomplete", response_model=AutocompleteResponse,
             summary="Autocomplete entity names",
             description="Lightweight typeahead suggestions for entity name search. Returns id, name, type, and place for up to 8 matches.")
 async def autocomplete(
@@ -2335,7 +2340,7 @@ def _event_sort_key(e: dict, today):
     return (2, datetime(today.year, 12, 31).date())
 
 
-@router.get("/events",
+@router.get("/events", response_model=EventsResponse,
             summary="List events",
             description="Returns upcoming events sorted by date. Filters out past events by default and excludes unreliable dates. Filterable by area.")
 async def list_events(
@@ -3012,7 +3017,7 @@ async def feed_new_since(
 # ── Collections (U-28, public read-only) ──────────────────────────────
 
 
-@router.get("/collections",
+@router.get("/collections", response_model=CollectionsResponse,
             summary="List public collections",
             description="Returns published editorial collections sorted by display order. Each collection includes title, description, cover image, and entity IDs.")
 async def list_public_collections(response: Response, limit: int = Query(20, ge=1, le=100)):
@@ -3110,7 +3115,7 @@ def _map_search_shape(e: dict, coords: list) -> dict:
     }
 
 
-@router.get("/entities/map",
+@router.get("/entities/map", response_model=EntityMapResponse,
             summary="Search entities by bounding box",
             description="Returns entities within a geographic bounding box for map display. Supports entity type filter. Returns coordinates, summary, and first image.")
 async def entities_map_search(
@@ -3147,7 +3152,7 @@ async def entities_map_search(
 
 # ── Entity Trending (hot entities recently) ──────────────────────────────
 
-@router.get("/entities/trending",
+@router.get("/entities/trending", response_model=TrendingResponse,
             summary="Get trending entities",
             description="Returns entities with the most activity (posts, reviews, bookmarks) in a recent time period. Filterable by entity type. Requires Postgres.")
 async def entities_trending(
@@ -3256,7 +3261,7 @@ async def user_engagement_stats(user_id: str, response: Response):
 
 # ── Entity comparison ─────────────────────────────────────────────────
 
-@router.get("/entities/compare",
+@router.get("/entities/compare", response_model=CompareResponse,
             summary="Compare entities side by side",
             description="Returns side-by-side comparison data for 2-5 entities. Includes practical attributes (hours, phone, address) and quality scores.")
 async def compare_entities(
@@ -3343,7 +3348,7 @@ def _shape_popular_entity(e: dict) -> dict:
     }
 
 
-@router.get("/entities/popular",
+@router.get("/entities/popular", response_model=PopularResponse,
             summary="Get popular entities",
             description="Returns entities ranked by a composite popularity score based on review count, rating, images, and quality. Filterable by type and area.")
 async def popular_entities(
