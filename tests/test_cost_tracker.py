@@ -5,7 +5,7 @@ import sys
 import tempfile
 import unittest
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -237,8 +237,8 @@ class TestCostAttributionDailyCosts(unittest.TestCase):
 
     def test_daily_costs_grouped_by_date(self):
         attr = _fresh_attribution()
-        today = datetime.now().strftime("%Y-%m-%d")
-        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
         _record_helper(attr, cost=0.01, date=today)
         _record_helper(attr, cost=0.02, date=today)
         _record_helper(attr, cost=0.05, date=yesterday)
@@ -251,7 +251,7 @@ class TestCostAttributionDailyCosts(unittest.TestCase):
 
     def test_daily_costs_excludes_old_dates(self):
         attr = _fresh_attribution()
-        old_date = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
+        old_date = (datetime.now(timezone.utc) - timedelta(days=60)).strftime("%Y-%m-%d")
         _record_helper(attr, cost=0.01, date=old_date)
         days = attr.get_daily_costs(days=30)
         self.assertEqual(len(days), 0)
@@ -350,7 +350,7 @@ class TestBudgetManagerCheckBudget(unittest.TestCase):
 
     def test_check_budget_within(self):
         attr = _fresh_attribution()
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         _record_helper(attr, cost=1.0, date=today)
         bm = BudgetManager(attr)
         bm.set_limit("daily", 10.0)
@@ -363,7 +363,7 @@ class TestBudgetManagerCheckBudget(unittest.TestCase):
 
     def test_check_budget_exceeded(self):
         attr = _fresh_attribution()
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         _record_helper(attr, cost=15.0, date=today)
         bm = BudgetManager(attr)
         bm.set_limit("daily", 10.0)
@@ -392,7 +392,7 @@ class TestBudgetManagerCheckBudget(unittest.TestCase):
 
     def test_check_budget_monthly_scope(self):
         attr = _fresh_attribution()
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         _record_helper(attr, cost=50.0, date=today)
         bm = BudgetManager(attr)
         bm.set_limit("monthly", 200.0)
@@ -403,7 +403,7 @@ class TestBudgetManagerCheckBudget(unittest.TestCase):
     def test_check_budget_alert_threshold_warning(self):
         """When utilization >= 80%, a warning is logged."""
         attr = _fresh_attribution()
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         _record_helper(attr, cost=9.0, date=today)
         bm = BudgetManager(attr)
         bm.set_limit("daily", 10.0)
@@ -492,7 +492,7 @@ class TestGetCostReport(unittest.TestCase):
         self.assertIn("monthly", report["budget"])
 
     def test_get_cost_report_with_data(self):
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         _record_helper(mod.cost_attribution, agent_name="knowledge",
                        tool_name="search", cost=0.01, date=today)
         report = get_cost_report()
