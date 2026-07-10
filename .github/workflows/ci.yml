@@ -217,7 +217,7 @@ jobs:
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: web-nuxt/package-lock.json
 
@@ -291,7 +291,7 @@ jobs:
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: web-nuxt/package-lock.json
 
@@ -308,6 +308,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # docker-compose.yml khai env_file: .env → `docker compose config` cần file .env
+      # tồn tại (dù rỗng giá trị). CI không có .env thật (gitignored) → tạo từ template.
+      - name: Create .env for compose validation
+        run: cp .env.example .env
 
       - name: Validate docker-compose.yml syntax
         run: docker compose config -q
@@ -364,7 +369,7 @@ jobs:
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: web-nuxt/package-lock.json
 
