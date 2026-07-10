@@ -1760,5 +1760,27 @@
    "new_text": "Viên kẹo dừa sáp ba vị — nguyên chất, lá dứa, ca cao — của Vicosap ở Cầu Kè, một trong bốn sản phẩm OCOP 5 sao cấp quốc gia của công ty, xuất khẩu sang Mỹ, Nhật, Đài Loan. Dừa sáp Cầu Kè cùi đặc sánh dẻo quánh, chỉ khoảng một trong năm trái trên buồng là dừa sáp thật — nguyên liệu hiếm nên kẹo có giá cao hơn kẹo dừa thường. Vicosap (Công ty TNHH Chế biến Dừa sáp Cầu Kè) hiện sở hữu bốn sản phẩm OCOP 5 sao và bảy sản phẩm OCOP 4 sao, đạt HACCP, FDA, ISO 9001:2015 và ISO 22000:2018. Ngoài kẹo còn có dừa sáp sấy dẻo, sấy giòn thăng hoa, sữa chua dừa sáp sấy khô và kem dừa sáp.",
    "reason": "Chỉ sửa câu đầu (đảo trật tự bỏ 'là một trong bốn', giữ mọi fact). Câu 2, 3, 4 copy byte-identical."
   }
- ]
+ ],
+ "coord_fixes_R_deploygate": {
+  "note": "Unblock deploy quality-budget (coordinate_clusters_precise 4→0, place_coords_coverage 98.4→100). Áp lên DB khi deploy.",
+  "delete_entity": [
+   "cu-lao-dai-song-co-chien-vung-liem (duplicate của cu-lao-dai-cu-lao-thanh-binh-quoi-thien, 0 ref)"
+  ],
+  "set_coords_approximate_true": [
+   "khu-du-lich-bien-con-bung",
+   "lo-com-cuu-long",
+   "chua-hang"
+  ],
+  "add_coords": {
+   "xa-trung-thanh": [
+    10.1500484,
+    106.0811408
+   ],
+   "xa-cai-ngang": [
+    10.0635449,
+    105.9375678
+   ],
+   "_note": "centroid entity-trong-xã, coords_approximate=true"
+  }
+ }
 }
