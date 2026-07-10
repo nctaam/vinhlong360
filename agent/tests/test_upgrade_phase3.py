@@ -31,9 +31,13 @@ class TestStaleQueue:
         assert "entity_type" in src
 
     def test_stale_queue_computes_days_since(self):
-        src = inspect.getsource(__import__("admin").stale_queue)
-        assert "days_since" in src
-        assert "timedelta" in src
+        # days-since tính qua chuỗi helper (refactor complexity): stale_queue →
+        # _stale_entity_record → _stale_days_since. Đọc cả chuỗi + kiểm phép tính
+        # THẬT (thay assert cũ trên 'timedelta' vốn chỉ tồn tại ở dead-line cutoff).
+        admin_mod = __import__("admin")
+        wiring = inspect.getsource(admin_mod.stale_queue) + inspect.getsource(admin_mod._stale_entity_record)
+        assert "days_since" in wiring
+        assert "(now - dt).days" in inspect.getsource(admin_mod._stale_days_since)
 
     def test_stale_queue_response_shape(self):
         # Per-entity record building was extracted into _stale_entity_record (complexity

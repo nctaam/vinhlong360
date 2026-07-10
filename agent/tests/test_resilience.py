@@ -1347,7 +1347,7 @@ class TestToolNameValidation:
             tool_calls_received.append(name)
             return json.dumps([{"id": "x", "name": "X"}])
 
-        result = orch.run(
+        orch.run(
             message="test", history=[], session_id="s",
             base_system_prompt="B.",
             call_tool_fn=fake_tool,
@@ -2245,7 +2245,7 @@ class TestKBVersioningLogging:
             kb_versioning.KEEP_SNAPSHOTS = 1
 
             kb_versioning.snapshot("first", "snap_00001")
-            with patch.object(kb_versioning, "logger") as mock_log:
+            with patch.object(kb_versioning, "logger"):
                 # second snapshot triggers pruning of first
                 kb_versioning.snapshot("second", "snap_00002")
             # pruning should succeed silently (or log warning if file gone)
@@ -2388,7 +2388,7 @@ class TestModerationLogging:
                     mock_client.__aexit__ = MagicMock(return_value=False)
                     mock_client.post = MagicMock(side_effect=RuntimeError("Vision down"))
                     mock_httpx.AsyncClient.return_value = mock_client
-                    result = asyncio.run(
+                    asyncio.run(
                         moderation._moderate_images(["http://test.jpg"]))
                 mock_log.warning.assert_called()
         finally:

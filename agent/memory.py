@@ -785,8 +785,6 @@ class MemoryExtractor:
         Types: "food", "area", "activity", "budget", "travel_style".
         """
         results: list[dict] = []
-        combined = f"{message} {reply}"
-        combined_lower = combined.lower()
 
         # Food preferences (from user message only — those are the user's words)
         _pref_extract_food(self, message, results)

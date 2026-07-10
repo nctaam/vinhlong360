@@ -147,7 +147,6 @@ def check_scope(branches):
 
         violations = []
         for f in files:
-            in_allowed = any(f.startswith(d) or f == d for d in rules["allowed_dirs"])
             in_forbidden = any(f.startswith(d) for d in rules["forbidden_dirs"])
 
             if in_forbidden:

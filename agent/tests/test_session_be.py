@@ -527,7 +527,6 @@ def test_api_health_has_openapi_docs():
     """The /api/health endpoint must have summary and description."""
     import public_api
     import inspect
-    src = inspect.getsource(public_api.api_health)
     assert "summary" in inspect.getsource(public_api.router.get) or True
     from public_api import router
     for route in router.routes:
@@ -1030,7 +1029,7 @@ class TestMonthFilter:
         """Month filter actually filters at DB level (SQLite)."""
         if db._use_pg:
             pytest.skip("SQLite-specific test")
-        all_ents = db.list_entities(limit=50)
+        db.list_entities(limit=50)
         month_3 = db.list_entities(limit=50, month=3)
         for e in month_3:
             months = (e.get("season") or {}).get("months") or []
@@ -1054,7 +1053,6 @@ class TestPhase7Security:
     def test_csrf_enforced_on_deactivate(self):
         """deactivate_account endpoint requires CSRF dependency."""
         import inspect
-        sig = inspect.signature(auth.deactivate_account)
         assert "_csrf" in list(inspect.signature(auth.deactivate_account).parameters.keys())
 
     def test_csrf_enforced_on_delete_account(self):

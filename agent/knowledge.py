@@ -21,7 +21,6 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "web"
 
 def _parse_data_js():
     """Trích xuất entities, relationships, itineraries từ data.js bằng regex."""
-    src = (DATA_DIR / "data.js").read_text(encoding="utf-8")
 
     # Bóc tách mảng places và items bằng cách eval qua JSON không được
     # (JS syntax ≠ JSON). Ta chuyển sang approach: export JSON riêng.

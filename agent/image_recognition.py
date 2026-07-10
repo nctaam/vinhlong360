@@ -198,7 +198,6 @@ def match_to_entities(
         # Build searchable text for this entity
         entity_text = f"{name} {summary} {' '.join(tags)}"
         entity_tokens = _tokenize(entity_text)
-        entity_norm = _normalize_vn(entity_text)
         name_norm = _normalize_vn(name)
 
         score = 0.0

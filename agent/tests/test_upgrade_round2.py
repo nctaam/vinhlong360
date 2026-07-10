@@ -1014,7 +1014,6 @@ class TestGetAppealStatus:
 
     def test_endpoint_exists(self):
         from social import router
-        paths = [r.path for r in router.routes if hasattr(r, "path")]
         get_paths = []
         for r in router.routes:
             if hasattr(r, "path") and "GET" in getattr(r, "methods", set()):
@@ -1211,7 +1210,7 @@ class TestUserEngagementStats:
 
     def test_requires_pg(self):
         src = inspect.getsource(__import__("admin").user_engagement_stats)
-        assert "db._use_pg" in src
+        assert "require_pg" in src  # endpoint đã refactor sang require_pg() (khớp bản public)
 
     def test_period_param(self):
         src = inspect.getsource(__import__("admin").user_engagement_stats)
@@ -2155,7 +2154,7 @@ class TestEntityMapSearch:
 # User Engagement Stats
 # ══════════════════════════════════════════════════════════════════════════
 
-class TestUserEngagementStats:
+class TestUserEngagementStatsPublic:
     def test_endpoint_exists(self):
         from public_api import router
         paths = [r.path for r in router.routes if hasattr(r, "path")]

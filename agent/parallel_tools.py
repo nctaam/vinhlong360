@@ -245,7 +245,6 @@ class ParallelToolExecutor:
                 all_results[pos] = r
 
         # 2. Sequential group -- one at a time, in order.
-        per_call_timeout = timeout if timeout is not None else self._default_timeout
         for tc in sequential_group:
             try:
                 result_str, duration_ms, error = self._run_one(

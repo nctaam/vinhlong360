@@ -133,7 +133,6 @@ class TestDataSync:
 
     def test_sync_creates_js(self, sample_data, tmp_path):
         json_path = tmp_path / "data.json"
-        js_path = tmp_path / "data.js"
         json_path.write_text(json.dumps(sample_data, ensure_ascii=False), encoding="utf-8")
 
         with patch.object(sys.modules['scheduler'], 'PROJECT_DIR', tmp_path):

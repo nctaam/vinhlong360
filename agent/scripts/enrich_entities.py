@@ -67,7 +67,7 @@ def llm_call(prompt, system="", retries=2):
                 temperature=0.7, max_tokens=2000
             )
             return r.choices[0].message.content.strip()
-        except Exception as e:
+        except Exception:
             if attempt < retries:
                 time.sleep(5 * (attempt + 1))
             else:
@@ -201,7 +201,7 @@ def main():
         for fut in as_completed(futures):
             try:
                 fut.result()
-            except Exception as e:
+            except Exception:
                 _stats["fail"] += 1
             if (_stats["done"] + _stats["fail"]) % 20 == 0:
                 tprint(f"  --- Progress: {_stats['done']} done, {_stats['fail']} fail / {len(candidates)} ---")

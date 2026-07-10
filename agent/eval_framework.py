@@ -716,7 +716,6 @@ class HallucinationScorer:
             return 10.0  # No reply = no hallucination
 
         max_pts = 10.0
-        reply_lower = _normalize_vn(reply)
 
         # Extract entity names from knowledge base
         known_names = set()

@@ -825,7 +825,6 @@ class TestBE19Consent:
         auth._log_consent("00000000-0000-0000-0000-000000000000", auth.CONSENT_VERSION, "127.0.0.1")
 
     def test_otp_verify_model_has_consent_field(self):
-        sig = inspect.signature(auth.OTPVerify.__init__) if hasattr(auth.OTPVerify, '__init__') else None
         fields = auth.OTPVerify.model_fields
         assert "consent" in fields
 

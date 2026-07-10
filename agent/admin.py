@@ -1445,7 +1445,6 @@ async def stale_queue(
     """Danh sách entity cũ/thiếu thông tin — admin review queue."""
     def _query():
         now = datetime.now(timezone.utc)
-        cutoff = now - timedelta(days=threshold_days)
         entities = knowledge._entities if getattr(knowledge, "_entities", None) else {}
         results = []
         for eid, e in entities.items():
@@ -1555,7 +1554,8 @@ async def completeness_overview():
                 has_place += 1
             if e.get("summary"):
                 has_summary += 1
-        pct = lambda n: round(n / total * 100, 1) if total else 0
+        def pct(n):
+            return round(n / total * 100, 1) if total else 0
         return {
             "total_entities": total,
             "source": {"count": has_source, "pct": pct(has_source)},
@@ -2354,7 +2354,6 @@ def _format_uptime(seconds: int) -> str:
             summary="List featured entities",
             description="Returns all currently featured entities with their sort order, name, and type.")
 async def list_featured():
-    ph = db._ph
     def _query():
         if not db._use_pg:
             return {"featured": []}
@@ -3389,7 +3388,6 @@ async def export_data():
 async def export_users_csv():
     """CSV export of all users with stats."""
     require_pg()
-    ph = db._ph
 
     def _generate():
         with db._conn() as conn:
@@ -3817,7 +3815,6 @@ async def get_moderation_notes(post_id: str):
 async def moderation_stats():
     require_pg()
     def _query():
-        ph = db._ph
         with db._conn() as conn:
             rows = db._fetchall(conn, """
                 SELECT moderation_status, COUNT(*) as c FROM posts GROUP BY moderation_status
@@ -4630,7 +4627,7 @@ async def ai_triage():
                     {"role": "user", "content": f"Tình hình hiện tại:\n{raw}\n\nĐề xuất việc ưu tiên:"},
                 ])
             return {"ok": True, "suggestion": resp.choices[0].message.content, "context": raw}
-        except Exception as e:  # noqa: BLE001 - LLM down/budget → vẫn trả context để admin tự xử
+        except Exception:  # noqa: BLE001 - LLM down/budget → vẫn trả context để admin tự xử
             return {"ok": False, "suggestion": None, "context": raw,
                     "note": "LLM không khả dụng — xem tình hình thô bên dưới."}
     return await asyncio.to_thread(_query)

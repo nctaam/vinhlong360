@@ -103,7 +103,7 @@ def llm_call(prompt, system="", retries=2):
                 temperature=0.6, max_tokens=3000
             )
             return r.choices[0].message.content.strip()
-        except Exception as e:
+        except Exception:
             if attempt < retries:
                 time.sleep(5 * (attempt + 1))
             else:

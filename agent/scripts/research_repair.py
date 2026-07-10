@@ -245,7 +245,7 @@ def main():
         return
 
     # Step 2: Clean broken entries
-    removed = clean_broken_entries()
+    clean_broken_entries()
 
     if args.clean_only:
         tprint("\nRe-audit after cleaning:")

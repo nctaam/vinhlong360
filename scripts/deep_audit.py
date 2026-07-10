@@ -99,7 +99,6 @@ def main():
     itineraries = data.get("itineraries", [])
 
     by_id = {str(e["id"]): e for e in entities if isinstance(e, dict) and e.get("id")}
-    issues = []
     fixes = []
 
     print(f"=== DEEP AUDIT: {len(entities)} entities, {len(rels)} rels, {len(itineraries)} itineraries ===\n")

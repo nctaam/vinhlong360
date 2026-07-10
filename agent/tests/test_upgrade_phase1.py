@@ -247,7 +247,6 @@ class TestEntityQA:
         assert "/api/entities/{entity_id}/qa" in paths
 
     def test_qa_endpoint_requires_pg(self):
-        src = inspect.getsource(__import__("public_api").get_entity_qa)
         assert "require_pg" in str(
             [d for r in __import__("public_api").router.routes
              if hasattr(r, "path") and r.path == "/api/entities/{entity_id}/qa"

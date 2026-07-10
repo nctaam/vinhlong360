@@ -497,12 +497,13 @@ def safe_llm_call(
         return client.chat.completions.create(**kwargs)
 
     try:
-        _retryable = lambda: retry_call(
-            _do_call,
-            max_retries=3,
-            base_delay=1.0,
-            retryable_exceptions=_LLM_RETRYABLE_EXCEPTIONS,
-        )
+        def _retryable():
+            return retry_call(
+                _do_call,
+                max_retries=3,
+                base_delay=1.0,
+                retryable_exceptions=_LLM_RETRYABLE_EXCEPTIONS,
+            )
         response = llm_breaker.call(_retryable)
         return {
             "success": True,

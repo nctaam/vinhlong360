@@ -875,7 +875,7 @@ class TestSecurityPosture:
         unconstrained = []
         for model in models:
             for name, field_info in model.model_fields.items():
-                if field_info.annotation is bool or field_info.annotation == bool:
+                if field_info.annotation is bool:
                     continue
                 anno = str(field_info.annotation or "")
                 if "str" not in anno:
@@ -1375,7 +1375,6 @@ class TestDeepScanBatch3:
     def test_publish_plan_verifies_rowcount(self):
         """publish_plan must check rowcount to detect missing/unauthorized plans."""
         src = (Path(__file__).resolve().parent.parent / "plans.py").read_text(encoding="utf-8")
-        idx = src.find("def _query():")
         # Find the publish_plan context
         pub_idx = src.find("publish_plan")
         assert pub_idx > 0

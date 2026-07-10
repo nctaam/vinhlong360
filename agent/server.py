@@ -84,7 +84,7 @@ from proactive import get_proactive_context, generate_welcome_message
 from agentic_rag import build_rag_context
 
 try:
-    from vector_search import embedding_store, hybrid_search
+    from vector_search import embedding_store, hybrid_search  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_VECTOR = True
     logger.info("Vector search enabled")
 except ImportError:
@@ -99,13 +99,13 @@ except ImportError:
     logger.info("Realtime data disabled (optional dependency)")
 
 try:
-    from circuit_breaker import safe_llm_call, all_breaker_stats, llm_breaker, web_search_breaker, weather_breaker
+    from circuit_breaker import safe_llm_call, all_breaker_stats, llm_breaker, web_search_breaker, weather_breaker  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_CIRCUIT_BREAKER = True
 except ImportError:
     HAS_CIRCUIT_BREAKER = False
 
 try:
-    from parallel_tools import ParallelToolExecutor, can_parallelize
+    from parallel_tools import ParallelToolExecutor, can_parallelize  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_PARALLEL = True
 except ImportError:
     HAS_PARALLEL = False
@@ -135,7 +135,7 @@ except ImportError:
     HAS_IMAGE_RECOGNITION = False
 
 try:
-    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_error, set_gauge, track_http_request
+    from metrics import generate_metrics, track_chat_request, track_tool_call, track_cache, track_feedback, track_error, set_gauge, track_http_request  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_METRICS = True
 except ImportError:
     HAS_METRICS = False
@@ -147,13 +147,13 @@ except ImportError:
     HAS_AB_TESTING = False
 
 try:
-    from prompt_cache import prompt_cache, estimate_tokens, compress_history
+    from prompt_cache import prompt_cache, estimate_tokens, compress_history  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_PROMPT_CACHE = True
 except ImportError:
     HAS_PROMPT_CACHE = False
 
 try:
-    from orchestrator import Orchestrator, QueryRouter, handoff_log
+    from orchestrator import Orchestrator, QueryRouter, handoff_log  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_ORCHESTRATOR = True
 except ImportError:
     HAS_ORCHESTRATOR = False
@@ -165,7 +165,7 @@ except ImportError:
     HAS_MEMORY_GRAPH = False
 
 try:
-    from tracing import tracer, trace_chat_request, trace_tool_call, trace_llm_call, trace_rag_retrieval, get_trace_summary, export_traces_json
+    from tracing import tracer, trace_chat_request, trace_tool_call, trace_llm_call, trace_rag_retrieval, get_trace_summary, export_traces_json  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_TRACING = True
 except ImportError:
     HAS_TRACING = False
@@ -195,7 +195,7 @@ except ImportError:
     HAS_FEWSHOT = False
 
 try:
-    from checkpoints import checkpoint_manager, confirmation_manager, needs_confirmation, format_confirmation_prompt
+    from checkpoints import checkpoint_manager, confirmation_manager, needs_confirmation, format_confirmation_prompt  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_CHECKPOINTS = True
 except ImportError:
     HAS_CHECKPOINTS = False
@@ -203,31 +203,31 @@ except ImportError:
 # ── Level 6 modules ──
 
 try:
-    from guardrails import injection_detector, pii_masker, output_validator, budget_manager as guardrail_budget, check_input, check_output
+    from guardrails import injection_detector, pii_masker, output_validator, budget_manager as guardrail_budget, check_input, check_output  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_GUARDRAILS = True
 except ImportError:
     HAS_GUARDRAILS = False
 
 try:
-    from cost_tracker import token_counter, cost_attribution, budget_manager as cost_budget, track_llm_call, get_cost_report
+    from cost_tracker import token_counter, cost_attribution, budget_manager as cost_budget, track_llm_call, get_cost_report  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_COST_TRACKER = True
 except ImportError:
     HAS_COST_TRACKER = False
 
 try:
-    from eval_framework import eval_runner, BENCHMARK_SUITE, run_benchmark, get_latest_report, get_report_history
+    from eval_framework import eval_runner, BENCHMARK_SUITE, run_benchmark, get_latest_report, get_report_history  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_EVAL = True
 except ImportError:
     HAS_EVAL = False
 
 try:
-    from self_optimizer import performance_collector, prompt_optimizer, parameter_tuner, tool_weight_optimizer, record_outcome, get_optimization_report
+    from self_optimizer import performance_collector, prompt_optimizer, parameter_tuner, tool_weight_optimizer, record_outcome, get_optimization_report  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_OPTIMIZER = True
 except ImportError:
     HAS_OPTIMIZER = False
 
 try:
-    from semantic_cache import multi_tier_cache, semantic_get, semantic_put, cache_stats as semantic_cache_stats, cache_warmer
+    from semantic_cache import multi_tier_cache, semantic_get, semantic_put, cache_stats as semantic_cache_stats, cache_warmer  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_SEMANTIC_CACHE = True
 except ImportError:
     HAS_SEMANTIC_CACHE = False
@@ -235,13 +235,13 @@ except ImportError:
 # ── Level 7 modules ──
 
 try:
-    from llm_judge import llm_judge, judge_analytics, judge, get_judge_report
+    from llm_judge import llm_judge, judge_analytics, judge, get_judge_report  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_LLM_JUDGE = True
 except ImportError:
     HAS_LLM_JUDGE = False
 
 try:
-    from dynamic_agents import agent_factory, dynamic_router, pattern_analyzer, agent_evolution, check_dynamic_route, get_agent_report
+    from dynamic_agents import agent_factory, dynamic_router, pattern_analyzer, agent_evolution, check_dynamic_route, get_agent_report  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_DYNAMIC_AGENTS = True
 except ImportError:
     HAS_DYNAMIC_AGENTS = False
@@ -1822,12 +1822,10 @@ async def chat(req: ChatRequest, request: Request):
 
     # Autocorrect user input
     corrected_message = req.message
-    corrections = []
     if HAS_AUTOCORRECT:
         ac = autocorrect(req.message)
         if ac.get("was_corrected"):
             corrected_message = ac["corrected"]
-            corrections = ac.get("corrections", [])
 
     t0 = time.time()
     build_info = {}

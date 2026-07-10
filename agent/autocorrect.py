@@ -479,7 +479,6 @@ def _fuzzy_match_words(text: str, max_distance: int = 2) -> str | None:
 
     best_match = None
     best_dist = max_distance + 1
-    best_span = (0, 0)
 
     # Try windows of decreasing size (prefer longer matches)
     max_window = min(len(words), 6)
@@ -495,7 +494,6 @@ def _fuzzy_match_words(text: str, max_distance: int = 2) -> str | None:
                 if dist < best_dist:
                     best_dist = dist
                     best_match = orig_name
-                    best_span = (start, start + window_size)
                     if dist == 0:
                         return best_match
 
@@ -756,7 +754,6 @@ def _apply_fuzzy_corrections(
             )
             if match and normalize_vietnamese(match) != window_text:
                 # Find the original text span
-                orig_char_start = _word_char_offset(text.split(), start)
                 original_span = " ".join(text.split()[start:start + window_size])
                 adjusted = _apply_capitalization(original_span, match)
 

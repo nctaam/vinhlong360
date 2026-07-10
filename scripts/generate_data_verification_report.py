@@ -1260,7 +1260,6 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
     write_fix_sql(CONFIRMED_ERRORS)
 
     type_counts = Counter(entity.get("type") for entity in entities)
-    area_counts = Counter(entity.get("area") for entity in entities)
     verdict_counts = Counter(row["verdict"] for row in matrix)
     trust_buckets = Counter()
     for row in matrix:
@@ -1446,7 +1445,7 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
 
     report = f"""# Data Verification Report — vinhlong360
 
-> Forensic audit: xác minh sự thật, phát hiện hallucination, đảm bảo data integrity.  
+> Forensic audit: xác minh sự thật, phát hiện hallucination, đảm bảo data integrity.
 > Cập nhật: {date.today().isoformat()}
 
 ---
@@ -1544,7 +1543,7 @@ The main LLM fingerprints are explicit `agent discovery`/`gpt` source labels, lo
 
 ## 3. GEOGRAPHIC VERIFICATION (V2)
 
-**Scope:** {len(entities)} entities.  
+**Scope:** {len(entities)} entities.
 **Method:** bbox check ({LAT_RANGE[0]}–{LAT_RANGE[1]} lat, {LNG_RANGE[0]}–{LNG_RANGE[1]} lon), exact coordinate cluster scan, outside-province keyword scan, and web-search area comparison for {len(web_log)} high-risk entries.
 
 Findings:
@@ -1563,7 +1562,7 @@ Area mismatch report is in Appendix M. Confirmed errors are intentionally limite
 
 ## 4. NAME VERIFICATION (V3)
 
-**Scope:** {len(entities)} names.  
+**Scope:** {len(entities)} names.
 **Method:** normalized duplicate scan, outside-place keywords, and web-search existence checks.
 
 Duplicate exact names: 0 by current structural validation. Near-name risk remains for similarly named hotels and places; these need manual merge review, especially where coordinates are identical or near-identical.
@@ -1575,7 +1574,7 @@ Outside-area keyword hits:
 
 ## 5. HISTORICAL FACT-CHECK (V4)
 
-**Scope:** {type_counts['history']} history entities + {type_counts['person']} person entities.  
+**Scope:** {type_counts['history']} history entities + {type_counts['person']} person entities.
 **Method:** one web search per `history`/`person` entity in this pass, plus source-tier analysis and claim extraction.
 
 Coverage:
@@ -1589,7 +1588,7 @@ Important nuance: `Chùa Vàm Ray` current Wikipedia text says tỉnh Vĩnh Long
 
 ## 6. CULINARY & PRODUCT VERIFICATION (V5)
 
-**Scope:** {sum(type_counts[t] for t in PRODUCT_TYPES)} dish/product/drink entities.  
+**Scope:** {sum(type_counts[t] for t in PRODUCT_TYPES)} dish/product/drink entities.
 **Method:** origin/OCOP claim extraction, web search sample, source-tier scan.
 
 Confirmed culinary origin errors:
@@ -1604,7 +1603,7 @@ OCOP/product risk:
 
 ## 7. CONTACT INFO VERIFICATION (V6)
 
-**Scope:** restaurants, cafes, accommodations, facilities, plus any entity with `attributes.phone`.  
+**Scope:** restaurants, cafes, accommodations, facilities, plus any entity with `attributes.phone`.
 **Method:** phone format validation and source-status check. Live phone calling/Google Maps verification was not performed.
 
 Findings:
@@ -1618,7 +1617,7 @@ Because no live Maps/API verification was performed, all phone numbers remain �
 
 ## 8. SOURCE ATTRIBUTION AUDIT (V7)
 
-**Scope:** {len(entities)} entities.  
+**Scope:** {len(entities)} entities.
 **Method:** parse every `source` object, classify domain tier, detect self-references/no-URL/LLM labels.
 
 {md_table(["Source domain/status", "Count"], [[k, v] for k, v in source_domain_counts.most_common(20)])}
@@ -1632,7 +1631,7 @@ Summary:
 
 ## 9. RELATIONSHIP TRUTH CHECK (V8)
 
-**Scope:** {len(rels)} relationships.  
+**Scope:** {len(rels)} relationships.
 **Method:** relationship type counts, duplicate triple scan, fanout check, near-distance check.
 
 {md_table(["Relationship type", "Count"], [[k, v] for k, v in rstats["counts"].most_common()])}
@@ -1647,7 +1646,7 @@ Findings:
 
 ## 10. ITINERARY VERIFICATION (V9)
 
-**Scope:** {len(itineraries)} top-level itineraries in `web/data.json`.  
+**Scope:** {len(itineraries)} top-level itineraries in `web/data.json`.
 **Method:** stop reference existence, relationship coverage via structural validators, and area-mismatch review.
 
 Structural validators report itinerary stop references are present, but factual route timing/transport claims still need source-level verification. This audit did not validate real travel times, road conditions, boat schedules, or seasonal closures.
@@ -1656,7 +1655,7 @@ Structural validators report itinerary stop references are present, but factual 
 
 ## 11. ATTRIBUTE VERIFICATION (V10)
 
-**Scope:** every `attributes` object.  
+**Scope:** every `attributes` object.
 **Method:** scan high-risk attributes: address, origin, OCOP, price, hours, phone, coordinates approximation flags.
 
 High-risk attribute issues:
@@ -1708,7 +1707,7 @@ Overall average: {avg_trust:.1f}/100.
 
 {md_table(["Bucket", "Entities", "%"], [[bucket, trust_buckets[bucket], pct(trust_buckets[bucket], len(entities))] for bucket in ["0-19", "20-39", "40-59", "60-79", "80-100"]])}
 
-High trust (>=90): {len(high_trust)} ({pct(len(high_trust), len(entities))})  
+High trust (>=90): {len(high_trust)} ({pct(len(high_trust), len(entities))})
 Untrusted (<50): {len(low_trust)} ({pct(len(low_trust), len(entities))})
 
 ### Per-type trust score
