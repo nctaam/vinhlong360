@@ -1898,9 +1898,11 @@ class TestMentionSearchAsync:
 
     def test_mention_search_uses_thread(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("async def mention_search(")
-        fn_src = src[idx:idx+1000]
-        assert "asyncio.to_thread" in fn_src
+        # Refactor: user-search dời sang _mention_users (mention_search gọi nó).
+        m_idx = src.index("async def mention_search(")
+        assert "_mention_users" in src[m_idx:m_idx + 600]
+        idx = src.index("async def _mention_users(")
+        assert "asyncio.to_thread" in src[idx:idx + 1000]
 
 
 class TestSavedModuleHardening:
@@ -2223,9 +2225,9 @@ class TestSecurityFixes:
 
     def test_mention_search_imports_db(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
-        idx = src.index("async def mention_search(")
-        fn_src = src[idx:idx+400]
-        assert "from database import db" in fn_src
+        # Refactor: db-query dời sang _mention_users.
+        idx = src.index("async def _mention_users(")
+        assert "from database import db" in src[idx:idx + 400]
 
     def test_sse_thread_lock_exists(self):
         import notifications

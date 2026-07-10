@@ -344,6 +344,31 @@ Trả về JSON array gồm 3 string. Chỉ trả JSON, không text khác."""}],
 
 # ── Tool dispatcher ──
 
+def _rerank_resolve_entities(reranked: list, allowed_ids: set, has_filters: bool) -> list:
+    """Resolve reranked hits → full entities, honoring active structured filters."""
+    out = []
+    for r in reranked:
+        eid = r.get("id", r.get("entity_id", ""))
+        ent = knowledge.get_entity(eid) if eid else None
+        if not ent:
+            continue
+        # With filters active, only keep entities that passed the filter.
+        if has_filters and eid not in allowed_ids:
+            continue
+        out.append(ent)
+    return out
+
+
+def _backfill_from_keyword(out: list, keyword_results: list, limit: int) -> None:
+    """Append keyword_results (in place) until `out` reaches limit."""
+    seen = {e["id"] for e in out}
+    for e in keyword_results:
+        if e["id"] not in seen:
+            out.append(e)
+            if len(out) >= limit:
+                break
+
+
 def _hybrid_rerank_search(args: dict) -> list[dict]:
     """Run the KB search with hybrid reranking (BM25 + semantic + contextual).
 
@@ -380,24 +405,10 @@ def _hybrid_rerank_search(args: dict) -> list[dict]:
             relationships=getattr(knowledge, "_relationships", []) or [],
             top_k=max(limit * 3, 30),
         )
-        out = []
-        for r in reranked:
-            eid = r.get("id", r.get("entity_id", ""))
-            ent = knowledge.get_entity(eid) if eid else None
-            if not ent:
-                continue
-            # With filters active, only keep entities that passed the filter.
-            if has_filters and eid not in allowed_ids:
-                continue
-            out.append(ent)
+        out = _rerank_resolve_entities(reranked, allowed_ids, has_filters)
         # Backfill from keyword_results if hybrid dropped too many.
         if len(out) < limit:
-            seen = {e["id"] for e in out}
-            for e in keyword_results:
-                if e["id"] not in seen:
-                    out.append(e)
-                    if len(out) >= limit:
-                        break
+            _backfill_from_keyword(out, keyword_results, limit)
         return out[:limit]
     except Exception as e:
         logger.error(f"Hybrid search failed, using keyword fallback: {e}")
@@ -1047,14 +1058,9 @@ TYPE_LABELS_VI = {
 }
 
 
-@app.get("/api/mentions", tags=["social"])
-async def mention_search(q: str = ""):
-    """Autocomplete cho @-mention: người dùng (PG) + địa điểm (KB in-RAM). Trả tối đa ~11 mục."""
-    ql = (q or "").strip().lower()
-    if len(ql) < 1:
-        return {"results": []}
-    results: list[dict] = []
-    # Người dùng (chỉ khi có Postgres)
+async def _mention_users(ql: str) -> list:
+    """@-mention: người dùng khớp (chỉ khi có Postgres)."""
+    out: list[dict] = []
     try:
         from database import db
         if db._use_pg:
@@ -1070,19 +1076,35 @@ async def mention_search(q: str = ""):
             for r in rows:
                 d = db._row_to_dict(r)
                 if d.get("display_name"):
-                    results.append({"type": "user", "id": str(d["id"]), "label": d["display_name"],
-                                    "sub": "Người dùng", "avatar": d.get("avatar_url")})
+                    out.append({"type": "user", "id": str(d["id"]), "label": d["display_name"],
+                                "sub": "Người dùng", "avatar": d.get("avatar_url")})
     except Exception:
         logger.debug("Mention search user query failed", exc_info=True)
-    # Địa điểm/entity (in-RAM, nhanh)
+    return out
+
+
+def _mention_entities(ql: str) -> list:
+    """@-mention: địa điểm/entity khớp (in-RAM, nhanh)."""
+    out: list[dict] = []
     try:
         ents = [e for e in (knowledge._entities or {}).values() if ql in (e.get("name") or "").lower()]
         ents.sort(key=lambda e: (0 if (e.get("name") or "").lower().startswith(ql) else 1, len(e.get("name") or "")))
         for e in ents[:6]:
-            results.append({"type": "entity", "id": e["id"], "label": e["name"],
-                            "sub": TYPE_LABELS_VI.get(e.get("type"), e.get("type") or "Địa điểm")})
+            out.append({"type": "entity", "id": e["id"], "label": e["name"],
+                        "sub": TYPE_LABELS_VI.get(e.get("type"), e.get("type") or "Địa điểm")})
     except Exception:
         logger.debug("Mention search entity query failed", exc_info=True)
+    return out
+
+
+@app.get("/api/mentions", tags=["social"])
+async def mention_search(q: str = ""):
+    """Autocomplete cho @-mention: người dùng (PG) + địa điểm (KB in-RAM). Trả tối đa ~11 mục."""
+    ql = (q or "").strip().lower()
+    if len(ql) < 1:
+        return {"results": []}
+    results = await _mention_users(ql)
+    results += _mention_entities(ql)
     return {"results": results}
 
 
@@ -1341,6 +1363,59 @@ class ClientErrorRequest(BaseModel):
         return v if v in {"error", "warn", "info"} else "error"
 
 
+_ANAPHOR_TYPES = {
+    "bảo tàng":     ["bảo tàng"],
+    "khách sạn":    ["khách sạn", "hotel", "resort", "homestay"],
+    "nhà hàng":     ["nhà hàng", "quán ăn", "restaurant"],
+    "chùa":         ["chùa", "tịnh xá", "thiền viện"],
+    "đình":         ["đình"],
+    "khu du lịch":  ["khu du lịch", "khu nghỉ dưỡng"],
+    "cồn":          ["cồn", "đảo"],
+    "lăng":         ["lăng", "khu tưởng niệm"],
+    "làng nghề":    ["làng nghề"],
+    "điểm":         ["điểm du lịch", "điểm tham quan"],
+}
+_CONTEXT_PRONOUNS = ("ở đó", "đến đó", "tại đó", "nơi đó", "chỗ đó")
+
+
+def _extract_reply_entities(history: list[dict]) -> list:
+    """Bold (**...**) + header (## ...) names từ reply assistant gần nhất."""
+    last_reply = ""
+    for turn in reversed(history[-6:]):
+        if turn.get("role") == "assistant":
+            last_reply = turn.get("content", "")
+            break
+    if not last_reply:
+        return []
+    bold_entities = re.findall(r'\*\*([^*\n]{2,60})\*\*', last_reply)
+    headers = re.findall(r'(?:^|\n)#+\s*(.{5,60}?)(?:\n|$)', last_reply)
+    return bold_entities + headers
+
+
+def _resolve_anaphors(msg_lower: str, resolved: str, all_entities: list) -> str:
+    for anaphor, keywords in _ANAPHOR_TYPES.items():
+        if anaphor not in msg_lower:
+            continue
+        # Heuristic: anaphor dạng bare → thay bằng entity type-khớp đủ dài.
+        pattern = re.compile(r'\b' + re.escape(anaphor) + r'\b', re.IGNORECASE)
+        for entity in all_entities:
+            entity_lower = entity.lower()
+            if any(kw in entity_lower for kw in keywords) and len(entity) > len(anaphor) + 3:
+                new_resolved = pattern.sub(entity, resolved, count=1)
+                if new_resolved != resolved:
+                    resolved = new_resolved
+                    break
+    return resolved
+
+
+def _resolve_pronouns(resolved: str, all_entities: list) -> str:
+    top = all_entities[0]
+    for pronoun in _CONTEXT_PRONOUNS:
+        if pronoun in resolved.lower():
+            resolved = re.sub(re.escape(pronoun), f"tại {top}", resolved, flags=re.IGNORECASE, count=1)
+    return resolved
+
+
 def _resolve_contextual_query(message: str, history: list[dict]) -> str:
     """
     Resolve anaphoric references in message using recent conversation history.
@@ -1351,72 +1426,16 @@ def _resolve_contextual_query(message: str, history: list[dict]) -> str:
     if not history:
         return message
     msg_lower = message.lower().strip()
-
-    # Types that commonly appear as ambiguous anaphors
-    ANAPHOR_TYPES = {
-        "bảo tàng":     ["bảo tàng"],
-        "khách sạn":    ["khách sạn", "hotel", "resort", "homestay"],
-        "nhà hàng":     ["nhà hàng", "quán ăn", "restaurant"],
-        "chùa":         ["chùa", "tịnh xá", "thiền viện"],
-        "đình":         ["đình"],
-        "khu du lịch":  ["khu du lịch", "khu nghỉ dưỡng"],
-        "cồn":          ["cồn", "đảo"],
-        "lăng":         ["lăng", "khu tưởng niệm"],
-        "làng nghề":    ["làng nghề"],
-        "điểm":         ["điểm du lịch", "điểm tham quan"],
-    }
-    PRONOUNS = {"ở đó": None, "đến đó": None, "tại đó": None, "nơi đó": None, "chỗ đó": None}
-
-    has_anaphor = any(a in msg_lower for a in ANAPHOR_TYPES)
-    has_pronoun = any(p in msg_lower for p in PRONOUNS)
+    has_anaphor = any(a in msg_lower for a in _ANAPHOR_TYPES)
+    has_pronoun = any(p in msg_lower for p in _CONTEXT_PRONOUNS)
     if not has_anaphor and not has_pronoun:
         return message
-
-    # Extract last assistant reply
-    last_reply = ""
-    for turn in reversed(history[-6:]):
-        if turn.get("role") == "assistant":
-            last_reply = turn.get("content", "")
-            break
-    if not last_reply:
-        return message
-
-    # Extract bold entity names (**...**) from assistant reply
-    import re as _re
-    bold_entities = _re.findall(r'\*\*([^*\n]{2,60})\*\*', last_reply)
-    # Also extract section headers (## Name) from structured replies
-    headers = _re.findall(r'(?:^|\n)#+\s*(.{5,60}?)(?:\n|$)', last_reply)
-    all_entities = bold_entities + headers
-
+    all_entities = _extract_reply_entities(history)
     if not all_entities:
         return message
-
-    resolved = message
-
-    # Resolve type-specific anaphors
-    for anaphor, keywords in ANAPHOR_TYPES.items():
-        if anaphor not in msg_lower:
-            continue
-        # Check if anaphor is used bare (not followed by a distinguishing proper noun)
-        # Heuristic: if the word right after anaphor is lowercase or empty, it's generic
-        pattern = _re.compile(r'\b' + _re.escape(anaphor) + r'\b', _re.IGNORECASE)
-        for entity in all_entities:
-            entity_lower = entity.lower()
-            if any(kw in entity_lower for kw in keywords) and len(entity) > len(anaphor) + 3:
-                new_resolved = pattern.sub(entity, resolved, count=1)
-                if new_resolved != resolved:
-                    resolved = new_resolved
-                    break
-
-    # Resolve pronouns with first bold entity
-    if has_pronoun and all_entities:
-        top = all_entities[0]
-        for pronoun in PRONOUNS:
-            if pronoun in resolved.lower():
-                resolved = _re.sub(
-                    _re.escape(pronoun), f"tại {top}", resolved, flags=_re.IGNORECASE, count=1
-                )
-
+    resolved = _resolve_anaphors(msg_lower, message, all_entities)
+    if has_pronoun:
+        resolved = _resolve_pronouns(resolved, all_entities)
     return resolved
 
 
