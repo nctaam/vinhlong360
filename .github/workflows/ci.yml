@@ -39,9 +39,9 @@ jobs:
       - name: Run ruff check
         run: ruff check agent/ scripts/ tests/ --output-format=github
 
-      # Verify import sorting
-      - name: Run ruff format check
-        run: ruff format --check agent/ scripts/ tests/
+      # NOTE: `ruff format --check` cố tình KHÔNG chạy. Dự án dùng ruff làm LINTER
+      # (E/F/W/ASYNC) với style compact chủ đích (ignore E501/E701/E741) — ruff-format
+      # default sẽ nổ import + reflow 88-col, phá style. Format-policy = ruff-lint-only.
 
   # ── 2. Test ────────────────────────────────────────────────
   test:
