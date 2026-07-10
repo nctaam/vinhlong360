@@ -619,7 +619,7 @@ useHead({
 .dark .catalog-hero.cat-festival {
   background:
     radial-gradient(120% 90% at 12% 0%, rgba(var(--accent-rgb), .05) 0%, transparent 55%),
-    linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%);
+    linear-gradient(135deg, rgba(var(--white-rgb),.03) 0%, rgba(var(--white-rgb),.01) 100%);
 }
 
 /* Time-aware status label above an event name */

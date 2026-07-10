@@ -258,7 +258,7 @@ useHead({
 .tip-item p { margin: 0; font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-relaxed); }
 
 /* Dark */
-.dark .guide-hero { background: linear-gradient(135deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.01) 100%); }
+.dark .guide-hero { background: linear-gradient(135deg, rgba(var(--white-rgb),.03) 0%, rgba(var(--white-rgb),.01) 100%); }
 .dark .guide-note { background: var(--bg-alt); }
 .dark .level-1 { --level-color: var(--secondary-fg); border-left-color: var(--level-color); }
 .dark .level-2 { --level-color: var(--tertiary-fg); border-left-color: var(--level-color); }

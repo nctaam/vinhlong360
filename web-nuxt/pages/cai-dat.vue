@@ -1115,7 +1115,7 @@ onUnmounted(() => {
 .sf-avatar-preview:hover .sf-avatar-overlay { opacity: 1; }
 .sf-avatar-img { width: 100%; height: 100%; object-fit: cover; }
 .sf-avatar-overlay {
-  position: absolute; inset: 0; background: rgba(0,0,0,.45); color: var(--text-on-dark, var(--white));
+  position: absolute; inset: 0; background: rgba(var(--black-rgb),.45); color: var(--text-on-dark, var(--white));
   display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
   opacity: 0; transition: opacity .2s;
 }
@@ -1148,7 +1148,7 @@ onUnmounted(() => {
 .notif-pref-info strong { display: block; font-size: .9rem; }
 .notif-pref-info .sf-hint { display: block; margin-top: .1rem; }
 .toggle { appearance: none; width: 40px; height: 22px; background: var(--muted); border-radius: 11px; position: relative; cursor: pointer; transition: background .25s var(--ease-out, ease); flex-shrink: 0; min-height: 44px; padding: 11px 0; box-sizing: content-box; }
-.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .3s var(--ease-spring-gentle, cubic-bezier(.2,1,.4,1)); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: var(--white, var(--white)); border-radius: 50%; transition: transform .3s var(--ease-spring-gentle, cubic-bezier(.2,1,.4,1)); box-shadow: 0 1px 3px rgba(var(--black-rgb),.15); }
 .toggle:checked { background: var(--accent, var(--primary)); }
 .toggle:checked::after { transform: translateX(18px); }
 .toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

@@ -977,10 +977,10 @@ useSeoMeta({
 .cover-img[src] { animation: none; }
 @keyframes coverShimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 .profile-private-notice { text-align: center; padding: var(--space-8) var(--space-4); color: var(--ink-700); font-size: .95rem; }
-.cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.18)); }
-.dark .cover-scrim { background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,.45)); }
+.cover-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 40%, rgba(var(--black-rgb),.18)); }
+.dark .cover-scrim { background: linear-gradient(to bottom, transparent 30%, rgba(var(--black-rgb),.45)); }
 .profile-avatar-wrap { position: absolute; bottom: calc(-1 * var(--space-6)); left: var(--space-5); z-index: 1; }
-.profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(0,0,0,.12); transition: transform .35s var(--ease-spring-gentle); }
+.profile-avatar-wrap .avatar { border: 6px solid var(--card); box-shadow: 0 0 0 2px var(--line), 0 8px 28px rgba(var(--black-rgb),.12); transition: transform .35s var(--ease-spring-gentle); }
 .profile-avatar-wrap .avatar:hover { transform: scale(1.05); }
 .profile-avatar-wrap .avatar:active { transform: scale(.98); transition-duration: .08s; }
 
@@ -1039,7 +1039,7 @@ useSeoMeta({
 .profile-insight-link:hover { text-decoration: underline; }
 
 /* Modal follower/following */
-.fm-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
+.fm-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(var(--black-rgb),.45); display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
 .fm-dialog { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 420px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); overflow: hidden; }
 .fm-head { display: flex; align-items: center; justify-content: space-between; border-bottom: .5px solid var(--line); padding-right: var(--space-2); }
 .fm-tabs { display: flex; }

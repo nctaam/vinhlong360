@@ -311,7 +311,7 @@ onMounted(fetchData)
   padding: var(--space-5); overflow: hidden;
   transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s;
 }
-.tk-panel:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: rgba(var(--blue-rgb),.15); }
+.tk-panel:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(var(--black-rgb),.06); border-color: rgba(var(--blue-rgb),.15); }
 
 .tk-panel-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -344,7 +344,7 @@ onMounted(fetchData)
   position: relative;
 }
 .tk-list li:last-child { border-bottom: none; }
-.tk-list li:hover { background: rgba(0,0,0,.015); margin: 0 calc(var(--space-2) * -1); padding-left: var(--space-2); padding-right: var(--space-2); border-radius: 6px; }
+.tk-list li:hover { background: rgba(var(--black-rgb),.015); margin: 0 calc(var(--space-2) * -1); padding-left: var(--space-2); padding-right: var(--space-2); border-radius: 6px; }
 .tk-rank {
   width: 24px; height: 24px; border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
@@ -399,12 +399,12 @@ onMounted(fetchData)
 /* ── Dark mode ── */
 .dark .tk-panel {
   background: var(--bg-alt);
-  border-color: rgba(255,255,255,.1);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  border-color: rgba(var(--white-rgb),.1);
+  box-shadow: inset 0 1px 0 rgba(var(--white-rgb),.04);
 }
-.dark .tk-panel:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 4px 16px rgba(0,0,0,.3); border-color: rgba(var(--blue-rgb),.3); }
-.dark .tk-list li:hover { background: rgba(255,255,255,.03); }
-.dark .tk-rank { background: rgba(255,255,255,.06); }
+.dark .tk-panel:hover { box-shadow: inset 0 1px 0 rgba(var(--white-rgb),.04), 0 4px 16px rgba(var(--black-rgb),.3); border-color: rgba(var(--blue-rgb),.3); }
+.dark .tk-list li:hover { background: rgba(var(--white-rgb),.03); }
+.dark .tk-rank { background: rgba(var(--white-rgb),.06); }
 .dark .tk-list li:nth-child(n+4):nth-child(-n+10) .tk-rank { border-color: rgba(var(--primary-rgb),.5); color: var(--primary-light); }
 .dark .tk-count-badge { background: rgba(var(--blue-rgb),.15); }
 .dark .tk-count-warn { background: rgba(var(--warning-rgb),.15); color: var(--accent); }
@@ -413,7 +413,7 @@ onMounted(fetchData)
 .dark .stat-card .stat-value { color: var(--primary-light); }
 .dark .tk-cost-scope { background: rgba(var(--primary-rgb),.22); color: var(--primary-light); }
 .dark .stat-card.status-warn { background: rgba(240,160,80,.08); border-color: var(--warning, #f0a050); }
-.dark .tk-sk-card, .dark .tk-sk-panel { background: rgba(255,255,255,.06); }
+.dark .tk-sk-card, .dark .tk-sk-panel { background: rgba(var(--white-rgb),.06); }
 
 /* ── Loading skeleton ── */
 .tk-skeleton .stat-grid { margin-bottom: var(--space-8); }

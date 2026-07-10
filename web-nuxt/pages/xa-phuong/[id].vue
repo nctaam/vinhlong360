@@ -394,13 +394,13 @@ onUnmounted(() => {
 .wp-hero::before {
   content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(circle at 12% 0%, rgba(255,255,255,.16), transparent 55%),
-    linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.12) 100%);
+    radial-gradient(circle at 12% 0%, rgba(var(--white-rgb),.16), transparent 55%),
+    linear-gradient(to bottom, transparent 0%, rgba(var(--black-rgb),.12) 100%);
 }
 .dark .wp-hero::before {
   background:
-    radial-gradient(circle at 12% 0%, rgba(255,255,255,.10), transparent 55%),
-    linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.28) 100%);
+    radial-gradient(circle at 12% 0%, rgba(var(--white-rgb),.10), transparent 55%),
+    linear-gradient(to bottom, transparent 0%, rgba(var(--black-rgb),.28) 100%);
 }
 /* Region-keyed decorative motif */
 .wp-hero-motif {
@@ -417,8 +417,8 @@ onUnmounted(() => {
 .wp-region a:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 2px; }
 .wp-region-emoji { margin-inline-end: var(--space-1); }
 
-.wp-stats { display: flex; flex-wrap: wrap; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4); border-top: .5px solid rgba(255,255,255,.25); }
-.dark .wp-stats { border-top-color: rgba(255,255,255,.12); }
+.wp-stats { display: flex; flex-wrap: wrap; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4); border-top: .5px solid rgba(var(--white-rgb),.25); }
+.dark .wp-stats { border-top-color: rgba(var(--white-rgb),.12); }
 .wp-stat { text-align: center; min-height: 44px; }
 .wp-stat-val { display: block; font-size: var(--text-xl); font-weight: var(--weight-extrabold); }
 .wp-stat-label { font-size: var(--text-xs); opacity: .8; text-transform: uppercase; letter-spacing: .03em; }
@@ -431,7 +431,7 @@ onUnmounted(() => {
 .wp-map-container { width: 100%; height: 380px; border-radius: var(--radius-lg, 16px); overflow: hidden; border: .5px solid var(--line); box-shadow: var(--shadow-sm); transition: box-shadow .35s var(--ease-out-expo); }
 .wp-map-loading { background: linear-gradient(100deg, var(--bg-warm) 30%, var(--line) 50%, var(--bg-warm) 70%); background-size: 200% 100%; animation: wp-shimmer 1.4s var(--ease-out) infinite; }
 @keyframes wp-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-:deep(.wp-marker) { font-size: 1.6rem; cursor: pointer; filter: drop-shadow(0 1px 3px rgba(0,0,0,.4)); line-height: 1; transition: transform .35s var(--ease-spring-gentle); }
+:deep(.wp-marker) { font-size: 1.6rem; cursor: pointer; filter: drop-shadow(0 1px 3px rgba(var(--black-rgb),.4)); line-height: 1; transition: transform .35s var(--ease-spring-gentle); }
 :deep(.wp-marker:hover) { transform: scale(1.25); }
 
 /* Body layout */
@@ -485,12 +485,12 @@ onUnmounted(() => {
 .wp-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-lg, 16px); padding: var(--space-5); box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .wp-card::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,.6) 0%, transparent 55%);
+  background: linear-gradient(180deg, rgba(var(--white-rgb),.6) 0%, transparent 55%);
   mix-blend-mode: overlay; opacity: 0; transition: opacity .35s var(--ease-out-expo);
 }
 .wp-card:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(var(--primary-rgb), .14), 0 18px 40px -18px rgba(var(--primary-rgb), .35); }
 .wp-card:hover::before { opacity: .9; }
-.dark .wp-card::before { background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, transparent 55%); }
+.dark .wp-card::before { background: linear-gradient(180deg, rgba(var(--white-rgb),.08) 0%, transparent 55%); }
 .dark .wp-card:hover::before { opacity: .5; }
 .wp-card h3 { font-size: var(--text-base); font-weight: var(--weight-semibold); margin: 0 0 var(--space-3); position: relative; z-index: 1; }
 .wp-card .wp-contact, .wp-card .wp-fac-list { position: relative; z-index: 1; }
@@ -544,7 +544,7 @@ onUnmounted(() => {
 
 /* Dark mode */
 .dark .wp-card { background: var(--card); border-color: var(--line); }
-.dark .wp-card:hover { box-shadow: 0 0 0 1px rgba(var(--primary-rgb), .22), 0 18px 40px -18px rgba(0,0,0,.6); }
+.dark .wp-card:hover { box-shadow: 0 0 0 1px rgba(var(--primary-rgb), .22), 0 18px 40px -18px rgba(var(--black-rgb),.6); }
 .dark .wp-contact-main { background: linear-gradient(90deg, rgba(var(--primary-rgb), .12) 0%, rgba(var(--accent-rgb), .10) 100%); }
 .dark .wp-phone { color: var(--primary-fg); }
 .dark .wp-fac:hover { background: var(--glass-subtle); }

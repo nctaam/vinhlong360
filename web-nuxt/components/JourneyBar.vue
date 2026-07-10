@@ -39,7 +39,7 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
   padding: var(--space-3) var(--space-5) calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
   background: var(--card); border-top: .5px solid var(--line);
-  box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+  box-shadow: 0 -4px 20px rgba(var(--black-rgb),.08);
 }
 .jb-summary {
   display: flex; align-items: center; gap: var(--space-2);
@@ -58,7 +58,7 @@ onUnmounted(() => { if (popTimer) clearTimeout(popTimer) })
 .jb-slide-enter-from { transform: translateY(100%); opacity: 0; }
 .jb-slide-leave-to { transform: translateY(100%); opacity: 0; }
 
-.dark .journey-bar { background: var(--card); box-shadow: 0 -4px 20px rgba(0,0,0,.25); }
+.dark .journey-bar { background: var(--card); box-shadow: 0 -4px 20px rgba(var(--black-rgb),.25); }
 
 @media (max-width: 480px) {
   .journey-bar { flex-wrap: wrap; padding: var(--space-2) var(--space-3); gap: var(--space-2); }

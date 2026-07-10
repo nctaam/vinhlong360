@@ -123,7 +123,7 @@ function hideImage(payload: Event | string) {
 .ef-more:hover { background: rgba(var(--primary-rgb), .04); }
 
 .dark .ef-link { background: var(--bg-alt); }
-.dark .ef-more:hover { background: rgba(255,255,255,.04); }
+.dark .ef-more:hover { background: rgba(var(--white-rgb),.04); }
 
 @media (max-width: 600px) {
   .ef-thumb { width: 48px; height: 48px; }

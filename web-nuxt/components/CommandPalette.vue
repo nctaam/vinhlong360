@@ -119,13 +119,13 @@ defineExpose({ open })
 </script>
 
 <style scoped>
-.cmd-overlay { position: fixed; inset: 0; z-index: var(--z-lightbox); background: rgba(0,0,0,.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; }
+.cmd-overlay { position: fixed; inset: 0; z-index: var(--z-lightbox); background: rgba(var(--black-rgb),.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; }
 .cmd-palette {
   width: min(540px, 90vw);
   background: var(--bg, var(--white));
   border: .5px solid var(--line);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  box-shadow: 0 20px 60px rgba(var(--black-rgb),.2);
   overflow: hidden;
 }
 .cmd-input { width: 100%; padding: 14px var(--space-5); border: none; outline: none; font-size: 1rem; background: transparent; color: var(--ink); }
@@ -148,9 +148,9 @@ defineExpose({ open })
 .cmd-icon-chip {
   flex-shrink: 0; width: 26px; height: 26px; border-radius: var(--radius-full, 999px);
   display: flex; align-items: center; justify-content: center;
-  background: var(--surface-container, rgba(0,0,0,.04));
+  background: var(--surface-container, rgba(var(--black-rgb),.04));
 }
-.dark .cmd-icon-chip { background: rgba(255,255,255,.06); }
+.dark .cmd-icon-chip { background: rgba(var(--white-rgb),.06); }
 .cmd-icon { font-size: .95rem; line-height: 1; }
 .cmd-label { font-weight: 500; flex: 1; }
 .cmd-hint { font-size: .72rem; text-transform: uppercase; letter-spacing: var(--tracking-caps, .06em); color: var(--muted); }
@@ -158,8 +158,8 @@ defineExpose({ open })
 .cmd-empty-query { font-family: var(--font-editorial); }
 .cmd-empty-hint { font-size: .75rem; opacity: .6; }
 .cmd-footer { padding: var(--space-2) var(--space-5); border-top: .5px solid var(--line); font-size: .8rem; color: var(--muted); }
-.cmd-footer kbd { background: rgba(0,0,0,.06); padding: 2px 6px; border-radius: 4px; font-family: inherit; font-size: .75rem; }
-.dark .cmd-footer kbd { background: rgba(255,255,255,.08); }
+.cmd-footer kbd { background: rgba(var(--black-rgb),.06); padding: 2px 6px; border-radius: 4px; font-family: inherit; font-size: .75rem; }
+.dark .cmd-footer kbd { background: rgba(var(--white-rgb),.08); }
 .cmd-fade-enter-active, .cmd-fade-leave-active { transition: opacity .15s; }
 .cmd-fade-enter-from, .cmd-fade-leave-to { opacity: 0; }
 /* dark overrides for .cmd-palette in dark-overrides.css */

@@ -415,7 +415,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   border-left: 4px solid var(--primary);
   border-radius: 14px;
   padding: var(--space-5);
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  box-shadow: 0 1px 3px rgba(var(--black-rgb),.04);
 }
 .ai-section > .admin-section-title { margin-top: 0; }
 
@@ -516,7 +516,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
   cursor: pointer; font-size: .82rem; font-weight: 500; color: var(--ink);
   transition: transform .3s var(--ease-soft), box-shadow .3s, border-color .3s, background .3s;
 }
-.ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); border-color: var(--primary); }
+.ai-action-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(var(--black-rgb),.06); border-color: var(--primary); }
 .ai-action-btn:active:not(:disabled) { transform: scale(.97); }
 .ai-action-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .ai-action-btn:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
@@ -578,13 +578,13 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-cost-note strong { color: var(--ink); }
 
 /* ── Dark mode ── */
-.dark .ai-section { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); border-left-color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
-.dark .ai-dq-track { background: rgba(255,255,255,.06); }
-.dark .ai-metric { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); }
+.dark .ai-section { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); border-left-color: var(--primary); box-shadow: 0 1px 3px rgba(var(--black-rgb),.3); }
+.dark .ai-dq-track { background: rgba(var(--white-rgb),.06); }
+.dark .ai-metric { background: var(--bg, #1c1c1e); border-color: rgba(var(--white-rgb),.08); }
 .dark .ai-subsys-on { background: rgba(var(--primary-rgb),.1); }
 .dark .ai-subsys-off { background: rgba(var(--danger-rgb),.1); }
-.dark .ai-action-secondary { background: var(--bg, #1c1c1e); border-color: rgba(255,255,255,.08); color: var(--ink); }
-.dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+.dark .ai-action-secondary { background: var(--bg, #1c1c1e); border-color: rgba(var(--white-rgb),.08); color: var(--ink); }
+.dark .ai-action-btn:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(var(--black-rgb),.3); }
 .dark .ai-action-primary { color: var(--ink); }
 .dark .ai-triage-box { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.3); }
 .dark .ai-triage-box.ai-triage-error { background: rgba(var(--danger-rgb),.12); border-color: var(--error); border-left-color: var(--error); }

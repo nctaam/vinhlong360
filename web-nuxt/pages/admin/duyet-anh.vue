@@ -306,7 +306,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-tab.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
 .img-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .img-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 10px; background: rgba(var(--ink-rgb, 0,0,0),.08); }
-.img-tab.active .img-tab-count { background: rgba(255,255,255,.25); }
+.img-tab.active .img-tab-count { background: rgba(var(--white-rgb),.25); }
 
 /* ── Card grid ── */
 .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-4); }
@@ -391,8 +391,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   .img-tab:active { transform: none; }
   .img-conf-fill { transition: none; }
 }
-.dark .img-type-badge { background: rgba(255,255,255,.06); }
-.dark .img-tab-count { background: rgba(255,255,255,.12); }
+.dark .img-type-badge { background: rgba(var(--white-rgb),.06); }
+.dark .img-tab-count { background: rgba(var(--white-rgb),.12); }
 .dark .img-tabs { background: var(--bg); }
-.dark .img-conf-bar { background: rgba(255,255,255,.12); }
+.dark .img-conf-bar { background: rgba(var(--white-rgb),.12); }
 </style>

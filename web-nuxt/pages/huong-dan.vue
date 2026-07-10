@@ -1134,13 +1134,13 @@ useHead({ link: [{ rel: 'canonical', href: canonicalUrl('/huong-dan') }] })
 .dark .guide-hero.brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(255,255,255,.02) 55%, rgba(var(--primary-rgb, 46, 125, 50), .1) 120%);
+    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb, 46, 125, 50), .1) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .65; }
 .dark .guide-topic { background: var(--bg-alt); }
 .dark .qs-step { background: var(--bg-alt); }
-.dark .subtopic { background: rgba(255,255,255,.03); }
-.dark .tip-box { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.08); }
+.dark .subtopic { background: rgba(var(--white-rgb),.03); }
+.dark .tip-box { background: rgba(var(--white-rgb),.03); border-color: rgba(var(--white-rgb),.08); }
 .dark .warn-box { background: rgba(var(--warning-rgb), .05); border-color: rgba(var(--warning-rgb), .12); }
 .dark .dyk-box { background: rgba(var(--blue-rgb), .04); border-color: rgba(var(--blue-rgb), .1); }
 

@@ -66,11 +66,11 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
   100% { background-position: -200% 0; }
 }
 :root .dark .sk-cover {
-  background: linear-gradient(90deg, rgba(255,255,255,.08) 25%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.08) 75%);
+  background: linear-gradient(90deg, rgba(var(--white-rgb),.08) 25%, rgba(var(--white-rgb),.15) 50%, rgba(var(--white-rgb),.08) 75%);
   background-size: 200% 100%;
 }
 :root .dark .sk-line {
-  background: linear-gradient(90deg, var(--bg-alt) 25%, rgba(255,255,255,.1) 50%, var(--bg-alt) 75%);
+  background: linear-gradient(90deg, var(--bg-alt) 25%, rgba(var(--white-rgb),.1) 50%, var(--bg-alt) 75%);
   background-size: 200% 100%;
 }
 .dark .sk-cover::after { opacity: .08; }

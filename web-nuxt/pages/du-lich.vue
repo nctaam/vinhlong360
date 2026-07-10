@@ -509,14 +509,14 @@ useHead(() => ({
   background: linear-gradient(135deg, rgba(var(--primary-rgb), .14) 0%, var(--bg-warm) 70%);
   transition: background 1.1s var(--ease-cinematic);
 }
-.dark .atlas-hero { background: linear-gradient(135deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%); border-color: var(--line); }
+.dark .atlas-hero { background: linear-gradient(135deg, rgba(var(--white-rgb),.04) 0%, rgba(var(--white-rgb),.01) 100%); border-color: var(--line); }
 /* each mode gets its own warm tint (still clay/amber family — same publication) */
 .atlas-hero.mode-am-thuc { background: linear-gradient(135deg, rgba(var(--accent-rgb), .16) 0%, var(--bg-warm) 70%); }
 .atlas-hero.mode-lang-nghe { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .14) 0%, var(--bg-warm) 70%); }
 .atlas-hero.mode-luu-tru { background: linear-gradient(135deg, rgba(var(--river-rgb, var(--primary-rgb)), .14) 0%, var(--bg-warm) 70%); }
 .dark .atlas-hero.mode-am-thuc,
 .dark .atlas-hero.mode-lang-nghe,
-.dark .atlas-hero.mode-luu-tru { background: linear-gradient(135deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%); }
+.dark .atlas-hero.mode-luu-tru { background: linear-gradient(135deg, rgba(var(--white-rgb),.04) 0%, rgba(var(--white-rgb),.01) 100%); }
 
 .atlas-hero-grain {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
@@ -652,7 +652,7 @@ useHead(() => ({
   line-height: var(--leading-snug); color: var(--ink);
 }
 .dark .life-tile { background: var(--card); border-color: var(--line); }
-.dark .life-tile:hover { border-color: rgba(255,255,255,.1); }
+.dark .life-tile:hover { border-color: rgba(var(--white-rgb),.1); }
 
 @media (max-width: 760px) {
   .life-quad { grid-template-columns: 1fr; }

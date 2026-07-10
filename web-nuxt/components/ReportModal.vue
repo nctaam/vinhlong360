@@ -94,7 +94,7 @@ async function submit() {
 <style scoped>
 .rm-overlay {
   position: fixed; inset: 0; z-index: var(--z-lightbox);
-  background: rgba(0,0,0,.45); backdrop-filter: blur(2px);
+  background: rgba(var(--black-rgb),.45); backdrop-filter: blur(2px);
   display: flex; align-items: flex-end; justify-content: center;
   padding: 0;
 }
@@ -103,12 +103,12 @@ async function submit() {
 .rm-sheet {
   background: var(--card); width: 100%; max-width: 460px;
   border-radius: 18px 18px 0 0; padding: var(--space-6);
-  box-shadow: 0 -8px 40px rgba(0,0,0,.18); position: relative;
+  box-shadow: 0 -8px 40px rgba(var(--black-rgb),.18); position: relative;
   /* Flex column + capped height: middle scrolls, actions stay reachable. */
   display: flex; flex-direction: column;
   max-height: min(90vh, calc(100vh - 40px)); overflow: hidden;
 }
-@media (min-width: 560px) { .rm-sheet { border-radius: 18px; box-shadow: 0 12px 48px rgba(0,0,0,.22); } }
+@media (min-width: 560px) { .rm-sheet { border-radius: 18px; box-shadow: 0 12px 48px rgba(var(--black-rgb),.22); } }
 
 .rm-head { flex-shrink: 0; }
 .rm-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }

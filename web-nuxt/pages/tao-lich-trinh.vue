@@ -824,16 +824,16 @@ useHead({
 .stop-card-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dark .picker-item:hover { background: var(--glass-light); }
 .dark .stop-card { background: var(--card); border-color: var(--line); }
-.dark .stop-card-actions button:hover { background: rgba(255,255,255,.06); }
+.dark .stop-card-actions button:hover { background: rgba(var(--white-rgb),.06); }
 .dark .stop-card:hover { border-color: var(--border); }
 .dark .stop-connector { background: var(--primary-fg); }
 .dark .picker-list::-webkit-scrollbar-thumb { background: var(--glass-medium); }
-.dark .picker-list::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+.dark .picker-list::-webkit-scrollbar-thumb:hover { background: rgba(var(--white-rgb),.2); }
 .dark .saved-plan-item { background: var(--bg-alt); border-color: var(--line); }
-.dark .saved-plan-item:hover { border-color: rgba(255,255,255,.1); }
+.dark .saved-plan-item:hover { border-color: rgba(var(--white-rgb),.1); }
 .dark .route-map { border-color: var(--line); }
-.dark .route-leg-info { background: rgba(255,255,255,.04); }
-.dark .route-total { background: rgba(255,255,255,.04); }
+.dark .route-leg-info { background: rgba(var(--white-rgb),.04); }
+.dark .route-total { background: rgba(var(--white-rgb),.04); }
 .dark .builder-title { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 .dark .stop-time-input, .dark .stop-note-input { background: var(--bg-alt); border-color: var(--line); color: var(--ink); }
 

@@ -480,7 +480,7 @@ onBeforeUnmount(() => {
 #mapContainer:hover {
   box-shadow:
     0 8px 28px -8px rgba(var(--primary-rgb), .28),
-    0 20px 48px -20px rgba(0, 0, 0, .35);
+    0 20px 48px -20px rgba(var(--black-rgb), .35);
   transform: scale(1.005);
 }
 
@@ -532,7 +532,7 @@ onBeforeUnmount(() => {
 .dark #mapContainer:hover {
   box-shadow:
     0 8px 28px -8px rgba(var(--primary-rgb), .34),
-    0 22px 52px -20px rgba(0, 0, 0, .6);
+    0 22px 52px -20px rgba(var(--black-rgb), .6);
 }
 
 /* Reduced motion: no scale/transform on hover; keep the elevation cue. */

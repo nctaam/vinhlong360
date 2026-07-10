@@ -375,7 +375,7 @@ useHead(() => ({
   background: var(--card); border-radius: 50%; box-shadow: var(--shadow-xs);
 }
 .day-arc-label { font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); white-space: nowrap; }
-.dark .day-arc-glyph { background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.dark .day-arc-glyph { background: var(--card); box-shadow: 0 1px 3px rgba(var(--black-rgb),.4); }
 
 /* ── Pace chips — "how much time do you have," the first filter axis ── */
 .pace-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
@@ -391,7 +391,7 @@ useHead(() => ({
 .pace-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); border-color: var(--border); }
 .pace-chip:active { transform: scale(.96); transition-duration: .08s; }
 .pace-chip.active { background: var(--secondary); border-color: var(--secondary); color: var(--text-on-dark, var(--white)); }
-.pace-chip.active .pace-chip-count { color: rgba(255,255,255,.85); }
+.pace-chip.active .pace-chip-count { color: rgba(var(--white-rgb),.85); }
 .dark .pace-chip { background: var(--card); border-color: var(--line); }
 .dark .pace-chip.active { background: var(--secondary); border-color: var(--secondary); }
 
@@ -447,10 +447,10 @@ useHead(() => ({
 
 /* Dark mode */
 .dark .saved-section { border-bottom-color: var(--line); }
-.dark .js-item { background: rgba(255,255,255,.04); }
-.dark .js-item:hover { background: rgba(255,255,255,.07); }
+.dark .js-item { background: rgba(var(--white-rgb),.04); }
+.dark .js-item:hover { background: rgba(var(--white-rgb),.07); }
 .dark .saved-row .card { background: var(--bg-alt); border-color: var(--line); }
-.dark .saved-row .card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .saved-row .card:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

@@ -191,7 +191,7 @@ const ratingDisplay = computed(() => {
   height: 28px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(var(--white-rgb), 0.9);
   color: var(--ink-900, #1a1a1a);
   font-size: 1.1rem;
   line-height: 1;
@@ -201,7 +201,7 @@ const ratingDisplay = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 4px rgba(var(--black-rgb), 0.15);
 }
 .card-arrow-prev { left: var(--space-2); }
 .card-arrow-next { right: var(--space-2); }
@@ -222,7 +222,7 @@ const ratingDisplay = computed(() => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(var(--white-rgb), 0.6);
   transition: background 200ms var(--ease-out), transform 200ms var(--ease-spring-gentle);
 }
 .card-dot.active {
@@ -290,9 +290,9 @@ const ratingDisplay = computed(() => {
   vertical-align: middle;
 }
 .dark .card-arrow {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(var(--black-rgb), 0.65);
   color: var(--white);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 4px rgba(var(--black-rgb), 0.4);
 }
-.dark .card-dot { background: rgba(255, 255, 255, 0.4); }
+.dark .card-dot { background: rgba(var(--white-rgb), 0.4); }
 </style>

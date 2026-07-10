@@ -397,7 +397,7 @@ const formatDate = formatDateVN
   transition: border-color .2s, box-shadow .2s;
 }
 .sf-rep-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .1); }
-.dark .sf-rep-input { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); }
+.dark .sf-rep-input { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--white-rgb),.08); }
 
 /* ── Color ── */
 .sf-color-row { display: flex; align-items: center; gap: var(--space-3); }
@@ -436,7 +436,7 @@ const formatDate = formatDateVN
 .sf-toggle-thumb {
   position: absolute; top: 2px; left: 2px;
   width: 27px; height: 27px; border-radius: 50%;
-  background: var(--white, var(--white)); box-shadow: 0 1px 4px rgba(0,0,0,.18), 0 0 1px rgba(0,0,0,.04);
+  background: var(--white, var(--white)); box-shadow: 0 1px 4px rgba(var(--black-rgb),.18), 0 0 1px rgba(var(--black-rgb),.04);
   transition: transform .3s var(--ease-soft);
 }
 .sf-toggle input:checked + .sf-toggle-track .sf-toggle-thumb { transform: translateX(20px); }
@@ -480,7 +480,7 @@ const formatDate = formatDateVN
 .sf-save { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); }
 .sf-spinner {
   width: 16px; height: 16px; flex-shrink: 0;
-  border: 2px solid rgba(255,255,255,.4); border-top-color: var(--text-on-dark, var(--white)); border-radius: 50%;
+  border: 2px solid rgba(var(--white-rgb),.4); border-top-color: var(--text-on-dark, var(--white)); border-radius: 50%;
   animation: sf-spin .7s linear infinite;
 }
 @keyframes sf-spin { to { transform: rotate(360deg); } }
@@ -513,14 +513,14 @@ const formatDate = formatDateVN
 .sf-history-rollback { min-height: 34px; padding: 6px 10px; border-radius: 8px; font-size: .76rem; }
 
 /* ── Dark ── */
-.dark .sf-input, .dark .sf-textarea { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .sf-color-picker { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .sf-color-hex { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); color: var(--ink); }
-.dark .sf-color-clear { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .sf-toggle-track { background: rgba(255,255,255,.15); }
-.dark .sf-toggle-thumb { box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.dark .sf-input, .dark .sf-textarea { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .sf-color-picker { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .sf-color-hex { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); color: var(--ink); }
+.dark .sf-color-clear { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .sf-toggle-track { background: rgba(var(--white-rgb),.15); }
+.dark .sf-toggle-thumb { box-shadow: 0 1px 4px rgba(var(--black-rgb),.35); }
 .dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
-.dark .sf-history { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.08); }
+.dark .sf-history { background: rgba(var(--white-rgb),.03); border-color: rgba(var(--white-rgb),.08); }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {

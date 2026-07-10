@@ -294,17 +294,17 @@ useHead({
 .dark .brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(255,255,255,.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb), .12) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .7; }
 .dark .contact-card { background: var(--bg-alt); border-color: var(--line); }
-.dark .contact-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
+.dark .contact-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
 .dark .card-report:hover, .dark .card-privacy:hover { box-shadow: var(--shadow-xs); border-color: var(--line); }
 .dark .card-claim { background: color-mix(in srgb, var(--accent) 10%, var(--bg-alt)); border-color: rgba(var(--accent-rgb, 240,160,80), .35); }
 .dark .contact-card p { color: var(--ink-secondary); }
 .dark .contact-card h2 { color: var(--ink); }
-.dark .card-icon { background: rgba(255,255,255,.04); border-color: var(--line); }
-.dark .contact-card:hover .card-icon { border-color: rgba(255,255,255,.16); }
+.dark .card-icon { background: rgba(var(--white-rgb),.04); border-color: var(--line); }
+.dark .contact-card:hover .card-icon { border-color: rgba(var(--white-rgb),.16); }
 .dark .card-claim .card-icon { background: rgba(var(--accent-rgb, 240,160,80), .08); }
 
 /* Reduced motion */

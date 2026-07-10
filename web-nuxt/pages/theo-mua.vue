@@ -454,7 +454,7 @@ useHead(() => ({
 .month-grid { position: relative; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: var(--space-2); }
 .month-grid .quick-pick { border-left: 2px solid color-mix(in srgb, var(--month-tone, var(--primary)) 55%, transparent); }
 .month-grid .quick-pick.active {
-  box-shadow: 0 2px 8px rgba(var(--primary-rgb), .28), inset 0 1px 0 rgba(255, 255, 255, .15);
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb), .28), inset 0 1px 0 rgba(var(--white-rgb), .15);
 }
 .quick-pick-count { color: var(--muted); font-size: var(--text-xs); }
 
@@ -517,13 +517,13 @@ useHead(() => ({
 .ring-notch-tick {
   position: absolute; left: 50%; top: 2px; width: 2px; height: 9px;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, .55);
+  background: rgba(var(--white-rgb), .55);
   border-radius: var(--radius-full);
   transition: height .2s var(--ease-out), background .2s var(--ease-out);
 }
 .ring-notch:hover .ring-notch-tick,
 .ring-notch:focus-visible .ring-notch-tick { height: 13px; background: var(--white); }
-.ring-notch.is-current .ring-notch-tick { height: 13px; width: 3px; background: var(--card); box-shadow: 0 0 0 1px rgba(0, 0, 0, .12); }
+.ring-notch.is-current .ring-notch-tick { height: 13px; width: 3px; background: var(--card); box-shadow: 0 0 0 1px rgba(var(--black-rgb), .12); }
 .ring-notch:focus-visible { outline: 2px solid var(--card); outline-offset: 1px; }
 
 .season-moment-text strong { display: block; font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--ink); }
@@ -550,11 +550,11 @@ useHead(() => ({
 .catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--accent-rgb), .14) 0%, var(--bg-warm) 100%); }
 .catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--sediment-teal-rgb), .06) 100%); }
 .catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .14) 0%, var(--bg-warm) 100%); }
-.dark .catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, rgba(255,255,255,.02) 100%); }
+.dark .catalog-hero.cat-season.q-spring  { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1) 0%, rgba(var(--white-rgb),.02) 100%); }
 .dark .catalog-hero.cat-season.q-bloom   { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--secondary-rgb), .06) 100%); }
-.dark .catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--accent-rgb), .14) 0%, rgba(255,255,255,.02) 100%); }
+.dark .catalog-hero.cat-season.q-summer  { background: linear-gradient(135deg, rgba(var(--accent-rgb), .14) 0%, rgba(var(--white-rgb),.02) 100%); }
 .dark .catalog-hero.cat-season.q-harvest { background: linear-gradient(135deg, rgba(var(--accent-rgb), .1) 0%, rgba(var(--sediment-teal-rgb), .08) 100%); }
-.dark .catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .18) 0%, rgba(255,255,255,.02) 100%); }
+.dark .catalog-hero.cat-season.q-flood   { background: linear-gradient(135deg, rgba(var(--sediment-teal-rgb), .18) 0%, rgba(var(--white-rgb),.02) 100%); }
 
 /* Section eyebrow + dividers */
 .section-eyebrow {
@@ -582,17 +582,17 @@ useHead(() => ({
 /* Badges — gradient + gloss */
 .season-badge {
   position: absolute; top: var(--space-2); left: var(--space-2); z-index: 2;
-  background: linear-gradient(135deg, rgba(0, 0, 0, .65), rgba(0, 0, 0, .78));
+  background: linear-gradient(135deg, rgba(var(--black-rgb), .65), rgba(var(--black-rgb), .78));
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   color: var(--text-on-dark, var(--white));
   font-size: .72rem; font-weight: var(--weight-semibold);
   padding: 3px var(--space-3); border-radius: var(--radius-full);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .08);
+  box-shadow: 0 1px 3px rgba(var(--black-rgb), .35), inset 0 1px 0 rgba(var(--white-rgb), .08);
 }
 .season-badge.peak {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   color: var(--ink); font-weight: var(--weight-semibold);
-  box-shadow: 0 1px 3px rgba(var(--accent-rgb), .4), inset 0 1px 0 rgba(255, 255, 255, .25);
+  box-shadow: 0 1px 3px rgba(var(--accent-rgb), .4), inset 0 1px 0 rgba(var(--white-rgb), .25);
 }
 .season-item:hover .season-badge.peak { animation: season-badge-pulse 2.4s var(--ease-out) infinite; }
 @keyframes season-badge-pulse {
@@ -668,7 +668,7 @@ useHead(() => ({
 .stl-cell {
   position: relative; aspect-ratio: 1 / 1.15; border: none; cursor: pointer;
   display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px;
-  color: rgba(255, 255, 255, .82); font-size: var(--text-2xs); font-weight: var(--weight-semibold);
+  color: rgba(var(--white-rgb), .82); font-size: var(--text-2xs); font-weight: var(--weight-semibold);
   font-variant-numeric: tabular-nums;
   transition: filter .2s var(--ease-out), transform .2s var(--ease-spring-gentle);
 }
@@ -682,7 +682,7 @@ useHead(() => ({
 /* Current-month marker: a static ring, not a pulsing glow (one ambient/
    viewport is already spent on the hero ring — this stays calm, per the
    §3 golden rule). */
-.stl-cell.is-now { box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 4px rgba(0, 0, 0, .25); }
+.stl-cell.is-now { box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 4px rgba(var(--black-rgb), .25); }
 .stl-cell.is-now .stl-m { font-weight: var(--weight-extrabold); }
 .stl-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin-top: var(--space-3); }
 .stl-legend-item { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-xs); color: var(--muted); }
@@ -694,12 +694,12 @@ useHead(() => ({
 .stl-swatch.q-flood   { background: var(--tertiary); }
 
 /* ── Dark mode ─────────────────────────────── */
-.dark .season-moment { border-top-color: rgba(255, 255, 255, .1); }
-.dark .season-ring { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
+.dark .season-moment { border-top-color: rgba(var(--white-rgb), .1); }
+.dark .season-ring { box-shadow: inset 0 0 0 1px rgba(var(--white-rgb), .12); }
 .dark .season-badge {
-  background: linear-gradient(135deg, rgba(0, 0, 0, .72), rgba(0, 0, 0, .82));
+  background: linear-gradient(135deg, rgba(var(--black-rgb), .72), rgba(var(--black-rgb), .82));
   color: var(--text-on-dark, var(--white));
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .06);
+  box-shadow: 0 1px 3px rgba(var(--black-rgb), .5), inset 0 1px 0 rgba(var(--white-rgb), .06);
 }
 .dark .season-badge.peak {
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
@@ -709,12 +709,12 @@ useHead(() => ({
 .dark .empty-type-card { background: rgba(var(--secondary-rgb), .07); border-color: rgba(var(--secondary-rgb), .22); }
 .dark .b2b-callout { background: linear-gradient(135deg, rgba(var(--secondary-rgb), .1), transparent); border-color: rgba(var(--secondary-rgb), .25); }
 .dark .month-grid .quick-pick { background: var(--bg-alt); border-color: var(--line); }
-.dark .month-grid .quick-pick:hover { border-color: rgba(255, 255, 255, .15); }
-.dark .ring-notch-tick { background: rgba(255, 255, 255, .4); }
-.dark .ring-notch:hover .ring-notch-tick, .dark .ring-notch:focus-visible .ring-notch-tick { background: rgba(255, 255, 255, .85); }
-.dark .ring-notch.is-current .ring-notch-tick { background: var(--card); box-shadow: 0 0 0 1px rgba(255, 255, 255, .2); }
-.dark .stl-cell { color: rgba(255, 255, 255, .78); }
-.dark .stl-cell.is-now { box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 4px rgba(0, 0, 0, .4); }
+.dark .month-grid .quick-pick:hover { border-color: rgba(var(--white-rgb), .15); }
+.dark .ring-notch-tick { background: rgba(var(--white-rgb), .4); }
+.dark .ring-notch:hover .ring-notch-tick, .dark .ring-notch:focus-visible .ring-notch-tick { background: rgba(var(--white-rgb), .85); }
+.dark .ring-notch.is-current .ring-notch-tick { background: var(--card); box-shadow: 0 0 0 1px rgba(var(--white-rgb), .2); }
+.dark .stl-cell { color: rgba(var(--white-rgb), .78); }
+.dark .stl-cell.is-now { box-shadow: inset 0 0 0 2px var(--card), inset 0 0 0 4px rgba(var(--black-rgb), .4); }
 
 /* ── Responsive ────────────────────────────── */
 @media (max-width: 700px) {

@@ -331,11 +331,11 @@ useHead({
 .dark .brand-masthead {
   background:
     var(--grain),
-    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(255,255,255,.02) 55%, rgba(var(--primary-rgb), .12) 120%);
+    linear-gradient(120deg, rgba(116, 171, 181, .1) 0%, rgba(var(--white-rgb),.02) 55%, rgba(var(--primary-rgb), .12) 120%);
 }
 .dark .bm-motif { color: var(--clay-400); opacity: .7; }
 .dark .highlight-badge { background: var(--bg-alt); border-color: var(--line); }
-.dark .about-section.tint-alt { background: rgba(255,255,255,.025); }
+.dark .about-section.tint-alt { background: rgba(var(--white-rgb),.025); }
 .dark .mission-section { border-color: var(--secondary-fg); background: rgba(var(--secondary-rgb), .12); }
 .dark .legal-page :deep(a) { text-decoration-color: transparent; }
 .dark .legal-page :deep(a:hover) { text-decoration-color: var(--primary-fg); }

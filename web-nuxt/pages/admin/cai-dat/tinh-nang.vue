@@ -131,7 +131,7 @@ onMounted(reload)
   background: var(--bg); margin-bottom: 2px; cursor: pointer; min-height: 44px;
   transition: box-shadow .3s var(--ease-soft);
 }
-.ff-row:hover { box-shadow: 0 2px 12px rgba(0,0,0,.05); }
+.ff-row:hover { box-shadow: 0 2px 12px rgba(var(--black-rgb),.05); }
 .ff-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .ff-label { font-size: .9rem; font-weight: 500; }
 .ff-desc { font-size: .76rem; color: var(--muted); line-height: 1.4; }
@@ -146,7 +146,7 @@ onMounted(reload)
 .ff-toggle input:checked + .ff-track { background: var(--primary); }
 .ff-thumb {
   position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%;
-  background: var(--bg); box-shadow: 0 1px 4px rgba(0,0,0,.18);
+  background: var(--bg); box-shadow: 0 1px 4px rgba(var(--black-rgb),.18);
   transition: transform .3s var(--ease-soft);
 }
 .ff-toggle input:checked + .ff-track .ff-thumb { transform: translateX(20px); }
@@ -175,8 +175,8 @@ onMounted(reload)
 .cs-skel-item { height: 60px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(even) { animation-delay: .2s; }
 
-.dark .ff-row { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .ff-track { background: rgba(255,255,255,.15); }
+.dark .ff-row { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .ff-track { background: rgba(var(--white-rgb),.15); }
 
 @media (prefers-reduced-motion: reduce) {
   .ff-row, .ff-track, .ff-thumb, .sf-save, .sf-reset { transition: none; }

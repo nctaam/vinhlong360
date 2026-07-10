@@ -460,7 +460,7 @@ useHead(() => ({
 }
 .dark .int-byline { color: var(--ink-tertiary) !important; border-top-color: var(--line); }
 .dark .interest-nav .chip { background: var(--bg-alt); border-color: var(--line); }
-.dark .interest-nav .chip:hover { border-color: rgba(255,255,255,.15); }
+.dark .interest-nav .chip:hover { border-color: rgba(var(--white-rgb),.15); }
 .dark .interest-nav .chip.active { background: rgba(var(--primary-rgb), .12); border-color: var(--primary-fg); }
 .dark .result-meta { color: var(--ink-tertiary); }
 

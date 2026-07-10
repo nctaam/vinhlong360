@@ -1271,14 +1271,14 @@ useHead({
   display: inline-block; margin-bottom: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   letter-spacing: .12em; text-transform: uppercase;
-  color: rgba(255, 255, 255, .92); padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, .38);
+  color: rgba(var(--white-rgb), .92); padding-bottom: 4px;
+  border-bottom: 1px solid rgba(var(--white-rgb), .38);
 }
 .detail-cover .dc-hook {
   margin: var(--space-2) 0 var(--space-1); max-width: 42ch;
   font-family: var(--font-editorial); font-style: italic; font-weight: 500;
-  font-size: var(--text-lg); line-height: 1.4; color: rgba(255, 255, 255, .95);
-  text-shadow: 0 1px 10px rgba(0, 0, 0, .38);
+  font-size: var(--text-lg); line-height: 1.4; color: rgba(var(--white-rgb), .95);
+  text-shadow: 0 1px 10px rgba(var(--black-rgb), .38);
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 /* No-photo entities: the per-entity gradient (inline bg) fills the hero; grain adds print texture */
@@ -1290,15 +1290,15 @@ useHead({
 .detail-cover:not(.has-cover-img) .dc-inner { position: relative; z-index: 2; }
 .dc-nophoto-note {
   position: absolute; right: var(--space-4); bottom: var(--space-3); z-index: 2;
-  font-size: var(--text-2xs); color: rgba(255, 255, 255, .82);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, .5); max-width: 58%; text-align: right; line-height: 1.3;
+  font-size: var(--text-2xs); color: rgba(var(--white-rgb), .82);
+  text-shadow: 0 1px 3px rgba(var(--black-rgb), .5); max-width: 58%; text-align: right; line-height: 1.3;
 }
 /* Oversized off-centre category motif watermark (no-photo hero only) — same visual
    language as EntityHeroPlaceholder.vue's .ehp-motif. Sits behind .dc-inner (z-index 2)
    and the existing .dc-overlay/.dc-vignette scrim, so hero text stays fully legible. */
 .dc-motif {
   position: absolute; right: -4%; bottom: -10%; z-index: 1; pointer-events: none;
-  width: 42%; max-width: 300px; color: rgba(255, 255, 255, .5); opacity: .45;
+  width: 42%; max-width: 300px; color: rgba(var(--white-rgb), .5); opacity: .45;
 }
 .dc-motif :deep(svg) { width: 100%; height: auto; display: block; }
 @media (max-width: 640px) {

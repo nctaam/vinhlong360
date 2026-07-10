@@ -102,7 +102,7 @@ function iconFor(type?: string) {
 .toast-move { transition: transform .3s var(--ease-spring-gentle, cubic-bezier(.2,1.2,.4,1)); }
 
 /* ── Dark ── */
-.dark .toast { background: var(--card); border-color: rgba(var(--text-on-dark-rgb, 255,255,255),.1); box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+.dark .toast { background: var(--card); border-color: rgba(var(--text-on-dark-rgb, 255,255,255),.1); box-shadow: 0 8px 32px rgba(var(--black-rgb),.5); }
 
 @media (max-width: 480px) {
   .toast-container { right: var(--space-2); left: var(--space-2); max-width: none; width: auto; }

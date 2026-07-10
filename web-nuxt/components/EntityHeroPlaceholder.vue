@@ -29,9 +29,9 @@ const label = computed(() => props.label || '')
   mix-blend-mode: soft-light; }
 /* oversized off-centre category motif bleeding off the right edge */
 .ehp-motif { position: absolute; right: -6%; bottom: -8%; z-index: 1; width: 46%; max-width: 320px;
-  color: rgba(255,255,255,.5); opacity: .5; }
+  color: rgba(var(--white-rgb),.5); opacity: .5; }
 .ehp-motif :deep(svg) { width: 100%; height: auto; display: block; }
 .ehp-note { position: absolute; left: var(--space-4); bottom: var(--space-3); z-index: 2;
-  font-size: var(--text-2xs); color: rgba(255,255,255,.82); text-shadow: 0 1px 3px rgba(0,0,0,.45);
+  font-size: var(--text-2xs); color: rgba(var(--white-rgb),.82); text-shadow: 0 1px 3px rgba(var(--black-rgb),.45);
   max-width: 62%; line-height: 1.3; }
 </style>

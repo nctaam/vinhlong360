@@ -172,7 +172,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cs-chip {
   display: inline-flex; align-items: center; gap: 6px;
   min-height: 44px; padding: 6px 14px; border-radius: 999px;
-  background: var(--bg-alt, rgba(0,0,0,.03)); border: .5px solid var(--line);
+  background: var(--bg-alt, rgba(var(--black-rgb),.03)); border: .5px solid var(--line);
   color: inherit; text-decoration: none;
   font-size: .8rem; font-weight: 500; line-height: 1;
   transition: transform .2s var(--ease-soft), border-color .2s, background .2s, box-shadow .2s;
@@ -214,7 +214,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 .cs-group-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px;
-  background: var(--bg-alt, rgba(0,0,0,.05)); border: .5px solid var(--line);
+  background: var(--bg-alt, rgba(var(--black-rgb),.05)); border: .5px solid var(--line);
   font-size: .7rem; font-weight: 600; letter-spacing: 0; color: var(--muted);
 }
 
@@ -233,7 +233,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 .cs-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,.06);
+  box-shadow: 0 6px 20px rgba(var(--black-rgb),.06);
   border-color: var(--primary);
 }
 .cs-card:active { transform: scale(.98); }
@@ -257,14 +257,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 }
 
 /* ── Dark ── */
-.dark .cs-chip { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.06); }
-.dark .cs-chip:hover { background: rgba(255,255,255,.08); }
-.dark .cs-search-input { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .cs-group-count { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.08); }
-.dark .cs-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+.dark .cs-chip { background: rgba(var(--white-rgb),.05); border-color: rgba(var(--white-rgb),.06); }
+.dark .cs-chip:hover { background: rgba(var(--white-rgb),.08); }
+.dark .cs-search-input { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .cs-group-count { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.08); }
+.dark .cs-card { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
 .dark .cs-card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,.3);
-  border-color: rgba(255,255,255,.18);
+  box-shadow: 0 6px 20px rgba(var(--black-rgb),.3);
+  border-color: rgba(var(--white-rgb),.18);
 }
 
 /* ── Reduced motion ── */

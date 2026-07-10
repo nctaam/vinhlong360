@@ -327,7 +327,7 @@ useHead({
   cursor: pointer; transition: border-color .2s, box-shadow .2s;
   min-width: 100px; flex-shrink: 0;
 }
-.dd-type-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.dd-type-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(var(--black-rgb),.06); }
 .dd-type-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .dd-type-card.active { border-color: var(--primary); background: rgba(var(--primary-rgb), .06); }
 .dd-type-icon { font-size: 1.6rem; }

@@ -67,7 +67,7 @@ const props = withDefaults(defineProps<{
   width: 40px; height: 40px; border-radius: var(--radius-full); flex-shrink: 0;
   background: rgba(var(--primary-rgb), .07);
 }
-.dark .interstitial-icon-chip { background: rgba(255, 255, 255, .06); }
+.dark .interstitial-icon-chip { background: rgba(var(--white-rgb), .06); }
 .interstitial-icon {
   font-size: 1.15rem;
   line-height: 1;
@@ -114,7 +114,7 @@ const props = withDefaults(defineProps<{
 
 .dark .interstitial {
   background: linear-gradient(135deg, rgba(var(--primary-rgb), .06), transparent);
-  border-color: rgba(255, 255, 255, .08);
+  border-color: rgba(var(--white-rgb), .08);
 }
 .dark .interstitial.warm {
   background: linear-gradient(135deg, rgba(var(--secondary-rgb), .08), rgba(var(--accent-rgb), .04));

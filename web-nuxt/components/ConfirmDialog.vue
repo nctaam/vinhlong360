@@ -65,7 +65,7 @@ watch(() => state.value.open, async (open) => {
 .confirm-fade-enter-from, .confirm-fade-leave-to { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .confirm-fade-enter-active, .confirm-fade-leave-active { transition: none; } }
 @media (forced-colors: active) {
-  .confirm-overlay { background: rgba(0,0,0,.7); }
+  .confirm-overlay { background: rgba(var(--black-rgb),.7); }
   .confirm-box { border: 2px solid CanvasText; background: Canvas; }
   .btn-danger { border: 1px solid ButtonText; }
 }

@@ -554,7 +554,7 @@ if (itinerary.value && !itinerary.value.error) {
   font-size: var(--text-2xs); color: var(--muted); text-transform: uppercase; letter-spacing: var(--tracking-caps);
   font-weight: var(--weight-semibold);
 }
-.dark .day-arc-dot { background: var(--card); box-shadow: 0 0 0 2px var(--primary-fg) inset, 0 1px 3px rgba(0,0,0,.4); }
+.dark .day-arc-dot { background: var(--card); box-shadow: 0 0 0 2px var(--primary-fg) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
 
 .itin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-4) 0; }
 .itin-actions .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
@@ -576,7 +576,7 @@ if (itinerary.value && !itinerary.value.error) {
   /* Reserve height so client-only mount doesn't shift layout (CLS) */
   min-height: 56px;
 }
-.dark .transport-mode-spaced { background: rgba(255,255,255,.03); border-color: var(--line); }
+.dark .transport-mode-spaced { background: rgba(var(--white-rgb),.03); border-color: var(--line); }
 .transport-mode .chip { transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out), background .3s var(--ease-out), border-color .3s var(--ease-out); }
 .transport-mode .chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); }
 .transport-mode .chip:active { transform: scale(.95); transition-duration: .08s; }
@@ -645,10 +645,10 @@ if (itinerary.value && !itinerary.value.error) {
   border-radius: var(--radius-full);
   line-height: 1.4;
 }
-.dark .step-type-label { background: rgba(255,255,255,.06); }
+.dark .step-type-label { background: rgba(var(--white-rgb),.06); }
 
 /* Summary contrast lift in dark mode */
-.dark .step-card .summary { color: rgba(255,255,255,.72); }
+.dark .step-card .summary { color: rgba(var(--white-rgb),.72); }
 
 /* ── Note callout — respectful etiquette/context notes (§8: chùa Khmer,
    seasonal caveats) surfaced as a warm amber-tinted aside instead of plain
@@ -726,13 +726,13 @@ if (itinerary.value && !itinerary.value.error) {
   gap: var(--space-2);
 }
 .route-total[role="status"] .chip { font-weight: var(--weight-semibold); }
-.dark .route-total { background: rgba(255,255,255,.04); border-color: rgba(var(--primary-rgb), .4); }
+.dark .route-total { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--primary-rgb), .4); }
 
 /* Dark mode */
 .dark .step-card { border-color: var(--line); }
-.dark .step-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(255,255,255,.1); }
-.dark .route-leg-line { background: rgba(255,255,255,.1); }
-.dark .route-leg-info { background: rgba(255,255,255,.04); }
+.dark .step-card:hover { box-shadow: var(--shadow-lg); border-color: rgba(var(--white-rgb),.1); }
+.dark .route-leg-line { background: rgba(var(--white-rgb),.1); }
+.dark .route-leg-info { background: rgba(var(--white-rgb),.04); }
 .dark .route-map { border-color: var(--line); }
 
 /* Reduced motion */

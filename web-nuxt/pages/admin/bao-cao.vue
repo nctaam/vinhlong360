@@ -478,9 +478,9 @@ onMounted(() => fetchAll())
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px;
   border-radius: 100px; font-size: .68rem; font-weight: 600;
-  background: rgba(0,0,0,.06); color: var(--muted);
+  background: rgba(var(--black-rgb),.06); color: var(--muted);
 }
-.rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); color: var(--text-on-dark); }
+.rpt-chip.active .rpt-chip-count { background: rgba(var(--white-rgb),.25); color: var(--text-on-dark); }
 
 /* ── Bulk action bar ── */
 .rpt-bulkbar {
@@ -553,24 +553,24 @@ onMounted(() => fetchAll())
 /* ── Dark ── */
 .dark .status-pending { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
 .dark .status-resolved { background: rgba(var(--primary-rgb),.12); }
-.dark .status-dismissed { background: rgba(255,255,255,.06); }
+.dark .status-dismissed { background: rgba(var(--white-rgb),.06); }
 .dark .rpt-open-badge { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
-.dark .rpt-chip { background: rgba(255,255,255,.04); }
-.dark .rpt-chip-count { background: rgba(255,255,255,.1); }
-.dark .rpt-chip.active .rpt-chip-count { background: rgba(255,255,255,.25); }
+.dark .rpt-chip { background: rgba(var(--white-rgb),.04); }
+.dark .rpt-chip-count { background: rgba(var(--white-rgb),.1); }
+.dark .rpt-chip.active .rpt-chip-count { background: rgba(var(--white-rgb),.25); }
 .dark .rpt-bulkbar { background: rgba(var(--blue-rgb),.16); border-color: rgba(var(--blue-rgb),.55); }
 .dark .rpt-bulk-count { color: rgb(var(--blue-rgb)); }
-.dark .rpt-bulk-hint { color: rgba(255,255,255,.55); }
+.dark .rpt-bulk-hint { color: rgba(var(--white-rgb),.55); }
 .dark .rpt-row-selected { background: rgba(0,113,227,.1); }
-.dark .rpt-loadmore { background: rgba(255,255,255,.04); }
+.dark .rpt-loadmore { background: rgba(var(--white-rgb),.04); }
 /* dark-mode contrast: brighter primary so toggle/chip-dot reach WCAG AA */
 .dark .rpt-reason-toggle { color: rgb(var(--blue-rgb)); }
-.dark .rpt-chip.active { box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+.dark .rpt-chip.active { box-shadow: 0 2px 8px rgba(var(--black-rgb),.35); }
 .dark .rpt-chip.active::after { background: rgb(var(--blue-rgb)); }
 
 /* fix 4 — keep header visually separated on scroll within this page's tables */
-.admin-table th { box-shadow: 0 2px 4px rgba(0,0,0,.04); }
-.dark .admin-table th { box-shadow: 0 2px 6px rgba(0,0,0,.35); }
+.admin-table th { box-shadow: 0 2px 4px rgba(var(--black-rgb),.04); }
+.dark .admin-table th { box-shadow: 0 2px 6px rgba(var(--black-rgb),.35); }
 
 /* ── Skeleton loading ── */
 .rpt-skeleton { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4) 0; }

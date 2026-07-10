@@ -495,7 +495,7 @@ useHead({
   background-size: cover; background-position: center;
   transition: transform .35s var(--ease-spring-gentle);
 }
-.quick-pick-glyph { display: inline-flex; width: 24px; height: 24px; color: rgba(255,255,255,.85); }
+.quick-pick-glyph { display: inline-flex; width: 24px; height: 24px; color: rgba(var(--white-rgb),.85); }
 .quick-pick-glyph :deep(svg) { width: 100%; height: 100%; }
 .quick-pick:hover .quick-pick-icon { transform: scale(1.1); }
 .quick-pick-label { font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
@@ -540,8 +540,8 @@ useHead({
 .sug-fade-leave-active { transition: opacity .1s; }
 .sug-fade-enter-from { opacity: 0; transform: translateY(-4px); }
 .sug-fade-leave-to { opacity: 0; }
-.dark .search-suggestions { background: var(--card); border-color: rgba(255,255,255,.1); }
-.dark .sug-item:hover, .dark .sug-item.active { background: rgba(255,255,255,.06); }
+.dark .search-suggestions { background: var(--card); border-color: rgba(var(--white-rgb),.1); }
+.dark .sug-item:hover, .dark .sug-item.active { background: rgba(var(--white-rgb),.06); }
 
 /* Search input polish */
 .search-row-spaced input {
@@ -661,7 +661,7 @@ useHead({
   100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
 }
 .dark .trending-chip { background: var(--bg-alt); border-color: var(--line); }
-.dark .trending-chip:hover { border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.04); }
+.dark .trending-chip:hover { border-color: rgba(var(--white-rgb),.15); background: rgba(var(--white-rgb),.04); }
 
 /* Grid results stagger */
 .grid { animation: fadeInGrid .4s var(--ease-out) both; }
@@ -669,7 +669,7 @@ useHead({
 
 /* Dark mode */
 .dark .quick-pick { background: var(--bg-alt); border-color: var(--line); }
-.dark .quick-pick:hover { border-color: rgba(255,255,255,.15); box-shadow: var(--shadow-md); background: rgba(255,255,255,.04); }
+.dark .quick-pick:hover { border-color: rgba(var(--white-rgb),.15); box-shadow: var(--shadow-md); background: rgba(var(--white-rgb),.04); }
 
 /* Recently viewed */
 /* Row C filmstrip — narrower flex-basis than the shared .scroll-row default (260px is
@@ -692,12 +692,12 @@ useHead({
   display: flex; align-items: center; justify-content: center;
   background-size: cover; background-position: center;
 }
-.recent-placeholder-glyph { display: inline-flex; width: 28px; height: 28px; color: rgba(255,255,255,.85); }
+.recent-placeholder-glyph { display: inline-flex; width: 28px; height: 28px; color: rgba(var(--white-rgb),.85); }
 .recent-placeholder-glyph :deep(svg) { width: 100%; height: 100%; }
 .recent-name { font-size: var(--text-xs); font-weight: var(--weight-semibold); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
 .recent-type { font-size: 10px; color: var(--muted); }
 .dark .recent-card { background: var(--bg-alt); border-color: var(--line); }
-.dark .recent-card:hover { border-color: rgba(255,255,255,.15); }
+.dark .recent-card:hover { border-color: rgba(var(--white-rgb),.15); }
 
 /* Reduced motion — ticker interval itself never starts (see onMounted guard in script);
    these rules cover the remaining CSS-driven motion so nothing depends on JS alone. */

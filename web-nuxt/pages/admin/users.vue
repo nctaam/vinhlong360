@@ -500,7 +500,7 @@ onMounted(() => fetchUsers())
   transition: transform .25s var(--ease-soft);
 }
 
-.dark .usr-filter-select { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
+.dark .usr-filter-select { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-sort-th:hover { background: rgba(var(--primary-rgb),.16); }
 
 /* ── User cell with avatar ── */
@@ -592,7 +592,7 @@ onMounted(() => fetchUsers())
 /* ── Loading skeleton rows ── */
 .usr-skeleton-line {
   height: 16px; border-radius: 6px;
-  background: linear-gradient(90deg, var(--line) 25%, rgba(0,0,0,.03) 50%, var(--line) 75%);
+  background: linear-gradient(90deg, var(--line) 25%, rgba(var(--black-rgb),.03) 50%, var(--line) 75%);
   background-size: 200% 100%;
   animation: usr-skeleton-pulse 1.4s var(--ease-in-out) infinite;
 }
@@ -610,19 +610,19 @@ onMounted(() => fetchUsers())
 /* ── Dark ── */
 .dark .usr-avatar { background: rgba(var(--primary-rgb),.2); }
 .dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(var(--primary-rgb),.25); }
-.dark .usr-role-select { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
+.dark .usr-role-select { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-active { background: rgba(var(--primary-rgb),.12); }
 .dark .usr-banned { background: rgba(var(--danger-rgb),.12); }
-.dark .usr-rolecount { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .usr-rolecount-n { background: rgba(255,255,255,.12); color: var(--ink); }
+.dark .usr-rolecount { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .usr-rolecount-n { background: rgba(var(--white-rgb),.12); color: var(--ink); }
 .dark .usr-rolecount.active { background: rgba(var(--primary-rgb),.18); }
-.dark .usr-skeleton-line { background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.12) 50%, rgba(255,255,255,.06) 75%); background-size: 200% 100%; }
-.dark .usr-confirm-actions button { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.08); }
-.dark .usr-confirm-cancel:hover { background: rgba(255,255,255,.06); }
+.dark .usr-skeleton-line { background: linear-gradient(90deg, rgba(var(--white-rgb),.06) 25%, rgba(var(--white-rgb),.12) 50%, rgba(var(--white-rgb),.06) 75%); background-size: 200% 100%; }
+.dark .usr-confirm-actions button { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .usr-confirm-cancel:hover { background: rgba(var(--white-rgb),.06); }
 
 /* ── User detail drawer ── */
-.ud-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(0,0,0,.45); display: flex; justify-content: flex-end; }
-.ud-drawer { width: 100%; max-width: 440px; background: var(--card); height: 100%; display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(0,0,0,.15); animation: udSlideIn .25s var(--ease-out, var(--ease-soft)); overflow: hidden; }
+.ud-overlay { position: fixed; inset: 0; z-index: var(--z-modal-high); background: rgba(var(--black-rgb),.45); display: flex; justify-content: flex-end; }
+.ud-drawer { width: 100%; max-width: 440px; background: var(--card); height: 100%; display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(var(--black-rgb),.15); animation: udSlideIn .25s var(--ease-out, var(--ease-soft)); overflow: hidden; }
 @keyframes udSlideIn { from { transform: translateX(100%); } }
 .ud-head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4); border-bottom: .5px solid var(--line); }
 .ud-head-user { display: flex; align-items: center; gap: var(--space-3); }
@@ -651,8 +651,8 @@ onMounted(() => fetchUsers())
 .ud-post-time { font-size: var(--text-xs); color: var(--muted); }
 .usr-admin-role { color: var(--primary); font-weight: 600; }
 
-.dark .ud-drawer { background: var(--card, #2c2c2e); box-shadow: -4px 0 32px rgba(0,0,0,.5); }
-.dark .ud-stat { background: rgba(255,255,255,.04); }
+.dark .ud-drawer { background: var(--card, #2c2c2e); box-shadow: -4px 0 32px rgba(var(--black-rgb),.5); }
+.dark .ud-stat { background: rgba(var(--white-rgb),.04); }
 
 @media (max-width: 480px) { .ud-drawer { max-width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .ud-drawer { animation: none; } }

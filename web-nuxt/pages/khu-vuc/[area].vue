@@ -318,7 +318,7 @@ if (areaMeta) {
   margin-bottom: var(--space-2);
   font-family: var(--font-sans); font-size: var(--text-2xs); font-weight: 700;
   letter-spacing: .22em; text-transform: uppercase;
-  color: rgba(255, 255, 255, .9); text-shadow: 0 1px 3px rgba(0, 0, 0, .45);
+  color: rgba(var(--white-rgb), .9); text-shadow: 0 1px 3px rgba(var(--black-rgb), .45);
 }
 .area-hero .area-eyebrow::before {
   content: ""; width: clamp(22px, 5vw, 46px); height: 1.5px;
@@ -361,13 +361,13 @@ if (areaMeta) {
 .cat-area-ben-tre   { --area-img: url(/img/area-ben-tre.webp); }
 .cat-area-tra-vinh  { --area-img: url(/img/area-tra-vinh.webp); }
 .cat-area-vinh-long .area-hero-bloom, .cat-area-ben-tre .area-hero-bloom, .cat-area-tra-vinh .area-hero-bloom { display: none; }
-.cat-area-vinh-long h1, .cat-area-ben-tre h1, .cat-area-tra-vinh h1 { color: var(--white); text-shadow: 0 2px 22px rgba(0,0,0,.5); }
-.cat-area-vinh-long p, .cat-area-ben-tre p, .cat-area-tra-vinh p { color: rgba(255,255,255,.92); text-shadow: 0 1px 10px rgba(0,0,0,.4); }
-.cat-area-vinh-long .catalog-hero-icon, .cat-area-ben-tre .catalog-hero-icon, .cat-area-tra-vinh .catalog-hero-icon { filter: drop-shadow(0 2px 8px rgba(0,0,0,.5)); }
+.cat-area-vinh-long h1, .cat-area-ben-tre h1, .cat-area-tra-vinh h1 { color: var(--white); text-shadow: 0 2px 22px rgba(var(--black-rgb),.5); }
+.cat-area-vinh-long p, .cat-area-ben-tre p, .cat-area-tra-vinh p { color: rgba(var(--white-rgb),.92); text-shadow: 0 1px 10px rgba(var(--black-rgb),.4); }
+.cat-area-vinh-long .catalog-hero-icon, .cat-area-ben-tre .catalog-hero-icon, .cat-area-tra-vinh .catalog-hero-icon { filter: drop-shadow(0 2px 8px rgba(var(--black-rgb),.5)); }
 .cat-area-vinh-long .area-stats .stat-num, .cat-area-ben-tre .area-stats .stat-num, .cat-area-tra-vinh .area-stats .stat-num { color: var(--white); }
-.cat-area-vinh-long .area-stats .stat-label, .cat-area-ben-tre .area-stats .stat-label, .cat-area-tra-vinh .area-stats .stat-label { color: rgba(255,255,255,.82); }
-.cat-area-vinh-long .area-stats .stat-item, .cat-area-ben-tre .area-stats .stat-item, .cat-area-tra-vinh .area-stats .stat-item { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.26); }
-.cat-area-vinh-long .area-stats .stat-item:hover, .cat-area-ben-tre .area-stats .stat-item:hover, .cat-area-tra-vinh .area-stats .stat-item:hover { background: rgba(255,255,255,.22); }
+.cat-area-vinh-long .area-stats .stat-label, .cat-area-ben-tre .area-stats .stat-label, .cat-area-tra-vinh .area-stats .stat-label { color: rgba(var(--white-rgb),.82); }
+.cat-area-vinh-long .area-stats .stat-item, .cat-area-ben-tre .area-stats .stat-item, .cat-area-tra-vinh .area-stats .stat-item { background: rgba(var(--white-rgb),.14); border-color: rgba(var(--white-rgb),.26); }
+.cat-area-vinh-long .area-stats .stat-item:hover, .cat-area-ben-tre .area-stats .stat-item:hover, .cat-area-tra-vinh .area-stats .stat-item:hover { background: rgba(var(--white-rgb),.22); }
 
 .area-hero-bloom {
   position: absolute;
@@ -376,12 +376,12 @@ if (areaMeta) {
   pointer-events: none;
   background:
     radial-gradient(120% 80% at 6% -10%, rgba(var(--AREA-rgb), .12), transparent 60%),
-    linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, .05) 100%);
+    linear-gradient(to bottom, transparent 55%, rgba(var(--black-rgb), .05) 100%);
 }
 .dark .area-hero-bloom {
   background:
     radial-gradient(120% 80% at 6% -10%, rgba(var(--AREA-rgb), .18), transparent 60%),
-    linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, .18) 100%);
+    linear-gradient(to bottom, transparent 55%, rgba(var(--black-rgb), .18) 100%);
 }
 /* a touch more breathing room around the regional emoji + text on phones */
 @media (max-width: 640px) {

@@ -258,11 +258,11 @@ useHead(() => ({
 .route-grid { display: flex; flex-direction: column; gap: var(--space-6); }
 .route-card { position: relative; background: var(--card); border: .5px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo), border-color .3s var(--ease-out); }
 /* glassy top-sheen, revealed on hover for an Apple-style finish */
-.route-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 40%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, rgba(255,255,255,.18), transparent); transition: opacity .35s var(--ease-out); z-index: 2; }
+.route-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 40%; pointer-events: none; opacity: 0; background: linear-gradient(180deg, rgba(var(--white-rgb),.18), transparent); transition: opacity .35s var(--ease-out); z-index: 2; }
 .route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .14), 0 18px 40px -18px rgba(var(--primary-rgb), .35); border-color: var(--border); }
 .route-card:hover::before { opacity: .9; }
 .route-card:active { transform: translateY(0) scale(.99); transition-duration: .08s; }
-.route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, var(--white)); box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgba(0,0,0,.1); transition: background .3s var(--ease-out); }
+.route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, var(--white)); box-shadow: inset 0 1px 0 rgba(var(--white-rgb),.15), 0 1px 2px rgba(var(--black-rgb),.1); transition: background .3s var(--ease-out); }
 .route-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); text-shadow: var(--shadow-text); overflow-wrap: break-word; word-break: break-word; }
 .route-meta { font-size: var(--text-sm); opacity: .9; }
 .route-emoji { font-size: var(--text-3xl); text-shadow: var(--shadow-text); }
@@ -378,13 +378,13 @@ useHead(() => ({
 .route-links .btn { transition: transform .35s var(--ease-spring-gentle), box-shadow .35s var(--ease-out-expo); }
 .route-links .btn:active { transform: scale(.95); transition-duration: .08s; }
 .dark .route-card { background: var(--card); border-color: var(--line); }
-.dark .route-card::before { background: linear-gradient(180deg, rgba(255,255,255,.07), transparent); }
-.dark .route-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .22), 0 18px 44px -18px rgba(0,0,0,.6); border-color: var(--border); }
-.dark .route-tips { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); }
-.dark .route-body p { color: rgba(255,255,255,.85); }
+.dark .route-card::before { background: linear-gradient(180deg, rgba(var(--white-rgb),.07), transparent); }
+.dark .route-card:hover { box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .22), 0 18px 44px -18px rgba(var(--black-rgb),.6); border-color: var(--border); }
+.dark .route-tips { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.1); }
+.dark .route-body p { color: rgba(var(--white-rgb),.85); }
 .dark .rail-stop:hover .rail-text strong { color: var(--primary); }
-.dark .rail-text span { color: rgba(255,255,255,.55); }
-.dark .rail-dot { background: var(--card); box-shadow: 0 0 0 2px var(--rail-tone, var(--primary)) inset, 0 1px 3px rgba(0,0,0,.4); }
+.dark .rail-text span { color: rgba(var(--white-rgb),.55); }
+.dark .rail-dot { background: var(--card); box-shadow: 0 0 0 2px var(--rail-tone, var(--primary)) inset, 0 1px 3px rgba(var(--black-rgb),.4); }
 .dark .route-stat-trio { border-color: var(--line); }
 .dark .rstat-num { color: var(--primary); }
 .dark .route-season-tag { background: rgba(var(--secondary-rgb), .16); border-color: rgba(var(--secondary-rgb), .3); }
@@ -467,7 +467,7 @@ useHead(() => ({
 .dark .rv-road { stroke: var(--clay-400); }
 .dark .rv-pin.area-tra-vinh .rv-pin-dot { background: #74ABB5; }
 .dark .rv-pin.area-lien-vung .rv-pin-dot { background: var(--clay-400); }
-.dark .rv-pin-dot { box-shadow: 0 0 0 2px var(--card), 0 1px 3px rgba(0,0,0,.4); }
+.dark .rv-pin-dot { box-shadow: 0 0 0 2px var(--card), 0 1px 3px rgba(var(--black-rgb),.4); }
 @media (max-width: 640px) {
   .route-vignette { height: 52px; }
   .rv-labels { font-size: 9px; }

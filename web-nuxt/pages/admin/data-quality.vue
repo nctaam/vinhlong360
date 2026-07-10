@@ -699,7 +699,7 @@ onMounted(() => refreshAll())
 .dq-select-all { display: inline-flex; align-items: center; gap: var(--space-2); font-size: .85rem; color: var(--ink, #1c1c1e); cursor: pointer; min-height: 44px; }
 .dq-select-all input { width: 18px; height: 18px; }
 .dq-ready-hint { font-size: .78rem; font-weight: 600; color: var(--primary); background: rgba(var(--primary-rgb),.1); padding: 2px 8px; border-radius: 999px; }
-.dq-btn-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 999px; background: rgba(255,255,255,.25); font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dq-btn-count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 999px; background: rgba(var(--white-rgb),.25); font-size: .72rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* Severity / status badges (derived from existing bucket / record_type data) */
 .dq-sev-badge, .dq-status-badge { display: inline-flex; align-items: center; justify-content: center; font-size: .68rem; font-weight: 700; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
@@ -767,7 +767,7 @@ onMounted(() => refreshAll())
   background: var(--card); box-shadow: var(--shadow-xs);
   transition: transform .25s var(--ease-soft), box-shadow .25s, border-color .25s;
 }
-.dq-history-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+.dq-history-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(var(--black-rgb),.06); }
 .dq-history-card--apply { border-left: 3px solid var(--primary); }
 .dq-history-card--rollback { border-left: 3px solid var(--warning, #e67e22); }
 .dq-history-card-head { display: flex; justify-content: space-between; gap: var(--space-3); align-items: flex-start; }
@@ -791,17 +791,17 @@ onMounted(() => refreshAll())
   .dq-history-card:hover { transform: none; }
 }
 
-.dark .dq-history-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.3); }
-.dark .dq-diff-item { background: rgba(255,255,255,.03); }
+.dark .dq-history-card:hover { box-shadow: 0 4px 16px rgba(var(--black-rgb),.3); }
+.dark .dq-diff-item { background: rgba(var(--white-rgb),.03); }
 .dark .dq-diff-item:hover { background: rgba(var(--blue-rgb),.08); }
-.dark .dq-decision-card { background: rgba(255,255,255,.03); border-color: rgba(255,255,255,.08); }
+.dark .dq-decision-card { background: rgba(var(--white-rgb),.03); border-color: rgba(var(--white-rgb),.08); }
 .dark .dq-select-all { color: var(--ink, #e5e5e7); }
 .dark .dq-apply-result { background: rgba(var(--primary-rgb),.1); color: var(--ink, #e5e5e7); }
 .dark .dq-apply-result--warn { background: rgba(var(--warning-rgb),.12); }
 .dark .dq-apply-result-stat b { color: var(--ink, #e5e5e7); }
 .dark .dq-page-info { color: var(--ink, #e5e5e7); }
 .dark .dq-sev-warning { color: var(--accent-text); }
-.dark .dq-copy-btn { border-color: rgba(255,255,255,.12); }
+.dark .dq-copy-btn { border-color: rgba(var(--white-rgb),.12); }
 
 @media (max-width: 780px) {
   .admin-page-head { flex-direction: column; }

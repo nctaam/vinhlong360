@@ -470,7 +470,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-tab.active { background: var(--primary); color: var(--text-on-dark); border-color: var(--primary); }
 .mod-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .mod-tab-count { font-size: .72rem; font-weight: 700; padding: 0 6px; border-radius: 100px; background: var(--line); color: var(--muted); }
-.mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: var(--text-on-dark); }
+.mod-tab.active .mod-tab-count { background: rgba(var(--white-rgb),.2); color: var(--text-on-dark); }
 
 /* Urgency accent for queue cards with pending/flagged items (dashboard-at-a-glance) */
 .stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
@@ -491,8 +491,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-expand:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
 
 /* Keyboard affordance: highlight the row whose action button is focused (mirrors tr:hover) */
-.admin-table tbody tr:focus-within td { background: rgba(0,0,0,.04); }
-.dark .admin-table tbody tr:focus-within td { background: rgba(255,255,255,.05); }
+.admin-table tbody tr:focus-within td { background: rgba(var(--black-rgb),.04); }
+.dark .admin-table tbody tr:focus-within td { background: rgba(var(--white-rgb),.05); }
 
 /* ── Type + status badges ── */
 .mod-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .72rem; font-weight: 600; background: rgba(142,142,147,.08); color: var(--muted); }
@@ -555,8 +555,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   .mod-btn-spin { animation: none; }
 }
 .dark .mod-author-avatar { background: rgba(var(--blue-rgb),.15); }
-.dark .mod-type-badge { background: rgba(255,255,255,.06); }
-.dark .mod-tab.active .mod-tab-count { background: rgba(255,255,255,.2); color: var(--text-on-dark); }
+.dark .mod-type-badge { background: rgba(var(--white-rgb),.06); }
+.dark .mod-tab.active .mod-tab-count { background: rgba(var(--white-rgb),.2); color: var(--text-on-dark); }
 .mod-preview-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
 .mod-preview-meta { font-size: .78rem; color: var(--muted); }
 .mod-preview-body { white-space: pre-wrap; line-height: 1.7; margin-bottom: var(--space-4); }

@@ -188,19 +188,19 @@ onMounted(fetchMedia)
 }
 .media-skeleton-img {
   aspect-ratio: 4/3; border-radius: 10px;
-  background: linear-gradient(90deg, rgba(0,0,0,.06) 25%, rgba(0,0,0,.1) 50%, rgba(0,0,0,.06) 75%);
+  background: linear-gradient(90deg, rgba(var(--black-rgb),.06) 25%, rgba(var(--black-rgb),.1) 50%, rgba(var(--black-rgb),.06) 75%);
   background-size: 400px 100%;
   animation: media-shimmer 1.4s ease infinite;
 }
 .media-skeleton-line {
   display: block; height: 10px; border-radius: 4px; margin-top: 6px;
-  background: linear-gradient(90deg, rgba(0,0,0,.06) 25%, rgba(0,0,0,.1) 50%, rgba(0,0,0,.06) 75%);
+  background: linear-gradient(90deg, rgba(var(--black-rgb),.06) 25%, rgba(var(--black-rgb),.1) 50%, rgba(var(--black-rgb),.06) 75%);
   background-size: 400px 100%;
   animation: media-shimmer 1.4s ease infinite;
 }
 .dark .media-skeleton-img,
 .dark .media-skeleton-line {
-  background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.06) 75%);
+  background: linear-gradient(90deg, rgba(var(--white-rgb),.06) 25%, rgba(var(--white-rgb),.1) 50%, rgba(var(--white-rgb),.06) 75%);
   background-size: 400px 100%;
 }
 .media-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); }
@@ -245,8 +245,8 @@ onMounted(fetchMedia)
 .media-preview-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
 
 .stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
-.dark .media-card { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .media-tab { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
+.dark .media-card { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .media-tab { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
 @media (max-width: 640px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .media-card:hover { transform: none; } .media-skeleton-img, .media-skeleton-line { animation: none; } }
 </style>

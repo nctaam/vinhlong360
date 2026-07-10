@@ -616,7 +616,7 @@ useHead({
 .comment-empty p { margin: 0; color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .comment-empty-hint { color: var(--muted); font-size: var(--text-xs); font-weight: var(--weight-normal); }
 .empty-state-wrap { padding: var(--space-8) 0; text-align: center; }
-.dark .comment-empty { background: rgba(255,255,255,.03); }
+.dark .comment-empty { background: rgba(var(--white-rgb),.03); }
 
 .feed-loading { text-align: center; padding: var(--space-5); }
 .feed-loading .spinner { margin: 0 auto; }

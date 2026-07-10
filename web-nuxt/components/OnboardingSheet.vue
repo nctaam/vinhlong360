@@ -77,7 +77,7 @@ function dismiss() {
   margin-bottom: 0;
   line-height: 1;
 }
-.dark .sheet-emoji-chip { background: rgba(255, 255, 255, 0.06); }
+.dark .sheet-emoji-chip { background: rgba(var(--white-rgb), 0.06); }
 
 /* Warm serif welcome title */
 .sheet-title {

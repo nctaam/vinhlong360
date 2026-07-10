@@ -234,7 +234,7 @@ onMounted(loadFacilities)
   padding: var(--space-5); margin-bottom: var(--space-6);
   transition: box-shadow .3s var(--ease-soft), border-color .3s;
 }
-.db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.06); border-color: rgba(var(--primary-rgb),.2); }
+.db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.06); border-color: rgba(var(--primary-rgb),.2); }
 .db-form-title { font-size: .95rem; font-weight: 600; margin: 0 0 var(--space-4); }
 .db-form-grid {
   display: grid; grid-template-columns: 1fr 1fr;
@@ -300,8 +300,8 @@ onMounted(loadFacilities)
 }
 
 /* ── Dark ── */
-.dark .db-form { background: var(--card, #2c2c2e); border-color: rgba(255,255,255,.06); }
-.dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(0,0,0,.3); border-color: rgba(var(--primary-rgb),.3); }
+.dark .db-form { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.3); border-color: rgba(var(--primary-rgb),.3); }
 .dark .db-count-badge { background: rgba(var(--blue-rgb),.12); }
 .dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }
 .dark .db-input-ok { border-color: rgba(var(--success-rgb),.45); }

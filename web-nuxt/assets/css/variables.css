@@ -145,6 +145,10 @@
   --teal-rgb: 0, 199, 190;
   --red-rgb: 255, 69, 58;
   --success-rgb: 95, 207, 138;
+  /* Primitive trắng/đen: theme-invariant → single-def, KHÔNG dark-override.
+     Dùng cho overlay rgba(var(--white-rgb), a) — pixel-identical mọi theme. */
+  --white-rgb: 255, 255, 255;
+  --black-rgb: 0, 0, 0;
   --focus-ring: 0 0 0 4px rgba(var(--primary-rgb), .12);
   --focus-outline: var(--primary);
   --shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 6px 20px rgba(0, 0, 0, .06);

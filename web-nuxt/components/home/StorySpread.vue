@@ -123,7 +123,7 @@ useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.12 })
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: .18em;
-  color: rgba(255, 255, 255, .88);
+  color: rgba(var(--white-rgb), .88);
 }
 /* phù-sa tick — same river→amber→clay recipe as .sediment-head, tying the
    signature moment back to the site's one motif. */
@@ -143,16 +143,16 @@ useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.12 })
   letter-spacing: -.015em;
   color: var(--text-on-dark, var(--white));
   text-wrap: balance;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, .4);
+  text-shadow: 0 2px 24px rgba(var(--black-rgb), .4);
 }
 .spread-sub {
   margin: 0;
   font-family: var(--font-editorial);
   font-size: clamp(1.05rem, 1rem + .4vw, 1.25rem);
   line-height: var(--leading-relaxed);
-  color: rgba(255, 255, 255, .92);
+  color: rgba(var(--white-rgb), .92);
   text-wrap: pretty;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, .4);
+  text-shadow: 0 1px 12px rgba(var(--black-rgb), .4);
 }
 .spread-cta {
   margin-top: var(--space-2);
@@ -175,7 +175,7 @@ useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.12 })
     var(--amber-600) 42%, var(--amber-500) 56%,
     var(--clay-600) 80%, var(--clay-600) 100%
   );
-  box-shadow: 0 -1px 0 rgba(0, 0, 0, .28), 0 -10px 26px rgba(0, 0, 0, .20);
+  box-shadow: 0 -1px 0 rgba(var(--black-rgb), .28), 0 -10px 26px rgba(var(--black-rgb), .20);
 }
 .spread-stratum::before {
   content: "";
@@ -194,7 +194,7 @@ useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.12 })
   right: 0;
   top: 0;
   height: 1px;
-  background: rgba(255, 255, 255, .22);
+  background: rgba(var(--white-rgb), .22);
 }
 
 /* ── Reduced motion: freeze both Ken Burns and parallax ── */

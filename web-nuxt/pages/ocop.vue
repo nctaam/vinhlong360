@@ -581,14 +581,14 @@ useHead(() => ({
     50% 100%, 39% 89%, 26% 93%, 18% 83%, 5% 81%, 4% 68%, 0% 58%,
     8% 48%, 0% 38%, 4% 28%, 5% 15%, 18% 13%, 26% 3%, 39% 7%
   );
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, .28), 0 4px 14px -6px rgba(var(--primary-rgb), .5);
+  box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .28), 0 4px 14px -6px rgba(var(--primary-rgb), .5);
   animation: seal-stamp .4s var(--ease-spring-gentle) both;
 }
 .wax-seal-notches {
   position: absolute;
   inset: 6%;
   border-radius: 50%;
-  border: 1px dashed rgba(255, 255, 255, .4);
+  border: 1px dashed rgba(var(--white-rgb), .4);
 }
 .wax-seal-star {
   position: relative;
@@ -597,14 +597,14 @@ useHead(() => ({
   font-weight: 600;
   font-size: clamp(1.1rem, .6vw + 1rem, 1.35rem);
   color: var(--white);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+  text-shadow: 0 1px 3px rgba(var(--black-rgb), .35);
   letter-spacing: -.01em;
 }
 @keyframes seal-stamp {
   0% { transform: scale(.9); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-.dark .wax-seal { box-shadow: inset 0 2px 6px rgba(0, 0, 0, .4), 0 4px 14px -6px rgba(var(--primary-rgb), .35); }
+.dark .wax-seal { box-shadow: inset 0 2px 6px rgba(var(--black-rgb), .4), 0 4px 14px -6px rgba(var(--primary-rgb), .35); }
 
 /* Kicker / dek — calmer, more formal register than san-pham's market voice */
 .catalog-hero-inner p.ledger-kicker {
