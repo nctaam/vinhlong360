@@ -37,9 +37,13 @@ def _completion(content):
 
 @pytest.fixture
 def kb_ctx():
-    """TestClient context → lifespan startup load KB (knowledge globals sẵn cho call_tool)."""
-    with patch.object(server.client.chat.completions, "create",
-                      side_effect=lambda *a, **k: _completion("ok")):
+    """TestClient context → lifespan startup load KB (knowledge globals sẵn cho call_tool).
+
+    server dùng get_client() (llm_config singleton) — KHÔNG có server.client → patch server.get_client.
+    """
+    fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
+        create=lambda *a, **k: _completion("ok"))))
+    with patch.object(server, "get_client", lambda: fake):
         with TestClient(server.app) as c:
             yield c
 
@@ -77,8 +81,9 @@ def test_call_tool_stats_returns_counts(kb_ctx):
 def test_valid_reply_with_su_co_not_clobbered(kb_ctx):
     """Reply hợp lệ bắt đầu 'Sự cố giao thông…' KHÔNG bị thay bằng KB-fallback 'đang bảo trì'."""
     valid = "Sự cố giao thông ở Vĩnh Long thường xảy ra vào giờ cao điểm tại các ngã tư trung tâm thành phố và gần chợ."
-    with patch.object(server.client.chat.completions, "create",
-                      side_effect=lambda *a, **k: _completion(valid)):
+    fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
+        create=lambda *a, **k: _completion(valid))))
+    with patch.object(server, "get_client", lambda: fake):
         r = kb_ctx.post("/chat", json={"message": "kể về giao thông", "session_id": "tc107"})
     assert r.status_code == 200, r.text
     reply = r.json().get("reply", "")
@@ -86,6 +91,19 @@ def test_valid_reply_with_su_co_not_clobbered(kb_ctx):
 
 
 # ── _run_agent helper: _prepare_pending_calls / _execute_pending_calls (extract-verbatim R20.8) ──
+
+def test_lifespan_resets_drain_flag_on_restart():
+    """Regression: lifespan reset _draining=False lúc startup → TestClient thứ 2 KHÔNG bị 503.
+
+    Trước fix: shutdown set _draining=True nhưng startup không reset → mọi test dùng
+    TestClient thứ 2+ trong cùng process trả 503 'Server shutting down'.
+    """
+    with TestClient(server.app):
+        pass  # startup rồi shutdown → _draining=True
+    assert server._draining is True
+    with TestClient(server.app):
+        assert server._draining is False  # startup lần 2 đã reset
+
 
 def _mk_tc(tc_id, name, arguments):
     """Giả tool_call object (shape OpenAI: .id + .function.name/.arguments)."""

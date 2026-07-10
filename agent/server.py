@@ -901,6 +901,8 @@ def start_search_index_build(background: bool = True):
 @asynccontextmanager
 async def lifespan(app):
     """Khởi động background scheduler và preload data."""
+    global _draining
+    _draining = False  # reset drain-flag mỗi lần (re)start — TestClient tái dùng lifespan/process trong test
     # Audit vòng 2 fix #4: default executor trên 1 vCPU = min(32, cpu+4) = 5 thread,
     # mỗi phiên /chat giữ 1 thread 30-120s → 5 chat đồng thời là toàn bộ API
     # (auth lookup cũng tranh pool này) tê liệt. Nới lên 16 (I/O-bound là chính).
@@ -922,7 +924,6 @@ async def lifespan(app):
     start_scheduler()
     logger.info("Server started", model=get_model(), entities=len(knowledge._entities))
     yield
-    global _draining
     _draining = True
     logger.info("Server shutting down — draining in-flight requests")
     deadline = time.time() + 30
