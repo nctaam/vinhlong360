@@ -1566,5 +1566,199 @@
    "old": "Bánh xèo miền Tây",
    "new": "Bánh xèo Vĩnh Long"
   }
+ ],
+ "formula_R50.3": [
+  {
+   "entity_id": "dinh-tan-hoa-w3",
+   "field": "description",
+   "new_text": "Đình Tân Hoa nép mình ở ấp Tân Hưng, xã Tân Hòa — một trong những dấu tích văn hóa lâu đời của vùng đất Vĩnh Long, nơi nhịp sống miệt vườn vẫn còn chậm rãi bên những hàng cây, con rạch và tiếng gà trưa. Ngôi đình được xếp hạng di tích lịch sử - văn hóa năm 1998, nổi bật với kiến trúc 6 mái chồng lợp còn giữ được vẻ cổ kính, như lớp thời gian xếp lên nhau qua bao mùa mưa nắng đồng bằng. Bước vào đình, du khách dễ cảm nhận mùi gỗ cũ thoảng nhẹ, hương nhang trầm ấm và không gian trang nghiêm quen thuộc của đình làng Nam Bộ. Đặc biệt, đình còn lưu giữ 12 bộ hoành phi, 16 đôi liễn, 14 bức câu đối, cùng bức hoành khắc chữ “Tân Hòa Đình” có niên đại từ năm 1798 – những hiện vật quý phản chiếu nếp sống, tín ngưỡng và lòng biết ơn tiền nhân của cư dân địa phương. Nếu đến vào lễ Hạ điền ngày 14-15/3 âm lịch hoặc lễ Thượng điền ngày 16-17/10 âm lịch, bạn sẽ nghe tiếng trống lễ vang trong sân đình, thấy bà con chỉnh tề áo dài, khăn đóng, cùng nhau cầu mùa màng thuận lợi, xóm làng yên vui. Đình Tân Hoa không ồn ào, nhưng có sức níu chân bằng sự trầm mặc, gần gũi và hơi thở làng xưa còn nguyên trong từng nét chạm.",
+   "reason": "Bỏ opener 'Nằm nép mình ở...' + 'là một trong những': đảo chủ ngữ 'Đình Tân Hoa' lên đầu, chuyển 'là một trong những dấu tích...' thành phần đồng vị sau dấu gạch ngang. Không thêm/bớt fact; các câu 2..n giữ byte-identical."
+  },
+  {
+   "entity_id": "san-chim-vam-ho-ben-tre",
+   "field": "summary",
+   "new_text": "Sân chim Vàm Hồ trải dọc ven sông Ba Lai, là điểm du lịch sinh thái được hình thành từ tháng 5-1986 do đàn chim trước ở Cù lao Đất, xã An Hiệp, huyện Ba Tri di cư tới.",
+   "reason": "Bỏ opener 'Nằm dọc ven sông Ba Lai, X là một...' → đảo chủ ngữ 'Sân chim Vàm Hồ' lên đầu + 'trải dọc ven sông Ba Lai', bỏ 'Nằm'/'một'. Giữ nguyên mọi fact (tháng 5-1986, Cù lao Đất, xã An Hiệp, huyện Ba Tri)."
+  },
+  {
+   "entity_id": "san-chim-vam-ho-ben-tre",
+   "field": "description",
+   "new_text": "Sân chim Vàm Hồ trải dọc ven sông Ba Lai, là điểm du lịch sinh thái được hình thành từ tháng 5-1986 do đàn chim trước ở Cù lao Đất. Xã An Hiệp, huyện Ba Tri di cư tới.",
+   "reason": "Chỉ sửa câu đầu: bỏ 'Nằm dọc...' + 'một', đảo chủ ngữ lên đầu với 'trải dọc ven sông Ba Lai'. Câu 2 ('Xã An Hiệp, huyện Ba Tri di cư tới.') giữ byte-identical. Không thêm/bớt fact."
+  },
+  {
+   "entity_id": "sau-rieng-cap-dong-chanh-thu",
+   "field": "summary",
+   "new_text": "Sản phẩm sầu riêng cấp đông của Công ty TNHH XNK Trái cây Chánh Thu — một trong những sản phẩm OCOP tiêu biểu của huyện Chợ Lách — đã được xuất khẩu ra thị trường quốc tế.",
+   "reason": "Bỏ pattern 'là một trong những': chuyển mệnh đề 'là một trong những sản phẩm OCOP tiêu biểu...' thành phần đồng vị đặt giữa hai dấu gạch ngang, bỏ 'là'. Giữ nguyên mọi fact."
+  },
+  {
+   "entity_id": "sau-rieng-cap-dong-chanh-thu",
+   "field": "description",
+   "new_text": "Sản phẩm sầu riêng cấp đông của Công ty TNHH XNK Trái cây Chánh Thu — một trong những sản phẩm OCOP tiêu biểu của huyện Chợ Lách. Đã được xuất khẩu ra thị trường quốc tế.",
+   "reason": "Chỉ sửa câu đầu: bỏ 'là' trong 'là một trong những...', chuyển thành đồng vị sau dấu gạch ngang. Câu 2 ('Đã được xuất khẩu ra thị trường quốc tế.') giữ byte-identical. Không thêm/bớt fact."
+  },
+  {
+   "entity_id": "dinh-tan-hoa",
+   "field": "summary",
+   "new_text": "Đình Tân Hòa dựng từ giữa thế kỷ 18 — một trong những ngôi đình cổ nhất Vĩnh Long, thờ Thành Hoàng Đại Vương theo tín ngưỡng hơn hai thế kỷ.",
+   "reason": "Bỏ opener 'Dựng từ...' dẫn tới 'là một trong những': đảo chủ ngữ 'Đình Tân Hòa' lên đầu, đưa 'dựng từ giữa thế kỷ 18' vào sau, bỏ 'là' bằng đồng vị gạch ngang. Giữ nguyên mọi fact."
+  },
+  {
+   "entity_id": "dinh-tan-hoa",
+   "field": "description",
+   "new_text": "Đình Tân Hòa dựng từ giữa thế kỷ 18 — một trong những ngôi đình cổ nhất Vĩnh Long, thờ Thành Hoàng Đại Vương theo tín ngưỡng hơn hai thế kỷ. Đình còn giữ tấm biển cổ khắc ba chữ Tân Hoa Đình theo lối triện, làm năm Mậu Ngọ 1798, cùng bài văn tế thần xưa. Chính những hiện vật ấy đưa đình vào danh sách di tích lịch sử - văn hóa cấp quốc gia năm 1998 — chứng tích một thuở lưu dân khẩn hoang, lập làng bên đất Vĩnh Long.",
+   "reason": "Chỉ sửa câu đầu như bản summary (đảo chủ ngữ lên đầu, bỏ 'là'). Hai câu sau giữ byte-identical. Không thêm/bớt fact."
+  },
+  {
+   "entity_id": "somo-farm-cuu-long",
+   "field": "description",
+   "new_text": "Thành lập năm 2021, điểm du lịch sinh thái nông nghiệp chữa lành được công nhận là một trong ba điểm du lịch chính thức của tỉnh Vĩnh Long. Nằm tại Thị Trấn Cái Nhum. Đạt Chứng Nhận OCOP 4 Sao Năm 2023 cho Sản Phẩm Du Lịch Sinh Thái. Tổ Chức Trải Nghiệm Làm Nón Lá, Đồ Thủ Công Lá Sen, Bắt Cá, Chèo Bè Tre, Trồng Rau Hữu Cơ và Tham Quan Vườn Trái Cây.",
+   "reason": "Chỉ sửa câu đầu: đảo trật tự đưa chi tiết 'thành lập năm 2021' lên đầu để opener không còn là câu định-nghĩa-thể-loại. Các câu 2..4 (kể cả 'Nằm tại Thị Trấn Cái Nhum.') giữ byte-identical theo yêu cầu. Không thêm/bớt fact."
+  },
+  {
+   "entity_id": "nha-hang-hai-san-song-tien-vinh-long",
+   "field": "summary",
+   "new_text": "Bên bờ sông Tiền (TP. Vĩnh Long), gần bến phà Đình Khao. Hải sản tươi sống: cá lóc, cá trê, tôm càng xanh sông Tiền. Tầm nhìn sông thoáng đãng, có bãi đậu xe. Món đặc sắc: cá lóc nướng trui cuốn bánh tráng, lẩu tôm càng xanh. Giá 150.",
+   "reason": "Bỏ mở-bài công thức 'Tọa lạc'; thay bằng giới từ vị trí 'Bên bờ sông Tiền (TP. Vĩnh Long)'. Giữ nguyên bờ sông Tiền + TP. Vĩnh Long + gần bến phà Đình Khao, không thêm/bớt fact. Các câu 2..n copy nguyên văn."
+  },
+  {
+   "entity_id": "quan-com-tam-chu-tu-tra-cu-tra-vinh",
+   "field": "summary",
+   "new_text": "Quán nằm tại chợ Trà Cú, huyện Trà Cú, Trà Vinh. Đặc trưng với cơm tấm sườn nướng, mỡ hành thơm đậm đà. Là điểm ăn sáng quen thuộc của người địa phương huyện Trà Cú.",
+   "reason": "Câu đầu bắt đầu bằng 'Nằm tại' → đưa chủ ngữ 'Quán' (chính entity) lên đầu để 'nằm' không còn dẫn câu. Giữ nguyên chợ Trà Cú, huyện Trà Cú, Trà Vinh; 2 câu sau byte-identical."
+  },
+  {
+   "entity_id": "cho-tan-thanh",
+   "field": "summary",
+   "new_text": "Chợ lớn xây dựng từ năm 1994 với diện tích khoảng 1,5 ha — một trong những chợ lớn nhất Bình Tân.",
+   "reason": "Bỏ copula công thức '..., là một trong những'; thay bằng dấu gạch ' — một trong những'. Giữ nguyên năm 1994, ~1,5 ha, chợ lớn nhất Bình Tân — không thêm/bớt fact."
+  },
+  {
+   "entity_id": "cho-tan-thanh",
+   "field": "description",
+   "new_text": "Chợ lớn xây dựng từ năm 1994 với diện tích khoảng 1,5 ha — một trong những chợ lớn nhất Bình Tân. Tập trung buôn bán nông sản, thực phẩm và hàng tiêu dùng, đông khách nhất vào buổi sáng.",
+   "reason": "Cùng sửa câu đầu như summary: bỏ ', là một trong những' → ' — một trong những'. Câu 2 (Tập trung buôn bán...) giữ byte-identical."
+  },
+  {
+   "entity_id": "tinh-xa-ngoc-nhan",
+   "field": "summary",
+   "new_text": "Tịnh xá Phật giáo Khất sĩ trên địa bàn Phường 8, TP Vĩnh Long — một trong các cơ sở tín ngưỡng của cộng đồng Phật tử tại phường.",
+   "reason": "Bỏ 'nằm trong' → 'trên địa bàn' (đồng nghĩa vị trí) và bỏ copula ', là' → ' — '. Giữ nguyên Tịnh xá Phật giáo Khất sĩ, Phường 8 TP Vĩnh Long, cơ sở tín ngưỡng của cộng đồng Phật tử tại phường."
+  },
+  {
+   "entity_id": "tinh-xa-ngoc-nhan",
+   "field": "description",
+   "new_text": "Tịnh xá Phật giáo Khất sĩ trên địa bàn Phường 8, TP Vĩnh Long — một trong các cơ sở tín ngưỡng của cộng đồng Phật tử tại phường. Vé: Miễn phí.",
+   "reason": "Cùng sửa câu đầu như summary ('nằm trong'→'trên địa bàn', bỏ ', là'→' — '). Câu 'Vé: Miễn phí.' giữ byte-identical."
+  },
+  {
+   "entity_id": "hai-dang-ba-dong",
+   "field": "summary",
+   "new_text": "Ngọn hải đăng ở ấp Nhà Mát, Phường Trường Long Hòa — một trong những điểm tham quan tại khu vực biển Ba Động.",
+   "reason": "Bỏ 'tọa lạc tại' → 'ở' và bỏ copula ', là' → ' — '. Giữ nguyên ấp Nhà Mát, Phường Trường Long Hòa, điểm tham quan khu vực biển Ba Động — không thêm/bớt fact."
+  },
+  {
+   "entity_id": "hai-dang-ba-dong",
+   "field": "description",
+   "new_text": "Ngọn hải đăng ở ấp Nhà Mát, Phường Trường Long Hòa — một trong những điểm tham quan tại khu vực biển Ba Động. Công trình mang giá trị lịch sử và cảnh quan. và chụp ảnh.",
+   "reason": "Cùng sửa câu đầu như summary ('tọa lạc tại'→'ở', bỏ ', là'→' — '). Các câu sau (kể cả 'Công trình... và chụp ảnh.') giữ byte-identical, không tự ý sửa lỗi ngoài phạm vi."
+  },
+  {
+   "entity_id": "ca-tra-tra-vinh",
+   "field": "summary",
+   "new_text": "Một trong những thủy sản nuôi quan trọng của Trà Vinh, cá tra tham gia chuỗi cung ứng chế biến và xuất khẩu của ĐBSCL.",
+   "reason": "Bỏ formula 'Cá tra là một trong những...': đẩy cụm 'Một trong những thủy sản nuôi quan trọng của Trà Vinh' lên đầu làm đồng vị ngữ, bỏ 'là', chủ ngữ 'cá tra' về giữa câu. Giữ nguyên mọi fact."
+  },
+  {
+   "entity_id": "ca-tra-tra-vinh",
+   "field": "description",
+   "new_text": "Một trong những thủy sản nuôi quan trọng của Trà Vinh, cá tra tham gia chuỗi cung ứng chế biến và xuất khẩu của ĐBSCL. Giá: Khoảng 35.000–70.000 đ/kg tùy loại và thời điểm.",
+   "reason": "Cùng cách sửa như summary cho câu đầu (đảo đồng vị ngữ, bỏ 'là'). Câu 'Giá: Khoảng 35.000–70.000 đ/kg...' giữ nguyên byte-identical."
+  },
+  {
+   "entity_id": "nha-co-huynh-ky",
+   "field": "summary",
+   "new_text": "Nhà cổ Huỳnh Kỳ tọa lạc giữa lòng thị xã Cai Lậy, là công trình kiến trúc ra đời năm 1924 — nơi giao thoa tài tình giữa phong cách Pháp và hồn Nam Bộ.",
+   "reason": "Bỏ mở-bài công thức 'Tọa lạc...': đưa chủ ngữ 'Nhà cổ Huỳnh Kỳ' lên đầu, đẩy 'tọa lạc giữa lòng thị xã Cai Lậy' vào giữa câu. Giữ nguyên năm 1924 và cụm giao thoa Pháp–Nam Bộ."
+  },
+  {
+   "entity_id": "nha-co-huynh-ky",
+   "field": "description",
+   "new_text": "Nhà cổ Huỳnh Kỳ tọa lạc giữa lòng thị xã Cai Lậy, là công trình kiến trúc ra đời năm 1924. Nơi giao thoa tài tình giữa phong cách Pháp và hồn Nam Bộ. Những mái vòm thanh lịch, hàng cột đá uy nghi và nội thất chạm khắc tinh xảo từ gỗ quý kể lại câu chuyện về thời kỳ vàng son của gia tộc vùng Tiền Giang. Bước qua cánh cổng sắt uốn lượn, du khách như lạc vào một trang sử sống động.",
+   "reason": "Chỉ đảo câu đầu (chủ ngữ lên trước, bỏ mở 'Tọa lạc'). Ba câu sau giữ nguyên byte-identical."
+  },
+  {
+   "entity_id": "dinh-binh-phuoc",
+   "field": "summary",
+   "new_text": "Hơn hai thế kỷ tuổi, Đình Bình Phước thuộc hàng những ngôi đình cổ nhất vùng Vĩnh Long với lịch sử tạo lập từ năm 1808.",
+   "reason": "Bỏ formula 'Đình Bình Phước là một trong những...': thay cụm copula 'là một trong những' bằng 'thuộc hàng những' (đồng nghĩa, không đổi fact), giữ mở-bài bằng chi tiết cụ thể 'Hơn hai thế kỷ tuổi' và năm 1808."
+  },
+  {
+   "entity_id": "dinh-binh-phuoc",
+   "field": "description",
+   "new_text": "Hơn hai thế kỷ tuổi, Đình Bình Phước thuộc hàng những ngôi đình cổ nhất vùng Vĩnh Long với lịch sử tạo lập từ năm 1808. Tấm sắc phong năm 1853 còn lưu giữ đến nay là bằng chứng quý giá về tín ngưỡng thờ thần Thành Hoàng và vai trò trung tâm văn hóa của ngôi đình trong đời sống làng xã Nam Bộ. Mái đình rêu phong, những bức phù điêu chạm trổ tinh vi và không khí trầm mặc nơi đây khiến du khách như đứng trước cổng thời gian.",
+   "reason": "Chỉ sửa câu đầu ('là một trong những' → 'thuộc hàng những'). Hai câu sau giữ nguyên byte-identical."
+  },
+  {
+   "entity_id": "dinh-hoa-ninh",
+   "field": "summary",
+   "new_text": "Bên dòng kênh hiền hòa, Đình Hoà Ninh toát lên vẻ đẹp cổ kính của ngôi đình thần dựng từ năm 1849 — nơi người dân mấy thế hệ gửi gắm niềm tin và lòng biết ơn đất trời phù hộ mưa thuận gió hòa.",
+   "reason": "Bỏ mở-bài công thức 'Tọa lạc bên...' → thay bằng giới từ vị trí 'Bên...' (theo mẫu CÁCH). Giữ nguyên năm 1849 và toàn bộ vế sau."
+  },
+  {
+   "entity_id": "dinh-hoa-ninh",
+   "field": "description",
+   "new_text": "Bên dòng kênh hiền hòa, Đình Hoà Ninh toát lên vẻ đẹp cổ kính của ngôi đình thần dựng từ năm 1849. Nơi người dân mấy thế hệ gửi gắm niềm tin và lòng biết ơn đất trời phù hộ mưa thuận gió hòa. Công trình giữ được nhiều nét kiến trúc truyền thống Nam Bộ đặc trưng: gian thờ uy nghi, hệ thống hoành phi câu đối chữ Hán-Nôm sắc nét và không gian sân đình rộng mát.",
+   "reason": "Chỉ sửa câu đầu ('Tọa lạc bên' → 'Bên'). Hai câu sau giữ nguyên byte-identical."
+  },
+  {
+   "entity_id": "thanh-tinh-ngoc-son-quang",
+   "field": "summary",
+   "new_text": "Được xây dựng năm 1936, Thánh tịnh Ngọc Sơn Quang thuộc số ít thánh địa Cao Đài hiếm hoi mang đậm nét kiến trúc Nam Bộ thuần túy, chưa bị pha trộn bởi phong trào hiện đại hóa sau này.",
+   "reason": "Bỏ copula công thức 'là một trong những' → 'thuộc số ít'; giữ nguyên năm 1936, 'hiếm hoi', nét kiến trúc Nam Bộ thuần túy và mệnh đề 'chưa bị pha trộn...'. Không thêm/bớt fact."
+  },
+  {
+   "entity_id": "thanh-tinh-ngoc-son-quang",
+   "field": "description",
+   "new_text": "Được xây dựng năm 1936, Thánh tịnh Ngọc Sơn Quang thuộc số ít thánh địa Cao Đài hiếm hoi mang đậm nét kiến trúc Nam Bộ thuần túy. Chưa bị pha trộn bởi phong trào hiện đại hóa sau này. Tường trắng tinh khôi, biểu tượng Thiên Nhãn uy nghiêm và khu vườn cây lành mạt xung quanh tạo nên không gian tâm linh trong sáng và thanh thản.",
+   "reason": "Chỉ sửa câu đầu: 'là một trong những' → 'thuộc số ít', giữ mọi fact. Câu 2 và câu 3 copy byte-identical."
+  },
+  {
+   "entity_id": "my-cam-hotel",
+   "field": "summary",
+   "new_text": "Khách sạn ở khu trung tâm thành phố — một địa chỉ lưu trú có thật và khá quen tên với khách đến Trà Vinh.",
+   "reason": "Bỏ 'nằm tại' → 'ở' và bỏ copula 'là một' bằng dấu gạch ngang appositive. Giữ nguyên vị trí trung tâm thành phố, 'địa chỉ lưu trú có thật', 'khá quen tên với khách đến Trà Vinh'."
+  },
+  {
+   "entity_id": "my-cam-hotel",
+   "field": "description",
+   "new_text": "Khách sạn ở khu Trung Tâm Thành Phố — Một Địa Chỉ Lưu Trú Có Thật và Khá Quen Tên với Khách Đến Trà Vinh.",
+   "reason": "Bỏ 'nằm tại' → 'ở' và bỏ copula 'là' bằng dấu gạch ngang; giữ nguyên cách viết hoa và toàn bộ fact."
+  },
+  {
+   "entity_id": "muoi-quynh-homestay",
+   "field": "summary",
+   "new_text": "Homestay có thật trong cụm du lịch cộng đồng Cồn Chim, phù hợp cho khách muốn ở cùng dân địa phương và trải nghiệm sinh hoạt Vĩnh Long.",
+   "reason": "Bỏ mở-bài công thức 'Đây là một' → dẫn thẳng bằng chủ ngữ 'Homestay có thật'. Giữ nguyên Cồn Chim và mệnh đề 'phù hợp cho khách...'."
+  },
+  {
+   "entity_id": "muoi-quynh-homestay",
+   "field": "description",
+   "new_text": "Homestay có thật trong cụm du lịch cộng đồng Cồn Chim. Phù hợp cho khách muốn ở cùng dân địa phương và trải nghiệm sinh hoạt Vĩnh Long.",
+   "reason": "Chỉ sửa câu đầu: bỏ 'Đây là một'. Câu 2 copy byte-identical."
+  },
+  {
+   "entity_id": "keo-dua-sap-vicosap",
+   "field": "summary",
+   "new_text": "Viên kẹo dừa sáp ba vị — nguyên chất, lá dứa, ca cao — của Vicosap ở Cầu Kè, một trong bốn sản phẩm OCOP 5 sao cấp quốc gia của công ty, xuất khẩu sang Mỹ, Nhật, Đài Loan.",
+   "reason": "Bỏ copula 'là một trong bốn' bằng cách đảo trật tự: đưa 'viên kẹo dừa sáp ba vị...' lên làm chủ ngữ với động từ chính 'xuất khẩu', mệnh đề OCOP thành appositive. Giữ đủ ba vị, Vicosap, Cầu Kè, 'một trong bốn sản phẩm OCOP 5 sao cấp quốc gia', thị trường xuất khẩu."
+  },
+  {
+   "entity_id": "keo-dua-sap-vicosap",
+   "field": "description",
+   "new_text": "Viên kẹo dừa sáp ba vị — nguyên chất, lá dứa, ca cao — của Vicosap ở Cầu Kè, một trong bốn sản phẩm OCOP 5 sao cấp quốc gia của công ty, xuất khẩu sang Mỹ, Nhật, Đài Loan. Dừa sáp Cầu Kè cùi đặc sánh dẻo quánh, chỉ khoảng một trong năm trái trên buồng là dừa sáp thật — nguyên liệu hiếm nên kẹo có giá cao hơn kẹo dừa thường. Vicosap (Công ty TNHH Chế biến Dừa sáp Cầu Kè) hiện sở hữu bốn sản phẩm OCOP 5 sao và bảy sản phẩm OCOP 4 sao, đạt HACCP, FDA, ISO 9001:2015 và ISO 22000:2018. Ngoài kẹo còn có dừa sáp sấy dẻo, sấy giòn thăng hoa, sữa chua dừa sáp sấy khô và kem dừa sáp.",
+   "reason": "Chỉ sửa câu đầu (đảo trật tự bỏ 'là một trong bốn', giữ mọi fact). Câu 2, 3, 4 copy byte-identical."
+  }
  ]
 }
