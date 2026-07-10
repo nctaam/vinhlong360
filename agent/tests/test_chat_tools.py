@@ -167,3 +167,23 @@ def test_execute_pending_calls_parallel_path():
     assert isinstance(erc, int)
     assert [m["tool_call_id"] for m in messages] == ["t1", "t2"]
     assert messages[0]["content"] == r1 and messages[1]["content"] == r2
+
+
+# ── _build_messages phân rã 4 phase-helper (R20.8 45→≤12, golden byte-identical) ──
+
+def test_build_messages_structure(kb_ctx):
+    """_build_messages: system-first + chứa user message + 'ab' trong build_info (sau refactor)."""
+    messages, info = server._build_messages("Vĩnh Long có gì chơi?", [], session_id="", user_id="")
+    assert isinstance(messages, list) and messages
+    assert isinstance(info, dict) and "ab" in info
+    assert messages[0]["role"] == "system" and messages[0]["content"]
+    assert any(m.get("role") == "user" and "Vĩnh Long" in str(m.get("content", "")) for m in messages)
+
+
+def test_build_messages_helpers_wired():
+    """Structure move-not-delete: _build_messages gọi đủ 4 helper phân-pha."""
+    import inspect
+    src = inspect.getsource(server._build_messages)
+    for helper in ("_gather_context_pieces(", "_resolve_base_prompt(",
+                   "_fold_experience_fewshot(", "_assemble_manual_messages("):
+        assert helper in src, f"thiếu wiring {helper}"

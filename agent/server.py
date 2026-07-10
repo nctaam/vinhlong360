@@ -1440,6 +1440,124 @@ def _resolve_contextual_query(message: str, history: list[dict]) -> str:
     return resolved
 
 
+def _gather_context_pieces(current_month, rag_query, session_id, user_id, message):
+    """Thu 6 mảnh context (proactive/rag/realtime/memory/reflexion/graph). Trả dict."""
+    realtime_ctx = ""
+    if HAS_REALTIME:
+        try:
+            realtime_ctx = get_realtime_context() or ""
+        except Exception:
+            logger.debug("Realtime context failed", exc_info=True)
+    graph_ctx = ""
+    if HAS_MEMORY_GRAPH:
+        try:
+            graph_ctx = memory_graph.build_graph_context(user_id) or ""
+        except Exception:
+            logger.debug("Memory graph context failed", exc_info=True)
+    return {
+        "proactive": get_proactive_context(month=current_month),
+        "rag": build_rag_context(rag_query),
+        "realtime": realtime_ctx,
+        "memory": memory_manager.build_context(session_id, user_id, message),
+        "reflexion": reflexion_engine.get_reflection_prompt(message),
+        "graph": graph_ctx,
+    }
+
+
+def _resolve_base_prompt(session_id):
+    """Chọn base_prompt (A/B variant) + tiêm KB-in-context. Trả (base_prompt, ab_info)."""
+    ab_info = {}
+    base_prompt = SYSTEM_PROMPT
+    if HAS_AB_TESTING and session_id:
+        try:
+            variant = ab_manager.assign_variant("prompt_style", session_id)
+            if variant:
+                ab_info["prompt_style"] = variant["id"]
+                style = variant.get("config", {}).get("style", "balanced")
+                if style == "concise":
+                    base_prompt = SYSTEM_PROMPT + "\nPhong cách trả lời: ngắn gọn, súc tích, đi thẳng vào trọng tâm."
+                elif style == "detailed":
+                    base_prompt = SYSTEM_PROMPT + "\nPhong cách trả lời: chi tiết, đầy đủ thông tin, có ví dụ minh họa."
+        except Exception:
+            logger.debug("A/B variant selection failed", exc_info=True)
+    # KB-in-context: inject a compact index (or full digest) of the knowledge base
+    # so the agent knows what exists → better searches + correct abstention. Static
+    # until reload, so it lands in the cacheable static layer via base_prompt.
+    if HAS_KB_CONTEXT:
+        try:
+            kb_ctx = kb_context.get_kb_context(knowledge._entities)
+            if kb_ctx:
+                base_prompt = base_prompt + "\n\n" + kb_ctx
+        except Exception:
+            logger.debug("KB context injection failed", exc_info=True)
+    return base_prompt, ab_info
+
+
+def _fold_lazy_prompt(builder, message, reflexion_ctx, label):
+    """Gọi builder(message), gộp kết quả (nếu có) vào reflexion_ctx. Trả reflexion_ctx."""
+    try:
+        extra = builder(message) or ""
+        if extra:
+            reflexion_ctx = (reflexion_ctx or "") + ("\n" + extra)
+    except Exception:
+        logger.debug(f"{label} failed", exc_info=True)
+    return reflexion_ctx
+
+
+def _fold_experience_fewshot(message, reflexion_ctx):
+    """Gộp experience-memory + few-shot demos vào reflexion_ctx (chỉ query phức tạp). Trả reflexion_ctx."""
+    # Lazy context: skip heavy modules for simple queries (search/general)
+    # to reduce token count and speed up responses. Only load for complex queries.
+    _is_simple = not any(kw in message.lower() for kw in [
+        "lịch trình", "so sánh", "kế hoạch", "tour", "ngày",
+        "hành trình", "plan", "compare", "itinerary",
+    ])
+    if _is_simple:
+        return reflexion_ctx
+    # Experience memory (ReasoningBank-lite) + few-shot demos (BootstrapFewShot, OFF mặc định).
+    if HAS_EXPERIENCE:
+        reflexion_ctx = _fold_lazy_prompt(experience_memory.build_prompt, message, reflexion_ctx, "Experience memory")
+    if HAS_FEWSHOT:
+        reflexion_ctx = _fold_lazy_prompt(prompt_compiler.build_prompt, message, reflexion_ctx, "Few-shot prompt build")
+    return reflexion_ctx
+
+
+def _assemble_manual_messages(base_prompt, current_month, pieces, reflexion_ctx, history, session_id, message):
+    """Fallback ráp tay (khi không có prompt-cache): system + history + user message. Trả messages."""
+    system_parts = [
+        base_prompt,
+        f"\nHôm nay: {datetime.now(timezone.utc).strftime('%d/%m/%Y')}. Tháng hiện tại: {current_month}.",
+    ]
+    if pieces["proactive"]:
+        system_parts.append(f"\n{pieces['proactive']}")
+    if pieces["rag"]:
+        system_parts.append(f"\n{pieces['rag']}")
+    if pieces["realtime"]:
+        system_parts.append(f"\n{pieces['realtime']}")
+    if pieces["memory"]:
+        system_parts.append(f"\n{pieces['memory']}")
+    if pieces["graph"]:
+        system_parts.append(f"\n{pieces['graph']}")
+    if reflexion_ctx:
+        system_parts.append(f"\n{reflexion_ctx}")
+
+    system = "\n".join(system_parts)
+    messages = [{"role": "system", "content": system}]
+
+    if session_id:
+        session = memory_manager.get_session(session_id)
+        ctx_messages = session.get_context_messages()
+        if ctx_messages:
+            messages.extend(ctx_messages)
+        else:
+            messages.extend(history[-20:])
+    else:
+        messages.extend(history[-20:])
+
+    messages.append({"role": "user", "content": message})
+    return messages
+
+
 def _build_messages(
     message: str,
     history: list[dict],
@@ -1464,78 +1582,10 @@ def _build_messages(
     # before RAG so entity detection picks up the correct entity.
     rag_query = _resolve_contextual_query(message, history)
 
-    # Gather context pieces
-    proactive_ctx = get_proactive_context(month=current_month)
-    rag_ctx = build_rag_context(rag_query)
-    realtime_ctx = ""
-    if HAS_REALTIME:
-        try:
-            realtime_ctx = get_realtime_context() or ""
-        except Exception:
-            logger.debug("Realtime context failed", exc_info=True)
-    memory_ctx = memory_manager.build_context(session_id, user_id, message)
-    reflexion_ctx = reflexion_engine.get_reflection_prompt(message)
-    graph_ctx = ""
-    if HAS_MEMORY_GRAPH:
-        try:
-            graph_ctx = memory_graph.build_graph_context(user_id) or ""
-        except Exception:
-            logger.debug("Memory graph context failed", exc_info=True)
-
-    # A/B testing: select prompt variant
-    ab_info = {}
-    base_prompt = SYSTEM_PROMPT
-    if HAS_AB_TESTING and session_id:
-        try:
-            variant = ab_manager.assign_variant("prompt_style", session_id)
-            if variant:
-                ab_info["prompt_style"] = variant["id"]
-                style = variant.get("config", {}).get("style", "balanced")
-                if style == "concise":
-                    base_prompt = SYSTEM_PROMPT + "\nPhong cách trả lời: ngắn gọn, súc tích, đi thẳng vào trọng tâm."
-                elif style == "detailed":
-                    base_prompt = SYSTEM_PROMPT + "\nPhong cách trả lời: chi tiết, đầy đủ thông tin, có ví dụ minh họa."
-        except Exception:
-            logger.debug("A/B variant selection failed", exc_info=True)
-
-    # KB-in-context: inject a compact index (or full digest) of the knowledge base
-    # so the agent knows what exists → better searches + correct abstention. Static
-    # until reload, so it lands in the cacheable static layer via base_prompt.
-    if HAS_KB_CONTEXT:
-        try:
-            kb_ctx = kb_context.get_kb_context(knowledge._entities)
-            if kb_ctx:
-                base_prompt = base_prompt + "\n\n" + kb_ctx
-        except Exception:
-            logger.debug("KB context injection failed", exc_info=True)
-
-    # Lazy context: skip heavy modules for simple queries (search/general)
-    # to reduce token count and speed up responses. Only load for complex queries.
-    _is_simple = not any(kw in message.lower() for kw in [
-        "lịch trình", "so sánh", "kế hoạch", "tour", "ngày",
-        "hành trình", "plan", "compare", "itinerary",
-    ])
-
-    # Experience memory (ReasoningBank-lite): inject distilled lessons + negative
-    # constraints relevant to this query. Query-dependent → fold into reflexion
-    # context so it flows through both the cached and manual assembly paths.
-    if HAS_EXPERIENCE and not _is_simple:
-        try:
-            experience_ctx = experience_memory.build_prompt(message) or ""
-            if experience_ctx:
-                reflexion_ctx = (reflexion_ctx or "") + ("\n" + experience_ctx)
-        except Exception:
-            logger.debug("Experience memory failed", exc_info=True)
-
-    # Few-shot demonstrations (BootstrapFewShot). OFF by default (token cost);
-    # enable via FEWSHOT_DEMOS=on. Compiled artifact is static → works offline.
-    if HAS_FEWSHOT and not _is_simple:
-        try:
-            fewshot_ctx = prompt_compiler.build_prompt(message) or ""
-            if fewshot_ctx:
-                reflexion_ctx = (reflexion_ctx or "") + ("\n" + fewshot_ctx)
-        except Exception:
-            logger.debug("Few-shot prompt build failed", exc_info=True)
+    pieces = _gather_context_pieces(current_month, rag_query, session_id, user_id, message)
+    base_prompt, ab_info = _resolve_base_prompt(session_id)
+    # Experience-memory + few-shot fold vào reflexion để chảy qua CẢ cached lẫn manual path.
+    reflexion_ctx = _fold_experience_fewshot(message, pieces["reflexion"])
 
     # Use prompt cache if available
     if HAS_PROMPT_CACHE:
@@ -1553,48 +1603,18 @@ def _build_messages(
             session_id=session_id,
             user_id=user_id,
             system_prompt=base_prompt,
-            proactive_context=proactive_ctx or "",
-            rag_context=rag_ctx or "",
-            realtime_context=realtime_ctx,
-            memory_context=(memory_ctx or "") + ("\n" + graph_ctx if graph_ctx else ""),
+            proactive_context=pieces["proactive"] or "",
+            rag_context=pieces["rag"] or "",
+            realtime_context=pieces["realtime"],
+            memory_context=(pieces["memory"] or "") + ("\n" + pieces["graph"] if pieces["graph"] else ""),
             reflexion_context=reflexion_ctx or "",
         )
         build_info = {**cache_info, "ab": ab_info}
         return messages, build_info
 
-    # Fallback: manual assembly (original logic)
-    system_parts = [
-        base_prompt,
-        f"\nHôm nay: {datetime.now(timezone.utc).strftime('%d/%m/%Y')}. Tháng hiện tại: {current_month}.",
-    ]
-
-    if proactive_ctx:
-        system_parts.append(f"\n{proactive_ctx}")
-    if rag_ctx:
-        system_parts.append(f"\n{rag_ctx}")
-    if realtime_ctx:
-        system_parts.append(f"\n{realtime_ctx}")
-    if memory_ctx:
-        system_parts.append(f"\n{memory_ctx}")
-    if graph_ctx:
-        system_parts.append(f"\n{graph_ctx}")
-    if reflexion_ctx:
-        system_parts.append(f"\n{reflexion_ctx}")
-
-    system = "\n".join(system_parts)
-    messages = [{"role": "system", "content": system}]
-
-    if session_id:
-        session = memory_manager.get_session(session_id)
-        ctx_messages = session.get_context_messages()
-        if ctx_messages:
-            messages.extend(ctx_messages)
-        else:
-            messages.extend(history[-20:])
-    else:
-        messages.extend(history[-20:])
-
-    messages.append({"role": "user", "content": message})
+    # Fallback: manual assembly
+    messages = _assemble_manual_messages(
+        base_prompt, current_month, pieces, reflexion_ctx, history, session_id, message)
     return messages, {"ab": ab_info}
 
 
