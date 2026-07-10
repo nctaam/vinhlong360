@@ -66,6 +66,16 @@ def test_fe_tokens_var_usage_clean(tmp_path):
     assert results["R30.3"] == 0
 
 
+def test_fe_colors_token_based_rgba_not_flagged(tmp_path):
+    # rgba(var(--x-rgb), a) = DÙNG token (idiomatic áp alpha lên token màu) →
+    # KHÔNG phải nợ (trước đây check flag nhầm ~620). rgb/rgba LITERAL vẫn bị bắt.
+    _mk(tmp_path, "web-nuxt/pages/a.vue",
+        "<style>.ok{background:rgba(var(--primary-rgb), .5); color:rgb( var(--x) )}"
+        ".bad{border-color:rgba(1,2,3,.4)}</style>\n")
+    results = {r["rule"]: r["count"] for r in (c.run() for c in fe_checks(root=tmp_path))}
+    assert results["R30.3"] == 1  # chỉ .bad (rgba literal); 2 token-based bỏ qua
+
+
 # ---------- doc_status ----------
 
 def test_doc_status_missing_and_present(tmp_path):

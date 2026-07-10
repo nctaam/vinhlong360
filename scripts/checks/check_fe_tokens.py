@@ -17,7 +17,9 @@ def build_checks(root: Path | None = None) -> list:
     return [
         RegexCheck(
             name="fe_colors", level="hard-ratchet", rule="R30.3",
-            patterns=[r"#[0-9a-fA-F]{6}\b", r"#[0-9a-fA-F]{3}\b(?![0-9a-fA-F])", r"\brgba?\("],
+            # rgb/rgba LITERAL = nợ; rgba(var(--x-rgb), a) = DÙNG token (idiomatic, như
+            # base.css) → KHÔNG phải nợ, lookahead loại. (Trước đây flag nhầm ~620.)
+            patterns=[r"#[0-9a-fA-F]{6}\b", r"#[0-9a-fA-F]{3}\b(?![0-9a-fA-F])", r"\brgba?\(\s*(?!var\()"],
             globs=["*.vue"], roots=["web-nuxt/pages", "web-nuxt/components", "web-nuxt/layouts"],
             exclude_paths=["web-nuxt/node_modules"],
             neg_context=None,
