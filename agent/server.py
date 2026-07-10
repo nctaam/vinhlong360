@@ -1122,23 +1122,22 @@ async def limit_request_size(request: Request, call_next):
     return await call_next(request)
 
 
+_GATED_EXACT_PATHS = ("/metrics", "/vectors/stats")
+_GATED_PREFIX_PATHS = (
+    "/system", "/analytics", "/checkpoints", "/confirmations",
+    "/confirm/", "/reject/", "/ab-testing", "/prompt-cache", "/freshness",
+)
+
+
+def _is_gated_path(path: str) -> bool:
+    return path in _GATED_EXACT_PATHS or any(path.startswith(p) for p in _GATED_PREFIX_PATHS)
+
+
 @app.middleware("http")
 async def gate_internal_endpoints(request: Request, call_next):
     """Gate internal endpoints behind admin key in ALL environments.
     Prevents accidental exposure of /system/*, /analytics/*, /metrics, checkpoints, etc."""
-    path = request.url.path
-    _gated = (path == "/metrics"
-              or path == "/vectors/stats"
-              or path.startswith("/system")
-              or path.startswith("/analytics")
-              or path.startswith("/checkpoints")
-              or path.startswith("/confirmations")
-              or path.startswith("/confirm/")
-              or path.startswith("/reject/")
-              or path.startswith("/ab-testing")
-              or path.startswith("/prompt-cache")
-              or path.startswith("/freshness"))
-    if _gated:
+    if _is_gated_path(request.url.path):
         from middleware import verify_admin_key
         if not verify_admin_key(request):
             return JSONResponse(status_code=404, content={"detail": "Not Found"})

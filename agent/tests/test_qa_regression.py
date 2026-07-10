@@ -69,6 +69,13 @@ class TestSystemEndpointGate:
     """Every system/internal endpoint must be caught by gate_internal_endpoints."""
 
     def _gate_src(self):
+        # Refactor: path-list dời sang _GATED_*_PATHS + _is_gated_path; trả vùng
+        # từ constants tới hết gate_internal_endpoints (gộp path-literal + logic).
+        full = inspect.getsource(server)
+        i = full.find("_GATED_EXACT_PATHS = (")
+        j = full.find("return await call_next", i)
+        if i >= 0 and j > i:
+            return full[i:j]
         return inspect.getsource(server.gate_internal_endpoints)
 
     @pytest.mark.parametrize("path", SYSTEM_ENDPOINTS)

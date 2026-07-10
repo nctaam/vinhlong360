@@ -1664,11 +1664,15 @@ class TestEndpointAuthGuards:
     def test_middleware_gates_internal_paths(self):
         """Middleware must gate /system, /analytics, /checkpoints, /confirm, /reject in prod."""
         src = self._server_src()
-        idx = src.find("gate_internal_endpoints")
+        idx = src.find("async def gate_internal_endpoints")
         assert idx > 0
-        block = src[idx:idx+1200]
+        # Refactor: path-list dời sang _GATED_PREFIX_PATHS, gate gọi _is_gated_path.
+        assert "_is_gated_path" in src[idx:idx + 400], "gate must use _is_gated_path"
+        gidx = src.find("_GATED_PREFIX_PATHS = (")
+        assert gidx > 0
+        gated = src[gidx:gidx + 400]
         for path in ["/system", "/analytics", "/checkpoints", "/confirm/", "/reject/", "/freshness"]:
-            assert path in block, f"Middleware must gate {path} in production"
+            assert path in gated, f"Middleware must gate {path} in production"
 
     def test_suggested_follows_has_limit(self):
         """Suggested-follows SQL query must have LIMIT to prevent full table scan."""
