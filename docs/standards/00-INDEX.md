@@ -26,8 +26,8 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 | R30.3 | màu ngoài tokens | hard-ratchet | check_fe_tokens | 1373 | 30-frontend.md |
 | R30.4 | ClientOnly cho volatile | checklist-ký | — | — | 30-frontend.md |
 | R30.5 | tap-target ≥44 (ngoại lệ season-ring) | checklist-ký | — | — | 30-frontend.md |
-| R30.6 | axe 0 serious+ | pending-check (SP4) | axe | — | 30-frontend.md |
-| R30.7 | bundle budget | pending-check (SP4) | build parse | — | 30-frontend.md |
+| R30.6 | axe 0 serious+ | hard-ratchet | check_axe (đọc axe-report.json, graceful-skip) | 0 | 30-frontend.md |
+| R30.7 | bundle budget (chunk-max gz + đích entry ≤200kB) | soft-ratchet | check_bundle (parse .output) | 0 | 30-frontend.md |
 | R40.3 | cấm claim đã-xác-minh | hard | check_banned_claims | 0 | 40-ui-design.md |
 | R50.2 | filler giọng cấm (field-aware, bỏ source) | soft-ratchet | check_content_voice | 389 | 50-content.md |
 | R50.3 | cấm công thức mở bài + kết sáo | soft-ratchet | check_content_gates | 58 | 50-content.md |
@@ -42,7 +42,7 @@ Cơ chế: **hard** = 0 vi phạm mọi lúc · **hard-ratchet/soft-ratchet** = 
 
 ## Pending-check có hạn
 - (R20.1 ruff + R20.2 async + R20.4 coverage-gate ĐÃ BẬT; coverage nâng ngưỡng dần qua W4/W5)
-- SP4: R30.6 axe · R30.7 bundle
+- ~~SP4: R30.6 axe · R30.7 bundle~~ → **XONG 2026-07-10** (check_axe + check_bundle, registry 24→26, graceful-skip local/enforce CI)
 
 ## Lệnh
 ```

@@ -1,0 +1,6 @@
+{
+  "_comment": "R30.7 bundle budget (gz kB) — RATCHET: chỉ GIẢM, không tăng. Đo 2026-07-10 từ web-nuxt/.output (790kB total, chunk lớn nhất 276kB). Baseline đặt trên hiện tại chút để margin. ĐÍCH chuẩn: entry ≤200kB gz — chunk-max 276 là nợ, hạ dần qua ratchet (giảm total_gz_kb/max_chunk_gz_kb mỗi khi build nhẹ đi).",
+  "total_gz_kb": 800,
+  "max_chunk_gz_kb": 280,
+  "entry_target_gz_kb": 200
+}

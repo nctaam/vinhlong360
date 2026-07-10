@@ -21,7 +21,9 @@ if hasattr(sys.stdout, "reconfigure"):  # hook console Windows = cp1252
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from checks import common  # noqa: E402
 from checks.check_api_contract import CHECKS as api_checks  # noqa: E402
+from checks.check_axe import CHECKS as axe  # noqa: E402
 from checks.check_banned_claims import CHECKS as banned  # noqa: E402
+from checks.check_bundle import CHECKS as bundle  # noqa: E402
 from checks.check_complexity import CHECKS as complexity  # noqa: E402
 from checks.check_content_gates import CHECKS as content_gates  # noqa: E402
 from checks.check_content_voice import CHECKS as voice  # noqa: E402
@@ -38,7 +40,8 @@ from checks.check_tinh_cu import CHECKS as tinh_cu  # noqa: E402
 
 ALL_CHECKS = (secrets + banned + schema + api_checks
               + tinh_cu + fe_tokens + doc_status + links
-              + voice + content_gates + thin + pairing + complexity + ruff_lint + coverage)
+              + voice + content_gates + thin + pairing + complexity + ruff_lint + coverage
+              + bundle + axe)
 REGISTRY = {c.name: c for c in ALL_CHECKS}
 
 
