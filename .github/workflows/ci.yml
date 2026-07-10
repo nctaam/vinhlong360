@@ -104,6 +104,73 @@ jobs:
           path: coverage.xml
           retention-days: 14
 
+  # ── 2b. Test on Postgres (UGC/auth prod-parity) ─────────────
+  # Job RIÊNG: chạy suite với DATABASE_URL=postgres → bật các test UGC/auth
+  # đang skip trên SQLite (Postgres-only). Job `test` ở trên vẫn chạy SQLite
+  # (nhanh, ổn định). Prod dùng Postgres cho CẢ entity lẫn UGC → đây là parity thật.
+  test-pg:
+    name: Test (Postgres — UGC/auth)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: vl360
+          POSTGRES_PASSWORD: vl360
+          POSTGRES_DB: vinhlong360
+        ports:
+          - 5432:5432
+        # Chờ Postgres sẵn sàng trước khi bước test chạy
+        options: >-
+          --health-cmd "pg_isready -U vl360 -d vinhlong360"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://vl360:vl360@localhost:5432/vinhlong360
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov
+
+      # init.sql (baseline) + agent/migrations/*.sql lên Postgres CI trống.
+      - name: Apply schema + migrations
+        run: python scripts/apply_migrations.py --init-baseline
+
+      - name: Run tests against Postgres (prod-parity)
+        env:
+          # Dummy để module đọc env lúc import không crash (không gọi API thật).
+          LLM_API_KEY: "test-ci-key"
+          LLM_BASE_URL: "http://localhost:9999/v1"
+          LLM_MODEL: "test-model"
+          LLM_MODEL_MINI: "test-model-mini"
+          ADMIN_API_KEY: "test-admin-key"
+          CORS_ORIGINS: "http://localhost:8360"
+          DESTRUCTIVE_OPS_LOCKED: "1"
+        run: |
+          # DATABASE_URL=postgres → db._use_pg=True → các test @pg_only chạy (không skip).
+          pytest tests/ agent/tests/ \
+            -m "not slow" \
+            --tb=short
+
   # ── 3. Data coverage (informational, non-blocking) ──────────
   # Prints the % of entities (overall + per type) carrying real photos,
   # summaries, external sources, coordinates, placeId and area. This step
