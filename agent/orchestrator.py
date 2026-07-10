@@ -14,6 +14,7 @@ Architecture:
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 import threading
@@ -324,6 +325,208 @@ handoff_log = HandoffLog()
 
 
 # ---------------------------------------------------------------------------
+# Agent-loop helpers -- extracted verbatim from Orchestrator._agent_loop
+# (behaviour-preserving: same branches, same side effects, same order).
+# ---------------------------------------------------------------------------
+
+# Maximum total size (bytes) of message content before truncation kicks in.
+_MAX_MESSAGES_BYTES = 128 * 1024  # 128 KB
+
+
+def _agent_loop_post_process(fn_name, result, suggestions: list[str]) -> bool:
+    """Collect suggestions + emit empty-search self-correction hint.
+    Returns True if an empty-search hint should be injected."""
+    if fn_name == "suggest_followups":
+        try:
+            data = json.loads(result)
+            sug = data.get("suggestions", [])
+            if sug:
+                suggestions.clear()
+                suggestions.extend(sug)
+        except Exception:
+            logger.debug("Failed to parse suggest_followups result", exc_info=True)
+    if fn_name == "search":
+        try:
+            parsed = json.loads(result)
+            if isinstance(parsed, list) and len(parsed) == 0:
+                return True
+        except Exception:
+            logger.debug("Failed to parse search result for empty-check", exc_info=True)
+    return False
+
+
+def _partition_tool_calls(
+    msg,
+    messages: list[dict],
+    total_tool_calls: int,
+    max_tool_calls: int,
+    allowed_tool_names: set | None,
+    tools_used: list[str],
+) -> tuple[list[dict], int]:
+    """Partition this round's calls: execute up to the global cap, stub the rest.
+
+    Appends error stubs directly to *messages* for capped/hallucinated calls and
+    records accepted calls in *tools_used*. Returns (pending, total_tool_calls).
+    """
+    pending: list[dict] = []
+    for tc in msg.tool_calls:
+        if total_tool_calls >= max_tool_calls:
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": json.dumps({
+                    "error": "Tool call limit reached. Please respond with available information.",
+                }),
+            })
+            continue
+        try:
+            fn_args = json.loads(tc.function.arguments)
+        except Exception:
+            logger.warning("Failed to parse tool call arguments for %s, using empty dict", tc.function.name, exc_info=True)
+            fn_args = {}
+        fn_name = tc.function.name
+        if allowed_tool_names and fn_name not in allowed_tool_names:
+            logger.warning("LLM hallucinated unknown tool: %s", fn_name)
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tc.id,
+                "content": json.dumps({
+                    "error": f"Unknown tool '{fn_name}'. Use only: {', '.join(sorted(allowed_tool_names))}",
+                }),
+            })
+            continue
+        tools_used.append(f"{fn_name}({json.dumps(fn_args, ensure_ascii=False)})")
+        total_tool_calls += 1
+        pending.append({"id": tc.id, "name": fn_name, "args": fn_args})
+    return pending, total_tool_calls
+
+
+def _execute_pending(pending: list[dict], tool_executor: Any, call_tool_fn: Callable[[str, dict], str]) -> list[dict]:
+    """Execute pending calls — parallel for multi-call rounds when an executor is available."""
+    if tool_executor is not None and len(pending) > 1:
+        try:
+            return tool_executor.execute_smart(pending)
+        except Exception:
+            logger.warning("Parallel tool executor failed, falling back to serial execution", exc_info=True)
+            return [
+                {"id": c["id"], "name": c["name"], "result": call_tool_fn(c["name"], c["args"])}
+                for c in pending
+            ]
+    return [
+        {"id": c["id"], "name": c["name"], "result": call_tool_fn(c["name"], c["args"])}
+        for c in pending
+    ]
+
+
+def _append_results_and_check_empty(
+    messages: list[dict],
+    exec_results: list[dict],
+    suggestions: list[str],
+) -> bool:
+    """Append tool results to *messages* and post-process each. Returns True if any empty search was seen."""
+    saw_empty_search = False
+    for r in exec_results:
+        messages.append({
+            "role": "tool",
+            "tool_call_id": r["id"],
+            "content": r["result"],
+        })
+        if _agent_loop_post_process(r["name"], r["result"], suggestions):
+            saw_empty_search = True
+    return saw_empty_search
+
+
+def _truncate_messages_if_large(messages: list[dict]) -> None:
+    """Message size guard — truncate oldest tool results when total payload exceeds the threshold."""
+    total_bytes = sum(len(str(m.get("content", ""))) for m in messages if isinstance(m, dict))
+    if total_bytes > _MAX_MESSAGES_BYTES:
+        for m in messages:
+            if isinstance(m, dict) and m.get("role") == "tool":
+                content = m.get("content", "")
+                if len(content) > 500:
+                    m["content"] = content[:500] + "…[truncated]"
+        logger.debug("Truncated old tool results (%d bytes over limit)", total_bytes)
+
+
+def _forced_synthesis(
+    messages: list[dict],
+    llm_call_fn: Callable[[list[dict], list[dict], float], Any],
+    temperature: float,
+) -> str:
+    """Rounds exhausted while the model was still calling tools. Force ONE final
+    synthesis turn with no tools so the model must answer from evidence collected."""
+    try:
+        messages.append({
+            "role": "system",
+            "content": (
+                "[Hệ thống]: Đã đạt giới hạn số vòng suy luận. "
+                "Hãy tổng hợp câu trả lời tốt nhất có thể TỪ thông tin "
+                "đã thu thập ở trên. KHÔNG gọi thêm công cụ nào nữa, "
+                "trả lời trực tiếp bằng tiếng Việt."
+            ),
+        })
+        final_resp = llm_call_fn(messages, [], temperature)
+        return (final_resp.choices[0].message.content or "").strip()
+    except Exception:
+        logger.warning("Final synthesis LLM call failed after rounds exhausted", exc_info=True)
+        return ""
+
+
+def _run_agent_round(
+    messages: list[dict],
+    tools: list[dict],
+    temperature: float,
+    state: dict,
+    call_tool_fn: Callable[[str, dict], str],
+    llm_call_fn: Callable[[list[dict], list[dict], float], Any],
+    tool_executor: Any,
+    allowed_tool_names: set | None,
+    max_tool_calls: int,
+) -> bool:
+    """Run a single ReAct round.
+
+    Mutates *messages* and the mutable *state* dict
+    (keys: tools_used, suggestions, total_tool_calls, empty_results_count, last_content).
+    Returns True when the loop should stop (model produced final content), else False.
+    """
+    response = llm_call_fn(messages, tools, temperature)
+    msg = response.choices[0].message
+
+    if not msg.tool_calls:
+        state["last_content"] = msg.content or ""
+        return True
+
+    messages.append(msg)
+
+    pending, state["total_tool_calls"] = _partition_tool_calls(
+        msg, messages, state["total_tool_calls"], max_tool_calls,
+        allowed_tool_names, state["tools_used"],
+    )
+
+    if not pending:
+        return False
+
+    exec_results = _execute_pending(pending, tool_executor, call_tool_fn)
+    saw_empty_search = _append_results_and_check_empty(messages, exec_results, state["suggestions"])
+
+    # Self-correction on empty search (at most twice per turn)
+    if saw_empty_search:
+        state["empty_results_count"] += 1
+        if state["empty_results_count"] <= 2:
+            messages.append({
+                "role": "system",
+                "content": (
+                    "[Observation]: Search returned 0 results. "
+                    "Try broader keywords, remove filters, "
+                    "or use web_search as fallback."
+                ),
+            })
+
+    _truncate_messages_if_large(messages)
+    return False
+
+
+# ---------------------------------------------------------------------------
 # Orchestrator
 # ---------------------------------------------------------------------------
 
@@ -477,21 +680,9 @@ class Orchestrator:
             },
         )
 
-        # Resolve tuned params (self_optimizer) for this category, falling back
-        # to the specialist's hardcoded defaults. Previously the tuned params
-        # computed by self_optimizer were never read — this wires them in.
-        _temp = agent.temperature
-        _rounds = agent.max_rounds
-        _tool_cap = max_tool_calls
-        if get_params_fn is not None:
-            try:
-                tuned = get_params_fn(category.value)
-                if tuned:
-                    _temp = tuned.get("temperature", _temp)
-                    _rounds = int(tuned.get("max_rounds", _rounds))
-                    _tool_cap = int(tuned.get("max_tool_calls", _tool_cap))
-            except Exception:
-                logger.debug("get_params_fn failed for category %s, using defaults", category.value, exc_info=True)
+        _temp, _rounds, _tool_cap = self._resolve_tuned_params(
+            agent, max_tool_calls, get_params_fn, category,
+        )
 
         # Try specialist first, fall back to general on failure.
         # Outer try/except catches the case where BOTH agents fail —
@@ -501,45 +692,12 @@ class Orchestrator:
                 if attempt == 1 and agent.name == GENERAL_AGENT.name:
                     break  # already tried general, don't retry
 
-                messages = self.build_specialist_messages(
-                    message, history, current_agent, base_system_prompt,
-                )
-                tools = self.filter_tools(current_agent)
-
-                # Build allowed tool name set for validation inside the loop
-                _allowed_names = {t["function"]["name"] for t in tools}
-
-                # Reorder tools by learned effectiveness (tool_weight_optimizer).
-                # Order is a soft signal for the model; safe + reversible.
-                if tool_order_fn is not None:
-                    try:
-                        order = tool_order_fn(category.value)
-                        rank = {name: i for i, name in enumerate(order)}
-                        tools.sort(key=lambda t: rank.get(t["function"]["name"], 999))
-                    except Exception:
-                        logger.debug("tool_order_fn failed for category %s, using default order", category.value, exc_info=True)
-
                 try:
-                    result = self._agent_loop(
-                        messages=messages,
-                        tools=tools,
-                        temperature=_temp,
-                        max_rounds=_rounds,
-                        max_tool_calls=_tool_cap,
-                        call_tool_fn=call_tool_fn,
-                        llm_call_fn=llm_call_fn,
-                        tool_executor=tool_executor,
-                        allowed_tool_names=_allowed_names,
+                    return self._run_single_attempt(
+                        attempt, current_agent, message, history, base_system_prompt,
+                        category, _temp, _rounds, _tool_cap,
+                        call_tool_fn, llm_call_fn, tool_executor, tool_order_fn,
                     )
-                    return {
-                        "reply": result["reply"],
-                        "tools_used": result["tools_used"],
-                        "suggestions": result["suggestions"],
-                        "agent_used": current_agent.name,
-                        "category": category.value,
-                        "fallback": attempt > 0,
-                        "use_mini": current_agent.use_mini,
-                    }
                 except Exception:
                     if attempt == 0:
                         logger.warning(
@@ -563,6 +721,95 @@ class Orchestrator:
             "agent_used": "none",
             "category": category.value,
             "fallback": True,
+        }
+
+    @staticmethod
+    def _resolve_tuned_params(
+        agent: AgentSpec,
+        max_tool_calls: int,
+        get_params_fn: Callable[[str], dict] | None,
+        category: QueryCategory,
+    ) -> tuple[float, int, int]:
+        """Resolve tuned params (self_optimizer) for this category, falling back
+        to the specialist's hardcoded defaults. Previously the tuned params
+        computed by self_optimizer were never read — this wires them in."""
+        _temp = agent.temperature
+        _rounds = agent.max_rounds
+        _tool_cap = max_tool_calls
+        if get_params_fn is not None:
+            try:
+                tuned = get_params_fn(category.value)
+                if tuned:
+                    _temp = tuned.get("temperature", _temp)
+                    _rounds = int(tuned.get("max_rounds", _rounds))
+                    _tool_cap = int(tuned.get("max_tool_calls", _tool_cap))
+            except Exception:
+                logger.debug("get_params_fn failed for category %s, using defaults", category.value, exc_info=True)
+        return _temp, _rounds, _tool_cap
+
+    @staticmethod
+    def _reorder_tools(
+        tools: list[dict[str, Any]],
+        tool_order_fn: Callable[[str], list] | None,
+        category: QueryCategory,
+    ) -> None:
+        """Reorder tools by learned effectiveness (tool_weight_optimizer).
+        Order is a soft signal for the model; safe + reversible."""
+        if tool_order_fn is not None:
+            try:
+                order = tool_order_fn(category.value)
+                rank = {name: i for i, name in enumerate(order)}
+                tools.sort(key=lambda t: rank.get(t["function"]["name"], 999))
+            except Exception:
+                logger.debug("tool_order_fn failed for category %s, using default order", category.value, exc_info=True)
+
+    def _run_single_attempt(
+        self,
+        attempt: int,
+        current_agent: AgentSpec,
+        message: str,
+        history: list[dict[str, str]],
+        base_system_prompt: str,
+        category: QueryCategory,
+        temperature: float,
+        rounds: int,
+        tool_cap: int,
+        call_tool_fn: Callable[[str, dict], str],
+        llm_call_fn: Callable[[list[dict], list[dict], float], Any],
+        tool_executor: Any,
+        tool_order_fn: Callable[[str], list] | None,
+    ) -> dict[str, Any]:
+        """Build messages + tools for *current_agent*, run the agent loop, and
+        wrap the result. Raises on loop failure so the caller can fall back."""
+        messages = self.build_specialist_messages(
+            message, history, current_agent, base_system_prompt,
+        )
+        tools = self.filter_tools(current_agent)
+
+        # Build allowed tool name set for validation inside the loop
+        _allowed_names = {t["function"]["name"] for t in tools}
+
+        self._reorder_tools(tools, tool_order_fn, category)
+
+        result = self._agent_loop(
+            messages=messages,
+            tools=tools,
+            temperature=temperature,
+            max_rounds=rounds,
+            max_tool_calls=tool_cap,
+            call_tool_fn=call_tool_fn,
+            llm_call_fn=llm_call_fn,
+            tool_executor=tool_executor,
+            allowed_tool_names=_allowed_names,
+        )
+        return {
+            "reply": result["reply"],
+            "tools_used": result["tools_used"],
+            "suggestions": result["suggestions"],
+            "agent_used": current_agent.name,
+            "category": category.value,
+            "fallback": attempt > 0,
+            "use_mini": current_agent.use_mini,
         }
 
     # -- private helpers ------------------------------------------------------
@@ -589,34 +836,13 @@ class Orchestrator:
         contains more than one tool call, the independent calls run concurrently
         instead of serially — cutting latency on multi-tool rounds.
         """
-        import json
-
-        def _post_process(fn_name, result):
-            """Collect suggestions + emit empty-search self-correction hint.
-            Returns True if an empty-search hint should be injected."""
-            if fn_name == "suggest_followups":
-                try:
-                    data = json.loads(result)
-                    sug = data.get("suggestions", [])
-                    if sug:
-                        suggestions.clear()
-                        suggestions.extend(sug)
-                except Exception:
-                    logger.debug("Failed to parse suggest_followups result", exc_info=True)
-            if fn_name == "search":
-                try:
-                    parsed = json.loads(result)
-                    if isinstance(parsed, list) and len(parsed) == 0:
-                        return True
-                except Exception:
-                    logger.debug("Failed to parse search result for empty-check", exc_info=True)
-            return False
-
-        tools_used: list[str] = []
-        suggestions: list[str] = []
-        total_tool_calls = 0
-        empty_results_count = 0
-        last_content = ""
+        state: dict[str, Any] = {
+            "tools_used": [],
+            "suggestions": [],
+            "total_tool_calls": 0,
+            "empty_results_count": 0,
+            "last_content": "",
+        }
         _loop_start = time.monotonic()
 
         for _round in range(max_rounds):
@@ -629,130 +855,30 @@ class Orchestrator:
                 )
                 break
 
-            response = llm_call_fn(messages, tools, temperature)
-            msg = response.choices[0].message
-
-            if not msg.tool_calls:
-                last_content = msg.content or ""
+            if _run_agent_round(
+                messages, tools, temperature, state,
+                call_tool_fn, llm_call_fn, tool_executor,
+                allowed_tool_names, max_tool_calls,
+            ):
                 break
-
-            messages.append(msg)
-
-            # Partition this round's calls: execute up to the global cap, stub the rest.
-            pending: list[dict] = []
-            for tc in msg.tool_calls:
-                if total_tool_calls >= max_tool_calls:
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tc.id,
-                        "content": json.dumps({
-                            "error": "Tool call limit reached. Please respond with available information.",
-                        }),
-                    })
-                    continue
-                try:
-                    fn_args = json.loads(tc.function.arguments)
-                except Exception:
-                    logger.warning("Failed to parse tool call arguments for %s, using empty dict", tc.function.name, exc_info=True)
-                    fn_args = {}
-                fn_name = tc.function.name
-                if allowed_tool_names and fn_name not in allowed_tool_names:
-                    logger.warning("LLM hallucinated unknown tool: %s", fn_name)
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tc.id,
-                        "content": json.dumps({
-                            "error": f"Unknown tool '{fn_name}'. Use only: {', '.join(sorted(allowed_tool_names))}",
-                        }),
-                    })
-                    continue
-                tools_used.append(f"{fn_name}({json.dumps(fn_args, ensure_ascii=False)})")
-                total_tool_calls += 1
-                pending.append({"id": tc.id, "name": fn_name, "args": fn_args})
-
-            if not pending:
-                continue
-
-            # Execute — parallel for multi-call rounds when an executor is available.
-            if tool_executor is not None and len(pending) > 1:
-                try:
-                    exec_results = tool_executor.execute_smart(pending)
-                except Exception:
-                    logger.warning("Parallel tool executor failed, falling back to serial execution", exc_info=True)
-                    exec_results = [
-                        {"id": c["id"], "name": c["name"], "result": call_tool_fn(c["name"], c["args"])}
-                        for c in pending
-                    ]
-            else:
-                exec_results = [
-                    {"id": c["id"], "name": c["name"], "result": call_tool_fn(c["name"], c["args"])}
-                    for c in pending
-                ]
-
-            saw_empty_search = False
-            for r in exec_results:
-                messages.append({
-                    "role": "tool",
-                    "tool_call_id": r["id"],
-                    "content": r["result"],
-                })
-                if _post_process(r["name"], r["result"]):
-                    saw_empty_search = True
-
-            # Self-correction on empty search (at most twice per turn)
-            if saw_empty_search:
-                empty_results_count += 1
-                if empty_results_count <= 2:
-                    messages.append({
-                        "role": "system",
-                        "content": (
-                            "[Observation]: Search returned 0 results. "
-                            "Try broader keywords, remove filters, "
-                            "or use web_search as fallback."
-                        ),
-                    })
-
-            # Message size guard — truncate oldest tool results when
-            # total payload exceeds the threshold to prevent unbounded growth.
-            total_bytes = sum(len(str(m.get("content", ""))) for m in messages if isinstance(m, dict))
-            if total_bytes > Orchestrator._MAX_MESSAGES_BYTES:
-                for m in messages:
-                    if isinstance(m, dict) and m.get("role") == "tool":
-                        content = m.get("content", "")
-                        if len(content) > 500:
-                            m["content"] = content[:500] + "…[truncated]"
-                logger.debug("Truncated old tool results (%d bytes over limit)", total_bytes)
         else:
             # Rounds exhausted while the model was still calling tools. Instead of
             # discarding the gathered tool results and returning a canned apology,
             # force ONE final synthesis turn with no tools so the model must answer
             # from the evidence it already collected.
-            if not last_content:
-                try:
-                    messages.append({
-                        "role": "system",
-                        "content": (
-                            "[Hệ thống]: Đã đạt giới hạn số vòng suy luận. "
-                            "Hãy tổng hợp câu trả lời tốt nhất có thể TỪ thông tin "
-                            "đã thu thập ở trên. KHÔNG gọi thêm công cụ nào nữa, "
-                            "trả lời trực tiếp bằng tiếng Việt."
-                        ),
-                    })
-                    final_resp = llm_call_fn(messages, [], temperature)
-                    last_content = (final_resp.choices[0].message.content or "").strip()
-                except Exception:
-                    logger.warning("Final synthesis LLM call failed after rounds exhausted", exc_info=True)
-                    last_content = ""
-            if not last_content:
-                last_content = "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này."
+            if not state["last_content"]:
+                state["last_content"] = _forced_synthesis(messages, llm_call_fn, temperature)
+            if not state["last_content"]:
+                state["last_content"] = "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này."
 
+        last_content = state["last_content"]
         if not last_content:
             last_content = "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này."
 
         return {
             "reply": last_content,
-            "tools_used": tools_used,
-            "suggestions": suggestions,
+            "tools_used": state["tools_used"],
+            "suggestions": state["suggestions"],
         }
 
 

@@ -313,6 +313,64 @@ def task_cleanup_analytics():
         _sched_logger.error("Analytics cleanup error: %s", e)
 
 
+def _digest_kb_part(parts: list):
+    """Thêm dòng thống kê tri thức (nội dung/địa điểm/lịch trình) vào digest."""
+    try:
+        import knowledge
+        s = knowledge.stats()
+        parts.append(f"• Nội dung: {s.get('total_content', 0)} · Địa điểm: {s.get('places', 0)} · Lịch trình: {s.get('itineraries', 0)}")
+    except Exception as e:
+        _sched_logger.error("digest stats error: %s", e)
+
+
+def _digest_reports_part(parts: list):
+    """Thêm dòng số báo-sai (reports.jsonl) vào digest — free, đọc file."""
+    try:
+        rf = AGENT_DIR / "data" / "reports.jsonl"
+        n = sum(1 for ln in rf.read_text(encoding="utf-8").splitlines() if ln.strip()) if rf.exists() else 0
+        if n:
+            parts.append(f"• ⚠️ Báo sai: {n} (xem /baosai)")
+    except Exception as e:
+        _sched_logger.warning("digest reports read error: %s", e)
+
+
+def _digest_moderation_part(parts: list):
+    """Thêm dòng số bài chờ duyệt (Postgres-only; bỏ qua nếu lỗi) vào digest."""
+    try:
+        from database import db
+        ph = db._ph
+        with db._conn() as conn:
+            row = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM posts WHERE moderation_status = {ph}", ("pending",))
+            if row and row["c"]:
+                parts.append(f"• 🧐 Chờ duyệt: {row['c']}")
+    except Exception as e:
+        _sched_logger.warning("digest moderation check skipped: %s", e)
+
+
+def _digest_budget_part(parts: list):
+    """Cảnh báo ngân sách: nếu agent tự động bật, báo mức dùng LLM/cap (free, không gọi LLM)."""
+    try:
+        import autonomous_budget as ab
+        if ab.enabled():
+            st = ab.status()
+            warn = " ⚠️ GẦN CAP!" if st["remaining_today"] <= max(1, st["cap_per_day"] // 5) else ""
+            parts.append(f"• 💰 Agent LLM: {st['used_today']}/{st['cap_per_day']} hôm nay{warn}")
+    except Exception as e:
+        _sched_logger.warning("digest budget status error: %s", e)
+
+
+def _digest_send(token: str, admin_ids: list, text: str):
+    """Gửi digest tới mọi ADMIN_TELEGRAM_IDS qua Telegram HTTP API."""
+    try:
+        import httpx
+        for cid in admin_ids:
+            httpx.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                       json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
+        _sched_logger.info("Admin digest sent to %d chat(s)", len(admin_ids))
+    except Exception as e:
+        _sched_logger.error("digest send error: %s", e)
+
+
 def task_admin_digest():
     """Digest quản lý định kỳ → Telegram admin. MIỄN PHÍ: tính từ DB/file, KHÔNG gọi LLM
     (không vi phạm §B8 — thay cho 'agent tự động' tốn LLM 24/7). No-op nếu chưa cấu hình
@@ -324,52 +382,15 @@ def task_admin_digest():
         return  # chưa cấu hình admin Telegram → bỏ qua
 
     parts = []
-    try:
-        import knowledge
-        s = knowledge.stats()
-        parts.append(f"• Nội dung: {s.get('total_content', 0)} · Địa điểm: {s.get('places', 0)} · Lịch trình: {s.get('itineraries', 0)}")
-    except Exception as e:
-        _sched_logger.error("digest stats error: %s", e)
-    # Báo-sai (reports.jsonl) — free, đọc file
-    try:
-        rf = AGENT_DIR / "data" / "reports.jsonl"
-        n = sum(1 for ln in rf.read_text(encoding="utf-8").splitlines() if ln.strip()) if rf.exists() else 0
-        if n:
-            parts.append(f"• ⚠️ Báo sai: {n} (xem /baosai)")
-    except Exception as e:
-        _sched_logger.warning("digest reports read error: %s", e)
-    # Kiểm duyệt chờ (Postgres-only; bỏ qua nếu lỗi)
-    try:
-        from database import db
-        ph = db._ph
-        with db._conn() as conn:
-            row = db._fetchone(conn, f"SELECT COUNT(*) AS c FROM posts WHERE moderation_status = {ph}", ("pending",))
-            if row and row["c"]:
-                parts.append(f"• 🧐 Chờ duyệt: {row['c']}")
-    except Exception as e:
-        _sched_logger.warning("digest moderation check skipped: %s", e)
-
-    # Cảnh báo ngân sách: nếu agent tự động bật, báo mức dùng LLM/cap (free, không gọi LLM).
-    try:
-        import autonomous_budget as ab
-        if ab.enabled():
-            st = ab.status()
-            warn = " ⚠️ GẦN CAP!" if st["remaining_today"] <= max(1, st["cap_per_day"] // 5) else ""
-            parts.append(f"• 💰 Agent LLM: {st['used_today']}/{st['cap_per_day']} hôm nay{warn}")
-    except Exception as e:
-        _sched_logger.warning("digest budget status error: %s", e)
+    _digest_kb_part(parts)
+    _digest_reports_part(parts)
+    _digest_moderation_part(parts)
+    _digest_budget_part(parts)
 
     if not parts:
         return
     text = "📊 *vinhlong360 — digest quản lý*\n" + "\n".join(parts)
-    try:
-        import httpx
-        for cid in admin_ids:
-            httpx.post(f"https://api.telegram.org/bot{token}/sendMessage",
-                       json={"chat_id": cid, "text": text, "parse_mode": "Markdown"}, timeout=15)
-        _sched_logger.info("Admin digest sent to %d chat(s)", len(admin_ids))
-    except Exception as e:
-        _sched_logger.error("digest send error: %s", e)
+    _digest_send(token, admin_ids, text)
 
 
 _TELEGRAM_RETRY_QUEUE: list[tuple[str, int]] = []
@@ -659,6 +680,32 @@ def task_notification_cleanup():
         _sched_logger.error("Notification cleanup error: %s", e)
 
 
+def _maybe_send_event_reminder(r, entity, now, cutoff, create_notification):
+    """Send one event reminder if the entity's event_date falls in [now, cutoff].
+
+    Returns True iff a notification was sent. Verbatim extraction of the per-RSVP
+    loop body of task_event_reminders (parse date → window check → notify)."""
+    from datetime import datetime
+    event_date_str = (entity.get("attributes") or {}).get("event_date")
+    if not event_date_str:
+        return False
+    try:
+        event_dt = datetime.fromisoformat(str(event_date_str).replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return False
+    if not (now <= event_dt <= cutoff):
+        return False
+    try:
+        create_notification(
+            str(r["user_id"]), "event_reminder",
+            f"Sự kiện sắp diễn ra: {entity.get('name', '')}",
+            ref_type="event_reminder", ref_id=r["entity_id"])
+        return True
+    except Exception:
+        _sched_logger.exception("Failed to send event reminder for %s", r["entity_id"])
+        return False
+
+
 def task_event_reminders():
     """Send reminder notifications to users who RSVP'd to events happening within 24h."""
     try:
@@ -689,23 +736,8 @@ def task_event_reminders():
         for row in rsvps:
             r = db_mod._row_to_dict(row)
             entity = entities.get(r["entity_id"], {})
-            event_date_str = (entity.get("attributes") or {}).get("event_date")
-            if not event_date_str:
-                continue
-            try:
-                event_dt = datetime.fromisoformat(str(event_date_str).replace("Z", "+00:00"))
-            except (ValueError, TypeError):
-                continue
-            if not (now <= event_dt <= cutoff):
-                continue
-            try:
-                create_notification(
-                    str(r["user_id"]), "event_reminder",
-                    f"Sự kiện sắp diễn ra: {entity.get('name', '')}",
-                    ref_type="event_reminder", ref_id=r["entity_id"])
+            if _maybe_send_event_reminder(r, entity, now, cutoff, create_notification):
                 sent += 1
-            except Exception:
-                _sched_logger.exception("Failed to send event reminder for %s", r["entity_id"])
         if sent:
             _sched_logger.info("Event reminders: sent %d", sent)
     except Exception as e:
@@ -741,29 +773,36 @@ def task_session_cleanup():
                     _sched_logger.info("Session cleanup: purged %d old login_history entries", old_logins)
             except Exception:
                 _sched_logger.warning("login_history cleanup failed", exc_info=True)
-            try:
-                deleted_ids = db._fetchall(conn, """
-                    SELECT id FROM posts WHERE deleted_at IS NOT NULL
-                    AND deleted_at < NOW() - INTERVAL '30 days'
-                    LIMIT 500
-                """, ())
-                if deleted_ids:
-                    ids = [str(db._row_to_dict(r)["id"]) for r in deleted_ids]
-                    for pid in ids:
-                        db._execute(conn, "DELETE FROM comments WHERE post_id::text = %s", (pid,))
-                        db._execute(conn, "DELETE FROM likes WHERE post_id::text = %s", (pid,))
-                        db._execute(conn, "DELETE FROM bookmarks WHERE post_id::text = %s", (pid,))
-                        db._execute(conn, "DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = %s", (pid,))
-                    db._execute(conn, """
-                        DELETE FROM posts WHERE deleted_at IS NOT NULL
-                        AND deleted_at < NOW() - INTERVAL '30 days'
-                    """, ())
-                    _sched_logger.info("Session cleanup: hard-deleted %d soft-deleted posts past grace period", len(ids))
-            except Exception as e:
-                _sched_logger.warning("Post hard-delete cleanup error: %s", e)
+            _hard_delete_stale_posts(db, conn)
         _sched_logger.info("Session cleanup: purged expired sessions and OTPs")
     except Exception as e:
         _sched_logger.error("Session cleanup error: %s", e)
+
+
+def _hard_delete_stale_posts(db, conn):
+    """Hard-delete soft-deleted posts past the 30-day grace period, plus their
+    comments/likes/bookmarks/notifications. Verbatim extraction of the innermost
+    post-cleanup block of task_session_cleanup (same connection, same SQL)."""
+    try:
+        deleted_ids = db._fetchall(conn, """
+            SELECT id FROM posts WHERE deleted_at IS NOT NULL
+            AND deleted_at < NOW() - INTERVAL '30 days'
+            LIMIT 500
+        """, ())
+        if deleted_ids:
+            ids = [str(db._row_to_dict(r)["id"]) for r in deleted_ids]
+            for pid in ids:
+                db._execute(conn, "DELETE FROM comments WHERE post_id::text = %s", (pid,))
+                db._execute(conn, "DELETE FROM likes WHERE post_id::text = %s", (pid,))
+                db._execute(conn, "DELETE FROM bookmarks WHERE post_id::text = %s", (pid,))
+                db._execute(conn, "DELETE FROM notifications WHERE ref_type = 'post' AND ref_id = %s", (pid,))
+            db._execute(conn, """
+                DELETE FROM posts WHERE deleted_at IS NOT NULL
+                AND deleted_at < NOW() - INTERVAL '30 days'
+            """, ())
+            _sched_logger.info("Session cleanup: hard-deleted %d soft-deleted posts past grace period", len(ids))
+    except Exception as e:
+        _sched_logger.warning("Post hard-delete cleanup error: %s", e)
 
 
 def task_moderation_auto_escalation():
@@ -794,6 +833,29 @@ def task_ratelimit_gc():
             _sched_logger.info("Rate-limit GC: freed %d keys (%d→%d)", result["freed"], result["before"], result["after"])
     except Exception as e:
         _sched_logger.error("Rate-limit GC error: %s", e)
+
+
+def _weekly_stats_counts(s):
+    """Coerce the weekly-stats row dict to (new_followers, week_likes, week_posts) ints.
+    Verbatim extraction from task_weekly_digest's per-user loop."""
+    new_followers = int(s.get("new_followers") or 0)
+    week_likes = int(s.get("week_likes") or 0)
+    week_posts = int(s.get("week_posts") or 0)
+    return new_followers, week_likes, week_posts
+
+
+def _format_weekly_digest_body(new_followers, week_likes, week_posts):
+    """Build the weekly-digest notification body from the week's counts.
+    Verbatim extraction from task_weekly_digest's per-user loop."""
+    parts = []
+    if new_followers > 0:
+        parts.append(f"+{new_followers} người theo dõi mới")
+    if week_likes > 0:
+        parts.append(f"{week_likes} lượt thích")
+    if week_posts > 0:
+        parts.append(f"{week_posts} bài viết")
+
+    return ", ".join(parts) + ". Tiếp tục chia sẻ nhé!"
 
 
 def task_weekly_digest():
@@ -840,22 +902,12 @@ def task_weekly_digest():
                            AND created_at > NOW() - INTERVAL '7 days') AS week_posts
                 """, (uid, uid, uid))
                 s = db._row_to_dict(stats) if stats else {}
-                new_followers = int(s.get("new_followers") or 0)
-                week_likes = int(s.get("week_likes") or 0)
-                week_posts = int(s.get("week_posts") or 0)
+                new_followers, week_likes, week_posts = _weekly_stats_counts(s)
 
                 if new_followers == 0 and week_likes == 0 and week_posts == 0:
                     continue
 
-                parts = []
-                if new_followers > 0:
-                    parts.append(f"+{new_followers} người theo dõi mới")
-                if week_likes > 0:
-                    parts.append(f"{week_likes} lượt thích")
-                if week_posts > 0:
-                    parts.append(f"{week_posts} bài viết")
-
-                body = ", ".join(parts) + ". Tiếp tục chia sẻ nhé!"
+                body = _format_weekly_digest_body(new_followers, week_likes, week_posts)
                 create_notification(
                     user_id=uid,
                     notif_type="digest",

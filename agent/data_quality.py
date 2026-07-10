@@ -296,6 +296,101 @@ def _coordinate_key(value: Any) -> tuple[float, float] | None:
         return None
     return (round(coords[0], 7), round(coords[1], 7))
 
+def _coordinate_owner_map(by_id: dict[str, dict[str, Any]]) -> dict[tuple[float, float], str]:
+    """First-writer-wins owner of each rounded coordinate key across all entities."""
+    coordinate_owners: dict[tuple[float, float], str] = {}
+    for entity_id, entity in by_id.items():
+        key = _coordinate_key(entity.get("coordinates"))
+        if key:
+            coordinate_owners.setdefault(key, entity_id)
+    return coordinate_owners
+
+def _duplicate_coord_owner(
+    key: tuple[float, float] | None,
+    entity: dict[str, Any],
+    coordinate_owners: dict[tuple[float, float], str],
+) -> str | None:
+    """Return the id of a different entity that already owns `key`, else None."""
+    owner = coordinate_owners.get(key) if key else None
+    if owner and owner != str(entity.get("id")):
+        return owner
+    return None
+
+def _coordinate_dup_skip(
+    record: dict[str, Any],
+    entity: dict[str, Any],
+    after: Any,
+    coordinate_owners: dict[tuple[float, float], str],
+) -> dict[str, Any] | None:
+    """Claim `after`'s coord for `entity`, or return a duplicate-coordinates skip dict."""
+    key = _coordinate_key(after)
+    owner = _duplicate_coord_owner(key, entity, coordinate_owners)
+    if owner:
+        return {
+            "candidate_id": record["candidate_id"],
+            "entity_id": entity.get("id"),
+            "field": "coordinates",
+            "reason": "duplicate coordinates",
+            "duplicate_of": owner,
+            "coordinates": list(key) if key else None,
+        }
+    if key:
+        coordinate_owners[key] = str(entity.get("id"))
+    return None
+
+def _process_candidate_change(
+    record: dict[str, Any],
+    by_id: dict[str, dict[str, Any]],
+    coordinate_owners: dict[tuple[float, float], str],
+    *,
+    dry_run: bool,
+    reviewer: str | None,
+    entity_id_on_invalid: bool,
+    include_review_fields: bool,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None, dict[str, Any] | None]:
+    """Apply one candidate against `by_id`; return (applied, change, skip).
+
+    Exactly one of the three is non-None. Behaviour matches the inline loop bodies
+    of apply_candidates / _apply_reviewed_records; `entity_id_on_invalid` and
+    `include_review_fields` parametrise the two call sites' differences.
+    """
+    entity = by_id.get(str(record.get("entity_id")))
+    if not entity:
+        return None, None, {"candidate_id": record["candidate_id"], "reason": "entity not found"}
+    field = str(record.get("field") or "")
+    after = _candidate_after_value(record)
+    if after is None:
+        skip = {"candidate_id": record["candidate_id"], "reason": "invalid suggestion"}
+        if entity_id_on_invalid:
+            skip = {"candidate_id": record["candidate_id"], "entity_id": entity.get("id"),
+                    "field": field, "reason": "invalid suggestion"}
+        return None, None, skip
+    before = _current_field_value(entity, field)
+    if _canonical_value(before) == _canonical_value(after):
+        return None, None, {"candidate_id": record["candidate_id"], "entity_id": entity.get("id"),
+                            "field": field, "reason": "value already current"}
+    if field == "coordinates":
+        dup_skip = _coordinate_dup_skip(record, entity, after, coordinate_owners)
+        if dup_skip is not None:
+            return None, None, dup_skip
+    if not dry_run:
+        _set_entity_field(entity, field, after)
+    change = {
+        "candidate_id": record["candidate_id"],
+        "entity_id": entity.get("id"),
+        "entity_name": entity.get("name"),
+        "field": field,
+        "before": _json_clone(before),
+        "after": _json_clone(after),
+        "evidence_urls": record.get("evidence_urls") or [],
+        "reason": record.get("reason"),
+    }
+    if include_review_fields:
+        change["reviewer"] = reviewer
+        change["review_bucket"] = record.get("bucket")
+    applied = {"candidate_id": record["candidate_id"], "entity_id": entity.get("id"), "field": field}
+    return applied, change, None
+
 def is_evidence_auto_apply(record: dict[str, Any]) -> bool:
     if record.get("apply_policy") != "auto_apply":
         return False
@@ -306,12 +401,8 @@ def is_evidence_auto_apply(record: dict[str, Any]) -> bool:
         return bool(record.get("geocode_verified") and parse_coordinates(record.get("suggested_value")))
     return False
 
-def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = True) -> dict[str, Any]:
-    queue = load_candidate_queue(refresh=True)
-    wanted = set(candidate_ids or [])
-    applied_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    batch_payload = f"{applied_at}:{','.join(sorted(wanted)) or 'all'}"
-    batch_id = f"dq_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{hashlib.sha1(batch_payload.encode('utf-8')).hexdigest()[:8]}"
+def _selected_auto_apply(queue: dict[str, Any], wanted: set[str]) -> list[dict[str, Any]]:
+    """Evidence-backed auto-apply records, filtered by `wanted` candidate ids (empty = all)."""
     selected = []
     for record in queue.get("auto_apply", []):
         cid = record.get("candidate_id") or candidate_id(record)
@@ -319,81 +410,71 @@ def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = 
             continue
         if is_evidence_auto_apply(record):
             selected.append({**record, "candidate_id": cid})
+    return selected
+
+def _persist_applied_changes(
+    *,
+    batch_id: str,
+    applied_at: str,
+    applied: list[dict[str, Any]],
+    skipped: list[dict[str, Any]],
+    changes: list[dict[str, Any]],
+    by_id: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Record the apply-history entry and upsert changed entities; return upsert errors."""
+    errors: list[dict[str, Any]] = []
+    _append_apply_history({
+        "record_type": "apply",
+        "batch_id": batch_id,
+        "applied_at": applied_at,
+        "backend": "db",
+        "applied_count": len(applied),
+        "skipped_count": len(skipped),
+        "changes": changes,
+        "skipped": skipped,
+    })
+    changed_ids = {str(c["entity_id"]) for c in changes}
+    for eid in changed_ids:
+        entity = by_id.get(eid)
+        if entity:
+            try:
+                db.upsert_entity(entity)
+            except Exception as exc:
+                errors.append({"entity_id": eid, "error": str(exc)})
+    return errors
+
+def apply_candidates(candidate_ids: list[str] | None = None, *, dry_run: bool = True) -> dict[str, Any]:
+    queue = load_candidate_queue(refresh=True)
+    wanted = set(candidate_ids or [])
+    applied_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    batch_payload = f"{applied_at}:{','.join(sorted(wanted)) or 'all'}"
+    batch_id = f"dq_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{hashlib.sha1(batch_payload.encode('utf-8')).hexdigest()[:8]}"
+    selected = _selected_auto_apply(queue, wanted)
 
     # GĐ3.8: nguồn = DB (nguồn sự thật), không còn đọc/ghi qua data.json.
     by_id = {str(e.get("id")): e for e in db.all_entities() if isinstance(e, dict) and e.get("id")}
-    coordinate_owners: dict[tuple[float, float], str] = {}
-    for entity_id, entity in by_id.items():
-        key = _coordinate_key(entity.get("coordinates"))
-        if key:
-            coordinate_owners.setdefault(key, entity_id)
+    coordinate_owners = _coordinate_owner_map(by_id)
     applied: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
     changes: list[dict[str, Any]] = []
     for record in selected:
-        entity = by_id.get(str(record.get("entity_id")))
-        if not entity:
-            skipped.append({"candidate_id": record["candidate_id"], "reason": "entity not found"})
+        applied_entry, change, skip = _process_candidate_change(
+            record, by_id, coordinate_owners,
+            dry_run=dry_run, reviewer=None,
+            entity_id_on_invalid=False, include_review_fields=False,
+        )
+        if skip is not None:
+            skipped.append(skip)
             continue
-        field = str(record.get("field") or "")
-        after = _candidate_after_value(record)
-        if after is None:
-            skipped.append({"candidate_id": record["candidate_id"], "reason": "invalid suggestion"})
-            continue
-        before = _current_field_value(entity, field)
-        if _canonical_value(before) == _canonical_value(after):
-            skipped.append({"candidate_id": record["candidate_id"], "entity_id": entity.get("id"), "field": field, "reason": "value already current"})
-            continue
-        if field == "coordinates":
-            key = _coordinate_key(after)
-            owner = coordinate_owners.get(key) if key else None
-            if owner and owner != str(entity.get("id")):
-                skipped.append({
-                    "candidate_id": record["candidate_id"],
-                    "entity_id": entity.get("id"),
-                    "field": field,
-                    "reason": "duplicate coordinates",
-                    "duplicate_of": owner,
-                    "coordinates": list(key) if key else None,
-                })
-                continue
-            if key:
-                coordinate_owners[key] = str(entity.get("id"))
-        if not dry_run:
-            _set_entity_field(entity, field, after)
-        change = {
-            "candidate_id": record["candidate_id"],
-            "entity_id": entity.get("id"),
-            "entity_name": entity.get("name"),
-            "field": field,
-            "before": _json_clone(before),
-            "after": _json_clone(after),
-            "evidence_urls": record.get("evidence_urls") or [],
-            "reason": record.get("reason"),
-        }
         changes.append(change)
-        applied.append({"candidate_id": record["candidate_id"], "entity_id": entity.get("id"), "field": field})
+        applied.append(applied_entry)
 
     errors: list[dict[str, Any]] = []
     if applied and not dry_run:
-        _append_apply_history({
-            "record_type": "apply",
-            "batch_id": batch_id,
-            "applied_at": applied_at,
-            "backend": "db",
-            "applied_count": len(applied),
-            "skipped_count": len(skipped),
-            "changes": changes,
-            "skipped": skipped,
-        })
-        changed_ids = {str(c["entity_id"]) for c in changes}
-        for eid in changed_ids:
-            entity = by_id.get(eid)
-            if entity:
-                try:
-                    db.upsert_entity(entity)
-                except Exception as exc:
-                    errors.append({"entity_id": eid, "error": str(exc)})
+        errors = _persist_applied_changes(
+            batch_id=batch_id, applied_at=applied_at,
+            applied=applied, skipped=skipped, changes=changes, by_id=by_id,
+        )
     return {
         "dry_run": dry_run,
         "batch_id": batch_id,
@@ -427,11 +508,7 @@ def _apply_reviewed_records(
     batch_id = f"dq_review_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{hashlib.sha1(seed.encode('utf-8')).hexdigest()[:8]}"
 
     by_id = {str(e.get("id")): e for e in db.all_entities() if isinstance(e, dict) and e.get("id")}
-    coordinate_owners: dict[tuple[float, float], str] = {}
-    for entity_id, entity in by_id.items():
-        key = _coordinate_key(entity.get("coordinates"))
-        if key:
-            coordinate_owners.setdefault(key, entity_id)
+    coordinate_owners = _coordinate_owner_map(by_id)
 
     applied: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
@@ -439,50 +516,16 @@ def _apply_reviewed_records(
     for raw in selected:
         record = dict(raw)
         record.setdefault("candidate_id", candidate_id(record))
-        entity = by_id.get(str(record.get("entity_id")))
-        if not entity:
-            skipped.append({"candidate_id": record["candidate_id"], "reason": "entity not found"})
+        applied_entry, change, skip = _process_candidate_change(
+            record, by_id, coordinate_owners,
+            dry_run=dry_run, reviewer=reviewer,
+            entity_id_on_invalid=True, include_review_fields=True,
+        )
+        if skip is not None:
+            skipped.append(skip)
             continue
-        field = str(record.get("field") or "")
-        after = _candidate_after_value(record)
-        if after is None:
-            skipped.append({"candidate_id": record["candidate_id"], "entity_id": entity.get("id"), "field": field, "reason": "invalid suggestion"})
-            continue
-        before = _current_field_value(entity, field)
-        if _canonical_value(before) == _canonical_value(after):
-            skipped.append({"candidate_id": record["candidate_id"], "entity_id": entity.get("id"), "field": field, "reason": "value already current"})
-            continue
-        if field == "coordinates":
-            key = _coordinate_key(after)
-            owner = coordinate_owners.get(key) if key else None
-            if owner and owner != str(entity.get("id")):
-                skipped.append({
-                    "candidate_id": record["candidate_id"],
-                    "entity_id": entity.get("id"),
-                    "field": field,
-                    "reason": "duplicate coordinates",
-                    "duplicate_of": owner,
-                    "coordinates": list(key) if key else None,
-                })
-                continue
-            if key:
-                coordinate_owners[key] = str(entity.get("id"))
-        if not dry_run:
-            _set_entity_field(entity, field, after)
-        change = {
-            "candidate_id": record["candidate_id"],
-            "entity_id": entity.get("id"),
-            "entity_name": entity.get("name"),
-            "field": field,
-            "before": _json_clone(before),
-            "after": _json_clone(after),
-            "evidence_urls": record.get("evidence_urls") or [],
-            "reason": record.get("reason"),
-            "reviewer": reviewer,
-            "review_bucket": record.get("bucket"),
-        }
         changes.append(change)
-        applied.append({"candidate_id": record["candidate_id"], "entity_id": entity.get("id"), "field": field})
+        applied.append(applied_entry)
 
     if applied and not dry_run:
         changed_ids = {str(c["entity_id"]) for c in changes}
@@ -512,6 +555,21 @@ def _apply_reviewed_records(
         "changes": changes,
     }
 
+def _resolve_candidate_records(
+    ids: list[str], queue: dict[str, Any]
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Split requested candidate ids into (found records, missing ids), preserving order."""
+    by_id = {str(r.get("candidate_id") or candidate_id(r)): r for r in _all_candidate_rows(queue)}
+    selected = []
+    missing = []
+    for cid in ids:
+        record = by_id.get(cid)
+        if record:
+            selected.append(record)
+        else:
+            missing.append(cid)
+    return selected, missing
+
 def decide_candidates(
     candidate_ids: list[str],
     *,
@@ -527,15 +585,7 @@ def decide_candidates(
     if not ids:
         raise ValueError("candidate_ids is required")
     queue = load_candidate_queue(refresh=False)
-    by_id = {str(r.get("candidate_id") or candidate_id(r)): r for r in _all_candidate_rows(queue)}
-    selected = []
-    missing = []
-    for cid in ids:
-        record = by_id.get(cid)
-        if record:
-            selected.append(record)
-        else:
-            missing.append(cid)
+    selected, missing = _resolve_candidate_records(ids, queue)
 
     decided_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     batch_id = f"dq_decision_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{hashlib.sha1((','.join(ids) + decision).encode('utf-8')).hexdigest()[:8]}"

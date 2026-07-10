@@ -185,29 +185,39 @@ class TestProfilePointsExposed:
         # whole `reputation` dict through by reference, and _reputation()
         # (social.py) puts "points" in that dict. Assert the pass-through
         # wiring instead of a literal substring that will never appear here.
+        # Refactor: response dict moved to helper _profile_full_response;
+        # get_user_profile gọi helper (wiring-assert). Giữ nguyên assertion.
         import social
-        src = inspect.getsource(social.get_user_profile)
+        assert "_profile_full_response" in inspect.getsource(social.get_user_profile)
+        src = inspect.getsource(social._profile_full_response)
         assert '"reputation": reputation' in src
         rep_src = inspect.getsource(social._reputation)
         assert '"points"' in rep_src
 
     def test_profile_exposes_login_streak(self):
         import social
-        src = inspect.getsource(social.get_user_profile)
+        assert "_profile_full_response" in inspect.getsource(social.get_user_profile)
+        src = inspect.getsource(social._profile_full_response)
         assert "login_streak" in src
 
     def test_profile_selects_login_streak_column(self):
         # login_streak must be in the SELECT, not just referenced later —
         # otherwise profile["login_streak"] would KeyError.
+        # Refactor: SELECT moved to helper _profile_resolve (called from
+        # _profile_query ← get_user_profile). Wiring-assert + giữ assertion.
         import social
-        src = inspect.getsource(social.get_user_profile)
+        assert "_profile_resolve" in inspect.getsource(social._profile_query)
+        assert "_profile_query" in inspect.getsource(social.get_user_profile)
+        src = inspect.getsource(social._profile_resolve)
         assert "SELECT id, display_name" in src
         assert "login_streak" in src.split("SELECT id, display_name")[1].split("\n")[0]
 
     def test_profile_gates_login_streak_on_is_self(self):
         # Streak is self-only (privacy: don't leak another user's streak).
+        # Refactor: gating moved to helper _profile_full_response.
         import social
-        src = inspect.getsource(social.get_user_profile)
+        assert "_profile_full_response" in inspect.getsource(social.get_user_profile)
+        src = inspect.getsource(social._profile_full_response)
         assert "if is_self else None" in src
 
 
@@ -264,7 +274,10 @@ class TestLeaderboardFilters:
 
     def test_leaderboard_period_filters_by_date(self):
         import social
-        src = inspect.getsource(social.community_leaderboard)
+        # Refactor: period clause moved to helper _leaderboard_period, và
+        # SQL vào _leaderboard_query. Wiring-assert + giữ nguyên assertion.
+        assert "_leaderboard_period" in inspect.getsource(social.community_leaderboard)
+        src = inspect.getsource(social._leaderboard_period) + inspect.getsource(social._leaderboard_query)
         assert "created_at >" in src or "INTERVAL" in src
 
     def test_leaderboard_cache_key_includes_filters(self):

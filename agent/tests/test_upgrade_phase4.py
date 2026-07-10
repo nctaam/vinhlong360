@@ -100,8 +100,13 @@ class TestEventReminders:
         assert "event_rsvp" in src
 
     def test_task_checks_event_date(self):
-        src = inspect.getsource(__import__("scheduler").task_event_reminders)
-        assert "event_date" in src
+        # Per-RSVP date logic extracted to _maybe_send_event_reminder (complexity
+        # refactor); parent still computes the 24h cutoff and delegates.
+        sched = __import__("scheduler")
+        src = inspect.getsource(sched.task_event_reminders)
+        helper_src = inspect.getsource(sched._maybe_send_event_reminder)
+        assert "event_date" in helper_src
+        assert "_maybe_send_event_reminder" in src  # wiring: parent delegates per-RSVP handling
         assert "timedelta(hours=24)" in src
 
     def test_task_dedup_12h_window(self):

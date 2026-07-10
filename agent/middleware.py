@@ -776,6 +776,31 @@ credential_stuffing = CredentialStuffingDetector()
 #  SECURITY EVENT CORRELATION ENGINE
 # ══════════════════════════════════════════════════
 
+def _correlator_pattern_matches(pattern: dict, entries: list, now: float) -> bool:
+    """Return True if `entries` match a single attack pattern within its window."""
+    window = pattern.get("window", 300)
+    recent = [(t, e) for t, e in entries if now - t < window]
+    if not recent:
+        return False
+
+    min_count = pattern.get("min_count", 3)
+    if len(recent) < min_count:
+        return False
+
+    # Multi-vector pattern: check distinct event types
+    if "min_distinct_types" in pattern:
+        distinct = len({e for _, e in recent})
+        return distinct >= pattern["min_distinct_types"]
+
+    # Standard pattern: check required events
+    required = pattern.get("required_events", set())
+    event_types = {e for _, e in recent}
+    if required and required & event_types:
+        type_count = sum(1 for _, e in recent if e in required)
+        return type_count >= min_count
+    return False
+
+
 class SecurityEventCorrelator:
     """Cross-reference multiple weak security signals into strong threat indicators.
 
@@ -838,47 +863,30 @@ class SecurityEventCorrelator:
             entries = self._events.get(ip, [])
 
             for name, pattern in self._ATTACK_PATTERNS.items():
-                window = pattern.get("window", 300)
-                recent = [(t, e) for t, e in entries if now - t < window]
-                if not recent:
-                    continue
-
-                min_count = pattern.get("min_count", 3)
-                if len(recent) < min_count:
-                    continue
-
-                # Multi-vector pattern: check distinct event types
-                if "min_distinct_types" in pattern:
-                    distinct = len({e for _, e in recent})
-                    if distinct >= pattern["min_distinct_types"]:
-                        matched.append(name)
-                    continue
-
-                # Standard pattern: check required events
-                required = pattern.get("required_events", set())
-                event_types = {e for _, e in recent}
-                if required and required & event_types:
-                    type_count = sum(1 for _, e in recent if e in required)
-                    if type_count >= min_count:
-                        matched.append(name)
+                if _correlator_pattern_matches(pattern, entries, now):
+                    matched.append(name)
 
             if matched:
-                severity = "critical" if len(matched) >= 2 else "high"
-                alert = {
-                    "ip": ip,
-                    "patterns": matched,
-                    "severity": severity,
-                    "ts": datetime.now(timezone.utc).isoformat(),
-                }
-                self._alerts.append(alert)
-                if len(self._alerts) > self._max_alerts:
-                    self._alerts = self._alerts[-self._max_alerts:]
+                self._append_alert_locked(ip, matched)
 
         return {
             "is_attack": bool(matched),
             "patterns": matched,
             "severity": "critical" if len(matched) >= 2 else ("high" if matched else "none"),
         }
+
+    def _append_alert_locked(self, ip: str, matched: list) -> None:
+        """Append a correlator alert (caller holds self._lock)."""
+        severity = "critical" if len(matched) >= 2 else "high"
+        alert = {
+            "ip": ip,
+            "patterns": matched,
+            "severity": severity,
+            "ts": datetime.now(timezone.utc).isoformat(),
+        }
+        self._alerts.append(alert)
+        if len(self._alerts) > self._max_alerts:
+            self._alerts = self._alerts[-self._max_alerts:]
 
     def recent_alerts(self, limit: int = 50) -> list[dict]:
         with self._lock:
@@ -1576,6 +1584,34 @@ request_forensics = RequestForensicsCollector()
 #  BEHAVIORAL FINGERPRINTING
 # ══════════════════════════════════════════════════
 
+def _interval_regularity(intervals: list) -> float:
+    """Compute interval regularity (0..1); higher = more bot-like regular timing."""
+    regularity = 0.0
+    if len(intervals) >= 5:
+        avg = sum(intervals) / len(intervals)
+        if avg > 0:
+            variance = sum((x - avg) ** 2 for x in intervals) / len(intervals)
+            std_dev = variance ** 0.5
+            regularity = 1.0 - min(1.0, std_dev / avg)
+    return regularity
+
+
+def _bot_reasons(request_count: int, unique_paths: int, ua_changes: int,
+                 regularity: float, get_count: int) -> list:
+    """Build the list of bot-indicator reasons from behavioral metrics."""
+    reasons = []
+    if request_count > 50 and regularity > 0.8:
+        reasons.append("high_regularity")
+    if request_count > 100 and unique_paths > 50:
+        reasons.append("excessive_crawling")
+    if ua_changes > 3 and request_count > 20:
+        reasons.append("ua_rotation")
+    # Only GET requests (scraper pattern)
+    if get_count == request_count and request_count > 30:
+        reasons.append("get_only_pattern")
+    return reasons
+
+
 class BehavioralFingerprint:
     """Build behavioral fingerprints for IPs/users based on request patterns.
 
@@ -1644,7 +1680,6 @@ class BehavioralFingerprint:
                     "interval_regularity": 0.0, "reasons": [],
                 }
 
-            reasons = []
             paths = p["paths"]
             request_count = len(paths)
             unique_paths = len({pa for _, pa in paths})
@@ -1653,25 +1688,12 @@ class BehavioralFingerprint:
             ua_changes = len(p["ua_hashes"])
 
             # Interval regularity — bots have very regular intervals
-            regularity = 0.0
-            intervals = p["intervals"]
-            if len(intervals) >= 5:
-                avg = sum(intervals) / len(intervals)
-                if avg > 0:
-                    variance = sum((x - avg) ** 2 for x in intervals) / len(intervals)
-                    std_dev = variance ** 0.5
-                    regularity = 1.0 - min(1.0, std_dev / avg)
+            regularity = _interval_regularity(p["intervals"])
 
-            # Bot indicators
-            if request_count > 50 and regularity > 0.8:
-                reasons.append("high_regularity")
-            if request_count > 100 and unique_paths > 50:
-                reasons.append("excessive_crawling")
-            if ua_changes > 3 and request_count > 20:
-                reasons.append("ua_rotation")
-            # Only GET requests (scraper pattern)
-            if p["methods"].get("GET", 0) == request_count and request_count > 30:
-                reasons.append("get_only_pattern")
+            reasons = _bot_reasons(
+                request_count, unique_paths, ua_changes, regularity,
+                p["methods"].get("GET", 0),
+            )
 
             return {
                 "is_bot_like": len(reasons) >= 2,

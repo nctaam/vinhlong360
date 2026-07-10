@@ -1178,10 +1178,14 @@ class TestMediumFixesBatch2:
 
     def test_create_comment_block_check(self):
         """create_comment must check blocks between commenter and post author."""
+        # Refactor: block check moved to helper _comment_guard (via _comment_query).
+        import inspect
+        import social
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         idx = src.find("async def create_comment(")
         assert idx > 0
-        block = src[idx:idx+1500]
+        assert "_comment_query" in src[idx:idx+1500]
+        block = inspect.getsource(social._comment_guard)
         assert "blocks" in block.lower(), "create_comment must check blocks table"
         assert "403" in block, "create_comment must return 403 if blocked"
 
@@ -1200,13 +1204,19 @@ class TestMediumFixesBatch2:
 
     def test_update_post_optional_content(self):
         """update_post must handle None content (rating-only update)."""
+        # Refactor: validation moved to _validate_post_update, UPDATE branches to
+        # _post_do_update. update_post gọi cả hai (wiring). Giữ nguyên assertion.
+        import inspect
+        import social
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         idx = src.find("async def update_post(")
         assert idx > 0
-        block = src[idx:idx+3500]
-        assert "new_content is None" in block, \
+        umeta = src[idx:idx+3500]
+        assert "_validate_post_update" in umeta
+        assert "_post_do_update" in umeta
+        assert "new_content is None" in inspect.getsource(social._validate_post_update), \
             "update_post must handle None content for rating-only updates"
-        assert "elif set_rating" in block, \
+        assert "elif set_rating" in inspect.getsource(social._post_do_update), \
             "update_post must have separate SQL branch for rating-only update"
 
     def test_trusted_proxies_whitespace_strip(self):
@@ -1228,11 +1238,12 @@ class TestMediumFixesBatch2:
 
     def test_nearby_entities_early_break(self):
         """nearby_entities first loop must break when limit reached."""
-        src = (Path(__file__).resolve().parent.parent / "knowledge.py").read_text(encoding="utf-8")
-        idx = src.find("# 1. Cùng placeId")
-        assert idx > 0
-        block = src[idx:idx+400]
-        assert "len(nearby) >= limit" in block, \
+        # Refactor: vòng same-placeId dời sang _nearby_same_place (nearby_entities
+        # gọi nó); early-break len(nearby)>=limit ở helper (move-not-delete).
+        import inspect
+        import knowledge
+        assert "_nearby_same_place" in inspect.getsource(knowledge.nearby_entities)  # wiring
+        assert "len(nearby) >= limit" in inspect.getsource(knowledge._nearby_same_place), \
             "First nearby loop must have early break at limit"
 
     def test_saved_max_limit(self):
@@ -1506,10 +1517,11 @@ class TestDeepScanBatch5:
 
     def test_community_leaderboard_has_limit(self):
         """Community leaderboard SQL must have LIMIT to cap result set."""
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("community_leaderboard")
-        assert idx > 0
-        block = src[idx:idx+3000]
+        # Refactor: leaderboard SQL moved to helper _leaderboard_query.
+        import inspect
+        import social
+        assert "_leaderboard_query" in inspect.getsource(social.community_leaderboard)
+        block = inspect.getsource(social._leaderboard_query)
         assert "LIMIT 500" in block or "LIMIT 200" in block or "LIMIT 100" in block, \
             "Leaderboard query must have LIMIT to prevent unbounded results"
 
@@ -1930,22 +1942,30 @@ class TestCommentParentValidation:
     """Comment parent_id must belong to the same post."""
 
     def test_create_comment_validates_parent_post(self):
+        # Refactor: parent validation moved to helper _comment_guard.
+        import inspect
+        import social
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         idx = src.find("async def create_comment(")
         assert idx > 0
-        block = src[idx:idx+2500]
+        assert "_comment_query" in src[idx:idx+2500]
+        block = inspect.getsource(social._comment_guard)
         assert "post_id::text" in block and "parent_id" in block, \
             "create_comment must validate parent_id belongs to the same post_id"
 
     def test_parent_check_before_insert(self):
-        src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("async def create_comment(")
-        block = src[idx:idx+3500]  # W6.1: soft-delete filter đẩy INSERT ra ngoài window 2500 cũ
-        parent_check_idx = block.find("Bình luận gốc không thuộc bài viết này")
-        insert_idx = block.find("INSERT INTO comments")
-        assert parent_check_idx > 0, "Must have parent-post validation error message"
-        assert parent_check_idx < insert_idx, \
-            "Parent validation must happen BEFORE the INSERT"
+        # Refactor: parent check in _comment_guard, INSERT in _comment_insert.
+        # _comment_query gọi guard TRƯỚC insert → thứ tự bảo toàn.
+        import inspect
+        import social
+        qsrc = inspect.getsource(social._comment_query)
+        guard_call = qsrc.find("_comment_guard")
+        insert_call = qsrc.find("_comment_insert")
+        assert guard_call > 0 and insert_call > 0
+        assert guard_call < insert_call, "guard (parent check) must run before insert"
+        assert "Bình luận gốc không thuộc bài viết này" in inspect.getsource(social._comment_guard), \
+            "Must have parent-post validation error message"
+        assert "INSERT INTO comments" in inspect.getsource(social._comment_insert)
 
 
 class TestSchedulerOverlapGuard:

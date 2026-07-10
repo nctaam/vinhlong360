@@ -98,32 +98,21 @@ def _web_search_light(query: str, max_results: int = 3) -> list[dict]:
         return []
 
 
-def _extract_entity_from_snippet(snippet: str, title: str, url: str, query: str) -> dict | None:
-    """Trích xuất entity từ search snippet KHÔNG cần LLM.
-
-    Dùng heuristics + regex thay vì LLM call.
-    Phù hợp khi LLM API down.
-    """
-    text = f"{title} {snippet}".strip()
-    if len(text) < 30:
-        return None
-
-    # Detect location keywords
+def _detect_area(text: str) -> str | None:
+    """Nhận diện vùng (VL/BT/TV) từ text; None nếu không liên quan."""
     location_patterns = {
         "vinh-long": r"[Vv]ĩnh\s*[Ll]ong",
         "ben-tre": r"[Bb]ến\s*[Tt]re",
         "tra-vinh": r"[Tt]rà\s*[Vv]inh",
     }
-    area = None
     for area_id, pattern in location_patterns.items():
         if re.search(pattern, text):
-            area = area_id
-            break
+            return area_id
+    return None
 
-    if not area:
-        return None  # Không liên quan đến VL/BT/TV
 
-    # Detect entity type from keywords
+def _detect_entity_type(text: str) -> str:
+    """Đoán entity type từ keyword; mặc định 'attraction'."""
     type_keywords = {
         "dish": ["món", "ẩm thực", "bún", "phở", "bánh", "cơm", "lẩu", "nướng", "chè", "gỏi"],
         "product": ["đặc sản", "OCOP", "nông sản", "trái cây", "dừa", "cam", "bưởi", "xoài", "sầu riêng"],
@@ -135,29 +124,56 @@ def _extract_entity_from_snippet(snippet: str, title: str, url: str, query: str)
         "person": ["nhà thơ", "danh nhân", "anh hùng", "nghệ nhân", "giáo sư"],
         "history": ["lịch sử", "kháng chiến", "cách mạng", "thời kỳ"],
     }
-
-    entity_type = "attraction"  # default
     for etype, keywords in type_keywords.items():
         if any(kw in text.lower() for kw in keywords):
-            entity_type = etype
-            break
+            return etype
+    return "attraction"  # default
 
-    # Use title as entity name (cleaned)
+
+def _clean_entity_name(title: str) -> str | None:
+    """Làm sạch tên entity từ title; None nếu độ dài không hợp lệ."""
     name = re.sub(r"\s*[-|–—]\s*.{0,30}$", "", title)  # Remove " - SiteName" suffix
     name = re.sub(r"\s*\(.*?\)\s*$", "", name)  # Remove trailing (...)
     name = name.strip()
-
     if len(name) < 4 or len(name) > 100:
         return None
+    return name
 
-    # Generate ID
+
+def _slugify_entity_name(name: str) -> str | None:
+    """Sinh slug ID từ name; None nếu slug quá ngắn."""
     import unicodedata
     slug = unicodedata.normalize("NFD", name.lower())
     slug = re.sub(r"[̀-ͯ]", "", slug)
     slug = slug.replace("đ", "d").replace("Đ", "d")
     slug = re.sub(r"[^a-z0-9]+", "-", slug).strip("-")[:60]
-
     if not slug or len(slug) < 3:
+        return None
+    return slug
+
+
+def _extract_entity_from_snippet(snippet: str, title: str, url: str, query: str) -> dict | None:
+    """Trích xuất entity từ search snippet KHÔNG cần LLM.
+
+    Dùng heuristics + regex thay vì LLM call.
+    Phù hợp khi LLM API down.
+    """
+    text = f"{title} {snippet}".strip()
+    if len(text) < 30:
+        return None
+
+    area = _detect_area(text)
+    if not area:
+        return None  # Không liên quan đến VL/BT/TV
+
+    entity_type = _detect_entity_type(text)
+
+    name = _clean_entity_name(title)
+    if name is None:
+        return None
+
+    slug = _slugify_entity_name(name)
+    if slug is None:
         return None
 
     return {
@@ -178,6 +194,114 @@ def _extract_entity_from_snippet(snippet: str, title: str, url: str, query: str)
     }
 
 
+def _norm_entity_name(s: str) -> str:
+    """Chuẩn hoá tên (bỏ dấu, lower, gộp khoảng trắng) để dedup."""
+    import unicodedata
+    x = unicodedata.normalize("NFD", (s or "").lower())
+    x = re.sub(r"[̀-ͯ]", "", x).replace("đ", "d")
+    return re.sub(r"\s+", " ", x).strip()
+
+
+def _collect_existing_keys(kb: dict) -> tuple[set, set]:
+    """Gom {id} và {norm_name} từ KB + DB để chống trùng."""
+    existing_ids = {e["id"] for e in kb["entities"]}
+    existing_names = {_norm_entity_name(e["name"]) for e in kb["entities"]}
+
+    # Also check DB names to prevent duplicates missed by data.json-only dedup
+    try:
+        from database import db as _db
+        for row in _db.search_entities("", limit=5000):
+            eid = row.get("id", "")
+            ename = row.get("name", "")
+            if eid:
+                existing_ids.add(eid)
+            if ename:
+                existing_names.add(_norm_entity_name(ename))
+    except Exception as exc:
+        _logger.debug("DB dedup check unavailable: %s", exc)
+    return existing_ids, existing_names
+
+
+def _geocode_entity_inline(entity: dict):
+    """Geocode 1 entity mới (coords chính xác từ OSM, không LLM)."""
+    try:
+        import geocode as _geo
+        c = _geo.geocode(entity["name"])
+        if c:
+            entity["coords"] = c
+    except Exception as e:
+        _logger.debug("Geocoding failed for %s: %s", entity.get("name"), e)
+
+
+def _accept_gap_candidate(entity: dict, kb: dict, existing_ids: set, existing_names: set) -> bool:
+    """True nếu candidate qua được các cổng dedup/near-duplicate."""
+    # Dedup check (diacritic-insensitive name + id)
+    if entity["id"] in existing_ids:
+        return False
+    if _norm_entity_name(entity["name"]) in existing_names:
+        return False
+
+    # Near-duplicate / contradiction gate: skip candidates that restate
+    # an existing same-type entity under a slightly different name.
+    try:
+        import kb_curation
+        dup = kb_curation.find_near_duplicate(entity["name"], entity["type"], kb["entities"])
+        if dup:
+            _logger.info("  Skipped near-duplicate of '%s': %s", dup, entity['name'])
+            return False
+    except Exception as e:
+        _logger.debug("Near-duplicate check failed: %s", e)
+    return True
+
+
+def _process_gap_results(results: list, query: str, kb: dict,
+                         existing_ids: set, existing_names: set, new_entities: list):
+    """Duyệt search results của 1 gap, thêm entity hợp lệ vào new_entities."""
+    for r in results:
+        title = r.get("title", "")
+        snippet = r.get("body", "")
+        url = r.get("href", r.get("url", ""))
+
+        entity = _extract_entity_from_snippet(snippet, title, url, query)
+        if not entity:
+            continue
+
+        if not _accept_gap_candidate(entity, kb, existing_ids, existing_names):
+            continue
+
+        # Geocode for the map (precise coords from OSM, not the LLM)
+        _geocode_entity_inline(entity)
+
+        new_entities.append(entity)
+        existing_ids.add(entity["id"])
+        existing_names.add(_norm_entity_name(entity["name"]))
+        _logger.info("  Found: [%s] %s (conf=%s)", entity['type'], entity['name'], entity['confidence'])
+
+
+def _persist_new_entities(kb: dict, new_entities: list) -> int:
+    """Ghi entity mới vào data.json + DB + reload knowledge. Trả số đã thêm."""
+    for e in new_entities:
+        kb["entities"].append(e)
+    _save_kb(kb)
+    # GĐ-audit (B1): ghi entity mới vào DB (chat đọc DB) — không chỉ data.json.
+    try:
+        from database import db
+        for e in new_entities:
+            db.upsert_entity(e)
+    except Exception as exc:  # noqa: BLE001
+        _logger.error("learn_loop: ghi DB that bai: %s", exc)
+    added = len(new_entities)
+    _logger.info("Added %d entities to KB (low confidence, needs review)", added)
+
+    # Reload knowledge module
+    try:
+        import knowledge
+        knowledge.reload()
+    except Exception as e:
+        _logger.warning("Knowledge reload after gap learning failed: %s", e)
+    return added
+
+
 def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
     """Học từ knowledge gaps — KHÔNG cần LLM.
 
@@ -194,28 +318,7 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
         return {"gaps_processed": 0, "entities_found": 0, "entities_added": 0}
 
     kb = _load_kb()
-
-    def _norm_name(s: str) -> str:
-        import unicodedata
-        x = unicodedata.normalize("NFD", (s or "").lower())
-        x = re.sub(r"[̀-ͯ]", "", x).replace("đ", "d")
-        return re.sub(r"\s+", " ", x).strip()
-
-    existing_ids = {e["id"] for e in kb["entities"]}
-    existing_names = {_norm_name(e["name"]) for e in kb["entities"]}
-
-    # Also check DB names to prevent duplicates missed by data.json-only dedup
-    try:
-        from database import db as _db
-        for row in _db.search_entities("", limit=5000):
-            eid = row.get("id", "")
-            ename = row.get("name", "")
-            if eid:
-                existing_ids.add(eid)
-            if ename:
-                existing_names.add(_norm_name(ename))
-    except Exception as exc:
-        _logger.debug("DB dedup check unavailable: %s", exc)
+    existing_ids, existing_names = _collect_existing_keys(kb)
 
     new_entities = []
     processed = 0
@@ -227,69 +330,13 @@ def learn_from_gaps(max_gaps: int = 5, dry_run: bool = False) -> dict:
         processed += 1
 
         results = _web_search_light(query)
-        for r in results:
-            title = r.get("title", "")
-            snippet = r.get("body", "")
-            url = r.get("href", r.get("url", ""))
-
-            entity = _extract_entity_from_snippet(snippet, title, url, query)
-            if not entity:
-                continue
-
-            # Dedup check (diacritic-insensitive name + id)
-            if entity["id"] in existing_ids:
-                continue
-            if _norm_name(entity["name"]) in existing_names:
-                continue
-
-            # Near-duplicate / contradiction gate: skip candidates that restate
-            # an existing same-type entity under a slightly different name.
-            try:
-                import kb_curation
-                dup = kb_curation.find_near_duplicate(entity["name"], entity["type"], kb["entities"])
-                if dup:
-                    _logger.info("  Skipped near-duplicate of '%s': %s", dup, entity['name'])
-                    continue
-            except Exception as e:
-                _logger.debug("Near-duplicate check failed: %s", e)
-
-            # Geocode for the map (precise coords from OSM, not the LLM)
-            try:
-                import geocode as _geo
-                c = _geo.geocode(entity["name"])
-                if c:
-                    entity["coords"] = c
-            except Exception as e:
-                _logger.debug("Geocoding failed for %s: %s", entity.get("name"), e)
-
-            new_entities.append(entity)
-            existing_ids.add(entity["id"])
-            existing_names.add(_norm_name(entity["name"]))
-            _logger.info("  Found: [%s] %s (conf=%s)", entity['type'], entity['name'], entity['confidence'])
+        _process_gap_results(results, query, kb, existing_ids, existing_names, new_entities)
 
         time.sleep(1)  # Rate limit
 
     added = 0
     if new_entities and not dry_run:
-        for e in new_entities:
-            kb["entities"].append(e)
-        _save_kb(kb)
-        # GĐ-audit (B1): ghi entity mới vào DB (chat đọc DB) — không chỉ data.json.
-        try:
-            from database import db
-            for e in new_entities:
-                db.upsert_entity(e)
-        except Exception as exc:  # noqa: BLE001
-            _logger.error("learn_loop: ghi DB that bai: %s", exc)
-        added = len(new_entities)
-        _logger.info("Added %d entities to KB (low confidence, needs review)", added)
-
-        # Reload knowledge module
-        try:
-            import knowledge
-            knowledge.reload()
-        except Exception as e:
-            _logger.warning("Knowledge reload after gap learning failed: %s", e)
+        added = _persist_new_entities(kb, new_entities)
 
     # Log
     _log_event("gap_learning", {
@@ -440,6 +487,30 @@ def process_feedback_batch() -> dict:
 #  3. AUTO-ENRICHMENT (fill missing data)
 # ══════════════════════════════════════════════════
 
+def _find_best_snippet(results: list, name: str) -> str:
+    """Tìm snippet đầu tiên thực sự nói về entity `name`."""
+    for r in results:
+        snippet = r.get("body", "")
+        title = r.get("title", "")
+        # Check if the snippet is actually about this entity
+        if name.lower()[:5] in (snippet + title).lower():
+            return snippet
+    return ""
+
+
+def _truncate_summary(best_snippet: str) -> str:
+    """Cắt snippet thành summary <=300, ưu tiên biên câu."""
+    summary = best_snippet.strip()
+    if len(summary) > 300:
+        # Cut at sentence boundary
+        cut = summary[:300].rfind(".")
+        if cut > 100:
+            summary = summary[:cut + 1]
+        else:
+            summary = summary[:300] + "..."
+    return summary
+
+
 def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
     """Bổ sung summary cho entities thiếu.
 
@@ -473,25 +544,10 @@ def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
         query = f"{name} {etype} Vĩnh Long"
         results = _web_search_light(query, max_results=2)
 
-        best_snippet = ""
-        for r in results:
-            snippet = r.get("body", "")
-            title = r.get("title", "")
-            # Check if the snippet is actually about this entity
-            if name.lower()[:5] in (snippet + title).lower():
-                best_snippet = snippet
-                break
+        best_snippet = _find_best_snippet(results, name)
 
         if best_snippet and len(best_snippet) > 20:
-            # Clean and truncate
-            summary = best_snippet.strip()
-            if len(summary) > 300:
-                # Cut at sentence boundary
-                cut = summary[:300].rfind(".")
-                if cut > 100:
-                    summary = summary[:cut + 1]
-                else:
-                    summary = summary[:300] + "..."
+            summary = _truncate_summary(best_snippet)
 
             if not dry_run:
                 entity["summary"] = summary
@@ -559,16 +615,8 @@ def _log_event(event_type: str, data: dict):
         _logger.debug("Failed to write learn log: %s", exc)
 
 
-def learning_status() -> dict:
-    """Trạng thái tổng quan của vòng lặp tự học."""
-    # Knowledge gaps
-    gaps = _get_knowledge_gaps()
-
-    # Feedback
-    feedback = _load_feedback()
-    recent_fb = [fb for fb in feedback if fb.get("timestamp", "") > datetime.now(timezone.utc).strftime("%Y-%m-%d")]
-
-    # Missing summaries
+def _status_kb_counts() -> tuple[int, int, int]:
+    """Đếm (missing_summaries, low_confidence, total) entity non-place từ KB."""
     try:
         kb = _load_kb()
         missing = len([
@@ -580,13 +628,14 @@ def learning_status() -> dict:
             if e.get("type") != "place" and e.get("confidence", 1) < 0.5
         ])
         total = len([e for e in kb["entities"] if e.get("type") != "place"])
+        return missing, low_conf, total
     except Exception as e:
         _logger.debug("Failed to load KB for status: %s", e)
-        missing = 0
-        low_conf = 0
-        total = 0
+        return 0, 0, 0
 
-    # Recent learning activity
+
+def _status_recent_events() -> list[dict]:
+    """Đọc 10 dòng cuối learn log, parse thành list event."""
     recent_events = []
     try:
         if LEARN_LOG.exists():
@@ -598,6 +647,23 @@ def learning_status() -> dict:
                     _logger.debug("Malformed learn log line: %s", e)
     except Exception as e:
         _logger.warning("Failed to read learn log: %s", e)
+    return recent_events
+
+
+def learning_status() -> dict:
+    """Trạng thái tổng quan của vòng lặp tự học."""
+    # Knowledge gaps
+    gaps = _get_knowledge_gaps()
+
+    # Feedback
+    feedback = _load_feedback()
+    recent_fb = [fb for fb in feedback if fb.get("timestamp", "") > datetime.now(timezone.utc).strftime("%Y-%m-%d")]
+
+    # Missing summaries
+    missing, low_conf, total = _status_kb_counts()
+
+    # Recent learning activity
+    recent_events = _status_recent_events()
 
     return {
         "knowledge_gaps": len(gaps),
@@ -609,6 +675,46 @@ def learning_status() -> dict:
         "feedback_total": len(feedback),
         "recent_learning": recent_events[-5:],
     }
+
+
+def _geocode_candidate(_geo, e: dict, places_by_id: dict):
+    """Thử geocode 1 entity qua 3 biến thể tên; trả coords hoặc None."""
+    # Variant 1: plain name
+    c = _geo.geocode(e["name"])
+    # Variant 2: name scoped by its commune/ward (helps OSM disambiguate)
+    if not c and e.get("placeId") in places_by_id:
+        pname = places_by_id[e["placeId"]].get("name", "")
+        if pname:
+            c = _geo.geocode(e["name"], region=pname)
+    # Variant 3: name without category prefix (e.g. "Khu di tích X" → "X")
+    if not c:
+        import re as _re
+        stripped = _re.sub(
+            r"^(khu di tích|khu lưu niệm|khu du lịch|di tích|làng nghề|cơ sở|vườn quốc gia)\s+",
+            "", e["name"], flags=_re.IGNORECASE).strip()
+        if stripped and stripped != e["name"] and len(stripped) >= 4:
+            c = _geo.geocode(stripped)
+    return c
+
+
+def _coord_backfill_candidates(kb: dict) -> list[dict]:
+    """Entity non-place thiếu coords, provisional/unverified xếp trước."""
+    candidates = [e for e in kb["entities"]
+                  if e.get("type") != "place" and not e.get("coords") and e.get("name")]
+    # Provisional/unverified first — they're the freshly auto-learned ones.
+    candidates.sort(key=lambda e: 0 if (e.get("status") == "provisional" or e.get("verified") is False) else 1)
+    return candidates
+
+
+def _persist_backfilled_coords(kb: dict, geocoded: list):
+    """Lưu KB + reload knowledge sau khi backfill coords."""
+    _save_kb(kb)
+    try:
+        import knowledge
+        knowledge.reload()
+    except Exception as e:
+        _logger.warning("Knowledge reload after geocode backfill failed: %s", e)
+    _logger.info("Backfilled coords for %d entities", len(geocoded))
 
 
 def backfill_coords(max_entities: int = 15, dry_run: bool = False) -> dict:
@@ -625,40 +731,17 @@ def backfill_coords(max_entities: int = 15, dry_run: bool = False) -> dict:
 
     kb = _load_kb()
     places_by_id = {e["id"]: e for e in kb["entities"] if e.get("type") == "place"}
-    candidates = [e for e in kb["entities"]
-                  if e.get("type") != "place" and not e.get("coords") and e.get("name")]
-    # Provisional/unverified first — they're the freshly auto-learned ones.
-    candidates.sort(key=lambda e: 0 if (e.get("status") == "provisional" or e.get("verified") is False) else 1)
+    candidates = _coord_backfill_candidates(kb)
 
     geocoded = []
     for e in candidates[:max_entities]:
-        # Variant 1: plain name
-        c = _geo.geocode(e["name"])
-        # Variant 2: name scoped by its commune/ward (helps OSM disambiguate)
-        if not c and e.get("placeId") in places_by_id:
-            pname = places_by_id[e["placeId"]].get("name", "")
-            if pname:
-                c = _geo.geocode(e["name"], region=pname)
-        # Variant 3: name without category prefix (e.g. "Khu di tích X" → "X")
-        if not c:
-            import re as _re
-            stripped = _re.sub(
-                r"^(khu di tích|khu lưu niệm|khu du lịch|di tích|làng nghề|cơ sở|vườn quốc gia)\s+",
-                "", e["name"], flags=_re.IGNORECASE).strip()
-            if stripped and stripped != e["name"] and len(stripped) >= 4:
-                c = _geo.geocode(stripped)
+        c = _geocode_candidate(_geo, e, places_by_id)
         if c:
             e["coords"] = c
             geocoded.append(e["id"])
 
     if geocoded and not dry_run:
-        _save_kb(kb)
-        try:
-            import knowledge
-            knowledge.reload()
-        except Exception as e:
-            _logger.warning("Knowledge reload after geocode backfill failed: %s", e)
-        _logger.info("Backfilled coords for %d entities", len(geocoded))
+        _persist_backfilled_coords(kb, geocoded)
 
     return {"checked": min(len(candidates), max_entities), "geocoded": len(geocoded), "ids": geocoded}
 

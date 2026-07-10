@@ -240,7 +240,9 @@ class TestLeaderboardMuteFilter:
         assert "_mute_sql" in src
 
     def test_leaderboard_includes_mc_in_sql(self):
-        src = inspect.getsource(__import__("social").community_leaderboard)
+        # Refactor: leaderboard SQL moved to helper _leaderboard_query.
+        assert "_leaderboard_query" in inspect.getsource(__import__("social").community_leaderboard)
+        src = inspect.getsource(__import__("social")._leaderboard_query)
         assert "{mc}" in src or "mc}" in src
 
     def test_leaderboard_cache_checks_both_filters(self):
@@ -321,9 +323,14 @@ class TestMuteEnforcementComprehensive:
         assert "{mc}" in src or "mc}" in src
 
     def test_related_posts_mute(self):
+        # Refactor: mute-filtered SQL moved to helpers _related_posts_query /
+        # _related_by_tags; related_posts computes _mute_sql & wires helpers.
         src = inspect.getsource(__import__("social").related_posts)
         assert "_mute_sql" in src
-        assert "{mc}" in src or "mc}" in src
+        assert "_related_posts_query" in src
+        helper_src = inspect.getsource(__import__("social")._related_posts_query) + \
+            inspect.getsource(__import__("social")._related_by_tags)
+        assert "{mc}" in helper_src or "mc}" in helper_src
 
     def test_comments_mute(self):
         src = inspect.getsource(__import__("social").get_comments)
@@ -336,7 +343,9 @@ class TestMuteEnforcementComprehensive:
         assert "{mc}" in src or "mc}" in src
 
     def test_entity_feed_count_query_has_mute(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        # Refactor: count query + mute clause moved to helper _entity_feed_query.
+        assert "_entity_feed_query" in inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("social")._entity_feed_query)
         lines = src.split("\n")
         count_section = [l for l in lines if "COUNT(*)" in l or "mc}" in l]
         assert len(count_section) >= 2
@@ -463,7 +472,11 @@ class TestViewerMutedInProfile:
     """get_user_profile returns is_muted in viewer_relationship."""
 
     def test_profile_queries_user_mutes(self):
-        src = inspect.getsource(__import__("social").get_user_profile)
+        # Refactor: viewer-relationship SQL moved to helper _profile_viewer_rel
+        # (called via _profile_query ← get_user_profile). Wiring + giữ assertion.
+        assert "_profile_query" in inspect.getsource(__import__("social").get_user_profile)
+        assert "_profile_viewer_rel" in inspect.getsource(__import__("social")._profile_query)
+        src = inspect.getsource(__import__("social")._profile_viewer_rel)
         assert "user_mutes" in src
         assert "muted_id" in src
 
@@ -472,18 +485,24 @@ class TestViewerMutedInProfile:
         assert "viewer_muted" in src
 
     def test_profile_returns_is_muted(self):
-        src = inspect.getsource(__import__("social").get_user_profile)
+        # Refactor: response dict moved to helper _profile_full_response.
+        assert "_profile_full_response" in inspect.getsource(__import__("social").get_user_profile)
+        src = inspect.getsource(__import__("social")._profile_full_response)
         assert '"is_muted"' in src
         assert "viewer_muted" in src
 
     def test_viewer_relationship_includes_muted(self):
-        src = inspect.getsource(__import__("social").get_user_profile)
+        # Refactor: viewer_relationship dict moved to helper _profile_full_response.
+        assert "_profile_full_response" in inspect.getsource(__import__("social").get_user_profile)
+        src = inspect.getsource(__import__("social")._profile_full_response)
         idx = src.find("viewer_relationship")
         block = src[idx:idx+200]
         assert "is_muted" in block
 
     def test_blocked_return_has_12_values(self):
-        src = inspect.getsource(__import__("social").get_user_profile)
+        # Refactor: blocked early-return tuple moved to helper _profile_query.
+        assert "_profile_query" in inspect.getsource(__import__("social").get_user_profile)
+        src = inspect.getsource(__import__("social")._profile_query)
         idx = src.find('"blocked"')
         block = src[idx:idx+200]
         assert "False" in block
@@ -665,12 +684,16 @@ class TestBlockEnforcementOnInteractions:
     """Like, comment-like, and reaction check blocks before acting."""
 
     def test_toggle_like_checks_blocks(self):
-        src = inspect.getsource(__import__("social").toggle_like)
+        # Refactor: block check moved to helper _like_check_self.
+        assert "_like_check_self" in inspect.getsource(__import__("social").toggle_like)
+        src = inspect.getsource(__import__("social")._like_check_self)
         assert "blocks" in src
         assert "blocker_id" in src
 
     def test_toggle_like_rejects_blocked(self):
-        src = inspect.getsource(__import__("social").toggle_like)
+        # Refactor: block rejection moved to helper _like_check_self.
+        assert "_like_check_self" in inspect.getsource(__import__("social").toggle_like)
+        src = inspect.getsource(__import__("social")._like_check_self)
         assert "Không thể thao tác với người dùng đã chặn" in src
 
     def test_comment_like_checks_blocks(self):
@@ -692,7 +715,9 @@ class TestBlockEnforcementOnInteractions:
         assert "Không thể thao tác với người dùng đã chặn" in src
 
     def test_block_check_bidirectional(self):
-        src = inspect.getsource(__import__("social").toggle_like)
+        # Refactor: bidirectional block SQL moved to helper _like_check_self.
+        assert "_like_check_self" in inspect.getsource(__import__("social").toggle_like)
+        src = inspect.getsource(__import__("social")._like_check_self)
         assert src.count("blocker_id") >= 2
         assert src.count("blocked_id") >= 2
 
@@ -1393,7 +1418,11 @@ class TestCountLimitAdvisoryLock:
     """Count-limited operations must use pg_advisory_xact_lock to prevent races."""
 
     def test_create_comment_uses_advisory_lock(self):
-        src = inspect.getsource(__import__("social").create_comment)
+        # Refactor: advisory lock + count check moved to helper _comment_guard
+        # (called via _comment_query ← create_comment). Wiring + giữ assertion.
+        assert "_comment_query" in inspect.getsource(__import__("social").create_comment)
+        assert "_comment_guard" in inspect.getsource(__import__("social")._comment_query)
+        src = inspect.getsource(__import__("social")._comment_guard)
         assert "pg_advisory_xact_lock" in src
 
     def test_create_collection_uses_advisory_lock(self):
@@ -1406,7 +1435,9 @@ class TestCountLimitAdvisoryLock:
 
     def test_advisory_lock_before_count_check(self):
         """Lock must come BEFORE the count query to prevent races."""
-        src = inspect.getsource(__import__("social").create_comment)
+        # Refactor: both moved to helper _comment_guard; order preserved there.
+        assert "_comment_query" in inspect.getsource(__import__("social").create_comment)
+        src = inspect.getsource(__import__("social")._comment_guard)
         lock_pos = src.index("pg_advisory_xact_lock")
         count_pos = src.index("COUNT(*) c FROM comments")
         assert lock_pos < count_pos, "Advisory lock must come before count check"
@@ -1797,7 +1828,10 @@ class TestSoftDeletePosts:
 
     def test_main_feed_filters_deleted(self):
         import social
-        src = inspect.getsource(social.get_feed)
+        # Refactor: WHERE conditions moved to helper _feed_build_conditions,
+        # get_feed gọi helper (wiring-assert). Giữ nguyên assertion.
+        assert "_feed_build_conditions" in inspect.getsource(social.get_feed)
+        src = inspect.getsource(social._feed_build_conditions)
         assert "deleted_at IS NULL" in src
 
     def test_following_feed_filters_deleted(self):
@@ -2137,12 +2171,17 @@ class TestSchedulerLoginHistoryCleanup:
         assert "90 days" in fn_src
 
     def test_session_cleanup_hard_deletes_posts(self):
+        # Post hard-delete block extracted to _hard_delete_stale_posts (complexity
+        # refactor); task_session_cleanup still delegates to it under the same conn.
         src = (AGENT_DIR / "scheduler.py").read_text(encoding="utf-8")
         idx = src.index("def task_session_cleanup():")
         fn_src = src[idx:idx+2500]
-        assert "deleted_at IS NOT NULL" in fn_src
-        assert "DELETE FROM posts" in fn_src
-        assert "30 days" in fn_src
+        assert "_hard_delete_stale_posts" in fn_src  # wiring: parent delegates post cleanup
+        hidx = src.index("def _hard_delete_stale_posts(")
+        helper_src = src[hidx:hidx+2000]
+        assert "deleted_at IS NOT NULL" in helper_src
+        assert "DELETE FROM posts" in helper_src
+        assert "30 days" in helper_src
 
 
 class TestSecurityFixes:
@@ -2252,10 +2291,19 @@ class TestReliabilityFixes:
 
     def test_privacy_fail_closed(self):
         """Privacy load failure must NOT default to public for non-self views."""
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("Failed to load privacy settings")
-        fn_src = src[idx:idx+300]
-        assert "followers_only" in fn_src
+        # Refactor: privacy load moved to _profile_load_privacy (returns None on
+        # failure) và default fail-closed 'followers_only' ở _profile_query.
+        import social
+        load_src = inspect.getsource(social._profile_load_privacy)
+        # on exception the loader logs the warning and falls through to return None
+        assert "Failed to load privacy settings" in load_src
+        assert "return None" in load_src
+        # None privacy → non-self default is 'followers_only' (NOT public)
+        q_src = inspect.getsource(social._profile_query)
+        assert "followers_only" in q_src
+        idx = q_src.find("followers_only")
+        window = q_src[max(0, idx - 120):idx + 40]
+        assert "privacy" in window and "public" in window
 
     def test_backup_conn_closed_on_error(self):
         """Backup connection must be closed in finally block."""
@@ -2327,16 +2375,23 @@ class TestSoftDeleteEnforcement:
         assert "deleted_at IS NULL" in fn
 
     def test_update_post_checks_soft_delete(self):
-        fn = self._get_fn("async def update_post(")
-        assert "deleted_at IS NULL" in fn
+        # Refactor: owner/existence check moved to helper _post_check_owner.
+        import social
+        assert "_post_check_owner" in self._get_fn("async def update_post(")
+        assert "deleted_at IS NULL" in inspect.getsource(social._post_check_owner)
 
     def test_create_comment_checks_soft_delete(self):
-        fn = self._get_fn("async def create_comment(", 1200)
-        assert "deleted_at IS NULL" in fn
+        # Refactor: existence check moved to helper _comment_guard (via _comment_query).
+        import social
+        assert "_comment_query" in self._get_fn("async def create_comment(", 1200)
+        assert "_comment_guard" in inspect.getsource(social._comment_query)
+        assert "deleted_at IS NULL" in inspect.getsource(social._comment_guard)
 
     def test_toggle_like_checks_soft_delete(self):
-        fn = self._get_fn("async def toggle_like(")
-        assert "deleted_at IS NULL" in fn
+        # Refactor: existence check moved to helper _like_check_self.
+        import social
+        assert "_like_check_self" in self._get_fn("async def toggle_like(")
+        assert "deleted_at IS NULL" in inspect.getsource(social._like_check_self)
 
     def test_report_post_checks_soft_delete(self):
         fn = self._get_fn("async def report_post(")
@@ -2538,10 +2593,15 @@ class TestCommentCountSync:
     """comment_count on posts must be updated when comments are created/deleted."""
 
     def test_create_comment_increments_count(self):
+        # Refactor: INSERT + count bump moved to helper _comment_insert
+        # (via _comment_query ← create_comment). Wiring + giữ assertion.
+        import social
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
         idx = src.index("async def create_comment(")
         fn = src[idx:idx+3000]
-        assert "comment_count = comment_count + 1" in fn
+        assert "_comment_query" in fn
+        assert "_comment_insert" in inspect.getsource(social._comment_query)
+        assert "comment_count = comment_count + 1" in inspect.getsource(social._comment_insert)
 
     def test_delete_comment_decrements_count(self):
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")

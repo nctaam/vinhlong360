@@ -143,9 +143,16 @@ class TestUserProfileSlug:
     """Regression: /api/users/{username} must not be rejected as non-UUID."""
 
     def test_profile_allows_username_slug(self):
+        # Refactor: username resolution moved to helper _profile_resolve
+        # (called from _profile_query ← get_user_profile). Wiring-assert +
+        # giữ nguyên assertion. validate_path_id vẫn không được xuất hiện.
         src = inspect.getsource(social.get_user_profile)
         assert "validate_path_id(user_id" not in src
-        assert "lower(username)" in src
+        resolve_src = inspect.getsource(social._profile_resolve)
+        assert "validate_path_id(user_id" not in resolve_src
+        assert "_profile_resolve" in inspect.getsource(social._profile_query)
+        assert "_profile_query" in src
+        assert "lower(username)" in resolve_src
 
     def test_user_posts_resolve_username_slug(self):
         src = inspect.getsource(social.get_user_posts)
@@ -203,7 +210,9 @@ class TestProductionFeedCleanup:
     """Regression: production community feed hides known seed/test posts."""
 
     def test_main_feed_filters_seed_posts(self):
-        src = inspect.getsource(social.get_feed)
+        # Refactor: seed filter applied in helper _feed_build_conditions.
+        assert "_feed_build_conditions" in inspect.getsource(social.get_feed)
+        src = inspect.getsource(social._feed_build_conditions)
         assert "_prod_seed_post_filter" in src
 
     def test_seed_filter_checks_repost_snapshots(self):
@@ -265,7 +274,10 @@ class TestReputationLikeCount:
         assert "jsonb_typeof(likes)" not in src
 
     def test_leaderboard_uses_like_count(self):
-        src = inspect.getsource(social.community_leaderboard)
+        # Refactor: leaderboard SQL moved to helper _leaderboard_query,
+        # community_leaderboard gọi helper (wiring-assert). Giữ nguyên assertion.
+        assert "_leaderboard_query" in inspect.getsource(social.community_leaderboard)
+        src = inspect.getsource(social._leaderboard_query)
         assert "p.like_count" in src
         assert "p.likes" not in src
 
@@ -373,7 +385,11 @@ class TestCommentThreadAssembly:
 
 
     def test_create_comment_only_replies_to_root_approved_comment(self):
-        src = inspect.getsource(social.create_comment)
+        # Refactor: parent-comment guard moved to helper _comment_guard (via
+        # _comment_query). Wiring-assert + giữ nguyên assertion.
+        assert "_comment_query" in inspect.getsource(social.create_comment)
+        assert "_comment_guard" in inspect.getsource(social._comment_query)
+        src = inspect.getsource(social._comment_guard)
         assert "parent_id IS NULL" in src
         assert "moderation_status = 'approved'" in src
 
@@ -544,7 +560,9 @@ class TestReputationAntiSybil:
     """Finding-020: reputation ignores followers from accounts < 7 days old."""
 
     def test_leaderboard_filters_new_followers(self):
-        src = inspect.getsource(social.community_leaderboard)
+        # Refactor: leaderboard SQL moved to helper _leaderboard_query.
+        assert "_leaderboard_query" in inspect.getsource(social.community_leaderboard)
+        src = inspect.getsource(social._leaderboard_query)
         assert "7 days" in src or "INTERVAL" in src
 
     def test_reputation_filters_new_followers(self):
@@ -552,7 +570,9 @@ class TestReputationAntiSybil:
         assert "7 days" in src or "INTERVAL" in src
 
     def test_both_join_users_for_age(self):
-        lb_src = inspect.getsource(social.community_leaderboard)
+        # Refactor: leaderboard SQL moved to helper _leaderboard_query.
+        assert "_leaderboard_query" in inspect.getsource(social.community_leaderboard)
+        lb_src = inspect.getsource(social._leaderboard_query)
         rep_src = inspect.getsource(social._reputation)
         assert "fu.created_at" in lb_src or "created_at" in lb_src
         assert "fu.created_at" in rep_src or "created_at" in rep_src

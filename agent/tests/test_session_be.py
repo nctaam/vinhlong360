@@ -1276,14 +1276,20 @@ class TestPhase8BlockEnforcement:
         """Comment notification passes actor_id=me for block check."""
         import inspect
         import social
-        src = inspect.getsource(social.create_comment)
+        # Refactor: notify logic moved to helper _notify_comment (+
+        # _notify_owner_comment). Wiring-assert + giữ nguyên assertion.
+        assert "_notify_comment" in inspect.getsource(social.create_comment)
+        src = inspect.getsource(social._notify_comment) + inspect.getsource(social._notify_owner_comment)
         assert "actor_id=" in src
 
     def test_like_notification_has_actor_id(self):
         """Like notification passes actor_id for block check."""
         import inspect
         import social
-        src = inspect.getsource(social.toggle_like)
+        # Refactor: notify logic moved to helper _notify_like (called from
+        # toggle_like). Wiring-assert + giữ nguyên assertion.
+        assert "_notify_like" in inspect.getsource(social.toggle_like)
+        src = inspect.getsource(social._notify_like)
         assert "actor_id=" in src
 
     def test_follow_notification_has_actor_id(self):
@@ -1308,7 +1314,10 @@ class TestPhase8BlockEnforcement:
         """Repost notification passes actor_id for block check."""
         import inspect
         import social
-        src = inspect.getsource(social.create_post)
+        # Refactor: notify logic moved to helper _notify_new_post, create_post
+        # gọi helper (wiring-assert). Giữ nguyên assertion.
+        assert "_notify_new_post" in inspect.getsource(social.create_post)
+        src = inspect.getsource(social._notify_new_post)
         assert src.count("actor_id=") >= 1
 
 
@@ -1340,7 +1349,9 @@ class TestPhase8SessionCleanup:
         """Leaderboard query excludes soft-deleted users."""
         import inspect
         import social
-        src = inspect.getsource(social.community_leaderboard)
+        # Refactor: leaderboard SQL moved to helper _leaderboard_query.
+        assert "_leaderboard_query" in inspect.getsource(social.community_leaderboard)
+        src = inspect.getsource(social._leaderboard_query)
         assert "deleted_at IS NULL" in src
 
     def test_user_search_excludes_deleted(self):
@@ -1683,8 +1694,12 @@ class TestPhase11SelfRepost:
 
     def test_repost_blocks_own_post(self):
         """create_post rejects reposting own post."""
+        # Refactor: repost guard moved to helper _process_repost (called from
+        # create_post). Wiring-assert + giữ nguyên assertion trên block helper.
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("def create_post")
+        cp_idx = src.find("def create_post")
+        assert "_process_repost" in src[cp_idx:cp_idx + 5000]
+        idx = src.find("def _process_repost")
         block = src[idx:idx + 5000]
         assert "Không thể đăng lại bài viết của chính mình" in block
 
@@ -1765,17 +1780,24 @@ class TestPhase11SelfLikePrevention:
 
     def test_toggle_like_prevents_self_like(self):
         """toggle_like rejects liking own post."""
+        # Refactor: self-like guard moved to helper _like_check_self (called from
+        # toggle_like). Wiring-assert + giữ nguyên assertion trên block helper.
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("def toggle_like")
-        end = src.find("\nasync def ", idx + 1)
-        block = src[idx:end] if end != -1 else src[idx:idx + 4000]
-        assert "Không thể thích bài viết của chính mình" in block
+        tl_idx = src.find("def toggle_like")
+        tl_end = src.find("\n\n\n", tl_idx + 1)
+        assert "_like_check_self" in src[tl_idx:tl_end if tl_end != -1 else tl_idx + 4000]
+        gidx = src.find("def _like_check_self")
+        gblock = src[gidx:gidx + 2000]
+        assert "Không thể thích bài viết của chính mình" in gblock
 
     def test_toggle_like_checks_post_exists(self):
         """toggle_like verifies post exists before like check."""
+        # Refactor: post-exists check moved to helper _like_check_self.
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
-        idx = src.find("def toggle_like")
-        block = src[idx:idx + 1500]
+        tl_idx = src.find("def toggle_like")
+        assert "_like_check_self" in src[tl_idx:tl_idx + 1500]
+        gidx = src.find("def _like_check_self")
+        block = src[gidx:gidx + 1500]
         assert "404" in block
         assert "Bài viết không tồn tại" in block
 
@@ -1881,12 +1903,18 @@ class TestPhase11CommentCap:
 
     def test_create_comment_has_per_post_cap(self):
         """create_comment enforces MAX_COMMENTS_PER_POST."""
+        # Refactor: cap check moved to helper _comment_guard (called via
+        # _comment_query). MAX_COMMENTS_PER_POST vẫn ở create_comment; thông
+        # điệp giới hạn ở helper. Wiring-assert + giữ nguyên assertion.
         src = (Path(__file__).resolve().parent.parent / "social.py").read_text(encoding="utf-8")
         idx = src.find("def create_comment")
         end = src.find("\nasync def ", idx + 1)
         block = src[idx:end] if end != -1 else src[idx:idx + 4000]
         assert "MAX_COMMENTS_PER_POST" in block
-        assert "đạt giới hạn bình luận" in block
+        assert "_comment_query" in block
+        guard_idx = src.find("def _comment_guard")
+        guard_block = src[guard_idx:guard_idx + 4000]
+        assert "đạt giới hạn bình luận" in guard_block
 
     def test_comment_cap_value_reasonable(self):
         """MAX_COMMENTS_PER_POST is set to 500 (via config)."""

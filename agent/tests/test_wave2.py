@@ -82,11 +82,15 @@ class TestProfileViewTracking:
         assert "create_task" in src or "ensure_future" in src
 
     def test_view_count_query_scoped_to_7_days(self):
-        src = inspect.getsource(social.get_user_profile)
+        # Refactor: view-count SQL moved to helper _profile_view_count_7d,
+        # còn get_user_profile gọi helper (wiring-assert). Giữ nguyên assertion.
+        assert "_profile_view_count_7d" in inspect.getsource(social.get_user_profile)
+        src = inspect.getsource(social._profile_view_count_7d)
         assert "INTERVAL '7 days'" in src
 
     def test_view_count_uses_distinct_viewer_to_avoid_double_count(self):
-        src = inspect.getsource(social.get_user_profile)
+        assert "_profile_view_count_7d" in inspect.getsource(social.get_user_profile)
+        src = inspect.getsource(social._profile_view_count_7d)
         assert "COUNT(DISTINCT viewer_id)" in src
 
 
@@ -99,20 +103,30 @@ class TestActivityTimeline:
         assert "timeline" in src.lower()
 
     def test_timeline_uses_union_query(self):
-        src = inspect.getsource(social.get_user_timeline)
+        # Refactor: UNION SQL moved to helper _timeline_fetch, get_user_timeline
+        # gọi helper (wiring-assert). Giữ nguyên assertion.
+        assert "_timeline_fetch" in inspect.getsource(social.get_user_timeline)
+        src = inspect.getsource(social._timeline_fetch)
         assert "UNION ALL" in src
 
     def test_timeline_respects_privacy(self):
-        src = inspect.getsource(social.get_user_timeline)
+        # Refactor: privacy gate moved to helper _timeline_visibility_gate.
+        assert "_timeline_visibility_gate" in inspect.getsource(social.get_user_timeline)
+        src = inspect.getsource(social._timeline_visibility_gate)
         assert "is_private" in src
 
     def test_timeline_has_pagination(self):
-        src = inspect.getsource(social.get_user_timeline)
+        assert "_timeline_fetch" in inspect.getsource(social.get_user_timeline)
+        src = inspect.getsource(social._timeline_fetch)
         assert "LIMIT" in src
         assert "OFFSET" in src
 
     def test_timeline_returns_typed_items(self):
-        src = inspect.getsource(social.get_user_timeline)
+        # Item types xuất hiện trong SQL (_timeline_fetch) và bộ chuẩn hoá
+        # (_timeline_item) — gộp source cả 2 helper.
+        assert "_timeline_fetch" in inspect.getsource(social.get_user_timeline)
+        assert "_timeline_item" in inspect.getsource(social.get_user_timeline)
+        src = inspect.getsource(social._timeline_fetch) + inspect.getsource(social._timeline_item)
         for item_type in ("post", "review", "follow"):
             assert f"'{item_type}'" in src or f'"{item_type}"' in src
 
@@ -128,7 +142,9 @@ class TestActivityTimeline:
         assert "Depends(get_current_user)" in src
 
     def test_timeline_excludes_unapproved_and_deleted_posts(self):
-        src = inspect.getsource(social.get_user_timeline)
+        # Refactor: query moved to helper _timeline_fetch.
+        assert "_timeline_fetch" in inspect.getsource(social.get_user_timeline)
+        src = inspect.getsource(social._timeline_fetch)
         assert "moderation_status" in src
         assert "deleted_at IS NULL" in src
 
@@ -145,7 +161,9 @@ class TestActivityTimeline:
         # Wave 2 review fix: get_user_posts/get_user_reviews đều splice
         # _prod_seed_post_filter để loại bài seed/test admin trên prod —
         # timeline (UNION 2 nhánh post+review) đã thiếu filter này.
-        src = inspect.getsource(social.get_user_timeline)
+        # Refactor: query moved to helper _timeline_fetch.
+        assert "_timeline_fetch" in inspect.getsource(social.get_user_timeline)
+        src = inspect.getsource(social._timeline_fetch)
         assert "_prod_seed_post_filter" in src
 
 

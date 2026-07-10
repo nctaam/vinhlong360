@@ -19,26 +19,38 @@ class TestEntityFeedUnanswered:
         assert "post_type" in src
 
     def test_unanswered_filters_questions(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        # Refactor: filter SQL moved to helper _entity_feed_filters.
+        assert "_entity_feed_filters" in inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("social")._entity_feed_filters)
         assert "post_type = 'question'" in src
         assert "best_answer_id IS NULL" in src
 
     def test_unanswered_sorts_by_comment_count(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        # Refactor: ORDER BY map moved to helper _entity_feed_order_clause.
+        assert "_entity_feed_order_clause" in inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("social")._entity_feed_order_clause)
         assert "comment_count ASC" in src
 
     def test_post_type_filter_validates(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
-        assert "_VALID_POST_TYPES" in src
-        assert "review" in src
+        # Refactor: post_type whitelist renamed _ENTITY_FEED_VALID_POST_TYPES,
+        # dùng trong helper _entity_feed_filters.
+        assert "_entity_feed_filters" in inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("social")._entity_feed_filters)
+        assert "_ENTITY_FEED_VALID_POST_TYPES" in src
+        assert "review" in str(__import__("social")._ENTITY_FEED_VALID_POST_TYPES)
 
     def test_post_type_filter_uses_parameterized(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        # Refactor: filter SQL moved to helper _entity_feed_filters.
+        assert "_entity_feed_filters" in inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("social")._entity_feed_filters)
         assert "p.post_type = {ph}" in src
 
     def test_post_type_filter_in_total_count(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
-        assert src.count("p.post_type = {ph}") >= 2
+        # Refactor: _entity_feed_filters được gọi 2 lần trong get_entity_feed
+        # (feed params + total_params) → áp cho cả feed lẫn count query.
+        parent = inspect.getsource(__import__("social").get_entity_feed)
+        assert parent.count("_entity_feed_filters(") >= 2
+        assert "p.post_type = {ph}" in inspect.getsource(__import__("social")._entity_feed_filters)
 
 
 class TestNotificationTypes:
@@ -65,11 +77,15 @@ class TestNotificationTypes:
         assert _NOTIF_TYPE_TO_PREF["question_answer"] == "pref_comment"
 
     def test_create_comment_sends_reply_type(self):
-        src = inspect.getsource(__import__("social").create_comment)
+        # Refactor: notify logic moved to helper _notify_comment.
+        assert "_notify_comment" in inspect.getsource(__import__("social").create_comment)
+        src = inspect.getsource(__import__("social")._notify_comment)
         assert '"comment_reply"' in src
 
     def test_create_comment_sends_question_answer_type(self):
-        src = inspect.getsource(__import__("social").create_comment)
+        # Refactor: owner-notify moved to helper _notify_owner_comment.
+        assert "_notify_comment" in inspect.getsource(__import__("social").create_comment)
+        src = inspect.getsource(__import__("social")._notify_owner_comment)
         assert '"question_answer"' in src
 
     def test_create_comment_fetches_post_type(self):
@@ -110,23 +126,29 @@ class TestUserProfileRelationship:
     """Viewer relationship status in user profile response."""
 
     def test_profile_returns_viewer_relationship(self):
-        src = inspect.getsource(__import__("social").get_user_profile)
+        # Refactor: response dict moved to helper _profile_full_response.
+        assert "_profile_full_response" in inspect.getsource(__import__("social").get_user_profile)
+        src = inspect.getsource(__import__("social")._profile_full_response)
         assert "viewer_relationship" in src
         assert "is_following" in src
         assert "is_blocked" in src
 
     def test_profile_checks_following(self):
-        src = inspect.getsource(__import__("social").get_user_profile)
-        assert "viewer_following" in src
-        assert "follows" in src
+        # Refactor: viewer var stays in get_user_profile; follows SQL in
+        # helper _profile_viewer_rel.
+        assert "viewer_following" in inspect.getsource(__import__("social").get_user_profile)
+        assert "follows" in inspect.getsource(__import__("social")._profile_viewer_rel)
 
     def test_profile_checks_blocked(self):
-        src = inspect.getsource(__import__("social").get_user_profile)
-        assert "viewer_blocked" in src
-        assert "blocks" in src
+        # Refactor: viewer var stays in get_user_profile; blocks SQL in
+        # helper _profile_viewer_rel.
+        assert "viewer_blocked" in inspect.getsource(__import__("social").get_user_profile)
+        assert "blocks" in inspect.getsource(__import__("social")._profile_viewer_rel)
 
     def test_profile_includes_is_self(self):
-        src = inspect.getsource(__import__("social").get_user_profile)
+        # Refactor: response dict moved to helper _profile_full_response.
+        assert "_profile_full_response" in inspect.getsource(__import__("social").get_user_profile)
+        src = inspect.getsource(__import__("social")._profile_full_response)
         assert '"is_self"' in src
 
 
@@ -369,7 +391,9 @@ class TestHidePostEndpoints:
         assert "db._ph" in src
 
     def test_feed_filters_hidden(self):
-        src = inspect.getsource(__import__("social").get_feed)
+        # Refactor: WHERE conditions moved to helper _feed_build_conditions.
+        assert "_feed_build_conditions" in inspect.getsource(__import__("social").get_feed)
+        src = inspect.getsource(__import__("social")._feed_build_conditions)
         assert "user_hidden_posts" in src
 
     def test_following_feed_filters_hidden(self):
@@ -3437,7 +3461,9 @@ class TestPostEditHistoryEndpoints:
         assert "old_content" in src
 
     def test_update_post_sets_updated_at(self):
-        src = inspect.getsource(__import__("social").update_post)
+        # Refactor: UPDATE statements moved to helper _post_do_update.
+        assert "_post_do_update" in inspect.getsource(__import__("social").update_post)
+        src = inspect.getsource(__import__("social")._post_do_update)
         assert "updated_at=NOW()" in src
 
     def test_edit_history_endpoint_exists(self):
@@ -3628,7 +3654,9 @@ class TestUserMuteEndpoints:
         assert len(params) == 1
 
     def test_feed_uses_mute_filter(self):
-        src = inspect.getsource(__import__("social").get_feed)
+        # Refactor: mute filter applied in helper _feed_build_conditions.
+        assert "_feed_build_conditions" in inspect.getsource(__import__("social").get_feed)
+        src = inspect.getsource(__import__("social")._feed_build_conditions)
         assert "_mute_sql" in src
 
     def test_following_feed_uses_mute_filter(self):

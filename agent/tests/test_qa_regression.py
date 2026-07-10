@@ -131,14 +131,20 @@ class TestSelfLikePrevention:
     """Self-like must be rejected with 400."""
 
     def test_toggle_like_checks_self(self):
-        src = inspect.getsource(social.toggle_like)
+        # Refactor: self-like guard moved to helper _like_check_self, toggle_like
+        # gọi helper (wiring-assert). Giữ nguyên assertion.
+        assert "_like_check_self" in inspect.getsource(social.toggle_like)
+        src = inspect.getsource(social._like_check_self)
         assert "Không thể thích bài viết của chính mình" in src
         assert "400" in src
 
     def test_check_happens_before_toggle(self):
+        # Refactor: helpers _like_check_self (guard) rồi _like_toggle_query (toggle).
+        # Vẫn xác nhận thứ tự gọi: guard phải trước toggle.
         src = inspect.getsource(social.toggle_like)
-        check_pos = src.find("_check_self_like")
-        toggle_pos = src.find("_query")
+        check_pos = src.find("_like_check_self")
+        toggle_pos = src.find("_like_toggle_query")
+        assert check_pos >= 0 and toggle_pos >= 0
         assert check_pos < toggle_pos
 
 
@@ -178,7 +184,10 @@ class TestSelfRepostPrevention:
     """User cannot repost their own post."""
 
     def test_create_post_rejects_self_repost(self):
-        src = inspect.getsource(social.create_post)
+        # Refactor: repost guard moved to helper _process_repost, create_post
+        # gọi helper (wiring-assert). Giữ nguyên assertion.
+        assert "_process_repost" in inspect.getsource(social.create_post)
+        src = inspect.getsource(social._process_repost)
         assert "Không thể đăng lại bài viết của chính mình" in src
 
 

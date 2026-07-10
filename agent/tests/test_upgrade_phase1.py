@@ -195,14 +195,18 @@ class TestEntityFeedSortFilter:
         assert "star" in src
 
     def test_entity_feed_has_min_rating_param(self):
+        # Refactor: filter SQL moved to helper _entity_feed_filters.
         src = inspect.getsource(__import__("social").get_entity_feed)
         assert "min_rating" in src
-        assert "p.rating >=" in src
+        assert "_entity_feed_filters" in src
+        assert "p.rating >=" in inspect.getsource(__import__("social")._entity_feed_filters)
 
     def test_entity_feed_has_photo_filter(self):
+        # Refactor: filter SQL moved to helper _entity_feed_filters.
         src = inspect.getsource(__import__("social").get_entity_feed)
         assert "has_photo" in src
-        assert "jsonb_array_length" in src
+        assert "_entity_feed_filters" in src
+        assert "jsonb_array_length" in inspect.getsource(__import__("social")._entity_feed_filters)
 
     def test_entity_feed_sort_options_defined(self):
         from social import _ENTITY_FEED_SORT_OPTIONS
@@ -213,11 +217,15 @@ class TestEntityFeedSortFilter:
         assert "star" in _ENTITY_FEED_SORT_OPTIONS
 
     def test_entity_feed_sort_newest_order(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        # Refactor: ORDER BY map moved to helper _entity_feed_order_clause.
+        assert "_entity_feed_order_clause" in inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("social")._entity_feed_order_clause)
         assert '"newest": "p.created_at DESC"' in src
 
     def test_entity_feed_sort_star_order(self):
-        src = inspect.getsource(__import__("social").get_entity_feed)
+        # Refactor: ORDER BY map moved to helper _entity_feed_order_clause.
+        assert "_entity_feed_order_clause" in inspect.getsource(__import__("social").get_entity_feed)
+        src = inspect.getsource(__import__("social")._entity_feed_order_clause)
         assert "p.rating DESC NULLS LAST" in src
 
     def test_entity_feed_invalid_sort_defaults(self):

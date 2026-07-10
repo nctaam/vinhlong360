@@ -85,6 +85,49 @@ except ImportError:
 #  1. CONTEXTUAL EMBEDDINGS  (Anthropic Contextual Retrieval pattern)
 # =====================================================================
 
+def _season_parts(season) -> list[str]:
+    """Season text fragments for build_contextual_text (extracted verbatim)."""
+    if not season:
+        return []
+    peak = season.get("peak", [])
+    months = season.get("months", [])
+    if peak:
+        return [
+            "Mua thu hoach (peak): thang " + ", ".join(str(m) for m in peak) + "."
+        ]
+    elif months:
+        return [
+            "Mua: thang " + ", ".join(str(m) for m in months) + "."
+        ]
+    return []
+
+
+def _relationship_parts(eid: str, relationships: list) -> tuple[list[str], list[str]]:
+    """Split relationships into (related_names, nearby_names) (extracted verbatim)."""
+    related_names: list[str] = []
+    nearby_names: list[str] = []
+    for rel in relationships:
+        src = rel.get("source", "")
+        tgt = rel.get("target", "")
+        rtype = rel.get("type", "")
+        label = rel.get("label", "")
+
+        partner_id = ""
+        if src == eid:
+            partner_id = tgt
+        elif tgt == eid:
+            partner_id = src
+        else:
+            continue
+
+        display = label if label else partner_id
+        if rtype in ("near", "nearby", "adjacent"):
+            nearby_names.append(display)
+        else:
+            related_names.append(display)
+    return related_names, nearby_names
+
+
 class ContextualRetrieval:
     """
     Implements Anthropic's Contextual Retrieval pattern:
@@ -171,41 +214,10 @@ class ContextualRetrieval:
             parts.append(f"OCOP {ocop} sao.")
 
         # --- season ---
-        if season:
-            peak = season.get("peak", [])
-            months = season.get("months", [])
-            if peak:
-                parts.append(
-                    "Mua thu hoach (peak): thang " + ", ".join(str(m) for m in peak) + "."
-                )
-            elif months:
-                parts.append(
-                    "Mua: thang " + ", ".join(str(m) for m in months) + "."
-                )
+        parts.extend(_season_parts(season))
 
         # --- relationships ---
-        related_names: list[str] = []
-        nearby_names: list[str] = []
-        for rel in relationships:
-            src = rel.get("source", "")
-            tgt = rel.get("target", "")
-            rtype = rel.get("type", "")
-            label = rel.get("label", "")
-
-            partner_id = ""
-            if src == eid:
-                partner_id = tgt
-            elif tgt == eid:
-                partner_id = src
-            else:
-                continue
-
-            display = label if label else partner_id
-            if rtype in ("near", "nearby", "adjacent"):
-                nearby_names.append(display)
-            else:
-                related_names.append(display)
-
+        related_names, nearby_names = _relationship_parts(eid, relationships)
         if related_names:
             parts.append("Lien quan den: " + ", ".join(related_names[:8]) + ".")
         if nearby_names:
@@ -359,6 +371,44 @@ class BM25:
 #  3. LLM RERANKER
 # =====================================================================
 
+def _build_rerank_prompt(query: str, candidates: list[dict]) -> str:
+    """Build the LLM rerank prompt from candidates (extracted verbatim)."""
+    lines: list[str] = []
+    for i, c in enumerate(candidates):
+        name = c.get("name", c.get("id", f"item_{i}"))
+        summary = c.get("summary", "")[:120]
+        etype = c.get("type", "")
+        lines.append(f"{i + 1}. [{etype}] {name}: {summary}")
+
+    candidate_block = "\n".join(lines)
+
+    return (
+        f"Given this user query about Vinh Long tourism:\n"
+        f'  "{query}"\n\n'
+        f"Rank the following search results from MOST to LEAST relevant. "
+        f"Return ONLY a comma-separated list of numbers (e.g. 3,1,5,2,4). "
+        f"No explanation.\n\n"
+        f"Results:\n{candidate_block}"
+    )
+
+
+def _parse_rerank_order(ranking_text: str, candidates: list[dict]) -> list[int]:
+    """Parse LLM ranking text into an ordered index list (extracted verbatim)."""
+    indices = []
+    for tok in re.split(r'[,\s]+', ranking_text):
+        tok = tok.strip().rstrip(".")
+        if tok.isdigit():
+            idx = int(tok) - 1  # 1-based -> 0-based
+            if 0 <= idx < len(candidates) and idx not in indices:
+                indices.append(idx)
+
+    # Any candidates not mentioned go at the end in original order
+    for i in range(len(candidates)):
+        if i not in indices:
+            indices.append(i)
+    return indices
+
+
 class LLMReranker:
     """
     Uses the LLM to rerank search results based on query relevance.
@@ -412,24 +462,7 @@ class LLMReranker:
             logger.warning("LLM reranker unavailable: %s", exc)
             return candidates[:top_k]
 
-        # Build candidate list for prompt
-        lines: list[str] = []
-        for i, c in enumerate(candidates):
-            name = c.get("name", c.get("id", f"item_{i}"))
-            summary = c.get("summary", "")[:120]
-            etype = c.get("type", "")
-            lines.append(f"{i + 1}. [{etype}] {name}: {summary}")
-
-        candidate_block = "\n".join(lines)
-
-        prompt = (
-            f"Given this user query about Vinh Long tourism:\n"
-            f'  "{query}"\n\n'
-            f"Rank the following search results from MOST to LEAST relevant. "
-            f"Return ONLY a comma-separated list of numbers (e.g. 3,1,5,2,4). "
-            f"No explanation.\n\n"
-            f"Results:\n{candidate_block}"
-        )
+        prompt = _build_rerank_prompt(query, candidates)
 
         try:
             response = self._client.chat.completions.create(
@@ -441,20 +474,7 @@ class LLMReranker:
             )
             ranking_text = response.choices[0].message.content.strip()
 
-            # Parse ordering
-            indices = []
-            for tok in re.split(r'[,\s]+', ranking_text):
-                tok = tok.strip().rstrip(".")
-                if tok.isdigit():
-                    idx = int(tok) - 1  # 1-based -> 0-based
-                    if 0 <= idx < len(candidates) and idx not in indices:
-                        indices.append(idx)
-
-            # Any candidates not mentioned go at the end in original order
-            for i in range(len(candidates)):
-                if i not in indices:
-                    indices.append(i)
-
+            indices = _parse_rerank_order(ranking_text, candidates)
             reranked = [candidates[i] for i in indices]
             return reranked[:top_k]
 
@@ -466,6 +486,127 @@ class LLMReranker:
 # =====================================================================
 #  4. ENHANCED HYBRID SEARCH
 # =====================================================================
+
+def _collect_bm25_scores(query: str, candidate_pool: int) -> dict[str, float]:
+    """BM25 leg of enhanced_hybrid_search (extracted verbatim)."""
+    bm25_scores: dict[str, float] = {}
+    try:
+        if bm25._built:
+            bm25_raw = bm25.score(query, top_k=candidate_pool)
+            if bm25_raw:
+                max_bm25 = bm25_raw[0]["score"] if bm25_raw else 1.0
+                for r in bm25_raw:
+                    # Normalize to 0-1
+                    bm25_scores[r["entity_id"]] = r["score"] / max(max_bm25, 0.001)
+    except Exception as exc:
+        logger.debug("BM25 unavailable: %s", exc)
+    return bm25_scores
+
+
+def _collect_semantic_scores(query: str, candidate_pool: int) -> dict[str, float]:
+    """TF-IDF semantic leg of enhanced_hybrid_search (extracted verbatim)."""
+    semantic_scores: dict[str, float] = {}
+    try:
+        if embedding_store is not None:
+            sem_raw = embedding_store.search(query, top_k=candidate_pool)
+            for r in sem_raw:
+                semantic_scores[r["entity_id"]] = r["score"]
+    except Exception as exc:
+        logger.debug("Semantic search unavailable: %s", exc)
+    return semantic_scores
+
+
+def _collect_ctx_scores(query: str) -> dict[str, float]:
+    """Contextual overlap leg of enhanced_hybrid_search (extracted verbatim)."""
+    ctx_scores: dict[str, float] = {}
+    try:
+        ctx_texts = contextual._cache
+        if ctx_texts:
+            q_tokens = set(_tokenize(query))
+            if q_tokens:
+                for eid, ctx_text in ctx_texts.items():
+                    doc_tokens = set(_tokenize(ctx_text))
+                    if not doc_tokens:
+                        continue
+                    # Jaccard-like overlap on enriched text
+                    overlap = len(q_tokens & doc_tokens)
+                    if overlap > 0:
+                        union = len(q_tokens | doc_tokens)
+                        ctx_scores[eid] = overlap / max(union, 1)
+    except Exception as exc:
+        logger.debug("Contextual scoring unavailable: %s", exc)
+    return ctx_scores
+
+
+def _effective_weights(
+    has_bm25: bool, has_semantic: bool, has_ctx: bool,
+    bm25_weight: float, semantic_weight: float, contextual_weight: float,
+):
+    """Redistribute weights over available signals (extracted verbatim).
+
+    Returns (w_bm25, w_sem, w_ctx) scaled to sum 1, or None when no
+    enhanced signal is available (caller falls back to keyword).
+    """
+    # If a signal source is empty, redistribute its weight
+    available_weight = 0.0
+    if has_bm25:
+        available_weight += bm25_weight
+    if has_semantic:
+        available_weight += semantic_weight
+    if has_ctx:
+        available_weight += contextual_weight
+
+    if available_weight <= 0:
+        return None
+
+    # Scale weights so they sum to 1
+    scale = 1.0 / available_weight
+    w_bm25 = (bm25_weight * scale) if has_bm25 else 0
+    w_sem = (semantic_weight * scale) if has_semantic else 0
+    w_ctx = (contextual_weight * scale) if has_ctx else 0
+    return w_bm25, w_sem, w_ctx
+
+
+def _compute_hybrid(
+    all_ids, bm25_scores: dict, semantic_scores: dict, ctx_scores: dict,
+    w_bm25, w_sem, w_ctx,
+) -> list[dict]:
+    """Combine per-signal scores into hybrid rows (extracted verbatim)."""
+    hybrid: list[dict] = []
+    for eid in all_ids:
+        s = 0.0
+        s += w_bm25 * bm25_scores.get(eid, 0)
+        s += w_sem * semantic_scores.get(eid, 0)
+        s += w_ctx * ctx_scores.get(eid, 0)
+
+        hybrid.append({
+            "entity_id": eid,
+            "hybrid_score": round(s, 4),
+            "bm25_score": round(bm25_scores.get(eid, 0), 4),
+            "semantic_score": round(semantic_scores.get(eid, 0), 4),
+            "contextual_score": round(ctx_scores.get(eid, 0), 4),
+        })
+    return hybrid
+
+
+def _reattach_entities(
+    hybrid: list[dict], candidate_pool: int,
+    keyword_results: list[dict], entities: dict, all_ids,
+) -> list[dict]:
+    """Re-attach full entity data to ranked ids (extracted verbatim)."""
+    entity_map = {e.get("id", e.get("entity_id", "")): e for e in keyword_results}
+    # Also include entities from the full entities dict
+    for eid in all_ids:
+        if eid not in entity_map and eid in entities:
+            entity_map[eid] = entities[eid]
+
+    merged: list[dict] = []
+    for h in hybrid[:candidate_pool]:
+        eid = h["entity_id"]
+        if eid in entity_map:
+            merged.append(entity_map[eid])
+    return merged
+
 
 def enhanced_hybrid_search(
     query: str,
@@ -507,46 +648,13 @@ def enhanced_hybrid_search(
     candidate_pool = top_k * 3  # fetch more candidates for merging
 
     # ── 1. BM25 scores ──
-    bm25_scores: dict[str, float] = {}
-    try:
-        if bm25._built:
-            bm25_raw = bm25.score(query, top_k=candidate_pool)
-            if bm25_raw:
-                max_bm25 = bm25_raw[0]["score"] if bm25_raw else 1.0
-                for r in bm25_raw:
-                    # Normalize to 0-1
-                    bm25_scores[r["entity_id"]] = r["score"] / max(max_bm25, 0.001)
-    except Exception as exc:
-        logger.debug("BM25 unavailable: %s", exc)
+    bm25_scores = _collect_bm25_scores(query, candidate_pool)
 
     # ── 2. TF-IDF semantic scores ──
-    semantic_scores: dict[str, float] = {}
-    try:
-        if embedding_store is not None:
-            sem_raw = embedding_store.search(query, top_k=candidate_pool)
-            for r in sem_raw:
-                semantic_scores[r["entity_id"]] = r["score"]
-    except Exception as exc:
-        logger.debug("Semantic search unavailable: %s", exc)
+    semantic_scores = _collect_semantic_scores(query, candidate_pool)
 
     # ── 3. Contextual scores ──
-    ctx_scores: dict[str, float] = {}
-    try:
-        ctx_texts = contextual._cache
-        if ctx_texts:
-            q_tokens = set(_tokenize(query))
-            if q_tokens:
-                for eid, ctx_text in ctx_texts.items():
-                    doc_tokens = set(_tokenize(ctx_text))
-                    if not doc_tokens:
-                        continue
-                    # Jaccard-like overlap on enriched text
-                    overlap = len(q_tokens & doc_tokens)
-                    if overlap > 0:
-                        union = len(q_tokens | doc_tokens)
-                        ctx_scores[eid] = overlap / max(union, 1)
-    except Exception as exc:
-        logger.debug("Contextual scoring unavailable: %s", exc)
+    ctx_scores = _collect_ctx_scores(query)
 
     # ── 4. Keyword results as positional scores ──
     keyword_scores: dict[str, float] = {}
@@ -563,59 +671,31 @@ def enhanced_hybrid_search(
     )
 
     # ── Determine effective weights ──
-    # If a signal source is empty, redistribute its weight
-    available_weight = 0.0
     has_bm25 = bool(bm25_scores)
     has_semantic = bool(semantic_scores)
     has_ctx = bool(ctx_scores)
 
-    if has_bm25:
-        available_weight += bm25_weight
-    if has_semantic:
-        available_weight += semantic_weight
-    if has_ctx:
-        available_weight += contextual_weight
-
-    if available_weight <= 0:
+    weights = _effective_weights(
+        has_bm25, has_semantic, has_ctx,
+        bm25_weight, semantic_weight, contextual_weight,
+    )
+    if weights is None:
         # None of the enhanced signals available -- fall back to keyword
         return keyword_results[:top_k]
-
-    # Scale weights so they sum to 1
-    scale = 1.0 / available_weight
-    w_bm25 = (bm25_weight * scale) if has_bm25 else 0
-    w_sem = (semantic_weight * scale) if has_semantic else 0
-    w_ctx = (contextual_weight * scale) if has_ctx else 0
+    w_bm25, w_sem, w_ctx = weights
 
     # ── Compute hybrid scores ──
-    hybrid: list[dict] = []
-    for eid in all_ids:
-        s = 0.0
-        s += w_bm25 * bm25_scores.get(eid, 0)
-        s += w_sem * semantic_scores.get(eid, 0)
-        s += w_ctx * ctx_scores.get(eid, 0)
-
-        hybrid.append({
-            "entity_id": eid,
-            "hybrid_score": round(s, 4),
-            "bm25_score": round(bm25_scores.get(eid, 0), 4),
-            "semantic_score": round(semantic_scores.get(eid, 0), 4),
-            "contextual_score": round(ctx_scores.get(eid, 0), 4),
-        })
+    hybrid = _compute_hybrid(
+        all_ids, bm25_scores, semantic_scores, ctx_scores,
+        w_bm25, w_sem, w_ctx,
+    )
 
     hybrid.sort(key=lambda x: x["hybrid_score"], reverse=True)
 
     # ── Re-attach full entity data ──
-    entity_map = {e.get("id", e.get("entity_id", "")): e for e in keyword_results}
-    # Also include entities from the full entities dict
-    for eid in all_ids:
-        if eid not in entity_map and eid in entities:
-            entity_map[eid] = entities[eid]
-
-    merged: list[dict] = []
-    for h in hybrid[:candidate_pool]:
-        eid = h["entity_id"]
-        if eid in entity_map:
-            merged.append(entity_map[eid])
+    merged = _reattach_entities(
+        hybrid, candidate_pool, keyword_results, entities, all_ids,
+    )
 
     # ── Optional LLM reranking ──
     reranked = False

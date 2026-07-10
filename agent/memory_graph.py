@@ -457,44 +457,15 @@ class MemoryGraph:
                 return []
 
             # Step 1: entities user has discussed
-            discussed_ids: set[str] = set()
-            for key in self._adjacency.get(user_id, set()):
-                edge = self._edges.get(key)
-                if edge and edge.relation in ("discussed", "interested_in", "visited"):
-                    other = edge.target if edge.source == user_id else edge.source
-                    discussed_ids.add(other)
-
+            discussed_ids = _su_collect_discussed(self, user_id)
             if not discussed_ids:
                 return []
 
             # Step 2: neighbors of discussed entities
-            candidates: dict[str, float] = {}  # entity_id -> score
-            for did in discussed_ids:
-                for key in self._adjacency.get(did, set()):
-                    edge = self._edges.get(key)
-                    if edge is None:
-                        continue
-                    neighbor = edge.target if edge.source == did else edge.source
-                    # Skip user nodes and already-discussed
-                    node = self._nodes.get(neighbor)
-                    if not node or node.type == "user":
-                        continue
-                    if neighbor in discussed_ids or neighbor == user_id:
-                        continue
-                    candidates[neighbor] = candidates.get(neighbor, 0) + edge.weight
+            candidates = _su_collect_candidates(self, discussed_ids, user_id)
 
             # Step 3: sort by score and return top N
-            ranked = sorted(candidates.items(), key=lambda x: x[1], reverse=True)
-            results = []
-            for eid, score in ranked[:limit]:
-                node = self._nodes.get(eid)
-                results.append({
-                    "entity_id": eid,
-                    "name": node.properties.get("name", eid) if node else eid,
-                    "type": node.type if node else "entity",
-                    "relevance_score": round(score, 2),
-                })
-            return results
+            return _su_rank_candidates(self, candidates, limit)
 
     def find_common_interests(self, user_a: str, user_b: str) -> list[dict]:
         """
@@ -751,23 +722,7 @@ class MemoryGraph:
 
             # Entities the user has discussed/visited (deduplicate by id,
             # keeping the highest-weight edge per entity)
-            discussed_map: dict[str, dict] = {}
-            for key in self._adjacency.get(user_id, set()):
-                edge = self._edges.get(key)
-                if not edge:
-                    continue
-                if edge.relation in ("discussed", "visited", "interested_in"):
-                    other = edge.target if edge.source == user_id else edge.source
-                    node = self._nodes.get(other)
-                    if node and node.type != "user":
-                        existing = discussed_map.get(other)
-                        if not existing or edge.weight > existing["weight"]:
-                            discussed_map[other] = {
-                                "id": other,
-                                "name": node.properties.get("name", other),
-                                "weight": edge.weight,
-                                "relation": edge.relation,
-                            }
+            discussed_map = _bgc_collect_discussed_map(self, user_id)
             discussed = list(discussed_map.values())
 
             if not discussed:
@@ -784,15 +739,7 @@ class MemoryGraph:
         # Suggest unexplored (release lock, then call suggest_unexplored)
         suggestions = self.suggest_unexplored(user_id, limit=3)
         if suggestions:
-            suggestion_parts = []
-            for s in suggestions:
-                # Find what it's connected to
-                neighbors = self.get_neighbors(s["entity_id"], relation="co_mentioned")
-                if neighbors:
-                    closest = neighbors[0]["node_name"]
-                    suggestion_parts.append(f"{s['name']} (gan {closest})")
-                else:
-                    suggestion_parts.append(s["name"])
+            suggestion_parts = _bgc_suggestion_parts(self, suggestions)
             parts.append("Chua kham pha: " + ", ".join(suggestion_parts))
 
         # Emerging patterns relevant to user
@@ -860,6 +807,94 @@ class MemoryGraph:
             f"<MemoryGraph nodes={s['total_nodes']} edges={s['total_edges']} "
             f"types={s['node_types']}>"
         )
+
+
+# ══════════════════════════════════════════════════
+#  Extract-method helpers (behavior-preserving)
+#  Caller holds mg._lock where the original code did.
+# ══════════════════════════════════════════════════
+
+def _su_collect_discussed(mg: MemoryGraph, user_id: str) -> set[str]:
+    """suggest_unexplored step 1: entities the user has discussed."""
+    discussed_ids: set[str] = set()
+    for key in mg._adjacency.get(user_id, set()):
+        edge = mg._edges.get(key)
+        if edge and edge.relation in ("discussed", "interested_in", "visited"):
+            other = edge.target if edge.source == user_id else edge.source
+            discussed_ids.add(other)
+    return discussed_ids
+
+
+def _su_collect_candidates(mg: MemoryGraph, discussed_ids: set[str],
+                           user_id: str) -> dict[str, float]:
+    """suggest_unexplored step 2: neighbors of discussed entities -> score."""
+    candidates: dict[str, float] = {}  # entity_id -> score
+    for did in discussed_ids:
+        for key in mg._adjacency.get(did, set()):
+            edge = mg._edges.get(key)
+            if edge is None:
+                continue
+            neighbor = edge.target if edge.source == did else edge.source
+            # Skip user nodes and already-discussed
+            node = mg._nodes.get(neighbor)
+            if not node or node.type == "user":
+                continue
+            if neighbor in discussed_ids or neighbor == user_id:
+                continue
+            candidates[neighbor] = candidates.get(neighbor, 0) + edge.weight
+    return candidates
+
+
+def _su_rank_candidates(mg: MemoryGraph, candidates: dict[str, float],
+                        limit: int) -> list[dict]:
+    """suggest_unexplored step 3: sort by score and return top N."""
+    ranked = sorted(candidates.items(), key=lambda x: x[1], reverse=True)
+    results = []
+    for eid, score in ranked[:limit]:
+        node = mg._nodes.get(eid)
+        results.append({
+            "entity_id": eid,
+            "name": node.properties.get("name", eid) if node else eid,
+            "type": node.type if node else "entity",
+            "relevance_score": round(score, 2),
+        })
+    return results
+
+
+def _bgc_collect_discussed_map(mg: MemoryGraph, user_id: str) -> dict[str, dict]:
+    """build_graph_context: dedupe discussed/visited entities by highest weight."""
+    discussed_map: dict[str, dict] = {}
+    for key in mg._adjacency.get(user_id, set()):
+        edge = mg._edges.get(key)
+        if not edge:
+            continue
+        if edge.relation in ("discussed", "visited", "interested_in"):
+            other = edge.target if edge.source == user_id else edge.source
+            node = mg._nodes.get(other)
+            if node and node.type != "user":
+                existing = discussed_map.get(other)
+                if not existing or edge.weight > existing["weight"]:
+                    discussed_map[other] = {
+                        "id": other,
+                        "name": node.properties.get("name", other),
+                        "weight": edge.weight,
+                        "relation": edge.relation,
+                    }
+    return discussed_map
+
+
+def _bgc_suggestion_parts(mg: MemoryGraph, suggestions: list[dict]) -> list[str]:
+    """build_graph_context: format each suggestion with its closest co-mention."""
+    suggestion_parts = []
+    for s in suggestions:
+        # Find what it's connected to
+        neighbors = mg.get_neighbors(s["entity_id"], relation="co_mentioned")
+        if neighbors:
+            closest = neighbors[0]["node_name"]
+            suggestion_parts.append(f"{s['name']} (gan {closest})")
+        else:
+            suggestion_parts.append(s["name"])
+    return suggestion_parts
 
 
 # ══════════════════════════════════════════════════

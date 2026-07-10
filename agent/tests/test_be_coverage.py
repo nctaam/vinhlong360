@@ -941,11 +941,14 @@ class TestBE23BlockIntegration:
         assert "UNION" in clause
 
     def test_entity_feed_block_enforcement_in_count_query(self):
-        src = inspect.getsource(social.get_entity_feed)
+        # Refactor: count query moved to helper _entity_feed_query, get_entity_feed
+        # gọi helper (wiring-assert). Giữ nguyên assertion trên count block.
+        assert "_entity_feed_query" in inspect.getsource(social.get_entity_feed)
+        src = inspect.getsource(social._entity_feed_query)
         count_idx = src.find("COUNT(*)")
-        if count_idx > 0:
-            count_block = src[count_idx:count_idx + 500]
-            assert "bc" in count_block or "block" in count_block.lower()
+        assert count_idx > 0
+        count_block = src[count_idx:count_idx + 500]
+        assert "bc" in count_block or "block" in count_block.lower()
 
 
 # ═══════════════════════════════════════════════════════════════════════

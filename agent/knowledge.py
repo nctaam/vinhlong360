@@ -276,6 +276,99 @@ def places(area: str = None) -> list[dict]:
     return sorted(out, key=lambda p: p["name"])
 
 
+def _search_area_match(e: dict, area: str) -> bool:
+    """GĐ: entity khớp bộ lọc area (qua places HOẶC province_old fallback)."""
+    p = get_place(e["id"])
+    # Primary: check via places data
+    area_match = p and p.get("area") == area
+    # Fallback: check province_old attribute (for new ward-crawl entities)
+    if not area_match:
+        prov = (e.get("attributes") or {}).get("province_old", "")
+        _AREA_PROV = {
+            "ben-tre": "Bến Tre",
+            "tra-vinh": "Trà Vinh",
+            "vinh-long": "Vĩnh Long",
+        }
+        area_match = prov == _AREA_PROV.get(area, "")
+    return area_match
+
+
+def _search_q_match(e: dict, q: str) -> bool:
+    """GĐ: entity khớp truy vấn text q (so cả bản gốc lẫn bản normalize dấu)."""
+    ql = q.lower()
+    ql_norm = _normalize_vn(q)
+    place_info = get_place(e["id"]) or {}
+    attrs = e.get("attributes") or {}
+    searchable = " ".join(filter(None, [
+        e.get("name"), e.get("summary"),
+        place_info.get("alias"), place_info.get("legacyArea"), place_info.get("name"),
+        attrs.get("ward"), attrs.get("district"),
+        attrs.get("province_old"), attrs.get("address"),
+    ])).lower()
+    searchable_norm = _normalize_vn(searchable)
+    return ql in searchable or ql_norm in searchable_norm
+
+
+def _search_month_ok(e: dict, month: int) -> bool:
+    """GĐ: entity qua bộ lọc month (guard mùa, tách nguyên văn)."""
+    season = e.get("season")
+    if season and month not in season.get("months", ALL_MONTHS):
+        return False
+    return True
+
+
+def _search_ocop_ok(e: dict) -> bool:
+    """GĐ: entity qua bộ lọc ocop_only (tách nguyên văn)."""
+    attrs = e.get("attributes", {})
+    return bool(attrs.get("ocop"))
+
+
+def _search_matches_scalar_filters(e, entity_type, place_id):
+    """GĐ: guard searchable + entity_type + place_id (tách nguyên văn)."""
+    if not _is_searchable(e):  # GĐ4.5: gồm cả place phi-hành-chính (quán/nhà hàng)
+        return False
+    if entity_type and e["type"] != entity_type:
+        return False
+    if place_id and e.get("placeId") != place_id:
+        return False
+    return True
+
+
+def _search_matches_facet_filters(e, area, month, ocop_only, q):
+    """GĐ: guard area + month + ocop_only + q (tách nguyên văn)."""
+    if area and not _search_area_match(e, area):
+        return False
+    if month and not _search_month_ok(e, month):
+        return False
+    if ocop_only and not _search_ocop_ok(e):
+        return False
+    if q and not _search_q_match(e, q):
+        return False
+    return True
+
+
+def _search_matches_filters(e, entity_type, area, place_id, month, ocop_only, q):
+    """GĐ: entity qua toàn bộ bộ lọc của search_entities (guard tách nguyên văn)."""
+    return (
+        _search_matches_scalar_filters(e, entity_type, place_id)
+        and _search_matches_facet_filters(e, area, month, ocop_only, q)
+    )
+
+
+def _search_fallback_sort(results: list[dict], month: int) -> None:
+    """GĐ: sắp xếp fallback theo mùa khi thiếu smart_rank (in-place, giữ nguyên logic)."""
+    def score(e):
+        s = e.get("season")
+        if not month or not s:
+            return 1
+        if month in (s.get("peak") or []):
+            return 4
+        if month in s.get("months", []):
+            return 3
+        return 1
+    results.sort(key=score, reverse=True)
+
+
 def search_entities(
     q: str = None,
     entity_type: str = None,
@@ -287,68 +380,17 @@ def search_entities(
 ) -> list[dict]:
     """Tìm kiếm entities theo nhiều tiêu chí."""
     _ensure()
-    results = []
-    for e in _entities.values():
-        if not _is_searchable(e):  # GĐ4.5: gồm cả place phi-hành-chính (quán/nhà hàng)
-            continue
-        if entity_type and e["type"] != entity_type:
-            continue
-        if place_id and e.get("placeId") != place_id:
-            continue
-        if area:
-            p = get_place(e["id"])
-            # Primary: check via places data
-            area_match = p and p.get("area") == area
-            # Fallback: check province_old attribute (for new ward-crawl entities)
-            if not area_match:
-                prov = (e.get("attributes") or {}).get("province_old", "")
-                _AREA_PROV = {
-                    "ben-tre": "Bến Tre",
-                    "tra-vinh": "Trà Vinh",
-                    "vinh-long": "Vĩnh Long",
-                }
-                area_match = prov == _AREA_PROV.get(area, "")
-            if not area_match:
-                continue
-        if month:
-            season = e.get("season")
-            if season and month not in season.get("months", ALL_MONTHS):
-                continue
-        if ocop_only:
-            attrs = e.get("attributes", {})
-            if not attrs.get("ocop"):
-                continue
-        if q:
-            ql = q.lower()
-            ql_norm = _normalize_vn(q)
-            place_info = get_place(e["id"]) or {}
-            attrs = e.get("attributes") or {}
-            searchable = " ".join(filter(None, [
-                e.get("name"), e.get("summary"),
-                place_info.get("alias"), place_info.get("legacyArea"), place_info.get("name"),
-                attrs.get("ward"), attrs.get("district"),
-                attrs.get("province_old"), attrs.get("address"),
-            ])).lower()
-            searchable_norm = _normalize_vn(searchable)
-            if ql not in searchable and ql_norm not in searchable_norm:
-                continue
-        results.append(e)
+    results = [
+        e for e in _entities.values()
+        if _search_matches_filters(e, entity_type, area, place_id, month, ocop_only, q)
+    ]
 
     # Smart ranking: popularity + season + content richness
     try:
         from smart_rank import smart_score
         results.sort(key=lambda e: smart_score(e, month=month), reverse=True)
     except ImportError:
-        def score(e):
-            s = e.get("season")
-            if not month or not s:
-                return 1
-            if month in (s.get("peak") or []):
-                return 4
-            if month in s.get("months", []):
-                return 3
-            return 1
-        results.sort(key=score, reverse=True)
+        _search_fallback_sort(results, month)
 
     return results[:limit]
 
@@ -510,6 +552,54 @@ def _top_entities(area: str, limit: int = 5) -> list[dict]:
     return [{"id": e["id"], "name": e["name"], "type": e["type"], "summary": e.get("summary", "")[:100]} for e in entries[:limit]]
 
 
+def _nearby_same_place(nearby, entity_id, pid, limit):
+    """GĐ: gom entity cùng placeId (khối 1, tách nguyên văn — mutate nearby)."""
+    if not pid:
+        return
+    for other in _entities.values():
+        if len(nearby) >= limit:
+            break
+        if other["id"] == entity_id:
+            continue
+        if other["type"] not in CARD_TYPES:
+            continue
+        if other.get("placeId") == pid:
+            nearby.append({"id": other["id"], "name": other["name"], "type": other["type"],
+                           "summary": other.get("summary", "")[:80], "proximity": "cùng xã/phường"})
+
+
+def _nearby_same_area(nearby, entity_id, pid, area, limit):
+    """GĐ: gom entity cùng area (khối 2, tách nguyên văn — mutate nearby)."""
+    if not (len(nearby) < limit and area):
+        return
+    for other in _entities.values():
+        if other["id"] == entity_id:
+            continue
+        if other["type"] not in CARD_TYPES:
+            continue
+        if other.get("placeId") == pid:
+            continue  # Đã có
+        op = get_place(other["id"])
+        if op and op.get("area") == area:
+            nearby.append({"id": other["id"], "name": other["name"], "type": other["type"],
+                           "summary": other.get("summary", "")[:80], "proximity": "cùng khu vực"})
+        if len(nearby) >= limit:
+            break
+
+
+def _nearby_via_relationships(nearby, entity_id, limit):
+    """GĐ: gom entity qua relationships (khối 3, tách nguyên văn — mutate nearby)."""
+    rels = related(entity_id)
+    for r in rels:
+        if len(nearby) >= limit:
+            break
+        if r["id"] not in {n["id"] for n in nearby}:
+            re_entity = _entities.get(r["id"])
+            if re_entity:
+                nearby.append({"id": r["id"], "name": r["entity"], "type": re_entity.get("type", ""),
+                               "summary": re_entity.get("summary", "")[:80], "proximity": r["label"]})
+
+
 def nearby_entities(entity_id: str, limit: int = 8) -> list[dict]:
     """Tìm entities gần 1 entity (cùng placeId hoặc cùng area)."""
     _ensure()
@@ -522,46 +612,9 @@ def nearby_entities(entity_id: str, limit: int = 8) -> list[dict]:
     area = place.get("area") if place else None
 
     nearby = []
-
-    # 1. Cùng placeId
-    if pid:
-        for other in _entities.values():
-            if len(nearby) >= limit:
-                break
-            if other["id"] == entity_id:
-                continue
-            if other["type"] not in CARD_TYPES:
-                continue
-            if other.get("placeId") == pid:
-                nearby.append({"id": other["id"], "name": other["name"], "type": other["type"],
-                               "summary": other.get("summary", "")[:80], "proximity": "cùng xã/phường"})
-
-    # 2. Cùng area (nếu chưa đủ)
-    if len(nearby) < limit and area:
-        for other in _entities.values():
-            if other["id"] == entity_id:
-                continue
-            if other["type"] not in CARD_TYPES:
-                continue
-            if other.get("placeId") == pid:
-                continue  # Đã có
-            op = get_place(other["id"])
-            if op and op.get("area") == area:
-                nearby.append({"id": other["id"], "name": other["name"], "type": other["type"],
-                               "summary": other.get("summary", "")[:80], "proximity": "cùng khu vực"})
-            if len(nearby) >= limit:
-                break
-
-    # 3. Qua relationships
-    rels = related(entity_id)
-    for r in rels:
-        if len(nearby) >= limit:
-            break
-        if r["id"] not in {n["id"] for n in nearby}:
-            re_entity = _entities.get(r["id"])
-            if re_entity:
-                nearby.append({"id": r["id"], "name": r["entity"], "type": re_entity.get("type", ""),
-                               "summary": re_entity.get("summary", "")[:80], "proximity": r["label"]})
+    _nearby_same_place(nearby, entity_id, pid, limit)          # 1. Cùng placeId
+    _nearby_same_area(nearby, entity_id, pid, area, limit)     # 2. Cùng area (nếu chưa đủ)
+    _nearby_via_relationships(nearby, entity_id, limit)        # 3. Qua relationships
 
     return nearby[:limit]
 

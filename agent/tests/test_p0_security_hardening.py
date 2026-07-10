@@ -465,7 +465,11 @@ class TestCommentModerationIntegration:
         """The comment INSERT must use the moderation status from moderate_content."""
         import inspect
         import social
-        src = inspect.getsource(social.create_comment)
+        # Refactor: INSERT moved to helper _comment_insert (via _comment_query),
+        # create_comment gọi helper (wiring-assert). Giữ nguyên assertion.
+        assert "_comment_query" in inspect.getsource(social.create_comment)
+        assert "_comment_insert" in inspect.getsource(social._comment_query)
+        src = inspect.getsource(social._comment_insert)
         assert "moderation_status" in src, \
             "create_comment must store moderation_status in DB"
 
