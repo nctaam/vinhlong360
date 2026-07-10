@@ -60,7 +60,7 @@ watch(() => state.value.open, async (open) => {
 .confirm-title { margin: 0 0 .5rem; font-size: 1.15rem; }
 .confirm-message { margin: 0 0 1.25rem; color: var(--ink-700); line-height: 1.5; }
 .confirm-actions { display: flex; gap: .75rem; justify-content: flex-end; }
-.btn-danger { background: var(--danger, #c0392b); color: var(--text-on-dark, var(--white)); }
+.btn-danger { background: var(--danger); color: var(--text-on-dark, var(--white)); }
 .confirm-fade-enter-active, .confirm-fade-leave-active { transition: opacity .2s var(--ease-out); }
 .confirm-fade-enter-from, .confirm-fade-leave-to { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .confirm-fade-enter-active, .confirm-fade-leave-active { transition: none; } }

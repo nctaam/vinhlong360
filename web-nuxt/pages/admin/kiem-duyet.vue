@@ -473,8 +473,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-tab.active .mod-tab-count { background: rgba(var(--white-rgb),.2); color: var(--text-on-dark); }
 
 /* Urgency accent for queue cards with pending/flagged items (dashboard-at-a-glance) */
-.stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
-.stat-card.status-error { border-left: 4px solid var(--error, #D94F3D); }
+.stat-card.status-warn { border-left: 4px solid var(--warning); }
+.stat-card.status-error { border-left: 4px solid var(--error); }
 .stat-card.status-warn .stat-icon,
 .stat-card.status-error .stat-icon { font-size: 1.3rem; font-weight: 700; }
 

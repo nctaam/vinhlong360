@@ -209,7 +209,7 @@ function addChild(parentIdx: number) {
 .sl-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 .sl-btn:disabled { opacity: .25; cursor: not-allowed; }
 .sl-btn-edit:hover:not(:disabled) { background: rgba(var(--primary-rgb), .06); color: var(--primary); }
-.sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb, 217,79,61), .06); color: var(--danger, #D94F3D); }
+.sl-btn-remove:hover:not(:disabled) { background: rgba(var(--danger-rgb, 217,79,61), .06); color: var(--danger); }
 
 .sl-edit-fields { display: flex; flex-direction: column; gap: var(--space-3); }
 .sl-edit-group { display: flex; flex-direction: column; gap: var(--space-1); }
@@ -271,9 +271,9 @@ function addChild(parentIdx: number) {
 .sl-expand-leave-to { opacity: 0; }
 
 /* ── Dark ── */
-.dark .sl-item { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .sl-item { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .sl-item-editing { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.15); }
-.dark .sl-btn { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .sl-btn { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .sl-edit-input { background: rgba(var(--white-rgb),.04); border-color: rgba(var(--white-rgb),.08); }
 .dark .sl-add { border-color: rgba(var(--white-rgb),.1); }
 .dark .sl-children { border-left-color: rgba(var(--white-rgb),.1); }

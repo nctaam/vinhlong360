@@ -262,7 +262,7 @@ useHead({
   display: flex; align-items: center; justify-content: center; align-self: center;
 }
 .tb-item:hover .tb-dismiss, .tb-dismiss:focus-visible { opacity: 1; }
-.tb-dismiss:hover { background: var(--bg-alt); color: var(--error, #e53e3e); }
+.tb-dismiss:hover { background: var(--bg-alt); color: var(--error); }
 .tb-dismiss:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .tb-guest { margin-top: var(--space-6); }
 .tb-filters { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); overflow-x: auto; padding-bottom: var(--space-1); scrollbar-width: none; }

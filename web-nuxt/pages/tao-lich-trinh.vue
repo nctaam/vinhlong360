@@ -767,8 +767,8 @@ useHead({
 
 .builder-title-wrap { position: relative; flex: 1; min-width: 0; }
 .title-counter { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: var(--text-xs); color: var(--muted); pointer-events: none; }
-.title-counter.warn { color: var(--error, #d32); font-weight: var(--weight-semibold); }
-.max-stops-warn { font-size: var(--text-sm); color: var(--warning, #c90); margin: var(--space-2) 0; }
+.title-counter.warn { color: var(--error); font-weight: var(--weight-semibold); }
+.max-stops-warn { font-size: var(--text-sm); color: var(--warning); margin: var(--space-2) 0; }
 .stop-card-actions .btn-icon-sm { min-width: 44px; min-height: 44px; }
 @media (pointer: coarse) { .stop-card-actions .btn-icon-sm { min-width: 44px; min-height: 44px; } }
 .picker-list { max-height: 50vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }

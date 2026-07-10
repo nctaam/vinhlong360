@@ -1305,8 +1305,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dark .home .hero-search:focus-within { border-color: rgba(var(--accent-rgb), .7); }
 .dark .home .section-head h2::before { background: linear-gradient(180deg, var(--accent) 0%, var(--primary-fg) 100%); }
 .dark .home .block + .block::before { background: linear-gradient(90deg, transparent, var(--line) 22%, var(--line) 78%, transparent); opacity: .6; }
-.dark .ec-countdown { color: var(--accent-text, #e0b366); }
-.dark .ec-today { color: var(--secondary-fg, #f0846f); }
+.dark .ec-countdown { color: var(--accent-text); }
+.dark .ec-today { color: var(--secondary-fg); }
 
 /* ═══════════════════════════════════════════════════
    REDUCED TRANSPARENCY / MOTION

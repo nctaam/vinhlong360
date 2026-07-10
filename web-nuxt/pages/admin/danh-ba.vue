@@ -250,12 +250,12 @@ onMounted(loadFacilities)
 
 /* ── Inline validation ── */
 .db-field-error {
-  font-size: .74rem; font-weight: 500; color: var(--error, #D94F3D);
+  font-size: .74rem; font-weight: 500; color: var(--error);
   display: flex; align-items: center; gap: var(--space-1);
 }
 .db-field-error::before { content: "\26A0"; font-size: .8em; }
 .db-field-hint { font-size: .74rem; color: var(--muted); }
-.db-input-error { border-color: var(--error, #D94F3D) !important; }
+.db-input-error { border-color: var(--error) !important; }
 .db-input-error:focus { box-shadow: 0 0 0 3px rgba(var(--danger-rgb),.12); }
 .db-input-ok { border-color: rgba(var(--primary-rgb),.5); }
 
@@ -300,7 +300,7 @@ onMounted(loadFacilities)
 }
 
 /* ── Dark ── */
-.dark .db-form { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .db-form { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .db-form:focus-within { box-shadow: 0 4px 20px rgba(var(--black-rgb),.3); border-color: rgba(var(--primary-rgb),.3); }
 .dark .db-count-badge { background: rgba(var(--blue-rgb),.12); }
 .dark .sf-dirty-badge { color: rgb(var(--success-rgb)); background: rgba(var(--primary-rgb),.18); border-color: rgba(var(--success-rgb),.3); }

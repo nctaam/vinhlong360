@@ -158,7 +158,7 @@ onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 
 .audit-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
 .skel-row { display: flex; gap: var(--space-3); padding: var(--space-2) 0; }
-.skel { height: 14px; border-radius: 6px; background: var(--line, #e5e5ea); animation: skelPulse 1.2s ease-in-out infinite; }
+.skel { height: 14px; border-radius: 6px; background: var(--line); animation: skelPulse 1.2s ease-in-out infinite; }
 .skel-ts { width: 110px; }
 .skel-method { width: 50px; }
 .skel-path { flex: 1; max-width: 250px; }

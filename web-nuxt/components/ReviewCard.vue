@@ -103,10 +103,10 @@ function dimImage(payload: Event | string) {
   background: transparent; font-size: var(--text-xs); color: var(--muted); cursor: pointer;
   transition: color .15s var(--ease-soft), border-color .15s var(--ease-soft);
 }
-.ri-action-btn:hover { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
+.ri-action-btn:hover { color: var(--error); border-color: var(--error); }
 .ri-action-btn:focus-visible { outline: 2px solid var(--error, currentColor); outline-offset: 1px; }
 .ri-action-btn:disabled { opacity: .55; cursor: not-allowed; }
-.rf-error { font-size: var(--text-sm); color: var(--error, #D94F3D); margin-top: var(--space-1); }
+.rf-error { font-size: var(--text-sm); color: var(--error); margin-top: var(--space-1); }
 /* Sediment accent replaces the generic --accent rail — river→amber→clay wash, echoing the section tick at card scale. */
 .review-featured {
   border-left: 3px solid transparent;

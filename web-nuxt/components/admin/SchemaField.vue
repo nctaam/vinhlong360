@@ -80,7 +80,7 @@ function onTags(raw: string) {
 
 <style scoped>
 .sf-field { display: flex; flex-direction: column; gap: .25rem; }
-.sf-req { color: var(--error, #e53e3e); }
+.sf-req { color: var(--error); }
 .sf-help { font-size: .75rem; color: var(--ink-700); }
 .sf-bool { display: flex; align-items: center; gap: .5rem; font-size: .9rem; cursor: pointer; }
 .sf-bool input { width: 18px; height: 18px; }

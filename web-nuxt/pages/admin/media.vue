@@ -234,7 +234,7 @@ onMounted(fetchMedia)
 .media-entity-name { font-weight: 600; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .media-entity-type { font-size: .72rem; color: var(--muted); text-transform: uppercase; }
 .media-credit { font-size: .72rem; color: var(--primary-fg); }
-.media-no-credit { font-size: .72rem; color: var(--warning, #FF9F0A); font-style: italic; }
+.media-no-credit { font-size: .72rem; color: var(--warning); font-style: italic; }
 
 
 .media-preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
@@ -244,9 +244,9 @@ onMounted(fetchMedia)
 .media-preview-url code { font-size: .75rem; background: var(--bg-alt); padding: 2px 6px; border-radius: 4px; }
 .media-preview-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: .5px solid var(--line); }
 
-.stat-card.status-warn { border-left: 4px solid var(--warning, #FF9F0A); }
-.dark .media-card { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
-.dark .media-tab { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.stat-card.status-warn { border-left: 4px solid var(--warning); }
+.dark .media-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
+.dark .media-tab { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 @media (max-width: 640px) { .media-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .media-card:hover { transform: none; } .media-skeleton-img, .media-skeleton-line { animation: none; } }
 </style>

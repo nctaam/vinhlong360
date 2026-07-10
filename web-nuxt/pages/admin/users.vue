@@ -500,7 +500,7 @@ onMounted(() => fetchUsers())
   transition: transform .25s var(--ease-soft);
 }
 
-.dark .usr-filter-select { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .usr-filter-select { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-sort-th:hover { background: rgba(var(--primary-rgb),.16); }
 
 /* ── User cell with avatar ── */
@@ -583,8 +583,8 @@ onMounted(() => fetchUsers())
 .usr-confirm-actions button:active { transform: scale(.95); transition-duration: .08s; }
 .usr-confirm-actions button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .usr-confirm-actions button:disabled { opacity: var(--opacity-disabled); cursor: default; }
-.usr-confirm-actions .btn-danger { color: var(--error, #D94F3D); border-color: var(--error, #D94F3D); }
-.usr-confirm-actions .btn-danger:hover { background: var(--error, #D94F3D); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
+.usr-confirm-actions .btn-danger { color: var(--error); border-color: var(--error); }
+.usr-confirm-actions .btn-danger:hover { background: var(--error); color: var(--on-error); box-shadow: 0 2px 8px rgba(var(--danger-rgb),.2); }
 .usr-confirm-actions .btn-success { color: var(--primary); border-color: var(--primary); }
 .usr-confirm-actions .btn-success:hover { background: var(--primary); color: var(--on-primary); box-shadow: 0 2px 8px rgba(var(--primary-rgb),.2); }
 .usr-confirm-cancel:hover { background: var(--bg-alt); }
@@ -610,14 +610,14 @@ onMounted(() => fetchUsers())
 /* ── Dark ── */
 .dark .usr-avatar { background: rgba(var(--primary-rgb),.2); }
 .dark .usr-cell:hover .usr-avatar { box-shadow: 0 2px 8px rgba(var(--primary-rgb),.25); }
-.dark .usr-role-select { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .usr-role-select { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-active { background: rgba(var(--primary-rgb),.12); }
 .dark .usr-banned { background: rgba(var(--danger-rgb),.12); }
-.dark .usr-rolecount { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .usr-rolecount { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-rolecount-n { background: rgba(var(--white-rgb),.12); color: var(--ink); }
 .dark .usr-rolecount.active { background: rgba(var(--primary-rgb),.18); }
 .dark .usr-skeleton-line { background: linear-gradient(90deg, rgba(var(--white-rgb),.06) 25%, rgba(var(--white-rgb),.12) 50%, rgba(var(--white-rgb),.06) 75%); background-size: 200% 100%; }
-.dark .usr-confirm-actions button { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .usr-confirm-actions button { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .usr-confirm-cancel:hover { background: rgba(var(--white-rgb),.06); }
 
 /* ── User detail drawer ── */
@@ -651,7 +651,7 @@ onMounted(() => fetchUsers())
 .ud-post-time { font-size: var(--text-xs); color: var(--muted); }
 .usr-admin-role { color: var(--primary); font-weight: 600; }
 
-.dark .ud-drawer { background: var(--card, #2c2c2e); box-shadow: -4px 0 32px rgba(var(--black-rgb),.5); }
+.dark .ud-drawer { background: var(--card); box-shadow: -4px 0 32px rgba(var(--black-rgb),.5); }
 .dark .ud-stat { background: rgba(var(--white-rgb),.04); }
 
 @media (max-width: 480px) { .ud-drawer { max-width: 100%; } }

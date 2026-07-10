@@ -192,7 +192,7 @@ const ratingDisplay = computed(() => {
   border-radius: 50%;
   border: none;
   background: rgba(var(--white-rgb), 0.9);
-  color: var(--ink-900, #1a1a1a);
+  color: var(--ink-900);
   font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
@@ -257,7 +257,7 @@ const ratingDisplay = computed(() => {
 .ca-icon { font-size: .7rem; opacity: .7; cursor: default; }
 .ca-more { font-size: .65rem; color: var(--muted); font-weight: 600; margin-left: 1px; }
 .card-rating { display: flex; align-items: center; gap: .25rem; font-size: .8rem; margin-top: .25rem; }
-.cr-stars { color: var(--secondary, #d4a017); letter-spacing: -1px; }
+.cr-stars { color: var(--secondary); letter-spacing: -1px; }
 .cr-score { font-weight: 600; color: var(--ink); }
 .cr-count { color: var(--muted); font-size: .75rem; }
 .badge.ocop-5 {
@@ -274,7 +274,7 @@ const ratingDisplay = computed(() => {
 .dark .badge.ocop-4 { color: var(--secondary-fg); }
 .badge.new-badge {
   background: var(--success-bg, rgba(52, 199, 89, .14));
-  color: var(--success, #157a33);
+  color: var(--success);
   font-weight: 600;
 }
 .dark .badge.new-badge {

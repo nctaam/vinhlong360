@@ -412,7 +412,7 @@ onMounted(load)
 .dark .cpl-total-badge { background: rgba(var(--warning-rgb),.12); color: var(--accent); }
 .dark .cpl-filter-badge { background: rgba(var(--primary-rgb),.14); color: rgb(var(--success-rgb)); }
 .dark .cpl-type-badge { background: rgba(var(--white-rgb),.06); }
-.dark .cpl-place-select { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.08); }
+.dark .cpl-place-select { background: var(--card); border-color: rgba(var(--white-rgb),.08); }
 .dark .cpl-bulk-bar { background: rgba(var(--primary-rgb),.1); border-color: rgba(var(--primary-rgb),.25); border-top-color: rgba(var(--primary-rgb),.35); }
 .dark .cpl-bulk-count { color: rgb(var(--success-rgb)); }
 .dark .cpl-bulk-progress { background: rgba(var(--white-rgb),.7); }

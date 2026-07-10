@@ -175,7 +175,7 @@ onMounted(reload)
 .cs-skel-item { height: 60px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(even) { animation-delay: .2s; }
 
-.dark .ff-row { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .ff-row { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .ff-track { background: rgba(var(--white-rgb),.15); }
 
 @media (prefers-reduced-motion: reduce) {

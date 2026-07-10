@@ -259,9 +259,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 /* ── Dark ── */
 .dark .cs-chip { background: rgba(var(--white-rgb),.05); border-color: rgba(var(--white-rgb),.06); }
 .dark .cs-chip:hover { background: rgba(var(--white-rgb),.08); }
-.dark .cs-search-input { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .cs-search-input { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .cs-group-count { background: rgba(var(--white-rgb),.06); border-color: rgba(var(--white-rgb),.08); }
-.dark .cs-card { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .cs-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .cs-card:hover {
   box-shadow: 0 6px 20px rgba(var(--black-rgb),.3);
   border-color: rgba(var(--white-rgb),.18);

@@ -247,8 +247,8 @@ onMounted(loadProvisional)
 }
 
 /* ── Dark ── */
-.dark .dth-empty { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
-.dark .dth-tool-card { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .dth-empty { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
+.dark .dth-tool-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .dth-tool-card:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(var(--black-rgb),.4); }
 .dark .dth-conf-high { background: rgba(var(--primary-rgb),.18); color: rgb(var(--success-rgb)); }
 .dark .dth-conf-low { background: rgba(var(--warning-rgb),.14); color: var(--accent-text); }

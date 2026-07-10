@@ -103,7 +103,7 @@ onMounted(reload)
 .cs-skel-item { height: 64px; border-radius: 12px; background: var(--line); opacity: .4; animation: cs-pulse 1.5s var(--ease-in-out) infinite; }
 .cs-skel-item:nth-child(even) { animation-delay: .2s; }
 .dark .cs-help { background: rgba(var(--primary-rgb),.08); }
-.dark .cs-help pre { background: var(--card, #2c2c2e); }
+.dark .cs-help pre { background: var(--card); }
 @media (prefers-reduced-motion: reduce) {
   .cs-skel-item { animation: none; }
 }

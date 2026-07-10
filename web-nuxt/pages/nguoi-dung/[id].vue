@@ -999,7 +999,7 @@ useSeoMeta({
 .profile-handle { color: var(--muted); font-size: var(--text-sm); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
 .profile-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--space-3); border-radius: var(--radius-full); border: 1px solid var(--line); background: var(--card); color: var(--ink-700); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .profile-chip.is-public { border-color: color-mix(in srgb, var(--success, var(--leaf-600)) 28%, var(--line)); color: var(--success, var(--leaf-600)); }
-.profile-chip.is-private { border-color: color-mix(in srgb, var(--warning, #b7791f) 28%, var(--line)); color: var(--warning, #b7791f); }
+.profile-chip.is-private { border-color: color-mix(in srgb, var(--warning) 28%, var(--line)); color: var(--warning); }
 .profile-chip.is-self,
 .profile-chip.is-following { background: color-mix(in srgb, var(--primary) 10%, var(--card)); border-color: color-mix(in srgb, var(--primary) 30%, var(--line)); color: var(--primary); }
 .profile-more-wrap { position: relative; }

@@ -627,9 +627,9 @@ function onOtpPaste(e: ClipboardEvent) {
 .otp-step { animation: stepSlideIn .35s var(--ease-out-expo); }
 @keyframes stepSlideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
 .form-label { display: block; font-size: var(--text-sm); font-weight: 600; margin-bottom: var(--space-1); color: var(--ink-secondary); }
-.form-label .required { color: var(--error, #e53e3e); }
+.form-label .required { color: var(--error); }
 .form-group { margin-bottom: var(--space-3); }
-.form-success { font-size: var(--text-sm); color: var(--success, #38a169); margin-top: var(--space-1); }
+.form-success { font-size: var(--text-sm); color: var(--success); margin-top: var(--space-1); }
 @media (prefers-reduced-motion: reduce) {
   .otp-done h3 { animation: none; }
   .otp-step { animation: none; }

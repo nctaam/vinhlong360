@@ -455,7 +455,7 @@ onMounted(() => fetchAll())
   display: inline-flex; align-items: center; gap: 6px;
   min-height: 44px; padding: var(--space-1) var(--space-3);
   border: 1px solid var(--border); border-radius: 100px;
-  background: var(--surface, var(--white)); color: var(--text, #1d1d1f);
+  background: var(--surface, var(--white)); color: var(--text);
   font-size: .78rem; font-weight: 500; cursor: pointer;
   transition: background .2s, border-color .2s, color .2s, transform .2s var(--ease-soft);
 }
@@ -503,7 +503,7 @@ onMounted(() => fetchAll())
   background: transparent; color: var(--muted); font-size: .78rem; cursor: pointer;
   transition: color .2s;
 }
-.rpt-bulk-clear:hover { color: var(--text, #1d1d1f); }
+.rpt-bulk-clear:hover { color: var(--text); }
 .rpt-bulk-clear:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Checkboxes / selected row ── */
@@ -532,7 +532,7 @@ onMounted(() => fetchAll())
 .rpt-loadmore {
   min-height: 44px; padding: 6px 18px;
   border: 1px solid var(--border); border-radius: 100px;
-  background: var(--surface, var(--white)); color: var(--text, #1d1d1f);
+  background: var(--surface, var(--white)); color: var(--text);
   font-size: .82rem; font-weight: 600; cursor: pointer;
   transition: background .2s, border-color .2s, transform .2s var(--ease-soft);
 }
@@ -575,7 +575,7 @@ onMounted(() => fetchAll())
 /* ── Skeleton loading ── */
 .rpt-skeleton { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4) 0; }
 .rpt-skel-row { display: flex; gap: var(--space-3); padding: var(--space-2) 0; }
-.skel { height: 14px; border-radius: 6px; background: var(--line, #e5e5ea); animation: rptSkelPulse 1.2s ease-in-out infinite; }
+.skel { height: 14px; border-radius: 6px; background: var(--line); animation: rptSkelPulse 1.2s ease-in-out infinite; }
 .skel-who { width: 100px; }
 .skel-type { width: 60px; }
 .skel-obj { width: 80px; }

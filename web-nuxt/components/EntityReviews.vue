@@ -317,7 +317,7 @@ onMounted(() => fetchReviews())
 <style scoped>
 .rf-rating-hint { font-size: var(--text-sm); color: var(--muted); font-weight: var(--weight-semibold); margin-inline-start: var(--space-2); align-self: center; font-variant-numeric: tabular-nums; }
 .review-textarea { resize: vertical; }
-.review-error { font-size: var(--text-sm); color: var(--error, #D94F3D); }
+.review-error { font-size: var(--text-sm); color: var(--error); }
 .review-retry-btn { margin-inline-start: var(--space-2); }
 .review-empty { font-size: var(--text-sm); }
 .review-sentinel { display: flex; justify-content: center; padding: var(--space-3) 0; min-height: 40px; }
@@ -357,7 +357,7 @@ onMounted(() => fetchReviews())
 .rf-image-add:focus-within { outline: 2px solid var(--brand, currentColor); outline-offset: 2px; }
 .rf-image-add.disabled { opacity: .55; cursor: not-allowed; }
 .rf-image-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.rf-error { font-size: var(--text-sm); color: var(--error, #D94F3D); margin-top: var(--space-1); }
+.rf-error { font-size: var(--text-sm); color: var(--error); margin-top: var(--space-1); }
 
 .review-loading { display: flex; flex-direction: column; gap: var(--space-4); }
 .review-skeleton { padding: var(--space-4); border-radius: var(--radius-md); background: var(--card); border: .5px solid var(--line); }

@@ -48,7 +48,7 @@ const pages = PAGE_MANIFEST_LIST
 .cs-arrow { font-size: 1.4rem; font-weight: 300; color: var(--muted); flex-shrink: 0; opacity: .4; transition: opacity .2s, transform .2s var(--ease-soft); }
 .cs-card:hover .cs-arrow { opacity: .8; transform: translateX(3px); }
 @keyframes cs-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.dark .cs-card { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .cs-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .cs-card:hover { box-shadow: 0 6px 20px rgba(var(--black-rgb),.3); }
 @media (prefers-reduced-motion: reduce) {
   .cs-card { animation: none; }

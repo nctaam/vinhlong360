@@ -383,7 +383,7 @@ function actionLabel(a: ActivityItem) {
 .cp-alert {
   display: flex; align-items: center; justify-content: space-between; gap: .75rem;
   margin-bottom: 1rem; padding: .75rem .9rem; border: 1px solid rgba(var(--danger-rgb, 217,79,61), .22);
-  border-radius: var(--radius-md); background: color-mix(in oklab, var(--error-container, #fff3f0) 70%, var(--card));
+  border-radius: var(--radius-md); background: color-mix(in oklab, var(--error-container) 70%, var(--card));
   color: var(--ink);
 }
 .cp-alert span { font-size: .86rem; line-height: 1.4; }

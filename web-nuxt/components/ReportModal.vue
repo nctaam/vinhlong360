@@ -144,7 +144,7 @@ async function submit() {
 .rm-fade-enter-from, .rm-fade-leave-to { opacity: 0; }
 .rm-fade-enter-from .rm-sheet, .rm-fade-leave-to .rm-sheet { transform: translateY(16px); }
 
-.dark .rm-sheet { background: var(--card, #2c2c2e); }
+.dark .rm-sheet { background: var(--card); }
 .dark .rm-chip { background: var(--glass-subtle); border-color: var(--glass-border); }
 .dark .rm-textarea { background: var(--glass-subtle); border-color: var(--glass-border); }
 

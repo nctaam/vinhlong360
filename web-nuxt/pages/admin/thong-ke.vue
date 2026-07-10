@@ -284,12 +284,12 @@ onMounted(fetchData)
 
 /* ── Warn-state card: tint + border/icon only, neutral text ── */
 .stat-card.status-warn {
-  border-color: var(--warning, #e67e22);
+  border-color: var(--warning);
   background: var(--warning-bg);
 }
 .stat-card.status-warn .stat-icon {
   background: rgba(var(--warning-rgb),.18) !important;
-  color: var(--warning, #e67e22) !important;
+  color: var(--warning) !important;
 }
 
 /* ── Section grouping + divider ── */
@@ -412,7 +412,7 @@ onMounted(fetchData)
 .dark .tk-panel:hover .tk-count-warn { background: rgba(var(--warning-rgb),.28); }
 .dark .stat-card .stat-value { color: var(--primary-light); }
 .dark .tk-cost-scope { background: rgba(var(--primary-rgb),.22); color: var(--primary-light); }
-.dark .stat-card.status-warn { background: rgba(240,160,80,.08); border-color: var(--warning, #f0a050); }
+.dark .stat-card.status-warn { background: rgba(240,160,80,.08); border-color: var(--warning); }
 .dark .tk-sk-card, .dark .tk-sk-panel { background: rgba(var(--white-rgb),.06); }
 
 /* ── Loading skeleton ── */

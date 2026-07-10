@@ -471,7 +471,7 @@ async function removeItinerary(planId: string) {
   background: var(--bg-alt); padding: 0 5px; border-radius: var(--radius-full);
   font-size: .75rem; font-weight: 600; color: var(--ink-700);
 }
-.saved-tab.active .saved-tab-count { background: var(--primary-light, #f0e6df); color: var(--primary); }
+.saved-tab.active .saved-tab-count { background: var(--primary-light); color: var(--primary); }
 
 /* Entity grid — rows use the shared <SavedEntityCard> for the Story-Card
    treatment (serif title, dateline eyebrow, tri-province card-rule, grain
@@ -482,7 +482,7 @@ async function removeItinerary(planId: string) {
   color: var(--ink-700); cursor: pointer; font-size: .85rem;
   border-radius: var(--radius-full); transition: background .15s;
 }
-.saved-remove:hover { background: var(--bg-alt); color: var(--error, #e53e3e); }
+.saved-remove:hover { background: var(--bg-alt); color: var(--error); }
 
 /* Posts list */
 .saved-posts-list { display: flex; flex-direction: column; gap: .5rem; }

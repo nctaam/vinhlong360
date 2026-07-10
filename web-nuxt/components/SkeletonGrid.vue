@@ -45,7 +45,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
   background-image: var(--grain); background-size: 120px 120px; opacity: .05;
 }
 .sk-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
-.sk-line { border-radius: var(--radius-sm, 6px); background: linear-gradient(90deg, var(--bg-warm, #f0ece2) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm, #f0ece2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.sk-line { border-radius: var(--radius-sm, 6px); background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 .sk-type { width: 80px; height: 10px; margin-bottom: 2px; }
 .sk-title { width: 70%; height: 18px; }
 /* Static tri-province rule — mirrors .card-rule exactly (river→amber→clay,

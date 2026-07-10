@@ -59,7 +59,7 @@ async function doLogout() {
 
 <style scoped>
 .menu-badge {
-  background: var(--error, #e53e3e);
+  background: var(--error);
   color: var(--white);
   font-size: .7rem;
   font-weight: 700;

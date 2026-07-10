@@ -54,9 +54,9 @@ function iconFor(type?: string) {
   -webkit-backdrop-filter: var(--glass, blur(16px));
   pointer-events: auto;
 }
-.toast.success { --toast-accent: var(--success, #16a34a); }
-.toast.error { --toast-accent: var(--error, #dc3545); }
-.toast.warning { --toast-accent: var(--accent-dark, #d4890f); }
+.toast.success { --toast-accent: var(--success); }
+.toast.error { --toast-accent: var(--error); }
+.toast.warning { --toast-accent: var(--accent-dark); }
 .toast.info { --toast-accent: var(--primary); }
 
 .toast-icon {

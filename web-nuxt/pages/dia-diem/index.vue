@@ -347,7 +347,7 @@ useHead({
 
 .dd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
 .dd-more { display: block; margin: var(--space-5) auto 0; }
-.dd-load-error { text-align: center; color: var(--danger, #dc2626); font-size: var(--text-sm); margin: var(--space-3) 0; }
+.dd-load-error { text-align: center; color: var(--danger); font-size: var(--text-sm); margin: var(--space-3) 0; }
 .dd-load-error .btn-text { color: var(--primary-fg); font-weight: var(--weight-semibold); background: none; border: none; cursor: pointer; text-decoration: underline; }
 
 /* ============================================================

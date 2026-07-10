@@ -651,7 +651,7 @@ tr:hover .lt-stops-badge { transform: scale(1.1); }
 /* ── Skeleton loading ── */
 .lt-skeleton { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4) 0; }
 .lt-skel-row { display: flex; gap: var(--space-3); padding: var(--space-2) 0; }
-.skel { height: 14px; border-radius: 6px; background: var(--line, #e5e5ea); animation: ltSkelPulse 1.2s ease-in-out infinite; }
+.skel { height: 14px; border-radius: 6px; background: var(--line); animation: ltSkelPulse 1.2s ease-in-out infinite; }
 .skel-id { width: 60px; }
 .skel-name { flex: 1; max-width: 200px; }
 .skel-area { width: 80px; }

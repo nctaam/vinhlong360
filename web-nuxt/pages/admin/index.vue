@@ -635,7 +635,7 @@ onMounted(fetchDashboard)
 }
 .dash-backup-btn:hover:not(:disabled) { background: rgba(var(--primary-rgb),.08); }
 .dash-backup-btn:disabled { opacity: var(--opacity-disabled); cursor: wait; }
-.dark .dash-health { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .dash-health { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 
 /* ── Entity completeness ── */
 .dash-completeness {
@@ -653,7 +653,7 @@ onMounted(fetchDashboard)
 .dash-orphan-link { color: inherit; text-decoration: none; border-bottom: 1px dashed rgb(var(--warning-rgb)); }
 .dash-orphan-link:hover { color: rgb(var(--warning-rgb)); }
 .dash-orphan-count { color: rgb(var(--warning-rgb)); }
-.dark .dash-completeness { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .dash-completeness { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 
 /* ── Quick actions ── */
 .dash-section { margin-bottom: var(--space-6); }
@@ -732,14 +732,14 @@ onMounted(fetchDashboard)
 .admin-refresh:disabled { opacity: var(--opacity-disabled); cursor: not-allowed; }
 
 /* ── Dark mode ── */
-.dark .dash-stat-card { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .dash-stat-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .dash-stat-card:hover { box-shadow: 0 4px 16px rgba(var(--black-rgb),.3); }
 .dark .dash-alert.warn { background: rgba(var(--warning-rgb),.08); color: var(--accent); border-color: rgba(var(--warning-rgb),.15); }
 .dark .dash-alert.error { background: rgba(var(--danger-rgb),.08); color: rgb(var(--red-rgb)); border-color: rgba(var(--danger-rgb),.15); }
-.dark .dash-action { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
-.dark .dash-action:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(var(--black-rgb),.3); background: color-mix(in oklab, var(--primary) 12%, var(--card, #2c2c2e)); }
+.dark .dash-action { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
+.dark .dash-action:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(var(--black-rgb),.3); background: color-mix(in oklab, var(--primary) 12%, var(--card)); }
 .dark .admin-refresh:disabled { border-color: rgba(var(--white-rgb),.12); }
-.dark .dash-chart-card { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .dash-chart-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .dash-chart-card:hover { box-shadow: 0 2px 12px rgba(var(--black-rgb),.2); }
 .dark .dash-bar-track { background: rgba(var(--white-rgb),.05); }
 
@@ -809,7 +809,7 @@ onMounted(fetchDashboard)
 .dash-ops-cell b { font-size: .9rem; color: var(--ink); }
 .dash-ops-cell small, .dash-ops-label { color: var(--muted); font-size: .75rem; overflow-wrap: anywhere; }
 .dash-ops-label { font-weight: 650; text-transform: uppercase; letter-spacing: .02em; }
-.dark .dash-ops { background: var(--card, #2c2c2e); border-color: rgba(var(--white-rgb),.06); }
+.dark .dash-ops { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 @media (max-width: 900px) { .dash-ops-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .dash-ops-grid { grid-template-columns: 1fr; } }
 </style>

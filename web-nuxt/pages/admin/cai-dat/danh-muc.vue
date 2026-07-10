@@ -64,5 +64,5 @@ onMounted(reload)
 .cs-help-keys code { font-family: 'SF Mono', monospace; font-size: .75rem; color: var(--primary); }
 .cs-skel-tall { height: 120px; }
 .dark .cs-help { background: rgba(var(--primary-rgb),.08); }
-.dark .cs-help pre { background: var(--card, #2c2c2e); }
+.dark .cs-help pre { background: var(--card); }
 </style>

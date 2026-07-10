@@ -317,7 +317,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-card.img-focused {
   box-shadow: 0 0 0 2px var(--primary); border-color: var(--primary);
 }
-.img-thumb-wrap { position: relative; aspect-ratio: 4 / 3; background: var(--bg-alt, #f2f2f2); overflow: hidden; }
+.img-thumb-wrap { position: relative; aspect-ratio: 4 / 3; background: var(--bg-alt); overflow: hidden; }
 .img-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
 .img-thumb.img-broken { object-fit: contain; opacity: .35; }
 .img-conf {

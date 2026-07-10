@@ -243,7 +243,7 @@ function goToSlide(idx: number) {
   border-radius: var(--radius-full, 999px);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold, 600);
-  color: var(--ink-900, #1a1a1a);
+  color: var(--ink-900);
   cursor: pointer;
   transition: background 200ms, transform 200ms;
 }

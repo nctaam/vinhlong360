@@ -40,21 +40,21 @@ withDefaults(defineProps<{ count?: number }>(), { count: 5 })
 .skl-row:nth-child(5) { animation-delay: .24s; }
 .skl-badge {
   width: 56px; height: 56px; flex-shrink: 0; border-radius: 50%;
-  background: linear-gradient(90deg, var(--bg-warm, #f0ece2) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm, #f0ece2) 75%);
+  background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%);
   background-size: 200% 100%; animation: shimmer 1.5s infinite;
 }
 .skl-body { flex: 1; display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
 .skl-meta { display: flex; align-items: center; gap: var(--space-3); }
 .skl-line {
   height: 12px; border-radius: var(--radius-sm, 6px);
-  background: linear-gradient(90deg, var(--bg-warm, #f0ece2) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm, #f0ece2) 75%);
+  background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%);
   background-size: 200% 100%; animation: shimmer 1.5s infinite;
 }
 .skl-title { width: 38%; min-width: 90px; height: 16px; }
 /* type-badge shimmer block (~60px) mirrors PostCard .thread-type-badge */
 .skl-pill {
   width: 60px; height: 18px; flex-shrink: 0; border-radius: var(--radius-full, 999px);
-  background: linear-gradient(90deg, var(--bg-warm, #f0ece2) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm, #f0ece2) 75%);
+  background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%);
   background-size: 200% 100%; animation: shimmer 1.5s infinite;
 }
 .skl-text { width: 100%; }
@@ -63,7 +63,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 5 })
 .skl-imgs { display: flex; gap: var(--space-2); margin-top: var(--space-1); }
 .skl-img {
   flex: 1; aspect-ratio: 4 / 3; max-width: 33%; border-radius: var(--radius-md, 10px);
-  background: linear-gradient(90deg, var(--bg-warm, #f0ece2) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm, #f0ece2) 75%);
+  background: linear-gradient(90deg, var(--bg-warm) 25%, var(--line, var(--sand-300)) 50%, var(--bg-warm) 75%);
   background-size: 200% 100%; animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }

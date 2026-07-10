@@ -67,8 +67,8 @@ function onToggle() {
 }
 .save-btn:hover {
   background: var(--bg-warm);
-  border-color: var(--save-red, #e74c3c);
-  color: var(--save-red, #e74c3c);
+  border-color: var(--save-red);
+  color: var(--save-red);
   transform: translateY(-1px);
   box-shadow: var(--shadow-xs);
 }
@@ -76,9 +76,9 @@ function onToggle() {
 .save-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
 .save-btn.saved {
-  color: var(--save-red, #e74c3c);
-  border-color: color-mix(in srgb, var(--save-red, #e74c3c) 30%, var(--line));
-  background: color-mix(in srgb, var(--save-red, #e74c3c) 6%, var(--card));
+  color: var(--save-red);
+  border-color: color-mix(in srgb, var(--save-red) 30%, var(--line));
+  background: color-mix(in srgb, var(--save-red) 6%, var(--card));
 }
 
 .save-btn-sm { padding: var(--space-1) var(--space-2); min-height: 44px; font-size: var(--text-xs); }

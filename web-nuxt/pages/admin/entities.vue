@@ -1398,7 +1398,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .img-thumb { border-color: rgba(var(--white-rgb),.1); }
 .dark .ent-search-clear:hover { background: rgba(var(--white-rgb),.08); color: var(--ink); }
 .dark .admin-actions button:focus-visible,
-.dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg, #D98A6F); }
+.dark .ent-search-clear:focus-visible { outline-color: var(--primary-fg); }
 /* ── Bulk relationship add ── */
 .bulk-rel-details { margin-top: var(--space-2); }
 .bulk-rel-details summary { cursor: pointer; font-size: .82rem; }
