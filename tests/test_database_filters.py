@@ -3,9 +3,17 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agent"))
 
-from database import Database
+from database import Database, db  # noqa: E402
+
+# Các test này isolate qua Database(tmp_path/'filters.db') — chỉ đúng trên SQLite
+# (mỗi path = file riêng). Dưới PG, Database bỏ qua path (dùng DATABASE_URL chung)
+# → không isolate được, dính state rò rỉ từ test khác. Skip khi PG.
+pytestmark = pytest.mark.skipif(
+    db._use_pg, reason="SQLite-file-isolation: Database(tmp_path) bị bỏ qua dưới Postgres (dùng chung DATABASE_URL)")
 
 
 def _make_db(tmp_path):

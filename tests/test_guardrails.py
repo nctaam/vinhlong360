@@ -435,7 +435,13 @@ class TestSessionBudgetManager(unittest.TestCase):
     """Tests for token budget management per session."""
 
     def setUp(self):
+        import tempfile
+        from pathlib import Path
         self.mgr = SessionBudgetManager(default_limit=1000)
+        # Cách ly khỏi file persist DÙNG CHUNG (agent/data/guardrails_budget.json):
+        # global budget_manager có thể đã ghi session 's1'/'s2' vào đó → làm sai test.
+        self.mgr._sessions.clear()
+        self.mgr._persistence_file = Path(tempfile.mkdtemp()) / "budget.json"
 
     def test_fresh_session_has_budget(self):
         result = self.mgr.check_budget("new_session")

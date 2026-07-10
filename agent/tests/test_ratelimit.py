@@ -63,8 +63,9 @@ def test_create_post_rate_limited(monkeypatch):
     client = TestClient(app)
     created = []
     try:
-        for _ in range(2):
-            r = client.post("/api/posts", json={"content": "Chia sẻ trải nghiệm hợp lệ.", "post_type": "share"})
+        for _i in range(2):
+            # Nội dung UNIQUE mỗi bài — tránh chặn-trùng-nội-dung (409) che mất path rate-limit (429).
+            r = client.post("/api/posts", json={"content": f"Chia sẻ trải nghiệm hợp lệ số {_i}.", "post_type": "share"})
             assert r.status_code == 201, r.text
             created.append(r.json()["post"]["id"])
         # lần thứ 3 vượt limit → 429

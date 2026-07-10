@@ -2094,34 +2094,46 @@ class TestPhase12DependencySecurity:
 #  Phase 14: PG indexes for performance
 # ═══════════════════════════════════════════════════════════════════════
 
+def _index_defn_source() -> str:
+    """Nơi index có thể được định nghĩa: database.py (inline) + MỌI migration .sql.
+
+    Các index social đã được dời từ inline database.py sang agent/migrations/ (commit
+    5c09a00). Quét CẢ HAI phản ánh đúng schema thật thay vì chỉ database.py (đọc sai
+    chỗ → fail cả SQLite lẫn PG). 3 index bị xoá nhầm được tái tạo ở migration 069.
+    """
+    root = Path(__file__).resolve().parent.parent
+    parts = [(root / "database.py").read_text(encoding="utf-8")]
+    mig = root / "migrations"
+    if mig.is_dir():
+        for f in sorted(mig.glob("*.sql")):
+            parts.append(f.read_text(encoding="utf-8"))
+    return "\n".join(parts)
+
+
 class TestPhase14PgIndexes:
-    """Phase 14: Missing PG indexes must be created."""
+    """Phase 14: các index PG cần thiết phải được định nghĩa (database.py HOẶC migrations)."""
 
     def test_follows_indexes_exist(self):
-        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        src = _index_defn_source()
         assert "idx_follows_follower" in src
         assert "idx_follows_target" in src
 
     def test_posts_user_index_exists(self):
-        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
-        assert "idx_posts_user" in src
+        assert "idx_posts_user" in _index_defn_source()
 
     def test_comments_post_index_exists(self):
-        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
-        assert "idx_comments_post" in src
+        assert "idx_comments_post" in _index_defn_source()
 
     def test_likes_bookmarks_indexes_exist(self):
-        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
+        src = _index_defn_source()
         assert "idx_likes_user" in src
         assert "idx_bookmarks_user" in src
 
     def test_entity_ratings_index_exists(self):
-        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
-        assert "idx_entity_ratings" in src
+        assert "idx_entity_ratings" in _index_defn_source()
 
     def test_posts_entity_index_exists(self):
-        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
-        assert "idx_posts_entity" in src
+        assert "idx_posts_entity" in _index_defn_source()
 
 
 # ═══════════════════════════════════════════════════════════════════════
