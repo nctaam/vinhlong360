@@ -26,8 +26,10 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from api_schemas import (  # W6.3: response_model (extra="allow" — không strip field FE)
     AreasResponse, AutocompleteResponse, CollectionsResponse, CompareResponse,
-    EntityListResponse, EntityMapResponse, EntityTypesResponse, EventsResponse,
-    FeaturedResponse, PopularResponse, SearchResponse, TrendingResponse,
+    EntityDetailResponse, EntityListResponse, EntityMapResponse, EntityTypesResponse,
+    EventsResponse, FeaturedResponse, HomepageResponse, MapPin, PopularResponse,
+    SearchResponse, SiteSettingsResponse, StatsResponse, TransparencyResponse,
+    TrendingResponse,
 )
 from database import db
 from data_quality import entity_quality
@@ -816,7 +818,7 @@ async def contextual_recommendations(
 import site_settings
 
 
-@router.get("/site-settings",
+@router.get("/site-settings", response_model=SiteSettingsResponse,
             summary="Get site settings",
             description="Returns all public site settings as a flat key-value dict. Cached for 60 seconds.")
 async def get_site_settings(response: Response):
@@ -1159,7 +1161,7 @@ async def list_areas(response: Response):
     return {"areas": result, "total_places": sum(a["count"] for a in result)}
 
 
-@router.get("/entities/{entity_id}",
+@router.get("/entities/{entity_id}", response_model=EntityDetailResponse,
             summary="Get entity detail",
             description="Returns full entity detail including relationships, quality score, source freshness, and practical facts. Supports ETag caching.")
 async def get_entity(
@@ -1804,7 +1806,7 @@ async def user_activity(
     return {"activity": items, "page": page, "has_more": len(items) == limit}
 
 
-@router.get("/stats",
+@router.get("/stats", response_model=StatsResponse,
             summary="Get public stats",
             description="Returns aggregate platform statistics including entity counts, user counts, and other summary metrics. Cached for 5 minutes.")
 async def public_stats(response: Response):
@@ -2187,7 +2189,7 @@ async def _build_homepage_payload(month: int) -> dict:
     }
 
 
-@router.get("/homepage",
+@router.get("/homepage", response_model=HomepageResponse,
             summary="Get curated homepage feed",
             description="Returns the curated homepage with seasonal picks, diverse experiences, products, top dishes, trending entities, upcoming events, itineraries, and area counts. Cached for 2 minutes.")
 async def homepage_curated(response: Response):
@@ -2275,7 +2277,7 @@ def _build_map_pin(e: dict) -> dict | None:
     return pin
 
 
-@router.get("/map-pins",
+@router.get("/map-pins", response_model=list[MapPin],
             summary="Get map pins",
             description="Returns lightweight map pin data for all entities with coordinates. Includes emoji, color, rating, and place name. Filterable by type and area.")
 async def get_map_pins(
@@ -3424,7 +3426,7 @@ async def entity_search(
 
 # ── ND 147/2024 Compliance & Transparency ──────────────────────────────
 
-@router.get("/transparency",
+@router.get("/transparency", response_model=TransparencyResponse,
             summary="Get transparency report",
             description="Returns ND 147/2024 compliance info: moderation policy, takedown SLA, data practices, and contact details. Cached for 24 hours.")
 async def transparency_report(response: Response):

@@ -15,6 +15,9 @@ WANT = {
     "/api/featured", "/api/events", "/api/collections", "/api/autocomplete",
     "/api/entities/map", "/api/entities/trending", "/api/entities/compare",
     "/api/entities/popular",
+    # batch-2
+    "/api/homepage", "/api/stats", "/api/site-settings", "/api/transparency",
+    "/api/entities/{entity_id}",
 }
 
 
@@ -59,3 +62,38 @@ def test_entity_types_shape_preserved_under_model():
     assert "types" in data and "total" in data
     if data["types"]:
         assert "type" in data["types"][0] and "count" in data["types"][0]
+
+
+def test_map_pins_uses_list_response_model():
+    # /map-pins trả LIST → response_model=list[MapPin]; kiểm có khai + trả 200 list.
+    got = {r.path: getattr(r, "response_model", None)
+           for r in public_api.router.routes if hasattr(r, "path")}
+    assert got.get("/api/map-pins") is not None
+    r = _client().get("/api/map-pins")
+    assert r.status_code == 200
+    assert isinstance(r.json(), list)
+
+
+def test_entity_detail_no_strip_across_types():
+    # entity-detail phục vụ MỌI type; model chỉ khai scalar → field container
+    # (attributes/source/images) phải pass-through (extra="allow"), không 500.
+    c = _client()
+    ents = c.get("/api/entities?limit=500").json().get("entities", [])
+    by_type = {}
+    for e in ents:
+        by_type.setdefault(e.get("type"), e.get("id"))
+    assert by_type, "cần có entity để test"
+    for _t, eid in list(by_type.items())[:20]:
+        r = c.get(f"/api/entities/{eid}")
+        assert r.status_code == 200, f"entity {eid} → {r.status_code}"
+        d = r.json()
+        # field KHÔNG khai trong EntityDetailResponse vẫn còn (không strip)
+        assert "attributes" in d and "source" in d
+
+
+def test_homepage_shape_preserved():
+    r = _client().get("/api/homepage")
+    assert r.status_code == 200
+    d = r.json()
+    for k in ("seasonal", "experiences", "products", "trending", "itineraries"):
+        assert k in d
