@@ -1,4 +1,6 @@
 # Nâng cấp cinematic-editorial — Design (batch 1: luồng khám phá)
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 **Ngày:** 2026-07-04. **Nhánh:** main. **Kiểu:** bespoke per-page, thẩm mỹ cinematic-editorial (NatGeo/Condé Nast).
 

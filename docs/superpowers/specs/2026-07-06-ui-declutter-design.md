@@ -1,4 +1,6 @@
 # Spec: Declutter giao diện — cắt + gộp trên 44 trang public
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 - **Ngày:** 2026-07-06 · **Nhánh:** `feat/dinh-vi-vinh-long` · **Trạng thái (cập nhật 2026-07-07): ĐÃ THỰC THI XONG cả 3 đợt + merge main.** Kết quả thực thi: `docs/superpowers/plans/2026-07-06-declutter-dot1-trim.md`, `2026-07-07-declutter-dot2-shared.md`, `2026-07-07-declutter-dot3-structural.md`. **Line-number trong spec đã LỖI THỜI so với code — KHÔNG thực thi lại.**
 - **Nguồn bằng chứng:** workflow audit 36 agents trên trạng thái nhánh local — 92 finding (path:line), verify đối kháng: 24 confirmed/softened, 15 đề xuất bị BÁC (§6), 43 trim pass-through, 23 mục `[unverified]` phải thẩm định lại khi thực thi.

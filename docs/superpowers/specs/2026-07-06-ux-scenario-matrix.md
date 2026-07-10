@@ -1,4 +1,6 @@
 # Ma trận kịch bản trải nghiệm người dùng — vinhlong360.vn (2026-07-06)
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 Khung đánh giá cho vòng test-trực-tiếp-Chrome. Mỗi kịch bản = một người thật, một mục tiêu thật, đi qua các trang thật. Test = đi đúng luồng đó trong browser, chấm từng bước theo tiêu chí.
 

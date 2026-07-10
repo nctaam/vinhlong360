@@ -1,4 +1,6 @@
 # Spec — Tối ưu hiệu năng & bundle toàn site (vinhlong360.vn)
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 **Ngày:** 2026-07-02 · **Phạm vi:** deep audit hiệu năng + bundle, cắt-ngang mọi trang public.
 **Nguồn:** brainstorming 2026-07-02 (chủ chọn: focus "Hiệu năng & bundle toàn site" → cách làm "Cả hai, audit sâu").

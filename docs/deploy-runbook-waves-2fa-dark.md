@@ -1,4 +1,6 @@
 # Deploy Runbook — User System Waves 2–4 + AdminCP polish (2FA shipped DARK)
+> STATUS (2026-07-10): done — runbook đợt deploy User-System waves 2–4 + 2FA + dark đã hoàn tất; deploy hiện tại xem docs/HANDOFF.md.
+
 
 **Status:** prepared for a LATER deploy (owner-run). Not deployed as of 2026-07-04.
 **Decision:** ship the code with 2FA **disabled** (`TWO_FACTOR_ENABLED=false`, the default) — no `TOTP_ENC_KEY` needed until you choose to enable 2FA.

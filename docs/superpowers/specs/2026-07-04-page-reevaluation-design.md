@@ -1,4 +1,6 @@
 # Re-audit đa-chiều toàn bộ trang — Design / Rubric
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 **Ngày:** 2026-07-04. **Nhánh:** main. **Kiểu:** dimension-led sweep (Approach B).
 

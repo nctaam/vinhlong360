@@ -1,4 +1,6 @@
 # User System Deep Upgrade — Design Spec
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 **Date:** 2026-07-03
 **Branch:** feat/entity-content-model

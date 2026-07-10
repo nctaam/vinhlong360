@@ -1,4 +1,6 @@
 # Spec — Tách quản lý entity theo nhóm + bảng CTI mở rộng
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 **Ngày:** 2026-07-02 · **Trạng thái:** chủ dự án đã duyệt hướng (brainstorming cùng ngày).
 **Bối cảnh:** chủ yêu cầu "tách entity ra cho dễ quản lý, mỗi loại khác nhau; AdminCP quản lý

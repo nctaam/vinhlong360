@@ -1,4 +1,6 @@
 # Hướng dẫn chạy Session Song Song
+> STATUS (2026-07-10): active — hướng dẫn chạy session song song, tham chiếu.
+
 
 > Rút kinh nghiệm từ đợt 3 session (2026-06-27): 228 commits, 1 conflict CLAUDE.md, 1 crash prod do JWT_SECRET.
 

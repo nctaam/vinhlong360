@@ -89,3 +89,17 @@ def test_links_repo_root_relative(tmp_path):
     _mk(tmp_path, "scripts/tool.py", "x\n")
     _mk(tmp_path, "docs/a.md", "[tool](scripts/tool.py)\n")
     assert LinksCheck(root=tmp_path).run()["count"] == 0
+
+
+def test_links_ignores_inline_and_fenced_code(tmp_path):
+    # Link-syntax trong inline-code / fenced-code là VÍ DỤ mô tả rule, KHÔNG phải
+    # link thật → không được flag (false-positive R60.4 khi doc mô tả chính rule).
+    _mk(tmp_path, "docs/a.md",
+        "> STATUS x\n"
+        "Rule: link markdown `[..](path)` nội bộ trỏ file không tồn tại.\n"
+        "```\n[cũng-vậy](khong-ton-tai.md)\n```\n")
+    assert LinksCheck(root=tmp_path).run()["count"] == 0
+
+    # Nhưng link THẬT (ngoài code) vẫn bị bắt.
+    _mk(tmp_path, "docs/b.md", "> STATUS x\n[thật](khong-ton-tai.md)\n")
+    assert LinksCheck(root=tmp_path).run()["count"] == 1

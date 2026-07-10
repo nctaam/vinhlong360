@@ -1,4 +1,6 @@
 # Homepage Refinement — De-duplicate, Separate Roles, Trim Cruft
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 **Date:** 2026-07-05
 **Scope:** `web-nuxt/pages/index.vue`, `web-nuxt/composables/useJourneyActions.ts` (+ test), optional `web-nuxt/components/ItineraryCard.vue`

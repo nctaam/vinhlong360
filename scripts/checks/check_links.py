@@ -13,6 +13,7 @@ from urllib.parse import unquote
 from .common import iter_text_files, repo_root
 
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+INLINE_CODE_RE = re.compile(r"`[^`]*`")  # bỏ code-span: `[..](path)` mô tả rule ≠ link thật
 EXCLUDE = ["docs/archive", "docs/research"]
 
 
@@ -40,8 +41,15 @@ class LinksCheck:
             p = self.root / rel
             if not p.exists():
                 continue
+            in_fence = False
             for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-                for m in LINK_RE.finditer(line):
+                s = line.lstrip()
+                if s.startswith("```") or s.startswith("~~~"):  # fenced-code block → bỏ qua
+                    in_fence = not in_fence
+                    continue
+                if in_fence:
+                    continue
+                for m in LINK_RE.finditer(INLINE_CODE_RE.sub("", line)):  # bỏ inline-code trước khi match
                     target = unquote(m.group(1).split("#")[0].strip())
                     if not target or target.startswith(("http://", "https://", "mailto:", "tel:")):
                         continue

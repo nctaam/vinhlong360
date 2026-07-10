@@ -1,4 +1,6 @@
 # UGC/Auth chạy trên Postgres (quyết định GĐ3.1)
+> STATUS (2026-07-10): active — quyết định kiến trúc UGC/Auth-Postgres còn hiệu lực.
+
 
 ## Quyết định
 Tính năng **cộng đồng/UGC + xác thực** (users, OTP, posts, comments, likes, follows,

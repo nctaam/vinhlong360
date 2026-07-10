@@ -1,4 +1,6 @@
 # Nâng cấp toàn diện trang chủ vinhlong360 — Design Spec
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 > Ngày: 2026-07-05 · Nhánh: `feat/entity-content-model` · Surface: `web-nuxt/pages/index.vue` + vài component/composable mới.
 > Mục tiêu: đưa trang chủ từ ~7.5/10 (live) lên **9+**, qua **ảnh hero-grade + biên tập cô đọng + 1 khoảnh khắc giác quan chữ ký** — KHÔNG phải thêm nhiều feature/chuyển động.

@@ -1,4 +1,6 @@
 # Declutter Đợt 1 — Trim rủi-ro-thấp: Implementation Plan
+> STATUS (2026-07-10): done — plan đã thực thi & ship.
+
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

@@ -1,4 +1,6 @@
 # Kết quả test-Chrome + audit 36 trang → danh sách nâng cấp ưu tiên (2026-07-06)
+> STATUS (2026-07-10): done — design/audit đã hiện thực & ship.
+
 
 Nguồn: live Chrome probes (home/detail desktop+mobile — sạch) + swarm audit 6 sub-agent đọc mã + grep. Xếp theo impact.
 

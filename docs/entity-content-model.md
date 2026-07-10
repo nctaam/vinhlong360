@@ -1,4 +1,6 @@
 # Entity content-model — nghiên cứu & lộ trình (2026-07)
+> STATUS (2026-07-10): active — nghiên cứu + lộ trình entity content-model, tham chiếu.
+
 
 > Nguồn: deep-research đa-agent (9 agent: map codebase + taxonomy thực nghiệm +
 > nghiên cứu pattern STI/TPT/CTI + headless-CMS + JSONB migration). Grounding:

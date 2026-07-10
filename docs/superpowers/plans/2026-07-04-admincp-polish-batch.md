@@ -1,4 +1,6 @@
 # AdminCP Polish Batch — Implementation Plan
+> STATUS (2026-07-10): done — plan đã thực thi & ship.
+
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox (`- [ ]`) syntax.
 

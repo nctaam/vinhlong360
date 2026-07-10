@@ -3,6 +3,8 @@ Audit xong — toàn bộ anchor đã grep trên code hiện tại (nhánh `feat
 ---
 
 # Declutter Đợt 3 — Cấu trúc: Implementation Plan
+> STATUS (2026-07-10): done — plan đã thực thi & ship.
+
 
 > **For agentic workers:** REQUIRED SUB-SKILL: superpowers:executing-plans (đang thực thi inline).
 

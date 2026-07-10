@@ -1,4 +1,6 @@
 # Implementation Specs — Tổng hợp từ nghiên cứu
+> STATUS (2026-07-10): active — tổng hợp spec từ nghiên cứu, tham chiếu.
+
 
 > **File này tổng hợp các specs HÀNH ĐỘNG từ 3 tài liệu nghiên cứu gốc.**
 > Sessions đọc file này để biết CẦN LÀM GÌ. Đọc file gốc chỉ khi cần hiểu sâu hơn.
