@@ -10,7 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "agent"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from backfill_entity_details import KIND_TABLE, UNIVERSAL, typed_values  # noqa: E402
+from backfill_entity_details import KIND_TABLE, typed_values  # noqa: E402
 from entity_schemas import ENTITY_SCHEMAS, KIND_OF_TYPE  # noqa: E402
 
 

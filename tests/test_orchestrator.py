@@ -2,7 +2,6 @@
 
 import sys
 import threading
-import time
 from pathlib import Path
 
 import pytest
@@ -12,15 +11,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "agent"))
 from orchestrator import (
     QueryRouter,
     QueryCategory,
-    AgentSpec,
     Orchestrator,
     HandoffLog,
-    HandoffRecord,
     handoff_log,
     SEARCH_AGENT,
     RECOMMEND_AGENT,
     ITINERARY_AGENT,
-    COMPARE_AGENT,
     GENERAL_AGENT,
     _CATEGORY_AGENTS,
 )

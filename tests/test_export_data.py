@@ -4,7 +4,6 @@
 B3/B4: script ETL mới phải có test trước khi dùng. Chạy trên SQLite temp — không đụng DB thật.
 """
 import json
-import os
 import sys
 from pathlib import Path
 

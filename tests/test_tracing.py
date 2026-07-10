@@ -27,7 +27,6 @@ from tracing import (
     get_trace_summary,
     export_traces_json,
     _span_store,
-    _store_lock,
     _record_span,
 )
 import tracing

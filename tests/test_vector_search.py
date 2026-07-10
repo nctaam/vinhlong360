@@ -1,5 +1,4 @@
 """Tests for agent/vector_search.py — TF-IDF Vector Search."""
-import math
 import pytest
 
 from vector_search import (
@@ -12,7 +11,6 @@ from vector_search import (
     _norm,
     TFIDFStore,
     hybrid_search,
-    STOP_WORDS,
 )
 
 

@@ -3,7 +3,6 @@
 import json
 import sys
 import time
-import uuid
 from pathlib import Path
 
 import pytest
@@ -17,7 +16,6 @@ from checkpoints import (
     PendingConfirmation,
     needs_confirmation,
     format_confirmation_prompt,
-    CONFIRMATION_EXPIRY_SECONDS,
 )
 
 

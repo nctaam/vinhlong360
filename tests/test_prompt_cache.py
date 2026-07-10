@@ -1,5 +1,4 @@
 """Tests for agent/prompt_cache.py — LLM Prompt Caching."""
-import time
 
 import pytest
 
@@ -28,9 +27,6 @@ def test_estimate_tokens_english():
 
 def test_estimate_tokens_vietnamese():
     # Vietnamese text with diacritics: ~2 chars/token
-    text = "Xin chao cac ban, toi la huong dan vien du lich Vinh Long"
-    tokens_en = estimate_tokens(text)
-    # Same idea but with diacritics
     text_vn = "Xin chao cac ban, toi la huong dan vien du lich Vinh Long"
     tokens_vn = estimate_tokens(text_vn)
     assert tokens_vn >= 1

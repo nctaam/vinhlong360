@@ -5,7 +5,6 @@ import os
 import time
 import threading
 import unittest
-from unittest.mock import patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
 
@@ -17,7 +16,6 @@ from semantic_cache import (
     semantic_get,
     semantic_put,
     _make_key,
-    _SEASONAL_QUERIES,
 )
 
 

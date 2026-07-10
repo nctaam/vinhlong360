@@ -1,6 +1,5 @@
 """Tests for agent/circuit_breaker.py — Circuit Breaker & Retry."""
 import time
-from unittest.mock import MagicMock, patch
 
 import pytest
 

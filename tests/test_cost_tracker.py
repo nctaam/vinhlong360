@@ -1,5 +1,4 @@
 """Tests for agent/cost_tracker.py — Token Usage & Cost Attribution."""
-import json
 import os
 import sys
 import tempfile
@@ -7,7 +6,7 @@ import unittest
 from collections import deque
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
 

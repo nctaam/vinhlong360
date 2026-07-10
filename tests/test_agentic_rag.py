@@ -1,7 +1,6 @@
 """Tests for the Agentic RAG layer (agent/agentic_rag.py)."""
 import pytest
 import knowledge
-import agentic_rag
 from agentic_rag import (
     classify_query,
     _detect_areas,

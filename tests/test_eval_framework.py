@@ -2,14 +2,11 @@
 
 import sys
 import os
-import time
 import json
 import unittest
-from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
 
-import eval_framework as ef
 from eval_framework import (
     TestCase,
     BENCHMARK_SUITE,
@@ -22,7 +19,6 @@ from eval_framework import (
     FormatScorer,
     EvalReport,
     EvalRunner,
-    PASS_THRESHOLD,
     _normalize_vn,
     _text_contains,
 )

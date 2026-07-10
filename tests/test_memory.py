@@ -1,8 +1,6 @@
 """Tests for agent/memory.py — Dual-Layer Conversation Memory."""
 import json
-import os
 import time
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -14,8 +12,6 @@ from memory import (
     MemoryManager,
     _encrypt,
     _decrypt,
-    _get_encryption_key,
-    MEMORY_DIR,
 )
 
 

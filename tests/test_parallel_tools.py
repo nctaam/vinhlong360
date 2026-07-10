@@ -2,7 +2,6 @@
 import json
 import time
 import threading
-from unittest.mock import MagicMock
 
 import pytest
 

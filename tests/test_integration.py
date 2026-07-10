@@ -2,10 +2,8 @@
 
 Tests FastAPI endpoints using TestClient with mocked external dependencies.
 """
-import json
 import os
-import sys
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -60,7 +58,7 @@ _mock_client.chat.completions.create = _mock_create
 def client():
     """Create a TestClient for the FastAPI app with mocked dependencies."""
     import threading
-    with patch("server.client", _mock_client), \
+    with patch("server.get_client", lambda: _mock_client), \
          patch("server.start_scheduler", MagicMock()), \
          patch("server.sync_data_json_to_js", MagicMock()):
         from server import app
@@ -424,7 +422,7 @@ def test_chat_stream_concurrent_non_blocking():
     slow.chat.completions.create = _slow_create
 
     async def _run():
-        with patch("server.client", slow), \
+        with patch("server.get_client", lambda: slow), \
              patch("server.start_scheduler", MagicMock()), \
              patch("server.sync_data_json_to_js", MagicMock()):
             import server

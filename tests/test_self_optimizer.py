@@ -4,7 +4,6 @@ import sys
 import os
 import time
 import unittest
-from unittest.mock import patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
 
@@ -17,7 +16,6 @@ from self_optimizer import (
     _categorize_query,
     _clamp,
     should_optimize,
-    record_outcome,
     get_optimization_report,
     TEMP_MIN,
     TEMP_MAX,

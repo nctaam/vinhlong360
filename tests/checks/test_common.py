@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Test scripts/checks/common.py — nền RegexCheck + ratchet (SP01 T1)."""
-import json
 import sys
 from pathlib import Path
 

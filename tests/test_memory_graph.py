@@ -1,9 +1,7 @@
 """Tests for agent/memory_graph.py -- Graph-based relationship memory."""
 
-import json
 import sys
 import threading
-import time
 from pathlib import Path
 
 import pytest

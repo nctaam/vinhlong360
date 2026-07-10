@@ -1,6 +1,5 @@
 """Tests for agent/cache.py — LLM Response Cache."""
 import time
-from unittest.mock import patch
 
 import pytest
 

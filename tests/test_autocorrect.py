@@ -1,5 +1,4 @@
 """Tests for agent/autocorrect.py — Vietnamese-aware autocorrect."""
-import pytest
 
 from autocorrect import (
     autocorrect,

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Test scorecard (SP01 T7)."""
-import json
 import sys
 from pathlib import Path
 

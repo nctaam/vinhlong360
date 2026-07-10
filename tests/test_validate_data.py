@@ -1396,7 +1396,6 @@ def test_vn_phone_regex_patterns() -> None:
 
 
 def test_main_returns_zero_on_clean_data(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
-    import pytest  # noqa: F811
     data = {"entities": [], "relationships": [], "itineraries": []}
     f = tmp_path / "data.json"
     f.write_text(json.dumps(data), encoding="utf-8")
@@ -1405,7 +1404,6 @@ def test_main_returns_zero_on_clean_data(tmp_path: Path, monkeypatch: "pytest.Mo
 
 
 def test_main_returns_one_on_errors(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
-    import pytest  # noqa: F811
     data = {
         "entities": [{"type": "attraction", "name": "Test"}],
         "relationships": [],
@@ -1418,7 +1416,6 @@ def test_main_returns_one_on_errors(tmp_path: Path, monkeypatch: "pytest.MonkeyP
 
 
 def test_main_json_output(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch", capsys: "pytest.CaptureFixture[str]") -> None:
-    import pytest  # noqa: F811
     data = {"entities": [], "relationships": [], "itineraries": []}
     f = tmp_path / "data.json"
     f.write_text(json.dumps(data), encoding="utf-8")
@@ -1431,7 +1428,6 @@ def test_main_json_output(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch", cap
 
 
 def test_main_warnings_as_errors(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
-    import pytest  # noqa: F811
     data = {
         "entities": [
             {"id": "a", "type": "attraction", "name": "A"},
@@ -1449,7 +1445,6 @@ def test_main_warnings_as_errors(tmp_path: Path, monkeypatch: "pytest.MonkeyPatc
 
 
 def test_print_report_runs_without_error(tmp_path: Path, capsys: "pytest.CaptureFixture[str]") -> None:
-    import pytest  # noqa: F811
     data = {
         "entities": [
             {"id": "a", "type": "restaurant", "name": "A", "summary": "A test restaurant",
@@ -1794,7 +1789,6 @@ def test_validate_no_confidence_distribution_without_values(tmp_path: Path) -> N
 
 
 def test_print_report_includes_new_keys(tmp_path: Path, capsys: "pytest.CaptureFixture[str]") -> None:
-    import pytest  # noqa: F811
     data = {
         "entities": [
             {"id": "a", "type": "restaurant", "name": "A", "summary": "A test restaurant",

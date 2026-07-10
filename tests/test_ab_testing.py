@@ -1,14 +1,10 @@
 """Tests for agent/ab_testing.py — A/B Testing Framework."""
-import json
-import os
 import pytest
-from pathlib import Path
 
 from ab_testing import (
     ABTestManager,
     Experiment,
     create_default_experiments,
-    _DEFAULT_EXPERIMENTS,
     _norm_cdf,
     _norm_ppf,
     _erf,
