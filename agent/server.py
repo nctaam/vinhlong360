@@ -1719,6 +1719,49 @@ def _run_agent_orchestrated(message, history, session_id, base_system_prompt):
     return result["reply"], result["tools_used"], result["suggestions"]
 
 
+def _prepare_pending_calls(tool_calls, tools_used, messages, total_tool_calls, max_tool_calls):
+    """Chuẩn bị pending tool-calls từ msg.tool_calls (parse args, đếm, log tool). Trả (pending, total)."""
+    pending_calls = []
+    for tc in tool_calls:
+        if total_tool_calls >= max_tool_calls:
+            messages.append({
+                "role": "tool", "tool_call_id": tc.id,
+                "content": json.dumps({"error": "Tool call limit reached. Please respond with available information."})
+            })
+            continue
+        fn_name = tc.function.name
+        try:
+            fn_args = json.loads(tc.function.arguments)
+        except (json.JSONDecodeError, TypeError):
+            fn_args = {}  # EH-02: LLM trả JSON args lỗi → dùng {} thay vì crash agent loop
+        tools_used.append(f"{fn_name}({json.dumps(fn_args, ensure_ascii=False)})")
+        total_tool_calls += 1
+        pending_calls.append({"id": tc.id, "name": fn_name, "args": fn_args})
+    return pending_calls, total_tool_calls
+
+
+def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
+                           empty_results_count, round_num, total_tool_calls):
+    """Thực thi pending tool-calls (parallel khi >1, else serial). Trả empty_results_count."""
+    if parallel_exec and len(pending_calls) > 1:
+        call_items = [{"id": c["id"], "name": c["name"], "args": c["args"]} for c in pending_calls]
+        results = parallel_exec.execute_smart(call_items)
+        for pc, res in zip(pending_calls, results):
+            logger.info("Tool call (parallel)", tool=pc["name"],
+                        duration_ms=round(res.get("duration_ms", 0)), round=round_num + 1)
+            result = res.get("result", json.dumps({"error": res.get("error", "Unknown")}))
+            messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
+            _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
+    else:
+        for pc in pending_calls:
+            logger.info(f"Tool call #{total_tool_calls}", tool=pc["name"],
+                        args=str(pc["args"])[:200], round=round_num + 1)
+            result = call_tool(pc["name"], pc["args"])
+            messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
+            empty_results_count = _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
+    return empty_results_count
+
+
 def _run_agent(messages: list[dict], max_rounds: int = 8, max_tool_calls: int = 15):
     """
     ReAct-style agent loop with multi-turn tool calling.
@@ -1763,41 +1806,11 @@ def _run_agent(messages: list[dict], max_rounds: int = 8, max_tool_calls: int = 
 
         messages.append(msg)
 
-        # Prepare tool calls
-        pending_calls = []
-        for tc in msg.tool_calls:
-            if total_tool_calls >= max_tool_calls:
-                messages.append({
-                    "role": "tool", "tool_call_id": tc.id,
-                    "content": json.dumps({"error": "Tool call limit reached. Please respond with available information."})
-                })
-                continue
-            fn_name = tc.function.name
-            try:
-                fn_args = json.loads(tc.function.arguments)
-            except (json.JSONDecodeError, TypeError):
-                fn_args = {}  # EH-02: LLM trả JSON args lỗi → dùng {} thay vì crash agent loop
-            tools_used.append(f"{fn_name}({json.dumps(fn_args, ensure_ascii=False)})")
-            total_tool_calls += 1
-            pending_calls.append({"id": tc.id, "name": fn_name, "args": fn_args})
-
-        # Execute tools — PARALLEL when possible, sequential fallback
-        if parallel_exec and len(pending_calls) > 1:
-            call_items = [{"id": c["id"], "name": c["name"], "args": c["args"]} for c in pending_calls]
-            results = parallel_exec.execute_smart(call_items)
-            for pc, res in zip(pending_calls, results):
-                logger.info("Tool call (parallel)", tool=pc["name"],
-                            duration_ms=round(res.get("duration_ms", 0)), round=round_num + 1)
-                result = res.get("result", json.dumps({"error": res.get("error", "Unknown")}))
-                messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
-                _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
-        else:
-            for pc in pending_calls:
-                logger.info(f"Tool call #{total_tool_calls}", tool=pc["name"],
-                            args=str(pc["args"])[:200], round=round_num + 1)
-                result = call_tool(pc["name"], pc["args"])
-                messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
-                empty_results_count = _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
+        pending_calls, total_tool_calls = _prepare_pending_calls(
+            msg.tool_calls, tools_used, messages, total_tool_calls, max_tool_calls)
+        empty_results_count = _execute_pending_calls(
+            pending_calls, parallel_exec, messages, suggestions,
+            empty_results_count, round_num, total_tool_calls)
 
     return msg.content or "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này.", tools_used, suggestions
 
