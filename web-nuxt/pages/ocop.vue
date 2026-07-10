@@ -596,7 +596,7 @@ useHead(() => ({
   font-family: var(--font-editorial);
   font-weight: 600;
   font-size: clamp(1.1rem, .6vw + 1rem, 1.35rem);
-  color: #fff;
+  color: var(--white);
   text-shadow: 0 1px 3px rgba(0, 0, 0, .35);
   letter-spacing: -.01em;
 }

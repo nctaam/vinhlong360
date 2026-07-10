@@ -998,7 +998,7 @@ useSeoMeta({
 .profile-meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
 .profile-handle { color: var(--muted); font-size: var(--text-sm); font-weight: var(--weight-semibold); overflow-wrap: anywhere; }
 .profile-chip { display: inline-flex; align-items: center; min-height: 28px; padding: 0 var(--space-3); border-radius: var(--radius-full); border: 1px solid var(--line); background: var(--card); color: var(--ink-700); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
-.profile-chip.is-public { border-color: color-mix(in srgb, var(--success, #2e7d5b) 28%, var(--line)); color: var(--success, #2e7d5b); }
+.profile-chip.is-public { border-color: color-mix(in srgb, var(--success, var(--leaf-600)) 28%, var(--line)); color: var(--success, var(--leaf-600)); }
 .profile-chip.is-private { border-color: color-mix(in srgb, var(--warning, #b7791f) 28%, var(--line)); color: var(--warning, #b7791f); }
 .profile-chip.is-self,
 .profile-chip.is-following { background: color-mix(in srgb, var(--primary) 10%, var(--card)); border-color: color-mix(in srgb, var(--primary) 30%, var(--line)); color: var(--primary); }
@@ -1052,7 +1052,7 @@ useSeoMeta({
 .fm-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
 .fm-user { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); text-decoration: none; color: var(--ink); }
 .fm-user:hover { background: var(--bg-alt); }
-.fm-avatar { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.fm-avatar { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .fm-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .fm-empty { text-align: center; color: var(--muted); padding: var(--space-5); font-size: var(--text-sm); }
 

@@ -455,7 +455,7 @@ onMounted(() => fetchAll())
   display: inline-flex; align-items: center; gap: 6px;
   min-height: 44px; padding: var(--space-1) var(--space-3);
   border: 1px solid var(--border); border-radius: 100px;
-  background: var(--surface, #fff); color: var(--text, #1d1d1f);
+  background: var(--surface, var(--white)); color: var(--text, #1d1d1f);
   font-size: .78rem; font-weight: 500; cursor: pointer;
   transition: background .2s, border-color .2s, color .2s, transform .2s var(--ease-soft);
 }
@@ -532,7 +532,7 @@ onMounted(() => fetchAll())
 .rpt-loadmore {
   min-height: 44px; padding: 6px 18px;
   border: 1px solid var(--border); border-radius: 100px;
-  background: var(--surface, #fff); color: var(--text, #1d1d1f);
+  background: var(--surface, var(--white)); color: var(--text, #1d1d1f);
   font-size: .82rem; font-weight: 600; cursor: pointer;
   transition: background .2s, border-color .2s, transform .2s var(--ease-soft);
 }

@@ -164,7 +164,7 @@ useHead({
 .bxh-rank { flex-shrink: 0; width: 28px; text-align: center; font-size: var(--text-lg); font-weight: var(--weight-bold); color: var(--muted); }
 .bxh-rank-1 { color: var(--rank-gold, #d4a017); } .bxh-rank-2 { color: var(--rank-silver, #8a8d91); } .bxh-rank-3 { color: var(--rank-bronze, #b07b4f); }
 .dark .bxh-rank-1 { --rank-gold: #f0c040; } .dark .bxh-rank-2 { --rank-silver: #b0b3b8; } .dark .bxh-rank-3 { --rank-bronze: #d4956a; }
-.bxh-avatar { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-weight: var(--weight-semibold); flex-shrink: 0; }
+.bxh-avatar { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-weight: var(--weight-semibold); flex-shrink: 0; }
 .bxh-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .1rem; }
 .bxh-name { font-weight: var(--weight-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bxh-meta { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-xs); color: var(--muted); }

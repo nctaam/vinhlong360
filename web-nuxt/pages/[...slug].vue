@@ -92,7 +92,7 @@ function onSearch() {
 .nf-search button {
   padding: var(--space-3) var(--space-5);
   background: var(--accent);
-  color: var(--text-on-dark, #fff);
+  color: var(--text-on-dark, var(--white));
   border: none;
   border-radius: var(--radius-full, 100px);
   font-size: var(--text-sm);
@@ -130,7 +130,7 @@ function onSearch() {
 
 .nf-btn-primary {
   background: var(--accent);
-  color: var(--text-on-dark, #fff);
+  color: var(--text-on-dark, var(--white));
   border: none;
 }
 
@@ -142,7 +142,7 @@ function onSearch() {
   border: 1.5px solid var(--accent);
 }
 
-.nf-btn-outline:hover { background: var(--accent); color: var(--text-on-dark, #fff); }
+.nf-btn-outline:hover { background: var(--accent); color: var(--text-on-dark, var(--white)); }
 
 .nf-inner { animation: nfIn .5s var(--ease-spring-gentle); }
 @keyframes nfIn { from { opacity: 0; transform: translateY(16px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }

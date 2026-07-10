@@ -436,7 +436,7 @@ const formatDate = formatDateVN
 .sf-toggle-thumb {
   position: absolute; top: 2px; left: 2px;
   width: 27px; height: 27px; border-radius: 50%;
-  background: var(--white, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.18), 0 0 1px rgba(0,0,0,.04);
+  background: var(--white, var(--white)); box-shadow: 0 1px 4px rgba(0,0,0,.18), 0 0 1px rgba(0,0,0,.04);
   transition: transform .3s var(--ease-soft);
 }
 .sf-toggle input:checked + .sf-toggle-track .sf-toggle-thumb { transform: translateX(20px); }
@@ -458,7 +458,7 @@ const formatDate = formatDateVN
 }
 .sf-save {
   padding: var(--space-3) 28px; border-radius: 12px; font-weight: 600; font-size: .88rem;
-  background: var(--primary); color: var(--text-on-dark, #fff); border: none; cursor: pointer;
+  background: var(--primary); color: var(--text-on-dark, var(--white)); border: none; cursor: pointer;
   min-height: 44px;
   transition: transform .2s var(--ease-soft), opacity .2s, box-shadow .2s;
 }
@@ -480,7 +480,7 @@ const formatDate = formatDateVN
 .sf-save { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); }
 .sf-spinner {
   width: 16px; height: 16px; flex-shrink: 0;
-  border: 2px solid rgba(255,255,255,.4); border-top-color: var(--text-on-dark, #fff); border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: var(--text-on-dark, var(--white)); border-radius: 50%;
   animation: sf-spin .7s linear infinite;
 }
 @keyframes sf-spin { to { transform: rotate(360deg); } }

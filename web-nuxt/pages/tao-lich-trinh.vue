@@ -797,7 +797,7 @@ useHead({
 @keyframes stopIn { from { opacity: 0; transform: translateY(6px); } }
 .stop-num {
   width: 28px; height: 28px; border-radius: 50%;
-  background: var(--primary); color: var(--text-on-dark, #fff);
+  background: var(--primary); color: var(--text-on-dark, var(--white));
   display: flex; align-items: center; justify-content: center;
   font-size: var(--text-sm); font-weight: var(--weight-bold);
   flex-shrink: 0; z-index: 1;
@@ -853,7 +853,7 @@ useHead({
   transition: background .3s var(--ease-out), color .3s var(--ease-out), border-color .3s var(--ease-out), box-shadow .3s var(--ease-out-expo), transform .35s var(--ease-spring-gentle);
 }
 .planner-step.active { color: var(--ink); font-weight: var(--weight-semibold); }
-.planner-step.active .step-dot { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .12); transform: scale(1.05); }
+.planner-step.active .step-dot { background: var(--primary); color: var(--text-on-dark, var(--white)); border-color: var(--primary); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), .12); transform: scale(1.05); }
 .planner-step.done .step-dot { background: rgba(var(--secondary-rgb), .14); color: var(--secondary-fg); border-color: rgba(var(--secondary-rgb), .3); }
 .planner-step.done .step-label { color: var(--ink); }
 .planner-step-sep { flex: 1 1 18px; min-width: 18px; max-width: 48px; height: 2px; border-radius: 1px; background: var(--line); }

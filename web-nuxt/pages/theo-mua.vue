@@ -522,7 +522,7 @@ useHead(() => ({
   transition: height .2s var(--ease-out), background .2s var(--ease-out);
 }
 .ring-notch:hover .ring-notch-tick,
-.ring-notch:focus-visible .ring-notch-tick { height: 13px; background: #fff; }
+.ring-notch:focus-visible .ring-notch-tick { height: 13px; background: var(--white); }
 .ring-notch.is-current .ring-notch-tick { height: 13px; width: 3px; background: var(--card); box-shadow: 0 0 0 1px rgba(0, 0, 0, .12); }
 .ring-notch:focus-visible { outline: 2px solid var(--card); outline-offset: 1px; }
 
@@ -538,7 +538,7 @@ useHead(() => ({
 .catalog-hero.cat-season {
   transition: background 550ms var(--ease-out-expo, ease);
 }
-/* --sediment-teal-rgb: rgb() of --river-600 (#33646E) — the sediment/water
+/* --sediment-teal-rgb: rgb() of --river-600 (var(--river-600)) — the sediment/water
    teal used site-wide for the "nước" register (EntityHeroPlaceholder wash,
    sediment-tick top stop). NOT --river-rgb (that token is the unrelated
    indigo used for .cat-accommodation elsewhere — a pre-existing naming
@@ -584,7 +584,7 @@ useHead(() => ({
   position: absolute; top: var(--space-2); left: var(--space-2); z-index: 2;
   background: linear-gradient(135deg, rgba(0, 0, 0, .65), rgba(0, 0, 0, .78));
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  color: var(--text-on-dark, #fff);
+  color: var(--text-on-dark, var(--white));
   font-size: .72rem; font-weight: var(--weight-semibold);
   padding: 3px var(--space-3); border-radius: var(--radius-full);
   box-shadow: 0 1px 3px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .08);
@@ -637,7 +637,7 @@ useHead(() => ({
 .b2b-callout-link {
   display: inline-flex; align-items: center; gap: var(--space-1);
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
-  background: var(--secondary); color: var(--text-on-dark, #fff);
+  background: var(--secondary); color: var(--text-on-dark, var(--white));
   font-weight: var(--weight-semibold); font-size: var(--text-sm); white-space: nowrap;
   min-height: 44px; transition: background .3s var(--ease-out), transform .3s var(--ease-out);
 }
@@ -698,7 +698,7 @@ useHead(() => ({
 .dark .season-ring { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); }
 .dark .season-badge {
   background: linear-gradient(135deg, rgba(0, 0, 0, .72), rgba(0, 0, 0, .82));
-  color: var(--text-on-dark, #fff);
+  color: var(--text-on-dark, var(--white));
   box-shadow: 0 1px 3px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .06);
 }
 .dark .season-badge.peak {

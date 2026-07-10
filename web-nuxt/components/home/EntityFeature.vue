@@ -138,7 +138,7 @@ if (props.priority) {
   width: 1.9em;
   height: 3px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-500) 52%, var(--clay-500, #C4694E) 100%);
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-500) 52%, var(--clay-500, var(--clay-400)) 100%);
   flex: 0 0 auto;
 }
 .ef-title {

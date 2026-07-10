@@ -213,7 +213,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer) })
 
 .cw-btn-primary {
   background: var(--primary);
-  color: var(--text-on-dark, #fff);
+  color: var(--text-on-dark, var(--white));
 }
 .cw-btn-primary:hover {
   background: var(--primary-dark, var(--primary));

@@ -340,7 +340,7 @@ onMounted(() => fetchReviews())
   width: 20px; height: 20px; line-height: 1;
   display: inline-flex; align-items: center; justify-content: center;
   border: none; border-radius: var(--radius-full);
-  background: rgba(0, 0, 0, .6); color: var(--text-on-dark, #fff); font-size: var(--text-sm);
+  background: rgba(0, 0, 0, .6); color: var(--text-on-dark, var(--white)); font-size: var(--text-sm);
   cursor: pointer; padding: 0;
   transition: background .15s var(--ease-soft);
 }
@@ -408,7 +408,7 @@ onMounted(() => fetchReviews())
 .ri-author { display: flex; align-items: center; gap: var(--space-2); text-decoration: none; color: inherit; min-height: 44px; }
 .ri-author strong { font-size: var(--text-sm); font-weight: var(--weight-semibold); font-family: var(--font-editorial); }
 .ri-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
-.ri-avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: var(--secondary); color: var(--text-on-dark, #fff); display: flex; align-items: center; justify-content: center; font-weight: var(--weight-bold); font-size: var(--text-sm); }
+.ri-avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: var(--secondary); color: var(--text-on-dark, var(--white)); display: flex; align-items: center; justify-content: center; font-weight: var(--weight-bold); font-size: var(--text-sm); }
 .ri-date { font-size: var(--text-xs); color: var(--muted); margin-inline-start: auto; }
 .ri-content { margin: 0; font-size: var(--text-sm); line-height: var(--leading-relaxed); }
 .ri-images { display: flex; gap: var(--space-2); margin-top: var(--space-2); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }

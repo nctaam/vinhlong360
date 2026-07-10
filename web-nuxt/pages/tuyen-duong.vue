@@ -262,7 +262,7 @@ useHead(() => ({
 .route-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 0 1px rgba(var(--primary-rgb), .14), 0 18px 40px -18px rgba(var(--primary-rgb), .35); border-color: var(--border); }
 .route-card:hover::before { opacity: .9; }
 .route-card:active { transform: translateY(0) scale(.99); transition-duration: .08s; }
-.route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, #fff); box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgba(0,0,0,.1); transition: background .3s var(--ease-out); }
+.route-header { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-5) var(--space-6); color: var(--text-on-dark, var(--white)); box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 1px 2px rgba(0,0,0,.1); transition: background .3s var(--ease-out); }
 .route-header h3 { margin: 0; font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); text-shadow: var(--shadow-text); overflow-wrap: break-word; word-break: break-word; }
 .route-meta { font-size: var(--text-sm); opacity: .9; }
 .route-emoji { font-size: var(--text-3xl); text-shadow: var(--shadow-text); }
@@ -343,7 +343,7 @@ useHead(() => ({
 .rail-text strong { color: var(--ink); transition: color .25s var(--ease-out); }
 .rail-text span { color: var(--muted); font-size: var(--text-sm); }
 .rail-stop:hover { transform: translateX(2px); background: var(--overlay-subtle); }
-.rail-stop:hover .rail-dot { transform: scale(1.1); background: var(--rail-tone, var(--primary)); color: var(--text-on-dark, #fff); }
+.rail-stop:hover .rail-dot { transform: scale(1.1); background: var(--rail-tone, var(--primary)); color: var(--text-on-dark, var(--white)); }
 .rail-stop:hover .rail-text strong { color: var(--primary-fg); }
 /* hovering a dot nudges the connecting line's tone brighter — "this is a path" */
 .route-rail:has(.rail-stop:hover)::before { filter: saturate(1.3) brightness(1.08); }

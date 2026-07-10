@@ -410,7 +410,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-section {
   margin-bottom: var(--space-6);
   position: relative;
-  background: var(--card, #fff);
+  background: var(--card, var(--white));
   border: .5px solid var(--line);
   border-left: 4px solid var(--primary);
   border-radius: 14px;

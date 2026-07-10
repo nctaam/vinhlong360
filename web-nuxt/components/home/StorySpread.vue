@@ -62,7 +62,7 @@ useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.12 })
   align-items: end;        /* anchor copy to the bottom … */
   justify-items: start;    /* … and the left (was place-items:center) */
   isolation: isolate;
-  color: var(--text-on-dark, #fff);
+  color: var(--text-on-dark, var(--white));
 }
 
 .spread-img {
@@ -132,7 +132,7 @@ useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.12 })
   height: 3px;
   margin-inline-end: 10px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-500) 52%, var(--clay-500, #C4694E) 100%);
+  background: linear-gradient(90deg, var(--river-600) 0%, var(--amber-500) 52%, var(--clay-500, var(--clay-400)) 100%);
 }
 .spread-title {
   margin: 0;
@@ -141,7 +141,7 @@ useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.12 })
   font-size: clamp(2.1rem, 1.5rem + 3.6vw, 3.75rem);
   line-height: var(--leading-tight);
   letter-spacing: -.015em;
-  color: var(--text-on-dark, #fff);
+  color: var(--text-on-dark, var(--white));
   text-wrap: balance;
   text-shadow: 0 2px 24px rgba(0, 0, 0, .4);
 }

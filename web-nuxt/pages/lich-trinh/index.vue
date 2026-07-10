@@ -390,7 +390,7 @@ useHead(() => ({
 .pace-chip-count { font-size: var(--text-2xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 .pace-chip:hover { transform: translateY(-1px); box-shadow: var(--shadow-xs); border-color: var(--border); }
 .pace-chip:active { transform: scale(.96); transition-duration: .08s; }
-.pace-chip.active { background: var(--secondary); border-color: var(--secondary); color: var(--text-on-dark, #fff); }
+.pace-chip.active { background: var(--secondary); border-color: var(--secondary); color: var(--text-on-dark, var(--white)); }
 .pace-chip.active .pace-chip-count { color: rgba(255,255,255,.85); }
 .dark .pace-chip { background: var(--card); border-color: var(--line); }
 .dark .pace-chip.active { background: var(--secondary); border-color: var(--secondary); }

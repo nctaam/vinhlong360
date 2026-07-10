@@ -226,7 +226,7 @@ const ratingDisplay = computed(() => {
   transition: background 200ms var(--ease-out), transform 200ms var(--ease-spring-gentle);
 }
 .card-dot.active {
-  background: var(--text-on-dark, #fff);
+  background: var(--text-on-dark, var(--white));
   transform: scale(1.3);
 }
 .card-amenities { display: none; }
@@ -262,7 +262,7 @@ const ratingDisplay = computed(() => {
 .cr-count { color: var(--muted); font-size: .75rem; }
 .badge.ocop-5 {
   background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
-  color: var(--text-on-dark, #fff);
+  color: var(--text-on-dark, var(--white));
   border-color: transparent;
   box-shadow: 0 0 0 2px rgba(var(--secondary-rgb), .2);
 }
@@ -291,7 +291,7 @@ const ratingDisplay = computed(() => {
 }
 .dark .card-arrow {
   background: rgba(0, 0, 0, 0.65);
-  color: #fff;
+  color: var(--white);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 .dark .card-dot { background: rgba(255, 255, 255, 0.4); }

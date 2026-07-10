@@ -470,7 +470,7 @@ useHead({
 .people-list { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .person-chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1); background: var(--card); border: .5px solid var(--line); border-radius: var(--radius-full); text-decoration: none; color: var(--ink); transition: border-color .25s var(--ease-out), transform .25s var(--ease-spring-gentle); }
 .person-chip:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
-.person-avatar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, #fff); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
+.person-avatar { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: var(--primary-fg, var(--white)); font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .person-name { font-size: var(--text-sm); font-weight: var(--weight-medium); }
 .person-meta { font-size: var(--text-xs); color: var(--muted); }
 .search-post-list { display: flex; flex-direction: column; gap: var(--space-2); }

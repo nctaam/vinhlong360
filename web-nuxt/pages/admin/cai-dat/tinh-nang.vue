@@ -155,7 +155,7 @@ onMounted(reload)
 .cs-save-row { display: flex; gap: var(--space-3); padding-top: var(--space-5); margin-top: var(--space-4); border-top: .5px solid var(--line); }
 .sf-save {
   padding: var(--space-3) var(--space-7); border-radius: 12px; font-weight: 600; font-size: .88rem;
-  background: var(--primary); color: var(--text-on-dark, #fff); border: none; cursor: pointer; min-height: 44px;
+  background: var(--primary); color: var(--text-on-dark, var(--white)); border: none; cursor: pointer; min-height: 44px;
   transition: transform .2s var(--ease-soft), box-shadow .2s;
 }
 .sf-save:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 4px 12px rgba(var(--primary-rgb),.2); }

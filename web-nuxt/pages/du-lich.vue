@@ -586,7 +586,7 @@ useHead(() => ({
 .mode-pill:active { transform: scale(.96); transition-duration: .08s; }
 .mode-pill:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .mode-pill.active {
-  background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary);
+  background: var(--primary); color: var(--text-on-dark, var(--white)); border-color: var(--primary);
   box-shadow: 0 2px 10px -2px rgba(var(--primary-rgb), .4);
 }
 .dark .mode-pill { background: var(--card); border-color: var(--line); }

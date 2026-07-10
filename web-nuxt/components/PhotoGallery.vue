@@ -247,7 +247,7 @@ function goToSlide(idx: number) {
   cursor: pointer;
   transition: background 200ms, transform 200ms;
 }
-.pg-show-all:hover { background: var(--card, #fff); transform: scale(1.03); }
+.pg-show-all:hover { background: var(--card, var(--white)); transform: scale(1.03); }
 .pg-show-all:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .pg-show-icon { font-size: 1em; }
 
@@ -314,7 +314,7 @@ function goToSlide(idx: number) {
     background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(4px);
     border-radius: var(--radius-full, 999px);
-    color: var(--text-on-dark, #fff);
+    color: var(--text-on-dark, var(--white));
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold, 600);
     font-variant-numeric: tabular-nums;
@@ -323,7 +323,7 @@ function goToSlide(idx: number) {
 .dark .pg-show-all {
   background: rgba(0, 0, 0, 0.7);
   border-color: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  color: var(--white);
 }
 .dark .pg-show-all:hover { background: rgba(0, 0, 0, 0.8); }
 @media (prefers-reduced-motion: reduce) {

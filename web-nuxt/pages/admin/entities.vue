@@ -1328,7 +1328,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-kind-types { display: flex; flex-wrap: wrap; gap: 4px; }
 .ent-kind-chip { border: 1px solid var(--line); background: var(--card); border-radius: 100px; padding: 2px 8px; font-size: .74rem; cursor: pointer; color: var(--ink-700); transition: background .12s, border-color .12s, color .12s; }
 .ent-kind-chip:hover { border-color: var(--primary); color: var(--ink); }
-.ent-kind-chip.active { background: var(--primary); color: var(--text-on-dark, #fff); border-color: var(--primary); }
+.ent-kind-chip.active { background: var(--primary); color: var(--text-on-dark, var(--white)); border-color: var(--primary); }
 .ent-kind-chip-n { opacity: .7; font-weight: 600; }
 
 /* GĐ-A: chip lọc nhanh theo nhóm + ô cột đặc thù */
@@ -1344,7 +1344,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .ent-season-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
 .ent-season-cell { padding: 6px 0; border: 1px solid var(--line); border-radius: 6px; background: var(--card); font-size: .78rem; font-weight: 600; cursor: pointer; color: var(--ink-700); transition: background .12s, color .12s, border-color .12s; }
 .ent-season-cell.ent-season-in { background: color-mix(in srgb, var(--primary) 22%, var(--card)); color: var(--ink); border-color: var(--primary); }
-.ent-season-cell.ent-season-peak { background: var(--primary); color: #fff; border-color: var(--primary); }
+.ent-season-cell.ent-season-peak { background: var(--primary); color: var(--white); border-color: var(--primary); }
 .ent-season-legend { display: flex; gap: var(--space-4); margin-top: var(--space-2); font-size: .76rem; color: var(--ink-700); }
 .ent-season-legend span { display: inline-flex; align-items: center; gap: 4px; }
 .ent-season-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }

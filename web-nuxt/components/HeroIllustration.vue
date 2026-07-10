@@ -169,7 +169,7 @@ onMounted(() => {
 }
 /* Parametric motif variants: muted line-art that reads on light bg; white on dark. */
 .hero-illustration .motif {
-  color: var(--ink-700, #586860);
+  color: var(--ink-700, var(--ink-700));
   opacity: .1;
 }
 /* dark override moved to dark-overrides.css — :global(.dark) in scoped CSS

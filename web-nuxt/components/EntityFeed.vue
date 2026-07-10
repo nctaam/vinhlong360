@@ -112,7 +112,7 @@ function hideImage(payload: Event | string) {
 .ef-avatar {
   width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  background: var(--primary); color: var(--text-on-dark, #fff); font-weight: var(--weight-semibold); font-size: var(--text-sm);
+  background: var(--primary); color: var(--text-on-dark, var(--white)); font-weight: var(--weight-semibold); font-size: var(--text-sm);
 }
 .ef-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
 .ef-author { font-weight: var(--weight-semibold); font-size: var(--text-sm); }

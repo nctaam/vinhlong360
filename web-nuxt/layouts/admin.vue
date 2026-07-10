@@ -232,7 +232,7 @@ onUnmounted(() => {
 
 /* ── Sidebar ── */
 .admin-sidebar {
-  width: 240px; background: var(--ink, #1a1a2e); color: var(--text-on-dark, #fff);
+  width: 240px; background: var(--ink, #1a1a2e); color: var(--text-on-dark, var(--white));
   display: flex; flex-direction: column; flex-shrink: 0;
   transition: width .35s var(--ease-soft);
   border-right: .5px solid rgba(255,255,255,.06);
@@ -247,7 +247,7 @@ onUnmounted(() => {
   border-bottom: .5px solid rgba(255,255,255,.08);
 }
 .admin-brand {
-  text-decoration: none; color: var(--text-on-dark, #fff);
+  text-decoration: none; color: var(--text-on-dark, var(--white));
   transition: opacity .3s;
 }
 .admin-brand:hover { opacity: .8; }
@@ -647,7 +647,7 @@ onUnmounted(() => {
 .admin-toast {
   position: fixed; bottom: var(--space-4); right: var(--space-4);
   z-index: var(--z-toast, 600); padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm, 10px); background: var(--bg, #fff);
+  border-radius: var(--radius-sm, 10px); background: var(--bg, var(--white));
   border: 1px solid var(--line); box-shadow: var(--shadow-lg);
   font-size: .88rem; color: var(--ink);
   animation: toastIn .25s var(--ease-out, ease-out);

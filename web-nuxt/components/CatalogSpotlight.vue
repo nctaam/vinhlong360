@@ -78,12 +78,12 @@ const relCount = computed(() => pick.value?.relationship_total || 0)
 }
 @keyframes cspot-glow { 0% { transform: translate3d(0,0,0) scale(1); } 100% { transform: translate3d(7%,5%,0) scale(1.12); } }
 .cspot-region, .cspot-icon { position: relative; z-index: 1; }
-.cspot-icon { width: 112px; height: 112px; opacity: .86; color: var(--text-on-dark, #fff); filter: drop-shadow(0 4px 14px rgba(0,0,0,.26)); }
+.cspot-icon { width: 112px; height: 112px; opacity: .86; color: var(--text-on-dark, var(--white)); filter: drop-shadow(0 4px 14px rgba(0,0,0,.26)); }
 @media (max-width: 760px) { .cspot-icon { width: 84px; height: 84px; } }
 .cspot-icon :deep(svg) { width: 100%; height: 100%; display: block; }
 .cspot-region {
   position: absolute; top: var(--space-4); left: var(--space-4);
-  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5); color: var(--text-on-dark, #fff);
+  padding: var(--space-1) var(--space-3); background: rgba(0,0,0,.5); color: var(--text-on-dark, var(--white));
   border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: var(--weight-semibold);
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }

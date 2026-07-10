@@ -381,7 +381,7 @@ onUnmounted(() => {
 .wp { max-width: var(--maxw, 1100px); margin: 0 auto; padding: 0 var(--space-4) var(--space-16); }
 
 /* Hero */
-.wp-hero { border-radius: var(--radius-lg, 16px); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: var(--text-on-dark, #fff); position: relative; overflow: hidden; }
+.wp-hero { border-radius: var(--radius-lg, 16px); padding: var(--space-8) var(--space-6); margin-top: var(--space-2); color: var(--text-on-dark, var(--white)); position: relative; overflow: hidden; }
 .wp-hero.area-vinh-long { background: linear-gradient(135deg, var(--clay-600) 0%, color-mix(in srgb, var(--clay-600), var(--clay-400)) 50%, var(--clay-400) 100%); }
 .wp-hero.area-ben-tre { background: linear-gradient(135deg, var(--leaf-700) 0%, var(--leaf-600) 50%, color-mix(in srgb, var(--leaf-600) 65%, white) 100%); }
 .wp-hero.area-tra-vinh { background: linear-gradient(135deg, color-mix(in srgb, var(--river-600) 80%, black) 0%, var(--river-600) 50%, color-mix(in srgb, var(--river-600) 65%, white) 100%); }
@@ -413,8 +413,8 @@ onUnmounted(() => {
 .wp-level { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; opacity: .85; font-weight: var(--weight-bold); }
 .wp-hero h1 { margin: var(--space-1) 0 var(--space-1); font-family: var(--font-editorial); font-size: clamp(1.7rem, 4.4vw, 2.2rem); font-weight: 600; letter-spacing: var(--tracking-tight); line-height: 1.1; }
 .wp-region { margin: 0; opacity: .9; font-size: var(--text-sm); }
-.wp-region a { color: var(--text-on-dark, #fff); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--radius-sm); }
-.wp-region a:focus-visible { outline: 2px solid var(--text-on-dark, #fff); outline-offset: 2px; }
+.wp-region a { color: var(--text-on-dark, var(--white)); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--radius-sm); }
+.wp-region a:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 2px; }
 .wp-region-emoji { margin-inline-end: var(--space-1); }
 
 .wp-stats { display: flex; flex-wrap: wrap; gap: var(--space-6); margin-top: var(--space-5); padding-top: var(--space-4); border-top: .5px solid rgba(255,255,255,.25); }

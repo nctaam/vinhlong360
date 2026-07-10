@@ -122,7 +122,7 @@ defineExpose({ open })
 .cmd-overlay { position: fixed; inset: 0; z-index: var(--z-lightbox); background: rgba(0,0,0,.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 15vh; }
 .cmd-palette {
   width: min(540px, 90vw);
-  background: var(--bg, #fff);
+  background: var(--bg, var(--white));
   border: .5px solid var(--line);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0,0,0,.2);
