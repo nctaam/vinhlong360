@@ -717,7 +717,7 @@ onMounted(fetchDashboard)
 }
 .dash-bar-track {
   height: 22px; border-radius: 6px;
-  background: rgba(142,142,147,.06);
+  background: rgba(var(--gray-rgb),.06);
   overflow: hidden;
 }
 .dash-bar-fill {
@@ -804,7 +804,7 @@ onMounted(fetchDashboard)
 .dash-ops-cell {
   min-width: 0; display: flex; flex-direction: column; gap: 3px;
   padding: var(--space-3); border: .5px solid var(--line); border-radius: 10px;
-  background: rgba(142,142,147,.06);
+  background: rgba(var(--gray-rgb),.06);
 }
 .dash-ops-cell b { font-size: .9rem; color: var(--ink); }
 .dash-ops-cell small, .dash-ops-label { color: var(--muted); font-size: .75rem; overflow-wrap: anywhere; }

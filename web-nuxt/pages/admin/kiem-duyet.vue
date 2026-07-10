@@ -495,12 +495,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .admin-table tbody tr:focus-within td { background: rgba(var(--white-rgb),.05); }
 
 /* ── Type + status badges ── */
-.mod-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .72rem; font-weight: 600; background: rgba(142,142,147,.08); color: var(--muted); }
+.mod-type-badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: .72rem; font-weight: 600; background: rgba(var(--gray-rgb),.08); color: var(--muted); }
 .mod-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
 .mb-pending { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
 .mb-flagged { background: rgba(var(--danger-rgb),.13); color: var(--error); }
 .mb-approved { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
-.mb-rejected { background: rgba(142,142,147,.15); color: var(--muted); }
+.mb-rejected { background: rgba(var(--gray-rgb),.15); color: var(--muted); }
 
 /* ── Reject reason inline ── */
 .mod-reject-row td { background: rgba(var(--danger-rgb),.04); }

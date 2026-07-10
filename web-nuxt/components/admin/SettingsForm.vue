@@ -429,7 +429,7 @@ const formatDate = formatDateVN
 .sf-toggle input:focus-visible + .sf-toggle-track { outline: 2px solid var(--primary); outline-offset: 2px; }
 .sf-toggle-track {
   width: 51px; height: 31px; border-radius: 16px;
-  background: rgba(142,142,147,.3); position: relative; flex-shrink: 0;
+  background: rgba(var(--gray-rgb),.3); position: relative; flex-shrink: 0;
   transition: background .25s var(--ease-soft);
 }
 .sf-toggle input:checked + .sf-toggle-track { background: var(--primary); }

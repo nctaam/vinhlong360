@@ -140,7 +140,7 @@ onMounted(reload)
 .ff-toggle input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
 .ff-track {
   display: block; width: 51px; height: 31px; border-radius: 16px;
-  background: rgba(142,142,147,.3); position: relative;
+  background: rgba(var(--gray-rgb),.3); position: relative;
   transition: background .25s var(--ease-soft);
 }
 .ff-toggle input:checked + .ff-track { background: var(--primary); }

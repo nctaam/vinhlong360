@@ -448,7 +448,7 @@ onMounted(() => { fetchHealth(); fetchCost() })
 .ai-dq-bar-pct { font-weight: 800; font-size: .9rem; }
 .ai-dq-track {
   height: 10px; border-radius: 5px;
-  background: rgba(142,142,147,.08); overflow: hidden;
+  background: rgba(var(--gray-rgb),.08); overflow: hidden;
 }
 .ai-dq-fill {
   height: 100%; border-radius: 5px;

@@ -440,7 +440,7 @@ onMounted(() => fetchAll())
 .status-pending::before { background: var(--warning); animation: rpt-pulse 2s var(--ease-in-out) infinite; }
 .status-resolved { background: rgba(var(--primary-rgb),.08); color: var(--secondary-fg); }
 .status-resolved::before { background: var(--secondary-fg); }
-.status-dismissed { background: rgba(142,142,147,.08); color: var(--muted); }
+.status-dismissed { background: rgba(var(--gray-rgb),.08); color: var(--muted); }
 .status-dismissed::before { background: var(--muted); opacity: .4; }
 @keyframes rpt-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 

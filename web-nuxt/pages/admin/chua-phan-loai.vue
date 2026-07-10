@@ -328,7 +328,7 @@ onMounted(load)
 .cpl-type-badge {
   display: inline-block; padding: 2px 8px; border-radius: 100px;
   font-size: .72rem; font-weight: 600;
-  background: rgba(142,142,147,.08); color: var(--muted);
+  background: rgba(var(--gray-rgb),.08); color: var(--muted);
 }
 
 .cpl-place-select {

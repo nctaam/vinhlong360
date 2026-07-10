@@ -664,7 +664,7 @@ onUnmounted(() => {
 .admin-help {
   display: inline-flex; align-items: center; justify-content: center;
   width: 16px; height: 16px; border-radius: 50%;
-  background: rgba(142,142,147,.12); color: var(--muted);
+  background: rgba(var(--gray-rgb),.12); color: var(--muted);
   font-size: .65rem; font-weight: 700; cursor: help;
   position: relative; vertical-align: middle; margin-left: var(--space-1);
 }

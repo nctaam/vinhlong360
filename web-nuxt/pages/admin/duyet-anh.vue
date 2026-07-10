@@ -346,7 +346,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-badge { display: inline-block; padding: 2px 9px; border-radius: 100px; font-size: .72rem; font-weight: 700; }
 .ib-pending { background: rgba(var(--warning-rgb),.12); color: var(--warning); }
 .ib-approved { background: rgba(var(--primary-rgb),.12); color: var(--secondary-fg); }
-.ib-rejected { background: rgba(142,142,147,.15); color: var(--muted); }
+.ib-rejected { background: rgba(var(--gray-rgb),.15); color: var(--muted); }
 
 .img-reject { padding: 0 var(--space-3) var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
 .img-reason-input { padding: 9px 12px; border: .5px solid var(--line); border-radius: 10px; font-size: .85rem; background: var(--bg); color: var(--ink); min-height: 40px; }
@@ -367,7 +367,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-legend-warn { background: var(--error); }
 
 /* ── Confidence bar (additive visual of match_confidence) ── */
-.img-conf-bar { height: 4px; border-radius: 100px; background: rgba(142,142,147,.18); overflow: hidden; }
+.img-conf-bar { height: 4px; border-radius: 100px; background: rgba(var(--gray-rgb),.18); overflow: hidden; }
 .img-conf-fill { display: block; height: 100%; border-radius: 100px; background: var(--muted); transition: width .3s var(--ease-soft); }
 .img-conf-bar.conf-high .img-conf-fill { background: var(--secondary-fg); }
 .img-conf-bar.conf-mid .img-conf-fill { background: var(--warning); }

@@ -706,7 +706,7 @@ onMounted(() => refreshAll())
 .dq-sev-success { background: rgba(var(--primary-rgb),.12); color: var(--primary); }
 .dq-sev-warning { background: rgba(var(--warning-rgb),.14); color: var(--warning); }
 .dq-sev-error { background: rgba(var(--danger-rgb),.12); color: var(--error, #D94F3D); }
-.dq-sev-neutral { background: rgba(142,142,147,.14); color: var(--muted); }
+.dq-sev-neutral { background: rgba(var(--gray-rgb),.14); color: var(--muted); }
 
 .dq-evidence-more { display: inline-block; font-size: .72rem; font-weight: 600; color: var(--muted); cursor: help; }
 .dq-actions-cell { min-width: 180px; }

@@ -1233,7 +1233,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.1); color: rgb(162,132,94); }
 .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.1); color: var(--error); }
 .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.1); color: rgb(var(--teal-rgb)); }
-.type-badge[data-type="place"] { background: rgba(142,142,147,.1); color: var(--muted); }
+.type-badge[data-type="place"] { background: rgba(var(--gray-rgb),.1); color: var(--muted); }
 .dark .type-badge[data-type="accommodation"] { background: rgba(var(--purple-rgb),.15); color: #C084FC; }
 .dark .type-badge[data-type="nature"] { background: rgba(52,199,89,.15); color: #66BB6A; }
 .dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); color: #D4A574; }
@@ -1391,7 +1391,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .dark .type-badge[data-type="craft_village"] { background: rgba(162,132,94,.15); }
 .dark .type-badge[data-type="event"] { background: rgba(var(--danger-rgb),.15); color: rgb(var(--danger-rgb)); }
 .dark .type-badge[data-type="drink"] { background: rgba(var(--teal-rgb),.15); }
-.dark .type-badge[data-type="place"] { background: rgba(142,142,147,.18); color: var(--muted); }
+.dark .type-badge[data-type="place"] { background: rgba(var(--gray-rgb),.18); color: var(--muted); }
 .dark .ent-name-cell:hover .ent-thumb { box-shadow: 0 2px 8px rgba(var(--black-rgb),.3); }
 .dark .row-selected td { background: rgba(var(--blue-rgb),.08); }
 .dark .bulk-bar { background: rgba(var(--blue-rgb),.08); border-color: rgba(var(--blue-rgb),.15); }
