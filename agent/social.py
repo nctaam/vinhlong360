@@ -42,6 +42,18 @@ RL_DELETE_LIMIT, RL_DELETE_WINDOW = 10, 300     # 10 xóa / 5 phút
 
 
 from auth_middleware import require_pg as _require_pg
+from api_schemas_social import (
+    DraftsListResponse, ScheduledListResponse, PostResponse, EditHistoryResponse,
+    FeedResponse, FollowingFeedResponse, FriendReviewsResponse, FriendSavesResponse,
+    TrendingPostsResponse, ExploreFeedResponse, SearchPostsResponse, SearchUsersResponse,
+    CommunityStatsResponse, UserCountsResponse, UserStatsResponse, UserActivityResponse,
+    TrendingTagsResponse, HashtagsListResponse, HashtagPostsResponse, LeaderboardResponse,
+    FollowUsersResponse, SuggestedFollowsResponse, EntityFeedResponse, RelatedPostsResponse,
+    CommentsResponse, AppealStatusResponse, LikersResponse, ReactionsResponse,
+    BookmarksResponse, CollectionsListResponse, CollectionItemsResponse, HiddenPostsResponse,
+    BadgeProgressResponse, UserProfileResponse, UserPostsResponse, UserReviewsResponse,
+    UserTimelineResponse, ActivityHeatmapResponse,
+)
 
 _POST_COLS = ("p.id, p.user_id, p.content, p.mentions, p.hashtags, p.best_answer_id, "
               "p.pinned_comment_id, "
@@ -480,7 +492,7 @@ async def save_draft(body: DraftPost, user=Depends(require_user), _csrf=Depends(
     return {"draft": draft}
 
 
-@router.get("/drafts",
+@router.get("/drafts", response_model=DraftsListResponse,
             summary="List drafts",
             description="List the authenticated user's draft posts with pagination. Returns drafts sorted by most recently updated.")
 async def list_drafts(
@@ -661,7 +673,7 @@ async def schedule_draft(draft_id: str, scheduled_at: str = Query(..., max_lengt
     return {"success": True, "scheduled_at": scheduled_at}
 
 
-@router.get("/scheduled",
+@router.get("/scheduled", response_model=ScheduledListResponse,
             summary="List scheduled posts",
             description="List the authenticated user's posts scheduled for future publication, sorted by publish time ascending.")
 async def list_scheduled(
@@ -725,7 +737,7 @@ async def cancel_scheduled(post_id: str, user=Depends(require_user), _csrf=Depen
     return {"success": True}
 
 
-@router.get("/posts/{post_id}",
+@router.get("/posts/{post_id}", response_model=PostResponse,
             summary="Get a post",
             description="Retrieve a single approved post by ID with author info, entity details, like/bookmark status, and reaction counts.")
 async def get_post(post_id: str, user=Depends(get_current_user)):
@@ -863,7 +875,7 @@ async def update_post(post_id: str, body: UpdatePost, user=Depends(require_user)
     return {"post": _format_post(db._row_to_dict(post)), "moderation_status": status}
 
 
-@router.get("/posts/{post_id}/edit-history",
+@router.get("/posts/{post_id}/edit-history", response_model=EditHistoryResponse,
             summary="Get post edit history",
             description="Retrieve the edit history of a post for transparency. Returns previous content and rating snapshots with timestamps.")
 async def get_post_edit_history(post_id: str, limit: int = Query(20, ge=1, le=100)):
@@ -895,7 +907,7 @@ async def get_post_edit_history(post_id: str, limit: int = Query(20, ge=1, le=10
 
 # ── Feed ──
 
-@router.get("/feed",
+@router.get("/feed", response_model=FeedResponse,
             summary="Get community feed",
             description="Main community feed with chronological + seasonal/quality boost ranking. Filterable by post type, entity type, area, and hashtag.")
 async def get_feed(
@@ -1010,7 +1022,7 @@ async def get_feed(
     }
 
 
-@router.get("/feed/following",
+@router.get("/feed/following", response_model=FollowingFeedResponse,
             summary="Get following feed",
             description="Feed of posts from users and entities the authenticated user follows, sorted by newest first.")
 async def get_following_feed(
@@ -1070,7 +1082,7 @@ async def get_following_feed(
             "has_more": offset + limit < total_c}
 
 
-@router.get("/feed/friend-reviews",
+@router.get("/feed/friend-reviews", response_model=FriendReviewsResponse,
             summary="Recent reviews from followed users",
             description="Returns the most recent reviews posted by users the caller follows, for the community 'Đang theo dõi' tab.")
 async def get_friend_reviews(
@@ -1124,7 +1136,7 @@ async def get_friend_reviews(
     return {"reviews": reviews}
 
 
-@router.get("/feed/friend-saves",
+@router.get("/feed/friend-saves", response_model=FriendSavesResponse,
             summary="Recent saves by followed users",
             description="Returns entities recently saved (favorited) by users the caller follows, for the community 'Đang theo dõi' tab.")
 async def get_friend_saves(
@@ -1183,7 +1195,7 @@ async def get_friend_saves(
 _TRENDING_POSTS_WINDOWS = {"24h": 1, "7d": 7, "30d": 30}
 
 
-@router.get("/feed/trending",
+@router.get("/feed/trending", response_model=TrendingPostsResponse,
             summary="Get trending posts",
             description="Trending posts ranked by engagement (likes x2 + comments x3) within a configurable time window (24h, 7d, or 30d).")
 async def trending_posts(
@@ -1226,7 +1238,7 @@ async def trending_posts(
     return {"posts": posts, "total": total, "has_more": total > len(posts), "window": window, "days": days}
 
 
-@router.get("/feed/explore",
+@router.get("/feed/explore", response_model=ExploreFeedResponse,
             summary="Get explore feed",
             description="Discover posts from users you don't follow yet, ranked by engagement and review quality. Excludes your own posts and those from followed users.")
 async def explore_feed(
@@ -1281,7 +1293,7 @@ async def explore_feed(
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-@router.get("/search/posts",
+@router.get("/search/posts", response_model=SearchPostsResponse,
             summary="Search posts",
             description="Full-text search across approved community posts using case-insensitive and accent-insensitive matching. Returns paginated results.")
 async def search_posts(
@@ -1335,7 +1347,7 @@ async def search_posts(
             "has_more": offset + limit < total_c}
 
 
-@router.get("/search/users",
+@router.get("/search/users", response_model=SearchUsersResponse,
             summary="Search users",
             description="Search users by display name with accent-insensitive matching. Returns public profile info and post count, sorted by activity.")
 async def search_users(
@@ -1396,7 +1408,7 @@ async def search_users(
     return {"users": users, "q": _strip_html_tags(q), "page": page, "total": total, "has_more": offset + limit < total}
 
 
-@router.get("/community/stats",
+@router.get("/community/stats", response_model=CommunityStatsResponse,
             summary="Get community statistics",
             description="Real-time community statistics: total approved posts, reviews, and active members. Cached for 60 seconds.")
 async def community_stats(response: Response):
@@ -1414,7 +1426,7 @@ async def community_stats(response: Response):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/me/counts",
+@router.get("/me/counts", response_model=UserCountsResponse,
             summary="Get current user's counts",
             description="Quick counts for the authenticated user: unread notifications, posts, drafts, bookmarks, and visits. Used for sidebar badges.")
 async def user_counts(response: Response, user=Depends(require_user)):
@@ -1456,7 +1468,7 @@ async def user_counts(response: Response, user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/me/stats",
+@router.get("/me/stats", response_model=UserStatsResponse,
             summary="Get current user's extended stats",
             description="Extended statistics for the user's profile dashboard: reviews, ratings, followers, following, likes received, reactions, entities reviewed, and collections.")
 async def user_stats(user=Depends(require_user)):
@@ -1518,7 +1530,7 @@ async def user_stats(user=Depends(require_user)):
     return await asyncio.to_thread(_query)
 
 
-@router.get("/me/activity",
+@router.get("/me/activity", response_model=UserActivityResponse,
             summary="Get current user's activity feed",
             description="Unified activity feed showing the user's recent posts, comments, and likes in reverse chronological order.")
 async def user_activity(limit: int = Query(30, ge=1, le=100), user=Depends(require_user)):
@@ -1578,7 +1590,7 @@ def _invalidate_social_caches():
 
 _TRENDING_PERIOD_DAYS = {"7d": 7, "14d": 14, "30d": 30, "90d": 90}
 
-@router.get("/community/trending-tags",
+@router.get("/community/trending-tags", response_model=TrendingTagsResponse,
             summary="Get trending hashtags",
             description="Most-used hashtags from approved posts within a configurable period (7d/14d/30d/90d). Cached in memory with configurable TTL.")
 async def trending_tags(
@@ -1621,7 +1633,7 @@ async def trending_tags(
         return result
 
 
-@router.get("/hashtags",
+@router.get("/hashtags", response_model=HashtagsListResponse,
             summary="List all hashtags",
             description="Browse all hashtags with their post counts, paginated and optionally filtered by search query. Cached for 2 minutes.")
 async def list_hashtags(
@@ -1671,7 +1683,7 @@ async def list_hashtags(
     return {"hashtags": tags, "total": total, "page": page, "has_more": page * limit < total}
 
 
-@router.get("/hashtags/{tag}/posts",
+@router.get("/hashtags/{tag}/posts", response_model=HashtagPostsResponse,
             summary="Get posts by hashtag",
             description="Retrieve approved posts tagged with a specific hashtag. Sortable by newest or most popular.")
 async def hashtag_posts(
@@ -1724,7 +1736,7 @@ def _leaderboard_fresh(cache_key: str):
     c = _leaderboard_cache.get(cache_key)
     return c if c and _t.time() - c["ts"] < _cfg.TRENDING_CACHE_TTL else None
 
-@router.get("/community/leaderboard",
+@router.get("/community/leaderboard", response_model=LeaderboardResponse,
             summary="Get community leaderboard",
             description="Ranked list of top contributors by reputation points. Anti-inflation scoring with diminishing returns. Supports period/category filters, search, self-rank.")
 async def community_leaderboard(limit: int = Query(10, ge=1, le=50), period: str = Query("all", pattern="^(7d|30d|all)$"), category: str = Query("total", pattern="^(posts|reviews|photos|total)$"), q: str = Query("", max_length=100), user=Depends(get_current_user)):
@@ -1815,7 +1827,7 @@ def _self_ranked_result(leaders: list, limit: int, user: dict | None) -> dict:
     return {"leaders": ranked[:limit], "self": self_entry}
 
 
-@router.get("/users/{user_id}/following",
+@router.get("/users/{user_id}/following", response_model=FollowUsersResponse,
             summary="List users a user follows",
             description="Paginated list of users that the specified user is following. Returns public profile info for each followed user.")
 async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
@@ -1850,7 +1862,7 @@ async def list_following_users(user_id: str, limit: int = Query(50, ge=1, le=100
     return {"users": users, "total": total, "offset": offset, "has_more": offset + limit < total}
 
 
-@router.get("/users/{user_id}/followers",
+@router.get("/users/{user_id}/followers", response_model=FollowUsersResponse,
             summary="List a user's followers",
             description="Paginated list of users following the specified user. Returns public profile info for each follower.")
 async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), offset: int = Query(0, ge=0, le=10000), user=Depends(get_current_user)):
@@ -1885,7 +1897,7 @@ async def list_followers(user_id: str, limit: int = Query(50, ge=1, le=100), off
     return {"users": users, "total": total, "offset": offset, "has_more": offset + limit < total}
 
 
-@router.get("/community/suggested-follows",
+@router.get("/community/suggested-follows", response_model=SuggestedFollowsResponse,
             summary="Get suggested users to follow",
             description="Suggest active contributors the user doesn't follow yet, ranked by reputation points. Excludes blocked/muted users.")
 async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge=1, le=20)):
@@ -1938,7 +1950,7 @@ async def suggested_follows(user=Depends(require_user), limit: int = Query(5, ge
 _ENTITY_FEED_SORT_OPTIONS = {"default", "newest", "helpful", "photo", "star", "unanswered"}
 
 
-@router.get("/entities/{entity_id}/feed",
+@router.get("/entities/{entity_id}/feed", response_model=EntityFeedResponse,
             summary="Get entity feed",
             description="Feed of posts for a specific entity (place, product, etc.). Supports sorting (newest, helpful, photo, star, unanswered) and filtering by rating, photo, and post type.")
 async def get_entity_feed(
@@ -2054,7 +2066,7 @@ async def get_entity_feed(
     }
 
 
-@router.get("/posts/{post_id}/related",
+@router.get("/posts/{post_id}/related", response_model=RelatedPostsResponse,
             summary="Get related posts",
             description="Find posts related to a given post by shared entity or overlapping hashtags. Returns up to the specified limit.")
 async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=Depends(get_current_user)):
@@ -2118,7 +2130,7 @@ async def related_posts(post_id: str, limit: int = Query(4, ge=1, le=10), user=D
 
 # ── Comments ──
 
-@router.get("/posts/{post_id}/comments",
+@router.get("/posts/{post_id}/comments", response_model=CommentsResponse,
             summary="Get post comments",
             description="Retrieve threaded comments for a post. Returns top-level comments with nested replies, excluding blocked/muted users.")
 async def get_comments(
@@ -2547,7 +2559,7 @@ async def appeal_post(post_id: str, body: AppealBody, user=Depends(require_user)
     return {"success": True, "message": "Khiếu nại đã được ghi nhận. Chúng tôi sẽ xem xét trong 7 ngày."}
 
 
-@router.get("/posts/{post_id}/appeal",
+@router.get("/posts/{post_id}/appeal", response_model=AppealStatusResponse,
             summary="Get appeal status",
             description="Check the status of a moderation appeal for the user's post. Returns appeal details including reviewer notes if reviewed.")
 async def get_appeal_status(post_id: str, user=Depends(require_user)):
@@ -2682,7 +2694,7 @@ async def toggle_like(post_id: str, user=Depends(require_user), _csrf=Depends(re
     return {"liked": liked, "like_count": like_count}
 
 
-@router.get("/posts/{post_id}/likers",
+@router.get("/posts/{post_id}/likers", response_model=LikersResponse,
             summary="List post likers",
             description="List users who liked a specific post with their profile info and like timestamp. Excludes blocked users.")
 async def get_post_likers(post_id: str, request: Request, limit: int = Query(20, ge=1, le=100)):
@@ -2842,7 +2854,7 @@ async def toggle_reaction(post_id: str, reaction_type: str = Query(..., max_leng
     return {"reacted": reacted, "reaction_type": reaction_type, "reactions": counts}
 
 
-@router.get("/posts/{post_id}/reactions",
+@router.get("/posts/{post_id}/reactions", response_model=ReactionsResponse,
             summary="Get post reaction counts",
             description="Get reaction counts grouped by type (heart, useful, beautiful, funny, surprised) and total count for a post.")
 async def get_reactions(post_id: str):
@@ -2897,7 +2909,7 @@ async def toggle_bookmark(post_id: str, user=Depends(require_user), _csrf=Depend
     return {"bookmarked": saved}
 
 
-@router.get("/me/bookmarks",
+@router.get("/me/bookmarks", response_model=BookmarksResponse,
             summary="List bookmarked posts",
             description="Paginated list of the authenticated user's bookmarked posts with full post details and reactions, sorted by most recently bookmarked.")
 async def get_my_bookmarks(
@@ -2982,7 +2994,7 @@ async def create_collection(body: CreateCollection, user=Depends(require_user), 
             "created_at": str(coll["created_at"]), "item_count": 0}}
 
 
-@router.get("/me/collections",
+@router.get("/me/collections", response_model=CollectionsListResponse,
             summary="List my collections",
             description="List all post collections owned by the authenticated user with item counts, sorted by most recently updated.")
 async def list_my_collections(user=Depends(require_user)):
@@ -3081,7 +3093,7 @@ async def remove_from_collection(collection_id: str, post_id: str,
     return {"success": True}
 
 
-@router.get("/me/collections/{collection_id}/items",
+@router.get("/me/collections/{collection_id}/items", response_model=CollectionItemsResponse,
             summary="Get collection items",
             description="Paginated list of posts in a collection with full post details and reactions. Public collections are viewable by anyone; private ones only by the owner.")
 async def get_collection_items(collection_id: str, page: int = Query(1, ge=1, le=1000),
@@ -3198,7 +3210,7 @@ async def unhide_post(post_id: str, user=Depends(require_user), _csrf=Depends(re
     return {"success": True}
 
 
-@router.get("/posts/hidden",
+@router.get("/posts/hidden", response_model=HiddenPostsResponse,
             summary="List hidden posts",
             description="Paginated list of posts the authenticated user has hidden from their feeds, sorted by most recently hidden.")
 async def list_hidden_posts(
@@ -3442,7 +3454,7 @@ def _reputation(conn, user_id: str, posts: int, reviews: int) -> dict:
             "photos": photos, "followers": followers, "places": places, "likes": likes}
 
 
-@router.get("/me/badge-progress",
+@router.get("/me/badge-progress", response_model=BadgeProgressResponse,
             summary="Badge progress for current user",
             description="Returns all badges with current progress and target thresholds — earned ones flagged, unearned ones show current/target for a progress bar.")
 async def get_badge_progress(user=Depends(require_user)):
@@ -3551,7 +3563,7 @@ def _check_achievements_bg(user_id: str):
         logger.warning("achievement check failed for %s: %s", user_id, e)
 
 
-@router.get("/users/{user_id}",
+@router.get("/users/{user_id}", response_model=UserProfileResponse,
             summary="Get user profile",
             description="Retrieve a user's public profile by UUID or username. Includes stats, reputation, badges, privacy settings, and viewer relationship status (following/blocked/muted).")
 async def get_user_profile(user_id: str, user=Depends(get_current_user)):
@@ -3725,7 +3737,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
     }
 
 
-@router.get("/users/{user_id}/posts",
+@router.get("/users/{user_id}/posts", response_model=UserPostsResponse,
             summary="Get a user's posts",
             description="Paginated list of a user's approved posts. Respects privacy settings (show_activity). Pinned posts appear first.")
 async def get_user_posts(
@@ -3774,7 +3786,7 @@ async def get_user_posts(
     return {"posts": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-@router.get("/users/{user_id}/reviews",
+@router.get("/users/{user_id}/reviews", response_model=UserReviewsResponse,
             summary="Get a user's reviews",
             description="Paginated list of a user's approved review posts. Respects privacy settings (show_activity). Sorted by newest first.")
 async def get_user_reviews(
@@ -3823,7 +3835,7 @@ async def get_user_reviews(
     return {"reviews": posts, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-@router.get("/users/{user_id}/timeline",
+@router.get("/users/{user_id}/timeline", response_model=UserTimelineResponse,
             summary="User activity timeline",
             description="Chronological timeline of a user's posts, reviews, and follows.")
 async def get_user_timeline(
@@ -3973,7 +3985,7 @@ async def get_user_timeline(
     return {"items": items, "total": total, "page": page, "has_more": offset + limit < total}
 
 
-@router.get("/users/{user_id}/activity-heatmap",
+@router.get("/users/{user_id}/activity-heatmap", response_model=ActivityHeatmapResponse,
             summary="365-day activity heatmap",
             description="Số đóng góp (bài đăng đã duyệt, gồm cả đánh giá) theo ngày trong 365 ngày qua (GitHub-style).")
 async def get_activity_heatmap(user_id: str, user=Depends(get_current_user)):

@@ -27,6 +27,17 @@ from pydantic import BaseModel, Field, field_validator
 from auth_middleware import get_current_user, require_user, validate_path_id, require_csrf
 from database import db
 from ratelimit import check_rate
+from api_schemas_notif import (
+    NotificationsResponse,
+    UnreadCountResponse,
+    NotificationPreferencesResponse,
+    FollowCheckResponse,
+    FollowingResponse,
+    FollowerCountResponse,
+    BlockedUsersResponse,
+    MutedUsersResponse,
+    RsvpStatusResponse,
+)
 
 
 from auth_middleware import require_pg as _require_pg
@@ -62,6 +73,7 @@ class ReportRequest(BaseModel):
 # ── Notifications ──
 
 @router.get("/notifications",
+            response_model=NotificationsResponse,
             summary="List notifications",
             description="Returns paginated notifications for the authenticated user, grouped by type. Includes unread count.")
 async def get_notifications(
@@ -95,6 +107,7 @@ async def get_notifications(
 
 
 @router.get("/notifications/unread-count",
+            response_model=UnreadCountResponse,
             summary="Get unread notification count",
             description="Returns the total number of unread notifications for the authenticated user.")
 async def unread_count(user=Depends(require_user)):
@@ -192,6 +205,7 @@ class NotifPrefsUpdate(BaseModel):
 
 
 @router.get("/notification-preferences",
+            response_model=NotificationPreferencesResponse,
             summary="Get notification preferences",
             description="Returns the user's notification preference flags for each notification type (like, comment, mention, follow, system).")
 async def get_notification_preferences(user=Depends(require_user)):
@@ -543,6 +557,7 @@ async def _run_follow_side_effects(user, target_id: str, target_type: str, follo
 
 
 @router.get("/follow/check/{target_type}/{target_id}",
+            response_model=FollowCheckResponse,
             summary="Check follow status",
             description="Checks whether the authenticated user is following a specific user or entity.")
 async def check_follow(target_type: str, target_id: str, user=Depends(require_user)):
@@ -563,6 +578,7 @@ async def check_follow(target_type: str, target_id: str, user=Depends(require_us
 
 
 @router.get("/following",
+            response_model=FollowingResponse,
             summary="List followed users and entities",
             description="Returns a paginated list of users and entities the authenticated user follows. Optionally filter by target type.")
 async def get_following(
@@ -614,6 +630,7 @@ async def get_following(
 
 
 @router.get("/followers/count/{target_type}/{target_id}",
+            response_model=FollowerCountResponse,
             summary="Get follower count",
             description="Returns the total number of followers for a given user or entity. No authentication required.")
 async def get_follower_count(target_type: str, target_id: str):
@@ -700,6 +717,7 @@ async def toggle_block(blocked_id: str, user=Depends(require_user), _csrf=Depend
 
 
 @router.get("/blocked-users",
+            response_model=BlockedUsersResponse,
             summary="List blocked users",
             description="Returns a paginated list of users blocked by the authenticated user, with display name and avatar.")
 async def list_blocked_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
@@ -761,6 +779,7 @@ async def toggle_mute(muted_id: str, user=Depends(require_user), _csrf=Depends(r
 
 
 @router.get("/muted-users",
+            response_model=MutedUsersResponse,
             summary="List muted users",
             description="Returns a paginated list of users muted by the authenticated user, with display name and avatar.")
 async def list_muted_users(page: int = Query(1, ge=1, le=100), limit: int = Query(50, ge=1, le=100),
@@ -862,6 +881,7 @@ async def toggle_rsvp(entity_id: str, user=Depends(require_user), _csrf=Depends(
 
 
 @router.get("/events/{entity_id}/rsvp",
+            response_model=RsvpStatusResponse,
             summary="Get event RSVP status",
             description="Returns the total attendee count and whether the current user (if authenticated) has RSVP'd to the event.")
 async def get_rsvp(entity_id: str, request: Request = None):

@@ -9,6 +9,12 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field, field_validator
 
+from api_schemas_visits import (
+    ReviewPromptsResponse,
+    VisitCheckResponse,
+    VisitListResponse,
+    VisitStatsResponse,
+)
 from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
 from ratelimit import check_rate
@@ -32,6 +38,7 @@ class VisitBody(BaseModel):
 
 
 @router.get("",
+            response_model=VisitListResponse,
             summary="List visit marks",
             description="Returns all entities marked as 'want' or 'visited' by the user. Optionally filter by status. Ordered by most recent, limited to 5000.")
 async def list_visits(status: Optional[str] = Query(None, pattern="^(want|visited)$"), user=Depends(require_user)):
@@ -50,6 +57,7 @@ async def list_visits(status: Optional[str] = Query(None, pattern="^(want|visite
 
 
 @router.get("/check/{entity_id}",
+            response_model=VisitCheckResponse,
             summary="Check visit status for an entity",
             description="Returns the current visit status ('want', 'visited', or null) for a specific entity. Used to render toggle state in the UI.")
 async def check_visit(entity_id: str, user=Depends(require_user)):
@@ -94,6 +102,7 @@ async def set_visit(body: VisitBody, user=Depends(require_user), _csrf=Depends(r
 
 
 @router.get("/review-prompts",
+            response_model=ReviewPromptsResponse,
             summary="Get review prompts",
             description="Returns entities the user has visited but not yet reviewed. Used to prompt the user to write reviews for places they have been to.")
 async def review_prompts(user=Depends(require_user), limit: int = Query(10, ge=1, le=30)):
@@ -121,6 +130,7 @@ async def review_prompts(user=Depends(require_user), limit: int = Query(10, ge=1
 
 
 @router.get("/stats",
+            response_model=VisitStatsResponse,
             summary="Visit statistics",
             description="Returns aggregate visit statistics for the user: total count, visited vs. want breakdown, and per-entity-type counts.")
 async def visit_stats(user=Depends(require_user)):
