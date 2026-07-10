@@ -5739,6 +5739,10 @@ def _fix_admin_route_order():
         else:
             other_routes.append(r)
     _reorder_static_routes(static_routes, other_routes)
-    router.routes[:] = other_routes
+    # An toàn: CHỈ áp reorder khi không mất route. Nếu _reorder_static_routes bỏ sót
+    # static (spath không khớp param nào trong other_routes) → other_routes ngắn hơn →
+    # router.routes[:] sẽ LÀM RỖNG/MẤT route (đã thấy admin.router trống trên CI-Linux).
+    if len(other_routes) == len(router.routes):
+        router.routes[:] = other_routes
 
 _fix_admin_route_order()
