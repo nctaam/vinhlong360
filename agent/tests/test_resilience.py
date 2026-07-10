@@ -237,13 +237,16 @@ class TestCircuitBreaker:
 
     def test_weather_tool_uses_circuit_breaker(self):
         """Weather tool call path must use weather_breaker for fault isolation."""
-        # The weather circuit breaker is wired in server.py _call_tool_impl
-        # where the weather tool is dispatched
+        # Dispatch refactor: weather tool dời từ if/elif sang handler _tool_weather,
+        # nối qua _TOOL_HANDLERS dict (extract-verbatim, CB giữ nguyên).
         server_path = AGENT_DIR / "server.py"
         source = server_path.read_text(encoding="utf-8")
-        # Find the weather tool handler in call_tool / _call_tool_impl
-        idx = source.find('elif name == "weather"')
-        assert idx > 0, "Weather tool handler must exist in server.py"
+        # Wiring: weather phải được dispatch qua bảng handler
+        assert '"weather": _tool_weather' in source, \
+            "Weather tool must be wired in _TOOL_HANDLERS dispatch"
+        # Handler _tool_weather phải tồn tại và dùng weather_breaker
+        idx = source.find("def _tool_weather")
+        assert idx > 0, "Weather tool handler _tool_weather must exist in server.py"
         func_body = source[idx:idx+800]
         assert "weather_breaker" in func_body, \
             "Weather tool must use weather_breaker circuit breaker for fault isolation"

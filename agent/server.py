@@ -414,325 +414,386 @@ def call_tool(name: str, args: dict) -> str:
         return json.dumps({"error": "Không thực hiện được công cụ (thiếu hoặc sai tham số)."}, ensure_ascii=False)
 
 
-def _call_tool_impl(name: str, args: dict) -> str:
-    if name == "search":
-        result = _hybrid_rerank_search(args)
-        try:
-            for e in result[:3]:
-                analytics.track_entity_hit(e["id"])
-        except Exception:
-            logger.warning("analytics.track_entity_hit failed (search)", exc_info=True)
-        def _search_card(e):
-            attrs = e.get("attributes") or {}
-            place_obj = knowledge.get_place(e["id"]) or {}
-            # Location label: prefer places data, fallback to attributes
-            place_label = place_obj.get("name") or attrs.get("ward") or attrs.get("district") or attrs.get("province_old") or ""
-            card = {
-                "id": e["id"], "type": e["type"], "name": e["name"],
-                "summary": e.get("summary", ""),
-                "place": place_label,
-                "season": knowledge.season_text(e),
-                "needs_verification": e.get("confidence", 1.0) < 0.7,
-                "verified": e.get("verified", True) is not False and e.get("status") != "provisional",
-            }
-            # Include coords when available (powers map display)
-            coords = e.get("coords") or e.get("coordinates")
-            if coords:
-                card["coords"] = coords
-            # Practical info — critical for trip planning queries
-            hours = attrs.get("hours") or attrs.get("open_hours")
-            if hours:
-                card["hours"] = hours
-            if attrs.get("admission_fee") or attrs.get("admission"):
-                card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
-            if attrs.get("best_time"):
-                card["best_time"] = attrs["best_time"]
-            if attrs.get("key_facts"):
-                card["key_facts"] = attrs["key_facts"]
-            if attrs.get("ocop"):
-                card["ocop"] = attrs["ocop"]
-            # Include address/district for context
-            if attrs.get("address"):
-                card["address"] = attrs["address"]
-            elif attrs.get("district"):
-                card["location"] = f"{attrs.get('ward', attrs['district'])}, {attrs.get('province_old', '')}"
-            return card
-        return json.dumps([_search_card(e) for e in result], ensure_ascii=False)
+# ── Tool helpers (tách để complexity ≤12, extract-verbatim) ──
+_PROV_NAMES = {"ben-tre": "Bến Tre", "tra-vinh": "Trà Vinh", "vinh-long": "Vĩnh Long"}
+_OCOP_CRAFT_KW = ["đan", "dệt", "gốm", "tre", "lá", "chiếu", "mây", "thủ công"]
+_OCOP_DRINK_KW = ["rượu", "nước", "mật", "trà", "cà phê", "đường hoa"]
+_ACCOM_TYPE_KW = {
+    "homestay": ["homestay", "nhà vườn", "nhà cổ", "nhà dân"],
+    "resort": ["resort", "khu nghỉ dưỡng"],
+    "hotel": ["khách sạn", "hotel"],
+    "guesthouse": ["nhà nghỉ", "guesthouse", "phòng trọ"],
+}
+_ACCOM_FAMILY_KW = ["gia đình", "trẻ em", "vườn", "sân chơi", "an toàn", "cù lao"]
 
-    elif name == "entity_detail":
-        detail = knowledge.entity_detail(args["entity_id"])
-        try:
-            analytics.track_entity_hit(args["entity_id"])
-        except Exception:
-            logger.warning("analytics.track_entity_hit failed (entity_detail)", exc_info=True)
-        if not detail:
-            return json.dumps({"error": "Không tìm thấy: " + args["entity_id"]})
-        conf = detail.pop("confidence", 1.0)
-        detail["needs_verification"] = (conf or 1.0) < 0.7
-        return json.dumps(detail, ensure_ascii=False, default=str)
 
-    elif name == "seasonal_now":
-        raw_month = args["month"]
-        try:
-            raw_month = max(1, min(12, int(raw_month)))
-        except (TypeError, ValueError):
-            raw_month = datetime.now(timezone.utc).month
-        result = knowledge.seasonal_now(raw_month)
-        def _seasonal_card(e):
-            attrs = e.get("attributes") or {}
-            card = {
-                "id": e["id"], "type": e["type"], "name": e["name"],
-                "summary": e.get("summary", ""),
-                "season": knowledge.season_text(e),
-            }
-            hours = attrs.get("hours") or attrs.get("open_hours")
-            if hours:                      card["hours"] = hours
-            if attrs.get("admission_fee") or attrs.get("admission"): card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
-            if attrs.get("best_time"):     card["best_time"] = attrs["best_time"]
-            if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
-            if e.get("coords"):            card["coords"] = e["coords"]
-            return card
-        return json.dumps([_seasonal_card(e) for e in result], ensure_ascii=False)
+def _area_matches(e: dict, attrs: dict, area) -> bool:
+    if not area:
+        return True
+    place = knowledge.get_place(e["id"])
+    prov = attrs.get("province_old", "")
+    return bool((place and place.get("area") == area) or prov == _PROV_NAMES.get(area, ""))
 
-    elif name == "list_itineraries":
-        result = knowledge.list_itineraries(args.get("area"))
-        return json.dumps([{
-            "id": it["id"], "title": it["title"],
-            "area": it.get("area"), "duration": it.get("duration"),
-            "summary": it.get("summary", ""),
-            "stops": len(it.get("stops", [])),
-        } for it in result], ensure_ascii=False)
 
-    elif name == "itinerary_detail":
-        it = knowledge.get_itinerary(args["itinerary_id"])
-        if not it:
-            return json.dumps({"error": "Không tìm thấy: " + args["itinerary_id"]})
-        stops_detail = []
-        for s in it.get("stops", []):
-            e = knowledge.get_entity(s["id"])
-            stops_detail.append({
-                "time": s["time"], "id": s["id"],
-                "name": e["name"] if e else s["id"],
-                "summary": e.get("summary", "") if e else "",
-                "note": s.get("note", ""),
-            })
-        return json.dumps({**it, "stops": stops_detail}, ensure_ascii=False)
+def _search_card_practical(card: dict, attrs: dict) -> None:
+    hours = attrs.get("hours") or attrs.get("open_hours")
+    if hours:
+        card["hours"] = hours
+    if attrs.get("admission_fee") or attrs.get("admission"):
+        card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
+    if attrs.get("best_time"):
+        card["best_time"] = attrs["best_time"]
+    if attrs.get("key_facts"):
+        card["key_facts"] = attrs["key_facts"]
+    if attrs.get("ocop"):
+        card["ocop"] = attrs["ocop"]
+    if attrs.get("address"):
+        card["address"] = attrs["address"]
+    elif attrs.get("district"):
+        card["location"] = f"{attrs.get('ward', attrs['district'])}, {attrs.get('province_old', '')}"
 
-    elif name == "places_in_area":
-        ps = knowledge.places(args["area"])
-        content_counts = {}
-        for e in knowledge._entities.values():
-            pid = e.get("placeId")
-            if pid and e["type"] in knowledge.CARD_TYPES:
-                content_counts[pid] = content_counts.get(pid, 0) + 1
-        return json.dumps([{
-            "id": p["id"], "name": p["name"], "level": p.get("level"),
-            "legacyArea": p.get("legacyArea", ""),
-            "content_count": content_counts.get(p["id"], 0),
-        } for p in ps], ensure_ascii=False)
 
-    elif name == "stats":
-        return json.dumps(knowledge.stats(), ensure_ascii=False)
+def _ocop_category_ok(e: dict, category: str) -> bool:
+    if category == "all":
+        return True
+    name_text = (e.get("name", "") + e.get("summary", "")).lower()
+    if category == "craft":
+        return any(kw in name_text for kw in _OCOP_CRAFT_KW)
+    if category == "drink":
+        return any(kw in name_text for kw in _OCOP_DRINK_KW)
+    if category == "food":
+        return not any(kw in name_text for kw in _OCOP_CRAFT_KW + _OCOP_DRINK_KW)
+    return True
 
-    elif name == "compare_areas":
-        result = knowledge.compare_areas(args["area_1"], args["area_2"])
-        return json.dumps(result, ensure_ascii=False)
 
-    elif name == "nearby_entities":
-        result = knowledge.nearby_entities(args["entity_id"], args.get("limit", 8))
-        # Enrich with practical info for each nearby entity
-        enriched_nearby = []
-        for item in result:
-            e = knowledge._entities.get(item["id"]) or {}
-            attrs = e.get("attributes") or {}
-            card = dict(item)
-            hours = attrs.get("hours") or attrs.get("open_hours")
-            if hours:                      card["hours"] = hours
-            if attrs.get("admission_fee") or attrs.get("admission"): card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
-            if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
-            if e.get("coords"):            card["coords"] = e["coords"]
-            enriched_nearby.append(card)
-        return json.dumps(enriched_nearby, ensure_ascii=False)
+def _accom_filters_ok(e: dict, attrs: dict, acc_type: str, family: bool) -> bool:
+    if acc_type != "all":
+        kws = _ACCOM_TYPE_KW.get(acc_type, [])
+        text = (e.get("name", "") + e.get("summary", "")).lower()
+        if not any(kw in text for kw in kws):
+            return False
+    if family:
+        text = (e.get("name", "") + e.get("summary", "") + attrs.get("booking_note", "")).lower()
+        if not any(kw in text for kw in _ACCOM_FAMILY_KW):
+            return False
+    return True
 
-    elif name == "ocop_products":
-        area = args.get("area")
-        min_stars = args.get("min_stars", 3)
-        category = args.get("category", "all")
-        limit = args.get("limit", 12)
-        results = []
-        CRAFT_KW = ["đan", "dệt", "gốm", "tre", "lá", "chiếu", "mây", "thủ công"]
-        DRINK_KW = ["rượu", "nước", "mật", "trà", "cà phê", "đường hoa"]
-        for e in knowledge._entities.values():
-            attrs = e.get("attributes") or {}
-            if not attrs.get("ocop"):
-                continue
-            # Area filter
-            if area:
-                place = knowledge.get_place(e["id"])
-                prov = attrs.get("province_old", "")
-                _PROV = {"ben-tre": "Bến Tre", "tra-vinh": "Trà Vinh", "vinh-long": "Vĩnh Long"}
-                area_ok = (place and place.get("area") == area) or prov == _PROV.get(area, "")
-                if not area_ok:
-                    continue
-            # Star filter
-            ocop_val = str(attrs["ocop"])
-            star_num = 0
-            import re as _re
-            m = _re.search(r"(\d)", ocop_val)
-            if m:
-                star_num = int(m.group(1))
-            if star_num and star_num < min_stars:
-                continue
-            # Category filter
-            if category != "all":
-                name_text = (e.get("name", "") + e.get("summary", "")).lower()
-                if category == "craft" and not any(kw in name_text for kw in CRAFT_KW):
-                    continue
-                if category == "drink" and not any(kw in name_text for kw in DRINK_KW):
-                    continue
-                if category == "food" and any(kw in name_text for kw in CRAFT_KW + DRINK_KW):
-                    continue
-            card = {
-                "id": e["id"], "name": e["name"],
-                "ocop": attrs["ocop"],
-                "summary": e.get("summary", "")[:120],
-                "province": attrs.get("province_old", ""),
-                "address": attrs.get("address", ""),
-            }
-            if attrs.get("admission_fee") or attrs.get("admission"): card["price"] = attrs.get("admission_fee") or attrs.get("admission")
-            if attrs.get("phone"):         card["phone"] = attrs["phone"]
-            if e.get("coords"):            card["coords"] = e["coords"]
-            # Sort key: star desc
-            card["_star"] = star_num
-            results.append(card)
-        results.sort(key=lambda x: -x.pop("_star", 0))
-        return json.dumps(results[:limit], ensure_ascii=False)
 
-    elif name == "accommodation_search":
-        area = args.get("area")
-        acc_type = args.get("type", "all")
-        family = args.get("family_friendly", False)
-        limit = args.get("limit", 8)
-        TYPE_KW = {
-            "homestay": ["homestay", "nhà vườn", "nhà cổ", "nhà dân"],
-            "resort": ["resort", "khu nghỉ dưỡng"],
-            "hotel": ["khách sạn", "hotel"],
-            "guesthouse": ["nhà nghỉ", "guesthouse", "phòng trọ"],
+def _ocop_card(e: dict, attrs: dict, star_num: int) -> dict:
+    card = {
+        "id": e["id"], "name": e["name"],
+        "ocop": attrs["ocop"],
+        "summary": e.get("summary", "")[:120],
+        "province": attrs.get("province_old", ""),
+        "address": attrs.get("address", ""),
+    }
+    if attrs.get("admission_fee") or attrs.get("admission"): card["price"] = attrs.get("admission_fee") or attrs.get("admission")
+    if attrs.get("phone"):         card["phone"] = attrs["phone"]
+    if e.get("coords"):            card["coords"] = e["coords"]
+    # Sort key: star desc
+    card["_star"] = star_num
+    return card
+
+
+def _accom_card(e: dict, attrs: dict) -> dict:
+    card = {
+        "id": e["id"], "name": e["name"],
+        "summary": e.get("summary", "")[:120],
+        "province": attrs.get("province_old", ""),
+        "address": attrs.get("address", ""),
+    }
+    if attrs.get("admission_fee") or attrs.get("admission") or attrs.get("price_range"):
+        card["price"] = attrs.get("admission_fee") or attrs.get("admission") or attrs.get("price_range")
+    if attrs.get("phone"):         card["phone"] = attrs["phone"]
+    hours = attrs.get("hours") or attrs.get("open_hours")
+    if hours:                      card["check_in"] = hours
+    if attrs.get("booking_note"):  card["booking_note"] = attrs["booking_note"]
+    if e.get("coords"):            card["coords"] = e["coords"]
+    return card
+
+
+def _search_result_card(e: dict) -> dict:
+    attrs = e.get("attributes") or {}
+    place_obj = knowledge.get_place(e["id"]) or {}
+    # Location label: prefer places data, fallback to attributes
+    place_label = place_obj.get("name") or attrs.get("ward") or attrs.get("district") or attrs.get("province_old") or ""
+    card = {
+        "id": e["id"], "type": e["type"], "name": e["name"],
+        "summary": e.get("summary", ""),
+        "place": place_label,
+        "season": knowledge.season_text(e),
+        "needs_verification": e.get("confidence", 1.0) < 0.7,
+        "verified": e.get("verified", True) is not False and e.get("status") != "provisional",
+    }
+    # Include coords when available (powers map display)
+    coords = e.get("coords") or e.get("coordinates")
+    if coords:
+        card["coords"] = coords
+    _search_card_practical(card, attrs)
+    return card
+
+
+def _tool_search(args: dict) -> str:
+    result = _hybrid_rerank_search(args)
+    try:
+        for e in result[:3]:
+            analytics.track_entity_hit(e["id"])
+    except Exception:
+        logger.warning("analytics.track_entity_hit failed (search)", exc_info=True)
+    return json.dumps([_search_result_card(e) for e in result], ensure_ascii=False)
+
+
+def _tool_entity_detail(args: dict) -> str:
+    detail = knowledge.entity_detail(args["entity_id"])
+    try:
+        analytics.track_entity_hit(args["entity_id"])
+    except Exception:
+        logger.warning("analytics.track_entity_hit failed (entity_detail)", exc_info=True)
+    if not detail:
+        return json.dumps({"error": "Không tìm thấy: " + args["entity_id"]})
+    conf = detail.pop("confidence", 1.0)
+    detail["needs_verification"] = (conf or 1.0) < 0.7
+    return json.dumps(detail, ensure_ascii=False, default=str)
+
+
+def _tool_seasonal_now(args: dict) -> str:
+    raw_month = args["month"]
+    try:
+        raw_month = max(1, min(12, int(raw_month)))
+    except (TypeError, ValueError):
+        raw_month = datetime.now(timezone.utc).month
+    result = knowledge.seasonal_now(raw_month)
+    def _seasonal_card(e):
+        attrs = e.get("attributes") or {}
+        card = {
+            "id": e["id"], "type": e["type"], "name": e["name"],
+            "summary": e.get("summary", ""),
+            "season": knowledge.season_text(e),
         }
-        FAMILY_KW = ["gia đình", "trẻ em", "vườn", "sân chơi", "an toàn", "cù lao"]
-        results = []
-        for e in knowledge._entities.values():
-            if e.get("type") != "accommodation":
-                continue
-            attrs = e.get("attributes") or {}
-            # Area filter
-            if area:
-                place = knowledge.get_place(e["id"])
-                prov = attrs.get("province_old", "")
-                _PROV = {"ben-tre": "Bến Tre", "tra-vinh": "Trà Vinh", "vinh-long": "Vĩnh Long"}
-                area_ok = (place and place.get("area") == area) or prov == _PROV.get(area, "")
-                if not area_ok:
-                    continue
-            # Type filter
-            if acc_type != "all":
-                kws = TYPE_KW.get(acc_type, [])
-                text = (e.get("name", "") + e.get("summary", "")).lower()
-                if not any(kw in text for kw in kws):
-                    continue
-            # Family filter
-            if family:
-                text = (e.get("name", "") + e.get("summary", "") + attrs.get("booking_note", "")).lower()
-                if not any(kw in text for kw in FAMILY_KW):
-                    continue
-            card = {
-                "id": e["id"], "name": e["name"],
-                "summary": e.get("summary", "")[:120],
-                "province": attrs.get("province_old", ""),
-                "address": attrs.get("address", ""),
-            }
-            if attrs.get("admission_fee") or attrs.get("admission") or attrs.get("price_range"):
-                card["price"] = attrs.get("admission_fee") or attrs.get("admission") or attrs.get("price_range")
-            if attrs.get("phone"):         card["phone"] = attrs["phone"]
-            hours = attrs.get("hours") or attrs.get("open_hours")
-            if hours:                      card["check_in"] = hours
-            if attrs.get("booking_note"):  card["booking_note"] = attrs["booking_note"]
-            if e.get("coords"):            card["coords"] = e["coords"]
-            results.append(card)
-        return json.dumps(results[:limit], ensure_ascii=False)
+        hours = attrs.get("hours") or attrs.get("open_hours")
+        if hours:                      card["hours"] = hours
+        if attrs.get("admission_fee") or attrs.get("admission"): card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
+        if attrs.get("best_time"):     card["best_time"] = attrs["best_time"]
+        if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
+        if e.get("coords"):            card["coords"] = e["coords"]
+        return card
+    return json.dumps([_seasonal_card(e) for e in result], ensure_ascii=False)
 
-    elif name == "web_search":
-        results = web_search(args["query"])
-        if not results:
-            return json.dumps({"results": [], "note": "Không tìm thấy kết quả"})
-        return json.dumps({"results": results}, ensure_ascii=False)
 
-    elif name == "suggest_followups":
-        suggestions = generate_followups(args["context"])
-        return json.dumps({"suggestions": suggestions}, ensure_ascii=False)
+def _tool_list_itineraries(args: dict) -> str:
+    result = knowledge.list_itineraries(args.get("area"))
+    return json.dumps([{
+        "id": it["id"], "title": it["title"],
+        "area": it.get("area"), "duration": it.get("duration"),
+        "summary": it.get("summary", ""),
+        "stops": len(it.get("stops", [])),
+    } for it in result], ensure_ascii=False)
 
-    elif name == "generate_itinerary":
-        result = generate_itinerary(
-            days=args.get("days", 1),
-            interests=args.get("interests"),
-            areas=args.get("areas"),
-            month=args.get("month"),
-            budget=args.get("budget", "trung_binh"),
-        )
-        return json.dumps(result, ensure_ascii=False)
 
-    elif name == "community_reviews":
+def _tool_itinerary_detail(args: dict) -> str:
+    it = knowledge.get_itinerary(args["itinerary_id"])
+    if not it:
+        return json.dumps({"error": "Không tìm thấy: " + args["itinerary_id"]})
+    stops_detail = []
+    for s in it.get("stops", []):
+        e = knowledge.get_entity(s["id"])
+        stops_detail.append({
+            "time": s["time"], "id": s["id"],
+            "name": e["name"] if e else s["id"],
+            "summary": e.get("summary", "") if e else "",
+            "note": s.get("note", ""),
+        })
+    return json.dumps({**it, "stops": stops_detail}, ensure_ascii=False)
+
+
+def _tool_places_in_area(args: dict) -> str:
+    ps = knowledge.places(args["area"])
+    content_counts = {}
+    for e in knowledge._entities.values():
+        pid = e.get("placeId")
+        if pid and e["type"] in knowledge.CARD_TYPES:
+            content_counts[pid] = content_counts.get(pid, 0) + 1
+    return json.dumps([{
+        "id": p["id"], "name": p["name"], "level": p.get("level"),
+        "legacyArea": p.get("legacyArea", ""),
+        "content_count": content_counts.get(p["id"], 0),
+    } for p in ps], ensure_ascii=False)
+
+
+def _tool_stats(args: dict) -> str:
+    return json.dumps(knowledge.stats(), ensure_ascii=False)
+
+
+def _tool_compare_areas(args: dict) -> str:
+    result = knowledge.compare_areas(args["area_1"], args["area_2"])
+    return json.dumps(result, ensure_ascii=False)
+
+
+def _tool_nearby_entities(args: dict) -> str:
+    result = knowledge.nearby_entities(args["entity_id"], args.get("limit", 8))
+    # Enrich with practical info for each nearby entity
+    enriched_nearby = []
+    for item in result:
+        e = knowledge._entities.get(item["id"]) or {}
+        attrs = e.get("attributes") or {}
+        card = dict(item)
+        hours = attrs.get("hours") or attrs.get("open_hours")
+        if hours:                      card["hours"] = hours
+        if attrs.get("admission_fee") or attrs.get("admission"): card["admission_fee"] = attrs.get("admission_fee") or attrs.get("admission")
+        if attrs.get("ocop"):          card["ocop"] = attrs["ocop"]
+        if e.get("coords"):            card["coords"] = e["coords"]
+        enriched_nearby.append(card)
+    return json.dumps(enriched_nearby, ensure_ascii=False)
+
+
+def _tool_ocop_products(args: dict) -> str:
+    area = args.get("area")
+    min_stars = args.get("min_stars", 3)
+    category = args.get("category", "all")
+    limit = args.get("limit", 12)
+    results = []
+    for e in knowledge._entities.values():
+        attrs = e.get("attributes") or {}
+        if not attrs.get("ocop"):
+            continue
+        if not _area_matches(e, attrs, area):
+            continue
+        # Star filter
+        m = re.search(r"(\d)", str(attrs["ocop"]))
+        star_num = int(m.group(1)) if m else 0
+        if star_num and star_num < min_stars:
+            continue
+        if not _ocop_category_ok(e, category):
+            continue
+        results.append(_ocop_card(e, attrs, star_num))
+    results.sort(key=lambda x: -x.pop("_star", 0))
+    return json.dumps(results[:limit], ensure_ascii=False)
+
+
+def _tool_accommodation_search(args: dict) -> str:
+    area = args.get("area")
+    acc_type = args.get("type", "all")
+    family = args.get("family_friendly", False)
+    limit = args.get("limit", 8)
+    results = []
+    for e in knowledge._entities.values():
+        if e.get("type") != "accommodation":
+            continue
+        attrs = e.get("attributes") or {}
+        if not _area_matches(e, attrs, area):
+            continue
+        if not _accom_filters_ok(e, attrs, acc_type, family):
+            continue
+        results.append(_accom_card(e, attrs))
+    return json.dumps(results[:limit], ensure_ascii=False)
+
+
+def _tool_web_search(args: dict) -> str:
+    results = web_search(args["query"])
+    if not results:
+        return json.dumps({"results": [], "note": "Không tìm thấy kết quả"})
+    return json.dumps({"results": results}, ensure_ascii=False)
+
+
+def _tool_suggest_followups(args: dict) -> str:
+    suggestions = generate_followups(args["context"])
+    return json.dumps({"suggestions": suggestions}, ensure_ascii=False)
+
+
+def _tool_generate_itinerary(args: dict) -> str:
+    result = generate_itinerary(
+        days=args.get("days", 1),
+        interests=args.get("interests"),
+        areas=args.get("areas"),
+        month=args.get("month"),
+        budget=args.get("budget", "trung_binh"),
+    )
+    return json.dumps(result, ensure_ascii=False)
+
+
+def _tool_community_reviews(args: dict) -> str:
+    try:
+        from social import get_community_reviews
+        entity_id = args.get("entity_id", "")
+        limit = args.get("limit", 5)
+        reviews = get_community_reviews(entity_id, limit)
+        if not reviews:
+            return json.dumps({"reviews": [], "note": f"Chưa có đánh giá cộng đồng cho '{entity_id}'"}, ensure_ascii=False)
+        return json.dumps({"reviews": reviews, "count": len(reviews)}, ensure_ascii=False, default=str)
+    except Exception as e:
+        logger.warning("community_reviews tool error: %s", e)
+        return json.dumps({"reviews": [], "error": "Không thể tải đánh giá"})
+
+
+def _tool_trending_posts(args: dict) -> str:
+    try:
+        from social import get_trending_posts
+        entity_type = args.get("entity_type")
+        limit = args.get("limit", 10)
+        posts = get_trending_posts(limit, entity_type)
+        if not posts:
+            return json.dumps({"posts": [], "note": "Chưa có bài viết nổi bật"}, ensure_ascii=False)
+        return json.dumps({"posts": posts, "count": len(posts)}, ensure_ascii=False, default=str)
+    except Exception as e:
+        logger.warning("trending_posts tool error: %s", e)
+        return json.dumps({"posts": [], "error": "Không thể tải bài viết"})
+
+
+def _tool_weather(args: dict) -> str:
+    if HAS_REALTIME:
+        area = args.get("area", "vinh-long")
+        # P0-7: wrap weather call with circuit breaker — after 3 failures,
+        # skip weather for 120s and return fallback instead of hanging.
+        def _do_weather():
+            return get_weather(area)
         try:
-            from social import get_community_reviews
-            entity_id = args.get("entity_id", "")
-            limit = args.get("limit", 5)
-            reviews = get_community_reviews(entity_id, limit)
-            if not reviews:
-                return json.dumps({"reviews": [], "note": f"Chưa có đánh giá cộng đồng cho '{entity_id}'"}, ensure_ascii=False)
-            return json.dumps({"reviews": reviews, "count": len(reviews)}, ensure_ascii=False, default=str)
-        except Exception as e:
-            logger.warning("community_reviews tool error: %s", e)
-            return json.dumps({"reviews": [], "error": "Không thể tải đánh giá"})
+            if HAS_CIRCUIT_BREAKER:
+                weather_data = weather_breaker.call(_do_weather)
+            else:
+                weather_data = _do_weather()
+        except Exception as _we:
+            logger.warning(f"Weather API error (circuit breaker): {_we}")
+            weather_data = None
+        events = get_upcoming_events(days_ahead=14, area=area)
+        return json.dumps({"weather": weather_data, "events": events}, ensure_ascii=False, default=str)
+    return json.dumps({"error": "Weather API not available"})
 
-    elif name == "trending_posts":
-        try:
-            from social import get_trending_posts
-            entity_type = args.get("entity_type")
-            limit = args.get("limit", 10)
-            posts = get_trending_posts(limit, entity_type)
-            if not posts:
-                return json.dumps({"posts": [], "note": "Chưa có bài viết nổi bật"}, ensure_ascii=False)
-            return json.dumps({"posts": posts, "count": len(posts)}, ensure_ascii=False, default=str)
-        except Exception as e:
-            logger.warning("trending_posts tool error: %s", e)
-            return json.dumps({"posts": [], "error": "Không thể tải bài viết"})
 
-    elif name == "weather":
-        if HAS_REALTIME:
-            area = args.get("area", "vinh-long")
-            # P0-7: wrap weather call with circuit breaker — after 3 failures,
-            # skip weather for 120s and return fallback instead of hanging.
-            def _do_weather():
-                return get_weather(area)
-            try:
-                if HAS_CIRCUIT_BREAKER:
-                    weather_data = weather_breaker.call(_do_weather)
-                else:
-                    weather_data = _do_weather()
-            except Exception as _we:
-                logger.warning(f"Weather API error (circuit breaker): {_we}")
-                weather_data = None
-            events = get_upcoming_events(days_ahead=14, area=area)
-            return json.dumps({"weather": weather_data, "events": events}, ensure_ascii=False, default=str)
-        return json.dumps({"error": "Weather API not available"})
+def _tool_directory_lookup(args: dict) -> str:
+    results = knowledge.directory_search(args.get("query", ""))
+    if not results:
+        return json.dumps(
+            {"results": [], "note": "Chưa có dữ liệu danh bạ hành chính cho yêu cầu này (đang bổ sung từ nguồn chính thống)."},
+            ensure_ascii=False)
+    return json.dumps({"results": results}, ensure_ascii=False)
 
-    elif name == "directory_lookup":
-        results = knowledge.directory_search(args.get("query", ""))
-        if not results:
-            return json.dumps(
-                {"results": [], "note": "Chưa có dữ liệu danh bạ hành chính cho yêu cầu này (đang bổ sung từ nguồn chính thống)."},
-                ensure_ascii=False)
-        return json.dumps({"results": results}, ensure_ascii=False)
 
+_TOOL_HANDLERS = {
+    "search": _tool_search,
+    "entity_detail": _tool_entity_detail,
+    "seasonal_now": _tool_seasonal_now,
+    "list_itineraries": _tool_list_itineraries,
+    "itinerary_detail": _tool_itinerary_detail,
+    "places_in_area": _tool_places_in_area,
+    "stats": _tool_stats,
+    "compare_areas": _tool_compare_areas,
+    "nearby_entities": _tool_nearby_entities,
+    "ocop_products": _tool_ocop_products,
+    "accommodation_search": _tool_accommodation_search,
+    "web_search": _tool_web_search,
+    "suggest_followups": _tool_suggest_followups,
+    "generate_itinerary": _tool_generate_itinerary,
+    "community_reviews": _tool_community_reviews,
+    "trending_posts": _tool_trending_posts,
+    "weather": _tool_weather,
+    "directory_lookup": _tool_directory_lookup,
+}
+
+
+def _call_tool_impl(name: str, args: dict) -> str:
+    handler = _TOOL_HANDLERS.get(name)
+    if handler is not None:
+        return handler(args)
     return json.dumps({"error": f"Unknown tool: {name}"})
 
 
