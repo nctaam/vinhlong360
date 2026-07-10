@@ -412,3 +412,6 @@ Những việc này **chặn ra mắt công khai** nhưng nằm ngoài code. Cla
 - **[P2/SEO] SP6.2 siết is_index_worthy lên 150 từ**: cần làm dày 159 trang dải 130-149 trước, tránh sitemap co đột ngột.
 - **[P2/Data] Đổi id chom-chom-binh-hoa-phuoc-rambutan → chom-chom-binh-hoa-phuoc** (slot đã trống sau xoá HOLD): ảnh hưởng URL/prerender/sitemap — task riêng.
 
+### Backlog phát sinh — Chuẩn-hoá R20.8 server.py (2026-07-10)
+- **[P2/Test-infra] Phục hồi chat integration coverage** (test_chat_smoke.py + test_chat_tools.py): fixture patch `server.client` đã lỗi thời (server chuyển sang `get_client()` singleton) → mọi test dùng fixture SILENT-error khi chạy `-m integration` (bị deselect ở `pytest -q` nên đi qua không ai thấy). Thêm: lifespan **không reset cờ `_shutting_down` lúc startup** → TestClient thứ 2+ trả 503 "Server shutting down" (test-ordering pollution). Sửa: (a) fixture patch `server.get_client` trả client giả; (b) reset shutdown-flag đầu lifespan startup. Lưu ý: ~20 test admin/UGC trong test_chat_smoke cần **PG-env** (503 trên SQLite) — phục hồi trọn vẹn cần `docker compose up postgres`. Giá trị: bọc được 4 pipeline-monster (chat/chat_stream/event_stream/_build_messages, R20.8 defer) để refactor an toàn. KHÔNG làm trong scope refactor _run_agent.
+
