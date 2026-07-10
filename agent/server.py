@@ -2702,6 +2702,42 @@ async def health():
     }
 
 
+def _health_data_quality() -> dict:
+    total_entities = len([e for e in knowledge._entities.values() if e.get("type") != "place"])
+    missing_summary = len([e for e in knowledge._entities.values() if e.get("type") != "place" and not e.get("summary")])
+    return {
+        "total_entities": total_entities,
+        "missing_summary": missing_summary,
+        "coverage_pct": round((total_entities - missing_summary) / total_entities * 100, 1) if total_entities else 0,
+    }
+
+
+def _health_features() -> dict:
+    """Cờ khả-dụng feature (simple data-driven) + feature có stats phụ."""
+    _flags = {
+        "realtime": HAS_REALTIME, "parallel_tools": HAS_PARALLEL,
+        "autocorrect": HAS_AUTOCORRECT, "recommender": HAS_RECOMMENDER,
+        "freshness": HAS_FRESHNESS, "image_recognition": HAS_IMAGE_RECOGNITION,
+        "metrics": HAS_METRICS, "orchestrator": HAS_ORCHESTRATOR,
+        "memory_graph": HAS_MEMORY_GRAPH, "tracing": HAS_TRACING,
+        "contextual_retrieval": HAS_CONTEXTUAL, "checkpoints": HAS_CHECKPOINTS,
+        "guardrails": HAS_GUARDRAILS, "cost_tracker": HAS_COST_TRACKER,
+        "eval_framework": HAS_EVAL, "self_optimizer": HAS_OPTIMIZER,
+        "llm_judge": HAS_LLM_JUDGE,
+    }
+    feats = {k: {"available": v} for k, v in _flags.items()}
+    feats["vector_search"] = embedding_store.stats() if HAS_VECTOR else {"available": False}
+    feats["kb_context"] = kb_context.stats() if HAS_KB_CONTEXT else {"available": False}
+    feats["experience_memory"] = experience_memory.stats() if HAS_EXPERIENCE else {"available": False}
+    feats["fewshot_compiler"] = prompt_compiler.stats() if HAS_FEWSHOT else {"available": False}
+    feats["circuit_breaker"] = all_breaker_stats() if HAS_CIRCUIT_BREAKER else {"available": False}
+    feats["ab_testing"] = {"available": HAS_AB_TESTING, "experiments": len(ab_manager.list_experiments()) if HAS_AB_TESTING else 0}
+    feats["prompt_cache"] = prompt_cache.stats() if HAS_PROMPT_CACHE else {"available": False}
+    feats["semantic_cache"] = {"available": HAS_SEMANTIC_CACHE, **(semantic_cache_stats() if HAS_SEMANTIC_CACHE else {})}
+    feats["dynamic_agents"] = {"available": HAS_DYNAMIC_AGENTS, "active_agents": len(agent_factory.get_active_agents()) if HAS_DYNAMIC_AGENTS else 0}
+    return feats
+
+
 async def _health_detail() -> dict:
     """Full health payload — internal use by admin-gated endpoints."""
     overall, db_ok, llm_status = _health_core()
@@ -2710,13 +2746,6 @@ async def _health_detail() -> dict:
         memory_mb = round(psutil.Process().memory_info().rss / 1024 / 1024, 1)
     except Exception:
         memory_mb = None
-    total_entities = len([e for e in knowledge._entities.values() if e.get("type") != "place"])
-    missing_summary = len([e for e in knowledge._entities.values() if e.get("type") != "place" and not e.get("summary")])
-    data_quality = {
-        "total_entities": total_entities,
-        "missing_summary": missing_summary,
-        "coverage_pct": round((total_entities - missing_summary) / total_entities * 100, 1) if total_entities else 0,
-    }
     from database import db as _db
     return {
         "status": overall,
@@ -2728,7 +2757,7 @@ async def _health_detail() -> dict:
         "llm_api_checked_at": datetime.fromtimestamp(_health_llm_cache["checked_at"]).isoformat() if _health_llm_cache["checked_at"] else None,
         "deep_checks": False,
         "entities": len(knowledge._entities),
-        "data_quality": data_quality,
+        "data_quality": _health_data_quality(),
         "model": get_model(),
         "cache": cache.stats(),
         "response_times": response_tracker.stats(),
@@ -2736,32 +2765,7 @@ async def _health_detail() -> dict:
         "errors": error_tracker.stats(),
         "scheduler": scheduler_status(),
         "search_index": dict(_index_build_state),
-        "vector_search": embedding_store.stats() if HAS_VECTOR else {"available": False},
-        "kb_context": kb_context.stats() if HAS_KB_CONTEXT else {"available": False},
-        "experience_memory": experience_memory.stats() if HAS_EXPERIENCE else {"available": False},
-        "fewshot_compiler": prompt_compiler.stats() if HAS_FEWSHOT else {"available": False},
-        "realtime": {"available": HAS_REALTIME},
-        "circuit_breaker": all_breaker_stats() if HAS_CIRCUIT_BREAKER else {"available": False},
-        "parallel_tools": {"available": HAS_PARALLEL},
-        "autocorrect": {"available": HAS_AUTOCORRECT},
-        "recommender": {"available": HAS_RECOMMENDER},
-        "freshness": {"available": HAS_FRESHNESS},
-        "image_recognition": {"available": HAS_IMAGE_RECOGNITION},
-        "metrics": {"available": HAS_METRICS},
-        "ab_testing": {"available": HAS_AB_TESTING, "experiments": len(ab_manager.list_experiments()) if HAS_AB_TESTING else 0},
-        "prompt_cache": prompt_cache.stats() if HAS_PROMPT_CACHE else {"available": False},
-        "orchestrator": {"available": HAS_ORCHESTRATOR},
-        "memory_graph": {"available": HAS_MEMORY_GRAPH},
-        "tracing": {"available": HAS_TRACING},
-        "contextual_retrieval": {"available": HAS_CONTEXTUAL},
-        "checkpoints": {"available": HAS_CHECKPOINTS},
-        "guardrails": {"available": HAS_GUARDRAILS},
-        "cost_tracker": {"available": HAS_COST_TRACKER},
-        "eval_framework": {"available": HAS_EVAL},
-        "self_optimizer": {"available": HAS_OPTIMIZER},
-        "semantic_cache": {"available": HAS_SEMANTIC_CACHE, **(semantic_cache_stats() if HAS_SEMANTIC_CACHE else {})},
-        "llm_judge": {"available": HAS_LLM_JUDGE},
-        "dynamic_agents": {"available": HAS_DYNAMIC_AGENTS, "active_agents": len(agent_factory.get_active_agents()) if HAS_DYNAMIC_AGENTS else 0},
+        **_health_features(),
         "time": datetime.now(timezone.utc).isoformat(),
     }
 

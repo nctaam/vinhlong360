@@ -1596,6 +1596,24 @@ class TestEndpointAuthGuards:
         block = src[idx:idx+200]
         assert "require_admin" in block
 
+    def test_health_features_helper_wired(self):
+        """Refactor: feature-availability dời sang _health_features, wired trong _health_detail."""
+        src = self._server_src()
+        assert "def _health_features(" in src
+        assert "**_health_features()" in src  # wiring
+        block = src[src.find("def _health_features("):][:2000]
+        for key in ("parallel_tools", "vector_search", "circuit_breaker", "dynamic_agents", "metrics"):
+            assert f'"{key}"' in block, f"_health_features thiếu {key}"
+
+    def test_health_data_quality_helper_wired(self):
+        """Refactor: data_quality dời sang _health_data_quality."""
+        src = self._server_src()
+        assert "def _health_data_quality(" in src
+        assert "_health_data_quality()" in src  # wiring trong _health_detail
+        block = src[src.find("def _health_data_quality("):][:400]
+        for key in ("total_entities", "missing_summary", "coverage_pct"):
+            assert f'"{key}"' in block
+
     def test_health_deep_behind_admin(self):
         """/health/deep must call require_admin."""
         src = self._server_src()
