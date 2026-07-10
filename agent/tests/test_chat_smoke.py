@@ -43,10 +43,11 @@ def _fake_completion(content="Vĩnh Long có Văn Thánh Miếu và làng gốm 
 
 @pytest.fixture
 def client_mocked():
-    # Patch tại client module-global của server: cả circuit-breaker và orchestrated
-    # đều gọi server.client.chat.completions.create.
-    with patch.object(server.client.chat.completions, "create",
-                      side_effect=lambda *a, **k: _fake_completion()):
+    # server dùng get_client() (llm_config singleton) — KHÔNG có server.client module-global.
+    # Patch server.get_client → client giả để cả circuit-breaker và orchestrated đều nhận mock.
+    fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
+        create=lambda *a, **k: _fake_completion())))
+    with patch.object(server, "get_client", lambda: fake):
         with TestClient(server.app) as c:
             yield c
 
@@ -84,7 +85,7 @@ def test_admin_edit_reflects_in_chat_and_api(client_mocked):
     try:
         r = client_mocked.post("/admin/entities", headers=hdr, json={
             "id": eid, "type": "dish", "name": "Món test GĐ3", "summary": "SENTINEL_GD3"})
-        assert r.status_code == 200, r.text
+        assert r.status_code == 201, r.text  # POST /admin/entities = create → 201
 
         # /api đọc DB -> thấy
         r2 = client_mocked.get(f"/api/entities/{eid}")
@@ -155,7 +156,7 @@ def test_relationship_management(client_mocked):
         # add
         r = client_mocked.post("/admin/relationships", headers=hdr,
                                json={"from_id": "rel-from", "to_id": "rel-to", "type": "related_to"})
-        assert r.status_code == 200, r.text
+        assert r.status_code == 201, r.text  # POST /admin/relationships = create → 201
         lst = client_mocked.get("/api/entities/rel-from/relationships").json()
         assert any(x["type"] == "related_to" and x["to_id"] == "rel-to" for x in lst["relationships"])
         # remove
@@ -180,7 +181,7 @@ def test_entity_image_management(client_mocked):
         assert client_mocked.post(f"/admin/entities/{eid}/images", headers=hdr, json={"url": "ftp://x"}).status_code == 400
         # add hợp lệ
         r = client_mocked.post(f"/admin/entities/{eid}/images", headers=hdr, json={"url": "https://ex.com/a.jpg"})
-        assert r.status_code == 200 and "https://ex.com/a.jpg" in r.json()["images"]
+        assert r.status_code == 201 and "https://ex.com/a.jpg" in r.json()["images"]  # add image = create → 201
         # remove index 0
         d = client_mocked.delete(f"/admin/entities/{eid}/images/0", headers=hdr)
         assert d.status_code == 200 and "https://ex.com/a.jpg" not in d.json().get("images", [])
@@ -189,7 +190,10 @@ def test_entity_image_management(client_mocked):
 
 
 def test_bulk_operations(client_mocked):
-    """Feature: thao tác hàng loạt — bulk-delete + bulk-update-confidence."""
+    """Feature: thao tác hàng loạt — bulk-delete (POST {entity_ids} → {success, count}).
+
+    (bulk-update-confidence KHÔNG có endpoint trong code hiện tại → bỏ khỏi test; backlog nếu cần.)
+    """
     from database import db
     from middleware import ADMIN_API_KEY as _ADMIN_KEY
     hdr = {"X-Admin-Key": _ADMIN_KEY}
@@ -197,12 +201,7 @@ def test_bulk_operations(client_mocked):
     try:
         for i in ids:
             db.upsert_entity({"id": i, "type": "dish", "name": f"Bulk {i}", "confidence": 0.5})
-        # bulk confidence
-        r = client_mocked.post("/admin/entities/bulk-update-confidence?confidence=0.9", headers=hdr, json=ids)
-        assert r.status_code == 200 and r.json()["count"] == 2
-        assert db.get_entity("bulk-a")["confidence"] == 0.9
-        # bulk delete
-        r2 = client_mocked.post("/admin/entities/bulk-delete", headers=hdr, json=ids)
+        r2 = client_mocked.post("/admin/entities/bulk-delete", headers=hdr, json={"entity_ids": ids})
         assert r2.status_code == 200 and r2.json()["count"] == 2
         assert db.get_entity("bulk-a") is None
     finally:
@@ -260,9 +259,12 @@ def test_create_facility_keeps_official_source(client_mocked):
             "id": eid, "type": "facility", "name": "UBND xã Test Danh Bạ", "placeId": "xa-x",
             "attributes": {"office_kind": "ubnd", "phone": "0270 111 222", "address": "Ấp 1"},
             "source": {"url": "https://vinhlong.gov.vn", "title": "cổng tỉnh"}})
-        assert r.status_code == 200, r.text
+        assert r.status_code == 201, r.text  # POST /admin/entities = create → 201
         got = db.get_entity(eid)
-        assert got["source"].get("url") == "https://vinhlong.gov.vn"   # KHÔNG bị ghi đè 'admin'
+        # source chuẩn-hoá DB có thể là dict (đơn) hoặc list[dict] (đa nguồn) — xử lý cả 2 shape.
+        src = got["source"]
+        src0 = src[0] if isinstance(src, list) else src
+        assert src0.get("url") == "https://vinhlong.gov.vn"   # url NGUỒN gốc KHÔNG bị ghi đè 'admin'
         assert got["attributes"]["office_kind"] == "ubnd"
     finally:
         db.delete_entity(eid)
@@ -314,23 +316,18 @@ def test_admin_ai_triage_endpoint(client_mocked):
     assert "ok" in body               # ok=True nếu LLM chạy, False nếu hỏng — đều 200
 
 
-def test_internal_endpoints_gated_in_prod(client_mocked, monkeypatch):
-    """GĐ4 phụ (a): ở production, /system/*, /analytics/*, /metrics ẩn sau admin key (404 nếu thiếu);
-    dev thì mở. Nuxt không gọi trực tiếp các path này."""
+def test_internal_endpoints_gated(client_mocked):
+    """/system/*, /analytics/*, /metrics ẩn sau admin key ở MỌI môi trường (gate 'ALL environments',
+    05bea20 security hardening — không còn phụ thuộc _IS_PROD). Nuxt không gọi trực tiếp các path này."""
     from middleware import ADMIN_API_KEY as _ADMIN_KEY
 
-    # Dev (mặc định): /metrics mở
-    monkeypatch.setattr(server, "_IS_PROD", False)
-    assert client_mocked.get("/metrics").status_code == 200
-
-    # Prod: ẩn nếu không có key
-    monkeypatch.setattr(server, "_IS_PROD", True)
+    # Không key → gate trả 404 (ẩn) ở cả dev lẫn prod
     assert client_mocked.get("/metrics").status_code == 404
     assert client_mocked.get("/system/logs").status_code == 404
     assert client_mocked.get("/analytics/summary").status_code == 404
-    # Có admin key -> qua middleware (200 hoặc lỗi nội bộ endpoint, miễn KHÔNG phải 404-gate)
+    # Có admin key → qua gate (200 hoặc lỗi nội bộ endpoint, miễn KHÔNG phải 404-gate)
     assert client_mocked.get("/metrics", headers={"X-Admin-Key": _ADMIN_KEY}).status_code == 200
-    # Path công khai vẫn mở ở prod
+    # Path công khai vẫn mở
     assert client_mocked.get("/health").status_code == 200
 
 
@@ -377,7 +374,7 @@ def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch)
     for _ in range(6):
         last = client_mocked.post("/api/report", json={"target_id": "y", "reason": "spam"})
     assert last.status_code == 429, last.text
-    assert last.json().get("error") == "rate_limited"
+    assert last.json().get("retry_after") == 300  # W6.2 error-shape: {detail, retry_after} (không còn {error})
 
 
 def test_entities_month_pagination(client_mocked):
