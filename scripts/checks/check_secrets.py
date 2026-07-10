@@ -33,38 +33,52 @@ class SecretsCheck:
     def root(self) -> Path:
         return self._root or repo_root()
 
-    def run(self, files: list[str] | None = None) -> dict:
-        violations = []
-        candidates = (
+    def _candidates(self, files: list[str] | None) -> list[str]:
+        return (
             [f.replace("\\", "/") for f in files]
             if files is not None
             else iter_text_files(self.root, _GLOBS, _ROOTS, _EXCLUDE)
         )
-        for rel in candidates:
-            # .env thật bị stage = chặn tuyệt đối
-            if rel == ".env" or rel.endswith("/.env"):
-                violations.append({"file": rel, "line": 0, "rule": self.rule,
-                                   "msg": "CẤM stage file .env (secret thật)"})
-                continue
-            if any(rel.startswith(e) or e in rel for e in _EXCLUDE):
-                continue
-            if not any(rel.endswith(g.lstrip("*")) for g in _GLOBS):
-                continue
-            p = self.root / rel
-            if not p.exists():
-                continue
-            for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-                if _ALLOW_LINE.search(line):
-                    continue
-                m = KEY_PATTERN.search(line)
-                if m:
-                    violations.append({"file": rel, "line": i, "rule": self.rule,
-                                       "msg": f"nghi hardcode secret ({m.group(1)}=...)"})
-                    continue
-                sm = _STRING_32.search(line)
-                if sm and _entropy(sm.group(1)) > 4.5:
-                    violations.append({"file": rel, "line": i, "rule": self.rule,
-                                       "msg": "chuỗi entropy cao ≥32 ký tự — nghi secret"})
+
+    def _scan_line(self, rel: str, i: int, line: str) -> dict | None:
+        if _ALLOW_LINE.search(line):
+            return None
+        m = KEY_PATTERN.search(line)
+        if m:
+            return {"file": rel, "line": i, "rule": self.rule,
+                    "msg": f"nghi hardcode secret ({m.group(1)}=...)"}
+        sm = _STRING_32.search(line)
+        if sm and _entropy(sm.group(1)) > 4.5:
+            return {"file": rel, "line": i, "rule": self.rule,
+                    "msg": "chuỗi entropy cao ≥32 ký tự — nghi secret"}
+        return None
+
+    def _scan_file(self, rel: str, p: Path) -> list[dict]:
+        found = []
+        for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+            v = self._scan_line(rel, i, line)
+            if v is not None:
+                found.append(v)
+        return found
+
+    def _file_violations(self, rel: str) -> list[dict]:
+        # .env thật bị stage = chặn tuyệt đối
+        if rel == ".env" or rel.endswith("/.env"):
+            return [{"file": rel, "line": 0, "rule": self.rule,
+                     "msg": "CẤM stage file .env (secret thật)"}]
+        if any(rel.startswith(e) or e in rel for e in _EXCLUDE):
+            return []
+        if not any(rel.endswith(g.lstrip("*")) for g in _GLOBS):
+            return []
+        p = self.root / rel
+        if not p.exists():
+            return []
+        return self._scan_file(rel, p)
+
+    def run(self, files: list[str] | None = None) -> dict:
+        violations = []
+        for rel in self._candidates(files):
+            violations.extend(self._file_violations(rel))
         return {"check": self.name, "level": self.level, "rule": self.rule,
                 "count": len(violations), "violations": violations}
 

@@ -152,6 +152,93 @@ def build_vision_message(image_base64: str, user_text: str = "") -> list[dict]:
 #  Entity matching
 # ══════════════════════════════════════════════════
 
+# Entity types that are matchable content (not places)
+_MATCHABLE_CONTENT_TYPES = {
+    "attraction", "product", "dish", "craft_village", "nature",
+    "event", "experience", "person", "history", "accommodation",
+    "organization", "economy",
+}
+
+
+def _score_name_match(
+    name: str, name_norm: str, description: str, desc_norm: str
+) -> tuple[float, list[str]]:
+    """Điểm cho khớp tên entity trong mô tả (verbatim từ match_to_entities)."""
+    # Exact name match in description (highest signal)
+    if name.lower() in description.lower():
+        return 0.5, [f"tên '{name}' xuất hiện trong mô tả"]
+    elif name_norm in desc_norm:
+        return 0.4, [f"tên '{name}' khớp (không dấu)"]
+    return 0.0, []
+
+
+def _score_token_overlap(
+    desc_tokens: set[str], entity_tokens: set[str]
+) -> tuple[float, list[str]]:
+    """Điểm cho token overlap (verbatim từ match_to_entities)."""
+    overlap = desc_tokens & entity_tokens
+    if overlap and entity_tokens:
+        overlap_ratio = len(overlap) / max(len(entity_tokens), 1)
+        token_score = min(overlap_ratio * 0.4, 0.3)
+        if token_score > 0.05:
+            sample = ", ".join(list(overlap)[:3])
+            return token_score, [f"từ khóa chung: {sample}"]
+    return 0.0, []
+
+
+def _score_name_words(name: str, description: str) -> tuple[float, list[str]]:
+    """Điểm cho substring matching tên nhiều từ (verbatim từ match_to_entities)."""
+    name_words = [w for w in name.lower().split() if len(w) >= 2]
+    matched_words = sum(1 for w in name_words if w in description.lower())
+    if name_words and matched_words >= 2:
+        word_score = (matched_words / len(name_words)) * 0.2
+        return word_score, [f"{matched_words}/{len(name_words)} từ trong tên khớp"]
+    return 0.0, []
+
+
+def _score_entity(
+    entity: dict, description: str, desc_tokens: set[str], desc_norm: str
+) -> tuple[float, str, str] | None:
+    """
+    Tính điểm khớp cho một entity. Trả (score, name, reason) hoặc None nếu
+    entity không phải content-type hoặc score quá thấp.
+    (Extract-method verbatim từ match_to_entities — không đổi logic.)
+    """
+    if entity.get("type") not in _MATCHABLE_CONTENT_TYPES:
+        return None
+
+    name = entity.get("name", "")
+    summary = entity.get("summary", "")
+    tags = entity.get("tags", [])
+    if isinstance(tags, str):
+        tags = [tags]
+
+    # Build searchable text for this entity
+    entity_text = f"{name} {summary} {' '.join(tags)}"
+    entity_tokens = _tokenize(entity_text)
+    name_norm = _normalize_vn(name)
+
+    score = 0.0
+    reasons: list[str] = []
+
+    name_score, name_reasons = _score_name_match(name, name_norm, description, desc_norm)
+    score += name_score
+    reasons.extend(name_reasons)
+
+    token_score, token_reasons = _score_token_overlap(desc_tokens, entity_tokens)
+    score += token_score
+    reasons.extend(token_reasons)
+
+    word_score, word_reasons = _score_name_words(name, description)
+    score += word_score
+    reasons.extend(word_reasons)
+
+    if score > 0.05:
+        reason = "; ".join(reasons) if reasons else "khớp từ khóa"
+        return (score, name, reason)
+    return None
+
+
 def match_to_entities(
     description: str,
     entities: dict,
@@ -178,59 +265,10 @@ def match_to_entities(
 
     scored: list[tuple[float, str, str, str]] = []  # (score, id, name, reason)
 
-    # Entity types that are matchable content (not places)
-    content_types = {
-        "attraction", "product", "dish", "craft_village", "nature",
-        "event", "experience", "person", "history", "accommodation",
-        "organization", "economy",
-    }
-
     for eid, entity in entities.items():
-        if entity.get("type") not in content_types:
-            continue
-
-        name = entity.get("name", "")
-        summary = entity.get("summary", "")
-        tags = entity.get("tags", [])
-        if isinstance(tags, str):
-            tags = [tags]
-
-        # Build searchable text for this entity
-        entity_text = f"{name} {summary} {' '.join(tags)}"
-        entity_tokens = _tokenize(entity_text)
-        name_norm = _normalize_vn(name)
-
-        score = 0.0
-        reasons = []
-
-        # Exact name match in description (highest signal)
-        if name.lower() in description.lower():
-            score += 0.5
-            reasons.append(f"tên '{name}' xuất hiện trong mô tả")
-        elif name_norm in desc_norm:
-            score += 0.4
-            reasons.append(f"tên '{name}' khớp (không dấu)")
-
-        # Token overlap
-        overlap = desc_tokens & entity_tokens
-        if overlap and entity_tokens:
-            overlap_ratio = len(overlap) / max(len(entity_tokens), 1)
-            token_score = min(overlap_ratio * 0.4, 0.3)
-            if token_score > 0.05:
-                score += token_score
-                sample = ", ".join(list(overlap)[:3])
-                reasons.append(f"từ khóa chung: {sample}")
-
-        # Substring matching for multi-word entity names
-        name_words = [w for w in name.lower().split() if len(w) >= 2]
-        matched_words = sum(1 for w in name_words if w in description.lower())
-        if name_words and matched_words >= 2:
-            word_score = (matched_words / len(name_words)) * 0.2
-            score += word_score
-            reasons.append(f"{matched_words}/{len(name_words)} từ trong tên khớp")
-
-        if score > 0.05:
-            reason = "; ".join(reasons) if reasons else "khớp từ khóa"
+        result = _score_entity(entity, description, desc_tokens, desc_norm)
+        if result is not None:
+            score, name, reason = result
             scored.append((score, eid, name, reason))
 
     # Sort by score descending, take top_k
@@ -333,42 +371,26 @@ def _fallback_recognize(
 #  Core: recognize_image
 # ══════════════════════════════════════════════════
 
-def recognize_image(
-    image_data: str | bytes,
-    entities: dict,
-    filename: str = "",
-) -> dict:
+def _normalize_image_to_b64(image_data: str | bytes) -> str:
     """
-    Nhận diện nội dung ảnh qua LLM Vision API, sau đó đối sánh
-    với entities du lịch đã biết.
-
-    Args:
-        image_data: Base64 string hoặc raw bytes của ảnh.
-        entities: Dict entity_id -> entity (từ knowledge.py).
-        filename: Tên file gốc (dùng cho fallback).
-
-    Returns:
-        {
-            "description": str,           # Mô tả tiếng Việt
-            "identified_entities": [       # Entities khớp
-                {"id": str, "name": str, "confidence": float}
-            ],
-            "category": str,              # food/landmark/nature/craft/event/person/other
-            "tags": [str],                # Từ khóa
-        }
-        Nếu fallback: thêm "fallback": True, "reason": str
+    Chuẩn hoá image_data về chuỗi base64.
+    (Extract-method verbatim từ recognize_image — không đổi logic.)
     """
-    # Normalize image_data to base64 string
     if isinstance(image_data, bytes):
-        image_b64 = base64.b64encode(image_data).decode("ascii")
-    else:
-        # Already base64; strip data URI prefix if present
-        if "," in image_data and image_data.startswith("data:"):
-            image_b64 = image_data.split(",", 1)[1]
-        else:
-            image_b64 = image_data
+        return base64.b64encode(image_data).decode("ascii")
+    # Already base64; strip data URI prefix if present
+    if "," in image_data and image_data.startswith("data:"):
+        return image_data.split(",", 1)[1]
+    return image_data
 
-    # Try Vision API
+
+def _call_vision_api(image_b64: str) -> dict:
+    """
+    Gọi Vision API và parse JSON. Nếu response không phải JSON hợp lệ,
+    trả dict raw-text (giữ nguyên hành vi). Lỗi API/mạng khác được ném ra
+    cho caller xử lý fallback.
+    (Extract-method verbatim từ recognize_image — không đổi logic.)
+    """
     try:
         client = _get_client()
         model = _get_model()
@@ -392,21 +414,24 @@ def recognize_image(
         if fence_match:
             json_text = fence_match.group(1).strip()
 
-        vision_result = json.loads(json_text)
+        return json.loads(json_text)
 
     except json.JSONDecodeError as exc:
         logger.warning("Vision API JSON parse error: %s, raw=%s", exc, raw[:200])
         # If we got text but not valid JSON, use the raw text as description
-        vision_result = {
+        return {
             "description": raw[:500] if raw else "Không thể phân tích kết quả",
             "category": "other",
             "identified_items": [],
             "tags": [],
         }
-    except Exception as exc:
-        logger.warning("Vision API error: %s", exc)
-        return _fallback_recognize(filename, entities)
 
+
+def _build_recognition_result(vision_result: dict, entities: dict) -> dict:
+    """
+    Chuẩn hoá field từ vision_result, đối sánh entities, trả dict kết quả.
+    (Extract-method verbatim từ recognize_image — không đổi logic.)
+    """
     # Normalize result fields
     description = vision_result.get("description", "")
     category = vision_result.get("category", "other")
@@ -436,6 +461,43 @@ def recognize_image(
         "category": category,
         "tags": tags,
     }
+
+
+def recognize_image(
+    image_data: str | bytes,
+    entities: dict,
+    filename: str = "",
+) -> dict:
+    """
+    Nhận diện nội dung ảnh qua LLM Vision API, sau đó đối sánh
+    với entities du lịch đã biết.
+
+    Args:
+        image_data: Base64 string hoặc raw bytes của ảnh.
+        entities: Dict entity_id -> entity (từ knowledge.py).
+        filename: Tên file gốc (dùng cho fallback).
+
+    Returns:
+        {
+            "description": str,           # Mô tả tiếng Việt
+            "identified_entities": [       # Entities khớp
+                {"id": str, "name": str, "confidence": float}
+            ],
+            "category": str,              # food/landmark/nature/craft/event/person/other
+            "tags": [str],                # Từ khóa
+        }
+        Nếu fallback: thêm "fallback": True, "reason": str
+    """
+    image_b64 = _normalize_image_to_b64(image_data)
+
+    # Try Vision API
+    try:
+        vision_result = _call_vision_api(image_b64)
+    except Exception as exc:
+        logger.warning("Vision API error: %s", exc)
+        return _fallback_recognize(filename, entities)
+
+    return _build_recognition_result(vision_result, entities)
 
 
 # ══════════════════════════════════════════════════

@@ -49,6 +49,66 @@ def _audit(record: dict):
         _logger.debug("Failed to write audit log: %s", exc)
 
 
+def _safe_fitness(name: str, phase: str):
+    """Compute fitness, swallowing errors into None (verbatim from phases 1 & 4)."""
+    try:
+        return self_eval.compute_fitness()
+    except Exception as e:
+        _logger.error("[%s] fitness_%s failed: %s", name, phase, e)
+        return None
+
+
+def _reload_kb(context: str):
+    """Reload live KB defensively, logging any failure (verbatim reload block)."""
+    try:
+        knowledge.reload()
+    except Exception as exc:
+        _logger.warning("knowledge.reload after %s failed: %s", context, exc)
+
+
+def _apply_change(name: str, apply_fn):
+    """Run apply_fn; return (change_result, apply_error) (verbatim phase 3)."""
+    change_result = None
+    apply_error = None
+    try:
+        change_result = apply_fn()
+    except Exception as e:
+        apply_error = f"{e}\n{traceback.format_exc()}"
+        _logger.error("[%s] apply_fn failed: %s", name, e)
+    return change_result, apply_error
+
+
+def _decide_gate(apply_error, before, after):
+    """Compute (decision, reason) from apply outcome + fitness (verbatim phase 5)."""
+    decision = "kept"
+    reason = "no baseline" if before is None else "no regression"
+    if apply_error:
+        decision = "rolled_back"
+        reason = f"apply error: {apply_error[:120]}"
+    elif before is not None and after is not None:
+        regressed, why = self_eval.is_regression(before, after)
+        if regressed:
+            decision = "rolled_back"
+            reason = why
+    return decision, reason
+
+
+def _maybe_rollback(decision: str, snap):
+    """Roll back + reload when the gate rejected the change (verbatim phase 6)."""
+    rollback_result = None
+    if decision == "rolled_back" and snap is not None:
+        rollback_result = kb_versioning.rollback(snap["id"])
+        _reload_kb("rollback")
+    return rollback_result
+
+
+def _serialize_change_result(change_result):
+    """JSON-safe change_result: passthrough for primitives else str() (verbatim)."""
+    if isinstance(change_result, (dict, list, str, int, float, type(None))):
+        return change_result
+    return str(change_result)
+
+
 def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
                    timestamp: str | None = None) -> dict:
     """Run `apply_fn` (a KB-modifying step) behind the fitness gate.
@@ -64,57 +124,25 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
     Returns a summary dict {name, decision, reason, before, after, change_result}.
     """
     # 1. Fitness before
-    try:
-        before = self_eval.compute_fitness()
-    except Exception as e:
-        _logger.error("[%s] fitness_before failed: %s", name, e)
-        before = None
+    before = _safe_fitness(name, "before")
 
     # 2. Snapshot (rollback point)
     snap = kb_versioning.snapshot(reason=f"pre:{name}", snapshot_id=snapshot_id)
 
     # 3. Apply the change
-    change_result = None
-    apply_error = None
-    try:
-        change_result = apply_fn()
-    except Exception as e:
-        apply_error = f"{e}\n{traceback.format_exc()}"
-        _logger.error("[%s] apply_fn failed: %s", name, e)
+    change_result, apply_error = _apply_change(name, apply_fn)
 
     # Ensure live KB reflects any file changes
-    try:
-        knowledge.reload()
-    except Exception as exc:
-        _logger.warning("knowledge.reload after apply failed: %s", exc)
+    _reload_kb("apply")
 
     # 4. Fitness after
-    try:
-        after = self_eval.compute_fitness()
-    except Exception as e:
-        _logger.error("[%s] fitness_after failed: %s", name, e)
-        after = None
+    after = _safe_fitness(name, "after")
 
     # 5. Gate decision
-    decision = "kept"
-    reason = "no baseline" if before is None else "no regression"
-    if apply_error:
-        decision = "rolled_back"
-        reason = f"apply error: {apply_error[:120]}"
-    elif before is not None and after is not None:
-        regressed, why = self_eval.is_regression(before, after)
-        if regressed:
-            decision = "rolled_back"
-            reason = why
+    decision, reason = _decide_gate(apply_error, before, after)
 
     # 6. Rollback if needed
-    rollback_result = None
-    if decision == "rolled_back" and snap is not None:
-        rollback_result = kb_versioning.rollback(snap["id"])
-        try:
-            knowledge.reload()
-        except Exception as exc:
-            _logger.warning("knowledge.reload after rollback failed: %s", exc)
+    rollback_result = _maybe_rollback(decision, snap)
 
     summary = {
         "name": name,
@@ -125,7 +153,7 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
         "before": before,
         "after": after,
         "rollback": rollback_result,
-        "change_result": change_result if isinstance(change_result, (dict, list, str, int, float, type(None))) else str(change_result),
+        "change_result": _serialize_change_result(change_result),
     }
     _audit(summary)
     _logger.info("[%s] decision=%s reason=%s", name, decision, reason)

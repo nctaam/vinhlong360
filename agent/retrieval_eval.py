@@ -109,10 +109,8 @@ def _search(query: str, k: int = 5):
     return [e["id"] for e in keyword[:k]]
 
 
-def run_eval(k: int = 5, verbose: bool = True) -> dict:
-    _build_indexes()
-
-    # 1. Recall@K
+def _eval_recall(k: int):
+    """Recall@K over RETRIEVAL_CASES. Returns (hits, total, misses)."""
     hits, total = 0, len(RETRIEVAL_CASES)
     misses = []
     for query, accept, _cat in RETRIEVAL_CASES:
@@ -123,11 +121,11 @@ def run_eval(k: int = 5, verbose: bool = True) -> dict:
             hits += 1
         else:
             misses.append({"query": query, "expected": accept, "got": ids})
+    return hits, total, misses
 
-    recall = hits / total if total else 0.0
 
-    # 2. Abstention: nonsense queries should yield no RELEVANT results.
-    # Apply the same relevance gate the degraded-mode fallback uses.
+def _eval_abstention(k: int):
+    """Abstention over ABSTENTION_CASES. Returns (abstain_ok, abstain_total, detail)."""
     abstain_ok, abstain_total = 0, len(ABSTENTION_CASES)
     abstain_detail = []
     for query in ABSTENTION_CASES:
@@ -141,6 +139,30 @@ def run_eval(k: int = 5, verbose: bool = True) -> dict:
         if passed:
             abstain_ok += 1
         abstain_detail.append({"query": query, "n_relevant": len(relevant), "abstained": passed})
+    return abstain_ok, abstain_total, abstain_detail
+
+
+def _print_report(k, recall, hits, total, report, abstain_ok, abstain_total, misses):
+    """Print the human-readable eval summary (verbose mode)."""
+    print("=" * 60)
+    print(f"  Retrieval Eval — Recall@{k}: {recall:.0%} ({hits}/{total})")
+    print(f"  Abstention rate: {report['abstention_rate']:.0%} ({abstain_ok}/{abstain_total})")
+    print("=" * 60)
+    for m in misses:
+        print(f"  MISS: '{m['query']}' expected {m['expected']}")
+        print(f"        got: {m['got']}")
+
+
+def run_eval(k: int = 5, verbose: bool = True) -> dict:
+    _build_indexes()
+
+    # 1. Recall@K
+    hits, total, misses = _eval_recall(k)
+    recall = hits / total if total else 0.0
+
+    # 2. Abstention: nonsense queries should yield no RELEVANT results.
+    # Apply the same relevance gate the degraded-mode fallback uses.
+    abstain_ok, abstain_total, abstain_detail = _eval_abstention(k)
 
     report = {
         "recall_at_k": round(recall, 3),
@@ -153,13 +175,7 @@ def run_eval(k: int = 5, verbose: bool = True) -> dict:
     }
 
     if verbose:
-        print("=" * 60)
-        print(f"  Retrieval Eval — Recall@{k}: {recall:.0%} ({hits}/{total})")
-        print(f"  Abstention rate: {report['abstention_rate']:.0%} ({abstain_ok}/{abstain_total})")
-        print("=" * 60)
-        for m in misses:
-            print(f"  MISS: '{m['query']}' expected {m['expected']}")
-            print(f"        got: {m['got']}")
+        _print_report(k, recall, hits, total, report, abstain_ok, abstain_total, misses)
     return report
 
 

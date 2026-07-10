@@ -75,6 +75,54 @@ def _load_json(path: Path, default=None):
     return default
 
 
+def _empty_stats() -> dict:
+    """Zeroed stats payload for an empty time window."""
+    return {
+        "total_records": 0,
+        "avg_score": 0.0,
+        "avg_duration": 0.0,
+        "avg_tokens": 0,
+        "by_agent": {},
+        "by_category": {},
+        "tool_usage_rate": 0.0,
+        "hallucination_rate": 0.0,
+        "avg_reply_length": 0,
+    }
+
+
+def _stats_by_agent(window: list[dict]) -> dict:
+    """Aggregate per-agent count + avg_score over *window* records."""
+    by_agent: dict[str, list[dict]] = defaultdict(list)
+    for r in window:
+        by_agent[r["agent_name"]].append(r)
+    agent_stats = {}
+    for agent, recs in by_agent.items():
+        agent_scores = [r["quality_score"] for r in recs]
+        agent_stats[agent] = {
+            "count": len(recs),
+            "avg_score": round(statistics.mean(agent_scores), 2),
+        }
+    return agent_stats
+
+
+def _stats_by_category(window: list[dict]) -> dict:
+    """Aggregate per-category count/avg_score/avg_duration/score_std."""
+    by_cat: dict[str, list[dict]] = defaultdict(list)
+    for r in window:
+        by_cat[r["category"]].append(r)
+    cat_stats = {}
+    for cat, recs in by_cat.items():
+        cat_scores = [r["quality_score"] for r in recs]
+        cat_durations = [r["duration"] for r in recs]
+        cat_stats[cat] = {
+            "count": len(recs),
+            "avg_score": round(statistics.mean(cat_scores), 2),
+            "avg_duration": round(statistics.mean(cat_durations), 2),
+            "score_std": round(statistics.pstdev(cat_scores), 2) if len(cat_scores) > 1 else 0.0,
+        }
+    return cat_stats
+
+
 def _categorize_query(query: str) -> str:
     """Classify a query into a category (same logic as reflexion module)."""
     q = query.lower()
@@ -165,48 +213,17 @@ class PerformanceCollector:
             window = [r for r in self._records if r["timestamp"] >= cutoff]
 
         if not window:
-            return {
-                "total_records": 0,
-                "avg_score": 0.0,
-                "avg_duration": 0.0,
-                "avg_tokens": 0,
-                "by_agent": {},
-                "by_category": {},
-                "tool_usage_rate": 0.0,
-                "hallucination_rate": 0.0,
-                "avg_reply_length": 0,
-            }
+            return _empty_stats()
 
         scores = [r["quality_score"] for r in window]
         durations = [r["duration"] for r in window]
         tokens = [r["token_count"] for r in window]
 
         # By agent
-        by_agent: dict[str, list[dict]] = defaultdict(list)
-        for r in window:
-            by_agent[r["agent_name"]].append(r)
-        agent_stats = {}
-        for agent, recs in by_agent.items():
-            agent_scores = [r["quality_score"] for r in recs]
-            agent_stats[agent] = {
-                "count": len(recs),
-                "avg_score": round(statistics.mean(agent_scores), 2),
-            }
+        agent_stats = _stats_by_agent(window)
 
         # By category
-        by_cat: dict[str, list[dict]] = defaultdict(list)
-        for r in window:
-            by_cat[r["category"]].append(r)
-        cat_stats = {}
-        for cat, recs in by_cat.items():
-            cat_scores = [r["quality_score"] for r in recs]
-            cat_durations = [r["duration"] for r in recs]
-            cat_stats[cat] = {
-                "count": len(recs),
-                "avg_score": round(statistics.mean(cat_scores), 2),
-                "avg_duration": round(statistics.mean(cat_durations), 2),
-                "score_std": round(statistics.pstdev(cat_scores), 2) if len(cat_scores) > 1 else 0.0,
-            }
+        cat_stats = _stats_by_category(window)
 
         # Tool usage rate
         tool_used_count = sum(1 for r in window if r["tools_used"])

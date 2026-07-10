@@ -109,10 +109,10 @@ def build_prompt(entity: dict) -> str:
     return prompt
 
 
-def load_entities(entity_type=None, entity_id=None, skip_existing=True):
+def _load_raw_entities():
     try:
         from database import db
-        entities = db.all_entities()
+        return db.all_entities()
     except Exception as e:
         print(f"[WARN] Cannot import database: {e}")
         print("[WARN] Falling back to web/data.json")
@@ -121,14 +121,10 @@ def load_entities(entity_type=None, entity_id=None, skip_existing=True):
             sys.exit(f"ERROR: {data_path} not found")
         with open(data_path, encoding="utf-8") as f:
             data = json.load(f)
-        entities = data.get("entities", [])
+        return data.get("entities", [])
 
-    if entity_id:
-        entities = [e for e in entities if e.get("id") == entity_id]
-        if not entities:
-            sys.exit(f"ERROR: entity '{entity_id}' not found")
-        return entities
 
+def _filter_entities(entities, entity_type=None, skip_existing=True):
     if entity_type:
         entities = [e for e in entities if e.get("type") == entity_type]
 
@@ -140,6 +136,18 @@ def load_entities(entity_type=None, entity_id=None, skip_existing=True):
                     if not e.get("images") or len(e.get("images", [])) == 0]
 
     return entities
+
+
+def load_entities(entity_type=None, entity_id=None, skip_existing=True):
+    entities = _load_raw_entities()
+
+    if entity_id:
+        entities = [e for e in entities if e.get("id") == entity_id]
+        if not entities:
+            sys.exit(f"ERROR: entity '{entity_id}' not found")
+        return entities
+
+    return _filter_entities(entities, entity_type, skip_existing)
 
 
 def update_entity_image(entity_id: str, image_path: str):

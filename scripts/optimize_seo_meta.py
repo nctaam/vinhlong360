@@ -86,6 +86,90 @@ def is_boilerplate(text: str) -> bool:
     return False
 
 
+# Types exempt from certain criteria (inherently don't have this data)
+CONTACT_EXEMPT = {"person", "nature", "history", "event", "itinerary", "economy"}
+SEASON_EXEMPT = {"facility", "organization", "person", "itinerary",
+                 "cafe", "restaurant", "history", "economy"}
+LOCATION_KW_EXEMPT = {"person", "event", "itinerary"}
+COORDS_EXEMPT = {"itinerary"}
+
+
+def _score_summary_quality(summary: str, issues: list[str]) -> int:
+    # Summary quality (max 30)
+    if not summary or is_boilerplate(summary):
+        issues.append("summary_missing")
+        return 0
+    if len(summary) < 50:
+        issues.append("summary_too_short")
+        return 5
+    if len(summary) < 120:
+        issues.append("summary_short")
+        return 15
+    score = 20
+    if len(summary) >= 200:
+        score += 10
+    return score
+
+
+def _score_location_kw(etype: str, summary_lower: str, issues: list[str]) -> int:
+    # Location keywords in summary (+10)
+    if etype in LOCATION_KW_EXEMPT:
+        return 10
+    if any(kw in summary_lower for kw in LOCATION_KEYWORDS):
+        return 10
+    issues.append("no_location_keyword")
+    return 0
+
+
+def _score_topic_kw(etype: str, summary_lower: str, issues: list[str]) -> int:
+    # Topic keywords in summary (+10)
+    type_keywords = TOPIC_KEYWORDS.get(etype, [])
+    if type_keywords and any(kw in summary_lower for kw in type_keywords):
+        return 10
+    if type_keywords:
+        issues.append("no_topic_keyword")
+        return 0
+    return 10
+
+
+def _score_images(images, issues: list[str]) -> int:
+    # Images (+15)
+    if images and len(images) > 0:
+        return 15
+    issues.append("no_images")
+    return 0
+
+
+def _score_contact(etype: str, attrs: dict, issues: list[str]) -> int:
+    # Contact info (+10)
+    if etype in CONTACT_EXEMPT:
+        return 10
+    if attrs.get("phone") or attrs.get("zalo") or attrs.get("email"):
+        return 10
+    issues.append("no_contact")
+    return 0
+
+
+def _score_coords(etype: str, coords, issues: list[str]) -> int:
+    # Coordinates (+10)
+    if etype in COORDS_EXEMPT:
+        return 10
+    if coords and isinstance(coords, (list, tuple)) and len(coords) == 2:
+        return 10
+    issues.append("no_coords")
+    return 0
+
+
+def _score_season(etype: str, season, issues: list[str]) -> int:
+    # Season data (+5)
+    if etype in SEASON_EXEMPT:
+        return 5
+    if season and isinstance(season, dict) and season.get("peak"):
+        return 5
+    issues.append("no_season")
+    return 0
+
+
 def score_entity(entity: dict) -> tuple[int, list[str]]:
     score = 0
     issues = []
@@ -98,75 +182,16 @@ def score_entity(entity: dict) -> tuple[int, list[str]]:
     season = entity.get("season")
     etype = entity.get("type", "")
 
-    # Summary quality (max 30)
-    if not summary or is_boilerplate(summary):
-        issues.append("summary_missing")
-    elif len(summary) < 50:
-        issues.append("summary_too_short")
-        score += 5
-    elif len(summary) < 120:
-        issues.append("summary_short")
-        score += 15
-    else:
-        score += 20
-        if len(summary) >= 200:
-            score += 10
+    score += _score_summary_quality(summary, issues)
 
     summary_lower = summary.lower()
 
-    # Types exempt from certain criteria (inherently don't have this data)
-    CONTACT_EXEMPT = {"person", "nature", "history", "event", "itinerary", "economy"}
-    SEASON_EXEMPT = {"facility", "organization", "person", "itinerary",
-                     "cafe", "restaurant", "history", "economy"}
-    LOCATION_KW_EXEMPT = {"person", "event", "itinerary"}
-    COORDS_EXEMPT = {"itinerary"}
-
-    # Location keywords in summary (+10)
-    if etype in LOCATION_KW_EXEMPT:
-        score += 10
-    elif any(kw in summary_lower for kw in LOCATION_KEYWORDS):
-        score += 10
-    else:
-        issues.append("no_location_keyword")
-
-    # Topic keywords in summary (+10)
-    type_keywords = TOPIC_KEYWORDS.get(etype, [])
-    if type_keywords and any(kw in summary_lower for kw in type_keywords):
-        score += 10
-    elif type_keywords:
-        issues.append("no_topic_keyword")
-    else:
-        score += 10
-
-    # Images (+15)
-    if images and len(images) > 0:
-        score += 15
-    else:
-        issues.append("no_images")
-
-    # Contact info (+10)
-    if etype in CONTACT_EXEMPT:
-        score += 10
-    elif attrs.get("phone") or attrs.get("zalo") or attrs.get("email"):
-        score += 10
-    else:
-        issues.append("no_contact")
-
-    # Coordinates (+10)
-    if etype in COORDS_EXEMPT:
-        score += 10
-    elif coords and isinstance(coords, (list, tuple)) and len(coords) == 2:
-        score += 10
-    else:
-        issues.append("no_coords")
-
-    # Season data (+5)
-    if etype in SEASON_EXEMPT:
-        score += 5
-    elif season and isinstance(season, dict) and season.get("peak"):
-        score += 5
-    else:
-        issues.append("no_season")
+    score += _score_location_kw(etype, summary_lower, issues)
+    score += _score_topic_kw(etype, summary_lower, issues)
+    score += _score_images(images, issues)
+    score += _score_contact(etype, attrs, issues)
+    score += _score_coords(etype, coords, issues)
+    score += _score_season(etype, season, issues)
 
     # Description bonus (+10)
     if description and len(description) > 100:
@@ -206,25 +231,11 @@ def suggest_description(entity: dict) -> str:
     return f"Khám phá {name} — thông tin chi tiết, hình ảnh, đánh giá tại vinhlong360.vn"
 
 
-def main():
-    ap = argparse.ArgumentParser(description="Phân tích SEO metadata")
-    ap.add_argument("--type", dest="entity_type", help="Filter entity type")
-    ap.add_argument("--min-score", type=int, default=0, help="Chỉ hiện entity dưới score này")
-    args = ap.parse_args()
-
-    entities = load_entities(args.entity_type)
-    if not entities:
-        print("[INFO] No entities found.")
-        return
-
-    SCRATCH.mkdir(parents=True, exist_ok=True)
-    date_str = datetime.now().strftime("%Y%m%d")
-    csv_path = SCRATCH / f"seo-audit-{date_str}.csv"
-
+def _build_rows(entities, min_score):
     rows = []
     for entity in entities:
         score, issues = score_entity(entity)
-        if args.min_score and score >= args.min_score:
+        if min_score and score >= min_score:
             continue
         rows.append({
             "id": entity.get("id", ""),
@@ -237,7 +248,10 @@ def main():
         })
 
     rows.sort(key=lambda r: r["score"])
+    return rows
 
+
+def _write_csv(csv_path, rows):
     with open(csv_path, "w", encoding="utf-8-sig", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=[
             "id", "name", "type", "score", "issues",
@@ -246,8 +260,8 @@ def main():
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"[OK] Exported {len(rows)} entities to {csv_path}")
 
+def _print_distribution(entities):
     # Score distribution
     brackets = {"0-30 (Kém)": 0, "31-60 (TB)": 0, "61-80 (Khá)": 0, "81-100 (Tốt)": 0}
     for entity in entities:
@@ -270,6 +284,9 @@ def main():
         bar = "█" * int(pct / 2)
         print(f"  {label:20s}  {count:5d}  ({pct:5.1f}%)  {bar}")
 
+
+def _print_top_issues(entities):
+    total = len(entities)
     # Top issues
     all_issues = {}
     for entity in entities:
@@ -280,6 +297,31 @@ def main():
     print("\nTop issues:")
     for issue, count in sorted(all_issues.items(), key=lambda x: -x[1])[:10]:
         print(f"  {issue:25s}  {count:5d}  ({count*100/total:.1f}%)")
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Phân tích SEO metadata")
+    ap.add_argument("--type", dest="entity_type", help="Filter entity type")
+    ap.add_argument("--min-score", type=int, default=0, help="Chỉ hiện entity dưới score này")
+    args = ap.parse_args()
+
+    entities = load_entities(args.entity_type)
+    if not entities:
+        print("[INFO] No entities found.")
+        return
+
+    SCRATCH.mkdir(parents=True, exist_ok=True)
+    date_str = datetime.now().strftime("%Y%m%d")
+    csv_path = SCRATCH / f"seo-audit-{date_str}.csv"
+
+    rows = _build_rows(entities, args.min_score)
+
+    _write_csv(csv_path, rows)
+
+    print(f"[OK] Exported {len(rows)} entities to {csv_path}")
+
+    _print_distribution(entities)
+    _print_top_issues(entities)
 
 
 if __name__ == "__main__":

@@ -707,22 +707,57 @@ def _apply_fuzzy_corrections(
     Returns:
         Tuple of (corrected_text, list_of_new_corrections).
     """
-    corrections: list[dict] = []
     text_norm = normalize_vietnamese(text)
     words = text_norm.split()
 
     if len(words) < 2:
         # Single-word inputs: try direct entity match
-        match = _fuzzy_match_entity(text_norm, max_distance=max_distance)
-        if match and normalize_vietnamese(match) != text_norm:
-            original_span = text.strip()
-            adjusted = _apply_capitalization(original_span, match)
-            if original_span != adjusted:
-                corrections.append({"from": original_span, "to": adjusted})
-                text = adjusted
-        return text, corrections
+        return _fuzzy_correct_single(text, text_norm, max_distance)
 
     # Slide windows of 2..5 words, try to match entity names
+    replaced_spans = _collect_fuzzy_spans(
+        text, words, already_corrected, max_distance
+    )
+
+    # Apply replacements (from right to left to preserve positions)
+    return _apply_fuzzy_replacements(text, replaced_spans)
+
+
+def _fuzzy_correct_single(
+    text: str,
+    text_norm: str,
+    max_distance: int,
+) -> tuple[str, list[dict]]:
+    """
+    Single-word fuzzy path: try a direct entity match for *text*.
+
+    Extracted verbatim from ``_apply_fuzzy_corrections`` (behavior-preserving).
+    """
+    corrections: list[dict] = []
+    match = _fuzzy_match_entity(text_norm, max_distance=max_distance)
+    if match and normalize_vietnamese(match) != text_norm:
+        original_span = text.strip()
+        adjusted = _apply_capitalization(original_span, match)
+        if original_span != adjusted:
+            corrections.append({"from": original_span, "to": adjusted})
+            text = adjusted
+    return text, corrections
+
+
+def _collect_fuzzy_spans(
+    text: str,
+    words: list[str],
+    already_corrected: list[dict],
+    max_distance: int,
+) -> list[tuple[int, int, str, str]]:
+    """
+    Slide windows of 2..5 words over *words* and collect fuzzy-match spans.
+
+    Extracted verbatim from ``_apply_fuzzy_corrections`` (behavior-preserving).
+
+    Returns:
+        List of (start_char, end_char, from_text, to_text) spans.
+    """
     already_replaced: set[str] = {
         normalize_vietnamese(c["from"]) for c in already_corrected
     }
@@ -732,35 +767,71 @@ def _apply_fuzzy_corrections(
 
     for window_size in range(max_window, 1, -1):
         for start in range(len(words) - window_size + 1):
-            window_words = words[start:start + window_size]
-            window_text = " ".join(window_words)
-
-            # Skip if this span was already corrected by dictionary pass
-            if window_text in already_replaced:
-                continue
-
-            # Skip if this window overlaps with an already-found fuzzy match
-            # (Calculate char positions in text_norm)
-            char_start = _word_char_offset(words, start)
-            char_end = char_start + len(window_text)
-            if any(
-                _spans_overlap(char_start, char_end, rs, re_)
-                for rs, re_, _, _ in replaced_spans
-            ):
-                continue
-
-            match = _fuzzy_match_entity(
-                window_text, max_distance=max_distance
+            _collect_fuzzy_span_at(
+                text, words, start, window_size,
+                already_replaced, replaced_spans, max_distance,
             )
-            if match and normalize_vietnamese(match) != window_text:
-                # Find the original text span
-                original_span = " ".join(text.split()[start:start + window_size])
-                adjusted = _apply_capitalization(original_span, match)
 
-                if original_span != adjusted:
-                    replaced_spans.append((char_start, char_end, original_span, adjusted))
+    return replaced_spans
 
-    # Apply replacements (from right to left to preserve positions)
+
+def _collect_fuzzy_span_at(
+    text: str,
+    words: list[str],
+    start: int,
+    window_size: int,
+    already_replaced: set[str],
+    replaced_spans: list[tuple[int, int, str, str]],
+    max_distance: int,
+) -> None:
+    """
+    Evaluate one window and append its span to *replaced_spans* if matched.
+
+    Extracted verbatim from ``_apply_fuzzy_corrections`` (behavior-preserving).
+    Mutates *replaced_spans* in place, preserving the original iteration order.
+    """
+    window_words = words[start:start + window_size]
+    window_text = " ".join(window_words)
+
+    # Skip if this span was already corrected by dictionary pass
+    if window_text in already_replaced:
+        return
+
+    # Skip if this window overlaps with an already-found fuzzy match
+    # (Calculate char positions in text_norm)
+    char_start = _word_char_offset(words, start)
+    char_end = char_start + len(window_text)
+    if any(
+        _spans_overlap(char_start, char_end, rs, re_)
+        for rs, re_, _, _ in replaced_spans
+    ):
+        return
+
+    match = _fuzzy_match_entity(
+        window_text, max_distance=max_distance
+    )
+    if match and normalize_vietnamese(match) != window_text:
+        # Find the original text span
+        original_span = " ".join(text.split()[start:start + window_size])
+        adjusted = _apply_capitalization(original_span, match)
+
+        if original_span != adjusted:
+            replaced_spans.append((char_start, char_end, original_span, adjusted))
+
+
+def _apply_fuzzy_replacements(
+    text: str,
+    replaced_spans: list[tuple[int, int, str, str]],
+) -> tuple[str, list[dict]]:
+    """
+    Apply collected fuzzy *replaced_spans* to *text*, right-to-left.
+
+    Extracted verbatim from ``_apply_fuzzy_corrections`` (behavior-preserving).
+
+    Returns:
+        Tuple of (corrected_text, list_of_new_corrections).
+    """
+    corrections: list[dict] = []
     replaced_spans.sort(key=lambda x: x[0], reverse=True)
     result_words = text.split()
     for _, _, from_text, to_text in replaced_spans:

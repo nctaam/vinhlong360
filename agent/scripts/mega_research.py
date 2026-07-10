@@ -170,6 +170,15 @@ def save_json(path: Path, data: Any):
 
 # ─── LLM Client ─────────────────────────────────────────────────────────────
 
+def _backoff_wait(ex_str: str, i: int) -> int:
+    if "502" in ex_str or "524" in ex_str or "429" in ex_str:
+        return 60 * (i + 1)
+    elif "500" in ex_str or "503" in ex_str:
+        return 30 * (i + 1)
+    else:
+        return 10 * (i + 1)
+
+
 class LLM:
     def __init__(self, model: str = DEFAULT_MODEL):
         self.model = model
@@ -186,46 +195,51 @@ class LLM:
         with self._lk:
             self.calls += c; self.pt += p; self.ct += t; self.errs += e
 
+    def _consume_stream(self, stream) -> tuple[str, int, int]:
+        chunks = []
+        p_tok = c_tok = 0
+        for chunk in stream:
+            delta = chunk.choices[0].delta if chunk.choices else None
+            if delta and delta.content:
+                chunks.append(delta.content)
+            u = getattr(chunk, "usage", None)
+            if u:
+                p_tok = int(getattr(u, "prompt_tokens", 0) or 0)
+                c_tok = int(getattr(u, "completion_tokens", 0) or 0)
+        if not c_tok and chunks:
+            c_tok = len("".join(chunks)) // 4
+        return "".join(chunks), p_tok, c_tok
+
+    def _attempt_ask(self, sys: str, user: str, temp: float,
+                     max_tok: int, timeout: int) -> str:
+        c = OpenAI(api_key=self.key, base_url=self.base)
+        stream = c.chat.completions.create(
+            model=self.model,
+            messages=[{"role": "system", "content": sys}, {"role": "user", "content": user}],
+            temperature=temp, max_tokens=max_tok, timeout=timeout,
+            stream=True)
+        text, p_tok, c_tok = self._consume_stream(stream)
+        self._add(c=1, p=p_tok, t=c_tok)
+        return text or ""
+
+    def _handle_ask_error(self, ex: Exception, i: int, retries: int):
+        self._add(e=1)
+        w = _backoff_wait(str(ex), i)
+        if i < retries:
+            log(f"  retry {i+1}/{retries}: {type(ex).__name__} — wait {w}s")
+            time.sleep(w)
+        else:
+            log(f"  LLM ERROR: {ex}")
+
     def ask(self, sys: str, user: str, temp: float = 0.15,
             max_tok: int = 4000, timeout: int = 300, retries: int = 3) -> str | None:
         if not self.ok:
             return None
         for i in range(retries + 1):
             try:
-                c = OpenAI(api_key=self.key, base_url=self.base)
-                stream = c.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "system", "content": sys}, {"role": "user", "content": user}],
-                    temperature=temp, max_tokens=max_tok, timeout=timeout,
-                    stream=True)
-                chunks = []
-                p_tok = c_tok = 0
-                for chunk in stream:
-                    delta = chunk.choices[0].delta if chunk.choices else None
-                    if delta and delta.content:
-                        chunks.append(delta.content)
-                    u = getattr(chunk, "usage", None)
-                    if u:
-                        p_tok = int(getattr(u, "prompt_tokens", 0) or 0)
-                        c_tok = int(getattr(u, "completion_tokens", 0) or 0)
-                if not c_tok and chunks:
-                    c_tok = len("".join(chunks)) // 4
-                self._add(c=1, p=p_tok, t=c_tok)
-                return "".join(chunks) or ""
+                return self._attempt_ask(sys, user, temp, max_tok, timeout)
             except Exception as ex:
-                self._add(e=1)
-                ex_str = str(ex)
-                if "502" in ex_str or "524" in ex_str or "429" in ex_str:
-                    w = 60 * (i + 1)
-                elif "500" in ex_str or "503" in ex_str:
-                    w = 30 * (i + 1)
-                else:
-                    w = 10 * (i + 1)
-                if i < retries:
-                    log(f"  retry {i+1}/{retries}: {type(ex).__name__} — wait {w}s")
-                    time.sleep(w)
-                else:
-                    log(f"  LLM ERROR: {ex}")
+                self._handle_ask_error(ex, i, retries)
         return None
 
     def ask_json(self, sys: str, user: str, **kw) -> Any:
@@ -398,6 +412,50 @@ QUERIES = {
 }
 
 
+def _phase1_write_result(r: dict, seen: set, f: Path, cat: str, q: str) -> bool:
+    """Fetch + persist one search result. Returns True if a record was written."""
+    if r["url"] in seen:
+        return False
+    seen.add(r["url"])
+    txt = fetch_url(r["url"], timeout=15)
+    if not txt or len(txt) < 300:
+        return False
+    append_jsonl(f, {
+        "url": r["url"], "title": r.get("title", ""),
+        "snippet": r.get("snippet", ""), "text": txt,
+        "text_length": len(txt), "category": cat,
+        "query": q, "fetched_at": utc(),
+    })
+    return True
+
+
+def _run_pool(items, do, workers, log_every=0):
+    """Submit do(item) for each item on a thread pool; drain results.
+    Logs '  i/total' every `log_every` completions (0 = no progress log),
+    and logs '  ERR: ...' for any task that raised."""
+    total = len(items)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for i, fut in enumerate(as_completed([pool.submit(do, x) for x in items])):
+            try:
+                fut.result()
+                if log_every and (i + 1) % log_every == 0:
+                    log(f"  {i+1}/{total}")
+            except Exception as ex:
+                log(f"  ERR: {ex}")
+
+
+def _phase1_collect(pool, tasks, do, n_tasks):
+    futs = {pool.submit(do, t): t for t in tasks}
+    for i, fut in enumerate(as_completed(futs)):
+        t = futs[fut]
+        try:
+            n = fut.result()
+            if n:
+                log(f"  [{i+1}/{n_tasks}] '{t[1][:50]}' → +{n}")
+        except Exception as ex:
+            log(f"  [{i+1}] ERR: {ex}")
+
+
 def phase1(llm: LLM, workers: int = 6, dry: bool = False):
     """Corpus Expansion — 150+ web searches, fetch+index sources (no LLM)"""
     log("═══ PHASE 1: CORPUS EXPANSION ═══")
@@ -427,33 +485,14 @@ def phase1(llm: LLM, workers: int = 6, dry: bool = False):
         results = web_search(q, n=10)
         n = 0
         for r in results:
-            if r["url"] in seen:
-                continue
-            seen.add(r["url"])
-            txt = fetch_url(r["url"], timeout=15)
-            if not txt or len(txt) < 300:
-                continue
-            append_jsonl(f, {
-                "url": r["url"], "title": r.get("title", ""),
-                "snippet": r.get("snippet", ""), "text": txt,
-                "text_length": len(txt), "category": cat,
-                "query": q, "fetched_at": utc(),
-            })
-            n += 1
-            with _lock:
-                count += 1
+            if _phase1_write_result(r, seen, f, cat, q):
+                n += 1
+                with _lock:
+                    count += 1
         return n
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futs = {pool.submit(do, t): t for t in tasks}
-        for i, fut in enumerate(as_completed(futs)):
-            t = futs[fut]
-            try:
-                n = fut.result()
-                if n:
-                    log(f"  [{i+1}/{len(tasks)}] '{t[1][:50]}' → +{n}")
-            except Exception as ex:
-                log(f"  [{i+1}] ERR: {ex}")
+        _phase1_collect(pool, tasks, do, len(tasks))
 
     log(f"  PHASE 1 DONE: +{count} new, {len(read_jsonl(f))} total")
 
@@ -480,12 +519,7 @@ DISTRICTS = {
 }
 
 
-def phase2(llm: LLM, workers: int = 4, dry: bool = False):
-    """Administrative Geography — 26 huyện/TX/TP, web-verified"""
-    log("═══ PHASE 2: ADMINISTRATIVE GEOGRAPHY ═══")
-    f = OUTPUT_DIR / "geography" / "districts.jsonl"
-    done = {r.get("key") for r in read_jsonl(f)}
-
+def _phase2_tasks(done: set) -> list[tuple]:
     tasks = []
     for area, dists in DISTRICTS.items():
         prov = PROVINCE[area]
@@ -493,6 +527,16 @@ def phase2(llm: LLM, workers: int = 4, dry: bool = False):
             k = f"{area}|{d}"
             if k not in done:
                 tasks.append((area, prov, d, k))
+    return tasks
+
+
+def phase2(llm: LLM, workers: int = 4, dry: bool = False):
+    """Administrative Geography — 26 huyện/TX/TP, web-verified"""
+    log("═══ PHASE 2: ADMINISTRATIVE GEOGRAPHY ═══")
+    f = OUTPUT_DIR / "geography" / "districts.jsonl"
+    done = {r.get("key") for r in read_jsonl(f)}
+
+    tasks = _phase2_tasks(done)
 
     log(f"  {len(tasks)} districts to research (done: {len(done)})")
     if dry or not tasks:
@@ -535,12 +579,7 @@ Liệt kê TẤT CẢ xã/phường. Không biết đầy đủ → confidence t
             append_jsonl(f, r)
             log(f"  ✓ {dist}: {len(r.get('wards',[]))} wards, conf={r.get('overall_confidence','?')}")
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        for fut in as_completed([pool.submit(do, t) for t in tasks]):
-            try:
-                fut.result()
-            except Exception as ex:
-                log(f"  ERR: {ex}")
+    _run_pool(tasks, do, workers)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -621,6 +660,24 @@ JSON (null cho thông tin không có):
 # PHASES 4–8: Entity-centric research (generic engine)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def _research_topics(llm: LLM, out: Path, topics: list[tuple]):
+    """Run per-topic web-research → LLM analyze, append to topics.jsonl."""
+    tf = out / "topics.jsonl"
+    td = {r.get("key") for r in read_jsonl(tf)}
+    for tk, tq, tp in topics:
+        if tk in td:
+            continue
+        log(f"  Topic: {tk}...")
+        wr, ctx = web_research(tq, max_per=8)
+        if not ctx:
+            continue
+        r = llm.ask_json(sys=SYS_ACCURACY, user=tp.replace("{web_context}", ctx),
+                         temp=0.1, max_tok=6000)
+        if r:
+            r["key"] = tk; r["sources"] = src_list(wr); r["ts"] = utc()
+            append_jsonl(tf, r)
+
+
 def _entity_research(llm: LLM, types: list[str], label: str,
                      subdir: str, fname: str,
                      q_fn, prompt_fn,
@@ -638,20 +695,7 @@ def _entity_research(llm: LLM, types: list[str], label: str,
         return
 
     if topics:
-        tf = out / "topics.jsonl"
-        td = {r.get("key") for r in read_jsonl(tf)}
-        for tk, tq, tp in topics:
-            if tk in td:
-                continue
-            log(f"  Topic: {tk}...")
-            wr, ctx = web_research(tq, max_per=8)
-            if not ctx:
-                continue
-            r = llm.ask_json(sys=SYS_ACCURACY, user=tp.replace("{web_context}", ctx),
-                             temp=0.1, max_tok=6000)
-            if r:
-                r["key"] = tk; r["sources"] = src_list(wr); r["ts"] = utc()
-                append_jsonl(tf, r)
+        _research_topics(llm, out, topics)
 
     def do(e):
         if e["id"] in done:
@@ -671,15 +715,7 @@ def _entity_research(llm: LLM, types: list[str], label: str,
             done.add(e["id"])
             log(f"  ✓ {e['name']} [{len(wr)} src, conf={r.get('overall_confidence','?')}]")
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        futs = [pool.submit(do, e) for e in ents]
-        for i, fut in enumerate(as_completed(futs)):
-            try:
-                fut.result()
-                if (i+1) % 20 == 0:
-                    log(f"  {i+1}/{len(ents)}")
-            except Exception as ex:
-                log(f"  ERR: {ex}")
+    _run_pool(ents, do, workers, log_every=20)
 
 
 def phase4(llm: LLM, workers: int = 4, dry: bool = False):
@@ -847,10 +883,8 @@ TYPE_SEARCH = {
 }
 
 
-def phase9(llm: LLM, workers: int = 4, dry: bool = False):
-    """Entity Enrichment — ALL remaining entities + web context"""
-    log("═══ PHASE 9: ENTITY ENRICHMENT ═══")
-    ef = OUTPUT_DIR / "enrichment" / "enrichment.jsonl"
+def _phase9_done_ids(ef: Path) -> set:
+    """Collect entity_ids already enriched across subdirs + legacy + current file."""
     done = set()
     for sd in ["heritage", "ecology", "gastronomy", "craft_villages", "festivals"]:
         for ff in (OUTPUT_DIR / sd).glob("*.jsonl"):
@@ -864,6 +898,14 @@ def phase9(llm: LLM, workers: int = 4, dry: bool = False):
                 done.add(r.get("entity_id"))
     for r in read_jsonl(ef):
         done.add(r.get("entity_id"))
+    return done
+
+
+def phase9(llm: LLM, workers: int = 4, dry: bool = False):
+    """Entity Enrichment — ALL remaining entities + web context"""
+    log("═══ PHASE 9: ENTITY ENRICHMENT ═══")
+    ef = OUTPUT_DIR / "enrichment" / "enrichment.jsonl"
+    done = _phase9_done_ids(ef)
 
     ents = [e for e in load_entities() if e["id"] not in done]
     log(f"  {len(ents)} remaining (done: {len(done)})")
@@ -900,20 +942,23 @@ JSON:
             append_jsonl(ef, rec)
             done.add(e["id"])
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        futs = [pool.submit(do, e) for e in ents]
-        for i, fut in enumerate(as_completed(futs)):
-            try:
-                fut.result()
-                if (i+1) % 50 == 0:
-                    log(f"  {i+1}/{len(ents)}")
-            except Exception as ex:
-                log(f"  ERR: {ex}")
+    _run_pool(ents, do, workers, log_every=50)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PHASE 10: PLACEID & COORDS
 # ═══════════════════════════════════════════════════════════════════════════════
+
+def _phase10_ward_str() -> str:
+    """Build the truncated JSON ward-name list from geography districts."""
+    geo = read_jsonl(OUTPUT_DIR / "geography" / "districts.jsonl")
+    wards = []
+    for d in geo:
+        for w in d.get("wards", []):
+            wn = w.get("name", "") if isinstance(w, dict) else str(w)
+            wards.append({"name": wn, "district": d.get("district", ""), "area": d.get("area", "")})
+    return json.dumps([w["name"] for w in wards[:200]], ensure_ascii=False)[:3000]
+
 
 def phase10(llm: LLM, workers: int = 4, dry: bool = False):
     """PlaceId & Coordinates — xã/phường mapping + coords"""
@@ -926,13 +971,7 @@ def phase10(llm: LLM, workers: int = 4, dry: bool = False):
     if dry:
         return
 
-    geo = read_jsonl(OUTPUT_DIR / "geography" / "districts.jsonl")
-    wards = []
-    for d in geo:
-        for w in d.get("wards", []):
-            wn = w.get("name", "") if isinstance(w, dict) else str(w)
-            wards.append({"name": wn, "district": d.get("district", ""), "area": d.get("area", "")})
-    ward_str = json.dumps([w["name"] for w in wards[:200]], ensure_ascii=False)[:3000]
+    ward_str = _phase10_ward_str()
 
     def do(e):
         if e["id"] in done:
@@ -955,14 +994,7 @@ CHỈ gán nếu confidence >= 0.7.""", temp=0.1, max_tok=1500)
             append_jsonl(gf, r)
             done.add(e["id"])
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        for i, fut in enumerate(as_completed([pool.submit(do, e) for e in ents])):
-            try:
-                fut.result()
-                if (i+1) % 50 == 0:
-                    log(f"  {i+1}/{len(ents)}")
-            except Exception as ex:
-                log(f"  ERR: {ex}")
+    _run_pool(ents, do, workers, log_every=50)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -978,19 +1010,7 @@ THEMES = [
 ]
 
 
-def phase11(llm: LLM, workers: int = 4, dry: bool = False):
-    """Cross-Analysis — journeys, personas, relationships"""
-    log("═══ PHASE 11: CROSS-ANALYSIS ═══")
-    cd = OUTPUT_DIR / "cross"
-    jf = cd / "journeys.jsonl"
-    pf = cd / "personas.jsonl"
-    rf = cd / "relationships.jsonl"
-
-    ents = load_entities()
-    if dry:
-        log(f"  [DRY] journeys + personas + relationships for {len(ents)} entities")
-        return
-
+def _phase11_journeys(llm: LLM, jf: Path, ents: list[dict]):
     dj = {r.get("key") for r in read_jsonl(jf)}
     sample = [{"id": e["id"], "name": e["name"], "type": e.get("type"),
                "area": e.get("area"), "s": (e.get("summary") or "")[:60]}
@@ -1016,11 +1036,14 @@ CHỈ dùng entity_id có trong danh sách.""", temp=0.25, max_tok=5000)
             r["key"] = tk; r["ts"] = utc()
             append_jsonl(jf, r)
 
-    if not read_jsonl(pf):
-        log("  Personas...")
-        wr, ctx = web_research(["du khách miền Tây ĐBSCL thống kê", "khách du lịch Vĩnh Long Bến Tre Trà Vinh"],
-                               max_per=5)
-        r = llm.ask_json(sys=SYS_ACCURACY, user=f"""8 visitor personas cho VL+BT+TV.
+
+def _phase11_personas(llm: LLM, pf: Path):
+    if read_jsonl(pf):
+        return
+    log("  Personas...")
+    wr, ctx = web_research(["du khách miền Tây ĐBSCL thống kê", "khách du lịch Vĩnh Long Bến Tre Trà Vinh"],
+                           max_per=5)
+    r = llm.ask_json(sys=SYS_ACCURACY, user=f"""8 visitor personas cho VL+BT+TV.
 [NGUỒN WEB]: {ctx[:4000]}
 JSON:
 {{"personas":[{{"id":"...","name":"...","age":"25-35","origin":"TP.HCM",
@@ -1029,10 +1052,12 @@ JSON:
 "motivations":["..."],"pain_points":["..."],
 "ideal_types":["attraction","dish"],"confidence":0.0}}],
 "overall_confidence":0.0}}""", temp=0.2, max_tok=5000)
-        if r:
-            r["sources"] = src_list(wr); r["ts"] = utc()
-            append_jsonl(pf, r)
+    if r:
+        r["sources"] = src_list(wr); r["ts"] = utc()
+        append_jsonl(pf, r)
 
+
+def _phase11_relationships(llm: LLM, rf: Path, ents: list[dict]):
     dr = {r.get("key") for r in read_jsonl(rf)}
     for area in PROVINCE:
         rk = f"rels_{area}"
@@ -1055,16 +1080,52 @@ CHỈ confidence >= 0.7.""", temp=0.15, max_tok=5000)
             append_jsonl(rf, r)
 
 
+def phase11(llm: LLM, workers: int = 4, dry: bool = False):
+    """Cross-Analysis — journeys, personas, relationships"""
+    log("═══ PHASE 11: CROSS-ANALYSIS ═══")
+    cd = OUTPUT_DIR / "cross"
+    jf = cd / "journeys.jsonl"
+    pf = cd / "personas.jsonl"
+    rf = cd / "relationships.jsonl"
+
+    ents = load_entities()
+    if dry:
+        log(f"  [DRY] journeys + personas + relationships for {len(ents)} entities")
+        return
+
+    _phase11_journeys(llm, jf, ents)
+    _phase11_personas(llm, pf)
+    _phase11_relationships(llm, rf, ents)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # PHASE 12: ADVERSARIAL VERIFICATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def phase12(llm: LLM, workers: int = 4, dry: bool = False):
-    """Adversarial Verify — independent fact-check sampled claims"""
-    log("═══ PHASE 12: ADVERSARIAL VERIFICATION ═══")
-    vf = OUTPUT_DIR / "verify" / "verdicts.jsonl"
-    done = {r.get("key") for r in read_jsonl(vf)}
+def _maybe_add_claim(obj, pfx, eid, sd, done, claims):
+    """Append a claim from a dict node if it is a high-confidence, unseen text fact."""
+    txt = obj.get("text") or obj.get("description") or obj.get("value")
+    conf = obj.get("confidence", 0)
+    if txt and isinstance(txt, str) and len(txt) > 20 and conf and conf >= 0.7:
+        ck = f"{eid}|{pfx}|{txt[:50]}"
+        if ck not in done:
+            claims.append({"key": ck, "eid": eid, "text": txt[:500],
+                           "conf": conf, "phase": sd})
 
+
+def _extract_claims(obj, pfx, eid, sd, done, claims):
+    """Recursively harvest high-confidence text claims from a record into `claims`."""
+    if isinstance(obj, dict):
+        _maybe_add_claim(obj, pfx, eid, sd, done, claims)
+        for k, v in obj.items():
+            _extract_claims(v, f"{pfx}.{k}", eid, sd, done, claims)
+    elif isinstance(obj, list):
+        for i, it in enumerate(obj):
+            _extract_claims(it, f"{pfx}[{i}]", eid, sd, done, claims)
+
+
+def _phase12_gather_claims(done: set) -> list[dict]:
+    """Scan phase outputs and collect unverified high-confidence claims."""
     claims = []
     for sd in ["heritage", "ecology", "gastronomy", "craft_villages", "festivals",
                "ocop", "geography", "enrichment"]:
@@ -1074,21 +1135,27 @@ def phase12(llm: LLM, workers: int = 4, dry: bool = False):
         for ff in d.glob("*.jsonl"):
             for rec in read_jsonl(ff):
                 eid = rec.get("entity_id") or rec.get("key") or ""
-                def _ex(obj, pfx=""):
-                    if isinstance(obj, dict):
-                        txt = obj.get("text") or obj.get("description") or obj.get("value")
-                        conf = obj.get("confidence", 0)
-                        if txt and isinstance(txt, str) and len(txt) > 20 and conf and conf >= 0.7:
-                            ck = f"{eid}|{pfx}|{txt[:50]}"
-                            if ck not in done:
-                                claims.append({"key": ck, "eid": eid, "text": txt[:500],
-                                               "conf": conf, "phase": sd})
-                        for k, v in obj.items():
-                            _ex(v, f"{pfx}.{k}")
-                    elif isinstance(obj, list):
-                        for i, it in enumerate(obj):
-                            _ex(it, f"{pfx}[{i}]")
-                _ex(rec)
+                _extract_claims(rec, "", eid, sd, done, claims)
+    return claims
+
+
+def _phase12_summary(vf: Path):
+    vs = read_jsonl(vf)
+    ct = Counter(v.get("verdict") for v in vs)
+    log(f"  SUMMARY: {dict(ct)}")
+    total = len(vs)
+    if total:
+        ok = ct.get("CONFIRMED", 0) + ct.get("PLAUSIBLE", 0)
+        log(f"  Accuracy: {ok}/{total} = {ok/total*100:.1f}%")
+
+
+def phase12(llm: LLM, workers: int = 4, dry: bool = False):
+    """Adversarial Verify — independent fact-check sampled claims"""
+    log("═══ PHASE 12: ADVERSARIAL VERIFICATION ═══")
+    vf = OUTPUT_DIR / "verify" / "verdicts.jsonl"
+    done = {r.get("key") for r in read_jsonl(vf)}
+
+    claims = _phase12_gather_claims(done)
 
     log(f"  {len(claims)} high-confidence claims (done: {len(done)})")
     if dry or not claims:
@@ -1117,22 +1184,9 @@ JSON:
             append_jsonl(vf, r)
             done.add(c["key"])
 
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        for i, fut in enumerate(as_completed([pool.submit(do, c) for c in claims])):
-            try:
-                fut.result()
-                if (i+1) % 50 == 0:
-                    log(f"  {i+1}/{len(claims)}")
-            except Exception as ex:
-                log(f"  ERR: {ex}")
+    _run_pool(claims, do, workers, log_every=50)
 
-    vs = read_jsonl(vf)
-    ct = Counter(v.get("verdict") for v in vs)
-    log(f"  SUMMARY: {dict(ct)}")
-    total = len(vs)
-    if total:
-        ok = ct.get("CONFIRMED", 0) + ct.get("PLAUSIBLE", 0)
-        log(f"  Accuracy: {ok}/{total} = {ok/total*100:.1f}%")
+    _phase12_summary(vf)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

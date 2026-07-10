@@ -94,7 +94,8 @@ def _make_meta_description(summary: str, max_length: int) -> str:
     return truncated.rstrip(",.;:!? ") + "..."
 
 
-def main() -> int:
+def _build_parser() -> argparse.ArgumentParser:
+    """Build the argument parser for the SEO metadata generator CLI."""
     parser = argparse.ArgumentParser(
         description="Generate SEO metadata (slug + meta_description) for entities."
     )
@@ -120,6 +121,120 @@ def main() -> int:
         dest="json_stats",
         help="output stats as JSON to stdout",
     )
+    return parser
+
+
+def _new_stats(total_entities: int) -> dict:
+    """Create the initial statistics accumulator for a run."""
+    return {
+        "total_entities": total_entities,
+        "processed": 0,
+        "slugs_generated": 0,
+        "descriptions_generated": 0,
+        "descriptions_truncated": 0,
+        "empty_summary": 0,
+        "empty_name": 0,
+        "slug_collisions": 0,
+        "by_type": {},
+    }
+
+
+def _add_slug(entry, entity, stats, seen_slugs) -> None:
+    """Generate and record the slug for one entity (mutates entry/stats/seen_slugs)."""
+    name = entity.get("name", "")
+    if name:
+        slug = _vietnamese_to_slug(name)
+        if slug:
+            entry["slug"] = slug
+            stats["slugs_generated"] += 1
+
+            # Track collisions
+            seen_slugs.setdefault(slug, []).append(entity.get("id", ""))
+    else:
+        stats["empty_name"] += 1
+
+
+def _add_description(entry, entity, stats, max_desc_length) -> None:
+    """Generate and record the meta description for one entity (mutates entry/stats)."""
+    summary = entity.get("summary", "")
+    if summary:
+        desc = _make_meta_description(summary, max_desc_length)
+        if desc:
+            entry["meta_description"] = desc
+            stats["descriptions_generated"] += 1
+            if desc.endswith("..."):
+                stats["descriptions_truncated"] += 1
+    else:
+        stats["empty_summary"] += 1
+
+
+def _process_entities(entities, max_desc_length):
+    """Build the SEO patch, stats, and seen-slug map for all *entities*."""
+    patch: dict[str, dict[str, str]] = {}
+    stats = _new_stats(len(entities))
+    seen_slugs: dict[str, list[str]] = {}
+
+    for entity in entities:
+        eid = entity.get("id", "")
+        etype = entity.get("type", "unknown")
+
+        if not eid:
+            continue
+
+        stats["processed"] += 1
+        stats["by_type"][etype] = stats["by_type"].get(etype, 0) + 1
+
+        entry: dict[str, str] = {}
+        _add_slug(entry, entity, stats, seen_slugs)
+        _add_description(entry, entity, stats, max_desc_length)
+
+        if entry:
+            patch[eid] = entry
+
+    return patch, stats, seen_slugs
+
+
+def _report_json(stats, collisions) -> None:
+    """Print the stats report as JSON to stdout."""
+    report = {"stats": stats}
+    if collisions:
+        report["slug_collisions"] = {
+            slug: ids for slug, ids in sorted(collisions.items())[:20]
+        }
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+
+
+def _report_text(stats, collisions, output_path) -> None:
+    """Print the human-readable stats report to stdout."""
+    total = stats["total_entities"]
+    pct_desc = (stats["descriptions_generated"] / total * 100) if total > 0 else 0
+    pct_slug = (stats["slugs_generated"] / total * 100) if total > 0 else 0
+
+    print("[seo] SEO metadata generated")
+    print(f"  entities: {stats['total_entities']}")
+    print(f"  processed: {stats['processed']}")
+    print(f"  slugs generated: {stats['slugs_generated']} ({pct_slug:.1f}%)")
+    print(f"  descriptions generated: {stats['descriptions_generated']} ({pct_desc:.1f}%)")
+    print(f"  descriptions truncated: {stats['descriptions_truncated']}")
+    print(f"  empty names: {stats['empty_name']}")
+    print(f"  empty summaries: {stats['empty_summary']}")
+    print(f"  slug collisions: {stats['slug_collisions']}")
+    print(f"  output: {output_path}")
+
+    if collisions:
+        print()
+        print("  Slug collisions (top 10):")
+        for slug, ids in sorted(collisions.items())[:10]:
+            print(f"    '{slug}': {ids}")
+
+    print()
+    print("  By type:")
+    for etype, count in sorted(stats["by_type"].items(), key=lambda x: -x[1]):
+        print(f"    {etype}: {count}")
+
+
+def main() -> int:
+    parser = _build_parser()
     args = parser.parse_args()
 
     data_path = Path(args.data)
@@ -135,60 +250,7 @@ def main() -> int:
         print("[seo] WARNING: no entities found in data", file=sys.stderr)
         return 1
 
-    patch: dict[str, dict[str, str]] = {}
-    stats = {
-        "total_entities": len(entities),
-        "processed": 0,
-        "slugs_generated": 0,
-        "descriptions_generated": 0,
-        "descriptions_truncated": 0,
-        "empty_summary": 0,
-        "empty_name": 0,
-        "slug_collisions": 0,
-        "by_type": {},
-    }
-
-    seen_slugs: dict[str, list[str]] = {}
-
-    for entity in entities:
-        eid = entity.get("id", "")
-        name = entity.get("name", "")
-        summary = entity.get("summary", "")
-        etype = entity.get("type", "unknown")
-
-        if not eid:
-            continue
-
-        stats["processed"] += 1
-        stats["by_type"][etype] = stats["by_type"].get(etype, 0) + 1
-
-        entry: dict[str, str] = {}
-
-        # Generate slug
-        if name:
-            slug = _vietnamese_to_slug(name)
-            if slug:
-                entry["slug"] = slug
-                stats["slugs_generated"] += 1
-
-                # Track collisions
-                seen_slugs.setdefault(slug, []).append(eid)
-        else:
-            stats["empty_name"] += 1
-
-        # Generate meta description
-        if summary:
-            desc = _make_meta_description(summary, args.max_desc_length)
-            if desc:
-                entry["meta_description"] = desc
-                stats["descriptions_generated"] += 1
-                if desc.endswith("..."):
-                    stats["descriptions_truncated"] += 1
-        else:
-            stats["empty_summary"] += 1
-
-        if entry:
-            patch[eid] = entry
+    patch, stats, seen_slugs = _process_entities(entities, args.max_desc_length)
 
     # Count slug collisions
     collisions = {slug: ids for slug, ids in seen_slugs.items() if len(ids) > 1}
@@ -202,45 +264,9 @@ def main() -> int:
 
     # Report
     if args.json_stats:
-        report = {"stats": stats}
-        if collisions:
-            report["slug_collisions"] = {
-                slug: ids for slug, ids in sorted(collisions.items())[:20]
-            }
-        print(json.dumps(report, indent=2, ensure_ascii=False))
+        _report_json(stats, collisions)
     else:
-        pct_desc = (
-            (stats["descriptions_generated"] / stats["total_entities"] * 100)
-            if stats["total_entities"] > 0
-            else 0
-        )
-        pct_slug = (
-            (stats["slugs_generated"] / stats["total_entities"] * 100)
-            if stats["total_entities"] > 0
-            else 0
-        )
-
-        print("[seo] SEO metadata generated")
-        print(f"  entities: {stats['total_entities']}")
-        print(f"  processed: {stats['processed']}")
-        print(f"  slugs generated: {stats['slugs_generated']} ({pct_slug:.1f}%)")
-        print(f"  descriptions generated: {stats['descriptions_generated']} ({pct_desc:.1f}%)")
-        print(f"  descriptions truncated: {stats['descriptions_truncated']}")
-        print(f"  empty names: {stats['empty_name']}")
-        print(f"  empty summaries: {stats['empty_summary']}")
-        print(f"  slug collisions: {stats['slug_collisions']}")
-        print(f"  output: {output_path}")
-
-        if collisions:
-            print()
-            print("  Slug collisions (top 10):")
-            for slug, ids in sorted(collisions.items())[:10]:
-                print(f"    '{slug}': {ids}")
-
-        print()
-        print("  By type:")
-        for etype, count in sorted(stats["by_type"].items(), key=lambda x: -x[1]):
-            print(f"    {etype}: {count}")
+        _report_text(stats, collisions, output_path)
 
     return 0
 

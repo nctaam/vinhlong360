@@ -168,34 +168,55 @@ class RuleBasedFallback:
         """Return {relevance, accuracy, completeness, helpfulness, format, feedback}."""
 
         scores: dict[str, float] = {}
+        reply_lower = reply.lower()
+        rlen = len(reply)
 
         # -- Relevance: keyword overlap between query and reply ---------------
-        query_words = set(w for w in query.lower().split() if len(w) > 2)
-        reply_lower = reply.lower()
-        if query_words:
-            matched = sum(1 for w in query_words if w in reply_lower)
-            ratio = matched / len(query_words)
-        else:
-            ratio = 0.5
-        scores["relevance"] = max(1, min(10, round(ratio * 10, 1)))
+        scores["relevance"] = self._score_relevance(query, reply_lower)
 
         # -- Accuracy: assume neutral (no factual verification possible) ------
         scores["accuracy"] = 5.0
 
         # -- Completeness: based on reply length adequacy ---------------------
-        rlen = len(reply)
-        if rlen < 50:
-            scores["completeness"] = 2.0
-        elif rlen < 100:
-            scores["completeness"] = 4.0
-        elif rlen < 300:
-            scores["completeness"] = 6.0
-        elif rlen < 800:
-            scores["completeness"] = 8.0
-        else:
-            scores["completeness"] = 9.0
+        scores["completeness"] = self._score_completeness(rlen)
 
         # -- Helpfulness: combination of length + practical keywords ----------
+        scores["helpfulness"] = self._score_helpfulness(reply_lower, rlen)
+
+        # -- Format: markdown, bullet lists, proper sentences -----------------
+        scores["format"] = self._score_format(reply)
+
+        # -- Feedback ---------------------------------------------------------
+        scores["feedback"] = self._build_feedback(scores)
+        return scores
+
+    @staticmethod
+    def _score_relevance(query: str, reply_lower: str) -> float:
+        """Relevance from keyword overlap between query and reply."""
+        query_words = set(w for w in query.lower().split() if len(w) > 2)
+        if query_words:
+            matched = sum(1 for w in query_words if w in reply_lower)
+            ratio = matched / len(query_words)
+        else:
+            ratio = 0.5
+        return max(1, min(10, round(ratio * 10, 1)))
+
+    @staticmethod
+    def _score_completeness(rlen: int) -> float:
+        """Completeness from reply length adequacy."""
+        if rlen < 50:
+            return 2.0
+        if rlen < 100:
+            return 4.0
+        if rlen < 300:
+            return 6.0
+        if rlen < 800:
+            return 8.0
+        return 9.0
+
+    @staticmethod
+    def _score_helpfulness(reply_lower: str, rlen: int) -> float:
+        """Helpfulness from length plus practical-keyword hits."""
         practical_kw = [
             "gia", "gio", "dia chi", "cach", "nen", "goi y",
             "luu y", "kinh nghiem", "meo", "chi phi",
@@ -204,9 +225,11 @@ class RuleBasedFallback:
         base_helpful = min(10, 4 + practical_hits * 0.8)
         if rlen > 200:
             base_helpful += 1
-        scores["helpfulness"] = max(1, min(10, round(base_helpful, 1)))
+        return max(1, min(10, round(base_helpful, 1)))
 
-        # -- Format: markdown, bullet lists, proper sentences -----------------
+    @staticmethod
+    def _score_format(reply: str) -> float:
+        """Format from markdown, bullet lists, proper sentences."""
         fmt_score = 4.0
         if "**" in reply or "##" in reply:
             fmt_score += 2.0
@@ -216,9 +239,11 @@ class RuleBasedFallback:
             fmt_score += 1.0
         if reply.endswith(".") or reply.endswith("!") or reply.endswith("?"):
             fmt_score += 0.5
-        scores["format"] = max(1, min(10, round(fmt_score, 1)))
+        return max(1, min(10, round(fmt_score, 1)))
 
-        # -- Feedback ---------------------------------------------------------
+    @staticmethod
+    def _build_feedback(scores: dict) -> str:
+        """Compose feedback string from low-scoring criteria."""
         issues = []
         if scores["relevance"] < 5:
             issues.append("Reply may not address the query directly.")
@@ -226,10 +251,7 @@ class RuleBasedFallback:
             issues.append("Reply is too short; consider adding more detail.")
         if scores["format"] < 5:
             issues.append("Consider using markdown formatting for clarity.")
-        feedback = " ".join(issues) if issues else "Acceptable quality (rule-based estimate)."
-
-        scores["feedback"] = feedback
-        return scores
+        return " ".join(issues) if issues else "Acceptable quality (rule-based estimate)."
 
 
 # ============================================================================

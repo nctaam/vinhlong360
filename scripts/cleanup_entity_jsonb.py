@@ -52,48 +52,66 @@ def strippable_keys(etype: str, attrs: dict, entity_row: dict, detail_row: dict)
     return out
 
 
+def _load_details(conn) -> dict[str, dict[str, dict]]:
+    """Đọc + chuẩn hoá mọi bảng detail thành {table: {entity_id: {col: value}}}."""
+    details: dict[str, dict[str, dict]] = {}
+    for table in set(KIND_TABLE.values()):
+        drows = db._fetchall(conn, f"SELECT * FROM {table}", ())
+        details[table] = {}
+        for dr in drows:
+            dd = db._row_to_dict(dr)
+            eid = dd.pop("entity_id")
+            # chuẩn hoá kiểu như cache đọc (bool/json/decimal)
+            from entity_details import _norm_col_value
+            details[table][eid] = {c: _norm_col_value(c, v) for c, v in dd.items()}
+    return details
+
+
+def _parse_attrs(e: dict):
+    """Trả về dict attrs hợp lệ, hoặc None nếu cần bỏ qua entity (rỗng/không parse được)."""
+    attrs = e.get("attributes")
+    if isinstance(attrs, str):
+        try:
+            attrs = json.loads(attrs or "{}")
+        except (json.JSONDecodeError, ValueError):
+            return None
+    if not isinstance(attrs, dict) or not attrs:
+        return None
+    return attrs
+
+
+def _process_entity(conn, e: dict, details: dict, stats: dict, apply: bool, ph: str) -> None:
+    """Dọn 1 entity: so cột-khớp → xoá key khỏi JSONB, cập nhật stats (+UPDATE nếu apply)."""
+    attrs = _parse_attrs(e)
+    if attrs is None:
+        return
+    kind = KIND_OF_TYPE.get(e["type"])
+    table = KIND_TABLE.get(kind or "")
+    drow = details.get(table, {}).get(e["id"], {}) if table else {}
+    strip = strippable_keys(e["type"], attrs, e, drow)
+    if not strip:
+        return
+    new_attrs = {k: v for k, v in attrs.items() if k not in strip}
+    # đếm key schema còn lại vì uncoercible (thống kê minh bạch)
+    schema_keys = {f["key"] for f in (ENTITY_SCHEMAS.get(e["type"]) or {"fields": []})["fields"]}
+    stats["kept_uncoercible"] += sum(1 for k in new_attrs if k in schema_keys)
+    stats["touched"] += 1
+    stats["keys_removed"] += len(strip)
+    if apply:
+        db._execute(conn, f"UPDATE entities SET attributes = {ph} WHERE id = {ph}",
+                    (json.dumps(new_attrs, ensure_ascii=False), e["id"]))
+
+
 def run(apply: bool) -> dict:
     db.initialize()
     ph = db._ph
     with db._conn() as conn:
         rows = db._fetchall(conn, "SELECT * FROM entities", ())
         raw_entities = [db._row_to_dict(r) for r in rows]
-        details: dict[str, dict[str, dict]] = {}
-        for table in set(KIND_TABLE.values()):
-            drows = db._fetchall(conn, f"SELECT * FROM {table}", ())
-            details[table] = {}
-            for dr in drows:
-                dd = db._row_to_dict(dr)
-                eid = dd.pop("entity_id")
-                # chuẩn hoá kiểu như cache đọc (bool/json/decimal)
-                from entity_details import _norm_col_value
-                details[table][eid] = {c: _norm_col_value(c, v) for c, v in dd.items()}
-
+        details = _load_details(conn)
         stats = {"entities": len(raw_entities), "touched": 0, "keys_removed": 0, "kept_uncoercible": 0}
         for e in raw_entities:
-            attrs = e.get("attributes")
-            if isinstance(attrs, str):
-                try:
-                    attrs = json.loads(attrs or "{}")
-                except (json.JSONDecodeError, ValueError):
-                    continue
-            if not isinstance(attrs, dict) or not attrs:
-                continue
-            kind = KIND_OF_TYPE.get(e["type"])
-            table = KIND_TABLE.get(kind or "")
-            drow = details.get(table, {}).get(e["id"], {}) if table else {}
-            strip = strippable_keys(e["type"], attrs, e, drow)
-            if not strip:
-                continue
-            new_attrs = {k: v for k, v in attrs.items() if k not in strip}
-            # đếm key schema còn lại vì uncoercible (thống kê minh bạch)
-            schema_keys = {f["key"] for f in (ENTITY_SCHEMAS.get(e["type"]) or {"fields": []})["fields"]}
-            stats["kept_uncoercible"] += sum(1 for k in new_attrs if k in schema_keys)
-            stats["touched"] += 1
-            stats["keys_removed"] += len(strip)
-            if apply:
-                db._execute(conn, f"UPDATE entities SET attributes = {ph} WHERE id = {ph}",
-                            (json.dumps(new_attrs, ensure_ascii=False), e["id"]))
+            _process_entity(conn, e, details, stats, apply, ph)
         if not apply and db._use_pg:
             conn.rollback()
     return stats

@@ -85,24 +85,7 @@ def levenshtein(a, b):
     return prev[-1]
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--fix", action="store_true")
-    args = parser.parse_args()
-
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
-
-    data = load()
-    entities = data.get("entities", [])
-    rels = data.get("relationships", [])
-    itineraries = data.get("itineraries", [])
-
-    by_id = {str(e["id"]): e for e in entities if isinstance(e, dict) and e.get("id")}
-    fixes = []
-
-    print(f"=== DEEP AUDIT: {len(entities)} entities, {len(rels)} rels, {len(itineraries)} itineraries ===\n")
-
+def _audit_types(entities):
     # ── 1. TYPE VALIDATION ──
     print("── 1. Entity types ──")
     type_counts = Counter(e.get("type") for e in entities)
@@ -111,6 +94,10 @@ def main():
     for t, c in sorted(type_counts.items(), key=lambda x: -x[1]):
         marker = " ❌ INVALID" if t in invalid_types else (" → "+TYPE_REMAP[t] if t in remap_types else "")
         print(f"  {t}: {c}{marker}")
+    return remap_types
+
+
+def _audit_areas(entities):
     # ── 2. AREA VALIDATION ──
     print("\n── 2. Area validation ──")
     bad_area = []
@@ -131,8 +118,8 @@ def main():
     for eid, name, area in bad_area[:10]:
         print(f"    {eid}: '{name}' has area='{area}'")
 
-    # ── 3. COORDINATES DEEP CHECK ──
-    print("\n── 3. Coordinates ──")
+
+def _scan_coordinates(entities):
     no_coords = []
     out_bbox = []
     coord_buckets = defaultdict(list)
@@ -148,6 +135,13 @@ def main():
             out_bbox.append((e["id"], e["name"], lat, lng))
         key = f"{lat:.4f},{lng:.4f}"
         coord_buckets[key].append((e["id"], has_approximate_coordinates(e)))
+    return no_coords, out_bbox, coord_buckets
+
+
+def _audit_coordinates(entities, by_id):
+    # ── 3. COORDINATES DEEP CHECK ──
+    print("\n── 3. Coordinates ──")
+    no_coords, out_bbox, coord_buckets = _scan_coordinates(entities)
 
     dup_coords_approx = {k: v for k, v in coord_buckets.items() if len(v) > 3 and all(is_approx for _eid, is_approx in v)}
     dup_coords_precise = {
@@ -163,9 +157,8 @@ def main():
         names = [by_id[eid]["name"] for eid in eids[:4] if eid in by_id]
         print(f"    {coord} ({len(eids)} entities): {', '.join(names)}...")
 
-    # ── 4. NEAR RELATIONSHIP AUDIT ──
-    print("\n── 4. Near relationships ──")
-    near_rels = [r for r in rels if rel_type(r) == "near"]
+
+def _classify_near(near_rels, by_id):
     near_no_coords = []
     near_too_far = []
     near_self = []
@@ -192,6 +185,14 @@ def main():
         dist = haversine(sc, dc)
         if dist > 50:
             near_too_far.append((r, dist, se["name"], de["name"]))
+    return near_no_coords, near_too_far, near_self, near_directed, near_edges
+
+
+def _audit_near(rels, by_id):
+    # ── 4. NEAR RELATIONSHIP AUDIT ──
+    print("\n── 4. Near relationships ──")
+    near_rels = [r for r in rels if rel_type(r) == "near"]
+    near_no_coords, near_too_far, near_self, near_directed, near_edges = _classify_near(near_rels, by_id)
 
     near_dups_found = sum(c - 1 for c in near_directed.values() if c > 1)
     near_reciprocal_pairs = sum(1 for s, d in near_edges if s < d and (d, s) in near_edges)
@@ -203,10 +204,10 @@ def main():
     print(f"  Reciprocal near pairs: {near_reciprocal_pairs} -> runtime-safe")
     for r, dist, sn, dn in near_too_far[:5]:
         print(f"    {sn} ↔ {dn}: {dist:.1f}km")
+    return near_no_coords, near_too_far, near_self
 
-    # ── 5. PRODUCED_IN CROSS-AREA ──
-    print("\n── 5. produced_in relationships ──")
-    pi_rels = [r for r in rels if rel_type(r) == "produced_in"]
+
+def _collect_pi_cross(pi_rels, by_id):
     pi_cross = []
     for r in pi_rels:
         src = str(rel_source(r) or "")
@@ -217,11 +218,22 @@ def main():
         da = de.get("area") or ""
         if sa and da and sa != da:
             pi_cross.append((r, se["name"], de["name"], sa, da))
+    return pi_cross
+
+
+def _audit_produced_in(rels, by_id):
+    # ── 5. PRODUCED_IN CROSS-AREA ──
+    print("\n── 5. produced_in relationships ──")
+    pi_rels = [r for r in rels if rel_type(r) == "produced_in"]
+    pi_cross = _collect_pi_cross(pi_rels, by_id)
     print(f"  Total produced_in: {len(pi_rels)}")
     print(f"  Cross-area conflicts: {len(pi_cross)} → SHOULD DELETE")
     for r, sn, dn, sa, da in pi_cross:
         print(f"    {sn} ({sa}) → {dn} ({da})")
+    return pi_cross
 
+
+def _audit_duplicate_rels(rels, by_id):
     # ── 6. DUPLICATE RELATIONSHIPS ──
     print("\n── 6. Duplicate relationships ──")
     rel_keys = Counter()
@@ -237,7 +249,10 @@ def main():
             sn = by_id.get(s, {}).get("name", s)
             dn = by_id.get(d, {}).get("name", d)
             print(f"    {sn} --{k}--> {dn}: {cnt}x")
+    return dup_rels
 
+
+def _audit_broken_refs(rels, by_id):
     # ── 7. BROKEN REFS IN RELATIONSHIPS ──
     print("\n── 7. Broken references ──")
     broken = []
@@ -248,8 +263,8 @@ def main():
             broken.append((src, dst))
     print(f"  Broken references: {len(broken)}")
 
-    # ── 8. FUZZY DUPLICATE NAMES ──
-    print("\n── 8. Fuzzy duplicate names ──")
+
+def _build_name_norm(entities):
     name_norm = {}
     for e in entities:
         name = e.get("name", "").strip()
@@ -260,9 +275,10 @@ def main():
         if key not in name_norm:
             name_norm[key] = []
         name_norm[key].append((e["id"], name, e.get("type")))
+    return name_norm
 
-    fuzzy_dups = {k: v for k, v in name_norm.items() if len(v) > 1}
-    # Also check levenshtein between different normalized keys
+
+def _find_close_pairs(name_norm):
     keys = list(name_norm.keys())
     close_pairs = []
     for i in range(len(keys)):
@@ -272,6 +288,17 @@ def main():
             dist = levenshtein(keys[i], keys[j])
             if dist <= 2 and dist > 0:
                 close_pairs.append((keys[i], keys[j], dist))
+    return close_pairs
+
+
+def _audit_fuzzy_names(entities):
+    # ── 8. FUZZY DUPLICATE NAMES ──
+    print("\n── 8. Fuzzy duplicate names ──")
+    name_norm = _build_name_norm(entities)
+
+    fuzzy_dups = {k: v for k, v in name_norm.items() if len(v) > 1}
+    # Also check levenshtein between different normalized keys
+    close_pairs = _find_close_pairs(name_norm)
 
     print(f"  Exact-normalized duplicates: {len(fuzzy_dups)}")
     for k, entries in sorted(fuzzy_dups.items(), key=lambda x: -len(x[1]))[:10]:
@@ -284,7 +311,10 @@ def main():
         n1 = name_norm[k1][0][1]
         n2 = name_norm[k2][0][1]
         print(f"    '{n1}' ↔ '{n2}' (dist={d})")
+    return fuzzy_dups
 
+
+def _audit_itineraries(itineraries, by_id):
     # ── 9. ITINERARY INTEGRITY ──
     print("\n── 9. Itinerary integrity ──")
     itin_broken_stops = 0
@@ -298,6 +328,8 @@ def main():
     if not itin_broken_stops:
         print(f"  All {len(itineraries)} itineraries OK")
 
+
+def _audit_placeid_area(entities, by_id):
     # ── 10. ENTITY PLACEAREA CONSISTENCY ──
     print("\n── 10. placeId ↔ area consistency ──")
     pid_area_conflict = 0
@@ -315,6 +347,8 @@ def main():
     if not pid_area_conflict:
         print("  All consistent")
 
+
+def _print_summary(near_no_coords, near_too_far, near_self, pi_cross, dup_rels, remap_types, fuzzy_dups):
     # ── SUMMARY ──
     print("\n" + "="*60)
     to_delete = len(near_no_coords) + len(near_too_far) + len(near_self) + len(pi_cross) + sum(v-1 for v in dup_rels.values())
@@ -327,45 +361,91 @@ def main():
     print(f"  Types to remap: {sum(remap_types.values())}")
     print(f"  Fuzzy name dups: {len(fuzzy_dups)}")
     print(f"  TOTAL RELS TO DELETE: {to_delete}")
+    return to_delete
+
+
+def _build_remove_set(rels, near_no_coords, near_too_far, near_self, pi_cross):
+    # Build set of rels to remove
+    remove_set = set()
+    for r in near_no_coords + near_self:
+        remove_set.add(id(r))
+    for r, *_ in near_too_far:
+        remove_set.add(id(r))
+    for r, *_ in pi_cross:
+        remove_set.add(id(r))
+
+    # Remove duplicates (keep first occurrence)
+    seen_keys = set()
+    for r in rels:
+        src = str(rel_source(r) or "")
+        dst = str(rel_target(r) or "")
+        kind = str(rel_type(r) or "")
+        key = (src, dst, kind)
+        if key in seen_keys:
+            remove_set.add(id(r))
+        else:
+            seen_keys.add(key)
+    return remove_set
+
+
+def _apply_fixes(data, entities, rels, remap_types, fixes,
+                 near_no_coords, near_too_far, near_self, pi_cross):
+    print("\n── APPLYING FIXES ──")
+    remove_set = _build_remove_set(rels, near_no_coords, near_too_far, near_self, pi_cross)
+
+    before = len(rels)
+    data["relationships"] = [r for r in rels if id(r) not in remove_set]
+    after = len(data["relationships"])
+    print(f"  Relationships: {before} → {after} (removed {before - after})")
+
+    if remap_types:
+        for e in entities:
+            if e.get("type") in TYPE_REMAP:
+                old = e["type"]
+                e["type"] = TYPE_REMAP[old]
+                fixes.append(f"type {e['id']}: {old} -> {e['type']}")
+        print(f"  Types remapped: {sum(remap_types.values())}")
+
+    save(data)
+    print(f"\n  ✅ Saved to {DATA_PATH}")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fix", action="store_true")
+    args = parser.parse_args()
+
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
+    data = load()
+    entities = data.get("entities", [])
+    rels = data.get("relationships", [])
+    itineraries = data.get("itineraries", [])
+
+    by_id = {str(e["id"]): e for e in entities if isinstance(e, dict) and e.get("id")}
+    fixes = []
+
+    print(f"=== DEEP AUDIT: {len(entities)} entities, {len(rels)} rels, {len(itineraries)} itineraries ===\n")
+
+    remap_types = _audit_types(entities)
+    _audit_areas(entities)
+    _audit_coordinates(entities, by_id)
+    near_no_coords, near_too_far, near_self = _audit_near(rels, by_id)
+    pi_cross = _audit_produced_in(rels, by_id)
+    dup_rels = _audit_duplicate_rels(rels, by_id)
+    _audit_broken_refs(rels, by_id)
+    fuzzy_dups = _audit_fuzzy_names(entities)
+    _audit_itineraries(itineraries, by_id)
+    _audit_placeid_area(entities, by_id)
+
+    to_delete = _print_summary(
+        near_no_coords, near_too_far, near_self, pi_cross, dup_rels, remap_types, fuzzy_dups
+    )
 
     if args.fix and (to_delete > 0 or remap_types):
-        print("\n── APPLYING FIXES ──")
-        # Build set of rels to remove
-        remove_set = set()
-        for r in near_no_coords + near_self:
-            remove_set.add(id(r))
-        for r, *_ in near_too_far:
-            remove_set.add(id(r))
-        for r, *_ in pi_cross:
-            remove_set.add(id(r))
-
-        # Remove duplicates (keep first occurrence)
-        seen_keys = set()
-        for r in rels:
-            src = str(rel_source(r) or "")
-            dst = str(rel_target(r) or "")
-            kind = str(rel_type(r) or "")
-            key = (src, dst, kind)
-            if key in seen_keys:
-                remove_set.add(id(r))
-            else:
-                seen_keys.add(key)
-
-        before = len(rels)
-        data["relationships"] = [r for r in rels if id(r) not in remove_set]
-        after = len(data["relationships"])
-        print(f"  Relationships: {before} → {after} (removed {before - after})")
-
-        if remap_types:
-            for e in entities:
-                if e.get("type") in TYPE_REMAP:
-                    old = e["type"]
-                    e["type"] = TYPE_REMAP[old]
-                    fixes.append(f"type {e['id']}: {old} -> {e['type']}")
-            print(f"  Types remapped: {sum(remap_types.values())}")
-
-        save(data)
-        print(f"\n  ✅ Saved to {DATA_PATH}")
+        _apply_fixes(data, entities, rels, remap_types, fixes,
+                     near_no_coords, near_too_far, near_self, pi_cross)
     elif args.fix:
         print("\n  No fixes needed.")
 

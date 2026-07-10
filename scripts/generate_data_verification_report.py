@@ -759,23 +759,42 @@ def outside_area_hits(entity: dict[str, Any]) -> list[str]:
     return sorted(set(hits))
 
 
-def build_search_queries(entities: list[dict[str, Any]], max_queries: int) -> list[dict[str, str]]:
-    def priority(entity: dict[str, Any]) -> tuple[int, int]:
-        etype = entity.get("type")
-        desc_len = len(entity.get("description") or "")
-        if etype == "person":
-            return (0, -desc_len)
-        if etype == "history":
-            return (1, -desc_len)
-        if etype == "attraction":
-            return (2, -desc_len)
-        if etype in {"product", "dish", "craft_village", "event"}:
-            return (3, -desc_len)
-        if etype in CONTACT_TYPES:
-            return (4, -desc_len)
-        return (5, -desc_len)
+def _bsq_priority(entity: dict[str, Any]) -> tuple[int, int]:
+    etype = entity.get("type")
+    desc_len = len(entity.get("description") or "")
+    if etype == "person":
+        return (0, -desc_len)
+    if etype == "history":
+        return (1, -desc_len)
+    if etype == "attraction":
+        return (2, -desc_len)
+    if etype in {"product", "dish", "craft_village", "event"}:
+        return (3, -desc_len)
+    if etype in CONTACT_TYPES:
+        return (4, -desc_len)
+    return (5, -desc_len)
 
-    sorted_entities = sorted(entities, key=priority)
+
+def _bsq_query_for(name: str, area: str, etype: str) -> str:
+    if etype == "person":
+        return f"{name} {area} tiểu sử"
+    if etype == "history":
+        return f"{name} {area} di tích lịch sử"
+    if etype == "attraction":
+        return f"{name} {area} điểm tham quan"
+    if etype in {"product", "dish", "drink"}:
+        return f"{name} {area} đặc sản OCOP"
+    if etype == "craft_village":
+        return f"{name} {area} làng nghề"
+    if etype == "event":
+        return f"{name} {area} lễ hội"
+    if etype in CONTACT_TYPES:
+        return f"{name} {area} địa chỉ"
+    return f"{name} {area}"
+
+
+def build_search_queries(entities: list[dict[str, Any]], max_queries: int) -> list[dict[str, str]]:
+    sorted_entities = sorted(entities, key=_bsq_priority)
     queries: list[dict[str, str]] = []
     for entity in sorted_entities:
         name = clean_query_text(entity.get("name") or "", max_words=10)
@@ -783,22 +802,7 @@ def build_search_queries(entities: list[dict[str, Any]], max_queries: int) -> li
         etype = entity.get("type") or ""
         if not name:
             continue
-        if etype == "person":
-            q = f"{name} {area} tiểu sử"
-        elif etype == "history":
-            q = f"{name} {area} di tích lịch sử"
-        elif etype == "attraction":
-            q = f"{name} {area} điểm tham quan"
-        elif etype in {"product", "dish", "drink"}:
-            q = f"{name} {area} đặc sản OCOP"
-        elif etype == "craft_village":
-            q = f"{name} {area} làng nghề"
-        elif etype == "event":
-            q = f"{name} {area} lễ hội"
-        elif etype in CONTACT_TYPES:
-            q = f"{name} {area} địa chỉ"
-        else:
-            q = f"{name} {area}"
+        q = _bsq_query_for(name, area, etype)
         queries.append(
             {
                 "entity_id": entity["id"],
@@ -813,22 +817,31 @@ def build_search_queries(entities: list[dict[str, Any]], max_queries: int) -> li
     return queries
 
 
+def _csr_accepted_areas(area: str) -> list[str]:
+    if area == "vinh-long":
+        return ["vinh long"]
+    if area == "ben-tre":
+        return ["ben tre", "vinh long"]  # current merged province may appear.
+    if area == "tra-vinh":
+        return ["tra vinh", "vinh long"]  # current merged province may appear.
+    return []
+
+
+def _csr_outside_hits(text: str) -> list[str]:
+    outside = []
+    for outside_area, terms in OUTSIDE_AREA_TERMS.items():
+        if any(norm_text(term) in text for term in terms):
+            outside.append(outside_area)
+    return outside
+
+
 def classify_search_result(query_row: dict[str, str], result: dict[str, Any] | None) -> str:
     if not result:
         return "NOT_FOUND"
     text = norm_text(" ".join([result.get("title") or "", result.get("body") or "", result.get("href") or ""]))
     area = query_row.get("area") or ""
-    accepted = []
-    if area == "vinh-long":
-        accepted = ["vinh long"]
-    elif area == "ben-tre":
-        accepted = ["ben tre", "vinh long"]  # current merged province may appear.
-    elif area == "tra-vinh":
-        accepted = ["tra vinh", "vinh long"]  # current merged province may appear.
-    outside = []
-    for outside_area, terms in OUTSIDE_AREA_TERMS.items():
-        if any(norm_text(term) in text for term in terms):
-            outside.append(outside_area)
+    accepted = _csr_accepted_areas(area)
+    outside = _csr_outside_hits(text)
     if outside and not any(a in text for a in accepted):
         return "MISMATCH"
     if any(a in text for a in accepted):
@@ -836,55 +849,43 @@ def classify_search_result(query_row: dict[str, str], result: dict[str, Any] | N
     return "AMBIGUOUS"
 
 
-def run_web_search(queries: list[dict[str, str]], workers: int) -> list[dict[str, Any]]:
+def _web_row_error(row: dict[str, str], error: str) -> dict[str, Any]:
+    return {
+        **row,
+        "result": "ERROR",
+        "top_title": "",
+        "top_url": "",
+        "top_snippet": "",
+        "domain": "",
+        "tier": "",
+        "error": error,
+    }
+
+
+def _web_search_one(row: dict[str, str], ddgs_cls: Any) -> dict[str, Any]:
     try:
-        from ddgs import DDGS
-    except Exception as exc:  # pragma: no cover - dependency exists in repo requirements.
-        return [
-            {
-                **q,
-                "result": "ERROR",
-                "top_title": "",
-                "top_url": "",
-                "top_snippet": "",
-                "domain": "",
-                "tier": "",
-                "error": f"ddgs unavailable: {exc}",
-            }
-            for q in queries
-        ]
+        with ddgs_cls(timeout=10) as ddgs:
+            results = list(ddgs.text(row["query"], region="vn-vi", max_results=3))
+        top = results[0] if results else None
+        host = domain(top.get("href", "")) if top else ""
+        return {
+            **row,
+            "result": classify_search_result(row, top),
+            "top_title": top.get("title", "") if top else "",
+            "top_url": top.get("href", "") if top else "",
+            "top_snippet": top.get("body", "") if top else "",
+            "domain": host,
+            "tier": tier_for_domain(host),
+            "error": "",
+        }
+    except Exception as exc:
+        return _web_row_error(row, f"{type(exc).__name__}: {exc}")
 
-    def one(row: dict[str, str]) -> dict[str, Any]:
-        try:
-            with DDGS(timeout=10) as ddgs:
-                results = list(ddgs.text(row["query"], region="vn-vi", max_results=3))
-            top = results[0] if results else None
-            host = domain(top.get("href", "")) if top else ""
-            return {
-                **row,
-                "result": classify_search_result(row, top),
-                "top_title": top.get("title", "") if top else "",
-                "top_url": top.get("href", "") if top else "",
-                "top_snippet": top.get("body", "") if top else "",
-                "domain": host,
-                "tier": tier_for_domain(host),
-                "error": "",
-            }
-        except Exception as exc:
-            return {
-                **row,
-                "result": "ERROR",
-                "top_title": "",
-                "top_url": "",
-                "top_snippet": "",
-                "domain": "",
-                "tier": "",
-                "error": f"{type(exc).__name__}: {exc}",
-            }
 
+def _web_collect(queries: list[dict[str, str]], ddgs_cls: Any, workers: int) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {pool.submit(one, q): q for q in queries}
+        futures = {pool.submit(_web_search_one, q, ddgs_cls): q for q in queries}
         for i, fut in enumerate(as_completed(futures), 1):
             rows.append(fut.result())
             if i % 50 == 0:
@@ -892,6 +893,14 @@ def run_web_search(queries: list[dict[str, str]], workers: int) -> list[dict[str
                 time.sleep(1)
     rows.sort(key=lambda r: (r.get("result") != "MISMATCH", r.get("entity_id", ""), r.get("query", "")))
     return rows
+
+
+def run_web_search(queries: list[dict[str, str]], workers: int) -> list[dict[str, Any]]:
+    try:
+        from ddgs import DDGS
+    except Exception as exc:  # pragma: no cover - dependency exists in repo requirements.
+        return [_web_row_error(q, f"ddgs unavailable: {exc}") for q in queries]
+    return _web_collect(queries, DDGS, workers)
 
 
 def load_or_create_web_log(entities: list[dict[str, Any]], max_queries: int, workers: int, refresh: bool) -> list[dict[str, Any]]:
@@ -992,18 +1001,10 @@ def source_audit_rows(entities: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return rows
 
 
-def score_entity(
-    entity: dict[str, Any],
-    claims_by_entity: dict[str, list[dict[str, Any]]],
-    web_by_entity: dict[str, list[dict[str, Any]]],
-    coord_cluster_sizes: dict[str, int],
-) -> dict[str, Any]:
-    src = source_status(entity)
-    score = 100
-    reasons = []
-    etype = entity.get("type") or ""
-    eid = entity["id"]
+CONFIRMED_ERROR_IDS = {err["entity_id"] for err in CONFIRMED_ERRORS}
 
+
+def _score_sources(score: int, reasons: list[str], src: dict[str, Any]) -> int:
     if src["explicit_llm"]:
         score -= 30
         reasons.append("explicit_llm_source")
@@ -1019,11 +1020,15 @@ def score_entity(
     elif not src["high_trust"]:
         score -= 8
         reasons.append("source_not_tier1_2")
+    return score
 
-    if likely_llm(entity, src):
-        score -= 12
-        reasons.append("llm_fingerprint")
 
+def _score_geo(
+    score: int,
+    reasons: list[str],
+    entity: dict[str, Any],
+    coord_cluster_sizes: dict[str, int],
+) -> int:
     c = coords(entity)
     if not c:
         score -= 18
@@ -1045,12 +1050,33 @@ def score_entity(
     if attrs.get("coords_approximate") or entity.get("coords_approximate"):
         score -= 8
         reasons.append("approximate_coordinates")
+    return score
 
+
+def _score_phones(score: int, reasons: list[str], entity: dict[str, Any], etype: str) -> int:
+    for phone in phones_for_entity(entity):
+        if not phone_valid(phone):
+            score -= 20
+            reasons.append("invalid_phone")
+        elif etype in CONTACT_TYPES:
+            score -= 3
+            reasons.append("phone_format_only_not_live_verified")
+    return score
+
+
+def _score_content(
+    score: int,
+    reasons: list[str],
+    entity: dict[str, Any],
+    etype: str,
+    eid: str,
+    entity_claims: list[dict[str, Any]],
+    web_by_entity: dict[str, list[dict[str, Any]]],
+) -> int:
     if not entity.get("images"):
         score -= 5
         reasons.append("missing_images")
 
-    entity_claims = claims_by_entity.get(eid, [])
     if entity_claims:
         score -= min(22, max(4, len(entity_claims) // 3))
         reasons.append(f"unverified_claims_{len(entity_claims)}")
@@ -1059,20 +1085,16 @@ def score_entity(
         score -= 12
         reasons.append("high_risk_not_web_checked")
 
-    for phone in phones_for_entity(entity):
-        if not phone_valid(phone):
-            score -= 20
-            reasons.append("invalid_phone")
-        elif etype in CONTACT_TYPES:
-            score -= 3
-            reasons.append("phone_format_only_not_live_verified")
+    score = _score_phones(score, reasons, entity, etype)
 
     outside = outside_area_hits(entity)
     if outside:
         score -= 8
         reasons.append("mentions_outside_area:" + ",".join(outside[:3]))
+    return score
 
-    web_rows = web_by_entity.get(eid, [])
+
+def _score_web(score: int, reasons: list[str], eid: str, web_rows: list[dict[str, Any]]) -> int:
     if any(row["result"] == "MISMATCH" for row in web_rows):
         manual_verdict = MANUAL_MISMATCH_BY_ID.get(eid, {}).get("manual_verdict")
         if manual_verdict == "FALSE_POSITIVE":
@@ -1090,22 +1112,65 @@ def score_entity(
     elif any(row["result"] in {"NOT_FOUND", "ERROR"} for row in web_rows):
         score -= 8
         reasons.append("web_not_found_or_error")
+    return score
 
-    if eid in {err["entity_id"] for err in CONFIRMED_ERRORS}:
+
+def _score_verdict(score: int, eid: str, src: dict[str, Any], entity_claims: list[dict[str, Any]]) -> str:
+    if eid in CONFIRMED_ERROR_IDS:
+        return "FABRICATED"
+    if score >= 82 and src["high_trust"] and not entity_claims:
+        return "VERIFIED"
+    if score >= 65:
+        return "PARTIAL"
+    if score >= 40:
+        return "SUSPECT"
+    return "UNTRUSTED"
+
+
+def _score_source_status(src: dict[str, Any]) -> str:
+    if src["high_trust"]:
+        return "TIER1_2"
+    if src["independent"]:
+        return "INDEPENDENT_LOW"
+    if src["self_only"]:
+        return "SELF_ONLY"
+    if src["no_url_source"]:
+        return "NO_URL"
+    return "MISSING"
+
+
+def score_entity(
+    entity: dict[str, Any],
+    claims_by_entity: dict[str, list[dict[str, Any]]],
+    web_by_entity: dict[str, list[dict[str, Any]]],
+    coord_cluster_sizes: dict[str, int],
+) -> dict[str, Any]:
+    src = source_status(entity)
+    score = 100
+    reasons: list[str] = []
+    etype = entity.get("type") or ""
+    eid = entity["id"]
+
+    score = _score_sources(score, reasons, src)
+
+    if likely_llm(entity, src):
+        score -= 12
+        reasons.append("llm_fingerprint")
+
+    score = _score_geo(score, reasons, entity, coord_cluster_sizes)
+
+    entity_claims = claims_by_entity.get(eid, [])
+    score = _score_content(score, reasons, entity, etype, eid, entity_claims, web_by_entity)
+
+    web_rows = web_by_entity.get(eid, [])
+    score = _score_web(score, reasons, eid, web_rows)
+
+    if eid in CONFIRMED_ERROR_IDS:
         score = min(score, 20)
         reasons.append("confirmed_factual_error")
 
     score = max(0, min(100, score))
-    if eid in {err["entity_id"] for err in CONFIRMED_ERRORS}:
-        verdict = "FABRICATED"
-    elif score >= 82 and src["high_trust"] and not entity_claims:
-        verdict = "VERIFIED"
-    elif score >= 65:
-        verdict = "PARTIAL"
-    elif score >= 40:
-        verdict = "SUSPECT"
-    else:
-        verdict = "UNTRUSTED"
+    verdict = _score_verdict(score, eid, src, entity_claims)
 
     return {
         "entity_id": eid,
@@ -1115,20 +1180,10 @@ def score_entity(
         "trust_score": score,
         "verdict": verdict,
         "claim_count": len(entity_claims),
-        "source_status": (
-            "TIER1_2"
-            if src["high_trust"]
-            else "INDEPENDENT_LOW"
-            if src["independent"]
-            else "SELF_ONLY"
-            if src["self_only"]
-            else "NO_URL"
-            if src["no_url_source"]
-            else "MISSING"
-        ),
+        "source_status": _score_source_status(src),
         "web_result": Counter(row["result"] for row in web_rows).most_common(1)[0][0] if web_rows else "",
         "hallucination_flags": ";".join(reasons[:10]),
-        "factual_errors": 1 if any(err["entity_id"] == eid for err in CONFIRMED_ERRORS) else 0,
+        "factual_errors": 1 if eid in CONFIRMED_ERROR_IDS else 0,
         "missing_source": "N" if src["independent"] else "Y",
     }
 
@@ -1173,33 +1228,17 @@ def write_fix_sql(errors: list[dict[str, Any]]) -> None:
     FIX_SQL.write_text("\n".join(lines), encoding="utf-8")
 
 
-def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None:
-    DOCS_DIR.mkdir(parents=True, exist_ok=True)
-    entities = data.get("entities", [])
-    rels = data.get("relationships", [])
-    itineraries = data.get("itineraries", [])
-    by_id = {entity["id"]: entity for entity in entities}
+def _group_by_entity(rows: list[dict[str, Any]], key: str) -> dict[str, list[dict[str, Any]]]:
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        grouped[row[key]].append(row)
+    return grouped
 
-    claims = extract_claims(entities)
-    claims_by_entity: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for claim in claims:
-        claims_by_entity[claim["entity_id"]].append(claim)
 
-    web_by_entity: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for row in web_log:
-        web_by_entity[row["entity_id"]].append(row)
-
-    cstats = coordinate_stats(entities)
-    coord_cluster_sizes = {key: len(ids) for key, ids in cstats["clusters"]}
-    rstats = relationship_stats(entities, rels)
-    source_rows = source_audit_rows(entities)
-
-    matrix = [
-        score_entity(entity, claims_by_entity, web_by_entity, coord_cluster_sizes)
-        for entity in entities
-    ]
-    matrix.sort(key=lambda row: (row["trust_score"], row["entity_id"]))
-
+def _annotate_claims(
+    claims: list[dict[str, Any]],
+    web_by_entity: dict[str, list[dict[str, Any]]],
+) -> None:
     # Mark claims covered by confirmed errors or a web result for the same entity.
     error_by_id = {err["entity_id"]: err for err in CONFIRMED_ERRORS}
     for claim in claims:
@@ -1211,6 +1250,13 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
             claim["verified"] = "ENTITY_FOUND_NOT_CLAIM_VERIFIED"
             claim["source"] = web_by_entity[claim["entity_id"]][0].get("top_url", "")
 
+
+def _write_all_csvs(
+    matrix: list[dict[str, Any]],
+    claims: list[dict[str, Any]],
+    web_log: list[dict[str, Any]],
+    source_rows: list[dict[str, Any]],
+) -> None:
     write_csv(
         MATRIX_CSV,
         matrix,
@@ -1259,9 +1305,9 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
     )
     write_fix_sql(CONFIRMED_ERRORS)
 
-    type_counts = Counter(entity.get("type") for entity in entities)
-    verdict_counts = Counter(row["verdict"] for row in matrix)
-    trust_buckets = Counter()
+
+def _trust_buckets(matrix: list[dict[str, Any]]) -> Counter:
+    trust_buckets: Counter = Counter()
     for row in matrix:
         score = int(row["trust_score"])
         if score < 20:
@@ -1274,32 +1320,17 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
             trust_buckets["60-79"] += 1
         else:
             trust_buckets["80-100"] += 1
+    return trust_buckets
 
-    source_domain_counts = Counter()
+
+def _source_domain_counts(source_rows: list[dict[str, Any]]) -> Counter:
+    counts: Counter = Counter()
     for row in source_rows:
-        source_domain_counts[row["domain"] or "(no-url-source-object)"] += 1
-    no_independent = sum(1 for entity in entities if not source_status(entity)["independent"])
-    high_trust_sources = sum(1 for entity in entities if source_status(entity)["high_trust"])
-    explicit_llm = sum(1 for entity in entities if source_status(entity)["explicit_llm"])
-    llm_like = sum(1 for entity in entities if likely_llm(entity, source_status(entity)))
-    phone_rows = [(entity["id"], p, phone_valid(p)) for entity in entities for p in phones_for_entity(entity)]
-    invalid_phones = [row for row in phone_rows if not row[2]]
-    out_hits = [(entity["id"], entity.get("name") or "", entity.get("area") or "", ",".join(outside_area_hits(entity))) for entity in entities if outside_area_hits(entity)]
+        counts[row["domain"] or "(no-url-source-object)"] += 1
+    return counts
 
-    web_counts = Counter(row["result"] for row in web_log)
-    web_type_counts = Counter(row["type"] for row in web_log)
-    web_area_counts = Counter(row["area"] for row in web_log)
-    errors_by_type = Counter(by_id[err["entity_id"]].get("type") for err in CONFIRMED_ERRORS if err["entity_id"] in by_id)
-    mismatch_ids = {row["entity_id"] for row in web_log if row["result"] == "MISMATCH"}
-    manually_reviewed_mismatch_ids = {row["entity_id"] for row in MANUAL_MISMATCH_REVIEWS}
-    current_manual_reviews = [row for row in MANUAL_MISMATCH_REVIEWS if row["entity_id"] in mismatch_ids]
-    manual_mismatch_counts = Counter(row["manual_verdict"] for row in current_manual_reviews)
-    cumulative_manual_mismatch_counts = Counter(row["manual_verdict"] for row in MANUAL_MISMATCH_REVIEWS)
 
-    avg_trust = sum(row["trust_score"] for row in matrix) / len(matrix)
-    low_trust = [row for row in matrix if row["trust_score"] < 50]
-    high_trust = [row for row in matrix if row["trust_score"] >= 90]
-
+def _type_trust_rows(matrix: list[dict[str, Any]], type_counts: Counter) -> list[list[Any]]:
     type_trust_rows = []
     for etype in sorted(type_counts):
         rows = [row for row in matrix if row["type"] == etype]
@@ -1313,7 +1344,10 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
                 lowest,
             ]
         )
+    return type_trust_rows
 
+
+def _coverage_rows(entities: list[dict[str, Any]], type_counts: Counter) -> list[list[Any]]:
     coverage_rows = []
     for etype, count in type_counts.most_common():
         type_entities = [entity for entity in entities if entity.get("type") == etype]
@@ -1329,17 +1363,27 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
                 pct(sum(source_status(entity)["independent"] for entity in type_entities), count),
             ]
         )
+    return coverage_rows
 
+
+def _area_type_rows(entities: list[dict[str, Any]], key_types: list[str]) -> list[list[Any]]:
     area_type_rows = []
-    key_types = ["attraction", "dish", "restaurant", "product", "event", "history", "nature", "person"]
     for area in ["vinh-long", "ben-tre", "tra-vinh", None]:
         area_entities = [entity for entity in entities if entity.get("area") == area]
         area_type_rows.append(
             [AREA_LABELS.get(area, "None"), len(area_entities)]
             + [sum(1 for entity in area_entities if entity.get("type") == etype) for etype in key_types]
         )
+    return area_type_rows
 
-    hallucination_patterns = [
+
+def _hallucination_patterns(
+    claims: list[dict[str, Any]],
+    entities: list[dict[str, Any]],
+    explicit_llm: int,
+    llm_like: int,
+) -> list[tuple[str, int]]:
+    return [
         ("H1 year", sum(1 for c in claims if "year" in c["claim_type"])),
         ("H2 measurement", sum(1 for c in claims if "measurement" in c["claim_type"])),
         ("H3 date/season", sum(1 for c in claims if "season/date" in c["claim_type"])),
@@ -1352,50 +1396,33 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
         ("H10 LLM prose fingerprint", llm_like),
     ]
 
-    quality_gate_rows = [
+
+def _quality_gate_rows(ctx: dict[str, Any]) -> list[list[Any]]:
+    web_type_counts = ctx["web_type_counts"]
+    type_counts = ctx["type_counts"]
+    mismatch_ids = ctx["mismatch_ids"]
+    manually_reviewed_mismatch_ids = ctx["manually_reviewed_mismatch_ids"]
+    return [
         ["QG1", "Web search cho 100% person + history", "PASS" if web_type_counts["person"] >= type_counts["person"] and web_type_counts["history"] >= type_counts["history"] else "PARTIAL"],
         ["QG2", "Attraction có claim lịch sử được web-check", "PARTIAL"],
         ["QG3", "OCOP/product claims được web-check", "PARTIAL"],
         ["QG4", "Restaurant/cafe spot-check", "PASS" if web_type_counts["restaurant"] + web_type_counts["cafe"] >= 30 else "PARTIAL"],
         ["QG5", "Mọi factual claim có Tier 1/2 source", "FAIL"],
-        ["QG6", "Appendix K >= 200 search entries", "PASS" if len(web_log) >= 200 else "FAIL"],
+        ["QG6", "Appendix K >= 200 search entries", "PASS" if len(ctx["web_log"]) >= 200 else "FAIL"],
         [
             "QG7",
             "Automated MISMATCH rows manually adjudicated",
             "PASS" if mismatch_ids <= manually_reviewed_mismatch_ids else f"PARTIAL ({len(mismatch_ids & manually_reviewed_mismatch_ids)}/{len(mismatch_ids)})",
         ],
         ["QG13", "Mọi coordinates bbox-check", "PASS"],
-        ["QG14", "Phone format + area-code format audit", "PASS" if not invalid_phones else "FAIL"],
-        ["QG16", "Trust score cho mọi entity", "PASS" if len(matrix) == len(entities) else "FAIL"],
+        ["QG14", "Phone format + area-code format audit", "PASS" if not ctx["invalid_phones"] else "FAIL"],
+        ["QG16", "Trust score cho mọi entity", "PASS" if len(ctx["matrix"]) == len(ctx["entities"]) else "FAIL"],
         ["QG22", "Fix script runnable", "PASS"],
     ]
 
-    lowest_rows = [
-        [
-            row["entity_id"],
-            row["type"],
-            row["area"],
-            row["trust_score"],
-            row["verdict"],
-            row["source_status"],
-            row["hallucination_flags"][:100],
-        ]
-        for row in matrix[:60]
-    ]
 
-    confirmed_rows = [
-        [
-            i + 1,
-            err["entity_id"],
-            err["claim"],
-            err["truth"],
-            f"[source]({err['source']})",
-            err["fix"],
-        ]
-        for i, err in enumerate(CONFIRMED_ERRORS)
-    ]
-
-    manual_mismatch_rows = [
+def _manual_mismatch_rows(reviews: list[dict[str, Any]]) -> list[list[Any]]:
+    return [
         [
             row["entity_id"],
             row["manual_verdict"],
@@ -1404,44 +1431,283 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
             f"[source]({row['source']})" if row.get("source") else "",
             row["action"],
         ]
-        for row in MANUAL_MISMATCH_REVIEWS
+        for row in reviews
     ]
 
-    current_manual_mismatch_rows = [
-        [
-            row["entity_id"],
-            row["manual_verdict"],
-            row["confidence"],
-            row["finding"],
-            f"[source]({row['source']})" if row.get("source") else "",
-            row["action"],
-        ]
-        for row in current_manual_reviews
-    ]
 
-    p1_manual_rows = [
-        [
-            row["entity_id"],
-            row["confidence"],
-            row["finding"],
-            f"[source]({row['source']})" if row.get("source") else "",
-            row["action"],
-        ]
-        for row in MANUAL_MISMATCH_REVIEWS
-        if row["manual_verdict"] == "P1_SUSPECT"
-    ]
+def _report_core(data: dict[str, Any], web_log: list[dict[str, Any]]) -> dict[str, Any]:
+    entities = data.get("entities", [])
+    rels = data.get("relationships", [])
+    itineraries = data.get("itineraries", [])
+    by_id = {entity["id"]: entity for entity in entities}
 
-    web_sample_rows = [
-        [
-            i + 1,
-            row["entity_id"],
-            row["query"],
-            row["result"],
-            f"[{row['domain'] or 'source'}]({row['top_url']})" if row.get("top_url") else "",
-            (row.get("top_snippet") or "")[:150],
-        ]
-        for i, row in enumerate(web_log[:80])
+    claims = extract_claims(entities)
+    claims_by_entity = _group_by_entity(claims, "entity_id")
+    web_by_entity = _group_by_entity(web_log, "entity_id")
+
+    cstats = coordinate_stats(entities)
+    coord_cluster_sizes = {key: len(ids) for key, ids in cstats["clusters"]}
+    rstats = relationship_stats(entities, rels)
+    source_rows = source_audit_rows(entities)
+
+    matrix = [
+        score_entity(entity, claims_by_entity, web_by_entity, coord_cluster_sizes)
+        for entity in entities
     ]
+    matrix.sort(key=lambda row: (row["trust_score"], row["entity_id"]))
+
+    _annotate_claims(claims, web_by_entity)
+    _write_all_csvs(matrix, claims, web_log, source_rows)
+
+    ctx: dict[str, Any] = {
+        "data": data,
+        "web_log": web_log,
+        "entities": entities,
+        "rels": rels,
+        "itineraries": itineraries,
+        "by_id": by_id,
+        "claims": claims,
+        "web_by_entity": web_by_entity,
+        "cstats": cstats,
+        "rstats": rstats,
+        "source_rows": source_rows,
+        "matrix": matrix,
+        "type_counts": Counter(entity.get("type") for entity in entities),
+        "trust_buckets": _trust_buckets(matrix),
+        "source_domain_counts": _source_domain_counts(source_rows),
+        "key_types": ["attraction", "dish", "restaurant", "product", "event", "history", "nature", "person"],
+    }
+    ctx.update(_report_counters(ctx))
+    ctx.update(_report_lists(ctx))
+    return ctx
+
+
+def _report_source_counts(entities: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "no_independent": sum(1 for entity in entities if not source_status(entity)["independent"]),
+        "high_trust_sources": sum(1 for entity in entities if source_status(entity)["high_trust"]),
+        "explicit_llm": sum(1 for entity in entities if source_status(entity)["explicit_llm"]),
+        "llm_like": sum(1 for entity in entities if likely_llm(entity, source_status(entity))),
+    }
+
+
+def _report_counters(ctx: dict[str, Any]) -> dict[str, Any]:
+    entities = ctx["entities"]
+    web_log = ctx["web_log"]
+    matrix = ctx["matrix"]
+    by_id = ctx["by_id"]
+    mismatch_ids = {row["entity_id"] for row in web_log if row["result"] == "MISMATCH"}
+    current_manual_reviews = [row for row in MANUAL_MISMATCH_REVIEWS if row["entity_id"] in mismatch_ids]
+    counters = {
+        "verdict_counts": Counter(row["verdict"] for row in matrix),
+        "web_counts": Counter(row["result"] for row in web_log),
+        "web_type_counts": Counter(row["type"] for row in web_log),
+        "web_area_counts": Counter(row["area"] for row in web_log),
+        "errors_by_type": Counter(by_id[err["entity_id"]].get("type") for err in CONFIRMED_ERRORS if err["entity_id"] in by_id),
+        "mismatch_ids": mismatch_ids,
+        "manually_reviewed_mismatch_ids": {row["entity_id"] for row in MANUAL_MISMATCH_REVIEWS},
+        "current_manual_reviews": current_manual_reviews,
+        "manual_mismatch_counts": Counter(row["manual_verdict"] for row in current_manual_reviews),
+        "cumulative_manual_mismatch_counts": Counter(row["manual_verdict"] for row in MANUAL_MISMATCH_REVIEWS),
+    }
+    counters.update(_report_source_counts(entities))
+    return counters
+
+
+def _report_lists(ctx: dict[str, Any]) -> dict[str, Any]:
+    entities = ctx["entities"]
+    matrix = ctx["matrix"]
+    phone_rows = [(entity["id"], p, phone_valid(p)) for entity in entities for p in phones_for_entity(entity)]
+    return {
+        "phone_rows": phone_rows,
+        "invalid_phones": [row for row in phone_rows if not row[2]],
+        "out_hits": [(entity["id"], entity.get("name") or "", entity.get("area") or "", ",".join(outside_area_hits(entity))) for entity in entities if outside_area_hits(entity)],
+        "avg_trust": sum(row["trust_score"] for row in matrix) / len(matrix),
+        "low_trust": [row for row in matrix if row["trust_score"] < 50],
+        "high_trust": [row for row in matrix if row["trust_score"] >= 90],
+    }
+
+
+def _report_tables(ctx: dict[str, Any]) -> dict[str, Any]:
+    matrix = ctx["matrix"]
+    claims = ctx["claims"]
+    web_log = ctx["web_log"]
+    current_manual_reviews = ctx["current_manual_reviews"]
+    tables: dict[str, Any] = {
+        "type_trust_rows": _type_trust_rows(matrix, ctx["type_counts"]),
+        "coverage_rows": _coverage_rows(ctx["entities"], ctx["type_counts"]),
+        "area_type_rows": _area_type_rows(ctx["entities"], ctx["key_types"]),
+        "hallucination_patterns": _hallucination_patterns(claims, ctx["entities"], ctx["explicit_llm"], ctx["llm_like"]),
+        "quality_gate_rows": _quality_gate_rows(ctx),
+        "lowest_rows": [
+            [
+                row["entity_id"],
+                row["type"],
+                row["area"],
+                row["trust_score"],
+                row["verdict"],
+                row["source_status"],
+                row["hallucination_flags"][:100],
+            ]
+            for row in matrix[:60]
+        ],
+        "confirmed_rows": [
+            [
+                i + 1,
+                err["entity_id"],
+                err["claim"],
+                err["truth"],
+                f"[source]({err['source']})",
+                err["fix"],
+            ]
+            for i, err in enumerate(CONFIRMED_ERRORS)
+        ],
+        "manual_mismatch_rows": _manual_mismatch_rows(MANUAL_MISMATCH_REVIEWS),
+        "current_manual_mismatch_rows": _manual_mismatch_rows(current_manual_reviews),
+        "p1_manual_rows": [
+            [
+                row["entity_id"],
+                row["confidence"],
+                row["finding"],
+                f"[source]({row['source']})" if row.get("source") else "",
+                row["action"],
+            ]
+            for row in MANUAL_MISMATCH_REVIEWS
+            if row["manual_verdict"] == "P1_SUSPECT"
+        ],
+        "web_sample_rows": [
+            [
+                i + 1,
+                row["entity_id"],
+                row["query"],
+                row["result"],
+                f"[{row['domain'] or 'source'}]({row['top_url']})" if row.get("top_url") else "",
+                (row.get("top_snippet") or "")[:150],
+            ]
+            for i, row in enumerate(web_log[:80])
+        ],
+    }
+    return tables
+
+
+def _derived_scalars_a(ctx: dict[str, Any]) -> dict[str, Any]:
+    matrix = ctx["matrix"]
+    claims = ctx["claims"]
+    cstats = ctx["cstats"]
+    return {
+        "clustered_entity_count": sum(len(ids) for _, ids in cstats["clusters"]),
+        "largest_cluster_size": len(cstats["clusters"][0][1]) if cstats["clusters"] else 0,
+        "llm_selfsource_claim_entities": sum(1 for row in matrix if row["missing_source"] == "Y" and row["claim_count"] > 0),
+        "contradicted_claim_count": len([c for c in claims if c["verified"] == "CONTRADICTED"]),
+        "product_type_total": sum(ctx["type_counts"][t] for t in PRODUCT_TYPES),
+        "ocop_claim_count": sum(1 for c in claims if "ocop" in c["claim_type"]),
+        "product_no_indep_source": sum(1 for entity in ctx["entities"] if entity.get("type") in PRODUCT_TYPES and not source_status(entity)["independent"]),
+        "contact_format_only_phone": sum(1 for entity in ctx["entities"] if entity.get("type") in CONTACT_TYPES and phones_for_entity(entity)),
+    }
+
+
+def _derived_scalars_b(ctx: dict[str, Any]) -> dict[str, Any]:
+    web_log = ctx["web_log"]
+    rstats = ctx["rstats"]
+    return {
+        "fanout_top5_str": ", ".join(f"{eid}:{cnt}" for eid, cnt in rstats["fanout"][:5]),
+        "web_match_ambiguous_entities": len({row["entity_id"] for row in web_log if row["result"] in {"MATCH", "AMBIGUOUS"}}),
+        "web_searched_entities": len({row["entity_id"] for row in web_log}),
+    }
+
+
+def _derived_tables(ctx: dict[str, Any]) -> dict[str, Any]:
+    cstats = ctx["cstats"]
+    by_id = ctx["by_id"]
+    return {
+        "cluster_top10_rows": [[key, len(ids), ", ".join(ids[:6])] for key, ids in cstats["clusters"][:10]],
+        "out_hits_rows": [[eid, area, hit] for eid, _name, area, hit in ctx["out_hits"][:40]],
+        "culinary_error_rows": [[err["entity_id"], err["claim"], err["truth"], f"[source]({err['source']})"] for err in CONFIRMED_ERRORS if err["entity_id"] in by_id and by_id[err["entity_id"]].get("type") in PRODUCT_TYPES],
+        "source_domain_rows": [[k, v] for k, v in ctx["source_domain_counts"].most_common(20)],
+        "rel_counts_rows": [[k, v] for k, v in ctx["rstats"]["counts"].most_common()],
+        "trust_bucket_rows": [[bucket, ctx["trust_buckets"][bucket], pct(ctx["trust_buckets"][bucket], len(ctx["entities"]))] for bucket in ["0-19", "20-39", "40-59", "60-79", "80-100"]],
+        "cluster_top25_rows": [[key, len(ids), ", ".join(ids[:10])] for key, ids in cstats["clusters"][:25]],
+        "recommended_value_rows": [[err["entity_id"], err["field"], err["claim"], err["truth"], f"[source]({err['source']})"] for err in CONFIRMED_ERRORS],
+        "area_mismatch_rows": [[err["entity_id"], by_id.get(err["entity_id"], {}).get("area", ""), err["truth"], err["fix"]] for err in CONFIRMED_ERRORS],
+    }
+
+
+def _derived_tables2(ctx: dict[str, Any], tables: dict[str, Any]) -> dict[str, Any]:
+    claims = ctx["claims"]
+    matrix = ctx["matrix"]
+    return {
+        "hallucination_pattern_rows": [[p, c, "Needs source-level verification" if c else "No hits"] for p, c in tables["hallucination_patterns"]],
+        "claims_sample_rows": [[c["entity_id"], c["claim_type"], c["verified"], c["claim_text"][:180]] for c in claims[:80]],
+        "p1_review_rows": [[row["entity_id"], row["trust_score"], row["hallucination_flags"][:140], "Human fact-check + source binding"] for row in matrix if row["verdict"] in {"UNTRUSTED", "SUSPECT"}][:40],
+        "web_type_rows": [[k, v] for k, v in ctx["web_type_counts"].most_common()],
+        "web_area_rows": [[k or "None", v] for k, v in ctx["web_area_counts"].most_common()],
+    }
+
+
+def _render_report(ctx: dict[str, Any]) -> str:
+    entities = ctx["entities"]
+    rels = ctx["rels"]
+    itineraries = ctx["itineraries"]
+    claims = ctx["claims"]
+    cstats = ctx["cstats"]
+    rstats = ctx["rstats"]
+    web_log = ctx["web_log"]
+    type_counts = ctx["type_counts"]
+    verdict_counts = ctx["verdict_counts"]
+    no_independent = ctx["no_independent"]
+    high_trust_sources = ctx["high_trust_sources"]
+    explicit_llm = ctx["explicit_llm"]
+    llm_like = ctx["llm_like"]
+    phone_rows = ctx["phone_rows"]
+    invalid_phones = ctx["invalid_phones"]
+    out_hits = ctx["out_hits"]
+    web_counts = ctx["web_counts"]
+    web_type_counts = ctx["web_type_counts"]
+    errors_by_type = ctx["errors_by_type"]
+    current_manual_reviews = ctx["current_manual_reviews"]
+    manual_mismatch_counts = ctx["manual_mismatch_counts"]
+    cumulative_manual_mismatch_counts = ctx["cumulative_manual_mismatch_counts"]
+    avg_trust = ctx["avg_trust"]
+    low_trust = ctx["low_trust"]
+    high_trust = ctx["high_trust"]
+    key_types = ctx["key_types"]
+    source_domain_counts = ctx["source_domain_counts"]
+    # Precomputed table rows / scalars (comprehensions moved out of the f-string).
+    type_trust_rows = ctx["type_trust_rows"]
+    coverage_rows = ctx["coverage_rows"]
+    area_type_rows = ctx["area_type_rows"]
+    quality_gate_rows = ctx["quality_gate_rows"]
+    lowest_rows = ctx["lowest_rows"]
+    confirmed_rows = ctx["confirmed_rows"]
+    manual_mismatch_rows = ctx["manual_mismatch_rows"]
+    current_manual_mismatch_rows = ctx["current_manual_mismatch_rows"]
+    p1_manual_rows = ctx["p1_manual_rows"]
+    web_sample_rows = ctx["web_sample_rows"]
+    clustered_entity_count = ctx["clustered_entity_count"]
+    largest_cluster_size = ctx["largest_cluster_size"]
+    llm_selfsource_claim_entities = ctx["llm_selfsource_claim_entities"]
+    contradicted_claim_count = ctx["contradicted_claim_count"]
+    product_type_total = ctx["product_type_total"]
+    ocop_claim_count = ctx["ocop_claim_count"]
+    product_no_indep_source = ctx["product_no_indep_source"]
+    contact_format_only_phone = ctx["contact_format_only_phone"]
+    fanout_top5_str = ctx["fanout_top5_str"]
+    web_match_ambiguous_entities = ctx["web_match_ambiguous_entities"]
+    web_searched_entities = ctx["web_searched_entities"]
+    hallucination_pattern_rows = ctx["hallucination_pattern_rows"]
+    claims_sample_rows = ctx["claims_sample_rows"]
+    p1_review_rows = ctx["p1_review_rows"]
+    web_type_rows = ctx["web_type_rows"]
+    web_area_rows = ctx["web_area_rows"]
+    cluster_top10_rows = ctx["cluster_top10_rows"]
+    out_hits_rows = ctx["out_hits_rows"]
+    culinary_error_rows = ctx["culinary_error_rows"]
+    source_domain_rows = ctx["source_domain_rows"]
+    rel_counts_rows = ctx["rel_counts_rows"]
+    trust_bucket_rows = ctx["trust_bucket_rows"]
+    cluster_top25_rows = ctx["cluster_top25_rows"]
+    recommended_value_rows = ctx["recommended_value_rows"]
+    area_mismatch_rows = ctx["area_mismatch_rows"]
 
     report = f"""# Data Verification Report — vinhlong360
 
@@ -1493,13 +1759,13 @@ def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None
 - New P0 from Round 2: `chua-ong-met-botum-vong-sa-som-rong` conflates Chùa Ông Mẹt (Trà Vinh) with Som Rong/Bô Tum Vông Sa Som Rông (Sóc Trăng/Cần Thơ mới).
 - New P0 from Round 3: `khu-bao-ton-lung-binh-hoa-tra-vinh` is a contaminated entity whose content describes Lung Ngọc Hoàng in Hậu Giang/Cần Thơ mới, not a verified Trà Vinh nature reserve.
 - Source risk: {no_independent}/{len(entities)} entities ({pct(no_independent, len(entities))}) chưa có URL nguồn độc lập; {source_domain_counts['vinhlong360.vn']} source trỏ về chính platform.
-- Coordinate risk: {len(cstats['clusters'])} exact-coordinate clusters >3 entities, {sum(len(ids) for _, ids in cstats['clusters'])} clustered entities; cụm lớn nhất có {len(cstats['clusters'][0][1]) if cstats['clusters'] else 0} entities.
+- Coordinate risk: {len(cstats['clusters'])} exact-coordinate clusters >3 entities, {clustered_entity_count} clustered entities; cụm lớn nhất có {largest_cluster_size} entities.
 - Image completeness: 0/{len(entities)} entities có image URL.
 
 ### LLM enrichment impact
 - Explicit LLM/agent-discovery source: {explicit_llm}/{len(entities)} ({pct(explicit_llm, len(entities))})
 - Estimated LLM-like or unreviewed prose: {llm_like}/{len(entities)} ({pct(llm_like, len(entities))})
-- LLM/no-url/self-source entities with factual claims: {sum(1 for row in matrix if row['missing_source'] == 'Y' and row['claim_count'] > 0)}
+- LLM/no-url/self-source entities with factual claims: {llm_selfsource_claim_entities}
 - Confirmed false claims in this pass: {len(CONFIRMED_ERRORS)}
 
 ### Overall trust score: {avg_trust:.1f}/100
@@ -1518,7 +1784,7 @@ External audit artifacts:
 ## 2. HALLUCINATION SCAN (V1)
 
 ### 2.1 Pattern frequency
-{md_table(["Pattern", "Occurrences", "Interpretation"], [[p, c, "Needs source-level verification" if c else "No hits"] for p, c in hallucination_patterns])}
+{md_table(["Pattern", "Occurrences", "Interpretation"], hallucination_pattern_rows)}
 
 ### 2.2 Confirmed false claims
 {md_table(["#", "Entity ID", "Claim", "Truth", "Source", "Fix"], confirmed_rows)}
@@ -1531,7 +1797,7 @@ Verdict counts: CONFIRMED_P0={manual_mismatch_counts['CONFIRMED_P0']}; P1_SUSPEC
 {md_table(["Entity ID", "Manual verdict", "Confidence", "Finding", "Source", "Action"], current_manual_mismatch_rows)}
 
 ### 2.3 Unverifiable claims (need human check)
-Detected factual claims: {len(claims)}. Extracted claims contradicted by this audit: {len([c for c in claims if c["verified"] == "CONTRADICTED"])}; confirmed false entities: {len(CONFIRMED_ERRORS)}. One P0 finding is entity/address scope rather than a single extracted sentence. Entity-level existence found by web search is not the same as claim-level verification; most claims remain `UNVERIFIED` in `{CLAIMS_CSV.relative_to(ROOT)}`.
+Detected factual claims: {len(claims)}. Extracted claims contradicted by this audit: {contradicted_claim_count}; confirmed false entities: {len(CONFIRMED_ERRORS)}. One P0 finding is entity/address scope rather than a single extracted sentence. Entity-level existence found by web search is not the same as claim-level verification; most claims remain `UNVERIFIED` in `{CLAIMS_CSV.relative_to(ROOT)}`.
 
 Lowest-trust unverified examples:
 {md_table(["Entity", "Type", "Area", "Score", "Verdict", "Source", "Why"], lowest_rows[:25])}
@@ -1550,11 +1816,11 @@ Findings:
 - Missing coordinates: {len(cstats['missing'])}
 - Coordinates outside tight bbox: {len(cstats['out_bbox'])}
 - Exact coordinate clusters >3 entities: {len(cstats['clusters'])}
-- Entities in large coordinate clusters: {sum(len(ids) for _, ids in cstats['clusters'])}
+- Entities in large coordinate clusters: {clustered_entity_count}
 - Entities mentioning outside-area terms: {len(out_hits)}
 
 Largest coordinate clusters:
-{md_table(["Coordinate", "Entity count", "Example IDs"], [[key, len(ids), ", ".join(ids[:6])] for key, ids in cstats["clusters"][:10]])}
+{md_table(["Coordinate", "Entity count", "Example IDs"], cluster_top10_rows)}
 
 Area mismatch report is in Appendix M. Confirmed errors are intentionally limited to cases with outside source support.
 
@@ -1568,7 +1834,7 @@ Area mismatch report is in Appendix M. Confirmed errors are intentionally limite
 Duplicate exact names: 0 by current structural validation. Near-name risk remains for similarly named hotels and places; these need manual merge review, especially where coordinates are identical or near-identical.
 
 Outside-area keyword hits:
-{md_table(["Entity", "Area", "Outside signal"], [[eid, area, hit] for eid, _name, area, hit in out_hits[:40]])}
+{md_table(["Entity", "Area", "Outside signal"], out_hits_rows)}
 
 ---
 
@@ -1588,16 +1854,16 @@ Important nuance: `Chùa Vàm Ray` current Wikipedia text says tỉnh Vĩnh Long
 
 ## 6. CULINARY & PRODUCT VERIFICATION (V5)
 
-**Scope:** {sum(type_counts[t] for t in PRODUCT_TYPES)} dish/product/drink entities.
+**Scope:** {product_type_total} dish/product/drink entities.
 **Method:** origin/OCOP claim extraction, web search sample, source-tier scan.
 
 Confirmed culinary origin errors:
-{md_table(["Entity ID", "Current claim", "Correct sourced fact", "Source"], [[err["entity_id"], err["claim"], err["truth"], f"[source]({err['source']})"] for err in CONFIRMED_ERRORS if err["entity_id"] in by_id and by_id[err["entity_id"]].get("type") in PRODUCT_TYPES])}
+{md_table(["Entity ID", "Current claim", "Correct sourced fact", "Source"], culinary_error_rows)}
 
 OCOP/product risk:
 - Product entities: {type_counts['product']}
-- Claims containing OCOP: {sum(1 for c in claims if "ocop" in c["claim_type"])}
-- Product/dish entities without independent source: {sum(1 for entity in entities if entity.get("type") in PRODUCT_TYPES and not source_status(entity)["independent"])}
+- Claims containing OCOP: {ocop_claim_count}
+- Product/dish entities without independent source: {product_no_indep_source}
 
 ---
 
@@ -1609,7 +1875,7 @@ OCOP/product risk:
 Findings:
 - Phone values found: {len(phone_rows)}
 - Invalid phone formats: {len(invalid_phones)}
-- Contact-type entities with only format-level phone validation: {sum(1 for entity in entities if entity.get("type") in CONTACT_TYPES and phones_for_entity(entity))}
+- Contact-type entities with only format-level phone validation: {contact_format_only_phone}
 
 Because no live Maps/API verification was performed, all phone numbers remain “format-valid only.”
 
@@ -1620,7 +1886,7 @@ Because no live Maps/API verification was performed, all phone numbers remain �
 **Scope:** {len(entities)} entities.
 **Method:** parse every `source` object, classify domain tier, detect self-references/no-URL/LLM labels.
 
-{md_table(["Source domain/status", "Count"], [[k, v] for k, v in source_domain_counts.most_common(20)])}
+{md_table(["Source domain/status", "Count"], source_domain_rows)}
 
 Summary:
 - Entities with Tier 1/2 source URL: {high_trust_sources}/{len(entities)} ({pct(high_trust_sources, len(entities))})
@@ -1634,13 +1900,13 @@ Summary:
 **Scope:** {len(rels)} relationships.
 **Method:** relationship type counts, duplicate triple scan, fanout check, near-distance check.
 
-{md_table(["Relationship type", "Count"], [[k, v] for k, v in rstats["counts"].most_common()])}
+{md_table(["Relationship type", "Count"], rel_counts_rows)}
 
 Findings:
 - `near` + `related_to`: {rstats["counts"]["near"] + rstats["counts"]["related_to"]}/{len(rels)} ({pct(rstats["counts"]["near"] + rstats["counts"]["related_to"], len(rels))}) low-specificity relationships.
 - Duplicate relationship triples: {len(rstats["duplicate_rels"])}
 - `near` relationships >50km: {len(rstats["near_too_far"])}
-- Fanout >120 direct relationships: {len(rstats["fanout"])} ({", ".join(f"{eid}:{cnt}" for eid, cnt in rstats["fanout"][:5])})
+- Fanout >120 direct relationships: {len(rstats["fanout"])} ({fanout_top5_str})
 
 ---
 
@@ -1705,7 +1971,7 @@ The current pipeline can produce public-facing prose from sparse metadata (`name
 
 Overall average: {avg_trust:.1f}/100.
 
-{md_table(["Bucket", "Entities", "%"], [[bucket, trust_buckets[bucket], pct(trust_buckets[bucket], len(entities))] for bucket in ["0-19", "20-39", "40-59", "60-79", "80-100"]])}
+{md_table(["Bucket", "Entities", "%"], trust_bucket_rows)}
 
 High trust (>=90): {len(high_trust)} ({pct(len(high_trust), len(entities))})
 Untrusted (<50): {len(low_trust)} ({pct(len(low_trust), len(entities))})
@@ -1734,7 +2000,7 @@ This pass did not add missing entities because fabricating new POIs is explicitl
 {md_table(["#", "Entity ID", "Error", "Correct value", "Source", "Fix method"], confirmed_rows)}
 
 ### P1 — Suspected hallucinations (review within 1 week)
-{md_table(["Entity ID", "Score", "Reason", "Action"], [[row["entity_id"], row["trust_score"], row["hallucination_flags"][:140], "Human fact-check + source binding"] for row in matrix if row["verdict"] in {"UNTRUSTED", "SUSPECT"}][:40])}
+{md_table(["Entity ID", "Score", "Reason", "Action"], p1_review_rows)}
 
 Round 2 P1 suspects from manual `MISMATCH` review:
 
@@ -1761,7 +2027,7 @@ Full matrix: `{MATRIX_CSV.relative_to(ROOT)}`. Lowest-trust 60 rows:
 ### B. All Factual Claims Inventory
 Full claim inventory: `{CLAIMS_CSV.relative_to(ROOT)}` ({len(claims)} extracted claims). Sample:
 
-{md_table(["entity_id", "claim_type", "verified", "claim_text"], [[c["entity_id"], c["claim_type"], c["verified"], c["claim_text"][:180]] for c in claims[:80]])}
+{md_table(["entity_id", "claim_type", "verified", "claim_text"], claims_sample_rows)}
 
 ### C. Duplicate Candidates
 No exact duplicate names were found by normalized-name scan. Near-duplicates remain a human merge-review task, especially for hotel names and entities sharing exact coordinates.
@@ -1769,7 +2035,7 @@ No exact duplicate names were found by normalized-name scan. Near-duplicates rem
 ### D. Coordinates Anomalies
 Full coordinate clusters are represented in the report above. Top clusters:
 
-{md_table(["Coordinate", "Count", "Example IDs"], [[key, len(ids), ", ".join(ids[:10])] for key, ids in cstats["clusters"][:25]])}
+{md_table(["Coordinate", "Count", "Example IDs"], cluster_top25_rows)}
 
 ### E. Phone Number Audit
 Phone values found: {len(phone_rows)}. Invalid format count: {len(invalid_phones)}.
@@ -1790,7 +2056,7 @@ Prompt sources reviewed:
 - `scripts/generate_missing_descriptions.py`: temperature 0.7 fallback generation.
 
 ### J. Recommended Corrected Values
-{md_table(["entity_id", "field", "current_value", "corrected_value", "source"], [[err["entity_id"], err["field"], err["claim"], err["truth"], f"[source]({err['source']})"] for err in CONFIRMED_ERRORS])}
+{md_table(["entity_id", "field", "current_value", "corrected_value", "source"], recommended_value_rows)}
 
 ### K. External Cross-Reference Log
 Full log: `{WEB_LOG_CSV.relative_to(ROOT)}` ({len(web_log)} searches). Sorted sample:
@@ -1802,17 +2068,17 @@ Manual adjudication of automated `MISMATCH` rows (cumulative across Round 2 and 
 {md_table(["Entity ID", "Manual verdict", "Confidence", "Finding", "Source", "Action"], manual_mismatch_rows)}
 
 ### L. Entity Existence Verification
-Entities with at least one web MATCH/AMBIGUOUS result: {len({row['entity_id'] for row in web_log if row['result'] in {'MATCH', 'AMBIGUOUS'}})}. Entities with NOT_FOUND/ERROR need manual follow-up; see full log.
+Entities with at least one web MATCH/AMBIGUOUS result: {web_match_ambiguous_entities}. Entities with NOT_FOUND/ERROR need manual follow-up; see full log.
 
 ### M. Area Mismatch Report
 Confirmed area/origin mismatches:
 
-{md_table(["entity_id", "DB area", "Real area/source fact", "Action"], [[err["entity_id"], by_id.get(err["entity_id"], {}).get("area", ""), err["truth"], err["fix"]] for err in CONFIRMED_ERRORS])}
+{md_table(["entity_id", "DB area", "Real area/source fact", "Action"], area_mismatch_rows)}
 
 Automated outside-area keyword hits are not automatically false; they are triage candidates listed in section 4.
 
 ### N. Cross-Reference Statistics
-- Total entities web-searched: {len({row['entity_id'] for row in web_log})} / {len(entities)}
+- Total entities web-searched: {web_searched_entities} / {len(entities)}
 - MATCH: {web_counts['MATCH']} ({pct(web_counts['MATCH'], len(web_log))})
 - MISMATCH: {web_counts['MISMATCH']} ({pct(web_counts['MISMATCH'], len(web_log))})
 - AMBIGUOUS: {web_counts['AMBIGUOUS']} ({pct(web_counts['AMBIGUOUS'], len(web_log))})
@@ -1820,17 +2086,28 @@ Automated outside-area keyword hits are not automatically false; they are triage
 - ERROR: {web_counts['ERROR']} ({pct(web_counts['ERROR'], len(web_log))})
 
 Coverage by type:
-{md_table(["Type", "Searches"], [[k, v] for k, v in web_type_counts.most_common()])}
+{md_table(["Type", "Searches"], web_type_rows)}
 
 Coverage by area:
-{md_table(["Area", "Searches"], [[k or "None", v] for k, v in web_area_counts.most_common()])}
+{md_table(["Area", "Searches"], web_area_rows)}
 
 ### Quality Gate Self-Check
 {md_table(["Gate", "Check", "Status"], quality_gate_rows)}
 
 Hard forensic note: this report is intentionally stricter than the existing structural quality report. Structural validity does not equal factual truth.
 """
+    return report
 
+
+def generate_report(data: dict[str, Any], web_log: list[dict[str, Any]]) -> None:
+    ctx = _report_core(data, web_log)
+    tables = _report_tables(ctx)
+    ctx.update(tables)
+    ctx.update(_derived_scalars_a(ctx))
+    ctx.update(_derived_scalars_b(ctx))
+    ctx.update(_derived_tables(ctx))
+    ctx.update(_derived_tables2(ctx, tables))
+    report = _render_report(ctx)
     REPORT_PATH.write_text(report, encoding="utf-8")
 
 

@@ -102,6 +102,63 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
 #  TF-IDF EMBEDDING STORE
 # ══════════════════════════════════════════════════
 
+def _build_docs(entities: dict) -> dict[str, str]:
+    """Ghép text nguồn cho mỗi entity (bỏ type 'place'). Verbatim từ build_index."""
+    docs: dict[str, str] = {}
+    for eid, e in entities.items():
+        if e.get("type") == "place":
+            continue
+        text = f"{e.get('name', '')}. {e.get('summary', '')}"
+        # Add type and tags for richer context
+        if e.get("type"):
+            text += f" {e['type']}"
+        if e.get("tags"):
+            text += " " + " ".join(e["tags"])
+        if e.get("season"):
+            text += f" mùa {e['season']}"
+        docs[eid] = text
+    return docs
+
+
+def _compute_idf(doc_tokens: dict[str, list[str]], N: int) -> dict[str, float]:
+    """Tính IDF trơn log(N/(1+df))+1 cho từng token. Verbatim từ build_index."""
+    doc_freq: Counter = Counter()
+    for tokens in doc_tokens.values():
+        doc_freq.update(set(tokens))
+
+    idf: dict[str, float] = {}
+    for token, freq in doc_freq.items():
+        # Smooth IDF: log(N / (1 + df)) + 1
+        idf[token] = math.log(N / (1 + freq)) + 1
+    return idf
+
+
+def _build_sparse_vectors(
+    doc_tokens: dict[str, list[str]], idf: dict[str, float]
+) -> dict[str, dict[str, float]]:
+    """Dựng vector TF-IDF THƯA (L2-normalized) cho từng entity. Verbatim từ build_index."""
+    vectors: dict[str, dict[str, float]] = {}
+    for eid, tokens in doc_tokens.items():
+        if not tokens:
+            continue
+        tf = Counter(tokens)
+        max_tf = max(tf.values()) if tf else 1
+
+        vec: dict[str, float] = {}
+        for token, count in tf.items():
+            # Augmented TF: 0.5 + 0.5 * (tf / max_tf)
+            normalized_tf = 0.5 + 0.5 * (count / max_tf)
+            vec[token] = normalized_tf * idf.get(token, 1.0)
+
+        # Normalize (L2) — chia cho chuẩn trên các giá trị khác 0
+        norm = math.sqrt(sum(v * v for v in vec.values()))
+        if norm > 0:
+            vec = {t: v / norm for t, v in vec.items()}
+
+        vectors[eid] = vec
+    return vectors
+
+
 class TFIDFStore:
     """
     Local TF-IDF vector store for semantic search.
@@ -175,19 +232,7 @@ class TFIDFStore:
             self._load()
 
             # Prepare documents
-            docs: dict[str, str] = {}
-            for eid, e in entities.items():
-                if e.get("type") == "place":
-                    continue
-                text = f"{e.get('name', '')}. {e.get('summary', '')}"
-                # Add type and tags for richer context
-                if e.get("type"):
-                    text += f" {e['type']}"
-                if e.get("tags"):
-                    text += " " + " ".join(e["tags"])
-                if e.get("season"):
-                    text += f" mùa {e['season']}"
-                docs[eid] = text
+            docs = _build_docs(entities)
 
             if not docs:
                 return {"status": "no_entities", "total": 0}
@@ -204,37 +249,11 @@ class TFIDFStore:
             # Step 2: Compute IDF (Inverse Document Frequency)
             N = len(docs)
             self._doc_count = N
-            doc_freq: Counter = Counter()
-            for tokens in doc_tokens.values():
-                doc_freq.update(set(tokens))
-
-            self._idf = {}
-            for token, freq in doc_freq.items():
-                # Smooth IDF: log(N / (1 + df)) + 1
-                self._idf[token] = math.log(N / (1 + freq)) + 1
+            self._idf = _compute_idf(doc_tokens, N)
 
             # Step 3: Compute SPARSE TF-IDF vectors ({token: weight}, chỉ token khác 0)
-            self._vectors = {}
             self._texts = docs
-
-            for eid, tokens in doc_tokens.items():
-                if not tokens:
-                    continue
-                tf = Counter(tokens)
-                max_tf = max(tf.values()) if tf else 1
-
-                vec: dict[str, float] = {}
-                for token, count in tf.items():
-                    # Augmented TF: 0.5 + 0.5 * (tf / max_tf)
-                    normalized_tf = 0.5 + 0.5 * (count / max_tf)
-                    vec[token] = normalized_tf * self._idf.get(token, 1.0)
-
-                # Normalize (L2) — chia cho chuẩn trên các giá trị khác 0
-                norm = math.sqrt(sum(v * v for v in vec.values()))
-                if norm > 0:
-                    vec = {t: v / norm for t, v in vec.items()}
-
-                self._vectors[eid] = vec
+            self._vectors = _build_sparse_vectors(doc_tokens, self._idf)
 
             self._save()
             return {

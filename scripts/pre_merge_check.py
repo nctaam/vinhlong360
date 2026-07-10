@@ -219,12 +219,50 @@ def check_plan_result(branches):
     return issues
 
 
-def main():
+def _resolve_branches():
+    """Giải nghĩa danh sách branch từ argv, fallback quét 'session-*'."""
     branches = sys.argv[1:] or []
     if not branches:
         out = run("git branch --list 'session-*'")
         if out:
             branches = [b.strip().lstrip("* ") for b in out.splitlines()]
+    return branches
+
+
+def _report_check(title, check_fn, branches):
+    """In kết quả 1 check; trả (số issue thật, số critical) của check đó."""
+    print(f"\n{title}")
+    issues = check_fn(branches)
+    if not issues:
+        print("  OK")
+        return 0, 0
+
+    critical = 0
+    for line in issues:
+        marker = "CRITICAL" if "crash" in line.lower() or "REQUIRED" in line else ""
+        if marker:
+            critical += 1
+        print(f"  {'!!!' if marker else '   '} {line.strip()}")
+    total = len([i for i in issues if i.strip().startswith("[")])
+    return total, critical
+
+
+def _print_verdict(critical, total_issues):
+    """In dòng tổng kết và exit theo mức nghiêm trọng."""
+    print(f"\n{'='*60}")
+    if critical:
+        print(f"CRITICAL: {critical} vấn đề sẽ gây crash prod — PHẢI sửa trước merge!")
+        sys.exit(1)
+    elif total_issues:
+        print(f"WARNING: {total_issues} vấn đề — review trước merge")
+        sys.exit(0)
+    else:
+        print("ALL CLEAR — sẵn sàng merge")
+        sys.exit(0)
+
+
+def main():
+    branches = _resolve_branches()
 
     if not branches:
         print("Usage: python scripts/pre_merge_check.py <branch1> [branch2] ...")
@@ -248,28 +286,11 @@ def main():
     critical = 0
 
     for title, check_fn in checks:
-        print(f"\n{title}")
-        issues = check_fn(branches)
-        if issues:
-            for line in issues:
-                marker = "CRITICAL" if "crash" in line.lower() or "REQUIRED" in line else ""
-                if marker:
-                    critical += 1
-                print(f"  {'!!!' if marker else '   '} {line.strip()}")
-            total_issues += len([i for i in issues if i.strip().startswith("[")])
-        else:
-            print("  OK")
+        t, c = _report_check(title, check_fn, branches)
+        total_issues += t
+        critical += c
 
-    print(f"\n{'='*60}")
-    if critical:
-        print(f"CRITICAL: {critical} vấn đề sẽ gây crash prod — PHẢI sửa trước merge!")
-        sys.exit(1)
-    elif total_issues:
-        print(f"WARNING: {total_issues} vấn đề — review trước merge")
-        sys.exit(0)
-    else:
-        print("ALL CLEAR — sẵn sàng merge")
-        sys.exit(0)
+    _print_verdict(critical, total_issues)
 
 
 if __name__ == "__main__":

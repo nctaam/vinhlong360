@@ -61,6 +61,19 @@ Viết caption hấp dẫn, dùng emoji phù hợp, có hashtag.
 Tone: thân thiện, gần gũi, gợi cảm xúc muốn đi du lịch."""
 
 
+def _extract_ctx_parts(rec: dict) -> list:
+    """Trích các trường nội dung (str dài / dict) từ 1 record research thành list dòng ctx."""
+    parts = []
+    for k, v in rec.items():
+        if k in ("ts", "sources", "n_sources", "entity_id", "entity_name"):
+            continue
+        if isinstance(v, str) and len(v) > 50:
+            parts.append(f"{k}: {v[:800]}")
+        elif isinstance(v, dict):
+            parts.append(f"{k}: {json.dumps(v, ensure_ascii=False)[:600]}")
+    return parts
+
+
 def _load_research_context(entity_id: str) -> str:
     """Load any existing research for an entity from mega_research JSONL files."""
     ctx_parts = []
@@ -69,13 +82,7 @@ def _load_research_context(entity_id: str) -> str:
             continue
         for rec in read_jsonl(jf):
             if rec.get("entity_id") == entity_id or rec.get("id") == entity_id:
-                for k, v in rec.items():
-                    if k in ("ts", "sources", "n_sources", "entity_id", "entity_name"):
-                        continue
-                    if isinstance(v, str) and len(v) > 50:
-                        ctx_parts.append(f"{k}: {v[:800]}")
-                    elif isinstance(v, dict):
-                        ctx_parts.append(f"{k}: {json.dumps(v, ensure_ascii=False)[:600]}")
+                ctx_parts.extend(_extract_ctx_parts(rec))
                 break
     return "\n".join(ctx_parts[:10]) if ctx_parts else ""
 

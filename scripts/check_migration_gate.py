@@ -31,9 +31,7 @@ def migration_files(migrations_dir: Path = MIGRATIONS) -> list[Path]:
     return sorted(migrations_dir.glob("*.sql"))
 
 
-def validate_static(migrations_dir: Path = MIGRATIONS) -> tuple[list[Issue], dict[str, Any]]:
-    issues: list[Issue] = []
-    files = migration_files(migrations_dir)
+def _parse_prefixes(files: list[Path], issues: list[Issue]) -> list[int]:
     prefixes: list[int] = []
     seen: set[int] = set()
     duplicate_prefixes: set[int] = set()
@@ -51,19 +49,25 @@ def validate_static(migrations_dir: Path = MIGRATIONS) -> tuple[list[Issue], dic
 
     if duplicate_prefixes:
         issues.append(Issue("error", "duplicate_prefix", f"duplicate migration prefixes: {sorted(duplicate_prefixes)}"))
+    return prefixes
 
-    if prefixes:
-        expected = list(range(min(prefixes), max(prefixes) + 1))
-        missing = sorted(set(expected) - set(prefixes))
-        if min(prefixes) != 2:
-            issues.append(Issue("error", "unexpected_baseline", f"first migration prefix is {min(prefixes)}, expected 002 after init.sql baseline"))
-        if missing:
-            issues.append(Issue("error", "missing_prefix", f"missing migration prefixes: {missing}"))
-        if max(prefixes) < LATEST_SCHEMA_VERSION:
-            issues.append(Issue("error", "old_latest_migration", f"latest migration is {max(prefixes):03d}, expected at least {LATEST_SCHEMA_VERSION:03d}"))
-        if files and files[-1].name != LATEST_MIGRATION:
-            issues.append(Issue("warning", "latest_marker_mismatch", f"latest migration is {files[-1].name}, update gate marker from {LATEST_MIGRATION}"))
 
+def _check_prefix_sequence(files: list[Path], prefixes: list[int], issues: list[Issue]) -> None:
+    if not prefixes:
+        return
+    expected = list(range(min(prefixes), max(prefixes) + 1))
+    missing = sorted(set(expected) - set(prefixes))
+    if min(prefixes) != 2:
+        issues.append(Issue("error", "unexpected_baseline", f"first migration prefix is {min(prefixes)}, expected 002 after init.sql baseline"))
+    if missing:
+        issues.append(Issue("error", "missing_prefix", f"missing migration prefixes: {missing}"))
+    if max(prefixes) < LATEST_SCHEMA_VERSION:
+        issues.append(Issue("error", "old_latest_migration", f"latest migration is {max(prefixes):03d}, expected at least {LATEST_SCHEMA_VERSION:03d}"))
+    if files and files[-1].name != LATEST_MIGRATION:
+        issues.append(Issue("warning", "latest_marker_mismatch", f"latest migration is {files[-1].name}, update gate marker from {LATEST_MIGRATION}"))
+
+
+def _check_required_contracts(files: list[Path], issues: list[Issue]) -> None:
     all_sql = "\n".join(_read(path) for path in files)
     required_contracts = {
         "saved_entities_kind": ["saved_entities", "kind", "itinerary"],
@@ -79,12 +83,24 @@ def validate_static(migrations_dir: Path = MIGRATIONS) -> tuple[list[Issue], dic
         if missing:
             issues.append(Issue("error", code, f"schema contract missing tokens: {', '.join(missing)}"))
 
+
+def _check_destructive_sql(files: list[Path], issues: list[Issue]) -> None:
     destructive_pattern = re.compile(r"\b(DROP\s+TABLE|TRUNCATE|DELETE\s+FROM)\b", re.IGNORECASE)
     for path in files:
         sql = _read(path)
         for match in destructive_pattern.finditer(sql):
             line_no = sql[:match.start()].count("\n") + 1
             issues.append(Issue("error", "destructive_sql", f"{path.name}:{line_no} contains {match.group(1)}"))
+
+
+def validate_static(migrations_dir: Path = MIGRATIONS) -> tuple[list[Issue], dict[str, Any]]:
+    issues: list[Issue] = []
+    files = migration_files(migrations_dir)
+
+    prefixes = _parse_prefixes(files, issues)
+    _check_prefix_sequence(files, prefixes, issues)
+    _check_required_contracts(files, issues)
+    _check_destructive_sql(files, issues)
 
     stats = {
         "migration_count": len(files),

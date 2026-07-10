@@ -62,23 +62,28 @@ class TinhCuCheck:
     def root(self) -> Path:
         return self._root or repo_root()
 
-    def run(self, files: list[str] | None = None) -> dict:
+    def _data_violations(self, norm: list[str] | None) -> list[dict]:
+        """1) data.json — theo whitelist per-occurrence."""
         violations = []
-        norm = [f.replace("\\", "/") for f in files] if files is not None else None
-        # 1) data.json — theo whitelist per-occurrence
         if norm is None or DATA_REL in norm:
             wl = _load_whitelist(self.root)
             for eid, field in _data_occurrences(self.root):
                 if (eid, field) not in wl:
                     violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
                                        "msg": f"{eid}:{field} — tỉnh cũ ngoài whitelist (§1.6)"})
-        # 2) FE code — mọi match là vi phạm
-        fe_files = (
+        return violations
+
+    def _fe_files(self, norm: list[str] | None) -> list[str]:
+        return (
             iter_text_files(self.root, ["*.vue", "*.ts"], ["web-nuxt"], ["web-nuxt/node_modules"])
             if norm is None
             else [f for f in norm if f.startswith("web-nuxt/") and (f.endswith(".vue") or f.endswith(".ts"))]
         )
-        for rel in fe_files:
+
+    def _fe_violations(self, norm: list[str] | None) -> list[dict]:
+        """2) FE code — mọi match là vi phạm."""
+        violations = []
+        for rel in self._fe_files(norm):
             p = self.root / rel
             if not p.exists():
                 continue
@@ -86,6 +91,11 @@ class TinhCuCheck:
                 if PAT.search(line):
                     violations.append({"file": rel, "line": i, "rule": self.rule,
                                        "msg": "tỉnh cũ trong FE code — dùng khung tỉnh-mới (§1.6)"})
+        return violations
+
+    def run(self, files: list[str] | None = None) -> dict:
+        norm = [f.replace("\\", "/") for f in files] if files is not None else None
+        violations = self._data_violations(norm) + self._fe_violations(norm)
         return {"check": self.name, "level": self.level, "rule": self.rule,
                 "count": len(violations), "violations": violations}
 

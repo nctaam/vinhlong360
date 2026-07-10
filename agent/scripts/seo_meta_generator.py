@@ -250,6 +250,17 @@ CHỈ trả về JSON hợp lệ."""
     return None
 
 
+def _run_phase(fn, items, max_workers):
+    collected = []
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        futs = {pool.submit(fn, item): item for item in items}
+        for f in as_completed(futs):
+            r = f.result()
+            if r:
+                collected.append(r)
+    return collected
+
+
 def main():
     tprint("=== SEO Meta Content Generator ===")
     tprint(f"Model: {LLM_MODEL}")
@@ -257,28 +268,13 @@ def main():
     results = {"pages": [], "regions": [], "categories": [], "generated_at": RUN_TS}
 
     tprint(f"\n--- Phase 1: {len(PAGES)} Page Routes ---")
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        futs = {pool.submit(generate_page_seo, p): p for p in PAGES}
-        for f in as_completed(futs):
-            r = f.result()
-            if r:
-                results["pages"].append(r)
+    results["pages"] = _run_phase(generate_page_seo, PAGES, 4)
 
     tprint(f"\n--- Phase 2: {len(REGIONS)} Region Landing Pages ---")
-    with ThreadPoolExecutor(max_workers=3) as pool:
-        futs = {pool.submit(generate_region_seo, r): r for r in REGIONS}
-        for f in as_completed(futs):
-            r = f.result()
-            if r:
-                results["regions"].append(r)
+    results["regions"] = _run_phase(generate_region_seo, REGIONS, 3)
 
     tprint(f"\n--- Phase 3: {len(CATEGORIES)} Category Pages ---")
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        futs = {pool.submit(generate_category_seo, c): c for c in CATEGORIES}
-        for f in as_completed(futs):
-            r = f.result()
-            if r:
-                results["categories"].append(r)
+    results["categories"] = _run_phase(generate_category_seo, CATEGORIES, 4)
 
     out = OUTPUT_DIR / f"seo_meta_{RUN_TS}.json"
     with open(out, "w", encoding="utf-8") as f:

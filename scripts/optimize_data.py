@@ -147,60 +147,98 @@ def fix_timestamps(db, apply=False):
 # Module 3: Phone normalization
 # ──────────────────────────────────────────────
 
+def _phone_already_valid(phone, cleaned, tollfree_clean):
+    if VN_PHONE_RE.fullmatch(cleaned) and cleaned == phone:
+        return True
+    if re.fullmatch(r'1[89]00\d{4,6}', tollfree_clean) and tollfree_clean == phone:
+        return True
+    return False
+
+
+def _build_phone_issue(e, phone, cleaned, tollfree_clean):
+    if VN_PHONE_RE.fullmatch(cleaned):
+        return {
+            "id": e["id"], "type": e.get("type", ""),
+            "original": phone, "primary": cleaned,
+            "is_note": False, "all_numbers": [cleaned],
+        }
+    if re.fullmatch(r'1[89]00\d{4,6}', tollfree_clean):
+        return {
+            "id": e["id"], "type": e.get("type", ""),
+            "original": phone, "primary": tollfree_clean,
+            "is_note": False, "all_numbers": [tollfree_clean],
+        }
+
+    NOT_A_PHONE = ["chưa", "không", "chưa xác", "không tìm",
+                   "đang cập nhật", "liên hệ", "xxxx", "xxx "]
+    is_note = any(kw in phone.lower() for kw in NOT_A_PHONE)
+
+    nums = [m.group() for m in VN_PHONE_RE.finditer(cleaned)]
+    tollfree = [m.group().replace(" ", "")
+                for m in VN_TOLLFREE_RE.finditer(phone)]
+
+    if is_note:
+        primary = ""
+    else:
+        primary = nums[0] if nums else (tollfree[0] if tollfree else None)
+
+    return {
+        "id": e["id"],
+        "type": e.get("type", ""),
+        "original": phone,
+        "primary": primary,
+        "is_note": is_note,
+        "all_numbers": nums + tollfree,
+    }
+
+
+def _classify_phone(e):
+    attrs = e.get("attributes") or {}
+    phone = attrs.get("phone", "")
+    if not phone:
+        return None
+
+    cleaned = PHONE_CLEAN_RE.sub("", phone)
+    tollfree_clean = re.sub(r'\s', '', phone.split("(")[0].split("|")[0].strip())
+
+    if _phone_already_valid(phone, cleaned, tollfree_clean):
+        return None
+
+    return _build_phone_issue(e, phone, cleaned, tollfree_clean)
+
+
+def _apply_phone_fixes(db, fixable):
+    fixed = 0
+    for issue in fixable:
+        e = db.get_entity(issue["id"])
+        if not e:
+            continue
+        attrs = dict(e.get("attributes") or {})
+        old_phone = attrs.get("phone", "")
+        attrs["phone"] = issue["primary"]
+        if len(issue["all_numbers"]) > 1 or old_phone != issue["primary"]:
+            attrs["phone_note"] = old_phone
+        e["attributes"] = attrs
+        db.upsert_entity(e)
+        fixed += 1
+    return fixed
+
+
+def _print_phone_samples(issues):
+    print("\n  DRY-RUN samples:")
+    for i in issues[:8]:
+        arrow = f" -> {i['primary']}" if i["primary"] else " -> (needs manual)"
+        print(f"    {i['id'][:45]:45s} {i['original'][:50]}{arrow}")
+
+
 def fix_phones(db, apply=False):
     entities = db.all_entities()
     issues = []
 
     for e in entities:
-        attrs = e.get("attributes") or {}
-        phone = attrs.get("phone", "")
-        if not phone:
-            continue
-
-        cleaned = PHONE_CLEAN_RE.sub("", phone)
-
-        if VN_PHONE_RE.fullmatch(cleaned) and cleaned == phone:
-            continue
-        tollfree_clean = re.sub(r'\s', '', phone.split("(")[0].split("|")[0].strip())
-        if re.fullmatch(r'1[89]00\d{4,6}', tollfree_clean) and tollfree_clean == phone:
-            continue
-
-        if VN_PHONE_RE.fullmatch(cleaned):
-            issues.append({
-                "id": e["id"], "type": e.get("type", ""),
-                "original": phone, "primary": cleaned,
-                "is_note": False, "all_numbers": [cleaned],
-            })
-            continue
-        if re.fullmatch(r'1[89]00\d{4,6}', tollfree_clean):
-            issues.append({
-                "id": e["id"], "type": e.get("type", ""),
-                "original": phone, "primary": tollfree_clean,
-                "is_note": False, "all_numbers": [tollfree_clean],
-            })
-            continue
-
-        NOT_A_PHONE = ["chưa", "không", "chưa xác", "không tìm",
-                       "đang cập nhật", "liên hệ", "xxxx", "xxx "]
-        is_note = any(kw in phone.lower() for kw in NOT_A_PHONE)
-
-        nums = [m.group() for m in VN_PHONE_RE.finditer(cleaned)]
-        tollfree = [m.group().replace(" ", "")
-                    for m in VN_TOLLFREE_RE.finditer(phone)]
-
-        if is_note:
-            primary = ""
-        else:
-            primary = nums[0] if nums else (tollfree[0] if tollfree else None)
-
-        issues.append({
-            "id": e["id"],
-            "type": e.get("type", ""),
-            "original": phone,
-            "primary": primary,
-            "is_note": is_note,
-            "all_numbers": nums + tollfree,
-        })
+        issue = _classify_phone(e)
+        if issue is not None:
+            issues.append(issue)
 
     print(f"\n{'='*50}")
     print(f"[phones] Non-standard phone formats: {len(issues)}")
@@ -219,25 +257,10 @@ def fix_phones(db, apply=False):
     print(f"  Needs manual review: {len(unfixable)}")
 
     if apply and fixable:
-        fixed = 0
-        for issue in fixable:
-            e = db.get_entity(issue["id"])
-            if not e:
-                continue
-            attrs = dict(e.get("attributes") or {})
-            old_phone = attrs.get("phone", "")
-            attrs["phone"] = issue["primary"]
-            if len(issue["all_numbers"]) > 1 or old_phone != issue["primary"]:
-                attrs["phone_note"] = old_phone
-            e["attributes"] = attrs
-            db.upsert_entity(e)
-            fixed += 1
+        fixed = _apply_phone_fixes(db, fixable)
         print(f"  APPLIED: normalized {fixed} phone numbers")
     else:
-        print("\n  DRY-RUN samples:")
-        for i in issues[:8]:
-            arrow = f" -> {i['primary']}" if i["primary"] else " -> (needs manual)"
-            print(f"    {i['id'][:45]:45s} {i['original'][:50]}{arrow}")
+        _print_phone_samples(issues)
 
     if unfixable:
         print("\n  Manual review needed:")
@@ -293,27 +316,19 @@ def audit_coord_clusters(db, apply=False):
 # Module 5: Summary quality
 # ──────────────────────────────────────────────
 
-def audit_summaries(db, apply=False):
-    entities = [e for e in db.all_entities() if e.get("type") != "place"]
-    issues = {"short": [], "truncated": [], "long": []}
+def _classify_summary(e, issues):
+    summary = (e.get("summary") or "").strip()
+    if not summary:
+        return
+    if len(summary) < 50:
+        issues["short"].append(e)
+    elif summary.endswith("...") or summary.endswith("…"):
+        issues["truncated"].append(e)
+    elif len(summary) > 500:
+        issues["long"].append(e)
 
-    for e in entities:
-        summary = (e.get("summary") or "").strip()
-        if not summary:
-            continue
-        if len(summary) < 50:
-            issues["short"].append(e)
-        elif summary.endswith("...") or summary.endswith("…"):
-            issues["truncated"].append(e)
-        elif len(summary) > 500:
-            issues["long"].append(e)
 
-    print(f"\n{'='*50}")
-    print(f"[summaries] {len(entities)} content entities")
-    print(f"  Short (<50 chars): {len(issues['short'])}")
-    print(f"  Truncated (ends ...): {len(issues['truncated'])}")
-    print(f"  Long (>500 chars): {len(issues['long'])}")
-
+def _print_summary_issues(issues):
     if issues["short"]:
         print("\n  Short summaries:")
         for e in issues["short"][:5]:
@@ -326,12 +341,53 @@ def audit_summaries(db, apply=False):
             s = (e.get("summary") or "")[-60:]
             print(f"    {e['id']:45s} ...{s}")
 
+
+def audit_summaries(db, apply=False):
+    entities = [e for e in db.all_entities() if e.get("type") != "place"]
+    issues = {"short": [], "truncated": [], "long": []}
+
+    for e in entities:
+        _classify_summary(e, issues)
+
+    print(f"\n{'='*50}")
+    print(f"[summaries] {len(entities)} content entities")
+    print(f"  Short (<50 chars): {len(issues['short'])}")
+    print(f"  Truncated (ends ...): {len(issues['truncated'])}")
+    print(f"  Long (>500 chars): {len(issues['long'])}")
+
+    _print_summary_issues(issues)
+
     return sum(len(v) for v in issues.values())
 
 
 # ──────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────
+
+def _clean_truncated_summary(s):
+    s = s.rstrip(".…").rstrip(".")
+    while s.endswith("..."):
+        s = s[:-3]
+    s = s.rstrip()
+    if s and s[-1] not in ".!?。":
+        last_period = max(s.rfind(". "), s.rfind("! "), s.rfind("? "))
+        if last_period > len(s) * 0.6:
+            s = s[:last_period + 1]
+        else:
+            s = s + "."
+    return s
+
+
+def _apply_truncated_fixes(db, truncated):
+    fixed = 0
+    for e in truncated:
+        s = (e.get("summary") or "").strip()
+        s = _clean_truncated_summary(s)
+        e["summary"] = s
+        db.upsert_entity(e)
+        fixed += 1
+    return fixed
+
 
 def fix_truncated_summaries(db, apply=False):
     entities = [e for e in db.all_entities() if e.get("type") != "place"]
@@ -349,22 +405,7 @@ def fix_truncated_summaries(db, apply=False):
         return 0
 
     if apply:
-        fixed = 0
-        for e in truncated:
-            s = (e.get("summary") or "").strip()
-            s = s.rstrip(".…").rstrip(".")
-            while s.endswith("..."):
-                s = s[:-3]
-            s = s.rstrip()
-            if s and s[-1] not in ".!?。":
-                last_period = max(s.rfind(". "), s.rfind("! "), s.rfind("? "))
-                if last_period > len(s) * 0.6:
-                    s = s[:last_period + 1]
-                else:
-                    s = s + "."
-            e["summary"] = s
-            db.upsert_entity(e)
-            fixed += 1
+        fixed = _apply_truncated_fixes(db, truncated)
         print(f"  APPLIED: cleaned {fixed} summaries")
     else:
         print("  DRY-RUN samples:")
@@ -373,6 +414,30 @@ def fix_truncated_summaries(db, apply=False):
             print(f"    {e['id']:40s} ...{s[-50:]}")
 
     return len(truncated)
+
+
+def _match_place(e, places, dist_km, max_dist):
+    c = e.get("coordinates")
+    if not c or not isinstance(c, (list, tuple)) or len(c) != 2:
+        return None
+    if _is_city_center(c):
+        return None
+    best = min(places, key=lambda p: dist_km(c, p["coordinates"]))
+    d = dist_km(c, best["coordinates"])
+    if d <= max_dist:
+        return (e, best, d)
+    return None
+
+
+def _apply_place_ids(db, assignable):
+    fixed = 0
+    for e, place, d in assignable:
+        e["placeId"] = place["id"]
+        if not e.get("area") and place.get("area"):
+            e["area"] = place["area"]
+        db.upsert_entity(e)
+        fixed += 1
+    return fixed
 
 
 def fix_place_ids(db, apply=False):
@@ -388,15 +453,9 @@ def fix_place_ids(db, apply=False):
     MAX_DIST = 5.0
     assignable = []
     for e in no_place:
-        c = e.get("coordinates")
-        if not c or not isinstance(c, (list, tuple)) or len(c) != 2:
-            continue
-        if _is_city_center(c):
-            continue
-        best = min(places, key=lambda p: dist_km(c, p["coordinates"]))
-        d = dist_km(c, best["coordinates"])
-        if d <= MAX_DIST:
-            assignable.append((e, best, d))
+        match = _match_place(e, places, dist_km, MAX_DIST)
+        if match is not None:
+            assignable.append(match)
 
     print(f"\n{'='*50}")
     print(f"[place-ids] Entities without placeId: {len(no_place)}")
@@ -407,13 +466,7 @@ def fix_place_ids(db, apply=False):
         return 0
 
     if apply:
-        fixed = 0
-        for e, place, d in assignable:
-            e["placeId"] = place["id"]
-            if not e.get("area") and place.get("area"):
-                e["area"] = place["area"]
-            db.upsert_entity(e)
-            fixed += 1
+        fixed = _apply_place_ids(db, assignable)
         print(f"  APPLIED: assigned {fixed} placeIds")
     else:
         print("\n  DRY-RUN samples:")

@@ -76,7 +76,42 @@ def _client():
     return OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
 
-def _build_prompt(entity):
+def _attr_context_parts(attrs):
+    parts = []
+    if attrs.get("address"):
+        parts.append(f"Địa chỉ: {attrs['address']}")
+    if attrs.get("hours"):
+        parts.append(f"Giờ mở cửa: {attrs['hours']}")
+    if attrs.get("price") or attrs.get("fee"):
+        parts.append(f"Giá/phí: {attrs.get('price') or attrs.get('fee')}")
+    if attrs.get("best_time"):
+        parts.append(f"Thời điểm tốt nhất: {attrs['best_time']}")
+    if attrs.get("ocop"):
+        parts.append(f"Chứng nhận OCOP: {attrs['ocop']}")
+    if attrs.get("key_facts"):
+        parts.append(f"Thông tin nổi bật: {attrs['key_facts']}")
+    if attrs.get("transport"):
+        parts.append(f"Di chuyển: {attrs['transport']}")
+    if attrs.get("amenities"):
+        am = attrs["amenities"]
+        if isinstance(am, list):
+            am = ", ".join(am)
+        parts.append(f"Tiện ích: {am}")
+    return parts
+
+
+def _season_context_parts(season):
+    parts = []
+    if season.get("months"):
+        months = ", ".join([f"T{m}" for m in season["months"]])
+        parts.append(f"Mùa vụ: {months}")
+        if season.get("peak"):
+            peak = ", ".join([f"T{m}" for m in season["peak"]])
+            parts.append(f"Rộ nhất: {peak}")
+    return parts
+
+
+def _build_context(entity):
     etype = TYPE_LABELS.get(entity["type"], entity["type"])
     area = AREA_NAMES.get(entity.get("area", ""), "miền Tây")
     summary = entity.get("summary", "") or ""
@@ -86,70 +121,55 @@ def _build_prompt(entity):
     context_parts = [f"Tên: {entity['name']}", f"Loại: {etype}", f"Vùng: {area}"]
     if summary:
         context_parts.append(f"Tóm tắt: {summary}")
-    if attrs.get("address"):
-        context_parts.append(f"Địa chỉ: {attrs['address']}")
-    if attrs.get("hours"):
-        context_parts.append(f"Giờ mở cửa: {attrs['hours']}")
-    if attrs.get("price") or attrs.get("fee"):
-        context_parts.append(f"Giá/phí: {attrs.get('price') or attrs.get('fee')}")
-    if attrs.get("best_time"):
-        context_parts.append(f"Thời điểm tốt nhất: {attrs['best_time']}")
-    if attrs.get("ocop"):
-        context_parts.append(f"Chứng nhận OCOP: {attrs['ocop']}")
-    if attrs.get("key_facts"):
-        context_parts.append(f"Thông tin nổi bật: {attrs['key_facts']}")
-    if attrs.get("transport"):
-        context_parts.append(f"Di chuyển: {attrs['transport']}")
-    if attrs.get("amenities"):
-        am = attrs["amenities"]
-        if isinstance(am, list):
-            am = ", ".join(am)
-        context_parts.append(f"Tiện ích: {am}")
-    if season.get("months"):
-        months = ", ".join([f"T{m}" for m in season["months"]])
-        context_parts.append(f"Mùa vụ: {months}")
-        if season.get("peak"):
-            peak = ", ".join([f"T{m}" for m in season["peak"]])
-            context_parts.append(f"Rộ nhất: {peak}")
+    context_parts.extend(_attr_context_parts(attrs))
+    context_parts.extend(_season_context_parts(season))
 
-    context = "\n".join(context_parts)
+    return "\n".join(context_parts)
 
-    type_guide = ""
+
+def _type_guide(entity):
     if entity["type"] in ("dish", "drink"):
-        type_guide = """- Mô tả hương vị, nguyên liệu chính, cách chế biến đặc trưng
+        return """- Mô tả hương vị, nguyên liệu chính, cách chế biến đặc trưng
 - Nêu cách thưởng thức đúng điệu (ăn kèm gì, uống gì)
 - Lịch sử hoặc giai thoại gắn với món ăn (nếu có)
 - Nơi nào bán ngon nhất, giá cả tham khảo"""
     elif entity["type"] in ("attraction", "experience", "nature"):
-        type_guide = """- Cảnh quan, không khí, những gì du khách sẽ thấy khi đến
+        return """- Cảnh quan, không khí, những gì du khách sẽ thấy khi đến
 - Hoạt động có thể tham gia (chèo thuyền, hái trái cây, chụp ảnh...)
 - Thời điểm đẹp nhất trong ngày/năm để ghé thăm
 - Mẹo hữu ích cho lần đầu đến"""
     elif entity["type"] == "history":
-        type_guide = """- Niên đại, bối cảnh lịch sử ra đời
+        return """- Niên đại, bối cảnh lịch sử ra đời
 - Ý nghĩa văn hóa, tâm linh hoặc lịch sử
 - Kiến trúc, hiện vật đáng chú ý
 - Lễ hội hoặc sự kiện liên quan"""
     elif entity["type"] == "craft_village":
-        type_guide = """- Lịch sử hình thành làng nghề, bao nhiêu đời truyền thừa
+        return """- Lịch sử hình thành làng nghề, bao nhiêu đời truyền thừa
 - Quy trình sản xuất thủ công đặc trưng
 - Sản phẩm nổi bật, có thể mua làm quà
 - Trải nghiệm du khách: xem nghệ nhân làm việc, tự tay thử"""
     elif entity["type"] == "product":
-        type_guide = """- Đặc điểm sản phẩm, chất lượng, hương vị (nếu thực phẩm)
+        return """- Đặc điểm sản phẩm, chất lượng, hương vị (nếu thực phẩm)
 - Quy trình sản xuất, nguồn nguyên liệu
 - Chứng nhận chất lượng (OCOP, VietGAP...)
 - Cách chọn mua, bảo quản, sử dụng"""
     elif entity["type"] == "accommodation":
-        type_guide = """- Phong cách kiến trúc, không gian nghỉ dưỡng
+        return """- Phong cách kiến trúc, không gian nghỉ dưỡng
 - Tiện nghi nổi bật, loại phòng
 - Trải nghiệm đặc biệt (view sông, vườn cây, ẩm thực tại chỗ)
 - Phù hợp với đối tượng nào (gia đình, couple, nhóm bạn)"""
     elif entity["type"] == "event":
-        type_guide = """- Thời gian, địa điểm tổ chức
+        return """- Thời gian, địa điểm tổ chức
 - Hoạt động chính, chương trình nổi bật
 - Ý nghĩa văn hóa, truyền thống
 - Lưu ý khi tham dự"""
+    return ""
+
+
+def _build_prompt(entity):
+    area = AREA_NAMES.get(entity.get("area", ""), "miền Tây")
+    context = _build_context(entity)
+    type_guide = _type_guide(entity)
 
     return f"""Viết bài giới thiệu chi tiết bằng tiếng Việt cho nội dung sau. Bài viết dành cho website du lịch cộng đồng vùng {area}.
 

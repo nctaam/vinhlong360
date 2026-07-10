@@ -249,6 +249,60 @@ def generate_welcome_message(user_preferences: dict = None) -> dict:
     }
 
 
+def _followup_nearby(entities_mentioned: list[str]) -> list[str]:
+    """Block 1 — gợi ý khám phá gần entity vừa nhắc. Verbatim từ get_followup_suggestions."""
+    out = []
+    if entities_mentioned:
+        last_entity = entities_mentioned[-1]
+        e = knowledge.get_entity(last_entity)
+        if e:
+            out.append(f"Gần {e['name']} có gì thú vị?")
+    return out
+
+
+def _followup_cross_area(area: str) -> list[str]:
+    """Block 2 — gợi ý khu vực khác. Verbatim từ get_followup_suggestions."""
+    out = []
+    all_areas = {"vinh-long", "ben-tre", "tra-vinh"}
+    if area:
+        other_areas = all_areas - {area}
+        area_names = {"vinh-long": "Vĩnh Long", "ben-tre": "Bến Tre", "tra-vinh": "Trà Vinh"}
+        for other in list(other_areas)[:1]:
+            out.append(f"Còn ở {area_names.get(other, other)} thì sao?")
+    return out
+
+
+def _followup_topic_deepening(query: str) -> list[str]:
+    """Block 3 — đào sâu theo chủ đề. Verbatim từ get_followup_suggestions."""
+    out = []
+    q_lower = query.lower()
+    if "ẩm thực" in q_lower or "ăn" in q_lower:
+        out.append("Quán ăn nào được đánh giá cao nhất?")
+    elif "lịch sử" in q_lower:
+        out.append("Nhân vật lịch sử nổi tiếng nhất vùng?")
+    elif "chùa" in q_lower or "khmer" in q_lower:
+        out.append("Lễ hội Khmer sắp tới là khi nào?")
+    elif "lịch trình" in q_lower:
+        out.append("Nên đặt homestay ở đâu?")
+    return out
+
+
+def _followup_pad_defaults(suggestions: list[str]) -> None:
+    """Block 4 — bảo đảm đủ 3 gợi ý (mutate in-place). Verbatim từ get_followup_suggestions."""
+    defaults = [
+        f"Tháng {datetime.now(_VN_TZ).month} nên trải nghiệm gì?",
+        "So sánh 3 khu vực",
+        "Sản phẩm OCOP nổi bật",
+    ]
+    while len(suggestions) < 3:
+        for d in defaults:
+            if d not in suggestions:
+                suggestions.append(d)
+                break
+        else:
+            break
+
+
 def get_followup_suggestions(
     query: str,
     answer_topics: list[str],
@@ -265,43 +319,15 @@ def get_followup_suggestions(
     suggestions = []
 
     # 1. Nearby exploration
-    if entities_mentioned:
-        last_entity = entities_mentioned[-1]
-        e = knowledge.get_entity(last_entity)
-        if e:
-            suggestions.append(f"Gần {e['name']} có gì thú vị?")
+    suggestions.extend(_followup_nearby(entities_mentioned))
 
     # 2. Cross-area suggestion
-    all_areas = {"vinh-long", "ben-tre", "tra-vinh"}
-    if area:
-        other_areas = all_areas - {area}
-        area_names = {"vinh-long": "Vĩnh Long", "ben-tre": "Bến Tre", "tra-vinh": "Trà Vinh"}
-        for other in list(other_areas)[:1]:
-            suggestions.append(f"Còn ở {area_names.get(other, other)} thì sao?")
+    suggestions.extend(_followup_cross_area(area))
 
     # 3. Topic deepening
-    q_lower = query.lower()
-    if "ẩm thực" in q_lower or "ăn" in q_lower:
-        suggestions.append("Quán ăn nào được đánh giá cao nhất?")
-    elif "lịch sử" in q_lower:
-        suggestions.append("Nhân vật lịch sử nổi tiếng nhất vùng?")
-    elif "chùa" in q_lower or "khmer" in q_lower:
-        suggestions.append("Lễ hội Khmer sắp tới là khi nào?")
-    elif "lịch trình" in q_lower:
-        suggestions.append("Nên đặt homestay ở đâu?")
+    suggestions.extend(_followup_topic_deepening(query))
 
     # Ensure 3 suggestions
-    defaults = [
-        f"Tháng {datetime.now(_VN_TZ).month} nên trải nghiệm gì?",
-        "So sánh 3 khu vực",
-        "Sản phẩm OCOP nổi bật",
-    ]
-    while len(suggestions) < 3:
-        for d in defaults:
-            if d not in suggestions:
-                suggestions.append(d)
-                break
-        else:
-            break
+    _followup_pad_defaults(suggestions)
 
     return suggestions[:3]

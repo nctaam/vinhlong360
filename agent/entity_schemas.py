@@ -301,6 +301,32 @@ def all_schemas() -> dict:
     }
 
 
+def _coerce_number(value):
+    """Coerce a raw value to int/float for the 'number' widget. May raise
+    ValueError/TypeError (caught by the caller)."""
+    if isinstance(value, bool):
+        return value, False
+    if isinstance(value, (int, float)):
+        return value, True
+    s = str(value).strip().replace(",", ".")
+    f = float(s)
+    return (int(f) if f.is_integer() else f), True
+
+
+def _coerce_bool(value):
+    """Coerce a raw value to bool for the 'bool' widget."""
+    if isinstance(value, bool):
+        return value, True
+    return str(value).strip().lower() in ("1", "true", "yes", "có", "co", "on"), True
+
+
+def _coerce_tags(value):
+    """Coerce a raw value to a list for the 'tags'/'multiselect' widgets."""
+    if isinstance(value, list):
+        return value, True
+    return [p.strip() for p in str(value).split(",") if p.strip()], True
+
+
 def _coerce(value, widget):
     """Best-effort coerce a raw value to the widget's expected python type.
     Returns (coerced_value, ok). Never raises."""
@@ -308,21 +334,11 @@ def _coerce(value, widget):
         return value, True
     try:
         if widget == "number":
-            if isinstance(value, bool):
-                return value, False
-            if isinstance(value, (int, float)):
-                return value, True
-            s = str(value).strip().replace(",", ".")
-            f = float(s)
-            return (int(f) if f.is_integer() else f), True
+            return _coerce_number(value)
         if widget == "bool":
-            if isinstance(value, bool):
-                return value, True
-            return str(value).strip().lower() in ("1", "true", "yes", "có", "co", "on"), True
+            return _coerce_bool(value)
         if widget in ("tags", "multiselect"):
-            if isinstance(value, list):
-                return value, True
-            return [p.strip() for p in str(value).split(",") if p.strip()], True
+            return _coerce_tags(value)
         return value, True
     except (ValueError, TypeError):
         return value, False
@@ -341,20 +357,32 @@ def validate_attributes(entity_type: str, attrs: dict | None) -> tuple[dict, lis
     if not fmap:
         return attrs, warnings
     for key, fdef in fmap.items():
-        if key not in attrs:
-            if fdef.get("required"):
-                warnings.append(f"Thiếu trường bắt buộc: {fdef['label']} ({key})")
-            continue
-        val = attrs[key]
-        coerced, ok = _coerce(val, fdef["widget"])
-        if not ok:
-            warnings.append(f"Giá trị không hợp lệ cho {fdef['label']} ({key}): {val!r}")
-            continue
-        attrs[key] = coerced
-        if fdef.get("required") and (coerced is None or coerced == ""):
-            warnings.append(f"Trường bắt buộc để trống: {fdef['label']} ({key})")
-        opts = fdef.get("options")
-        if opts and fdef["widget"] == "select" and coerced not in ("", None):
-            if str(coerced) not in [str(o) for o in opts]:
-                warnings.append(f"{fdef['label']} ({key}) = {coerced!r} không thuộc danh sách cho phép")
+        _validate_field(key, fdef, attrs, warnings)
     return attrs, warnings
+
+
+def _validate_field(key, fdef, attrs, warnings):
+    """Validate/coerce a single field IN PLACE: mutates attrs[key] to its coerced
+    value and appends any warnings. Extracted verbatim from validate_attributes'
+    loop body — same checks, same side-effect order."""
+    if key not in attrs:
+        if fdef.get("required"):
+            warnings.append(f"Thiếu trường bắt buộc: {fdef['label']} ({key})")
+        return
+    val = attrs[key]
+    coerced, ok = _coerce(val, fdef["widget"])
+    if not ok:
+        warnings.append(f"Giá trị không hợp lệ cho {fdef['label']} ({key}): {val!r}")
+        return
+    attrs[key] = coerced
+    if fdef.get("required") and (coerced is None or coerced == ""):
+        warnings.append(f"Trường bắt buộc để trống: {fdef['label']} ({key})")
+    _check_select_membership(key, fdef, coerced, warnings)
+
+
+def _check_select_membership(key, fdef, coerced, warnings):
+    """Warn if a 'select' field's coerced value is outside its allowed options."""
+    opts = fdef.get("options")
+    if opts and fdef["widget"] == "select" and coerced not in ("", None):
+        if str(coerced) not in [str(o) for o in opts]:
+            warnings.append(f"{fdef['label']} ({key}) = {coerced!r} không thuộc danh sách cho phép")

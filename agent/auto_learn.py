@@ -462,6 +462,34 @@ def is_near_duplicate(name: str, known_names: set) -> str | None:
     return None
 
 
+def _reject_too_generic(name_lower: str) -> tuple[bool, str] | None:
+    """Check 3: tên quá chung chung. Trả reject-tuple nếu loại, None nếu qua."""
+    if name_lower in TOO_GENERIC:
+        return False, "quá chung"
+    for g in TOO_GENERIC:
+        if name_lower == g or (len(name_lower) < 15 and name_lower.startswith(g)):
+            return False, f"quá chung ({g})"
+    return None
+
+
+def _reject_outside_vl(name_lower: str, location: str) -> tuple[bool, str] | None:
+    """Check 4: ngoài Vĩnh Long. Trả reject-tuple nếu loại, None nếu qua."""
+    for kw in OUTSIDE_KEYWORDS:
+        if kw in location and "vĩnh long" not in location and "bến tre" not in location and "trà vinh" not in location:
+            return False, f"ngoài VL ({kw})"
+        if kw in name_lower and not any(vl in name_lower for vl in ["vĩnh long", "bến tre", "trà vinh"]):
+            return False, f"ngoài VL ({kw})"
+    return None
+
+
+def _reject_legal(name_lower: str) -> tuple[bool, str] | None:
+    """Check 5: văn bản pháp luật / thương mại. Trả reject-tuple nếu loại, None nếu qua."""
+    for pat in LEGAL_PATTERNS:
+        if re.search(pat, name_lower):
+            return False, f"văn bản/thương mại ({pat.strip()})"
+    return None
+
+
 def filter_entity(raw: dict, known_names: set) -> tuple[bool, str]:
     """
     Kiểm tra 1 entity có nên giữ không.
@@ -480,23 +508,19 @@ def filter_entity(raw: dict, known_names: set) -> tuple[bool, str]:
         return False, "tên tiếng Anh"
 
     # 3. Quá chung chung
-    if name_lower in TOO_GENERIC:
-        return False, "quá chung"
-    for g in TOO_GENERIC:
-        if name_lower == g or (len(name_lower) < 15 and name_lower.startswith(g)):
-            return False, f"quá chung ({g})"
+    generic = _reject_too_generic(name_lower)
+    if generic:
+        return generic
 
     # 4. Ngoài Vĩnh Long
-    for kw in OUTSIDE_KEYWORDS:
-        if kw in location and "vĩnh long" not in location and "bến tre" not in location and "trà vinh" not in location:
-            return False, f"ngoài VL ({kw})"
-        if kw in name_lower and not any(vl in name_lower for vl in ["vĩnh long", "bến tre", "trà vinh"]):
-            return False, f"ngoài VL ({kw})"
+    outside = _reject_outside_vl(name_lower, location)
+    if outside:
+        return outside
 
     # 5. Văn bản pháp luật / thương mại
-    for pat in LEGAL_PATTERNS:
-        if re.search(pat, name_lower):
-            return False, f"văn bản/thương mại ({pat.strip()})"
+    legal = _reject_legal(name_lower)
+    if legal:
+        return legal
 
     # 6. Trùng gần
     dup = is_near_duplicate(name, known_names)
@@ -517,6 +541,50 @@ def filter_entity(raw: dict, known_names: set) -> tuple[bool, str]:
 
 # ── Main learn loop ──
 
+def _accept_raw(raw: dict, url: str, known: set, new_entities: list[dict]) -> None:
+    """Xử lý 1 raw item: lọc nhiễu → tạo entity → append vào new_entities (in-place).
+
+    Di chuyển verbatim thân vòng `for raw in raw_items` của learn_from_query.
+    """
+    name = raw.get("name", "").strip()
+    if not name or len(name) < 3:
+        return
+    if name.lower() in known:
+        return
+
+    # ── Noise filter ──
+    keep, reason = filter_entity(raw, known)
+    if not keep:
+        logger.debug("Filtered [%s] %s", reason, name)
+        return
+
+    entity = to_entity(raw, url)
+    if entity["id"] and entity["id"] not in {e["id"] for e in new_entities}:
+        new_entities.append(entity)
+        known.add(name.lower())
+        logger.info("Found [%s] %s", entity['type'], name)
+
+
+def _process_result(r: dict, query: str, known: set, new_entities: list[dict]) -> None:
+    """Xử lý 1 kết quả tìm kiếm: fetch → extract → accept từng raw item (in-place).
+
+    Di chuyển verbatim thân vòng `for r in results` của learn_from_query.
+    """
+    url = r.get("href") or r.get("url", "")
+    if not url:
+        return
+
+    # Fetch page content
+    text = fetch_url(url)
+    if not text or len(text) < 200:
+        return
+
+    # Extract entities
+    raw_items = extract_entities_from_text(text, url, query)
+    for raw in raw_items:
+        _accept_raw(raw, url, known, new_entities)
+
+
 def learn_from_query(query: str, known: set) -> list[dict]:
     """Tìm kiếm 1 query, trích xuất entities mới."""
     logger.info("Searching: \"%s\"", query)
@@ -527,47 +595,16 @@ def learn_from_query(query: str, known: set) -> list[dict]:
 
     new_entities = []
     for r in results:
-        url = r.get("href") or r.get("url", "")
-        if not url:
-            continue
-
-        # Fetch page content
-        text = fetch_url(url)
-        if not text or len(text) < 200:
-            continue
-
-        # Extract entities
-        raw_items = extract_entities_from_text(text, url, query)
-        for raw in raw_items:
-            name = raw.get("name", "").strip()
-            if not name or len(name) < 3:
-                continue
-            if name.lower() in known:
-                continue
-
-            # ── Noise filter ──
-            keep, reason = filter_entity(raw, known)
-            if not keep:
-                logger.debug("Filtered [%s] %s", reason, name)
-                continue
-
-            entity = to_entity(raw, url)
-            if entity["id"] and entity["id"] not in {e["id"] for e in new_entities}:
-                new_entities.append(entity)
-                known.add(name.lower())
-                logger.info("Found [%s] %s", entity['type'], name)
+        _process_result(r, query, known, new_entities)
 
     return new_entities
 
 
-def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
-    """1 vòng học: tìm gaps → search → extract → deduplicate."""
-    logger.info("Auto-Learn Round started at %s", datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M'))
+def _select_queries(category: str, num_topics: int, known: set) -> list[str]:
+    """Chọn queries cho 1 vòng: category seed → LLM gaps → fallback random seed.
 
-    known = existing_names()
-    logger.info("Knowledge base: %d entities", len(known))
-
-    # Chọn queries
+    Di chuyển verbatim khối "Chọn queries" của learn_round.
+    """
     queries = []
     if category and category in CATEGORIES:
         cat = CATEGORIES[category]
@@ -588,6 +625,53 @@ def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
                 all_seeds.extend(cat["seed_queries"])
             random.shuffle(all_seeds)
             queries = all_seeds[:num_topics]
+    return queries
+
+
+def _save_round(unique: list[dict], category: str, queries: list[str]) -> None:
+    """Log-by-type + ghi file learned_*.json + append log-jsonl cho 1 vòng.
+
+    Di chuyển verbatim thân nhánh `if unique:` của learn_round. Chỉ gọi khi unique không rỗng.
+    """
+    # Group by type
+    by_type = {}
+    for e in unique:
+        by_type.setdefault(e["type"], []).append(e)
+    for t, items in sorted(by_type.items()):
+        label = ENTITY_TYPES.get(t, t)
+        logger.info("[%s] %s: %d", t, label, len(items))
+        for e in items:
+            place = e.get("placeId", "?")
+            logger.debug("  - %s -> %s (conf: %s)", e['name'], place, e['confidence'])
+
+    # Save
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    out_file = LEARN_DIR / f"learned_{timestamp}.json"
+    with open(out_file, "w", encoding="utf-8") as f:
+        json.dump(unique, f, ensure_ascii=False, indent=2)
+    logger.info("Saved: %s", out_file)
+
+    # Log
+    log_entry = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "category": category,
+        "queries": queries,
+        "found": len(unique),
+        "types": {t: len(items) for t, items in by_type.items()},
+    }
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+
+
+def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
+    """1 vòng học: tìm gaps → search → extract → deduplicate."""
+    logger.info("Auto-Learn Round started at %s", datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M'))
+
+    known = existing_names()
+    logger.info("Knowledge base: %d entities", len(known))
+
+    # Chọn queries
+    queries = _select_queries(category, num_topics, known)
 
     logger.info("Will search %d topics", len(queries))
 
@@ -608,34 +692,7 @@ def learn_round(category: str = None, num_topics: int = 5) -> list[dict]:
     logger.info("Round complete — new entities: %d", len(unique))
 
     if unique:
-        # Group by type
-        by_type = {}
-        for e in unique:
-            by_type.setdefault(e["type"], []).append(e)
-        for t, items in sorted(by_type.items()):
-            label = ENTITY_TYPES.get(t, t)
-            logger.info("[%s] %s: %d", t, label, len(items))
-            for e in items:
-                place = e.get("placeId", "?")
-                logger.debug("  - %s -> %s (conf: %s)", e['name'], place, e['confidence'])
-
-        # Save
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        out_file = LEARN_DIR / f"learned_{timestamp}.json"
-        with open(out_file, "w", encoding="utf-8") as f:
-            json.dump(unique, f, ensure_ascii=False, indent=2)
-        logger.info("Saved: %s", out_file)
-
-        # Log
-        log_entry = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "category": category,
-            "queries": queries,
-            "found": len(unique),
-            "types": {t: len(items) for t, items in by_type.items()},
-        }
-        with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+        _save_round(unique, category, queries)
 
     return unique
 

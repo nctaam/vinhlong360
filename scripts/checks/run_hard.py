@@ -70,6 +70,33 @@ def _parse_skips(root: Path) -> set[str]:
     return ok
 
 
+def _hard_messages(results: list) -> tuple[bool, list[str]]:
+    """Khối phát hiện hard-block (count>0). Trả (blocked, messages) — logic verbatim."""
+    blocked = False
+    messages: list[str] = []
+    for r in results:
+        if r["level"] == "hard" and r["count"] > 0:
+            blocked = True
+            messages.append(f'✖ HARD {r["rule"]} ({r["check"]}): {r["count"]} vi phạm')
+            for v in r["violations"][:5]:
+                messages.append(f'    {v["file"]}:{v["line"]} — {v["msg"]}')
+    return blocked, messages
+
+
+def _ratchet_messages(blockers: list, skips: set[str], lvl: dict) -> tuple[bool, list[str]]:
+    """Khối xử lý ratchet-blockers + skip-soft. Trả (blocked, messages) — logic verbatim."""
+    blocked = False
+    messages: list[str] = []
+    for b in blockers:
+        rule = b.split(" ")[0]
+        if rule in skips and lvl.get(rule, "").startswith("soft"):
+            messages.append(f"⚠ SKIPPED (soft) {b}")
+            continue
+        blocked = True
+        messages.append(f"✖ RATCHET {b}")
+    return blocked, messages
+
+
 def run(files: list[str] | None, checks: list | None = None, root: Path | None = None,
         baseline: dict | None = None, skips: set[str] | None = None) -> tuple[int, list[str]]:
     """Trả (exit_code, messages). Tách tham số để test được."""
@@ -79,22 +106,14 @@ def run(files: list[str] | None, checks: list | None = None, root: Path | None =
     skips = skips if skips is not None else set()
     results = [c.run(files) for c in checks]
     messages: list[str] = []
-    blocked = False
-    for r in results:
-        if r["level"] == "hard" and r["count"] > 0:
-            blocked = True
-            messages.append(f'✖ HARD {r["rule"]} ({r["check"]}): {r["count"]} vi phạm')
-            for v in r["violations"][:5]:
-                messages.append(f'    {v["file"]}:{v["line"]} — {v["msg"]}')
+    hard_blocked, hard_msgs = _hard_messages(results)
+    messages.extend(hard_msgs)
+    blocked = hard_blocked
     blockers, suggestions = common.ratchet_violations(results, baseline)
     lvl = {c.rule: c.level for c in checks}
-    for b in blockers:
-        rule = b.split(" ")[0]
-        if rule in skips and lvl.get(rule, "").startswith("soft"):
-            messages.append(f"⚠ SKIPPED (soft) {b}")
-            continue
-        blocked = True
-        messages.append(f"✖ RATCHET {b}")
+    ratchet_blocked, ratchet_msgs = _ratchet_messages(blockers, skips, lvl)
+    messages.extend(ratchet_msgs)
+    blocked = blocked or ratchet_blocked
     if files is None:  # suggestions chỉ có nghĩa khi đếm TOÀN repo (--all)
         for s in suggestions:
             messages.append(f"↓ {s}")

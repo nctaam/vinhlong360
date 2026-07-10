@@ -151,7 +151,7 @@ def build_desc_prompt(entity: dict) -> str:
     return "\n".join(parts)
 
 
-def enrich_descriptions(db, apply=False, limit=0, entity_type=None):
+def _desc_collect_targets(db, limit, entity_type):
     entities = [e for e in db.all_entities() if e.get("type") != "place"]
     if entity_type:
         entities = [e for e in entities if e.get("type") == entity_type]
@@ -162,6 +162,42 @@ def enrich_descriptions(db, apply=False, limit=0, entity_type=None):
 
     if limit:
         targets = targets[:limit]
+    return targets
+
+
+def _desc_print_dryrun(targets):
+    print(f"  DRY-RUN — would generate {len(targets)} descriptions")
+    print(f"  Model: {MODEL}")
+    print(f"  API: {API_BASE}")
+    for e in targets[:5]:
+        print(f"    {e['id']:45s} summary={len(e.get('summary',''))} chars")
+    return len(targets)
+
+
+def _desc_process_one(db, e, i, total):
+    """Xử lý 1 entity trong apply loop. Trả về 'ok' | 'fail' | 'skip'."""
+    prompt = build_desc_prompt(e)
+    result = call_llm(prompt, system=SYSTEM_DESC, max_tokens=800)
+
+    if result.startswith("[ERROR]"):
+        print(f"  [{i+1}/{total}] FAIL {e['id'][:40]} {result}")
+        if "rate" in result.lower() or "429" in result:
+            time.sleep(5)
+        return "fail"
+
+    if len(result) < 50:
+        print(f"  [{i+1}/{total}] SKIP {e['id'][:40]} (too short: {len(result)})")
+        return "fail"
+
+    e["description"] = result
+    db.upsert_entity(e)
+    print(f"  [{i+1}/{total}] OK   {e['id'][:40]} ({len(result)} chars)")
+    time.sleep(0.5)
+    return "ok"
+
+
+def enrich_descriptions(db, apply=False, limit=0, entity_type=None):
+    targets = _desc_collect_targets(db, limit, entity_type)
 
     print(f"[description] Targets: {len(targets)}")
 
@@ -170,37 +206,15 @@ def enrich_descriptions(db, apply=False, limit=0, entity_type=None):
         return 0
 
     if not apply:
-        print(f"  DRY-RUN — would generate {len(targets)} descriptions")
-        print(f"  Model: {MODEL}")
-        print(f"  API: {API_BASE}")
-        for e in targets[:5]:
-            print(f"    {e['id']:45s} summary={len(e.get('summary',''))} chars")
-        return len(targets)
+        return _desc_print_dryrun(targets)
 
     success = 0
     fail = 0
     for i, e in enumerate(targets):
-        prompt = build_desc_prompt(e)
-        result = call_llm(prompt, system=SYSTEM_DESC, max_tokens=800)
-
-        if result.startswith("[ERROR]"):
+        if _desc_process_one(db, e, i, len(targets)) == "ok":
+            success += 1
+        else:
             fail += 1
-            print(f"  [{i+1}/{len(targets)}] FAIL {e['id'][:40]} {result}")
-            if "rate" in result.lower() or "429" in result:
-                time.sleep(5)
-            continue
-
-        if len(result) < 50:
-            fail += 1
-            print(f"  [{i+1}/{len(targets)}] SKIP {e['id'][:40]} (too short: {len(result)})")
-            continue
-
-        e["description"] = result
-        db.upsert_entity(e)
-        success += 1
-        print(f"  [{i+1}/{len(targets)}] OK   {e['id'][:40]} ({len(result)} chars)")
-
-        time.sleep(0.5)
 
     print(f"\nDone: {success} generated, {fail} failed")
     return success
@@ -229,7 +243,7 @@ LOCATION_KEYWORDS = [
 EXEMPT_TYPES = {"person", "event", "itinerary"}
 
 
-def enrich_summaries(db, apply=False, limit=0, entity_type=None):
+def _summary_collect_targets(db, limit, entity_type):
     entities = [e for e in db.all_entities() if e.get("type") != "place"]
     if entity_type:
         entities = [e for e in entities if e.get("type") == entity_type]
@@ -247,6 +261,62 @@ def enrich_summaries(db, apply=False, limit=0, entity_type=None):
 
     if limit:
         targets = targets[:limit]
+    return targets
+
+
+def _summary_print_dryrun(targets):
+    print(f"  DRY-RUN — would improve {len(targets)} summaries")
+    print(f"  Model: {MODEL}")
+    for e in targets[:5]:
+        s = (e.get("summary") or "")[:60]
+        area = AREA_LABELS.get(e.get("area", ""), "?")
+        print(f"    {e['id'][:40]:40s} [{area}] {s}...")
+    return len(targets)
+
+
+def _summary_build_prompt(e):
+    area_label = AREA_LABELS.get(e.get("area", ""), "miền Tây")
+    summary = (e.get("summary") or "").strip()
+    type_label = TYPE_LABELS.get(e.get("type", ""), "")
+
+    prompt = (f"Tóm tắt gốc: {summary}\n"
+              f"Tên: {e.get('name','')}\n"
+              f"Loại: {type_label}\n"
+              f"Khu vực: {area_label}\n\n"
+              f"Cải thiện tóm tắt để tự nhiên nhắc đến \"{area_label}\" hoặc \"miền Tây\".")
+    return prompt, summary
+
+
+def _summary_process_one(db, e, i, total):
+    """Xử lý 1 entity trong apply loop. Trả về 'ok' | 'fail'."""
+    prompt, summary = _summary_build_prompt(e)
+
+    result = call_llm(prompt, system=SYSTEM_SUMMARY, max_tokens=400)
+
+    if result.startswith("[ERROR]"):
+        print(f"  [{i+1}/{total}] FAIL {e['id'][:40]} {result}")
+        if "rate" in result.lower() or "429" in result:
+            time.sleep(5)
+        return "fail"
+
+    result = result.strip().strip('"')
+    if len(result) < 30 or len(result) > len(summary) * 2:
+        print(f"  [{i+1}/{total}] SKIP {e['id'][:40]} (bad length: {len(result)})")
+        return "fail"
+
+    if not any(kw in result.lower() for kw in LOCATION_KEYWORDS):
+        print(f"  [{i+1}/{total}] SKIP {e['id'][:40]} (no keyword added)")
+        return "fail"
+
+    e["summary"] = result
+    db.upsert_entity(e)
+    print(f"  [{i+1}/{total}] OK   {e['id'][:40]} ({len(result)} chars)")
+    time.sleep(0.5)
+    return "ok"
+
+
+def enrich_summaries(db, apply=False, limit=0, entity_type=None):
+    targets = _summary_collect_targets(db, limit, entity_type)
 
     print(f"[summary] Targets missing location keyword: {len(targets)}")
 
@@ -255,53 +325,15 @@ def enrich_summaries(db, apply=False, limit=0, entity_type=None):
         return 0
 
     if not apply:
-        print(f"  DRY-RUN — would improve {len(targets)} summaries")
-        print(f"  Model: {MODEL}")
-        for e in targets[:5]:
-            s = (e.get("summary") or "")[:60]
-            area = AREA_LABELS.get(e.get("area", ""), "?")
-            print(f"    {e['id'][:40]:40s} [{area}] {s}...")
-        return len(targets)
+        return _summary_print_dryrun(targets)
 
     success = 0
     fail = 0
     for i, e in enumerate(targets):
-        area_label = AREA_LABELS.get(e.get("area", ""), "miền Tây")
-        summary = (e.get("summary") or "").strip()
-        type_label = TYPE_LABELS.get(e.get("type", ""), "")
-
-        prompt = (f"Tóm tắt gốc: {summary}\n"
-                  f"Tên: {e.get('name','')}\n"
-                  f"Loại: {type_label}\n"
-                  f"Khu vực: {area_label}\n\n"
-                  f"Cải thiện tóm tắt để tự nhiên nhắc đến \"{area_label}\" hoặc \"miền Tây\".")
-
-        result = call_llm(prompt, system=SYSTEM_SUMMARY, max_tokens=400)
-
-        if result.startswith("[ERROR]"):
+        if _summary_process_one(db, e, i, len(targets)) == "ok":
+            success += 1
+        else:
             fail += 1
-            print(f"  [{i+1}/{len(targets)}] FAIL {e['id'][:40]} {result}")
-            if "rate" in result.lower() or "429" in result:
-                time.sleep(5)
-            continue
-
-        result = result.strip().strip('"')
-        if len(result) < 30 or len(result) > len(summary) * 2:
-            fail += 1
-            print(f"  [{i+1}/{len(targets)}] SKIP {e['id'][:40]} (bad length: {len(result)})")
-            continue
-
-        if not any(kw in result.lower() for kw in LOCATION_KEYWORDS):
-            fail += 1
-            print(f"  [{i+1}/{len(targets)}] SKIP {e['id'][:40]} (no keyword added)")
-            continue
-
-        e["summary"] = result
-        db.upsert_entity(e)
-        success += 1
-        print(f"  [{i+1}/{len(targets)}] OK   {e['id'][:40]} ({len(result)} chars)")
-
-        time.sleep(0.5)
 
     print(f"\nDone: {success} improved, {fail} failed/skipped")
     return success

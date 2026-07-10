@@ -96,6 +96,79 @@ def _to_dict(row) -> dict:
     return d
 
 
+def _clean_suggestion(s) -> Optional[tuple[str, str]]:
+    """Validate one raw suggestion item; return (entity_id, candidate_url) or None.
+
+    Returns None for anything that must be skipped: non-dict, missing
+    entity_id/candidate_url, or a non-http(s) URL. Verbatim extraction of the
+    original guard clauses in create_batch's loop body.
+    """
+    if not isinstance(s, dict):
+        return None
+    entity_id = (s.get("entity_id") or "").strip()
+    candidate_url = (s.get("candidate_url") or s.get("url") or s.get("image") or "").strip()
+    if not entity_id or not candidate_url:
+        return None
+    if not candidate_url.startswith(("http://", "https://")):
+        return None
+    return entity_id, candidate_url
+
+
+def _pending_exists(conn, entity_id: str, candidate_url: str) -> bool:
+    """De-dupe check: is there already an identical PENDING suggestion row?"""
+    ph = db._ph
+    existing = db._fetchone(
+        conn,
+        f"SELECT 1 FROM image_suggestions WHERE entity_id = {ph} AND candidate_url = {ph} AND status = 'pending'",
+        (entity_id, candidate_url),
+    )
+    return bool(existing)
+
+
+def _insert_suggestion(conn, s: dict, entity_id: str, candidate_url: str) -> str:
+    """Insert one validated suggestion (status=pending); return its new id.
+
+    Verbatim extraction of the sid/conf/INSERT block from create_batch's loop.
+    """
+    ph = db._ph
+    sid = uuid.uuid4().hex
+    try:
+        conf = float(s.get("match_confidence", 0.7))
+    except (TypeError, ValueError):
+        conf = 0.7
+    db._execute(
+        conn,
+        f"""INSERT INTO image_suggestions
+            (id, entity_id, candidate_url, wp_title, license, author, source, match_confidence, status)
+            VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},'pending')""",
+        (
+            sid, entity_id, candidate_url,
+            (s.get("wp_title") or "")[:200],
+            (s.get("license") or "")[:80],
+            (s.get("author") or s.get("artist") or "")[:120],
+            (s.get("source") or "wikipedia-vi")[:40],
+            conf,
+        ),
+    )
+    return sid
+
+
+def _process_one_suggestion(conn, s) -> Optional[str]:
+    """Validate + de-dupe + insert a single suggestion.
+
+    Returns the new suggestion id when a row was inserted, or None when the
+    item was skipped (invalid or duplicate). Verbatim per-item body of
+    create_batch's original loop.
+    """
+    cleaned = _clean_suggestion(s)
+    if cleaned is None:
+        return None
+    entity_id, candidate_url = cleaned
+    if _pending_exists(conn, entity_id, candidate_url):
+        return None
+    return _insert_suggestion(conn, s, entity_id, candidate_url)
+
+
 def create_batch(suggestions: list[dict]) -> dict:
     """Insert a batch of candidate suggestions (status=pending).
 
@@ -107,49 +180,13 @@ def create_batch(suggestions: list[dict]) -> dict:
     Returns {"created": n, "skipped": n, "ids": [...]}.
     """
     _ensure_table()
-    ph = db._ph
     created, skipped, ids = 0, 0, []
     with db._conn() as conn:
         for s in suggestions or []:
-            if not isinstance(s, dict):
+            sid = _process_one_suggestion(conn, s)
+            if sid is None:
                 skipped += 1
                 continue
-            entity_id = (s.get("entity_id") or "").strip()
-            candidate_url = (s.get("candidate_url") or s.get("url") or s.get("image") or "").strip()
-            if not entity_id or not candidate_url:
-                skipped += 1
-                continue
-            if not candidate_url.startswith(("http://", "https://")):
-                skipped += 1
-                continue
-            # De-dupe: skip if an identical pending suggestion already exists.
-            existing = db._fetchone(
-                conn,
-                f"SELECT 1 FROM image_suggestions WHERE entity_id = {ph} AND candidate_url = {ph} AND status = 'pending'",
-                (entity_id, candidate_url),
-            )
-            if existing:
-                skipped += 1
-                continue
-            sid = uuid.uuid4().hex
-            try:
-                conf = float(s.get("match_confidence", 0.7))
-            except (TypeError, ValueError):
-                conf = 0.7
-            db._execute(
-                conn,
-                f"""INSERT INTO image_suggestions
-                    (id, entity_id, candidate_url, wp_title, license, author, source, match_confidence, status)
-                    VALUES ({ph},{ph},{ph},{ph},{ph},{ph},{ph},{ph},'pending')""",
-                (
-                    sid, entity_id, candidate_url,
-                    (s.get("wp_title") or "")[:200],
-                    (s.get("license") or "")[:80],
-                    (s.get("author") or s.get("artist") or "")[:120],
-                    (s.get("source") or "wikipedia-vi")[:40],
-                    conf,
-                ),
-            )
             created += 1
             ids.append(sid)
     return {"created": created, "skipped": skipped, "ids": ids}

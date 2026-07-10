@@ -372,6 +372,44 @@ def load_csv(path: Path) -> list[dict]:
         return [dict(row) for row in csv.DictReader(f)]
 
 
+def _corpus_read_local(url):
+    lp = Path(url.replace("/", os.sep))
+    if lp.exists():
+        try:
+            return compact(lp.read_text(encoding="utf-8-sig"), 12000), "local_read"
+        except Exception:
+            return "", "local_error"
+    return "", "local_not_found"
+
+
+def _corpus_fetch_one(src):
+    sid, url = src.get("source_id", ""), src.get("url", "").strip()
+    text, status = "", "skipped"
+    if url.startswith("C:/") or url.startswith("C:\\"):
+        text, status = _corpus_read_local(url)
+    elif is_http_url(url):
+        text = fetch_url(url, timeout=20)
+        status = "fetched" if text else "fetch_failed"
+    else:
+        status = "no_url"
+    rec = {**{k: src.get(k, "") for k in ["source_id", "url", "title", "geography", "layer", "layer_name", "reliability", "note"]},
+           "fetch_status": status, "text_length": len(text), "text": text, "fetched_at": utc_now()}
+    tprint(f"  [{'✓' if text else '✗'}] {sid}: {src.get('title','')[:50]}... ({status})")
+    return rec
+
+
+def _corpus_build_index(all_rec):
+    ok = sum(1 for r in all_rec if r.get("text_length", 0) > 100)
+    idx = {"total": len(all_rec), "ok": ok, "by_geo": {}, "by_layer": {}, "at": utc_now()}
+    for r in all_rec:
+        for g in r.get("geography", "").split(";"):
+            g = g.strip()
+            if g:
+                idx["by_geo"].setdefault(g, []).append(r["source_id"])
+        idx["by_layer"].setdefault(r.get("layer", "?"), []).append(r["source_id"])
+    return ok, idx
+
+
 def build_corpus(workers: int = 8):
     tprint("PHA 0: BUILD CORPUS")
     corpus_dir = OUTPUT_DIR / "corpus"
@@ -386,46 +424,16 @@ def build_corpus(workers: int = 8):
     if not to_fetch:
         return read_jsonl(corpus_file)
 
-    def fetch_one(src):
-        sid, url = src.get("source_id", ""), src.get("url", "").strip()
-        text, status = "", "skipped"
-        if url.startswith("C:/") or url.startswith("C:\\"):
-            lp = Path(url.replace("/", os.sep))
-            if lp.exists():
-                try:
-                    text, status = compact(lp.read_text(encoding="utf-8-sig"), 12000), "local_read"
-                except Exception:
-                    status = "local_error"
-            else:
-                status = "local_not_found"
-        elif is_http_url(url):
-            text = fetch_url(url, timeout=20)
-            status = "fetched" if text else "fetch_failed"
-        else:
-            status = "no_url"
-        rec = {**{k: src.get(k, "") for k in ["source_id", "url", "title", "geography", "layer", "layer_name", "reliability", "note"]},
-               "fetch_status": status, "text_length": len(text), "text": text, "fetched_at": utc_now()}
-        tprint(f"  [{'✓' if text else '✗'}] {sid}: {src.get('title','')[:50]}... ({status})")
-        return rec
-
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        for fut in as_completed([pool.submit(fetch_one, s) for s in to_fetch]):
+        for fut in as_completed([pool.submit(_corpus_fetch_one, s) for s in to_fetch]):
             try:
                 append_jsonl(corpus_file, fut.result())
             except Exception as e:
                 tprint(f"  [ERR] {e}")
 
     all_rec = read_jsonl(corpus_file)
-    ok = sum(1 for r in all_rec if r.get("text_length", 0) > 100)
+    ok, idx = _corpus_build_index(all_rec)
     tprint(f"  Corpus: {ok}/{len(all_rec)} with text")
-
-    idx = {"total": len(all_rec), "ok": ok, "by_geo": {}, "by_layer": {}, "at": utc_now()}
-    for r in all_rec:
-        for g in r.get("geography", "").split(";"):
-            g = g.strip()
-            if g:
-                idx["by_geo"].setdefault(g, []).append(r["source_id"])
-        idx["by_layer"].setdefault(r.get("layer", "?"), []).append(r["source_id"])
     with open(corpus_dir / "corpus_index.json", "w", encoding="utf-8") as f:
         json.dump(idx, f, ensure_ascii=False, indent=2)
     return all_rec
@@ -524,21 +532,18 @@ Trả về JSON: {{"sub_topic":"{st}","layer":"L3_perspectives","academic":{{"in
     return llm.complete_json(system=sys, user=f"PREV:\n{prev_all[:8000]}\n\nCORPUS:\n{ctx[:8000]}", max_tokens=4000)
 
 
-def _L4(llm, st, claims, ctx, n_skeptics=5):
-    """5 independent skeptics. 3/5 refute = kill."""
-    if not claims:
-        return {"sub_topic": st, "layer": "L4_adversarial", "verdicts": [], "note": "no claims"}
-    claims_text = json.dumps(claims[:40], ensure_ascii=False)
-    personas = [
-        "Nhà sử học KHẮT KHE — kiểm niên đại, tên riêng, số liệu.",
-        "Nhà dân tộc học PHẢN BIỆN — tìm suy luận quá mức, thiếu ngữ cảnh.",
-        "Chuyên gia du lịch THỰC TẾ — kiểm tính khả thi, hallucination.",
-        "Nhà ngôn ngữ học — kiểm tên gọi, từ nguyên, dịch sai Khmer/Nôm.",
-        "Nhà môi trường — kiểm dữ liệu sinh thái, khí hậu, rủi ro tự nhiên.",
-    ]
+_L4_PERSONAS = [
+    "Nhà sử học KHẮT KHE — kiểm niên đại, tên riêng, số liệu.",
+    "Nhà dân tộc học PHẢN BIỆN — tìm suy luận quá mức, thiếu ngữ cảnh.",
+    "Chuyên gia du lịch THỰC TẾ — kiểm tính khả thi, hallucination.",
+    "Nhà ngôn ngữ học — kiểm tên gọi, từ nguyên, dịch sai Khmer/Nôm.",
+    "Nhà môi trường — kiểm dữ liệu sinh thái, khí hậu, rủi ro tự nhiên.",
+]
 
+
+def _l4_run_skeptics(llm, claims_text, ctx, n_skeptics):
     def skeptic(i):
-        sys = f"""{personas[i % len(personas)]}
+        sys = f"""{_L4_PERSONAS[i % len(_L4_PERSONAS)]}
 Mặc định refuted=true nếu không chắc. Chỉ confirmed khi có bằng chứng RÕ trong corpus.
 Trả về JSON: {{"skeptic_id":{i},"verdicts":[{{"claim_index":0,"refuted":true,"reason":"..."}}]}}"""
         return llm.complete_json(system=sys, user=f"CLAIMS:\n{claims_text}\n\nCORPUS:\n{ctx[:8000]}", max_tokens=3000)
@@ -552,7 +557,10 @@ Trả về JSON: {{"skeptic_id":{i},"verdicts":[{{"claim_index":0,"refuted":true
                     results.append(r)
             except Exception:
                 pass
+    return results
 
+
+def _l4_tally_votes(results):
     votes = {}
     for r in results:
         for v in r.get("verdicts", []):
@@ -564,14 +572,27 @@ Trả về JSON: {{"skeptic_id":{i},"verdicts":[{{"claim_index":0,"refuted":true
             else:
                 votes[idx]["conf"] += 1
             votes[idx]["reasons"].append(v.get("reason", "")[:100])
+    return votes
 
+
+def _l4_build_verdicts(votes, claims):
     verdicts = []
     for idx, v in sorted(votes.items()):
         ct = claims[idx].get("claim", "") if idx < len(claims) else "?"
         killed = v["ref"] >= 3  # 3/5 majority
         verdicts.append({"claim_index": idx, "claim": ct[:200], "refuted": v["ref"], "confirmed": v["conf"],
                          "killed": killed, "reasons": v["reasons"][:3]})
+    return verdicts
 
+
+def _L4(llm, st, claims, ctx, n_skeptics=5):
+    """5 independent skeptics. 3/5 refute = kill."""
+    if not claims:
+        return {"sub_topic": st, "layer": "L4_adversarial", "verdicts": [], "note": "no claims"}
+    claims_text = json.dumps(claims[:40], ensure_ascii=False)
+    results = _l4_run_skeptics(llm, claims_text, ctx, n_skeptics)
+    votes = _l4_tally_votes(results)
+    verdicts = _l4_build_verdicts(votes, claims)
     return {"sub_topic": st, "layer": "L4_adversarial", "total_claims": len(claims),
             "skeptics": len(results), "verdicts": verdicts,
             "killed": sum(1 for v in verdicts if v["killed"]),
@@ -668,6 +689,41 @@ Trả về JSON: {{"sub_topic":"{st}","layer":"L10_synthesis","theme":"{tname}",
 # ─── Parallel Sub-topic Pipeline ─────────────────────────────────────────────
 
 
+def _subtopic_load_l1(result_file, sub_topic):
+    for rec in read_jsonl(result_file):
+        if rec.get("sub_topic") == sub_topic and rec.get("layer") == "L1_survey":
+            return rec
+    return None
+
+
+def _subtopic_collect_claims(result_file, sub_topic):
+    claims = []
+    for rec in read_jsonl(result_file):
+        if rec.get("sub_topic") == sub_topic:
+            claims.extend(rec.get("claims", []))
+            for sf in rec.get("specific_facts", []):
+                claims.append({"claim": sf.get("fact", ""), "source_id": sf.get("source_id", ""), "confidence": sf.get("confidence", 0.5)})
+    return claims
+
+
+def _subtopic_run_layer(layer_name, llm, sub_topic, tname, corpus_ctx, result_file, prev_all, tag, save):
+    """Run one layer, calling save() for produced records. Preserves original side-effect order."""
+    if layer_name == "L2_extract":
+        l1 = _subtopic_load_l1(result_file, sub_topic)
+        save(_L2(llm, sub_topic, l1, corpus_ctx))
+    elif layer_name == "L4_adversarial":
+        claims = _subtopic_collect_claims(result_file, sub_topic)
+        r = _L4(llm, sub_topic, claims, corpus_ctx, n_skeptics=5)
+        save(r)
+        if r:
+            tprint(f"    {tag} L4 → {r.get('survived',0)} survived, {r.get('killed',0)} killed")
+    elif layer_name == "L6_gap_r1":
+        gap_results = _L6(llm, sub_topic, tname, prev_all(), max_rounds=5)
+        for gr in gap_results:
+            save(gr)
+        tprint(f"    {tag} L6 → {len(gap_results)} productive rounds")
+
+
 def process_subtopic(llm, theme, sub_topic, corpus_ctx, result_file, done):
     """Run all 10 layers for one sub-topic. Called from thread pool."""
     tid, tname = theme["id"], theme["name"]
@@ -707,37 +763,11 @@ def process_subtopic(llm, theme, sub_topic, corpus_ctx, result_file, done):
 
         tprint(f"    {tag} {layer_name}...")
 
-        if layer_name == "L2_extract":
-            # Find L1 result for chain
-            l1 = None
-            for rec in read_jsonl(result_file):
-                if rec.get("sub_topic") == sub_topic and rec.get("layer") == "L1_survey":
-                    l1 = rec
-                    break
-            r = _L2(llm, sub_topic, l1, corpus_ctx)
-            save(r)
-
-        elif layer_name == "L4_adversarial":
-            claims = []
-            for rec in read_jsonl(result_file):
-                if rec.get("sub_topic") == sub_topic:
-                    claims.extend(rec.get("claims", []))
-                    for sf in rec.get("specific_facts", []):
-                        claims.append({"claim": sf.get("fact", ""), "source_id": sf.get("source_id", ""), "confidence": sf.get("confidence", 0.5)})
-            r = _L4(llm, sub_topic, claims, corpus_ctx, n_skeptics=5)
-            save(r)
-            if r:
-                tprint(f"    {tag} L4 → {r.get('survived',0)} survived, {r.get('killed',0)} killed")
-
-        elif layer_name == "L6_gap_r1":
-            gap_results = _L6(llm, sub_topic, tname, prev_all, max_rounds=5)
-            for gr in gap_results:
-                save(gr)
-            tprint(f"    {tag} L6 → {len(gap_results)} productive rounds")
-
+        if layer_name in ("L2_extract", "L4_adversarial", "L6_gap_r1"):
+            _subtopic_run_layer(layer_name, llm, sub_topic, tname, corpus_ctx,
+                                result_file, lambda: prev_all, tag, save)
         else:
-            r = fn()
-            save(r)
+            save(fn())
 
     tprint(f"  ✓ {tag} — 10 layers done")
 
@@ -789,6 +819,65 @@ def run_thematic_ultra(corpus, llm, concurrent_themes=3, concurrent_subs=2):
 # ─── Pha 1b: Cross-pollination ───────────────────────────────────────────────
 
 
+def _cross_collect_synth(theme_dir):
+    all_synth = {}
+    for td in theme_dir.iterdir():
+        if not td.is_dir():
+            continue
+        tid = td.name.split("_")[0]
+        for rec in read_jsonl(td / "research.jsonl"):
+            if rec.get("layer") == "L10_synthesis":
+                all_synth.setdefault(tid, []).append(rec)
+    return all_synth
+
+
+def _cross_other_ctx(all_synth, tid):
+    other_ctx = ""
+    for other_tid, synths in all_synth.items():
+        if other_tid == tid:
+            continue
+        for s in synths[:2]:
+            other_ctx += f"\n[{other_tid}] {s.get('sub_topic','')}: {s.get('executive_summary','')[:400]}\n"
+    return other_ctx
+
+
+def _cross_own_ctx(all_synth, tid):
+    own_ctx = ""
+    for s in all_synth.get(tid, []):
+        own_ctx += f"\n{s.get('sub_topic','')}: {s.get('executive_summary','')[:300]}\n"
+    return own_ctx
+
+
+def _cross_pollinate_theme(llm, theme, theme_dir, all_synth):
+    tid = theme["id"]
+    tname = theme["name"]
+    safe = re.sub(r"[^\w]", "_", tname)
+    result_file = theme_dir / f"{tid}_{safe}" / "cross_pollination.jsonl"
+
+    if result_file.exists() and len(read_jsonl(result_file)) > 0:
+        tprint(f"  {tid} cross-pollination SKIP (already done)")
+        return
+
+    other_ctx = _cross_other_ctx(all_synth, tid)
+    if not other_ctx:
+        return
+    own_ctx = _cross_own_ctx(all_synth, tid)
+
+    sys = f"""Bạn đã nghiên cứu "{tname}". Bây giờ xem kết quả 14 chiều KHÁC.
+Tìm: (1)Liên hệ mới giữa {tname} và các chiều khác (2)Insights bổ sung (3)Mâu thuẫn liên chiều.
+
+Trả về JSON: {{"theme":"{tname}","layer":"cross_pollination",
+  "new_connections":[{{"from_theme":"...","to_theme":"...","insight":"..."}}],
+  "enrichments":[{{"sub_topic":"...","new_insight":"...","triggered_by":"..."}}],
+  "cross_contradictions":[{{"theme_a":"...","theme_b":"...","contradiction":"..."}}]}}"""
+
+    r = llm.complete_json(system=sys, user=f"OWN ({tname}):\n{own_ctx[:5000]}\n\nOTHER THEMES:\n{other_ctx[:15000]}", max_tokens=4000)
+    if r:
+        r["timestamp"] = utc_now()
+        append_jsonl(result_file, r)
+        tprint(f"  ✓ {tid} cross-pollinated: {len(r.get('new_connections',[]))} connections")
+
+
 def run_cross_pollination(llm):
     """After all themes done, each theme gets insights from ALL other themes."""
     tprint("=" * 70)
@@ -799,62 +888,13 @@ def run_cross_pollination(llm):
     if not theme_dir.exists():
         return
 
-    # Collect all L10 syntheses
-    all_synth = {}
-    for td in theme_dir.iterdir():
-        if not td.is_dir():
-            continue
-        tid = td.name.split("_")[0]
-        for rec in read_jsonl(td / "research.jsonl"):
-            if rec.get("layer") == "L10_synthesis":
-                all_synth.setdefault(tid, []).append(rec)
-
+    all_synth = _cross_collect_synth(theme_dir)
     if len(all_synth) < 2:
         tprint("  Not enough themes. Skipping.")
         return
 
-    def pollinate_theme(theme):
-        tid = theme["id"]
-        tname = theme["name"]
-        safe = re.sub(r"[^\w]", "_", tname)
-        result_file = theme_dir / f"{tid}_{safe}" / "cross_pollination.jsonl"
-
-        if result_file.exists() and len(read_jsonl(result_file)) > 0:
-            tprint(f"  {tid} cross-pollination SKIP (already done)")
-            return
-
-        # Gather syntheses from OTHER themes
-        other_ctx = ""
-        for other_tid, synths in all_synth.items():
-            if other_tid == tid:
-                continue
-            for s in synths[:2]:
-                other_ctx += f"\n[{other_tid}] {s.get('sub_topic','')}: {s.get('executive_summary','')[:400]}\n"
-
-        if not other_ctx:
-            return
-
-        # Own syntheses
-        own_ctx = ""
-        for s in all_synth.get(tid, []):
-            own_ctx += f"\n{s.get('sub_topic','')}: {s.get('executive_summary','')[:300]}\n"
-
-        sys = f"""Bạn đã nghiên cứu "{tname}". Bây giờ xem kết quả 14 chiều KHÁC.
-Tìm: (1)Liên hệ mới giữa {tname} và các chiều khác (2)Insights bổ sung (3)Mâu thuẫn liên chiều.
-
-Trả về JSON: {{"theme":"{tname}","layer":"cross_pollination",
-  "new_connections":[{{"from_theme":"...","to_theme":"...","insight":"..."}}],
-  "enrichments":[{{"sub_topic":"...","new_insight":"...","triggered_by":"..."}}],
-  "cross_contradictions":[{{"theme_a":"...","theme_b":"...","contradiction":"..."}}]}}"""
-
-        r = llm.complete_json(system=sys, user=f"OWN ({tname}):\n{own_ctx[:5000]}\n\nOTHER THEMES:\n{other_ctx[:15000]}", max_tokens=4000)
-        if r:
-            r["timestamp"] = utc_now()
-            append_jsonl(result_file, r)
-            tprint(f"  ✓ {tid} cross-pollinated: {len(r.get('new_connections',[]))} connections")
-
     with ThreadPoolExecutor(max_workers=4) as pool:
-        futs = [pool.submit(pollinate_theme, t) for t in THEMES]
+        futs = [pool.submit(_cross_pollinate_theme, llm, t, theme_dir, all_synth) for t in THEMES]
         for f in as_completed(futs):
             try:
                 f.result()
@@ -878,6 +918,68 @@ ASSET_ANGLES = [
 ]
 
 
+def _asset_thematic_ctx(thematic_findings, aname):
+    tctx = ""
+    for tid, findings in thematic_findings.items():
+        for f in findings:
+            if aname.lower() in json.dumps(f, ensure_ascii=False).lower():
+                tctx += f"\n[{tid}] {json.dumps(f.get('executive_summary', f.get('summary', f.get('findings', ''))), ensure_ascii=False)[:300]}"
+                if len(tctx) > 3000:
+                    break
+    return tctx
+
+
+def _asset_collect_claims(rf):
+    claims = []
+    for f in read_jsonl(rf):
+        for sf in f.get("specific_facts", []):
+            claims.append(sf)
+        for fi in f.get("findings", []):
+            if isinstance(fi, str):
+                claims.append({"fact": fi, "confidence": 0.7})
+    return claims
+
+
+def _asset_run_angles(llm, aid, aname, province, ameta, ctx, tctx, rf, done):
+    for ang_id, ang_desc in ASSET_ANGLES:
+        if ang_id in done:
+            continue
+        tprint(f"  {aid} → {ang_id}")
+        sys = f"""Phân tích "{aname}" ({province}) — GÓC: {ang_desc}. Metadata: {ameta}
+Trả về JSON: {{"asset_id":"{aid}","angle":"{ang_id}","findings":["..."],"specific_facts":[{{"fact":"...","source_id":"...","confidence":0.0-1.0}}],"gaps":["..."],"connections":["..."]}}"""
+        r = llm.complete_json(system=sys, user=f"CORPUS:\n{ctx[:12000]}\nTHEMATIC:\n{tctx[:3000]}", max_tokens=4000)
+        if r:
+            r["timestamp"] = utc_now()
+            append_jsonl(rf, r)
+
+
+def _asset_run_adversarial(llm, aid, aname, ctx, rf):
+    tprint(f"  {aid} → adversarial (5 skeptics)")
+    claims = _asset_collect_claims(rf)
+    r = _L4(llm, aname, claims[:40], ctx, n_skeptics=5)
+    if r:
+        r["pass"] = "adversarial_verify"
+        r["asset_id"] = aid
+        r["timestamp"] = utc_now()
+        append_jsonl(rf, r)
+
+
+def _asset_run_synthesis(llm, aid, aname, rf):
+    tprint(f"  {aid} → synthesis")
+    all_d = json.dumps(read_jsonl(rf), ensure_ascii=False)[:20000]
+    sys = f"""Tổng hợp "{aname}" — chỉ giữ claims survived. Loại killed.
+Trả về JSON: {{"asset_id":"{aid}","pass":"synthesis","name":"{aname}","summary":"150-300 từ","description":"500-1000 từ",
+  "key_facts":[{{"fact":"...","confidence":0.0-1.0,"source":"..."}}],
+  "sensory_profile":{{"sounds":["..."],"smells":["..."],"tastes":["..."],"textures":["..."],"sights":["..."]}},
+  "etymology":"nguồn gốc tên gọi","connections":[{{"target":"...","type":"...","description":"..."}}],
+  "best_season":"...","suggested_duration":"...","visitor_tips":["..."],
+  "remaining_gaps":["..."],"overall_confidence":0.0}}"""
+    r = llm.complete_json(system=sys, user=f"DATA:\n{all_d}", max_tokens=5000)
+    if r:
+        r["timestamp"] = utc_now()
+        append_jsonl(rf, r)
+
+
 def process_asset(llm, asset, corpus, thematic_findings):
     aid, aname = asset.get("asset_id", ""), asset.get("name", "")
     province, category = asset.get("province", ""), asset.get("category", "")
@@ -891,59 +993,16 @@ def process_asset(llm, asset, corpus, thematic_findings):
     cat_w = [w.strip() for w in category.replace("-", " ").replace("/", " ").split() if len(w.strip()) > 2]
     ac = corpus_filter(corpus, geos=geo_f, keywords=[aname] + cat_w)
     ctx = build_corpus_context(ac[:30], max_chars=12000)
-
-    # Thematic context
-    tctx = ""
-    for tid, findings in thematic_findings.items():
-        for f in findings:
-            if aname.lower() in json.dumps(f, ensure_ascii=False).lower():
-                tctx += f"\n[{tid}] {json.dumps(f.get('executive_summary', f.get('summary', f.get('findings', ''))), ensure_ascii=False)[:300]}"
-                if len(tctx) > 3000:
-                    break
-
+    tctx = _asset_thematic_ctx(thematic_findings, aname)
     ameta = json.dumps(asset, ensure_ascii=False)
 
-    for ang_id, ang_desc in ASSET_ANGLES:
-        if ang_id in done:
-            continue
-        tprint(f"  {aid} → {ang_id}")
-        sys = f"""Phân tích "{aname}" ({province}) — GÓC: {ang_desc}. Metadata: {ameta}
-Trả về JSON: {{"asset_id":"{aid}","angle":"{ang_id}","findings":["..."],"specific_facts":[{{"fact":"...","source_id":"...","confidence":0.0-1.0}}],"gaps":["..."],"connections":["..."]}}"""
-        r = llm.complete_json(system=sys, user=f"CORPUS:\n{ctx[:12000]}\nTHEMATIC:\n{tctx[:3000]}", max_tokens=4000)
-        if r:
-            r["timestamp"] = utc_now()
-            append_jsonl(rf, r)
+    _asset_run_angles(llm, aid, aname, province, ameta, ctx, tctx, rf, done)
 
     if "adversarial_verify" not in done:
-        tprint(f"  {aid} → adversarial (5 skeptics)")
-        claims = []
-        for f in read_jsonl(rf):
-            for sf in f.get("specific_facts", []):
-                claims.append(sf)
-            for fi in f.get("findings", []):
-                if isinstance(fi, str):
-                    claims.append({"fact": fi, "confidence": 0.7})
-        r = _L4(llm, aname, claims[:40], ctx, n_skeptics=5)
-        if r:
-            r["pass"] = "adversarial_verify"
-            r["asset_id"] = aid
-            r["timestamp"] = utc_now()
-            append_jsonl(rf, r)
+        _asset_run_adversarial(llm, aid, aname, ctx, rf)
 
     if "synthesis" not in done:
-        tprint(f"  {aid} → synthesis")
-        all_d = json.dumps(read_jsonl(rf), ensure_ascii=False)[:20000]
-        sys = f"""Tổng hợp "{aname}" — chỉ giữ claims survived. Loại killed.
-Trả về JSON: {{"asset_id":"{aid}","pass":"synthesis","name":"{aname}","summary":"150-300 từ","description":"500-1000 từ",
-  "key_facts":[{{"fact":"...","confidence":0.0-1.0,"source":"..."}}],
-  "sensory_profile":{{"sounds":["..."],"smells":["..."],"tastes":["..."],"textures":["..."],"sights":["..."]}},
-  "etymology":"nguồn gốc tên gọi","connections":[{{"target":"...","type":"...","description":"..."}}],
-  "best_season":"...","suggested_duration":"...","visitor_tips":["..."],
-  "remaining_gaps":["..."],"overall_confidence":0.0}}"""
-        r = llm.complete_json(system=sys, user=f"DATA:\n{all_d}", max_tokens=5000)
-        if r:
-            r["timestamp"] = utc_now()
-            append_jsonl(rf, r)
+        _asset_run_synthesis(llm, aid, aname, rf)
 
     tprint(f"  ✓ {aid} done")
 
@@ -978,98 +1037,65 @@ def run_asset_ultra(corpus, llm, concurrent=4):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def run_crosslink_ultra(corpus, llm, concurrent=6):
-    tprint("=" * 70)
-    tprint("PHA 3 ULTRA: 105 cross-pairs + calendar + products + counter")
-    tprint("=" * 70)
-
-    cd = OUTPUT_DIR / "crosslink"
-    cd.mkdir(parents=True, exist_ok=True)
-
-    # Load all data
+def _crosslink_load_ctx(ad, td):
     synths, theme_summ = [], []
-    ad = OUTPUT_DIR / "assets"
     if ad.exists():
         for f in ad.glob("*/research.jsonl"):
             for r in read_jsonl(f):
                 if r.get("pass") == "synthesis":
                     synths.append(r)
-    td = OUTPUT_DIR / "thematic"
     if td.exists():
         for f in td.glob("*/research.jsonl"):
             for r in read_jsonl(f):
                 if r.get("layer") in ("L1_survey", "L10_synthesis"):
                     theme_summ.append(r)
+    return json.dumps({"assets": synths[:25], "themes": theme_summ[:20]}, ensure_ascii=False)[:25000]
 
-    all_ctx = json.dumps({"assets": synths[:25], "themes": theme_summ[:20]}, ensure_ascii=False)[:25000]
 
-    # 3.1 Relationships
-    if not (cd / "relationships.json").exists():
-        tprint("  → 3.1 Relationships")
-        r = llm.complete_json(system='Xác định quan hệ thực thể VL/TV/BT. JSON: {"relationships":[{"from":"...","to":"...","type":"...","strength":1-5,"description":"..."}],"clusters":[{"name":"...","members":["..."],"theme":"..."}],"hub_nodes":["..."]}', user=all_ctx, max_tokens=5000)
-        if r:
-            with open(cd / "relationships.json", "w", encoding="utf-8") as f:
-                json.dump(r, f, ensure_ascii=False, indent=2)
+def _crosslink_dump_json(cd, filename, label, llm, system, all_ctx, max_tokens):
+    if (cd / filename).exists():
+        return
+    tprint(f"  → {label}")
+    r = llm.complete_json(system=system, user=all_ctx, max_tokens=max_tokens)
+    if r:
+        with open(cd / filename, "w", encoding="utf-8") as f:
+            json.dump(r, f, ensure_ascii=False, indent=2)
 
-    # 3.2 Calendar
-    if not (cd / "festival_calendar.json").exists():
-        tprint("  → 3.2 Calendar + temporal")
-        r = llm.complete_json(system='Lịch lễ hội 12 tháng VL/TV/BT + temporal. JSON: {"calendar":[{"month":1,"lunar_date":"...","name":"...","location":"...","province":"...","confirmed":true,"peak_crowd":"low/medium/high","weather":"..."}],"seasonal_patterns":{"peak":"...","shoulder":"...","low":"..."},"year_round":["..."]}', user=all_ctx, max_tokens=5000)
-        if r:
-            with open(cd / "festival_calendar.json", "w", encoding="utf-8") as f:
-                json.dump(r, f, ensure_ascii=False, indent=2)
 
-    # 3.3 Products
-    if not (cd / "products.json").exists():
-        tprint("  → 3.3 Products")
-        r = llm.complete_json(system='Sản phẩm du lịch từ nghiên cứu. JSON: {"products":[{"name":"...","type":"tour/workshop/event","route":["..."],"duration":"...","season":"...","segments":["..."],"highlights":["..."],"sensory":"...","story_hook":"...","readiness":"market-ready|pilot|development","value_chain":["..."]}]}', user=all_ctx, max_tokens=5000)
-        if r:
-            with open(cd / "products.json", "w", encoding="utf-8") as f:
-                json.dump(r, f, ensure_ascii=False, indent=2)
-
-    # 3.4 ALL 105 cross-dimension pairs — PARALLEL
-    pairs_file = cd / "cross_dimension_pairs.jsonl"
+def _crosslink_pending_pairs(pairs_file):
     done_pairs = set()
     if pairs_file.exists():
         for r in read_jsonl(pairs_file):
             done_pairs.add(f"{r.get('dim_a','')}×{r.get('dim_b','')}")
-
     all_pairs = []
     for i, t1 in enumerate(THEMES):
         for t2 in THEMES[i+1:]:
             if f"{t1['id']}×{t2['id']}" not in done_pairs:
                 all_pairs.append((t1["id"], t1["name"], t2["id"], t2["name"]))
+    return all_pairs
 
-    if all_pairs:
-        tprint(f"  → 3.4 Cross-pairs: {len(all_pairs)} remaining (of 105)")
 
-        def analyze_pair(p):
-            d1, n1, d2, n2 = p
-            sys = f"""Liên hệ "{n1}" × "{n2}". JSON: {{"dim_a":"{d1}","dim_b":"{d2}","connections":["..."],"synergies":["..."],"tensions":["..."],"insights":["..."]}}"""
-            r = llm.complete_json(system=sys, user=all_ctx[:12000], max_tokens=2000)
-            if r:
-                r["timestamp"] = utc_now()
-                append_jsonl(pairs_file, r)
+def _crosslink_run_pairs(llm, all_ctx, pairs_file, all_pairs, concurrent):
+    tprint(f"  → 3.4 Cross-pairs: {len(all_pairs)} remaining (of 105)")
 
-        with ThreadPoolExecutor(max_workers=concurrent) as pool:
-            futs = [pool.submit(analyze_pair, p) for p in all_pairs]
-            for f in as_completed(futs):
-                try:
-                    f.result()
-                except Exception:
-                    pass
-
-    # 3.5 Master counter-narrative
-    if not (cd / "counter_narratives.json").exists():
-        tprint("  → 3.5 Master counter-narrative")
-        r = llm.complete_json(
-            system='PHẢN BIỆN VIÊN. Toàn bộ nghiên cứu VL/TV/BT. JSON: {"mainstream":[{"narrative":"...","counter":"...","evidence":"..."}],"assumptions":["..."],"missing_voices":["..."],"source_biases":["..."],"risks_overlooked":["..."]}',
-            user=all_ctx, max_tokens=4000)
+    def analyze_pair(p):
+        d1, n1, d2, n2 = p
+        sys = f"""Liên hệ "{n1}" × "{n2}". JSON: {{"dim_a":"{d1}","dim_b":"{d2}","connections":["..."],"synergies":["..."],"tensions":["..."],"insights":["..."]}}"""
+        r = llm.complete_json(system=sys, user=all_ctx[:12000], max_tokens=2000)
         if r:
-            with open(cd / "counter_narratives.json", "w", encoding="utf-8") as f:
-                json.dump(r, f, ensure_ascii=False, indent=2)
+            r["timestamp"] = utc_now()
+            append_jsonl(pairs_file, r)
 
-    # 3.6 Confidence matrix
+    with ThreadPoolExecutor(max_workers=concurrent) as pool:
+        futs = [pool.submit(analyze_pair, p) for p in all_pairs]
+        for f in as_completed(futs):
+            try:
+                f.result()
+            except Exception:
+                pass
+
+
+def _crosslink_confidence_matrix(cd, ad):
     tprint("  → 3.6 Confidence matrix")
     rows = []
     if ad.exists():
@@ -1084,12 +1110,64 @@ def run_crosslink_ultra(corpus, llm, concurrent=6):
             w.writeheader()
             w.writerows(sorted(rows, key=lambda r: -r["confidence"]))
 
+
+def run_crosslink_ultra(corpus, llm, concurrent=6):
+    tprint("=" * 70)
+    tprint("PHA 3 ULTRA: 105 cross-pairs + calendar + products + counter")
+    tprint("=" * 70)
+
+    cd = OUTPUT_DIR / "crosslink"
+    cd.mkdir(parents=True, exist_ok=True)
+
+    ad = OUTPUT_DIR / "assets"
+    td = OUTPUT_DIR / "thematic"
+    all_ctx = _crosslink_load_ctx(ad, td)
+
+    _crosslink_dump_json(cd, "relationships.json", "3.1 Relationships", llm,
+                         'Xác định quan hệ thực thể VL/TV/BT. JSON: {"relationships":[{"from":"...","to":"...","type":"...","strength":1-5,"description":"..."}],"clusters":[{"name":"...","members":["..."],"theme":"..."}],"hub_nodes":["..."]}',
+                         all_ctx, 5000)
+    _crosslink_dump_json(cd, "festival_calendar.json", "3.2 Calendar + temporal", llm,
+                         'Lịch lễ hội 12 tháng VL/TV/BT + temporal. JSON: {"calendar":[{"month":1,"lunar_date":"...","name":"...","location":"...","province":"...","confirmed":true,"peak_crowd":"low/medium/high","weather":"..."}],"seasonal_patterns":{"peak":"...","shoulder":"...","low":"..."},"year_round":["..."]}',
+                         all_ctx, 5000)
+    _crosslink_dump_json(cd, "products.json", "3.3 Products", llm,
+                         'Sản phẩm du lịch từ nghiên cứu. JSON: {"products":[{"name":"...","type":"tour/workshop/event","route":["..."],"duration":"...","season":"...","segments":["..."],"highlights":["..."],"sensory":"...","story_hook":"...","readiness":"market-ready|pilot|development","value_chain":["..."]}]}',
+                         all_ctx, 5000)
+
+    # 3.4 ALL 105 cross-dimension pairs — PARALLEL
+    pairs_file = cd / "cross_dimension_pairs.jsonl"
+    all_pairs = _crosslink_pending_pairs(pairs_file)
+    if all_pairs:
+        _crosslink_run_pairs(llm, all_ctx, pairs_file, all_pairs, concurrent)
+
+    _crosslink_dump_json(cd, "counter_narratives.json", "3.5 Master counter-narrative", llm,
+                         'PHẢN BIỆN VIÊN. Toàn bộ nghiên cứu VL/TV/BT. JSON: {"mainstream":[{"narrative":"...","counter":"...","evidence":"..."}],"assumptions":["..."],"missing_voices":["..."],"source_biases":["..."],"risks_overlooked":["..."]}',
+                         all_ctx, 4000)
+
+    _crosslink_confidence_matrix(cd, ad)
     tprint("  ✓ PHA 3 DONE")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
+
+
+def _run_phases(phases, args, llm):
+    corpus = []
+    if 0 in phases:
+        corpus = build_corpus(workers=args.workers)
+    if any(p in phases for p in [1, 2, 3]):
+        cf = OUTPUT_DIR / "corpus" / "full_corpus.jsonl"
+        if not corpus and cf.exists():
+            corpus = read_jsonl(cf)
+            tprint(f"Loaded corpus: {len(corpus)} sources")
+    if 1 in phases:
+        run_thematic_ultra(corpus, llm, concurrent_themes=args.concurrent, concurrent_subs=max(2, args.concurrent // 2))
+        run_cross_pollination(llm)
+    if 2 in phases:
+        run_asset_ultra(corpus, llm, concurrent=args.concurrent)
+    if 3 in phases:
+        run_crosslink_ultra(corpus, llm, concurrent=min(6, args.concurrent))
 
 
 def main():
@@ -1118,23 +1196,8 @@ def main():
     if not llm.available:
         tprint("[WARN] LLM not available — set LLM_API_KEY and LLM_BASE_URL")
 
-    corpus = []
     start = time.time()
-
-    if 0 in phases:
-        corpus = build_corpus(workers=args.workers)
-    if any(p in phases for p in [1, 2, 3]):
-        cf = OUTPUT_DIR / "corpus" / "full_corpus.jsonl"
-        if not corpus and cf.exists():
-            corpus = read_jsonl(cf)
-            tprint(f"Loaded corpus: {len(corpus)} sources")
-    if 1 in phases:
-        run_thematic_ultra(corpus, llm, concurrent_themes=args.concurrent, concurrent_subs=max(2, args.concurrent // 2))
-        run_cross_pollination(llm)
-    if 2 in phases:
-        run_asset_ultra(corpus, llm, concurrent=args.concurrent)
-    if 3 in phases:
-        run_crosslink_ultra(corpus, llm, concurrent=min(6, args.concurrent))
+    _run_phases(phases, args, llm)
 
     elapsed = time.time() - start
     tprint(f"{'=' * 70}")

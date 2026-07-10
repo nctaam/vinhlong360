@@ -165,12 +165,7 @@ CHỈ trả JSON. Chỉ liệt kê MỐI LIÊN HỆ THỰC SỰ CÓ Ý NGHĨA (k
         _stats["fail"] += 1
 
 
-def main():
-    with open(PROJECT_DIR / "web" / "data.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-    entities = data.get("entities", [])
-    hi = [e for e in entities if e.get("confidence", 0) >= 0.7]
-
+def _build_clusters(hi):
     # Build clusters: by area × type
     clusters = {}
     for e in hi:
@@ -191,13 +186,10 @@ def main():
         if len(type_ents) >= 3:
             clusters[f"cross-area/{etype}"] = type_ents[:30]
 
-    tprint("=== Entity Relationship Graph Builder ===")
-    tprint(f"High-confidence entities: {len(hi)}")
-    tprint(f"Clusters to process: {len(clusters)}")
-    tprint(f"Model: {LLM_MODEL}")
-    tprint(f"Output: {RESULT_FILE}")
-    tprint("")
+    return clusters
 
+
+def _run_clusters(clusters):
     with ThreadPoolExecutor(max_workers=3) as pool:
         futures = {pool.submit(build_cluster_relationships, name, ents): name
                    for name, ents in clusters.items()}
@@ -206,6 +198,24 @@ def main():
                 fut.result()
             except Exception:
                 _stats["fail"] += 1
+
+
+def main():
+    with open(PROJECT_DIR / "web" / "data.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+    entities = data.get("entities", [])
+    hi = [e for e in entities if e.get("confidence", 0) >= 0.7]
+
+    clusters = _build_clusters(hi)
+
+    tprint("=== Entity Relationship Graph Builder ===")
+    tprint(f"High-confidence entities: {len(hi)}")
+    tprint(f"Clusters to process: {len(clusters)}")
+    tprint(f"Model: {LLM_MODEL}")
+    tprint(f"Output: {RESULT_FILE}")
+    tprint("")
+
+    _run_clusters(clusters)
 
     tprint(f"\n=== DONE: {_stats['done']} clusters, {_stats['edges']} edges, {_stats['fail']} failed ===")
     tprint(f"Output: {RESULT_FILE}")

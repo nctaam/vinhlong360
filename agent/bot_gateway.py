@@ -897,6 +897,21 @@ def _get_gateway() -> BotGateway:
     return _gateway
 
 
+def _home_status(gw: BotGateway) -> dict:
+    """Build the gateway status payload for the ``GET /`` endpoint."""
+    platforms = []
+    if TELEGRAM_TOKEN and HAS_TELEGRAM:
+        platforms.append("Telegram")
+    if ZALO_OA_ID:
+        platforms.append("Zalo OA")
+    return {
+        "service": "vinhlong360 Bot Gateway",
+        "platforms": platforms or ["(chua cau hinh - xem .env)"],
+        "agent_url": gw.agent_url,
+        "session_count": len(_sessions),
+    }
+
+
 def create_bot_app() -> FastAPI:
     """Create and return a FastAPI app with Zalo webhook endpoints.
 
@@ -917,17 +932,7 @@ def create_bot_app() -> FastAPI:
     @bot_app.get("/")
     async def home():
         """Gateway status page."""
-        platforms = []
-        if TELEGRAM_TOKEN and HAS_TELEGRAM:
-            platforms.append("Telegram")
-        if ZALO_OA_ID:
-            platforms.append("Zalo OA")
-        return {
-            "service": "vinhlong360 Bot Gateway",
-            "platforms": platforms or ["(chua cau hinh - xem .env)"],
-            "agent_url": gw.agent_url,
-            "session_count": len(_sessions),
-        }
+        return _home_status(gw)
 
     @bot_app.post("/webhook/zalo")
     async def zalo_webhook(request: Request):

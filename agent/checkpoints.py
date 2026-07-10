@@ -526,90 +526,118 @@ def needs_confirmation(action_type: str, params: dict) -> bool:
         return False
 
 
+def _prompt_lines_itinerary(confirmation: PendingConfirmation) -> list:
+    """Build itinerary confirmation lines (verbatim from format_confirmation_prompt)."""
+    lines = []
+    params = confirmation.params
+    days = params.get("days", 1)
+    areas = params.get("areas", [])
+    budget = params.get("budget", "trung_binh")
+    interests = params.get("interests", [])
+
+    budget_map = {
+        "thap": "Thấp",
+        "trung_binh": "Trung bình",
+        "cao": "Cao",
+    }
+    interest_map = {
+        "am_thuc": "Ẩm thực",
+        "lich_su": "Lịch sử",
+        "thien_nhien": "Thiên nhiên",
+        "van_hoa": "Văn hóa",
+        "mua_sam": "Mua sắm",
+        "tham_quan": "Tham quan",
+        "tong_hop": "Tổng hợp",
+    }
+    area_map = {
+        "vinh-long": "Vĩnh Long",
+        "ben-tre": "Bến Tre",
+        "tra-vinh": "Trà Vinh",
+    }
+
+    duration = f"{days} ngày" + (f" {days - 1} đêm" if days > 1 else "")
+    area_names = ", ".join(area_map.get(a, a) for a in areas) if areas else "Tất cả khu vực"
+    interest_names = ", ".join(interest_map.get(i, i) for i in interests) if interests else "Tổng hợp"
+    budget_name = budget_map.get(budget, budget)
+
+    lines.append("Xac nhan lich trinh:")
+    lines.append(f"  - {duration}, khu vuc {area_names}")
+    lines.append(f"  - Ngan sach: {budget_name}")
+    lines.append(f"  - So thich: {interest_names}")
+    if params.get("month"):
+        lines.append(f"  - Thang di: {params['month']}")
+    lines.append("")
+    lines.append("Ban muon toi tao lich trinh nay? (Xac nhan / Thay doi)")
+    return lines
+
+
+def _prompt_lines_recommendation(confirmation: PendingConfirmation) -> list:
+    """Build recommendation confirmation lines (verbatim from format_confirmation_prompt)."""
+    lines = []
+    params = confirmation.params
+    areas = params.get("areas", params.get("area", ""))
+    count = params.get("limit", params.get("result_count", ""))
+
+    lines.append("Xac nhan goi y:")
+    lines.append(f"  - {confirmation.description}")
+    if areas:
+        lines.append(f"  - Khu vuc: {areas}")
+    if count:
+        lines.append(f"  - So luong: {count} ket qua")
+    lines.append("")
+    lines.append("Ban muon xem goi y nay? (Xac nhan / Thay doi)")
+    return lines
+
+
+def _prompt_lines_search_results(confirmation: PendingConfirmation) -> list:
+    """Build search_results confirmation lines (verbatim from format_confirmation_prompt)."""
+    lines = []
+    count = confirmation.params.get("result_count", 0)
+    lines.append("Xac nhan ket qua tim kiem:")
+    lines.append(f"  - Tim thay {count} ket qua")
+    lines.append(f"  - {confirmation.description}")
+    lines.append("")
+    lines.append("Ban muon xem tat ca hay chi 10 ket qua dau? (Tat ca / 10 dau)")
+    return lines
+
+
+def _prompt_lines_weather_dependent(confirmation: PendingConfirmation) -> list:
+    """Build weather_dependent confirmation lines (verbatim from format_confirmation_prompt)."""
+    lines = []
+    lines.append("Xac nhan goi y theo thoi tiet:")
+    lines.append(f"  - {confirmation.description}")
+    lines.append("  - Du lieu thoi tiet co the khong chinh xac 100%")
+    lines.append("")
+    lines.append("Ban muon tiep tuc voi goi y nay? (Xac nhan / Bo qua)")
+    return lines
+
+
+def _prompt_lines_generic(confirmation: PendingConfirmation) -> list:
+    """Build generic fallback confirmation lines (verbatim from format_confirmation_prompt)."""
+    lines = []
+    lines.append(f"Xac nhan hanh dong: {confirmation.action_type}")
+    lines.append(f"  - {confirmation.description}")
+    lines.append("")
+    lines.append("Ban muon tiep tuc? (Xac nhan / Huy)")
+    return lines
+
+
 def format_confirmation_prompt(confirmation: PendingConfirmation) -> str:
     """
     Format a PendingConfirmation into a user-facing Vietnamese message.
 
     Returns a string suitable for displaying in the chat UI.
     """
-    lines = []
-
     if confirmation.action_type == "itinerary":
-        params = confirmation.params
-        days = params.get("days", 1)
-        areas = params.get("areas", [])
-        budget = params.get("budget", "trung_binh")
-        interests = params.get("interests", [])
-
-        budget_map = {
-            "thap": "Thấp",
-            "trung_binh": "Trung bình",
-            "cao": "Cao",
-        }
-        interest_map = {
-            "am_thuc": "Ẩm thực",
-            "lich_su": "Lịch sử",
-            "thien_nhien": "Thiên nhiên",
-            "van_hoa": "Văn hóa",
-            "mua_sam": "Mua sắm",
-            "tham_quan": "Tham quan",
-            "tong_hop": "Tổng hợp",
-        }
-        area_map = {
-            "vinh-long": "Vĩnh Long",
-            "ben-tre": "Bến Tre",
-            "tra-vinh": "Trà Vinh",
-        }
-
-        duration = f"{days} ngày" + (f" {days - 1} đêm" if days > 1 else "")
-        area_names = ", ".join(area_map.get(a, a) for a in areas) if areas else "Tất cả khu vực"
-        interest_names = ", ".join(interest_map.get(i, i) for i in interests) if interests else "Tổng hợp"
-        budget_name = budget_map.get(budget, budget)
-
-        lines.append("Xac nhan lich trinh:")
-        lines.append(f"  - {duration}, khu vuc {area_names}")
-        lines.append(f"  - Ngan sach: {budget_name}")
-        lines.append(f"  - So thich: {interest_names}")
-        if params.get("month"):
-            lines.append(f"  - Thang di: {params['month']}")
-        lines.append("")
-        lines.append("Ban muon toi tao lich trinh nay? (Xac nhan / Thay doi)")
-
+        lines = _prompt_lines_itinerary(confirmation)
     elif confirmation.action_type == "recommendation":
-        params = confirmation.params
-        areas = params.get("areas", params.get("area", ""))
-        count = params.get("limit", params.get("result_count", ""))
-
-        lines.append("Xac nhan goi y:")
-        lines.append(f"  - {confirmation.description}")
-        if areas:
-            lines.append(f"  - Khu vuc: {areas}")
-        if count:
-            lines.append(f"  - So luong: {count} ket qua")
-        lines.append("")
-        lines.append("Ban muon xem goi y nay? (Xac nhan / Thay doi)")
-
+        lines = _prompt_lines_recommendation(confirmation)
     elif confirmation.action_type == "search_results":
-        count = confirmation.params.get("result_count", 0)
-        lines.append("Xac nhan ket qua tim kiem:")
-        lines.append(f"  - Tim thay {count} ket qua")
-        lines.append(f"  - {confirmation.description}")
-        lines.append("")
-        lines.append("Ban muon xem tat ca hay chi 10 ket qua dau? (Tat ca / 10 dau)")
-
+        lines = _prompt_lines_search_results(confirmation)
     elif confirmation.action_type == "weather_dependent":
-        lines.append("Xac nhan goi y theo thoi tiet:")
-        lines.append(f"  - {confirmation.description}")
-        lines.append("  - Du lieu thoi tiet co the khong chinh xac 100%")
-        lines.append("")
-        lines.append("Ban muon tiep tuc voi goi y nay? (Xac nhan / Bo qua)")
-
+        lines = _prompt_lines_weather_dependent(confirmation)
     else:
-        # Generic fallback
-        lines.append(f"Xac nhan hanh dong: {confirmation.action_type}")
-        lines.append(f"  - {confirmation.description}")
-        lines.append("")
-        lines.append("Ban muon tiep tuc? (Xac nhan / Huy)")
+        lines = _prompt_lines_generic(confirmation)
 
     return "\n".join(lines)
 

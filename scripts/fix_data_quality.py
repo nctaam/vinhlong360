@@ -94,6 +94,38 @@ def _rel_type(rel: dict) -> str:
     return str(rel.get("type") or rel.get("rel_type") or "")
 
 
+def _near_pairs(relationships: list[dict]) -> set[tuple[str, str]]:
+    """Build the set of existing (source, target) pairs for 'near' relationships."""
+    near_pairs: set[tuple[str, str]] = set()
+    for rel in relationships:
+        if _rel_type(rel) == "near":
+            src = _rel_source(rel)
+            tgt = _rel_target(rel)
+            if src and tgt:
+                near_pairs.add((src, tgt))
+    return near_pairs
+
+
+def _build_reverse_near(relationships: list[dict], src: str, tgt: str) -> dict:
+    """Build the reverse 'near' relationship for src->tgt, matching field names.
+
+    data.json uses "from"/"to", not "source"/"target".
+    """
+    original = next(
+        (r for r in relationships
+         if _rel_type(r) == "near" and _rel_source(r) == src and _rel_target(r) == tgt),
+        None,
+    )
+    # Detect which field names the data uses
+    if original and "from" in original:
+        reverse: dict = {"from": tgt, "to": src, "type": "near"}
+    else:
+        reverse = {"source_id": tgt, "target_id": src, "type": "near"}
+    if original and "attributes" in original:
+        reverse["attributes"] = dict(original["attributes"])
+    return reverse
+
+
 def check_asymmetric_near(
     entities: list[dict],
     relationships: list[dict],
@@ -103,42 +135,19 @@ def check_asymmetric_near(
     A 'near' relationship from A->B should have a matching B->A.
     """
     entity_ids = {e["id"] for e in entities}
-
-    # Build set of existing (source, target) pairs for 'near'
-    near_pairs: set[tuple[str, str]] = set()
-    for rel in relationships:
-        if _rel_type(rel) == "near":
-            src = _rel_source(rel)
-            tgt = _rel_target(rel)
-            if src and tgt:
-                near_pairs.add((src, tgt))
+    near_pairs = _near_pairs(relationships)
 
     issues: list[dict] = []
     fixes: list[dict] = []
     for src, tgt in sorted(near_pairs):
-        if (tgt, src) not in near_pairs:
-            if tgt in entity_ids and src in entity_ids:
-                issues.append({
-                    "code": "ASYMMETRIC_NEAR",
-                    "message": f"near {src} -> {tgt} exists but reverse is missing",
-                    "source": src,
-                    "target": tgt,
-                })
-                # Build the reverse relationship using the same field names as
-                # the original (data.json uses "from"/"to", not "source"/"target")
-                original = next(
-                    (r for r in relationships
-                     if _rel_type(r) == "near" and _rel_source(r) == src and _rel_target(r) == tgt),
-                    None,
-                )
-                # Detect which field names the data uses
-                if original and "from" in original:
-                    reverse: dict = {"from": tgt, "to": src, "type": "near"}
-                else:
-                    reverse = {"source_id": tgt, "target_id": src, "type": "near"}
-                if original and "attributes" in original:
-                    reverse["attributes"] = dict(original["attributes"])
-                fixes.append(reverse)
+        if (tgt, src) not in near_pairs and tgt in entity_ids and src in entity_ids:
+            issues.append({
+                "code": "ASYMMETRIC_NEAR",
+                "message": f"near {src} -> {tgt} exists but reverse is missing",
+                "source": src,
+                "target": tgt,
+            })
+            fixes.append(_build_reverse_near(relationships, src, tgt))
     return issues, fixes
 
 
@@ -253,7 +262,8 @@ def check_duplicates(entities: list[dict]) -> list[dict]:
     return issues
 
 
-def main() -> int:
+def _parse_args() -> argparse.Namespace:
+    """Build the CLI parser and parse arguments."""
     parser = argparse.ArgumentParser(
         description="Automated data-quality fixes for web/data.json."
     )
@@ -273,20 +283,16 @@ def main() -> int:
         dest="json_output",
         help="output report as JSON",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    data_path = Path(args.data)
-    if not data_path.exists():
-        print(f"[fix] ERROR: {data_path} not found", file=sys.stderr)
-        return 1
 
-    data = _load_data(data_path)
-    entities = data.get("entities", [])
-    relationships = data.get("relationships", [])
-
+def _collect_issues(
+    entities: list[dict],
+    relationships: list[dict],
+) -> tuple[list[dict], dict, list[dict], int]:
+    """Run all quality checks. Returns (all_issues, summary, near_fixes, phone_fix_count)."""
     all_issues: list[dict] = []
     summary: dict = {}
-    applied_fixes: list[str] = []
 
     # 1. Asymmetric near relationships
     near_issues, near_fixes = check_asymmetric_near(entities, relationships)
@@ -317,8 +323,20 @@ def main() -> int:
     summary["total_issues"] = len(all_issues)
     summary["entities_scanned"] = len(entities)
     summary["relationships_scanned"] = len(relationships)
+    return all_issues, summary, near_fixes, phone_fix_count
 
-    # --- Apply fixes if requested ---
+
+def _apply_fixes(
+    args: argparse.Namespace,
+    data: dict,
+    data_path: Path,
+    relationships: list[dict],
+    summary: dict,
+    applied_fixes: list[str],
+    near_fixes: list[dict],
+    phone_fix_count: int,
+) -> int | None:
+    """Apply fixes if requested. Returns 1 on backup failure, else None."""
     if args.fix and (near_fixes or phone_fix_count > 0):
         if not _run_backup():
             print("[fix] ERROR: backup failed, aborting fix", file=sys.stderr)
@@ -336,45 +354,98 @@ def main() -> int:
         summary["fixes_applied"] = applied_fixes
     elif args.fix:
         summary["fixes_applied"] = ["(no fixable issues found)"]
+    return None
 
-    # --- Output ---
+
+def _print_issue_groups(all_issues: list[dict]) -> None:
+    """Print issues grouped by code (text report section)."""
+    if all_issues:
+        print()
+        # Group by code
+        by_code: dict[str, list[dict]] = {}
+        for issue in all_issues:
+            by_code.setdefault(issue["code"], []).append(issue)
+
+        for code, items in by_code.items():
+            print(f"  --- {code} ({len(items)}) ---")
+            for item in items[:10]:  # show up to 10 per category
+                print(f"    {item['message']}")
+            if len(items) > 10:
+                print(f"    ... and {len(items) - 10} more")
+
+
+def _print_text_report(
+    args: argparse.Namespace,
+    summary: dict,
+    applied_fixes: list[str],
+    all_issues: list[dict],
+) -> None:
+    """Print the human-readable (non-JSON) report."""
+    mode = "FIX" if args.fix else "DRY-RUN"
+    print(f"[fix] data quality report ({mode})")
+    print(f"  entities scanned: {summary['entities_scanned']}")
+    print(f"  relationships scanned: {summary['relationships_scanned']}")
+    print(f"  total issues: {summary['total_issues']}")
+    print()
+
+    for key in ("asymmetric_near", "coords_approximate", "wrong_province_summary", "phone_issues", "duplicates"):
+        count = summary.get(key, 0)
+        label = key.replace("_", " ").title()
+        marker = "!!" if count > 0 else "ok"
+        print(f"  [{marker}] {label}: {count}")
+
+    if applied_fixes:
+        print()
+        print("  Fixes applied:")
+        for fix_desc in applied_fixes:
+            print(f"    - {fix_desc}")
+
+    _print_issue_groups(all_issues)
+
+
+def _output_report(
+    args: argparse.Namespace,
+    summary: dict,
+    all_issues: list[dict],
+    applied_fixes: list[str],
+) -> None:
+    """Emit the report as JSON or human-readable text."""
     report = {"summary": summary, "issues": all_issues}
 
     if args.json_output:
         print(json.dumps(report, indent=2, ensure_ascii=False))
     else:
-        mode = "FIX" if args.fix else "DRY-RUN"
-        print(f"[fix] data quality report ({mode})")
-        print(f"  entities scanned: {summary['entities_scanned']}")
-        print(f"  relationships scanned: {summary['relationships_scanned']}")
-        print(f"  total issues: {summary['total_issues']}")
-        print()
+        _print_text_report(args, summary, applied_fixes, all_issues)
 
-        for key in ("asymmetric_near", "coords_approximate", "wrong_province_summary", "phone_issues", "duplicates"):
-            count = summary.get(key, 0)
-            label = key.replace("_", " ").title()
-            marker = "!!" if count > 0 else "ok"
-            print(f"  [{marker}] {label}: {count}")
 
-        if applied_fixes:
-            print()
-            print("  Fixes applied:")
-            for fix_desc in applied_fixes:
-                print(f"    - {fix_desc}")
+def main() -> int:
+    args = _parse_args()
 
-        if all_issues:
-            print()
-            # Group by code
-            by_code: dict[str, list[dict]] = {}
-            for issue in all_issues:
-                by_code.setdefault(issue["code"], []).append(issue)
+    data_path = Path(args.data)
+    if not data_path.exists():
+        print(f"[fix] ERROR: {data_path} not found", file=sys.stderr)
+        return 1
 
-            for code, items in by_code.items():
-                print(f"  --- {code} ({len(items)}) ---")
-                for item in items[:10]:  # show up to 10 per category
-                    print(f"    {item['message']}")
-                if len(items) > 10:
-                    print(f"    ... and {len(items) - 10} more")
+    data = _load_data(data_path)
+    entities = data.get("entities", [])
+    relationships = data.get("relationships", [])
+
+    applied_fixes: list[str] = []
+
+    all_issues, summary, near_fixes, phone_fix_count = _collect_issues(
+        entities, relationships
+    )
+
+    # --- Apply fixes if requested ---
+    rc = _apply_fixes(
+        args, data, data_path, relationships, summary,
+        applied_fixes, near_fixes, phone_fix_count,
+    )
+    if rc is not None:
+        return rc
+
+    # --- Output ---
+    _output_report(args, summary, all_issues, applied_fixes)
 
     return 0
 

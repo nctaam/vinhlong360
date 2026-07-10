@@ -150,6 +150,39 @@ def _full_norm_name(name: str) -> str:
     return _re.sub(r"[^a-z0-9]+", " ", s).strip()
 
 
+# Sentinel distinguishing "no match" from "matched entity whose id is falsy".
+_NO_DUP = object()
+
+
+def _same_type_dup_id(cand_tokens: set, e: dict):
+    """Same-type near-duplicate check for one entity.
+
+    Returns the entity id on match (mirrors ``e.get("id")`` verbatim), else
+    the ``_NO_DUP`` sentinel (candidate looks distinct vs this entity).
+    """
+    ex_tokens = _name_tokens(e.get("name", ""))
+    if not ex_tokens:
+        return _NO_DUP
+    overlap = cand_tokens & ex_tokens
+    if len(overlap) >= 2 or (overlap and overlap == min(cand_tokens, ex_tokens, key=len)):
+        return e.get("id")
+    return _NO_DUP
+
+
+def _cross_site_dup_id(cand_full: str, e: dict):
+    """Cross site-type containment check for one entity.
+
+    Returns the entity id on match (mirrors ``e.get("id")`` verbatim), else
+    the ``_NO_DUP`` sentinel.
+    """
+    ex_full = _full_norm_name(e.get("name", ""))
+    if not ex_full or len(min(cand_full, ex_full, key=len)) < 8:
+        return _NO_DUP
+    if cand_full in ex_full or ex_full in cand_full:
+        return e.get("id")
+    return _NO_DUP
+
+
 def find_near_duplicate(candidate_name: str, candidate_type: str, entities: list) -> str | None:
     """Detect a likely near-duplicate / contradiction (offline, no LLM).
 
@@ -172,20 +205,14 @@ def find_near_duplicate(candidate_name: str, candidate_type: str, entities: list
 
     for e in entities:
         etype = e.get("type")
-        ex_name = e.get("name", "")
         if etype == candidate_type:
-            ex_tokens = _name_tokens(ex_name)
-            if not ex_tokens:
-                continue
-            overlap = cand_tokens & ex_tokens
-            if len(overlap) >= 2 or (overlap and overlap == min(cand_tokens, ex_tokens, key=len)):
-                return e.get("id")
+            dup = _same_type_dup_id(cand_tokens, e)
+            if dup is not _NO_DUP:
+                return dup
         elif cand_is_site and etype in _SITE_TYPES:
-            ex_full = _full_norm_name(ex_name)
-            if not ex_full or len(min(cand_full, ex_full, key=len)) < 8:
-                continue
-            if cand_full in ex_full or ex_full in cand_full:
-                return e.get("id")
+            dup = _cross_site_dup_id(cand_full, e)
+            if dup is not _NO_DUP:
+                return dup
     return None
 
 

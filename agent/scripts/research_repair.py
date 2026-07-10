@@ -76,6 +76,47 @@ def is_entry_empty(rec: dict) -> bool:
     return True
 
 
+def _clean_thematic_file(rf: Path) -> tuple[int, int]:
+    """Clean one thematic research.jsonl. Returns (removed, kept)."""
+    records = read_jsonl(rf)
+    original_count = len(records)
+    cleaned = []
+    removed_layers = []
+    for rec in records:
+        layer = rec.get("layer", "")
+        sub = rec.get("sub_topic", "")
+        if is_entry_empty(rec):
+            removed_layers.append(f"{sub}|{layer}")
+        else:
+            cleaned.append(rec)
+    removed = original_count - len(cleaned)
+    if removed > 0:
+        write_jsonl(rf, cleaned)
+        tprint(f"  {rf.parent.name}: removed {removed}/{original_count} empty entries")
+        for rl in removed_layers[:5]:
+            tprint(f"    - {rl}")
+        if len(removed_layers) > 5:
+            tprint(f"    ... and {len(removed_layers) - 5} more")
+    return removed, len(cleaned)
+
+
+def _clean_asset_file(rf: Path) -> tuple[int, int]:
+    """Clean one asset research.jsonl. Returns (removed, kept)."""
+    records = read_jsonl(rf)
+    original_count = len(records)
+    cleaned = []
+    for rec in records:
+        if is_entry_empty(rec):
+            pass  # remove
+        else:
+            cleaned.append(rec)
+    removed = original_count - len(cleaned)
+    if removed > 0:
+        write_jsonl(rf, cleaned)
+        tprint(f"  {rf.parent.name}: removed {removed}/{original_count} empty entries")
+    return removed, len(cleaned)
+
+
 def clean_broken_entries():
     """Remove empty entries from thematic and asset JSONL files."""
     tprint("=" * 70)
@@ -89,46 +130,17 @@ def clean_broken_entries():
     thematic_dir = OUTPUT_DIR / "thematic"
     if thematic_dir.exists():
         for rf in thematic_dir.glob("*/research.jsonl"):
-            records = read_jsonl(rf)
-            original_count = len(records)
-            cleaned = []
-            removed_layers = []
-            for rec in records:
-                layer = rec.get("layer", "")
-                sub = rec.get("sub_topic", "")
-                if is_entry_empty(rec):
-                    removed_layers.append(f"{sub}|{layer}")
-                else:
-                    cleaned.append(rec)
-            removed = original_count - len(cleaned)
-            if removed > 0:
-                write_jsonl(rf, cleaned)
-                tprint(f"  {rf.parent.name}: removed {removed}/{original_count} empty entries")
-                for rl in removed_layers[:5]:
-                    tprint(f"    - {rl}")
-                if len(removed_layers) > 5:
-                    tprint(f"    ... and {len(removed_layers) - 5} more")
+            removed, kept = _clean_thematic_file(rf)
             total_removed += removed
-            total_kept += len(cleaned)
+            total_kept += kept
 
     # Clean asset research
     assets_dir = OUTPUT_DIR / "assets"
     if assets_dir.exists():
         for rf in assets_dir.glob("*/research.jsonl"):
-            records = read_jsonl(rf)
-            original_count = len(records)
-            cleaned = []
-            for rec in records:
-                if is_entry_empty(rec):
-                    pass  # remove
-                else:
-                    cleaned.append(rec)
-            removed = original_count - len(cleaned)
-            if removed > 0:
-                write_jsonl(rf, cleaned)
-                tprint(f"  {rf.parent.name}: removed {removed}/{original_count} empty entries")
+            removed, kept = _clean_asset_file(rf)
             total_removed += removed
-            total_kept += len(cleaned)
+            total_kept += kept
 
     tprint(f"Cleaning done: removed {total_removed} empty entries, kept {total_kept}")
     return total_removed
@@ -136,13 +148,34 @@ def clean_broken_entries():
 
 # ─── Step 2: Audit what's missing ────────────────────────────────────────────
 
-def audit_gaps():
-    """Report exactly what needs to be re-run."""
-    tprint("=" * 70)
-    tprint("AUDIT: What's missing?")
-    tprint("=" * 70)
+def _audit_thematic_dir(td: Path, expected_layers: list[str]) -> int:
+    """Count missing layer entries for one thematic dir. Returns missing count."""
+    rf = td / "research.jsonl"
+    if not rf.exists():
+        return 0
+    records = read_jsonl(rf)
+    subs = set()
+    done = set()
+    for rec in records:
+        st = rec.get("sub_topic", "")
+        layer = rec.get("layer", "")
+        if st:
+            subs.add(st)
+        if st and layer:
+            done.add(f"{st}|{layer}")
+    missing = []
+    for st in subs:
+        for lyr in expected_layers:
+            if f"{st}|{lyr}" not in done:
+                missing.append(f"{st}|{lyr}")
+    if missing:
+        tprint(f"  {td.name}: {len(missing)} missing layers across {len(subs)} sub-topics")
+        return len(missing)
+    return 0
 
-    # Thematic gaps
+
+def _audit_thematic_gaps() -> int:
+    """Total missing thematic layer entries across all dirs."""
     thematic_dir = OUTPUT_DIR / "thematic"
     expected_layers = [
         "L1_survey", "L2_extract", "L3_perspectives", "L4_adversarial",
@@ -152,58 +185,65 @@ def audit_gaps():
     thematic_missing = 0
     if thematic_dir.exists():
         for td in sorted(thematic_dir.iterdir()):
-            rf = td / "research.jsonl"
-            if not rf.exists():
-                continue
-            records = read_jsonl(rf)
-            subs = set()
-            done = set()
-            for rec in records:
-                st = rec.get("sub_topic", "")
-                layer = rec.get("layer", "")
-                if st:
-                    subs.add(st)
-                if st and layer:
-                    done.add(f"{st}|{layer}")
-            missing = []
-            for st in subs:
-                for lyr in expected_layers:
-                    if f"{st}|{lyr}" not in done:
-                        missing.append(f"{st}|{lyr}")
-            if missing:
-                tprint(f"  {td.name}: {len(missing)} missing layers across {len(subs)} sub-topics")
-                thematic_missing += len(missing)
+            thematic_missing += _audit_thematic_dir(td, expected_layers)
+    return thematic_missing
 
-    # Asset gaps
+
+def _audit_asset_dir(ad: Path, expected_angles: list[str],
+                     without_synthesis: list[str], without_adversarial: list[str]) -> int:
+    """Count missing angle entries for one asset dir; append names to gap lists."""
+    rf = ad / "research.jsonl"
+    if not rf.exists():
+        return 0
+    records = read_jsonl(rf)
+    done = set()
+    for rec in records:
+        a = rec.get("angle") or rec.get("pass") or rec.get("layer")
+        if a:
+            done.add(a)
+    asset_missing = 0
+    for ang in expected_angles:
+        if ang not in done:
+            asset_missing += 1
+    if "synthesis" not in done:
+        without_synthesis.append(ad.name)
+    if "adversarial_verify" not in done:
+        without_adversarial.append(ad.name)
+    return asset_missing
+
+
+def _audit_asset_gaps() -> tuple[int, list[str], list[str]]:
+    """Returns (asset_missing, assets_without_synthesis, assets_without_adversarial)."""
     assets_dir = OUTPUT_DIR / "assets"
     expected_angles = ["history", "architecture", "culture", "tourism", "community", "sensory", "etymology"]
     asset_missing = 0
-    assets_without_synthesis = []
-    assets_without_adversarial = []
+    assets_without_synthesis: list[str] = []
+    assets_without_adversarial: list[str] = []
     if assets_dir.exists():
         for ad in sorted(assets_dir.iterdir()):
-            rf = ad / "research.jsonl"
-            if not rf.exists():
-                continue
-            records = read_jsonl(rf)
-            done = set()
-            for rec in records:
-                a = rec.get("angle") or rec.get("pass") or rec.get("layer")
-                if a:
-                    done.add(a)
-            for ang in expected_angles:
-                if ang not in done:
-                    asset_missing += 1
-            if "synthesis" not in done:
-                assets_without_synthesis.append(ad.name)
-            if "adversarial_verify" not in done:
-                assets_without_adversarial.append(ad.name)
+            asset_missing += _audit_asset_dir(
+                ad, expected_angles, assets_without_synthesis, assets_without_adversarial)
+    return asset_missing, assets_without_synthesis, assets_without_adversarial
 
-    # Crosslink gaps
+
+def _audit_crosslink_count() -> int:
+    """Count assets present in the crosslink confidence matrix."""
     matrix_file = OUTPUT_DIR / "crosslink" / "confidence_matrix.csv"
     matrix_count = 0
     if matrix_file.exists():
         matrix_count = len(matrix_file.read_text(encoding="utf-8").strip().split("\n")) - 1
+    return matrix_count
+
+
+def audit_gaps():
+    """Report exactly what needs to be re-run."""
+    tprint("=" * 70)
+    tprint("AUDIT: What's missing?")
+    tprint("=" * 70)
+
+    thematic_missing = _audit_thematic_gaps()
+    asset_missing, assets_without_synthesis, assets_without_adversarial = _audit_asset_gaps()
+    matrix_count = _audit_crosslink_count()
 
     tprint("\nSUMMARY:")
     tprint(f"  Thematic: {thematic_missing} missing layer entries")
@@ -261,6 +301,55 @@ def main():
         return
 
     # Step 4: Import and run the engine phases
+    _run_repair(args, gaps, start)
+
+
+def _select_phases(args, gaps) -> list[int]:
+    """Decide which phases to run based on args and gaps."""
+    phases_to_run = []
+    if args.all:
+        if gaps["thematic_missing"] > 0:
+            phases_to_run.append(1)
+        if gaps["asset_missing"] > 0 or gaps["assets_no_adversarial"] > 0 or gaps["assets_no_synthesis"] > 0:
+            phases_to_run.append(2)
+        phases_to_run.append(3)  # always rebuild crosslink
+    elif args.phase:
+        phases_to_run = [args.phase]
+    return phases_to_run
+
+
+def _execute_phases(phases_to_run, corpus, llm, args, engine):
+    """Run the selected engine phases in order."""
+    if 1 in phases_to_run:
+        tprint("\n>>> PHASE 1: Repairing thematic research (missing layers only)")
+        engine["run_thematic_ultra"](corpus, llm, concurrent_themes=args.concurrent,
+                                     concurrent_subs=max(1, args.concurrent // 2))
+        engine["run_cross_pollination"](llm)
+
+    if 2 in phases_to_run:
+        tprint("\n>>> PHASE 2: Repairing asset research (missing angles/adversarial/synthesis)")
+        engine["run_asset_ultra"](corpus, llm, concurrent=args.concurrent)
+
+    if 3 in phases_to_run:
+        tprint("\n>>> PHASE 3: Rebuilding crosslink matrix (all 62 assets)")
+        engine["run_crosslink_ultra"](corpus, llm, concurrent=min(4, args.concurrent))
+
+
+def _save_repair_usage(elapsed, phases_to_run, gaps, llm):
+    """Persist repair usage stats to repair_usage.json."""
+    with open(OUTPUT_DIR / "repair_usage.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "run_at": datetime.now(timezone.utc).isoformat(),
+            "elapsed_s": round(elapsed),
+            "elapsed_h": round(elapsed / 3600, 1),
+            "phases": phases_to_run,
+            "gaps_before": gaps,
+            **llm.stats()
+        }, f, ensure_ascii=False, indent=2)
+
+
+def _run_repair(args, gaps, start):
+    """Import engine, load corpus, run selected phases, and save usage."""
     tprint("\n" + "=" * 70)
     tprint("REPAIR: Re-running missing phases with conservative rate limits")
     tprint(f"Model: {args.model} | RPS: {args.rps} | Concurrent: {args.concurrent}")
@@ -286,43 +375,20 @@ def main():
         tprint("[ERROR] No corpus found — run full pipeline first")
         return
 
-    phases_to_run = []
-    if args.all:
-        if gaps["thematic_missing"] > 0:
-            phases_to_run.append(1)
-        if gaps["asset_missing"] > 0 or gaps["assets_no_adversarial"] > 0 or gaps["assets_no_synthesis"] > 0:
-            phases_to_run.append(2)
-        phases_to_run.append(3)  # always rebuild crosslink
-    elif args.phase:
-        phases_to_run = [args.phase]
-
-    if 1 in phases_to_run:
-        tprint("\n>>> PHASE 1: Repairing thematic research (missing layers only)")
-        run_thematic_ultra(corpus, llm, concurrent_themes=args.concurrent, concurrent_subs=max(1, args.concurrent // 2))
-        run_cross_pollination(llm)
-
-    if 2 in phases_to_run:
-        tprint("\n>>> PHASE 2: Repairing asset research (missing angles/adversarial/synthesis)")
-        run_asset_ultra(corpus, llm, concurrent=args.concurrent)
-
-    if 3 in phases_to_run:
-        tprint("\n>>> PHASE 3: Rebuilding crosslink matrix (all 62 assets)")
-        run_crosslink_ultra(corpus, llm, concurrent=min(4, args.concurrent))
+    phases_to_run = _select_phases(args, gaps)
+    engine = {
+        "run_thematic_ultra": run_thematic_ultra,
+        "run_cross_pollination": run_cross_pollination,
+        "run_asset_ultra": run_asset_ultra,
+        "run_crosslink_ultra": run_crosslink_ultra,
+    }
+    _execute_phases(phases_to_run, corpus, llm, args, engine)
 
     elapsed = time.time() - start
     tprint(f"\n{'=' * 70}")
     tprint(f"REPAIR COMPLETE — {elapsed:.0f}s ({elapsed / 3600:.1f}h) — {json.dumps(llm.stats())}")
 
-    # Save repair usage
-    with open(OUTPUT_DIR / "repair_usage.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "run_at": datetime.now(timezone.utc).isoformat(),
-            "elapsed_s": round(elapsed),
-            "elapsed_h": round(elapsed / 3600, 1),
-            "phases": phases_to_run,
-            "gaps_before": gaps,
-            **llm.stats()
-        }, f, ensure_ascii=False, indent=2)
+    _save_repair_usage(elapsed, phases_to_run, gaps, llm)
 
     # Final audit
     tprint("\nFINAL AUDIT:")

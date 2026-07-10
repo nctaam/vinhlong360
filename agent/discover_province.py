@@ -135,11 +135,11 @@ def _district_regions():
     return out or REGIONS
 
 
-def discover_stream(region, category, etype, model):
-    """One parallel stream → list of dicts (or [{'_error':...}])."""
+def _build_stream_prompt(region, category, etype):
+    """Build the LLM prompt for one discovery stream (pure)."""
     is_product = etype not in PLACE_TYPES
     loc_word = "vùng trồng/sản xuất (xã/huyện)" if is_product else "xã/phường + huyện"
-    prompt = (
+    return (
         f"Liệt kê các {category} CÓ THẬT và NỔI TIẾNG ở {region['label']} "
         f"(nay thuộc tỉnh Vĩnh Long mới, ĐBSCL Việt Nam). CHỈ liệt kê thứ có thật, không bịa. "
         f"Mỗi mục gồm tên đầy đủ, {loc_word}, và mô tả 1 câu.\n"
@@ -147,24 +147,23 @@ def discover_stream(region, category, etype, model):
         f'[{{"name":"...","location":"...","summary":"1 câu tiếng Việt"}}]. '
         f"Tối đa 15 mục. Không thêm chữ nào ngoài JSON."
     )
-    try:
-        resp = _client().chat.completions.create(
-            model=model, messages=[{"role": "user", "content": prompt}],
-            temperature=0.3, timeout=90)
-        text = resp.choices[0].message.content or ""
-    except Exception as e:
-        return [{"_error": f"{region['area']}/{etype}: {e}"}]
 
+
+def _parse_stream_items(text, region, etype):
+    """Extract the JSON array from an LLM stream response (pure). Returns list of items."""
     text = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.MULTILINE).strip()
     m = re.search(r"\[.*\]", text, re.DOTALL)
     if not m:
         return []
     try:
-        items = json.loads(m.group(0))
+        return json.loads(m.group(0))
     except (json.JSONDecodeError, ValueError) as exc:
         logger.warning("LLM returned invalid JSON for %s/%s: %s", region.get("area", "?"), etype, exc)
         return []
 
+
+def _filter_stream_items(items, region, etype):
+    """Normalize + filter raw LLM items into stream dicts (pure)."""
     out = []
     for it in items:
         if not isinstance(it, dict):
@@ -180,6 +179,21 @@ def discover_stream(region, category, etype, model):
         out.append({"name": name, "location": loc, "summary": (it.get("summary") or "").strip(),
                     "type": etype, "area": region["area"]})
     return out
+
+
+def discover_stream(region, category, etype, model):
+    """One parallel stream → list of dicts (or [{'_error':...}])."""
+    prompt = _build_stream_prompt(region, category, etype)
+    try:
+        resp = _client().chat.completions.create(
+            model=model, messages=[{"role": "user", "content": prompt}],
+            temperature=0.3, timeout=90)
+        text = resp.choices[0].message.content or ""
+    except Exception as e:
+        return [{"_error": f"{region['area']}/{etype}: {e}"}]
+
+    items = _parse_stream_items(text, region, etype)
+    return _filter_stream_items(items, region, etype)
 
 
 def _place_for(area, location, places):
@@ -199,28 +213,20 @@ def _place_for(area, location, places):
     return None
 
 
-def run_discovery(topics, regions, workers, model, apply, label="manual"):
-    """Run one discovery round across the given topics × regions. Returns summary dict."""
-    cats = []
-    for t in topics:
-        cats.extend(TOPIC_SETS.get(t, []))
-    if not cats:
-        return {"error": "no valid topics", "topics": topics}
-
-    data = json.loads(DATA.read_text(encoding="utf-8"))
-    places = [e for e in data["entities"] if e["type"] == "place"]
-    existing_ids = {e["id"] for e in data["entities"]}
-
-    streams = [(r, cat, et) for r in regions for (cat, et) in cats]
+def _collect_streams(streams, workers, model):
+    """Run streams in parallel → (found, errors). Same side-effects/order as inline loop."""
     found, errors = [], 0
-    t0 = time.time()
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futs = [pool.submit(discover_stream, r, cat, et, model) for (r, cat, et) in streams]
         for fut in as_completed(futs):
             res = fut.result()
             errors += sum(1 for x in res if x.get("_error"))
             found.extend([x for x in res if not x.get("_error")])
+    return found, errors
 
+
+def _dedup_candidates(found, existing_ids, data):
+    """Dedup within batch + vs KB. Returns list of unique candidate dicts (mutated in place)."""
     # dedup within batch + vs KB (near-dup gate checks BOTH the KB and the
     # candidates already accepted this batch — fixes "Nhà xưa Cai Cường" vs
     # "Khu du lịch Nhà xưa Cai Cường" slipping through together)
@@ -236,8 +242,11 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
         s["id"] = _slug(s["name"])
         unique.append(s)
         accepted_pseudo.append({"id": s["id"], "name": s["name"], "type": s["type"]})
+    return unique
 
-    # geocode: places by name, products by location (vùng trồng)
+
+def _geocode_candidates(unique):
+    """Geocode: places by name, products by location (vùng trồng). Returns count geocoded."""
     geocoded = 0
     for s in unique:
         q = s["name"] if s["type"] in PLACE_TYPES else (s.get("location") or s["name"])
@@ -245,6 +254,81 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
         if c:
             s["coords"] = c
             geocoded += 1
+    return geocoded
+
+
+def _build_entity(s, places, model):
+    """Build a provisional entity dict for one discovered candidate (pure)."""
+    e = {"id": s["id"], "type": s["type"], "name": s["name"], "summary": s.get("summary", ""),
+         "placeId": _place_for(s["area"], s.get("location", ""), places),
+         "confidence": 0.45 if s.get("coords") else 0.35,
+         "status": "provisional", "verified": False,
+         "learned_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+         "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+         "attributes": {}, "season": None, "images": [],
+         "source": {"title": f"agent discovery ({model}) + OSM geocode", "method": "llm+nominatim"}}
+    if s.get("coords"):
+        e["coords"] = s["coords"]
+    return e
+
+
+def _persist_to_db(unique, data):
+    """Write new entities to DB (source of truth for chat). data.json is a working copy."""
+    # GĐ-audit (B1): ghi entity mới vào DB (nguồn sự thật cho chat); data.json là working copy.
+    try:
+        from database import db
+        for s in unique:
+            ent = next((x for x in data["entities"] if x["id"] == s["id"]), None)
+            if ent:
+                db.upsert_entity(ent)  # upsert nhận alias "coords"->"coordinates"
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("ghi DB that bai: %s", exc)
+
+
+def _sync_and_reload():
+    """Sync data.json → data.js and reload knowledge index."""
+    try:
+        import scheduler
+        scheduler.sync_data_json_to_js()
+        import knowledge
+        knowledge.reload()
+    except Exception as exc:
+        logger.warning("Post-discover sync/reload failed: %s", exc)
+
+
+def _apply_discovery(unique, data, places, model, label, summary):
+    """Snapshot, append entities, write data.json, persist to DB, sync/reload. Mutates summary."""
+    kb_versioning.snapshot(reason=f"discovery:{label}", snapshot_id="snap_discovery_latest")
+    for s in unique:
+        data["entities"].append(_build_entity(s, places, model))
+    summary["added"] = len(unique)
+
+    tmp = DATA.with_suffix(".discover.tmp")
+    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(DATA)
+    _persist_to_db(unique, data)
+    _sync_and_reload()
+    return summary
+
+
+def run_discovery(topics, regions, workers, model, apply, label="manual"):
+    """Run one discovery round across the given topics × regions. Returns summary dict."""
+    cats = []
+    for t in topics:
+        cats.extend(TOPIC_SETS.get(t, []))
+    if not cats:
+        return {"error": "no valid topics", "topics": topics}
+
+    data = json.loads(DATA.read_text(encoding="utf-8"))
+    places = [e for e in data["entities"] if e["type"] == "place"]
+    existing_ids = {e["id"] for e in data["entities"]}
+
+    streams = [(r, cat, et) for r in regions for (cat, et) in cats]
+    t0 = time.time()
+    found, errors = _collect_streams(streams, workers, model)
+
+    unique = _dedup_candidates(found, existing_ids, data)
+    geocoded = _geocode_candidates(unique)
 
     summary = {"topics": topics, "raw": len(found), "errors": errors,
                "new": len(unique), "geocoded": geocoded, "seconds": round(time.time() - t0),
@@ -255,41 +339,7 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
                               "coords": s.get("coords")} for s in unique[:12]]
         return summary
 
-    kb_versioning.snapshot(reason=f"discovery:{label}", snapshot_id="snap_discovery_latest")
-    for s in unique:
-        e = {"id": s["id"], "type": s["type"], "name": s["name"], "summary": s.get("summary", ""),
-             "placeId": _place_for(s["area"], s.get("location", ""), places),
-             "confidence": 0.45 if s.get("coords") else 0.35,
-             "status": "provisional", "verified": False,
-             "learned_at": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-             "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-             "attributes": {}, "season": None, "images": [],
-             "source": {"title": f"agent discovery ({model}) + OSM geocode", "method": "llm+nominatim"}}
-        if s.get("coords"):
-            e["coords"] = s["coords"]
-        data["entities"].append(e)
-    summary["added"] = len(unique)
-
-    tmp = DATA.with_suffix(".discover.tmp")
-    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    tmp.replace(DATA)
-    # GĐ-audit (B1): ghi entity mới vào DB (nguồn sự thật cho chat); data.json là working copy.
-    try:
-        from database import db
-        for s in unique:
-            ent = next((x for x in data["entities"] if x["id"] == s["id"]), None)
-            if ent:
-                db.upsert_entity(ent)  # upsert nhận alias "coords"->"coordinates"
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("ghi DB that bai: %s", exc)
-    try:
-        import scheduler
-        scheduler.sync_data_json_to_js()
-        import knowledge
-        knowledge.reload()
-    except Exception as exc:
-        logger.warning("Post-discover sync/reload failed: %s", exc)
-    return summary
+    return _apply_discovery(unique, data, places, model, label, summary)
 
 
 # ── Rotation cursor (for continuous mode) ──

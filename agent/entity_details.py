@@ -62,6 +62,54 @@ def _kind_columns() -> dict[str, list[str]]:
 KIND_COLUMNS: dict[str, list[str]] = _kind_columns()
 
 
+def _coerce_int_column(coerced: Any) -> tuple[Any, bool]:
+    """Ép giá trị đã-coerce về int cho cột INT_COLUMNS.
+
+    Widget select trả string ("3" cho ocop_star) — nhận string số. Trả
+    (int_value, True) nếu ép được; (None, False) nếu phải bỏ qua (bool, chữ
+    trong cột số, float lẻ, kiểu không phải số).
+    """
+    if isinstance(coerced, bool):
+        return None, False
+    if isinstance(coerced, str):
+        try:
+            coerced = float(coerced.strip().replace(",", "."))
+        except ValueError:
+            return None, False
+    if isinstance(coerced, float):
+        if not coerced.is_integer():
+            return None, False
+        coerced = int(coerced)
+    if not isinstance(coerced, int):
+        return None, False
+    return coerced, True
+
+
+def _split_typed_field(f: dict, attrs: dict) -> tuple[str | None, str | None, Any, str | None]:
+    """Xử lý 1 field → (bucket, col_or_key, value, skip_entry).
+
+    bucket ∈ {"uni", "det", None}. None = field vắng/rỗng (bỏ, không skip).
+    skip_entry != None = mục "key=raw" cần ghi vào skipped (bucket cũng None).
+    """
+    key = f["key"]
+    if key not in attrs:
+        return None, None, None, None
+    raw = attrs[key]
+    if raw in (None, "", [], {}):
+        return None, None, None, None
+    coerced, ok = _coerce(raw, f["widget"])
+    if not ok or coerced in (None, "", [], {}):
+        return None, None, None, f"{key}={raw!r}"
+    if key in UNIVERSAL:
+        return "uni", key, coerced if isinstance(coerced, str) else str(coerced), None
+    col = KEY_MAP.get(key, key)
+    if col in INT_COLUMNS:
+        coerced, int_ok = _coerce_int_column(coerced)
+        if not int_ok:
+            return None, None, None, f"{key}={raw!r}"
+    return "det", col, coerced, None
+
+
 def split_typed(etype: str, attrs: dict | None) -> tuple[dict, dict, list[str]]:
     """→ (universal {key: str}, detail {column: value}, skipped [key=value]).
 
@@ -74,40 +122,13 @@ def split_typed(etype: str, attrs: dict | None) -> tuple[dict, dict, list[str]]:
     det: dict = {}
     skipped: list[str] = []
     for f in schema["fields"]:
-        key = f["key"]
-        if key not in attrs:
-            continue
-        raw = attrs[key]
-        if raw in (None, "", [], {}):
-            continue
-        coerced, ok = _coerce(raw, f["widget"])
-        if not ok or coerced in (None, "", [], {}):
-            skipped.append(f"{key}={raw!r}")
-            continue
-        if key in UNIVERSAL:
-            uni[key] = coerced if isinstance(coerced, str) else str(coerced)
-            continue
-        col = KEY_MAP.get(key, key)
-        if col in INT_COLUMNS:
-            # Widget select trả string ("3" cho ocop_star) — nhận string số.
-            if isinstance(coerced, bool):
-                skipped.append(f"{key}={raw!r}")
-                continue
-            if isinstance(coerced, str):
-                try:
-                    coerced = float(coerced.strip().replace(",", "."))
-                except ValueError:
-                    skipped.append(f"{key}={raw!r}")
-                    continue
-            if isinstance(coerced, float):
-                if not coerced.is_integer():
-                    skipped.append(f"{key}={raw!r}")
-                    continue
-                coerced = int(coerced)
-            if not isinstance(coerced, int):
-                skipped.append(f"{key}={raw!r}")
-                continue
-        det[col] = coerced
+        bucket, col_or_key, value, skip_entry = _split_typed_field(f, attrs)
+        if skip_entry is not None:
+            skipped.append(skip_entry)
+        elif bucket == "uni":
+            uni[col_or_key] = value
+        elif bucket == "det":
+            det[col_or_key] = value
     return uni, det, skipped
 
 

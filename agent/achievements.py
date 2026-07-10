@@ -103,6 +103,33 @@ def _compute_metrics(conn, user_id: str) -> dict[str, int]:
     }
 
 
+def _maybe_award_allrounder(earned_ids: set[str], _award) -> None:
+    """allrounder: đủ ≥1 thành tích ở mỗi nhóm content/explorer/social/veteran.
+    (extracted verbatim từ check_achievements — không đổi logic/thứ tự.)"""
+    if "allrounder" not in earned_ids:
+        cats = {_ACH_BY_ID[i]["category"] for i in earned_ids if i in _ACH_BY_ID}
+        if all(c in cats for c in _CATEGORIES):
+            _award("allrounder")
+
+
+def _notify_new_achievements(user_id: str, newly: list[dict]) -> None:
+    """Thông báo (thời gian thực khi hook gọi notify=True).
+    (extracted verbatim từ check_achievements — không đổi logic/thứ tự.)"""
+    from notifications import create_notification
+    for a in newly:
+        try:
+            create_notification(
+                user_id=user_id,
+                notif_type="achievement",
+                title=f"{a['icon']} Mở khóa thành tích: {a['name']}",
+                body=a.get("description") or "",
+                ref_type="achievement",
+                ref_id=a["id"],
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.warning("achievement notify failed (%s/%s): %s", user_id, a["id"], e)
+
+
 def check_achievements(conn, user_id: str, notify: bool = True) -> list[dict]:
     """Award thành tích mới đạt ngưỡng. Trả về danh sách def mới mở khóa.
     Idempotent qua ON CONFLICT DO NOTHING. allrounder tính sau (dựa trên nhóm
@@ -133,26 +160,11 @@ def check_achievements(conn, user_id: str, notify: bool = True) -> list[dict]:
             _award(a["id"])
 
     # 2) allrounder: đủ ≥1 thành tích ở mỗi nhóm content/explorer/social/veteran
-    if "allrounder" not in earned_ids:
-        cats = {_ACH_BY_ID[i]["category"] for i in earned_ids if i in _ACH_BY_ID}
-        if all(c in cats for c in _CATEGORIES):
-            _award("allrounder")
+    _maybe_award_allrounder(earned_ids, _award)
 
     # 3) Thông báo (thời gian thực khi hook gọi notify=True)
     if notify and newly:
-        from notifications import create_notification
-        for a in newly:
-            try:
-                create_notification(
-                    user_id=user_id,
-                    notif_type="achievement",
-                    title=f"{a['icon']} Mở khóa thành tích: {a['name']}",
-                    body=a.get("description") or "",
-                    ref_type="achievement",
-                    ref_id=a["id"],
-                )
-            except Exception as e:  # noqa: BLE001
-                logger.warning("achievement notify failed (%s/%s): %s", user_id, a["id"], e)
+        _notify_new_achievements(user_id, newly)
 
     return newly
 

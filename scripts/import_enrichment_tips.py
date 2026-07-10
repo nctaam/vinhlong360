@@ -33,6 +33,74 @@ def load_enrichments():
     return records
 
 
+def _parse_attrs(raw):
+    """Parse an entity's attributes JSON blob, tolerating null/garbage."""
+    attrs = {}
+    try:
+        attrs = json.loads(raw) if raw else {}
+    except Exception:
+        attrs = {}
+    return attrs
+
+
+def _merge_enrichment_into_attrs(attrs, enrichment):
+    """Merge enrichment fields into attrs in place without overwriting.
+
+    Returns a dict with per-field flags: which of travel_tips / best_time /
+    highlight were newly added (each 1 if added, else 0). ``changed`` is True
+    if any field was added.
+    """
+    tips_added = 0
+    best_time_added = 0
+    hook_added = 0
+
+    # Import travel_tips (as a list)
+    tips = enrichment.get("travel_tips", [])
+    if tips and isinstance(tips, list) and not attrs.get("travel_tips"):
+        attrs["travel_tips"] = tips[:3]  # Keep top 3
+        tips_added = 1
+
+    # Import best_time
+    best_time = enrichment.get("best_time", "")
+    if best_time and not attrs.get("best_time"):
+        attrs["best_time"] = best_time
+        best_time_added = 1
+
+    # Import emotional_hook as highlight
+    hook = enrichment.get("emotional_hook", "")
+    if hook and not attrs.get("highlight"):
+        attrs["highlight"] = hook
+        hook_added = 1
+
+    return {
+        "tips_added": tips_added,
+        "best_time_added": best_time_added,
+        "hook_added": hook_added,
+        "changed": bool(tips_added or best_time_added or hook_added),
+    }
+
+
+def _apply_enrichment_row(cur, eid, enrichment):
+    """Apply one enrichment to its entity row. Returns per-field add counts.
+
+    Returns None if the entity does not exist (nothing applied).
+    """
+    cur.execute("SELECT id, attributes FROM entities WHERE id = ?", (eid,))
+    row = cur.fetchone()
+    if not row:
+        return None
+
+    attrs = _parse_attrs(row["attributes"])
+    result = _merge_enrichment_into_attrs(attrs, enrichment)
+
+    if result["changed"]:
+        cur.execute(
+            "UPDATE entities SET attributes = ? WHERE id = ?",
+            (json.dumps(attrs, ensure_ascii=False), eid),
+        )
+    return result
+
+
 def main():
     enrichments = load_enrichments()
     print(f"Loaded {len(enrichments)} enrichment records")
@@ -47,45 +115,13 @@ def main():
     hook_added = 0
 
     for eid, enrichment in enrichments.items():
-        cur.execute("SELECT id, attributes FROM entities WHERE id = ?", (eid,))
-        row = cur.fetchone()
-        if not row:
+        result = _apply_enrichment_row(cur, eid, enrichment)
+        if result is None:
             continue
-
-        attrs = {}
-        try:
-            attrs = json.loads(row["attributes"]) if row["attributes"] else {}
-        except Exception:
-            attrs = {}
-
-        changed = False
-
-        # Import travel_tips (as a list)
-        tips = enrichment.get("travel_tips", [])
-        if tips and isinstance(tips, list) and not attrs.get("travel_tips"):
-            attrs["travel_tips"] = tips[:3]  # Keep top 3
-            tips_added += 1
-            changed = True
-
-        # Import best_time
-        best_time = enrichment.get("best_time", "")
-        if best_time and not attrs.get("best_time"):
-            attrs["best_time"] = best_time
-            best_time_added += 1
-            changed = True
-
-        # Import emotional_hook as highlight
-        hook = enrichment.get("emotional_hook", "")
-        if hook and not attrs.get("highlight"):
-            attrs["highlight"] = hook
-            hook_added += 1
-            changed = True
-
-        if changed:
-            cur.execute(
-                "UPDATE entities SET attributes = ? WHERE id = ?",
-                (json.dumps(attrs, ensure_ascii=False), eid),
-            )
+        tips_added += result["tips_added"]
+        best_time_added += result["best_time_added"]
+        hook_added += result["hook_added"]
+        if result["changed"]:
             updated += 1
 
     conn.commit()

@@ -94,7 +94,9 @@ class TestAchievementSystem:
 
     def test_check_achievements_creates_notification(self):
         import achievements
-        src = inspect.getsource(achievements.check_achievements)
+        # notify block extracted verbatim to _notify_new_achievements (R20.8 refactor)
+        assert "_notify_new_achievements" in inspect.getsource(achievements.check_achievements)
+        src = inspect.getsource(achievements._notify_new_achievements)
         assert "create_notification" in src
         assert "achievement" in src
 
@@ -107,7 +109,9 @@ class TestAchievementSystem:
 
     def test_allrounder_checks_categories(self):
         import achievements
-        src = inspect.getsource(achievements.check_achievements)
+        # allrounder block extracted verbatim to _maybe_award_allrounder (R20.8 refactor)
+        assert "_maybe_award_allrounder" in inspect.getsource(achievements.check_achievements)
+        src = inspect.getsource(achievements._maybe_award_allrounder)
         assert "category" in src or "categories" in src
 
     def test_notif_type_registered(self):

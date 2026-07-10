@@ -32,6 +32,94 @@ REFLEXION_DIR = Path(__file__).resolve().parent / "data" / "memory"
 REFLEXION_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def _score_answer_length(answer, score, issues, good_points):
+    """Section 1 của evaluate_answer — chấm điểm theo độ dài (verbatim)."""
+    answer_len = len(answer)
+    if answer_len < 50:
+        score -= 2
+        issues.append("Câu trả lời quá ngắn")
+    elif answer_len < 100:
+        score -= 1
+        issues.append("Câu trả lời hơi ngắn")
+    elif answer_len > 200:
+        score += 1
+        good_points.append("Câu trả lời đầy đủ")
+    if answer_len > 2000:
+        score -= 0.5
+        issues.append("Câu trả lời có thể quá dài")
+    return score
+
+
+def _score_tool_usage(tools_used, score, issues, good_points):
+    """Section 2 của evaluate_answer — chấm điểm theo tool usage (verbatim)."""
+    if not tools_used:
+        score -= 2
+        issues.append("Không dùng tools tra cứu — có thể đoán")
+    elif len(tools_used) >= 2:
+        score += 1
+        good_points.append("Dùng nhiều tools tra cứu")
+    if "search" in tools_used or "entity_detail" in tools_used:
+        score += 0.5
+        good_points.append("Tra cứu knowledge base")
+    if "web_search" in tools_used and "search" in tools_used:
+        score += 0.5
+        good_points.append("Kết hợp KB + web search")
+    if "suggest_followups" in tools_used:
+        score += 0.5
+        good_points.append("Có gợi ý tiếp theo")
+    return score
+
+
+def _score_content_quality(answer, score, issues, good_points):
+    """Section 3 của evaluate_answer — tín hiệu chất lượng nội dung (verbatim)."""
+    if "xin lỗi" in answer.lower() and "không" in answer.lower():
+        score -= 1.5
+        issues.append("Agent xin lỗi không trả lời được")
+    if "**" in answer:  # Markdown formatting
+        score += 0.5
+        good_points.append("Có định dạng markdown")
+    if answer.count("- ") >= 3 or answer.count("• ") >= 3:
+        score += 0.5
+        good_points.append("Có cấu trúc danh sách")
+    return score
+
+
+def _score_vietnamese_quality(answer, score, issues):
+    """Section 4 của evaluate_answer — chất lượng tiếng Việt (verbatim)."""
+    vietnamese_chars = sum(1 for c in answer if ord(c) > 127)
+    if vietnamese_chars / max(len(answer), 1) < 0.05:
+        score -= 1
+        issues.append("Ít ký tự tiếng Việt — có thể trả lời bằng tiếng Anh")
+    return score
+
+
+def _score_relevance(query, answer, score, issues, good_points):
+    """Section 5 của evaluate_answer — độ liên quan query↔answer (verbatim)."""
+    query_words = set(query.lower().split())
+    answer_lower = answer.lower()
+    matched = sum(1 for w in query_words if len(w) > 2 and w in answer_lower)
+    relevance = matched / max(len(query_words), 1)
+    if relevance < 0.2:
+        score -= 1
+        issues.append("Câu trả lời có thể không liên quan đến câu hỏi")
+    elif relevance > 0.5:
+        score += 0.5
+        good_points.append("Câu trả lời liên quan tốt")
+    return score
+
+
+def _score_error_patterns(answer, score, issues):
+    """Section 6 của evaluate_answer — phát hiện dấu hiệu lỗi (verbatim)."""
+    error_patterns = [
+        "lỗi", "error", "exception", "timeout",
+        "không kết nối", "thử lại",
+    ]
+    if any(p in answer.lower() for p in error_patterns):
+        score -= 1.5
+        issues.append("Có dấu hiệu lỗi trong câu trả lời")
+    return score
+
+
 class ReflexionEngine:
     """
     Self-evaluation & improvement engine.
@@ -85,74 +173,22 @@ class ReflexionEngine:
         good_points = []
 
         # 1. Độ dài — quá ngắn hoặc quá dài
-        answer_len = len(answer)
-        if answer_len < 50:
-            score -= 2
-            issues.append("Câu trả lời quá ngắn")
-        elif answer_len < 100:
-            score -= 1
-            issues.append("Câu trả lời hơi ngắn")
-        elif answer_len > 200:
-            score += 1
-            good_points.append("Câu trả lời đầy đủ")
-        if answer_len > 2000:
-            score -= 0.5
-            issues.append("Câu trả lời có thể quá dài")
+        score = _score_answer_length(answer, score, issues, good_points)
 
         # 2. Tool usage — đã dùng tools hay chỉ đoán?
-        if not tools_used:
-            score -= 2
-            issues.append("Không dùng tools tra cứu — có thể đoán")
-        elif len(tools_used) >= 2:
-            score += 1
-            good_points.append("Dùng nhiều tools tra cứu")
-        if "search" in tools_used or "entity_detail" in tools_used:
-            score += 0.5
-            good_points.append("Tra cứu knowledge base")
-        if "web_search" in tools_used and "search" in tools_used:
-            score += 0.5
-            good_points.append("Kết hợp KB + web search")
-        if "suggest_followups" in tools_used:
-            score += 0.5
-            good_points.append("Có gợi ý tiếp theo")
+        score = _score_tool_usage(tools_used, score, issues, good_points)
 
         # 3. Content quality signals
-        if "xin lỗi" in answer.lower() and "không" in answer.lower():
-            score -= 1.5
-            issues.append("Agent xin lỗi không trả lời được")
-        if "**" in answer:  # Markdown formatting
-            score += 0.5
-            good_points.append("Có định dạng markdown")
-        if answer.count("- ") >= 3 or answer.count("• ") >= 3:
-            score += 0.5
-            good_points.append("Có cấu trúc danh sách")
+        score = _score_content_quality(answer, score, issues, good_points)
 
         # 4. Vietnamese language quality
-        vietnamese_chars = sum(1 for c in answer if ord(c) > 127)
-        if vietnamese_chars / max(len(answer), 1) < 0.05:
-            score -= 1
-            issues.append("Ít ký tự tiếng Việt — có thể trả lời bằng tiếng Anh")
+        score = _score_vietnamese_quality(answer, score, issues)
 
         # 5. Relevance check — query keywords in answer
-        query_words = set(query.lower().split())
-        answer_lower = answer.lower()
-        matched = sum(1 for w in query_words if len(w) > 2 and w in answer_lower)
-        relevance = matched / max(len(query_words), 1)
-        if relevance < 0.2:
-            score -= 1
-            issues.append("Câu trả lời có thể không liên quan đến câu hỏi")
-        elif relevance > 0.5:
-            score += 0.5
-            good_points.append("Câu trả lời liên quan tốt")
+        score = _score_relevance(query, answer, score, issues, good_points)
 
         # 6. Error patterns
-        error_patterns = [
-            "lỗi", "error", "exception", "timeout",
-            "không kết nối", "thử lại",
-        ]
-        if any(p in answer.lower() for p in error_patterns):
-            score -= 1.5
-            issues.append("Có dấu hiệu lỗi trong câu trả lời")
+        score = _score_error_patterns(answer, score, issues)
 
         score = max(0, min(10, score))
 

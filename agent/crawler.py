@@ -81,21 +81,23 @@ def guess_place_id(address: str) -> str | None:
     return None
 
 
+# Ordered mapping (keyword-list → entity type); nhánh khớp SỚM NHẤT thắng.
+_ENTITY_TYPE_KEYWORDS: list[tuple[list[str], str]] = [
+    (["tham quan", "du lịch", "khu du lịch", "điểm", "attraction", "bảo tàng", "chùa", "đình", "di tích"], "attraction"),
+    (["homestay", "lưu trú", "khách sạn", "nhà nghỉ", "accommodation"], "accommodation"),
+    (["trải nghiệm", "experience", "tour"], "experience"),
+    (["làng nghề", "craft"], "craft_village"),
+    (["sản phẩm", "đặc sản", "product"], "product"),
+    (["ẩm thực", "món ăn", "dish"], "dish"),
+]
+
+
 def guess_entity_type(raw_type: str) -> str:
     """Map loại từ LLM về entity type chuẩn."""
     raw = raw_type.lower()
-    if any(k in raw for k in ["tham quan", "du lịch", "khu du lịch", "điểm", "attraction", "bảo tàng", "chùa", "đình", "di tích"]):
-        return "attraction"
-    if any(k in raw for k in ["homestay", "lưu trú", "khách sạn", "nhà nghỉ", "accommodation"]):
-        return "accommodation"
-    if any(k in raw for k in ["trải nghiệm", "experience", "tour"]):
-        return "experience"
-    if any(k in raw for k in ["làng nghề", "craft"]):
-        return "craft_village"
-    if any(k in raw for k in ["sản phẩm", "đặc sản", "product"]):
-        return "product"
-    if any(k in raw for k in ["ẩm thực", "món ăn", "dish"]):
-        return "dish"
+    for keywords, entity_type in _ENTITY_TYPE_KEYWORDS:
+        if any(k in raw for k in keywords):
+            return entity_type
     return "attraction"
 
 

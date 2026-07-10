@@ -54,6 +54,75 @@ def popularity_score(entity_id: str, max_boost: float = 3.0) -> float:
     return min(math.log2(hits + 1), max_boost)
 
 
+def _season_bonus(entity: dict, month: int) -> float:
+    """Season match bonus (+5 peak, +2 in-season)."""
+    if not month:
+        return 0.0
+    season = entity.get("season")
+    if season and isinstance(season, dict):
+        peak = season.get("peak", [])
+        months = season.get("months", [])
+        if month in peak:
+            return 5.0
+        elif month in months:
+            return 2.0
+    return 0.0
+
+
+def _richness_bonus(summary_len: int, attrs: dict) -> float:
+    """Content richness (+0-2) from summary length and attribute count."""
+    bonus = 0.0
+    if summary_len > 50:
+        bonus += 0.5
+    if summary_len > 100:
+        bonus += 0.5
+    if summary_len > 200:
+        bonus += 0.5
+    if len(attrs) > 2:
+        bonus += 0.5
+    return bonus
+
+
+def _query_match_bonus(q_match_level: str) -> float:
+    """Query match level (+3 exact, +1 fuzzy)."""
+    if q_match_level == "exact":
+        return 3.0
+    elif q_match_level == "fuzzy":
+        return 1.0
+    return 0.0
+
+
+_TYPE_BONUS = {
+    "attraction": 1.0,
+    "experience": 1.0,
+    "dish": 0.8,
+    "nature": 0.8,
+    "craft_village": 0.7,
+    "product": 0.5,
+    "history": 0.6,
+    "person": 0.3,
+    "event": 0.5,
+    "accommodation": 0.3,
+    "economy": 0.2,
+}
+
+
+def _verification_bonus(entity: dict) -> float:
+    """Verification bonus (+2 verified, -2 provisional/unverified)."""
+    if entity.get("verified") is True:
+        return 2.0
+    elif entity.get("status") == "provisional" or entity.get("verified") is False:
+        return -2.0
+    return 0.0
+
+
+def _gps_bonus(entity: dict) -> float:
+    """GPS completeness bonus."""
+    if entity.get("coords") or entity.get("coordinates"):
+        return 0.5
+    return 0.0
+
+
 def smart_score(entity: dict, month: int = None, q_match_level: str = "exact") -> float:
     """
     Tính tổng điểm xếp hạng thông minh.
@@ -69,66 +138,31 @@ def smart_score(entity: dict, month: int = None, q_match_level: str = "exact") -
     score = 0.0
 
     # 1. Season
-    if month:
-        season = entity.get("season")
-        if season and isinstance(season, dict):
-            peak = season.get("peak", [])
-            months = season.get("months", [])
-            if month in peak:
-                score += 5
-            elif month in months:
-                score += 2
+    score += _season_bonus(entity, month)
 
     # 2. Popularity
     score += popularity_score(entity["id"])
 
     # 3. Content richness
     summary_len = len(entity.get("summary", ""))
-    if summary_len > 50:
-        score += 0.5
-    if summary_len > 100:
-        score += 0.5
-    if summary_len > 200:
-        score += 0.5
     attrs = entity.get("attributes", {})
-    if len(attrs) > 2:
-        score += 0.5
+    score += _richness_bonus(summary_len, attrs)
 
     # 4. Query match
-    if q_match_level == "exact":
-        score += 3
-    elif q_match_level == "fuzzy":
-        score += 1
+    score += _query_match_bonus(q_match_level)
 
     # 5. OCOP
     if attrs.get("ocop"):
         score += 1.5
 
     # 6. Type bonus (popular types slightly higher)
-    type_bonus = {
-        "attraction": 1.0,
-        "experience": 1.0,
-        "dish": 0.8,
-        "nature": 0.8,
-        "craft_village": 0.7,
-        "product": 0.5,
-        "history": 0.6,
-        "person": 0.3,
-        "event": 0.5,
-        "accommodation": 0.3,
-        "economy": 0.2,
-    }
-    score += type_bonus.get(entity["type"], 0)
+    score += _TYPE_BONUS.get(entity["type"], 0)
 
     # 7. Verification bonus
-    if entity.get("verified") is True:
-        score += 2.0
-    elif entity.get("status") == "provisional" or entity.get("verified") is False:
-        score -= 2.0
+    score += _verification_bonus(entity)
 
     # 8. GPS completeness bonus
-    if entity.get("coords") or entity.get("coordinates"):
-        score += 0.5
+    score += _gps_bonus(entity)
 
     return round(score, 2)
 

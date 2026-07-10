@@ -32,6 +32,62 @@ from entity_details import (  # noqa: E402,F401  (INT_COLUMNS/KEY_MAP/UNIVERSAL 
 typed_values = split_typed  # alias giữ tương thích parity script/test
 
 
+def _apply_universal(cur, r, uni, stats, apply):
+    """Cập nhật cột phổ quát (COALESCE — cột-đã-có thắng) + đếm stats."""
+    if uni:
+        stats["uni_updates"] += 1
+        if apply:
+            sets = ", ".join(f"{k} = COALESCE({k}, %s)" for k in uni)
+            cur.execute(f"UPDATE entities SET {sets} WHERE id = %s", [*uni.values(), r["id"]])
+
+
+def _apply_detail(cur, r, det, stats, per_table, apply):
+    """Upsert bảng CTI (ON CONFLICT COALESCE) + đếm stats/per_table."""
+    import psycopg2.extras
+    kind = KIND_OF_TYPE.get(r["type"])
+    table = KIND_TABLE.get(kind or "")
+    if table and det:
+        stats["detail_rows"] += 1
+        per_table[table] += 1
+        if apply:
+            cols = list(det.keys())
+            vals = [psycopg2.extras.Json(v) if c in JSONB_COLUMNS else v
+                    for c, v in det.items()]
+            collist = ", ".join(cols)
+            ph = ", ".join(["%s"] * len(cols))
+            updates = ", ".join(f"{c} = COALESCE({table}.{c}, EXCLUDED.{c})" for c in cols)
+            cur.execute(
+                f"INSERT INTO {table} (entity_id, {collist}) VALUES (%s, {ph}) "
+                f"ON CONFLICT (entity_id) DO UPDATE SET {updates}",
+                [r["id"], *vals])
+
+
+def _process_row(cur, r, stats, per_table, skipped_log, apply):
+    """Xử lý 1 entity: parse attrs → split → apply universal + detail."""
+    attrs = r["attributes"] or {}
+    if isinstance(attrs, str):
+        attrs = json.loads(attrs or "{}")
+    uni, det, skipped = typed_values(r["type"], attrs)
+    if skipped:
+        stats["skipped_vals"] += len(skipped)
+        skipped_log.extend(f"{r['id']}: {s}" for s in skipped)
+    _apply_universal(cur, r, uni, stats, apply)
+    _apply_detail(cur, r, det, stats, per_table, apply)
+
+
+def _print_report(mode, stats, per_table, skipped_log):
+    """In báo cáo tổng + per-table + danh sách skipped (tối đa 15 dòng)."""
+    print(f"[{mode}] entities={stats['entities']} | uni_updates={stats['uni_updates']} "
+          f"| detail_rows={stats['detail_rows']} | skipped_vals={stats['skipped_vals']}")
+    for t, n in sorted(per_table.items(), key=lambda kv: -kv[1]):
+        if n:
+            print(f"  {t}: {n}")
+    if skipped_log:
+        print("-- skipped (ở lại JSONB, tối đa 15 dòng):")
+        for line in skipped_log[:15]:
+            print("  ", line)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     g = ap.add_mutually_exclusive_group(required=True)
@@ -56,34 +112,7 @@ def main() -> int:
     skipped_log: list[str] = []
 
     for r in rows:
-        attrs = r["attributes"] or {}
-        if isinstance(attrs, str):
-            attrs = json.loads(attrs or "{}")
-        uni, det, skipped = typed_values(r["type"], attrs)
-        if skipped:
-            stats["skipped_vals"] += len(skipped)
-            skipped_log.extend(f"{r['id']}: {s}" for s in skipped)
-        if uni:
-            stats["uni_updates"] += 1
-            if args.apply:
-                sets = ", ".join(f"{k} = COALESCE({k}, %s)" for k in uni)
-                cur.execute(f"UPDATE entities SET {sets} WHERE id = %s", [*uni.values(), r["id"]])
-        kind = KIND_OF_TYPE.get(r["type"])
-        table = KIND_TABLE.get(kind or "")
-        if table and det:
-            stats["detail_rows"] += 1
-            per_table[table] += 1
-            if args.apply:
-                cols = list(det.keys())
-                vals = [psycopg2.extras.Json(v) if c in JSONB_COLUMNS else v
-                        for c, v in det.items()]
-                collist = ", ".join(cols)
-                ph = ", ".join(["%s"] * len(cols))
-                updates = ", ".join(f"{c} = COALESCE({table}.{c}, EXCLUDED.{c})" for c in cols)
-                cur.execute(
-                    f"INSERT INTO {table} (entity_id, {collist}) VALUES (%s, {ph}) "
-                    f"ON CONFLICT (entity_id) DO UPDATE SET {updates}",
-                    [r["id"], *vals])
+        _process_row(cur, r, stats, per_table, skipped_log, args.apply)
 
     if args.apply:
         conn.commit()
@@ -93,15 +122,7 @@ def main() -> int:
         mode = "DRY-RUN"
     conn.close()
 
-    print(f"[{mode}] entities={stats['entities']} | uni_updates={stats['uni_updates']} "
-          f"| detail_rows={stats['detail_rows']} | skipped_vals={stats['skipped_vals']}")
-    for t, n in sorted(per_table.items(), key=lambda kv: -kv[1]):
-        if n:
-            print(f"  {t}: {n}")
-    if skipped_log:
-        print("-- skipped (ở lại JSONB, tối đa 15 dòng):")
-        for line in skipped_log[:15]:
-            print("  ", line)
+    _print_report(mode, stats, per_table, skipped_log)
     return 0
 
 

@@ -33,6 +33,69 @@ def _norm(v):
     return v
 
 
+def _load_details(cur) -> dict[str, dict[str, dict]]:
+    """Nạp toàn bộ bảng CTI thành map {table: {entity_id: row}}."""
+    details: dict[str, dict[str, dict]] = {}
+    for table in set(KIND_TABLE.values()):
+        cur.execute(f"SELECT * FROM {table}")
+        details[table] = {r["entity_id"]: dict(r) for r in cur.fetchall()}
+    return details
+
+
+def _entity_attrs(e) -> dict:
+    """Lấy attributes của entity, parse JSON nếu là chuỗi."""
+    attrs = e.get("attributes") or {}
+    if isinstance(attrs, str):
+        attrs = json.loads(attrs or "{}")
+    return attrs
+
+
+def _check_universal(e, uni) -> list[str]:
+    """Chiều universal: cột trên entities vs JSONB. Trả list dòng lệch."""
+    out: list[str] = []
+    for key, expected in uni.items():
+        actual = e.get(key)
+        if _norm(actual) != _norm(expected):
+            out.append(f"{e['id']}.{key}: cột={actual!r} ≠ jsonb={expected!r}")
+    return out
+
+
+def _check_detail(e, det, drow) -> list[str]:
+    """Chiều CTI: cột trong bảng kind vs JSONB. Trả list dòng lệch."""
+    from decimal import Decimal
+    out: list[str] = []
+    for col, expected in det.items():
+        actual = drow.get(col)
+        if isinstance(actual, Decimal):
+            actual = float(actual)
+        if col in JSONB_COLUMNS:
+            if (actual or []) != (expected or []):
+                out.append(f"{e['id']}.{col}: cột={actual!r} ≠ jsonb={expected!r}")
+        elif _norm(actual) != _norm(expected):
+            out.append(f"{e['id']}.{col}: cột={actual!r} ≠ jsonb={expected!r}")
+    return out
+
+
+def _check_entity(e, details) -> tuple[int, list[str]]:
+    """Đối chiếu 1 entity cả 2 chiều. Trả (số giá trị đã check, dòng lệch)."""
+    attrs = _entity_attrs(e)
+    uni, det, _skipped = typed_values(e["type"], attrs)
+    kind = KIND_OF_TYPE.get(e["type"])
+    table = KIND_TABLE.get(kind or "")
+    drow = details.get(table, {}).get(e["id"], {}) if table else {}
+
+    if not table:
+        # Kind không có bảng CTI (itinerary — bảng riêng; other) → typed fields
+        # ở lại JSONB theo thiết kế, không phải lệch.
+        det = {}
+    checked = len(uni) + len(det)
+    mismatches = _check_universal(e, uni) + _check_detail(e, det, drow)
+    # HẬU-C3: JSONB lưu tail-only — key VẮNG trong JSONB là by-design (đã dọn),
+    # KHÔNG phải lệch. Chỉ XUNG ĐỘT giá trị (key tồn tại trong JSONB nhưng khác
+    # cột) mới là lệch — đã được kiểm ở chiều thuận phía trên.
+    return checked, mismatches
+
+
 def main() -> int:
     dsn = os.environ.get("DATABASE_URL", "")
     if not dsn.startswith(("postgres://", "postgresql://")):
@@ -40,52 +103,20 @@ def main() -> int:
         return 2
     import psycopg2
     import psycopg2.extras
-    from decimal import Decimal
 
     conn = psycopg2.connect(dsn)
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute("SELECT * FROM entities")
     entities = cur.fetchall()
-
-    details: dict[str, dict[str, dict]] = {}
-    for table in set(KIND_TABLE.values()):
-        cur.execute(f"SELECT * FROM {table}")
-        details[table] = {r["entity_id"]: dict(r) for r in cur.fetchall()}
+    details = _load_details(cur)
     conn.close()
 
     mismatches: list[str] = []
     checked = 0
     for e in entities:
-        attrs = e.get("attributes") or {}
-        if isinstance(attrs, str):
-            attrs = json.loads(attrs or "{}")
-        uni, det, _skipped = typed_values(e["type"], attrs)
-        kind = KIND_OF_TYPE.get(e["type"])
-        table = KIND_TABLE.get(kind or "")
-        drow = details.get(table, {}).get(e["id"], {}) if table else {}
-
-        for key, expected in uni.items():
-            checked += 1
-            actual = e.get(key)
-            if _norm(actual) != _norm(expected):
-                mismatches.append(f"{e['id']}.{key}: cột={actual!r} ≠ jsonb={expected!r}")
-        if not table:
-            # Kind không có bảng CTI (itinerary — bảng riêng; other) → typed fields
-            # ở lại JSONB theo thiết kế, không phải lệch.
-            det = {}
-        for col, expected in det.items():
-            checked += 1
-            actual = drow.get(col)
-            if isinstance(actual, Decimal):
-                actual = float(actual)
-            if col in JSONB_COLUMNS:
-                if (actual or []) != (expected or []):
-                    mismatches.append(f"{e['id']}.{col}: cột={actual!r} ≠ jsonb={expected!r}")
-            elif _norm(actual) != _norm(expected):
-                mismatches.append(f"{e['id']}.{col}: cột={actual!r} ≠ jsonb={expected!r}")
-        # HẬU-C3: JSONB lưu tail-only — key VẮNG trong JSONB là by-design (đã dọn),
-        # KHÔNG phải lệch. Chỉ XUNG ĐỘT giá trị (key tồn tại trong JSONB nhưng khác
-        # cột) mới là lệch — đã được kiểm ở chiều thuận phía trên.
+        n, rows = _check_entity(e, details)
+        checked += n
+        mismatches.extend(rows)
 
     print(f"parity: {checked} giá trị đối chiếu, {len(mismatches)} lệch / {len(entities)} entity")
     for line in mismatches[:20]:

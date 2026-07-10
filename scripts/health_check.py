@@ -34,52 +34,69 @@ def _fetch(url: str, timeout: int) -> tuple[dict | None, str | None]:
         return None, str(exc)
 
 
-def main() -> int:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Health check for vinhlong360 backend.")
     parser.add_argument("--base-url", default="http://localhost:8360", help="backend base URL")
     parser.add_argument("--deep", action="store_true", help="also check /health/deep (LLM connectivity)")
     parser.add_argument("--timeout", type=int, default=5, help="request timeout in seconds (default: 5)")
     parser.add_argument("--json", action="store_true", dest="json_output", help="output as JSON")
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+def _check_health(base: str, timeout: int, results: dict) -> bool:
+    """Run /health; record result. Returns True if overall stays OK for this check."""
+    health_data, health_err = _fetch(f"{base}/health", timeout)
+    if health_err:
+        results["checks"]["health"] = {"status": "FAIL", "error": health_err}
+        return False
+    status = health_data.get("status", "unknown") if health_data else "unknown"
+    results["checks"]["health"] = {"status": "OK" if status == "ok" else "FAIL", "response": health_data}
+    return status == "ok"
+
+
+def _check_health_deep(base: str, timeout: int, results: dict) -> bool:
+    """Run /health/deep; record result. Returns True if overall stays OK for this check."""
+    deep_data, deep_err = _fetch(f"{base}/health/deep", max(timeout, 15))
+    if deep_err:
+        results["checks"]["health_deep"] = {"status": "FAIL", "error": deep_err}
+        return False
+    status = deep_data.get("status", "unknown") if deep_data else "unknown"
+    results["checks"]["health_deep"] = {"status": "OK" if status == "ok" else "WARN", "response": deep_data}
+    return True
+
+
+def _render_text(base: str, results: dict) -> None:
+    print(f"[health] {base}  ({results['timestamp']})")
+    for name, check in results["checks"].items():
+        status = check["status"]
+        detail = check.get("error", "")
+        if not detail and "response" in check:
+            resp = check["response"]
+            if isinstance(resp, dict):
+                detail = ", ".join(f"{k}={v}" for k, v in resp.items() if k != "status")
+        print(f"  {name}: {status}  {detail}")
+    print(f"  overall: {results['overall']}")
+
+
+def main() -> int:
+    args = _parse_args()
 
     base = args.base_url.rstrip("/")
     results: dict = {"timestamp": datetime.now().isoformat(), "base_url": base, "checks": {}}
     all_ok = True
 
-    health_data, health_err = _fetch(f"{base}/health", args.timeout)
-    if health_err:
-        results["checks"]["health"] = {"status": "FAIL", "error": health_err}
+    if not _check_health(base, args.timeout, results):
         all_ok = False
-    else:
-        status = health_data.get("status", "unknown") if health_data else "unknown"
-        results["checks"]["health"] = {"status": "OK" if status == "ok" else "FAIL", "response": health_data}
-        if status != "ok":
-            all_ok = False
 
-    if args.deep:
-        deep_data, deep_err = _fetch(f"{base}/health/deep", max(args.timeout, 15))
-        if deep_err:
-            results["checks"]["health_deep"] = {"status": "FAIL", "error": deep_err}
-            all_ok = False
-        else:
-            status = deep_data.get("status", "unknown") if deep_data else "unknown"
-            results["checks"]["health_deep"] = {"status": "OK" if status == "ok" else "WARN", "response": deep_data}
+    if args.deep and not _check_health_deep(base, args.timeout, results):
+        all_ok = False
 
     results["overall"] = "OK" if all_ok else "FAIL"
 
     if args.json_output:
         print(json.dumps(results, indent=2, ensure_ascii=False))
     else:
-        print(f"[health] {base}  ({results['timestamp']})")
-        for name, check in results["checks"].items():
-            status = check["status"]
-            detail = check.get("error", "")
-            if not detail and "response" in check:
-                resp = check["response"]
-                if isinstance(resp, dict):
-                    detail = ", ".join(f"{k}={v}" for k, v in resp.items() if k != "status")
-            print(f"  {name}: {status}  {detail}")
-        print(f"  overall: {results['overall']}")
+        _render_text(base, results)
 
     return 0 if all_ok else 1
 

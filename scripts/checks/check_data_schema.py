@@ -54,24 +54,30 @@ class DataSchemaCheck:
         enum = load_type_enum(self.root)
         seen: set[str] = set()
         for e in data.get("entities", []):
-            eid = e.get("id") or "<no-id>"
-            if eid in seen:
-                violations.append({"file": DATA_REL, "line": 0, "rule": self.rule, "msg": f"id trùng: {eid}"})
-            seen.add(eid)
-            if e.get("type") not in enum:
-                violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
-                                   "msg": f"{eid}: type '{e.get('type')}' ngoài enum {len(enum)} loại"})
-            for f in REQUIRED:
-                if not e.get(f):
-                    violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
-                                       "msg": f"{eid}: thiếu trường bắt buộc '{f}'"})
-            c = e.get("coordinates")
-            if isinstance(c, dict) and c.get("lat") is not None:
-                lat, lng = c.get("lat"), c.get("lng")
-                if not (BBOX["lat"][0] <= lat <= BBOX["lat"][1] and BBOX["lng"][0] <= lng <= BBOX["lng"][1]):
-                    violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
-                                       "msg": f"{eid}: coords ({lat},{lng}) ngoài bbox tỉnh"})
+            self._check_entity(e, enum, seen, violations)
         return self._result(violations)
+
+    def _check_entity(self, e: dict, enum: set, seen: set, violations: list) -> None:
+        eid = e.get("id") or "<no-id>"
+        if eid in seen:
+            violations.append({"file": DATA_REL, "line": 0, "rule": self.rule, "msg": f"id trùng: {eid}"})
+        seen.add(eid)
+        if e.get("type") not in enum:
+            violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
+                               "msg": f"{eid}: type '{e.get('type')}' ngoài enum {len(enum)} loại"})
+        for f in REQUIRED:
+            if not e.get(f):
+                violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
+                                   "msg": f"{eid}: thiếu trường bắt buộc '{f}'"})
+        self._check_coords(e, eid, violations)
+
+    def _check_coords(self, e: dict, eid: str, violations: list) -> None:
+        c = e.get("coordinates")
+        if isinstance(c, dict) and c.get("lat") is not None:
+            lat, lng = c.get("lat"), c.get("lng")
+            if not (BBOX["lat"][0] <= lat <= BBOX["lat"][1] and BBOX["lng"][0] <= lng <= BBOX["lng"][1]):
+                violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
+                                   "msg": f"{eid}: coords ({lat},{lng}) ngoài bbox tỉnh"})
 
     def _result(self, violations: list) -> dict:
         return {"check": self.name, "level": self.level, "rule": self.rule,

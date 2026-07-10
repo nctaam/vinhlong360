@@ -82,11 +82,7 @@ def function_source(text: str, name: str) -> str:
     return text[start:end if end > start else len(text)]
 
 
-def main() -> int:
-    source = SERVER.read_text(encoding="utf-8", errors="replace")
-    gate = gate_source(source)
-    failures: list[str] = []
-
+def _check_gate_integrity(gate: str, failures: list[str]) -> None:
     if not gate:
         failures.append("missing gate_internal_endpoints middleware")
     if "verify_admin_key" not in gate:
@@ -94,14 +90,14 @@ def main() -> int:
     if "404" not in gate:
         failures.append("gate_internal_endpoints must hide sensitive paths with 404")
 
-    print("Sensitive route guard matrix")
-    print("============================")
+def _check_prefix_guards(gate: str, failures: list[str]) -> None:
     for check in CHECKS:
         ok = check.token in gate
         print(f"{'OK' if ok else 'FAIL'} {check.route:20} {check.reason}")
         if not ok:
             failures.append(f"{check.route} missing token {check.token}")
 
+def _check_endpoint_guards(source: str, failures: list[str]) -> None:
     for check in ENDPOINT_CHECKS:
         block = function_source(source, check.function)
         ok = bool(block) and all(token in block for token in check.tokens)
@@ -111,12 +107,28 @@ def main() -> int:
         elif not ok:
             failures.append(f"{check.route} missing endpoint guard tokens {check.tokens}")
 
+def _report_failures(failures: list[str]) -> int:
     if failures:
         print("\nFailures:")
         for failure in failures:
             print(f"- {failure}")
         return 1
     return 0
+
+
+def main() -> int:
+    source = SERVER.read_text(encoding="utf-8", errors="replace")
+    gate = gate_source(source)
+    failures: list[str] = []
+
+    _check_gate_integrity(gate, failures)
+
+    print("Sensitive route guard matrix")
+    print("============================")
+    _check_prefix_guards(gate, failures)
+    _check_endpoint_guards(source, failures)
+
+    return _report_failures(failures)
 
 
 if __name__ == "__main__":

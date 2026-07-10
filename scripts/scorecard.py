@@ -93,6 +93,23 @@ def origin_rule_debts(history: list[dict], current: dict) -> dict:
     return seen
 
 
+def _regressions(sc: dict, prev: dict | None) -> list[str]:
+    regressions = []
+    if prev:
+        for d, s in sc.items():
+            ps = prev.get(d)
+            if s is not None and ps is not None and s < ps:
+                regressions.append(f"{d}: {ps} → {s}")
+    return regressions
+
+
+def _append_entry(root: Path, entry: dict) -> None:
+    p = root / HISTORY_REL
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+
 def run(checks: list, root: Path, append: bool = True) -> tuple[int, dict]:
     debts, hard = collect_debts(checks)
     cur = dim_debts(debts)
@@ -100,19 +117,11 @@ def run(checks: list, root: Path, append: bool = True) -> tuple[int, dict]:
     origin = dim_debts(origin_rule_debts(history, debts))
     sc = scores(cur, {d: (v or 0) for d, v in origin.items()})
     prev = history[-1]["scores"] if history else None
-    regressions = []
-    if prev:
-        for d, s in sc.items():
-            ps = prev.get(d)
-            if s is not None and ps is not None and s < ps:
-                regressions.append(f"{d}: {ps} → {s}")
+    regressions = _regressions(sc, prev)
     entry = {"ts": datetime.now().isoformat(timespec="seconds"), "scores": sc,
              "dim_debts": cur, "debts": debts, "hard_violations": hard}
     if append:
-        p = root / HISTORY_REL
-        p.parent.mkdir(parents=True, exist_ok=True)
-        with p.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        _append_entry(root, entry)
     code = 1 if (hard > 0 or regressions) else 0
     return code, {"entry": entry, "regressions": regressions}
 

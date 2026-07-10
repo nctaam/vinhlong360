@@ -486,35 +486,69 @@ def check_rate_load_aware(
     check_rate(key, effective_limit, base_window, msg)
 
 
+def _gc_all_dicts() -> list:
+    return [_buckets, _violations, _ip_global, _resource_access,
+            _slow_rate_tracking, _token_buckets, _penalty_box,
+            _penalty_violations, _sliding_counters]
+
+
+def _gc_ip_global(now: float) -> None:
+    cutoff_global = now - _IP_GLOBAL_WINDOW * 2
+    for k in [k for k, ts in _ip_global.items() if not ts or now - ts[-1] > cutoff_global]:
+        _ip_global.pop(k, None)
+
+
+def _gc_violations(now: float) -> None:
+    for k in [k for k, ts in _violations.items() if not ts or now - ts[-1] > _VIOLATION_DECAY]:
+        _violations.pop(k, None)
+
+
+def _gc_resource_access(now: float) -> None:
+    for k in [k for k, v in _resource_access.items() if not v or v[-1][0] < now - _COORD_WINDOW]:
+        _resource_access.pop(k, None)
+
+
+def _gc_slow_rate_tracking(now: float) -> None:
+    for k in [k for k, ts in _slow_rate_tracking.items() if not ts or now - ts[-1] > _SLOW_RATE_WINDOW]:
+        _slow_rate_tracking.pop(k, None)
+
+
+def _gc_token_buckets(now: float) -> None:
+    for k in [k for k, (_, t) in _token_buckets.items() if t < now - 3600]:
+        _token_buckets.pop(k, None)
+
+
+def _gc_penalty_box(now: float) -> None:
+    for ip in [ip for ip, t in _penalty_box.items() if now >= t]:
+        _penalty_box.pop(ip, None)
+
+
+def _gc_penalty_violations(now: float) -> None:
+    for ip in [ip for ip, cnt in _penalty_violations.items()
+               if cnt <= 0 or ip not in _penalty_box]:
+        _penalty_violations.pop(ip, None)
+
+
+def _gc_sliding_counters(now: float) -> None:
+    for k in [k for k, v in _sliding_counters.items() if not v or v[-1][0] < now - 3600]:
+        _sliding_counters.pop(k, None)
+
+
 def gc_all() -> dict:
     """Periodic GC for all in-memory rate-limit dicts. Call from scheduler."""
     now = _now()
     with _rl_lock:
-        before = sum(len(d) for d in [_buckets, _violations, _ip_global, _resource_access,
-                                        _slow_rate_tracking, _token_buckets, _penalty_box,
-                                        _penalty_violations, _sliding_counters])
+        before = sum(len(d) for d in _gc_all_dicts())
         _gc(now)
-        cutoff_global = now - _IP_GLOBAL_WINDOW * 2
-        for k in [k for k, ts in _ip_global.items() if not ts or now - ts[-1] > cutoff_global]:
-            _ip_global.pop(k, None)
-        for k in [k for k, ts in _violations.items() if not ts or now - ts[-1] > _VIOLATION_DECAY]:
-            _violations.pop(k, None)
-        for k in [k for k, v in _resource_access.items() if not v or v[-1][0] < now - _COORD_WINDOW]:
-            _resource_access.pop(k, None)
-        for k in [k for k, ts in _slow_rate_tracking.items() if not ts or now - ts[-1] > _SLOW_RATE_WINDOW]:
-            _slow_rate_tracking.pop(k, None)
-        for k in [k for k, (_, t) in _token_buckets.items() if t < now - 3600]:
-            _token_buckets.pop(k, None)
-        for ip in [ip for ip, t in _penalty_box.items() if now >= t]:
-            _penalty_box.pop(ip, None)
-        for ip in [ip for ip, cnt in _penalty_violations.items()
-                   if cnt <= 0 or ip not in _penalty_box]:
-            _penalty_violations.pop(ip, None)
-        for k in [k for k, v in _sliding_counters.items() if not v or v[-1][0] < now - 3600]:
-            _sliding_counters.pop(k, None)
-        after = sum(len(d) for d in [_buckets, _violations, _ip_global, _resource_access,
-                                       _slow_rate_tracking, _token_buckets, _penalty_box,
-                                       _penalty_violations, _sliding_counters])
+        _gc_ip_global(now)
+        _gc_violations(now)
+        _gc_resource_access(now)
+        _gc_slow_rate_tracking(now)
+        _gc_token_buckets(now)
+        _gc_penalty_box(now)
+        _gc_penalty_violations(now)
+        _gc_sliding_counters(now)
+        after = sum(len(d) for d in _gc_all_dicts())
     return {"before": before, "after": after, "freed": before - after}
 
 

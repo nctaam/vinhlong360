@@ -299,6 +299,57 @@ _SUSPICIOUS_PRICE_RE = re.compile(r"(\d[\d.,]*)\s*(VND|dong|đồng|vnd|trieu|tr
 _SUSPICIOUS_YEAR_RE = re.compile(r"\b(1[0-8]\d{2}|2[1-9]\d{2}|20[3-9]\d)\b")
 
 
+def _collect_known_names(entities: dict) -> set:
+    """Trich xuat tat ca entity names + aliases tu knowledge base (lowercase)."""
+    known_names = set()
+    for edata in entities.values():
+        if isinstance(edata, dict):
+            name = edata.get("name", "")
+            if name:
+                known_names.add(name.lower())
+            # Them aliases neu co
+            for alias in edata.get("aliases", []):
+                known_names.add(alias.lower())
+    return known_names
+
+
+def _extract_mentioned_names(reply: str) -> set:
+    """Trich xuat entity names tu reply (quoted hoac proper nouns)."""
+    mentioned = set()
+    for m in _ENTITY_NAME_RE.finditer(reply):
+        name = m.group(1) or m.group(2)
+        if name:
+            mentioned.add(name.strip())
+    return mentioned
+
+
+def _score_unknown_entities(mentioned: set, known_names: set) -> tuple:
+    """So sanh mentioned vs known_names -> (score, issues). Substring match gan dung."""
+    unknown = []
+    for name in mentioned:
+        name_lower = name.lower()
+        # Tim gan dung: substring match
+        found = any(
+            name_lower in kn or kn in name_lower
+            for kn in known_names
+        )
+        if not found:
+            unknown.append(name)
+
+    total = len(mentioned)
+    unknown_count = len(unknown)
+    score = unknown_count / total if total > 0 else 0.0
+
+    issues = []
+    if unknown:
+        issues.append(
+            f"Co the hallucination: {unknown_count}/{total} entities khong co trong KB: "
+            + ", ".join(unknown[:5])
+        )
+
+    return (score, issues)
+
+
 class OutputValidator:
     """
     Kiem tra chat luong output cua Knowledge Agent.
@@ -385,54 +436,15 @@ class OutputValidator:
         if not entities:
             return (0.0, [])
 
-        # Trich xuat tat ca entity names tu knowledge base (lowercase)
-        known_names = set()
-        for eid, edata in entities.items():
-            if isinstance(edata, dict):
-                name = edata.get("name", "")
-                if name:
-                    known_names.add(name.lower())
-                # Them aliases neu co
-                for alias in edata.get("aliases", []):
-                    known_names.add(alias.lower())
-
+        known_names = _collect_known_names(entities)
         if not known_names:
             return (0.0, [])
 
-        # Trich xuat entity names tu reply
-        mentioned = set()
-        for m in _ENTITY_NAME_RE.finditer(reply):
-            name = m.group(1) or m.group(2)
-            if name:
-                mentioned.add(name.strip())
-
+        mentioned = _extract_mentioned_names(reply)
         if not mentioned:
             return (0.0, [])
 
-        # So sanh: entity nao trong reply khong co trong KB?
-        unknown = []
-        for name in mentioned:
-            name_lower = name.lower()
-            # Tim gan dung: substring match
-            found = any(
-                name_lower in kn or kn in name_lower
-                for kn in known_names
-            )
-            if not found:
-                unknown.append(name)
-
-        total = len(mentioned)
-        unknown_count = len(unknown)
-        score = unknown_count / total if total > 0 else 0.0
-
-        issues = []
-        if unknown:
-            issues.append(
-                f"Co the hallucination: {unknown_count}/{total} entities khong co trong KB: "
-                + ", ".join(unknown[:5])
-            )
-
-        return (score, issues)
+        return _score_unknown_entities(mentioned, known_names)
 
     def _check_factuality(self, reply: str) -> list:
         """Kiem tra gia tri bat thuong (gia, nam)."""

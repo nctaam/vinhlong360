@@ -204,6 +204,113 @@ def _format_ms(val: float | None) -> str:
     return f"{val:.0f}ms"
 
 
+def _resolve_report_path(args) -> str:
+    """Return the report path, creating a temp file if no output specified."""
+    if args.output:
+        return args.output
+    tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
+    report_path = tmp.name
+    tmp.close()
+    return report_path
+
+
+def _load_report(lh_cmd: str, args, report_path: str) -> tuple[dict | None, int]:
+    """Run lighthouse, load the JSON report. Returns (report, exit_code)."""
+    try:
+        ok = _run_lighthouse(lh_cmd, args.url, report_path)
+        if not ok:
+            return None, 1
+
+        if not os.path.exists(report_path):
+            print(f"[lighthouse] ERROR: report file not created at {report_path}", file=sys.stderr)
+            return None, 1
+
+        with open(report_path, encoding="utf-8") as f:
+            report = json.load(f)
+
+    except json.JSONDecodeError as exc:
+        print(f"[lighthouse] ERROR: failed to parse report JSON: {exc}", file=sys.stderr)
+        return None, 1
+    finally:
+        # Clean up temp file
+        if not args.output and os.path.exists(report_path):
+            os.unlink(report_path)
+
+    return report, 0
+
+
+def _build_result(cwv: dict, failures: list[dict], args) -> dict:
+    """Assemble the audit result dict."""
+    return {
+        "url": args.url,
+        "cwv": cwv,
+        "thresholds": {
+            "lcp_ms": args.lcp_threshold,
+            "cls": args.cls_threshold,
+            "performance_score": args.perf_threshold,
+            "inp_ms": args.inp_threshold,
+        },
+        "failures": failures,
+        "passed": len(failures) == 0,
+    }
+
+
+def _status_for(metric: str, failures: list[dict]) -> str:
+    """Return "FAIL" if the metric is among failures, else "PASS"."""
+    return "FAIL" if any(f["metric"] == metric for f in failures) else "PASS"
+
+
+def _print_metric_rows(cwv: dict, failures: list[dict], args) -> None:
+    """Print the threshold-checked metric table rows."""
+    # Performance score
+    perf = cwv.get("performance_score")
+    perf_status = _status_for("Performance Score", failures)
+    print(f"  {'Performance Score':<22} {str(perf or 'N/A'):>10} {f'>={args.perf_threshold:.0f}':>12} {perf_status:>8}")
+
+    # LCP
+    lcp_status = _status_for("LCP", failures)
+    print(f"  {'LCP':<22} {_format_ms(cwv.get('lcp_ms')):>10} {f'<={args.lcp_threshold:.0f}ms':>12} {lcp_status:>8}")
+
+    # CLS
+    cls_val = cwv.get("cls")
+    cls_str = f"{cls_val:.3f}" if cls_val is not None else "N/A"
+    cls_status = _status_for("CLS", failures)
+    print(f"  {'CLS':<22} {cls_str:>10} {f'<={args.cls_threshold}':>12} {cls_status:>8}")
+
+    # INP
+    inp_status = _status_for("INP", failures)
+    print(f"  {'INP':<22} {_format_ms(cwv.get('inp_ms')):>10} {f'<={args.inp_threshold:.0f}ms':>12} {inp_status:>8}")
+
+
+def _print_additional_metrics(cwv: dict, failures: list[dict]) -> None:
+    """Print the info-only additional metrics and failure summary."""
+    print()
+    print("  Additional metrics:")
+    print(f"    FCP:   {_format_ms(cwv.get('fcp_ms'))}")
+    print(f"    SI:    {_format_ms(cwv.get('si_ms'))}")
+    print(f"    TTI:   {_format_ms(cwv.get('tti_ms'))}")
+    print(f"    TBT:   {_format_ms(cwv.get('tbt_ms'))}")
+
+    if failures:
+        print()
+        print(f"  {len(failures)} metric(s) failed thresholds.")
+
+
+def _print_human_report(result: dict, cwv: dict, failures: list[dict], args) -> None:
+    """Print the human-readable Core Web Vitals report."""
+    overall = "PASS" if result["passed"] else "FAIL"
+    print(f"[lighthouse] Core Web Vitals audit: {overall}")
+    print(f"  URL: {args.url}")
+    print()
+
+    # Table header
+    print(f"  {'Metric':<22} {'Value':>10} {'Threshold':>12} {'Status':>8}")
+    print(f"  {'─' * 22} {'─' * 10} {'─' * 12} {'─' * 8}")
+
+    _print_metric_rows(cwv, failures, args)
+    _print_additional_metrics(cwv, failures)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Run Lighthouse audit and report Core Web Vitals."
@@ -269,32 +376,11 @@ def main() -> int:
 
     # --- Run Lighthouse ---
     # Use a temp file if no output specified
-    if args.output:
-        report_path = args.output
-    else:
-        tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False)
-        report_path = tmp.name
-        tmp.close()
+    report_path = _resolve_report_path(args)
 
-    try:
-        ok = _run_lighthouse(lh_cmd, args.url, report_path)
-        if not ok:
-            return 1
-
-        if not os.path.exists(report_path):
-            print(f"[lighthouse] ERROR: report file not created at {report_path}", file=sys.stderr)
-            return 1
-
-        with open(report_path, encoding="utf-8") as f:
-            report = json.load(f)
-
-    except json.JSONDecodeError as exc:
-        print(f"[lighthouse] ERROR: failed to parse report JSON: {exc}", file=sys.stderr)
-        return 1
-    finally:
-        # Clean up temp file
-        if not args.output and os.path.exists(report_path):
-            os.unlink(report_path)
+    report, exit_code = _load_report(lh_cmd, args, report_path)
+    if report is None:
+        return exit_code
 
     # --- Extract and check CWV ---
     cwv = _extract_cwv(report)
@@ -306,62 +392,13 @@ def main() -> int:
         args.inp_threshold,
     )
 
-    result = {
-        "url": args.url,
-        "cwv": cwv,
-        "thresholds": {
-            "lcp_ms": args.lcp_threshold,
-            "cls": args.cls_threshold,
-            "performance_score": args.perf_threshold,
-            "inp_ms": args.inp_threshold,
-        },
-        "failures": failures,
-        "passed": len(failures) == 0,
-    }
+    result = _build_result(cwv, failures, args)
 
     # --- Output ---
     if args.json_output:
         print(json.dumps(result, indent=2))
     else:
-        overall = "PASS" if result["passed"] else "FAIL"
-        print(f"[lighthouse] Core Web Vitals audit: {overall}")
-        print(f"  URL: {args.url}")
-        print()
-
-        # Table header
-        print(f"  {'Metric':<22} {'Value':>10} {'Threshold':>12} {'Status':>8}")
-        print(f"  {'─' * 22} {'─' * 10} {'─' * 12} {'─' * 8}")
-
-        # Performance score
-        perf = cwv.get("performance_score")
-        perf_status = "FAIL" if any(f["metric"] == "Performance Score" for f in failures) else "PASS"
-        print(f"  {'Performance Score':<22} {str(perf or 'N/A'):>10} {f'>={args.perf_threshold:.0f}':>12} {perf_status:>8}")
-
-        # LCP
-        lcp_status = "FAIL" if any(f["metric"] == "LCP" for f in failures) else "PASS"
-        print(f"  {'LCP':<22} {_format_ms(cwv.get('lcp_ms')):>10} {f'<={args.lcp_threshold:.0f}ms':>12} {lcp_status:>8}")
-
-        # CLS
-        cls_val = cwv.get("cls")
-        cls_str = f"{cls_val:.3f}" if cls_val is not None else "N/A"
-        cls_status = "FAIL" if any(f["metric"] == "CLS" for f in failures) else "PASS"
-        print(f"  {'CLS':<22} {cls_str:>10} {f'<={args.cls_threshold}':>12} {cls_status:>8}")
-
-        # INP
-        inp_status = "FAIL" if any(f["metric"] == "INP" for f in failures) else "PASS"
-        print(f"  {'INP':<22} {_format_ms(cwv.get('inp_ms')):>10} {f'<={args.inp_threshold:.0f}ms':>12} {inp_status:>8}")
-
-        # Additional metrics (no thresholds, info only)
-        print()
-        print("  Additional metrics:")
-        print(f"    FCP:   {_format_ms(cwv.get('fcp_ms'))}")
-        print(f"    SI:    {_format_ms(cwv.get('si_ms'))}")
-        print(f"    TTI:   {_format_ms(cwv.get('tti_ms'))}")
-        print(f"    TBT:   {_format_ms(cwv.get('tbt_ms'))}")
-
-        if failures:
-            print()
-            print(f"  {len(failures)} metric(s) failed thresholds.")
+        _print_human_report(result, cwv, failures, args)
 
     return 0 if result["passed"] else 1
 
