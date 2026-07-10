@@ -179,6 +179,7 @@ def test_admin_activity_feed_endpoint_mounted():
     assert ("GET", "/admin/activity-feed") in pairs
 
 
+@pytest.mark.skipif(db._use_pg, reason="Activity feed serves from admin_audit_events DB table on PG; the JSONL-file path (monkeypatched _AUDIT_FILE) only runs on SQLite/fallback")
 def test_admin_activity_feed_reads_jsonl(tmp_path, monkeypatch):
     import admin
     audit_file = tmp_path / "admin_audit.jsonl"
@@ -203,6 +204,7 @@ def test_admin_activity_feed_reads_jsonl(tmp_path, monkeypatch):
     assert data["actions"][1]["method"] == "PUT"
 
 
+@pytest.mark.skipif(db._use_pg, reason="Activity feed serves from admin_audit_events DB table on PG; the JSONL-file path (monkeypatched _AUDIT_FILE) only runs on SQLite/fallback")
 def test_admin_activity_feed_empty(tmp_path, monkeypatch):
     import admin
     audit_file = tmp_path / "admin_audit.jsonl"

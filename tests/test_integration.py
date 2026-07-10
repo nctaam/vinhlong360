@@ -84,16 +84,16 @@ def test_health_endpoint(client):
     response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "ok"
-    assert "version" in data
+    # /health is a lightweight public probe: only status/time/entities.
+    # version/model/cache moved to the admin-gated /health/details.
+    assert data["status"] in ("ok", "degraded")
     assert "entities" in data
-    assert "model" in data
-    assert "cache" in data
     assert "time" in data
 
 
-def test_health_contains_feature_flags(client):
-    response = client.get("/health")
+def test_health_contains_feature_flags(client, admin_headers):
+    # Feature flags moved from /health (slim probe) to /health/details (admin-gated).
+    response = client.get("/health/details", headers=admin_headers)
     data = response.json()
     # Feature availability flags
     for key in ["vector_search", "realtime", "circuit_breaker",
@@ -104,8 +104,8 @@ def test_health_contains_feature_flags(client):
 # ── /metrics ─────────────────────────────────────────
 
 
-def test_metrics_endpoint(client):
-    response = client.get("/metrics")
+def test_metrics_endpoint(client, admin_headers):
+    response = client.get("/metrics", headers=admin_headers)
     if response.status_code == 501:
         pytest.skip("Metrics module not available")
     assert response.status_code == 200
@@ -115,8 +115,8 @@ def test_metrics_endpoint(client):
     assert "# TYPE" in text
 
 
-def test_metrics_content_type(client):
-    response = client.get("/metrics")
+def test_metrics_content_type(client, admin_headers):
+    response = client.get("/metrics", headers=admin_headers)
     if response.status_code == 501:
         pytest.skip("Metrics module not available")
     assert "text/plain" in response.headers.get("content-type", "")
@@ -192,8 +192,8 @@ def test_chat_response_structure(client):
 # ── /ab-testing/experiments ──────────────────────────
 
 
-def test_ab_experiments_endpoint(client):
-    response = client.get("/ab-testing/experiments")
+def test_ab_experiments_endpoint(client, admin_headers):
+    response = client.get("/ab-testing/experiments", headers=admin_headers)
     assert response.status_code == 200
     data = response.json()
     if "error" in data:
@@ -256,8 +256,8 @@ def test_autocorrect_with_misspelling(client):
 # ── /vectors/stats ───────────────────────────────────
 
 
-def test_vector_stats_endpoint(client):
-    response = client.get("/vectors/stats")
+def test_vector_stats_endpoint(client, admin_headers):
+    response = client.get("/vectors/stats", headers=admin_headers)
     assert response.status_code == 200
     data = response.json()
     # Either has stats or reports not available
@@ -267,8 +267,8 @@ def test_vector_stats_endpoint(client):
 # ── /prompt-cache/stats ──────────────────────────────
 
 
-def test_prompt_cache_stats_endpoint(client):
-    response = client.get("/prompt-cache/stats")
+def test_prompt_cache_stats_endpoint(client, admin_headers):
+    response = client.get("/prompt-cache/stats", headers=admin_headers)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -277,8 +277,8 @@ def test_prompt_cache_stats_endpoint(client):
 # ── /analytics/summary ───────────────────────────────
 
 
-def test_analytics_summary_endpoint(client):
-    response = client.get("/analytics/summary")
+def test_analytics_summary_endpoint(client, admin_headers):
+    response = client.get("/analytics/summary", headers=admin_headers)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -287,8 +287,8 @@ def test_analytics_summary_endpoint(client):
 # ── /system/circuit-breakers ─────────────────────────
 
 
-def test_circuit_breaker_stats_endpoint(client):
-    response = client.get("/system/circuit-breakers")
+def test_circuit_breaker_stats_endpoint(client, admin_headers):
+    response = client.get("/system/circuit-breakers", headers=admin_headers)
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, dict)
@@ -301,8 +301,8 @@ def test_circuit_breaker_stats_endpoint(client):
 # ── /system/memory ───────────────────────────────────
 
 
-def test_system_memory_endpoint(client):
-    response = client.get("/system/memory")
+def test_system_memory_endpoint(client, admin_headers):
+    response = client.get("/system/memory", headers=admin_headers)
     assert response.status_code == 200
     data = response.json()
     assert "active_sessions" in data
@@ -342,7 +342,8 @@ def test_feedback_endpoint(client):
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "ok"
+    # /feedback returns {"success": True} (previously {"status": "ok"}).
+    assert data["success"] is True
 
 
 def test_feedback_invalid_rating(client):

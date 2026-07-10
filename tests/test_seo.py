@@ -26,11 +26,12 @@ def test_entity_jsonld_accepts_list_coordinates() -> None:
 
 
 def test_sitemap_includes_all_public_non_place_entities_and_itineraries(monkeypatch) -> None:
+    rich = "chu " * 140  # >=130 tu -> qua cong chat luong is_index_worthy (P0-1)
     monkeypatch.setattr(seo, "_data", {
         "entities": [
             {"id": "xa-vinh-long", "type": "place", "name": "Xa Vinh Long", "updatedAt": "2026-01-01"},
-            {"id": "lich-su-a", "type": "history", "name": "Lich su A", "updatedAt": "2026-01-02"},
-            {"id": "nhan-vat-b", "type": "person", "name": "Nhan vat B"},
+            {"id": "lich-su-a", "type": "history", "name": "Lich su A", "summary": rich, "updatedAt": "2026-01-02"},
+            {"id": "nhan-vat-b", "type": "person", "name": "Nhan vat B", "summary": rich},
         ],
         "relationships": [],
         "itineraries": [{"id": "hanh-trinh-a", "title": "Hanh trinh A", "updatedAt": "2026-01-03"}],
@@ -42,4 +43,6 @@ def test_sitemap_includes_all_public_non_place_entities_and_itineraries(monkeypa
     assert "https://vinhlong360.vn/dia-diem/nhan-vat-b" in body
     assert "https://vinhlong360.vn/dia-diem/xa-vinh-long" not in body
     assert "https://vinhlong360.vn/lich-trinh/hanh-trinh-a" in body
-    assert "<lastmod>2026-01-02</lastmod>" in body
+    # P1-4: detail URL khong con phat lastmod=updatedAt (chong freshness-gaming);
+    # lastmod hop le den tu itinerary (updatedAt 2026-01-03).
+    assert "<lastmod>2026-01-03</lastmod>" in body

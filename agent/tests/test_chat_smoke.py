@@ -104,6 +104,9 @@ def test_admin_edit_reflects_in_chat_and_api(client_mocked):
 
 def test_ugc_degrades_to_503_on_sqlite(client_mocked):
     """GĐ3.1 (quyết định): UGC/auth Postgres-only — trên SQLite dev trả 503 rõ ràng (không crash 500)."""
+    from database import db
+    if db._use_pg:
+        pytest.skip("Hành vi degrade-503 đặc thù SQLite; dưới Postgres UGC/auth chạy thật (không 503).")
     r = client_mocked.post("/auth/request-otp", json={"phone": "0912345678"})
     assert r.status_code == 503, r.text
 

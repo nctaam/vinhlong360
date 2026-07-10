@@ -579,7 +579,9 @@ class TestAuthGuards:
         if not db._use_pg:
             assert client.post("/auth/logout").status_code == 503
         else:
-            assert client.post("/auth/logout").status_code in (401, 403)
+            # Logout is a public no-op: returns 200 even without a valid session
+            # (see auth.logout docstring). It is NOT an auth-guarded endpoint.
+            assert client.post("/auth/logout").status_code == 200
 
     def test_profile_update_guarded(self):
         client = _auth_client()
@@ -611,7 +613,9 @@ class TestSocialGuards:
         if not db._use_pg:
             assert client.get("/api/feed").status_code == 503
         else:
-            assert client.get("/api/feed").status_code in (401, 403)
+            # Community feed uses optional auth (get_current_user): anonymous
+            # visitors get the public feed — 200, not an auth challenge.
+            assert client.get("/api/feed").status_code == 200
 
     def test_drafts_guarded(self):
         client = _social_client()

@@ -403,6 +403,7 @@ class TestBE9ActivityFeed:
         pairs = _route_pairs(client.app)
         assert ("GET", "/admin/activity-feed") in pairs
 
+    @pytest.mark.skipif(db._use_pg, reason="JSONL fallback path only reachable on SQLite; under PG activity_feed serves from admin_audit_events table")
     def test_activity_feed_empty_file(self, tmp_path, monkeypatch):
         audit_file = tmp_path / "admin_audit.jsonl"
         monkeypatch.setattr(admin, "_AUDIT_FILE", audit_file)
@@ -411,6 +412,7 @@ class TestBE9ActivityFeed:
         assert resp.status_code == 200
         assert resp.json()["actions"] == []
 
+    @pytest.mark.skipif(db._use_pg, reason="JSONL fallback path only reachable on SQLite; under PG activity_feed serves from admin_audit_events table")
     def test_activity_feed_returns_newest_first(self, tmp_path, monkeypatch):
         audit_file = tmp_path / "admin_audit.jsonl"
         records = [

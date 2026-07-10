@@ -71,7 +71,11 @@ def test_typed_clean_data_byte_identical(flip):
     flip()
     on = _attrs(IDS["product"])
     assert on == off == original
-    assert list(on.keys()) == list(original.keys()), "thứ tự key phải giữ nguyên"
+    # Postgres jsonb chuẩn hoá lại thứ tự key (order-by-length rồi bytewise); thứ tự
+    # key GỐC chỉ bảo toàn end-to-end trên SQLite (JSON lưu dạng text). Giá trị vẫn
+    # byte-identical trên cả hai (đã assert ở dòng trên) — chỉ order-parity là SQLite-only.
+    if not db._use_pg:
+        assert list(on.keys()) == list(original.keys()), "thứ tự key phải giữ nguyên"
 
 
 def test_uncoercible_value_not_lost(flip):

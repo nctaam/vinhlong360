@@ -191,6 +191,12 @@ class TestBurstDetection:
 
     def test_detects_rapid_burst(self):
         from ratelimit import detect_burst, check_rate, _reset
+        from database import db
+        if db._use_pg:
+            pytest.skip(
+                "in-memory burst path: dưới Postgres check_rate uỷ quyền cho shared PG "
+                "limiter nên _buckets rỗng; detect_burst chỉ đọc _buckets (không có caller prod)"
+            )
         _reset()
         key = "rapid_burst"
         for _ in range(12):

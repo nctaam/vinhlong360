@@ -65,7 +65,7 @@ def test_create_post_rate_limited(monkeypatch):
     try:
         for _ in range(2):
             r = client.post("/api/posts", json={"content": "Chia sẻ trải nghiệm hợp lệ.", "post_type": "share"})
-            assert r.status_code == 200, r.text
+            assert r.status_code == 201, r.text
             created.append(r.json()["post"]["id"])
         # lần thứ 3 vượt limit → 429
         blocked = client.post("/api/posts", json={"content": "Bài thứ ba bị chặn nhé.", "post_type": "share"})

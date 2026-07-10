@@ -168,7 +168,7 @@ def test_list_visits_with_status_filter_adds_clause_and_param():
         out = asyncio.run(visits.list_visits(status="visited", user=FAKE_USER))
     assert out == {"visits": []}
     sql, params = cap["fetchall"][0]
-    assert "AND status = ?" in sql
+    assert "AND status = " in sql  # placeholder is ? (SQLite) or %s (PG)
     # The status value is appended as the 2nd bound param.
     assert params == (FAKE_USER["id"], "visited")
 

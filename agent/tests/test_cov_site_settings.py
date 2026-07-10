@@ -263,6 +263,12 @@ class TestCacheInvalidate:
 # No-PG early returns — against the REAL db (SQLite mode locally)              #
 # --------------------------------------------------------------------------- #
 
+@pytest.mark.skipif(
+    db._use_pg,
+    reason="SQLite-specific: exercises the `if not db._use_pg` early-return "
+    "branches; under Postgres (test-pg CI) these paths are not taken and the "
+    "functions return real data / True.",
+)
 class TestNoPgEarlyReturns:
     def test_real_db_is_sqlite(self):
         # sanity: local env genuinely has no PG, so these branches are live

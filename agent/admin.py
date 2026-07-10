@@ -779,7 +779,7 @@ def _completeness_has(e: dict, key: str) -> bool:
 
 def _completeness_fetch_ents(kind_types: list[str]) -> list[dict]:
     with db._conn() as conn:
-        placeholders = ", ".join("?" for _ in kind_types)
+        placeholders = ", ".join(db._ph for _ in kind_types)  # ?/%s theo backend (PG dùng %s)
         rows = db._fetchall(conn,
             f"SELECT * FROM entities WHERE type IN ({placeholders}) ORDER BY name LIMIT 2000",
             tuple(kind_types))
@@ -3361,21 +3361,21 @@ async def export_data():
         for i, e in enumerate(entities):
             if i:
                 yield ","
-            yield json.dumps(e, ensure_ascii=False)
+            yield json.dumps(e, ensure_ascii=False, default=str)
         yield '],"relationships":['
         with db._conn() as conn:
             rels = db._fetchall(conn, "SELECT from_id, to_id, type FROM relationships", ())
         for i, r in enumerate(rels):
             if i:
                 yield ","
-            yield json.dumps(db._row_to_dict(r), ensure_ascii=False)
+            yield json.dumps(db._row_to_dict(r), ensure_ascii=False, default=str)
         yield '],"itineraries":['
         with db._conn() as conn:
             itins = db._fetchall(conn, "SELECT * FROM itineraries", ())
         for i, it in enumerate(itins):
             if i:
                 yield ","
-            yield json.dumps(db._row_to_dict(it), ensure_ascii=False)
+            yield json.dumps(db._row_to_dict(it), ensure_ascii=False, default=str)  # default=str: TIMESTAMPTZ (datetime) trên PG
         yield ']}'
 
     return StreamingResponse(_generate(), media_type="application/json",
@@ -3476,7 +3476,7 @@ async def list_sources():
     def _query():
         with db._conn() as conn:
             rows = db._fetchall(conn,
-                "SELECT source FROM entities WHERE type != 'place' AND source IS NOT NULL AND source != ''",
+                "SELECT source FROM entities WHERE type != 'place' AND source IS NOT NULL",
                 ())
         sources: dict = {}
         for r in rows:

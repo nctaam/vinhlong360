@@ -61,6 +61,7 @@ def test_reupsert_clears_removed_values_mirror_not_coalesce():
     assert _fetch_universal()["address"] is None
 
 
+@pytest.mark.skipif(db._use_pg, reason="SQLite-specific raw storage: bool→int 1, rating REAL→float, tags→JSON text string; trên PG là bool/Decimal/JSONB-parsed — dual-write code đúng cả 2 backend, test chỉ đúng cho SQLite")
 def test_bool_and_tags_on_sqlite():
     db.upsert_entity({"id": TEST_ID, "type": "cafe", "name": "Cafe test",
                       "attributes": {"wifi": "true", "rating": "4.5",

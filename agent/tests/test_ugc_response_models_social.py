@@ -119,6 +119,11 @@ def _client():
     return TestClient(app, raise_server_exceptions=False)
 
 
+@pytest.mark.skipif(
+    social.db._use_pg,
+    reason="503-degrade la hanh-vi DAC-THU SQLite; duoi PG endpoint chay handler that "
+    "(vd /api/posts/hidden yeu-cau auth -> 401). PG coverage da co o test_integration_api.",
+)
 @pytest.mark.parametrize("path", [
     "/api/feed",
     "/api/community/stats",

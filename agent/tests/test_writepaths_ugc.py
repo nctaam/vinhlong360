@@ -191,7 +191,7 @@ def test_create_post_happy_path_sets_moderation_status(pg_user, pg_entity):
         "content": "Chia sẻ trải nghiệm tham quan rất tuyệt.",
         "post_type": "share",
     })
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     post = resp.json()["post"]
     pid = post["id"]
     # cleanup
@@ -221,10 +221,10 @@ def test_threaded_reply_nests_under_parent(pg_user, pg_entity):
     try:
         client = _client_as(pg_user)
         top = client.post(f"/api/posts/{pid}/comments", json={"content": "Bình luận gốc."})
-        assert top.status_code == 200, top.text
+        assert top.status_code == 201, top.text
         top_id = top.json()["comment"]["id"]
         reply = client.post(f"/api/posts/{pid}/comments", json={"content": "Trả lời gốc.", "parent_id": top_id})
-        assert reply.status_code == 200, reply.text
+        assert reply.status_code == 201, reply.text
         assert reply.json()["comment"]["parent_id"] == top_id
         listed = client.get(f"/api/posts/{pid}/comments").json()["comments"]
         assert len(listed) == 1 and listed[0]["id"] == top_id
@@ -301,7 +301,7 @@ def test_update_post_owner_only(pg_user, pg_entity):
         r = c.patch(f"/api/posts/{pid}", json={"content": "Nội dung đã chỉnh sửa rồi nhé."})
         assert r.status_code == 200, r.text
         assert "đã chỉnh sửa" in r.json()["post"]["content"]
-        assert c.patch(f"/api/posts/{pid}", json={"content": "ngắn"}).status_code == 400
+        assert c.patch(f"/api/posts/{pid}", json={"content": "ngắn"}).status_code == 422
         co = _client_as(other)
         assert co.patch(f"/api/posts/{pid}", json={"content": "Người khác sửa trộm nhé."}).status_code == 403
     finally:
@@ -416,19 +416,20 @@ def test_delete_post_forbidden_for_other_user(pg_user, pg_entity):
 def test_repost_creates_snapshot_and_blocks_repost_of_repost(pg_user, pg_entity):
     """Migration 013: repost lưu snapshot bài gốc; chặn repost-của-repost."""
     ph = db._ph
+    author = db.create_user("09" + uuid.uuid4().hex[:8])  # bài gốc của người KHÁC (không tự đăng lại được)
     with db._conn() as conn:
         row = db._fetchone(conn, f"""
             INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved')
             RETURNING id
-        """, (str(pg_user["id"]), pg_entity, "Bài gốc để đăng lại.", json.dumps([]), "share"))
+        """, (str(author["id"]), pg_entity, "Bài gốc để đăng lại.", json.dumps([]), "share"))
         orig_id = str(row["id"])
     created = [orig_id]
     try:
         client = _client_as(pg_user)
-        # repost với content rỗng → 200 + snapshot
+        # repost với content rỗng → 201 + snapshot
         resp = client.post("/api/posts", json={"repost_of": orig_id, "content": ""})
-        assert resp.status_code == 200, resp.text
+        assert resp.status_code == 201, resp.text
         rp = resp.json()["post"]
         created.append(rp["id"])
         assert rp["repost_of"] == orig_id
@@ -436,7 +437,7 @@ def test_repost_creates_snapshot_and_blocks_repost_of_repost(pg_user, pg_entity)
         assert rp["content"] == ""  # đăng lại không kèm lời → content rỗng
         # quote (trích dẫn) — content bình luận + snapshot cùng tồn tại
         resp_q = client.post("/api/posts", json={"repost_of": orig_id, "content": "Bài này hay, mọi người xem nhé."})
-        assert resp_q.status_code == 200, resp_q.text
+        assert resp_q.status_code == 201, resp_q.text
         qp = resp_q.json()["post"]
         created.append(qp["id"])
         assert qp["content"].startswith("Bài này hay")
@@ -448,18 +449,20 @@ def test_repost_creates_snapshot_and_blocks_repost_of_repost(pg_user, pg_entity)
         with db._conn() as conn:
             for pid in created:
                 db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
+            db._execute(conn, f"DELETE FROM users WHERE id::text = {ph}", (str(author["id"]),))
 
 
 @pg_only
 def test_toggle_like_idempotent(pg_user, pg_entity):
     """Liking twice flips liked True→False (idempotent toggle)."""
     ph = db._ph
+    author = db.create_user("09" + uuid.uuid4().hex[:8])  # like bài của người KHÁC (không tự-thích được)
     with db._conn() as conn:
         row = db._fetchone(conn, f"""
             INSERT INTO posts (user_id, entity_id, content, images, post_type, moderation_status)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}::jsonb, {ph}, 'approved')
             RETURNING id
-        """, (str(pg_user["id"]), pg_entity, "Bài để like.", json.dumps([]), "share"))
+        """, (str(author["id"]), pg_entity, "Bài để like.", json.dumps([]), "share"))
         pid = str(row["id"])
     try:
         client = _client_as(pg_user)
@@ -470,3 +473,4 @@ def test_toggle_like_idempotent(pg_user, pg_entity):
     finally:
         with db._conn() as conn:
             db._execute(conn, f"DELETE FROM posts WHERE id::text = {ph}", (pid,))
+            db._execute(conn, f"DELETE FROM users WHERE id::text = {ph}", (str(author["id"]),))
