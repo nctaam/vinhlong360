@@ -1565,6 +1565,11 @@
   {
    "old": "Bánh xèo miền Tây",
    "new": "Bánh xèo Vĩnh Long"
+  },
+  {
+   "old": "sông nước hữu tình",
+   "new": "sông nước",
+   "note": "R50.2 audit-verified 2 occ (itinerary Tuan-trang-mat summary+description); bỏ tính từ sáo hữu tình, 0 mất fact, 0 bịa"
   }
  ],
  "formula_R50.3": [

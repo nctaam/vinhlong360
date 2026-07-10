@@ -146,7 +146,7 @@ onUnmounted(() => { if (searchTimer) clearTimeout(searchTimer) })
 .audit-method { font-weight: 700; font-size: .7rem; padding: 1px 6px; border-radius: var(--radius-sm); text-transform: uppercase; }
 .audit-method.post { background: rgba(52,199,89,.15); color: var(--success); }
 .audit-method.put, .audit-method.patch { background: rgba(var(--warning-rgb),.15); color: var(--warning); }
-.audit-method.delete { background: rgba(255,69,58,.15); color: var(--error); }
+.audit-method.delete { background: rgba(var(--red-rgb),.15); color: var(--error); }
 .audit-ts { white-space: nowrap; font-size: .8rem; }
 .audit-path { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .audit-actor { font-weight: 500; }
