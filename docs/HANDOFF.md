@@ -99,7 +99,7 @@ const { data } = await useAsyncData('key', () => apiFetch('/api/...'))
 
 - **DB là nguồn sự-thật.** `web/data.json` chỉ là **export/backup + nguồn build prerender**, và **đã phân kỳ với DB prod** (cơ chế export tự-động DB→data.json chưa tái lập; chỉ có admin `POST /export` tải tay).
 - **Flow sửa dữ liệu chuẩn:** `python scripts/backup_data.py` → sửa qua **AdminCP** (write-through vào DB) hoặc script có backup → `python scripts/validate_data.py` (exit 0).
-- **CẤM:** `normalize_data.py` / `export_data.py` (đã XOÁ khỏi repo) và `deploy.sh --replace` từ data.json cũ — **đè mất edit AdminCP trên prod PG** (B7; chỉ khi chủ chỉ đạo trực tiếp + backup trước).
+- **CẤM:** `normalize_data.py` (đã XOÁ khỏi repo) và `deploy.sh --replace` từ data.json cũ — **đè mất edit AdminCP trên prod PG** (B7; chỉ khi chủ chỉ đạo trực tiếp + backup trước). (`export_data.py` đã **HỒI SINH 2026-07-07** — export DB→data.json thủ công, atomic, backup trước; xem §4/§5, KHÔNG còn bị cấm.)
 - **UGC/auth (users/posts/comments/follow/...) = Postgres-only.** Dev cộng-đồng: `docker compose up postgres`. Endpoint UGC trên SQLite trả 503 cố-ý. KHÔNG port UGC sang SQLite.
 - `--replace` cần `ALLOW_DESTRUCTIVE_DB_REPLACE=1` (deploy.sh tự set khi `--replace`) + restart vl-agent để reload RAM cache.
 - **Số xã/phường ĐÚNG = 124** (89 xã + 35 phường). `/api/places` = 125 (124 + 1 tỉnh). Thống-kê "Xã phường" đếm `level IN (xa,phuong)`.
