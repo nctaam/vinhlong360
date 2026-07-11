@@ -214,7 +214,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 20
+      - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: "24"
@@ -266,7 +266,7 @@ jobs:
       # TruffleHog scans the entire git history for leaked secrets
       # (API keys, tokens, passwords).  Fails the build if any are found.
       - name: Run TruffleHog
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.95.9
         with:
           extra_args: --only-verified
 
@@ -285,7 +285,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 20
+      - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: "24"
@@ -363,7 +363,7 @@ jobs:
           pip install pip-audit
           pip-audit -r requirements.txt --progress-spinner off
 
-      - name: Set up Node.js 20
+      - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
           node-version: "24"

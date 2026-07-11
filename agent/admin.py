@@ -416,6 +416,11 @@ async def require_admin(request: Request, required_scope_override: str | None = 
     request.state.admin_required_scope = required_scope
     if required_scope:
         _ensure_admin_scope(request, required_scope)
+    elif admin_user is not None and request.method not in ("GET", "HEAD", "OPTIONS"):
+        # Default-deny: path admin MUTATING không có scope rule → chỉ master ('*'/admin-key/
+        # superadmin) được vào (scoped-user 403). Chống fail-open âm thầm khi thêm endpoint
+        # mutating mới mà quên khai ADMIN_SCOPE_RULES. Read (GET) giữ nguyên cho mọi admin.
+        _ensure_admin_scope(request, "*")
     if admin_user is not None:
         request.state.user = admin_user
     await _require_admin_mutation_side_effects(request, actor, admin_user, client_ip)

@@ -799,10 +799,6 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
         await asyncio.to_thread(_log_login, phone, "password", False, request)
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
-    if not user.get("is_active", True):
-        await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
-        raise HTTPException(403, "Tài khoản đã bị vô hiệu hóa")
-
     matched, is_legacy = await asyncio.to_thread(_verify_password, body.password, user["password_hash"], _return_legacy=True)
     if not matched:
         _check_shared_auth_rate(f"login_phone_fail:{phone}", LOGIN_PHONE_LIMIT, LOGIN_PHONE_WINDOW, "Tai khoan tam khoa do dang nhap sai nhieu lan. Thu lai sau 15 phut.")
@@ -811,6 +807,12 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
         _gc_rate_dict(_login_phone_fails, LOGIN_PHONE_WINDOW)
         await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
+
+    # is_active check SAU khi verify password: chống user-enumeration (trước đây trả 403
+    # "vô hiệu hóa" TRƯỚC verify → lộ tài khoản tồn tại + trạng thái không cần credential).
+    if not user.get("is_active", True):
+        await asyncio.to_thread(_log_login, phone, "password", False, request, str(user["id"]))
+        raise HTTPException(403, "Tài khoản đã bị vô hiệu hóa")
 
     if is_legacy:
         new_hash = await asyncio.to_thread(_hash_password, body.password)
