@@ -448,7 +448,17 @@ class TestBE10Completeness:
     def test_stats_endpoint_mounted(self):
         client = _admin_client()
         pairs = _route_pairs(client.app)
-        assert ("GET", "/admin/stats") in pairs
+        import sys as _sys
+        _sm = _sys.modules.get("admin")
+        _diag = (
+            f"DIAG admin_id={id(admin)} sysmod_id={id(_sm)} same={admin is _sm} "
+            f"router_id={id(admin.router)} n_routes={len(admin.router.routes)} "
+            f"router_paths={[getattr(r,'path','') for r in admin.router.routes[:6]]} "
+            f"app_n={len(client.app.routes)} "
+            f"app_paths={sorted({getattr(r,'path','') for r in client.app.routes})[:12]} "
+            f"admin_file={getattr(admin,'__file__','?')}"
+        )
+        assert ("GET", "/admin/stats") in pairs, _diag
 
     def test_completeness_fields_in_stats_source(self):
         # Completeness computation extracted into _admin_stats_completeness (complexity
