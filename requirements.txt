@@ -1,6 +1,6 @@
-# fastapi 0.137.0 có regression phá APIRouter.include_router (chỉ copy 1/N route,
-# im lặng, không error) → server.app mount thiếu route, route-mounted test đỏ trên CI.
-# 0.136.3 là bản cao nhất còn đúng; cap <0.137 tới khi upstream vá. (starlette nào cũng OK.)
+# fastapi 0.137.0 regression breaks APIRouter.include_router (copies only 1/N routes,
+# silently, no error) -> server.app mounts missing routes, route-mounted tests fail on CI.
+# 0.136.3 is the highest known-good; cap <0.137 until upstream fixes. (any starlette OK.)
 fastapi>=0.115,<0.137
 uvicorn>=0.34
 openai>=1.82
