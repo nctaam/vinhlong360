@@ -896,7 +896,7 @@ async function openCreate() {
   editingEntity.value = null
   form.value = { ...EMPTY_ENTITY_FORM }
   if (currentKind.value && !currentKind.value.types.includes(String(form.value.type))) {
-    form.value.type = currentKind.value.types[0]
+    form.value.type = currentKind.value.types[0] ?? ''
   }
   newImage.value = ''
   fieldErrors.value = {}

@@ -610,8 +610,8 @@ if (import.meta.server && fetchError.value) {
 watch(() => entity.value?.id, () => trackCurrentEntity())
 
 const typeMeta = computed(() => {
-  if (!entity.value) return { emoji: '•', label: '', cat: 'place' }
-  return TYPE_META[entity.value.type] || { emoji: '•', label: entity.value.type, cat: 'place' }
+  if (!entity.value) return { emoji: '•', icon: 'pin', label: '', cat: 'place' }
+  return TYPE_META[entity.value.type] || { emoji: '•', icon: 'pin', label: entity.value.type, cat: 'place' }
 })
 
 const areaName = computed(() => {

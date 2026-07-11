@@ -159,7 +159,7 @@ const interestTintRgb = computed(() => INTEREST_TINT[interest] || 'var(--primary
 // generateCategoryIcon() system already powering EntityCard placeholders so
 // the interest icon and its cards' icons visually rhyme (no bare emoji).
 // Each interest borrows the glyph of its first mapped entity type.
-const interestIconSvg = computed(() => generateCategoryIcon(TYPE_META[resolvedInterestMeta.types[0]]?.cat || 'place'))
+const interestIconSvg = computed(() => generateCategoryIcon(TYPE_META[resolvedInterestMeta.types[0] ?? '']?.cat || 'place'))
 
 // Per-interest halo shape — cheap CSS clip-path variant reinforcing "this lens
 // has its own shape": circle (thiên-nhiên), hex (làng-nghề), arch (văn-hoá)…

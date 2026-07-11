@@ -236,7 +236,7 @@ function matchStatus(r: AdminReport, f: string) {
   return r.status === f
 }
 const statusCounts = computed(() => {
-  const m: Record<string, number> = { all: 0, open: 0, resolved: 0, dismissed: 0 }
+  const m = { all: 0, open: 0, resolved: 0, dismissed: 0 }
   for (const r of reports.value) {
     m.all++
     if (r.status === 'pending') m.open++
@@ -246,16 +246,16 @@ const statusCounts = computed(() => {
   return m
 })
 const typeCounts = computed(() => {
-  const m: Record<string, number> = { all: 0, entity: 0, post: 0, user: 0 }
+  const m = { all: 0, entity: 0, post: 0, user: 0 }
   for (const r of reports.value) {
     m.all++
     const t = reportType(r)
-    if (t in m) m[t]++
+    if (t === 'entity' || t === 'post' || t === 'user') m[t]++
   }
   return m
 })
-function countByStatus(f: string) { return statusCounts.value[f] ?? 0 }
-function countByType(f: string) { return typeCounts.value[f] ?? 0 }
+function countByStatus(f: string) { return (statusCounts.value as Record<string, number>)[f] ?? 0 }
+function countByType(f: string) { return (typeCounts.value as Record<string, number>)[f] ?? 0 }
 
 const filteredReports = computed(() =>
   reports.value.filter(r => matchStatus(r, statusFilter.value)

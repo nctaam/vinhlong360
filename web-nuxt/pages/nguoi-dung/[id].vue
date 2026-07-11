@@ -4,8 +4,8 @@
 
     <div v-if="profile" class="user-profile reveal">
       <div class="profile-cover">
-        <NuxtImg v-if="profile.cover_url && isRemoteUrl(profile.cover_url)" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" sizes="100vw" format="webp" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-        <img v-else-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+        <NuxtImg v-if="profile.cover_url && isRemoteUrl(profile.cover_url)" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" sizes="100vw" format="webp" @error="(e: string | Event) => { ((e as Event).target as HTMLImageElement).style.opacity = '.15' }" />
+        <img v-else-if="profile.cover_url" :src="profile.cover_url" :alt="`Ảnh bìa ${profile.display_name}`" class="cover-img" loading="eager" fetchpriority="high" decoding="async" width="960" height="200" @error="(e: string | Event) => { ((e as Event).target as HTMLImageElement).style.opacity = '.15' }" />
         <UserCoverPlaceholder v-else />
         <div class="cover-scrim" aria-hidden="true"></div>
         <div class="profile-avatar-wrap">

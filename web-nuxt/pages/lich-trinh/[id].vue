@@ -165,7 +165,7 @@ if (import.meta.server && fetchError.value) {
 
 const areaMeta = computed(() => {
   const area = itinerary.value?.area
-  return (area ? AREA_META[area] : null) || { emoji: '📍', name: area || '' }
+  return (area ? AREA_META[area] : null) || { emoji: '📍', icon: 'pin', name: area || '', blurb: '' }
 })
 
 const itinerarySaveShape = computed(() => ({
@@ -224,7 +224,7 @@ function parseStopHour(timeStr?: string): number | null {
     if (h >= 0 && h <= 24) return h + m / 60
   }
   for (const key of Object.keys(PERIOD_HOUR)) {
-    if (tail.includes(key)) return PERIOD_HOUR[key]
+    if (tail.includes(key)) return PERIOD_HOUR[key] ?? null
   }
   return null
 }
@@ -259,7 +259,7 @@ const sunArcDots = computed(() => {
   const known = hours.filter((h): h is number => h !== null)
   return stops.map((s, i) => {
     const h = hours[i]
-    const pct = h !== null
+    const pct = h != null
       ? Math.min(98, Math.max(2, ((h - 5) / 15) * 100)) // 5:00–20:00 span → 0–100%
       : (known.length ? (i / Math.max(1, stops.length - 1)) * 100 : 50)
     return { name: s.name || stopIdentity(s), pct }

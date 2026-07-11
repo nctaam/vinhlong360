@@ -106,6 +106,9 @@ export interface Entity {
   quality?: EntityQuality
   source_freshness?: EntitySourceFreshness
   verified?: boolean
+  /** Ngày kiểm-chứng-thực-địa thật (người đặt tay) — top-level, backend serialize từ
+   * attributes.verifiedAt (xem agent/database.py). Trống nếu chưa kiểm chứng. */
+  verifiedAt?: string
 }
 
 export interface Relationship {

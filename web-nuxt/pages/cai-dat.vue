@@ -744,12 +744,12 @@ const trustedDevices = ref<any[]>([])
 async function load2FAStatus() {
   twoFALoading.value = true
   try {
-    twoFA.value = await $fetch('/auth/2fa/status', { headers: authHeaders() })
+    twoFA.value = await $fetch<{ enabled: boolean; recovery_remaining: number }>('/auth/2fa/status', { headers: authHeaders() })
   } catch { /* ignore */ }
   twoFALoading.value = false
 }
 async function begin2FASetup() {
-  try { setupData.value = await $fetch('/auth/2fa/setup', { method: 'POST', headers: authHeaders() }) }
+  try { setupData.value = await $fetch<{ secret: string; otpauth_uri: string; qr: string }>('/auth/2fa/setup', { method: 'POST', headers: authHeaders() }) }
   catch (e: unknown) { if (getStatusCode(e) === 401) { handleSessionExpired(); return } showToast(extractErrorMessage(e, 'Không thể bắt đầu thiết lập'), 'error') }
 }
 async function confirm2FASetup() {

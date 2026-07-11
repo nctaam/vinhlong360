@@ -1348,7 +1348,7 @@ onMounted(() => {
   // Vào thẳng ?tab=following (link chia sẻ, back/forward) — activeTab đã là
   // 'following' TRƯỚC KHI watch(activeTab, …) bên dưới kịp đăng ký (useFilterUrl
   // gán ref đồng bộ lúc setup), nên watcher sẽ không bắt được lần đổi tab đó.
-  if (activeTab.value === 'following' && isLoggedIn.value) loadFriendActivity()
+  if (activeTab.value === 'following' && isLoggedIn.value) fetchFeed(true)
   loadCommunityStats()
   loadTrendingTags()
   loadLeaderboard()

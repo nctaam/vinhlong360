@@ -270,17 +270,14 @@ jobs:
         with:
           extra_args: --only-verified
 
-  # ── 7. Frontend typecheck (informational, non-blocking) ─────
-  # Runs `nuxt typecheck` (vue-tsc). NON-BLOCKING for now: the app carries a
-  # backlog of pre-existing type errors (untyped useFetch/$fetch data). The job
-  # surfaces the count so it can be driven down incrementally; flip
-  # continue-on-error to false once it reaches 0 to make it a real gate.
-  # Value today: catches the "missing composable / undefined → SSR 500" class
-  # (e.g. the /danh-ba, /theo-mua regression) that `npm run build` did not.
+  # ── 7. Frontend typecheck (BLOCKING gate) ─────
+  # Runs `nuxt typecheck` (vue-tsc). Type-error backlog driven to 0, so this is now
+  # a real gate (continue-on-error removed). Catches the "missing composable /
+  # undefined → SSR 500" class (e.g. the /danh-ba, /theo-mua regression) that
+  # `npm run build` did not — plus null-safety and route/type drift.
   typecheck:
-    name: Frontend typecheck (informational)
+    name: Frontend typecheck
     runs-on: ubuntu-latest
-    continue-on-error: true
     defaults:
       run:
         working-directory: web-nuxt
