@@ -1,8 +1,11 @@
-"""Guard: _fix_*_route_order KHÔNG được làm rỗng/mất route của router.
+"""Invariant: _fix_*_route_order phải bảo toàn ĐỦ route (không mất/rỗng).
 
-Bug (route-mounted fail trên CI-Linux): _reorder_static_routes match từng static,
-có thể bỏ sót → other_routes ngắn hơn → `router.routes[:] = other_routes` làm rỗng
-router. Guard chỉ áp reorder khi len(other_routes)==len(router.routes).
+_reorder_static_routes chèn từng static route trước param base tương ứng; nếu bỏ sót
+static nào thì other_routes ngắn hơn. Guard `if len(other_routes)==len(router.routes)`
+đảm bảo chỉ áp reorder khi bảo toàn đủ. Test này khoá bất biến đó (đếm route trước=sau).
+
+(Ghi chú: route-mounted đỏ trên CI trước đây KHÔNG do reorder — đó là regression
+fastapi 0.137+ phá include_router, đã pin <0.137 ở requirements.txt.)
 """
 import sys
 from pathlib import Path

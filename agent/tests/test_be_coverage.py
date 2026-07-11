@@ -448,28 +448,7 @@ class TestBE10Completeness:
     def test_stats_endpoint_mounted(self):
         client = _admin_client()
         pairs = _route_pairs(client.app)
-        import fastapi as _fa
-        import starlette as _st
-        from fastapi import FastAPI as _F
-        _ta = _F()
-        _before = len(_ta.routes)
-        try:
-            _ta.include_router(admin.router)
-            _err = "none"
-        except Exception as _e:  # noqa: BLE001
-            _err = f"{type(_e).__name__}:{_e}"
-        _after = len(_ta.routes)
-        _types = {}
-        for _r in admin.router.routes:
-            _tn = type(_r).__name__
-            _types[_tn] = _types.get(_tn, 0) + 1
-        _diag = (
-            f"DIAG n_routes={len(admin.router.routes)} route_types={_types} "
-            f"fresh_include before={_before} after={_after} include_err={_err} "
-            f"fastapi={_fa.__version__} starlette={_st.__version__} "
-            f"app_n={len(client.app.routes)}"
-        )
-        assert ("GET", "/admin/stats") in pairs and _after > 100, _diag
+        assert ("GET", "/admin/stats") in pairs
 
     def test_completeness_fields_in_stats_source(self):
         # Completeness computation extracted into _admin_stats_completeness (complexity

@@ -4482,7 +4482,7 @@ def _fix_social_route_order():
         else:
             other_routes.append(r)
     _reorder_shadowed(static_routes, other_routes)
-    # An toàn: chỉ áp reorder khi không mất route (chống làm rỗng router như admin.py).
+    # Defensive: chỉ áp reorder khi bảo toàn đủ route (bỏ qua nếu reorder bỏ sót static).
     if len(other_routes) == len(router.routes):
         router.routes[:] = other_routes
 
