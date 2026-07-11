@@ -70,6 +70,14 @@ def test_stream_empty_message_yields_error_frame(client_mocked):
     assert all("type" in f for f in frames)  # protocol contract
 
 
+def test_stream_tool_decision_routes_through_circuit_breaker():
+    # Đợt 5 helper #1: stream tool-decision qua safe_llm_call (llm_breaker) như non-stream —
+    # fail-fast khi LLM sập thay vì chờ trọn LLM_TIMEOUT. Guard chống regression về create-thẳng.
+    import inspect
+    src = inspect.getsource(server.chat_stream) if hasattr(server, "chat_stream") else inspect.getsource(server)
+    assert "safe_llm_call(get_client(), **_kw)" in src
+
+
 def test_stream_valid_message_is_wellformed_and_terminates(client_mocked):
     r = client_mocked.get("/chat/stream", params={"message": "Vĩnh Long có gì chơi?", "session_id": "sse-test"})
     assert r.status_code == 200

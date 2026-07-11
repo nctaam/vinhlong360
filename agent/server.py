@@ -2414,7 +2414,17 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     _kw["temperature"] = _stream_temp
                 # CONC-001: chạy LLM-call ĐỒNG-BỘ trong thread để KHÔNG chặn event loop
                 # (request /chat khác + /health vẫn xử lý được trong lúc chờ LLM).
-                response = await asyncio.to_thread(lambda: get_client().chat.completions.create(**_kw))
+                # Route qua safe_llm_call (circuit breaker) như non-stream — fail-fast khi
+                # LLM sập thay vì chờ trọn LLM_TIMEOUT + ghi nhận vào llm_breaker chung.
+                if HAS_CIRCUIT_BREAKER:
+                    cb = await asyncio.to_thread(lambda: safe_llm_call(get_client(), **_kw))
+                    if not cb["success"]:
+                        yield f"data: {json.dumps({'type': 'text', 'content': cb['message']}, ensure_ascii=False)}\n\n"
+                        yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                        return
+                    response = cb["response"]
+                else:
+                    response = await asyncio.to_thread(lambda: get_client().chat.completions.create(**_kw))
                 msg = response.choices[0].message
             except Exception as exc:
                 error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
