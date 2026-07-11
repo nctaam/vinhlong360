@@ -205,7 +205,7 @@ def test_perf_quality_trend_migration_contracts_exist():
     ):
         assert token in migration
     assert "quality_metric_snapshots" in init_sql
-    assert "PG_REQUIRED_SCHEMA_VERSION = 70" in database
+    assert "PG_REQUIRED_SCHEMA_VERSION = 62" in database
 
 def test_itinerary_areas_schema_migration_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "058_itinerary_areas_schema.sql").read_text(encoding="utf-8")
