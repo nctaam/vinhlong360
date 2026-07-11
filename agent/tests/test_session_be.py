@@ -2282,6 +2282,18 @@ class TestPhase15Idempotency:
         r = check_idempotency("")
         assert r["is_duplicate"] is False
 
+    def test_reset_idempotency_clears_pg_table(self):
+        # _reset_idempotency() phải xoá CẢ bảng PG request_idempotency_keys (không chỉ
+        # memory) — nếu không, dưới PG key cũ tồn tại qua test khiến lần gọi đầu = duplicate.
+        from auth_middleware import check_idempotency, _reset_idempotency
+        _reset_idempotency()
+        assert check_idempotency("reset-pg-key")["is_duplicate"] is False
+        assert check_idempotency("reset-pg-key")["is_duplicate"] is True
+        _reset_idempotency()
+        assert check_idempotency("reset-pg-key")["is_duplicate"] is False, \
+            "_reset_idempotency phải xoá row PG → key lại 'mới'"
+        _reset_idempotency()
+
 
 # ═══════════════════════════════════════════════════════════════════════
 #  Phase 13b: Auth config centralization (SESSION_EXPIRE, OTP, ESMS)

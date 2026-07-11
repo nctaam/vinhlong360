@@ -1425,6 +1425,14 @@ def _reset_idempotency():
         _seen_idempotency_keys.clear()
         _IDEMPOTENCY_PG_FAIL_UNTIL = 0.0
         _IDEMPOTENCY_PG_GC_LAST = 0.0
+    # Test-only: xoá cả request_idempotency_keys (PG) — clear memory phía trên chỉ đủ cho
+    # SQLite; dưới PG check_idempotency ghi vào bảng này nên phải xoá để mỗi test sạch.
+    try:
+        if getattr(db, "_use_pg", False):
+            with db._conn() as conn:
+                db._execute(conn, "DELETE FROM request_idempotency_keys")
+    except Exception:
+        pass
 
 
 # ══════════════════════════════════════════════════
