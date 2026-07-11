@@ -570,6 +570,15 @@ def _reset() -> None:
     _rl_callbacks.clear()
     _SHARED_PG_FAIL_UNTIL = 0.0
     _SHARED_PG_GC_LAST = 0.0
+    # Test-only: xoá cả shared_rate_limits (PG) — state in-memory clear ở trên chỉ đủ cho
+    # SQLite; dưới PG check_rate ghi vào bảng này nên phải xoá để mỗi test bắt đầu sạch.
+    try:
+        from database import db
+        if getattr(db, "_use_pg", False):
+            with db._conn() as conn:
+                db._execute(conn, "DELETE FROM shared_rate_limits")
+    except Exception:
+        pass
 
 
 # ── Penalty box (temporary IP ban after severe violations) ──

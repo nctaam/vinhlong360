@@ -255,6 +255,14 @@ class RateLimiter:
 # Singletons: different limits for different endpoints
 chat_limiter = RateLimiter(max_requests=30, window_seconds=60)   # 30 req/min
 admin_limiter = RateLimiter(max_requests=60, window_seconds=60)  # 60 req/min
+
+
+def _reset_limiters() -> None:
+    """Test-only: xoá state của mọi limiter singleton (TestClient dùng chung IP nên
+    state cộng dồn qua cả suite → 429 giả ở test không tự-reset)."""
+    for lim in (chat_limiter, admin_limiter):
+        with lim._lock:
+            lim._requests.clear()
 stream_limiter = RateLimiter(max_requests=20, window_seconds=60)  # 20 req/min
 report_limiter = RateLimiter(max_requests=5, window_seconds=300)  # 5 báo cáo / 5 phút (chống spam)
 

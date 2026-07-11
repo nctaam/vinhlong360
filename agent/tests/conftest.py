@@ -20,6 +20,28 @@ os.environ.setdefault("LOG_LEVEL", "WARNING")
 os.environ.setdefault("ADMIN_API_KEY", "test-admin-key-12345")
 
 
+@pytest.fixture(autouse=True)
+def _reset_rate_limiters():
+    """Reset MỌI rate-limiter TRƯỚC mỗi test.
+
+    TestClient dùng chung client-IP nên state của check_rate (ratelimit._buckets + bảng PG
+    shared_rate_limits) và admin_limiter/chat_limiter (middleware) cộng dồn qua cả suite →
+    test không tự-reset (vd test_chat_smoke) bị 429 giả. Reset ở đây làm state rate-limit
+    độc lập theo từng test; test rate-limit vẫn tự tích luỹ trong thân hàm nên không ảnh hưởng.
+    """
+    try:
+        import ratelimit
+        ratelimit._reset()
+    except Exception:
+        pass
+    try:
+        import middleware
+        middleware._reset_limiters()
+    except Exception:
+        pass
+    yield
+
+
 @pytest.fixture
 def sample_entities():
     """Minimal entity list for testing."""

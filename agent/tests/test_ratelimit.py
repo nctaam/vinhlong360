@@ -38,6 +38,19 @@ def test_keys_isolated():
         check_rate("a", 1, 100)
 
 
+def test_reset_limiters_clears_middleware_singletons():
+    """middleware._reset_limiters() phải xoá state admin_limiter/chat_limiter (chống 429
+    giả do state cộng dồn qua suite — dùng bởi autouse fixture trong conftest)."""
+    import middleware
+    for _ in range(middleware.admin_limiter.max_requests + 5):
+        middleware.admin_limiter.is_allowed("testclient")
+    allowed, _ = middleware.admin_limiter.is_allowed("testclient")
+    assert allowed is False  # đã vượt cap
+    middleware._reset_limiters()
+    allowed, _ = middleware.admin_limiter.is_allowed("testclient")
+    assert allowed is True   # reset đã xoá state
+
+
 def test_window_expiry(monkeypatch):
     ratelimit._reset()
     t = [1000.0]
