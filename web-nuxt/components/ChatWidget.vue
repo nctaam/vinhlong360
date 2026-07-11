@@ -12,7 +12,7 @@
         </div>
 
         <div ref="messagesEl" class="chat-panel-msgs" aria-live="polite">
-          <div v-for="(msg, i) in renderedMessages" :key="i" :class="['cmsg', msg.role, { 'cmsg-failed': msg.failed }]">
+          <div v-for="msg in renderedMessages" :key="msg._key" :class="['cmsg', msg.role, { 'cmsg-failed': msg.failed }]">
             <span v-if="msg.role === 'assistant'" v-html="formatMd(msg.content)"></span>
             <template v-else>{{ msg.content }}</template>
             <button v-if="msg.failed" type="button" class="cmsg-retry" aria-label="Gửi lại" @click="resend(msg)">↻ Thử lại</button>
@@ -110,7 +110,12 @@ if (import.meta.client) {
   try { sessionId.value = sessionStorage.getItem('chat_sid') || '' } catch { /* private/disabled */ }
 }
 const messagesEl = ref<HTMLElement | null>(null)
-const renderedMessages = computed(() => messages.value.slice(-50))
+const renderedMessages = computed(() => {
+  // key theo index TUYỆT ĐỐI (start+i) — slice(-50) trượt cửa sổ nên index cục bộ đổi
+  // nghĩa giữa các message → :key phải ổn định để tránh Vue tái dùng DOM sai (v-html lẫn).
+  const start = Math.max(0, messages.value.length - 50)
+  return messages.value.slice(start).map((m, i) => ({ ...m, _key: start + i }))
+})
 
 function sanitize(t: string) {
   return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

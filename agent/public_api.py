@@ -1965,12 +1965,12 @@ def _select_upcoming_events(public: list[dict], today, cutoff) -> list[dict]:
     return upcoming_pool[:3]
 
 
-def _score_one_itinerary(it: dict, public: list[dict], month: int) -> float:
+def _score_one_itinerary(it: dict, public_by_id: dict, month: int) -> float:
     it_score = 0.0
     stops = it.get("stops") or []
     for stop in stops:
         eid = _itinerary_stop_entity_id(stop)
-        matched = next((e for e in public if e["id"] == eid), None)
+        matched = public_by_id.get(eid)
         if matched:
             if _entity_in_season(matched, month):
                 it_score += 2.0
@@ -2018,8 +2018,9 @@ def _fill_remaining_itineraries(itineraries: list[dict], all_itineraries: list[d
 
 
 def _select_homepage_itineraries(all_itineraries: list[dict], public: list[dict], month: int) -> list[dict]:
+    public_by_id = {e["id"]: e for e in public}  # index O(1) thay vì quét tuyến tính public mỗi stop
     for it in all_itineraries:
-        it["_score"] = _score_one_itinerary(it, public, month)
+        it["_score"] = _score_one_itinerary(it, public_by_id, month)
     all_itineraries.sort(key=lambda x: x.get("_score", 0), reverse=True)
     itineraries, selected_itinerary_ids = _pick_diverse_itineraries(all_itineraries)
     _fill_remaining_itineraries(itineraries, all_itineraries, selected_itinerary_ids)

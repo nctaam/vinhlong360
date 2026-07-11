@@ -146,7 +146,9 @@ export function linkifyContent(content: string, mentions?: Array<{ label?: strin
       html = html.split(token).join(`<a class="mention-link" href="${href}">${token}</a>`)
     }
   }
-  html = html.replace(/#(\w{1,30})/gu, (_m, tag) =>
+  // \p{L}\p{N} (Unicode) để khớp hashtag tiếng Việt (#đặcsản) như backend _extract_hashtags
+  // (Python \w+UNICODE). JS \w LUÔN chỉ [A-Za-z0-9_] kể cả cờ u → phải dùng property escape.
+  html = html.replace(/#([\p{L}\p{N}_]{1,30})/gu, (_m, tag) =>
     `<a class="hashtag-link" href="/cong-dong?tag=${encodeURIComponent(tag.toLowerCase())}">#${tag}</a>`)
   return html
 }

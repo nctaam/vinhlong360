@@ -98,6 +98,7 @@
         :id="'ac-opt-' + (totalItems - 1)"
         :class="{ highlighted: highlightIndex === totalItems - 1 }"
         role="option"
+        :aria-selected="highlightIndex === totalItems - 1"
         @mousedown.prevent="onSubmit"
       >
         🔍 Xem tất cả kết quả cho "{{ query.trim() }}"

@@ -123,7 +123,9 @@ def _get_adjacency() -> dict:
 def _ensure():
     global _entities, _relationships, _itineraries
     if _entities is None:
-        _entities, _relationships, _itineraries = _load()
+        with _reload_lock:  # double-check: chống 2 thread cùng thấy None → double _load
+            if _entities is None:
+                _entities, _relationships, _itineraries = _load()
 
 
 # GĐ11.4: khoá tuần-tự-hoá reload (chống 2 reload đua nhau dựng + swap lẫn lộn).

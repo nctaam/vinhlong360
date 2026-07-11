@@ -1275,7 +1275,7 @@ class Database:
     def log_query(self, query: str, tools: list, reply_length: int, score: float = None, session_id: str = ""):
         self.initialize()
         ph = self._ph
-        tools_val = json.dumps(tools) if not self._use_pg else json.dumps(tools)
+        tools_val = json.dumps(tools)
         with self._conn() as conn:
             self._execute(conn, f"""
                 INSERT INTO query_log (query, tools, reply_length, score, session_id)
@@ -1599,6 +1599,7 @@ class Database:
                 """, c)
 
     def get_entity_history(self, entity_id: str, limit: int = 50) -> list[dict]:
+        self.initialize()
         ph = self._ph
         with self._conn() as conn:
             rows = self._fetchall(conn, f"""

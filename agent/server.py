@@ -2590,7 +2590,9 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 analytics.track_query(message, tools_used, full_text, sid)
                 if not hist and len(full_text) > 30 and evaluation["score"] >= 5:
                     cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
-                    cache.put(message, cache_data)
+                    # Lưu theo original_message (khoá lúc cache.get) — không phải bản đã autocorrect,
+                    # nếu không lần sau cùng câu gốc sẽ luôn MISS (đã sửa: stream cache key mismatch).
+                    cache.put(original_message, cache_data)
                     # ── Semantic cache: store ──
                     if HAS_SEMANTIC_CACHE:
                         try:
