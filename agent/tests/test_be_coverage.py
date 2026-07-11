@@ -448,17 +448,28 @@ class TestBE10Completeness:
     def test_stats_endpoint_mounted(self):
         client = _admin_client()
         pairs = _route_pairs(client.app)
-        import sys as _sys
-        _sm = _sys.modules.get("admin")
+        import fastapi as _fa
+        import starlette as _st
+        from fastapi import FastAPI as _F
+        _ta = _F()
+        _before = len(_ta.routes)
+        try:
+            _ta.include_router(admin.router)
+            _err = "none"
+        except Exception as _e:  # noqa: BLE001
+            _err = f"{type(_e).__name__}:{_e}"
+        _after = len(_ta.routes)
+        _types = {}
+        for _r in admin.router.routes:
+            _tn = type(_r).__name__
+            _types[_tn] = _types.get(_tn, 0) + 1
         _diag = (
-            f"DIAG admin_id={id(admin)} sysmod_id={id(_sm)} same={admin is _sm} "
-            f"router_id={id(admin.router)} n_routes={len(admin.router.routes)} "
-            f"router_paths={[getattr(r,'path','') for r in admin.router.routes[:6]]} "
-            f"app_n={len(client.app.routes)} "
-            f"app_paths={sorted({getattr(r,'path','') for r in client.app.routes})[:12]} "
-            f"admin_file={getattr(admin,'__file__','?')}"
+            f"DIAG n_routes={len(admin.router.routes)} route_types={_types} "
+            f"fresh_include before={_before} after={_after} include_err={_err} "
+            f"fastapi={_fa.__version__} starlette={_st.__version__} "
+            f"app_n={len(client.app.routes)}"
         )
-        assert ("GET", "/admin/stats") in pairs, _diag
+        assert ("GET", "/admin/stats") in pairs and _after > 100, _diag
 
     def test_completeness_fields_in_stats_source(self):
         # Completeness computation extracted into _admin_stats_completeness (complexity
