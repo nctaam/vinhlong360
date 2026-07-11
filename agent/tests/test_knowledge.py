@@ -389,3 +389,39 @@ class TestDirectorySearch:
         # dish/product/place không bao giờ lọt vào danh bạ
         results = knowledge.directory_search("")
         assert all("office_kind" in r for r in results)
+
+    def _facility_with_source(self, source):
+        return {
+            "f-src": {
+                "id": "f-src", "name": "UBND phường Nguồn", "type": "facility",
+                "placeId": "p-src",
+                "attributes": {"office_kind": "ubnd", "address": "A",
+                               "phone": "1", "hours": "h"},
+                "source": source, "updatedAt": "2026-07-07",
+            },
+            "p-src": {"id": "p-src", "name": "Phường Nguồn", "type": "place"},
+        }
+
+    def test_source_as_list_of_dicts_uses_url(self):
+        # Dạng export thực tế: source là list-of-dict; ưu tiên url (không crash).
+        ents = self._facility_with_source(
+            [{"title": "curated"}, {"title": "x — y", "url": "https://ex.com/a"}])
+        with patch.object(knowledge, "_entities", ents):
+            results = knowledge.directory_search("Nguồn")
+        assert len(results) == 1
+        assert results[0]["source"] == "https://ex.com/a"
+
+    def test_source_as_list_curated_only_falls_back_to_title(self):
+        # Chỉ có {"title": "curated"} (không url) → không crash, không trả None trống-nghĩa.
+        ents = self._facility_with_source([{"title": "curated"}])
+        with patch.object(knowledge, "_entities", ents):
+            results = knowledge.directory_search("Nguồn")
+        assert len(results) == 1
+        assert results[0]["source"] == "curated"
+
+    def test_source_as_empty_list_returns_none(self):
+        ents = self._facility_with_source([])
+        with patch.object(knowledge, "_entities", ents):
+            results = knowledge.directory_search("Nguồn")
+        assert len(results) == 1
+        assert results[0]["source"] is None

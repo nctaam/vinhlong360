@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, Depends, UploadFile, File
+from fastapi import Path as PathParam
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
@@ -599,7 +600,7 @@ async def list_entities(
     q: Optional[str] = Query(None, max_length=200),
     include_places: bool = False,
     orphans_only: bool = False,
-    limit: int = Query(50, le=500),
+    limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0, le=10000),
 ):
     """Danh sách entities với filter — đọc từ database."""
@@ -1052,7 +1053,7 @@ async def upload_entity_image(entity_id: str, file: UploadFile = File(...)):
 @router.delete("/entities/{entity_id}/images/{idx}",
                summary="Remove image from entity",
                description="Removes an image at the given index from the entity's image list. Does not delete the actual file from storage.")
-async def remove_entity_image(entity_id: str, idx: int):
+async def remove_entity_image(entity_id: str, idx: int = PathParam(..., ge=0)):
     """Gỡ ảnh thứ idx khỏi entity.images (không xoá file R2 — tránh mất ảnh dùng chung)."""
     entity_id = validate_path_id(entity_id, "entity_id")
     def _query():

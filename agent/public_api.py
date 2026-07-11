@@ -2579,6 +2579,11 @@ def _extract_mentions(texts: list[str], top_n: int = 8) -> list[dict]:
     return [{"keyword": kw, "count": cnt} for kw, cnt in combined.most_common(top_n)]
 
 
+def _int0(v) -> int:
+    """int() null-safe: NULL/None/'' → 0 (dùng cho review stats từ DB)."""
+    return int(v or 0)
+
+
 @router.get("/entities/{entity_id}/review-stats",
             summary="Get entity review stats",
             description="Returns review statistics for an entity: average rating, distribution by star, and frequently mentioned keywords extracted from review text.")
@@ -2631,8 +2636,8 @@ async def get_review_stats(entity_id: str, response: Response):
     weighted_sum = 0
     for row in dist_rows:
         r = db._row_to_dict(row)
-        rating = int(r["rating"])
-        cnt = int(r["cnt"])
+        rating = _int0(r.get("rating"))
+        cnt = _int0(r.get("cnt"))
         distribution[str(rating)] = cnt
         total += cnt
         weighted_sum += rating * cnt

@@ -411,7 +411,7 @@ if not ADMIN_API_KEY:
     else:
         ADMIN_API_KEY = _generate_default_key()
         ADMIN_KEY_AUTOGEN = True
-        logger.warn(
+        logger.warning(
             "ADMIN_API_KEY not set — generated a temporary DEV key (printed at server startup). "
             "Set ADMIN_API_KEY in .env for a stable key."
         )

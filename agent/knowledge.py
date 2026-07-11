@@ -429,6 +429,28 @@ def related(entity_id: str) -> list[dict]:
     return out
 
 
+def _source_ref(entity: dict) -> str | None:
+    """Trích 1 giá trị nguồn để hiển thị danh bạ: ưu tiên URL, rồi tới title.
+
+    `source` trong dữ liệu thật là list-of-dict (dạng export, vd
+    ``[{"title": "curated"}, {"title": "...", "url": "..."}]``); code cũ giả định
+    dict đơn nên crash ``'list' object has no attribute 'get'`` (bug 2026-07-10).
+    Chuẩn hoá cả list / dict / str để không crash và giữ đúng ý cũ (url || title).
+    """
+    source = entity.get("source")
+    items = source if isinstance(source, list) else [source]
+    title = None
+    for s in items:
+        if isinstance(s, dict):
+            if s.get("url"):
+                return s["url"]
+            if title is None and s.get("title"):
+                title = s["title"]
+        elif isinstance(s, str) and s and title is None:
+            title = s
+    return title
+
+
 def directory_search(query: str, limit: int = 12) -> list[dict]:
     """GĐ13: tra danh bạ cơ quan (facility) theo tên cơ quan HOẶC tên xã/phường.
 
@@ -445,7 +467,6 @@ def directory_search(query: str, limit: int = 12) -> list[dict]:
         hay = _normalize_vn(f"{e.get('name', '')} {ward.get('name', '')}")
         if not qn or qn in hay:
             attrs = e.get("attributes") or {}
-            src = e.get("source") or {}
             out.append({
                 "name": e.get("name"),
                 "office_kind": attrs.get("office_kind"),
@@ -453,7 +474,7 @@ def directory_search(query: str, limit: int = 12) -> list[dict]:
                 "phone": attrs.get("phone"),
                 "hours": attrs.get("hours"),
                 "ward": ward.get("name"),
-                "source": src.get("url") or src.get("title"),
+                "source": _source_ref(e),
                 "updated_at": e.get("updatedAt"),
             })
         if len(out) >= limit:

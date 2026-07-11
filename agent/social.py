@@ -1738,7 +1738,7 @@ async def list_hashtags(
 async def hashtag_posts(
     tag: str, request: Request,
     page: int = Query(1, ge=1, le=1000), limit: int = Query(20, ge=1, le=50),
-    sort: str = Query("newest", max_length=10),
+    sort: str = Query("newest", pattern="^(newest|popular)$"),
 ):
     tag = tag.lower().lstrip("#")[:50]
     if not tag:

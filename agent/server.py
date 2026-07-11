@@ -421,7 +421,7 @@ def call_tool(name: str, args: dict) -> str:
     try:
         return _call_tool_impl(name, args or {})
     except Exception as e:  # noqa: BLE001
-        logger.warn(f"call_tool '{name}' lỗi: {e}")
+        logger.warning(f"call_tool '{name}' lỗi: {e}")
         return json.dumps({"error": "Không thực hiện được công cụ (thiếu hoặc sai tham số)."}, ensure_ascii=False)
 
 
@@ -930,7 +930,7 @@ async def lifespan(app):
     while _inflight > 0 and time.time() < deadline:  # noqa: ASYNC110 (shutdown-drain poll có deadline — Event không phù hợp vì đếm inflight giảm dần)
         await asyncio.sleep(0.5)
     if _inflight > 0:
-        logger.warn("Force shutdown with in-flight requests", inflight=_inflight)
+        logger.warning("Force shutdown with in-flight requests", inflight=_inflight)
     stop_scheduler()
     from database import db as _db
     if _db._pg_pool:
@@ -1004,6 +1004,10 @@ async def security_headers(request, call_next):
         response.headers[k] = v
     response.headers["Content-Security-Policy"] = build_csp(nonce)
     response.headers["X-API-Version"] = "1.0"
+    # Vary: phản hồi /api|/admin|/auth phụ thuộc Authorization → cache đúng theo user
+    # (salvage session-be af90dbb: tránh cache lẫn giữa các phiên đăng nhập).
+    if request.url.path.startswith(("/api/", "/admin/", "/auth/")):
+        response.headers["Vary"] = "Authorization, Accept"
     if request.method == "GET" and "cache-control" not in response.headers:
         response.headers["Cache-Control"] = "private, max-age=30"
     return response
@@ -1210,7 +1214,7 @@ async def track_response_time(request: Request, call_next):
             track_http_request(request.method, request.url.path, response.status_code, duration_ms / 1000)
 
         if duration_ms > 5000:
-            logger.warn("Slow request", endpoint=endpoint, duration_ms=round(duration_ms), req_id=req_id)
+            logger.warning("Slow request", endpoint=endpoint, duration_ms=round(duration_ms), req_id=req_id)
 
         response.headers["X-Request-Id"] = req_id
         response.headers["X-Response-Time"] = f"{duration_ms:.0f}ms"
@@ -1881,7 +1885,7 @@ async def chat(req: ChatRequest, request: Request):
     client_ip = get_client_ip(request)
     allowed, rate_info = chat_limiter.is_allowed(client_ip)
     if not allowed:
-        logger.warn("Rate limited", ip=client_ip, endpoint="/chat")
+        logger.warning("Rate limited", ip=client_ip, endpoint="/chat")
         _resp = _error_response(429, "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
                                 retry_after=rate_info["retry_after"])
         _resp.headers["Retry-After"] = str(rate_info["retry_after"])
@@ -1896,14 +1900,14 @@ async def chat(req: ChatRequest, request: Request):
             guard = check_input(req.message, session_id)
             if not guard.get("allowed", True):
                 # P1: log lý do chi tiết server-side, KHÔNG lộ chuỗi chẩn-đoán ra user.
-                logger.warn("Guardrails blocked input", reason=guard.get("blocked_reason", ""), session_id=session_id)
+                logger.warning("Guardrails blocked input", reason=guard.get("blocked_reason", ""), session_id=session_id)
                 return ChatResponse(
                     reply="Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.",
                     tool_calls=[], suggestions=[], session_id=session_id,
                 )
         except Exception as _gerr:
             # P1: fail-CLOSED — guardrail lỗi thì KHÔNG cho qua không kiểm.
-            logger.warn(f"Guardrail check_input lỗi → fail-closed: {_gerr}")
+            logger.warning(f"Guardrail check_input lỗi → fail-closed: {_gerr}")
             return ChatResponse(
                 reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
                 tool_calls=[], suggestions=[], session_id=session_id,
@@ -2119,7 +2123,7 @@ async def chat(req: ChatRequest, request: Request):
                 tools_used = ["search (kb-fallback)"]
                 suggestions = []
         except Exception as kb_err:
-            logger.warn("KB fallback error", error=str(kb_err))
+            logger.warning("KB fallback error", error=str(kb_err))
             if not reply:
                 reply = "Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi. Vui lòng thử lại."
 
@@ -2163,7 +2167,7 @@ async def chat(req: ChatRequest, request: Request):
 
         if evaluation["score"] < 5:
             reflexion_engine.reflect_on_failure(req.message, reply, evaluation)
-            logger.warn("Low quality answer", score=evaluation["score"],
+            logger.warning("Low quality answer", score=evaluation["score"],
                          issues=evaluation["issues"], query=req.message[:100])
         elif evaluation["score"] >= 8:
             # Good answer → save as skill
@@ -2185,7 +2189,7 @@ async def chat(req: ChatRequest, request: Request):
             except Exception:
                 logger.debug("Few-shot demo record failed", exc_info=True)
     except Exception as eval_err:
-        logger.warn("Reflexion evaluation error", error=str(eval_err))
+        logger.warning("Reflexion evaluation error", error=str(eval_err))
         evaluation = {"score": 0, "issues": [], "good_points": []}
 
     # ── Self optimizer: record outcome for auto-tuning ──
@@ -2257,7 +2261,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
     client_ip = get_client_ip(request)
     allowed, rate_info = stream_limiter.is_allowed(client_ip)
     if not allowed:
-        logger.warn("Rate limited", ip=client_ip, endpoint="/chat/stream")
+        logger.warning("Rate limited", ip=client_ip, endpoint="/chat/stream")
         async def rate_limit_stream():
             yield f"data: {json.dumps({'type': 'error', 'content': 'Quá nhiều yêu cầu. Vui lòng thử lại sau.'}, ensure_ascii=False)}\n\n"
         return StreamingResponse(rate_limit_stream(), media_type="text/event-stream")
@@ -2291,12 +2295,12 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             guard = check_input(message, sid)
             if not guard.get("allowed", True):
                 # P1: ẩn blocked_reason (chẩn-đoán) khỏi user, chỉ log server-side
-                logger.warn("Guardrails blocked stream input", reason=guard.get("blocked_reason", ""), session_id=sid)
+                logger.warning("Guardrails blocked stream input", reason=guard.get("blocked_reason", ""), session_id=sid)
                 gen = _safe_block_stream("Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.")
                 return StreamingResponse(gen(), media_type="text/event-stream")
         except Exception as _gerr:
             # P1: fail-CLOSED
-            logger.warn(f"Guardrail stream check lỗi → fail-closed: {_gerr}")
+            logger.warning(f"Guardrail stream check lỗi → fail-closed: {_gerr}")
             gen = _safe_block_stream("Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.")
             return StreamingResponse(gen(), media_type="text/event-stream")
 
