@@ -2856,7 +2856,7 @@ class TestAsyncCorrectnessFixes:
     def test_round_exhaustion_thread_safe_queue(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
         idx = src.index("Round-exhaustion")
-        fn_src = src[idx:idx + 1200]
+        fn_src = src[idx:idx + 1600]  # nới: helper #2 thêm _synth_cancelled đẩy call xuống
         assert "call_soon_threadsafe" in fn_src, \
             "Round-exhaustion synthesis must use call_soon_threadsafe for asyncio.Queue"
 
