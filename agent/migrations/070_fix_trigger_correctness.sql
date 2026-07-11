@@ -75,6 +75,7 @@ SELECT entity_id, COALESCE(AVG(rating), 0), COUNT(*), NOW()
 FROM posts
 WHERE post_type = 'review' AND rating IS NOT NULL
     AND moderation_status = 'approved' AND deleted_at IS NULL
+    AND entity_id IS NOT NULL   -- prod có review orphan entity_id=NULL → GROUP BY sinh NULL vi phạm NOT NULL
 GROUP BY entity_id
 ON CONFLICT (entity_id) DO UPDATE SET
     avg_rating   = EXCLUDED.avg_rating,
