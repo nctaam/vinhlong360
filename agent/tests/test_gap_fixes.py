@@ -2066,7 +2066,7 @@ class TestCacheControlHeaders:
     def test_middleware_sets_default_cache_control(self):
         src = (AGENT_DIR / "server.py").read_text(encoding="utf-8")
         idx = src.index("async def security_headers(")
-        fn_src = src[idx:idx+800]  # nới window: thêm Vary header đẩy Cache-Control xuống (salvage af90dbb)
+        fn_src = src[idx:idx+1200]  # window ôm cả function (Vary header đẩy Cache-Control xuống ~835)
         assert 'Cache-Control' in fn_src
         assert 'private, max-age=30' in fn_src
 
