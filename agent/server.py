@@ -2626,10 +2626,13 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             })
             synth_q: asyncio.Queue = asyncio.Queue()
             loop = asyncio.get_event_loop()
+            _synth_cancelled = threading.Event()
             def _synth_produce():
                 try:
                     resp = get_client().chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
                     for chunk in resp:
+                        if _synth_cancelled.is_set():
+                            break  # consumer đã thoát (client disconnect) → dừng, không leak thread
                         delta = chunk.choices[0].delta
                         if delta.content:
                             loop.call_soon_threadsafe(synth_q.put_nowait, delta.content)
@@ -2637,12 +2640,15 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     loop.call_soon_threadsafe(synth_q.put_nowait, None)
             loop.run_in_executor(None, _synth_produce)
             synth_text = ""
-            while True:
-                token = await synth_q.get()
-                if token is None:
-                    break
-                synth_text += token
-                yield f"data: {json.dumps({'type': 'text', 'content': token}, ensure_ascii=False)}\n\n"
+            try:
+                while True:
+                    token = await synth_q.get()
+                    if token is None:
+                        break
+                    synth_text += token
+                    yield f"data: {json.dumps({'type': 'text', 'content': token}, ensure_ascii=False)}\n\n"
+            finally:
+                _synth_cancelled.set()  # generator đóng (disconnect/hoàn tất) → báo thread produce dừng
             if synth_text:
                 memory_manager.on_message(sid, "assistant", synth_text)
                 analytics.track_query(message, tools_used, synth_text, sid)

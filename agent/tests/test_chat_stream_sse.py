@@ -78,6 +78,14 @@ def test_stream_tool_decision_routes_through_circuit_breaker():
     assert "safe_llm_call(get_client(), **_kw)" in src
 
 
+def test_stream_synthesis_fallback_is_cancellable():
+    # Đợt 5 helper #2: synthesis fallback (round-exhaustion) có cancel event → client
+    # disconnect mid-synthesis không leak thread produce (giữ LLM conn). Guard regression.
+    import inspect
+    src = inspect.getsource(server.chat_stream) if hasattr(server, "chat_stream") else inspect.getsource(server)
+    assert "_synth_cancelled" in src and "_synth_cancelled.set()" in src
+
+
 def test_stream_valid_message_is_wellformed_and_terminates(client_mocked):
     r = client_mocked.get("/chat/stream", params={"message": "Vĩnh Long có gì chơi?", "session_id": "sse-test"})
     assert r.status_code == 200
