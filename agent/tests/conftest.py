@@ -26,24 +26,19 @@ os.environ.setdefault("ADMIN_API_KEY", "test-admin-key-12345")
 # RỖNG X.router → ~40 test route-mounted fail. Chưa truy được thủ phạm; prod KHÔNG ảnh
 # hưởng (dùng server.app đã copy route lúc mount). Snapshot route-list lúc session-start
 # (populated) rồi restore TRƯỚC mỗi test → route-mounted luôn thấy router đầy đủ.
-@pytest.fixture(scope="session", autouse=True)
-def _snapshot_routers():
-    snaps = {}
-    for name in ("admin", "social", "auth", "notifications", "public_api"):
-        try:
-            mod = __import__(name)
-            if hasattr(mod, "router") and len(mod.router.routes) > 5:
-                snaps[name] = (mod, list(mod.router.routes))
-        except Exception:
-            pass
-    return snaps
-
-
 @pytest.fixture(autouse=True)
-def _restore_routers(_snapshot_routers):
-    for _name, (mod, routes) in _snapshot_routers.items():
-        if len(mod.router.routes) < len(routes):
-            mod.router.routes[:] = list(routes)
+def _restore_routers():
+    # Nếu router bị rỗng (test-isolation CI-Linux làm rỗng, snapshot có thể chụp lúc
+    # đã rỗng) → RELOAD module để re-run decorator @router.<verb> → re-register route.
+    # Reload chỉ khi rỗng (rẻ). Route-mounted test luôn thấy router đầy đủ.
+    import importlib
+    for name in ("admin", "social", "auth", "notifications", "public_api"):
+        mod = sys.modules.get(name)
+        if mod is not None and hasattr(mod, "router") and len(mod.router.routes) < 5:
+            try:
+                importlib.reload(mod)
+            except Exception:
+                pass
     yield
 
 
