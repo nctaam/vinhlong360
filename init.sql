@@ -338,18 +338,23 @@ CREATE OR REPLACE FUNCTION update_entity_ratings()
 RETURNS TRIGGER AS $$
 DECLARE
     eid TEXT;
+    v_avg NUMERIC;
+    v_cnt INTEGER;
 BEGIN
     IF TG_OP = 'DELETE' THEN eid := OLD.entity_id;
     ELSE eid := NEW.entity_id;
     END IF;
 
     IF eid IS NOT NULL THEN
-        INSERT INTO entity_ratings (entity_id, avg_rating, rating_count, updated_at)
-        SELECT entity_id, AVG(rating), COUNT(*), NOW()
+        -- deleted_at IS NULL: review soft-delete không còn tính vào sao (xem migration 070).
+        SELECT COALESCE(AVG(rating), 0), COUNT(*)
+        INTO v_avg, v_cnt
         FROM posts
         WHERE entity_id = eid AND post_type = 'review' AND rating IS NOT NULL
-            AND moderation_status = 'approved'
-        GROUP BY entity_id
+            AND moderation_status = 'approved' AND deleted_at IS NULL;
+        -- Luôn UPSERT (kể cả v_cnt=0) → xoá review cuối cùng thì reset avg/count về 0.
+        INSERT INTO entity_ratings (entity_id, avg_rating, rating_count, updated_at)
+        VALUES (eid, v_avg, v_cnt, NOW())
         ON CONFLICT (entity_id)
         DO UPDATE SET
             avg_rating   = EXCLUDED.avg_rating,
@@ -401,13 +406,18 @@ BEGIN
     IF TG_OP = 'DELETE' THEN pid := OLD.post_id;
     ELSE pid := NEW.post_id;
     END IF;
-    UPDATE posts SET comment_count = (SELECT COUNT(*) FROM comments WHERE post_id = pid) WHERE id = pid;
+    -- deleted_at IS NULL + fire ON UPDATE (soft-delete): trigger là nguồn-sự-thật duy
+    -- nhất cho comment_count; social.py KHÔNG tăng/giảm tay nữa (xem migration 070).
+    UPDATE posts SET comment_count = (
+        SELECT COUNT(*) FROM comments WHERE post_id = pid AND deleted_at IS NULL
+    ) WHERE id = pid;
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER trg_comment_count
-    AFTER INSERT OR DELETE ON comments
+DROP TRIGGER IF EXISTS trg_comment_count ON comments;
+CREATE TRIGGER trg_comment_count
+    AFTER INSERT OR DELETE OR UPDATE ON comments
     FOR EACH ROW EXECUTE FUNCTION update_comment_count();
 
 -- Cleanup expired OTP sessions (run via pg_cron or app-level)

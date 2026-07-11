@@ -2319,9 +2319,8 @@ def _comment_insert(conn, ph, post_id, user, body, status, mentions):
     """, (post_id, str(user["id"]),
           body.parent_id if body.parent_id else None,
           body.content, status, json.dumps(mentions, ensure_ascii=False)))
-    db._execute(conn, f"""
-        UPDATE posts SET comment_count = comment_count + 1 WHERE id::text = {ph}
-    """, (post_id,))
+    # comment_count do trigger trg_comment_count recount (migration 070) — KHÔNG tăng tay
+    # nữa (trước: trigger recount + '+1' tay = đếm dư mỗi bình luận).
     post_owner = db._fetchone(conn, f"SELECT user_id FROM posts WHERE id::text = {ph}", (post_id,))
     parent_author = None
     if body.parent_id:
@@ -2476,13 +2475,10 @@ async def delete_comment(comment_id: str, user=Depends(require_user), _csrf=Depe
             db._execute(conn, f"DELETE FROM notifications WHERE ref_type = 'comment' AND ref_id = {ph}", (comment_id,))
             # Soft-delete: SP3 W6.1 — trước đây hard-DELETE xóa vĩnh viễn reply con
             # của người khác. Nay UPDATE deleted_at (reply con giữ lại, recoverable).
-            child_count = db._fetchone(conn, f"SELECT COUNT(*) as c FROM comments WHERE parent_id::text = {ph} AND deleted_at IS NULL", (comment_id,))
-            children = int(db._row_to_dict(child_count)["c"]) if child_count else 0
             db._execute(conn, f"UPDATE comments SET deleted_at = NOW() WHERE parent_id::text = {ph} AND deleted_at IS NULL", (comment_id,))
             db._execute(conn, f"UPDATE comments SET deleted_at = NOW() WHERE id::text = {ph}", (comment_id,))
-            db._execute(conn, f"""
-                UPDATE posts SET comment_count = GREATEST(comment_count - {ph}::int, 0) WHERE id::text = {ph}
-            """, (1 + children, str(rd["post_id"])))
+            # comment_count do trigger trg_comment_count recount trên các UPDATE deleted_at
+            # ở trên (migration 070 fire ON UPDATE) — KHÔNG giảm tay nữa.
     await asyncio.to_thread(_query)
     return {"success": True}
 

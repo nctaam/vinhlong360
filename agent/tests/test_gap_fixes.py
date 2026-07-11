@@ -2594,25 +2594,23 @@ class TestPasswordRehash:
 class TestCommentCountSync:
     """comment_count on posts must be updated when comments are created/deleted."""
 
-    def test_create_comment_increments_count(self):
-        # Refactor: INSERT + count bump moved to helper _comment_insert
-        # (via _comment_query ← create_comment). Wiring + giữ assertion.
-        import social
-        src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def create_comment(")
-        fn = src[idx:idx+3000]
-        assert "_comment_query" in fn
-        assert "_comment_insert" in inspect.getsource(social._comment_query)
-        assert "comment_count = comment_count + 1" in inspect.getsource(social._comment_insert)
+    def test_comment_count_via_trigger_not_manual(self):
+        # Migration 070: comment_count do trigger trg_comment_count recount (lọc deleted_at,
+        # fire ON INSERT/UPDATE/DELETE) — nguồn-sự-thật duy nhất. Hành vi end-to-end test ở
+        # test_trigger_correctness.py (PG). Đây guard hợp đồng schema.
+        init_sql = (AGENT_DIR.parent / "init.sql").read_text(encoding="utf-8")
+        mig = (AGENT_DIR / "migrations" / "070_fix_trigger_correctness.sql").read_text(encoding="utf-8")
+        for src in (init_sql, mig):
+            assert "update_comment_count" in src
+            assert "AND deleted_at IS NULL" in src
+            assert "AFTER INSERT OR DELETE OR UPDATE ON comments" in src
 
-    def test_delete_comment_decrements_count(self):
+    def test_social_does_not_manually_bump_comment_count(self):
+        # Chống regression: social.py KHÔNG còn UPDATE comment_count tay (trước +1/-N tay
+        # chồng recount trigger → đếm dư mỗi bình luận + drift khi soft-delete).
         src = (AGENT_DIR / "social.py").read_text(encoding="utf-8")
-        idx = src.index("async def delete_comment(")
-        # window 2500: W6.1 soft-delete thêm comment giải thích đẩy UPDATE posts
-        # xuống quá 1500 ký tự; logic count vẫn còn nguyên.
-        fn = src[idx:idx+2500]
-        assert "comment_count" in fn
-        assert "GREATEST" in fn
+        assert "comment_count = comment_count + 1" not in src
+        assert "comment_count = GREATEST(comment_count" not in src
 
 
 class TestPerformanceOptimizations:

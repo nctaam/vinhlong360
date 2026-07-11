@@ -25,8 +25,8 @@ def test_migration_gate_static_contracts_pass_current_repo():
     errors = [issue for issue in issues if issue.severity == "error"]
 
     assert errors == []
-    assert stats["latest"] == "069_recreate_social_indexes.sql"
-    assert stats["latest_schema_version"] == 69
+    assert stats["latest"] == "070_fix_trigger_correctness.sql"
+    assert stats["latest_schema_version"] == 70
 
 def test_shared_rate_limit_and_idempotency_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "056_shared_rate_idempotency.sql").read_text(encoding="utf-8")
@@ -205,7 +205,7 @@ def test_perf_quality_trend_migration_contracts_exist():
     ):
         assert token in migration
     assert "quality_metric_snapshots" in init_sql
-    assert "PG_REQUIRED_SCHEMA_VERSION = 62" in database
+    assert "PG_REQUIRED_SCHEMA_VERSION = 70" in database
 
 def test_itinerary_areas_schema_migration_contracts_exist():
     migration = (ROOT / "agent" / "migrations" / "058_itinerary_areas_schema.sql").read_text(encoding="utf-8")
@@ -240,7 +240,7 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
     pending_after_legacy_baseline = [m.path.name for m in migrations if m.version > runner.LEGACY_BASELINE_VERSION]
 
     assert runner.LEGACY_BASELINE_VERSION == 52
-    assert migrations[-1].path.name == "069_recreate_social_indexes.sql"
+    assert migrations[-1].path.name == "070_fix_trigger_correctness.sql"
     assert pending_after_legacy_baseline == [
         "053_saved_kind_superadmin.sql",
         "054_admin_audit_events.sql",
@@ -259,6 +259,7 @@ def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
         "067_trusted_devices.sql",
         "068_comments_deleted_at.sql",
         "069_recreate_social_indexes.sql",
+        "070_fix_trigger_correctness.sql",
     ]
 
 def test_chrome_smoke_redacts_sensitive_urls():
