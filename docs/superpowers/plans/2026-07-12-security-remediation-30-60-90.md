@@ -34,11 +34,14 @@
 
 **Files:** `agent/server.py`, `agent/memory.py`, `agent/guardrails.py`, `web-nuxt/components/ChatWidget.vue`, `web-nuxt/composables/useAI.ts`.
 
-- [ ] Add owner-mismatch tests for POST chat, SSE, welcome, exact cache, semantic cache, and budgets.
-- [ ] Introduce a server-derived owner key and bind hot memory, cold profiles, caches, and cost ledgers to it.
-- [ ] Move streaming prompt/history from query parameters to a POST/SSE-compatible protected transport.
-- [ ] Record provider-reported usage for every model round.
-- [ ] Acceptance: no synthetic sentinel crosses owners; provider usage equals ledger usage; URL logs contain no prompt/history.
+- [x] Add owner-mismatch tests for POST chat, SSE, welcome, exact cache, semantic cache, and budgets.
+- [x] Introduce a server-derived owner key and bind hot memory, cold profiles, caches, and cost ledgers to it.
+- [x] Move streaming prompt/history from query parameters to a POST/SSE-compatible protected transport.
+- [x] Record provider-reported usage for every model round, including nested provider-backed tools and cancellation finalizers.
+- [x] Acceptance: no synthetic sentinel crosses owners; provider usage equals ledger usage; URL logs contain no prompt/history.
+- [x] Completed on branch `codex/chat-ownership-budgets`; production closure `12454a59c5c95dc29ea97605163f5fb2950fb34a`, test-harness stabilization `6d3d5e0c59590e056b804bae1702539769032cd0`.
+- [x] Evidence: focused `309 passed`; full backend `6039 passed, 39 skipped, 78 deselected, 1 xfailed`; frontend `109 passed`, typecheck/build exit `0`; dedicated accounting `99 passed`; 100 AnyIO plus 100 double-native cancellation repetitions clean; final reviews spec compliant with no Critical/Important/Minor findings.
+- [x] Rollback: revert Workstream 3 endpoint/owner/accounting commits together while retaining the regression tests; do not restore GET streaming or client-selected ownership/budget keys as a compatibility path.
 
 ### Workstream 4: Immediate account/control-plane fixes
 

@@ -1,6 +1,6 @@
 # Chat Ownership, Cache, Transport, and Usage Design
 
-> STATUS: approved for implementation under the active 30/60/90 remediation program
+> STATUS: implemented and verified
 
 ## Goal
 
@@ -98,6 +98,27 @@ The accumulated provider totals are committed once to the guardrail ledger and c
 - Synthetic multi-round provider tests prove exact usage parity for POST, streaming, synthesis, fallback, missing-usage, cache-hit, and error paths without network access.
 - Frontend tests prove JSON POST streaming, auth headers, cookie-compatible requests, and absence of message/history in URLs.
 - Focused suites, full pytest, Ruff, `py_compile`, frontend tests, typecheck, build, and independent spec/quality review gate completion.
+
+## Implementation Evidence
+
+Implemented on branch `codex/chat-ownership-budgets`; the production closure is `12454a59c5c95dc29ea97605163f5fb2950fb34a`, followed by the test-only cancellation harness stabilization `6d3d5e0c59590e056b804bae1702539769032cd0`.
+
+- The exact Task 5 focused security suite completed with `309 passed, 51 deselected, 1 warning`.
+- Specified Ruff and `py_compile` gates passed; `git diff --check` passed.
+- Full backend verification completed with `6039 passed, 39 skipped, 78 deselected, 1 xfailed, 1 warning`.
+- Frontend verification completed with `109 passed` tests, typecheck exit `0`, and production build exit `0`.
+- The dedicated usage/stream/orchestrator suite completed with `99 passed`; a real parallel dispatcher probe accounted three of three provider calls, including the nested `suggest_followups` call.
+- Repeated cancellation verification completed 100 AnyIO nested-provider cancellations and 100 double-native cancellations without settling before provider completion or losing completed usage.
+- Independent final review at `12454a5` returned `✅ Spec compliant` and no Critical, Important, or Minor quality findings; the review run reported `142 passed` and a clean 100-cancellation stress result.
+
+The original issue variants no longer reproduce: owner-mismatch tests prevent POST/SSE/welcome/cache sentinels from crossing owners; owner rotation does not reset admission or settlement identity; GET streaming is unavailable and browser URLs contain no prompt/history; legacy cache namespaces are not read by chat; and provider totals match request, guardrail, and attribution totals across direct, orchestrated, parallel, nested-tool, streaming, synthesis, error, and cancellation paths.
+
+## Verified Residuals
+
+- Explicit provider all-zero usage cannot be distinguished from absent metadata, so the call is estimated conservatively.
+- A settlement sink that mutates and then raises is not covered; a later retry could duplicate that individual sink's side effect.
+- Disconnect before terminal stream usage arrives falls back to complete-message/output estimation rather than provider-reported totals.
+- Cancellation deliberately waits for the synchronous provider worker to complete before settlement; provider completion and configured provider timeouts bound that wait.
 
 ## Non-Goals
 

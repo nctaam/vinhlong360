@@ -1,6 +1,6 @@
 # Chat Ownership, Cache, Transport, and Usage Implementation Plan
 
-> STATUS: active
+> STATUS: complete
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -21,7 +21,7 @@
 - Create: `agent/tests/test_chat_owner_boundary.py`
 - Modify: `tests/test_memory.py`
 
-- [ ] **Step 1: Write failing identity and memory tests**
+- [x] **Step 1: Write failing identity and memory tests**
 
 Add tests for these concrete contracts:
 
@@ -42,13 +42,13 @@ assert ("user:bob", alice.session_id) not in mm._sessions
 
 Also prove two conversations owned by Alice share `ColdMemory["user:alice"]` but keep distinct hot messages, and two owners using the same selector cannot collide.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `python -m pytest agent/tests/test_chat_owner_boundary.py tests/test_memory.py -q`
 
 Expected: FAIL because no signed owner context or owned session API exists.
 
-- [ ] **Step 3: Implement the owner resolver**
+- [x] **Step 3: Implement the owner resolver**
 
 In `agent/chat_identity.py`, add:
 
@@ -87,21 +87,21 @@ def set_chat_owner_cookie(response: Response, context: ChatOwnerContext) -> None
 
 Use `secrets.token_urlsafe(32)`, HMAC-SHA256, `hmac.compare_digest`, URL-safe encoding, and `sha256(visitor_id)` for the persisted owner key. Prefer `CHAT_OWNER_SECRET`, fall back to `CSRF_SECRET`, require one in production, and allow an ephemeral development secret. Cookie name: `vl360_chat_owner`; `HttpOnly`, `SameSite=Lax`, path `/`, secure in production, bounded max-age.
 
-- [ ] **Step 4: Implement owned memory APIs**
+- [x] **Step 4: Implement owned memory APIs**
 
 Add `UnknownConversation`. Change `_sessions` to `dict[tuple[str, str], HotMemory]`. Add `create_session(owner_key)` using `secrets.token_hex(16)` and `require_session(owner_key, session_id)` with no implicit creation. Update `build_context`, `on_message`, `on_entity_discussed`, `on_chat_complete`, and session-end helpers so hot state receives both owner and conversation while cold profiles receive only owner.
 
-- [ ] **Step 5: Bind POST chat and welcome before any state access**
+- [x] **Step 5: Bind POST chat and welcome before any state access**
 
 Resolve the owner first. If `session_id` is absent, create an owned conversation; if supplied, require it and return uniform HTTP 404 on miss/mismatch. Pass `owner_key` to cold memory and memory graph. `/welcome` must ignore selector-based profile lookup and use only the resolved owner. Attach a newly issued anonymous cookie to JSON and streaming-compatible responses.
 
-- [ ] **Step 6: Run GREEN and nearby tests**
+- [x] **Step 6: Run GREEN and nearby tests**
 
 Run: `python -m pytest agent/tests/test_chat_owner_boundary.py tests/test_memory.py agent/tests/test_chat_smoke.py tests/test_integration.py -q`
 
 Expected: PASS; no mismatch test observes or mutates the target sentinel.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```powershell
 git add agent/chat_identity.py agent/memory.py agent/server.py agent/tests/test_chat_owner_boundary.py tests/test_memory.py
@@ -120,7 +120,7 @@ git commit -m "fix: bind chat memory to server owner"
 - Modify: `tests/test_guardrails.py`
 - Modify: `agent/tests/test_chat_owner_boundary.py`
 
-- [ ] **Step 1: Add failing owner-namespace regressions**
+- [x] **Step 1: Add failing owner-namespace regressions**
 
 Prove exact cache, L1, L2, semantic matching, and request dedup return Alice's sentinel only for `owner_key="user:alice"`; Bob gets a miss for the identical or semantically similar query. Prove one owner cannot reset a 100-token ledger by changing conversation IDs:
 
@@ -132,27 +132,27 @@ assert budget.check_budget("user:bob")["allowed"] is True
 
 At endpoint level, seed an Alice cache reply, present Alice's selector as Bob, and assert the request fails before cache access.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run: `python -m pytest tests/test_cache.py tests/test_semantic_cache.py tests/test_guardrails.py agent/tests/test_chat_owner_boundary.py -q`
 
 Expected: FAIL because production callers omit the existing exact-cache namespace and semantic cache/dedup have no owner namespace.
 
-- [ ] **Step 3: Namespace cache APIs by owner**
+- [x] **Step 3: Namespace cache APIs by owner**
 
 Change exact `get/put` to accept `owner_key` and use it in Redis and memory keys. Extend semantic `_make_key`, matcher metadata/filtering, `MultiTierCache.get/put/invalidate`, and `RequestDeduplicator.acquire` so exact and fuzzy candidates are considered only within the requested owner. Persist `owner_key` in L2 entries and treat legacy entries without one as a separate non-chat namespace.
 
-- [ ] **Step 4: Use one owner key for admission and settlement**
+- [x] **Step 4: Use one owner key for admission and settlement**
 
 Rename budget parameter/documentation from session to owner where touched, preserving stored JSON compatibility. In both chat routes, call `check_input(message, owner_key)` and later `record_usage(owner_key, ...)`. Pass `owner_key` to exact and semantic cache reads/writes. Conversation IDs remain only response selectors and analytics labels.
 
-- [ ] **Step 5: Run GREEN**
+- [x] **Step 5: Run GREEN**
 
 Run: `python -m pytest tests/test_cache.py tests/test_semantic_cache.py tests/test_guardrails.py agent/tests/test_chat_owner_boundary.py agent/tests/test_chat_smoke.py agent/tests/test_chat_stream_sse.py -q`
 
 Expected: PASS with isolated sentinels and owner-stable budgets.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add agent/cache.py agent/semantic_cache.py agent/guardrails.py agent/server.py tests/test_cache.py tests/test_semantic_cache.py tests/test_guardrails.py agent/tests/test_chat_owner_boundary.py
@@ -168,7 +168,7 @@ git commit -m "fix: scope chat caches and budgets by owner"
 - Modify: `agent/tests/test_chat_stream_sse.py`
 - Create: `web-nuxt/tests/chat-transport-security.test.ts`
 
-- [ ] **Step 1: Write failing backend and frontend transport tests**
+- [x] **Step 1: Write failing backend and frontend transport tests**
 
 Backend: POST JSON to `/chat/stream` and assert SSE succeeds; GET with `message`, `history`, and `session_id` returns 405. Frontend source/mounted tests assert both callers use:
 
@@ -183,7 +183,7 @@ fetch('/chat/stream', {
 
 and assert no `URLSearchParams`, `/chat/stream?`, `message=`, or serialized `history` enters a URL.
 
-- [ ] **Step 2: Run RED**
+- [x] **Step 2: Run RED**
 
 Run:
 
@@ -195,15 +195,15 @@ npm test -- --run tests/chat-transport-security.test.ts
 
 Expected: FAIL because the backend exposes GET and `ChatWidget.vue` builds a query string; `useAI.ts` omits auth headers.
 
-- [ ] **Step 3: Replace GET streaming with bounded POST JSON**
+- [x] **Step 3: Replace GET streaming with bounded POST JSON**
 
 Use `ChatRequest` for `/chat/stream`, preserving message sanitization, 50-item history bound, response media type, and SSE event shapes. Remove query JSON parsing. Do not retain a GET compatibility route.
 
-- [ ] **Step 4: Update both frontend callers**
+- [x] **Step 4: Update both frontend callers**
 
 Use JSON POST, `authHeaders()`, and `credentials: 'same-origin'`. Keep conversation selector storage behavior unchanged. Do not place the anonymous owner cookie in JavaScript-visible state.
 
-- [ ] **Step 5: Run GREEN, typecheck, and build**
+- [x] **Step 5: Run GREEN, typecheck, and build**
 
 Run:
 
@@ -217,7 +217,7 @@ npm run build
 
 Expected: PASS; request URLs contain only `/chat/stream`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add agent/server.py agent/tests/test_chat_stream_sse.py web-nuxt/components/ChatWidget.vue web-nuxt/composables/useAI.ts web-nuxt/tests/chat-transport-security.test.ts
@@ -235,39 +235,39 @@ git commit -m "fix: move chat streaming payload out of urls"
 - Modify: `agent/tests/test_chat_stream_sse.py`
 - Modify: `tests/test_orchestrator.py`
 
-- [ ] **Step 1: Write failing accumulator and POST regressions**
+- [x] **Step 1: Write failing accumulator and POST regressions**
 
 Use synthetic OpenAI-shaped responses. First response requests a benign tool and reports `120/10`; second returns text and reports `180/25`. Assert provider total `335` equals request aggregate, guardrail increment, and attributed total. Add specialist-fallback and forced-synthesis cases. A cache hit must record zero.
 
-- [ ] **Step 2: Write failing streaming regressions**
+- [x] **Step 2: Write failing streaming regressions**
 
 Use one decision response and a stream whose terminal chunk reports usage. Add round-exhaustion synthesis, missing-usage fallback, provider error after one completed call, and disconnect/finalizer coverage. Assert every reported usage object is consumed exactly once.
 
-- [ ] **Step 3: Run RED**
+- [x] **Step 3: Run RED**
 
 Run: `python -m pytest agent/tests/test_chat_usage_accounting.py agent/tests/test_chat_stream_sse.py tests/test_orchestrator.py -q`
 
 Expected: FAIL because routes estimate only visible input/output and synthesis does not settle usage.
 
-- [ ] **Step 4: Implement `UsageAccumulator`**
+- [x] **Step 4: Implement `UsageAccumulator`**
 
 Add methods for non-stream responses, terminal stream chunks, per-call full-message fallback estimates, token totals, model-aware cost totals, and an idempotent settlement snapshot. Store prompt/completion/total tokens, cost, provider-call count, and estimated-call count.
 
-- [ ] **Step 5: Track every provider boundary**
+- [x] **Step 5: Track every provider boundary**
 
 Wrap orchestrator and direct POST call functions so every returned response is added before its content is used. Pass one accumulator through specialist fallback and forced synthesis. In streaming, request `stream_options={"include_usage": True}`, consume decision responses and terminal stream usage, and include synthesis.
 
-- [ ] **Step 6: Settle once on all terminal paths**
+- [x] **Step 6: Settle once on all terminal paths**
 
 After provider work, commit accumulator totals using `owner_key` to guardrail and cost attribution. Use a finalizer for success, provider error, synthesis, and disconnect. Do not settle on cache hits. Remove outer visible-message/final-reply estimates.
 
-- [ ] **Step 7: Run GREEN and parity tests**
+- [x] **Step 7: Run GREEN and parity tests**
 
 Run: `python -m pytest agent/tests/test_chat_usage_accounting.py agent/tests/test_chat_stream_sse.py tests/test_orchestrator.py agent/tests/test_chat_smoke.py -q`
 
 Expected: PASS; ledger and attribution totals exactly equal synthetic provider totals.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```powershell
 git add agent/chat_usage.py agent/server.py agent/orchestrator.py agent/cost_tracker.py agent/tests/test_chat_usage_accounting.py agent/tests/test_chat_stream_sse.py tests/test_orchestrator.py
@@ -282,13 +282,13 @@ git commit -m "fix: account every chat provider round"
 - Modify: `docs/superpowers/plans/2026-07-12-security-remediation-30-60-90.md`
 - Write: existing scan bundle `artifacts/fix_report.md`
 
-- [ ] **Step 1: Run focused security suites**
+- [x] **Step 1: Run focused security suites**
 
 ```powershell
 python -m pytest agent/tests/test_chat_owner_boundary.py agent/tests/test_chat_usage_accounting.py agent/tests/test_chat_stream_sse.py agent/tests/test_chat_smoke.py tests/test_memory.py tests/test_cache.py tests/test_semantic_cache.py tests/test_guardrails.py tests/test_orchestrator.py tests/test_integration.py -q
 ```
 
-- [ ] **Step 2: Run backend static and full checks**
+- [x] **Step 2: Run backend static and full checks**
 
 ```powershell
 python -m ruff check agent/chat_identity.py agent/chat_usage.py agent/memory.py agent/cache.py agent/semantic_cache.py agent/guardrails.py agent/cost_tracker.py agent/orchestrator.py agent/server.py agent/tests/test_chat_owner_boundary.py agent/tests/test_chat_usage_accounting.py agent/tests/test_chat_stream_sse.py
@@ -297,7 +297,7 @@ git diff --check
 python -m pytest -q
 ```
 
-- [ ] **Step 3: Run frontend checks**
+- [x] **Step 3: Run frontend checks**
 
 ```powershell
 cd web-nuxt
@@ -306,10 +306,33 @@ npm run typecheck
 npm run build
 ```
 
-- [ ] **Step 4: Review bypass variants**
+- [x] **Step 4: Review bypass variants**
 
 Confirm POST, streaming, welcome, exact cache, semantic cache, dedup, guardrail admission, settlement, and cost attribution all consume the same request-scoped owner. Confirm mismatch fails before target mutation, rotating conversation IDs does not reset budget, GET URLs contain no prompt/history, legacy cache entries are not read by chat, and all provider terminal branches settle once.
 
-- [ ] **Step 5: Update evidence and commit**
+- [x] **Step 5: Update evidence and commit**
 
 Mark Workstream 3 complete only after independent spec and quality reviews have no open important issues. Append exact commands/results and remaining uncertainty to the scan fix report, update the master roadmap, and commit documentation. Do not merge or push automatically.
+
+## Completion Evidence
+
+- Branch: `codex/chat-ownership-budgets`.
+- Production closure: `12454a59c5c95dc29ea97605163f5fb2950fb34a`; cancellation test-harness stabilization: `6d3d5e0c59590e056b804bae1702539769032cd0`.
+- Independent Task 4 reviews at `12454a5`: spec verdict `✅ Spec compliant`; quality verdict reported no Critical, Important, or Minor findings, with `142 passed` and a 100-cancellation stress probe clean.
+- Focused security command from Task 5: `309 passed, 51 deselected, 1 warning in 10.79s`.
+- Backend gates: specified Ruff `All checks passed!`; specified `py_compile` exit `0`; `git diff --check` exit `0`; full `python -m pytest -q` -> `6039 passed, 39 skipped, 78 deselected, 1 xfailed, 1 warning in 165.21s`.
+- Frontend gates: `npm test -- --run` -> `7 passed` files and `109 passed` tests; `npm run typecheck` exit `0`; `npm run build` exit `0` with the known Nuxt sourcemap, chunk-size, dependency-resolution, and Node deprecation warnings. The build did not modify tracked `web/data.js`.
+- Change-aware accounting suite: `python -m pytest agent/tests/test_chat_usage_accounting.py agent/tests/test_chat_stream_sse.py tests/test_orchestrator.py -q` -> `99 passed, 1 warning in 8.58s`.
+- Parallel dispatcher probe observed three provider calls (`outer`, nested `suggest_followups`, `outer`) and the request accumulator recorded exactly `3` calls / `30` tokens while preserving the final reply and suggestions.
+- Cancellation stress repeated 100 AnyIO nested-provider cancellations and 100 double-native cancellations without early settlement or lost usage.
+
+## Bypass Review Result
+
+POST, streaming, welcome, exact cache, semantic cache, deduplication, guardrail admission, settlement, and cost attribution all consume the same request-scoped owner. Unknown or mismatched selectors fail before target memory, cache, prompt, or provider access. Conversation rotation does not reset the owner budget. Streaming is JSON `POST /chat/stream`; GET is unavailable and frontend URLs contain no prompt, history, selector payload, or owner cookie. Owner-scoped chat cannot read legacy exact or semantic cache namespaces. Direct, orchestrated, parallel, nested-tool, decision, final-stream, synthesis, provider-error, disconnect, and repeated-cancellation paths settle completed provider usage once.
+
+## Residual Risk
+
+- A provider response that explicitly reports all token fields as zero is indistinguishable from missing usage metadata and is conservatively estimated.
+- Settlement sinks are not tested against the unusual case where `record_usage()` or cost attribution performs its side effect and then raises; retrying such a sink could duplicate that sink's record.
+- If a stream disconnects before terminal provider usage metadata arrives, accounting estimates the completed call from the full serialized messages and collected output rather than provider-reported totals.
+- Cancellation waits for the synchronous provider worker to finish before settlement; the wait is bounded by provider completion and configured provider timeouts, not by an additional independent worker deadline.
