@@ -74,20 +74,36 @@ def _track_cache_metric(operation: str) -> None:
         logger.debug("Cache metric tracking unavailable", exc_info=True)
 
 
-def _normalize_key(message: str, session_id: str = "") -> str:
-    """Chuẩn hóa query thành cache key (isolated by session)."""
+def _normalize_key(
+    message: str,
+    session_id: str = "",
+    *,
+    owner_key: str | None = None,
+    namespace: str | None = None,
+) -> str:
+    """Normalize a query into the legacy or explicitly selected namespace."""
     text = message.lower().strip()
     # Bỏ dấu câu cuối
     text = text.rstrip("?!.").strip()
-    # Include session_id for isolation (empty = shared cache for common queries)
-    key_input = text if not session_id else f"{session_id}:{text}"
+    # session_id remains a compatibility alias for older non-chat callers.
+    selected_namespace = session_id
+    if owner_key is not None:
+        selected_namespace = owner_key
+    if namespace is not None:
+        selected_namespace = namespace
+    key_input = text if not selected_namespace else f"{selected_namespace}:{text}"
     return hashlib.md5(key_input.encode("utf-8")).hexdigest()
 
 
-def get(message: str) -> dict | None:
+def get(
+    message: str,
+    owner_key: str = "",
+    *,
+    namespace: str | None = None,
+) -> dict | None:
     """Lấy cached response. Trả về None nếu miss."""
     _ensure_redis()
-    key = _normalize_key(message)
+    key = _normalize_key(message, owner_key=owner_key, namespace=namespace)
 
     if _use_redis:
         return _redis_get(key)
@@ -108,10 +124,17 @@ def get(message: str) -> dict | None:
         return None
 
 
-def put(message: str, response: dict, ttl: int = DEFAULT_TTL):
+def put(
+    message: str,
+    response: dict,
+    ttl: int = DEFAULT_TTL,
+    owner_key: str = "",
+    *,
+    namespace: str | None = None,
+):
     """Lưu response vào cache."""
     _ensure_redis()
-    key = _normalize_key(message)
+    key = _normalize_key(message, owner_key=owner_key, namespace=namespace)
 
     if _use_redis:
         _redis_put(key, response, message, ttl)

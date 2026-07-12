@@ -87,7 +87,7 @@ def test_stream_synthesis_fallback_is_cancellable():
 
 
 def test_stream_valid_message_is_wellformed_and_terminates(client_mocked):
-    r = client_mocked.get("/chat/stream", params={"message": "Vĩnh Long có gì chơi?", "session_id": "sse-test"})
+    r = client_mocked.get("/chat/stream", params={"message": "Vĩnh Long có gì chơi?"})
     assert r.status_code == 200
     frames = _parse_sse(r.text)
     assert frames, "không có frame SSE nào"

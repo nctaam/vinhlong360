@@ -5,6 +5,7 @@ import os
 import time
 import threading
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agent"))
 
@@ -17,6 +18,7 @@ from semantic_cache import (
     semantic_put,
     _make_key,
 )
+import semantic_cache as semantic_cache_mod
 
 
 # ---- SemanticMatcher ----
@@ -36,6 +38,24 @@ class TestSemanticMatcher(unittest.TestCase):
         key, sim = self.matcher.find_similar("du lich vinh long mekong")
         self.assertEqual(key, "k1")
         self.assertGreater(sim, 0.9)
+
+    def test_find_similar_searches_only_the_requested_owner_namespace(self):
+        query = "du lich vinh long mekong delta"
+        self.matcher.add("alice-key", query, owner_key="user:alice")
+        self.matcher.add(
+            "bob-key",
+            "du lich vinh long mekong delta homestay",
+            owner_key="user:bob",
+        )
+
+        key, sim = self.matcher.find_similar(
+            query,
+            threshold=0.3,
+            owner_key="user:bob",
+        )
+
+        self.assertEqual(key, "bob-key")
+        self.assertGreaterEqual(sim, 0.3)
 
     def test_find_similar_different_query(self):
         self.matcher.add("k1", "du lich vinh long mekong delta")
@@ -98,6 +118,62 @@ class TestMultiTierCache(unittest.TestCase):
         self.assertEqual(result["answer"], "hello")
         self.assertEqual(self.cache.hits_l1, 1)
 
+    def test_l1_isolated_by_owner(self):
+        alice_response = {"answer": "alice sentinel"}
+        self.cache.put("same query", alice_response, owner_key="user:alice")
+
+        self.assertEqual(
+            self.cache.get("same query", owner_key="user:alice"),
+            alice_response,
+        )
+        self.assertIsNone(self.cache.get("same query", owner_key="user:bob"))
+
+    def test_l2_isolated_by_owner_and_persists_owner_metadata(self):
+        alice_response = {"answer": "alice sentinel"}
+        self.cache.put("same query", alice_response, owner_key="user:alice")
+        alice_key = _make_key("same query", owner_key="user:alice")
+        self.cache._l1.clear()
+
+        self.assertEqual(self.cache._l2[alice_key]["owner_key"], "user:alice")
+        self.assertIsNone(self.cache.get("same query", owner_key="user:bob"))
+        self.assertEqual(
+            self.cache.get("same query", owner_key="user:alice"),
+            alice_response,
+        )
+
+    def test_semantic_fallback_isolated_by_owner(self):
+        alice_response = {"answer": "alice sentinel"}
+        self.cache.put(
+            "du lich vinh long mekong delta homestay",
+            alice_response,
+            owner_key="user:alice",
+        )
+
+        self.assertIsNone(
+            self.cache.get("du lich vinh long mekong delta", owner_key="user:bob")
+        )
+        self.assertEqual(
+            self.cache.get(
+                "du lich vinh long mekong delta",
+                owner_key="user:alice",
+            ),
+            alice_response,
+        )
+
+    def test_legacy_entry_is_not_visible_to_owner_scoped_chat(self):
+        query = "legacy cached query"
+        legacy_key = _make_key(query)
+        self.cache._l2[legacy_key] = {
+            "query": query,
+            "response": {"answer": "legacy sentinel"},
+            "timestamp": time.time(),
+            "ttl": 3600,
+        }
+        self.matcher.add(legacy_key, query)
+
+        self.assertIsNone(self.cache.get(query, owner_key="user:alice"))
+        self.assertEqual(self.cache.get(query)["answer"], "legacy sentinel")
+
     def test_get_miss(self):
         result = self.cache.get("nonexistent query")
         self.assertIsNone(result)
@@ -119,6 +195,18 @@ class TestMultiTierCache(unittest.TestCase):
         self.cache.invalidate("to remove")
         result = self.cache.get("to remove")
         self.assertIsNone(result)
+
+    def test_invalidate_removes_only_the_requested_owner_entry(self):
+        self.cache.put("same query", {"owner": "alice"}, owner_key="user:alice")
+        self.cache.put("same query", {"owner": "bob"}, owner_key="user:bob")
+
+        self.cache.invalidate("same query", owner_key="user:alice")
+
+        self.assertIsNone(self.cache.get("same query", owner_key="user:alice"))
+        self.assertEqual(
+            self.cache.get("same query", owner_key="user:bob"),
+            {"owner": "bob"},
+        )
 
     def test_invalidate_entity(self):
         self.cache.put("query about entity_123", {"entity_id": "entity_123", "name": "Test"}, ttl=3600)
@@ -177,6 +265,23 @@ class TestRequestDeduplicator(unittest.TestCase):
         is_first2, key2 = self.dedup.acquire("same query")
         self.assertFalse(is_first2)
         self.assertEqual(key1, key2)
+
+    def test_identical_queries_from_different_owners_do_not_deduplicate(self):
+        alice_first, alice_key = self.dedup.acquire(
+            "same query", owner_key="user:alice"
+        )
+        bob_first, bob_key = self.dedup.acquire("same query", owner_key="user:bob")
+
+        self.assertTrue(alice_first)
+        self.assertTrue(bob_first)
+        self.assertNotEqual(alice_key, bob_key)
+
+        self.dedup.resolve(
+            alice_key,
+            {"reply": "alice sentinel"},
+            owner_key="user:alice",
+        )
+        self.assertIsNone(self.dedup.wait_for(bob_key, timeout=0.01))
 
     def test_resolve_and_wait_for(self):
         is_first, key = self.dedup.acquire("resolve test")
@@ -249,6 +354,41 @@ class TestConvenienceFunctions(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result["reply"], "test")
 
+    def test_semantic_convenience_functions_isolate_cache_and_dedup_by_owner(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+        dedup = RequestDeduplicator()
+        query = "du lich vinh long owner scoped"
+        sentinel = {"reply": "alice sentinel"}
+
+        with (
+            patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+            patch.object(semantic_cache_mod, "deduplicator", dedup),
+        ):
+            semantic_put(query, sentinel, owner_key="user:alice")
+
+            self.assertEqual(
+                semantic_get(query, owner_key="user:alice"),
+                sentinel,
+            )
+            self.assertIsNone(semantic_get(query, owner_key="user:bob"))
+
+    def test_owner_scoped_convenience_get_ignores_legacy_namespace(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+        dedup = RequestDeduplicator()
+        query = "legacy semantic convenience"
+
+        with (
+            patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+            patch.object(semantic_cache_mod, "deduplicator", dedup),
+        ):
+            semantic_put(query, {"reply": "legacy sentinel"})
+
+            self.assertIsNone(semantic_get(query, owner_key="user:alice"))
+
     def test_make_key_deterministic(self):
         key1 = _make_key("hello world")
         key2 = _make_key("hello world")
@@ -258,6 +398,13 @@ class TestConvenienceFunctions(unittest.TestCase):
         key1 = _make_key("query A")
         key2 = _make_key("query B")
         self.assertNotEqual(key1, key2)
+
+    def test_make_key_includes_owner_namespace(self):
+        alice = _make_key("same query", owner_key="user:alice")
+        bob = _make_key("same query", owner_key="user:bob")
+        legacy = _make_key("same query")
+
+        self.assertEqual(len({alice, bob, legacy}), 3)
 
 
 if __name__ == "__main__":

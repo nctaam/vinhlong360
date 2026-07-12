@@ -1937,7 +1937,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     # ── Semantic cache: embedding-based dedup (before regular cache) ──
     if not req.history and HAS_SEMANTIC_CACHE:
         try:
-            sem_cached = semantic_get(req.message)
+            sem_cached = semantic_get(req.message, owner_key=owner_key)
             if sem_cached:
                 if HAS_METRICS:
                     track_cache("hit")
@@ -1947,7 +1947,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 
     # Check cache (only for new conversations without history)
     if not req.history:
-        cached = cache.get(req.message)
+        cached = cache.get(req.message, owner_key=owner_key)
         if cached:
             if HAS_METRICS:
                 track_cache("hit")
@@ -2258,11 +2258,11 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     # Cache response (only if good quality)
     if not req.history and len(reply) > 30 and evaluation["score"] >= 5:
         cache_data = {"reply": reply, "tool_calls": tools_used, "suggestions": suggestions}
-        cache.put(req.message, cache_data)
+        cache.put(req.message, cache_data, owner_key=owner_key)
         # ── Semantic cache: store for embedding-based dedup ──
         if HAS_SEMANTIC_CACHE:
             try:
-                semantic_put(req.message, cache_data)
+                semantic_put(req.message, cache_data, owner_key=owner_key)
             except Exception:
                 pass
         if HAS_METRICS:
@@ -2346,7 +2346,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
     # ── Semantic cache: check before regular cache ──
     if not hist and HAS_SEMANTIC_CACHE:
         try:
-            sem_cached = semantic_get(message)
+            sem_cached = semantic_get(message, owner_key=owner_key)
             if sem_cached:
                 async def sem_cached_stream():
                     reply = sem_cached.get("reply", "")
@@ -2365,7 +2365,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
 
     # Check cache for history-less requests
     if not hist:
-        cached = cache.get(message)
+        cached = cache.get(message, owner_key=owner_key)
         if cached:
             async def cached_stream():
                 reply = cached.get("reply", "")
@@ -2638,11 +2638,11 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
                     # Lưu theo original_message (khoá lúc cache.get) — không phải bản đã autocorrect,
                     # nếu không lần sau cùng câu gốc sẽ luôn MISS (đã sửa: stream cache key mismatch).
-                    cache.put(original_message, cache_data)
+                    cache.put(original_message, cache_data, owner_key=owner_key)
                     # ── Semantic cache: store ──
                     if HAS_SEMANTIC_CACHE:
                         try:
-                            semantic_put(message, cache_data)
+                            semantic_put(message, cache_data, owner_key=owner_key)
                         except Exception:
                             logger.debug("Semantic cache put failed", exc_info=True)
 

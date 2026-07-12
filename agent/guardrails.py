@@ -484,10 +484,10 @@ class OutputValidator:
 
 class SessionBudgetManager:
     """
-    Quan ly token budget theo session.
+    Quan ly token budget theo identity key do caller cung cap.
 
-    Moi session co gioi han token (mac dinh 10000, env: GUARDRAIL_SESSION_BUDGET).
-    Tu dong don dep sessions cu hon 24h.
+    Chat truyen owner_key de xoay conversation selector khong reset quota. Ten
+    class va persisted JSON field ``sessions`` duoc giu lai de tuong thich.
     """
 
     CLEANUP_INTERVAL = 3600  # 1 hour giua cac lan cleanup

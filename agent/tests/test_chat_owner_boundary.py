@@ -149,6 +149,15 @@ def test_post_mismatch_fails_before_state_cache_prompt_or_provider_access(tmp_pa
     manager = _manager(tmp_path)
     conversation = manager.create_session("user:alice")
     monkeypatch.setattr(server, "memory_manager", manager)
+    server.cache.put(
+        "alice cached query",
+        {"reply": "alice sentinel"},
+        owner_key="user:alice",
+    )
+    alice_cache_key = server.cache._normalize_key(
+        "alice cached query",
+        owner_key="user:alice",
+    )
 
     async def bob_owner(_request):
         return SimpleNamespace(owner_key="user:bob", cookie_value=None)
@@ -158,18 +167,65 @@ def test_post_mismatch_fails_before_state_cache_prompt_or_provider_access(tmp_pa
     monkeypatch.setattr(manager, "on_message", forbidden)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", forbidden)
     monkeypatch.setattr(server.cache, "get", forbidden)
+    monkeypatch.setattr(server, "semantic_get", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
     monkeypatch.setattr(server, "get_client", forbidden)
     client = TestClient(server.app)
 
-    response = client.post(
-        "/chat",
-        json={"message": "steal", "session_id": conversation.session_id},
-    )
+    try:
+        response = client.post(
+            "/chat",
+            json={"message": "alice cached query", "session_id": conversation.session_id},
+        )
+    finally:
+        server.cache._cache.pop(alice_cache_key, None)
 
     assert response.status_code == 404
     forbidden.assert_not_called()
     assert ("user:bob", conversation.session_id) not in manager._sessions
+
+
+def test_owned_post_cache_reads_receive_owner_key(tmp_path, monkeypatch):
+    manager = _manager(tmp_path)
+    conversation = manager.create_session("user:alice")
+    calls = []
+    sentinel = {
+        "reply": "alice exact cache sentinel",
+        "tool_calls": [],
+        "suggestions": [],
+    }
+
+    async def alice_owner(_request):
+        return SimpleNamespace(owner_key="user:alice", cookie_value=None)
+
+    def semantic_read(message, owner_key=""):
+        calls.append(("semantic", message, owner_key))
+        return None
+
+    def exact_read(message, owner_key=""):
+        calls.append(("exact", message, owner_key))
+        return sentinel
+
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server, "semantic_get", semantic_read)
+    monkeypatch.setattr(server.cache, "get", exact_read)
+    client = TestClient(server.app)
+
+    response = client.post(
+        "/chat",
+        json={"message": "cached query", "session_id": conversation.session_id},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["reply"] == sentinel["reply"]
+    assert calls == [
+        ("semantic", "cached query", "user:alice"),
+        ("exact", "cached query", "user:alice"),
+    ]
 
 
 def test_rate_limited_post_does_not_create_or_evict_session(tmp_path, monkeypatch):
@@ -256,6 +312,7 @@ def test_stream_mismatch_fails_before_access_and_sets_anonymous_cookie(tmp_path,
     monkeypatch.setattr(manager, "on_message", forbidden)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", forbidden)
     monkeypatch.setattr(server.cache, "get", forbidden)
+    monkeypatch.setattr(server, "semantic_get", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
     monkeypatch.setattr(server, "get_client", forbidden)
     client = TestClient(server.app)
@@ -268,6 +325,50 @@ def test_stream_mismatch_fails_before_access_and_sets_anonymous_cookie(tmp_path,
     assert response.status_code == 404
     assert "vl360_chat_owner=" in response.headers["set-cookie"]
     forbidden.assert_not_called()
+
+
+def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
+    manager = _manager(tmp_path)
+    conversation = manager.create_session("user:alice")
+    calls = []
+    sentinel = {
+        "reply": "alice exact stream cache sentinel",
+        "tool_calls": [],
+        "suggestions": [],
+    }
+
+    async def alice_owner(_request):
+        return SimpleNamespace(owner_key="user:alice", cookie_value=None)
+
+    def semantic_read(message, owner_key=""):
+        calls.append(("semantic", message, owner_key))
+        return None
+
+    def exact_read(message, owner_key=""):
+        calls.append(("exact", message, owner_key))
+        return sentinel
+
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server, "semantic_get", semantic_read)
+    monkeypatch.setattr(server.cache, "get", exact_read)
+    client = TestClient(server.app)
+
+    response = client.get(
+        "/chat/stream",
+        params={"message": "cached query", "session_id": conversation.session_id},
+    )
+
+    assert response.status_code == 200
+    assert "alice exact stream" in response.text
+    assert "cache sentinel" in response.text
+    assert calls == [
+        ("semantic", "cached query", "user:alice"),
+        ("exact", "cached query", "user:alice"),
+    ]
 
 
 def test_welcome_ignores_client_profile_selector(tmp_path, monkeypatch):

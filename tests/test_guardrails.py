@@ -469,6 +469,26 @@ class TestSessionBudgetManager(unittest.TestCase):
         self.assertFalse(result["allowed"])
         self.assertEqual(result["remaining"], 0.0)
 
+    def test_rotating_conversation_selectors_does_not_reset_owner_budget(self):
+        owner_key = "user:alice"
+        conversation_ids = ["conversation-one", "conversation-two"]
+
+        self.mgr.set_limit(owner_key, 100)
+        self.mgr.record_usage(owner_key, 100)
+
+        for _conversation_id in conversation_ids:
+            result = self.mgr.check_budget(owner_key)
+            self.assertFalse(result["allowed"])
+            self.assertEqual(result["spent"], 100.0)
+
+    def test_owner_budgets_remain_independent(self):
+        self.mgr.set_limit("user:alice", 100)
+        self.mgr.set_limit("user:bob", 100)
+        self.mgr.record_usage("user:alice", 100)
+
+        self.assertFalse(self.mgr.check_budget("user:alice")["allowed"])
+        self.assertTrue(self.mgr.check_budget("user:bob")["allowed"])
+
     def test_multiple_recordings_accumulate(self):
         self.mgr.record_usage("s4", 300)
         self.mgr.record_usage("s4", 200)

@@ -60,6 +60,8 @@ class SemanticMatcher:
         self._vectors: dict[str, dict[str, float]] = {}
         # query_key -> original query text
         self._texts: dict[str, str] = {}
+        # query_key -> owner namespace (empty string is the legacy namespace)
+        self._owners: dict[str, str] = {}
         # token -> document frequency (number of queries containing this token)
         self._df: Counter = Counter()
         self._doc_count: int = 0
@@ -108,7 +110,7 @@ class SemanticMatcher:
 
     # ── index management ──
 
-    def add(self, key: str, query: str):
+    def add(self, key: str, query: str, owner_key: str = ""):
         """Add a query to the matcher index."""
         with self._lock:
             vec = self._vectorize(query)
@@ -116,6 +118,7 @@ class SemanticMatcher:
                 return
             self._vectors[key] = vec
             self._texts[key] = query
+            self._owners[key] = owner_key
             # Update document frequency
             for token in set(vec.keys()):
                 self._df[token] += 1
@@ -126,12 +129,18 @@ class SemanticMatcher:
         with self._lock:
             vec = self._vectors.pop(key, None)
             self._texts.pop(key, None)
+            self._owners.pop(key, None)
             if vec:
                 for token in set(vec.keys()):
                     self._df[token] = max(0, self._df.get(token, 1) - 1)
                 self._doc_count = max(0, self._doc_count - 1)
 
-    def find_similar(self, query: str, threshold: float = 0.88) -> tuple[str | None, float]:
+    def find_similar(
+        self,
+        query: str,
+        threshold: float = 0.88,
+        owner_key: str = "",
+    ) -> tuple[str | None, float]:
         """
         Find the cached query most similar to *query*.
 
@@ -149,6 +158,8 @@ class SemanticMatcher:
             best_sim = 0.0
 
             for key, vec in self._vectors.items():
+                if self._owners.get(key, "") != owner_key:
+                    continue
                 sim = self._cosine_similarity(qvec, vec)
                 if sim > best_sim:
                     best_sim = sim
@@ -163,10 +174,11 @@ class SemanticMatcher:
 #  MULTI-TIER CACHE
 # ══════════════════════════════════════════════════
 
-def _make_key(query: str) -> str:
+def _make_key(query: str, owner_key: str = "") -> str:
     """Deterministic cache key from normalised query text."""
     text = _normalize_vietnamese(query).strip().rstrip("?!.").strip()
-    return hashlib.md5(text.encode("utf-8")).hexdigest()
+    key_input = text if not owner_key else f"{owner_key}:{text}"
+    return hashlib.md5(key_input.encode("utf-8")).hexdigest()
 
 
 class MultiTierCache:
@@ -217,7 +229,11 @@ class MultiTierCache:
                 for key, entry in self._l2.items():
                     query_text = entry.get("query", "")
                     if query_text:
-                        self._matcher.add(key, query_text)
+                        self._matcher.add(
+                            key,
+                            query_text,
+                            owner_key=entry.get("owner_key", ""),
+                        )
         except Exception as exc:
             logger.warning("Failed to load L2 cache: %s", exc)
         self._l2_loaded = True
@@ -258,7 +274,7 @@ class MultiTierCache:
 
     # ── public API ──
 
-    def get(self, query: str) -> dict | None:
+    def get(self, query: str, owner_key: str = "") -> dict | None:
         """
         Lookup *query* across L1 -> L2 -> semantic match.
 
@@ -267,7 +283,7 @@ class MultiTierCache:
         with self._lock:
             self._load_l2()
             self.total_queries += 1
-            key = _make_key(query)
+            key = _make_key(query, owner_key=owner_key)
 
             # --- L1 ---
             if key in self._l1:
@@ -294,7 +310,10 @@ class MultiTierCache:
                     return entry.get("response")
 
             # --- Semantic match ---
-            matched_key, sim = self._matcher.find_similar(query)
+            matched_key, sim = self._matcher.find_similar(
+                query,
+                owner_key=owner_key,
+            )
             if matched_key is not None:
                 # Try L1 first, then L2
                 entry = self._l1.get(matched_key) or self._l2.get(matched_key)
@@ -312,14 +331,21 @@ class MultiTierCache:
             self.misses += 1
             return None
 
-    def put(self, query: str, response: dict, ttl: int = 3600):
+    def put(
+        self,
+        query: str,
+        response: dict,
+        ttl: int = 3600,
+        owner_key: str = "",
+    ):
         """Store *response* for *query* in both L1 and L2."""
         with self._lock:
             self._load_l2()
-            key = _make_key(query)
+            key = _make_key(query, owner_key=owner_key)
 
             entry = {
                 "query": query,
+                "owner_key": owner_key,
                 "response": response,
                 "timestamp": time.time(),
                 "ttl": ttl,
@@ -336,16 +362,16 @@ class MultiTierCache:
             self._evict_l2()
 
             # Semantic index
-            self._matcher.add(key, query)
+            self._matcher.add(key, query, owner_key=owner_key)
 
             self._save_l2()
             logger.debug("Cache put: %s (ttl=%ds)", query[:60], ttl)
 
-    def invalidate(self, query: str):
+    def invalidate(self, query: str, owner_key: str = ""):
         """Remove exact cache entry for *query*."""
         with self._lock:
             self._load_l2()
-            key = _make_key(query)
+            key = _make_key(query, owner_key=owner_key)
             self._l1.pop(key, None)
             removed = self._l2.pop(key, None)
             self._matcher.remove(key)
@@ -414,7 +440,12 @@ class RequestDeduplicator:
             oldest = min(self._pending, key=lambda k: self._pending[k]["timestamp"])
             self._pending.pop(oldest, None)
 
-    def acquire(self, query: str, timeout: float = 5.0) -> tuple[bool, str]:
+    def acquire(
+        self,
+        query: str,
+        timeout: float = 5.0,
+        owner_key: str = "",
+    ) -> tuple[bool, str]:
         """
         Acquire dedup slot for *query*.
 
@@ -424,7 +455,7 @@ class RequestDeduplicator:
         """
         with self._lock:
             self._cleanup()
-            key = _make_key(query)
+            key = _make_key(query, owner_key=owner_key)
             now = time.time()
 
             existing = self._pending.get(key)
@@ -435,17 +466,20 @@ class RequestDeduplicator:
             # First request — create slot
             self._pending[key] = {
                 "query": query,
+                "owner_key": owner_key,
                 "timestamp": now,
                 "event": Event(),
                 "result": None,
             }
             return True, key
 
-    def resolve(self, dedup_key: str, result: dict):
+    def resolve(self, dedup_key: str, result: dict, owner_key: str = ""):
         """Store the computed result and wake up all waiters."""
         with self._lock:
             slot = self._pending.get(dedup_key)
             if slot is None:
+                return
+            if slot.get("owner_key", "") != owner_key:
                 return
             slot["result"] = result
             slot["event"].set()
@@ -597,7 +631,7 @@ cache_warmer = CacheWarmer(cache=multi_tier_cache)
 #  CONVENIENCE FUNCTIONS
 # ══════════════════════════════════════════════════
 
-def semantic_get(query: str) -> dict | None:
+def semantic_get(query: str, owner_key: str = "") -> dict | None:
     """
     Try the semantic cache with request deduplication.
 
@@ -605,12 +639,12 @@ def semantic_get(query: str) -> dict | None:
     instead of computing a new one.
     """
     # Check cache first (fast path, no dedup needed)
-    cached = multi_tier_cache.get(query)
+    cached = multi_tier_cache.get(query, owner_key=owner_key)
     if cached is not None:
         return cached
 
     # Dedup check — if someone else is already computing this query, wait
-    is_first, dedup_key = deduplicator.acquire(query)
+    is_first, dedup_key = deduplicator.acquire(query, owner_key=owner_key)
     if not is_first:
         result = deduplicator.wait_for(dedup_key)
         if result is not None:
@@ -620,12 +654,12 @@ def semantic_get(query: str) -> dict | None:
     return None
 
 
-def semantic_put(query: str, response: dict):
+def semantic_put(query: str, response: dict, owner_key: str = ""):
     """Store a response in the semantic cache and resolve any dedup waiters."""
-    multi_tier_cache.put(query, response)
+    multi_tier_cache.put(query, response, owner_key=owner_key)
     # Also resolve dedup waiters
-    key = _make_key(query)
-    deduplicator.resolve(key, response)
+    key = _make_key(query, owner_key=owner_key)
+    deduplicator.resolve(key, response, owner_key=owner_key)
 
 
 def cache_stats() -> dict:

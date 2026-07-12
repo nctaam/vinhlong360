@@ -27,6 +27,16 @@ def test_put_and_get():
     assert result == response
 
 
+def test_owner_scoped_put_and_get_isolate_identical_queries():
+    alice_response = {"reply": "alice sentinel"}
+
+    cache_mod.put("same query", alice_response, owner_key="user:alice")
+
+    assert cache_mod.get("same query", owner_key="user:alice") == alice_response
+    assert cache_mod.get("same query", owner_key="user:bob") is None
+    assert cache_mod.get("same query") is None
+
+
 def test_get_miss():
     result = cache_mod.get("nonexistent query")
     assert result is None
@@ -74,6 +84,16 @@ def test_normalize_key_same_session():
     k1 = cache_mod._normalize_key("hello", session_id="abc")
     k2 = cache_mod._normalize_key("hello", session_id="abc")
     assert k1 == k2
+
+
+def test_owner_namespace_changes_memory_and_redis_keys():
+    alice = cache_mod._normalize_key("same query", owner_key="user:alice")
+    bob = cache_mod._normalize_key("same query", owner_key="user:bob")
+    legacy = cache_mod._normalize_key("same query")
+
+    assert len({alice, bob, legacy}) == 3
+    assert cache_mod._redis_key(alice) != cache_mod._redis_key(bob)
+    assert cache_mod._redis_key(alice) != cache_mod._redis_key(legacy)
 
 
 # ── invalidate_all ───────────────────────────────────
