@@ -5,6 +5,7 @@ Tests for kb_curation.py — quarantine review queue + auto-promotion.
 import json
 import re
 import sys
+import threading
 from copy import deepcopy
 from pathlib import Path
 
@@ -137,7 +138,7 @@ class TestPromote:
         def fail_mutation(*_args, **_kwargs):
             pytest.fail("stale approval attempted a mutation")
 
-        monkeypatch.setattr(kb_curation, "_save_kb", fail_mutation)
+        monkeypatch.setattr(kb_curation, "compare_and_swap_json", fail_mutation)
         monkeypatch.setattr(kb_curation, "_db_upsert", fail_mutation)
         monkeypatch.setattr(kb_curation, "_reload", fail_mutation)
 
@@ -146,6 +147,44 @@ class TestPromote:
         assert result == {"ok": False, "error": "stale_review"}
         persisted = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
         persisted_entity = next(x for x in persisted["entities"] if x["id"] == "prov-1")
+        assert persisted_entity["status"] == "provisional"
+        assert persisted_entity["verified"] is False
+
+    def test_hidden_update_after_token_check_is_not_overwritten(self, kb_with_provisional, monkeypatch):
+        review = next(x for x in kb_curation.list_provisional() if x["id"] == "prov-1")
+        token_checked = threading.Event()
+        writer_done = threading.Event()
+        original_review_token = kb_curation._review_token
+        result = {}
+
+        def pause_after_token_check(snapshot):
+            token = original_review_token(snapshot)
+            if threading.current_thread().name == "manual-promote":
+                token_checked.set()
+                assert writer_done.wait(timeout=5)
+            return token
+
+        monkeypatch.setattr(kb_curation, "_review_token", pause_after_token_check)
+
+        def run_promote():
+            result.update(kb_curation.promote("prov-1", review["review_token"]))
+
+        promote_thread = threading.Thread(target=run_promote, name="manual-promote")
+        promote_thread.start()
+        assert token_checked.wait(timeout=5)
+
+        changed = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        entity = next(x for x in changed["entities"] if x["id"] == "prov-1")
+        entity["attributes"]["phone"] = "0922222222"
+        kb_with_provisional.write_text(json.dumps(changed, ensure_ascii=False), encoding="utf-8")
+        writer_done.set()
+        promote_thread.join(timeout=5)
+
+        assert not promote_thread.is_alive()
+        assert result == {"ok": False, "error": "stale_review"}
+        persisted = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        persisted_entity = next(x for x in persisted["entities"] if x["id"] == "prov-1")
+        assert persisted_entity["attributes"]["phone"] == "0922222222"
         assert persisted_entity["status"] == "provisional"
         assert persisted_entity["verified"] is False
 

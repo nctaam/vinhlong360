@@ -55,6 +55,7 @@ from openai import OpenAI
 import geocode as geo
 import kb_curation
 import kb_versioning
+from versioned_json_store import load_json, mutate_json
 
 DATA = PROJECT_DIR / "web" / "data.json"
 CURSOR_FILE = AGENT_DIR / "data" / "discovery_cursor.json"
@@ -120,7 +121,7 @@ def _client():
 def _district_regions():
     """Build finer per-district regions from KB places' legacyArea (deeper sweep)."""
     try:
-        data = json.loads(DATA.read_text(encoding="utf-8"))
+        data = load_json(DATA)
     except Exception as exc:
         logger.warning("Failed to load district data: %s", exc)
         return REGIONS
@@ -298,15 +299,26 @@ def _sync_and_reload():
 
 def _apply_discovery(unique, data, places, model, label, summary):
     """Snapshot, append entities, write data.json, persist to DB, sync/reload. Mutates summary."""
+    del data, places  # Final dedup and placement use the latest locked snapshot.
     kb_versioning.snapshot(reason=f"discovery:{label}", snapshot_id="snap_discovery_latest")
-    for s in unique:
-        data["entities"].append(_build_entity(s, places, model))
-    summary["added"] = len(unique)
 
-    tmp = DATA.with_suffix(".discover.tmp")
-    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    tmp.replace(DATA)
-    _persist_to_db(unique, data)
+    def append_current(current: dict) -> tuple[bool, tuple[list, dict]]:
+        existing_ids = {entity["id"] for entity in current["entities"]}
+        current_places = [entity for entity in current["entities"] if entity.get("type") == "place"]
+        added = []
+        for candidate in unique:
+            if candidate["id"] in existing_ids:
+                continue
+            if kb_curation.find_near_duplicate(candidate["name"], candidate["type"], current["entities"]):
+                continue
+            current["entities"].append(_build_entity(candidate, current_places, model))
+            existing_ids.add(candidate["id"])
+            added.append(candidate)
+        return bool(added), (added, current)
+
+    added, current = mutate_json(DATA, append_current)
+    summary["added"] = len(added)
+    _persist_to_db(added, current)
     _sync_and_reload()
     return summary
 
@@ -319,7 +331,7 @@ def run_discovery(topics, regions, workers, model, apply, label="manual"):
     if not cats:
         return {"error": "no valid topics", "topics": topics}
 
-    data = json.loads(DATA.read_text(encoding="utf-8"))
+    data = load_json(DATA)
     places = [e for e in data["entities"] if e["type"] == "place"]
     existing_ids = {e["id"] for e in data["entities"]}
 

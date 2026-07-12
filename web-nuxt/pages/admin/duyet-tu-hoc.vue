@@ -5,7 +5,7 @@
         <h1>Duyệt tự học & Tiện ích</h1>
         <p class="dth-subtitle">Duyệt entity provisional và công cụ dữ liệu</p>
       </div>
-      <button type="button" class="admin-refresh" :disabled="loading" @click="loadProvisional"><span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới</button>
+      <button type="button" class="admin-refresh" :disabled="loading" @click="loadProvisional()"><span :class="{ 'refresh-spin': loading }">&#8635;</span> Làm mới</button>
     </div>
 
     <!-- 1) Provisional review -->
@@ -18,7 +18,7 @@
       <div v-if="loading" class="admin-loading" role="status" aria-label="Đang tải danh sách tự học"><div class="spinner"></div></div>
       <div v-else-if="loadError" class="admin-empty">
         <p>Không tải được danh sách entity tự học.</p>
-        <button type="button" class="btn btn-secondary" @click="loadProvisional">Thử lại</button>
+        <button type="button" class="btn btn-secondary" @click="loadProvisional()">Thử lại</button>
       </div>
       <template v-else>
         <div v-if="!provisional.length" class="dth-empty">
@@ -99,9 +99,9 @@
               <span v-else class="admin-muted">—</span>
             </section>
 
-            <details class="dth-snapshot">
+            <details class="dth-snapshot" @toggle="onSnapshotToggle(e.id, $event)">
               <summary>Toàn bộ snapshot đã xem xét</summary>
-              <pre>{{ JSON.stringify(e.entity, null, 2) }}</pre>
+              <pre v-if="expandedSnapshots.has(e.id)">{{ JSON.stringify(e.entity, null, 2) }}</pre>
             </details>
 
             <footer class="dth-review-actions">
@@ -198,18 +198,21 @@ const loading = ref(true)
 const loadError = ref(false)
 const acting = ref<string | null>(null)
 const loadingSources = ref(false)
+const expandedSnapshots = ref(new Set<string>())
 
-async function loadProvisional() {
-  loading.value = true
-  loadError.value = false
+async function loadProvisional(preserveCurrent = false) {
+  if (!preserveCurrent) {
+    loading.value = true
+    loadError.value = false
+  }
   try {
     const r = await $fetch<ProvisionalListResponse>('/admin-api/provisional', { headers: authHeaders() })
     provisional.value = r.provisional || []
   } catch {
-    loadError.value = true
+    if (!preserveCurrent) loadError.value = true
     showToast('Không thể tải danh sách entity tự học', 'error')
   } finally {
-    loading.value = false
+    if (!preserveCurrent) loading.value = false
   }
 }
 async function approve(e: ProvisionalReview) {
@@ -224,8 +227,16 @@ async function approve(e: ProvisionalReview) {
     })
     provisional.value = provisional.value.filter(x => x.id !== e.id)
     showToast(`Đã duyệt ${name}`, 'success')
-  } catch (err: unknown) { showToast(getErrorDetail(err, 'Duyệt lỗi'), 'error') }
-  acting.value = null
+  } catch (err: unknown) {
+    if (getStatusCode(err) === 409 && getErrorDetail(err) === 'stale_review') {
+      showToast('Dữ liệu đã thay đổi. Vui lòng xem lại snapshot mới trước khi duyệt.', 'error')
+      await loadProvisional(true)
+    } else {
+      showToast(getErrorDetail(err, 'Duyệt lỗi'), 'error')
+    }
+  } finally {
+    acting.value = null
+  }
 }
 async function reject(e: ProvisionalReview) {
   const name = e.entity.name || e.id
@@ -260,6 +271,13 @@ function imageValues(value: unknown): unknown[] {
 
 function isHttpUrl(value: unknown): value is string {
   return typeof value === 'string' && /^https?:\/\//i.test(value)
+}
+
+function onSnapshotToggle(entityId: string, event: Event) {
+  const next = new Set(expandedSnapshots.value)
+  if ((event.currentTarget as HTMLDetailsElement).open) next.add(entityId)
+  else next.delete(entityId)
+  expandedSnapshots.value = next
 }
 
 async function loadSources() {

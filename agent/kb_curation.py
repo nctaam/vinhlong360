@@ -6,7 +6,7 @@ Auto-learned entities enter the KB as `status: provisional, verified: false`
 "chưa kiểm chứng" in answers. This module manages their lifecycle:
 
   - list_provisional()      : the review queue
-  - promote(id)             : provisional → verified (trusted)
+  - promote(id, token)      : reviewed provisional snapshot → verified
   - reject(id)              : remove a bad provisional entity
   - auto_promote_pass()     : eval-gated automatic promotion of provisional
                               entities that have PROVEN useful (queried/hit with
@@ -25,6 +25,8 @@ import json
 import logging
 from pathlib import Path
 
+from versioned_json_store import compare_and_swap_json, load_json, load_json_versioned, mutate_json
+
 logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
@@ -34,13 +36,7 @@ ANALYTICS_FILE = AGENT_DIR / "data" / "analytics.json"
 
 
 def _load_kb() -> dict:
-    return json.loads(DATA_JSON.read_text(encoding="utf-8"))
-
-
-def _save_kb(data: dict):
-    tmp = DATA_JSON.with_suffix(".curation.tmp")
-    tmp.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    tmp.replace(DATA_JSON)
+    return load_json(DATA_JSON)
 
 
 def _reload():
@@ -109,7 +105,7 @@ def list_provisional() -> list:
 
 def promote(entity_id: str, review_token: str) -> dict:
     """Promote a provisional entity to verified (trusted)."""
-    kb = _load_kb()
+    kb, version = load_json_versioned(DATA_JSON)
     for e in kb["entities"]:
         if e["id"] == entity_id:
             if not _is_provisional(e):
@@ -119,8 +115,10 @@ def promote(entity_id: str, review_token: str) -> dict:
                 return {"ok": False, "error": "stale_review"}
             e["status"] = "verified"
             e["verified"] = True
-            _save_kb(kb)
-            _db_upsert(e)   # B1: ghi DB để chat thấy
+            promoted = copy.deepcopy(e)
+            if not compare_and_swap_json(DATA_JSON, version, kb):
+                return {"ok": False, "error": "stale_review"}
+            _db_upsert(promoted)   # B1: ghi DB để chat thấy
             _reload()
             return {"ok": True, "id": entity_id, "status": "verified"}
     return {"ok": False, "error": "not found"}
@@ -128,23 +126,26 @@ def promote(entity_id: str, review_token: str) -> dict:
 
 def reject(entity_id: str) -> dict:
     """Remove a provisional entity from the KB (rejected in review)."""
-    kb = _load_kb()
-    before = len(kb["entities"])
-    target = next((e for e in kb["entities"] if e["id"] == entity_id), None)
-    if target is None:
-        return {"ok": False, "error": "not found"}
-    if not _is_provisional(target):
-        return {"ok": False, "error": "refusing to delete a verified entity via reject"}
-    kb["entities"] = [e for e in kb["entities"] if e["id"] != entity_id]
-    # Also drop relationships referencing it
-    kb["relationships"] = [
-        r for r in kb.get("relationships", [])
-        if r.get("from") != entity_id and r.get("to") != entity_id
-    ]
-    _save_kb(kb)
+    def apply_rejection(kb: dict) -> tuple[bool, dict]:
+        before = len(kb["entities"])
+        target = next((e for e in kb["entities"] if e["id"] == entity_id), None)
+        if target is None:
+            return False, {"ok": False, "error": "not found"}
+        if not _is_provisional(target):
+            return False, {"ok": False, "error": "refusing to delete a verified entity via reject"}
+        kb["entities"] = [e for e in kb["entities"] if e["id"] != entity_id]
+        kb["relationships"] = [
+            r for r in kb.get("relationships", [])
+            if r.get("from") != entity_id and r.get("to") != entity_id
+        ]
+        return True, {"ok": True, "id": entity_id, "removed": before - len(kb["entities"])}
+
+    result = mutate_json(DATA_JSON, apply_rejection)
+    if not result.get("ok"):
+        return result
     _db_delete(entity_id)   # B1: xoá khỏi DB (cascade rels) để chat thấy
     _reload()
-    return {"ok": True, "id": entity_id, "removed": before - len(kb["entities"])}
+    return result
 
 
 import re as _re
@@ -262,24 +263,30 @@ def auto_promote_pass(min_hits: int = 3, dry_run: bool = False) -> dict:
 
     Returns {candidates, promoted: [ids]}.
     """
-    kb = _load_kb()
     hits = _entity_hits()
-    promoted = []
-    candidates = 0
-    for e in kb["entities"]:
-        if not _is_provisional(e):
-            continue
-        candidates += 1
-        if hits.get(e["id"], 0) >= min_hits:
-            if not dry_run:
-                e["status"] = "verified"
-                e["verified"] = True
-                _db_upsert(e)
-            promoted.append(e["id"])
-    if promoted and not dry_run:
-        _save_kb(kb)
+    promoted_entities = []
+
+    def apply_promotions(kb: dict) -> tuple[bool, dict]:
+        promoted = []
+        candidates = 0
+        for e in kb["entities"]:
+            if not _is_provisional(e):
+                continue
+            candidates += 1
+            if hits.get(e["id"], 0) >= min_hits:
+                if not dry_run:
+                    e["status"] = "verified"
+                    e["verified"] = True
+                    promoted_entities.append(copy.deepcopy(e))
+                promoted.append(e["id"])
+        return bool(promoted and not dry_run), {"candidates": candidates, "promoted": promoted}
+
+    result = mutate_json(DATA_JSON, apply_promotions)
+    if promoted_entities:
+        for entity in promoted_entities:
+            _db_upsert(entity)
         _reload()
-    return {"candidates": candidates, "promoted": promoted}
+    return result
 
 
 def stats() -> dict:

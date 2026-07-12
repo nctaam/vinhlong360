@@ -23,6 +23,7 @@ Chạy tự động qua scheduler (mỗi 3h) hoặc CLI:
   python agent/learn_loop.py --all       # Chạy tất cả
 """
 
+import copy
 import json
 import logging
 import os
@@ -38,6 +39,8 @@ if sys.stdout.encoding != "utf-8":
     sys.stderr.reconfigure(encoding="utf-8")
 
 from dotenv import load_dotenv
+
+from versioned_json_store import load_json, mutate_json
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
@@ -64,14 +67,7 @@ if not _logger.handlers:
 
 def _load_kb() -> dict:
     """Load knowledge base."""
-    with open(DATA_JSON, encoding="utf-8") as f:
-        return json.load(f)
-
-
-def _save_kb(data: dict):
-    """Save knowledge base."""
-    with open(DATA_JSON, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    return load_json(DATA_JSON)
 
 
 def _get_knowledge_gaps() -> list[dict]:
@@ -280,17 +276,29 @@ def _process_gap_results(results: list, query: str, kb: dict,
 
 def _persist_new_entities(kb: dict, new_entities: list) -> int:
     """Ghi entity mới vào data.json + DB + reload knowledge. Trả số đã thêm."""
-    for e in new_entities:
-        kb["entities"].append(e)
-    _save_kb(kb)
+    del kb  # Candidates were derived from a snapshot; commit against current data.
+
+    def append_current(current: dict) -> tuple[bool, list]:
+        existing_ids = {entity["id"] for entity in current["entities"]}
+        added = []
+        for entity in new_entities:
+            if entity["id"] in existing_ids:
+                continue
+            stored = copy.deepcopy(entity)
+            current["entities"].append(stored)
+            existing_ids.add(stored["id"])
+            added.append(stored)
+        return bool(added), added
+
+    added_entities = mutate_json(DATA_JSON, append_current)
     # GĐ-audit (B1): ghi entity mới vào DB (chat đọc DB) — không chỉ data.json.
     try:
         from database import db
-        for e in new_entities:
+        for e in added_entities:
             db.upsert_entity(e)
     except Exception as exc:  # noqa: BLE001
         _logger.error("learn_loop: ghi DB that bai: %s", exc)
-    added = len(new_entities)
+    added = len(added_entities)
     _logger.info("Added %d entities to KB (low confidence, needs review)", added)
 
     # Reload knowledge module
@@ -409,23 +417,28 @@ def record_feedback(query: str, rating: int, entity_id: str = None, session_id: 
 def _adjust_entity_confidence(entity_id: str, delta: float):
     """Điều chỉnh confidence dựa trên feedback."""
     try:
-        kb = _load_kb()
-        for e in kb["entities"]:
-            if e["id"] == entity_id:
-                old_conf = e.get("confidence", 0.7)
+        def adjust_current(kb: dict) -> tuple[bool, tuple[dict | None, float | None, float | None]]:
+            for entity in kb["entities"]:
+                if entity["id"] != entity_id:
+                    continue
+                old_conf = entity.get("confidence", 0.7)
                 new_conf = max(0.1, min(1.0, old_conf + delta))
-                e["confidence"] = round(new_conf, 3)
-                e["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-                _save_kb(kb)
-                # GĐ-audit (B1): cập nhật confidence vào DB (chat đọc DB).
-                try:
-                    from database import db
-                    if db.get_entity(entity_id):
-                        db.upsert_entity(e)
-                except Exception as exc:  # noqa: BLE001
-                    _logger.error("learn_loop: cap nhat confidence DB that bai: %s", exc)
-                _logger.debug("Confidence %s: %s → %s", entity_id, old_conf, new_conf)
-                return
+                entity["confidence"] = round(new_conf, 3)
+                entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                return True, (copy.deepcopy(entity), old_conf, new_conf)
+            return False, (None, None, None)
+
+        entity, old_conf, new_conf = mutate_json(DATA_JSON, adjust_current)
+        if entity is None:
+            return
+        # GĐ-audit (B1): cập nhật confidence vào DB (chat đọc DB).
+        try:
+            from database import db
+            if db.get_entity(entity_id):
+                db.upsert_entity(entity)
+        except Exception as exc:  # noqa: BLE001
+            _logger.error("learn_loop: cap nhat confidence DB that bai: %s", exc)
+        _logger.debug("Confidence %s: %s → %s", entity_id, old_conf, new_conf)
     except Exception as e:
         _logger.error("Failed to adjust confidence: %s", e)
 
@@ -511,6 +524,24 @@ def _truncate_summary(best_snippet: str) -> str:
     return summary
 
 
+def _persist_enrichments(updates: dict[str, tuple[str | None, str, str]]) -> int:
+    def apply_current(kb: dict) -> tuple[bool, int]:
+        applied = 0
+        for entity in kb["entities"]:
+            update = updates.get(entity["id"])
+            if update is None:
+                continue
+            expected_summary, summary, updated_at = update
+            if entity.get("summary") != expected_summary:
+                continue
+            entity["summary"] = summary
+            entity["updatedAt"] = updated_at
+            applied += 1
+        return applied > 0, applied
+
+    return mutate_json(DATA_JSON, apply_current)
+
+
 def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
     """Bổ sung summary cho entities thiếu.
 
@@ -522,6 +553,7 @@ def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
     kb = _load_kb()
     enriched = 0
     skipped = 0
+    enrichment_updates = {}
 
     # Tìm entities thiếu summary
     missing = [
@@ -550,8 +582,14 @@ def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
             summary = _truncate_summary(best_snippet)
 
             if not dry_run:
+                expected_summary = entity.get("summary")
                 entity["summary"] = summary
                 entity["updatedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                enrichment_updates[entity["id"]] = (
+                    expected_summary,
+                    entity["summary"],
+                    entity["updatedAt"],
+                )
                 enriched += 1
                 _logger.info("  Enriched: %s ← %s...", name, summary[:60])
             else:
@@ -564,7 +602,7 @@ def enrich_entities(max_entities: int = 10, dry_run: bool = False) -> dict:
         time.sleep(1)  # Rate limit
 
     if enriched > 0 and not dry_run:
-        _save_kb(kb)
+        enriched = _persist_enrichments(enrichment_updates)
         _logger.info("Enriched %d entities with summaries", enriched)
 
         try:
@@ -708,13 +746,28 @@ def _coord_backfill_candidates(kb: dict) -> list[dict]:
 
 def _persist_backfilled_coords(kb: dict, geocoded: list):
     """Lưu KB + reload knowledge sau khi backfill coords."""
-    _save_kb(kb)
+    updates = {entity["id"]: copy.deepcopy(entity["coords"])
+               for entity in kb["entities"] if entity["id"] in geocoded and entity.get("coords")}
+
+    def apply_current(current: dict) -> tuple[bool, list]:
+        applied = []
+        for entity in current["entities"]:
+            if entity["id"] not in updates or entity.get("coords") or entity.get("coordinates"):
+                continue
+            entity["coords"] = updates[entity["id"]]
+            applied.append(entity["id"])
+        return bool(applied), applied
+
+    persisted = mutate_json(DATA_JSON, apply_current)
+    if not persisted:
+        return []
     try:
         import knowledge
         knowledge.reload()
     except Exception as e:
         _logger.warning("Knowledge reload after geocode backfill failed: %s", e)
-    _logger.info("Backfilled coords for %d entities", len(geocoded))
+    _logger.info("Backfilled coords for %d entities", len(persisted))
+    return persisted
 
 
 def backfill_coords(max_entities: int = 15, dry_run: bool = False) -> dict:
@@ -741,7 +794,7 @@ def backfill_coords(max_entities: int = 15, dry_run: bool = False) -> dict:
             geocoded.append(e["id"])
 
     if geocoded and not dry_run:
-        _persist_backfilled_coords(kb, geocoded)
+        geocoded = _persist_backfilled_coords(kb, geocoded)
 
     return {"checked": min(len(candidates), max_entities), "geocoded": len(geocoded), "ids": geocoded}
 

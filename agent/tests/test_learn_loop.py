@@ -4,7 +4,9 @@ Tests for learn_loop.py — self-learning feedback loop.
 
 import json
 import sys
+from copy import deepcopy
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -63,3 +65,56 @@ class TestProcessFeedbackBatch:
             result = learn_loop.process_feedback_batch()
             assert isinstance(result, dict)
             assert result.get("total_feedback", 0) == 0
+
+
+def test_persist_new_entities_preserves_concurrent_fields(tmp_path, monkeypatch):
+    data_path = tmp_path / "data.json"
+    original = {
+        "entities": [{"id": "existing", "name": "Existing", "type": "dish",
+                      "attributes": {"phone": "0900000000"}}],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path.write_text(json.dumps(original), encoding="utf-8")
+    stale = deepcopy(original)
+    latest = deepcopy(original)
+    latest["entities"][0]["attributes"]["phone"] = "0911111111"
+    data_path.write_text(json.dumps(latest), encoding="utf-8")
+    saved_to_db = []
+
+    monkeypatch.setattr(learn_loop, "DATA_JSON", data_path)
+    monkeypatch.setitem(
+        sys.modules,
+        "database",
+        SimpleNamespace(db=SimpleNamespace(upsert_entity=lambda entity: saved_to_db.append(deepcopy(entity)))),
+    )
+    monkeypatch.setitem(sys.modules, "knowledge", SimpleNamespace(reload=lambda: None))
+
+    added = learn_loop._persist_new_entities(
+        stale,
+        [{"id": "new-entity", "name": "New", "type": "dish", "attributes": {}}],
+    )
+
+    persisted = json.loads(data_path.read_text(encoding="utf-8"))
+    assert added == 1
+    assert persisted["entities"][0]["attributes"]["phone"] == "0911111111"
+    assert {entity["id"] for entity in persisted["entities"]} == {"existing", "new-entity"}
+    assert [entity["id"] for entity in saved_to_db] == ["new-entity"]
+
+
+def test_persist_enrichments_skips_concurrently_changed_summary(tmp_path, monkeypatch):
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps({
+        "entities": [{"id": "existing", "name": "Existing", "type": "dish", "summary": "fresh"}],
+        "relationships": [],
+        "itineraries": [],
+    }), encoding="utf-8")
+    monkeypatch.setattr(learn_loop, "DATA_JSON", data_path)
+
+    applied = learn_loop._persist_enrichments({
+        "existing": ("", "generated summary", "2026-07-12"),
+    })
+
+    persisted = json.loads(data_path.read_text(encoding="utf-8"))
+    assert applied == 0
+    assert persisted["entities"][0]["summary"] == "fresh"
