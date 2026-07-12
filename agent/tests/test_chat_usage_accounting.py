@@ -777,6 +777,73 @@ def test_post_semantic_publication_uses_captured_generation_lease(monkeypatch):
     )["reply"].startswith("provider answer")
 
 
+def test_post_semantic_lookup_error_rejects_missing_lease(monkeypatch):
+    guardrail = _GuardrailRecorder()
+    attribution = _AttributionRecorder()
+    _configure_post_chat(monkeypatch, guardrail, attribution)
+    exact_puts = []
+    semantic_puts = []
+
+    async def semantic_error(*_args, **_kwargs):
+        raise RuntimeError("semantic lookup failed")
+
+    def forbidden_take(*_args, **_kwargs):
+        raise AssertionError("failed lookup must not expose a semantic lease")
+
+    def reject_missing_lease(query, response, owner_key="", dedup_key=None):
+        semantic_puts.append((query, owner_key, dedup_key))
+        return False
+
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        server.cache,
+        "put",
+        lambda query, *_args, **_kwargs: exact_puts.append(query),
+    )
+    monkeypatch.setattr(server, "semantic_get_async", semantic_error)
+    monkeypatch.setattr(server, "semantic_take_dedup_lease", forbidden_take)
+    monkeypatch.setattr(server, "semantic_put", reject_missing_lease)
+    monkeypatch.setattr(
+        server,
+        "_run_agent_orchestrated",
+        lambda *_args, **_kwargs: (
+            "provider reply survives semantic lookup failure and remains usable",
+            [],
+            [],
+        ),
+    )
+
+    response = asyncio.run(server.chat(
+        server.ChatRequest.model_validate({
+            "message": "post semantic error fallback",
+            "history": [],
+        }),
+        Request({
+            "type": "http",
+            "http_version": "1.1",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/chat",
+            "raw_path": b"/chat",
+            "query_string": b"",
+            "headers": [],
+            "client": ("127.0.0.1", 1234),
+            "server": ("testserver", 80),
+        }),
+        Response(),
+    ))
+
+    assert response.reply.startswith("provider reply survives")
+    assert exact_puts == ["post semantic error fallback"]
+    assert semantic_puts == [(
+        "post semantic error fallback",
+        "user:alice",
+        None,
+    )]
+
+
 def test_post_cancellation_settles_completed_worker_usage_once(monkeypatch):
     guardrail = _GuardrailRecorder()
     attribution = _AttributionRecorder()

@@ -134,6 +134,34 @@ async def _consume_stream_body(response):
     return "".join([chunk async for chunk in response.body_iterator])
 
 
+class _SemanticErrorStreamCompletions:
+    def create(self, *_args, stream=False, **_kwargs):
+        if not stream:
+            message = SimpleNamespace(
+                content="decision",
+                tool_calls=None,
+                role="assistant",
+                function_call=None,
+            )
+            return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+        def chunks():
+            yield SimpleNamespace(
+                choices=[SimpleNamespace(
+                    delta=SimpleNamespace(
+                        content=(
+                            "Provider stream survives semantic lookup failure "
+                            "with a complete answer."
+                        ),
+                        tool_calls=None,
+                    ),
+                    finish_reason=None,
+                )]
+            )
+
+        return chunks()
+
+
 def _assert_semantic_waiter_response(endpoint, response, sentinel):
     if endpoint == "post":
         assert response.reply == sentinel["reply"]
@@ -568,6 +596,96 @@ def test_semantic_dedup_wait_keeps_async_handlers_responsive(
         unrelated_progressed,
     )
     _assert_semantic_waiter_response(endpoint, response, sentinel)
+
+
+def test_stream_semantic_lookup_error_rejects_missing_lease(tmp_path, monkeypatch):
+    manager = _manager(tmp_path)
+    exact_puts = []
+    semantic_puts = []
+
+    async def alice_owner(_request):
+        return SimpleNamespace(owner_key="user:alice", cookie_value=None)
+
+    async def semantic_error(*_args, **_kwargs):
+        raise RuntimeError("semantic lookup failed")
+
+    def forbidden_take(*_args, **_kwargs):
+        raise AssertionError("failed lookup must not expose a semantic lease")
+
+    def reject_missing_lease(query, response, owner_key="", dedup_key=None):
+        semantic_puts.append((query, owner_key, dedup_key))
+        return False
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(completions=_SemanticErrorStreamCompletions())
+    )
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(manager, "on_chat_complete", lambda *_args: None)
+    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(server, "HAS_METRICS", False)
+    monkeypatch.setattr(
+        server,
+        "_build_messages",
+        lambda *_args: ([{"role": "system", "content": "test"}], {}),
+    )
+    monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        server.cache,
+        "put",
+        lambda query, *_args, **_kwargs: exact_puts.append(query),
+    )
+    monkeypatch.setattr(
+        server.reflexion_engine,
+        "evaluate_answer",
+        lambda *_args: {"score": 6},
+    )
+    monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_error)
+    monkeypatch.setattr(server, "semantic_take_dedup_lease", forbidden_take)
+    monkeypatch.setattr(server, "semantic_put", reject_missing_lease)
+
+    response = asyncio.run(server.chat_stream(
+        server.ChatRequest.model_validate({
+            "message": "stream semantic error fallback",
+            "history": [],
+        }),
+        Request({
+            "type": "http",
+            "http_version": "1.1",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/chat/stream",
+            "raw_path": b"/chat/stream",
+            "query_string": b"",
+            "headers": [],
+            "client": ("127.0.0.1", 1234),
+            "server": ("testserver", 80),
+        }),
+    ))
+    body = asyncio.run(_consume_stream_body(response))
+
+    assert "Provider stream survives" in body
+    assert exact_puts == ["stream semantic error fallback"]
+    assert semantic_puts == [(
+        "stream semantic error fallback",
+        "user:alice",
+        None,
+    )]
 
 
 def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, monkeypatch):

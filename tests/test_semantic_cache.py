@@ -890,6 +890,94 @@ class TestConvenienceFunctions(unittest.TestCase):
             {"reply": "new generation"},
         )
 
+    def test_explicit_missing_lease_cannot_publish_replacement_generation(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+
+        class ErrorDeduplicator(RequestDeduplicator):
+            async def wait_for_async(self, dedup_key, timeout=30):
+                raise RuntimeError("generation one waiter error")
+
+        dedup = ErrorDeduplicator()
+        dedup._EXPIRY = 0.01
+        query = "explicit missing semantic generation lease"
+        owner_key = "user:alice"
+        _first, first_key = dedup.acquire(query, owner_key=owner_key)
+
+        async def exercise():
+            with self.assertRaisesRegex(RuntimeError, "generation one waiter error"):
+                await semantic_cache_mod.semantic_get_async(
+                    query,
+                    owner_key=owner_key,
+                )
+            self.assertIsNone(
+                semantic_cache_mod.semantic_take_dedup_lease(
+                    query,
+                    owner_key=owner_key,
+                )
+            )
+            dedup._pending[first_key]["timestamp"] -= 1
+            second_first, second_key = dedup.acquire(query, owner_key=owner_key)
+            replacement_waiter = asyncio.create_task(
+                RequestDeduplicator.wait_for_async(
+                    dedup,
+                    second_key,
+                    timeout=0.2,
+                )
+            )
+            await asyncio.sleep(0)
+
+            missing_before = semantic_cache_mod.semantic_put(
+                query,
+                {"reply": "late missing lease"},
+                owner_key=owner_key,
+                dedup_key=None,
+            )
+            await asyncio.sleep(0)
+            woke_before_replacement = replacement_waiter.done()
+            semantic_cache_mod.semantic_put(
+                query,
+                {"reply": "replacement generation"},
+                owner_key=owner_key,
+                dedup_key=second_key,
+            )
+            replacement_result = await replacement_waiter
+            missing_after = semantic_cache_mod.semantic_put(
+                query,
+                {"reply": "late missing lease"},
+                owner_key=owner_key,
+                dedup_key=None,
+            )
+            return (
+                second_first,
+                missing_before,
+                woke_before_replacement,
+                replacement_result,
+                missing_after,
+            )
+
+        with (
+            patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+            patch.object(semantic_cache_mod, "deduplicator", dedup),
+        ):
+            result = asyncio.run(exercise())
+
+        self.assertEqual(
+            result,
+            (
+                True,
+                False,
+                False,
+                {"reply": "replacement generation"},
+                False,
+            ),
+        )
+        self.assertEqual(
+            cache.get(query, owner_key=owner_key),
+            {"reply": "replacement generation"},
+        )
+
     def test_semantic_convenience_functions_isolate_cache_and_dedup_by_owner(self):
         matcher = SemanticMatcher()
         cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)

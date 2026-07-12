@@ -823,6 +823,7 @@ _semantic_dedup_lease: ContextVar[tuple[str, str] | None] = ContextVar(
     "semantic_dedup_lease",
     default=None,
 )
+_DEDUP_KEY_OMITTED = object()
 
 
 # ══════════════════════════════════════════════════
@@ -895,14 +896,19 @@ def semantic_put(
     query: str,
     response: dict,
     owner_key: str = "",
-    dedup_key: str | None = None,
+    dedup_key: str | None | object = _DEDUP_KEY_OMITTED,
 ):
     """Publish only for the active generation and resolve its waiters."""
     base_key = _make_key(query, owner_key=owner_key)
     lease = _semantic_dedup_lease.get()
     _semantic_dedup_lease.set(None)
-    if dedup_key is None and lease is not None and lease[0] == base_key:
-        dedup_key = lease[1]
+    if dedup_key is None:
+        return False
+    if dedup_key is _DEDUP_KEY_OMITTED:
+        if lease is not None and lease[0] == base_key:
+            dedup_key = lease[1]
+        else:
+            dedup_key = None
 
     def publish_fn():
         multi_tier_cache.put(query, response, owner_key=owner_key)
