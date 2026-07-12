@@ -2343,10 +2343,13 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
     # Record in memory
     memory_manager.on_message(owner_key, sid, "user", message)
 
+    # The cache/dedup lifecycle must use one stable pre-autocorrect query key.
+    cache_query = message
+
     # ── Semantic cache: check before regular cache ──
     if not hist and HAS_SEMANTIC_CACHE:
         try:
-            sem_cached = semantic_get(message, owner_key=owner_key)
+            sem_cached = semantic_get(cache_query, owner_key=owner_key)
             if sem_cached:
                 async def sem_cached_stream():
                     reply = sem_cached.get("reply", "")
@@ -2365,7 +2368,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
 
     # Check cache for history-less requests
     if not hist:
-        cached = cache.get(message, owner_key=owner_key)
+        cached = cache.get(cache_query, owner_key=owner_key)
         if cached:
             async def cached_stream():
                 reply = cached.get("reply", "")
@@ -2381,7 +2384,6 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             return _stream_response(cached_stream())
 
     # Autocorrect
-    original_message = message
     if HAS_AUTOCORRECT:
         ac = autocorrect(message)
         if ac.get("was_corrected"):
@@ -2437,8 +2439,8 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
 
     async def event_stream():
         # Send autocorrect info if corrected
-        if HAS_AUTOCORRECT and message != original_message:
-            yield f"data: {json.dumps({'type': 'autocorrect', 'original': original_message, 'corrected': message}, ensure_ascii=False)}\n\n"
+        if HAS_AUTOCORRECT and message != cache_query:
+            yield f"data: {json.dumps({'type': 'autocorrect', 'original': cache_query, 'corrected': message}, ensure_ascii=False)}\n\n"
         tools_used = []
         suggestions = []
         max_rounds = _stream_rounds
@@ -2636,13 +2638,13 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 analytics.track_query(message, tools_used, full_text, sid)
                 if not hist and len(full_text) > 30 and evaluation["score"] >= 5:
                     cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
-                    # Lưu theo original_message (khoá lúc cache.get) — không phải bản đã autocorrect,
+                    # Lưu theo cache_query (khoá lúc cache.get) — không phải bản đã autocorrect,
                     # nếu không lần sau cùng câu gốc sẽ luôn MISS (đã sửa: stream cache key mismatch).
-                    cache.put(original_message, cache_data, owner_key=owner_key)
+                    cache.put(cache_query, cache_data, owner_key=owner_key)
                     # ── Semantic cache: store ──
                     if HAS_SEMANTIC_CACHE:
                         try:
-                            semantic_put(message, cache_data, owner_key=owner_key)
+                            semantic_put(cache_query, cache_data, owner_key=owner_key)
                         except Exception:
                             logger.debug("Semantic cache put failed", exc_info=True)
 
@@ -3703,7 +3705,7 @@ async def semantic_cache_invalidate(req: SemanticCacheInvalidateRequest, request
         multi_tier_cache.invalidate_entity(req.entity_id)
         return {"success": True, "invalidated": f"entity:{req.entity_id}"}
     elif req.query:
-        multi_tier_cache.invalidate(req.query)
+        multi_tier_cache.invalidate_all_namespaces(req.query)
         return {"success": True, "invalidated": f"query:{req.query[:50]}"}
     raise HTTPException(400, detail="Provide entity_id or query")
 

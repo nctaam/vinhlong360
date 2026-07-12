@@ -379,6 +379,34 @@ class MultiTierCache:
                 self._save_l2()
             logger.debug("Cache invalidate: %s", query[:60])
 
+    def invalidate_all_namespaces(self, query: str) -> int:
+        """Remove an exact query from every owner and legacy namespace."""
+        with self._lock:
+            self._load_l2()
+            keys_to_remove: set[str] = set()
+
+            for layer in (self._l1, self._l2):
+                for key, entry in layer.items():
+                    owner_key = entry.get("owner_key", "") or ""
+                    if key == _make_key(query, owner_key=owner_key):
+                        keys_to_remove.add(key)
+
+            removed_l2 = False
+            for key in keys_to_remove:
+                self._l1.pop(key, None)
+                if self._l2.pop(key, None) is not None:
+                    removed_l2 = True
+                self._matcher.remove(key)
+
+            if removed_l2:
+                self._save_l2()
+            logger.debug(
+                "Cache invalidated across %d namespaces: %s",
+                len(keys_to_remove),
+                query[:60],
+            )
+            return len(keys_to_remove)
+
     def invalidate_entity(self, entity_id: str):
         """Remove all cached entries whose response mentions *entity_id*."""
         with self._lock:

@@ -5,6 +5,7 @@ import importlib.util
 import os
 import subprocess
 import sys
+import threading
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
@@ -369,6 +370,172 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
         ("semantic", "cached query", "user:alice"),
         ("exact", "cached query", "user:alice"),
     ]
+
+
+def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, monkeypatch):
+    import semantic_cache as semantic_cache_mod
+
+    manager = _manager(tmp_path)
+    owner_key = "user:alice"
+    original_query = "vinh log co gi choi"
+    corrected_query = "Vĩnh Long có gì chơi"
+    first_acquired = threading.Event()
+    waiter_started = threading.Event()
+    allow_stream_finish = threading.Event()
+    waiter_result = {}
+    response_result = {}
+    exact_put_queries = []
+
+    class SignalingDeduplicator(semantic_cache_mod.RequestDeduplicator):
+        def acquire(self, query, timeout=5.0, owner_key=""):
+            result = super().acquire(query, timeout=timeout, owner_key=owner_key)
+            if result[0]:
+                first_acquired.set()
+            return result
+
+        def wait_for(self, dedup_key, timeout=30):
+            waiter_started.set()
+            return super().wait_for(dedup_key, timeout=0.75)
+
+    matcher = semantic_cache_mod.SemanticMatcher()
+    semantic_cache = semantic_cache_mod.MultiTierCache(matcher, l1_max=10, l2_max=20)
+    semantic_cache._l2_loaded = True
+    semantic_cache._save_l2 = lambda: None
+    deduplicator = SignalingDeduplicator()
+
+    async def alice_owner(_request):
+        return SimpleNamespace(owner_key=owner_key, cookie_value=None)
+
+    def fake_create(*_args, stream=False, **_kwargs):
+        if stream:
+            def chunks():
+                allow_stream_finish.wait(timeout=2)
+                yield SimpleNamespace(
+                    choices=[SimpleNamespace(
+                        delta=SimpleNamespace(
+                            content="Vĩnh Long có nhiều điểm tham quan rất hấp dẫn.",
+                            tool_calls=None,
+                        ),
+                        finish_reason=None,
+                    )]
+                )
+            return chunks()
+        message = SimpleNamespace(
+            content="unused",
+            tool_calls=None,
+            role="assistant",
+            function_call=None,
+        )
+        return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(completions=SimpleNamespace(create=fake_create))
+    )
+
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(manager, "on_chat_complete", lambda *_args: None)
+    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_AUTOCORRECT", True)
+    monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(server, "HAS_METRICS", False)
+    monkeypatch.setattr(server, "autocorrect", lambda _query: {
+        "was_corrected": True,
+        "corrected": corrected_query,
+    })
+    monkeypatch.setattr(
+        server,
+        "_build_messages",
+        lambda *_args: ([{"role": "system", "content": "test"}], {}),
+    )
+    monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        server.cache,
+        "put",
+        lambda query, *_args, **_kwargs: exact_put_queries.append(query),
+    )
+    monkeypatch.setattr(
+        server.reflexion_engine,
+        "evaluate_answer",
+        lambda *_args: {"score": 6},
+    )
+    monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
+    monkeypatch.setattr(semantic_cache_mod, "deduplicator", deduplicator)
+    client = TestClient(server.app)
+
+    request_thread = threading.Thread(
+        target=lambda: response_result.setdefault(
+            "response",
+            client.get("/chat/stream", params={"message": original_query}),
+        )
+    )
+    request_thread.start()
+    assert first_acquired.wait(timeout=2)
+
+    waiter_thread = threading.Thread(
+        target=lambda: waiter_result.setdefault(
+            "value",
+            semantic_cache_mod.semantic_get(original_query, owner_key=owner_key),
+        )
+    )
+    waiter_thread.start()
+    assert waiter_started.wait(timeout=2)
+    allow_stream_finish.set()
+
+    request_thread.join(timeout=3)
+    waiter_thread.join(timeout=3)
+
+    assert not request_thread.is_alive()
+    assert not waiter_thread.is_alive()
+    assert response_result["response"].status_code == 200
+    assert waiter_result["value"]["reply"].startswith("Vĩnh Long")
+    assert exact_put_queries == [original_query]
+
+
+def test_admin_semantic_query_invalidation_clears_all_owner_namespaces(monkeypatch):
+    import admin
+    import semantic_cache as semantic_cache_mod
+
+    matcher = semantic_cache_mod.SemanticMatcher()
+    semantic_cache = semantic_cache_mod.MultiTierCache(matcher, l1_max=10, l2_max=20)
+    semantic_cache._l2_loaded = True
+    semantic_cache._save_l2 = lambda: None
+    query = "same admin query"
+    semantic_cache.put(query, {"owner": "alice"}, owner_key="user:alice")
+    semantic_cache.put(query, {"owner": "bob"}, owner_key="user:bob")
+    semantic_cache.put(query, {"owner": "legacy"})
+
+    async def allow_admin(_request):
+        return None
+
+    monkeypatch.setattr(admin, "require_admin", allow_admin)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "multi_tier_cache", semantic_cache)
+
+    result = __import__("asyncio").run(
+        server.semantic_cache_invalidate(
+            server.SemanticCacheInvalidateRequest(query=query),
+            SimpleNamespace(),
+        )
+    )
+
+    assert result["success"] is True
+    assert semantic_cache.get(query, owner_key="user:alice") is None
+    assert semantic_cache.get(query, owner_key="user:bob") is None
+    assert semantic_cache.get(query) is None
 
 
 def test_welcome_ignores_client_profile_selector(tmp_path, monkeypatch):

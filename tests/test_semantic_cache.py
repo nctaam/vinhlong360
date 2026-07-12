@@ -208,6 +208,18 @@ class TestMultiTierCache(unittest.TestCase):
             {"owner": "bob"},
         )
 
+    def test_invalidate_all_namespaces_removes_owner_and_legacy_entries(self):
+        query = "same query"
+        self.cache.put(query, {"owner": "alice"}, owner_key="user:alice")
+        self.cache.put(query, {"owner": "bob"}, owner_key="user:bob")
+        self.cache.put(query, {"owner": "legacy"})
+
+        self.cache.invalidate_all_namespaces(query)
+
+        self.assertIsNone(self.cache.get(query, owner_key="user:alice"))
+        self.assertIsNone(self.cache.get(query, owner_key="user:bob"))
+        self.assertIsNone(self.cache.get(query))
+
     def test_invalidate_entity(self):
         self.cache.put("query about entity_123", {"entity_id": "entity_123", "name": "Test"}, ttl=3600)
         self.cache.put("unrelated query", {"other": "data"}, ttl=3600)
