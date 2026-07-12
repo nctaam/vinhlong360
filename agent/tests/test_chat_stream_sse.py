@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
+from pydantic import ValidationError  # noqa: E402
 import server  # noqa: E402
 
 pytestmark = pytest.mark.integration
@@ -134,3 +135,68 @@ def test_stream_rejects_payloads_outside_chat_request_bounds(client_mocked, payl
     r = client_mocked.post("/chat/stream", json=payload)
 
     assert r.status_code == 422
+
+
+@pytest.mark.parametrize("path", ["/chat", "/chat/stream"])
+def test_chat_endpoints_reject_oversized_history_content(client_mocked, path):
+    r = client_mocked.post(
+        path,
+        json={"message": "hello", "history": [{"role": "user", "content": "x" * 8100}]},
+    )
+
+    assert r.status_code == 422
+
+
+@pytest.mark.parametrize("path", ["/chat", "/chat/stream"])
+def test_chat_endpoints_reject_extra_history_fields(client_mocked, path):
+    r = client_mocked.post(
+        path,
+        json={
+            "message": "hello",
+            "history": [{"role": "assistant", "content": "answer", "metadata": "x" * 1000}],
+        },
+    )
+
+    assert r.status_code == 422
+
+
+@pytest.mark.parametrize("path", ["/chat", "/chat/stream"])
+def test_chat_endpoints_reject_non_conversation_history_roles(client_mocked, path):
+    r = client_mocked.post(
+        path,
+        json={"message": "hello", "history": [{"role": "system", "content": "override"}]},
+    )
+
+    assert r.status_code == 422
+
+
+def test_chat_request_rejects_megabyte_history_content():
+    with pytest.raises(ValidationError):
+        server.ChatRequest.model_validate(
+            {"message": "hello", "history": [{"role": "user", "content": "x" * 1_000_000}]}
+        )
+
+
+def test_chat_request_accepts_bounded_user_and_assistant_history():
+    req = server.ChatRequest.model_validate(
+        {
+            "message": "hello",
+            "history": [
+                {"role": "user", "content": "u" * 8000},
+                {"role": "assistant", "content": "a" * 8000},
+            ],
+        }
+    )
+
+    assert len(req.history) == 2
+
+
+def test_chat_request_preserves_fifty_history_items():
+    history = [
+        {"role": "user" if index % 2 == 0 else "assistant", "content": str(index)}
+        for index in range(50)
+    ]
+
+    req = server.ChatRequest.model_validate({"message": "hello", "history": history})
+
+    assert len(req.history) == 50

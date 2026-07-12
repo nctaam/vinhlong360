@@ -81,7 +81,12 @@ describe('chat streaming transport security', () => {
     })
     await mountSuspended(Harness)
     ai!.aiSessionId.value = 'stored-session'
-    const history = [{ role: 'assistant' as const, content: 'previous answer' }]
+    const history = [{
+      role: 'assistant' as const,
+      content: 'previous answer',
+      suggestions: ['not history'],
+      tool_calls: [{ name: 'not-history' }],
+    }]
 
     await ai!.aiStream('next question', vi.fn(), undefined, history)
 
@@ -98,7 +103,7 @@ describe('chat streaming transport security', () => {
     })
     expect(JSON.parse(String(init.body))).toEqual({
       message: 'next question',
-      history,
+      history: [{ role: 'assistant', content: 'previous answer' }],
       session_id: 'stored-session',
     })
   })

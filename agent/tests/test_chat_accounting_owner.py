@@ -81,7 +81,7 @@ def test_stream_admission_and_settlement_share_owner_across_conversation_rotatio
     admitted = []
     settled = []
     attributed = []
-    history = json.dumps([{"role": "user", "content": "prior"}])
+    history = [{"role": "user", "content": "prior"}]
 
     with patch.object(server, "HAS_GUARDRAILS", True), \
          patch.object(server, "HAS_COST_TRACKER", True), \
@@ -89,8 +89,12 @@ def test_stream_admission_and_settlement_share_owner_across_conversation_rotatio
          patch.object(server, "check_output", return_value={}), \
          patch.object(server.guardrail_budget, "record_usage", side_effect=lambda key, _tokens: settled.append(key)), \
          patch.object(server.cost_attribution, "record", side_effect=lambda key, *_args, **_kwargs: attributed.append(key)):
-        first = client_mocked.get("/chat/stream", params={"message": "owner stream one", "history": history})
-        second = client_mocked.get("/chat/stream", params={"message": "owner stream two", "history": history})
+        first = client_mocked.post(
+            "/chat/stream", json={"message": "owner stream one", "history": history}
+        )
+        second = client_mocked.post(
+            "/chat/stream", json={"message": "owner stream two", "history": history}
+        )
 
     assert first.status_code == second.status_code == 200
     assert _stream_session_id(first) != _stream_session_id(second)

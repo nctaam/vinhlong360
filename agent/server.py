@@ -26,6 +26,7 @@ import asyncio
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Literal
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 if sys.stdout.encoding != "utf-8":
@@ -1257,7 +1258,7 @@ async def track_response_time(request: Request, call_next):
         return _error_response(500, "Internal server error", request)
 
 
-from pydantic import Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
 def _sanitize_message(v: str) -> str:
     """Strip HTML/script tags from user chat messages."""
@@ -1267,15 +1268,25 @@ def _sanitize_message(v: str) -> str:
     return v.strip()
 
 
+class ChatHistoryItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    role: Literal["user", "assistant"]
+    content: str = Field(..., min_length=1, max_length=8000)
+
+
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000, description="User message")
-    history: list[dict] = Field(default=[], max_length=50, description="Conversation history")
+    history: list[ChatHistoryItem] = Field(default_factory=list, max_length=50, description="Conversation history")
     session_id: str | None = Field(default=None, max_length=32)
 
     @field_validator("message")
     @classmethod
     def sanitize_message(cls, v):
         return _sanitize_message(v)
+
+    def history_messages(self) -> list[dict[str, str]]:
+        return [item.model_dump() for item in self.history]
 
 
 class ChatResponse(BaseModel):
@@ -1884,6 +1895,7 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
 async def chat(req: ChatRequest, request: Request, response: Response):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
+    history = req.history_messages()
     session = None
     session_id = req.session_id or ""
     try:
@@ -1934,7 +1946,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     memory_manager.on_message(owner_key, session_id, "user", req.message)
 
     # ── Semantic cache: embedding-based dedup (before regular cache) ──
-    if not req.history and HAS_SEMANTIC_CACHE:
+    if not history and HAS_SEMANTIC_CACHE:
         try:
             sem_cached = semantic_get(req.message, owner_key=owner_key)
             if sem_cached:
@@ -1945,7 +1957,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             logger.debug("Semantic cache retrieval failed", exc_info=True)
 
     # Check cache (only for new conversations without history)
-    if not req.history:
+    if not history:
         cached = cache.get(req.message, owner_key=owner_key)
         if cached:
             if HAS_METRICS:
@@ -1968,7 +1980,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         if HAS_TRACING:
             _trace_ctx = trace_chat_request(corrected_message, session_id, get_model())
             _trace_ctx.__enter__()
-        messages, build_info = _build_messages(corrected_message, req.history, session_id, owner_key)
+        messages, build_info = _build_messages(corrected_message, history, session_id, owner_key)
 
         # ── Dynamic agents: check for specialist match before orchestrator ──
         _dyn_prompt_addon = ""
@@ -2010,7 +2022,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         if HAS_ORCHESTRATOR:
             reply, tools_used, suggestions = await asyncio.to_thread(
                 _run_agent_orchestrated,
-                corrected_message, req.history, session_id, _enriched_system,
+                corrected_message, history, session_id, _enriched_system,
             )
         else:
             messages[0]["content"] = _enriched_system
@@ -2255,7 +2267,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             logger.error("Output guardrail failed", error=str(guard_err))
 
     # Cache response (only if good quality)
-    if not req.history and len(reply) > 30 and evaluation["score"] >= 5:
+    if not history and len(reply) > 30 and evaluation["score"] >= 5:
         cache_data = {"reply": reply, "tool_calls": tools_used, "suggestions": suggestions}
         cache.put(req.message, cache_data, owner_key=owner_key)
         # ── Semantic cache: store for embedding-based dedup ──
@@ -2278,7 +2290,7 @@ async def chat_stream(req: ChatRequest, request: Request):
     owner_key = owner_context.owner_key
     session = None
     message = req.message
-    hist = req.history
+    hist = req.history_messages()
     sid = req.session_id or ""
     try:
         if req.session_id:

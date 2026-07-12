@@ -10,9 +10,10 @@ export function useAI() {
   }
 
   function chatBody(message: string, history: ChatMessage[] = []) {
+    const conversationHistory = history.map(({ role, content }) => ({ role, content }))
     return aiSessionId.value
-      ? { message, history, session_id: aiSessionId.value }
-      : { message, history }
+      ? { message, history: conversationHistory, session_id: aiSessionId.value }
+      : { message, history: conversationHistory }
   }
 
   async function aiChat(message: string, history: ChatMessage[] = []): Promise<ChatResponse> {

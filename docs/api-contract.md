@@ -111,8 +111,8 @@ The table above lists the primary endpoints; `agent/public_api.py` also serves a
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/chat` | Chat (JSON request/response) |
-| POST | `/chat/stream` | SSE streaming chat; JSON body uses `ChatRequest` (`message`, `history`, optional `session_id`) |
+| POST | `/chat` | Chat JSON request/response; body uses the bounded `ChatRequest` contract described below |
+| POST | `/chat/stream` | SSE streaming chat; JSON body uses `ChatRequest` (`message`, up to 50 `user`/`assistant` history items with 8,000-character content, optional `session_id`) |
 
 ### Authentication (`/auth` — note: NOT under `/api`; nginx proxies `/auth` directly to the agent)
 
