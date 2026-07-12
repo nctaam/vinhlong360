@@ -1769,6 +1769,19 @@ def _run_agent_orchestrated(
     return result["reply"], result["tools_used"], result["suggestions"]
 
 
+async def _await_chat_worker(func, *args):
+    """Wait for provider work on cancellation, then preserve cancellation."""
+    worker = asyncio.create_task(asyncio.to_thread(func, *args))
+    try:
+        return await asyncio.shield(worker)
+    except asyncio.CancelledError:
+        try:
+            await worker
+        except Exception:
+            logger.debug("Chat worker failed after request cancellation", exc_info=True)
+        raise
+
+
 def _prepare_pending_calls(tool_calls, tools_used, messages, total_tool_calls, max_tool_calls):
     """Chuẩn bị pending tool-calls từ msg.tool_calls (parse args, đếm, log tool). Trả (pending, total)."""
     pending_calls = []
@@ -2047,14 +2060,14 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         # GĐ4.1: offload vòng lặp agent (OpenAI client ĐỒNG BỘ) sang thread để KHÔNG
         # chặn event loop -> nhiều /chat đồng thời + /health không bị đóng băng.
         if HAS_ORCHESTRATOR:
-            reply, tools_used, suggestions = await asyncio.to_thread(
+            reply, tools_used, suggestions = await _await_chat_worker(
                 _run_agent_orchestrated,
                 corrected_message, history, session_id, _enriched_system,
                 usage_accumulator,
             )
         else:
             messages[0]["content"] = _enriched_system
-            reply, tools_used, suggestions = await asyncio.to_thread(
+            reply, tools_used, suggestions = await _await_chat_worker(
                 _run_agent,
                 messages,
                 8,
@@ -2074,6 +2087,16 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 _trace_ctx.__exit__(None, None, None)
             except Exception:
                 logger.debug("Trace context exit failed", exc_info=True)
+        try:
+            usage_accumulator.settle(
+                owner_key=owner_key,
+                query=corrected_message[:200],
+                agent_name="chat",
+                guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
+                cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
+            )
+        except Exception:
+            logger.debug("Cost tracking failed", exc_info=True)
 
     # ── Knowledge-only fallback: supplement with KB data when LLM fails ──
     # P0/chat: chỉ coi là lỗi khi reply RỖNG, hoặc là fallback hệ-thống thật (mọi fallback
@@ -2191,17 +2214,6 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 reply = "Xin lỗi, đã xảy ra lỗi khi xử lý câu hỏi. Vui lòng thử lại."
 
     duration = time.time() - t0
-
-    try:
-        usage_accumulator.settle(
-            owner_key=owner_key,
-            query=corrected_message[:200],
-            agent_name="chat",
-            guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
-            cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
-        )
-    except Exception:
-        logger.debug("Cost tracking failed", exc_info=True)
 
     # Record assistant reply in memory
     memory_manager.on_message(owner_key, session_id, "assistant", reply)
@@ -2550,14 +2562,17 @@ async def chat_stream(req: ChatRequest, request: Request):
                 loop = asyncio.get_running_loop()
                 chunk_q: asyncio.Queue = asyncio.Queue()
                 _cancelled = threading.Event()
+                stream_returned = False
 
                 def _produce_stream():
+                    nonlocal stream_returned
                     try:
                         stream = get_client().chat.completions.create(
                             model=_stream_model, messages=messages, stream=True,
                             stream_options={"include_usage": True},
                             timeout=LLM_TIMEOUT,
                         )
+                        stream_returned = True
                         for chunk in stream:
                             if _cancelled.is_set():
                                 break
@@ -2595,12 +2610,13 @@ async def chat_stream(req: ChatRequest, request: Request):
                 finally:
                     _cancelled.set()
                     await producer
-                    usage_accumulator.add_response(
-                        terminal_chunk,
-                        model=_stream_model,
-                        messages=messages,
-                        completion_text="".join(_chunks),
-                    )
+                    if stream_returned:
+                        usage_accumulator.add_response(
+                            terminal_chunk,
+                            model=_stream_model,
+                            messages=messages,
+                            completion_text="".join(_chunks),
+                        )
                 full_text = "".join(_chunks)
 
                 # Record in memory
@@ -2707,7 +2723,9 @@ async def chat_stream(req: ChatRequest, request: Request):
             synth_q: asyncio.Queue = asyncio.Queue()
             loop = asyncio.get_event_loop()
             _synth_cancelled = threading.Event()
+            synth_stream_returned = False
             def _synth_produce():
+                nonlocal synth_stream_returned
                 try:
                     resp = get_client().chat.completions.create(
                         model=_stream_model,
@@ -2716,6 +2734,7 @@ async def chat_stream(req: ChatRequest, request: Request):
                         stream_options={"include_usage": True},
                         timeout=LLM_TIMEOUT,
                     )
+                    synth_stream_returned = True
                     for chunk in resp:
                         if _synth_cancelled.is_set():
                             break  # consumer đã thoát (client disconnect) → dừng, không leak thread
@@ -2749,12 +2768,13 @@ async def chat_stream(req: ChatRequest, request: Request):
             finally:
                 _synth_cancelled.set()  # generator đóng (disconnect/hoàn tất) → báo thread produce dừng
                 await synth_producer
-                usage_accumulator.add_response(
-                    synth_terminal_chunk,
-                    model=_stream_model,
-                    messages=messages,
-                    completion_text="".join(synth_chunks),
-                )
+                if synth_stream_returned:
+                    usage_accumulator.add_response(
+                        synth_terminal_chunk,
+                        model=_stream_model,
+                        messages=messages,
+                        completion_text="".join(synth_chunks),
+                    )
             synth_text = "".join(synth_chunks)
             if synth_text:
                 memory_manager.on_message(owner_key, sid, "assistant", synth_text)

@@ -1,8 +1,10 @@
 """Provider-accurate chat usage accumulation and settlement tests."""
 
+import asyncio
 import json
 import os
 import sys
+import threading
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -17,7 +19,9 @@ os.environ["SCHEDULER_ENABLED"] = "false"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from fastapi import Response  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
+from starlette.requests import Request  # noqa: E402
 
 from chat_usage import UsageAccumulator  # noqa: E402
 import server  # noqa: E402
@@ -330,3 +334,61 @@ def test_post_cache_hit_adds_no_usage(monkeypatch):
     assert response.json()["cached"] is True
     assert guardrail.calls == []
     assert attribution.calls == []
+
+
+@pytest.mark.integration
+def test_post_cancellation_settles_completed_worker_usage_once(monkeypatch):
+    guardrail = _GuardrailRecorder()
+    attribution = _AttributionRecorder()
+    _configure_post_chat(monkeypatch, guardrail, attribution)
+    started = threading.Event()
+    release = threading.Event()
+
+    def fake_orchestrated(_message, _history, _session_id, _prompt, usage_accumulator):
+        usage_accumulator.add_response(
+            _response(120, 10),
+            model="cx/gpt-5.4",
+            messages=[{"role": "user", "content": "completed call"}],
+        )
+        started.set()
+        release.wait(timeout=2)
+        return "unused after cancellation", [], []
+
+    monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(server, "_run_agent_orchestrated", fake_orchestrated)
+    scope = {
+        "type": "http",
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/chat",
+        "raw_path": b"/chat",
+        "query_string": b"",
+        "headers": [],
+        "client": ("127.0.0.1", 1234),
+        "server": ("testserver", 80),
+    }
+
+    async def cancel_after_provider_usage():
+        task = asyncio.create_task(
+            server.chat(
+                server.ChatRequest.model_validate({
+                    "message": "where should I go?",
+                    "history": [{"role": "user", "content": "prior"}],
+                }),
+                Request(scope),
+                Response(),
+            )
+        )
+        assert await asyncio.to_thread(started.wait, 2)
+        task.cancel()
+        release.set()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+    asyncio.run(cancel_after_provider_usage())
+
+    assert guardrail.calls == [("user:alice", 130, 0.0)]
+    assert len(attribution.calls) == 1
+    assert attribution.calls[0]["tokens"]["provider_call_count"] == 1
+    assert attribution.calls[0]["tokens"]["total_tokens"] == 130

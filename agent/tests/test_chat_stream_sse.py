@@ -287,6 +287,19 @@ def _assert_exact_stream_usage(guardrail, attribution):
     }
 
 
+def _assert_only_completed_decision_usage(guardrail, attribution):
+    assert guardrail.calls == [("user:alice", 130, 0.0)]
+    assert len(attribution.calls) == 1
+    assert attribution.calls[0]["tokens"] == {
+        "prompt_tokens": 120,
+        "completion_tokens": 10,
+        "total_tokens": 130,
+        "provider_call_count": 1,
+        "estimated_call_count": 0,
+    }
+    assert attribution.calls[0]["cost"] == 0.00075
+
+
 def test_stream_consumes_terminal_usage_once_and_requests_usage(monkeypatch):
     stream_kwargs = []
 
@@ -463,6 +476,66 @@ def test_stream_provider_error_after_completed_decision_still_settles(monkeypatc
     assert tokens["provider_call_count"] == 2
     assert tokens["estimated_call_count"] == 1
     assert tokens["total_tokens"] > 130
+
+
+def test_stream_create_failure_does_not_invent_provider_usage(monkeypatch):
+    def create(*_args, stream=False, **_kwargs):
+        if not stream:
+            return _completion_with_usage("decision", 120, 10)
+        raise ConnectionError("stream create failed")
+
+    guardrail, attribution = _configure_usage_stream(monkeypatch, create)
+    client = TestClient(server.app)
+
+    client.post(
+        "/chat/stream",
+        json={
+            "message": "where should I go?",
+            "history": [{"role": "user", "content": "prior"}],
+        },
+    )
+
+    _assert_only_completed_decision_usage(guardrail, attribution)
+
+
+def test_stream_synthesis_create_failure_does_not_invent_usage(monkeypatch):
+    tool_call = SimpleNamespace(
+        id="call-1",
+        function=SimpleNamespace(name="search", arguments='{"q":"test"}'),
+    )
+
+    def create(*_args, stream=False, **_kwargs):
+        if not stream:
+            response = _completion_with_usage(None, 120, 10)
+            response.choices[0].message.tool_calls = [tool_call]
+            return response
+        raise ConnectionError("synthesis create failed")
+
+    guardrail, attribution = _configure_usage_stream(monkeypatch, create)
+    monkeypatch.setattr(server, "HAS_OPTIMIZER", True)
+    monkeypatch.setattr(
+        server.parameter_tuner,
+        "get_optimal_params",
+        lambda _category: {"max_rounds": 1},
+    )
+    monkeypatch.setattr(
+        server.prompt_optimizer,
+        "get_current_variant",
+        lambda: {"prompt_addon": ""},
+    )
+    monkeypatch.setattr(server, "call_tool", lambda *_args: "[]")
+    client = TestClient(server.app)
+
+    response = client.post(
+        "/chat/stream",
+        json={
+            "message": "where should I go?",
+            "history": [{"role": "user", "content": "prior"}],
+        },
+    )
+
+    assert response.status_code == 200
+    _assert_only_completed_decision_usage(guardrail, attribution)
 
 
 def test_stream_generator_close_runs_usage_finalizer(monkeypatch):
