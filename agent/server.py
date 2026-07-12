@@ -2155,8 +2155,8 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             est_out = token_counter.estimate_tokens(reply)
             # Audit vòng 2 fix #8: record_usage để check_budget (guardrails) có số thật
             if HAS_GUARDRAILS:
-                guardrail_budget.record_usage(session_id, est_in + est_out)
-            cost_attribution.record(session_id, corrected_message[:200], "chat", None, get_model(),
+                guardrail_budget.record_usage(owner_key, est_in + est_out)
+            cost_attribution.record(owner_key, corrected_message[:200], "chat", None, get_model(),
                                      {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
                                      token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
         except Exception:
@@ -2568,8 +2568,8 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                         est_out = token_counter.estimate_tokens(full_text)
                         # Audit vòng 2 fix #8: đồng bộ với đường non-stream
                         if HAS_GUARDRAILS:
-                            guardrail_budget.record_usage(sid, est_in + est_out)
-                        cost_attribution.record(sid, message[:200], "stream", None, get_model(),
+                            guardrail_budget.record_usage(owner_key, est_in + est_out)
+                        cost_attribution.record(owner_key, message[:200], "stream", None, get_model(),
                                                  {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
                                                  token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
                     except Exception:
