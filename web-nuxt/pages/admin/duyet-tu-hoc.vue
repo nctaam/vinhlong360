@@ -26,30 +26,91 @@
           <p>Tất cả entity tự học đã được duyệt.</p>
           <small class="admin-muted">Quay lại kiểm tra sau, hoặc tải nguồn dữ liệu để xem thống kê.</small>
         </div>
-        <div v-else class="admin-table-wrap">
-          <table class="admin-table" aria-label="Entity tự học chờ duyệt">
-            <thead><tr><th scope="col">Entity</th><th scope="col">Loại</th><th scope="col">Tin cậy</th><th scope="col">Nguồn</th><th scope="col">Thao tác</th></tr></thead>
-            <tbody>
-              <tr v-for="e in provisional" :key="e.id">
-                <td>
-                  <strong>{{ e.name }}</strong>
-                  <small v-if="e.summary" class="dth-summary">{{ e.summary }}</small>
-                </td>
-                <td><span class="dth-type-badge">{{ e.type }}</span></td>
-                <td>
-                  <span v-if="typeof e.confidence === 'number'" class="dth-conf-badge" :class="e.confidence >= 0.7 ? 'dth-conf-high' : 'dth-conf-low'">{{ Math.round(e.confidence * 100) }}%</span>
-                  <span v-else class="admin-td-muted"><small>—</small></span>
-                </td>
-                <td class="admin-td-muted"><small>{{ e.source?.[0]?.url || e.source?.[0]?.name || '—' }}</small></td>
-                <td class="admin-actions">
-                  <button type="button" class="btn-success" :disabled="acting === e.id" @click="approve(e)">
-                    {{ acting === e.id ? '...' : 'Duyệt' }}
-                  </button>
-                  <button type="button" class="btn-danger" :disabled="acting === e.id" @click="reject(e)">Từ chối</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-else class="dth-review-list" aria-label="Entity tự học chờ duyệt">
+          <article
+            v-for="e in provisional"
+            :key="e.id"
+            class="dth-review-card"
+            :aria-labelledby="`review-title-${e.id}`"
+            :aria-busy="acting === e.id"
+          >
+            <header class="dth-review-head">
+              <div>
+                <h3 :id="`review-title-${e.id}`">{{ e.entity.name || e.id }}</h3>
+                <code>{{ e.id }}</code>
+              </div>
+              <div class="dth-review-badges">
+                <span v-if="e.entity.type" class="dth-type-badge">{{ e.entity.type }}</span>
+                <span
+                  v-if="typeof e.entity.confidence === 'number'"
+                  class="dth-conf-badge"
+                  :class="e.entity.confidence >= 0.7 ? 'dth-conf-high' : 'dth-conf-low'"
+                >{{ Math.round(e.entity.confidence * 100) }}%</span>
+              </div>
+            </header>
+
+            <section v-if="e.entity.summary" class="dth-review-section" aria-label="Tóm tắt đầy đủ">
+              <h4>Tóm tắt</h4>
+              <p class="dth-summary">{{ e.entity.summary }}</p>
+            </section>
+
+            <dl class="dth-field-grid">
+              <div>
+                <dt>Địa chỉ</dt>
+                <dd>{{ e.entity.address || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Khu vực</dt>
+                <dd>{{ e.entity.area || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Place ID</dt>
+                <dd>{{ e.entity.placeId || '—' }}</dd>
+              </div>
+              <div>
+                <dt>Thời điểm học</dt>
+                <dd>{{ e.entity.learned_at || '—' }}</dd>
+              </div>
+            </dl>
+
+            <div class="dth-inspection-grid">
+              <section class="dth-review-section">
+                <h4>Nguồn</h4>
+                <pre>{{ formatInspectable(e.entity.source) }}</pre>
+              </section>
+              <section class="dth-review-section">
+                <h4>Tọa độ</h4>
+                <pre>{{ formatInspectable(coordinateValue(e.entity)) }}</pre>
+              </section>
+              <section class="dth-review-section">
+                <h4>Thuộc tính</h4>
+                <pre>{{ formatInspectable(e.entity.attributes) }}</pre>
+              </section>
+            </div>
+
+            <section class="dth-review-section">
+              <h4>Hình ảnh</h4>
+              <ul v-if="imageValues(e.entity.images).length" class="dth-image-list">
+                <li v-for="(image, index) in imageValues(e.entity.images)" :key="`${e.id}-image-${index}`">
+                  <a v-if="isHttpUrl(image)" :href="image" target="_blank" rel="noopener noreferrer">{{ image }}</a>
+                  <pre v-else>{{ formatInspectable(image) }}</pre>
+                </li>
+              </ul>
+              <span v-else class="admin-muted">—</span>
+            </section>
+
+            <details class="dth-snapshot">
+              <summary>Toàn bộ snapshot đã xem xét</summary>
+              <pre>{{ JSON.stringify(e.entity, null, 2) }}</pre>
+            </details>
+
+            <footer class="dth-review-actions">
+              <button type="button" class="btn-success" :disabled="acting === e.id" @click="approve(e)">
+                {{ acting === e.id ? '...' : 'Duyệt' }}
+              </button>
+              <button type="button" class="btn-danger" :disabled="acting === e.id" @click="reject(e)">Từ chối</button>
+            </footer>
+          </article>
         </div>
       </template>
     </div>
@@ -91,7 +152,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Entity } from '~/types'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Duyệt tự học — Admin' })
 const { authHeaders } = useAuth()
@@ -104,7 +164,34 @@ interface DataSourceSummary {
   sample_url?: string
 }
 
-const provisional = ref<Entity[]>([])
+interface ProvisionalEntitySnapshot extends Record<string, unknown> {
+  id: string
+  name?: string
+  type?: string
+  summary?: string
+  confidence?: number
+  source?: unknown
+  coordinates?: unknown
+  coords?: unknown
+  images?: unknown
+  attributes?: unknown
+  address?: string
+  area?: string
+  placeId?: string
+  learned_at?: string
+}
+
+interface ProvisionalReview {
+  id: string
+  review_token: string
+  entity: ProvisionalEntitySnapshot
+}
+
+interface ProvisionalListResponse {
+  provisional?: ProvisionalReview[]
+}
+
+const provisional = ref<ProvisionalReview[]>([])
 const sources = ref<DataSourceSummary[]>([])
 const exporting = ref(false)
 const loading = ref(true)
@@ -116,8 +203,8 @@ async function loadProvisional() {
   loading.value = true
   loadError.value = false
   try {
-    const r = await $fetch<Record<string, unknown>>('/admin-api/provisional', { headers: authHeaders() })
-    provisional.value = (r.provisional || []) as Entity[]
+    const r = await $fetch<ProvisionalListResponse>('/admin-api/provisional', { headers: authHeaders() })
+    provisional.value = r.provisional || []
   } catch {
     loadError.value = true
     showToast('Không thể tải danh sách entity tự học', 'error')
@@ -125,18 +212,24 @@ async function loadProvisional() {
     loading.value = false
   }
 }
-async function approve(e: Entity) {
-  if (!await confirmDialog(`Duyệt "${e.name}" vào hệ thống?`)) return
+async function approve(e: ProvisionalReview) {
+  const name = e.entity.name || e.id
+  if (!await confirmDialog(`Duyệt "${name}" vào hệ thống?`)) return
   acting.value = e.id
   try {
-    await $fetch(`/admin-api/provisional/${e.id}/approve`, { method: 'POST', headers: authHeaders() })
+    await $fetch(`/admin-api/provisional/${e.id}/approve`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: { review_token: e.review_token },
+    })
     provisional.value = provisional.value.filter(x => x.id !== e.id)
-    showToast(`Đã duyệt ${e.name}`, 'success')
+    showToast(`Đã duyệt ${name}`, 'success')
   } catch (err: unknown) { showToast(getErrorDetail(err, 'Duyệt lỗi'), 'error') }
   acting.value = null
 }
-async function reject(e: Entity) {
-  if (!await confirmDialog(`Từ chối + xóa "${e.name}"?`, { danger: true })) return
+async function reject(e: ProvisionalReview) {
+  const name = e.entity.name || e.id
+  if (!await confirmDialog(`Từ chối + xóa "${name}"?`, { danger: true })) return
   acting.value = e.id
   try {
     await $fetch(`/admin-api/provisional/${e.id}/reject`, { method: 'POST', headers: authHeaders() })
@@ -144,6 +237,29 @@ async function reject(e: Entity) {
     showToast('Đã từ chối', 'success')
   } catch (err: unknown) { showToast(getErrorDetail(err, 'Từ chối lỗi'), 'error') }
   acting.value = null
+}
+
+function formatInspectable(value: unknown): string {
+  if (value === null || value === undefined || value === '') return '—'
+  if (typeof value === 'string') return value
+  try {
+    return JSON.stringify(value, null, 2)
+  } catch {
+    return String(value)
+  }
+}
+
+function coordinateValue(entity: ProvisionalEntitySnapshot): unknown {
+  return entity.coordinates ?? entity.coords
+}
+
+function imageValues(value: unknown): unknown[] {
+  if (value === null || value === undefined) return []
+  return Array.isArray(value) ? value : [value]
+}
+
+function isHttpUrl(value: unknown): value is string {
+  return typeof value === 'string' && /^https?:\/\//i.test(value)
 }
 
 async function loadSources() {
@@ -184,7 +300,41 @@ onMounted(loadProvisional)
 }
 .dth-count-warn { background: rgba(var(--warning-rgb),.1); color: var(--warning); }
 
-.dth-summary { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--muted); margin-top: 2px; font-size: .8rem; }
+.dth-review-list { display: grid; gap: var(--space-4); }
+.dth-review-card {
+  padding: var(--space-4); border: .5px solid var(--line); border-radius: 14px;
+  background: var(--bg); box-shadow: 0 2px 10px rgba(var(--black-rgb),.03);
+}
+.dth-review-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: .5px solid var(--line);
+}
+.dth-review-head h3 { margin: 0 0 3px; font-size: 1rem; color: var(--ink); }
+.dth-review-head code { font-size: .72rem; color: var(--muted); overflow-wrap: anywhere; }
+.dth-review-badges { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
+.dth-summary { margin: 0; color: var(--ink); font-size: .86rem; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.dth-review-section { min-width: 0; margin-top: var(--space-3); }
+.dth-review-section h4 { margin: 0 0 var(--space-2); font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.dth-review-section pre,
+.dth-snapshot pre,
+.dth-image-list pre {
+  margin: 0; padding: var(--space-3); border-radius: 10px;
+  background: rgba(var(--gray-rgb),.06); color: var(--ink);
+  font: .75rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.dth-field-grid,
+.dth-inspection-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.dth-field-grid { margin: var(--space-3) 0 0; }
+.dth-field-grid > div { min-width: 0; padding: var(--space-3); border-radius: 10px; background: rgba(var(--gray-rgb),.04); }
+.dth-field-grid dt { font-size: .7rem; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+.dth-field-grid dd { margin: 4px 0 0; font-size: .82rem; color: var(--ink); overflow-wrap: anywhere; }
+.dth-image-list { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.dth-image-list a { color: var(--primary); font-size: .78rem; overflow-wrap: anywhere; }
+.dth-snapshot { margin-top: var(--space-4); border-top: .5px solid var(--line); padding-top: var(--space-3); }
+.dth-snapshot summary { cursor: pointer; font-size: .8rem; font-weight: 650; color: var(--primary); }
+.dth-snapshot pre { margin-top: var(--space-3); max-height: 480px; overflow: auto; }
+.dth-review-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-4); }
 .dth-type-badge {
   display: inline-block; padding: 2px 8px; border-radius: 100px;
   font-size: .72rem; font-weight: 600;
@@ -248,6 +398,7 @@ onMounted(loadProvisional)
 
 /* ── Dark ── */
 .dark .dth-empty { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
+.dark .dth-review-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); box-shadow: none; }
 .dark .dth-tool-card { background: var(--card); border-color: rgba(var(--white-rgb),.06); }
 .dark .dth-tool-card:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(var(--black-rgb),.4); }
 .dark .dth-conf-high { background: rgba(var(--primary-rgb),.18); color: rgb(var(--success-rgb)); }
@@ -255,4 +406,12 @@ onMounted(loadProvisional)
 .dark .dth-tool-label { color: var(--ink); }
 .dark .dth-count-warn { background: rgba(var(--warning-rgb),.12); color: var(--accent-text); }
 .dark .dth-type-badge { background: rgba(var(--white-rgb),.06); }
+
+@media (max-width: 720px) {
+  .dth-review-head { flex-direction: column; }
+  .dth-field-grid,
+  .dth-inspection-grid { grid-template-columns: 1fr; }
+  .dth-review-actions { justify-content: stretch; }
+  .dth-review-actions button { flex: 1; }
+}
 </style>

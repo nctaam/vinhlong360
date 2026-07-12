@@ -18,6 +18,9 @@ Auto-learned entities enter the KB as `status: provisional, verified: false`
 All writes go to web/data.json and trigger knowledge.reload().
 """
 
+import copy
+import hashlib
+import hmac
 import json
 import logging
 from pathlib import Path
@@ -70,26 +73,50 @@ def _is_provisional(e: dict) -> bool:
     return e.get("status") == "provisional" or e.get("verified") is False
 
 
+def _review_snapshot(entity: dict) -> dict:
+    snapshot = copy.deepcopy(entity)
+    snapshot.pop("status", None)
+    snapshot.pop("verified", None)
+    return snapshot
+
+
+def _review_token(snapshot: dict) -> str:
+    canonical = json.dumps(
+        snapshot,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        default=str,
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def list_provisional() -> list:
     """Return all provisional (unverified, auto-learned) entities."""
     kb = _load_kb()
-    return [
-        {
-            "id": e["id"], "name": e.get("name", ""), "type": e.get("type", ""),
-            "summary": e.get("summary", "")[:160],
-            "learned_at": e.get("learned_at", ""), "source": e.get("source", {}),
-        }
-        for e in kb.get("entities", []) if _is_provisional(e)
-    ]
+    reviews = []
+    for entity in kb.get("entities", []):
+        if not _is_provisional(entity):
+            continue
+        snapshot = _review_snapshot(entity)
+        reviews.append({
+            "id": entity["id"],
+            "review_token": _review_token(snapshot),
+            "entity": snapshot,
+        })
+    return reviews
 
 
-def promote(entity_id: str) -> dict:
+def promote(entity_id: str, review_token: str) -> dict:
     """Promote a provisional entity to verified (trusted)."""
     kb = _load_kb()
     for e in kb["entities"]:
         if e["id"] == entity_id:
             if not _is_provisional(e):
                 return {"ok": False, "error": "already verified"}
+            current_token = _review_token(_review_snapshot(e))
+            if not isinstance(review_token, str) or not hmac.compare_digest(current_token, review_token):
+                return {"ok": False, "error": "stale_review"}
             e["status"] = "verified"
             e["verified"] = True
             _save_kb(kb)

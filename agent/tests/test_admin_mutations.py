@@ -194,8 +194,34 @@ def test_site_settings_bulk():
 # ── Provisional ──────────────────────────────────────────────────────────
 
 def test_provisional_approve_nonexistent():
+    r = client.post("/admin/provisional/nonexistent/approve",
+                    json={"review_token": "0" * 64}, headers=H)
+    assert r.status_code == 404
+
+
+def test_provisional_approve_requires_review_token_body():
     r = client.post("/admin/provisional/nonexistent/approve", headers=H)
-    assert r.status_code in (200, 404)
+    assert r.status_code == 422
+
+
+@pytest.mark.parametrize("review_token", ["0" * 63, "0" * 65, "A" * 64, "g" * 64])
+def test_provisional_approve_validates_review_token(review_token):
+    r = client.post("/admin/provisional/nonexistent/approve",
+                    json={"review_token": review_token}, headers=H)
+    assert r.status_code == 422
+
+
+def test_provisional_stale_review_returns_conflict(monkeypatch):
+    import kb_curation
+
+    monkeypatch.setattr(
+        kb_curation,
+        "promote",
+        lambda entity_id, review_token: {"ok": False, "error": "stale_review"},
+    )
+    r = client.post("/admin/provisional/nonexistent/approve",
+                    json={"review_token": "0" * 64}, headers=H)
+    assert r.status_code == 409
 
 
 def test_provisional_reject_nonexistent():

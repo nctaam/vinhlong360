@@ -3314,6 +3314,10 @@ async def trigger_learn(category: Optional[str] = Query(None, max_length=50), to
 
 # ── Quarantine review queue (provisional auto-learned entities) ──
 
+class ProvisionalDecisionBody(BaseModel):
+    review_token: str = Field(..., min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+
+
 @router.get("/provisional",
             summary="List provisional entities",
             description="Returns auto-learned entities pending verification, along with queue statistics.")
@@ -3328,14 +3332,16 @@ async def list_provisional_entities():
 @router.post("/provisional/{entity_id}/approve",
              summary="Approve provisional entity",
              description="Promotes a provisional auto-learned entity to verified status in the knowledge base.")
-async def approve_provisional(entity_id: str):
+async def approve_provisional(entity_id: str, body: ProvisionalDecisionBody):
     """Duyệt 1 entity provisional → verified (tin cậy)."""
     validate_path_id(entity_id, "entity_id")
     def _query():
         import kb_curation
-        result = kb_curation.promote(entity_id)
+        result = kb_curation.promote(entity_id, body.review_token)
         if not result.get("ok"):
-            raise HTTPException(404 if result.get("error") == "not found" else 400, result.get("error", "failed"))
+            error = result.get("error")
+            status_code = 409 if error == "stale_review" else 404 if error == "not found" else 400
+            raise HTTPException(status_code, error or "failed")
         return result
     return await asyncio.to_thread(_query)
 

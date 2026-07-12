@@ -3,7 +3,9 @@ Tests for kb_curation.py — quarantine review queue + auto-promotion.
 """
 
 import json
+import re
 import sys
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -15,13 +17,35 @@ import kb_curation
 
 @pytest.fixture
 def kb_with_provisional(tmp_path, monkeypatch):
+    long_summary = "Chi tiết biên tập cần được đọc đầy đủ trước khi duyệt. " * 4
     data = {
         "entities": [
             {"id": "verified-1", "name": "Cam sành", "type": "product", "confidence": 0.9, "verified": True},
-            {"id": "prov-1", "name": "Quán mới X", "type": "dish", "confidence": 0.4,
-             "status": "provisional", "verified": False, "summary": "auto-learned"},
+            {
+                "id": "prov-1",
+                "name": "Quán mới X",
+                "type": "dish",
+                "confidence": 0.4,
+                "status": "provisional",
+                "verified": False,
+                "summary": long_summary,
+                "source": {"name": "Danh bạ đối tác", "url": "https://example.test/source"},
+                "coordinates": {"lat": 10.253, "lng": 106.012},
+                "coords": [10.253, 106.012],
+                "images": ["https://example.test/image-1.webp", "https://example.test/image-2.webp"],
+                "attributes": {
+                    "phone": "0900000000",
+                    "address": "12 đường Thử Nghiệm",
+                    "contact": {"zalo": "0900000000"},
+                },
+                "address": "12 đường Thử Nghiệm, Vĩnh Long",
+                "area": "vinh-long",
+                "placeId": "phuong-thanh-duc",
+                "provider_trace_id": "partner-feed:uncommon:42",
+            },
             {"id": "prov-2", "name": "Điểm Y", "type": "attraction", "confidence": 0.4,
-             "status": "provisional", "verified": False, "summary": "auto-learned"},
+             "status": "provisional", "verified": False, "summary": "auto-learned",
+             "source": {"provider": "crawler", "fetched_at": "2026-07-12"}},
         ],
         "relationships": [{"from": "prov-1", "to": "verified-1", "type": "near"}],
         "itineraries": [],
@@ -50,7 +74,8 @@ class TestDbWriteThrough:
             db.upsert_entity({"id": "prov-2", "name": "Điểm Y", "type": "attraction",
                               "status": "provisional", "verified": False})
 
-            r = kb_curation.promote("prov-1")
+            review = next(x for x in kb_curation.list_provisional() if x["id"] == "prov-1")
+            r = kb_curation.promote("prov-1", review["review_token"])
             assert r["ok"] is True
             got = db.get_entity("prov-1")
             assert got is not None
@@ -65,27 +90,71 @@ class TestDbWriteThrough:
 
 
 class TestListProvisional:
-    def test_lists_only_provisional(self, kb_with_provisional):
+    def test_lists_complete_review_snapshots(self, kb_with_provisional):
+        source = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
         prov = kb_curation.list_provisional()
         ids = {p["id"] for p in prov}
         assert ids == {"prov-1", "prov-2"}
 
+        for item in prov:
+            original = next(e for e in source["entities"] if e["id"] == item["id"])
+            expected_snapshot = {k: deepcopy(v) for k, v in original.items() if k not in {"status", "verified"}}
+            assert set(item) == {"id", "review_token", "entity"}
+            assert re.fullmatch(r"[0-9a-f]{64}", item["review_token"])
+            assert item["entity"] == expected_snapshot
+
+        complete = next(item["entity"] for item in prov if item["id"] == "prov-1")
+        assert len(complete["summary"]) > 160
+        assert complete["provider_trace_id"] == "partner-feed:uncommon:42"
+
 
 class TestPromote:
-    def test_promote_sets_verified(self, kb_with_provisional):
-        result = kb_curation.promote("prov-1")
+    def test_promote_with_current_token_preserves_snapshot(self, kb_with_provisional, monkeypatch):
+        before = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        original = next(x for x in before["entities"] if x["id"] == "prov-1")
+        review = next(x for x in kb_curation.list_provisional() if x["id"] == "prov-1")
+        upserted = []
+        monkeypatch.setattr(kb_curation, "_db_upsert", lambda entity: upserted.append(deepcopy(entity)))
+
+        result = kb_curation.promote("prov-1", review["review_token"])
         assert result["ok"] is True
         data = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
         e = next(x for x in data["entities"] if x["id"] == "prov-1")
         assert e["verified"] is True
         assert e["status"] == "verified"
+        assert {k: v for k, v in e.items() if k not in {"status", "verified"}} == {
+            k: v for k, v in original.items() if k not in {"status", "verified"}
+        }
+        assert upserted == [e]
+
+    def test_stale_review_token_fails_before_mutation(self, kb_with_provisional, monkeypatch):
+        review = next(x for x in kb_curation.list_provisional() if x["id"] == "prov-1")
+        changed = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        entity = next(x for x in changed["entities"] if x["id"] == "prov-1")
+        entity["attributes"]["phone"] = "0911111111"
+        kb_with_provisional.write_text(json.dumps(changed, ensure_ascii=False), encoding="utf-8")
+
+        def fail_mutation(*_args, **_kwargs):
+            pytest.fail("stale approval attempted a mutation")
+
+        monkeypatch.setattr(kb_curation, "_save_kb", fail_mutation)
+        monkeypatch.setattr(kb_curation, "_db_upsert", fail_mutation)
+        monkeypatch.setattr(kb_curation, "_reload", fail_mutation)
+
+        result = kb_curation.promote("prov-1", review["review_token"])
+
+        assert result == {"ok": False, "error": "stale_review"}
+        persisted = json.loads(kb_with_provisional.read_text(encoding="utf-8"))
+        persisted_entity = next(x for x in persisted["entities"] if x["id"] == "prov-1")
+        assert persisted_entity["status"] == "provisional"
+        assert persisted_entity["verified"] is False
 
     def test_promote_already_verified(self, kb_with_provisional):
-        result = kb_curation.promote("verified-1")
+        result = kb_curation.promote("verified-1", "0" * 64)
         assert result["ok"] is False
 
     def test_promote_not_found(self, kb_with_provisional):
-        result = kb_curation.promote("nope")
+        result = kb_curation.promote("nope", "0" * 64)
         assert result["ok"] is False
 
 
