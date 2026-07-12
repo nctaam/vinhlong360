@@ -101,28 +101,35 @@ The accumulated provider totals are committed once to the guardrail ledger and c
 
 ## Implementation Evidence
 
-Implemented on branch `codex/chat-ownership-budgets`; the production closure is `12454a59c5c95dc29ea97605163f5fb2950fb34a`, followed by the test-only cancellation harness stabilization `6d3d5e0c59590e056b804bae1702539769032cd0`.
+Implemented on branch `codex/chat-ownership-budgets`; fresh final verification covers code HEAD `0ae1ceb6c39addc6d1f68c9a19febb46140681ab`. The earlier production/accounting closure is `12454a59c5c95dc29ea97605163f5fb2950fb34a`, followed by cancellation harness stabilization `6d3d5e0c59590e056b804bae1702539769032cd0`.
 
-- The exact Task 5 focused security suite completed with `309 passed, 51 deselected, 1 warning`.
+- Final-review semantic dedup remediation landed in `b053c4a`, `f7259a3`, `4b56bc8`, `240dac6`, and `86c1353`; history continuity landed in `affa524`; fragmented SSE and reader lifecycle landed in `8c1af0a`, `cad268a`, and `0ae1ceb`.
+- The exact Task 5 focused security suite completed with `350 passed, 51 deselected, 1 warning`; the separate history-continuity suite completed with `22 passed, 1 warning`.
 - Specified Ruff and `py_compile` gates passed; `git diff --check` passed.
-- Full backend verification completed with `6039 passed, 39 skipped, 78 deselected, 1 xfailed, 1 warning`.
-- Frontend verification completed with `109 passed` tests, typecheck exit `0`, and production build exit `0`.
-- The dedicated usage/stream/orchestrator suite completed with `99 passed`; a real parallel dispatcher probe accounted three of three provider calls, including the nested `suggest_followups` call.
-- Repeated cancellation verification completed 100 AnyIO nested-provider cancellations and 100 double-native cancellations without settling before provider completion or losing completed usage.
-- Independent final review at `12454a5` returned `✅ Spec compliant` and no Critical, Important, or Minor quality findings; the review run reported `142 passed` and a clean 100-cancellation stress result.
+- Full backend verification completed with `6102 passed, 39 skipped, 78 deselected, 1 xfailed, 1 warning`.
+- Frontend verification completed with `8` test files / `125 passed` tests, typecheck exit `0`, and production build exit `0`.
+- Change-aware verification completed owner/admission/history `31 passed`, provider exact-once `13 passed`, semantic/terminal lifecycle `28 passed`, frontend transport/SSE/stale retry `23 passed`, and ten repeated cancellation iterations totaling `60/60` checks.
+- Nested direct and orchestrated provider paths retained exact `3` calls / `30` tokens. Dedup saturation woke the evicted waiter and kept generation maps consistent, with a bounded 501 pending entries due to pre-insert cleanup against the nominal 500 cap.
+- Fresh Browser proof rendered exactly one `Xin chào Vĩnh Long` reply from a stream fragmented across JSON and the multibyte `ĩ`, retained the clean URL `http://127.0.0.1:8360/`, and produced no Browser warning/error logs.
+- The earlier review at `12454a5` was superseded by the three remediation groups above. Fresh change-aware review at `0ae1ceb` found no new Important issue.
 
-The original issue variants no longer reproduce: owner-mismatch tests prevent POST/SSE/welcome/cache sentinels from crossing owners; owner rotation does not reset admission or settlement identity; GET streaming is unavailable and browser URLs contain no prompt/history; legacy cache namespaces are not read by chat; and provider totals match request, guardrail, and attribution totals across direct, orchestrated, parallel, nested-tool, streaming, synthesis, error, and cancellation paths.
+The original issue variants no longer reproduce: admission occurs before selector lookup, owner mismatch precedes target mutation, and new sessions are created only after admission; POST/SSE/welcome/cache sentinels do not cross owners; owner rotation does not reset admission or settlement identity; GET streaming is unavailable and browser URLs contain no prompt/history; legacy cache namespaces are not read by chat; semantic leases terminate across exact-hit, miss/non-cacheable, error, cancellation, setup, and ASGI-start branches; history prior/current turns appear exactly once with hot summary/hydration continuity and context-aware cache eligibility; and provider totals match request, guardrail, and attribution totals across direct, orchestrated, parallel, nested-tool, streaming, synthesis, error, and cancellation paths.
 
 ## Verified Residuals
 
+- Clearing the anonymous owner cookie intentionally starts a new anonymous identity, history, and budget namespace.
+- Owner-correct admission does not yet reserve and commit provider capacity atomically across parallel requests.
+- The unrelated `/feedback` endpoint still accepts a session-like label and is outside this workstream.
 - Explicit provider all-zero usage cannot be distinguished from absent metadata, so the call is estimated conservatively.
 - A settlement sink that mutates and then raises is not covered; a later retry could duplicate that individual sink's side effect.
 - Disconnect before terminal stream usage arrives falls back to complete-message/output estimation rather than provider-reported totals.
 - Cancellation deliberately waits for the synchronous provider worker to complete before settlement; provider completion and configured provider timeouts bound that wait.
+- Dedup saturation permits 501 pending entries against the nominal 500 constant because cleanup runs before insertion; waiter wakeup and generation consistency remain correct.
+- The development frontend build retains the known large-chunk/dynamic-import warning.
 
 ## Non-Goals
 
 - No login requirement for anonymous chat.
 - No database migration for persistent server-side anonymous sessions in this workstream.
 - No redesign of unrelated feedback/checkpoint endpoints that also accept session-like labels.
-- No global provider reservation/parallel-admission architecture; owner-correct accounting lands now, while atomic reserve/commit can be added with broader bounded-work controls.
+- No global provider reservation/parallel-admission architecture; owner-correct accounting is complete, while atomic reserve/commit belongs with broader bounded-work controls.

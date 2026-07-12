@@ -317,22 +317,31 @@ Mark Workstream 3 complete only after independent spec and quality reviews have 
 ## Completion Evidence
 
 - Branch: `codex/chat-ownership-budgets`.
-- Production closure: `12454a59c5c95dc29ea97605163f5fb2950fb34a`; cancellation test-harness stabilization: `6d3d5e0c59590e056b804bae1702539769032cd0`.
-- Independent Task 4 reviews at `12454a5`: spec verdict `✅ Spec compliant`; quality verdict reported no Critical, Important, or Minor findings, with `142 passed` and a 100-cancellation stress probe clean.
-- Focused security command from Task 5: `309 passed, 51 deselected, 1 warning in 10.79s`.
-- Backend gates: specified Ruff `All checks passed!`; specified `py_compile` exit `0`; `git diff --check` exit `0`; full `python -m pytest -q` -> `6039 passed, 39 skipped, 78 deselected, 1 xfailed, 1 warning in 165.21s`.
-- Frontend gates: `npm test -- --run` -> `7 passed` files and `109 passed` tests; `npm run typecheck` exit `0`; `npm run build` exit `0` with the known Nuxt sourcemap, chunk-size, dependency-resolution, and Node deprecation warnings. The build did not modify tracked `web/data.js`.
-- Change-aware accounting suite: `python -m pytest agent/tests/test_chat_usage_accounting.py agent/tests/test_chat_stream_sse.py tests/test_orchestrator.py -q` -> `99 passed, 1 warning in 8.58s`.
-- Parallel dispatcher probe observed three provider calls (`outer`, nested `suggest_followups`, `outer`) and the request accumulator recorded exactly `3` calls / `30` tokens while preserving the final reply and suggestions.
-- Cancellation stress repeated 100 AnyIO nested-provider cancellations and 100 double-native cancellations without early settlement or lost usage.
+- Freshly verified code HEAD: `0ae1ceb6c39addc6d1f68c9a19febb46140681ab`.
+- Earlier production/accounting closure: `12454a59c5c95dc29ea97605163f5fb2950fb34a`; cancellation harness stabilization: `6d3d5e0c59590e056b804bae1702539769032cd0`.
+- Final-review remediation group 1, semantic dedup lifecycle: `b053c4a` (non-blocking waits), `f7259a3` (owner-isolated waiters), `4b56bc8` (active-slot authority), `240dac6` (reject missing leases), and `86c1353` (terminal lease finalization).
+- Final-review remediation group 2, history continuity: `affa524` preserves prior/current turns exactly once, hot summaries, hydration, and context-aware cache eligibility.
+- Final-review remediation group 3, fragmented SSE and reader lifecycle: `8c1af0a` buffers fragmented events, `cad268a` closes readers correctly, and `0ae1ceb` settles cancellation/release behavior.
+- The earlier Task 4 review at `12454a5` was superseded by three final-review remediation groups listed below. Fresh verification at `0ae1ceb` found no new Important gap.
+- Exact focused security command: `350 passed, 51 deselected, 1 warning in 12.84s`; separate history-continuity command: `22 passed, 1 warning in 5.68s`.
+- Backend gates: specified Ruff `All checks passed!`; specified `py_compile` exit `0`; `git diff --check` exit `0`; full `python -m pytest -q` -> `6102 passed, 39 skipped, 78 deselected, 1 xfailed, 1 warning in 167.77s`.
+- Frontend gates: `npm test -- --run` -> `8 passed` files and `125 passed` tests; `npm run typecheck` exit `0`; `npm run build` exit `0`. Warnings were limited to the known sourcemap, large-chunk/dynamic-import, Nitro dependency-resolution, and Node package-export deprecation messages. The build and application lifespan did not modify tracked `web/data.js`.
+- Change-aware probes: owner/admission/history `31 passed`; provider exact-once `13 passed`; semantic/terminal lifecycle `28 passed`; frontend transport/SSE/stale-retry `23 passed`; ten cancellation-stress iterations completed `60/60` checks.
+- The nested provider probes preserved the established `3` calls / `30` tokens result for direct and orchestrated `suggest_followups` paths. Dedup saturation woke the evicted waiter and preserved active-generation consistency; pre-insert cleanup keeps the nominal 500-entry structure bounded at 501.
+- Fresh Browser proof used the real backend chat UI and an OpenAI-compatible stream fragmented across JSON and the multibyte `ĩ`: exactly one `Xin chào Vĩnh Long` reply rendered, the URL remained `http://127.0.0.1:8360/`, and Browser warning/error logs were empty.
 
 ## Bypass Review Result
 
-POST, streaming, welcome, exact cache, semantic cache, deduplication, guardrail admission, settlement, and cost attribution all consume the same request-scoped owner. Unknown or mismatched selectors fail before target memory, cache, prompt, or provider access. Conversation rotation does not reset the owner budget. Streaming is JSON `POST /chat/stream`; GET is unavailable and frontend URLs contain no prompt, history, selector payload, or owner cookie. Owner-scoped chat cannot read legacy exact or semantic cache namespaces. Direct, orchestrated, parallel, nested-tool, decision, final-stream, synthesis, provider-error, disconnect, and repeated-cancellation paths settle completed provider usage once.
+POST, streaming, welcome, exact cache, semantic cache, deduplication, guardrail admission, settlement, and cost attribution all consume the same request-scoped owner. Admission limiting occurs before selector lookup; unknown or mismatched selectors fail before target memory, cache, prompt, or provider access; and new sessions are created only after admission and guardrail checks. Conversation rotation does not reset the owner budget. Streaming is JSON `POST /chat/stream`; GET is unavailable and frontend URLs contain no prompt, history, selector payload, or owner cookie. Owner-scoped chat cannot read legacy exact or semantic cache namespaces. Semantic leases terminate on exact hit, miss/non-cacheable completion, error, cancellation, setup failure, and ASGI response-start failure without stale-generation publication. Prior/current history reaches providers exactly once, owned hot history overrides conflicting client history, compressed summaries remain in system context, and hydrated conversations bypass context-free caches. Direct, orchestrated, parallel, nested-tool, decision, final-stream, synthesis, provider-error, disconnect, and repeated-cancellation paths settle completed provider usage once.
 
 ## Residual Risk
 
+- Clearing the anonymous owner cookie intentionally creates a new anonymous identity and therefore a new anonymous history/budget namespace; authenticated owners are stable by account ID.
+- Admission and usage settlement are owner-correct but do not implement an atomic reserve/commit protocol across parallel requests.
+- The unrelated `/feedback` endpoint still accepts a session-like label and was not redesigned in this workstream.
 - A provider response that explicitly reports all token fields as zero is indistinguishable from missing usage metadata and is conservatively estimated.
 - Settlement sinks are not tested against the unusual case where `record_usage()` or cost attribution performs its side effect and then raises; retrying such a sink could duplicate that sink's record.
 - If a stream disconnects before terminal provider usage metadata arrives, accounting estimates the completed call from the full serialized messages and collected output rather than provider-reported totals.
 - Cancellation waits for the synchronous provider worker to finish before settlement; the wait is bounded by provider completion and configured provider timeouts, not by an additional independent worker deadline.
+- Dedup saturation is safely bounded and wakes evicted waiters, but pre-insert cleanup permits 501 pending entries against the nominal `_MAX_PENDING = 500` constant.
+- The frontend build retains a development large-chunk/dynamic-import warning; it is a bundle optimization concern, not a chat confidentiality or correctness failure.
