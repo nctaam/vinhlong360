@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import ChatWidget from '../components/ChatWidget.vue'
 import { useAI } from '../composables/useAI'
+import { fragmentedStreamResponse } from './chat-stream-fixtures'
 
 const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
@@ -18,14 +19,6 @@ mockNuxtImport('useAuth', () => () => ({
   fetchMe: vi.fn(),
   user: { value: null },
 }))
-
-function streamResponse(sessionId = 'fresh-session') {
-  const payload = [
-    `data: ${JSON.stringify({ type: 'text', content: 'ok' })}\n\n`,
-    `data: ${JSON.stringify({ type: 'done', session_id: sessionId })}\n\n`,
-  ].join('')
-  return new Response(payload, { status: 200 })
-}
 
 async function flushUi() {
   await new Promise(resolve => setTimeout(resolve, 0))
@@ -53,12 +46,12 @@ beforeEach(() => {
 })
 
 describe('stale chat selector recovery', () => {
-  it('ChatWidget clears the stale selector and retries exactly once without it', async () => {
+  it('ChatWidget clears the stale selector and retries exactly once into a fragmented done event', async () => {
     mocks.fetch
       .mockResolvedValueOnce(new Response(null, { status: 404 }))
-      .mockResolvedValueOnce(streamResponse())
+      .mockResolvedValueOnce(fragmentedStreamResponse('fresh-session'))
 
-    await sendWidgetMessage()
+    const wrapper = await sendWidgetMessage()
 
     expect(mocks.fetch).toHaveBeenCalledTimes(2)
     expect(JSON.parse(String(mocks.fetch.mock.calls[0]?.[1]?.body))).toEqual({
@@ -70,6 +63,7 @@ describe('stale chat selector recovery', () => {
       message: 'hello',
       history: [],
     })
+    expect(wrapper.findAll('.cmsg.assistant').at(-1)?.text()).toBe('Xin chào Vĩnh Long')
     expect(sessionStorage.getItem('chat_sid')).toBe('fresh-session')
   })
 
@@ -107,6 +101,33 @@ describe('stale chat selector recovery', () => {
     expect(mocks.nuxtFetch.mock.calls[0]?.[1]?.body).toMatchObject({ session_id: 'stale-session' })
     expect(mocks.nuxtFetch.mock.calls[1]?.[1]?.body).not.toHaveProperty('session_id')
     expect(ai!.aiSessionId.value).toBe('fresh-session')
+  })
+
+  it('useAI retries a stale stream selector once and parses the fragmented done event', async () => {
+    let ai: ReturnType<typeof useAI> | undefined
+    const Harness = defineComponent({
+      setup() {
+        ai = useAI()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+    ai!.aiSessionId.value = 'stale-session'
+    mocks.fetch
+      .mockResolvedValueOnce(new Response(null, { status: 404 }))
+      .mockResolvedValueOnce(fragmentedStreamResponse('fresh-stream-session'))
+    const onDone = vi.fn()
+
+    const result = await ai!.aiStream('hello', vi.fn(), onDone)
+
+    expect(result).toBe('Xin chào Vĩnh Long')
+    expect(mocks.fetch).toHaveBeenCalledTimes(2)
+    expect(JSON.parse(String(mocks.fetch.mock.calls[0]?.[1]?.body))).toMatchObject({
+      session_id: 'stale-session',
+    })
+    expect(JSON.parse(String(mocks.fetch.mock.calls[1]?.[1]?.body))).not.toHaveProperty('session_id')
+    expect(onDone).toHaveBeenCalledWith(expect.objectContaining({ session_id: 'fresh-stream-session' }))
+    expect(ai!.aiSessionId.value).toBe('fresh-stream-session')
   })
 
   it('useAI stops after one selector-free retry', async () => {

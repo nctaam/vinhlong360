@@ -41,6 +41,8 @@
 </template>
 
 <script setup lang="ts">
+import { consumeJsonSseStream } from '~/utils/sse'
+
 const route = useRoute()
 // declutter-2 A4: ẩn FAB trên trang chi tiết entity — nơi đã có AITravelTips +
 // SmartRecommendations inline (2 khối AI đủ); route-name (không regex path — id có %2F).
@@ -202,31 +204,23 @@ async function sendMessage(text: string) {
       return
     }
     reader = res.body.getReader()
-    const decoder = new TextDecoder()
     let fullText = ''
 
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      const chunk = decoder.decode(value, { stream: true })
-      for (const line of chunk.split('\n')) {
-        if (!line.startsWith('data: ')) continue
-        try {
-          const data = JSON.parse(line.slice(6))
-          if (data.type === 'text') {
-            fullText += data.content
-            streamText.value = fullText
-            scrollBottom()
-          } else if (data.type === 'done') {
-            if (data.session_id) {
-              sessionId.value = data.session_id
-              try { sessionStorage.setItem('chat_sid', data.session_id) } catch { /* */ }
-            }
-            if (data.suggestions?.length) suggestions.value = data.suggestions
-          }
-        } catch { /* skip malformed SSE line */ }
+    await consumeJsonSseStream(reader, (data) => {
+      if (data.type === 'text' && typeof data.content === 'string') {
+        fullText += data.content
+        streamText.value = fullText
+        scrollBottom()
+      } else if (data.type === 'done') {
+        if (typeof data.session_id === 'string' && data.session_id) {
+          sessionId.value = data.session_id
+          try { sessionStorage.setItem('chat_sid', data.session_id) } catch { /* */ }
+        }
+        if (Array.isArray(data.suggestions) && data.suggestions.length) {
+          suggestions.value = data.suggestions.filter((value): value is string => typeof value === 'string')
+        }
       }
-    }
+    })
 
     messages.value.push({ role: 'assistant', content: fullText || 'Không có phản hồi.' })
   } catch {

@@ -1,4 +1,5 @@
 import type { ChatMessage, ChatResponse, ChatToolCall, Entity } from '~/types'
+import { consumeJsonSseStream } from '~/utils/sse'
 
 export function useAI() {
   const aiSessionId = useState('ai-session-id', () => '')
@@ -56,23 +57,18 @@ export function useAI() {
       }
       if (!res.ok || !res.body) return ''
       const reader = res.body.getReader()
-      const decoder = new TextDecoder()
       let fullText = ''
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        for (const line of decoder.decode(value, { stream: true }).split('\n')) {
-          if (!line.startsWith('data: ')) continue
-          try {
-            const data = JSON.parse(line.slice(6))
-            if (data.type === 'text') { fullText += data.content; onChunk(fullText) }
-            else if (data.type === 'done') {
-              if (data.session_id) aiSessionId.value = data.session_id
-              onDone?.(data)
-            }
-          } catch { /* skip */ }
+      await consumeJsonSseStream(reader, (data) => {
+        if (data.type === 'text' && typeof data.content === 'string') {
+          fullText += data.content
+          onChunk(fullText)
+        } else if (data.type === 'done') {
+          if (typeof data.session_id === 'string' && data.session_id) {
+            aiSessionId.value = data.session_id
+          }
+          onDone?.(data)
         }
-      }
+      })
       return fullText
     } catch { return '' }
   }

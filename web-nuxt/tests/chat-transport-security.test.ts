@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import ChatWidget from '../components/ChatWidget.vue'
 import { useAI } from '../composables/useAI'
+import { fragmentedStreamResponse } from './chat-stream-fixtures'
 
 const mocks = vi.hoisted(() => ({
   authHeaders: vi.fn(() => ({ Authorization: 'Bearer test-token' })),
@@ -119,6 +120,46 @@ describe('chat streaming transport security', () => {
       history: [{ role: 'assistant', content: 'previous answer' }],
       session_id: 'stored-session',
     })
+  })
+
+  it('ChatWidget renders fragmented UTF-8 SSE text and the EOF done event completely', async () => {
+    mocks.fetch.mockResolvedValue(fragmentedStreamResponse('widget-session'))
+    const wrapper = await mountSuspended(ChatWidget, {
+      global: { stubs: { ClientOnly: false, IconLine: true } },
+    })
+
+    await wrapper.get('input').setValue('fragment this response')
+    await wrapper.get('input').trigger('keyup.enter')
+    await flushUi()
+    await flushUi()
+
+    expect(wrapper.findAll('.cmsg.assistant').at(-1)?.text()).toBe('Xin chào Vĩnh Long')
+    expect(sessionStorage.getItem('chat_sid')).toBe('widget-session')
+    expect(wrapper.findAll('.csuggestions button').map(button => button.text())).toContain('Khám phá tiếp')
+  })
+
+  it('useAI accumulates fragmented UTF-8 SSE text and forwards the EOF done event', async () => {
+    mocks.fetch.mockResolvedValue(fragmentedStreamResponse('composable-session'))
+    let ai: ReturnType<typeof useAI> | undefined
+    const Harness = defineComponent({
+      setup() {
+        ai = useAI()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+    const onChunk = vi.fn()
+    const onDone = vi.fn()
+
+    const text = await ai!.aiStream('fragment this response', onChunk, onDone)
+
+    expect(text).toBe('Xin chào Vĩnh Long')
+    expect(onChunk).toHaveBeenLastCalledWith('Xin chào Vĩnh Long')
+    expect(onDone).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'done',
+      session_id: 'composable-session',
+    }))
+    expect(ai!.aiSessionId.value).toBe('composable-session')
   })
 
   it('does not serialize chat payloads or the anonymous owner cookie into browser URLs', () => {
