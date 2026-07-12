@@ -83,7 +83,7 @@ def _is_public(e: dict) -> bool:
     """Entity được hiển thị công khai (listing/homepage): loại entity provisional /
     chưa kiểm chứng (auto-learned). Quarantine cho public display — KB chat vẫn dùng,
     nhưng trang công khai KHÔNG show nội dung tự-học chưa duyệt (tránh cảm giác nghiệp dư)."""
-    return e.get("status") != "provisional" and e.get("verified") is not False
+    return e.get("status") != "provisional" and e.get("verified") not in (False, 0)
 
 
 def _get_public_entity(entity_id: str) -> Optional[dict]:
@@ -93,12 +93,60 @@ def _get_public_entity(entity_id: str) -> Optional[dict]:
     return entity
 
 
+def _filter_public_entities(entities: list[dict]) -> list[dict]:
+    """Keep only entities eligible for anonymous public projections."""
+    return [entity for entity in entities if _is_public(entity)]
+
+
+def _get_public_entities_batch(entity_ids: list[str]) -> dict[str, dict]:
+    """Batch lookup that cannot return provisional or explicitly unverified rows."""
+    return {
+        entity_id: entity
+        for entity_id, entity in db.get_entities_batch(entity_ids).items()
+        if _is_public(entity)
+    }
+
+
+def _public_entities_by_place(place_id: str) -> list[dict]:
+    return _filter_public_entities(db.entities_by_place(place_id))
+
+
+def _public_facilities_by_place(place_id: str | None = None) -> list[dict]:
+    return _filter_public_entities(db.facilities_by_place(place_id))
+
+
 def _itinerary_stop_entity_id(stop) -> str:
     if isinstance(stop, str):
         return stop
     if isinstance(stop, dict):
         return str(stop.get("entityId") or stop.get("entity_id") or stop.get("id") or "")
     return ""
+
+
+def _public_itinerary_stops(
+    stops: list, public_entities: dict[str, dict] | None = None, *, enrich: bool = False,
+) -> list:
+    stop_ids = [sid for sid in (_itinerary_stop_entity_id(stop) for stop in stops) if sid]
+    if public_entities is None:
+        public_entities = _get_public_entities_batch(stop_ids)
+    result = []
+    for stop in stops:
+        stop_id = _itinerary_stop_entity_id(stop)
+        if stop_id and stop_id not in public_entities:
+            continue
+        if enrich and isinstance(stop, dict):
+            entity = public_entities.get(stop_id)
+            if entity:
+                stop.setdefault("id", stop_id)
+                stop.setdefault("entityId", stop_id)
+                stop["name"] = entity["name"]
+                if not stop.get("summary"):
+                    stop["summary"] = entity.get("summary", "")
+                stop["type"] = entity["type"]
+                if entity.get("coordinates"):
+                    stop["coordinates"] = entity["coordinates"]
+        result.append(stop)
+    return result
 
 
 def _itinerary_coverage_areas(itinerary: dict) -> set[str]:
@@ -113,8 +161,8 @@ def _filter_public_relationships(rels: list[dict]) -> list[dict]:
     other_ids = [r.get("other_id") for r in rels if r.get("other_id")]
     if not other_ids:
         return rels
-    batch = db.get_entities_batch(other_ids)
-    return [r for r in rels if _is_public(batch.get(r.get("other_id"), {}))]
+    batch = _get_public_entities_batch(other_ids)
+    return [r for r in rels if r.get("other_id") in batch]
 
 
 def _days_since(iso: str | None) -> int | None:
@@ -1111,7 +1159,7 @@ async def get_featured_entities(response: Response):
                 ORDER BY sort_order LIMIT 20
             """, ())
         entity_ids = [db._row_to_dict(r)["entity_id"] for r in rows]
-        batch = db.get_entities_batch(entity_ids)
+        batch = _get_public_entities_batch(entity_ids)
         result = []
         for eid in entity_ids:
             entity = batch.get(eid)
@@ -1435,12 +1483,17 @@ async def list_places(response: Response, area: Optional[str] = Query(None, max_
         with db._conn() as conn:
             if area:
                 rows = db._fetchall(conn,
-                    f"SELECT id, name, area, level FROM entities WHERE type = 'place' AND area = {ph} ORDER BY name",
+                    f"SELECT id, name, area, level, status, verified FROM entities WHERE type = 'place' AND area = {ph} ORDER BY name",
                     (area,))
             else:
                 rows = db._fetchall(conn,
-                    "SELECT id, name, area, level FROM entities WHERE type = 'place' ORDER BY name LIMIT 500")
-        return [db._row_to_dict(r) for r in rows]
+                    "SELECT id, name, area, level, status, verified FROM entities WHERE type = 'place' ORDER BY name LIMIT 500")
+        public_places = _filter_public_entities([db._row_to_dict(r) for r in rows])
+        return [
+            {"id": place["id"], "name": place["name"],
+             "area": place.get("area"), "level": place.get("level")}
+            for place in public_places
+        ]
     return await asyncio.to_thread(_query)
 
 
@@ -1450,7 +1503,7 @@ async def list_places(response: Response, area: Optional[str] = Query(None, max_
 async def list_facilities(response: Response, place: Optional[str] = Query(None, max_length=100)):
     """GĐ13.4: danh bạ hành chính — cơ quan công vụ (UBND/công an/...) theo xã/phường."""
     response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=7200"
-    facilities = await asyncio.to_thread(db.facilities_by_place, place)
+    facilities = await asyncio.to_thread(_public_facilities_by_place, place)
     return {"facilities": facilities}
 
 
@@ -1472,10 +1525,10 @@ async def place_overview(place_id: str, response: Response):
     """
     validate_path_id(place_id, "place_id")
     def _query():
-        p = db.get_entity(place_id)
+        p = _get_public_entity(place_id)
         if not p or p.get("type") != "place":
             return None
-        ents = db.entities_by_place(place_id)
+        ents = _public_entities_by_place(place_id)
         groups: dict[str, list] = {"tourism": [], "lodging": [], "products": [], "other": []}
         for e in ents:
             t = e.get("type")
@@ -1492,7 +1545,7 @@ async def place_overview(place_id: str, response: Response):
                       "level": p.get("level"), "summary": p.get("summary"),
                       "attributes": p.get("attributes", {}),
                       "coordinates": p.get("coordinates")},
-            "facilities": db.facilities_by_place(place_id),
+            "facilities": _public_facilities_by_place(place_id),
             "counts": {g: len(v) for g, v in groups.items()},
             "tourism": groups["tourism"],
             "lodging": groups["lodging"],
@@ -1570,10 +1623,10 @@ async def place_day_plan(place_id: str, response: Response):
     validate_path_id(place_id, "place_id")
 
     def _query():
-        p = db.get_entity(place_id)
+        p = _get_public_entity(place_id)
         if not p or p.get("type") != "place":
             return None
-        ents = db.entities_by_place(place_id)
+        ents = _public_entities_by_place(place_id)
         center = p.get("coordinates")
         candidates = _select_day_plan_candidates(ents, center)
         stops = _build_day_plan_stops(candidates)
@@ -1602,7 +1655,23 @@ async def list_itineraries(
     offset: int = Query(0, ge=0, le=10000),
 ):
     response.headers["Cache-Control"] = "public, max-age=300, stale-while-revalidate=600"
-    return await asyncio.to_thread(db.list_itineraries, area=area, limit=limit, offset=offset)
+    def _query():
+        itineraries = db.list_itineraries(area=area, limit=limit, offset=offset)
+        stop_ids = [
+            stop_id
+            for itinerary in itineraries
+            for stop_id in (
+                _itinerary_stop_entity_id(stop) for stop in itinerary.get("stops", [])
+            )
+            if stop_id
+        ]
+        public_entities = _get_public_entities_batch(stop_ids) if stop_ids else {}
+        for itinerary in itineraries:
+            itinerary["stops"] = _public_itinerary_stops(
+                itinerary.get("stops", []), public_entities,
+            )
+        return itineraries
+    return await asyncio.to_thread(_query)
 
 
 @router.get("/itineraries/{itin_id}",
@@ -1615,22 +1684,7 @@ async def get_itinerary(itin_id: str, response: Response):
         it = db.get_itinerary(itin_id)
         if not it:
             return None
-        stop_ids = [sid for sid in (_itinerary_stop_entity_id(s) for s in it.get("stops", [])) if sid]
-        entities = db.get_entities_batch(stop_ids)
-        for stop in it.get("stops", []):
-            if not isinstance(stop, dict):
-                continue
-            stop_id = _itinerary_stop_entity_id(stop)
-            entity = entities.get(stop_id)
-            if entity:
-                stop.setdefault("id", stop_id)
-                stop.setdefault("entityId", stop_id)
-                stop["name"] = entity["name"]
-                if not stop.get("summary"):
-                    stop["summary"] = entity.get("summary", "")
-                stop["type"] = entity["type"]
-                if entity.get("coordinates"):
-                    stop["coordinates"] = entity["coordinates"]
+        it["stops"] = _public_itinerary_stops(it.get("stops", []), enrich=True)
         return it
     result = await asyncio.to_thread(_query)
     if not result:
@@ -1741,7 +1795,9 @@ async def autocomplete(
     from ratelimit import check_rate
     check_rate(f"autocomplete:{get_client_ip(request)}", 60, 60, "Quá nhiều yêu cầu. Vui lòng thử lại sau.")
     response.headers["Cache-Control"] = "public, max-age=30, stale-while-revalidate=60"
-    results = await asyncio.to_thread(db.search_entities, q=q, entity_type=type, limit=limit)
+    results = await asyncio.to_thread(
+        db.search_entities, q=q, entity_type=type, limit=limit, public_only=True,
+    )
     return {
         "suggestions": [
             {"id": e["id"], "name": e["name"], "type": e.get("type", ""),
@@ -2020,6 +2076,7 @@ def _fill_remaining_itineraries(itineraries: list[dict], all_itineraries: list[d
 def _select_homepage_itineraries(all_itineraries: list[dict], public: list[dict], month: int) -> list[dict]:
     public_by_id = {e["id"]: e for e in public}  # index O(1) thay vì quét tuyến tính public mỗi stop
     for it in all_itineraries:
+        it["stops"] = _public_itinerary_stops(it.get("stops", []), public_by_id)
         it["_score"] = _score_one_itinerary(it, public_by_id, month)
     all_itineraries.sort(key=lambda x: x.get("_score", 0), reverse=True)
     itineraries, selected_itinerary_ids = _pick_diverse_itineraries(all_itineraries)
@@ -3041,7 +3098,21 @@ async def list_public_collections(response: Response, limit: int = Query(20, ge=
                 ORDER BY sort_order, created_at DESC
                 LIMIT {ph}
             """, (limit,))
-        return {"collections": [db._row_to_dict(r) for r in rows]}
+        collections = [db._row_to_dict(r) for r in rows]
+        entity_ids = []
+        for collection in collections:
+            collection_ids = collection.get("entity_ids") or []
+            if isinstance(collection_ids, str):
+                collection_ids = json.loads(collection_ids)
+            collection["entity_ids"] = collection_ids
+            entity_ids.extend(collection_ids)
+        public_entities = _get_public_entities_batch(entity_ids) if entity_ids else {}
+        for collection in collections:
+            collection["entity_ids"] = [
+                entity_id for entity_id in collection["entity_ids"]
+                if entity_id in public_entities
+            ]
+        return {"collections": collections}
     return await asyncio.to_thread(_query)
 
 
@@ -3064,7 +3135,7 @@ async def get_collection_by_slug(slug: str, response: Response):
         entity_ids = col.get("entity_ids") or []
         if isinstance(entity_ids, str):
             entity_ids = json.loads(entity_ids)
-        entities = db.get_entities_batch(entity_ids) if entity_ids else []
+        entities = _get_public_entities_batch(entity_ids) if entity_ids else []
         col["entities"] = entities
         return col
     result = await asyncio.to_thread(_query)
@@ -3191,7 +3262,7 @@ async def entities_trending(
                 LIMIT {ph}
             """, (days, limit * 3))
         candidates = [db._row_to_dict(r) for r in rows]
-        batch = db.get_entities_batch([c["entity_id"] for c in candidates])
+        batch = _get_public_entities_batch([c["entity_id"] for c in candidates])
         results = []
         for c in candidates:
             e = batch.get(c["entity_id"])
@@ -3287,7 +3358,7 @@ async def compare_entities(
         raise HTTPException(400, "Cần ít nhất 2 entity để so sánh")
 
     def _query():
-        batch = db.get_entities_batch(id_list)
+        batch = _get_public_entities_batch(id_list)
         results = []
         for eid in id_list:
             e = batch.get(eid)

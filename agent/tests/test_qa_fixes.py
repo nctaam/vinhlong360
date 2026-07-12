@@ -351,9 +351,11 @@ class TestItineraryPagination:
         # homepage_curated into module-level helpers (extract-method, behavior
         # identical). The stop-id + coverage helpers are now called there.
         detail_src = inspect.getsource(public_api.get_itinerary)
+        public_stops_src = inspect.getsource(public_api._public_itinerary_stops)
         home_src = inspect.getsource(public_api._score_one_itinerary)
         coverage_src = inspect.getsource(public_api._pick_diverse_itineraries)
-        assert "_itinerary_stop_entity_id" in detail_src
+        assert "_public_itinerary_stops" in detail_src
+        assert "_itinerary_stop_entity_id" in public_stops_src
         assert "_itinerary_stop_entity_id" in home_src
         assert "_itinerary_coverage_areas" in coverage_src
 

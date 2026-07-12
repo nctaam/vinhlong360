@@ -73,7 +73,7 @@ class TestCollections:
 
     def test_public_collection_resolves_entities(self):
         src = inspect.getsource(__import__("public_api").get_collection_by_slug)
-        assert "get_entities_batch" in src
+        assert "_get_public_entities_batch" in src
         assert "entity_ids" in src
 
     def test_admin_create_checks_slug_unique(self):
