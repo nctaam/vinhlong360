@@ -24,10 +24,11 @@
 
 **Files:** `agent/social.py`, `web-nuxt/pages/admin/duyet-tu-hoc.vue`, focused social/admin tests.
 
-- [ ] Add RED tests for `show_saved=false`, followers-only/non-follower profile access, and hidden provisional fields in admin review.
-- [ ] Enforce privacy at SQL selection and return a restricted profile shape for unauthorized viewers.
-- [ ] Render every field that the approval request will verify, or exclude unrendered fields from approval.
-- [ ] Acceptance: denied viewers receive no private fields; admin approval payload equals the visible review payload.
+- [x] Add RED tests for `show_saved=false`, followers-only/non-follower profile access, and hidden provisional fields in admin review.
+- [x] Enforce privacy at SQL selection and return a restricted profile shape for unauthorized viewers.
+- [x] Render every field that the approval request will verify, or exclude unrendered fields from approval.
+- [x] Acceptance: denied viewers receive no private fields; admin approval payload equals the visible review payload.
+- [x] Completed on branch `codex/social-privacy-admin-review`; findings `REVIEW-02-001`, `REVIEW-02-003`, and `REVIEW-16-003` have regression-backed closure.
 
 ### Workstream 3: Chat ownership, cache, URL, and budgets
 
@@ -63,9 +64,13 @@
 **Files:** `agent/moderation.py`, `agent/social.py`, `agent/scheduler.py`, `agent/database.py`, `agent/self_evolve.py`, `agent/kb_versioning.py`, `agent/knowledge.py`.
 
 - [ ] Encode state-transition tests for provider failure, scheduled publication, autonomous upsert, fitness failure, rollback, and reload.
+- [ ] Add synchronized regressions for unrelated edits during a long guarded apply and for partial apply followed by an exception.
+- [ ] Give each guarded operation an owned atomic commit/version, reentrant transaction boundary, or targeted three-way rollback so rollback cannot erase unrelated edits.
+- [ ] Report `rollback_conflict` and `rollback_failed` as explicit failure outcomes; never emit `decision="rolled_back"` when the rejected mutation remains active.
 - [ ] Introduce explicit pending/approved/rejected/quarantined transitions.
 - [ ] Keep rejected autonomous mutations outside PostgreSQL or compensate them transactionally.
-- [ ] Acceptance: unavailable moderation never creates public content; a reported rollback restores the authoritative DB state.
+- [ ] Preserve file mode before fsync and define deployment requirements for ownership/ACL durability; validate on POSIX CI.
+- [ ] Acceptance: unavailable moderation never creates public content; a reported rollback restores the authoritative DB state; unrelated concurrent edits survive guarded failures.
 
 ### Workstream 7: Shared pinned outbound HTTP client
 

@@ -1,6 +1,6 @@
 # Social Privacy and Admin Review Design
 
-> STATUS: active
+> STATUS: done
 
 ## Goal
 
@@ -55,3 +55,7 @@ The admin page renders the complete summary and structured publication fields, p
 - TDD fixture regressions for complete review DTOs, valid tokens, and stale-token rejection.
 - Frontend regression test proving every required field and the token-bearing approval body are present.
 - Focused backend/frontend suites, Ruff, Nuxt typecheck/build, full pytest, and independent spec/code-quality review.
+
+## Deferred Transactional Ownership
+
+Independent review confirmed that file-level CAS protects edits made after the guarded post-apply version is captured, but it cannot assign ownership to edits made during a long `apply_fn`. Resolving that race requires the Workstream 6 transactional publication state machine: an owned atomic commit or targeted three-way rollback, explicit conflict/failure decisions, and authoritative-state compensation. It is outside this design's social-privacy and manual-review invariants.
