@@ -21,6 +21,7 @@ os.environ["SCHEDULER_ENABLED"] = "false"
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import pytest  # noqa: E402
+import anyio  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 from starlette.requests import Request  # noqa: E402
@@ -52,6 +53,11 @@ def client_mocked():
             yield c
 
 
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"
+
+
 def _parse_sse(text: str) -> list[dict]:
     frames = []
     for line in text.splitlines():
@@ -77,7 +83,9 @@ def test_stream_tool_decision_routes_through_circuit_breaker():
     # fail-fast khi LLM sập thay vì chờ trọn LLM_TIMEOUT. Guard chống regression về create-thẳng.
     import inspect
     src = inspect.getsource(server.chat_stream) if hasattr(server, "chat_stream") else inspect.getsource(server)
-    assert "safe_llm_call(get_client(), **_kw)" in src
+    helper_src = inspect.getsource(server._call_stream_decision)
+    assert "_call_stream_decision" in src
+    assert "safe_llm_call(get_client(), **kwargs)" in helper_src
 
 
 def test_stream_synthesis_fallback_is_cancellable():
@@ -360,11 +368,17 @@ class _NestedCancellationProbe:
         self.release_nested = threading.Event()
         self.nested_started = threading.Event()
         self.nested_add_attempted = threading.Event()
+        self.release_provider = self.release_nested
+        self.provider_started = self.nested_started
+        self.provider_add_attempted = self.nested_add_attempted
         self.add_after_settlement = threading.Event()
         self.settlement_started = threading.Event()
         self.call_count = 0
         self.accumulators = []
         self.original_record_usage = None
+        self.consumer_done = threading.Event()
+        self.cancelled = False
+        self.frames = []
 
     def create(self, *_args, stream=False, **_kwargs):
         assert stream is False
@@ -409,6 +423,45 @@ class _RecordingStreamAccumulator(server.UsageAccumulator):
                 if settled_before_add:
                     self._probe.add_after_settlement.set()
                 self._probe.nested_add_attempted.set()
+
+
+class _DecisionCancellationProbe:
+    def __init__(self):
+        self.release_provider = threading.Event()
+        self.provider_started = threading.Event()
+        self.provider_add_attempted = threading.Event()
+        self.add_after_settlement = threading.Event()
+        self.settlement_started = threading.Event()
+        self.consumer_done = threading.Event()
+        self.cancelled = False
+        self.frames = []
+        self.accumulators = []
+
+    def create(self, *_args, stream=False, **_kwargs):
+        assert stream is False
+        self.provider_started.set()
+        self.release_provider.wait(timeout=5)
+        return _completion_with_usage("decision", 15, 7)
+
+
+class _RecordingDecisionAccumulator(server.UsageAccumulator):
+    def __init__(self, probe):
+        super().__init__()
+        self._probe = probe
+        probe.accumulators.append(self)
+
+    def add_response(self, response, *args, **kwargs):
+        settled_before_add = self.snapshot().settled
+        try:
+            return super().add_response(response, *args, **kwargs)
+        finally:
+            if settled_before_add:
+                self._probe.add_after_settlement.set()
+            self._probe.provider_add_attempted.set()
+
+    def settle(self, *args, **kwargs):
+        self._probe.settlement_started.set()
+        return super().settle(*args, **kwargs)
 
 
 async def _cancel_blocked_nested_stream(probe):
@@ -461,6 +514,55 @@ async def _cancel_blocked_nested_stream(probe):
     return observed
 
 
+async def _consume_stream_until_anyio_cancellation(probe):
+    try:
+        response = await server.chat_stream(
+            server.ChatRequest.model_validate({
+                "message": "where should I go?",
+                "history": [{"role": "user", "content": "prior"}],
+            }),
+            Request({
+                "type": "http",
+                "http_version": "1.1",
+                "method": "POST",
+                "scheme": "http",
+                "path": "/chat/stream",
+                "raw_path": b"/chat/stream",
+                "query_string": b"",
+                "headers": [],
+                "client": ("127.0.0.1", 1234),
+                "server": ("testserver", 80),
+            }),
+        )
+        async for event in response.body_iterator:
+            probe.frames.extend(_parse_sse(event))
+    except anyio.get_cancelled_exc_class():
+        probe.cancelled = True
+        raise
+    finally:
+        probe.consumer_done.set()
+
+
+async def _cancel_anyio_group_after_provider_starts(probe, started_event, add_event):
+    observed = {}
+    async with anyio.create_task_group() as task_group:
+        task_group.start_soon(_consume_stream_until_anyio_cancellation, probe)
+        observed["started"] = await anyio.to_thread.run_sync(started_event.wait, 2)
+        task_group.cancel_scope.cancel()
+        with anyio.CancelScope(shield=True):
+            observed["settled_before_release"] = await anyio.to_thread.run_sync(
+                probe.settlement_started.wait,
+                0.25,
+            )
+            observed["consumer_done_before_release"] = probe.consumer_done.is_set()
+            probe.release_provider.set()
+            observed["add_attempted"] = await anyio.to_thread.run_sync(
+                add_event.wait,
+                2,
+            )
+    return observed
+
+
 def _assert_nested_cancel_behavior(probe, observed):
     assert observed == {
         "settled_before_release": False,
@@ -488,6 +590,32 @@ def _assert_nested_cancel_usage(probe, guardrail, attribution):
         "provider_call_count": 2,
         "estimated_call_count": 0,
     }
+
+
+def _assert_anyio_cancellation_waited(probe, observed):
+    assert observed == {
+        "started": True,
+        "settled_before_release": False,
+        "consumer_done_before_release": False,
+        "add_attempted": True,
+    }
+    assert probe.cancelled is True
+    assert probe.add_after_settlement.is_set() is False
+    assert probe.consumer_done.is_set() is True
+
+
+def _assert_decision_cancel_usage(probe, guardrail, attribution):
+    assert probe.frames == []
+    assert len(probe.accumulators) == 1
+    snapshot = probe.accumulators[0].snapshot()
+    assert snapshot.settled is True
+    assert snapshot.prompt_tokens == 15
+    assert snapshot.completion_tokens == 7
+    assert snapshot.total_tokens == 22
+    assert snapshot.provider_call_count == 1
+    assert guardrail.calls == [("user:alice", 22, 0.0)]
+    assert attribution.calls[0]["tokens"]["total_tokens"] == 22
+    assert attribution.calls[0]["tokens"]["provider_call_count"] == 1
 
 
 def test_stream_missing_terminal_usage_estimates_complete_call_once(monkeypatch):
@@ -734,3 +862,59 @@ def test_stream_cancellation_waits_for_nested_provider_before_settlement(monkeyp
 
     _assert_nested_cancel_behavior(probe, observed)
     _assert_nested_cancel_usage(probe, guardrail, attribution)
+
+
+@pytest.mark.anyio
+async def test_anyio_repeated_cancellation_waits_for_nested_provider(monkeypatch):
+    probe = _NestedCancellationProbe()
+    guardrail, attribution = _configure_usage_stream(monkeypatch, probe.create)
+    probe.original_record_usage = guardrail.record_usage
+    monkeypatch.setattr(guardrail, "record_usage", probe.record_usage)
+    monkeypatch.setattr(
+        server,
+        "UsageAccumulator",
+        lambda: _RecordingStreamAccumulator(probe),
+    )
+
+    observed = await _cancel_anyio_group_after_provider_starts(
+        probe,
+        probe.provider_started,
+        probe.provider_add_attempted,
+    )
+
+    _assert_anyio_cancellation_waited(probe, observed)
+    _assert_nested_cancel_usage(probe, guardrail, attribution)
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("use_circuit_breaker", [False, True])
+async def test_anyio_cancellation_accounts_blocked_first_decision(
+    monkeypatch,
+    use_circuit_breaker,
+):
+    probe = _DecisionCancellationProbe()
+    guardrail, attribution = _configure_usage_stream(monkeypatch, probe.create)
+    monkeypatch.setattr(
+        server,
+        "UsageAccumulator",
+        lambda: _RecordingDecisionAccumulator(probe),
+    )
+    monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", use_circuit_breaker)
+    if use_circuit_breaker:
+        monkeypatch.setattr(
+            server,
+            "safe_llm_call",
+            lambda *_args, **_kwargs: {
+                "success": True,
+                "response": probe.create(),
+            },
+        )
+
+    observed = await _cancel_anyio_group_after_provider_starts(
+        probe,
+        probe.provider_started,
+        probe.provider_add_attempted,
+    )
+
+    _assert_anyio_cancellation_waited(probe, observed)
+    _assert_decision_cancel_usage(probe, guardrail, attribution)

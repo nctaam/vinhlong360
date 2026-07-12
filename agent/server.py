@@ -24,6 +24,7 @@ import time
 import traceback
 import asyncio
 import threading
+import anyio
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
@@ -1779,11 +1780,30 @@ async def _await_chat_worker(func, *args):
     try:
         return await asyncio.shield(worker)
     except asyncio.CancelledError:
-        try:
-            await worker
-        except Exception:
-            logger.debug("Chat worker failed after request cancellation", exc_info=True)
+        with anyio.CancelScope(shield=True):
+            try:
+                await asyncio.shield(worker)
+            except Exception:
+                logger.debug("Chat worker failed after request cancellation", exc_info=True)
         raise
+
+
+def _call_stream_decision(kwargs, usage_accumulator, model, messages):
+    """Call and account for one stream tool-decision response in the worker."""
+    if HAS_CIRCUIT_BREAKER:
+        result = safe_llm_call(get_client(), **kwargs)
+        if not result["success"]:
+            return result
+        response = result["response"]
+    else:
+        response = get_client().chat.completions.create(**kwargs)
+        result = {"success": True, "response": response}
+    usage_accumulator.add_response(
+        response,
+        model=model,
+        messages=messages,
+    )
+    return result
 
 
 def _prepare_pending_calls(tool_calls, tools_used, messages, total_tool_calls, max_tool_calls):
@@ -2511,20 +2531,18 @@ async def chat_stream(req: ChatRequest, request: Request):
                 # (request /chat khác + /health vẫn xử lý được trong lúc chờ LLM).
                 # Route qua safe_llm_call (circuit breaker) như non-stream — fail-fast khi
                 # LLM sập thay vì chờ trọn LLM_TIMEOUT + ghi nhận vào llm_breaker chung.
-                if HAS_CIRCUIT_BREAKER:
-                    cb = await asyncio.to_thread(lambda: safe_llm_call(get_client(), **_kw))
-                    if not cb["success"]:
-                        yield f"data: {json.dumps({'type': 'text', 'content': cb['message']}, ensure_ascii=False)}\n\n"
-                        yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
-                        return
-                    response = cb["response"]
-                else:
-                    response = await asyncio.to_thread(lambda: get_client().chat.completions.create(**_kw))
-                usage_accumulator.add_response(
-                    response,
-                    model=_stream_model,
-                    messages=messages,
+                decision = await _await_chat_worker(
+                    _call_stream_decision,
+                    _kw,
+                    usage_accumulator,
+                    _stream_model,
+                    messages,
                 )
+                if not decision["success"]:
+                    yield f"data: {json.dumps({'type': 'text', 'content': decision['message']}, ensure_ascii=False)}\n\n"
+                    yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
+                    return
+                response = decision["response"]
                 msg = response.choices[0].message
             except Exception as exc:
                 error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
