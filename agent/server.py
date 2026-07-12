@@ -3,7 +3,7 @@ vinhlong360 — Knowledge Agent Server (v3 — Production).
 
 FastAPI server cung cấp:
   POST /chat          — chat endpoint (JSON) + rate limiting
-  GET  /chat/stream   — SSE streaming chat + rate limiting
+  POST /chat/stream   — SSE streaming chat + rate limiting
   POST /reload        — hot-reload data + cache invalidation + data sync
   GET  /health        — health check + cache stats + response times
   GET  /              — trang chat
@@ -1260,8 +1260,7 @@ async def track_response_time(request: Request, call_next):
 from pydantic import Field, field_validator
 
 def _sanitize_message(v: str) -> str:
-    """Strip HTML/script tags khỏi message người dùng. Dùng cho cả POST /chat
-    (validator) lẫn GET /chat/stream (query param) — đảm bảo parity."""
+    """Strip HTML/script tags from user chat messages."""
     v = re.sub(r"<script[^>]*>.*?</script>", "", v or "", flags=re.DOTALL | re.IGNORECASE)
     v = re.sub(r"<[^>]+>", "", v)
     v = v.replace("\r\n", " ").replace("\r", " ").replace("\n", " ")
@@ -2273,15 +2272,17 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 
 # ── SSE Streaming ──
 
-@app.get("/chat/stream")
-async def chat_stream(request: Request, message: str, history: str = "[]", session_id: str = ""):
+@app.post("/chat/stream")
+async def chat_stream(req: ChatRequest, request: Request):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
     session = None
-    sid = session_id
+    message = req.message
+    hist = req.history
+    sid = req.session_id or ""
     try:
-        if session_id:
-            session = memory_manager.require_session(owner_key, session_id)
+        if req.session_id:
+            session = memory_manager.require_session(owner_key, req.session_id)
     except UnknownConversation:
         not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
         set_chat_owner_cookie(not_found, owner_context)
@@ -2301,20 +2302,10 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             yield f"data: {json.dumps({'type': 'error', 'content': 'Quá nhiều yêu cầu. Vui lòng thử lại sau.'}, ensure_ascii=False)}\n\n"
         return _stream_response(rate_limit_stream())
 
-    # Parity với POST /chat: cắt độ dài + strip HTML (query param không qua pydantic validator).
-    message = _sanitize_message(message)[:2000]
     if not message:
         async def empty_stream():
             yield f"data: {json.dumps({'type': 'error', 'content': 'Tin nhắn trống.'}, ensure_ascii=False)}\n\n"
         return _stream_response(empty_stream())
-
-    try:
-        hist = json.loads(history)
-        if not isinstance(hist, list):
-            hist = []
-        hist = hist[:50]
-    except Exception:
-        hist = []
 
     # ── Guardrails: input safety ──
     if HAS_GUARDRAILS:
@@ -3886,9 +3877,8 @@ async function send(){
   const typing=document.createElement('div');typing.className='typing';
   typing.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';
   msgs.appendChild(typing);msgs.scrollTop=msgs.scrollHeight;
-  const params=new URLSearchParams({message:text,history:JSON.stringify(history.slice(-20))});
   try{
-    const response=await fetch('/chat/stream?'+params);const reader=response.body.getReader();
+    const response=await fetch('/chat/stream',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({message:text,history:history.slice(-20)})});const reader=response.body.getReader();
     const decoder=new TextDecoder();typing.remove();
     const msgDiv=addMsg('assistant','',true);const contentDiv=msgDiv.querySelector('.content')||msgDiv;
     let fullText='',tools=[],buffer='';

@@ -1,4 +1,4 @@
-"""Đợt 4 — chat_stream SSE protocol (B3). GET /chat/stream (server.py:2258) trả SSE
+"""Đợt 4 — chat_stream SSE protocol (B3). POST /chat/stream (server.py:2258) trả SSE
 `data: {json}` frames có key 'type'. Trước không có test protocol → đổi schema frame
 vỡ chat UI mà zero signal. Test: empty→'error'; valid→kết thúc 'done'; mọi frame có 'type'.
 """
@@ -63,7 +63,7 @@ def _parse_sse(text: str) -> list[dict]:
 
 
 def test_stream_empty_message_yields_error_frame(client_mocked):
-    r = client_mocked.get("/chat/stream", params={"message": ""})
+    r = client_mocked.post("/chat/stream", json={"message": "   ", "history": []})
     assert r.status_code == 200
     frames = _parse_sse(r.text)
     assert any(f.get("type") == "error" for f in frames), frames
@@ -87,10 +87,50 @@ def test_stream_synthesis_fallback_is_cancellable():
 
 
 def test_stream_valid_message_is_wellformed_and_terminates(client_mocked):
-    r = client_mocked.get("/chat/stream", params={"message": "Vĩnh Long có gì chơi?"})
+    r = client_mocked.post(
+        "/chat/stream",
+        json={
+            "message": "What should I visit?",
+            "history": [{"role": "user", "content": "I like museums."}],
+        },
+    )
     assert r.status_code == 200
+    assert r.headers["content-type"].startswith("text/event-stream")
     frames = _parse_sse(r.text)
     assert frames, "không có frame SSE nào"
     assert all("type" in f for f in frames), frames          # mọi frame có 'type'
     types = {f.get("type") for f in frames}
     assert "done" in types or "error" in types, types        # phải có frame kết thúc
+
+
+def test_stream_get_transport_is_not_available(client_mocked):
+    r = client_mocked.get(
+        "/chat/stream",
+        params={"message": "secret prompt", "history": "[]", "session_id": "selector"},
+    )
+
+    assert r.status_code == 405
+
+
+def test_builtin_chat_page_uses_post_body_for_stream_payload(client_mocked):
+    r = client_mocked.get("/")
+
+    assert r.status_code == 200
+    assert "/chat/stream?" not in r.text
+    assert "fetch('/chat/stream'" in r.text
+    assert "method:'POST'" in r.text
+    assert "JSON.stringify({message:text,history:history.slice(-20)})" in r.text
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"message": "x" * 2001, "history": []},
+        {"message": "hello", "history": [{}] * 51},
+        {"message": "hello", "history": [], "session_id": "s" * 33},
+    ],
+)
+def test_stream_rejects_payloads_outside_chat_request_bounds(client_mocked, payload):
+    r = client_mocked.post("/chat/stream", json=payload)
+
+    assert r.status_code == 422

@@ -274,7 +274,7 @@ def test_empty_stream_does_not_create_or_evict_session(tmp_path, monkeypatch):
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
     client = TestClient(server.app)
 
-    response = client.get("/chat/stream", params={"message": "   "})
+    response = client.post("/chat/stream", json={"message": "   ", "history": []})
 
     assert response.status_code == 200
     assert existing_key in manager._sessions
@@ -295,7 +295,7 @@ def test_guardrail_blocked_stream_uses_owner_without_creating_session(tmp_path, 
     )
     client = TestClient(server.app)
 
-    response = client.get("/chat/stream", params={"message": "blocked"})
+    response = client.post("/chat/stream", json={"message": "blocked", "history": []})
 
     assert response.status_code == 200
     assert checked == [("blocked", "anon:new-owner")]
@@ -318,9 +318,9 @@ def test_stream_mismatch_fails_before_access_and_sets_anonymous_cookie(tmp_path,
     monkeypatch.setattr(server, "get_client", forbidden)
     client = TestClient(server.app)
 
-    response = client.get(
+    response = client.post(
         "/chat/stream",
-        params={"message": "steal", "session_id": conversation.session_id},
+        json={"message": "steal", "history": [], "session_id": conversation.session_id},
     )
 
     assert response.status_code == 404
@@ -358,9 +358,9 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
     monkeypatch.setattr(server.cache, "get", exact_read)
     client = TestClient(server.app)
 
-    response = client.get(
+    response = client.post(
         "/chat/stream",
-        params={"message": "cached query", "session_id": conversation.session_id},
+        json={"message": "cached query", "history": [], "session_id": conversation.session_id},
     )
 
     assert response.status_code == 200
@@ -479,7 +479,7 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
     request_thread = threading.Thread(
         target=lambda: response_result.setdefault(
             "response",
-            client.get("/chat/stream", params={"message": original_query}),
+            client.post("/chat/stream", json={"message": original_query, "history": []}),
         )
     )
     request_thread.start()

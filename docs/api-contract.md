@@ -112,7 +112,7 @@ The table above lists the primary endpoints; `agent/public_api.py` also serves a
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/chat` | Chat (JSON request/response) |
-| GET | `/chat/stream` | SSE streaming chat |
+| POST | `/chat/stream` | SSE streaming chat; JSON body uses `ChatRequest` (`message`, `history`, optional `session_id`) |
 
 ### Authentication (`/auth` — note: NOT under `/api`; nginx proxies `/auth` directly to the agent)
 

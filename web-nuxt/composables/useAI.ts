@@ -35,12 +35,18 @@ export function useAI() {
     return { reply: '', suggestions: [], tool_calls: [] }
   }
 
-  async function aiStream(message: string, onChunk: (text: string) => void, onDone?: (data: Record<string, unknown>) => void) {
+  async function aiStream(
+    message: string,
+    onChunk: (text: string) => void,
+    onDone?: (data: Record<string, unknown>) => void,
+    history: ChatMessage[] = [],
+  ) {
     try {
       const request = () => fetch('/chat/stream', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(aiSessionId.value ? { message, session_id: aiSessionId.value } : { message }),
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        credentials: 'same-origin',
+        body: JSON.stringify(chatBody(message, history)),
       })
       let res = await request()
       if (res.status === 404 && aiSessionId.value) {

@@ -47,6 +47,7 @@ const route = useRoute()
 const isEntityDetail = computed(() => route.name === 'dia-diem-id')
 const { get: ss } = useSiteSettings()
 const { enabled: ff } = useFeature()
+const { authHeaders } = useAuth()
 const chatTitle = computed(() => ss('chat.title', 'Hỏi về Vĩnh Long'))
 const chatPlaceholder = computed(() => ss('chat.placeholder', 'Hỏi gì đó về Vĩnh Long…'))
 const chatDisclaimer = computed(() => ss('chat.disclaimer', 'Nội dung do AI tạo, có thể chưa chính xác — vui lòng kiểm chứng.'))
@@ -115,15 +116,6 @@ function clearSessionId() {
   try { sessionStorage.removeItem('chat_sid') } catch { /* private/disabled */ }
 }
 
-function streamUrl(userMsg: string, history: { role: string; content: string }[]) {
-  const params = new URLSearchParams({
-    message: userMsg,
-    history: JSON.stringify(history),
-  })
-  if (sessionId.value) params.set('session_id', sessionId.value)
-  return `/chat/stream?${params}`
-}
-
 async function openChatStream(
   userMsg: string,
   history: { role: string; content: string }[],
@@ -131,7 +123,16 @@ async function openChatStream(
   canRetry = true,
 ) {
   const hadSelector = Boolean(sessionId.value)
-  const res = await fetch(streamUrl(userMsg, history), { signal })
+  const body = sessionId.value
+    ? { message: userMsg, history, session_id: sessionId.value }
+    : { message: userMsg, history }
+  const res = await fetch('/chat/stream', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    credentials: 'same-origin',
+    body: JSON.stringify(body),
+    signal,
+  })
   if (res.status === 404 && hadSelector && canRetry) {
     clearSessionId()
     return openChatStream(userMsg, history, signal, false)
