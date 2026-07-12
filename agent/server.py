@@ -231,7 +231,7 @@ except ImportError:
     HAS_OPTIMIZER = False
 
 try:
-    from semantic_cache import multi_tier_cache, semantic_get, semantic_put, cache_stats as semantic_cache_stats, cache_warmer  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
+    from semantic_cache import multi_tier_cache, semantic_get_async, semantic_put, cache_stats as semantic_cache_stats, cache_warmer  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_SEMANTIC_CACHE = True
 except ImportError:
     HAS_SEMANTIC_CACHE = False
@@ -2022,7 +2022,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     # ── Semantic cache: embedding-based dedup (before regular cache) ──
     if not history and HAS_SEMANTIC_CACHE:
         try:
-            sem_cached = semantic_get(req.message, owner_key=owner_key)
+            sem_cached = await semantic_get_async(req.message, owner_key=owner_key)
             if sem_cached:
                 if HAS_METRICS:
                     track_cache("hit")
@@ -2430,7 +2430,7 @@ async def chat_stream(req: ChatRequest, request: Request):
     # ── Semantic cache: check before regular cache ──
     if not hist and HAS_SEMANTIC_CACHE:
         try:
-            sem_cached = semantic_get(cache_query, owner_key=owner_key)
+            sem_cached = await semantic_get_async(cache_query, owner_key=owner_key)
             if sem_cached:
                 async def sem_cached_stream():
                     reply = sem_cached.get("reply", "")

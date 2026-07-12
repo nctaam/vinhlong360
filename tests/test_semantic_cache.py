@@ -1,5 +1,6 @@
 """Tests for agent/semantic_cache.py -- Semantic Cache & Request Deduplication."""
 
+import asyncio
 import sys
 import os
 import time
@@ -365,6 +366,34 @@ class TestConvenienceFunctions(unittest.TestCase):
         result = multi_tier_cache.get(unique)
         self.assertIsNotNone(result)
         self.assertEqual(result["reply"], "test")
+
+    def test_semantic_get_async_propagates_waiter_error(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+
+        class RaisingDeduplicator(RequestDeduplicator):
+            def acquire(self, query, timeout=5.0, owner_key=""):
+                return False, _make_key(query, owner_key=owner_key)
+
+            def wait_for(self, dedup_key, timeout=30):
+                raise RuntimeError("semantic waiter failed")
+
+        with (
+            patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+            patch.object(
+                semantic_cache_mod,
+                "deduplicator",
+                RaisingDeduplicator(),
+            ),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "semantic waiter failed"):
+                asyncio.run(
+                    semantic_cache_mod.semantic_get_async(
+                        "async semantic error",
+                        owner_key="user:alice",
+                    )
+                )
 
     def test_semantic_convenience_functions_isolate_cache_and_dedup_by_owner(self):
         matcher = SemanticMatcher()

@@ -11,6 +11,7 @@ Persistence: agent/data/semantic_cache/entries.json
 Reuses _tokenize / _normalize_vietnamese from vector_search.py.
 """
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -679,6 +680,21 @@ def semantic_get(query: str, owner_key: str = "") -> dict | None:
             return result
 
     # Caller is first (or dedup timed out) — no cached result available
+    return None
+
+
+async def semantic_get_async(query: str, owner_key: str = "") -> dict | None:
+    """Async semantic lookup that keeps duplicate waits off the event loop."""
+    cached = multi_tier_cache.get(query, owner_key=owner_key)
+    if cached is not None:
+        return cached
+
+    is_first, dedup_key = deduplicator.acquire(query, owner_key=owner_key)
+    if not is_first:
+        result = await asyncio.to_thread(deduplicator.wait_for, dedup_key)
+        if result is not None:
+            return result
+
     return None
 
 

@@ -1,5 +1,6 @@
 """Security boundary tests for server-derived chat ownership."""
 
+import asyncio
 import importlib
 import importlib.util
 import os
@@ -10,7 +11,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
+import pytest
 from fastapi import Response
+from starlette.requests import Request
 from fastapi.testclient import TestClient
 
 os.environ.setdefault("LLM_API_KEY", "test-key")
@@ -20,6 +23,7 @@ os.environ["BACKGROUND_INDEX_BUILD"] = "false"
 os.environ["SCHEDULER_ENABLED"] = "false"
 
 import server  # noqa: E402
+import semantic_cache as semantic_cache_mod  # noqa: E402
 from memory import MemoryManager  # noqa: E402
 
 
@@ -43,6 +47,109 @@ def _capacity_manager(tmp_path):
 
 async def _new_anonymous_owner(_request):
     return SimpleNamespace(owner_key="anon:new-owner", cookie_value="visitor.signature")
+
+
+class _SignalingDeduplicator(semantic_cache_mod.RequestDeduplicator):
+    def __init__(self, waiter_started):
+        super().__init__()
+        self._waiter_started = waiter_started
+
+    def wait_for(self, dedup_key, timeout=30):
+        self._waiter_started.set()
+        return super().wait_for(dedup_key, timeout=5)
+
+
+def _release_semantic_deadlock(
+    async_release_completed,
+    query,
+    watchdog_sentinel,
+    owner_key,
+):
+    if not async_release_completed.wait(timeout=2):
+        semantic_cache_mod.semantic_put(
+            query,
+            watchdog_sentinel,
+            owner_key=owner_key,
+        )
+
+
+async def _record_semantic_heartbeat(waiter_started, heartbeat_progressed):
+    assert await asyncio.to_thread(waiter_started.wait, 1)
+    heartbeat_progressed.set()
+
+
+async def _record_unrelated_async_work(waiter_started, unrelated_progressed):
+    assert await asyncio.to_thread(waiter_started.wait, 1)
+    await asyncio.sleep(0)
+    unrelated_progressed.set()
+
+
+async def _exercise_semantic_waiter_handler(
+    endpoint,
+    query,
+    owner_key,
+    sentinel,
+    waiter_started,
+    heartbeat_progressed,
+    unrelated_progressed,
+    async_release_completed,
+):
+    path = "/chat" if endpoint == "post" else "/chat/stream"
+    request = Request({
+        "type": "http",
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": path,
+        "raw_path": path.encode(),
+        "query_string": b"",
+        "headers": [],
+        "client": ("127.0.0.1", 1234),
+        "server": ("testserver", 80),
+    })
+    chat_request = server.ChatRequest.model_validate({
+        "message": query,
+        "history": [],
+    })
+    if endpoint == "post":
+        handler = server.chat(chat_request, request, Response())
+    else:
+        handler = server.chat_stream(chat_request, request)
+
+    handler_task = asyncio.create_task(handler)
+    await asyncio.gather(
+        _record_semantic_heartbeat(waiter_started, heartbeat_progressed),
+        _record_unrelated_async_work(waiter_started, unrelated_progressed),
+    )
+    semantic_cache_mod.semantic_put(query, sentinel, owner_key=owner_key)
+    async_release_completed.set()
+    return await handler_task
+
+
+async def _consume_stream_body(response):
+    return "".join([chunk async for chunk in response.body_iterator])
+
+
+def _assert_semantic_waiter_response(endpoint, response, sentinel):
+    if endpoint == "post":
+        assert response.reply == sentinel["reply"]
+        assert response.cached is True
+    else:
+        body = asyncio.run(_consume_stream_body(response))
+        assert sentinel["reply"] in body
+        assert "semantic_cache_hit" in body
+
+
+def _assert_semantic_probe_completed(
+    watchdog,
+    async_release_completed,
+    heartbeat_progressed,
+    unrelated_progressed,
+):
+    assert not watchdog.is_alive()
+    assert async_release_completed.is_set()
+    assert heartbeat_progressed.is_set()
+    assert unrelated_progressed.is_set()
 
 
 def test_anonymous_owner_cookie_round_trip_and_tamper_rotation(monkeypatch):
@@ -168,7 +275,7 @@ def test_post_mismatch_fails_before_state_cache_prompt_or_provider_access(tmp_pa
     monkeypatch.setattr(manager, "on_message", forbidden)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", forbidden)
     monkeypatch.setattr(server.cache, "get", forbidden)
-    monkeypatch.setattr(server, "semantic_get", forbidden)
+    monkeypatch.setattr(server, "semantic_get_async", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
     monkeypatch.setattr(server, "get_client", forbidden)
     client = TestClient(server.app)
@@ -199,7 +306,7 @@ def test_owned_post_cache_reads_receive_owner_key(tmp_path, monkeypatch):
     async def alice_owner(_request):
         return SimpleNamespace(owner_key="user:alice", cookie_value=None)
 
-    def semantic_read(message, owner_key=""):
+    async def semantic_read(message, owner_key=""):
         calls.append(("semantic", message, owner_key))
         return None
 
@@ -212,7 +319,7 @@ def test_owned_post_cache_reads_receive_owner_key(tmp_path, monkeypatch):
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
-    monkeypatch.setattr(server, "semantic_get", semantic_read)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_read)
     monkeypatch.setattr(server.cache, "get", exact_read)
     client = TestClient(server.app)
 
@@ -313,7 +420,7 @@ def test_stream_mismatch_fails_before_access_and_sets_anonymous_cookie(tmp_path,
     monkeypatch.setattr(manager, "on_message", forbidden)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", forbidden)
     monkeypatch.setattr(server.cache, "get", forbidden)
-    monkeypatch.setattr(server, "semantic_get", forbidden)
+    monkeypatch.setattr(server, "semantic_get_async", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
     monkeypatch.setattr(server, "get_client", forbidden)
     client = TestClient(server.app)
@@ -341,7 +448,7 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
     async def alice_owner(_request):
         return SimpleNamespace(owner_key="user:alice", cookie_value=None)
 
-    def semantic_read(message, owner_key=""):
+    async def semantic_read(message, owner_key=""):
         calls.append(("semantic", message, owner_key))
         return None
 
@@ -354,7 +461,7 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
     monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
     monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
     monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
-    monkeypatch.setattr(server, "semantic_get", semantic_read)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_read)
     monkeypatch.setattr(server.cache, "get", exact_read)
     client = TestClient(server.app)
 
@@ -370,6 +477,93 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
         ("semantic", "cached query", "user:alice"),
         ("exact", "cached query", "user:alice"),
     ]
+
+
+@pytest.mark.parametrize("endpoint", ["post", "stream"])
+def test_semantic_dedup_wait_keeps_async_handlers_responsive(
+    endpoint,
+    tmp_path,
+    monkeypatch,
+):
+    manager = _manager(tmp_path)
+    owner_key = "user:alice"
+    query = "same owner duplicate semantic query"
+    sentinel = {
+        "reply": "semantic singleflight result",
+        "tool_calls": [],
+        "suggestions": [],
+    }
+    watchdog_sentinel = {
+        "reply": "watchdog deadlock release",
+        "tool_calls": [],
+        "suggestions": [],
+    }
+    waiter_started = threading.Event()
+    heartbeat_progressed = threading.Event()
+    unrelated_progressed = threading.Event()
+    async_release_completed = threading.Event()
+
+    matcher = semantic_cache_mod.SemanticMatcher()
+    semantic_cache = semantic_cache_mod.MultiTierCache(
+        matcher,
+        l1_max=10,
+        l2_max=20,
+    )
+    semantic_cache._l2_loaded = True
+    semantic_cache._save_l2 = lambda: None
+    deduplicator = _SignalingDeduplicator(waiter_started)
+    is_holder, _dedup_key = deduplicator.acquire(query, owner_key=owner_key)
+    assert is_holder
+
+    async def alice_owner(_request):
+        return SimpleNamespace(owner_key=owner_key, cookie_value=None)
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("semantic dedup waiter must not start provider work")
+
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(manager, "on_message", lambda *_args: None)
+    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_METRICS", False)
+    monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server.cache, "get", forbidden)
+    monkeypatch.setattr(server, "UsageAccumulator", forbidden)
+    monkeypatch.setattr(server, "_build_messages", forbidden)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
+    monkeypatch.setattr(semantic_cache_mod, "deduplicator", deduplicator)
+
+    watchdog = threading.Thread(
+        target=_release_semantic_deadlock,
+        args=(
+            async_release_completed,
+            query,
+            watchdog_sentinel,
+            owner_key,
+        ),
+    )
+    watchdog.start()
+    response = asyncio.run(_exercise_semantic_waiter_handler(
+        endpoint,
+        query,
+        owner_key,
+        sentinel,
+        waiter_started,
+        heartbeat_progressed,
+        unrelated_progressed,
+        async_release_completed,
+    ))
+    watchdog.join(timeout=3)
+    _assert_semantic_probe_completed(
+        watchdog,
+        async_release_completed,
+        heartbeat_progressed,
+        unrelated_progressed,
+    )
+    _assert_semantic_waiter_response(endpoint, response, sentinel)
 
 
 def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, monkeypatch):
