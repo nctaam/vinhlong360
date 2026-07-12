@@ -324,18 +324,26 @@ def _tool_description(name: str, args: dict) -> str:
     return f"Đang xử lý {name}..."
 
 
-def generate_followups(context: str) -> list[str]:
+def generate_followups(context: str, usage_accumulator=None) -> list[str]:
     try:
-        response = get_client().chat.completions.create(
-            model=get_model_mini(),
-            messages=[{"role": "user", "content": f"""Dựa vào ngữ cảnh sau, gợi ý 3 câu hỏi tiếp theo ngắn gọn (< 40 ký tự) mà du khách có thể muốn hỏi.
+        model = get_model_mini()
+        messages = [{"role": "user", "content": f"""Dựa vào ngữ cảnh sau, gợi ý 3 câu hỏi tiếp theo ngắn gọn (< 40 ký tự) mà du khách có thể muốn hỏi.
 
 Ngữ cảnh: {context}
 
-Trả về JSON array gồm 3 string. Chỉ trả JSON, không text khác."""}],
+Trả về JSON array gồm 3 string. Chỉ trả JSON, không text khác."""}]
+        response = get_client().chat.completions.create(
+            model=model,
+            messages=messages,
             temperature=0.7,
             timeout=LLM_TIMEOUT,
         )
+        if usage_accumulator is not None:
+            usage_accumulator.add_response(
+                response,
+                model=model,
+                messages=messages,
+            )
         content = response.choices[0].message.content.strip()
         content = re.sub(r"^```json\s*", "", content)
         content = re.sub(r"\s*```$", "", content)
@@ -418,11 +426,11 @@ def _hybrid_rerank_search(args: dict) -> list[dict]:
         return keyword_results[:limit]
 
 
-def call_tool(name: str, args: dict) -> str:
+def call_tool(name: str, args: dict, usage_accumulator=None) -> str:
     # P1: cô lập lỗi tool (KeyError do LLM thiếu tham số, lỗi tool…) → trả lỗi có cấu trúc
     # thay vì propagate (trước đây args["x"] thiếu field → 500 ở serial path).
     try:
-        return _call_tool_impl(name, args or {})
+        return _call_tool_impl(name, args or {}, usage_accumulator)
     except Exception as e:  # noqa: BLE001
         logger.warning(f"call_tool '{name}' lỗi: {e}")
         return json.dumps({"error": "Không thực hiện được công cụ (thiếu hoặc sai tham số)."}, ensure_ascii=False)
@@ -709,8 +717,8 @@ def _tool_web_search(args: dict) -> str:
     return json.dumps({"results": results}, ensure_ascii=False)
 
 
-def _tool_suggest_followups(args: dict) -> str:
-    suggestions = generate_followups(args["context"])
+def _tool_suggest_followups(args: dict, usage_accumulator=None) -> str:
+    suggestions = generate_followups(args["context"], usage_accumulator)
     return json.dumps({"suggestions": suggestions}, ensure_ascii=False)
 
 
@@ -804,9 +812,11 @@ _TOOL_HANDLERS = {
 }
 
 
-def _call_tool_impl(name: str, args: dict) -> str:
+def _call_tool_impl(name: str, args: dict, usage_accumulator=None) -> str:
     handler = _TOOL_HANDLERS.get(name)
     if handler is not None:
+        if handler is _tool_suggest_followups:
+            return handler(args, usage_accumulator)
         return handler(args)
     return json.dumps({"error": f"Unknown tool: {name}"})
 
@@ -1753,15 +1763,21 @@ def _run_agent_orchestrated(
     if _use_mini:
         logger.info("Model routing: using MINI", category=_cat.value, agent=_agent.name)
 
+    def _request_call_tool(name, args):
+        return call_tool(name, args, usage_accumulator)
+
     result = orch.run(
         message=message,
         history=history,
         session_id=session_id,
         base_system_prompt=base_system_prompt,
-        call_tool_fn=call_tool,
+        call_tool_fn=_request_call_tool,
         llm_call_fn=_call_fn,
         get_params_fn=_optimal_params_fn if HAS_OPTIMIZER else None,
-        tool_executor=_get_parallel_executor() if HAS_PARALLEL else None,
+        tool_executor=(
+            ParallelToolExecutor(_request_call_tool, max_workers=4)
+            if HAS_PARALLEL else None
+        ),
         tool_order_fn=_tool_order_fn if HAS_OPTIMIZER else None,
         usage_accumulator=usage_accumulator,
         model_name=_model_fn,
@@ -1804,7 +1820,8 @@ def _prepare_pending_calls(tool_calls, tools_used, messages, total_tool_calls, m
 
 
 def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
-                           empty_results_count, round_num, total_tool_calls):
+                           empty_results_count, round_num, total_tool_calls,
+                           call_tool_fn=None):
     """Thực thi pending tool-calls (parallel khi >1, else serial). Trả empty_results_count."""
     if parallel_exec and len(pending_calls) > 1:
         call_items = [{"id": c["id"], "name": c["name"], "args": c["args"]} for c in pending_calls]
@@ -1816,10 +1833,11 @@ def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
             messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
             _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
     else:
+        tool_caller = call_tool_fn or call_tool
         for pc in pending_calls:
             logger.info(f"Tool call #{total_tool_calls}", tool=pc["name"],
                         args=str(pc["args"])[:200], round=round_num + 1)
-            result = call_tool(pc["name"], pc["args"])
+            result = tool_caller(pc["name"], pc["args"])
             messages.append({"role": "tool", "tool_call_id": pc["id"], "content": result})
             empty_results_count = _post_tool_process(pc["name"], pc["args"], result, suggestions, messages, empty_results_count)
     return empty_results_count
@@ -1846,10 +1864,13 @@ def _run_agent(
     total_tool_calls = 0
     empty_results_count = 0
 
+    def _request_call_tool(name, args):
+        return call_tool(name, args, usage_accumulator)
+
     # Setup parallel executor if available
     parallel_exec = None
     if HAS_PARALLEL:
-        parallel_exec = ParallelToolExecutor(call_tool, max_workers=4)
+        parallel_exec = ParallelToolExecutor(_request_call_tool, max_workers=4)
 
     for round_num in range(max_rounds):
         # Circuit breaker protected LLM call
@@ -1885,7 +1906,8 @@ def _run_agent(
             msg.tool_calls, tools_used, messages, total_tool_calls, max_tool_calls)
         empty_results_count = _execute_pending_calls(
             pending_calls, parallel_exec, messages, suggestions,
-            empty_results_count, round_num, total_tool_calls)
+            empty_results_count, round_num, total_tool_calls,
+            _request_call_tool)
 
     return msg.content or "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này.", tools_used, suggestions
 
@@ -2537,7 +2559,9 @@ async def chat_stream(req: ChatRequest, request: Request):
                     yield f"data: {json.dumps({'type': 'tool_start', 'name': fn_name, 'description': tool_desc, 'args': fn_args}, ensure_ascii=False)}\n\n"
 
                     t0 = time.time()
-                    result = await asyncio.to_thread(call_tool, fn_name, fn_args)  # CONC-001: tool I/O off event loop
+                    result = await asyncio.to_thread(
+                        call_tool, fn_name, fn_args, usage_accumulator,
+                    )  # CONC-001: tool I/O off event loop
                     duration_ms = round((time.time() - t0) * 1000)
                     messages.append({"role": "tool", "tool_call_id": tc.id, "content": result})
 

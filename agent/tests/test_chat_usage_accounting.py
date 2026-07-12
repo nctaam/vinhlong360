@@ -26,6 +26,7 @@ from starlette.requests import Request  # noqa: E402
 from chat_usage import UsageAccumulator  # noqa: E402
 from cost_tracker import TokenCounter  # noqa: E402
 import server  # noqa: E402
+import orchestrator  # noqa: E402
 
 
 def _response(prompt_tokens, completion_tokens, total_tokens=None, content="answer"):
@@ -486,6 +487,118 @@ def test_direct_agent_path_accumulates_every_provider_response(monkeypatch):
     assert reply == "direct final answer"
     assert accumulator.snapshot().total_tokens == 335
     assert accumulator.snapshot().provider_call_count == 2
+
+
+def test_direct_agent_counts_nested_followup_provider_response(monkeypatch):
+    tool_call = SimpleNamespace(
+        id="call-followups",
+        function=SimpleNamespace(
+            name="suggest_followups",
+            arguments='{"context":"direct context"}',
+        ),
+    )
+    decision = _response(6, 4, content=None)
+    decision.choices[0].message.tool_calls = [tool_call]
+    responses = iter([
+        decision,
+        _response(6, 4, content='["Cau hoi 1?", "Cau hoi 2?", "Cau hoi 3?"]'),
+        _response(6, 4, content="direct final answer"),
+    ])
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(create=lambda **_kwargs: next(responses))
+        )
+    )
+    accumulator = UsageAccumulator()
+    monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(server, "HAS_PARALLEL", False)
+    monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    monkeypatch.setattr(server, "get_model", lambda: "cx/gpt-5.4")
+    monkeypatch.setattr(server, "get_model_mini", lambda: "cx/gpt-5.4-mini")
+
+    reply, _tools, suggestions = server._run_agent(
+        [{"role": "user", "content": "test"}],
+        usage_accumulator=accumulator,
+    )
+
+    snapshot = accumulator.snapshot()
+    assert reply == "direct final answer"
+    assert suggestions == ["Cau hoi 1?", "Cau hoi 2?", "Cau hoi 3?"]
+    assert snapshot.prompt_tokens == 18
+    assert snapshot.completion_tokens == 12
+    assert snapshot.total_tokens == 30
+    assert snapshot.provider_call_count == 3
+    assert snapshot.cost == pytest.approx(
+        2 * TokenCounter().calculate_cost(
+            {"prompt_tokens": 6, "completion_tokens": 4},
+            "cx/gpt-5.4",
+        )
+        + TokenCounter().calculate_cost(
+            {"prompt_tokens": 6, "completion_tokens": 4},
+            "cx/gpt-5.4-mini",
+        )
+    )
+
+
+def test_orchestrated_agent_counts_nested_followup_provider_response(monkeypatch):
+    tool_call = SimpleNamespace(
+        id="call-followups",
+        function=SimpleNamespace(
+            name="suggest_followups",
+            arguments='{"context":"orchestrated context"}',
+        ),
+    )
+    decision = _response(6, 4, content=None)
+    decision.choices[0].message.tool_calls = [tool_call]
+    outer_responses = iter([
+        decision,
+        _response(6, 4, content="orchestrated final answer"),
+    ])
+    nested_response = _response(
+        6,
+        4,
+        content='["Goi y 1?", "Goi y 2?", "Goi y 3?"]',
+    )
+    fake_client = SimpleNamespace(
+        chat=SimpleNamespace(
+            completions=SimpleNamespace(create=lambda **_kwargs: nested_response)
+        )
+    )
+    orch = server.Orchestrator(server.TOOLS)
+    monkeypatch.setattr(
+        orch,
+        "route",
+        lambda _message: (
+            orchestrator.QueryCategory.GENERAL,
+            orchestrator.GENERAL_AGENT,
+        ),
+    )
+    accumulator = UsageAccumulator()
+    monkeypatch.setattr(server, "HAS_PARALLEL", False)
+    monkeypatch.setattr(server, "_get_orchestrator", lambda: orch)
+    monkeypatch.setattr(
+        server,
+        "_llm_call_fn_mini",
+        lambda _messages, _tools, _temperature: next(outer_responses),
+    )
+    monkeypatch.setattr(server, "get_client", lambda: fake_client)
+    monkeypatch.setattr(server, "get_model_mini", lambda: "cx/gpt-5.4-mini")
+
+    reply, _tools, suggestions = server._run_agent_orchestrated(
+        "test",
+        [],
+        "session",
+        "base prompt",
+        usage_accumulator=accumulator,
+    )
+
+    snapshot = accumulator.snapshot()
+    assert reply == "orchestrated final answer"
+    assert suggestions == ["Goi y 1?", "Goi y 2?", "Goi y 3?"]
+    assert snapshot.prompt_tokens == 18
+    assert snapshot.completion_tokens == 12
+    assert snapshot.total_tokens == 30
+    assert snapshot.provider_call_count == 3
 
 
 def _configure_post_chat(monkeypatch, guardrail, attribution):
