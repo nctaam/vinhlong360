@@ -347,8 +347,9 @@ def test_post_mismatch_fails_before_state_cache_prompt_or_provider_access(tmp_pa
 
     monkeypatch.setattr(server, "resolve_chat_owner", bob_owner, raising=False)
     forbidden = Mock(side_effect=AssertionError("must not be accessed for an ownership miss"))
+    limiter = Mock(return_value=(True, {}))
     monkeypatch.setattr(manager, "on_message", forbidden)
-    monkeypatch.setattr(server.chat_limiter, "is_allowed", forbidden)
+    monkeypatch.setattr(server.chat_limiter, "is_allowed", limiter)
     monkeypatch.setattr(server.cache, "get", forbidden)
     monkeypatch.setattr(server, "semantic_get_async", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
@@ -364,6 +365,7 @@ def test_post_mismatch_fails_before_state_cache_prompt_or_provider_access(tmp_pa
         server.cache._cache.pop(alice_cache_key, None)
 
     assert response.status_code == 404
+    limiter.assert_called_once()
     forbidden.assert_not_called()
     assert ("user:bob", conversation.session_id) not in manager._sessions
 
@@ -492,8 +494,9 @@ def test_stream_mismatch_fails_before_access_and_sets_anonymous_cookie(tmp_path,
     monkeypatch.setattr(server, "memory_manager", manager)
     monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
     forbidden = Mock(side_effect=AssertionError("must not be accessed for an ownership miss"))
+    limiter = Mock(return_value=(True, {}))
     monkeypatch.setattr(manager, "on_message", forbidden)
-    monkeypatch.setattr(server.stream_limiter, "is_allowed", forbidden)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", limiter)
     monkeypatch.setattr(server.cache, "get", forbidden)
     monkeypatch.setattr(server, "semantic_get_async", forbidden)
     monkeypatch.setattr(server, "_build_messages", forbidden)
@@ -507,6 +510,41 @@ def test_stream_mismatch_fails_before_access_and_sets_anonymous_cookie(tmp_path,
 
     assert response.status_code == 404
     assert "vl360_chat_owner=" in response.headers["set-cookie"]
+    limiter.assert_called_once()
+    forbidden.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("path", "limiter_name"),
+    [("/chat", "chat_limiter"), ("/chat/stream", "stream_limiter")],
+)
+def test_rate_limited_invalid_selector_returns_429_before_lookup_or_mutation(
+    path,
+    limiter_name,
+    tmp_path,
+    monkeypatch,
+):
+    manager = _manager(tmp_path)
+    forbidden = Mock(side_effect=AssertionError("blocked request must not touch target state"))
+    limiter = Mock(return_value=(False, {"retry_after": 30}))
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(getattr(server, limiter_name), "is_allowed", limiter)
+    monkeypatch.setattr(manager, "require_session", forbidden)
+    monkeypatch.setattr(manager, "create_session", forbidden)
+    monkeypatch.setattr(server.cache, "get", forbidden)
+    monkeypatch.setattr(server, "semantic_get_async", forbidden)
+    monkeypatch.setattr(server, "_build_messages", forbidden)
+    monkeypatch.setattr(server, "get_client", forbidden)
+    client = TestClient(server.app)
+
+    response = client.post(
+        path,
+        json={"message": "blocked", "history": [], "session_id": "missing-selector"},
+    )
+
+    assert response.status_code == 429
+    limiter.assert_called_once()
     forbidden.assert_not_called()
 
 

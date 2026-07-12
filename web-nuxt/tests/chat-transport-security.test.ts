@@ -42,18 +42,23 @@ beforeEach(() => {
 })
 
 describe('chat streaming transport security', () => {
-  it('ChatWidget sends prompt, history, and selector in a credentialed POST body', async () => {
+  it('ChatWidget snapshots only prior turns in each credentialed POST body', async () => {
     sessionStorage.setItem('chat_sid', 'stored-session')
     const wrapper = await mountSuspended(ChatWidget, {
       global: { stubs: { ClientOnly: false, IconLine: true } },
     })
 
-    await wrapper.get('input').setValue('hello')
+    await wrapper.get('input').setValue('first question')
     await wrapper.get('input').trigger('keyup.enter')
     await flushUi()
     await flushUi()
 
-    expect(mocks.fetch).toHaveBeenCalledTimes(1)
+    await wrapper.get('input').setValue('next question')
+    await wrapper.get('input').trigger('keyup.enter')
+    await flushUi()
+    await flushUi()
+
+    expect(mocks.fetch).toHaveBeenCalledTimes(2)
     const [url, init] = mocks.fetch.mock.calls[0] as [string, RequestInit]
     expect(url).toBe('/chat/stream')
     expect(init).toMatchObject({
@@ -65,9 +70,17 @@ describe('chat streaming transport security', () => {
       },
     })
     expect(JSON.parse(String(init.body))).toEqual({
-      message: 'hello',
-      history: [{ role: 'user', content: 'hello' }],
+      message: 'first question',
+      history: [],
       session_id: 'stored-session',
+    })
+    expect(JSON.parse(String(mocks.fetch.mock.calls[1]?.[1]?.body))).toEqual({
+      message: 'next question',
+      history: [
+        { role: 'user', content: 'first question' },
+        { role: 'assistant', content: 'ok' },
+      ],
+      session_id: 'fresh-session',
     })
   })
 

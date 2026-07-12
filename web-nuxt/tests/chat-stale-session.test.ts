@@ -61,8 +61,15 @@ describe('stale chat selector recovery', () => {
     await sendWidgetMessage()
 
     expect(mocks.fetch).toHaveBeenCalledTimes(2)
-    expect(JSON.parse(String(mocks.fetch.mock.calls[0]?.[1]?.body))).toMatchObject({ session_id: 'stale-session' })
-    expect(JSON.parse(String(mocks.fetch.mock.calls[1]?.[1]?.body))).not.toHaveProperty('session_id')
+    expect(JSON.parse(String(mocks.fetch.mock.calls[0]?.[1]?.body))).toEqual({
+      message: 'hello',
+      history: [],
+      session_id: 'stale-session',
+    })
+    expect(JSON.parse(String(mocks.fetch.mock.calls[1]?.[1]?.body))).toEqual({
+      message: 'hello',
+      history: [],
+    })
     expect(sessionStorage.getItem('chat_sid')).toBe('fresh-session')
   })
 
@@ -72,7 +79,10 @@ describe('stale chat selector recovery', () => {
     await sendWidgetMessage()
 
     expect(mocks.fetch).toHaveBeenCalledTimes(2)
-    expect(JSON.parse(String(mocks.fetch.mock.calls[1]?.[1]?.body))).not.toHaveProperty('session_id')
+    expect(JSON.parse(String(mocks.fetch.mock.calls[1]?.[1]?.body))).toEqual({
+      message: 'hello',
+      history: [],
+    })
     expect(sessionStorage.getItem('chat_sid')).toBeNull()
   })
 

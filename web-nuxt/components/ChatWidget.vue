@@ -180,13 +180,12 @@ async function sendMessage(text: string) {
   const userMsg = text.trim()
   inputText.value = ''
   suggestions.value = []
+  const history = messages.value.slice(-10).map(m => ({ role: m.role, content: m.content }))
   messages.value.push({ role: 'user', content: userMsg })
   scrollBottom()
 
   streaming.value = true
   streamText.value = ''
-
-  const history = messages.value.slice(-10).map(m => ({ role: m.role, content: m.content }))
 
   abortCtrl.value?.abort()
   const controller = new AbortController()

@@ -1373,7 +1373,10 @@ class ChatRequest(BaseModel):
         return _sanitize_message(v)
 
     def history_messages(self) -> list[dict[str, str]]:
-        return [item.model_dump() for item in self.history]
+        history = [item.model_dump() for item in self.history]
+        if history and history[-1] == {"role": "user", "content": self.message}:
+            history.pop()
+        return history
 
 
 class ChatResponse(BaseModel):
@@ -1647,18 +1650,28 @@ def _assemble_manual_messages(
     system = "\n".join(system_parts)
     messages = [{"role": "system", "content": system}]
 
-    if session_id:
-        session = memory_manager.require_session(owner_key, session_id)
-        ctx_messages = session.get_context_messages()
-        if ctx_messages:
-            messages.extend(ctx_messages)
-        else:
-            messages.extend(history[-20:])
-    else:
-        messages.extend(history[-20:])
+    messages.extend(history[-20:])
 
     messages.append({"role": "user", "content": message})
     return messages
+
+
+def _fold_system_history_context(pieces: dict, history: list[dict]) -> tuple[dict, list[dict]]:
+    """Move hot-memory summaries into the consolidated system context."""
+    system_context = []
+    conversation = []
+    for item in history:
+        if item.get("role") == "system":
+            system_context.append(item["content"])
+        else:
+            conversation.append(item)
+    if not system_context:
+        return pieces, history
+    folded = dict(pieces)
+    folded["memory"] = "\n".join(
+        part for part in (pieces["memory"], "\n".join(system_context)) if part
+    )
+    return folded, conversation
 
 
 def _build_messages(
@@ -1680,26 +1693,25 @@ def _build_messages(
     Returns: (messages, build_info) where build_info includes cache/AB stats
     """
     current_month = datetime.now(timezone.utc).month
+    effective_history = history[-20:]
+    if session_id:
+        session = memory_manager.require_session(owner_key, session_id)
+        ctx_messages = session.get_context_messages()
+        if ctx_messages:
+            effective_history = ctx_messages
 
     # Resolve anaphoric references (e.g. "bảo tàng" → specific museum from history)
     # before RAG so entity detection picks up the correct entity.
-    rag_query = _resolve_contextual_query(message, history)
+    rag_query = _resolve_contextual_query(message, effective_history)
 
     pieces = _gather_context_pieces(current_month, rag_query, owner_key, session_id, message)
+    pieces, effective_history = _fold_system_history_context(pieces, effective_history)
     base_prompt, ab_info = _resolve_base_prompt(session_id)
     # Experience-memory + few-shot fold vào reflexion để chảy qua CẢ cached lẫn manual path.
     reflexion_ctx = _fold_experience_fewshot(message, pieces["reflexion"])
 
     # Use prompt cache if available
     if HAS_PROMPT_CACHE:
-        # Get session history from memory or request
-        effective_history = history[-20:]
-        if session_id:
-            session = memory_manager.require_session(owner_key, session_id)
-            ctx_messages = session.get_context_messages()
-            if ctx_messages:
-                effective_history = ctx_messages
-
         messages, cache_info = prompt_cache.build_cached_prompt(
             message=message,
             history=effective_history,
@@ -1717,8 +1729,21 @@ def _build_messages(
 
     # Fallback: manual assembly
     messages = _assemble_manual_messages(
-        base_prompt, current_month, pieces, reflexion_ctx, history, owner_key, session_id, message)
+        base_prompt, current_month, pieces, reflexion_ctx, effective_history, owner_key, session_id, message)
     return messages, {"ab": ab_info}
+
+
+def _hydrate_empty_session(owner_key: str, session, history: list[dict[str, str]]) -> None:
+    """Seed a new/empty hot session with bounded validated prior turns once."""
+    if session.messages or not history:
+        return
+    for item in history[-session.max_messages:]:
+        memory_manager.on_message(owner_key, session.session_id, item["role"], item["content"])
+
+
+def _record_cached_exchange(owner_key: str, session_id: str, message: str, cached: dict) -> None:
+    memory_manager.on_message(owner_key, session_id, "user", message)
+    memory_manager.on_message(owner_key, session_id, "assistant", cached.get("reply", ""))
 
 
 LLM_TIMEOUT = int(os.environ.get("LLM_TIMEOUT", "30"))
@@ -2047,14 +2072,6 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     history = req.history_messages()
     session = None
     session_id = req.session_id or ""
-    try:
-        if req.session_id:
-            session = memory_manager.require_session(owner_key, req.session_id)
-    except UnknownConversation:
-        not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
-        set_chat_owner_cookie(not_found, owner_context)
-        return not_found
-
     set_chat_owner_cookie(response, owner_context)
 
     # Rate limiting
@@ -2067,6 +2084,14 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         _resp.headers["Retry-After"] = str(rate_info["retry_after"])
         set_chat_owner_cookie(_resp, owner_context)
         return _resp
+
+    try:
+        if req.session_id:
+            session = memory_manager.require_session(owner_key, req.session_id)
+    except UnknownConversation:
+        not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
+        set_chat_owner_cookie(not_found, owner_context)
+        return not_found
 
     # ── Guardrails: input safety (injection detect + PII mask + budget) ──
     if HAS_GUARDRAILS:
@@ -2090,13 +2115,12 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     if session is None:
         session = memory_manager.create_session(owner_key)
         session_id = session.session_id
-
-    # Record user message in memory
-    memory_manager.on_message(owner_key, session_id, "user", req.message)
+    _hydrate_empty_session(owner_key, session, history)
+    cache_eligible = not history and not session.get_context_messages()
 
     # ── Semantic cache: embedding-based dedup (before regular cache) ──
     semantic_dedup_key = None
-    if not history and HAS_SEMANTIC_CACHE:
+    if cache_eligible and HAS_SEMANTIC_CACHE:
         try:
             sem_cached = await semantic_get_async(req.message, owner_key=owner_key)
             semantic_dedup_key = semantic_take_dedup_lease(
@@ -2111,12 +2135,13 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             if sem_cached:
                 if HAS_METRICS:
                     track_cache("hit")
+                _record_cached_exchange(owner_key, session_id, req.message, sem_cached)
                 return ChatResponse(**sem_cached, session_id=session_id, cached=True)
         except Exception:
             logger.debug("Semantic cache retrieval failed", exc_info=True)
 
     # Check cache (only for new conversations without history)
-    if not history:
+    if cache_eligible:
         cached = cache.get(req.message, owner_key=owner_key)
         if cached:
             if HAS_METRICS:
@@ -2131,6 +2156,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                     )
                 except Exception:
                     logger.debug("Semantic cache exact-hit publication failed", exc_info=True)
+            _record_cached_exchange(owner_key, session_id, req.message, cached)
             return ChatResponse(**cached, session_id=session_id, cached=True)
         elif HAS_METRICS:
             track_cache("miss")
@@ -2152,6 +2178,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             _trace_ctx = trace_chat_request(corrected_message, session_id, get_model())
             _trace_ctx.__enter__()
         messages, build_info = _build_messages(corrected_message, history, session_id, owner_key)
+        memory_manager.on_message(owner_key, session_id, "user", req.message)
 
         # ── Dynamic agents: check for specialist match before orchestrator ──
         _dyn_prompt_addon = ""
@@ -2193,7 +2220,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         if HAS_ORCHESTRATOR:
             reply, tools_used, suggestions = await _await_chat_worker(
                 _run_agent_orchestrated,
-                corrected_message, history, session_id, _enriched_system,
+                corrected_message, messages[1:-1], session_id, _enriched_system,
                 usage_accumulator,
             )
         else:
@@ -2440,7 +2467,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             logger.error("Output guardrail failed", error=str(guard_err))
 
     # Cache response (only if good quality)
-    if not history and len(reply) > 30 and evaluation["score"] >= 5:
+    if cache_eligible and len(reply) > 30 and evaluation["score"] >= 5:
         cache_data = {"reply": reply, "tool_calls": tools_used, "suggestions": suggestions}
         cache.put(req.message, cache_data, owner_key=owner_key)
         # ── Semantic cache: store for embedding-based dedup ──
@@ -2471,14 +2498,6 @@ async def chat_stream(req: ChatRequest, request: Request):
     message = req.message
     hist = req.history_messages()
     sid = req.session_id or ""
-    try:
-        if req.session_id:
-            session = memory_manager.require_session(owner_key, req.session_id)
-    except UnknownConversation:
-        not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
-        set_chat_owner_cookie(not_found, owner_context)
-        return not_found
-
     def _stream_response(generator, semantic_lease=None):
         stream_response = _SemanticLeaseStreamingResponse(
             generator,
@@ -2493,9 +2512,23 @@ async def chat_stream(req: ChatRequest, request: Request):
     allowed, rate_info = stream_limiter.is_allowed(client_ip)
     if not allowed:
         logger.warning("Rate limited", ip=client_ip, endpoint="/chat/stream")
-        async def rate_limit_stream():
-            yield f"data: {json.dumps({'type': 'error', 'content': 'Quá nhiều yêu cầu. Vui lòng thử lại sau.'}, ensure_ascii=False)}\n\n"
-        return _stream_response(rate_limit_stream())
+        limited = _error_response(
+            429,
+            "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
+            request,
+            retry_after=rate_info["retry_after"],
+        )
+        limited.headers["Retry-After"] = str(rate_info["retry_after"])
+        set_chat_owner_cookie(limited, owner_context)
+        return limited
+
+    try:
+        if req.session_id:
+            session = memory_manager.require_session(owner_key, req.session_id)
+    except UnknownConversation:
+        not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
+        set_chat_owner_cookie(not_found, owner_context)
+        return not_found
 
     if not message:
         async def empty_stream():
@@ -2525,16 +2558,15 @@ async def chat_stream(req: ChatRequest, request: Request):
     if session is None:
         session = memory_manager.create_session(owner_key)
         sid = session.session_id
-
-    # Record in memory
-    memory_manager.on_message(owner_key, sid, "user", message)
+    _hydrate_empty_session(owner_key, session, hist)
+    cache_eligible = not hist and not session.get_context_messages()
 
     # The cache/dedup lifecycle must use one stable pre-autocorrect query key.
     cache_query = message
 
     # ── Semantic cache: check before regular cache ──
     semantic_dedup_key = None
-    if not hist and HAS_SEMANTIC_CACHE:
+    if cache_eligible and HAS_SEMANTIC_CACHE:
         try:
             sem_cached = await semantic_get_async(cache_query, owner_key=owner_key)
             semantic_dedup_key = semantic_take_dedup_lease(
@@ -2547,6 +2579,7 @@ async def chat_stream(req: ChatRequest, request: Request):
                 semantic_dedup_key,
             )
             if sem_cached:
+                _record_cached_exchange(owner_key, sid, cache_query, sem_cached)
                 async def sem_cached_stream():
                     reply = sem_cached.get("reply", "")
                     words = reply.split(" ")
@@ -2563,7 +2596,7 @@ async def chat_stream(req: ChatRequest, request: Request):
             logger.debug("Semantic cache retrieval failed (stream)", exc_info=True)
 
     # Check cache for history-less requests
-    if not hist:
+    if cache_eligible:
         cached = cache.get(cache_query, owner_key=owner_key)
         if cached:
             if HAS_SEMANTIC_CACHE:
@@ -2579,6 +2612,7 @@ async def chat_stream(req: ChatRequest, request: Request):
                         "Semantic cache exact-hit publication failed (stream)",
                         exc_info=True,
                     )
+            _record_cached_exchange(owner_key, sid, cache_query, cached)
             async def cached_stream():
                 reply = cached.get("reply", "")
                 words = reply.split(" ")
@@ -2602,6 +2636,7 @@ async def chat_stream(req: ChatRequest, request: Request):
 
     # Build messages with full 2026 architecture context
     messages, _build_info = _build_messages(message, hist, sid, owner_key)
+    memory_manager.on_message(owner_key, sid, "user", cache_query)
 
     # ── Parity with /chat: apply dynamic-agent addon + active prompt variant ──
     # (Previously the streaming path missed these, giving lower quality than /chat.)
@@ -2858,7 +2893,7 @@ async def chat_stream(req: ChatRequest, request: Request):
 
                 # Track & cache
                 analytics.track_query(message, tools_used, full_text, sid)
-                if not hist and len(full_text) > 30 and evaluation["score"] >= 5:
+                if cache_eligible and len(full_text) > 30 and evaluation["score"] >= 5:
                     cache_data = {"reply": full_text, "tool_calls": tools_used, "suggestions": suggestions}
                     # Lưu theo cache_query (khoá lúc cache.get) — không phải bản đã autocorrect,
                     # nếu không lần sau cùng câu gốc sẽ luôn MISS (đã sửa: stream cache key mismatch).
