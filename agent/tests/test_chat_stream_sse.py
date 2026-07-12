@@ -25,8 +25,6 @@ from pydantic import ValidationError  # noqa: E402
 from starlette.requests import Request  # noqa: E402
 import server  # noqa: E402
 
-pytestmark = pytest.mark.integration
-
 
 def _completion(content="Vĩnh Long có Văn Thánh Miếu và làng gốm Mang Thít."):
     msg = SimpleNamespace(content=content, tool_calls=None, role="assistant", function_call=None)

@@ -277,6 +277,77 @@ def test_components_without_total_are_preserved_and_summed():
     assert snapshot.cost == 0.0007
 
 
+@pytest.mark.parametrize(
+    "response",
+    [
+        SimpleNamespace(
+            usage=SimpleNamespace(
+                prompt_tokens=0,
+                completion_tokens=0,
+                total_tokens=0,
+            ),
+            choices=[SimpleNamespace(
+                message=SimpleNamespace(content="generated answer", tool_calls=None),
+            )],
+        ),
+        {
+            "usage": {
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0,
+            },
+            "choices": [{"message": {"content": "generated answer", "tool_calls": None}}],
+        },
+    ],
+)
+def test_all_zero_provider_usage_uses_full_call_fallback(response):
+    messages = [{"role": "user", "content": "complete prompt"}]
+    expected = TokenCounter().estimate_call_tokens(messages, "generated answer")
+    accumulator = UsageAccumulator()
+
+    accumulator.add_response(
+        response,
+        model="cx/gpt-5.4",
+        messages=messages,
+    )
+
+    snapshot = accumulator.snapshot()
+    assert snapshot.prompt_tokens == expected["prompt_tokens"]
+    assert snapshot.completion_tokens == expected["completion_tokens"]
+    assert snapshot.total_tokens == expected["total_tokens"]
+    assert snapshot.total_tokens > 0
+    assert snapshot.estimated_call_count == 1
+    assert snapshot.cost == TokenCounter().calculate_cost(expected, "cx/gpt-5.4")
+
+
+def test_all_zero_provider_usage_marks_estimated_when_estimator_returns_zero():
+    class ZeroCounter:
+        def count_with_provenance(self, _response):
+            tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+            return tokens, {name: True for name in tokens}
+
+        def estimate_call_tokens(self, _messages, _completion):
+            return {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+        def calculate_cost(self, _tokens, _model):
+            return 0.0
+
+    accumulator = UsageAccumulator(counter=ZeroCounter())
+
+    accumulator.add_response(
+        SimpleNamespace(choices=[]),
+        model="cx/gpt-5.4",
+        messages=[],
+        completion_text="",
+    )
+
+    snapshot = accumulator.snapshot()
+    assert snapshot.total_tokens == 0
+    assert snapshot.cost == 0.0
+    assert snapshot.provider_call_count == 1
+    assert snapshot.estimated_call_count == 1
+
+
 def test_accumulator_estimates_one_missing_usage_call_from_full_messages():
     class RecordingCounter:
         def __init__(self):

@@ -137,6 +137,8 @@ class UsageAccumulator:
         prompt = max(0, int(tokens.get("prompt_tokens", 0) or 0))
         completion = max(0, int(tokens.get("completion_tokens", 0) or 0))
         total = max(0, int(tokens.get("total_tokens", 0) or 0))
+        if not prompt and not completion and not total:
+            return self._estimate_missing_usage(response, messages, completion_text), True
         prompt_reported = reported.get("prompt_tokens", False)
         completion_reported = reported.get("completion_tokens", False)
         total_reported = reported.get("total_tokens", False) and total > 0
