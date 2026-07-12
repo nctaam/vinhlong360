@@ -22,6 +22,61 @@ def _fake_conn():
     yield object()
 
 
+def test_get_user_profile_restricts_followers_visibility_for_nonfollower(monkeypatch):
+    profile = {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "username": "private-profile",
+        "display_name": "Private Profile",
+        "avatar_url": "/avatar.webp",
+        "cover_url": "/cover.webp",
+        "bio": "This bio must stay hidden.",
+        "created_at": "2026-07-12T08:30:00+00:00",
+        "login_streak": 9,
+    }
+    query_result = (
+        "followers",
+        profile,
+        False,
+        False,
+        {"followers": 7},
+        {"c": 4},
+        12,
+        3,
+        {"show_activity": True, "show_saved": True},
+        False,
+        False,
+        False,
+    )
+    monkeypatch.setattr(social, "_profile_query", lambda *_args: query_result)
+
+    result = asyncio.run(social.get_user_profile(profile["id"], user=None))
+
+    assert result["user"].get("is_private") is True
+    assert result["user"]["bio"] == ""
+    assert result["user"]["stats"]["posts"] == 0
+    assert result["user"]["stats"]["reviews"] == 0
+    assert result["user"]["reputation"] is None
+
+
+@pytest.mark.parametrize(
+    ("visibility", "is_self", "is_follower", "expected"),
+    [
+        ("public", False, False, True),
+        ("followers", False, False, False),
+        ("followers", False, True, True),
+        ("followers_only", False, False, False),
+        ("private", False, True, True),
+        ("private", False, False, False),
+        ("unknown", False, False, False),
+        ("followers", True, False, True),
+    ],
+)
+def test_profile_can_view_full_policy(
+    visibility, is_self, is_follower, expected
+):
+    assert social._profile_can_view_full(visibility, is_self, is_follower) is expected
+
+
 def test_friend_saves_enforces_owner_visibility_in_sql(monkeypatch):
     captured = {}
     row = {

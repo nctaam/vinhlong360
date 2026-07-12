@@ -3735,6 +3735,14 @@ def _profile_private_response(profile, follower_count):
     }
 
 
+def _profile_can_view_full(vis: str, is_self: bool, is_follower: bool) -> bool:
+    if is_self or vis == "public":
+        return True
+    if vis in {"followers", "followers_only", "private"}:
+        return is_follower
+    return False
+
+
 def _profile_full_response(profile, posts_n, reviews_n, follower_count, following_row,
                            reputation, privacy, view_count_7d, is_self,
                            viewer_following, viewer_blocked, viewer_muted):
@@ -3913,7 +3921,7 @@ async def get_user_profile(user_id: str, user=Depends(get_current_user)):
 
     follower_count = reputation["followers"] if reputation else 0
 
-    if vis == "private" and not is_self and not is_follower:
+    if not _profile_can_view_full(vis, is_self, is_follower):
         return _profile_private_response(profile, follower_count)
 
     view_count_7d = None
