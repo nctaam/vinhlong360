@@ -1885,17 +1885,16 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
 async def chat(req: ChatRequest, request: Request, response: Response):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
+    session = None
+    session_id = req.session_id or ""
     try:
         if req.session_id:
             session = memory_manager.require_session(owner_key, req.session_id)
-        else:
-            session = memory_manager.create_session(owner_key)
     except UnknownConversation:
         not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
         set_chat_owner_cookie(not_found, owner_context)
         return not_found
 
-    session_id = session.session_id
     set_chat_owner_cookie(response, owner_context)
 
     # Rate limiting
@@ -1912,7 +1911,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     # ── Guardrails: input safety (injection detect + PII mask + budget) ──
     if HAS_GUARDRAILS:
         try:
-            guard = check_input(req.message, session_id)
+            guard = check_input(req.message, owner_key)
             if not guard.get("allowed", True):
                 # P1: log lý do chi tiết server-side, KHÔNG lộ chuỗi chẩn-đoán ra user.
                 logger.warning("Guardrails blocked input", reason=guard.get("blocked_reason", ""), session_id=session_id)
@@ -1927,6 +1926,10 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 reply="Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.",
                 tool_calls=[], suggestions=[], session_id=session_id,
             )
+
+    if session is None:
+        session = memory_manager.create_session(owner_key)
+        session_id = session.session_id
 
     # Record user message in memory
     memory_manager.on_message(owner_key, session_id, "user", req.message)
@@ -2274,17 +2277,15 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 async def chat_stream(request: Request, message: str, history: str = "[]", session_id: str = ""):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
+    session = None
+    sid = session_id
     try:
         if session_id:
             session = memory_manager.require_session(owner_key, session_id)
-        else:
-            session = memory_manager.create_session(owner_key)
     except UnknownConversation:
         not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
         set_chat_owner_cookie(not_found, owner_context)
         return not_found
-
-    sid = session.session_id
 
     def _stream_response(generator):
         stream_response = StreamingResponse(generator, media_type="text/event-stream")
@@ -2323,7 +2324,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 yield f"data: {json.dumps({'type': 'done', 'tools': [], 'suggestions': [], 'session_id': sid}, ensure_ascii=False)}\n\n"
             return _gen
         try:
-            guard = check_input(message, sid)
+            guard = check_input(message, owner_key)
             if not guard.get("allowed", True):
                 # P1: ẩn blocked_reason (chẩn-đoán) khỏi user, chỉ log server-side
                 logger.warning("Guardrails blocked stream input", reason=guard.get("blocked_reason", ""), session_id=sid)
@@ -2334,6 +2335,10 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             logger.warning(f"Guardrail stream check lỗi → fail-closed: {_gerr}")
             gen = _safe_block_stream("Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.")
             return _stream_response(gen())
+
+    if session is None:
+        session = memory_manager.create_session(owner_key)
+        sid = session.session_id
 
     # Record in memory
     memory_manager.on_message(owner_key, sid, "user", message)
@@ -3383,8 +3388,8 @@ async def welcome_message(request: Request, response: Response):
     owner_context = await resolve_chat_owner(request)
     set_chat_owner_cookie(response, owner_context)
     preferences = None
-    profile = memory_manager.cold.get_profile(owner_context.owner_key)
-    if profile.conversation_count > 0:
+    profile = memory_manager.cold.find_profile(owner_context.owner_key)
+    if profile is not None and profile.conversation_count > 0:
         preferences = {
             "interests": profile.interests,
             "preferred_areas": profile.preferred_areas,

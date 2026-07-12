@@ -4,26 +4,49 @@ export function useAI() {
   const aiSessionId = useState('ai-session-id', () => '')
   const { authHeaders } = useAuth()
 
+  function isMissingConversation(error: unknown) {
+    const value = error as { status?: number; statusCode?: number; response?: { status?: number } }
+    return value?.response?.status === 404 || value?.statusCode === 404 || value?.status === 404
+  }
+
+  function chatBody(message: string, history: ChatMessage[] = []) {
+    return aiSessionId.value
+      ? { message, history, session_id: aiSessionId.value }
+      : { message, history }
+  }
+
   async function aiChat(message: string, history: ChatMessage[] = []): Promise<ChatResponse> {
-    try {
-      const res = await $fetch<ChatResponse & { session_id?: string }>('/chat', {
-        method: 'POST',
-        body: { message, history, session_id: aiSessionId.value },
-      })
-      if (res.session_id) aiSessionId.value = res.session_id
-      return { reply: res.reply || '', suggestions: res.suggestions || [], tool_calls: res.tool_calls || [] }
-    } catch {
-      return { reply: '', suggestions: [], tool_calls: [] }
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await $fetch<ChatResponse & { session_id?: string }>('/chat', {
+          method: 'POST',
+          body: chatBody(message, history),
+        })
+        if (res.session_id) aiSessionId.value = res.session_id
+        return { reply: res.reply || '', suggestions: res.suggestions || [], tool_calls: res.tool_calls || [] }
+      } catch (error) {
+        if (attempt === 0 && aiSessionId.value && isMissingConversation(error)) {
+          aiSessionId.value = ''
+          continue
+        }
+        return { reply: '', suggestions: [], tool_calls: [] }
+      }
     }
+    return { reply: '', suggestions: [], tool_calls: [] }
   }
 
   async function aiStream(message: string, onChunk: (text: string) => void, onDone?: (data: Record<string, unknown>) => void) {
     try {
-      const res = await fetch('/chat/stream', {
+      const request = () => fetch('/chat/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, session_id: aiSessionId.value }),
+        body: JSON.stringify(aiSessionId.value ? { message, session_id: aiSessionId.value } : { message }),
       })
+      let res = await request()
+      if (res.status === 404 && aiSessionId.value) {
+        aiSessionId.value = ''
+        res = await request()
+      }
       if (!res.ok || !res.body) return ''
       const reader = res.body.getReader()
       const decoder = new TextDecoder()

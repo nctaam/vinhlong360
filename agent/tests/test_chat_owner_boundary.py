@@ -33,6 +33,17 @@ def _manager(tmp_path):
         return MemoryManager()
 
 
+def _capacity_manager(tmp_path):
+    manager = _manager(tmp_path)
+    manager._MAX_SESSIONS = 1
+    existing = manager.create_session("user:existing")
+    return manager, ("user:existing", existing.session_id)
+
+
+async def _new_anonymous_owner(_request):
+    return SimpleNamespace(owner_key="anon:new-owner", cookie_value="visitor.signature")
+
+
 def test_anonymous_owner_cookie_round_trip_and_tamper_rotation(monkeypatch):
     identity = _chat_identity_module()
     monkeypatch.setattr(identity, "_CHAT_OWNER_SECRET", b"owner-test-secret")
@@ -161,6 +172,104 @@ def test_post_mismatch_fails_before_state_cache_prompt_or_provider_access(tmp_pa
     assert ("user:bob", conversation.session_id) not in manager._sessions
 
 
+def test_rate_limited_post_does_not_create_or_evict_session(tmp_path, monkeypatch):
+    manager, existing_key = _capacity_manager(tmp_path)
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (False, {"retry_after": 30}))
+    client = TestClient(server.app)
+
+    response = client.post("/chat", json={"message": "new conversation"})
+
+    assert response.status_code == 429
+    assert existing_key in manager._sessions
+    assert len(manager._sessions) == 1
+    assert "vl360_chat_owner=" in response.headers["set-cookie"]
+
+
+def test_guardrail_blocked_post_uses_owner_without_creating_session(tmp_path, monkeypatch):
+    manager, existing_key = _capacity_manager(tmp_path)
+    checked = []
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+    monkeypatch.setattr(
+        server,
+        "check_input",
+        lambda message, identity: checked.append((message, identity)) or {"allowed": False},
+    )
+    client = TestClient(server.app)
+
+    response = client.post("/chat", json={"message": "blocked"})
+
+    assert response.status_code == 200
+    assert response.json()["session_id"] == ""
+    assert checked == [("blocked", "anon:new-owner")]
+    assert existing_key in manager._sessions
+    assert len(manager._sessions) == 1
+    assert "vl360_chat_owner=" in response.headers["set-cookie"]
+
+
+def test_empty_stream_does_not_create_or_evict_session(tmp_path, monkeypatch):
+    manager, existing_key = _capacity_manager(tmp_path)
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    client = TestClient(server.app)
+
+    response = client.get("/chat/stream", params={"message": "   "})
+
+    assert response.status_code == 200
+    assert existing_key in manager._sessions
+    assert len(manager._sessions) == 1
+    assert "vl360_chat_owner=" in response.headers["set-cookie"]
+
+
+def test_guardrail_blocked_stream_uses_owner_without_creating_session(tmp_path, monkeypatch):
+    manager, existing_key = _capacity_manager(tmp_path)
+    checked = []
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+    monkeypatch.setattr(
+        server,
+        "check_input",
+        lambda message, identity: checked.append((message, identity)) or {"allowed": False},
+    )
+    client = TestClient(server.app)
+
+    response = client.get("/chat/stream", params={"message": "blocked"})
+
+    assert response.status_code == 200
+    assert checked == [("blocked", "anon:new-owner")]
+    assert existing_key in manager._sessions
+    assert len(manager._sessions) == 1
+    assert "vl360_chat_owner=" in response.headers["set-cookie"]
+
+
+def test_stream_mismatch_fails_before_access_and_sets_anonymous_cookie(tmp_path, monkeypatch):
+    manager = _manager(tmp_path)
+    conversation = manager.create_session("user:alice")
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    forbidden = Mock(side_effect=AssertionError("must not be accessed for an ownership miss"))
+    monkeypatch.setattr(manager, "on_message", forbidden)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", forbidden)
+    monkeypatch.setattr(server.cache, "get", forbidden)
+    monkeypatch.setattr(server, "_build_messages", forbidden)
+    monkeypatch.setattr(server, "get_client", forbidden)
+    client = TestClient(server.app)
+
+    response = client.get(
+        "/chat/stream",
+        params={"message": "steal", "session_id": conversation.session_id},
+    )
+
+    assert response.status_code == 404
+    assert "vl360_chat_owner=" in response.headers["set-cookie"]
+    forbidden.assert_not_called()
+
+
 def test_welcome_ignores_client_profile_selector(tmp_path, monkeypatch):
     manager = _manager(tmp_path)
     alice = manager.cold.get_profile("user:alice")
@@ -189,3 +298,22 @@ def test_welcome_ignores_client_profile_selector(tmp_path, monkeypatch):
     assert response.status_code == 200
     assert captured["preferences"]["interests"] == ["alice-only"]
     assert "target-secret" not in captured["preferences"]["interests"]
+
+
+def test_welcome_does_not_create_absent_profile(tmp_path, monkeypatch):
+    manager = _manager(tmp_path)
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", _new_anonymous_owner)
+    captured = []
+    monkeypatch.setattr(
+        server,
+        "generate_welcome_message",
+        lambda preferences: captured.append(preferences) or {"greeting": "ok", "suggestions": []},
+    )
+    client = TestClient(server.app)
+
+    response = client.get("/welcome")
+
+    assert response.status_code == 200
+    assert captured == [None]
+    assert manager.cold._profiles == {}

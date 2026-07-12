@@ -387,3 +387,11 @@ class TestMemoryManager:
         assert s["active_sessions"] == 2
         assert "cold_memory" in s
         assert "skills" in s
+
+
+def test_find_profile_does_not_create_missing_profile(tmp_path):
+    with patch("memory.MEMORY_DIR", tmp_path):
+        manager = MemoryManager()
+
+    assert manager.cold.find_profile("anon:missing") is None
+    assert manager.cold._profiles == {}

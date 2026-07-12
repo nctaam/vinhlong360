@@ -366,6 +366,11 @@ class ColdMemory:
                 self._profiles[user_id] = UserProfile(user_id)
             return self._profiles[user_id]
 
+    def find_profile(self, user_id: str) -> UserProfile | None:
+        """Return an existing profile without creating persistent state."""
+        with self._lock:
+            return self._profiles.get(user_id)
+
     def update_profile_from_session(self, user_id: str, hot: HotMemory):
         """Merge hot memory insights into persistent profile."""
         with self._lock:

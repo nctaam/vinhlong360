@@ -109,6 +109,35 @@ const sessionId = ref('')
 if (import.meta.client) {
   try { sessionId.value = sessionStorage.getItem('chat_sid') || '' } catch { /* private/disabled */ }
 }
+
+function clearSessionId() {
+  sessionId.value = ''
+  try { sessionStorage.removeItem('chat_sid') } catch { /* private/disabled */ }
+}
+
+function streamUrl(userMsg: string, history: { role: string; content: string }[]) {
+  const params = new URLSearchParams({
+    message: userMsg,
+    history: JSON.stringify(history),
+  })
+  if (sessionId.value) params.set('session_id', sessionId.value)
+  return `/chat/stream?${params}`
+}
+
+async function openChatStream(
+  userMsg: string,
+  history: { role: string; content: string }[],
+  signal: AbortSignal,
+  canRetry = true,
+) {
+  const hadSelector = Boolean(sessionId.value)
+  const res = await fetch(streamUrl(userMsg, history), { signal })
+  if (res.status === 404 && hadSelector && canRetry) {
+    clearSessionId()
+    return openChatStream(userMsg, history, signal, false)
+  }
+  return res
+}
 const messagesEl = ref<HTMLElement | null>(null)
 const renderedMessages = computed(() => {
   // key theo index TUYỆT ĐỐI (start+i) — slice(-50) trượt cửa sổ nên index cục bộ đổi
@@ -164,12 +193,7 @@ async function sendMessage(text: string) {
   const timeoutId = setTimeout(() => controller.abort(), 45000)
   let reader: ReadableStreamDefaultReader<Uint8Array> | null = null
   try {
-    const params = new URLSearchParams({
-      message: userMsg,
-      history: JSON.stringify(history),
-      session_id: sessionId.value,
-    })
-    const res = await fetch(`/chat/stream?${params}`, { signal: controller.signal })
+    const res = await openChatStream(userMsg, history, controller.signal)
     if (!res.ok || !res.body) {
       messages.value.push({ role: 'assistant', content: 'Xin lỗi, không thể kết nối. Vui lòng thử lại.' })
       streaming.value = false
