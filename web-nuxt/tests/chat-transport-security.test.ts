@@ -162,6 +162,115 @@ describe('chat streaming transport security', () => {
     expect(ai!.aiSessionId.value).toBe('composable-session')
   })
 
+  it('useAI cancels a never-ending stream when the chunk consumer throws', async () => {
+    const cancel = vi.fn()
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode('data: {"type":"text","content":"partial"}\n\n'))
+      },
+      cancel,
+    })
+    mocks.fetch.mockResolvedValue(new Response(stream))
+    let ai: ReturnType<typeof useAI> | undefined
+    const Harness = defineComponent({
+      setup() {
+        ai = useAI()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+
+    const result = await ai!.aiStream('cancel callback failure', () => {
+      throw new Error('consumer failed')
+    })
+
+    expect(result).toBe('')
+    expect(cancel).toHaveBeenCalledTimes(1)
+    expect(stream.locked).toBe(false)
+  })
+
+  it('useAI cancels a never-ending stream when the parser rejects oversized input', async () => {
+    const cancel = vi.fn()
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode(`data: ${'x'.repeat(256 * 1024)}`))
+      },
+      cancel,
+    })
+    mocks.fetch.mockResolvedValue(new Response(stream))
+    let ai: ReturnType<typeof useAI> | undefined
+    const Harness = defineComponent({
+      setup() {
+        ai = useAI()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+
+    const result = await ai!.aiStream('cancel oversized stream', vi.fn())
+
+    expect(result).toBe('')
+    expect(cancel).toHaveBeenCalledTimes(1)
+    expect(stream.locked).toBe(false)
+  })
+
+  it('useAI keeps its error return when reader cancellation rejects', async () => {
+    const cancel = vi.fn(() => Promise.reject(new Error('cancel failed')))
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode('data: {"type":"text","content":"partial"}\n\n'))
+      },
+      cancel,
+    })
+    mocks.fetch.mockResolvedValue(new Response(stream))
+    let ai: ReturnType<typeof useAI> | undefined
+    const Harness = defineComponent({
+      setup() {
+        ai = useAI()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+
+    const result = await ai!.aiStream('cancel rejection', () => {
+      throw new Error('consumer failed')
+    })
+
+    expect(result).toBe('')
+    expect(cancel).toHaveBeenCalledTimes(1)
+    expect(stream.locked).toBe(false)
+  })
+
+  it('useAI releases a completed reader without cancelling it', async () => {
+    const cancel = vi.fn()
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode('data: {"type":"text","content":"complete"}\n\n'))
+        controller.close()
+      },
+      cancel,
+    })
+    mocks.fetch.mockResolvedValue(new Response(stream))
+    let ai: ReturnType<typeof useAI> | undefined
+    const Harness = defineComponent({
+      setup() {
+        ai = useAI()
+        return () => h('div')
+      },
+    })
+    await mountSuspended(Harness)
+
+    const result = await ai!.aiStream('complete stream', vi.fn())
+
+    expect(result).toBe('complete')
+    expect(cancel).not.toHaveBeenCalled()
+    expect(stream.locked).toBe(false)
+  })
+
   it('does not serialize chat payloads or the anonymous owner cookie into browser URLs', () => {
     const widget = readFileSync(resolve(process.cwd(), 'components/ChatWidget.vue'), 'utf8')
     const composable = readFileSync(resolve(process.cwd(), 'composables/useAI.ts'), 'utf8')

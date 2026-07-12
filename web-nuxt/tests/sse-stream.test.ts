@@ -55,6 +55,19 @@ describe('consumeJsonSseStream', () => {
     expect(onEvent).toHaveBeenCalledWith({ type: 'text', content: 'still valid' })
   })
 
+  it('skips JSON arrays without aborting later valid events', async () => {
+    const onEvent = vi.fn()
+    const reader = readerFor(
+      'data: []\n\n',
+      'data: {"type":"text","content":"still valid"}\n\n',
+    )
+
+    await consumeJsonSseStream(reader, onEvent)
+
+    expect(onEvent).toHaveBeenCalledTimes(1)
+    expect(onEvent).toHaveBeenCalledWith({ type: 'text', content: 'still valid' })
+  })
+
   it('allows an exact-limit event when the delimiter is split across chunks', async () => {
     const event = 'data: {"type":"text","content":"ok"}'
     const onEvent = vi.fn()

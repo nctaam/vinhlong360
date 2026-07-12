@@ -37,7 +37,7 @@ export async function consumeJsonSseStream<T extends Record<string, unknown>>(
       if (error instanceof SyntaxError) return
       throw error
     }
-    if (typeof event !== 'object' || event === null) return
+    if (typeof event !== 'object' || event === null || Array.isArray(event)) return
     onEvent(event as T)
   }
 

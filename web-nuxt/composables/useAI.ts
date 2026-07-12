@@ -58,17 +58,26 @@ export function useAI() {
       if (!res.ok || !res.body) return ''
       const reader = res.body.getReader()
       let fullText = ''
-      await consumeJsonSseStream(reader, (data) => {
-        if (data.type === 'text' && typeof data.content === 'string') {
-          fullText += data.content
-          onChunk(fullText)
-        } else if (data.type === 'done') {
-          if (typeof data.session_id === 'string' && data.session_id) {
-            aiSessionId.value = data.session_id
+      let completed = false
+      try {
+        await consumeJsonSseStream(reader, (data) => {
+          if (data.type === 'text' && typeof data.content === 'string') {
+            fullText += data.content
+            onChunk(fullText)
+          } else if (data.type === 'done') {
+            if (typeof data.session_id === 'string' && data.session_id) {
+              aiSessionId.value = data.session_id
+            }
+            onDone?.(data)
           }
-          onDone?.(data)
+        })
+        completed = true
+      } finally {
+        if (!completed) {
+          try { await reader.cancel() } catch { /* preserve the original stream failure */ }
         }
-      })
+        try { reader.releaseLock() } catch { /* reader may already be detached */ }
+      }
       return fullText
     } catch { return '' }
   }
