@@ -80,8 +80,10 @@ class UsageAccumulator:
         """Add one non-stream response or terminal stream usage chunk."""
         if getattr(response, "_skip_usage", False):
             return self.snapshot()
+        raw_tokens, reported = self._count_provider_usage(response)
         tokens, estimated = self._complete_call_tokens(
-            self._counter.count_from_response(response),
+            raw_tokens,
+            reported,
             response,
             messages,
             completion_text,
@@ -111,9 +113,23 @@ class UsageAccumulator:
             self._models.add(model)
             return self._snapshot_locked(settled=False)
 
+    def _count_provider_usage(
+        self,
+        response: Any,
+    ) -> tuple[dict[str, int], dict[str, bool]]:
+        if hasattr(self._counter, "count_with_provenance"):
+            return self._counter.count_with_provenance(response)
+        tokens = self._counter.count_from_response(response)
+        reported = {
+            name: bool(tokens.get(name, 0))
+            for name in ("prompt_tokens", "completion_tokens", "total_tokens")
+        }
+        return tokens, reported
+
     def _complete_call_tokens(
         self,
         tokens: dict[str, int],
+        reported: dict[str, bool],
         response: Any,
         messages: list[dict],
         completion_text: str | None,
@@ -121,16 +137,78 @@ class UsageAccumulator:
         prompt = max(0, int(tokens.get("prompt_tokens", 0) or 0))
         completion = max(0, int(tokens.get("completion_tokens", 0) or 0))
         total = max(0, int(tokens.get("total_tokens", 0) or 0))
-        if not total:
-            return self._estimate_missing_usage(response, messages, completion_text), True
-        if prompt > 0 and completion > 0 and prompt + completion == total:
-            return tokens, False
-        if 0 < prompt < total and not completion:
+        prompt_reported = reported.get("prompt_tokens", False)
+        completion_reported = reported.get("completion_tokens", False)
+        total_reported = reported.get("total_tokens", False) and total > 0
+        if not total_reported:
+            return self._complete_without_total(
+                prompt,
+                completion,
+                prompt_reported,
+                completion_reported,
+                response,
+                messages,
+                completion_text,
+            )
+        return self._complete_with_total(
+            prompt,
+            completion,
+            total,
+            prompt_reported,
+            completion_reported,
+            response,
+            messages,
+            completion_text,
+        )
+
+    def _complete_with_total(
+        self,
+        prompt: int,
+        completion: int,
+        total: int,
+        prompt_reported: bool,
+        completion_reported: bool,
+        response: Any,
+        messages: list[dict],
+        completion_text: str | None,
+    ) -> tuple[dict[str, int], bool]:
+        if prompt_reported and completion_reported and prompt + completion == total:
+            return self._token_dict(prompt, completion, total), False
+        if prompt_reported and not completion_reported and prompt <= total:
             return self._token_dict(prompt, total - prompt, total), True
-        if 0 < completion < total and not prompt:
+        if completion_reported and not prompt_reported and completion <= total:
             return self._token_dict(total - completion, completion, total), True
         estimated = self._estimate_missing_usage(response, messages, completion_text)
         return self._scale_components_to_total(estimated, total), True
+
+    def _complete_without_total(
+        self,
+        prompt: int,
+        completion: int,
+        prompt_reported: bool,
+        completion_reported: bool,
+        response: Any,
+        messages: list[dict],
+        completion_text: str | None,
+    ) -> tuple[dict[str, int], bool]:
+        if prompt_reported and completion_reported:
+            return self._token_dict(prompt, completion, prompt + completion), False
+        estimated = self._estimate_missing_usage(response, messages, completion_text)
+        if prompt_reported:
+            estimated_completion = estimated["completion_tokens"]
+            return self._token_dict(
+                prompt,
+                estimated_completion,
+                prompt + estimated_completion,
+            ), True
+        if completion_reported:
+            estimated_prompt = estimated["prompt_tokens"]
+            return self._token_dict(
+                estimated_prompt,
+                completion,
+                estimated_prompt + completion,
+            ), True
+        return estimated, True
 
     @staticmethod
     def _token_dict(prompt: int, completion: int, total: int) -> dict[str, int]:

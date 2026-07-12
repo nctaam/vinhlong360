@@ -24,6 +24,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from starlette.requests import Request  # noqa: E402
 
 from chat_usage import UsageAccumulator  # noqa: E402
+from cost_tracker import TokenCounter  # noqa: E402
 import server  # noqa: E402
 
 
@@ -178,6 +179,101 @@ def test_dict_provider_usage_shape_reconstructs_missing_component():
     assert snapshot.completion_tokens == 20
     assert snapshot.total_tokens == 100
     assert snapshot.estimated_call_count == 1
+    assert snapshot.cost == 0.0007
+
+
+def test_prompt_only_without_total_preserves_prompt_and_estimates_completion():
+    messages = [{"role": "user", "content": "complete prompt"}]
+    completion_text = "generated answer"
+    expected_completion = TokenCounter().estimate_tokens(completion_text)
+    response = SimpleNamespace(
+        usage=SimpleNamespace(prompt_tokens=80),
+        choices=[SimpleNamespace(message=SimpleNamespace(content=completion_text, tool_calls=None))],
+    )
+    accumulator = UsageAccumulator()
+
+    accumulator.add_response(
+        response,
+        model="cx/gpt-5.4",
+        messages=messages,
+    )
+
+    snapshot = accumulator.snapshot()
+    assert snapshot.prompt_tokens == 80
+    assert snapshot.completion_tokens == expected_completion
+    assert snapshot.total_tokens == 80 + expected_completion
+    assert snapshot.estimated_call_count == 1
+    assert snapshot.cost == TokenCounter().calculate_cost(
+        {"prompt_tokens": 80, "completion_tokens": expected_completion},
+        "cx/gpt-5.4",
+    )
+
+
+def test_completion_only_dict_without_total_preserves_completion_and_estimates_prompt():
+    messages = [{"role": "user", "content": "complete prompt"}]
+    expected_prompt = TokenCounter().estimate_call_tokens(messages, "answer")["prompt_tokens"]
+    response = {
+        "usage": {"completion_tokens": 20},
+        "choices": [{"message": {"content": "answer", "tool_calls": None}}],
+    }
+    accumulator = UsageAccumulator()
+
+    accumulator.add_response(
+        response,
+        model="cx/gpt-5.4",
+        messages=messages,
+    )
+
+    snapshot = accumulator.snapshot()
+    assert snapshot.prompt_tokens == expected_prompt
+    assert snapshot.completion_tokens == 20
+    assert snapshot.total_tokens == expected_prompt + 20
+    assert snapshot.estimated_call_count == 1
+    assert snapshot.cost == TokenCounter().calculate_cost(
+        {"prompt_tokens": expected_prompt, "completion_tokens": 20},
+        "cx/gpt-5.4",
+    )
+
+
+def test_explicit_total_with_missing_completion_preserves_zero_remainder():
+    response = SimpleNamespace(
+        usage=SimpleNamespace(prompt_tokens=100, total_tokens=100),
+        choices=[SimpleNamespace(message=SimpleNamespace(content="answer", tool_calls=None))],
+    )
+    accumulator = UsageAccumulator()
+
+    accumulator.add_response(
+        response,
+        model="cx/gpt-5.4",
+        messages=[{"role": "user", "content": "complete prompt"}],
+    )
+
+    snapshot = accumulator.snapshot()
+    assert snapshot.prompt_tokens == 100
+    assert snapshot.completion_tokens == 0
+    assert snapshot.total_tokens == 100
+    assert snapshot.estimated_call_count == 1
+    assert snapshot.cost == 0.0005
+
+
+def test_components_without_total_are_preserved_and_summed():
+    response = SimpleNamespace(
+        usage=SimpleNamespace(prompt_tokens=80, completion_tokens=20),
+        choices=[SimpleNamespace(message=SimpleNamespace(content="answer", tool_calls=None))],
+    )
+    accumulator = UsageAccumulator()
+
+    accumulator.add_response(
+        response,
+        model="cx/gpt-5.4",
+        messages=[{"role": "user", "content": "complete prompt"}],
+    )
+
+    snapshot = accumulator.snapshot()
+    assert snapshot.prompt_tokens == 80
+    assert snapshot.completion_tokens == 20
+    assert snapshot.total_tokens == 100
+    assert snapshot.estimated_call_count == 0
     assert snapshot.cost == 0.0007
 
 

@@ -81,6 +81,32 @@ class TokenCounter:
             return usage.get(name, 0) or 0
         return getattr(usage, name, 0) or 0
 
+    @staticmethod
+    def _usage_reports(usage: Any, name: str) -> bool:
+        if isinstance(usage, dict):
+            return name in usage and usage[name] is not None
+        return hasattr(usage, name) and getattr(usage, name) is not None
+
+    def count_with_provenance(
+        self,
+        response: Any,
+    ) -> tuple[Dict[str, int], Dict[str, bool]]:
+        """Extract raw usage values plus whether each field was reported."""
+        try:
+            usage = self._response_usage(response)
+            names = ("prompt_tokens", "completion_tokens", "total_tokens")
+            tokens = {name: self._usage_value(usage, name) for name in names}
+            reported = {name: self._usage_reports(usage, name) for name in names}
+            return tokens, reported
+        except (AttributeError, TypeError):
+            logger.warning("Khong the trich xuat token usage tu response")
+            empty_tokens = {
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0,
+            }
+            return empty_tokens, {name: False for name in empty_tokens}
+
     def count_from_response(self, response: Any) -> Dict[str, int]:
         """Extract prompt_tokens, completion_tokens, total_tokens
         tu OpenAI-compatible response object.
@@ -88,26 +114,14 @@ class TokenCounter:
         Tra ve dict voi cac key: prompt_tokens, completion_tokens, total_tokens.
         Neu response khong co usage info, tra ve tat ca = 0.
         """
-        try:
-            usage = self._response_usage(response)
-            prompt_tokens = self._usage_value(usage, "prompt_tokens")
-            completion_tokens = self._usage_value(usage, "completion_tokens")
-            total_tokens = self._usage_value(usage, "total_tokens")
-            # Dam bao total nhat quan
-            if total_tokens == 0 and (prompt_tokens or completion_tokens):
-                total_tokens = prompt_tokens + completion_tokens
-            return {
-                "prompt_tokens": prompt_tokens,
-                "completion_tokens": completion_tokens,
-                "total_tokens": total_tokens,
-            }
-        except (AttributeError, TypeError):
-            logger.warning("Khong the trich xuat token usage tu response")
-            return {
-                "prompt_tokens": 0,
-                "completion_tokens": 0,
-                "total_tokens": 0,
-            }
+        tokens, _reported = self.count_with_provenance(response)
+        if not tokens["total_tokens"] and (
+            tokens["prompt_tokens"] or tokens["completion_tokens"]
+        ):
+            tokens["total_tokens"] = (
+                tokens["prompt_tokens"] + tokens["completion_tokens"]
+            )
+        return tokens
 
     def estimate_tokens(self, text: str) -> int:
         """Uoc tinh so token cho text (fallback khi khong co usage info).
