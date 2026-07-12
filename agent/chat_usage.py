@@ -42,24 +42,31 @@ class UsageAccumulator:
         self._settlement_snapshot: UsageSnapshot | None = None
 
     @staticmethod
+    def _field(value: Any, name: str, default: Any = None) -> Any:
+        if isinstance(value, dict):
+            return value.get(name, default)
+        return getattr(value, name, default)
+
+    @staticmethod
     def _completion_from_response(response: Any) -> str:
         try:
-            message = response.choices[0].message
-        except (AttributeError, IndexError, TypeError):
+            choices = UsageAccumulator._field(response, "choices", [])
+            message = UsageAccumulator._field(choices[0], "message")
+        except (IndexError, TypeError):
             return ""
-        content = getattr(message, "content", None)
+        content = UsageAccumulator._field(message, "content")
         if content:
             return str(content)
-        tool_calls = getattr(message, "tool_calls", None)
+        tool_calls = UsageAccumulator._field(message, "tool_calls")
         if not tool_calls:
             return ""
         serializable = []
         for call in tool_calls:
-            function = getattr(call, "function", None)
+            function = UsageAccumulator._field(call, "function")
             serializable.append({
-                "id": getattr(call, "id", None),
-                "name": getattr(function, "name", None),
-                "arguments": getattr(function, "arguments", None),
+                "id": UsageAccumulator._field(call, "id"),
+                "name": UsageAccumulator._field(function, "name"),
+                "arguments": UsageAccumulator._field(function, "arguments"),
             })
         return json.dumps(serializable, ensure_ascii=False, separators=(",", ":"))
 
@@ -73,14 +80,12 @@ class UsageAccumulator:
         """Add one non-stream response or terminal stream usage chunk."""
         if getattr(response, "_skip_usage", False):
             return self.snapshot()
-        tokens = self._counter.count_from_response(response)
-        estimated = not tokens.get("total_tokens", 0)
-        if estimated:
-            tokens = self._estimate_missing_usage(
-                response,
-                messages,
-                completion_text,
-            )
+        tokens, estimated = self._complete_call_tokens(
+            self._counter.count_from_response(response),
+            response,
+            messages,
+            completion_text,
+        )
 
         prompt_tokens = max(0, int(tokens.get("prompt_tokens", 0) or 0))
         completion_tokens = max(0, int(tokens.get("completion_tokens", 0) or 0))
@@ -106,6 +111,49 @@ class UsageAccumulator:
             self._models.add(model)
             return self._snapshot_locked(settled=False)
 
+    def _complete_call_tokens(
+        self,
+        tokens: dict[str, int],
+        response: Any,
+        messages: list[dict],
+        completion_text: str | None,
+    ) -> tuple[dict[str, int], bool]:
+        prompt = max(0, int(tokens.get("prompt_tokens", 0) or 0))
+        completion = max(0, int(tokens.get("completion_tokens", 0) or 0))
+        total = max(0, int(tokens.get("total_tokens", 0) or 0))
+        if not total:
+            return self._estimate_missing_usage(response, messages, completion_text), True
+        if prompt > 0 and completion > 0 and prompt + completion == total:
+            return tokens, False
+        if 0 < prompt < total and not completion:
+            return self._token_dict(prompt, total - prompt, total), True
+        if 0 < completion < total and not prompt:
+            return self._token_dict(total - completion, completion, total), True
+        estimated = self._estimate_missing_usage(response, messages, completion_text)
+        return self._scale_components_to_total(estimated, total), True
+
+    @staticmethod
+    def _token_dict(prompt: int, completion: int, total: int) -> dict[str, int]:
+        return {
+            "prompt_tokens": prompt,
+            "completion_tokens": completion,
+            "total_tokens": total,
+        }
+
+    def _scale_components_to_total(
+        self,
+        estimated: dict[str, int],
+        total: int,
+    ) -> dict[str, int]:
+        prompt = max(0, int(estimated.get("prompt_tokens", 0) or 0))
+        completion = max(0, int(estimated.get("completion_tokens", 0) or 0))
+        estimated_total = prompt + completion
+        if not estimated_total:
+            return self._token_dict(0, total, total)
+        scaled_completion = round(total * completion / estimated_total)
+        scaled_completion = min(total, max(0, scaled_completion))
+        return self._token_dict(total - scaled_completion, scaled_completion, total)
+
     def _estimate_missing_usage(
         self,
         response: Any,
@@ -127,11 +175,11 @@ class UsageAccumulator:
         )
         prompt_tokens = self._counter.estimate_tokens(serialized)
         completion_tokens = self._counter.estimate_tokens(completion)
-        return {
-            "prompt_tokens": prompt_tokens,
-            "completion_tokens": completion_tokens,
-            "total_tokens": prompt_tokens + completion_tokens,
-        }
+        return self._token_dict(
+            prompt_tokens,
+            completion_tokens,
+            prompt_tokens + completion_tokens,
+        )
 
     def _snapshot_locked(self, *, settled: bool) -> UsageSnapshot:
         return UsageSnapshot(

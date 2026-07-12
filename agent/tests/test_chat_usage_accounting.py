@@ -91,6 +91,96 @@ def test_accumulator_aggregates_provider_usage_and_model_aware_cost():
     assert snapshot.cost == 0.000801
 
 
+@pytest.mark.parametrize(
+    ("usage", "expected_prompt", "expected_completion"),
+    [
+        (SimpleNamespace(prompt_tokens=80, total_tokens=100), 80, 20),
+        (SimpleNamespace(completion_tokens=20, total_tokens=100), 80, 20),
+    ],
+)
+def test_partial_provider_usage_derives_one_missing_component(
+    usage,
+    expected_prompt,
+    expected_completion,
+):
+    response = SimpleNamespace(
+        usage=usage,
+        choices=[SimpleNamespace(message=SimpleNamespace(content="answer", tool_calls=None))],
+    )
+    accumulator = UsageAccumulator()
+
+    accumulator.add_response(
+        response,
+        model="cx/gpt-5.4",
+        messages=[{"role": "user", "content": "complete prompt"}],
+    )
+
+    snapshot = accumulator.snapshot()
+    assert snapshot.prompt_tokens == expected_prompt
+    assert snapshot.completion_tokens == expected_completion
+    assert snapshot.total_tokens == 100
+    assert snapshot.estimated_call_count == 1
+    assert snapshot.cost == 0.0007
+
+
+@pytest.mark.parametrize(
+    "provider_tokens",
+    [
+        {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 100},
+        {"prompt_tokens": 90, "completion_tokens": 30, "total_tokens": 100},
+    ],
+)
+def test_partial_provider_usage_scales_fallback_split_to_provider_total(provider_tokens):
+    class PartialCounter:
+        def count_from_response(self, _response):
+            return provider_tokens
+
+        def estimate_call_tokens(self, _messages, _completion):
+            return {"prompt_tokens": 60, "completion_tokens": 40, "total_tokens": 100}
+
+        def calculate_cost(self, tokens, model):
+            from cost_tracker import TokenCounter
+
+            return TokenCounter().calculate_cost(tokens, model)
+
+    accumulator = UsageAccumulator(counter=PartialCounter())
+
+    accumulator.add_response(
+        SimpleNamespace(choices=[]),
+        model="cx/gpt-5.4",
+        messages=[{"role": "user", "content": "complete prompt"}],
+        completion_text="complete answer",
+    )
+
+    snapshot = accumulator.snapshot()
+    assert snapshot.prompt_tokens == 60
+    assert snapshot.completion_tokens == 40
+    assert snapshot.total_tokens == 100
+    assert snapshot.estimated_call_count == 1
+    assert snapshot.cost == 0.0009
+
+
+def test_dict_provider_usage_shape_reconstructs_missing_component():
+    response = {
+        "usage": {"prompt_tokens": 80, "total_tokens": 100},
+        "choices": [{"message": {"content": "answer", "tool_calls": None}}],
+    }
+    accumulator = UsageAccumulator()
+
+    accumulator.add_response(
+        response,
+        model="cx/gpt-5.4",
+        messages=[{"role": "user", "content": "complete prompt"}],
+    )
+
+    snapshot = accumulator.snapshot()
+    assert snapshot.prompt_tokens == 80
+    assert snapshot.completion_tokens == 20
+    assert snapshot.total_tokens == 100
+    assert snapshot.estimated_call_count == 1
+    assert snapshot.cost == 0.0007
+
+
 def test_accumulator_estimates_one_missing_usage_call_from_full_messages():
     class RecordingCounter:
         def __init__(self):
@@ -270,7 +360,6 @@ def _configure_post_chat(monkeypatch, guardrail, attribution):
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
 
 
-@pytest.mark.integration
 def test_post_chat_settles_provider_totals_once_to_owner(monkeypatch):
     guardrail = _GuardrailRecorder()
     attribution = _AttributionRecorder()
@@ -309,7 +398,6 @@ def test_post_chat_settles_provider_totals_once_to_owner(monkeypatch):
     assert attribution.calls[0]["cost"] == 0.002025
 
 
-@pytest.mark.integration
 def test_post_cache_hit_adds_no_usage(monkeypatch):
     guardrail = _GuardrailRecorder()
     attribution = _AttributionRecorder()
@@ -336,7 +424,6 @@ def test_post_cache_hit_adds_no_usage(monkeypatch):
     assert attribution.calls == []
 
 
-@pytest.mark.integration
 def test_post_cancellation_settles_completed_worker_usage_once(monkeypatch):
     guardrail = _GuardrailRecorder()
     attribution = _AttributionRecorder()

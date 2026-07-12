@@ -69,6 +69,18 @@ _VIETNAMESE_RE = re.compile(
 class TokenCounter:
     """Trich xuat va uoc tinh token usage, tinh chi phi."""
 
+    @staticmethod
+    def _response_usage(response: Any) -> Any:
+        if isinstance(response, dict):
+            return response.get("usage")
+        return response.usage
+
+    @staticmethod
+    def _usage_value(usage: Any, name: str) -> int:
+        if isinstance(usage, dict):
+            return usage.get(name, 0) or 0
+        return getattr(usage, name, 0) or 0
+
     def count_from_response(self, response: Any) -> Dict[str, int]:
         """Extract prompt_tokens, completion_tokens, total_tokens
         tu OpenAI-compatible response object.
@@ -77,10 +89,10 @@ class TokenCounter:
         Neu response khong co usage info, tra ve tat ca = 0.
         """
         try:
-            usage = response.usage
-            prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
-            completion_tokens = getattr(usage, "completion_tokens", 0) or 0
-            total_tokens = getattr(usage, "total_tokens", 0) or 0
+            usage = self._response_usage(response)
+            prompt_tokens = self._usage_value(usage, "prompt_tokens")
+            completion_tokens = self._usage_value(usage, "completion_tokens")
+            total_tokens = self._usage_value(usage, "total_tokens")
             # Dam bao total nhat quan
             if total_tokens == 0 and (prompt_tokens or completion_tokens):
                 total_tokens = prompt_tokens + completion_tokens
