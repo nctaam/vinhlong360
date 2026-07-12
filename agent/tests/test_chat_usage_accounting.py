@@ -1,6 +1,7 @@
 """Provider-accurate chat usage accumulation and settlement tests."""
 
 import asyncio
+import gc
 import json
 import os
 import sys
@@ -759,3 +760,84 @@ def test_post_cancellation_settles_completed_worker_usage_once(monkeypatch):
     assert len(attribution.calls) == 1
     assert attribution.calls[0]["tokens"]["provider_call_count"] == 1
     assert attribution.calls[0]["tokens"]["total_tokens"] == 130
+
+
+def test_post_double_cancellation_retrieves_worker_error(monkeypatch):
+    guardrail = _GuardrailRecorder()
+    attribution = _AttributionRecorder()
+    _configure_post_chat(monkeypatch, guardrail, attribution)
+    started = threading.Event()
+    release = threading.Event()
+    worker_finished = threading.Event()
+
+    def failing_orchestrated(
+        _message,
+        _history,
+        _session_id,
+        _prompt,
+        usage_accumulator,
+    ):
+        usage_accumulator.add_response(
+            _response(7, 4),
+            model="cx/gpt-5.4",
+            messages=[{"role": "user", "content": "completed outer call"}],
+        )
+        started.set()
+        release.wait(timeout=5)
+        worker_finished.set()
+        raise RuntimeError("worker failed after cancellation")
+
+    monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(server, "_run_agent_orchestrated", failing_orchestrated)
+    scope = {
+        "type": "http",
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/chat",
+        "raw_path": b"/chat",
+        "query_string": b"",
+        "headers": [],
+        "client": ("127.0.0.1", 1234),
+        "server": ("testserver", 80),
+    }
+
+    async def cancel_worker_twice_and_capture_loop_errors():
+        loop = asyncio.get_running_loop()
+        contexts = []
+        previous_handler = loop.get_exception_handler()
+        loop.set_exception_handler(lambda _loop, context: contexts.append(context))
+        try:
+            task = asyncio.create_task(
+                server.chat(
+                    server.ChatRequest.model_validate({
+                        "message": "where should I go?",
+                        "history": [{"role": "user", "content": "prior"}],
+                    }),
+                    Request(scope),
+                    Response(),
+                )
+            )
+            assert await asyncio.to_thread(started.wait, 2)
+            task.cancel()
+            loop.call_soon(task.cancel)
+            await asyncio.sleep(0)
+            release.set()
+            with pytest.raises(asyncio.CancelledError):
+                await task
+            assert await asyncio.to_thread(worker_finished.wait, 2)
+            await asyncio.sleep(0)
+            gc.collect()
+            await asyncio.sleep(0)
+            return contexts
+        finally:
+            release.set()
+            loop.set_exception_handler(previous_handler)
+
+    contexts = asyncio.run(cancel_worker_twice_and_capture_loop_errors())
+
+    assert contexts == []
+    assert guardrail.calls == [("user:alice", 11, 0.0)]
+    assert len(attribution.calls) == 1
+    assert attribution.calls[0]["tokens"]["provider_call_count"] == 1
+    assert attribution.calls[0]["tokens"]["total_tokens"] == 11

@@ -563,6 +563,33 @@ async def _cancel_anyio_group_after_provider_starts(probe, started_event, add_ev
     return observed
 
 
+async def _double_cancel_stream_consumer(probe):
+    consumer = asyncio.create_task(_consume_stream_until_anyio_cancellation(probe))
+    started = await asyncio.to_thread(probe.provider_started.wait, 2)
+    consumer.cancel()
+    asyncio.get_running_loop().call_soon(consumer.cancel)
+    await asyncio.sleep(0)
+    observed = {
+        "started": started,
+        "settled_before_release": await asyncio.to_thread(
+            probe.settlement_started.wait,
+            0.25,
+        ),
+        "consumer_done_before_release": consumer.done(),
+        "cancel_count": consumer.cancelling(),
+    }
+    probe.release_provider.set()
+    observed["add_attempted"] = await asyncio.to_thread(
+        probe.provider_add_attempted.wait,
+        2,
+    )
+    try:
+        await consumer
+    except asyncio.CancelledError:
+        observed["cancelled"] = True
+    return observed
+
+
 def _assert_nested_cancel_behavior(probe, observed):
     assert observed == {
         "settled_before_release": False,
@@ -600,6 +627,19 @@ def _assert_anyio_cancellation_waited(probe, observed):
         "add_attempted": True,
     }
     assert probe.cancelled is True
+    assert probe.add_after_settlement.is_set() is False
+    assert probe.consumer_done.is_set() is True
+
+
+def _assert_double_native_cancellation_waited(probe, observed):
+    assert observed == {
+        "started": True,
+        "settled_before_release": False,
+        "consumer_done_before_release": False,
+        "cancel_count": 2,
+        "add_attempted": True,
+        "cancelled": True,
+    }
     assert probe.add_after_settlement.is_set() is False
     assert probe.consumer_done.is_set() is True
 
@@ -917,4 +957,36 @@ async def test_anyio_cancellation_accounts_blocked_first_decision(
     )
 
     _assert_anyio_cancellation_waited(probe, observed)
+    _assert_decision_cancel_usage(probe, guardrail, attribution)
+
+
+def test_double_native_cancellation_waits_for_nested_provider(monkeypatch):
+    probe = _NestedCancellationProbe()
+    guardrail, attribution = _configure_usage_stream(monkeypatch, probe.create)
+    probe.original_record_usage = guardrail.record_usage
+    monkeypatch.setattr(guardrail, "record_usage", probe.record_usage)
+    monkeypatch.setattr(
+        server,
+        "UsageAccumulator",
+        lambda: _RecordingStreamAccumulator(probe),
+    )
+
+    observed = asyncio.run(_double_cancel_stream_consumer(probe))
+
+    _assert_double_native_cancellation_waited(probe, observed)
+    _assert_nested_cancel_usage(probe, guardrail, attribution)
+
+
+def test_double_native_cancellation_accounts_first_decision(monkeypatch):
+    probe = _DecisionCancellationProbe()
+    guardrail, attribution = _configure_usage_stream(monkeypatch, probe.create)
+    monkeypatch.setattr(
+        server,
+        "UsageAccumulator",
+        lambda: _RecordingDecisionAccumulator(probe),
+    )
+
+    observed = asyncio.run(_double_cancel_stream_consumer(probe))
+
+    _assert_double_native_cancellation_waited(probe, observed)
     _assert_decision_cancel_usage(probe, guardrail, attribution)

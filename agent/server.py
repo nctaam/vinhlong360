@@ -1778,11 +1778,17 @@ async def _await_chat_worker(func, *args):
     """Wait for provider work on cancellation, then preserve cancellation."""
     worker = asyncio.create_task(asyncio.to_thread(func, *args))
     try:
-        return await asyncio.shield(worker)
+        await asyncio.wait({worker})
+        return worker.result()
     except asyncio.CancelledError:
         with anyio.CancelScope(shield=True):
+            while not worker.done():
+                try:
+                    await asyncio.wait({worker})
+                except asyncio.CancelledError:
+                    continue
             try:
-                await asyncio.shield(worker)
+                worker.result()
             except Exception:
                 logger.debug("Chat worker failed after request cancellation", exc_info=True)
         raise
