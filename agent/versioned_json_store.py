@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import stat
 import tempfile
 import threading
 from collections.abc import Callable, Iterator
@@ -83,8 +84,33 @@ def load_json_versioned(path: Path) -> tuple[dict, str]:
     return _read_versioned(path)
 
 
+def json_version(path: Path) -> str:
+    return _version(path.read_bytes())
+
+
+def _fsync_parent(path: Path) -> None:
+    if os.name == "nt":
+        return
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    try:
+        directory_fd = os.open(path.parent, flags)
+    except OSError:
+        return
+    try:
+        os.fsync(directory_fd)
+    except OSError:
+        pass
+    finally:
+        os.close(directory_fd)
+
+
 def _atomic_write(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    target_mode = None
+    try:
+        target_mode = stat.S_IMODE(path.stat().st_mode)
+    except OSError:
+        pass
     fd, temp_name = tempfile.mkstemp(
         dir=path.parent,
         prefix=f".{path.name}.",
@@ -96,15 +122,22 @@ def _atomic_write(path: Path, data: dict) -> None:
             json.dump(data, temp_file, ensure_ascii=False, indent=2)
             temp_file.flush()
             os.fsync(temp_file.fileno())
+        if target_mode is not None:
+            os.chmod(temp_path, target_mode)
         os.replace(temp_path, path)
+        _fsync_parent(path)
     finally:
         temp_path.unlink(missing_ok=True)
 
 
 def compare_and_swap_json(path: Path, expected_version: str, data: dict) -> bool:
+    return replace_json(path, data, expected_version=expected_version)
+
+
+def replace_json(path: Path, data: dict, expected_version: str | None = None) -> bool:
+    """Replace JSON under lock; expected_version enables CAS, None is a force replace."""
     with _locked(path):
-        _, current_version = _read_versioned(path)
-        if current_version != expected_version:
+        if expected_version is not None and json_version(path) != expected_version:
             return False
         _atomic_write(path, data)
         return True

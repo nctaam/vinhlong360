@@ -14,6 +14,8 @@ import logging
 import shutil
 from pathlib import Path
 
+from versioned_json_store import load_json, replace_json
+
 logger = logging.getLogger(__name__)
 
 AGENT_DIR = Path(__file__).resolve().parent
@@ -94,11 +96,15 @@ def list_snapshots() -> list:
     return _load_manifest()
 
 
-def rollback(snapshot_id: str | None = None) -> dict:
+def rollback(snapshot_id: str | None = None, expected_version: str | None = None) -> dict:
     """Restore data.json from a snapshot (latest if id is None).
 
-    Returns {restored: bool, id, entity_count} . Caller is responsible for
-    calling knowledge.reload() afterwards.
+    Guarded callers pass ``expected_version`` so rollback refuses to erase data
+    changed after the guarded apply. Omitting it keeps force-rollback behavior
+    for explicit manual recovery, while still using the shared write lock.
+
+    Returns {restored: bool, id, entity_count}. Caller is responsible for
+    calling knowledge.reload() only when ``restored`` is true.
     """
     entries = _load_manifest()
     if not entries:
@@ -115,10 +121,9 @@ def rollback(snapshot_id: str | None = None) -> dict:
     if not src.exists():
         return {"restored": False, "error": f"snapshot file missing: {target['file']}"}
 
-    # Atomic restore
-    tmp = DATA_JSON.with_suffix(".rollback.tmp")
-    shutil.copy2(src, tmp)
-    tmp.replace(DATA_JSON)
+    snapshot_data = load_json(src)
+    if not replace_json(DATA_JSON, snapshot_data, expected_version=expected_version):
+        return {"restored": False, "error": "rollback_conflict"}
     return {"restored": True, "id": target["id"], "entity_count": target["entity_count"]}
 
 

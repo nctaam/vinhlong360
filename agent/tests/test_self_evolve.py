@@ -177,3 +177,45 @@ class TestGuardedEvolve:
         assert result["decision"] == "rolled_back"
         assert "apply error" in result["reason"]
         assert rolled["called"] is True
+
+    def test_rollback_conflict_preserves_edit_after_post_apply_version(self, monkeypatch, tmp_path):
+        data_json = tmp_path / "data.json"
+        snap_dir = tmp_path / "snaps"
+        snap_dir.mkdir()
+        original = {"entities": [{"id": "a", "attributes": {"phone": "0900000000"}}],
+                    "relationships": [], "itineraries": []}
+        data_json.write_text(json.dumps(original), encoding="utf-8")
+        monkeypatch.setattr(kb_versioning, "DATA_JSON", data_json)
+        monkeypatch.setattr(kb_versioning, "SNAP_DIR", snap_dir)
+        monkeypatch.setattr(kb_versioning, "MANIFEST", snap_dir / "manifest.json")
+        monkeypatch.setattr(self_evolve, "AUDIT_LOG", tmp_path / "audit.jsonl")
+        reloads = []
+        monkeypatch.setattr(self_evolve.knowledge, "reload", lambda: reloads.append("reload"))
+        fitness_call = 0
+
+        def fitness():
+            nonlocal fitness_call
+            fitness_call += 1
+            if fitness_call == 1:
+                return {"composite": 0.90, "recall_at_5": 1.0, "dup_ratio": 0.01}
+            concurrent = json.loads(data_json.read_text(encoding="utf-8"))
+            concurrent["entities"][0]["attributes"]["phone"] = "0911111111"
+            data_json.write_text(json.dumps(concurrent), encoding="utf-8")
+            return {"composite": 0.80, "recall_at_5": 1.0, "dup_ratio": 0.01}
+
+        def apply_bad_change():
+            bad = json.loads(data_json.read_text(encoding="utf-8"))
+            bad["entities"].append({"id": "bad"})
+            data_json.write_text(json.dumps(bad), encoding="utf-8")
+            return {"added": 1}
+
+        monkeypatch.setattr(self_evolve.self_eval, "compute_fitness", fitness)
+
+        result = self_evolve.guarded_evolve("test", apply_bad_change, snapshot_id="snap_conflict")
+
+        persisted = json.loads(data_json.read_text(encoding="utf-8"))
+        assert result["decision"] == "rolled_back"
+        assert result["rollback"] == {"restored": False, "error": "rollback_conflict"}
+        assert persisted["entities"][0]["attributes"]["phone"] == "0911111111"
+        assert {entity["id"] for entity in persisted["entities"]} == {"a", "bad"}
+        assert reloads == ["reload"]

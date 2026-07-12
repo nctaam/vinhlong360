@@ -279,14 +279,22 @@ def _persist_new_entities(kb: dict, new_entities: list) -> int:
     del kb  # Candidates were derived from a snapshot; commit against current data.
 
     def append_current(current: dict) -> tuple[bool, list]:
+        import kb_curation
+
         existing_ids = {entity["id"] for entity in current["entities"]}
+        existing_names = {_norm_entity_name(entity.get("name", "")) for entity in current["entities"]}
         added = []
         for entity in new_entities:
-            if entity["id"] in existing_ids:
+            normalized_name = _norm_entity_name(entity.get("name", ""))
+            if entity["id"] in existing_ids or normalized_name in existing_names:
+                continue
+            if kb_curation.find_near_duplicate(entity.get("name", ""), entity.get("type", ""),
+                                                current["entities"]):
                 continue
             stored = copy.deepcopy(entity)
             current["entities"].append(stored)
             existing_ids.add(stored["id"])
+            existing_names.add(normalized_name)
             added.append(stored)
         return bool(added), added
 

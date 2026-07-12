@@ -118,3 +118,34 @@ def test_persist_enrichments_skips_concurrently_changed_summary(tmp_path, monkey
     persisted = json.loads(data_path.read_text(encoding="utf-8"))
     assert applied == 0
     assert persisted["entities"][0]["summary"] == "fresh"
+
+
+def test_persist_new_entities_rechecks_names_and_near_duplicates(tmp_path, monkeypatch):
+    data_path = tmp_path / "data.json"
+    current = {
+        "entities": [{"id": "existing", "name": "Quán Cây Dừa", "type": "dish", "attributes": {}}],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path.write_text(json.dumps(current), encoding="utf-8")
+    saved_to_db = []
+    monkeypatch.setattr(learn_loop, "DATA_JSON", data_path)
+    monkeypatch.setitem(
+        sys.modules,
+        "database",
+        SimpleNamespace(db=SimpleNamespace(upsert_entity=lambda entity: saved_to_db.append(entity))),
+    )
+    monkeypatch.setitem(sys.modules, "knowledge", SimpleNamespace(reload=lambda: None))
+
+    added = learn_loop._persist_new_entities(
+        {"entities": [], "relationships": [], "itineraries": []},
+        [
+            {"id": "same-name", "name": "QUÁN CÂY DỪA", "type": "dish", "attributes": {}},
+            {"id": "near-name", "name": "Quán Cây Dừa Vĩnh Long", "type": "dish", "attributes": {}},
+        ],
+    )
+
+    persisted = json.loads(data_path.read_text(encoding="utf-8"))
+    assert added == 0
+    assert [entity["id"] for entity in persisted["entities"]] == ["existing"]
+    assert saved_to_db == []

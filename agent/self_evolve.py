@@ -36,6 +36,7 @@ if str(AGENT_DIR) not in sys.path:
 import knowledge
 import self_eval
 import kb_versioning
+from versioned_json_store import json_version
 
 _logger = logging.getLogger("self_evolve")
 AUDIT_LOG = AGENT_DIR / "data" / "self_evolve_log.jsonl"
@@ -93,12 +94,23 @@ def _decide_gate(apply_error, before, after):
     return decision, reason
 
 
-def _maybe_rollback(decision: str, snap):
+def _post_apply_version(name: str) -> str | None:
+    try:
+        return json_version(kb_versioning.DATA_JSON)
+    except Exception as exc:
+        _logger.error("[%s] cannot capture post-apply data version: %s", name, exc)
+        return None
+
+
+def _maybe_rollback(decision: str, snap, expected_version: str | None):
     """Roll back + reload when the gate rejected the change (verbatim phase 6)."""
     rollback_result = None
     if decision == "rolled_back" and snap is not None:
-        rollback_result = kb_versioning.rollback(snap["id"])
-        _reload_kb("rollback")
+        if expected_version is None:
+            return {"restored": False, "error": "post_apply_version_unavailable"}
+        rollback_result = kb_versioning.rollback(snap["id"], expected_version=expected_version)
+        if rollback_result.get("restored"):
+            _reload_kb("rollback")
     return rollback_result
 
 
@@ -131,6 +143,7 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
 
     # 3. Apply the change
     change_result, apply_error = _apply_change(name, apply_fn)
+    post_apply_version = _post_apply_version(name)
 
     # Ensure live KB reflects any file changes
     _reload_kb("apply")
@@ -142,7 +155,7 @@ def guarded_evolve(name: str, apply_fn, snapshot_id: str | None = None,
     decision, reason = _decide_gate(apply_error, before, after)
 
     # 6. Rollback if needed
-    rollback_result = _maybe_rollback(decision, snap)
+    rollback_result = _maybe_rollback(decision, snap, post_apply_version)
 
     summary = {
         "name": name,
