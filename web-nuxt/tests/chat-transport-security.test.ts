@@ -138,6 +138,72 @@ describe('chat streaming transport security', () => {
     expect(wrapper.findAll('.csuggestions button').map(button => button.text())).toContain('Khám phá tiếp')
   })
 
+  it('ChatWidget settles rejected reader cancellation when the user stops streaming', async () => {
+    const cancel = vi.fn(() => Promise.reject(new Error('cancel failed')))
+    const encoder = new TextEncoder()
+    let stream: ReadableStream<Uint8Array> | undefined
+    const unhandled: unknown[] = []
+    const onUnhandled = (reason: unknown) => { unhandled.push(reason) }
+    process.on('unhandledRejection', onUnhandled)
+    mocks.fetch.mockImplementation((_url, init) => {
+      const signal = init?.signal as AbortSignal
+      stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          signal.addEventListener('abort', () => {
+            controller.enqueue(encoder.encode(`data: ${'x'.repeat(256 * 1024)}`))
+          }, { once: true })
+        },
+        cancel,
+      })
+      return Promise.resolve(new Response(stream))
+    })
+    const wrapper = await mountSuspended(ChatWidget, {
+      global: { stubs: { ClientOnly: false, IconLine: true } },
+    })
+
+    try {
+      await wrapper.get('input').setValue('stop this stream')
+      await wrapper.get('input').trigger('keyup.enter')
+      await flushUi()
+      await wrapper.get('button[aria-label="Dừng trả lời"]').trigger('click')
+      await flushUi()
+      await flushUi()
+
+      expect(cancel).toHaveBeenCalledTimes(1)
+      expect(stream?.locked).toBe(false)
+      expect(wrapper.findAll('.cmsg.assistant').at(-1)?.text()).toBe('Đã dừng hoặc quá thời gian chờ.')
+      expect(wrapper.get('input').attributes('disabled')).toBeUndefined()
+      expect(unhandled).toEqual([])
+    } finally {
+      process.off('unhandledRejection', onUnhandled)
+    }
+  })
+
+  it('ChatWidget releases a completed reader without cancelling it', async () => {
+    const cancel = vi.fn()
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(encoder.encode('data: {"type":"text","content":"complete"}\n\n'))
+        controller.close()
+      },
+      cancel,
+    })
+    mocks.fetch.mockResolvedValue(new Response(stream))
+    const wrapper = await mountSuspended(ChatWidget, {
+      global: { stubs: { ClientOnly: false, IconLine: true } },
+    })
+
+    await wrapper.get('input').setValue('complete this stream')
+    await wrapper.get('input').trigger('keyup.enter')
+    await flushUi()
+    await flushUi()
+
+    expect(wrapper.findAll('.cmsg.assistant').at(-1)?.text()).toBe('complete')
+    expect(cancel).not.toHaveBeenCalled()
+    expect(stream.locked).toBe(false)
+  })
+
   it('useAI accumulates fragmented UTF-8 SSE text and forwards the EOF done event', async () => {
     mocks.fetch.mockResolvedValue(fragmentedStreamResponse('composable-session'))
     let ai: ReturnType<typeof useAI> | undefined

@@ -194,6 +194,7 @@ async function sendMessage(text: string) {
   abortCtrl.value = controller
   const timeoutId = setTimeout(() => controller.abort(), 45000)
   let reader: ReadableStreamDefaultReader<Uint8Array> | null = null
+  let readerCompleted = false
   try {
     const res = await openChatStream(userMsg, history, controller.signal)
     if (!res.ok || !res.body) {
@@ -221,6 +222,7 @@ async function sendMessage(text: string) {
         }
       }
     })
+    readerCompleted = true
 
     messages.value.push({ role: 'assistant', content: fullText || 'Không có phản hồi.' })
   } catch {
@@ -233,7 +235,12 @@ async function sendMessage(text: string) {
     })
   } finally {
     clearTimeout(timeoutId)
-    try { reader?.cancel() } catch { /* already closed */ }
+    if (reader) {
+      if (!readerCompleted) {
+        try { await reader.cancel() } catch { /* preserve the original stream failure */ }
+      }
+      try { reader.releaseLock() } catch { /* reader may already be detached */ }
+    }
     abortCtrl.value = null
     streaming.value = false
     streamText.value = ''
