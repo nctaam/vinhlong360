@@ -1217,9 +1217,11 @@ async def get_friend_saves(
                     FROM saved_entities s
                     JOIN users u ON u.id = s.user_id
                     JOIN entities e ON e.id = s.entity_id
+                    LEFT JOIN user_privacy save_privacy ON save_privacy.user_id = s.user_id
                     WHERE s.user_id IN (SELECT target_id::uuid FROM follows
                                         WHERE follower_id = {ph}::uuid AND target_type='user')
                       AND s.user_id != {ph}::uuid
+                      AND COALESCE(save_privacy.show_saved, TRUE) = TRUE
                       {bc}
                     ORDER BY s.entity_id, s.created_at DESC
                 ) latest_per_entity
