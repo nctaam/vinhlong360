@@ -1418,7 +1418,9 @@ class TestDeepScanBatch4:
         src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
         idx = src.find("def _produce_stream():")
         assert idx > 0
-        block = src[idx:idx+500]
+        end = src.find("\n                producer =", idx)
+        assert end > idx
+        block = src[idx:end]
         assert "_cancelled" in block, \
             "Producer must check cancellation flag between chunks"
         assert "_cancelled.is_set()" in block, \
