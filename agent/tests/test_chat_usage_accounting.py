@@ -705,6 +705,78 @@ def test_post_cache_hit_adds_no_usage(monkeypatch):
     assert attribution.calls == []
 
 
+def test_post_semantic_publication_uses_captured_generation_lease(monkeypatch):
+    import semantic_cache as semantic_cache_mod
+
+    guardrail = _GuardrailRecorder()
+    attribution = _AttributionRecorder()
+    _configure_post_chat(monkeypatch, guardrail, attribution)
+    matcher = semantic_cache_mod.SemanticMatcher()
+    semantic_cache = semantic_cache_mod.MultiTierCache(
+        matcher,
+        l1_max=10,
+        l2_max=20,
+    )
+    semantic_cache._l2_loaded = True
+    semantic_cache._save_l2 = lambda: None
+    deduplicator = semantic_cache_mod.RequestDeduplicator()
+    published_dedup_keys = []
+
+    def publish_semantic(query, response, owner_key="", dedup_key=None):
+        published_dedup_keys.append(dedup_key)
+        return semantic_cache_mod.semantic_put(
+            query,
+            response,
+            owner_key=owner_key,
+            dedup_key=dedup_key,
+        )
+
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(server.cache, "put", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(server, "semantic_put", publish_semantic)
+    monkeypatch.setattr(
+        server,
+        "_run_agent_orchestrated",
+        lambda *_args, **_kwargs: (
+            "provider answer long enough to publish into semantic cache",
+            [],
+            [],
+        ),
+    )
+    monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
+    monkeypatch.setattr(semantic_cache_mod, "deduplicator", deduplicator)
+
+    response = asyncio.run(server.chat(
+        server.ChatRequest.model_validate({
+            "message": "post semantic lease",
+            "history": [],
+        }),
+        Request({
+            "type": "http",
+            "http_version": "1.1",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/chat",
+            "raw_path": b"/chat",
+            "query_string": b"",
+            "headers": [],
+            "client": ("127.0.0.1", 1234),
+            "server": ("testserver", 80),
+        }),
+        Response(),
+    ))
+
+    assert response.reply.startswith("provider answer")
+    assert len(deduplicator._pending) == 1
+    assert published_dedup_keys == list(deduplicator._pending)
+    assert semantic_cache.get(
+        "post semantic lease",
+        owner_key="user:alice",
+    )["reply"].startswith("provider answer")
+
+
 def test_post_cancellation_settles_completed_worker_usage_once(monkeypatch):
     guardrail = _GuardrailRecorder()
     attribution = _AttributionRecorder()

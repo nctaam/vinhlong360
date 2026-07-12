@@ -231,7 +231,7 @@ except ImportError:
     HAS_OPTIMIZER = False
 
 try:
-    from semantic_cache import multi_tier_cache, semantic_get_async, semantic_put, cache_stats as semantic_cache_stats, cache_warmer  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
+    from semantic_cache import multi_tier_cache, semantic_get_async, semantic_put, semantic_take_dedup_lease, cache_stats as semantic_cache_stats, cache_warmer  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_SEMANTIC_CACHE = True
 except ImportError:
     HAS_SEMANTIC_CACHE = False
@@ -2020,9 +2020,14 @@ async def chat(req: ChatRequest, request: Request, response: Response):
     memory_manager.on_message(owner_key, session_id, "user", req.message)
 
     # ── Semantic cache: embedding-based dedup (before regular cache) ──
+    semantic_dedup_key = None
     if not history and HAS_SEMANTIC_CACHE:
         try:
             sem_cached = await semantic_get_async(req.message, owner_key=owner_key)
+            semantic_dedup_key = semantic_take_dedup_lease(
+                req.message,
+                owner_key=owner_key,
+            )
             if sem_cached:
                 if HAS_METRICS:
                     track_cache("hit")
@@ -2351,7 +2356,12 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         # ── Semantic cache: store for embedding-based dedup ──
         if HAS_SEMANTIC_CACHE:
             try:
-                semantic_put(req.message, cache_data, owner_key=owner_key)
+                semantic_put(
+                    req.message,
+                    cache_data,
+                    owner_key=owner_key,
+                    dedup_key=semantic_dedup_key,
+                )
             except Exception:
                 pass
         if HAS_METRICS:
@@ -2428,9 +2438,14 @@ async def chat_stream(req: ChatRequest, request: Request):
     cache_query = message
 
     # ── Semantic cache: check before regular cache ──
+    semantic_dedup_key = None
     if not hist and HAS_SEMANTIC_CACHE:
         try:
             sem_cached = await semantic_get_async(cache_query, owner_key=owner_key)
+            semantic_dedup_key = semantic_take_dedup_lease(
+                cache_query,
+                owner_key=owner_key,
+            )
             if sem_cached:
                 async def sem_cached_stream():
                     reply = sem_cached.get("reply", "")
@@ -2738,7 +2753,12 @@ async def chat_stream(req: ChatRequest, request: Request):
                     # ── Semantic cache: store ──
                     if HAS_SEMANTIC_CACHE:
                         try:
-                            semantic_put(cache_query, cache_data, owner_key=owner_key)
+                            semantic_put(
+                                cache_query,
+                                cache_data,
+                                owner_key=owner_key,
+                                dedup_key=semantic_dedup_key,
+                            )
                         except Exception:
                             logger.debug("Semantic cache put failed", exc_info=True)
 

@@ -432,6 +432,94 @@ class TestRequestDeduplicatorAsync(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(sync_waiter.is_alive())
         self.assertEqual(self.dedup._pending[key]["async_waiters"], {})
 
+    async def test_active_slot_remains_authoritative_after_dedup_window(self):
+        self.dedup._WINDOW = 0.01
+        _is_first, first_key = self.dedup.acquire("long active holder")
+        async_waiter = asyncio.create_task(
+            self.dedup.wait_for_async(first_key, timeout=0.2)
+        )
+        await asyncio.sleep(0)
+        sync_started = threading.Event()
+        sync_result = {}
+
+        def wait_synchronously():
+            sync_started.set()
+            sync_result["value"] = self.dedup.wait_for(first_key, timeout=0.2)
+
+        sync_waiter = threading.Thread(target=wait_synchronously)
+        sync_waiter.start()
+        self.assertTrue(await asyncio.to_thread(sync_started.wait, 1))
+        self.dedup._pending[first_key]["timestamp"] -= 1
+
+        second_is_first, second_key = self.dedup.acquire("long active holder")
+        self.dedup.resolve(first_key, {"reply": "original holder"})
+        async_result = await async_waiter
+        sync_waiter.join(timeout=1)
+
+        self.assertFalse(second_is_first)
+        self.assertEqual(second_key, first_key)
+        self.assertEqual(async_result, {"reply": "original holder"})
+        self.assertEqual(sync_result["value"], {"reply": "original holder"})
+        self.assertEqual(self.dedup._pending[first_key]["async_waiters"], {})
+
+    async def test_resolved_slot_rolls_to_fresh_generation_after_window(self):
+        self.dedup._WINDOW = 0.01
+        _is_first, first_key = self.dedup.acquire("resolved generation")
+        self.dedup.resolve(first_key, {"reply": "first generation"})
+        self.dedup._pending[first_key]["timestamp"] -= 1
+
+        second_is_first, second_key = self.dedup.acquire("resolved generation")
+
+        self.assertTrue(second_is_first)
+        self.assertNotEqual(second_key, first_key)
+        self.assertEqual(
+            self.dedup.wait_for(first_key, timeout=0),
+            {"reply": "first generation"},
+        )
+
+    async def test_expired_holder_rolls_generation_without_late_resolve_leak(self):
+        self.dedup._EXPIRY = 0.01
+        _is_first, first_key = self.dedup.acquire("expired generation")
+        old_waiter = asyncio.create_task(
+            self.dedup.wait_for_async(first_key, timeout=0.2)
+        )
+        await asyncio.sleep(0)
+        sync_started = threading.Event()
+        sync_result = {}
+
+        def wait_on_expired_generation():
+            sync_started.set()
+            sync_result["value"] = self.dedup.wait_for(first_key, timeout=0.2)
+
+        sync_waiter = threading.Thread(target=wait_on_expired_generation)
+        sync_waiter.start()
+        self.assertTrue(await asyncio.to_thread(sync_started.wait, 1))
+        self.dedup._pending[first_key]["timestamp"] -= 1
+
+        second_is_first, second_key = self.dedup.acquire("expired generation")
+        old_result = await old_waiter
+        sync_waiter.join(timeout=1)
+        new_waiter = asyncio.create_task(
+            self.dedup.wait_for_async(second_key, timeout=0.2)
+        )
+        await asyncio.sleep(0)
+        self.dedup.resolve(first_key, {"reply": "late old holder"})
+        await asyncio.sleep(0)
+        late_old_resolved_new = new_waiter.done()
+        if not late_old_resolved_new:
+            self.dedup.resolve(second_key, {"reply": "new holder"})
+        new_result = await new_waiter
+
+        self.assertTrue(second_is_first)
+        self.assertNotEqual(second_key, first_key)
+        self.assertIsNone(old_result)
+        self.assertIsNone(sync_result["value"])
+        self.assertFalse(sync_waiter.is_alive())
+        self.assertFalse(late_old_resolved_new)
+        self.assertEqual(new_result, {"reply": "new holder"})
+        self.assertNotIn(first_key, self.dedup._pending)
+        self.assertEqual(self.dedup._pending[second_key]["async_waiters"], {})
+
 
 # ---- CacheWarmer ----
 
@@ -507,6 +595,51 @@ class TestConvenienceFunctions(unittest.TestCase):
                         owner_key="user:alice",
                     )
                 )
+            self.assertIsNone(
+                semantic_cache_mod.semantic_take_dedup_lease(
+                    "async semantic error",
+                    owner_key="user:alice",
+                )
+            )
+
+    def test_semantic_timeout_lease_is_taken_once_for_fallback_holder(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+
+        class TimeoutDeduplicator(RequestDeduplicator):
+            async def wait_for_async(self, dedup_key, timeout=30):
+                return None
+
+        dedup = TimeoutDeduplicator()
+        _is_first, expected_lease = dedup.acquire(
+            "semantic timeout fallback",
+            owner_key="user:alice",
+        )
+
+        with (
+            patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+            patch.object(semantic_cache_mod, "deduplicator", dedup),
+        ):
+            async def exercise_timeout():
+                result = await semantic_cache_mod.semantic_get_async(
+                    "semantic timeout fallback",
+                    owner_key="user:alice",
+                )
+                first_take = semantic_cache_mod.semantic_take_dedup_lease(
+                    "semantic timeout fallback",
+                    owner_key="user:alice",
+                )
+                second_take = semantic_cache_mod.semantic_take_dedup_lease(
+                    "semantic timeout fallback",
+                    owner_key="user:alice",
+                )
+                return result, first_take, second_take
+
+            result, first_take, second_take = asyncio.run(exercise_timeout())
+            self.assertIsNone(result)
+            self.assertEqual(first_take, expected_lease)
+            self.assertIsNone(second_take)
 
     def test_cancelled_async_waiters_do_not_starve_default_executor(self):
         matcher = SemanticMatcher()
@@ -608,6 +741,154 @@ class TestConvenienceFunctions(unittest.TestCase):
 
         self.assertEqual(release_source["value"], "provider")
         self.assertTrue(all(not thread.is_alive() for thread in executor._threads))
+
+    def test_late_semantic_holder_cannot_resolve_replacement_generation(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+        dedup = RequestDeduplicator()
+        dedup._EXPIRY = 0.01
+        query = "late semantic holder generation lease"
+        owner_key = "user:alice"
+
+        async def exercise():
+            old_holder_ready = asyncio.Event()
+            allow_old_holder_put = asyncio.Event()
+            old_publish_result = {}
+
+            async def old_holder():
+                self.assertIsNone(
+                    await semantic_cache_mod.semantic_get_async(
+                        query,
+                        owner_key=owner_key,
+                    )
+                )
+                old_holder_ready.set()
+                await allow_old_holder_put.wait()
+                old_publish_result["value"] = semantic_cache_mod.semantic_put(
+                    query,
+                    {"reply": "late old holder"},
+                    owner_key=owner_key,
+                )
+
+            with (
+                patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+                patch.object(semantic_cache_mod, "deduplicator", dedup),
+            ):
+                old_holder_task = asyncio.create_task(old_holder())
+                await old_holder_ready.wait()
+                first_key = next(iter(dedup._pending))
+                dedup._pending[first_key]["timestamp"] -= 1
+
+                self.assertIsNone(
+                    await semantic_cache_mod.semantic_get_async(
+                        query,
+                        owner_key=owner_key,
+                    )
+                )
+                second_key = max(
+                    dedup._pending,
+                    key=lambda key: dedup._pending[key]["timestamp"],
+                )
+                replacement_waiter = asyncio.create_task(
+                    dedup.wait_for_async(second_key, timeout=0.2)
+                )
+                await asyncio.sleep(0)
+
+                self.assertTrue(semantic_cache_mod.semantic_put(
+                    query,
+                    {"reply": "replacement holder"},
+                    owner_key=owner_key,
+                ))
+                replacement_result = await replacement_waiter
+                allow_old_holder_put.set()
+                await old_holder_task
+
+                self.assertNotEqual(second_key, first_key)
+                self.assertFalse(old_publish_result["value"])
+                self.assertEqual(
+                    replacement_result,
+                    {"reply": "replacement holder"},
+                )
+                self.assertEqual(
+                    cache.get(query, owner_key=owner_key),
+                    {"reply": "replacement holder"},
+                )
+
+        asyncio.run(exercise())
+
+    def test_generation_validation_and_cache_publication_are_atomic(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+        dedup = RequestDeduplicator()
+        dedup._WINDOW = 0.01
+        query = "atomic semantic generation publication"
+        owner_key = "user:alice"
+        old_put_started = threading.Event()
+        release_old_put = threading.Event()
+        new_published = threading.Event()
+        real_put = cache.put
+
+        def controlled_put(query, response, owner_key="", **kwargs):
+            if response.get("reply") == "old generation":
+                old_put_started.set()
+                release_old_put.wait(timeout=3)
+            return real_put(query, response, owner_key=owner_key, **kwargs)
+
+        cache.put = controlled_put
+        _old_first, old_key = dedup.acquire(query, owner_key=owner_key)
+        dedup._pending[old_key]["timestamp"] -= 1
+        results = {}
+
+        def publish_old():
+            results["old"] = semantic_cache_mod.semantic_put(
+                query,
+                {"reply": "old generation"},
+                owner_key=owner_key,
+                dedup_key=old_key,
+            )
+
+        def publish_new():
+            new_first, new_key = dedup.acquire(query, owner_key=owner_key)
+            results["new_first"] = new_first
+            results["new"] = semantic_cache_mod.semantic_put(
+                query,
+                {"reply": "new generation"},
+                owner_key=owner_key,
+                dedup_key=new_key,
+            )
+            new_published.set()
+
+        def release_with_deadlock_guard():
+            new_published.wait(timeout=1)
+            release_old_put.set()
+
+        with (
+            patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+            patch.object(semantic_cache_mod, "deduplicator", dedup),
+        ):
+            old_publisher = threading.Thread(target=publish_old)
+            old_publisher.start()
+            self.assertTrue(old_put_started.wait(timeout=1))
+            new_publisher = threading.Thread(target=publish_new)
+            watchdog = threading.Thread(target=release_with_deadlock_guard)
+            new_publisher.start()
+            watchdog.start()
+            old_publisher.join(timeout=3)
+            new_publisher.join(timeout=3)
+            watchdog.join(timeout=3)
+
+        self.assertFalse(old_publisher.is_alive())
+        self.assertFalse(new_publisher.is_alive())
+        self.assertFalse(watchdog.is_alive())
+        self.assertTrue(results["old"])
+        self.assertTrue(results["new_first"])
+        self.assertTrue(results["new"])
+        self.assertEqual(
+            cache.get(query, owner_key=owner_key),
+            {"reply": "new generation"},
+        )
 
     def test_semantic_convenience_functions_isolate_cache_and_dedup_by_owner(self):
         matcher = SemanticMatcher()

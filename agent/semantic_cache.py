@@ -18,6 +18,7 @@ import logging
 import math
 import time
 from collections import Counter, OrderedDict
+from contextvars import ContextVar
 from pathlib import Path
 from threading import Event, Lock
 
@@ -442,8 +443,8 @@ class RequestDeduplicator:
     Coalesce identical concurrent queries.
 
     The first caller gets ``(True, dedup_key)`` and should compute the result.
-    Subsequent callers within the dedup window receive ``(False, dedup_key)``
-    and can wait on :meth:`wait_for` until the first caller calls :meth:`resolve`.
+    Subsequent callers share the unresolved active generation. Resolved slots
+    remain reusable within the short dedup window, then roll to a fresh key.
     """
 
     _WINDOW = 2.0    # seconds — identical queries within this window are deduped
@@ -451,23 +452,57 @@ class RequestDeduplicator:
 
     def __init__(self):
         self._lock = Lock()
-        # dedup_key -> {query, timestamp, event, async_waiters, result}
+        # generation_key -> {base_key, query, timestamp, event, waiters, result}
         self._pending: dict[str, dict] = {}
+        self._active: dict[str, str] = {}
+        self._generation = 0
 
     _MAX_PENDING = 500
 
-    def _cleanup(self):
-        """Remove stale entries older than _EXPIRY seconds + enforce size cap."""
+    def _evict_locked(self, dedup_key: str) -> list[tuple]:
+        slot = self._pending.pop(dedup_key, None)
+        if slot is None:
+            return []
+        base_key = slot.get("base_key")
+        if base_key and self._active.get(base_key) == dedup_key:
+            self._active.pop(base_key, None)
+        event = slot.get("event")
+        if event is not None:
+            event.set()
+        async_waiters = list(slot.get("async_waiters", {}).values())
+        slot.get("async_waiters", {}).clear()
+        return async_waiters
+
+    def _cleanup_locked(self) -> list[tuple]:
         now = time.time()
         stale = [
             k for k, v in self._pending.items()
             if now - v["timestamp"] > self._EXPIRY
         ]
+        async_waiters = []
         for k in stale:
-            self._pending.pop(k, None)
+            async_waiters.extend(self._evict_locked(k))
         while len(self._pending) > self._MAX_PENDING:
             oldest = min(self._pending, key=lambda k: self._pending[k]["timestamp"])
-            self._pending.pop(oldest, None)
+            async_waiters.extend(self._evict_locked(oldest))
+        return async_waiters
+
+    def _notify_async_waiters(self, async_waiters: list[tuple], result):
+        for loop, future in async_waiters:
+            try:
+                loop.call_soon_threadsafe(
+                    self._set_async_result,
+                    future,
+                    result,
+                )
+            except RuntimeError:
+                continue
+
+    def _cleanup(self):
+        """Remove stale entries older than _EXPIRY seconds + enforce size cap."""
+        with self._lock:
+            async_waiters = self._cleanup_locked()
+        self._notify_async_waiters(async_waiters, None)
 
     def acquire(
         self,
@@ -483,25 +518,37 @@ class RequestDeduplicator:
             (False, dedup_key) — duplicate; call wait_for() to get the result.
         """
         with self._lock:
-            self._cleanup()
-            key = _make_key(query, owner_key=owner_key)
+            async_waiters = self._cleanup_locked()
+            base_key = _make_key(query, owner_key=owner_key)
             now = time.time()
 
-            existing = self._pending.get(key)
-            if existing and (now - existing["timestamp"]) < self._WINDOW:
+            active_key = self._active.get(base_key)
+            existing = self._pending.get(active_key) if active_key else None
+            if existing and (
+                existing.get("result") is None
+                or (now - existing["timestamp"]) < self._WINDOW
+            ):
                 # Duplicate request within window
-                return False, key
+                outcome = (False, active_key)
 
             # First request — create slot
-            self._pending[key] = {
-                "query": query,
-                "owner_key": owner_key,
-                "timestamp": now,
-                "event": Event(),
-                "async_waiters": {},
-                "result": None,
-            }
-            return True, key
+            else:
+                self._generation += 1
+                generation_key = f"{base_key}:{self._generation:x}"
+                self._pending[generation_key] = {
+                    "base_key": base_key,
+                    "query": query,
+                    "owner_key": owner_key,
+                    "timestamp": now,
+                    "event": Event(),
+                    "async_waiters": {},
+                    "result": None,
+                }
+                self._active[base_key] = generation_key
+                outcome = (True, generation_key)
+
+        self._notify_async_waiters(async_waiters, None)
+        return outcome
 
     def resolve(self, dedup_key: str, result: dict, owner_key: str = ""):
         """Store the computed result and wake up all waiters."""
@@ -516,19 +563,90 @@ class RequestDeduplicator:
             async_waiters = list(slot.get("async_waiters", {}).values())
             slot.get("async_waiters", {}).clear()
 
-        for loop, future in async_waiters:
-            try:
-                loop.call_soon_threadsafe(
-                    self._set_async_result,
-                    future,
-                    result,
-                )
-            except RuntimeError:
-                # The owning request loop may already be closed after cancellation.
-                continue
+        self._notify_async_waiters(async_waiters, result)
+
+    def resolve_if_active(
+        self,
+        dedup_key: str,
+        result: dict,
+        owner_key: str = "",
+    ) -> bool:
+        """Resolve only when *dedup_key* is still the active generation."""
+        with self._lock:
+            slot = self._pending.get(dedup_key)
+            if slot is None or slot.get("owner_key", "") != owner_key:
+                return False
+            if self._active.get(slot.get("base_key")) != dedup_key:
+                return False
+            slot["result"] = result
+            slot["event"].set()
+            async_waiters = list(slot.get("async_waiters", {}).values())
+            slot.get("async_waiters", {}).clear()
+
+        self._notify_async_waiters(async_waiters, result)
+        return True
+
+    def resolve_active(
+        self,
+        base_key: str,
+        result: dict,
+        owner_key: str = "",
+    ) -> bool:
+        with self._lock:
+            dedup_key = self._active.get(base_key)
+        if dedup_key is None:
+            return False
+        return self.resolve_if_active(dedup_key, result, owner_key=owner_key)
+
+    def publish_if_active(
+        self,
+        dedup_key: str,
+        result: dict,
+        publish_fn,
+        owner_key: str = "",
+    ) -> bool:
+        """Validate, publish, and resolve one generation under the slot lock."""
+        with self._lock:
+            slot = self._pending.get(dedup_key)
+            if slot is None or slot.get("owner_key", "") != owner_key:
+                return False
+            if self._active.get(slot.get("base_key")) != dedup_key:
+                return False
+            publish_fn()
+            slot["result"] = result
+            slot["event"].set()
+            async_waiters = list(slot.get("async_waiters", {}).values())
+            slot.get("async_waiters", {}).clear()
+
+        self._notify_async_waiters(async_waiters, result)
+        return True
+
+    def publish_active(
+        self,
+        base_key: str,
+        result: dict,
+        publish_fn,
+        owner_key: str = "",
+    ) -> bool | None:
+        """Publish the active generation, or return ``None`` when absent."""
+        with self._lock:
+            dedup_key = self._active.get(base_key)
+            if dedup_key is None:
+                return None
+            slot = self._pending.get(dedup_key)
+            if slot is None or slot.get("owner_key", "") != owner_key:
+                return False
+            publish_fn()
+            slot["result"] = result
+            slot["event"].set()
+            async_waiters = list(slot.get("async_waiters", {}).values())
+            slot.get("async_waiters", {}).clear()
+
+        self._notify_async_waiters(async_waiters, result)
+        return True
 
     @staticmethod
-    def _set_async_result(future, result: dict):
+    def _set_async_result(future, result: dict | None):
         if not future.done():
             future.set_result(result)
 
@@ -701,6 +819,10 @@ semantic_matcher = SemanticMatcher()
 multi_tier_cache = MultiTierCache(matcher=semantic_matcher)
 deduplicator = RequestDeduplicator()
 cache_warmer = CacheWarmer(cache=multi_tier_cache)
+_semantic_dedup_lease: ContextVar[tuple[str, str] | None] = ContextVar(
+    "semantic_dedup_lease",
+    default=None,
+)
 
 
 # ══════════════════════════════════════════════════
@@ -714,6 +836,7 @@ def semantic_get(query: str, owner_key: str = "") -> dict | None:
     If a duplicate request is already in-flight, wait for its result
     instead of computing a new one.
     """
+    _semantic_dedup_lease.set(None)
     # Check cache first (fast path, no dedup needed)
     cached = multi_tier_cache.get(query, owner_key=owner_key)
     if cached is not None:
@@ -721,9 +844,15 @@ def semantic_get(query: str, owner_key: str = "") -> dict | None:
 
     # Dedup check — if someone else is already computing this query, wait
     is_first, dedup_key = deduplicator.acquire(query, owner_key=owner_key)
+    _semantic_dedup_lease.set((_make_key(query, owner_key=owner_key), dedup_key))
     if not is_first:
-        result = deduplicator.wait_for(dedup_key)
+        try:
+            result = deduplicator.wait_for(dedup_key)
+        except BaseException:
+            _semantic_dedup_lease.set(None)
+            raise
         if result is not None:
+            _semantic_dedup_lease.set(None)
             return result
 
     # Caller is first (or dedup timed out) — no cached result available
@@ -732,25 +861,69 @@ def semantic_get(query: str, owner_key: str = "") -> dict | None:
 
 async def semantic_get_async(query: str, owner_key: str = "") -> dict | None:
     """Async semantic lookup that keeps duplicate waits off the event loop."""
+    _semantic_dedup_lease.set(None)
     cached = multi_tier_cache.get(query, owner_key=owner_key)
     if cached is not None:
         return cached
 
     is_first, dedup_key = deduplicator.acquire(query, owner_key=owner_key)
+    _semantic_dedup_lease.set((_make_key(query, owner_key=owner_key), dedup_key))
     if not is_first:
-        result = await deduplicator.wait_for_async(dedup_key)
+        try:
+            result = await deduplicator.wait_for_async(dedup_key)
+        except BaseException:
+            _semantic_dedup_lease.set(None)
+            raise
         if result is not None:
+            _semantic_dedup_lease.set(None)
             return result
 
     return None
 
 
-def semantic_put(query: str, response: dict, owner_key: str = ""):
-    """Store a response in the semantic cache and resolve any dedup waiters."""
-    multi_tier_cache.put(query, response, owner_key=owner_key)
-    # Also resolve dedup waiters
-    key = _make_key(query, owner_key=owner_key)
-    deduplicator.resolve(key, response, owner_key=owner_key)
+def semantic_take_dedup_lease(query: str, owner_key: str = "") -> str | None:
+    """Take the current lookup's generation lease for deferred publication."""
+    base_key = _make_key(query, owner_key=owner_key)
+    lease = _semantic_dedup_lease.get()
+    _semantic_dedup_lease.set(None)
+    if lease is None or lease[0] != base_key:
+        return None
+    return lease[1]
+
+
+def semantic_put(
+    query: str,
+    response: dict,
+    owner_key: str = "",
+    dedup_key: str | None = None,
+):
+    """Publish only for the active generation and resolve its waiters."""
+    base_key = _make_key(query, owner_key=owner_key)
+    lease = _semantic_dedup_lease.get()
+    _semantic_dedup_lease.set(None)
+    if dedup_key is None and lease is not None and lease[0] == base_key:
+        dedup_key = lease[1]
+
+    def publish_fn():
+        multi_tier_cache.put(query, response, owner_key=owner_key)
+    if dedup_key is not None:
+        return deduplicator.publish_if_active(
+            dedup_key,
+            response,
+            publish_fn,
+            owner_key=owner_key,
+        )
+
+    published = deduplicator.publish_active(
+        base_key,
+        response,
+        publish_fn,
+        owner_key=owner_key,
+    )
+    if published is None:
+        publish_fn()
+        return True
+    return published
 
 
 def cache_stats() -> dict:

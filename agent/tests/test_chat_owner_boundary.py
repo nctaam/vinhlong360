@@ -583,11 +583,14 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
     waiter_result = {}
     response_result = {}
     exact_put_queries = []
+    holder_keys = []
+    published_dedup_keys = []
 
     class SignalingDeduplicator(semantic_cache_mod.RequestDeduplicator):
         def acquire(self, query, timeout=5.0, owner_key=""):
             result = super().acquire(query, timeout=timeout, owner_key=owner_key)
             if result[0]:
+                holder_keys.append(result[1])
                 first_acquired.set()
             return result
 
@@ -630,6 +633,27 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
         chat=SimpleNamespace(completions=SimpleNamespace(create=fake_create))
     )
 
+    def publish_semantic(query, response, owner_key="", dedup_key=None):
+        published_dedup_keys.append(dedup_key)
+        return semantic_cache_mod.semantic_put(
+            query,
+            response,
+            owner_key=owner_key,
+            dedup_key=dedup_key,
+        )
+
+    async def read_semantic(query, owner_key=""):
+        return await semantic_cache_mod.semantic_get_async(
+            query,
+            owner_key=owner_key,
+        )
+
+    def take_semantic_lease(query, owner_key=""):
+        return semantic_cache_mod.semantic_take_dedup_lease(
+            query,
+            owner_key=owner_key,
+        )
+
     monkeypatch.setattr(server, "memory_manager", manager)
     monkeypatch.setattr(manager, "on_chat_complete", lambda *_args: None)
     monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
@@ -670,6 +694,9 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
     )
     monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
     monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server, "semantic_get_async", read_semantic)
+    monkeypatch.setattr(server, "semantic_take_dedup_lease", take_semantic_lease)
+    monkeypatch.setattr(server, "semantic_put", publish_semantic)
     monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
     monkeypatch.setattr(semantic_cache_mod, "deduplicator", deduplicator)
     client = TestClient(server.app)
@@ -681,7 +708,7 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
         )
     )
     request_thread.start()
-    assert first_acquired.wait(timeout=2)
+    assert first_acquired.wait(timeout=5)
 
     waiter_thread = threading.Thread(
         target=lambda: waiter_result.setdefault(
@@ -701,6 +728,7 @@ def test_autocorrected_stream_resolves_waiter_on_original_cache_query(tmp_path, 
     assert response_result["response"].status_code == 200
     assert waiter_result["value"]["reply"].startswith("Vĩnh Long")
     assert exact_put_queries == [original_query]
+    assert published_dedup_keys == holder_keys
 
 
 def test_admin_semantic_query_invalidation_clears_all_owner_namespaces(monkeypatch):
