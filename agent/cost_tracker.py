@@ -114,6 +114,26 @@ class TokenCounter:
         chars_per_token = 2.0 + (1.0 - viet_ratio) * 2.0
         return max(1, int(total_chars / chars_per_token + 0.5))
 
+    def estimate_call_tokens(
+        self,
+        messages: List[Dict[str, Any]],
+        completion_text: str,
+    ) -> Dict[str, int]:
+        """Estimate one provider call from its complete serialized payload."""
+        serialized = json.dumps(
+            messages,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            default=str,
+        )
+        prompt_tokens = self.estimate_tokens(serialized)
+        completion_tokens = self.estimate_tokens(completion_text)
+        return {
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": prompt_tokens + completion_tokens,
+        }
+
     def calculate_cost(self, tokens: Dict[str, int], model: str) -> float:
         """Tinh chi phi USD tu token usage va model name.
 

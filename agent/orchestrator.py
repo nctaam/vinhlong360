@@ -452,6 +452,8 @@ def _forced_synthesis(
     messages: list[dict],
     llm_call_fn: Callable[[list[dict], list[dict], float], Any],
     temperature: float,
+    usage_accumulator: Any = None,
+    model_name: str | Callable[[], str] | None = None,
 ) -> str:
     """Rounds exhausted while the model was still calling tools. Force ONE final
     synthesis turn with no tools so the model must answer from evidence collected."""
@@ -466,6 +468,13 @@ def _forced_synthesis(
             ),
         })
         final_resp = llm_call_fn(messages, [], temperature)
+        if usage_accumulator is not None:
+            resolved_model = model_name() if callable(model_name) else model_name
+            usage_accumulator.add_response(
+                final_resp,
+                model=resolved_model or "unknown",
+                messages=messages,
+            )
         return (final_resp.choices[0].message.content or "").strip()
     except Exception:
         logger.warning("Final synthesis LLM call failed after rounds exhausted", exc_info=True)
@@ -482,6 +491,8 @@ def _run_agent_round(
     tool_executor: Any,
     allowed_tool_names: set | None,
     max_tool_calls: int,
+    usage_accumulator: Any = None,
+    model_name: str | Callable[[], str] | None = None,
 ) -> bool:
     """Run a single ReAct round.
 
@@ -490,6 +501,13 @@ def _run_agent_round(
     Returns True when the loop should stop (model produced final content), else False.
     """
     response = llm_call_fn(messages, tools, temperature)
+    if usage_accumulator is not None:
+        resolved_model = model_name() if callable(model_name) else model_name
+        usage_accumulator.add_response(
+            response,
+            model=resolved_model or "unknown",
+            messages=messages,
+        )
     msg = response.choices[0].message
 
     if not msg.tool_calls:
@@ -636,6 +654,8 @@ class Orchestrator:
         get_params_fn: Callable[[str], dict] | None = None,
         tool_executor: Any = None,
         tool_order_fn: Callable[[str], list] | None = None,
+        usage_accumulator: Any = None,
+        model_name: str | Callable[[], str] | None = None,
     ) -> dict[str, Any]:
         """Orchestrate a full agent turn.
 
@@ -697,6 +717,7 @@ class Orchestrator:
                         attempt, current_agent, message, history, base_system_prompt,
                         category, _temp, _rounds, _tool_cap,
                         call_tool_fn, llm_call_fn, tool_executor, tool_order_fn,
+                        usage_accumulator, model_name,
                     )
                 except Exception:
                     if attempt == 0:
@@ -778,6 +799,8 @@ class Orchestrator:
         llm_call_fn: Callable[[list[dict], list[dict], float], Any],
         tool_executor: Any,
         tool_order_fn: Callable[[str], list] | None,
+        usage_accumulator: Any,
+        model_name: str | Callable[[], str] | None,
     ) -> dict[str, Any]:
         """Build messages + tools for *current_agent*, run the agent loop, and
         wrap the result. Raises on loop failure so the caller can fall back."""
@@ -801,6 +824,8 @@ class Orchestrator:
             llm_call_fn=llm_call_fn,
             tool_executor=tool_executor,
             allowed_tool_names=_allowed_names,
+            usage_accumulator=usage_accumulator,
+            model_name=model_name,
         )
         return {
             "reply": result["reply"],
@@ -829,6 +854,8 @@ class Orchestrator:
         tool_executor: Any = None,
         allowed_tool_names: set | None = None,
         total_timeout: float = 120.0,
+        usage_accumulator: Any = None,
+        model_name: str | Callable[[], str] | None = None,
     ) -> dict[str, Any]:
         """ReAct-style agent loop.  Returns dict(reply, tools_used, suggestions).
 
@@ -859,6 +886,7 @@ class Orchestrator:
                 messages, tools, temperature, state,
                 call_tool_fn, llm_call_fn, tool_executor,
                 allowed_tool_names, max_tool_calls,
+                usage_accumulator, model_name,
             ):
                 break
         else:
@@ -867,7 +895,13 @@ class Orchestrator:
             # force ONE final synthesis turn with no tools so the model must answer
             # from the evidence it already collected.
             if not state["last_content"]:
-                state["last_content"] = _forced_synthesis(messages, llm_call_fn, temperature)
+                state["last_content"] = _forced_synthesis(
+                    messages,
+                    llm_call_fn,
+                    temperature,
+                    usage_accumulator,
+                    model_name,
+                )
             if not state["last_content"]:
                 state["last_content"] = "Xin lỗi, tôi không thể trả lời đầy đủ câu hỏi này."
 

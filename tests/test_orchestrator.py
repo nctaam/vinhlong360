@@ -3,6 +3,7 @@
 import sys
 import threading
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -20,6 +21,7 @@ from orchestrator import (
     GENERAL_AGENT,
     _CATEGORY_AGENTS,
 )
+from chat_usage import UsageAccumulator
 
 
 # ---- QueryRouter: classification with Vietnamese diacritics ----
@@ -209,6 +211,109 @@ class TestOrchestrator:
     def test_category_agent_map_complete(self):
         for cat in QueryCategory:
             assert cat in _CATEGORY_AGENTS
+
+
+def _usage_response(prompt_tokens, completion_tokens, *, content=None, tool_calls=None):
+    message = SimpleNamespace(content=content, tool_calls=tool_calls, role="assistant")
+    return SimpleNamespace(
+        choices=[SimpleNamespace(message=message)],
+        usage=SimpleNamespace(
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=prompt_tokens + completion_tokens,
+        ),
+    )
+
+
+def _tool_call(call_id="call-1"):
+    return SimpleNamespace(
+        id=call_id,
+        function=SimpleNamespace(name="search", arguments='{"q":"test"}'),
+    )
+
+
+class TestOrchestratorUsageAccounting:
+    @pytest.fixture()
+    def orch(self):
+        return Orchestrator(tools_list=[
+            {"type": "function", "function": {"name": "search"}},
+            {"type": "function", "function": {"name": "suggest_followups"}},
+        ])
+
+    def test_normal_tool_and_final_rounds_share_one_accumulator(self, orch):
+        accumulator = UsageAccumulator()
+        responses = iter([
+            _usage_response(120, 10, tool_calls=[_tool_call()]),
+            _usage_response(180, 25, content="final answer"),
+        ])
+
+        result = orch.run(
+            message="where should I go?",
+            history=[],
+            session_id="session",
+            base_system_prompt="base",
+            call_tool_fn=lambda *_args: "[]",
+            llm_call_fn=lambda *_args: next(responses),
+            usage_accumulator=accumulator,
+            model_name="cx/gpt-5.4",
+        )
+
+        assert result["reply"] == "final answer"
+        assert accumulator.snapshot().total_tokens == 335
+        assert accumulator.snapshot().provider_call_count == 2
+
+    def test_specialist_error_settles_completed_call_and_fallback(self, orch):
+        accumulator = UsageAccumulator()
+        calls = 0
+
+        def fake_llm(*_args):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                return _usage_response(120, 10, tool_calls=[_tool_call()])
+            if calls == 2:
+                raise ConnectionError("provider failed after completed round")
+            return _usage_response(180, 25, content="fallback answer")
+
+        result = orch.run(
+            message="goi y du lich",
+            history=[],
+            session_id="session",
+            base_system_prompt="base",
+            call_tool_fn=lambda *_args: "[]",
+            llm_call_fn=fake_llm,
+            usage_accumulator=accumulator,
+            model_name="cx/gpt-5.4",
+        )
+
+        assert result["fallback"] is True
+        assert result["reply"] == "fallback answer"
+        assert accumulator.snapshot().total_tokens == 335
+        assert accumulator.snapshot().provider_call_count == 2
+
+    def test_round_exhaustion_synthesis_is_accumulated(self, orch):
+        accumulator = UsageAccumulator()
+
+        def fake_llm(_messages, tools, _temperature):
+            if tools:
+                return _usage_response(120, 10, tool_calls=[_tool_call()])
+            return _usage_response(180, 25, content="synthesized answer")
+
+        result = orch.run(
+            message="where should I go?",
+            history=[],
+            session_id="session",
+            base_system_prompt="base",
+            call_tool_fn=lambda *_args: "[]",
+            llm_call_fn=fake_llm,
+            get_params_fn=lambda _category: {"max_rounds": 1},
+            usage_accumulator=accumulator,
+            model_name="cx/gpt-5.4",
+        )
+
+        assert result["reply"] == "synthesized answer"
+        assert accumulator.snapshot().total_tokens == 335
+        assert accumulator.snapshot().provider_call_count == 2
 
 
 # ---- HandoffLog ----

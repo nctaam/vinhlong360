@@ -1429,7 +1429,7 @@ class TestDeepScanBatch4:
         src = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
         idx = src.find("_cancelled = threading.Event()")
         assert idx > 0
-        block = src[idx:idx+2000]
+        block = src[idx:src.find('full_text = "".join(_chunks)', idx)]
         assert "CancelledError" in block or "GeneratorExit" in block, \
             "Consumer must catch disconnect exceptions to signal producer"
         assert "_cancelled.set()" in block, \

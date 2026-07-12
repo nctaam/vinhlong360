@@ -303,7 +303,7 @@ class TestGuardrailFallback:
         source = server_path.read_text(encoding="utf-8")
 
         # Find the guardrail input check in /chat endpoint
-        idx = source.find("guard = check_input(req.message, session_id)")
+        idx = source.find("guard = check_input(req.message, owner_key)")
         assert idx > 0, "Guardrail check_input must exist in chat endpoint"
 
         # Check that there is a try/except wrapping it
@@ -335,7 +335,7 @@ class TestGuardrailFallback:
 
         # Find stream guardrail check
         stream_section = source[source.find("async def chat_stream"):]
-        assert "check_input(message, sid)" in stream_section
+        assert "check_input(message, owner_key)" in stream_section
         assert "fail-closed" in stream_section.lower() or "fail-CLOSED" in stream_section
 
 

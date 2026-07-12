@@ -3,6 +3,7 @@
 vỡ chat UI mà zero signal. Test: empty→'error'; valid→kết thúc 'done'; mọi frame có 'type'.
 """
 import json
+import asyncio
 import os
 import sys
 from pathlib import Path
@@ -21,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
+from starlette.requests import Request  # noqa: E402
 import server  # noqa: E402
 
 pytestmark = pytest.mark.integration
@@ -200,3 +202,311 @@ def test_chat_request_preserves_fifty_history_items():
     req = server.ChatRequest.model_validate({"message": "hello", "history": history})
 
     assert len(req.history) == 50
+
+
+class _UsageGuardrail:
+    def __init__(self):
+        self.calls = []
+
+    def record_usage(self, owner_key, tokens, cost=0.0):
+        self.calls.append((owner_key, tokens, cost))
+
+
+class _UsageAttribution:
+    def __init__(self):
+        self.calls = []
+
+    def record(self, session_id, query, agent_name, tool_name, model, tokens, cost):
+        self.calls.append({
+            "session_id": session_id,
+            "query": query,
+            "agent_name": agent_name,
+            "tool_name": tool_name,
+            "model": model,
+            "tokens": tokens,
+            "cost": cost,
+        })
+
+
+def _configure_usage_stream(monkeypatch, create):
+    async def resolve_owner(_request):
+        return SimpleNamespace(owner_key="user:alice", cookie_value=None)
+
+    guardrail = _UsageGuardrail()
+    attribution = _UsageAttribution()
+    fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    monkeypatch.setattr(server, "_draining", False)
+    monkeypatch.setattr(server, "resolve_chat_owner", resolve_owner, raising=False)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", True)
+    monkeypatch.setattr(server, "HAS_COST_TRACKER", True)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", False)
+    monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(server, "HAS_METRICS", False)
+    monkeypatch.setattr(server, "check_input", lambda *_args: {"allowed": True})
+    monkeypatch.setattr(server, "check_output", lambda reply, *_args: {"cleaned_reply": reply})
+    monkeypatch.setattr(server, "guardrail_budget", guardrail)
+    monkeypatch.setattr(server, "cost_attribution", attribution)
+    monkeypatch.setattr(server, "get_client", lambda: fake)
+    monkeypatch.setattr(server, "get_model", lambda: "cx/gpt-5.4")
+    monkeypatch.setattr(server, "get_model_mini", lambda: "cx/gpt-5.4")
+    monkeypatch.setattr(
+        server,
+        "_build_messages",
+        lambda *_args: ([{"role": "system", "content": "complete context"}], {}),
+    )
+    monkeypatch.setattr(server.memory_manager, "on_message", lambda *_args: None)
+    monkeypatch.setattr(server.memory_manager, "on_chat_complete", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(
+        server.reflexion_engine,
+        "evaluate_answer",
+        lambda *_args: {"score": 6},
+    )
+    monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
+    return guardrail, attribution
+
+
+def _assert_exact_stream_usage(guardrail, attribution):
+    assert guardrail.calls == [("user:alice", 335, 0.0)]
+    assert len(attribution.calls) == 1
+    assert attribution.calls[0]["tokens"] == {
+        "prompt_tokens": 300,
+        "completion_tokens": 35,
+        "total_tokens": 335,
+        "provider_call_count": 2,
+        "estimated_call_count": 0,
+    }
+
+
+def test_stream_consumes_terminal_usage_once_and_requests_usage(monkeypatch):
+    stream_kwargs = []
+
+    def create(*_args, stream=False, **kwargs):
+        if not stream:
+            return _completion_with_usage("decision", 120, 10)
+        stream_kwargs.append(kwargs)
+        return iter([
+            SimpleNamespace(
+                choices=[SimpleNamespace(delta=SimpleNamespace(content="final answer"))],
+                usage=None,
+            ),
+            SimpleNamespace(
+                choices=[],
+                usage=SimpleNamespace(
+                    prompt_tokens=180,
+                    completion_tokens=25,
+                    total_tokens=205,
+                ),
+            ),
+        ])
+
+    guardrail, attribution = _configure_usage_stream(monkeypatch, create)
+    client = TestClient(server.app)
+
+    response = client.post(
+        "/chat/stream",
+        json={
+            "message": "where should I go?",
+            "history": [{"role": "user", "content": "prior"}],
+        },
+    )
+
+    assert response.status_code == 200
+    assert any(frame.get("type") == "done" for frame in _parse_sse(response.text))
+    assert stream_kwargs[0]["stream_options"] == {"include_usage": True}
+    _assert_exact_stream_usage(guardrail, attribution)
+
+
+def _completion_with_usage(content, prompt_tokens, completion_tokens):
+    message = SimpleNamespace(
+        content=content,
+        tool_calls=None,
+        role="assistant",
+        function_call=None,
+    )
+    return SimpleNamespace(
+        choices=[SimpleNamespace(message=message)],
+        usage=SimpleNamespace(
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=prompt_tokens + completion_tokens,
+        ),
+    )
+
+
+def test_stream_missing_terminal_usage_estimates_complete_call_once(monkeypatch):
+    def create(*_args, stream=False, **_kwargs):
+        if not stream:
+            return _completion_with_usage("decision", 120, 10)
+        return iter([
+            SimpleNamespace(
+                choices=[SimpleNamespace(delta=SimpleNamespace(content="generated output"))],
+                usage=None,
+            ),
+        ])
+
+    guardrail, attribution = _configure_usage_stream(monkeypatch, create)
+    client = TestClient(server.app)
+
+    response = client.post(
+        "/chat/stream",
+        json={
+            "message": "where should I go?",
+            "history": [{"role": "user", "content": "prior"}],
+        },
+    )
+
+    assert response.status_code == 200
+    assert len(guardrail.calls) == 1
+    assert len(attribution.calls) == 1
+    tokens = attribution.calls[0]["tokens"]
+    assert tokens["provider_call_count"] == 2
+    assert tokens["estimated_call_count"] == 1
+    assert guardrail.calls[0][1] == tokens["total_tokens"]
+    assert guardrail.calls[0][2] == 0.0
+    assert attribution.calls[0]["cost"] > 0
+
+
+def test_stream_round_exhaustion_synthesis_usage_is_included(monkeypatch):
+    tool_call = SimpleNamespace(
+        id="call-1",
+        function=SimpleNamespace(name="search", arguments='{"q":"test"}'),
+    )
+
+    def create(*_args, stream=False, **_kwargs):
+        if not stream:
+            response = _completion_with_usage(None, 120, 10)
+            response.choices[0].message.tool_calls = [tool_call]
+            return response
+        return iter([
+            SimpleNamespace(
+                choices=[SimpleNamespace(delta=SimpleNamespace(content="synthesis"))],
+                usage=None,
+            ),
+            SimpleNamespace(
+                choices=[],
+                usage=SimpleNamespace(
+                    prompt_tokens=180,
+                    completion_tokens=25,
+                    total_tokens=205,
+                ),
+            ),
+        ])
+
+    guardrail, attribution = _configure_usage_stream(monkeypatch, create)
+    monkeypatch.setattr(server, "HAS_OPTIMIZER", True)
+    monkeypatch.setattr(
+        server.parameter_tuner,
+        "get_optimal_params",
+        lambda _category: {"max_rounds": 1},
+    )
+    monkeypatch.setattr(
+        server.prompt_optimizer,
+        "get_current_variant",
+        lambda: {"prompt_addon": ""},
+    )
+    monkeypatch.setattr(server, "call_tool", lambda *_args: "[]")
+    client = TestClient(server.app)
+
+    response = client.post(
+        "/chat/stream",
+        json={
+            "message": "where should I go?",
+            "history": [{"role": "user", "content": "prior"}],
+        },
+    )
+
+    assert response.status_code == 200
+    assert guardrail.calls == [("user:alice", 335, 0.0)]
+    assert attribution.calls[0]["tokens"]["provider_call_count"] == 2
+    assert attribution.calls[0]["tokens"]["estimated_call_count"] == 0
+
+
+def test_stream_provider_error_after_completed_decision_still_settles(monkeypatch):
+    def create(*_args, stream=False, **_kwargs):
+        if not stream:
+            return _completion_with_usage("decision", 120, 10)
+
+        def failing_stream():
+            yield SimpleNamespace(
+                choices=[SimpleNamespace(delta=SimpleNamespace(content="partial"))],
+                usage=None,
+            )
+            raise ConnectionError("provider stream failed")
+
+        return failing_stream()
+
+    guardrail, attribution = _configure_usage_stream(monkeypatch, create)
+    client = TestClient(server.app)
+
+    with pytest.raises(Exception, match="provider stream failed"):
+        client.post(
+            "/chat/stream",
+            json={
+                "message": "where should I go?",
+                "history": [{"role": "user", "content": "prior"}],
+            },
+        )
+
+    assert len(guardrail.calls) == 1
+    assert len(attribution.calls) == 1
+    tokens = attribution.calls[0]["tokens"]
+    assert tokens["provider_call_count"] == 2
+    assert tokens["estimated_call_count"] == 1
+    assert tokens["total_tokens"] > 130
+
+
+def test_stream_generator_close_runs_usage_finalizer(monkeypatch):
+    def create(*_args, stream=False, **_kwargs):
+        if not stream:
+            return _completion_with_usage("decision", 120, 10)
+        return iter([
+            SimpleNamespace(
+                choices=[SimpleNamespace(delta=SimpleNamespace(content="partial"))],
+                usage=None,
+            ),
+        ])
+
+    guardrail, attribution = _configure_usage_stream(monkeypatch, create)
+    scope = {
+        "type": "http",
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/chat/stream",
+        "raw_path": b"/chat/stream",
+        "query_string": b"",
+        "headers": [],
+        "client": ("127.0.0.1", 1234),
+        "server": ("testserver", 80),
+    }
+
+    async def close_after_first_frame():
+        response = await server.chat_stream(
+            server.ChatRequest.model_validate({
+                "message": "where should I go?",
+                "history": [{"role": "user", "content": "prior"}],
+            }),
+            Request(scope),
+        )
+        generator = response.body_iterator
+        first = await anext(generator)
+        assert "data:" in first
+        await generator.aclose()
+
+    asyncio.run(close_after_first_frame())
+
+    assert len(guardrail.calls) == 1
+    assert len(attribution.calls) == 1
+    tokens = attribution.calls[0]["tokens"]
+    assert tokens["provider_call_count"] == 2
+    assert tokens["estimated_call_count"] == 1

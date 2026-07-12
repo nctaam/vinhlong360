@@ -215,6 +215,8 @@ try:
 except ImportError:
     HAS_COST_TRACKER = False
 
+from chat_usage import UsageAccumulator
+
 try:
     from eval_framework import eval_runner, BENCHMARK_SUITE, run_benchmark, get_latest_report, get_report_history  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
     HAS_EVAL = True
@@ -1655,6 +1657,7 @@ def _make_llm_call_fn(model_fn=None):
                             tool_calls = None
                     class _MockResponse:
                         choices = [_MockChoice()]
+                        _skip_usage = True
                     return _MockResponse()
                 return cb_result["response"]
             return get_client().chat.completions.create(
@@ -1672,6 +1675,7 @@ def _make_llm_call_fn(model_fn=None):
                         tool_calls = None
                 class _MockResponse:
                     choices = [_MockChoice()]
+                    _skip_usage = True
                 return _MockResponse()
             return cb_result["response"]
         return get_client().chat.completions.create(model=_model, messages=messages, timeout=LLM_TIMEOUT)
@@ -1730,7 +1734,13 @@ def _tool_order_fn(category: str) -> list:
         return []
 
 
-def _run_agent_orchestrated(message, history, session_id, base_system_prompt):
+def _run_agent_orchestrated(
+    message,
+    history,
+    session_id,
+    base_system_prompt,
+    usage_accumulator=None,
+):
     """Run agent via the orchestrator, now wired with tuned params + parallel tools
     + learned tool ordering + smart model routing."""
     orch = _get_orchestrator()
@@ -1739,6 +1749,7 @@ def _run_agent_orchestrated(message, history, session_id, base_system_prompt):
     _cat, _agent = orch.route(message)
     _use_mini = getattr(_agent, "use_mini", False)
     _call_fn = _llm_call_fn_mini if _use_mini else _llm_call_fn_default
+    _model_fn = get_model_mini if _use_mini else get_model
     if _use_mini:
         logger.info("Model routing: using MINI", category=_cat.value, agent=_agent.name)
 
@@ -1752,6 +1763,8 @@ def _run_agent_orchestrated(message, history, session_id, base_system_prompt):
         get_params_fn=_optimal_params_fn if HAS_OPTIMIZER else None,
         tool_executor=_get_parallel_executor() if HAS_PARALLEL else None,
         tool_order_fn=_tool_order_fn if HAS_OPTIMIZER else None,
+        usage_accumulator=usage_accumulator,
+        model_name=_model_fn,
     )
     return result["reply"], result["tools_used"], result["suggestions"]
 
@@ -1799,7 +1812,12 @@ def _execute_pending_calls(pending_calls, parallel_exec, messages, suggestions,
     return empty_results_count
 
 
-def _run_agent(messages: list[dict], max_rounds: int = 8, max_tool_calls: int = 15):
+def _run_agent(
+    messages: list[dict],
+    max_rounds: int = 8,
+    max_tool_calls: int = 15,
+    usage_accumulator=None,
+):
     """
     ReAct-style agent loop with multi-turn tool calling.
 
@@ -1823,15 +1841,22 @@ def _run_agent(messages: list[dict], max_rounds: int = 8, max_tool_calls: int = 
     for round_num in range(max_rounds):
         # Circuit breaker protected LLM call
         try:
+            _model = get_model()
             if HAS_CIRCUIT_BREAKER:
-                cb_result = safe_llm_call(get_client(), model=get_model(), messages=messages, tools=TOOLS, tool_choice="auto")
+                cb_result = safe_llm_call(get_client(), model=_model, messages=messages, tools=TOOLS, tool_choice="auto")
                 if not cb_result["success"]:
                     return cb_result["message"], tools_used, suggestions
                 response = cb_result["response"]
             else:
                 response = get_client().chat.completions.create(
-                    model=get_model(), messages=messages, tools=TOOLS, tool_choice="auto",
+                    model=_model, messages=messages, tools=TOOLS, tool_choice="auto",
                     timeout=LLM_TIMEOUT,
+                )
+            if usage_accumulator is not None:
+                usage_accumulator.add_response(
+                    response,
+                    model=_model,
+                    messages=messages,
                 )
             msg = response.choices[0].message
         except Exception as llm_err:
@@ -1966,6 +1991,8 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         elif HAS_METRICS:
             track_cache("miss")
 
+    usage_accumulator = UsageAccumulator()
+
     # Autocorrect user input
     corrected_message = req.message
     if HAS_AUTOCORRECT:
@@ -2023,10 +2050,17 @@ async def chat(req: ChatRequest, request: Request, response: Response):
             reply, tools_used, suggestions = await asyncio.to_thread(
                 _run_agent_orchestrated,
                 corrected_message, history, session_id, _enriched_system,
+                usage_accumulator,
             )
         else:
             messages[0]["content"] = _enriched_system
-            reply, tools_used, suggestions = await asyncio.to_thread(_run_agent, messages)
+            reply, tools_used, suggestions = await asyncio.to_thread(
+                _run_agent,
+                messages,
+                8,
+                15,
+                usage_accumulator,
+            )
     except Exception as exc:
         error_tracker.record_error("/chat", str(exc), traceback.format_exc())
         if HAS_METRICS:
@@ -2158,20 +2192,16 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 
     duration = time.time() - t0
 
-    # ── Cost tracking: record token usage ──
-    if HAS_COST_TRACKER:
-        try:
-            # Estimate tokens from message + reply when no response object
-            est_in = token_counter.estimate_tokens(corrected_message)
-            est_out = token_counter.estimate_tokens(reply)
-            # Audit vòng 2 fix #8: record_usage để check_budget (guardrails) có số thật
-            if HAS_GUARDRAILS:
-                guardrail_budget.record_usage(owner_key, est_in + est_out)
-            cost_attribution.record(owner_key, corrected_message[:200], "chat", None, get_model(),
-                                     {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
-                                     token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
-        except Exception:
-            logger.debug("Cost tracking failed", exc_info=True)
+    try:
+        usage_accumulator.settle(
+            owner_key=owner_key,
+            query=corrected_message[:200],
+            agent_name="chat",
+            guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
+            cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
+        )
+    except Exception:
+        logger.debug("Cost tracking failed", exc_info=True)
 
     # Record assistant reply in memory
     memory_manager.on_message(owner_key, session_id, "assistant", reply)
@@ -2386,6 +2416,8 @@ async def chat_stream(req: ChatRequest, request: Request):
             analytics.track_query(message, ["cache_hit"], cached.get("reply", ""), sid)
             return _stream_response(cached_stream())
 
+    usage_accumulator = UsageAccumulator()
+
     # Autocorrect
     if HAS_AUTOCORRECT:
         ac = autocorrect(message)
@@ -2440,7 +2472,7 @@ async def chat_stream(req: ChatRequest, request: Request):
         except Exception:
             logger.debug("Stream tuned params failed", exc_info=True)
 
-    async def event_stream():
+    async def _event_stream_body():
         # Send autocorrect info if corrected
         if HAS_AUTOCORRECT and message != cache_query:
             yield f"data: {json.dumps({'type': 'autocorrect', 'original': cache_query, 'corrected': message}, ensure_ascii=False)}\n\n"
@@ -2466,6 +2498,11 @@ async def chat_stream(req: ChatRequest, request: Request):
                     response = cb["response"]
                 else:
                     response = await asyncio.to_thread(lambda: get_client().chat.completions.create(**_kw))
+                usage_accumulator.add_response(
+                    response,
+                    model=_stream_model,
+                    messages=messages,
+                )
                 msg = response.choices[0].message
             except Exception as exc:
                 error_tracker.record_error("/chat/stream", str(exc), traceback.format_exc())
@@ -2518,11 +2555,16 @@ async def chat_stream(req: ChatRequest, request: Request):
                     try:
                         stream = get_client().chat.completions.create(
                             model=_stream_model, messages=messages, stream=True,
+                            stream_options={"include_usage": True},
                             timeout=LLM_TIMEOUT,
                         )
                         for chunk in stream:
                             if _cancelled.is_set():
                                 break
+                            if getattr(chunk, "usage", None) is not None:
+                                loop.call_soon_threadsafe(chunk_q.put_nowait, chunk)
+                            if not getattr(chunk, "choices", None):
+                                continue
                             delta = chunk.choices[0].delta
                             if delta.content:
                                 loop.call_soon_threadsafe(chunk_q.put_nowait, delta.content)
@@ -2534,6 +2576,7 @@ async def chat_stream(req: ChatRequest, request: Request):
 
                 producer = asyncio.create_task(asyncio.to_thread(_produce_stream))
                 _chunks: list[str] = []
+                terminal_chunk = None
                 try:
                     while True:
                         item = await chunk_q.get()
@@ -2541,13 +2584,23 @@ async def chat_stream(req: ChatRequest, request: Request):
                             break
                         if isinstance(item, Exception):
                             raise item
+                        if getattr(item, "usage", None) is not None:
+                            terminal_chunk = item
+                            continue
                         _chunks.append(item)
                         yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
                 except (asyncio.CancelledError, GeneratorExit):
                     _cancelled.set()
-                    await producer
                     return
-                await producer
+                finally:
+                    _cancelled.set()
+                    await producer
+                    usage_accumulator.add_response(
+                        terminal_chunk,
+                        model=_stream_model,
+                        messages=messages,
+                        completion_text="".join(_chunks),
+                    )
                 full_text = "".join(_chunks)
 
                 # Record in memory
@@ -2565,20 +2618,6 @@ async def chat_stream(req: ChatRequest, request: Request):
                     memory_manager.on_chat_complete(owner_key, sid, message, full_text)
                 except Exception:
                     logger.debug("LLM memory extraction failed (stream)", exc_info=True)
-
-                # ── Cost tracking ──
-                if HAS_COST_TRACKER:
-                    try:
-                        est_in = token_counter.estimate_tokens(message)
-                        est_out = token_counter.estimate_tokens(full_text)
-                        # Audit vòng 2 fix #8: đồng bộ với đường non-stream
-                        if HAS_GUARDRAILS:
-                            guardrail_budget.record_usage(owner_key, est_in + est_out)
-                        cost_attribution.record(owner_key, message[:200], "stream", None, get_model(),
-                                                 {"prompt_tokens": est_in, "completion_tokens": est_out, "total_tokens": est_in + est_out},
-                                                 token_counter.calculate_cost({"prompt_tokens": est_in, "completion_tokens": est_out}, get_model()))
-                    except Exception:
-                        logger.debug("Cost tracking failed (stream)", exc_info=True)
 
                 # Reflexion: evaluate quality
                 evaluation = reflexion_engine.evaluate_answer(message, full_text, tools_used)
@@ -2670,26 +2709,53 @@ async def chat_stream(req: ChatRequest, request: Request):
             _synth_cancelled = threading.Event()
             def _synth_produce():
                 try:
-                    resp = get_client().chat.completions.create(model=_stream_model, messages=messages, stream=True, timeout=LLM_TIMEOUT)
+                    resp = get_client().chat.completions.create(
+                        model=_stream_model,
+                        messages=messages,
+                        stream=True,
+                        stream_options={"include_usage": True},
+                        timeout=LLM_TIMEOUT,
+                    )
                     for chunk in resp:
                         if _synth_cancelled.is_set():
                             break  # consumer đã thoát (client disconnect) → dừng, không leak thread
+                        if getattr(chunk, "usage", None) is not None:
+                            loop.call_soon_threadsafe(synth_q.put_nowait, chunk)
+                        if not getattr(chunk, "choices", None):
+                            continue
                         delta = chunk.choices[0].delta
                         if delta.content:
                             loop.call_soon_threadsafe(synth_q.put_nowait, delta.content)
+                except Exception as exc:
+                    if not _synth_cancelled.is_set():
+                        loop.call_soon_threadsafe(synth_q.put_nowait, exc)
                 finally:
                     loop.call_soon_threadsafe(synth_q.put_nowait, None)
-            loop.run_in_executor(None, _synth_produce)
-            synth_text = ""
+            synth_producer = asyncio.create_task(asyncio.to_thread(_synth_produce))
+            synth_chunks: list[str] = []
+            synth_terminal_chunk = None
             try:
                 while True:
-                    token = await synth_q.get()
-                    if token is None:
+                    item = await synth_q.get()
+                    if item is None:
                         break
-                    synth_text += token
-                    yield f"data: {json.dumps({'type': 'text', 'content': token}, ensure_ascii=False)}\n\n"
+                    if isinstance(item, Exception):
+                        raise item
+                    if getattr(item, "usage", None) is not None:
+                        synth_terminal_chunk = item
+                        continue
+                    synth_chunks.append(item)
+                    yield f"data: {json.dumps({'type': 'text', 'content': item}, ensure_ascii=False)}\n\n"
             finally:
                 _synth_cancelled.set()  # generator đóng (disconnect/hoàn tất) → báo thread produce dừng
+                await synth_producer
+                usage_accumulator.add_response(
+                    synth_terminal_chunk,
+                    model=_stream_model,
+                    messages=messages,
+                    completion_text="".join(synth_chunks),
+                )
+            synth_text = "".join(synth_chunks)
             if synth_text:
                 memory_manager.on_message(owner_key, sid, "assistant", synth_text)
                 analytics.track_query(message, tools_used, synth_text, sid)
@@ -2697,6 +2763,24 @@ async def chat_stream(req: ChatRequest, request: Request):
             logger.debug("Stream synthesis fallback failed", exc_info=True)
 
         yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
+
+    async def event_stream():
+        body = _event_stream_body()
+        try:
+            async for event in body:
+                yield event
+        finally:
+            await body.aclose()
+            try:
+                usage_accumulator.settle(
+                    owner_key=owner_key,
+                    query=message[:200],
+                    agent_name="stream",
+                    guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
+                    cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
+                )
+            except Exception:
+                logger.debug("Cost tracking failed (stream)", exc_info=True)
 
     return _stream_response(event_stream())
 
