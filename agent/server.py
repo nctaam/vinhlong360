@@ -25,7 +25,9 @@ import traceback
 import asyncio
 import threading
 import anyio
+from contextvars import ContextVar
 from datetime import datetime, timezone
+from functools import wraps
 from pathlib import Path
 from typing import Literal
 
@@ -232,9 +234,81 @@ except ImportError:
 
 try:
     from semantic_cache import multi_tier_cache, semantic_get_async, semantic_put, semantic_take_dedup_lease, cache_stats as semantic_cache_stats, cache_warmer  # noqa: F401 (feature-probe try-import — HAS_* dùng runtime)
+    from semantic_cache import semantic_abandon
     HAS_SEMANTIC_CACHE = True
 except ImportError:
     HAS_SEMANTIC_CACHE = False
+
+
+_semantic_route_lease: ContextVar[tuple[str, str, str] | None] = ContextVar(
+    "semantic_route_lease",
+    default=None,
+)
+
+
+def _finalize_semantic_route_lease(func):
+    """Abandon a captured semantic lease whenever a route task exits."""
+    @wraps(func)
+    async def wrapped(*args, **kwargs):
+        token = _semantic_route_lease.set(None)
+        try:
+            return await func(*args, **kwargs)
+        finally:
+            lease = _semantic_route_lease.get()
+            _semantic_route_lease.reset(token)
+            if lease is not None and HAS_SEMANTIC_CACHE:
+                query, owner_key, dedup_key = lease
+                try:
+                    semantic_abandon(
+                        query,
+                        owner_key=owner_key,
+                        dedup_key=dedup_key,
+                    )
+                except Exception:
+                    logger.debug("Semantic cache abandon failed", exc_info=True)
+
+    return wrapped
+
+
+def _hold_semantic_route_lease(
+    query: str,
+    owner_key: str,
+    dedup_key: str | None,
+) -> None:
+    if dedup_key is not None:
+        _semantic_route_lease.set((query, owner_key, dedup_key))
+
+
+def _transfer_semantic_route_lease() -> None:
+    _semantic_route_lease.set(None)
+
+
+class _SemanticLeaseStreamingResponse(StreamingResponse):
+    """Finalize an explicitly captured lease across the full ASGI response."""
+
+    def __init__(self, *args, semantic_lease=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._semantic_lease = semantic_lease
+
+    async def __call__(self, scope, receive, send):
+        try:
+            await super().__call__(scope, receive, send)
+        finally:
+            lease = self._semantic_lease
+            self._semantic_lease = None
+            if lease is not None and HAS_SEMANTIC_CACHE:
+                query, owner_key, dedup_key = lease
+                try:
+                    semantic_abandon(
+                        query,
+                        owner_key=owner_key,
+                        dedup_key=dedup_key,
+                    )
+                except Exception:
+                    logger.debug(
+                        "Semantic cache abandon failed (stream)",
+                        exc_info=True,
+                    )
 
 # ── Level 7 modules ──
 
@@ -1966,6 +2040,7 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
 
 
 @app.post("/chat", response_model=ChatResponse)
+@_finalize_semantic_route_lease
 async def chat(req: ChatRequest, request: Request, response: Response):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
@@ -2028,6 +2103,11 @@ async def chat(req: ChatRequest, request: Request, response: Response):
                 req.message,
                 owner_key=owner_key,
             )
+            _hold_semantic_route_lease(
+                req.message,
+                owner_key,
+                semantic_dedup_key,
+            )
             if sem_cached:
                 if HAS_METRICS:
                     track_cache("hit")
@@ -2041,6 +2121,16 @@ async def chat(req: ChatRequest, request: Request, response: Response):
         if cached:
             if HAS_METRICS:
                 track_cache("hit")
+            if HAS_SEMANTIC_CACHE:
+                try:
+                    semantic_put(
+                        req.message,
+                        cached,
+                        owner_key=owner_key,
+                        dedup_key=semantic_dedup_key,
+                    )
+                except Exception:
+                    logger.debug("Semantic cache exact-hit publication failed", exc_info=True)
             return ChatResponse(**cached, session_id=session_id, cached=True)
         elif HAS_METRICS:
             track_cache("miss")
@@ -2373,6 +2463,7 @@ async def chat(req: ChatRequest, request: Request, response: Response):
 # ── SSE Streaming ──
 
 @app.post("/chat/stream")
+@_finalize_semantic_route_lease
 async def chat_stream(req: ChatRequest, request: Request):
     owner_context = await resolve_chat_owner(request)
     owner_key = owner_context.owner_key
@@ -2388,8 +2479,12 @@ async def chat_stream(req: ChatRequest, request: Request):
         set_chat_owner_cookie(not_found, owner_context)
         return not_found
 
-    def _stream_response(generator):
-        stream_response = StreamingResponse(generator, media_type="text/event-stream")
+    def _stream_response(generator, semantic_lease=None):
+        stream_response = _SemanticLeaseStreamingResponse(
+            generator,
+            media_type="text/event-stream",
+            semantic_lease=semantic_lease,
+        )
         set_chat_owner_cookie(stream_response, owner_context)
         return stream_response
 
@@ -2446,6 +2541,11 @@ async def chat_stream(req: ChatRequest, request: Request):
                 cache_query,
                 owner_key=owner_key,
             )
+            _hold_semantic_route_lease(
+                cache_query,
+                owner_key,
+                semantic_dedup_key,
+            )
             if sem_cached:
                 async def sem_cached_stream():
                     reply = sem_cached.get("reply", "")
@@ -2466,6 +2566,19 @@ async def chat_stream(req: ChatRequest, request: Request):
     if not hist:
         cached = cache.get(cache_query, owner_key=owner_key)
         if cached:
+            if HAS_SEMANTIC_CACHE:
+                try:
+                    semantic_put(
+                        cache_query,
+                        cached,
+                        owner_key=owner_key,
+                        dedup_key=semantic_dedup_key,
+                    )
+                except Exception:
+                    logger.debug(
+                        "Semantic cache exact-hit publication failed (stream)",
+                        exc_info=True,
+                    )
             async def cached_stream():
                 reply = cached.get("reply", "")
                 words = reply.split(" ")
@@ -2846,19 +2959,26 @@ async def chat_stream(req: ChatRequest, request: Request):
             async for event in body:
                 yield event
         finally:
-            await body.aclose()
             try:
-                usage_accumulator.settle(
-                    owner_key=owner_key,
-                    query=message[:200],
-                    agent_name="stream",
-                    guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
-                    cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
-                )
-            except Exception:
-                logger.debug("Cost tracking failed (stream)", exc_info=True)
+                await body.aclose()
+            finally:
+                try:
+                    usage_accumulator.settle(
+                        owner_key=owner_key,
+                        query=message[:200],
+                        agent_name="stream",
+                        guardrail_budget=guardrail_budget if HAS_GUARDRAILS else None,
+                        cost_attribution=cost_attribution if HAS_COST_TRACKER else None,
+                    )
+                except Exception:
+                    logger.debug("Cost tracking failed (stream)", exc_info=True)
 
-    return _stream_response(event_stream())
+    semantic_lease = None
+    if semantic_dedup_key is not None:
+        semantic_lease = (cache_query, owner_key, semantic_dedup_key)
+    response = _stream_response(event_stream(), semantic_lease=semantic_lease)
+    _transfer_semantic_route_lease()
+    return response
 
 
 # ── System endpoints ──

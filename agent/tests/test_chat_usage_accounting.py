@@ -901,6 +901,214 @@ def test_post_cancellation_settles_completed_worker_usage_once(monkeypatch):
     assert attribution.calls[0]["tokens"]["total_tokens"] == 130
 
 
+def test_post_cancellation_abandons_captured_semantic_lease(monkeypatch):
+    guardrail = _GuardrailRecorder()
+    attribution = _AttributionRecorder()
+    _configure_post_chat(monkeypatch, guardrail, attribution)
+    query = "cancel post semantic holder"
+    dedup_key = "post-cancel-generation"
+    started = threading.Event()
+    release = threading.Event()
+    abandoned = []
+
+    async def semantic_miss(*_args, **_kwargs):
+        return None
+
+    def fake_orchestrated(*_args, **_kwargs):
+        started.set()
+        release.wait(timeout=2)
+        return "unused after cancellation", [], []
+
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        lambda *_args, **_kwargs: dedup_key,
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_abandon",
+        lambda message, owner_key="", dedup_key=None: abandoned.append(
+            (message, owner_key, dedup_key)
+        ) or True,
+        raising=False,
+    )
+    monkeypatch.setattr(server, "_run_agent_orchestrated", fake_orchestrated)
+    request = Request({
+        "type": "http",
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/chat",
+        "raw_path": b"/chat",
+        "query_string": b"",
+        "headers": [],
+        "client": ("127.0.0.1", 1234),
+        "server": ("testserver", 80),
+    })
+
+    async def exercise():
+        task = asyncio.create_task(server.chat(
+            server.ChatRequest.model_validate({"message": query, "history": []}),
+            request,
+            Response(),
+        ))
+        assert await asyncio.to_thread(started.wait, 2)
+        task.cancel()
+        release.set()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+    asyncio.run(exercise())
+
+    assert abandoned == [(query, "user:alice", dedup_key)]
+
+
+@pytest.mark.parametrize(
+    ("provider_result", "expected_reply_prefix"),
+    [
+        (("brief", [], []), "brief"),
+        (RuntimeError("provider terminal failure"), ""),
+    ],
+)
+def test_post_non_publication_terminal_path_abandons_semantic_lease(
+    provider_result,
+    expected_reply_prefix,
+    monkeypatch,
+):
+    guardrail = _GuardrailRecorder()
+    attribution = _AttributionRecorder()
+    _configure_post_chat(monkeypatch, guardrail, attribution)
+    query = "post terminal semantic holder"
+    dedup_key = "post-terminal-generation"
+    abandoned = []
+
+    async def semantic_miss(*_args, **_kwargs):
+        return None
+
+    def provider(*_args, **_kwargs):
+        if isinstance(provider_result, Exception):
+            raise provider_result
+        return provider_result
+
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(server.cache, "put", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        server.reflexion_engine,
+        "evaluate_answer",
+        lambda *_args: {"score": 4, "issues": [], "good_points": []},
+    )
+    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        lambda *_args, **_kwargs: dedup_key,
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_put",
+        lambda *_args, **_kwargs: pytest.fail("non-cacheable result must not publish"),
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_abandon",
+        lambda message, owner_key="", dedup_key=None: abandoned.append(
+            (message, owner_key, dedup_key)
+        ) or True,
+        raising=False,
+    )
+    monkeypatch.setattr(server, "_run_agent_orchestrated", provider)
+
+    response = asyncio.run(server.chat(
+        server.ChatRequest.model_validate({"message": query, "history": []}),
+        Request({
+            "type": "http",
+            "http_version": "1.1",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/chat",
+            "raw_path": b"/chat",
+            "query_string": b"",
+            "headers": [],
+            "client": ("127.0.0.1", 1234),
+            "server": ("testserver", 80),
+        }),
+        Response(),
+    ))
+
+    assert response.reply.startswith(expected_reply_prefix)
+    assert abandoned == [(query, "user:alice", dedup_key)]
+
+
+def test_post_postprocessing_exception_abandons_semantic_lease(monkeypatch):
+    guardrail = _GuardrailRecorder()
+    attribution = _AttributionRecorder()
+    _configure_post_chat(monkeypatch, guardrail, attribution)
+    query = "postprocessing exception semantic holder"
+    dedup_key = "postprocessing-exception-generation"
+    abandoned = []
+
+    async def semantic_miss(*_args, **_kwargs):
+        return None
+
+    def fail_assistant_memory(_owner, _session, role, _content):
+        if role == "assistant":
+            raise RuntimeError("assistant memory write failed")
+
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_ORCHESTRATOR", True)
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        lambda *_args, **_kwargs: dedup_key,
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_abandon",
+        lambda message, owner_key="", dedup_key=None: abandoned.append(
+            (message, owner_key, dedup_key)
+        ) or True,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        server,
+        "_run_agent_orchestrated",
+        lambda *_args, **_kwargs: (
+            "provider reply before postprocessing exception",
+            [],
+            [],
+        ),
+    )
+    monkeypatch.setattr(server.memory_manager, "on_message", fail_assistant_memory)
+
+    with pytest.raises(RuntimeError, match="assistant memory write failed"):
+        asyncio.run(server.chat(
+            server.ChatRequest.model_validate({"message": query, "history": []}),
+            Request({
+                "type": "http",
+                "http_version": "1.1",
+                "method": "POST",
+                "scheme": "http",
+                "path": "/chat",
+                "raw_path": b"/chat",
+                "query_string": b"",
+                "headers": [],
+                "client": ("127.0.0.1", 1234),
+                "server": ("testserver", 80),
+            }),
+            Response(),
+        ))
+
+    assert abandoned == [(query, "user:alice", dedup_key)]
+
+
 def test_post_double_cancellation_retrieves_worker_error(monkeypatch):
     guardrail = _GuardrailRecorder()
     attribution = _AttributionRecorder()

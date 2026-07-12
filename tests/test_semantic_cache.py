@@ -323,6 +323,47 @@ class TestRequestDeduplicator(unittest.TestCase):
         t.join(timeout=2)
         self.assertEqual(result_holder[0], {"woken": True})
 
+    def test_stale_generation_cannot_abandon_replacement(self):
+        owner_key = "user:alice"
+        query = "stale abandon generation"
+        _first, stale_key = self.dedup.acquire(query, owner_key=owner_key)
+        self.dedup.resolve(
+            stale_key,
+            {"reply": "stale resolved result"},
+            owner_key=owner_key,
+        )
+        self.dedup._pending[stale_key]["timestamp"] -= self.dedup._WINDOW + 1
+        replacement_first, replacement_key = self.dedup.acquire(
+            query,
+            owner_key=owner_key,
+        )
+
+        abandoned = self.dedup.abandon_if_active(stale_key, owner_key=owner_key)
+
+        self.assertTrue(replacement_first)
+        self.assertFalse(abandoned)
+        self.assertIn(replacement_key, self.dedup._pending)
+        self.assertEqual(
+            self.dedup._active[_make_key(query, owner_key=owner_key)],
+            replacement_key,
+        )
+
+    def test_resolved_generation_cannot_be_abandoned(self):
+        owner_key = "user:alice"
+        query = "resolved abandon generation"
+        _first, key = self.dedup.acquire(query, owner_key=owner_key)
+        result = {"reply": "already resolved"}
+        self.dedup.resolve(key, result, owner_key=owner_key)
+
+        abandoned = self.dedup.abandon_if_active(key, owner_key=owner_key)
+
+        self.assertFalse(abandoned)
+        self.assertEqual(self.dedup.wait_for(key, timeout=0), result)
+        self.assertEqual(
+            self.dedup._active[_make_key(query, owner_key=owner_key)],
+            key,
+        )
+
 
 class TestRequestDeduplicatorAsync(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
@@ -368,6 +409,39 @@ class TestRequestDeduplicatorAsync(unittest.IsolatedAsyncioTestCase):
             await waiter
 
         self.assertEqual(self.dedup._pending[key]["async_waiters"], {})
+
+    async def test_abandon_wakes_sync_and_async_waiters_and_evicts_slot(self):
+        owner_key = "user:alice"
+        query = "abandon active generation"
+        _first, key = self.dedup.acquire(query, owner_key=owner_key)
+        base_key = _make_key(query, owner_key=owner_key)
+        slot = self.dedup._pending[key]
+        sync_waiter_started = threading.Event()
+        sync_result = []
+
+        def wait_sync():
+            sync_waiter_started.set()
+            sync_result.append(self.dedup.wait_for(key, timeout=5))
+
+        sync_waiter = threading.Thread(target=wait_sync)
+        sync_waiter.start()
+        self.assertTrue(sync_waiter_started.wait(timeout=1))
+        async_waiter = asyncio.create_task(self.dedup.wait_for_async(key, timeout=5))
+        await asyncio.sleep(0)
+        registered_future = next(iter(slot["async_waiters"].values()))[1]
+
+        abandoned = self.dedup.abandon_if_active(key, owner_key=owner_key)
+        async_result = await async_waiter
+        sync_waiter.join(timeout=1)
+
+        self.assertTrue(abandoned)
+        self.assertIsNone(async_result)
+        self.assertEqual(sync_result, [None])
+        self.assertFalse(sync_waiter.is_alive())
+        self.assertNotIn(key, self.dedup._pending)
+        self.assertNotIn(base_key, self.dedup._active)
+        self.assertEqual(slot["async_waiters"], {})
+        self.assertTrue(registered_future.done())
 
     async def test_async_waiters_remain_isolated_by_owner(self):
         _alice_first, alice_key = self.dedup.acquire(
@@ -640,6 +714,94 @@ class TestConvenienceFunctions(unittest.TestCase):
             self.assertIsNone(result)
             self.assertEqual(first_take, expected_lease)
             self.assertIsNone(second_take)
+
+    def test_semantic_abandon_evicts_exact_lease_without_caching(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+        dedup = RequestDeduplicator()
+        query = "semantic abandon exact lease"
+        owner_key = "user:alice"
+
+        with (
+            patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+            patch.object(semantic_cache_mod, "deduplicator", dedup),
+        ):
+            self.assertIsNone(semantic_get(query, owner_key=owner_key))
+            dedup_key = next(iter(dedup._pending))
+
+            abandoned = semantic_cache_mod.semantic_abandon(
+                query,
+                owner_key=owner_key,
+                dedup_key=dedup_key,
+            )
+
+            self.assertTrue(abandoned)
+            self.assertEqual(dedup._pending, {})
+            self.assertEqual(dedup._active, {})
+            self.assertIsNone(cache.get(query, owner_key=owner_key))
+            self.assertIsNone(
+                semantic_cache_mod.semantic_take_dedup_lease(
+                    query,
+                    owner_key=owner_key,
+                )
+            )
+
+    def test_semantic_abandon_rejects_explicit_missing_lease(self):
+        dedup = RequestDeduplicator()
+        query = "semantic abandon missing lease"
+        owner_key = "user:alice"
+        _first, active_key = dedup.acquire(query, owner_key=owner_key)
+
+        with patch.object(semantic_cache_mod, "deduplicator", dedup):
+            abandoned = semantic_cache_mod.semantic_abandon(
+                query,
+                owner_key=owner_key,
+                dedup_key=None,
+            )
+
+        self.assertFalse(abandoned)
+        self.assertIn(active_key, dedup._pending)
+
+    def test_semantic_abandon_stale_key_preserves_newer_context_lease(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+        dedup = RequestDeduplicator()
+        query = "semantic abandon preserves replacement context"
+        owner_key = "user:alice"
+
+        with (
+            patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+            patch.object(semantic_cache_mod, "deduplicator", dedup),
+        ):
+            self.assertIsNone(semantic_get(query, owner_key=owner_key))
+            stale_key = semantic_cache_mod.semantic_take_dedup_lease(
+                query,
+                owner_key=owner_key,
+            )
+            dedup.resolve(
+                stale_key,
+                {"reply": "stale generation"},
+                owner_key=owner_key,
+            )
+            dedup._pending[stale_key]["timestamp"] -= dedup._WINDOW + 1
+            self.assertIsNone(semantic_get(query, owner_key=owner_key))
+            replacement_key = dedup._active[_make_key(query, owner_key=owner_key)]
+
+            abandoned = semantic_cache_mod.semantic_abandon(
+                query,
+                owner_key=owner_key,
+                dedup_key=stale_key,
+            )
+            remaining_lease = semantic_cache_mod.semantic_take_dedup_lease(
+                query,
+                owner_key=owner_key,
+            )
+
+        self.assertFalse(abandoned)
+        self.assertNotEqual(replacement_key, stale_key)
+        self.assertEqual(remaining_lease, replacement_key)
 
     def test_cancelled_async_waiters_do_not_starve_default_executor(self):
         matcher = SemanticMatcher()

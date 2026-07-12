@@ -184,6 +184,49 @@ def _assert_semantic_probe_completed(
     assert unrelated_progressed.is_set()
 
 
+def _assert_exact_cache_response(endpoint, first, second, sentinel):
+    if endpoint == "post":
+        assert first.json()["reply"] == sentinel["reply"]
+        assert second.json()["reply"] == sentinel["reply"]
+    else:
+        assert "cache_hit" in first.text
+        assert "cache_hit" in second.text
+
+
+def _assert_exact_cache_publication_success(
+    deduplicator,
+    semantic_cache,
+    abandoned,
+    query,
+    owner_key,
+    sentinel,
+):
+    assert len(deduplicator._pending) == 1
+    active_key, slot = next(iter(deduplicator._pending.items()))
+    assert abandoned == [(query, owner_key, active_key)]
+    assert slot["result"] == sentinel
+    assert semantic_cache.get(query, owner_key=owner_key) == sentinel
+
+
+def _assert_exact_cache_publication_failure(
+    deduplicator,
+    semantic_cache,
+    abandoned,
+    query,
+    owner_key,
+    _sentinel,
+):
+    assert [(message, owner) for message, owner, _key in abandoned] == [
+        (query, owner_key),
+        (query, owner_key),
+    ]
+    abandoned_keys = [key for _message, _owner, key in abandoned]
+    assert all(abandoned_keys)
+    assert len(set(abandoned_keys)) == 2
+    assert deduplicator._pending == {}
+    assert semantic_cache.get(query, owner_key=owner_key) is None
+
+
 def test_anonymous_owner_cookie_round_trip_and_tamper_rotation(monkeypatch):
     identity = _chat_identity_module()
     monkeypatch.setattr(identity, "_CHAT_OWNER_SECRET", b"owner-test-secret")
@@ -509,6 +552,414 @@ def test_owned_stream_cache_reads_receive_owner_key(tmp_path, monkeypatch):
         ("semantic", "cached query", "user:alice"),
         ("exact", "cached query", "user:alice"),
     ]
+
+
+@pytest.mark.parametrize("endpoint", ["post", "stream"])
+@pytest.mark.parametrize("publication_fails", [False, True])
+def test_exact_cache_hit_finalizes_captured_semantic_generation(
+    endpoint,
+    publication_fails,
+    tmp_path,
+    monkeypatch,
+):
+    manager = _manager(tmp_path)
+    owner_key = "user:alice"
+    query = f"{endpoint} exact cache resolves semantic generation"
+    sentinel = {
+        "reply": "Exact cache response resolves every semantic duplicate immediately.",
+        "tool_calls": [],
+        "suggestions": [],
+    }
+    exact_reads = []
+    abandoned = []
+
+    class NoWaitDeduplicator(semantic_cache_mod.RequestDeduplicator):
+        def __init__(self):
+            super().__init__()
+            self.wait_calls = 0
+
+        async def wait_for_async(self, dedup_key, timeout=30):
+            self.wait_calls += 1
+            return await super().wait_for_async(dedup_key, timeout=0)
+
+    matcher = semantic_cache_mod.SemanticMatcher()
+    semantic_cache = semantic_cache_mod.MultiTierCache(
+        matcher,
+        l1_max=10,
+        l2_max=20,
+    )
+    semantic_cache._l2_loaded = True
+    semantic_cache._save_l2 = lambda: None
+    deduplicator = NoWaitDeduplicator()
+
+    async def alice_owner(_request):
+        return SimpleNamespace(owner_key=owner_key, cookie_value=None)
+
+    def exact_read(message, owner_key=""):
+        exact_reads.append((message, owner_key))
+        return sentinel
+
+    def forbidden(*_args, **_kwargs):
+        raise AssertionError("provider must not run for an exact cache hit")
+
+    def fail_publication(*_args, **_kwargs):
+        raise RuntimeError("semantic exact-hit publication failed")
+
+    def record_abandon(message, owner_key="", dedup_key=None):
+        abandoned.append((message, owner_key, dedup_key))
+        return semantic_cache_mod.semantic_abandon(
+            message,
+            owner_key=owner_key,
+            dedup_key=dedup_key,
+        )
+
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server.chat_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server, "semantic_get_async", semantic_cache_mod.semantic_get_async)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        semantic_cache_mod.semantic_take_dedup_lease,
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_put",
+        {
+            False: semantic_cache_mod.semantic_put,
+            True: fail_publication,
+        }[publication_fails],
+    )
+    monkeypatch.setattr(server, "semantic_abandon", record_abandon)
+    monkeypatch.setattr(server.cache, "get", exact_read)
+    monkeypatch.setattr(server, "_build_messages", forbidden)
+    monkeypatch.setattr(server, "get_client", forbidden)
+    monkeypatch.setattr(semantic_cache_mod, "multi_tier_cache", semantic_cache)
+    monkeypatch.setattr(semantic_cache_mod, "deduplicator", deduplicator)
+    client = TestClient(server.app)
+    path = "/chat" if endpoint == "post" else "/chat/stream"
+
+    first = client.post(path, json={"message": query, "history": []})
+    second = client.post(path, json={"message": query, "history": []})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    _assert_exact_cache_response(endpoint, first, second, sentinel)
+    expected_exact_reads = {False: 1, True: 2}[publication_fails]
+    assert exact_reads == [(query, owner_key)] * expected_exact_reads
+    assert deduplicator.wait_calls == 0
+    assertion = {
+        False: _assert_exact_cache_publication_success,
+        True: _assert_exact_cache_publication_failure,
+    }[publication_fails]
+    assertion(
+        deduplicator,
+        semantic_cache,
+        abandoned,
+        query,
+        owner_key,
+        sentinel,
+    )
+
+
+@pytest.mark.parametrize("terminal_mode", ["disconnect", "decision_error", "noncacheable"])
+def test_stream_terminal_path_abandons_captured_semantic_lease(
+    terminal_mode,
+    tmp_path,
+    monkeypatch,
+):
+    manager = _manager(tmp_path)
+    owner_key = "user:alice"
+    query = f"stream {terminal_mode} semantic holder"
+    dedup_key = f"stream-{terminal_mode}-generation"
+    abandoned = []
+
+    class StreamCompletions:
+        def create(self, *_args, stream=False, **_kwargs):
+            if not stream:
+                message = SimpleNamespace(
+                    content="decision",
+                    tool_calls=None,
+                    role="assistant",
+                    function_call=None,
+                )
+                return SimpleNamespace(choices=[SimpleNamespace(message=message)])
+
+            def chunks():
+                yield SimpleNamespace(
+                    choices=[SimpleNamespace(
+                        delta=SimpleNamespace(
+                            content="A streamed response that must not remain an active lease.",
+                            tool_calls=None,
+                        ),
+                        finish_reason=None,
+                    )]
+                )
+
+            return chunks()
+
+    async def alice_owner(_request):
+        return SimpleNamespace(owner_key=owner_key, cookie_value=None)
+
+    async def semantic_miss(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(manager, "on_chat_complete", lambda *_args: None)
+    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(server, "HAS_CIRCUIT_BREAKER", False)
+    monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(server, "HAS_MEMORY_GRAPH", False)
+    monkeypatch.setattr(server, "HAS_EXPERIENCE", False)
+    monkeypatch.setattr(server, "HAS_FEWSHOT", False)
+    monkeypatch.setattr(server, "HAS_LLM_JUDGE", False)
+    monkeypatch.setattr(server, "HAS_AB_TESTING", False)
+    monkeypatch.setattr(server, "HAS_METRICS", False)
+    monkeypatch.setattr(
+        server,
+        "_build_messages",
+        lambda *_args: ([{"role": "system", "content": "test"}], {}),
+    )
+    monkeypatch.setattr(
+        server,
+        "get_client",
+        lambda: SimpleNamespace(
+            chat=SimpleNamespace(completions=StreamCompletions())
+        ),
+    )
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        server.cache,
+        "put",
+        lambda *_args, **_kwargs: pytest.fail("terminal stream must not cache"),
+    )
+    monkeypatch.setattr(
+        server.reflexion_engine,
+        "evaluate_answer",
+        lambda *_args: {"score": 4, "issues": [], "good_points": []},
+    )
+    monkeypatch.setattr(server.quality_tracker, "record", lambda *_args: None)
+    monkeypatch.setattr(server.analytics, "track_query", lambda *_args: None)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        lambda *_args, **_kwargs: dedup_key,
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_put",
+        lambda *_args, **_kwargs: pytest.fail("terminal stream must not publish"),
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_abandon",
+        lambda message, owner_key="", dedup_key=None: abandoned.append(
+            (message, owner_key, dedup_key)
+        ) or True,
+        raising=False,
+    )
+    if terminal_mode == "decision_error":
+        monkeypatch.setattr(
+            server,
+            "_call_stream_decision",
+            lambda *_args: {"success": False, "message": "decision failed"},
+        )
+
+    async def exercise():
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0", "spec_version": "2.4"},
+            "http_version": "1.1",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/chat/stream",
+            "raw_path": b"/chat/stream",
+            "query_string": b"",
+            "headers": [],
+            "client": ("127.0.0.1", 1234),
+            "server": ("testserver", 80),
+        }
+        response = await server.chat_stream(
+            server.ChatRequest.model_validate({"message": query, "history": []}),
+            Request(scope),
+        )
+
+        async def receive():
+            return {"type": "http.disconnect"}
+
+        async def send(message):
+            if terminal_mode == "disconnect" and message["type"] == "http.response.body":
+                raise RuntimeError("client disconnected after response start")
+
+        if terminal_mode == "disconnect":
+            with pytest.raises(RuntimeError, match="client disconnected"):
+                await response(scope, receive, send)
+        else:
+            await response(scope, receive, send)
+
+    asyncio.run(exercise())
+
+    assert abandoned == [(query, owner_key, dedup_key)]
+
+
+def test_stream_setup_exception_abandons_captured_semantic_lease(
+    tmp_path,
+    monkeypatch,
+):
+    manager = _manager(tmp_path)
+    owner_key = "user:alice"
+    query = "stream setup exception semantic holder"
+    dedup_key = "stream-setup-exception-generation"
+    abandoned = []
+
+    async def alice_owner(_request):
+        return SimpleNamespace(owner_key=owner_key, cookie_value=None)
+
+    async def semantic_miss(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        lambda *_args, **_kwargs: dedup_key,
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_abandon",
+        lambda message, owner_key="", dedup_key=None: abandoned.append(
+            (message, owner_key, dedup_key)
+        ) or True,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        server,
+        "_build_messages",
+        lambda *_args: (_ for _ in ()).throw(RuntimeError("stream setup failed")),
+    )
+
+    with pytest.raises(RuntimeError, match="stream setup failed"):
+        asyncio.run(server.chat_stream(
+            server.ChatRequest.model_validate({"message": query, "history": []}),
+            Request({
+                "type": "http",
+                "http_version": "1.1",
+                "method": "POST",
+                "scheme": "http",
+                "path": "/chat/stream",
+                "raw_path": b"/chat/stream",
+                "query_string": b"",
+                "headers": [],
+                "client": ("127.0.0.1", 1234),
+                "server": ("testserver", 80),
+            }),
+        ))
+
+    assert abandoned == [(query, owner_key, dedup_key)]
+
+
+def test_stream_response_start_failure_abandons_before_generator_iteration(
+    tmp_path,
+    monkeypatch,
+):
+    manager = _manager(tmp_path)
+    owner_key = "user:alice"
+    query = "stream response start failure semantic holder"
+    dedup_key = "stream-response-start-generation"
+    abandoned = []
+    provider_called = []
+
+    async def alice_owner(_request):
+        return SimpleNamespace(owner_key=owner_key, cookie_value=None)
+
+    async def semantic_miss(*_args, **_kwargs):
+        return None
+
+    monkeypatch.setattr(server, "memory_manager", manager)
+    monkeypatch.setattr(server, "resolve_chat_owner", alice_owner, raising=False)
+    monkeypatch.setattr(server.stream_limiter, "is_allowed", lambda _ip: (True, {}))
+    monkeypatch.setattr(server, "HAS_GUARDRAILS", False)
+    monkeypatch.setattr(server, "HAS_SEMANTIC_CACHE", True)
+    monkeypatch.setattr(server, "HAS_AUTOCORRECT", False)
+    monkeypatch.setattr(server, "HAS_DYNAMIC_AGENTS", False)
+    monkeypatch.setattr(server, "HAS_OPTIMIZER", False)
+    monkeypatch.setattr(server, "HAS_COST_TRACKER", False)
+    monkeypatch.setattr(server.cache, "get", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(server, "semantic_get_async", semantic_miss)
+    monkeypatch.setattr(
+        server,
+        "semantic_take_dedup_lease",
+        lambda *_args, **_kwargs: dedup_key,
+    )
+    monkeypatch.setattr(
+        server,
+        "semantic_abandon",
+        lambda message, owner_key="", dedup_key=None: abandoned.append(
+            (message, owner_key, dedup_key)
+        ) or True,
+        raising=False,
+    )
+    monkeypatch.setattr(
+        server,
+        "_build_messages",
+        lambda *_args: ([{"role": "system", "content": "test"}], {}),
+    )
+    monkeypatch.setattr(
+        server,
+        "get_client",
+        lambda: provider_called.append(True),
+    )
+
+    async def exercise():
+        scope = {
+            "type": "http",
+            "asgi": {"version": "3.0", "spec_version": "2.4"},
+            "http_version": "1.1",
+            "method": "POST",
+            "scheme": "http",
+            "path": "/chat/stream",
+            "raw_path": b"/chat/stream",
+            "query_string": b"",
+            "headers": [],
+            "client": ("127.0.0.1", 1234),
+            "server": ("testserver", 80),
+        }
+        response = await server.chat_stream(
+            server.ChatRequest.model_validate({"message": query, "history": []}),
+            Request(scope),
+        )
+
+        async def receive():
+            return {"type": "http.disconnect"}
+
+        async def fail_start(message):
+            assert message["type"] == "http.response.start"
+            raise RuntimeError("response start failed")
+
+        with pytest.raises(RuntimeError, match="response start failed"):
+            await response(scope, receive, fail_start)
+
+    asyncio.run(exercise())
+
+    assert provider_called == []
+    assert abandoned == [(query, owner_key, dedup_key)]
 
 
 @pytest.mark.parametrize("endpoint", ["post", "stream"])

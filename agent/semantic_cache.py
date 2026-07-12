@@ -586,6 +586,21 @@ class RequestDeduplicator:
         self._notify_async_waiters(async_waiters, result)
         return True
 
+    def abandon_if_active(self, dedup_key: str, owner_key: str = "") -> bool:
+        """Evict one unresolved active generation and wake its waiters."""
+        with self._lock:
+            slot = self._pending.get(dedup_key)
+            if slot is None or slot.get("owner_key", "") != owner_key:
+                return False
+            if slot.get("result") is not None:
+                return False
+            if self._active.get(slot.get("base_key")) != dedup_key:
+                return False
+            async_waiters = self._evict_locked(dedup_key)
+
+        self._notify_async_waiters(async_waiters, None)
+        return True
+
     def resolve_active(
         self,
         base_key: str,
@@ -890,6 +905,25 @@ def semantic_take_dedup_lease(query: str, owner_key: str = "") -> str | None:
     if lease is None or lease[0] != base_key:
         return None
     return lease[1]
+
+
+def semantic_abandon(
+    query: str,
+    owner_key: str = "",
+    dedup_key: str | None = None,
+) -> bool:
+    """Abandon an exact semantic generation without publishing cache data."""
+    base_key = _make_key(query, owner_key=owner_key)
+    lease = _semantic_dedup_lease.get()
+    if (
+        lease is not None
+        and lease[0] == base_key
+        and (dedup_key is None or lease[1] == dedup_key)
+    ):
+        _semantic_dedup_lease.set(None)
+    if dedup_key is None:
+        return False
+    return deduplicator.abandon_if_active(dedup_key, owner_key=owner_key)
 
 
 def semantic_put(
