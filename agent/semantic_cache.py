@@ -451,7 +451,7 @@ class RequestDeduplicator:
 
     def __init__(self):
         self._lock = Lock()
-        # dedup_key -> {query, timestamp, event: Event, result: dict|None}
+        # dedup_key -> {query, timestamp, event, async_waiters, result}
         self._pending: dict[str, dict] = {}
 
     _MAX_PENDING = 500
@@ -498,6 +498,7 @@ class RequestDeduplicator:
                 "owner_key": owner_key,
                 "timestamp": now,
                 "event": Event(),
+                "async_waiters": {},
                 "result": None,
             }
             return True, key
@@ -512,6 +513,24 @@ class RequestDeduplicator:
                 return
             slot["result"] = result
             slot["event"].set()
+            async_waiters = list(slot.get("async_waiters", {}).values())
+            slot.get("async_waiters", {}).clear()
+
+        for loop, future in async_waiters:
+            try:
+                loop.call_soon_threadsafe(
+                    self._set_async_result,
+                    future,
+                    result,
+                )
+            except RuntimeError:
+                # The owning request loop may already be closed after cancellation.
+                continue
+
+    @staticmethod
+    def _set_async_result(future, result: dict):
+        if not future.done():
+            future.set_result(result)
 
     def wait_for(self, dedup_key: str, timeout: float = 30) -> dict | None:
         """Block until the result is available or *timeout* expires."""
@@ -522,6 +541,34 @@ class RequestDeduplicator:
 
         slot["event"].wait(timeout=timeout)
         return slot.get("result")
+
+    async def wait_for_async(
+        self,
+        dedup_key: str,
+        timeout: float = 30,
+    ) -> dict | None:
+        """Wait without occupying a thread from the event loop's executor."""
+        loop = asyncio.get_running_loop()
+        future = loop.create_future()
+        waiter_id = id(future)
+
+        with self._lock:
+            slot = self._pending.get(dedup_key)
+            if slot is None:
+                return None
+            if slot.get("result") is not None:
+                return slot["result"]
+            slot.setdefault("async_waiters", {})[waiter_id] = (loop, future)
+
+        try:
+            return await asyncio.wait_for(future, timeout=timeout)
+        except asyncio.TimeoutError:
+            return None
+        finally:
+            with self._lock:
+                slot = self._pending.get(dedup_key)
+                if slot is not None:
+                    slot.setdefault("async_waiters", {}).pop(waiter_id, None)
 
 
 # ══════════════════════════════════════════════════
@@ -691,7 +738,7 @@ async def semantic_get_async(query: str, owner_key: str = "") -> dict | None:
 
     is_first, dedup_key = deduplicator.acquire(query, owner_key=owner_key)
     if not is_first:
-        result = await asyncio.to_thread(deduplicator.wait_for, dedup_key)
+        result = await deduplicator.wait_for_async(dedup_key)
         if result is not None:
             return result
 

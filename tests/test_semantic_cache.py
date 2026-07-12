@@ -1,6 +1,7 @@
 """Tests for agent/semantic_cache.py -- Semantic Cache & Request Deduplication."""
 
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import sys
 import os
 import time
@@ -323,6 +324,115 @@ class TestRequestDeduplicator(unittest.TestCase):
         self.assertEqual(result_holder[0], {"woken": True})
 
 
+class TestRequestDeduplicatorAsync(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.dedup = RequestDeduplicator()
+
+    async def test_resolve_wakes_async_waiter_and_removes_registration(self):
+        is_first, key = self.dedup.acquire("async resolve")
+        self.assertTrue(is_first)
+        waiter = asyncio.create_task(self.dedup.wait_for_async(key, timeout=1))
+        await asyncio.sleep(0)
+
+        self.assertEqual(len(self.dedup._pending[key]["async_waiters"]), 1)
+        self.dedup.resolve(key, {"reply": "resolved"})
+
+        self.assertEqual(await waiter, {"reply": "resolved"})
+        self.assertEqual(self.dedup._pending[key]["async_waiters"], {})
+
+    async def test_async_waiter_timeout_returns_none_and_removes_registration(self):
+        _is_first, key = self.dedup.acquire("async timeout")
+
+        result = await self.dedup.wait_for_async(key, timeout=0.01)
+
+        self.assertIsNone(result)
+        self.assertEqual(self.dedup._pending[key]["async_waiters"], {})
+
+    async def test_async_waiter_observes_result_resolved_before_registration(self):
+        _is_first, key = self.dedup.acquire("async resolve race")
+        self.dedup.resolve(key, {"reply": "already resolved"})
+
+        result = await self.dedup.wait_for_async(key, timeout=1)
+
+        self.assertEqual(result, {"reply": "already resolved"})
+        self.assertEqual(self.dedup._pending[key]["async_waiters"], {})
+
+    async def test_async_waiter_cancellation_removes_registration(self):
+        _is_first, key = self.dedup.acquire("async cancellation")
+        waiter = asyncio.create_task(self.dedup.wait_for_async(key, timeout=30))
+        await asyncio.sleep(0)
+        self.assertEqual(len(self.dedup._pending[key]["async_waiters"]), 1)
+
+        waiter.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await waiter
+
+        self.assertEqual(self.dedup._pending[key]["async_waiters"], {})
+
+    async def test_async_waiters_remain_isolated_by_owner(self):
+        _alice_first, alice_key = self.dedup.acquire(
+            "same async query",
+            owner_key="user:alice",
+        )
+        _bob_first, bob_key = self.dedup.acquire(
+            "same async query",
+            owner_key="user:bob",
+        )
+        alice_waiter = asyncio.create_task(
+            self.dedup.wait_for_async(alice_key, timeout=1)
+        )
+        bob_waiter = asyncio.create_task(
+            self.dedup.wait_for_async(bob_key, timeout=1)
+        )
+        await asyncio.sleep(0)
+
+        self.dedup.resolve(
+            alice_key,
+            {"reply": "alice"},
+            owner_key="user:alice",
+        )
+
+        self.assertEqual(await alice_waiter, {"reply": "alice"})
+        self.assertFalse(bob_waiter.done())
+        self.dedup.resolve(
+            bob_key,
+            {"reply": "bob"},
+            owner_key="user:bob",
+        )
+        self.assertEqual(await bob_waiter, {"reply": "bob"})
+
+    async def test_threaded_resolve_wakes_sync_and_async_waiters_together(self):
+        _is_first, key = self.dedup.acquire("mixed sync async waiters")
+        sync_started = threading.Event()
+        sync_result = {}
+
+        def wait_synchronously():
+            sync_started.set()
+            sync_result["value"] = self.dedup.wait_for(key, timeout=1)
+
+        sync_waiter = threading.Thread(target=wait_synchronously)
+        async_waiter = asyncio.create_task(
+            self.dedup.wait_for_async(key, timeout=1)
+        )
+        await asyncio.sleep(0)
+        sync_waiter.start()
+        self.assertTrue(await asyncio.to_thread(sync_started.wait, 1))
+
+        resolver = threading.Thread(
+            target=self.dedup.resolve,
+            args=(key, {"reply": "mixed resolved"}),
+        )
+        resolver.start()
+        resolver.join(timeout=1)
+
+        self.assertEqual(await async_waiter, {"reply": "mixed resolved"})
+        sync_waiter.join(timeout=1)
+        self.assertEqual(sync_result["value"], {"reply": "mixed resolved"})
+        self.assertFalse(resolver.is_alive())
+        self.assertFalse(sync_waiter.is_alive())
+        self.assertEqual(self.dedup._pending[key]["async_waiters"], {})
+
+
 # ---- CacheWarmer ----
 
 
@@ -379,6 +489,9 @@ class TestConvenienceFunctions(unittest.TestCase):
             def wait_for(self, dedup_key, timeout=30):
                 raise RuntimeError("semantic waiter failed")
 
+            async def wait_for_async(self, dedup_key, timeout=30):
+                raise RuntimeError("semantic waiter failed")
+
         with (
             patch.object(semantic_cache_mod, "multi_tier_cache", cache),
             patch.object(
@@ -394,6 +507,107 @@ class TestConvenienceFunctions(unittest.TestCase):
                         owner_key="user:alice",
                     )
                 )
+
+    def test_cancelled_async_waiters_do_not_starve_default_executor(self):
+        matcher = SemanticMatcher()
+        cache = MultiTierCache(matcher=matcher, l1_max=10, l2_max=50)
+        cache._l2_loaded = True
+        executor = ThreadPoolExecutor(max_workers=2)
+        release_source = {"value": None}
+        source_lock = threading.Lock()
+        provider_completed = threading.Event()
+        query = "cancelled semantic waiters executor isolation"
+        owner_key = "user:alice"
+
+        async def exercise():
+            loop = asyncio.get_running_loop()
+            loop.set_default_executor(executor)
+            waiters_started = asyncio.Event()
+
+            class SaturatingDeduplicator(RequestDeduplicator):
+                def __init__(self):
+                    super().__init__()
+                    self._started = 0
+                    self._started_lock = threading.Lock()
+
+                def _mark_started(self):
+                    with self._started_lock:
+                        self._started += 1
+                        if self._started == 2:
+                            loop.call_soon_threadsafe(waiters_started.set)
+
+                def wait_for(self, dedup_key, timeout=30):
+                    self._mark_started()
+                    return super().wait_for(dedup_key, timeout=5)
+
+                async def wait_for_async(self, dedup_key, timeout=30):
+                    self._mark_started()
+                    return await super().wait_for_async(dedup_key, timeout=timeout)
+
+            dedup = SaturatingDeduplicator()
+            is_holder, key = dedup.acquire(query, owner_key=owner_key)
+            self.assertTrue(is_holder)
+
+            with (
+                patch.object(semantic_cache_mod, "multi_tier_cache", cache),
+                patch.object(semantic_cache_mod, "deduplicator", dedup),
+            ):
+                waiters = [
+                    asyncio.create_task(
+                        semantic_cache_mod.semantic_get_async(
+                            query,
+                            owner_key=owner_key,
+                        )
+                    )
+                    for _ in range(2)
+                ]
+                await asyncio.wait_for(waiters_started.wait(), timeout=1)
+                for waiter in waiters:
+                    waiter.cancel()
+                results = await asyncio.gather(*waiters, return_exceptions=True)
+                self.assertTrue(
+                    all(isinstance(result, asyncio.CancelledError) for result in results)
+                )
+                self.assertEqual(
+                    dedup._pending[key].get("async_waiters", {}),
+                    {},
+                )
+
+                def release_only_to_break_starvation():
+                    if not provider_completed.wait(timeout=2):
+                        with source_lock:
+                            release_source["value"] = "watchdog"
+                        semantic_cache_mod.semantic_put(
+                            query,
+                            {"reply": "watchdog release"},
+                            owner_key=owner_key,
+                        )
+
+                watchdog = threading.Thread(
+                    target=release_only_to_break_starvation
+                )
+                watchdog.start()
+                provider_result = await asyncio.to_thread(
+                    lambda: "unrelated provider work"
+                )
+                with source_lock:
+                    if release_source["value"] is None:
+                        release_source["value"] = "provider"
+                semantic_cache_mod.semantic_put(
+                    query,
+                    {"reply": "provider completed first"},
+                    owner_key=owner_key,
+                )
+                provider_completed.set()
+                watchdog.join(timeout=3)
+
+                self.assertEqual(provider_result, "unrelated provider work")
+                self.assertFalse(watchdog.is_alive())
+
+        asyncio.run(exercise())
+
+        self.assertEqual(release_source["value"], "provider")
+        self.assertTrue(all(not thread.is_alive() for thread in executor._threads))
 
     def test_semantic_convenience_functions_isolate_cache_and_dedup_by_owner(self):
         matcher = SemanticMatcher()

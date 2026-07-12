@@ -58,6 +58,10 @@ class _SignalingDeduplicator(semantic_cache_mod.RequestDeduplicator):
         self._waiter_started.set()
         return super().wait_for(dedup_key, timeout=5)
 
+    async def wait_for_async(self, dedup_key, timeout=30):
+        self._waiter_started.set()
+        return await super().wait_for_async(dedup_key, timeout=timeout)
+
 
 def _release_semantic_deadlock(
     async_release_completed,
