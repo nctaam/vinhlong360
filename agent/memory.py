@@ -22,6 +22,7 @@ import json
 import logging
 import os
 import re
+import secrets
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -936,6 +937,10 @@ class MemoryExtractor:
 #  MEMORY MANAGER — Unified interface
 # ══════════════════════════════════════════════════
 
+class UnknownConversation(LookupError):
+    """Raised when a conversation does not belong to the resolved owner."""
+
+
 class MemoryManager:
     """
     Quản lý thống nhất cả Hot + Cold memory.
@@ -948,19 +953,30 @@ class MemoryManager:
         self.cold = ColdMemory()
         self.skills = SkillDocumentStore()
         self.extractor = MemoryExtractor()
-        self._sessions: dict[str, HotMemory] = {}
+        self._sessions: dict[tuple[str, str], HotMemory] = {}
         self._lock = Lock()
 
-    def get_session(self, session_id: str) -> HotMemory:
+    def create_session(self, owner_key: str) -> HotMemory:
+        """Create a high-entropy conversation scoped to one server-derived owner."""
+        session_id = secrets.token_hex(16)
+        key = (owner_key, session_id)
         with self._lock:
-            if session_id not in self._sessions:
-                if len(self._sessions) >= self._MAX_SESSIONS:
-                    oldest_key = min(self._sessions, key=lambda k: self._sessions[k].last_active)
-                    del self._sessions[oldest_key]
-                self._sessions[session_id] = HotMemory(session_id)
-            return self._sessions[session_id]
+            if len(self._sessions) >= self._MAX_SESSIONS:
+                oldest_key = min(self._sessions, key=lambda k: self._sessions[k].last_active)
+                del self._sessions[oldest_key]
+            session = HotMemory(session_id)
+            self._sessions[key] = session
+            return session
 
-    def build_context(self, session_id: str, user_id: str, message: str) -> str:
+    def require_session(self, owner_key: str, session_id: str) -> HotMemory:
+        """Return an owned conversation without materializing misses."""
+        with self._lock:
+            try:
+                return self._sessions[(owner_key, session_id)]
+            except KeyError as exc:
+                raise UnknownConversation(session_id) from exc
+
+    def build_context(self, owner_key: str, session_id: str, message: str) -> str:
         """
         Xây dựng context bổ sung từ memory system.
         Được inject vào system prompt.
@@ -968,17 +984,18 @@ class MemoryManager:
         parts = []
 
         # 1. User profile (cold memory)
-        if user_id:
-            profile = self.cold.get_profile(user_id)
+        if owner_key:
+            profile = self.cold.get_profile(owner_key)
             profile_prompt = profile.get_personalization_prompt()
             if profile_prompt:
                 parts.append(profile_prompt)
 
         # 2. Session preferences (hot memory)
-        session = self.get_session(session_id)
-        pref_ctx = session.get_preference_context()
-        if pref_ctx:
-            parts.append(f"[Phiên hiện tại]: {pref_ctx}")
+        if session_id:
+            session = self.require_session(owner_key, session_id)
+            pref_ctx = session.get_preference_context()
+            if pref_ctx:
+                parts.append(f"[Phiên hiện tại]: {pref_ctx}")
 
         # 3. Relevant skills
         skill_prompt = self.skills.get_skill_prompt(message)
@@ -987,28 +1004,27 @@ class MemoryManager:
 
         return "\n".join(parts)
 
-    def on_message(self, session_id: str, role: str, content: str):
+    def on_message(self, owner_key: str, session_id: str, role: str, content: str):
         """Ghi nhận tin nhắn mới."""
-        session = self.get_session(session_id)
+        session = self.require_session(owner_key, session_id)
         session.add_message(role, content)
 
-    def on_entity_discussed(self, session_id: str, entity_id: str):
+    def on_entity_discussed(self, owner_key: str, session_id: str, entity_id: str):
         """Ghi nhận entity được thảo luận."""
-        session = self.get_session(session_id)
+        session = self.require_session(owner_key, session_id)
         if entity_id not in session.entities_discussed:
             session.entities_discussed.append(entity_id)
 
-    def on_session_end(self, session_id: str, user_id: str):
+    def on_session_end(self, owner_key: str, session_id: str):
         """Merge session insights vào cold memory."""
-        if session_id in self._sessions:
-            hot = self._sessions[session_id]
-            if user_id:
-                self.cold.update_profile_from_session(user_id, hot)
+        key = (owner_key, session_id)
+        if key in self._sessions and owner_key:
+            self.cold.update_profile_from_session(owner_key, self._sessions[key])
 
     def on_chat_complete(
         self,
+        owner_key: str,
         session_id: str,
-        user_id: str,
         message: str,
         reply: str,
         entities: list[str] | None = None,
@@ -1024,7 +1040,7 @@ class MemoryManager:
         """
         return self.extractor.on_conversation_turn(
             session_id=session_id,
-            user_id=user_id,
+            user_id=owner_key,
             message=message,
             reply=reply,
             entities_discussed=entities or [],

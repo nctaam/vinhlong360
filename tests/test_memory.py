@@ -10,6 +10,7 @@ from memory import (
     ColdMemory,
     UserProfile,
     MemoryManager,
+    UnknownConversation,
     _encrypt,
     _decrypt,
 )
@@ -316,39 +317,72 @@ def test_cold_memory_reads_plain_json(tmp_path):
 
 
 class TestMemoryManager:
-    def test_get_session(self):
-        mm = MemoryManager()
-        s = mm.get_session("s1")
+    @staticmethod
+    def _manager(tmp_path):
+        with patch("memory.MEMORY_DIR", tmp_path):
+            return MemoryManager()
+
+    def test_create_and_require_owned_session(self, tmp_path):
+        mm = self._manager(tmp_path)
+        s = mm.create_session("user:alice")
         assert isinstance(s, HotMemory)
-        assert s.session_id == "s1"
+        assert len(s.session_id) == 32
+        assert mm.require_session("user:alice", s.session_id) is s
 
-    def test_get_session_returns_same_instance(self):
-        mm = MemoryManager()
-        s1 = mm.get_session("s1")
-        s2 = mm.get_session("s1")
-        assert s1 is s2
+    def test_require_session_never_creates_unknown_conversation(self, tmp_path):
+        mm = self._manager(tmp_path)
 
-    def test_on_message(self):
-        mm = MemoryManager()
-        mm.on_message("s1", "user", "Hello")
-        session = mm.get_session("s1")
+        with pytest.raises(UnknownConversation):
+            mm.require_session("user:alice", "missing")
+
+        assert mm._sessions == {}
+
+    def test_same_visible_conversation_id_is_scoped_by_owner(self, tmp_path):
+        mm = self._manager(tmp_path)
+        with patch("memory.secrets.token_hex", return_value="shared-selector"):
+            alice = mm.create_session("user:alice")
+            bob = mm.create_session("user:bob")
+
+        assert alice.session_id == bob.session_id == "shared-selector"
+        assert alice is not bob
+        assert mm.require_session("user:alice", "shared-selector") is alice
+        assert mm.require_session("user:bob", "shared-selector") is bob
+
+    def test_on_message_uses_owner_and_conversation(self, tmp_path):
+        mm = self._manager(tmp_path)
+        session = mm.create_session("user:alice")
+        mm.on_message("user:alice", session.session_id, "user", "Hello")
         assert len(session.messages) == 1
 
-    def test_cleanup_stale_sessions(self):
-        mm = MemoryManager()
-        s = mm.get_session("old_session")
-        s.last_active = time.time() - 7200  # 2 hours ago
+    def test_owner_shares_cold_profile_but_conversations_keep_separate_hot_history(self, tmp_path):
+        mm = self._manager(tmp_path)
+        first = mm.create_session("user:alice")
+        second = mm.create_session("user:alice")
+        mm.cold.get_profile("user:alice").interests = ["food"]
 
-        mm.get_session("new_session")  # fresh session
+        mm.on_message("user:alice", first.session_id, "user", "first-only")
+        mm.on_message("user:alice", second.session_id, "user", "second-only")
+
+        assert [m["content"] for m in first.messages] == ["first-only"]
+        assert [m["content"] for m in second.messages] == ["second-only"]
+        assert "food" in mm.build_context("user:alice", first.session_id, "hello")
+        assert "food" in mm.build_context("user:alice", second.session_id, "hello")
+
+    def test_cleanup_stale_sessions(self, tmp_path):
+        mm = self._manager(tmp_path)
+        old = mm.create_session("user:alice")
+        old.last_active = time.time() - 7200  # 2 hours ago
+
+        new = mm.create_session("user:alice")
 
         mm.cleanup_stale_sessions(max_age_seconds=3600)
-        assert "old_session" not in mm._sessions
-        assert "new_session" in mm._sessions
+        assert ("user:alice", old.session_id) not in mm._sessions
+        assert ("user:alice", new.session_id) in mm._sessions
 
-    def test_stats(self):
-        mm = MemoryManager()
-        mm.get_session("s1")
-        mm.get_session("s2")
+    def test_stats(self, tmp_path):
+        mm = self._manager(tmp_path)
+        mm.create_session("user:alice")
+        mm.create_session("user:bob")
         s = mm.stats()
         assert s["active_sessions"] == 2
         assert "cold_memory" in s

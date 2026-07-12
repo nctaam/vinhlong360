@@ -138,17 +138,22 @@ def test_chat_endpoint(client):
 
 
 def test_chat_with_session_id(client):
+    created = client.post(
+        "/chat",
+        json={"message": "Bat dau cuoc tro chuyen", "history": []},
+    )
+    session_id = created.json()["session_id"]
     response = client.post(
         "/chat",
         json={
             "message": "Cam sanh la gi?",
             "history": [],
-            "session_id": "test123",
+            "session_id": session_id,
         },
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["session_id"] == "test123"
+    assert data["session_id"] == session_id
 
 
 def test_chat_empty_message_rejected(client):
@@ -433,7 +438,7 @@ def test_chat_stream_concurrent_non_blocking():
             transport = ASGITransport(app=app)
             async with AsyncClient(transport=transport, base_url="http://test") as ac:
                 async def one(n):
-                    r = await ac.get("/chat/stream", params={"message": f"cau hoi doc nhat {n}", "session_id": f"s{n}"})
+                    r = await ac.get("/chat/stream", params={"message": f"cau hoi doc nhat {n}"})
                     return r.status_code
                 t0 = _time.time()
                 codes = await asyncio.gather(one(1), one(2))

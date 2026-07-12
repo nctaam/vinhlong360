@@ -53,7 +53,7 @@ def client_mocked():
 
 
 def test_chat_returns_200_and_reply(client_mocked):
-    r = client_mocked.post("/chat", json={"message": "Vĩnh Long có gì chơi?", "session_id": "smoke1"})
+    r = client_mocked.post("/chat", json={"message": "Vĩnh Long có gì chơi?"})
     assert r.status_code == 200, r.text
     body = r.json()
     assert isinstance(body.get("reply"), str)
@@ -334,6 +334,21 @@ def test_internal_endpoints_gated(client_mocked):
     assert client_mocked.get("/health").status_code == 200
 
 
+def _assert_info_report_list(body):
+    assert body["total"] == 2
+    assert body["reports"][0]["target_id"] == "x"
+    assert body["reports"][0]["target_type"] == "other"
+    assert body["reports"][1]["reason"] == "Sai số điện thoại"
+
+
+def _assert_info_report_rate_limit(client_mocked):
+    last = None
+    for _ in range(6):
+        last = client_mocked.post("/api/report", json={"target_id": "y", "reason": "spam"})
+    assert last.status_code == 429, last.text
+    assert last.json().get("retry_after") == 300
+
+
 def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch):
     """GĐ13.6f: POST /api/report (ẩn danh, JSONL) ghi nhận; admin xem qua /admin/info-reports;
     rate-limit chặn spam. Tách khỏi UGC `reports` (Postgres)."""
@@ -363,21 +378,13 @@ def test_info_report_submit_and_admin_list(client_mocked, tmp_path, monkeypatch)
     hdr = {"X-Admin-Key": _ADMIN_KEY}
     lst = client_mocked.get("/admin/info-reports", headers=hdr)
     assert lst.status_code == 200, lst.text
-    body = lst.json()
-    assert body["total"] == 2
-    assert body["reports"][0]["target_id"] == "x"
-    assert body["reports"][0]["target_type"] == "other"
-    assert body["reports"][1]["reason"] == "Sai số điện thoại"
+    _assert_info_report_list(lst.json())
 
     # admin endpoint yêu cầu auth
     assert client_mocked.get("/admin/info-reports").status_code == 401
 
     # 3) Rate-limit: limiter cho 5/5min — đã dùng 2, gửi thêm tới khi 429
-    last = None
-    for _ in range(6):
-        last = client_mocked.post("/api/report", json={"target_id": "y", "reason": "spam"})
-    assert last.status_code == 429, last.text
-    assert last.json().get("retry_after") == 300  # W6.2 error-shape: {detail, retry_after} (không còn {error})
+    _assert_info_report_rate_limit(client_mocked)
 
 
 def test_entities_month_pagination(client_mocked):

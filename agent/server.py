@@ -22,7 +22,6 @@ import re
 import sys
 import time
 import traceback
-import uuid
 import asyncio
 import threading
 from datetime import datetime, timezone
@@ -36,7 +35,7 @@ if sys.stdout.encoding != "utf-8":
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
@@ -78,7 +77,8 @@ from middleware import (
 )
 from itinerary_gen import generate_itinerary
 from scheduler import start_scheduler, stop_scheduler, scheduler_status, sync_data_json_to_js
-from memory import memory_manager
+from chat_identity import resolve_chat_owner, set_chat_owner_cookie
+from memory import UnknownConversation, memory_manager
 from reflexion import reflexion_engine, quality_tracker
 from proactive import get_proactive_context, generate_welcome_message
 from agentic_rag import build_rag_context
@@ -1444,7 +1444,7 @@ def _resolve_contextual_query(message: str, history: list[dict]) -> str:
     return resolved
 
 
-def _gather_context_pieces(current_month, rag_query, session_id, user_id, message):
+def _gather_context_pieces(current_month, rag_query, owner_key, session_id, message):
     """Thu 6 mảnh context (proactive/rag/realtime/memory/reflexion/graph). Trả dict."""
     realtime_ctx = ""
     if HAS_REALTIME:
@@ -1455,14 +1455,14 @@ def _gather_context_pieces(current_month, rag_query, session_id, user_id, messag
     graph_ctx = ""
     if HAS_MEMORY_GRAPH:
         try:
-            graph_ctx = memory_graph.build_graph_context(user_id) or ""
+            graph_ctx = memory_graph.build_graph_context(owner_key) or ""
         except Exception:
             logger.debug("Memory graph context failed", exc_info=True)
     return {
         "proactive": get_proactive_context(month=current_month),
         "rag": build_rag_context(rag_query),
         "realtime": realtime_ctx,
-        "memory": memory_manager.build_context(session_id, user_id, message),
+        "memory": memory_manager.build_context(owner_key, session_id, message),
         "reflexion": reflexion_engine.get_reflection_prompt(message),
         "graph": graph_ctx,
     }
@@ -1526,7 +1526,9 @@ def _fold_experience_fewshot(message, reflexion_ctx):
     return reflexion_ctx
 
 
-def _assemble_manual_messages(base_prompt, current_month, pieces, reflexion_ctx, history, session_id, message):
+def _assemble_manual_messages(
+    base_prompt, current_month, pieces, reflexion_ctx, history, owner_key, session_id, message
+):
     """Fallback ráp tay (khi không có prompt-cache): system + history + user message. Trả messages."""
     system_parts = [
         base_prompt,
@@ -1549,7 +1551,7 @@ def _assemble_manual_messages(base_prompt, current_month, pieces, reflexion_ctx,
     messages = [{"role": "system", "content": system}]
 
     if session_id:
-        session = memory_manager.get_session(session_id)
+        session = memory_manager.require_session(owner_key, session_id)
         ctx_messages = session.get_context_messages()
         if ctx_messages:
             messages.extend(ctx_messages)
@@ -1566,7 +1568,7 @@ def _build_messages(
     message: str,
     history: list[dict],
     session_id: str = "",
-    user_id: str = "",
+    owner_key: str = "",
 ) -> tuple[list[dict], dict]:
     """
     Xây dựng messages cho LLM với đầy đủ context:
@@ -1586,7 +1588,7 @@ def _build_messages(
     # before RAG so entity detection picks up the correct entity.
     rag_query = _resolve_contextual_query(message, history)
 
-    pieces = _gather_context_pieces(current_month, rag_query, session_id, user_id, message)
+    pieces = _gather_context_pieces(current_month, rag_query, owner_key, session_id, message)
     base_prompt, ab_info = _resolve_base_prompt(session_id)
     # Experience-memory + few-shot fold vào reflexion để chảy qua CẢ cached lẫn manual path.
     reflexion_ctx = _fold_experience_fewshot(message, pieces["reflexion"])
@@ -1596,7 +1598,7 @@ def _build_messages(
         # Get session history from memory or request
         effective_history = history[-20:]
         if session_id:
-            session = memory_manager.get_session(session_id)
+            session = memory_manager.require_session(owner_key, session_id)
             ctx_messages = session.get_context_messages()
             if ctx_messages:
                 effective_history = ctx_messages
@@ -1605,7 +1607,7 @@ def _build_messages(
             message=message,
             history=effective_history,
             session_id=session_id,
-            user_id=user_id,
+            user_id=owner_key,
             system_prompt=base_prompt,
             proactive_context=pieces["proactive"] or "",
             rag_context=pieces["rag"] or "",
@@ -1618,7 +1620,7 @@ def _build_messages(
 
     # Fallback: manual assembly
     messages = _assemble_manual_messages(
-        base_prompt, current_month, pieces, reflexion_ctx, history, session_id, message)
+        base_prompt, current_month, pieces, reflexion_ctx, history, owner_key, session_id, message)
     return messages, {"ab": ab_info}
 
 
@@ -1880,7 +1882,22 @@ def _post_tool_process(fn_name, fn_args, result, suggestions, messages, empty_re
 
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(req: ChatRequest, request: Request):
+async def chat(req: ChatRequest, request: Request, response: Response):
+    owner_context = await resolve_chat_owner(request)
+    owner_key = owner_context.owner_key
+    try:
+        if req.session_id:
+            session = memory_manager.require_session(owner_key, req.session_id)
+        else:
+            session = memory_manager.create_session(owner_key)
+    except UnknownConversation:
+        not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
+        set_chat_owner_cookie(not_found, owner_context)
+        return not_found
+
+    session_id = session.session_id
+    set_chat_owner_cookie(response, owner_context)
+
     # Rate limiting
     client_ip = get_client_ip(request)
     allowed, rate_info = chat_limiter.is_allowed(client_ip)
@@ -1889,10 +1906,8 @@ async def chat(req: ChatRequest, request: Request):
         _resp = _error_response(429, "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
                                 retry_after=rate_info["retry_after"])
         _resp.headers["Retry-After"] = str(rate_info["retry_after"])
+        set_chat_owner_cookie(_resp, owner_context)
         return _resp
-
-    session_id = req.session_id or str(uuid.uuid4())[:8]
-    user_id = session_id  # For now, session_id = user_id
 
     # ── Guardrails: input safety (injection detect + PII mask + budget) ──
     if HAS_GUARDRAILS:
@@ -1914,7 +1929,7 @@ async def chat(req: ChatRequest, request: Request):
             )
 
     # Record user message in memory
-    memory_manager.on_message(session_id, "user", req.message)
+    memory_manager.on_message(owner_key, session_id, "user", req.message)
 
     # ── Semantic cache: embedding-based dedup (before regular cache) ──
     if not req.history and HAS_SEMANTIC_CACHE:
@@ -1951,7 +1966,7 @@ async def chat(req: ChatRequest, request: Request):
         if HAS_TRACING:
             _trace_ctx = trace_chat_request(corrected_message, session_id, get_model())
             _trace_ctx.__enter__()
-        messages, build_info = _build_messages(corrected_message, req.history, session_id, user_id)
+        messages, build_info = _build_messages(corrected_message, req.history, session_id, owner_key)
 
         # ── Dynamic agents: check for specialist match before orchestrator ──
         _dyn_prompt_addon = ""
@@ -2145,18 +2160,18 @@ async def chat(req: ChatRequest, request: Request):
             logger.debug("Cost tracking failed", exc_info=True)
 
     # Record assistant reply in memory
-    memory_manager.on_message(session_id, "assistant", reply)
+    memory_manager.on_message(owner_key, session_id, "assistant", reply)
 
     # Memory graph: record entity interactions
     if HAS_MEMORY_GRAPH:
         try:
-            memory_graph.on_chat_complete(user_id, corrected_message, reply, [])
+            memory_graph.on_chat_complete(owner_key, corrected_message, reply, [])
         except Exception:
             logger.debug("Memory graph record failed", exc_info=True)
 
     # LLM memory extraction: extract preferences/facts
     try:
-        memory_manager.on_chat_complete(session_id, user_id, corrected_message, reply)
+        memory_manager.on_chat_complete(owner_key, session_id, corrected_message, reply)
     except Exception:
         logger.debug("LLM memory extraction failed", exc_info=True)
 
@@ -2257,6 +2272,25 @@ async def chat(req: ChatRequest, request: Request):
 
 @app.get("/chat/stream")
 async def chat_stream(request: Request, message: str, history: str = "[]", session_id: str = ""):
+    owner_context = await resolve_chat_owner(request)
+    owner_key = owner_context.owner_key
+    try:
+        if session_id:
+            session = memory_manager.require_session(owner_key, session_id)
+        else:
+            session = memory_manager.create_session(owner_key)
+    except UnknownConversation:
+        not_found = _error_response(404, "Không tìm thấy cuộc trò chuyện.", request)
+        set_chat_owner_cookie(not_found, owner_context)
+        return not_found
+
+    sid = session.session_id
+
+    def _stream_response(generator):
+        stream_response = StreamingResponse(generator, media_type="text/event-stream")
+        set_chat_owner_cookie(stream_response, owner_context)
+        return stream_response
+
     # Rate limiting
     client_ip = get_client_ip(request)
     allowed, rate_info = stream_limiter.is_allowed(client_ip)
@@ -2264,14 +2298,14 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
         logger.warning("Rate limited", ip=client_ip, endpoint="/chat/stream")
         async def rate_limit_stream():
             yield f"data: {json.dumps({'type': 'error', 'content': 'Quá nhiều yêu cầu. Vui lòng thử lại sau.'}, ensure_ascii=False)}\n\n"
-        return StreamingResponse(rate_limit_stream(), media_type="text/event-stream")
+        return _stream_response(rate_limit_stream())
 
     # Parity với POST /chat: cắt độ dài + strip HTML (query param không qua pydantic validator).
     message = _sanitize_message(message)[:2000]
     if not message:
         async def empty_stream():
             yield f"data: {json.dumps({'type': 'error', 'content': 'Tin nhắn trống.'}, ensure_ascii=False)}\n\n"
-        return StreamingResponse(empty_stream(), media_type="text/event-stream")
+        return _stream_response(empty_stream())
 
     try:
         hist = json.loads(history)
@@ -2280,9 +2314,6 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
         hist = hist[:50]
     except Exception:
         hist = []
-
-    sid = session_id or str(uuid.uuid4())[:8]
-    user_id = sid
 
     # ── Guardrails: input safety ──
     if HAS_GUARDRAILS:
@@ -2297,15 +2328,15 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 # P1: ẩn blocked_reason (chẩn-đoán) khỏi user, chỉ log server-side
                 logger.warning("Guardrails blocked stream input", reason=guard.get("blocked_reason", ""), session_id=sid)
                 gen = _safe_block_stream("Xin lỗi, tin nhắn này không thể xử lý vì lý do an toàn. Vui lòng diễn đạt lại.")
-                return StreamingResponse(gen(), media_type="text/event-stream")
+                return _stream_response(gen())
         except Exception as _gerr:
             # P1: fail-CLOSED
             logger.warning(f"Guardrail stream check lỗi → fail-closed: {_gerr}")
             gen = _safe_block_stream("Xin lỗi, hệ thống đang bận kiểm tra an toàn. Vui lòng thử lại sau ít phút.")
-            return StreamingResponse(gen(), media_type="text/event-stream")
+            return _stream_response(gen())
 
     # Record in memory
-    memory_manager.on_message(sid, "user", message)
+    memory_manager.on_message(owner_key, sid, "user", message)
 
     # ── Semantic cache: check before regular cache ──
     if not hist and HAS_SEMANTIC_CACHE:
@@ -2323,7 +2354,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                     suggestions = sem_cached.get("suggestions", [])
                     yield f"data: {json.dumps({'type': 'done', 'tools': ['semantic_cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
                 analytics.track_query(message, ["semantic_cache_hit"], sem_cached.get("reply", ""), sid)
-                return StreamingResponse(sem_cached_stream(), media_type="text/event-stream")
+                return _stream_response(sem_cached_stream())
         except Exception:
             logger.debug("Semantic cache retrieval failed (stream)", exc_info=True)
 
@@ -2342,7 +2373,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 suggestions = cached.get("suggestions", [])
                 yield f"data: {json.dumps({'type': 'done', 'tools': ['cache_hit'], 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
             analytics.track_query(message, ["cache_hit"], cached.get("reply", ""), sid)
-            return StreamingResponse(cached_stream(), media_type="text/event-stream")
+            return _stream_response(cached_stream())
 
     # Autocorrect
     original_message = message
@@ -2352,7 +2383,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             message = ac["corrected"]
 
     # Build messages with full 2026 architecture context
-    messages, _build_info = _build_messages(message, hist, sid, user_id)
+    messages, _build_info = _build_messages(message, hist, sid, owner_key)
 
     # ── Parity with /chat: apply dynamic-agent addon + active prompt variant ──
     # (Previously the streaming path missed these, giving lower quality than /chat.)
@@ -2457,7 +2488,7 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
 
                     # Track entity discussions in memory
                     if fn_name in ("entity_detail", "nearby_entities") and "entity_id" in fn_args:
-                        memory_manager.on_entity_discussed(sid, fn_args["entity_id"])
+                        memory_manager.on_entity_discussed(owner_key, sid, fn_args["entity_id"])
 
                     if fn_name == "suggest_followups":
                         try:
@@ -2510,18 +2541,18 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
                 full_text = "".join(_chunks)
 
                 # Record in memory
-                memory_manager.on_message(sid, "assistant", full_text)
+                memory_manager.on_message(owner_key, sid, "assistant", full_text)
 
                 # Memory graph: record entity interactions
                 if HAS_MEMORY_GRAPH:
                     try:
-                        memory_graph.on_chat_complete(user_id, message, full_text, [])
+                        memory_graph.on_chat_complete(owner_key, message, full_text, [])
                     except Exception:
                         logger.debug("Memory graph record failed (stream)", exc_info=True)
 
                 # LLM memory extraction
                 try:
-                    memory_manager.on_chat_complete(sid, user_id, message, full_text)
+                    memory_manager.on_chat_complete(owner_key, sid, message, full_text)
                 except Exception:
                     logger.debug("LLM memory extraction failed (stream)", exc_info=True)
 
@@ -2650,14 +2681,14 @@ async def chat_stream(request: Request, message: str, history: str = "[]", sessi
             finally:
                 _synth_cancelled.set()  # generator đóng (disconnect/hoàn tất) → báo thread produce dừng
             if synth_text:
-                memory_manager.on_message(sid, "assistant", synth_text)
+                memory_manager.on_message(owner_key, sid, "assistant", synth_text)
                 analytics.track_query(message, tools_used, synth_text, sid)
         except Exception:
             logger.debug("Stream synthesis fallback failed", exc_info=True)
 
         yield f"data: {json.dumps({'type': 'done', 'tools': tools_used, 'suggestions': suggestions, 'session_id': sid}, ensure_ascii=False)}\n\n"
 
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    return _stream_response(event_stream())
 
 
 # ── System endpoints ──
@@ -3347,16 +3378,17 @@ async def system_client_errors(request: Request, limit: int = Query(50, ge=1, le
 
 
 @app.get("/welcome")
-async def welcome_message(session_id: str = ""):
+async def welcome_message(request: Request, response: Response):
     """Welcome message cá nhân hóa."""
+    owner_context = await resolve_chat_owner(request)
+    set_chat_owner_cookie(response, owner_context)
     preferences = None
-    if session_id:
-        profile = memory_manager.cold.get_profile(session_id)
-        if profile.conversation_count > 0:
-            preferences = {
-                "interests": profile.interests,
-                "preferred_areas": profile.preferred_areas,
-            }
+    profile = memory_manager.cold.get_profile(owner_context.owner_key)
+    if profile.conversation_count > 0:
+        preferences = {
+            "interests": profile.interests,
+            "preferred_areas": profile.preferred_areas,
+        }
     return generate_welcome_message(preferences)
 
 

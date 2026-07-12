@@ -173,7 +173,7 @@ def test_execute_pending_calls_parallel_path():
 
 def test_build_messages_structure(kb_ctx):
     """_build_messages: system-first + chứa user message + 'ab' trong build_info (sau refactor)."""
-    messages, info = server._build_messages("Vĩnh Long có gì chơi?", [], session_id="", user_id="")
+    messages, info = server._build_messages("Vĩnh Long có gì chơi?", [], session_id="", owner_key="")
     assert isinstance(messages, list) and messages
     assert isinstance(info, dict) and "ab" in info
     assert messages[0]["role"] == "system" and messages[0]["content"]

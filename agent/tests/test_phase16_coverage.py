@@ -999,10 +999,10 @@ class TestSecurityPosture:
         """MemoryManager must cap sessions to prevent unbounded memory growth."""
         src = (Path(__file__).resolve().parent.parent / "memory.py").read_text(encoding="utf-8")
         assert "_MAX_SESSIONS" in src, "MemoryManager must define _MAX_SESSIONS"
-        idx = src.find("def get_session")
+        idx = src.find("def create_session")
         assert idx > 0
         block = src[idx:idx+500]
-        assert "_MAX_SESSIONS" in block, "get_session must enforce max sessions"
+        assert "_MAX_SESSIONS" in block, "create_session must enforce max sessions"
 
     def test_skill_store_max_size(self):
         """SkillDocumentStore must cap skills to prevent unbounded list growth."""
