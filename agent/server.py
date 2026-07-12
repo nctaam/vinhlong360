@@ -1710,18 +1710,6 @@ def _get_orchestrator():
     return _orchestrator
 
 
-# Shared parallel tool executor (concurrent multi-tool rounds in the live loop)
-_parallel_executor = None
-
-def _get_parallel_executor():
-    global _parallel_executor
-    if _parallel_executor is None and HAS_PARALLEL:
-        with _orchestrator_lock:
-            if _parallel_executor is None:
-                _parallel_executor = ParallelToolExecutor(call_tool, max_workers=4)
-    return _parallel_executor
-
-
 def _optimal_params_fn(category: str) -> dict:
     """Return self_optimizer's tuned params for a query category (or {})."""
     if not HAS_OPTIMIZER:
@@ -2559,7 +2547,7 @@ async def chat_stream(req: ChatRequest, request: Request):
                     yield f"data: {json.dumps({'type': 'tool_start', 'name': fn_name, 'description': tool_desc, 'args': fn_args}, ensure_ascii=False)}\n\n"
 
                     t0 = time.time()
-                    result = await asyncio.to_thread(
+                    result = await _await_chat_worker(
                         call_tool, fn_name, fn_args, usage_accumulator,
                     )  # CONC-001: tool I/O off event loop
                     duration_ms = round((time.time() - t0) * 1000)

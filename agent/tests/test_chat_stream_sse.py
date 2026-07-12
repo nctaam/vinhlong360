@@ -6,6 +6,7 @@ import json
 import asyncio
 import os
 import sys
+import threading
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -354,6 +355,141 @@ def _completion_with_usage(content, prompt_tokens, completion_tokens):
     )
 
 
+class _NestedCancellationProbe:
+    def __init__(self):
+        self.release_nested = threading.Event()
+        self.nested_started = threading.Event()
+        self.nested_add_attempted = threading.Event()
+        self.add_after_settlement = threading.Event()
+        self.settlement_started = threading.Event()
+        self.call_count = 0
+        self.accumulators = []
+        self.original_record_usage = None
+
+    def create(self, *_args, stream=False, **_kwargs):
+        assert stream is False
+        self.call_count += 1
+        if self.call_count == 1:
+            tool_call = SimpleNamespace(
+                id="call-followups",
+                function=SimpleNamespace(
+                    name="suggest_followups",
+                    arguments='{"context":"stream context"}',
+                ),
+            )
+            decision = _completion_with_usage(None, 7, 4)
+            decision.choices[0].message.tool_calls = [tool_call]
+            return decision
+        self.nested_started.set()
+        self.release_nested.wait(timeout=5)
+        return _completion_with_usage(
+            '["Goi y 1?", "Goi y 2?", "Goi y 3?"]',
+            15,
+            7,
+        )
+
+    def record_usage(self, *args, **kwargs):
+        self.original_record_usage(*args, **kwargs)
+        self.settlement_started.set()
+
+
+class _RecordingStreamAccumulator(server.UsageAccumulator):
+    def __init__(self, probe):
+        super().__init__()
+        self._probe = probe
+        probe.accumulators.append(self)
+
+    def add_response(self, response, *args, **kwargs):
+        total_tokens = getattr(getattr(response, "usage", None), "total_tokens", 0)
+        settled_before_add = self.snapshot().settled
+        try:
+            return super().add_response(response, *args, **kwargs)
+        finally:
+            if total_tokens == 22:
+                if settled_before_add:
+                    self._probe.add_after_settlement.set()
+                self._probe.nested_add_attempted.set()
+
+
+async def _cancel_blocked_nested_stream(probe):
+    scope = {
+        "type": "http",
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/chat/stream",
+        "raw_path": b"/chat/stream",
+        "query_string": b"",
+        "headers": [],
+        "client": ("127.0.0.1", 1234),
+        "server": ("testserver", 80),
+    }
+    response = await server.chat_stream(
+        server.ChatRequest.model_validate({
+            "message": "where should I go?",
+            "history": [{"role": "user", "content": "prior"}],
+        }),
+        Request(scope),
+    )
+    generator = response.body_iterator
+    first = await anext(generator)
+    assert _parse_sse(first)[0]["name"] == "suggest_followups"
+    consumer = asyncio.create_task(anext(generator))
+    started = await asyncio.to_thread(probe.nested_started.wait, 2)
+    if not started:
+        probe.release_nested.set()
+    assert started
+
+    consumer.cancel()
+    observed = {
+        "settled_before_release": await asyncio.to_thread(
+            probe.settlement_started.wait,
+            0.25,
+        ),
+        "consumer_done_before_release": consumer.done(),
+    }
+    probe.release_nested.set()
+    try:
+        await consumer
+    except asyncio.CancelledError:
+        observed["cancelled"] = True
+    observed["nested_add_attempted"] = await asyncio.to_thread(
+        probe.nested_add_attempted.wait,
+        2,
+    )
+    await generator.aclose()
+    return observed
+
+
+def _assert_nested_cancel_behavior(probe, observed):
+    assert observed == {
+        "settled_before_release": False,
+        "consumer_done_before_release": False,
+        "cancelled": True,
+        "nested_add_attempted": True,
+    }
+    assert probe.add_after_settlement.is_set() is False
+    assert len(probe.accumulators) == 1
+    assert probe.accumulators[0].snapshot().settled is True
+
+
+def _assert_nested_cancel_usage(probe, guardrail, attribution):
+    snapshot = probe.accumulators[0].snapshot()
+    assert snapshot.prompt_tokens == 22
+    assert snapshot.completion_tokens == 11
+    assert snapshot.total_tokens == 33
+    assert snapshot.provider_call_count == 2
+    assert guardrail.calls == [("user:alice", 33, 0.0)]
+    assert len(attribution.calls) == 1
+    assert attribution.calls[0]["tokens"] == {
+        "prompt_tokens": 22,
+        "completion_tokens": 11,
+        "total_tokens": 33,
+        "provider_call_count": 2,
+        "estimated_call_count": 0,
+    }
+
+
 def test_stream_missing_terminal_usage_estimates_complete_call_once(monkeypatch):
     def create(*_args, stream=False, **_kwargs):
         if not stream:
@@ -581,3 +717,20 @@ def test_stream_generator_close_runs_usage_finalizer(monkeypatch):
     tokens = attribution.calls[0]["tokens"]
     assert tokens["provider_call_count"] == 2
     assert tokens["estimated_call_count"] == 1
+
+
+def test_stream_cancellation_waits_for_nested_provider_before_settlement(monkeypatch):
+    probe = _NestedCancellationProbe()
+    guardrail, attribution = _configure_usage_stream(monkeypatch, probe.create)
+    probe.original_record_usage = guardrail.record_usage
+    monkeypatch.setattr(guardrail, "record_usage", probe.record_usage)
+    monkeypatch.setattr(
+        server,
+        "UsageAccumulator",
+        lambda: _RecordingStreamAccumulator(probe),
+    )
+
+    observed = asyncio.run(_cancel_blocked_nested_stream(probe))
+
+    _assert_nested_cancel_behavior(probe, observed)
+    _assert_nested_cancel_usage(probe, guardrail, attribution)
