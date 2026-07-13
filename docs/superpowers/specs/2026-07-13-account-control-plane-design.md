@@ -1,6 +1,6 @@
 # Account and Control-Plane Security Design
 
-> STATUS: approved
+> STATUS: implemented and verified
 
 ## Goal
 
@@ -314,3 +314,74 @@ findings.
 - No frontend redesign; existing error handling consumes the standard FastAPI
   error shape.
 - No merge, push, deployment, secret rotation, or production data operation.
+
+## Implementation Evidence
+
+The verified implementation and test HEAD before this closure-only documentation
+update is `389eccfc01d524fdf85c53566851476f2788d2ce` on branch
+`codex/account-control-plane`.
+
+Production correctness was implemented by these commits:
+
+- `ea323d0` centralizes the account role hierarchy;
+- `c8ba17b` enforces hierarchy before single-user ban mutation;
+- `4ceff8c` makes bulk bans validation-first, atomic, and deterministically
+  locked;
+- `6c316c2` binds pending challenges and sessions to credential snapshots;
+- `eb062f7` closes the legacy-password rehash/reset compare-and-swap race;
+- `b43b3d5` keeps trusted-device touch failure best-effort and ordered after the
+  credential boundary; and
+- `c91cb6f` makes OTP consumption, password change, session revocation, and
+  pending-challenge revocation one transaction.
+
+Regression and verification coverage was completed by `8b33266`, `8c4972a`,
+`3b405e2`, `7a77d06`, and the test-only PostgreSQL commit `389eccf`. The final
+PostgreSQL commit does not change production behavior; it proves the existing
+transaction design against real PostgreSQL MVCC, row locks, predicate rechecks,
+deadlock behavior, and rollback.
+
+Fresh verification evidence:
+
+- the pre-PostgreSQL focused Workstream set passed with `1358 passed, 5 skipped,
+  1 warning`;
+- the pre-PostgreSQL full backend passed with `6168 passed, 39 skipped, 78
+  deselected, 1 xfailed, 1 warning`;
+- with the opt-in PostgreSQL URL absent, the final focused control-plane run
+  passed with `66 passed, 8 skipped`;
+- the final full backend run passed with `6168 passed, 47 skipped, 78 deselected,
+  1 xfailed, 1 warning`; the eight additional skips are exactly the opt-in
+  PostgreSQL module;
+- a fresh disposable PostgreSQL 16.4 cluster, bound only to localhost with the
+  database `account_control_plane_test`, passed all eight PostgreSQL race and
+  rollback tests in `9.10s` and was stopped and removed afterward;
+- `ACCOUNT_CONTROL_PLANE_TEST_DATABASE_URL` is required, unsafe database names
+  are rejected unless the explicit second opt-in is set, and event/future plus
+  server-side timeouts bound lock and failure waits; and
+- Ruff, `py_compile`, and `git diff --check` passed across every Python file
+  touched by the Workstream 4 commits.
+
+The final specification review reported `✅ Final spec compliant`. The final
+quality re-review found no Critical or Important issue and approved closure
+documentation. These reviews and the real PostgreSQL tests support the
+production correctness claims above; the opt-in integration module is
+additional verification coverage, not the source of the fixes.
+
+## Verified Residuals
+
+- Bulk ban performs at most 50 individual `id::text` row-lock queries. This is
+  correctness-safe, bounded by the request model, and avoids deadlock through
+  sorted lock order, but a future one-query locking optimization would reduce
+  round trips.
+- The real PostgreSQL suite is opt-in and is not yet wired into continuous
+  integration. Run it serially in a dedicated CI or scheduled job with a
+  disposable database.
+- A small set of regressions intentionally inspects AST/source ordering. That
+  coupling is maintenance debt and can be replaced opportunistically with
+  behavior-level seams without weakening current coverage.
+- The existing Starlette/httpx deprecation warning remains unchanged and is not
+  introduced by this workstream.
+
+Rollback remains commit-based: revert the production Workstream 4 commits
+together while retaining the regression tests for diagnosis. No migration,
+stored-data rewrite, merge, push, deployment, or production data operation is
+part of this closure.

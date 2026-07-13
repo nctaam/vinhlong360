@@ -1,6 +1,6 @@
 # Account and Control-Plane Security Implementation Plan
 
-> STATUS: active
+> STATUS: complete
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -15,10 +15,12 @@
 ## File Map
 
 - Create `agent/tests/test_account_control_plane_security.py`: focused behavioral regressions for role hierarchy, zero-side-effect denial, all-or-nothing bulk behavior, password snapshot checks, and reset ordering.
+- Create `agent/tests/test_account_control_plane_postgres.py`: opt-in real PostgreSQL MVCC, row-lock, deadlock-avoidance, and rollback verification with a disposable-database safety gate.
 - Modify `agent/admin.py`: canonical role ranks, shared actor-target guard, locked single-ban flow, and two-pass locked bulk-ban flow.
 - Modify `agent/auth.py`: locked credential snapshot helper, guarded challenge/session creation, legacy-rehash snapshot refresh, and atomic password-reset helper.
 - Modify `docs/superpowers/specs/2026-07-13-account-control-plane-design.md`: final implementation evidence and verified status.
 - Modify `docs/superpowers/plans/2026-07-12-security-remediation-30-60-90.md`: close Workstream 4 only after every verification gate passes.
+- Modify `docs/superpowers/plans/2026-07-13-account-control-plane.md`: record completed steps and exact closure results.
 
 ## Task 1: Canonical Administrative Role Policy
 
@@ -26,7 +28,7 @@
 - Create: `agent/tests/test_account_control_plane_security.py`
 - Modify: `agent/admin.py:92-96`
 
-- [ ] **Step 1: Write the failing role-matrix tests**
+- [x] **Step 1: Write the failing role-matrix tests**
 
 Create the focused test file with the shared imports, IDs, request helper, and role-policy tests:
 
@@ -91,7 +93,7 @@ def test_admin_key_can_manage_superadmin():
     admin._assert_actor_can_manage_target(None, "superadmin")
 ```
 
-- [ ] **Step 2: Run the role-policy tests to verify RED**
+- [x] **Step 2: Run the role-policy tests to verify RED**
 
 Run:
 
@@ -101,7 +103,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py -q
 
 Expected: collection succeeds and the tests fail with `AttributeError: module 'admin' has no attribute '_assert_actor_can_manage_target'`.
 
-- [ ] **Step 3: Implement the minimal canonical guard**
+- [x] **Step 3: Implement the minimal canonical guard**
 
 Add immediately after `ADMIN_ROLE_SCOPES` in `agent/admin.py`:
 
@@ -126,7 +128,7 @@ def _assert_actor_can_manage_target(admin_user: dict | None, target_role: str | 
         raise HTTPException(403, "Khong du quyen thao tac tai khoan nay")
 ```
 
-- [ ] **Step 4: Run the role-policy tests to verify GREEN**
+- [x] **Step 4: Run the role-policy tests to verify GREEN**
 
 Run:
 
@@ -136,7 +138,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py -q
 
 Expected: `15 passed`.
 
-- [ ] **Step 5: Commit the role policy**
+- [x] **Step 5: Commit the role policy**
 
 ```powershell
 git add agent/admin.py agent/tests/test_account_control_plane_security.py
@@ -149,7 +151,7 @@ git commit -m "fix(admin): centralize account role hierarchy"
 - Modify: `agent/tests/test_account_control_plane_security.py`
 - Modify: `agent/admin.py:4840-4863`
 
-- [ ] **Step 1: Add a recording admin database and failing single-ban tests**
+- [x] **Step 1: Add a recording admin database and failing single-ban tests**
 
 Append to the focused test file:
 
@@ -228,7 +230,7 @@ def test_single_ban_allows_superior_or_admin_key(monkeypatch, actor, target_role
     assert len(logs) == 1
 ```
 
-- [ ] **Step 2: Run the single-ban tests to verify RED**
+- [x] **Step 2: Run the single-ban tests to verify RED**
 
 Run:
 
@@ -238,7 +240,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py -q -k "singl
 
 Expected: denial tests fail because `ban_user` neither selects `role` nor calls the shared hierarchy guard.
 
-- [ ] **Step 3: Replace the single-ban handler with locked authorization-before-mutation**
+- [x] **Step 3: Replace the single-ban handler with locked authorization-before-mutation**
 
 Implement this flow in `agent/admin.py`:
 
@@ -271,7 +273,7 @@ async def ban_user(user_id: str, request: Request):
 
 Keep the repository's existing Vietnamese response strings if they differ only by encoding; do not change the public error meaning.
 
-- [ ] **Step 4: Run focused and owning single-ban regressions**
+- [x] **Step 4: Run focused and owning single-ban regressions**
 
 Run:
 
@@ -281,7 +283,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py agent/tests/
 
 Expected: all selected tests pass.
 
-- [ ] **Step 5: Commit the single-ban boundary**
+- [x] **Step 5: Commit the single-ban boundary**
 
 ```powershell
 git add agent/admin.py agent/tests/test_account_control_plane_security.py
@@ -294,7 +296,7 @@ git commit -m "fix(admin): enforce hierarchy before single ban"
 - Modify: `agent/tests/test_account_control_plane_security.py`
 - Modify: `agent/admin.py:4889-4921`
 
-- [ ] **Step 1: Add failing mixed-target and ordering tests**
+- [x] **Step 1: Add failing mixed-target and ordering tests**
 
 Append:
 
@@ -344,7 +346,7 @@ def test_bulk_ban_deduplicates_skips_missing_and_preserves_response_order(monkey
     assert locked_ids == sorted(set([PEER_ID, missing, USER_ID]))
 ```
 
-- [ ] **Step 2: Run the bulk tests to verify RED**
+- [x] **Step 2: Run the bulk tests to verify RED**
 
 Run:
 
@@ -354,7 +356,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py -q -k "bulk_
 
 Expected: mixed-target denial and deduplication tests fail against the current mutate-as-you-iterate loop.
 
-- [ ] **Step 3: Implement deterministic two-pass bulk authorization**
+- [x] **Step 3: Implement deterministic two-pass bulk authorization**
 
 Replace the body of `bulk_ban_users` after rate limiting with:
 
@@ -394,7 +396,7 @@ Replace the body of `bulk_ban_users` after rate limiting with:
 
 Retain the existing post-transaction logging and response construction.
 
-- [ ] **Step 4: Run focused and owning bulk-ban regressions**
+- [x] **Step 4: Run focused and owning bulk-ban regressions**
 
 Run:
 
@@ -404,7 +406,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py agent/tests/
 
 Expected: all selected tests pass with no partial writes.
 
-- [ ] **Step 5: Commit the bulk boundary**
+- [x] **Step 5: Commit the bulk boundary**
 
 ```powershell
 git add agent/admin.py agent/tests/test_account_control_plane_security.py
@@ -421,7 +423,7 @@ git commit -m "fix(admin): make bulk bans hierarchy atomic"
 - Modify: `agent/auth.py:817-832`
 - Modify: `agent/auth.py:1752-1761`
 
-- [ ] **Step 1: Add failing stale-snapshot tests**
+- [x] **Step 1: Add failing stale-snapshot tests**
 
 Append:
 
@@ -493,7 +495,7 @@ def test_login_paths_forward_password_snapshot():
     assert "user.get(\"password_hash\")" in inspect.getsource(auth._finish_login)
 ```
 
-- [ ] **Step 2: Run snapshot tests to verify RED**
+- [x] **Step 2: Run snapshot tests to verify RED**
 
 Run:
 
@@ -503,7 +505,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py -q -k "snaps
 
 Expected: signature/wiring tests fail because challenge and session creation do not validate the authenticated password state.
 
-- [ ] **Step 3: Add one locked snapshot assertion helper**
+- [x] **Step 3: Add one locked snapshot assertion helper**
 
 Add before `_create_session_atomic` in `agent/auth.py`:
 
@@ -530,7 +532,7 @@ def _assert_current_auth_snapshot(conn, user_id: str, expected_password_hash: st
     return user
 ```
 
-- [ ] **Step 4: Guard session and challenge creation and wire all callers**
+- [x] **Step 4: Guard session and challenge creation and wire all callers**
 
 Change `_create_session_atomic` to accept `expected_password_hash` as its final argument and call `_assert_current_auth_snapshot` before the session insert:
 
@@ -577,7 +579,7 @@ Pass `user.get("password_hash")` from both `verify_otp` and `login_password`. Af
         user["password_hash"] = new_hash
 ```
 
-- [ ] **Step 5: Run auth snapshot and existing session/2FA tests**
+- [x] **Step 5: Run auth snapshot and existing session/2FA tests**
 
 Run:
 
@@ -587,7 +589,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py agent/tests/
 
 Expected: all selected tests pass; existing atomic challenge consumption remains green.
 
-- [ ] **Step 6: Commit credential snapshot guards**
+- [x] **Step 6: Commit credential snapshot guards**
 
 ```powershell
 git add agent/auth.py agent/tests/test_account_control_plane_security.py
@@ -600,7 +602,7 @@ git commit -m "fix(auth): bind challenges and sessions to credential state"
 - Modify: `agent/tests/test_account_control_plane_security.py`
 - Modify: `agent/auth.py:873-916`
 
-- [ ] **Step 1: Add failing reset transaction and serial-order tests**
+- [x] **Step 1: Add failing reset transaction and serial-order tests**
 
 Extend `_AuthDB._execute` in the focused test so it updates in-memory state:
 
@@ -696,7 +698,7 @@ def test_pre_reset_challenge_and_session_are_removed(monkeypatch):
 
 Make `_AuthDB._fetchone` return the user for both `id::text` and `phone` user queries.
 
-- [ ] **Step 2: Run reset tests to verify RED**
+- [x] **Step 2: Run reset tests to verify RED**
 
 Run:
 
@@ -706,7 +708,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py -q -k "reset
 
 Expected: tests fail because `_reset_password_state` does not exist and reset does not delete `pending_2fa`.
 
-- [ ] **Step 3: Extract the atomic reset helper**
+- [x] **Step 3: Extract the atomic reset helper**
 
 Add before the reset endpoint:
 
@@ -738,7 +740,7 @@ Replace the nested `_verify_and_reset` function and call with:
 
 Leave login-history, streak, achievements, cookie clearing, and the response body in the endpoint unchanged.
 
-- [ ] **Step 4: Run focused reset and auth regressions**
+- [x] **Step 4: Run focused reset and auth regressions**
 
 Run:
 
@@ -748,7 +750,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py agent/tests/
 
 Expected: all selected tests pass.
 
-- [ ] **Step 5: Commit atomic reset revocation**
+- [x] **Step 5: Commit atomic reset revocation**
 
 ```powershell
 git add agent/auth.py agent/tests/test_account_control_plane_security.py
@@ -760,8 +762,9 @@ git commit -m "fix(auth): revoke pending challenges during reset"
 **Files:**
 - Modify: `docs/superpowers/specs/2026-07-13-account-control-plane-design.md`
 - Modify: `docs/superpowers/plans/2026-07-12-security-remediation-30-60-90.md`
+- Modify: `docs/superpowers/plans/2026-07-13-account-control-plane.md`
 
-- [ ] **Step 1: Run the complete focused security suite**
+- [x] **Step 1: Run the complete focused security suite**
 
 ```powershell
 python -m pytest agent/tests/test_account_control_plane_security.py agent/tests/test_wave3.py agent/tests/test_wave4.py agent/tests/test_session_be.py agent/tests/test_upgrade_round2.py agent/tests/test_writepaths_auth.py agent/tests/test_wave3_security.py -q
@@ -769,7 +772,7 @@ python -m pytest agent/tests/test_account_control_plane_security.py agent/tests/
 
 Expected: all selected tests pass with only repository-known skips/warnings.
 
-- [ ] **Step 2: Run static verification**
+- [x] **Step 2: Run static verification**
 
 ```powershell
 python -m ruff check agent/admin.py agent/auth.py agent/tests/test_account_control_plane_security.py
@@ -779,7 +782,7 @@ git diff --check
 
 Expected: Ruff reports `All checks passed!`; the remaining commands exit `0` without output.
 
-- [ ] **Step 3: Run the full backend suite**
+- [x] **Step 3: Run the full backend suite**
 
 ```powershell
 python -m pytest -q
@@ -787,7 +790,7 @@ python -m pytest -q
 
 Expected baseline shape: at least `6102 passed, 39 skipped, 78 deselected, 1 xfailed`, with no new failure. Restore only `web/data.js` to `HEAD` if and only if the suite generates that known artifact and `git diff` proves no other unexpected change.
 
-- [ ] **Step 4: Run an independent specification review**
+- [x] **Step 4: Run an independent specification review**
 
 Give the reviewer the approved design spec, this implementation plan, and the
 complete Workstream 4 diff. Require a finding-first response that checks every
@@ -795,7 +798,7 @@ role, transaction, error, compatibility, and race invariant. Do not continue
 while any Critical or Important specification mismatch remains open; fix the
 finding and rerun Steps 1-3 before requesting a fresh review.
 
-- [ ] **Step 5: Run an independent code-quality review**
+- [x] **Step 5: Run an independent code-quality review**
 
 Only after specification review passes, review the same final diff for logic
 bugs, transaction misuse, deadlocks, stale-snapshot bypasses, test weakness,
@@ -803,7 +806,7 @@ and unrelated scope expansion. Do not continue while any Critical or Important
 quality finding remains open; fix it and rerun Steps 1-4 before requesting a
 fresh quality review.
 
-- [ ] **Step 6: Update the design evidence**
+- [x] **Step 6: Update the design evidence**
 
 Change the spec header to:
 
@@ -813,7 +816,7 @@ Change the spec header to:
 
 Append an `Implementation Evidence` section recording exact commit hashes, focused/full test counts, Ruff/compile/diff results, independent review results, and any verified residuals.
 
-- [ ] **Step 7: Close Workstream 4 in the 30/60/90 roadmap**
+- [x] **Step 7: Close Workstream 4 in the 30/60/90 roadmap**
 
 Replace its unchecked bullets with checked evidence-backed bullets:
 
@@ -824,7 +827,7 @@ Replace its unchecked bullets with checked evidence-backed bullets:
 - [x] Completed on branch `codex/account-control-plane`; findings `REVIEW-01-005`, `REVIEW-01-006`, and `REVIEW-08-001` have regression-backed closure.
 ```
 
-- [ ] **Step 8: Run documentation and final diff checks**
+- [x] **Step 8: Run documentation and final diff checks**
 
 ```powershell
 rg -n "T[B]D|T[O]DO|F[I]XME|P[L]ACEHOLDER" docs/superpowers/specs/2026-07-13-account-control-plane-design.md docs/superpowers/plans/2026-07-13-account-control-plane.md
@@ -834,13 +837,60 @@ git status --short
 
 Expected: placeholder search returns no matches, diff check exits `0`, and status lists only intended Workstream 4 files.
 
-- [ ] **Step 9: Commit verified closure documentation**
+- [x] **Step 9: Commit verified closure documentation**
 
 ```powershell
-git add docs/superpowers/specs/2026-07-13-account-control-plane-design.md docs/superpowers/plans/2026-07-12-security-remediation-30-60-90.md
+git add docs/superpowers/specs/2026-07-13-account-control-plane-design.md docs/superpowers/plans/2026-07-12-security-remediation-30-60-90.md docs/superpowers/plans/2026-07-13-account-control-plane.md
 git commit -m "docs: close account control-plane workstream"
 ```
 
-- [ ] **Step 10: Preserve the branch for user-directed integration**
+- [x] **Step 10: Preserve the branch for user-directed integration**
 
 Do not merge, push, deploy, rotate secrets, or modify production data. Report the clean branch HEAD, exact verification evidence, rollback statement, and any residual risk to the user.
+
+## KẾT QUẢ
+
+Workstream 4 is complete on branch `codex/account-control-plane`. The verified
+implementation and test HEAD before this documentation-only closure is
+`389eccfc01d524fdf85c53566851476f2788d2ce`.
+
+Implementation and regression commits:
+
+- `ea323d0` role hierarchy, `8b33266` hierarchy denial matrix, `c8ba17b`
+  transactional single ban, and `8c4972a` request-scoped actor regression;
+- `4ceff8c` atomic deterministic bulk ban and `3b405e2` peer/log/dedup coverage;
+- `6c316c2` credential snapshots, `eb062f7` legacy rehash CAS and trusted-device
+  ordering, and `b43b3d5` best-effort trusted-device touch;
+- `c91cb6f` atomic password reset revocation and `7a77d06` rollback proof; and
+- test-only `389eccf` real PostgreSQL race and rollback verification.
+
+Exact verification evidence:
+
+- pre-PostgreSQL focused verification: `1358 passed, 5 skipped, 1 warning`;
+- pre-PostgreSQL full backend: `6168 passed, 39 skipped, 78 deselected, 1
+  xfailed, 1 warning`;
+- final focused control-plane run without the opt-in URL: `66 passed, 8
+  skipped`;
+- final full backend: `6168 passed, 47 skipped, 78 deselected, 1 xfailed, 1
+  warning` in `166.01s`; the additional eight skips are the opt-in PostgreSQL
+  module;
+- fresh disposable PostgreSQL 16.4: all eight required MVCC/locking/rollback
+  tests passed in `9.10s` against localhost-only database
+  `account_control_plane_test`; the cluster was stopped and removed afterward;
+  and
+- Ruff, `py_compile`, and `git diff --check` passed for all Python files touched
+  by the Workstream 4 commits.
+
+The final specification review reported `✅ Final spec compliant`. The final
+quality re-review found no Critical or Important finding and approved closure.
+The remaining Minor performance residual is up to 50 individual sorted
+`id::text` bulk-lock queries; it is correctness-safe and bounded. Maintenance
+residuals are the opt-in PostgreSQL suite not yet being wired into CI, a small
+amount of AST/source-order test coupling, and the unchanged Starlette/httpx
+deprecation warning.
+
+Rollback is commit-based: revert the production Workstream 4 commits together
+while retaining the regression tests. No schema migration or stored-data rewrite
+was introduced. Such a rollback reopens `REVIEW-01-005`, `REVIEW-01-006`, and
+`REVIEW-08-001` until a replacement fix is deployed. This workstream performed
+no merge, push, deployment, secret rotation, or production data operation.

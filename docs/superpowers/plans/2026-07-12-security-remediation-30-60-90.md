@@ -48,9 +48,13 @@
 
 **Files:** `agent/admin.py`, `agent/auth.py`, associated tests.
 
-- [ ] Add RED tests for admin-to-superadmin single/bulk ban and pending 2FA after password reset.
-- [ ] Centralize actor-target role comparison and revoke all pending authentication challenges during reset.
-- [ ] Acceptance: denied hierarchy operations have zero database/session side effects; pre-reset challenges cannot create sessions.
+- [x] Add RED tests for admin-to-superadmin single/bulk ban and pending 2FA after password reset.
+- [x] Centralize actor-target role comparison and revoke all pending authentication challenges during reset.
+- [x] Acceptance: denied hierarchy operations have zero target database/session side effects; pre-reset challenges cannot create sessions.
+- [x] Completed on branch `codex/account-control-plane`; findings `REVIEW-01-005`, `REVIEW-01-006`, and `REVIEW-08-001` have regression-backed closure.
+- [x] Evidence: implementation/test HEAD `389eccfc01d524fdf85c53566851476f2788d2ce`; focused control-plane `66 passed, 8 skipped`; full backend `6168 passed, 47 skipped, 78 deselected, 1 xfailed, 1 warning`; disposable PostgreSQL 16.4 `8 passed`; Ruff, `py_compile`, and diff checks passed; final spec and quality reviews found no open Critical or Important issue.
+- [x] Residuals: bulk locking uses up to 50 correctness-safe individual queries; real PostgreSQL coverage remains opt-in and should run serially in dedicated CI; AST/source-order regressions are maintenance coupling; the existing Starlette/httpx deprecation warning remains.
+- [x] Rollback: revert the Workstream 4 production commits together while retaining regression tests; no migration or stored-data rewrite is involved, and rollback reopens the three findings until a replacement fix lands.
 
 ### Workstream 5: Launch policy alignment
 
