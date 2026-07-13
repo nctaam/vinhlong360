@@ -81,6 +81,18 @@ The current repository can express conflicting launch signals:
 - `docker-compose.yml` also makes `nuxt` depend on `agent: service_healthy` and
   healthchecks the homepage, so the current local topology cannot demonstrate a
   backend-independent safe-closed Nuxt cold start.
+- `docker-compose.yml` publishes agent port 8360 and Nuxt port 3000 on every
+  host interface, both processes bind `0.0.0.0`, and the merged production
+  Compose topology also inherits other non-Nginx host publications. It therefore
+  does not enforce Nginx as the exclusive public ingress.
+- both Nginx configs use prefix/regex backend locations without a segment-end
+  boundary, so names such as `/systematic` can accidentally enter the `/system`
+  backend family; the bot-gateway `/webhook` alias is outside the current route
+  manifest inventory.
+- `GET /api/entities/{entity_id}` currently advertises public caching, emits an
+  ETag, and returns 304 for `If-None-Match`; that endpoint will become the
+  entity/ward launch-policy decision carrier and cannot retain those HTTP cache
+  semantics.
 
 The current packaging boundary also matters:
 
@@ -137,6 +149,14 @@ The packaging contract is normative:
   root and proves both loaders resolve the exact packaged bytes;
 - layout tests fail if another file with either canonical artifact filename is
   introduced outside root `config/`.
+
+The launch-compatible release/rehearsal package also records the source-
+controlled production Nginx configs, production systemd unit/wrapper
+definitions, rendered production Compose network audit, and the identity of the
+excluded developer override. Installation may place those operational files in
+host-specific locations, but the packaged bytes and rendered listener contract
+are the review authority. An unpacked-release test proves the ingress artifacts
+are present and that no production command selects the developer override.
 
 Generated `.output` manifests and immutable sitemap bundles are operational
 artifacts, not duplicate sources of policy truth.
@@ -266,11 +286,13 @@ must unconditionally remove SWR, ISR, route cache, and prerender from:
 - `/_internal/launch-readiness`.
 
 No ordinary closed SWR exception exists. Closed, selective-open, and failed-open
-policy-bearing responses are dynamic and `Cache-Control: no-store`. Only
-policy-neutral content-addressed assets such as `/_nuxt/**`, reviewed fonts,
-icons, and static image assets may be cached or emitted statically. Workstream 5
-does not create custom policy cache keys. Selective-open response caching remains
-a separately authorized Stage 3 design.
+policy-bearing Nuxt responses are dynamic and `Cache-Control: no-store`. The
+exact FastAPI HTTP authority and its narrower endpoint inventory are defined in
+Section 4.7.1; this Nuxt build rule does not silently reclassify every backend
+API as policy-bearing. Only policy-neutral content-addressed assets such as
+`/_nuxt/**`, reviewed fonts, icons, and static image assets may be cached or
+emitted statically. Workstream 5 does not create custom policy cache keys.
+Selective-open response caching remains a separately authorized Stage 3 design.
 
 The build emits a generated readiness manifest inside `.output` that records:
 
@@ -368,6 +390,10 @@ exact_routes[]:
 sensitive_prefixes[]:
   prefix: canonical segment prefix
   classification: crawl-blocked-sensitive
+backend_ingress_exceptions[]:
+  prefix: canonical segment prefix
+  upstream: agent | bot-gateway
+  review_reason: non-empty reviewed string
 dynamic_templates[]:
   template: canonical path template
   authority: backend-entity | backend-ward | fixed-noindex
@@ -388,11 +414,17 @@ Rules are applied in this order:
 6. apply `unknown_policy=noindex-follow-public` to catch-all/404 routes.
 
 Sensitive prefix classification wins every exact, template, redirect, and
-catch-all overlap. A prefix matches itself and descendants on a segment
-boundary, so `/admin` matches `/admin` and `/admin/x` but not `/administrator`.
-Query strings never change sensitive classification. For public HTML, any
-non-empty query produces `noindex,follow` and is absent from sitemaps; the sole
-query exception is the sitemap `batch` protocol defined in Section 4.8.
+catch-all overlap. Prefix matching is exact-segment matching after path
+normalization: a prefix matches only itself or a descendant beginning with
+`prefix + "/"`. Thus `/admin` matches `/admin` and `/admin/x` but not
+`/administrator`, and `/system` matches `/system` and `/system/logs` but not
+`/systematic`. The query string is removed before this comparison and never
+changes sensitive classification. Both Nginx configs must use equivalent
+end-or-slash boundary semantics for every backend-directed exact, prefix, or
+regex location; a bare `location /api` or regex lacking `(?:/|$)` is invalid.
+For public HTML, any non-empty query produces `noindex,follow` and is absent from
+sitemaps; the sole query exception is the sitemap `batch` protocol defined in
+Section 4.8.
 
 The initial reviewed inventory derived from current `web-nuxt/pages` is:
 
@@ -402,7 +434,7 @@ The initial reviewed inventory derived from current `web-nuxt/pages` is:
 | `indexable-public`, sitemap exact | `/kham-pha/am-thuc`, `/kham-pha/thien-nhien`, `/kham-pha/van-hoa`, `/kham-pha/lang-nghe`, `/kham-pha/mua-sam`, `/khu-vuc/vinh-long`, `/khu-vuc/ben-tre`, `/khu-vuc/tra-vinh` |
 | backend-delegated dynamic | `/dia-diem/{entity_id}` -> `backend-entity`; `/xa-phuong/{ward_id}` -> `backend-ward` |
 | `noindex-follow-public`, excluded | `/tim-kiem`, `/lich-trinh`, `/tao-lich-trinh`, `/cong-dong`, `/bang-xep-hang`, `/bai-viet/{id}`, `/nguoi-dung/{id}`, `/lich-trinh/{id}`, `/lich-trinh-chia-se/{id}` |
-| `crawl-blocked-sensitive` exact/prefix | `/admin`, `/admin-api`, `/api`, `/auth`, `/chat`, `/feedback`, `/freshness`, `/health`, `/_internal`, `/reload`, `/recommend`, `/weather`, `/events`, `/seo`, `/cai-dat`, `/tai-khoan`, `/da-luu`, `/thong-bao` |
+| `crawl-blocked-sensitive` exact/prefix | `/_internal`, `/admin`, `/admin-api`, `/analytics`, `/api`, `/auth`, `/chat`, `/events`, `/feedback`, `/freshness`, `/health`, `/reload`, `/recommend`, `/seo`, `/system`, `/weather`, `/webhook`, `/welcome`, `/cai-dat`, `/tai-khoan`, `/da-luu`, `/thong-bao` |
 
 Static sitemap generation includes only exact inventory entries whose
 `classification=indexable-public` and `sitemap=true`. It does not crawl Nuxt
@@ -415,6 +447,16 @@ reject exact/prefix ambiguity not resolved by the precedence contract, and
 compute the same revision. Parity tests run a shared corpus covering exact and
 prefix overlap, encoded paths, trailing slashes, repeated slashes, query
 strings, invalid escapes, dynamic templates, and catch-all behavior.
+
+The initial `backend_ingress_exceptions` array is empty. A static parity test
+extracts every location or alias that proxies to `vl360_agent` or `vl360_bots`
+from both `nginx.conf` and `nginx-ssl.conf`, normalizes it to the same segment
+boundary model, and requires it to be present in `sensitive_prefixes` or in an
+explicit reviewed exception. This covers `/health`, `/analytics`, `/feedback`,
+`/welcome`, `/reload`, `/system`, `/seo`, `/weather`, `/recommend`,
+`/freshness`, `/chat`, `/events`, `/api`, `/auth`, `/admin-api`, and the
+bot-gateway `/webhook` alias. An unknown backend ingress, an exception without a
+review reason, or drift between the HTTP and HTTPS configs fails the test.
 
 ### 4.7 Backend Indexability Authority
 
@@ -454,6 +496,50 @@ photos do not increment the current real-image predicate. UGC is not called AI,
 but it remains outside the current entity-quality predicate until a separate
 reviewed provenance and moderation rule explicitly admits it.
 
+#### 4.7.1 Policy-Bearing FastAPI HTTP Cache Authority
+
+The final policy-bearing FastAPI HTTP registry is exact and intentionally
+narrow:
+
+| Method and path template | Exposure | Policy role |
+| --- | --- | --- |
+| `GET /api/entities/{entity_id}` | public through the reviewed `/api` Nginx ingress and consumed by Nuxt | the single entity-or-ward detail decision carrier; the entity kind determines which `index_policy` rule applies |
+| `GET /_internal/launch-policy-attestation` | Nuxt-to-agent internal network or loopback only | build/backend fingerprint and revision attestation |
+| `GET /_internal/launch-sitemaps/{document}` where `document` is exactly `sitemap-index.xml`, `sitemap.xml`, or `sitemap-media.xml` | Nuxt-to-agent internal network or loopback only | active or pinned immutable sitemap bytes and evidence |
+
+Every response status from these exact endpoints, including validation errors,
+not-found responses, dependency failures, and a request carrying
+`If-None-Match`, emits `Cache-Control: no-store`. They omit `ETag`,
+`Last-Modified`, and every other public cache validator, and they never return
+HTTP 304. Nginx disables proxy caching and preserves this contract at the public
+boundary; an Nginx-facing request to `GET /api/entities/{entity_id}` must observe
+`no-store`, no validator, and a non-304 response even when `If-None-Match` is
+present. The two `/_internal` families are never exposed by an Nginx proxy
+location; Nuxt calls them through the Compose service network or production
+loopback.
+
+The current in-memory entity memoization may remain only as policy-neutral data
+memoization. A complete serialized policy response, decision, fingerprint, or
+revision is not replayed from that cache. The handler recomputes or validates
+the `IndexPolicyDecision`, policy fingerprint, and policy revision on every
+request after reading the memoized data. Entity writes, relationship changes,
+ward-child eligibility changes, reload, and any policy-artifact/fingerprint
+revision change invalidate the affected entity and parent-ward data entries.
+This preserves performance without allowing an old policy revision to be
+served under new evidence.
+
+Other FastAPI endpoints retain their existing HTTP cache policy unless they are
+added to this reviewed registry. The service worker may still conservatively
+bypass all `/api/**`. Registry matching uses the resolved FastAPI route identity,
+not a broad lexical Nginx regex: existing static routes such as
+`/api/entities/map`, `/api/entities/trending`, `/api/entities/compare`,
+`/api/entities/popular`, and `/api/entities/search` are not silently swept into
+the dynamic detail contract. A source scan compares the registry to every
+FastAPI route that serializes `IndexPolicyDecision`, `indexable` plus policy
+evidence, launch attestation, or launch sitemap evidence; adding a new policy
+decision endpoint without an explicit exposure and
+`no-store-no-validator` classification fails.
+
 ### 4.8 Immutable Sitemap Bundle and Pinned Publication
 
 The backend is the sole owner of selective-open sitemap assembly and XML
@@ -489,13 +575,16 @@ directory metadata are flushed, the staging directory is atomically renamed to
 tables and other domain data are never mutated. A failed write or validation
 leaves the previous active pointer intact.
 
-Endpoint behavior in selective-open is exact:
+Backend-internal endpoint behavior in selective-open is exact. Nuxt calls
+`GET /_internal/launch-sitemaps/{document}` over the service network or
+loopback, while the corresponding public root path remains Nuxt-owned:
 
-- `/sitemap-index.xml` with no `batch` reads the active pointer and serves that
-  immutable bundle's index;
-- `/sitemap-index.xml?batch=<revision>` serves the exact retained bundle;
-- `/sitemap.xml?batch=<revision>` and
-  `/sitemap-media.xml?batch=<revision>` serve the exact retained child;
+- internal document `sitemap-index.xml` with no `batch` reads the active pointer
+  and serves that immutable bundle's index;
+- internal document `sitemap-index.xml?batch=<revision>` serves the exact
+  retained bundle;
+- internal documents `sitemap.xml?batch=<revision>` and
+  `sitemap-media.xml?batch=<revision>` serve the exact retained child;
 - a selective-open child request without `batch`, a duplicate or additional
   query parameter, an empty/non-lowercase/non-hex/non-64-character batch, an
   unknown or expired batch, a corrupt bundle, or a requested-batch echo mismatch
@@ -523,22 +612,72 @@ Backend startup only reloads and validates the active pointer; public sitemap GE
 never generates a bundle. Exact open-intent readiness requires a valid active
 bundle before traffic.
 
-### 4.9 Public Ingress Ownership
+### 4.9 Exclusive Public Ingress and Ownership
+
+The launch-compatible production Compose topology has one public network
+boundary. Only Nginx publishes host ports 80 and 443. `agent` and `nuxt` remove
+their inherited host `ports` entries and use internal-network `expose` only for
+8360 and 3000. The bot gateway, Postgres, Redis, Prometheus, Grafana, Loki, and
+other supporting services also have no production host publication, so the
+rendered production Compose model contains no public socket other than Nginx
+80/443. A developer-only override may publish a needed service only as an
+explicit loopback binding such as `127.0.0.1:3000:3000`; that override is named
+and tested as non-production and is never packaged or selected by the production
+deploy/rehearsal commands.
+
+Compose Nginx has exactly one startup dependency:
+
+```text
+nginx.depends_on.nuxt.condition = service_healthy
+nginx.depends_on.agent = absent
+```
+
+Nginx can still reach agent and bot gateway over the private Compose network for
+reviewed API, auth, chat, event, admin, health/operational, and webhook routes.
+Nuxt safe-closed health is independent of agent, so an agent-absent closed cold
+start makes Nuxt healthy and permits Nginx to start. With exact open intent and
+agent absent, Nuxt readiness is 503; in the cold-start test topology Nginx's
+`service_healthy` dependency is unsatisfied and the harness must not mark Nginx
+ready or admit public traffic. Runtime/deploy admission also requires the same
+Nuxt readiness probe, because Compose startup dependency alone does not withdraw
+traffic from an already-running proxy.
+
+The non-Compose production boundary is equivalent. The source-controlled
+`vl-agent` and `vl-nuxt` systemd unit definitions or their reviewed launch
+wrappers bind 8360 and 3000 to `127.0.0.1` (or loopback IPv6 when explicitly
+tested), never public `0.0.0.0`. The bot gateway and any other Nginx-reached
+internal HTTP process follow the same loopback-only rule. Unit/static tests
+inspect the effective `ExecStart` and environment, and a socket probe confirms
+that the services are not listening on a non-loopback address before traffic is
+reopened.
 
 Both `nginx.conf` and `nginx-ssl.conf` route exactly `/robots.txt`,
 `/sitemap.xml`, `/sitemap-media.xml`, and `/sitemap-index.xml` to the Nuxt
 upstream before their catch-all behavior. Those exact locations have proxy
-caching disabled and preserve host/forwarded headers and query strings.
+caching disabled and preserve host/forwarded headers and query strings. The
+configs contain an exact
+`location = /_internal/launch-readiness { return 404; }`-equivalent rule before
+the catch-all, plus a non-proxy deny/not-found boundary for the backend launch
+attestation and sitemap families. Therefore public requests cannot reach Nuxt
+readiness or FastAPI launch-internal routes through Nginx.
 
-Both configs explicitly deny public access to
-`/_internal/launch-readiness`. FastAPI remains reachable from Nuxt through the
-internal API base for attestation and guarded sitemap proxying but is not the
-public owner of the four root SEO paths.
+FastAPI remains reachable from Nuxt through the internal API base for entity
+decisions, attestation, and guarded sitemap proxying, but is not the public owner
+of the four root SEO paths. Direct host access to agent 8360, Nuxt 3000, bot
+gateway, `/_internal/launch-readiness`, FastAPI launch attestation/sitemap
+routes, or the legacy FastAPI root sitemap handlers must fail from outside the
+private network/loopback boundary.
 
-Static configuration tests cover both files. An Nginx-facing integration
-harness proves root SEO requests cannot bypass Nuxt, query-pinned batch requests
-arrive intact, policy/evidence headers are preserved, the readiness path is not
-public, and no Nginx cache serves a root SEO response.
+Static configuration tests cover the rendered production Compose model, both
+Nginx files, production systemd units/wrappers, and the dev-override exclusion.
+A practical local integration combines that static inspection with container
+network probes: the host has only Nginx 80/443, `docker compose port` reports no
+binding for agent/Nuxt/internal services, Nginx and Nuxt can reach the reviewed
+private upstreams, and host-direct 3000/8360/readiness/FastAPI-sitemap bypass
+attempts fail. Nginx-facing probes additionally prove root SEO requests cannot
+bypass Nuxt, query-pinned batch requests arrive intact, policy/evidence headers
+are preserved, and no Nginx cache serves a root SEO or policy-bearing entity
+response.
 
 ### 4.10 Shared Image Descriptor and Disclosure Inventory
 
@@ -707,7 +846,7 @@ request -> both keys exact -> validate backend attestation
 Selective-open entity/ward request:
 
 ```text
-attested request -> fetch structured backend policy response
+attested request -> GET /api/entities/{entity_id} through the resolved detail route
   -> valid matching indexable=true: selective-open + index,follow
   -> valid matching indexable=false: selective-open + noindex,follow
   -> missing/malformed/transport/mismatch:
@@ -734,7 +873,8 @@ internal refresh -> one DB REPEATABLE READ READ ONLY transaction
 Selective-open sitemap request:
 
 ```text
-request -> attested Nuxt decision -> guarded backend request
+request -> attested Nuxt decision
+  -> guarded GET /_internal/launch-sitemaps/{document}
   -> active root index or exact requested batch
   -> backend returns immutable bytes + four evidence values
      + requested-batch echo when applicable
@@ -805,7 +945,11 @@ than by the eventual implementation file.
 - build Nuxt from repository-root context with `web-nuxt/Dockerfile` and verify
   the artifact digests embedded in `.output` match root bytes;
 - inspect the backend tarball and an unpacked temporary release root to prove
-  `config/` is present and loadable.
+  `config/` is present and loadable;
+- inspect the launch-compatible release/rehearsal package to prove the reviewed
+  Nginx and loopback systemd artifacts are present, the rendered production
+  Compose audit exposes only 80/443, and no production command selects the
+  developer override.
 
 ### 8.2 Decision, Header, and Entity Failure Tests
 
@@ -822,6 +966,19 @@ than by the eventual implementation file.
 - missing/malformed/timeout/transport/fingerprint/revision entity failures make
   only the affected request failed-open and do not affect a concurrent valid
   request or later valid request;
+- backend unit tests cover every endpoint in the exact policy-bearing FastAPI
+  registry on success and failure: `Cache-Control: no-store`, no ETag or other
+  validator, and no 304 when `If-None-Match` is sent;
+- entity-detail memoization tests change the policy revision and mutate entity,
+  relationship, and ward-child inputs to prove data invalidation plus per-request
+  decision/evidence recomputation; no cached response can replay an old revision;
+- an exact registry/source scan fails when a FastAPI route starts returning
+  policy-decision, attestation, or sitemap evidence without an exposure and
+  `no-store-no-validator` registry entry; unrelated APIs retain their reviewed
+  existing cache assertions, including the static `/api/entities/map`,
+  `trending`, `compare`, `popular`, and `search` route identities;
+- an Nginx-facing entity-detail test repeats an `If-None-Match` request and sees
+  `no-store`, no validator, and a non-304 result at the public boundary;
 - meta and `X-Robots-Tag` agree in every branch.
 
 ### 8.3 Build, Readiness, and Service-Worker Tests
@@ -835,6 +992,12 @@ than by the eventual implementation file.
   whether health-gated or startup-order-only, any equivalent backend startup
   gate, and any homepage healthcheck; the Nuxt healthcheck must call internal
   readiness;
+- rendered production Compose inspection proves only Nginx publishes host
+  80/443, agent and Nuxt use internal `expose` without host `ports`, all other
+  internal services are unpublished, and any developer binding is explicit
+  `127.0.0.1` in an excluded non-production override;
+- the rendered Compose model gives Nginx exactly a
+  `nuxt: condition: service_healthy` dependency and no agent dependency;
 - an agent-absent cold-start integration starts Nuxt with open-intent keys absent
   or invalid and proves readiness 200 safe closed, closed robots, all three valid
   empty sitemap shapes, no sitemap discovery, and zero backend calls;
@@ -844,6 +1007,10 @@ than by the eventual implementation file.
 - Docker healthcheck and local deploy harness call the internal endpoint from
   inside the container before traffic, without gating closed Nuxt startup on
   agent health;
+- the exact-open/agent-absent cold-start leaves the Nginx dependency unsatisfied,
+  and both the Compose and deploy harnesses record that no listener is admitted;
+- production systemd unit/wrapper tests require agent, Nuxt, and Nginx-reached
+  internal HTTP services to bind loopback only and reject `0.0.0.0`;
 - service worker bypasses navigation, HTML, root SEO, `/_internal/**`, `/api/**`,
   `/events`, `/recommend`, `/seo/**`, request `no-store`, and response
   `no-store`;
@@ -858,6 +1025,15 @@ than by the eventual implementation file.
   excluded;
 - sensitive prefix wins over exact/template/catch-all overlap;
 - `/admin` does not match `/administrator`;
+- `/system` and `/system/x` match while `/systematic` does not; equivalent cases
+  cover `/api` versus `/apiary`, `/webhook` versus `/webhooks`, and queries do
+  not alter the normalized path classification;
+- the initial sensitive inventory includes every reviewed agent/bot ingress,
+  including `/analytics`, `/welcome`, `/system`, and `/webhook`;
+- an automated parity test extracts every backend-directed location/alias from
+  both Nginx files and requires a matching manifest sensitive prefix or explicit
+  reviewed exception with equivalent end-or-slash semantics; unknown ingress,
+  HTTP/HTTPS drift, or a boundaryless location fails;
 - encoded separators, invalid UTF-8/escapes, dot segments, and double-decoding
   candidates fail closed;
 - trailing slash, repeated slash, unreserved encoding, query, and catch-all
@@ -886,6 +1062,24 @@ than by the eventual implementation file.
 - backend restart reloads a valid active bundle and rejects corrupt pointer/file
   state;
 - snapshot failure never falls back to `web/data.json`.
+
+Unit fixtures remain the deterministic authority for exact XML bytes. In
+addition, an opt-in integration test runs against a disposable local PostgreSQL
+database (a local container is acceptable) and proves the real isolation and
+publication boundary: one `REPEATABLE READ, READ ONLY` snapshot does not observe
+a mutation committed by a second connection during generation, all documents
+reflect the original snapshot, and concurrent/failed publication exposes only
+the previous or complete new atomic bundle and `active.json` pointer. The test
+is skipped unless `SITEMAP_BUNDLE_TEST_DATABASE_URL` points to an explicitly
+disposable PostgreSQL database and rejects a non-loopback host unless a separate
+test-only override is exact. Evidence records the command and pass/skip result,
+for example:
+
+```text
+SITEMAP_BUNDLE_TEST_DATABASE_URL=postgresql://... \
+  python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q
+Expected: snapshot/concurrent-publication tests pass; default suite skips safely.
+```
 
 ### 8.6 Disclosure and UGC Tests
 
@@ -918,6 +1112,12 @@ than by the eventual implementation file.
 
 - both Nginx configs route all four root SEO paths through Nuxt with query
   preservation and no cache, and deny public internal readiness;
+- exact Nginx deny/not-found rules prevent proxying Nuxt readiness and backend
+  launch-internal attestation/sitemap paths;
+- rendered Compose plus container-network probes prove only 80/443 are host
+  reachable; direct host access to 3000, 8360, bot/internal services, readiness,
+  and FastAPI sitemap bypass is unavailable while reviewed private upstream
+  calls still work;
 - Nginx-facing probes preserve exact policy/evidence/batch headers;
 - controlled browser activation proves no old worker or Cache Storage entry can
   replay policy-bearing content offline;
@@ -948,55 +1148,71 @@ reviewable RED -> GREEN change.
 10. Ward policy plus itinerary/shared-plan fixed exclusion tests.
 11. Public entity/ward response integration with mandatory boolean decision,
     fingerprint, and revision.
-12. Backend policy-attestation endpoint and revision matching.
-13. One authoritative DB snapshot/transaction abstraction for sitemap input.
-14. Immutable sitemap bundle store, atomic active pointer, retention, locking,
+12. Exact policy-bearing FastAPI endpoint registry; entity-detail unconditional
+    no-store/no-validator/no-304 behavior; memo invalidation and source-scan
+    enforcement.
+13. Internal-only backend policy-attestation endpoint, revision matching,
+    no-store registration, and Nginx non-exposure contract.
+14. One authoritative DB snapshot/transaction abstraction for sitemap input.
+15. Immutable sitemap bundle store, atomic active pointer, retention, locking,
     restart loading, and failure tests.
-15. Main sitemap rendering from manifest plus entity/ward batch decisions.
-16. Media sitemap rendering with AI disclosure and placeholder/UGC exclusions.
-17. Sitemap-index rendering and exact pinned-batch URL protocol.
-18. Nuxt guarded sitemap proxy validating all four evidence values and requested-
-    batch echo.
-19. Nuxt two-key base decision and backend attestation client.
-20. Nuxt response middleware for exact policy and evidence headers.
-21. Per-entity/ward valid-negative and request-scoped failed-open behavior.
-22. HTML head/meta/`X-Robots-Tag` integration and conditional sitemap-index link.
-23. Closed/failed-open robots and the three endpoint-specific root sitemap
+16. Opt-in disposable PostgreSQL integration for real `REPEATABLE READ`
+    visibility, concurrent mutation, atomic bundle publication, and active
+    pointer behavior.
+17. Main sitemap rendering from manifest plus entity/ward batch decisions and
+    the registered internal-only FastAPI document route.
+18. Media sitemap rendering with AI disclosure and placeholder/UGC exclusions.
+19. Sitemap-index rendering and exact pinned-batch URL protocol.
+20. Nuxt two-key base decision and internal backend attestation client.
+21. Nuxt guarded sitemap proxy validating all four evidence values and requested-
+    batch echo through the internal backend document route.
+22. Nuxt response middleware for exact policy and evidence headers.
+23. Per-entity/ward valid-negative and request-scoped failed-open behavior.
+24. HTML head/meta/`X-Robots-Tag` integration and conditional sitemap-index link.
+25. Closed/failed-open robots and the three endpoint-specific root sitemap
     handlers.
-24. Unconditional routeRules/SWR removal, prerender removal, generated readiness
-    manifest, and `.output` audit tests.
-25. Service-worker policy-neutral cache, bypass, no-store, version, and purge.
-26. Exact `/_internal/launch-readiness` endpoint and safe-closed/safe-open checks.
-27. Launch-compatible Compose topology: remove the complete Nuxt-to-agent
-    `depends_on` relationship, use internal readiness for Nuxt health, and add
-    static plus agent-absent closed/open cold-start tests.
-28. `scripts/deploy.sh` and local deploy/release harness readiness wiring without
+26. Unconditional routeRules/SWR removal, prerender removal, and preliminary
+    `.output` policy-bearing artifact audit.
+27. Service-worker policy-neutral cache, bypass, no-store, version, rule digest,
+    and legacy-cache purge contract.
+28. Generated readiness manifest with the final service-worker version/digest,
+    plus complete `.output` manifest/digest audit tests.
+29. Exact `/_internal/launch-readiness` endpoint and safe-closed/safe-open checks.
+30. Exclusive production network topology: remove all non-Nginx host
+    publications, use agent/Nuxt internal `expose`, keep dev overrides
+    loopback-only, make Nginx depend only on healthy Nuxt, bind production
+    systemd internal services to loopback, and add static plus agent-absent and
+    container-network tests.
+31. `scripts/deploy.sh` and local deploy/release harness readiness wiring without
     a closed-start backend-health gate, plus Docker build verification.
-29. Nginx ownership of root SEO paths, query preservation, no-cache behavior,
-    and public readiness denial in both configs.
-30. Shared structured image descriptor and mixed entity/UGC gallery API.
-31. Detail hero and thumbnail-rail AI/placeholder disclosure.
-32. Gallery and lightbox descriptor/caption/accessibility behavior.
-33. Home feature/spotlight plus `EntityCard` listing/search/ward/nearby/
+32. Nginx ownership of root SEO paths, query preservation, no-cache behavior,
+    exact internal-route denial, segment-boundary backend locations, and
+    manifest-to-agent/bot ingress parity in both configs.
+33. Shared structured image descriptor and mixed entity/UGC gallery API.
+34. Detail hero and thumbnail-rail AI/placeholder disclosure.
+35. Gallery and lightbox descriptor/caption/accessibility behavior.
+36. Home feature/spotlight plus `EntityCard` listing/search/ward/nearby/
     recommendation consumers.
-34. Descriptor-preserving favorite/recent adapters and `SavedEntityCard`
+37. Descriptor-preserving favorite/recent adapters and `SavedEntityCard`
     consumers on saved, itinerary, profile, and recent-search surfaces.
-35. Event thumbnails, related places, and map/popup descriptor behavior.
-36. Admin entity surfaces in `admin/entities.vue`, `admin/media.vue`, and
+38. Event thumbnails, related places, and map/popup descriptor behavior.
+39. Admin entity surfaces in `admin/entities.vue`, `admin/media.vue`, and
     `admin/duyet-tu-hoc.vue`, including dense-badge accessibility and full-copy
     expanded previews.
-37. Machine-readable renderer registry plus repository-wide public,
+40. Machine-readable renderer registry plus repository-wide public,
     authenticated, and admin direct/raw entity-image inventory guard.
-38. Review/post UGC photo classification, admin moderation behavior, and
+41. Review/post UGC photo classification, admin moderation behavior, and
     current-quality exclusion.
-39. Native share, OG/Twitter alt, JSON-LD, and media metadata parity.
-40. Browser/Nginx end-to-end matrix for closed, selective-open, valid negative,
-    request-scoped failed-open, pinned sitemap, and worker-cache behavior.
-41. Executable single-host rollback runbook, source-controlled Nginx
+42. Native share, OG/Twitter alt, JSON-LD, and media metadata parity.
+43. Browser/Nginx end-to-end matrix for closed, selective-open, valid negative,
+    request-scoped failed-open, pinned sitemap, worker-cache behavior, and the
+    exclusive 80/443 network boundary.
+44. Executable single-host rollback runbook, source-controlled Nginx
     maintenance/drain include, and timed local rehearsal.
-42. Full backend/frontend regression evidence and final source scan.
+45. Full backend/frontend regression evidence and final source scan.
 
-Every numbered implementation task starts with a fresh implementer context or
+This graph contains exactly 45 continuous numbered task boundaries. Every
+numbered implementation task starts with a fresh implementer context or
 agent, without exception; no implementer context is reused for a later task.
 Each task records RED before the smallest coherent GREEN change. Its first
 spec-compliance review uses a fresh reviewer context independent of the
@@ -1041,6 +1257,11 @@ Implementation is accepted only when:
   request, which becomes failed-open with no evidence or discovery link;
 - all policy-bearing HTML/API/root SEO responses are dynamic `no-store` with no
   SWR, ISR, route cache, prerender, proxy cache, or service-worker source;
+- the exact FastAPI policy-bearing registry contains public
+  `GET /api/entities/{entity_id}` and the two reviewed launch-internal route
+  families only; every status is `no-store`, emits no validator, never returns
+  304, recomputes/validates the current decision evidence, and unrelated backend
+  APIs retain their separately reviewed cache policy;
 - internal readiness is exact, non-public, backend-independent in closed, and
   checks real `.output`, route rules, artifact hashes, worker rules, runtime
   keys, attestation, and active batch state;
@@ -1052,16 +1273,33 @@ Implementation is accepted only when:
   agent absent, Nuxt cold-starts to readiness 200 safe closed for absent/invalid
   keys, serves closed robots and empty sitemaps with zero backend calls, while
   exact open intent yields readiness 503 and no admitted traffic;
+- rendered production Compose publishes only Nginx 80/443; agent 8360, Nuxt
+  3000, bot/backend dependencies, data stores, and monitoring services are
+  private, while any development publication is explicit `127.0.0.1` in an
+  excluded override;
+- Compose Nginx depends on healthy Nuxt only, production systemd agent/Nuxt and
+  other Nginx-reached internal services bind loopback rather than `0.0.0.0`, and
+  direct host/backend/readiness/FastAPI-sitemap bypass probes fail;
 - the two canonical JSON artifacts exist only at root `config/`, Nuxt Docker
   builds from repository root, and backend release packaging includes `config/`;
+- the launch-compatible release/rehearsal package contains the reviewed Nginx,
+  loopback systemd, and production Compose network-audit artifacts and excludes
+  the developer override from every production command;
 - Python/TypeScript loaders and route classifiers pass parity tests;
 - route manifest schema, normalization, precedence, initial inventory, unknown
   fail-closed behavior, and static-sitemap exactness match Section 4.6;
+- sensitive prefixes use exact end-or-slash segment boundaries, include
+  `/analytics`, `/welcome`, `/system`, `/webhook` and every other current
+  agent/bot ingress, and both Nginx configs pass the automated manifest parity
+  scan with no unknown or boundaryless backend alias;
 - itinerary/share/search/UGC/catch-all pages remain noindex and excluded;
 - backend `index_policy` is the only entity/ward indexability authority and all
   current AI, placeholder, malformed, and UGC media give zero current real-image
   credit;
 - one authoritative DB transaction renders a complete immutable sitemap bundle;
+- the deterministic XML unit fixtures and opt-in disposable PostgreSQL
+  integration both pass, including real `REPEATABLE READ` mutation visibility,
+  concurrent publication, and atomic active-pointer evidence;
 - publication atomically swaps the active pointer only after validation and
   never mutates entity data;
 - active index children are pinned with the exact batch query; missing/expired
@@ -1071,7 +1309,8 @@ Implementation is accepted only when:
 - retention and restart behavior preserve an active plus minimum previous bundle
   and fail safely on corrupt state;
 - both Nginx configs route root SEO through Nuxt, preserve query/evidence, disable
-  caching, and deny public readiness;
+  caching, return not-found for public readiness and backend launch-internal
+  paths, and do not expose FastAPI attestation or sitemap routes directly;
 - every first-party public, authenticated, and admin entity-image renderer found
   by the normative minimum plus automated repository inventory consumes the
   shared descriptor and presents the correct AI/placeholder/user-uploaded
@@ -1107,8 +1346,10 @@ executable rollback runbook is therefore a maintenance-window replacement, not
 a mixed-fleet rollout:
 
 1. Record start time, candidate/rollback release identifiers, operator, and
-   known-good closed artifact; verify the closed artifact contains root config
-   and a launch-compatible readiness manifest.
+   known-good closed artifact; verify the closed artifact contains root config,
+   a launch-compatible readiness manifest, the reviewed Nginx configs,
+   loopback-only systemd unit/wrapper definitions, and the production Compose
+   network audit with the developer override excluded.
 2. Suspend `vl-watchdog.timer` and stop any active `vl-watchdog.service` so it
    cannot restart processes during rollback.
 3. Enable the preinstalled Nginx maintenance/drain include. It returns HTTP 503
@@ -1120,15 +1361,20 @@ a mixed-fleet rollout:
    paths enumerated by the old readiness manifest. Preserve backend sitemap
    bundle storage because it is immutable operational evidence, not Nuxt cache.
 6. Install the known-good launch-compatible replacement with one or both unlock
-   keys absent, verify root `config/` artifact digests, install runtime
-   dependencies, and start `vl-nuxt`.
+   keys absent, verify root `config/` and packaged ingress artifact digests,
+   install runtime dependencies, install/verify the reviewed loopback-only
+   service definitions, run `systemctl daemon-reload`, and start `vl-nuxt`.
 7. Poll process-local
    `http://127.0.0.1:3000/_internal/launch-readiness`; require safe closed HTTP
    200 and the complete isolation check set before any traffic is admitted.
+   Inspect effective listeners and require agent/Nuxt/internal HTTP services on
+   loopback only and Nginx as the sole non-loopback 80/443 listener.
 8. Through the Nginx-facing production Host/TLS path from the allowlisted
    operator source, verify representative rich/thin HTML, policy/meta noindex,
    robots without sitemap, all three valid empty sitemap shapes, `no-store`, no
-   evidence headers, no discovery link, and public denial of internal readiness.
+   evidence headers, no discovery link, public not-found for internal readiness
+   and backend launch-internal paths, and failed direct 3000/8360/FastAPI root-
+   sitemap bypass attempts from outside the loopback/private boundary.
 9. In a controlled browser using the same allowed path, update and activate the
    current worker, inspect Cache Storage, and prove no HTML, root SEO, API,
    selective-open, or failed-open response can be replayed.
