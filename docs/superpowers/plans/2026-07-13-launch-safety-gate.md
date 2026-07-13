@@ -6001,6 +6001,7 @@ try {
     @{ Name = 'compose-up-fail'; Up = 23; Body = 0; Down = 0; Evidence = 0; Expected = 23 },
     @{ Name = 'evidence-fail'; Up = 0; Body = 0; Down = 0; Evidence = 13; Expected = 13 }
   )
+  $executedCases = 0
 
   foreach ($case in $cases) {
     $env:STUB_UP_EXIT = [string]$case.Up
@@ -6031,7 +6032,9 @@ try {
     Assert-Equal $result[0] $case.Expected "$($case.Name) exit precedence"
     Assert-Equal $env:CHROME_PATH 'C:\pre-existing\chrome.exe' "$($case.Name) restores existing CHROME_PATH"
     if (Test-Path Env:NGINX_PROBE_URL) { throw "$($case.Name) must restore NGINX_PROBE_URL to unset" }
+    $executedCases += 1
   }
+  Assert-Equal $executedCases $cases.Count 'noisy stub matrix must execute every case'
 }
 finally {
   $env:PATH = $priorPath
@@ -6045,9 +6048,24 @@ finally {
 
 Run: `python -m pytest tests/launch_safety/test_evidence_record.py -q`
 
-Run: `$powershell = (Get-Command pwsh,powershell -ErrorAction Stop | Select-Object -First 1).Source; & $powershell -NoProfile -File tests/launch_safety/powershell/test_release_gate_harness.ps1`
+Run:
 
-Expected: FAIL because the evidence recorder/document and importable harness helper do not exist, and CI does not run the new focused gates.
+```powershell
+function Resolve-PowerShellExecutable {
+  $command = Get-Command pwsh,powershell -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($null -eq $command) { throw 'PowerShell executable unavailable' }
+  $path = [string]$command.Source
+  if ([string]::IsNullOrWhiteSpace($path)) { throw 'PowerShell executable unavailable' }
+  return $path
+}
+
+$powershell = Resolve-PowerShellExecutable
+if ($powershell -isnot [string]) { throw 'PowerShell executable selector must return a scalar path' }
+& $powershell -NoProfile -File tests/launch_safety/powershell/test_release_gate_harness.ps1
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+```
+
+Expected: the selector resolves one scalar executable path on both `pwsh` and Windows PowerShell-only hosts, then the harness test fails because the evidence recorder/document and importable helper do not exist. Once implemented, the noisy-stub assertion requires all five matrix cases to execute.
 
 - [ ] **Step 3: Add deterministic evidence recording and CI/release wiring**
 
@@ -6219,7 +6237,16 @@ Run source/config gates:
 ```powershell
 python scripts/checks/run_hard.py
 python -m pytest tests/checks/test_hard_checks.py tests/test_release_quality_gates.py -q
-$powershell = (Get-Command pwsh,powershell -ErrorAction Stop | Select-Object -First 1).Source
+function Resolve-PowerShellExecutable {
+  $command = Get-Command pwsh,powershell -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($null -eq $command) { throw 'PowerShell executable unavailable' }
+  $path = [string]$command.Source
+  if ([string]::IsNullOrWhiteSpace($path)) { throw 'PowerShell executable unavailable' }
+  return $path
+}
+
+$powershell = Resolve-PowerShellExecutable
+if ($powershell -isnot [string]) { throw 'PowerShell executable selector must return a scalar path' }
 & $powershell -NoProfile -File tests/launch_safety/powershell/test_release_gate_harness.ps1
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 git diff --check
