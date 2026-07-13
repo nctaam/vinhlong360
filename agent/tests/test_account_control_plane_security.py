@@ -143,6 +143,46 @@ class _AuthDB:
         return dict(self.login_user) if self.login_user else None
 
 
+class _ResetAuthDB(_AuthDB):
+    def __init__(self, user):
+        super().__init__(user)
+        self.otp_verified = False
+        self.fail_pending_delete = False
+
+    @contextmanager
+    def _conn(self):
+        conn = SimpleNamespace(reset_db=self)
+        self.connections.append(conn)
+        snapshot = (
+            dict(self.user) if self.user else None,
+            list(self.sessions),
+            list(self.pending),
+            self.otp_verified,
+        )
+        try:
+            yield conn
+        except Exception:
+            user, sessions, pending, otp_verified = snapshot
+            self.user = user
+            self.sessions = sessions
+            self.pending = pending
+            self.otp_verified = otp_verified
+            raise
+
+    def _execute(self, conn, sql, params=()):
+        result = super()._execute(conn, sql, params)
+        normalized_sql = " ".join(sql.split())
+        if self.fail_pending_delete and normalized_sql.startswith(
+            "DELETE FROM pending_2fa WHERE user_id::text"
+        ):
+            raise RuntimeError("injected pending challenge deletion failure")
+        return result
+
+
+def _mark_reset_otp_verified(conn, *_args):
+    conn.reset_db.otp_verified = True
+
+
 def _invoke_auth_snapshot_creation(kind, expected_password_hash):
     if kind == "pending":
         return auth._create_pending_2fa(
@@ -554,7 +594,7 @@ def test_auth_state_non_null_snapshot_uses_constant_time_compare(monkeypatch):
 
 
 def test_reset_password_state_revokes_sessions_and_pending_challenges(monkeypatch):
-    fake = _AuthDB(
+    fake = _ResetAuthDB(
         {
             "id": USER_ID,
             "phone": "0901234567",
@@ -567,11 +607,11 @@ def test_reset_password_state_revokes_sessions_and_pending_challenges(monkeypatc
     fake.pending.append(("existing",))
     monkeypatch.setattr(auth, "db", fake)
     consumed_connections = []
-    monkeypatch.setattr(
-        auth,
-        "_consume_verified_otp",
-        lambda conn, *_args: consumed_connections.append(conn),
-    )
+    def consume_otp(conn, *_args):
+        consumed_connections.append(conn)
+        _mark_reset_otp_verified(conn)
+
+    monkeypatch.setattr(auth, "_consume_verified_otp", consume_otp)
     monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
 
     user = auth._reset_password_state("0901234567", "otp-hash", "NewPass1")
@@ -580,6 +620,7 @@ def test_reset_password_state_revokes_sessions_and_pending_challenges(monkeypatc
     assert fake.user["password_hash"] == "new-hash"
     assert fake.sessions == []
     assert fake.pending == []
+    assert fake.otp_verified is True
     assert len(consumed_connections) == 1
     assert any(
         "WHERE u.phone" in sql and "FOR UPDATE" in sql
@@ -621,7 +662,7 @@ def test_reset_password_state_revokes_sessions_and_pending_challenges(monkeypatc
 
 @pytest.mark.parametrize("kind", ["pending", "session"])
 def test_reset_then_old_snapshot_auth_creation_is_rejected(monkeypatch, kind):
-    fake = _AuthDB(
+    fake = _ResetAuthDB(
         {
             "id": USER_ID,
             "phone": "0901234567",
@@ -631,7 +672,7 @@ def test_reset_then_old_snapshot_auth_creation_is_rejected(monkeypatch, kind):
         }
     )
     monkeypatch.setattr(auth, "db", fake)
-    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(auth, "_consume_verified_otp", _mark_reset_otp_verified)
     monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
 
     auth._reset_password_state("0901234567", "otp-hash", "NewPass1")
@@ -645,7 +686,7 @@ def test_reset_then_old_snapshot_auth_creation_is_rejected(monkeypatch, kind):
 
 
 def test_pre_reset_auth_creation_is_revoked(monkeypatch):
-    fake = _AuthDB(
+    fake = _ResetAuthDB(
         {
             "id": USER_ID,
             "phone": "0901234567",
@@ -655,7 +696,7 @@ def test_pre_reset_auth_creation_is_revoked(monkeypatch):
         }
     )
     monkeypatch.setattr(auth, "db", fake)
-    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(auth, "_consume_verified_otp", _mark_reset_otp_verified)
     monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
 
     _invoke_auth_snapshot_creation("pending", "old-hash")
@@ -670,16 +711,11 @@ def test_pre_reset_auth_creation_is_revoked(monkeypatch):
 
 
 def test_reset_password_state_missing_user_does_not_commit_changes(monkeypatch):
-    fake = _AuthDB(None)
+    fake = _ResetAuthDB(None)
     fake.sessions.append(("existing",))
     fake.pending.append(("existing",))
     monkeypatch.setattr(auth, "db", fake)
-    consumed_connections = []
-    monkeypatch.setattr(
-        auth,
-        "_consume_verified_otp",
-        lambda conn, *_args: consumed_connections.append(conn),
-    )
+    monkeypatch.setattr(auth, "_consume_verified_otp", _mark_reset_otp_verified)
     monkeypatch.setattr(
         auth,
         "_hash_password",
@@ -691,10 +727,50 @@ def test_reset_password_state_missing_user_does_not_commit_changes(monkeypatch):
 
     assert exc.value.status_code == 404
     assert exc.value.detail == "Không tìm thấy tài khoản với số điện thoại này"
-    assert len(consumed_connections) == 1
+    assert len(fake.connections) == 1
+    assert fake.otp_verified is False
+    assert fake.user is None
     assert fake.executes == []
     assert fake.sessions == [("existing",)]
     assert fake.pending == [("existing",)]
+
+
+def test_reset_password_state_rolls_back_mid_sequence_failure(monkeypatch):
+    fake = _ResetAuthDB(
+        {
+            "id": USER_ID,
+            "phone": "0901234567",
+            "password_hash": "old-hash",
+            "is_active": True,
+            "deleted_at": None,
+        }
+    )
+    fake.sessions.append(("existing-session",))
+    fake.pending.append(("existing-challenge",))
+    fake.fail_pending_delete = True
+    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(auth, "_consume_verified_otp", _mark_reset_otp_verified)
+    monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
+
+    with pytest.raises(
+        RuntimeError, match="injected pending challenge deletion failure"
+    ):
+        auth._reset_password_state("0901234567", "otp-hash", "NewPass1")
+
+    assert len(fake.connections) == 1
+    assert fake.otp_verified is False
+    assert fake.user["password_hash"] == "old-hash"
+    assert fake.sessions == [("existing-session",)]
+    assert fake.pending == [("existing-challenge",)]
+    assert any("UPDATE users SET password_hash" in sql for sql, _ in fake.executes)
+    assert any(
+        "DELETE FROM user_sessions WHERE user_id::text" in sql
+        for sql, _ in fake.executes
+    )
+    assert any(
+        "DELETE FROM pending_2fa WHERE user_id::text" in sql
+        for sql, _ in fake.executes
+    )
 
 
 def test_reset_password_otp_delegates_and_retains_side_effects(monkeypatch):
