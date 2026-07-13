@@ -4869,7 +4869,7 @@ def _admin_user_detail_stats(ps, comment_count, fs, session_count, report_count,
 async def ban_user(user_id: str, request: Request):
     require_pg()
     user_id = validate_path_id(user_id, "user_id")
-    # require_admin populated request state; do not repeat get_current_user here.
+    # require_admin already populated the request-scoped actor.
     admin_user = getattr(request.state, "admin_user", None)
     if admin_user and str(admin_user.get("id")) == user_id:
         raise HTTPException(400, "Không thể tự ban chính mình")

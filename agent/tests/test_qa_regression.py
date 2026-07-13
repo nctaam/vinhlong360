@@ -4,6 +4,7 @@ Covers: system endpoint gating, health minimal data, business integrity
 (self-like, self-follow, best-answer ownership, RSVP entity validation,
 reply cross-post, no booking routes), XSS/SQLi detection, Unicode
 boundaries, and performance bounds."""
+import ast
 import inspect
 import os
 import re
@@ -377,9 +378,28 @@ class TestAdminSelfProtection:
         src = inspect.getsource(admin.ban_user)
         assert "chính mình" in src
 
-    def test_ban_user_has_auth_guard(self):
+    def test_ban_user_uses_request_scoped_actor(self):
         src = inspect.getsource(admin.ban_user)
-        assert "get_current_user" in src
+        tree = ast.parse(src)
+        actor_assignments = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            and any(isinstance(target, ast.Name) and target.id == "admin_user" for target in node.targets)
+        ]
+        assert any(
+            isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Name)
+            and node.value.func.id == "getattr"
+            and ast.unparse(node.value) == "getattr(request.state, 'admin_user', None)"
+            for node in actor_assignments
+        )
+        assert not any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "get_current_user"
+            for node in ast.walk(tree)
+        )
 
 
 # ── Rate limiting coverage ──

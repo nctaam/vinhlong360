@@ -1847,12 +1847,32 @@ class TestPhase11AdminHardening:
 
     def test_ban_user_prevents_self_ban(self):
         """ban_user checks admin user ID against target."""
-        src = (Path(__file__).resolve().parent.parent / "admin.py").read_text(encoding="utf-8")
-        idx = src.find("def ban_user")
-        end = src.find("\nasync def ", idx + 1)
-        block = src[idx:end] if end != -1 else src[idx:idx + 2000]
-        assert "Không thể tự ban chính mình" in block
-        assert "get_current_user" in block
+        import ast
+        import inspect
+        import admin
+
+        src = inspect.getsource(admin.ban_user)
+        tree = ast.parse(src)
+        assert "Không thể tự ban chính mình" in src
+        actor_assignments = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            and any(isinstance(target, ast.Name) and target.id == "admin_user" for target in node.targets)
+        ]
+        assert any(
+            isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Name)
+            and node.value.func.id == "getattr"
+            and ast.unparse(node.value) == "getattr(request.state, 'admin_user', None)"
+            for node in actor_assignments
+        )
+        assert not any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "get_current_user"
+            for node in ast.walk(tree)
+        )
 
     def test_ban_user_checks_target_exists(self):
         """ban_user verifies target user exists."""
