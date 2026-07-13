@@ -1,6 +1,6 @@
 # Launch Safety Gate Design
 
-> STATUS: proposed; awaiting written-spec review; implementation must not start; launch remains blocked
+> STATUS: approved; implementation planning authorized; implementation must not start until the plan is approved; launch remains blocked
 
 ## 1. Goal
 
