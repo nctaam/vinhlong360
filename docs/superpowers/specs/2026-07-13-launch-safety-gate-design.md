@@ -198,7 +198,9 @@ The matrix is normative:
 | Robots public crawl | Allow public routes | Allow public routes |
 | Robots sensitive crawl | Block every `crawl-blocked-sensitive` route consistently in every applicable user-agent group | Block the same sensitive route set |
 | Robots sitemap line | Absent | Present only when both keys and backend policy attestation are valid |
-| Sitemap XML | Valid empty XML, HTTP 200, `no-store` | Shared-manifest canonical routes plus backend-indexable canonical detail URLs |
+| `/sitemap.xml` | Valid empty `<urlset>`, HTTP 200, `no-store` | Shared-manifest canonical routes plus backend-indexable canonical detail URLs |
+| `/sitemap-media.xml` | Valid empty media `<urlset>`, HTTP 200, `no-store` | Disclosed AI image entries for backend-indexable entities only; no placeholders |
+| `/sitemap-index.xml` | Valid empty `<sitemapindex>`, HTTP 200, `no-store` | Exactly the main and media child locations from one matching generation batch |
 | Public links | Followable for usable public pages | Rich and thin public pages may remain linked |
 | Private links | Not promoted through public nav or sitemap | Same restriction |
 | Canonical core/listing/static page | `noindex,follow`, absent from sitemap | `index,follow` only when allowed by the shared route manifest; present in sitemap under the same rule |
