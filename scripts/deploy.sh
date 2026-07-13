@@ -110,7 +110,9 @@ set -e
 cd $REMOTE
 set -a; . ./.env; set +a
 pg_dump -Fc "\$DATABASE_URL" -f /tmp/db-pre-deploy-$TS.dump && mv /tmp/db-pre-deploy-$TS.dump backups/ && echo "  db dump -> backups/db-pre-deploy-$TS.dump"
-tar -czf backups/pre-deploy-$TS.tar.gz agent web/data.json web/media web-nuxt/.output config 2>/dev/null && echo "  code snapshot -> backups/pre-deploy-$TS.tar.gz"
+snapshot_members=(agent web/data.json web/media web-nuxt/.output)
+[ -d config ] && snapshot_members+=(config)
+tar -czf backups/pre-deploy-$TS.tar.gz "\${snapshot_members[@]}" 2>/dev/null && echo "  code snapshot -> backups/pre-deploy-$TS.tar.gz"
 ls -t backups/pre-deploy-*.tar.gz 2>/dev/null | tail -n +7 | xargs -r rm -f
 ls -t backups/db-pre-deploy-*.dump 2>/dev/null | tail -n +7 | xargs -r rm -f
 echo "  rotated auto-backups (kept newest 6)"

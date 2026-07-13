@@ -232,7 +232,9 @@ def test_release_gate_runs_migration_and_quality_budgets():
     assert "scripts/restore_drill.py" in deploy
     assert "quality_budget.py --data web/data.json --record-db" in deploy
     assert "init.sql config web/data.json" in deploy
-    assert "agent web/data.json web/media web-nuxt/.output config" in deploy
+    assert "snapshot_members=(agent web/data.json web/media web-nuxt/.output)" in deploy
+    assert '[ -d config ] && snapshot_members+=(config)' in deploy
+    assert r'"\${snapshot_members[@]}"' in deploy
     assert "for mf in agent/migrations/053_saved_kind_superadmin.sql" not in deploy
 
 def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():
