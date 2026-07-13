@@ -1,6 +1,6 @@
 # Launch Safety Gate Design
 
-> STATUS: proposed; implementation may proceed, launch may not
+> STATUS: proposed; awaiting written-spec review; implementation must not start; launch remains blocked
 
 ## 1. Goal
 
@@ -29,9 +29,10 @@ These are fixed inputs, not design questions:
 6. UI option A is selected: disclosure appears at the point of image use.
 7. Selective-open behavior is test simulation only in this workstream.
 8. No real environment value is changed.
-H1 is the external legal approval gate for public claims, AI disclosure,
-metadata, and indexing posture. H2 is the external owner authorization gate
-for any later deployed indexing change. This spec does not resolve either.
+H1 is the external legal-entity and NĐ147 registration/licensing gate. H2 is
+the external ICT/data-counsel review of the site's legal classification and
+cross-border data obligations. A later indexing change also requires separate,
+explicit project-owner authorization. This spec resolves none of those gates.
 UI option A means the hero shows visible disclosure and gallery/lightbox views
 retain it. Users do not need to open a policy page or credit drawer to learn
 that an image is generated.
@@ -68,21 +69,25 @@ LaunchSafetyDecision
   mode: closed | selective-open
   fingerprint: string
   reason: closed-default | valid-two-key-unlock | invalid-configuration
+          | owner-approval-missing | policy-mismatch
 ```
 It reads private runtime config. Unlock values never enter public runtime
 config or browser JavaScript.
 The two-key contract is exact:
 1. `LAUNCH_INDEXING_MODE` equals `selective-open`.
-2. `LAUNCH_INDEXING_POLICY_FINGERPRINT` equals the build-pinned fingerprint
-   expected by both Nuxt and the backend contract.
+2. `LAUNCH_INDEXING_OWNER_APPROVED` equals `true`.
 Missing, blank, partial, unknown, case-changed, malformed, or mismatched values
-produce `closed`. Aliases such as `1`, `true`, `open`, and `enabled` are invalid.
+produce `closed`. Mode aliases such as `1`, `true`, `open`, and `enabled` are
+invalid. The literal `true` is accepted only for the owner-approval key; it is
+not an alias for the mode key. A build-pinned policy fingerprint is validated
+separately and is not a substitute for either runtime key.
 The decision is computed once per request and passed to all SEO surfaces.
 Components do not reread env values or make independent launch decisions.
 ### 4.2 Two-Key Unlock and Fail-Closed Rule
 
-The mode key records launch intent. The fingerprint key proves agreement with
-the reviewed policy version. Neither key alone carries permission.
+The mode key records launch intent. The owner-approval key records explicit
+operational authorization by the project owner. Neither key alone carries
+permission, and neither key proves that H1 or H2 has been completed.
 Closed is the startup default and the result of every configuration error.
 Closed meta, header, robots, and empty sitemap do not call the backend.
 Selective-open may consult backend policy. Backend absence, an incomplete
@@ -98,7 +103,8 @@ covers:
 - cache-fencing schema version.
 The value is stable and build-pinned in reviewed source. Runtime code does not
 invent a replacement. Nuxt supplies the expected value on selective-open
-policy requests; the backend returns its active value.
+policy requests; the backend returns its active value. The fingerprint proves
+software-policy agreement only; it is not owner approval or legal clearance.
 A missing or mismatched backend fingerprint behaves like missing `indexable`
 for entity detail and like a backend failure for sitemap generation.
 ### 4.4 Cache Fencing
@@ -118,21 +124,31 @@ The backend owns one `index_policy` module as the sole entity indexability
 authority. Entity response serialization and sitemap selection call that same
 module. A batch wrapper remains owned by the module and preserves single-item
 semantics.
-Nuxt consumes the result. It does not reconstruct indexability from image
-count, description length, verification flags, or other entity fields.
+Nuxt consumes the result. It does not reconstruct entity indexability from
+image count, description length, verification flags, or other entity fields.
+
+### 4.6 Public Route Policy
+
+Non-entity canonical pages use one reviewed, machine-readable public-route
+manifest consumed by Nuxt and by the backend's static sitemap builder. The
+manifest classifies core, listing, static/legal, private, search, preview, and
+account-bound routes and contributes to the policy fingerprint.
+Entity and ward/detail eligibility remain backend decisions. The route manifest
+does not duplicate entity quality thresholds.
 ## 5. Policy Matrix
 
 The matrix is normative:
 | Surface | Closed | Selective-open simulation |
 | --- | --- | --- |
-| HTML meta robots | `noindex,follow` on every public page | `index,follow` only for a backend-rich/indexable entity; otherwise `noindex,follow` |
+| HTML meta robots | `noindex,follow` on every public page | `index,follow` only for an allowlisted canonical public route or a backend-indexable detail; otherwise `noindex,follow` |
 | `X-Robots-Tag` | `noindex, follow` on public HTML | Mirrors the page decision; omission is not permission |
 | Robots public crawl | Allow public routes | Allow public routes |
 | Robots private crawl | Block admin and API routes consistently | Block the same admin and API routes |
 | Robots sitemap line | Absent | Present only when both keys are valid |
-| Sitemap XML | Valid empty XML, HTTP 200, `no-store` | Only backend-indexable canonical public URLs |
+| Sitemap XML | Valid empty XML, HTTP 200, `no-store` | Shared-manifest canonical routes plus backend-indexable canonical detail URLs |
 | Public links | Followable for usable public pages | Rich and thin public pages may remain linked |
 | Private links | Not promoted through public nav or sitemap | Same restriction |
+| Canonical core/listing/static page | `noindex,follow`, absent from sitemap | `index,follow` only when allowed by the shared route manifest; present in sitemap under the same rule |
 | Thin public entity | `noindex,follow`, absent from sitemap | `noindex,follow`, absent from sitemap |
 | Rich public entity | `noindex,follow`, absent from sitemap | `index,follow`, present in sitemap |
 Additional rules:
@@ -141,6 +157,8 @@ Additional rules:
 - private includes admin, account-specific, authorization-bound, API, preview,
   and other non-public routes;
 - the launch gate never overrides authorization or publication eligibility;
+- non-entity public routes use the shared route manifest, not an ad hoc page
+  default or a second hand-maintained sitemap list;
 - rich means the shared backend contract returns a valid positive decision;
 - thin means public but not backed by a valid positive decision;
 - only a fingerprint-matching positive decision enters the open sitemap;
@@ -185,8 +203,10 @@ These strings are centralized product copy. Short variants may not remove the
 distinction between actual AI imagery and a generic placeholder.
 ### 7.2 Hero, Gallery, and Lightbox
 
-- Actual AI hero: visible pill with exact AI copy.
+- Actual AI hero: visible pill with the short label `Minh họa AI`.
 - Placeholder hero: visible pill/caption with exact placeholder copy only.
+- The AI pill is associated through accessible description with the full
+  canonical AI sentence; disclosure is never hover-only or icon-only.
 - Pill remains readable at mobile/desktop widths and exposed as text to AT.
 - Each AI gallery item carries the exact disclosure in caption data.
 - The selected gallery caption and lightbox show the full copy.
@@ -233,16 +253,17 @@ request -> both keys exact -> fetch public entity policy
 ```
 Selective-open sitemap simulation:
 ```text
-sitemap -> both keys exact -> request backend batch policy
+sitemap -> both keys exact -> load canonical routes from shared manifest
+  -> request backend batch policy for detail URLs
   -> validate completeness + fingerprint
-  -> retain indexable canonical public URLs
+  -> merge manifest routes with indexable canonical public detail URLs
   -> serialize under fenced cache identity
 ```
 Disclosure classification:
 ```text
-entity.images present -> actual AI -> exact AI copy on every surface
-entity.images absent  -> placeholder -> exact placeholder copy only
-malformed image data  -> never real -> safe AI or placeholder treatment
+renderable entity image -> actual AI -> AI pill/caption disclosure
+no renderable image     -> placeholder -> exact placeholder copy only
+malformed image data    -> omit from media; never real; never quality credit
 ```
 ## 9. Failure Behavior
 
@@ -267,8 +288,9 @@ as intentional URL removal while refusing to serve stale or unverified URLs.
 
 Every behavior change follows RED -> GREEN.
 Nuxt unit tests cover the full two-key truth table: no keys, either key alone,
-wrong mode, wrong fingerprint, case/whitespace variants, previous fingerprint,
-and both exact values.
+wrong mode, wrong owner-approval value, case/whitespace variants, and both exact
+values. Fingerprint matching, mismatch, and previous-version behavior are a
+separate policy-agreement matrix.
 Closed tests assert meta, header, robots, and empty sitemap without a successful
 backend mock. Open simulations cover rich, thin, missing-field, mismatch, and
 backend-error behavior.
@@ -283,10 +305,11 @@ Integration tests assert:
 - open robots error falls back closed;
 - entity detail without valid positive policy remains `noindex`;
 - cache keys differ by mode, fingerprint, and revision.
-Disclosure tests verify exact copy in hero, gallery, lightbox, share-card data,
-OG/Twitter alt, JSON-LD, and image sitemap. They verify placeholder copy,
-placeholder exclusions, keyboard access, accessible captions, and a text scan
-for forbidden real/documentary claims.
+Disclosure tests verify the short AI pill plus its full accessible description,
+and exact full copy in gallery, lightbox, share-card data, OG/Twitter alt,
+JSON-LD, and image sitemap. They verify placeholder copy, placeholder
+exclusions, keyboard access, accessible captions, and a text scan for forbidden
+real/documentary claims.
 Regression gate:
 - rerun backend suite against the 6168/47/78/1/1 baseline;
 - rerun frontend serially against 8 files/125 passed plus new tests;
@@ -298,7 +321,7 @@ Regression gate:
 The implementation plan separates:
 1. backend `index_policy` model and unit tests;
 2. shared entity-response and sitemap consumption;
-3. Nuxt two-key gate and fingerprint;
+3. Nuxt two-key gate, shared public-route manifest, and fingerprint;
 4. closed meta/header/robots/sitemap behavior;
 5. selective-open simulation and failures;
 6. cache fencing;
@@ -332,22 +355,26 @@ This workstream does not:
 
 Implementation is accepted only when:
 - default, missing, partial, invalid, and mismatched config is closed;
-- only two exact valid keys produce selective-open in tests;
+- only two exact valid runtime keys plus a matching build/backend fingerprint
+  produce selective-open in tests;
 - deployed config remains unchanged and globally closed;
 - closed public HTML emits `noindex,follow` in meta and header;
 - closed robots allows public crawl, blocks admin/API, and has no sitemap line;
 - closed sitemap is valid empty XML, HTTP 200, `no-store`, backend-independent;
 - backend `index_policy` is the only indexability authority;
 - entity response and sitemap share decision, fingerprint, and revision;
+- non-entity page meta and static sitemap entries share the same route manifest;
 - all current `entity.images` are classified as AI;
 - AI imagery contributes nothing to real-image criteria;
-- only rich public entities open and enter the simulated open sitemap;
+- allowlisted canonical public routes and rich public entities open and enter
+  the simulated open sitemap under their respective shared contracts;
 - thin/private/invalid/missing/mismatch cases stay excluded or `noindex`;
 - open sitemap backend error is 503 `no-store`;
 - open robots error returns closed robots;
 - open entity detail without valid positive policy is `noindex`;
 - cache is fenced by mode and policy identity;
-- exact AI disclosure appears on every actual-image surface;
+- the short AI pill and full accessible description appear on every actual AI
+  hero; exact full disclosure appears on gallery/lightbox/share/metadata surfaces;
 - exact placeholder copy appears only on placeholder surfaces;
 - placeholders are excluded from image sitemap and entity `ImageObject`;
 - no current AI image is called real or documentary;
@@ -360,14 +387,16 @@ Implementation is accepted only when:
 
 Stage 0 is this workstream: implement and test while all real environments stay
 closed. Stage 1 gathers truth-table, policy, disclosure, cache-fence, and full
-regression evidence. Stage 2 requires externally recorded H1 legal approval
-and H2 owner authorization. Stage 3 would be a separately authorized
-operational task and is outside this spec.
+regression evidence. Stage 2 requires externally recorded H1 legal-entity/NĐ147
+completion, H2 qualified-counsel review, and separate explicit project-owner
+authorization. Stage 3 would be a separately authorized operational task and is
+outside this spec.
 A test simulation, merged commit, passing suite, or generated fingerprint is
 not H1 or H2 approval.
 Any future selective-open request requires:
-- explicit H1 clearance;
-- explicit H2 clearance;
+- explicit H1 completion;
+- explicit H2 counsel sign-off;
+- explicit project-owner authorization;
 - reviewed build-pinned fingerprint;
 - matching backend and Nuxt fingerprints;
 - current regression and candidate sitemap evidence;
@@ -383,6 +412,7 @@ Post-rollback verification checks representative rich/thin pages, meta/header
 blocking, valid empty sitemap HTTP 200 `no-store`, and zero open-policy cache
 hits in the closed namespace.
 Engineering owns closed-state correctness, simulation evidence, fingerprint
-agreement, and rollback mechanics. Legal owns H1. The project owner owns H2.
-No engineer, reviewer, test, env value, or commit may infer external approval
-from technical readiness.
+agreement, and rollback mechanics. The responsible organization/legal process
+owns H1; qualified ICT/data counsel owns H2; the project owner owns operational
+authorization. No engineer, reviewer, test, env value, or commit may infer any
+external approval from technical readiness.
