@@ -174,10 +174,12 @@ class TestTrustedDevices:
         assert "_hash_token" in src
         assert "vl360_trusted" in src or "set_cookie" in src
 
-    def test_skip_check_updates_last_used(self):
-        src = inspect.getsource(auth._has_valid_trusted_device)
-        assert "expires_at" in src
-        assert "last_used_at" in src
+    def test_skip_check_defers_last_used_touch(self):
+        check_src = inspect.getsource(auth._has_valid_trusted_device)
+        touch_src = inspect.getsource(auth._touch_trusted_device)
+        assert "expires_at" in check_src
+        assert "last_used_at" not in check_src
+        assert "last_used_at" in touch_src
 
     def test_login_gate_checks_trusted_device(self):
         assert "_has_valid_trusted_device" in inspect.getsource(auth.verify_otp)

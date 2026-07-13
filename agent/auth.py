@@ -240,6 +240,9 @@ def _is_internal_session(user_agent: str | None, ip: str | None) -> bool:
     return loopback and not any(marker in ua for marker in browser_markers)
 
 
+_STALE_AUTH_DETAIL = "Thong tin dang nhap da thay doi. Vui long dang nhap lai."
+
+
 def _password_snapshot_matches(expected: str | None, current: str | None) -> bool:
     if expected is None or current is None:
         return expected is current
@@ -262,10 +265,20 @@ def _assert_current_auth_snapshot(
             expected_password_hash, user.get("password_hash")
         )
     ):
-        raise HTTPException(
-            401, "Thong tin dang nhap da thay doi. Vui long dang nhap lai."
-        )
+        raise HTTPException(401, _STALE_AUTH_DETAIL)
     return user
+
+
+def _rehash_legacy_password(
+    user_id: str, original_hash: str, new_hash: str
+) -> bool:
+    with db._conn() as conn:
+        row = db._fetchone(conn, f"""
+            UPDATE users SET password_hash = {db._ph}
+            WHERE id::text = {db._ph} AND password_hash = {db._ph}
+            RETURNING password_hash
+        """, (new_hash, user_id, original_hash))
+    return row is not None
 
 
 def _create_session_atomic(
@@ -653,11 +666,11 @@ async def _remember_trusted_device(user: dict, request: Request, response: Respo
     response.set_cookie(key=TRUSTED_DEVICE_COOKIE_NAME, value=raw, **_trusted_cookie_params(request))
 
 
-def _has_valid_trusted_device(user_id: str, request: Request) -> bool:
-    """Kiểm tra cookie vl360_trusted khớp hàng trusted_devices chưa hết hạn; cập nhật last_used_at."""
+def _has_valid_trusted_device(user_id: str, request: Request) -> str | None:
+    """Trả về ID thiết bị tin cậy khớp cookie và chưa hết hạn."""
     raw = request.cookies.get(TRUSTED_DEVICE_COOKIE_NAME, "")
     if not raw:
-        return False
+        return None
     ph = db._ph
     with db._conn() as conn:
         row = db._fetchone(conn, f"""
@@ -665,10 +678,18 @@ def _has_valid_trusted_device(user_id: str, request: Request) -> bool:
             WHERE user_id::text = {ph} AND token_hash = {ph} AND expires_at > NOW()
         """, (user_id, _hash_token(raw)))
         if not row:
-            return False
+            return None
         d = db._row_to_dict(row)
-        db._execute(conn, f"UPDATE trusted_devices SET last_used_at = NOW() WHERE id = {ph}", (d["id"],))
-        return True
+        return str(d["id"])
+
+
+def _touch_trusted_device(device_id: str) -> None:
+    with db._conn() as conn:
+        db._execute(
+            conn,
+            f"UPDATE trusted_devices SET last_used_at = NOW() WHERE id = {db._ph}",
+            (device_id,),
+        )
 
 
 def _consume_verified_otp(conn, phone: str, hashed_code: str) -> dict:
@@ -780,19 +801,29 @@ async def verify_otp(body: OTPVerify, request: Request, response: Response):
     if body.consent:
         await asyncio.to_thread(_log_consent, str(user["id"]), CONSENT_VERSION, ip)
 
-    if _2fa_is_enabled(str(user["id"])) and not await asyncio.to_thread(_has_valid_trusted_device, str(user["id"]), request):
-        ua = request.headers.get("user-agent", "")[:500]
-        challenge = await asyncio.to_thread(
-            _create_pending_2fa,
-            str(user["id"]),
-            ip,
-            ua,
-            user.get("password_hash"),
+    trusted_device_id = None
+    if _2fa_is_enabled(str(user["id"])):
+        trusted_device_id = await asyncio.to_thread(
+            _has_valid_trusted_device, str(user["id"]), request
         )
-        await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
-        return {"two_factor_required": True, "challenge_id": challenge}
+        if not trusted_device_id:
+            ua = request.headers.get("user-agent", "")[:500]
+            challenge = await asyncio.to_thread(
+                _create_pending_2fa,
+                str(user["id"]),
+                ip,
+                ua,
+                user.get("password_hash"),
+            )
+            await asyncio.to_thread(
+                _log_login, phone, "otp", True, request, str(user["id"])
+            )
+            return {"two_factor_required": True, "challenge_id": challenge}
 
-    return await _finish_login(user, phone, "otp", request, response)
+    result = await _finish_login(user, phone, "otp", request, response)
+    if trusted_device_id:
+        await asyncio.to_thread(_touch_trusted_device, trusted_device_id)
+    return result
 
 
 CHECK_PHONE_IP_LIMIT = _cfg.CHECK_PHONE_IP_LIMIT
@@ -849,7 +880,13 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
         await asyncio.to_thread(_log_login, phone, "password", False, request)
         raise HTTPException(401, "Số điện thoại hoặc mật khẩu không đúng")
 
-    matched, is_legacy = await asyncio.to_thread(_verify_password, body.password, user["password_hash"], _return_legacy=True)
+    verified_password_hash = user["password_hash"]
+    matched, is_legacy = await asyncio.to_thread(
+        _verify_password,
+        body.password,
+        verified_password_hash,
+        _return_legacy=True,
+    )
     if not matched:
         _check_shared_auth_rate(f"login_phone_fail:{phone}", LOGIN_PHONE_LIMIT, LOGIN_PHONE_WINDOW, "Tai khoan tam khoa do dang nhap sai nhieu lan. Thu lai sau 15 phut.")
         phone_hits.append(now)
@@ -866,30 +903,43 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
 
     if is_legacy:
         new_hash = await asyncio.to_thread(_hash_password, body.password)
-        def _rehash():
-            with db._conn() as conn:
-                db._execute(conn, f"UPDATE users SET password_hash = {db._ph} WHERE id::text = {db._ph}",
-                            (new_hash, str(user["id"])))
-        await asyncio.to_thread(_rehash)
+        rehashed = await asyncio.to_thread(
+            _rehash_legacy_password,
+            str(user["id"]),
+            verified_password_hash,
+            new_hash,
+        )
+        if not rehashed:
+            raise HTTPException(401, _STALE_AUTH_DETAIL)
         user = dict(user)
         user["password_hash"] = new_hash
         logger.info("Rehashed legacy PBKDF2 password for user %s", user["id"])
 
     _login_phone_fails.pop(phone, None)
 
-    if _2fa_is_enabled(str(user["id"])) and not await asyncio.to_thread(_has_valid_trusted_device, str(user["id"]), request):
-        ua = request.headers.get("user-agent", "")[:500]
-        challenge = await asyncio.to_thread(
-            _create_pending_2fa,
-            str(user["id"]),
-            ip,
-            ua,
-            user.get("password_hash"),
+    trusted_device_id = None
+    if _2fa_is_enabled(str(user["id"])):
+        trusted_device_id = await asyncio.to_thread(
+            _has_valid_trusted_device, str(user["id"]), request
         )
-        await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
-        return {"two_factor_required": True, "challenge_id": challenge}
+        if not trusted_device_id:
+            ua = request.headers.get("user-agent", "")[:500]
+            challenge = await asyncio.to_thread(
+                _create_pending_2fa,
+                str(user["id"]),
+                ip,
+                ua,
+                user.get("password_hash"),
+            )
+            await asyncio.to_thread(
+                _log_login, phone, "password", True, request, str(user["id"])
+            )
+            return {"two_factor_required": True, "challenge_id": challenge}
 
-    return await _finish_login(user, phone, "password", request, response)
+    result = await _finish_login(user, phone, "password", request, response)
+    if trusted_device_id:
+        await asyncio.to_thread(_touch_trusted_device, trusted_device_id)
+    return result
 
 
 @router.post("/set-password",

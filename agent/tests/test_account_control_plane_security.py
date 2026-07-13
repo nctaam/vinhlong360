@@ -6,7 +6,7 @@ from contextlib import contextmanager  # noqa: F401
 from types import SimpleNamespace
 
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, Request, Response
 
 import admin
 import auth  # noqa: F401
@@ -20,6 +20,24 @@ USER_ID = "00000000-0000-0000-0000-000000000004"
 
 def _request(actor):
     return SimpleNamespace(state=SimpleNamespace(admin_user=actor))
+
+
+def _http_request(*, trusted=False):
+    headers = [(b"host", b"localhost"), (b"user-agent", b"pytest")]
+    if trusted:
+        headers.append((b"cookie", b"vl360_trusted=device-token"))
+    return Request(
+        {
+            "type": "http",
+            "method": "POST",
+            "path": "/auth/login",
+            "query_string": b"",
+            "headers": headers,
+            "client": ("127.0.0.1", 12345),
+            "server": ("localhost", 80),
+            "scheme": "http",
+        }
+    )
 
 
 class _AdminDB:
@@ -56,10 +74,13 @@ class _AuthDB:
 
     def __init__(self, user):
         self.user = dict(user)
+        self.login_user = dict(user)
+        self.trusted_device_id = None
         self.pending = []
         self.sessions = []
         self.fetches = []
         self.executes = []
+        self.calls = []
 
     @contextmanager
     def _conn(self):
@@ -67,12 +88,28 @@ class _AuthDB:
 
     def _fetchone(self, _conn, sql, params=()):
         self.fetches.append((sql, params))
+        self.calls.append(("fetch", sql, params))
+        if "UPDATE users SET password_hash" in sql and "RETURNING password_hash" in sql:
+            new_hash, user_id, original_hash = params
+            if (
+                self.user
+                and str(self.user["id"]) == str(user_id)
+                and self.user.get("password_hash") == original_hash
+            ):
+                self.user["password_hash"] = new_hash
+                return {"password_hash": new_hash}
+            return None
+        if "FROM trusted_devices" in sql:
+            if self.trusted_device_id:
+                return {"id": self.trusted_device_id}
+            return None
         if "FROM users" in sql:
             return dict(self.user) if self.user else None
         return None
 
     def _execute(self, _conn, sql, params=()):
         self.executes.append((sql, params))
+        self.calls.append(("execute", sql, params))
         if "INSERT INTO pending_2fa" in sql:
             self.pending.append(params)
         if "INSERT INTO user_sessions" in sql:
@@ -81,6 +118,9 @@ class _AuthDB:
     @staticmethod
     def _row_to_dict(row):
         return dict(row) if row else None
+
+    def get_user_by_phone(self, _phone):
+        return dict(self.login_user) if self.login_user else None
 
 
 def _invoke_auth_snapshot_creation(kind, expected_password_hash):
@@ -123,6 +163,24 @@ def _is_user_password_snapshot(node):
         and isinstance(node.args[0], ast.Constant)
         and node.args[0].value == "password_hash"
     )
+
+
+def _disable_login_rate_limits(monkeypatch):
+    monkeypatch.setattr(auth, "_check_shared_auth_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(auth, "_enforce_local_rate", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(auth, "_login_ip_rate", {})
+    monkeypatch.setattr(auth, "_login_phone_fails", {})
+    monkeypatch.setattr(auth, "_otp_verify_ip_rate", {})
+    monkeypatch.setattr(auth, "_otp_verify_phone_rate", {})
+
+
+async def _run_trusted_login_path(path, response):
+    request = _http_request(trusted=True)
+    if path == "otp":
+        body = auth.OTPVerify(phone="0901234567", code="123456")
+        return await auth.verify_otp(body, request, response)
+    body = auth.PasswordLogin(phone="0901234567", password="password123")
+    return await auth.login_password(body, request, response)
 
 
 def _install_admin_db(monkeypatch, users):
@@ -415,6 +473,32 @@ def test_auth_state_none_snapshot_allows_none_password_account(monkeypatch, kind
 
 
 @pytest.mark.parametrize("kind", ["pending", "session"])
+@pytest.mark.parametrize(
+    ("expected_password_hash", "current_password_hash"),
+    [(None, "current-hash"), ("expected-hash", None)],
+)
+def test_auth_state_null_direction_mismatch_rejects_creation(
+    monkeypatch, kind, expected_password_hash, current_password_hash
+):
+    fake = _AuthDB(
+        {
+            "id": USER_ID,
+            "password_hash": current_password_hash,
+            "is_active": True,
+            "deleted_at": None,
+        }
+    )
+    monkeypatch.setattr(auth, "db", fake)
+
+    with pytest.raises(HTTPException) as exc:
+        _invoke_auth_snapshot_creation(kind, expected_password_hash)
+
+    assert exc.value.status_code == 401
+    assert fake.pending == []
+    assert fake.sessions == []
+
+
+@pytest.mark.parametrize("kind", ["pending", "session"])
 @pytest.mark.parametrize("state", ["inactive", "deleted", "missing"])
 def test_auth_state_invalid_account_rejects_creation(monkeypatch, kind, state):
     user = {
@@ -494,41 +578,206 @@ def test_finish_login_auth_state_check_precedes_login_side_effects():
     assert session_call.lineno < min(side_effect_lines)
 
 
-def test_legacy_rehash_updates_local_password_snapshot_before_auth_creation():
-    tree = ast.parse(textwrap.dedent(inspect.getsource(auth.login_password)))
-    assignments = [node for node in ast.walk(tree) if isinstance(node, ast.Assign)]
-    user_copy = next(
-        node
-        for node in assignments
-        if any(isinstance(target, ast.Name) and target.id == "user" for target in node.targets)
-        and isinstance(node.value, ast.Call)
-        and isinstance(node.value.func, ast.Name)
-        and node.value.func.id == "dict"
+def test_finish_login_stale_snapshot_has_no_side_effects(monkeypatch):
+    fake = _AuthDB(
+        {"id": USER_ID, "password_hash": "new-hash", "is_active": True, "deleted_at": None}
     )
-    snapshot_update = next(
-        node
-        for node in assignments
-        if any(
-            isinstance(target, ast.Subscript)
-            and isinstance(target.value, ast.Name)
-            and target.value.id == "user"
-            and isinstance(target.slice, ast.Constant)
-            and target.slice.value == "password_hash"
-            for target in node.targets
+    monkeypatch.setattr(auth, "db", fake)
+    calls = []
+    monkeypatch.setattr(auth, "_check_suspicious_login", lambda *_args: calls.append("alert"))
+    monkeypatch.setattr(auth, "_log_login", lambda *_args: calls.append("history"))
+    monkeypatch.setattr(auth, "_update_login_streak", lambda *_args: calls.append("streak"))
+    monkeypatch.setattr(auth, "_set_session_cookie", lambda *_args: calls.append("cookie"))
+    monkeypatch.setattr(auth.asyncio, "create_task", lambda *_args: calls.append("achievement"))
+    response = Response()
+
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(
+            auth._finish_login(
+                {"id": USER_ID, "password_hash": "old-hash", "is_active": True},
+                "0901234567",
+                "password",
+                _http_request(),
+                response,
+            )
         )
-        and isinstance(node.value, ast.Name)
-        and node.value.id == "new_hash"
+
+    assert exc.value.status_code == 401
+    assert fake.sessions == []
+    assert response.headers.get("set-cookie") is None
+    assert response.body == b""
+    assert calls == []
+
+
+def test_legacy_rehash_cas_rejects_concurrent_reset_without_auth_creation(monkeypatch):
+    fake = _AuthDB(
+        {"id": USER_ID, "password_hash": "reset-hash", "is_active": True, "deleted_at": None}
     )
-    rehash_call = _threaded_helper_calls(auth.login_password, "_rehash")[0]
-    challenge_call = _threaded_helper_calls(auth.login_password, "_create_pending_2fa")[0]
-    finish_call = next(
-        node
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Name)
-        and node.func.id == "_finish_login"
+    fake.login_user = {
+        "id": USER_ID,
+        "phone": "0901234567",
+        "password_hash": "legacy-hash",
+        "is_active": True,
+        "deleted_at": None,
+    }
+    monkeypatch.setattr(auth, "db", fake)
+    _disable_login_rate_limits(monkeypatch)
+    monkeypatch.setattr(
+        auth,
+        "_verify_password",
+        lambda *_args, **_kwargs: (True, True),
+    )
+    monkeypatch.setattr(auth, "_hash_password", lambda _password: "upgraded-hash")
+    reached = []
+    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: reached.append("2fa"))
+
+    async def finish(*_args):
+        reached.append("finish")
+
+    monkeypatch.setattr(auth, "_finish_login", finish)
+
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(
+            auth.login_password(
+                auth.PasswordLogin(phone="0901234567", password="password123"),
+                _http_request(),
+                Response(),
+            )
+        )
+
+    assert exc.value.status_code == 401
+    assert exc.value.detail == auth._STALE_AUTH_DETAIL
+    assert fake.user["password_hash"] == "reset-hash"
+    assert fake.pending == []
+    assert fake.sessions == []
+    assert reached == []
+    cas_sql, cas_params = next(
+        (sql, params)
+        for sql, params in fake.fetches
+        if "UPDATE users SET password_hash" in sql
+    )
+    assert "password_hash = %s" in cas_sql
+    assert "RETURNING password_hash" in cas_sql
+    assert cas_params == ("upgraded-hash", USER_ID, "legacy-hash")
+
+
+def test_legacy_rehash_cas_success_updates_local_snapshot(monkeypatch):
+    fake = _AuthDB(
+        {"id": USER_ID, "password_hash": "legacy-hash", "is_active": True, "deleted_at": None}
+    )
+    fake.login_user.update({"phone": "0901234567"})
+    monkeypatch.setattr(auth, "db", fake)
+    _disable_login_rate_limits(monkeypatch)
+    monkeypatch.setattr(
+        auth,
+        "_verify_password",
+        lambda *_args, **_kwargs: (True, True),
+    )
+    monkeypatch.setattr(auth, "_hash_password", lambda _password: "upgraded-hash")
+    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: False)
+    snapshots = []
+
+    async def finish(user, *_args):
+        snapshots.append(user["password_hash"])
+        return {"success": True}
+
+    monkeypatch.setattr(auth, "_finish_login", finish)
+
+    result = asyncio.run(
+        auth.login_password(
+            auth.PasswordLogin(phone="0901234567", password="password123"),
+            _http_request(),
+            Response(),
+        )
     )
 
-    assert rehash_call.lineno < user_copy.lineno < snapshot_update.lineno
-    assert snapshot_update.lineno < challenge_call.lineno
-    assert snapshot_update.lineno < finish_call.lineno
+    assert result == {"success": True}
+    assert fake.user["password_hash"] == "upgraded-hash"
+    assert snapshots == ["upgraded-hash"]
+
+
+@pytest.mark.parametrize("path", ["otp", "password"])
+def test_trusted_device_touch_occurs_after_successful_finish_login(monkeypatch, path):
+    user = {
+        "id": USER_ID,
+        "phone": "0901234567",
+        "password_hash": "current-hash",
+        "is_active": True,
+        "deleted_at": None,
+    }
+    fake = _AuthDB(user)
+    fake.trusted_device_id = "device-id"
+    monkeypatch.setattr(auth, "db", fake)
+    _disable_login_rate_limits(monkeypatch)
+    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(auth, "_get_or_create_user", lambda *_args: dict(user))
+    monkeypatch.setattr(
+        auth,
+        "_verify_password",
+        lambda *_args, **_kwargs: (True, False),
+    )
+    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: True)
+    events = []
+    execute = fake._execute
+
+    def track_execute(conn, sql, params=()):
+        if "UPDATE trusted_devices SET last_used_at" in sql:
+            events.append("touch")
+        return execute(conn, sql, params)
+
+    fake._execute = track_execute
+
+    async def finish(*_args):
+        events.append("finish")
+        return {"success": True}
+
+    monkeypatch.setattr(auth, "_finish_login", finish)
+
+    result = asyncio.run(_run_trusted_login_path(path, Response()))
+
+    assert result == {"success": True}
+    assert events == ["finish", "touch"]
+
+
+@pytest.mark.parametrize("path", ["otp", "password"])
+def test_trusted_device_stale_finish_login_does_not_touch(monkeypatch, path):
+    user = {
+        "id": USER_ID,
+        "phone": "0901234567",
+        "password_hash": "current-hash",
+        "is_active": True,
+        "deleted_at": None,
+    }
+    fake = _AuthDB(user)
+    fake.trusted_device_id = "device-id"
+    monkeypatch.setattr(auth, "db", fake)
+    _disable_login_rate_limits(monkeypatch)
+    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(auth, "_get_or_create_user", lambda *_args: dict(user))
+    monkeypatch.setattr(
+        auth,
+        "_verify_password",
+        lambda *_args, **_kwargs: (True, False),
+    )
+    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: True)
+    events = []
+    execute = fake._execute
+
+    def track_execute(conn, sql, params=()):
+        if "UPDATE trusted_devices SET last_used_at" in sql:
+            events.append("touch")
+        return execute(conn, sql, params)
+
+    fake._execute = track_execute
+
+    async def stale_finish(*_args):
+        events.append("finish")
+        raise HTTPException(401, "stale")
+
+    monkeypatch.setattr(auth, "_finish_login", stale_finish)
+
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(_run_trusted_login_path(path, Response()))
+
+    assert exc.value.status_code == 401
+    assert events == ["finish"]
