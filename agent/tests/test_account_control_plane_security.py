@@ -159,7 +159,10 @@ def test_single_ban_uses_request_scoped_actor_without_auth_lookup(monkeypatch):
     assert result == {"success": True}
 
 
-def test_bulk_ban_rejects_mixed_superior_batch_without_any_write(monkeypatch):
+@pytest.mark.parametrize("target_role", ["admin", "superadmin"])
+def test_bulk_ban_rejects_mixed_peer_or_superior_batch_without_any_write(
+    monkeypatch, target_role
+):
     actor = {"id": ADMIN_ID, "role": "admin"}
 
     async def legacy_auth_lookup(_request):
@@ -170,7 +173,7 @@ def test_bulk_ban_rejects_mixed_superior_batch_without_any_write(monkeypatch):
         monkeypatch,
         {
             USER_ID: {"id": USER_ID, "role": "user", "is_active": True},
-            SUPER_ID: {"id": SUPER_ID, "role": "superadmin", "is_active": True},
+            SUPER_ID: {"id": SUPER_ID, "role": target_role, "is_active": True},
         },
     )
     assert_manage = admin._assert_actor_can_manage_target
@@ -224,7 +227,8 @@ def test_bulk_ban_deduplicates_skips_missing_and_preserves_response_order(monkey
         return assert_manage(admin_user, target_role)
 
     monkeypatch.setattr(admin, "_assert_actor_can_manage_target", track_validation)
-    monkeypatch.setattr(admin, "_log_mod_action", lambda *_args: None)
+    logs = []
+    monkeypatch.setattr(admin, "_log_mod_action", lambda *args: logs.append(args))
     missing = "00000000-0000-0000-0000-000000000099"
     body = admin.BulkUserAction(user_ids=[PEER_ID, missing, USER_ID, PEER_ID])
 
@@ -234,6 +238,10 @@ def test_bulk_ban_deduplicates_skips_missing_and_preserves_response_order(monkey
 
     assert result["banned_ids"] == [PEER_ID, USER_ID]
     assert result["banned_count"] == 2
+    assert logs == [
+        ("user", PEER_ID, "ban", None),
+        ("user", USER_ID, "ban", None),
+    ]
     assert len(fake.fetches) == 3
     locked_ids = [str(params[0]) for sql, params in fake.fetches if "FOR UPDATE" in sql]
     assert locked_ids == sorted({PEER_ID, missing, USER_ID})
