@@ -55,6 +55,11 @@ export interface LaunchRouteManifest {
   }>
 }
 
+export interface RouteDecision {
+  readonly classification: string
+  readonly canonical_path: string | null
+}
+
 function record(value: unknown, label: string): Record<string, unknown> {
   if (
     value === null
@@ -183,6 +188,24 @@ function templatesOverlap(left: string, right: string): boolean {
     const other = rightSegments[index]!
     return PLACEHOLDER.test(segment) || PLACEHOLDER.test(other) || segment === other
   })
+}
+
+function decodeOnce(rawPath: string): string | null {
+  if (/%(?![0-9A-Fa-f]{2})/.test(rawPath) || /%2f|%5c/i.test(rawPath)) return null
+
+  let decoded: string
+  try {
+    decoded = decodeURIComponent(rawPath)
+  } catch {
+    return null
+  }
+  if (decoded.includes('\0') || /%[0-9A-Fa-f]{2}/.test(decoded)) return null
+  if (decoded.split('/').some(segment => segment === '.' || segment === '..')) return null
+  return decoded
+}
+
+function segmentMatch(path: string, prefix: string): boolean {
+  return path === prefix || path.startsWith(`${prefix}/`)
 }
 
 function deepFreeze<T>(value: T): T {
@@ -343,3 +366,54 @@ export function parseLaunchRouteManifest(
 }
 
 export const launchRouteManifest = parseLaunchRouteManifest(manifestJson)
+
+export function classifyRequestTarget(
+  target: string,
+  manifest: LaunchRouteManifest,
+  method: 'GET' | 'HEAD' | string = 'GET',
+): RouteDecision {
+  if (!target.startsWith('/') || target.includes('#')) {
+    return { classification: 'reject', canonical_path: null }
+  }
+
+  const question = target.indexOf('?')
+  const rawPath = question === -1 ? target : target.slice(0, question)
+  const query = question === -1 ? '' : target.slice(question + 1)
+  const decoded = decodeOnce(rawPath)
+  if (decoded === null) return { classification: 'reject', canonical_path: null }
+
+  const rawWithoutEmpty = `/${rawPath.split('/').filter(Boolean).join('/')}`
+  const normalized = `/${decoded.split('/').filter(Boolean).join('/')}`
+
+  for (const item of manifest.sensitive_prefixes) {
+    if (segmentMatch(rawWithoutEmpty, item.prefix) || segmentMatch(normalized, item.prefix)) {
+      return { classification: 'crawl-blocked-sensitive', canonical_path: normalized }
+    }
+  }
+
+  if (rawPath !== normalized) {
+    const classification = method === 'GET' || method === 'HEAD'
+      ? 'redirect-canonical'
+      : 'noindex-follow-public'
+    return { classification, canonical_path: normalized }
+  }
+
+  if (question !== -1 && query !== '') {
+    return { classification: 'noindex-follow-public', canonical_path: normalized }
+  }
+
+  const exact = manifest.exact_routes.find(item => item.path === normalized)
+  if (exact) return { classification: exact.classification, canonical_path: normalized }
+
+  const dynamic = manifest.dynamic_templates.find(item => matchesTemplate(normalized, item.template))
+  if (dynamic) return { classification: dynamic.authority, canonical_path: normalized }
+
+  return { classification: manifest.unknown_policy, canonical_path: normalized }
+}
+
+export function extractStaticSitemapPaths(manifest: LaunchRouteManifest): string[] {
+  return manifest.exact_routes
+    .filter(item => item.classification === 'indexable-public' && item.sitemap === true)
+    .map(item => item.path)
+    .sort()
+}

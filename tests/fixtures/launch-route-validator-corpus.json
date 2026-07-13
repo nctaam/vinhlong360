@@ -1,0 +1,21 @@
+[
+  {"name": "missing-normalization-key", "operation": "delete", "pointer": "/normalization/query_policy", "error": "normalization"},
+  {"name": "unknown-root-key", "operation": "set", "pointer": "/extra", "value": true, "error": "keys mismatch"},
+  {"name": "invalid-exact-classification", "operation": "set", "pointer": "/exact_routes/0/classification", "value": "public", "error": "exact route"},
+  {"name": "duplicate-sensitive-prefix", "operation": "append-copy", "pointer": "/sensitive_prefixes/0", "error": "duplicate sensitive prefix"},
+  {"name": "empty-ingress-review", "operation": "append", "pointer": "/backend_ingress_exceptions", "value": {"prefix": "/hook", "upstream": "agent", "review_reason": ""}, "error": "ingress exception"},
+  {"name": "ambiguous-dynamic-template", "operation": "append", "pointer": "/dynamic_templates", "value": {"template": "/dia-diem/{id}", "authority": "backend-entity", "sitemap": "backend"}, "error": "ambiguous dynamic template"},
+  {"name": "unclosed-dynamic-placeholder", "operation": "set", "pointer": "/dynamic_templates/0/template", "value": "/dia-diem/{entity_id", "error": "dynamic template"},
+  {"name": "extra-closing-dynamic-placeholder", "operation": "set", "pointer": "/dynamic_templates/0/template", "value": "/dia-diem/entity_id}", "error": "dynamic template"},
+  {"name": "embedded-dynamic-placeholder", "operation": "set", "pointer": "/dynamic_templates/0/template", "value": "/dia-diem/prefix-{entity_id}", "error": "dynamic template"},
+  {"name": "uppercase-dynamic-placeholder", "operation": "set", "pointer": "/dynamic_templates/0/template", "value": "/dia-diem/{EntityId}", "error": "dynamic template"},
+  {"name": "duplicate-placeholder-name", "operation": "set", "pointer": "/dynamic_templates/0/template", "value": "/dia-diem/{entity_id}/{entity_id}", "error": "dynamic template"},
+  {"name": "empty-dynamic-placeholder", "operation": "set", "pointer": "/dynamic_templates/0/template", "value": "/dia-diem/{}", "error": "dynamic template"},
+  {"name": "leading-digit-dynamic-placeholder", "operation": "set", "pointer": "/dynamic_templates/0/template", "value": "/dia-diem/{1entity_id}", "error": "dynamic template"},
+  {"name": "hyphenated-dynamic-placeholder", "operation": "set", "pointer": "/dynamic_templates/0/template", "value": "/dia-diem/{entity-id}", "error": "dynamic template"},
+  {"name": "missing-dynamic-placeholder", "operation": "set", "pointer": "/dynamic_templates/0/template", "value": "/dia-diem/no-placeholder", "error": "dynamic template"},
+  {"name": "fixed-noindex-with-backend-sitemap", "operation": "set", "pointer": "/dynamic_templates/2/sitemap", "value": "backend", "error": "dynamic authority"},
+  {"name": "accepted-nel-exact-path", "operation": "set", "pointer": "/exact_routes/0/path", "value": "/nel\u0085route", "error": null},
+  {"name": "accepted-ingress-review", "operation": "append", "pointer": "/backend_ingress_exceptions", "value": {"prefix": "/hook", "upstream": "agent", "review_reason": "reviewed callback"}, "error": null},
+  {"name": "accepted-nel-ingress-review", "operation": "append", "pointer": "/backend_ingress_exceptions", "value": {"prefix": "/nel-hook", "upstream": "bot-gateway", "review_reason": "\u0085"}, "error": null}
+]

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
+from urllib.parse import unquote_to_bytes
 
 if __package__:
     from .launch_artifacts import (
@@ -15,7 +16,12 @@ if __package__:
         load_artifact,
     )
 else:
-    from launch_artifacts import ImmutableJSONObject, LoadedArtifact, _freeze_json, load_artifact
+    from launch_artifacts import (
+        ImmutableJSONObject,
+        LoadedArtifact,
+        _freeze_json,
+        load_artifact,
+    )
 
 
 ARTIFACT_NAME = "launch-indexing-policy.json"
@@ -32,17 +38,19 @@ NORMALIZATION = MappingProxyType(
         "query_policy": "noindex-except-sitemap-batch",
     }
 )
-TOP_LEVEL_KEYS = frozenset({
-    "backend_ingress_exceptions",
-    "canonical_origin",
-    "dynamic_templates",
-    "exact_routes",
-    "normalization",
-    "revision",
-    "schema_version",
-    "sensitive_prefixes",
-    "unknown_policy",
-})
+TOP_LEVEL_KEYS = frozenset(
+    {
+        "backend_ingress_exceptions",
+        "canonical_origin",
+        "dynamic_templates",
+        "exact_routes",
+        "normalization",
+        "revision",
+        "schema_version",
+        "sensitive_prefixes",
+        "unknown_policy",
+    }
+)
 EXACT_KEYS = frozenset({"classification", "path", "sitemap"})
 PREFIX_KEYS = frozenset({"classification", "prefix"})
 INGRESS_KEYS = frozenset({"prefix", "review_reason", "upstream"})
@@ -50,15 +58,15 @@ TEMPLATE_KEYS = frozenset({"authority", "sitemap", "template"})
 EXACT_CLASSIFICATIONS = frozenset({"indexable-public", "noindex-follow-public"})
 SENSITIVE_CLASSIFICATIONS = frozenset({"crawl-blocked-sensitive"})
 INGRESS_UPSTREAMS = frozenset({"agent", "bot-gateway"})
-TEMPLATE_AUTHORITIES = frozenset(
-    {"backend-entity", "backend-ward", "fixed-noindex"}
-)
+TEMPLATE_AUTHORITIES = frozenset({"backend-entity", "backend-ward", "fixed-noindex"})
 PLACEHOLDER = re.compile(r"^\{([a-z_][a-z0-9_]*)\}$")
 JS_EXTRA_WHITESPACE = frozenset(
     "\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006"
     "\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"
 )
-JS_TRIM_CHARACTERS = "\u0009\u000a\u000b\u000c\u000d\u0020" + "".join(JS_EXTRA_WHITESPACE)
+JS_TRIM_CHARACTERS = "\u0009\u000a\u000b\u000c\u000d\u0020" + "".join(
+    JS_EXTRA_WHITESPACE
+)
 
 
 @dataclass(frozen=True)
@@ -74,6 +82,12 @@ class LoadedRouteManifest:
         if snapshot != self.artifact.data:
             raise ValueError("route manifest data does not match artifact data")
         object.__setattr__(self, "data", snapshot)
+
+
+@dataclass(frozen=True)
+class RouteDecision:
+    classification: str
+    canonical_path: str | None
 
 
 def _record(value: object, label: str) -> Mapping[str, Any]:
@@ -181,6 +195,55 @@ def _templates_overlap(left: str, right: str) -> bool:
     )
 
 
+def _decode_once(raw_path: str) -> str | None:
+    if re.search(r"%(?![0-9A-Fa-f]{2})", raw_path) or re.search(
+        r"%2f|%5c", raw_path, re.IGNORECASE
+    ):
+        return None
+    try:
+        decoded = unquote_to_bytes(raw_path).decode("utf-8", errors="strict")
+    except (UnicodeDecodeError, ValueError):
+        return None
+    if "\x00" in decoded or re.search(r"%[0-9A-Fa-f]{2}", decoded):
+        return None
+    if any(segment in {".", ".."} for segment in decoded.split("/")):
+        return None
+    return decoded
+
+
+def _segment_match(path: str, prefix: str) -> bool:
+    return path == prefix or path.startswith(f"{prefix}/")
+
+
+def _collapse_slashes(path: str) -> str:
+    return "/" + "/".join(segment for segment in path.split("/") if segment)
+
+
+def _sensitive_classification(
+    raw_path: str,
+    canonical_path: str,
+    manifest: LoadedRouteManifest,
+) -> str | None:
+    for item in manifest.data["sensitive_prefixes"]:
+        prefix = item["prefix"]
+        if _segment_match(raw_path, prefix) or _segment_match(canonical_path, prefix):
+            return item["classification"]
+    return None
+
+
+def _canonical_classification(
+    path: str,
+    manifest: LoadedRouteManifest,
+) -> str:
+    for item in manifest.data["exact_routes"]:
+        if item["path"] == path:
+            return item["classification"]
+    for item in manifest.data["dynamic_templates"]:
+        if _matches_template(path, item["template"]):
+            return item["authority"]
+    return manifest.data["unknown_policy"]
+
+
 def _assert_unique(values: list[str], message: str) -> None:
     if len(set(values)) != len(values):
         raise ValueError(f"route manifest {message}")
@@ -207,7 +270,10 @@ def _validate_route_manifest_shape(
 
     normalization = _record(manifest["normalization"], "normalization")
     _exact_keys(normalization, frozenset(NORMALIZATION), "normalization")
-    if any(type(normalization[key]) is not str or normalization[key] != expected for key, expected in NORMALIZATION.items()):
+    if any(
+        type(normalization[key]) is not str or normalization[key] != expected
+        for key, expected in NORMALIZATION.items()
+    ):
         raise ValueError("route manifest normalization mismatch")
 
     exact_routes: list[dict[str, Any]] = []
@@ -227,7 +293,9 @@ def _validate_route_manifest_shape(
         )
 
     sensitive_prefixes: list[dict[str, str]] = []
-    for index, raw in enumerate(_array(manifest["sensitive_prefixes"], "sensitive_prefixes")):
+    for index, raw in enumerate(
+        _array(manifest["sensitive_prefixes"], "sensitive_prefixes")
+    ):
         item = _record(raw, f"sensitive_prefixes[{index}]")
         _exact_keys(item, PREFIX_KEYS, f"sensitive_prefixes[{index}]")
         prefix = _canonical_path(item["prefix"], "sensitive prefix")
@@ -253,7 +321,10 @@ def _validate_route_manifest_shape(
             item["upstream"], INGRESS_UPSTREAMS, "ingress exception mismatch"
         )
         review_reason = item["review_reason"]
-        if type(review_reason) is not str or review_reason.strip(JS_TRIM_CHARACTERS) == "":
+        if (
+            type(review_reason) is not str
+            or review_reason.strip(JS_TRIM_CHARACTERS) == ""
+        ):
             raise ValueError("route manifest ingress exception mismatch")
         ingress_exceptions.append(
             {"prefix": prefix, "upstream": upstream, "review_reason": review_reason}
@@ -261,7 +332,9 @@ def _validate_route_manifest_shape(
 
     templates: list[dict[str, Any]] = []
     signatures: list[str] = []
-    for index, raw in enumerate(_array(manifest["dynamic_templates"], "dynamic_templates")):
+    for index, raw in enumerate(
+        _array(manifest["dynamic_templates"], "dynamic_templates")
+    ):
         item = _record(raw, f"dynamic_templates[{index}]")
         _exact_keys(item, TEMPLATE_KEYS, f"dynamic_templates[{index}]")
         template = item["template"]
@@ -279,12 +352,18 @@ def _validate_route_manifest_shape(
             if type(item["sitemap"]) is not str or item["sitemap"] != "backend":
                 raise ValueError("route manifest dynamic authority mismatch")
             sitemap = "backend"
-        templates.append({"template": template, "authority": authority, "sitemap": sitemap})
+        templates.append(
+            {"template": template, "authority": authority, "sitemap": sitemap}
+        )
         signatures.append(signature)
 
     _assert_unique([item["path"] for item in exact_routes], "duplicate exact route")
-    _assert_unique([item["prefix"] for item in sensitive_prefixes], "duplicate sensitive prefix")
-    _assert_unique([item["prefix"] for item in ingress_exceptions], "duplicate ingress exception")
+    _assert_unique(
+        [item["prefix"] for item in sensitive_prefixes], "duplicate sensitive prefix"
+    )
+    _assert_unique(
+        [item["prefix"] for item in ingress_exceptions], "duplicate ingress exception"
+    )
     _assert_unique(signatures, "ambiguous dynamic template")
     for left_index, left in enumerate(templates):
         for right in templates[left_index + 1 :]:
@@ -293,8 +372,8 @@ def _validate_route_manifest_shape(
 
     if any(
         ingress["prefix"] == sensitive["prefix"]
-        or ingress["prefix"].startswith(f'{sensitive["prefix"]}/')
-        or sensitive["prefix"].startswith(f'{ingress["prefix"]}/')
+        or ingress["prefix"].startswith(f"{sensitive['prefix']}/")
+        or sensitive["prefix"].startswith(f"{ingress['prefix']}/")
         for ingress in ingress_exceptions
         for sensitive in sensitive_prefixes
     ):
@@ -334,3 +413,47 @@ def load_route_manifest(
     )
     data = validate_route_manifest_data(artifact.data)
     return LoadedRouteManifest(artifact=artifact, revision=data["revision"], data=data)
+
+
+def classify_request_target(
+    target: str,
+    manifest: LoadedRouteManifest,
+    *,
+    method: str = "GET",
+) -> RouteDecision:
+    if not target.startswith("/") or "#" in target:
+        return RouteDecision("reject", None)
+
+    raw_path, separator, query = target.partition("?")
+    decoded = _decode_once(raw_path)
+    if decoded is None:
+        return RouteDecision("reject", None)
+
+    raw_without_empty = _collapse_slashes(raw_path)
+    normalized = _collapse_slashes(decoded)
+    sensitive = _sensitive_classification(raw_without_empty, normalized, manifest)
+    if sensitive is not None:
+        return RouteDecision(sensitive, normalized)
+
+    if raw_path != normalized:
+        classification = (
+            "redirect-canonical"
+            if method in {"GET", "HEAD"}
+            else "noindex-follow-public"
+        )
+        return RouteDecision(classification, normalized)
+
+    if separator and query:
+        return RouteDecision("noindex-follow-public", normalized)
+
+    return RouteDecision(_canonical_classification(normalized, manifest), normalized)
+
+
+def extract_static_sitemap_paths(manifest: LoadedRouteManifest) -> tuple[str, ...]:
+    return tuple(
+        sorted(
+            item["path"]
+            for item in manifest.data["exact_routes"]
+            if item["classification"] == "indexable-public" and item["sitemap"] is True
+        )
+    )
