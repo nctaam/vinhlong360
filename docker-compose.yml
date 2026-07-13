@@ -76,7 +76,8 @@ services:
 
   nuxt:
     build:
-      context: ./web-nuxt
+      context: .
+      dockerfile: web-nuxt/Dockerfile
     container_name: vl360-nuxt
     ports:
       - "3000:3000"

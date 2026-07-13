@@ -41,6 +41,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy source
 COPY agent/ ./agent/
 COPY web/ ./web/
+COPY config/ ./config/
 
 # Data directory for logs, memory, analytics
 RUN mkdir -p agent/data data/memory

@@ -91,7 +91,7 @@ if [ "$DO_BACKEND" = 1 ]; then
   [ -f scripts/validate_data.py ] && GATE_SCRIPTS="$GATE_SCRIPTS scripts/validate_data.py"
   [ -f scripts/quality_budget.py ] && GATE_SCRIPTS="$GATE_SCRIPTS scripts/quality_budget.py"
   [ -f scripts/restore_drill.py ] && GATE_SCRIPTS="$GATE_SCRIPTS scripts/restore_drill.py"
-  tar -czf "$TMP/vl-deploy.tar.gz" agent/*.py requirements.txt init.sql web/data.json $DATAJS $MIGRATIONS $GATE_SCRIPTS
+  tar -czf "$TMP/vl-deploy.tar.gz" agent/*.py requirements.txt init.sql config web/data.json $DATAJS $MIGRATIONS $GATE_SCRIPTS
 fi
 if [ "$DO_FRONTEND" = 1 ]; then
   if [ ! -f web-nuxt/.output/server/index.mjs ] || [ ! -f web-nuxt/.output/server/package.json ]; then
@@ -110,7 +110,7 @@ set -e
 cd $REMOTE
 set -a; . ./.env; set +a
 pg_dump -Fc "\$DATABASE_URL" -f /tmp/db-pre-deploy-$TS.dump && mv /tmp/db-pre-deploy-$TS.dump backups/ && echo "  db dump -> backups/db-pre-deploy-$TS.dump"
-tar -czf backups/pre-deploy-$TS.tar.gz agent web/data.json web/media web-nuxt/.output 2>/dev/null && echo "  code snapshot -> backups/pre-deploy-$TS.tar.gz"
+tar -czf backups/pre-deploy-$TS.tar.gz agent web/data.json web/media web-nuxt/.output config 2>/dev/null && echo "  code snapshot -> backups/pre-deploy-$TS.tar.gz"
 ls -t backups/pre-deploy-*.tar.gz 2>/dev/null | tail -n +7 | xargs -r rm -f
 ls -t backups/db-pre-deploy-*.dump 2>/dev/null | tail -n +7 | xargs -r rm -f
 echo "  rotated auto-backups (kept newest 6)"

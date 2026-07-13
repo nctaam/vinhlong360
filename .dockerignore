@@ -1,10 +1,16 @@
 .git
+.env
+**/.env
 __pycache__
 *.pyc
 node_modules
 .claude
+.pytest_cache
+.ruff_cache
 *.log
 *.log.jsonl
 agent/data/
 data/
 ssl/
+web-nuxt/.nuxt
+web-nuxt/.output
