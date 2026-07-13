@@ -4,8 +4,9 @@ import hashlib
 import json
 import math
 import unicodedata
+import warnings
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 
@@ -15,6 +16,7 @@ WINDOWS_RESERVED_FILENAMES = frozenset(
     | {f"COM{index}" for index in range(1, 10)}
     | {f"LPT{index}" for index in range(1, 10)}
 )
+WINDOWS_SUPERSCRIPT_DIGITS = str.maketrans("\u00b9\u00b2\u00b3", "123")
 
 
 @dataclass(frozen=True)
@@ -66,22 +68,35 @@ def _parse_json_object(raw: bytes, path: Path) -> dict[str, Any]:
     return data
 
 
+def _is_windows_reserved_filename(name: str) -> bool:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        if PureWindowsPath(name).is_reserved():
+            return True
+    reserved_stem = (
+        name.split(".", 1)[0]
+        .rstrip(" .")
+        .translate(WINDOWS_SUPERSCRIPT_DIGITS)
+        .upper()
+    )
+    return reserved_stem in WINDOWS_RESERVED_FILENAMES
+
+
 def _validate_artifact_name(name: object) -> Path:
     if type(name) is not str:
         raise ValueError("artifact name must be a single valid filename")
     artifact_name = Path(name)
-    reserved_stem = name.split(".", 1)[0].upper()
     if (
         name in {"", ".", ".."}
         or artifact_name.is_absolute()
         or artifact_name.name != name
         or name.endswith((".", " "))
-        or reserved_stem in WINDOWS_RESERVED_FILENAMES
         or any(
             character in WINDOWS_INVALID_FILENAME_CHARACTERS
             or unicodedata.category(character) == "Cc"
             for character in name
         )
+        or _is_windows_reserved_filename(name)
     ):
         raise ValueError("artifact name must be a single valid filename")
     return artifact_name
@@ -96,10 +111,10 @@ def load_artifact(
     if release_root is not None and fixture_path is not None:
         raise ValueError("release_root and fixture_path are mutually exclusive")
 
+    artifact_name = _validate_artifact_name(name)
     if fixture_path is not None:
         path = Path(fixture_path)
     else:
-        artifact_name = _validate_artifact_name(name)
         root = Path(release_root) if release_root is not None else Path(__file__).resolve().parent.parent
         path = root / "config" / artifact_name
 

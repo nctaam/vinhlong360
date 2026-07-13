@@ -123,6 +123,61 @@ def test_load_artifact_rejects_windows_invalid_production_names_before_read(tmp_
         load_artifact(name, release_root=tmp_path)
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "CON .json",
+        "COM\u00b9.json",
+        "LPT\u00b3.txt",
+        "CON.json",
+        "NUL",
+        "AUX.txt",
+        "COM1",
+        "LPT9",
+        "cOn .JsOn",
+        "com\u00b2 .json",
+        "lPt\u00b3..txt",
+    ],
+    ids=[
+        "con-stem-space",
+        "com-superscript-one",
+        "lpt-superscript-three",
+        "con-extension",
+        "nul",
+        "aux-extension",
+        "com1",
+        "lpt9",
+        "mixed-case-stem-space",
+        "superscript-stem-space",
+        "mixed-case-stem-dot",
+    ],
+)
+@pytest.mark.parametrize("source", ["production", "fixture"])
+def test_load_artifact_rejects_reserved_names_before_any_read(
+    tmp_path,
+    monkeypatch,
+    name,
+    source,
+):
+    reads = []
+
+    def forbidden_read(path):
+        reads.append(path)
+        pytest.fail("reserved artifact name reached file I/O")
+
+    monkeypatch.setattr(Path, "read_bytes", forbidden_read)
+    kwargs = (
+        {"release_root": tmp_path}
+        if source == "production"
+        else {"fixture_path": tmp_path / "fixture.json"}
+    )
+
+    with pytest.raises(ValueError, match="artifact name"):
+        load_artifact(name, **kwargs)
+
+    assert reads == []
+
+
 @pytest.mark.parametrize("name", ["launch-indexing-policy.json", "ai-disclosure.json"])
 def test_load_artifact_accepts_canonical_production_names(tmp_path, name):
     target = tmp_path / "config" / name
