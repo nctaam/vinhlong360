@@ -17,7 +17,7 @@ The required result is:
 - a future selective-open state requires two exact keys plus external gates;
 - backend entity responses and sitemap selection share one quality authority;
 - all current entity images are treated and disclosed as AI-generated;
-- rollback to closed is immediate and does not depend on the backend.
+- rollback to closed is bounded, restart-based, and does not depend on the backend.
 ## 2. Owner Decisions
 
 These are fixed inputs, not design questions:
@@ -49,7 +49,7 @@ The repository can currently express conflicting signals:
 - visible UI, share metadata, and structured data can disclose differently;
 - a generic graphic placeholder can inherit actual-image copy.
 The launch gate therefore coordinates meta, response headers, robots, sitemap,
-cache identity, backend quality, link eligibility, and disclosure surfaces.
+cache isolation, backend quality, link eligibility, and disclosure surfaces.
 Baseline evidence before implementation:
 - backend: 6168 passed, 47 skipped, 78 deselected, 1 xfailed, 1 warning;
 - frontend serial: 8 files, 125 passed;
@@ -112,7 +112,7 @@ covers:
 - closed/selective-open matrix version;
 - AI-image classification rule;
 - disclosure copy version;
-- cache-fencing schema version.
+- cache-isolation rule version.
 The value is stable and build-pinned in reviewed source. Runtime code does not
 invent a replacement. Nuxt supplies the expected value on selective-open
 policy requests; the backend returns its active value. The fingerprint proves
@@ -121,30 +121,26 @@ A missing or mismatched backend fingerprint or route-manifest revision prevents
 selective-open globally. Non-entity pages stay `noindex`, `robots.txt` omits its
 sitemap line, entity detail remains `noindex` without consulting a local
 fallback rule, and sitemap endpoints follow `sitemap_action=unavailable`.
-### 4.4 Cache Fencing
+### 4.4 Cache Isolation
 
-Every open cache identity starts with:
-```text
-route + selective-open + policy fingerprint
-      + route-manifest revision + backend-policy revision
-```
-It then uses one surface-specific suffix:
-```text
-static canonical page -> static
-entity detail         -> entity policy revision
-robots.txt            -> robots
-open sitemap          -> deterministic sitemap batch revision
-```
-Closed artifacts use `route + closed + closed-sentinel` and need no backend
-revision. A sitemap batch revision deterministically covers the manifest
-revision, backend policy revision, entity-data revision, and the evaluated URL
-set; it is not a concatenation of per-entity revisions.
-Open HTML, payload, route-rule, robots, or sitemap artifacts cannot match a
-closed cache namespace. If an open page/robots identity cannot be computed, the
-request uses closed output. If an open sitemap identity is incomplete, the
-endpoint returns HTTP 503 `no-store` rather than an empty or cached document.
-Closed `robots.txt` and sitemap responses use `Cache-Control: no-store`.
-Any future open sitemap cache must be short-lived and fingerprint-fenced.
+Workstream 5 does not add a custom Nitro cache-key system. The current Nuxt
+route rules cache policy-bearing HTML and entity responses by URL only, so they
+cannot safely represent fingerprint/revision state.
+The required behavior is deliberately simpler:
+- ordinary closed processes may retain existing SWR for public HTML because the
+  mode is fixed for the lifetime of that process and the response header remains
+  closed;
+- any process started with both open-intent keys disables SWR for policy-bearing
+  HTML, entity-policy/API responses, robots, and all sitemap endpoints before it
+  can attempt backend attestation;
+- selective-open simulation and failed-open behavior use `no-store` and never
+  read or populate a policy-bearing SWR entry;
+- closed robots and all closed sitemap responses use `no-store`;
+- Nginx must not cache the four guarded root SEO endpoints.
+Fingerprint, route-manifest revision, backend-policy revision, entity revision,
+and sitemap batch revision remain validation inputs and response evidence, not
+cache keys in this workstream. Designing and enabling selective-open caching is
+a separately authorized Stage 3 task after H1/H2 and owner approval.
 ### 4.5 Backend Single Authority
 
 The backend owns one `index_policy` module as the sole entity indexability
@@ -156,8 +152,9 @@ image count, description length, verification flags, or other entity fields.
 
 ### 4.6 Public Route Policy
 
-Non-entity canonical pages use one reviewed, machine-readable public-route
-manifest consumed by Nuxt and by the backend's static sitemap builder. The
+Non-entity canonical pages use the reviewed machine-readable manifest
+`config/launch-indexing-policy.json`, consumed by Nuxt and by the backend's
+static sitemap builder. The
 manifest classifies routes into three explicit groups:
 - `indexable-public`: canonical core, listing, and static/legal routes that may
   open only in selective-open;
@@ -184,10 +181,29 @@ serialization. It emits all three documents from one attested generation batch:
   child document is unavailable or policy-inconsistent.
 Every document emits fingerprint, manifest revision, backend policy revision,
 and the same deterministic sitemap batch revision in response headers.
+An attested open batch is built from one authoritative database snapshot of
+entities, relationships, and itineraries. `web/data.json` is not an allowed
+fallback for attestation, open sitemap generation, or batch revision. Unit tests
+may inject explicit in-memory fixtures; a production DB snapshot failure makes
+the open batch unavailable and yields HTTP 503 through the Nuxt gate.
 Nuxt owns only the public launch gate, closed endpoint bodies, attestation, and
 the guarded proxy. It does not merge URL lists or serialize open sitemap XML.
 Nuxt forwards an open sitemap response only after validating all required policy
 headers; otherwise it returns HTTP 503 `no-store`.
+
+### 4.8 Public Ingress Ownership
+
+Both `nginx.conf` and `nginx-ssl.conf` currently send root robots/sitemap paths
+directly to FastAPI, bypassing the Nuxt gate. Workstream 5 must route exactly
+`/robots.txt`, `/sitemap.xml`, `/sitemap-media.xml`, and `/sitemap-index.xml` to
+the `vl360_nuxt` upstream before the catch-all route.
+The dedicated ingress location must remove Nginx proxy caching for these paths
+and preserve host/forwarded headers. FastAPI remains reachable from Nuxt through
+the internal API base for guarded open-mode proxying, but is not the public
+entry point for the four root SEO endpoints.
+Static Nginx configuration tests cover both files, and an Nginx-facing HTTP
+integration test proves that all four public paths carry the Nuxt policy header
+and cannot bypass the closed gate.
 ## 5. Policy Matrix
 
 The matrix is normative:
@@ -247,6 +263,7 @@ stale or partially open document.
 The shared module returns:
 ```text
 IndexPolicyDecision
+  kind: entity | ward | itinerary
   indexable: boolean
   reasons: stable reason-code list
   policy_fingerprint: string
@@ -258,6 +275,20 @@ Public eligibility is evaluated before quality. A missing, provisional,
 explicitly unverified, private, or otherwise ineligible entity is not
 indexable.
 The quality gate is deterministic and shared by single and batch evaluation.
+The normative per-kind rules are:
+- non-place entity detail: preserve public eligibility and require at least 130
+  descriptive words; the former 100-word-plus-real-image branch cannot pass
+  because current images are AI and provide zero real-image credit;
+- ward/place detail: preserve the existing hub gate, requiring public
+  eligibility and either more than one public-eligible child or at least 60
+  summary words;
+- itinerary detail: remain `noindex,follow` and excluded from every sitemap in
+  this workstream because no reviewed itinerary quality predicate exists yet;
+- public shared-plan/share routes: remain `noindex,follow` and excluded;
+- static area/core/listing/legal pages: use the shared route manifest, not this
+  dynamic decision contract.
+Adding an itinerary quality predicate or widening supported dynamic kinds is a
+separate reviewed change, not an implicit side effect of selective-open.
 Its fixed image rules are:
 - non-empty current `entity.images` means AI imagery;
 - AI imagery contributes zero to `real_image_count`;
@@ -267,7 +298,7 @@ Its fixed image rules are:
 - an entity cannot become rich merely because AI images are present;
 - copy must not call current AI imagery real, documentary, or on-site;
 - sitemap and entity detail receive identical decisions for identical input.
-The public entity response includes at least `indexable`,
+The public entity/ward response includes at least `indexable`,
 `policy_fingerprint`, and `policy_revision`. The sitemap builder calls the same
 module directly or through its owned batch wrapper, never a duplicate checklist.
 ## 7. AI Disclosure Surfaces
@@ -278,15 +309,20 @@ Actual AI entity image:
 > Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.
 Generated graphic placeholder for an entity without its own image:
 > Minh họa đồ họa — chưa có ảnh riêng cho địa điểm.
-These strings are centralized product copy. Short variants may not remove the
+These strings and the short `Minh họa AI` label live in the versioned artifact
+`config/ai-disclosure.json`, consumed by Python and TypeScript. Its version
+contributes to the policy fingerprint. Short variants may not remove the
 distinction between actual AI imagery and a generic placeholder.
 ### 7.2 Hero, Gallery, and Lightbox
 
 - Actual AI hero: visible pill with the short label `Minh họa AI`.
 - Placeholder hero: visible pill/caption with exact placeholder copy only.
-- The AI pill is associated through accessible description with the full
-  canonical AI sentence; disclosure is never hover-only or icon-only.
+- The hero image/figure itself references the full canonical sentence through
+  `aria-describedby`; the pill is not the sole association target.
 - Pill remains readable at mobile/desktop widths and exposed as text to AT.
+- Gallery and lightbox consume structured image descriptors containing source,
+  alt text, classification, disclosure key, and full caption rather than bare
+  URL strings.
 - Each AI gallery item carries the exact disclosure in caption data.
 - The selected gallery caption and lightbox show the full copy.
 - Slide changes preserve accessible caption association.
@@ -294,7 +330,10 @@ distinction between actual AI imagery and a generic placeholder.
 - Placeholder tiles are not counted or described as entity photography.
 ### 7.3 Share, OG, and Twitter
 
-- A share card using an AI image includes the AI disclosure in visible text.
+- First-party native-share payload text includes the AI disclosure when an AI
+  image is referenced. The page DOM and controllable OG/Twitter alt fields also
+  disclose it; the design does not promise that a third-party platform will
+  render every supplied field visibly.
 - Copy-link may copy only the canonical URL because the destination hero
   discloses without interaction.
 - A placeholder preview uses placeholder copy and does not imply a real view.
@@ -341,7 +380,7 @@ attested request -> fetch public entity policy
   -> verify indexable + fingerprint + revision
   -> valid true: index,follow
   -> false/missing/mismatch: noindex,follow
-  -> cache under mode + fingerprint + revision
+  -> emit uncached no-store response; revisions remain validation evidence
 ```
 Selective-open sitemap simulation:
 ```text
@@ -351,7 +390,7 @@ sitemap -> both keys exact -> validate backend policy attestation
   -> media: emit disclosed AI images for indexable entities only
   -> index: reference main + media from the same completed batch
   -> Nuxt validates fingerprint + manifest revision + batch revision
-  -> forward intact response under fenced cache identity or return 503 no-store
+  -> forward intact response uncached with no-store or return 503 no-store
 ```
 Disclosure classification:
 ```text
@@ -376,8 +415,9 @@ malformed image data    -> omit from media; never real; never quality credit
 - partial open sitemap policy response: 503 `no-store`, not partial success;
 - invalid/non-canonical URL: omit and report; return 503 if response
   completeness cannot be proven;
-- page or robots cache-fence failure: bypass cache and produce closed behavior;
-- sitemap cache-fence or batch-revision failure: HTTP 503 `no-store`;
+- an open-intent Nuxt process that cannot disable policy-bearing SWR/cache:
+  fails health readiness and must not serve selective-open traffic;
+- sitemap batch-revision validation failure: HTTP 503 `no-store`;
 - present current image with missing disclosure metadata: use exact AI copy;
 - no image: use placeholder plus exact placeholder copy;
 - attempted real/documentary labeling of current entity images: test and review
@@ -393,7 +433,7 @@ values. Fingerprint matching, mismatch, and previous-version behavior are a
 separate policy-agreement matrix.
 Decision-contract tests assert that every selective-open result retains the
 fingerprint, route-manifest revision, backend-policy revision, and guarded-proxy
-sitemap action required by downstream cache and endpoint logic.
+sitemap action required by downstream cache-isolation and endpoint logic.
 Closed tests assert meta, header, robots, and empty sitemap without a successful
 backend mock. Open simulations cover rich, thin, missing-field, mismatch, and
 backend-error behavior.
@@ -407,9 +447,18 @@ the two matching child locations for the index. A failed or mismatched child
 forces the sitemap index to 503 rather than partial output.
 Backend tests compare single and batch decisions for rich candidates, thin,
 provisional, explicitly unverified, missing, AI-image, no-image, and malformed
-image fixtures. Adding AI images must not change any real-image criterion.
+image fixtures. They cover the preserved ward threshold, public-child counting,
+and explicit itinerary/shared-plan exclusion. Adding AI images must not change
+any real-image criterion.
+Sitemap batch tests use injected fixtures and a real test database snapshot;
+attested open generation must fail when the authoritative DB snapshot is
+unavailable and must never fall back to `web/data.json`.
 Integration tests assert:
 - meta and `X-Robots-Tag` agreement;
+- open-intent startup disables SWR/cache for policy-bearing HTML, entity policy
+  responses, robots, and all sitemap endpoints;
+- both Nginx configs route the four root SEO endpoints to Nuxt with no proxy
+  cache, and an Nginx-facing probe observes the Nuxt policy header;
 - closed robots allows both public route groups, blocks every sensitive-route
   category in every applicable bot group, and has no sitemap line;
 - all three closed sitemap endpoints return their specified valid empty XML,
@@ -419,10 +468,10 @@ Integration tests assert:
 - open sitemap error is 503 `no-store`;
 - open robots error falls back closed;
 - entity detail without valid positive policy remains `noindex`;
-- cache keys use the base policy identity plus the defined static, entity,
-  robots, or sitemap-batch suffix;
+- no selective-open or failed-open response reads or populates a policy-bearing
+  SWR/proxy cache entry;
 Disclosure tests verify the short AI pill plus its full accessible description,
-and exact full copy in gallery, lightbox, share-card data, OG/Twitter alt,
+and exact full copy in gallery, lightbox, native-share payload, OG/Twitter alt,
 JSON-LD, and image sitemap. They verify placeholder copy, placeholder
 exclusions, keyboard access, accessible captions, and a text scan for forbidden
 real/documentary claims.
@@ -435,15 +484,26 @@ Regression gate:
 ## 11. Task Boundaries and Review Workflow
 
 The implementation plan separates:
-1. backend `index_policy` model and unit tests;
-2. shared entity-response consumption plus backend-owned open sitemap assembly;
-3. Nuxt two-key gate, shared public-route manifest, and fingerprint;
-4. closed meta/header/robots/sitemap behavior;
-5. selective-open simulation and failures;
-6. cache fencing;
-7. visible AI and placeholder disclosure;
-8. share, OG/Twitter, JSON-LD, and image-sitemap disclosure;
-9. integration evidence and operational documentation.
+1. public-route policy JSON plus Python/TypeScript loaders and parity tests;
+2. AI-disclosure JSON plus Python/TypeScript loaders and parity tests;
+3. backend non-place entity index-policy decision and RED/GREEN unit tests;
+4. ward policy plus itinerary/shared-plan exclusion contracts;
+5. public entity/ward response integration with policy revision fields;
+6. authoritative DB snapshot and deterministic sitemap batch revision;
+7. backend policy-attestation endpoint;
+8. backend main-sitemap generation from the attested DB batch;
+9. backend media-sitemap generation with AI disclosure and exclusions;
+10. backend sitemap-index generation and child-batch consistency;
+11. Nuxt two-key decision, backend attestation, and policy header;
+12. Nuxt open-intent SWR/cache isolation and readiness failure behavior;
+13. closed Nuxt meta/header/robots and three empty sitemap handlers;
+14. Nginx ingress changes in both configs plus config/boundary tests;
+15. entity/ward detail robots consumption and failure behavior;
+16. hero AI pill, placeholder distinction, and accessible figure description;
+17. structured gallery/lightbox image descriptors and captions;
+18. native-share payload plus OG/Twitter alt disclosure;
+19. JSON-LD disclosure and backend media metadata parity;
+20. browser matrix, full regression evidence, and restart-based rollback runbook.
 Each task uses a fresh implementer context. Each change records a failing RED
 test before the smallest coherent implementation and records GREEN afterward.
 Each implemented task receives two fresh reviews in order:
@@ -465,6 +525,7 @@ This workstream does not:
 - promise search-engine inclusion or ranking;
 - use `robots.txt` as authorization;
 - add a second frontend quality predicate;
+- enable or design selective-open response caching before Stage 3 approval;
 - advertise a sitemap while closed;
 - describe current AI imagery as real, documentary, or on-site photography.
 ## 13. Acceptance Criteria
@@ -484,8 +545,14 @@ Implementation is accepted only when:
 - `/sitemap.xml`, `/sitemap-media.xml`, and `/sitemap-index.xml` each return the
   specified empty XML, HTTP 200, `no-store`, and remain backend-independent;
 - backend `index_policy` is the only indexability authority;
+- entity and ward thresholds match the normative per-kind contract, while
+  itinerary and shared-plan details remain `noindex` and absent from sitemaps;
 - entity response and sitemap share decision, fingerprint, and revision;
+- attested open sitemap generation uses one authoritative DB snapshot and has no
+  `web/data.json` fallback;
 - non-entity page meta and static sitemap entries share the same route manifest;
+- both Nginx configs route the four root SEO endpoints through Nuxt without
+  proxy caching, and the public boundary exposes the Nuxt policy header;
 - all current `entity.images` are classified as AI;
 - AI imagery contributes nothing to real-image criteria;
 - allowlisted canonical public routes and rich public entities open and enter
@@ -494,8 +561,11 @@ Implementation is accepted only when:
 - open sitemap backend error is 503 `no-store`;
 - open robots error returns closed robots;
 - open entity detail without valid positive policy is `noindex`;
-- cache uses the closed sentinel or the attested open base identity plus the
-  exact static, entity-revision, robots, or deterministic sitemap-batch suffix;
+- ordinary closed SWR cannot be reused by an open-intent process, and every
+  selective-open/failed-open policy-bearing response is uncached `no-store`;
+- one versioned disclosure JSON artifact drives Python and TypeScript copy, and
+  gallery/lightbox use structured descriptors whose image/figure references the
+  full disclosure;
 - the short AI pill and full accessible description appear on every actual AI
   hero; exact full disclosure appears on gallery/lightbox/share/metadata surfaces;
 - exact placeholder copy appears only on placeholder surfaces;
@@ -503,14 +573,17 @@ Implementation is accepted only when:
 - no current AI image is called real or documentary;
 - new behavior shows RED then GREEN evidence;
 - backend and serial frontend regression suites pass;
+- rollback runbook drains old replicas, force-recreates closed replacements,
+  verifies every replica plus Nginx within five minutes, and forbids mixed fleets;
 - spec review precedes quality review for each task;
 - no Important finding remains open;
 - H1 and H2 remain explicit unresolved launch blockers.
 ## 14. Rollout, Rollback, and Legal/Owner Gates
 
 Stage 0 is this workstream: implement and test while all real environments stay
-closed. Stage 1 gathers truth-table, policy, disclosure, cache-fence, and full
-regression evidence. Stage 2 requires externally recorded H1 legal-entity/NĐ147
+closed. Stage 1 gathers truth-table, policy, disclosure, cache-isolation,
+ingress, and full regression evidence. Stage 2 requires externally recorded H1
+legal-entity/NĐ147
 completion, H2 qualified-counsel review, and separate explicit project-owner
 authorization. Stage 3 would be a separately authorized operational task and is
 outside this spec.
@@ -527,13 +600,21 @@ Any future selective-open request requires:
 - named rollback owner and observation window.
 Both runtime keys are changed as one controlled operation. A partial change is
 expected and verified to remain closed.
-Rollback removes or invalidates either key. New requests immediately use
-closed behavior without backend access, and cache fencing prevents open
-artifacts from matching the closed namespace.
-Post-rollback verification checks representative rich/thin pages, meta/header
-`noindex,follow`, robots without sitemap advertisement, retained sensitive-route
-blocking, valid empty output from all three sitemap endpoints with HTTP 200
-`no-store`, and zero open-policy cache hits in the closed namespace.
+Nuxt configuration is process-start state. Rollback therefore removes or
+invalidates either key and force-recreates every Nuxt replica. A restart is
+acceptable only when the runbook first proves the old Nitro cache is purged;
+changing an env file alone is not rollback completion.
+For the current single-host deployment, the rollback target is five minutes
+from command start to externally verified closed behavior. Public traffic is
+drained from old open replicas before closed replacements receive traffic; a
+mixed open/closed fleet is not an allowed rolling state. If all replacements
+are not healthy and verified within the bound, public traffic remains drained
+rather than returning to an unverified replica.
+Post-restart verification checks every Nuxt replica and the Nginx-facing public
+path: representative rich/thin pages, meta/header `noindex,follow`, robots
+without sitemap advertisement, retained sensitive-route blocking, valid empty
+output from all three sitemap endpoints with HTTP 200 `no-store`, the closed
+policy header, and absence of any old open-intent process.
 Engineering owns closed-state correctness, simulation evidence, fingerprint
 agreement, and rollback mechanics. The responsible organization/legal process
 owns H1; qualified ICT/data counsel owns H2; the project owner owns operational
