@@ -1,13 +1,56 @@
 import json
 from pathlib import Path
 
+import pytest
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "config" / "launch-indexing-policy.json"
 
 
+def _reject_duplicate_keys(pairs):
+    parsed = {}
+    for key, value in pairs:
+        if key in parsed:
+            raise ValueError(f"duplicate JSON key: {key}")
+        parsed[key] = value
+    return parsed
+
+
+def _reject_non_finite_number(constant: str):
+    raise ValueError(f"non-finite JSON number: {constant}")
+
+
+def _load_strict_json(raw_json: str):
+    return json.loads(
+        raw_json,
+        object_pairs_hook=_reject_duplicate_keys,
+        parse_constant=_reject_non_finite_number,
+    )
+
+
+@pytest.mark.parametrize(
+    "raw_json",
+    [
+        '{"schema_version": 1, "schema_version": 2}',
+        '{"normalization": {"percent_decode": "utf8-once", "percent_decode": "twice"}}',
+        '{"exact_routes": [{"path": "/", "path": "/other"}]}',
+    ],
+    ids=["top-level", "nested-normalization", "nested-route"],
+)
+def test_route_manifest_rejects_duplicate_object_keys(raw_json: str):
+    with pytest.raises(ValueError, match="duplicate JSON key"):
+        _load_strict_json(raw_json)
+
+
+@pytest.mark.parametrize("constant", ["NaN", "Infinity", "-Infinity"])
+def test_route_manifest_rejects_non_finite_numbers(constant: str):
+    with pytest.raises(ValueError, match="non-finite JSON number"):
+        _load_strict_json(f'{{"value": {constant}}}')
+
+
 def test_route_manifest_contains_exact_reviewed_schema_and_inventory():
-    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    manifest = _load_strict_json(MANIFEST_PATH.read_text(encoding="utf-8"))
 
     assert set(manifest) == {
         "schema_version",
