@@ -39,7 +39,12 @@ def test_actor_can_manage_only_lower_roles(actor_role, target_role):
     ("actor_role", "target_role"),
     [
         ("user", "user"),
+        ("user", "moderator"),
+        ("user", "admin"),
+        ("user", "superadmin"),
         ("moderator", "moderator"),
+        ("moderator", "admin"),
+        ("moderator", "superadmin"),
         ("admin", "admin"),
         ("admin", "superadmin"),
         ("superadmin", "superadmin"),
