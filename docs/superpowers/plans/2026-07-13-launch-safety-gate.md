@@ -70,8 +70,8 @@
 
 - Modify `web-nuxt/Dockerfile`, `Dockerfile`, `.dockerignore`, `docker-compose.yml`, and `docker-compose.prod.yml`; create `docker-compose.dev.yml` and `docker-compose.systemd-deps.yml` for audited loopback-only auxiliary topologies.
 - Create `ops/systemd/vl-agent.service`, `ops/systemd/vl-nuxt.service`, `ops/systemd/vl-bot.service`, `ops/systemd/vl-watchdog.service`, and `ops/systemd/vl-watchdog.timer` as tracked loopback-bound production authorities.
-- Modify `nginx.conf` and `nginx-ssl.conf`; create `ops/nginx/maintenance/` templates for the rehearsed single-host drain.
-- Modify `scripts/deploy.sh` and add focused source/config validation helpers under `scripts/checks/`.
+- Modify `nginx.conf` and `nginx-ssl.conf`; create `ops/nginx/maintenance/` plus `scripts/ops/maintenance_mode.sh` in Task 31 as the reusable deploy/rollback drain authority.
+- Modify `scripts/deploy.sh`; extend `scripts/package_launch_release.py` with the combined manifest+digest archive; add focused source/config validation helpers under `scripts/checks/`.
 - Add backend tests under `agent/tests/`, Nuxt tests under `web-nuxt/tests/`, source/config tests under `tests/`, and local-only harnesses under `scripts/tests/`.
 
 ## Phase 1: Canonical Artifacts and Shared Policy Loaders
@@ -2145,6 +2145,51 @@ def test_cleanup_keeps_active_previous_and_every_bundle_inside_retention(tmp_pat
     assert store.list_batches() == ("a" * 64, "b" * 64, "c" * 64)
     clock.advance(hours=23); store.cleanup()
     assert store.list_batches() == ("b" * 64, "c" * 64)
+
+
+def test_repeated_identical_publish_reuses_completed_directory(tmp_path, clock, monkeypatch):
+    candidate = bundle("b" * 64)
+    store = SitemapBundleStore(tmp_path, now=clock.now)
+    store.publish(candidate)
+    first_pointer = read_and_validate_active_pointer(tmp_path / "active.json")
+    clock.advance(minutes=1)
+    write_spy = Mock(wraps=write_bundle_and_fsync)
+    monkeypatch.setattr("agent.sitemap_store.write_bundle_and_fsync", write_spy)
+
+    store.publish(candidate)
+
+    write_spy.assert_not_called()
+    assert store.load_active() == candidate
+    assert read_and_validate_active_pointer(tmp_path / "active.json")["published_at"] != first_pointer["published_at"]
+
+
+def test_retry_after_post_rename_pre_pointer_failure_reuses_completed_directory(tmp_path):
+    previous = bundle("a" * 64)
+    candidate = bundle("b" * 64)
+    store = SitemapBundleStore(tmp_path, fail_after_directory_rename_for_test=True)
+    SitemapBundleStore(tmp_path).publish(previous)
+
+    with pytest.raises(InjectedPublicationFailure):
+        store.publish(candidate)
+
+    assert SitemapBundleStore(tmp_path).load_active() == previous
+    with pytest.raises(SitemapStateUnavailable):
+        SitemapBundleStore(tmp_path).load_batch(candidate.batch_revision)
+    assert (tmp_path / candidate.batch_revision).is_dir()
+    restarted = SitemapBundleStore(tmp_path)
+    restarted.publish(candidate)
+    assert restarted.load_active() == candidate
+    assert not any(path.name.endswith(".staging") for path in tmp_path.iterdir())
+
+
+def test_existing_content_address_with_conflicting_bytes_is_rejected(tmp_path):
+    candidate = bundle("b" * 64)
+    target = tmp_path / candidate.batch_revision
+    write_bundle_and_fsync(target, bundle_with_changed_document(candidate))
+
+    with pytest.raises(SitemapBundleConflict):
+        SitemapBundleStore(tmp_path).publish(candidate)
+    assert not (tmp_path / "active.json").exists()
 ```
 
 - [ ] **Step 2: Run RED**
@@ -2172,10 +2217,12 @@ class SitemapBundleStore:
         *,
         retention: timedelta = DEFAULT_RETENTION,
         now=lambda: datetime.now(timezone.utc),
+        fail_after_directory_rename_for_test: bool = False,
     ):
         self.root = root
         self.retention = retention
         self.now = now
+        self._fail_after_directory_rename_for_test = fail_after_directory_rename_for_test
 
     @classmethod
     def from_release_root(cls, release_root: Path | None = None, **kwargs):
@@ -2184,12 +2231,25 @@ class SitemapBundleStore:
 
     def publish(self, bundle: StoredBundle) -> None:
         with cross_process_lock(self.root / ".publish.lock"):
-            staging = self.root / f".{bundle.batch_revision}.staging"
-            write_bundle_and_fsync(staging, bundle)
-            os.replace(staging, self.root / bundle.batch_revision)
+            target = self.root / bundle.batch_revision
+            if target.exists():
+                validate_completed_bundle_matches(target, bundle)
+            else:
+                staging = self.root / f".{bundle.batch_revision}.{uuid4().hex}.staging"
+                write_bundle_and_fsync(staging, bundle)
+                os.replace(staging, target)
+                fsync_directory(self.root)
+                if self._fail_after_directory_rename_for_test:
+                    raise InjectedPublicationFailure("after-directory-rename-before-active-pointer")
+            pointer = read_active_pointer_or_empty(self.root / "active.json")
+            published_at = self.now().isoformat()
+            history = upsert_successful_publication(
+                pointer.get("published_batches", []), bundle.batch_revision, published_at,
+            )
             atomic_write_json(self.root / "active.json", {
                 "batch_revision": bundle.batch_revision,
-                "published_at": self.now().isoformat(),
+                "published_at": published_at,
+                "published_batches": history,
             })
 
     def load_active_on_startup(self) -> StoredBundle:
@@ -2198,18 +2258,23 @@ class SitemapBundleStore:
 
     def cleanup(self) -> None:
         with cross_process_lock(self.root / ".publish.lock"):
-            active = read_and_validate_active_pointer(self.root / "active.json")["batch_revision"]
-            bundles = sorted(self._valid_bundle_metadata(), key=lambda item: item.published_at, reverse=True)
-            previous = next((item.batch_revision for item in bundles if item.batch_revision != active), None)
+            pointer = read_and_validate_active_pointer(self.root / "active.json")
+            active = pointer["batch_revision"]
+            bundles = sorted(pointer["published_batches"], key=lambda item: item["published_at"], reverse=True)
+            previous = next((item["batch_revision"] for item in bundles if item["batch_revision"] != active), None)
             keep = {active, previous} - {None}
             cutoff = self.now() - self.retention
-            keep.update(item.batch_revision for item in bundles if item.published_at >= cutoff)
+            keep.update(item["batch_revision"] for item in bundles if parse_utc(item["published_at"]) >= cutoff)
             for item in bundles:
-                if item.batch_revision not in keep:
-                    remove_validated_bundle_directory(self.root, item.batch_revision)
+                if item["batch_revision"] not in keep:
+                    remove_validated_bundle_directory(self.root, item["batch_revision"])
+            atomic_write_json(self.root / "active.json", {
+                **pointer,
+                "published_batches": [item for item in bundles if item["batch_revision"] in keep],
+            })
 ```
 
-`read_and_validate_immutable_bundle()` verifies metadata schema, all three filenames, per-document SHA-256 values, the batch revision, and the directory name before returning bytes. Corrupt or missing `active.json` raises `SitemapStateUnavailable` and never triggers generation. `remove_validated_bundle_directory()` resolves the candidate under `self.root`, rejects symlinks/staging/active/previous paths, deletes only a validated immutable batch, and fsyncs the parent. Promote or reuse the lock and atomic JSON replacement primitives from `versioned_json_store.py`; do not duplicate a weaker implementation.
+`read_and_validate_immutable_bundle()` verifies metadata schema, all three filenames, per-document SHA-256 values, the batch revision, and the directory name before returning bytes. `validate_completed_bundle_matches()` additionally requires the exact expected filename set, metadata bytes, and document bytes for the supplied `StoredBundle`; a content-addressed directory that differs in any byte, contains an extra entry, or is a symlink raises `SitemapBundleConflict`. The immutable bundle metadata contains no publication timestamp. Replaceable `active.json` owns `published_at` plus a deduplicated `published_batches` ledger of successfully pointer-published revisions and timestamps; cleanup derives active, previous, and retention exclusively from that ledger, and `load_batch()` refuses an orphan directory not present in it. An identical publish validates/reuses the completed directory and atomically refreshes/upserts the pointer ledger. A retry after the test-only post-rename/pre-pointer injection follows that same reuse path, while the orphan remains unreachable before retry. Corrupt or missing `active.json` raises `SitemapStateUnavailable` and never triggers generation. `remove_validated_bundle_directory()` resolves the candidate under `self.root`, rejects symlinks/staging/active/previous paths, deletes only a validated immutable batch, and fsyncs the parent. Promote or reuse the lock and atomic JSON replacement primitives from `versioned_json_store.py`; do not duplicate a weaker implementation.
 
 The CLI protocol consumed by Task 17 is fixed here: production opens `SitemapBundleStore.from_release_root()`, backend startup calls only `load_active_on_startup()`, `python -m agent.sitemap_bundle refresh` is the only generation entry point, and public GET handlers call only `load_active()`/`load_batch()`. Tests monkeypatch the refresh function and prove import, startup load, and public reads never invoke it.
 
@@ -2217,7 +2282,7 @@ The CLI protocol consumed by Task 17 is fixed here: production opens `SitemapBun
 
 Run: `python -m pytest agent/tests/test_sitemap_store.py -q`
 
-Expected: the production default path, configurable 24-hour clock, active-plus-previous retention algorithm, atomic publication, restart validation, corrupt-state rejection, and no-refresh startup/public-read protocol pass.
+Expected: the production default path, configurable 24-hour clock, active-plus-previous retention algorithm, first publication, identical idempotent publication, retry after post-rename/pre-pointer failure, conflicting-directory rejection, restart validation, corrupt-state rejection, and no-refresh startup/public-read protocol pass.
 
 - [ ] **Step 5: Commit**
 
@@ -2296,7 +2361,7 @@ if parsed.hostname not in {"127.0.0.1", "localhost", "::1"} and os.getenv("ALLOW
 
 The Compose harness publishes PostgreSQL only on `127.0.0.1:55432`, uses a dedicated disposable database, and has no production credentials or volumes. The fixture creates a unique schema, opens the production `REPEATABLE READ, READ ONLY` snapshot, pauses after the first read, commits changed summary/image/relationship data through a second connection, then builds three deterministic probe documents from the still-open snapshot. `sitemap-index.xml` includes a snapshot marker derived inside that transaction, so the test proves main, media, and index inputs are all original rather than checking one entity object only.
 
-Add a test-only `fail_after_directory_rename_for_test` injection immediately after the complete candidate directory is fsynced/renamed and before `active.json` replacement. The production default is immutable `False`. The failed-publication test reconstructs a new store instance, loads the prior active pointer and all three prior document bytes, and asserts no staging or candidate directory is reachable through public load methods.
+Reuse the Task 15 test-only `fail_after_directory_rename_for_test` injection immediately after the complete candidate directory is fsynced/renamed and before `active.json` replacement. Its production default remains immutable `False`. The failed-publication test reconstructs a new store instance, loads the prior active pointer and all three prior document bytes, asserts no staging or candidate directory is reachable through public load methods, and leaves the completed candidate available only for a later validated idempotent publish.
 
 - [ ] **Step 4: Run GREEN against a disposable local PostgreSQL**
 
@@ -2447,6 +2512,26 @@ Expected: FAIL because the immutable bundle has no media document and legacy cod
 - [ ] **Step 3: Add descriptor-backed media rendering**
 
 ```python
+def normalize_renderable_image_url(raw: object) -> str | None:
+    if not isinstance(raw, str):
+        return None
+    url = raw.strip()
+    if not url or any(ord(char) <= 0x20 or ord(char) == 0x7F for char in url) or "\\" in url or "#" in url:
+        return None
+    if url.startswith("//"):
+        return None
+    parsed = urlsplit(url)
+    try:
+        parsed.port
+    except ValueError:
+        return None
+    if url.startswith("/"):
+        return url if not parsed.scheme and not parsed.netloc and parsed.path.startswith("/") else None
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+        return None
+    return url
+
+
 @dataclass(frozen=True)
 class ImageDescriptor:
     url: str | None
@@ -2459,15 +2544,6 @@ class ImageDescriptor:
     credit: str | None
     width: int | None
     height: int | None
-
-
-def normalize_renderable_image_url(raw: object) -> str | None:
-    if not isinstance(raw, str):
-        return None
-    value = raw.strip()
-    return value if value.startswith(("/", "https://", "http://")) else None
-
-
 def describe_entity_images(entity, *, disclosure):
     descriptors = []
     for index, raw in enumerate(entity.get("images") or []):
@@ -2780,7 +2856,7 @@ it.each([
   ['x-launch-sitemap-requested-batch', 'b'.repeat(64)],
 ])('fails closed when %s mismatches', async (header, value) => {
   const upstream = matchingUpstream.withHeader(header, value)
-  expect((await runGuardedProxy({
+  expect(await runGuardedProxy({
     document: 'sitemap.xml',
     query: '?batch=' + 'a'.repeat(64),
     upstream,
@@ -3586,6 +3662,16 @@ it('returns 503 for exact open intent without an active bundle', async () => {
   expect(response.status).toBe(503)
   expect(response.body.reason).toBe('sitemap-batch-unavailable')
 })
+
+it('preserves the guarded sitemap evidence-mismatch reason', async () => {
+  const response = await readiness({
+    env: exactOpenEnv,
+    fetchAttestation: matchingAttestation,
+    fetchSitemap: sitemapWithMismatchedEvidence,
+  })
+  expect(response.status).toBe(503)
+  expect(response.body.reason).toBe('sitemap-evidence-mismatch')
+})
 ```
 
 - [ ] **Step 2: Run RED**
@@ -3611,8 +3697,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 503, data: { ok: false, reason: decision.reason } })
   }
   const active = await fetchAndValidateActiveSitemapIndex(event, decision)
+  if (active.decision.reason === 'sitemap-evidence-mismatch') {
+    throw createError({ statusCode: 503, data: { ok: false, reason: active.decision.reason } })
+  }
   if (!active.batchRevision) {
-    throw createError({ statusCode: 503, data: { ok: false, reason: 'sitemap-batch-unavailable' } })
+    const reason = active.decision.reason === 'sitemap-batch-unavailable'
+      ? active.decision.reason
+      : 'sitemap-batch-unavailable'
+    throw createError({ statusCode: 503, data: { ok: false, reason } })
   }
   return { ok: true, state: 'selective-open', active_batch: active.batchRevision, checks: build.checks }
 })
@@ -3624,7 +3716,7 @@ Do not return unlock values, backend URLs, free-form errors, or legal/owner evid
 
 Run: `cd web-nuxt && npm test -- --run tests/launch-readiness.test.ts tests/launch-readiness-manifest.test.ts`
 
-Expected: safe closed is backend-independent; safe open requires matching attestation and active bundle; every unsafe check is 503.
+Expected: safe closed is backend-independent; safe open requires matching attestation and active bundle; every unsafe check is 503; guarded sitemap failures preserve the exact `sitemap-batch-unavailable` versus `sitemap-evidence-mismatch` reason.
 
 - [ ] **Step 5: Commit**
 
@@ -3701,9 +3793,9 @@ Materialize the watchdog service/timer examples currently documented in `scripts
 
 Run: `python -m pytest tests/launch_safety/test_compose_contract.py tests/launch_safety/test_systemd_contract.py -q`
 
-Run when Docker is available: `python -m pytest tests/launch_safety/integration/test_compose_cold_start.py -m integration -q`
+Run when Docker is available: `python -m pytest tests/launch_safety/integration/test_compose_cold_start.py tests/launch_safety/integration/test_network_boundary.py -m integration -q`
 
-Expected: closed/agent-absent Nuxt is healthy on the private network; exact-open/agent-absent Nuxt is unhealthy. Task 32 adds optional-upstream rendering before any integration test starts Nginx with agent absent.
+Expected: closed/agent-absent Nuxt is healthy on the private network; exact-open/agent-absent Nuxt is unhealthy and admits no listener; the live socket probe proves only Nginx owns non-loopback 80/443 while agent, Nuxt, bot, PostgreSQL, and Redis remain private or loopback-only. Task 32 adds optional-upstream rendering before any integration test starts Nginx with agent absent.
 
 - [ ] **Step 5: Commit**
 
@@ -3715,15 +3807,46 @@ git commit -m "ops: enforce exclusive launch ingress topology"
 ### Task 31: Wire readiness into build and local deploy admission
 
 **Files:**
+- Modify: `scripts/package_launch_release.py`
 - Modify: `scripts/deploy.sh:94-199`
 - Modify: `web-nuxt/Dockerfile`
 - Modify: `Dockerfile`
 - Modify: `tests/test_release_quality_gates.py`
+- Modify: `tests/launch_safety/test_release_package.py`
+- Create: `ops/nginx/maintenance/http-context.conf.template`
+- Create: `ops/nginx/maintenance/server-enabled.conf`
+- Create: `ops/nginx/maintenance/server-disabled.conf`
+- Create: `scripts/ops/maintenance_mode.sh`
+- Create: `scripts/ops/deploy_launch_admission.sh`
+- Create: `scripts/ops/probe_launch_boundary.py`
 - Create: `tests/launch_safety/test_deploy_readiness.py`
 
-- [ ] **Step 1: Write failing deploy-source contract tests**
+- [ ] **Step 1: Write failing combined-package and deploy-admission tests**
 
 ```python
+def test_build_launch_release_has_exact_payload_manifest_and_archive_digest(release_source, tmp_path):
+    result = build_launch_release(
+        release_source,
+        tmp_path / "vl360-launch-release.tar.gz",
+        compose_network_audit=release_source / "build/compose-network-audit.json",
+        source_revision="reviewed-source-revision",
+    )
+    members = read_tar_members(result.archive)
+    manifest = read_tar_json(result.archive, "launch-release-manifest.json")
+
+    assert members == expected_launch_release_members(release_source)
+    assert not any(name == "agent/data" or name.startswith("agent/data/") for name in members)
+    assert "docker-compose.dev.yml" not in members
+    assert manifest["package_kind"] == "vl360-launch-release"
+    assert manifest["launch_posture"] == "closed"
+    assert manifest["developer_override"] == {"path": "docker-compose.dev.yml", "included": False}
+    assert manifest["persistent_paths"] == ["agent/data", "agent/data/sitemap-bundles"]
+    assert manifest["members"] == sha256_size_map(result.archive, exclude={"launch-release-manifest.json"})
+    assert result.digest_file.read_text(encoding="ascii") == (
+        f"{sha256_file(result.archive)}  {result.archive.name}\n"
+    )
+
+
 def test_deploy_uses_internal_readiness_not_homepage():
     script = Path("scripts/deploy.sh").read_text(encoding="utf-8")
     assert "_internal/launch-readiness" in script
@@ -3733,39 +3856,124 @@ def test_deploy_uses_internal_readiness_not_homepage():
 
 def test_release_contains_config_ingress_units_and_network_audit(release_members):
     assert {"config", "nginx.conf", "nginx-ssl.conf", "ops/systemd", "compose-network-audit.json"} <= release_members
+
+
+def test_deploy_closes_traffic_before_install_and_reopens_only_after_readiness(deploy_stub):
+    result = deploy_stub.run_closed_release()
+    assert result.exit_code == 0
+    assert result.commands == [
+        "maintenance-enable", "nginx-test-closed", "nginx-reload-closed", "maintenance-probe",
+        "verify-archive", "install-release", "restart-services",
+        "process-local-readiness", "listener-boundary",
+        "maintenance-disable", "nginx-test-open", "nginx-reload-open", "post-reopen-closed-probe",
+    ]
+
+
+@pytest.mark.parametrize("failure", ["install-release", "restart-services", "process-local-readiness", "listener-boundary"])
+def test_deploy_failure_never_reopens_traffic(deploy_stub, failure):
+    result = deploy_stub.fail_at(failure)
+    assert result.maintenance_enabled is True
+    assert "maintenance-disable" not in result.commands
+    assert "nginx-reload-open" not in result.commands
 ```
 
 - [ ] **Step 2: Run RED**
 
-Run: `python -m pytest tests/launch_safety/test_deploy_readiness.py tests/test_release_quality_gates.py -q`
+Run: `python -m pytest tests/launch_safety/test_release_package.py tests/launch_safety/test_deploy_readiness.py tests/test_release_quality_gates.py -q`
 
-Expected: FAIL because current deploy packaging omits the reviewed artifacts and healthchecks the wrong surfaces.
+Expected: FAIL because `build_launch_release`, the combined archive manifest/digest, the tracked maintenance/admission primitive, and command-order enforcement do not exist.
 
-- [ ] **Step 3: Package reviewed bytes and gate traffic on local readiness**
+- [ ] **Step 3: Build one combined archive and add a fail-closed admission primitive**
 
-Update the build to run the Task 28 output audit. Update `scripts/deploy.sh` so its source path:
+`build_launch_release()` is the only launch-compatible release/rehearsal archive authority. Its exact signature and result are:
 
-```bash
-curl --fail --silent --show-error \
-  http://127.0.0.1:3000/_internal/launch-readiness >/tmp/vl360-launch-readiness.json
+```python
+@dataclass(frozen=True)
+class LaunchReleasePackage:
+    archive: Path
+    digest_file: Path
+    manifest: Mapping[str, object]
+
+
+def build_launch_release(
+    root: Path,
+    destination: Path,
+    *,
+    compose_network_audit: Path,
+    source_revision: str,
+) -> LaunchReleasePackage:
+    payload = collect_launch_release_payload(root, compose_network_audit)
+    manifest = build_launch_release_manifest(root, payload, source_revision)
+    write_deterministic_tar_gz(destination, payload, {"launch-release-manifest.json": canonical_json_bytes(manifest)})
+    digest_file = destination.with_name(destination.name + ".sha256")
+    digest_file.write_text(f"{sha256_file(destination)}  {destination.name}\n", encoding="ascii")
+    return LaunchReleasePackage(destination, digest_file, MappingProxyType(manifest))
 ```
 
-occurs after installing the candidate and before Nginx is reopened. Backend/Nuxt/config/units/rendered-ingress must be revision-aligned in the launch package. Do not execute a real deploy in this task.
+The archive has these exact top-level authorities: `agent/` excluding all `agent/data/**`; `web-nuxt/.output/`, `web-nuxt/package.json`, and the production lockfile; root `config/`; `requirements.txt`; `init.sql`; `nginx.conf`; `nginx-ssl.conf`; `ops/systemd/`; `ops/nginx/maintenance/`; production `scripts/ops/`; `compose-network-audit.json`; and `launch-release-manifest.json`. It contains no `.git`, tests, docs, developer Compose override, environment file, secret, unlock key, runtime cache, or persistent data. Tar member order, uid/gid, names, modes, and timestamps are normalized.
+
+`launch-release-manifest.json` has exact keys `schema_version`, `package_kind`, `source_revision`, `launch_posture`, `canonical_artifacts`, `readiness_manifest`, `network_audit`, `developer_override`, `persistent_paths`, and `members`. `canonical_artifacts` records both canonical revisions and SHA-256 digests; `readiness_manifest` and `network_audit` record path+digest; `members` records SHA-256 and byte length for every payload member except the manifest itself. The manifest fixes `launch_posture="closed"`, `developer_override={"path":"docker-compose.dev.yml","included":false}`, and `persistent_paths=["agent/data","agent/data/sitemap-bundles"]`. The adjacent `.sha256` file authenticates the complete archive bytes without a circular in-archive digest.
+
+The local build command is deterministic and never deploys:
+
+```bash
+python scripts/ops/compose_network_audit.py --compose docker-compose.yml --production docker-compose.prod.yml --output build/compose-network-audit.json
+python scripts/package_launch_release.py launch-release --root . --destination dist/vl360-launch-release.tar.gz --compose-network-audit build/compose-network-audit.json --source-revision "$(git rev-parse HEAD)"
+```
+
+Update the build to run the Task 28 output audit before packaging. `scripts/deploy.sh` sources `scripts/ops/deploy_launch_admission.sh`; the reusable primitive owns the order below and accepts an injectable `RUNNER` for deterministic tests:
+
+```bash
+close_launch_admission() {
+  "$RUNNER" scripts/ops/maintenance_mode.sh enable --operator-cidr "${OPERATOR_CIDR:?}"
+  "$RUNNER" nginx -t
+  "$RUNNER" systemctl reload nginx
+  "$RUNNER" python scripts/ops/probe_launch_boundary.py --expect maintenance --operator-source
+}
+
+verify_before_reopen() {
+  "$RUNNER" curl --fail --silent --show-error \
+    http://127.0.0.1:3000/_internal/launch-readiness >"${READINESS_EVIDENCE:?}"
+  "$RUNNER" python scripts/ops/socket_boundary_probe.py \
+    --expect-nginx-public-only --expect-loopback 3000 8360
+}
+
+reopen_launch_admission() {
+  verify_before_reopen
+  "$RUNNER" scripts/ops/maintenance_mode.sh disable --operator-cidr "${OPERATOR_CIDR:?}"
+  "$RUNNER" nginx -t
+  "$RUNNER" systemctl reload nginx
+  if ! "$RUNNER" python scripts/ops/probe_launch_boundary.py --expect closed --require-public-post-reopen-matrix; then
+    "$RUNNER" scripts/ops/maintenance_mode.sh enable --operator-cidr "${OPERATOR_CIDR:?}"
+    "$RUNNER" nginx -t
+    "$RUNNER" systemctl reload nginx
+    return 1
+  fi
+}
+```
+
+`maintenance_mode.sh` atomically selects the tracked enabled/disabled include, runs `nginx -t`, and never reloads an invalid configuration. The deploy sequence calls `close_launch_admission` before archive verification, install, or service restart; any failure from that boundary onward leaves maintenance enabled. Only `reopen_launch_admission` may disable maintenance, and it runs process-local readiness and listener isolation first. Backend/Nuxt/config/units/rendered-ingress bytes must match the combined manifest. Do not execute a real deploy in this task.
+
+Task 31 creates the minimal `probe_launch_boundary.py` authority with exact `--expect maintenance --operator-source` and `--expect closed --require-public-post-reopen-matrix` modes. It checks status, policy/meta/header `noindex`, robots without discovery, three empty sitemap shapes, `no-store`, and absent launch evidence for the closed matrix. Task 43 later modifies this same file to add the selective-open and browser-matrix modes; no Task 31 command references a file created by a later task.
 
 - [ ] **Step 4: Run GREEN and syntax/build verification**
 
-Run: `python -m pytest tests/launch_safety/test_deploy_readiness.py tests/test_release_quality_gates.py -q`
+Run: `python -m pytest tests/launch_safety/test_release_package.py tests/launch_safety/test_deploy_readiness.py tests/test_release_quality_gates.py -q`
 
 Run: `& 'C:\Program Files\Git\bin\bash.exe' -n scripts/deploy.sh`
 
+Run: `& 'C:\Program Files\Git\bin\bash.exe' -n scripts/ops/maintenance_mode.sh`
+
+Run: `& 'C:\Program Files\Git\bin\bash.exe' -n scripts/ops/deploy_launch_admission.sh`
+
 Run when Docker is available: `docker build -f web-nuxt/Dockerfile -t vl360-nuxt:launch-safety .`
 
-Expected: tests and syntax pass; the build contains canonical digests and readiness evidence.
+Expected: tests and syntax pass; the build contains canonical digests and readiness evidence; the combined archive and sidecar digest validate; stub logs prove maintenance closes before install/restart and cannot reopen until readiness plus listener isolation pass.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/deploy.sh web-nuxt/Dockerfile Dockerfile tests/test_release_quality_gates.py tests/launch_safety/test_deploy_readiness.py
+git add scripts/package_launch_release.py scripts/deploy.sh web-nuxt/Dockerfile Dockerfile ops/nginx/maintenance scripts/ops/maintenance_mode.sh scripts/ops/deploy_launch_admission.sh scripts/ops/probe_launch_boundary.py tests/test_release_quality_gates.py tests/launch_safety/test_release_package.py tests/launch_safety/test_deploy_readiness.py
 git commit -m "ops: gate launch packages on readiness"
 ```
 
@@ -3818,7 +4026,7 @@ location ~ ^/(api|auth|chat)(?:/|$) {
 }
 ```
 
-Systemd rendering uses literal loopback targets. Do not use a URI suffix with variable `proxy_pass`; preserve raw path/query and keep `/admin-api` rewrite behavior covered by integration tests. Add exact root SEO locations to Nuxt, disable proxy caching, preserve policy/evidence headers, deny all launch-internal paths, and parity-check every agent/bot alias against the route manifest.
+Systemd rendering uses literal loopback targets. Do not use a URI suffix with variable `proxy_pass`; preserve raw path/query and keep `/admin-api` rewrite behavior covered by integration tests. Add exact root SEO locations to Nuxt, disable proxy caching, preserve policy/evidence headers, deny all launch-internal paths, and parity-check every agent/bot alias against the route manifest. The disposable `tests/launch_safety/harness/docker-compose.yml` publishes only its test Nginx service at `127.0.0.1:18080`; its internal agent/Nuxt ports remain unpublished, and teardown always uses `down -v --remove-orphans`.
 
 - [ ] **Step 4: Run GREEN and opt-in Nginx harness**
 
@@ -3859,11 +4067,36 @@ def test_entity_and_review_images_have_distinct_source_classes(disclosure):
     assert entity.source_kind == "entity-editorial"
     assert review.source_class == "user-uploaded"
     assert review.source_kind == "review-ugc"
+
+
+@pytest.mark.parametrize("url", ["/img/entity.webp", "/media/entity.webp?v=2", "https://cdn.example/entity.webp"])
+def test_backend_accepts_only_canonical_local_paths_or_https(url):
+    assert normalize_renderable_image_url(url) == url
+
+
+@pytest.mark.parametrize("url", [
+    "//cdn.example/entity.webp", "http://cdn.example/entity.webp", "data:image/png;base64,AA==",
+    "javascript:alert(1)", "ftp://cdn.example/entity.webp", "/img\\entity.webp",
+])
+def test_backend_rejects_unsafe_image_urls(url):
+    assert normalize_renderable_image_url(url) is None
 ```
 
 ```ts
 expect(parseGalleryDescriptor(apiEntityImage)!.source_class).toBe('ai-generated')
 expect(parseGalleryDescriptor(apiReviewImage)!.source_class).toBe('user-uploaded')
+
+it.each(['/img/entity.webp', '/media/entity.webp?v=2', 'https://cdn.example/entity.webp'])(
+  'accepts the same renderable URL forms as the backend: %s',
+  (url) => expect(parseGalleryDescriptor({ ...apiEntityImage, url })?.url).toBe(url),
+)
+
+it.each([
+  '//cdn.example/entity.webp', 'http://cdn.example/entity.webp', 'data:image/png;base64,AA==',
+  'javascript:alert(1)', 'ftp://cdn.example/entity.webp', '/img\\entity.webp',
+])('rejects unsafe URL form %s', (url) => {
+  expect(parseGalleryDescriptor({ ...apiEntityImage, url })).toBeNull()
+})
 
 it.each([
   ['extra key', { ...apiReviewImage, extra: true }],
@@ -3967,11 +4200,27 @@ const ALLOWED_SOURCE_COMBINATIONS = new Set([
   'user-uploaded|post-ugc|ugc-photo',
 ])
 
+export function normalizeRenderableImageUrl(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const url = value.trim()
+  if (!url || /[\u0000-\u0020\u007f\\]/.test(url) || url.includes('#')) return null
+  if (url.startsWith('//')) return null
+  if (url.startsWith('/')) return url
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'https:' || !parsed.hostname || parsed.username || parsed.password) return null
+    return url
+  } catch {
+    return null
+  }
+}
+
 export function parseGalleryDescriptor(value: unknown): ImageDescriptor | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
   const descriptor = value as Record<string, unknown>
   if (Object.keys(descriptor).sort().join('\0') !== [...DESCRIPTOR_KEYS].sort().join('\0')) return null
-  if (descriptor.url !== null && (typeof descriptor.url !== 'string' || !descriptor.url.trim())) return null
+  const normalizedUrl = descriptor.url === null ? null : normalizeRenderableImageUrl(descriptor.url)
+  if (descriptor.url !== null && normalizedUrl === null) return null
   if (typeof descriptor.alt !== 'string' || !descriptor.alt.trim()) return null
   if (descriptor.credit !== null && (typeof descriptor.credit !== 'string' || !descriptor.credit.trim())) return null
   if (descriptor.short_label !== null && (typeof descriptor.short_label !== 'string' || !descriptor.short_label.trim())) return null
@@ -3991,7 +4240,7 @@ export function parseGalleryDescriptor(value: unknown): ImageDescriptor | null {
   const dimensions = [descriptor.width, descriptor.height]
   if (dimensions.some(dimension => dimension !== null && (typeof dimension !== 'number' || !Number.isInteger(dimension) || dimension <= 0))) return null
   if ((descriptor.width === null) !== (descriptor.height === null)) return null
-  return Object.freeze({ ...descriptor }) as ImageDescriptor
+  return Object.freeze({ ...descriptor, url: normalizedUrl }) as ImageDescriptor
 }
 
 export function normalizeReviewPhoto(input: { url: string; alt: string; credit?: string | null }): ImageDescriptor {
@@ -4010,7 +4259,7 @@ export function normalizeReviewPhoto(input: { url: string; alt: string; credit?:
 }
 ```
 
-Use the same source-combination table in the backend Pydantic response model with `extra='forbid'`: `ai-generated/entity-editorial/entity-ai`, `placeholder/generated-placeholder/entity-placeholder`, and `user-uploaded/(review-ugc|post-ugc)/ugc-photo` are the only valid triples. Backend and frontend both require exact canonical short/full copy for the disclosure key, non-blank alt text, null-or-non-blank credit, null dimensions or a positive-integer width/height pair, no credit on AI/placeholder descriptors, and a non-null URL for non-placeholder media. Unclassified UGC, contradictory source triples, partial dimensions, altered copy, and extra fields are rejected rather than normalized into a different class.
+Use the same source-combination and URL tables in the backend Pydantic response model with `extra='forbid'`: `ai-generated/entity-editorial/entity-ai`, `placeholder/generated-placeholder/entity-placeholder`, and `user-uploaded/(review-ugc|post-ugc)/ugc-photo` are the only valid triples. `normalize_renderable_image_url()` and `normalizeRenderableImageUrl()` accept only a single-leading-slash local canonical path or an absolute `https:` URL with a host and no credentials, fragment, whitespace/control character, or backslash. They reject protocol-relative URLs and every other scheme. Backend and frontend both require exact canonical short/full copy for the disclosure key, non-blank alt text, null-or-non-blank credit, null dimensions or a positive-integer width/height pair, no credit on AI/placeholder descriptors, and a non-null valid URL for non-placeholder media. Unclassified UGC, contradictory source triples, partial dimensions, altered copy, unsafe URLs, and extra fields are rejected rather than normalized into a different class.
 
 - [ ] **Step 4: Run GREEN**
 
@@ -4018,7 +4267,7 @@ Run: `python -m pytest agent/tests/test_image_descriptor.py agent/tests/test_pub
 
 Run: `cd web-nuxt && npm test -- --run tests/image-descriptors.test.ts && npm run typecheck`
 
-Expected: backend/frontend descriptor shapes agree and review photos are never labeled AI.
+Expected: backend/frontend descriptor shapes and URL acceptance agree; only canonical local paths and credential-free HTTPS render; review photos are never labeled AI.
 
 - [ ] **Step 5: Commit**
 
@@ -4391,6 +4640,21 @@ def test_registration_does_not_exempt_a_raw_renderer(tmp_path):
         "MISSING_DISCLOSURE_PRESENTATION",
         "MISSING_ACCESSIBLE_ASSOCIATION",
     }
+
+
+@pytest.mark.parametrize("source", [
+    '<NuxtImg :src="entity[\'images\'][0]" />',
+    '<script setup>const { images } = entity</script><NuxtImg :src="images[0]" />',
+    '<script setup>const pics = entity.images</script><NuxtImg :src="pics?.[0]" />',
+    '<div :style="{ backgroundImage: `url(${entity?.images?.[0]})` }" />',
+])
+def test_adversarial_raw_access_forms_cannot_bypass_the_guard(tmp_path, source):
+    page = tmp_path / "pages" / "adversarial.vue"
+    page.parent.mkdir(parents=True)
+    page.write_text(source, encoding="utf-8")
+    codes = {item.code for item in scan_entity_image_renderers(tmp_path, registry=[])}
+    assert "UNREGISTERED_ENTITY_IMAGE_RENDERER" in codes
+    assert "RAW_DESCRIPTOR_BYPASS" in codes
 ```
 
 - [ ] **Step 2: Run RED**
@@ -4422,9 +4686,9 @@ The committed registry contains rows for every exact boundary in the preceding l
 
 ```python
 RAW_PATTERNS = (
-    re.compile(r"\bentity\.images\b"),
-    re.compile(r"\b(?:entity|event|saved|item)\.images\s*\[\s*0\s*\]"),
-    re.compile(r"\b(?:entity|event|saved|item)\.(?:image|image_url|image_urls)\b"),
+    re.compile(r"\bentity(?:(?:\?\.|\.)images|\[['\"]images['\"]\])"),
+    re.compile(r"\b(?:entity|event|saved|item)(?:(?:\?\.|\.)images|\[['\"]images['\"]\])(?:\?\.)?\[\s*0\s*\]"),
+    re.compile(r"\b(?:entity|event|saved|item)(?:(?:\?\.|\.)(?:image|image_url|image_urls)|\[['\"](?:image|image_url|image_urls)['\"]\])"),
 )
 
 
@@ -4435,8 +4699,9 @@ def scan_entity_image_renderers(root: Path, registry: list[dict]) -> list[Findin
         text = path.read_text(encoding="utf-8")
         relative = path.relative_to(root).as_posix()
         entries = entries_by_file.get(relative, ())
+        raw_aliases = trace_raw_image_aliases(text)
         render_sinks = find_image_render_sinks(text)
-        raw_render_sinks = find_image_render_sinks(text, require_raw_source=True)
+        raw_render_sinks = find_image_render_sinks(text, require_raw_source=True, raw_aliases=raw_aliases)
         for pattern in RAW_PATTERNS:
             for match in pattern.finditer(text):
                 access = match.group(0)
@@ -4459,7 +4724,7 @@ def scan_entity_image_renderers(root: Path, registry: list[dict]) -> list[Findin
     return findings
 ```
 
-`group_validated_registry_entries()` rejects missing/extra keys, duplicate `(file,surface,source_class)` rows, invalid source/presentation/accessibility combinations, missing test files, and `source_class=none` unless all three invariant fields are `none`/`no-image-invariant`. `find_image_render_sinks()` covers `<img>`, `<NuxtImg>`, CSS/background bindings, lightbox/gallery props, native-share/metadata image use, and representative thumbnail props. `has_required_presentation()` requires `ImageDisclosure presentation="short"` plus full-copy association for short, visible `full_disclosure` for full, and both for `short-and-full`; `has_accessibility_proof()` requires the registered `aria-describedby`/visible-caption pattern. Descriptor producer modules may access raw arrays only when they contain no render sink; every consumer still needs its own registry row and checks.
+`group_validated_registry_entries()` rejects missing/extra keys, duplicate `(file,surface,source_class)` rows, invalid source/presentation/accessibility combinations, missing test files, and `source_class=none` unless all three invariant fields are `none`/`no-image-invariant`. `trace_raw_image_aliases()` iterates to a fixed point over dot access, bracket access, optional chaining, `const { images } = entity`, renamed destructuring, and direct/derived aliases; it returns every identifier whose value can still be a raw image or image array. `find_image_render_sinks()` covers `<img>`, `<NuxtImg>`, CSS `background`/`background-image` static and bound styles, lightbox/gallery props, native-share/metadata image use, representative thumbnail props, and optional-chained alias indexing. A sink counts as raw when its expression contains a raw access or a traced alias. `has_required_presentation()` requires `ImageDisclosure presentation="short"` plus full-copy association for short, visible `full_disclosure` for full, and both for `short-and-full`; `has_accessibility_proof()` requires the registered `aria-describedby`/visible-caption pattern. Descriptor producer modules may access raw arrays only when they contain no render sink; every consumer still needs its own registry row and checks.
 
 - [ ] **Step 4: Run GREEN and hard gate**
 
@@ -4467,7 +4732,7 @@ Run: `python -m pytest tests/launch_safety/test_entity_image_renderer_guard.py t
 
 Run: `cd web-nuxt && npm test -- --run tests/image-renderer-inventory.test.ts`
 
-Expected: all current public/auth/admin renderers have a required source class, descriptor producer, short/full presentation, accessibility proof, and focused test; both unregistered and registered-but-raw synthetic renderers fail the guard.
+Expected: all current public/auth/admin renderers have a required source class, descriptor producer, short/full presentation, accessibility proof, and focused test; unregistered, registered-but-raw, bracket-access, destructured, aliased, optional-chained, and CSS-background synthetic renderers all fail the guard.
 
 - [ ] **Step 5: Commit**
 
@@ -4635,7 +4900,7 @@ git commit -m "feat: align image disclosure metadata"
 ### Task 43: Exercise the browser, Nginx, and network launch matrix
 
 **Files:**
-- Create: `scripts/ops/probe_launch_boundary.py`
+- Modify: `scripts/ops/probe_launch_boundary.py`
 - Create: `scripts/launch_safety_browser_e2e.mjs`
 - Create: `tests/launch_safety/test_launch_matrix_contract.py`
 - Create: `tests/launch_safety/integration/test_launch_matrix.py`
@@ -4734,11 +4999,13 @@ git commit -m "test: exercise the launch safety matrix"
 ### Task 44: Add and rehearse the single-host rollback runbook
 
 **Files:**
-- Create: `ops/nginx/maintenance/http-context.conf.template`
-- Create: `ops/nginx/maintenance/server-enabled.conf`
-- Create: `ops/nginx/maintenance/server-disabled.conf`
+- Modify: `ops/nginx/maintenance/http-context.conf.template`
+- Modify: `ops/nginx/maintenance/server-enabled.conf`
+- Modify: `ops/nginx/maintenance/server-disabled.conf`
 - Create: `ops/launch-safety/cache-purge-paths.json`
-- Create: `scripts/ops/maintenance_mode.sh`
+- Modify: `scripts/ops/maintenance_mode.sh`
+- Reuse: `scripts/ops/deploy_launch_admission.sh`
+- Reuse: `scripts/package_launch_release.py`
 - Create: `scripts/ops/verify_closed_release.py`
 - Create: `scripts/ops/purge_launch_runtime.py`
 - Create: `scripts/ops/install_closed_release.sh`
@@ -4786,6 +5053,10 @@ def test_known_good_package_is_verified_before_maintenance(package_verifier):
         "ops/systemd/vl-nuxt.service",
         "compose-network-audit.json",
     }
+    assert evidence.package_kind == "vl360-launch-release"
+    assert evidence.archive_sha256 == read_archive_sidecar(KNOWN_GOOD_CLOSED_ARCHIVE)
+    assert evidence.member_digests_match_manifest is True
+    assert evidence.persistent_paths == ["agent/data", "agent/data/sitemap-bundles"]
     assert evidence.dev_override_selected is False
     assert evidence.unlock_keys_present is False
 
@@ -4829,6 +5100,45 @@ def test_recovery_repeats_install_through_browser_before_any_reopen(rehearsal):
     assert result.traffic_reopened is False
 
 
+def test_post_reopen_failure_redrains_before_any_other_recovery_action(rehearsal):
+    result = rehearsal.fail_at("post-reopen-closed-probe")
+    assert result.recovery_commands[:4] == [
+        "maintenance-enable", "nginx-test-closed", "nginx-reload-closed", "maintenance-probe",
+    ]
+    assert result.traffic_reopened is False
+
+
+def test_recovery_records_every_result_and_preserves_original_exit_status(rehearsal):
+    result = rehearsal.fail_at("verify-readiness-and-listeners", status=37)
+    assert result.exit_code == 37
+    assert result.recovery_results.keys() >= {
+        "verify-recovery-package", "install-closed-release", "verify-dependencies-units-daemon-reload",
+        "verify-readiness-and-listeners", "verify-nginx-closed-boundary", "verify-browser-worker-cache",
+    }
+    assert set(result.recovery_results.values()) <= {"passed", "failed", "skipped"}
+    assert result.summary["closed_verified"] is False
+
+
+@pytest.mark.parametrize("path", ["agent/data/app.db", "agent/data/uploads/photo.jpg", "agent/data/sitemap-bundles/a/metadata.json"])
+def test_primary_and_recovery_whole_tree_installs_preserve_persistent_bytes(rehearsal, path):
+    before = rehearsal.hash_and_read(path)
+    primary = rehearsal.install_known_good_closed()
+    after_primary = rehearsal.hash_and_read(path)
+    recovery = rehearsal.fail_at("verify-browser-worker-cache")
+    after_recovery = rehearsal.hash_and_read(path)
+    assert after_primary == before
+    assert after_recovery == before
+    assert primary.persistent_events == ["detach-agent-data", "swap-release-root", "restore-bind-agent-data", "verify-agent-data-mount"]
+    assert recovery.persistent_events[-4:] == primary.persistent_events
+
+
+def test_failure_after_persistent_detach_restores_old_tree_and_mount(rehearsal):
+    before = rehearsal.snapshot_release_and_persistent_state()
+    result = rehearsal.fail_at("swap-release-root")
+    assert result.release_and_persistent_state == before
+    assert result.maintenance_enabled is True
+
+
 def test_listener_browser_and_nginx_proofs_are_required(evidence_schema):
     assert evidence_schema.required_checks >= {
         "process-local-readiness",
@@ -4855,15 +5165,16 @@ def test_rehearsal_never_claims_stage3_sla(script_text):
 
 Run: `python -m pytest tests/launch_safety/test_watchdog_contract.py tests/launch_safety/test_rollback_runbook.py -q`
 
-Expected: FAIL because the tracked drain, exact package verifier, explicit purge authority, dependency/unit installer, complete phase evidence, controlled browser proof, and recovery state machine do not exist.
+Expected: FAIL because Task 44 has not yet upgraded the Task 31 drain for rollback, consumed the combined manifest+sidecar package, implemented persistent-safe whole-tree installation, added the exact package verifier/purge authority/dependency-unit installer, or built the inherited-ERR best-effort recovery/evidence state machine.
 
 - [ ] **Step 3: Implement every Section 12 phase and the local-only recovery rehearsal**
 
 ```bash
-set -euo pipefail
+set -Eeuo pipefail
 MODE=${1:---local-rehearsal}
 RELEASE_ROOT=${RELEASE_ROOT:-/opt/vinhlong360}
 KNOWN_GOOD_CLOSED=${KNOWN_GOOD_CLOSED:?known-good closed package is required}
+PERSISTENT_AGENT_DATA_ROOT=${PERSISTENT_AGENT_DATA_ROOT:?external persistent agent data root is required}
 EVIDENCE_DIR=${EVIDENCE_DIR:?evidence directory is required}
 OPERATOR=${OPERATOR:?operator identity is required}
 OPERATOR_CIDR=${OPERATOR_CIDR:?operator probe CIDR is required}
@@ -4894,9 +5205,12 @@ install_closed_package() {
   package=$1
   evidence_dir=$2
   "$RUNNER" scripts/ops/install_closed_release.sh \
-    --archive "$package" --release-root "$RELEASE_ROOT" --require-closed
+    --archive "$package" --archive-digest-file "$package.sha256" \
+    --release-root "$RELEASE_ROOT" --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
+    --require-closed --evidence-dir "$evidence_dir/install"
   "$RUNNER" python scripts/ops/verify_closed_release.py \
     --installed-root "$RELEASE_ROOT" --verify-config-ingress-unit-digests \
+    --verify-persistent-agent-data-mount "$PERSISTENT_AGENT_DATA_ROOT" \
     --require-closed --evidence-dir "$evidence_dir/installed"
 }
 
@@ -4938,25 +5252,52 @@ verify_browser_worker_cache() {
     --evidence "$evidence_dir/browser.json"
 }
 
-install_and_verify_closed_sequence() {
-  package=$1
-  evidence_dir=$2
-  install_closed_package "$package" "$evidence_dir"
-  verify_dependencies_units_daemon_reload
-  verify_readiness_and_listeners "$evidence_dir"
-  verify_nginx_closed_boundary
-  verify_browser_worker_cache "$evidence_dir"
+record_recovery_result() {
+  name=$1
+  status=$2
+  code=$3
+  python scripts/ops/record_rollback_phase.py \
+    --evidence-dir "$EVIDENCE_DIR" --phase "recovery:$name" --status "$status" \
+    --exit-code "$code" --stage3-claim false --live-sla-proven false
+}
+
+best_effort_recovery_step() {
+  name=$1
+  shift
+  "$@"
+  code=$?
+  if [ "$code" -eq 0 ]; then
+    record_recovery_result "$name" passed 0
+  else
+    record_recovery_result "$name" failed "$code"
+    RECOVERY_CHAIN_OK=false
+  fi
+  return 0
+}
+
+skip_recovery_step() {
+  record_recovery_result "$1" skipped 0
+  return 0
 }
 
 keep_maintenance_and_recover() {
-  code=$?
+  original_status=${1:-1}
   trap - ERR
-  record_phase failed
-  "$RUNNER" scripts/ops/maintenance_mode.sh enable --operator-cidr "$OPERATOR_CIDR"
-  "$RUNNER" nginx -t
-  "$RUNNER" systemctl reload nginx
+  set +e
+  RECOVERY_CHAIN_OK=true
   if [ "$REOPENED" = true ]; then
-    "$RUNNER" python scripts/ops/probe_launch_boundary.py --expect maintenance
+    best_effort_recovery_step immediate-redrain-enable "$RUNNER" scripts/ops/maintenance_mode.sh enable --operator-cidr "$OPERATOR_CIDR"
+    best_effort_recovery_step immediate-redrain-nginx-test "$RUNNER" nginx -t
+    best_effort_recovery_step immediate-redrain-nginx-reload "$RUNNER" systemctl reload nginx
+    best_effort_recovery_step immediate-redrain-probe "$RUNNER" python scripts/ops/probe_launch_boundary.py --expect maintenance --operator-source
+    REOPENED=false
+  fi
+  record_phase failed
+  primary_record_status=$?
+  if [ "$primary_record_status" -eq 0 ]; then
+    record_recovery_result record-primary-failure passed 0
+  else
+    record_recovery_result record-primary-failure failed "$primary_record_status"
   fi
   if [ -n "${CORRECTED_CLOSED_PACKAGE:-}" ]; then
     recovery_package=$CORRECTED_CLOSED_PACKAGE
@@ -4965,9 +5306,37 @@ keep_maintenance_and_recover() {
     recovery_package=$KNOWN_GOOD_CLOSED
     recovery_action=known-good-closed-restore
   fi
-  if "$RUNNER" python scripts/ops/verify_closed_release.py \
-      --archive "$recovery_package" --require-closed --evidence-dir "$EVIDENCE_DIR/recovery/package" && \
-      install_and_verify_closed_sequence "$recovery_package" "$EVIDENCE_DIR/recovery"; then
+
+  best_effort_recovery_step verify-recovery-package "$RUNNER" python scripts/ops/verify_closed_release.py \
+    --archive "$recovery_package" --archive-digest-file "$recovery_package.sha256" \
+    --require-closed --evidence-dir "$EVIDENCE_DIR/recovery/package"
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step install-closed-release install_closed_package "$recovery_package" "$EVIDENCE_DIR/recovery"
+  else
+    skip_recovery_step install-closed-release
+  fi
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step verify-dependencies-units-daemon-reload verify_dependencies_units_daemon_reload
+  else
+    skip_recovery_step verify-dependencies-units-daemon-reload
+  fi
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step verify-readiness-and-listeners verify_readiness_and_listeners "$EVIDENCE_DIR/recovery"
+  else
+    skip_recovery_step verify-readiness-and-listeners
+  fi
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step verify-nginx-closed-boundary verify_nginx_closed_boundary
+  else
+    skip_recovery_step verify-nginx-closed-boundary
+  fi
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step verify-browser-worker-cache verify_browser_worker_cache "$EVIDENCE_DIR/recovery"
+  else
+    skip_recovery_step verify-browser-worker-cache
+  fi
+
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
     recovery_status=closed-verified-maintenance-retained
   else
     recovery_status=failed-maintenance-retained
@@ -4976,7 +5345,7 @@ keep_maintenance_and_recover() {
     --evidence-dir "$EVIDENCE_DIR" --phase recovery --status "$recovery_status" \
     --recovery-action "$recovery_action" --old-open-restored false \
     --traffic-reopened false --steps-replayed install,dependencies-units,readiness-listeners,nginx-boundary,browser-cache
-  exit "$code"
+  exit "$original_status"
 }
 
 CURRENT_PHASE=record-and-verify-evidence
@@ -5009,7 +5378,7 @@ if ! "$RUNNER" scripts/ops/maintenance_mode.sh enable --operator-cidr "$OPERATOR
 fi
 record_phase passed
 RECOVERY_TRAP_ARMED=true
-trap keep_maintenance_and_recover ERR
+trap 'keep_maintenance_and_recover "$?"' ERR
 
 CURRENT_PHASE=stop-vl-nuxt
 "$RUNNER" systemctl stop vl-nuxt
@@ -5062,14 +5431,14 @@ python scripts/ops/record_rollback_phase.py \
 
 The operational authorities are exact:
 
-- `verify_closed_release.py` rejects an archive/installed root unless both canonical artifact bytes and revisions, readiness manifest, Nginx configs, loopback systemd units/wrappers, rendered Compose network audit, and excluded developer override identity match package metadata. It rejects either unlock key in packaged environment material and writes SHA-256 evidence before maintenance begins.
+- `verify_closed_release.py` consumes only the Task 31 `build_launch_release()` format. It verifies the adjacent whole-archive SHA-256 sidecar first, then rejects an archive/installed root unless every member digest/length, both canonical artifact bytes and revisions, readiness manifest, Nginx configs, loopback systemd units/wrappers, rendered Compose network audit, persistent-path declaration, and excluded developer override identity match `launch-release-manifest.json`. It rejects any `agent/data/**` archive member, either unlock key in packaged environment material, or a non-closed package and writes SHA-256 evidence before maintenance begins.
 - `cache-purge-paths.json` requires `web-nuxt/.output`, `web-nuxt/.nuxt`, and `web-nuxt/.cache`; permits only additional cache/output paths enumerated by the old readiness manifest; protects `agent/data/sitemap-bundles`; and rejects absolute escape, `..`, symlink, release-root deletion, and protected descendants. `purge_launch_runtime.py` resolves every path before deletion and records each removed/absent/protected result.
-- `install_closed_release.sh` verifies the archive again, extracts to a sibling staging directory, installs backend requirements and Nuxt production dependencies, verifies `pip check` and `npm ls --omit=dev`, atomically installs the known-good closed tree, copies only digest-matched tracked systemd units, and never copies a developer override or unlock values.
+- `install_closed_release.sh` verifies the combined archive and sidecar again, extracts to a sibling staging directory, installs backend requirements and Nuxt production dependencies, verifies `pip check` and `npm ls --omit=dev`, atomically installs the known-good closed tree, copies only digest-matched tracked systemd units, and never copies a developer override or unlock values. Its persistent-data algorithm is exact: resolve `RELEASE_ROOT`, its sibling staging/old roots, and `PERSISTENT_AGENT_DATA_ROOT`; reject symlinks, path escape, archive `agent/data/**`, or an unexpected mount source; snapshot SHA-256+length for every existing `agent/data/**` regular file; if `agent/data` is already the expected bind mount, record it with `findmnt --json` and detach it, otherwise atomically move the existing directory to the empty external persistent root; swap the complete release tree; create the new empty `agent/data` mountpoint; bind-mount the same external root; verify source/options with `findmnt`; and compare the complete byte snapshot including `agent/data/sitemap-bundles/**`. If failure occurs after detach and before verified remount, the install trap restores the previous tree and the same bind mount before returning failure. Primary and recovery installs call this identical function, so neither path copies, replaces, or regenerates persistent bytes.
 - `http-context.conf.template` defines the named operator CIDR allowlist. `server-enabled.conf` returns 503 to every non-operator request; `server-disabled.conf` contains no drain rule. `maintenance_mode.sh` atomically selects the include, runs `nginx -t`, and refuses to reload on invalid configuration.
 - `local_command_stub.py` executes this identical state machine against a temporary release root and stubbed systemctl/Nginx/listener commands, while the real Task 32 Nginx harness and Task 43 controlled Chrome worker run the HTTP/cache proofs. The local rehearsal is not allowed to replace the browser step with a stub.
-- Initial archive/evidence verification runs before any watchdog, Nginx, service, live-release, or release-root mutation and before the recovery trap is armed; apart from its append-only evidence attempt, failure exits with the exact prior operational host state and no recovery command. Watchdog suspension and maintenance admission have explicit local restoration paths. The `ERR` recovery trap is armed only after maintenance has passed config test, reload, and maintenance probe.
-- Pre-reopen failure leaves maintenance enabled and first rolls forward to an explicitly supplied corrected closed package; otherwise it restores the recorded known-good closed package. Recovery calls the same install, dependency/unit/daemon-reload, process-local readiness, listener, Nginx boundary, and controlled browser/cache helpers used by the primary path, in that order. It records `traffic-reopened=false` and leaves maintenance enabled after verification; no recovery path may jump directly from package install to reopen. Post-reopen failure immediately re-enables maintenance before the same complete recovery. The candidate/open artifact is never a recovery source.
-- `record_rollback_phase.py` writes append-only JSONL plus a final summary containing candidate/rollback identifiers, operator, package/config/ingress/unit digests, every phase command/result, listener and browser evidence paths, recovery action, `stage3_claim=false`, `live_sla_proven=false`, and observed local elapsed seconds only.
+- Initial archive/evidence verification runs before any watchdog, Nginx, service, live-release, or release-root mutation and before the recovery trap is armed; apart from its append-only evidence attempt, failure exits with the exact prior operational host state and no recovery command. Watchdog suspension and maintenance admission have explicit local restoration paths. The script uses `set -Eeuo pipefail`, and the `ERR` recovery trap is armed only after maintenance has passed config test, reload, and maintenance probe, so failures inherited through shell functions reach the same handler.
+- Pre-reopen failure leaves maintenance enabled and first rolls forward to an explicitly supplied corrected closed package; otherwise it restores the recorded known-good closed package. Recovery calls the same package verifier, persistent-safe install, dependency/unit/daemon-reload, process-local readiness, listener, Nginx boundary, and controlled browser/cache helpers used by the primary path, in that order. It records `traffic-reopened=false` and leaves maintenance enabled after verification; no recovery path may jump directly from package install to reopen. On post-reopen failure the handler's first operational sequence is maintenance enable, `nginx -t`, reload, and maintenance probe; only then may package recovery begin. The candidate/open artifact is never a recovery source.
+- The recovery handler receives and later exits with the original failing status, disables `errexit` after removing the `ERR` trap, and treats recovery as best-effort. Every required recovery phase is appended as `passed`, `failed`, or `skipped`; one failed command cannot abort evidence recording for later phases, while unsafe dependent phases are recorded skipped instead of executed. `record_rollback_phase.py` writes append-only JSONL plus a final summary containing candidate/rollback identifiers, operator, package/config/ingress/unit/persistent-tree digests, every phase command/result, listener and browser evidence paths, recovery action, `stage3_claim=false`, `live_sla_proven=false`, and observed local elapsed seconds only. It sets `closed_verified=true` only when every required recovery command exited zero and its evidence file validates; missing/failed/skipped proof can never be summarized as passed.
 
 This workstream invokes only `--local-rehearsal`. `--execute-on-host` remains an approval-gated runbook path and is not executed, deployed, or claimed as live evidence.
 
@@ -5083,9 +5452,9 @@ Run: `& 'C:\Program Files\Git\bin\bash.exe' -n scripts/ops/install_closed_releas
 
 Run: `& 'C:\Program Files\Git\bin\bash.exe' -n scripts/ops/rehearse_launch_rollback.sh`
 
-Run: `& 'C:\Program Files\Git\bin\bash.exe' scripts/ops/rehearse_launch_rollback.sh --local-rehearsal` with `KNOWN_GOOD_CLOSED`, `LOCAL_RELEASE_ROOT`, `EVIDENCE_DIR`, `OPERATOR`, `OPERATOR_CIDR`, `CANDIDATE_RELEASE_ID`, `ROLLBACK_RELEASE_ID`, and `NGINX_PROBE_URL` set to the disposable Task 43/44 harness values.
+Run: `& 'C:\Program Files\Git\bin\bash.exe' scripts/ops/rehearse_launch_rollback.sh --local-rehearsal` with `KNOWN_GOOD_CLOSED` plus its `.sha256` sidecar, `LOCAL_RELEASE_ROOT`, `PERSISTENT_AGENT_DATA_ROOT`, `EVIDENCE_DIR`, `OPERATOR`, `OPERATOR_CIDR`, `CANDIDATE_RELEASE_ID`, `ROLLBACK_RELEASE_ID`, and `NGINX_PROBE_URL` set to the disposable Task 43/44 harness values.
 
-Expected: every Section 12 phase passes against the local harness; package/dependency/systemd-unit/daemon-reload evidence is recorded; purge paths are explicit and sitemap bundles are preserved; readiness/listener/Nginx/browser/cache proofs pass before reopen; initial verification failure leaves the simulated host byte-for-byte/state-for-state unchanged with no armed recovery; every post-boundary failure keeps maintenance and replays install through browser verification with no reopen bypass; the observed local duration is recorded without a live five-minute SLA claim.
+Expected: every Section 12 phase passes against the local harness; the Task 31 combined archive, sidecar, package/dependency/systemd-unit/daemon-reload evidence is recorded; purge paths are explicit and all `agent/data` including sitemap bundles remain byte-for-byte identical through primary and recovery whole-tree swaps; readiness/listener/Nginx/browser/cache proofs pass before reopen; initial verification failure leaves the simulated host byte-for-byte/state-for-state unchanged with no armed recovery; every post-boundary failure preserves its original status, immediately re-drains when needed, records every best-effort result, keeps maintenance, and never overstates closed proof or bypasses reopen gates; the observed local duration is recorded without a live five-minute SLA claim.
 
 - [ ] **Step 5: Commit**
 
@@ -5189,14 +5558,46 @@ git diff --check
 Run and record opt-in tests where available:
 
 ```powershell
-$env:SITEMAP_BUNDLE_TEST_DATABASE_URL='postgresql://vl360:vl360_dev_password@127.0.0.1:5432/vl360_launch_test'
-python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q
-python -m pytest tests/launch_safety/integration -m integration -q
-cd web-nuxt
-npm run smoke:launch-safety
+$pgCompose = 'tests/launch_safety/harness/docker-compose.postgres.yml'
+try {
+  docker compose -f $pgCompose up -d --wait
+  if ($LASTEXITCODE -ne 0) { throw 'failed to provision disposable PostgreSQL harness' }
+  $env:SITEMAP_BUNDLE_TEST_DATABASE_URL = 'postgresql://vl360:vl360_launch_test@127.0.0.1:55432/vl360_launch_test'
+  python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q
+  if ($LASTEXITCODE -ne 0) { throw "PostgreSQL sitemap integration failed with exit $LASTEXITCODE" }
+}
+finally {
+  Remove-Item Env:SITEMAP_BUNDLE_TEST_DATABASE_URL -ErrorAction SilentlyContinue
+  docker compose -f $pgCompose down -v --remove-orphans
+  if ($LASTEXITCODE -ne 0) { Write-Error 'disposable PostgreSQL cleanup failed' }
+}
+
+$launchCompose = 'tests/launch_safety/harness/docker-compose.yml'
+try {
+  docker compose -f $launchCompose up -d --build --wait
+  if ($LASTEXITCODE -ne 0) { throw 'failed to provision launch HTTP harness' }
+  $env:LAUNCH_SAFETY_BASE_URL = 'http://127.0.0.1:18080'
+  $env:NGINX_PROBE_URL = 'http://127.0.0.1:18080'
+  python -m pytest tests/launch_safety/integration/test_launch_matrix.py tests/launch_safety/integration/test_nginx_boundary.py tests/launch_safety/integration/test_network_boundary.py -m integration -q
+  if ($LASTEXITCODE -ne 0) { throw "launch integration failed with exit $LASTEXITCODE" }
+  Push-Location web-nuxt
+  try {
+    npm run smoke:launch-safety
+    if ($LASTEXITCODE -ne 0) { throw "Chrome launch smoke failed with exit $LASTEXITCODE" }
+  }
+  finally {
+    Pop-Location
+  }
+}
+finally {
+  Remove-Item Env:LAUNCH_SAFETY_BASE_URL -ErrorAction SilentlyContinue
+  Remove-Item Env:NGINX_PROBE_URL -ErrorAction SilentlyContinue
+  docker compose -f $launchCompose down -v --remove-orphans
+  if ($LASTEXITCODE -ne 0) { Write-Error 'launch HTTP harness cleanup failed' }
+}
 ```
 
-Expected: provisioned opt-in checks pass; unavailable local dependencies are recorded as explicit skips. The known parallel resource timeout is recorded separately and never changes functional expectations.
+The Task 16 PostgreSQL harness owns exact credentials/database and publishes only `127.0.0.1:55432`; Task 45 never connects to port 5432 or any pre-existing database. Both `finally` blocks always remove environment variables and run `down -v --remove-orphans`, including after a failing test. The Task 32 launch harness publishes its test-only Nginx boundary at `127.0.0.1:18080`. Expected: provisioned opt-in checks pass; unavailable Docker/Chrome dependencies are recorded as explicit skips before setup rather than by silently targeting another service. The known parallel resource timeout is recorded separately and never changes functional expectations.
 
 - [ ] **Step 5: Commit the final evidence only after every required command is recorded**
 
