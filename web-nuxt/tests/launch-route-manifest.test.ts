@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   launchRouteManifest,
   parseLaunchRouteManifest,
+  type LaunchRouteManifest,
 } from '../server/utils/launch/launchRouteManifest'
 
 const validManifest = {
@@ -85,9 +86,55 @@ const validManifest = {
   ],
 }
 
+const invalidRawPathCases = [
+  ['C0 NUL', '/bad\u0000path'],
+  ['C0 tab', '/bad\tpath'],
+  ['DEL', '/bad\u007Fpath'],
+  ['ASCII whitespace', '/bad path'],
+  ['non-breaking whitespace', '/bad\u00A0path'],
+  ['raw opening brace', '/bad{path'],
+  ['raw closing brace', '/bad}path'],
+] as const
+
+const manifestArrayFields = [
+  'exact_routes',
+  'sensitive_prefixes',
+  'backend_ingress_exceptions',
+  'dynamic_templates',
+] as const
+
+type ManifestArrayField = typeof manifestArrayFields[number]
+
 function cloneManifest(): typeof validManifest {
   return structuredClone(validManifest)
 }
+
+function cloneManifestArray(field: ManifestArrayField): unknown[] {
+  return structuredClone(validManifest[field]) as unknown[]
+}
+
+function withManifestArray(field: ManifestArrayField, value: unknown[]): Record<string, unknown> {
+  return { ...validManifest, [field]: value }
+}
+
+function assertReadonlyManifestTypes(manifest: LaunchRouteManifest): void {
+  // @ts-expect-error parsed manifest root fields are readonly
+  manifest.revision = 'changed'
+  // @ts-expect-error normalization fields are readonly
+  manifest.normalization.percent_decode = 'utf8-once'
+  // @ts-expect-error parsed manifest arrays are readonly
+  manifest.exact_routes.push(manifest.exact_routes[0]!)
+  // @ts-expect-error exact route fields are readonly
+  manifest.exact_routes[0]!.path = '/changed'
+  // @ts-expect-error sensitive prefix fields are readonly
+  manifest.sensitive_prefixes[0]!.prefix = '/changed'
+  // @ts-expect-error ingress exception fields are readonly
+  manifest.backend_ingress_exceptions[0]!.review_reason = 'changed'
+  // @ts-expect-error dynamic template fields are readonly
+  manifest.dynamic_templates[0]!.authority = 'fixed-noindex'
+}
+
+void assertReadonlyManifestTypes
 
 describe('parseLaunchRouteManifest', () => {
   it('accepts the canonical placeholder grammar and canonical manifest', () => {
@@ -123,15 +170,19 @@ describe('parseLaunchRouteManifest', () => {
     ['empty ingress review', {
       backend_ingress_exceptions: [{ prefix: '/hook', upstream: 'agent', review_reason: ' ' }],
     }],
-    ['ambiguous template signatures', {
+  ])('rejects %s', (_name, override) => {
+    expect(() => parseLaunchRouteManifest({ ...validManifest, ...override }))
+      .toThrow(/route manifest/i)
+  })
+
+  it('rejects duplicate dynamic signatures with the ambiguity error', () => {
+    expect(() => parseLaunchRouteManifest({
+      ...validManifest,
       dynamic_templates: [
         { template: '/dia-diem/{entity_id}', authority: 'backend-entity', sitemap: 'backend' },
         { template: '/dia-diem/{id}', authority: 'backend-entity', sitemap: 'backend' },
       ],
-    }],
-  ])('rejects %s', (_name, override) => {
-    expect(() => parseLaunchRouteManifest({ ...validManifest, ...override }))
-      .toThrow(/route manifest/i)
+    })).toThrow(/ambiguous dynamic template/i)
   })
 
   it.each([
@@ -151,6 +202,27 @@ describe('parseLaunchRouteManifest', () => {
     })).toThrow(/sensitive prefix.*canonical/i)
   })
 
+  it.each(invalidRawPathCases)('rejects %s in an exact path', (_name, path) => {
+    expect(() => parseLaunchRouteManifest({
+      ...validManifest,
+      exact_routes: [{ path, classification: 'indexable-public', sitemap: true }],
+    })).toThrow(/exact path.*canonical/i)
+  })
+
+  it.each(invalidRawPathCases)('rejects %s in a sensitive prefix', (_name, prefix) => {
+    expect(() => parseLaunchRouteManifest({
+      ...validManifest,
+      sensitive_prefixes: [{ prefix, classification: 'crawl-blocked-sensitive' }],
+    })).toThrow(/sensitive prefix.*canonical/i)
+  })
+
+  it.each(invalidRawPathCases)('rejects %s in an ingress prefix', (_name, prefix) => {
+    expect(() => parseLaunchRouteManifest({
+      ...validManifest,
+      backend_ingress_exceptions: [{ prefix, upstream: 'agent', review_reason: 'reviewed' }],
+    })).toThrow(/ingress prefix.*canonical/i)
+  })
+
   it.each([
     '/dia-diem/{entity_id',
     '/dia-diem/entity_id}',
@@ -164,6 +236,26 @@ describe('parseLaunchRouteManifest', () => {
       ...validManifest,
       dynamic_templates: [{ template, authority: 'backend-entity', sitemap: 'backend' }],
     })).toThrow(/dynamic template/i)
+  })
+
+  it('rejects dynamic templates that can match the same concrete path', () => {
+    expect(() => parseLaunchRouteManifest({
+      ...validManifest,
+      dynamic_templates: [
+        { template: '/foo/{id}/bar', authority: 'fixed-noindex', sitemap: false },
+        { template: '/foo/baz/{slug}', authority: 'fixed-noindex', sitemap: false },
+      ],
+    })).toThrow(/overlapping dynamic template/i)
+  })
+
+  it('accepts dynamic templates separated by conflicting literal segments', () => {
+    expect(() => parseLaunchRouteManifest({
+      ...validManifest,
+      dynamic_templates: [
+        { template: '/foo/{id}/bar', authority: 'fixed-noindex', sitemap: false },
+        { template: '/foo/{slug}/qux', authority: 'fixed-noindex', sitemap: false },
+      ],
+    })).not.toThrow()
   })
 
   it('rejects duplicate exact routes', () => {
@@ -187,6 +279,65 @@ describe('parseLaunchRouteManifest', () => {
       ...validManifest,
       backend_ingress_exceptions: [exception, exception],
     })).toThrow(/duplicate ingress exception/i)
+  })
+
+  it.each(manifestArrayFields)('rejects an own array method on %s', (field) => {
+    const values = cloneManifestArray(field)
+    Object.defineProperty(values, 'map', { enumerable: true, value: () => [] })
+
+    expect(() => parseLaunchRouteManifest(withManifestArray(field, values)))
+      .toThrow(/plain dense JSON array/i)
+  })
+
+  it.each(manifestArrayFields)('rejects a sparse %s array', (field) => {
+    const values = new Array<unknown>(1)
+
+    expect(() => parseLaunchRouteManifest(withManifestArray(field, values)))
+      .toThrow(/plain dense JSON array/i)
+  })
+
+  it.each(manifestArrayFields)('rejects an Array subclass for %s', (field) => {
+    class ManifestArray extends Array<unknown> {}
+    const values = new ManifestArray(...cloneManifestArray(field))
+
+    expect(() => parseLaunchRouteManifest(withManifestArray(field, values)))
+      .toThrow(/plain dense JSON array/i)
+  })
+
+  it.each(manifestArrayFields)('rejects an extra own property on %s', (field) => {
+    const values = cloneManifestArray(field)
+    Object.defineProperty(values, 'reviewed', { enumerable: true, value: true })
+
+    expect(() => parseLaunchRouteManifest(withManifestArray(field, values)))
+      .toThrow(/plain dense JSON array/i)
+  })
+
+  it('rejects an array with a custom prototype', () => {
+    const values = cloneManifestArray('exact_routes')
+    Object.setPrototypeOf(values, Object.create(Array.prototype))
+
+    expect(() => parseLaunchRouteManifest(withManifestArray('exact_routes', values)))
+      .toThrow(/plain dense JSON array/i)
+  })
+
+  it.each([
+    ['custom root prototype', { inherited: true }],
+    ['null root prototype', null],
+  ])('rejects a manifest with a %s', (_name, prototype) => {
+    const candidate = cloneManifest()
+    Object.setPrototypeOf(candidate, prototype)
+
+    expect(() => parseLaunchRouteManifest(candidate)).toThrow(/plain JSON object/i)
+  })
+
+  it('rejects a route item with an unusual prototype', () => {
+    const route = { path: '/', classification: 'indexable-public', sitemap: true }
+    Object.setPrototypeOf(route, { inherited: true })
+
+    expect(() => parseLaunchRouteManifest({
+      ...validManifest,
+      exact_routes: [route],
+    })).toThrow(/plain JSON object/i)
   })
 
   it.each([
