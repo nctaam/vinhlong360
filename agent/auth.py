@@ -989,6 +989,36 @@ async def set_password(body: SetPassword, request: Request, _csrf=Depends(_requi
     return {"success": True, "message": "Đã đặt mật khẩu thành công"}
 
 
+def _reset_password_state(phone: str, hashed_code: str, new_password: str) -> dict:
+    with db._conn() as conn:
+        _consume_verified_otp(conn, phone, hashed_code)
+        row = db._fetchone(conn, f"""
+            SELECT u.* FROM users u
+            WHERE u.phone = {db._ph} FOR UPDATE
+        """, (phone,))
+        user = db._row_to_dict(row) if row else None
+        if not user:
+            raise HTTPException(404, "Không tìm thấy tài khoản với số điện thoại này")
+        pw_hash = _hash_password(new_password)
+        uid = str(user["id"])
+        db._execute(
+            conn,
+            f"UPDATE users SET password_hash = {db._ph} WHERE id::text = {db._ph}",
+            (pw_hash, uid),
+        )
+        db._execute(
+            conn,
+            f"DELETE FROM user_sessions WHERE user_id::text = {db._ph}",
+            (uid,),
+        )
+        db._execute(
+            conn,
+            f"DELETE FROM pending_2fa WHERE user_id::text = {db._ph}",
+            (uid,),
+        )
+        return user
+
+
 @router.post("/reset-password-otp",
              summary="Reset password via OTP",
              description="Resets the user's password by verifying an OTP code. Revokes all existing sessions, requiring the user to log in again with the new password.")
@@ -1002,23 +1032,12 @@ async def reset_password_otp(body: ResetPasswordOTP, request: Request, response:
     _enforce_local_rate(_otp_verify_phone_rate, phone, OTP_VERIFY_PHONE_LIMIT, OTP_VERIFY_PHONE_WINDOW, "Quá nhiều lần nhập OTP cho số này. Vui lòng yêu cầu mã mới sau 5 phút.")
     hashed_code = _hash_otp(body.code.strip())
 
-    def _verify_and_reset():
-        with db._conn() as conn:
-            _consume_verified_otp(conn, phone, hashed_code)
-
-            user = db.get_user_by_phone(phone)
-            if not user:
-                raise HTTPException(404, "Không tìm thấy tài khoản với số điện thoại này")
-            pw_hash = _hash_password(body.new_password)
-            db._execute(conn, f"""
-                UPDATE users SET password_hash = {db._ph} WHERE id::text = {db._ph}
-            """, (pw_hash, str(user["id"])))
-            db._execute(conn, f"""
-                DELETE FROM user_sessions WHERE user_id::text = {db._ph}
-            """, (str(user["id"]),))
-            return user
-
-    user = await asyncio.to_thread(_verify_and_reset)
+    user = await asyncio.to_thread(
+        _reset_password_state,
+        phone,
+        hashed_code,
+        body.new_password,
+    )
     await asyncio.to_thread(_log_login, phone, "password_reset", True, request, str(user["id"]))
     await asyncio.to_thread(_update_login_streak, str(user["id"]))
 

@@ -73,22 +73,27 @@ class _AuthDB:
     _ph = "%s"
 
     def __init__(self, user):
-        self.user = dict(user)
-        self.login_user = dict(user)
+        self.user = dict(user) if user else None
+        self.login_user = dict(user) if user else None
         self.trusted_device_id = None
         self.pending = []
         self.sessions = []
         self.fetches = []
         self.executes = []
         self.calls = []
+        self.connections = []
+        self.connection_calls = []
 
     @contextmanager
     def _conn(self):
-        yield object()
+        conn = object()
+        self.connections.append(conn)
+        yield conn
 
-    def _fetchone(self, _conn, sql, params=()):
+    def _fetchone(self, conn, sql, params=()):
         self.fetches.append((sql, params))
         self.calls.append(("fetch", sql, params))
+        self.connection_calls.append(("fetch", sql, params, conn))
         if "UPDATE users SET password_hash" in sql and "RETURNING password_hash" in sql:
             new_hash, user_id, original_hash = params
             if (
@@ -107,13 +112,28 @@ class _AuthDB:
             return dict(self.user) if self.user else None
         return None
 
-    def _execute(self, _conn, sql, params=()):
+    def _execute(self, conn, sql, params=()):
         self.executes.append((sql, params))
         self.calls.append(("execute", sql, params))
+        self.connection_calls.append(("execute", sql, params, conn))
+        normalized_sql = " ".join(sql.split())
+        if (
+            normalized_sql.startswith("UPDATE users SET password_hash")
+            and "RETURNING password_hash" not in normalized_sql
+        ):
+            new_hash, user_id = params
+            if self.user and str(self.user["id"]) == str(user_id):
+                self.user["password_hash"] = new_hash
         if "INSERT INTO pending_2fa" in sql:
             self.pending.append(params)
         if "INSERT INTO user_sessions" in sql:
             self.sessions.append(params)
+        if normalized_sql.startswith(
+            "DELETE FROM user_sessions WHERE user_id::text"
+        ):
+            self.sessions.clear()
+        if normalized_sql.startswith("DELETE FROM pending_2fa WHERE user_id::text"):
+            self.pending.clear()
 
     @staticmethod
     def _row_to_dict(row):
@@ -531,6 +551,221 @@ def test_auth_state_non_null_snapshot_uses_constant_time_compare(monkeypatch):
 
     assert auth._password_snapshot_matches("expected-hash", "current-hash") is True
     assert compared == [("expected-hash", "current-hash")]
+
+
+def test_reset_password_state_revokes_sessions_and_pending_challenges(monkeypatch):
+    fake = _AuthDB(
+        {
+            "id": USER_ID,
+            "phone": "0901234567",
+            "password_hash": "old-hash",
+            "is_active": True,
+            "deleted_at": None,
+        }
+    )
+    fake.sessions.append(("existing",))
+    fake.pending.append(("existing",))
+    monkeypatch.setattr(auth, "db", fake)
+    consumed_connections = []
+    monkeypatch.setattr(
+        auth,
+        "_consume_verified_otp",
+        lambda conn, *_args: consumed_connections.append(conn),
+    )
+    monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
+
+    user = auth._reset_password_state("0901234567", "otp-hash", "NewPass1")
+
+    assert user["id"] == USER_ID
+    assert fake.user["password_hash"] == "new-hash"
+    assert fake.sessions == []
+    assert fake.pending == []
+    assert len(consumed_connections) == 1
+    assert any(
+        "WHERE u.phone" in sql and "FOR UPDATE" in sql
+        for sql, _ in fake.fetches
+    )
+
+    _, _, _, lock_conn = next(
+        call
+        for call in fake.connection_calls
+        if call[0] == "fetch"
+        and "WHERE u.phone" in call[1]
+        and "FOR UPDATE" in call[1]
+    )
+    operations = [
+        (index, sql, conn)
+        for index, (kind, sql, _params, conn) in enumerate(fake.connection_calls)
+        if kind == "execute"
+    ]
+    update_index, _, update_conn = next(
+        item for item in operations if "UPDATE users SET password_hash" in item[1]
+    )
+    session_delete_index, _, session_delete_conn = next(
+        item
+        for item in operations
+        if "DELETE FROM user_sessions WHERE user_id::text" in item[1]
+    )
+    pending_delete_index, _, pending_delete_conn = next(
+        item
+        for item in operations
+        if "DELETE FROM pending_2fa WHERE user_id::text" in item[1]
+    )
+    assert update_index < session_delete_index < pending_delete_index
+    assert len(fake.connections) == 1
+    assert lock_conn is consumed_connections[0]
+    assert update_conn is consumed_connections[0]
+    assert session_delete_conn is consumed_connections[0]
+    assert pending_delete_conn is consumed_connections[0]
+
+
+@pytest.mark.parametrize("kind", ["pending", "session"])
+def test_reset_then_old_snapshot_auth_creation_is_rejected(monkeypatch, kind):
+    fake = _AuthDB(
+        {
+            "id": USER_ID,
+            "phone": "0901234567",
+            "password_hash": "old-hash",
+            "is_active": True,
+            "deleted_at": None,
+        }
+    )
+    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
+
+    auth._reset_password_state("0901234567", "otp-hash", "NewPass1")
+
+    with pytest.raises(HTTPException) as exc:
+        _invoke_auth_snapshot_creation(kind, "old-hash")
+
+    assert exc.value.status_code == 401
+    assert fake.pending == []
+    assert fake.sessions == []
+
+
+def test_pre_reset_auth_creation_is_revoked(monkeypatch):
+    fake = _AuthDB(
+        {
+            "id": USER_ID,
+            "phone": "0901234567",
+            "password_hash": "old-hash",
+            "is_active": True,
+            "deleted_at": None,
+        }
+    )
+    monkeypatch.setattr(auth, "db", fake)
+    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(auth, "_hash_password", lambda _password: "new-hash")
+
+    _invoke_auth_snapshot_creation("pending", "old-hash")
+    _invoke_auth_snapshot_creation("session", "old-hash")
+    assert len(fake.pending) == 1
+    assert len(fake.sessions) == 1
+
+    auth._reset_password_state("0901234567", "otp-hash", "NewPass1")
+
+    assert fake.pending == []
+    assert fake.sessions == []
+
+
+def test_reset_password_state_missing_user_does_not_commit_changes(monkeypatch):
+    fake = _AuthDB(None)
+    fake.sessions.append(("existing",))
+    fake.pending.append(("existing",))
+    monkeypatch.setattr(auth, "db", fake)
+    consumed_connections = []
+    monkeypatch.setattr(
+        auth,
+        "_consume_verified_otp",
+        lambda conn, *_args: consumed_connections.append(conn),
+    )
+    monkeypatch.setattr(
+        auth,
+        "_hash_password",
+        lambda _password: pytest.fail("missing users must not reach password hashing"),
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        auth._reset_password_state("0901234567", "otp-hash", "NewPass1")
+
+    assert exc.value.status_code == 404
+    assert exc.value.detail == "Không tìm thấy tài khoản với số điện thoại này"
+    assert len(consumed_connections) == 1
+    assert fake.executes == []
+    assert fake.sessions == [("existing",)]
+    assert fake.pending == [("existing",)]
+
+
+def test_reset_password_otp_delegates_and_retains_side_effects(monkeypatch):
+    _disable_login_rate_limits(monkeypatch)
+    request = _http_request()
+    response = Response()
+    helper_calls = []
+    events = []
+    user = {
+        "id": USER_ID,
+        "phone": "0901234567",
+        "password_hash": "old-hash",
+        "is_active": True,
+        "deleted_at": None,
+    }
+
+    monkeypatch.setattr(auth, "_hash_otp", lambda code: f"hashed:{code}")
+
+    def reset_state(phone, hashed_code, new_password):
+        helper_calls.append((phone, hashed_code, new_password))
+        return dict(user)
+
+    monkeypatch.setattr(auth, "_reset_password_state", reset_state)
+    monkeypatch.setattr(
+        auth,
+        "_log_login",
+        lambda phone, method, success, req, uid: events.append(
+            ("history", phone, method, success, req, uid)
+        ),
+    )
+    monkeypatch.setattr(
+        auth,
+        "_update_login_streak",
+        lambda uid: events.append(("streak", uid)),
+    )
+
+    def schedule_achievement(coro):
+        events.append(("achievement", USER_ID))
+        coro.close()
+        return SimpleNamespace()
+
+    monkeypatch.setattr(auth.asyncio, "create_task", schedule_achievement)
+    monkeypatch.setattr(
+        auth,
+        "_clear_session_cookie",
+        lambda resp, req: events.append(("cookie", resp, req)),
+    )
+
+    result = asyncio.run(
+        auth.reset_password_otp(
+            auth.ResetPasswordOTP(
+                phone="0901234567",
+                code="123456",
+                new_password="NewPass1",
+            ),
+            request,
+            response,
+        )
+    )
+
+    assert helper_calls == [("0901234567", "hashed:123456", "NewPass1")]
+    assert events == [
+        ("history", "0901234567", "password_reset", True, request, USER_ID),
+        ("streak", USER_ID),
+        ("achievement", USER_ID),
+        ("cookie", response, request),
+    ]
+    assert result == {
+        "success": True,
+        "message": "Đã đặt lại mật khẩu. Vui lòng đăng nhập lại.",
+    }
 
 
 @pytest.mark.parametrize(

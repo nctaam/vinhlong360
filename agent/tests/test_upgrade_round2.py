@@ -235,25 +235,26 @@ class TestResetPasswordOTP:
         assert m.phone == "0901234567"
 
     def test_verifies_otp_before_reset(self):
-        # Refactor (complexity ≤12): the OTP-row verification (SELECT otp_sessions +
-        # mark verified) was extracted verbatim into the shared _consume_verified_otp
-        # helper, called at the top of reset_password_otp's _verify_and_reset before
-        # the password write. Check the wiring + that the contract lives in the helper.
         import auth
-        src = inspect.getsource(auth.reset_password_otp)
-        assert "_hash_otp" in src
-        assert "_consume_verified_otp" in src
-        helper_src = inspect.getsource(auth._consume_verified_otp)
-        assert "otp_sessions" in helper_src
-        assert "verified = TRUE" in helper_src
+        endpoint_src = inspect.getsource(auth.reset_password_otp)
+        reset_src = inspect.getsource(auth._reset_password_state)
+        consume_src = inspect.getsource(auth._consume_verified_otp)
+        assert "_hash_otp" in endpoint_src
+        assert "_reset_password_state" in endpoint_src
+        assert "_consume_verified_otp" in reset_src
+        assert reset_src.index("_consume_verified_otp") < reset_src.index(
+            "UPDATE users SET password_hash"
+        )
+        assert "otp_sessions" in consume_src
+        assert "verified = TRUE" in consume_src
 
     def test_uses_parameterized_queries(self):
-        src = inspect.getsource(__import__("auth").reset_password_otp)
+        src = inspect.getsource(__import__("auth")._reset_password_state)
         assert "db._ph" in src
         assert "f-string" not in src or "{db._ph}" in src
 
     def test_revokes_all_sessions(self):
-        src = inspect.getsource(__import__("auth").reset_password_otp)
+        src = inspect.getsource(__import__("auth")._reset_password_state)
         assert "DELETE FROM user_sessions" in src
 
     def test_rate_limited_by_ip(self):
@@ -274,7 +275,7 @@ class TestResetPasswordOTP:
         assert "_require_csrf_lazy" in src or "_csrf" in src
 
     def test_updates_password_hash(self):
-        src = inspect.getsource(__import__("auth").reset_password_otp)
+        src = inspect.getsource(__import__("auth")._reset_password_state)
         assert "_hash_password" in src
         assert "password_hash" in src
 
