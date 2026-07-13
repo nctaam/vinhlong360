@@ -32,6 +32,14 @@ ImmutableJSON: TypeAlias = (
 ImmutableJSONObject: TypeAlias = Mapping[str, ImmutableJSON]
 
 
+def _own_raw_bytes(raw: object) -> bytes:
+    if type(raw) is bytes:
+        return raw
+    if isinstance(raw, (bytes, bytearray, memoryview)):
+        return memoryview(raw).tobytes()
+    raise TypeError("artifact raw must be bytes-like")
+
+
 @dataclass(frozen=True)
 class LoadedArtifact:
     path: Path
@@ -40,10 +48,12 @@ class LoadedArtifact:
     sha256: str
 
     def __post_init__(self) -> None:
-        expected_sha256 = hashlib.sha256(self.raw).hexdigest()
+        owned_raw = _own_raw_bytes(self.raw)
+        object.__setattr__(self, "raw", owned_raw)
+        expected_sha256 = hashlib.sha256(owned_raw).hexdigest()
         if self.sha256 != expected_sha256:
             raise ValueError("artifact SHA-256 does not match raw bytes")
-        parsed = _parse_json_object(self.raw, self.path)
+        parsed = _parse_json_object(owned_raw, self.path)
         try:
             snapshot = _freeze_json(self.data)
         except TypeError as exc:

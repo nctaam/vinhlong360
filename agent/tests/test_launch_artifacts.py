@@ -74,6 +74,44 @@ def test_loaded_artifact_constructor_owns_backing_data(tmp_path):
     assert artifact.data["nested"]["value"] == 1
 
 
+@pytest.mark.parametrize("raw_kind", ["bytearray", "memoryview", "bytes-subclass"])
+def test_loaded_artifact_constructor_owns_bytes_like_raw_evidence(tmp_path, raw_kind):
+    original = b'{"revision": "v1"}'
+    backing = bytearray(original)
+    if raw_kind == "bytearray":
+        supplied_raw = backing
+    elif raw_kind == "memoryview":
+        supplied_raw = memoryview(backing)
+    else:
+        class RawBytes(bytes):
+            pass
+
+        supplied_raw = RawBytes(original)
+
+    artifact = LoadedArtifact(
+        path=tmp_path / "artifact.json",
+        raw=supplied_raw,
+        data={"revision": "v1"},
+        sha256=hashlib.sha256(original).hexdigest(),
+    )
+    backing[backing.index(ord("1"))] = ord("2")
+
+    assert type(artifact.raw) is bytes
+    assert artifact.raw == original
+    assert artifact.data["revision"] == "v1"
+    assert artifact.sha256 == hashlib.sha256(artifact.raw).hexdigest()
+
+
+def test_loaded_artifact_constructor_rejects_non_bytes_like_raw(tmp_path):
+    with pytest.raises(TypeError, match="bytes-like"):
+        LoadedArtifact(
+            path=tmp_path / "artifact.json",
+            raw='{"revision": "v1"}',
+            data={"revision": "v1"},
+            sha256="0" * 64,
+        )
+
+
 @pytest.mark.parametrize("mismatch", ["sha", "data"])
 def test_loaded_artifact_constructor_rejects_raw_evidence_mismatch(tmp_path, mismatch):
     raw = b'{"revision": "v1"}'
