@@ -1,5 +1,6 @@
 import hashlib
 import os
+import stat
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 from types import MappingProxyType
@@ -18,6 +19,20 @@ def symlink_or_skip(link, target, *, target_is_directory=False):
         link.symlink_to(target, target_is_directory=target_is_directory)
     except OSError as exc:
         pytest.skip(f"symlink creation unavailable: {exc}")
+
+
+class ReparsePointStat:
+    def __init__(self, original):
+        self._original = original
+        self.st_file_attributes = getattr(original, "st_file_attributes", 0) | getattr(
+            stat,
+            "FILE_ATTRIBUTE_REPARSE_POINT",
+            0x400,
+        )
+        self.st_reparse_tag = 0x8000001B
+
+    def __getattr__(self, name):
+        return getattr(self._original, name)
 
 
 def test_load_artifact_uses_exact_fixture_bytes_for_data_and_sha(tmp_path):
@@ -243,6 +258,115 @@ def test_load_artifact_rejects_a_directory_instead_of_a_regular_file(tmp_path, s
         load_artifact("artifact.json", **kwargs)
 
 
+@pytest.mark.parametrize("source", ["production", "fixture"])
+def test_load_artifact_rejects_a_regular_file_with_multiple_filesystem_links(
+    tmp_path,
+    source,
+):
+    if source == "production":
+        target = tmp_path / "config" / "artifact.json"
+        target.parent.mkdir()
+        kwargs = {"release_root": tmp_path}
+    else:
+        target = tmp_path / "fixture.json"
+        kwargs = {"fixture_path": target}
+    target.write_bytes(b'{"source": "linked"}')
+    try:
+        os.link(target, tmp_path / f"{source}-alias.json")
+    except OSError as exc:
+        pytest.skip(f"hardlink creation unavailable: {exc}")
+
+    assert os.lstat(target).st_nlink > 1
+    with pytest.raises(ValueError, match="filesystem link"):
+        load_artifact("artifact.json", **kwargs)
+
+
+@pytest.mark.parametrize("source", ["production", "fixture"])
+def test_load_artifact_rejects_regular_looking_windows_reparse_metadata(
+    tmp_path,
+    monkeypatch,
+    source,
+):
+    if source == "production":
+        target = tmp_path / "config" / "artifact.json"
+        target.parent.mkdir()
+        kwargs = {"release_root": tmp_path}
+    else:
+        target = tmp_path / "fixture.json"
+        kwargs = {"fixture_path": target}
+    target.write_bytes(b'{"source": "reparse"}')
+    original_lstat = os.lstat
+
+    def reparse_lstat(path, *args, **kwargs):
+        result = original_lstat(path, *args, **kwargs)
+        if Path(path) == target:
+            return ReparsePointStat(result)
+        return result
+
+    monkeypatch.setattr(launch_artifacts.os, "lstat", reparse_lstat)
+
+    with pytest.raises(ValueError, match="reparse point"):
+        load_artifact("artifact.json", **kwargs)
+
+
+def test_load_artifact_rejects_a_hardlink_added_between_preopen_and_fstat(
+    tmp_path,
+    monkeypatch,
+):
+    target = tmp_path / "fixture.json"
+    target.write_bytes(b'{"source": "linked-during-open"}')
+    alias = tmp_path / "alias.json"
+    original_open = os.open
+
+    def linking_open(path, flags, *args, **kwargs):
+        descriptor = original_open(path, flags, *args, **kwargs)
+        try:
+            os.link(target, alias)
+        except BaseException:
+            os.close(descriptor)
+            raise
+        return descriptor
+
+    monkeypatch.setattr(launch_artifacts.os, "open", linking_open)
+
+    with pytest.raises(ValueError, match="filesystem link"):
+        load_artifact("artifact.json", fixture_path=target)
+
+    assert alias.exists()
+
+
+def test_load_artifact_rejects_a_hardlink_added_during_read(tmp_path, monkeypatch):
+    target = tmp_path / "fixture.json"
+    target.write_bytes(b'{"source": "linked-during-read"}')
+    alias = tmp_path / "alias.json"
+    original_fdopen = os.fdopen
+
+    class LinkingStream:
+        def __init__(self, stream):
+            self.stream = stream
+
+        def __enter__(self):
+            self.stream.__enter__()
+            return self
+
+        def __exit__(self, *args):
+            return self.stream.__exit__(*args)
+
+        def read(self):
+            os.link(target, alias)
+            return self.stream.read()
+
+    def linking_fdopen(*args, **kwargs):
+        return LinkingStream(original_fdopen(*args, **kwargs))
+
+    monkeypatch.setattr(launch_artifacts.os, "fdopen", linking_fdopen)
+
+    with pytest.raises(ValueError, match="filesystem link"):
+        load_artifact("artifact.json", fixture_path=target)
+
+    assert alias.exists()
+
+
 def test_load_artifact_rejects_a_fifo_before_reading_when_supported(tmp_path, monkeypatch):
     if not hasattr(os, "mkfifo"):
         pytest.skip("FIFO creation is unavailable on this platform")
@@ -281,7 +405,7 @@ def test_load_artifact_rejects_an_identity_swap_between_lstat_and_open(tmp_path,
 
 
 @pytest.mark.parametrize("location", ["inside", "outside"])
-def test_load_artifact_rejects_parent_config_swap_to_symlink_same_inode(
+def test_load_artifact_rejects_parent_config_swap_to_symlink(
     tmp_path,
     monkeypatch,
     location,
@@ -295,29 +419,77 @@ def test_load_artifact_rejects_parent_config_swap_to_symlink_same_inode(
     if location == "outside":
         redirect_target = tmp_path / "outside-config"
         redirect_target.mkdir()
-        try:
-            os.link(target, redirect_target / "artifact.json")
-        except OSError as exc:
-            pytest.skip(f"hardlink creation unavailable: {exc}")
+        (redirect_target / "artifact.json").write_bytes(b'{"source": "outside"}')
     else:
         redirect_target = retired_config
     original_open = os.open
-    swapped = False
+    swap_attempted = False
 
     def swapping_open(path, flags, *args, **kwargs):
-        nonlocal swapped
-        if Path(path).name == "artifact.json" and not swapped:
+        nonlocal swap_attempted
+        if Path(path).name == "artifact.json" and not swap_attempted:
+            swap_attempted = True
             config.rename(retired_config)
             symlink_or_skip(config, redirect_target, target_is_directory=True)
-            swapped = True
         return original_open(path, flags, *args, **kwargs)
 
     monkeypatch.setattr(os, "open", swapping_open)
 
-    with pytest.raises(ValueError, match="config.*identity|parent.*identity|symlink"):
+    with pytest.raises(
+        ValueError,
+        match="config.*identity|parent.*identity|path.*identity|symlink",
+    ):
         load_artifact("artifact.json", release_root=release_root)
 
-    assert swapped is True
+    assert swap_attempted is True
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows directory sharing semantics")
+def test_windows_production_load_pins_config_directory_before_child_open(
+    tmp_path,
+    monkeypatch,
+):
+    release_root = tmp_path / "release"
+    config = release_root / "config"
+    config.mkdir(parents=True)
+    target = config / "artifact.json"
+    original_raw = b'{"source": "original"}'
+    target.write_bytes(original_raw)
+    replacement = release_root / "replacement-config"
+    replacement.mkdir()
+    (replacement / "artifact.json").write_bytes(b'{"source": "replacement"}')
+    retired = release_root / "retired-config"
+    original_open = os.open
+    state = {"attempted": False, "blocked": False, "restored": False}
+
+    def replacing_and_restoring_open(path, flags, *args, **kwargs):
+        if Path(path).name == target.name and not state["attempted"]:
+            state["attempted"] = True
+            try:
+                config.rename(retired)
+            except PermissionError:
+                state["blocked"] = True
+            else:
+                replacement.rename(config)
+                config.rename(replacement)
+                retired.rename(config)
+                state["restored"] = True
+        return original_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(launch_artifacts.os, "open", replacing_and_restoring_open)
+
+    try:
+        loaded = load_artifact("artifact.json", release_root=release_root)
+    except ValueError:
+        loaded = None
+
+    assert state == {"attempted": True, "blocked": True, "restored": False}
+    assert target.read_bytes() == original_raw
+    if loaded is not None:
+        assert loaded.raw == original_raw
+    after_load = release_root / "config-after-load"
+    config.rename(after_load)
+    after_load.rename(config)
 
 
 def test_load_artifact_closes_config_descriptor_when_fstat_fails(tmp_path, monkeypatch):
@@ -354,6 +526,32 @@ def test_file_identity_detects_metadata_change_when_inode_is_stable(tmp_path):
     after = os.stat(target)
 
     assert launch_artifacts._file_identity(before) != launch_artifacts._file_identity(after)
+
+
+def test_file_identity_includes_filesystem_link_count(tmp_path):
+    target = tmp_path / "artifact.json"
+    target.write_bytes(b'{"source": "identity"}')
+    before = os.stat(target)
+    try:
+        os.link(target, tmp_path / "alias.json")
+    except OSError as exc:
+        pytest.skip(f"hardlink creation unavailable: {exc}")
+    after = os.stat(target)
+
+    assert before.st_nlink == 1
+    assert after.st_nlink > 1
+    assert launch_artifacts._file_identity(before) != launch_artifacts._file_identity(after)
+
+
+def test_file_identity_includes_windows_reparse_metadata(tmp_path):
+    target = tmp_path / "artifact.json"
+    target.write_bytes(b'{"source": "identity"}')
+    regular = os.stat(target)
+    reparse = ReparsePointStat(regular)
+
+    assert launch_artifacts._file_identity(regular) != launch_artifacts._file_identity(
+        reparse
+    )
 
 
 @pytest.mark.parametrize("name", ["../outside.json", "nested/artifact.json"])
