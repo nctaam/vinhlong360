@@ -216,6 +216,28 @@ def test_validate_route_manifest_accepts_reviewed_canonical_neighbors(path):
     assert parsed["exact_routes"][0]["path"] == path
 
 
+def test_validate_route_manifest_matches_typescript_acceptance_of_unicode_nel_path():
+    candidate = valid_manifest()
+    candidate["exact_routes"] = [
+        {"path": "/bad\u0085path", "classification": "indexable-public", "sitemap": True}
+    ]
+
+    parsed = validate_route_manifest_data(candidate)
+
+    assert parsed["exact_routes"][0]["path"] == "/bad\u0085path"
+
+
+def test_validate_route_manifest_matches_typescript_nonblank_unicode_nel_review():
+    candidate = valid_manifest()
+    candidate["backend_ingress_exceptions"] = [
+        {"prefix": "/reviewed-hook", "upstream": "agent", "review_reason": "\u0085"}
+    ]
+
+    parsed = validate_route_manifest_data(candidate)
+
+    assert parsed["backend_ingress_exceptions"][0]["review_reason"] == "\u0085"
+
+
 @pytest.mark.parametrize(
     "template",
     [

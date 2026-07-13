@@ -85,6 +85,53 @@ def test_load_artifact_rejects_an_absolute_production_name(tmp_path):
         load_artifact(str(outside), release_root=tmp_path / "release")
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "host.json:secret",
+        "host.json.",
+        "host.json ",
+        "host<name>.json",
+        'host"name.json',
+        "host|name.json",
+        "host?name.json",
+        "host*name.json",
+        "host\x01name.json",
+        "CON",
+        "nul.json",
+        "COM1.txt",
+        "lpt9.JSON",
+    ],
+    ids=[
+        "alternate-data-stream",
+        "trailing-dot",
+        "trailing-space",
+        "angle-bracket",
+        "quote",
+        "pipe",
+        "question-mark",
+        "asterisk",
+        "control-character",
+        "reserved-con",
+        "reserved-nul",
+        "reserved-com1",
+        "reserved-lpt9",
+    ],
+)
+def test_load_artifact_rejects_windows_invalid_production_names_before_read(tmp_path, name):
+    with pytest.raises(ValueError, match="artifact name"):
+        load_artifact(name, release_root=tmp_path)
+
+
+@pytest.mark.parametrize("name", ["launch-indexing-policy.json", "ai-disclosure.json"])
+def test_load_artifact_accepts_canonical_production_names(tmp_path, name):
+    target = tmp_path / "config" / name
+    target.parent.mkdir(exist_ok=True)
+    target.write_bytes(b'{"valid": true}')
+
+    assert load_artifact(name, release_root=tmp_path).path == target
+
+
 def test_load_artifact_defaults_to_repository_release_root():
     loaded = load_artifact("launch-indexing-policy.json")
 
@@ -117,6 +164,33 @@ def test_load_artifact_rejects_non_finite_json_numbers(tmp_path, constant):
 
     with pytest.raises(ValueError, match="non-finite JSON number"):
         load_artifact("ignored.json", fixture_path=fixture)
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        b'{"value": 1e9999}',
+        b'{"value": -1e9999}',
+        b'{"nested": {"value": 1e9999}}',
+        b'{"items": [{"value": -1e9999}]}',
+    ],
+    ids=["positive-root-value", "negative-root-value", "nested-object", "nested-array"],
+)
+def test_load_artifact_rejects_overflowed_non_finite_json_numbers(tmp_path, raw):
+    fixture = tmp_path / "overflow.json"
+    fixture.write_bytes(raw)
+
+    with pytest.raises(ValueError, match="non-finite JSON number"):
+        load_artifact("ignored.json", fixture_path=fixture)
+
+
+def test_load_artifact_preserves_finite_json_numbers(tmp_path):
+    fixture = tmp_path / "finite.json"
+    fixture.write_bytes(b'{"fraction": 1.25, "exponent": -1e200}')
+
+    loaded = load_artifact("ignored.json", fixture_path=fixture)
+
+    assert loaded.data == {"fraction": 1.25, "exponent": -1e200}
 
 
 @pytest.mark.parametrize("raw", [b"[]", b"null", b'"value"', b"1", b"true"])

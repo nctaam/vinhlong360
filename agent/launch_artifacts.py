@@ -2,9 +2,19 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+
+WINDOWS_INVALID_FILENAME_CHARACTERS = frozenset('<>:"/\\|?*')
+WINDOWS_RESERVED_FILENAMES = frozenset(
+    {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"}
+    | {f"COM{index}" for index in range(1, 10)}
+    | {f"LPT{index}" for index in range(1, 10)}
+)
 
 
 @dataclass(frozen=True)
@@ -28,6 +38,13 @@ def _reject_non_finite_number(constant: str) -> None:
     raise ValueError(f"non-finite JSON number: {constant}")
 
 
+def _parse_finite_float(literal: str) -> float:
+    value = float(literal)
+    if not math.isfinite(value):
+        raise ValueError(f"non-finite JSON number: {literal}")
+    return value
+
+
 def _parse_json_object(raw: bytes, path: Path) -> dict[str, Any]:
     try:
         text = raw.decode("utf-8")
@@ -39,6 +56,7 @@ def _parse_json_object(raw: bytes, path: Path) -> dict[str, Any]:
             text,
             object_pairs_hook=_reject_duplicate_keys,
             parse_constant=_reject_non_finite_number,
+            parse_float=_parse_finite_float,
         )
     except json.JSONDecodeError as exc:
         raise ValueError(f"artifact {path} is not valid JSON: {exc.msg}") from exc
@@ -46,6 +64,27 @@ def _parse_json_object(raw: bytes, path: Path) -> dict[str, Any]:
     if type(data) is not dict:
         raise ValueError(f"artifact {path} must contain a JSON object")
     return data
+
+
+def _validate_artifact_name(name: object) -> Path:
+    if type(name) is not str:
+        raise ValueError("artifact name must be a single valid filename")
+    artifact_name = Path(name)
+    reserved_stem = name.split(".", 1)[0].upper()
+    if (
+        name in {"", ".", ".."}
+        or artifact_name.is_absolute()
+        or artifact_name.name != name
+        or name.endswith((".", " "))
+        or reserved_stem in WINDOWS_RESERVED_FILENAMES
+        or any(
+            character in WINDOWS_INVALID_FILENAME_CHARACTERS
+            or unicodedata.category(character) == "Cc"
+            for character in name
+        )
+    ):
+        raise ValueError("artifact name must be a single valid filename")
+    return artifact_name
 
 
 def load_artifact(
@@ -60,15 +99,7 @@ def load_artifact(
     if fixture_path is not None:
         path = Path(fixture_path)
     else:
-        if type(name) is not str:
-            raise ValueError("artifact name must be a single filename")
-        artifact_name = Path(name)
-        if (
-            name in {"", ".", ".."}
-            or artifact_name.is_absolute()
-            or artifact_name.name != name
-        ):
-            raise ValueError("artifact name must be a single filename")
+        artifact_name = _validate_artifact_name(name)
         root = Path(release_root) if release_root is not None else Path(__file__).resolve().parent.parent
         path = root / "config" / artifact_name
 
