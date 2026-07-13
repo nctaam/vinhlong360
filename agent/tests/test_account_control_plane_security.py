@@ -1,5 +1,7 @@
+import ast
 import asyncio  # noqa: F401
 import inspect  # noqa: F401
+import textwrap
 from contextlib import contextmanager  # noqa: F401
 from types import SimpleNamespace
 
@@ -47,6 +49,80 @@ class _AdminDB:
     @staticmethod
     def _row_to_dict(row):
         return dict(row) if row else None
+
+
+class _AuthDB:
+    _ph = "%s"
+
+    def __init__(self, user):
+        self.user = dict(user)
+        self.pending = []
+        self.sessions = []
+        self.fetches = []
+        self.executes = []
+
+    @contextmanager
+    def _conn(self):
+        yield object()
+
+    def _fetchone(self, _conn, sql, params=()):
+        self.fetches.append((sql, params))
+        if "FROM users" in sql:
+            return dict(self.user) if self.user else None
+        return None
+
+    def _execute(self, _conn, sql, params=()):
+        self.executes.append((sql, params))
+        if "INSERT INTO pending_2fa" in sql:
+            self.pending.append(params)
+        if "INSERT INTO user_sessions" in sql:
+            self.sessions.append(params)
+
+    @staticmethod
+    def _row_to_dict(row):
+        return dict(row) if row else None
+
+
+def _invoke_auth_snapshot_creation(kind, expected_password_hash):
+    if kind == "pending":
+        return auth._create_pending_2fa(
+            USER_ID, "127.0.0.1", "pytest", expected_password_hash
+        )
+    return auth._create_session_atomic(
+        USER_ID,
+        "token-hash",
+        "pytest",
+        "127.0.0.1",
+        "2099-01-01T00:00:00+00:00",
+        expected_password_hash,
+    )
+
+
+def _threaded_helper_calls(fn, helper_name):
+    tree = ast.parse(textwrap.dedent(inspect.getsource(fn)))
+    return [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "to_thread"
+        and node.args
+        and isinstance(node.args[0], ast.Name)
+        and node.args[0].id == helper_name
+    ]
+
+
+def _is_user_password_snapshot(node):
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == "user"
+        and node.func.attr == "get"
+        and len(node.args) == 1
+        and isinstance(node.args[0], ast.Constant)
+        and node.args[0].value == "password_hash"
+    )
 
 
 def _install_admin_db(monkeypatch, users):
@@ -275,3 +351,184 @@ def test_bulk_ban_uses_request_scoped_actor_without_auth_lookup(monkeypatch):
     )
 
     assert result["banned_ids"] == [USER_ID]
+
+
+def test_pending_challenge_rejects_stale_password_snapshot(monkeypatch):
+    fake = _AuthDB(
+        {"id": USER_ID, "password_hash": "new-hash", "is_active": True, "deleted_at": None}
+    )
+    monkeypatch.setattr(auth, "db", fake)
+
+    with pytest.raises(HTTPException) as exc:
+        auth._create_pending_2fa(USER_ID, "127.0.0.1", "pytest", "old-hash")
+
+    assert exc.value.status_code == 401
+    assert fake.pending == []
+    assert any("FOR UPDATE" in sql for sql, _ in fake.fetches)
+
+
+def test_session_creation_rejects_stale_password_snapshot(monkeypatch):
+    fake = _AuthDB(
+        {"id": USER_ID, "password_hash": "new-hash", "is_active": True, "deleted_at": None}
+    )
+    monkeypatch.setattr(auth, "db", fake)
+
+    with pytest.raises(HTTPException) as exc:
+        auth._create_session_atomic(
+            USER_ID,
+            "token-hash",
+            "pytest",
+            "127.0.0.1",
+            "2099-01-01T00:00:00+00:00",
+            "old-hash",
+        )
+
+    assert exc.value.status_code == 401
+    assert fake.sessions == []
+
+
+@pytest.mark.parametrize("kind", ["pending", "session"])
+def test_auth_state_matching_password_snapshot_allows_creation(monkeypatch, kind):
+    fake = _AuthDB(
+        {"id": USER_ID, "password_hash": "same-hash", "is_active": True, "deleted_at": None}
+    )
+    monkeypatch.setattr(auth, "db", fake)
+
+    _invoke_auth_snapshot_creation(kind, "same-hash")
+
+    inserted = fake.pending if kind == "pending" else fake.sessions
+    assert len(inserted) == 1
+    assert any("FOR UPDATE" in sql for sql, _ in fake.fetches)
+
+
+@pytest.mark.parametrize("kind", ["pending", "session"])
+def test_auth_state_none_snapshot_allows_none_password_account(monkeypatch, kind):
+    fake = _AuthDB(
+        {"id": USER_ID, "password_hash": None, "is_active": True, "deleted_at": None}
+    )
+    monkeypatch.setattr(auth, "db", fake)
+
+    _invoke_auth_snapshot_creation(kind, None)
+
+    inserted = fake.pending if kind == "pending" else fake.sessions
+    assert len(inserted) == 1
+
+
+@pytest.mark.parametrize("kind", ["pending", "session"])
+@pytest.mark.parametrize("state", ["inactive", "deleted", "missing"])
+def test_auth_state_invalid_account_rejects_creation(monkeypatch, kind, state):
+    user = {
+        "id": USER_ID,
+        "password_hash": "same-hash",
+        "is_active": state != "inactive",
+        "deleted_at": "2099-01-01T00:00:00+00:00" if state == "deleted" else None,
+    }
+    fake = _AuthDB(user)
+    if state == "missing":
+        fake.user = None
+    monkeypatch.setattr(auth, "db", fake)
+
+    with pytest.raises(HTTPException) as exc:
+        _invoke_auth_snapshot_creation(kind, "same-hash")
+
+    assert exc.value.status_code == 401
+    assert fake.pending == []
+    assert fake.sessions == []
+
+
+def test_auth_state_non_null_snapshot_uses_constant_time_compare(monkeypatch):
+    compared = []
+
+    def compare(expected, current):
+        compared.append((expected, current))
+        return True
+
+    monkeypatch.setattr(auth.hmac, "compare_digest", compare)
+
+    assert auth._password_snapshot_matches("expected-hash", "current-hash") is True
+    assert compared == [("expected-hash", "current-hash")]
+
+
+@pytest.mark.parametrize(
+    ("fn", "helper_name"),
+    [
+        (auth.verify_otp, "_create_pending_2fa"),
+        (auth.login_password, "_create_pending_2fa"),
+        (auth._finish_login, "_create_session_atomic"),
+    ],
+)
+def test_login_paths_forward_password_snapshot(fn, helper_name):
+    calls = _threaded_helper_calls(fn, helper_name)
+
+    assert len(calls) == 1
+    assert _is_user_password_snapshot(calls[0].args[-1])
+
+
+def test_finish_login_auth_state_check_precedes_login_side_effects():
+    tree = ast.parse(textwrap.dedent(inspect.getsource(auth._finish_login)))
+    calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)]
+    session_call = _threaded_helper_calls(auth._finish_login, "_create_session_atomic")[0]
+    side_effect_names = {
+        "_check_suspicious_login",
+        "_log_login",
+        "_update_login_streak",
+        "_set_session_cookie",
+    }
+    side_effect_lines = [
+        node.lineno
+        for node in calls
+        if (
+            isinstance(node.func, ast.Name)
+            and node.func.id in side_effect_names
+        )
+        or (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr == "to_thread"
+            and node.args
+            and isinstance(node.args[0], ast.Name)
+            and node.args[0].id in side_effect_names
+        )
+    ]
+
+    assert side_effect_lines
+    assert session_call.lineno < min(side_effect_lines)
+
+
+def test_legacy_rehash_updates_local_password_snapshot_before_auth_creation():
+    tree = ast.parse(textwrap.dedent(inspect.getsource(auth.login_password)))
+    assignments = [node for node in ast.walk(tree) if isinstance(node, ast.Assign)]
+    user_copy = next(
+        node
+        for node in assignments
+        if any(isinstance(target, ast.Name) and target.id == "user" for target in node.targets)
+        and isinstance(node.value, ast.Call)
+        and isinstance(node.value.func, ast.Name)
+        and node.value.func.id == "dict"
+    )
+    snapshot_update = next(
+        node
+        for node in assignments
+        if any(
+            isinstance(target, ast.Subscript)
+            and isinstance(target.value, ast.Name)
+            and target.value.id == "user"
+            and isinstance(target.slice, ast.Constant)
+            and target.slice.value == "password_hash"
+            for target in node.targets
+        )
+        and isinstance(node.value, ast.Name)
+        and node.value.id == "new_hash"
+    )
+    rehash_call = _threaded_helper_calls(auth.login_password, "_rehash")[0]
+    challenge_call = _threaded_helper_calls(auth.login_password, "_create_pending_2fa")[0]
+    finish_call = next(
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "_finish_login"
+    )
+
+    assert rehash_call.lineno < user_copy.lineno < snapshot_update.lineno
+    assert snapshot_update.lineno < challenge_call.lineno
+    assert snapshot_update.lineno < finish_call.lineno

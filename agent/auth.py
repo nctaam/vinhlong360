@@ -240,9 +240,45 @@ def _is_internal_session(user_agent: str | None, ip: str | None) -> bool:
     return loopback and not any(marker in ua for marker in browser_markers)
 
 
-def _create_session_atomic(uid: str, token_hash: str, ua: str, ip: str, expires_iso: str):
+def _password_snapshot_matches(expected: str | None, current: str | None) -> bool:
+    if expected is None or current is None:
+        return expected is current
+    return hmac.compare_digest(str(expected), str(current))
+
+
+def _assert_current_auth_snapshot(
+    conn, user_id: str, expected_password_hash: str | None
+) -> dict:
+    row = db._fetchone(conn, f"""
+        SELECT id, password_hash, is_active, deleted_at FROM users
+        WHERE id::text = {db._ph} FOR UPDATE
+    """, (user_id,))
+    user = db._row_to_dict(row) if row else None
+    if (
+        not user
+        or not user.get("is_active")
+        or user.get("deleted_at") is not None
+        or not _password_snapshot_matches(
+            expected_password_hash, user.get("password_hash")
+        )
+    ):
+        raise HTTPException(
+            401, "Thong tin dang nhap da thay doi. Vui long dang nhap lai."
+        )
+    return user
+
+
+def _create_session_atomic(
+    uid: str,
+    token_hash: str,
+    ua: str,
+    ip: str,
+    expires_iso: str,
+    expected_password_hash: str | None,
+):
     from auth_middleware import MAX_CONCURRENT_SESSIONS
     with db._conn() as conn:
+        _assert_current_auth_snapshot(conn, uid, expected_password_hash)
         db._execute(conn, f"""
             INSERT INTO user_sessions (user_id, token, user_agent, ip_address, expires_at)
             VALUES ({db._ph}::uuid, {db._ph}, {db._ph}, {db._ph}, {db._ph})
@@ -531,7 +567,15 @@ async def _finish_login(user: dict, phone: str, method: str, request: Request, r
     from middleware import get_client_ip
     ip = get_client_ip(request)
     ua = request.headers.get("user-agent", "")[:500]
-    await asyncio.to_thread(_create_session_atomic, str(user["id"]), _hash_token(token), ua, ip, expires.isoformat())
+    await asyncio.to_thread(
+        _create_session_atomic,
+        str(user["id"]),
+        _hash_token(token),
+        ua,
+        ip,
+        expires.isoformat(),
+        user.get("password_hash"),
+    )
     # ORDER MATTERS: this must run before the history-write call below — it
     # queries for a PRIOR successful login with the same ip/ua. Running it
     # after (or racing it via create_task) risks the just-written current-login
@@ -738,7 +782,13 @@ async def verify_otp(body: OTPVerify, request: Request, response: Response):
 
     if _2fa_is_enabled(str(user["id"])) and not await asyncio.to_thread(_has_valid_trusted_device, str(user["id"]), request):
         ua = request.headers.get("user-agent", "")[:500]
-        challenge = await asyncio.to_thread(_create_pending_2fa, str(user["id"]), ip, ua)
+        challenge = await asyncio.to_thread(
+            _create_pending_2fa,
+            str(user["id"]),
+            ip,
+            ua,
+            user.get("password_hash"),
+        )
         await asyncio.to_thread(_log_login, phone, "otp", True, request, str(user["id"]))
         return {"two_factor_required": True, "challenge_id": challenge}
 
@@ -821,13 +871,21 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
                 db._execute(conn, f"UPDATE users SET password_hash = {db._ph} WHERE id::text = {db._ph}",
                             (new_hash, str(user["id"])))
         await asyncio.to_thread(_rehash)
+        user = dict(user)
+        user["password_hash"] = new_hash
         logger.info("Rehashed legacy PBKDF2 password for user %s", user["id"])
 
     _login_phone_fails.pop(phone, None)
 
     if _2fa_is_enabled(str(user["id"])) and not await asyncio.to_thread(_has_valid_trusted_device, str(user["id"]), request):
         ua = request.headers.get("user-agent", "")[:500]
-        challenge = await asyncio.to_thread(_create_pending_2fa, str(user["id"]), ip, ua)
+        challenge = await asyncio.to_thread(
+            _create_pending_2fa,
+            str(user["id"]),
+            ip,
+            ua,
+            user.get("password_hash"),
+        )
         await asyncio.to_thread(_log_login, phone, "password", True, request, str(user["id"]))
         return {"two_factor_required": True, "challenge_id": challenge}
 
@@ -1749,11 +1807,14 @@ _tfa_verify_ip_rate: dict[str, list[float]] = {}
 PENDING_2FA_EXPIRE_MINUTES = 5
 
 
-def _create_pending_2fa(user_id: str, ip: str, ua: str) -> str:
+def _create_pending_2fa(
+    user_id: str, ip: str, ua: str, expected_password_hash: str | None
+) -> str:
     raw = _generate_token()
     expires = datetime.now(timezone.utc) + timedelta(minutes=PENDING_2FA_EXPIRE_MINUTES)
     ph = db._ph
     with db._conn() as conn:
+        _assert_current_auth_snapshot(conn, user_id, expected_password_hash)
         db._execute(conn, f"""
             INSERT INTO pending_2fa (user_id, token_hash, ip, user_agent, expires_at)
             VALUES ({ph}::uuid, {ph}, {ph}, {ph}, {ph})
