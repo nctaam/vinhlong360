@@ -4930,18 +4930,31 @@ async def bulk_ban_users(body: BulkUserAction, request: Request):
     require_pg()
     from ratelimit import check_rate
     check_rate("admin:bulk-ban", 5, 60, "Thao tác quá nhanh")
-    admin_user = await get_current_user(request)
-    admin_id = str(admin_user["id"]) if admin_user else None
-    ids = [validate_path_id(uid, "user_id") for uid in body.user_ids]
+    admin_user = getattr(request.state, "admin_user", None)
+    admin_id = str(admin_user.get("id")) if admin_user else None
+    ids = list(dict.fromkeys(validate_path_id(uid, "user_id") for uid in body.user_ids))
     if admin_id and admin_id in ids:
         raise HTTPException(400, "Không thể tự ban chính mình")
     def _query():
         ph = db._ph
-        banned = []
+        targets = {}
         with db._conn() as conn:
+            for uid in sorted(ids):
+                row = db._fetchone(conn, f"""
+                    SELECT id, is_active, role FROM users
+                    WHERE id::text = {ph} FOR UPDATE
+                """, (uid,))
+                if row:
+                    targets[uid] = db._row_to_dict(row)
+
             for uid in ids:
-                target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (uid,))
-                if not target:
+                target = targets.get(uid)
+                if target:
+                    _assert_actor_can_manage_target(admin_user, target.get("role"))
+
+            banned = []
+            for uid in ids:
+                if uid not in targets:
                     continue
                 db._execute(conn, f"UPDATE users SET is_active = FALSE WHERE id::text = {ph}", (uid,))
                 db._execute(conn, f"DELETE FROM user_sessions WHERE user_id = {ph}::uuid", (uid,))
