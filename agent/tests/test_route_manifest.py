@@ -16,6 +16,7 @@ from route_manifest import (
     PREFIX_KEYS,
     TEMPLATE_KEYS,
     TOP_LEVEL_KEYS,
+    LoadedRouteManifest,
     load_route_manifest,
     validate_route_manifest_data,
 )
@@ -34,6 +35,19 @@ def plain_json(value):
         return {key: plain_json(child) for key, child in value.items()}
     if isinstance(value, (list, tuple)):
         return [plain_json(child) for child in value]
+    return value
+
+
+def frozen_looking_json(value, retained_backings):
+    if type(value) is dict:
+        backing = {}
+        retained_backings.append(backing)
+        backing.update(
+            {key: frozen_looking_json(child, retained_backings) for key, child in value.items()}
+        )
+        return MappingProxyType(backing)
+    if type(value) is list:
+        return tuple(frozen_looking_json(child, retained_backings) for child in value)
     return value
 
 
@@ -62,7 +76,6 @@ def test_load_route_manifest_preserves_artifact_and_revision(tmp_path):
     assert loaded.artifact.path == fixture
     assert loaded.artifact.raw == raw
     assert loaded.revision == "launch-indexing-policy-v1"
-    assert loaded.data is loaded.artifact.data
     assert plain_json(loaded.data) == valid_manifest()
     assert isinstance(loaded.data, MappingProxyType)
     assert isinstance(loaded.data["exact_routes"], tuple)
@@ -98,6 +111,69 @@ def test_validate_route_manifest_returns_a_copy_without_mutating_input():
     assert parsed["normalization"] is not candidate["normalization"]
     assert parsed["exact_routes"] is not candidate["exact_routes"]
     assert parsed["exact_routes"][0] is not candidate["exact_routes"][0]
+
+
+@pytest.mark.parametrize("mutation", ["root", "normalization", "route"])
+def test_validate_route_manifest_copies_retained_mappingproxy_backings(mutation):
+    retained_backings = []
+    candidate = frozen_looking_json(valid_manifest(), retained_backings)
+    root_backing = retained_backings[0]
+    normalization_backing = next(
+        backing for backing in retained_backings if "query_policy" in backing
+    )
+    route_backing = next(
+        backing for backing in retained_backings if backing.get("path") == "/"
+    )
+
+    parsed = validate_route_manifest_data(candidate)
+    loaded = LoadedRouteManifest(
+        artifact=load_route_manifest().artifact,
+        revision=parsed["revision"],
+        data=parsed,
+    )
+    if mutation == "root":
+        root_backing["revision"] = "launch-indexing-policy-v2"
+    elif mutation == "normalization":
+        normalization_backing["query_policy"] = "weakened"
+    else:
+        route_backing["path"] = "/changed"
+
+    for snapshot in (parsed, loaded.data):
+        assert snapshot["revision"] == "launch-indexing-policy-v1"
+        assert snapshot["normalization"]["query_policy"] == "noindex-except-sitemap-batch"
+        assert snapshot["exact_routes"][0]["path"] == "/"
+
+
+def test_loaded_route_manifest_constructor_owns_mappingproxy_input():
+    retained_backings = []
+    candidate = frozen_looking_json(valid_manifest(), retained_backings)
+    root_backing = retained_backings[0]
+
+    loaded = LoadedRouteManifest(
+        artifact=load_route_manifest().artifact,
+        revision="launch-indexing-policy-v1",
+        data=candidate,
+    )
+    root_backing["revision"] = "launch-indexing-policy-v2"
+
+    assert loaded.data["revision"] == "launch-indexing-policy-v1"
+
+
+def test_loaded_route_manifest_rejects_data_that_diverges_from_artifact_sha():
+    artifact = load_route_manifest().artifact
+    divergent = valid_manifest()
+    divergent["exact_routes"][0] = {
+        "path": "/different-home",
+        "classification": "indexable-public",
+        "sitemap": True,
+    }
+
+    with pytest.raises(ValueError, match="artifact data"):
+        LoadedRouteManifest(
+            artifact=artifact,
+            revision="launch-indexing-policy-v1",
+            data=divergent,
+        )
 
 
 def test_route_manifest_module_policy_constants_are_immutable():

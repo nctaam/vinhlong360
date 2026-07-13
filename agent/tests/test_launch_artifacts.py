@@ -7,7 +7,7 @@ from types import MappingProxyType
 import pytest
 
 import launch_artifacts
-from launch_artifacts import load_artifact
+from launch_artifacts import LoadedArtifact, load_artifact
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -52,6 +52,41 @@ def test_load_artifact_recursively_freezes_parsed_json(tmp_path):
         loaded.data["routes"].append({"path": "/second"})
     with pytest.raises(TypeError):
         loaded.data["routes"][0]["path"] = "/changed"
+
+
+def test_loaded_artifact_constructor_owns_backing_data(tmp_path):
+    raw = b'{"revision": "v1", "nested": {"value": 1}}'
+    nested_backing = {"value": 1}
+    root_backing = {
+        "revision": "v1",
+        "nested": MappingProxyType(nested_backing),
+    }
+    artifact = LoadedArtifact(
+        path=tmp_path / "artifact.json",
+        raw=raw,
+        data=MappingProxyType(root_backing),
+        sha256=hashlib.sha256(raw).hexdigest(),
+    )
+    root_backing["revision"] = "v2"
+    nested_backing["value"] = 2
+
+    assert artifact.data["revision"] == "v1"
+    assert artifact.data["nested"]["value"] == 1
+
+
+@pytest.mark.parametrize("mismatch", ["sha", "data"])
+def test_loaded_artifact_constructor_rejects_raw_evidence_mismatch(tmp_path, mismatch):
+    raw = b'{"revision": "v1"}'
+    data = {"revision": "different"} if mismatch == "data" else {"revision": "v1"}
+    digest = "0" * 64 if mismatch == "sha" else hashlib.sha256(raw).hexdigest()
+
+    with pytest.raises(ValueError, match="raw bytes"):
+        LoadedArtifact(
+            path=tmp_path / "artifact.json",
+            raw=raw,
+            data=data,
+            sha256=digest,
+        )
 
 
 def test_load_artifact_reads_the_source_once(tmp_path, monkeypatch):
@@ -205,6 +240,82 @@ def test_load_artifact_rejects_an_identity_swap_between_lstat_and_open(tmp_path,
 
     with pytest.raises(ValueError, match="identity"):
         load_artifact("artifact.json", release_root=tmp_path)
+
+
+@pytest.mark.parametrize("location", ["inside", "outside"])
+def test_load_artifact_rejects_parent_config_swap_to_symlink_same_inode(
+    tmp_path,
+    monkeypatch,
+    location,
+):
+    release_root = tmp_path / "release"
+    config = release_root / "config"
+    config.mkdir(parents=True)
+    target = config / "artifact.json"
+    target.write_bytes(b'{"source": "same-inode"}')
+    retired_config = release_root / "config-retired"
+    if location == "outside":
+        redirect_target = tmp_path / "outside-config"
+        redirect_target.mkdir()
+        try:
+            os.link(target, redirect_target / "artifact.json")
+        except OSError as exc:
+            pytest.skip(f"hardlink creation unavailable: {exc}")
+    else:
+        redirect_target = retired_config
+    original_open = os.open
+    swapped = False
+
+    def swapping_open(path, flags, *args, **kwargs):
+        nonlocal swapped
+        if Path(path).name == "artifact.json" and not swapped:
+            config.rename(retired_config)
+            symlink_or_skip(config, redirect_target, target_is_directory=True)
+            swapped = True
+        return original_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(os, "open", swapping_open)
+
+    with pytest.raises(ValueError, match="config.*identity|parent.*identity|symlink"):
+        load_artifact("artifact.json", release_root=release_root)
+
+    assert swapped is True
+
+
+def test_load_artifact_closes_config_descriptor_when_fstat_fails(tmp_path, monkeypatch):
+    target = tmp_path / "config" / "artifact.json"
+    target.parent.mkdir()
+    target.write_bytes(b'{"source": "descriptor-error"}')
+    descriptor = 731
+    closed = []
+
+    monkeypatch.setattr(launch_artifacts, "_directory_fd_supported", lambda: True)
+    monkeypatch.setattr(launch_artifacts.os, "O_DIRECTORY", 0, raising=False)
+    monkeypatch.setattr(launch_artifacts.os, "open", lambda *_args, **_kwargs: descriptor)
+
+    def failed_fstat(_descriptor):
+        raise OSError("synthetic fstat failure")
+
+    monkeypatch.setattr(launch_artifacts.os, "fstat", failed_fstat)
+    monkeypatch.setattr(launch_artifacts.os, "close", closed.append)
+
+    with pytest.raises(OSError, match="synthetic fstat failure"):
+        load_artifact("artifact.json", release_root=tmp_path)
+
+    assert closed == [descriptor]
+
+
+def test_file_identity_detects_metadata_change_when_inode_is_stable(tmp_path):
+    target = tmp_path / "artifact.json"
+    target.write_bytes(b'{"source": "identity"}')
+    before = os.stat(target)
+    os.utime(
+        target,
+        ns=(before.st_atime_ns, before.st_mtime_ns + 1_000_000_000),
+    )
+    after = os.stat(target)
+
+    assert launch_artifacts._file_identity(before) != launch_artifacts._file_identity(after)
 
 
 @pytest.mark.parametrize("name", ["../outside.json", "nested/artifact.json"])

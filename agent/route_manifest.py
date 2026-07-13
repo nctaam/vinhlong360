@@ -67,6 +67,14 @@ class LoadedRouteManifest:
     revision: str
     data: ImmutableJSONObject
 
+    def __post_init__(self) -> None:
+        snapshot = validate_route_manifest_data(self.data)
+        if self.revision != snapshot["revision"]:
+            raise ValueError("route manifest revision does not match validated data")
+        if snapshot != self.artifact.data:
+            raise ValueError("route manifest data does not match artifact data")
+        object.__setattr__(self, "data", snapshot)
+
 
 def _record(value: object, label: str) -> Mapping[str, Any]:
     if type(value) is not dict and not isinstance(value, MappingProxyType):
@@ -178,11 +186,11 @@ def _assert_unique(values: list[str], message: str) -> None:
         raise ValueError(f"route manifest {message}")
 
 
-def validate_route_manifest_data(
+def _validate_route_manifest_shape(
     value: object,
     *,
     expected_revision: str = EXPECTED_REVISION,
-) -> ImmutableJSONObject:
+) -> Mapping[str, Any]:
     manifest = _record(value, "root")
     _exact_keys(manifest, TOP_LEVEL_KEYS, "root")
     if (
@@ -298,10 +306,20 @@ def validate_route_manifest_data(
     ):
         raise ValueError("route manifest exact/template ambiguity")
 
-    frozen = _freeze_json(manifest)
-    if not isinstance(frozen, Mapping):
+    return manifest
+
+
+def validate_route_manifest_data(
+    value: object,
+    *,
+    expected_revision: str = EXPECTED_REVISION,
+) -> ImmutableJSONObject:
+    _validate_route_manifest_shape(value, expected_revision=expected_revision)
+    snapshot = _freeze_json(value)
+    if not isinstance(snapshot, Mapping):
         raise AssertionError("validated route manifest did not freeze to a mapping")
-    return frozen
+    _validate_route_manifest_shape(snapshot, expected_revision=expected_revision)
+    return snapshot
 
 
 def load_route_manifest(
