@@ -18,9 +18,9 @@ def _pre_deploy_snapshot_block() -> str:
     rotation_index = next(
         index
         for index, line in enumerate(deploy_lines[dump_index + 1 :], dump_index + 1)
-        if line.startswith("ls -t backups/pre-deploy-")
+        if line == 'echo "  rotated auto-backups (kept newest 6)"'
     )
-    return "\n".join(deploy_lines[dump_index + 1 : rotation_index])
+    return "\n".join(deploy_lines[dump_index + 1 : rotation_index + 1])
 
 
 def _git_bash() -> str:
@@ -32,17 +32,21 @@ def _git_bash() -> str:
     return bash
 
 
-def _run_pre_deploy_snapshot(root: Path) -> subprocess.CompletedProcess[str]:
-    for directory in ("agent", "web/media", "web-nuxt/.output", "backups"):
+def _run_pre_deploy_snapshot(
+    root: Path, *, include_nuxt_output: bool = True
+) -> subprocess.CompletedProcess[str]:
+    for directory in ("agent", "web/media", "backups"):
         (root / directory).mkdir(parents=True)
     (root / "agent" / "server.py").write_bytes(b"agent\n")
     (root / "web" / "data.json").write_bytes(b"{}\n")
     (root / "web" / "media" / "photo.txt").write_bytes(b"media\n")
-    (root / "web-nuxt" / ".output" / "server.mjs").write_bytes(b"nuxt\n")
+    if include_nuxt_output:
+        (root / "web-nuxt" / ".output").mkdir(parents=True)
+        (root / "web-nuxt" / ".output" / "server.mjs").write_bytes(b"nuxt\n")
     env = {**os.environ, "TS": "snapshot-test"}
     # The production block is inside an unquoted SSH heredoc, so escaped remote
     # expansions arrive at the remote Bash process without the backslash.
-    snapshot_block = _pre_deploy_snapshot_block().replace(r"\$", "$")
+    snapshot_block = "set -e\n" + _pre_deploy_snapshot_block().replace(r"\$", "$")
     return subprocess.run(
         [_git_bash(), "-c", snapshot_block],
         cwd=root,
@@ -104,6 +108,16 @@ def test_pre_deploy_snapshot_includes_config_bytes_when_present(tmp_path: Path):
     assert result.returncode == 0, result.stderr
     with tarfile.open(tmp_path / "backups/pre-deploy-snapshot-test.tar.gz", "r:gz") as bundle:
         assert bundle.extractfile("config/launch-indexing-policy.json").read() == config_bytes
+
+
+def test_pre_deploy_snapshot_failure_is_nonzero_and_leaves_no_partial_archive(
+    tmp_path: Path,
+):
+    result = _run_pre_deploy_snapshot(tmp_path, include_nuxt_output=False)
+
+    assert result.returncode != 0
+    assert not (tmp_path / "backups/pre-deploy-snapshot-test.tar.gz").exists()
+    assert list((tmp_path / "backups").glob("*.tmp*")) == []
 
 
 def test_docker_context_excludes_secrets_and_local_build_caches():

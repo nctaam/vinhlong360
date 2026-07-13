@@ -235,6 +235,9 @@ def test_release_gate_runs_migration_and_quality_budgets():
     assert "snapshot_members=(agent web/data.json web/media web-nuxt/.output)" in deploy
     assert '[ -d config ] && snapshot_members+=(config)' in deploy
     assert r'"\${snapshot_members[@]}"' in deploy
+    assert "if ! tar -czf" in deploy
+    assert "mv -f" in deploy
+    assert 'tar -czf backups/pre-deploy-$TS.tar.gz' not in deploy
     assert "for mf in agent/migrations/053_saved_kind_superadmin.sql" not in deploy
 
 def test_apply_migrations_runner_uses_legacy_baseline_and_latest_plan():

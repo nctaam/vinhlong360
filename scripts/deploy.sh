@@ -112,7 +112,18 @@ set -a; . ./.env; set +a
 pg_dump -Fc "\$DATABASE_URL" -f /tmp/db-pre-deploy-$TS.dump && mv /tmp/db-pre-deploy-$TS.dump backups/ && echo "  db dump -> backups/db-pre-deploy-$TS.dump"
 snapshot_members=(agent web/data.json web/media web-nuxt/.output)
 [ -d config ] && snapshot_members+=(config)
-tar -czf backups/pre-deploy-$TS.tar.gz "\${snapshot_members[@]}" 2>/dev/null && echo "  code snapshot -> backups/pre-deploy-$TS.tar.gz"
+snapshot_archive="backups/pre-deploy-$TS.tar.gz"
+snapshot_tmp="\$snapshot_archive.tmp.\$\$"
+rm -f "\$snapshot_tmp"
+if ! tar -czf "\$snapshot_tmp" "\${snapshot_members[@]}" 2>/dev/null; then
+  rm -f "\$snapshot_tmp"
+  exit 1
+fi
+if ! mv -f "\$snapshot_tmp" "\$snapshot_archive"; then
+  rm -f "\$snapshot_tmp"
+  exit 1
+fi
+echo "  code snapshot -> \$snapshot_archive"
 ls -t backups/pre-deploy-*.tar.gz 2>/dev/null | tail -n +7 | xargs -r rm -f
 ls -t backups/db-pre-deploy-*.dump 2>/dev/null | tail -n +7 | xargs -r rm -f
 echo "  rotated auto-backups (kept newest 6)"
