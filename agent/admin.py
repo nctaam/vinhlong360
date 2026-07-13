@@ -4869,15 +4869,21 @@ def _admin_user_detail_stats(ps, comment_count, fs, session_count, report_count,
 async def ban_user(user_id: str, request: Request):
     require_pg()
     user_id = validate_path_id(user_id, "user_id")
-    admin_user = await get_current_user(request)
-    if admin_user and str(admin_user["id"]) == user_id:
+    # require_admin populated request state; do not repeat get_current_user here.
+    admin_user = getattr(request.state, "admin_user", None)
+    if admin_user and str(admin_user.get("id")) == user_id:
         raise HTTPException(400, "Không thể tự ban chính mình")
     def _query():
         ph = db._ph
         with db._conn() as conn:
-            target = db._fetchone(conn, f"SELECT is_active FROM users WHERE id::text = {ph}", (user_id,))
+            target = db._fetchone(conn, f"""
+                SELECT id, is_active, role FROM users
+                WHERE id::text = {ph} FOR UPDATE
+            """, (user_id,))
             if not target:
                 raise HTTPException(404, "Không tìm thấy người dùng")
+            target_data = db._row_to_dict(target)
+            _assert_actor_can_manage_target(admin_user, target_data.get("role"))
             db._execute(conn, f"""
                 UPDATE users SET is_active = FALSE WHERE id::text = {ph}
             """, (user_id,))
