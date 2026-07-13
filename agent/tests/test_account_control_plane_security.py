@@ -740,6 +740,48 @@ def test_trusted_device_touch_occurs_after_successful_finish_login(monkeypatch, 
 
 
 @pytest.mark.parametrize("path", ["otp", "password"])
+def test_trusted_device_touch_failure_is_best_effort(monkeypatch, path):
+    user = {
+        "id": USER_ID,
+        "phone": "0901234567",
+        "password_hash": "current-hash",
+        "is_active": True,
+        "deleted_at": None,
+    }
+    fake = _AuthDB(user)
+    fake.trusted_device_id = "device-id"
+    monkeypatch.setattr(auth, "db", fake)
+    _disable_login_rate_limits(monkeypatch)
+    monkeypatch.setattr(auth, "_consume_verified_otp", lambda *_args: None)
+    monkeypatch.setattr(auth, "_get_or_create_user", lambda *_args: dict(user))
+    monkeypatch.setattr(
+        auth,
+        "_verify_password",
+        lambda *_args, **_kwargs: (True, False),
+    )
+    monkeypatch.setattr(auth, "_2fa_is_enabled", lambda *_args: True)
+    finish_calls = []
+    touch_attempts = []
+
+    async def finish(*_args):
+        finish_calls.append("finish")
+        return {"success": True, "token": "session-token"}
+
+    def failing_touch(device_id):
+        touch_attempts.append(device_id)
+        raise RuntimeError("audit write failed")
+
+    monkeypatch.setattr(auth, "_finish_login", finish)
+    monkeypatch.setattr(auth, "_touch_trusted_device", failing_touch)
+
+    result = asyncio.run(_run_trusted_login_path(path, Response()))
+
+    assert result == {"success": True, "token": "session-token"}
+    assert finish_calls == ["finish"]
+    assert touch_attempts == ["device-id"]
+
+
+@pytest.mark.parametrize("path", ["otp", "password"])
 def test_trusted_device_stale_finish_login_does_not_touch(monkeypatch, path):
     user = {
         "id": USER_ID,

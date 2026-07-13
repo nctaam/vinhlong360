@@ -692,6 +692,17 @@ def _touch_trusted_device(device_id: str) -> None:
         )
 
 
+def _touch_trusted_device_best_effort(device_id: str) -> None:
+    try:
+        _touch_trusted_device(device_id)
+    except Exception:
+        logger.warning(
+            "Failed to update trusted device last_used_at for device %s",
+            device_id,
+            exc_info=True,
+        )
+
+
 def _consume_verified_otp(conn, phone: str, hashed_code: str) -> dict:
     """Xác thực OTP mới nhất chưa dùng cho `phone` trên connection cho trước, tăng
     attempts/đánh dấu verified như logic gốc. Trích chung cho verify-otp và
@@ -822,7 +833,7 @@ async def verify_otp(body: OTPVerify, request: Request, response: Response):
 
     result = await _finish_login(user, phone, "otp", request, response)
     if trusted_device_id:
-        await asyncio.to_thread(_touch_trusted_device, trusted_device_id)
+        await asyncio.to_thread(_touch_trusted_device_best_effort, trusted_device_id)
     return result
 
 
@@ -938,7 +949,7 @@ async def login_password(body: PasswordLogin, request: Request, response: Respon
 
     result = await _finish_login(user, phone, "password", request, response)
     if trusted_device_id:
-        await asyncio.to_thread(_touch_trusted_device, trusted_device_id)
+        await asyncio.to_thread(_touch_trusted_device_best_effort, trusted_device_id)
     return result
 
 
