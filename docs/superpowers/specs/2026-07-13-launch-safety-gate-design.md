@@ -69,6 +69,8 @@ LaunchSafetyDecision
   mode: closed | selective-open
   fingerprint: string
   route_manifest_revision: string
+  backend_policy_revision: string | closed-sentinel
+  sitemap_action: closed-empty | guarded-proxy | unavailable
   reason: closed-default | valid-two-key-unlock | invalid-configuration
           | owner-approval-missing | policy-attestation-unavailable
           | policy-mismatch
@@ -97,7 +99,11 @@ Closed is the startup default and the result of every configuration error.
 Closed meta, header, robots, and empty sitemap do not call the backend.
 Selective-open must validate backend policy attestation before any page,
 robots, or sitemap surface opens. Backend absence, an incomplete attestation,
-or a mismatched fingerprint/revision yields one request-wide closed decision.
+or a mismatched fingerprint/revision yields one request-wide closed indexing
+posture. For ordinary closed configuration the decision uses
+`sitemap_action=closed-empty`; for a failed open attempt it uses
+`sitemap_action=unavailable`, preserving `noindex`/closed robots while returning
+HTTP 503 for sitemap endpoints instead of implying intentional URL removal.
 ### 4.3 Policy Fingerprint
 
 The fingerprint identifies reviewed semantics, not merely a deployment. It
@@ -113,8 +119,8 @@ policy requests; the backend returns its active value. The fingerprint proves
 software-policy agreement only; it is not owner approval or legal clearance.
 A missing or mismatched backend fingerprint or route-manifest revision prevents
 selective-open globally. Non-entity pages stay `noindex`, `robots.txt` omits its
-sitemap line, sitemap endpoints use closed output, and entity detail remains
-`noindex` without consulting a local fallback rule.
+sitemap line, entity detail remains `noindex` without consulting a local
+fallback rule, and sitemap endpoints follow `sitemap_action=unavailable`.
 ### 4.4 Cache Fencing
 
 Every open cache identity starts with:
@@ -166,10 +172,18 @@ does not duplicate entity quality thresholds.
 ### 4.7 Open Sitemap Ownership
 
 The backend is the sole owner of selective-open sitemap assembly and XML
-serialization. It loads static canonical routes from the shared route manifest,
-evaluates detail URLs through `index_policy`, merges/deduplicates the results,
-and emits fingerprint, manifest revision, and deterministic batch revision in
-response headers.
+serialization. It emits all three documents from one attested generation batch:
+- `/sitemap.xml` loads static canonical routes from the shared route manifest,
+  evaluates detail URLs through `index_policy`, and merges/deduplicates the
+  canonical page URLs into a standard `<urlset>`;
+- `/sitemap-media.xml` includes only backend-indexable entities with normalized
+  renderable AI images, emits the required AI disclosure in image captions, and
+  excludes placeholders and malformed media;
+- `/sitemap-index.xml` references exactly `/sitemap.xml` and
+  `/sitemap-media.xml` from that same completed batch and returns 503 if either
+  child document is unavailable or policy-inconsistent.
+Every document emits fingerprint, manifest revision, backend policy revision,
+and the same deterministic sitemap batch revision in response headers.
 Nuxt owns only the public launch gate, closed endpoint bodies, attestation, and
 the guarded proxy. It does not merge URL lists or serialize open sitemap XML.
 Nuxt forwards an open sitemap response only after validating all required policy
@@ -216,9 +230,16 @@ Closed behavior is required independently for every exposed endpoint:
 - `/sitemap-index.xml`: HTTP 200, `no-store`, valid empty `<sitemapindex>` with
   no child sitemap locations.
 Each closed endpoint makes zero backend calls. In selective-open, all three are
-proxied only after valid request-wide policy attestation. A proxy, attestation,
-completeness, or revision failure on any endpoint returns HTTP 503 `no-store`;
-an endpoint never falls back to a stale or partially open document.
+proxied only after valid request-wide policy attestation. Open shapes are:
+- main sitemap: manifest-approved canonical pages plus backend-indexable detail
+  pages;
+- media sitemap: image entries only for indexable entities, with AI disclosure
+  and no placeholders;
+- sitemap index: the two canonical child sitemap locations from one matching
+  generation batch.
+A proxy, attestation, completeness, child-generation, or revision failure on
+any endpoint returns HTTP 503 `no-store`; an endpoint never falls back to a
+stale or partially open document.
 ## 6. Backend Indexability Contract
 
 The shared module returns:
@@ -303,8 +324,8 @@ Selective-open preflight for every surface:
 ```text
 request -> both runtime keys exact -> fetch backend policy attestation
   -> fingerprint + route-manifest revision + backend-policy revision match
-  -> yes: one request-wide selective-open decision
-  -> no/error/incomplete: one request-wide closed decision
+  -> yes: selective-open + guarded-proxy sitemap action
+  -> no/error/incomplete: closed indexing + unavailable sitemap action
 ```
 Selective-open non-entity page simulation:
 ```text
@@ -324,8 +345,9 @@ Selective-open sitemap simulation:
 ```text
 sitemap -> both keys exact -> validate backend policy attestation
   -> guarded proxy to backend sitemap owner
-  -> backend loads shared manifest + evaluates detail batch
-  -> backend merges, deduplicates, serializes, and returns policy headers
+  -> main: merge manifest routes + indexable details into page urlset
+  -> media: emit disclosed AI images for indexable entities only
+  -> index: reference main + media from the same completed batch
   -> Nuxt validates fingerprint + manifest revision + batch revision
   -> forward intact response under fenced cache identity or return 503 no-store
 ```
@@ -339,7 +361,8 @@ malformed image data    -> omit from media; never real; never quality credit
 
 - config unreadable, missing, partial, stale, or invalid: closed;
 - backend policy attestation missing, unavailable, incomplete, or mismatched:
-  request-wide closed behavior on every surface;
+  request-wide closed indexing and robots behavior; sitemap endpoints return
+  HTTP 503 `no-store` through `sitemap_action=unavailable`;
 - backend unavailable in closed: closed behavior remains fully usable;
 - open sitemap backend error: HTTP 503 and `Cache-Control: no-store`;
 - closed `/sitemap.xml`, `/sitemap-media.xml`, and `/sitemap-index.xml` each
@@ -366,11 +389,20 @@ Nuxt unit tests cover the full two-key truth table: no keys, either key alone,
 wrong mode, wrong owner-approval value, case/whitespace variants, and both exact
 values. Fingerprint matching, mismatch, and previous-version behavior are a
 separate policy-agreement matrix.
+Decision-contract tests assert that every selective-open result retains the
+fingerprint, route-manifest revision, backend-policy revision, and guarded-proxy
+sitemap action required by downstream cache and endpoint logic.
 Closed tests assert meta, header, robots, and empty sitemap without a successful
 backend mock. Open simulations cover rich, thin, missing-field, mismatch, and
 backend-error behavior.
 Attestation tests prove that static pages, entity pages, robots, and all sitemap
 endpoints share one request-wide decision and cannot open independently.
+They distinguish ordinary closed configuration (`closed-empty`) from a failed
+open attempt (`unavailable`) without weakening the closed indexing posture.
+Selective-open sitemap tests assert endpoint-specific XML: canonical page URLs
+for main, disclosed AI image entries with no placeholders for media, and exactly
+the two matching child locations for the index. A failed or mismatched child
+forces the sitemap index to 503 rather than partial output.
 Backend tests compare single and batch decisions for rich candidates, thin,
 provisional, explicitly unverified, missing, AI-image, no-image, and malformed
 image fixtures. Adding AI images must not change any real-image criterion.
@@ -380,6 +412,8 @@ Integration tests assert:
   category in every applicable bot group, and has no sitemap line;
 - all three closed sitemap endpoints return their specified valid empty XML,
   HTTP 200, `no-store`, and make no backend call;
+- open main, media, and index sitemaps each satisfy their endpoint-specific XML
+  and shared-generation-revision contracts;
 - open sitemap error is 503 `no-store`;
 - open robots error falls back closed;
 - entity detail without valid positive policy remains `noindex`;
@@ -437,7 +471,10 @@ Implementation is accepted only when:
 - default, missing, partial, invalid, and mismatched config is closed;
 - only two exact valid runtime keys plus a matching build/backend fingerprint
   produce selective-open in tests;
-- missing or mismatched backend attestation keeps every indexing surface closed;
+- every selective-open decision carries fingerprint, route-manifest revision,
+  backend-policy revision, and `sitemap_action=guarded-proxy`;
+- missing or mismatched backend attestation keeps pages and robots closed while
+  all sitemap endpoints return 503 `no-store` rather than closed-empty success;
 - deployed config remains unchanged and globally closed;
 - closed public HTML emits `noindex,follow` in meta and header;
 - closed robots allows `indexable-public` and `noindex-follow-public`, blocks
