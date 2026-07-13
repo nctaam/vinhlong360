@@ -1,7 +1,13 @@
+import { fileURLToPath } from 'node:url'
+
 const apiBase = process.env.API_BASE || 'http://localhost:8360'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
+
+  alias: {
+    '#launch-config': fileURLToPath(new URL('../config', import.meta.url)),
+  },
 
   ssr: true,
 
