@@ -20,8 +20,9 @@ The required result is:
 - a future selective-open process requires two exact keys, matching software
   policy evidence, H1/H2 completion, and separate owner authorization;
 - backend entity responses and sitemap generation share one quality authority;
-- every first-party rendering of current `entity.images` discloses that the
-  image is AI-generated, while review and other UGC photos are never mislabeled;
+- every first-party rendering of current `entity.images`, including public,
+  authenticated, and admin surfaces, discloses that the image is AI-generated,
+  while review and other UGC photos are never mislabeled;
 - a launch-compatible build contains no policy-bearing SWR or prerender output;
 - rollback to closed matches the current single-host, single-`vl-nuxt` topology.
 
@@ -35,7 +36,7 @@ These are fixed inputs, not design questions:
 4. Every current value under `entity.images` is AI-generated.
 5. AI images never count as real, documentary, on-site, or first-hand photos.
 6. Disclosure option A is selected: disclosure appears at every first-party
-   point where an entity image is used.
+   public, authenticated, or admin point where an entity image is used.
 7. Selective-open behavior is test simulation only in this workstream.
 8. No real environment value is changed.
 
@@ -47,9 +48,11 @@ explicit project-owner authorization. This spec resolves none of those gates.
 Option A applies to more than the detail hero. The inventory includes hero,
 thumbnail rail, gallery/lightbox, `EntityCard`, `SavedEntityCard`, listings,
 search, nearby and recommendation cards, event thumbnails and related places,
-and any map/popup or other first-party renderer that consumes `entity.images`.
-Dense cards may use a short pill with an accessible full description; expanded
-detail and lightbox surfaces show the full copy.
+admin entity/media/review tools, and any map/popup or other first-party renderer
+that consumes `entity.images` or a representative entity-image value derived
+from it. Dense cards and admin grids may use a short pill with an accessible full
+description; expanded detail, preview, gallery, and lightbox surfaces show the
+full copy.
 
 ## 3. Repository Evidence and Current Risk
 
@@ -70,8 +73,14 @@ The current repository can express conflicting launch signals:
 - `EntityCard`, saved cards, event thumbnails, recommendation cards, detail
   media, share metadata, and structured data can render entity images without
   one shared disclosure descriptor;
+- `web-nuxt/pages/admin/entities.vue`, `web-nuxt/pages/admin/media.vue`, and
+  `web-nuxt/pages/admin/duyet-tu-hoc.vue` directly inspect or render entity image
+  values without the shared source descriptor;
 - `docker-compose.yml` has one Nuxt service/container, while production uses one
   systemd service named `vl-nuxt`; there is no current replica fleet to drain.
+- `docker-compose.yml` also makes `nuxt` depend on `agent: service_healthy` and
+  healthchecks the homepage, so the current local topology cannot demonstrate a
+  backend-independent safe-closed Nuxt cold start.
 
 The current packaging boundary also matters:
 
@@ -316,6 +325,26 @@ target execution context before its external verification; its current systemd
 path uses the equivalent process-local loopback probe before Nginx is reopened.
 A homepage 200 is not readiness.
 
+The launch-compatible Compose topology removes the entire
+`nuxt.depends_on.agent` relationship, including the current
+`condition: service_healthy`, and any equivalent wrapper or deploy-harness wait
+that prevents the Nuxt container/process from starting when the agent is absent
+or unhealthy. The Nuxt Docker healthcheck uses only the container-local internal
+readiness endpoint above. Compose, local deploy, and release harnesses may start
+the backend independently, but ordinary closed Nuxt startup is never gated on
+backend health or backend startup order.
+
+With both exact open-intent keys absent or invalid, the Nuxt container/process
+must cold-start while the agent is absent, return readiness 200 safe closed,
+serve closed HTML/robots/empty-sitemap behavior, and make zero backend calls for
+those launch-gate surfaces. Backend-dependent non-SEO application features may
+remain unavailable; they do not change safe-closed launch readiness. With exact
+open intent and the agent absent, the Nuxt process may start but internal
+readiness returns 503 because attestation is unavailable; the process receives
+no traffic. Any directly probed policy-bearing request follows the existing
+failed-open response contract: noindex, `no-store`, no evidence headers, and no
+selective-open sitemap discovery.
+
 ### 4.6 Route Manifest Schema, Normalization, and Initial Inventory
 
 `config/launch-indexing-policy.json` has this normative logical schema:
@@ -544,22 +573,51 @@ API returns structured descriptors for both entity AI images and approved review
 UGC photos, preserving order and source classification; frontend gallery code no
 longer receives an untyped `string[]` for mixed media.
 
-The first implementation inventory is normative:
+The repository inventory below is the normative minimum, not a closed allowlist.
+Every first-party public, authenticated, and admin renderer of `entity.images`
+or a representative entity-image value derived from it must consume a shared
+`ImageDescriptor` at the rendering boundary and present the matching AI,
+placeholder, or user-uploaded classification at the point of use:
 
 - detail hero, thumbnail rail, `PhotoGallery`, and `ImageLightbox`;
 - home feature/spotlight backgrounds sourced from `entity.images`, and every
   `EntityCard` use on home, `/dia-diem`, `/du-lich`, `/san-pham`, `/ocop`,
   `/luu-tru`, `/kham-pha/**`, `/khu-vuc/**`, `/theo-mua`, `/tim-kiem`, ward child
   sections, nearby entities, home feature cards, and smart/AI recommendations;
-- every `SavedEntityCard` use on `/da-luu`, `/lich-trinh`, and user profiles;
+- the `useFavorites` and `useRecentlyViewed` adapters, every `SavedEntityCard`
+  use on `/da-luu`, `/lich-trinh`, and user profiles, and the recent-search
+  thumbnail on `/tim-kiem`; a derived `image` field may not discard descriptor
+  classification;
 - entity event thumbnails on `/le-hoi` and `/su-kien`, plus related-place cards;
+- `web-nuxt/pages/admin/entities.vue` table thumbnails and image editor,
+  `web-nuxt/pages/admin/media.vue` media grid and expanded preview, and
+  `web-nuxt/pages/admin/duyet-tu-hoc.vue` inspected image link/list;
 - any map/popup entity-image renderer found during implementation inventory;
   the current `/ban-do` popup has no image, and a regression test prevents a new
   unclassified image from being added there;
-- review photos, entity community-feed/post thumbnails, and the mixed gallery
-  API, which must stay classified as UGC rather than AI;
+- review photos, `ReviewCard`, `PostCard`, `EntityFeed`, related post/community
+  thumbnails, the admin post-moderation preview, and the mixed gallery API,
+  which must stay classified as user-uploaded UGC rather than AI;
 - native share payload, OG/Twitter image alt, JSON-LD `ImageObject`, and media
   sitemap metadata.
+
+Dense public cards and admin grids may render the short `Minh họa AI` badge only
+when the image, figure, row, or link has an accessible association to the full AI
+sentence. Expanded admin previews and inspectors show the full disclosure copy.
+Placeholder descriptors show placeholder copy. UGC surfaces show truthful
+user-uploaded copy/credit and never inherit an AI label, including on admin
+moderation surfaces.
+
+Implementation maintains a machine-readable first-party renderer registry with
+the file/surface, access path or adapter, source class, descriptor producer, and
+required short/full presentation. An automated repository scan covers Vue
+templates, components, pages, composables, and server/client adapters across
+public, authenticated, and admin code. It fails when a new direct `entity.images`
+access, raw image-array prop, or representative entity-image URL reaches a
+renderer without a registered descriptor conversion and point-of-use
+classification. Review reconciles the generated scan with this normative
+minimum; registration documents a renderer but never exempts it from descriptor
+and disclosure requirements.
 
 The exact canonical copy remains:
 
@@ -705,7 +763,10 @@ malformed media    -> omit; never quality credit
 - exact open intent with missing/mismatched attestation: affected readiness or
   request is failed-open; no process-global latch is written;
 - backend unavailable in ordinary closed: closed HTML, robots, readiness, and
-  empty sitemaps remain usable with zero backend calls;
+  empty sitemaps remain usable with zero backend calls, and Nuxt process startup
+  is not blocked by backend health;
+- exact open intent with the backend absent: the Nuxt process may start, but
+  readiness is 503 failed-open and traffic remains gated;
 - valid matching entity/ward `indexable=false`: selective-open request remains
   valid and noindex; it is not relabeled failed-open;
 - entity/ward policy missing, malformed, transport-failed, or mismatched: only
@@ -770,8 +831,19 @@ than by the eventual implementation file.
 - a deliberately injected prerender file or cache rule makes readiness 503;
 - readiness exact path returns 200 for safe closed without backend, 200 for
   fully attested safe open with active bundle, and 503 for each unsafe check;
+- a static Compose test rejects every `nuxt.depends_on` reference to `agent`,
+  whether health-gated or startup-order-only, any equivalent backend startup
+  gate, and any homepage healthcheck; the Nuxt healthcheck must call internal
+  readiness;
+- an agent-absent cold-start integration starts Nuxt with open-intent keys absent
+  or invalid and proves readiness 200 safe closed, closed robots, all three valid
+  empty sitemap shapes, no sitemap discovery, and zero backend calls;
+- the counterpart agent-absent exact-open-intent integration proves the Nuxt
+  process starts, readiness returns 503 failed-open, and the harness admits no
+  traffic;
 - Docker healthcheck and local deploy harness call the internal endpoint from
-  inside the container before traffic;
+  inside the container before traffic, without gating closed Nuxt startup on
+  agent health;
 - service worker bypasses navigation, HTML, root SEO, `/_internal/**`, `/api/**`,
   `/events`, `/recommend`, `/seo/**`, request `no-store`, and response
   `no-store`;
@@ -823,12 +895,20 @@ than by the eventual implementation file.
   and preserve accessible association through slide changes and reopen;
 - home feature/spotlight tests and `EntityCard` tests cover listings, search,
   ward children, nearby, and smart/AI recommendation consumers;
-- `SavedEntityCard` tests cover saved page, itinerary page, and user profile;
+- descriptor-preserving adapter tests cover `useFavorites`,
+  `useRecentlyViewed`, contextual recommendations, `SavedEntityCard` on saved,
+  itinerary, and user-profile surfaces, and the recent-search thumbnail;
 - event tests cover `/le-hoi`, `/su-kien`, and related-place cards;
-- a map/popup source scan fails if `entity.images` is introduced without a
-  structured descriptor;
+- admin tests cover entity-list thumbnails, entity image editing, the media grid,
+  expanded media preview, and self-learning image inspection in
+  `admin/entities.vue`, `admin/media.vue`, and `admin/duyet-tu-hoc.vue`; dense
+  admin rows/grids use the short accessible badge and expanded previews use full
+  copy;
+- the machine-readable renderer registry and repository-wide source scan cover
+  public, authenticated, and admin code and fail for every unregistered or
+  unclassified direct/raw entity-image renderer, including a future map/popup;
 - mixed gallery API preserves `ai-generated` versus `user-uploaded` source class
-  and never labels review/UGC photos as AI;
+  and never labels review/UGC photos as AI, including admin post moderation;
 - UGC photos do not change current entity indexability or media sitemap output;
 - native share, OG/Twitter alt, JSON-LD, and media sitemap use the correct source
   disclosure; placeholder and UGC copy never inherit AI text;
@@ -887,30 +967,43 @@ reviewable RED -> GREEN change.
     manifest, and `.output` audit tests.
 25. Service-worker policy-neutral cache, bypass, no-store, version, and purge.
 26. Exact `/_internal/launch-readiness` endpoint and safe-closed/safe-open checks.
-27. Docker healthcheck, `scripts/deploy.sh`, local deploy/release harness
-    readiness wiring, and Docker build verification.
-28. Nginx ownership of root SEO paths, query preservation, no-cache behavior,
+27. Launch-compatible Compose topology: remove the complete Nuxt-to-agent
+    `depends_on` relationship, use internal readiness for Nuxt health, and add
+    static plus agent-absent closed/open cold-start tests.
+28. `scripts/deploy.sh` and local deploy/release harness readiness wiring without
+    a closed-start backend-health gate, plus Docker build verification.
+29. Nginx ownership of root SEO paths, query preservation, no-cache behavior,
     and public readiness denial in both configs.
-29. Shared structured image descriptor and mixed entity/UGC gallery API.
-30. Detail hero and thumbnail-rail AI/placeholder disclosure.
-31. Gallery and lightbox descriptor/caption/accessibility behavior.
-32. Home feature/spotlight plus `EntityCard` listing/search/ward/nearby/
+30. Shared structured image descriptor and mixed entity/UGC gallery API.
+31. Detail hero and thumbnail-rail AI/placeholder disclosure.
+32. Gallery and lightbox descriptor/caption/accessibility behavior.
+33. Home feature/spotlight plus `EntityCard` listing/search/ward/nearby/
     recommendation consumers.
-33. `SavedEntityCard` consumers on saved, itinerary, and profile surfaces.
-34. Event thumbnails, related places, and map/popup renderer inventory guard.
-35. Review/post UGC photo classification and current-quality exclusion.
-36. Native share, OG/Twitter alt, JSON-LD, and media metadata parity.
-37. Browser/Nginx end-to-end matrix for closed, selective-open, valid negative,
+34. Descriptor-preserving favorite/recent adapters and `SavedEntityCard`
+    consumers on saved, itinerary, profile, and recent-search surfaces.
+35. Event thumbnails, related places, and map/popup descriptor behavior.
+36. Admin entity surfaces in `admin/entities.vue`, `admin/media.vue`, and
+    `admin/duyet-tu-hoc.vue`, including dense-badge accessibility and full-copy
+    expanded previews.
+37. Machine-readable renderer registry plus repository-wide public,
+    authenticated, and admin direct/raw entity-image inventory guard.
+38. Review/post UGC photo classification, admin moderation behavior, and
+    current-quality exclusion.
+39. Native share, OG/Twitter alt, JSON-LD, and media metadata parity.
+40. Browser/Nginx end-to-end matrix for closed, selective-open, valid negative,
     request-scoped failed-open, pinned sitemap, and worker-cache behavior.
-38. Executable single-host rollback runbook, source-controlled Nginx
+41. Executable single-host rollback runbook, source-controlled Nginx
     maintenance/drain include, and timed local rehearsal.
-39. Full backend/frontend regression evidence and final source scan.
+42. Full backend/frontend regression evidence and final source scan.
 
-Each task uses a fresh implementer context where the execution workflow supports
-it. Each task records RED before the smallest coherent GREEN change, then
-receives spec-compliance review followed by code-quality review. Critical and
-Important findings block progression. Cross-task scope changes require a plan
-update.
+Every numbered implementation task starts with a fresh implementer context or
+agent, without exception; no implementer context is reused for a later task.
+Each task records RED before the smallest coherent GREEN change. Its first
+spec-compliance review uses a fresh reviewer context independent of the
+implementer. Re-review after fixes may reuse that same spec-reviewer role for
+continuity. Only after spec compliance explicitly passes does a separate fresh
+code-quality reviewer context review the task. Critical and Important findings
+block progression. Cross-task scope changes require a plan update.
 
 ## 10. Non-Goals
 
@@ -954,6 +1047,11 @@ Implementation is accepted only when:
 - Docker healthcheck, `scripts/deploy.sh`, and the local deploy harness use the
   internal readiness endpoint from the container/process-local target context
   before traffic;
+- the launch-compatible Compose file has no `nuxt.depends_on.agent` relationship
+  and local/deploy harnesses contain no equivalent closed-start gate; with the
+  agent absent, Nuxt cold-starts to readiness 200 safe closed for absent/invalid
+  keys, serves closed robots and empty sitemaps with zero backend calls, while
+  exact open intent yields readiness 503 and no admitted traffic;
 - the two canonical JSON artifacts exist only at root `config/`, Nuxt Docker
   builds from repository root, and backend release packaging includes `config/`;
 - Python/TypeScript loaders and route classifiers pass parity tests;
@@ -974,8 +1072,14 @@ Implementation is accepted only when:
   and fail safely on corrupt state;
 - both Nginx configs route root SEO through Nuxt, preserve query/evidence, disable
   caching, and deny public readiness;
-- every listed first-party entity-image surface discloses AI source using the
-  shared descriptor and exact copy;
+- every first-party public, authenticated, and admin entity-image renderer found
+  by the normative minimum plus automated repository inventory consumes the
+  shared descriptor and presents the correct AI/placeholder/user-uploaded
+  classification at its point of use; no unregistered direct/raw renderer passes
+  review or tests;
+- dense admin grids may use the accessible `Minh họa AI` badge, expanded admin
+  previews use full copy, and placeholder/UGC descriptors use their own truthful
+  copy;
 - mixed gallery, review, and post photos remain `user-uploaded`, are never called
   AI, and remain outside current entity quality and media sitemap;
 - service-worker activation purges legacy policy caches and a controlled browser
