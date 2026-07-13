@@ -355,16 +355,18 @@ Fresh verification evidence:
   database `account_control_plane_test`, passed all eight PostgreSQL race and
   rollback tests in `9.10s` and was stopped and removed afterward;
 - `ACCOUNT_CONTROL_PLANE_TEST_DATABASE_URL` is required, unsafe database names
-  are rejected unless the explicit second opt-in is set, and event/future plus
-  server-side timeouts bound lock and failure waits; and
+  are rejected unless the explicit second opt-in is set, and event/barrier and
+  future timeouts bound synchronization waits; and
 - Ruff, `py_compile`, and `git diff --check` passed across every Python file
   touched by the Workstream 4 commits.
 
 The final specification review reported `✅ Final spec compliant`. The final
-quality re-review found no Critical or Important issue and approved closure
-documentation. These reviews and the real PostgreSQL tests support the
-production correctness claims above; the opt-in integration module is
-additional verification coverage, not the source of the fixes.
+quality re-review found no Critical or Important finding, recorded one Minor
+bounded bulk-query performance residual, and returned
+`Ready for closure docs = Yes` only after PostgreSQL coverage was added. These
+reviews and the real PostgreSQL tests support the production correctness claims
+above; the opt-in integration module is additional verification coverage, not
+the source of the fixes.
 
 ## Verified Residuals
 

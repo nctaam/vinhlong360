@@ -882,12 +882,13 @@ Exact verification evidence:
   by the Workstream 4 commits.
 
 The final specification review reported `✅ Final spec compliant`. The final
-quality re-review found no Critical or Important finding and approved closure.
-The remaining Minor performance residual is up to 50 individual sorted
-`id::text` bulk-lock queries; it is correctness-safe and bounded. Maintenance
-residuals are the opt-in PostgreSQL suite not yet being wired into CI, a small
-amount of AST/source-order test coupling, and the unchanged Starlette/httpx
-deprecation warning.
+quality re-review found no Critical or Important finding, recorded one Minor
+bounded bulk-query performance residual, and returned
+`Ready for closure docs = Yes` only after PostgreSQL coverage was added. That
+Minor residual is up to 50 individual sorted `id::text` bulk-lock queries; it is
+correctness-safe and bounded. Maintenance residuals are the opt-in PostgreSQL
+suite not yet being wired into CI, a small amount of AST/source-order test
+coupling, and the unchanged Starlette/httpx deprecation warning.
 
 Rollback is commit-based: revert the production Workstream 4 commits together
 while retaining the regression tests. No schema migration or stored-data rewrite
