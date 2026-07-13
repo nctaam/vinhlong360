@@ -26,8 +26,7 @@ const PREFIX_KEYS = ['classification', 'prefix']
 const INGRESS_KEYS = ['prefix', 'review_reason', 'upstream']
 const TEMPLATE_KEYS = ['authority', 'sitemap', 'template']
 const PLACEHOLDER = /^\{([a-z_][a-z0-9_]*)\}$/
-// Reviewed paths use lowercase ASCII slugs; underscores remain valid for reserved prefixes.
-const CANONICAL_PATH_SEGMENT = /^[a-z0-9_]+(?:-[a-z0-9_]+)*$/
+const FORBIDDEN_PATH_CHARACTERS = /[\u0000-\u0020\u007F{}\s]/u
 
 export interface LaunchRouteManifest {
   readonly schema_version: 1
@@ -85,10 +84,18 @@ function exactKeys(value: Record<string, unknown>, keys: string[], label: string
 }
 
 function canonicalPath(value: unknown, label: string): string {
-  if (typeof value !== 'string' || !value.startsWith('/')) {
-    throw new Error(`route manifest ${label} is not canonical`)
-  }
-  if (value !== '/' && value.slice(1).split('/').some(segment => !CANONICAL_PATH_SEGMENT.test(segment))) {
+  if (
+    typeof value !== 'string'
+    || !value.startsWith('/')
+    || value.includes('?')
+    || value.includes('#')
+    || value.includes('//')
+    || value.includes('%')
+    || value.includes('\\')
+    || FORBIDDEN_PATH_CHARACTERS.test(value)
+    || (value !== '/' && value.endsWith('/'))
+    || value.split('/').some(segment => segment === '.' || segment === '..')
+  ) {
     throw new Error(`route manifest ${label} is not canonical`)
   }
   return value

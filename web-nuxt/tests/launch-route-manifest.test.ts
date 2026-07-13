@@ -202,6 +202,25 @@ describe('parseLaunchRouteManifest', () => {
     })).toThrow(/sensitive prefix.*canonical/i)
   })
 
+  it.each([
+    ['exact path with a dotted segment', {
+      exact_routes: [{ path: '/release/v1.0', classification: 'indexable-public', sitemap: true }],
+    }],
+    ['sensitive prefix with a leading hyphen', {
+      sensitive_prefixes: [{ prefix: '/-well-known', classification: 'crawl-blocked-sensitive' }],
+    }],
+    ['ingress prefix with an RFC unreserved tilde', {
+      backend_ingress_exceptions: [{
+        prefix: '/foo~bar', upstream: 'agent', review_reason: 'reviewed endpoint',
+      }],
+    }],
+    ['exact path with a double hyphen', {
+      exact_routes: [{ path: '/foo--bar', classification: 'indexable-public', sitemap: true }],
+    }],
+  ])('accepts reviewed-shape canonical %s', (_name, override) => {
+    expect(() => parseLaunchRouteManifest({ ...validManifest, ...override })).not.toThrow()
+  })
+
   it.each(invalidRawPathCases)('rejects %s in an exact path', (_name, path) => {
     expect(() => parseLaunchRouteManifest({
       ...validManifest,
