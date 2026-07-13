@@ -492,6 +492,43 @@ def test_windows_production_load_pins_config_directory_before_child_open(
     after_load.rename(config)
 
 
+@pytest.mark.skipif(os.name != "nt", reason="Windows directory sharing semantics")
+def test_windows_production_load_releases_config_handle_after_child_open_error(
+    tmp_path,
+    monkeypatch,
+):
+    release_root = tmp_path / "release"
+    config = release_root / "config"
+    config.mkdir(parents=True)
+    target = config / "artifact.json"
+    target.write_bytes(b'{"source": "open-error"}')
+    during_open = release_root / "config-during-open"
+    original_open = os.open
+    state = {"attempted": False, "blocked": False}
+
+    def failing_open(path, flags, *args, **kwargs):
+        if Path(path).name == target.name and not state["attempted"]:
+            state["attempted"] = True
+            try:
+                config.rename(during_open)
+            except PermissionError:
+                state["blocked"] = True
+            else:
+                during_open.rename(config)
+            raise PermissionError("synthetic child open failure")
+        return original_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(launch_artifacts.os, "open", failing_open)
+
+    with pytest.raises(ValueError, match="identity changed before open"):
+        load_artifact("artifact.json", release_root=release_root)
+
+    assert state == {"attempted": True, "blocked": True}
+    after_error = release_root / "config-after-error"
+    config.rename(after_error)
+    after_error.rename(config)
+
+
 def test_load_artifact_closes_config_descriptor_when_fstat_fails(tmp_path, monkeypatch):
     target = tmp_path / "config" / "artifact.json"
     target.parent.mkdir()
