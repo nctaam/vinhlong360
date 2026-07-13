@@ -2554,12 +2554,60 @@ git commit -m "feat: render immutable main sitemap"
 - [ ] **Step 1: Write failing media inclusion/exclusion tests**
 
 ```python
+from pathlib import Path
+from urllib.parse import urlsplit
+from xml.etree import ElementTree
+
+
 def test_media_sitemap_includes_only_entity_ai_images(snapshot, manifest, evidence, disclosure):
     xml = render_media_sitemap(snapshot, manifest, evidence, disclosure)
     assert "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.".encode() in xml
     assert b"review-user-photo.jpg" not in xml
     assert b"generated-placeholder.svg" not in xml
     assert b"thin-entity-ai.webp" not in xml
+
+
+def test_media_sitemap_groups_two_images_under_one_canonical_page_node(
+    fully_public_entity, manifest, evidence, disclosure,
+):
+    entity = {
+        **fully_public_entity,
+        "id": "two-images",
+        "images": [
+            "/media/z-local.webp",
+            "https://cdn.example.test/media/a-absolute.webp",
+            "http://cdn.example.test/media/rejected.webp",
+        ],
+    }
+    first = render_media_sitemap(snapshot_with(entity), manifest, evidence, disclosure)
+    entity["images"].reverse()
+    second = render_media_sitemap(snapshot_with(entity), manifest, evidence, disclosure)
+
+    assert first == second
+    assert first == Path(
+        "agent/tests/fixtures/sitemap/expected-sitemap-media.xml"
+    ).read_bytes()
+
+    root = ElementTree.fromstring(first)
+    namespaces = {
+        "sitemap": "http://www.sitemaps.org/schemas/sitemap/0.9",
+        "image": "http://www.google.com/schemas/sitemap-image/1.1",
+    }
+    page_nodes = root.findall("sitemap:url", namespaces)
+    assert len(page_nodes) == 1
+    page_locs = [node.findtext("sitemap:loc", namespaces=namespaces) for node in page_nodes]
+    assert page_locs == ["https://vinhlong360.vn/dia-diem/two-images"]
+    assert len(page_locs) == len(set(page_locs))
+
+    image_nodes = page_nodes[0].findall("image:image", namespaces)
+    assert len(image_nodes) == 2
+    image_locs = [node.findtext("image:loc", namespaces=namespaces) for node in image_nodes]
+    assert image_locs == [
+        "https://cdn.example.test/media/a-absolute.webp",
+        "https://vinhlong360.vn/media/z-local.webp",
+    ]
+    assert all(urlsplit(loc).scheme == "https" and urlsplit(loc).netloc for loc in image_locs)
+    assert b"rejected.webp" not in first
 ```
 
 - [ ] **Step 2: Run RED**
@@ -2629,37 +2677,62 @@ def decide_entity_or_ward(entity, snapshot, evidence):
     return decide_entity(entity, evidence)
 
 
+def resolve_sitemap_image_url(raw: object, *, canonical_origin: str) -> str | None:
+    normalized = normalize_renderable_image_url(raw)
+    if normalized is None:
+        return None
+    if normalized.startswith("/"):
+        return f"{canonical_origin.rstrip('/')}{normalized}"
+    return normalized
+
+
 def render_media_sitemap(snapshot, manifest, evidence, disclosure) -> bytes:
-    entries = []
+    entries: dict[str, list[tuple[str, ImageDescriptor]]] = {}
+    canonical_origin = manifest["canonical_origin"]
     for entity in snapshot.entities:
         if decide_entity_or_ward(entity, snapshot, evidence).indexable:
             for descriptor in describe_entity_images(entity, disclosure=disclosure):
-                if descriptor.source_class == "ai-generated" and descriptor.url:
-                    entries.append((canonical_detail_url(entity), descriptor))
+                image_url = resolve_sitemap_image_url(
+                    descriptor.url,
+                    canonical_origin=canonical_origin,
+                )
+                if descriptor.source_class == "ai-generated" and image_url:
+                    page_url = canonical_detail_url(entity)
+                    entries.setdefault(page_url, []).append((image_url, descriptor))
     return serialize_image_urlset(entries)
 
 
-def serialize_image_urlset(entries) -> bytes:
+def serialize_image_urlset(
+    entries: dict[str, list[tuple[str, ImageDescriptor]]],
+) -> bytes:
     root = Element("urlset", {
         "xmlns": "http://www.sitemaps.org/schemas/sitemap/0.9",
         "xmlns:image": "http://www.google.com/schemas/sitemap-image/1.1",
     })
-    for page_url, descriptor in entries:
+    for page_url in sorted(entries):
         url = SubElement(root, "url")
         SubElement(url, "loc").text = page_url
-        image = SubElement(url, "image:image")
-        SubElement(image, "image:loc").text = descriptor.url
-        SubElement(image, "image:caption").text = descriptor.full_disclosure
+        for image_url, descriptor in sorted(entries[page_url], key=lambda item: item[0]):
+            image = SubElement(url, "image:image")
+            SubElement(image, "image:loc").text = image_url
+            SubElement(image, "image:caption").text = descriptor.full_disclosure
     return tostring(root, encoding="utf-8", xml_declaration=True)
 ```
 
-Placeholders, malformed URLs, review UGC, and post UGC never enter the media sitemap.
+Create `expected-sitemap-media.xml` as the exact UTF-8 serialization of one canonical page node with the two ordered `image:image` children above. The page `loc` is always the absolute `canonical_detail_url()` result. Accepted single-leading-slash image paths resolve against the reviewed `manifest["canonical_origin"]`; already-absolute credential-free HTTPS URLs are preserved byte-for-byte. Placeholders, malformed URLs, protocol-relative URLs, review UGC, and post UGC never enter the media sitemap.
+
+```xml
+<?xml version='1.0' encoding='utf-8'?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"><url><loc>https://vinhlong360.vn/dia-diem/two-images</loc><image:image><image:loc>https://cdn.example.test/media/a-absolute.webp</image:loc><image:caption>Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.</image:caption></image:image><image:image><image:loc>https://vinhlong360.vn/media/z-local.webp</image:loc><image:caption>Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.</image:caption></image:image></url></urlset>
+```
+
+Write the fixture with the one serializer newline after the XML declaration and no trailing newline after `</urlset>`.
 
 - [ ] **Step 4: Run GREEN**
 
 Run: `python -m pytest agent/tests/test_sitemap_render.py agent/tests/test_sitemap_bundle.py -q`
 
-Expected: deterministic media XML matches the fixture and disclosure text exactly.
+Expected: deterministic media XML matches the fixture and disclosure text exactly; reversing source image order still yields one unique absolute page `loc`, two ordered image nodes, and only absolute HTTPS image `loc` values.
 
 - [ ] **Step 5: Commit**
 
@@ -5024,12 +5097,15 @@ git commit -m "test: guard entity image renderers"
 - [ ] **Step 1: Write failing mixed-UGC and zero-quality-credit tests**
 
 ```ts
-expect(normalizeReviewPhoto(reviewPhoto)).toMatchObject({
+const reviewDescriptor = normalizeReviewPhoto(reviewPhoto)
+expect(reviewDescriptor).not.toBeNull()
+if (reviewDescriptor === null) throw new Error('expected a valid review descriptor')
+expect(reviewDescriptor).toMatchObject({
   source_class: 'user-uploaded',
   source_kind: 'review-ugc',
   disclosure_key: 'ugc-photo',
 })
-expect(normalizeReviewPhoto(reviewPhoto).full_disclosure).not.toContain('AI')
+expect(reviewDescriptor.full_disclosure).not.toContain('AI')
 
 const home = await mountHomeCommunity({ posts: [postWithUserThumbnail] })
 expect(home.get('[data-community-thumbnail]').attributes('data-source-class')).toBe('user-uploaded')
@@ -5831,8 +5907,10 @@ git commit -m "ops: add launch safety rollback rehearsal"
 
 **Files:**
 - Create: `scripts/ops/record_launch_evidence.py`
+- Create: `scripts/ops/release_gate_harness.ps1`
 - Create: `docs/superpowers/results/2026-07-13-launch-safety-gate-evidence.md`
 - Create: `tests/launch_safety/test_evidence_record.py`
+- Create: `tests/launch_safety/powershell/test_release_gate_harness.ps1`
 - Modify: `.github/workflows/ci.yml`
 - Modify: `scripts/release_gate.ps1`
 - Verify: all files changed by Tasks 1–44
@@ -5879,11 +5957,97 @@ def test_release_gate_records_prerequisite_skips_before_any_setup(release_gate_c
     }
 ```
 
+Create `tests/launch_safety/powershell/test_release_gate_harness.ps1` as an executable contract test. It prepends noisy `docker.cmd` and `python.cmd` stubs to `PATH`, dot-sources only `scripts/ops/release_gate_harness.ps1`, and exercises the production helper rather than a parser double:
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
+$stubRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("launch-gate-stubs-" + [guid]::NewGuid())
+New-Item -ItemType Directory -Path $stubRoot | Out-Null
+
+@'
+@echo off
+echo docker stdout %*
+echo docker stderr %* 1>&2
+echo %* | findstr /C:" down " >nul
+if %errorlevel%==0 exit /b %STUB_DOWN_EXIT%
+exit /b %STUB_UP_EXIT%
+'@ | Set-Content -LiteralPath (Join-Path $stubRoot 'docker.cmd') -Encoding Ascii
+
+@'
+@echo off
+echo evidence stdout %*
+echo evidence stderr %* 1>&2
+exit /b %STUB_EVIDENCE_EXIT%
+'@ | Set-Content -LiteralPath (Join-Path $stubRoot 'python.cmd') -Encoding Ascii
+
+function Assert-Equal($Actual, $Expected, [string]$Message) {
+  if ($Actual -ne $Expected) { throw "$Message; expected=$Expected actual=$Actual" }
+}
+
+$priorPath = $env:PATH
+$priorChromeExists = Test-Path Env:CHROME_PATH
+$priorChrome = $env:CHROME_PATH
+$priorNginxExists = Test-Path Env:NGINX_PROBE_URL
+$priorNginx = $env:NGINX_PROBE_URL
+try {
+  $env:PATH = "$stubRoot;$priorPath"
+  . (Join-Path $repoRoot 'scripts/ops/release_gate_harness.ps1')
+
+  $cases = @(
+    @{ Name = 'noisy-pass'; Up = 0; Body = 0; Down = 0; Evidence = 0; Expected = 0 },
+    @{ Name = 'cleanup-fail'; Up = 0; Body = 0; Down = 9; Evidence = 0; Expected = 9 },
+    @{ Name = 'primary-and-cleanup-fail'; Up = 0; Body = 37; Down = 9; Evidence = 0; Expected = 37 },
+    @{ Name = 'compose-up-fail'; Up = 23; Body = 0; Down = 0; Evidence = 0; Expected = 23 },
+    @{ Name = 'evidence-fail'; Up = 0; Body = 0; Down = 0; Evidence = 13; Expected = 13 }
+  )
+
+  foreach ($case in $cases) {
+    $env:STUB_UP_EXIT = [string]$case.Up
+    $env:STUB_DOWN_EXIT = [string]$case.Down
+    $env:STUB_EVIDENCE_EXIT = [string]$case.Evidence
+    $env:CHROME_PATH = 'C:\pre-existing\chrome.exe'
+    Remove-Item Env:NGINX_PROBE_URL -ErrorAction SilentlyContinue
+    $env:STUB_BODY_EXIT = [string]$case.Body
+
+    $result = @(Invoke-RecordedComposeHarness `
+      -Section $case.Name `
+      -ComposeFile 'noisy-stub.yml' `
+      -EnvironmentNames @('CHROME_PATH', 'NGINX_PROBE_URL') `
+      -Body {
+        Write-Output 'body stdout must not become a return object'
+        [Console]::Error.WriteLine('body stderr must not become a return object')
+        $env:CHROME_PATH = 'C:\temporary\chrome.exe'
+        $env:NGINX_PROBE_URL = 'http://127.0.0.1:18080'
+        if ([int]$env:STUB_BODY_EXIT -ne 0) {
+          $failure = [System.Exception]::new('stub primary failure')
+          $failure.Data['ExitCode'] = [int]$env:STUB_BODY_EXIT
+          throw $failure
+        }
+      })
+
+    Assert-Equal $result.Count 1 "$($case.Name) must emit exactly one pipeline object"
+    if ($result[0] -isnot [int]) { throw "$($case.Name) result must be System.Int32" }
+    Assert-Equal $result[0] $case.Expected "$($case.Name) exit precedence"
+    Assert-Equal $env:CHROME_PATH 'C:\pre-existing\chrome.exe' "$($case.Name) restores existing CHROME_PATH"
+    if (Test-Path Env:NGINX_PROBE_URL) { throw "$($case.Name) must restore NGINX_PROBE_URL to unset" }
+  }
+}
+finally {
+  $env:PATH = $priorPath
+  if ($priorChromeExists) { $env:CHROME_PATH = $priorChrome } else { Remove-Item Env:CHROME_PATH -ErrorAction SilentlyContinue }
+  if ($priorNginxExists) { $env:NGINX_PROBE_URL = $priorNginx } else { Remove-Item Env:NGINX_PROBE_URL -ErrorAction SilentlyContinue }
+  Remove-Item -LiteralPath $stubRoot -Recurse -Force
+}
+```
+
 - [ ] **Step 2: Run RED**
 
 Run: `python -m pytest tests/launch_safety/test_evidence_record.py -q`
 
-Expected: FAIL because the evidence recorder/document does not exist and CI does not run the new focused gates.
+Run: `$powershell = (Get-Command pwsh,powershell -ErrorAction Stop | Select-Object -First 1).Source; & $powershell -NoProfile -File tests/launch_safety/powershell/test_release_gate_harness.ps1`
+
+Expected: FAIL because the evidence recorder/document and importable harness helper do not exist, and CI does not run the new focused gates.
 
 - [ ] **Step 3: Add deterministic evidence recording and CI/release wiring**
 
@@ -5917,7 +6081,110 @@ def resolve_harness_result(*, primary_exit: int, cleanup_exit: int) -> HarnessRe
     )
 ```
 
-CI runs unit/static launch gates by default and opt-in jobs only when their dependencies are provisioned. The release gate runs the full serial frontend suite, typecheck, build/output audit, backend policy tests, artifact/renderer/source checks, and diff-check. `scripts/release_gate.ps1` has one `Invoke-RecordedComposeHarness` helper that captures `primaryExit` and `cleanupExit` independently, records both rows, and returns `primaryExit` when nonzero or otherwise `cleanupExit`; cleanup failure can never be a non-terminating `Write-Error` that leaves the gate successful. The caller stops on that returned nonzero code.
+CI runs unit/static launch gates by default and opt-in jobs only when their dependencies are provisioned. The release gate runs the full serial frontend suite, typecheck, build/output audit, backend policy tests, artifact/renderer/source checks, and diff-check. `scripts/release_gate.ps1` dot-sources `scripts/ops/release_gate_harness.ps1`, whose one `Invoke-RecordedComposeHarness` helper captures `primaryExit`, `cleanupExit`, and evidence-recorder exit independently. Docker up/down, the body (including pytest), and evidence-recorder stdout/stderr are all piped through `Out-Host`, so the function emits exactly one `[int]`: primary failure first, then cleanup failure, then recorder failure, otherwise zero. The caller validates that single typed result and stops on nonzero.
+
+```powershell
+function Invoke-RecordedComposeHarness {
+  [OutputType([int])]
+  param(
+    [string]$Section,
+    [string]$ComposeFile,
+    [string[]]$EnvironmentNames,
+    [scriptblock]$Body,
+    [switch]$Build
+  )
+
+  $environmentSnapshot = @{}
+  foreach ($name in $EnvironmentNames) {
+    $exists = Test-Path -LiteralPath "Env:$name"
+    $environmentSnapshot[$name] = [pscustomobject]@{
+      Exists = $exists
+      Value = if ($exists) { (Get-Item -LiteralPath "Env:$name").Value } else { $null }
+    }
+  }
+
+  $primaryExit = 0
+  $cleanupExit = 0
+  $recordExit = 0
+  try {
+    $upArgs = @('compose', '-f', $ComposeFile, 'up', '-d')
+    if ($Build) { $upArgs += '--build' }
+    $upArgs += '--wait'
+    $priorErrorActionPreference = $ErrorActionPreference
+    try {
+      $ErrorActionPreference = 'Continue'
+      & docker @upArgs 2>&1 | Out-Host
+      $primaryExit = [int]$LASTEXITCODE
+    }
+    finally {
+      $ErrorActionPreference = $priorErrorActionPreference
+    }
+    if ($primaryExit -eq 0) {
+      $priorErrorActionPreference = $ErrorActionPreference
+      try {
+        $ErrorActionPreference = 'Continue'
+        & $Body 2>&1 | Out-Host
+      }
+      finally {
+        $ErrorActionPreference = $priorErrorActionPreference
+      }
+    }
+  }
+  catch {
+    if ($primaryExit -eq 0) {
+      $primaryExit = if ($_.Exception.Data.Contains('ExitCode')) {
+        [int]$_.Exception.Data['ExitCode']
+      } else { 1 }
+    }
+  }
+  finally {
+    try {
+      $priorErrorActionPreference = $ErrorActionPreference
+      try {
+        $ErrorActionPreference = 'Continue'
+        & docker compose -f $ComposeFile down -v --remove-orphans 2>&1 | Out-Host
+        $cleanupExit = [int]$LASTEXITCODE
+      }
+      finally {
+        $ErrorActionPreference = $priorErrorActionPreference
+      }
+    }
+    catch {
+      $cleanupExit = 1
+    }
+    finally {
+      foreach ($name in $EnvironmentNames) {
+        $prior = $environmentSnapshot[$name]
+        if ($prior.Exists) {
+          Set-Item -LiteralPath "Env:$name" -Value $prior.Value
+        } else {
+          Remove-Item -LiteralPath "Env:$name" -ErrorAction SilentlyContinue
+        }
+      }
+    }
+  }
+
+  $priorErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    & python scripts/ops/record_launch_evidence.py harness-result `
+      --section $Section --primary-exit $primaryExit --cleanup-exit $cleanupExit 2>&1 | Out-Host
+    $recordExit = [int]$LASTEXITCODE
+  }
+  finally {
+    $ErrorActionPreference = $priorErrorActionPreference
+  }
+
+  $result = if ($primaryExit -ne 0) {
+    $primaryExit
+  } elseif ($cleanupExit -ne 0) {
+    $cleanupExit
+  } elseif ($recordExit -ne 0) {
+    $recordExit
+  } else { 0 }
+  return [int]$result
+}
+```
 
 - [ ] **Step 4: Run the final verification matrix serially**
 
@@ -5952,6 +6219,9 @@ Run source/config gates:
 ```powershell
 python scripts/checks/run_hard.py
 python -m pytest tests/checks/test_hard_checks.py tests/test_release_quality_gates.py -q
+$powershell = (Get-Command pwsh,powershell -ErrorAction Stop | Select-Object -First 1).Source
+& $powershell -NoProfile -File tests/launch_safety/powershell/test_release_gate_harness.ps1
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 git diff --check
 ```
 
@@ -5973,48 +6243,7 @@ function Invoke-Required([scriptblock]$Command) {
   }
 }
 
-function Invoke-RecordedComposeHarness {
-  param(
-    [string]$Section,
-    [string]$ComposeFile,
-    [string[]]$EnvironmentNames,
-    [scriptblock]$Body,
-    [switch]$Build
-  )
-  $primaryExit = 0
-  $cleanupExit = 0
-  try {
-    $upArgs = @('compose', '-f', $ComposeFile, 'up', '-d')
-    if ($Build) { $upArgs += '--build' }
-    $upArgs += '--wait'
-    & docker @upArgs
-    if ($LASTEXITCODE -ne 0) {
-      $primaryExit = $LASTEXITCODE
-    } else {
-      & $Body
-    }
-  }
-  catch {
-    if ($primaryExit -eq 0) {
-      $primaryExit = if ($_.Exception.Data.Contains('ExitCode')) {
-        [int]$_.Exception.Data['ExitCode']
-      } else { 1 }
-    }
-  }
-  finally {
-    foreach ($name in $EnvironmentNames) {
-      Remove-Item "Env:$name" -ErrorAction SilentlyContinue
-    }
-    & docker compose -f $ComposeFile down -v --remove-orphans
-    $cleanupExit = $LASTEXITCODE
-  }
-
-  python scripts/ops/record_launch_evidence.py harness-result `
-    --section $Section --primary-exit $primaryExit --cleanup-exit $cleanupExit
-  if ($LASTEXITCODE -ne 0 -and $primaryExit -eq 0 -and $cleanupExit -eq 0) { return 1 }
-  if ($primaryExit -ne 0) { return $primaryExit }
-  return $cleanupExit
-}
+. (Join-Path $PSScriptRoot 'ops/release_gate_harness.ps1')
 
 function Resolve-ChromeExecutable {
   $candidates = @(
@@ -6047,7 +6276,7 @@ if ($dockerReason) {
     Record-OptInSkip 'browser-opt-in' 'chrome-unavailable'
   }
 
-  $pgResult = Invoke-RecordedComposeHarness `
+  $pgResult = @(Invoke-RecordedComposeHarness `
     -Section 'postgres-opt-in' `
     -ComposeFile 'tests/launch_safety/harness/docker-compose.postgres.yml' `
     -EnvironmentNames @('SITEMAP_BUNDLE_TEST_DATABASE_URL') `
@@ -6055,9 +6284,11 @@ if ($dockerReason) {
       $env:SITEMAP_BUNDLE_TEST_DATABASE_URL = 'postgresql://vl360:vl360_launch_test@127.0.0.1:55432/vl360_launch_test'
       Invoke-Required { python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q }
     }
-  if ($pgResult -ne 0) { exit $pgResult }
+  )
+  if ($pgResult.Count -ne 1 -or $pgResult[0] -isnot [int]) { throw 'postgres harness returned a non-scalar result' }
+  if ($pgResult[0] -ne 0) { exit $pgResult[0] }
 
-  $launchResult = Invoke-RecordedComposeHarness `
+  $launchResult = @(Invoke-RecordedComposeHarness `
     -Section 'compose-nginx-opt-in' `
     -ComposeFile 'tests/launch_safety/harness/docker-compose.yml' `
     -EnvironmentNames @('LAUNCH_SAFETY_BASE_URL', 'NGINX_PROBE_URL', 'CHROME_PATH') `
@@ -6089,16 +6320,18 @@ if ($dockerReason) {
         }
       }
     }
-  if ($launchResult -ne 0) { exit $launchResult }
+  )
+  if ($launchResult.Count -ne 1 -or $launchResult[0] -isnot [int]) { throw 'launch harness returned a non-scalar result' }
+  if ($launchResult[0] -ne 0) { exit $launchResult[0] }
 }
 ```
 
-The Docker CLI and daemon are checked once before any Compose `up`; missing prerequisites record exact SKIP evidence for all affected sections and perform no setup. Chrome is resolved before the launch Compose harness or browser profile is created; absence records `browser-opt-in=skip/chrome-unavailable` while still allowing the non-browser Nginx/network integration. The Task 16 PostgreSQL harness owns exact credentials/database and publishes only `127.0.0.1:55432`; Task 45 never connects to port 5432 or any pre-existing database. Every harness removes environment variables and runs `down -v --remove-orphans`, including after a failing primary command. `harness-result` records primary and cleanup exit codes separately; primary failure wins when both fail, while cleanup failure after a passing primary makes the release gate nonzero. The Task 32 launch harness publishes its test-only Nginx boundary at `127.0.0.1:18080`. Expected: provisioned opt-in checks pass; unavailable Docker/Chrome dependencies are recorded as explicit skips before setup rather than by silently targeting another service. The known parallel resource timeout is recorded separately and never changes functional expectations.
+The Docker CLI and daemon are checked once before any Compose `up`; missing prerequisites record exact SKIP evidence for all affected sections and perform no setup. Chrome is resolved before the launch Compose harness or browser profile is created; absence records `browser-opt-in=skip/chrome-unavailable` while still allowing the non-browser Nginx/network integration. The Task 16 PostgreSQL harness owns exact credentials/database and publishes only `127.0.0.1:55432`; Task 45 never connects to port 5432 or any pre-existing database. Before setup, every harness snapshots whether each named environment variable exists and its exact value; after `down -v --remove-orphans`, it restores pre-existing values (including `CHROME_PATH`) and removes only variables that were originally unset. `harness-result` records primary and cleanup exit codes separately; primary failure wins when both fail, cleanup failure after a passing primary makes the release gate nonzero, and recorder failure is surfaced only when primary and cleanup passed. The Task 32 launch harness publishes its test-only Nginx boundary at `127.0.0.1:18080`. Expected: provisioned opt-in checks pass; unavailable Docker/Chrome dependencies are recorded as explicit skips before setup rather than by silently targeting another service. The known parallel resource timeout is recorded separately and never changes functional expectations.
 
 - [ ] **Step 5: Commit the final evidence only after every required command is recorded**
 
 ```bash
-git add scripts/ops/record_launch_evidence.py docs/superpowers/results/2026-07-13-launch-safety-gate-evidence.md .github/workflows/ci.yml scripts/release_gate.ps1 tests/launch_safety/test_evidence_record.py
+git add scripts/ops/record_launch_evidence.py scripts/ops/release_gate_harness.ps1 docs/superpowers/results/2026-07-13-launch-safety-gate-evidence.md .github/workflows/ci.yml scripts/release_gate.ps1 tests/launch_safety/test_evidence_record.py tests/launch_safety/powershell/test_release_gate_harness.ps1
 git commit -m "test: record launch safety gate evidence"
 ```
 
