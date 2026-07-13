@@ -95,6 +95,26 @@ ADMIN_ROLE_SCOPES: dict[str, set[str]] = {
     "superadmin": {"*"},
 }
 
+ADMIN_ROLE_RANKS: dict[str, int] = {
+    "user": 0,
+    "moderator": 1,
+    "admin": 2,
+    "superadmin": 3,
+}
+
+
+def _assert_actor_can_manage_target(admin_user: dict | None, target_role: str | None) -> None:
+    """Allow account control only when a session actor strictly outranks the target."""
+    if admin_user is None:
+        return
+    actor_role = str(admin_user.get("role") or "")
+    normalized_target = str(target_role or "")
+    actor_rank = ADMIN_ROLE_RANKS.get(actor_role)
+    target_rank = ADMIN_ROLE_RANKS.get(normalized_target)
+    if actor_rank is None or target_rank is None or actor_rank <= target_rank:
+        raise HTTPException(403, "Khong du quyen thao tac tai khoan nay")
+
+
 ADMIN_SCOPE_RULES: tuple[tuple[str, str], ...] = (
     ("/admin/users", "security.admin"),
     ("/admin/audit-log", "security.admin"),
