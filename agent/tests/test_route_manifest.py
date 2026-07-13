@@ -2,12 +2,23 @@ import copy
 import json
 import subprocess
 import sys
+from collections.abc import Mapping
 from dataclasses import FrozenInstanceError
 from pathlib import Path
+from types import MappingProxyType
 
 import pytest
 
-from route_manifest import load_route_manifest, validate_route_manifest_data
+from route_manifest import (
+    EXACT_KEYS,
+    INGRESS_KEYS,
+    NORMALIZATION,
+    PREFIX_KEYS,
+    TEMPLATE_KEYS,
+    TOP_LEVEL_KEYS,
+    load_route_manifest,
+    validate_route_manifest_data,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -16,6 +27,14 @@ MANIFEST_PATH = REPO_ROOT / "config" / "launch-indexing-policy.json"
 
 def valid_manifest():
     return json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+
+
+def plain_json(value):
+    if isinstance(value, Mapping):
+        return {key: plain_json(child) for key, child in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [plain_json(child) for child in value]
+    return value
 
 
 def test_route_manifest_supports_repository_package_import():
@@ -43,7 +62,16 @@ def test_load_route_manifest_preserves_artifact_and_revision(tmp_path):
     assert loaded.artifact.path == fixture
     assert loaded.artifact.raw == raw
     assert loaded.revision == "launch-indexing-policy-v1"
-    assert loaded.data == valid_manifest()
+    assert loaded.data is loaded.artifact.data
+    assert plain_json(loaded.data) == valid_manifest()
+    assert isinstance(loaded.data, MappingProxyType)
+    assert isinstance(loaded.data["exact_routes"], tuple)
+    with pytest.raises(TypeError):
+        loaded.artifact.data["revision"] = "changed"
+    with pytest.raises(AttributeError):
+        loaded.data["exact_routes"].append({})
+    with pytest.raises(TypeError):
+        loaded.data["exact_routes"][0]["path"] = "/changed"
     with pytest.raises(FrozenInstanceError):
         loaded.revision = "changed"
 
@@ -65,11 +93,22 @@ def test_validate_route_manifest_returns_a_copy_without_mutating_input():
     parsed = validate_route_manifest_data(candidate)
 
     assert candidate == before
-    assert parsed == before
+    assert plain_json(parsed) == before
     assert parsed is not candidate
     assert parsed["normalization"] is not candidate["normalization"]
     assert parsed["exact_routes"] is not candidate["exact_routes"]
     assert parsed["exact_routes"][0] is not candidate["exact_routes"][0]
+
+
+def test_route_manifest_module_policy_constants_are_immutable():
+    assert isinstance(NORMALIZATION, MappingProxyType)
+    with pytest.raises(TypeError):
+        NORMALIZATION["query_policy"] = "weakened"
+
+    for keys in (TOP_LEVEL_KEYS, EXACT_KEYS, PREFIX_KEYS, INGRESS_KEYS, TEMPLATE_KEYS):
+        assert isinstance(keys, frozenset)
+        with pytest.raises(AttributeError):
+            keys.add("extra")
 
 
 @pytest.mark.parametrize(

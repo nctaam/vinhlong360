@@ -1,29 +1,38 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 if __package__:
-    from .launch_artifacts import LoadedArtifact, load_artifact
+    from .launch_artifacts import (
+        ImmutableJSONObject,
+        LoadedArtifact,
+        _freeze_json,
+        load_artifact,
+    )
 else:
-    from launch_artifacts import LoadedArtifact, load_artifact
+    from launch_artifacts import ImmutableJSONObject, LoadedArtifact, _freeze_json, load_artifact
 
 
 ARTIFACT_NAME = "launch-indexing-policy.json"
 EXPECTED_REVISION = "launch-indexing-policy-v1"
 CANONICAL_ORIGIN = "https://vinhlong360.vn"
 UNKNOWN_POLICY = "noindex-follow-public"
-NORMALIZATION = {
-    "percent_decode": "utf8-once",
-    "encoded_separator_policy": "reject",
-    "dot_segment_policy": "reject",
-    "repeated_slash_policy": "redirect-canonical",
-    "trailing_slash_policy": "redirect-except-root",
-    "query_policy": "noindex-except-sitemap-batch",
-}
-TOP_LEVEL_KEYS = {
+NORMALIZATION = MappingProxyType(
+    {
+        "percent_decode": "utf8-once",
+        "encoded_separator_policy": "reject",
+        "dot_segment_policy": "reject",
+        "repeated_slash_policy": "redirect-canonical",
+        "trailing_slash_policy": "redirect-except-root",
+        "query_policy": "noindex-except-sitemap-batch",
+    }
+)
+TOP_LEVEL_KEYS = frozenset({
     "backend_ingress_exceptions",
     "canonical_origin",
     "dynamic_templates",
@@ -33,11 +42,17 @@ TOP_LEVEL_KEYS = {
     "schema_version",
     "sensitive_prefixes",
     "unknown_policy",
-}
-EXACT_KEYS = {"classification", "path", "sitemap"}
-PREFIX_KEYS = {"classification", "prefix"}
-INGRESS_KEYS = {"prefix", "review_reason", "upstream"}
-TEMPLATE_KEYS = {"authority", "sitemap", "template"}
+})
+EXACT_KEYS = frozenset({"classification", "path", "sitemap"})
+PREFIX_KEYS = frozenset({"classification", "prefix"})
+INGRESS_KEYS = frozenset({"prefix", "review_reason", "upstream"})
+TEMPLATE_KEYS = frozenset({"authority", "sitemap", "template"})
+EXACT_CLASSIFICATIONS = frozenset({"indexable-public", "noindex-follow-public"})
+SENSITIVE_CLASSIFICATIONS = frozenset({"crawl-blocked-sensitive"})
+INGRESS_UPSTREAMS = frozenset({"agent", "bot-gateway"})
+TEMPLATE_AUTHORITIES = frozenset(
+    {"backend-entity", "backend-ward", "fixed-noindex"}
+)
 PLACEHOLDER = re.compile(r"^\{([a-z_][a-z0-9_]*)\}$")
 JS_EXTRA_WHITESPACE = frozenset(
     "\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006"
@@ -50,28 +65,32 @@ JS_TRIM_CHARACTERS = "\u0009\u000a\u000b\u000c\u000d\u0020" + "".join(JS_EXTRA_W
 class LoadedRouteManifest:
     artifact: LoadedArtifact
     revision: str
-    data: dict[str, Any]
+    data: ImmutableJSONObject
 
 
-def _record(value: object, label: str) -> dict[str, Any]:
-    if type(value) is not dict:
+def _record(value: object, label: str) -> Mapping[str, Any]:
+    if type(value) is not dict and not isinstance(value, MappingProxyType):
         raise ValueError(f"route manifest {label} must be a plain JSON object")
     return value
 
 
-def _exact_keys(value: dict[str, Any], keys: set[str], label: str) -> None:
+def _exact_keys(
+    value: Mapping[str, Any],
+    keys: frozenset[str],
+    label: str,
+) -> None:
     actual = list(value.keys())
     if any(type(key) is not str for key in actual) or set(actual) != keys:
         raise ValueError(f"route manifest {label} keys mismatch")
 
 
-def _array(value: object, label: str) -> list[Any]:
-    if type(value) is not list:
+def _array(value: object, label: str) -> Sequence[Any]:
+    if type(value) is not list and type(value) is not tuple:
         raise ValueError(f"route manifest {label} must be a plain JSON array")
     return value
 
 
-def _string_choice(value: object, choices: set[str], message: str) -> str:
+def _string_choice(value: object, choices: frozenset[str], message: str) -> str:
     if type(value) is not str or value not in choices:
         raise ValueError(f"route manifest {message}")
     return value
@@ -163,7 +182,7 @@ def validate_route_manifest_data(
     value: object,
     *,
     expected_revision: str = EXPECTED_REVISION,
-) -> dict[str, Any]:
+) -> ImmutableJSONObject:
     manifest = _record(value, "root")
     _exact_keys(manifest, TOP_LEVEL_KEYS, "root")
     if (
@@ -179,7 +198,7 @@ def validate_route_manifest_data(
         raise ValueError("route manifest fixed fields mismatch")
 
     normalization = _record(manifest["normalization"], "normalization")
-    _exact_keys(normalization, set(NORMALIZATION), "normalization")
+    _exact_keys(normalization, frozenset(NORMALIZATION), "normalization")
     if any(type(normalization[key]) is not str or normalization[key] != expected for key, expected in NORMALIZATION.items()):
         raise ValueError("route manifest normalization mismatch")
 
@@ -190,7 +209,7 @@ def validate_route_manifest_data(
         path = _canonical_path(item["path"], "exact path")
         classification = _string_choice(
             item["classification"],
-            {"indexable-public", "noindex-follow-public"},
+            EXACT_CLASSIFICATIONS,
             "exact route values mismatch",
         )
         if type(item["sitemap"]) is not bool:
@@ -208,7 +227,7 @@ def validate_route_manifest_data(
             raise ValueError("route manifest sensitive prefix cannot be root")
         classification = _string_choice(
             item["classification"],
-            {"crawl-blocked-sensitive"},
+            SENSITIVE_CLASSIFICATIONS,
             "sensitive classification mismatch",
         )
         sensitive_prefixes.append({"prefix": prefix, "classification": classification})
@@ -223,7 +242,7 @@ def validate_route_manifest_data(
         if prefix == "/":
             raise ValueError("route manifest ingress prefix cannot be root")
         upstream = _string_choice(
-            item["upstream"], {"agent", "bot-gateway"}, "ingress exception mismatch"
+            item["upstream"], INGRESS_UPSTREAMS, "ingress exception mismatch"
         )
         review_reason = item["review_reason"]
         if type(review_reason) is not str or review_reason.strip(JS_TRIM_CHARACTERS) == "":
@@ -241,7 +260,7 @@ def validate_route_manifest_data(
         signature = _template_signature(template)
         authority = _string_choice(
             item["authority"],
-            {"backend-entity", "backend-ward", "fixed-noindex"},
+            TEMPLATE_AUTHORITIES,
             "dynamic authority mismatch",
         )
         if authority == "fixed-noindex":
@@ -279,17 +298,10 @@ def validate_route_manifest_data(
     ):
         raise ValueError("route manifest exact/template ambiguity")
 
-    return {
-        "schema_version": 1,
-        "revision": manifest["revision"],
-        "canonical_origin": CANONICAL_ORIGIN,
-        "unknown_policy": UNKNOWN_POLICY,
-        "normalization": dict(NORMALIZATION),
-        "exact_routes": exact_routes,
-        "sensitive_prefixes": sensitive_prefixes,
-        "backend_ingress_exceptions": ingress_exceptions,
-        "dynamic_templates": templates,
-    }
+    frozen = _freeze_json(manifest)
+    if not isinstance(frozen, Mapping):
+        raise AssertionError("validated route manifest did not freeze to a mapping")
+    return frozen
 
 
 def load_route_manifest(

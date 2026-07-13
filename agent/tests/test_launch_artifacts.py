@@ -1,13 +1,23 @@
 import hashlib
+import os
 from dataclasses import FrozenInstanceError
 from pathlib import Path
+from types import MappingProxyType
 
 import pytest
 
+import launch_artifacts
 from launch_artifacts import load_artifact
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def symlink_or_skip(link, target, *, target_is_directory=False):
+    try:
+        link.symlink_to(target, target_is_directory=target_is_directory)
+    except OSError as exc:
+        pytest.skip(f"symlink creation unavailable: {exc}")
 
 
 def test_load_artifact_uses_exact_fixture_bytes_for_data_and_sha(tmp_path):
@@ -25,17 +35,36 @@ def test_load_artifact_uses_exact_fixture_bytes_for_data_and_sha(tmp_path):
         loaded.path = tmp_path / "changed.json"
 
 
+def test_load_artifact_recursively_freezes_parsed_json(tmp_path):
+    fixture = tmp_path / "fixture.json"
+    fixture.write_bytes(
+        b'{"revision": "v1", "routes": [{"path": "/first"}], "flags": [true]}'
+    )
+
+    loaded = load_artifact("fixture.json", fixture_path=fixture)
+
+    assert isinstance(loaded.data, MappingProxyType)
+    assert isinstance(loaded.data["routes"], tuple)
+    assert isinstance(loaded.data["routes"][0], MappingProxyType)
+    with pytest.raises(TypeError):
+        loaded.data["revision"] = "v2"
+    with pytest.raises(AttributeError):
+        loaded.data["routes"].append({"path": "/second"})
+    with pytest.raises(TypeError):
+        loaded.data["routes"][0]["path"] = "/changed"
+
+
 def test_load_artifact_reads_the_source_once(tmp_path, monkeypatch):
     fixture = tmp_path / "fixture.json"
     fixture.write_bytes(b'{"value": 1}')
-    original_read_bytes = Path.read_bytes
+    original_open = os.open
     calls = []
 
-    def counted_read_bytes(path):
-        calls.append(path)
-        return original_read_bytes(path)
+    def counted_open(path, flags):
+        calls.append(Path(path))
+        return original_open(path, flags)
 
-    monkeypatch.setattr(Path, "read_bytes", counted_read_bytes)
+    monkeypatch.setattr(launch_artifacts.os, "open", counted_open)
 
     load_artifact("ignored.json", fixture_path=fixture)
 
@@ -66,6 +95,116 @@ def test_load_artifact_resolves_release_root_config_exactly(tmp_path):
 
     assert loaded.path == configured
     assert loaded.data == {"source": "config"}
+
+
+def test_load_artifact_allows_a_symlinked_release_root(tmp_path):
+    real_root = tmp_path / "real-release"
+    target = real_root / "config" / "artifact.json"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b'{"source": "real-release"}')
+    release_link = tmp_path / "release-link"
+    symlink_or_skip(release_link, real_root, target_is_directory=True)
+
+    loaded = load_artifact("artifact.json", release_root=release_link)
+
+    assert loaded.path == target.resolve()
+    assert loaded.data == {"source": "real-release"}
+
+
+@pytest.mark.parametrize("location", ["inside", "outside"])
+def test_load_artifact_rejects_a_symlinked_production_config_directory(tmp_path, location):
+    release_root = tmp_path / "release"
+    release_root.mkdir()
+    config_target = (
+        release_root / "actual-config"
+        if location == "inside"
+        else tmp_path / "outside-config"
+    )
+    config_target.mkdir()
+    (config_target / "artifact.json").write_bytes(b'{"source": "symlinked-config"}')
+    symlink_or_skip(release_root / "config", config_target, target_is_directory=True)
+
+    with pytest.raises(ValueError, match="symlink"):
+        load_artifact("artifact.json", release_root=release_root)
+
+
+@pytest.mark.parametrize("location", ["inside", "outside"])
+def test_load_artifact_rejects_a_symlinked_production_file(tmp_path, location):
+    release_root = tmp_path / "release"
+    config = release_root / "config"
+    config.mkdir(parents=True)
+    file_target = (
+        config / "actual.json"
+        if location == "inside"
+        else tmp_path / "outside.json"
+    )
+    file_target.write_bytes(b'{"source": "symlinked-file"}')
+    symlink_or_skip(config / "artifact.json", file_target)
+
+    with pytest.raises(ValueError, match="symlink"):
+        load_artifact("artifact.json", release_root=release_root)
+
+
+def test_load_artifact_rejects_a_symlinked_fixture_file(tmp_path):
+    target = tmp_path / "target.json"
+    target.write_bytes(b'{"source": "fixture-symlink"}')
+    fixture = tmp_path / "fixture.json"
+    symlink_or_skip(fixture, target)
+
+    with pytest.raises(ValueError, match="symlink"):
+        load_artifact("artifact.json", fixture_path=fixture)
+
+
+@pytest.mark.parametrize("source", ["production", "fixture"])
+def test_load_artifact_rejects_a_directory_instead_of_a_regular_file(tmp_path, source):
+    if source == "production":
+        target = tmp_path / "config" / "artifact.json"
+        target.mkdir(parents=True)
+        kwargs = {"release_root": tmp_path}
+    else:
+        target = tmp_path / "fixture.json"
+        target.mkdir()
+        kwargs = {"fixture_path": target}
+
+    with pytest.raises(ValueError, match="regular file"):
+        load_artifact("artifact.json", **kwargs)
+
+
+def test_load_artifact_rejects_a_fifo_before_reading_when_supported(tmp_path, monkeypatch):
+    if not hasattr(os, "mkfifo"):
+        pytest.skip("FIFO creation is unavailable on this platform")
+    fixture = tmp_path / "fixture.json"
+    os.mkfifo(fixture)
+
+    def forbidden_read(_path):
+        pytest.fail("nonregular fixture reached file I/O")
+
+    monkeypatch.setattr(Path, "read_bytes", forbidden_read)
+
+    with pytest.raises(ValueError, match="regular file"):
+        load_artifact("artifact.json", fixture_path=fixture)
+
+
+def test_load_artifact_rejects_an_identity_swap_between_lstat_and_open(tmp_path, monkeypatch):
+    target = tmp_path / "config" / "artifact.json"
+    target.parent.mkdir()
+    target.write_bytes(b'{"source": "original"}')
+    replacement = tmp_path / "replacement.json"
+    replacement.write_bytes(b'{"source": "replacement"}')
+    original_open = os.open
+    swapped = False
+
+    def swapping_open(path, flags, *args, **kwargs):
+        nonlocal swapped
+        if Path(path) == target and not swapped:
+            replacement.replace(target)
+            swapped = True
+        return original_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(os, "open", swapping_open)
+
+    with pytest.raises(ValueError, match="identity"):
+        load_artifact("artifact.json", release_root=tmp_path)
 
 
 @pytest.mark.parametrize("name", ["../outside.json", "nested/artifact.json"])
