@@ -94,10 +94,11 @@
 
 ```python
 from pathlib import Path
+import tarfile
 
 from scripts.package_launch_release import (
     CANONICAL_ARTIFACTS,
-    backend_archive_members,
+    build_backend_archive,
     find_duplicate_artifacts,
 )
 
@@ -116,9 +117,21 @@ def test_canonical_artifacts_may_exist_only_under_root_config(tmp_path: Path):
 
 
 def test_backend_archive_includes_root_config_unchanged(tmp_path: Path):
-    members = backend_archive_members(tmp_path)
-    assert "config/launch-indexing-policy.json" in members
-    assert "config/ai-disclosure.json" in members
+    root = tmp_path / "source"
+    (root / "agent").mkdir(parents=True)
+    (root / "config").mkdir()
+    (root / "requirements.txt").write_bytes(b"fastapi\n")
+    (root / "init.sql").write_bytes(b"-- schema\n")
+    route_bytes = b'{"revision":"launch-indexing-policy-v1"}\n'
+    disclosure_bytes = b'{"revision":"ai-disclosure-v1"}\n'
+    (root / "config" / "launch-indexing-policy.json").write_bytes(route_bytes)
+    (root / "config" / "ai-disclosure.json").write_bytes(disclosure_bytes)
+
+    archive = build_backend_archive(root, tmp_path / "backend.tar.gz")
+
+    with tarfile.open(archive, "r:gz") as bundle:
+        assert bundle.extractfile("config/launch-indexing-policy.json").read() == route_bytes
+        assert bundle.extractfile("config/ai-disclosure.json").read() == disclosure_bytes
 ```
 
 - [ ] **Step 2: Run RED**
@@ -132,6 +145,7 @@ Expected: FAIL because `scripts.package_launch_release`, root-context Nuxt packa
 ```python
 # scripts/package_launch_release.py
 from pathlib import Path
+import tarfile
 
 CANONICAL_ARTIFACTS = (
     "launch-indexing-policy.json",
@@ -149,11 +163,17 @@ def find_duplicate_artifacts(root: Path) -> list[Path]:
     )
 
 
-def backend_archive_members(root: Path) -> tuple[str, ...]:
-    return tuple(
-        ["agent", "requirements.txt", "init.sql", "config"]
-        + (["web/data.json"] if (root / "web/data.json").exists() else [])
-    )
+def build_backend_archive(root: Path, destination: Path) -> Path:
+    members = ["agent", "requirements.txt", "init.sql", "config"]
+    if (root / "web/data.json").exists():
+        members.append("web/data.json")
+    with tarfile.open(destination, "w:gz", format=tarfile.PAX_FORMAT) as archive:
+        for member in members:
+            source = root / member
+            if not source.exists():
+                raise FileNotFoundError(source)
+            archive.add(source, arcname=member, recursive=True)
+    return destination
 ```
 
 Use repository root as the Nuxt Docker context:
@@ -340,21 +360,33 @@ import { describe, expect, it } from 'vitest'
 import { parseLaunchRouteManifest } from '../server/utils/launch/launchRouteManifest'
 
 describe('parseLaunchRouteManifest', () => {
-  it('rejects duplicate exact routes', () => {
+  it.each([
+    ['missing normalization key', { normalization: { percent_decode: 'utf8-once' } }],
+    ['unknown top-level key', { extra: true }],
+    ['invalid exact classification', { exact_routes: [{ path: '/', classification: 'public', sitemap: true }] }],
+    ['invalid sensitive path', { sensitive_prefixes: [{ prefix: '/admin/', classification: 'crawl-blocked-sensitive' }] }],
+    ['empty ingress review', { backend_ingress_exceptions: [{ prefix: '/hook', upstream: 'agent', review_reason: ' ' }] }],
+    ['ambiguous template', { dynamic_templates: [
+      { template: '/dia-diem/{entity_id}', authority: 'backend-entity', sitemap: 'backend' },
+      { template: '/dia-diem/{id}', authority: 'backend-entity', sitemap: 'backend' },
+    ] }],
+  ])('rejects %s', (_name, override) => {
+    expect(() => parseLaunchRouteManifest({ ...validManifest, ...override }))
+      .toThrow(/route manifest/i)
+  })
+
+  it('rejects duplicate exact routes and exact/exception duplicates', () => {
     expect(() => parseLaunchRouteManifest({
-      schema_version: 1,
-      revision: 'r1',
-      canonical_origin: 'https://vinhlong360.vn',
-      unknown_policy: 'noindex-follow-public',
-      normalization: {},
-      exact_routes: [
-        { path: '/', classification: 'indexable-public', sitemap: true },
-        { path: '/', classification: 'indexable-public', sitemap: true },
-      ],
-      sensitive_prefixes: [],
-      backend_ingress_exceptions: [],
-      dynamic_templates: [],
+      ...validManifest,
+      exact_routes: [validManifest.exact_routes[0], validManifest.exact_routes[0]],
     })).toThrow(/duplicate exact route/i)
+    expect(() => parseLaunchRouteManifest({
+      ...validManifest,
+      backend_ingress_exceptions: [
+        { prefix: '/webhook', upstream: 'bot-gateway', review_reason: 'reviewed alias' },
+        { prefix: '/webhook', upstream: 'bot-gateway', review_reason: 'reviewed alias' },
+      ],
+    })).toThrow(/duplicate ingress exception/i)
   })
 })
 ```
@@ -371,33 +403,139 @@ Expected: FAIL because the loader and parser do not exist.
 // web-nuxt/server/utils/launch/launchRouteManifest.ts
 import manifestJson from '#launch-config/launch-indexing-policy.json'
 
-export type RouteClassification = 'indexable-public' | 'noindex-follow-public' | 'crawl-blocked-sensitive'
+const EXPECTED_REVISION = 'launch-indexing-policy-v1'
+const NORMALIZATION = Object.freeze({
+  percent_decode: 'utf8-once',
+  encoded_separator_policy: 'reject',
+  dot_segment_policy: 'reject',
+  repeated_slash_policy: 'redirect-canonical',
+  trailing_slash_policy: 'redirect-except-root',
+  query_policy: 'noindex-except-sitemap-batch',
+})
+const TOP_LEVEL_KEYS = ['backend_ingress_exceptions', 'canonical_origin', 'dynamic_templates', 'exact_routes', 'normalization', 'revision', 'schema_version', 'sensitive_prefixes', 'unknown_policy']
+const EXACT_KEYS = ['classification', 'path', 'sitemap']
+const PREFIX_KEYS = ['classification', 'prefix']
+const INGRESS_KEYS = ['prefix', 'review_reason', 'upstream']
+const TEMPLATE_KEYS = ['authority', 'sitemap', 'template']
 
 export interface LaunchRouteManifest {
   schema_version: 1
   revision: string
   canonical_origin: 'https://vinhlong360.vn'
   unknown_policy: 'noindex-follow-public'
-  normalization: Record<string, string>
-  exact_routes: Array<{ path: string; classification: Exclude<RouteClassification, 'crawl-blocked-sensitive'>; sitemap: boolean }>
+  normalization: typeof NORMALIZATION
+  exact_routes: Array<{ path: string; classification: 'indexable-public' | 'noindex-follow-public'; sitemap: boolean }>
   sensitive_prefixes: Array<{ prefix: string; classification: 'crawl-blocked-sensitive' }>
   backend_ingress_exceptions: Array<{ prefix: string; upstream: 'agent' | 'bot-gateway'; review_reason: string }>
   dynamic_templates: Array<{ template: string; authority: 'backend-entity' | 'backend-ward' | 'fixed-noindex'; sitemap: 'backend' | false }>
 }
 
-export function parseLaunchRouteManifest(value: unknown): LaunchRouteManifest {
-  if (!value || typeof value !== 'object') throw new Error('route manifest must be an object')
-  const manifest = value as LaunchRouteManifest
-  if (manifest.schema_version !== 1 || !manifest.revision) throw new Error('unsupported route manifest')
-  const exact = manifest.exact_routes.map(item => item.path)
-  if (new Set(exact).size !== exact.length) throw new Error('duplicate exact route')
-  const prefixes = manifest.sensitive_prefixes.map(item => item.prefix)
-  if (new Set(prefixes).size !== prefixes.length) throw new Error('duplicate sensitive prefix')
-  return Object.freeze(manifest)
+function record(value: unknown, label: string): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`route manifest ${label} must be an object`)
+  return value as Record<string, unknown>
+}
+
+function exactKeys(value: Record<string, unknown>, keys: string[], label: string) {
+  const actual = Object.keys(value).sort()
+  if (actual.join('\0') !== [...keys].sort().join('\0')) throw new Error(`route manifest ${label} keys mismatch`)
+}
+
+function canonicalPath(value: unknown, label: string): string {
+  if (typeof value !== 'string' || !value.startsWith('/') || value.includes('?') || value.includes('#') ||
+      value.includes('//') || value.includes('%') || value.includes('\\') || (value !== '/' && value.endsWith('/')) ||
+      value.split('/').some(segment => segment === '.' || segment === '..')) {
+    throw new Error(`route manifest ${label} is not canonical`)
+  }
+  return value
+}
+
+function templateSignature(template: string): string {
+  const names = [...template.matchAll(/\{([a-z_][a-z0-9_]*)\}/g)].map(match => match[1])
+  if (!names.length || new Set(names).size !== names.length || template.replace(/\{[a-z_][a-z0-9_]*\}/g, '{}').includes('{')) {
+    throw new Error('route manifest dynamic template is invalid')
+  }
+  canonicalPath(template.replace(/\{[a-z_][a-z0-9_]*\}/g, 'value'), 'dynamic template')
+  return template.replace(/\{[a-z_][a-z0-9_]*\}/g, '{}')
+}
+
+function array(value: unknown, label: string): unknown[] {
+  if (!Array.isArray(value)) throw new Error(`route manifest ${label} must be an array`)
+  return value
+}
+
+function assertUnique(values: string[], message: string) {
+  if (new Set(values).size !== values.length) throw new Error(`route manifest ${message}`)
+}
+
+function matchesTemplate(path: string, template: string): boolean {
+  const pathSegments = path.split('/').slice(1)
+  const templateSegments = template.split('/').slice(1)
+  return pathSegments.length === templateSegments.length && templateSegments.every((segment, index) =>
+    /^\{[a-z_][a-z0-9_]*\}$/.test(segment) || segment === pathSegments[index])
+}
+
+function deepFreeze<T>(value: T): Readonly<T> {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value)
+    for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child)
+  }
+  return value
+}
+
+export function parseLaunchRouteManifest(value: unknown, expectedRevision = EXPECTED_REVISION): LaunchRouteManifest {
+  const manifest = record(value, 'root')
+  exactKeys(manifest, TOP_LEVEL_KEYS, 'root')
+  if (manifest.schema_version !== 1 || manifest.revision !== expectedRevision ||
+      manifest.canonical_origin !== 'https://vinhlong360.vn' || manifest.unknown_policy !== 'noindex-follow-public') {
+    throw new Error('route manifest fixed fields mismatch')
+  }
+  const normalization = record(manifest.normalization, 'normalization')
+  exactKeys(normalization, Object.keys(NORMALIZATION), 'normalization')
+  if (Object.entries(NORMALIZATION).some(([key, expected]) => normalization[key] !== expected)) throw new Error('route manifest normalization mismatch')
+
+  const exactRoutes = array(manifest.exact_routes, 'exact_routes').map((raw, index) => {
+    const item = record(raw, `exact_routes[${index}]`); exactKeys(item, EXACT_KEYS, `exact_routes[${index}]`)
+    const path = canonicalPath(item.path, 'exact path')
+    if (!['indexable-public', 'noindex-follow-public'].includes(String(item.classification)) || typeof item.sitemap !== 'boolean') throw new Error('route manifest exact route values mismatch')
+    return { path, classification: item.classification, sitemap: item.sitemap }
+  })
+  const sensitive = array(manifest.sensitive_prefixes, 'sensitive_prefixes').map((raw, index) => {
+    const item = record(raw, `sensitive_prefixes[${index}]`); exactKeys(item, PREFIX_KEYS, `sensitive_prefixes[${index}]`)
+    if (item.classification !== 'crawl-blocked-sensitive') throw new Error('route manifest sensitive classification mismatch')
+    const prefix = canonicalPath(item.prefix, 'sensitive prefix')
+    if (prefix === '/') throw new Error('route manifest sensitive prefix cannot be root')
+    return { prefix, classification: item.classification }
+  })
+  const ingress = array(manifest.backend_ingress_exceptions, 'backend_ingress_exceptions').map((raw, index) => {
+    const item = record(raw, `backend_ingress_exceptions[${index}]`); exactKeys(item, INGRESS_KEYS, `backend_ingress_exceptions[${index}]`)
+    if (!['agent', 'bot-gateway'].includes(String(item.upstream)) || typeof item.review_reason !== 'string' || !item.review_reason.trim()) throw new Error('route manifest ingress exception mismatch')
+    const prefix = canonicalPath(item.prefix, 'ingress prefix')
+    if (prefix === '/') throw new Error('route manifest ingress prefix cannot be root')
+    return { prefix, upstream: item.upstream, review_reason: item.review_reason }
+  })
+  const templates = array(manifest.dynamic_templates, 'dynamic_templates').map((raw, index) => {
+    const item = record(raw, `dynamic_templates[${index}]`); exactKeys(item, TEMPLATE_KEYS, `dynamic_templates[${index}]`)
+    const template = String(item.template); const signature = templateSignature(template)
+    const authority = item.authority
+    if (!['backend-entity', 'backend-ward', 'fixed-noindex'].includes(String(authority)) ||
+        ((authority === 'fixed-noindex') !== (item.sitemap === false)) ||
+        ((authority !== 'fixed-noindex') !== (item.sitemap === 'backend'))) throw new Error('route manifest dynamic authority mismatch')
+    return { template, signature, authority, sitemap: item.sitemap }
+  })
+
+  assertUnique(exactRoutes.map(item => item.path), 'duplicate exact route')
+  assertUnique(sensitive.map(item => item.prefix), 'duplicate sensitive prefix')
+  assertUnique(ingress.map(item => item.prefix), 'duplicate ingress exception')
+  assertUnique(templates.map(item => item.signature), 'ambiguous dynamic template')
+  if (ingress.some(item => sensitive.some(rule => item.prefix === rule.prefix || item.prefix.startsWith(rule.prefix + '/') || rule.prefix.startsWith(item.prefix + '/')))) throw new Error('route manifest ingress/sensitive ambiguity')
+  if (exactRoutes.some(item => templates.some(template => matchesTemplate(item.path, template.template)))) throw new Error('route manifest exact/template ambiguity')
+  return deepFreeze({ ...manifest, exact_routes: exactRoutes, sensitive_prefixes: sensitive, backend_ingress_exceptions: ingress, dynamic_templates: templates.map(({ signature, ...item }) => item) }) as LaunchRouteManifest
 }
 
 export const launchRouteManifest = parseLaunchRouteManifest(manifestJson)
 ```
+
+The invalid-fixture matrix in Task 5 exercises every helper, so neither runtime can silently accept a partial schema, extra key, malformed template, unresolved exact/template ambiguity, or ingress exception without a non-empty review reason.
 
 Add a Nuxt alias that resolves `../config` from the repository root without copying a second source artifact:
 
@@ -431,6 +569,7 @@ git commit -m "feat: load launch route manifest in Nuxt"
 - [ ] **Step 1: Write failing release-root and schema tests**
 
 ```python
+import json
 from pathlib import Path
 
 import pytest
@@ -444,10 +583,30 @@ def test_fixture_path_is_explicit_and_production_has_no_fallback(tmp_path: Path)
         load_artifact("launch-indexing-policy.json", release_root=tmp_path)
 
 
-def test_route_manifest_rejects_duplicate_paths(tmp_path: Path):
+def test_release_root_and_fixture_path_are_mutually_exclusive(tmp_path: Path):
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        load_route_manifest(release_root=tmp_path, fixture_path=tmp_path / "manifest.json")
+
+
+def test_route_manifest_rejects_duplicate_paths(valid_manifest, tmp_path: Path):
     fixture = tmp_path / "manifest.json"
-    fixture.write_text('{"schema_version":1,"revision":"r","exact_routes":[{"path":"/"},{"path":"/"}]}')
+    valid_manifest["exact_routes"].append(valid_manifest["exact_routes"][0].copy())
+    fixture.write_text(json.dumps(valid_manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="duplicate exact route"):
+        load_route_manifest(fixture_path=fixture)
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda data: data["normalization"].pop("query_policy"),
+    lambda data: data.update(extra=True),
+    lambda data: data["dynamic_templates"].append({"template": "/dia-diem/{id}", "authority": "backend-entity", "sitemap": "backend"}),
+    lambda data: data["backend_ingress_exceptions"].append({"prefix": "/hook", "upstream": "agent", "review_reason": ""}),
+])
+def test_python_validator_rejects_the_same_strict_schema_failures(valid_manifest, mutation, tmp_path):
+    mutation(valid_manifest)
+    fixture = tmp_path / "manifest.json"
+    fixture.write_text(json.dumps(valid_manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="route manifest"):
         load_route_manifest(fixture_path=fixture)
 ```
 
@@ -464,9 +623,6 @@ Expected: FAIL because the Python artifact and manifest loaders do not exist.
 from dataclasses import dataclass
 from hashlib import sha256
 import json
-
-from ai_disclosure import load_ai_disclosure
-from route_manifest import load_route_manifest
 from pathlib import Path
 
 
@@ -479,8 +635,10 @@ class LoadedArtifact:
 
 
 def load_artifact(name: str, *, release_root: Path | None = None, fixture_path: Path | None = None) -> LoadedArtifact:
-    root = release_root or Path(__file__).resolve().parents[1]
-    path = fixture_path or root / "config" / name
+    if release_root is not None and fixture_path is not None:
+        raise ValueError("release_root and fixture_path are mutually exclusive")
+    root = release_root if release_root is not None else Path(__file__).resolve().parents[1]
+    path = fixture_path if fixture_path is not None else root / "config" / name
     raw = path.read_bytes()
     data = json.loads(raw)
     if not isinstance(data, dict):
@@ -492,8 +650,23 @@ def load_artifact(name: str, *, release_root: Path | None = None, fixture_path: 
 # agent/route_manifest.py
 from dataclasses import dataclass
 from pathlib import Path
+import re
 
 from launch_artifacts import LoadedArtifact, load_artifact
+
+EXPECTED_REVISION = "launch-indexing-policy-v1"
+NORMALIZATION = {
+    "percent_decode": "utf8-once",
+    "encoded_separator_policy": "reject",
+    "dot_segment_policy": "reject",
+    "repeated_slash_policy": "redirect-canonical",
+    "trailing_slash_policy": "redirect-except-root",
+    "query_policy": "noindex-except-sitemap-batch",
+}
+TOP_LEVEL_KEYS = {
+    "schema_version", "revision", "canonical_origin", "unknown_policy", "normalization",
+    "exact_routes", "sensitive_prefixes", "backend_ingress_exceptions", "dynamic_templates",
+}
 
 
 @dataclass(frozen=True)
@@ -503,14 +676,118 @@ class LoadedRouteManifest:
     data: dict
 
 
-def load_route_manifest(*, fixture_path: Path | None = None) -> LoadedRouteManifest:
-    artifact = load_artifact("launch-indexing-policy.json", fixture_path=fixture_path)
+def _exact_keys(value: dict, expected: set[str], label: str) -> None:
+    if set(value) != expected:
+        raise ValueError(f"route manifest {label} keys mismatch")
+
+
+def _canonical_path(value: object, label: str) -> str:
+    if (
+        not isinstance(value, str) or not value.startswith("/") or "?" in value or "#" in value
+        or "//" in value or "%" in value or "\\" in value
+        or (value != "/" and value.endswith("/"))
+        or any(segment in {".", ".."} for segment in value.split("/"))
+    ):
+        raise ValueError(f"route manifest {label} is not canonical")
+    return value
+
+
+def _template_signature(template: object) -> str:
+    if not isinstance(template, str):
+        raise ValueError("route manifest dynamic template is invalid")
+    names = re.findall(r"\{([a-z_][a-z0-9_]*)\}", template)
+    replaced = re.sub(r"\{[a-z_][a-z0-9_]*\}", "value", template)
+    if not names or len(names) != len(set(names)) or "{" in replaced or "}" in replaced:
+        raise ValueError("route manifest dynamic template is invalid")
+    _canonical_path(replaced, "dynamic template")
+    return re.sub(r"\{[a-z_][a-z0-9_]*\}", "{}", template)
+
+
+def _matches_template(path: str, template: str) -> bool:
+    path_segments = path.split("/")[1:]
+    template_segments = template.split("/")[1:]
+    return len(path_segments) == len(template_segments) and all(
+        re.fullmatch(r"\{[a-z_][a-z0-9_]*\}", rule) or rule == actual
+        for actual, rule in zip(path_segments, template_segments, strict=True)
+    )
+
+
+def validate_route_manifest_data(data: dict, *, expected_revision: str = EXPECTED_REVISION) -> None:
+    _exact_keys(data, TOP_LEVEL_KEYS, "root")
+    if data["schema_version"] != 1 or data["revision"] != expected_revision:
+        raise ValueError("route manifest fixed fields mismatch")
+    if data["canonical_origin"] != "https://vinhlong360.vn" or data["unknown_policy"] != "noindex-follow-public":
+        raise ValueError("route manifest fixed fields mismatch")
+    if not isinstance(data["normalization"], dict):
+        raise ValueError("route manifest normalization must be an object")
+    _exact_keys(data["normalization"], set(NORMALIZATION), "normalization")
+    if data["normalization"] != NORMALIZATION:
+        raise ValueError("route manifest normalization mismatch")
+
+    for key in ("exact_routes", "sensitive_prefixes", "backend_ingress_exceptions", "dynamic_templates"):
+        if not isinstance(data[key], list):
+            raise ValueError(f"route manifest {key} must be an array")
+    exact_paths: list[str] = []
+    for item in data["exact_routes"]:
+        if not isinstance(item, dict):
+            raise ValueError("route manifest exact route must be an object")
+        _exact_keys(item, {"path", "classification", "sitemap"}, "exact route")
+        exact_paths.append(_canonical_path(item["path"], "exact path"))
+        if item["classification"] not in {"indexable-public", "noindex-follow-public"} or not isinstance(item["sitemap"], bool):
+            raise ValueError("route manifest exact route values mismatch")
+    sensitive: list[str] = []
+    for item in data["sensitive_prefixes"]:
+        if not isinstance(item, dict):
+            raise ValueError("route manifest sensitive prefix must be an object")
+        _exact_keys(item, {"prefix", "classification"}, "sensitive prefix")
+        prefix = _canonical_path(item["prefix"], "sensitive prefix")
+        if prefix == "/":
+            raise ValueError("route manifest sensitive prefix cannot be root")
+        sensitive.append(prefix)
+        if item["classification"] != "crawl-blocked-sensitive":
+            raise ValueError("route manifest sensitive classification mismatch")
+    ingress: list[str] = []
+    for item in data["backend_ingress_exceptions"]:
+        if not isinstance(item, dict):
+            raise ValueError("route manifest ingress exception must be an object")
+        _exact_keys(item, {"prefix", "upstream", "review_reason"}, "ingress exception")
+        prefix = _canonical_path(item["prefix"], "ingress prefix")
+        if prefix == "/":
+            raise ValueError("route manifest ingress prefix cannot be root")
+        ingress.append(prefix)
+        if item["upstream"] not in {"agent", "bot-gateway"} or not isinstance(item["review_reason"], str) or not item["review_reason"].strip():
+            raise ValueError("route manifest ingress exception mismatch")
+    signatures: list[str] = []
+    templates: list[str] = []
+    for item in data["dynamic_templates"]:
+        if not isinstance(item, dict):
+            raise ValueError("route manifest dynamic template must be an object")
+        _exact_keys(item, {"template", "authority", "sitemap"}, "dynamic template")
+        templates.append(item["template"])
+        signatures.append(_template_signature(item["template"]))
+        authority = item["authority"]
+        if authority not in {"backend-entity", "backend-ward", "fixed-noindex"}:
+            raise ValueError("route manifest dynamic authority mismatch")
+        if (authority == "fixed-noindex" and item["sitemap"] is not False) or (authority != "fixed-noindex" and item["sitemap"] != "backend"):
+            raise ValueError("route manifest dynamic authority mismatch")
+
+    for values, label in ((exact_paths, "duplicate exact route"), (sensitive, "duplicate sensitive prefix"), (ingress, "duplicate ingress exception"), (signatures, "ambiguous dynamic template")):
+        if len(values) != len(set(values)):
+            raise ValueError(f"route manifest {label}")
+    if any(a == b or a.startswith(b + "/") or b.startswith(a + "/") for a in ingress for b in sensitive):
+        raise ValueError("route manifest ingress/sensitive ambiguity")
+    if any(_matches_template(path, template) for path in exact_paths for template in templates):
+        raise ValueError("route manifest exact/template ambiguity")
+
+
+def load_route_manifest(*, release_root: Path | None = None, fixture_path: Path | None = None) -> LoadedRouteManifest:
+    artifact = load_artifact(
+        "launch-indexing-policy.json",
+        release_root=release_root,
+        fixture_path=fixture_path,
+    )
     data = artifact.data
-    if data.get("schema_version") != 1 or not data.get("revision"):
-        raise ValueError("unsupported route manifest")
-    exact = [item["path"] for item in data.get("exact_routes", [])]
-    if len(exact) != len(set(exact)):
-        raise ValueError("duplicate exact route")
+    validate_route_manifest_data(data)
     return LoadedRouteManifest(artifact=artifact, revision=data["revision"], data=data)
 ```
 
@@ -535,6 +812,7 @@ git commit -m "feat: load launch route manifest in Python"
 - Modify: `agent/route_manifest.py`
 - Modify: `web-nuxt/server/utils/launch/launchRouteManifest.ts`
 - Create: `tests/fixtures/launch-route-parity-corpus.json`
+- Create: `tests/fixtures/launch-route-validator-corpus.json`
 - Create: `agent/tests/test_route_manifest_parity.py`
 - Create: `web-nuxt/tests/launch-route-parity.test.ts`
 - Modify: `nginx.conf`
@@ -544,18 +822,42 @@ git commit -m "feat: load launch route manifest in Python"
 
 ```json
 [
-  {"target": "/", "classification": "indexable-public", "canonical": "/"},
-  {"target": "/admin", "classification": "crawl-blocked-sensitive", "canonical": "/admin"},
-  {"target": "/administrator", "classification": "noindex-follow-public", "canonical": "/administrator"},
-  {"target": "/system/x?debug=1", "classification": "crawl-blocked-sensitive", "canonical": "/system/x"},
-  {"target": "/systematic", "classification": "noindex-follow-public", "canonical": "/systematic"},
-  {"target": "/dia-diem/a", "classification": "backend-entity", "canonical": "/dia-diem/a"},
-  {"target": "/dia-diem//a", "classification": "redirect-canonical", "canonical": "/dia-diem/a"},
-  {"target": "/api%2Fsecret", "classification": "reject", "canonical": null}
+  {"target": "/", "method": "GET", "classification": "indexable-public", "canonical": "/"},
+  {"target": "/admin", "method": "GET", "classification": "crawl-blocked-sensitive", "canonical": "/admin"},
+  {"target": "/%61dmin/users", "method": "GET", "classification": "crawl-blocked-sensitive", "canonical": "/admin/users"},
+  {"target": "/administrator", "method": "GET", "classification": "noindex-follow-public", "canonical": "/administrator"},
+  {"target": "/system/x?debug=1", "method": "GET", "classification": "crawl-blocked-sensitive", "canonical": "/system/x"},
+  {"target": "/systematic", "method": "GET", "classification": "noindex-follow-public", "canonical": "/systematic"},
+  {"target": "/apiary", "method": "GET", "classification": "noindex-follow-public", "canonical": "/apiary"},
+  {"target": "/webhooks", "method": "GET", "classification": "noindex-follow-public", "canonical": "/webhooks"},
+  {"target": "/dia-diem/a", "method": "GET", "classification": "backend-entity", "canonical": "/dia-diem/a"},
+  {"target": "/bai-viet/a", "method": "GET", "classification": "fixed-noindex", "canonical": "/bai-viet/a"},
+  {"target": "/dia-diem//a", "method": "GET", "classification": "redirect-canonical", "canonical": "/dia-diem/a"},
+  {"target": "/du-lich/", "method": "HEAD", "classification": "redirect-canonical", "canonical": "/du-lich"},
+  {"target": "/du-lich?campaign=1", "method": "GET", "classification": "noindex-follow-public", "canonical": "/du-lich"},
+  {"target": "/api%2Fsecret", "method": "GET", "classification": "reject", "canonical": null},
+  {"target": "/api%255csecret", "method": "GET", "classification": "reject", "canonical": null},
+  {"target": "/a/%2e%2e/admin", "method": "GET", "classification": "reject", "canonical": null},
+  {"target": "/%FF", "method": "GET", "classification": "reject", "canonical": null},
+  {"target": "/unknown", "method": "GET", "classification": "noindex-follow-public", "canonical": "/unknown"}
 ]
 ```
 
-Both test suites iterate the same corpus and compare classification plus canonical target.
+The validator corpus applies the same JSON mutations in both runtimes:
+
+```json
+[
+  {"name": "missing-normalization-key", "operation": "delete", "pointer": "/normalization/query_policy", "error": "normalization"},
+  {"name": "unknown-root-key", "operation": "set", "pointer": "/extra", "value": true, "error": "keys mismatch"},
+  {"name": "invalid-exact-classification", "operation": "set", "pointer": "/exact_routes/0/classification", "value": "public", "error": "exact route"},
+  {"name": "duplicate-sensitive-prefix", "operation": "append-copy", "pointer": "/sensitive_prefixes/0", "error": "duplicate sensitive prefix"},
+  {"name": "empty-ingress-review", "operation": "append", "pointer": "/backend_ingress_exceptions", "value": {"prefix": "/hook", "upstream": "agent", "review_reason": ""}, "error": "ingress exception"},
+  {"name": "ambiguous-dynamic-template", "operation": "append", "pointer": "/dynamic_templates", "value": {"template": "/dia-diem/{id}", "authority": "backend-entity", "sitemap": "backend"}, "error": "ambiguous dynamic template"},
+  {"name": "fixed-noindex-with-backend-sitemap", "operation": "set", "pointer": "/dynamic_templates/2/sitemap", "value": "backend", "error": "dynamic authority"}
+]
+```
+
+Both test suites load the canonical artifact, apply every mutation, and assert the matching error class. They also iterate the route corpus and compare classification plus canonical target, the exact `sitemap=true` extraction, and the normalized backend-ingress exception model.
 
 - [ ] **Step 2: Run RED**
 
@@ -568,26 +870,123 @@ Expected: FAIL because normalization/classification functions do not exist.
 - [ ] **Step 3: Implement identical precedence and static extraction**
 
 ```python
+from urllib.parse import unquote_to_bytes
+
+
 @dataclass(frozen=True)
 class RouteDecision:
     classification: str
     canonical_path: str | None
 
 
-def classify_request_target(target: str, manifest: LoadedRouteManifest) -> RouteDecision:
-    path = target.split("?", 1)[0]
-    if "%2f" in path.lower() or "%5c" in path.lower() or "\x00" in path:
+def _decode_once(raw_path: str) -> str | None:
+    if re.search(r"%(?![0-9A-Fa-f]{2})", raw_path) or re.search(r"%2f|%5c", raw_path, re.I):
+        return None
+    try:
+        decoded = unquote_to_bytes(raw_path).decode("utf-8", errors="strict")
+    except (UnicodeDecodeError, ValueError):
+        return None
+    if "\x00" in decoded or re.search(r"%[0-9A-Fa-f]{2}", decoded):
+        return None
+    if any(segment in {".", ".."} for segment in decoded.split("/")):
+        return None
+    return decoded
+
+
+def _segment_match(path: str, prefix: str) -> bool:
+    return path == prefix or path.startswith(prefix + "/")
+
+
+def classify_request_target(target: str, manifest: LoadedRouteManifest, *, method: str = "GET") -> RouteDecision:
+    if not target.startswith("/") or "#" in target:
         return RouteDecision("reject", None)
-    normalized = "/" + "/".join(segment for segment in path.split("/") if segment)
+    raw_path, separator, query = target.partition("?")
+    decoded = _decode_once(raw_path)
+    if decoded is None:
+        return RouteDecision("reject", None)
+    raw_without_empty = "/" + "/".join(segment for segment in raw_path.split("/") if segment)
+    normalized = "/" + "/".join(segment for segment in decoded.split("/") if segment)
     normalized = normalized if normalized == "/" else normalized.rstrip("/")
     for item in manifest.data["sensitive_prefixes"]:
         prefix = item["prefix"]
-        if normalized == prefix or normalized.startswith(prefix + "/"):
+        if _segment_match(raw_without_empty, prefix) or _segment_match(normalized, prefix):
             return RouteDecision("crawl-blocked-sensitive", normalized)
-    # Then exact routes, dynamic templates, and unknown noindex in that order.
+    needs_redirect = raw_path != normalized
+    if needs_redirect and method in {"GET", "HEAD"}:
+        return RouteDecision("redirect-canonical", normalized)
+    if needs_redirect:
+        return RouteDecision("noindex-follow-public", normalized)
+    if separator and query:
+        return RouteDecision("noindex-follow-public", normalized)
+    exact = next((item for item in manifest.data["exact_routes"] if item["path"] == normalized), None)
+    if exact:
+        return RouteDecision(exact["classification"], normalized)
+    for item in manifest.data["dynamic_templates"]:
+        if _matches_template(normalized, item["template"]):
+            return RouteDecision(item["authority"], normalized)
+    return RouteDecision(manifest.data["unknown_policy"], normalized)
+
+
+def extract_static_sitemap_paths(manifest: LoadedRouteManifest) -> tuple[str, ...]:
+    return tuple(sorted(
+        item["path"] for item in manifest.data["exact_routes"]
+        if item["classification"] == "indexable-public" and item["sitemap"] is True
+    ))
 ```
 
-Implement the equivalent TypeScript function and `extractStaticSitemapPaths()` in both languages. Update Nginx backend-route regexes to use end-or-slash boundaries; detailed ingress ownership remains Task 32.
+```ts
+function decodeOnce(rawPath: string): string | null {
+  if (/%(?![0-9A-Fa-f]{2})/.test(rawPath) || /%2f|%5c/i.test(rawPath)) return null
+  let decoded: string
+  try { decoded = decodeURIComponent(rawPath) } catch { return null }
+  if (decoded.includes('\0') || /%[0-9A-Fa-f]{2}/.test(decoded)) return null
+  if (decoded.split('/').some(segment => segment === '.' || segment === '..')) return null
+  return decoded
+}
+
+function segmentMatch(path: string, prefix: string): boolean {
+  return path === prefix || path.startsWith(`${prefix}/`)
+}
+
+export function classifyRequestTarget(
+  target: string,
+  manifest: LaunchRouteManifest,
+  method: 'GET' | 'HEAD' | string = 'GET',
+): RouteDecision {
+  if (!target.startsWith('/') || target.includes('#')) return { classification: 'reject', canonical_path: null }
+  const question = target.indexOf('?')
+  const rawPath = question === -1 ? target : target.slice(0, question)
+  const query = question === -1 ? '' : target.slice(question + 1)
+  const decoded = decodeOnce(rawPath)
+  if (decoded === null) return { classification: 'reject', canonical_path: null }
+  const rawWithoutEmpty = `/${rawPath.split('/').filter(Boolean).join('/')}`
+  const collapsed = `/${decoded.split('/').filter(Boolean).join('/')}`
+  const normalized = collapsed === '/' ? collapsed : collapsed.replace(/\/+$/, '')
+  for (const item of manifest.sensitive_prefixes) {
+    if (segmentMatch(rawWithoutEmpty, item.prefix) || segmentMatch(normalized, item.prefix)) {
+      return { classification: 'crawl-blocked-sensitive', canonical_path: normalized }
+    }
+  }
+  if (rawPath !== normalized) {
+    return { classification: method === 'GET' || method === 'HEAD' ? 'redirect-canonical' : 'noindex-follow-public', canonical_path: normalized }
+  }
+  if (question !== -1 && query !== '') return { classification: 'noindex-follow-public', canonical_path: normalized }
+  const exact = manifest.exact_routes.find(item => item.path === normalized)
+  if (exact) return { classification: exact.classification, canonical_path: normalized }
+  const dynamic = manifest.dynamic_templates.find(item => matchesTemplate(normalized, item.template))
+  if (dynamic) return { classification: dynamic.authority, canonical_path: normalized }
+  return { classification: manifest.unknown_policy, canonical_path: normalized }
+}
+
+export function extractStaticSitemapPaths(manifest: LaunchRouteManifest): string[] {
+  return manifest.exact_routes
+    .filter(item => item.classification === 'indexable-public' && item.sitemap === true)
+    .map(item => item.path)
+    .sort()
+}
+```
+
+The TypeScript test imports both JSON corpora and checks every row; the Python test invokes a small Node runner over those same corpora and compares the serialized decisions byte-for-byte. Update Nginx backend-route regexes to use end-or-slash boundaries; detailed ingress ownership remains Task 32.
 
 - [ ] **Step 4: Run GREEN and parity checks**
 
@@ -600,7 +999,7 @@ Expected: both implementations return identical corpus results and exact static 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add agent/route_manifest.py web-nuxt/server/utils/launch/launchRouteManifest.ts tests/fixtures/launch-route-parity-corpus.json agent/tests/test_route_manifest_parity.py web-nuxt/tests/launch-route-parity.test.ts nginx.conf nginx-ssl.conf
+git add agent/route_manifest.py web-nuxt/server/utils/launch/launchRouteManifest.ts tests/fixtures/launch-route-parity-corpus.json tests/fixtures/launch-route-validator-corpus.json agent/tests/test_route_manifest_parity.py web-nuxt/tests/launch-route-parity.test.ts nginx.conf nginx-ssl.conf
 git commit -m "feat: classify launch routes consistently"
 ```
 
@@ -682,6 +1081,7 @@ git commit -m "feat: add canonical AI disclosure copy"
 **Files:**
 - Create: `web-nuxt/utils/aiDisclosure.ts`
 - Create: `web-nuxt/tests/ai-disclosure.test.ts`
+- Create: `tests/fixtures/ai-disclosure-validator-corpus.json`
 
 - [ ] **Step 1: Write failing strict-loader tests**
 
@@ -696,6 +1096,30 @@ it('rejects altered canonical AI copy', () => {
     entity_ai: { short_label: 'AI', full_disclosure: 'altered' },
   })).toThrow(/canonical AI disclosure/i)
 })
+
+it.each(loadDisclosureMutations())('rejects $name identically to Python', ({ apply, error }) => {
+  const candidate = structuredClone(validDisclosure)
+  apply(candidate)
+  expect(() => parseAiDisclosure(candidate)).toThrow(error)
+})
+```
+
+Create `tests/fixtures/ai-disclosure-validator-corpus.json` with these exact mutations:
+
+```json
+[
+  {"name": "wrong-revision", "operation": "set", "pointer": "/revision", "value": "ai-disclosure-v0", "error": "revision"},
+  {"name": "extra-root-key", "operation": "set", "pointer": "/extra", "value": true, "error": "root keys"},
+  {"name": "missing-ugc", "operation": "delete", "pointer": "/ugc_photo", "error": "root keys"},
+  {"name": "altered-ai-short", "operation": "set", "pointer": "/entity_ai/short_label", "value": "AI", "error": "entity_ai"},
+  {"name": "altered-ai-full", "operation": "set", "pointer": "/entity_ai/full_disclosure", "value": "altered", "error": "entity_ai"},
+  {"name": "altered-placeholder-full", "operation": "set", "pointer": "/placeholder/full_disclosure", "value": "altered", "error": "placeholder"},
+  {"name": "altered-ugc-short", "operation": "set", "pointer": "/ugc_photo/short_label", "value": "photo", "error": "ugc_photo"},
+  {"name": "altered-ugc-full", "operation": "set", "pointer": "/ugc_photo/full_disclosure", "value": "altered", "error": "ugc_photo"},
+  {"name": "altered-accessibility-key", "operation": "set", "pointer": "/entity_ai/accessible_description_key", "value": "wrong", "error": "entity_ai"},
+  {"name": "reordered-forbidden-claims", "operation": "reverse", "pointer": "/forbidden_entity_image_claims", "error": "forbidden claims"},
+  {"name": "wrong-forbidden-type", "operation": "set", "pointer": "/forbidden_entity_image_claims", "value": "real photo", "error": "forbidden claims"}
+]
 ```
 
 - [ ] **Step 2: Run RED**
@@ -712,6 +1136,57 @@ import disclosureJson from '#launch-config/ai-disclosure.json'
 const AI_FULL = 'Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.'
 const PLACEHOLDER_FULL = 'Minh họa đồ họa — chưa có ảnh riêng cho địa điểm.'
 
+const aiDisclosureCanonicalCopy = Object.freeze({
+  entity_ai: Object.freeze({
+    short_label: '\u004d\u0069\u006e\u0068\u0020\u0068\u1ecda\u0020\u0041\u0049',
+    full_disclosure: '\u1ea2nh minh h\u1ecda do AI d\u1ef1ng \u2014 kh\u00f4ng ph\u1ea3i \u1ea3nh ch\u1ee5p t\u1ea1i ch\u1ed7.',
+    accessible_description_key: 'entity-ai-full',
+  }),
+  placeholder: Object.freeze({
+    short_label: null,
+    full_disclosure: 'Minh h\u1ecda \u0111\u1ed3 h\u1ecda \u2014 ch\u01b0a c\u00f3 \u1ea3nh ri\u00eang cho \u0111\u1ecba \u0111i\u1ec3m.',
+    accessible_description_key: 'entity-placeholder-full',
+  }),
+  ugc_photo: Object.freeze({
+    short_label: '\u1ea2nh ng\u01b0\u1eddi d\u00f9ng',
+    full_disclosure: '\u1ea2nh do ng\u01b0\u1eddi d\u00f9ng cung c\u1ea5p.',
+    accessible_description_key: 'ugc-photo-full',
+  }),
+  forbidden_entity_image_claims: Object.freeze([
+    '\u1ea3nh th\u1eadt', 'real photo', 'documentary photo', 'on-site photo', '\u1ea3nh ch\u1ee5p t\u1ea1i ch\u1ed7',
+  ]),
+})
+const UGC_FULL = aiDisclosureCanonicalCopy.ugc_photo.full_disclosure
+const EXPECTED_REVISION = 'ai-disclosure-v1'
+const EXPECTED_FORBIDDEN = aiDisclosureCanonicalCopy.forbidden_entity_image_claims
+
+function asRecord(value: unknown, label: string): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`canonical AI disclosure ${label} mismatch`)
+  return value as Record<string, unknown>
+}
+
+function assertExactKeys(value: Record<string, unknown>, expected: string[], label: string) {
+  const actual = Object.keys(value).sort()
+  if (actual.join('\0') !== [...expected].sort().join('\0')) throw new Error(`canonical AI disclosure ${label} keys mismatch`)
+}
+
+function parseExactCopy(value: unknown, expected: Readonly<Record<string, unknown>>, label: string) {
+  const copy = asRecord(value, label)
+  assertExactKeys(copy, ['short_label', 'full_disclosure', 'accessible_description_key'], label)
+  if (Object.entries(expected).some(([key, expectedValue]) => copy[key] !== expectedValue)) {
+    throw new Error(`canonical AI disclosure ${label} mismatch`)
+  }
+  return { ...copy }
+}
+
+function deepFreeze<T>(value: T): Readonly<T> {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value)
+    for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child)
+  }
+  return value
+}
+
 export interface AiDisclosureArtifact {
   schema_version: 1
   revision: string
@@ -722,15 +1197,42 @@ export interface AiDisclosureArtifact {
 }
 
 export function parseAiDisclosure(value: unknown): Readonly<AiDisclosureArtifact> {
-  const data = value as AiDisclosureArtifact
-  if (data?.schema_version !== 1 || data.entity_ai?.full_disclosure !== AI_FULL || data.placeholder?.full_disclosure !== PLACEHOLDER_FULL) {
-    throw new Error('canonical AI disclosure mismatch')
+  const data = asRecord(value, 'root')
+  assertExactKeys(data, ['schema_version', 'revision', 'entity_ai', 'placeholder', 'ugc_photo', 'forbidden_entity_image_claims'], 'root')
+  if (data.schema_version !== 1 || data.revision !== EXPECTED_REVISION) throw new Error('canonical AI disclosure revision mismatch')
+  const entity = parseExactCopy(data.entity_ai, {
+    short_label: aiDisclosureCanonicalCopy.entity_ai.short_label,
+    full_disclosure: AI_FULL,
+    accessible_description_key: 'entity-ai-full',
+  }, 'entity_ai')
+  const placeholder = parseExactCopy(data.placeholder, {
+    short_label: null,
+    full_disclosure: PLACEHOLDER_FULL,
+    accessible_description_key: 'entity-placeholder-full',
+  }, 'placeholder')
+  const ugc = parseExactCopy(data.ugc_photo, {
+    short_label: aiDisclosureCanonicalCopy.ugc_photo.short_label,
+    full_disclosure: UGC_FULL,
+    accessible_description_key: 'ugc-photo-full',
+  }, 'ugc_photo')
+  if (!Array.isArray(data.forbidden_entity_image_claims) ||
+      JSON.stringify(data.forbidden_entity_image_claims) !== JSON.stringify(EXPECTED_FORBIDDEN)) {
+    throw new Error('canonical AI disclosure forbidden claims mismatch')
   }
-  return Object.freeze(data)
+  return deepFreeze({
+    schema_version: 1,
+    revision: EXPECTED_REVISION,
+    entity_ai: entity,
+    placeholder,
+    ugc_photo: ugc,
+    forbidden_entity_image_claims: [...EXPECTED_FORBIDDEN],
+  }) as Readonly<AiDisclosureArtifact>
 }
 
 export const aiDisclosure = parseAiDisclosure(disclosureJson)
 ```
+
+The shared JSON mutation corpus covers missing/extra root keys, wrong revision, altered AI/placeholder/UGC short and full copy, altered accessibility keys, reordered/added forbidden claims, and wrong scalar/array types. Task 8 applies the same corpus in Python.
 
 - [ ] **Step 4: Run GREEN and typecheck**
 
@@ -741,7 +1243,7 @@ Expected: tests and typecheck pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add web-nuxt/utils/aiDisclosure.ts web-nuxt/tests/ai-disclosure.test.ts
+git add web-nuxt/utils/aiDisclosure.ts web-nuxt/tests/ai-disclosure.test.ts tests/fixtures/ai-disclosure-validator-corpus.json
 git commit -m "feat: load AI disclosure copy in Nuxt"
 ```
 
@@ -750,15 +1252,21 @@ git commit -m "feat: load AI disclosure copy in Nuxt"
 **Files:**
 - Create: `agent/ai_disclosure.py`
 - Create: `agent/tests/test_ai_disclosure.py`
+- Modify: `tests/launch_safety/test_release_package.py`
 
 - [ ] **Step 1: Write failing exact-copy and fixture tests**
 
 ```python
+import copy
+import json
 from pathlib import Path
+import tarfile
 
 import pytest
 
 from ai_disclosure import load_ai_disclosure
+from route_manifest import load_route_manifest
+from scripts.package_launch_release import build_backend_archive
 
 
 def test_loads_exact_canonical_copy():
@@ -771,11 +1279,49 @@ def test_rejects_altered_copy(tmp_path: Path):
     fixture.write_text('{"schema_version":1,"revision":"r","entity_ai":{"full_disclosure":"altered"}}')
     with pytest.raises(ValueError, match="canonical AI disclosure"):
         load_ai_disclosure(fixture_path=fixture)
+
+
+def test_disclosure_release_root_and_fixture_path_are_mutually_exclusive(tmp_path: Path):
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        load_ai_disclosure(release_root=tmp_path, fixture_path=tmp_path / "ai.json")
+
+
+def test_python_applies_the_shared_strict_disclosure_corpus(valid_disclosure, disclosure_mutations, tmp_path: Path):
+    for mutation in disclosure_mutations:
+        candidate = copy.deepcopy(valid_disclosure)
+        apply_json_mutation(candidate, mutation)
+        fixture = tmp_path / f"{mutation['name']}.json"
+        fixture.write_text(json.dumps(candidate, ensure_ascii=False), encoding="utf-8")
+        with pytest.raises(ValueError, match=mutation["error"]):
+            load_ai_disclosure(fixture_path=fixture)
+
+
+def test_unpacked_release_loaders_read_exact_packaged_bytes(tmp_path: Path):
+    archive = build_backend_archive(REPO_ROOT, tmp_path / "backend.tar.gz")
+    release_root = tmp_path / "release"
+    with tarfile.open(archive, "r:gz") as bundle:
+        bundle.extractall(release_root, filter="data")
+
+    route = load_route_manifest(release_root=release_root)
+    disclosure = load_ai_disclosure(release_root=release_root)
+
+    assert route.artifact.path == release_root / "config/launch-indexing-policy.json"
+    assert disclosure.artifact.path == release_root / "config/ai-disclosure.json"
+    assert route.artifact.raw == (REPO_ROOT / "config/launch-indexing-policy.json").read_bytes()
+    assert disclosure.artifact.raw == (REPO_ROOT / "config/ai-disclosure.json").read_bytes()
+
+
+def test_low_level_artifact_loader_has_no_domain_import_cycle():
+    source = Path("agent/launch_artifacts.py").read_text(encoding="utf-8")
+    assert "import route_manifest" not in source
+    assert "from route_manifest" not in source
+    assert "import ai_disclosure" not in source
+    assert "from ai_disclosure" not in source
 ```
 
 - [ ] **Step 2: Run RED**
 
-Run: `python -m pytest agent/tests/test_ai_disclosure.py -q`
+Run: `python -m pytest agent/tests/test_ai_disclosure.py tests/launch_safety/test_release_package.py -q`
 
 Expected: FAIL because the Python disclosure loader does not exist.
 
@@ -805,9 +1351,49 @@ class LoadedAiDisclosure:
     forbidden_entity_image_claims: tuple[str, ...]
 
 
-def load_ai_disclosure(*, fixture_path: Path | None = None) -> LoadedAiDisclosure:
-    artifact = load_artifact("ai-disclosure.json", fixture_path=fixture_path)
+def canonical_disclosure_copy() -> dict:
+    return {
+        "entity_ai": {
+            "short_label": "\u004d\u0069\u006e\u0068\u0020\u0068\u1ecda\u0020\u0041\u0049",
+            "full_disclosure": "\u1ea2nh minh h\u1ecda do AI d\u1ef1ng \u2014 kh\u00f4ng ph\u1ea3i \u1ea3nh ch\u1ee5p t\u1ea1i ch\u1ed7.",
+            "accessible_description_key": "entity-ai-full",
+        },
+        "placeholder": {
+            "short_label": None,
+            "full_disclosure": "Minh h\u1ecda \u0111\u1ed3 h\u1ecda \u2014 ch\u01b0a c\u00f3 \u1ea3nh ri\u00eang cho \u0111\u1ecba \u0111i\u1ec3m.",
+            "accessible_description_key": "entity-placeholder-full",
+        },
+        "ugc_photo": {
+            "short_label": "\u1ea2nh ng\u01b0\u1eddi d\u00f9ng",
+            "full_disclosure": "\u1ea2nh do ng\u01b0\u1eddi d\u00f9ng cung c\u1ea5p.",
+            "accessible_description_key": "ugc-photo-full",
+        },
+        "forbidden_entity_image_claims": [
+            "\u1ea3nh th\u1eadt", "real photo", "documentary photo", "on-site photo", "\u1ea3nh ch\u1ee5p t\u1ea1i ch\u1ed7",
+        ],
+    }
+
+
+def load_ai_disclosure(*, release_root: Path | None = None, fixture_path: Path | None = None) -> LoadedAiDisclosure:
+    artifact = load_artifact(
+        "ai-disclosure.json",
+        release_root=release_root,
+        fixture_path=fixture_path,
+    )
     data = artifact.data
+    expected_copy = canonical_disclosure_copy()
+    if set(data) != {"schema_version", "revision", "entity_ai", "placeholder", "ugc_photo", "forbidden_entity_image_claims"}:
+        raise ValueError("canonical AI disclosure root keys mismatch")
+    if data.get("schema_version") != 1 or data.get("revision") != "ai-disclosure-v1":
+        raise ValueError("canonical AI disclosure revision mismatch")
+    for name in ("entity_ai", "placeholder", "ugc_photo"):
+        value = data.get(name)
+        if not isinstance(value, dict) or set(value) != {"short_label", "full_disclosure", "accessible_description_key"}:
+            raise ValueError(f"canonical AI disclosure {name} keys mismatch")
+        if value != expected_copy[name]:
+            raise ValueError(f"canonical AI disclosure {name} mismatch")
+    if data.get("forbidden_entity_image_claims") != expected_copy["forbidden_entity_image_claims"]:
+        raise ValueError("canonical AI disclosure forbidden claims mismatch")
     if data.get("schema_version") != 1:
         raise ValueError("unsupported AI disclosure schema")
     if data.get("entity_ai", {}).get("full_disclosure") != "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.":
@@ -824,16 +1410,16 @@ def load_ai_disclosure(*, fixture_path: Path | None = None) -> LoadedAiDisclosur
 
 - [ ] **Step 4: Run GREEN and Ruff**
 
-Run: `python -m pytest agent/tests/test_ai_disclosure.py -q`
+Run: `python -m pytest agent/tests/test_ai_disclosure.py tests/launch_safety/test_release_package.py -q`
 
 Run: `python -m ruff check agent/ai_disclosure.py agent/tests/test_ai_disclosure.py`
 
-Expected: tests and Ruff pass.
+Expected: strict AI/placeholder/UGC/revision parity, mutual-exclusive path injection, exact unpacked release bytes for both loaders, and Ruff all pass. Importing `launch_artifacts` alone does not import `route_manifest` or `ai_disclosure`, proving the low-level loader has no circular dependency.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add agent/ai_disclosure.py agent/tests/test_ai_disclosure.py
+git add agent/ai_disclosure.py agent/tests/test_ai_disclosure.py tests/launch_safety/test_release_package.py
 git commit -m "feat: load AI disclosure copy in Python"
 ```
 
@@ -845,6 +1431,7 @@ git commit -m "feat: load AI disclosure copy in Python"
 - Create: `agent/launch_evidence.py`
 - Create: `agent/index_policy.py`
 - Create: `agent/tests/test_index_policy.py`
+- Create: `tests/fixtures/launch-policy-fingerprint.json`
 - Modify: `agent/seo.py:1178-1215`
 - Modify: `scripts/checks/check_data_schema.py:139`
 - Modify: `tests/checks/test_hard_checks.py:123`
@@ -890,6 +1477,29 @@ def test_ai_images_never_restore_the_old_100_word_branch():
         "images": ["/img/ai-1.webp", "/img/ai-2.webp"],
     }
     assert decide_entity(entity, EVIDENCE).indexable is False
+
+
+@pytest.mark.parametrize("entity", [
+    {},
+    {"status": "published", "verified": None},
+    {"status": "provisional", "verified": True},
+    {"status": "private", "verified": True},
+    {"status": "draft", "verified": True},
+    {"status": "unpublished", "verified": True},
+    {"status": "published", "verified": False},
+    {"status": "published", "verified": True, "is_private": True},
+    {"status": "published", "verified": True, "is_public": False},
+    {"status": "published", "verified": True, "published": False},
+])
+def test_missing_private_draft_unpublished_and_unverified_entities_are_ineligible(entity):
+    entity.update(summary=" ".join(["word"] * 130), description="")
+    decision = decide_entity(entity, EVIDENCE)
+    assert decision.indexable is False
+    assert any(reason.startswith("public-") for reason in decision.reasons)
+
+
+def test_fingerprint_hashes_both_artifact_revisions_digests_and_semantic_revisions(fingerprint_fixture):
+    assert build_policy_fingerprint(**fingerprint_fixture["inputs"]) == fingerprint_fixture["expected_sha256"]
 ```
 
 - [ ] **Step 2: Run RED**
@@ -906,20 +1516,29 @@ from dataclasses import dataclass
 from hashlib import sha256
 import json
 
+from ai_disclosure import load_ai_disclosure
+from route_manifest import load_route_manifest
+
 INDEX_POLICY_REVISION = "index-policy-v1"
 RESPONSE_MATRIX_REVISION = "launch-safety-matrix-v1"
 CACHE_ISOLATION_REVISION = "launch-cache-isolation-v1"
 SITEMAP_PROTOCOL_REVISION = "pinned-sitemap-bundle-v1"
 
 
-def build_policy_fingerprint(*, route_digest: str, disclosure_digest: str) -> str:
+def build_policy_fingerprint(
+    *,
+    route_revision: str,
+    route_digest: str,
+    disclosure_revision: str,
+    disclosure_digest: str,
+) -> str:
     payload = {
         "index_policy": INDEX_POLICY_REVISION,
         "response_matrix": RESPONSE_MATRIX_REVISION,
         "cache_isolation": CACHE_ISOLATION_REVISION,
         "sitemap_protocol": SITEMAP_PROTOCOL_REVISION,
-        "route_digest": route_digest,
-        "disclosure_digest": disclosure_digest,
+        "route_artifact": {"revision": route_revision, "sha256": route_digest},
+        "disclosure_artifact": {"revision": disclosure_revision, "sha256": disclosure_digest},
     }
     return sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
@@ -936,7 +1555,9 @@ def current_policy_evidence() -> PolicyEvidence:
     disclosure = load_ai_disclosure()
     return PolicyEvidence(
         policy_fingerprint=build_policy_fingerprint(
+            route_revision=route.revision,
             route_digest=route.artifact.sha256,
+            disclosure_revision=disclosure.revision,
             disclosure_digest=disclosure.artifact.sha256,
         ),
         route_manifest_revision=route.revision,
@@ -946,6 +1567,7 @@ def current_policy_evidence() -> PolicyEvidence:
 
 ```python
 # agent/index_policy.py
+from dataclasses import dataclass
 import re
 from typing import Mapping
 
@@ -961,8 +1583,30 @@ class IndexPolicyDecision:
     policy_revision: str
 
 
-def _public(entity: Mapping[str, object]) -> bool:
-    return entity.get("status") != "provisional" and entity.get("verified") not in (False, 0)
+PUBLIC_STATUSES = frozenset({"published", "verified"})
+
+
+def public_eligibility_reasons(entity: Mapping[str, object]) -> tuple[str, ...]:
+    reasons: list[str] = []
+    status = entity.get("status")
+    if status is None:
+        reasons.append("public-status-missing")
+    elif status not in PUBLIC_STATUSES:
+        reasons.append("public-status-not-allowlisted")
+    verified = entity.get("verified")
+    if verified is None:
+        reasons.append("public-verification-missing")
+    elif verified not in (True, 1):
+        reasons.append("public-explicitly-unverified")
+    if entity.get("is_private") is True or entity.get("visibility") == "private":
+        reasons.append("public-private-content")
+    if entity.get("is_public") is False or entity.get("published") is False:
+        reasons.append("public-unpublished-content")
+    return tuple(reasons)
+
+
+def is_publicly_eligible(entity: Mapping[str, object]) -> bool:
+    return not public_eligibility_reasons(entity)
 
 
 def _descriptive_word_count(entity: Mapping[str, object]) -> int:
@@ -975,15 +1619,33 @@ def _descriptive_word_count(entity: Mapping[str, object]) -> int:
 
 
 def decide_entity(entity: Mapping[str, object], evidence: PolicyEvidence) -> IndexPolicyDecision:
-    reasons: list[str] = []
-    if not _public(entity):
-        reasons.append("not-publicly-eligible")
+    reasons = list(public_eligibility_reasons(entity))
     if _descriptive_word_count(entity) < 130:
         reasons.append("description-below-130-words")
     return IndexPolicyDecision("entity", not reasons, tuple(reasons), evidence.policy_fingerprint, evidence.backend_policy_revision)
 ```
 
-Delete the old 100-words-plus-image branch from `agent/seo.py` and retarget the data-schema hard check to `index_policy.decide_entity`.
+Create the shared fingerprint fixture with exact content:
+
+```json
+{
+  "inputs": {
+    "route_revision": "launch-indexing-policy-v1",
+    "route_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+    "disclosure_revision": "ai-disclosure-v1",
+    "disclosure_digest": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "semantic_revisions": {
+    "index_policy": "index-policy-v1",
+    "response_matrix": "launch-safety-matrix-v1",
+    "cache_isolation": "launch-cache-isolation-v1",
+    "sitemap_protocol": "pinned-sitemap-bundle-v1"
+  },
+  "expected_sha256": "6397813fbaafc0800f0d1cadb87214b3d250c72bc03b5a15a7386ba979b2926e"
+}
+```
+
+Delete the old 100-words-plus-image branch and every legacy permissive `_is_public`/`is_index_worthy` quality decision from `agent/seo.py`; retarget the data-schema hard check to `index_policy.decide_entity`. Listing visibility may retain a separately named compatibility filter, but entity/ward indexability and sitemap child eligibility may call only `is_publicly_eligible()`, `decide_entity()`, or `decide_ward()` from `index_policy`.
 
 - [ ] **Step 4: Run GREEN and focused SEO regressions**
 
@@ -996,7 +1658,7 @@ Expected: tests pass with the obsolete image-credit assertions replaced by zero-
 - [ ] **Step 5: Commit**
 
 ```bash
-git add agent/launch_evidence.py agent/index_policy.py agent/tests/test_index_policy.py agent/seo.py scripts/checks/check_data_schema.py tests/checks/test_hard_checks.py agent/tests/test_seo.py
+git add agent/launch_evidence.py agent/index_policy.py agent/tests/test_index_policy.py tests/fixtures/launch-policy-fingerprint.json agent/seo.py scripts/checks/check_data_schema.py tests/checks/test_hard_checks.py agent/tests/test_seo.py
 git commit -m "feat: centralize entity index policy"
 ```
 
@@ -1036,9 +1698,7 @@ Expected: FAIL because ward and itinerary decision functions do not exist.
 
 ```python
 def decide_ward(ward: Mapping[str, object], *, public_child_count: int, evidence: PolicyEvidence) -> IndexPolicyDecision:
-    reasons: list[str] = []
-    if not _public(ward):
-        reasons.append("not-publicly-eligible")
+    reasons = list(public_eligibility_reasons(ward))
     summary_words = len(re.findall(r"\b\w+\b", str(ward.get("summary") or ""), flags=re.UNICODE))
     if public_child_count <= 1 and summary_words < 60:
         reasons.append("ward-below-child-and-summary-threshold")
@@ -1112,8 +1772,13 @@ class IndexPolicyDecisionResponse(BaseModel):
     policy_revision: str
 
 
-class EntityDetailResponse(BaseModel):
-    # Keep existing fields.
+class EntityDetailResponse(ApiModel):
+    id: str | None = None
+    type: str | None = None
+    name: str | None = None
+    summary: str | None = None
+    description: str | None = None
+    relationship_total: int | None = None
     index_policy: IndexPolicyDecisionResponse
 ```
 
@@ -1137,6 +1802,9 @@ git commit -m "feat: expose entity index policy decisions"
 **Files:**
 - Create: `agent/policy_http.py`
 - Create: `agent/tests/test_policy_http.py`
+- Create: `scripts/checks/check_policy_http_registry.py`
+- Create: `tests/launch_safety/test_policy_http_registry_guard.py`
+- Modify: `scripts/checks/run_hard.py`
 - Modify: `agent/public_api.py:68-80`
 - Modify: `agent/public_api.py:1212-1265`
 - Modify: `agent/server.py:1085-1330`
@@ -1161,13 +1829,37 @@ def test_direct_database_change_is_visible_without_invalidation_hook(client, db)
     after = client.get("/api/entities/public-entity").json()["index_policy"]
     assert before["indexable"] is True
     assert after["indexable"] is False
+
+
+@pytest.mark.parametrize("case,expected_status", [
+    ("success", 200),
+    ("not-found", 404),
+    ("validation", 422),
+    ("dependency-failure", 503),
+])
+def test_registered_route_contract_covers_every_response_path(policy_test_client, case, expected_status):
+    response = policy_test_client.get(policy_case_url(case), headers={"If-None-Match": '"legacy"'})
+    assert response.status_code == expected_status
+    assert response.status_code != 304
+    assert response.headers["cache-control"] == "no-store"
+    assert not ({"etag", "last-modified", "expires"} & {name.lower() for name in response.headers})
+
+
+def test_policy_route_scanner_rejects_unregistered_evidence_route(tmp_path):
+    source = tmp_path / "unregistered.py"
+    source.write_text('''
+@router.get("/new-policy")
+def new_policy():
+    return {"indexable": False, "policy_fingerprint": "a" * 64, "policy_revision": "index-policy-v1"}
+''', encoding="utf-8")
+    assert scan_policy_routes([source], POLICY_ENDPOINTS)[0].code == "UNREGISTERED_POLICY_ROUTE"
 ```
 
 - [ ] **Step 2: Run RED**
 
 Run: `python -m pytest agent/tests/test_policy_http.py agent/tests/test_gap_fixes.py -q`
 
-Expected: FAIL because `/api/entities/{entity_id}` still emits public cache headers, ETag, and 304 and can replay a full cached entity.
+Expected: FAIL because `/api/entities/{entity_id}` still emits public cache headers, ETag, and 304, can replay a full cached entity, and no scanner proves every policy/evidence route is registered.
 
 - [ ] **Step 3: Implement resolved-route registry enforcement and remove policy-input memoization**
 
@@ -1180,13 +1872,15 @@ from dataclasses import dataclass
 class PolicyEndpoint:
     method: str
     path: str
+    route_name: str
     exposure: str
+    cache_contract: str = "no-store-no-validator"
 
 
 POLICY_ENDPOINTS = (
-    PolicyEndpoint("GET", "/api/entities/{entity_id}", "public"),
-    PolicyEndpoint("GET", "/_internal/launch-policy-attestation", "internal"),
-    PolicyEndpoint("GET", "/_internal/launch-sitemaps/{document}", "internal"),
+    PolicyEndpoint("GET", "/api/entities/{entity_id}", "get_entity", "public"),
+    PolicyEndpoint("GET", "/_internal/launch-policy-attestation", "launch_policy_attestation", "internal"),
+    PolicyEndpoint("GET", "/_internal/launch-sitemaps/{document}", "launch_sitemap_document", "internal"),
 )
 
 
@@ -1197,18 +1891,24 @@ def enforce_policy_http_headers(response):
     return response
 ```
 
+Install an ASGI response-start wrapper after all FastAPI routers are mounted. It reads the resolved `scope["route"].path`, method, and route name; only an exact `PolicyEndpoint` identity receives `Cache-Control: no-store` and validator removal. This covers handler success, handler-raised 404/503, request validation 422, and application error responses because headers are normalized at `http.response.start`, not only inside successful handlers. A focused test app mounts the exact registered identities with an integer path parameter to force 422 and explicit 404/503 branches. The production handler removes its ETag/`If-None-Match` branch, so 304 cannot be emitted; the wrapper raises a test-visible contract error if a registered response attempts status 304.
+
+`scripts/checks/check_policy_http_registry.py` parses every FastAPI-decorated function under `agent/` and marks a route policy-bearing when its AST contains `IndexPolicyDecision`, `current_policy_evidence`, `policy_fingerprint`, `policy_revision`, `route_manifest_revision`, `backend_policy_revision`, `index_policy`, or sitemap evidence/header names. It joins router prefixes from `include_router()` declarations, compares method/path/function name with `POLICY_ENDPOINTS`, and emits `UNREGISTERED_POLICY_ROUTE`, `STALE_POLICY_REGISTRY_ENTRY`, or `POLICY_ROUTE_CONTRACT_MISMATCH`. Until Tasks 13 and 17 create the two internal routes, their registry rows are allowed only as declared future entries; the scanner still requires every currently discovered policy route to be registered. Task 13 and Task 17 each remove one future allowance, and Task 17's GREEN command requires zero future entries.
+
 Match the resolved FastAPI route template, not the lexical URL, so `/api/entities/map` and other static routes keep their existing reviewed cache behavior. Remove `_entity_cache` from the policy-bearing detail handler; load policy-input fields from the database on every request. If presentation-only memoization remains, exclude `status`, `verified`, summary, description, type, relationships, ward-child counts, and every policy/evidence field.
 
 - [ ] **Step 4: Run GREEN and registry source scan**
 
-Run: `python -m pytest agent/tests/test_policy_http.py agent/tests/test_public_index_policy.py agent/tests/test_gap_fixes.py -q`
+Run: `python -m pytest agent/tests/test_policy_http.py agent/tests/test_public_index_policy.py agent/tests/test_gap_fixes.py tests/launch_safety/test_policy_http_registry_guard.py -q`
 
-Expected: every status from the registered detail route is `no-store`, has no validator, never returns 304, and observes direct DB policy-input changes.
+Run: `python scripts/checks/check_policy_http_registry.py --allow-future launch_policy_attestation --allow-future launch_sitemap_document`
+
+Expected: every success/error/validation/not-found status from the registered detail route is `no-store`, has no validator, never returns 304, observes direct DB policy-input changes, and every discovered policy/evidence route matches the exact registry.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add agent/policy_http.py agent/tests/test_policy_http.py agent/public_api.py agent/server.py agent/tests/test_gap_fixes.py
+git add agent/policy_http.py agent/tests/test_policy_http.py agent/public_api.py agent/server.py agent/tests/test_gap_fixes.py scripts/checks/check_policy_http_registry.py tests/launch_safety/test_policy_http_registry_guard.py scripts/checks/run_hard.py
 git commit -m "fix: prevent caching policy-bearing API responses"
 ```
 
@@ -1280,7 +1980,9 @@ location ^~ /_internal/ {
 
 Run: `python -m pytest agent/tests/test_launch_policy_api.py agent/tests/test_policy_http.py -q`
 
-Expected: attestation returns exact evidence with no cache validators and is absent from public API docs.
+Run: `python scripts/checks/check_policy_http_registry.py --allow-future launch_sitemap_document`
+
+Expected: attestation returns exact evidence with no cache validators, is absent from public API docs, and its previously future registry row now resolves to the exact mounted FastAPI route identity.
 
 - [ ] **Step 5: Commit**
 
@@ -1380,6 +2082,27 @@ def test_cleanup_keeps_active_and_previous(tmp_path, clock):
     store.publish(bundle("b" * 64))
     store.cleanup()
     assert store.list_batches() == ("a" * 64, "b" * 64)
+
+
+def test_production_defaults_and_restart_protocol(release_root, clock):
+    store = SitemapBundleStore.from_release_root(release_root, now=clock.now)
+    assert store.root == release_root / "agent/data/sitemap-bundles"
+    assert store.retention == timedelta(hours=24)
+    store.publish(bundle("a" * 64))
+
+    restarted = SitemapBundleStore.from_release_root(release_root, now=clock.now)
+    assert restarted.load_active_on_startup().batch_revision == "a" * 64
+    assert not hasattr(restarted, "refresh")
+
+
+def test_cleanup_keeps_active_previous_and_every_bundle_inside_retention(tmp_path, clock):
+    store = SitemapBundleStore(tmp_path, retention=timedelta(hours=24), now=clock.now)
+    store.publish(bundle("a" * 64)); clock.advance(hours=1)
+    store.publish(bundle("b" * 64)); clock.advance(hours=1)
+    store.publish(bundle("c" * 64)); store.cleanup()
+    assert store.list_batches() == ("a" * 64, "b" * 64, "c" * 64)
+    clock.advance(hours=23); store.cleanup()
+    assert store.list_batches() == ("b" * 64, "c" * 64)
 ```
 
 - [ ] **Step 2: Run RED**
@@ -1399,9 +2122,23 @@ class StoredBundle:
 
 
 class SitemapBundleStore:
-    def __init__(self, root: Path, *, now=lambda: datetime.now(timezone.utc)):
+    DEFAULT_RETENTION = timedelta(hours=24)
+
+    def __init__(
+        self,
+        root: Path,
+        *,
+        retention: timedelta = DEFAULT_RETENTION,
+        now=lambda: datetime.now(timezone.utc),
+    ):
         self.root = root
+        self.retention = retention
         self.now = now
+
+    @classmethod
+    def from_release_root(cls, release_root: Path | None = None, **kwargs):
+        root = release_root if release_root is not None else Path(__file__).resolve().parents[1]
+        return cls(root / "agent" / "data" / "sitemap-bundles", **kwargs)
 
     def publish(self, bundle: StoredBundle) -> None:
         with cross_process_lock(self.root / ".publish.lock"):
@@ -1412,15 +2149,33 @@ class SitemapBundleStore:
                 "batch_revision": bundle.batch_revision,
                 "published_at": self.now().isoformat(),
             })
+
+    def load_active_on_startup(self) -> StoredBundle:
+        pointer = read_and_validate_active_pointer(self.root / "active.json")
+        return read_and_validate_immutable_bundle(self.root / pointer["batch_revision"])
+
+    def cleanup(self) -> None:
+        with cross_process_lock(self.root / ".publish.lock"):
+            active = read_and_validate_active_pointer(self.root / "active.json")["batch_revision"]
+            bundles = sorted(self._valid_bundle_metadata(), key=lambda item: item.published_at, reverse=True)
+            previous = next((item.batch_revision for item in bundles if item.batch_revision != active), None)
+            keep = {active, previous} - {None}
+            cutoff = self.now() - self.retention
+            keep.update(item.batch_revision for item in bundles if item.published_at >= cutoff)
+            for item in bundles:
+                if item.batch_revision not in keep:
+                    remove_validated_bundle_directory(self.root, item.batch_revision)
 ```
 
-Promote or reuse the lock and atomic JSON replacement primitives from `versioned_json_store.py`; do not duplicate a weaker implementation.
+`read_and_validate_immutable_bundle()` verifies metadata schema, all three filenames, per-document SHA-256 values, the batch revision, and the directory name before returning bytes. Corrupt or missing `active.json` raises `SitemapStateUnavailable` and never triggers generation. `remove_validated_bundle_directory()` resolves the candidate under `self.root`, rejects symlinks/staging/active/previous paths, deletes only a validated immutable batch, and fsyncs the parent. Promote or reuse the lock and atomic JSON replacement primitives from `versioned_json_store.py`; do not duplicate a weaker implementation.
+
+The CLI protocol consumed by Task 17 is fixed here: production opens `SitemapBundleStore.from_release_root()`, backend startup calls only `load_active_on_startup()`, `python -m agent.sitemap_bundle refresh` is the only generation entry point, and public GET handlers call only `load_active()`/`load_batch()`. Tests monkeypatch the refresh function and prove import, startup load, and public reads never invoke it.
 
 - [ ] **Step 4: Run GREEN**
 
 Run: `python -m pytest agent/tests/test_sitemap_store.py -q`
 
-Expected: atomic publication, restart validation, corruption rejection, and retention tests pass.
+Expected: the production default path, configurable 24-hour clock, active-plus-previous retention algorithm, atomic publication, restart validation, corrupt-state rejection, and no-refresh startup/public-read protocol pass.
 
 - [ ] **Step 5: Commit**
 
@@ -1433,15 +2188,23 @@ git commit -m "feat: publish immutable sitemap bundles"
 
 **Files:**
 - Create: `agent/tests/test_sitemap_bundle_postgres.py`
+- Create: `tests/launch_safety/harness/docker-compose.postgres.yml`
+- Modify: `agent/sitemap_snapshot.py`
+- Modify: `agent/sitemap_store.py`
 
 - [ ] **Step 1: Write the opt-in integration test**
 
 ```python
 @pytest.mark.integration
-def test_repeatable_read_ignores_second_connection_commit(disposable_pg):
+def test_all_three_documents_use_the_original_repeatable_read_snapshot(disposable_pg, tmp_path):
     with open_snapshot(disposable_pg) as snapshot:
-        mutate_entity_from_second_connection(disposable_pg, "entity-1", summary="changed")
-        assert snapshot.entity("entity-1")["summary"] == "original"
+        mutate_entity_from_second_connection(disposable_pg, "entity-1", summary="changed", images=["changed.webp"])
+        documents = build_snapshot_probe_documents(snapshot)
+
+    assert b"original-summary" in documents["sitemap.xml"]
+    assert b"original.webp" in documents["sitemap-media.xml"]
+    assert b"original-snapshot" in documents["sitemap-index.xml"]
+    assert all(b"changed" not in body for body in documents.values())
 
 
 @pytest.mark.integration
@@ -1450,15 +2213,33 @@ def test_concurrent_refresh_exposes_only_complete_bundle(disposable_pg, tmp_path
     active = SitemapBundleStore(tmp_path).load_active()
     assert active.batch_revision in revisions
     assert set(active.documents) == {"sitemap.xml", "sitemap-media.xml", "sitemap-index.xml"}
+
+
+@pytest.mark.integration
+def test_failed_publication_preserves_previous_complete_bundle(disposable_pg, tmp_path):
+    store = SitemapBundleStore(tmp_path)
+    previous = complete_probe_bundle(disposable_pg, label="previous")
+    store.publish(previous)
+    store.fail_after_directory_rename_for_test = True
+
+    with pytest.raises(InjectedPublicationFailure):
+        store.publish(complete_probe_bundle(disposable_pg, label="candidate"))
+
+    restarted = SitemapBundleStore(tmp_path).load_active_on_startup()
+    assert restarted.batch_revision == previous.batch_revision
+    assert restarted.documents == previous.documents
+    assert set(restarted.documents) == {"sitemap.xml", "sitemap-media.xml", "sitemap-index.xml"}
 ```
 
 Use the guarded disposable PostgreSQL fixture pattern from `agent/tests/test_account_control_plane_postgres.py:25`; reject non-loopback database URLs unless an exact test-only override is supplied.
 
-- [ ] **Step 2: Run the default safe-skip check**
+- [ ] **Step 2: Provision disposable PostgreSQL and record a genuine RED**
 
-Run: `python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q`
+Run: `docker compose -f tests/launch_safety/harness/docker-compose.postgres.yml up -d --wait`
 
-Expected: SKIP when `SITEMAP_BUNDLE_TEST_DATABASE_URL` is absent.
+Run: `$env:SITEMAP_BUNDLE_TEST_DATABASE_URL='postgresql://vl360:vl360_launch_test@127.0.0.1:55432/vl360_launch_test'; python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q`
+
+Expected: FAIL after connecting to the disposable loopback database because the snapshot callback/probe-document contract, concurrent publication harness, and injected post-rename/pre-pointer failure hook do not exist. A SKIP does not count as RED; if Docker is unavailable, record the missing local dependency and do not mark Task 16 complete until the test has produced a real failing assertion against a provisioned disposable PostgreSQL.
 
 - [ ] **Step 3: Implement the disposable database fixture and concurrency harness**
 
@@ -1471,18 +2252,24 @@ if parsed.hostname not in {"127.0.0.1", "localhost", "::1"} and os.getenv("ALLOW
     pytest.fail("PostgreSQL integration target must be loopback")
 ```
 
-The fixture creates isolated tables, runs one refresh transaction and one concurrent mutation connection, then drops the isolated schema.
+The Compose harness publishes PostgreSQL only on `127.0.0.1:55432`, uses a dedicated disposable database, and has no production credentials or volumes. The fixture creates a unique schema, opens the production `REPEATABLE READ, READ ONLY` snapshot, pauses after the first read, commits changed summary/image/relationship data through a second connection, then builds three deterministic probe documents from the still-open snapshot. `sitemap-index.xml` includes a snapshot marker derived inside that transaction, so the test proves main, media, and index inputs are all original rather than checking one entity object only.
+
+Add a test-only `fail_after_directory_rename_for_test` injection immediately after the complete candidate directory is fsynced/renamed and before `active.json` replacement. The production default is immutable `False`. The failed-publication test reconstructs a new store instance, loads the prior active pointer and all three prior document bytes, and asserts no staging or candidate directory is reachable through public load methods.
 
 - [ ] **Step 4: Run GREEN against a disposable local PostgreSQL**
 
-Run: `$env:SITEMAP_BUNDLE_TEST_DATABASE_URL='postgresql://vl360:vl360_dev_password@127.0.0.1:5432/vl360_launch_test'; python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q`
+Run: `$env:SITEMAP_BUNDLE_TEST_DATABASE_URL='postgresql://vl360:vl360_launch_test@127.0.0.1:55432/vl360_launch_test'; python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q`
 
-Expected: real `REPEATABLE READ`, concurrent mutation, and atomic publication tests pass.
+Run: `Remove-Item Env:SITEMAP_BUNDLE_TEST_DATABASE_URL; python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q`
+
+Run: `docker compose -f tests/launch_safety/harness/docker-compose.postgres.yml down -v`
+
+Expected: the provisioned run passes all original-snapshot/all-three-document, concurrent complete-publication, and failed-publication preservation assertions; the unconfigured run safely skips; teardown removes the disposable volume.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add agent/tests/test_sitemap_bundle_postgres.py
+git add agent/tests/test_sitemap_bundle_postgres.py tests/launch_safety/harness/docker-compose.postgres.yml agent/sitemap_snapshot.py agent/sitemap_store.py
 git commit -m "test: verify sitemap PostgreSQL isolation"
 ```
 
@@ -1512,6 +2299,11 @@ def test_internal_main_document_requires_pinned_batch(client, published_store):
     response = client.get(f"/_internal/launch-sitemaps/sitemap.xml?batch={published_store.active_revision}")
     assert response.status_code == 200
     assert response.headers["x-launch-sitemap-batch-revision"] == published_store.active_revision
+
+
+def test_ward_child_counts_use_the_index_policy_public_allowlist(snapshot_with_children):
+    counts = public_ward_child_counts(snapshot_with_children)
+    assert counts["ward-1"] == 2
 ```
 
 - [ ] **Step 2: Run RED**
@@ -1538,7 +2330,11 @@ def render_main_sitemap(snapshot, manifest, evidence) -> bytes:
 
 
 def public_ward_child_counts(snapshot) -> dict[str, int]:
-    public_ids = {entity["id"] for entity in snapshot.entities if entity.get("status") != "provisional" and entity.get("verified") not in (False, 0)}
+    public_ids = {
+        entity["id"]
+        for entity in snapshot.entities
+        if is_publicly_eligible(entity)
+    }
     counts: dict[str, int] = {}
     for relationship in snapshot.relationships:
         if relationship.get("type") == "located_in" and relationship.get("source_id") in public_ids:
@@ -1560,7 +2356,7 @@ def serialize_urlset(urls: list[str]) -> bytes:
     return tostring(root, encoding="utf-8", xml_declaration=True)
 ```
 
-`python -m agent.sitemap_bundle refresh` loads one snapshot, renders all current document types, validates them, and publishes through `SitemapBundleStore`. Backend startup validates `active.json` but never refreshes inside a GET.
+Import `is_publicly_eligible`, `decide_entity`, and `decide_ward` from `index_policy`; do not define a sitemap-local status/verification rule. `python -m agent.sitemap_bundle refresh` loads one snapshot, renders all current document types, validates them, and publishes through `SitemapBundleStore`. Backend startup validates `active.json` but never refreshes inside a GET.
 
 Because existing agent modules use top-level imports, `agent/sitemap_bundle.py` must use the same direct-execution/module bootstrap pattern as `agent/mcp_server.py:35` so both `python agent/sitemap_bundle.py refresh` and the required module command resolve imports consistently without adding a repository-wide package refactor.
 
@@ -1568,7 +2364,9 @@ Because existing agent modules use top-level imports, `agent/sitemap_bundle.py` 
 
 Run: `python -m pytest agent/tests/test_sitemap_snapshot.py agent/tests/test_sitemap_render.py agent/tests/test_sitemap_store.py agent/tests/test_sitemap_bundle.py agent/tests/test_launch_policy_api.py -q`
 
-Expected: exact main XML and pinned internal response pass; legacy `web/data.json` fallback tests are removed.
+Run: `python scripts/checks/check_policy_http_registry.py`
+
+Expected: exact main XML and pinned internal response pass; all three registry rows resolve with zero future allowance; every policy/evidence route is registered; legacy `web/data.json` fallback tests are removed.
 
 - [ ] **Step 5: Commit**
 
@@ -1850,19 +2648,25 @@ export const RESPONSE_MATRIX_REVISION = 'launch-safety-matrix-v1'
 export const CACHE_ISOLATION_REVISION = 'launch-cache-isolation-v1'
 export const SITEMAP_PROTOCOL_REVISION = 'pinned-sitemap-bundle-v1'
 
-export function buildPolicyFingerprint(routeDigest: string, disclosureDigest: string): string {
-  return createHash('sha256').update(JSON.stringify({
+export function buildPolicyFingerprint(input: {
+  routeRevision: string
+  routeDigest: string
+  disclosureRevision: string
+  disclosureDigest: string
+}): string {
+  const canonicalPayload = JSON.stringify({
     cache_isolation: CACHE_ISOLATION_REVISION,
-    disclosure_digest: disclosureDigest,
+    disclosure_artifact: { revision: input.disclosureRevision, sha256: input.disclosureDigest },
     index_policy: INDEX_POLICY_REVISION,
     response_matrix: RESPONSE_MATRIX_REVISION,
-    route_digest: routeDigest,
+    route_artifact: { revision: input.routeRevision, sha256: input.routeDigest },
     sitemap_protocol: SITEMAP_PROTOCOL_REVISION,
-  })).digest('hex')
+  })
+  return createHash('sha256').update(canonicalPayload, 'utf8').digest('hex')
 }
 ```
 
-Add a shared fixture assertion that Python and TypeScript compute the same known fingerprint for fixed artifact digests.
+Load `tests/fixtures/launch-policy-fingerprint.json` and assert TypeScript produces `6397813fbaafc0800f0d1cadb87214b3d250c72bc03b5a15a7386ba979b2926e` for the same two artifact revisions/digests and semantic revisions as Python. Add one mutation assertion per input: changing only the route revision, route digest, disclosure revision, disclosure digest, index-policy revision, response-matrix revision, cache/service-worker isolation revision, or sitemap-protocol revision must change the fingerprint. The readiness build evidence passes all four artifact inputs rather than reconstructing or omitting either revision.
 
 ```ts
 export function readLaunchIntent(env: NodeJS.ProcessEnv) {
@@ -1911,7 +2715,24 @@ it.each([
 })
 ```
 
-Add separate tests for each fingerprint, route revision, backend revision, batch revision, and requested-batch echo mismatch.
+```ts
+it.each([
+  ['x-launch-policy-fingerprint', 'f'.repeat(64)],
+  ['x-launch-route-manifest-revision', 'stale-route-v0'],
+  ['x-launch-backend-policy-revision', 'stale-policy-v0'],
+  ['x-launch-sitemap-batch-revision', 'b'.repeat(64)],
+  ['x-launch-sitemap-requested-batch', 'b'.repeat(64)],
+])('fails closed when %s mismatches', async (header, value) => {
+  const upstream = matchingUpstream.withHeader(header, value)
+  expect((await runGuardedProxy({
+    document: 'sitemap.xml',
+    query: '?batch=' + 'a'.repeat(64),
+    upstream,
+  })).status).toBe(503)
+})
+```
+
+Add a pinned-response regression where `X-Launch-Sitemap-Requested-Batch` correctly echoes the requested `a...a` value but `X-Launch-Sitemap-Batch-Revision` reports a different valid `b...b` value; it must return 503. This proves the served immutable bundle itself, not only the echo header, is pinned to the request.
 
 - [ ] **Step 2: Run RED**
 
@@ -1968,8 +2789,10 @@ function validateAllLaunchEvidence(
   if (headers['x-launch-policy-fingerprint'] !== decision.policy_fingerprint) throw createError({ statusCode: 503 })
   if (headers['x-launch-route-manifest-revision'] !== decision.route_manifest_revision) throw createError({ statusCode: 503 })
   if (headers['x-launch-backend-policy-revision'] !== decision.backend_policy_revision) throw createError({ statusCode: 503 })
-  if (!/^[a-f0-9]{64}$/.test(headers['x-launch-sitemap-batch-revision'] || '')) throw createError({ statusCode: 503 })
+  const servedBatch = headers['x-launch-sitemap-batch-revision'] || ''
+  if (!/^[a-f0-9]{64}$/.test(servedBatch)) throw createError({ statusCode: 503 })
   if (requestedBatch && headers['x-launch-sitemap-requested-batch'] !== requestedBatch) throw createError({ statusCode: 503 })
+  if (requestedBatch && servedBatch !== requestedBatch) throw createError({ statusCode: 503 })
 }
 
 export async function proxyGuardedSitemap(input: GuardedSitemapInput): Promise<GuardedSitemapResult> {
@@ -2176,6 +2999,9 @@ git commit -m "feat: refine entity launch decisions per request"
 
 **Files:**
 - Create: `web-nuxt/tests/launch-head.test.ts`
+- Modify: `web-nuxt/server/utils/launch/launchHeaders.ts`
+- Modify: `web-nuxt/server/plugins/launch-response.ts`
+- Modify: `web-nuxt/tests/launch-headers.test.ts`
 - Modify: `web-nuxt/nuxt.config.ts:44-94`
 - Modify: `web-nuxt/composables/useLaunchSafety.ts`
 - Modify: `web-nuxt/pages/[...slug].vue:25`
@@ -2200,9 +3026,21 @@ it.each([
   [selectiveNegativeEntityDecision, 'noindex, follow', 1],
   [failedOpenDecision, 'noindex, follow', 0],
 ])('emits one robots meta and conditional sitemap link', (decision, robots, sitemapLinks) => {
-  const head = buildLaunchHead(decision)
-  expect(head.meta.filter(item => item.name === 'robots')).toEqual([{ name: 'robots', content: robots }])
-  expect(head.link.filter(item => item.rel === 'sitemap')).toHaveLength(sitemapLinks)
+    const head = buildLaunchHead(decision)
+    expect(head.meta.filter(item => item.name === 'robots')).toEqual([{ name: 'robots', content: robots }])
+    expect(head.link.filter(item => item.rel === 'sitemap')).toHaveLength(sitemapLinks)
+    expect(buildLaunchResponseHeaders({ decision, html: true })['X-Robots-Tag']).toBe(robots)
+})
+
+it.each([
+  ['/missing', 404, selectiveUnknownDecision, 'noindex, follow'],
+  ['/dia-diem/missing', 404, entityPolicyUnavailableDecision, 'noindex, follow'],
+  ['/error', 500, failedOpenDecision, 'noindex, follow'],
+])('final response hook keeps error meta/header parity for %s', async (path, status, decision, robots) => {
+  const response = await renderHtmlThroughFinalHook({ path, status, decision })
+  expect(response.headers.get('x-robots-tag')).toBe(robots)
+  expect(extractRobotsMeta(response.body)).toEqual([robots])
+  expect(response.headerValues('x-robots-tag')).toEqual([robots])
 })
 ```
 
@@ -2223,20 +3061,33 @@ export function buildLaunchHead(decision: LaunchPageDecision) {
       : [],
   }
 }
+
+export function buildLaunchResponseHeaders(input: {
+  decision: Readonly<LaunchPageDecision>
+  html: boolean
+}): Record<string, string> {
+  const headers = buildBaseLaunchResponseHeaders(input.decision)
+  if (input.html) headers['X-Robots-Tag'] = input.decision.robots
+  return headers
+}
 ```
 
 Remove the global index robots meta and unconditional sitemap link from `nuxt.config.ts`. Replace page-local launch robots declarations with `useLaunchSafety()` while keeping non-launch SEO metadata intact. Sensitive/admin pages remain noindex through route classification, not a page-owned quality predicate.
+
+Rename Task 22's state/evidence writer to `buildBaseLaunchResponseHeaders()` and make the new HTML-aware `buildLaunchResponseHeaders()` above its only public wrapper; update Task 22 tests/imports in this same commit so there is no second implementation or stale signature.
+
+The legacy `server/middleware/noindex.ts` is already deleted in Task 22. Extend the single final `beforeResponse`/`render:response` path in `server/plugins/launch-response.ts`: after entity/ward refinement and after Nuxt has selected an error/404 status, read `event.context.launchSafety` as the final `LaunchPageDecision`; force `robots='noindex, follow'` for every status `>=400` without changing a valid selective-open evidence state; replace any pre-existing case-insensitive `X-Robots-Tag`; then write exactly one header from `decision.robots`. The same final decision is serialized to `useLaunchSafety()` and passed to `buildLaunchHead()`, so meta and header cannot be computed from different base/page states. Non-HTML root SEO/API responses do not receive `X-Robots-Tag` from this hook. Add a source scan rejecting any other `X-Robots-Tag` writer or page-local launch robots predicate.
 
 - [ ] **Step 4: Run GREEN and source scan**
 
 Run: `cd web-nuxt && npm test -- --run tests/launch-head.test.ts tests/smoke.test.ts && npm run typecheck`
 
-Expected: one robots meta, matching `X-Robots-Tag`, and the sitemap-index link only on fully attested selective-open HTML.
+Expected: success, valid-negative, error, and 404 HTML each have one robots meta and exactly one matching final `X-Robots-Tag`; entity refinement is visible to both; the sitemap-index link appears only on fully attested selective-open HTML.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add web-nuxt/nuxt.config.ts web-nuxt/composables/useLaunchSafety.ts web-nuxt/tests/launch-head.test.ts 'web-nuxt/pages/[...slug].vue' 'web-nuxt/pages/xa-phuong/[id].vue' web-nuxt/pages/tao-lich-trinh.vue 'web-nuxt/pages/nguoi-dung/[id].vue' 'web-nuxt/pages/lich-trinh-chia-se/[id].vue' 'web-nuxt/pages/bai-viet/[id].vue' web-nuxt/pages/tim-kiem.vue web-nuxt/pages/thong-bao.vue web-nuxt/pages/tai-khoan.vue web-nuxt/pages/da-luu.vue web-nuxt/pages/cai-dat.vue web-nuxt/layouts/admin.vue
+git add web-nuxt/nuxt.config.ts web-nuxt/composables/useLaunchSafety.ts web-nuxt/server/utils/launch/launchHeaders.ts web-nuxt/server/plugins/launch-response.ts web-nuxt/tests/launch-headers.test.ts web-nuxt/tests/launch-head.test.ts 'web-nuxt/pages/[...slug].vue' 'web-nuxt/pages/xa-phuong/[id].vue' web-nuxt/pages/tao-lich-trinh.vue 'web-nuxt/pages/nguoi-dung/[id].vue' 'web-nuxt/pages/lich-trinh-chia-se/[id].vue' 'web-nuxt/pages/bai-viet/[id].vue' web-nuxt/pages/tim-kiem.vue web-nuxt/pages/thong-bao.vue web-nuxt/pages/tai-khoan.vue web-nuxt/pages/da-luu.vue web-nuxt/pages/cai-dat.vue web-nuxt/layouts/admin.vue
 git commit -m "feat: align launch HTML indexing signals"
 ```
 
@@ -2419,6 +3270,8 @@ git commit -m "fix: isolate the service worker asset cache"
 - Create: `web-nuxt/scripts/generate-launch-readiness-manifest.mjs`
 - Create: `web-nuxt/server/utils/launch/readinessManifest.ts`
 - Create: `web-nuxt/tests/launch-readiness-manifest.test.ts`
+- Modify: `web-nuxt/public/sw.js`
+- Modify: `web-nuxt/tests/service-worker-policy.test.ts`
 - Modify: `web-nuxt/package.json`
 
 - [ ] **Step 1: Write failing generated-manifest tests**
@@ -2433,6 +3286,22 @@ it('rejects a policy-bearing prerender artifact', () => {
 
 it('requires the final service-worker digest', () => {
   expect(validateReadinessManifest(validManifest).service_worker.rule_digest).toMatch(/^[a-f0-9]{64}$/)
+})
+
+it('requires both artifact revisions as well as digests', () => {
+  expect(validateReadinessManifest(validManifest).artifacts).toMatchObject({
+    route_manifest: { revision: 'launch-indexing-policy-v1', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
+    ai_disclosure: { revision: 'ai-disclosure-v1', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) },
+  })
+  expect(() => validateReadinessManifest({
+    ...validManifest,
+    artifacts: { ...validManifest.artifacts, route_manifest: { ...validManifest.artifacts.route_manifest, revision: '' } },
+  })).toThrow(/artifact revision/i)
+})
+
+it.each(['missing', 'wrong-retained-cache', 'unverified'])('rejects %s cache-purge declaration', mutation => {
+  expect(() => validateReadinessManifest(mutateCachePurge(validManifest, mutation)))
+    .toThrow(/cache purge/i)
 })
 ```
 
@@ -2449,29 +3318,39 @@ Expected: FAIL because no post-build audit or strict manifest loader exists.
   "schema_version": 1,
   "build_revision": "source-revision",
   "artifacts": {
-    "route_manifest_sha256": "64-hex",
-    "disclosure_sha256": "64-hex",
+    "route_manifest": {"revision": "launch-indexing-policy-v1", "sha256": "64-hex"},
+    "ai_disclosure": {"revision": "ai-disclosure-v1", "sha256": "64-hex"},
     "policy_fingerprint": "64-hex"
   },
   "policy_route_classes": ["public-html", "public-api", "root-seo", "internal-readiness"],
   "compiled_cache_rules": [],
   "public_prerender_files": [],
-  "service_worker": {"version": "vl360-launch-v1", "rule_digest": "64-hex"}
+  "service_worker": {
+    "version": "vl360-launch-v1",
+    "rule_digest": "64-hex",
+    "cache_purge": {
+      "revision": "launch-cache-purge-v1",
+      "strategy": "delete-all-except",
+      "retained_cache_names": ["vl360-launch-v1-assets"],
+      "forbidden_cache_classes": ["navigation", "html", "root-seo", "internal", "api", "selective-open", "failed-open"],
+      "activation_verified": true
+    }
+  }
 }
 ```
 
-The generator scans `.output`, compiled route rules, and `public/sw.js`, writes `.output/server/launch-readiness-manifest.json`, and exits non-zero on any unsafe artifact. Add it after `nuxt build` in the build script.
+Add the same exact `CACHE_PURGE_DECLARATION` object to `public/sw.js`; activation computes the retained set from `retained_cache_names` and deletes every other cache. The generator scans `.output`, compiled route rules, and `public/sw.js`, executes the worker activation in the existing fake-cache harness with caches representing every forbidden class, and sets `activation_verified=true` only when all forbidden caches are deleted and exactly `vl360-launch-v1-assets` remains. It recomputes both root artifact SHA-256 values, reads both artifact revisions through the strict loaders, recomputes the full Task 9/20 fingerprint, hashes the final worker rule source, writes `.output/server/launch-readiness-manifest.json`, and exits non-zero on any revision/digest/purge mismatch or unsafe artifact. The runtime validator repeats the exact declaration comparison and treats a missing, false, stale, or altered cache-purge declaration as readiness 503. Add the generator after `nuxt build` in the build script.
 
 - [ ] **Step 4: Run GREEN and build audit**
 
 Run: `cd web-nuxt && npm test -- --run tests/launch-readiness-manifest.test.ts && npm run build`
 
-Expected: generated manifest exists, validates, and records the final worker version/digest.
+Expected: generated manifest exists, validates both artifact revision+digest pairs, records the final worker version/rule digest, and proves the exact cache-purge declaration against a controlled activation.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add web-nuxt/scripts/generate-launch-readiness-manifest.mjs web-nuxt/server/utils/launch/readinessManifest.ts web-nuxt/tests/launch-readiness-manifest.test.ts web-nuxt/package.json
+git add web-nuxt/scripts/generate-launch-readiness-manifest.mjs web-nuxt/server/utils/launch/readinessManifest.ts web-nuxt/tests/launch-readiness-manifest.test.ts web-nuxt/public/sw.js web-nuxt/tests/service-worker-policy.test.ts web-nuxt/package.json
 git commit -m "build: generate launch readiness evidence"
 ```
 
@@ -3235,6 +4114,28 @@ def test_unregistered_raw_entity_image_access_fails(tmp_path):
     page.write_text('<NuxtImg :src="entity.images[0]" />', encoding="utf-8")
     findings = scan_entity_image_renderers(tmp_path, registry=[])
     assert findings[0].code == "UNREGISTERED_ENTITY_IMAGE_RENDERER"
+
+
+def test_registration_does_not_exempt_a_raw_renderer(tmp_path):
+    page = tmp_path / "pages" / "registered.vue"
+    page.parent.mkdir(parents=True)
+    page.write_text('<NuxtImg :src="entity.images[0]" />', encoding="utf-8")
+    registry = [{
+        "file": "pages/registered.vue",
+        "surface": "synthetic",
+        "access_path": "entity.images",
+        "source_class": "ai-generated",
+        "descriptor_producer": "describeEntityImages",
+        "presentation": "short",
+        "accessibility": "aria-describedby-full-copy",
+        "test_file": "tests/registered.test.ts",
+    }]
+    assert {item.code for item in scan_entity_image_renderers(tmp_path, registry)} >= {
+        "RAW_DESCRIPTOR_BYPASS",
+        "MISSING_DESCRIPTOR_PRODUCER",
+        "MISSING_DISCLOSURE_PRESENTATION",
+        "MISSING_ACCESSIBLE_ASSOCIATION",
+    }
 ```
 
 - [ ] **Step 2: Run RED**
@@ -3251,15 +4152,18 @@ Expected: FAIL because the registry and scanner do not exist.
 {
   "schema_version": 1,
   "renderers": [
-    {"file": "components/EntityCard.vue", "access_path": "entity.images", "producer": "describeEntityImages", "presentation": "short"},
-    {"file": "pages/dia-diem/[id].vue", "access_path": "gallery.images", "producer": "parseGalleryDescriptor", "presentation": "full"},
-    {"file": "pages/admin/media.vue", "access_path": "entity.images", "producer": "describeEntityImages", "presentation": "short-and-full"},
-    {"file": "pages/ban-do.vue", "access_path": "popup", "producer": "no-image-invariant", "presentation": "none"}
+    {"file": "components/EntityCard.vue", "surface": "entity-card", "access_path": "entity.images", "source_class": "ai-generated", "descriptor_producer": "describeEntityImages", "presentation": "short", "accessibility": "aria-describedby-full-copy", "test_file": "tests/entity-card-disclosure.test.ts"},
+    {"file": "pages/dia-diem/[id].vue", "surface": "mixed-gallery", "access_path": "gallery.images", "source_class": "ai-generated", "descriptor_producer": "parseGalleryDescriptor", "presentation": "full", "accessibility": "visible-full-copy", "test_file": "tests/gallery-disclosure.test.ts"},
+    {"file": "pages/dia-diem/[id].vue", "surface": "mixed-gallery-ugc", "access_path": "gallery.images", "source_class": "user-uploaded", "descriptor_producer": "parseGalleryDescriptor", "presentation": "full", "accessibility": "visible-full-copy", "test_file": "tests/gallery-disclosure.test.ts"},
+    {"file": "pages/admin/media.vue", "surface": "admin-media", "access_path": "entity.images", "source_class": "ai-generated", "descriptor_producer": "describeEntityImages", "presentation": "short-and-full", "accessibility": "aria-and-visible-full-copy", "test_file": "tests/admin-image-disclosure.test.ts"},
+    {"file": "pages/ban-do.vue", "surface": "map-popup", "access_path": "popup", "source_class": "none", "descriptor_producer": "no-image-invariant", "presentation": "none", "accessibility": "no-image-invariant", "test_file": "tests/event-image-disclosure.test.ts"}
   ]
 }
 ```
 
-Populate the complete approved inventory, not only these examples. The scanner covers Vue templates/scripts, composables, adapters, background styles, and raw `image/images/image_urls` props; registration never exempts a renderer from descriptor conversion.
+The required initial rows cover these exact implementation boundaries: detail hero/rail in `pages/dia-diem/[id].vue`; `PhotoGallery.vue`; `ImageLightbox.vue`; `EntityCard.vue`; `home/EntityFeature.vue`; entity feature/spotlight and community UGC thumbnails in `pages/index.vue`; `NearbyEntities.vue`; `SmartRecommendations.vue`; `AIRecommendations.vue`; descriptor adapters in `useFavorites.ts`, `useRecentlyViewed.ts`, and `useContextualRecommendations.ts`; `SavedEntityCard.vue` and its saved/itinerary/profile/search consumers; event thumbnails in `pages/le-hoi.vue` and `pages/su-kien.vue`; the `pages/ban-do.vue` no-image invariant; admin entity/media/self-learning surfaces; `ReviewCard.vue`; `PostCard.vue`; `EntityFeed.vue`; post detail/related post/JSON-LD in `pages/bai-viet/[id].vue`; admin post moderation; and native-share/OG/Twitter/JSON-LD consumers. Each file with multiple source classes or short/full modes receives separate rows, not a combined undocumented exemption.
+
+The committed registry contains rows for every exact boundary in the preceding list, and the inventory test compares that required `(file, surface, source_class)` set for equality rather than a subset. Every row has exactly the eight shown keys; `source_class` is required and is one of `ai-generated`, `placeholder`, `user-uploaded`, or `none`. Mixed surfaces use separate rows per source class. The scanner covers Vue templates/scripts, composables, adapters, background styles, and raw `image/images/image_urls` props; registration documents the expected contract but never exempts a renderer from descriptor conversion, short/full presentation, or accessibility proof.
 
 ```python
 RAW_PATTERNS = (
@@ -3270,17 +4174,37 @@ RAW_PATTERNS = (
 
 
 def scan_entity_image_renderers(root: Path, registry: list[dict]) -> list[Finding]:
-    registered = {(item["file"], item["access_path"]) for item in registry}
     findings: list[Finding] = []
+    entries_by_file = group_validated_registry_entries(registry)
     for path in iter_frontend_source_files(root):
         text = path.read_text(encoding="utf-8")
+        relative = path.relative_to(root).as_posix()
+        entries = entries_by_file.get(relative, ())
+        render_sinks = find_image_render_sinks(text)
+        raw_render_sinks = find_image_render_sinks(text, require_raw_source=True)
         for pattern in RAW_PATTERNS:
             for match in pattern.finditer(text):
                 access = match.group(0)
-                if (path.as_posix(), access) not in registered and "data-entity-image-policy=\"no-image-invariant\"" not in text:
+                if not any(entry["access_path"] in access or access in entry["access_path"] for entry in entries):
                     findings.append(Finding("UNREGISTERED_ENTITY_IMAGE_RENDERER", path, access))
+        if raw_render_sinks:
+            findings.append(Finding("RAW_DESCRIPTOR_BYPASS", path, raw_render_sinks[0]))
+        for entry in entries:
+            producer = entry["descriptor_producer"]
+            if producer == "no-image-invariant":
+                if render_sinks or 'data-entity-image-policy="no-image-invariant"' not in text:
+                    findings.append(Finding("BROKEN_NO_IMAGE_INVARIANT", path, entry["surface"]))
+                continue
+            if producer not in text:
+                findings.append(Finding("MISSING_DESCRIPTOR_PRODUCER", path, producer))
+            if not has_required_presentation(text, entry["presentation"], entry["source_class"]):
+                findings.append(Finding("MISSING_DISCLOSURE_PRESENTATION", path, entry["surface"]))
+            if not has_accessibility_proof(text, entry["accessibility"]):
+                findings.append(Finding("MISSING_ACCESSIBLE_ASSOCIATION", path, entry["surface"]))
     return findings
 ```
+
+`group_validated_registry_entries()` rejects missing/extra keys, duplicate `(file,surface,source_class)` rows, invalid source/presentation/accessibility combinations, missing test files, and `source_class=none` unless all three invariant fields are `none`/`no-image-invariant`. `find_image_render_sinks()` covers `<img>`, `<NuxtImg>`, CSS/background bindings, lightbox/gallery props, native-share/metadata image use, and representative thumbnail props. `has_required_presentation()` requires `ImageDisclosure presentation="short"` plus full-copy association for short, visible `full_disclosure` for full, and both for `short-and-full`; `has_accessibility_proof()` requires the registered `aria-describedby`/visible-caption pattern. Descriptor producer modules may access raw arrays only when they contain no render sink; every consumer still needs its own registry row and checks.
 
 - [ ] **Step 4: Run GREEN and hard gate**
 
@@ -3288,7 +4212,7 @@ Run: `python -m pytest tests/launch_safety/test_entity_image_renderer_guard.py t
 
 Run: `cd web-nuxt && npm test -- --run tests/image-renderer-inventory.test.ts`
 
-Expected: all current renderers are registered and a synthetic raw renderer fails the guard.
+Expected: all current public/auth/admin renderers have a required source class, descriptor producer, short/full presentation, accessibility proof, and focused test; both unregistered and registered-but-raw synthetic renderers fail the guard.
 
 - [ ] **Step 5: Commit**
 
@@ -3303,6 +4227,8 @@ git commit -m "test: guard entity image renderers"
 - Modify: `web-nuxt/components/ReviewCard.vue`
 - Modify: `web-nuxt/components/PostCard.vue`
 - Modify: `web-nuxt/components/EntityFeed.vue`
+- Modify: `web-nuxt/pages/index.vue`
+- Modify: `web-nuxt/pages/bai-viet/[id].vue`
 - Modify: `web-nuxt/pages/admin/kiem-duyet.vue`
 - Modify: `agent/public_api.py:2550-2585`
 - Modify: `agent/index_policy.py`
@@ -3321,6 +4247,15 @@ expect(normalizeReviewPhoto(reviewPhoto)).toMatchObject({
   disclosure_key: 'ugc-photo',
 })
 expect(normalizeReviewPhoto(reviewPhoto).full_disclosure).not.toContain('AI')
+
+const home = await mountHomeCommunity({ posts: [postWithUserThumbnail] })
+expect(home.get('[data-community-thumbnail]').attributes('data-source-class')).toBe('user-uploaded')
+expect(home.get('[data-community-thumbnail]').text()).not.toContain('Minh họa AI')
+
+const post = await mountPostDetail({ post: postWithUserThumbnail, related: [relatedPostWithUserThumbnail] })
+expect(post.get('[data-related-post-thumbnail]').attributes('data-source-class')).toBe('user-uploaded')
+expect(postJsonLd(post).image.caption).toBe(aiDisclosure.ugc_photo.full_disclosure)
+expect(JSON.stringify(postJsonLd(post))).not.toContain('Minh họa AI')
 ```
 
 ```python
@@ -3340,6 +4275,8 @@ Expected: FAIL because UGC surfaces use bare URLs and mixed gallery rows have no
 
 - [ ] **Step 3: Convert UGC renderers without changing the entity quality predicate**
 
+`pages/index.vue` converts every community-feed thumbnail with the post-UGC producer before rendering and associates the truthful UGC sentence at `data-community-thumbnail`. `pages/bai-viet/[id].vue` converts the hero and every related-post thumbnail to `user-uploaded/post-ugc`, renders UGC disclosure/credit, and builds post JSON-LD `ImageObject.caption`/`description` from that same descriptor; it never invokes the entity-AI helper for post media.
+
 Review/post/admin moderation surfaces use `user-uploaded` descriptors with available credit. PostCard’s bespoke lightbox and share path retain UGC classification. Backend decision and media rendering explicitly ignore review/post descriptors for real-image credit and image-sitemap membership.
 
 - [ ] **Step 4: Run GREEN**
@@ -3348,12 +4285,12 @@ Run: `cd web-nuxt && npm test -- --run tests/ugc-image-classification.test.ts te
 
 Run: `python -m pytest agent/tests/test_image_descriptor.py agent/tests/test_index_policy.py agent/tests/test_sitemap_render.py -q`
 
-Expected: UGC is truthful, credited, never labeled AI, and never changes current quality/sitemap output.
+Expected: review cards, post cards, home community thumbnails, post-detail related thumbnails/JSON-LD, feed, and admin moderation are truthful, credited, never labeled AI, and never change current quality/sitemap output.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add web-nuxt/components/ReviewCard.vue web-nuxt/components/PostCard.vue web-nuxt/components/EntityFeed.vue web-nuxt/pages/admin/kiem-duyet.vue agent/public_api.py agent/index_policy.py agent/sitemap_render.py web-nuxt/tests/ugc-image-classification.test.ts agent/tests/test_image_descriptor.py agent/tests/test_index_policy.py agent/tests/test_sitemap_render.py
+git add web-nuxt/components/ReviewCard.vue web-nuxt/components/PostCard.vue web-nuxt/components/EntityFeed.vue web-nuxt/pages/index.vue 'web-nuxt/pages/bai-viet/[id].vue' web-nuxt/pages/admin/kiem-duyet.vue agent/public_api.py agent/index_policy.py agent/sitemap_render.py web-nuxt/tests/ugc-image-classification.test.ts agent/tests/test_image_descriptor.py agent/tests/test_index_policy.py agent/tests/test_sitemap_render.py
 git commit -m "feat: preserve UGC image provenance"
 ```
 
@@ -3513,7 +4450,12 @@ git commit -m "test: exercise the launch safety matrix"
 - Create: `ops/nginx/maintenance/http-context.conf.template`
 - Create: `ops/nginx/maintenance/server-enabled.conf`
 - Create: `ops/nginx/maintenance/server-disabled.conf`
+- Create: `ops/launch-safety/cache-purge-paths.json`
 - Create: `scripts/ops/maintenance_mode.sh`
+- Create: `scripts/ops/verify_closed_release.py`
+- Create: `scripts/ops/purge_launch_runtime.py`
+- Create: `scripts/ops/install_closed_release.sh`
+- Create: `scripts/ops/record_rollback_phase.py`
 - Create: `scripts/ops/rehearse_launch_rollback.sh`
 - Create: `scripts/ops/local_command_stub.py`
 - Create: `docs/runbooks/launch-safety-rollback.md`
@@ -3523,58 +4465,237 @@ git commit -m "test: exercise the launch safety matrix"
 - Create: `tests/launch_safety/test_watchdog_contract.py`
 - Create: `tests/launch_safety/test_rollback_runbook.py`
 
-- [ ] **Step 1: Write failing ordering and no-live-claim tests**
+- [ ] **Step 1: Write failing phase, evidence, purge, recovery, and no-live-claim tests**
 
 ```python
-def test_runbook_orders_drain_before_process_stop(runbook_steps):
-    assert runbook_steps.index("suspend-watchdog") < runbook_steps.index("enable-maintenance")
-    assert runbook_steps.index("enable-maintenance") < runbook_steps.index("stop-vl-nuxt")
-    assert runbook_steps.index("closed-readiness") < runbook_steps.index("reopen-nginx")
-    assert runbook_steps.index("reopen-probe") < runbook_steps.index("enable-watchdog")
+EXPECTED_PHASES = [
+    "record-and-verify-evidence",
+    "suspend-watchdog",
+    "enable-maintenance",
+    "stop-vl-nuxt",
+    "purge-runtime-caches",
+    "install-known-good-closed",
+    "verify-dependencies-units-daemon-reload",
+    "verify-readiness-and-listeners",
+    "verify-nginx-closed-boundary",
+    "verify-browser-worker-cache",
+    "reopen-and-recover-watchdog",
+]
+
+
+def test_runbook_executes_every_design_phase_in_order(runbook_steps):
+    assert runbook_steps == EXPECTED_PHASES
+
+
+def test_known_good_package_is_verified_before_maintenance(package_verifier):
+    evidence = package_verifier.verify(KNOWN_GOOD_CLOSED_ARCHIVE)
+    assert evidence.required_members >= {
+        "config/launch-indexing-policy.json",
+        "config/ai-disclosure.json",
+        "web-nuxt/.output/server/launch-readiness-manifest.json",
+        "nginx.conf",
+        "nginx-ssl.conf",
+        "ops/systemd/vl-agent.service",
+        "ops/systemd/vl-nuxt.service",
+        "compose-network-audit.json",
+    }
+    assert evidence.dev_override_selected is False
+    assert evidence.unlock_keys_present is False
+
+
+def test_cache_purge_is_explicit_and_preserves_sitemap_evidence(purge_plan):
+    assert purge_plan.required_paths == {
+        "web-nuxt/.output", "web-nuxt/.nuxt", "web-nuxt/.cache",
+    }
+    assert "agent/data/sitemap-bundles" in purge_plan.protected_paths
+    assert purge_plan.rejects_outside_release_root is True
+    assert purge_plan.rejects_symlinks is True
+
+
+def test_recovery_keeps_or_restores_closed_maintenance_state(rehearsal):
+    result = rehearsal.fail_at("verify-browser-worker-cache")
+    assert result.maintenance_enabled is True
+    assert result.old_open_release_restored is False
+    assert result.recovery_action in {"corrected-closed-roll-forward", "known-good-closed-restore"}
+
+
+def test_listener_browser_and_nginx_proofs_are_required(evidence_schema):
+    assert evidence_schema.required_checks >= {
+        "process-local-readiness",
+        "loopback-internal-listeners",
+        "nginx-only-public-80-443",
+        "nginx-closed-html-robots-empty-sitemaps",
+        "public-internal-route-not-found",
+        "direct-3000-8360-fastapi-bypass-denied",
+        "controlled-worker-activated",
+        "policy-cache-storage-empty",
+        "offline-policy-replay-denied",
+        "post-reopen-closed-probes",
+    }
 
 
 def test_rehearsal_never_claims_stage3_sla(script_text):
-    assert "stage3_claim=false" in script_text
-    assert "live_sla_proven=true" not in script_text
+    assert '"stage3_claim": false' in script_text
+    assert '"live_sla_proven": false' in script_text
+    assert '"observed_local_elapsed_seconds"' in script_text
+    assert '"live_sla_proven": true' not in script_text
 ```
 
 - [ ] **Step 2: Run RED**
 
 Run: `python -m pytest tests/launch_safety/test_watchdog_contract.py tests/launch_safety/test_rollback_runbook.py -q`
 
-Expected: FAIL because tracked maintenance artifacts, executable rehearsal, and ordering tests do not exist.
+Expected: FAIL because the tracked drain, exact package verifier, explicit purge authority, dependency/unit installer, complete phase evidence, controlled browser proof, and recovery state machine do not exist.
 
-- [ ] **Step 3: Implement the exact single-host sequence**
+- [ ] **Step 3: Implement every Section 12 phase and the local-only recovery rehearsal**
 
 ```bash
 set -euo pipefail
 MODE=${1:---local-rehearsal}
+RELEASE_ROOT=${RELEASE_ROOT:-/opt/vinhlong360}
+KNOWN_GOOD_CLOSED=${KNOWN_GOOD_CLOSED:?known-good closed package is required}
+EVIDENCE_DIR=${EVIDENCE_DIR:?evidence directory is required}
+OPERATOR=${OPERATOR:?operator identity is required}
+OPERATOR_CIDR=${OPERATOR_CIDR:?operator probe CIDR is required}
 STAGE3_CLAIM=false
+LIVE_SLA_PROVEN=false
+STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+STARTED_EPOCH=$(date +%s)
+CURRENT_PHASE=initialization
+REOPENED=false
 
 if [ "$MODE" = "--execute-on-host" ]; then
   [ "${ACKNOWLEDGE_MAINTENANCE:-}" = "launch-safety-rollback" ] || exit 64
-  RUN=
+  RUNNER=run_host
 else
-  RUN="python scripts/ops/local_command_stub.py"
+  [ "$MODE" = "--local-rehearsal" ] || exit 64
+  RELEASE_ROOT=${LOCAL_RELEASE_ROOT:?local rehearsal root is required}
+  RUNNER=run_local_stub
 fi
 
-$RUN systemctl stop vl-watchdog.timer vl-watchdog.service
-$RUN scripts/ops/maintenance_mode.sh enable
-$RUN nginx -t
-$RUN systemctl reload nginx
-$RUN systemctl stop vl-nuxt
-# Purge only paths enumerated by the installed readiness manifest.
-$RUN systemctl start vl-nuxt
-$RUN curl --fail http://127.0.0.1:3000/_internal/launch-readiness
-$RUN python scripts/ops/probe_launch_boundary.py --expect closed --maintenance-probe
-$RUN scripts/ops/maintenance_mode.sh disable
-$RUN nginx -t
-$RUN systemctl reload nginx
-$RUN python scripts/ops/probe_launch_boundary.py --expect closed
-$RUN systemctl start vl-watchdog.timer
+record_phase() {
+  python scripts/ops/record_rollback_phase.py \
+    --evidence-dir "$EVIDENCE_DIR" --phase "$CURRENT_PHASE" --status "$1" \
+    --operator "$OPERATOR" --started-at "$STARTED_AT" --stage3-claim false --live-sla-proven false
+}
+
+keep_maintenance_and_recover() {
+  code=$?
+  record_phase failed
+  "$RUNNER" scripts/ops/maintenance_mode.sh enable --operator-cidr "$OPERATOR_CIDR"
+  "$RUNNER" nginx -t
+  "$RUNNER" systemctl reload nginx
+  if [ "$REOPENED" = true ]; then
+    "$RUNNER" python scripts/ops/probe_launch_boundary.py --expect maintenance
+  fi
+  if [ -n "${CORRECTED_CLOSED_PACKAGE:-}" ]; then
+    recovery_package=$CORRECTED_CLOSED_PACKAGE
+    recovery_action=corrected-closed-roll-forward
+  else
+    recovery_package=$KNOWN_GOOD_CLOSED
+    recovery_action=known-good-closed-restore
+  fi
+  "$RUNNER" python scripts/ops/verify_closed_release.py --archive "$recovery_package" --require-closed --evidence-dir "$EVIDENCE_DIR/recovery"
+  "$RUNNER" scripts/ops/install_closed_release.sh --archive "$recovery_package" --release-root "$RELEASE_ROOT" --require-closed
+  python scripts/ops/record_rollback_phase.py --evidence-dir "$EVIDENCE_DIR" --phase recovery --status attempted --recovery-action "$recovery_action" --old-open-restored false
+  exit "$code"
+}
+trap keep_maintenance_and_recover ERR
+
+CURRENT_PHASE=record-and-verify-evidence
+"$RUNNER" python scripts/ops/verify_closed_release.py \
+  --archive "$KNOWN_GOOD_CLOSED" --require-closed --operator "$OPERATOR" \
+  --candidate-id "${CANDIDATE_RELEASE_ID:?}" --rollback-id "${ROLLBACK_RELEASE_ID:?}" \
+  --evidence-dir "$EVIDENCE_DIR/package"
+record_phase passed
+
+CURRENT_PHASE=suspend-watchdog
+"$RUNNER" systemctl stop vl-watchdog.timer
+"$RUNNER" systemctl stop vl-watchdog.service
+record_phase passed
+
+CURRENT_PHASE=enable-maintenance
+"$RUNNER" scripts/ops/maintenance_mode.sh enable --operator-cidr "$OPERATOR_CIDR"
+"$RUNNER" nginx -t
+"$RUNNER" systemctl reload nginx
+"$RUNNER" python scripts/ops/probe_launch_boundary.py --expect maintenance --operator-source
+record_phase passed
+
+CURRENT_PHASE=stop-vl-nuxt
+"$RUNNER" systemctl stop vl-nuxt
+record_phase passed
+
+CURRENT_PHASE=purge-runtime-caches
+"$RUNNER" python scripts/ops/purge_launch_runtime.py \
+  --release-root "$RELEASE_ROOT" \
+  --readiness-manifest "$RELEASE_ROOT/web-nuxt/.output/server/launch-readiness-manifest.json" \
+  --policy ops/launch-safety/cache-purge-paths.json \
+  --evidence "$EVIDENCE_DIR/cache-purge.json"
+record_phase passed
+
+CURRENT_PHASE=install-known-good-closed
+"$RUNNER" scripts/ops/install_closed_release.sh \
+  --archive "$KNOWN_GOOD_CLOSED" --release-root "$RELEASE_ROOT" --require-closed
+record_phase passed
+
+CURRENT_PHASE=verify-dependencies-units-daemon-reload
+"$RUNNER" python -m pip check
+"$RUNNER" npm --prefix "$RELEASE_ROOT/web-nuxt" ls --omit=dev
+"$RUNNER" systemd-analyze verify "$RELEASE_ROOT/ops/systemd/vl-agent.service" "$RELEASE_ROOT/ops/systemd/vl-nuxt.service" "$RELEASE_ROOT/ops/systemd/vl-bot.service"
+"$RUNNER" python scripts/ops/verify_closed_release.py --installed-root "$RELEASE_ROOT" --verify-config-ingress-unit-digests --require-closed --evidence-dir "$EVIDENCE_DIR/installed"
+"$RUNNER" systemctl daemon-reload
+"$RUNNER" systemctl start vl-nuxt
+record_phase passed
+
+CURRENT_PHASE=verify-readiness-and-listeners
+"$RUNNER" python scripts/ops/probe_launch_boundary.py --process-local-readiness http://127.0.0.1:3000/_internal/launch-readiness --expect closed --require-complete-check-set
+"$RUNNER" python scripts/ops/socket_boundary_probe.py --expect-nginx-public-only --expect-loopback 3000 8360 --evidence "$EVIDENCE_DIR/listeners.json"
+record_phase passed
+
+CURRENT_PHASE=verify-nginx-closed-boundary
+"$RUNNER" python scripts/ops/probe_launch_boundary.py \
+  --expect closed --maintenance-probe --operator-source \
+  --require-rich-thin-html --require-meta-header-noindex --require-robots-without-sitemap \
+  --require-three-empty-sitemap-shapes --require-no-store --require-no-evidence \
+  --require-no-discovery --require-public-internal-404 --require-direct-bypass-denied
+record_phase passed
+
+CURRENT_PHASE=verify-browser-worker-cache
+"$RUNNER" node scripts/launch_safety_browser_e2e.mjs \
+  --base-url "${NGINX_PROBE_URL:?}" --profile "$EVIDENCE_DIR/chrome-profile" \
+  --install-legacy-worker-first --activate-current-worker \
+  --assert-policy-cache-storage-empty --assert-offline-policy-replay-denied \
+  --evidence "$EVIDENCE_DIR/browser.json"
+record_phase passed
+
+CURRENT_PHASE=reopen-and-recover-watchdog
+"$RUNNER" scripts/ops/maintenance_mode.sh disable --operator-cidr "$OPERATOR_CIDR"
+"$RUNNER" nginx -t
+"$RUNNER" systemctl reload nginx
+REOPENED=true
+"$RUNNER" python scripts/ops/probe_launch_boundary.py --expect closed --require-public-post-reopen-matrix
+"$RUNNER" systemctl start vl-watchdog.timer
+record_phase passed
+
+trap - ERR
+FINISHED_EPOCH=$(date +%s)
+python scripts/ops/record_rollback_phase.py \
+  --evidence-dir "$EVIDENCE_DIR" --phase complete --status passed \
+  --observed-local-elapsed-seconds "$((FINISHED_EPOCH - STARTED_EPOCH))" \
+  --stage3-claim false --live-sla-proven false
 ```
 
-Create `scripts/ops/local_command_stub.py` to execute the same state machine against sandboxed temporary paths and stub services. This workstream runs only the default `--local-rehearsal` mode; it never invokes `--execute-on-host`. The runbook documents recovery: remain in maintenance, roll forward to a corrected closed artifact, otherwise restore the recorded known-good closed package; never restore an open artifact.
+The operational authorities are exact:
+
+- `verify_closed_release.py` rejects an archive/installed root unless both canonical artifact bytes and revisions, readiness manifest, Nginx configs, loopback systemd units/wrappers, rendered Compose network audit, and excluded developer override identity match package metadata. It rejects either unlock key in packaged environment material and writes SHA-256 evidence before maintenance begins.
+- `cache-purge-paths.json` requires `web-nuxt/.output`, `web-nuxt/.nuxt`, and `web-nuxt/.cache`; permits only additional cache/output paths enumerated by the old readiness manifest; protects `agent/data/sitemap-bundles`; and rejects absolute escape, `..`, symlink, release-root deletion, and protected descendants. `purge_launch_runtime.py` resolves every path before deletion and records each removed/absent/protected result.
+- `install_closed_release.sh` verifies the archive again, extracts to a sibling staging directory, installs backend requirements and Nuxt production dependencies, verifies `pip check` and `npm ls --omit=dev`, atomically installs the known-good closed tree, copies only digest-matched tracked systemd units, and never copies a developer override or unlock values.
+- `http-context.conf.template` defines the named operator CIDR allowlist. `server-enabled.conf` returns 503 to every non-operator request; `server-disabled.conf` contains no drain rule. `maintenance_mode.sh` atomically selects the include, runs `nginx -t`, and refuses to reload on invalid configuration.
+- `local_command_stub.py` executes this identical state machine against a temporary release root and stubbed systemctl/Nginx/listener commands, while the real Task 32 Nginx harness and Task 43 controlled Chrome worker run the HTTP/cache proofs. The local rehearsal is not allowed to replace the browser step with a stub.
+- Pre-reopen failure leaves maintenance enabled and first rolls forward to an explicitly supplied corrected closed package; otherwise it restores the recorded known-good closed package and repeats install/readiness/listener/Nginx/browser verification. Post-reopen failure immediately re-enables maintenance before the same recovery. The candidate/open artifact is never a recovery source.
+- `record_rollback_phase.py` writes append-only JSONL plus a final summary containing candidate/rollback identifiers, operator, package/config/ingress/unit digests, every phase command/result, listener and browser evidence paths, recovery action, `stage3_claim=false`, `live_sla_proven=false`, and observed local elapsed seconds only.
+
+This workstream invokes only `--local-rehearsal`. `--execute-on-host` remains an approval-gated runbook path and is not executed, deployed, or claimed as live evidence.
 
 - [ ] **Step 4: Run GREEN and Bash syntax checks**
 
@@ -3582,14 +4703,18 @@ Run: `python -m pytest tests/launch_safety/test_watchdog_contract.py tests/launc
 
 Run: `& 'C:\Program Files\Git\bin\bash.exe' -n scripts/ops/maintenance_mode.sh`
 
+Run: `& 'C:\Program Files\Git\bin\bash.exe' -n scripts/ops/install_closed_release.sh`
+
 Run: `& 'C:\Program Files\Git\bin\bash.exe' -n scripts/ops/rehearse_launch_rollback.sh`
 
-Expected: ordering, safety, maintenance, watchdog, and local elapsed-time evidence tests pass; no live SLA claim is emitted.
+Run: `& 'C:\Program Files\Git\bin\bash.exe' scripts/ops/rehearse_launch_rollback.sh --local-rehearsal` with `KNOWN_GOOD_CLOSED`, `LOCAL_RELEASE_ROOT`, `EVIDENCE_DIR`, `OPERATOR`, `OPERATOR_CIDR`, `CANDIDATE_RELEASE_ID`, `ROLLBACK_RELEASE_ID`, and `NGINX_PROBE_URL` set to the disposable Task 43/44 harness values.
+
+Expected: every Section 12 phase passes against the local harness; package/dependency/systemd-unit/daemon-reload evidence is recorded; purge paths are explicit and sitemap bundles are preserved; readiness/listener/Nginx/browser/cache proofs pass before reopen; failure-injection cases keep maintenance and restore only closed packages; the observed local duration is recorded without a live five-minute SLA claim.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add ops/nginx/maintenance scripts/ops/maintenance_mode.sh scripts/ops/rehearse_launch_rollback.sh scripts/ops/local_command_stub.py docs/runbooks/launch-safety-rollback.md scripts/ops/watchdog.sh ops/systemd/vl-watchdog.service ops/systemd/vl-watchdog.timer tests/launch_safety/test_watchdog_contract.py tests/launch_safety/test_rollback_runbook.py
+git add ops/nginx/maintenance ops/launch-safety/cache-purge-paths.json scripts/ops/maintenance_mode.sh scripts/ops/verify_closed_release.py scripts/ops/purge_launch_runtime.py scripts/ops/install_closed_release.sh scripts/ops/record_rollback_phase.py scripts/ops/rehearse_launch_rollback.sh scripts/ops/local_command_stub.py docs/runbooks/launch-safety-rollback.md scripts/ops/watchdog.sh ops/systemd/vl-watchdog.service ops/systemd/vl-watchdog.timer tests/launch_safety/test_watchdog_contract.py tests/launch_safety/test_rollback_runbook.py
 git commit -m "ops: add launch safety rollback rehearsal"
 ```
 
