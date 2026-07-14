@@ -6,11 +6,13 @@ import argparse
 import json
 import os
 import re
+import secrets
 import shutil
 import sqlite3
 import stat
 import subprocess
 import sys
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -43,9 +45,28 @@ DB_FILE = ROOT / "agent" / "data" / "vinhlong360.db"
 BACKUP_ROOT = ROOT / "scratch" / "backups"
 PG_REQUIRED_TABLES = ("entities", "entity_changes")
 LOCAL_BACKUP_NAME_RE = re.compile(r"^(?P<timestamp>\d{8}-\d{6})(?:-.+)?$")
+LOCAL_BACKUP_SCHEMA = "vinhlong360-local-backup-v1"
+LOCAL_BACKUP_TARGET = "local"
+LOCAL_BACKUP_TIMESTAMP_FORMAT = "%Y%m%d-%H%M%S"
+LOCAL_BACKUP_ARTIFACTS = {
+    "web/data.json": "data.json",
+    "agent/data/vinhlong360.db": "vinhlong360.db",
+}
+LOCAL_BACKUP_QUARANTINE_PREFIX = ".vinhlong360-quarantine-"
 PG_TABLE_TOC_RE = re.compile(
     r"^\s*\d+;\s+\d+\s+\d+\s+TABLE\s+public\s+(?P<name>\S+)(?:\s|$)"
 )
+
+
+@dataclass(frozen=True)
+class _OwnedLocalBackup:
+    path: Path
+    name: str
+    modified_at: float
+    device: int
+    inode: int
+    is_symlink: bool
+    is_reparse: bool
 
 
 def _utc_now() -> str:
@@ -79,6 +100,115 @@ def _file_size_human(path: Path) -> str:
     return f"{size:.1f} TB"
 
 
+def _lstat_status(path: Path):
+    status = path.lstat()
+    attributes = getattr(status, "st_file_attributes", 0)
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    return status, stat.S_ISLNK(status.st_mode), bool(attributes & reparse_flag)
+
+
+def _owned_local_backup(path: Path, managed_root: Path) -> _OwnedLocalBackup | None:
+    try:
+        status, is_symlink, is_reparse = _lstat_status(path)
+        if is_symlink or is_reparse or not stat.S_ISDIR(status.st_mode):
+            return None
+        candidate = path.resolve(strict=True)
+        if candidate.parent != managed_root:
+            return None
+        resolved_status, resolved_symlink, resolved_reparse = _lstat_status(candidate)
+        if resolved_symlink or resolved_reparse:
+            return None
+        if (resolved_status.st_dev, resolved_status.st_ino) != (status.st_dev, status.st_ino):
+            return None
+
+        name_match = LOCAL_BACKUP_NAME_RE.fullmatch(candidate.name)
+        if name_match is None:
+            return None
+        timestamp = name_match.group("timestamp")
+        parsed_timestamp = datetime.strptime(timestamp, LOCAL_BACKUP_TIMESTAMP_FORMAT)
+        if parsed_timestamp.strftime(LOCAL_BACKUP_TIMESTAMP_FORMAT) != timestamp:
+            return None
+
+        manifest_path = candidate / "manifest.json"
+        manifest_status, manifest_symlink, manifest_reparse = _lstat_status(manifest_path)
+        if manifest_symlink or manifest_reparse or not stat.S_ISREG(manifest_status.st_mode):
+            return None
+        with manifest_path.open(encoding="utf-8") as stream:
+            manifest = json.load(stream)
+        if not isinstance(manifest, dict):
+            return None
+        if manifest.get("schema") != LOCAL_BACKUP_SCHEMA:
+            return None
+        if manifest.get("target") != LOCAL_BACKUP_TARGET:
+            return None
+        if manifest.get("timestamp") != timestamp:
+            return None
+
+        copied = manifest.get("copied")
+        if not isinstance(copied, list) or not copied:
+            return None
+        if len(set(copied)) != len(copied):
+            return None
+        if any(source not in LOCAL_BACKUP_ARTIFACTS for source in copied):
+            return None
+        for source in copied:
+            artifact_path = candidate / LOCAL_BACKUP_ARTIFACTS[source]
+            artifact_status, artifact_symlink, artifact_reparse = _lstat_status(artifact_path)
+            if artifact_symlink or artifact_reparse or not stat.S_ISREG(artifact_status.st_mode):
+                return None
+
+        return _OwnedLocalBackup(
+            path=candidate,
+            name=candidate.name,
+            modified_at=status.st_mtime,
+            device=status.st_dev,
+            inode=status.st_ino,
+            is_symlink=is_symlink,
+            is_reparse=is_reparse,
+        )
+    except (OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+
+def _quarantine_path(managed_root: Path) -> Path | None:
+    for _attempt in range(16):
+        candidate = managed_root / f"{LOCAL_BACKUP_QUARANTINE_PREFIX}{secrets.token_hex(16)}"
+        try:
+            candidate.lstat()
+        except FileNotFoundError:
+            return candidate
+        except OSError:
+            return None
+    return None
+
+
+def _restore_quarantine(quarantine: Path, original: Path) -> None:
+    try:
+        original.lstat()
+        return
+    except FileNotFoundError:
+        pass
+    except OSError:
+        return
+    try:
+        os.replace(quarantine, original)
+    except OSError:
+        pass
+
+
+def _quarantine_identity_matches(record: _OwnedLocalBackup, quarantine: Path) -> bool:
+    try:
+        status, is_symlink, is_reparse = _lstat_status(quarantine)
+    except OSError:
+        return False
+    return (
+        not is_symlink
+        and not is_reparse
+        and stat.S_ISDIR(status.st_mode)
+        and (status.st_dev, status.st_ino) == (record.device, record.inode)
+    )
+
+
 def _cleanup_old_backups(
     keep: int = 5,
     max_age_days: int = 30,
@@ -92,49 +222,46 @@ def _cleanup_old_backups(
     if root.resolve() != managed_root:
         return
 
-    def _owned_backup(path: Path) -> Path | None:
-        try:
-            attributes = getattr(path.lstat(), "st_file_attributes", 0)
-            reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
-            if path.is_symlink() or attributes & reparse_flag:
-                return None
-            candidate = path.resolve(strict=True)
-            if not candidate.is_dir() or candidate.parent != managed_root:
-                return None
-            name_match = LOCAL_BACKUP_NAME_RE.fullmatch(candidate.name)
-            if name_match is None:
-                return None
-            manifest_path = candidate / "manifest.json"
-            if manifest_path.is_symlink():
-                return None
-            with manifest_path.open(encoding="utf-8") as stream:
-                manifest = json.load(stream)
-            if not isinstance(manifest, dict):
-                return None
-            if manifest.get("timestamp") != name_match.group("timestamp"):
-                return None
-            if not isinstance(manifest.get("copied"), list):
-                return None
-            return candidate
-        except (OSError, ValueError, json.JSONDecodeError):
-            return None
-
     directories = sorted(
         [
             candidate
             for path in root.iterdir()
-            if (candidate := _owned_backup(path)) is not None
+            if (candidate := _owned_local_backup(path, managed_root)) is not None
         ],
-        key=lambda path: path.stat().st_mtime,
+        key=lambda candidate: candidate.modified_at,
         reverse=True,
     )
     if len(directories) <= keep:
         return
     cutoff = datetime.now().timestamp() - max_age_days * 86400
-    for directory in directories[keep:]:
-        if directory.stat().st_mtime < cutoff:
-            shutil.rmtree(directory, ignore_errors=True)
-            print(f"[backup] cleanup: removed old backup {directory.name}")
+    for record in directories[keep:]:
+        if record.modified_at >= cutoff:
+            continue
+        if _owned_local_backup(record.path, managed_root) != record:
+            continue
+        quarantine = _quarantine_path(managed_root)
+        if quarantine is None:
+            continue
+        try:
+            os.replace(record.path, quarantine)
+        except OSError:
+            continue
+        if not _quarantine_identity_matches(record, quarantine):
+            _restore_quarantine(quarantine, record.path)
+            continue
+        try:
+            shutil.rmtree(quarantine)
+        except OSError:
+            _restore_quarantine(quarantine, record.path)
+            continue
+        try:
+            quarantine.lstat()
+        except FileNotFoundError:
+            print(f"[backup] cleanup: removed old backup {record.name}")
+        except OSError:
+            _restore_quarantine(quarantine, record.path)
+        else:
+            _restore_quarantine(quarantine, record.path)
 
 
 def _backup_sqlite(source_path: Path, artifact_path: Path) -> None:
@@ -166,6 +293,8 @@ def _backup_sqlite(source_path: Path, artifact_path: Path) -> None:
 def _create_local_backup(destination: Path, timestamp: str) -> tuple[Path, dict]:
     destination.mkdir(parents=True, exist_ok=True)
     manifest: dict = {
+        "schema": LOCAL_BACKUP_SCHEMA,
+        "target": LOCAL_BACKUP_TARGET,
         "timestamp": timestamp,
         "copied": [],
         "counts": {},

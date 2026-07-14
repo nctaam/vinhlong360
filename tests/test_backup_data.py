@@ -69,6 +69,8 @@ def test_main_creates_backup(tmp_path: Path, monkeypatch) -> None:
     assert len(dirs) == 1
 
     manifest = json.loads((dirs[0] / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["schema"] == "vinhlong360-local-backup-v1"
+    assert manifest["target"] == "local"
     assert "web/data.json" in manifest["copied"]
     assert manifest["counts"]["entities"] == 1
     assert "data.json" in manifest["sizes"]
@@ -199,9 +201,12 @@ def test_main_returns_1_when_nothing_to_backup(tmp_path: Path, monkeypatch) -> N
 def _write_owned_local_backup(root: Path, name: str, modified_at: float) -> Path:
     directory = root / name
     directory.mkdir(parents=True)
+    (directory / "data.json").write_text("{}", encoding="utf-8")
     (directory / "manifest.json").write_text(
         json.dumps(
             {
+                "schema": "vinhlong360-local-backup-v1",
+                "target": "local",
                 "timestamp": name[:15],
                 "copied": ["web/data.json"],
                 "counts": {},
@@ -212,6 +217,61 @@ def _write_owned_local_backup(root: Path, name: str, modified_at: float) -> Path
     )
     os.utime(directory, (modified_at, modified_at))
     return directory
+
+
+def test_cleanup_preserves_spoofed_impossible_timestamp_backup(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    backup_root = tmp_path / "backups"
+    monkeypatch.setattr(backup_data, "BACKUP_ROOT", backup_root)
+    backup_root.mkdir()
+    now = time.time()
+    spoofed = backup_root / "20269999-999999-user-data"
+    spoofed.mkdir()
+    marker = spoofed / "keep-me.txt"
+    marker.write_text("unrelated", encoding="utf-8")
+    (spoofed / "manifest.json").write_text(
+        json.dumps({"timestamp": "20269999-999999", "copied": []}),
+        encoding="utf-8",
+    )
+    os.utime(spoofed, (now - 40 * 86400, now - 40 * 86400))
+    _write_owned_local_backup(backup_root, "20260714-120000-new", now)
+
+    backup_data._cleanup_old_backups(keep=1, max_age_days=30)
+
+    assert marker.read_text(encoding="utf-8") == "unrelated"
+
+
+def test_cleanup_preserves_legacy_local_manifest_without_schema(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    backup_root = tmp_path / "backups"
+    monkeypatch.setattr(backup_data, "BACKUP_ROOT", backup_root)
+    backup_root.mkdir()
+    now = time.time()
+    legacy = backup_root / "20260101-000000-legacy"
+    legacy.mkdir()
+    marker = legacy / "data.json"
+    marker.write_text("legacy", encoding="utf-8")
+    (legacy / "manifest.json").write_text(
+        json.dumps(
+            {
+                "timestamp": "20260101-000000",
+                "copied": ["web/data.json"],
+                "counts": {},
+                "sizes": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+    os.utime(legacy, (now - 40 * 86400, now - 40 * 86400))
+    _write_owned_local_backup(backup_root, "20260714-120000-new", now)
+
+    backup_data._cleanup_old_backups(keep=1, max_age_days=30)
+
+    assert marker.read_text(encoding="utf-8") == "legacy"
 
 
 def test_main_custom_out_dir_preserves_unrelated_old_directories(
@@ -305,6 +365,56 @@ def test_cleanup_managed_root_removes_expired_owned_backup(
 
     assert not old_backup.exists()
     assert new_backup.exists()
+
+
+def test_cleanup_preserves_swapped_path_before_delete(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    backup_root = tmp_path / "backups"
+    monkeypatch.setattr(backup_data, "BACKUP_ROOT", backup_root)
+    backup_root.mkdir()
+    now = time.time()
+    old_backup = _write_owned_local_backup(
+        backup_root,
+        "20260101-000000-old",
+        now - 40 * 86400,
+    )
+    _write_owned_local_backup(backup_root, "20260714-120000-new", now)
+
+    replacement = tmp_path / "replacement"
+    replacement.mkdir()
+    (replacement / "keep-me.txt").write_text("unrelated", encoding="utf-8")
+    validated_original = tmp_path / "validated-original"
+    real_replace = os.replace
+    real_rmtree = backup_data.shutil.rmtree
+    swapped = False
+
+    def swap_original() -> None:
+        nonlocal swapped
+        real_replace(old_backup, validated_original)
+        real_replace(replacement, old_backup)
+        swapped = True
+
+    def replacing_replace(source, destination) -> None:
+        if Path(source) == old_backup and not swapped:
+            swap_original()
+        real_replace(source, destination)
+
+    def replacing_rmtree(path, *args, **kwargs) -> None:
+        if Path(path) == old_backup and not swapped:
+            swap_original()
+        real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(backup_data.os, "replace", replacing_replace)
+    monkeypatch.setattr(backup_data.shutil, "rmtree", replacing_rmtree)
+
+    backup_data._cleanup_old_backups(keep=1, max_age_days=30)
+
+    assert swapped
+    assert (old_backup / "keep-me.txt").read_text(encoding="utf-8") == "unrelated"
+    assert "removed old backup" not in capsys.readouterr().out
 
 
 def test_cleanup_keeps_minimum(tmp_path: Path, monkeypatch) -> None:
