@@ -32,9 +32,16 @@ import pytest
         "https://vinhlong360。vn/source",
         "https://service。local/source",
         "https://api。localhost/source",
+        "https://foo.test/source",
+        "https://foo.invalid/source",
+        "https://foo.example/source",
+        "https://foo.home.arpa/source",
+        "https://home.arpa/source",
         "http://224.0.0.1/source",
         "http://239.255.255.250/source",
         "http://[ff02::1]/source",
+        "http://[fec0::1]/source",
+        "http://[feff::1]/source",
     ],
 )
 def test_rejects_sources_without_an_external_http_url(source: object):

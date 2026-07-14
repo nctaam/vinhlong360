@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 
 _SELF_DOMAIN = "vinhlong360.vn"
+_SPECIAL_USE_DOMAINS = frozenset({"test", "invalid", "example", "home.arpa"})
 _HOST_LABEL = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
 _NUMERIC_HOST_LABEL = re.compile(r"(?:0x[0-9a-f]+|[0-9]+)")
 
@@ -32,6 +33,13 @@ def _canonical_domain(host: str) -> str | None:
         return None
 
 
+def _is_special_use_domain(host: str) -> bool:
+    return any(
+        host == suffix or host.endswith(f".{suffix}")
+        for suffix in _SPECIAL_USE_DOMAINS
+    )
+
+
 def _is_blocked_domain(host: str) -> bool:
     return (
         host == _SELF_DOMAIN
@@ -39,6 +47,7 @@ def _is_blocked_domain(host: str) -> bool:
         or host == "localhost"
         or host.endswith(".localhost")
         or host.endswith(".local")
+        or _is_special_use_domain(host)
     )
 
 
@@ -63,6 +72,7 @@ def _is_public_unicast(
         and not address.is_unspecified
         and not address.is_loopback
         and not address.is_link_local
+        and not getattr(address, "is_site_local", False)
     )
 
 
