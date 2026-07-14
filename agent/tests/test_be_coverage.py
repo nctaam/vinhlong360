@@ -652,16 +652,18 @@ class TestBE15EntityHistory:
         src = inspect.getsource(admin.get_entity_history)
         assert '"history"' in src
 
-    def test_log_entity_changes_tracks_diffs(self):
+    def test_log_entity_changes_tracks_diffs(self, isolated_sqlite_db):
+        isolated_sqlite_db.initialize()
         old = {"name": "Old Name", "summary": "Old summary"}
         new = {"name": "New Name", "summary": "Old summary"}
-        changes = db.log_entity_changes("test-entity", old, new)
-        if changes is not None:
-            assert any("name" in str(c) for c in (changes if isinstance(changes, list) else [changes]))
+        isolated_sqlite_db.log_entity_changes("test-entity", old, new)
+        history = isolated_sqlite_db.get_entity_history("test-entity")
+        assert len(history) == 1
+        assert history[0]["field"] == "name"
 
-    def test_log_entity_changes_no_diff_no_record(self):
+    def test_log_entity_changes_no_diff_no_record(self, isolated_sqlite_db):
         old = {"name": "Same", "summary": "Same"}
-        result = db.log_entity_changes("test-entity", old, old)
+        result = isolated_sqlite_db.log_entity_changes("test-entity", old, old)
         assert result is None or result == 0 or result == []
 
 

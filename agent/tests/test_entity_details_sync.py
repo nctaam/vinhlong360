@@ -20,7 +20,8 @@ TEST_ID = "zz-test-entity-details-sync"
 
 
 @pytest.fixture(autouse=True)
-def _cleanup():
+def _cleanup(isolated_sqlite_db, monkeypatch):
+    monkeypatch.setattr(sys.modules[__name__], "db", isolated_sqlite_db)
     yield
     db.delete_entity(TEST_ID)
 

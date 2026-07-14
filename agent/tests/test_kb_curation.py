@@ -65,29 +65,25 @@ def kb_with_provisional(tmp_path, monkeypatch):
 class TestDbWriteThrough:
     """GĐ-audit B1: promote/reject phải ghi DB (chat đọc DB) — không chỉ data.json."""
 
-    def test_promote_and_reject_hit_db(self, kb_with_provisional):
-        from database import db
-        db.initialize()
-        ids = ["prov-1", "prov-2"]
-        try:
-            db.upsert_entity({"id": "prov-1", "name": "Quán mới X", "type": "dish",
-                              "status": "provisional", "verified": False})
-            db.upsert_entity({"id": "prov-2", "name": "Điểm Y", "type": "attraction",
-                              "status": "provisional", "verified": False})
+    def test_promote_and_reject_hit_db(
+        self, kb_with_provisional, isolated_sqlite_db, monkeypatch
+    ):
+        import database
 
-            review = next(x for x in kb_curation.list_provisional() if x["id"] == "prov-1")
-            r = kb_curation.promote("prov-1", review["review_token"])
-            assert r["ok"] is True
-            got = db.get_entity("prov-1")
-            assert got is not None
-
-            # reject: entity bị xoá khỏi DB (trước fix B1, reject chỉ sửa data.json → chat vẫn thấy)
-            r2 = kb_curation.reject("prov-2")
-            assert r2["ok"] is True
-            assert db.get_entity("prov-2") is None
-        finally:
-            for i in ids:
-                db.delete_entity(i)
+        monkeypatch.setattr(database, "db", isolated_sqlite_db)
+        isolated_sqlite_db.upsert_entity({
+            "id": "prov-1", "name": "Quán mới X", "type": "dish",
+            "status": "provisional", "verified": False,
+        })
+        isolated_sqlite_db.upsert_entity({
+            "id": "prov-2", "name": "Điểm Y", "type": "attraction",
+            "status": "provisional", "verified": False,
+        })
+        review = next(x for x in kb_curation.list_provisional() if x["id"] == "prov-1")
+        assert kb_curation.promote("prov-1", review["review_token"])["ok"] is True
+        assert isolated_sqlite_db.get_entity("prov-1") is not None
+        assert kb_curation.reject("prov-2")["ok"] is True
+        assert isolated_sqlite_db.get_entity("prov-2") is None
 
 
 class TestListProvisional:

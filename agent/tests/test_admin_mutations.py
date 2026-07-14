@@ -20,6 +20,29 @@ H = {"X-Admin-Key": os.environ["ADMIN_API_KEY"]}
 _USE_PG = os.environ.get("USE_POSTGRES") == "true"
 
 
+@pytest.fixture(autouse=True)
+def isolate_admin_database(isolated_sqlite_db, monkeypatch):
+    import admin
+    import database
+
+    monkeypatch.setattr(database, "db", isolated_sqlite_db)
+    monkeypatch.setattr(admin, "db", isolated_sqlite_db)
+    # Keep reload from treating an emptied test DB as a fresh install and seeding real data.
+    isolated_sqlite_db.upsert_entity({
+        "id": "test-isolation-sentinel",
+        "name": "Test isolation sentinel",
+        "type": "attraction",
+    })
+    yield
+
+
+def test_admin_mutations_use_temporary_sqlite(isolated_sqlite_db):
+    assert pathlib.Path(isolated_sqlite_db.db_path).name == "isolated.db"
+    assert pathlib.Path(isolated_sqlite_db.db_path).resolve() != (
+        pathlib.Path(__file__).resolve().parents[1] / "data" / "vinhlong360.db"
+    ).resolve()
+
+
 # ── Entity CRUD ──────────────────────────────────────────────────────────
 
 def _create_entity(suffix="1"):

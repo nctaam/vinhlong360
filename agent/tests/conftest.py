@@ -20,6 +20,16 @@ os.environ.setdefault("LOG_LEVEL", "WARNING")
 os.environ.setdefault("ADMIN_API_KEY", "test-admin-key-12345")
 
 
+@pytest.fixture
+def isolated_sqlite_db(tmp_path, monkeypatch):
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    import database
+
+    instance = database.Database(str(tmp_path / "isolated.db"))
+    assert Path(instance.db_path).parent == tmp_path
+    return instance
+
+
 @pytest.fixture(autouse=True)
 def _reset_rate_limiters():
     """Reset MỌI rate-limiter TRƯỚC mỗi test.

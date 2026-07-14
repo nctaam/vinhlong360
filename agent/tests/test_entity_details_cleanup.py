@@ -18,13 +18,16 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "scripts"))
 import pytest  # noqa: E402
 import entity_details  # noqa: E402
 from database import db  # noqa: E402
+import cleanup_entity_jsonb  # noqa: E402
 from cleanup_entity_jsonb import run as cleanup_run, strippable_keys  # noqa: E402
 
 TEST_ID = "zz-test-c3-cleanup"
 
 
 @pytest.fixture(autouse=True)
-def _cleanup():
+def _cleanup(isolated_sqlite_db, monkeypatch):
+    monkeypatch.setattr(sys.modules[__name__], "db", isolated_sqlite_db)
+    monkeypatch.setattr(cleanup_entity_jsonb, "db", isolated_sqlite_db)
     yield
     os.environ.pop("ENTITY_DETAILS_TABLES", None)
     entity_details.reset_detail_cache()

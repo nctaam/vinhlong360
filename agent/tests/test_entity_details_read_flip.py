@@ -43,7 +43,8 @@ def flip(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def _cleanup():
+def _cleanup(isolated_sqlite_db, monkeypatch):
+    monkeypatch.setattr(sys.modules[__name__], "db", isolated_sqlite_db)
     yield
     os.environ.pop("ENTITY_DETAILS_TABLES", None)
     entity_details.reset_detail_cache()
