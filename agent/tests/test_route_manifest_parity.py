@@ -60,8 +60,8 @@ STATIC_SITEMAP_PATHS = (
     "/theo-mua",
     "/tuyen-duong",
 )
-BACKEND_PROXY_URL = re.compile(
-    r"^http://(?P<upstream>vl360_agent|vl360_bots)(?P<uri>/.*)?$"
+PROXY_TARGET_URL = re.compile(
+    r"^http://(?P<upstream>vl360_agent|vl360_bots|vl360_nuxt)(?P<uri>/.*)?$"
 )
 UPSTREAM_OWNERS = {"vl360_agent": "agent", "vl360_bots": "bot-gateway"}
 SEO_TRANSITION_LOCATION = (
@@ -72,8 +72,14 @@ SEO_TRANSITION_LOCATION = (
 
 
 @dataclass(frozen=True)
+class _NginxArgument:
+    value: str
+    quoted: bool
+
+
+@dataclass(frozen=True)
 class _NginxStatement:
-    parts: tuple[str, ...]
+    parts: tuple[_NginxArgument, ...]
     children: tuple[_NginxStatement, ...] | None
 
 
@@ -238,7 +244,7 @@ def _tokenize_nginx(source: str) -> list[tuple[str, str]]:
         elif character in {'"', "'"}:
             _flush_nginx_word(buffer, tokens)
             value, index = _read_nginx_quoted(source, index)
-            tokens.append(("word", value))
+            tokens.append(("quoted", value))
             continue
         elif character in "{};":
             _flush_nginx_word(buffer, tokens)
@@ -257,11 +263,11 @@ def _parse_nginx_statements(
     expect_close: bool = False,
 ) -> tuple[tuple[_NginxStatement, ...], int]:
     statements: list[_NginxStatement] = []
-    parts: list[str] = []
+    parts: list[_NginxArgument] = []
     while index < len(tokens):
         kind, value = tokens[index]
-        if kind == "word":
-            parts.append(value)
+        if kind in {"word", "quoted"}:
+            parts.append(_NginxArgument(value, kind == "quoted"))
         elif value == ";":
             if not parts:
                 raise AssertionError("empty Nginx directive")
@@ -288,21 +294,44 @@ def _parse_nginx_statements(
     return tuple(statements), index
 
 
-def _backend_reference(parts: tuple[str, ...]) -> tuple[str, str] | None:
-    references = [
-        part
-        for part in parts
-        if part.startswith(("http://vl360_agent", "http://vl360_bots"))
-    ]
-    if not references:
+def _unescape_nginx_unquoted(value: str) -> str:
+    normalized: list[str] = []
+    index = 0
+    while index < len(value):
+        if value[index] == "\\":
+            if index + 1 == len(value):
+                raise AssertionError(
+                    f"unsupported proxy target dangling escape: {value}"
+                )
+            index += 1
+        normalized.append(value[index])
+        index += 1
+    return "".join(normalized)
+
+
+def _backend_reference(
+    parts: tuple[_NginxArgument, ...],
+    location: str | None,
+) -> tuple[str, str] | None:
+    if not parts or parts[0].value != "proxy_pass":
         return None
-    if len(parts) != 2 or parts[0] != "proxy_pass" or len(references) != 1:
+    selector = location or "<outside location>"
+    if len(parts) != 2:
         raise AssertionError(
-            f"unparsed active backend upstream token: {' '.join(parts)}"
+            f"unsupported proxy target in {selector}: "
+            f"{' '.join(part.value for part in parts[1:])}"
         )
-    match = BACKEND_PROXY_URL.fullmatch(references[0])
+    target = parts[1]
+    normalized = (
+        target.value if target.quoted else _unescape_nginx_unquoted(target.value)
+    )
+    if "$" in normalized:
+        raise AssertionError(f"unsupported proxy target {target.value!r} in {selector}")
+    match = PROXY_TARGET_URL.fullmatch(normalized)
     if match is None:
-        raise AssertionError("backend proxy URL unexpectedly failed normalization")
+        raise AssertionError(f"unsupported proxy target {target.value!r} in {selector}")
+    if match.group("upstream") == "vl360_nuxt":
+        return None
     return match.group("upstream"), match.group("uri") or ""
 
 
@@ -313,17 +342,17 @@ def _collect_backend_locations(
     locations: list[tuple[str, str, str]] = []
     for statement in statements:
         if statement.children is None:
-            proxy = _backend_reference(statement.parts)
+            proxy = _backend_reference(statement.parts, location)
             if proxy is not None:
                 if location is None:
                     raise AssertionError("backend proxy outside parsed location")
                 locations.append((location, *proxy))
             continue
         child_location = location
-        if statement.parts[0] == "location":
+        if statement.parts[0].value == "location":
             if location is not None or len(statement.parts) < 2:
                 raise AssertionError("invalid nested or empty Nginx location")
-            child_location = " ".join(statement.parts[1:])
+            child_location = " ".join(part.value for part in statement.parts[1:])
         locations.extend(_collect_backend_locations(statement.children, child_location))
     return locations
 
@@ -717,6 +746,63 @@ server {
 
     with pytest.raises(AssertionError, match="backend proxy outside parsed location"):
         _backend_locations(source)
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "http://$backend",
+        "http://unknown_upstream",
+        "http://vl360_agent$uri",
+        "http://vl360_agent/$uri",
+    ],
+)
+def test_nginx_scanner_rejects_unresolved_or_unknown_proxy_target(target):
+    source = f"""
+location ~ ^/private(?:/|$) {{
+    set $backend vl360_agent;
+    proxy_pass {target};
+}}
+"""
+
+    with pytest.raises(
+        AssertionError,
+        match=rf"unsupported proxy target.*{re.escape(target)}.*private",
+    ):
+        _backend_locations(source)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        r"""
+location ~ ^/private(?:/|$) {
+    proxy_pass http://vl360_\agent/private;
+}
+""",
+        r"""
+location ~ ^/private(?:/|$) {
+    proxy_pass "http://vl360_\agent/private";
+}
+""",
+    ],
+)
+def test_nginx_scanner_normalizes_escaped_backend_literal(source):
+    locations = [("~ ^/private(?:/|$)", "vl360_agent", "/private")]
+
+    assert _backend_locations(source) == locations
+    with pytest.raises(AssertionError, match="unreviewed backend ingress: /private"):
+        _assert_backend_ingress_reviewed(locations)
+
+
+def test_nginx_scanner_allows_literal_nuxt_public_upstream():
+    source = """
+location / {
+    proxy_pass http://vl360_nuxt;
+}
+"""
+
+    assert _backend_locations(source) == []
 
 
 @pytest.mark.parametrize(
