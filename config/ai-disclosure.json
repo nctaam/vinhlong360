@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "revision": "ai-disclosure-v1",
+  "entity_ai": {
+    "short_label": "Minh họa AI",
+    "full_disclosure": "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.",
+    "accessible_description_key": "entity-ai-full"
+  },
+  "placeholder": {
+    "short_label": null,
+    "full_disclosure": "Minh họa đồ họa — chưa có ảnh riêng cho địa điểm.",
+    "accessible_description_key": "entity-placeholder-full"
+  },
+  "ugc_photo": {
+    "short_label": "Ảnh người dùng",
+    "full_disclosure": "Ảnh do người dùng cung cấp.",
+    "accessible_description_key": "ugc-photo-full"
+  },
+  "forbidden_entity_image_claims": [
+    "ảnh thật",
+    "real photo",
+    "documentary photo",
+    "on-site photo",
+    "ảnh chụp tại chỗ"
+  ]
+}
