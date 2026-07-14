@@ -364,6 +364,43 @@ def _publication_write_fields(entity: dict) -> tuple[object, object, bool, bool]
     )
 
 
+def _fts_unavailable_error(exc: sqlite3.OperationalError) -> bool:
+    message = str(exc).lower()
+    return "no such table: entities_fts" in message or "no such module: fts5" in message
+
+
+def _delete_entity_fts_terms(conn, row) -> bool:
+    if row is None:
+        return True
+    try:
+        conn.execute(
+            "INSERT INTO entities_fts(entities_fts, rowid, id, name, summary, type) "
+            "VALUES ('delete', ?, ?, ?, ?, ?)",
+            (row["rowid"], row["id"], row["name"], row["summary"], row["type"]),
+        )
+    except sqlite3.OperationalError as exc:
+        if not _fts_unavailable_error(exc):
+            raise
+        logger.debug("FTS5 delete skipped for entity %s", row["id"])
+        return False
+    return True
+
+
+def _insert_entity_fts_terms(conn, entity: dict) -> None:
+    row = conn.execute(
+        "SELECT rowid FROM entities WHERE id = ?", (entity["id"],)
+    ).fetchone()
+    try:
+        conn.execute(
+            "INSERT INTO entities_fts(rowid, id, name, summary, type) VALUES (?, ?, ?, ?, ?)",
+            (row["rowid"], entity["id"], entity["name"], entity.get("summary", ""), entity["type"]),
+        )
+    except sqlite3.OperationalError as exc:
+        if not _fts_unavailable_error(exc):
+            raise
+        logger.debug("FTS5 insert skipped for entity %s", entity["id"])
+
+
 # ══════════════════════════════════════════════════
 #  DATABASE CLASS
 # ══════════════════════════════════════════════════
@@ -779,6 +816,11 @@ class Database:
                         verified = CASE WHEN %s THEN EXCLUDED.verified ELSE entities.verified END
                 """, values)
         else:
+            old_fts_row = conn.execute(
+                "SELECT rowid, id, name, summary, type FROM entities WHERE id = ?",
+                (entity["id"],),
+            ).fetchone()
+            fts_available = _delete_entity_fts_terms(conn, old_fts_row)
             conn.execute("""
                     INSERT INTO entities
                     (id, type, name, summary, description, placeId, confidence, season,
@@ -805,12 +847,8 @@ class Database:
                         status = CASE WHEN ? THEN excluded.status ELSE entities.status END,
                         verified = CASE WHEN ? THEN excluded.verified ELSE entities.verified END
                 """, values)
-            try:
-                conn.execute(
-                    "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",
-                    (entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
-            except sqlite3.OperationalError:
-                logger.debug("FTS5 insert skipped for entity %s", entity["id"])
+            if fts_available:
+                _insert_entity_fts_terms(conn, entity)
 
     def reload_entity_details_cache(self) -> int:
         """GĐ-C C2: nạp lại cache detail-rows (test + vận hành sau khi sửa DB tay)."""

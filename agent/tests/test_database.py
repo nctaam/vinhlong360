@@ -8,6 +8,7 @@ Chạy trên SQLite tạm, không đụng DB thật.
 
 import json
 import inspect
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -187,6 +188,55 @@ def test_pg_upsert_publication_sql_and_parameter_order(monkeypatch):
     assert "status = CASE WHEN %s THEN EXCLUDED.status ELSE entities.status END" in captured["sql"]
     assert "verified = CASE WHEN %s THEN EXCLUDED.verified ELSE entities.verified END" in captured["sql"]
     assert captured["params"][-4:] == ("published", True, True, False)
+
+
+def test_upsert_refreshes_external_content_fts_without_rowid_drift(db):
+    with db._conn() as conn:
+        try:
+            conn.execute("SELECT rowid FROM entities_fts LIMIT 1").fetchall()
+        except sqlite3.OperationalError as exc:
+            if "no such table: entities_fts" in str(exc) or "no such module: fts5" in str(exc):
+                pytest.skip("SQLite build does not provide FTS5")
+            raise
+
+    entity_id = "fts-rowid-alignment"
+    db.upsert_entity({
+        "id": entity_id,
+        "type": "attraction",
+        "name": "olduniqueterm attraction",
+        "summary": "oldsummaryterm",
+    })
+    with db._conn() as conn:
+        original_rowid = conn.execute(
+            "SELECT rowid FROM entities WHERE id = ?", (entity_id,)
+        ).fetchone()["rowid"]
+
+    db.upsert_entity({
+        "id": entity_id,
+        "type": "attraction",
+        "name": "newuniqueterm attraction",
+        "summary": "newsummaryterm",
+    })
+
+    with db._conn() as conn:
+        current_rowid = conn.execute(
+            "SELECT rowid FROM entities WHERE id = ?", (entity_id,)
+        ).fetchone()["rowid"]
+        new_matches = conn.execute(
+            "SELECT rowid, id, name FROM entities_fts WHERE entities_fts MATCH ?",
+            ("newuniqueterm",),
+        ).fetchall()
+        old_matches = conn.execute(
+            "SELECT rowid, id FROM entities_fts WHERE entities_fts MATCH ?",
+            ("olduniqueterm",),
+        ).fetchall()
+
+    assert current_rowid == original_rowid
+    assert [(row["id"], row["name"]) for row in new_matches] == [
+        (entity_id, "newuniqueterm attraction")
+    ]
+    assert new_matches[0]["rowid"] == current_rowid
+    assert old_matches == []
 
 
 def test_get_missing_entity_returns_none(db):
