@@ -8,6 +8,7 @@ from urllib.parse import urlsplit
 
 _SELF_HOSTS = frozenset({"vinhlong360.vn", "www.vinhlong360.vn"})
 _HOST_LABEL = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
+_NUMERIC_HOST_LABEL = re.compile(r"(?:0x[0-9a-f]+|[0-9]+)")
 
 
 def _http_host(value: object) -> str | None:
@@ -40,6 +41,8 @@ def _is_external_host(host: str) -> bool:
         except UnicodeError:
             return False
         labels = ascii_host.split(".")
+        if all(_NUMERIC_HOST_LABEL.fullmatch(label) for label in labels):
+            return False
         return len(labels) > 1 and all(_HOST_LABEL.fullmatch(label) for label in labels)
 
 
