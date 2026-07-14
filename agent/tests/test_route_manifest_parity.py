@@ -61,7 +61,12 @@ LOCATION = re.compile(
     r"location\s+(?P<selector>[^{}]+?)\s*\{(?P<body>[^{}]*)\}", re.DOTALL
 )
 PROXY = re.compile(
-    r"proxy_pass\s+http://(?P<upstream>vl360_agent|vl360_bots)(?:/[^;]*)?;"
+    r"proxy_pass\s+http://(?P<upstream>vl360_agent|vl360_bots)(?P<uri>/[^;]*)?;"
+)
+SEO_TRANSITION_LOCATION = (
+    r"~ ^/(sitemap.*\.xml|robots\.txt)$",
+    "vl360_agent",
+    "",
 )
 
 
@@ -127,14 +132,104 @@ def _accepted_ingress_manifest() -> dict[str, object]:
     return candidate
 
 
-def _backend_locations(source: str) -> list[tuple[str, str]]:
-    locations: list[tuple[str, str]] = []
+def _validate_route_mutation_shape(mutation: object) -> None:
+    assert isinstance(mutation, dict)
+    assert set(mutation) == {"operation", "pointer", "value"}
+    assert mutation["operation"] == "append"
+    assert mutation["pointer"] in {"/exact_routes", "/dynamic_templates"}
+    assert isinstance(mutation["value"], dict)
+
+
+def _validate_route_variant_shape(variant: object, names: set[str]) -> None:
+    assert isinstance(variant, dict)
+    assert set(variant) == {"name", "mutations"}
+    assert isinstance(variant["name"], str) and variant["name"]
+    assert variant["name"] not in names
+    names.add(variant["name"])
+    assert isinstance(variant["mutations"], list) and variant["mutations"]
+    for mutation in variant["mutations"]:
+        _validate_route_mutation_shape(mutation)
+
+
+def _validate_route_row_shape(row: object, variant_names: set[str]) -> None:
+    required = {"target", "method", "classification", "canonical"}
+    assert isinstance(row, dict)
+    assert required <= row.keys() <= required | {"variant"}
+    assert type(row["target"]) is str
+    assert type(row["method"]) is str
+    assert type(row["classification"]) is str
+    assert row["canonical"] is None or type(row["canonical"]) is str
+    if row.get("variant") is not None:
+        _validate_route_variant_shape(row["variant"], variant_names)
+
+
+def _validate_route_corpus_shape() -> None:
+    assert isinstance(ROUTE_CORPUS, list)
+    variant_names: set[str] = set()
+    for row in ROUTE_CORPUS:
+        _validate_route_row_shape(row, variant_names)
+
+
+def _route_manifest_for_row(row: dict[str, object], tmp_path: Path):
+    candidate = _manifest_source()
+    variant = row.get("variant")
+    if variant is None:
+        return load_route_manifest()
+    for mutation in variant["mutations"]:
+        _apply_mutation(candidate, mutation)
+    validate_route_manifest_data(candidate)
+    fixture = tmp_path / f"{variant['name']}.json"
+    fixture.write_text(json.dumps(candidate, ensure_ascii=False), encoding="utf-8")
+    return load_route_manifest(fixture_path=fixture)
+
+
+def _backend_locations(source: str) -> list[tuple[str, str, str]]:
+    locations: list[tuple[str, str, str]] = []
     for match in LOCATION.finditer(source):
         proxy = PROXY.search(match.group("body"))
         if proxy:
             selector = " ".join(match.group("selector").split())
-            locations.append((selector, proxy.group("upstream")))
+            locations.append(
+                (selector, proxy.group("upstream"), proxy.group("uri") or "")
+            )
     return locations
+
+
+def _reviewable_backend_locations(
+    locations: list[tuple[str, str, str]],
+) -> list[tuple[str, str, str]]:
+    # Root SEO stays on the backend until Task 32 transfers its ingress ownership.
+    return [location for location in locations if location != SEO_TRANSITION_LOCATION]
+
+
+def _assert_backend_ingress_reviewed(
+    locations: list[tuple[str, str, str]],
+) -> None:
+    manifest = load_route_manifest()
+    reviewed = {item["prefix"] for item in manifest.data["sensitive_prefixes"]} | {
+        item["prefix"] for item in manifest.data["backend_ingress_exceptions"]
+    }
+    for selector, _upstream, _proxy_uri in _reviewable_backend_locations(locations):
+        for prefix in _selector_prefixes(selector):
+            assert prefix in reviewed, (
+                f"unreviewed backend ingress: {prefix} ({selector})"
+            )
+
+
+def _proxy_target(
+    location: tuple[str, str, str],
+    request_path: str,
+) -> tuple[str, str]:
+    selector, upstream, proxy_uri = location
+    assert _selector_matches(selector, request_path)
+    if proxy_uri == "":
+        return upstream, request_path
+    if selector.startswith("= "):
+        return upstream, proxy_uri
+    if selector.startswith("^~ "):
+        location_prefix = selector[3:]
+        return upstream, proxy_uri + request_path[len(location_prefix) :]
+    raise AssertionError(f"URI-bearing regex proxy is unsupported: {selector}")
 
 
 def _selector_matches(selector: str, path: str) -> bool:
@@ -190,10 +285,14 @@ def test_shared_validator_corpus_accepts_canonical_templates_and_matches_errors(
                 validate_route_manifest_data(candidate)
 
 
-def test_shared_route_corpus_matches_python_classifier():
-    manifest = load_route_manifest()
+def test_shared_route_corpus_has_reviewed_shape():
+    _validate_route_corpus_shape()
+
+
+def test_shared_route_corpus_matches_python_classifier(tmp_path):
 
     for row in ROUTE_CORPUS:
+        manifest = _route_manifest_for_row(row, tmp_path)
         decision = classify_request_target(
             row["target"], manifest, method=row["method"]
         )
@@ -245,7 +344,17 @@ for (const mutation of validatorCorpus) {{
 }}
 const ingressManifest = parseLaunchRouteManifest(ingressCandidate)
 const output = {{
-  decisions: routeCorpus.map(row => classifyRequestTarget(row.target, manifest, row.method)),
+  decisions: routeCorpus.map(row => {{
+    const candidate = structuredClone(manifestSource)
+    for (const mutation of row.variant?.mutations ?? []) applyMutation(candidate, mutation)
+    const rowManifest = parseLaunchRouteManifest(candidate)
+    const decision = classifyRequestTarget(row.target, rowManifest, row.method)
+    return {{
+      variant: row.variant?.name ?? null,
+      manifest: row.variant ? rowManifest : null,
+      ...decision,
+    }}
+  }}),
   static_sitemap_paths: extractStaticSitemapPaths(manifest),
   ingress_exceptions: ingressManifest.backend_ingress_exceptions,
 }}
@@ -275,12 +384,19 @@ process.stdout.write(JSON.stringify(output))
     python_output = {
         "decisions": [
             {
+                "variant": row.get("variant", {}).get("name"),
+                "manifest": (
+                    _plain_json(row_manifest.data) if row.get("variant") else None
+                ),
                 "classification": decision.classification,
                 "canonical_path": decision.canonical_path,
             }
             for row in ROUTE_CORPUS
+            for row_manifest in [_route_manifest_for_row(row, tmp_path)]
             for decision in [
-                classify_request_target(row["target"], manifest, method=row["method"])
+                classify_request_target(
+                    row["target"], row_manifest, method=row["method"]
+                )
             ]
         ],
         "static_sitemap_paths": list(extract_static_sitemap_paths(manifest)),
@@ -299,7 +415,9 @@ process.stdout.write(JSON.stringify(output))
     ]
 
 
-def _nginx_location_pair() -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
+def _nginx_location_pair() -> tuple[
+    list[tuple[str, str, str]], list[tuple[str, str, str]]
+]:
     http_locations = _backend_locations(NGINX_PATHS[0].read_text(encoding="utf-8"))
     https_locations = _backend_locations(NGINX_PATHS[1].read_text(encoding="utf-8"))
     return http_locations, https_locations
@@ -312,10 +430,45 @@ def test_nginx_backend_locations_have_http_https_parity():
     assert http_locations
 
 
+def test_nginx_admin_api_preserves_proxy_uri_rewrite_semantics():
+    http_locations, _https_locations = _nginx_location_pair()
+    by_selector = {location[0]: location for location in http_locations}
+
+    assert _proxy_target(by_selector["= /admin-api"], "/admin-api") == (
+        "vl360_agent",
+        "/admin",
+    )
+    assert _proxy_target(by_selector["^~ /admin-api/"], "/admin-api/users") == (
+        "vl360_agent",
+        "/admin/users",
+    )
+
+
+def test_nginx_regex_ingress_preserves_original_request_uri():
+    http_locations, _https_locations = _nginx_location_pair()
+    regex_locations = [
+        location for location in http_locations if location[0].startswith("~ ")
+    ]
+
+    assert regex_locations
+    assert all(proxy_uri == "" for _selector, _upstream, proxy_uri in regex_locations)
+
+
+def test_nginx_backend_location_parser_detects_proxy_uri_drift():
+    source = NGINX_PATHS[0].read_text(encoding="utf-8")
+    drifted = source.replace(
+        "proxy_pass http://vl360_agent/admin;",
+        "proxy_pass http://vl360_agent/admin-broken;",
+        1,
+    )
+
+    assert _backend_locations(source) != _backend_locations(drifted)
+
+
 def test_nginx_backend_locations_have_explicit_boundaries():
     http_locations, _https_locations = _nginx_location_pair()
 
-    for selector, _upstream in http_locations:
+    for selector, _upstream, _proxy_uri in http_locations:
         if selector.startswith("~ "):
             assert selector.endswith("(?:/|$)") or selector.endswith("$")
         else:
@@ -326,26 +479,27 @@ def test_nginx_backend_locations_have_explicit_boundaries():
 
 def test_nginx_backend_ingress_is_reviewed_by_segment_prefix():
     http_locations, _https_locations = _nginx_location_pair()
-    ingress_locations = [
-        location for location in http_locations if "sitemap" not in location[0]
-    ]
-    manifest = load_route_manifest()
-    prefixes = [item["prefix"] for item in manifest.data["sensitive_prefixes"]]
-    exceptions = [
-        item["prefix"] for item in manifest.data["backend_ingress_exceptions"]
-    ]
-    for selector, _upstream in ingress_locations:
-        reviewed_prefixes = (*prefixes, *exceptions)
-        for prefix in _selector_prefixes(selector):
-            assert prefix in reviewed_prefixes, (selector, prefix)
+    _assert_backend_ingress_reviewed(http_locations)
+
+
+def test_nginx_private_sitemap_is_not_transition_exempt():
+    source = """
+location ~ ^/private-sitemap(?:/|$) {
+    proxy_pass http://vl360_agent;
+}
+"""
+    locations = _backend_locations(source)
+
+    with pytest.raises(
+        AssertionError, match="unreviewed backend ingress: /private-sitemap"
+    ):
+        _assert_backend_ingress_reviewed(locations)
 
 
 def test_nginx_backend_boundaries_exclude_lookalike_public_paths():
     http_locations, _https_locations = _nginx_location_pair()
-    ingress_locations = [
-        location for location in http_locations if "sitemap" not in location[0]
-    ]
-    selectors = [selector for selector, _upstream in ingress_locations]
+    ingress_locations = _reviewable_backend_locations(http_locations)
+    selectors = [selector for selector, _upstream, _proxy_uri in ingress_locations]
     assert _matches_any_selector(selectors, "/api")
     assert _matches_any_selector(selectors, "/api/entities")
     assert not _matches_any_selector(selectors, "/apiary")

@@ -8,18 +8,29 @@ import {
   parseLaunchRouteManifest,
 } from '../server/utils/launch/launchRouteManifest'
 
+interface ManifestMutation {
+  operation: 'delete' | 'set' | 'append-copy' | 'append'
+  pointer: string
+  value?: unknown
+}
+
 interface RouteCorpusRow {
   target: string
   method: string
   classification: string
   canonical: string | null
+  variant?: {
+    name: string
+    mutations: Array<{
+      operation: 'append'
+      pointer: '/exact_routes' | '/dynamic_templates'
+      value: Record<string, unknown>
+    }>
+  }
 }
 
-interface ValidatorMutation {
+interface ValidatorMutation extends ManifestMutation {
   name: string
-  operation: 'delete' | 'set' | 'append-copy' | 'append'
-  pointer: string
-  value?: unknown
   error: string | null
 }
 
@@ -72,7 +83,7 @@ function pointerParent(document: unknown, pointer: string): [Record<string, unkn
   return [current as Record<string, unknown> | unknown[], parts.at(-1)!]
 }
 
-function applyMutation(document: unknown, mutation: ValidatorMutation): void {
+function applyMutation(document: unknown, mutation: ManifestMutation): void {
   const [parent, key] = pointerParent(document, mutation.pointer)
   if (mutation.operation === 'delete') {
     if (Array.isArray(parent)) parent.splice(Number(key), 1)
@@ -95,7 +106,59 @@ function applyMutation(document: unknown, mutation: ValidatorMutation): void {
   target.push(structuredClone(mutation.value))
 }
 
+function pointerValue(document: unknown, pointer: string): unknown {
+  let current = document
+  for (const part of pointerParts(pointer)) {
+    current = Array.isArray(current)
+      ? current[Number(part)]
+      : (current as Record<string, unknown>)[part]
+  }
+  return current
+}
+
+function manifestForRouteRow(row: RouteCorpusRow) {
+  const candidate = structuredClone(launchRouteManifest)
+  for (const mutation of row.variant?.mutations ?? []) applyMutation(candidate, mutation)
+  return parseLaunchRouteManifest(candidate)
+}
+
+function validateRouteCorpusShape(): void {
+  const required = ['target', 'method', 'classification', 'canonical']
+  const variantNames = new Set<string>()
+  for (const row of routeCorpus as unknown as Array<Record<string, unknown>>) {
+    expect(Object.keys(row).sort()).toEqual([
+      ...required,
+      ...('variant' in row ? ['variant'] : []),
+    ].sort())
+    expect(typeof row.target).toBe('string')
+    expect(typeof row.method).toBe('string')
+    expect(typeof row.classification).toBe('string')
+    expect(row.canonical === null || typeof row.canonical === 'string').toBe(true)
+    if (!('variant' in row)) continue
+    const variant = row.variant as Record<string, unknown>
+    expect(Object.keys(variant).sort()).toEqual(['mutations', 'name'])
+    expect(typeof variant.name).toBe('string')
+    expect((variant.name as string).length).toBeGreaterThan(0)
+    expect(variantNames.has(variant.name as string)).toBe(false)
+    variantNames.add(variant.name as string)
+    expect(Array.isArray(variant.mutations)).toBe(true)
+    expect((variant.mutations as unknown[]).length).toBeGreaterThan(0)
+    for (const rawMutation of variant.mutations as Array<Record<string, unknown>>) {
+      expect(Object.keys(rawMutation).sort()).toEqual(['operation', 'pointer', 'value'])
+      expect(rawMutation.operation).toBe('append')
+      expect(['/exact_routes', '/dynamic_templates']).toContain(rawMutation.pointer)
+      expect(rawMutation.value).not.toBeNull()
+      expect(typeof rawMutation.value).toBe('object')
+      expect(Array.isArray(rawMutation.value)).toBe(false)
+    }
+  }
+}
+
 describe('launch route runtime parity corpus', () => {
+  it('validates the shared route corpus shape', () => {
+    validateRouteCorpusShape()
+  })
+
   it('accepts the canonical manifest templates before applying mutations', () => {
     const parsed = parseLaunchRouteManifest(structuredClone(launchRouteManifest))
 
@@ -121,7 +184,11 @@ describe('launch route runtime parity corpus', () => {
   })
 
   it.each(routeCorpus)('classifies $method $target', (row) => {
-    const decision = classifyRequestTarget(row.target, launchRouteManifest, row.method)
+    const manifest = manifestForRouteRow(row)
+    for (const mutation of row.variant?.mutations ?? []) {
+      expect(pointerValue(manifest, mutation.pointer)).toContainEqual(mutation.value)
+    }
+    const decision = classifyRequestTarget(row.target, manifest, row.method)
 
     expect(decision).toEqual({
       classification: row.classification,

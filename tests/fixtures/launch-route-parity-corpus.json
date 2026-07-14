@@ -36,5 +36,7 @@
   {"target": "/du-lich#section", "method": "GET", "classification": "reject", "canonical": null},
   {"target": "/nel\u0085route", "method": "GET", "classification": "noindex-follow-public", "canonical": "/nel\u0085route"},
   {"target": "/nel%C2%85route", "method": "GET", "classification": "redirect-canonical", "canonical": "/nel\u0085route"},
+  {"target": "/admin/reviewed", "method": "GET", "classification": "crawl-blocked-sensitive", "canonical": "/admin/reviewed", "variant": {"name": "sensitive-over-exact", "mutations": [{"operation": "append", "pointer": "/exact_routes", "value": {"path": "/admin/reviewed", "classification": "indexable-public", "sitemap": false}}]}},
+  {"target": "/system/trace", "method": "GET", "classification": "crawl-blocked-sensitive", "canonical": "/system/trace", "variant": {"name": "sensitive-over-dynamic", "mutations": [{"operation": "append", "pointer": "/dynamic_templates", "value": {"template": "/system/{trace_id}", "authority": "fixed-noindex", "sitemap": false}}]}},
   {"target": "/unknown", "method": "GET", "classification": "noindex-follow-public", "canonical": "/unknown"}
 ]
