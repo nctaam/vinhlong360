@@ -673,6 +673,32 @@ def test_loaded_constructor_rejects_fake_and_subclass_artifacts():
         )
 
 
+def test_loaded_constructor_rejects_non_exact_sha256_types():
+    class AlwaysEqualSha:
+        def __eq__(self, other: object) -> bool:
+            return True
+
+        def __ne__(self, other: object) -> bool:
+            return False
+
+    class ShaSubclass(str):
+        pass
+
+    canonical_sha256 = load_ai_disclosure().artifact.sha256
+    for sha256 in (AlwaysEqualSha(), ShaSubclass(canonical_sha256)):
+        artifact = load_ai_disclosure().artifact
+        object.__setattr__(artifact, "sha256", sha256)
+
+        with pytest.raises(TypeError) as error:
+            LoadedAiDisclosure(**_constructor_kwargs(artifact))
+
+        assert type(error.value) is TypeError
+        assert str(error.value) == (
+            "loaded AI disclosure artifact sha256 must be an exact str"
+        )
+        assert artifact.sha256 is sha256
+
+
 def test_loaded_constructor_reconstructs_and_owns_artifact(tmp_path: Path):
     input_artifact = load_ai_disclosure().artifact
     loaded = LoadedAiDisclosure(**_constructor_kwargs(input_artifact))

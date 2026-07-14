@@ -193,6 +193,8 @@ def _copy_matches(value: object, expected: DisclosureCopy) -> bool:
 def _owned_artifact(value: object) -> LoadedArtifact:
     if type(value) is not LoadedArtifact:
         raise TypeError("loaded AI disclosure artifact must be an exact LoadedArtifact")
+    if type(value.sha256) is not str:
+        raise TypeError("loaded AI disclosure artifact sha256 must be an exact str")
     return LoadedArtifact(
         path=Path(value.path),
         raw=memoryview(value.raw).tobytes(),
