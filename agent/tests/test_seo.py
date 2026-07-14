@@ -5,6 +5,7 @@ import os
 import time
 
 import seo
+from launch_evidence import PolicyEvidence
 
 
 def _write_data(path, entity_id, name):
@@ -14,6 +15,7 @@ def _write_data(path, entity_id, name):
             # entity reaches the sitemap; this test asserts cache invalidation, not
             # index-worthiness.
             {"id": entity_id, "name": name, "type": "product", "updatedAt": "2026-06-12",
+             "status": "published", "verified": True,
              "summary": " ".join(["từ"] * 220)},
         ],
         "relationships": [],
@@ -62,7 +64,40 @@ def test_sitemap_cache_invalidates_with_data_mtime(tmp_path, monkeypatch):
     assert b"entity-one" not in second.body
 
 
-# ── P0-1: cổng chất lượng trước index (is_index_worthy) ──────────────────────
+def test_sitemap_cache_invalidates_with_policy_fingerprint(tmp_path, monkeypatch):
+    data_path = tmp_path / "data.json"
+    _write_data(data_path, "entity-one", "Entity One")
+    monkeypatch.setattr(seo, "DATA_PATH", data_path)
+    monkeypatch.setattr(seo, "_data", None)
+    monkeypatch.setattr(seo, "_data_mtime_ns", None)
+    monkeypatch.setattr(seo, "_by_id_cache", None)
+    monkeypatch.setattr(seo, "_sitemap_cache", None)
+
+    evidence = [
+        PolicyEvidence("a" * 64, "launch-indexing-policy-v1", "index-policy-v1")
+    ]
+    calls: list[str] = []
+    real_decide_entity = seo.decide_entity
+
+    def recording_decision(entity, current_evidence):
+        calls.append(current_evidence.policy_fingerprint)
+        return real_decide_entity(entity, current_evidence)
+
+    monkeypatch.setattr(seo, "current_policy_evidence", lambda: evidence[0])
+    monkeypatch.setattr(seo, "decide_entity", recording_decision)
+
+    seo.sitemap()
+    seo.sitemap()
+    assert calls == ["a" * 64]
+
+    evidence[0] = PolicyEvidence(
+        "b" * 64, "launch-indexing-policy-v1", "index-policy-v1"
+    )
+    seo.sitemap()
+    assert calls == ["a" * 64, "b" * 64]
+
+
+# ── Entity sitemap delegates to index_policy ─────────────────────────────────
 
 def _text(n: int) -> str:
     """A descriptive string of exactly ``n`` whitespace-separated words."""
@@ -70,7 +105,8 @@ def _text(n: int) -> str:
 
 
 def _entity(**over):
-    e = {"id": "e1", "name": "Test", "type": "attraction", "updatedAt": "2026-06-12"}
+    e = {"id": "e1", "name": "Test", "type": "attraction", "updatedAt": "2026-06-12",
+         "status": "published", "verified": True}
     e.update(over)
     return e
 
@@ -81,63 +117,40 @@ def _reset_seo(monkeypatch, data_path):
         monkeypatch.setattr(seo, attr, None)
 
 
-def test_is_index_worthy_rich_text_no_image():
-    # ≥200 descriptive words carries enough unique value on its own.
-    assert seo.is_index_worthy(_entity(summary=_text(220))) is True
+def test_seo_has_no_legacy_entity_indexability_authority():
+    for legacy_name in (
+        "is_index_worthy",
+        "_is_public",
+        "_page_word_count",
+        "_has_real_image",
+        "INDEX_MIN_WORDS",
+        "INDEX_RICH_WORDS",
+    ):
+        assert not hasattr(seo, legacy_name)
 
 
-def test_is_index_worthy_medium_text_with_real_image():
-    assert seo.is_index_worthy(
-        _entity(summary=_text(120), images=["https://ex.com/p.jpg"])
-    ) is True
+def test_sitemap_does_not_credit_an_image_below_130_words(tmp_path, monkeypatch):
+    payload = {
+        "entities": [
+            _entity(id="ai-only", summary=_text(100), images=["https://ex.com/p.jpg"]),
+        ],
+        "relationships": [], "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    _reset_seo(monkeypatch, data_path)
 
-
-def test_is_index_worthy_medium_text_without_image_excluded():
-    # 100–199 words needs a real image to be index-worthy.
-    assert seo.is_index_worthy(_entity(summary=_text(120))) is False
-
-
-def test_is_index_worthy_thin_text_with_image_excluded():
-    # Below the floor, a real image does not rescue a thin page.
-    assert seo.is_index_worthy(
-        _entity(summary=_text(30), images=["https://ex.com/p.jpg"])
-    ) is False
-
-
-def test_is_index_worthy_provisional_excluded_even_if_rich():
-    assert seo.is_index_worthy(
-        _entity(summary=_text(300), status="provisional")
-    ) is False
-
-
-def test_page_word_count_sums_distinct_lead_and_body():
-    # The detail page renders the summary lead AND the description body.
-    entity = _entity(summary=" ".join(["dan"] * 120), description=" ".join(["than"] * 90))
-    assert seo._page_word_count(entity) == 210
-
-
-def test_page_word_count_dedups_verbatim_body():
-    # A description copied verbatim from the summary adds no content, so it is
-    # counted once, not twice.
-    text = _text(150)
-    assert seo._page_word_count(_entity(summary=text, description=text)) == 150
-
-
-def test_is_index_worthy_counts_summary_plus_description():
-    # A page clears the bar on the sum of its two distinct blocks even when
-    # neither block alone is long enough.
-    n = seo.INDEX_RICH_WORDS - 10  # each block alone stays under the bar
-    lead = " ".join(["dan"] * n)
-    body = " ".join(["than"] * n)
-    assert seo.is_index_worthy(_entity(summary=lead, description=body)) is True
+    assert b"ai-only" not in seo.sitemap().body
 
 
 def test_sitemap_excludes_thin_entity_pages(tmp_path, monkeypatch):
     payload = {
         "entities": [
             {"id": "rich-entity", "name": "Rich", "type": "attraction",
+             "status": "published", "verified": True,
              "summary": _text(220), "updatedAt": "2026-06-12"},
             {"id": "thin-entity", "name": "Thin", "type": "attraction",
+             "status": "published", "verified": True,
              "summary": _text(20), "updatedAt": "2026-06-12"},
         ],
         "relationships": [], "itineraries": [],
@@ -155,8 +168,10 @@ def test_sitemap_changefreq_by_type_and_no_lastmod(tmp_path, monkeypatch):
     import re
     payload = {
         "entities": [
-            {"id": "hist-1", "name": "H", "type": "history", "summary": _text(200), "updatedAt": "2026-06-12"},
-            {"id": "ev-1", "name": "E", "type": "event", "summary": _text(200), "updatedAt": "2026-06-12"},
+            {"id": "hist-1", "name": "H", "type": "history", "status": "published", "verified": True,
+             "summary": _text(200), "updatedAt": "2026-06-12"},
+            {"id": "ev-1", "name": "E", "type": "event", "status": "published", "verified": True,
+             "summary": _text(200), "updatedAt": "2026-06-12"},
         ],
         "relationships": [], "itineraries": [],
     }
@@ -174,11 +189,16 @@ def test_sitemap_changefreq_by_type_and_no_lastmod(tmp_path, monkeypatch):
 def test_sitemap_thin_ward_excluded(tmp_path, monkeypatch):
     payload = {
         "entities": [
-            {"id": "thin-ward", "name": "TW", "type": "place", "summary": _text(20)},
-            {"id": "rich-ward", "name": "RW", "type": "place", "summary": _text(80)},
-            {"id": "hub-ward", "name": "HW", "type": "place", "summary": _text(10)},
-            {"id": "child-1", "name": "C1", "type": "dish", "placeId": "hub-ward", "summary": _text(200)},
-            {"id": "child-2", "name": "C2", "type": "dish", "placeId": "hub-ward", "summary": _text(200)},
+            {"id": "thin-ward", "name": "TW", "type": "place", "status": "published", "verified": True,
+             "summary": _text(20)},
+            {"id": "rich-ward", "name": "RW", "type": "place", "status": "published", "verified": True,
+             "summary": _text(80)},
+            {"id": "hub-ward", "name": "HW", "type": "place", "status": "published", "verified": True,
+             "summary": _text(10)},
+            {"id": "child-1", "name": "C1", "type": "dish", "status": "published", "verified": True,
+             "placeId": "hub-ward", "summary": _text(200)},
+            {"id": "child-2", "name": "C2", "type": "dish", "status": "published", "verified": True,
+             "placeId": "hub-ward", "summary": _text(200)},
         ],
         "relationships": [], "itineraries": [],
     }
@@ -195,8 +215,9 @@ def test_sitemap_place_loop_skips_provisional(tmp_path, monkeypatch):
     payload = {
         "entities": [
             {"id": "prov-place", "name": "P", "type": "place",
-             "status": "provisional", "updatedAt": "2026-06-12"},
+             "status": "provisional", "verified": True, "updatedAt": "2026-06-12"},
             {"id": "good-place", "name": "G", "type": "place",
+             "status": "published", "verified": True,
              "summary": _text(80), "updatedAt": "2026-06-12"},
         ],
         "relationships": [], "itineraries": [],

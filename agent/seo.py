@@ -25,6 +25,13 @@ logger = logging.getLogger(__name__)
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, Response
 
+if __package__:
+    from .index_policy import decide_entity, is_publicly_eligible
+    from .launch_evidence import PolicyEvidence, current_policy_evidence
+else:
+    from index_policy import decide_entity, is_publicly_eligible
+    from launch_evidence import PolicyEvidence, current_policy_evidence
+
 router = APIRouter()
 
 DATA_PATH = Path(__file__).parent.parent / "web" / "data.json"
@@ -198,7 +205,7 @@ _data: dict[str, Any] | None = None
 _data_mtime_ns: int | None = None
 _by_id_cache: dict[str, dict[str, Any]] | None = None
 _by_id_cache_key: int | None = None
-_sitemap_cache: tuple[int, int, str, str] | None = None
+_sitemap_cache: tuple[int, int, str, str, str] | None = None
 
 
 def _load() -> dict[str, Any]:
@@ -681,7 +688,7 @@ def _jsonld_place_containment(ld: dict[str, Any], entity: dict[str, Any],
     for e in by_id.values():
         if not isinstance(e, dict) or e.get("type") == "place":
             continue
-        if str(e.get("placeId")) == entity_id and _is_public(e):
+        if str(e.get("placeId")) == entity_id and _is_listing_visible(e):
             contained.append({
                 "@type": TYPE_SCHEMA.get(str(e.get("type")), "Thing"),
                 "name": e.get("name") or str(e.get("id")),
@@ -1118,7 +1125,7 @@ def build_area_jsonld(area_slug: str, data: dict[str, Any] | None = None) -> dic
         for e in data.get("entities", []):
             if not isinstance(e, dict) or not e.get("id") or e.get("type") == "place":
                 continue
-            if not _is_public(e):
+            if not _is_listing_visible(e):
                 continue
             if _entity_area(e, by_id_map) == area_slug:
                 contained.append({
@@ -1163,7 +1170,7 @@ def entity_jsonld(entity_id: str):
     data = _load_seo_data()
     by_id = _by_id(data)
     entity = by_id.get(entity_id)
-    if not entity or not _is_public(entity):
+    if not entity or not _is_listing_visible(entity):
         raise HTTPException(status_code=404, detail="not found")
     entity_ld = build_entity_jsonld(entity, by_id, relationships=data.get("relationships", []))
     faq = build_faq_jsonld(entity)
@@ -1175,7 +1182,7 @@ def entity_jsonld(entity_id: str):
     return entity_ld
 
 
-def _is_public(entity: dict[str, Any]) -> bool:
+def _is_listing_visible(entity: dict[str, Any]) -> bool:
     """An entity is listable in public collection schema unless it is explicitly
     provisional or explicitly marked verified=False (Track-H: only surface
     moderated public entities)."""
@@ -1186,60 +1193,12 @@ def _is_public(entity: dict[str, Any]) -> bool:
     return True
 
 
-# P0-1: index-eligibility thresholds. A detail page is only worth submitting to
-# search when it carries enough unique value; thin data-fragment pages stay out
-# of the sitemap (and are marked noindex,follow on-page) so the long tail can't
-# trip Google's "scaled content abuse" signal. Tune against real data.
-INDEX_MIN_WORDS = 100   # floor: below this a page is thin regardless of imagery
-INDEX_RICH_WORDS = 130  # index on text alone above this (summary + description)
-# Calibrated against web/data.json (2026-07): ~405 entity pages index, ~1200 thin
-# pages get noindex,follow — within the ~300-500 target. Raise for a stricter bar.
-
-
-def _page_word_count(entity: dict[str, Any]) -> int:
-    """Word count of the descriptive prose that actually renders on the detail
-    page: the summary lead plus the description body. The body is deduped when it
-    is a verbatim copy of the lead (which adds no content for the reader)."""
-    summary = entity.get("summary")
-    description = entity.get("description")
-    s = summary.strip() if isinstance(summary, str) else ""
-    d = description.strip() if isinstance(description, str) else ""
-    if d and d == s:
-        return len(s.split())
-    return len(s.split()) + len(d.split())
-
-
-def _has_real_image(entity: dict[str, Any]) -> bool:
-    """True if the entity carries at least one real (http) image URL."""
-    images = entity.get("images")
-    if not isinstance(images, list):
-        images = [images] if images else []
-    return any(_image_url(img) for img in images)
-
-
-def is_index_worthy(entity: dict[str, Any]) -> bool:
-    """P0-1 quality gate: whether an entity detail page should be indexed.
-
-    A public entity qualifies only when it carries substantial unique value —
-    at least ``INDEX_RICH_WORDS`` descriptive words, or ``INDEX_MIN_WORDS`` words
-    plus a real image. Everything thinner is kept out of the sitemap and marked
-    ``noindex, follow`` on-page, so the long tail of data-fragment pages cannot
-    dilute site-wide quality signals.
-    """
-    if not _is_public(entity):
-        return False
-    words = _page_word_count(entity)
-    if words >= INDEX_RICH_WORDS:
-        return True
-    return words >= INDEX_MIN_WORDS and _has_real_image(entity)
-
-
 def _collection_items(data: dict[str, Any], types: Any, require_attr: Any) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     for e in data.get("entities", []):
         if not isinstance(e, dict) or e.get("type") not in types or not e.get("id"):
             continue
-        if not _is_public(e):
+        if not _is_listing_visible(e):
             continue
         if require_attr:
             attrs = e.get("attributes") if isinstance(e.get("attributes"), dict) else {}
@@ -1332,10 +1291,14 @@ def _sitemap_static_urls() -> list[str]:
 
 def _sitemap_place_children(data: dict[str, Any]) -> dict[str, int]:
     # P1-5: đếm con nội dung mỗi place — ward là HUB, giá trị đến từ children chứ không
-    # từ độ dài summary, nên gate riêng (không dùng is_index_worthy theo số từ).
+    # từ độ dài summary; ward quality remains a separate reviewed policy step.
     _place_children: dict[str, int] = {}
     for e in data.get("entities", []):
-        pid = e.get("placeId") if isinstance(e, dict) else None
+        pid = (
+            e.get("placeId")
+            if isinstance(e, dict) and is_publicly_eligible(e)
+            else None
+        )
         if pid:
             _place_children[str(pid)] = _place_children.get(str(pid), 0) + 1
     return _place_children
@@ -1346,7 +1309,7 @@ def _sitemap_place_urls(data: dict[str, Any], place_children: dict[str, int]) ->
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
             continue
-        if not _is_public(entity):  # P0-1: keep provisional/unverified places out of the sitemap
+        if not is_publicly_eligible(entity):
             continue
         # P1-5: bỏ ward mỏng (ít con VÀ summary ngắn) khỏi sitemap — hết thin-doorway.
         children = place_children.get(str(entity["id"]), 0)
@@ -1362,13 +1325,15 @@ def _sitemap_place_urls(data: dict[str, Any], place_children: dict[str, int]) ->
     return urls
 
 
-def _sitemap_detail_urls(data: dict[str, Any]) -> list[str]:
+def _sitemap_detail_urls(
+    data: dict[str, Any], evidence: PolicyEvidence
+) -> list[str]:
     urls: list[str] = []
     seen: set[str] = set()
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
             continue
-        if not is_index_worthy(entity):  # P0-1: quality gate (subsumes _is_public) — thin pages stay out
+        if not decide_entity(entity, evidence).indexable:
             continue
         loc = _entity_url(str(entity["id"]))
         if loc in seen:
@@ -1414,14 +1379,22 @@ def sitemap():
     now = datetime.now(UTC).strftime("%Y-%m-%d")
     mtime_ns = _data_mtime_ns or 0
     data_key = id(data)
-    if _sitemap_cache and _sitemap_cache[0] == mtime_ns and _sitemap_cache[1] == data_key and _sitemap_cache[2] == now:
-        return _sitemap_response(_sitemap_cache[3])
+    evidence = current_policy_evidence()
+    fingerprint = evidence.policy_fingerprint
+    if (
+        _sitemap_cache
+        and _sitemap_cache[0] == mtime_ns
+        and _sitemap_cache[1] == data_key
+        and _sitemap_cache[2] == now
+        and _sitemap_cache[3] == fingerprint
+    ):
+        return _sitemap_response(_sitemap_cache[4])
 
     urls: list[str] = []
     urls.extend(_sitemap_static_urls())
     place_children = _sitemap_place_children(data)
     urls.extend(_sitemap_place_urls(data, place_children))
-    urls.extend(_sitemap_detail_urls(data))
+    urls.extend(_sitemap_detail_urls(data, evidence))
     urls.extend(_sitemap_itinerary_urls(data))
 
     if len(urls) > 50000:
@@ -1431,7 +1404,7 @@ def sitemap():
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
     xml += "\n".join(urls)
     xml += "\n</urlset>"
-    _sitemap_cache = (mtime_ns, data_key, now, xml)
+    _sitemap_cache = (mtime_ns, data_key, now, fingerprint, xml)
     return _sitemap_response(xml)
 
 
@@ -1470,10 +1443,10 @@ def _media_caption_tag(entity: dict[str, Any]) -> str:
     return ""
 
 
-def _media_entity_url(entity: Any) -> str | None:
+def _media_entity_url(entity: Any, evidence: PolicyEvidence) -> str | None:
     if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
         return None
-    if not _is_public(entity):
+    if not decide_entity(entity, evidence).indexable:
         return None
     imgs = entity.get("images")
     if not isinstance(imgs, list) or not imgs:
@@ -1495,9 +1468,10 @@ def sitemap_media():
     """GĐ8.5: image sitemap — entity detail URLs with their image(s) so Google
     Images can index them. Auto-populates as entities gain images (GĐ8.2/8.4)."""
     data = _load()
+    evidence = current_policy_evidence()
     urls: list[str] = []
     for entity in data.get("entities", []):
-        url_block = _media_entity_url(entity)
+        url_block = _media_entity_url(entity, evidence)
         if url_block:
             urls.append(url_block)
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Test 4 module HARD (SP01 T3) — fixture vi-phạm bị bắt / sạch pass / neg-context pass."""
 import json
+import inspect
 import subprocess
 import sys
 from pathlib import Path
@@ -122,21 +123,37 @@ def test_typed_required_skips_when_not_staged(tmp_path):
 
 # ---------- R10.8 RICH-source (SP2 T3) ----------
 
-RICH_TEXT = "chữ " * 140  # ≥130 từ → is_index_worthy
+RICH_TEXT = "chữ " * 140  # ≥130 từ → entity indexable
 
 
 def test_rich_source_catches_rich_entity_without_source(tmp_path):
     from checks.check_data_schema import DataRichSourceCheck
 
     _mk_data(tmp_path, [
-        {"id": "rich-0src", "type": "dish", "name": "A", "summary": "s", "description": RICH_TEXT, "source": []},
-        {"id": "rich-ok", "type": "dish", "name": "B", "summary": "s", "description": RICH_TEXT,
+        {"id": "rich-0src", "type": "dish", "name": "A", "status": "published", "verified": True,
+         "summary": "s", "description": RICH_TEXT, "source": []},
+        {"id": "rich-ok", "type": "dish", "name": "B", "status": "published", "verified": True,
+         "summary": "s", "description": RICH_TEXT,
          "source": [{"url": "https://example.org"}]},
-        {"id": "thin-0src", "type": "dish", "name": "C", "summary": "s", "description": "ngắn", "source": []},
+        {"id": "thin-0src", "type": "dish", "name": "C", "status": "published", "verified": True,
+         "summary": "s", "description": "ngắn", "source": []},
+        {"id": "private-rich", "type": "dish", "name": "D", "status": "private", "verified": True,
+         "summary": "s", "description": RICH_TEXT, "source": []},
+        {"id": "ai-100", "type": "dish", "name": "E", "status": "published", "verified": True,
+         "summary": "chữ " * 100, "images": ["/img/ai.webp"], "source": []},
     ])
     r = DataRichSourceCheck(root=tmp_path).run()
     assert r["level"] == "hard-ratchet" and r["rule"] == "R10.8"
     assert r["count"] == 1 and "rich-0src" in r["violations"][0]["msg"]
+
+
+def test_rich_source_uses_the_central_index_policy_not_seo():
+    from checks.check_data_schema import DataRichSourceCheck
+
+    source = inspect.getsource(DataRichSourceCheck.check_entities)
+    assert "from index_policy import decide_entity" in source
+    assert "from launch_evidence import current_policy_evidence" in source
+    assert "from seo" not in source
 
 
 def test_rich_source_skips_when_not_staged(tmp_path):

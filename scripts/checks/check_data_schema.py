@@ -4,7 +4,7 @@
 
 Chỉ chạy khi data.json nằm trong tập file (staged) hoặc chạy --all.
 Enum type đọc THẬT từ TYPE_META (web-nuxt/composables/useConstants.ts);
-per-type schema tái dùng agent/entity_schemas.py; RICH tái dùng agent/seo.py
+per-type schema tái dùng agent/entity_schemas.py; RICH tái dùng agent/index_policy.py
 — 1 nguồn sự thật, không chế chuẩn thứ hai.
 """
 from __future__ import annotations
@@ -20,7 +20,7 @@ DATA_REL = "web/data.json"
 BBOX = {"lat": (9.0, 10.6), "lng": (105.6, 107.1)}  # tỉnh Vĩnh Long mới (siết từ validator cũ)
 REQUIRED = ["id", "type", "name", "summary"]
 
-# agent/ của repo THẬT (không phụ thuộc root fixture — validate/is_index_worthy là logic thuần)
+# agent/ của repo THẬT (không phụ thuộc root fixture — policy là logic thuần)
 _AGENT_DIR = str(Path(__file__).resolve().parents[2] / "agent")
 
 
@@ -137,7 +137,7 @@ class DataTypedRequiredCheck(_DataJsonCheck):
 
 
 class DataRichSourceCheck(_DataJsonCheck):
-    """R10.8 — entity RICH (index-worthy theo agent/seo.py) phải có nguồn.
+    """R10.8 — non-place entity indexable theo agent/index_policy.py phải có nguồn.
 
     Hard-ratchet baseline 0: thành quả 0/405 RICH thiếu nguồn không được thụt lùi.
     """
@@ -147,11 +147,13 @@ class DataRichSourceCheck(_DataJsonCheck):
     def check_entities(self, entities: list) -> list:
         if _AGENT_DIR not in sys.path:
             sys.path.insert(0, _AGENT_DIR)
-        from seo import is_index_worthy  # lazy — import seo ~1s, chỉ khi data.json trong tập file
+        from index_policy import decide_entity
+        from launch_evidence import current_policy_evidence
 
         violations = []
+        evidence = current_policy_evidence()
         for e in entities:
-            if not is_index_worthy(e):
+            if e.get("type") == "place" or not decide_entity(e, evidence).indexable:
                 continue
             s = e.get("source")
             has = bool(s) if isinstance(s, list) else bool(str(s or "").strip())

@@ -1,0 +1,15 @@
+{
+  "inputs": {
+    "route_revision": "launch-indexing-policy-v1",
+    "route_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+    "disclosure_revision": "ai-disclosure-v1",
+    "disclosure_digest": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "semantic_revisions": {
+    "index_policy": "index-policy-v1",
+    "response_matrix": "launch-safety-matrix-v1",
+    "cache_isolation": "launch-cache-isolation-v1",
+    "sitemap_protocol": "pinned-sitemap-bundle-v1"
+  },
+  "expected_sha256": "6397813fbaafc0800f0d1cadb87214b3d250c72bc03b5a15a7386ba979b2926e"
+}

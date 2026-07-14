@@ -389,6 +389,8 @@ def test_sitemap_includes_all_public_entities(monkeypatch, sample_data):
     # the public-inclusion contract: non-place → P0-1 word gate; place → P1-5 ward
     # summary gate (≥60 words). Thin-page exclusion is covered by dedicated tests.
     for _e in sample_data["entities"]:
+        _e["status"] = "published"
+        _e["verified"] = True
         _e["summary"] = " ".join(["từ"] * 220)
     monkeypatch.setattr(seo, "_load", lambda: sample_data)
     monkeypatch.setattr(seo, "_sitemap_cache", None)
@@ -406,8 +408,10 @@ def test_sitemap_includes_all_public_entities(monkeypatch, sample_data):
 def test_sitemap_excludes_provisional(monkeypatch):
     data = {
         "entities": [
-            {"id": "ok", "name": "OK", "type": "attraction", "summary": " ".join(["từ"] * 220)},
-            {"id": "prov", "name": "Provisional", "type": "attraction", "status": "provisional"},
+            {"id": "ok", "name": "OK", "type": "attraction", "status": "published",
+             "verified": True, "summary": " ".join(["từ"] * 220)},
+            {"id": "prov", "name": "Provisional", "type": "attraction", "status": "provisional",
+             "verified": True},
         ],
         "relationships": [],
         "itineraries": [],
@@ -625,23 +629,23 @@ def test_safe_date_strips_whitespace():
     assert seo._safe_date("  2026-06-15  ", None) == "2026-06-15"
 
 
-# ── _is_public ────────────────────────────────────────────────────────────
+# ── listing visibility compatibility ──────────────────────────────────────
 
 
-def test_is_public_normal():
-    assert seo._is_public({"id": "x", "type": "attraction"}) is True
+def test_listing_visible_normal():
+    assert seo._is_listing_visible({"id": "x", "type": "attraction"}) is True
 
 
-def test_is_public_provisional():
-    assert seo._is_public({"status": "provisional"}) is False
+def test_listing_visible_provisional():
+    assert seo._is_listing_visible({"status": "provisional"}) is False
 
 
-def test_is_public_unverified():
-    assert seo._is_public({"verified": False}) is False
+def test_listing_visible_unverified():
+    assert seo._is_listing_visible({"verified": False}) is False
 
 
-def test_is_public_verified_true():
-    assert seo._is_public({"verified": True}) is True
+def test_listing_visible_verified_true():
+    assert seo._is_listing_visible({"verified": True}) is True
 
 
 # ── robots.txt ────────────────────────────────────────────────────────────
@@ -669,7 +673,8 @@ def test_robots_disallows_admin():
 def test_media_sitemap_includes_image_title(monkeypatch):
     data = {
         "entities": [
-            {"id": "e1", "name": "Test Entity", "type": "attraction", "images": ["https://example.com/img.jpg"]},
+            {"id": "e1", "name": "Test Entity", "type": "attraction", "status": "published",
+             "verified": True, "summary": "chữ " * 130, "images": ["https://example.com/img.jpg"]},
         ],
         "relationships": [],
         "itineraries": [],
@@ -689,6 +694,9 @@ def test_media_sitemap_includes_license_from_image_credits(monkeypatch):
                 "id": "e1",
                 "name": "Test Entity",
                 "type": "attraction",
+                "status": "published",
+                "verified": True,
+                "summary": "chữ " * 130,
                 "area": "vinh-long",
                 "images": ["https://example.com/img.jpg"],
                 "attributes": {
@@ -718,8 +726,10 @@ def test_media_sitemap_includes_license_from_image_credits(monkeypatch):
 def test_media_sitemap_excludes_non_public(monkeypatch):
     data = {
         "entities": [
-            {"id": "e1", "name": "OK", "type": "attraction", "images": ["https://example.com/a.jpg"]},
-            {"id": "e2", "name": "Hidden", "type": "attraction", "status": "provisional", "images": ["https://example.com/b.jpg"]},
+            {"id": "e1", "name": "OK", "type": "attraction", "status": "published", "verified": True,
+             "summary": "chữ " * 130, "images": ["https://example.com/a.jpg"]},
+            {"id": "e2", "name": "Hidden", "type": "attraction", "status": "provisional", "verified": True,
+             "summary": "chữ " * 130, "images": ["https://example.com/b.jpg"]},
         ],
         "relationships": [],
         "itineraries": [],
@@ -1326,6 +1336,7 @@ def test_sitemap_xml_special_chars_in_id(monkeypatch):
     data = {
         "entities": [
             {"id": "test&entity<>", "name": "Test", "type": "attraction",
+             "status": "published", "verified": True,
              "summary": " ".join(["từ"] * 220)},
         ],
         "relationships": [],
@@ -1692,8 +1703,10 @@ def test_load_invalidates_by_id_cache_on_data_change(monkeypatch, tmp_path):
 def test_sitemap_deduplicates_entity_urls(monkeypatch):
     data = {
         "entities": [
-            {"id": "dup", "name": "Dup 1", "type": "attraction", "summary": " ".join(["từ"] * 220)},
-            {"id": "dup", "name": "Dup 2", "type": "dish", "summary": " ".join(["từ"] * 220)},
+            {"id": "dup", "name": "Dup 1", "type": "attraction", "status": "published",
+             "verified": True, "summary": " ".join(["từ"] * 220)},
+            {"id": "dup", "name": "Dup 2", "type": "dish", "status": "published",
+             "verified": True, "summary": " ".join(["từ"] * 220)},
         ],
         "relationships": [],
         "itineraries": [],
@@ -2289,7 +2302,8 @@ def test_sitemap_media_has_caption(monkeypatch):
     data = {
         "entities": [
             {"id": "cap-e", "name": "Captioned", "type": "attraction",
-             "summary": "Beautiful place in VL", "confidence": 0.9,
+             "status": "published", "verified": True,
+             "summary": "Beautiful place in VL", "description": "chữ " * 130, "confidence": 0.9,
              "images": ["https://example.com/img.jpg"]},
         ],
         "relationships": [],
@@ -2395,7 +2409,8 @@ def test_sitemap_media_no_caption_without_summary(monkeypatch):
     data = {
         "entities": [
             {"id": "no-cap", "name": "NoCap", "type": "attraction",
-             "confidence": 0.9,
+             "status": "published", "verified": True,
+             "description": "chữ " * 130, "confidence": 0.9,
              "images": ["https://example.com/img.jpg"]},
         ],
         "relationships": [],

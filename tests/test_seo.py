@@ -30,8 +30,10 @@ def test_sitemap_includes_all_public_non_place_entities_and_itineraries(monkeypa
     monkeypatch.setattr(seo, "_data", {
         "entities": [
             {"id": "xa-vinh-long", "type": "place", "name": "Xa Vinh Long", "updatedAt": "2026-01-01"},
-            {"id": "lich-su-a", "type": "history", "name": "Lich su A", "summary": rich, "updatedAt": "2026-01-02"},
-            {"id": "nhan-vat-b", "type": "person", "name": "Nhan vat B", "summary": rich},
+            {"id": "lich-su-a", "type": "history", "name": "Lich su A", "status": "published",
+             "verified": True, "summary": rich, "updatedAt": "2026-01-02"},
+            {"id": "nhan-vat-b", "type": "person", "name": "Nhan vat B", "status": "published",
+             "verified": True, "summary": rich},
         ],
         "relationships": [],
         "itineraries": [{"id": "hanh-trinh-a", "title": "Hanh trinh A", "updatedAt": "2026-01-03"}],
