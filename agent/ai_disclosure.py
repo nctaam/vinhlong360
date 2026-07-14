@@ -190,6 +190,17 @@ def _copy_matches(value: object, expected: DisclosureCopy) -> bool:
     )
 
 
+def _owned_artifact(value: object) -> LoadedArtifact:
+    if type(value) is not LoadedArtifact:
+        raise TypeError("loaded AI disclosure artifact must be an exact LoadedArtifact")
+    return LoadedArtifact(
+        path=Path(value.path),
+        raw=memoryview(value.raw).tobytes(),
+        data=value.data,
+        sha256=value.sha256,
+    )
+
+
 @dataclass(frozen=True)
 class LoadedAiDisclosure:
     artifact: LoadedArtifact
@@ -200,7 +211,8 @@ class LoadedAiDisclosure:
     forbidden_entity_image_claims: tuple[str, ...]
 
     def __post_init__(self) -> None:
-        artifact_components = _validated_components(self.artifact.data)
+        owned_artifact = _owned_artifact(self.artifact)
+        artifact_components = _validated_components(owned_artifact.data)
         if type(self.forbidden_entity_image_claims) not in {list, tuple}:
             raise ValueError("loaded AI disclosure does not match artifact data")
         owned_claims = tuple(claim for claim in self.forbidden_entity_image_claims)
@@ -214,6 +226,7 @@ class LoadedAiDisclosure:
             or owned_claims != artifact_components[4]
         ):
             raise ValueError("loaded AI disclosure does not match artifact data")
+        object.__setattr__(self, "artifact", owned_artifact)
         object.__setattr__(self, "revision", artifact_components[0])
         object.__setattr__(self, "entity_ai", artifact_components[1])
         object.__setattr__(self, "placeholder", artifact_components[2])

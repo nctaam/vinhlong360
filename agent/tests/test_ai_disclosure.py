@@ -19,6 +19,7 @@ from ai_disclosure import (
     canonical_disclosure_copy,
     load_ai_disclosure,
 )
+from launch_artifacts import LoadedArtifact
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -337,6 +338,20 @@ def _write_fixture(tmp_path: Path, name: str, data: object) -> Path:
     return fixture
 
 
+def _constructor_kwargs(artifact: object) -> dict[str, Any]:
+    canonical = canonical_disclosure_copy()
+    return {
+        "artifact": artifact,
+        "revision": "ai-disclosure-v1",
+        "entity_ai": DisclosureCopy(**canonical["entity_ai"]),
+        "placeholder": DisclosureCopy(**canonical["placeholder"]),
+        "ugc_photo": DisclosureCopy(**canonical["ugc_photo"]),
+        "forbidden_entity_image_claims": list(
+            canonical["forbidden_entity_image_claims"]
+        ),
+    }
+
+
 def test_ai_disclosure_supports_repository_package_import():
     script = (
         f"import sys; sys.path.insert(0, {str(REPO_ROOT)!r}); "
@@ -498,9 +513,11 @@ def test_mutation_helper_rejects_unsafe_or_misspelled_pointers(
         "error": "unused",
     }
 
-    with pytest.raises(AssertionError, match=re.escape(expected_message)):
+    with pytest.raises(AssertionError) as error:
         _apply_mutation(candidate, mutation)
 
+    assert type(error.value) is AssertionError
+    assert str(error.value) == expected_message
     assert candidate == before
 
 
@@ -607,10 +624,7 @@ def test_loaded_constructor_owns_claims_and_rejects_artifact_divergence():
         full_disclosure=canonical["entity_ai"]["full_disclosure"],
         accessible_description_key="entity-ai-full",
     )
-    with pytest.raises(
-        ValueError,
-        match="loaded AI disclosure does not match artifact data",
-    ):
+    with pytest.raises(ValueError) as error:
         LoadedAiDisclosure(
             artifact=loaded.artifact,
             revision=loaded.revision,
@@ -619,6 +633,124 @@ def test_loaded_constructor_owns_claims_and_rejects_artifact_divergence():
             ugc_photo=loaded.ugc_photo,
             forbidden_entity_image_claims=loaded.forbidden_entity_image_claims,
         )
+
+    assert type(error.value) is ValueError
+    assert str(error.value) == "loaded AI disclosure does not match artifact data"
+
+
+def test_loaded_constructor_rejects_fake_and_subclass_artifacts():
+    canonical_artifact = load_ai_disclosure().artifact
+
+    class MissingIntegrityArtifact:
+        data = canonical_artifact.data
+
+    class InvalidIntegrityArtifact:
+        path = canonical_artifact.path
+        raw = b"{}"
+        data = canonical_artifact.data
+        sha256 = "0" * 64
+
+    class UnsupportedLoadedArtifact(LoadedArtifact):
+        pass
+
+    subclass_artifact = UnsupportedLoadedArtifact(
+        path=canonical_artifact.path,
+        raw=canonical_artifact.raw,
+        data=canonical_artifact.data,
+        sha256=canonical_artifact.sha256,
+    )
+    for artifact in (
+        MissingIntegrityArtifact(),
+        InvalidIntegrityArtifact(),
+        subclass_artifact,
+    ):
+        with pytest.raises(TypeError) as error:
+            LoadedAiDisclosure(**_constructor_kwargs(artifact))
+
+        assert type(error.value) is TypeError
+        assert str(error.value) == (
+            "loaded AI disclosure artifact must be an exact LoadedArtifact"
+        )
+
+
+def test_loaded_constructor_reconstructs_and_owns_artifact(tmp_path: Path):
+    input_artifact = load_ai_disclosure().artifact
+    loaded = LoadedAiDisclosure(**_constructor_kwargs(input_artifact))
+    owned_path = loaded.artifact.path
+    owned_raw = loaded.artifact.raw
+    owned_data = loaded.artifact.data
+    owned_sha256 = loaded.artifact.sha256
+
+    assert (
+        loaded.artifact is input_artifact,
+        loaded.artifact.path is input_artifact.path,
+        loaded.artifact.raw is input_artifact.raw,
+        loaded.artifact.data is input_artifact.data,
+        loaded.artifact.path,
+        loaded.artifact.raw,
+        loaded.artifact.data,
+        loaded.artifact.sha256,
+    ) == (
+        False,
+        False,
+        False,
+        False,
+        input_artifact.path,
+        input_artifact.raw,
+        input_artifact.data,
+        input_artifact.sha256,
+    )
+
+    object.__setattr__(input_artifact, "path", tmp_path / "changed.json")
+    object.__setattr__(input_artifact, "raw", b"{}")
+    object.__setattr__(
+        input_artifact,
+        "data",
+        MappingProxyType({"schema_version": 1}),
+    )
+    object.__setattr__(input_artifact, "sha256", "0" * 64)
+
+    assert (
+        loaded.artifact.path,
+        loaded.artifact.raw,
+        loaded.artifact.data,
+        loaded.artifact.sha256,
+    ) == (owned_path, owned_raw, owned_data, owned_sha256)
+
+
+@pytest.mark.parametrize(
+    "field, value, expected_message",
+    [
+        (
+            "sha256",
+            "0" * 64,
+            "artifact SHA-256 does not match raw bytes",
+        ),
+        (
+            "raw",
+            b"{}",
+            "artifact SHA-256 does not match raw bytes",
+        ),
+        (
+            "data",
+            MappingProxyType({"schema_version": 1}),
+            "artifact data does not match raw bytes",
+        ),
+    ],
+)
+def test_loaded_constructor_revalidates_artifact_raw_data_and_sha(
+    field: str,
+    value: object,
+    expected_message: str,
+):
+    artifact = load_ai_disclosure().artifact
+    object.__setattr__(artifact, field, value)
+
+    with pytest.raises(ValueError) as error:
+        LoadedAiDisclosure(**_constructor_kwargs(artifact))
+
+    assert type(error.value) is ValueError
+    assert str(error.value) == expected_message
 
 
 def test_low_level_artifact_loader_has_no_domain_import_cycle():
