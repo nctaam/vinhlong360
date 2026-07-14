@@ -197,6 +197,35 @@ def test_rich_source_reports_structured_policy_artifact_load_failure(
     assert "sensitive artifact path" not in violation["msg"]
 
 
+def test_rich_source_checks_policy_artifacts_without_data_json_staged(
+    tmp_path,
+    monkeypatch,
+):
+    from checks.check_data_schema import DataRichSourceCheck
+
+    monkeypatch.syspath_prepend(str(ROOT / "agent"))
+    import launch_evidence
+
+    def fail_to_load_evidence():
+        raise RuntimeError("sensitive artifact path")
+
+    monkeypatch.setattr(
+        launch_evidence,
+        "current_policy_evidence",
+        fail_to_load_evidence,
+    )
+
+    result = DataRichSourceCheck(root=tmp_path).run(
+        files=["agent/launch_evidence.py"]
+    )
+
+    assert result["count"] == 1
+    violation = result["violations"][0]
+    assert violation["code"] == "index-policy-artifact-load-failed"
+    assert "RuntimeError" in violation["msg"]
+    assert "sensitive artifact path" not in violation["msg"]
+
+
 def test_rich_source_uses_the_central_index_policy_not_seo():
     from checks.check_data_schema import DataRichSourceCheck
 

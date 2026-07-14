@@ -144,6 +144,26 @@ class DataRichSourceCheck(_DataJsonCheck):
 
     name, level, rule = "data_rich_source", "hard-ratchet", "R10.8"
 
+    def _artifact_load_failure(self, exc: Exception) -> dict:
+        return {
+            "file": DATA_REL,
+            "line": 0,
+            "rule": self.rule,
+            "code": "index-policy-artifact-load-failed",
+            "msg": f"index policy artifact load failed ({type(exc).__name__})",
+        }
+
+    def run(self, files: list[str] | None = None) -> dict:
+        if _AGENT_DIR not in sys.path:
+            sys.path.insert(0, _AGENT_DIR)
+        from launch_evidence import current_policy_evidence
+
+        try:
+            current_policy_evidence()
+        except Exception as exc:
+            return self._result([self._artifact_load_failure(exc)])
+        return super().run(files)
+
     def check_entities(self, entities: list) -> list:
         if _AGENT_DIR not in sys.path:
             sys.path.insert(0, _AGENT_DIR)
@@ -155,13 +175,7 @@ class DataRichSourceCheck(_DataJsonCheck):
         try:
             evidence = current_policy_evidence()
         except Exception as exc:
-            return [{
-                "file": DATA_REL,
-                "line": 0,
-                "rule": self.rule,
-                "code": "index-policy-artifact-load-failed",
-                "msg": f"index policy artifact load failed ({type(exc).__name__})",
-            }]
+            return [self._artifact_load_failure(exc)]
         for e in entities:
             if e.get("type") == "place" or not decide_entity(e, evidence).indexable:
                 continue

@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 from urllib.parse import urlsplit
 
 
-_SELF_HOSTS = frozenset({"vinhlong360.vn", "www.vinhlong360.vn"})
+_SELF_DOMAIN = "vinhlong360.vn"
 _HOST_LABEL = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
 _NUMERIC_HOST_LABEL = re.compile(r"(?:0x[0-9a-f]+|[0-9]+)")
 
@@ -25,25 +25,53 @@ def _http_host(value: object) -> str | None:
     return host
 
 
-def _is_external_host(host: str) -> bool:
-    if (
-        host in _SELF_HOSTS
+def _canonical_domain(host: str) -> str | None:
+    try:
+        return host.encode("idna").decode("ascii").rstrip(".").lower()
+    except UnicodeError:
+        return None
+
+
+def _is_blocked_domain(host: str) -> bool:
+    return (
+        host == _SELF_DOMAIN
+        or host.endswith(f".{_SELF_DOMAIN}")
         or host == "localhost"
         or host.endswith(".localhost")
         or host.endswith(".local")
-    ):
+    )
+
+
+def _is_external_domain(host: str) -> bool:
+    ascii_host = _canonical_domain(host)
+    if ascii_host is None or _is_blocked_domain(ascii_host):
         return False
+    labels = ascii_host.split(".")
+    if all(_NUMERIC_HOST_LABEL.fullmatch(label) for label in labels):
+        return False
+    return len(labels) > 1 and all(_HOST_LABEL.fullmatch(label) for label in labels)
+
+
+def _is_public_unicast(
+    address: ipaddress.IPv4Address | ipaddress.IPv6Address,
+) -> bool:
+    return (
+        address.is_global
+        and not address.is_private
+        and not address.is_multicast
+        and not address.is_reserved
+        and not address.is_unspecified
+        and not address.is_loopback
+        and not address.is_link_local
+    )
+
+
+def _is_external_host(host: str) -> bool:
     try:
-        return ipaddress.ip_address(host).is_global
+        address = ipaddress.ip_address(host)
     except ValueError:
-        try:
-            ascii_host = host.encode("idna").decode("ascii")
-        except UnicodeError:
-            return False
-        labels = ascii_host.split(".")
-        if all(_NUMERIC_HOST_LABEL.fullmatch(label) for label in labels):
-            return False
-        return len(labels) > 1 and all(_HOST_LABEL.fullmatch(label) for label in labels)
+        return _is_external_domain(host)
+    return _is_public_unicast(address)
 
 
 def _is_external_http_url(value: object) -> bool:
