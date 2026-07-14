@@ -75,6 +75,7 @@ SEO_TRANSITION_LOCATION = (
 class _NginxArgument:
     value: str
     quoted: bool
+    had_escape: bool
 
 
 @dataclass(frozen=True)
@@ -205,59 +206,74 @@ def _route_manifest_for_row(row: dict[str, object], tmp_path: Path):
     return load_route_manifest(fixture_path=fixture)
 
 
-def _flush_nginx_word(buffer: list[str], tokens: list[tuple[str, str]]) -> None:
+def _flush_nginx_word(
+    buffer: list[str],
+    tokens: list[tuple[str, str, bool]],
+    had_escape: bool,
+) -> bool:
     if buffer:
-        tokens.append(("word", "".join(buffer)))
+        tokens.append(("word", "".join(buffer), had_escape))
         buffer.clear()
+    return False
 
 
-def _read_nginx_quoted(source: str, start: int) -> tuple[str, int]:
+def _read_nginx_quoted(source: str, start: int) -> tuple[str, int, bool]:
     quote = source[start]
     value: list[str] = []
+    had_escape = False
     index = start + 1
     while index < len(source):
         character = source[index]
         if character == "\\" and index + 1 < len(source):
+            had_escape = True
             value.append(source[index + 1])
             index += 2
             continue
         if character == quote:
-            return "".join(value), index + 1
+            return "".join(value), index + 1, had_escape
         value.append(character)
         index += 1
     raise AssertionError("unterminated quoted Nginx token")
 
 
-def _tokenize_nginx(source: str) -> list[tuple[str, str]]:
-    tokens: list[tuple[str, str]] = []
+def _tokenize_nginx(source: str) -> list[tuple[str, str, bool]]:
+    tokens: list[tuple[str, str, bool]] = []
     buffer: list[str] = []
+    buffer_had_escape = False
     index = 0
     while index < len(source):
         character = source[index]
-        if character.isspace():
-            _flush_nginx_word(buffer, tokens)
+        if character == "\\":
+            buffer_had_escape = True
+            if index + 1 < len(source):
+                buffer.extend((character, source[index + 1]))
+                index += 2
+                continue
+            buffer.append(character)
+        elif character.isspace():
+            buffer_had_escape = _flush_nginx_word(buffer, tokens, buffer_had_escape)
         elif character == "#":
-            _flush_nginx_word(buffer, tokens)
+            buffer_had_escape = _flush_nginx_word(buffer, tokens, buffer_had_escape)
             newline = source.find("\n", index)
             index = len(source) if newline == -1 else newline
             continue
         elif character in {'"', "'"}:
-            _flush_nginx_word(buffer, tokens)
-            value, index = _read_nginx_quoted(source, index)
-            tokens.append(("quoted", value))
+            buffer_had_escape = _flush_nginx_word(buffer, tokens, buffer_had_escape)
+            value, index, had_escape = _read_nginx_quoted(source, index)
+            tokens.append(("quoted", value, had_escape))
             continue
         elif character in "{};":
-            _flush_nginx_word(buffer, tokens)
-            tokens.append(("symbol", character))
+            buffer_had_escape = _flush_nginx_word(buffer, tokens, buffer_had_escape)
+            tokens.append(("symbol", character, False))
         else:
             buffer.append(character)
         index += 1
-    _flush_nginx_word(buffer, tokens)
+    _flush_nginx_word(buffer, tokens, buffer_had_escape)
     return tokens
 
 
 def _parse_nginx_statements(
-    tokens: list[tuple[str, str]],
+    tokens: list[tuple[str, str, bool]],
     index: int = 0,
     *,
     expect_close: bool = False,
@@ -265,9 +281,9 @@ def _parse_nginx_statements(
     statements: list[_NginxStatement] = []
     parts: list[_NginxArgument] = []
     while index < len(tokens):
-        kind, value = tokens[index]
+        kind, value, had_escape = tokens[index]
         if kind in {"word", "quoted"}:
-            parts.append(_NginxArgument(value, kind == "quoted"))
+            parts.append(_NginxArgument(value, kind == "quoted", had_escape))
         elif value == ";":
             if not parts:
                 raise AssertionError("empty Nginx directive")
@@ -294,21 +310,6 @@ def _parse_nginx_statements(
     return tuple(statements), index
 
 
-def _unescape_nginx_unquoted(value: str) -> str:
-    normalized: list[str] = []
-    index = 0
-    while index < len(value):
-        if value[index] == "\\":
-            if index + 1 == len(value):
-                raise AssertionError(
-                    f"unsupported proxy target dangling escape: {value}"
-                )
-            index += 1
-        normalized.append(value[index])
-        index += 1
-    return "".join(normalized)
-
-
 def _backend_reference(
     parts: tuple[_NginxArgument, ...],
     location: str | None,
@@ -322,12 +323,13 @@ def _backend_reference(
             f"{' '.join(part.value for part in parts[1:])}"
         )
     target = parts[1]
-    normalized = (
-        target.value if target.quoted else _unescape_nginx_unquoted(target.value)
-    )
-    if "$" in normalized:
+    if target.had_escape:
+        raise AssertionError(
+            f"escaped proxy target {target.value!r} is unsupported in {selector}"
+        )
+    if "$" in target.value:
         raise AssertionError(f"unsupported proxy target {target.value!r} in {selector}")
-    match = PROXY_TARGET_URL.fullmatch(normalized)
+    match = PROXY_TARGET_URL.fullmatch(target.value)
     if match is None:
         raise AssertionError(f"unsupported proxy target {target.value!r} in {selector}")
     if match.group("upstream") == "vl360_nuxt":
@@ -773,36 +775,49 @@ location ~ ^/private(?:/|$) {{
 
 
 @pytest.mark.parametrize(
-    "source",
+    "target",
     [
-        r"""
-location ~ ^/private(?:/|$) {
-    proxy_pass http://vl360_\agent/private;
-}
-""",
-        r"""
-location ~ ^/private(?:/|$) {
-    proxy_pass "http://vl360_\agent/private";
-}
-""",
+        r"http://vl360_\agent",
+        r"http://vl360_\nuxt",
+        r"http://vl360_\tagent",
+        r"http://vl360_\ragent",
+        r"http://vl360_\nagent",
+        r"http://vl360_\"agent",
+        r"http://vl360_\\agent",
     ],
 )
-def test_nginx_scanner_normalizes_escaped_backend_literal(source):
-    locations = [("~ ^/private(?:/|$)", "vl360_agent", "/private")]
-
-    assert _backend_locations(source) == locations
-    with pytest.raises(AssertionError, match="unreviewed backend ingress: /private"):
-        _assert_backend_ingress_reviewed(locations)
-
-
-def test_nginx_scanner_allows_literal_nuxt_public_upstream():
-    source = """
-location / {
-    proxy_pass http://vl360_nuxt;
-}
+@pytest.mark.parametrize("quoted", [False, True])
+def test_nginx_scanner_rejects_escaped_proxy_target(target, quoted):
+    proxy_target = f'"{target}"' if quoted else target
+    source = f"""
+location ~ ^/private(?:/|$) {{
+    proxy_pass {proxy_target};
+}}
 """
 
-    assert _backend_locations(source) == []
+    with pytest.raises(AssertionError, match=r"escaped proxy target.*private"):
+        _backend_locations(source)
+
+
+@pytest.mark.parametrize(
+    ("target", "expected"),
+    [
+        ("http://vl360_agent/admin", [("/", "vl360_agent", "/admin")]),
+        ('"http://vl360_agent/admin"', [("/", "vl360_agent", "/admin")]),
+        ("http://vl360_bots/hook", [("/", "vl360_bots", "/hook")]),
+        ('"http://vl360_bots/hook"', [("/", "vl360_bots", "/hook")]),
+        ("http://vl360_nuxt/app", []),
+        ('"http://vl360_nuxt/app"', []),
+    ],
+)
+def test_nginx_scanner_allows_plain_literal_proxy_targets(target, expected):
+    source = f"""
+location / {{
+    proxy_pass {target};
+}}
+"""
+
+    assert _backend_locations(source) == expected
 
 
 @pytest.mark.parametrize(
