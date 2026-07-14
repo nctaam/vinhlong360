@@ -72,20 +72,29 @@ class PublicationDecision:
 
 def _has_non_public_flag(container: Mapping[str, object]) -> bool:
     for field in _NON_PUBLIC_FLAGS:
-        if field in container:
-            value = container.get(field)
-            if type(value) is not bool or value is True:
-                return True
-    for field in _PUBLIC_FLAGS:
-        if field in container:
-            value = container.get(field)
-            if type(value) is not bool or value is not True:
-                return True
-    if "visibility" in container:
-        value = container.get("visibility")
-        if type(value) is not str or value != "public":
+        value = container.get(field, _MISSING)
+        if value is not _MISSING and (type(value) is not bool or value is True):
             return True
+    for field in _PUBLIC_FLAGS:
+        value = container.get(field, _MISSING)
+        if value is not _MISSING and (type(value) is not bool or value is not True):
+            return True
+    visibility = container.get("visibility", _MISSING)
+    if visibility is not _MISSING and (
+        type(visibility) is not str or visibility != "public"
+    ):
+        return True
     return False
+
+
+def _validate_reviewed_exclusions(reviewed_exclusions: object) -> None:
+    if type(reviewed_exclusions) is not frozenset:
+        raise TypeError("reviewed_exclusions must be a frozenset")
+    for exclusion in reviewed_exclusions:
+        if type(exclusion) is not str:
+            raise TypeError("reviewed_exclusions must contain strings")
+        if not exclusion:
+            raise ValueError("reviewed_exclusions cannot contain empty strings")
 
 
 def decide_publication_candidate(
@@ -93,6 +102,7 @@ def decide_publication_candidate(
     *,
     reviewed_exclusions: frozenset[str] = PUBLISHED_V1_EXCLUSIONS,
 ) -> PublicationDecision:
+    _validate_reviewed_exclusions(reviewed_exclusions)
     if not isinstance(entity, Mapping):
         raise TypeError("entity must be a mapping")
 

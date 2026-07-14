@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from collections.abc import Iterator, Mapping
 from dataclasses import FrozenInstanceError
 from types import MappingProxyType
 
@@ -26,6 +27,26 @@ def _candidate(**overrides: object) -> dict[str, object]:
     }
     entity.update(overrides)
     return entity
+
+
+class _FlippingPrivateMapping(Mapping[str, object]):
+    def __init__(self, values: Mapping[str, object]) -> None:
+        self._values = dict(values)
+        self.private_reads = 0
+
+    def __getitem__(self, key: str) -> object:
+        if key == "is_private":
+            self.private_reads += 1
+            return self.private_reads == 1
+        return self._values[key]
+
+    def __iter__(self) -> Iterator[str]:
+        yield from self._values
+        if "is_private" not in self._values:
+            yield "is_private"
+
+    def __len__(self) -> int:
+        return len(self._values) + ("is_private" not in self._values)
 
 
 def test_policy_constants_are_exact():
@@ -229,6 +250,22 @@ def test_non_boolean_flag_values_do_not_alias_valid_boolean_values(
     )
 
 
+@pytest.mark.parametrize("location", ["top-level", "attributes"])
+def test_non_public_mapping_fields_are_read_exactly_once(location: str):
+    if location == "top-level":
+        mapping = _FlippingPrivateMapping(_candidate())
+        candidate: Mapping[str, object] = mapping
+    else:
+        mapping = _FlippingPrivateMapping({})
+        candidate = _candidate(attributes=mapping)
+
+    assert decide_publication_candidate(candidate) == PublicationDecision(
+        eligible=False,
+        reasons=("non-public-flag",),
+    )
+    assert mapping.private_reads == 1
+
+
 @pytest.mark.parametrize(
     "field, value",
     [
@@ -309,7 +346,58 @@ def test_custom_reviewed_exclusions_are_honored():
     assert decide_publication_candidate(
         _candidate(),
         reviewed_exclusions=frozenset({"candidate"}),
-    ).reasons == ("reviewed-exclusion",)
+    ) == PublicationDecision(eligible=False, reasons=("reviewed-exclusion",))
+
+
+def test_valid_empty_reviewed_exclusions_allow_a_default_exclusion():
+    assert decide_publication_candidate(
+        _candidate(id="prov-1"),
+        reviewed_exclusions=frozenset(),
+    ) == PublicationDecision(eligible=True, reasons=())
+
+
+@pytest.mark.parametrize(
+    "reviewed_exclusions",
+    [
+        pytest.param("candidate", id="string"),
+        pytest.param({"candidate": True}, id="mapping"),
+        pytest.param((value for value in ("candidate",)), id="generator"),
+        pytest.param(None, id="none"),
+        pytest.param({"candidate"}, id="mutable-set"),
+    ],
+)
+def test_reviewed_exclusions_require_an_exact_frozenset(
+    reviewed_exclusions: object,
+):
+    with pytest.raises(TypeError, match="reviewed_exclusions must be a frozenset"):
+        decide_publication_candidate(
+            _candidate(),
+            reviewed_exclusions=reviewed_exclusions,  # type: ignore[arg-type]
+        )
+
+
+def test_reviewed_exclusions_require_exact_string_elements():
+    with pytest.raises(TypeError, match="reviewed_exclusions must contain strings"):
+        decide_publication_candidate(
+            _candidate(),
+            reviewed_exclusions=frozenset({"candidate", 1}),  # type: ignore[arg-type]
+        )
+
+
+def test_reviewed_exclusions_reject_empty_string_elements():
+    with pytest.raises(ValueError, match="reviewed_exclusions cannot contain empty strings"):
+        decide_publication_candidate(
+            _candidate(),
+            reviewed_exclusions=frozenset({"candidate", ""}),
+        )
+
+
+def test_reviewed_exclusions_are_validated_before_the_entity_is_read():
+    with pytest.raises(TypeError, match="reviewed_exclusions must be a frozenset"):
+        decide_publication_candidate(
+            [],  # type: ignore[arg-type]
+            reviewed_exclusions=None,  # type: ignore[arg-type]
+        )
 
 
 def test_combined_failures_are_unique_and_in_canonical_order():
