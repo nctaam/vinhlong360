@@ -186,19 +186,21 @@ def test_sitemap_changefreq_by_type_and_no_lastmod(tmp_path, monkeypatch):
     assert "<lastmod>" not in xml                            # P1-4: no misleading import-date lastmod
 
 
-def test_sitemap_thin_ward_excluded(tmp_path, monkeypatch):
+def test_sitemap_ward_outer_compatibility_and_strict_child_count(tmp_path, monkeypatch):
     payload = {
         "entities": [
-            {"id": "thin-ward", "name": "TW", "type": "place", "status": "published", "verified": True,
-             "summary": _text(20)},
-            {"id": "rich-ward", "name": "RW", "type": "place", "status": "published", "verified": True,
-             "summary": _text(80)},
-            {"id": "hub-ward", "name": "HW", "type": "place", "status": "published", "verified": True,
-             "summary": _text(10)},
+            {"id": "thin-ward", "name": "TW", "type": "place", "summary": _text(20)},
+            {"id": "rich-ward", "name": "RW", "type": "place", "summary": _text(80)},
+            {"id": "hub-ward", "name": "HW", "type": "place", "summary": _text(10)},
+            {"id": "single-child-ward", "name": "SW", "type": "place", "summary": _text(10)},
             {"id": "child-1", "name": "C1", "type": "dish", "status": "published", "verified": True,
              "placeId": "hub-ward", "summary": _text(200)},
             {"id": "child-2", "name": "C2", "type": "dish", "status": "published", "verified": True,
              "placeId": "hub-ward", "summary": _text(200)},
+            {"id": "eligible-child", "name": "EC", "type": "dish", "status": "published", "verified": True,
+             "placeId": "single-child-ward", "summary": _text(200)},
+            {"id": "legacy-child", "name": "LC", "type": "dish",
+             "placeId": "single-child-ward", "summary": _text(200)},
         ],
         "relationships": [], "itineraries": [],
     }
@@ -207,8 +209,22 @@ def test_sitemap_thin_ward_excluded(tmp_path, monkeypatch):
     _reset_seo(monkeypatch, data_path)
     body = seo.sitemap().body
     assert b"/xa-phuong/thin-ward" not in body   # thin summary + no children → out (P1-5)
-    assert b"/xa-phuong/rich-ward" in body        # rich summary → in
-    assert b"/xa-phuong/hub-ward" in body         # thin summary but a hub (2 children) → in
+    assert b"/xa-phuong/rich-ward" in body        # legacy outer listing remains compatible in Task 9
+    assert b"/xa-phuong/hub-ward" in body         # thin summary but a hub (2 eligible children) → in
+    assert b"/xa-phuong/single-child-ward" not in body  # ineligible child receives no hub credit
+
+
+def test_sitemap_place_children_counts_only_publicly_eligible_children():
+    data = {
+        "entities": [
+            {"id": "eligible", "type": "dish", "status": "published", "verified": True,
+             "placeId": "ward"},
+            {"id": "missing-status", "type": "dish", "verified": True, "placeId": "ward"},
+            {"id": "draft", "type": "dish", "status": "draft", "verified": True, "placeId": "ward"},
+        ]
+    }
+
+    assert seo._sitemap_place_children(data) == {"ward": 1}
 
 
 def test_sitemap_place_loop_skips_provisional(tmp_path, monkeypatch):
@@ -217,7 +233,6 @@ def test_sitemap_place_loop_skips_provisional(tmp_path, monkeypatch):
             {"id": "prov-place", "name": "P", "type": "place",
              "status": "provisional", "verified": True, "updatedAt": "2026-06-12"},
             {"id": "good-place", "name": "G", "type": "place",
-             "status": "published", "verified": True,
              "summary": _text(80), "updatedAt": "2026-06-12"},
         ],
         "relationships": [], "itineraries": [],

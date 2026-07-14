@@ -389,8 +389,9 @@ def test_sitemap_includes_all_public_entities(monkeypatch, sample_data):
     # the public-inclusion contract: non-place → P0-1 word gate; place → P1-5 ward
     # summary gate (≥60 words). Thin-page exclusion is covered by dedicated tests.
     for _e in sample_data["entities"]:
-        _e["status"] = "published"
-        _e["verified"] = True
+        if _e["type"] != "place":
+            _e["status"] = "published"
+            _e["verified"] = True
         _e["summary"] = " ".join(["từ"] * 220)
     monkeypatch.setattr(seo, "_load", lambda: sample_data)
     monkeypatch.setattr(seo, "_sitemap_cache", None)

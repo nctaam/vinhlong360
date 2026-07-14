@@ -1309,7 +1309,7 @@ def _sitemap_place_urls(data: dict[str, Any], place_children: dict[str, int]) ->
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
             continue
-        if not is_publicly_eligible(entity):
+        if not _is_listing_visible(entity):
             continue
         # P1-5: bỏ ward mỏng (ít con VÀ summary ngắn) khỏi sitemap — hết thin-doorway.
         children = place_children.get(str(entity["id"]), 0)
