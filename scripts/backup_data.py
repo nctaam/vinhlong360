@@ -107,67 +107,138 @@ def _lstat_status(path: Path):
     return status, stat.S_ISLNK(status.st_mode), bool(attributes & reparse_flag)
 
 
-def _owned_local_backup(path: Path, managed_root: Path) -> _OwnedLocalBackup | None:
+def _safe_lstat_status(path: Path):
     try:
-        status, is_symlink, is_reparse = _lstat_status(path)
-        if is_symlink or is_reparse or not stat.S_ISDIR(status.st_mode):
-            return None
+        return _lstat_status(path)
+    except OSError:
+        return None
+
+
+def _is_plain_directory(status_info) -> bool:
+    status, is_symlink, is_reparse = status_info
+    return not is_symlink and not is_reparse and stat.S_ISDIR(status.st_mode)
+
+
+def _is_plain_file(path: Path) -> bool:
+    status_info = _safe_lstat_status(path)
+    if status_info is None:
+        return False
+    status, is_symlink, is_reparse = status_info
+    return not is_symlink and not is_reparse and stat.S_ISREG(status.st_mode)
+
+
+def _direct_owned_directory(path: Path, managed_root: Path):
+    status_info = _safe_lstat_status(path)
+    if status_info is None or not _is_plain_directory(status_info):
+        return None
+    try:
         candidate = path.resolve(strict=True)
-        if candidate.parent != managed_root:
-            return None
-        resolved_status, resolved_symlink, resolved_reparse = _lstat_status(candidate)
-        if resolved_symlink or resolved_reparse:
-            return None
-        if (resolved_status.st_dev, resolved_status.st_ino) != (status.st_dev, status.st_ino):
-            return None
+    except OSError:
+        return None
+    if candidate.parent != managed_root:
+        return None
+    resolved_info = _safe_lstat_status(candidate)
+    if resolved_info is None or not _is_plain_directory(resolved_info):
+        return None
+    status = status_info[0]
+    resolved_status = resolved_info[0]
+    if (resolved_status.st_dev, resolved_status.st_ino) != (status.st_dev, status.st_ino):
+        return None
+    return candidate, status, status_info[1], status_info[2]
 
-        name_match = LOCAL_BACKUP_NAME_RE.fullmatch(candidate.name)
-        if name_match is None:
-            return None
-        timestamp = name_match.group("timestamp")
+
+def _local_backup_timestamp(name: str) -> str | None:
+    name_match = LOCAL_BACKUP_NAME_RE.fullmatch(name)
+    if name_match is None:
+        return None
+    timestamp = name_match.group("timestamp")
+    try:
         parsed_timestamp = datetime.strptime(timestamp, LOCAL_BACKUP_TIMESTAMP_FORMAT)
-        if parsed_timestamp.strftime(LOCAL_BACKUP_TIMESTAMP_FORMAT) != timestamp:
-            return None
+    except ValueError:
+        return None
+    if parsed_timestamp.strftime(LOCAL_BACKUP_TIMESTAMP_FORMAT) != timestamp:
+        return None
+    return timestamp
 
-        manifest_path = candidate / "manifest.json"
-        manifest_status, manifest_symlink, manifest_reparse = _lstat_status(manifest_path)
-        if manifest_symlink or manifest_reparse or not stat.S_ISREG(manifest_status.st_mode):
-            return None
+
+def _has_local_manifest_identity(manifest: dict, timestamp: str) -> bool:
+    return (
+        manifest.get("schema") == LOCAL_BACKUP_SCHEMA
+        and manifest.get("target") == LOCAL_BACKUP_TARGET
+        and manifest.get("timestamp") == timestamp
+    )
+
+
+def _read_local_backup_manifest(candidate: Path, timestamp: str) -> dict | None:
+    manifest_path = candidate / "manifest.json"
+    if not _is_plain_file(manifest_path):
+        return None
+    try:
         with manifest_path.open(encoding="utf-8") as stream:
             manifest = json.load(stream)
-        if not isinstance(manifest, dict):
-            return None
-        if manifest.get("schema") != LOCAL_BACKUP_SCHEMA:
-            return None
-        if manifest.get("target") != LOCAL_BACKUP_TARGET:
-            return None
-        if manifest.get("timestamp") != timestamp:
-            return None
-
-        copied = manifest.get("copied")
-        if not isinstance(copied, list) or not copied:
-            return None
-        if len(set(copied)) != len(copied):
-            return None
-        if any(source not in LOCAL_BACKUP_ARTIFACTS for source in copied):
-            return None
-        for source in copied:
-            artifact_path = candidate / LOCAL_BACKUP_ARTIFACTS[source]
-            artifact_status, artifact_symlink, artifact_reparse = _lstat_status(artifact_path)
-            if artifact_symlink or artifact_reparse or not stat.S_ISREG(artifact_status.st_mode):
-                return None
-
-        return _OwnedLocalBackup(
-            path=candidate,
-            name=candidate.name,
-            modified_at=status.st_mtime,
-            device=status.st_dev,
-            inode=status.st_ino,
-            is_symlink=is_symlink,
-            is_reparse=is_reparse,
-        )
-    except (OSError, TypeError, ValueError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError):
         return None
+    if not isinstance(manifest, dict):
+        return None
+    if not _has_local_manifest_identity(manifest, timestamp):
+        return None
+    return manifest
+
+
+def _declared_local_artifacts(manifest: dict) -> list[str] | None:
+    copied = manifest.get("copied")
+    if not isinstance(copied, list) or not copied:
+        return None
+    seen: set[str] = set()
+    for source in copied:
+        if not isinstance(source, str):
+            return None
+        if source in seen:
+            return None
+        if source not in LOCAL_BACKUP_ARTIFACTS:
+            return None
+        seen.add(source)
+    return copied
+
+
+def _local_artifacts_are_regular(candidate: Path, copied: list[str]) -> bool:
+    for source in copied:
+        artifact_path = candidate / LOCAL_BACKUP_ARTIFACTS[source]
+        if not _is_plain_file(artifact_path):
+            return False
+    return True
+
+
+def _owned_backup_record(candidate: Path, status_info) -> _OwnedLocalBackup:
+    status, is_symlink, is_reparse = status_info
+    return _OwnedLocalBackup(
+        path=candidate,
+        name=candidate.name,
+        modified_at=status.st_mtime,
+        device=status.st_dev,
+        inode=status.st_ino,
+        is_symlink=is_symlink,
+        is_reparse=is_reparse,
+    )
+
+
+def _owned_local_backup(path: Path, managed_root: Path) -> _OwnedLocalBackup | None:
+    directory = _direct_owned_directory(path, managed_root)
+    if directory is None:
+        return None
+    candidate, status, is_symlink, is_reparse = directory
+    timestamp = _local_backup_timestamp(candidate.name)
+    if timestamp is None:
+        return None
+    manifest = _read_local_backup_manifest(candidate, timestamp)
+    if manifest is None:
+        return None
+    copied = _declared_local_artifacts(manifest)
+    if copied is None:
+        return None
+    if not _local_artifacts_are_regular(candidate, copied):
+        return None
+    return _owned_backup_record(candidate, (status, is_symlink, is_reparse))
 
 
 def _quarantine_path(managed_root: Path) -> Path | None:
@@ -217,6 +288,73 @@ def _warn_incomplete_cleanup(quarantine: Path) -> None:
     )
 
 
+def _managed_cleanup_root(root: Path) -> Path | None:
+    if not root.is_dir():
+        return None
+    managed_root = BACKUP_ROOT.resolve()
+    if root.resolve() != managed_root:
+        return None
+    return managed_root
+
+
+def _owned_backup_records(root: Path, managed_root: Path) -> list[_OwnedLocalBackup]:
+    records: list[_OwnedLocalBackup] = []
+    for path in root.iterdir():
+        record = _owned_local_backup(path, managed_root)
+        if record is not None:
+            records.append(record)
+    return sorted(records, key=lambda record: record.modified_at, reverse=True)
+
+
+def _expired_backup_records(
+    records: list[_OwnedLocalBackup],
+    keep: int,
+    max_age_days: int,
+) -> list[_OwnedLocalBackup]:
+    if len(records) <= keep:
+        return []
+    cutoff = datetime.now().timestamp() - max_age_days * 86400
+    return [record for record in records[keep:] if record.modified_at < cutoff]
+
+
+def _quarantine_owned_backup(
+    record: _OwnedLocalBackup,
+    managed_root: Path,
+) -> Path | None:
+    if _owned_local_backup(record.path, managed_root) != record:
+        return None
+    quarantine = _quarantine_path(managed_root)
+    if quarantine is None:
+        return None
+    try:
+        os.replace(record.path, quarantine)
+    except OSError:
+        return None
+    if not _quarantine_identity_matches(record, quarantine):
+        _restore_quarantine(quarantine, record.path)
+        return None
+    return quarantine
+
+
+def _remove_quarantined_backup(record: _OwnedLocalBackup, quarantine: Path) -> None:
+    destructive_started = False
+    try:
+        destructive_started = True
+        shutil.rmtree(quarantine)
+    except OSError:
+        if destructive_started:
+            _warn_incomplete_cleanup(quarantine)
+        return
+    try:
+        quarantine.lstat()
+    except FileNotFoundError:
+        print(f"[backup] cleanup: removed old backup {record.name}")
+    except OSError:
+        _warn_incomplete_cleanup(quarantine)
+    else:
+        _warn_incomplete_cleanup(quarantine)
+
+
 def _cleanup_old_backups(
     keep: int = 5,
     max_age_days: int = 30,
@@ -224,55 +362,14 @@ def _cleanup_old_backups(
 ) -> None:
     """Remove expired backups while preserving at least the newest entries."""
     root = backup_root or BACKUP_ROOT
-    if not root.is_dir():
+    managed_root = _managed_cleanup_root(root)
+    if managed_root is None:
         return
-    managed_root = BACKUP_ROOT.resolve()
-    if root.resolve() != managed_root:
-        return
-
-    directories = sorted(
-        [
-            candidate
-            for path in root.iterdir()
-            if (candidate := _owned_local_backup(path, managed_root)) is not None
-        ],
-        key=lambda candidate: candidate.modified_at,
-        reverse=True,
-    )
-    if len(directories) <= keep:
-        return
-    cutoff = datetime.now().timestamp() - max_age_days * 86400
-    for record in directories[keep:]:
-        if record.modified_at >= cutoff:
-            continue
-        if _owned_local_backup(record.path, managed_root) != record:
-            continue
-        quarantine = _quarantine_path(managed_root)
-        if quarantine is None:
-            continue
-        try:
-            os.replace(record.path, quarantine)
-        except OSError:
-            continue
-        if not _quarantine_identity_matches(record, quarantine):
-            _restore_quarantine(quarantine, record.path)
-            continue
-        destructive_started = False
-        try:
-            destructive_started = True
-            shutil.rmtree(quarantine)
-        except OSError:
-            if destructive_started:
-                _warn_incomplete_cleanup(quarantine)
-            continue
-        try:
-            quarantine.lstat()
-        except FileNotFoundError:
-            print(f"[backup] cleanup: removed old backup {record.name}")
-        except OSError:
-            _warn_incomplete_cleanup(quarantine)
-        else:
-            _warn_incomplete_cleanup(quarantine)
+    records = _owned_backup_records(root, managed_root)
+    for record in _expired_backup_records(records, keep, max_age_days):
+        quarantine = _quarantine_owned_backup(record, managed_root)
+        if quarantine is not None:
+            _remove_quarantined_backup(record, quarantine)
 
 
 def _backup_sqlite(source_path: Path, artifact_path: Path) -> None:
