@@ -1,11 +1,44 @@
 import json
-from pathlib import Path
+import subprocess
+from pathlib import Path, PurePosixPath
 
-from scripts.package_launch_release import find_duplicate_artifacts
+import pytest
+
+from scripts.package_launch_release import CANONICAL_ARTIFACTS
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DISCLOSURE_PATH = REPO_ROOT / "config" / "ai-disclosure.json"
+DISCLOSURE_FILENAME = "ai-disclosure.json"
+CANONICAL_DISCLOSURE_PATH = PurePosixPath("config") / DISCLOSURE_FILENAME
+DISCLOSURE_PATH = REPO_ROOT / CANONICAL_DISCLOSURE_PATH
+EXPECTED_DISCLOSURE_BYTES = (
+    "{\n"
+    '  "schema_version": 1,\n'
+    '  "revision": "ai-disclosure-v1",\n'
+    '  "entity_ai": {\n'
+    '    "short_label": "Minh họa AI",\n'
+    '    "full_disclosure": "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.",\n'
+    '    "accessible_description_key": "entity-ai-full"\n'
+    "  },\n"
+    '  "placeholder": {\n'
+    '    "short_label": null,\n'
+    '    "full_disclosure": "Minh họa đồ họa — chưa có ảnh riêng cho địa điểm.",\n'
+    '    "accessible_description_key": "entity-placeholder-full"\n'
+    "  },\n"
+    '  "ugc_photo": {\n'
+    '    "short_label": "Ảnh người dùng",\n'
+    '    "full_disclosure": "Ảnh do người dùng cung cấp.",\n'
+    '    "accessible_description_key": "ugc-photo-full"\n'
+    "  },\n"
+    '  "forbidden_entity_image_claims": [\n'
+    '    "ảnh thật",\n'
+    '    "real photo",\n'
+    '    "documentary photo",\n'
+    '    "on-site photo",\n'
+    '    "ảnh chụp tại chỗ"\n'
+    "  ]\n"
+    "}\n"
+).encode("utf-8")
 DISCLOSURE_FIELDS = {
     "short_label",
     "full_disclosure",
@@ -55,6 +88,77 @@ def _load_disclosure():
     )
 
 
+def _assert_canonical_disclosure_bytes(path: Path) -> None:
+    assert path.read_bytes() == EXPECTED_DISCLOSURE_BYTES
+
+
+def _find_noncanonical_ai_disclosure_paths(
+    paths: list[PurePosixPath],
+) -> list[PurePosixPath]:
+    return sorted(
+        (
+            path
+            for path in paths
+            if path.name.casefold() == DISCLOSURE_FILENAME.casefold()
+            and path.as_posix() != CANONICAL_DISCLOSURE_PATH.as_posix()
+        ),
+        key=PurePosixPath.as_posix,
+    )
+
+
+def _git_tracked_paths() -> list[PurePosixPath]:
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "-z"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            check=False,
+        )
+    except FileNotFoundError:
+        pytest.fail("git is required to verify tracked canonical artifact paths")
+    if result.returncode != 0:
+        stderr = result.stderr.decode("utf-8", errors="replace").strip()
+        pytest.fail(f"git ls-files failed with exit {result.returncode}: {stderr}")
+    return [
+        PurePosixPath(raw_path.decode("utf-8"))
+        for raw_path in result.stdout.split(b"\0")
+        if raw_path
+    ]
+
+
+def test_ai_disclosure_bytes_match_canonical_utf8_artifact():
+    _assert_canonical_disclosure_bytes(DISCLOSURE_PATH)
+
+
+@pytest.mark.parametrize(
+    "mutated_bytes",
+    [
+        json.dumps(
+            EXPECTED_DISCLOSURE, ensure_ascii=False, separators=(",", ":")
+        ).encode("utf-8")
+        + b"\n",
+        EXPECTED_DISCLOSURE_BYTES.replace(
+            b'  "schema_version": 1,\n  "revision": "ai-disclosure-v1",\n',
+            b'  "revision": "ai-disclosure-v1",\n  "schema_version": 1,\n',
+        ),
+        EXPECTED_DISCLOSURE_BYTES.replace(b"\n", b"\r\n"),
+        EXPECTED_DISCLOSURE_BYTES.removesuffix(b"\n"),
+        b"\xef\xbb\xbf" + EXPECTED_DISCLOSURE_BYTES,
+        json.dumps(EXPECTED_DISCLOSURE, ensure_ascii=True, indent=2).encode("utf-8")
+        + b"\n",
+    ],
+    ids=["minified", "reordered", "crlf", "no-final-lf", "bom", "unicode-escapes"],
+)
+def test_canonical_byte_guard_rejects_serialization_drift(
+    tmp_path: Path, mutated_bytes: bytes
+):
+    mutated_path = tmp_path / "ai-disclosure.json"
+    mutated_path.write_bytes(mutated_bytes)
+
+    with pytest.raises(AssertionError):
+        _assert_canonical_disclosure_bytes(mutated_path)
+
+
 def test_ai_disclosure_contains_exact_reviewed_schema_and_copy():
     disclosure = _load_disclosure()
 
@@ -101,5 +205,39 @@ def test_ai_disclosure_contains_exact_reviewed_schema_and_copy():
     assert len(forbidden_claims) == len(set(forbidden_claims))
 
 
-def test_ai_disclosure_exists_only_at_the_canonical_root_config_location():
-    assert find_duplicate_artifacts(REPO_ROOT) == []
+def test_ai_disclosure_is_registered_as_a_canonical_release_artifact():
+    assert DISCLOSURE_FILENAME in CANONICAL_ARTIFACTS
+
+
+@pytest.mark.parametrize(
+    ("paths", "expected_noncanonical"),
+    [
+        ([CANONICAL_DISCLOSURE_PATH], []),
+        (
+            [PurePosixPath("config/AI-Disclosure.json")],
+            [PurePosixPath("config/AI-Disclosure.json")],
+        ),
+        (
+            [
+                CANONICAL_DISCLOSURE_PATH,
+                PurePosixPath("web-nuxt/AI-DISCLOSURE.JSON"),
+            ],
+            [PurePosixPath("web-nuxt/AI-DISCLOSURE.JSON")],
+        ),
+    ],
+    ids=["exact-canonical", "wrong-case-canonical", "casefold-duplicate"],
+)
+def test_ai_disclosure_layout_guard_is_case_sensitive_and_excludes_only_canonical(
+    paths: list[PurePosixPath], expected_noncanonical: list[PurePosixPath]
+):
+    assert _find_noncanonical_ai_disclosure_paths(paths) == expected_noncanonical
+
+
+def test_tracked_sources_contain_exactly_one_canonical_ai_disclosure_path():
+    tracked_matches = [
+        path
+        for path in _git_tracked_paths()
+        if path.name.casefold() == DISCLOSURE_FILENAME.casefold()
+    ]
+
+    assert tracked_matches == [CANONICAL_DISCLOSURE_PATH]
