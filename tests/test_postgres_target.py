@@ -28,33 +28,48 @@ class _StreamProxy:
         self.stream.close()
 
 
-class _PartialWriteFailure(_StreamProxy):
-    def write(self, payload: bytes) -> None:
-        self.stream.write(payload[:1])
-        self.stream.flush()
-        raise OSError("simulated partial write failure")
-
-
-class _ReplaceOnClose(_StreamProxy):
-    def __init__(self, stream: BinaryIO, path: Path, foreign: bytes) -> None:
+class _FailingStream(_StreamProxy):
+    def __init__(self, stream: BinaryIO, failure_point: str) -> None:
         super().__init__(stream)
-        self.path = path
-        self.foreign = foreign
+        self.failure_point = failure_point
+
+    def write(self, payload: bytes) -> int:
+        if self.failure_point == "write":
+            self.stream.write(payload[:1])
+            self.stream.flush()
+            raise OSError("simulated write failure")
+        return self.stream.write(payload)
+
+    def flush(self) -> None:
+        self.stream.flush()
+        if self.failure_point == "flush":
+            raise OSError("simulated flush failure")
+
+    def close(self) -> None:
+        self.stream.close()
+        if self.failure_point == "close":
+            raise OSError("simulated close failure")
+
+
+class _ReplacePendingOnClose(_StreamProxy):
+    def __init__(self, stream: BinaryIO, pending: Path, foreign_source: Path) -> None:
+        super().__init__(stream)
+        self.pending = pending
+        self.foreign_source = foreign_source
         self.replaced = False
 
     def close(self) -> None:
         if self.replaced:
             return
         self.stream.close()
-        self.path.unlink()
-        self.path.write_bytes(self.foreign)
+        postgres_target.os.replace(self.foreign_source, self.pending)
         self.replaced = True
 
 
-def _patch_exclusive_stream(
+def _patch_pending_stream(
     monkeypatch: pytest.MonkeyPatch,
-    path: Path,
-    factory: Callable[[BinaryIO], object],
+    final_path: Path,
+    factory: Callable[[BinaryIO, Path], object],
 ) -> None:
     original_open = Path.open
 
@@ -65,17 +80,21 @@ def _patch_exclusive_stream(
         **kwargs: object,
     ):
         stream = original_open(destination, mode, *args, **kwargs)
-        if destination == path and mode == "xb":
-            return factory(stream)
+        if (
+            destination.parent == final_path.parent
+            and destination.name.startswith(".pending-write-")
+            and mode == "xb"
+        ):
+            return factory(stream, destination)
         return stream
 
     monkeypatch.setattr(Path, "open", open_wrapped)
 
 
-def _assert_quarantine_name(quarantine: Path, final_path: Path) -> None:
-    assert quarantine.parent == final_path.parent
-    assert quarantine.name != final_path.name
-    assert re.fullmatch(r"\.failed-write-[0-9a-f]{32}", quarantine.name)
+def _assert_pending_name(pending: Path, final_path: Path) -> None:
+    assert pending.parent == final_path.parent
+    assert pending.name != final_path.name
+    assert re.fullmatch(r"\.pending-write-[0-9a-f]{32}", pending.name)
 
 
 def test_canonical_json_bytes_are_sorted_compact_utf8_and_newline_terminated() -> None:
@@ -254,43 +273,88 @@ def test_write_exclusive_preflights_serialization_before_creating_file(
     assert not path.exists()
 
 
-def test_write_exclusive_cleans_up_its_partial_file_after_write_failure(
+def test_write_exclusive_fstat_failure_never_creates_requested_final(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     path = tmp_path / "nested" / "manifest.json"
-    _patch_exclusive_stream(monkeypatch, path, _PartialWriteFailure)
 
-    with pytest.raises(OSError, match="simulated partial write failure"):
+    def fail_fstat(_descriptor: int):
+        raise OSError("simulated fstat failure")
+
+    monkeypatch.setattr(postgres_target.os, "fstat", fail_fstat)
+
+    with pytest.raises(OSError, match="simulated fstat failure"):
         postgres_target.write_exclusive(path, {"valid": True})
 
     assert not path.exists()
-    quarantines = list(path.parent.glob(".failed-write-*"))
-    assert len(quarantines) == 1
-    _assert_quarantine_name(quarantines[0], path)
-    assert quarantines[0].read_bytes() == b"{"
+    pending = list(path.parent.glob(".pending-write-*"))
+    assert len(pending) == 1
+    _assert_pending_name(pending[0], path)
 
 
-def test_write_exclusive_detects_replacement_without_unlinking_foreign_file(
+def test_write_exclusive_publish_failure_leaves_final_absent_and_staging_isolated(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     path = tmp_path / "nested" / "manifest.json"
-    foreign = b"other-process"
-    _patch_exclusive_stream(
+
+    def fail_link(*_args: object, **_kwargs: object) -> None:
+        raise OSError("simulated publish failure")
+
+    monkeypatch.setattr(postgres_target.os, "link", fail_link)
+
+    with pytest.raises(OSError, match="simulated publish failure"):
+        postgres_target.write_exclusive(path, {"valid": True})
+
+    assert not path.exists()
+    pending = list(path.parent.glob(".pending-write-*"))
+    assert len(pending) == 1
+    _assert_pending_name(pending[0], path)
+    assert pending[0].read_bytes() == b'{"valid":true}\n'
+
+
+@pytest.mark.parametrize("failure_point", ["write", "flush", "close"])
+def test_write_exclusive_stream_failure_never_creates_requested_final(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure_point: str,
+) -> None:
+    path = tmp_path / "nested" / "manifest.json"
+    _patch_pending_stream(
         monkeypatch,
         path,
-        lambda stream: _ReplaceOnClose(stream, path, foreign),
+        lambda stream, _pending: _FailingStream(stream, failure_point),
     )
 
-    try:
-        with pytest.raises(RuntimeError, match="changed"):
-            postgres_target.write_exclusive(path, {"valid": True})
-    finally:
-        assert path.read_bytes() == foreign
+    with pytest.raises(OSError, match=f"simulated {failure_point} failure"):
+        postgres_target.write_exclusive(path, {"valid": True})
+
+    assert not path.exists()
+    pending = list(path.parent.glob(".pending-write-*"))
+    assert len(pending) == 1
+    _assert_pending_name(pending[0], path)
 
 
-def test_write_exclusive_atomic_cleanup_restores_foreign_replacement(
+def test_write_exclusive_preexisting_foreign_final_is_untouched(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "nested" / "manifest.json"
+    path.parent.mkdir(parents=True)
+    foreign = b"other-process"
+    path.write_bytes(foreign)
+
+    with pytest.raises(FileExistsError):
+        postgres_target.write_exclusive(path, {"valid": True})
+
+    assert path.read_bytes() == foreign
+    pending = list(path.parent.glob(".pending-write-*"))
+    assert len(pending) == 1
+    _assert_pending_name(pending[0], path)
+    assert pending[0].read_bytes() == b'{"valid":true}\n'
+
+
+def test_write_exclusive_detects_close_time_pending_replacement_before_publish(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -298,49 +362,53 @@ def test_write_exclusive_atomic_cleanup_restores_foreign_replacement(
     foreign = b"other-process"
     foreign_source = tmp_path / "other-process.tmp"
     foreign_source.write_bytes(foreign)
-    original_replace = postgres_target.os.replace
-    replacements: list[tuple[Path, Path]] = []
+    _patch_pending_stream(
+        monkeypatch,
+        path,
+        lambda stream, pending: _ReplacePendingOnClose(
+            stream, pending, foreign_source
+        ),
+    )
 
-    def replace_after_foreign_swap(source, destination) -> None:
-        source_path = Path(source)
-        destination_path = Path(destination)
-        replacements.append((source_path, destination_path))
-        if source_path == path:
-            original_replace(foreign_source, path)
-        original_replace(source, destination)
-
-    _patch_exclusive_stream(monkeypatch, path, _PartialWriteFailure)
-    monkeypatch.setattr(postgres_target.os, "replace", replace_after_foreign_swap)
-
-    with pytest.raises(OSError, match="simulated partial write failure"):
+    with pytest.raises(RuntimeError, match="changed"):
         postgres_target.write_exclusive(path, {"valid": True})
 
-    assert replacements
-    quarantine = replacements[0][1]
-    _assert_quarantine_name(quarantine, path)
-    assert path.read_bytes() == foreign
-    assert quarantine.read_bytes() == foreign
+    assert not path.exists()
+    pending = list(path.parent.glob(".pending-write-*"))
+    assert len(pending) == 1
+    assert pending[0].read_bytes() == foreign
 
 
-def test_write_exclusive_ambiguous_quarantine_identity_stays_isolated(
+def test_write_exclusive_detects_pending_replacement_during_publish(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     path = tmp_path / "nested" / "manifest.json"
-    original_lstat = Path.lstat
+    foreign = b"other-process"
+    foreign_source = tmp_path / "other-process.tmp"
+    foreign_source.write_bytes(foreign)
+    original_link = postgres_target.os.link
+    original_replace = postgres_target.os.replace
 
-    def deny_quarantine_identity(candidate: Path):
-        if candidate.name.startswith(".failed-write-"):
-            raise PermissionError("simulated quarantine lstat failure")
-        return original_lstat(candidate)
+    def link_after_pending_swap(
+        source,
+        destination,
+        *,
+        follow_symlinks: bool = True,
+    ) -> None:
+        original_replace(foreign_source, source)
+        original_link(
+            source,
+            destination,
+            follow_symlinks=follow_symlinks,
+        )
 
-    _patch_exclusive_stream(monkeypatch, path, _PartialWriteFailure)
-    monkeypatch.setattr(Path, "lstat", deny_quarantine_identity)
+    monkeypatch.setattr(postgres_target.os, "link", link_after_pending_swap)
 
-    with pytest.raises(OSError, match="simulated partial write failure"):
+    with pytest.raises(RuntimeError, match="changed"):
         postgres_target.write_exclusive(path, {"valid": True})
 
-    assert not path.exists()
-    quarantines = list(path.parent.glob(".failed-write-*"))
-    assert len(quarantines) == 1
-    assert quarantines[0].read_bytes() == b"{"
+    assert path.read_bytes() == foreign
+    pending = list(path.parent.glob(".pending-write-*"))
+    assert len(pending) == 1
+    assert pending[0].read_bytes() == foreign

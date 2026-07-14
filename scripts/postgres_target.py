@@ -15,6 +15,7 @@ IDENTITY_KEYS = (
     "server_port",
     "server_version_num",
 )
+_PENDING_WRITE_ATTEMPTS = 8
 
 
 def canonical_json_bytes(value: object) -> bytes:
@@ -155,42 +156,32 @@ def _close_best_effort(stream) -> None:
         return
 
 
-def _failed_write_path(path: Path) -> Path:
-    return path.with_name(f".failed-write-{secrets.token_hex(16)}")
-
-
-def _restore_quarantined_entry(quarantine: Path, path: Path) -> None:
-    try:
-        os.link(quarantine, path, follow_symlinks=False)
-    except (NotImplementedError, OSError):
-        return
-
-
-def _quarantine_failed_write(path: Path, identity: tuple[int, int]) -> None:
-    quarantine = _failed_write_path(path)
-    try:
-        os.replace(path, quarantine)
-    except OSError:
-        return
-    metadata = _lstat_best_effort(quarantine)
-    if metadata is None or _metadata_matches_owned_file(metadata, identity):
-        return
-    _restore_quarantined_entry(quarantine, path)
+def _open_pending_stream(path: Path):
+    for _attempt in range(_PENDING_WRITE_ATTEMPTS):
+        pending = path.with_name(f".pending-write-{secrets.token_hex(16)}")
+        try:
+            return pending, pending.open("xb")
+        except FileExistsError:
+            continue
+    raise RuntimeError("unable to allocate exclusive pending write path")
 
 
 def write_exclusive(path: Path, payload: object) -> Path:
     canonical_payload = canonical_json_bytes(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
-    stream = path.open("xb")
-    identity = _file_identity(os.fstat(stream.fileno()))
+    pending, stream = _open_pending_stream(path)
     try:
+        identity = _file_identity(os.fstat(stream.fileno()))
         stream.write(canonical_payload)
         stream.flush()
         stream.close()
     except BaseException:
         _close_best_effort(stream)
-        _quarantine_failed_write(path, identity)
         raise
+    if not _path_matches_owned_file(pending, identity):
+        raise RuntimeError("exclusive write staging path changed before publish")
+    os.link(pending, path, follow_symlinks=False)
     if not _path_matches_owned_file(path, identity):
         raise RuntimeError("exclusive write path changed before verification")
+    # A portable conditional unlink is unavailable; retaining staging avoids races.
     return path
