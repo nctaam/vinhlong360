@@ -69,6 +69,16 @@ def test_legacy_integer_one_verification_is_accepted():
     assert decide_publication_candidate(_candidate(verified=1)).eligible is True
 
 
+def test_missing_verified_key_is_rejected():
+    candidate = _candidate()
+    del candidate["verified"]
+
+    assert decide_publication_candidate(candidate) == PublicationDecision(
+        eligible=False,
+        reasons=("verified-not-true",),
+    )
+
+
 @pytest.mark.parametrize("status", ["", "draft", "private", "published", "verified"])
 def test_every_non_null_status_is_rejected(status: object):
     assert decide_publication_candidate(_candidate(status=status)) == (
@@ -217,6 +227,52 @@ def test_non_boolean_flag_values_do_not_alias_valid_boolean_values(
     assert decide_publication_candidate(candidate).reasons == (
         "non-public-flag",
     )
+
+
+@pytest.mark.parametrize(
+    "field, value",
+    [
+        ("is_private", False),
+        ("private", False),
+        ("is_draft", False),
+        ("draft", False),
+        ("provisional", False),
+        ("unpublished", False),
+        ("is_public", True),
+        ("published", True),
+        ("visibility", "public"),
+    ],
+)
+def test_exact_public_flag_values_are_accepted_at_top_level(
+    field: str,
+    value: object,
+):
+    assert decide_publication_candidate(_candidate(**{field: value})) == (
+        PublicationDecision(eligible=True, reasons=())
+    )
+
+
+@pytest.mark.parametrize(
+    "field, value",
+    [
+        ("is_private", False),
+        ("private", False),
+        ("is_draft", False),
+        ("draft", False),
+        ("provisional", False),
+        ("unpublished", False),
+        ("is_public", True),
+        ("published", True),
+        ("visibility", "public"),
+    ],
+)
+def test_exact_public_flag_values_are_accepted_in_attributes(
+    field: str,
+    value: object,
+):
+    assert decide_publication_candidate(
+        _candidate(attributes={field: value})
+    ) == PublicationDecision(eligible=True, reasons=())
 
 
 @pytest.mark.parametrize("attributes", [[], 1])
