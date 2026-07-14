@@ -1515,7 +1515,7 @@ class Database:
         self.initialize()
         if not backup_path:
             ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-            backup_path = str(DB_DIR / f"vinhlong360_backup_{ts}.db")
+            backup_path = str(Path(self.db_path).parent / f"vinhlong360_backup_{ts}.db")
         with self._conn() as conn:
             backup_conn = sqlite3.connect(backup_path)
             try:

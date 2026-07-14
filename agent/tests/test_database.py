@@ -312,6 +312,35 @@ def test_replace_from_json_with_override_roundtrip(db, tmp_path, monkeypatch):
     assert db.get_entity("new1")["name"] == "Mới"
 
 
+def test_replace_from_json_auto_backup_stays_next_to_custom_db(db, tmp_path, monkeypatch):
+    import database
+
+    monkeypatch.setenv("DESTRUCTIVE_OPS_LOCKED", "1")
+    monkeypatch.setenv("ALLOW_DESTRUCTIVE_DB_REPLACE", "1")
+    legacy_global = tmp_path / "legacy-global-replace"
+    legacy_global.mkdir()
+    monkeypatch.setattr(database, "DB_DIR", legacy_global)
+    db.upsert_entity(_entity(eid="old-backup-location"))
+    data_path = tmp_path / "replace-backup-location.json"
+    data_path.write_text(json.dumps({
+        "entities": [_entity(eid="new-backup-location")],
+        "relationships": [],
+        "itineraries": [],
+    }, ensure_ascii=False), encoding="utf-8")
+
+    try:
+        result = db.replace_from_json(str(data_path))
+        backup_path = Path(result["backup"])
+        assert backup_path.parent == Path(db.db_path).parent
+        assert backup_path.parent != legacy_global
+        assert backup_path.name.startswith("vinhlong360_backup_")
+        assert backup_path.suffix == ".db"
+    finally:
+        for directory in (Path(db.db_path).parent, legacy_global):
+            for generated in directory.glob("vinhlong360_backup_*.db"):
+                generated.unlink()
+
+
 def test_replace_from_json_roundtrip_with_rels_itins(db, tmp_path, monkeypatch):
     """Replace nạp đủ entity + relationship + itinerary; xoá row cũ (stale)."""
     monkeypatch.setenv("DESTRUCTIVE_OPS_LOCKED", "1")
@@ -903,7 +932,9 @@ def test_query_stats_empty(db):
 
 def test_backup_creates_copy(db, tmp_path):
     db.upsert_entity(_entity(eid="bk1"))
-    backup_path = db.backup(str(tmp_path / "backup_test.db"))
+    requested_path = tmp_path / "backup_test.db"
+    backup_path = db.backup(str(requested_path))
+    assert Path(backup_path) == requested_path
     assert os.path.exists(backup_path)
     backup_db = Database(db_path=backup_path)
     backup_db._use_pg = False
@@ -912,12 +943,24 @@ def test_backup_creates_copy(db, tmp_path):
     assert backup_db.get_entity("bk1") is not None
 
 
-def test_backup_auto_generates_path(db):
+def test_backup_auto_generates_path_next_to_database(db, tmp_path, monkeypatch):
+    import database
+
+    legacy_global = tmp_path / "legacy-global-backup"
+    legacy_global.mkdir()
+    monkeypatch.setattr(database, "DB_DIR", legacy_global)
     db.upsert_entity(_entity(eid="bk2"))
-    backup_path = db.backup()
-    assert os.path.exists(backup_path)
-    assert "backup" in backup_path
-    os.remove(backup_path)
+    try:
+        backup_path = Path(db.backup())
+        assert backup_path.parent == Path(db.db_path).parent
+        assert backup_path.parent != legacy_global
+        assert backup_path.name.startswith("vinhlong360_backup_")
+        assert backup_path.suffix == ".db"
+        assert backup_path.exists()
+    finally:
+        for directory in (Path(db.db_path).parent, legacy_global):
+            for generated in directory.glob("vinhlong360_backup_*.db"):
+                generated.unlink()
 
 
 # ── stats ──
