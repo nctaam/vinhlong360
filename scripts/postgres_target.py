@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import secrets
 import stat
 from pathlib import Path
 from typing import Mapping
@@ -125,16 +126,26 @@ def _is_reparse_point(metadata: os.stat_result) -> bool:
     )
 
 
-def _path_matches_owned_file(path: Path, identity: tuple[int, int]) -> bool:
+def _lstat_best_effort(path: Path) -> os.stat_result | None:
     try:
-        metadata = path.lstat()
+        return path.lstat()
     except OSError:
-        return False
+        return None
+
+
+def _metadata_matches_owned_file(
+    metadata: os.stat_result, identity: tuple[int, int]
+) -> bool:
     return (
         not stat.S_ISLNK(metadata.st_mode)
         and not _is_reparse_point(metadata)
         and _file_identity(metadata) == identity
     )
+
+
+def _path_matches_owned_file(path: Path, identity: tuple[int, int]) -> bool:
+    metadata = _lstat_best_effort(path)
+    return metadata is not None and _metadata_matches_owned_file(metadata, identity)
 
 
 def _close_best_effort(stream) -> None:
@@ -144,13 +155,27 @@ def _close_best_effort(stream) -> None:
         return
 
 
-def _unlink_owned_file(path: Path, identity: tuple[int, int]) -> None:
-    if not _path_matches_owned_file(path, identity):
-        return
+def _failed_write_path(path: Path) -> Path:
+    return path.with_name(f".failed-write-{secrets.token_hex(16)}")
+
+
+def _restore_quarantined_entry(quarantine: Path, path: Path) -> None:
     try:
-        path.unlink()
+        os.link(quarantine, path, follow_symlinks=False)
+    except (NotImplementedError, OSError):
+        return
+
+
+def _quarantine_failed_write(path: Path, identity: tuple[int, int]) -> None:
+    quarantine = _failed_write_path(path)
+    try:
+        os.replace(path, quarantine)
     except OSError:
         return
+    metadata = _lstat_best_effort(quarantine)
+    if metadata is None or _metadata_matches_owned_file(metadata, identity):
+        return
+    _restore_quarantined_entry(quarantine, path)
 
 
 def write_exclusive(path: Path, payload: object) -> Path:
@@ -164,7 +189,7 @@ def write_exclusive(path: Path, payload: object) -> Path:
         stream.close()
     except BaseException:
         _close_best_effort(stream)
-        _unlink_owned_file(path, identity)
+        _quarantine_failed_write(path, identity)
         raise
     if not _path_matches_owned_file(path, identity):
         raise RuntimeError("exclusive write path changed before verification")
