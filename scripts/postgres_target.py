@@ -181,7 +181,10 @@ def write_exclusive(path: Path, payload: object) -> Path:
     if not _path_matches_owned_file(pending, identity):
         raise RuntimeError("exclusive write staging path changed before publish")
     os.link(pending, path, follow_symlinks=False)
-    if not _path_matches_owned_file(path, identity):
+    final_metadata = _lstat_best_effort(path)
+    if final_metadata is not None and not _metadata_matches_owned_file(
+        final_metadata, identity
+    ):
         raise RuntimeError("exclusive write path changed before verification")
     # A portable conditional unlink is unavailable; retaining staging avoids races.
     return path
