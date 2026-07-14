@@ -417,6 +417,46 @@ def test_cleanup_preserves_swapped_path_before_delete(
     assert "removed old backup" not in capsys.readouterr().out
 
 
+def test_cleanup_partial_delete_keeps_damaged_quarantine_for_review(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    backup_root = tmp_path / "backups"
+    monkeypatch.setattr(backup_data, "BACKUP_ROOT", backup_root)
+    backup_root.mkdir()
+    now = time.time()
+    old_backup = _write_owned_local_backup(
+        backup_root,
+        "20260101-000000-old",
+        now - 40 * 86400,
+    )
+    _write_owned_local_backup(backup_root, "20260714-120000-new", now)
+
+    def partially_delete(path: Path) -> None:
+        (Path(path) / "data.json").unlink()
+        raise OSError("simulated partial recursive deletion")
+
+    monkeypatch.setattr(backup_data.shutil, "rmtree", partially_delete)
+
+    backup_data._cleanup_old_backups(keep=1, max_age_days=30)
+
+    assert not old_backup.exists()
+    quarantines = [
+        path
+        for path in backup_root.iterdir()
+        if path.name.startswith(backup_data.LOCAL_BACKUP_QUARANTINE_PREFIX)
+    ]
+    assert len(quarantines) == 1
+    quarantine = quarantines[0]
+    assert (quarantine / "manifest.json").is_file()
+    assert not (quarantine / "data.json").exists()
+    captured = capsys.readouterr()
+    assert "[backup] cleanup: removed" not in captured.out
+    assert quarantine.name in captured.err
+    assert "manual review" in captured.err.lower()
+
+
 def test_cleanup_keeps_minimum(tmp_path: Path, monkeypatch) -> None:
     backup_root = tmp_path / "backups"
     monkeypatch.setattr(backup_data, "BACKUP_ROOT", backup_root)

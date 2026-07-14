@@ -209,6 +209,14 @@ def _quarantine_identity_matches(record: _OwnedLocalBackup, quarantine: Path) ->
     )
 
 
+def _warn_incomplete_cleanup(quarantine: Path) -> None:
+    print(
+        f"[backup] WARNING: cleanup incomplete for quarantine {quarantine.name}; "
+        "manual review required.",
+        file=sys.stderr,
+    )
+
+
 def _cleanup_old_backups(
     keep: int = 5,
     max_age_days: int = 30,
@@ -249,19 +257,22 @@ def _cleanup_old_backups(
         if not _quarantine_identity_matches(record, quarantine):
             _restore_quarantine(quarantine, record.path)
             continue
+        destructive_started = False
         try:
+            destructive_started = True
             shutil.rmtree(quarantine)
         except OSError:
-            _restore_quarantine(quarantine, record.path)
+            if destructive_started:
+                _warn_incomplete_cleanup(quarantine)
             continue
         try:
             quarantine.lstat()
         except FileNotFoundError:
             print(f"[backup] cleanup: removed old backup {record.name}")
         except OSError:
-            _restore_quarantine(quarantine, record.path)
+            _warn_incomplete_cleanup(quarantine)
         else:
-            _restore_quarantine(quarantine, record.path)
+            _warn_incomplete_cleanup(quarantine)
 
 
 def _backup_sqlite(source_path: Path, artifact_path: Path) -> None:
