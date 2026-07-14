@@ -149,17 +149,33 @@ class DataRichSourceCheck(_DataJsonCheck):
             sys.path.insert(0, _AGENT_DIR)
         from index_policy import decide_entity
         from launch_evidence import current_policy_evidence
+        from source_policy import has_external_source_url
 
         violations = []
-        evidence = current_policy_evidence()
+        try:
+            evidence = current_policy_evidence()
+        except Exception as exc:
+            return [{
+                "file": DATA_REL,
+                "line": 0,
+                "rule": self.rule,
+                "code": "index-policy-artifact-load-failed",
+                "msg": f"index policy artifact load failed ({type(exc).__name__})",
+            }]
         for e in entities:
             if e.get("type") == "place" or not decide_entity(e, evidence).indexable:
                 continue
-            s = e.get("source")
-            has = bool(s) if isinstance(s, list) else bool(str(s or "").strip())
-            if not has:
-                violations.append({"file": DATA_REL, "line": 0, "rule": self.rule,
-                                   "msg": f"{e.get('id') or '<no-id>'}: RICH nhưng thiếu source"})
+            if not has_external_source_url(e.get("source")):
+                violations.append({
+                    "file": DATA_REL,
+                    "line": 0,
+                    "rule": self.rule,
+                    "code": "external-source-missing",
+                    "msg": (
+                        f"{e.get('id') or '<no-id>'}: "
+                        "RICH nhưng thiếu external source URL"
+                    ),
+                })
         return violations
 
 

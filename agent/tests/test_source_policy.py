@@ -1,0 +1,45 @@
+from __future__ import annotations
+
+import pytest
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        None,
+        "",
+        [],
+        {},
+        {"title": "Manual review"},
+        "/relative/source",
+        {"url": "/relative/source"},
+        "manual",
+        "http://localhost:8000/source",
+        "https://api.localhost/source",
+        "https://service.local/source",
+        "http://127.0.0.1/source",
+        "http://192.168.1.20/source",
+        "http://[::1]/source",
+        "https://intranet/source",
+        "https://vinhlong360.vn/source",
+        "https://www.vinhlong360.vn/source",
+    ],
+)
+def test_rejects_sources_without_an_external_http_url(source: object):
+    from source_policy import has_external_source_url
+
+    assert has_external_source_url(source) is False
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "https://example.org/source",
+        {"url": "http://example.org/source"},
+        [{"href": "https://example.org/source"}],
+    ],
+)
+def test_accepts_supported_external_http_source_shapes(source: object):
+    from source_policy import has_external_source_url
+
+    assert has_external_source_url(source) is True

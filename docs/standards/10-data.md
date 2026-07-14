@@ -15,7 +15,7 @@ Schema.org (type mapping đã dùng trong seo.py) · nguyên tắc anti-hallucin
 | R10.5 | KHÔNG bịa fact thực địa (SĐT/giờ/giá/mùa) — chỉ nhập từ nguồn; thiếu thì để trống | checklist-ký* | ngoại lệ ký bên dưới |
 | R10.6 | Ảnh CHỈ AI-gen — cấm Wikimedia/Pexels/Unsplash/UGC/cào báo | hard | check_banned_claims |
 | R10.7 | "tỉnh Bến Tre/Trà Vinh" chỉ hợp lệ trong ngữ cảnh lịch sử ĐÃ whitelist (per-occurrence, chống swap) | hard-ratchet | check_tinh_cu + whitelist-tinh-cu.txt |
-| R10.8 | Entity index-worthy (RICH) phải có ≥1 `source` — giữ thành quả 0 thiếu | hard-ratchet (baseline 0, SP2) | check_data_schema (data_rich_source, tái dùng seo.is_index_worthy) |
+| R10.8 | Entity được `agent/index_policy.py` quyết định indexable phải có ≥1 URL nguồn HTTP(S) bên ngoài; lỗi tải policy artifact/evidence là lỗi hard | hard-ratchet (baseline 0, SP2); artifact-load failure: hard | check_data_schema (`data_rich_source`, tái dùng `index_policy.decide_entity`) |
 | R10.9 | Xuất xứ đặc sản/địa danh phải TRONG tỉnh (cấm gán Cái Bè/Lai Vung/Định Yên...) — nợ về 0 sau SP2 (quyết định chủ 2026-07-07: bỏ hẳn điểm ngoài tỉnh) | soft-ratchet (baseline 0) | check_content_voice (out_of_province) |
 
 ## Ngoại lệ đã duyệt

@@ -7,6 +7,8 @@ Covers the P2/P4 SEO/GEO additions:
   attribution fields present only when the entity actually carries them (B6).
 """
 
+import re
+
 import seo
 
 
@@ -2426,7 +2428,15 @@ def test_sitemap_media_no_caption_without_summary(monkeypatch):
 
 def test_sitemap_url_has_hreflang(monkeypatch):
     data = {
-        "entities": [{"id": "a", "name": "A", "type": "attraction", "confidence": 0.9}],
+        "entities": [{
+            "id": "a",
+            "name": "A",
+            "type": "attraction",
+            "status": "published",
+            "verified": True,
+            "summary": "word " * 130,
+            "confidence": 0.9,
+        }],
         "relationships": [],
         "itineraries": [],
     }
@@ -2436,5 +2446,11 @@ def test_sitemap_url_has_hreflang(monkeypatch):
     monkeypatch.setattr(seo, "_data_mtime_ns", 0)
     resp = seo.sitemap()
     xml = resp.body.decode()
-    assert 'hreflang="vi"' in xml
-    assert 'hreflang="x-default"' in xml
+    url_block = re.search(
+        rf"<url>\s*<loc>{re.escape(seo.SITE)}/dia-diem/a</loc>.*?</url>",
+        xml,
+        re.DOTALL,
+    )
+    assert url_block is not None
+    assert 'hreflang="vi"' in url_block.group(0)
+    assert 'hreflang="x-default"' in url_block.group(0)

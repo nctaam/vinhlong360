@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from dataclasses import dataclass
 from hashlib import sha256
 
@@ -26,9 +27,10 @@ _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 def _validated_revision(value: object, label: str) -> str:
     if type(value) is not str:
         raise TypeError(f"{label} must be a string")
-    if not value or value.strip() != value:
+    normalized = unicodedata.normalize("NFC", value)
+    if not normalized or normalized.strip() != normalized:
         raise ValueError(f"{label} must be a non-empty canonical revision")
-    return value
+    return normalized
 
 
 def _validated_sha256(value: object, label: str) -> str:
@@ -68,9 +70,12 @@ def build_policy_fingerprint(
             "sha256": _validated_sha256(disclosure_digest, "disclosure digest"),
         },
     }
-    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
-        "utf-8"
-    )
+    canonical = json.dumps(
+        payload,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
     return sha256(canonical).hexdigest()
 
 

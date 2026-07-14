@@ -145,6 +145,56 @@ def test_rich_source_catches_rich_entity_without_source(tmp_path):
     r = DataRichSourceCheck(root=tmp_path).run()
     assert r["level"] == "hard-ratchet" and r["rule"] == "R10.8"
     assert r["count"] == 1 and "rich-0src" in r["violations"][0]["msg"]
+    assert r["violations"][0]["code"] == "external-source-missing"
+
+
+def test_rich_source_rejects_self_and_title_only_sources(tmp_path):
+    from checks.check_data_schema import DataRichSourceCheck
+
+    _mk_data(tmp_path, [
+        {"id": "rich-self", "type": "dish", "name": "A", "status": "published", "verified": True,
+         "summary": "s", "description": RICH_TEXT,
+         "source": [{"url": "https://vinhlong360.vn/dia-diem/a"}]},
+        {"id": "rich-title", "type": "dish", "name": "B", "status": "published", "verified": True,
+         "summary": "s", "description": RICH_TEXT,
+         "source": [{"title": "Manual review"}]},
+    ])
+
+    result = DataRichSourceCheck(root=tmp_path).run()
+
+    assert result["count"] == 2
+    assert [violation["code"] for violation in result["violations"]] == [
+        "external-source-missing",
+        "external-source-missing",
+    ]
+
+
+def test_rich_source_reports_structured_policy_artifact_load_failure(
+    tmp_path,
+    monkeypatch,
+):
+    from checks.check_data_schema import DataRichSourceCheck
+
+    monkeypatch.syspath_prepend(str(ROOT / "agent"))
+    import launch_evidence
+
+    def fail_to_load_evidence():
+        raise RuntimeError("sensitive artifact path")
+
+    monkeypatch.setattr(
+        launch_evidence,
+        "current_policy_evidence",
+        fail_to_load_evidence,
+    )
+    _mk_data(tmp_path, [])
+
+    result = DataRichSourceCheck(root=tmp_path).run()
+
+    assert result["count"] == 1
+    violation = result["violations"][0]
+    assert violation["code"] == "index-policy-artifact-load-failed"
+    assert "RuntimeError" in violation["msg"]
+    assert "sensitive artifact path" not in violation["msg"]
 
 
 def test_rich_source_uses_the_central_index_policy_not_seo():
@@ -153,6 +203,7 @@ def test_rich_source_uses_the_central_index_policy_not_seo():
     source = inspect.getsource(DataRichSourceCheck.check_entities)
     assert "from index_policy import decide_entity" in source
     assert "from launch_evidence import current_policy_evidence" in source
+    assert "from source_policy import has_external_source_url" in source
     assert "from seo" not in source
 
 

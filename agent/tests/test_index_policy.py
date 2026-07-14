@@ -4,6 +4,7 @@ import copy
 import json
 import subprocess
 import sys
+import unicodedata
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 from types import MappingProxyType
@@ -38,6 +39,11 @@ EVIDENCE = PolicyEvidence(
 )
 
 
+class _NonStringEntityType:
+    def __eq__(self, other: object) -> bool:
+        raise AssertionError("non-string entity types must not be compared")
+
+
 @pytest.fixture
 def fingerprint_fixture() -> dict[str, object]:
     return json.loads(FINGERPRINT_FIXTURE.read_text(encoding="utf-8"))
@@ -58,6 +64,30 @@ def _public_entity(**overrides: object) -> dict[str, object]:
     }
     entity.update(overrides)
     return entity
+
+
+def test_reviewed_non_place_entity_types_are_exact():
+    from public_entity_types import REVIEWED_NON_PLACE_ENTITY_TYPES
+
+    assert REVIEWED_NON_PLACE_ENTITY_TYPES == frozenset(
+        {
+            "accommodation",
+            "attraction",
+            "cafe",
+            "craft_village",
+            "dish",
+            "drink",
+            "event",
+            "experience",
+            "facility",
+            "history",
+            "nature",
+            "organization",
+            "person",
+            "product",
+            "restaurant",
+        }
+    )
 
 
 def test_entity_requires_public_eligibility_and_exactly_130_words():
@@ -84,6 +114,16 @@ def test_description_casefold_duplicate_is_counted_once():
     assert decision.reasons == ("description-below-130-words",)
 
 
+def test_nfc_nfd_description_duplicate_is_counted_once():
+    summary = _words(65, "café")
+    description = unicodedata.normalize("NFD", summary)
+    entity = _public_entity(summary=summary, description=description)
+
+    decision = decide_entity(entity, EVIDENCE)
+
+    assert decision.reasons == ("description-below-130-words",)
+
+
 def test_distinct_summary_and_description_are_counted_together():
     entity = _public_entity(
         summary=_words(65, "vườn"),
@@ -99,6 +139,50 @@ def test_unicode_words_count_at_the_same_129_130_boundary():
 
     entity["summary"] = f"{entity['summary']} miệtvườn"
     assert decide_entity(entity, EVIDENCE).indexable is True
+
+
+@pytest.mark.parametrize("token", ["___", "123", "--"])
+def test_non_letter_tokens_receive_no_word_credit(token: str):
+    entity = _public_entity(summary=f"{_words(129)} {token}")
+
+    assert decide_entity(entity, EVIDENCE).reasons == (
+        "description-below-130-words",
+    )
+
+
+def test_missing_entity_type_uses_canonical_reason():
+    entity = _public_entity()
+    del entity["type"]
+
+    assert decide_entity(entity, EVIDENCE).reasons == ("entity-type-missing",)
+
+
+@pytest.mark.parametrize(
+    "entity_type, expected_reason",
+    [
+        (None, "entity-type-missing"),
+        ("", "entity-type-missing"),
+        ("itinerary", "entity-type-not-allowlisted"),
+        ("unknown", "entity-type-not-allowlisted"),
+        (1, "entity-type-not-allowlisted"),
+        (True, "entity-type-not-allowlisted"),
+    ],
+)
+def test_entity_type_must_be_reviewed_and_allowlisted(
+    entity_type: object,
+    expected_reason: str,
+):
+    entity = _public_entity(type=entity_type)
+
+    assert decide_entity(entity, EVIDENCE).reasons == (expected_reason,)
+
+
+def test_non_string_entity_type_is_rejected_without_string_comparison():
+    entity = _public_entity(type=_NonStringEntityType())
+
+    assert decide_entity(entity, EVIDENCE).reasons == (
+        "entity-type-not-allowlisted",
+    )
 
 
 @pytest.mark.parametrize(
@@ -133,7 +217,7 @@ def test_missing_private_draft_unpublished_and_unverified_entities_are_ineligibl
     entity: dict[str, object],
     expected_reason: str,
 ):
-    entity.update(summary=_words(130), description="")
+    entity.update(type="attraction", summary=_words(130), description="")
 
     decision = decide_entity(entity, EVIDENCE)
 
@@ -170,8 +254,9 @@ def test_legacy_integer_one_verification_is_explicitly_supported_without_float_a
     assert is_publicly_eligible(_public_entity(verified=1.0)) is False
 
 
-def test_public_reason_order_is_stable_unique_and_precedes_quality():
+def test_entity_reason_order_is_stable_unique_and_precedes_public_and_quality():
     entity = {
+        "type": "unknown",
         "status": "draft",
         "verified": False,
         "is_private": True,
@@ -184,6 +269,7 @@ def test_public_reason_order_is_stable_unique_and_precedes_quality():
     decision = decide_entity(entity, EVIDENCE)
 
     assert decision.reasons == (
+        "entity-type-not-allowlisted",
         "public-status-not-allowlisted",
         "public-explicitly-unverified",
         "public-private-content",
@@ -310,6 +396,22 @@ def test_fingerprint_is_deterministic_and_every_artifact_field_changes_it(
         changed = dict(inputs)
         changed[field] = replacement
         assert build_policy_fingerprint(**changed) != baseline
+
+
+def test_fingerprint_normalizes_equivalent_revision_strings(
+    fingerprint_fixture: dict[str, object],
+):
+    inputs = fingerprint_fixture["inputs"]
+    assert isinstance(inputs, dict)
+    nfc_revision = "révision-v1"
+    nfd_revision = unicodedata.normalize("NFD", nfc_revision)
+
+    nfc_inputs = dict(inputs, route_revision=nfc_revision)
+    nfd_inputs = dict(inputs, route_revision=nfd_revision)
+
+    assert build_policy_fingerprint(**nfc_inputs) == build_policy_fingerprint(
+        **nfd_inputs
+    )
 
 
 @pytest.mark.parametrize(

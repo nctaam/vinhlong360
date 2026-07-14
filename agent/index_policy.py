@@ -1,17 +1,22 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass
 
 if __package__:
     from .launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence
+    from .public_entity_types import REVIEWED_NON_PLACE_ENTITY_TYPES
 else:
     from launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence
+    from public_entity_types import REVIEWED_NON_PLACE_ENTITY_TYPES
 
 
 PUBLIC_STATUSES = frozenset({"published", "verified"})
 ENTITY_REASON_ORDER = (
+    "entity-type-missing",
+    "entity-type-not-allowlisted",
     "public-status-missing",
     "public-status-not-allowlisted",
     "public-verification-missing",
@@ -93,6 +98,19 @@ def _is_supported_verified(value: object) -> bool:
     return value is True or (type(value) is int and value == 1)
 
 
+def _entity_type_reasons(snapshot: Mapping[str, object]) -> tuple[str, ...]:
+    entity_type = snapshot["type"]
+    if entity_type is _MISSING or entity_type is None:
+        return ("entity-type-missing",)
+    if type(entity_type) is not str:
+        return ("entity-type-not-allowlisted",)
+    if not entity_type:
+        return ("entity-type-missing",)
+    if entity_type not in REVIEWED_NON_PLACE_ENTITY_TYPES:
+        return ("entity-type-not-allowlisted",)
+    return ()
+
+
 def _public_eligibility_reasons(snapshot: Mapping[str, object]) -> tuple[str, ...]:
     reasons: list[str] = []
 
@@ -139,12 +157,23 @@ def is_publicly_eligible(entity: Mapping[str, object]) -> bool:
 def _descriptive_word_count(snapshot: Mapping[str, object]) -> int:
     summary_value = snapshot["summary"]
     description_value = snapshot["description"]
-    summary = summary_value.strip() if type(summary_value) is str else ""
-    description = description_value.strip() if type(description_value) is str else ""
+    summary = (
+        unicodedata.normalize("NFC", summary_value).strip()
+        if type(summary_value) is str
+        else ""
+    )
+    description = (
+        unicodedata.normalize("NFC", description_value).strip()
+        if type(description_value) is str
+        else ""
+    )
     parts = [summary]
     if description.casefold() != summary.casefold():
         parts.append(description)
-    return len(_UNICODE_WORD.findall(" ".join(parts)))
+    return sum(
+        any(character.isalpha() for character in token)
+        for token in _UNICODE_WORD.findall(" ".join(parts))
+    )
 
 
 def decide_entity(
@@ -153,9 +182,10 @@ def decide_entity(
     if type(evidence) is not PolicyEvidence:
         raise TypeError("evidence must be PolicyEvidence")
     snapshot = _snapshot(entity)
-    if snapshot["type"] == "place":
+    if type(snapshot["type"]) is str and snapshot["type"] == "place":
         raise ValueError("decide_entity accepts non-place entities only")
-    reasons = list(_public_eligibility_reasons(snapshot))
+    reasons = list(_entity_type_reasons(snapshot))
+    reasons.extend(_public_eligibility_reasons(snapshot))
     if _descriptive_word_count(snapshot) < 130:
         reasons.append("description-below-130-words")
     return IndexPolicyDecision(
