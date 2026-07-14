@@ -11,6 +11,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DISCLOSURE_FILENAME = "ai-disclosure.json"
 CANONICAL_DISCLOSURE_PATH = PurePosixPath("config") / DISCLOSURE_FILENAME
 DISCLOSURE_PATH = REPO_ROOT / CANONICAL_DISCLOSURE_PATH
+CANONICAL_ARTIFACT_PATHS = (
+    PurePosixPath("config/launch-indexing-policy.json"),
+    CANONICAL_DISCLOSURE_PATH,
+)
+GIT_ATTRIBUTES_PATH = REPO_ROOT / ".gitattributes"
+EXPECTED_GIT_ATTRIBUTES_BYTES = (
+    b"config/launch-indexing-policy.json text eol=lf\n"
+    b"config/ai-disclosure.json text eol=lf\n"
+)
 EXPECTED_DISCLOSURE_BYTES = (
     "{\n"
     '  "schema_version": 1,\n'
@@ -106,19 +115,26 @@ def _find_noncanonical_ai_disclosure_paths(
     )
 
 
-def _git_tracked_paths() -> list[PurePosixPath]:
+def _run_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
     try:
         result = subprocess.run(
-            ["git", "ls-files", "-z"],
-            cwd=REPO_ROOT,
+            ["git", *args],
+            cwd=repo_root,
             capture_output=True,
             check=False,
         )
     except FileNotFoundError:
-        pytest.fail("git is required to verify tracked canonical artifact paths")
+        pytest.fail("git is required to verify canonical artifact contracts")
     if result.returncode != 0:
         stderr = result.stderr.decode("utf-8", errors="replace").strip()
-        pytest.fail(f"git ls-files failed with exit {result.returncode}: {stderr}")
+        pytest.fail(
+            f"git {' '.join(args)} failed with exit {result.returncode}: {stderr}"
+        )
+    return result
+
+
+def _git_tracked_paths() -> list[PurePosixPath]:
+    result = _run_git(REPO_ROOT, "ls-files", "-z")
     return [
         PurePosixPath(raw_path.decode("utf-8"))
         for raw_path in result.stdout.split(b"\0")
@@ -126,8 +142,87 @@ def _git_tracked_paths() -> list[PurePosixPath]:
     ]
 
 
+def _git_text_eol_attributes(
+    repo_root: Path, paths: tuple[PurePosixPath, ...]
+) -> dict[tuple[PurePosixPath, str], str]:
+    result = _run_git(
+        repo_root,
+        "check-attr",
+        "-z",
+        "text",
+        "eol",
+        "--",
+        *(path.as_posix() for path in paths),
+    )
+    fields = [field for field in result.stdout.split(b"\0") if field]
+    assert len(fields) % 3 == 0
+    return {
+        (
+            PurePosixPath(fields[index].decode("utf-8")),
+            fields[index + 1].decode("ascii"),
+        ): fields[index + 2].decode("ascii")
+        for index in range(0, len(fields), 3)
+    }
+
+
 def test_ai_disclosure_bytes_match_canonical_utf8_artifact():
     _assert_canonical_disclosure_bytes(DISCLOSURE_PATH)
+
+
+def test_canonical_artifacts_have_exact_lf_git_attributes():
+    expected_attributes = {
+        (path, attribute): value
+        for path in CANONICAL_ARTIFACT_PATHS
+        for attribute, value in (("text", "set"), ("eol", "lf"))
+    }
+
+    assert (
+        _git_text_eol_attributes(REPO_ROOT, CANONICAL_ARTIFACT_PATHS)
+        == expected_attributes
+    )
+    assert GIT_ATTRIBUTES_PATH.read_text(encoding="ascii").splitlines() == (
+        EXPECTED_GIT_ATTRIBUTES_BYTES.decode("ascii").splitlines()
+    )
+
+
+def test_autocrlf_checkout_index_preserves_canonical_artifact_bytes(tmp_path: Path):
+    isolated_repo = tmp_path / "repo"
+    fresh_checkout = tmp_path / "fresh"
+    isolated_repo.mkdir()
+    fresh_checkout.mkdir()
+    _run_git(isolated_repo, "init", "--quiet")
+    _run_git(isolated_repo, "config", "core.autocrlf", "true")
+    (isolated_repo / ".gitattributes").write_bytes(EXPECTED_GIT_ATTRIBUTES_BYTES)
+
+    canonical_bytes = {}
+    for relative_path in CANONICAL_ARTIFACT_PATHS:
+        raw = (REPO_ROOT / relative_path).read_bytes()
+        assert raw.endswith(b"\n")
+        assert b"\r\n" not in raw
+        canonical_bytes[relative_path] = raw
+        target = isolated_repo / relative_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(raw)
+
+    _run_git(
+        isolated_repo,
+        "add",
+        "--",
+        ".gitattributes",
+        *(path.as_posix() for path in CANONICAL_ARTIFACT_PATHS),
+    )
+    _run_git(
+        isolated_repo,
+        "checkout-index",
+        "--all",
+        "--force",
+        f"--prefix={fresh_checkout.as_posix()}/",
+    )
+
+    for relative_path, expected_bytes in canonical_bytes.items():
+        checked_out_bytes = (fresh_checkout / relative_path).read_bytes()
+        assert checked_out_bytes == expected_bytes
+        assert b"\r\n" not in checked_out_bytes
 
 
 @pytest.mark.parametrize(
