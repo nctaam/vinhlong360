@@ -4,6 +4,10 @@ import shutil
 import subprocess
 import tarfile
 
+from ai_disclosure import load_ai_disclosure
+from route_manifest import load_route_manifest
+from scripts.package_launch_release import build_backend_archive
+
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -135,3 +139,20 @@ def test_docker_context_excludes_secrets_and_local_build_caches():
     } <= ignored
     assert "config" not in ignored
     assert "config/" not in ignored
+
+
+def test_unpacked_release_loaders_read_exact_packaged_bytes(tmp_path: Path):
+    archive = build_backend_archive(ROOT, tmp_path / "backend.tar.gz")
+    release_root = tmp_path / "release"
+    with tarfile.open(archive, "r:gz") as bundle:
+        bundle.extractall(release_root, filter="data")
+
+    route = load_route_manifest(release_root=release_root)
+    disclosure = load_ai_disclosure(release_root=release_root)
+
+    route_path = ROOT / "config" / "launch-indexing-policy.json"
+    disclosure_path = ROOT / "config" / "ai-disclosure.json"
+    assert route.artifact.path == release_root / "config" / route_path.name
+    assert disclosure.artifact.path == release_root / "config" / disclosure_path.name
+    assert route.artifact.raw == route_path.read_bytes()
+    assert disclosure.artifact.raw == disclosure_path.read_bytes()
