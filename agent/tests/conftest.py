@@ -25,7 +25,11 @@ def isolated_sqlite_db(tmp_path, monkeypatch):
     monkeypatch.delenv("DATABASE_URL", raising=False)
     import database
 
+    monkeypatch.setattr(database, "USE_PG", False)
+    monkeypatch.setattr(database, "DATABASE_URL", "")
     instance = database.Database(str(tmp_path / "isolated.db"))
+    assert instance._use_pg is False
+    assert instance._dsn is None
     assert Path(instance.db_path).parent == tmp_path
     return instance
 

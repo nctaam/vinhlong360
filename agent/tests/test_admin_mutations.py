@@ -19,21 +19,48 @@ client = TestClient(app)
 H = {"X-Admin-Key": os.environ["ADMIN_API_KEY"]}
 _USE_PG = os.environ.get("USE_POSTGRES") == "true"
 
+_KNOWLEDGE_STATE_NAMES = (
+    "_entities",
+    "_relationships",
+    "_itineraries",
+    "_data_source",
+    "_adjacency",
+    "_adj_src",
+)
+
+
+@pytest.fixture
+def knowledge_state_snapshot():
+    import knowledge
+
+    snapshot = {name: getattr(knowledge, name) for name in _KNOWLEDGE_STATE_NAMES}
+    yield snapshot
+    for name, original in snapshot.items():
+        assert getattr(knowledge, name) is original
+    entities = knowledge._entities or {}
+    assert "test-isolation-sentinel" not in entities
+    assert "test-mutation-knowledge-lifecycle" not in entities
+
 
 @pytest.fixture(autouse=True)
-def isolate_admin_database(isolated_sqlite_db, monkeypatch):
+def isolate_admin_database(isolated_sqlite_db, monkeypatch, knowledge_state_snapshot):
     import admin
     import database
+    import knowledge
 
     monkeypatch.setattr(database, "db", isolated_sqlite_db)
     monkeypatch.setattr(admin, "db", isolated_sqlite_db)
-    # Keep reload from treating an emptied test DB as a fresh install and seeding real data.
-    isolated_sqlite_db.upsert_entity({
-        "id": "test-isolation-sentinel",
-        "name": "Test isolation sentinel",
-        "type": "attraction",
-    })
-    yield
+    try:
+        # Keep reload from treating an emptied test DB as a fresh install and seeding real data.
+        isolated_sqlite_db.upsert_entity({
+            "id": "test-isolation-sentinel",
+            "name": "Test isolation sentinel",
+            "type": "attraction",
+        })
+        yield
+    finally:
+        for name, original in knowledge_state_snapshot.items():
+            setattr(knowledge, name, original)
 
 
 def test_admin_mutations_use_temporary_sqlite(isolated_sqlite_db):
@@ -41,6 +68,16 @@ def test_admin_mutations_use_temporary_sqlite(isolated_sqlite_db):
     assert pathlib.Path(isolated_sqlite_db.db_path).resolve() != (
         pathlib.Path(__file__).resolve().parents[1] / "data" / "vinhlong360.db"
     ).resolve()
+
+
+def test_admin_mutation_knowledge_state_is_fixture_scoped():
+    response = _create_entity("knowledge-lifecycle")
+    assert response.status_code == 201
+
+    import knowledge
+
+    assert "test-isolation-sentinel" in knowledge._entities
+    assert "test-mutation-knowledge-lifecycle" in knowledge._entities
 
 
 # ── Entity CRUD ──────────────────────────────────────────────────────────

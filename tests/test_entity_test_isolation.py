@@ -12,13 +12,39 @@ CRITICAL_DECLARATIONS = (
     ),
     (
         "agent/tests/conftest.py",
+        'monkeypatch.setattr(database, "USE_PG", False)',
+    ),
+    (
+        "agent/tests/conftest.py",
+        'monkeypatch.setattr(database, "DATABASE_URL", "")',
+    ),
+    (
+        "agent/tests/conftest.py",
         'instance = database.Database(str(tmp_path / "isolated.db"))',
     ),
+    ("agent/tests/conftest.py", "assert instance._use_pg is False"),
+    ("agent/tests/conftest.py", "assert instance._dsn is None"),
     ("agent/tests/conftest.py", "return instance"),
     (
         "agent/tests/test_admin_mutations.py",
+        '_KNOWLEDGE_STATE_NAMES = (\n'
+        '    "_entities",\n'
+        '    "_relationships",\n'
+        '    "_itineraries",\n'
+        '    "_data_source",\n'
+        '    "_adjacency",\n'
+        '    "_adj_src",\n'
+        ")",
+    ),
+    (
+        "agent/tests/test_admin_mutations.py",
         "@pytest.fixture(autouse=True)\n"
-        "def isolate_admin_database(isolated_sqlite_db, monkeypatch):",
+        "def isolate_admin_database(isolated_sqlite_db, monkeypatch, "
+        "knowledge_state_snapshot):",
+    ),
+    (
+        "agent/tests/test_admin_mutations.py",
+        "def knowledge_state_snapshot():",
     ),
     (
         "agent/tests/test_admin_mutations.py",
@@ -27,6 +53,14 @@ CRITICAL_DECLARATIONS = (
     (
         "agent/tests/test_admin_mutations.py",
         'monkeypatch.setattr(admin, "db", isolated_sqlite_db)',
+    ),
+    (
+        "agent/tests/test_admin_mutations.py",
+        "for name, original in knowledge_state_snapshot.items():",
+    ),
+    (
+        "agent/tests/test_admin_mutations.py",
+        "setattr(knowledge, name, original)",
     ),
     (
         "agent/tests/test_kb_curation.py",
