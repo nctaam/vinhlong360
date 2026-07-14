@@ -1,6 +1,6 @@
 # Entity Published-Status Migration Design
 
-> STATUS: proposed; PostgreSQL-only direction approved; written-spec review required before implementation planning; no data mutation authorized by this document
+> STATUS: approved as design input for implementation planning; PostgreSQL-only; Stage C data mutation requires separate exact-artifact owner authorization
 
 ## 1. Goal
 
