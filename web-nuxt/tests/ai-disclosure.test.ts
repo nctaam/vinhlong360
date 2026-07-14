@@ -148,24 +148,6 @@ function cloneDisclosure(): Record<string, unknown> {
   return structuredClone(disclosureJson) as Record<string, unknown>
 }
 
-function disclosureForMutation(mutation: DisclosureMutation): Record<string, unknown> {
-  const candidate = cloneDisclosure()
-  if (
-    mutation.name === 'extra-root-key'
-    && mutation.operation === 'set'
-    && mutation.pointer === '/extra'
-  ) {
-    // Pre-seed the one intentional creation so applyMutation can remain typo-safe.
-    Object.defineProperty(candidate, 'extra', {
-      configurable: true,
-      enumerable: true,
-      value: undefined,
-      writable: true,
-    })
-  }
-  return candidate
-}
-
 function pointerParts(pointer: string): string[] {
   if (!pointer.startsWith('/')) {
     throw new Error(`AI disclosure corpus pointer must start with "/": ${pointer}`)
@@ -291,7 +273,12 @@ function pointerContainer(value: unknown, pointer: string): PointerContainer {
   return value as PointerContainer
 }
 
-function existingPointerKey(container: PointerContainer, token: string, pointer: string): string {
+function existingPointerKey(
+  container: PointerContainer,
+  token: string,
+  pointer: string,
+  allowMissing = false,
+): string {
   if (Array.isArray(container)) {
     if (!CANONICAL_ARRAY_INDEX.test(token) || !Number.isSafeInteger(Number(token))) {
       throw new Error(`AI disclosure corpus pointer index is invalid: ${pointer}`)
@@ -301,6 +288,7 @@ function existingPointerKey(container: PointerContainer, token: string, pointer:
     }
   }
   if (!Object.hasOwn(container, token)) {
+    if (allowMissing && !Array.isArray(container)) return token
     throw new Error(`AI disclosure corpus pointer target does not exist: ${pointer}`)
   }
   return token
@@ -310,7 +298,11 @@ function ownPointerValue(container: PointerContainer, key: string): unknown {
   return Array.isArray(container) ? container[Number(key)] : container[key]
 }
 
-function pointerParent(document: unknown, pointer: string): [PointerContainer, string] {
+function pointerParent(
+  document: unknown,
+  pointer: string,
+  allowMissingFinalTarget = false,
+): [PointerContainer, string] {
   const parts = pointerParts(pointer)
   let current = document
   for (const part of parts.slice(0, -1)) {
@@ -318,7 +310,7 @@ function pointerParent(document: unknown, pointer: string): [PointerContainer, s
     current = ownPointerValue(container, existingPointerKey(container, part, pointer))
   }
   const parent = pointerContainer(current, pointer)
-  const key = existingPointerKey(parent, parts.at(-1)!, pointer)
+  const key = existingPointerKey(parent, parts.at(-1)!, pointer, allowMissingFinalTarget)
   return [parent, key]
 }
 
@@ -333,7 +325,12 @@ function pointerValue(document: unknown, pointer: string): unknown {
 
 function applyMutation(document: unknown, rawMutation: DisclosureMutation): void {
   const mutation = validateMutationRow(rawMutation, 'mutation')
-  const [parent, key] = pointerParent(document, mutation.pointer)
+  const allowCreate = mutation.name === 'extra-root-key'
+    && mutation.operation === 'set'
+    && mutation.pointer === '/extra'
+    && mutation.value === true
+    && mutation.error === 'root keys'
+  const [parent, key] = pointerParent(document, mutation.pointer, allowCreate)
 
   switch (mutation.operation) {
     case 'delete':
@@ -509,8 +506,23 @@ describe('parseAiDisclosure', () => {
     expect(candidate).toEqual(before)
   })
 
+  it('creates the reviewed extra root key only when its exact mutation is applied', () => {
+    const mutation = validatorCorpus.find(row => row.name === 'extra-root-key')!
+    const candidate = cloneDisclosure()
+
+    expect(parseAiDisclosure(candidate)).toEqual(disclosureJson)
+    expect(Object.hasOwn(candidate, 'extra')).toBe(false)
+
+    applyMutation(candidate, mutation)
+
+    expect(Object.hasOwn(candidate, 'extra')).toBe(true)
+    expect(candidate.extra).toBe(true)
+  })
+
   it.each(validatorCorpus)('rejects shared validator mutation: $name', (mutation) => {
-    const candidate = disclosureForMutation(mutation)
+    const candidate = cloneDisclosure()
+
+    expect(parseAiDisclosure(candidate)).toEqual(disclosureJson)
     applyMutation(candidate, mutation)
 
     expectExactError(() => parseAiDisclosure(candidate), exactLoaderErrors[mutation.name]!)
