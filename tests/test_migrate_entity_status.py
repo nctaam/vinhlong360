@@ -279,40 +279,44 @@ def test_write_immutable_json_preflights_serialization_without_false_artifact(
     assert not path.exists()
 
 
-def test_write_immutable_json_removes_partial_file_created_by_failed_write(
+def test_write_immutable_json_does_not_remove_foreign_replacement_on_write_failure(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     path = tmp_path / "report" / "plan.json"
+    foreign = b"other-process"
 
-    def fail_after_partial_write(destination: Path, _value: object) -> None:
+    def replace_before_failure(destination: Path, _value: object) -> None:
         destination.parent.mkdir(parents=True)
-        destination.write_bytes(b"partial")
+        destination.write_bytes(b"owned-partial")
+        destination.unlink()
+        destination.write_bytes(foreign)
         raise OSError("simulated write failure")
 
-    monkeypatch.setattr(migration, "write_exclusive", fail_after_partial_write)
+    monkeypatch.setattr(migration, "write_exclusive", replace_before_failure)
 
-    with pytest.raises(OSError, match="simulated write failure"):
-        migration.write_immutable_json(path, {"valid": True})
+    try:
+        with pytest.raises(OSError, match="simulated write failure"):
+            migration.write_immutable_json(path, {"valid": True})
+    finally:
+        assert path.read_bytes() == foreign
 
-    assert not path.exists()
 
-
-def test_write_immutable_json_removes_file_when_hashing_fails(
+def test_write_immutable_json_returns_precomputed_digest_without_path_hashing(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     path = tmp_path / "report" / "plan.json"
+    value = {"place": "V\u0129nh Long", "valid": True}
 
-    def fail_hash(_path: Path) -> str:
-        raise OSError("simulated hash failure")
+    def fail_path_hash(_path: Path) -> str:
+        pytest.fail("immutable digest was recomputed from the final path")
 
-    monkeypatch.setattr(migration, "sha256_file", fail_hash)
+    monkeypatch.setattr(migration, "sha256_file", fail_path_hash, raising=False)
 
-    with pytest.raises(OSError, match="simulated hash failure"):
-        migration.write_immutable_json(path, {"valid": True})
+    digest = migration.write_immutable_json(path, value)
 
-    assert not path.exists()
+    assert digest == hashlib.sha256(canonical_json_bytes(value)).hexdigest()
 
 
 def test_write_immutable_json_never_removes_preexisting_file_on_exclusive_refusal(

@@ -28,7 +28,6 @@ if __package__:
         read_target_identity,
         resolve_database_url,
         sha256_bytes,
-        sha256_file,
         target_fingerprint,
         write_exclusive,
     )
@@ -38,7 +37,6 @@ else:
         read_target_identity,
         resolve_database_url,
         sha256_bytes,
-        sha256_file,
         target_fingerprint,
         write_exclusive,
     )
@@ -94,25 +92,11 @@ def schema_fingerprint(columns) -> str:
     return sha256_bytes(canonical_json_bytes(_normalized_schema_columns(columns)))
 
 
-def _best_effort_unlink(path: Path) -> None:
-    try:
-        path.unlink(missing_ok=True)
-    except OSError:
-        return
-
-
 def write_immutable_json(path: Path, value: object) -> str:
-    canonical_json_bytes(value)
-    existed_before = path.exists()
-    try:
-        write_exclusive(path, value)
-        return sha256_file(path)
-    except FileExistsError:
-        raise
-    except Exception:
-        if not existed_before:
-            _best_effort_unlink(path)
-        raise
+    canonical_payload = canonical_json_bytes(value)
+    digest = sha256_bytes(canonical_payload)
+    write_exclusive(path, value)
+    return digest
 
 
 def load_immutable_json(path: Path) -> tuple[dict[str, object], str]:

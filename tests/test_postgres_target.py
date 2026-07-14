@@ -167,6 +167,174 @@ def test_write_exclusive_writes_canonical_json_and_refuses_overwrite(
 
     assert result == path
     assert path.read_bytes() == b'{"a":"ok","z":1}\n'
+    original = path.read_bytes()
     with pytest.raises(FileExistsError):
         postgres_target.write_exclusive(path, {"replacement": True})
-    assert json.loads(path.read_text(encoding="utf-8")) == {"a": "ok", "z": 1}
+    assert path.read_bytes() == original
+    assert json.loads(original) == {"a": "ok", "z": 1}
+
+
+def test_write_exclusive_preflights_serialization_before_creating_file(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "nested" / "manifest.json"
+
+    with pytest.raises(TypeError):
+        postgres_target.write_exclusive(path, {"bad": object()})
+
+    assert not path.exists()
+
+
+def test_write_exclusive_cleans_up_its_partial_file_after_write_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "nested" / "manifest.json"
+    original_open = Path.open
+
+    class PartialWriteFailure:
+        def __init__(self, stream) -> None:
+            self.stream = stream
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            self.close()
+
+        def fileno(self) -> int:
+            return self.stream.fileno()
+
+        def write(self, payload: bytes) -> None:
+            self.stream.write(payload[:1])
+            self.stream.flush()
+            raise OSError("simulated partial write failure")
+
+        def flush(self) -> None:
+            self.stream.flush()
+
+        def close(self) -> None:
+            self.stream.close()
+
+    def open_with_partial_failure(
+        destination: Path,
+        mode: str = "r",
+        *args: object,
+        **kwargs: object,
+    ):
+        stream = original_open(destination, mode, *args, **kwargs)
+        if destination == path and mode == "xb":
+            return PartialWriteFailure(stream)
+        return stream
+
+    monkeypatch.setattr(Path, "open", open_with_partial_failure)
+
+    with pytest.raises(OSError, match="simulated partial write failure"):
+        postgres_target.write_exclusive(path, {"valid": True})
+
+    assert not path.exists()
+
+
+def test_write_exclusive_detects_replacement_without_unlinking_foreign_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "nested" / "manifest.json"
+    foreign = b"other-process"
+    original_open = Path.open
+
+    class ReplaceOnClose:
+        def __init__(self, stream) -> None:
+            self.stream = stream
+            self.replaced = False
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            self.close()
+
+        def fileno(self) -> int:
+            return self.stream.fileno()
+
+        def write(self, payload: bytes) -> int:
+            return self.stream.write(payload)
+
+        def flush(self) -> None:
+            self.stream.flush()
+
+        def close(self) -> None:
+            if self.replaced:
+                return
+            self.stream.close()
+            path.unlink()
+            path.write_bytes(foreign)
+            self.replaced = True
+
+    def open_with_replacement(
+        destination: Path,
+        mode: str = "r",
+        *args: object,
+        **kwargs: object,
+    ):
+        stream = original_open(destination, mode, *args, **kwargs)
+        if destination == path and mode == "xb":
+            return ReplaceOnClose(stream)
+        return stream
+
+    monkeypatch.setattr(Path, "open", open_with_replacement)
+
+    try:
+        with pytest.raises(RuntimeError, match="changed"):
+            postgres_target.write_exclusive(path, {"valid": True})
+    finally:
+        assert path.read_bytes() == foreign
+
+
+def test_write_exclusive_failure_does_not_unlink_foreign_replacement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "nested" / "manifest.json"
+    foreign = b"other-process"
+    original_open = Path.open
+
+    class ReplaceThenFail:
+        def __init__(self, stream) -> None:
+            self.stream = stream
+
+        def fileno(self) -> int:
+            return self.stream.fileno()
+
+        def write(self, payload: bytes) -> None:
+            self.stream.write(payload[:1])
+            self.stream.flush()
+            self.stream.close()
+            path.unlink()
+            path.write_bytes(foreign)
+            raise OSError("simulated replacement race")
+
+        def flush(self) -> None:
+            self.stream.flush()
+
+        def close(self) -> None:
+            self.stream.close()
+
+    def open_with_replacement_failure(
+        destination: Path,
+        mode: str = "r",
+        *args: object,
+        **kwargs: object,
+    ):
+        stream = original_open(destination, mode, *args, **kwargs)
+        if destination == path and mode == "xb":
+            return ReplaceThenFail(stream)
+        return stream
+
+    monkeypatch.setattr(Path, "open", open_with_replacement_failure)
+
+    try:
+        with pytest.raises(OSError, match="simulated replacement race"):
+            postgres_target.write_exclusive(path, {"valid": True})
+    finally:
+        assert path.read_bytes() == foreign

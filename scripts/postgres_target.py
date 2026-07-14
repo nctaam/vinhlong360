@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import stat
 from pathlib import Path
 from typing import Mapping
 from urllib.parse import parse_qs, unquote, urlsplit
@@ -112,8 +113,59 @@ def target_fingerprint(identity: Mapping[str, object]) -> str:
     return sha256_bytes(canonical_json_bytes(canonical_identity))
 
 
+def _file_identity(metadata: os.stat_result) -> tuple[int, int]:
+    return metadata.st_dev, metadata.st_ino
+
+
+def _is_reparse_point(metadata: os.stat_result) -> bool:
+    attributes = getattr(metadata, "st_file_attributes", 0)
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    return bool(getattr(metadata, "st_reparse_tag", 0)) or bool(
+        attributes & reparse_flag
+    )
+
+
+def _path_matches_owned_file(path: Path, identity: tuple[int, int]) -> bool:
+    try:
+        metadata = path.lstat()
+    except OSError:
+        return False
+    return (
+        not stat.S_ISLNK(metadata.st_mode)
+        and not _is_reparse_point(metadata)
+        and _file_identity(metadata) == identity
+    )
+
+
+def _close_best_effort(stream) -> None:
+    try:
+        stream.close()
+    except BaseException:
+        return
+
+
+def _unlink_owned_file(path: Path, identity: tuple[int, int]) -> None:
+    if not _path_matches_owned_file(path, identity):
+        return
+    try:
+        path.unlink()
+    except OSError:
+        return
+
+
 def write_exclusive(path: Path, payload: object) -> Path:
+    canonical_payload = canonical_json_bytes(payload)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("xb") as stream:
-        stream.write(canonical_json_bytes(payload))
+    stream = path.open("xb")
+    identity = _file_identity(os.fstat(stream.fileno()))
+    try:
+        stream.write(canonical_payload)
+        stream.flush()
+        stream.close()
+    except BaseException:
+        _close_best_effort(stream)
+        _unlink_owned_file(path, identity)
+        raise
+    if not _path_matches_owned_file(path, identity):
+        raise RuntimeError("exclusive write path changed before verification")
     return path
