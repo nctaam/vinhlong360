@@ -27,6 +27,7 @@
 
 ### Canonical policy and backend authority
 
+- Create `.gitattributes`: pin both canonical JSON artifacts to `text eol=lf` so fresh checkouts preserve their reviewed SHA-256 bytes even when `core.autocrlf=true`.
 - Create `config/launch-indexing-policy.json`: canonical route schema, inventory, revisions, normalization, and backend-ingress classification.
 - Create `config/ai-disclosure.json`: canonical Vietnamese AI/placeholder/UGC copy and revision.
 - Create `agent/launch_artifacts.py`: release-root resolution, exact-byte artifact loading, schema validation, and SHA-256 evidence.
@@ -1048,6 +1049,7 @@ git commit -m "feat: classify launch routes consistently"
 ### Task 6: Create the canonical AI-disclosure artifact
 
 **Files:**
+- Modify: `.gitattributes`
 - Create: `config/ai-disclosure.json`
 - Create: `tests/launch_safety/test_ai_disclosure_artifact.py`
 
@@ -1066,11 +1068,19 @@ def test_ai_disclosure_copy_is_exact():
     assert data["placeholder"]["full_disclosure"] == "Minh họa đồ họa — chưa có ảnh riêng cho địa điểm."
 ```
 
+The failing test also runs `git check-attr text eol --` for both
+`config/launch-indexing-policy.json` and `config/ai-disclosure.json`, requiring
+`text: set` and `eol: lf`. An isolated temporary Git repository copies the same
+narrow rules, sets `core.autocrlf=true`, stages canonical LF bytes, and uses
+`git checkout-index --prefix=<fresh-dir>/` to prove a fresh worktree preserves
+the exact bytes for both artifacts.
+
 - [ ] **Step 2: Run RED**
 
 Run: `python -m pytest tests/launch_safety/test_ai_disclosure_artifact.py -q`
 
-Expected: FAIL because the canonical disclosure artifact does not exist.
+Expected: FAIL because the canonical disclosure artifact and the required
+per-artifact LF attributes do not exist.
 
 - [ ] **Step 3: Add the exact reviewed disclosure data**
 
@@ -1105,16 +1115,26 @@ Expected: FAIL because the canonical disclosure artifact does not exist.
 
 The UGC sentence is intentionally distinct from the AI and placeholder copy and always appears with the available user credit.
 
+Add only these root `.gitattributes` rules; do not introduce a broad repository
+line-ending policy:
+
+```gitattributes
+config/launch-indexing-policy.json text eol=lf
+config/ai-disclosure.json text eol=lf
+```
+
 - [ ] **Step 4: Run GREEN**
 
-Run: `python -m pytest tests/launch_safety/test_ai_disclosure_artifact.py -q`
+Run: `python -m pytest tests/launch_safety/test_ai_disclosure_artifact.py tests/launch_safety/test_artifact_packaging.py -q -W error`
 
-Expected: PASS with exact UTF-8 copy.
+Expected: PASS with exact UTF-8 copy, both canonical paths reporting
+`text: set` plus `eol: lf`, and the isolated `core.autocrlf=true`
+`checkout-index` simulation preserving LF-only canonical bytes.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add config/ai-disclosure.json tests/launch_safety/test_ai_disclosure_artifact.py
+git add .gitattributes config/ai-disclosure.json tests/launch_safety/test_ai_disclosure_artifact.py
 git commit -m "feat: add canonical AI disclosure copy"
 ```
 
