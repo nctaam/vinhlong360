@@ -274,6 +274,23 @@ def test_cleanup_preserves_legacy_local_manifest_without_schema(
     assert marker.read_text(encoding="utf-8") == "legacy"
 
 
+def test_cleanup_preserves_backup_with_undecodable_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    backup_root = tmp_path / "backups"
+    monkeypatch.setattr(backup_data, "BACKUP_ROOT", backup_root)
+    candidate = backup_root / "20260101-000000-undecodable"
+    candidate.mkdir(parents=True)
+    marker = candidate / "keep-me.txt"
+    marker.write_text("unrelated", encoding="utf-8")
+    (candidate / "manifest.json").write_bytes(b"\xff\xfe\xfa")
+
+    backup_data._cleanup_old_backups(keep=0, max_age_days=0)
+
+    assert marker.read_text(encoding="utf-8") == "unrelated"
+
+
 def test_main_custom_out_dir_preserves_unrelated_old_directories(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

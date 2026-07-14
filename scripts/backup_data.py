@@ -176,7 +176,7 @@ def _read_local_backup_manifest(candidate: Path, timestamp: str) -> dict | None:
     try:
         with manifest_path.open(encoding="utf-8") as stream:
             manifest = json.load(stream)
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return None
     if not isinstance(manifest, dict):
         return None
