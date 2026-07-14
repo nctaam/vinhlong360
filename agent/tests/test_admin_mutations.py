@@ -105,6 +105,25 @@ def test_update_entity():
     assert r.status_code == 200
 
 
+def test_admin_update_does_not_erase_publication_fields(isolated_sqlite_db):
+    isolated_sqlite_db.upsert_entity({
+        "id": "test-mutation-status",
+        "name": "Published entity",
+        "type": "attraction",
+        "status": "published",
+        "verified": True,
+    })
+    response = client.put(
+        "/admin/entities/test-mutation-status",
+        json={"name": "Renamed", "type": "attraction"},
+        headers=H,
+    )
+    assert response.status_code == 200
+    saved = isolated_sqlite_db.get_entity("test-mutation-status")
+    assert saved["status"] == "published"
+    assert saved["verified"] in (True, 1)
+
+
 def test_delete_entity():
     _create_entity("delete")
     r = client.delete("/admin/entities/test-mutation-delete", headers=H)

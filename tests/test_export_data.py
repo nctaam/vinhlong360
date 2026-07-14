@@ -23,6 +23,8 @@ MINI = {
             "description": "Mô tả A dài hơn một chút.",
             "area": "vinh-long",
             "attributes": {"address": "Xã Test, tỉnh Vĩnh Long"},
+            "status": "published",
+            "verified": False,
         },
         {
             "id": "test-entity-b",
@@ -140,9 +142,13 @@ def test_export_roundtrip_stable(tmp_db, tmp_path, monkeypatch):
     e1 = {e["id"]: e for e in d1["entities"]}
     e2 = {e["id"]: e for e in d2["entities"]}
     assert set(e1) == set(e2)
+    assert e1["test-entity-a"].get("status") == "published"
+    assert e1["test-entity-a"].get("verified") in (False, 0)
     for i in e1:
-        for f in ("name", "summary", "description", "type", "attributes"):
-            assert e1[i].get(f) == e2[i].get(f), (i, f)
+        for field in (
+            "name", "summary", "description", "type", "attributes", "status", "verified"
+        ):
+            assert e1[i].get(field) == e2[i].get(field), (i, field)
 
 
 def test_export_serializes_datetime_from_pg_backend(tmp_db, tmp_path, monkeypatch):

@@ -124,6 +124,71 @@ def test_upsert_is_update_on_same_id(db):
     assert db.count_entities().get("dish", 0) == 1
 
 
+def test_upsert_preserves_publication_fields_when_omitted(db):
+    db.upsert_entity({
+        "id": "publication-preserve",
+        "type": "dish",
+        "name": "Initial",
+        "status": "published",
+        "verified": False,
+    })
+    db.upsert_entity({
+        "id": "publication-preserve",
+        "type": "dish",
+        "name": "Updated",
+    })
+    saved = db.get_entity("publication-preserve")
+    assert saved["status"] == "published"
+    assert saved["verified"] in (False, 0)
+
+
+def test_upsert_changes_publication_fields_only_when_explicit(db):
+    db.upsert_entity({
+        "id": "publication-explicit",
+        "type": "dish",
+        "name": "Initial",
+        "status": "provisional",
+        "verified": False,
+    })
+    db.upsert_entity({
+        "id": "publication-explicit",
+        "type": "dish",
+        "name": "Approved",
+        "status": "verified",
+        "verified": True,
+    })
+    saved = db.get_entity("publication-explicit")
+    assert saved["status"] == "verified"
+    assert saved["verified"] in (True, 1)
+
+
+def test_pg_upsert_publication_sql_and_parameter_order(monkeypatch):
+    db = Database(db_path="unused.db")
+    db._use_pg = True
+    captured = {}
+
+    def capture_execute(conn, sql, params=None):
+        captured["sql"] = " ".join(sql.split())
+        captured["params"] = params
+
+    monkeypatch.setattr(db, "_execute", capture_execute)
+    entity = {
+        "id": "pg-publication-contract",
+        "type": "dish",
+        "name": "Contract",
+        "status": "published",
+    }
+    db._write_entity_row(
+        object(), entity, None, {}, [], [], None, "2026-07-14"
+    )
+
+    assert '"legacyArea", status, verified)' in captured["sql"]
+    assert captured["sql"].count("%s") == 21
+    assert "status = CASE WHEN %s THEN EXCLUDED.status ELSE entities.status END" in captured["sql"]
+    assert "verified = CASE WHEN %s THEN EXCLUDED.verified ELSE entities.verified END" in captured["sql"]
+    assert captured["params"][-4:] == ("published", True, True, False)
+
+
 def test_get_missing_entity_returns_none(db):
     assert db.get_entity("khong-ton-tai") is None
 

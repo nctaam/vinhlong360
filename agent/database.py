@@ -286,6 +286,8 @@ def _build_bulk_entity_rows(entities, strip: bool, now: str):
             json.dumps(coords_val) if coords_val else None,
             entity.get("area"), entity.get("level"), entity.get("parentId"),
             entity.get("legacyArea"),
+            entity.get("status"),
+            entity.get("verified", True),
         ))
         fts_rows.append((entity["id"], entity["name"], entity.get("summary", ""), entity["type"]))
     return entity_rows, fts_rows
@@ -351,6 +353,15 @@ def _normalize_upsert_fields(entity: dict):
                    if _entity_details.reads_enabled() and isinstance(attrs_val, dict)
                    else attrs_val)
     return season_val, attrs_val, source_val, images_val, coords_val, updated, attrs_store
+
+
+def _publication_write_fields(entity: dict) -> tuple[object, object, bool, bool]:
+    return (
+        entity.get("status"),
+        entity.get("verified", True),
+        "status" in entity,
+        "verified" in entity,
+    )
 
 
 # ══════════════════════════════════════════════════
@@ -716,56 +727,84 @@ class Database:
     def _write_entity_row(self, conn, entity, season_val, attrs_store,
                           source_val, images_val, coords_val, updated) -> None:
         """Ghi 1 hàng entities (extract nguyên văn từ upsert_entity, per-backend SQL)."""
+        status, verified, has_status, has_verified = _publication_write_fields(entity)
+        values = (
+            entity["id"],
+            entity["type"],
+            entity["name"],
+            entity.get("summary", ""),
+            entity.get("description", ""),
+            entity.get("placeId"),
+            entity.get("confidence", 1.0),
+            json.dumps(season_val, ensure_ascii=False) if season_val else None,
+            json.dumps(attrs_store, ensure_ascii=False),
+            json.dumps(source_val, ensure_ascii=False),
+            json.dumps(images_val, ensure_ascii=False),
+            updated,
+            json.dumps(coords_val) if coords_val else None,
+            entity.get("area"),
+            entity.get("level"),
+            entity.get("parentId"),
+            entity.get("legacyArea"),
+            status,
+            verified,
+            has_status,
+            has_verified,
+        )
         if self._use_pg:
             self._execute(conn, """
                     INSERT INTO entities
-                    (id, type, name, summary, description, "placeId", confidence, season, attributes, source, images, "updatedAt",
-                     coordinates, area, level, "parentId", "legacyArea")
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    (id, type, name, summary, description, "placeId", confidence, season,
+                     attributes, source, images, "updatedAt", coordinates, area, level,
+                     "parentId", "legacyArea", status, verified)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     ON CONFLICT (id) DO UPDATE SET
-                        type = EXCLUDED.type, name = EXCLUDED.name, summary = EXCLUDED.summary,
+                        type = EXCLUDED.type,
+                        name = EXCLUDED.name,
+                        summary = EXCLUDED.summary,
                         description = EXCLUDED.description,
-                        "placeId" = EXCLUDED."placeId", confidence = EXCLUDED.confidence,
-                        season = EXCLUDED.season, attributes = EXCLUDED.attributes,
-                        source = EXCLUDED.source, images = EXCLUDED.images,
+                        "placeId" = EXCLUDED."placeId",
+                        confidence = EXCLUDED.confidence,
+                        season = EXCLUDED.season,
+                        attributes = EXCLUDED.attributes,
+                        source = EXCLUDED.source,
+                        images = EXCLUDED.images,
                         "updatedAt" = EXCLUDED."updatedAt",
-                        coordinates = EXCLUDED.coordinates, area = EXCLUDED.area,
-                        level = EXCLUDED.level, "parentId" = EXCLUDED."parentId",
-                        "legacyArea" = EXCLUDED."legacyArea"
-                """, (
-                entity["id"], entity["type"], entity["name"],
-                entity.get("summary", ""), entity.get("description", ""),
-                entity.get("placeId"),
-                entity.get("confidence", 1.0),
-                json.dumps(season_val, ensure_ascii=False) if season_val else None,
-                json.dumps(attrs_store, ensure_ascii=False),
-                json.dumps(source_val, ensure_ascii=False),
-                json.dumps(images_val, ensure_ascii=False),
-                updated,
-                json.dumps(coords_val) if coords_val else None,
-                entity.get("area"), entity.get("level"), entity.get("parentId"),
-                entity.get("legacyArea"),
-            ))
+                        coordinates = EXCLUDED.coordinates,
+                        area = EXCLUDED.area,
+                        level = EXCLUDED.level,
+                        "parentId" = EXCLUDED."parentId",
+                        "legacyArea" = EXCLUDED."legacyArea",
+                        status = CASE WHEN %s THEN EXCLUDED.status ELSE entities.status END,
+                        verified = CASE WHEN %s THEN EXCLUDED.verified ELSE entities.verified END
+                """, values)
         else:
             conn.execute("""
-                    INSERT OR REPLACE INTO entities
-                    (id, type, name, summary, description, placeId, confidence, season, attributes, source, images, updatedAt,
-                     coordinates, area, level, parentId, legacyArea)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                """, (
-                entity["id"], entity["type"], entity["name"],
-                entity.get("summary", ""), entity.get("description", ""),
-                entity.get("placeId"),
-                entity.get("confidence", 1.0),
-                json.dumps(season_val, ensure_ascii=False) if season_val else None,
-                json.dumps(attrs_store, ensure_ascii=False),
-                json.dumps(source_val, ensure_ascii=False),
-                json.dumps(images_val, ensure_ascii=False),
-                updated,
-                json.dumps(coords_val) if coords_val else None,
-                entity.get("area"), entity.get("level"), entity.get("parentId"),
-                entity.get("legacyArea"),
-            ))
+                    INSERT INTO entities
+                    (id, type, name, summary, description, placeId, confidence, season,
+                     attributes, source, images, updatedAt, coordinates, area, level,
+                     parentId, legacyArea, status, verified)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    ON CONFLICT(id) DO UPDATE SET
+                        type = excluded.type,
+                        name = excluded.name,
+                        summary = excluded.summary,
+                        description = excluded.description,
+                        placeId = excluded.placeId,
+                        confidence = excluded.confidence,
+                        season = excluded.season,
+                        attributes = excluded.attributes,
+                        source = excluded.source,
+                        images = excluded.images,
+                        updatedAt = excluded.updatedAt,
+                        coordinates = excluded.coordinates,
+                        area = excluded.area,
+                        level = excluded.level,
+                        parentId = excluded.parentId,
+                        legacyArea = excluded.legacyArea,
+                        status = CASE WHEN ? THEN excluded.status ELSE entities.status END,
+                        verified = CASE WHEN ? THEN excluded.verified ELSE entities.verified END
+                """, values)
             try:
                 conn.execute(
                     "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",
@@ -1438,8 +1477,9 @@ class Database:
             cur = conn.cursor()
             cur.executemany(
                 'INSERT INTO entities (id, type, name, summary, description, "placeId", confidence, season, '
-                'attributes, source, images, "updatedAt", coordinates, area, level, "parentId", "legacyArea") '
-                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO NOTHING",
+                'attributes, source, images, "updatedAt", coordinates, area, level, "parentId", "legacyArea", status, verified) '
+                'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) '
+                'ON CONFLICT (id) DO NOTHING',
                 entity_rows)
             cur.executemany(
                 "INSERT INTO relationships (from_id, to_id, type) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
@@ -1452,8 +1492,8 @@ class Database:
         else:
             conn.executemany(
                 "INSERT OR REPLACE INTO entities (id, type, name, summary, description, placeId, confidence, season, "
-                "attributes, source, images, updatedAt, coordinates, area, level, parentId, legacyArea) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", entity_rows)
+                "attributes, source, images, updatedAt, coordinates, area, level, parentId, legacyArea, status, verified) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", entity_rows)
             try:
                 conn.executemany(
                     "INSERT OR REPLACE INTO entities_fts(id, name, summary, type) VALUES (?, ?, ?, ?)",
