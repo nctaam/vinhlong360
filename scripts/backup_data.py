@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import sqlite3
+import stat
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -41,6 +42,10 @@ DATA_JSON = ROOT / "web" / "data.json"
 DB_FILE = ROOT / "agent" / "data" / "vinhlong360.db"
 BACKUP_ROOT = ROOT / "scratch" / "backups"
 PG_REQUIRED_TABLES = ("entities", "entity_changes")
+LOCAL_BACKUP_NAME_RE = re.compile(r"^(?P<timestamp>\d{8}-\d{6})(?:-.+)?$")
+PG_TABLE_TOC_RE = re.compile(
+    r"^\s*\d+;\s+\d+\s+\d+\s+TABLE\s+public\s+(?P<name>\S+)(?:\s|$)"
+)
 
 
 def _utc_now() -> str:
@@ -83,8 +88,43 @@ def _cleanup_old_backups(
     root = backup_root or BACKUP_ROOT
     if not root.is_dir():
         return
+    managed_root = BACKUP_ROOT.resolve()
+    if root.resolve() != managed_root:
+        return
+
+    def _owned_backup(path: Path) -> Path | None:
+        try:
+            attributes = getattr(path.lstat(), "st_file_attributes", 0)
+            reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+            if path.is_symlink() or attributes & reparse_flag:
+                return None
+            candidate = path.resolve(strict=True)
+            if not candidate.is_dir() or candidate.parent != managed_root:
+                return None
+            name_match = LOCAL_BACKUP_NAME_RE.fullmatch(candidate.name)
+            if name_match is None:
+                return None
+            manifest_path = candidate / "manifest.json"
+            if manifest_path.is_symlink():
+                return None
+            with manifest_path.open(encoding="utf-8") as stream:
+                manifest = json.load(stream)
+            if not isinstance(manifest, dict):
+                return None
+            if manifest.get("timestamp") != name_match.group("timestamp"):
+                return None
+            if not isinstance(manifest.get("copied"), list):
+                return None
+            return candidate
+        except (OSError, ValueError, json.JSONDecodeError):
+            return None
+
     directories = sorted(
-        [path for path in root.iterdir() if path.is_dir()],
+        [
+            candidate
+            for path in root.iterdir()
+            if (candidate := _owned_backup(path)) is not None
+        ],
         key=lambda path: path.stat().st_mtime,
         reverse=True,
     )
@@ -165,6 +205,14 @@ def _run_command(runner, command: list[str], environment: dict[str, str]):
         raise RuntimeError(f"Required PostgreSQL tool is unavailable: {command[0]}") from exc
 
 
+def _pg_restore_table_names(listing: str) -> set[str]:
+    return {
+        match.group("name")
+        for line in listing.splitlines()
+        if (match := PG_TABLE_TOC_RE.match(line)) is not None
+    }
+
+
 def create_postgres_backup(
     *,
     database_url: str,
@@ -210,8 +258,9 @@ def create_postgres_backup(
     if listing_result.returncode != 0:
         raise RuntimeError("pg_restore --list failed to validate the backup")
     listing = listing_result.stdout
+    listed_tables = _pg_restore_table_names(listing)
     for table in PG_REQUIRED_TABLES:
-        if re.search(rf"\b{re.escape(table)}\b", listing) is None:
+        if table not in listed_tables:
             raise RuntimeError(f"PostgreSQL backup is missing required table: {table}")
 
     database_identity = {key: identity[key] for key in IDENTITY_KEYS}
@@ -312,11 +361,12 @@ def main() -> int:
         print("[backup] CẢNH BÁO: không có gì để sao lưu.", file=sys.stderr)
         return 1
 
-    _cleanup_old_backups(
-        keep=args.keep,
-        max_age_days=args.max_age_days,
-        backup_root=args.out_dir,
-    )
+    if args.out_dir.resolve() == BACKUP_ROOT.resolve():
+        _cleanup_old_backups(
+            keep=args.keep,
+            max_age_days=args.max_age_days,
+            backup_root=args.out_dir,
+        )
     return 0
 
 

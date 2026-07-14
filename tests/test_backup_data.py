@@ -196,23 +196,115 @@ def test_main_returns_1_when_nothing_to_backup(tmp_path: Path, monkeypatch) -> N
     assert rc == 1
 
 
-def test_cleanup_removes_old_backups(tmp_path: Path, monkeypatch) -> None:
+def _write_owned_local_backup(root: Path, name: str, modified_at: float) -> Path:
+    directory = root / name
+    directory.mkdir(parents=True)
+    (directory / "manifest.json").write_text(
+        json.dumps(
+            {
+                "timestamp": name[:15],
+                "copied": ["web/data.json"],
+                "counts": {},
+                "sizes": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+    os.utime(directory, (modified_at, modified_at))
+    return directory
+
+
+def test_main_custom_out_dir_preserves_unrelated_old_directories(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    custom_root = tmp_path / "user-output"
+    custom_root.mkdir()
+    old_time = time.time() - 40 * 86400
+    markers = []
+    for index in range(6):
+        unrelated = custom_root / f"unrelated-{index}"
+        unrelated.mkdir()
+        marker = unrelated / "keep-me.txt"
+        marker.write_text(f"marker-{index}", encoding="utf-8")
+        os.utime(unrelated, (old_time - index, old_time - index))
+        markers.append(marker)
+
+    data_json = tmp_path / "data.json"
+    data_json.write_text(
+        json.dumps({"entities": [], "relationships": [], "itineraries": []}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(backup_data, "DATA_JSON", data_json)
+    monkeypatch.setattr(backup_data, "DB_FILE", tmp_path / "missing.db")
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "backup_data.py",
+            "--target",
+            "local",
+            "--out-dir",
+            str(custom_root),
+            "--keep",
+            "5",
+            "--max-age-days",
+            "30",
+        ],
+    )
+
+    assert backup_data.main() == 0
+    assert all(marker.read_text(encoding="utf-8").startswith("marker-") for marker in markers)
+
+
+def test_cleanup_managed_root_preserves_unowned_old_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     backup_root = tmp_path / "backups"
     monkeypatch.setattr(backup_data, "BACKUP_ROOT", backup_root)
+    backup_root.mkdir()
+    now = time.time()
+    for index in range(5):
+        _write_owned_local_backup(
+            backup_root,
+            f"2026071{index + 1}-120000",
+            now - index,
+        )
+    unrelated = backup_root / "unrelated-user-data"
+    unrelated.mkdir()
+    marker = unrelated / "keep-me.txt"
+    marker.write_text("important", encoding="utf-8")
+    old_time = now - 40 * 86400
+    os.utime(unrelated, (old_time, old_time))
 
-    for i in range(8):
-        d = backup_root / f"backup-{i:02d}"
-        d.mkdir(parents=True)
-        old_time = time.time() - (40 + i) * 86400
-        os.utime(d, (old_time, old_time))
+    backup_data._cleanup_old_backups(keep=5, max_age_days=30)
 
-    newest = backup_root / "backup-newest"
-    newest.mkdir(parents=True)
+    assert marker.read_text(encoding="utf-8") == "important"
 
-    backup_data._cleanup_old_backups(keep=3, max_age_days=30)
 
-    remaining = list(backup_root.iterdir())
-    assert len(remaining) <= 3 + 1
+def test_cleanup_managed_root_removes_expired_owned_backup(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    backup_root = tmp_path / "backups"
+    monkeypatch.setattr(backup_data, "BACKUP_ROOT", backup_root)
+    backup_root.mkdir()
+    now = time.time()
+    old_backup = _write_owned_local_backup(
+        backup_root,
+        "20260101-000000-old",
+        now - 40 * 86400,
+    )
+    new_backup = _write_owned_local_backup(
+        backup_root,
+        "20260714-120000-new",
+        now,
+    )
+
+    backup_data._cleanup_old_backups(keep=1, max_age_days=30)
+
+    assert not old_backup.exists()
+    assert new_backup.exists()
 
 
 def test_cleanup_keeps_minimum(tmp_path: Path, monkeypatch) -> None:
@@ -355,6 +447,31 @@ def test_create_postgres_backup_rejects_missing_required_table_without_manifest(
             destination=destination,
             identity=_identity(),
             runner=runner,
+            now=_clock(),
+        )
+
+    assert not (destination / "manifest.json").exists()
+
+
+def test_create_postgres_backup_rejects_required_names_on_wrong_toc_objects(
+    tmp_path: Path,
+) -> None:
+    destination = tmp_path / "pg-backup"
+    listing = (
+        "1; 0 0 FUNCTION public entities() postgres\n"
+        "2; 0 0 ACL public entity_changes postgres\n"
+        "3; 0 0 COMMENT - TABLE public entities postgres\n"
+        "4; 0 0 TABLE DATA public entities postgres\n"
+        "5; 0 0 TABLE DATA public entity_changes postgres\n"
+        "6; 0 0 TABLE public entities_archive postgres\n"
+    )
+
+    with pytest.raises(RuntimeError, match="entities"):
+        backup_data.create_postgres_backup(
+            database_url="postgresql://backup:secret@db.example/vl360",
+            destination=destination,
+            identity=_identity(),
+            runner=FakeRunner(listing=listing),
             now=_clock(),
         )
 
