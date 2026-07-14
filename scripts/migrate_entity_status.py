@@ -57,12 +57,6 @@ REQUIRED_ENTITY_COLUMNS = {
     "attributes",
     "source",
 }
-_IDENTITY_KEYS = (
-    "database",
-    "server_addr",
-    "server_port",
-    "server_version_num",
-)
 
 
 class MigrationRefusal(RuntimeError):
@@ -100,9 +94,25 @@ def schema_fingerprint(columns) -> str:
     return sha256_bytes(canonical_json_bytes(_normalized_schema_columns(columns)))
 
 
+def _best_effort_unlink(path: Path) -> None:
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        return
+
+
 def write_immutable_json(path: Path, value: object) -> str:
-    write_exclusive(path, value)
-    return sha256_file(path)
+    canonical_json_bytes(value)
+    existed_before = path.exists()
+    try:
+        write_exclusive(path, value)
+        return sha256_file(path)
+    except FileExistsError:
+        raise
+    except Exception:
+        if not existed_before:
+            _best_effort_unlink(path)
+        raise
 
 
 def load_immutable_json(path: Path) -> tuple[dict[str, object], str]:
@@ -182,7 +192,7 @@ def _sorted_counter(counter: Counter[str]) -> dict[str, int]:
 
 
 def _database_identity(identity) -> dict[str, object]:
-    return {key: identity[key] for key in _IDENTITY_KEYS}
+    return dict(identity)
 
 
 def build_plan(
@@ -200,7 +210,7 @@ def build_plan(
     )
     candidates.sort()
     if not candidates:
-        raise MigrationRefusal("no publication candidates")
+        raise MigrationRefusal("publication plan has zero candidates")
     database_identity = _database_identity(identity)
     candidate_count = len(candidates)
     return {
@@ -209,7 +219,7 @@ def build_plan(
         "created_at": created_at,
         "max_age_seconds": MAX_PLAN_AGE_SECONDS,
         "tool_source_revision": tool_source_revision,
-        "target_fingerprint": target_fingerprint(database_identity),
+        "target_fingerprint": target_fingerprint(identity),
         "database_identity": database_identity,
         "schema_fingerprint": sha256_bytes(canonical_json_bytes(normalized_columns)),
         "schema_columns": normalized_columns,

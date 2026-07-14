@@ -145,8 +145,10 @@ def test_build_plan_refuses_duplicate_entity_ids() -> None:
 
 
 def test_build_plan_refuses_zero_candidates() -> None:
-    with pytest.raises(migration.MigrationRefusal, match="no publication candidates"):
+    with pytest.raises(migration.MigrationRefusal) as error:
         _build(rows=[_row("already-reviewed", status="verified")])
+
+    assert str(error.value) == "publication plan has zero candidates"
 
 
 def test_build_plan_refuses_missing_required_columns_in_sorted_order() -> None:
@@ -206,6 +208,28 @@ def test_build_plan_does_not_mutate_input_rows_or_columns() -> None:
     assert columns == original_columns
 
 
+def test_build_plan_preserves_complete_identity_without_mutating_input() -> None:
+    identity = {
+        **IDENTITY,
+        "cluster_name": "primary-vl360",
+        "metadata": {"region": "mekong"},
+    }
+    original = copy.deepcopy(identity)
+
+    plan = migration.build_plan(
+        rows=_fixture_rows(),
+        identity=identity,
+        schema_columns=COLUMNS,
+        created_at=CREATED_AT,
+        tool_source_revision=REVISION,
+    )
+
+    assert plan["database_identity"] == identity
+    assert plan["database_identity"] is not identity
+    assert plan["target_fingerprint"] == target_fingerprint(identity)
+    assert identity == original
+
+
 def test_candidate_schema_and_target_hashes_are_canonical_and_deterministic() -> None:
     candidate_ids = ["a", "b", "V\u0129nh Long"]
     normalized_columns = [
@@ -242,6 +266,72 @@ def test_write_and_load_immutable_json_preserve_unicode_payload_and_raw_digest(
     with pytest.raises(FileExistsError):
         migration.write_immutable_json(path, {"replacement": True})
     assert path.read_bytes() == canonical_json_bytes(value)
+
+
+def test_write_immutable_json_preflights_serialization_without_false_artifact(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "report" / "plan.json"
+
+    with pytest.raises(TypeError):
+        migration.write_immutable_json(path, {"bad": object()})
+
+    assert not path.exists()
+
+
+def test_write_immutable_json_removes_partial_file_created_by_failed_write(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "report" / "plan.json"
+
+    def fail_after_partial_write(destination: Path, _value: object) -> None:
+        destination.parent.mkdir(parents=True)
+        destination.write_bytes(b"partial")
+        raise OSError("simulated write failure")
+
+    monkeypatch.setattr(migration, "write_exclusive", fail_after_partial_write)
+
+    with pytest.raises(OSError, match="simulated write failure"):
+        migration.write_immutable_json(path, {"valid": True})
+
+    assert not path.exists()
+
+
+def test_write_immutable_json_removes_file_when_hashing_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "report" / "plan.json"
+
+    def fail_hash(_path: Path) -> str:
+        raise OSError("simulated hash failure")
+
+    monkeypatch.setattr(migration, "sha256_file", fail_hash)
+
+    with pytest.raises(OSError, match="simulated hash failure"):
+        migration.write_immutable_json(path, {"valid": True})
+
+    assert not path.exists()
+
+
+def test_write_immutable_json_never_removes_preexisting_file_on_exclusive_refusal(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "plan.json"
+    original = b"preexisting-report"
+    path.write_bytes(original)
+
+    def refuse_existing(_path: Path, _value: object) -> None:
+        raise FileExistsError("already exists")
+
+    monkeypatch.setattr(migration, "write_exclusive", refuse_existing)
+
+    with pytest.raises(FileExistsError):
+        migration.write_immutable_json(path, {"replacement": True})
+
+    assert path.read_bytes() == original
 
 
 @pytest.mark.parametrize(
