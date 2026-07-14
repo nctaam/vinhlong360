@@ -43,12 +43,8 @@ BACKUP_ROOT = ROOT / "scratch" / "backups"
 PG_REQUIRED_TABLES = ("entities", "entity_changes")
 
 
-def _utc_now() -> datetime:
-    return datetime.now(UTC)
-
-
-def _timestamp(value: datetime) -> str:
-    return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
+def _utc_now() -> str:
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
 def _count_data_json(path: Path) -> dict:
@@ -179,7 +175,7 @@ def create_postgres_backup(
 ) -> Path:
     destination.mkdir(parents=True, exist_ok=False)
     artifact = destination / "postgres.dump"
-    started_at = _timestamp(now())
+    started_at = now()
     connection_args, connection_environment = pg_cli_connection(database_url)
     environment = os.environ.copy()
     environment.update(connection_environment)
@@ -225,7 +221,7 @@ def create_postgres_backup(
         "target_fingerprint": target_fingerprint(database_identity),
         "database_identity": database_identity,
         "started_at": started_at,
-        "completed_at": _timestamp(now()),
+        "completed_at": now(),
         "max_age_seconds": 3600,
         "tools": versions,
         "artifact": {
@@ -240,8 +236,7 @@ def create_postgres_backup(
         },
         "policy_revision": "published-v1",
     }
-    write_exclusive(destination / "manifest.json", manifest)
-    return destination
+    return write_exclusive(destination / "manifest.json", manifest)
 
 
 def _read_postgres_identity(database_url: str) -> dict[str, object]:

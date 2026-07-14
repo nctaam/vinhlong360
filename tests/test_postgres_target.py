@@ -163,8 +163,9 @@ def test_write_exclusive_writes_canonical_json_and_refuses_overwrite(
 ) -> None:
     path = tmp_path / "nested" / "manifest.json"
 
-    postgres_target.write_exclusive(path, {"z": 1, "a": "ok"})
+    result = postgres_target.write_exclusive(path, {"z": 1, "a": "ok"})
 
+    assert result == path
     assert path.read_bytes() == b'{"a":"ok","z":1}\n'
     with pytest.raises(FileExistsError):
         postgres_target.write_exclusive(path, {"replacement": True})

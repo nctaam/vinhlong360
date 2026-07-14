@@ -112,7 +112,8 @@ def target_fingerprint(identity: Mapping[str, object]) -> str:
     return sha256_bytes(canonical_json_bytes(canonical_identity))
 
 
-def write_exclusive(path: Path, payload: object) -> None:
+def write_exclusive(path: Path, payload: object) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("xb") as stream:
         stream.write(canonical_json_bytes(payload))
+    return path

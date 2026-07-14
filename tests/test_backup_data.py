@@ -9,7 +9,6 @@ import sqlite3
 import subprocess
 import sys
 import time
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -135,6 +134,21 @@ def test_local_target_does_not_import_or_call_postgresql(
     monkeypatch.setattr(backup_data, "DB_FILE", tmp_path / "missing.db")
     monkeypatch.setattr(builtins, "__import__", guarded_import)
     monkeypatch.setattr(
+        backup_data,
+        "resolve_database_url",
+        lambda *_args, **_kwargs: pytest.fail("local backup resolved PostgreSQL URL"),
+    )
+    monkeypatch.setattr(
+        backup_data,
+        "_read_postgres_identity",
+        lambda *_args, **_kwargs: pytest.fail("local backup read PostgreSQL identity"),
+    )
+    monkeypatch.setattr(
+        backup_data,
+        "create_postgres_backup",
+        lambda *_args, **_kwargs: pytest.fail("local backup invoked PostgreSQL backup"),
+    )
+    monkeypatch.setattr(
         "sys.argv",
         ["backup_data.py", "--target", "local", "--out-dir", str(tmp_path / "backups")],
     )
@@ -214,28 +228,58 @@ def test_cleanup_keeps_minimum(tmp_path: Path, monkeypatch) -> None:
 
 
 class FakeRunner:
-    def __init__(self, *, listing: str | None = None, dump_returncode: int = 0) -> None:
+    def __init__(
+        self,
+        *,
+        listing: str | None = None,
+        dump_returncode: int = 0,
+        restore_returncode: int = 0,
+        unavailable_tool: str | None = None,
+        version_tool: str | None = None,
+        version_returncode: int = 0,
+        version_stdout: str = "16.4\n",
+    ) -> None:
         self.calls: list[tuple[list[str], dict[str, object]]] = []
-        self.listing = listing or (
-            "1; 0 0 TABLE public entities postgres\n"
-            "2; 0 0 TABLE public entity_changes postgres\n"
+        self.listing = (
+            listing
+            if listing is not None
+            else (
+                "1; 0 0 TABLE public entities postgres\n"
+                "2; 0 0 TABLE public entity_changes postgres\n"
+            )
         )
         self.dump_returncode = dump_returncode
+        self.restore_returncode = restore_returncode
+        self.unavailable_tool = unavailable_tool
+        self.version_tool = version_tool
+        self.version_returncode = version_returncode
+        self.version_stdout = version_stdout
 
     def __call__(self, args, **kwargs):
         command = [str(value) for value in args]
         self.calls.append((command, kwargs))
-        if command[:2] == ["pg_dump", "--version"]:
-            return subprocess.CompletedProcess(command, 0, "16.4\n", "")
-        if command[:2] == ["pg_restore", "--version"]:
-            return subprocess.CompletedProcess(command, 0, "16.4\n", "")
+        if command[0] == self.unavailable_tool:
+            raise FileNotFoundError(command[0])
+        if command[1:] == ["--version"]:
+            use_invalid_version = command[0] == self.version_tool
+            return subprocess.CompletedProcess(
+                command,
+                self.version_returncode if use_invalid_version else 0,
+                self.version_stdout if use_invalid_version else "16.4\n",
+                "version failed",
+            )
         if command[0] == "pg_dump":
             if self.dump_returncode == 0:
                 artifact = Path(command[command.index("--file") + 1])
                 artifact.write_bytes(b"PGDMP-test")
             return subprocess.CompletedProcess(command, self.dump_returncode, "", "dump failed")
         if command[:2] == ["pg_restore", "--list"]:
-            return subprocess.CompletedProcess(command, 0, self.listing, "")
+            return subprocess.CompletedProcess(
+                command,
+                self.restore_returncode,
+                self.listing,
+                "restore failed",
+            )
         raise AssertionError(f"unexpected command: {command}")
 
 
@@ -249,13 +293,7 @@ def _identity() -> dict[str, object]:
 
 
 def _clock():
-    values = iter(
-        [
-            datetime(2026, 7, 14, 12, 0, tzinfo=UTC),
-            datetime(2026, 7, 14, 12, 1, tzinfo=UTC),
-        ]
-    )
-    return lambda: next(values)
+    return lambda: "2026-07-14T12:00:00Z"
 
 
 def test_create_postgres_backup_writes_validated_secret_free_manifest(
@@ -274,15 +312,15 @@ def test_create_postgres_backup_writes_validated_secret_free_manifest(
         now=_clock(),
     )
 
-    assert result == destination
-    manifest_bytes = (destination / "manifest.json").read_bytes()
-    manifest = json.loads(manifest_bytes)
+    assert result == destination / "manifest.json"
+    manifest_text = result.read_text(encoding="utf-8")
+    manifest = json.loads(manifest_text)
     assert manifest["schema"] == "vinhlong360-pg-backup-v1"
     assert manifest["target"] == "pg"
     assert manifest["database_identity"] == _identity()
     assert len(manifest["target_fingerprint"]) == 64
     assert manifest["started_at"] == "2026-07-14T12:00:00Z"
-    assert manifest["completed_at"] == "2026-07-14T12:01:00Z"
+    assert manifest["completed_at"] == "2026-07-14T12:00:00Z"
     assert manifest["max_age_seconds"] == 3600
     assert manifest["tools"] == {"pg_dump": "16.4", "pg_restore": "16.4"}
     assert manifest["artifact"] == {
@@ -290,6 +328,7 @@ def test_create_postgres_backup_writes_validated_secret_free_manifest(
         "size": len(b"PGDMP-test"),
         "sha256": hashlib.sha256(b"PGDMP-test").hexdigest(),
     }
+    assert (result.parent / manifest["artifact"]["path"]).read_bytes() == b"PGDMP-test"
     listing = runner.listing.encode()
     assert manifest["validation"] == {
         "pg_restore_list": True,
@@ -297,7 +336,7 @@ def test_create_postgres_backup_writes_validated_secret_free_manifest(
         "listing_sha256": hashlib.sha256(listing).hexdigest(),
     }
     assert manifest["policy_revision"] == "published-v1"
-    assert secret.encode() not in manifest_bytes
+    assert secret not in manifest_text
     assert all(secret not in " ".join(command) for command, _ in runner.calls)
     dump_call = next(call for call in runner.calls if call[0][0] == "pg_dump" and "--file" in call[0])
     assert dump_call[1]["env"]["PGPASSWORD"] == secret
@@ -337,3 +376,193 @@ def test_create_postgres_backup_does_not_claim_success_when_pg_dump_fails(
         )
 
     assert not (destination / "manifest.json").exists()
+
+
+@pytest.mark.parametrize("tool", ["pg_dump", "pg_restore"])
+def test_create_postgres_backup_rejects_unavailable_tool_without_manifest(
+    tmp_path: Path,
+    tool: str,
+) -> None:
+    destination = tmp_path / "pg-backup"
+
+    with pytest.raises(RuntimeError, match=tool):
+        backup_data.create_postgres_backup(
+            database_url="postgresql://backup:secret@db.example/vl360",
+            destination=destination,
+            identity=_identity(),
+            runner=FakeRunner(unavailable_tool=tool),
+            now=_clock(),
+        )
+
+    assert not (destination / "manifest.json").exists()
+
+
+@pytest.mark.parametrize(
+    ("tool", "version_stdout", "version_returncode"),
+    [
+        ("pg_dump", "", 0),
+        ("pg_dump", "16.4\n", 1),
+        ("pg_restore", "", 0),
+        ("pg_restore", "16.4\n", 1),
+    ],
+)
+def test_create_postgres_backup_rejects_invalid_tool_version_without_manifest(
+    tmp_path: Path,
+    tool: str,
+    version_stdout: str,
+    version_returncode: int,
+) -> None:
+    destination = tmp_path / "pg-backup"
+
+    with pytest.raises(RuntimeError, match=tool):
+        backup_data.create_postgres_backup(
+            database_url="postgresql://backup:secret@db.example/vl360",
+            destination=destination,
+            identity=_identity(),
+            runner=FakeRunner(
+                version_tool=tool,
+                version_stdout=version_stdout,
+                version_returncode=version_returncode,
+            ),
+            now=_clock(),
+        )
+
+    assert not (destination / "manifest.json").exists()
+
+
+def test_create_postgres_backup_rejects_failed_restore_listing_without_manifest(
+    tmp_path: Path,
+) -> None:
+    destination = tmp_path / "pg-backup"
+
+    with pytest.raises(RuntimeError, match="pg_restore --list"):
+        backup_data.create_postgres_backup(
+            database_url="postgresql://backup:secret@db.example/vl360",
+            destination=destination,
+            identity=_identity(),
+            runner=FakeRunner(restore_returncode=1),
+            now=_clock(),
+        )
+
+    assert not (destination / "manifest.json").exists()
+
+
+def test_main_pg_missing_named_env_stops_before_identity_or_backup(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    environment_name = "TASK5_MISSING_DATABASE_URL"
+    fallback_secret = "fallback-secret"
+    monkeypatch.delenv(environment_name, raising=False)
+    monkeypatch.setenv(
+        "DATABASE_URL",
+        f"postgresql://fallback:{fallback_secret}@db.example/vl360",
+    )
+    monkeypatch.setattr(
+        backup_data,
+        "_read_postgres_identity",
+        lambda *_args, **_kwargs: pytest.fail("identity ran before env validation"),
+    )
+    monkeypatch.setattr(
+        backup_data,
+        "create_postgres_backup",
+        lambda *_args, **_kwargs: pytest.fail("backup ran before env validation"),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "backup_data.py",
+            "--target",
+            "pg",
+            "--database-url-env",
+            environment_name,
+            "--out-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert backup_data.main() == 1
+    stderr = capsys.readouterr().err
+    assert environment_name in stderr
+    assert fallback_secret not in stderr
+    assert not list(tmp_path.rglob("manifest.json"))
+
+
+def test_main_pg_missing_psycopg2_is_credential_safe_and_has_no_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    environment_name = "TASK5_DATABASE_URL"
+    secret = "identity-secret"
+    monkeypatch.setenv(
+        environment_name,
+        f"postgresql://backup:{secret}@db.example/vl360",
+    )
+    monkeypatch.setitem(sys.modules, "psycopg2", None)
+    monkeypatch.setattr(
+        backup_data,
+        "create_postgres_backup",
+        lambda *_args, **_kwargs: pytest.fail("backup ran without PostgreSQL identity"),
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "backup_data.py",
+            "--target",
+            "pg",
+            "--database-url-env",
+            environment_name,
+            "--out-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert backup_data.main() == 1
+    stderr = capsys.readouterr().err
+    assert "psycopg2" in stderr
+    assert secret not in stderr
+    assert not list(tmp_path.rglob("manifest.json"))
+
+
+def test_main_pg_validation_failure_returns_1_without_success_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    environment_name = "TASK5_DATABASE_URL"
+    secret = "validation-secret"
+    monkeypatch.setenv(
+        environment_name,
+        f"postgresql://backup:{secret}@db.example/vl360",
+    )
+    monkeypatch.setattr(backup_data, "_read_postgres_identity", lambda _url: _identity())
+    create_postgres_backup = backup_data.create_postgres_backup
+
+    def fail_validation(**kwargs):
+        return create_postgres_backup(
+            **kwargs,
+            runner=FakeRunner(listing="1; 0 0 TABLE public entities postgres\n"),
+            now=_clock(),
+        )
+
+    monkeypatch.setattr(backup_data, "create_postgres_backup", fail_validation)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "backup_data.py",
+            "--target",
+            "pg",
+            "--database-url-env",
+            environment_name,
+            "--out-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert backup_data.main() == 1
+    stderr = capsys.readouterr().err
+    assert "entity_changes" in stderr
+    assert secret not in stderr
+    assert not list(tmp_path.rglob("manifest.json"))
