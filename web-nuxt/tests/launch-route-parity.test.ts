@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import routeCorpusJson from '../../tests/fixtures/launch-route-parity-corpus.json'
 import validatorCorpusJson from '../../tests/fixtures/launch-route-validator-corpus.json'
 import {
   classifyRequestTarget,
@@ -26,6 +27,7 @@ interface RouteCorpusRow {
       pointer: '/exact_routes' | '/dynamic_templates'
       value: Record<string, unknown>
     }>
+    static_sitemap_paths?: string[]
   }
 }
 
@@ -34,7 +36,10 @@ interface ValidatorMutation extends ManifestMutation {
   error: string | null
 }
 
-const routeCorpus = routeCorpusJson as RouteCorpusRow[]
+const routeCorpus = JSON.parse(readFileSync(
+  resolve(process.cwd(), '../tests/fixtures/launch-route-parity-corpus.json'),
+  'utf8',
+)) as RouteCorpusRow[]
 const validatorCorpus = validatorCorpusJson as ValidatorMutation[]
 const staticSitemapPaths = [
   '/',
@@ -136,7 +141,11 @@ function validateRouteCorpusShape(): void {
     expect(row.canonical === null || typeof row.canonical === 'string').toBe(true)
     if (!('variant' in row)) continue
     const variant = row.variant as Record<string, unknown>
-    expect(Object.keys(variant).sort()).toEqual(['mutations', 'name'])
+    expect(Object.keys(variant).sort()).toEqual([
+      'mutations',
+      'name',
+      ...('static_sitemap_paths' in variant ? ['static_sitemap_paths'] : []),
+    ].sort())
     expect(typeof variant.name).toBe('string')
     expect((variant.name as string).length).toBeGreaterThan(0)
     expect(variantNames.has(variant.name as string)).toBe(false)
@@ -150,6 +159,11 @@ function validateRouteCorpusShape(): void {
       expect(rawMutation.value).not.toBeNull()
       expect(typeof rawMutation.value).toBe('object')
       expect(Array.isArray(rawMutation.value)).toBe(false)
+    }
+    if ('static_sitemap_paths' in variant) {
+      expect(Array.isArray(variant.static_sitemap_paths)).toBe(true)
+      expect((variant.static_sitemap_paths as unknown[]).length).toBe(2)
+      expect((variant.static_sitemap_paths as unknown[]).every(path => typeof path === 'string')).toBe(true)
     }
   }
 }
@@ -194,6 +208,10 @@ describe('launch route runtime parity corpus', () => {
       classification: row.classification,
       canonical_path: row.canonical,
     })
+    if (row.variant?.static_sitemap_paths) {
+      const expected = row.variant.static_sitemap_paths
+      expect(extractStaticSitemapPaths(manifest).filter(path => expected.includes(path))).toEqual(expected)
+    }
   })
 
   it('extracts only the reviewed static sitemap inventory', () => {

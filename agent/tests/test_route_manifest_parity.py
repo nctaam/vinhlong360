@@ -5,7 +5,9 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -26,6 +28,7 @@ VALIDATOR_CORPUS_PATH = (
     REPO_ROOT / "tests" / "fixtures" / "launch-route-validator-corpus.json"
 )
 NGINX_PATHS = (REPO_ROOT / "nginx.conf", REPO_ROOT / "nginx-ssl.conf")
+TYPESCRIPT_RUNNER_TIMEOUT_SECONDS = 120
 
 ROUTE_CORPUS = json.loads(ROUTE_CORPUS_PATH.read_text(encoding="utf-8"))
 VALIDATOR_CORPUS = json.loads(VALIDATOR_CORPUS_PATH.read_text(encoding="utf-8"))
@@ -57,17 +60,21 @@ STATIC_SITEMAP_PATHS = (
     "/theo-mua",
     "/tuyen-duong",
 )
-LOCATION = re.compile(
-    r"location\s+(?P<selector>[^{}]+?)\s*\{(?P<body>[^{}]*)\}", re.DOTALL
+BACKEND_PROXY_URL = re.compile(
+    r"^http://(?P<upstream>vl360_agent|vl360_bots)(?P<uri>/.*)?$"
 )
-PROXY = re.compile(
-    r"proxy_pass\s+http://(?P<upstream>vl360_agent|vl360_bots)(?P<uri>/[^;]*)?;"
-)
+UPSTREAM_OWNERS = {"vl360_agent": "agent", "vl360_bots": "bot-gateway"}
 SEO_TRANSITION_LOCATION = (
     r"~ ^/(sitemap.*\.xml|robots\.txt)$",
     "vl360_agent",
     "",
 )
+
+
+@dataclass(frozen=True)
+class _NginxStatement:
+    parts: tuple[str, ...]
+    children: tuple[_NginxStatement, ...] | None
 
 
 def _manifest_source() -> dict[str, object]:
@@ -142,13 +149,22 @@ def _validate_route_mutation_shape(mutation: object) -> None:
 
 def _validate_route_variant_shape(variant: object, names: set[str]) -> None:
     assert isinstance(variant, dict)
-    assert set(variant) == {"name", "mutations"}
+    required = {"name", "mutations"}
+    assert required <= set(variant) <= required | {"static_sitemap_paths"}
     assert isinstance(variant["name"], str) and variant["name"]
     assert variant["name"] not in names
     names.add(variant["name"])
     assert isinstance(variant["mutations"], list) and variant["mutations"]
     for mutation in variant["mutations"]:
         _validate_route_mutation_shape(mutation)
+    if "static_sitemap_paths" in variant:
+        _validate_static_sitemap_paths_shape(variant["static_sitemap_paths"])
+
+
+def _validate_static_sitemap_paths_shape(paths: object) -> None:
+    assert isinstance(paths, list)
+    assert len(paths) == 2
+    assert all(type(path) is str for path in paths)
 
 
 def _validate_route_row_shape(row: object, variant_names: set[str]) -> None:
@@ -183,16 +199,141 @@ def _route_manifest_for_row(row: dict[str, object], tmp_path: Path):
     return load_route_manifest(fixture_path=fixture)
 
 
-def _backend_locations(source: str) -> list[tuple[str, str, str]]:
-    locations: list[tuple[str, str, str]] = []
-    for match in LOCATION.finditer(source):
-        proxy = PROXY.search(match.group("body"))
-        if proxy:
-            selector = " ".join(match.group("selector").split())
-            locations.append(
-                (selector, proxy.group("upstream"), proxy.group("uri") or "")
+def _flush_nginx_word(buffer: list[str], tokens: list[tuple[str, str]]) -> None:
+    if buffer:
+        tokens.append(("word", "".join(buffer)))
+        buffer.clear()
+
+
+def _read_nginx_quoted(source: str, start: int) -> tuple[str, int]:
+    quote = source[start]
+    value: list[str] = []
+    index = start + 1
+    while index < len(source):
+        character = source[index]
+        if character == "\\" and index + 1 < len(source):
+            value.append(source[index + 1])
+            index += 2
+            continue
+        if character == quote:
+            return "".join(value), index + 1
+        value.append(character)
+        index += 1
+    raise AssertionError("unterminated quoted Nginx token")
+
+
+def _tokenize_nginx(source: str) -> list[tuple[str, str]]:
+    tokens: list[tuple[str, str]] = []
+    buffer: list[str] = []
+    index = 0
+    while index < len(source):
+        character = source[index]
+        if character.isspace():
+            _flush_nginx_word(buffer, tokens)
+        elif character == "#":
+            _flush_nginx_word(buffer, tokens)
+            newline = source.find("\n", index)
+            index = len(source) if newline == -1 else newline
+            continue
+        elif character in {'"', "'"}:
+            _flush_nginx_word(buffer, tokens)
+            value, index = _read_nginx_quoted(source, index)
+            tokens.append(("word", value))
+            continue
+        elif character in "{};":
+            _flush_nginx_word(buffer, tokens)
+            tokens.append(("symbol", character))
+        else:
+            buffer.append(character)
+        index += 1
+    _flush_nginx_word(buffer, tokens)
+    return tokens
+
+
+def _parse_nginx_statements(
+    tokens: list[tuple[str, str]],
+    index: int = 0,
+    *,
+    expect_close: bool = False,
+) -> tuple[tuple[_NginxStatement, ...], int]:
+    statements: list[_NginxStatement] = []
+    parts: list[str] = []
+    while index < len(tokens):
+        kind, value = tokens[index]
+        if kind == "word":
+            parts.append(value)
+        elif value == ";":
+            if not parts:
+                raise AssertionError("empty Nginx directive")
+            statements.append(_NginxStatement(tuple(parts), None))
+            parts.clear()
+        elif value == "{":
+            if not parts:
+                raise AssertionError("Nginx block is missing a header")
+            children, index = _parse_nginx_statements(
+                tokens, index + 1, expect_close=True
             )
+            statements.append(_NginxStatement(tuple(parts), children))
+            parts.clear()
+            continue
+        else:
+            if not expect_close or parts:
+                raise AssertionError("unexpected Nginx closing brace")
+            return tuple(statements), index + 1
+        index += 1
+    if expect_close:
+        raise AssertionError("unterminated Nginx block")
+    if parts:
+        raise AssertionError("unterminated Nginx directive")
+    return tuple(statements), index
+
+
+def _backend_reference(parts: tuple[str, ...]) -> tuple[str, str] | None:
+    references = [
+        part
+        for part in parts
+        if part.startswith(("http://vl360_agent", "http://vl360_bots"))
+    ]
+    if not references:
+        return None
+    if len(parts) != 2 or parts[0] != "proxy_pass" or len(references) != 1:
+        raise AssertionError(
+            f"unparsed active backend upstream token: {' '.join(parts)}"
+        )
+    match = BACKEND_PROXY_URL.fullmatch(references[0])
+    if match is None:
+        raise AssertionError("backend proxy URL unexpectedly failed normalization")
+    return match.group("upstream"), match.group("uri") or ""
+
+
+def _collect_backend_locations(
+    statements: tuple[_NginxStatement, ...],
+    location: str | None = None,
+) -> list[tuple[str, str, str]]:
+    locations: list[tuple[str, str, str]] = []
+    for statement in statements:
+        if statement.children is None:
+            proxy = _backend_reference(statement.parts)
+            if proxy is not None:
+                if location is None:
+                    raise AssertionError("backend proxy outside parsed location")
+                locations.append((location, *proxy))
+            continue
+        child_location = location
+        if statement.parts[0] == "location":
+            if location is not None or len(statement.parts) < 2:
+                raise AssertionError("invalid nested or empty Nginx location")
+            child_location = " ".join(statement.parts[1:])
+        locations.extend(_collect_backend_locations(statement.children, child_location))
     return locations
+
+
+def _backend_locations(source: str) -> list[tuple[str, str, str]]:
+    tokens = _tokenize_nginx(source)
+    statements, consumed = _parse_nginx_statements(tokens)
+    if consumed != len(tokens):
+        raise AssertionError("Nginx parser left active tokens unconsumed")
+    return _collect_backend_locations(statements)
 
 
 def _reviewable_backend_locations(
@@ -206,13 +347,21 @@ def _assert_backend_ingress_reviewed(
     locations: list[tuple[str, str, str]],
 ) -> None:
     manifest = load_route_manifest()
-    reviewed = {item["prefix"] for item in manifest.data["sensitive_prefixes"]} | {
-        item["prefix"] for item in manifest.data["backend_ingress_exceptions"]
+    sensitive = {item["prefix"] for item in manifest.data["sensitive_prefixes"]}
+    exceptions = {
+        (item["prefix"], item["upstream"])
+        for item in manifest.data["backend_ingress_exceptions"]
     }
-    for selector, _upstream, _proxy_uri in _reviewable_backend_locations(locations):
+    for selector, nginx_upstream, _proxy_uri in _reviewable_backend_locations(
+        locations
+    ):
+        upstream = UPSTREAM_OWNERS[nginx_upstream]
         for prefix in _selector_prefixes(selector):
-            assert prefix in reviewed, (
-                f"unreviewed backend ingress: {prefix} ({selector})"
+            if prefix in sensitive:
+                continue
+            assert (prefix, upstream) in exceptions, (
+                f"unreviewed backend ingress: {prefix} "
+                f"upstream ownership -> {upstream} ({selector})"
             )
 
 
@@ -263,6 +412,43 @@ def _matches_any_selector(selectors: list[str], path: str) -> bool:
     return any(_selector_matches(selector, path) for selector in selectors)
 
 
+def _subprocess_text(value: bytes | str | None) -> str:
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value or ""
+
+
+def _run_typescript_parity_runner(runner: Path) -> bytes:
+    node = shutil.which("node")
+    if node is None:
+        raise AssertionError("Node.js is required for cross-runtime route parity")
+    command = [
+        node,
+        str(WEB_ROOT / "node_modules" / "vite-node" / "dist" / "cli.mjs"),
+        "--config",
+        "vitest.config.ts",
+        str(runner),
+    ]
+    try:
+        result = subprocess.run(
+            command,
+            cwd=WEB_ROOT,
+            capture_output=True,
+            check=False,
+            timeout=TYPESCRIPT_RUNNER_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise AssertionError(
+            f"TypeScript parity runner timed out after "
+            f"{TYPESCRIPT_RUNNER_TIMEOUT_SECONDS}s; "
+            f"stdout={_subprocess_text(error.output)!r}; "
+            f"stderr={_subprocess_text(error.stderr)!r}"
+        ) from error
+    if result.returncode != 0:
+        raise AssertionError(_subprocess_text(result.stderr))
+    return result.stdout
+
+
 def test_shared_validator_corpus_accepts_canonical_templates_and_matches_errors():
     parsed = validate_route_manifest_data(_manifest_source())
     assert [item["template"] for item in parsed["dynamic_templates"]] == [
@@ -298,6 +484,12 @@ def test_shared_route_corpus_matches_python_classifier(tmp_path):
         )
         assert decision.classification == row["classification"], row
         assert decision.canonical_path == row["canonical"], row
+        expected_sitemap_paths = row.get("variant", {}).get("static_sitemap_paths")
+        if expected_sitemap_paths:
+            actual = extract_static_sitemap_paths(manifest)
+            assert [
+                path for path in actual if path in expected_sitemap_paths
+            ] == expected_sitemap_paths
 
 
 def test_static_sitemap_paths_are_exact_manifest_inventory():
@@ -352,6 +544,7 @@ const output = {{
     return {{
       variant: row.variant?.name ?? null,
       manifest: row.variant ? rowManifest : null,
+      static_sitemap_paths: row.variant?.static_sitemap_paths ? extractStaticSitemapPaths(rowManifest) : null,
       ...decision,
     }}
   }}),
@@ -363,21 +556,7 @@ process.stdout.write(JSON.stringify(output))
         encoding="utf-8",
     )
 
-    node = shutil.which("node")
-    assert node is not None, "Node.js is required for cross-runtime route parity"
-    result = subprocess.run(
-        [
-            node,
-            str(WEB_ROOT / "node_modules" / "vite-node" / "dist" / "cli.mjs"),
-            "--config",
-            "vitest.config.ts",
-            str(runner),
-        ],
-        cwd=WEB_ROOT,
-        capture_output=True,
-        check=False,
-    )
-    assert result.returncode == 0, result.stderr.decode("utf-8", errors="replace")
+    typescript_output = _run_typescript_parity_runner(runner)
 
     manifest = load_route_manifest()
     ingress = validate_route_manifest_data(_accepted_ingress_manifest())
@@ -387,6 +566,11 @@ process.stdout.write(JSON.stringify(output))
                 "variant": row.get("variant", {}).get("name"),
                 "manifest": (
                     _plain_json(row_manifest.data) if row.get("variant") else None
+                ),
+                "static_sitemap_paths": (
+                    list(extract_static_sitemap_paths(row_manifest))
+                    if row.get("variant", {}).get("static_sitemap_paths")
+                    else None
                 ),
                 "classification": decision.classification,
                 "canonical_path": decision.canonical_path,
@@ -408,7 +592,16 @@ process.stdout.write(JSON.stringify(output))
         separators=(",", ":"),
     ).encode("utf-8")
 
-    assert result.stdout == expected
+    if typescript_output != expected:
+        actual_json = json.loads(typescript_output)
+        for index, (actual_decision, expected_decision) in enumerate(
+            zip(actual_json["decisions"], python_output["decisions"], strict=True)
+        ):
+            assert actual_decision == expected_decision, (
+                f"route corpus decision {index} differs: {ROUTE_CORPUS[index]!r}"
+            )
+        assert actual_json == python_output
+    assert typescript_output == expected
     assert python_output["ingress_exceptions"] == [
         {"prefix": "/hook", "upstream": "agent", "review_reason": "reviewed callback"},
         {"prefix": "/nel-hook", "upstream": "bot-gateway", "review_reason": "\u0085"},
@@ -463,6 +656,120 @@ def test_nginx_backend_location_parser_detects_proxy_uri_drift():
     )
 
     assert _backend_locations(source) != _backend_locations(drifted)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        """
+location ~ ^/private(?:/|$) {
+    if ($request_method = POST) {
+        set $private_request 1;
+    }
+    proxy_pass http://vl360_agent;
+}
+""",
+        """
+location ~ ^/private(?:/|$) {
+    # Braces in a comment must not hide this active backend location: {}
+    proxy_pass http://vl360_agent;
+}
+""",
+        """
+location ~ ^/private(?:/|$) {
+    set $quoted "{ # quoted syntax is inert }";
+    proxy_pass http://vl360_agent;
+}
+""",
+    ],
+)
+def test_nginx_scanner_keeps_nested_and_comment_brace_locations(source):
+    with pytest.raises(AssertionError, match="unreviewed backend ingress: /private"):
+        _assert_backend_ingress_reviewed(_backend_locations(source))
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        """
+# location ~ ^/private(?:/|$) {
+#     proxy_pass http://vl360_agent;
+# }
+""",
+        """
+location /public {
+    # proxy_pass http://vl360_agent;
+    return 204;
+}
+""",
+    ],
+)
+def test_nginx_scanner_ignores_commented_backend_directives(source):
+    assert _backend_locations(source) == []
+
+
+def test_nginx_scanner_rejects_backend_proxy_outside_location():
+    source = """
+server {
+    proxy_pass http://vl360_agent;
+}
+"""
+
+    with pytest.raises(AssertionError, match="backend proxy outside parsed location"):
+        _backend_locations(source)
+
+
+@pytest.mark.parametrize(
+    "exception_upstream, nginx_upstream",
+    [("agent", "vl360_bots"), ("bot-gateway", "vl360_agent")],
+)
+def test_ingress_exception_does_not_approve_wrong_upstream(
+    monkeypatch,
+    exception_upstream,
+    nginx_upstream,
+):
+    candidate = _manifest_source()
+    candidate["backend_ingress_exceptions"] = [
+        {
+            "prefix": "/hook",
+            "upstream": exception_upstream,
+            "review_reason": "reviewed ownership",
+        }
+    ]
+    parsed = validate_route_manifest_data(candidate)
+
+    class ManifestStub:
+        data = parsed
+
+    monkeypatch.setattr(sys.modules[__name__], "load_route_manifest", ManifestStub)
+    locations = [("~ ^/hook(?:/|$)", nginx_upstream, "")]
+
+    with pytest.raises(AssertionError, match="upstream ownership"):
+        _assert_backend_ingress_reviewed(locations)
+    matching_upstream = next(
+        name for name, owner in UPSTREAM_OWNERS.items() if owner == exception_upstream
+    )
+    _assert_backend_ingress_reviewed([("~ ^/hook(?:/|$)", matching_upstream, "")])
+
+
+def test_sensitive_ingress_allows_either_reviewed_backend_upstream():
+    _assert_backend_ingress_reviewed([("~ ^/api(?:/|$)", "vl360_bots", "")])
+
+
+def test_typescript_runner_timeout_is_actionable(monkeypatch, tmp_path):
+    def expire(*_args, **kwargs):
+        assert kwargs["timeout"] == 120
+        raise subprocess.TimeoutExpired(
+            cmd="vite-node",
+            timeout=120,
+            output=b"partial stdout",
+            stderr=b"partial stderr",
+        )
+
+    monkeypatch.setattr(subprocess, "run", expire)
+
+    with pytest.raises(AssertionError, match="timed out after 120s.*partial stderr"):
+        _run_typescript_parity_runner(tmp_path / "runner.ts")
 
 
 def test_nginx_backend_locations_have_explicit_boundaries():

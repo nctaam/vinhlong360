@@ -190,8 +190,26 @@ function templatesOverlap(left: string, right: string): boolean {
   })
 }
 
+function hasUnpairedSurrogate(value: string): boolean {
+  for (let index = 0; index < value.length; index += 1) {
+    const unit = value.charCodeAt(index)
+    if (unit >= 0xD800 && unit <= 0xDBFF) {
+      const next = value.charCodeAt(index + 1)
+      if (!(next >= 0xDC00 && next <= 0xDFFF)) return true
+      index += 1
+    } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
+      return true
+    }
+  }
+  return false
+}
+
 function decodeOnce(rawPath: string): string | null {
-  if (/%(?![0-9A-Fa-f]{2})/.test(rawPath) || /%2f|%5c/i.test(rawPath)) return null
+  if (
+    hasUnpairedSurrogate(rawPath)
+    || /%(?![0-9A-Fa-f]{2})/.test(rawPath)
+    || /%2f|%5c/i.test(rawPath)
+  ) return null
 
   let decoded: string
   try {
@@ -199,7 +217,11 @@ function decodeOnce(rawPath: string): string | null {
   } catch {
     return null
   }
-  if (decoded.includes('\0') || /%[0-9A-Fa-f]{2}/.test(decoded)) return null
+  if (
+    hasUnpairedSurrogate(decoded)
+    || decoded.includes('\0')
+    || /%[0-9A-Fa-f]{2}/.test(decoded)
+  ) return null
   if (decoded.split('/').some(segment => segment === '.' || segment === '..')) return null
   return decoded
 }
@@ -415,5 +437,17 @@ export function extractStaticSitemapPaths(manifest: LaunchRouteManifest): string
   return manifest.exact_routes
     .filter(item => item.classification === 'indexable-public' && item.sitemap === true)
     .map(item => item.path)
-    .sort()
+    .sort(compareCodePointOrder)
+}
+
+function compareCodePointOrder(left: string, right: string): number {
+  // Match Python's Unicode code-point ordering for deterministic parity.
+  const leftPoints = Array.from(left, character => character.codePointAt(0)!)
+  const rightPoints = Array.from(right, character => character.codePointAt(0)!)
+  const sharedLength = Math.min(leftPoints.length, rightPoints.length)
+  for (let index = 0; index < sharedLength; index += 1) {
+    const difference = leftPoints[index]! - rightPoints[index]!
+    if (difference !== 0) return difference
+  }
+  return leftPoints.length - rightPoints.length
 }
