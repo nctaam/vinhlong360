@@ -1,0 +1,17 @@
+[
+  {"name": "wrong-revision", "operation": "set", "pointer": "/revision", "value": "ai-disclosure-v0", "error": "revision"},
+  {"name": "extra-root-key", "operation": "set", "pointer": "/extra", "value": true, "error": "root keys"},
+  {"name": "missing-ugc", "operation": "delete", "pointer": "/ugc_photo", "error": "root keys"},
+  {"name": "altered-ai-short", "operation": "set", "pointer": "/entity_ai/short_label", "value": "AI", "error": "entity_ai"},
+  {"name": "altered-ai-full", "operation": "set", "pointer": "/entity_ai/full_disclosure", "value": "altered", "error": "entity_ai"},
+  {"name": "altered-placeholder-full", "operation": "set", "pointer": "/placeholder/full_disclosure", "value": "altered", "error": "placeholder"},
+  {"name": "altered-ugc-short", "operation": "set", "pointer": "/ugc_photo/short_label", "value": "photo", "error": "ugc_photo"},
+  {"name": "altered-ugc-full", "operation": "set", "pointer": "/ugc_photo/full_disclosure", "value": "altered", "error": "ugc_photo"},
+  {"name": "altered-accessibility-key", "operation": "set", "pointer": "/entity_ai/accessible_description_key", "value": "wrong", "error": "entity_ai"},
+  {"name": "reordered-forbidden-claims", "operation": "reverse", "pointer": "/forbidden_entity_image_claims", "error": "forbidden claims"},
+  {"name": "wrong-forbidden-type", "operation": "set", "pointer": "/forbidden_entity_image_claims", "value": "real photo", "error": "forbidden claims"},
+  {"name": "added-forbidden-claim", "operation": "append", "pointer": "/forbidden_entity_image_claims", "value": "current entity photo", "error": "forbidden claims"},
+  {"name": "wrong-entity-scalar-type", "operation": "set", "pointer": "/entity_ai", "value": "entity-ai", "error": "entity_ai"},
+  {"name": "wrong-placeholder-array-type", "operation": "set", "pointer": "/placeholder", "value": [], "error": "placeholder"},
+  {"name": "wrong-ugc-short-object-type", "operation": "set", "pointer": "/ugc_photo/short_label", "value": {"label": "user photo"}, "error": "ugc_photo"}
+]
