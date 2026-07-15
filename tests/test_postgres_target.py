@@ -414,21 +414,43 @@ def test_write_exclusive_detects_pending_replacement_during_publish(
     assert pending[0].read_bytes() == foreign
 
 
-def test_write_exclusive_final_lstat_failure_does_not_reverse_successful_publish(
+def test_write_exclusive_final_lstat_failure_fails_closed_after_pending_swap(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     path = tmp_path / "nested" / "manifest.json"
+    foreign = b"other-process"
+    foreign_source = tmp_path / "other-process.tmp"
+    foreign_source.write_bytes(foreign)
+    original_link = postgres_target.os.link
+    original_replace = postgres_target.os.replace
     original_lstat = Path.lstat
+
+    def link_after_pending_swap(
+        source,
+        destination,
+        *,
+        follow_symlinks: bool = True,
+    ) -> None:
+        original_replace(foreign_source, source)
+        original_link(
+            source,
+            destination,
+            follow_symlinks=follow_symlinks,
+        )
 
     def deny_final_metadata(candidate: Path):
         if candidate == path:
             raise PermissionError("simulated final lstat failure")
         return original_lstat(candidate)
 
+    monkeypatch.setattr(postgres_target.os, "link", link_after_pending_swap)
     monkeypatch.setattr(Path, "lstat", deny_final_metadata)
 
-    result = postgres_target.write_exclusive(path, {"z": 1, "a": "ok"})
+    with pytest.raises(RuntimeError, match="could not be verified"):
+        postgres_target.write_exclusive(path, {"valid": True})
 
-    assert result == path
-    assert path.read_bytes() == b'{"a":"ok","z":1}\n'
+    assert path.read_bytes() == foreign
+    pending = list(path.parent.glob(".pending-write-*"))
+    assert len(pending) == 1
+    assert pending[0].read_bytes() == foreign
