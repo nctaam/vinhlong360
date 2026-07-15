@@ -497,7 +497,7 @@ class _FakeCursor:
                 raise RuntimeError("snapshot failed with should-not-leak-secret")
             self.phase = "schema"
             return
-        if normalized == "SELECT * FROM entities ORDER BY id":
+        if normalized == "SELECT * FROM public.entities ORDER BY id":
             self.phase = "rows"
             self.description = [
                 ("id",),
@@ -606,7 +606,7 @@ def test_cli_reads_one_readonly_repeatable_snapshot_and_writes_immutable_plan(
     assert "table_schema = 'public'" in connection.fake_cursor.queries[1]
     assert "table_name = 'entities'" in connection.fake_cursor.queries[1]
     assert connection.fake_cursor.queries[1].endswith("ORDER BY ordinal_position")
-    assert connection.fake_cursor.queries[2] == "SELECT * FROM entities ORDER BY id"
+    assert connection.fake_cursor.queries[2] == "SELECT * FROM public.entities ORDER BY id"
     assert connection.fake_cursor.closed is True
     assert connection.rollback_count == 1
     assert connection.closed is True
@@ -851,7 +851,7 @@ def _restore_ok(_artifact: Path) -> str:
     return hashlib.sha256(RESTORE_LISTING.encode("utf-8")).hexdigest()
 
 
-def _apply(store: ApplyFakeStore, plan, backup):
+def _apply(store: ApplyFakeStore, plan, backup, *, clock=None):
     return migration.apply_plan(
         store,
         plan,
@@ -860,6 +860,7 @@ def _apply(store: ApplyFakeStore, plan, backup):
         confirm_target=plan["target_fingerprint"],
         now=APPLY_NOW,
         restore_validator=_restore_ok,
+        **({"clock": clock} if clock is not None else {}),
     )
 
 
@@ -1170,6 +1171,53 @@ def test_restore_validation_rejects_wrong_schema_even_with_public_definitions(
         )
 
 
+def test_restore_validation_rejects_foreign_table_even_with_public_definitions(
+    tmp_path: Path,
+) -> None:
+    artifact = tmp_path / "postgres.dump"
+    artifact.write_bytes(b"PGDMP-test")
+    listing = """1; 1259 100 TABLE public entities owner
+2; 1259 101 TABLE public entity_changes owner
+3; 1259 102 FOREIGN TABLE public entities owner
+"""
+
+    with pytest.raises(migration.MigrationRefusal, match="invalid table objects"):
+        migration.validate_restore_artifact(
+            artifact,
+            runner=lambda command, **_kwargs: subprocess.CompletedProcess(
+                command, 0, listing, ""
+            ),
+        )
+
+
+@pytest.mark.parametrize(
+    "masquerade",
+    [
+        "3; 0 0 ACL public TABLE entities owner",
+        "3; 0 0 COMMENT public TABLE entities owner",
+        "3; 1255 102 FUNCTION public entities() owner",
+    ],
+)
+def test_restore_validation_rejects_realistic_masquerade_with_definitions(
+    tmp_path: Path, masquerade: str
+) -> None:
+    artifact = tmp_path / "postgres.dump"
+    artifact.write_bytes(b"PGDMP-test")
+    listing = (
+        "1; 1259 100 TABLE public entities owner\n"
+        "2; 1259 101 TABLE public entity_changes owner\n"
+        f"{masquerade}\n"
+    )
+
+    with pytest.raises(migration.MigrationRefusal, match="invalid table objects"):
+        migration.validate_restore_artifact(
+            artifact,
+            runner=lambda command, **_kwargs: subprocess.CompletedProcess(
+                command, 0, listing, ""
+            ),
+        )
+
+
 def test_apply_revalidates_listing_hash_and_detects_artifact_replacement(
     tmp_path: Path,
 ) -> None:
@@ -1191,7 +1239,9 @@ def test_apply_revalidates_listing_hash_and_detects_artifact_replacement(
     artifact = backup.artifact_root / "postgres.dump"
 
     def replace(path: Path) -> str:
-        path.write_bytes(b"replacement")
+        assert path != artifact
+        path.write_bytes(b"pinned replacement")
+        artifact.write_bytes(b"replacement")
         return backup.manifest["validation"]["listing_sha256"]
 
     with pytest.raises(migration.MigrationRefusal, match="artifact changed"):
@@ -1296,6 +1346,24 @@ def test_apply_refuses_reordered_update_ids_and_post_audit_cardinality_drift(
         _apply(MissingAuditStore([_row("a"), _row("b")]), plan, backup)
 
 
+def test_apply_normalizes_db_row_and_audit_order_before_exact_comparison(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+
+    class CollationStore(ApplyFakeStore):
+        def rows_for_update(self, ids):
+            return list(reversed(super().rows_for_update(ids)))
+
+        def audit_rows(self, actor: str):
+            return list(reversed(super().audit_rows(actor)))
+
+    report = _apply(CollationStore([_row("a"), _row("b")]), plan, backup)
+
+    assert report["result"] == "applied"
+
+
 def test_apply_idempotency_requires_exact_unique_owned_audits_and_counts(
     tmp_path: Path,
 ) -> None:
@@ -1308,12 +1376,28 @@ def test_apply_idempotency_requires_exact_unique_owned_audits_and_counts(
     assert first["result"] == "applied"
     assert second["result"] == "already-applied"
     assert second["candidate_ids"] == ["a", "b"]
-    assert second["updated_ids"] == []
+    assert second["updated_ids"] == ["a", "b"]
+    assert second["recovery_ready"] is True
+    assert second["recovery_contract"] == "apply-audit-exact-v1"
     assert len(store.audit) == 2
 
     store.audit.append(dict(store.audit[0]))
     with pytest.raises(migration.MigrationRefusal, match="audit ownership"):
         _apply(store, plan, backup)
+
+
+def test_apply_revalidates_freshness_after_lock_before_mutation(tmp_path: Path) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    after_lock = APPLY_NOW + timedelta(hours=2)
+
+    with pytest.raises(migration.MigrationRefusal, match="backup evidence is stale"):
+        _apply(store, plan, backup, clock=lambda: after_lock)
+
+    assert store.locked == migration.LOCK_NAME
+    assert "update" not in store.events
+    assert store.status_counts() == {"published": 0, "null": 2}
 
 
 def test_apply_refuses_preexisting_apply_audit_on_null_candidate(tmp_path: Path) -> None:
@@ -1382,6 +1466,22 @@ def test_postgres_store_uses_qualified_parameterized_sql() -> None:
     assert audit_params == [("a", "null", "published", "actor")]
 
 
+def test_postgres_store_and_snapshot_readers_accept_only_safe_qualified_schema() -> None:
+    cursor = StoreCursor()
+    store = migration.PostgresPublicationStore(cursor, schema="task9_fixture_1")
+    store.acquire_lock("lock-name")
+    cursor.rows = [("a", None)]
+    store.rows_for_update(["a"])
+    migration._read_entity_rows(cursor, schema="task9_fixture_1")
+
+    assert "FROM task9_fixture_1.entities" in cursor.calls[1][0]
+    assert cursor.calls[2][0] == "SELECT * FROM task9_fixture_1.entities ORDER BY id"
+    with pytest.raises(migration.MigrationRefusal, match="schema identifier"):
+        migration.PostgresPublicationStore(cursor, schema="public; DROP TABLE entities")
+    with pytest.raises(migration.MigrationRefusal, match="schema identifier"):
+        migration._read_entity_rows(cursor, schema="../public")
+
+
 def _apply_cli_args(
     plan_path: Path, manifest_path: Path, report: Path, target: str
 ) -> list[str]:
@@ -1399,6 +1499,8 @@ def _apply_cli_args(
         target,
         "--confirm-plan-sha256",
         hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+        "--confirm-backup-manifest-sha256",
+        hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
         "--report-out",
         str(report),
     ]
@@ -1421,6 +1523,7 @@ def _write_apply_artifacts(tmp_path: Path):
         lambda args: args.__setitem__(4, "DATABASE_URL"),
         lambda args: args.__setitem__(10, "bad-target"),
         lambda args: args.__setitem__(12, "bad-plan-sha"),
+        lambda args: args.__setitem__(14, "bad-backup-sha"),
     ],
 )
 def test_apply_cli_refuses_unsafe_args_before_artifact_access_import_or_connect(
@@ -1433,6 +1536,7 @@ def test_apply_cli_refuses_unsafe_args_before_artifact_access_import_or_connect(
         "apply", "--target", "pg", "--database-url-env", "TASK7_DATABASE_URL",
         "--plan", str(plan), "--backup-manifest", str(manifest),
         "--confirm-target", "0" * 64, "--confirm-plan-sha256", "0" * 64,
+        "--confirm-backup-manifest-sha256", "0" * 64,
         "--report-out", str(report),
     ]
     mutate(args)
@@ -1467,6 +1571,7 @@ def test_apply_cli_refuses_existing_report_before_artifact_access(
         "apply", "--target", "pg", "--database-url-env", "TASK7_DATABASE_URL",
         "--plan", str(plan), "--backup-manifest", str(manifest),
         "--confirm-target", "0" * 64, "--confirm-plan-sha256", "0" * 64,
+        "--confirm-backup-manifest-sha256", "0" * 64,
         "--report-out", str(report),
     ]
     monkeypatch.setattr(
@@ -1521,6 +1626,25 @@ def test_apply_cli_requires_exact_raw_plan_confirmation_before_resolve(
     assert not report.exists()
 
 
+def test_apply_cli_requires_exact_raw_backup_confirmation_before_resolve(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan, plan_path, _backup, manifest_path = _write_apply_artifacts(tmp_path)
+    report = tmp_path / "report.json"
+    args = _apply_cli_args(
+        plan_path, manifest_path, report, plan["target_fingerprint"]
+    )
+    args[14] = "0" * 64
+    monkeypatch.setattr(
+        migration,
+        "resolve_database_url",
+        lambda *_args: pytest.fail("database resolved for wrong backup confirmation"),
+    )
+
+    assert migration.main(args) == 1
+    assert not report.exists()
+
+
 class ApplyCliCursor:
     def __init__(self, events: list[object]) -> None:
         self.events = events
@@ -1564,11 +1688,20 @@ def test_apply_cli_validates_offline_then_commits_before_immutable_report(
     report = tmp_path / "apply.json"
     events: list[object] = []
     connection = ApplyCliConnection(events)
-    monkeypatch.setattr(migration, "_utc_now", lambda: APPLY_NOW)
+    completed_at = APPLY_NOW + timedelta(seconds=5)
+    clock_values = iter([APPLY_NOW, completed_at])
+
+    def clock():
+        value = next(clock_values)
+        events.append(("clock", value))
+        return value
+
+    monkeypatch.setattr(migration, "_utc_now", clock)
     expected_report = {
         "schema": migration.APPLY_SCHEMA,
         "result": "applied",
         "candidate_count": plan["candidate_count"],
+        "completed_at": migration.utc_text(APPLY_NOW),
     }
 
     monkeypatch.setattr(
@@ -1599,8 +1732,10 @@ def test_apply_cli_validates_offline_then_commits_before_immutable_report(
         _apply_cli_args(plan_path, manifest_path, report, plan["target_fingerprint"])
     ) == 0
     assert json.loads(report.read_text(encoding="utf-8")) == expected_report
+    assert expected_report["completed_at"] == migration.utc_text(completed_at)
     assert events.index("restore") < events.index(("resolve", "TASK7_DATABASE_URL"))
     assert events.index("commit") < events.index("cursor-close")
+    assert events.index("commit") < events.index(("clock", completed_at))
     assert events[events.index("cursor") + 1] == (
         "execute",
         "SET LOCAL search_path = public",
@@ -1653,8 +1788,10 @@ def test_apply_cli_report_write_failure_after_commit_never_claims_success(
 ) -> None:
     plan, plan_path, backup, manifest_path = _write_apply_artifacts(tmp_path)
     report = tmp_path / "apply.json"
+    retry_report = tmp_path / "apply-recovery.json"
     events: list[object] = []
     connection = ApplyCliConnection(events)
+    original_writer = migration.write_immutable_json
     monkeypatch.setattr(migration, "_utc_now", lambda: APPLY_NOW)
     monkeypatch.setattr(
         migration,
@@ -1667,10 +1804,29 @@ def test_apply_cli_report_write_failure_after_commit_never_claims_success(
         "_load_psycopg2",
         lambda: SimpleNamespace(connect=lambda _dsn: connection),
     )
+    reports = iter(
+        [
+            {
+                "schema": migration.APPLY_SCHEMA,
+                "result": "applied",
+                "candidate_count": plan["candidate_count"],
+                "completed_at": migration.utc_text(APPLY_NOW),
+            },
+            {
+                "schema": migration.APPLY_SCHEMA,
+                "result": "already-applied",
+                "candidate_count": plan["candidate_count"],
+                "candidate_ids": plan["candidate_ids"],
+                "candidate_sha256": plan["candidate_sha256"],
+                "updated_ids": plan["candidate_ids"],
+                "recovery_ready": True,
+                "recovery_contract": "apply-audit-exact-v1",
+                "completed_at": migration.utc_text(APPLY_NOW),
+            },
+        ]
+    )
     monkeypatch.setattr(
-        migration,
-        "_apply_locked",
-        lambda *_args, **_kwargs: {"schema": migration.APPLY_SCHEMA},
+        migration, "_apply_locked", lambda *_args, **_kwargs: next(reports)
     )
     monkeypatch.setattr(
         migration,
@@ -1685,3 +1841,15 @@ def test_apply_cli_report_write_failure_after_commit_never_claims_success(
     assert captured.out == ""
     assert "commit" in events
     assert not report.exists()
+
+    monkeypatch.setattr(migration, "write_immutable_json", original_writer)
+    assert migration.main(
+        _apply_cli_args(
+            plan_path, manifest_path, retry_report, plan["target_fingerprint"]
+        )
+    ) == 0
+    recovery = json.loads(retry_report.read_text(encoding="utf-8"))
+    assert recovery["result"] == "already-applied"
+    assert recovery["updated_ids"] == plan["candidate_ids"]
+    assert recovery["recovery_ready"] is True
+    assert recovery["recovery_contract"] == "apply-audit-exact-v1"

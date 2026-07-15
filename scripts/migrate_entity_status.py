@@ -9,6 +9,7 @@ import re
 import stat
 import subprocess
 import sys
+import tempfile
 from collections import Counter
 from datetime import UTC, datetime
 from dataclasses import dataclass
@@ -80,6 +81,16 @@ def audit_actor(prefix: str, plan_sha256: str) -> str:
     ):
         raise MigrationRefusal("audit actor inputs are invalid")
     return f"entity-status:{prefix}:{PUBLICATION_POLICY_REVISION}:{plan_sha256}"
+
+
+def validate_schema_identifier(value: object) -> str:
+    if (
+        type(value) is not str
+        or len(value) > 63
+        or not re.fullmatch(r"[a-z_][a-z0-9_]*", value)
+    ):
+        raise MigrationRefusal("PostgreSQL schema identifier is invalid")
+    return value
 
 
 def parse_utc(value: str) -> datetime:
@@ -462,19 +473,22 @@ def validate_backup_manifest(
 
 
 def _restore_required_object(text: str) -> str | None:
-    match = re.search(
-        r"\b(TABLE DATA|TABLE|COMMENT|ACL|FUNCTION)\s+(\S+)\s+(\S+)(?:\s|$)",
-        text,
+    prefix = re.match(r"^\d+;\s+\S+\s+\S+\s+(.*)$", text)
+    body = prefix.group(1) if prefix else text
+    match = re.match(
+        r"^(FOREIGN\s+)?(TABLE DATA|TABLE|COMMENT|ACL|FUNCTION)\s+"
+        r"(\S+)\s+(?:TABLE\s+)?(\S+)(?:\s|$)",
+        body,
     )
     if not match:
         return None
-    kind, schema, name = match.groups()
+    foreign, kind, schema, name = match.groups()
     required = ("entities", "entity_changes")
     if name not in required and not (
         schema == "public" and any(name.startswith(prefix) for prefix in required)
     ):
         return None
-    if schema != "public" or name not in required:
+    if foreign or schema != "public" or name not in required:
         raise MigrationRefusal("pg_restore listing contains invalid table objects")
     if kind == "TABLE DATA":
         return None
@@ -507,8 +521,11 @@ def validate_restore_artifact(path: Path, runner=subprocess.run) -> str:
 
 
 class PostgresPublicationStore:
-    def __init__(self, cursor) -> None:
+    def __init__(self, cursor, schema: str = "public") -> None:
         self.cursor = cursor
+        self.schema = validate_schema_identifier(schema)
+        self.entities = f"{self.schema}.entities"
+        self.entity_changes = f"{self.schema}.entity_changes"
 
     def target_identity(self):
         return read_target_identity(self.cursor)
@@ -517,7 +534,7 @@ class PostgresPublicationStore:
         self.cursor.execute(
             "SELECT column_name, data_type, is_nullable "
             "FROM information_schema.columns "
-            "WHERE table_schema = 'public' AND table_name = 'entities' "
+            f"WHERE table_schema = '{self.schema}' AND table_name = 'entities' "
             "ORDER BY column_name"
         )
         return list(self.cursor.fetchall())
@@ -527,7 +544,7 @@ class PostgresPublicationStore:
 
     def rows_for_update(self, ids):
         self.cursor.execute(
-            "SELECT * FROM public.entities WHERE id = ANY(%s) "
+            f"SELECT * FROM {self.entities} WHERE id = ANY(%s) "
             "ORDER BY id FOR UPDATE",
             (ids,),
         )
@@ -537,7 +554,7 @@ class PostgresPublicationStore:
     def audit_rows(self, actor: str):
         self.cursor.execute(
             "SELECT entity_id, field, old_value, new_value, actor "
-            "FROM public.entity_changes WHERE actor = %s ORDER BY entity_id",
+            f"FROM {self.entity_changes} WHERE actor = %s ORDER BY entity_id",
             (actor,),
         )
         names = [item[0] for item in self.cursor.description]
@@ -553,7 +570,7 @@ class PostgresPublicationStore:
     def apply_audit_rows(self, ids):
         self.cursor.execute(
             "SELECT entity_id, field, old_value, new_value, actor "
-            "FROM public.entity_changes WHERE entity_id = ANY(%s) "
+            f"FROM {self.entity_changes} WHERE entity_id = ANY(%s) "
             "AND field = %s AND old_value = %s AND new_value = %s "
             "AND actor LIKE %s ORDER BY entity_id, actor",
             (
@@ -570,7 +587,7 @@ class PostgresPublicationStore:
     def update_to_published(self, ids):
         self.cursor.execute(
             "WITH updated AS ("
-            "UPDATE public.entities SET status = 'published' "
+            f"UPDATE {self.entities} SET status = 'published' "
             "WHERE id = ANY(%s) AND status IS NULL RETURNING id"
             ") SELECT id FROM updated ORDER BY id",
             (ids,),
@@ -579,7 +596,7 @@ class PostgresPublicationStore:
 
     def insert_status_audit(self, ids, actor, old_value, new_value):
         self.cursor.executemany(
-            "INSERT INTO public.entity_changes "
+            f"INSERT INTO {self.entity_changes} "
             "(entity_id, field, old_value, new_value, actor) "
             "VALUES (%s, 'status', %s, %s, %s)",
             [(entity_id, old_value, new_value, actor) for entity_id in ids],
@@ -588,7 +605,7 @@ class PostgresPublicationStore:
     def status_counts(self):
         self.cursor.execute(
             "SELECT COUNT(*) FILTER (WHERE status = 'published'), "
-            "COUNT(*) FILTER (WHERE status IS NULL) FROM public.entities"
+            f"COUNT(*) FILTER (WHERE status IS NULL) FROM {self.entities}"
         )
         row = self.cursor.fetchone()
         return {"published": int(row[0]), "null": int(row[1])}
@@ -635,6 +652,12 @@ def _audit_owned_exact(records, candidate_ids: list[str], actor: str) -> bool:
         }
         for entity_id in candidate_ids
     ]
+    positions = {entity_id: index for index, entity_id in enumerate(candidate_ids)}
+    if len(records) != len(candidate_ids) or any(
+        row.get("entity_id") not in positions for row in records
+    ):
+        return False
+    ordered = sorted(records, key=lambda row: positions[row["entity_id"]])
     normalized = [
         {
             "entity_id": row.get("entity_id"),
@@ -643,7 +666,7 @@ def _audit_owned_exact(records, candidate_ids: list[str], actor: str) -> bool:
             "new_value": row.get("new_value"),
             "actor": row.get("actor"),
         }
-        for row in records
+        for row in ordered
     ]
     return normalized == expected
 
@@ -676,16 +699,46 @@ def _apply_report(
     }
 
 
-def _locked_rows(store, plan, target: str, candidate_ids: list[str]):
+def _locked_freshness(
+    plan,
+    plan_sha256: str,
+    backup: BackupEvidence,
+    target: str,
+    now: datetime,
+    clock,
+) -> None:
+    current = _require_aware_datetime(clock() if clock else now, "locked apply time")
+    _validate_plan_header(plan, plan_sha256, target, current)
+    _validate_backup_freshness(backup.manifest, current, True)
+
+
+def _locked_rows(
+    store,
+    plan,
+    plan_sha256: str,
+    backup: BackupEvidence,
+    target: str,
+    candidate_ids: list[str],
+    now: datetime,
+    clock,
+):
     store.acquire_lock(LOCK_NAME)
+    _locked_freshness(plan, plan_sha256, backup, target, now, clock)
     if target_fingerprint(store.target_identity()) != target:
         raise MigrationRefusal("connected target drift")
     if schema_fingerprint(store.schema_columns()) != plan["schema_fingerprint"]:
         raise MigrationRefusal("entity schema drift")
     rows = store.rows_for_update(candidate_ids)
-    if [row.get("id") for row in rows] != candidate_ids:
+    row_ids = [row.get("id") for row in rows]
+    if (
+        len(row_ids) != len(candidate_ids)
+        or any(type(entity_id) is not str for entity_id in row_ids)
+        or len(set(row_ids)) != len(row_ids)
+        or set(row_ids) != set(candidate_ids)
+    ):
         raise MigrationRefusal("planned IDs are missing or reordered")
-    return rows
+    positions = {entity_id: index for index, entity_id in enumerate(candidate_ids)}
+    return sorted(rows, key=lambda row: positions[row["id"]])
 
 
 def _already_applied_report(
@@ -705,7 +758,12 @@ def _already_applied_report(
         raise MigrationRefusal("published rows lack exact audit ownership")
     if store.status_counts() != plan["expected_after"]:
         raise MigrationRefusal("already-applied global count drift")
-    return _apply_report("already-applied", plan, plan_sha256, backup, [], now)
+    report = _apply_report(
+        "already-applied", plan, plan_sha256, backup, candidate_ids, now
+    )
+    report["recovery_ready"] = True
+    report["recovery_contract"] = "apply-audit-exact-v1"
+    return report
 
 
 def _apply_new_candidates(
@@ -758,8 +816,18 @@ def _apply_locked(
     target: str,
     candidate_ids: list[str],
     now: datetime,
+    clock=None,
 ) -> dict[str, object]:
-    rows = _locked_rows(store, plan, target, candidate_ids)
+    rows = _locked_rows(
+        store,
+        plan,
+        plan_sha256,
+        backup,
+        target,
+        candidate_ids,
+        now,
+        clock,
+    )
     actor = audit_actor("apply", plan_sha256)
     audit_records = _audit_records(store, actor)
     candidate_audits = _candidate_apply_records(store, candidate_ids, actor)
@@ -797,6 +865,42 @@ def _assert_artifact_unchanged(artifact: Path, state: tuple[int, int, int, str])
         raise MigrationRefusal("backup artifact changed during validation")
 
 
+def _open_validated_artifact(artifact: Path, state):
+    metadata = artifact.lstat()
+    if _is_linklike(metadata) or not stat.S_ISREG(metadata.st_mode):
+        raise MigrationRefusal("backup artifact path is invalid")
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(artifact, flags)
+    except OSError:
+        raise MigrationRefusal("backup artifact changed during pinning") from None
+    opened = os.fstat(descriptor)
+    if (opened.st_dev, opened.st_ino, opened.st_size) != state[:3]:
+        os.close(descriptor)
+        raise MigrationRefusal("backup artifact changed during pinning")
+    return os.fdopen(descriptor, "rb")
+
+
+def _validate_pinned_restore(artifact: Path, state, restore_validator) -> str:
+    with tempfile.TemporaryDirectory(prefix="vinhlong360-publication-apply-") as directory:
+        pinned = Path(directory) / "postgres.dump"
+        with _open_validated_artifact(artifact, state) as source, pinned.open(
+            "xb"
+        ) as destination:
+            while chunk := source.read(1024 * 1024):
+                destination.write(chunk)
+            destination.flush()
+            os.fsync(destination.fileno())
+        _assert_artifact_unchanged(artifact, state)
+        if sha256_file(pinned) != state[3]:
+            raise MigrationRefusal("backup artifact changed during pinning")
+        listing_hash = _require_sha(
+            restore_validator(pinned), "restore listing hash"
+        )
+        _assert_artifact_unchanged(artifact, state)
+        return listing_hash
+
+
 def apply_plan(
     store,
     plan: dict[str, object],
@@ -806,6 +910,7 @@ def apply_plan(
     confirm_target: str,
     now: datetime,
     restore_validator,
+    clock=None,
 ) -> dict[str, object]:
     target, candidate_ids = _validate_plan_for_apply(
         plan, plan_sha256, confirm_target, now
@@ -814,7 +919,7 @@ def apply_plan(
         backup, expected_target=target, now=now, require_fresh=True
     )
     state = _artifact_state(artifact)
-    listing_hash = _require_sha(restore_validator(artifact), "restore listing hash")
+    listing_hash = _validate_pinned_restore(artifact, state, restore_validator)
     expected_listing = backup.manifest["validation"]["listing_sha256"]
     if listing_hash != expected_listing:
         raise MigrationRefusal("backup listing hash mismatch")
@@ -827,6 +932,7 @@ def apply_plan(
         target=target,
         candidate_ids=candidate_ids,
         now=now,
+        clock=clock,
     )
 
 
@@ -937,12 +1043,15 @@ def _source_revision(runner=subprocess.run) -> str:
     return revision
 
 
-def _read_schema_columns(cursor) -> list[tuple[object, object, object]]:
+def _read_schema_columns(
+    cursor, schema: str = "public"
+) -> list[tuple[object, object, object]]:
+    schema = validate_schema_identifier(schema)
     cursor.execute(
-        """
+        f"""
         SELECT column_name, data_type, is_nullable
         FROM information_schema.columns
-        WHERE table_schema = 'public'
+        WHERE table_schema = '{schema}'
           AND table_name = 'entities'
         ORDER BY ordinal_position
         """
@@ -950,8 +1059,9 @@ def _read_schema_columns(cursor) -> list[tuple[object, object, object]]:
     return list(cursor.fetchall())
 
 
-def _read_entity_rows(cursor) -> list[dict[str, object]]:
-    cursor.execute("SELECT * FROM entities ORDER BY id")
+def _read_entity_rows(cursor, schema: str = "public") -> list[dict[str, object]]:
+    schema = validate_schema_identifier(schema)
+    cursor.execute(f"SELECT * FROM {schema}.entities ORDER BY id")
     names = [description[0] for description in cursor.description]
     return [dict(zip(names, row, strict=True)) for row in cursor.fetchall()]
 
@@ -971,7 +1081,8 @@ def _close_snapshot(connection, cursor) -> None:
     _safe_method(connection, "close")
 
 
-def _read_postgres_snapshot(database_url: str, psycopg2_module):
+def _read_postgres_snapshot(database_url: str, psycopg2_module, schema: str = "public"):
+    schema = validate_schema_identifier(schema)
     connection = None
     cursor = None
     try:
@@ -983,8 +1094,8 @@ def _read_postgres_snapshot(database_url: str, psycopg2_module):
         )
         cursor = connection.cursor()
         identity = read_target_identity(cursor)
-        schema_columns = _read_schema_columns(cursor)
-        rows = _read_entity_rows(cursor)
+        schema_columns = _read_schema_columns(cursor, schema)
+        rows = _read_entity_rows(cursor, schema)
         return identity, schema_columns, rows
     except Exception:
         raise MigrationRefusal("unable to read PostgreSQL publication snapshot") from None
@@ -1016,6 +1127,10 @@ def _validate_apply_args(args: argparse.Namespace) -> None:
         raise MigrationRefusal("report output already exists")
     _require_sha(args.confirm_target, "target confirmation")
     _require_sha(args.confirm_plan_sha256, "plan SHA-256 confirmation")
+    _require_sha(
+        args.confirm_backup_manifest_sha256,
+        "backup manifest SHA-256 confirmation",
+    )
     if not args.plan.is_file() or not args.backup_manifest.is_file():
         raise MigrationRefusal("plan and backup manifest paths must be files")
 
@@ -1032,6 +1147,8 @@ def _load_apply_artifacts(
         plan, plan_sha256, args.confirm_target, now
     )
     manifest, manifest_sha256 = load_immutable_json(args.backup_manifest)
+    if manifest_sha256 != args.confirm_backup_manifest_sha256:
+        raise MigrationRefusal("backup manifest SHA-256 confirmation mismatch")
     if manifest_sha256 != sha256_bytes(canonical_json_bytes(manifest)):
         raise MigrationRefusal("backup manifest bytes are not canonical")
     backup = BackupEvidence(
@@ -1043,8 +1160,8 @@ def _load_apply_artifacts(
         backup, expected_target=target, now=now, require_fresh=True
     )
     state = _artifact_state(artifact)
-    listing_hash = _require_sha(
-        validate_restore_artifact(artifact), "restore listing hash"
+    listing_hash = _validate_pinned_restore(
+        artifact, state, validate_restore_artifact
     )
     if listing_hash != manifest["validation"]["listing_sha256"]:
         raise MigrationRefusal("backup listing hash mismatch")
@@ -1079,8 +1196,10 @@ def _generate_apply(args: argparse.Namespace) -> dict[str, object]:
             target=target,
             candidate_ids=candidate_ids,
             now=now,
+            clock=_utc_now,
         )
         connection.commit()
+        report["completed_at"] = utc_text(_utc_now())
     except MigrationRefusal:
         _safe_method(connection, "rollback")
         raise
@@ -1145,6 +1264,7 @@ def _build_parser() -> argparse.ArgumentParser:
     apply.add_argument("--backup-manifest", required=True, type=Path)
     apply.add_argument("--confirm-target", required=True)
     apply.add_argument("--confirm-plan-sha256", required=True)
+    apply.add_argument("--confirm-backup-manifest-sha256", required=True)
     apply.add_argument("--report-out", required=True, type=Path)
     return parser
 
