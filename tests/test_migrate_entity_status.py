@@ -215,12 +215,8 @@ def test_build_plan_does_not_mutate_input_rows_or_columns() -> None:
     assert columns == original_columns
 
 
-def test_build_plan_preserves_complete_identity_without_mutating_input() -> None:
-    identity = {
-        **IDENTITY,
-        "cluster_name": "primary-vl360",
-        "metadata": {"region": "mekong"},
-    }
+def test_build_plan_serializes_only_exact_canonical_v2_identity_without_mutating_input() -> None:
+    identity = {**IDENTITY, "password": "excluded", "ssh_host": "66.42.57.202"}
     original = copy.deepcopy(identity)
 
     plan = migration.build_plan(
@@ -231,10 +227,12 @@ def test_build_plan_preserves_complete_identity_without_mutating_input() -> None
         tool_source_revision=REVISION,
     )
 
-    assert plan["database_identity"] == identity
+    assert plan["database_identity"] == IDENTITY
+    assert set(plan["database_identity"]) == set(migration.IDENTITY_KEYS)
     assert plan["database_identity"] is not identity
     assert plan["target_fingerprint"] == target_fingerprint(identity)
     assert identity == original
+    assert sha256_bytes(canonical_json_bytes(plan)) == _artifact_sha(plan)
 
 
 def test_candidate_schema_and_target_hashes_are_canonical_and_deterministic() -> None:
@@ -1334,6 +1332,8 @@ def test_apply_rechecks_locked_state_updates_and_audits_exact_plan_ownership(
     report = _apply(store, plan, backup)
 
     assert report["result"] == "applied"
+    assert report["database_identity"] == IDENTITY
+    assert set(report) == migration._APPLY_REPORT_KEYS
     assert report["candidate_ids"] == report["updated_ids"] == ["a", "b"]
     assert report["candidate_sha256"] == migration.candidate_id_hash(["a", "b"])
     assert store.locked == migration.LOCK_NAME
@@ -1417,6 +1417,9 @@ def test_apply_idempotency_requires_exact_unique_owned_audits_and_counts(
 
     assert first["result"] == "applied"
     assert second["result"] == "already-applied"
+    assert second["database_identity"] == IDENTITY
+    assert set(first) == migration._APPLY_REPORT_KEYS
+    assert set(second) == migration._APPLY_RECOVERY_KEYS
     assert second["candidate_ids"] == ["a", "b"]
     assert second["updated_ids"] == ["a", "b"]
     assert second["recovery_ready"] is True
@@ -1511,6 +1514,8 @@ def test_rollback_restores_only_apply_owned_unchanged_rows(tmp_path: Path) -> No
     )
 
     assert report["result"] == "rolled-back"
+    assert report["database_identity"] == IDENTITY
+    assert set(report) == migration._ROLLBACK_REPORT_KEYS
     assert report["restored_ids"] == ["a", "b"]
     assert all(store.rows[entity_id]["status"] is None for entity_id in ("a", "b"))
 
@@ -1708,6 +1713,10 @@ def test_rollback_is_idempotent_only_with_owned_rollback_audits(tmp_path: Path) 
 
     assert first["result"] == "rolled-back"
     assert second["result"] == "already-rolled-back"
+    assert first["database_identity"] == IDENTITY
+    assert second["database_identity"] == IDENTITY
+    assert set(first) == migration._ROLLBACK_REPORT_KEYS
+    assert set(second) == migration._ROLLBACK_RECOVERY_KEYS
     assert second["restored_ids"] == []
     assert second["recovery_ready"] is True
     assert second["recovery_contract"] == "rollback-audit-exact-v1"

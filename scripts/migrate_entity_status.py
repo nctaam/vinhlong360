@@ -28,7 +28,9 @@ from publication_status import (  # noqa: E402
 
 if __package__:
     from .postgres_target import (  # noqa: E402
+        IDENTITY_KEYS as IDENTITY_KEYS,
         canonical_json_bytes,
+        canonical_target_identity,
         read_target_identity,
         resolve_database_url,
         sha256_file,
@@ -38,7 +40,9 @@ if __package__:
     )
 else:
     from postgres_target import (  # noqa: E402
+        IDENTITY_KEYS as IDENTITY_KEYS,
         canonical_json_bytes,
+        canonical_target_identity,
         read_target_identity,
         resolve_database_url,
         sha256_file,
@@ -188,6 +192,7 @@ _APPLY_REPORT_KEYS = {
     "policy_revision",
     "result",
     "target_fingerprint",
+    "database_identity",
     "schema_fingerprint",
     "plan_sha256",
     "backup_manifest_sha256",
@@ -201,6 +206,30 @@ _APPLY_REPORT_KEYS = {
     "completed_at",
 }
 _APPLY_RECOVERY_KEYS = _APPLY_REPORT_KEYS | {
+    "recovery_ready",
+    "recovery_contract",
+}
+_ROLLBACK_REPORT_KEYS = {
+    "schema",
+    "policy_revision",
+    "result",
+    "target_fingerprint",
+    "database_identity",
+    "schema_fingerprint",
+    "plan_sha256",
+    "apply_report_sha256",
+    "backup_manifest_sha256",
+    "candidate_ids",
+    "candidate_count",
+    "candidate_sha256",
+    "expected_before",
+    "expected_after",
+    "restored_ids",
+    "restored_count",
+    "started_at",
+    "completed_at",
+}
+_ROLLBACK_RECOVERY_KEYS = _ROLLBACK_REPORT_KEYS | {
     "recovery_ready",
     "recovery_contract",
 }
@@ -845,6 +874,7 @@ def _apply_report(
         "policy_revision": PUBLICATION_POLICY_REVISION,
         "result": result,
         "target_fingerprint": plan["target_fingerprint"],
+        "database_identity": _database_identity(plan["database_identity"]),
         "schema_fingerprint": plan["schema_fingerprint"],
         "plan_sha256": plan_sha256,
         "backup_manifest_sha256": backup.manifest_sha256,
@@ -1212,6 +1242,7 @@ def _rollback_report(
         "policy_revision": PUBLICATION_POLICY_REVISION,
         "result": result,
         "target_fingerprint": apply_report["target_fingerprint"],
+        "database_identity": _database_identity(apply_report["database_identity"]),
         "schema_fingerprint": apply_report["schema_fingerprint"],
         "plan_sha256": apply_report["plan_sha256"],
         "apply_report_sha256": apply_report_sha256,
@@ -1476,7 +1507,10 @@ def _sorted_counter(counter: Counter[str]) -> dict[str, int]:
 
 
 def _database_identity(identity) -> dict[str, object]:
-    return dict(identity)
+    try:
+        return canonical_target_identity(identity)
+    except RuntimeError as exc:
+        raise MigrationRefusal(str(exc)) from None
 
 
 def build_plan(
