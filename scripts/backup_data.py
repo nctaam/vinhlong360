@@ -18,7 +18,8 @@ from pathlib import Path
 
 try:
     from .postgres_target import (
-        IDENTITY_KEYS,
+        IDENTITY_KEYS as IDENTITY_KEYS,
+        canonical_target_identity,
         pg_cli_connection,
         read_target_identity,
         resolve_database_url,
@@ -29,7 +30,8 @@ try:
     )
 except ImportError:
     from postgres_target import (
-        IDENTITY_KEYS,
+        IDENTITY_KEYS as IDENTITY_KEYS,
+        canonical_target_identity,
         pg_cli_connection,
         read_target_identity,
         resolve_database_url,
@@ -458,6 +460,7 @@ def create_postgres_backup(
     runner=subprocess.run,
     now=_utc_now,
 ) -> Path:
+    database_identity = canonical_target_identity(identity, exact_keys=True)
     destination.mkdir(parents=True, exist_ok=False)
     artifact = destination / "postgres.dump"
     started_at = now()
@@ -500,7 +503,6 @@ def create_postgres_backup(
         if table not in listed_tables:
             raise RuntimeError(f"PostgreSQL backup is missing required table: {table}")
 
-    database_identity = {key: identity[key] for key in IDENTITY_KEYS}
     manifest = {
         "schema": "vinhlong360-pg-backup-v1",
         "target": "pg",

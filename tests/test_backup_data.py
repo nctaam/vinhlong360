@@ -558,6 +558,31 @@ def _clock():
     return lambda: "2026-07-14T12:00:00Z"
 
 
+def test_create_postgres_backup_rejects_legacy_identity_before_directory_or_pg_dump(
+    tmp_path: Path,
+) -> None:
+    destination = tmp_path / "pg-backup"
+    runner = FakeRunner()
+    legacy = {
+        "database": "vl360",
+        "server_addr": "127.0.0.1/32",
+        "server_port": 5432,
+        "server_version_num": 160004,
+    }
+
+    with pytest.raises(RuntimeError, match="target identity revision"):
+        backup_data.create_postgres_backup(
+            database_url="postgresql://backup:secret@db.example/vl360",
+            destination=destination,
+            identity=legacy,
+            runner=runner,
+            now=_clock(),
+        )
+
+    assert not destination.exists()
+    assert runner.calls == []
+
+
 def test_create_postgres_backup_writes_validated_secret_free_manifest(
     tmp_path: Path,
 ) -> None:
@@ -580,7 +605,8 @@ def test_create_postgres_backup_writes_validated_secret_free_manifest(
     assert manifest["schema"] == "vinhlong360-pg-backup-v1"
     assert manifest["target"] == "pg"
     assert manifest["database_identity"] == _identity()
-    assert len(manifest["target_fingerprint"]) == 64
+    assert manifest["target_fingerprint"] == backup_data.target_fingerprint(_identity())
+    assert set(manifest["database_identity"]) == set(backup_data.IDENTITY_KEYS)
     assert manifest["started_at"] == "2026-07-14T12:00:00Z"
     assert manifest["completed_at"] == "2026-07-14T12:00:00Z"
     assert manifest["max_age_seconds"] == 3600
