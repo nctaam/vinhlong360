@@ -307,12 +307,28 @@ function directExpressionStatementCalls(statement) {
     .filter((expression) => ts.isCallExpression(expression))
 }
 
-function isRobotsHeaderCall(call, eventName) {
+function callExpressionsWithin(node) {
+  const calls = []
+  function visit(current) {
+    if (ts.isCallExpression(current)) calls.push(current)
+    ts.forEachChild(current, visit)
+  }
+  visit(node)
+  return calls
+}
+
+function isAnyRobotsHeaderCall(call) {
   return Boolean(
     isIdentifier(call.expression, 'setResponseHeader') &&
       call.arguments.length >= 2 &&
-      isIdentifier(call.arguments[0], eventName) &&
       isStringLiteral(call.arguments[1], 'X-Robots-Tag'),
+  )
+}
+
+function isRobotsHeaderCall(call, eventName) {
+  return Boolean(
+    isAnyRobotsHeaderCall(call) &&
+      isIdentifier(call.arguments[0], eventName),
   )
 }
 
@@ -343,6 +359,14 @@ function validateMiddleware() {
   expect(ts.isBlock(handler.body), 'noindex middleware handler must use a block body')
   if (!ts.isBlock(handler.body)) return
 
+  const allHeaderCalls = callExpressionsWithin(handler.body).filter((candidate) =>
+    isAnyRobotsHeaderCall(candidate),
+  )
+  expect(
+    allHeaderCalls.length === 1,
+    'middleware handler must contain exactly one X-Robots-Tag setResponseHeader call',
+  )
+
   const matchingIfStatements = handler.body.statements.filter(
     (statement) =>
       ts.isIfStatement(statement) &&
@@ -360,7 +384,10 @@ function validateMiddleware() {
       (candidate) => isRobotsHeaderCall(candidate, eventName),
     )
     expect(
-      guardedCalls.length === 1 && isExactRobotsHeaderCall(guardedCalls[0], eventName),
+      guardedCalls.length === 1 &&
+        isExactRobotsHeaderCall(guardedCalls[0], eventName) &&
+        allHeaderCalls.length === 1 &&
+        allHeaderCalls[0] === guardedCalls[0],
       "middleware if body must directly execute setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow') exactly once",
     )
   }

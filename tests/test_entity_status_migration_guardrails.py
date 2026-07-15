@@ -242,6 +242,20 @@ export default defineEventHandler((event) => {
         _assert_typescript_noindex_guard(middleware, "middleware")
 
 
+def test_middleware_guard_rejects_later_x_robots_tag_override():
+    middleware = """
+export default defineEventHandler((event) => {
+  if (useRuntimeConfig(event).public.siteNoindex) {
+    setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow')
+  }
+  setResponseHeader(event, 'X-Robots-Tag', 'index, follow')
+})
+"""
+
+    with pytest.raises(AssertionError):
+        _assert_typescript_noindex_guard(middleware, "middleware")
+
+
 def test_global_noindex_default_and_authoritative_header_are_executable_code():
     config = (WEB_NUXT / "nuxt.config.ts").read_text(encoding="utf-8")
     middleware = (
