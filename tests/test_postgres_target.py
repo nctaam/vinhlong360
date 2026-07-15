@@ -283,6 +283,19 @@ def test_canonical_target_identity_rejects_legacy_revision() -> None:
         postgres_target.canonical_target_identity(legacy_identity, exact_keys=True)
 
 
+def test_canonical_target_identity_rejects_revision_str_subclass() -> None:
+    class Revision(str):
+        pass
+
+    identity = {
+        **POSTGRES_IDENTITY_V2,
+        "identity_revision": Revision("postgres-cluster-v2"),
+    }
+
+    with pytest.raises(RuntimeError, match="target identity revision"):
+        postgres_target.canonical_target_identity(identity)
+
+
 def test_canonical_target_identity_rejects_noncanonical_system_identifier() -> None:
     identity = {**POSTGRES_IDENTITY_V2, "system_identifier": "07463376938976342231"}
 

@@ -544,7 +544,10 @@ class FakeRunner:
 
 def _identity() -> dict[str, object]:
     return {
+        "identity_revision": "postgres-cluster-v2",
         "database": "vl360",
+        "database_oid": 16384,
+        "system_identifier": "7463376938976342231",
         "server_addr": "10.0.0.8",
         "server_port": 5432,
         "server_version_num": 160004,

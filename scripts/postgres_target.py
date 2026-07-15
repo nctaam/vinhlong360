@@ -101,7 +101,8 @@ def canonical_target_identity(
 ) -> dict[str, object]:
     if not isinstance(identity, Mapping):
         raise RuntimeError("PostgreSQL target identity must be an object")
-    if identity.get("identity_revision") != POSTGRES_IDENTITY_REVISION:
+    revision = identity.get("identity_revision")
+    if type(revision) is not str or revision != POSTGRES_IDENTITY_REVISION:
         raise RuntimeError(
             "target identity revision mismatch: expected postgres-cluster-v2"
         )

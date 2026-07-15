@@ -19,7 +19,10 @@ from scripts.postgres_target import (
 
 
 IDENTITY = {
+    "identity_revision": "postgres-cluster-v2",
     "database": "vl360",
+    "database_oid": 16384,
+    "system_identifier": "7463376938976342231",
     "server_addr": "10.0.0.3",
     "server_port": 5432,
     "server_version_num": 160004,
@@ -512,7 +515,7 @@ class _FakeCursor:
 
     def fetchone(self):
         assert self.phase == "identity"
-        return ("vl360", "10.0.0.3", 5432, 160004)
+        return ("vl360", 16384, "7463376938976342231", "10.0.0.3", 5432, 160004)
 
     def fetchall(self):
         if self.phase == "schema":
