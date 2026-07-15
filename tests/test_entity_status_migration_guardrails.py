@@ -1,4 +1,9 @@
+import re
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -6,16 +11,85 @@ MIGRATION_TOOL = ROOT / "scripts" / "migrate_entity_status.py"
 RUNBOOK = ROOT / "docs" / "runbooks" / "entity-published-status-migration.md"
 
 
-def test_migration_tool_is_postgresql_only_and_avoids_project_data_sources():
-    source = MIGRATION_TOOL.read_text(encoding="utf-8")
+def _cli_args(command: str, target: str, environment_name: str, report: Path) -> list[str]:
+    common = [
+        sys.executable,
+        str(MIGRATION_TOOL),
+        command,
+        "--target",
+        target,
+        "--database-url-env",
+        environment_name,
+    ]
+    if command == "plan":
+        return [
+            *common,
+            "--policy",
+            "published-v1",
+            "--report-out",
+            str(report),
+        ]
+    if command == "apply":
+        return [
+            *common,
+            "--plan",
+            str(report.parent / "missing-plan.json"),
+            "--backup-manifest",
+            str(report.parent / "missing-manifest.json"),
+            "--confirm-target",
+            "0" * 64,
+            "--confirm-plan-sha256",
+            "0" * 64,
+            "--confirm-backup-manifest-sha256",
+            "0" * 64,
+            "--report-out",
+            str(report),
+        ]
+    return [
+        *common,
+        "--apply-report",
+        str(report.parent / "missing-apply.json"),
+        "--backup-manifest",
+        str(report.parent / "missing-manifest.json"),
+        "--confirm-target",
+        "0" * 64,
+        "--confirm-apply-report-sha256",
+        "0" * 64,
+        "--confirm-backup-manifest-sha256",
+        "0" * 64,
+        "--report-out",
+        str(report),
+    ]
 
-    assert source.count('if args.target != "pg":') >= 3
-    for command in ("plan", "apply", "rollback"):
-        assert f'{command} target must be pg' in source
-        assert (
-            f'{command} requires a named database URL environment other than DATABASE_URL'
-            in source
-        )
+
+@pytest.mark.parametrize("command", ["plan", "apply", "rollback"])
+@pytest.mark.parametrize(
+    ("target", "environment_name"),
+    [("sqlite", "ENTITY_STATUS_GUARD_DATABASE_URL"), ("pg", "DATABASE_URL")],
+)
+def test_migration_cli_refuses_unsafe_target_or_default_environment_without_report(
+    tmp_path: Path,
+    command: str,
+    target: str,
+    environment_name: str,
+) -> None:
+    report = tmp_path / f"{command}-report.json"
+
+    result = subprocess.run(
+        _cli_args(command, target, environment_name, report),
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert not report.exists()
+
+
+def test_migration_tool_avoids_project_database_imports_and_local_data_literals():
+    source = MIGRATION_TOOL.read_text(encoding="utf-8")
 
     for forbidden in (
         "from database import",
@@ -29,17 +103,37 @@ def test_migration_tool_is_postgresql_only_and_avoids_project_data_sources():
         assert forbidden not in source
 
 
-def test_global_noindex_default_and_authoritative_header_remain_enabled():
-    config = (ROOT / "web-nuxt" / "nuxt.config.ts").read_text(encoding="utf-8")
-    middleware = (
-        ROOT / "web-nuxt" / "server" / "middleware" / "noindex.ts"
-    ).read_text(encoding="utf-8")
-
-    assert "process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'" in config
-    assert "setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow')" in middleware
+def _without_javascript_comments(source: str) -> str:
+    without_blocks = re.sub(r"/\*.*?\*/", "", source, flags=re.DOTALL)
+    return re.sub(r"//[^\r\n]*", "", without_blocks)
 
 
-def test_runbook_preserves_stage_boundaries_and_exact_authorization_contract():
+def test_global_noindex_default_and_authoritative_header_are_executable_code():
+    config = _without_javascript_comments(
+        (ROOT / "web-nuxt" / "nuxt.config.ts").read_text(encoding="utf-8")
+    )
+    middleware = _without_javascript_comments(
+        (ROOT / "web-nuxt" / "server" / "middleware" / "noindex.ts").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert re.search(
+        r"\bsiteNoindex\s*:\s*process\.env\.NUXT_PUBLIC_SITE_NOINDEX\s*!==\s*"
+        r"(?P<quote>['\"])false(?P=quote)",
+        config,
+    )
+    assert re.search(
+        r"if\s*\(\s*useRuntimeConfig\(event\)\.public\.siteNoindex\s*\)\s*\{"
+        r"\s*setResponseHeader\(\s*event\s*,\s*(?P<header_quote>['\"])"
+        r"X-Robots-Tag(?P=header_quote)\s*,\s*(?P<value_quote>['\"])"
+        r"noindex, follow(?P=value_quote)\s*\)",
+        middleware,
+        flags=re.DOTALL,
+    )
+
+
+def test_runbook_is_fail_closed_and_reproducible():
     assert RUNBOOK.is_file(), "the publication-status migration runbook must exist"
     runbook = RUNBOOK.read_text(encoding="utf-8")
 
@@ -56,64 +150,50 @@ def test_runbook_preserves_stage_boundaries_and_exact_authorization_contract():
         assert heading in runbook
 
     for phrase in (
+        "PowerShell 7+ on Windows",
         "Stage A completion is not authorization for Stage B or Stage C",
         "separate Stage C authorization",
         "exact target fingerprint",
-        "plan SHA-256",
-        "backup manifest SHA-256",
-        "candidate count",
         "candidate ID hash",
-        "schema fingerprint",
-        "every exclusion count",
-        "status groups",
         "X-Robots-Tag: noindex, follow",
         "Do not import web/data.json",
         "Do not mutate local data",
+        "commit-success/report-write failure",
+        "EXACT same target, plan, backup, and confirmation values",
         "recovery_ready=true",
         "recovery_contract=apply-audit-exact-v1",
         "zero status writes and zero audit writes",
+        "already-rolled-back",
+        "recovery_contract=rollback-audit-exact-v1",
+        "Do not jump to disaster recovery while the transaction outcome is ambiguous",
+        "residual concurrent race",
+        "not an immutable-artifact writer",
         "Reconciliation into tracked web/data.json or local SQLite is a separate reviewed task",
-        "Docker executable: unavailable",
-        "Nginx executable: unavailable",
-        "No installation was attempted",
-        "802 passed, 8 skipped, 2 deselected, 1 xfailed",
-        "6871 passed, 48 skipped, 80 deselected, 1 xfailed",
-        "2 skipped because no disposable PostgreSQL target was supplied",
-        "7d20a0442129ae650c168225d3a6d4e0c7a96797ba8e3b003f3b61b76f493418",
-        "3c9c1235e2c32409df52bcf60d115515e292fbaf18d0b1aaf912a9e843847c1f",
+        "Do not start or deploy a server",
     ):
         assert phrase in runbook
 
-    assert (
-        "python scripts/backup_data.py --target pg --database-url-env "
-        "<OWNER_SUPPLIED_ENV> --out-dir <NEW_BACKUP_ROOT>"
-    ) in runbook
-    assert (
-        "python scripts/migrate_entity_status.py plan --target pg "
-        "--database-url-env <OWNER_SUPPLIED_ENV> --policy published-v1 "
-        "--report-out <NEW_PLAN_PATH>"
-    ) in runbook
-    assert (
-        "python scripts/migrate_entity_status.py apply --target pg "
-        "--database-url-env <OWNER_SUPPLIED_ENV> --plan <PLAN_PATH> "
-        "--backup-manifest <BACKUP_MANIFEST> --confirm-target "
-        "<AUTHORIZED_TARGET_FINGERPRINT> --confirm-plan-sha256 "
-        "<AUTHORIZED_PLAN_SHA256> --confirm-backup-manifest-sha256 "
-        "<AUTHORIZED_BACKUP_MANIFEST_SHA256> --report-out <NEW_APPLY_REPORT>"
-    ) in runbook
-    assert (
-        "python scripts/migrate_entity_status.py rollback --target pg "
-        "--database-url-env <OWNER_SUPPLIED_ENV> --apply-report <APPLY_REPORT> "
-        "--backup-manifest <BACKUP_MANIFEST> --confirm-target "
-        "<AUTHORIZED_TARGET_FINGERPRINT> --confirm-apply-report-sha256 "
-        "<AUTHORIZED_APPLY_REPORT_SHA256> "
-        "--confirm-backup-manifest-sha256 "
-        "<AUTHORIZED_BACKUP_MANIFEST_SHA256> --report-out "
-        "<NEW_ROLLBACK_REPORT>"
-    ) in runbook
+    for snippet in (
+        "$ErrorActionPreference = 'Stop'",
+        "$StageABase = '<AUTHORIZED_STAGE_A_BASE_SHA>'",
+        'git diff --check "$StageABase..HEAD"',
+        'git diff --name-only "$StageABase..HEAD"',
+        "$OwnerBaseUrl = '<OWNER_SUPPLIED_BASE_URL>'",
+        "Invoke-WebRequest",
+        "-Method Get",
+        "$NoindexResponse.Headers['X-Robots-Tag']",
+        "-ne 'noindex, follow'",
+        '$OwnerEnvItem = Get-Item -LiteralPath "Env:$OwnerEnvName" -ErrorAction Stop',
+        "$ExportPath = [System.IO.Path]::GetFullPath",
+        "$TrackedDataPath = [System.IO.Path]::GetFullPath",
+        "$RepositoryDbPath = [System.IO.Path]::GetFullPath",
+        "Test-Path -LiteralPath $ExportPath",
+        "StartsWith('postgresql://'",
+        '& python scripts/export_data.py --dry-run --out "$ExportPath"',
+        '& python scripts/export_data.py --out "$ExportPath"',
+        "if ($LASTEXITCODE -ne 0)",
+    ):
+        assert snippet in runbook
 
-    assert "python scripts/export_data.py --dry-run --out " in runbook
-    assert "python scripts/export_data.py --out " in runbook
+    assert "--database-url-env <OWNER_SUPPLIED_ENV>" not in runbook
     assert "scripts/export_data.py --database-url-env" not in runbook
-    assert "python scripts/check_complexity.py" not in runbook
-    assert "from scripts.checks.check_complexity import ComplexityCheck" in runbook

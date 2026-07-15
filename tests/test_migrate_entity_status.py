@@ -2423,3 +2423,76 @@ def test_rollback_cli_commit_failure_rolls_back_and_writes_no_report(
     assert "commit" in events
     assert "rollback" in events
     assert not report.exists()
+
+
+def test_rollback_cli_report_write_failure_recovers_on_exact_retry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    plan, plan_path, backup, manifest_path = _write_apply_artifacts(tmp_path)
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    apply_report = _apply(store, plan, backup)
+    apply_path = tmp_path / "apply.json"
+    apply_path.write_bytes(canonical_json_bytes(apply_report))
+    report = tmp_path / "rollback.json"
+    retry_report = tmp_path / "rollback-recovery.json"
+    events: list[object] = []
+    connection = ApplyCliConnection(events)
+    original_writer = migration.write_immutable_json
+    monkeypatch.setattr(
+        migration, "_utc_now", lambda: APPLY_NOW + timedelta(days=1)
+    )
+    monkeypatch.setattr(
+        migration,
+        "validate_restore_artifact",
+        lambda _path: backup.manifest["validation"]["listing_sha256"],
+    )
+    monkeypatch.setattr(
+        migration, "resolve_database_url", lambda _name: "postgresql://x/db"
+    )
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: SimpleNamespace(connect=lambda _dsn: connection),
+    )
+    monkeypatch.setattr(migration, "PostgresPublicationStore", lambda _cursor: store)
+    monkeypatch.setattr(
+        migration,
+        "write_immutable_json",
+        lambda *_args: (_ for _ in ()).throw(OSError("write failed")),
+    )
+
+    args = _rollback_cli_args(
+        apply_path,
+        manifest_path,
+        report,
+        apply_report["target_fingerprint"],
+    )
+    assert migration.main(args) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "commit" in events
+    assert not report.exists()
+
+    retry_event_start = len(store.events)
+    monkeypatch.setattr(migration, "write_immutable_json", original_writer)
+    retry_args = _rollback_cli_args(
+        apply_path,
+        manifest_path,
+        retry_report,
+        apply_report["target_fingerprint"],
+    )
+    assert migration.main(retry_args) == 0
+
+    recovery = json.loads(retry_report.read_text(encoding="utf-8"))
+    assert recovery["result"] == "already-rolled-back"
+    assert recovery["restored_ids"] == []
+    assert recovery["restored_count"] == 0
+    assert recovery["expected_before"] == apply_report["expected_before"]
+    assert recovery["expected_after"] == apply_report["expected_after"]
+    assert recovery["recovery_ready"] is True
+    assert recovery["recovery_contract"] == "rollback-audit-exact-v1"
+    retry_events = store.events[retry_event_start:]
+    assert "rollback-update" not in retry_events
+    assert "audit-write" not in retry_events
