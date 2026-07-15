@@ -244,26 +244,41 @@ def _validate_plan_header(
     return target
 
 
-def _validate_plan_identity_schema(plan: dict[str, object], target: str) -> None:
+def _plan_identity_fingerprint(plan: dict[str, object]) -> str:
     identity = plan.get("database_identity")
     try:
-        identity_fingerprint = target_fingerprint(identity)
+        return target_fingerprint(identity)
     except (KeyError, TypeError):
         raise MigrationRefusal("plan database identity is invalid") from None
-    if identity_fingerprint != target:
-        raise MigrationRefusal("plan target identity mismatch")
 
+
+def _valid_plan_schema_column(column: object) -> bool:
+    return (
+        type(column) is dict
+        and set(column) == {"name", "type", "nullable"}
+        and all(type(column[key]) is str for key in ("name", "type", "nullable"))
+    )
+
+
+def _plan_schema_column_tuples(
+    plan: dict[str, object],
+) -> list[tuple[str, str, str]]:
     columns = plan.get("schema_columns")
-    if type(columns) is not list or any(
-        type(column) is not dict
-        or set(column) != {"name", "type", "nullable"}
-        or any(type(column[key]) is not str for key in ("name", "type", "nullable"))
-        for column in columns
+    if type(columns) is not list or not all(
+        _valid_plan_schema_column(column) for column in columns
     ):
         raise MigrationRefusal("plan schema columns are invalid")
-    column_tuples = [
+    return [
         (column["name"], column["type"], column["nullable"]) for column in columns
     ]
+
+
+def _validate_plan_identity_schema(plan: dict[str, object], target: str) -> None:
+    if _plan_identity_fingerprint(plan) != target:
+        raise MigrationRefusal("plan target identity mismatch")
+
+    columns = plan["schema_columns"]
+    column_tuples = _plan_schema_column_tuples(plan)
     if len({column[0] for column in column_tuples}) != len(column_tuples):
         raise MigrationRefusal("plan schema columns contain duplicates")
     if columns != _normalized_schema_columns(column_tuples):
@@ -412,34 +427,46 @@ def _validate_backup_tools_and_evidence(manifest: dict[str, object]) -> None:
     _require_sha(validation["listing_sha256"], "backup listing hash")
 
 
-def _validate_backup_artifact(backup: BackupEvidence, manifest) -> Path:
+def _valid_backup_artifact_name(value: object) -> bool:
+    if type(value) is not str or not value:
+        return False
+    path = Path(value)
+    return (
+        path.name == value
+        and not path.is_absolute()
+        and "/" not in value
+        and "\\" not in value
+        and value not in {".", ".."}
+    )
+
+
+def _backup_artifact_metadata(manifest) -> tuple[str, int, str]:
     artifact_info = _require_exact_keys(
         manifest["artifact"], {"path", "size", "sha256"}, "backup artifact"
     )
     artifact_name = artifact_info["path"]
-    if (
-        type(artifact_name) is not str
-        or not artifact_name
-        or Path(artifact_name).name != artifact_name
-        or Path(artifact_name).is_absolute()
-        or "/" in artifact_name
-        or "\\" in artifact_name
-        or artifact_name in {".", ".."}
-    ):
+    if not _valid_backup_artifact_name(artifact_name):
         raise MigrationRefusal("backup artifact path is invalid")
-    if type(artifact_info["size"]) is not int or artifact_info["size"] < 0:
+    artifact_size = artifact_info["size"]
+    if type(artifact_size) is not int or artifact_size < 0:
         raise MigrationRefusal("backup artifact size is invalid")
     expected_hash = _require_sha(artifact_info["sha256"], "backup artifact hash")
-    root = backup.artifact_root
+    return artifact_name, artifact_size, expected_hash
+
+
+def _validated_backup_root(root: Path) -> Path:
     try:
         root_metadata = root.lstat()
     except OSError:
         raise MigrationRefusal("backup artifact root is unavailable") from None
     if _is_linklike(root_metadata) or not root.is_dir():
         raise MigrationRefusal("backup artifact root is invalid")
-    root_resolved = root.resolve()
-    artifact = root_resolved / artifact_name
-    if artifact.parent != root_resolved:
+    return root.resolve()
+
+
+def _validated_backup_artifact_path(root: Path, artifact_name: str) -> Path:
+    artifact = root / artifact_name
+    if artifact.parent != root:
         raise MigrationRefusal("backup artifact path is invalid")
     try:
         artifact_metadata = artifact.lstat()
@@ -447,8 +474,15 @@ def _validate_backup_artifact(backup: BackupEvidence, manifest) -> Path:
         raise MigrationRefusal("backup artifact is unavailable") from None
     if _is_linklike(artifact_metadata) or not stat.S_ISREG(artifact_metadata.st_mode):
         raise MigrationRefusal("backup artifact path is invalid")
+    return artifact
+
+
+def _validate_backup_artifact(backup: BackupEvidence, manifest) -> Path:
+    artifact_name, artifact_size, expected_hash = _backup_artifact_metadata(manifest)
+    root = _validated_backup_root(backup.artifact_root)
+    artifact = _validated_backup_artifact_path(root, artifact_name)
     state = _artifact_state(artifact)
-    if state[2] != artifact_info["size"]:
+    if state[2] != artifact_size:
         raise MigrationRefusal("backup artifact size mismatch")
     if state[3] != expected_hash:
         raise MigrationRefusal("backup artifact hash mismatch")
@@ -472,6 +506,37 @@ def validate_backup_manifest(
     return _validate_backup_artifact(backup, manifest)
 
 
+_REQUIRED_RESTORE_TABLES = ("entities", "entity_changes")
+
+
+def _restore_object_is_related(schema: str, name: str) -> bool:
+    if name in _REQUIRED_RESTORE_TABLES:
+        return True
+    return schema == "public" and any(
+        name.startswith(prefix) for prefix in _REQUIRED_RESTORE_TABLES
+    )
+
+
+def _reject_malformed_restore_reference(body: str, match, name: str) -> None:
+    trailing = body[match.end() :].split()
+    if name != "TABLE" or not trailing:
+        return
+    if any(trailing[0].startswith(prefix) for prefix in _REQUIRED_RESTORE_TABLES):
+        raise MigrationRefusal("pg_restore listing contains invalid table objects")
+
+
+def _validated_required_restore_object(
+    foreign: str | None, kind: str, schema: str, name: str
+) -> str | None:
+    if foreign or schema != "public" or name not in _REQUIRED_RESTORE_TABLES:
+        raise MigrationRefusal("pg_restore listing contains invalid table objects")
+    if kind == "TABLE DATA":
+        return None
+    if kind != "TABLE":
+        raise MigrationRefusal("pg_restore listing contains invalid table objects")
+    return name
+
+
 def _restore_required_object(text: str) -> str | None:
     prefix = re.match(r"^\d+;\s+\S+\s+\S+\s+(.*)$", text)
     body = prefix.group(1) if prefix else text
@@ -483,23 +548,10 @@ def _restore_required_object(text: str) -> str | None:
     if not match:
         return None
     foreign, kind, schema, name = match.groups()
-    required = ("entities", "entity_changes")
-    if name not in required and not (
-        schema == "public" and any(name.startswith(prefix) for prefix in required)
-    ):
-        trailing = body[match.end() :].split()
-        if name == "TABLE" and trailing and any(
-            trailing[0].startswith(prefix) for prefix in required
-        ):
-            raise MigrationRefusal("pg_restore listing contains invalid table objects")
+    if not _restore_object_is_related(schema, name):
+        _reject_malformed_restore_reference(body, match, name)
         return None
-    if foreign or schema != "public" or name not in required:
-        raise MigrationRefusal("pg_restore listing contains invalid table objects")
-    if kind == "TABLE DATA":
-        return None
-    if kind != "TABLE":
-        raise MigrationRefusal("pg_restore listing contains invalid table objects")
-    return name
+    return _validated_required_restore_object(foreign, kind, schema, name)
 
 
 def validate_restore_artifact(path: Path, runner=subprocess.run) -> str:
