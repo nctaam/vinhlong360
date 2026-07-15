@@ -1051,6 +1051,29 @@ def test_backup_validation_checks_manifest_identity_size_hash_and_direct_child(
             )
 
 
+def test_backup_validation_rejects_direct_child_symlink_before_resolve(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    artifact = backup.artifact_root / "postgres.dump"
+    sibling = backup.artifact_root / "real.dump"
+    sibling.write_bytes(artifact.read_bytes())
+    artifact.unlink()
+    try:
+        artifact.symlink_to(sibling.name)
+    except OSError:
+        pytest.skip("symlinks are unavailable on this platform")
+
+    with pytest.raises(migration.MigrationRefusal, match="artifact path"):
+        migration.validate_backup_manifest(
+            backup,
+            expected_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            require_fresh=True,
+        )
+
+
 @pytest.mark.parametrize(
     "listing",
     [
@@ -1107,6 +1130,46 @@ def test_restore_validation_returns_listing_hash_and_rejects_command_failure(
         )
 
 
+def test_restore_validation_allows_exact_table_data_after_table_definitions(
+    tmp_path: Path,
+) -> None:
+    artifact = tmp_path / "postgres.dump"
+    artifact.write_bytes(b"PGDMP-test")
+    listing = """1; 1259 100 TABLE public entities owner
+2; 0 100 TABLE DATA public entities owner
+3; 1259 101 TABLE public entity_changes owner
+4; 0 101 TABLE DATA public entity_changes owner
+"""
+
+    digest = migration.validate_restore_artifact(
+        artifact,
+        runner=lambda command, **_kwargs: subprocess.CompletedProcess(
+            command, 0, listing, ""
+        ),
+    )
+
+    assert digest == hashlib.sha256(listing.encode("utf-8")).hexdigest()
+
+
+def test_restore_validation_rejects_wrong_schema_even_with_public_definitions(
+    tmp_path: Path,
+) -> None:
+    artifact = tmp_path / "postgres.dump"
+    artifact.write_bytes(b"PGDMP-test")
+    listing = """1; 1259 100 TABLE public entities owner
+2; 1259 101 TABLE public entity_changes owner
+3; 1259 102 TABLE private entities owner
+"""
+
+    with pytest.raises(migration.MigrationRefusal, match="invalid table objects"):
+        migration.validate_restore_artifact(
+            artifact,
+            runner=lambda command, **_kwargs: subprocess.CompletedProcess(
+                command, 0, listing, ""
+            ),
+        )
+
+
 def test_apply_revalidates_listing_hash_and_detects_artifact_replacement(
     tmp_path: Path,
 ) -> None:
@@ -1142,6 +1205,30 @@ def test_apply_revalidates_listing_hash_and_detects_artifact_replacement(
             restore_validator=replace,
         )
     assert artifact.read_bytes() == b"replacement"
+    assert store.events == []
+
+
+@pytest.mark.parametrize("listing_hash", [None, "", "0" * 63, "g" * 64, 7])
+def test_apply_requires_exact_restore_listing_digest_before_lock(
+    tmp_path: Path, listing_hash: object
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+
+    with pytest.raises(
+        migration.MigrationRefusal, match="restore listing hash is invalid"
+    ):
+        migration.apply_plan(
+            store,
+            plan,
+            plan_sha256=_artifact_sha(plan),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=lambda _path: listing_hash,
+        )
+
     assert store.events == []
 
 

@@ -427,8 +427,14 @@ def _validate_backup_artifact(backup: BackupEvidence, manifest) -> Path:
     if _is_linklike(root_metadata) or not root.is_dir():
         raise MigrationRefusal("backup artifact root is invalid")
     root_resolved = root.resolve()
-    artifact = (root_resolved / artifact_name).resolve()
+    artifact = root_resolved / artifact_name
     if artifact.parent != root_resolved:
+        raise MigrationRefusal("backup artifact path is invalid")
+    try:
+        artifact_metadata = artifact.lstat()
+    except OSError:
+        raise MigrationRefusal("backup artifact is unavailable") from None
+    if _is_linklike(artifact_metadata) or not stat.S_ISREG(artifact_metadata.st_mode):
         raise MigrationRefusal("backup artifact path is invalid")
     state = _artifact_state(artifact)
     if state[2] != artifact_info["size"]:
@@ -455,6 +461,28 @@ def validate_backup_manifest(
     return _validate_backup_artifact(backup, manifest)
 
 
+def _restore_required_object(text: str) -> str | None:
+    match = re.search(
+        r"\b(TABLE DATA|TABLE|COMMENT|ACL|FUNCTION)\s+(\S+)\s+(\S+)(?:\s|$)",
+        text,
+    )
+    if not match:
+        return None
+    kind, schema, name = match.groups()
+    required = ("entities", "entity_changes")
+    if name not in required and not (
+        schema == "public" and any(name.startswith(prefix) for prefix in required)
+    ):
+        return None
+    if schema != "public" or name not in required:
+        raise MigrationRefusal("pg_restore listing contains invalid table objects")
+    if kind == "TABLE DATA":
+        return None
+    if kind != "TABLE":
+        raise MigrationRefusal("pg_restore listing contains invalid table objects")
+    return name
+
+
 def validate_restore_artifact(path: Path, runner=subprocess.run) -> str:
     result = runner(
         ["pg_restore", "--list", str(path)],
@@ -469,23 +497,9 @@ def validate_restore_artifact(path: Path, runner=subprocess.run) -> str:
         text = line.strip()
         if not text or text.startswith(";"):
             continue
-        forbidden = re.search(
-            r"\b(?:COMMENT|ACL|FUNCTION|TABLE\s+DATA)\s+public\s+"
-            r"(?:entities|entity_changes)(?:\s|$)",
-            text,
-        )
-        if forbidden:
-            raise MigrationRefusal("pg_restore listing contains invalid table objects")
-        suspicious = re.search(
-            r"\bTABLE\s+public\s+"
-            r"(entities\S+|entity_changes\S+)(?:\s|$)",
-            text,
-        )
-        if suspicious:
-            raise MigrationRefusal("pg_restore listing contains invalid table objects")
-        match = re.search(r"\bTABLE\s+public\s+(entities|entity_changes)(?:\s|$)", text)
-        if match:
-            found[match.group(1)] += 1
+        required_object = _restore_required_object(text)
+        if required_object:
+            found[required_object] += 1
     missing = [table for table in ("entities", "entity_changes") if found[table] != 1]
     if missing:
         raise MigrationRefusal(f"backup revalidation missing tables: {', '.join(missing)}")
@@ -800,9 +814,9 @@ def apply_plan(
         backup, expected_target=target, now=now, require_fresh=True
     )
     state = _artifact_state(artifact)
-    listing_hash = restore_validator(artifact)
+    listing_hash = _require_sha(restore_validator(artifact), "restore listing hash")
     expected_listing = backup.manifest["validation"]["listing_sha256"]
-    if listing_hash is not None and listing_hash != expected_listing:
+    if listing_hash != expected_listing:
         raise MigrationRefusal("backup listing hash mismatch")
     _assert_artifact_unchanged(artifact, state)
     return _apply_locked(
@@ -1029,7 +1043,9 @@ def _load_apply_artifacts(
         backup, expected_target=target, now=now, require_fresh=True
     )
     state = _artifact_state(artifact)
-    listing_hash = validate_restore_artifact(artifact)
+    listing_hash = _require_sha(
+        validate_restore_artifact(artifact), "restore listing hash"
+    )
     if listing_hash != manifest["validation"]["listing_sha256"]:
         raise MigrationRefusal("backup listing hash mismatch")
     _assert_artifact_unchanged(artifact, state)
