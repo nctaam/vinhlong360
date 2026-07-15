@@ -104,8 +104,191 @@ def test_migration_tool_avoids_project_database_imports_and_local_data_literals(
 
 
 def _without_javascript_comments(source: str) -> str:
-    without_blocks = re.sub(r"/\*.*?\*/", "", source, flags=re.DOTALL)
-    return re.sub(r"//[^\r\n]*", "", without_blocks)
+    result: list[str] = []
+    index = 0
+    quote: str | None = None
+
+    while index < len(source):
+        char = source[index]
+
+        if quote is not None:
+            result.append(char)
+            if char == "\\" and index + 1 < len(source):
+                result.append(source[index + 1])
+                index += 2
+                continue
+            if char == quote:
+                quote = None
+            index += 1
+            continue
+
+        if char in ("'", '"', "`"):
+            quote = char
+            result.append(char)
+            index += 1
+            continue
+
+        if source.startswith("//", index):
+            result.append(" ")
+            index += 2
+            while index < len(source) and source[index] not in "\r\n":
+                index += 1
+            continue
+
+        if source.startswith("/*", index):
+            result.append(" ")
+            index += 2
+            while index < len(source) and not source.startswith("*/", index):
+                if source[index] in "\r\n":
+                    result.append(source[index])
+                index += 1
+            index += 2 if source.startswith("*/", index) else 0
+            continue
+
+        result.append(char)
+        index += 1
+
+    return "".join(result)
+
+
+def test_javascript_comment_stripper_preserves_markers_inside_strings():
+    source = """
+const httpUrl = 'http://localhost:8360/path//segment'
+const httpsUrl = "https://example.com/a/*literal*/b"
+const slashMarker = '// keep'
+const blockMarker = '/* keep */'
+// remove this line comment
+const afterLine = true
+/* remove this block comment */
+const afterBlock = true
+"""
+
+    stripped = _without_javascript_comments(source)
+
+    for literal in (
+        "'http://localhost:8360/path//segment'",
+        '"https://example.com/a/*literal*/b"',
+        "'// keep'",
+        "'/* keep */'",
+    ):
+        assert literal in stripped
+    assert "remove this line comment" not in stripped
+    assert "remove this block comment" not in stripped
+    assert "const afterLine = true" in stripped
+    assert "const afterBlock = true" in stripped
+
+
+def _javascript_object_property(source: str, property_pattern: str) -> str:
+    match = re.search(rf"(?:{property_pattern})\s*:\s*\{{", source)
+    assert match is not None
+
+    object_start = match.end() - 1
+    depth = 0
+    quote: str | None = None
+    index = object_start
+
+    while index < len(source):
+        char = source[index]
+
+        if quote is not None:
+            if char == "\\" and index + 1 < len(source):
+                index += 2
+                continue
+            if char == quote:
+                quote = None
+            index += 1
+            continue
+
+        if char in ("'", '"', "`"):
+            quote = char
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return source[object_start + 1 : index]
+        index += 1
+
+    raise AssertionError(f"unclosed JavaScript object for {property_pattern!r}")
+
+
+def _assert_runtime_config_uses_site_noindex_shorthand(config: str) -> None:
+    assert re.search(
+        r"\bconst\s+siteNoindex\s*=\s*process\.env\.NUXT_PUBLIC_SITE_NOINDEX\s*!==\s*"
+        r"(?P<quote>['\"])false(?P=quote)",
+        config,
+    )
+    runtime_config = _javascript_object_property(config, r"\bruntimeConfig\b")
+    public_config = _javascript_object_property(runtime_config, r"\bpublic\b")
+    assert "{" not in public_config and "}" not in public_config
+    assert re.search(
+        r"(?:^|,)\s*siteNoindex\s*(?=,|$)",
+        public_config,
+        flags=re.DOTALL,
+    )
+
+
+def _assert_nitro_catch_all_noindex_header(config: str) -> None:
+    nitro = _javascript_object_property(config, r"\bnitro\b")
+    route_rules = _javascript_object_property(nitro, r"\brouteRules\b")
+    catch_all = _javascript_object_property(route_rules, r"['\"]/\*\*['\"]")
+    headers = _javascript_object_property(catch_all, r"\bheaders\b")
+
+    header_properties = re.findall(
+        r"(?:['\"]X-Robots-Tag['\"]|\[\s*['\"]X-Robots-Tag['\"]\s*\])\s*:",
+        headers,
+    )
+    assert len(header_properties) == 1
+    assert re.search(
+        r"\.\.\.\(\s*siteNoindex\s*\?\s*\{\s*"
+        r"['\"]X-Robots-Tag['\"]\s*:\s*['\"]noindex,\s*follow['\"]\s*,?\s*"
+        r"\}\s*:\s*\{\s*\}\s*\)",
+        headers,
+        flags=re.DOTALL,
+    )
+
+
+def test_runtime_config_guard_does_not_match_site_noindex_outside_public():
+    config = _without_javascript_comments(
+        """
+const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
+export default defineNuxtConfig({
+  runtimeConfig: {
+    public: {
+      apiBase,
+    },
+    private: {
+      siteNoindex,
+    },
+  },
+})
+"""
+    )
+
+    with pytest.raises(AssertionError):
+        _assert_runtime_config_uses_site_noindex_shorthand(config)
+
+
+def test_nitro_guard_rejects_later_x_robots_tag_override():
+    config = _without_javascript_comments(
+        """
+export default defineNuxtConfig({
+  nitro: {
+    routeRules: {
+      '/**': {
+        headers: {
+          ...(siteNoindex ? { 'X-Robots-Tag': 'noindex, follow' } : {}),
+          'X-Robots-Tag': 'index, follow',
+        },
+      },
+    },
+  },
+})
+"""
+    )
+
+    with pytest.raises(AssertionError):
+        _assert_nitro_catch_all_noindex_header(config)
 
 
 def test_global_noindex_default_and_authoritative_header_are_executable_code():
@@ -118,17 +301,7 @@ def test_global_noindex_default_and_authoritative_header_are_executable_code():
         )
     )
 
-    assert re.search(
-        r"\bconst\s+siteNoindex\s*=\s*process\.env\.NUXT_PUBLIC_SITE_NOINDEX\s*!==\s*"
-        r"(?P<quote>['\"])false(?P=quote)",
-        config,
-    )
-    assert re.search(
-        r"runtimeConfig\s*:\s*\{\s*public\s*:\s*\{.*?"
-        r"\bsiteNoindex\s*,\s*\}\s*,",
-        config,
-        flags=re.DOTALL,
-    )
+    _assert_runtime_config_uses_site_noindex_shorthand(config)
     assert re.search(
         r"\{\s*name\s*:\s*['\"]robots['\"]\s*,\s*"
         r"content\s*:\s*siteNoindex\s*\?\s*['\"]noindex,\s*follow['\"]\s*:\s*"
@@ -136,13 +309,7 @@ def test_global_noindex_default_and_authoritative_header_are_executable_code():
         config,
         flags=re.DOTALL,
     )
-    assert re.search(
-        r"nitro\s*:\s*\{.*?routeRules\s*:\s*\{.*?['\"]\/\*\*['\"]\s*:\s*\{\s*"
-        r"headers\s*:\s*\{\s*\.\.\.\(\s*siteNoindex\s*\?\s*\{\s*"
-        r"['\"]X-Robots-Tag['\"]\s*:\s*['\"]noindex,\s*follow['\"]\s*\}\s*:\s*\{\}\s*\)",
-        config,
-        flags=re.DOTALL,
-    )
+    _assert_nitro_catch_all_noindex_header(config)
     assert re.search(
         r"if\s*\(\s*useRuntimeConfig\(event\)\.public\.siteNoindex\s*\)\s*\{"
         r"\s*setResponseHeader\(\s*event\s*,\s*(?P<header_quote>['\"])"
