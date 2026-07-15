@@ -28,6 +28,9 @@ const loadConfig = async (siteNoindex?: string) => {
 const robotsContent = (config: Awaited<ReturnType<typeof loadNuxtConfig>>) =>
   (config.app.head.meta ?? []).find(entry => 'name' in entry && entry.name === 'robots')?.content
 
+const globalNitroHeaders = (config: Awaited<ReturnType<typeof loadNuxtConfig>>) =>
+  config.nitro?.routeRules?.['/**']?.headers
+
 afterEach(() => {
   runtimeConfigState.siteNoindex = true
 
@@ -52,6 +55,18 @@ describe('global noindex posture', () => {
 
     expect(config.runtimeConfig.public.siteNoindex).toBe(false)
     expect(robotsContent(config)).toBe(permissiveRobots)
+  })
+
+  it('defaults prerender and static responses to the global noindex header', async () => {
+    const config = await loadConfig()
+
+    expect(globalNitroHeaders(config)).toHaveProperty('X-Robots-Tag', 'noindex, follow')
+  })
+
+  it('removes the global static response header when indexing is opened', async () => {
+    const config = await loadConfig('false')
+
+    expect(globalNitroHeaders(config)).not.toHaveProperty('X-Robots-Tag')
   })
 
   it.each([

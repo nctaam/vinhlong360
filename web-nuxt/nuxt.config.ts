@@ -241,6 +241,7 @@ export default defineNuxtConfig({
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       '/**': {
         headers: {
+          ...(siteNoindex ? { 'X-Robots-Tag': 'noindex, follow' } : {}),
           'X-Content-Type-Options': 'nosniff',
           'X-Frame-Options': 'SAMEORIGIN',
           'Referrer-Policy': 'strict-origin-when-cross-origin',
