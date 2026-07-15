@@ -183,6 +183,27 @@ _BACKUP_KEYS = {
     "validation",
     "policy_revision",
 }
+_APPLY_REPORT_KEYS = {
+    "schema",
+    "policy_revision",
+    "result",
+    "target_fingerprint",
+    "schema_fingerprint",
+    "plan_sha256",
+    "backup_manifest_sha256",
+    "candidate_ids",
+    "candidate_count",
+    "candidate_sha256",
+    "expected_before",
+    "expected_after",
+    "updated_ids",
+    "started_at",
+    "completed_at",
+}
+_APPLY_RECOVERY_KEYS = _APPLY_REPORT_KEYS | {
+    "recovery_ready",
+    "recovery_contract",
+}
 
 
 def _require_exact_keys(value: object, expected: set[str], label: str) -> dict[str, object]:
@@ -641,6 +662,16 @@ class PostgresPublicationStore:
         names = [item[0] for item in self.cursor.description]
         return [dict(zip(names, row, strict=True)) for row in self.cursor.fetchall()]
 
+    def audit_rows_for_ids(self, ids):
+        self.cursor.execute(
+            "SELECT entity_id, field, old_value, new_value, actor "
+            f"FROM {self.entity_changes} WHERE entity_id = ANY(%s) "
+            "ORDER BY entity_id, actor, field, old_value, new_value",
+            (ids,),
+        )
+        names = [item[0] for item in self.cursor.description]
+        return [dict(zip(names, row, strict=True)) for row in self.cursor.fetchall()]
+
     def update_to_published(self, ids):
         self.cursor.execute(
             "WITH updated AS ("
@@ -650,6 +681,14 @@ class PostgresPublicationStore:
             (ids,),
         )
         return [row[0] for row in self.cursor.fetchall()]
+
+    def rollback_to_null(self, ids):
+        self.cursor.execute(
+            f"UPDATE {self.entities} SET status = NULL "
+            "WHERE id = ANY(%s) AND status = 'published' RETURNING id",
+            (ids,),
+        )
+        return sorted(row[0] for row in self.cursor.fetchall())
 
     def insert_status_audit(self, ids, actor, old_value, new_value):
         self.cursor.executemany(
@@ -698,20 +737,73 @@ def _candidate_apply_records(store, candidate_ids, actor: str) -> list[dict[str,
     return _audit_records(store, actor)
 
 
-def _audit_owned_exact(records, candidate_ids: list[str], actor: str) -> bool:
+def _audit_rows_for_ids(store, candidate_ids: list[str]) -> list[dict[str, object]]:
+    if hasattr(store, "audit_rows_for_ids"):
+        return list(store.audit_rows_for_ids(candidate_ids))
+    if hasattr(store, "audit"):
+        return [
+            dict(row)
+            for row in store.audit
+            if row.get("entity_id") in candidate_ids
+        ]
+    return []
+
+
+def _audit_prefix_records(
+    store, candidate_ids: list[str], prefix: str, actor: str | None = None
+) -> list[dict[str, object]]:
+    records = _audit_rows_for_ids(store, candidate_ids)
+    if records:
+        return [
+            row
+            for row in records
+            if type(row.get("actor")) is str
+            and row["actor"].startswith(prefix)
+        ]
+    if prefix == f"entity-status:apply:{PUBLICATION_POLICY_REVISION}:":
+        if hasattr(store, "apply_audit_rows"):
+            return list(store.apply_audit_rows(candidate_ids))
+    if actor and hasattr(store, "audit_ids"):
+        old_value, new_value = (
+            ("null", "published")
+            if prefix.startswith("entity-status:apply:")
+            else ("published", "null")
+        )
+        owned_ids = store.audit_ids(actor, old_value, new_value)
+        return [
+            {
+                "entity_id": entity_id,
+                "field": "status",
+                "old_value": old_value,
+                "new_value": new_value,
+                "actor": actor,
+            }
+            for entity_id in owned_ids
+        ]
+    return []
+
+
+def _audit_owned_transition(
+    records: list[dict[str, object]],
+    candidate_ids: list[str],
+    actor: str,
+    old_value: str,
+    new_value: str,
+) -> bool:
     expected = [
         {
             "entity_id": entity_id,
             "field": "status",
-            "old_value": "null",
-            "new_value": "published",
+            "old_value": old_value,
+            "new_value": new_value,
             "actor": actor,
         }
         for entity_id in candidate_ids
     ]
     positions = {entity_id: index for index, entity_id in enumerate(candidate_ids)}
     if len(records) != len(candidate_ids) or any(
-        row.get("entity_id") not in positions for row in records
+        type(row) is not dict or row.get("entity_id") not in positions
+        for row in records
     ):
         return False
     ordered = sorted(records, key=lambda row: positions[row["entity_id"]])
@@ -726,6 +818,12 @@ def _audit_owned_exact(records, candidate_ids: list[str], actor: str) -> bool:
         for row in ordered
     ]
     return normalized == expected
+
+
+def _audit_owned_exact(records, candidate_ids: list[str], actor: str) -> bool:
+    return _audit_owned_transition(
+        records, candidate_ids, actor, "null", "published"
+    )
 
 
 def _apply_report(
@@ -995,6 +1093,361 @@ def apply_plan(
     )
 
 
+def _validate_apply_report_candidates(
+    apply_report: dict[str, object],
+) -> tuple[list[str], int]:
+    candidate_ids = apply_report.get("candidate_ids")
+    _validate_report_candidate_ids(candidate_ids)
+    count = apply_report.get("candidate_count")
+    if type(count) is not int or count != len(candidate_ids):
+        raise MigrationRefusal("apply report candidate count mismatch")
+    if candidate_id_hash(candidate_ids) != apply_report.get("candidate_sha256"):
+        raise MigrationRefusal("apply report candidate hash mismatch")
+    updated_ids = apply_report.get("updated_ids")
+    if type(updated_ids) is not list or updated_ids != candidate_ids:
+        raise MigrationRefusal("apply report updated IDs mismatch")
+    return list(candidate_ids), count
+
+
+def _validate_report_candidate_ids(candidate_ids: object) -> None:
+    if type(candidate_ids) is not list or not candidate_ids or any(
+        type(item) is not str or not item for item in candidate_ids
+    ):
+        raise MigrationRefusal("apply report candidate IDs are invalid")
+    if candidate_ids != sorted(set(candidate_ids)):
+        raise MigrationRefusal("apply report candidate IDs are not canonical")
+
+
+def _validate_apply_report_counts(
+    apply_report: dict[str, object], candidate_count: int
+) -> tuple[dict[str, int], dict[str, int]]:
+    before = _require_nonnegative_counts(
+        apply_report.get("expected_before"), "apply report expected counts"
+    )
+    after = _require_nonnegative_counts(
+        apply_report.get("expected_after"), "apply report expected counts"
+    )
+    if before["null"] < candidate_count or after != {
+        "published": before["published"] + candidate_count,
+        "null": before["null"] - candidate_count,
+    }:
+        raise MigrationRefusal("apply report expected count algebra mismatch")
+    return before, after
+
+
+def _validate_apply_report_shape(apply_report: dict[str, object]) -> str:
+    if type(apply_report) is not dict:
+        raise MigrationRefusal("apply report must be an object")
+    if apply_report.get("schema") != APPLY_SCHEMA:
+        raise MigrationRefusal("apply report schema mismatch")
+    if apply_report.get("policy_revision") != PUBLICATION_POLICY_REVISION:
+        raise MigrationRefusal("apply report policy mismatch")
+    result = apply_report.get("result")
+    if result == "applied":
+        _require_exact_keys(apply_report, _APPLY_REPORT_KEYS, "apply report")
+    elif result == "already-applied":
+        if set(apply_report) != _APPLY_RECOVERY_KEYS or (
+            apply_report.get("recovery_ready") is not True
+            or apply_report.get("recovery_contract") != "apply-audit-exact-v1"
+        ):
+            raise MigrationRefusal("apply recovery contract mismatch")
+    else:
+        raise MigrationRefusal("rollback requires an applied report")
+    return result
+
+
+def _validate_apply_report(
+    apply_report: dict[str, object],
+    apply_report_sha256: str,
+    backup: BackupEvidence,
+    confirm_target: str,
+) -> tuple[str, str, list[str], dict[str, int], dict[str, int]]:
+    _validate_apply_report_shape(apply_report)
+    digest = _require_sha(apply_report_sha256, "apply report SHA-256")
+    if digest != sha256_bytes(canonical_json_bytes(apply_report)):
+        raise MigrationRefusal("apply report SHA-256 mismatch")
+    target = _require_sha(
+        apply_report.get("target_fingerprint"), "apply report target fingerprint"
+    )
+    if _require_sha(confirm_target, "target confirmation") != target:
+        raise MigrationRefusal("target confirmation mismatch")
+    _require_sha(
+        apply_report.get("schema_fingerprint"), "apply report schema fingerprint"
+    )
+    plan_sha256 = _require_sha(
+        apply_report.get("plan_sha256"), "apply report plan hash"
+    )
+    backup_sha256 = _require_sha(
+        apply_report.get("backup_manifest_sha256"),
+        "apply report backup manifest hash",
+    )
+    if backup.manifest_sha256 != backup_sha256:
+        raise MigrationRefusal("backup manifest mismatch")
+    candidate_ids, candidate_count = _validate_apply_report_candidates(apply_report)
+    before, after = _validate_apply_report_counts(apply_report, candidate_count)
+    started = parse_utc(apply_report.get("started_at"))
+    completed = parse_utc(apply_report.get("completed_at"))
+    if started > completed:
+        raise MigrationRefusal("apply report timestamps are invalid")
+    return target, plan_sha256, candidate_ids, before, after
+
+
+def _rollback_report(
+    result: str,
+    apply_report: dict[str, object],
+    apply_report_sha256: str,
+    backup: BackupEvidence,
+    restored_ids: list[str],
+    started_at: datetime,
+    completed_at: datetime,
+) -> dict[str, object]:
+    candidate_ids = list(apply_report["candidate_ids"])
+    report = {
+        "schema": ROLLBACK_SCHEMA,
+        "policy_revision": PUBLICATION_POLICY_REVISION,
+        "result": result,
+        "target_fingerprint": apply_report["target_fingerprint"],
+        "schema_fingerprint": apply_report["schema_fingerprint"],
+        "plan_sha256": apply_report["plan_sha256"],
+        "apply_report_sha256": apply_report_sha256,
+        "backup_manifest_sha256": backup.manifest_sha256,
+        "candidate_ids": candidate_ids,
+        "candidate_count": len(candidate_ids),
+        "candidate_sha256": candidate_id_hash(candidate_ids),
+        "expected_before": dict(apply_report["expected_before"]),
+        "expected_after": dict(apply_report["expected_after"]),
+        "restored_ids": list(restored_ids),
+        "restored_count": len(restored_ids),
+        "started_at": utc_text(started_at),
+        "completed_at": utc_text(completed_at),
+    }
+    if result == "already-rolled-back":
+        report["recovery_ready"] = True
+        report["recovery_contract"] = "rollback-audit-exact-v1"
+    return report
+
+
+def _rollback_target_matches(store, target: str) -> None:
+    try:
+        connected_target = target_fingerprint(store.target_identity())
+    except (KeyError, TypeError):
+        raise MigrationRefusal("connected target drift") from None
+    if connected_target != target:
+        raise MigrationRefusal("connected target drift")
+
+
+def _rollback_schema_matches(store, schema_sha256: str) -> None:
+    try:
+        connected_schema = schema_fingerprint(store.schema_columns())
+    except (TypeError, ValueError):
+        raise MigrationRefusal("entity schema drift") from None
+    if connected_schema != schema_sha256:
+        raise MigrationRefusal("entity schema drift")
+
+
+def _rollback_rows(
+    store,
+    candidate_ids: list[str],
+    target: str,
+    schema_sha256: str,
+) -> list[dict[str, object]]:
+    _rollback_target_matches(store, target)
+    _rollback_schema_matches(store, schema_sha256)
+    rows = store.rows_for_update(candidate_ids)
+    if type(rows) is not list or any(type(row) is not dict for row in rows):
+        raise MigrationRefusal("rollback IDs are missing or reordered")
+    row_ids = [row.get("id") for row in rows]
+    if (
+        len(row_ids) != len(candidate_ids)
+        or any(type(entity_id) is not str for entity_id in row_ids)
+        or len(set(row_ids)) != len(row_ids)
+        or set(row_ids) != set(candidate_ids)
+    ):
+        raise MigrationRefusal("rollback IDs are missing or reordered")
+    positions = {entity_id: index for index, entity_id in enumerate(candidate_ids)}
+    return sorted(rows, key=lambda row: positions[row["id"]])
+
+
+def _rollback_audit_records(store, candidate_ids: list[str], prefix: str):
+    return _audit_prefix_records(store, candidate_ids, prefix)
+
+
+def _already_rolled_back(
+    store,
+    apply_report: dict[str, object],
+    apply_report_sha256: str,
+    backup: BackupEvidence,
+    candidate_ids: list[str],
+    rollback_actor: str,
+    before: dict[str, int],
+    started_at: datetime,
+    completed_at: datetime,
+) -> dict[str, object]:
+    prefix = f"entity-status:rollback:{PUBLICATION_POLICY_REVISION}:"
+    records = _audit_prefix_records(store, candidate_ids, prefix, rollback_actor)
+    if not _audit_owned_transition(
+        records, candidate_ids, rollback_actor, "published", "null"
+    ):
+        raise MigrationRefusal("NULL rows lack rollback audit ownership")
+    if store.status_counts() != before:
+        raise MigrationRefusal("already-rolled-back global count drift")
+    return _rollback_report(
+        "already-rolled-back",
+        apply_report,
+        apply_report_sha256,
+        backup,
+        [],
+        started_at,
+        completed_at,
+    )
+
+
+def _rollback_published(
+    store,
+    apply_report: dict[str, object],
+    apply_report_sha256: str,
+    backup: BackupEvidence,
+    candidate_ids: list[str],
+    rollback_actor: str,
+    before: dict[str, int],
+    after: dict[str, int],
+    started_at: datetime,
+    completed_at: datetime,
+) -> dict[str, object]:
+    rollback_prefix = f"entity-status:rollback:{PUBLICATION_POLICY_REVISION}:"
+    if _rollback_audit_records(store, candidate_ids, rollback_prefix):
+        raise MigrationRefusal("pre-existing rollback audit on published candidate")
+    if store.status_counts() != after:
+        raise MigrationRefusal("pre-rollback global count drift")
+    restored_ids = store.rollback_to_null(candidate_ids)
+    if restored_ids != candidate_ids:
+        raise MigrationRefusal("rollback update count drift")
+    store.insert_status_audit(restored_ids, rollback_actor, "published", "null")
+    if not _audit_owned_transition(
+        _audit_prefix_records(store, candidate_ids, rollback_prefix, rollback_actor),
+        candidate_ids,
+        rollback_actor,
+        "published",
+        "null",
+    ):
+        raise MigrationRefusal("rollback audit ownership/cardinality drift")
+    if store.status_counts() != before:
+        raise MigrationRefusal("post-rollback global count drift")
+    return _rollback_report(
+        "rolled-back",
+        apply_report,
+        apply_report_sha256,
+        backup,
+        restored_ids,
+        started_at,
+        completed_at,
+    )
+
+
+def _rollback_locked(
+    store,
+    apply_report: dict[str, object],
+    *,
+    apply_report_sha256: str,
+    backup: BackupEvidence,
+    target: str,
+    plan_sha256: str,
+    candidate_ids: list[str],
+    before: dict[str, int],
+    after: dict[str, int],
+    now: datetime,
+    clock=None,
+) -> dict[str, object]:
+    store.acquire_lock(LOCK_NAME)
+    completed_at = _require_aware_datetime(
+        clock() if clock else _utc_now(), "locked rollback time"
+    )
+    report_completed_at = completed_at if clock else now
+    rows = _rollback_rows(
+        store,
+        candidate_ids,
+        target,
+        str(apply_report["schema_fingerprint"]),
+    )
+    apply_actor = audit_actor("apply", plan_sha256)
+    apply_prefix = f"entity-status:apply:{PUBLICATION_POLICY_REVISION}:"
+    if not _audit_owned_transition(
+        _audit_prefix_records(store, candidate_ids, apply_prefix, apply_actor),
+        candidate_ids,
+        apply_actor,
+        "null",
+        "published",
+    ):
+        raise MigrationRefusal("apply audit ownership mismatch")
+    rollback_actor = audit_actor("rollback", plan_sha256)
+    statuses = [row.get("status") for row in rows]
+    if all(status is None for status in statuses):
+        return _already_rolled_back(
+            store,
+            apply_report,
+            apply_report_sha256,
+            backup,
+            candidate_ids,
+            rollback_actor,
+            before,
+            now,
+            report_completed_at,
+        )
+    if any(status != "published" for status in statuses):
+        raise MigrationRefusal("rollback drift")
+    return _rollback_published(
+        store,
+        apply_report,
+        apply_report_sha256,
+        backup,
+        candidate_ids,
+        rollback_actor,
+        before,
+        after,
+        now,
+        report_completed_at,
+    )
+
+
+def rollback_apply(
+    store,
+    apply_report: dict[str, object],
+    *,
+    apply_report_sha256: str,
+    backup: BackupEvidence,
+    confirm_target: str,
+    now: datetime,
+    restore_validator=None,
+    clock=None,
+) -> dict[str, object]:
+    now = _require_aware_datetime(now, "rollback time")
+    target, plan_sha256, candidate_ids, before, after = _validate_apply_report(
+        apply_report, apply_report_sha256, backup, confirm_target
+    )
+    artifact = validate_backup_manifest(
+        backup, expected_target=target, now=now, require_fresh=False
+    )
+    state = _artifact_state(artifact)
+    if restore_validator is not None:
+        listing_hash = _validate_pinned_restore(artifact, state, restore_validator)
+        if listing_hash != backup.manifest["validation"]["listing_sha256"]:
+            raise MigrationRefusal("backup listing hash mismatch")
+    _assert_artifact_unchanged(artifact, state)
+    return _rollback_locked(
+        store,
+        apply_report,
+        apply_report_sha256=apply_report_sha256,
+        backup=backup,
+        target=target,
+        plan_sha256=plan_sha256,
+        candidate_ids=candidate_ids,
+        before=before,
+        after=after,
+        now=now,
+        clock=clock,
+    )
+
+
 def _status_group(value: object) -> str:
     if value is None:
         return "<null>"
@@ -1194,6 +1647,25 @@ def _validate_apply_args(args: argparse.Namespace) -> None:
         raise MigrationRefusal("plan and backup manifest paths must be files")
 
 
+def _validate_rollback_args(args: argparse.Namespace) -> None:
+    if args.target != "pg":
+        raise MigrationRefusal("rollback target must be pg")
+    if not args.database_url_env or args.database_url_env == "DATABASE_URL":
+        raise MigrationRefusal(
+            "rollback requires a named database URL environment other than DATABASE_URL"
+        )
+    if args.report_out.exists():
+        raise MigrationRefusal("report output already exists")
+    _require_sha(args.confirm_target, "target confirmation")
+    _require_sha(args.confirm_apply_report_sha256, "apply report SHA-256 confirmation")
+    _require_sha(
+        args.confirm_backup_manifest_sha256,
+        "backup manifest SHA-256 confirmation",
+    )
+    if not args.apply_report.is_file() or not args.backup_manifest.is_file():
+        raise MigrationRefusal("apply report and backup manifest paths must be files")
+
+
 def _load_apply_artifacts(
     args: argparse.Namespace, now: datetime
 ) -> tuple[dict[str, object], str, BackupEvidence, Path, tuple[int, int, int, str]]:
@@ -1226,6 +1698,43 @@ def _load_apply_artifacts(
         raise MigrationRefusal("backup listing hash mismatch")
     _assert_artifact_unchanged(artifact, state)
     return plan, plan_sha256, backup, artifact, state
+
+
+def _load_rollback_artifacts(
+    args: argparse.Namespace, now: datetime
+) -> tuple[dict[str, object], str, BackupEvidence, Path, tuple[int, int, int, str]]:
+    apply_report, apply_report_sha256 = load_immutable_json(args.apply_report)
+    if apply_report_sha256 != args.confirm_apply_report_sha256:
+        raise MigrationRefusal("apply report SHA-256 confirmation mismatch")
+    if apply_report_sha256 != sha256_bytes(canonical_json_bytes(apply_report)):
+        raise MigrationRefusal("apply report bytes are not canonical")
+    manifest, manifest_sha256 = load_immutable_json(args.backup_manifest)
+    if manifest_sha256 != args.confirm_backup_manifest_sha256:
+        raise MigrationRefusal("backup manifest SHA-256 confirmation mismatch")
+    if manifest_sha256 != sha256_bytes(canonical_json_bytes(manifest)):
+        raise MigrationRefusal("backup manifest bytes are not canonical")
+    backup = BackupEvidence(
+        manifest=manifest,
+        manifest_sha256=manifest_sha256,
+        artifact_root=args.backup_manifest.parent,
+    )
+    target, _plan_sha256, _candidate_ids, _before, _after = _validate_apply_report(
+        apply_report,
+        apply_report_sha256,
+        backup,
+        args.confirm_target,
+    )
+    artifact = validate_backup_manifest(
+        backup, expected_target=target, now=now, require_fresh=False
+    )
+    state = _artifact_state(artifact)
+    listing_hash = _validate_pinned_restore(
+        artifact, state, validate_restore_artifact
+    )
+    if listing_hash != manifest["validation"]["listing_sha256"]:
+        raise MigrationRefusal("backup listing hash mismatch")
+    _assert_artifact_unchanged(artifact, state)
+    return apply_report, apply_report_sha256, backup, artifact, state
 
 
 def _generate_apply(args: argparse.Namespace) -> dict[str, object]:
@@ -1270,6 +1779,55 @@ def _generate_apply(args: argparse.Namespace) -> dict[str, object]:
         _safe_method(connection, "close")
     if report is None:
         raise MigrationRefusal("publication apply did not produce a report")
+    digest = write_immutable_json(args.report_out, report)
+    return {
+        "report_path": str(args.report_out),
+        "sha256": digest,
+        "result": report["result"],
+        "candidate_count": report["candidate_count"],
+    }
+
+
+def _generate_rollback(args: argparse.Namespace) -> dict[str, object]:
+    now = _utc_now()
+    apply_report, apply_report_sha256, backup, artifact, artifact_state = (
+        _load_rollback_artifacts(args, now)
+    )
+    database_url = _resolved_database_url(args.database_url_env)
+    psycopg2_module = _load_psycopg2()
+    connection = None
+    cursor = None
+    report: dict[str, object] | None = None
+    try:
+        connection = psycopg2_module.connect(database_url)
+        connection.set_session(
+            isolation_level="SERIALIZABLE", readonly=False, autocommit=False
+        )
+        cursor = connection.cursor()
+        cursor.execute("SET LOCAL search_path = public")
+        _assert_artifact_unchanged(artifact, artifact_state)
+        report = rollback_apply(
+            PostgresPublicationStore(cursor),
+            apply_report,
+            apply_report_sha256=apply_report_sha256,
+            backup=backup,
+            confirm_target=args.confirm_target,
+            now=now,
+            clock=_utc_now,
+        )
+        connection.commit()
+        report["completed_at"] = utc_text(_utc_now())
+    except MigrationRefusal:
+        _safe_method(connection, "rollback")
+        raise
+    except Exception:
+        _safe_method(connection, "rollback")
+        raise MigrationRefusal("publication rollback transaction failed") from None
+    finally:
+        _safe_method(cursor, "close")
+        _safe_method(connection, "close")
+    if report is None:
+        raise MigrationRefusal("publication rollback did not produce a report")
     digest = write_immutable_json(args.report_out, report)
     return {
         "report_path": str(args.report_out),
@@ -1325,6 +1883,15 @@ def _build_parser() -> argparse.ArgumentParser:
     apply.add_argument("--confirm-plan-sha256", required=True)
     apply.add_argument("--confirm-backup-manifest-sha256", required=True)
     apply.add_argument("--report-out", required=True, type=Path)
+    rollback = subparsers.add_parser("rollback")
+    rollback.add_argument("--target", required=True)
+    rollback.add_argument("--database-url-env", required=True)
+    rollback.add_argument("--apply-report", required=True, type=Path)
+    rollback.add_argument("--backup-manifest", required=True, type=Path)
+    rollback.add_argument("--confirm-target", required=True)
+    rollback.add_argument("--confirm-apply-report-sha256", required=True)
+    rollback.add_argument("--confirm-backup-manifest-sha256", required=True)
+    rollback.add_argument("--report-out", required=True, type=Path)
     return parser
 
 
@@ -1334,9 +1901,12 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "plan":
             _validate_plan_args(args)
             evidence = _generate_plan(args)
-        else:
+        elif args.command == "apply":
             _validate_apply_args(args)
             evidence = _generate_apply(args)
+        else:
+            _validate_rollback_args(args)
+            evidence = _generate_rollback(args)
     except MigrationRefusal as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

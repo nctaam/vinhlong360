@@ -833,6 +833,15 @@ class ApplyFakeStore:
                 changed.append(entity_id)
         return changed if self.updated_return is None else self.updated_return
 
+    def rollback_to_null(self, ids):
+        self.events.append("rollback-update")
+        changed = []
+        for entity_id in ids:
+            if self.rows[entity_id]["status"] == "published":
+                self.rows[entity_id]["status"] = None
+                changed.append(entity_id)
+        return changed
+
     def insert_status_audit(self, ids, actor, old_value, new_value):
         self.events.append("audit-write")
         for entity_id in ids:
@@ -1473,6 +1482,162 @@ def test_apply_refuses_preexisting_apply_audit_on_null_candidate(tmp_path: Path)
         _apply(store, plan, backup)
 
 
+def test_rollback_restores_only_apply_owned_unchanged_rows(tmp_path: Path) -> None:
+    plan = _valid_apply_plan()
+    plan_sha = _artifact_sha(plan)
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    apply_report = migration.apply_plan(
+        store,
+        plan,
+        plan_sha256=plan_sha,
+        backup=backup,
+        confirm_target=plan["target_fingerprint"],
+        now=APPLY_NOW,
+        restore_validator=_restore_ok,
+        clock=lambda: APPLY_NOW,
+    )
+
+    report = migration.rollback_apply(
+        store,
+        apply_report,
+        apply_report_sha256=_artifact_sha(apply_report),
+        backup=backup,
+        confirm_target=plan["target_fingerprint"],
+        now=APPLY_NOW + timedelta(days=1),
+    )
+
+    assert report["result"] == "rolled-back"
+    assert report["restored_ids"] == ["a", "b"]
+    assert all(store.rows[entity_id]["status"] is None for entity_id in ("a", "b"))
+
+
+def test_rollback_aborts_on_manual_status_drift(tmp_path: Path) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    apply_report = _apply(store, plan, backup)
+    store.rows["a"]["status"] = "verified"
+
+    with pytest.raises(migration.MigrationRefusal, match="rollback drift"):
+        migration.rollback_apply(
+            store,
+            apply_report,
+            apply_report_sha256=_artifact_sha(apply_report),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW + timedelta(days=1),
+        )
+
+    assert "rollback-update" not in store.events
+
+
+def test_rollback_requires_matching_apply_audit(tmp_path: Path) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    apply_report = _apply(store, plan, backup)
+    store.audit.clear()
+
+    with pytest.raises(migration.MigrationRefusal, match="apply audit ownership"):
+        migration.rollback_apply(
+            store,
+            apply_report,
+            apply_report_sha256=_artifact_sha(apply_report),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW + timedelta(days=1),
+        )
+
+
+def test_rollback_accepts_only_recovery_ready_already_applied_report(tmp_path: Path) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    first = _apply(store, plan, backup)
+    recovery = _apply(store, plan, backup)
+
+    rolled = migration.rollback_apply(
+        store,
+        recovery,
+        apply_report_sha256=_artifact_sha(recovery),
+        backup=backup,
+        confirm_target=plan["target_fingerprint"],
+        now=APPLY_NOW + timedelta(days=1),
+    )
+
+    assert first["result"] == "applied"
+    assert recovery["result"] == "already-applied"
+    assert rolled["result"] == "rolled-back"
+
+    ordinary = dict(recovery)
+    ordinary.pop("recovery_ready")
+    ordinary.pop("recovery_contract")
+    with pytest.raises(migration.MigrationRefusal, match="recovery contract"):
+        migration.rollback_apply(
+            store,
+            ordinary,
+            apply_report_sha256=_artifact_sha(ordinary),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW + timedelta(days=1),
+        )
+
+
+def test_rollback_is_idempotent_only_with_owned_rollback_audits(tmp_path: Path) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    apply_report = _apply(store, plan, backup)
+    digest = _artifact_sha(apply_report)
+
+    first = migration.rollback_apply(
+        store,
+        apply_report,
+        apply_report_sha256=digest,
+        backup=backup,
+        confirm_target=plan["target_fingerprint"],
+        now=APPLY_NOW + timedelta(days=1),
+    )
+    event_count = len(store.events)
+    second = migration.rollback_apply(
+        store,
+        apply_report,
+        apply_report_sha256=digest,
+        backup=backup,
+        confirm_target=plan["target_fingerprint"],
+        now=APPLY_NOW + timedelta(days=2),
+    )
+
+    assert first["result"] == "rolled-back"
+    assert second["result"] == "already-rolled-back"
+    assert second["restored_ids"] == []
+    assert second["recovery_ready"] is True
+    assert second["recovery_contract"] == "rollback-audit-exact-v1"
+    assert store.events[event_count:].count("rollback-update") == 0
+    assert store.events[event_count:].count("audit-write") == 0
+
+
+def test_rollback_refuses_null_rows_without_owned_rollback_audit(tmp_path: Path) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    apply_report = _apply(store, plan, backup)
+    store.rows["a"]["status"] = None
+
+    with pytest.raises(
+        migration.MigrationRefusal, match="NULL rows lack rollback audit ownership"
+    ):
+        migration.rollback_apply(
+            store,
+            apply_report,
+            apply_report_sha256=_artifact_sha(apply_report),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW + timedelta(days=1),
+        )
+
+
 class StoreCursor:
     def __init__(self) -> None:
         self.calls: list[tuple[str, object]] = []
@@ -1569,6 +1734,15 @@ def _write_apply_artifacts(tmp_path: Path):
     manifest_path = backup.artifact_root / "manifest.json"
     manifest_path.write_bytes(canonical_json_bytes(backup.manifest))
     return plan, plan_path, backup, manifest_path
+
+
+def _write_rollback_artifacts(tmp_path: Path):
+    plan, plan_path, backup, manifest_path = _write_apply_artifacts(tmp_path)
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    apply_report = _apply(store, plan, backup)
+    apply_path = tmp_path / "apply.json"
+    apply_path.write_bytes(canonical_json_bytes(apply_report))
+    return apply_report, apply_path, backup, manifest_path
 
 
 @pytest.mark.parametrize(
@@ -1908,3 +2082,197 @@ def test_apply_cli_report_write_failure_after_commit_never_claims_success(
     assert recovery["updated_ids"] == plan["candidate_ids"]
     assert recovery["recovery_ready"] is True
     assert recovery["recovery_contract"] == "apply-audit-exact-v1"
+
+
+def _rollback_cli_args(
+    apply_path: Path,
+    manifest_path: Path,
+    report: Path,
+    target: str,
+) -> list[str]:
+    return [
+        "rollback",
+        "--target",
+        "pg",
+        "--database-url-env",
+        "TASK8_DATABASE_URL",
+        "--apply-report",
+        str(apply_path),
+        "--backup-manifest",
+        str(manifest_path),
+        "--confirm-target",
+        target,
+        "--confirm-apply-report-sha256",
+        hashlib.sha256(apply_path.read_bytes()).hexdigest(),
+        "--confirm-backup-manifest-sha256",
+        hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+        "--report-out",
+        str(report),
+    ]
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda args: args.__setitem__(2, "sqlite"),
+        lambda args: args.__setitem__(4, "DATABASE_URL"),
+        lambda args: args.__setitem__(10, "bad-target"),
+        lambda args: args.__setitem__(12, "bad-apply-sha"),
+        lambda args: args.__setitem__(14, "bad-backup-sha"),
+    ],
+)
+def test_rollback_cli_refuses_unsafe_args_before_artifact_access_import_or_connect(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutate
+) -> None:
+    apply_path = tmp_path / "missing-apply.json"
+    manifest_path = tmp_path / "missing-manifest.json"
+    report = tmp_path / "rollback.json"
+    args = [
+        "rollback",
+        "--target",
+        "pg",
+        "--database-url-env",
+        "TASK8_DATABASE_URL",
+        "--apply-report",
+        str(apply_path),
+        "--backup-manifest",
+        str(manifest_path),
+        "--confirm-target",
+        "0" * 64,
+        "--confirm-apply-report-sha256",
+        "0" * 64,
+        "--confirm-backup-manifest-sha256",
+        "0" * 64,
+        "--report-out",
+        str(report),
+    ]
+    mutate(args)
+    monkeypatch.setattr(
+        migration,
+        "load_immutable_json",
+        lambda *_args: pytest.fail("rollback artifacts accessed before CLI preflight"),
+    )
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: pytest.fail("psycopg2 imported before rollback CLI preflight"),
+    )
+    monkeypatch.setattr(
+        migration,
+        "resolve_database_url",
+        lambda *_args: pytest.fail("database URL resolved before rollback CLI preflight"),
+    )
+
+    assert migration.main(args) == 1
+    assert not report.exists()
+
+
+def test_rollback_cli_commits_before_immutable_report_and_uses_serializable_transaction(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    apply_report, apply_path, backup, manifest_path = _write_rollback_artifacts(tmp_path)
+    report = tmp_path / "rollback.json"
+    events: list[object] = []
+    connection = ApplyCliConnection(events)
+    locked_at = APPLY_NOW + timedelta(days=1, seconds=1)
+    completed_at = locked_at + timedelta(seconds=1)
+    clock_values = iter([APPLY_NOW + timedelta(days=1), completed_at])
+
+    def clock():
+        value = next(clock_values)
+        events.append(("clock", value))
+        return value
+
+    monkeypatch.setattr(migration, "_utc_now", clock)
+    monkeypatch.setattr(
+        migration,
+        "validate_restore_artifact",
+        lambda _path: events.append("restore")
+        or backup.manifest["validation"]["listing_sha256"],
+    )
+    monkeypatch.setattr(
+        migration,
+        "resolve_database_url",
+        lambda name: events.append(("resolve", name)) or "postgresql://secret@db/vl360",
+    )
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: SimpleNamespace(
+            connect=lambda dsn: events.append(("connect", dsn)) or connection
+        ),
+    )
+    expected = dict(
+        migration._rollback_report(
+            "rolled-back",
+            apply_report,
+            hashlib.sha256(apply_path.read_bytes()).hexdigest(),
+            backup,
+            apply_report["candidate_ids"],
+            APPLY_NOW + timedelta(days=1),
+            locked_at,
+        )
+    )
+    monkeypatch.setattr(
+        migration,
+        "rollback_apply",
+        lambda *_args, **kwargs: events.append("locked-rollback")
+        or expected,
+    )
+
+    assert migration.main(
+        _rollback_cli_args(
+            apply_path,
+            manifest_path,
+            report,
+            apply_report["target_fingerprint"],
+        )
+    ) == 0
+    written = json.loads(report.read_text(encoding="utf-8"))
+    assert written["result"] == "rolled-back"
+    assert written["completed_at"] == migration.utc_text(completed_at)
+    assert events.index("restore") < events.index(("resolve", "TASK8_DATABASE_URL"))
+    assert events.index("commit") < events.index(("clock", completed_at))
+    assert ("session", {
+        "isolation_level": "SERIALIZABLE",
+        "readonly": False,
+        "autocommit": False,
+    }) in events
+
+
+def test_rollback_cli_commit_failure_rolls_back_and_writes_no_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    apply_report, apply_path, backup, manifest_path = _write_rollback_artifacts(tmp_path)
+    report = tmp_path / "rollback.json"
+    events: list[object] = []
+    connection = ApplyCliConnection(events, fail_commit=True)
+    monkeypatch.setattr(migration, "_utc_now", lambda: APPLY_NOW + timedelta(days=1))
+    monkeypatch.setattr(
+        migration,
+        "validate_restore_artifact",
+        lambda _path: backup.manifest["validation"]["listing_sha256"],
+    )
+    monkeypatch.setattr(migration, "resolve_database_url", lambda _name: "postgresql://x/db")
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: SimpleNamespace(connect=lambda _dsn: connection),
+    )
+    monkeypatch.setattr(
+        migration,
+        "rollback_apply",
+        lambda *_args, **_kwargs: {"schema": migration.ROLLBACK_SCHEMA},
+    )
+
+    assert migration.main(
+        _rollback_cli_args(
+            apply_path,
+            manifest_path,
+            report,
+            apply_report["target_fingerprint"],
+        )
+    ) == 1
+    assert "commit" in events
+    assert "rollback" in events
+    assert not report.exists()
