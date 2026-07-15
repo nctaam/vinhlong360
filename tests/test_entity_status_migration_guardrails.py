@@ -119,9 +119,29 @@ def test_global_noindex_default_and_authoritative_header_are_executable_code():
     )
 
     assert re.search(
-        r"\bsiteNoindex\s*:\s*process\.env\.NUXT_PUBLIC_SITE_NOINDEX\s*!==\s*"
+        r"\bconst\s+siteNoindex\s*=\s*process\.env\.NUXT_PUBLIC_SITE_NOINDEX\s*!==\s*"
         r"(?P<quote>['\"])false(?P=quote)",
         config,
+    )
+    assert re.search(
+        r"runtimeConfig\s*:\s*\{\s*public\s*:\s*\{.*?"
+        r"\bsiteNoindex\s*,\s*\}\s*,",
+        config,
+        flags=re.DOTALL,
+    )
+    assert re.search(
+        r"\{\s*name\s*:\s*['\"]robots['\"]\s*,\s*"
+        r"content\s*:\s*siteNoindex\s*\?\s*['\"]noindex,\s*follow['\"]\s*:\s*"
+        r"['\"]index,\s*follow,\s*max-image-preview:large,\s*max-snippet:-1['\"]\s*,\s*\}",
+        config,
+        flags=re.DOTALL,
+    )
+    assert re.search(
+        r"nitro\s*:\s*\{.*?routeRules\s*:\s*\{.*?['\"]\/\*\*['\"]\s*:\s*\{\s*"
+        r"headers\s*:\s*\{\s*\.\.\.\(\s*siteNoindex\s*\?\s*\{\s*"
+        r"['\"]X-Robots-Tag['\"]\s*:\s*['\"]noindex,\s*follow['\"]\s*\}\s*:\s*\{\}\s*\)",
+        config,
+        flags=re.DOTALL,
     )
     assert re.search(
         r"if\s*\(\s*useRuntimeConfig\(event\)\.public\.siteNoindex\s*\)\s*\{"
