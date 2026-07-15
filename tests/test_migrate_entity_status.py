@@ -851,7 +851,11 @@ def _restore_ok(_artifact: Path) -> str:
     return hashlib.sha256(RESTORE_LISTING.encode("utf-8")).hexdigest()
 
 
-def _apply(store: ApplyFakeStore, plan, backup, *, clock=None):
+def _apply_now() -> datetime:
+    return APPLY_NOW
+
+
+def _apply(store: ApplyFakeStore, plan, backup, *, clock=_apply_now):
     return migration.apply_plan(
         store,
         plan,
@@ -860,7 +864,7 @@ def _apply(store: ApplyFakeStore, plan, backup, *, clock=None):
         confirm_target=plan["target_fingerprint"],
         now=APPLY_NOW,
         restore_validator=_restore_ok,
-        **({"clock": clock} if clock is not None else {}),
+        clock=clock,
     )
 
 
@@ -1218,6 +1222,25 @@ def test_restore_validation_rejects_realistic_masquerade_with_definitions(
         )
 
 
+def test_restore_validation_rejects_malformed_table_token_without_definition(
+    tmp_path: Path,
+) -> None:
+    artifact = tmp_path / "postgres.dump"
+    artifact.write_bytes(b"PGDMP-test")
+    listing = (
+        "1; 1259 101 TABLE public entity_changes owner\n"
+        "2; 0 0 TABLE public TABLE entities owner\n"
+    )
+
+    with pytest.raises(migration.MigrationRefusal, match="invalid table objects"):
+        migration.validate_restore_artifact(
+            artifact,
+            runner=lambda command, **_kwargs: subprocess.CompletedProcess(
+                command, 0, listing, ""
+            ),
+        )
+
+
 def test_apply_revalidates_listing_hash_and_detects_artifact_replacement(
     tmp_path: Path,
 ) -> None:
@@ -1394,6 +1417,31 @@ def test_apply_revalidates_freshness_after_lock_before_mutation(tmp_path: Path) 
 
     with pytest.raises(migration.MigrationRefusal, match="backup evidence is stale"):
         _apply(store, plan, backup, clock=lambda: after_lock)
+
+    assert store.locked == migration.LOCK_NAME
+    assert "update" not in store.events
+    assert store.status_counts() == {"published": 0, "null": 2}
+
+
+def test_apply_uses_fresh_default_clock_after_lock_before_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    after_lock = APPLY_NOW + timedelta(hours=2)
+    monkeypatch.setattr(migration, "_utc_now", lambda: after_lock)
+
+    with pytest.raises(migration.MigrationRefusal, match="backup evidence is stale"):
+        migration.apply_plan(
+            store,
+            plan,
+            plan_sha256=_artifact_sha(plan),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=_restore_ok,
+        )
 
     assert store.locked == migration.LOCK_NAME
     assert "update" not in store.events

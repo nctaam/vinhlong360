@@ -477,7 +477,7 @@ def _restore_required_object(text: str) -> str | None:
     body = prefix.group(1) if prefix else text
     match = re.match(
         r"^(FOREIGN\s+)?(TABLE DATA|TABLE|COMMENT|ACL|FUNCTION)\s+"
-        r"(\S+)\s+(?:TABLE\s+)?(\S+)(?:\s|$)",
+        r"(\S+)\s+(\S+)(?:\s|$)",
         body,
     )
     if not match:
@@ -487,6 +487,11 @@ def _restore_required_object(text: str) -> str | None:
     if name not in required and not (
         schema == "public" and any(name.startswith(prefix) for prefix in required)
     ):
+        trailing = body[match.end() :].split()
+        if name == "TABLE" and trailing and any(
+            trailing[0].startswith(prefix) for prefix in required
+        ):
+            raise MigrationRefusal("pg_restore listing contains invalid table objects")
         return None
     if foreign or schema != "public" or name not in required:
         raise MigrationRefusal("pg_restore listing contains invalid table objects")
@@ -707,7 +712,9 @@ def _locked_freshness(
     now: datetime,
     clock,
 ) -> None:
-    current = _require_aware_datetime(clock() if clock else now, "locked apply time")
+    current = _require_aware_datetime(
+        clock() if clock else _utc_now(), "locked apply time"
+    )
     _validate_plan_header(plan, plan_sha256, target, current)
     _validate_backup_freshness(backup.manifest, current, True)
 
