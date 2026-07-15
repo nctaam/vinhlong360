@@ -3,14 +3,19 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import secrets
 import stat
 from pathlib import Path
 from typing import Mapping
 from urllib.parse import parse_qs, unquote, urlsplit
 
+POSTGRES_IDENTITY_REVISION = "postgres-cluster-v2"
 IDENTITY_KEYS = (
+    "identity_revision",
     "database",
+    "database_oid",
+    "system_identifier",
     "server_addr",
     "server_port",
     "server_version_num",
@@ -91,27 +96,96 @@ def pg_cli_connection(database_url: str) -> tuple[list[str], dict[str, str]]:
     return args, environment
 
 
+def canonical_target_identity(
+    identity: Mapping[str, object], *, exact_keys: bool = False
+) -> dict[str, object]:
+    if not isinstance(identity, Mapping):
+        raise RuntimeError("PostgreSQL target identity must be an object")
+    if identity.get("identity_revision") != POSTGRES_IDENTITY_REVISION:
+        raise RuntimeError(
+            "target identity revision mismatch: expected postgres-cluster-v2"
+        )
+    if exact_keys and set(identity) != set(IDENTITY_KEYS):
+        raise RuntimeError("PostgreSQL target identity has invalid keys")
+
+    database = identity.get("database")
+    if type(database) is not str or not database:
+        raise RuntimeError("PostgreSQL target identity has invalid database")
+
+    database_oid = identity.get("database_oid")
+    if type(database_oid) is not int or database_oid <= 0:
+        raise RuntimeError("PostgreSQL target identity has invalid database OID")
+
+    system_identifier = identity.get("system_identifier")
+    if type(system_identifier) is not str or re.fullmatch(
+        r"[1-9][0-9]*", system_identifier
+    ) is None:
+        raise RuntimeError(
+            "PostgreSQL target identity has invalid system identifier"
+        )
+
+    server_addr = identity.get("server_addr")
+    if type(server_addr) is not str or not server_addr:
+        raise RuntimeError("PostgreSQL target identity has invalid server address")
+
+    server_port = identity.get("server_port")
+    if type(server_port) is not int or not 1 <= server_port <= 65535:
+        raise RuntimeError("PostgreSQL target identity has invalid server port")
+
+    server_version_num = identity.get("server_version_num")
+    if type(server_version_num) is not int or server_version_num <= 0:
+        raise RuntimeError(
+            "PostgreSQL target identity has invalid server version number"
+        )
+
+    return {key: identity[key] for key in IDENTITY_KEYS}
+
+
 def read_target_identity(cursor) -> dict[str, object]:
     cursor.execute(
         """
         SELECT
             current_database(),
+            database.oid,
+            control.system_identifier::text,
             inet_server_addr()::text,
             inet_server_port(),
             current_setting('server_version_num')::int
+        FROM pg_catalog.pg_database AS database
+        CROSS JOIN pg_catalog.pg_control_system() AS control
+        WHERE database.datname = current_database()
         """
     )
-    database, server_addr, server_port, server_version_num = cursor.fetchone()
-    return {
-        "database": database,
-        "server_addr": server_addr,
-        "server_port": server_port,
-        "server_version_num": server_version_num,
-    }
+    row = cursor.fetchone()
+    try:
+        (
+            database,
+            database_oid,
+            system_identifier,
+            server_addr,
+            server_port,
+            server_version_num,
+        ) = row
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError(
+            "PostgreSQL target identity row must contain six fields"
+        ) from exc
+    return canonical_target_identity(
+        {
+            "identity_revision": POSTGRES_IDENTITY_REVISION,
+            "database": database,
+            "database_oid": database_oid,
+            "system_identifier": system_identifier,
+            "server_addr": server_addr,
+            "server_port": server_port,
+            "server_version_num": server_version_num,
+        },
+        exact_keys=True,
+    )
 
 
 def target_fingerprint(identity: Mapping[str, object]) -> str:
-    canonical_identity = {key: identity[key] for key in IDENTITY_KEYS}
+    canonical_identity = canonical_target_identity(identity)
     return sha256_bytes(canonical_json_bytes(canonical_identity))
 
 

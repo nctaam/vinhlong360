@@ -194,56 +194,135 @@ def test_pg_cli_connection_keeps_password_out_of_argv() -> None:
     assert environment == {"PGPASSWORD": "s3cr/et", "PGSSLMODE": "verify-full"}
 
 
+POSTGRES_IDENTITY_V2 = {
+    "identity_revision": "postgres-cluster-v2",
+    "database": "vl360",
+    "database_oid": 16384,
+    "system_identifier": "7463376938976342231",
+    "server_addr": "10.0.0.8",
+    "server_port": 5432,
+    "server_version_num": 160004,
+}
+POSTGRES_IDENTITY_ROW = (
+    "vl360",
+    16384,
+    "7463376938976342231",
+    "10.0.0.8",
+    5432,
+    160004,
+)
+
+
 class _Cursor:
-    def __init__(self) -> None:
-        self.query = ""
+    def __init__(
+        self,
+        row: object = POSTGRES_IDENTITY_ROW,
+        execute_failure: BaseException | None = None,
+    ) -> None:
+        self.row = row
+        self.execute_failure = execute_failure
+        self.queries: list[str] = []
 
     def execute(self, query: str) -> None:
-        self.query = query
+        self.queries.append(query)
+        if self.execute_failure is not None:
+            raise self.execute_failure
 
-    def fetchone(self) -> tuple[str, str, int, int]:
-        return ("vl360", "10.0.0.8", 5432, 160004)
+    def fetchone(self) -> object:
+        return self.row
 
 
-def test_read_target_identity_reads_only_server_identity() -> None:
+def test_read_target_identity_reads_exact_postgres_cluster_identity() -> None:
     cursor = _Cursor()
 
     identity = postgres_target.read_target_identity(cursor)
 
-    assert "current_database()" in cursor.query
-    assert identity == {
+    assert len(cursor.queries) == 1
+    query = cursor.queries[0].casefold()
+    assert query.count("select") == 1
+    assert "pg_catalog.pg_database" in query
+    assert "pg_catalog.pg_control_system()" in query
+    assert "current_database()" in query
+    assert identity == POSTGRES_IDENTITY_V2
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        None,
+        ("vl360", None, "7463376938976342231", "10.0.0.8", 5432, 160004),
+        ("vl360", 16384, None, "10.0.0.8", 5432, 160004),
+        ("vl360", True, "7463376938976342231", "10.0.0.8", 5432, 160004),
+        ("vl360", 16384, 7463376938976342231, "10.0.0.8", 5432, 160004),
+        ("vl360", 16384, "7463376938976342231", "10.0.0.8", 5432),
+    ],
+)
+def test_read_target_identity_rejects_missing_or_malformed_rows(row: object) -> None:
+    with pytest.raises(RuntimeError, match="PostgreSQL target identity"):
+        postgres_target.read_target_identity(_Cursor(row=row))
+
+
+def test_read_target_identity_propagates_control_system_permission_failure() -> None:
+    failure = PermissionError("permission denied for function pg_control_system")
+
+    with pytest.raises(PermissionError) as raised:
+        postgres_target.read_target_identity(_Cursor(execute_failure=failure))
+
+    assert raised.value is failure
+
+
+def test_canonical_target_identity_rejects_legacy_revision() -> None:
+    legacy_identity = {
         "database": "vl360",
         "server_addr": "10.0.0.8",
         "server_port": 5432,
         "server_version_num": 160004,
     }
 
+    with pytest.raises(RuntimeError, match="target identity revision"):
+        postgres_target.canonical_target_identity(legacy_identity, exact_keys=True)
 
-def test_target_fingerprint_ignores_credentials_and_is_sha256() -> None:
-    identity = {
-        "database": "vl360",
-        "server_addr": "10.0.0.8",
-        "server_port": 5432,
-        "server_version_num": 160004,
+
+def test_canonical_target_identity_rejects_noncanonical_system_identifier() -> None:
+    identity = {**POSTGRES_IDENTITY_V2, "system_identifier": "07463376938976342231"}
+
+    with pytest.raises(RuntimeError, match="system identifier"):
+        postgres_target.canonical_target_identity(identity)
+
+
+@pytest.mark.parametrize(
+    ("field", "replacement"),
+    [
+        ("database_oid", 16385),
+        ("system_identifier", "7463376938976342232"),
+    ],
+)
+def test_target_fingerprint_changes_with_cluster_identity(
+    field: str,
+    replacement: object,
+) -> None:
+    changed_identity = {**POSTGRES_IDENTITY_V2, field: replacement}
+
+    assert postgres_target.target_fingerprint(
+        changed_identity
+    ) != postgres_target.target_fingerprint(POSTGRES_IDENTITY_V2)
+
+
+def test_target_fingerprint_uses_only_canonical_v2_identity() -> None:
+    identity_with_metadata = {
+        **POSTGRES_IDENTITY_V2,
         "password": "must-not-be-hashed",
+        "ssh_host": "bastion.example",
     }
 
-    fingerprint = postgres_target.target_fingerprint(identity)
+    fingerprint = postgres_target.target_fingerprint(identity_with_metadata)
+    expected = hashlib.sha256(
+        postgres_target.canonical_json_bytes(POSTGRES_IDENTITY_V2)
+    ).hexdigest()
 
     assert len(fingerprint) == 64
-    expected_identity = {
-        key: identity[key]
-        for key in (
-            "database",
-            "server_addr",
-            "server_port",
-            "server_version_num",
-        )
-    }
-    assert fingerprint == hashlib.sha256(
-        postgres_target.canonical_json_bytes(expected_identity)
-    ).hexdigest()
-    assert "must-not-be-hashed" not in fingerprint
+    assert fingerprint == expected
+    assert postgres_target.target_fingerprint(identity_with_metadata) == fingerprint
 
 
 def test_write_exclusive_writes_canonical_json_and_refuses_overwrite(
