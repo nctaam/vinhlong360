@@ -26,7 +26,7 @@ const loadConfig = async (siteNoindex?: string) => {
 }
 
 const robotsContent = (config: Awaited<ReturnType<typeof loadNuxtConfig>>) =>
-  config.app.head.meta.find(entry => 'name' in entry && entry.name === 'robots')?.content
+  (config.app.head.meta ?? []).find(entry => 'name' in entry && entry.name === 'robots')?.content
 
 afterEach(() => {
   runtimeConfigState.siteNoindex = true
