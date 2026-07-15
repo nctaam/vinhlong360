@@ -5,6 +5,7 @@ import json
 import os
 import re
 import uuid
+from contextlib import ExitStack, closing
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -89,6 +90,22 @@ def _audit_rows(cursor, schema: str) -> list[tuple[object, ...]]:
     return cursor.fetchall()
 
 
+def _begin_serializable(connection) -> None:
+    connection.set_session(
+        isolation_level="SERIALIZABLE",
+        readonly=False,
+        autocommit=False,
+    )
+    assert connection.autocommit is False
+
+
+def _assert_serializable(cursor) -> None:
+    cursor.execute("SHOW transaction_isolation")
+    assert cursor.fetchone() == ("serializable",)
+    cursor.execute("SHOW transaction_read_only")
+    assert cursor.fetchone() == ("off",)
+
+
 @pytest.fixture
 def pg_schema():
     if not TEST_URL or not TEST_URL.startswith("postgresql://"):
@@ -102,7 +119,11 @@ def pg_schema():
     psycopg2 = pytest.importorskip("psycopg2")
     schema = f"entity_status_{uuid.uuid4().hex}"
     quoted_schema = _quote_schema(schema)
-    connection = psycopg2.connect(TEST_URL)
+    connection = psycopg2.connect(
+        TEST_URL,
+        connect_timeout=5,
+        options="-c statement_timeout=5000 -c lock_timeout=1000",
+    )
     created = False
     try:
         connection.autocommit = True
@@ -158,7 +179,9 @@ def test_postgres_apply_recovery_and_rollback_audits(
     connection, schema = pg_schema
     quoted_schema = _quote_schema(schema)
 
+    _begin_serializable(connection)
     with connection.cursor() as cursor:
+        _assert_serializable(cursor)
         store = migration.PostgresPublicationStore(cursor, schema=schema)
         cursor.execute(f"SELECT * FROM {quoted_schema}.entities ORDER BY id")
         rows = _rows(cursor)
@@ -187,7 +210,9 @@ def test_postgres_apply_recovery_and_rollback_audits(
     assert applied["result"] == "applied"
     assert applied["updated_ids"] == ["a", "b"]
 
+    _begin_serializable(connection)
     with connection.cursor() as cursor:
+        _assert_serializable(cursor)
         store = migration.PostgresPublicationStore(cursor, schema=schema)
         assert store.status_counts() == {"published": 2, "null": 0}
         apply_actor = migration.audit_actor("apply", plan_sha)
@@ -212,15 +237,15 @@ def test_postgres_apply_recovery_and_rollback_audits(
     assert repeated["recovery_contract"] == "apply-audit-exact-v1"
     assert repeated["updated_ids"] == ["a", "b"]
 
+    rollback_now = NOW + timedelta(minutes=10)
+    repeated_sha = sha256_bytes(canonical_json_bytes(repeated))
+    _begin_serializable(connection)
     with connection.cursor() as cursor:
+        _assert_serializable(cursor)
         assert _audit_rows(cursor, schema) == [
             ("a", "status", "null", "published", apply_actor),
             ("b", "status", "null", "published", apply_actor),
         ]
-
-    rollback_now = NOW + timedelta(minutes=10)
-    repeated_sha = sha256_bytes(canonical_json_bytes(repeated))
-    with connection.cursor() as cursor:
         store = migration.PostgresPublicationStore(cursor, schema=schema)
         rolled_back = migration.rollback_apply(
             store,
@@ -237,7 +262,9 @@ def test_postgres_apply_recovery_and_rollback_audits(
     assert rolled_back["result"] == "rolled-back"
     assert rolled_back["restored_ids"] == ["a", "b"]
 
+    _begin_serializable(connection)
     with connection.cursor() as cursor:
+        _assert_serializable(cursor)
         store = migration.PostgresPublicationStore(cursor, schema=schema)
         assert store.status_counts() == {"published": 0, "null": 2}
         rollback_actor = migration.audit_actor("rollback", plan_sha)
@@ -278,26 +305,45 @@ def test_postgres_apply_recovery_and_rollback_audits(
 def test_postgres_advisory_lock_excludes_second_transaction(pg_schema) -> None:
     _fixture_connection, schema = pg_schema
     psycopg2 = pytest.importorskip("psycopg2")
-    first = psycopg2.connect(TEST_URL)
-    second = psycopg2.connect(TEST_URL)
-    try:
-        with first.cursor() as first_cursor, second.cursor() as second_cursor:
-            migration.PostgresPublicationStore(
-                first_cursor, schema=schema
-            ).acquire_lock(migration.LOCK_NAME)
-            second_cursor.execute(
-                "SELECT pg_try_advisory_xact_lock(hashtext(%s))",
-                (migration.LOCK_NAME,),
+    lock_name = f"{migration.LOCK_NAME}:{schema}"
+    with ExitStack() as stack:
+        first = stack.enter_context(
+            closing(
+                psycopg2.connect(
+                    TEST_URL,
+                    connect_timeout=5,
+                    options="-c statement_timeout=5000 -c lock_timeout=1000",
+                )
             )
-            assert second_cursor.fetchone()[0] is False
+        )
+        second = stack.enter_context(
+            closing(
+                psycopg2.connect(
+                    TEST_URL,
+                    connect_timeout=5,
+                    options="-c statement_timeout=5000 -c lock_timeout=1000",
+                )
+            )
+        )
+        try:
+            with first.cursor() as first_cursor, second.cursor() as second_cursor:
+                for cursor in (first_cursor, second_cursor):
+                    cursor.execute("SET LOCAL statement_timeout = '5s'")
+                    cursor.execute("SET LOCAL lock_timeout = '1s'")
+                migration.PostgresPublicationStore(
+                    first_cursor, schema=schema
+                ).acquire_lock(lock_name)
+                second_cursor.execute(
+                    "SELECT pg_try_advisory_xact_lock(hashtext(%s))",
+                    (lock_name,),
+                )
+                assert second_cursor.fetchone()[0] is False
+                first.rollback()
+                second_cursor.execute(
+                    "SELECT pg_try_advisory_xact_lock(hashtext(%s))",
+                    (lock_name,),
+                )
+                assert second_cursor.fetchone()[0] is True
+        finally:
             first.rollback()
-            second_cursor.execute(
-                "SELECT pg_try_advisory_xact_lock(hashtext(%s))",
-                (migration.LOCK_NAME,),
-            )
-            assert second_cursor.fetchone()[0] is True
-    finally:
-        first.rollback()
-        second.rollback()
-        first.close()
-        second.close()
+            second.rollback()
