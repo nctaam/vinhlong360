@@ -277,7 +277,7 @@ def _validate_plan_identity_schema(plan: dict[str, object], target: str) -> None
     if _plan_identity_fingerprint(plan) != target:
         raise MigrationRefusal("plan target identity mismatch")
 
-    columns = plan["schema_columns"]
+    columns = plan.get("schema_columns")
     column_tuples = _plan_schema_column_tuples(plan)
     if len({column[0] for column in column_tuples}) != len(column_tuples):
         raise MigrationRefusal("plan schema columns contain duplicates")

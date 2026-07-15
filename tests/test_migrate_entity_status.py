@@ -868,6 +868,13 @@ def _apply(store: ApplyFakeStore, plan, backup, *, clock=_apply_now):
     )
 
 
+def test_plan_identity_schema_refuses_missing_columns_without_key_error() -> None:
+    with pytest.raises(migration.MigrationRefusal, match="schema columns are invalid"):
+        migration._validate_plan_identity_schema(
+            {"database_identity": IDENTITY}, target_fingerprint(IDENTITY)
+        )
+
+
 @pytest.mark.parametrize(
     ("field", "value", "message"),
     [
