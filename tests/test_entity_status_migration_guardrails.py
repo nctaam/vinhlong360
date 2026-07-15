@@ -1,6 +1,6 @@
-import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -9,6 +9,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATION_TOOL = ROOT / "scripts" / "migrate_entity_status.py"
 RUNBOOK = ROOT / "docs" / "runbooks" / "entity-published-status-migration.md"
+WEB_NUXT = ROOT / "web-nuxt"
+NOINDEX_AST_GUARD = ROOT / "tests" / "helpers" / "noindex_ast_guard.cjs"
 
 
 def _cli_args(command: str, target: str, environment_name: str, report: Path) -> list[str]:
@@ -103,154 +105,31 @@ def test_migration_tool_avoids_project_database_imports_and_local_data_literals(
         assert forbidden not in source
 
 
-def _without_javascript_comments(source: str) -> str:
-    result: list[str] = []
-    index = 0
-    quote: str | None = None
+def _assert_typescript_noindex_guard(source: str, mode: str) -> None:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        source_path = Path(temp_dir) / "source.ts"
+        source_path.write_text(source, encoding="utf-8")
+        result = subprocess.run(
+            ["node", str(NOINDEX_AST_GUARD), mode, str(source_path)],
+            cwd=WEB_NUXT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
 
-    while index < len(source):
-        char = source[index]
-
-        if quote is not None:
-            result.append(char)
-            if char == "\\" and index + 1 < len(source):
-                result.append(source[index + 1])
-                index += 2
-                continue
-            if char == quote:
-                quote = None
-            index += 1
-            continue
-
-        if char in ("'", '"', "`"):
-            quote = char
-            result.append(char)
-            index += 1
-            continue
-
-        if source.startswith("//", index):
-            result.append(" ")
-            index += 2
-            while index < len(source) and source[index] not in "\r\n":
-                index += 1
-            continue
-
-        if source.startswith("/*", index):
-            result.append(" ")
-            index += 2
-            while index < len(source) and not source.startswith("*/", index):
-                if source[index] in "\r\n":
-                    result.append(source[index])
-                index += 1
-            index += 2 if source.startswith("*/", index) else 0
-            continue
-
-        result.append(char)
-        index += 1
-
-    return "".join(result)
-
-
-def test_javascript_comment_stripper_preserves_markers_inside_strings():
-    source = """
-const httpUrl = 'http://localhost:8360/path//segment'
-const httpsUrl = "https://example.com/a/*literal*/b"
-const slashMarker = '// keep'
-const blockMarker = '/* keep */'
-// remove this line comment
-const afterLine = true
-/* remove this block comment */
-const afterBlock = true
-"""
-
-    stripped = _without_javascript_comments(source)
-
-    for literal in (
-        "'http://localhost:8360/path//segment'",
-        '"https://example.com/a/*literal*/b"',
-        "'// keep'",
-        "'/* keep */'",
-    ):
-        assert literal in stripped
-    assert "remove this line comment" not in stripped
-    assert "remove this block comment" not in stripped
-    assert "const afterLine = true" in stripped
-    assert "const afterBlock = true" in stripped
-
-
-def _javascript_object_property(source: str, property_pattern: str) -> str:
-    match = re.search(rf"(?:{property_pattern})\s*:\s*\{{", source)
-    assert match is not None
-
-    object_start = match.end() - 1
-    depth = 0
-    quote: str | None = None
-    index = object_start
-
-    while index < len(source):
-        char = source[index]
-
-        if quote is not None:
-            if char == "\\" and index + 1 < len(source):
-                index += 2
-                continue
-            if char == quote:
-                quote = None
-            index += 1
-            continue
-
-        if char in ("'", '"', "`"):
-            quote = char
-        elif char == "{":
-            depth += 1
-        elif char == "}":
-            depth -= 1
-            if depth == 0:
-                return source[object_start + 1 : index]
-        index += 1
-
-    raise AssertionError(f"unclosed JavaScript object for {property_pattern!r}")
+    assert result.returncode == 0, result.stderr
 
 
 def _assert_runtime_config_uses_site_noindex_shorthand(config: str) -> None:
-    assert re.search(
-        r"\bconst\s+siteNoindex\s*=\s*process\.env\.NUXT_PUBLIC_SITE_NOINDEX\s*!==\s*"
-        r"(?P<quote>['\"])false(?P=quote)",
-        config,
-    )
-    runtime_config = _javascript_object_property(config, r"\bruntimeConfig\b")
-    public_config = _javascript_object_property(runtime_config, r"\bpublic\b")
-    assert "{" not in public_config and "}" not in public_config
-    assert re.search(
-        r"(?:^|,)\s*siteNoindex\s*(?=,|$)",
-        public_config,
-        flags=re.DOTALL,
-    )
+    _assert_typescript_noindex_guard(config, "runtime")
 
 
 def _assert_nitro_catch_all_noindex_header(config: str) -> None:
-    nitro = _javascript_object_property(config, r"\bnitro\b")
-    route_rules = _javascript_object_property(nitro, r"\brouteRules\b")
-    catch_all = _javascript_object_property(route_rules, r"['\"]/\*\*['\"]")
-    headers = _javascript_object_property(catch_all, r"\bheaders\b")
-
-    header_properties = re.findall(
-        r"(?:['\"]X-Robots-Tag['\"]|\[\s*['\"]X-Robots-Tag['\"]\s*\])\s*:",
-        headers,
-    )
-    assert len(header_properties) == 1
-    assert re.search(
-        r"\.\.\.\(\s*siteNoindex\s*\?\s*\{\s*"
-        r"['\"]X-Robots-Tag['\"]\s*:\s*['\"]noindex,\s*follow['\"]\s*,?\s*"
-        r"\}\s*:\s*\{\s*\}\s*\)",
-        headers,
-        flags=re.DOTALL,
-    )
+    _assert_typescript_noindex_guard(config, "nitro")
 
 
 def test_runtime_config_guard_does_not_match_site_noindex_outside_public():
-    config = _without_javascript_comments(
-        """
+    config = """
 const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
 export default defineNuxtConfig({
   runtimeConfig: {
@@ -263,15 +142,52 @@ export default defineNuxtConfig({
   },
 })
 """
-    )
+
+    with pytest.raises(AssertionError):
+        _assert_runtime_config_uses_site_noindex_shorthand(config)
+
+
+def test_runtime_config_guard_rejects_extended_site_noindex_initializer():
+    config = """
+const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false' && false
+export default defineNuxtConfig({
+  runtimeConfig: {
+    public: {
+      siteNoindex,
+    },
+  },
+})
+"""
+
+    with pytest.raises(AssertionError):
+        _assert_runtime_config_uses_site_noindex_shorthand(config)
+
+
+def test_runtime_config_guard_ignores_markers_in_doc_string_before_real_config():
+    config = """
+const documentation = `
+const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
+runtimeConfig: {
+  public: {
+    siteNoindex,
+  },
+}
+`
+export default defineNuxtConfig({
+  runtimeConfig: {
+    public: {
+      apiBase,
+    },
+  },
+})
+"""
 
     with pytest.raises(AssertionError):
         _assert_runtime_config_uses_site_noindex_shorthand(config)
 
 
 def test_nitro_guard_rejects_later_x_robots_tag_override():
-    config = _without_javascript_comments(
-        """
+    config = """
 export default defineNuxtConfig({
   nitro: {
     routeRules: {
@@ -285,39 +201,21 @@ export default defineNuxtConfig({
   },
 })
 """
-    )
 
     with pytest.raises(AssertionError):
         _assert_nitro_catch_all_noindex_header(config)
 
 
 def test_global_noindex_default_and_authoritative_header_are_executable_code():
-    config = _without_javascript_comments(
-        (ROOT / "web-nuxt" / "nuxt.config.ts").read_text(encoding="utf-8")
-    )
-    middleware = _without_javascript_comments(
-        (ROOT / "web-nuxt" / "server" / "middleware" / "noindex.ts").read_text(
-            encoding="utf-8"
-        )
+    config = (WEB_NUXT / "nuxt.config.ts").read_text(encoding="utf-8")
+    middleware = (
+        WEB_NUXT / "server" / "middleware" / "noindex.ts"
+    ).read_text(
+        encoding="utf-8"
     )
 
-    _assert_runtime_config_uses_site_noindex_shorthand(config)
-    assert re.search(
-        r"\{\s*name\s*:\s*['\"]robots['\"]\s*,\s*"
-        r"content\s*:\s*siteNoindex\s*\?\s*['\"]noindex,\s*follow['\"]\s*:\s*"
-        r"['\"]index,\s*follow,\s*max-image-preview:large,\s*max-snippet:-1['\"]\s*,\s*\}",
-        config,
-        flags=re.DOTALL,
-    )
-    _assert_nitro_catch_all_noindex_header(config)
-    assert re.search(
-        r"if\s*\(\s*useRuntimeConfig\(event\)\.public\.siteNoindex\s*\)\s*\{"
-        r"\s*setResponseHeader\(\s*event\s*,\s*(?P<header_quote>['\"])"
-        r"X-Robots-Tag(?P=header_quote)\s*,\s*(?P<value_quote>['\"])"
-        r"noindex, follow(?P=value_quote)\s*\)",
-        middleware,
-        flags=re.DOTALL,
-    )
+    _assert_typescript_noindex_guard(config, "config")
+    _assert_typescript_noindex_guard(middleware, "middleware")
 
 
 def test_runbook_is_fail_closed_and_reproducible():
