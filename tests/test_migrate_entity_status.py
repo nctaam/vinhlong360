@@ -11,7 +11,11 @@ from types import SimpleNamespace
 import pytest
 
 from scripts import migrate_entity_status as migration
-from scripts.postgres_target import canonical_json_bytes, target_fingerprint
+from scripts.postgres_target import (
+    canonical_json_bytes,
+    sha256_bytes,
+    target_fingerprint,
+)
 
 
 IDENTITY = {
@@ -716,3 +720,881 @@ def test_source_revision_refuses_git_failure_or_empty_output(
         migration._source_revision(runner=lambda *_args, **_kwargs: result)
 
     assert "secret detail" not in str(error.value)
+
+
+APPLY_NOW = datetime(2026, 7, 15, 2, 10, tzinfo=UTC)
+
+
+RESTORE_LISTING = """;
+; Archive created at 2026-07-15 02:00:00 UTC
+;
+1; 1259 100 TABLE public entities owner
+2; 1259 101 TABLE public entity_changes owner
+"""
+
+
+def _artifact_sha(value: object) -> str:
+    return sha256_bytes(canonical_json_bytes(value))
+
+
+def _valid_apply_plan(rows=None) -> dict[str, object]:
+    return migration.build_plan(
+        rows=[_row("a"), _row("b")] if rows is None else rows,
+        identity=IDENTITY,
+        schema_columns=COLUMNS,
+        created_at="2026-07-15T02:00:00Z",
+        tool_source_revision=REVISION,
+    )
+
+
+def _valid_backup(tmp_path: Path, target: str) -> migration.BackupEvidence:
+    root = tmp_path / "backup"
+    root.mkdir()
+    artifact = root / "postgres.dump"
+    artifact.write_bytes(b"PGDMP-test")
+    manifest = {
+        "schema": "vinhlong360-pg-backup-v1",
+        "target": "pg",
+        "target_fingerprint": target,
+        "database_identity": dict(IDENTITY),
+        "started_at": "2026-07-15T02:00:00Z",
+        "completed_at": "2026-07-15T02:00:01Z",
+        "max_age_seconds": migration.MAX_BACKUP_AGE_SECONDS,
+        "tools": {
+            "pg_dump": "pg_dump (PostgreSQL) 16.4",
+            "pg_restore": "pg_restore (PostgreSQL) 16.4",
+        },
+        "artifact": {
+            "path": artifact.name,
+            "size": artifact.stat().st_size,
+            "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
+        },
+        "validation": {
+            "pg_restore_list": True,
+            "required_tables": ["entities", "entity_changes"],
+            "listing_sha256": hashlib.sha256(
+                RESTORE_LISTING.encode("utf-8")
+            ).hexdigest(),
+        },
+        "policy_revision": "published-v1",
+    }
+    return migration.BackupEvidence(
+        manifest=manifest,
+        manifest_sha256=_artifact_sha(manifest),
+        artifact_root=root,
+    )
+
+
+class ApplyFakeStore:
+    def __init__(self, rows, *, identity=IDENTITY, columns=COLUMNS) -> None:
+        self.rows = {row["id"]: dict(row) for row in rows}
+        self.identity = identity
+        self.columns = columns
+        self.locked: str | None = None
+        self.audit: list[dict[str, str]] = []
+        self.updated_return: list[str] | None = None
+        self.events: list[str] = []
+
+    def acquire_lock(self, name: str) -> None:
+        self.events.append("lock")
+        self.locked = name
+
+    def target_identity(self):
+        self.events.append("identity")
+        return self.identity
+
+    def schema_columns(self):
+        self.events.append("schema")
+        return self.columns
+
+    def rows_for_update(self, ids):
+        self.events.append("rows")
+        return [dict(self.rows[entity_id]) for entity_id in ids if entity_id in self.rows]
+
+    def audit_rows(self, actor: str):
+        self.events.append("audit-read")
+        return [dict(row) for row in self.audit if row["actor"] == actor]
+
+    def status_counts(self):
+        self.events.append("counts")
+        return {
+            "published": sum(
+                row["status"] == "published" for row in self.rows.values()
+            ),
+            "null": sum(row["status"] is None for row in self.rows.values()),
+        }
+
+    def update_to_published(self, ids):
+        self.events.append("update")
+        changed = []
+        for entity_id in ids:
+            if self.rows[entity_id]["status"] is None:
+                self.rows[entity_id]["status"] = "published"
+                changed.append(entity_id)
+        return changed if self.updated_return is None else self.updated_return
+
+    def insert_status_audit(self, ids, actor, old_value, new_value):
+        self.events.append("audit-write")
+        for entity_id in ids:
+            self.audit.append(
+                {
+                    "entity_id": entity_id,
+                    "field": "status",
+                    "old_value": old_value,
+                    "new_value": new_value,
+                    "actor": actor,
+                }
+            )
+
+
+def _restore_ok(_artifact: Path) -> str:
+    return hashlib.sha256(RESTORE_LISTING.encode("utf-8")).hexdigest()
+
+
+def _apply(store: ApplyFakeStore, plan, backup):
+    return migration.apply_plan(
+        store,
+        plan,
+        plan_sha256=_artifact_sha(plan),
+        backup=backup,
+        confirm_target=plan["target_fingerprint"],
+        now=APPLY_NOW,
+        restore_validator=_restore_ok,
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("schema", "wrong", "plan schema"),
+        ("policy_revision", "wrong", "plan policy"),
+        ("max_age_seconds", True, "plan max age"),
+        ("max_age_seconds", "86400", "plan max age"),
+        ("max_age_seconds", 0, "plan max age"),
+        ("candidate_count", True, "candidate count"),
+        ("candidate_sha256", "0" * 64, "candidate hash"),
+    ],
+)
+def test_apply_refuses_malformed_plan_before_store(
+    tmp_path: Path, field: str, value: object, message: str
+) -> None:
+    plan = _valid_apply_plan()
+    plan[field] = value
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+
+    with pytest.raises(migration.MigrationRefusal, match=message):
+        migration.apply_plan(
+            store,
+            plan,
+            plan_sha256=_artifact_sha(plan),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=_restore_ok,
+        )
+
+    assert store.events == []
+
+
+def test_apply_refuses_plan_confirmation_target_age_and_count_algebra_offline(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+
+    with pytest.raises(migration.MigrationRefusal, match="plan SHA-256 confirmation"):
+        migration.apply_plan(
+            store,
+            plan,
+            plan_sha256="0" * 64,
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=_restore_ok,
+        )
+    with pytest.raises(migration.MigrationRefusal, match="target confirmation"):
+        migration.apply_plan(
+            store,
+            plan,
+            plan_sha256=_artifact_sha(plan),
+            backup=backup,
+            confirm_target="0" * 64,
+            now=APPLY_NOW,
+            restore_validator=_restore_ok,
+        )
+    drift = copy.deepcopy(plan)
+    drift["expected_after"]["published"] += 1
+    with pytest.raises(migration.MigrationRefusal, match="expected count algebra"):
+        migration.apply_plan(
+            store,
+            drift,
+            plan_sha256=_artifact_sha(drift),
+            backup=backup,
+            confirm_target=drift["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=_restore_ok,
+        )
+
+    assert store.events == []
+
+
+def test_apply_refuses_future_plan_and_noncanonical_candidate_ids_offline(
+    tmp_path: Path,
+) -> None:
+    future = _valid_apply_plan()
+    future["created_at"] = "2026-07-15T02:11:00Z"
+    backup = _valid_backup(tmp_path, future["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+
+    with pytest.raises(migration.MigrationRefusal, match="plan is stale"):
+        migration.apply_plan(
+            store,
+            future,
+            plan_sha256=_artifact_sha(future),
+            backup=backup,
+            confirm_target=future["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=_restore_ok,
+        )
+
+    reordered = _valid_apply_plan()
+    reordered["candidate_ids"] = ["b", "a"]
+    reordered["candidate_sha256"] = migration.candidate_id_hash(["b", "a"])
+    with pytest.raises(migration.MigrationRefusal, match="not canonical"):
+        migration.apply_plan(
+            store,
+            reordered,
+            plan_sha256=_artifact_sha(reordered),
+            backup=backup,
+            confirm_target=reordered["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=_restore_ok,
+        )
+    assert store.events == []
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (lambda manifest: manifest.update(target="sqlite"), "backup target"),
+        (lambda manifest: manifest.update(policy_revision="draft-v1"), "backup policy"),
+        (lambda manifest: manifest.update(max_age_seconds=True), "backup max age"),
+        (lambda manifest: manifest.update(max_age_seconds=7200), "backup max age"),
+        (
+            lambda manifest: manifest.update(
+                started_at="2026-07-14T01:59:59Z",
+                completed_at="2026-07-14T02:00:00Z",
+            ),
+            "backup evidence is stale",
+        ),
+        (
+            lambda manifest: manifest.update(started_at="2026-07-15T02:00:02Z"),
+            "backup timestamps",
+        ),
+    ],
+)
+def test_backup_validation_refuses_noncanonical_or_stale_evidence(
+    tmp_path: Path, mutate, message: str
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    mutate(backup.manifest)
+    backup = migration.BackupEvidence(
+        manifest=backup.manifest,
+        manifest_sha256=_artifact_sha(backup.manifest),
+        artifact_root=backup.artifact_root,
+    )
+
+    with pytest.raises(migration.MigrationRefusal, match=message):
+        migration.validate_backup_manifest(
+            backup,
+            expected_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            require_fresh=True,
+        )
+
+
+def test_backup_validation_checks_manifest_identity_size_hash_and_direct_child(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+
+    with pytest.raises(migration.MigrationRefusal, match="manifest hash"):
+        migration.validate_backup_manifest(
+            migration.BackupEvidence(
+                backup.manifest, "0" * 64, backup.artifact_root
+            ),
+            expected_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            require_fresh=True,
+        )
+
+    for artifact_field, value, message in [
+        ("size", 999, "artifact size"),
+        ("sha256", "0" * 64, "artifact hash"),
+        ("path", "../postgres.dump", "artifact path"),
+    ]:
+        changed = copy.deepcopy(backup.manifest)
+        changed["artifact"][artifact_field] = value
+        evidence = migration.BackupEvidence(
+            changed, _artifact_sha(changed), backup.artifact_root
+        )
+        with pytest.raises(migration.MigrationRefusal, match=message):
+            migration.validate_backup_manifest(
+                evidence,
+                expected_target=plan["target_fingerprint"],
+                now=APPLY_NOW,
+                require_fresh=True,
+            )
+
+
+@pytest.mark.parametrize(
+    "listing",
+    [
+        "1; 0 0 COMMENT public entities owner\n2; 0 0 TABLE public entity_changes owner\n",
+        "1; 0 0 ACL public entities owner\n2; 0 0 TABLE public entity_changes owner\n",
+        "1; 0 0 FUNCTION public entities owner\n2; 0 0 TABLE public entity_changes owner\n",
+        "1; 0 0 TABLE DATA public entities owner\n2; 0 0 TABLE public entity_changes owner\n",
+        "1; 0 0 TABLE public entities_archive owner\n2; 0 0 TABLE public entity_changes owner\n",
+        "1; 0 0 TABLE private entities owner\n2; 0 0 TABLE public entity_changes owner\n",
+    ],
+)
+def test_restore_validation_requires_exact_public_table_objects(
+    tmp_path: Path, listing: str
+) -> None:
+    artifact = tmp_path / "postgres.dump"
+    artifact.write_bytes(b"PGDMP-test")
+
+    def runner(*_args, **_kwargs):
+        return subprocess.CompletedProcess([], 0, listing, "")
+
+    with pytest.raises(
+        migration.MigrationRefusal, match="missing tables|invalid table objects"
+    ):
+        migration.validate_restore_artifact(artifact, runner=runner)
+
+
+def test_restore_validation_returns_listing_hash_and_rejects_command_failure(
+    tmp_path: Path,
+) -> None:
+    artifact = tmp_path / "postgres.dump"
+    artifact.write_bytes(b"PGDMP-test")
+    calls = []
+
+    def runner(command, **kwargs):
+        calls.append((command, kwargs))
+        return subprocess.CompletedProcess(command, 0, RESTORE_LISTING, "")
+
+    assert migration.validate_restore_artifact(artifact, runner=runner) == hashlib.sha256(
+        RESTORE_LISTING.encode("utf-8")
+    ).hexdigest()
+    assert calls == [
+        (
+            ["pg_restore", "--list", str(artifact)],
+            {"check": False, "capture_output": True, "text": True},
+        )
+    ]
+
+    with pytest.raises(migration.MigrationRefusal, match="revalidation failed"):
+        migration.validate_restore_artifact(
+            artifact,
+            runner=lambda *args, **kwargs: subprocess.CompletedProcess(
+                args[0], 1, "", "secret stderr"
+            ),
+        )
+
+
+def test_apply_revalidates_listing_hash_and_detects_artifact_replacement(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+
+    with pytest.raises(migration.MigrationRefusal, match="listing hash"):
+        migration.apply_plan(
+            store,
+            plan,
+            plan_sha256=_artifact_sha(plan),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=lambda _path: "0" * 64,
+        )
+
+    artifact = backup.artifact_root / "postgres.dump"
+
+    def replace(path: Path) -> str:
+        path.write_bytes(b"replacement")
+        return backup.manifest["validation"]["listing_sha256"]
+
+    with pytest.raises(migration.MigrationRefusal, match="artifact changed"):
+        migration.apply_plan(
+            store,
+            plan,
+            plan_sha256=_artifact_sha(plan),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=replace,
+        )
+    assert artifact.read_bytes() == b"replacement"
+    assert store.events == []
+
+
+def test_apply_rechecks_locked_state_updates_and_audits_exact_plan_ownership(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+
+    report = _apply(store, plan, backup)
+
+    assert report["result"] == "applied"
+    assert report["candidate_ids"] == report["updated_ids"] == ["a", "b"]
+    assert report["candidate_sha256"] == migration.candidate_id_hash(["a", "b"])
+    assert store.locked == migration.LOCK_NAME
+    actor = migration.audit_actor("apply", _artifact_sha(plan))
+    assert store.audit == [
+        {
+            "entity_id": entity_id,
+            "field": "status",
+            "old_value": "null",
+            "new_value": "published",
+            "actor": actor,
+        }
+        for entity_id in ["a", "b"]
+    ]
+    assert store.events[:4] == ["lock", "identity", "schema", "rows"]
+
+
+@pytest.mark.parametrize(
+    ("rows", "message"),
+    [
+        ([_row("a")], "planned IDs are missing or reordered"),
+        ([_row("a", source=[]), _row("b")], "candidate drift"),
+        ([_row("a", status="verified"), _row("b")], "candidate status drift"),
+    ],
+)
+def test_apply_refuses_locked_candidate_drift(
+    tmp_path: Path, rows, message: str
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+
+    with pytest.raises(migration.MigrationRefusal, match=message):
+        _apply(ApplyFakeStore(rows), plan, backup)
+
+
+def test_apply_refuses_reordered_update_ids_and_post_audit_cardinality_drift(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    reordered = ApplyFakeStore([_row("a"), _row("b")])
+    reordered.updated_return = ["b", "a"]
+
+    with pytest.raises(migration.MigrationRefusal, match="status update IDs drift"):
+        _apply(reordered, plan, backup)
+
+    class MissingAuditStore(ApplyFakeStore):
+        def insert_status_audit(self, ids, actor, old_value, new_value):
+            super().insert_status_audit(ids[:1], actor, old_value, new_value)
+
+    with pytest.raises(migration.MigrationRefusal, match="audit ownership"):
+        _apply(MissingAuditStore([_row("a"), _row("b")]), plan, backup)
+
+
+def test_apply_idempotency_requires_exact_unique_owned_audits_and_counts(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    first = _apply(store, plan, backup)
+    second = _apply(store, plan, backup)
+
+    assert first["result"] == "applied"
+    assert second["result"] == "already-applied"
+    assert second["candidate_ids"] == ["a", "b"]
+    assert second["updated_ids"] == []
+    assert len(store.audit) == 2
+
+    store.audit.append(dict(store.audit[0]))
+    with pytest.raises(migration.MigrationRefusal, match="audit ownership"):
+        _apply(store, plan, backup)
+
+
+def test_apply_refuses_preexisting_apply_audit_on_null_candidate(tmp_path: Path) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    store.audit.append(
+        {
+            "entity_id": "a",
+            "field": "status",
+            "old_value": "null",
+            "new_value": "published",
+            "actor": migration.audit_actor("apply", _artifact_sha(plan)),
+        }
+    )
+
+    with pytest.raises(migration.MigrationRefusal, match="pre-existing apply audit"):
+        _apply(store, plan, backup)
+
+
+class StoreCursor:
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, object]] = []
+        self.description = [("id",), ("status",)]
+        self.rows = []
+        self.one = (0, 0)
+
+    def execute(self, query: str, params=None) -> None:
+        self.calls.append((" ".join(query.split()), params))
+
+    def executemany(self, query: str, params) -> None:
+        self.calls.append((" ".join(query.split()), params))
+
+    def fetchall(self):
+        return self.rows
+
+    def fetchone(self):
+        return self.one
+
+
+def test_postgres_store_uses_qualified_parameterized_sql() -> None:
+    cursor = StoreCursor()
+    store = migration.PostgresPublicationStore(cursor)
+
+    store.acquire_lock("lock-name")
+    cursor.rows = [("a", None)]
+    assert store.rows_for_update(["a"]) == [{"id": "a", "status": None}]
+    cursor.rows = [("a",)]
+    assert store.update_to_published(["a"]) == ["a"]
+    store.insert_status_audit(["a"], "actor", "null", "published")
+
+    assert cursor.calls[0] == (
+        "SELECT pg_advisory_xact_lock(hashtext(%s))",
+        ("lock-name",),
+    )
+    rows_query, rows_params = cursor.calls[1]
+    assert "FROM public.entities" in rows_query
+    assert "ORDER BY id FOR UPDATE" in rows_query
+    assert rows_params == (["a"],)
+    update_query, update_params = cursor.calls[2]
+    assert "UPDATE public.entities" in update_query
+    assert "RETURNING id" in update_query
+    assert update_params == (["a"],)
+    audit_query, audit_params = cursor.calls[3]
+    assert "INSERT INTO public.entity_changes" in audit_query
+    assert audit_params == [("a", "null", "published", "actor")]
+
+
+def _apply_cli_args(
+    plan_path: Path, manifest_path: Path, report: Path, target: str
+) -> list[str]:
+    return [
+        "apply",
+        "--target",
+        "pg",
+        "--database-url-env",
+        "TASK7_DATABASE_URL",
+        "--plan",
+        str(plan_path),
+        "--backup-manifest",
+        str(manifest_path),
+        "--confirm-target",
+        target,
+        "--confirm-plan-sha256",
+        hashlib.sha256(plan_path.read_bytes()).hexdigest(),
+        "--report-out",
+        str(report),
+    ]
+
+
+def _write_apply_artifacts(tmp_path: Path):
+    plan = _valid_apply_plan()
+    plan_path = tmp_path / "plan.json"
+    plan_path.write_bytes(canonical_json_bytes(plan))
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    manifest_path = backup.artifact_root / "manifest.json"
+    manifest_path.write_bytes(canonical_json_bytes(backup.manifest))
+    return plan, plan_path, backup, manifest_path
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda args: args.__setitem__(2, "sqlite"),
+        lambda args: args.__setitem__(4, "DATABASE_URL"),
+        lambda args: args.__setitem__(10, "bad-target"),
+        lambda args: args.__setitem__(12, "bad-plan-sha"),
+    ],
+)
+def test_apply_cli_refuses_unsafe_args_before_artifact_access_import_or_connect(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mutate
+) -> None:
+    plan = tmp_path / "missing-plan.json"
+    manifest = tmp_path / "missing-manifest.json"
+    report = tmp_path / "report.json"
+    args = [
+        "apply", "--target", "pg", "--database-url-env", "TASK7_DATABASE_URL",
+        "--plan", str(plan), "--backup-manifest", str(manifest),
+        "--confirm-target", "0" * 64, "--confirm-plan-sha256", "0" * 64,
+        "--report-out", str(report),
+    ]
+    mutate(args)
+    monkeypatch.setattr(
+        migration,
+        "load_immutable_json",
+        lambda *_args: pytest.fail("artifact accessed before apply CLI preflight"),
+    )
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: pytest.fail("psycopg2 imported before apply CLI preflight"),
+    )
+    monkeypatch.setattr(
+        migration,
+        "resolve_database_url",
+        lambda *_args: pytest.fail("database URL resolved before apply CLI preflight"),
+    )
+
+    assert migration.main(args) == 1
+    assert not report.exists()
+
+
+def test_apply_cli_refuses_existing_report_before_artifact_access(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = tmp_path / "missing-plan.json"
+    manifest = tmp_path / "missing-manifest.json"
+    report = tmp_path / "existing.json"
+    report.write_text("preserve", encoding="utf-8")
+    args = [
+        "apply", "--target", "pg", "--database-url-env", "TASK7_DATABASE_URL",
+        "--plan", str(plan), "--backup-manifest", str(manifest),
+        "--confirm-target", "0" * 64, "--confirm-plan-sha256", "0" * 64,
+        "--report-out", str(report),
+    ]
+    monkeypatch.setattr(
+        migration,
+        "load_immutable_json",
+        lambda *_args: pytest.fail("existing report did not short-circuit artifacts"),
+    )
+
+    assert migration.main(args) == 1
+    assert report.read_text(encoding="utf-8") == "preserve"
+
+
+def test_apply_cli_refuses_noncanonical_plan_bytes_before_resolve_or_import(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan, plan_path, _backup, manifest_path = _write_apply_artifacts(tmp_path)
+    plan_path.write_bytes(json.dumps(plan, indent=2).encode("utf-8"))
+    report = tmp_path / "report.json"
+    monkeypatch.setattr(
+        migration,
+        "resolve_database_url",
+        lambda *_args: pytest.fail("database resolved for noncanonical plan"),
+    )
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: pytest.fail("psycopg2 imported for noncanonical plan"),
+    )
+
+    assert migration.main(
+        _apply_cli_args(plan_path, manifest_path, report, plan["target_fingerprint"])
+    ) == 1
+    assert not report.exists()
+
+
+def test_apply_cli_requires_exact_raw_plan_confirmation_before_resolve(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan, plan_path, _backup, manifest_path = _write_apply_artifacts(tmp_path)
+    report = tmp_path / "report.json"
+    args = _apply_cli_args(
+        plan_path, manifest_path, report, plan["target_fingerprint"]
+    )
+    args[12] = "0" * 64
+    monkeypatch.setattr(
+        migration,
+        "resolve_database_url",
+        lambda *_args: pytest.fail("database resolved for wrong plan confirmation"),
+    )
+
+    assert migration.main(args) == 1
+    assert not report.exists()
+
+
+class ApplyCliCursor:
+    def __init__(self, events: list[object]) -> None:
+        self.events = events
+
+    def execute(self, query: str, params=None) -> None:
+        self.events.append(("execute", " ".join(query.split()), params))
+
+    def close(self) -> None:
+        self.events.append("cursor-close")
+
+
+class ApplyCliConnection:
+    def __init__(self, events: list[object], *, fail_commit: bool = False) -> None:
+        self.events = events
+        self.fail_commit = fail_commit
+        self.cursor_value = ApplyCliCursor(events)
+
+    def set_session(self, **kwargs) -> None:
+        self.events.append(("session", kwargs))
+
+    def cursor(self):
+        self.events.append("cursor")
+        return self.cursor_value
+
+    def commit(self) -> None:
+        self.events.append("commit")
+        if self.fail_commit:
+            raise RuntimeError("commit failed")
+
+    def rollback(self) -> None:
+        self.events.append("rollback")
+
+    def close(self) -> None:
+        self.events.append("connection-close")
+
+
+def test_apply_cli_validates_offline_then_commits_before_immutable_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan, plan_path, backup, manifest_path = _write_apply_artifacts(tmp_path)
+    report = tmp_path / "apply.json"
+    events: list[object] = []
+    connection = ApplyCliConnection(events)
+    monkeypatch.setattr(migration, "_utc_now", lambda: APPLY_NOW)
+    expected_report = {
+        "schema": migration.APPLY_SCHEMA,
+        "result": "applied",
+        "candidate_count": plan["candidate_count"],
+    }
+
+    monkeypatch.setattr(
+        migration,
+        "validate_restore_artifact",
+        lambda _path: events.append("restore")
+        or backup.manifest["validation"]["listing_sha256"],
+    )
+    monkeypatch.setattr(
+        migration,
+        "resolve_database_url",
+        lambda name: events.append(("resolve", name)) or "postgresql://secret@db/vl360",
+    )
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: SimpleNamespace(
+            connect=lambda dsn: events.append(("connect", dsn)) or connection
+        ),
+    )
+    monkeypatch.setattr(
+        migration,
+        "_apply_locked",
+        lambda *_args, **_kwargs: events.append("locked-apply") or expected_report,
+    )
+
+    assert migration.main(
+        _apply_cli_args(plan_path, manifest_path, report, plan["target_fingerprint"])
+    ) == 0
+    assert json.loads(report.read_text(encoding="utf-8")) == expected_report
+    assert events.index("restore") < events.index(("resolve", "TASK7_DATABASE_URL"))
+    assert events.index("commit") < events.index("cursor-close")
+    assert events[events.index("cursor") + 1] == (
+        "execute",
+        "SET LOCAL search_path = public",
+        None,
+    )
+    assert ("session", {
+        "isolation_level": "SERIALIZABLE",
+        "readonly": False,
+        "autocommit": False,
+    }) in events
+
+
+def test_apply_cli_commit_failure_rolls_back_and_writes_no_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan, plan_path, backup, manifest_path = _write_apply_artifacts(tmp_path)
+    report = tmp_path / "apply.json"
+    events: list[object] = []
+    connection = ApplyCliConnection(events, fail_commit=True)
+    monkeypatch.setattr(migration, "_utc_now", lambda: APPLY_NOW)
+    monkeypatch.setattr(
+        migration,
+        "validate_restore_artifact",
+        lambda _path: backup.manifest["validation"]["listing_sha256"],
+    )
+    monkeypatch.setattr(migration, "resolve_database_url", lambda _name: "postgresql://x/db")
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: SimpleNamespace(connect=lambda _dsn: connection),
+    )
+    monkeypatch.setattr(
+        migration,
+        "_apply_locked",
+        lambda *_args, **_kwargs: {"schema": migration.APPLY_SCHEMA},
+    )
+
+    assert migration.main(
+        _apply_cli_args(plan_path, manifest_path, report, plan["target_fingerprint"])
+    ) == 1
+    assert "commit" in events
+    assert "rollback" in events
+    assert not report.exists()
+
+
+def test_apply_cli_report_write_failure_after_commit_never_claims_success(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    plan, plan_path, backup, manifest_path = _write_apply_artifacts(tmp_path)
+    report = tmp_path / "apply.json"
+    events: list[object] = []
+    connection = ApplyCliConnection(events)
+    monkeypatch.setattr(migration, "_utc_now", lambda: APPLY_NOW)
+    monkeypatch.setattr(
+        migration,
+        "validate_restore_artifact",
+        lambda _path: backup.manifest["validation"]["listing_sha256"],
+    )
+    monkeypatch.setattr(migration, "resolve_database_url", lambda _name: "postgresql://x/db")
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: SimpleNamespace(connect=lambda _dsn: connection),
+    )
+    monkeypatch.setattr(
+        migration,
+        "_apply_locked",
+        lambda *_args, **_kwargs: {"schema": migration.APPLY_SCHEMA},
+    )
+    monkeypatch.setattr(
+        migration,
+        "write_immutable_json",
+        lambda *_args: (_ for _ in ()).throw(OSError("write failed")),
+    )
+
+    assert migration.main(
+        _apply_cli_args(plan_path, manifest_path, report, plan["target_fingerprint"])
+    ) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "commit" in events
+    assert not report.exists()

@@ -5,10 +5,13 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import stat
 import subprocess
 import sys
 from collections import Counter
 from datetime import UTC, datetime
+from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -27,6 +30,7 @@ if __package__:
         canonical_json_bytes,
         read_target_identity,
         resolve_database_url,
+        sha256_file,
         sha256_bytes,
         target_fingerprint,
         write_exclusive,
@@ -36,6 +40,7 @@ else:
         canonical_json_bytes,
         read_target_identity,
         resolve_database_url,
+        sha256_file,
         sha256_bytes,
         target_fingerprint,
         write_exclusive,
@@ -46,6 +51,7 @@ PLAN_SCHEMA = "vinhlong360-entity-status-plan-v1"
 APPLY_SCHEMA = "vinhlong360-entity-status-apply-v1"
 ROLLBACK_SCHEMA = "vinhlong360-entity-status-rollback-v1"
 MAX_PLAN_AGE_SECONDS = 86400
+MAX_BACKUP_AGE_SECONDS = 3600
 LOCK_NAME = "vinhlong360:entity-status:published-v1"
 REQUIRED_ENTITY_COLUMNS = {
     "id",
@@ -59,6 +65,21 @@ REQUIRED_ENTITY_COLUMNS = {
 
 class MigrationRefusal(RuntimeError):
     """Refuse unsafe or non-canonical migration planning input."""
+
+
+@dataclass(frozen=True)
+class BackupEvidence:
+    manifest: dict[str, object]
+    manifest_sha256: str
+    artifact_root: Path
+
+
+def audit_actor(prefix: str, plan_sha256: str) -> str:
+    if prefix not in {"apply", "rollback"} or not re.fullmatch(
+        r"[0-9a-f]{64}", plan_sha256
+    ):
+        raise MigrationRefusal("audit actor inputs are invalid")
+    return f"entity-status:{prefix}:{PUBLICATION_POLICY_REVISION}:{plan_sha256}"
 
 
 def parse_utc(value: str) -> datetime:
@@ -75,6 +96,10 @@ def utc_text(value: datetime) -> str:
     if value.tzinfo is None or value.utcoffset() is None:
         raise MigrationRefusal("datetime requires a timezone")
     return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
+
+
+def _utc_now() -> datetime:
+    return datetime.now(UTC)
 
 
 def candidate_id_hash(ids) -> str:
@@ -115,6 +140,174 @@ def load_immutable_json(path: Path) -> tuple[dict[str, object], str]:
     return value, digest
 
 
+_PLAN_KEYS = {
+    "schema",
+    "policy_revision",
+    "created_at",
+    "max_age_seconds",
+    "tool_source_revision",
+    "target_fingerprint",
+    "database_identity",
+    "schema_fingerprint",
+    "schema_columns",
+    "candidate_ids",
+    "candidate_count",
+    "candidate_sha256",
+    "reviewed_exclusions",
+    "exclusion_counts",
+    "status_groups",
+    "expected_before",
+    "expected_after",
+}
+_BACKUP_KEYS = {
+    "schema",
+    "target",
+    "target_fingerprint",
+    "database_identity",
+    "started_at",
+    "completed_at",
+    "max_age_seconds",
+    "tools",
+    "artifact",
+    "validation",
+    "policy_revision",
+}
+
+
+def _require_exact_keys(value: object, expected: set[str], label: str) -> dict[str, object]:
+    if type(value) is not dict or set(value) != expected:
+        raise MigrationRefusal(f"{label} fields are malformed")
+    return value
+
+
+def _require_sha(value: object, label: str) -> str:
+    if type(value) is not str or not re.fullmatch(r"[0-9a-f]{64}", value):
+        raise MigrationRefusal(f"{label} is invalid")
+    return value
+
+
+def _require_nonnegative_counts(value: object, label: str) -> dict[str, int]:
+    counts = _require_exact_keys(value, {"published", "null"}, label)
+    if any(type(item) is not int or item < 0 for item in counts.values()):
+        raise MigrationRefusal(f"{label} are invalid")
+    return {key: int(item) for key, item in counts.items()}
+
+
+def _require_counter(value: object, label: str) -> dict[str, int]:
+    if type(value) is not dict or any(
+        type(key) is not str or type(item) is not int or item < 0
+        for key, item in value.items()
+    ):
+        raise MigrationRefusal(f"{label} are invalid")
+    return dict(value)
+
+
+def _require_aware_datetime(value: object, label: str) -> datetime:
+    if not isinstance(value, datetime) or value.tzinfo is None or value.utcoffset() is None:
+        raise MigrationRefusal(f"{label} requires a timezone")
+    return value.astimezone(UTC)
+
+
+def _validate_plan_header(
+    plan: dict[str, object], plan_sha256: str, confirm_target: str, now: datetime
+) -> str:
+    if plan.get("schema") != PLAN_SCHEMA:
+        raise MigrationRefusal("plan schema mismatch")
+    if plan.get("policy_revision") != PUBLICATION_POLICY_REVISION:
+        raise MigrationRefusal("plan policy mismatch")
+    if _require_sha(plan_sha256, "plan SHA-256 confirmation") != sha256_bytes(
+        canonical_json_bytes(plan)
+    ):
+        raise MigrationRefusal("plan SHA-256 confirmation mismatch")
+    target = plan.get("target_fingerprint")
+    if _require_sha(target, "plan target fingerprint") != confirm_target:
+        raise MigrationRefusal("target confirmation mismatch")
+    created_at = parse_utc(plan.get("created_at"))
+    now = _require_aware_datetime(now, "apply time")
+    max_age = plan.get("max_age_seconds")
+    if type(max_age) is not int or max_age != MAX_PLAN_AGE_SECONDS:
+        raise MigrationRefusal("plan max age is invalid")
+    age = (now - created_at).total_seconds()
+    if age < 0 or age > MAX_PLAN_AGE_SECONDS:
+        raise MigrationRefusal("plan is stale")
+    return target
+
+
+def _validate_plan_identity_schema(plan: dict[str, object], target: str) -> None:
+    identity = plan.get("database_identity")
+    try:
+        identity_fingerprint = target_fingerprint(identity)
+    except (KeyError, TypeError):
+        raise MigrationRefusal("plan database identity is invalid") from None
+    if identity_fingerprint != target:
+        raise MigrationRefusal("plan target identity mismatch")
+
+    columns = plan.get("schema_columns")
+    if type(columns) is not list or any(
+        type(column) is not dict
+        or set(column) != {"name", "type", "nullable"}
+        or any(type(column[key]) is not str for key in ("name", "type", "nullable"))
+        for column in columns
+    ):
+        raise MigrationRefusal("plan schema columns are invalid")
+    column_tuples = [
+        (column["name"], column["type"], column["nullable"]) for column in columns
+    ]
+    if len({column[0] for column in column_tuples}) != len(column_tuples):
+        raise MigrationRefusal("plan schema columns contain duplicates")
+    if columns != _normalized_schema_columns(column_tuples):
+        raise MigrationRefusal("plan schema columns are not canonical")
+    if schema_fingerprint(column_tuples) != _require_sha(
+        plan.get("schema_fingerprint"), "plan schema fingerprint"
+    ):
+        raise MigrationRefusal("plan schema fingerprint mismatch")
+
+
+def _validate_plan_candidates(plan: dict[str, object]) -> tuple[list[str], int]:
+    candidate_ids = plan.get("candidate_ids")
+    if type(candidate_ids) is not list or not candidate_ids or any(
+        type(item) is not str or not item for item in candidate_ids
+    ):
+        raise MigrationRefusal("plan candidate IDs are invalid")
+    if candidate_ids != sorted(set(candidate_ids)):
+        raise MigrationRefusal("plan candidate IDs are not canonical")
+    count = plan.get("candidate_count")
+    if type(count) is not int or count != len(candidate_ids):
+        raise MigrationRefusal("plan candidate count mismatch")
+    if candidate_id_hash(candidate_ids) != plan.get("candidate_sha256"):
+        raise MigrationRefusal("plan candidate hash mismatch")
+    return list(candidate_ids), count
+
+
+def _validate_plan_accounting(plan: dict[str, object], count: int) -> None:
+    before = _require_nonnegative_counts(plan.get("expected_before"), "plan expected counts")
+    after = _require_nonnegative_counts(plan.get("expected_after"), "plan expected counts")
+    if after != {
+        "published": before["published"] + count,
+        "null": before["null"] - count,
+    } or before["null"] < count:
+        raise MigrationRefusal("plan expected count algebra mismatch")
+    if plan.get("reviewed_exclusions") != sorted(PUBLISHED_V1_EXCLUSIONS):
+        raise MigrationRefusal("plan policy exclusions mismatch")
+    _require_counter(plan.get("exclusion_counts"), "plan exclusion counts")
+    _require_counter(plan.get("status_groups"), "plan status groups")
+    if type(plan.get("tool_source_revision")) is not str or not plan["tool_source_revision"]:
+        raise MigrationRefusal("plan source revision is invalid")
+
+
+def _validate_plan_for_apply(
+    plan: dict[str, object], plan_sha256: str, confirm_target: str, now: datetime
+) -> tuple[str, list[str]]:
+    if type(plan) is not dict:
+        raise MigrationRefusal("plan must be an object")
+    _require_exact_keys(plan, _PLAN_KEYS, "plan")
+    target = _validate_plan_header(plan, plan_sha256, confirm_target, now)
+    _validate_plan_identity_schema(plan, target)
+    candidate_ids, count = _validate_plan_candidates(plan)
+    _validate_plan_accounting(plan, count)
+    return target, candidate_ids
+
+
 def _validate_schema(columns) -> list[dict[str, object]]:
     normalized = _normalized_schema_columns(columns)
     names = {column["name"] for column in normalized}
@@ -140,6 +333,487 @@ def _validate_rows(rows) -> list[dict[str, object]]:
         seen.add(entity_id)
         validated.append(row)
     return validated
+
+
+def _is_linklike(metadata: os.stat_result) -> bool:
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    return (
+        stat.S_ISLNK(metadata.st_mode)
+        or bool(getattr(metadata, "st_reparse_tag", 0))
+        or bool(getattr(metadata, "st_file_attributes", 0) & reparse_flag)
+    )
+
+
+def _artifact_state(path: Path) -> tuple[int, int, int, str]:
+    try:
+        metadata = path.lstat()
+    except OSError:
+        raise MigrationRefusal("backup artifact is unavailable") from None
+    if _is_linklike(metadata) or not stat.S_ISREG(metadata.st_mode):
+        raise MigrationRefusal("backup artifact path is invalid")
+    return metadata.st_dev, metadata.st_ino, metadata.st_size, sha256_file(path)
+
+
+def _validate_backup_header(manifest, expected_target: str) -> None:
+    if manifest["schema"] != "vinhlong360-pg-backup-v1":
+        raise MigrationRefusal("backup schema mismatch")
+    if manifest["target"] != "pg":
+        raise MigrationRefusal("backup target must be pg")
+    if manifest["policy_revision"] != PUBLICATION_POLICY_REVISION:
+        raise MigrationRefusal("backup policy mismatch")
+    if manifest["target_fingerprint"] != expected_target:
+        raise MigrationRefusal("backup target mismatch")
+    try:
+        if target_fingerprint(manifest["database_identity"]) != expected_target:
+            raise MigrationRefusal("backup database identity mismatch")
+    except (KeyError, TypeError):
+        raise MigrationRefusal("backup database identity mismatch") from None
+
+
+def _validate_backup_freshness(
+    manifest: dict[str, object], now: datetime, require_fresh: bool
+) -> None:
+    started = parse_utc(manifest["started_at"])
+    completed = parse_utc(manifest["completed_at"])
+    if started > completed:
+        raise MigrationRefusal("backup timestamps are invalid")
+    max_age = manifest["max_age_seconds"]
+    if type(max_age) is not int or max_age != MAX_BACKUP_AGE_SECONDS:
+        raise MigrationRefusal("backup max age is invalid")
+    age = (now - completed).total_seconds()
+    if require_fresh and (age < 0 or age > MAX_BACKUP_AGE_SECONDS):
+        raise MigrationRefusal("backup evidence is stale")
+
+
+def _validate_backup_tools_and_evidence(manifest: dict[str, object]) -> None:
+    tools = _require_exact_keys(manifest["tools"], {"pg_dump", "pg_restore"}, "backup tools")
+    if any(type(value) is not str or not value.strip() for value in tools.values()):
+        raise MigrationRefusal("backup tools are invalid")
+    validation = _require_exact_keys(
+        manifest["validation"],
+        {"pg_restore_list", "required_tables", "listing_sha256"},
+        "backup validation",
+    )
+    if validation["pg_restore_list"] is not True:
+        raise MigrationRefusal("backup restore-list validation is missing")
+    if validation["required_tables"] != ["entities", "entity_changes"]:
+        raise MigrationRefusal("backup required-table evidence mismatch")
+    _require_sha(validation["listing_sha256"], "backup listing hash")
+
+
+def _validate_backup_artifact(backup: BackupEvidence, manifest) -> Path:
+    artifact_info = _require_exact_keys(
+        manifest["artifact"], {"path", "size", "sha256"}, "backup artifact"
+    )
+    artifact_name = artifact_info["path"]
+    if (
+        type(artifact_name) is not str
+        or not artifact_name
+        or Path(artifact_name).name != artifact_name
+        or Path(artifact_name).is_absolute()
+        or "/" in artifact_name
+        or "\\" in artifact_name
+        or artifact_name in {".", ".."}
+    ):
+        raise MigrationRefusal("backup artifact path is invalid")
+    if type(artifact_info["size"]) is not int or artifact_info["size"] < 0:
+        raise MigrationRefusal("backup artifact size is invalid")
+    expected_hash = _require_sha(artifact_info["sha256"], "backup artifact hash")
+    root = backup.artifact_root
+    try:
+        root_metadata = root.lstat()
+    except OSError:
+        raise MigrationRefusal("backup artifact root is unavailable") from None
+    if _is_linklike(root_metadata) or not root.is_dir():
+        raise MigrationRefusal("backup artifact root is invalid")
+    root_resolved = root.resolve()
+    artifact = (root_resolved / artifact_name).resolve()
+    if artifact.parent != root_resolved:
+        raise MigrationRefusal("backup artifact path is invalid")
+    state = _artifact_state(artifact)
+    if state[2] != artifact_info["size"]:
+        raise MigrationRefusal("backup artifact size mismatch")
+    if state[3] != expected_hash:
+        raise MigrationRefusal("backup artifact hash mismatch")
+    return artifact
+
+
+def validate_backup_manifest(
+    backup: BackupEvidence,
+    *,
+    expected_target: str,
+    now: datetime,
+    require_fresh: bool,
+) -> Path:
+    manifest = _require_exact_keys(backup.manifest, _BACKUP_KEYS, "backup manifest")
+    now = _require_aware_datetime(now, "backup validation time")
+    if backup.manifest_sha256 != sha256_bytes(canonical_json_bytes(manifest)):
+        raise MigrationRefusal("backup manifest hash mismatch")
+    _validate_backup_header(manifest, expected_target)
+    _validate_backup_freshness(manifest, now, require_fresh)
+    _validate_backup_tools_and_evidence(manifest)
+    return _validate_backup_artifact(backup, manifest)
+
+
+def validate_restore_artifact(path: Path, runner=subprocess.run) -> str:
+    result = runner(
+        ["pg_restore", "--list", str(path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise MigrationRefusal("pg_restore --list revalidation failed")
+    found: Counter[str] = Counter()
+    for line in result.stdout.splitlines():
+        text = line.strip()
+        if not text or text.startswith(";"):
+            continue
+        forbidden = re.search(
+            r"\b(?:COMMENT|ACL|FUNCTION|TABLE\s+DATA)\s+public\s+"
+            r"(?:entities|entity_changes)(?:\s|$)",
+            text,
+        )
+        if forbidden:
+            raise MigrationRefusal("pg_restore listing contains invalid table objects")
+        suspicious = re.search(
+            r"\bTABLE\s+public\s+"
+            r"(entities\S+|entity_changes\S+)(?:\s|$)",
+            text,
+        )
+        if suspicious:
+            raise MigrationRefusal("pg_restore listing contains invalid table objects")
+        match = re.search(r"\bTABLE\s+public\s+(entities|entity_changes)(?:\s|$)", text)
+        if match:
+            found[match.group(1)] += 1
+    missing = [table for table in ("entities", "entity_changes") if found[table] != 1]
+    if missing:
+        raise MigrationRefusal(f"backup revalidation missing tables: {', '.join(missing)}")
+    return sha256_bytes(result.stdout.encode("utf-8"))
+
+
+class PostgresPublicationStore:
+    def __init__(self, cursor) -> None:
+        self.cursor = cursor
+
+    def target_identity(self):
+        return read_target_identity(self.cursor)
+
+    def schema_columns(self):
+        self.cursor.execute(
+            "SELECT column_name, data_type, is_nullable "
+            "FROM information_schema.columns "
+            "WHERE table_schema = 'public' AND table_name = 'entities' "
+            "ORDER BY column_name"
+        )
+        return list(self.cursor.fetchall())
+
+    def acquire_lock(self, name: str) -> None:
+        self.cursor.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (name,))
+
+    def rows_for_update(self, ids):
+        self.cursor.execute(
+            "SELECT * FROM public.entities WHERE id = ANY(%s) "
+            "ORDER BY id FOR UPDATE",
+            (ids,),
+        )
+        names = [item[0] for item in self.cursor.description]
+        return [dict(zip(names, row, strict=True)) for row in self.cursor.fetchall()]
+
+    def audit_rows(self, actor: str):
+        self.cursor.execute(
+            "SELECT entity_id, field, old_value, new_value, actor "
+            "FROM public.entity_changes WHERE actor = %s ORDER BY entity_id",
+            (actor,),
+        )
+        names = [item[0] for item in self.cursor.description]
+        return [dict(zip(names, row, strict=True)) for row in self.cursor.fetchall()]
+
+    def audit_ids(self, actor, old_value, new_value):
+        return {
+            row["entity_id"]
+            for row in self.audit_rows(actor)
+            if row["old_value"] == old_value and row["new_value"] == new_value
+        }
+
+    def apply_audit_rows(self, ids):
+        self.cursor.execute(
+            "SELECT entity_id, field, old_value, new_value, actor "
+            "FROM public.entity_changes WHERE entity_id = ANY(%s) "
+            "AND field = %s AND old_value = %s AND new_value = %s "
+            "AND actor LIKE %s ORDER BY entity_id, actor",
+            (
+                ids,
+                "status",
+                "null",
+                "published",
+                f"entity-status:apply:{PUBLICATION_POLICY_REVISION}:%",
+            ),
+        )
+        names = [item[0] for item in self.cursor.description]
+        return [dict(zip(names, row, strict=True)) for row in self.cursor.fetchall()]
+
+    def update_to_published(self, ids):
+        self.cursor.execute(
+            "WITH updated AS ("
+            "UPDATE public.entities SET status = 'published' "
+            "WHERE id = ANY(%s) AND status IS NULL RETURNING id"
+            ") SELECT id FROM updated ORDER BY id",
+            (ids,),
+        )
+        return [row[0] for row in self.cursor.fetchall()]
+
+    def insert_status_audit(self, ids, actor, old_value, new_value):
+        self.cursor.executemany(
+            "INSERT INTO public.entity_changes "
+            "(entity_id, field, old_value, new_value, actor) "
+            "VALUES (%s, 'status', %s, %s, %s)",
+            [(entity_id, old_value, new_value, actor) for entity_id in ids],
+        )
+
+    def status_counts(self):
+        self.cursor.execute(
+            "SELECT COUNT(*) FILTER (WHERE status = 'published'), "
+            "COUNT(*) FILTER (WHERE status IS NULL) FROM public.entities"
+        )
+        row = self.cursor.fetchone()
+        return {"published": int(row[0]), "null": int(row[1])}
+
+
+def _audit_records(store, actor: str) -> list[dict[str, object]]:
+    if hasattr(store, "audit_rows"):
+        return list(store.audit_rows(actor))
+    ids = store.audit_ids(actor, "null", "published")
+    return [
+        {
+            "entity_id": entity_id,
+            "field": "status",
+            "old_value": "null",
+            "new_value": "published",
+            "actor": actor,
+        }
+        for entity_id in ids
+    ]
+
+
+def _candidate_apply_records(store, candidate_ids, actor: str) -> list[dict[str, object]]:
+    if hasattr(store, "apply_audit_rows"):
+        return list(store.apply_audit_rows(candidate_ids))
+    if hasattr(store, "audit"):
+        prefix = f"entity-status:apply:{PUBLICATION_POLICY_REVISION}:"
+        return [
+            dict(row)
+            for row in store.audit
+            if row.get("entity_id") in candidate_ids
+            and str(row.get("actor", "")).startswith(prefix)
+        ]
+    return _audit_records(store, actor)
+
+
+def _audit_owned_exact(records, candidate_ids: list[str], actor: str) -> bool:
+    expected = [
+        {
+            "entity_id": entity_id,
+            "field": "status",
+            "old_value": "null",
+            "new_value": "published",
+            "actor": actor,
+        }
+        for entity_id in candidate_ids
+    ]
+    normalized = [
+        {
+            "entity_id": row.get("entity_id"),
+            "field": row.get("field"),
+            "old_value": row.get("old_value"),
+            "new_value": row.get("new_value"),
+            "actor": row.get("actor"),
+        }
+        for row in records
+    ]
+    return normalized == expected
+
+
+def _apply_report(
+    result: str,
+    plan: dict[str, object],
+    plan_sha256: str,
+    backup: BackupEvidence,
+    updated_ids: list[str],
+    now: datetime,
+) -> dict[str, object]:
+    candidate_ids = list(plan["candidate_ids"])
+    return {
+        "schema": APPLY_SCHEMA,
+        "policy_revision": PUBLICATION_POLICY_REVISION,
+        "result": result,
+        "target_fingerprint": plan["target_fingerprint"],
+        "schema_fingerprint": plan["schema_fingerprint"],
+        "plan_sha256": plan_sha256,
+        "backup_manifest_sha256": backup.manifest_sha256,
+        "candidate_ids": candidate_ids,
+        "candidate_count": len(candidate_ids),
+        "candidate_sha256": candidate_id_hash(candidate_ids),
+        "expected_before": dict(plan["expected_before"]),
+        "expected_after": dict(plan["expected_after"]),
+        "updated_ids": list(updated_ids),
+        "started_at": utc_text(now),
+        "completed_at": utc_text(now),
+    }
+
+
+def _locked_rows(store, plan, target: str, candidate_ids: list[str]):
+    store.acquire_lock(LOCK_NAME)
+    if target_fingerprint(store.target_identity()) != target:
+        raise MigrationRefusal("connected target drift")
+    if schema_fingerprint(store.schema_columns()) != plan["schema_fingerprint"]:
+        raise MigrationRefusal("entity schema drift")
+    rows = store.rows_for_update(candidate_ids)
+    if [row.get("id") for row in rows] != candidate_ids:
+        raise MigrationRefusal("planned IDs are missing or reordered")
+    return rows
+
+
+def _already_applied_report(
+    store,
+    plan,
+    plan_sha256: str,
+    backup: BackupEvidence,
+    candidate_ids: list[str],
+    actor: str,
+    audit_records,
+    candidate_audits,
+    now: datetime,
+):
+    if not _audit_owned_exact(audit_records, candidate_ids, actor) or not _audit_owned_exact(
+        candidate_audits, candidate_ids, actor
+    ):
+        raise MigrationRefusal("published rows lack exact audit ownership")
+    if store.status_counts() != plan["expected_after"]:
+        raise MigrationRefusal("already-applied global count drift")
+    return _apply_report("already-applied", plan, plan_sha256, backup, [], now)
+
+
+def _apply_new_candidates(
+    store,
+    plan,
+    plan_sha256: str,
+    backup: BackupEvidence,
+    candidate_ids: list[str],
+    actor: str,
+    audit_records,
+    rows,
+    now: datetime,
+):
+    if any(row.get("status") is not None for row in rows):
+        raise MigrationRefusal("candidate status drift")
+    if audit_records:
+        raise MigrationRefusal("pre-existing apply audit on null candidate")
+    if store.status_counts() != plan["expected_before"]:
+        raise MigrationRefusal("pre-apply global count drift")
+    eligible_ids = [
+        str(row["id"])
+        for row in rows
+        if decide_publication_candidate(row).eligible
+    ]
+    if eligible_ids != candidate_ids:
+        raise MigrationRefusal("candidate drift")
+    if candidate_id_hash(eligible_ids) != plan["candidate_sha256"]:
+        raise MigrationRefusal("candidate hash drift")
+    updated_ids = store.update_to_published(candidate_ids)
+    if updated_ids != candidate_ids:
+        raise MigrationRefusal("status update IDs drift")
+    store.insert_status_audit(updated_ids, actor, "null", "published")
+    if not _audit_owned_exact(
+        _audit_records(store, actor), candidate_ids, actor
+    ) or not _audit_owned_exact(
+        _candidate_apply_records(store, candidate_ids, actor), candidate_ids, actor
+    ):
+        raise MigrationRefusal("audit ownership/cardinality drift")
+    if store.status_counts() != plan["expected_after"]:
+        raise MigrationRefusal("post-apply global count drift")
+    return _apply_report("applied", plan, plan_sha256, backup, updated_ids, now)
+
+
+def _apply_locked(
+    store,
+    plan: dict[str, object],
+    *,
+    plan_sha256: str,
+    backup: BackupEvidence,
+    target: str,
+    candidate_ids: list[str],
+    now: datetime,
+) -> dict[str, object]:
+    rows = _locked_rows(store, plan, target, candidate_ids)
+    actor = audit_actor("apply", plan_sha256)
+    audit_records = _audit_records(store, actor)
+    candidate_audits = _candidate_apply_records(store, candidate_ids, actor)
+    statuses = [row.get("status") for row in rows]
+    published = all(status == "published" for status in statuses)
+    if candidate_audits and not published:
+        raise MigrationRefusal("pre-existing apply audit on null candidate")
+    if published:
+        return _already_applied_report(
+            store,
+            plan,
+            plan_sha256,
+            backup,
+            candidate_ids,
+            actor,
+            audit_records,
+            candidate_audits,
+            now,
+        )
+    return _apply_new_candidates(
+        store,
+        plan,
+        plan_sha256,
+        backup,
+        candidate_ids,
+        actor,
+        audit_records,
+        rows,
+        now,
+    )
+
+
+def _assert_artifact_unchanged(artifact: Path, state: tuple[int, int, int, str]) -> None:
+    if _artifact_state(artifact) != state:
+        raise MigrationRefusal("backup artifact changed during validation")
+
+
+def apply_plan(
+    store,
+    plan: dict[str, object],
+    *,
+    plan_sha256: str,
+    backup: BackupEvidence,
+    confirm_target: str,
+    now: datetime,
+    restore_validator,
+) -> dict[str, object]:
+    target, candidate_ids = _validate_plan_for_apply(
+        plan, plan_sha256, confirm_target, now
+    )
+    artifact = validate_backup_manifest(
+        backup, expected_target=target, now=now, require_fresh=True
+    )
+    state = _artifact_state(artifact)
+    listing_hash = restore_validator(artifact)
+    expected_listing = backup.manifest["validation"]["listing_sha256"]
+    if listing_hash is not None and listing_hash != expected_listing:
+        raise MigrationRefusal("backup listing hash mismatch")
+    _assert_artifact_unchanged(artifact, state)
+    return _apply_locked(
+        store,
+        plan,
+        plan_sha256=plan_sha256,
+        backup=backup,
+        target=target,
+        candidate_ids=candidate_ids,
+        now=now,
+    )
 
 
 def _status_group(value: object) -> str:
@@ -317,6 +991,100 @@ def _validate_plan_args(args: argparse.Namespace) -> None:
         raise MigrationRefusal("report output already exists")
 
 
+def _validate_apply_args(args: argparse.Namespace) -> None:
+    if args.target != "pg":
+        raise MigrationRefusal("apply target must be pg")
+    if not args.database_url_env or args.database_url_env == "DATABASE_URL":
+        raise MigrationRefusal(
+            "apply requires a named database URL environment other than DATABASE_URL"
+        )
+    if args.report_out.exists():
+        raise MigrationRefusal("report output already exists")
+    _require_sha(args.confirm_target, "target confirmation")
+    _require_sha(args.confirm_plan_sha256, "plan SHA-256 confirmation")
+    if not args.plan.is_file() or not args.backup_manifest.is_file():
+        raise MigrationRefusal("plan and backup manifest paths must be files")
+
+
+def _load_apply_artifacts(
+    args: argparse.Namespace, now: datetime
+) -> tuple[dict[str, object], str, BackupEvidence, Path, tuple[int, int, int, str]]:
+    plan, plan_sha256 = load_immutable_json(args.plan)
+    if plan_sha256 != args.confirm_plan_sha256:
+        raise MigrationRefusal("plan SHA-256 confirmation mismatch")
+    if plan_sha256 != sha256_bytes(canonical_json_bytes(plan)):
+        raise MigrationRefusal("plan bytes are not canonical")
+    target, _candidate_ids = _validate_plan_for_apply(
+        plan, plan_sha256, args.confirm_target, now
+    )
+    manifest, manifest_sha256 = load_immutable_json(args.backup_manifest)
+    if manifest_sha256 != sha256_bytes(canonical_json_bytes(manifest)):
+        raise MigrationRefusal("backup manifest bytes are not canonical")
+    backup = BackupEvidence(
+        manifest=manifest,
+        manifest_sha256=manifest_sha256,
+        artifact_root=args.backup_manifest.parent,
+    )
+    artifact = validate_backup_manifest(
+        backup, expected_target=target, now=now, require_fresh=True
+    )
+    state = _artifact_state(artifact)
+    listing_hash = validate_restore_artifact(artifact)
+    if listing_hash != manifest["validation"]["listing_sha256"]:
+        raise MigrationRefusal("backup listing hash mismatch")
+    _assert_artifact_unchanged(artifact, state)
+    return plan, plan_sha256, backup, artifact, state
+
+
+def _generate_apply(args: argparse.Namespace) -> dict[str, object]:
+    now = _utc_now()
+    plan, plan_sha256, backup, artifact, artifact_state = _load_apply_artifacts(args, now)
+    database_url = _resolved_database_url(args.database_url_env)
+    psycopg2_module = _load_psycopg2()
+    connection = None
+    cursor = None
+    report: dict[str, object] | None = None
+    try:
+        connection = psycopg2_module.connect(database_url)
+        connection.set_session(
+            isolation_level="SERIALIZABLE", readonly=False, autocommit=False
+        )
+        cursor = connection.cursor()
+        cursor.execute("SET LOCAL search_path = public")
+        _assert_artifact_unchanged(artifact, artifact_state)
+        target, candidate_ids = _validate_plan_for_apply(
+            plan, plan_sha256, args.confirm_target, now
+        )
+        report = _apply_locked(
+            PostgresPublicationStore(cursor),
+            plan,
+            plan_sha256=plan_sha256,
+            backup=backup,
+            target=target,
+            candidate_ids=candidate_ids,
+            now=now,
+        )
+        connection.commit()
+    except MigrationRefusal:
+        _safe_method(connection, "rollback")
+        raise
+    except Exception:
+        _safe_method(connection, "rollback")
+        raise MigrationRefusal("publication apply transaction failed") from None
+    finally:
+        _safe_method(cursor, "close")
+        _safe_method(connection, "close")
+    if report is None:
+        raise MigrationRefusal("publication apply did not produce a report")
+    digest = write_immutable_json(args.report_out, report)
+    return {
+        "report_path": str(args.report_out),
+        "sha256": digest,
+        "result": report["result"],
+        "candidate_count": report["candidate_count"],
+    }
+
+
 def _resolved_database_url(environment_name: str) -> str:
     try:
         return resolve_database_url(environment_name)
@@ -354,14 +1122,26 @@ def _build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--database-url-env", required=True)
     plan.add_argument("--policy", required=True)
     plan.add_argument("--report-out", required=True, type=Path)
+    apply = subparsers.add_parser("apply")
+    apply.add_argument("--target", required=True)
+    apply.add_argument("--database-url-env", required=True)
+    apply.add_argument("--plan", required=True, type=Path)
+    apply.add_argument("--backup-manifest", required=True, type=Path)
+    apply.add_argument("--confirm-target", required=True)
+    apply.add_argument("--confirm-plan-sha256", required=True)
+    apply.add_argument("--report-out", required=True, type=Path)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     try:
-        _validate_plan_args(args)
-        evidence = _generate_plan(args)
+        if args.command == "plan":
+            _validate_plan_args(args)
+            evidence = _generate_plan(args)
+        else:
+            _validate_apply_args(args)
+            evidence = _generate_apply(args)
     except MigrationRefusal as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
