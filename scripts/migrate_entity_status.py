@@ -662,12 +662,12 @@ class PostgresPublicationStore:
         names = [item[0] for item in self.cursor.description]
         return [dict(zip(names, row, strict=True)) for row in self.cursor.fetchall()]
 
-    def audit_rows_for_ids(self, ids):
+    def status_audit_rows(self):
         self.cursor.execute(
             "SELECT entity_id, field, old_value, new_value, actor "
-            f"FROM {self.entity_changes} WHERE entity_id = ANY(%s) "
-            "ORDER BY entity_id, actor, field, old_value, new_value",
-            (ids,),
+            f"FROM {self.entity_changes} WHERE field = %s "
+            "ORDER BY entity_id, actor, old_value, new_value",
+            ("status",),
         )
         names = [item[0] for item in self.cursor.description]
         return [dict(zip(names, row, strict=True)) for row in self.cursor.fetchall()]
@@ -737,48 +737,14 @@ def _candidate_apply_records(store, candidate_ids, actor: str) -> list[dict[str,
     return _audit_records(store, actor)
 
 
-def _audit_rows_for_ids(store, candidate_ids: list[str]) -> list[dict[str, object]]:
-    if hasattr(store, "audit_rows_for_ids"):
-        return list(store.audit_rows_for_ids(candidate_ids))
+def _all_status_audit_records(store) -> list[dict[str, object]]:
+    if hasattr(store, "status_audit_rows"):
+        return list(store.status_audit_rows())
     if hasattr(store, "audit"):
         return [
             dict(row)
             for row in store.audit
-            if row.get("entity_id") in candidate_ids
-        ]
-    return []
-
-
-def _audit_prefix_records(
-    store, candidate_ids: list[str], prefix: str, actor: str | None = None
-) -> list[dict[str, object]]:
-    records = _audit_rows_for_ids(store, candidate_ids)
-    if records:
-        return [
-            row
-            for row in records
-            if type(row.get("actor")) is str
-            and row["actor"].startswith(prefix)
-        ]
-    if prefix == f"entity-status:apply:{PUBLICATION_POLICY_REVISION}:":
-        if hasattr(store, "apply_audit_rows"):
-            return list(store.apply_audit_rows(candidate_ids))
-    if actor and hasattr(store, "audit_ids"):
-        old_value, new_value = (
-            ("null", "published")
-            if prefix.startswith("entity-status:apply:")
-            else ("published", "null")
-        )
-        owned_ids = store.audit_ids(actor, old_value, new_value)
-        return [
-            {
-                "entity_id": entity_id,
-                "field": "status",
-                "old_value": old_value,
-                "new_value": new_value,
-                "actor": actor,
-            }
-            for entity_id in owned_ids
+            if row.get("field") == "status"
         ]
     return []
 
@@ -824,6 +790,45 @@ def _audit_owned_exact(records, candidate_ids: list[str], actor: str) -> bool:
     return _audit_owned_transition(
         records, candidate_ids, actor, "null", "published"
     )
+
+
+def _validate_rollback_audit_ownership(
+    store,
+    candidate_ids: list[str],
+    apply_actor: str,
+    rollback_actor: str,
+    *,
+    already_rolled_back: bool,
+) -> None:
+    records = _all_status_audit_records(store)
+    candidate_set = set(candidate_ids)
+    candidate_records = [
+        row for row in records if row.get("entity_id") in candidate_set
+    ]
+    apply_records = [row for row in records if row.get("actor") == apply_actor]
+    if not _audit_owned_transition(
+        apply_records, candidate_ids, apply_actor, "null", "published"
+    ):
+        raise MigrationRefusal("apply audit ownership mismatch")
+    rollback_records = [
+        row for row in records if row.get("actor") == rollback_actor
+    ]
+    if already_rolled_back:
+        if not _audit_owned_transition(
+            rollback_records,
+            candidate_ids,
+            rollback_actor,
+            "published",
+            "null",
+        ):
+            raise MigrationRefusal("NULL rows lack rollback audit ownership")
+    elif rollback_records:
+        raise MigrationRefusal("rollback audit ownership mismatch")
+    allowed_actors = {apply_actor}
+    if already_rolled_back:
+        allowed_actors.add(rollback_actor)
+    if any(row.get("actor") not in allowed_actors for row in candidate_records):
+        raise MigrationRefusal("audit ownership/cardinality drift")
 
 
 def _apply_report(
@@ -1268,27 +1273,15 @@ def _rollback_rows(
     return sorted(rows, key=lambda row: positions[row["id"]])
 
 
-def _rollback_audit_records(store, candidate_ids: list[str], prefix: str):
-    return _audit_prefix_records(store, candidate_ids, prefix)
-
-
 def _already_rolled_back(
     store,
     apply_report: dict[str, object],
     apply_report_sha256: str,
     backup: BackupEvidence,
-    candidate_ids: list[str],
-    rollback_actor: str,
     before: dict[str, int],
     started_at: datetime,
     completed_at: datetime,
 ) -> dict[str, object]:
-    prefix = f"entity-status:rollback:{PUBLICATION_POLICY_REVISION}:"
-    records = _audit_prefix_records(store, candidate_ids, prefix, rollback_actor)
-    if not _audit_owned_transition(
-        records, candidate_ids, rollback_actor, "published", "null"
-    ):
-        raise MigrationRefusal("NULL rows lack rollback audit ownership")
     if store.status_counts() != before:
         raise MigrationRefusal("already-rolled-back global count drift")
     return _rollback_report(
@@ -1308,29 +1301,26 @@ def _rollback_published(
     apply_report_sha256: str,
     backup: BackupEvidence,
     candidate_ids: list[str],
+    apply_actor: str,
     rollback_actor: str,
     before: dict[str, int],
     after: dict[str, int],
     started_at: datetime,
     completed_at: datetime,
 ) -> dict[str, object]:
-    rollback_prefix = f"entity-status:rollback:{PUBLICATION_POLICY_REVISION}:"
-    if _rollback_audit_records(store, candidate_ids, rollback_prefix):
-        raise MigrationRefusal("pre-existing rollback audit on published candidate")
     if store.status_counts() != after:
         raise MigrationRefusal("pre-rollback global count drift")
     restored_ids = store.rollback_to_null(candidate_ids)
     if restored_ids != candidate_ids:
         raise MigrationRefusal("rollback update count drift")
     store.insert_status_audit(restored_ids, rollback_actor, "published", "null")
-    if not _audit_owned_transition(
-        _audit_prefix_records(store, candidate_ids, rollback_prefix, rollback_actor),
+    _validate_rollback_audit_ownership(
+        store,
         candidate_ids,
+        apply_actor,
         rollback_actor,
-        "published",
-        "null",
-    ):
-        raise MigrationRefusal("rollback audit ownership/cardinality drift")
+        already_rolled_back=True,
+    )
     if store.status_counts() != before:
         raise MigrationRefusal("post-rollback global count drift")
     return _rollback_report(
@@ -1362,7 +1352,7 @@ def _rollback_locked(
     completed_at = _require_aware_datetime(
         clock() if clock else _utc_now(), "locked rollback time"
     )
-    report_completed_at = completed_at if clock else now
+    report_completed_at = completed_at
     rows = _rollback_rows(
         store,
         candidate_ids,
@@ -1370,37 +1360,41 @@ def _rollback_locked(
         str(apply_report["schema_fingerprint"]),
     )
     apply_actor = audit_actor("apply", plan_sha256)
-    apply_prefix = f"entity-status:apply:{PUBLICATION_POLICY_REVISION}:"
-    if not _audit_owned_transition(
-        _audit_prefix_records(store, candidate_ids, apply_prefix, apply_actor),
-        candidate_ids,
-        apply_actor,
-        "null",
-        "published",
-    ):
-        raise MigrationRefusal("apply audit ownership mismatch")
     rollback_actor = audit_actor("rollback", plan_sha256)
     statuses = [row.get("status") for row in rows]
     if all(status is None for status in statuses):
+        _validate_rollback_audit_ownership(
+            store,
+            candidate_ids,
+            apply_actor,
+            rollback_actor,
+            already_rolled_back=True,
+        )
         return _already_rolled_back(
             store,
             apply_report,
             apply_report_sha256,
             backup,
-            candidate_ids,
-            rollback_actor,
             before,
             now,
             report_completed_at,
         )
     if any(status != "published" for status in statuses):
         raise MigrationRefusal("rollback drift")
+    _validate_rollback_audit_ownership(
+        store,
+        candidate_ids,
+        apply_actor,
+        rollback_actor,
+        already_rolled_back=False,
+    )
     return _rollback_published(
         store,
         apply_report,
         apply_report_sha256,
         backup,
         candidate_ids,
+        apply_actor,
         rollback_actor,
         before,
         after,

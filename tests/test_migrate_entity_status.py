@@ -1550,6 +1550,100 @@ def test_rollback_requires_matching_apply_audit(tmp_path: Path) -> None:
         )
 
 
+def test_rollback_refuses_manual_status_history_for_candidate_before_mutation(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    apply_report = _apply(store, plan, backup)
+    store.audit.extend(
+        [
+            {
+                "entity_id": "a",
+                "field": "status",
+                "old_value": "published",
+                "new_value": "verified",
+                "actor": "manual-operator",
+            },
+            {
+                "entity_id": "a",
+                "field": "status",
+                "old_value": "verified",
+                "new_value": "published",
+                "actor": "manual-operator",
+            },
+        ]
+    )
+
+    with pytest.raises(migration.MigrationRefusal, match="audit ownership"):
+        migration.rollback_apply(
+            store,
+            apply_report,
+            apply_report_sha256=_artifact_sha(apply_report),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW + timedelta(days=1),
+        )
+
+    assert store.rows["a"]["status"] == "published"
+    assert "rollback-update" not in store.events
+
+
+def test_rollback_refuses_same_plan_apply_audit_outside_candidates(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    apply_report = _apply(store, plan, backup)
+    actor = migration.audit_actor("apply", apply_report["plan_sha256"])
+    store.audit.append(
+        {
+            "entity_id": "outside-candidate",
+            "field": "status",
+            "old_value": "null",
+            "new_value": "published",
+            "actor": actor,
+        }
+    )
+
+    with pytest.raises(migration.MigrationRefusal, match="audit ownership"):
+        migration.rollback_apply(
+            store,
+            apply_report,
+            apply_report_sha256=_artifact_sha(apply_report),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW + timedelta(days=1),
+        )
+
+    assert store.rows["a"]["status"] == "published"
+    assert "rollback-update" not in store.events
+
+
+def test_rollback_default_clock_reports_fresh_post_lock_completion(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    apply_report = _apply(store, plan, backup)
+    fresh = APPLY_NOW + timedelta(days=1, seconds=9)
+    monkeypatch.setattr(migration, "_utc_now", lambda: fresh)
+
+    report = migration.rollback_apply(
+        store,
+        apply_report,
+        apply_report_sha256=_artifact_sha(apply_report),
+        backup=backup,
+        confirm_target=plan["target_fingerprint"],
+        now=APPLY_NOW + timedelta(days=1),
+    )
+
+    assert report["completed_at"] == migration.utc_text(fresh)
+
+
 def test_rollback_accepts_only_recovery_ready_already_applied_report(tmp_path: Path) -> None:
     plan = _valid_apply_plan(rows=[_row("a")])
     backup = _valid_backup(tmp_path, plan["target_fingerprint"])
@@ -1618,6 +1712,45 @@ def test_rollback_is_idempotent_only_with_owned_rollback_audits(tmp_path: Path) 
     assert store.events[event_count:].count("audit-write") == 0
 
 
+def test_already_rolled_back_refuses_extra_manual_status_history(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan(rows=[_row("a")])
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a")])
+    apply_report = _apply(store, plan, backup)
+    digest = _artifact_sha(apply_report)
+    migration.rollback_apply(
+        store,
+        apply_report,
+        apply_report_sha256=digest,
+        backup=backup,
+        confirm_target=plan["target_fingerprint"],
+        now=APPLY_NOW + timedelta(days=1),
+    )
+    store.audit.append(
+        {
+            "entity_id": "a",
+            "field": "status",
+            "old_value": "null",
+            "new_value": "published",
+            "actor": "manual-operator",
+        }
+    )
+
+    with pytest.raises(migration.MigrationRefusal, match="audit ownership"):
+        migration.rollback_apply(
+            store,
+            apply_report,
+            apply_report_sha256=digest,
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW + timedelta(days=2),
+        )
+
+    assert store.rows["a"]["status"] is None
+
+
 def test_rollback_refuses_null_rows_without_owned_rollback_audit(tmp_path: Path) -> None:
     plan = _valid_apply_plan(rows=[_row("a")])
     backup = _valid_backup(tmp_path, plan["target_fingerprint"])
@@ -1668,6 +1801,10 @@ def test_postgres_store_uses_qualified_parameterized_sql() -> None:
     cursor.rows = [("a",)]
     assert store.update_to_published(["a"]) == ["a"]
     store.insert_status_audit(["a"], "actor", "null", "published")
+    cursor.rows = []
+    assert store.status_audit_rows() == []
+    cursor.rows = [("a",)]
+    assert store.rollback_to_null(["a"]) == ["a"]
 
     assert cursor.calls[0] == (
         "SELECT pg_advisory_xact_lock(hashtext(%s))",
@@ -1684,6 +1821,16 @@ def test_postgres_store_uses_qualified_parameterized_sql() -> None:
     audit_query, audit_params = cursor.calls[3]
     assert "INSERT INTO public.entity_changes" in audit_query
     assert audit_params == [("a", "null", "published", "actor")]
+    status_audit_query, status_audit_params = cursor.calls[4]
+    assert "FROM public.entity_changes WHERE field = %s" in status_audit_query
+    assert status_audit_query.endswith(
+        "ORDER BY entity_id, actor, old_value, new_value"
+    )
+    assert status_audit_params == ("status",)
+    rollback_query, rollback_params = cursor.calls[5]
+    assert "UPDATE public.entities SET status = NULL" in rollback_query
+    assert "status = 'published' RETURNING id" in rollback_query
+    assert rollback_params == (["a"],)
 
 
 def test_postgres_store_and_snapshot_readers_accept_only_safe_qualified_schema() -> None:
