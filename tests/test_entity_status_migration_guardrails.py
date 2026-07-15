@@ -206,6 +206,42 @@ export default defineNuxtConfig({
         _assert_nitro_catch_all_noindex_header(config)
 
 
+def test_nitro_guard_rejects_unknown_spread_after_noindex_header():
+    config = """
+export default defineNuxtConfig({
+  nitro: {
+    routeRules: {
+      '/**': {
+        headers: {
+          ...(siteNoindex ? { 'X-Robots-Tag': 'noindex, follow' } : {}),
+          ...runtimeHeaders,
+          'X-Content-Type-Options': 'nosniff',
+        },
+      },
+    },
+  },
+})
+"""
+
+    with pytest.raises(AssertionError):
+        _assert_nitro_catch_all_noindex_header(config)
+
+
+def test_middleware_guard_rejects_header_call_inside_unused_arrow():
+    middleware = """
+export default defineEventHandler((event) => {
+  if (useRuntimeConfig(event).public.siteNoindex) {
+    const setNoindex = () => {
+      setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow')
+    }
+  }
+})
+"""
+
+    with pytest.raises(AssertionError):
+        _assert_typescript_noindex_guard(middleware, "middleware")
+
+
 def test_global_noindex_default_and_authoritative_header_are_executable_code():
     config = (WEB_NUXT / "nuxt.config.ts").read_text(encoding="utf-8")
     middleware = (

@@ -263,6 +263,16 @@ function validateNitroHeaders() {
     matchingSpreads.length === 1,
     "nitro.routeRules['/**'].headers must contain the exact conditional noindex spread",
   )
+  if (matchingSpreads.length === 1) {
+    const noindexSpreadIndex = headers.properties.indexOf(matchingSpreads[0])
+    const laterSpreads = headers.properties
+      .slice(noindexSpreadIndex + 1)
+      .filter((property) => ts.isSpreadAssignment(property))
+    expect(
+      laterSpreads.length === 0,
+      "nitro.routeRules['/**'].headers must not spread unknown headers after noindex",
+    )
+  }
 }
 
 function exactRuntimeNoindexCondition(condition, eventName) {
@@ -289,14 +299,12 @@ function exactRuntimeNoindexCondition(condition, eventName) {
   )
 }
 
-function callsWithin(node) {
-  const calls = []
-  function visit(current) {
-    if (ts.isCallExpression(current)) calls.push(current)
-    ts.forEachChild(current, visit)
-  }
-  visit(node)
-  return calls
+function directExpressionStatementCalls(statement) {
+  const statements = ts.isBlock(statement) ? statement.statements : [statement]
+  return statements
+    .filter((candidate) => ts.isExpressionStatement(candidate))
+    .map((candidate) => unwrap(candidate.expression))
+    .filter((expression) => ts.isCallExpression(expression))
 }
 
 function isRobotsHeaderCall(call, eventName) {
@@ -345,23 +353,15 @@ function validateMiddleware() {
     'middleware must contain exactly one runtimeConfig.public.siteNoindex if statement',
   )
 
-  const allHeaderCalls = callsWithin(handler.body).filter((candidate) =>
-    isRobotsHeaderCall(candidate, eventName),
-  )
-  expect(
-    allHeaderCalls.length === 1,
-    'middleware must contain exactly one X-Robots-Tag setResponseHeader call',
-  )
-
   if (matchingIfStatements.length === 1) {
     const statement = matchingIfStatements[0]
     expect(!statement.elseStatement, 'noindex middleware if statement must not have an else')
-    const guardedCalls = callsWithin(statement.thenStatement).filter((candidate) =>
-      isExactRobotsHeaderCall(candidate, eventName),
+    const guardedCalls = directExpressionStatementCalls(statement.thenStatement).filter(
+      (candidate) => isRobotsHeaderCall(candidate, eventName),
     )
     expect(
-      guardedCalls.length === 1 && allHeaderCalls[0] === guardedCalls[0],
-      "middleware if body must set X-Robots-Tag to 'noindex, follow' exactly once",
+      guardedCalls.length === 1 && isExactRobotsHeaderCall(guardedCalls[0], eventName),
+      "middleware if body must directly execute setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow') exactly once",
     )
   }
 }
