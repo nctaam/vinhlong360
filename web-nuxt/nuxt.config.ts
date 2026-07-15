@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
 
 const apiBase = process.env.API_BASE || 'http://localhost:8360'
+const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
@@ -63,7 +64,12 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#9C3D22', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#1a1a1a', media: '(prefers-color-scheme: dark)' },
         { name: 'color-scheme', content: 'light dark' },
-        { name: 'robots', content: 'noindex, follow' },
+        {
+          name: 'robots',
+          content: siteNoindex
+            ? 'noindex, follow'
+            : 'index, follow, max-image-preview:large, max-snippet:-1',
+        },
         { name: 'format-detection', content: 'telephone=no' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
@@ -136,11 +142,11 @@ export default defineNuxtConfig({
       apiBase,
       ndaMapKey: process.env.NDA_MAP_KEY || 'J2TnJ4JIEP3WTBnFwzVPAxTP7KKfW1OD',
       // ⚠️ TẠM THỜI — chặn Google index TOÀN SITE trong giai đoạn hoàn thiện nội dung.
-      // Mặc định BẬT (noindex). Khi nội dung đủ chất & sẵn sàng công khai, đặt env
-      // NUXT_PUBLIC_SITE_NOINDEX=false rồi restart (KHÔNG cần đổi code/rebuild) để mở
-      // index — lúc đó cổng chọn-lọc per-page (P0-1 is_index_worthy) tự điều tiết.
-      // Cơ chế: server/middleware/noindex.ts phát X-Robots-Tag khi cờ này bật.
-      siteNoindex: process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false',
+      // Mặc định BẬT (noindex). Cờ này đồng bộ runtime config với robots meta
+      // được ghi vào HTML prerender. Khi mở index, đặt NUXT_PUBLIC_SITE_NOINDEX=false
+      // trước khi build/generate, sau đó deploy/restart output mới; restart output cũ
+      // không thể thay đổi robots meta đã tạo sẵn. Middleware động vẫn theo runtime config.
+      siteNoindex,
     },
   },
 

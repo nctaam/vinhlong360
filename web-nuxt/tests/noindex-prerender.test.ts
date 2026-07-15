@@ -1,21 +1,76 @@
-import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+// @vitest-environment node
 
-const readSource = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8').replaceAll('\r\n', '\n')
+import { loadNuxtConfig } from '@nuxt/kit'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+
+import noindexMiddleware from '../server/middleware/noindex'
+
+const runtimeConfigState = vi.hoisted(() => ({ siteNoindex: true }))
+
+vi.mock('nitropack/runtime', () => ({
+  useRuntimeConfig: () => ({ public: { siteNoindex: runtimeConfigState.siteNoindex } }),
+}))
+
+const permissiveRobots = 'index, follow, max-image-preview:large, max-snippet:-1'
+const originalSiteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX
+
+const loadConfig = async (siteNoindex?: string) => {
+  if (siteNoindex === undefined) {
+    delete process.env.NUXT_PUBLIC_SITE_NOINDEX
+  }
+  else {
+    process.env.NUXT_PUBLIC_SITE_NOINDEX = siteNoindex
+  }
+
+  return loadNuxtConfig({ cwd: process.cwd(), dotenv: false })
+}
+
+const robotsContent = (config: Awaited<ReturnType<typeof loadNuxtConfig>>) =>
+  config.app.head.meta.find(entry => 'name' in entry && entry.name === 'robots')?.content
+
+afterEach(() => {
+  runtimeConfigState.siteNoindex = true
+
+  if (originalSiteNoindex === undefined) {
+    delete process.env.NUXT_PUBLIC_SITE_NOINDEX
+  }
+  else {
+    process.env.NUXT_PUBLIC_SITE_NOINDEX = originalSiteNoindex
+  }
+})
 
 describe('global noindex posture', () => {
-  it('keeps the global app head fail-closed for prerendered HTML', () => {
-    const config = readSource('nuxt.config.ts')
-    const robotsContent = config.match(/\{\s*name:\s*'robots',\s*content:\s*'([^']+)'\s*\}/)?.[1]
+  it('defaults resolved runtime config and prerender metadata to noindex', async () => {
+    const config = await loadConfig()
 
-    expect(robotsContent).toBe('noindex, follow')
-    expect(config).not.toContain("name: 'robots', content: 'index, follow")
+    expect(config.runtimeConfig.public.siteNoindex).toBe(true)
+    expect(robotsContent(config)).toBe('noindex, follow')
   })
 
-  it('keeps the dynamic noindex response middleware in place', () => {
-    const middleware = readSource('server/middleware/noindex.ts')
+  it('opens resolved runtime config and prerender metadata together', async () => {
+    const config = await loadConfig('false')
 
-    expect(middleware).toContain("setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow')")
+    expect(config.runtimeConfig.public.siteNoindex).toBe(false)
+    expect(robotsContent(config)).toBe(permissiveRobots)
+  })
+
+  it.each([
+    { siteNoindex: true, expectedHeader: 'noindex, follow' },
+    { siteNoindex: false, expectedHeader: undefined },
+  ])('sets the dynamic header only when siteNoindex is $siteNoindex', async ({ siteNoindex, expectedHeader }) => {
+    runtimeConfigState.siteNoindex = siteNoindex
+    const setHeader = vi.fn()
+    const event = {
+      node: { res: { setHeader } },
+    }
+
+    await noindexMiddleware(event as never)
+
+    if (expectedHeader) {
+      expect(setHeader).toHaveBeenCalledWith('X-Robots-Tag', expectedHeader)
+    }
+    else {
+      expect(setHeader).not.toHaveBeenCalled()
+    }
   })
 })
