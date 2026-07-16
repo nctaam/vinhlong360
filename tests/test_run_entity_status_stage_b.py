@@ -118,6 +118,32 @@ def test_runner_keeps_tunnel_handle_and_verifies_identity_before_cleanup() -> No
     assert "if ($null -ne $script:TunnelIdentity)" in cleanup
 
 
+def test_runner_cleanup_listener_absence_only_checks_loopback_listeners() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    cleanup = source.split("function Invoke-Cleanup {", 1)[1].split(
+        "function Get-SourceState {", 1
+    )[0]
+    assert (
+        "Get-NetTCPConnection -State Listen -LocalPort $LocalPort "
+        "-ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -eq '127.0.0.1' }"
+        in cleanup
+    )
+    assert "Get-NetTCPConnection -LocalPort $LocalPort" not in cleanup
+
+
+def test_runner_tunnel_readiness_requires_retained_identity_and_one_owned_listener() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    marker = "function Assert-TunnelReady {"
+    assert marker in source
+    ready = source.split(marker, 1)[1].split("function Stop-Tunnel {", 1)[0]
+    assert "Assert-TunnelProcessOwnership" in ready
+    assert ready.count("$script:TunnelProcess.HasExited") >= 2
+    assert "Get-NetTCPConnection -State Listen -LocalPort $LocalPort" in ready
+    assert "Where-Object { $_.LocalAddress -eq '127.0.0.1' }" in ready
+    assert "$listeners.Count -ne 1" in ready
+    assert "$listeners[0].OwningProcess -ne $script:TunnelPid" in ready
+
+
 def test_runner_attestation_uses_cleanup_verification_timestamps() -> None:
     source = SCRIPT.read_text(encoding="utf-8")
     assert "$script:CleanupEvidence.RoleAbsentCheckedAt = [DateTime]::UtcNow" in source
@@ -219,8 +245,13 @@ def test_runner_timeout_kills_child_and_returns_without_running_later_stages(
         "create-root",
         "create-role",
         "open-tunnel",
+        "verify-tunnel-ready",
         "verify-readonly-identity",
+        "verify-tunnel-ready",
+        "verify-tunnel-ready",
         "backup",
+        "verify-tunnel-ready",
+        "verify-tunnel-ready",
         "plan",
         "drop-role",
         "close-tunnel",
@@ -228,6 +259,33 @@ def test_runner_timeout_kills_child_and_returns_without_running_later_stages(
         "verify-tunnel-absent",
     ]
     assert "timed out" in result.stderr.lower()
+
+
+def test_runner_guards_every_credentialed_database_consumer_before_and_after(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode == 0, result.stderr
+    events = fake_stage_b_tools.events
+    for consumer in ("verify-readonly-identity", "backup", "plan"):
+        index = events.index(consumer)
+        assert events[index - 1] == "verify-tunnel-ready"
+        assert events[index + 1] == "verify-tunnel-ready"
+    assert events.count("verify-tunnel-ready") == 6
+
+
+def test_runner_fails_closed_before_database_use_when_tunnel_is_not_ready(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    fake_stage_b_tools.failure_stage = "verify-tunnel-ready"
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode != 0
+    assert "verify-readonly-identity" not in fake_stage_b_tools.events
+    assert "backup" not in fake_stage_b_tools.events
+    assert "plan" not in fake_stage_b_tools.events
+    assert "ERROR: ssh failed (exit 17)" in result.stderr
+    assert "drop-role" in fake_stage_b_tools.events
+    assert "close-tunnel" in fake_stage_b_tools.events
 
 
 def test_runner_fails_closed_if_refreshed_noindex_check_fails_after_cleanup(
@@ -414,6 +472,7 @@ $urlCapture = "$($env:VL360_STAGE_B_SECRET_CAPTURE).url"
 $invocationObject = if ($Invocation) { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Invocation)) | ConvertFrom-Json } else { @{tool="unknown";arguments=@()} }
 $stdin = [Console]::In.ReadToEnd()
 $stdinHash = if ($stdin) { (([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($stdin)) | ForEach-Object ToString x2) -join "") } else { "" }
+$failureStages = @($env:VL360_STAGE_B_FAILURE_STAGE -split ',' | Where-Object { $_ })
 $record = [ordered]@{
   event=$event; tool=$invocationObject.tool; arguments=@($invocationObject.arguments)
   stdin_length=$stdin.Length; stdin_sha256=$stdinHash
@@ -434,8 +493,8 @@ if ($event -eq "create-role" -and $stdin -match "\\set stage_b_password '([^']+)
     [IO.File]::WriteAllText($urlCapture, $expectedUrl)
   }
 }
-if ($env:VL360_STAGE_B_FAILURE_STAGE -eq $event -or ($env:VL360_STAGE_B_FAILURE_STAGE -eq "noindex" -and $event -eq "verify-source-noindex")) { exit 17 }
-if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "fresh-noindex" -and $event -eq "verify-source-noindex") {
+if ($event -in $failureStages -or ("noindex" -in $failureStages -and $event -eq "verify-source-noindex")) { exit 17 }
+if ("fresh-noindex" -in $failureStages -and $event -eq "verify-source-noindex") {
   $noindexCount = @(
     Get-Content -LiteralPath $log |
       ForEach-Object { $_ | ConvertFrom-Json } |
@@ -443,15 +502,15 @@ if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "fresh-noindex" -and $event -eq "verify
   ).Count
   if ($noindexCount -ge 2) { exit 17 }
 }
-if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "timeout" -and $event -eq "plan") {
+if ("timeout" -in $failureStages -and $event -eq "plan") {
   $chunk = "x" * 1048576
   [Console]::Out.Write($chunk)
   [Console]::Error.Write($chunk)
   Start-Sleep -Seconds 30
 }
-if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "dirty-worktree" -and $event -eq "git-status") { Write-Output " M dirty"; exit 0 }
-if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "git" -and $event -like "git-*") { exit 17 }
-if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "role-already-absent" -and $event -eq "drop-role" -and ($stdin -notmatch "\\if :stage_b_role_exists" -or $stdin -notmatch "DROP ROLE IF EXISTS")) { exit 17 }
+if ("dirty-worktree" -in $failureStages -and $event -eq "git-status") { Write-Output " M dirty"; exit 0 }
+if ("git" -in $failureStages -and $event -like "git-*") { exit 17 }
+if ("role-already-absent" -in $failureStages -and $event -eq "drop-role" -and ($stdin -notmatch "\\if :stage_b_role_exists" -or $stdin -notmatch "DROP ROLE IF EXISTS")) { exit 17 }
 $root = [Environment]::GetEnvironmentVariable("VL360_STAGE_B_FAKE_ROOT")
 if ($event -eq "create-root") {
   New-Item -ItemType Directory -Force -Path $root | Out-Null
@@ -565,8 +624,13 @@ def test_runner_cleanup_executes_when_plan_fails(fake_stage_b_tools: FakeStageBT
         "create-root",
         "create-role",
         "open-tunnel",
+        "verify-tunnel-ready",
         "verify-readonly-identity",
+        "verify-tunnel-ready",
+        "verify-tunnel-ready",
         "backup",
+        "verify-tunnel-ready",
+        "verify-tunnel-ready",
         "plan",
         "drop-role",
         "close-tunnel",
@@ -574,6 +638,34 @@ def test_runner_cleanup_executes_when_plan_fails(fake_stage_b_tools: FakeStageBT
         "verify-tunnel-absent",
     ]
     assert not list(tmp_path.rglob("stage-b-attestation.json"))
+
+
+@pytest.mark.parametrize(
+    ("main_stage", "cleanup_stage", "main_error"),
+    [
+        ("backup", "drop-role", "backup failed (exit 17)"),
+        ("backup", "close-tunnel", "backup failed (exit 17)"),
+        ("plan", "verify-role-absent", "plan failed (exit 17)"),
+        ("plan", "verify-tunnel-absent", "plan failed (exit 17)"),
+    ],
+)
+def test_runner_reports_main_and_mandatory_cleanup_failures(
+    fake_stage_b_tools: FakeStageBTools,
+    tmp_path: Path,
+    main_stage: str,
+    cleanup_stage: str,
+    main_error: str,
+) -> None:
+    fake_stage_b_tools.failure_stage = f"{main_stage},{cleanup_stage}"
+    result = fake_stage_b_tools.run(tmp_path)
+    combined = result.stdout + result.stderr + fake_stage_b_tools.log_text
+    assert result.returncode != 0
+    assert f"ERROR: {main_error}" in result.stderr
+    assert "ERROR: mandatory cleanup failed" in result.stderr
+    assert fake_stage_b_tools.password not in combined
+    assert "postgresql://" not in combined
+    assert "CREATE ROLE" not in combined
+    assert not ({"apply", "rollback", "export", "deploy"} & set(fake_stage_b_tools.events))
 
 
 @pytest.mark.parametrize(

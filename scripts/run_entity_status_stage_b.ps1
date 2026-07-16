@@ -432,6 +432,21 @@ function Assert-TunnelProcessOwnership {
     }
 }
 
+function Assert-TunnelReady {
+    if ($script:TestMode) {
+        Invoke-Tool -Name 'ssh' -Arguments @('-O','check',$SshTarget) -Event 'verify-tunnel-ready' | Out-Null
+        return
+    }
+    Assert-TunnelProcessOwnership
+    if ($script:TunnelProcess.HasExited) { Fail 'SSH tunnel process exited' }
+    $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $LocalPort -ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -eq '127.0.0.1' })
+    if ($listeners.Count -ne 1 -or $listeners[0].OwningProcess -ne $script:TunnelPid) {
+        Fail 'SSH tunnel listener ownership verification failed'
+    }
+    if ($script:TunnelProcess.HasExited) { Fail 'SSH tunnel process exited' }
+    Assert-TunnelProcessOwnership
+}
+
 function Stop-Tunnel {
     if (-not $script:TunnelAttempted) { return }
     if ($script:TestMode) {
@@ -491,7 +506,8 @@ function Invoke-Cleanup {
                 if ($null -eq $script:TunnelProcess) { Fail 'tunnel process evidence is missing' }
                 if ($null -ne $script:TunnelIdentity) { Assert-TunnelProcessOwnership }
                 if (-not $script:TunnelProcess.HasExited) { Fail 'tunnel process remains' }
-                if ($null -ne (Get-NetTCPConnection -LocalPort $LocalPort -ErrorAction SilentlyContinue)) { Fail 'tunnel listener remains' }
+                $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $LocalPort -ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -eq '127.0.0.1' })
+                if ($listeners.Count -ne 0) { Fail 'tunnel listener remains' }
             }
             $script:CleanupEvidence.TunnelAbsentCheckedAt = [DateTime]::UtcNow.ToString('o',[Globalization.CultureInfo]::InvariantCulture)
         } catch { $script:CleanupErrors.Add('tunnel absence verification failed') }
@@ -552,13 +568,17 @@ CROSS JOIN pg_catalog.pg_control_system() AS control
 WHERE database.datname = current_database();
 "@
     $pgEnvironment = @{ PGHOST='127.0.0.1'; PGPORT=[string]$LocalPort; PGUSER=$script:RoleName; PGPASSWORD=$password; PGDATABASE=$RemoteDatabase }
+    Assert-TunnelReady
     $identityResult = Invoke-Tool -Name 'psql' -Arguments @('--no-psqlrc','--tuples-only','--no-align','--field-separator','|','--set','ON_ERROR_STOP=1') -StandardInput $identitySql -Event 'verify-readonly-identity' -ChildEnvironment $pgEnvironment
+    Assert-TunnelReady
     $fields = @($identityResult.Stdout.Trim() -split '\|')
     $identity = Assert-IdentityFields $fields
 
     $backupRoot = Join-Path $script:Root 'backup'
     $backupEnvironment = @{ $DatabaseUrlEnvironment = $databaseUrl }
+    Assert-TunnelReady
     Invoke-Tool -Name 'backup' -Arguments @('--target','pg','--database-url-env',$DatabaseUrlEnvironment,'--out-dir',$backupRoot,'--keep','1','--max-age-days','1') -Event 'backup' -ChildEnvironment $backupEnvironment | Out-Null
+    Assert-TunnelReady
     $run = Get-BackupRun $backupRoot
     $dump = Join-Path $run.FullName 'postgres.dump'
     $manifestPath = Join-Path $run.FullName 'manifest.json'
@@ -567,7 +587,9 @@ WHERE database.datname = current_database();
     Assert-CanonicalIdentity $manifest.database_identity $identity
 
     $planEnvironment = @{ $DatabaseUrlEnvironment = $databaseUrl }
+    Assert-TunnelReady
     Invoke-Tool -Name 'plan' -Arguments @('--target','pg','--database-url-env',$DatabaseUrlEnvironment,'--policy','published-v1','--report-out',(Join-Path $script:Root 'published-v1-plan.json')) -Event 'plan' -ChildEnvironment $planEnvironment | Out-Null
+    Assert-TunnelReady
     if (-not (Test-Path -LiteralPath (Join-Path $script:Root 'published-v1-plan.json') -PathType Leaf)) { Fail 'publication plan was not created' }
     $plan = Get-Content -Raw -LiteralPath (Join-Path $script:Root 'published-v1-plan.json') | ConvertFrom-Json
     Assert-CanonicalIdentity $plan.database_identity $identity
@@ -587,8 +609,12 @@ try { $evidence = Invoke-Runner }
 catch { $mainError = $_.Exception.Message }
 finally { Invoke-Cleanup }
 
-if ($null -ne $mainError) { [Console]::Error.WriteLine("ERROR: $mainError"); exit 1 }
-if ($script:CleanupErrors.Count -gt 0) { [Console]::Error.WriteLine('ERROR: mandatory cleanup failed'); exit 1 }
+if ($null -ne $mainError) { [Console]::Error.WriteLine("ERROR: $mainError") }
+if ($script:CleanupErrors.Count -gt 0) {
+    [Console]::Error.WriteLine('ERROR: mandatory cleanup failed')
+    foreach ($cleanupError in $script:CleanupErrors) { [Console]::Error.WriteLine("ERROR: cleanup: $cleanupError") }
+}
+if ($null -ne $mainError -or $script:CleanupErrors.Count -gt 0) { exit 1 }
 
 try {
     if ([string]::IsNullOrWhiteSpace($script:CleanupEvidence.RoleAbsentCheckedAt) -or [string]::IsNullOrWhiteSpace($script:CleanupEvidence.TunnelAbsentCheckedAt)) {
