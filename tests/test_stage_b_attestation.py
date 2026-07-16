@@ -528,6 +528,58 @@ def test_attestation_refuses_final_output_mutation_after_acl_verify(
     assert pending[0].read_bytes() == b"X"
 
 
+def test_attestation_refuses_third_hardlink_after_acl_verify(
+    stage_b_root: Path,
+    evidence: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    original_acl = stage_b_attestation.run_acl_helper
+    output = stage_b_root / "stage-b-attestation.json"
+    third_link = tmp_path / "third-attestation-link.json"
+
+    def add_third_link(mode: str, root: Path) -> dict[str, object]:
+        summary = original_acl(mode, root)
+        if mode == "Verify" and output.exists():
+            os.link(output, third_link, follow_symlinks=False)
+        return summary
+
+    monkeypatch.setattr(stage_b_attestation, "run_acl_helper", add_third_link)
+    result = _run_attestation(stage_b_root, output, evidence)
+
+    assert result.returncode != 0
+    assert "hardlink count" in result.stderr.lower()
+    assert third_link.exists()
+
+
+def test_attestation_refuses_source_drift_observed_during_final_verify(
+    stage_b_root: Path,
+    evidence: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_acl = stage_b_attestation.run_acl_helper
+    state = {"head": REVISION, "worktree_clean": True}
+    output = stage_b_root / "stage-b-attestation.json"
+
+    monkeypatch.setattr(
+        stage_b_attestation,
+        "git_state",
+        lambda _root: dict(state),
+    )
+
+    def drift_final(mode: str, root: Path) -> dict[str, object]:
+        summary = original_acl(mode, root)
+        if mode == "Verify" and output.exists():
+            state["worktree_clean"] = False
+        return summary
+
+    monkeypatch.setattr(stage_b_attestation, "run_acl_helper", drift_final)
+    result = _run_attestation(stage_b_root, output, evidence)
+
+    assert result.returncode != 0
+    assert "source" in result.stderr.lower()
+
+
 @pytest.mark.parametrize(
     "mutate",
     [

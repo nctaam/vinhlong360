@@ -863,10 +863,7 @@ def _verify_published_attestation(
     output_identity = (output_metadata.st_dev, output_metadata.st_ino)
     if pending_identity != identity or output_identity != identity:
         raise AttestationRefusal("attestation hardlink identity changed")
-    if (
-        pending_metadata.st_nlink != output_metadata.st_nlink
-        or pending_metadata.st_nlink < 2
-    ):
+    if pending_metadata.st_nlink != 2 or output_metadata.st_nlink != 2:
         raise AttestationRefusal("attestation hardlink count is invalid")
     if pending_raw != payload or output_raw != payload:
         raise AttestationRefusal("attestation canonical bytes changed")
@@ -950,6 +947,10 @@ def build_attestation(
     validate_evidence(evidence, finalization_now, source_state)
     _revalidate_artifact_snapshots(artifact_snapshots)
     _verify_published_attestation(pending, output, identity, payload, digest)
+    if git_state(root) != source_state:
+        raise AttestationRefusal(
+            "source revision or worktree changed during attestation"
+        )
     return final, digest
 
 
