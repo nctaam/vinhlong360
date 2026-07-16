@@ -259,6 +259,68 @@ def test_sitemap_place_children_counts_only_publicly_eligible_children():
     assert seo._sitemap_place_children(data) == {"ward": 1}
 
 
+def test_sitemap_static_urls_exclude_fixed_itinerary_routes():
+    xml = "\n".join(seo._sitemap_static_urls())
+
+    assert f"<loc>{seo.SITE}/lich-trinh</loc>" not in xml
+    assert f"<loc>{seo.SITE}/tao-lich-trinh</loc>" not in xml
+
+
+def test_sitemap_place_children_skips_malformed_id_and_place_id_values():
+    data = {
+        "entities": [
+            {"id": "valid-child", "type": "dish", "status": "published",
+             "verified": True, "placeId": "ward"},
+            {"type": "dish", "status": "published", "verified": True,
+             "placeId": "ward"},
+            {"id": 7, "type": "dish", "status": "published", "verified": True,
+             "placeId": "ward"},
+            {"id": "blank-child", "type": "dish", "status": "published", "verified": True,
+             "placeId": "  "},
+            {"id": "  ", "type": "dish", "status": "published", "verified": True,
+             "placeId": "ward"},
+            {"id": "", "type": "dish", "status": "published", "verified": True,
+             "placeId": "ward"},
+            {"id": "non-string-place", "type": "dish", "status": "published", "verified": True,
+             "placeId": 7},
+            {"id": "empty-place", "type": "dish", "status": "published", "verified": True,
+             "placeId": ""},
+            {"id": "self", "type": "dish", "status": "published", "verified": True,
+             "placeId": "self"},
+        ]
+    }
+
+    assert seo._sitemap_place_children(data) == {"ward": 1}
+
+
+def test_sitemap_place_urls_skip_non_string_or_blank_ward_ids(tmp_path, monkeypatch):
+    payload = {
+        "entities": [
+            {"id": "valid-ward", "name": "Valid", "type": "place",
+             "status": "published", "verified": True, "summary": _text(80)},
+            {"id": 7, "name": "Numeric", "type": "place",
+             "status": "published", "verified": True, "summary": _text(80)},
+            {"id": "  ", "name": "Blank", "type": "place",
+             "status": "published", "verified": True, "summary": _text(80)},
+            {"id": "", "name": "Empty", "type": "place",
+             "status": "published", "verified": True, "summary": _text(80)},
+            {"name": "Missing", "type": "place",
+             "status": "published", "verified": True, "summary": _text(80)},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    _reset_seo(monkeypatch, data_path)
+
+    body = seo.sitemap().body
+
+    assert b"/xa-phuong/valid-ward" in body
+    assert b"/xa-phuong/7" not in body
+    assert b"/xa-phuong/%20%20" not in body
+
+
 def test_sitemap_place_loop_skips_provisional(tmp_path, monkeypatch):
     payload = {
         "entities": [

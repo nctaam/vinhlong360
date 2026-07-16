@@ -183,9 +183,7 @@ CORE_PAGES = [
     ("/su-kien", "weekly", "0.7"),
     ("/theo-mua", "weekly", "0.8"),
     ("/ban-do", "weekly", "0.7"),
-    ("/lich-trinh", "weekly", "0.8"),
     ("/tuyen-duong", "weekly", "0.7"),
-    ("/tao-lich-trinh", "monthly", "0.6"),
     ("/danh-ba", "monthly", "0.7"),
     ("/tim-kiem", "monthly", "0.5"),
     ("/cong-dong", "daily", "0.6"),
@@ -1298,9 +1296,15 @@ def _sitemap_place_children(data: dict[str, Any]) -> dict[str, int]:
             continue
         pid = e.get("placeId")
         entity_id = e.get("id")
-        if not pid or (entity_id is not None and str(entity_id) == str(pid)):
+        if (
+            type(pid) is not str
+            or not pid.strip()
+            or type(entity_id) is not str
+            or not entity_id.strip()
+            or entity_id == pid
+        ):
             continue
-        _place_children[str(pid)] = _place_children.get(str(pid), 0) + 1
+        _place_children[pid] = _place_children.get(pid, 0) + 1
     return _place_children
 
 
@@ -1311,15 +1315,18 @@ def _sitemap_place_urls(
 ) -> list[str]:
     urls: list[str] = []
     for entity in data.get("entities", []):
-        if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
+        if not isinstance(entity, dict) or entity.get("type") != "place":
             continue
-        children = place_children.get(str(entity["id"]), 0)
+        entity_id = entity.get("id")
+        if type(entity_id) is not str or not entity_id.strip():
+            continue
+        children = place_children.get(entity_id, 0)
         if not decide_ward(
             entity, public_child_count=children, evidence=evidence
         ).indexable:
             continue
         urls.append(_url_xml(
-            f"{SITE}/xa-phuong/{quote(str(entity['id']))}",
+            f"{SITE}/xa-phuong/{quote(entity_id)}",
             changefreq="monthly",
             priority="0.6",
             lastmod=None,  # P1-4: bỏ lastmod=updatedAt (import date → freshness-gaming)
