@@ -73,7 +73,7 @@ POLICY_ENDPOINTS = validate_policy_endpoints(POLICY_ENDPOINTS)
 
 
 class PolicyHttpContractError(RuntimeError):
-    """Raised before headers are sent when a registered route attempts HTTP 304."""
+    """Raised after a sanitized failure response when a registered route attempts HTTP 304."""
 
 
 class PolicyHttpMiddleware:
@@ -97,17 +97,20 @@ class PolicyHttpMiddleware:
             await self.app(scope, receive, send)
             return
         pre_resolved_identity = self._resolved_route_identity(scope)
+        contract_error = None
 
         async def enforce_at_response_start(message) -> None:
+            nonlocal contract_error
             if message.get("type") == "http.response.start" and self._is_registered(
                 scope, pre_resolved_identity
             ):
                 status = message.get("status")
                 if status == 304:
                     route = scope.get("route")
-                    raise PolicyHttpContractError(
+                    contract_error = PolicyHttpContractError(
                         f"registered policy route {getattr(route, 'name', '<unknown>')!r} attempted HTTP 304"
                     )
+                    message = {**message, "status": 500}
                 headers = [
                     (name, value)
                     for name, value in message.get("headers", [])
@@ -118,6 +121,8 @@ class PolicyHttpMiddleware:
             await send(message)
 
         await self.app(scope, receive, enforce_at_response_start)
+        if contract_error is not None:
+            raise contract_error
 
     def _resolved_route_identity(self, scope):
         route = scope.get("route")

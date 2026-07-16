@@ -210,6 +210,14 @@ def test_registered_304_is_a_contract_error():
             client.get("/api/entities/304")
 
 
+def test_registered_304_production_response_is_no_store_contract_failure():
+    with TestClient(_policy_contract_app(), raise_server_exceptions=False) as client:
+        response = client.get("/api/entities/304")
+
+    assert response.status_code == 500
+    _assert_no_store_no_validator(response)
+
+
 def test_static_entity_route_keeps_existing_cache_contract():
     with TestClient(_policy_contract_app()) as client:
         response = client.get("/api/entities/map")

@@ -150,6 +150,39 @@ def serialized():
     assert _codes(findings) == {"UNREGISTERED_POLICY_ROUTE"}
 
 
+@pytest.mark.parametrize(
+    "returned_value",
+    [
+        "asdict(current_policy_evidence())",
+        '{"evidence": asdict(current_policy_evidence())}',
+        "current_policy_evidence()",
+        'asdict(PolicyEvidence("a" * 64, "route-v1", "backend-v1"))',
+    ],
+)
+def test_scanner_classifies_direct_policy_evidence_serialization(
+    tmp_path: Path,
+    returned_value: str,
+):
+    checker = _load_checker()
+    assert checker is not None
+    source = _write(
+        tmp_path / "evidence.py",
+        f'''
+from dataclasses import asdict
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/evidence")
+def evidence():
+    return {returned_value}
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], ())
+
+    assert _codes(findings) == {"UNREGISTERED_POLICY_ROUTE"}
+
+
 def test_scanner_joins_imported_router_and_include_prefix(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None and policy_http is not None
@@ -166,7 +199,7 @@ def get_entity(entity_id: str):
 ''',
     )
     server = _write(
-        tmp_path / "server.py",
+        tmp_path / "agent" / "server.py",
         '''
 from fastapi import FastAPI
 from routes import router as public_router
@@ -217,7 +250,7 @@ def test_scanner_propagates_nested_router_prefixes(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None and policy_http is not None
     source = _write(
-        tmp_path / "nested.py",
+        tmp_path / "server.py",
         '''
 from fastapi import APIRouter, FastAPI
 api_router = APIRouter(prefix="/api")
@@ -252,6 +285,48 @@ def get_entity(entity_id: str):
 
     findings = checker.scan_policy_routes(
         [source],
+        (policy_http.POLICY_ENDPOINTS[0],),
+    )
+
+    assert _codes(findings) == {
+        "POLICY_ROUTE_CONTRACT_MISMATCH",
+        "STALE_POLICY_REGISTRY_ENTRY",
+    }
+
+
+def test_only_server_app_is_an_authoritative_production_mount_root(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    routes = _write(
+        tmp_path / "public_api.py",
+        '''
+from fastapi import APIRouter
+router = APIRouter(prefix="/api")
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+    server = _write(
+        tmp_path / "server.py",
+        '''
+from fastapi import FastAPI
+app = FastAPI()
+''',
+    )
+    bot_gateway = _write(
+        tmp_path / "bot_gateway.py",
+        '''
+from fastapi import FastAPI
+from public_api import router
+bot_app = FastAPI()
+bot_app.include_router(router)
+''',
+    )
+
+    findings = checker.scan_policy_routes(
+        [routes, server, bot_gateway],
         (policy_http.POLICY_ENDPOINTS[0],),
     )
 
@@ -334,7 +409,7 @@ def test_scanner_resolves_fastapi_constructor_aliases(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None and policy_http is not None
     source = _write(
-        tmp_path / "aliased.py",
+        tmp_path / "server.py",
         '''
 from fastapi import APIRouter as Router, FastAPI as Application
 router = Router(prefix="/api")
@@ -354,7 +429,7 @@ def test_scanner_resolves_fastapi_module_alias_constructors(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None and policy_http is not None
     source = _write(
-        tmp_path / "module_alias.py",
+        tmp_path / "server.py",
         '''
 import fastapi as fa
 router = fa.APIRouter(prefix="/api")

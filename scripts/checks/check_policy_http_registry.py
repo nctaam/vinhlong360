@@ -38,6 +38,8 @@ SERIALIZED_POLICY_KEYS = frozenset(
         "x-launch-sitemap-requested-batch",
     }
 )
+_AUTHORITATIVE_APP_MODULE = "server"
+_AUTHORITATIVE_APP_VARIABLE = "app"
 
 
 @dataclass(frozen=True)
@@ -432,6 +434,7 @@ def _contains_name(node: ast.AST | None, name: str) -> bool:
 _POLICY_CALLS = frozenset(
     {"IndexPolicyDecision", "decide_entity", "decide_ward", "decide_itinerary"}
 )
+_POLICY_EVIDENCE_CALLS = frozenset({"PolicyEvidence", "current_policy_evidence"})
 
 
 def _assignment_parts(node: ast.AST) -> tuple[list[ast.AST], ast.AST | None, ast.AST | None]:
@@ -471,6 +474,35 @@ def _policy_names(node: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str]:
     return names
 
 
+def _policy_evidence_names(node: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str]:
+    names: set[str] = set()
+    for child in ast.walk(node):
+        targets, value, annotation = _assignment_parts(child)
+        evidence_call = isinstance(value, ast.Call) and _call_name(value) in _POLICY_EVIDENCE_CALLS
+        if evidence_call or _contains_name(annotation, "PolicyEvidence"):
+            names.update(_assigned_names(targets))
+    return names
+
+
+def _directly_derived_names(
+    node: ast.FunctionDef | ast.AsyncFunctionDef,
+    initial: set[str],
+) -> set[str]:
+    derived = set(initial)
+    for child in ast.walk(node):
+        targets, value, _annotation = _assignment_parts(child)
+        if value is not None and (
+            bool(_names_in(value) & initial)
+            or any(
+                _call_name(call) in _POLICY_EVIDENCE_CALLS
+                for call in ast.walk(value)
+                if isinstance(call, ast.Call)
+            )
+        ):
+            derived.update(_assigned_names(targets))
+    return derived
+
+
 def _tainted_names(
     node: ast.FunctionDef | ast.AsyncFunctionDef,
     initial: set[str],
@@ -492,17 +524,22 @@ def _return_serializes_policy(
     node: ast.Return,
     policy_names: set[str],
     tainted_names: set[str],
+    evidence_names: set[str],
     constants: dict[str, str] | None,
 ) -> bool:
     value = node.value
     if value is None:
         return False
-    if _contains_serialized_key(value, constants) or bool(_names_in(value) & tainted_names):
+    if _contains_serialized_key(value, constants) or bool(
+        _names_in(value) & (tainted_names | evidence_names)
+    ):
         return True
     for call in (child for child in ast.walk(value) if isinstance(child, ast.Call)):
-        if _call_name(call) == "asdict" and bool(_names_in(call) & policy_names):
+        if _call_name(call) == "asdict" and bool(
+            _names_in(call) & (policy_names | evidence_names)
+        ):
             return True
-        if _call_name(call) in _POLICY_CALLS:
+        if _call_name(call) in (_POLICY_CALLS | _POLICY_EVIDENCE_CALLS):
             return True
     return False
 
@@ -565,9 +602,10 @@ def _serializes_policy(
     returned = _returned_names(node)
     policy = _policy_names(node)
     tainted = _tainted_names(node, policy, constants)
+    evidence = _directly_derived_names(node, _policy_evidence_names(node))
     parameters = _function_parameter_names(node)
     return any(
-        _return_serializes_policy(child, policy, tainted, constants)
+        _return_serializes_policy(child, policy, tainted, evidence, constants)
         for child in ast.walk(node)
         if isinstance(child, ast.Return)
     ) or any(
@@ -642,6 +680,9 @@ def _mounted_prefixes(
         for module in modules
         for router in module.routers.values()
         if router.is_app
+        and router.variable == _AUTHORITATIVE_APP_VARIABLE
+        and module.path.name == f"{_AUTHORITATIVE_APP_MODULE}.py"
+        and _module_matches(module.key, _AUTHORITATIVE_APP_MODULE)
     }
     changed = True
     while changed:
