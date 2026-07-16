@@ -69,6 +69,31 @@ Set-Acl -LiteralPath $env:ACL_TEST_PATH -AclObject $acl
     assert completed.returncode == 0, completed.stderr
 
 
+def _acl_snapshot(path: Path) -> dict[str, object]:
+    command = r"""
+$ErrorActionPreference = 'Stop'
+$acl = Get-Acl -LiteralPath $env:ACL_TEST_PATH
+$rules = @($acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]))
+[ordered]@{
+    protected = $acl.AreAccessRulesProtected
+    inherited = @($rules | Where-Object IsInherited).Count
+    sddl = $acl.GetSecurityDescriptorSddlForm([System.Security.AccessControl.AccessControlSections]::Access)
+} | ConvertTo-Json -Compress
+"""
+    env = os.environ.copy()
+    env["ACL_TEST_PATH"] = str(path)
+    completed = subprocess.run(
+        [PWSH, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", command],
+        capture_output=True,
+        text=True,
+        check=False,
+        env=env,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stderr == ""
+    return json.loads(completed.stdout)
+
+
 def test_create_root_secures_absent_root_and_emits_json_evidence(tmp_path: Path):
     artifact_root = tmp_path / "stage-b"
 
@@ -168,6 +193,49 @@ def test_verify_rejects_new_child_with_inherited_rules_and_preserves_it(tmp_path
     assert completed.stdout == ""
     assert "inherited" in completed.stderr.lower()
     assert artifact.read_text(encoding="utf-8") == "keep"
+
+
+def test_normalize_rejects_inherited_rules_originating_at_nested_protected_parent(tmp_path: Path):
+    artifact_root = tmp_path / "stage-b"
+    _evidence(_pwsh("CreateRoot", artifact_root))
+    parent = artifact_root / "nested"
+    parent.mkdir()
+    _evidence(_pwsh("NormalizeAndVerify", artifact_root))
+    child = parent / "child.txt"
+    child.write_text("child bytes", encoding="utf-8")
+    child_before = _acl_snapshot(child)
+
+    completed = _pwsh("NormalizeAndVerify", artifact_root)
+
+    assert completed.returncode != 0
+    assert completed.stdout == ""
+    assert "ancestor" in completed.stderr.lower()
+    assert child.read_text(encoding="utf-8") == "child bytes"
+    assert _acl_snapshot(child) == child_before
+
+
+def test_normalize_preflight_preserves_safe_earlier_child_when_later_child_is_hostile(
+    tmp_path: Path,
+):
+    artifact_root = tmp_path / "stage-b"
+    _evidence(_pwsh("CreateRoot", artifact_root))
+    safe = artifact_root / "a-safe.txt"
+    hostile = artifact_root / "z-hostile.txt"
+    safe.write_text("safe bytes", encoding="utf-8")
+    hostile.write_text("hostile bytes", encoding="utf-8")
+    _grant_read_rule(hostile, r"BUILTIN\Users")
+    safe_before = _acl_snapshot(safe)
+    hostile_before = _acl_snapshot(hostile)
+
+    completed = _pwsh("NormalizeAndVerify", artifact_root)
+
+    assert completed.returncode != 0
+    assert completed.stdout == ""
+    assert "unexpected principal" in completed.stderr.lower()
+    assert safe.read_text(encoding="utf-8") == "safe bytes"
+    assert hostile.read_text(encoding="utf-8") == "hostile bytes"
+    assert _acl_snapshot(safe) == safe_before
+    assert _acl_snapshot(hostile) == hostile_before
 
 
 def test_normalize_converts_safe_inheritance_and_is_idempotent(tmp_path: Path):

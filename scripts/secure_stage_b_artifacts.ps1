@@ -155,15 +155,87 @@ function Assert-NoHostileObjects {
     }
 }
 
+function Get-ObjectPathKey {
+    param([Parameter(Mandatory)][string]$Path)
+
+    return ([System.IO.Path]::GetFullPath($Path)).ToUpperInvariant()
+}
+
+function Get-ParentDirectoryPath {
+    param([Parameter(Mandatory)][System.IO.FileSystemInfo]$Item)
+
+    if (Test-IsDirectory -Item $Item) {
+        if ($null -eq $Item.Parent) {
+            return $null
+        }
+        return $Item.Parent.FullName
+    }
+    return $Item.DirectoryName
+}
+
+function Assert-InheritedRuleOrigin {
+    param(
+        [Parameter(Mandatory)][System.IO.FileSystemInfo]$Item,
+        [Parameter(Mandatory)][string]$RootPath,
+        [Parameter(Mandatory)]$ObjectByPath,
+        [Parameter(Mandatory)]$AllowedSids
+    )
+
+    $rootKey = Get-ObjectPathKey -Path $RootPath
+    $parentPath = Get-ParentDirectoryPath -Item $Item
+    while ($null -ne $parentPath) {
+        $parentKey = Get-ObjectPathKey -Path $parentPath
+        if ($parentKey -eq $rootKey) {
+            return
+        }
+        if (-not $ObjectByPath.ContainsKey($parentKey)) {
+            throw "Inherited rule has an ancestor outside the protected root: $parentPath"
+        }
+
+        $ancestor = $ObjectByPath[$parentKey]
+        $ancestorAcl = Get-Acl -LiteralPath $ancestor.FullName
+        if ($ancestorAcl.AreAccessRulesProtected) {
+            throw "Inherited rule originates at a protected non-root ancestor: $($ancestor.FullName)"
+        }
+
+        $explicitRules = @(
+            $ancestorAcl.GetAccessRules(
+                $true,
+                $false,
+                [System.Security.Principal.SecurityIdentifier]
+            )
+        )
+        foreach ($rule in $explicitRules) {
+            if (
+                $AllowedSids.ContainsKey($rule.IdentityReference.Value) -and
+                $rule.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow -and
+                $rule.InheritanceFlags -ne [System.Security.AccessControl.InheritanceFlags]::None
+            ) {
+                throw "Inherited rule originates at an explicit non-root ancestor: $($ancestor.FullName)"
+            }
+        }
+
+        $parentPath = Get-ParentDirectoryPath -Item $ancestor
+    }
+
+    throw "Inherited rule has no protected root ancestor: $($Item.FullName)"
+}
+
 function Assert-NormalizationPreflight {
     param(
         [Parameter(Mandatory)][System.IO.FileSystemInfo[]]$Objects,
-        [Parameter(Mandatory)][object[]]$AllowedPrincipals
+        [Parameter(Mandatory)][object[]]$AllowedPrincipals,
+        [Parameter(Mandatory)][string]$RootPath
     )
 
     $allowedSids = @{}
     foreach ($principal in $AllowedPrincipals) {
         $allowedSids[$principal.Sid.Value] = $true
+    }
+
+    $objectByPath = @{}
+    foreach ($object in $Objects) {
+        $objectByPath[(Get-ObjectPathKey -Path $object.FullName)] = $object
     }
 
     $rootAcl = Get-Acl -LiteralPath $Objects[0].FullName
@@ -209,6 +281,9 @@ function Assert-NormalizationPreflight {
 
         if ($inheritedAllowedSids.Count -ne 0 -and $inheritedAllowedSids.Count -ne $allowedSids.Count) {
             $unsafeInherited.Add($item.FullName)
+        }
+        if ($inheritedAllowedSids.Count -gt 0) {
+            Assert-InheritedRuleOrigin -Item $item -RootPath $RootPath -ObjectByPath $objectByPath -AllowedSids $allowedSids
         }
     }
 
@@ -331,6 +406,9 @@ function New-Evidence {
 function Invoke-Main {
     $rootPath = Get-ResolvedRoot -Path $Root
     $allowedPrincipals = @(Get-AllowedPrincipals)
+    if ($allowedPrincipals.Count -ne 3) {
+        throw "Exactly three distinct allowed principals are required; resolved $($allowedPrincipals.Count)"
+    }
 
     if ($Mode -eq 'CreateRoot') {
         if ($null -ne (Get-Item -LiteralPath $rootPath -Force -ErrorAction SilentlyContinue)) {
@@ -344,7 +422,7 @@ function Invoke-Main {
     Assert-NoHostileObjects -Objects $objects
 
     if ($Mode -eq 'NormalizeAndVerify') {
-        Assert-NormalizationPreflight -Objects $objects -AllowedPrincipals $allowedPrincipals
+        Assert-NormalizationPreflight -Objects $objects -AllowedPrincipals $allowedPrincipals -RootPath $rootPath
         foreach ($item in $objects) {
             Set-ExactAcl -Item $item -AllowedPrincipals $allowedPrincipals
         }
