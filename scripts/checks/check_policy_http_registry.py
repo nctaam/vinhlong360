@@ -244,6 +244,19 @@ class _RebindingVisitor(ast.NodeVisitor):
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         self.names.add(node.name)
 
+    def visit_Delete(self, node: ast.Delete) -> None:
+        self.names.update(
+            child.id
+            for target in node.targets
+            for child in ast.walk(target)
+            if isinstance(child, ast.Name)
+        )
+
+    def visit_ExceptHandler(self, node: ast.ExceptHandler) -> None:
+        if node.name:
+            self.names.add(node.name)
+        self.generic_visit(node)
+
     def visit_Lambda(self, node: ast.Lambda) -> None:
         return None
 
@@ -530,8 +543,9 @@ def _assignment_serializes_policy(
 def _call_serializes_policy(
     call: ast.Call,
     constants: dict[str, str] | None,
+    tainted_names: set[str],
 ) -> bool:
-    if not _contains_serialized_key(call, constants):
+    if not (_contains_serialized_key(call, constants) or bool(_names_in(call) & tainted_names)):
         return False
     if _call_name(call) in {"Response", "JSONResponse"}:
         return True
@@ -561,7 +575,7 @@ def _serializes_policy(
         for child in ast.walk(node)
         if isinstance(child, (ast.Assign, ast.AnnAssign))
     ) or any(
-        _call_serializes_policy(child, constants)
+        _call_serializes_policy(child, constants, tainted)
         for child in ast.walk(node)
         if isinstance(child, ast.Call)
     )

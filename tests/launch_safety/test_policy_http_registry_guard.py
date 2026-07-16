@@ -445,6 +445,13 @@ if True:
 router = fastapi.APIRouter(prefix="/api")
 app = fastapi.FastAPI()
 ''',
+        '''
+from fastapi import APIRouter, FastAPI
+del APIRouter
+del FastAPI
+router = APIRouter(prefix="/api")
+app = FastAPI()
+''',
     ],
 )
 def test_relative_or_shadowed_fastapi_provenance_fails_closed(
@@ -540,6 +547,28 @@ app = FastAPI()
 @app.get("/policy-header")
 def policy_header(response: Response):
     response.headers.update({"X-Launch-Indexing-Policy": "failed-open"})
+    return {"ok": True}
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], ())
+
+    assert _codes(findings) == {"UNREGISTERED_POLICY_ROUTE"}
+
+
+def test_scanner_taints_local_header_dict_into_update_sink(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None
+    source = _write(
+        tmp_path / "header_update_local.py",
+        '''
+from fastapi import FastAPI, Response
+app = FastAPI()
+
+@app.get("/policy-header-local")
+def policy_header_local(response: Response):
+    headers = {"X-Launch-Indexing-Policy": "failed-open"}
+    response.headers.update(headers)
     return {"ok": True}
 ''',
     )
