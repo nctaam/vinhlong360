@@ -211,6 +211,24 @@ def test_cleanup_is_idempotent_when_role_is_already_absent(fake_stage_b_tools, t
     assert result.returncode == 0, result.stderr
 
 
+@pytest.mark.parametrize(
+    ("role_check_variant", "should_succeed"),
+    [("canonical", True), ("aligned", False), ("malformed", False), ("nonzero", False)],
+)
+def test_cleanup_requires_canonical_role_absence_count(
+    fake_stage_b_tools, tmp_path: Path, role_check_variant: str, should_succeed: bool
+) -> None:
+    fake_stage_b_tools.role_check_variant = role_check_variant
+    result = fake_stage_b_tools.run(tmp_path)
+
+    assert (result.returncode == 0) is should_succeed, result.stderr
+    role_check = next(
+        record for record in fake_stage_b_tools.records if record["event"] == "verify-role-absent"
+    )
+    assert role_check["arguments"][-2:] == ["--tuples-only", "--no-align"]
+    assert ("write-attestation" in fake_stage_b_tools.events) is should_succeed
+
+
 def test_runner_secret_and_sql_are_absent_from_fake_argv_and_event_log(
     fake_stage_b_tools, tmp_path: Path
 ) -> None:
@@ -237,6 +255,7 @@ class FakeStageBTools:
         self.password = ""
         self.noindex_variant = "normal"
         self.identity_variant = "normal"
+        self.role_check_variant = "canonical"
         self._make_dispatcher()
 
     def _make_dispatcher(self) -> None:
@@ -301,6 +320,14 @@ if ($event -eq "verify-readonly-identity") {
   $port = if ($env:VL360_STAGE_B_IDENTITY_VARIANT -eq "wrong-port") { "5433" } else { "5432" }
   Write-Output "vinhlong360|16384|123456789|127.0.0.1|$port|160004|on|$($env:PGUSER)"
 }
+if ($event -eq "verify-role-absent") {
+  switch ($env:VL360_STAGE_B_ROLE_CHECK_VARIANT) {
+    "aligned" { [Console]::Out.Write(" count`n-------`n     0`n(1 row)`n") }
+    "malformed" { [Console]::Out.Write("0`n1`n") }
+    "nonzero" { [Console]::Out.Write("1`n") }
+    default { [Console]::Out.Write("0`n") }
+  }
+}
 '''
         path = self.tools / "fake.ps1"
         path.write_text(dispatcher, encoding="utf-8")
@@ -334,6 +361,7 @@ if ($event -eq "verify-readonly-identity") {
                 "VL360_STAGE_B_FAILURE_STAGE": self.failure_stage,
                 "VL360_STAGE_B_NOINDEX_VARIANT": self.noindex_variant,
                 "VL360_STAGE_B_IDENTITY_VARIANT": self.identity_variant,
+                "VL360_STAGE_B_ROLE_CHECK_VARIANT": self.role_check_variant,
                 "VL360_STAGE_B_SECRET_CAPTURE": str(self.secret_capture),
             }
         )

@@ -178,8 +178,14 @@ function Invoke-Tool {
     return $result
 }
 
-function Invoke-SshSql([string]$Sql, [string]$Event) {
+function Invoke-SshSql {
+    param(
+        [Parameter(Mandatory)][string]$Sql,
+        [Parameter(Mandatory)][string]$Event,
+        [switch]$Scalar
+    )
     $arguments = @('-i',$SshKeyPath,$SshTarget,'sudo','-u','postgres','psql','--no-psqlrc','--set','ON_ERROR_STOP=1','--dbname',$RemoteDatabase)
+    if ($Scalar) { $arguments += @('--tuples-only','--no-align') }
     return Invoke-Tool -Name 'ssh' -Arguments $arguments -StandardInput $Sql -Event $Event
 }
 
@@ -324,8 +330,8 @@ function Invoke-Cleanup {
     }
     if ($script:RoleAttempted) {
         try {
-            $roleCheck = Invoke-SshSql "SELECT count(*) FROM pg_roles WHERE rolname = '$RoleName';" 'verify-role-absent'
-            if (-not $script:TestMode -and $roleCheck.Stdout.Trim() -ne '0') { Fail 'temporary role remains' }
+            $roleCheck = Invoke-SshSql "SELECT count(*) FROM pg_roles WHERE rolname = '$RoleName';" 'verify-role-absent' -Scalar
+            if ($roleCheck.Stdout.Trim() -cne '0') { Fail 'temporary role remains' }
         } catch { $script:CleanupErrors.Add('role absence verification failed') }
     }
     if ($script:TunnelAttempted) {
