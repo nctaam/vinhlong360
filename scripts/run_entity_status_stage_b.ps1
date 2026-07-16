@@ -18,11 +18,23 @@ $script:RoleName = $null
 $script:RoleAttempted = $false
 $script:TunnelAttempted = $false
 $script:TunnelPid = $null
+$script:TunnelProcess = $null
+$script:TunnelIdentity = $null
+$script:TunnelStdoutDrain = $null
+$script:TunnelStderrDrain = $null
 $script:Root = $null
-$script:PreviousDatabaseUrl = $null
+$script:CleanupEvidence = [ordered]@{ RoleAbsentCheckedAt = $null; TunnelAbsentCheckedAt = $null }
 $script:CleanupErrors = [System.Collections.Generic.List[string]]::new()
 
 function Fail([string]$Message) { throw $Message }
+
+function Remove-InheritedDatabaseCredentials([Diagnostics.ProcessStartInfo]$StartInfo) {
+    foreach ($key in @($StartInfo.Environment.Keys)) {
+        if ($key -like 'PG*' -or $key -like '*DATABASE_URL' -or $key -eq $DatabaseUrlEnvironment) {
+            [void]$StartInfo.Environment.Remove($key)
+        }
+    }
+}
 
 function Assert-Identifier([string]$Value, [string]$Label) {
     if ([string]::IsNullOrWhiteSpace($Value) -or $Value -notmatch '^[A-Za-z_][A-Za-z0-9_]*$') {
@@ -137,21 +149,80 @@ function Invoke-CapturedProcess {
     $start.RedirectStandardOutput = $true
     $start.RedirectStandardError = $true
     foreach ($argument in $Arguments) { [void]$start.ArgumentList.Add([string]$argument) }
+    # Never inherit ambient database credentials; each consumer receives only its explicit child environment.
+    Remove-InheritedDatabaseCredentials $start
     foreach ($key in $Environment.Keys) { $start.Environment[$key] = [string]$Environment[$key] }
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $start
+    $started = $false
+    $stdoutTask = $null
+    $stderrTask = $null
+    $drainTask = $null
+    $stdinTask = $null
+    $processId = $null
+    $terminationFailure = $null
     try {
         if (-not $process.Start()) { Fail 'unable to start child process' }
+        $started = $true
+        $processId = $process.Id
+        # Drain both pipes before waiting so a verbose child cannot deadlock on a full buffer.
+        $stdoutTask = $process.StandardOutput.ReadToEndAsync()
+        $stderrTask = $process.StandardError.ReadToEndAsync()
+        $drainTask = [Threading.Tasks.Task]::WhenAll([Threading.Tasks.Task[]]@($stdoutTask, $stderrTask))
+        $timeoutMilliseconds = 900000
+        if ($script:TestMode -and $env:VL360_STAGE_B_PROCESS_TIMEOUT_MS) {
+            $candidateTimeout = 0
+            if ([int]::TryParse($env:VL360_STAGE_B_PROCESS_TIMEOUT_MS, [ref]$candidateTimeout) -and $candidateTimeout -gt 0) { $timeoutMilliseconds = $candidateTimeout }
+        }
+        $deadline = [DateTime]::UtcNow.AddMilliseconds($timeoutMilliseconds)
         if ($null -ne $StandardInput) {
-            $process.StandardInput.Write($StandardInput)
+            $stdinTask = $process.StandardInput.WriteAsync($StandardInput)
+            $remaining = [int][Math]::Max(1, ($deadline - [DateTime]::UtcNow).TotalMilliseconds)
+            if (-not $stdinTask.Wait($remaining)) { Fail 'child process timed out while writing stdin' }
+            [void]$stdinTask.GetAwaiter().GetResult()
         }
         $process.StandardInput.Close()
-        $stdout = $process.StandardOutput.ReadToEnd()
-        $stderr = $process.StandardError.ReadToEnd()
-        $process.WaitForExit()
-        return [pscustomobject]@{ ExitCode = $process.ExitCode; Stdout = $stdout; Stderr = $stderr; Pid = $process.Id }
+        $remaining = [int][Math]::Max(1, ($deadline - [DateTime]::UtcNow).TotalMilliseconds)
+        if (-not $process.WaitForExit($remaining)) { Fail 'child process timed out' }
+        $remaining = [int][Math]::Max(1, ($deadline - [DateTime]::UtcNow).TotalMilliseconds)
+        if (-not $drainTask.Wait($remaining)) { Fail 'child process output drain timed out' }
+        [void]$drainTask.GetAwaiter().GetResult()
+        $stdout = $stdoutTask.GetAwaiter().GetResult()
+        $stderr = $stderrTask.GetAwaiter().GetResult()
+        return [pscustomobject]@{ ExitCode = $process.ExitCode; Stdout = $stdout; Stderr = $stderr; Pid = $processId }
     }
-    finally { $process.Dispose() }
+    finally {
+        if ($started) {
+            try {
+                if (-not $process.HasExited) {
+                    $killSucceeded = $false
+                    try { $process.Kill($true); $killSucceeded = $true }
+                    catch {
+                        try { $process.Kill(); $killSucceeded = $true }
+                        catch { $terminationFailure = 'child process did not terminate after timeout' }
+                    }
+                    if ($killSucceeded) {
+                        try {
+                            $exited = $process.WaitForExit(5000)
+                            if (-not $exited -or -not $process.HasExited) { $terminationFailure = 'child process did not terminate after timeout' }
+                        } catch {
+                            $terminationFailure = 'child process did not terminate after timeout'
+                        }
+                    }
+                }
+            } catch { $terminationFailure = 'child process did not terminate after timeout' }
+            # Observe completed async operations after timeout/kill without replacing the primary failure.
+            foreach ($task in @($stdinTask, $drainTask)) {
+                if ($null -ne $task) {
+                    try {
+                        if ($task.Wait(5000)) { [void]$task.GetAwaiter().GetResult() }
+                    } catch { }
+                }
+            }
+        }
+        $process.Dispose()
+        if ($null -ne $terminationFailure) { Fail $terminationFailure }
+    }
 }
 
 function Invoke-Tool {
@@ -281,6 +352,29 @@ function Write-Listing([string]$Path, [string]$Content) {
     return Get-Sha256File $Path
 }
 
+function Stop-RetainedTunnelProcess {
+    if ($null -eq $script:TunnelProcess) { return }
+    $failure = $null
+    try {
+        if (-not $script:TunnelProcess.HasExited) {
+            try { $script:TunnelProcess.Kill($true) } catch { $script:TunnelProcess.Kill() }
+            if (-not $script:TunnelProcess.WaitForExit(5000)) { $failure = 'SSH tunnel did not stop' }
+        }
+    } catch {
+        $failure = 'SSH tunnel did not stop'
+    }
+    foreach ($drain in @($script:TunnelStdoutDrain, $script:TunnelStderrDrain)) {
+        if ($null -eq $drain) { continue }
+        try {
+            if (-not $drain.Wait(5000)) { $failure = 'SSH tunnel output drain did not finish'; continue }
+            [void]$drain.GetAwaiter().GetResult()
+        } catch {
+            $failure = 'SSH tunnel output drain failed'
+        }
+    }
+    if ($null -ne $failure) { Fail $failure }
+}
+
 function Open-Tunnel {
     $script:TunnelAttempted = $true
     $tunnelArguments = @('-N','-L',"127.0.0.1:$LocalPort`:127.0.0.1:5432",'-i',$SshKeyPath,$SshTarget)
@@ -292,22 +386,50 @@ function Open-Tunnel {
     $invocation = Get-ToolInvocation 'ssh' $tunnelArguments
     $start = [Diagnostics.ProcessStartInfo]::new(); $start.FileName = $invocation.File; $start.UseShellExecute = $false; $start.CreateNoWindow = $true; $start.RedirectStandardInput = $true; $start.RedirectStandardOutput = $true; $start.RedirectStandardError = $true
     foreach ($arg in $invocation.Arguments) { [void]$start.ArgumentList.Add($arg) }
+    Remove-InheritedDatabaseCredentials $start
     $process = [Diagnostics.Process]::new(); $process.StartInfo = $start
     if (-not $process.Start()) { Fail 'unable to start SSH tunnel' }
+    $script:TunnelProcess = $process
     $script:TunnelPid = $process.Id
+    try {
+        # SSH -N should be quiet, but continuously drain both redirected streams regardless.
+        $script:TunnelStdoutDrain = $process.StandardOutput.BaseStream.CopyToAsync([IO.Stream]::Null)
+        $script:TunnelStderrDrain = $process.StandardError.BaseStream.CopyToAsync([IO.Stream]::Null)
+        $script:TunnelIdentity = [pscustomobject]@{
+            Pid = $process.Id
+            StartTimeUtc = $process.StartTime.ToUniversalTime().Ticks
+        }
+    } catch {
+        try { Stop-RetainedTunnelProcess } catch { }
+        if ($null -eq $script:TunnelProcess -or $script:TunnelProcess.HasExited) { Dispose-TunnelProcess }
+        Fail 'unable to capture SSH tunnel process identity'
+    }
     Start-Sleep -Milliseconds 250
-    if ($process.HasExited) { $code = $process.ExitCode; $process.Dispose(); Fail "SSH tunnel failed (exit $code)" }
-    $process.Dispose()
+    if ($process.HasExited) { $code = $process.ExitCode; Fail "SSH tunnel failed (exit $code)" }
 
     $owned = $false
     for ($attempt = 0; $attempt -lt 30; $attempt += 1) {
-        $liveProcess = Get-Process -Id $script:TunnelPid -ErrorAction SilentlyContinue
-        if ($null -eq $liveProcess) { Fail 'SSH tunnel process exited' }
+        if ($script:TunnelProcess.HasExited) { Fail 'SSH tunnel process exited' }
         $listener = Get-NetTCPConnection -State Listen -LocalPort $LocalPort -ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -eq '127.0.0.1' }
-        if (@($listener | Where-Object { $_.OwningProcess -eq $script:TunnelPid }).Count -eq 1) { $owned = $true; break }
+        if (@($listener | Where-Object { $_.OwningProcess -eq $script:TunnelPid }).Count -eq 1) {
+            if ($script:TunnelProcess.HasExited) { Fail 'SSH tunnel process exited' }
+            $owned = $true
+            break
+        }
         Start-Sleep -Milliseconds 100
     }
     if (-not $owned) { Fail 'SSH tunnel listener ownership verification failed' }
+}
+
+function Assert-TunnelProcessOwnership {
+    if ($null -eq $script:TunnelProcess -or $null -eq $script:TunnelIdentity) { Fail 'SSH tunnel ownership is unavailable' }
+    try {
+        if ($script:TunnelProcess.Id -ne $script:TunnelIdentity.Pid) { Fail 'SSH tunnel PID ownership changed' }
+        if ($script:TunnelProcess.StartTime.ToUniversalTime().Ticks -ne $script:TunnelIdentity.StartTimeUtc) { Fail 'SSH tunnel process identity changed' }
+    } catch {
+        if ($_.Exception.Message -like 'SSH tunnel*') { throw }
+        Fail 'unable to verify SSH tunnel process ownership'
+    }
 }
 
 function Stop-Tunnel {
@@ -316,12 +438,39 @@ function Stop-Tunnel {
         Invoke-Tool -Name 'ssh' -Arguments @('-O','exit',$SshTarget) -Event 'close-tunnel' | Out-Null
         return
     }
-    $process = Get-Process -Id $script:TunnelPid -ErrorAction SilentlyContinue
-    if ($null -ne $process) { Stop-Process -Id $script:TunnelPid -Force -ErrorAction Stop; Wait-Process -Id $script:TunnelPid -Timeout 5 -ErrorAction SilentlyContinue }
+    if ($null -eq $script:TunnelProcess) { return }
+    if ($null -eq $script:TunnelIdentity) {
+        Stop-RetainedTunnelProcess
+        return
+    }
+    try { Assert-TunnelProcessOwnership }
+    catch {
+        Stop-RetainedTunnelProcess
+        throw
+    }
+    Stop-RetainedTunnelProcess
+}
+
+function Dispose-TunnelProcess {
+    if ($null -ne $script:TunnelProcess) {
+        try {
+            if (-not $script:TunnelProcess.HasExited) { return }
+            foreach ($drain in @($script:TunnelStdoutDrain, $script:TunnelStderrDrain)) {
+                if ($null -ne $drain) {
+                    if (-not $drain.IsCompleted) { return }
+                    [void]$drain.GetAwaiter().GetResult()
+                }
+            }
+            $script:TunnelProcess.Dispose()
+            $script:TunnelProcess = $null
+        } catch { return }
+    }
+    $script:TunnelIdentity = $null
+    $script:TunnelStdoutDrain = $null
+    $script:TunnelStderrDrain = $null
 }
 
 function Invoke-Cleanup {
-    [Environment]::SetEnvironmentVariable($DatabaseUrlEnvironment,$null,'Process')
     if ($script:RoleAttempted) {
         try { Invoke-SshSql (New-DropRoleSql) 'drop-role' | Out-Null } catch { $script:CleanupErrors.Add('role drop failed') }
     }
@@ -332,16 +481,21 @@ function Invoke-Cleanup {
         try {
             $roleCheck = Invoke-SshSql "SELECT count(*) FROM pg_roles WHERE rolname = '$RoleName';" 'verify-role-absent' -Scalar
             if ($roleCheck.Stdout.Trim() -cne '0') { Fail 'temporary role remains' }
+            $script:CleanupEvidence.RoleAbsentCheckedAt = [DateTime]::UtcNow.ToString('o',[Globalization.CultureInfo]::InvariantCulture)
         } catch { $script:CleanupErrors.Add('role absence verification failed') }
     }
     if ($script:TunnelAttempted) {
         try {
             if ($script:TestMode) { Invoke-Tool -Name 'ssh' -Arguments @('-O','check',$SshTarget) -Event 'verify-tunnel-absent' | Out-Null }
             else {
-                if ($null -ne (Get-Process -Id $script:TunnelPid -ErrorAction SilentlyContinue)) { Fail 'tunnel process remains' }
+                if ($null -eq $script:TunnelProcess) { Fail 'tunnel process evidence is missing' }
+                if ($null -ne $script:TunnelIdentity) { Assert-TunnelProcessOwnership }
+                if (-not $script:TunnelProcess.HasExited) { Fail 'tunnel process remains' }
                 if ($null -ne (Get-NetTCPConnection -LocalPort $LocalPort -ErrorAction SilentlyContinue)) { Fail 'tunnel listener remains' }
             }
+            $script:CleanupEvidence.TunnelAbsentCheckedAt = [DateTime]::UtcNow.ToString('o',[Globalization.CultureInfo]::InvariantCulture)
         } catch { $script:CleanupErrors.Add('tunnel absence verification failed') }
+        finally { Dispose-TunnelProcess }
     }
 }
 
@@ -372,7 +526,7 @@ function Invoke-Runner {
     if ($SshTarget -notmatch '^[A-Za-z0-9_.-]+@[A-Za-z0-9_.:-]+$') { Fail 'SSH target is invalid' }
     if ($LocalPort -lt 1 -or $LocalPort -gt 65535) { Fail 'local port is invalid' }
     $sourceHead = Get-SourceState
-    $noindex = Invoke-NoindexCheck
+    [void](Invoke-NoindexCheck)
 
     New-Item -ItemType Directory -Force -Path $ArtifactParent | Out-Null
     $stamp = [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ')
@@ -389,7 +543,6 @@ function Invoke-Runner {
     if (-not (Test-PortFree $LocalPort)) { Fail 'local port is occupied' }
     Open-Tunnel
     $databaseUrl = "postgresql://$RoleName`:$([Uri]::EscapeDataString($password))@127.0.0.1:$LocalPort/$RemoteDatabase"
-    [Environment]::SetEnvironmentVariable($DatabaseUrlEnvironment,$databaseUrl,'Process')
     $identitySql = @"
 SELECT current_database(), database.oid, control.system_identifier::text,
        inet_server_addr()::text, inet_server_port(), current_setting('server_version_num')::int,
@@ -404,7 +557,8 @@ WHERE database.datname = current_database();
     $identity = Assert-IdentityFields $fields
 
     $backupRoot = Join-Path $script:Root 'backup'
-    Invoke-Tool -Name 'backup' -Arguments @('--target','pg','--database-url-env',$DatabaseUrlEnvironment,'--out-dir',$backupRoot,'--keep','1','--max-age-days','1') -Event 'backup' | Out-Null
+    $backupEnvironment = @{ $DatabaseUrlEnvironment = $databaseUrl }
+    Invoke-Tool -Name 'backup' -Arguments @('--target','pg','--database-url-env',$DatabaseUrlEnvironment,'--out-dir',$backupRoot,'--keep','1','--max-age-days','1') -Event 'backup' -ChildEnvironment $backupEnvironment | Out-Null
     $run = Get-BackupRun $backupRoot
     $dump = Join-Path $run.FullName 'postgres.dump'
     $manifestPath = Join-Path $run.FullName 'manifest.json'
@@ -412,7 +566,8 @@ WHERE database.datname = current_database();
     $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
     Assert-CanonicalIdentity $manifest.database_identity $identity
 
-    Invoke-Tool -Name 'plan' -Arguments @('--target','pg','--database-url-env',$DatabaseUrlEnvironment,'--policy','published-v1','--report-out',(Join-Path $script:Root 'published-v1-plan.json')) -Event 'plan' | Out-Null
+    $planEnvironment = @{ $DatabaseUrlEnvironment = $databaseUrl }
+    Invoke-Tool -Name 'plan' -Arguments @('--target','pg','--database-url-env',$DatabaseUrlEnvironment,'--policy','published-v1','--report-out',(Join-Path $script:Root 'published-v1-plan.json')) -Event 'plan' -ChildEnvironment $planEnvironment | Out-Null
     if (-not (Test-Path -LiteralPath (Join-Path $script:Root 'published-v1-plan.json') -PathType Leaf)) { Fail 'publication plan was not created' }
     $plan = Get-Content -Raw -LiteralPath (Join-Path $script:Root 'published-v1-plan.json') | ConvertFrom-Json
     Assert-CanonicalIdentity $plan.database_identity $identity
@@ -423,7 +578,7 @@ WHERE database.datname = current_database();
     $expectedListingHash = [string]$manifest.validation.listing_sha256
     if ($listingHash -ne $expectedListingHash) { Fail 'restore listing hash mismatch' }
 
-    return [pscustomobject]@{ SourceHead = $sourceHead; Noindex = $noindex; RoleExpiry = $expiry; ListingHash = $listingHash }
+    return [pscustomobject]@{ SourceHead = $sourceHead; RoleExpiry = $expiry; ListingHash = $listingHash }
 }
 
 $mainError = $null
@@ -436,12 +591,16 @@ if ($null -ne $mainError) { [Console]::Error.WriteLine("ERROR: $mainError"); exi
 if ($script:CleanupErrors.Count -gt 0) { [Console]::Error.WriteLine('ERROR: mandatory cleanup failed'); exit 1 }
 
 try {
+    if ([string]::IsNullOrWhiteSpace($script:CleanupEvidence.RoleAbsentCheckedAt) -or [string]::IsNullOrWhiteSpace($script:CleanupEvidence.TunnelAbsentCheckedAt)) {
+        Fail 'cleanup absence timestamps are missing'
+    }
+    $freshNoindex = Invoke-NoindexCheck
     Invoke-Tool -Name 'secure' -Arguments @('-Mode','NormalizeAndVerify','-Root',$script:Root) -Event 'normalize-acl' | Out-Null
     $attestationEvidence = [ordered]@{
         source = [ordered]@{ head = $evidence.SourceHead; worktree_clean = $true }
-        noindex = $evidence.Noindex
-        temporary_role = [ordered]@{ name = $script:RoleName; expires_at = ([DateTime]::Parse($evidence.RoleExpiry).ToUniversalTime().ToString('o')); role_absent = $true; absent_checked_at = ([DateTime]::UtcNow.ToString('o')) }
-        tunnel = [ordered]@{ endpoint = "127.0.0.1:$LocalPort"; pid = [int]$script:TunnelPid; process_absent = $true; listener_absent = $true; absent_checked_at = ([DateTime]::UtcNow.ToString('o')) }
+        noindex = $freshNoindex
+        temporary_role = [ordered]@{ name = $script:RoleName; expires_at = ([DateTime]::Parse($evidence.RoleExpiry).ToUniversalTime().ToString('o')); role_absent = $true; absent_checked_at = $script:CleanupEvidence.RoleAbsentCheckedAt }
+        tunnel = [ordered]@{ endpoint = "127.0.0.1:$LocalPort"; pid = [int]$script:TunnelPid; process_absent = $true; listener_absent = $true; absent_checked_at = $script:CleanupEvidence.TunnelAbsentCheckedAt }
         operations = [ordered]@{ apply_run = $false; rollback_run = $false; export_run = $false; deploy_run = $false }
     }
     $json = $attestationEvidence | ConvertTo-Json -Compress -Depth 8

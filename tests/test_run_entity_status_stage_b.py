@@ -13,7 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "run_entity_status_stage_b.ps1"
 
 
-def _run_script(env: dict[str, str], *extra: str) -> subprocess.CompletedProcess[str]:
+def _run_script(
+    env: dict[str, str], *extra: str, timeout: float = 120
+) -> subprocess.CompletedProcess[str]:
     command = [
         "pwsh",
         "-NoLogo",
@@ -23,7 +25,9 @@ def _run_script(env: dict[str, str], *extra: str) -> subprocess.CompletedProcess
         str(SCRIPT),
         *extra,
     ]
-    return subprocess.run(command, capture_output=True, text=True, env=env, check=False)
+    return subprocess.run(
+        command, capture_output=True, text=True, env=env, check=False, timeout=timeout
+    )
 
 
 def test_runner_source_contract_has_safe_defaults_and_no_stage_c_paths() -> None:
@@ -75,6 +79,61 @@ def test_runner_binds_psql_through_scoped_pg_environment_without_url_or_sql_argv
     assert "--command" not in source
 
 
+def test_runner_capture_drains_both_pipes_and_fails_closed_on_timeout() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "ReadToEndAsync()" in source
+    assert "WhenAll([Threading.Tasks.Task[]]@($stdoutTask, $stderrTask))" in source
+    assert "$drainTask.GetAwaiter().GetResult()" in source
+    assert "child process timed out" in source
+    assert "child process did not terminate after timeout" in source
+    assert "Kill($true)" in source
+    assert "WaitForExit($remaining)" in source
+    assert "-or -not $process.HasExited" in source
+
+
+def test_runner_keeps_tunnel_handle_and_verifies_identity_before_cleanup() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    open_tunnel = source.split("function Open-Tunnel {", 1)[1].split(
+        "function Assert-TunnelProcessOwnership {", 1
+    )[0]
+    stop_tunnel = source.split("function Stop-Tunnel {", 1)[1].split(
+        "function Dispose-TunnelProcess {", 1
+    )[0]
+    cleanup = source.split("function Invoke-Cleanup {", 1)[1].split(
+        "function Get-SourceState {", 1
+    )[0]
+    assert "$script:TunnelProcess" in source
+    assert "$script:TunnelIdentity" in source
+    assert "CopyToAsync([IO.Stream]::Null)" in source
+    assert "Assert-TunnelProcessOwnership" in source
+    assert "Get-Process -Id $script:TunnelPid" not in stop_tunnel
+    assert "Get-Process -Id $script:TunnelPid" not in cleanup
+    assert "Stop-Process -Id $script:TunnelPid" not in stop_tunnel
+    assert "Stop-Process -Id $script:TunnelPid" not in cleanup
+    assert "Stop-RetainedTunnelProcess" in open_tunnel
+    assert "Dispose-TunnelProcess" in open_tunnel
+    assert "finally { Dispose-TunnelProcess }" not in open_tunnel
+    assert open_tunnel.count("if ($script:TunnelProcess.HasExited)") >= 2
+    assert "finally { Dispose-TunnelProcess }" in cleanup
+    assert "if ($null -ne $script:TunnelIdentity)" in cleanup
+
+
+def test_runner_attestation_uses_cleanup_verification_timestamps() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "$script:CleanupEvidence.RoleAbsentCheckedAt = [DateTime]::UtcNow" in source
+    assert "$script:CleanupEvidence.TunnelAbsentCheckedAt = [DateTime]::UtcNow" in source
+    assert "absent_checked_at = $script:CleanupEvidence.RoleAbsentCheckedAt" in source
+    assert "absent_checked_at = $script:CleanupEvidence.TunnelAbsentCheckedAt" in source
+    assert "cleanup absence timestamps are missing" in source
+
+
+def test_runner_refreshes_noindex_after_cleanup_before_attestation() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    publication = source.split("if ($null -ne $mainError)", 1)[1]
+    assert "$freshNoindex = Invoke-NoindexCheck" in publication
+    assert "noindex = $freshNoindex" in publication
+
+
 def test_runner_passes_real_safe_arguments_and_scoped_pg_values_to_fakes(
     fake_stage_b_tools, tmp_path: Path
 ) -> None:
@@ -99,6 +158,93 @@ def test_runner_passes_real_safe_arguments_and_scoped_pg_values_to_fakes(
     create_role = next(record for record in fake_stage_b_tools.records if record["event"] == "create-role")
     assert "root@66.42.57.202" in create_role["arguments"]
     assert not any(str(argument).startswith("<") for argument in create_role["arguments"])
+
+
+def test_runner_does_not_inherit_ambient_database_credentials(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "SetEnvironmentVariable($DatabaseUrlEnvironment" not in source
+    assert "$script:PreviousDatabaseUrl" not in source
+    env = os.environ.copy()
+    env.update(
+        {
+            "VL360_STAGE_B_TEST_MODE": "1",
+            "VL360_STAGE_B_TEST_ROOT": str(fake_stage_b_tools.root),
+            "VL360_STAGE_B_FAKE_TOOLS_DIR": str(fake_stage_b_tools.tools),
+            "VL360_STAGE_B_EVENT_LOG": str(fake_stage_b_tools.events_path),
+            "VL360_STAGE_B_FAKE_ROOT": str(fake_stage_b_tools.root / "artifacts"),
+            "VL360_STAGE_B_SECRET_CAPTURE": str(fake_stage_b_tools.secret_capture),
+            "VL360_STAGE_B_FAILURE_STAGE": "",
+            "VL360_STAGE_B_NOINDEX_VARIANT": "normal",
+            "VL360_STAGE_B_IDENTITY_VARIANT": "normal",
+            "VL360_STAGE_B_ROLE_CHECK_VARIANT": "canonical",
+            "DATABASE_URL": "postgresql://ambient:secret@db/prod",
+            "VL360_STAGE_B_DATABASE_URL": "postgresql://ambient:secret@db/prod",
+            "PGPASSWORD": "ambient-secret",
+            "PGOPTIONS": "ambient-options",
+        }
+    )
+    result = _run_script(env, "-ArtifactParent", str(fake_stage_b_tools.root / "artifacts-parent"))
+    assert result.returncode == 0, result.stderr
+    records = {record["event"]: record for record in fake_stage_b_tools.records}
+    assert records["verify-readonly-identity"]["pg_password_present"] is True
+    assert all(
+        record["pg_password_present"] is False
+        for event, record in records.items()
+        if event != "verify-readonly-identity"
+    )
+    assert records["backup"]["named_database_url_present"] is True
+    assert records["plan"]["named_database_url_present"] is True
+    assert records["backup"]["named_database_url_matches_generated"] is True
+    assert records["plan"]["named_database_url_matches_generated"] is True
+    assert all(
+        record["named_database_url_present"] is False
+        for event, record in records.items()
+        if event not in {"backup", "plan"}
+    )
+    assert all(record["generic_database_url_present"] is False for record in records.values())
+    assert all(record["ambient_pg_options_present"] is False for record in records.values())
+
+
+def test_runner_timeout_kills_child_and_returns_without_running_later_stages(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    fake_stage_b_tools.failure_stage = "timeout"
+    fake_stage_b_tools.process_timeout_ms = "5000"
+    result = fake_stage_b_tools.run(tmp_path, timeout=60)
+    assert result.returncode != 0
+    assert fake_stage_b_tools.events == [
+        "verify-source-noindex",
+        "create-root",
+        "create-role",
+        "open-tunnel",
+        "verify-readonly-identity",
+        "backup",
+        "plan",
+        "drop-role",
+        "close-tunnel",
+        "verify-role-absent",
+        "verify-tunnel-absent",
+    ]
+    assert "timed out" in result.stderr.lower()
+
+
+def test_runner_fails_closed_if_refreshed_noindex_check_fails_after_cleanup(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    fake_stage_b_tools.failure_stage = "fresh-noindex"
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode != 0
+    events = fake_stage_b_tools.events
+    assert events.count("verify-source-noindex") == 2
+    assert events.index("drop-role") < events.index("verify-role-absent")
+    assert events.index("close-tunnel") < events.index("verify-tunnel-absent")
+    assert events.index("verify-role-absent") < events.index("verify-source-noindex", 1)
+    assert events.index("verify-tunnel-absent") < events.index("verify-source-noindex", 1)
+    assert events[-1] == "verify-source-noindex"
+    assert "write-attestation" not in events
+    assert not ({"apply", "rollback", "export", "deploy"} & set(events))
 
 
 def test_runner_normalizes_restore_listing_to_lf_before_hashing() -> None:
@@ -256,6 +402,7 @@ class FakeStageBTools:
         self.noindex_variant = "normal"
         self.identity_variant = "normal"
         self.role_check_variant = "canonical"
+        self.process_timeout_ms = ""
         self._make_dispatcher()
 
     def _make_dispatcher(self) -> None:
@@ -263,6 +410,7 @@ class FakeStageBTools:
 param([string]$Invocation)
 $event = $env:VL360_STAGE_B_FAKE_EVENT
 $log = $env:VL360_STAGE_B_EVENT_LOG
+$urlCapture = "$($env:VL360_STAGE_B_SECRET_CAPTURE).url"
 $invocationObject = if ($Invocation) { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Invocation)) | ConvertFrom-Json } else { @{tool="unknown";arguments=@()} }
 $stdin = [Console]::In.ReadToEnd()
 $stdinHash = if ($stdin) { (([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($stdin)) | ForEach-Object ToString x2) -join "") } else { "" }
@@ -270,13 +418,37 @@ $record = [ordered]@{
   event=$event; tool=$invocationObject.tool; arguments=@($invocationObject.arguments)
   stdin_length=$stdin.Length; stdin_sha256=$stdinHash
   pg_environment=@{PGHOST=$env:PGHOST;PGPORT=$env:PGPORT;PGDATABASE=$env:PGDATABASE}
+  pg_password_present=[bool](-not [string]::IsNullOrEmpty($env:PGPASSWORD))
+  named_database_url_present=[bool](-not [string]::IsNullOrEmpty($env:VL360_STAGE_B_DATABASE_URL))
+  named_database_url_matches_generated=if ($event -in @("backup","plan") -and (Test-Path -LiteralPath $urlCapture)) { $env:VL360_STAGE_B_DATABASE_URL -ceq [IO.File]::ReadAllText($urlCapture) } else { $null }
+  generic_database_url_present=[bool](-not [string]::IsNullOrEmpty($env:DATABASE_URL))
+  ambient_pg_options_present=[bool](-not [string]::IsNullOrEmpty($env:PGOPTIONS))
   pg_password_matches_role_sql=if ($event -eq "verify-readonly-identity" -and (Test-Path -LiteralPath $env:VL360_STAGE_B_SECRET_CAPTURE)) { $env:PGPASSWORD -ceq [IO.File]::ReadAllText($env:VL360_STAGE_B_SECRET_CAPTURE) } else { $null }
 }
 if ($event) { Add-Content -LiteralPath $log -Value ($record | ConvertTo-Json -Compress -Depth 8) }
 if ($event -eq "create-role" -and $stdin -match "\\set stage_b_password '([^']+)'") {
-  [IO.File]::WriteAllText($env:VL360_STAGE_B_SECRET_CAPTURE, $Matches[1])
+  $capturedPassword = $Matches[1]
+  [IO.File]::WriteAllText($env:VL360_STAGE_B_SECRET_CAPTURE, $capturedPassword)
+  if ($stdin -match 'CREATE ROLE "([^"]+)"') {
+    $expectedUrl = "postgresql://$($Matches[1]):$([Uri]::EscapeDataString($capturedPassword))@127.0.0.1:15432/vinhlong360"
+    [IO.File]::WriteAllText($urlCapture, $expectedUrl)
+  }
 }
 if ($env:VL360_STAGE_B_FAILURE_STAGE -eq $event -or ($env:VL360_STAGE_B_FAILURE_STAGE -eq "noindex" -and $event -eq "verify-source-noindex")) { exit 17 }
+if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "fresh-noindex" -and $event -eq "verify-source-noindex") {
+  $noindexCount = @(
+    Get-Content -LiteralPath $log |
+      ForEach-Object { $_ | ConvertFrom-Json } |
+      Where-Object { $_.event -eq "verify-source-noindex" }
+  ).Count
+  if ($noindexCount -ge 2) { exit 17 }
+}
+if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "timeout" -and $event -eq "plan") {
+  $chunk = "x" * 1048576
+  [Console]::Out.Write($chunk)
+  [Console]::Error.Write($chunk)
+  Start-Sleep -Seconds 30
+}
 if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "dirty-worktree" -and $event -eq "git-status") { Write-Output " M dirty"; exit 0 }
 if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "git" -and $event -like "git-*") { exit 17 }
 if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "role-already-absent" -and $event -eq "drop-role" -and ($stdin -notmatch "\\if :stage_b_role_exists" -or $stdin -notmatch "DROP ROLE IF EXISTS")) { exit 17 }
@@ -349,7 +521,7 @@ if ($event -eq "verify-role-absent") {
     def log_text(self) -> str:
         return self.events_path.read_text() if self.events_path.exists() else ""
 
-    def run(self, tmp_path: Path) -> subprocess.CompletedProcess[str]:
+    def run(self, tmp_path: Path, timeout: float = 120) -> subprocess.CompletedProcess[str]:
         env = os.environ.copy()
         env.update(
             {
@@ -365,7 +537,14 @@ if ($event -eq "verify-role-absent") {
                 "VL360_STAGE_B_SECRET_CAPTURE": str(self.secret_capture),
             }
         )
-        result = _run_script(env, "-ArtifactParent", str(self.root / "artifacts-parent"))
+        if self.process_timeout_ms:
+            env["VL360_STAGE_B_PROCESS_TIMEOUT_MS"] = self.process_timeout_ms
+        result = _run_script(
+            env,
+            "-ArtifactParent",
+            str(self.root / "artifacts-parent"),
+            timeout=timeout,
+        )
         if self.secret_capture.exists():
             self.password = self.secret_capture.read_text()
             self.secret_capture.unlink()
