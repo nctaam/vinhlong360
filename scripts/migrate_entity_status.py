@@ -251,6 +251,14 @@ def _artifact_database_identity(value: object, label: str) -> dict[str, object]:
         raise MigrationRefusal(f"{label} database identity is invalid") from None
 
 
+def _verify_live_target_identity(
+    store, expected_identity: dict[str, object]
+) -> None:
+    live_identity = _artifact_database_identity(store.target_identity(), "live target")
+    if live_identity != expected_identity:
+        raise MigrationRefusal("live target identity mismatch")
+
+
 def _require_sha(value: object, label: str) -> str:
     if type(value) is not str or not re.fullmatch(r"[0-9a-f]{64}", value):
         raise MigrationRefusal(f"{label} is invalid")
@@ -1142,6 +1150,7 @@ def apply_plan(
     if listing_hash != expected_listing:
         raise MigrationRefusal("backup listing hash mismatch")
     _assert_artifact_unchanged(artifact, state)
+    _verify_live_target_identity(store, plan_identity)
     return _apply_locked(
         store,
         plan,
@@ -1506,6 +1515,7 @@ def rollback_apply(
         if listing_hash != backup.manifest["validation"]["listing_sha256"]:
             raise MigrationRefusal("backup listing hash mismatch")
     _assert_artifact_unchanged(artifact, state)
+    _verify_live_target_identity(store, apply_identity)
     return _rollback_locked(
         store,
         apply_report,

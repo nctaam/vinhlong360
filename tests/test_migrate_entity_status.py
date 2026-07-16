@@ -1510,7 +1510,21 @@ def test_apply_rechecks_locked_state_updates_and_audits_exact_plan_ownership(
         }
         for entity_id in ["a", "b"]
     ]
-    assert store.events[:4] == ["lock", "identity", "schema", "rows"]
+    assert store.events.index("identity") < store.events.index("lock")
+
+
+def test_apply_refuses_live_cluster_identity_drift_before_lock(tmp_path: Path) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    drifted = {**IDENTITY, "system_identifier": "7463376938976342232"}
+    store = ApplyFakeStore([_row("a"), _row("b")], identity=drifted)
+
+    with pytest.raises(
+        migration.MigrationRefusal, match="live target identity mismatch"
+    ):
+        _apply(store, plan, backup)
+
+    assert store.events == ["identity"]
 
 
 @pytest.mark.parametrize(
@@ -1665,6 +1679,7 @@ def test_rollback_restores_only_apply_owned_unchanged_rows(tmp_path: Path) -> No
         restore_validator=_restore_ok,
         clock=lambda: APPLY_NOW,
     )
+    store.events.clear()
 
     report = migration.rollback_apply(
         store,
@@ -1680,6 +1695,32 @@ def test_rollback_restores_only_apply_owned_unchanged_rows(tmp_path: Path) -> No
     assert set(report) == migration._ROLLBACK_REPORT_KEYS
     assert report["restored_ids"] == ["a", "b"]
     assert all(store.rows[entity_id]["status"] is None for entity_id in ("a", "b"))
+    assert store.events.index("identity") < store.events.index("lock")
+
+
+def test_rollback_refuses_live_cluster_identity_drift_before_lock(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    apply_report = _apply(store, plan, backup)
+    store.events.clear()
+    store.identity = {**IDENTITY, "database_oid": IDENTITY["database_oid"] + 1}
+
+    with pytest.raises(
+        migration.MigrationRefusal, match="live target identity mismatch"
+    ):
+        migration.rollback_apply(
+            store,
+            apply_report,
+            apply_report_sha256=_artifact_sha(apply_report),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW + timedelta(days=1),
+        )
+
+    assert store.events == ["identity"]
 
 
 def test_rollback_aborts_on_manual_status_drift(tmp_path: Path) -> None:
