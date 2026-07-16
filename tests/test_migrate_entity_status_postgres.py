@@ -25,6 +25,7 @@ RESTORE_LISTING = (
     "1; 1259 100 TABLE public entities owner\n"
     "2; 1259 101 TABLE public entity_changes owner\n"
 )
+FUNCTION_ACL_LOCK_NAME = "vinhlong360:entity-identity:pg-control-system-acl-v1"
 
 
 def _disposable_database_url() -> str:
@@ -77,6 +78,46 @@ def _quote_role(role: str) -> str:
     return f'"{role}"'
 
 
+def _acquire_function_acl_lock(cursor) -> None:
+    cursor.execute(
+        "SELECT pg_catalog.pg_advisory_lock("
+        "pg_catalog.hashtextextended(%s, 0))",
+        (FUNCTION_ACL_LOCK_NAME,),
+    )
+
+
+def _read_function_acl(cursor):
+    cursor.execute(
+        "SELECT proacl FROM pg_catalog.pg_proc "
+        "WHERE oid = 'pg_catalog.pg_control_system()'::regprocedure"
+    )
+    row = cursor.fetchone()
+    if row is None:
+        raise AssertionError("pg_control_system function ACL snapshot is missing")
+    return row[0]
+
+
+def _verify_function_acl(cursor, function_acl) -> bool:
+    cursor.execute(
+        "SELECT proacl IS NOT DISTINCT FROM %s::pg_catalog.aclitem[] "
+        "FROM pg_catalog.pg_proc "
+        "WHERE oid = 'pg_catalog.pg_control_system()'::pg_catalog.regprocedure",
+        (function_acl,),
+    )
+    row = cursor.fetchone()
+    return row is not None and row[0] is True
+
+
+def _release_function_acl_lock(cursor) -> bool:
+    cursor.execute(
+        "SELECT pg_catalog.pg_advisory_unlock("
+        "pg_catalog.hashtextextended(%s, 0))",
+        (FUNCTION_ACL_LOCK_NAME,),
+    )
+    row = cursor.fetchone()
+    return row is not None and row[0] is True
+
+
 def _restore_function_acl(cursor, function_acl) -> None:
     cursor.execute(
         "UPDATE pg_catalog.pg_proc SET proacl = %s::pg_catalog.aclitem[] "
@@ -98,8 +139,12 @@ def _cleanup_identity_roles(
     function_granted: bool,
     function_acl,
     public_execute_revoked: bool,
+    function_acl_snapshot_acquired: bool,
+    acl_lock_acquired: bool,
 ) -> None:
     errors: list[str] = []
+    acl_restore_succeeded = not public_execute_revoked
+    acl_readback_succeeded = False
 
     def attempt(label: str, action) -> None:
         try:
@@ -115,7 +160,7 @@ def _cleanup_identity_roles(
                 cursor.execute(query, params)
 
     if admin is None:
-        if created_roles or public_execute_revoked:
+        if created_roles or public_execute_revoked or acl_lock_acquired:
             errors.append("administrator connection was not opened")
     else:
         admin_closed = False
@@ -171,11 +216,27 @@ def _cleanup_identity_roles(
                 def restore_function_acl() -> None:
                     with admin.cursor() as cursor:
                         _restore_function_acl(cursor, function_acl)
+                    nonlocal acl_restore_succeeded
+                    acl_restore_succeeded = True
 
                 attempt(
                     "restore function ACL",
                     restore_function_acl,
                 )
+            if acl_lock_acquired:
+                if not function_acl_snapshot_acquired:
+                    errors.append("function ACL snapshot was not acquired")
+                else:
+                    def verify_function_acl() -> None:
+                        with admin.cursor() as cursor:
+                            if not _verify_function_acl(cursor, function_acl):
+                                raise AssertionError(
+                                    "function ACL readback did not match snapshot"
+                                )
+                        nonlocal acl_readback_succeeded
+                        acl_readback_succeeded = True
+
+                    attempt("verify function ACL", verify_function_acl)
             for role in created_roles:
                 attempt(
                     "drop generated role",
@@ -183,6 +244,18 @@ def _cleanup_identity_roles(
                         sql.SQL("DROP ROLE IF EXISTS {}").format(sql.Identifier(role))
                     ),
                 )
+            if acl_lock_acquired:
+                if acl_restore_succeeded and acl_readback_succeeded:
+                    def release_function_acl_lock() -> None:
+                        with admin.cursor() as cursor:
+                            if not _release_function_acl_lock(cursor):
+                                raise AssertionError(
+                                    "function ACL advisory lock release was not confirmed"
+                                )
+
+                    attempt("release function ACL lock", release_function_acl_lock)
+                else:
+                    errors.append("function ACL advisory lock left for connection close")
         attempt("close administrator connection", admin.close)
 
     if errors:
@@ -261,6 +334,116 @@ def test_restore_function_acl_uses_raw_aclitem_array() -> None:
     ]
 
 
+def test_function_acl_lock_is_acquired_before_snapshot() -> None:
+    class RecordingCursor:
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, tuple[object, ...] | None]] = []
+
+        def execute(
+            self, query: str, params: tuple[object, ...] | None = None
+        ) -> None:
+            self.calls.append((query, params))
+
+        def fetchone(self) -> tuple[list[str]]:
+            return (["=X/postgres"],)
+
+    cursor = RecordingCursor()
+
+    _acquire_function_acl_lock(cursor)
+    acl = _read_function_acl(cursor)
+
+    assert acl == ["=X/postgres"]
+    assert cursor.calls == [
+        (
+            "SELECT pg_catalog.pg_advisory_lock("
+            "pg_catalog.hashtextextended(%s, 0))",
+            ("vinhlong360:entity-identity:pg-control-system-acl-v1",),
+        ),
+        (
+            "SELECT proacl FROM pg_catalog.pg_proc "
+            "WHERE oid = 'pg_catalog.pg_control_system()'::regprocedure",
+            None,
+        ),
+    ]
+
+
+def test_cleanup_verifies_acl_before_unlocking_and_closing() -> None:
+    events: list[str] = []
+
+    class FakeSqlValue(str):
+        def format(self, *args) -> str:
+            return str(self).format(*args)
+
+    class FakeSql:
+        @staticmethod
+        def SQL(value: str) -> FakeSqlValue:
+            return FakeSqlValue(value)
+
+        @staticmethod
+        def Identifier(value: str) -> str:
+            return f'"{value}"'
+
+    class FakeCursor:
+        row: tuple[bool] | None = None
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args) -> None:
+            return None
+
+        def execute(self, query, params=None) -> None:
+            normalized = " ".join(str(query).split())
+            events.append(normalized)
+            if "proacl IS NOT DISTINCT FROM" in normalized:
+                self.row = (True,)
+            elif "pg_advisory_unlock" in normalized:
+                self.row = (True,)
+
+        def fetchone(self) -> tuple[bool] | None:
+            return self.row
+
+    class FakeAdmin:
+        closed = False
+
+        def rollback(self) -> None:
+            events.append("rollback")
+
+        def cursor(self) -> FakeCursor:
+            return FakeCursor()
+
+        def close(self) -> None:
+            events.append("close")
+
+    role = "entity_identity_" + ("a" * 32)
+    _cleanup_identity_roles(
+        admin=FakeAdmin(),
+        sql=FakeSql,
+        roles=(role,),
+        created_roles={role},
+        connect_granted_roles={role},
+        database_name="vl360",
+        allowed_role=role,
+        read_granted=True,
+        function_granted=True,
+        function_acl=["=X/postgres"],
+        public_execute_revoked=True,
+        function_acl_snapshot_acquired=True,
+        acl_lock_acquired=True,
+    )
+
+    terminate = next(i for i, event in enumerate(events) if "pg_terminate" in event)
+    restore = next(i for i, event in enumerate(events) if event.startswith("UPDATE"))
+    verify = next(
+        i for i, event in enumerate(events) if "proacl IS NOT DISTINCT FROM" in event
+    )
+    drop = next(i for i, event in enumerate(events) if event.startswith("DROP ROLE"))
+    unlock = next(i for i, event in enumerate(events) if "pg_advisory_unlock" in event)
+    close = events.index("close")
+
+    assert terminate < restore < verify < drop < unlock < close
+
+
 def test_cleanup_reports_closed_admin_connection() -> None:
     class ClosedAdmin:
         closed = True
@@ -284,6 +467,8 @@ def test_cleanup_reports_closed_admin_connection() -> None:
             function_granted=False,
             function_acl=None,
             public_execute_revoked=False,
+            function_acl_snapshot_acquired=False,
+            acl_lock_acquired=False,
         )
 
     assert admin.close_called is True
@@ -440,9 +625,11 @@ def pg_identity_roles():
     admin = None
     database_name = None
     function_acl = None
+    function_acl_snapshot_acquired = False
     read_granted = False
     function_granted = False
     public_execute_revoked = False
+    acl_lock_acquired = False
     try:
         admin = psycopg2.connect(
             database_url,
@@ -454,11 +641,10 @@ def pg_identity_roles():
         with admin.cursor() as cursor:
             cursor.execute("SELECT current_database()")
             database_name = cursor.fetchone()[0]
-            cursor.execute(
-                "SELECT proacl FROM pg_catalog.pg_proc "
-                "WHERE oid = 'pg_catalog.pg_control_system()'::regprocedure"
-            )
-            function_acl = cursor.fetchone()[0]
+            _acquire_function_acl_lock(cursor)
+            acl_lock_acquired = True
+            function_acl = _read_function_acl(cursor)
+            function_acl_snapshot_acquired = True
             cursor.execute(
                 "REVOKE EXECUTE ON FUNCTION pg_catalog.pg_control_system() FROM PUBLIC"
             )
@@ -521,6 +707,8 @@ def pg_identity_roles():
             function_granted=function_granted,
             function_acl=function_acl,
             public_execute_revoked=public_execute_revoked,
+            function_acl_snapshot_acquired=function_acl_snapshot_acquired,
+            acl_lock_acquired=acl_lock_acquired,
         )
 
 
