@@ -158,11 +158,27 @@ def _string_constants(tree: ast.Module) -> dict[str, str]:
     return constants
 
 
+def _proven_fastapi_constructor(
+    value: ast.Call,
+    imported_symbols: dict[str, tuple[str, str]],
+    imported_modules: dict[str, str],
+) -> str | None:
+    if isinstance(value.func, ast.Name):
+        imported = imported_symbols.get(value.func.id)
+        if imported is not None and imported[0] == "fastapi":
+            return imported[1]
+    elif isinstance(value.func, ast.Attribute) and isinstance(value.func.value, ast.Name):
+        if imported_modules.get(value.func.value.id) == "fastapi":
+            return value.func.attr
+    return None
+
+
 def _router_definition(
     node: ast.AST,
     module_key: str,
     constants: dict[str, str],
     imported_symbols: dict[str, tuple[str, str]],
+    imported_modules: dict[str, str],
     path: Path,
     scan_errors: list[Finding],
 ) -> _RouterDef | None:
@@ -170,13 +186,17 @@ def _router_definition(
     if name is None or not isinstance(value, ast.Call):
         return None
     constructor_name = _call_name(value)
-    imported = imported_symbols.get(constructor_name or "")
-    constructor = (
-        imported[1]
-        if imported is not None and imported[0] == "fastapi"
-        else constructor_name
-    )
+    constructor = _proven_fastapi_constructor(value, imported_symbols, imported_modules)
     if constructor not in {"APIRouter", "FastAPI"}:
+        if constructor_name in {"APIRouter", "FastAPI"}:
+            scan_errors.append(
+                Finding(
+                    "POLICY_ROUTE_SCAN_ERROR",
+                    str(path),
+                    node.lineno,
+                    "router constructor is not proven to originate from fastapi",
+                )
+            )
         return None
     prefix_node = next((keyword.value for keyword in value.keywords if keyword.arg == "prefix"), None)
     prefix = _literal_string(prefix_node, constants) if prefix_node is not None else ""
@@ -193,12 +213,29 @@ def _record_imports(
     imported_modules: dict[str, str],
 ) -> None:
     if isinstance(node, ast.ImportFrom):
-        module = (node.module or "").lstrip(".")
+        module = ("." * node.level) + (node.module or "")
         for name in node.names:
             imported_symbols[name.asname or name.name] = (module, name.name)
     elif isinstance(node, ast.Import):
         for name in node.names:
             imported_modules[name.asname or name.name.split(".")[0]] = name.name
+
+
+def _clear_rebound_imports(
+    node: ast.AST,
+    imported_symbols: dict[str, tuple[str, str]],
+    imported_modules: dict[str, str],
+) -> None:
+    names: list[str] = []
+    if isinstance(node, ast.Assign):
+        names = [target.id for target in node.targets if isinstance(target, ast.Name)]
+    elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+        names = [node.target.id]
+    elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+        names = [node.name]
+    for name in names:
+        imported_symbols.pop(name, None)
+        imported_modules.pop(name, None)
 
 
 def _parse_module(path: Path, source_root: Path) -> _ModuleInfo:
@@ -211,11 +248,13 @@ def _parse_module(path: Path, source_root: Path) -> _ModuleInfo:
     scan_errors: list[Finding] = []
 
     for node in tree.body:
+        _clear_rebound_imports(node, imported_symbols, imported_modules)
         router = _router_definition(
             node,
             key,
             constants,
             imported_symbols,
+            imported_modules,
             path,
             scan_errors,
         )

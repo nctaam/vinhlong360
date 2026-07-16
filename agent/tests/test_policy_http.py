@@ -1,5 +1,6 @@
 import copy
 import asyncio
+import inspect
 import sys
 from collections.abc import Iterator
 from pathlib import Path
@@ -141,6 +142,49 @@ def _policy_contract_app() -> FastAPI:
     return app
 
 
+class _PreRouteShortCircuitMiddleware:
+    def __init__(self, app, status_code=503):
+        self.app = app
+        self.status_code = status_code
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http":
+            response = Response(
+                status_code=self.status_code,
+                headers={
+                    "Cache-Control": "public, max-age=60",
+                    "ETag": '"pre-route"',
+                    "Last-Modified": "Wed, 15 Jul 2026 00:00:00 GMT",
+                    "Expires": "Wed, 15 Jul 2026 01:00:00 GMT",
+                },
+            )
+            await response(scope, receive, send)
+            return
+        await self.app(scope, receive, send)
+
+
+def _pre_route_short_circuit_app(status_code=503) -> FastAPI:
+    assert policy_http is not None, "agent.policy_http must exist"
+    router = APIRouter(prefix="/api")
+
+    @router.get("/entities/map", name="entity_map")
+    def entity_map():
+        return {"ok": True}
+
+    @router.get("/entities/{entity_id}", name="get_entity")
+    def get_entity(entity_id: str):
+        return {"id": entity_id}
+
+    app = FastAPI()
+    app.include_router(router)
+    app.add_middleware(_PreRouteShortCircuitMiddleware, status_code=status_code)
+    middleware_kwargs = {}
+    if "route_resolver" in inspect.signature(policy_http.PolicyHttpMiddleware).parameters:
+        middleware_kwargs["route_resolver"] = app.router
+    app.add_middleware(policy_http.PolicyHttpMiddleware, **middleware_kwargs)
+    return app
+
+
 @pytest.mark.parametrize(
     ("url", "expected_status"),
     [
@@ -213,9 +257,34 @@ def test_exact_lexical_path_without_resolved_route_is_untouched():
     ]
 
 
+@pytest.mark.parametrize(
+    ("path", "status_code", "expected_cache"),
+    [
+        ("/api/entities/1", 503, "no-store"),
+        ("/api/entities/1", 413, "no-store"),
+        ("/api/entities/map", 503, "public, max-age=60"),
+        ("/api/entities/not/a/route", 503, "public, max-age=60"),
+    ],
+)
+def test_pre_route_short_circuit_uses_exact_application_route_identity(
+    path: str,
+    status_code: int,
+    expected_cache: str,
+):
+    with TestClient(_pre_route_short_circuit_app(status_code)) as client:
+        response = client.get(path, headers={"If-None-Match": '"pre-route"'})
+
+    assert response.status_code == status_code
+    assert response.headers["cache-control"] == expected_cache
+    if expected_cache == "no-store":
+        assert not ({"etag", "last-modified", "expires"} & set(response.headers))
+    else:
+        assert response.headers["etag"] == '"pre-route"'
+
+
 def test_server_registers_policy_middleware_after_every_decorator_middleware():
     source = (Path(__file__).resolve().parent.parent / "server.py").read_text(encoding="utf-8")
-    registration = source.index("app.add_middleware(PolicyHttpMiddleware)")
+    registration = source.index("app.add_middleware(PolicyHttpMiddleware")
 
     assert registration > source.rfind('@app.middleware("http")')
 

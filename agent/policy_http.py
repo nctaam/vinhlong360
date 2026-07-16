@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable
 
+from starlette.routing import Match
+
 
 _EXPOSURES = frozenset({"public", "internal"})
 _CACHE_CONTRACT = "no-store-no-validator"
@@ -77,8 +79,14 @@ class PolicyHttpContractError(RuntimeError):
 class PolicyHttpMiddleware:
     """Apply the registry contract at ASGI response start after route resolution."""
 
-    def __init__(self, app, endpoints: Iterable[PolicyEndpoint] = POLICY_ENDPOINTS) -> None:
+    def __init__(
+        self,
+        app,
+        endpoints: Iterable[PolicyEndpoint] = POLICY_ENDPOINTS,
+        route_resolver=None,
+    ) -> None:
         self.app = app
+        self.route_resolver = route_resolver
         self._identities = frozenset(
             (row.method, row.path, row.route_name)
             for row in validate_policy_endpoints(endpoints)
@@ -88,9 +96,12 @@ class PolicyHttpMiddleware:
         if scope.get("type") != "http":
             await self.app(scope, receive, send)
             return
+        pre_resolved_identity = self._resolved_route_identity(scope)
 
         async def enforce_at_response_start(message) -> None:
-            if message.get("type") == "http.response.start" and self._is_registered(scope):
+            if message.get("type") == "http.response.start" and self._is_registered(
+                scope, pre_resolved_identity
+            ):
                 status = message.get("status")
                 if status == 304:
                     route = scope.get("route")
@@ -108,13 +119,31 @@ class PolicyHttpMiddleware:
 
         await self.app(scope, receive, enforce_at_response_start)
 
-    def _is_registered(self, scope) -> bool:
+    def _resolved_route_identity(self, scope):
         route = scope.get("route")
-        if route is None:
+        if route is not None:
+            return (
+                str(scope.get("method", "")).upper(),
+                getattr(route, "path", None),
+                getattr(route, "name", None),
+            )
+        if self.route_resolver is None:
+            return None
+        for candidate in getattr(self.route_resolver, "routes", ()):
+            try:
+                match, _child_scope = candidate.matches(scope)
+            except Exception:
+                return None
+            if match is Match.FULL:
+                return (
+                    str(scope.get("method", "")).upper(),
+                    getattr(candidate, "path", None),
+                    getattr(candidate, "name", None),
+                )
+        return None
+
+    def _is_registered(self, scope, pre_resolved_identity=None) -> bool:
+        identity = self._resolved_route_identity(scope) or pre_resolved_identity
+        if identity is None:
             return False
-        identity = (
-            str(scope.get("method", "")).upper(),
-            getattr(route, "path", None),
-            getattr(route, "name", None),
-        )
         return identity in self._identities

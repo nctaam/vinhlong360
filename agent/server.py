@@ -1347,7 +1347,7 @@ async def track_response_time(request: Request, call_next):
 
 
 # Registered after every decorator middleware so policy headers remain final.
-app.add_middleware(PolicyHttpMiddleware)
+app.add_middleware(PolicyHttpMiddleware, route_resolver=app.router)
 
 
 from pydantic import ConfigDict, Field, field_validator

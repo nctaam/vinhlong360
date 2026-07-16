@@ -108,6 +108,7 @@ Legacy aliases (`from_id`, `to_id`, `type`) may be included during migration.
 The table above lists the primary endpoints; `agent/public_api.py` also serves additional public routes (autocomplete, map-pins, gallery, similar, nearby, qa, reviews, collections, announcements, featured, entity-types, areas, ...). Check the router when in doubt.
 
 Policy-bearing HTTP responses are governed by the exact registry in `agent/policy_http.py`. Matching uses the resolved FastAPI method, path template, and route name; static `/api/entities/*` routes retain their existing cache behavior.
+The same exact route identity is used for pre-routing 413/503 short-circuits; unmatched URLs remain outside the policy contract.
 
 ### Chat
 

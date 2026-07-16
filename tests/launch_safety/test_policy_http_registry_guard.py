@@ -328,6 +328,112 @@ def get_entity(entity_id: str):
     assert checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],)) == []
 
 
+def test_scanner_resolves_fastapi_module_alias_constructors(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    source = _write(
+        tmp_path / "module_alias.py",
+        '''
+import fastapi as fa
+router = fa.APIRouter(prefix="/api")
+app = fa.FastAPI()
+app.include_router(router)
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+
+    assert checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],)) == []
+
+
+@pytest.mark.parametrize(
+    "constructor_source",
+    [
+        '''
+from fake import APIRouter, FastAPI
+router = APIRouter(prefix="/api")
+app = FastAPI()
+''',
+        '''
+import fake
+router = fake.APIRouter(prefix="/api")
+app = fake.FastAPI()
+''',
+    ],
+)
+def test_non_fastapi_constructor_provenance_fails_closed(
+    tmp_path: Path,
+    constructor_source: str,
+):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    source = _write(
+        tmp_path / "fake_constructor.py",
+        constructor_source
+        + '''
+app.include_router(router)
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],))
+
+    assert "POLICY_ROUTE_SCAN_ERROR" in _codes(findings)
+    assert "STALE_POLICY_REGISTRY_ENTRY" in _codes(findings)
+
+
+@pytest.mark.parametrize(
+    "constructor_source",
+    [
+        '''
+from .fastapi import APIRouter, FastAPI
+router = APIRouter(prefix="/api")
+app = FastAPI()
+''',
+        '''
+from fastapi import APIRouter, FastAPI
+APIRouter = fake.APIRouter
+FastAPI = fake.FastAPI
+router = APIRouter(prefix="/api")
+app = FastAPI()
+''',
+        '''
+import fastapi
+fastapi = fake
+router = fastapi.APIRouter(prefix="/api")
+app = fastapi.FastAPI()
+''',
+    ],
+)
+def test_relative_or_shadowed_fastapi_provenance_fails_closed(
+    tmp_path: Path,
+    constructor_source: str,
+):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    source = _write(
+        tmp_path / "shadowed_constructor.py",
+        constructor_source
+        + '''
+app.include_router(router)
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],))
+
+    assert "POLICY_ROUTE_SCAN_ERROR" in _codes(findings)
+    assert "STALE_POLICY_REGISTRY_ENTRY" in _codes(findings)
+
+
 def test_unresolved_router_constructor_fails_closed(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None
