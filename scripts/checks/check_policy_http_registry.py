@@ -39,6 +39,7 @@ SERIALIZED_POLICY_KEYS = frozenset(
     }
 )
 _AUTHORITATIVE_APP_MODULE = "server"
+_AUTHORITATIVE_APP_MODULES = frozenset({_AUTHORITATIVE_APP_MODULE, "agent.server"})
 _AUTHORITATIVE_APP_VARIABLE = "app"
 
 
@@ -685,7 +686,7 @@ def _mounted_prefixes(
         if router.is_app
         and router.variable == _AUTHORITATIVE_APP_VARIABLE
         and module.path.name == f"{_AUTHORITATIVE_APP_MODULE}.py"
-        and _module_matches(module.key, _AUTHORITATIVE_APP_MODULE)
+        and module.key in _AUTHORITATIVE_APP_MODULES
     }
     changed = True
     while changed:

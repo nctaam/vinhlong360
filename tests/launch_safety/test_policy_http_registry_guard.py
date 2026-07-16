@@ -336,6 +336,49 @@ bot_app.include_router(router)
     }
 
 
+def test_nested_server_module_cannot_impersonate_authoritative_root(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    agent = tmp_path / "agent"
+    routes = _write(
+        agent / "public_api.py",
+        '''
+from fastapi import APIRouter
+router = APIRouter(prefix="/api")
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+    server = _write(
+        agent / "server.py",
+        '''
+from fastapi import FastAPI
+app = FastAPI()
+''',
+    )
+    impersonator = _write(
+        agent / "foo" / "server.py",
+        '''
+from fastapi import FastAPI
+from public_api import router
+app = FastAPI()
+app.include_router(router)
+''',
+    )
+
+    findings = checker.scan_policy_routes(
+        [routes, server, impersonator],
+        (policy_http.POLICY_ENDPOINTS[0],),
+    )
+
+    assert _codes(findings) == {
+        "POLICY_ROUTE_CONTRACT_MISMATCH",
+        "STALE_POLICY_REGISTRY_ENTRY",
+    }
+
+
 def test_conditional_include_router_does_not_mount_registered_route(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None and policy_http is not None
