@@ -45,6 +45,16 @@ ATTESTATION_REVISION = "postgres-identity-v2"
 MAX_INPUT_BYTES = 1024 * 1024
 MAX_EVIDENCE_AGE_SECONDS = 300
 EVIDENCE_KEYS = {"source", "noindex", "temporary_role", "tunnel", "operations"}
+ACL_KEYS = {
+    "checked_at",
+    "allowed_principals",
+    "object_count",
+    "protected_object_count",
+    "unexpected_principals",
+    "inherited_rule_count",
+    "reparse_point_count",
+    "alternate_data_stream_count",
+}
 SECRET_KEYS = {
     "password",
     "password_hash",
@@ -349,6 +359,9 @@ def validate_artifacts(root: Path, now: datetime | None = None) -> dict[str, obj
 
     plan, plan_sha = load_canonical_object(plan_path, "publication plan")
     manifest, manifest_sha = load_canonical_object(manifest_path, "backup manifest")
+    artifact_info = manifest.get("artifact")
+    if type(artifact_info) is not dict or artifact_info.get("path") != "postgres.dump":
+        raise AttestationRefusal("backup artifact path must be postgres.dump")
     plan_identity = _identity(plan.get("database_identity"), "plan")
     manifest_identity = _identity(manifest.get("database_identity"), "backup")
     if plan_identity != manifest_identity:
@@ -380,9 +393,6 @@ def validate_artifacts(root: Path, now: datetime | None = None) -> dict[str, obj
 
     dump_raw, dump_metadata = _stable_read(dump_path, "postgres dump")
     dump_identity = (dump_metadata.st_dev, dump_metadata.st_ino, dump_metadata.st_size)
-    artifact_info = manifest.get("artifact")
-    if type(artifact_info) is not dict:
-        raise AttestationRefusal("backup artifact fields are malformed")
     if dump_metadata.st_size != artifact_info.get("size"):
         raise AttestationRefusal("backup artifact size mismatch")
     dump_sha = hashlib.sha256(dump_raw).hexdigest()
@@ -478,7 +488,11 @@ def run_acl_helper(mode: str, root: Path) -> dict[str, object]:
         raise AttestationRefusal("ACL verification returned invalid evidence") from None
     if type(evidence) is not dict:
         raise AttestationRefusal("ACL verification returned invalid evidence")
-    return evidence
+    if set(evidence) != ACL_KEYS | {"root"}:
+        raise AttestationRefusal("ACL verification returned invalid evidence")
+    if type(evidence["root"]) is not str or not evidence["root"]:
+        raise AttestationRefusal("ACL verification returned invalid evidence")
+    return {key: evidence[key] for key in ACL_KEYS}
 
 
 def _fresh(timestamp: object, label: str, now: datetime) -> str:
@@ -623,26 +637,21 @@ def validate_evidence(
 
 
 def _acl_summary(value: dict[str, object]) -> dict[str, object]:
-    expected = {
-        "checked_at",
-        "allowed_principals",
-        "object_count",
-        "protected_object_count",
-        "unexpected_principals",
-        "inherited_rule_count",
-        "reparse_point_count",
-        "alternate_data_stream_count",
-    }
-    if not expected.issubset(value):
+    if set(value) != ACL_KEYS:
         raise AttestationRefusal("ACL evidence fields are malformed")
     checked_at = _parse_utc(value["checked_at"], "ACL")
     age = (_utc_now() - checked_at).total_seconds()
     if age < 0 or age > MAX_EVIDENCE_AGE_SECONDS:
         raise AttestationRefusal("ACL evidence is stale")
-    if value["unexpected_principals"] != [] or value["inherited_rule_count"] != 0:
+    if value["unexpected_principals"] != []:
         raise AttestationRefusal("ACL evidence is not explicit and clean")
-    if value["reparse_point_count"] != 0 or value["alternate_data_stream_count"] != 0:
-        raise AttestationRefusal("ACL evidence contains hostile objects")
+    for key in (
+        "inherited_rule_count",
+        "reparse_point_count",
+        "alternate_data_stream_count",
+    ):
+        if type(value[key]) is not int or value[key] != 0:
+            raise AttestationRefusal("ACL evidence contains hostile objects")
     if type(value["allowed_principals"]) is not list or any(
         type(item) is not str for item in value["allowed_principals"]
     ):
@@ -652,21 +661,32 @@ def _acl_summary(value: dict[str, object]) -> dict[str, object]:
             raise AttestationRefusal("ACL object counts are invalid")
     if value["protected_object_count"] != value["object_count"]:
         raise AttestationRefusal("ACL objects are not protected")
-    return {
-        "checked_at": _utc_text(checked_at),
-        "allowed_principals": list(value["allowed_principals"]),
-        "object_count": value["object_count"],
-        "protected_object_count": value["protected_object_count"],
-        "unexpected_principals": [],
-        "inherited_rule_count": 0,
-        "reparse_point_count": 0,
-        "alternate_data_stream_count": 0,
-    }
+    return {key: value[key] for key in ACL_KEYS}
 
 
 def _path_identity(path: Path) -> tuple[int, int]:
     metadata = _real_file(path, "attestation path")
     return metadata.st_dev, metadata.st_ino
+
+
+def _assert_empty_attestation_links(
+    pending: Path,
+    output: Path,
+    expected_identity: tuple[int, int] | None = None,
+) -> tuple[int, int]:
+    pending_metadata = _real_file(pending, "attestation pending path")
+    output_metadata = _real_file(output, "attestation output path")
+    pending_identity = (pending_metadata.st_dev, pending_metadata.st_ino)
+    output_identity = (output_metadata.st_dev, output_metadata.st_ino)
+    if pending_identity != output_identity or (
+        expected_identity is not None and pending_identity != expected_identity
+    ):
+        raise AttestationRefusal("attestation hardlink identity mismatch")
+    if pending_metadata.st_size != 0 or output_metadata.st_size != 0:
+        raise AttestationRefusal(
+            "attestation hardlinks must remain empty before ACL normalization"
+        )
+    return pending_identity
 
 
 def _create_empty_links(root: Path, output: Path) -> tuple[Path, tuple[int, int]]:
@@ -689,9 +709,7 @@ def _create_empty_links(root: Path, output: Path) -> tuple[Path, tuple[int, int]
         raise AttestationRefusal("attestation output already exists") from None
     except OSError:
         raise AttestationRefusal("unable to allocate attestation paths") from None
-    identity = _path_identity(pending)
-    if _path_identity(output) != identity:
-        raise AttestationRefusal("attestation hardlink identity mismatch")
+    identity = _assert_empty_attestation_links(pending, output)
     return pending, identity
 
 
@@ -779,6 +797,7 @@ def build_attestation(
     except (TypeError, ValueError):
         raise AttestationRefusal("attestation sections are not serializable") from None
     pending, identity = _create_empty_links(root, output)
+    _assert_empty_attestation_links(pending, output, identity)
     acl = run_acl_helper("NormalizeAndVerify", root)
     final = dict(base)
     final["acl"] = _acl_summary(acl)

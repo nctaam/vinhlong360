@@ -35,10 +35,16 @@ REVISION = subprocess.run(
 ).stdout.strip()
 NOW = datetime.now(UTC).replace(microsecond=0)
 REAL_ACL_HELPER = stage_b_attestation.run_acl_helper
+ACL_SUMMARY_BY_ROOT: dict[Path, dict[str, object]] = {}
 
 
 def _utc_text(value: datetime) -> str:
     return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
+
+
+def _dotnet_utc_text(value: datetime) -> str:
+    utc = value.astimezone(UTC)
+    return f"{utc:%Y-%m-%dT%H:%M:%S}.{utc.microsecond:06d}7Z"
 
 
 def _restore_listing() -> bytes:
@@ -142,13 +148,14 @@ def stage_b_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         "validate_restore_artifact",
         lambda _path: listing_sha,
     )
+    acl_checked_at = _dotnet_utc_text(datetime.now(UTC))
 
-    def fake_acl(_mode: str, checked_root: Path) -> dict[str, object]:
+    def fake_acl(mode: str, checked_root: Path) -> dict[str, object]:
         object_count = (
             8 if os.path.lexists(checked_root / "stage-b-attestation.json") else 6
         )
-        return {
-            "checked_at": _utc_text(datetime.now(UTC)),
+        summary = {
+            "checked_at": acl_checked_at,
             "allowed_principals": [
                 "DESKTOP\\Administrator",
                 "NT AUTHORITY\\SYSTEM",
@@ -161,6 +168,9 @@ def stage_b_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
             "reparse_point_count": 0,
             "alternate_data_stream_count": 0,
         }
+        if mode == "NormalizeAndVerify":
+            ACL_SUMMARY_BY_ROOT[checked_root] = dict(summary)
+        return summary
 
     monkeypatch.setattr(stage_b_attestation, "run_acl_helper", fake_acl)
     monkeypatch.setattr(
@@ -337,10 +347,8 @@ def test_attestation_writer_validates_and_writes_canonical_secret_free_evidence(
         "export_run": False,
         "deploy_run": False,
     }
-    assert document["acl"]["object_count"] == 8
-    assert document["acl"]["protected_object_count"] == 8
-    assert document["acl"]["alternate_data_stream_count"] == 0
-    assert "alternate_stream_count" not in document["acl"]
+    assert document["acl"] == ACL_SUMMARY_BY_ROOT[stage_b_root]
+    assert document["acl"]["checked_at"].endswith("7Z")
     assert output.read_bytes() == postgres_target.canonical_json_bytes(document)
     assert "entity-1" not in output.read_text(encoding="utf-8")
     pending = list(stage_b_root.glob(".pending-write-*"))
@@ -411,6 +419,86 @@ def test_attestation_refuses_artifact_drift_without_output(
     output = stage_b_root / "stage-b-attestation.json"
     result = _run_attestation(stage_b_root, output, evidence)
     assert result.returncode != 0
+    assert not output.exists()
+    assert not list(stage_b_root.glob(".pending-write-*"))
+
+
+def test_attestation_refuses_manifest_bound_to_identical_sibling_dump(
+    stage_b_root: Path, evidence: dict[str, object]
+) -> None:
+    run = stage_b_root / "backup" / "20260715-230716"
+    dump = run / "postgres.dump"
+    (run / "other.dump").write_bytes(dump.read_bytes())
+    manifest_path = run / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["artifact"]["path"] = "other.dump"
+    manifest_path.write_bytes(postgres_target.canonical_json_bytes(manifest))
+
+    output = stage_b_root / "stage-b-attestation.json"
+    result = _run_attestation(stage_b_root, output, evidence)
+
+    assert result.returncode != 0
+    assert "artifact path" in result.stderr.lower()
+    assert not output.exists()
+    assert not list(stage_b_root.glob(".pending-write-*"))
+
+
+def test_attestation_refuses_nonempty_hardlinks_before_acl_normalization(
+    stage_b_root: Path,
+    evidence: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    acl_modes: list[str] = []
+    original_acl = stage_b_attestation.run_acl_helper
+    original_link = stage_b_attestation.os.link
+
+    def record_acl(mode: str, root: Path) -> dict[str, object]:
+        acl_modes.append(mode)
+        return original_acl(mode, root)
+
+    def link_then_write(
+        source: os.PathLike[str] | str,
+        destination: os.PathLike[str] | str,
+        *,
+        follow_symlinks: bool = True,
+    ) -> None:
+        original_link(source, destination, follow_symlinks=follow_symlinks)
+        Path(source).write_bytes(b"x")
+
+    monkeypatch.setattr(stage_b_attestation, "run_acl_helper", record_acl)
+    monkeypatch.setattr(stage_b_attestation.os, "link", link_then_write)
+    output = stage_b_root / "stage-b-attestation.json"
+
+    result = _run_attestation(stage_b_root, output, evidence)
+
+    assert result.returncode != 0
+    assert "empty" in result.stderr.lower()
+    assert acl_modes == ["Verify"]
+    pending = list(stage_b_root.glob(".pending-write-*"))
+    assert len(pending) == 1
+    assert pending[0].read_bytes() == b"x"
+    assert output.read_bytes() == b"x"
+
+
+def test_attestation_refuses_extra_acl_summary_key_before_allocation(
+    stage_b_root: Path,
+    evidence: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_acl = stage_b_attestation.run_acl_helper
+
+    def acl_with_extra(mode: str, root: Path) -> dict[str, object]:
+        summary = original_acl(mode, root)
+        summary["unexpected_extra"] = True
+        return summary
+
+    monkeypatch.setattr(stage_b_attestation, "run_acl_helper", acl_with_extra)
+    output = stage_b_root / "stage-b-attestation.json"
+
+    result = _run_attestation(stage_b_root, output, evidence)
+
+    assert result.returncode != 0
+    assert "acl evidence fields" in result.stderr.lower()
     assert not output.exists()
     assert not list(stage_b_root.glob(".pending-write-*"))
 
