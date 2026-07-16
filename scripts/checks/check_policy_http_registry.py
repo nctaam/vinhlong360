@@ -581,18 +581,18 @@ def _call_serializes_policy(
     call: ast.Call,
     constants: dict[str, str] | None,
     tainted_names: set[str],
+    returned_names: set[str],
 ) -> bool:
     if not (_contains_serialized_key(call, constants) or bool(_names_in(call) & tainted_names)):
         return False
     if _call_name(call) in {"Response", "JSONResponse"}:
         return True
     function = call.func
-    return (
-        isinstance(function, ast.Attribute)
-        and function.attr == "update"
-        and isinstance(function.value, ast.Attribute)
-        and function.value.attr == "headers"
-    )
+    if not isinstance(function, ast.Attribute) or function.attr != "update":
+        return False
+    if isinstance(function.value, ast.Attribute) and function.value.attr == "headers":
+        return True
+    return _root_name(function.value) in returned_names
 
 
 def _serializes_policy(
@@ -613,7 +613,7 @@ def _serializes_policy(
         for child in ast.walk(node)
         if isinstance(child, (ast.Assign, ast.AnnAssign))
     ) or any(
-        _call_serializes_policy(child, constants, tainted)
+        _call_serializes_policy(child, constants, tainted, returned)
         for child in ast.walk(node)
         if isinstance(child, ast.Call)
     )
@@ -663,7 +663,10 @@ def _mount_edges(
 ) -> dict[tuple[str, str], list[tuple[tuple[str, str], str]]]:
     edges: dict[tuple[str, str], list[tuple[tuple[str, str], str]]] = {}
     for module in modules:
-        for call in (node for node in ast.walk(module.tree) if isinstance(node, ast.Call)):
+        for statement in module.tree.body:
+            call = statement.value if isinstance(statement, ast.Expr) else None
+            if not isinstance(call, ast.Call):
+                continue
             edge = _include_edge(call, module, router_defs)
             if edge is not None:
                 parent_key, child_key, prefix = edge

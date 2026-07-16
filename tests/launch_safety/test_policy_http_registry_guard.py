@@ -336,6 +336,33 @@ bot_app.include_router(router)
     }
 
 
+def test_conditional_include_router_does_not_mount_registered_route(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    source = _write(
+        tmp_path / "server.py",
+        '''
+from fastapi import APIRouter, FastAPI
+router = APIRouter(prefix="/api")
+app = FastAPI()
+
+if False:
+    app.include_router(router)
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],))
+
+    assert _codes(findings) == {
+        "POLICY_ROUTE_CONTRACT_MISMATCH",
+        "STALE_POLICY_REGISTRY_ENTRY",
+    }
+
+
 def test_scanner_preserves_fastapi_trailing_slash_route_semantics(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None and policy_http is not None
@@ -651,6 +678,39 @@ def policy_header_local(response: Response):
     findings = checker.scan_policy_routes([source], ())
 
     assert _codes(findings) == {"UNREGISTERED_POLICY_ROUTE"}
+
+
+def test_scanner_classifies_policy_mapping_update_returned_as_json(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None
+    source = _write(
+        tmp_path / "mapping_update.py",
+        '''
+from dataclasses import asdict
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+app = FastAPI()
+
+@app.get("/mapping")
+def mapping():
+    decision = decide_entity(...)
+    payload = {}
+    payload.update({"index_policy": asdict(decision)})
+    return payload
+
+@app.get("/json-mapping")
+def json_mapping():
+    decision = decide_entity(...)
+    payload = {}
+    payload.update({"decision": asdict(decision)})
+    return JSONResponse(payload)
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], ())
+    unregistered = [finding for finding in findings if finding.code == "UNREGISTERED_POLICY_ROUTE"]
+
+    assert len(unregistered) == 2
 
 
 def test_scanner_supports_api_route_methods_and_exact_header_markers(tmp_path: Path):
