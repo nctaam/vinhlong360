@@ -109,7 +109,7 @@ function Initialize-TestMode {
         [void](Assert-TestOwnedPath $env:VL360_STAGE_B_FAKE_ROOT 'fake artifact root')
     }
     # Resolve every fake before the first observable stage so partial seams cannot run.
-    foreach ($name in @('git','http','secure','ssh','psql','backup','plan','pg_restore','attestation')) {
+    foreach ($name in @('git','http','secure','ssh','psql','backup','plan','pg_restore','attestation','listener_query')) {
         [void](Get-FakeTool $name)
     }
 }
@@ -485,6 +485,22 @@ function Dispose-TunnelProcess {
     $script:TunnelStderrDrain = $null
 }
 
+function Get-CleanupTunnelListeners {
+    if ($script:TestMode) {
+        $failureStages = @($env:VL360_STAGE_B_FAILURE_STAGE -split ',' | Where-Object { $_ })
+        if ('query-tunnel-listeners' -in $failureStages) {
+            Invoke-Tool -Name 'listener_query' -Arguments @([string]$LocalPort) -Event 'query-tunnel-listeners' | Out-Null
+        }
+        return @()
+    }
+    $connections = @(Get-NetTCPConnection -ErrorAction Stop)
+    return @($connections | Where-Object {
+        $_.State -eq 'Listen' -and
+        $_.LocalPort -eq $LocalPort -and
+        $_.LocalAddress -eq '127.0.0.1'
+    })
+}
+
 function Invoke-Cleanup {
     if ($script:RoleAttempted) {
         try { Invoke-SshSql (New-DropRoleSql) 'drop-role' | Out-Null } catch { $script:CleanupErrors.Add('role drop failed') }
@@ -506,9 +522,9 @@ function Invoke-Cleanup {
                 if ($null -eq $script:TunnelProcess) { Fail 'tunnel process evidence is missing' }
                 if ($null -ne $script:TunnelIdentity) { Assert-TunnelProcessOwnership }
                 if (-not $script:TunnelProcess.HasExited) { Fail 'tunnel process remains' }
-                $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $LocalPort -ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -eq '127.0.0.1' })
-                if ($listeners.Count -ne 0) { Fail 'tunnel listener remains' }
             }
+            $listeners = @(Get-CleanupTunnelListeners)
+            if ($listeners.Count -ne 0) { Fail 'tunnel listener remains' }
             $script:CleanupEvidence.TunnelAbsentCheckedAt = [DateTime]::UtcNow.ToString('o',[Globalization.CultureInfo]::InvariantCulture)
         } catch { $script:CleanupErrors.Add('tunnel absence verification failed') }
         finally { Dispose-TunnelProcess }

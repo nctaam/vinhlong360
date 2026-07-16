@@ -123,11 +123,16 @@ def test_runner_cleanup_listener_absence_only_checks_loopback_listeners() -> Non
     cleanup = source.split("function Invoke-Cleanup {", 1)[1].split(
         "function Get-SourceState {", 1
     )[0]
-    assert (
-        "Get-NetTCPConnection -State Listen -LocalPort $LocalPort "
-        "-ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -eq '127.0.0.1' }"
-        in cleanup
-    )
+    query = source.split("function Get-CleanupTunnelListeners {", 1)[1].split(
+        "function Invoke-Cleanup {", 1
+    )[0]
+    assert "Get-NetTCPConnection -ErrorAction Stop" in query
+    assert "-ErrorAction SilentlyContinue" not in query
+    assert "Where-Object {" in query
+    assert "$_.State -eq 'Listen'" in query
+    assert "$_.LocalPort -eq $LocalPort" in query
+    assert "$_.LocalAddress -eq '127.0.0.1'" in query
+    assert "$listeners = @(Get-CleanupTunnelListeners)" in cleanup
     assert "Get-NetTCPConnection -LocalPort $LocalPort" not in cleanup
 
 
@@ -431,6 +436,19 @@ def test_cleanup_requires_canonical_role_absence_count(
     )
     assert role_check["arguments"][-2:] == ["--tuples-only", "--no-align"]
     assert ("write-attestation" in fake_stage_b_tools.events) is should_succeed
+
+
+def test_cleanup_listener_query_failure_blocks_attestation(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    fake_stage_b_tools.failure_stage = "query-tunnel-listeners"
+    result = fake_stage_b_tools.run(tmp_path)
+
+    assert result.returncode != 0
+    assert "query-tunnel-listeners" in fake_stage_b_tools.events
+    assert "ERROR: mandatory cleanup failed" in result.stderr
+    assert "write-attestation" not in fake_stage_b_tools.events
+    assert not list(fake_stage_b_tools.root.rglob("stage-b-attestation.json"))
 
 
 def test_runner_secret_and_sql_are_absent_from_fake_argv_and_event_log(
