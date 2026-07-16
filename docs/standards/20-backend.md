@@ -15,6 +15,7 @@ PEP 8 + ruff full-ruleset (đích SP3: E,F,W,I,N,UP,B,S,C90) · FastAPI best pra
 | R20.6 | B3: module mù phải có test TRƯỚC khi refactor | quy-trình-ký* | — |
 | R20.7 | agent/*.py đổi ⇒ có test staged cùng commit | soft-ratchet | check_test_pairing |
 | R20.8 | Cyclomatic complexity hàm ≤12 | soft-ratchet | check_complexity |
+| R20.9 | Policy-bearing FastAPI route phải khớp exact no-store registry và mounted route identity | hard | check_policy_http_registry |
 
 ## Ngoại lệ đã duyệt
 - **R20.6** là quy trình (không máy-đo trọn) — *chủ dự án duyệt (2026-07-07); vi phạm phát hiện qua review = chặn merge tay.*

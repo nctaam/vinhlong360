@@ -89,7 +89,7 @@ Legacy aliases (`from_id`, `to_id`, `type`) may be included during migration.
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/entities` | List entities (filters: type, area, q, month, limit, offset) |
-| GET | `/api/entities/{id}` | Entity detail with relationships + quality score |
+| GET | `/api/entities/{id}` | Entity detail with relationships, quality score, and mandatory `index_policy`; exact registered route is `no-store`, emits no validators, and never returns 304 |
 | GET | `/api/entities/{id}/relationships` | Paginated relationships |
 | GET | `/api/places` | List place entities (xã/phường/tỉnh) |
 | GET | `/api/facilities` | List facility entities |
@@ -106,6 +106,8 @@ Legacy aliases (`from_id`, `to_id`, `type`) may be included during migration.
 | POST | `/api/client-error` | Client-side error reporting |
 
 The table above lists the primary endpoints; `agent/public_api.py` also serves additional public routes (autocomplete, map-pins, gallery, similar, nearby, qa, reviews, collections, announcements, featured, entity-types, areas, ...). Check the router when in doubt.
+
+Policy-bearing HTTP responses are governed by the exact registry in `agent/policy_http.py`. Matching uses the resolved FastAPI method, path template, and route name; static `/api/entities/*` routes retain their existing cache behavior.
 
 ### Chat
 

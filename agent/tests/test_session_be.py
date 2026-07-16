@@ -434,13 +434,14 @@ def test_check_phone_endpoint_mounted():
     assert ("POST", "/auth/check-phone") in pairs
 
 
-# ── LRU cache eviction ─────────────────────────────────────────────────
+# ── Cache compatibility ────────────────────────────────────────────────
 
-def test_entity_cache_lru_eviction():
-    from collections import OrderedDict
-    from public_api import _entity_cache, _ENTITY_CACHE_MAX
-    assert isinstance(_entity_cache, OrderedDict)
-    assert _ENTITY_CACHE_MAX == 1000
+def test_entity_cache_invalidator_remains_compatible_without_response_memo():
+    import public_api
+
+    assert not hasattr(public_api, "_entity_cache")
+    public_api.invalidate_entity_cache()
+    public_api.invalidate_entity_cache("entity-id")
 
 
 def test_place_cache_lru_eviction():

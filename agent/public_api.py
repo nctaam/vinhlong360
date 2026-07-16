@@ -83,18 +83,9 @@ _HOMEPAGE_TTL = 120  # giây
 _homepage_rebuilding = False
 _homepage_lock = asyncio.Lock()
 
-_ENTITY_CACHE_MAX = 1000
-_entity_cache: OrderedDict[str, tuple[float, dict]] = OrderedDict()
-_ENTITY_TTL = 60  # 60s cache per entity
-
 def invalidate_entity_cache(entity_id: str | None = None):
-    """Clear entity cache entry or all entries."""
-    if entity_id:
-        to_del = [k for k in _entity_cache if k.startswith(f"{entity_id}:")]
-        for k in to_del:
-            _entity_cache.pop(k, None)
-    else:
-        _entity_cache.clear()
+    """Compatibility hook retained after removing policy-bearing response memoization."""
+    del entity_id
 
 
 def _is_public(e: dict) -> bool:
@@ -1264,28 +1255,12 @@ async def list_areas(response: Response):
 
 @router.get("/entities/{entity_id}", response_model=EntityDetailResponse,
             summary="Get entity detail",
-            description="Returns full entity detail including relationships, quality score, source freshness, and practical facts. Supports ETag caching.")
+            description="Returns full entity detail including relationships, quality score, source freshness, practical facts, and index policy.")
 async def get_entity(
     entity_id: str,
-    request: Request,
-    response: Response,
     relationship_limit: int = Query(DEFAULT_RELATIONSHIP_LIMIT, ge=0, le=100),
 ):
     validate_path_id(entity_id, "entity_id")
-    response.headers["Cache-Control"] = "public, max-age=60, stale-while-revalidate=120"
-    if not await asyncio.to_thread(_get_public_entity, entity_id):
-        return _err(404, "not_found")
-    cache_key = f"{entity_id}:{relationship_limit}"
-    now = _time.time()
-    cached = _entity_cache.get(cache_key)
-    if cached and now - cached[0] < _ENTITY_TTL:
-        _entity_cache.move_to_end(cache_key)
-        etag = cached[2] if len(cached) > 2 else None
-        if etag:
-            response.headers["ETag"] = etag
-            if request.headers.get("if-none-match") == etag:
-                return Response(status_code=304, headers={"ETag": etag, "Cache-Control": "public, max-age=60, stale-while-revalidate=120"})
-        return cached[1]
 
     def _query():
         e = _get_public_entity(entity_id)
@@ -1306,16 +1281,6 @@ async def get_entity(
     entity = await asyncio.to_thread(_query)
     if not entity:
         return _err(404, "not_found")
-
-    etag = f'W/"{hashlib.md5(json.dumps(entity, sort_keys=True, default=str).encode()).hexdigest()[:16]}"'
-    response.headers["ETag"] = etag
-    if request.headers.get("if-none-match") == etag:
-        return Response(status_code=304, headers={"ETag": etag, "Cache-Control": "public, max-age=60, stale-while-revalidate=120"})
-
-    _entity_cache[cache_key] = (now, entity, etag)
-    while len(_entity_cache) > _ENTITY_CACHE_MAX:
-        _entity_cache.popitem(last=False)
-
     return entity
 
 

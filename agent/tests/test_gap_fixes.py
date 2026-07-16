@@ -1193,7 +1193,9 @@ class TestToggleRowcountGuard:
 class TestCacheControlCoverage:
     """All public GET endpoints in public_api.py should set Cache-Control."""
 
-    _NO_CACHE_ENDPOINTS: set = set()
+    # The policy-bearing entity route is normalized by PolicyHttpMiddleware,
+    # so its handler intentionally does not carry a lexical cache header.
+    _NO_CACHE_ENDPOINTS: set = {"get_entity"}
 
     def test_public_get_endpoints_have_cache_control(self):
         import public_api
@@ -1859,38 +1861,44 @@ class TestSoftDeletePosts:
         self._check_deleted_filter("get_user_profile")
 
 
-class TestETagSupport:
-    """Entity detail endpoint supports ETag conditional requests."""
+class TestPolicyBearingEntityCacheContract:
+    """Entity detail recomputes policy and delegates cache headers to middleware."""
 
-    def test_entity_detail_generates_etag(self):
+    def _source(self):
         src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
         idx = src.index("async def get_entity(")
-        fn_src = src[idx:idx+2000]
-        assert "ETag" in fn_src
-        assert "hashlib.md5" in fn_src or "hashlib.sha" in fn_src
+        end = min(
+            (
+                x
+                for x in (
+                    src.find("\n@", idx + 10),
+                    src.find("\nasync def ", idx + 10),
+                    src.find("\ndef ", idx + 10),
+                )
+                if x > 0
+            ),
+            default=len(src),
+        )
+        return src[idx:end]
 
-    def test_entity_detail_checks_if_none_match(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
-        idx = src.index("async def get_entity(")
-        fn_src = src[idx:idx+2000]
-        assert "if-none-match" in fn_src
-        assert "304" in fn_src
+    def test_entity_detail_has_no_validator_or_304_branch(self):
+        fn_src = self._source().lower()
+        assert "etag" not in fn_src
+        assert "if-none-match" not in fn_src
+        assert "304" not in fn_src
 
-    def test_entity_detail_accepts_request_param(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
-        idx = src.index("async def get_entity(")
-        fn_sig = src[idx:src.index(")", idx) + 1]
-        assert "request: Request" in fn_sig
+    def test_entity_detail_does_not_accept_request_only_for_conditional_cache(self):
+        fn_src = self._source()
+        fn_sig = fn_src[:fn_src.index(")") + 1]
+        assert "request: Request" not in fn_sig
 
-    def test_etag_cached_with_entity(self):
-        src = (AGENT_DIR / "public_api.py").read_text(encoding="utf-8")
-        idx = src.index("async def get_entity(")
-        # scan the whole function (to the next top-level def/decorator) rather than an
-        # arbitrary char window — the cache write moved past a fixed cutoff as get_entity grew.
-        end = min((x for x in (src.find("\n@", idx+10), src.find("\nasync def ", idx+10), src.find("\ndef ", idx+10)) if x > 0), default=len(src))
-        fn_src = src[idx:end]
-        assert "_entity_cache[cache_key]" in fn_src
-        assert "etag" in fn_src.lower()
+    def test_entity_detail_does_not_replay_full_response_memo(self):
+        assert "_entity_cache" not in self._source()
+
+    def test_entity_detail_loads_policy_inputs_inside_each_query(self):
+        fn_src = self._source()
+        assert "_get_public_entity(entity_id)" in fn_src
+        assert "_entity_detail_index_policy(e)" in fn_src
 
 
 class TestMentionSearchAsync:

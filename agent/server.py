@@ -79,6 +79,7 @@ from middleware import (
     logger, chat_limiter, stream_limiter, report_limiter,
     response_tracker, error_tracker, generate_request_id, get_client_ip,
 )
+from policy_http import PolicyHttpMiddleware
 from itinerary_gen import generate_itinerary
 from scheduler import start_scheduler, stop_scheduler, scheduler_status, sync_data_json_to_js
 from chat_identity import resolve_chat_owner, set_chat_owner_cookie
@@ -1343,6 +1344,10 @@ async def track_response_time(request: Request, call_next):
         logger.error("Unhandled exception", endpoint=endpoint, req_id=req_id,
                       duration_ms=round(duration_ms), error=str(exc)[:200])
         return _error_response(500, "Internal server error", request)
+
+
+# Registered after every decorator middleware so policy headers remain final.
+app.add_middleware(PolicyHttpMiddleware)
 
 
 from pydantic import ConfigDict, Field, field_validator

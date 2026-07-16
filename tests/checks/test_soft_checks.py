@@ -94,6 +94,15 @@ def test_complexity_flags_deep_function(tmp_path):
     assert r["count"] == 1 and "f()" in r["violations"][0]["msg"]
 
 
+def test_complexity_staged_mode_excludes_agent_tests(tmp_path):
+    body = "\n".join(f"    if x > {i}: x += {i}" for i in range(15))
+    _mk(tmp_path, "agent/tests/test_deep.py", f"def test_deep(x):\n{body}\n    return x\n")
+
+    result = ComplexityCheck(root=tmp_path).run(files=["agent/tests/test_deep.py"])
+
+    assert result["count"] == 0
+
+
 def test_bare_except_flagged_typed_ok(tmp_path):
     _mk(tmp_path, "agent/e.py", "try:\n    x = 1\nexcept:\n    pass\ntry:\n    y = 1\nexcept ValueError:\n    pass\n")
     r = BareExceptCheck(root=tmp_path).run()

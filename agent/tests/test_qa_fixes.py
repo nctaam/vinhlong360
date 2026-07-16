@@ -501,10 +501,10 @@ class TestPersonalizationFoundation:
 class TestPublicEntityVisibility:
     """Public entity endpoints must apply the same visibility rule as listings."""
 
-    def test_entity_detail_checks_visibility_before_cache(self):
+    def test_entity_detail_checks_visibility_without_response_cache(self):
         src = inspect.getsource(public_api.get_entity)
         assert "_get_public_entity" in src
-        assert src.find("_get_public_entity") < src.find("_entity_cache")
+        assert "_entity_cache" not in src
 
     def test_entity_related_endpoints_use_public_entity(self):
         for fn in (

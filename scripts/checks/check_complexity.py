@@ -36,8 +36,13 @@ class ComplexityCheck:
     def _candidates(self, files):
         if files is None:
             return iter_text_files(self.root, ["*.py"], _ROOTS, _EXCLUDE)
-        return [f.replace("\\", "/") for f in files
-                if f.endswith(".py") and any(f.replace("\\", "/").startswith(r + "/") for r in _ROOTS)]
+        normalized = [f.replace("\\", "/") for f in files]
+        return [
+            rel for rel in normalized
+            if rel.endswith(".py")
+            and any(rel.startswith(root + "/") for root in _ROOTS)
+            and not any(rel == excluded or rel.startswith(excluded + "/") for excluded in _EXCLUDE)
+        ]
 
     def run(self, files: list[str] | None = None) -> dict:
         violations = []
