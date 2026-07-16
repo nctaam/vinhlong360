@@ -850,6 +850,42 @@ def aliased_evidence_mapping():
     assert len(unregistered) == 3
 
 
+@pytest.mark.parametrize(
+    "payload_expression",
+    [
+        "dict(asdict(evidence))",
+        "[asdict(evidence)]",
+        "tuple([asdict(evidence)])",
+        "set([asdict(evidence)])",
+    ],
+)
+def test_scanner_propagates_evidence_through_safe_containers(
+    tmp_path: Path,
+    payload_expression: str,
+):
+    checker = _load_checker()
+    assert checker is not None
+    source = _write(
+        tmp_path / "evidence_container.py",
+        f'''
+from dataclasses import asdict
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+app = FastAPI()
+
+@app.get("/evidence-container")
+def evidence_container():
+    evidence = current_policy_evidence()
+    payload = {payload_expression}
+    return JSONResponse(payload)
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], ())
+
+    assert _codes(findings) == {"UNREGISTERED_POLICY_ROUTE"}
+
+
 def test_scanner_supports_api_route_methods_and_exact_header_markers(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None

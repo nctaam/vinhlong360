@@ -489,14 +489,22 @@ def _evidence_alias_value(value: ast.AST, derived: set[str]) -> bool:
         return value.id in derived
     if isinstance(value, ast.Attribute):
         return _root_name(value) in derived
-    if isinstance(value, ast.Dict):
+    if isinstance(value, (ast.Dict, ast.List, ast.Tuple, ast.Set)):
         return bool(_names_in(value) & derived)
     if not isinstance(value, ast.Call):
         return False
     call_name = _call_name(value)
     if call_name in _POLICY_EVIDENCE_CALLS:
         return True
-    return call_name in {"Response", "JSONResponse", "asdict"} and bool(
+    return call_name in {
+        "JSONResponse",
+        "Response",
+        "asdict",
+        "dict",
+        "list",
+        "set",
+        "tuple",
+    } and bool(
         _names_in(value) & derived
     )
 
@@ -535,18 +543,73 @@ def _tainted_names(
     return tainted
 
 
+def _assigned_values(node: ast.FunctionDef | ast.AsyncFunctionDef) -> dict[str, ast.AST]:
+    values: dict[str, ast.AST] = {}
+    for child in ast.walk(node):
+        targets, value, _annotation = _assignment_parts(child)
+        if value is not None:
+            values.update({name: value for name in _assigned_names(targets)})
+    return values
+
+
+def _literal_subscript_value(
+    node: ast.Subscript,
+    assigned_values: dict[str, ast.AST],
+) -> ast.AST | None:
+    if not isinstance(node.value, ast.Name) or not isinstance(node.slice, ast.Constant):
+        return None
+    container = assigned_values.get(node.value.id)
+    index = node.slice.value
+    if isinstance(container, (ast.List, ast.Tuple)) and type(index) is int:
+        return container.elts[index] if -len(container.elts) <= index < len(container.elts) else None
+    if isinstance(container, ast.Dict):
+        return next(
+            (
+                value
+                for key, value in zip(container.keys, container.values, strict=True)
+                if isinstance(key, ast.Constant) and key.value == index
+            ),
+            None,
+        )
+    return None
+
+
+def _expression_exposes_evidence(
+    node: ast.AST,
+    evidence_names: set[str],
+    assigned_values: dict[str, ast.AST],
+) -> bool:
+    if isinstance(node, ast.Name):
+        return node.id in evidence_names
+    if isinstance(node, ast.Subscript):
+        selected = _literal_subscript_value(node, assigned_values)
+        target = selected if selected is not None else node.value
+        return _expression_exposes_evidence(target, evidence_names, assigned_values)
+    if isinstance(node, ast.Call):
+        values = [*node.args, *(keyword.value for keyword in node.keywords)]
+    else:
+        values = list(ast.iter_child_nodes(node))
+    return any(
+        _expression_exposes_evidence(child, evidence_names, assigned_values)
+        for child in values
+    )
+
+
 def _return_serializes_policy(
     node: ast.Return,
     policy_names: set[str],
     tainted_names: set[str],
     evidence_names: set[str],
+    assigned_values: dict[str, ast.AST],
     constants: dict[str, str] | None,
 ) -> bool:
     value = node.value
     if value is None:
         return False
-    if _contains_serialized_key(value, constants) or bool(
-        _names_in(value) & (tainted_names | evidence_names)
+    if (
+        _contains_serialized_key(value, constants)
+        or bool(_names_in(value) & tainted_names)
+        or _expression_exposes_evidence(value, evidence_names, assigned_values)
     ):
         return True
     for call in (child for child in ast.walk(value) if isinstance(child, ast.Call)):
@@ -628,9 +691,17 @@ def _serializes_policy(
     policy = _policy_names(node)
     tainted = _tainted_names(node, policy, constants)
     evidence = _derived_evidence_names(node, _policy_evidence_names(node))
+    assigned_values = _assigned_values(node)
     parameters = _function_parameter_names(node)
     return any(
-        _return_serializes_policy(child, policy, tainted, evidence, constants)
+        _return_serializes_policy(
+            child,
+            policy,
+            tainted,
+            evidence,
+            assigned_values,
+            constants,
+        )
         for child in ast.walk(node)
         if isinstance(child, ast.Return)
     ) or any(
