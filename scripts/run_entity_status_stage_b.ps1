@@ -35,11 +35,36 @@ function Get-PwshPath {
     return $command.Source
 }
 
-function Get-FakeTool([string]$Name) {
-    if (-not $script:TestMode) { return $null }
+function Assert-NoReparseAncestors([string]$Path, [string]$Label) {
+    $current = [IO.Path]::GetFullPath($Path)
+    while ($null -ne $current) {
+        $item = Get-Item -LiteralPath $current -Force -ErrorAction SilentlyContinue
+        if ($null -ne $item -and ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            Fail "$Label has a reparse-point ancestor"
+        }
+        $parent = [IO.Directory]::GetParent($current)
+        if ($null -eq $parent -or $parent.FullName -eq $current) { break }
+        $current = $parent.FullName
+    }
+}
+
+function Assert-TestOwnedPath([string]$Path, [string]$Label) {
     $testRootText = $env:VL360_STAGE_B_TEST_ROOT
     if ([string]::IsNullOrWhiteSpace($testRootText)) { Fail 'test mode requires a pytest-owned test root' }
     $testRoot = [IO.Path]::GetFullPath($testRootText).TrimEnd('\', '/')
+    $rootItem = Get-Item -LiteralPath $testRoot -Force -ErrorAction SilentlyContinue
+    if ($null -eq $rootItem -or -not ($rootItem -is [IO.DirectoryInfo])) { Fail 'pytest-owned test root is unavailable' }
+    $candidate = [IO.Path]::GetFullPath($Path)
+    $same = [StringComparer]::OrdinalIgnoreCase.Equals($candidate.TrimEnd('\', '/'), $testRoot)
+    $inside = $candidate.StartsWith("$testRoot\", [StringComparison]::OrdinalIgnoreCase)
+    if (-not ($same -or $inside)) { Fail "$Label is outside test root" }
+    Assert-NoReparseAncestors $testRoot 'test root'
+    Assert-NoReparseAncestors $candidate $Label
+    return $candidate
+}
+
+function Get-FakeTool([string]$Name) {
+    if (-not $script:TestMode) { return $null }
     $candidateText = [Environment]::GetEnvironmentVariable("VL360_STAGE_B_FAKE_$($Name.ToUpperInvariant())")
     if ([string]::IsNullOrWhiteSpace($candidateText) -and -not [string]::IsNullOrWhiteSpace($env:VL360_STAGE_B_FAKE_TOOLS_DIR)) {
         $candidateText = Join-Path $env:VL360_STAGE_B_FAKE_TOOLS_DIR "$Name.ps1"
@@ -48,9 +73,7 @@ function Get-FakeTool([string]$Name) {
         }
     }
     if ([string]::IsNullOrWhiteSpace($candidateText)) { Fail "fake executable missing for $Name" }
-    $candidate = [IO.Path]::GetFullPath($candidateText)
-    $prefix = "$testRoot\"
-    if (-not $candidate.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) { Fail "fake executable for $Name is outside test root" }
+    $candidate = Assert-TestOwnedPath $candidateText "fake executable for $Name"
     $item = Get-Item -LiteralPath $candidate -Force -ErrorAction SilentlyContinue
     if ($null -eq $item -or -not ($item -is [IO.FileInfo]) -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
         Fail "fake executable for $Name is unavailable"
@@ -60,6 +83,19 @@ function Get-FakeTool([string]$Name) {
 
 function Initialize-TestMode {
     if (-not $script:TestMode) { return }
+    [void](Assert-TestOwnedPath $ArtifactParent 'artifact parent')
+    if (-not [string]::IsNullOrWhiteSpace($env:VL360_STAGE_B_FAKE_TOOLS_DIR)) {
+        [void](Assert-TestOwnedPath $env:VL360_STAGE_B_FAKE_TOOLS_DIR 'fake tools directory')
+    }
+    if (-not [string]::IsNullOrWhiteSpace($env:VL360_STAGE_B_EVENT_LOG)) {
+        [void](Assert-TestOwnedPath $env:VL360_STAGE_B_EVENT_LOG 'fake event log')
+    }
+    if (-not [string]::IsNullOrWhiteSpace($env:VL360_STAGE_B_SECRET_CAPTURE)) {
+        [void](Assert-TestOwnedPath $env:VL360_STAGE_B_SECRET_CAPTURE 'fake secret capture')
+    }
+    if (-not [string]::IsNullOrWhiteSpace($env:VL360_STAGE_B_FAKE_ROOT)) {
+        [void](Assert-TestOwnedPath $env:VL360_STAGE_B_FAKE_ROOT 'fake artifact root')
+    }
     # Resolve every fake before the first observable stage so partial seams cannot run.
     foreach ($name in @('git','http','secure','ssh','psql','backup','plan','pg_restore','attestation')) {
         [void](Get-FakeTool $name)
@@ -69,8 +105,9 @@ function Initialize-TestMode {
 function Get-ToolInvocation([string]$Name, [string[]]$Arguments) {
     if ($script:TestMode) {
         $fake = Get-FakeTool $Name
-        # Fake tools receive only an event through the process environment; no SQL or URL enters argv.
-        return [pscustomobject]@{ File = Get-PwshPath; Arguments = @('-NoLogo','-NoProfile','-NonInteractive','-File',$fake) }
+        $description = @{ tool = $Name; arguments = @($Arguments) } | ConvertTo-Json -Compress -Depth 4
+        $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($description))
+        return [pscustomobject]@{ File = Get-PwshPath; Arguments = @('-NoLogo','-NoProfile','-NonInteractive','-File',$fake,'-Invocation',$encoded) }
     }
     switch ($Name) {
         'git' { return [pscustomobject]@{ File = 'git'; Arguments = $Arguments } }
@@ -122,10 +159,12 @@ function Invoke-Tool {
         [Parameter(Mandatory)][string]$Name,
         [Parameter(Mandatory)][string[]]$Arguments,
         [string]$StandardInput,
-        [string]$Event
+        [string]$Event,
+        [hashtable]$ChildEnvironment = @{}
     )
     $invocation = Get-ToolInvocation $Name $Arguments
     $environment = @{}
+    foreach ($key in $ChildEnvironment.Keys) { $environment[$key] = $ChildEnvironment[$key] }
     if ($script:TestMode) {
         $environment['VL360_STAGE_B_FAKE_EVENT'] = $Event
         $environment['VL360_STAGE_B_FAKE_ROOT'] = $script:Root
@@ -157,19 +196,41 @@ function Get-Sha256Text([string]$Text) {
 
 function Get-Sha256File([string]$Path) { return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() }
 
+function Get-RobotsMetaValues([string]$Body) {
+    $values = [System.Collections.Generic.List[string]]::new()
+    $attributePattern = @'
+(?is)\b(?<key>[a-z][a-z0-9:_-]*)\s*=\s*(?:"(?<double>[^"]*)"|''(?<single>[^'']*)''|(?<bare>[^\s>]+))
+'@
+    foreach ($tagMatch in [regex]::Matches($Body, '(?is)<meta\b[^>]*>')) {
+        $attributes = @{}
+        foreach ($attributeMatch in [regex]::Matches($tagMatch.Value, $attributePattern.Trim())) {
+            $key = $attributeMatch.Groups['key'].Value.ToLowerInvariant()
+            if ($attributes.ContainsKey($key)) { $attributes[$key] = $null; continue }
+            $value = if ($attributeMatch.Groups['double'].Success) { $attributeMatch.Groups['double'].Value } elseif ($attributeMatch.Groups['single'].Success) { $attributeMatch.Groups['single'].Value } else { $attributeMatch.Groups['bare'].Value }
+            $attributes[$key] = $value
+        }
+        if ($attributes.ContainsKey('name') -and [string]$attributes['name'] -ieq 'robots') {
+            $content = if ($attributes.ContainsKey('content')) { [string]$attributes['content'] } else { '' }
+            [void]$values.Add($content)
+        }
+    }
+    return @($values.ToArray())
+}
+
 function Invoke-NoindexCheck {
     $checkedAt = [DateTime]::UtcNow.ToString('o',[Globalization.CultureInfo]::InvariantCulture)
     if ($script:TestMode) {
         $result = Invoke-Tool -Name 'http' -Arguments @($LiveNoindexUrl.AbsoluteUri) -Event 'verify-source-noindex'
         $response = $result.Stdout | ConvertFrom-Json
         $body = [string]$response.body
-        if ([int]$response.status -ne 200 -or [string]$response.x_robots_tag -cne 'noindex, follow' -or [int]$response.robots_meta_count -ne 1 -or [string]$response.robots_meta_value -cne 'noindex, follow') { Fail 'live noindex gate failed' }
+        $robotsValues = @(Get-RobotsMetaValues $body)
+        if ([int]$response.status -ne 200 -or [string]$response.x_robots_tag -cne 'noindex, follow' -or $robotsValues.Count -ne 1 -or $robotsValues[0] -cne 'noindex, follow') { Fail 'live noindex gate failed' }
         return [ordered]@{ url = $LiveNoindexUrl.AbsoluteUri; checked_at = $checkedAt; status = 200; x_robots_tag = 'noindex, follow'; robots_meta_count = 1; robots_meta_value = 'noindex, follow'; body_sha256 = Get-Sha256Text $body }
     }
     try { $response = Invoke-WebRequest -Uri $LiveNoindexUrl -Method Get -UseBasicParsing } catch { Fail 'live noindex request failed' }
     $tag = [string]($response.Headers['X-Robots-Tag'])
-    $matches = [regex]::Matches([string]$response.Content,'(?is)<meta\s+[^>]*name\s*=\s*["'']robots["''][^>]*content\s*=\s*["'']\s*noindex\s*,\s*follow\s*["''][^>]*>')
-    if ([int]$response.StatusCode -ne 200 -or $tag -cne 'noindex, follow' -or $matches.Count -ne 1) { Fail 'live noindex gate failed' }
+    $robotsValues = @(Get-RobotsMetaValues ([string]$response.Content))
+    if ([int]$response.StatusCode -ne 200 -or $tag -cne 'noindex, follow' -or $robotsValues.Count -ne 1 -or $robotsValues[0] -cne 'noindex, follow') { Fail 'live noindex gate failed' }
     return [ordered]@{ url = $LiveNoindexUrl.AbsoluteUri; checked_at = $checkedAt; status = 200; x_robots_tag = 'noindex, follow'; robots_meta_count = 1; robots_meta_value = 'noindex, follow'; body_sha256 = Get-Sha256Text ([string]$response.Content) }
 }
 
@@ -180,13 +241,31 @@ function New-RoleSql([string]$Password, [string]$Expiry) {
 }
 
 function New-DropRoleSql {
-    return "REVOKE EXECUTE ON FUNCTION pg_catalog.pg_control_system() FROM `"$RoleName`";`nREVOKE pg_read_all_data FROM `"$RoleName`";`nREVOKE ALL PRIVILEGES ON DATABASE `"$RemoteDatabase`" FROM `"$RoleName`";`nDROP ROLE IF EXISTS `"$RoleName`";"
+    return "SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '$RoleName') AS stage_b_role_exists \gset`n\if :stage_b_role_exists`nREVOKE EXECUTE ON FUNCTION pg_catalog.pg_control_system() FROM `"$RoleName`";`nREVOKE pg_read_all_data FROM `"$RoleName`";`nREVOKE ALL PRIVILEGES ON DATABASE `"$RemoteDatabase`" FROM `"$RoleName`";`n\endif`nDROP ROLE IF EXISTS `"$RoleName`";"
 }
 
 function Get-BackupRun([string]$BackupRoot) {
     $runs = @(Get-ChildItem -LiteralPath $BackupRoot -Directory -Force | Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) })
     if ($runs.Count -ne 1) { Fail 'backup must contain exactly one run directory' }
     return $runs[0]
+}
+
+function Assert-CanonicalIdentity($Identity, [hashtable]$Expected) {
+    if ($null -eq $Identity) { Fail 'database identity is missing' }
+    $required = @('identity_revision','database','database_oid','system_identifier','server_addr','server_port','server_version_num')
+    if ((@($Identity.PSObject.Properties.Name | Sort-Object) -join ',') -ne (($required | Sort-Object) -join ',')) { Fail 'database identity fields are malformed' }
+    if ($Identity.identity_revision -isnot [string] -or $Identity.database -isnot [string] -or $Identity.database_oid -isnot [int64] -or $Identity.system_identifier -isnot [string] -or $Identity.server_addr -isnot [string] -or $Identity.server_port -isnot [int64] -or $Identity.server_version_num -isnot [int64]) { Fail 'database identity fields are malformed' }
+    if ($Identity.identity_revision -cne 'postgres-cluster-v2' -or $Identity.database -cne $Expected.database -or $Identity.database_oid -ne $Expected.database_oid -or $Identity.system_identifier -cne $Expected.system_identifier -or $Identity.server_addr -cne $Expected.server_addr -or $Identity.server_port -ne $Expected.server_port -or $Identity.server_version_num -ne $Expected.server_version_num) { Fail 'database identity drift detected' }
+}
+
+function Assert-IdentityFields([string[]]$Fields) {
+    if ($Fields.Count -ne 8) { Fail 'PostgreSQL identity row is malformed' }
+    $databaseOid = 0L; $serverPort = 0; $version = 0
+    if (-not [int64]::TryParse($Fields[1].Trim(), [Globalization.NumberStyles]::Integer, [Globalization.CultureInfo]::InvariantCulture, [ref]$databaseOid) -or $databaseOid -le 0) { Fail 'database OID is invalid' }
+    if (-not [int]::TryParse($Fields[4].Trim(), [Globalization.NumberStyles]::Integer, [Globalization.CultureInfo]::InvariantCulture, [ref]$serverPort) -or $serverPort -ne 5432) { Fail 'PostgreSQL server port is invalid' }
+    if (-not [int]::TryParse($Fields[5].Trim(), [Globalization.NumberStyles]::Integer, [Globalization.CultureInfo]::InvariantCulture, [ref]$version) -or $version -le 0) { Fail 'PostgreSQL server version is invalid' }
+    if ($Fields[0].Trim() -cne $RemoteDatabase -or [string]::IsNullOrWhiteSpace($Fields[2]) -or $Fields[2].Trim() -notmatch '^[1-9][0-9]*$' -or $Fields[3].Trim() -cne '127.0.0.1' -or $Fields[6].Trim() -cne 'on' -or $Fields[7].Trim() -cne $script:RoleName) { Fail 'PostgreSQL identity or read-only verification failed' }
+    return @{ identity_revision='postgres-cluster-v2'; database=$Fields[0].Trim(); database_oid=$databaseOid; system_identifier=$Fields[2].Trim(); server_addr=$Fields[3].Trim(); server_port=$serverPort; server_version_num=$version }
 }
 
 function Write-Listing([string]$Path, [string]$Content) {
@@ -262,11 +341,17 @@ function Invoke-Cleanup {
 
 function Get-SourceState {
     if ($script:TestMode) {
-        $head = (git -C $script:RepoRoot rev-parse HEAD 2>$null).Trim()
-        if ($head -notmatch '^[0-9a-f]{40}$') { $head = 'eb956fa00000000000000000000000000000000' }
+        $headResult = Invoke-Tool -Name 'git' -Arguments @('-C',$script:RepoRoot,'rev-parse','HEAD') -Event 'git-head'
+        $head = $headResult.Stdout.Trim()
+        $statusResult = Invoke-Tool -Name 'git' -Arguments @('-C',$script:RepoRoot,'status','--porcelain') -Event 'git-status'
+        if ($statusResult.Stdout.Trim()) { Fail 'git worktree is dirty' }
     } else {
-        $head = (Invoke-CapturedProcess -File 'git' -Arguments @('-C',$script:RepoRoot,'rev-parse','HEAD')).Stdout.Trim()
-        $status = (Invoke-CapturedProcess -File 'git' -Arguments @('-C',$script:RepoRoot,'status','--porcelain')).Stdout.Trim()
+        $headProcess = Invoke-CapturedProcess -File 'git' -Arguments @('-C',$script:RepoRoot,'rev-parse','HEAD')
+        if ($headProcess.ExitCode -ne 0) { Fail 'git HEAD lookup failed' }
+        $head = $headProcess.Stdout.Trim()
+        $statusProcess = Invoke-CapturedProcess -File 'git' -Arguments @('-C',$script:RepoRoot,'status','--porcelain')
+        if ($statusProcess.ExitCode -ne 0) { Fail 'git worktree status failed' }
+        $status = $statusProcess.Stdout.Trim()
         if ($status) { Fail 'git worktree is dirty' }
     }
     if ($head -notmatch '^[0-9a-f]{40}$') { Fail 'git HEAD is invalid' }
@@ -302,16 +387,15 @@ function Invoke-Runner {
     $identitySql = @"
 SELECT current_database(), database.oid, control.system_identifier::text,
        inet_server_addr()::text, inet_server_port(), current_setting('server_version_num')::int,
-       current_setting('transaction_read_only')
+       current_setting('transaction_read_only'), current_user
 FROM pg_catalog.pg_database AS database
 CROSS JOIN pg_catalog.pg_control_system() AS control
 WHERE database.datname = current_database();
 "@
-    $identityResult = Invoke-Tool -Name 'psql' -Arguments @('--no-psqlrc','--tuples-only','--no-align','--field-separator','|','--set','ON_ERROR_STOP=1') -StandardInput $identitySql -Event 'verify-readonly-identity'
-    if (-not $script:TestMode) {
-        $fields = @($identityResult.Stdout.Trim() -split '\|')
-        if ($fields.Count -ne 7 -or $fields[0] -ne $RemoteDatabase -or [int64]$fields[1] -le 0 -or [string]::IsNullOrWhiteSpace($fields[2]) -or $fields[6].Trim() -ne 'on') { Fail 'PostgreSQL identity or read-only verification failed' }
-    }
+    $pgEnvironment = @{ PGHOST='127.0.0.1'; PGPORT=[string]$LocalPort; PGUSER=$script:RoleName; PGPASSWORD=$password; PGDATABASE=$RemoteDatabase }
+    $identityResult = Invoke-Tool -Name 'psql' -Arguments @('--no-psqlrc','--tuples-only','--no-align','--field-separator','|','--set','ON_ERROR_STOP=1') -StandardInput $identitySql -Event 'verify-readonly-identity' -ChildEnvironment $pgEnvironment
+    $fields = @($identityResult.Stdout.Trim() -split '\|')
+    $identity = Assert-IdentityFields $fields
 
     $backupRoot = Join-Path $script:Root 'backup'
     Invoke-Tool -Name 'backup' -Arguments @('--target','pg','--database-url-env',$DatabaseUrlEnvironment,'--out-dir',$backupRoot,'--keep','1','--max-age-days','1') -Event 'backup' | Out-Null
@@ -319,13 +403,17 @@ WHERE database.datname = current_database();
     $dump = Join-Path $run.FullName 'postgres.dump'
     $manifestPath = Join-Path $run.FullName 'manifest.json'
     if (-not (Test-Path -LiteralPath $dump -PathType Leaf) -or -not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { Fail 'backup artifacts are incomplete' }
+    $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
+    Assert-CanonicalIdentity $manifest.database_identity $identity
 
     Invoke-Tool -Name 'plan' -Arguments @('--target','pg','--database-url-env',$DatabaseUrlEnvironment,'--policy','published-v1','--report-out',(Join-Path $script:Root 'published-v1-plan.json')) -Event 'plan' | Out-Null
     if (-not (Test-Path -LiteralPath (Join-Path $script:Root 'published-v1-plan.json') -PathType Leaf)) { Fail 'publication plan was not created' }
+    $plan = Get-Content -Raw -LiteralPath (Join-Path $script:Root 'published-v1-plan.json') | ConvertFrom-Json
+    Assert-CanonicalIdentity $plan.database_identity $identity
 
     $listingResult = Invoke-Tool -Name 'pg_restore' -Arguments @('--list',$dump) -Event 'pg-restore-list'
-    $listingHash = Write-Listing (Join-Path $script:Root 'pg-restore-list.txt') $listingResult.Stdout
-    $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
+    $normalizedListing = [regex]::Replace($listingResult.Stdout, '\r\n?', "`n")
+    $listingHash = Write-Listing (Join-Path $script:Root 'pg-restore-list.txt') $normalizedListing
     $expectedListingHash = [string]$manifest.validation.listing_sha256
     if ($listingHash -ne $expectedListingHash) { Fail 'restore listing hash mismatch' }
 

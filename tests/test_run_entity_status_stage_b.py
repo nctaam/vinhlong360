@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -61,6 +62,169 @@ def test_test_mode_rejects_fake_tools_outside_pytest_root(tmp_path: Path) -> Non
     assert "fake" in result.stderr.lower() or "test" in result.stderr.lower()
 
 
+def test_runner_binds_psql_through_scoped_pg_environment_without_url_or_sql_argv() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "PGHOST" in source
+    assert "PGPORT" in source
+    assert "PGUSER" in source
+    assert "PGPASSWORD" in source
+    assert "PGDATABASE" in source
+    assert "current_setting('server_version_num')" in source
+    assert "current_setting('transaction_read_only')" in source
+    assert "current_user" in source
+    assert "--command" not in source
+
+
+def test_runner_passes_real_safe_arguments_and_scoped_pg_values_to_fakes(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode == 0, result.stderr
+    identity = next(record for record in fake_stage_b_tools.records if record["event"] == "verify-readonly-identity")
+    assert identity["arguments"] == [
+        "--no-psqlrc",
+        "--tuples-only",
+        "--no-align",
+        "--field-separator",
+        "|",
+        "--set",
+        "ON_ERROR_STOP=1",
+    ]
+    assert identity["pg_environment"] == {
+        "PGHOST": "127.0.0.1",
+        "PGPORT": "15432",
+        "PGDATABASE": "vinhlong360",
+    }
+    assert identity["pg_password_matches_role_sql"] is True
+    create_role = next(record for record in fake_stage_b_tools.records if record["event"] == "create-role")
+    assert "root@66.42.57.202" in create_role["arguments"]
+    assert not any(str(argument).startswith("<") for argument in create_role["arguments"])
+
+
+def test_runner_normalizes_restore_listing_to_lf_before_hashing() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "`r`n" not in source
+    assert "-replace" in source or "\\r\\n?" in source
+
+
+def test_runner_rejects_dirty_fake_git_worktree(fake_stage_b_tools, tmp_path: Path) -> None:
+    fake_stage_b_tools.failure_stage = "dirty-worktree"
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode != 0
+    assert fake_stage_b_tools.events == []
+
+
+def test_runner_fails_closed_when_fake_git_fails(fake_stage_b_tools, tmp_path: Path) -> None:
+    fake_stage_b_tools.failure_stage = "git"
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode != 0
+    assert fake_stage_b_tools.events == []
+
+
+def test_runner_rejects_noindex_attribute_order_and_conflicting_meta(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    fake_stage_b_tools.noindex_variant = "conflict"
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode != 0
+    assert "create-root" not in fake_stage_b_tools.events
+
+
+def test_runner_accepts_single_noindex_meta_with_content_before_name(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    fake_stage_b_tools.noindex_variant = "order"
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode == 0, result.stderr
+
+
+def test_runner_rejects_non_exact_robots_meta_value(fake_stage_b_tools, tmp_path: Path) -> None:
+    fake_stage_b_tools.noindex_variant = "padded"
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode != 0
+    assert "create-root" not in fake_stage_b_tools.events
+
+
+def test_test_mode_rejects_artifact_parent_outside_pytest_root(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    env = os.environ.copy()
+    env.update(
+        {
+            "VL360_STAGE_B_TEST_MODE": "1",
+            "VL360_STAGE_B_TEST_ROOT": str(fake_stage_b_tools.root),
+            "VL360_STAGE_B_FAKE_TOOLS_DIR": str(fake_stage_b_tools.tools),
+            "VL360_STAGE_B_EVENT_LOG": str(fake_stage_b_tools.events_path),
+        }
+    )
+    result = _run_script(env, "-ArtifactParent", str(tmp_path / "outside"))
+    assert result.returncode != 0
+    assert fake_stage_b_tools.events == []
+
+
+def test_test_mode_rejects_reparse_fake_tool_ancestor(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    target = fake_stage_b_tools.root / "real-tools"
+    fake_stage_b_tools.tools.rename(target)
+    link = fake_stage_b_tools.root / "tools-link"
+    try:
+        link.symlink_to(target, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"Windows symlink creation unavailable: {exc}")
+    env = os.environ.copy()
+    env.update(
+        {
+            "VL360_STAGE_B_TEST_MODE": "1",
+            "VL360_STAGE_B_TEST_ROOT": str(fake_stage_b_tools.root),
+            "VL360_STAGE_B_FAKE_TOOLS_DIR": str(link),
+            "VL360_STAGE_B_EVENT_LOG": str(fake_stage_b_tools.events_path),
+        }
+    )
+    result = _run_script(env, "-ArtifactParent", str(fake_stage_b_tools.root / "artifacts"))
+    assert result.returncode != 0
+
+
+def test_runner_binds_identity_v2_and_rejects_server_drift(fake_stage_b_tools, tmp_path: Path) -> None:
+    fake_stage_b_tools.identity_variant = "wrong-port"
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode != 0
+    assert "backup" not in fake_stage_b_tools.events
+
+
+@pytest.mark.parametrize("identity_variant", ["backup-string-oid", "plan-string-port"])
+def test_runner_rejects_noncanonical_artifact_identity_types(
+    fake_stage_b_tools, tmp_path: Path, identity_variant: str
+) -> None:
+    fake_stage_b_tools.identity_variant = identity_variant
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode != 0
+    if identity_variant.startswith("backup"):
+        assert "plan" not in fake_stage_b_tools.events
+    else:
+        assert "pg-restore-list" not in fake_stage_b_tools.events
+
+
+def test_cleanup_is_idempotent_when_role_is_already_absent(fake_stage_b_tools, tmp_path: Path) -> None:
+    fake_stage_b_tools.failure_stage = "role-already-absent"
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode == 0, result.stderr
+
+
+def test_runner_secret_and_sql_are_absent_from_fake_argv_and_event_log(
+    fake_stage_b_tools, tmp_path: Path
+) -> None:
+    result = fake_stage_b_tools.run(tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert fake_stage_b_tools.password not in fake_stage_b_tools.log_text
+    assert "postgresql://" not in fake_stage_b_tools.log_text
+    assert "CREATE ROLE" not in fake_stage_b_tools.log_text
+    for record in fake_stage_b_tools.records:
+        assert fake_stage_b_tools.password not in json.dumps(record)
+        assert "postgresql://" not in json.dumps(record)
+        assert "CREATE ROLE" not in json.dumps(record)
+
+
 class FakeStageBTools:
     def __init__(self, tmp_path: Path) -> None:
         self.root = tmp_path / "pytest-owned"
@@ -69,16 +233,34 @@ class FakeStageBTools:
         self.tools.mkdir()
         self.events_path = self.root / "events.jsonl"
         self.failure_stage = ""
-        self.password = "password-marker"  # marker used by secrecy assertions
+        self.secret_capture = self.root / "secret.capture"
+        self.password = ""
+        self.noindex_variant = "normal"
+        self.identity_variant = "normal"
         self._make_dispatcher()
 
     def _make_dispatcher(self) -> None:
         dispatcher = r'''
-param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Args)
+param([string]$Invocation)
 $event = $env:VL360_STAGE_B_FAKE_EVENT
 $log = $env:VL360_STAGE_B_EVENT_LOG
-if ($event) { Add-Content -LiteralPath $log -Value $event }
+$invocationObject = if ($Invocation) { [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Invocation)) | ConvertFrom-Json } else { @{tool="unknown";arguments=@()} }
+$stdin = [Console]::In.ReadToEnd()
+$stdinHash = if ($stdin) { (([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($stdin)) | ForEach-Object ToString x2) -join "") } else { "" }
+$record = [ordered]@{
+  event=$event; tool=$invocationObject.tool; arguments=@($invocationObject.arguments)
+  stdin_length=$stdin.Length; stdin_sha256=$stdinHash
+  pg_environment=@{PGHOST=$env:PGHOST;PGPORT=$env:PGPORT;PGDATABASE=$env:PGDATABASE}
+  pg_password_matches_role_sql=if ($event -eq "verify-readonly-identity" -and (Test-Path -LiteralPath $env:VL360_STAGE_B_SECRET_CAPTURE)) { $env:PGPASSWORD -ceq [IO.File]::ReadAllText($env:VL360_STAGE_B_SECRET_CAPTURE) } else { $null }
+}
+if ($event) { Add-Content -LiteralPath $log -Value ($record | ConvertTo-Json -Compress -Depth 8) }
+if ($event -eq "create-role" -and $stdin -match "\\set stage_b_password '([^']+)'") {
+  [IO.File]::WriteAllText($env:VL360_STAGE_B_SECRET_CAPTURE, $Matches[1])
+}
 if ($env:VL360_STAGE_B_FAILURE_STAGE -eq $event -or ($env:VL360_STAGE_B_FAILURE_STAGE -eq "noindex" -and $event -eq "verify-source-noindex")) { exit 17 }
+if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "dirty-worktree" -and $event -eq "git-status") { Write-Output " M dirty"; exit 0 }
+if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "git" -and $event -like "git-*") { exit 17 }
+if ($env:VL360_STAGE_B_FAILURE_STAGE -eq "role-already-absent" -and $event -eq "drop-role" -and ($stdin -notmatch "\\if :stage_b_role_exists" -or $stdin -notmatch "DROP ROLE IF EXISTS")) { exit 17 }
 $root = [Environment]::GetEnvironmentVariable("VL360_STAGE_B_FAKE_ROOT")
 if ($event -eq "create-root") {
   New-Item -ItemType Directory -Force -Path $root | Out-Null
@@ -87,24 +269,38 @@ if ($event -eq "create-root") {
 if ($event -eq "backup") {
   $run = Join-Path $root "backup/20260716-120000"
   New-Item -ItemType Directory -Force -Path $run | Out-Null
-  $listing = "1; 10 10 TABLE public entities`r`n"
+  $listing = "1; 10 10 TABLE public entities`n"
   [IO.File]::WriteAllText((Join-Path $run "postgres.dump"), "dump")
   $hash = [Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($listing)) | ForEach-Object ToString x2
-  $manifest = @{validation=@{listing_sha256=($hash -join "")}; artifact=@{path="postgres.dump"}}
+  $identity = @{identity_revision="postgres-cluster-v2";database="vinhlong360";database_oid=16384;system_identifier="123456789";server_addr="127.0.0.1";server_port=5432;server_version_num=160004}
+  if ($env:VL360_STAGE_B_IDENTITY_VARIANT -eq "backup-string-oid") { $identity.database_oid = "16384" }
+  $manifest = @{validation=@{listing_sha256=($hash -join "")}; artifact=@{path="postgres.dump"}; database_identity=$identity}
   $manifest | ConvertTo-Json -Compress | Set-Content -NoNewline (Join-Path $run "manifest.json")
 }
 if ($event -eq "plan") {
-  @{tool_source_revision=""; schema="vinhlong360-entity-status-plan-v1"} | ConvertTo-Json -Compress | Set-Content -NoNewline (Join-Path $root "published-v1-plan.json")
+  $identity = @{identity_revision="postgres-cluster-v2";database="vinhlong360";database_oid=16384;system_identifier="123456789";server_addr="127.0.0.1";server_port=5432;server_version_num=160004}
+  if ($env:VL360_STAGE_B_IDENTITY_VARIANT -eq "plan-string-port") { $identity.server_port = "5432" }
+  @{tool_source_revision=""; schema="vinhlong360-entity-status-plan-v1"; database_identity=$identity} | ConvertTo-Json -Compress | Set-Content -NoNewline (Join-Path $root "published-v1-plan.json")
 }
 if ($event -eq "pg-restore-list") { [Console]::Out.Write("1; 10 10 TABLE public entities`r`n") }
 if ($event -eq "write-attestation") {
   [IO.File]::WriteAllText((Join-Path $root "stage-b-attestation.json"), '{"ok":true}')
 }
 if ($event -eq "verify-source-noindex") {
-  @{status=200;x_robots_tag="noindex, follow";robots_meta_count=1;robots_meta_value="noindex, follow";body='<html><head><meta name="robots" content="noindex, follow"></head></html>'} | ConvertTo-Json -Compress
+  $body = switch ($env:VL360_STAGE_B_NOINDEX_VARIANT) {
+    "conflict" { '<html><head><meta content="noindex, follow" name="robots"><meta name="robots" content="index, follow"></head></html>' }
+    "order" { '<html><head><meta content="noindex, follow" name="robots"></head></html>' }
+    "padded" { '<html><head><meta name="robots" content=" noindex, follow "></head></html>' }
+    default { '<html><head><meta name="robots" content="noindex, follow"></head></html>' }
+  }
+  @{status=200;x_robots_tag="noindex, follow";body=$body} | ConvertTo-Json -Compress
 }
-if ($event -eq "git-head") { Write-Output "eb956fa000000000000000000000000000000000" }
+if ($event -eq "git-head") { Write-Output "b6c4854b33d0c7548e5913ad6f0853b58d97e405" }
 if ($event -eq "git-status") { }
+if ($event -eq "verify-readonly-identity") {
+  $port = if ($env:VL360_STAGE_B_IDENTITY_VARIANT -eq "wrong-port") { "5433" } else { "5432" }
+  Write-Output "vinhlong360|16384|123456789|127.0.0.1|$port|160004|on|$($env:PGUSER)"
+}
 '''
         path = self.tools / "fake.ps1"
         path.write_text(dispatcher, encoding="utf-8")
@@ -114,7 +310,13 @@ if ($event -eq "git-status") { }
     def events(self) -> list[str]:
         if not self.events_path.exists():
             return []
-        return [line.strip() for line in self.events_path.read_text().splitlines() if line.strip()]
+        return [record["event"] for record in self.records if record["event"] not in {"git-head", "git-status"}]
+
+    @property
+    def records(self) -> list[dict[str, object]]:
+        if not self.events_path.exists():
+            return []
+        return [json.loads(line) for line in self.events_path.read_text().splitlines() if line.strip()]
 
     @property
     def log_text(self) -> str:
@@ -128,11 +330,18 @@ if ($event -eq "git-status") { }
                 "VL360_STAGE_B_TEST_ROOT": str(self.root),
                 "VL360_STAGE_B_FAKE_TOOLS_DIR": str(self.tools),
                 "VL360_STAGE_B_EVENT_LOG": str(self.events_path),
-                "VL360_STAGE_B_FAKE_ROOT": str(tmp_path / "artifacts"),
+                "VL360_STAGE_B_FAKE_ROOT": str(self.root / "artifacts"),
                 "VL360_STAGE_B_FAILURE_STAGE": self.failure_stage,
+                "VL360_STAGE_B_NOINDEX_VARIANT": self.noindex_variant,
+                "VL360_STAGE_B_IDENTITY_VARIANT": self.identity_variant,
+                "VL360_STAGE_B_SECRET_CAPTURE": str(self.secret_capture),
             }
         )
-        return _run_script(env, "-ArtifactParent", str(tmp_path / "artifacts-parent"))
+        result = _run_script(env, "-ArtifactParent", str(self.root / "artifacts-parent"))
+        if self.secret_capture.exists():
+            self.password = self.secret_capture.read_text()
+            self.secret_capture.unlink()
+        return result
 
 
 @pytest.fixture
@@ -186,7 +395,8 @@ def test_runner_failure_matrix_is_cleanup_first_and_never_runs_stage_c(
     assert result.returncode != 0
     assert ("write-attestation" in fake_stage_b_tools.events) is attestation_expected
     assert not ({"apply", "rollback", "export", "deploy"} & set(fake_stage_b_tools.events))
-    assert fake_stage_b_tools.password not in combined
+    if fake_stage_b_tools.password:
+        assert fake_stage_b_tools.password not in combined
     if "create-role" in fake_stage_b_tools.events:
         assert "drop-role" in fake_stage_b_tools.events
     if "open-tunnel" in fake_stage_b_tools.events:
