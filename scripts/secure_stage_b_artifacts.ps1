@@ -9,10 +9,113 @@ param(
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 
+function Initialize-StableIdentityType {
+    if ($null -eq ('StageBFileIdentity' -as [type])) {
+        Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.IO;
+using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
+
+public static class StageBFileIdentity
+{
+    [StructLayout(LayoutKind.Sequential)]
+    private struct FileTime
+    {
+        public uint LowDateTime;
+        public uint HighDateTime;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct ByHandleFileInformation
+    {
+        public uint FileAttributes;
+        public FileTime CreationTime;
+        public FileTime LastAccessTime;
+        public FileTime LastWriteTime;
+        public uint VolumeSerialNumber;
+        public uint FileSizeHigh;
+        public uint FileSizeLow;
+        public uint NumberOfLinks;
+        public uint FileIndexHigh;
+        public uint FileIndexLow;
+    }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, EntryPoint = "CreateFileW", SetLastError = true)]
+    private static extern SafeFileHandle CreateFile(
+        string fileName,
+        uint desiredAccess,
+        uint shareMode,
+        IntPtr securityAttributes,
+        uint creationDisposition,
+        uint flagsAndAttributes,
+        IntPtr templateFile
+    );
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool GetFileInformationByHandle(
+        SafeFileHandle handle,
+        out ByHandleFileInformation information
+    );
+
+    public static string Get(string path)
+    {
+        const uint shareRead = 0x00000001;
+        const uint shareWrite = 0x00000002;
+        const uint shareDelete = 0x00000004;
+        const uint openExisting = 3;
+        const uint backupSemantics = 0x02000000;
+        const uint openReparsePoint = 0x00200000;
+
+        using (SafeFileHandle handle = CreateFile(
+            path,
+            0,
+            shareRead | shareWrite | shareDelete,
+            IntPtr.Zero,
+            openExisting,
+            backupSemantics | openReparsePoint,
+            IntPtr.Zero
+        ))
+        {
+            if (handle.IsInvalid)
+            {
+                throw new IOException("Unable to open path for stable identity", new Win32Exception(Marshal.GetLastWin32Error()));
+            }
+            if (!GetFileInformationByHandle(handle, out ByHandleFileInformation information))
+            {
+                throw new IOException("Unable to read stable file identity", new Win32Exception(Marshal.GetLastWin32Error()));
+            }
+            return string.Format(
+                "{0:X8}:{1:X8}:{2:X8}",
+                information.VolumeSerialNumber,
+                information.FileIndexHigh,
+                information.FileIndexLow
+            );
+        }
+    }
+}
+'@
+    }
+}
+
 function Get-ResolvedRoot {
     param([Parameter(Mandatory)][string]$Path)
 
-    return [System.IO.Path]::GetFullPath($Path)
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    $pathRoot = [System.IO.Path]::GetPathRoot($fullPath)
+    if ($fullPath.Length -gt $pathRoot.Length) {
+        $fullPath = $fullPath.TrimEnd('\', '/')
+    }
+    $existing = Get-Item -LiteralPath $fullPath -Force -ErrorAction SilentlyContinue
+    if ($null -ne $existing) {
+        $fullPath = [System.IO.Path]::GetFullPath($existing.FullName)
+        $pathRoot = [System.IO.Path]::GetPathRoot($fullPath)
+        if ($fullPath.Length -gt $pathRoot.Length) {
+            $fullPath = $fullPath.TrimEnd('\', '/')
+        }
+    }
+    return $fullPath
 }
 
 function Get-AllowedPrincipals {
@@ -53,13 +156,111 @@ function Test-IsReparsePoint {
     return [bool]($Item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)
 }
 
+function Get-ObjectPathKey {
+    param([Parameter(Mandatory)][string]$Path)
+
+    return (Get-ResolvedRoot -Path $Path).ToUpperInvariant()
+}
+
+function Assert-PathWithinRoot {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$RootPath
+    )
+
+    $candidate = Get-ResolvedRoot -Path $Path
+    $root = Get-ResolvedRoot -Path $RootPath
+    $same = [System.StringComparer]::OrdinalIgnoreCase.Equals($candidate, $root)
+    $prefix = if ($root.EndsWith('\') -or $root.EndsWith('/')) { $root } else { "$root\" }
+    $underRoot = $candidate.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)
+    if (-not ($same -or $underRoot)) {
+        throw "Path escapes the artifact root: $candidate"
+    }
+    return $candidate
+}
+
+function Assert-NoReparseAncestors {
+    param([Parameter(Mandatory)][string]$Path)
+
+    $current = Get-ResolvedRoot -Path $Path
+    while ($null -ne $current) {
+        $item = Get-Item -LiteralPath $current -Force -ErrorAction SilentlyContinue
+        if ($null -eq $item) {
+            $parent = [System.IO.Directory]::GetParent($current)
+            $current = if ($null -eq $parent) { $null } else { $parent.FullName }
+            continue
+        }
+        if (Test-IsReparsePoint -Item $item) {
+            throw "Reparse point in path ancestry: $current"
+        }
+        $parent = [System.IO.Directory]::GetParent($current)
+        if ($null -eq $parent -or $parent.FullName -eq $current) {
+            break
+        }
+        $current = $parent.FullName
+    }
+}
+
+function Get-FreshObjectSnapshot {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$RootPath,
+        [string]$ExpectedIdentity
+    )
+
+    $canonicalPath = Assert-PathWithinRoot -Path $Path -RootPath $RootPath
+    Assert-NoReparseAncestors -Path $canonicalPath
+    $item = Get-Item -LiteralPath $canonicalPath -Force
+    if (Test-IsReparsePoint -Item $item) {
+        throw "Reparse point detected: $canonicalPath"
+    }
+    Initialize-StableIdentityType
+    $identity = [StageBFileIdentity]::Get($canonicalPath)
+    if (-not [string]::IsNullOrEmpty($ExpectedIdentity) -and $identity -ne $ExpectedIdentity) {
+        throw "Stable identity changed: $canonicalPath"
+    }
+    return [pscustomobject]@{
+        Item = $item
+        Path = $canonicalPath
+        Identity = $identity
+        Attributes = $item.Attributes
+        IsDirectory = Test-IsDirectory -Item $item
+    }
+}
+
+function Assert-SnapshotUnchanged {
+    param(
+        [Parameter(Mandatory)]$Before,
+        [Parameter(Mandatory)]$After
+    )
+
+    if (
+        $Before.Identity -ne $After.Identity -or
+        $Before.Attributes -ne $After.Attributes -or
+        $Before.IsDirectory -ne $After.IsDirectory
+    ) {
+        throw "Stable object identity or attributes changed: $($Before.Path)"
+    }
+}
+
+function Add-StableIdentity {
+    param(
+        [Parameter(Mandatory)][System.IO.FileSystemInfo]$Item,
+        [Parameter(Mandatory)]$Snapshot
+    )
+
+    $Item | Add-Member -MemberType NoteProperty -Name StableIdentity -Value $Snapshot.Identity -Force
+    return $Item
+}
+
 function Get-TreeObjects {
     param([Parameter(Mandatory)][string]$RootPath)
 
-    $rootItem = Get-Item -LiteralPath $RootPath -Force
-    if (-not (Test-IsDirectory -Item $rootItem)) {
+    $rootSnapshot = Get-FreshObjectSnapshot -Path $RootPath -RootPath $RootPath
+    if (-not $rootSnapshot.IsDirectory) {
         throw "Artifact root is not a directory: $RootPath"
     }
+    $rootItem = Add-StableIdentity -Item $rootSnapshot.Item -Snapshot $rootSnapshot
 
     $objects = [System.Collections.Generic.List[System.IO.FileSystemInfo]]::new()
     $directories = [System.Collections.Generic.Queue[System.IO.DirectoryInfo]]::new()
@@ -70,14 +271,27 @@ function Get-TreeObjects {
 
     while ($directories.Count -gt 0) {
         $directory = $directories.Dequeue()
+        $beforeEnumeration = Get-FreshObjectSnapshot `
+            -Path $directory.FullName `
+            -RootPath $RootPath `
+            -ExpectedIdentity $directory.StableIdentity
+        if (-not $beforeEnumeration.IsDirectory) {
+            throw "Directory changed into a non-directory before enumeration: $($directory.FullName)"
+        }
         $children = @(
             [System.IO.Directory]::EnumerateFileSystemEntries($directory.FullName) |
                 Sort-Object
         )
+        $afterEnumeration = Get-FreshObjectSnapshot `
+            -Path $directory.FullName `
+            -RootPath $RootPath `
+            -ExpectedIdentity $directory.StableIdentity
+        Assert-SnapshotUnchanged -Before $beforeEnumeration -After $afterEnumeration
         foreach ($childPath in $children) {
-            $child = Get-Item -LiteralPath $childPath -Force
+            $childSnapshot = Get-FreshObjectSnapshot -Path $childPath -RootPath $RootPath
+            $child = Add-StableIdentity -Item $childSnapshot.Item -Snapshot $childSnapshot
             $objects.Add($child)
-            if ((Test-IsDirectory -Item $child) -and -not (Test-IsReparsePoint -Item $child)) {
+            if ($childSnapshot.IsDirectory) {
                 $directories.Enqueue($child)
             }
         }
@@ -98,6 +312,26 @@ function Get-SidRules {
     )
 }
 
+function Get-SafeAcl {
+    param(
+        [Parameter(Mandatory)][System.IO.FileSystemInfo]$Item,
+        [Parameter(Mandatory)][string]$RootPath
+    )
+
+    $expectedIdentity = $null
+    if ($null -ne $Item.PSObject.Properties['StableIdentity']) {
+        $expectedIdentity = $Item.StableIdentity
+    }
+    $before = Get-FreshObjectSnapshot -Path $Item.FullName -RootPath $RootPath -ExpectedIdentity $expectedIdentity
+    $acl = Get-Acl -LiteralPath $before.Item.FullName
+    $after = Get-FreshObjectSnapshot -Path $before.Path -RootPath $RootPath -ExpectedIdentity $before.Identity
+    Assert-SnapshotUnchanged -Before $before -After $after
+    return [pscustomobject]@{
+        Acl = $acl
+        Snapshot = $after
+    }
+}
+
 function Get-ExpectedInheritanceFlags {
     param([Parameter(Mandatory)][System.IO.FileSystemInfo]$Item)
 
@@ -113,16 +347,19 @@ function Get-ExpectedInheritanceFlags {
 function Set-ExactAcl {
     param(
         [Parameter(Mandatory)][System.IO.FileSystemInfo]$Item,
-        [Parameter(Mandatory)][object[]]$AllowedPrincipals
+        [Parameter(Mandatory)][object[]]$AllowedPrincipals,
+        [Parameter(Mandatory)][string]$RootPath
     )
 
-    $acl = Get-Acl -LiteralPath $Item.FullName
+    $safeAcl = Get-SafeAcl -Item $Item -RootPath $RootPath
+    $acl = $safeAcl.Acl
+    $freshItem = $safeAcl.Snapshot.Item
     $acl.SetAccessRuleProtection($true, $false)
     foreach ($rule in @(Get-SidRules -Acl $acl)) {
         $acl.RemoveAccessRuleSpecific($rule)
     }
 
-    $inheritanceFlags = Get-ExpectedInheritanceFlags -Item $Item
+    $inheritanceFlags = Get-ExpectedInheritanceFlags -Item $freshItem
     foreach ($principal in $AllowedPrincipals) {
         $rule = [System.Security.AccessControl.FileSystemAccessRule]::new(
             $principal.Sid,
@@ -133,32 +370,42 @@ function Set-ExactAcl {
         )
         $acl.AddAccessRule($rule)
     }
-    Set-Acl -LiteralPath $Item.FullName -AclObject $acl
+    $beforeWrite = Get-FreshObjectSnapshot `
+        -Path $freshItem.FullName `
+        -RootPath $RootPath `
+        -ExpectedIdentity $safeAcl.Snapshot.Identity
+    Assert-SnapshotUnchanged -Before $safeAcl.Snapshot -After $beforeWrite
+    # Provider Set-Acl is path-based; post-write identity checks fail closed if a same-user swap wins the residual race.
+    Set-Acl -LiteralPath $beforeWrite.Item.FullName -AclObject $acl
+    $afterWrite = Get-FreshObjectSnapshot `
+        -Path $beforeWrite.Path `
+        -RootPath $RootPath `
+        -ExpectedIdentity $beforeWrite.Identity
+    Assert-SnapshotUnchanged -Before $beforeWrite -After $afterWrite
 }
 
 function Assert-NoHostileObjects {
-    param([Parameter(Mandatory)][System.IO.FileSystemInfo[]]$Objects)
-
-    $reparsePoints = @($Objects | Where-Object { Test-IsReparsePoint -Item $_ })
-    if ($reparsePoints.Count -gt 0) {
-        throw "Reparse point detected: $($reparsePoints[0].FullName)"
-    }
+    param(
+        [Parameter(Mandatory)][System.IO.FileSystemInfo[]]$Objects,
+        [Parameter(Mandatory)][string]$RootPath
+    )
 
     foreach ($item in $Objects) {
+        $expectedIdentity = $null
+        if ($null -ne $item.PSObject.Properties['StableIdentity']) {
+            $expectedIdentity = $item.StableIdentity
+        }
+        $before = Get-FreshObjectSnapshot -Path $item.FullName -RootPath $RootPath -ExpectedIdentity $expectedIdentity
         $namedStreams = @(
-            Get-Item -LiteralPath $item.FullName -Stream * |
+            Get-Item -LiteralPath $before.Item.FullName -Stream * |
                 Where-Object { $_.Stream -ne ':$DATA' }
         )
         if ($namedStreams.Count -gt 0) {
-            throw "Alternate data stream detected: $($item.FullName)$($namedStreams[0].Stream)"
+            throw "Alternate data stream detected: $($before.Path)$($namedStreams[0].Stream)"
         }
+        $after = Get-FreshObjectSnapshot -Path $before.Path -RootPath $RootPath -ExpectedIdentity $before.Identity
+        Assert-SnapshotUnchanged -Before $before -After $after
     }
-}
-
-function Get-ObjectPathKey {
-    param([Parameter(Mandatory)][string]$Path)
-
-    return ([System.IO.Path]::GetFullPath($Path)).ToUpperInvariant()
 }
 
 function Get-ParentDirectoryPath {
@@ -193,7 +440,7 @@ function Assert-InheritedRuleOrigin {
         }
 
         $ancestor = $ObjectByPath[$parentKey]
-        $ancestorAcl = Get-Acl -LiteralPath $ancestor.FullName
+        $ancestorAcl = (Get-SafeAcl -Item $ancestor -RootPath $RootPath).Acl
         if ($ancestorAcl.AreAccessRulesProtected) {
             throw "Inherited rule originates at a protected non-root ancestor: $($ancestor.FullName)"
         }
@@ -238,7 +485,7 @@ function Assert-NormalizationPreflight {
         $objectByPath[(Get-ObjectPathKey -Path $object.FullName)] = $object
     }
 
-    $rootAcl = Get-Acl -LiteralPath $Objects[0].FullName
+    $rootAcl = (Get-SafeAcl -Item $Objects[0] -RootPath $RootPath).Acl
     $rootRules = @(Get-SidRules -Acl $rootAcl)
     if (-not $rootAcl.AreAccessRulesProtected) {
         throw 'NormalizeAndVerify requires a protected artifact root'
@@ -252,9 +499,10 @@ function Assert-NormalizationPreflight {
     $unsafeInherited = [System.Collections.Generic.List[string]]::new()
 
     foreach ($item in $Objects) {
-        $acl = Get-Acl -LiteralPath $item.FullName
+        $safeAcl = Get-SafeAcl -Item $item -RootPath $RootPath
+        $acl = $safeAcl.Acl
         $rules = @(Get-SidRules -Acl $acl)
-        $expectedFlags = Get-ExpectedInheritanceFlags -Item $item
+        $expectedFlags = Get-ExpectedInheritanceFlags -Item $safeAcl.Snapshot.Item
         $inheritedAllowedSids = @{}
         foreach ($rule in $rules) {
             $sid = $rule.IdentityReference.Value
@@ -302,7 +550,8 @@ function Assert-NormalizationPreflight {
 function Assert-StrictAclTree {
     param(
         [Parameter(Mandatory)][System.IO.FileSystemInfo[]]$Objects,
-        [Parameter(Mandatory)][object[]]$AllowedPrincipals
+        [Parameter(Mandatory)][object[]]$AllowedPrincipals,
+        [Parameter(Mandatory)][string]$RootPath
     )
 
     $allowedSids = @{}
@@ -317,7 +566,8 @@ function Assert-StrictAclTree {
     $shapeErrors = [System.Collections.Generic.List[string]]::new()
 
     foreach ($item in $Objects) {
-        $acl = Get-Acl -LiteralPath $item.FullName
+        $safeAcl = Get-SafeAcl -Item $item -RootPath $RootPath
+        $acl = $safeAcl.Acl
         if ($acl.AreAccessRulesProtected) {
             $protectedObjectCount += 1
         }
@@ -327,7 +577,7 @@ function Assert-StrictAclTree {
 
         $rules = @(Get-SidRules -Acl $acl)
         $seenAllowedSids = @{}
-        $expectedFlags = Get-ExpectedInheritanceFlags -Item $item
+        $expectedFlags = Get-ExpectedInheritanceFlags -Item $safeAcl.Snapshot.Item
         foreach ($rule in $rules) {
             $sid = $rule.IdentityReference.Value
             if ($rule.IsInherited) {
@@ -409,28 +659,31 @@ function Invoke-Main {
     if ($allowedPrincipals.Count -ne 3) {
         throw "Exactly three distinct allowed principals are required; resolved $($allowedPrincipals.Count)"
     }
+    Assert-NoReparseAncestors -Path $rootPath
 
     if ($Mode -eq 'CreateRoot') {
         if ($null -ne (Get-Item -LiteralPath $rootPath -Force -ErrorAction SilentlyContinue)) {
             throw "Artifact root already exists: $rootPath"
         }
         $rootItem = [System.IO.Directory]::CreateDirectory($rootPath)
-        Set-ExactAcl -Item $rootItem -AllowedPrincipals $allowedPrincipals
+        $rootSnapshot = Get-FreshObjectSnapshot -Path $rootPath -RootPath $rootPath
+        $rootItem = Add-StableIdentity -Item $rootSnapshot.Item -Snapshot $rootSnapshot
+        Set-ExactAcl -Item $rootItem -AllowedPrincipals $allowedPrincipals -RootPath $rootPath
     }
 
     $objects = @(Get-TreeObjects -RootPath $rootPath)
-    Assert-NoHostileObjects -Objects $objects
+    Assert-NoHostileObjects -Objects $objects -RootPath $rootPath
 
     if ($Mode -eq 'NormalizeAndVerify') {
         Assert-NormalizationPreflight -Objects $objects -AllowedPrincipals $allowedPrincipals -RootPath $rootPath
         foreach ($item in $objects) {
-            Set-ExactAcl -Item $item -AllowedPrincipals $allowedPrincipals
+            Set-ExactAcl -Item $item -AllowedPrincipals $allowedPrincipals -RootPath $rootPath
         }
         $objects = @(Get-TreeObjects -RootPath $rootPath)
-        Assert-NoHostileObjects -Objects $objects
+        Assert-NoHostileObjects -Objects $objects -RootPath $rootPath
     }
 
-    $stats = Assert-StrictAclTree -Objects $objects -AllowedPrincipals $allowedPrincipals
+    $stats = Assert-StrictAclTree -Objects $objects -AllowedPrincipals $allowedPrincipals -RootPath $rootPath
     $evidence = New-Evidence -RootPath $rootPath -AllowedPrincipals $allowedPrincipals -Stats $stats
     Write-Output ($evidence | ConvertTo-Json -Compress -Depth 4)
 }

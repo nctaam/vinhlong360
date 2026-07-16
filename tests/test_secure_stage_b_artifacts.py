@@ -132,8 +132,11 @@ def test_normalize_rejects_named_alternate_stream_and_preserves_artifact(tmp_pat
     _evidence(_pwsh("CreateRoot", artifact_root))
     artifact = artifact_root / "artifact.txt"
     artifact.write_text("artifact bytes", encoding="utf-8")
-    with open(f"{artifact}:hostile", "w", encoding="utf-8") as stream:
-        stream.write("hidden bytes")
+    try:
+        with open(f"{artifact}:hostile", "w", encoding="utf-8") as stream:
+            stream.write("hidden bytes")
+    except OSError as exc:
+        pytest.skip(f"Named alternate streams unavailable: {exc}")
 
     completed = _pwsh("NormalizeAndVerify", artifact_root)
 
@@ -163,8 +166,11 @@ def test_verify_rejects_unexpected_principal_and_preserves_artifact(tmp_path: Pa
 def test_normalize_rejects_reparse_point_before_acl_changes(tmp_path: Path):
     artifact_root = tmp_path / "stage-b"
     _evidence(_pwsh("CreateRoot", artifact_root))
-    target = artifact_root / "target.txt"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    target = outside / "target.txt"
     target.write_text("target bytes", encoding="utf-8")
+    target_before = _acl_snapshot(target)
     link = artifact_root / "link.txt"
     try:
         link.symlink_to(target)
@@ -179,6 +185,42 @@ def test_normalize_rejects_reparse_point_before_acl_changes(tmp_path: Path):
     assert os.path.lexists(link)
     assert link.is_symlink()
     assert target.read_text(encoding="utf-8") == "target bytes"
+    assert _acl_snapshot(target) == target_before
+
+
+def test_create_root_rejects_reparse_parent_before_writing_outside_root(tmp_path: Path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    parent_link = tmp_path / "parent-link"
+    try:
+        parent_link.symlink_to(outside, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"Windows symlink creation unavailable: {exc}")
+    requested_root = parent_link / "stage-b"
+
+    completed = _pwsh("CreateRoot", requested_root)
+
+    assert completed.returncode != 0
+    assert completed.stdout == ""
+    assert "reparse" in completed.stderr.lower()
+    assert not (outside / "stage-b").exists()
+
+
+def test_normalize_accepts_trailing_root_separator_and_is_idempotent(tmp_path: Path):
+    artifact_root = tmp_path / "stage-b"
+    root_with_separator = f"{artifact_root}\\"
+    _evidence(_pwsh("CreateRoot", root_with_separator))
+    artifact = artifact_root / "artifact.txt"
+    artifact.write_text("keep", encoding="utf-8")
+
+    first = _evidence(_pwsh("NormalizeAndVerify", root_with_separator))
+    second = _evidence(_pwsh("NormalizeAndVerify", root_with_separator))
+
+    assert first["root"] == str(artifact_root.resolve())
+    assert second["root"] == str(artifact_root.resolve())
+    assert first["inherited_rule_count"] == 0
+    assert second["inherited_rule_count"] == 0
+    assert artifact.read_text(encoding="utf-8") == "keep"
 
 
 def test_verify_rejects_new_child_with_inherited_rules_and_preserves_it(tmp_path: Path):
