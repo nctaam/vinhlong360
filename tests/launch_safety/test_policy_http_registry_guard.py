@@ -834,13 +834,20 @@ def local_evidence_mapping():
     payload = {}
     payload.update(asdict(evidence))
     return JSONResponse(payload)
+
+@app.get("/aliased-evidence-mapping")
+def aliased_evidence_mapping():
+    evidence = current_policy_evidence()
+    alias = evidence
+    payload = alias
+    return JSONResponse(payload)
 ''',
     )
 
     findings = checker.scan_policy_routes([source], ())
     unregistered = [finding for finding in findings if finding.code == "UNREGISTERED_POLICY_ROUTE"]
 
-    assert len(unregistered) == 2
+    assert len(unregistered) == 3
 
 
 def test_scanner_supports_api_route_methods_and_exact_header_markers(tmp_path: Path):

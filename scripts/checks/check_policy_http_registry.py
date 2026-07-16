@@ -484,22 +484,37 @@ def _policy_evidence_names(node: ast.FunctionDef | ast.AsyncFunctionDef) -> set[
     return names
 
 
-def _directly_derived_names(
+def _evidence_alias_value(value: ast.AST, derived: set[str]) -> bool:
+    if isinstance(value, ast.Name):
+        return value.id in derived
+    if isinstance(value, ast.Attribute):
+        return _root_name(value) in derived
+    if isinstance(value, ast.Dict):
+        return bool(_names_in(value) & derived)
+    if not isinstance(value, ast.Call):
+        return False
+    call_name = _call_name(value)
+    if call_name in _POLICY_EVIDENCE_CALLS:
+        return True
+    return call_name in {"Response", "JSONResponse", "asdict"} and bool(
+        _names_in(value) & derived
+    )
+
+
+def _derived_evidence_names(
     node: ast.FunctionDef | ast.AsyncFunctionDef,
     initial: set[str],
 ) -> set[str]:
     derived = set(initial)
-    for child in ast.walk(node):
-        targets, value, _annotation = _assignment_parts(child)
-        if value is not None and (
-            bool(_names_in(value) & initial)
-            or any(
-                _call_name(call) in _POLICY_EVIDENCE_CALLS
-                for call in ast.walk(value)
-                if isinstance(call, ast.Call)
-            )
-        ):
-            derived.update(_assigned_names(targets))
+    changed = True
+    while changed:
+        changed = False
+        for child in ast.walk(node):
+            targets, value, _annotation = _assignment_parts(child)
+            if value is not None and _evidence_alias_value(value, derived):
+                before = len(derived)
+                derived.update(_assigned_names(targets))
+                changed = len(derived) != before
     return derived
 
 
@@ -612,7 +627,7 @@ def _serializes_policy(
     returned = _returned_names(node)
     policy = _policy_names(node)
     tainted = _tainted_names(node, policy, constants)
-    evidence = _directly_derived_names(node, _policy_evidence_names(node))
+    evidence = _derived_evidence_names(node, _policy_evidence_names(node))
     parameters = _function_parameter_names(node)
     return any(
         _return_serializes_policy(child, policy, tainted, evidence, constants)
