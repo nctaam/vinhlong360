@@ -827,12 +827,20 @@ def evidence_mapping():
     payload = {}
     payload.update(asdict(current_policy_evidence()))
     return JSONResponse(payload)
+
+@app.get("/local-evidence-mapping")
+def local_evidence_mapping():
+    evidence = current_policy_evidence()
+    payload = {}
+    payload.update(asdict(evidence))
+    return JSONResponse(payload)
 ''',
     )
 
     findings = checker.scan_policy_routes([source], ())
+    unregistered = [finding for finding in findings if finding.code == "UNREGISTERED_POLICY_ROUTE"]
 
-    assert _codes(findings) == {"UNREGISTERED_POLICY_ROUTE"}
+    assert len(unregistered) == 2
 
 
 def test_scanner_supports_api_route_methods_and_exact_header_markers(tmp_path: Path):
@@ -930,6 +938,36 @@ def test_hard_check_uses_only_the_two_task12_future_allowances():
     assert checker is not None
 
     result = checker.PolicyHttpRegistryCheck(root=ROOT).run()
+
+    assert result["count"] == 0
+
+
+def test_hard_check_uses_configured_root_for_authoritative_app(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None
+    agent = tmp_path / "agent"
+    _write(
+        agent / "public_api.py",
+        '''
+from fastapi import APIRouter
+router = APIRouter(prefix="/api")
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+    _write(
+        agent / "server.py",
+        '''
+from fastapi import FastAPI
+from public_api import router
+app = FastAPI()
+app.include_router(router)
+''',
+    )
+
+    result = checker.PolicyHttpRegistryCheck(root=tmp_path).run()
 
     assert result["count"] == 0
 

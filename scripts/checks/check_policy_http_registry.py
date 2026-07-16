@@ -581,6 +581,7 @@ def _call_serializes_policy(
     call: ast.Call,
     constants: dict[str, str] | None,
     tainted_names: set[str],
+    evidence_names: set[str],
     returned_names: set[str],
 ) -> bool:
     evidence_call = any(
@@ -590,7 +591,7 @@ def _call_serializes_policy(
     )
     if not (
         _contains_serialized_key(call, constants)
-        or bool(_names_in(call) & tainted_names)
+        or bool(_names_in(call) & (tainted_names | evidence_names))
         or evidence_call
     ):
         return False
@@ -622,7 +623,7 @@ def _serializes_policy(
         for child in ast.walk(node)
         if isinstance(child, (ast.Assign, ast.AnnAssign))
     ) or any(
-        _call_serializes_policy(child, constants, tainted, returned)
+        _call_serializes_policy(child, constants, tainted, evidence, returned)
         for child in ast.walk(node)
         if isinstance(child, ast.Call)
     )
@@ -926,6 +927,7 @@ class PolicyHttpRegistryCheck:
             agent_source_files(self.root / "agent"),
             POLICY_ENDPOINTS,
             allowed_future={"launch_policy_attestation", "launch_sitemap_document"},
+            authoritative_app_path=self.root / "agent" / "server.py",
         )
         violations = [
             {
