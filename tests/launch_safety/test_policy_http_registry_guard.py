@@ -168,7 +168,9 @@ def get_entity(entity_id: str):
     server = _write(
         tmp_path / "server.py",
         '''
+from fastapi import FastAPI
 from routes import router as public_router
+app = FastAPI()
 app.include_router(public_router, prefix="/api")
 ''',
     )
@@ -198,7 +200,9 @@ def detail(entity_id: str):
     server = _write(
         tmp_path / "server.py",
         '''
+from fastapi import FastAPI
 import routes as public
+app = FastAPI()
 app.include_router(public.router, prefix="/api")
 ''',
     )
@@ -279,6 +283,71 @@ def get_entity(entity_id: str):
 
     assert "POLICY_ROUTE_CONTRACT_MISMATCH" in _codes(findings)
     assert "STALE_POLICY_REGISTRY_ENTRY" in _codes(findings)
+
+
+def test_app_name_without_fastapi_constructor_does_not_mount_policy_router(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    source = _write(
+        tmp_path / "public_api.py",
+        '''
+from fastapi import APIRouter
+router = APIRouter(prefix="/api")
+app = object()
+app.include_router(router)
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],))
+
+    assert "POLICY_ROUTE_CONTRACT_MISMATCH" in _codes(findings)
+    assert "STALE_POLICY_REGISTRY_ENTRY" in _codes(findings)
+
+
+def test_scanner_resolves_fastapi_constructor_aliases(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    source = _write(
+        tmp_path / "aliased.py",
+        '''
+from fastapi import APIRouter as Router, FastAPI as Application
+router = Router(prefix="/api")
+app = Application()
+app.include_router(router)
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+
+    assert checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],)) == []
+
+
+def test_unresolved_router_constructor_fails_closed(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None
+    source = _write(
+        tmp_path / "unresolved.py",
+        '''
+from fastapi import FastAPI
+router = make_router(prefix="/api")
+app = FastAPI()
+app.include_router(router)
+
+@router.get("/policy")
+def policy():
+    return {"index_policy": {"indexable": False}}
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], ())
+
+    assert "POLICY_ROUTE_SCAN_ERROR" in _codes(findings)
 
 
 def test_scanner_classifies_asdict_typed_policy_and_response_header_sinks(tmp_path: Path):
@@ -415,6 +484,22 @@ def test_hard_check_uses_only_the_two_task12_future_allowances():
     assert result["count"] == 0
 
 
+def test_public_future_allowance_is_rejected_and_cannot_hide_stale_entry(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    source = _write(tmp_path / "empty.py", "value = 1\n")
+
+    findings = checker.scan_policy_routes(
+        [source],
+        (policy_http.POLICY_ENDPOINTS[0],),
+        allowed_future={"get_entity"},
+    )
+
+    assert "INVALID_FUTURE_ALLOWANCE" in _codes(findings)
+    assert "STALE_POLICY_REGISTRY_ENTRY" in _codes(findings)
+    assert checker._validate_allow_future(["get_entity"])
+
+
 def test_current_repository_registry_is_exact_with_only_declared_futures():
     checker = _load_checker()
     assert checker is not None and policy_http is not None
@@ -433,6 +518,7 @@ def test_current_repository_registry_is_exact_with_only_declared_futures():
     [
         ["--allow-future", "unknown_future"],
         ["--allow-future", "launch_policy_attestation", "--allow-future", "launch_policy_attestation"],
+        ["--allow-future", "get_entity"],
     ],
 )
 def test_cli_rejects_unknown_or_duplicate_future_allowance(args: list[str]):

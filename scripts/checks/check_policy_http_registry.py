@@ -21,6 +21,9 @@ from policy_http import POLICY_ENDPOINTS, PolicyEndpoint  # noqa: E402
 
 
 HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head"})
+DECLARED_FUTURE_ROUTE_NAMES = frozenset(
+    {"launch_policy_attestation", "launch_sitemap_document"}
+)
 SERIALIZED_POLICY_KEYS = frozenset(
     {
         "index_policy",
@@ -159,13 +162,20 @@ def _router_definition(
     node: ast.AST,
     module_key: str,
     constants: dict[str, str],
+    imported_symbols: dict[str, tuple[str, str]],
     path: Path,
     scan_errors: list[Finding],
 ) -> _RouterDef | None:
     name, value = _assignment_name_value(node)
     if name is None or not isinstance(value, ast.Call):
         return None
-    constructor = _call_name(value)
+    constructor_name = _call_name(value)
+    imported = imported_symbols.get(constructor_name or "")
+    constructor = (
+        imported[1]
+        if imported is not None and imported[0] == "fastapi"
+        else constructor_name
+    )
     if constructor not in {"APIRouter", "FastAPI"}:
         return None
     prefix_node = next((keyword.value for keyword in value.keywords if keyword.arg == "prefix"), None)
@@ -201,7 +211,14 @@ def _parse_module(path: Path, source_root: Path) -> _ModuleInfo:
     scan_errors: list[Finding] = []
 
     for node in tree.body:
-        router = _router_definition(node, key, constants, path, scan_errors)
+        router = _router_definition(
+            node,
+            key,
+            constants,
+            imported_symbols,
+            path,
+            scan_errors,
+        )
         if router is not None:
             routers[router.variable] = router
         _record_imports(node, imported_symbols, imported_modules)
@@ -484,8 +501,6 @@ def _include_parent_key(
     parent = _resolve_router_reference(expression, module, router_defs)
     if parent is not None:
         return parent.module, parent.variable
-    if isinstance(expression, ast.Name) and expression.id == "app":
-        return module.key, "__implicit_app__"
     return None
 
 
@@ -541,8 +556,6 @@ def _mounted_prefixes(
         for router in module.routers.values()
         if router.is_app
     }
-    for module in modules:
-        mounted.setdefault((module.key, "__implicit_app__"), {""})
     changed = True
     while changed:
         changed = False
@@ -595,6 +608,15 @@ def _module_routes(
         ):
             router = _resolve_router_reference(router_expression, module, router_defs)
             if router is None:
+                if _serializes_policy(function, module.constants):
+                    module.scan_errors.append(
+                        Finding(
+                            "POLICY_ROUTE_SCAN_ERROR",
+                            str(module.path),
+                            function.lineno,
+                            "policy-bearing route uses an unresolved router constructor",
+                        )
+                    )
                 continue
             prefixes = mounted_prefixes.get((router.module, router.variable), set())
             for prefix in prefixes or {""}:
@@ -624,17 +646,19 @@ def _future_allowance_state(
     registry_names: set[str],
     routes: Sequence[_Route],
 ) -> tuple[list[Finding], set[str]]:
-    unknown = allowed - registry_names
+    permitted = DECLARED_FUTURE_ROUTE_NAMES & registry_names
+    invalid = allowed - permitted
+    requested = allowed & permitted
     observed = {route.route_name for route in routes}
     findings = [
-        Finding("INVALID_FUTURE_ALLOWANCE", "<registry>", 0, f"unknown future route name {name!r}")
-        for name in sorted(unknown)
+        Finding("INVALID_FUTURE_ALLOWANCE", "<registry>", 0, f"unsupported future route name {name!r}")
+        for name in sorted(invalid)
     ]
     findings.extend(
         Finding("INVALID_FUTURE_ALLOWANCE", "<registry>", 0, f"future route {name!r} already exists")
-        for name in sorted(allowed & observed)
+        for name in sorted(requested & observed)
     )
-    return findings, allowed - unknown - observed
+    return findings, requested - observed
 
 
 def _route_contract_result(
@@ -781,7 +805,7 @@ CHECKS = [PolicyHttpRegistryCheck()]
 def _validate_allow_future(values: list[str]) -> list[str]:
     errors: list[str] = []
     seen: set[str] = set()
-    known = {row.route_name for row in POLICY_ENDPOINTS}
+    known = DECLARED_FUTURE_ROUTE_NAMES
     for value in values:
         if value in seen:
             errors.append(f"duplicate future route name {value!r}")
