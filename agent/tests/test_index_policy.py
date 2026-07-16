@@ -329,6 +329,49 @@ def test_ward_summary_uses_unicode_letter_tokens_and_nfc_normalization():
 
 
 @pytest.mark.parametrize(
+    "ward_type",
+    [
+        pytest.param(None, id="missing-type"),
+        pytest.param("product", id="non-place-type"),
+    ],
+)
+def test_decide_ward_requires_exact_place_type_without_mutating_input(
+    ward_type: str | None,
+):
+    ward = _public_ward()
+    if ward_type is None:
+        del ward["type"]
+    else:
+        ward["type"] = ward_type
+    original = copy.deepcopy(ward)
+
+    decision = index_policy.decide_ward(
+        ward, public_child_count=2, evidence=EVIDENCE
+    )
+
+    assert decision.indexable is False
+    assert decision.reasons == ("ward-type-not-place",)
+    assert ward == original
+
+
+def test_invalid_ward_type_precedes_public_and_quality_reasons():
+    ward = _public_ward(
+        type="product", status="draft", verified=False, summary=_words(59, "xã")
+    )
+
+    decision = index_policy.decide_ward(
+        ward, public_child_count=1, evidence=EVIDENCE
+    )
+
+    assert decision.reasons == (
+        "ward-type-not-place",
+        "public-status-not-allowlisted",
+        "public-explicitly-unverified",
+        "ward-below-child-and-summary-threshold",
+    )
+
+
+@pytest.mark.parametrize(
     "overrides, expected_reason",
     [
         ({"status": None}, "public-status-missing"),
@@ -476,13 +519,23 @@ def test_decision_validation_uses_exact_per_kind_reason_vocabularies():
         policy_revision=INDEX_POLICY_REVISION,
     )
     assert valid_ward.kind == "ward"
+    valid_ward_type = IndexPolicyDecision(
+        kind="ward",
+        indexable=False,
+        reasons=("ward-type-not-place",),
+        policy_fingerprint="a" * 64,
+        policy_revision=INDEX_POLICY_REVISION,
+    )
+    assert valid_ward_type.reasons == ("ward-type-not-place",)
 
     invalid_kind_reason_pairs = [
         ("entity", "ward-below-child-and-summary-threshold"),
+        ("entity", "ward-type-not-place"),
         ("ward", "description-below-130-words"),
         ("ward", "itinerary-fixed-noindex"),
         ("itinerary", "public-status-missing"),
         ("itinerary", "ward-below-child-and-summary-threshold"),
+        ("itinerary", "ward-type-not-place"),
     ]
     for kind, reason in invalid_kind_reason_pairs:
         with pytest.raises(ValueError, match="unknown reason"):

@@ -219,6 +219,33 @@ def test_sitemap_ward_outer_compatibility_and_strict_child_count(tmp_path, monke
     assert b"/xa-phuong/single-child-ward" not in body  # ineligible child receives no hub credit
 
 
+def test_sitemap_ward_child_count_ignores_self_references(tmp_path, monkeypatch):
+    payload = {
+        "entities": [
+            {"id": "self-plus-one", "type": "place", "status": "published",
+             "verified": True, "placeId": "self-plus-one", "summary": _text(10)},
+            {"id": "one-real-child", "type": "dish", "status": "published",
+             "verified": True, "placeId": "self-plus-one", "summary": _text(200)},
+            {"id": "self-plus-two", "type": "place", "status": "published",
+             "verified": True, "placeId": "self-plus-two", "summary": _text(10)},
+            {"id": "first-real-child", "type": "dish", "status": "published",
+             "verified": True, "placeId": "self-plus-two", "summary": _text(200)},
+            {"id": "second-real-child", "type": "dish", "status": "published",
+             "verified": True, "placeId": "self-plus-two", "summary": _text(200)},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    _reset_seo(monkeypatch, data_path)
+
+    body = seo.sitemap().body
+
+    assert b"/xa-phuong/self-plus-one" not in body
+    assert b"/xa-phuong/self-plus-two" in body
+
+
 def test_sitemap_place_children_counts_only_publicly_eligible_children():
     data = {
         "entities": [

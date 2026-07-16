@@ -1294,13 +1294,13 @@ def _sitemap_place_children(data: dict[str, Any]) -> dict[str, int]:
     # từ độ dài summary; ward quality remains a separate reviewed policy step.
     _place_children: dict[str, int] = {}
     for e in data.get("entities", []):
-        pid = (
-            e.get("placeId")
-            if isinstance(e, dict) and is_publicly_eligible(e)
-            else None
-        )
-        if pid:
-            _place_children[str(pid)] = _place_children.get(str(pid), 0) + 1
+        if not isinstance(e, dict) or not is_publicly_eligible(e):
+            continue
+        pid = e.get("placeId")
+        entity_id = e.get("id")
+        if not pid or (entity_id is not None and str(entity_id) == str(pid)):
+            continue
+        _place_children[str(pid)] = _place_children.get(str(pid), 0) + 1
     return _place_children
 
 

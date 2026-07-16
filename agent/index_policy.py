@@ -26,6 +26,7 @@ ENTITY_REASON_ORDER = (
     "description-below-130-words",
 )
 WARD_REASON_ORDER = (
+    "ward-type-not-place",
     "public-status-missing",
     "public-status-not-allowlisted",
     "public-verification-missing",
@@ -246,7 +247,10 @@ def decide_ward(
     if public_child_count < 0:
         raise ValueError("public_child_count must be nonnegative")
     snapshot = _snapshot(ward)
-    reasons = list(_public_eligibility_reasons(snapshot))
+    reasons: list[str] = []
+    if type(snapshot["type"]) is not str or snapshot["type"] != "place":
+        reasons.append("ward-type-not-place")
+    reasons.extend(_public_eligibility_reasons(snapshot))
     if public_child_count <= 1 and _unicode_word_count(snapshot["summary"]) < 60:
         reasons.append("ward-below-child-and-summary-threshold")
     return IndexPolicyDecision(
