@@ -40,7 +40,11 @@ def _disposable_database_url() -> str:
         parsed = urlsplit(TEST_URL)
     except ValueError:
         pytest.skip("ENTITY_STATUS_TEST_DATABASE_URL is not a valid PostgreSQL URL")
-    if parsed.scheme not in {"postgres", "postgresql"} or not parsed.netloc:
+    if (
+        parsed.scheme not in {"postgres", "postgresql"}
+        or not parsed.netloc
+        or not parsed.hostname
+    ):
         pytest.skip(
             "ENTITY_STATUS_TEST_DATABASE_URL must be a PostgreSQL URL with a host"
         )
@@ -71,6 +75,120 @@ def _quote_role(role: str) -> str:
     if not re.fullmatch(r"entity_identity_[0-9a-f]{32}", role):
         raise AssertionError("fixture role must be a safe generated role")
     return f'"{role}"'
+
+
+def _restore_function_acl(cursor, function_acl) -> None:
+    cursor.execute(
+        "UPDATE pg_catalog.pg_proc SET proacl = %s::pg_catalog.aclitem[] "
+        "WHERE oid = 'pg_catalog.pg_control_system()'::pg_catalog.regprocedure",
+        (function_acl,),
+    )
+
+
+def _cleanup_identity_roles(
+    *,
+    admin,
+    sql,
+    roles: tuple[str, ...],
+    created_roles: set[str],
+    connect_granted_roles: set[str],
+    database_name: str | None,
+    allowed_role: str,
+    read_granted: bool,
+    function_granted: bool,
+    function_acl,
+    public_execute_revoked: bool,
+) -> None:
+    errors: list[str] = []
+
+    def attempt(label: str, action) -> None:
+        try:
+            action()
+        except Exception as exc:
+            errors.append(f"{label} ({type(exc).__name__})")
+
+    def execute(query, params=None) -> None:
+        with admin.cursor() as cursor:
+            if params is None:
+                cursor.execute(query)
+            else:
+                cursor.execute(query, params)
+
+    if admin is None:
+        if created_roles or public_execute_revoked:
+            errors.append("administrator connection was not opened")
+    else:
+        admin_closed = False
+        try:
+            admin_closed = bool(admin.closed)
+        except Exception as exc:
+            errors.append(f"administrator connection state ({type(exc).__name__})")
+        if admin_closed:
+            errors.append("administrator connection was closed before cleanup")
+        else:
+            attempt("administrator rollback", admin.rollback)
+            attempt("administrator autocommit", lambda: setattr(admin, "autocommit", True))
+            for role in roles:
+                attempt(
+                    "terminate generated role sessions",
+                    lambda role=role: execute(
+                        "SELECT pg_terminate_backend(pid) "
+                        "FROM pg_catalog.pg_stat_activity "
+                        "WHERE usename = %s AND pid <> pg_backend_pid()",
+                        (role,),
+                    ),
+                )
+            if database_name is not None:
+                for role in connect_granted_roles:
+                    attempt(
+                        "revoke database connect",
+                        lambda role=role: execute(
+                            sql.SQL("REVOKE CONNECT ON DATABASE {} FROM {}").format(
+                                sql.Identifier(database_name), sql.Identifier(role)
+                            )
+                        ),
+                    )
+            if read_granted:
+                attempt(
+                    "revoke read role",
+                    lambda: execute(
+                        sql.SQL("REVOKE pg_read_all_data FROM {}").format(
+                            sql.Identifier(allowed_role)
+                        )
+                    ),
+                )
+            if function_granted:
+                attempt(
+                    "revoke function execute",
+                    lambda: execute(
+                        sql.SQL(
+                            "REVOKE EXECUTE ON FUNCTION "
+                            "pg_catalog.pg_control_system() FROM {}"
+                        ).format(sql.Identifier(allowed_role))
+                    ),
+                )
+            if public_execute_revoked:
+                def restore_function_acl() -> None:
+                    with admin.cursor() as cursor:
+                        _restore_function_acl(cursor, function_acl)
+
+                attempt(
+                    "restore function ACL",
+                    restore_function_acl,
+                )
+            for role in created_roles:
+                attempt(
+                    "drop generated role",
+                    lambda role=role: execute(
+                        sql.SQL("DROP ROLE IF EXISTS {}").format(sql.Identifier(role))
+                    ),
+                )
+        attempt("close administrator connection", admin.close)
+
+    if errors:
+        raise AssertionError(
+            "restricted PostgreSQL role cleanup failed: " + "; ".join(errors)
+        )
 
 
 def _quote_schema(schema: str) -> str:
@@ -104,6 +222,71 @@ def test_role_url_replaces_credentials_and_discards_fragment() -> None:
 def test_quote_role_rejects_non_generated_identifiers(role: str) -> None:
     with pytest.raises(AssertionError, match="safe generated role"):
         _quote_role(role)
+
+
+def test_disposable_database_url_skips_missing_hostname(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "tests.test_migrate_entity_status_postgres.TEST_URL",
+        "postgresql://fixture@:5432/vl360",
+    )
+    monkeypatch.setattr(
+        "tests.test_migrate_entity_status_postgres.TEST_CONFIRM", "disposable"
+    )
+
+    with pytest.raises(pytest.skip.Exception, match="host"):
+        _disposable_database_url()
+
+
+def test_restore_function_acl_uses_raw_aclitem_array() -> None:
+    class RecordingCursor:
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, tuple[object, ...]]] = []
+
+        def execute(self, query: str, params: tuple[object, ...]) -> None:
+            self.calls.append((query, params))
+
+    cursor = RecordingCursor()
+    acl = ["=X/postgres", "postgres=X/postgres"]
+
+    _restore_function_acl(cursor, acl)
+
+    assert cursor.calls == [
+        (
+            "UPDATE pg_catalog.pg_proc SET proacl = %s::pg_catalog.aclitem[] "
+            "WHERE oid = 'pg_catalog.pg_control_system()'::pg_catalog.regprocedure",
+            (acl,),
+        )
+    ]
+
+
+def test_cleanup_reports_closed_admin_connection() -> None:
+    class ClosedAdmin:
+        closed = True
+        close_called = False
+
+        def close(self) -> None:
+            self.close_called = True
+
+    admin = ClosedAdmin()
+
+    with pytest.raises(AssertionError, match="closed before cleanup"):
+        _cleanup_identity_roles(
+            admin=admin,
+            sql=None,
+            roles=(),
+            created_roles=set(),
+            connect_granted_roles=set(),
+            database_name=None,
+            allowed_role="entity_identity_" + ("a" * 32),
+            read_granted=False,
+            function_granted=False,
+            function_acl=None,
+            public_execute_revoked=False,
+        )
+
+    assert admin.close_called is True
 
 
 def _restore_listing_sha() -> str:
@@ -252,9 +435,13 @@ def pg_identity_roles():
     allowed_role, allowed_password = role_specs[0]
     denied_role, denied_password = role_specs[1]
     roles = (allowed_role, denied_role)
+    created_roles: set[str] = set()
+    connect_granted_roles: set[str] = set()
     admin = None
     database_name = None
-    public_execute_initial = True
+    function_acl = None
+    read_granted = False
+    function_granted = False
     public_execute_revoked = False
     try:
         admin = psycopg2.connect(
@@ -272,16 +459,6 @@ def pg_identity_roles():
                 "WHERE oid = 'pg_catalog.pg_control_system()'::regprocedure"
             )
             function_acl = cursor.fetchone()[0]
-            if function_acl is not None:
-                acl_entries = (
-                    function_acl.strip("{}").split(",")
-                    if isinstance(function_acl, str)
-                    else function_acl
-                )
-                public_execute_initial = any(
-                    entry.partition("/")[0].startswith("=X")
-                    for entry in acl_entries
-                )
             cursor.execute(
                 "REVOKE EXECUTE ON FUNCTION pg_catalog.pg_control_system() FROM PUBLIC"
             )
@@ -293,6 +470,7 @@ def pg_identity_roles():
                     "NOREPLICATION NOBYPASSRLS CONNECTION LIMIT 2 VALID UNTIL %s",
                     (password, valid_until),
                 )
+                created_roles.add(role)
                 cursor.execute(
                     f"ALTER ROLE {_quote_role(role)} "
                     "SET default_transaction_read_only = 'on'"
@@ -305,21 +483,25 @@ def pg_identity_roles():
                     sql.Identifier(database_name), sql.Identifier(allowed_role)
                 )
             )
+            connect_granted_roles.add(allowed_role)
             cursor.execute(
                 sql.SQL("GRANT CONNECT ON DATABASE {} TO {} ").format(
                     sql.Identifier(database_name), sql.Identifier(denied_role)
                 )
             )
+            connect_granted_roles.add(denied_role)
             cursor.execute(
                 sql.SQL("GRANT pg_read_all_data TO {} ").format(
                     sql.Identifier(allowed_role)
                 )
             )
+            read_granted = True
             cursor.execute(
                 sql.SQL(
                     "GRANT EXECUTE ON FUNCTION pg_catalog.pg_control_system() TO {}"
                 ).format(sql.Identifier(allowed_role))
             )
+            function_granted = True
         yield {
             "allowed_role": allowed_role,
             "allowed_url": _role_url(database_url, allowed_role, allowed_password),
@@ -327,84 +509,19 @@ def pg_identity_roles():
             "denied_url": _role_url(database_url, denied_role, denied_password),
         }
     finally:
-        if admin is not None and not admin.closed:
-            try:
-                admin.rollback()
-            except Exception:
-                pass
-            try:
-                admin.autocommit = True
-            except Exception:
-                pass
-            for role in roles:
-                try:
-                    with admin.cursor() as cursor:
-                        cursor.execute(
-                            "SELECT pg_terminate_backend(pid) "
-                            "FROM pg_catalog.pg_stat_activity "
-                            "WHERE usename = %s AND pid <> pg_backend_pid()",
-                            (role,),
-                        )
-                except Exception:
-                    pass
-            for role in roles:
-                try:
-                    with admin.cursor() as cursor:
-                        cursor.execute(
-                            sql.SQL("REVOKE CONNECT ON DATABASE {} FROM {} ").format(
-                                sql.Identifier(database_name), sql.Identifier(role)
-                            )
-                        )
-                except Exception:
-                    pass
-            try:
-                with admin.cursor() as cursor:
-                    cursor.execute(
-                        sql.SQL("REVOKE pg_read_all_data FROM {} ").format(
-                            sql.Identifier(allowed_role)
-                        )
-                    )
-            except Exception:
-                pass
-            try:
-                with admin.cursor() as cursor:
-                    cursor.execute(
-                        sql.SQL(
-                            "REVOKE EXECUTE ON FUNCTION "
-                            "pg_catalog.pg_control_system() FROM {}"
-                        ).format(sql.Identifier(allowed_role))
-                    )
-            except Exception:
-                pass
-            if public_execute_revoked:
-                try:
-                    with admin.cursor() as cursor:
-                        if public_execute_initial:
-                            cursor.execute(
-                                "GRANT EXECUTE ON FUNCTION "
-                                "pg_catalog.pg_control_system() TO PUBLIC"
-                            )
-                        else:
-                            cursor.execute(
-                                "REVOKE EXECUTE ON FUNCTION "
-                                "pg_catalog.pg_control_system() FROM PUBLIC"
-                            )
-                except Exception:
-                    pass
-            for role in roles:
-                try:
-                    with admin.cursor() as cursor:
-                        cursor.execute(
-                            sql.SQL("DROP ROLE IF EXISTS {} ").format(
-                                sql.Identifier(role)
-                            )
-                        )
-                except Exception:
-                    pass
-            try:
-                admin.close()
-            except Exception:
-                pass
+        _cleanup_identity_roles(
+            admin=admin,
+            sql=sql,
+            roles=roles,
+            created_roles=created_roles,
+            connect_granted_roles=connect_granted_roles,
+            database_name=database_name,
+            allowed_role=allowed_role,
+            read_granted=read_granted,
+            function_granted=function_granted,
+            function_acl=function_acl,
+            public_execute_revoked=public_execute_revoked,
+        )
 
 
 def test_postgres_apply_recovery_and_rollback_audits(
