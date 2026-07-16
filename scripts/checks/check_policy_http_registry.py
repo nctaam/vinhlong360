@@ -221,19 +221,41 @@ def _record_imports(
             imported_modules[name.asname or name.name.split(".")[0]] = name.name
 
 
+class _RebindingVisitor(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.names: set[str] = set()
+
+    def visit_Name(self, node: ast.Name) -> None:
+        if isinstance(node.ctx, ast.Store):
+            self.names.add(node.id)
+
+    def visit_Import(self, node: ast.Import) -> None:
+        self.names.update(name.asname or name.name.split(".")[0] for name in node.names)
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
+        self.names.update(name.asname or name.name for name in node.names)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self.names.add(node.name)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        self.names.add(node.name)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self.names.add(node.name)
+
+    def visit_Lambda(self, node: ast.Lambda) -> None:
+        return None
+
+
 def _clear_rebound_imports(
     node: ast.AST,
     imported_symbols: dict[str, tuple[str, str]],
     imported_modules: dict[str, str],
 ) -> None:
-    names: list[str] = []
-    if isinstance(node, ast.Assign):
-        names = [target.id for target in node.targets if isinstance(target, ast.Name)]
-    elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-        names = [node.target.id]
-    elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-        names = [node.name]
-    for name in names:
+    visitor = _RebindingVisitor()
+    visitor.visit(node)
+    for name in visitor.names:
         imported_symbols.pop(name, None)
         imported_modules.pop(name, None)
 
@@ -505,6 +527,23 @@ def _assignment_serializes_policy(
     )
 
 
+def _call_serializes_policy(
+    call: ast.Call,
+    constants: dict[str, str] | None,
+) -> bool:
+    if not _contains_serialized_key(call, constants):
+        return False
+    if _call_name(call) in {"Response", "JSONResponse"}:
+        return True
+    function = call.func
+    return (
+        isinstance(function, ast.Attribute)
+        and function.attr == "update"
+        and isinstance(function.value, ast.Attribute)
+        and function.value.attr == "headers"
+    )
+
+
 def _serializes_policy(
     node: ast.FunctionDef | ast.AsyncFunctionDef,
     constants: dict[str, str] | None = None,
@@ -521,6 +560,10 @@ def _serializes_policy(
         _assignment_serializes_policy(child, returned, parameters, constants)
         for child in ast.walk(node)
         if isinstance(child, (ast.Assign, ast.AnnAssign))
+    ) or any(
+        _call_serializes_policy(child, constants)
+        for child in ast.walk(node)
+        if isinstance(child, ast.Call)
     )
 
 
@@ -530,17 +573,6 @@ def _router_definitions(modules: Sequence[_ModuleInfo]) -> dict[tuple[str, str],
         for module in modules
         for router in module.routers.values()
     }
-
-
-def _include_parent_key(
-    expression: ast.AST,
-    module: _ModuleInfo,
-    router_defs: dict[tuple[str, str], _RouterDef],
-) -> tuple[str, str] | None:
-    parent = _resolve_router_reference(expression, module, router_defs)
-    if parent is not None:
-        return parent.module, parent.variable
-    return None
 
 
 def _include_prefix(call: ast.Call, module: _ModuleInfo) -> str | None:
@@ -561,14 +593,16 @@ def _include_edge(
 ) -> tuple[tuple[str, str], tuple[str, str], str] | None:
     if not isinstance(call.func, ast.Attribute) or call.func.attr != "include_router" or not call.args:
         return None
+    parent = _resolve_router_reference(call.func.value, module, router_defs)
     child = _resolve_router_reference(call.args[0], module, router_defs)
-    parent_key = _include_parent_key(call.func.value, module, router_defs)
-    if parent_key is None or child is None:
+    if parent is None or child is None:
         return None
     prefix = _include_prefix(call, module)
     if prefix is None:
         return None
-    return parent_key, (child.module, child.variable), prefix
+    parent_key = (parent.module, parent.variable)
+    edge_prefix = _normalise_path(parent.prefix, prefix)
+    return parent_key, (child.module, child.variable), edge_prefix
 
 
 def _mount_edges(

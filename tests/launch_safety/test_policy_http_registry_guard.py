@@ -213,6 +213,28 @@ app.include_router(public.router, prefix="/api")
     ) == []
 
 
+def test_scanner_propagates_nested_router_prefixes(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    source = _write(
+        tmp_path / "nested.py",
+        '''
+from fastapi import APIRouter, FastAPI
+api_router = APIRouter(prefix="/api")
+entity_router = APIRouter(prefix="/entities")
+app = FastAPI()
+api_router.include_router(entity_router)
+app.include_router(api_router)
+
+@entity_router.get("/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+
+    assert checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],)) == []
+
+
 def test_unmounted_exact_route_is_not_accepted_as_resolved_registry_identity(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None and policy_http is not None
@@ -408,6 +430,21 @@ fastapi = fake
 router = fastapi.APIRouter(prefix="/api")
 app = fastapi.FastAPI()
 ''',
+        '''
+from fastapi import APIRouter, FastAPI
+if True:
+    APIRouter = fake.APIRouter
+    FastAPI = fake.FastAPI
+router = APIRouter(prefix="/api")
+app = FastAPI()
+''',
+        '''
+import fastapi
+if True:
+    fastapi = fake
+router = fastapi.APIRouter(prefix="/api")
+app = fastapi.FastAPI()
+''',
     ],
 )
 def test_relative_or_shadowed_fastapi_provenance_fails_closed(
@@ -489,6 +526,27 @@ def cache_only():
 
     assert {Path(finding.file).name for finding in unregistered} == {"policy.py"}
     assert len(unregistered) == 2
+
+
+def test_scanner_classifies_response_header_update_call_sink(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None
+    source = _write(
+        tmp_path / "header_update.py",
+        '''
+from fastapi import FastAPI, Response
+app = FastAPI()
+
+@app.get("/policy-header")
+def policy_header(response: Response):
+    response.headers.update({"X-Launch-Indexing-Policy": "failed-open"})
+    return {"ok": True}
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], ())
+
+    assert _codes(findings) == {"UNREGISTERED_POLICY_ROUTE"}
 
 
 def test_scanner_supports_api_route_methods_and_exact_header_markers(tmp_path: Path):
