@@ -1749,16 +1749,16 @@ def _load_apply_artifacts(
     plan_identity = _artifact_database_identity(
         plan.get("database_identity"), "plan"
     )
+    manifest, manifest_sha256 = load_immutable_json(args.backup_manifest)
+    backup_identity = _artifact_database_identity(
+        manifest.get("database_identity"), "backup"
+    )
     if plan_sha256 != args.confirm_plan_sha256:
         raise MigrationRefusal("plan SHA-256 confirmation mismatch")
     if plan_sha256 != sha256_bytes(canonical_json_bytes(plan)):
         raise MigrationRefusal("plan bytes are not canonical")
     _target, _candidate_ids = _validate_plan_for_apply(
         plan, plan_sha256, args.confirm_target, now
-    )
-    manifest, manifest_sha256 = load_immutable_json(args.backup_manifest)
-    backup_identity = _artifact_database_identity(
-        manifest.get("database_identity"), "backup"
     )
     if manifest_sha256 != args.confirm_backup_manifest_sha256:
         raise MigrationRefusal("backup manifest SHA-256 confirmation mismatch")
@@ -1794,14 +1794,14 @@ def _load_rollback_artifacts(
     apply_identity = _artifact_database_identity(
         apply_report.get("database_identity"), "apply report"
     )
-    if apply_report_sha256 != args.confirm_apply_report_sha256:
-        raise MigrationRefusal("apply report SHA-256 confirmation mismatch")
-    if apply_report_sha256 != sha256_bytes(canonical_json_bytes(apply_report)):
-        raise MigrationRefusal("apply report bytes are not canonical")
     manifest, manifest_sha256 = load_immutable_json(args.backup_manifest)
     backup_identity = _artifact_database_identity(
         manifest.get("database_identity"), "backup"
     )
+    if apply_report_sha256 != args.confirm_apply_report_sha256:
+        raise MigrationRefusal("apply report SHA-256 confirmation mismatch")
+    if apply_report_sha256 != sha256_bytes(canonical_json_bytes(apply_report)):
+        raise MigrationRefusal("apply report bytes are not canonical")
     if manifest_sha256 != args.confirm_backup_manifest_sha256:
         raise MigrationRefusal("backup manifest SHA-256 confirmation mismatch")
     if manifest_sha256 != sha256_bytes(canonical_json_bytes(manifest)):

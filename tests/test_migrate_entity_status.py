@@ -2219,6 +2219,8 @@ def test_apply_cli_rejects_legacy_artifact_before_confirmation_or_connection(
         args[10] = "f" * 64
         args[12] = "0" * 64
     else:
+        args[10] = "f" * 64
+        args[12] = "0" * 64
         args[14] = "0" * 64
     monkeypatch.setattr(
         migration,
@@ -2235,7 +2237,9 @@ def test_apply_cli_rejects_legacy_artifact_before_confirmation_or_connection(
 
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "target identity revision" in captured.err
+    assert captured.err == (
+        "ERROR: target identity revision mismatch: expected postgres-cluster-v2\n"
+    )
     assert "127.0.0.1/32" not in captured.err
     assert not report.exists()
 
@@ -2562,6 +2566,8 @@ def test_rollback_cli_rejects_legacy_artifact_before_confirmation_or_connection(
         args[10] = "f" * 64
         args[12] = "0" * 64
     else:
+        args[10] = "f" * 64
+        args[12] = "0" * 64
         args[14] = "0" * 64
     monkeypatch.setattr(
         migration,
@@ -2578,7 +2584,9 @@ def test_rollback_cli_rejects_legacy_artifact_before_confirmation_or_connection(
 
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "target identity revision" in captured.err
+    assert captured.err == (
+        "ERROR: target identity revision mismatch: expected postgres-cluster-v2\n"
+    )
     assert "127.0.0.1/32" not in captured.err
     assert not report.exists()
 
