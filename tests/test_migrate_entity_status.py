@@ -27,6 +27,15 @@ IDENTITY = {
     "server_port": 5432,
     "server_version_num": 160004,
 }
+
+
+def _legacy_identity() -> dict[str, object]:
+    return {
+        "database": "vl360",
+        "server_addr": "127.0.0.1/32",
+        "server_port": 5432,
+        "server_version_num": 160004,
+    }
 COLUMNS = [
     ("attributes", "jsonb", "YES"),
     ("id", "text", "NO"),
@@ -786,6 +795,19 @@ def _valid_backup(tmp_path: Path, target: str) -> migration.BackupEvidence:
     )
 
 
+def _backup_with_identity(
+    backup: migration.BackupEvidence, identity: dict[str, object]
+) -> migration.BackupEvidence:
+    manifest = copy.deepcopy(backup.manifest)
+    manifest["database_identity"] = dict(identity)
+    manifest["target_fingerprint"] = target_fingerprint(identity)
+    return migration.BackupEvidence(
+        manifest=manifest,
+        manifest_sha256=_artifact_sha(manifest),
+        artifact_root=backup.artifact_root,
+    )
+
+
 class ApplyFakeStore:
     def __init__(self, rows, *, identity=IDENTITY, columns=COLUMNS) -> None:
         self.rows = {row["id"]: dict(row) for row in rows}
@@ -876,6 +898,146 @@ def _apply(store: ApplyFakeStore, plan, backup, *, clock=_apply_now):
         restore_validator=_restore_ok,
         clock=clock,
     )
+
+
+@pytest.mark.parametrize("artifact_kind", ["plan", "backup"])
+def test_apply_rejects_legacy_identity_before_hash_confirmation_or_store(
+    tmp_path: Path, artifact_kind: str
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    if artifact_kind == "plan":
+        plan = copy.deepcopy(plan)
+        plan["database_identity"] = _legacy_identity()
+    else:
+        legacy_manifest = copy.deepcopy(backup.manifest)
+        legacy_manifest["database_identity"] = _legacy_identity()
+        backup = migration.BackupEvidence(
+            manifest=legacy_manifest,
+            manifest_sha256=_artifact_sha(legacy_manifest),
+            artifact_root=backup.artifact_root,
+        )
+
+    with pytest.raises(
+        migration.MigrationRefusal,
+        match="^target identity revision mismatch: expected postgres-cluster-v2$",
+    ):
+        migration.apply_plan(
+            store,
+            plan,
+            plan_sha256="0" * 64,
+            backup=backup,
+            confirm_target="f" * 64,
+            now=APPLY_NOW,
+            restore_validator=_restore_ok,
+        )
+
+    assert store.events == []
+
+
+def test_rollback_rejects_legacy_apply_report_before_hash_confirmation_or_store(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    apply_report = _apply(store, plan, backup)
+    store.events.clear()
+    apply_report = copy.deepcopy(apply_report)
+    apply_report["database_identity"] = _legacy_identity()
+
+    with pytest.raises(
+        migration.MigrationRefusal,
+        match="^target identity revision mismatch: expected postgres-cluster-v2$",
+    ):
+        migration.rollback_apply(
+            store,
+            apply_report,
+            apply_report_sha256="0" * 64,
+            backup=backup,
+            confirm_target="f" * 64,
+            now=APPLY_NOW + timedelta(days=1),
+        )
+
+    assert store.events == []
+
+
+def test_apply_rejects_exact_plan_backup_identity_mismatch_before_store_or_lock(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _backup_with_identity(
+        _valid_backup(tmp_path, plan["target_fingerprint"]),
+        {**IDENTITY, "database_oid": IDENTITY["database_oid"] + 1},
+    )
+    store = ApplyFakeStore([_row("a"), _row("b")])
+
+    with pytest.raises(
+        migration.MigrationRefusal,
+        match="^plan and backup database identity mismatch$",
+    ):
+        migration.apply_plan(
+            store,
+            plan,
+            plan_sha256=_artifact_sha(plan),
+            backup=backup,
+            confirm_target=plan["target_fingerprint"],
+            now=APPLY_NOW,
+            restore_validator=_restore_ok,
+        )
+
+    assert store.events == []
+
+
+def test_rollback_rejects_exact_apply_report_backup_identity_mismatch_before_store_or_lock(
+    tmp_path: Path,
+) -> None:
+    plan = _valid_apply_plan()
+    backup = _valid_backup(tmp_path, plan["target_fingerprint"])
+    store = ApplyFakeStore([_row("a"), _row("b")])
+    apply_report = _apply(store, plan, backup)
+    store.events.clear()
+    apply_report = copy.deepcopy(apply_report)
+    alternate = {**IDENTITY, "system_identifier": "7463376938976342232"}
+    apply_report["database_identity"] = alternate
+    apply_report["target_fingerprint"] = target_fingerprint(alternate)
+
+    with pytest.raises(
+        migration.MigrationRefusal,
+        match="^apply report and backup database identity mismatch$",
+    ):
+        migration.rollback_apply(
+            store,
+            apply_report,
+            apply_report_sha256=_artifact_sha(apply_report),
+            backup=backup,
+            confirm_target=apply_report["target_fingerprint"],
+            now=APPLY_NOW + timedelta(days=1),
+        )
+
+    assert store.events == []
+
+
+@pytest.mark.parametrize(
+    ("artifact", "label"),
+    [
+        ("plan", "plan"),
+        ("backup", "backup"),
+        ("apply report", "apply report"),
+    ],
+)
+def test_artifact_identity_with_invalid_exact_keys_uses_label_specific_error(
+    artifact: str, label: str
+) -> None:
+    identity = dict(IDENTITY)
+    identity["unexpected"] = "value"
+
+    with pytest.raises(
+        migration.MigrationRefusal,
+        match=rf"^{label} database identity is invalid$",
+    ):
+        migration._artifact_database_identity(identity, label)
 
 
 def test_plan_identity_schema_refuses_missing_columns_without_key_error() -> None:
@@ -2033,6 +2195,51 @@ def test_apply_cli_requires_exact_raw_backup_confirmation_before_resolve(
     assert not report.exists()
 
 
+@pytest.mark.parametrize("artifact_kind", ["plan", "backup"])
+def test_apply_cli_rejects_legacy_artifact_before_confirmation_or_connection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    artifact_kind: str,
+) -> None:
+    plan, plan_path, backup, manifest_path = _write_apply_artifacts(tmp_path)
+    if artifact_kind == "plan":
+        legacy_plan = copy.deepcopy(plan)
+        legacy_plan["database_identity"] = _legacy_identity()
+        plan_path.write_bytes(canonical_json_bytes(legacy_plan))
+    else:
+        legacy_manifest = copy.deepcopy(backup.manifest)
+        legacy_manifest["database_identity"] = _legacy_identity()
+        manifest_path.write_bytes(canonical_json_bytes(legacy_manifest))
+    report = tmp_path / "report.json"
+    args = _apply_cli_args(
+        plan_path, manifest_path, report, plan["target_fingerprint"]
+    )
+    if artifact_kind == "plan":
+        args[10] = "f" * 64
+        args[12] = "0" * 64
+    else:
+        args[14] = "0" * 64
+    monkeypatch.setattr(
+        migration,
+        "_resolved_database_url",
+        lambda *_args: pytest.fail("database URL resolved for legacy apply artifact"),
+    )
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: pytest.fail("psycopg2 imported for legacy apply artifact"),
+    )
+
+    assert migration.main(args) == 1
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "target identity revision" in captured.err
+    assert "127.0.0.1/32" not in captured.err
+    assert not report.exists()
+
+
 class ApplyCliCursor:
     def __init__(self, events: list[object]) -> None:
         self.events = events
@@ -2323,6 +2530,56 @@ def test_rollback_cli_refuses_unsafe_args_before_artifact_access_import_or_conne
     )
 
     assert migration.main(args) == 1
+    assert not report.exists()
+
+
+@pytest.mark.parametrize("artifact_kind", ["apply report", "backup"])
+def test_rollback_cli_rejects_legacy_artifact_before_confirmation_or_connection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    artifact_kind: str,
+) -> None:
+    apply_report, apply_path, backup, manifest_path = _write_rollback_artifacts(
+        tmp_path
+    )
+    if artifact_kind == "apply report":
+        legacy_report = copy.deepcopy(apply_report)
+        legacy_report["database_identity"] = _legacy_identity()
+        apply_path.write_bytes(canonical_json_bytes(legacy_report))
+    else:
+        legacy_manifest = copy.deepcopy(backup.manifest)
+        legacy_manifest["database_identity"] = _legacy_identity()
+        manifest_path.write_bytes(canonical_json_bytes(legacy_manifest))
+    report = tmp_path / "rollback.json"
+    args = _rollback_cli_args(
+        apply_path,
+        manifest_path,
+        report,
+        apply_report["target_fingerprint"],
+    )
+    if artifact_kind == "apply report":
+        args[10] = "f" * 64
+        args[12] = "0" * 64
+    else:
+        args[14] = "0" * 64
+    monkeypatch.setattr(
+        migration,
+        "_resolved_database_url",
+        lambda *_args: pytest.fail("database URL resolved for legacy rollback artifact"),
+    )
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: pytest.fail("psycopg2 imported for legacy rollback artifact"),
+    )
+
+    assert migration.main(args) == 1
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "target identity revision" in captured.err
+    assert "127.0.0.1/32" not in captured.err
     assert not report.exists()
 
 

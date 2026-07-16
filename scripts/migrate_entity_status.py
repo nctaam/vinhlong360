@@ -241,6 +241,16 @@ def _require_exact_keys(value: object, expected: set[str], label: str) -> dict[s
     return value
 
 
+def _artifact_database_identity(value: object, label: str) -> dict[str, object]:
+    try:
+        return canonical_target_identity(value, exact_keys=True)
+    except RuntimeError as exc:
+        message = str(exc)
+        if "target identity revision" in message:
+            raise MigrationRefusal(message) from None
+        raise MigrationRefusal(f"{label} database identity is invalid") from None
+
+
 def _require_sha(value: object, label: str) -> str:
     if type(value) is not str or not re.fullmatch(r"[0-9a-f]{64}", value):
         raise MigrationRefusal(f"{label} is invalid")
@@ -295,11 +305,8 @@ def _validate_plan_header(
 
 
 def _plan_identity_fingerprint(plan: dict[str, object]) -> str:
-    identity = plan.get("database_identity")
-    try:
-        return target_fingerprint(identity)
-    except (KeyError, TypeError):
-        raise MigrationRefusal("plan database identity is invalid") from None
+    identity = _artifact_database_identity(plan.get("database_identity"), "plan")
+    return target_fingerprint(identity)
 
 
 def _valid_plan_schema_column(column: object) -> bool:
@@ -376,6 +383,7 @@ def _validate_plan_for_apply(
 ) -> tuple[str, list[str]]:
     if type(plan) is not dict:
         raise MigrationRefusal("plan must be an object")
+    _artifact_database_identity(plan.get("database_identity"), "plan")
     _require_exact_keys(plan, _PLAN_KEYS, "plan")
     target = _validate_plan_header(plan, plan_sha256, confirm_target, now)
     _validate_plan_identity_schema(plan, target)
@@ -439,11 +447,11 @@ def _validate_backup_header(manifest, expected_target: str) -> None:
         raise MigrationRefusal("backup policy mismatch")
     if manifest["target_fingerprint"] != expected_target:
         raise MigrationRefusal("backup target mismatch")
-    try:
-        if target_fingerprint(manifest["database_identity"]) != expected_target:
-            raise MigrationRefusal("backup database identity mismatch")
-    except (KeyError, TypeError):
-        raise MigrationRefusal("backup database identity mismatch") from None
+    identity = _artifact_database_identity(
+        manifest.get("database_identity"), "backup"
+    )
+    if target_fingerprint(identity) != expected_target:
+        raise MigrationRefusal("backup database identity mismatch")
 
 
 def _validate_backup_freshness(
@@ -546,6 +554,9 @@ def validate_backup_manifest(
     now: datetime,
     require_fresh: bool,
 ) -> Path:
+    if type(backup.manifest) is not dict:
+        raise MigrationRefusal("backup manifest fields are malformed")
+    _artifact_database_identity(backup.manifest.get("database_identity"), "backup")
     manifest = _require_exact_keys(backup.manifest, _BACKUP_KEYS, "backup manifest")
     now = _require_aware_datetime(now, "backup validation time")
     if backup.manifest_sha256 != sha256_bytes(canonical_json_bytes(manifest)):
@@ -1104,12 +1115,27 @@ def apply_plan(
     restore_validator,
     clock=None,
 ) -> dict[str, object]:
+    if type(plan) is not dict:
+        raise MigrationRefusal("plan must be an object")
+    plan_identity = _artifact_database_identity(
+        plan.get("database_identity"), "plan"
+    )
+    if type(backup.manifest) is not dict:
+        raise MigrationRefusal("backup manifest fields are malformed")
+    backup_identity = _artifact_database_identity(
+        backup.manifest.get("database_identity"), "backup"
+    )
     target, candidate_ids = _validate_plan_for_apply(
         plan, plan_sha256, confirm_target, now
     )
-    artifact = validate_backup_manifest(
-        backup, expected_target=target, now=now, require_fresh=True
+    backup_target = _require_sha(
+        backup.manifest.get("target_fingerprint"), "backup target fingerprint"
     )
+    artifact = validate_backup_manifest(
+        backup, expected_target=backup_target, now=now, require_fresh=True
+    )
+    if plan_identity != backup_identity:
+        raise MigrationRefusal("plan and backup database identity mismatch")
     state = _artifact_state(artifact)
     listing_hash = _validate_pinned_restore(artifact, state, restore_validator)
     expected_listing = backup.manifest["validation"]["listing_sha256"]
@@ -1197,6 +1223,11 @@ def _validate_apply_report(
     backup: BackupEvidence,
     confirm_target: str,
 ) -> tuple[str, str, list[str], dict[str, int], dict[str, int]]:
+    if type(apply_report) is not dict:
+        raise MigrationRefusal("apply report must be an object")
+    identity = _artifact_database_identity(
+        apply_report.get("database_identity"), "apply report"
+    )
     _validate_apply_report_shape(apply_report)
     digest = _require_sha(apply_report_sha256, "apply report SHA-256")
     if digest != sha256_bytes(canonical_json_bytes(apply_report)):
@@ -1206,6 +1237,8 @@ def _validate_apply_report(
     )
     if _require_sha(confirm_target, "target confirmation") != target:
         raise MigrationRefusal("target confirmation mismatch")
+    if target_fingerprint(identity) != target:
+        raise MigrationRefusal("apply report target identity mismatch")
     _require_sha(
         apply_report.get("schema_fingerprint"), "apply report schema fingerprint"
     )
@@ -1445,13 +1478,28 @@ def rollback_apply(
     restore_validator=None,
     clock=None,
 ) -> dict[str, object]:
+    if type(apply_report) is not dict:
+        raise MigrationRefusal("apply report must be an object")
+    apply_identity = _artifact_database_identity(
+        apply_report.get("database_identity"), "apply report"
+    )
+    if type(backup.manifest) is not dict:
+        raise MigrationRefusal("backup manifest fields are malformed")
+    backup_identity = _artifact_database_identity(
+        backup.manifest.get("database_identity"), "backup"
+    )
     now = _require_aware_datetime(now, "rollback time")
     target, plan_sha256, candidate_ids, before, after = _validate_apply_report(
         apply_report, apply_report_sha256, backup, confirm_target
     )
-    artifact = validate_backup_manifest(
-        backup, expected_target=target, now=now, require_fresh=False
+    backup_target = _require_sha(
+        backup.manifest.get("target_fingerprint"), "backup target fingerprint"
     )
+    artifact = validate_backup_manifest(
+        backup, expected_target=backup_target, now=now, require_fresh=False
+    )
+    if apply_identity != backup_identity:
+        raise MigrationRefusal("apply report and backup database identity mismatch")
     state = _artifact_state(artifact)
     if restore_validator is not None:
         listing_hash = _validate_pinned_restore(artifact, state, restore_validator)
@@ -1698,14 +1746,20 @@ def _load_apply_artifacts(
     args: argparse.Namespace, now: datetime
 ) -> tuple[dict[str, object], str, BackupEvidence, Path, tuple[int, int, int, str]]:
     plan, plan_sha256 = load_immutable_json(args.plan)
+    plan_identity = _artifact_database_identity(
+        plan.get("database_identity"), "plan"
+    )
     if plan_sha256 != args.confirm_plan_sha256:
         raise MigrationRefusal("plan SHA-256 confirmation mismatch")
     if plan_sha256 != sha256_bytes(canonical_json_bytes(plan)):
         raise MigrationRefusal("plan bytes are not canonical")
-    target, _candidate_ids = _validate_plan_for_apply(
+    _target, _candidate_ids = _validate_plan_for_apply(
         plan, plan_sha256, args.confirm_target, now
     )
     manifest, manifest_sha256 = load_immutable_json(args.backup_manifest)
+    backup_identity = _artifact_database_identity(
+        manifest.get("database_identity"), "backup"
+    )
     if manifest_sha256 != args.confirm_backup_manifest_sha256:
         raise MigrationRefusal("backup manifest SHA-256 confirmation mismatch")
     if manifest_sha256 != sha256_bytes(canonical_json_bytes(manifest)):
@@ -1715,9 +1769,14 @@ def _load_apply_artifacts(
         manifest_sha256=manifest_sha256,
         artifact_root=args.backup_manifest.parent,
     )
-    artifact = validate_backup_manifest(
-        backup, expected_target=target, now=now, require_fresh=True
+    backup_target = _require_sha(
+        manifest.get("target_fingerprint"), "backup target fingerprint"
     )
+    artifact = validate_backup_manifest(
+        backup, expected_target=backup_target, now=now, require_fresh=True
+    )
+    if plan_identity != backup_identity:
+        raise MigrationRefusal("plan and backup database identity mismatch")
     state = _artifact_state(artifact)
     listing_hash = _validate_pinned_restore(
         artifact, state, validate_restore_artifact
@@ -1732,11 +1791,17 @@ def _load_rollback_artifacts(
     args: argparse.Namespace, now: datetime
 ) -> tuple[dict[str, object], str, BackupEvidence, Path, tuple[int, int, int, str]]:
     apply_report, apply_report_sha256 = load_immutable_json(args.apply_report)
+    apply_identity = _artifact_database_identity(
+        apply_report.get("database_identity"), "apply report"
+    )
     if apply_report_sha256 != args.confirm_apply_report_sha256:
         raise MigrationRefusal("apply report SHA-256 confirmation mismatch")
     if apply_report_sha256 != sha256_bytes(canonical_json_bytes(apply_report)):
         raise MigrationRefusal("apply report bytes are not canonical")
     manifest, manifest_sha256 = load_immutable_json(args.backup_manifest)
+    backup_identity = _artifact_database_identity(
+        manifest.get("database_identity"), "backup"
+    )
     if manifest_sha256 != args.confirm_backup_manifest_sha256:
         raise MigrationRefusal("backup manifest SHA-256 confirmation mismatch")
     if manifest_sha256 != sha256_bytes(canonical_json_bytes(manifest)):
@@ -1746,15 +1811,20 @@ def _load_rollback_artifacts(
         manifest_sha256=manifest_sha256,
         artifact_root=args.backup_manifest.parent,
     )
-    target, _plan_sha256, _candidate_ids, _before, _after = _validate_apply_report(
+    _target, _plan_sha256, _candidate_ids, _before, _after = _validate_apply_report(
         apply_report,
         apply_report_sha256,
         backup,
         args.confirm_target,
     )
-    artifact = validate_backup_manifest(
-        backup, expected_target=target, now=now, require_fresh=False
+    backup_target = _require_sha(
+        manifest.get("target_fingerprint"), "backup target fingerprint"
     )
+    artifact = validate_backup_manifest(
+        backup, expected_target=backup_target, now=now, require_fresh=False
+    )
+    if apply_identity != backup_identity:
+        raise MigrationRefusal("apply report and backup database identity mismatch")
     state = _artifact_state(artifact)
     listing_hash = _validate_pinned_restore(
         artifact, state, validate_restore_artifact
