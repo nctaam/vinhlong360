@@ -211,6 +211,7 @@ app.include_router(public_router, prefix="/api")
     findings = checker.scan_policy_routes(
         [routes, server],
         (policy_http.POLICY_ENDPOINTS[0],),
+        authoritative_app_path=server,
     )
 
     assert findings == []
@@ -243,6 +244,7 @@ app.include_router(public.router, prefix="/api")
     assert checker.scan_policy_routes(
         [routes, server],
         (policy_http.POLICY_ENDPOINTS[0],),
+        authoritative_app_path=server,
     ) == []
 
 
@@ -265,7 +267,11 @@ def get_entity(entity_id: str):
 ''',
     )
 
-    assert checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],)) == []
+    assert checker.scan_policy_routes(
+        [source],
+        (policy_http.POLICY_ENDPOINTS[0],),
+        authoritative_app_path=source,
+    ) == []
 
 
 def test_unmounted_exact_route_is_not_accepted_as_resolved_registry_identity(tmp_path: Path):
@@ -328,6 +334,7 @@ bot_app.include_router(router)
     findings = checker.scan_policy_routes(
         [routes, server, bot_gateway],
         (policy_http.POLICY_ENDPOINTS[0],),
+        authoritative_app_path=server,
     )
 
     assert _codes(findings) == {
@@ -379,6 +386,42 @@ app.include_router(router)
     }
 
 
+def test_subset_scan_cannot_promote_fake_server_by_common_root(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None and policy_http is not None
+    source_root = tmp_path / "foo"
+    routes = _write(
+        source_root / "public_api.py",
+        '''
+from fastapi import APIRouter
+router = APIRouter(prefix="/api")
+
+@router.get("/entities/{entity_id}", name="get_entity")
+def get_entity(entity_id: str):
+    return {"index_policy": {"indexable": False, "policy_revision": "index-policy-v1"}}
+''',
+    )
+    fake_server = _write(
+        source_root / "server.py",
+        '''
+from fastapi import FastAPI
+from public_api import router
+app = FastAPI()
+app.include_router(router)
+''',
+    )
+
+    findings = checker.scan_policy_routes(
+        [routes, fake_server],
+        (policy_http.POLICY_ENDPOINTS[0],),
+    )
+
+    assert _codes(findings) == {
+        "POLICY_ROUTE_CONTRACT_MISMATCH",
+        "STALE_POLICY_REGISTRY_ENTRY",
+    }
+
+
 def test_conditional_include_router_does_not_mount_registered_route(tmp_path: Path):
     checker = _load_checker()
     assert checker is not None and policy_http is not None
@@ -398,7 +441,11 @@ def get_entity(entity_id: str):
 ''',
     )
 
-    findings = checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],))
+    findings = checker.scan_policy_routes(
+        [source],
+        (policy_http.POLICY_ENDPOINTS[0],),
+        authoritative_app_path=source,
+    )
 
     assert _codes(findings) == {
         "POLICY_ROUTE_CONTRACT_MISMATCH",
@@ -492,7 +539,11 @@ def get_entity(entity_id: str):
 ''',
     )
 
-    assert checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],)) == []
+    assert checker.scan_policy_routes(
+        [source],
+        (policy_http.POLICY_ENDPOINTS[0],),
+        authoritative_app_path=source,
+    ) == []
 
 
 def test_scanner_resolves_fastapi_module_alias_constructors(tmp_path: Path):
@@ -512,7 +563,11 @@ def get_entity(entity_id: str):
 ''',
     )
 
-    assert checker.scan_policy_routes([source], (policy_http.POLICY_ENDPOINTS[0],)) == []
+    assert checker.scan_policy_routes(
+        [source],
+        (policy_http.POLICY_ENDPOINTS[0],),
+        authoritative_app_path=source,
+    ) == []
 
 
 @pytest.mark.parametrize(
@@ -754,6 +809,30 @@ def json_mapping():
     unregistered = [finding for finding in findings if finding.code == "UNREGISTERED_POLICY_ROUTE"]
 
     assert len(unregistered) == 2
+
+
+def test_scanner_classifies_evidence_mapping_update_returned_as_json(tmp_path: Path):
+    checker = _load_checker()
+    assert checker is not None
+    source = _write(
+        tmp_path / "evidence_mapping.py",
+        '''
+from dataclasses import asdict
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+app = FastAPI()
+
+@app.get("/evidence-mapping")
+def evidence_mapping():
+    payload = {}
+    payload.update(asdict(current_policy_evidence()))
+    return JSONResponse(payload)
+''',
+    )
+
+    findings = checker.scan_policy_routes([source], ())
+
+    assert _codes(findings) == {"UNREGISTERED_POLICY_ROUTE"}
 
 
 def test_scanner_supports_api_route_methods_and_exact_header_markers(tmp_path: Path):

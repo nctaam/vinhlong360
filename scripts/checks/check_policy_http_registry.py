@@ -38,9 +38,8 @@ SERIALIZED_POLICY_KEYS = frozenset(
         "x-launch-sitemap-requested-batch",
     }
 )
-_AUTHORITATIVE_APP_MODULE = "server"
-_AUTHORITATIVE_APP_MODULES = frozenset({_AUTHORITATIVE_APP_MODULE, "agent.server"})
 _AUTHORITATIVE_APP_VARIABLE = "app"
+_AUTHORITATIVE_APP_PATH = (AGENT_ROOT / "server.py").resolve()
 
 
 @dataclass(frozen=True)
@@ -584,7 +583,16 @@ def _call_serializes_policy(
     tainted_names: set[str],
     returned_names: set[str],
 ) -> bool:
-    if not (_contains_serialized_key(call, constants) or bool(_names_in(call) & tainted_names)):
+    evidence_call = any(
+        _call_name(child) in _POLICY_EVIDENCE_CALLS
+        for child in ast.walk(call)
+        if isinstance(child, ast.Call)
+    )
+    if not (
+        _contains_serialized_key(call, constants)
+        or bool(_names_in(call) & tainted_names)
+        or evidence_call
+    ):
         return False
     if _call_name(call) in {"Response", "JSONResponse"}:
         return True
@@ -678,6 +686,7 @@ def _mount_edges(
 def _mounted_prefixes(
     modules: Sequence[_ModuleInfo],
     edges: dict[tuple[str, str], list[tuple[tuple[str, str], str]]],
+    authoritative_app_path: Path,
 ) -> dict[tuple[str, str], set[str]]:
     mounted = {
         (router.module, router.variable): {""}
@@ -685,8 +694,7 @@ def _mounted_prefixes(
         for router in module.routers.values()
         if router.is_app
         and router.variable == _AUTHORITATIVE_APP_VARIABLE
-        and module.path.name == f"{_AUTHORITATIVE_APP_MODULE}.py"
-        and module.key in _AUTHORITATIVE_APP_MODULES
+        and module.path.resolve() == authoritative_app_path
     }
     changed = True
     while changed:
@@ -766,9 +774,16 @@ def _module_scan_errors(modules: Sequence[_ModuleInfo]) -> list[Finding]:
     ]
 
 
-def _discover_routes(modules: Sequence[_ModuleInfo]) -> tuple[list[_Route], list[Finding]]:
+def _discover_routes(
+    modules: Sequence[_ModuleInfo],
+    authoritative_app_path: Path,
+) -> tuple[list[_Route], list[Finding]]:
     router_defs = _router_definitions(modules)
-    mounted = _mounted_prefixes(modules, _mount_edges(modules, router_defs))
+    mounted = _mounted_prefixes(
+        modules,
+        _mount_edges(modules, router_defs),
+        authoritative_app_path,
+    )
     routes = [route for module in modules for route in _module_routes(module, router_defs, mounted)]
     return routes, _module_scan_errors(modules)
 
@@ -860,6 +875,7 @@ def scan_policy_routes(
     endpoints: Iterable[PolicyEndpoint],
     *,
     allowed_future: set[str] | None = None,
+    authoritative_app_path: Path | None = None,
 ) -> list[Finding]:
     paths = [Path(path).resolve() for path in source_files]
     registry = tuple(endpoints)
@@ -868,7 +884,8 @@ def scan_policy_routes(
         return []
     source_root = _common_source_root(paths)
     modules = [_parse_module(path, source_root) for path in paths]
-    routes, scan_errors = _discover_routes(modules)
+    authority = (authoritative_app_path or _AUTHORITATIVE_APP_PATH).resolve()
+    routes, scan_errors = _discover_routes(modules, authority)
     registry_by_identity = {
         (row.method, row.path, row.route_name): row
         for row in registry
