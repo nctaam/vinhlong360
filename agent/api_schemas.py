@@ -13,6 +13,8 @@ strip/500. Item-shape chi tiết đi qua nhờ extra="allow" (FE nhận nguyên)
 """
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -104,6 +106,16 @@ class HomepageResponse(ApiModel):
     seasonal_tagline: str | None = None
 
 
+class IndexPolicyDecisionResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["entity", "ward", "itinerary"]
+    indexable: bool
+    reasons: list[str]
+    policy_fingerprint: str
+    policy_revision: str
+
+
 class EntityDetailResponse(ApiModel):
     # CHỈ khai scalar chắc-chắn-kiểu (id/type/name/summary/description luôn str|None).
     # KHÔNG khai field container biến-kiểu theo entity-type (source có thể str/list/
@@ -115,6 +127,7 @@ class EntityDetailResponse(ApiModel):
     summary: str | None = None
     description: str | None = None
     relationship_total: int | None = None
+    index_policy: IndexPolicyDecisionResponse
 
 
 class StatsResponse(ApiModel):

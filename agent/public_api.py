@@ -8,6 +8,7 @@ Mount: app.include_router(public_router)
 """
 
 import asyncio
+from dataclasses import asdict
 import hashlib
 import json
 import logging
@@ -35,6 +36,23 @@ from database import db
 from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
 from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
+
+if __package__:
+    from .index_policy import (
+        IndexPolicyDecision,
+        decide_entity,
+        decide_ward,
+        is_publicly_eligible,
+    )
+    from .launch_evidence import current_policy_evidence
+else:
+    from index_policy import (
+        IndexPolicyDecision,
+        decide_entity,
+        decide_ward,
+        is_publicly_eligible,
+    )
+    from launch_evidence import current_policy_evidence
 
 router = APIRouter(prefix="/api", tags=["public"])
 
@@ -109,6 +127,41 @@ def _get_public_entities_batch(entity_ids: list[str]) -> dict[str, dict]:
 
 def _public_entities_by_place(place_id: str) -> list[dict]:
     return _filter_public_entities(db.entities_by_place(place_id))
+
+
+def _public_index_policy_child_count(ward_id: object) -> int:
+    """Count only strictly identified, policy-eligible content children."""
+    if type(ward_id) is not str or not ward_id.strip():
+        return 0
+    count = 0
+    for child in db.entities_by_place(ward_id):
+        if not isinstance(child, dict):
+            continue
+        child_id = child.get("id")
+        place_id = child.get("placeId")
+        if (
+            type(child_id) is not str
+            or not child_id.strip()
+            or type(place_id) is not str
+            or not place_id.strip()
+            or place_id != ward_id
+            or child_id == ward_id
+        ):
+            continue
+        if is_publicly_eligible(child):
+            count += 1
+    return count
+
+
+def _entity_detail_index_policy(entity: dict) -> IndexPolicyDecision:
+    evidence = current_policy_evidence()
+    if type(entity.get("type")) is str and entity["type"] == "place":
+        return decide_ward(
+            entity,
+            public_child_count=_public_index_policy_child_count(entity.get("id")),
+            evidence=evidence,
+        )
+    return decide_entity(entity, evidence)
 
 
 def _public_facilities_by_place(place_id: str | None = None) -> list[dict]:
@@ -1238,6 +1291,7 @@ async def get_entity(
         e = _get_public_entity(entity_id)
         if not e:
             return None
+        e["index_policy"] = asdict(_entity_detail_index_policy(e))
         rels, rel_total = db.get_relationships(entity_id, limit=relationship_limit, return_total=True)
         rels = _filter_public_relationships(rels)
         # rel_total giữ tổng thật từ DB (return_total=True) — KHÔNG ghi đè bằng
