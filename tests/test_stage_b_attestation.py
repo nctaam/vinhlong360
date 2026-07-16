@@ -33,7 +33,6 @@ REVISION = subprocess.run(
     capture_output=True,
     text=True,
 ).stdout.strip()
-NOW = datetime.now(UTC).replace(microsecond=0)
 REAL_ACL_HELPER = stage_b_attestation.run_acl_helper
 ACL_SUMMARY_BY_ROOT: dict[Path, dict[str, object]] = {}
 
@@ -47,6 +46,11 @@ def _dotnet_utc_text(value: datetime) -> str:
     return f"{utc:%Y-%m-%dT%H:%M:%S}.{utc.microsecond:06d}7Z"
 
 
+@pytest.fixture()
+def attestation_now() -> datetime:
+    return datetime.now(UTC).replace(microsecond=0)
+
+
 def _restore_listing() -> bytes:
     return (
         b"1; 2615 2200 TABLE public entities postgres\n"
@@ -54,15 +58,15 @@ def _restore_listing() -> bytes:
     )
 
 
-def _populate_artifacts(root: Path) -> str:
+def _populate_artifacts(root: Path, attestation_now: datetime) -> str:
     run = root / "backup" / "20260715-230716"
     run.mkdir(parents=True)
     dump = b"synthetic postgres dump bytes\n"
     listing = _restore_listing()
     listing_sha = hashlib.sha256(listing).hexdigest()
-    plan = _plan(IDENTITY, listing_sha)
+    plan = _plan(IDENTITY, listing_sha, attestation_now)
     plan.pop("_listing_sha256_unused")
-    manifest = _manifest(IDENTITY, dump, listing_sha)
+    manifest = _manifest(IDENTITY, dump, listing_sha, attestation_now)
     (root / "published-v1-plan.json").write_bytes(
         postgres_target.canonical_json_bytes(plan)
     )
@@ -72,7 +76,9 @@ def _populate_artifacts(root: Path) -> str:
     return listing_sha
 
 
-def _plan(identity: dict[str, object], listing_sha256: str) -> dict[str, object]:
+def _plan(
+    identity: dict[str, object], listing_sha256: str, attestation_now: datetime
+) -> dict[str, object]:
     target = postgres_target.target_fingerprint(identity)
     columns = [
         {"name": "attributes", "type": "jsonb", "nullable": "YES"},
@@ -85,7 +91,7 @@ def _plan(identity: dict[str, object], listing_sha256: str) -> dict[str, object]
     return {
         "schema": migration.PLAN_SCHEMA,
         "policy_revision": "published-v1",
-        "created_at": _utc_text(NOW),
+        "created_at": _utc_text(attestation_now),
         "max_age_seconds": migration.MAX_PLAN_AGE_SECONDS,
         "tool_source_revision": REVISION,
         "target_fingerprint": target,
@@ -109,7 +115,10 @@ def _plan(identity: dict[str, object], listing_sha256: str) -> dict[str, object]
 
 
 def _manifest(
-    identity: dict[str, object], dump: bytes, listing_sha256: str
+    identity: dict[str, object],
+    dump: bytes,
+    listing_sha256: str,
+    attestation_now: datetime,
 ) -> dict[str, object]:
     target = postgres_target.target_fingerprint(identity)
     return {
@@ -117,8 +126,8 @@ def _manifest(
         "target": "pg",
         "target_fingerprint": target,
         "database_identity": dict(identity),
-        "started_at": _utc_text(NOW),
-        "completed_at": _utc_text(NOW),
+        "started_at": _utc_text(attestation_now),
+        "completed_at": _utc_text(attestation_now),
         "max_age_seconds": migration.MAX_BACKUP_AGE_SECONDS,
         "tools": {
             "pg_dump": "pg_dump (PostgreSQL) 16",
@@ -139,16 +148,20 @@ def _manifest(
 
 
 @pytest.fixture()
-def stage_b_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+def stage_b_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    attestation_now: datetime,
+) -> Path:
     root = tmp_path / "stage-b"
     root.mkdir()
-    listing_sha = _populate_artifacts(root)
+    listing_sha = _populate_artifacts(root, attestation_now)
     monkeypatch.setattr(
         stage_b_attestation,
         "validate_restore_artifact",
         lambda _path: listing_sha,
     )
-    acl_checked_at = _dotnet_utc_text(datetime.now(UTC))
+    acl_checked_at = _dotnet_utc_text(attestation_now)
 
     def fake_acl(mode: str, checked_root: Path) -> dict[str, object]:
         object_count = (
@@ -182,7 +195,11 @@ def stage_b_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 @pytest.fixture()
-def secure_stage_b_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+def secure_stage_b_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    attestation_now: datetime,
+) -> Path:
     if os.name != "nt":
         pytest.skip("Windows ACL contract")
     root = tmp_path / "secure-stage-b"
@@ -205,7 +222,7 @@ def secure_stage_b_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path
     )
     if completed.returncode != 0:
         pytest.skip(f"Windows ACL helper unavailable: {completed.stderr}")
-    listing_sha = _populate_artifacts(root)
+    listing_sha = _populate_artifacts(root, attestation_now)
     normalized = subprocess.run(
         [
             "pwsh",
@@ -238,12 +255,12 @@ def secure_stage_b_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path
 
 
 @pytest.fixture()
-def evidence() -> dict[str, object]:
+def evidence(attestation_now: datetime) -> dict[str, object]:
     return {
         "source": {"head": REVISION, "worktree_clean": True},
         "noindex": {
             "url": "https://vinhlong360.vn/",
-            "checked_at": _utc_text(NOW),
+            "checked_at": _utc_text(attestation_now),
             "status": 200,
             "x_robots_tag": "noindex, follow",
             "robots_meta_count": 1,
@@ -252,16 +269,16 @@ def evidence() -> dict[str, object]:
         },
         "temporary_role": {
             "name": "vl360_stage_b_0123456789abcdef0123456789abcdef",
-            "expires_at": _utc_text(NOW + timedelta(hours=2)),
+            "expires_at": _utc_text(attestation_now + timedelta(hours=2)),
             "role_absent": True,
-            "absent_checked_at": _utc_text(NOW),
+            "absent_checked_at": _utc_text(attestation_now),
         },
         "tunnel": {
             "endpoint": "127.0.0.1:15432",
             "pid": 7712,
             "process_absent": True,
             "listener_absent": True,
-            "absent_checked_at": _utc_text(NOW),
+            "absent_checked_at": _utc_text(attestation_now),
         },
         "operations": {
             "apply_run": False,
@@ -646,13 +663,13 @@ def test_attestation_refuses_freshness_expiring_during_validation(
     stage_b_root: Path,
     evidence: dict[str, object],
     monkeypatch: pytest.MonkeyPatch,
+    attestation_now: datetime,
 ) -> None:
-    base = datetime.now(UTC)
     clock_values = iter(
         [
-            base + timedelta(seconds=1),
-            base + timedelta(seconds=1),
-            base + timedelta(seconds=302),
+            attestation_now + timedelta(seconds=1),
+            attestation_now + timedelta(seconds=1),
+            attestation_now + timedelta(seconds=302),
         ]
     )
     monkeypatch.setattr(stage_b_attestation, "_utc_now", lambda: next(clock_values))
@@ -716,9 +733,13 @@ def test_attestation_refuses_plan_source_revision_drift(
 
 
 def test_attestation_refuses_stale_timestamp_without_output(
-    stage_b_root: Path, evidence: dict[str, object]
+    stage_b_root: Path,
+    evidence: dict[str, object],
+    attestation_now: datetime,
 ) -> None:
-    evidence["noindex"]["checked_at"] = _utc_text(NOW - timedelta(seconds=301))
+    evidence["noindex"]["checked_at"] = _utc_text(
+        attestation_now - timedelta(seconds=301)
+    )
     output = stage_b_root / "stage-b-attestation.json"
     result = _run_attestation(stage_b_root, output, evidence)
     assert result.returncode != 0
@@ -736,10 +757,11 @@ def test_attestation_refuses_stale_timestamp_without_output(
 def test_attestation_refuses_stale_cleanup_timestamp_without_output(
     stage_b_root: Path,
     evidence: dict[str, object],
+    attestation_now: datetime,
     section: str,
     field: str,
 ) -> None:
-    evidence[section][field] = _utc_text(NOW - timedelta(seconds=301))
+    evidence[section][field] = _utc_text(attestation_now - timedelta(seconds=301))
     output = stage_b_root / "stage-b-attestation.json"
     result = _run_attestation(stage_b_root, output, evidence)
     assert result.returncode != 0
