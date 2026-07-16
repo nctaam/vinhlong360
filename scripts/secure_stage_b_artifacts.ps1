@@ -300,6 +300,82 @@ function Get-TreeObjects {
     return @($objects)
 }
 
+function Get-CanonicalRelativePath {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$RootPath
+    )
+
+    $root = Get-ResolvedRoot -Path $RootPath
+    $canonicalPath = Assert-PathWithinRoot -Path $Path -RootPath $root
+    $relativePath = [System.IO.Path]::GetRelativePath($root, $canonicalPath)
+    return $relativePath.Replace('/', '\').ToUpperInvariant()
+}
+
+function Get-TreeMembershipSnapshot {
+    param(
+        [Parameter(Mandatory)][System.IO.FileSystemInfo[]]$Objects,
+        [Parameter(Mandatory)][string]$RootPath
+    )
+
+    $snapshot = [System.Collections.Generic.List[object]]::new()
+    foreach ($item in $Objects) {
+        if ($null -eq $item.PSObject.Properties['StableIdentity']) {
+            throw "Stable identity missing from tree object: $($item.FullName)"
+        }
+        $isDirectory = Test-IsDirectory -Item $item
+        $snapshot.Add([pscustomobject][ordered]@{
+            RelativePath = Get-CanonicalRelativePath -Path $item.FullName -RootPath $RootPath
+            StableIdentity = [string]$item.StableIdentity
+            IsDirectory = $isDirectory
+            DirectoryAttributes = if ($isDirectory) { [long]$item.Attributes } else { $null }
+        })
+    }
+    return @($snapshot)
+}
+
+function Assert-TreeMembershipUnchanged {
+    param(
+        [Parameter(Mandatory)][object[]]$BaselineSnapshot,
+        [Parameter(Mandatory)][string]$RootPath
+    )
+
+    try {
+        $currentObjects = @(Get-TreeObjects -RootPath $RootPath)
+        $currentSnapshot = @(
+            Get-TreeMembershipSnapshot -Objects $currentObjects -RootPath $RootPath
+        )
+    }
+    catch {
+        throw "artifact tree changed during verification: $($_.Exception.Message)"
+    }
+
+    if ($BaselineSnapshot.Count -ne $currentSnapshot.Count) {
+        throw 'artifact tree changed during verification'
+    }
+    for ($index = 0; $index -lt $BaselineSnapshot.Count; $index += 1) {
+        $baseline = $BaselineSnapshot[$index]
+        $current = $currentSnapshot[$index]
+        $pathChanged = -not [System.StringComparer]::Ordinal.Equals(
+            [string]$baseline.RelativePath,
+            [string]$current.RelativePath
+        )
+        $directoryAttributesChanged = (
+            $baseline.IsDirectory -and
+            $baseline.DirectoryAttributes -ne $current.DirectoryAttributes
+        )
+        if (
+            $pathChanged -or
+            $baseline.StableIdentity -ne $current.StableIdentity -or
+            $baseline.IsDirectory -ne $current.IsDirectory -or
+            $directoryAttributesChanged
+        ) {
+            throw 'artifact tree changed during verification'
+        }
+    }
+    return @($currentObjects)
+}
+
 function Get-SidRules {
     param([Parameter(Mandatory)]$Acl)
 
@@ -649,7 +725,7 @@ function New-Evidence {
         unexpected_principals = @()
         inherited_rule_count = $Stats.InheritedRuleCount
         reparse_point_count = 0
-        alternate_stream_count = 0
+        alternate_data_stream_count = 0
     }
 }
 
@@ -672,18 +748,35 @@ function Invoke-Main {
     }
 
     $objects = @(Get-TreeObjects -RootPath $rootPath)
+    $baselineSnapshot = @(
+        Get-TreeMembershipSnapshot -Objects $objects -RootPath $rootPath
+    )
     Assert-NoHostileObjects -Objects $objects -RootPath $rootPath
+    $objects = @(
+        Assert-TreeMembershipUnchanged -BaselineSnapshot $baselineSnapshot -RootPath $rootPath
+    )
 
     if ($Mode -eq 'NormalizeAndVerify') {
         Assert-NormalizationPreflight -Objects $objects -AllowedPrincipals $allowedPrincipals -RootPath $rootPath
+        $objects = @(
+            Assert-TreeMembershipUnchanged -BaselineSnapshot $baselineSnapshot -RootPath $rootPath
+        )
         foreach ($item in $objects) {
             Set-ExactAcl -Item $item -AllowedPrincipals $allowedPrincipals -RootPath $rootPath
         }
-        $objects = @(Get-TreeObjects -RootPath $rootPath)
+        $objects = @(
+            Assert-TreeMembershipUnchanged -BaselineSnapshot $baselineSnapshot -RootPath $rootPath
+        )
         Assert-NoHostileObjects -Objects $objects -RootPath $rootPath
+        $objects = @(
+            Assert-TreeMembershipUnchanged -BaselineSnapshot $baselineSnapshot -RootPath $rootPath
+        )
     }
 
     $stats = Assert-StrictAclTree -Objects $objects -AllowedPrincipals $allowedPrincipals -RootPath $rootPath
+    $objects = @(
+        Assert-TreeMembershipUnchanged -BaselineSnapshot $baselineSnapshot -RootPath $rootPath
+    )
     $evidence = New-Evidence -RootPath $rootPath -AllowedPrincipals $allowedPrincipals -Stats $stats
     Write-Output ($evidence | ConvertTo-Json -Compress -Depth 4)
 }

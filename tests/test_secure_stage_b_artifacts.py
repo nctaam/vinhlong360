@@ -16,7 +16,12 @@ SCRIPT = ROOT / "scripts" / "secure_stage_b_artifacts.ps1"
 PWSH = shutil.which("pwsh") or r"C:\Program Files\PowerShell\7\pwsh.exe"
 
 
-def _pwsh(mode: str, root: Path) -> subprocess.CompletedProcess[str]:
+def _pwsh(
+    mode: str,
+    root: Path,
+    *,
+    script: Path = SCRIPT,
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [
             PWSH,
@@ -24,7 +29,7 @@ def _pwsh(mode: str, root: Path) -> subprocess.CompletedProcess[str]:
             "-NoProfile",
             "-NonInteractive",
             "-File",
-            str(SCRIPT),
+            str(script),
             "-Mode",
             mode,
             "-Root",
@@ -34,6 +39,24 @@ def _pwsh(mode: str, root: Path) -> subprocess.CompletedProcess[str]:
         text=True,
         check=False,
     )
+
+
+def _script_with_late_child_before_strict_acl(tmp_path: Path) -> Path:
+    strict_acl_call = (
+        "    $stats = Assert-StrictAclTree -Objects $objects "
+        "-AllowedPrincipals $allowedPrincipals -RootPath $rootPath"
+    )
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert source.count(strict_acl_call) == 1
+    injected = source.replace(
+        strict_acl_call,
+        "    [System.IO.File]::WriteAllText("
+        "(Join-Path $rootPath 'late-child.txt'), 'late')\n"
+        f"{strict_acl_call}",
+    )
+    instrumented = tmp_path / "secure_stage_b_artifacts_instrumented.ps1"
+    instrumented.write_text(injected, encoding="utf-8")
+    return instrumented
 
 
 def _evidence(completed: subprocess.CompletedProcess[str]) -> dict[str, object]:
@@ -280,6 +303,23 @@ def test_normalize_preflight_preserves_safe_earlier_child_when_later_child_is_ho
     assert _acl_snapshot(hostile) == hostile_before
 
 
+@pytest.mark.parametrize("mode", ["Verify", "NormalizeAndVerify"])
+def test_tree_membership_change_before_strict_acl_fails_without_evidence(
+    tmp_path: Path,
+    mode: str,
+):
+    artifact_root = tmp_path / "stage-b"
+    _evidence(_pwsh("CreateRoot", artifact_root))
+    instrumented = _script_with_late_child_before_strict_acl(tmp_path)
+
+    completed = _pwsh(mode, artifact_root, script=instrumented)
+
+    assert completed.returncode != 0
+    assert completed.stdout == ""
+    assert "artifact tree changed during verification" in completed.stderr.lower()
+    assert (artifact_root / "late-child.txt").read_text(encoding="utf-8") == "late"
+
+
 def test_normalize_converts_safe_inheritance_and_is_idempotent(tmp_path: Path):
     artifact_root = tmp_path / "stage-b"
     _evidence(_pwsh("CreateRoot", artifact_root))
@@ -295,5 +335,6 @@ def test_normalize_converts_safe_inheritance_and_is_idempotent(tmp_path: Path):
         assert evidence["unexpected_principals"] == []
         assert evidence["inherited_rule_count"] == 0
         assert evidence["reparse_point_count"] == 0
-        assert evidence["alternate_stream_count"] == 0
+        assert evidence["alternate_data_stream_count"] == 0
+        assert "alternate_stream_count" not in evidence
     assert artifact.read_text(encoding="utf-8") == "keep"
