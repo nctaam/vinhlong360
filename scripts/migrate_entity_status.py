@@ -1848,6 +1848,9 @@ def _load_rollback_artifacts(
 def _generate_apply(args: argparse.Namespace) -> dict[str, object]:
     now = _utc_now()
     plan, plan_sha256, backup, artifact, artifact_state = _load_apply_artifacts(args, now)
+    plan_identity = _artifact_database_identity(
+        plan.get("database_identity"), "plan"
+    )
     database_url = _resolved_database_url(args.database_url_env)
     psycopg2_module = _load_psycopg2()
     connection = None
@@ -1864,8 +1867,10 @@ def _generate_apply(args: argparse.Namespace) -> dict[str, object]:
         target, candidate_ids = _validate_plan_for_apply(
             plan, plan_sha256, args.confirm_target, now
         )
+        store = PostgresPublicationStore(cursor)
+        _verify_live_target_identity(store, plan_identity)
         report = _apply_locked(
-            PostgresPublicationStore(cursor),
+            store,
             plan,
             plan_sha256=plan_sha256,
             backup=backup,

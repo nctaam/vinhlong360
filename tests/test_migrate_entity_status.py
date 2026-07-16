@@ -1510,7 +1510,7 @@ def test_apply_rechecks_locked_state_updates_and_audits_exact_plan_ownership(
         }
         for entity_id in ["a", "b"]
     ]
-    assert store.events.index("identity") < store.events.index("lock")
+    assert store.events[:5] == ["identity", "lock", "identity", "schema", "rows"]
 
 
 def test_apply_refuses_live_cluster_identity_drift_before_lock(tmp_path: Path) -> None:
@@ -1695,7 +1695,7 @@ def test_rollback_restores_only_apply_owned_unchanged_rows(tmp_path: Path) -> No
     assert set(report) == migration._ROLLBACK_REPORT_KEYS
     assert report["restored_ids"] == ["a", "b"]
     assert all(store.rows[entity_id]["status"] is None for entity_id in ("a", "b"))
-    assert store.events.index("identity") < store.events.index("lock")
+    assert store.events[:5] == ["identity", "lock", "identity", "schema", "rows"]
 
 
 def test_rollback_refuses_live_cluster_identity_drift_before_lock(
@@ -2292,6 +2292,9 @@ class ApplyCliCursor:
     def execute(self, query: str, params=None) -> None:
         self.events.append(("execute", " ".join(query.split()), params))
 
+    def fetchone(self):
+        return ("vl360", 16384, "7463376938976342231", "10.0.0.3", 5432, 160004)
+
     def close(self) -> None:
         self.events.append("cursor-close")
 
@@ -2386,6 +2389,46 @@ def test_apply_cli_validates_offline_then_commits_before_immutable_report(
         "readonly": False,
         "autocommit": False,
     }) in events
+
+
+def test_apply_cli_refuses_live_cluster_identity_drift_before_lock(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    plan, plan_path, backup, manifest_path = _write_apply_artifacts(tmp_path)
+    report = tmp_path / "apply.json"
+    events: list[object] = []
+    connection = ApplyCliConnection(events)
+    drifted = {**IDENTITY, "system_identifier": "7463376938976342232"}
+    store = ApplyFakeStore([_row("a"), _row("b")], identity=drifted)
+    monkeypatch.setattr(migration, "_utc_now", lambda: APPLY_NOW)
+    monkeypatch.setattr(
+        migration,
+        "validate_restore_artifact",
+        lambda _path: backup.manifest["validation"]["listing_sha256"],
+    )
+    monkeypatch.setattr(
+        migration, "resolve_database_url", lambda _name: "postgresql://x/db"
+    )
+    monkeypatch.setattr(
+        migration,
+        "_load_psycopg2",
+        lambda: SimpleNamespace(connect=lambda _dsn: connection),
+    )
+    monkeypatch.setattr(migration, "PostgresPublicationStore", lambda _cursor: store)
+
+    assert migration.main(
+        _apply_cli_args(plan_path, manifest_path, report, plan["target_fingerprint"])
+    ) == 1
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == "ERROR: live target identity mismatch\n"
+    assert store.events == ["identity"]
+    assert "commit" not in events
+    assert "rollback" in events
+    assert not report.exists()
 
 
 def test_apply_cli_commit_failure_rolls_back_and_writes_no_report(
