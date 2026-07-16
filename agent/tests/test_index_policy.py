@@ -11,6 +11,7 @@ from types import MappingProxyType
 
 import pytest
 
+import index_policy
 import launch_evidence
 from ai_disclosure import load_ai_disclosure
 from index_policy import (
@@ -64,6 +65,18 @@ def _public_entity(**overrides: object) -> dict[str, object]:
     }
     entity.update(overrides)
     return entity
+
+
+def _public_ward(**overrides: object) -> dict[str, object]:
+    ward: dict[str, object] = {
+        "id": "ward",
+        "type": "place",
+        "status": "published",
+        "verified": True,
+        "summary": _words(60, "phường"),
+    }
+    ward.update(overrides)
+    return ward
 
 
 def test_reviewed_non_place_entity_types_are_exact():
@@ -276,6 +289,263 @@ def test_entity_reason_order_is_stable_unique_and_precedes_public_and_quality():
         "public-unpublished-content",
         "description-below-130-words",
     )
+
+
+def test_ward_quality_boundary_requires_two_public_children_or_60_summary_words():
+    ward = _public_ward(summary=_words(59, "phường"))
+
+    one_child = index_policy.decide_ward(
+        ward, public_child_count=1, evidence=EVIDENCE
+    )
+    two_children = index_policy.decide_ward(
+        ward, public_child_count=2, evidence=EVIDENCE
+    )
+    rich_summary = index_policy.decide_ward(
+        _public_ward(summary=_words(60, "phường")),
+        public_child_count=0,
+        evidence=EVIDENCE,
+    )
+
+    assert one_child.indexable is False
+    assert one_child.reasons == ("ward-below-child-and-summary-threshold",)
+    assert two_children.indexable is True
+    assert two_children.reasons == ()
+    assert rich_summary.indexable is True
+    assert rich_summary.reasons == ()
+
+
+def test_ward_summary_uses_unicode_letter_tokens_and_nfc_normalization():
+    accented = unicodedata.normalize("NFD", _words(60, "café"))
+    numeric_padding = f"{_words(59, 'xã')} 123 ___ --"
+
+    assert index_policy.decide_ward(
+        _public_ward(summary=accented), public_child_count=0, evidence=EVIDENCE
+    ).indexable is True
+    assert index_policy.decide_ward(
+        _public_ward(summary=numeric_padding),
+        public_child_count=0,
+        evidence=EVIDENCE,
+    ).reasons == ("ward-below-child-and-summary-threshold",)
+
+
+@pytest.mark.parametrize(
+    "overrides, expected_reason",
+    [
+        ({"status": None}, "public-status-missing"),
+        ({"status": "draft"}, "public-status-not-allowlisted"),
+        ({"status": "unpublished"}, "public-status-not-allowlisted"),
+        ({"verified": None}, "public-verification-missing"),
+        ({"verified": False}, "public-explicitly-unverified"),
+        ({"published": False}, "public-unpublished-content"),
+    ],
+)
+def test_ward_public_eligibility_fails_closed_regardless_of_quality(
+    overrides: dict[str, object], expected_reason: str
+):
+    ward = _public_ward(**overrides)
+
+    decision = index_policy.decide_ward(
+        ward, public_child_count=2, evidence=EVIDENCE
+    )
+
+    assert decision.indexable is False
+    assert decision.reasons == (expected_reason,)
+
+
+@pytest.mark.parametrize(
+    "missing_field, expected_reason",
+    [
+        ("status", "public-status-missing"),
+        ("verified", "public-verification-missing"),
+    ],
+)
+def test_ward_missing_public_fields_fail_closed(
+    missing_field: str, expected_reason: str
+):
+    ward = _public_ward()
+    del ward[missing_field]
+
+    decision = index_policy.decide_ward(
+        ward, public_child_count=2, evidence=EVIDENCE
+    )
+
+    assert decision.reasons == (expected_reason,)
+
+
+def test_thin_ineligible_ward_orders_public_reasons_before_quality_reason():
+    ward = _public_ward(
+        status="draft", verified=False, summary=_words(59, "xã")
+    )
+
+    decision = index_policy.decide_ward(
+        ward, public_child_count=1, evidence=EVIDENCE
+    )
+
+    assert decision.reasons == (
+        "public-status-not-allowlisted",
+        "public-explicitly-unverified",
+        "ward-below-child-and-summary-threshold",
+    )
+
+
+def test_decide_ward_does_not_mutate_or_alias_the_caller():
+    with pytest.raises(TypeError, match="entity must be a mapping"):
+        index_policy.decide_ward(  # type: ignore[arg-type]
+            [], public_child_count=0, evidence=EVIDENCE
+        )
+
+    ward = _public_ward(summary=_words(59, "xã"))
+    original = copy.deepcopy(ward)
+
+    decision = index_policy.decide_ward(
+        MappingProxyType(ward), public_child_count=1, evidence=EVIDENCE
+    )
+
+    assert ward == original
+    ward["summary"] = _words(60, "xã")
+    assert decision.reasons == ("ward-below-child-and-summary-threshold",)
+
+
+@pytest.mark.parametrize("public_child_count", [-1, True, 1.0, "2"])
+def test_decide_ward_requires_a_nonnegative_exact_integer_child_count(
+    public_child_count: object,
+):
+    with pytest.raises((TypeError, ValueError)):
+        index_policy.decide_ward(
+            _public_ward(),
+            public_child_count=public_child_count,  # type: ignore[arg-type]
+            evidence=EVIDENCE,
+        )
+
+
+def test_itinerary_and_shared_plan_are_fixed_noindex_decisions():
+    itinerary = index_policy.decide_itinerary(
+        shared_plan=False, evidence=EVIDENCE
+    )
+    shared_plan = index_policy.decide_itinerary(
+        shared_plan=True, evidence=EVIDENCE
+    )
+
+    assert itinerary == IndexPolicyDecision(
+        kind="itinerary",
+        indexable=False,
+        reasons=("itinerary-fixed-noindex",),
+        policy_fingerprint="a" * 64,
+        policy_revision=INDEX_POLICY_REVISION,
+    )
+    assert shared_plan == IndexPolicyDecision(
+        kind="itinerary",
+        indexable=False,
+        reasons=("shared-plan-fixed-noindex",),
+        policy_fingerprint="a" * 64,
+        policy_revision=INDEX_POLICY_REVISION,
+    )
+
+
+@pytest.mark.parametrize("shared_plan", [0, 1, None, "true"])
+def test_decide_itinerary_requires_an_exact_boolean(shared_plan: object):
+    with pytest.raises(TypeError, match="shared_plan must be a boolean"):
+        index_policy.decide_itinerary(
+            shared_plan=shared_plan,  # type: ignore[arg-type]
+            evidence=EVIDENCE,
+        )
+
+
+def test_decide_itinerary_requires_keyword_only_arguments():
+    with pytest.raises(TypeError):
+        index_policy.decide_itinerary(False, EVIDENCE)  # type: ignore[misc]
+
+
+def test_new_policy_entry_points_require_exact_policy_evidence():
+    with pytest.raises(TypeError, match="evidence must be PolicyEvidence"):
+        index_policy.decide_ward(
+            _public_ward(), public_child_count=0, evidence=object()  # type: ignore[arg-type]
+        )
+    with pytest.raises(TypeError, match="evidence must be PolicyEvidence"):
+        index_policy.decide_itinerary(
+            shared_plan=False, evidence=object()  # type: ignore[arg-type]
+        )
+
+
+def test_decision_validation_uses_exact_per_kind_reason_vocabularies():
+    valid_ward = IndexPolicyDecision(
+        kind="ward",
+        indexable=False,
+        reasons=("ward-below-child-and-summary-threshold",),
+        policy_fingerprint="a" * 64,
+        policy_revision=INDEX_POLICY_REVISION,
+    )
+    assert valid_ward.kind == "ward"
+
+    invalid_kind_reason_pairs = [
+        ("entity", "ward-below-child-and-summary-threshold"),
+        ("ward", "description-below-130-words"),
+        ("ward", "itinerary-fixed-noindex"),
+        ("itinerary", "public-status-missing"),
+        ("itinerary", "ward-below-child-and-summary-threshold"),
+    ]
+    for kind, reason in invalid_kind_reason_pairs:
+        with pytest.raises(ValueError, match="unknown reason"):
+            IndexPolicyDecision(
+                kind=kind,
+                indexable=False,
+                reasons=(reason,),
+                policy_fingerprint="a" * 64,
+                policy_revision=INDEX_POLICY_REVISION,
+            )
+
+
+def test_decision_validation_rejects_unknown_kind_and_noncanonical_reasons():
+    with pytest.raises(ValueError, match="entity, ward, or itinerary"):
+        IndexPolicyDecision(
+            kind="place",
+            indexable=True,
+            reasons=(),
+            policy_fingerprint="a" * 64,
+            policy_revision=INDEX_POLICY_REVISION,
+        )
+    with pytest.raises(ValueError, match="canonical order"):
+        IndexPolicyDecision(
+            kind="ward",
+            indexable=False,
+            reasons=(
+                "ward-below-child-and-summary-threshold",
+                "public-status-missing",
+            ),
+            policy_fingerprint="a" * 64,
+            policy_revision=INDEX_POLICY_REVISION,
+        )
+    with pytest.raises(ValueError, match="unique"):
+        IndexPolicyDecision(
+            kind="itinerary",
+            indexable=False,
+            reasons=("itinerary-fixed-noindex", "itinerary-fixed-noindex"),
+            policy_fingerprint="a" * 64,
+            policy_revision=INDEX_POLICY_REVISION,
+        )
+
+
+@pytest.mark.parametrize(
+    "indexable, reasons",
+    [
+        (True, ()),
+        (
+            False,
+            ("itinerary-fixed-noindex", "shared-plan-fixed-noindex"),
+        ),
+    ],
+)
+def test_itinerary_decision_requires_exactly_one_fixed_noindex_reason(
+    indexable: bool, reasons: tuple[str, ...]
+):
+    with pytest.raises(ValueError, match="exactly one fixed noindex reason"):
+        IndexPolicyDecision(
+            kind="itinerary",
+            indexable=indexable,
+            reasons=reasons,
+            policy_fingerprint="a" * 64,
+            policy_revision=INDEX_POLICY_REVISION,
+        )
 
 
 @pytest.mark.parametrize(

@@ -3,6 +3,7 @@
 import json
 import os
 import time
+from types import SimpleNamespace
 
 import seo
 from launch_evidence import PolicyEvidence
@@ -189,10 +190,14 @@ def test_sitemap_changefreq_by_type_and_no_lastmod(tmp_path, monkeypatch):
 def test_sitemap_ward_outer_compatibility_and_strict_child_count(tmp_path, monkeypatch):
     payload = {
         "entities": [
-            {"id": "thin-ward", "name": "TW", "type": "place", "summary": _text(20)},
-            {"id": "rich-ward", "name": "RW", "type": "place", "summary": _text(80)},
-            {"id": "hub-ward", "name": "HW", "type": "place", "summary": _text(10)},
-            {"id": "single-child-ward", "name": "SW", "type": "place", "summary": _text(10)},
+            {"id": "thin-ward", "name": "TW", "type": "place", "status": "published",
+             "verified": True, "summary": _text(20)},
+            {"id": "rich-ward", "name": "RW", "type": "place", "status": "published",
+             "verified": True, "summary": _text(80)},
+            {"id": "hub-ward", "name": "HW", "type": "place", "status": "published",
+             "verified": True, "summary": _text(10)},
+            {"id": "single-child-ward", "name": "SW", "type": "place", "status": "published",
+             "verified": True, "summary": _text(10)},
             {"id": "child-1", "name": "C1", "type": "dish", "status": "published", "verified": True,
              "placeId": "hub-ward", "summary": _text(200)},
             {"id": "child-2", "name": "C2", "type": "dish", "status": "published", "verified": True,
@@ -209,7 +214,7 @@ def test_sitemap_ward_outer_compatibility_and_strict_child_count(tmp_path, monke
     _reset_seo(monkeypatch, data_path)
     body = seo.sitemap().body
     assert b"/xa-phuong/thin-ward" not in body   # thin summary + no children → out (P1-5)
-    assert b"/xa-phuong/rich-ward" in body        # legacy outer listing remains compatible in Task 9
+    assert b"/xa-phuong/rich-ward" in body        # public ward with 60+ Unicode words → in
     assert b"/xa-phuong/hub-ward" in body         # thin summary but a hub (2 eligible children) → in
     assert b"/xa-phuong/single-child-ward" not in body  # ineligible child receives no hub credit
 
@@ -233,7 +238,10 @@ def test_sitemap_place_loop_skips_provisional(tmp_path, monkeypatch):
             {"id": "prov-place", "name": "P", "type": "place",
              "status": "provisional", "verified": True, "updatedAt": "2026-06-12"},
             {"id": "good-place", "name": "G", "type": "place",
+             "status": "published", "verified": True,
              "summary": _text(80), "updatedAt": "2026-06-12"},
+            {"id": "missing-status", "name": "M", "type": "place",
+             "verified": True, "summary": _text(80)},
         ],
         "relationships": [], "itineraries": [],
     }
@@ -244,3 +252,43 @@ def test_sitemap_place_loop_skips_provisional(tmp_path, monkeypatch):
     body = seo.sitemap().body
     assert b"prov-place" not in body
     assert b"good-place" in body
+    assert b"missing-status" not in body
+
+
+def test_sitemap_ward_delegates_to_index_policy_with_request_evidence(
+    tmp_path, monkeypatch
+):
+    payload = {
+        "entities": [
+            {"id": "policy-ward", "type": "place", "status": "published",
+             "verified": True, "summary": _text(60)},
+        ],
+        "relationships": [],
+        "itineraries": [],
+    }
+    data_path = tmp_path / "data.json"
+    data_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    _reset_seo(monkeypatch, data_path)
+    current_evidence = PolicyEvidence(
+        "c" * 64, "launch-indexing-policy-v1", "index-policy-v1"
+    )
+    calls = []
+
+    def recording_decision(ward, *, public_child_count, evidence):
+        calls.append((ward["id"], public_child_count, evidence))
+        return SimpleNamespace(indexable=True)
+
+    monkeypatch.setattr(seo, "current_policy_evidence", lambda: current_evidence)
+    monkeypatch.setattr(seo, "decide_ward", recording_decision)
+    monkeypatch.setattr(
+        seo,
+        "_is_listing_visible",
+        lambda entity: (_ for _ in ()).throw(
+            AssertionError("ward sitemap must not use legacy visibility authority")
+        ),
+    )
+
+    body = seo.sitemap().body
+
+    assert b"/xa-phuong/policy-ward" in body
+    assert calls == [("policy-ward", 0, current_evidence)]

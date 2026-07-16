@@ -25,7 +25,7 @@ def test_entity_jsonld_accepts_list_coordinates() -> None:
     assert ld["citation"]["url"] == "https://example.com/ao-ba-om"
 
 
-def test_sitemap_includes_all_public_non_place_entities_and_itineraries(monkeypatch) -> None:
+def test_sitemap_includes_public_entities_but_excludes_fixed_itineraries(monkeypatch) -> None:
     rich = "chu " * 140  # >=130 tu -> qua cong chat luong is_index_worthy (P0-1)
     monkeypatch.setattr(seo, "_data", {
         "entities": [
@@ -44,7 +44,10 @@ def test_sitemap_includes_all_public_non_place_entities_and_itineraries(monkeypa
     assert "https://vinhlong360.vn/dia-diem/lich-su-a" in body
     assert "https://vinhlong360.vn/dia-diem/nhan-vat-b" in body
     assert "https://vinhlong360.vn/dia-diem/xa-vinh-long" not in body
-    assert "https://vinhlong360.vn/lich-trinh/hanh-trinh-a" in body
-    # P1-4: detail URL khong con phat lastmod=updatedAt (chong freshness-gaming);
-    # lastmod hop le den tu itinerary (updatedAt 2026-01-03).
-    assert "<lastmod>2026-01-03</lastmod>" in body
+    assert "https://vinhlong360.vn/lich-trinh/hanh-trinh-a" not in body
+    assert "<lastmod>2026-01-03</lastmod>" not in body
+
+    itinerary_ld = seo.build_itinerary_jsonld(
+        {"id": "hanh-trinh-a", "title": "Hanh trinh A", "stops": []}, {}
+    )
+    assert itinerary_ld["url"] == "https://vinhlong360.vn/lich-trinh/hanh-trinh-a"

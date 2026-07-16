@@ -26,10 +26,10 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, Response
 
 if __package__:
-    from .index_policy import decide_entity, is_publicly_eligible
+    from .index_policy import decide_entity, decide_ward, is_publicly_eligible
     from .launch_evidence import PolicyEvidence, current_policy_evidence
 else:
-    from index_policy import decide_entity, is_publicly_eligible
+    from index_policy import decide_entity, decide_ward, is_publicly_eligible
     from launch_evidence import PolicyEvidence, current_policy_evidence
 
 router = APIRouter()
@@ -1304,17 +1304,19 @@ def _sitemap_place_children(data: dict[str, Any]) -> dict[str, int]:
     return _place_children
 
 
-def _sitemap_place_urls(data: dict[str, Any], place_children: dict[str, int]) -> list[str]:
+def _sitemap_place_urls(
+    data: dict[str, Any],
+    place_children: dict[str, int],
+    evidence: PolicyEvidence,
+) -> list[str]:
     urls: list[str] = []
     for entity in data.get("entities", []):
         if not isinstance(entity, dict) or entity.get("type") != "place" or not entity.get("id"):
             continue
-        if not _is_listing_visible(entity):
-            continue
-        # P1-5: bỏ ward mỏng (ít con VÀ summary ngắn) khỏi sitemap — hết thin-doorway.
         children = place_children.get(str(entity["id"]), 0)
-        summary_words = len(str(entity.get("summary") or "").split())
-        if children <= 1 and summary_words < 60:
+        if not decide_ward(
+            entity, public_child_count=children, evidence=evidence
+        ).indexable:
             continue
         urls.append(_url_xml(
             f"{SITE}/xa-phuong/{quote(str(entity['id']))}",
@@ -1348,20 +1350,6 @@ def _sitemap_detail_urls(
     return urls
 
 
-def _sitemap_itinerary_urls(data: dict[str, Any]) -> list[str]:
-    urls: list[str] = []
-    for itinerary in data.get("itineraries", []):
-        if not isinstance(itinerary, dict) or not itinerary.get("id"):
-            continue
-        urls.append(_url_xml(
-            _itinerary_url(str(itinerary["id"])),
-            changefreq="monthly",
-            priority="0.7",
-            lastmod=_safe_date(itinerary.get("updatedAt"), None),
-        ))
-    return urls
-
-
 def _sitemap_response(content: str) -> Response:
     return Response(
         content=content,
@@ -1372,7 +1360,7 @@ def _sitemap_response(content: str) -> Response:
 
 @router.get("/sitemap.xml", response_class=Response,
             summary="XML Sitemap",
-            description="Returns the XML sitemap for search engine crawlers. Includes core pages, area pages, entity detail pages, and itineraries with lastmod dates.")
+            description="Returns the XML sitemap for search engine crawlers. Includes core pages, area pages, eligible wards, and entity detail pages.")
 def sitemap():
     global _sitemap_cache
     data = _load()
@@ -1393,9 +1381,8 @@ def sitemap():
     urls: list[str] = []
     urls.extend(_sitemap_static_urls())
     place_children = _sitemap_place_children(data)
-    urls.extend(_sitemap_place_urls(data, place_children))
+    urls.extend(_sitemap_place_urls(data, place_children, evidence))
     urls.extend(_sitemap_detail_urls(data, evidence))
-    urls.extend(_sitemap_itinerary_urls(data))
 
     if len(urls) > 50000:
         logger.warning("Sitemap has %d URLs, truncating to 50000 (Google limit)", len(urls))

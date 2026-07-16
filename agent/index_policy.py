@@ -25,6 +25,25 @@ ENTITY_REASON_ORDER = (
     "public-unpublished-content",
     "description-below-130-words",
 )
+WARD_REASON_ORDER = (
+    "public-status-missing",
+    "public-status-not-allowlisted",
+    "public-verification-missing",
+    "public-explicitly-unverified",
+    "public-private-content",
+    "public-unpublished-content",
+    "ward-below-child-and-summary-threshold",
+)
+ITINERARY_REASON_ORDER = (
+    "itinerary-fixed-noindex",
+    "shared-plan-fixed-noindex",
+)
+
+_REASON_ORDERS = {
+    "entity": ENTITY_REASON_ORDER,
+    "ward": WARD_REASON_ORDER,
+    "itinerary": ITINERARY_REASON_ORDER,
+}
 
 _ENTITY_FIELDS = (
     "type",
@@ -51,8 +70,8 @@ class IndexPolicyDecision:
     policy_revision: str
 
     def __post_init__(self) -> None:
-        if type(self.kind) is not str or self.kind != "entity":
-            raise ValueError("decision kind must be entity")
+        if type(self.kind) is not str or self.kind not in _REASON_ORDERS:
+            raise ValueError("decision kind must be entity, ward, or itinerary")
         if type(self.indexable) is not bool:
             raise TypeError("indexable must be a boolean")
         if type(self.reasons) is not tuple:
@@ -61,14 +80,21 @@ class IndexPolicyDecision:
             raise TypeError("decision reasons must be strings")
         if len(set(self.reasons)) != len(self.reasons):
             raise ValueError("decision reasons must be unique")
+        reason_order = _REASON_ORDERS[self.kind]
         try:
             positions = tuple(
-                ENTITY_REASON_ORDER.index(reason) for reason in self.reasons
+                reason_order.index(reason) for reason in self.reasons
             )
         except ValueError as exc:
             raise ValueError("decision contains an unknown reason") from exc
         if positions != tuple(sorted(positions)):
             raise ValueError("decision reasons are not in canonical order")
+        if self.kind == "itinerary" and (
+            self.indexable or len(self.reasons) != 1
+        ):
+            raise ValueError(
+                "itinerary decision requires exactly one fixed noindex reason"
+            )
         if self.indexable is bool(self.reasons):
             raise ValueError("indexable does not match decision reasons")
         if (
@@ -154,6 +180,16 @@ def is_publicly_eligible(entity: Mapping[str, object]) -> bool:
     return not public_eligibility_reasons(entity)
 
 
+def _unicode_word_count(value: object) -> int:
+    if type(value) is not str:
+        return 0
+    normalized = unicodedata.normalize("NFC", value).strip()
+    return sum(
+        any(character.isalpha() for character in token)
+        for token in _UNICODE_WORD.findall(normalized)
+    )
+
+
 def _descriptive_word_count(snapshot: Mapping[str, object]) -> int:
     summary_value = snapshot["summary"]
     description_value = snapshot["description"]
@@ -170,17 +206,18 @@ def _descriptive_word_count(snapshot: Mapping[str, object]) -> int:
     parts = [summary]
     if description.casefold() != summary.casefold():
         parts.append(description)
-    return sum(
-        any(character.isalpha() for character in token)
-        for token in _UNICODE_WORD.findall(" ".join(parts))
-    )
+    return _unicode_word_count(" ".join(parts))
+
+
+def _require_evidence(evidence: PolicyEvidence) -> None:
+    if type(evidence) is not PolicyEvidence:
+        raise TypeError("evidence must be PolicyEvidence")
 
 
 def decide_entity(
     entity: Mapping[str, object], evidence: PolicyEvidence
 ) -> IndexPolicyDecision:
-    if type(evidence) is not PolicyEvidence:
-        raise TypeError("evidence must be PolicyEvidence")
+    _require_evidence(evidence)
     snapshot = _snapshot(entity)
     if type(snapshot["type"]) is str and snapshot["type"] == "place":
         raise ValueError("decide_entity accepts non-place entities only")
@@ -192,6 +229,50 @@ def decide_entity(
         kind="entity",
         indexable=not reasons,
         reasons=tuple(reasons),
+        policy_fingerprint=evidence.policy_fingerprint,
+        policy_revision=evidence.backend_policy_revision,
+    )
+
+
+def decide_ward(
+    ward: Mapping[str, object],
+    *,
+    public_child_count: int,
+    evidence: PolicyEvidence,
+) -> IndexPolicyDecision:
+    _require_evidence(evidence)
+    if type(public_child_count) is not int:
+        raise TypeError("public_child_count must be an integer")
+    if public_child_count < 0:
+        raise ValueError("public_child_count must be nonnegative")
+    snapshot = _snapshot(ward)
+    reasons = list(_public_eligibility_reasons(snapshot))
+    if public_child_count <= 1 and _unicode_word_count(snapshot["summary"]) < 60:
+        reasons.append("ward-below-child-and-summary-threshold")
+    return IndexPolicyDecision(
+        kind="ward",
+        indexable=not reasons,
+        reasons=tuple(reasons),
+        policy_fingerprint=evidence.policy_fingerprint,
+        policy_revision=evidence.backend_policy_revision,
+    )
+
+
+def decide_itinerary(
+    *, shared_plan: bool, evidence: PolicyEvidence
+) -> IndexPolicyDecision:
+    _require_evidence(evidence)
+    if type(shared_plan) is not bool:
+        raise TypeError("shared_plan must be a boolean")
+    reason = (
+        "shared-plan-fixed-noindex"
+        if shared_plan
+        else "itinerary-fixed-noindex"
+    )
+    return IndexPolicyDecision(
+        kind="itinerary",
+        indexable=False,
+        reasons=(reason,),
         policy_fingerprint=evidence.policy_fingerprint,
         policy_revision=evidence.backend_policy_revision,
     )
