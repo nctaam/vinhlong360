@@ -12,6 +12,7 @@ import shutil
 import stat
 import subprocess
 import sys
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -72,6 +73,15 @@ HEAD_RE = re.compile(r"[0-9a-f]{40}\Z")
 
 class AttestationRefusal(RuntimeError):
     """Refuse malformed, stale, mutable, or unsafe attestation input."""
+
+
+@dataclass(frozen=True)
+class ArtifactSnapshot:
+    path: Path
+    identity: tuple[int, int]
+    size: int
+    sha256: str
+    canonical_json: bool
 
 
 def parse_args() -> argparse.Namespace:
@@ -281,6 +291,15 @@ def load_canonical_object(
     return value, sha256_bytes(raw)
 
 
+def _validate_canonical_object_bytes(raw: bytes, label: str) -> None:
+    try:
+        value = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        raise AttestationRefusal(f"{label} is invalid JSON") from None
+    if type(value) is not dict or canonical_json_bytes(value) != raw:
+        raise AttestationRefusal(f"{label} bytes are not canonical")
+
+
 def _identity(value: object, label: str) -> dict[str, object]:
     try:
         return canonical_target_identity(value, exact_keys=True)
@@ -431,6 +450,53 @@ def validate_artifacts(root: Path, now: datetime | None = None) -> dict[str, obj
     }
 
 
+def _capture_artifact_snapshots(
+    root: Path, artifacts: dict[str, object]
+) -> tuple[ArtifactSnapshot, ...]:
+    snapshots: list[ArtifactSnapshot] = []
+    for key, canonical_json in (
+        ("plan", True),
+        ("manifest", True),
+        ("dump", False),
+        ("restore_list", False),
+    ):
+        artifact = artifacts[key]
+        if type(artifact) is not dict:
+            raise AttestationRefusal("artifact summary is malformed")
+        path = root / str(artifact["path"])
+        raw, metadata = _stable_read(path, f"{key} artifact")
+        digest = hashlib.sha256(raw).hexdigest()
+        if digest != artifact.get("sha256"):
+            raise AttestationRefusal("artifact changed before snapshot")
+        if canonical_json:
+            _validate_canonical_object_bytes(raw, f"{key} artifact")
+        snapshots.append(
+            ArtifactSnapshot(
+                path=path,
+                identity=(metadata.st_dev, metadata.st_ino),
+                size=metadata.st_size,
+                sha256=digest,
+                canonical_json=canonical_json,
+            )
+        )
+    return tuple(snapshots)
+
+
+def _revalidate_artifact_snapshots(
+    snapshots: tuple[ArtifactSnapshot, ...],
+) -> None:
+    for snapshot in snapshots:
+        raw, metadata = _stable_read(snapshot.path, "attested artifact")
+        if (
+            (metadata.st_dev, metadata.st_ino) != snapshot.identity
+            or metadata.st_size != snapshot.size
+            or hashlib.sha256(raw).hexdigest() != snapshot.sha256
+        ):
+            raise AttestationRefusal("artifact changed after attestation validation")
+        if snapshot.canonical_json:
+            _validate_canonical_object_bytes(raw, "attested JSON artifact")
+
+
 def git_state(_root: Path) -> dict[str, object]:
     try:
         head_result = subprocess.run(
@@ -490,9 +556,9 @@ def run_acl_helper(mode: str, root: Path) -> dict[str, object]:
         raise AttestationRefusal("ACL verification returned invalid evidence")
     if set(evidence) != ACL_KEYS | {"root"}:
         raise AttestationRefusal("ACL verification returned invalid evidence")
-    if type(evidence["root"]) is not str or not evidence["root"]:
-        raise AttestationRefusal("ACL verification returned invalid evidence")
-    return {key: evidence[key] for key in ACL_KEYS}
+    _validate_acl_root(evidence["root"], root)
+    _validate_allowed_principals(evidence["allowed_principals"])
+    return evidence
 
 
 def _fresh(timestamp: object, label: str, now: datetime) -> str:
@@ -636,32 +702,62 @@ def validate_evidence(
     }
 
 
-def _acl_summary(value: dict[str, object]) -> dict[str, object]:
-    if set(value) != ACL_KEYS:
+def _validate_acl_root(value: object, root: Path) -> None:
+    if type(value) is not str or not value:
+        raise AttestationRefusal("ACL evidence root is invalid")
+    try:
+        reported = Path(value).absolute()
+    except OSError:
+        raise AttestationRefusal("ACL evidence root is invalid") from None
+    if reported != root.absolute():
+        raise AttestationRefusal("ACL evidence root mismatch")
+
+
+def _validate_allowed_principals(value: object) -> None:
+    if (
+        type(value) is not list
+        or len(value) != 3
+        or any(type(item) is not str or not item for item in value)
+    ):
+        raise AttestationRefusal("ACL principals are invalid")
+    normalized = {item.casefold() for item in value}
+    required = {
+        "NT AUTHORITY\\SYSTEM".casefold(),
+        "BUILTIN\\Administrators".casefold(),
+    }
+    if len(normalized) != 3 or not required.issubset(normalized):
+        raise AttestationRefusal("ACL principals are invalid")
+
+
+def _acl_summary(value: dict[str, object], root: Path) -> dict[str, object]:
+    keys = set(value)
+    if keys == ACL_KEYS | {"root"}:
+        _validate_acl_root(value["root"], root)
+        canonical = {key: value[key] for key in ACL_KEYS}
+    elif keys == ACL_KEYS:
+        canonical = dict(value)
+    else:
         raise AttestationRefusal("ACL evidence fields are malformed")
-    checked_at = _parse_utc(value["checked_at"], "ACL")
+    _validate_allowed_principals(canonical["allowed_principals"])
+    checked_at = _parse_utc(canonical["checked_at"], "ACL")
     age = (_utc_now() - checked_at).total_seconds()
     if age < 0 or age > MAX_EVIDENCE_AGE_SECONDS:
         raise AttestationRefusal("ACL evidence is stale")
-    if value["unexpected_principals"] != []:
+    if canonical["unexpected_principals"] != []:
         raise AttestationRefusal("ACL evidence is not explicit and clean")
     for key in (
         "inherited_rule_count",
         "reparse_point_count",
         "alternate_data_stream_count",
     ):
-        if type(value[key]) is not int or value[key] != 0:
+        if type(canonical[key]) is not int or canonical[key] != 0:
             raise AttestationRefusal("ACL evidence contains hostile objects")
-    if type(value["allowed_principals"]) is not list or any(
-        type(item) is not str for item in value["allowed_principals"]
-    ):
-        raise AttestationRefusal("ACL principals are invalid")
     for key in ("object_count", "protected_object_count"):
-        if type(value[key]) is not int or value[key] < 1:
+        if type(canonical[key]) is not int or canonical[key] < 1:
             raise AttestationRefusal("ACL object counts are invalid")
-    if value["protected_object_count"] != value["object_count"]:
+    if canonical["protected_object_count"] != canonical["object_count"]:
         raise AttestationRefusal("ACL objects are not protected")
-    return {key: value[key] for key in ACL_KEYS}
+    return canonical
 
 
 def _path_identity(path: Path) -> tuple[int, int]:
@@ -754,6 +850,31 @@ def _write_owned_pending(
     return digest
 
 
+def _verify_published_attestation(
+    pending: Path,
+    output: Path,
+    identity: tuple[int, int],
+    payload: bytes,
+    digest: str,
+) -> None:
+    pending_raw, pending_metadata = _stable_read(pending, "attestation pending path")
+    output_raw, output_metadata = _stable_read(output, "attestation output path")
+    pending_identity = (pending_metadata.st_dev, pending_metadata.st_ino)
+    output_identity = (output_metadata.st_dev, output_metadata.st_ino)
+    if pending_identity != identity or output_identity != identity:
+        raise AttestationRefusal("attestation hardlink identity changed")
+    if (
+        pending_metadata.st_nlink != output_metadata.st_nlink
+        or pending_metadata.st_nlink < 2
+    ):
+        raise AttestationRefusal("attestation hardlink count is invalid")
+    if pending_raw != payload or output_raw != payload:
+        raise AttestationRefusal("attestation canonical bytes changed")
+    if hashlib.sha256(pending_raw).hexdigest() != digest:
+        raise AttestationRefusal("attestation hash changed after ACL verification")
+    _validate_canonical_object_bytes(output_raw, "attestation")
+
+
 def build_attestation(
     root: Path,
     output: Path,
@@ -763,7 +884,7 @@ def build_attestation(
     now = now or _utc_now()
     _assert_no_reparse_ancestors(root)
     _real_dir(root, "artifact root")
-    _acl_summary(run_acl_helper("Verify", root))
+    _acl_summary(run_acl_helper("Verify", root), root)
     source_state = git_state(root)
     validated_evidence = validate_evidence(evidence, now, source_state)
     artifacts = validate_artifacts(root, now)
@@ -772,10 +893,13 @@ def build_attestation(
     )
     if plan.get("tool_source_revision") != source_state["head"]:
         raise AttestationRefusal("plan source revision mismatch")
+    artifact_snapshots = _capture_artifact_snapshots(root, artifacts)
+    preallocation_now = _utc_now()
+    validated_evidence = validate_evidence(evidence, preallocation_now, source_state)
     base = {
         "schema": SCHEMA,
         "attestation_revision": ATTESTATION_REVISION,
-        "generated_at": _utc_text(now),
+        "generated_at": _utc_text(preallocation_now),
         "source": validated_evidence["source"],
         "artifacts": {
             "plan": artifacts["plan"],
@@ -799,17 +923,33 @@ def build_attestation(
     pending, identity = _create_empty_links(root, output)
     _assert_empty_attestation_links(pending, output, identity)
     acl = run_acl_helper("NormalizeAndVerify", root)
+    write_now = _utc_now()
+    validated_evidence = validate_evidence(evidence, write_now, source_state)
+    base.update(
+        {
+            "generated_at": _utc_text(write_now),
+            "source": validated_evidence["source"],
+            "noindex": validated_evidence["noindex"],
+            "temporary_role": validated_evidence["temporary_role"],
+            "tunnel": validated_evidence["tunnel"],
+            "operations": validated_evidence["operations"],
+        }
+    )
     final = dict(base)
-    final["acl"] = _acl_summary(acl)
+    final["acl"] = _acl_summary(acl, root)
     try:
         payload = canonical_json_bytes(final)
     except (TypeError, ValueError):
         raise AttestationRefusal("attestation is not serializable") from None
     digest = _write_owned_pending(pending, output, identity, payload)
-    final_acl = _acl_summary(run_acl_helper("Verify", root))
+    final_acl = _acl_summary(run_acl_helper("Verify", root), root)
     for key, value in final["acl"].items():
         if key != "checked_at" and final_acl[key] != value:
             raise AttestationRefusal("ACL evidence changed after attestation write")
+    finalization_now = _utc_now()
+    validate_evidence(evidence, finalization_now, source_state)
+    _revalidate_artifact_snapshots(artifact_snapshots)
+    _verify_published_attestation(pending, output, identity, payload, digest)
     return final, digest
 
 

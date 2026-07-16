@@ -503,6 +503,117 @@ def test_attestation_refuses_extra_acl_summary_key_before_allocation(
     assert not list(stage_b_root.glob(".pending-write-*"))
 
 
+def test_attestation_refuses_final_output_mutation_after_acl_verify(
+    stage_b_root: Path,
+    evidence: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_acl = stage_b_attestation.run_acl_helper
+    output = stage_b_root / "stage-b-attestation.json"
+
+    def mutate_final(mode: str, root: Path) -> dict[str, object]:
+        summary = original_acl(mode, root)
+        if mode == "Verify" and output.exists():
+            output.write_bytes(b"X")
+        return summary
+
+    monkeypatch.setattr(stage_b_attestation, "run_acl_helper", mutate_final)
+    result = _run_attestation(stage_b_root, output, evidence)
+
+    assert result.returncode != 0
+    assert "hash" in result.stderr.lower() or "canonical" in result.stderr.lower()
+    assert output.read_bytes() == b"X"
+    pending = list(stage_b_root.glob(".pending-write-*"))
+    assert len(pending) == 1
+    assert pending[0].read_bytes() == b"X"
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda root: _mutate_json(
+            root / "published-v1-plan.json", {"candidate_count": 2}
+        ),
+        lambda root: _mutate_json(
+            root / "backup" / "20260715-230716" / "manifest.json",
+            {"completed_at": "2026-07-16T05:00:00Z"},
+        ),
+        lambda root: (
+            root / "backup" / "20260715-230716" / "postgres.dump"
+        ).write_bytes(b"drift"),
+        lambda root: (root / "pg-restore-list.txt").write_bytes(b"drift\n"),
+    ],
+)
+def test_attestation_refuses_artifact_drift_after_normalization(
+    stage_b_root: Path,
+    evidence: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+    mutate,
+) -> None:
+    original_acl = stage_b_attestation.run_acl_helper
+
+    def mutate_on_normalize(mode: str, root: Path) -> dict[str, object]:
+        summary = original_acl(mode, root)
+        if mode == "NormalizeAndVerify":
+            mutate(root)
+        return summary
+
+    monkeypatch.setattr(stage_b_attestation, "run_acl_helper", mutate_on_normalize)
+    output = stage_b_root / "stage-b-attestation.json"
+    result = _run_attestation(stage_b_root, output, evidence)
+
+    assert result.returncode != 0
+    assert "artifact" in result.stderr.lower() or "canonical" in result.stderr.lower()
+
+
+def test_attestation_refuses_acl_evidence_for_wrong_root(
+    stage_b_root: Path,
+    evidence: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    original_acl = stage_b_attestation.run_acl_helper
+    wrong_root = tmp_path / "wrong-root"
+
+    def wrong_root_acl(mode: str, root: Path) -> dict[str, object]:
+        summary = original_acl(mode, root)
+        summary["root"] = str(wrong_root.absolute())
+        return summary
+
+    monkeypatch.setattr(stage_b_attestation, "run_acl_helper", wrong_root_acl)
+    output = stage_b_root / "stage-b-attestation.json"
+    result = _run_attestation(stage_b_root, output, evidence)
+
+    assert result.returncode != 0
+    assert "root" in result.stderr.lower()
+    assert not output.exists()
+    assert not list(stage_b_root.glob(".pending-write-*"))
+
+
+def test_attestation_refuses_freshness_expiring_during_validation(
+    stage_b_root: Path,
+    evidence: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base = datetime.now(UTC)
+    clock_values = iter(
+        [
+            base + timedelta(seconds=1),
+            base + timedelta(seconds=1),
+            base + timedelta(seconds=302),
+        ]
+    )
+    monkeypatch.setattr(stage_b_attestation, "_utc_now", lambda: next(clock_values))
+    output = stage_b_root / "stage-b-attestation.json"
+
+    result = _run_attestation(stage_b_root, output, evidence)
+
+    assert result.returncode != 0
+    assert "stale" in result.stderr.lower()
+    assert not output.exists()
+    assert not list(stage_b_root.glob(".pending-write-*"))
+
+
 def _mutate_json(path: Path, updates: dict[str, object]) -> None:
     value = json.loads(path.read_text(encoding="utf-8"))
     value.update(updates)
