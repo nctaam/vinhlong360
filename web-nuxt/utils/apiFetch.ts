@@ -7,7 +7,7 @@
 const FALLBACK_SSR_ORIGIN = import.meta.dev ? 'http://localhost:8360' : 'https://vinhlong360.vn'
 
 function getServerApiBase() {
-  const configured = useRuntimeConfig().public.apiBase
+  const configured = useRuntimeConfig().apiBase
   const base = typeof configured === 'string' && configured.trim()
     ? configured
     : FALLBACK_SSR_ORIGIN

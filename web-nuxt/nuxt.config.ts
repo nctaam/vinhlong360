@@ -138,8 +138,11 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Backend origins are server-only. Browser requests stay relative and go
+    // through the exclusive Nginx ingress, so this value is never serialized
+    // into the public runtime payload.
+    apiBase,
     public: {
-      apiBase,
       ndaMapKey: process.env.NDA_MAP_KEY || 'J2TnJ4JIEP3WTBnFwzVPAxTP7KKfW1OD',
       // ⚠️ TẠM THỜI — chặn Google index TOÀN SITE trong giai đoạn hoàn thiện nội dung.
       // Mặc định BẬT (noindex). Cờ này đồng bộ runtime config với robots meta
