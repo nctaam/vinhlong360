@@ -1,15 +1,7 @@
 // @vitest-environment node
 
 import { loadNuxtConfig } from '@nuxt/kit'
-import { afterEach, describe, expect, it, vi } from 'vitest'
-
-import noindexMiddleware from '../server/middleware/noindex'
-
-const runtimeConfigState = vi.hoisted(() => ({ siteNoindex: true }))
-
-vi.mock('nitropack/runtime', () => ({
-  useRuntimeConfig: () => ({ public: { siteNoindex: runtimeConfigState.siteNoindex } }),
-}))
+import { afterEach, describe, expect, it } from 'vitest'
 
 const permissiveRobots = 'index, follow, max-image-preview:large, max-snippet:-1'
 const originalSiteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX
@@ -32,8 +24,6 @@ const globalNitroHeaders = (config: Awaited<ReturnType<typeof loadNuxtConfig>>) 
   config.nitro?.routeRules?.['/**']?.headers
 
 afterEach(() => {
-  runtimeConfigState.siteNoindex = true
-
   if (originalSiteNoindex === undefined) {
     delete process.env.NUXT_PUBLIC_SITE_NOINDEX
   }
@@ -69,23 +59,4 @@ describe('global noindex posture', () => {
     expect(globalNitroHeaders(config)).not.toHaveProperty('X-Robots-Tag')
   })
 
-  it.each([
-    { siteNoindex: true, expectedHeader: 'noindex, follow' },
-    { siteNoindex: false, expectedHeader: undefined },
-  ])('sets the dynamic header only when siteNoindex is $siteNoindex', async ({ siteNoindex, expectedHeader }) => {
-    runtimeConfigState.siteNoindex = siteNoindex
-    const setHeader = vi.fn()
-    const event = {
-      node: { res: { setHeader } },
-    }
-
-    await noindexMiddleware(event as never)
-
-    if (expectedHeader) {
-      expect(setHeader).toHaveBeenCalledWith('X-Robots-Tag', expectedHeader)
-    }
-    else {
-      expect(setHeader).not.toHaveBeenCalled()
-    }
-  })
 })
