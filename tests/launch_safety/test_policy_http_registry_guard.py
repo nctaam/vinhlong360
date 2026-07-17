@@ -976,7 +976,7 @@ def launch_policy_attestation():
     assert "POLICY_ROUTE_CONTRACT_MISMATCH" in _codes(findings)
 
 
-def test_hard_check_uses_only_the_two_task12_future_allowances():
+def test_hard_check_uses_only_the_remaining_sitemap_future_allowance():
     checker = _load_checker()
     assert checker is not None
 
@@ -1001,12 +1001,30 @@ def get_entity(entity_id: str):
 ''',
     )
     _write(
+        agent / "launch_policy_api.py",
+        '''
+from fastapi import APIRouter
+router = APIRouter(prefix="/_internal", include_in_schema=False)
+
+@router.get("/launch-policy-attestation")
+def launch_policy_attestation():
+    evidence = current_policy_evidence()
+    return {
+        "policy_fingerprint": evidence.policy_fingerprint,
+        "route_manifest_revision": evidence.route_manifest_revision,
+        "backend_policy_revision": evidence.backend_policy_revision,
+    }
+''',
+    )
+    _write(
         agent / "server.py",
         '''
 from fastapi import FastAPI
 from public_api import router
+from launch_policy_api import router as launch_policy_router
 app = FastAPI()
 app.include_router(router)
+app.include_router(launch_policy_router)
 ''',
     )
 
@@ -1038,7 +1056,7 @@ def test_current_repository_registry_is_exact_with_only_declared_futures():
     findings = checker.scan_policy_routes(
         checker.agent_source_files(AGENT),
         policy_http.POLICY_ENDPOINTS,
-        allowed_future={"launch_policy_attestation", "launch_sitemap_document"},
+        allowed_future={"launch_sitemap_document"},
     )
 
     assert findings == []
@@ -1048,7 +1066,8 @@ def test_current_repository_registry_is_exact_with_only_declared_futures():
     "args",
     [
         ["--allow-future", "unknown_future"],
-        ["--allow-future", "launch_policy_attestation", "--allow-future", "launch_policy_attestation"],
+        ["--allow-future", "launch_policy_attestation"],
+        ["--allow-future", "launch_sitemap_document", "--allow-future", "launch_sitemap_document"],
         ["--allow-future", "get_entity"],
     ],
 )

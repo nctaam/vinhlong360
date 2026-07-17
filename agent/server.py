@@ -74,6 +74,7 @@ from visits import router as visits_router
 from achievements import router as achievements_router
 from seo import router as seo_router
 from social import router as social_router
+from launch_policy_api import router as launch_policy_router
 from tools import TOOLS, SYSTEM_PROMPT
 from middleware import (
     logger, chat_limiter, stream_limiter, report_limiter,
@@ -1142,6 +1143,7 @@ app.include_router(achievements_router)
 app.include_router(seo_router)
 app.include_router(social_router)
 app.include_router(community_router)
+app.include_router(launch_policy_router)
 
 
 TYPE_LABELS_VI = {

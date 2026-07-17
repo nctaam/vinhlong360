@@ -21,9 +21,7 @@ from policy_http import POLICY_ENDPOINTS, PolicyEndpoint  # noqa: E402
 
 
 HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head"})
-DECLARED_FUTURE_ROUTE_NAMES = frozenset(
-    {"launch_policy_attestation", "launch_sitemap_document"}
-)
+DECLARED_FUTURE_ROUTE_NAMES = frozenset({"launch_sitemap_document"})
 SERIALIZED_POLICY_KEYS = frozenset(
     {
         "index_policy",
@@ -1012,7 +1010,7 @@ class PolicyHttpRegistryCheck:
         findings = scan_policy_routes(
             agent_source_files(self.root / "agent"),
             POLICY_ENDPOINTS,
-            allowed_future={"launch_policy_attestation", "launch_sitemap_document"},
+            allowed_future={"launch_sitemap_document"},
             authoritative_app_path=self.root / "agent" / "server.py",
         )
         violations = [

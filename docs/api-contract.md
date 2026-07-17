@@ -110,6 +110,21 @@ The table above lists the primary endpoints; `agent/public_api.py` also serves a
 Policy-bearing HTTP responses are governed by the exact registry in `agent/policy_http.py`. Matching uses the resolved FastAPI method, path template, and route name; static `/api/entities/*` routes retain their existing cache behavior.
 The same exact route identity is used for pre-routing 413/503 short-circuits; unmatched URLs remain outside the policy contract.
 
+### Internal launch safety (private network only)
+
+`GET /_internal/launch-policy-attestation` returns exactly
+`policy_fingerprint`, `route_manifest_revision`, and
+`backend_policy_revision`, loaded from the current launch-policy artifacts on every
+request. The response always uses `Cache-Control: no-store`, emits no `ETag`,
+`Last-Modified`, or `Expires` validators, and never returns HTTP 304, including
+loader-failure responses; ordinary evidence-loader failures are sanitized as HTTP
+503. The route is excluded from OpenAPI and has no public authentication or admin
+gate because it is intended only for private-network launch coordination. Unlike the
+admin-key-protected `/system/*` endpoints, its trust boundary is the private ingress:
+every public Nginx server returns 404 for `/_internal/` descendants without proxying
+them upstream. This internal attestation does not change the global `noindex` launch
+state.
+
 ### Chat
 
 | Method | Path | Description |
