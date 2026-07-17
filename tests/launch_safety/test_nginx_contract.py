@@ -69,21 +69,19 @@ def _tokenize_nginx(source: str) -> list[Token]:
             index = len(source) if newline == -1 else newline
             continue
         elif character in {'"', "'"}:
-            flush()
+            if not buffer:
+                buffer_start = index
             quote = character
-            quoted_start = index
-            value: list[str] = []
             index += 1
             while index < len(source) and source[index] != quote:
                 if source[index] == "\\" and index + 1 < len(source):
-                    value.extend((source[index], source[index + 1]))
+                    buffer.extend((source[index], source[index + 1]))
                     index += 2
                     continue
-                value.append(source[index])
+                buffer.append(source[index])
                 index += 1
             if index >= len(source):
                 raise AssertionError("unterminated quoted Nginx token")
-            tokens.append(Token("quoted", "".join(value), quoted_start))
         elif character in "{};":
             flush()
             tokens.append(Token("symbol", character, index))
@@ -265,7 +263,7 @@ def _regex_is_provably_outside_internal(location: Location) -> bool:
     if "[:" in location.pattern:
         return False
     try:
-        parsed_pattern = re._parser.parse(location.pattern, flags)
+        parsed_pattern = re._parser.parse(location.pattern, 0)
     except re.error:
         return False
     # Inline PCRE case-folding is accepted only when we can prove the path prefix
@@ -291,6 +289,8 @@ def _regex_is_provably_outside_internal(location: Location) -> bool:
 
 
 def _overlaps_internal_namespace(location: Location) -> bool:
+    if location.modifier in {"=", "", "^~"} and "\\" in location.pattern:
+        return True
     if location.modifier == "=":
         return location.pattern.startswith(INTERNAL_PREFIX)
     if location.modifier in {"", "^~"}:
@@ -424,6 +424,30 @@ server {
     assert [(item.modifier, item.pattern) for item in _locations(servers[0])] == [("", "/")]
 
 
+def test_parser_concatenates_adjacent_quoted_and_unquoted_fragments():
+    source = r'''
+ser"ver" {
+    server_na"me" vinhlong360.vn;
+    loca"tion" = /_inter"nal"/new-secret {
+        add_header X-Literal "quoted # value";
+        proxy_pass http://vl360_agent;
+    }
+}
+'''
+
+    servers = _public_servers_from_source(source)
+
+    assert len(servers) == 1
+    locations = _locations(servers[0])
+    assert [(item.modifier, item.pattern) for item in locations] == [
+        ("=", "/_internal/new-secret")
+    ]
+    assert _active_directives(locations[0].body) == [
+        "add_header X-Literal quoted # value",
+        "proxy_pass http://vl360_agent",
+    ]
+
+
 @pytest.mark.parametrize(
     "override",
     [
@@ -446,6 +470,10 @@ def test_location_resolution_exposes_exact_or_longer_prefix_overrides(override: 
         "location ^~ /_internal { proxy_pass http://vl360_agent; }",
         "location /_internal/new-secret { proxy_pass http://vl360_agent; }",
         "location ^~ /_internal/new-secret { proxy_pass http://vl360_agent; }",
+        'location = /_inter"nal"/new-secret { proxy_pass http://vl360_agent; }',
+        r"location = /\_internal/new-secret { proxy_pass http://vl360_agent; }",
+        r"location /\_internal/new-secret { proxy_pass http://vl360_agent; }",
+        r"location ^~ /\_internal/new-secret { proxy_pass http://vl360_agent; }",
         r"location ~ ^/_internal/new-secret$ { proxy_pass http://vl360_agent; }",
         r"location ~ ^/_inte[r]nal/new-secret$ { proxy_pass http://vl360_agent; }",
         r"location ~ ^/[xA-z]internal/ { proxy_pass http://vl360_agent; }",
@@ -466,10 +494,15 @@ def test_internal_boundary_rejects_every_overlapping_location_selector(selector:
         _assert_internal_boundary(server)
 
 
-def test_internal_boundary_allows_regex_class_after_disjoint_literal_prefix():
-    server = _public_server_with(
-        r"location ~ ^/api[x\D] { proxy_pass http://vl360_agent; }"
-    )
+@pytest.mark.parametrize(
+    "selector",
+    [
+        r"location ~ ^/api[x\D] { proxy_pass http://vl360_agent; }",
+        r"location ~* ^/api(?:/|$) { proxy_pass http://vl360_agent; }",
+    ],
+)
+def test_internal_boundary_allows_regex_after_disjoint_literal_prefix(selector: str):
+    server = _public_server_with(selector)
 
     _assert_internal_boundary(server)
 
