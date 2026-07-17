@@ -132,6 +132,25 @@ def test_loader_uses_one_connection_and_exact_read_only_transaction_order():
     assert database.context_exits == 1
 
 
+def test_open_manager_materializes_before_yield_and_rolls_back_after_exit():
+    module = _snapshot_module()
+    database = FakeDatabase()
+
+    with module.open_sitemap_snapshot(database) as snapshot:
+        assert snapshot.entities
+        assert snapshot.relationships
+        assert [(sql, params) for _, sql, params in database.execute_calls] == [
+            (BEGIN_SQL, ()),
+            (ENTITIES_SQL, ()),
+            (RELATIONSHIPS_SQL, ()),
+        ]
+        assert database.connection.rollback_calls == 0
+        assert database.context_exits == 0
+
+    assert database.connection.rollback_calls == 1
+    assert database.context_exits == 1
+
+
 def test_loader_populates_tuples_normalizes_relationships_and_derives_wards():
     module = _snapshot_module()
     database = FakeDatabase()
@@ -197,7 +216,12 @@ def test_loader_rejects_non_postgres_before_opening_a_connection():
 
 def test_loader_has_no_public_bulk_api_json_or_itinerary_fallback():
     module = _snapshot_module()
-    source = inspect.getsource(module.load_sitemap_snapshot)
+    source = "\n".join(
+        (
+            inspect.getsource(module.open_sitemap_snapshot),
+            inspect.getsource(module.load_sitemap_snapshot),
+        )
+    )
 
     for forbidden in (
         "initialize",

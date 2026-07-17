@@ -2,20 +2,20 @@
 
 import hashlib
 import json
+import multiprocessing
 import os
+import queue
 import sys
 import threading
 import time
 import uuid
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
-from urllib.parse import unquote, urlparse
 
 import psycopg2
 import psycopg2.extras
 from psycopg2 import sql
-from psycopg2.extensions import make_dsn
+from psycopg2.extensions import make_dsn, parse_dsn
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -49,29 +49,50 @@ def _test_database_url() -> str | None:
     if not url:
         return None
 
-    parsed = urlparse(url)
-    database_name = unquote(parsed.path.lstrip("/"))
-    if parsed.scheme not in {"postgres", "postgresql"} or not database_name:
+    scheme = url.split(":", 1)[0]
+    if scheme not in {"postgres", "postgresql"}:
         raise pytest.UsageError(
             "SITEMAP_BUNDLE_TEST_DATABASE_URL must be a PostgreSQL URL"
+        )
+    try:
+        target = parse_dsn(url)
+    except (psycopg2.ProgrammingError, TypeError, ValueError) as error:
+        raise pytest.UsageError(
+            "SITEMAP_BUNDLE_TEST_DATABASE_URL must be a valid PostgreSQL URL"
+        ) from error
+
+    database_name = target.get("dbname", "")
+    if not database_name:
+        raise pytest.UsageError(
+            "SITEMAP_BUNDLE_TEST_DATABASE_URL must name a PostgreSQL database"
         )
     if "launch_test" not in database_name.lower():
         raise pytest.UsageError(
             "sitemap bundle PostgreSQL tests require a database name containing "
             "'launch_test'"
         )
-    try:
-        port = parsed.port
-    except ValueError as error:
-        raise pytest.UsageError(
-            "SITEMAP_BUNDLE_TEST_DATABASE_URL must use a valid PostgreSQL port"
-        ) from error
-    if port != 55432:
+    ports = tuple(part.strip() for part in target.get("port", "").split(","))
+    if not ports or any(port != "55432" for port in ports):
         raise pytest.UsageError(
             "sitemap bundle PostgreSQL tests require disposable port 55432"
         )
+
+    hosts = tuple(part.strip() for part in target.get("host", "").split(","))
+    host_addresses = tuple(
+        part.strip() for part in target.get("hostaddr", "").split(",")
+    )
+    effective_hosts = tuple(
+        host for host in (*hosts, *host_addresses) if host
+    )
+    if not effective_hosts:
+        raise pytest.UsageError(
+            "SITEMAP_BUNDLE_TEST_DATABASE_URL must name an explicit host"
+        )
     if (
-        parsed.hostname not in {"127.0.0.1", "localhost", "::1"}
+        any(
+            host not in {"127.0.0.1", "localhost", "::1"}
+            for host in effective_hosts
+        )
         and os.environ.get("ALLOW_REMOTE_DISPOSABLE_PG") != "true"
     ):
         raise pytest.UsageError(
@@ -82,13 +103,170 @@ def _test_database_url() -> str | None:
 
 
 TEST_DATABASE_URL = _test_database_url()
-pytestmark = [
-    pytest.mark.integration,
-    pytest.mark.skipif(
-        TEST_DATABASE_URL is None,
-        reason="set SITEMAP_BUNDLE_TEST_DATABASE_URL to a disposable PostgreSQL DB",
-    ),
-]
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        (
+            "postgresql://task16_admin@127.0.0.1:55432/vl360_launch_test"
+            "?host=203.0.113.10"
+        ),
+        (
+            "postgresql://task16_admin@127.0.0.1:55432/vl360_launch_test"
+            "?port=5432"
+        ),
+        (
+            "postgresql://task16_admin@127.0.0.1:55432/vl360_launch_test"
+            "?dbname=prod"
+        ),
+        (
+            "postgresql://task16_admin@127.0.0.1:55432/vl360_launch_test"
+            "?hostaddr=203.0.113.10"
+        ),
+    ],
+    ids=("remote-host", "default-port", "production-dbname", "remote-hostaddr"),
+)
+def test_database_url_guard_rejects_effective_query_overrides_without_connecting(
+    monkeypatch,
+    url,
+):
+    connection_attempts = []
+
+    def reject_connection(*args, **kwargs):
+        connection_attempts.append((args, kwargs))
+        raise AssertionError("URL validation must finish before any connection attempt")
+
+    monkeypatch.setattr(psycopg2, "connect", reject_connection)
+    monkeypatch.setenv("SITEMAP_BUNDLE_TEST_DATABASE_URL", url)
+    monkeypatch.delenv("ALLOW_REMOTE_DISPOSABLE_PG", raising=False)
+
+    with pytest.raises(pytest.UsageError):
+        _test_database_url()
+
+    assert connection_attempts == []
+
+
+@pytest.mark.parametrize(
+    ("override", "allowed"),
+    [("true", True), ("TRUE", False), ("1", False)],
+)
+def test_database_url_guard_remote_override_is_exact(
+    monkeypatch,
+    override,
+    allowed,
+):
+    url = "postgresql://task16_admin@203.0.113.10:55432/vl360_launch_test"
+    monkeypatch.setenv("SITEMAP_BUNDLE_TEST_DATABASE_URL", url)
+    monkeypatch.setenv("ALLOW_REMOTE_DISPOSABLE_PG", override)
+
+    if allowed:
+        assert _test_database_url() == url
+    else:
+        with pytest.raises(pytest.UsageError, match="ALLOW_REMOTE_DISPOSABLE_PG"):
+            _test_database_url()
+
+
+class StubbornProcess:
+    def __init__(self):
+        self.alive = True
+        self.terminate_calls = 0
+        self.kill_calls = 0
+        self.join_timeouts = []
+
+    def is_alive(self):
+        return self.alive
+
+    def terminate(self):
+        self.terminate_calls += 1
+
+    def kill(self):
+        self.kill_calls += 1
+
+    def join(self, timeout):
+        self.join_timeouts.append(timeout)
+        if self.kill_calls:
+            self.alive = False
+
+
+def test_process_cleanup_terminates_then_kills_with_only_bounded_joins():
+    process = StubbornProcess()
+
+    remaining = _terminate_processes((process,), timeout=0.01)
+
+    assert remaining == ()
+    assert process.terminate_calls == 1
+    assert process.kill_calls == 1
+    assert process.join_timeouts
+    assert all(timeout is not None and timeout <= 0.01 for timeout in process.join_timeouts)
+
+
+def _terminate_processes(processes, *, timeout):
+    processes = tuple(processes)
+    deadline = time.monotonic() + timeout
+    for process in processes:
+        if process.is_alive():
+            process.terminate()
+    for process in processes:
+        process.join(max(0.0, deadline - time.monotonic()))
+
+    alive = tuple(process for process in processes if process.is_alive())
+    for process in alive:
+        process.kill()
+    for process in alive:
+        process.join(max(0.0, deadline - time.monotonic()))
+    return tuple(process for process in processes if process.is_alive())
+
+
+def _publish_candidate_process(root, candidate, start, results):
+    try:
+        start.wait(timeout=WAIT_TIMEOUT)
+        SitemapBundleStore(Path(root)).publish(candidate)
+    except BaseException as error:
+        results.put(("error", f"{type(error).__name__}: {error}"))
+    else:
+        results.put(("published", candidate.batch_revision))
+
+
+def _put_observation(observations, stop, message):
+    while not stop.is_set():
+        try:
+            observations.put(message, timeout=0.1)
+        except queue.Full:
+            continue
+        return True
+    return False
+
+
+def _observe_active_process(root, stop, ready, observations):
+    store = SitemapBundleStore(Path(root))
+    while not stop.is_set():
+        try:
+            active = store.load_active()
+        except BaseException as error:
+            _put_observation(
+                observations,
+                stop,
+                ("error", f"{type(error).__name__}: {error}"),
+            )
+            ready.set()
+            return
+        if _put_observation(observations, stop, ("bundle", active)):
+            ready.set()
+
+
+def _drain_process_queue(messages):
+    drained = []
+    while True:
+        try:
+            drained.append(messages.get_nowait())
+        except queue.Empty:
+            return drained
+
+
+def _close_process_queue(messages):
+    messages.cancel_join_thread()
+    messages.close()
 
 
 @dataclass(frozen=True)
@@ -100,7 +278,10 @@ class DisposablePostgres:
 
 @pytest.fixture
 def disposable_pg():
-    assert TEST_DATABASE_URL is not None
+    if TEST_DATABASE_URL is None:
+        pytest.skip(
+            "set SITEMAP_BUNDLE_TEST_DATABASE_URL to a disposable PostgreSQL DB"
+        )
     schema = f"sitemap_bundle_{uuid.uuid4().hex}"
     schema_created = False
     try:
@@ -113,7 +294,10 @@ def disposable_pg():
 
         schema_dsn = make_dsn(
             TEST_DATABASE_URL,
-            options=f"-csearch_path={schema}",
+            options=(
+                f"-csearch_path={schema} "
+                "-cstatement_timeout=5000 -clock_timeout=5000"
+            ),
         )
         with psycopg2.connect(schema_dsn) as conn:
             with conn.cursor() as cursor:
@@ -267,6 +451,7 @@ def _directory_signature(directory: Path) -> dict[str, tuple[bytes, int]]:
     }
 
 
+@pytest.mark.integration
 def test_all_three_documents_use_the_original_repeatable_read_snapshot(
     disposable_pg,
     monkeypatch,
@@ -299,19 +484,31 @@ def test_all_three_documents_use_the_original_repeatable_read_snapshot(
     )
 
     def load_probe_documents():
-        with open_snapshot(disposable_pg.adapter) as snapshot:
-            return _build_snapshot_probe_documents(snapshot)
-
-    with ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(load_probe_documents)
         try:
-            assert entity_read.wait(WAIT_TIMEOUT), (
-                "snapshot worker did not complete its first PostgreSQL read"
-            )
-            _mutate_snapshot_source(disposable_pg)
-        finally:
-            release_relationship_read.set()
-        documents = future.result(timeout=THREAD_TIMEOUT)
+            with open_snapshot(disposable_pg.adapter) as snapshot:
+                documents = _build_snapshot_probe_documents(snapshot)
+        except BaseException as error:
+            worker_result.put(("error", error))
+        else:
+            worker_result.put(("documents", documents))
+
+    worker_result = queue.Queue(maxsize=1)
+    worker = threading.Thread(target=load_probe_documents, daemon=True)
+    worker.start()
+    try:
+        assert entity_read.wait(WAIT_TIMEOUT), (
+            "snapshot worker did not complete its first PostgreSQL read"
+        )
+        _mutate_snapshot_source(disposable_pg)
+    finally:
+        release_relationship_read.set()
+        worker.join(THREAD_TIMEOUT)
+        assert not worker.is_alive(), "snapshot worker did not stop within its timeout"
+
+    result_type, result = worker_result.get_nowait()
+    if result_type == "error":
+        raise result
+    documents = result
 
     assert b"original-summary" in documents["sitemap.xml"]
     assert b"original.webp" in documents["sitemap-media.xml"]
@@ -320,6 +517,7 @@ def test_all_three_documents_use_the_original_repeatable_read_snapshot(
     assert all(b"changed" not in body for body in documents.values())
 
 
+@pytest.mark.integration
 def test_concurrent_publication_exposes_only_complete_bundles(
     disposable_pg,
     tmp_path,
@@ -330,21 +528,67 @@ def test_concurrent_publication_exposes_only_complete_bundles(
         _complete_probe_bundle("c" * 64, "candidate-two"),
     )
     SitemapBundleStore(tmp_path).publish(previous)
-    start = threading.Barrier(len(candidates))
+    context = multiprocessing.get_context("spawn")
+    start = context.Barrier(len(candidates))
+    writer_results = context.Queue()
+    observation_messages = context.Queue(maxsize=64)
+    stop_reader = context.Event()
+    reader_ready = context.Event()
+    reader = context.Process(
+        target=_observe_active_process,
+        args=(str(tmp_path), stop_reader, reader_ready, observation_messages),
+    )
+    writers = tuple(
+        context.Process(
+            target=_publish_candidate_process,
+            args=(str(tmp_path), candidate, start, writer_results),
+        )
+        for candidate in candidates
+    )
+    started_processes = []
+    observations = []
+    remaining_processes = ()
 
-    def publish(candidate):
-        start.wait(timeout=WAIT_TIMEOUT)
-        SitemapBundleStore(tmp_path).publish(candidate)
+    def record_observation(message):
+        message_type, payload = message
+        assert message_type == "bundle", payload
+        observations.append(payload)
 
-    observations = [SitemapBundleStore(tmp_path).load_active()]
-    with ThreadPoolExecutor(max_workers=len(candidates)) as executor:
-        futures = [executor.submit(publish, candidate) for candidate in candidates]
+    try:
+        reader.start()
+        started_processes.append(reader)
+        assert reader_ready.wait(WAIT_TIMEOUT), "publication reader did not start"
+        record_observation(observation_messages.get(timeout=WAIT_TIMEOUT))
+        for writer in writers:
+            writer.start()
+            started_processes.append(writer)
+
         deadline = time.monotonic() + THREAD_TIMEOUT
-        while not all(future.done() for future in futures):
+        while any(writer.is_alive() for writer in writers):
             assert time.monotonic() < deadline, "concurrent publication timed out"
-            observations.append(SitemapBundleStore(tmp_path).load_active())
-        for future in futures:
-            future.result(timeout=THREAD_TIMEOUT)
+            for message in _drain_process_queue(observation_messages):
+                record_observation(message)
+            time.sleep(0.01)
+
+        for writer in writers:
+            writer.join(max(0.0, deadline - time.monotonic()))
+        for _candidate in candidates:
+            result_type, payload = writer_results.get(
+                timeout=max(0.01, deadline - time.monotonic())
+            )
+            assert result_type == "published", payload
+        for message in _drain_process_queue(observation_messages):
+            record_observation(message)
+    finally:
+        stop_reader.set()
+        remaining_processes = _terminate_processes(
+            started_processes,
+            timeout=WAIT_TIMEOUT,
+        )
+        _close_process_queue(writer_results)
+        _close_process_queue(observation_messages)
+
+    assert remaining_processes == ()
 
     store = SitemapBundleStore(tmp_path)
     observations.append(store.load_active())
@@ -364,6 +608,7 @@ def test_concurrent_publication_exposes_only_complete_bundles(
     } == set(revisions)
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize(
     ("stage", "error"),
     [
