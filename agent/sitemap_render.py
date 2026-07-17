@@ -12,6 +12,7 @@ if __package__:
         decide_ward,
         public_ward_child_counts as _index_policy_ward_child_counts,
     )
+    from .launch_evidence import PolicyEvidence
     from .route_manifest import (
         LoadedRouteManifest,
         extract_static_sitemap_paths,
@@ -23,6 +24,7 @@ else:
         decide_ward,
         public_ward_child_counts as _index_policy_ward_child_counts,
     )
+    from launch_evidence import PolicyEvidence
     from route_manifest import (
         LoadedRouteManifest,
         extract_static_sitemap_paths,
@@ -67,21 +69,18 @@ def _indexable_detail_url(
 ) -> str | None:
     if not isinstance(entity, Mapping):
         return None
-    try:
-        if entity.get("type") == "place":
-            ward_id = entity.get("id")
-            public_child_count = (
-                child_counts.get(ward_id, 0) if type(ward_id) is str else 0
-            )
-            decision = decide_ward(
-                entity,
-                public_child_count=public_child_count,
-                evidence=evidence,
-            )
-        else:
-            decision = decide_entity(entity, evidence)
-    except (TypeError, ValueError):
-        return None
+    if entity.get("type") == "place":
+        ward_id = entity.get("id")
+        public_child_count = (
+            child_counts.get(ward_id, 0) if type(ward_id) is str else 0
+        )
+        decision = decide_ward(
+            entity,
+            public_child_count=public_child_count,
+            evidence=evidence,
+        )
+    else:
+        decision = decide_entity(entity, evidence)
     if not decision.indexable:
         return None
     return canonical_detail_url(entity, canonical_origin)
@@ -101,6 +100,8 @@ def render_main_sitemap(
     evidence,
 ) -> bytes:
     """Render sorted, deduplicated loc-only XML from one immutable snapshot."""
+    if type(evidence) is not PolicyEvidence:
+        raise TypeError("evidence must be PolicyEvidence")
     manifest = manifest if manifest is not None else load_route_manifest()
     canonical_origin = manifest.data["canonical_origin"]
     entities = tuple(snapshot.entities)

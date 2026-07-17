@@ -126,13 +126,15 @@ them upstream. This internal attestation does not change the global `noindex` la
 state.
 
 `GET /_internal/launch-sitemaps/{document}` currently serves only the immutable
-main document name `sitemap.xml` and requires an exact `batch` query revision. It
-loads that pinned publication batch only, returns the stored bytes with
+main document name `sitemap.xml` and requires a pinned `batch` value. It loads
+only that requested publication revision and returns the stored bytes with
 `X-Launch-Sitemap-Batch-Revision`, and never refreshes, generates, publishes, or
 falls back to the active batch during a request. Missing, malformed, unknown,
 unsupported, or corrupt state is sanitized as HTTP 503. Success and failure both
 use the registered no-store/no-validator contract and never return HTTP 304. The
 route remains private-network-only and does not change the global `noindex` state.
+Task 17 does not yet guarantee exact single-query shape: rejection of duplicate
+`batch` keys or unrelated extra query keys is deferred to Task 19.
 
 ### Chat
 

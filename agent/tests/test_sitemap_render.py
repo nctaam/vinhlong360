@@ -12,6 +12,7 @@ sys.path.insert(0, str(AGENT))
 
 from launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence  # noqa: E402
 from route_manifest import extract_static_sitemap_paths, load_route_manifest  # noqa: E402
+import sitemap_render  # noqa: E402
 from sitemap_render import (  # noqa: E402
     canonical_detail_url,
     public_ward_child_counts,
@@ -135,6 +136,26 @@ def test_main_sitemap_delegates_non_places_and_wards_to_index_policy():
     assert not any(loc.endswith("/dia-diem/draft") for loc in locs)
     assert not any(loc.endswith("/xa-phuong/weak-ward") for loc in locs)
     assert any(loc.endswith("/xa-phuong/strong-ward") for loc in locs)
+
+
+@pytest.mark.parametrize("invalid_evidence", [None, object()])
+def test_invalid_or_missing_evidence_aborts_before_rendering_xml(invalid_evidence):
+    with pytest.raises(TypeError, match="evidence must be PolicyEvidence"):
+        render_main_sitemap(_snapshot(), load_route_manifest(), invalid_evidence)
+
+
+def test_policy_contract_exceptions_abort_render(monkeypatch):
+    def fail_policy(_entity, _evidence):
+        raise ValueError("policy contract failure")
+
+    monkeypatch.setattr(sitemap_render, "decide_entity", fail_policy)
+
+    with pytest.raises(ValueError, match="policy contract failure"):
+        render_main_sitemap(
+            _snapshot(_entity("rich")),
+            load_route_manifest(),
+            EVIDENCE,
+        )
 
 
 def test_shared_ward_child_counts_are_exact_unique_and_relationship_independent():
