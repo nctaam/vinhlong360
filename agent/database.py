@@ -472,13 +472,15 @@ class Database:
                 if pool:
                     try:
                         pool.putconn(conn, close=not reusable)
-                    except BaseException:
+                    except BaseException as cleanup_error:
                         try:
                             conn.close()
                         except BaseException:
                             pass
                         if primary_error is None:
-                            raise
+                            committed_write = reusable and commit_on_success
+                            if not (committed_write and isinstance(cleanup_error, Exception)):
+                                raise
                 else:
                     try:
                         conn.close()

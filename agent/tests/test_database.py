@@ -1337,6 +1337,41 @@ def test_pg_conn_putconn_base_exception_closes_connection_and_propagates(
     assert conn.close_calls == 1
 
 
+def test_pg_conn_committed_write_suppresses_ordinary_pool_return_failure(monkeypatch):
+    conn = _ManagedConnectionDouble()
+    pool = _ConnectionPoolDouble(
+        conn,
+        putconn_error=RuntimeError("pool return failed"),
+    )
+    database = _pg_connection_manager(monkeypatch, conn, pool)
+
+    with database._conn():
+        pass
+
+    assert conn.commit_calls == 1
+    assert conn.rollback_calls == 0
+    assert pool.putconn_calls == [(conn, False)]
+    assert conn.close_calls == 1
+
+
+def test_pg_conn_read_rollback_propagates_ordinary_pool_return_failure(monkeypatch):
+    conn = _ManagedConnectionDouble()
+    pool = _ConnectionPoolDouble(
+        conn,
+        putconn_error=RuntimeError("pool return failed"),
+    )
+    database = _pg_connection_manager(monkeypatch, conn, pool)
+
+    with pytest.raises(RuntimeError, match="pool return failed"):
+        with database._conn(commit_on_success=False):
+            pass
+
+    assert conn.commit_calls == 0
+    assert conn.rollback_calls == 1
+    assert pool.putconn_calls == [(conn, False)]
+    assert conn.close_calls == 1
+
+
 @pytest.mark.parametrize("pooled", [True, False], ids=["pooled", "unpooled"])
 def test_pg_conn_autocommit_setup_failure_discards_or_closes(
     monkeypatch, pooled
