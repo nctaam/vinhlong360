@@ -162,6 +162,97 @@ def test_first_publication_round_trips_exact_bundle_and_pointer(tmp_path, clock)
     assert parsed.tzinfo is not None and parsed.utcoffset() == timedelta(0)
 
 
+def test_first_publish_durably_creates_each_missing_root_component(
+    tmp_path, monkeypatch
+):
+    root = tmp_path / "r" / "a" / "d" / "s"
+    missing_components = (
+        tmp_path / "r",
+        tmp_path / "r" / "a",
+        tmp_path / "r" / "a" / "d",
+        root,
+    )
+    events = []
+    real_mkdir = Path.mkdir
+    real_fsync_directory = sitemap_store.fsync_directory
+    real_publication_lock = sitemap_store.publication_lock
+
+    def record_mkdir(path, *args, **kwargs):
+        existed = path.exists()
+        result = real_mkdir(path, *args, **kwargs)
+        if path in missing_components and not existed:
+            events.append(("mkdir", path))
+        return result
+
+    def record_fsync(directory):
+        directory = Path(directory)
+        if directory in {component.parent for component in missing_components}:
+            events.append(("fsync", directory))
+        return real_fsync_directory(directory)
+
+    @contextmanager
+    def record_publication_lock(path):
+        events.append(("lock", Path(path)))
+        with real_publication_lock(path):
+            yield
+
+    monkeypatch.setattr(Path, "mkdir", record_mkdir)
+    monkeypatch.setattr(sitemap_store, "fsync_directory", record_fsync)
+    monkeypatch.setattr(sitemap_store, "publication_lock", record_publication_lock)
+
+    SitemapBundleStore(root).publish(make_bundle("a" * 64))
+
+    expected = []
+    for component in missing_components:
+        expected.extend((("mkdir", component), ("fsync", component.parent)))
+    expected.append(("lock", root / ".publish.lock"))
+    assert events[: len(expected)] == expected
+
+
+def test_publish_with_existing_root_does_not_fsync_unchanged_ancestor(
+    tmp_path, monkeypatch
+):
+    root = tmp_path / "sitemap-bundles"
+    root.mkdir()
+    fsynced = []
+    real_fsync_directory = sitemap_store.fsync_directory
+
+    def record_fsync(directory):
+        fsynced.append(Path(directory))
+        return real_fsync_directory(directory)
+
+    monkeypatch.setattr(sitemap_store, "fsync_directory", record_fsync)
+
+    SitemapBundleStore(root).publish(make_bundle("a" * 64))
+
+    assert tmp_path not in fsynced
+
+
+def test_root_creation_tolerates_component_created_by_concurrent_publisher(
+    tmp_path, monkeypatch
+):
+    root = tmp_path / "r" / "a" / "d"
+    raced_component = tmp_path / "r"
+    real_mkdir = Path.mkdir
+    injected = False
+
+    def race_mkdir(path, *args, **kwargs):
+        nonlocal injected
+        if path == raced_component and not injected:
+            injected = True
+            real_mkdir(path)
+            raise FileExistsError("created concurrently")
+        return real_mkdir(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "mkdir", race_mkdir)
+
+    store = SitemapBundleStore(root)
+    store.publish(make_bundle("a" * 64))
+
+    assert injected is True
+    assert store.load_active() == make_bundle("a" * 64)
+
+
 @pytest.mark.parametrize(
     "revision",
     [

@@ -109,23 +109,25 @@ def _canonical_metadata_bytes(metadata: dict) -> bytes:
     ).encode("utf-8")
 
 
-def _prepare_bundle(bundle: StoredBundle) -> _PreparedBundle:
-    revision = _validate_revision(bundle.batch_revision)
-    if not isinstance(bundle.documents, dict):
+def _copy_bundle_documents(documents: object) -> dict[str, bytes]:
+    if not isinstance(documents, dict):
         raise ValueError("bundle documents must be a mapping")
-    if set(bundle.documents) != set(_DOCUMENT_NAMES):
+    if set(documents) != set(_DOCUMENT_NAMES):
         raise ValueError("bundle documents must contain exactly the three sitemap files")
 
-    documents: dict[str, bytes] = {}
+    copied: dict[str, bytes] = {}
     for name in _DOCUMENT_NAMES:
-        body = bundle.documents[name]
+        body = documents[name]
         if not isinstance(body, bytes):
             raise ValueError(f"{name} must contain bytes")
-        documents[name] = bytes(body)
+        copied[name] = bytes(body)
+    return copied
 
-    metadata = bundle.metadata
+
+def _validate_metadata_envelope(metadata: object, revision: str) -> dict:
     if not isinstance(metadata, dict) or not _is_json_value(metadata):
         raise ValueError("metadata must be a valid JSON object")
+
     metadata_keys = set(metadata)
     if not _REQUIRED_METADATA_KEYS.issubset(metadata_keys):
         raise ValueError("metadata is missing a required root key")
@@ -141,8 +143,13 @@ def _prepare_bundle(bundle: StoredBundle) -> _PreparedBundle:
     renderer_evidence = metadata.get("renderer_evidence")
     if "renderer_evidence" in metadata and not isinstance(renderer_evidence, dict):
         raise ValueError("metadata renderer_evidence must be a JSON object")
+    return metadata
 
-    document_hashes = metadata.get("documents")
+
+def _validate_document_hashes(
+    document_hashes: object,
+    documents: dict[str, bytes],
+) -> None:
     if not isinstance(document_hashes, dict) or set(document_hashes) != set(
         _DOCUMENT_NAMES
     ):
@@ -154,6 +161,12 @@ def _prepare_bundle(bundle: StoredBundle) -> _PreparedBundle:
         if digest != hashlib.sha256(body).hexdigest():
             raise ValueError(f"metadata digest for {name} does not match its bytes")
 
+
+def _prepare_bundle(bundle: StoredBundle) -> _PreparedBundle:
+    revision = _validate_revision(bundle.batch_revision)
+    documents = _copy_bundle_documents(bundle.documents)
+    metadata = _validate_metadata_envelope(bundle.metadata, revision)
+    _validate_document_hashes(metadata.get("documents"), documents)
     metadata_bytes = _canonical_metadata_bytes(metadata)
     metadata_copy = json.loads(metadata_bytes.decode("utf-8"))
     return _PreparedBundle(
@@ -234,45 +247,57 @@ def _read_and_validate_bundle(directory: Path, revision: str) -> StoredBundle:
     return prepared.bundle
 
 
+def _read_conflict_directory_entries(directory: Path) -> tuple[Path, ...]:
+    try:
+        directory_stat = directory.lstat()
+    except OSError as error:
+        raise SitemapBundleConflict("content-addressed directory is unreachable") from error
+    if (
+        directory.is_symlink()
+        or _is_reparse_point(directory_stat)
+        or not stat.S_ISDIR(directory_stat.st_mode)
+    ):
+        raise SitemapBundleConflict("content-addressed path is not a regular directory")
+    try:
+        return tuple(directory.iterdir())
+    except OSError as error:
+        raise SitemapBundleConflict("content-addressed directory is unreachable") from error
+
+
+def _read_conflict_entry(entry: Path) -> bytes:
+    try:
+        entry_stat = entry.lstat()
+    except OSError as error:
+        raise SitemapBundleConflict(
+            f"content-addressed entry is unreachable: {entry.name}"
+        ) from error
+    if (
+        entry.is_symlink()
+        or _is_reparse_point(entry_stat)
+        or not stat.S_ISREG(entry_stat.st_mode)
+    ):
+        raise SitemapBundleConflict(
+            f"content-addressed entry is not a regular file: {entry.name}"
+        )
+    try:
+        return entry.read_bytes()
+    except OSError as error:
+        raise SitemapBundleConflict(
+            f"content-addressed entry is unreachable: {entry.name}"
+        ) from error
+
+
 def validate_completed_bundle_matches(directory: Path, bundle: StoredBundle) -> None:
     prepared = _prepare_bundle(bundle)
     if directory.name != prepared.bundle.batch_revision:
         raise SitemapBundleConflict("content-addressed directory name differs")
-    try:
-        directory_stat = directory.lstat()
-        if (
-            directory.is_symlink()
-            or _is_reparse_point(directory_stat)
-            or not stat.S_ISDIR(directory_stat.st_mode)
-        ):
-            raise SitemapBundleConflict("content-addressed path is not a regular directory")
-        entries = tuple(directory.iterdir())
-    except SitemapBundleConflict:
-        raise
-    except OSError as error:
-        raise SitemapBundleConflict("content-addressed directory is unreachable") from error
+    entries = _read_conflict_directory_entries(directory)
     if {entry.name for entry in entries} != _BUNDLE_ENTRY_NAMES:
         raise SitemapBundleConflict("content-addressed directory entry set differs")
 
     expected = {_METADATA_NAME: prepared.metadata_bytes, **prepared.bundle.documents}
     for entry in entries:
-        try:
-            entry_stat = entry.lstat()
-            if (
-                entry.is_symlink()
-                or _is_reparse_point(entry_stat)
-                or not stat.S_ISREG(entry_stat.st_mode)
-            ):
-                raise SitemapBundleConflict(
-                    f"content-addressed entry is not a regular file: {entry.name}"
-                )
-            actual = entry.read_bytes()
-        except SitemapBundleConflict:
-            raise
-        except OSError as error:
-            raise SitemapBundleConflict(
-                f"content-addressed entry is unreachable: {entry.name}"
-            ) from error
+        actual = _read_conflict_entry(entry)
         if actual != expected[entry.name]:
             raise SitemapBundleConflict(
                 f"content-addressed entry bytes differ: {entry.name}"
@@ -307,39 +332,45 @@ def _validate_timestamp(value: object) -> datetime:
     return parsed
 
 
+def _validate_ledger_entry(item: object) -> dict:
+    if not isinstance(item, dict) or set(item) != _LEDGER_ENTRY_KEYS:
+        raise SitemapStateUnavailable("active sitemap pointer ledger entry is invalid")
+    revision = _validate_revision(item.get("batch_revision"), state_error=True)
+    published_at = item.get("published_at")
+    _validate_timestamp(published_at)
+    return {"batch_revision": revision, "published_at": published_at}
+
+
+def _validate_pointer_ledger(ledger: object, active: str, published_at: object) -> list:
+    if not isinstance(ledger, list) or not ledger:
+        raise SitemapStateUnavailable("active sitemap pointer ledger is empty")
+
+    seen = set()
+    validated_ledger = []
+    for item in ledger:
+        validated = _validate_ledger_entry(item)
+        revision = validated["batch_revision"]
+        if revision in seen:
+            raise SitemapStateUnavailable("active sitemap pointer ledger is duplicated")
+        seen.add(revision)
+        validated_ledger.append(validated)
+    active_entries = [item for item in validated_ledger if item["batch_revision"] == active]
+    if len(active_entries) != 1 or active_entries[0]["published_at"] != published_at:
+        raise SitemapStateUnavailable("active sitemap pointer does not match its ledger")
+    if validated_ledger[-1]["batch_revision"] != active:
+        raise SitemapStateUnavailable("active sitemap revision must be newest in the ledger")
+    return validated_ledger
+
+
 def _validate_pointer_payload(payload: object) -> dict:
     if not isinstance(payload, dict) or set(payload) != _POINTER_KEYS:
         raise SitemapStateUnavailable("active sitemap pointer has invalid keys")
     active = _validate_revision(payload.get("batch_revision"), state_error=True)
     published_at = payload.get("published_at")
     _validate_timestamp(published_at)
-    ledger = payload.get("published_batches")
-    if not isinstance(ledger, list) or not ledger:
-        raise SitemapStateUnavailable("active sitemap pointer ledger is empty")
-
-    seen = set()
-    active_entries = []
-    validated_ledger = []
-    for item in ledger:
-        if not isinstance(item, dict) or set(item) != _LEDGER_ENTRY_KEYS:
-            raise SitemapStateUnavailable("active sitemap pointer ledger entry is invalid")
-        revision = _validate_revision(item.get("batch_revision"), state_error=True)
-        item_timestamp = item.get("published_at")
-        _validate_timestamp(item_timestamp)
-        if revision in seen:
-            raise SitemapStateUnavailable("active sitemap pointer ledger is duplicated")
-        seen.add(revision)
-        validated = {
-            "batch_revision": revision,
-            "published_at": item_timestamp,
-        }
-        validated_ledger.append(validated)
-        if revision == active:
-            active_entries.append(validated)
-    if len(active_entries) != 1 or active_entries[0]["published_at"] != published_at:
-        raise SitemapStateUnavailable("active sitemap pointer does not match its ledger")
-    if validated_ledger[-1]["batch_revision"] != active:
-        raise SitemapStateUnavailable("active sitemap revision must be newest in the ledger")
+    validated_ledger = _validate_pointer_ledger(
+        payload.get("published_batches"), active, published_at
+    )
     return {
         "batch_revision": active,
         "published_at": published_at,
@@ -366,27 +397,53 @@ def _format_publication_time(now: Callable[[], datetime]) -> str:
     return value.isoformat()
 
 
-def _ensure_root_directory(root: Path) -> None:
+def _require_root_directory_component(path: Path) -> None:
     try:
-        root.mkdir(parents=True, exist_ok=True)
-        root_stat = root.lstat()
+        path_stat = path.lstat()
     except OSError as error:
         raise SitemapStateUnavailable("sitemap bundle root is unreachable") from error
-    if root.is_symlink() or _is_reparse_point(root_stat) or not stat.S_ISDIR(
-        root_stat.st_mode
+    if path.is_symlink() or _is_reparse_point(path_stat) or not stat.S_ISDIR(
+        path_stat.st_mode
     ):
         raise SitemapStateUnavailable("sitemap bundle root is not a regular directory")
+
+
+def _root_directory_component_stat(path: Path) -> os.stat_result | None:
+    try:
+        return path.lstat()
+    except FileNotFoundError:
+        return None
+    except OSError as error:
+        raise SitemapStateUnavailable("sitemap bundle root is unreachable") from error
+
+
+def _ensure_root_directory(root: Path) -> None:
+    missing = []
+    current = root
+    while _root_directory_component_stat(current) is None:
+        missing.append(current)
+        parent = current.parent
+        if parent == current:
+            raise SitemapStateUnavailable("sitemap bundle root has no reachable ancestor")
+        current = parent
+
+    _require_root_directory_component(current)
+    for component in reversed(missing):
+        _require_root_directory_component(component.parent)
+        try:
+            component.mkdir()
+        except FileExistsError:
+            pass
+        except OSError as error:
+            raise SitemapStateUnavailable("sitemap bundle root is unreachable") from error
+        _require_root_directory_component(component)
+        fsync_directory(component.parent)
 
 
 def _require_existing_root(root: Path) -> None:
-    try:
-        root_stat = root.lstat()
-    except OSError as error:
-        raise SitemapStateUnavailable("sitemap bundle root is missing") from error
-    if root.is_symlink() or _is_reparse_point(root_stat) or not stat.S_ISDIR(
-        root_stat.st_mode
-    ):
-        raise SitemapStateUnavailable("sitemap bundle root is not a regular directory")
+    if _root_directory_component_stat(root) is None:
+        raise SitemapStateUnavailable("sitemap bundle root is missing")
+    _require_root_directory_component(root)
 
 
 @contextmanager
