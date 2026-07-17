@@ -8,6 +8,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
+INTERNAL_PREFIX = "/_internal/"
 INTERNAL_PATHS = (
     "/_internal/launch-policy-attestation",
     "/_internal/launch-policy-attestation/child",
@@ -210,6 +211,148 @@ def _active_directives(body: tuple[Statement, ...]) -> list[str]:
     ]
 
 
+def _literal_prefixes(
+    tokens: list[tuple[object, object]],
+) -> tuple[set[str], bool]:
+    prefixes = {""}
+    for operation, argument in tokens:
+        if operation == re._constants.LITERAL:
+            pieces = {chr(argument)}
+            complete = True
+        elif operation == re._constants.IN:
+            pieces = {
+                chr(value)
+                for item_operation, value in argument
+                if item_operation == re._constants.LITERAL
+            }
+            complete = len(pieces) == len(argument)
+        elif operation == re._constants.SUBPATTERN:
+            pieces, complete = _literal_prefixes(list(argument[-1]))
+        elif operation == re._constants.BRANCH:
+            branch_results = [
+                _literal_prefixes(list(branch)) for branch in argument[1]
+            ]
+            pieces = {
+                prefix
+                for branch_prefixes, _complete in branch_results
+                for prefix in branch_prefixes
+            }
+            complete = all(result_complete for _prefixes, result_complete in branch_results)
+        else:
+            return prefixes, False
+
+        prefixes = {
+            prefix + piece
+            for prefix in prefixes
+            for piece in pieces
+        }
+        if not complete:
+            return prefixes, False
+    return prefixes, True
+
+
+def _regex_is_provably_outside_internal(location: Location) -> bool:
+    flags = re.IGNORECASE if location.modifier == "~*" else 0
+    try:
+        parsed = list(re._parser.parse(location.pattern, flags))
+    except re.error:
+        return False
+    if parsed[:2] != [
+        (re._constants.AT, re._constants.AT_BEGINNING),
+        (re._constants.LITERAL, ord("/")),
+    ]:
+        return False
+
+    prefixes, _complete = _literal_prefixes(parsed[2:])
+    protected = INTERNAL_PREFIX[1:].lower() if flags else INTERNAL_PREFIX[1:]
+    candidates = {prefix.lower() for prefix in prefixes} if flags else prefixes
+    return bool(candidates) and all(
+        prefix
+        and not protected.startswith(prefix)
+        and not prefix.startswith(protected)
+        for prefix in candidates
+    )
+
+
+def _overlaps_internal_namespace(location: Location) -> bool:
+    if location.modifier == "=":
+        return location.pattern.startswith(INTERNAL_PREFIX)
+    if location.modifier in {"", "^~"}:
+        return location.pattern == INTERNAL_PREFIX.rstrip("/") or location.pattern.startswith(
+            INTERNAL_PREFIX
+        )
+    return not _regex_is_provably_outside_internal(location)
+
+
+def _server_scope_directive_names(body: tuple[Statement, ...]) -> set[str]:
+    names: set[str] = set()
+    for statement in body:
+        if not statement.parts or statement.parts[0] == "location":
+            continue
+        names.add(statement.parts[0])
+        if statement.children is not None:
+            names.update(_server_scope_directive_names(statement.children))
+    return names
+
+
+def _assert_internal_boundary(server: Statement) -> None:
+    assert server.children is not None
+    server_directives = _server_scope_directive_names(server.children)
+    assert not server_directives & {"error_page", "include", "rewrite"}
+
+    locations = _locations(server)
+    denies = [
+        location
+        for location in locations
+        if location.modifier == "^~" and location.pattern == "/_internal/"
+    ]
+
+    assert len(denies) == 1
+    deny = denies[0]
+    assert _active_directives(deny.body) == ["return 404"]
+    assert not {
+        statement.parts[0]
+        for statement in deny.body
+        if statement.parts
+    } & {"proxy_pass", "rewrite", "try_files", "error_page"}
+
+    overlapping = [
+        location
+        for location in locations
+        if location is not deny and _overlaps_internal_namespace(location)
+    ]
+    assert overlapping == []
+
+    backend_or_catch_all = [
+        location.start
+        for location in locations
+        if location.modifier in {"~", "~*"}
+        or (location.modifier == "" and location.pattern == "/")
+    ]
+    assert backend_or_catch_all
+    assert deny.start < min(backend_or_catch_all)
+
+    for request_path in INTERNAL_PATHS:
+        assert _resolve_location(locations, request_path) == deny
+    assert _resolve_location(locations, "/_internality") != deny
+
+
+def _public_server_with(extra: str) -> Statement:
+    servers = _public_servers_from_source(
+        f"""
+server {{
+    listen 443 ssl;
+    server_name vinhlong360.vn www.vinhlong360.vn;
+    location ^~ /_internal/ {{ return 404; }}
+    {extra}
+    location / {{ proxy_pass http://vl360_nuxt; }}
+}}
+"""
+    )
+    assert len(servers) == 1
+    return servers[0]
+
+
 def test_parser_ignores_server_and_location_decoys_inside_comments_and_quotes(tmp_path: Path):
     config = tmp_path / "nginx.conf"
     config.write_text(
@@ -281,6 +424,58 @@ def test_location_resolution_exposes_exact_or_longer_prefix_overrides(override: 
 
 
 @pytest.mark.parametrize(
+    "selector",
+    [
+        "location = /_internal/new-secret { proxy_pass http://vl360_agent; }",
+        "location ^~ /_internal { proxy_pass http://vl360_agent; }",
+        "location /_internal/new-secret { proxy_pass http://vl360_agent; }",
+        "location ^~ /_internal/new-secret { proxy_pass http://vl360_agent; }",
+        r"location ~ ^/_internal/new-secret$ { proxy_pass http://vl360_agent; }",
+        r"location ~ ^/_inte[r]nal/new-secret$ { proxy_pass http://vl360_agent; }",
+        r"location ~ ^/.*$ { proxy_pass http://vl360_agent; }",
+        r"location ~* ^/_INTERNAL/new-secret$ { proxy_pass http://vl360_agent; }",
+    ],
+)
+def test_internal_boundary_rejects_every_overlapping_location_selector(selector: str):
+    server = _public_server_with(selector)
+
+    with pytest.raises(AssertionError):
+        _assert_internal_boundary(server)
+
+
+@pytest.mark.parametrize(
+    "directive",
+    [
+        "error_page 404 = @proxied; location @proxied { proxy_pass http://vl360_agent; }",
+        r"rewrite ^/_internal/(.*)$ /$1 last;",
+        r"if ($request_uri ~ ^/_internal/) { rewrite ^ /api last; }",
+        "include conf.d/public-routes.conf;",
+    ],
+)
+def test_internal_boundary_rejects_server_scope_routing_bypasses(directive: str):
+    server = _public_server_with(directive)
+
+    with pytest.raises(AssertionError):
+        _assert_internal_boundary(server)
+
+
+def test_server_scope_guard_ignores_comments_quotes_and_location_body_directives():
+    server = _public_server_with(
+        r'''
+        # error_page 404 = @proxied;
+        add_header X-Literal "rewrite ^/_internal/(.*)$ /$1 last; include bypass.conf;";
+        location /legacy {
+            rewrite ^/legacy$ / permanent;
+            include conf.d/location-headers.conf;
+            error_page 404 = /legacy;
+        }
+        '''
+    )
+
+    _assert_internal_boundary(server)
+
+
+@pytest.mark.parametrize(
     ("filename", "expected_public_servers"),
     [("nginx.conf", 1), ("nginx-ssl.conf", 2)],
 )
@@ -292,31 +487,4 @@ def test_every_public_server_fails_closed_for_internal_routes(
     assert len(servers) == expected_public_servers
 
     for server in servers:
-        locations = _locations(server)
-        denies = [
-            location
-            for location in locations
-            if location.modifier == "^~" and location.pattern == "/_internal/"
-        ]
-
-        assert len(denies) == 1
-        deny = denies[0]
-        assert _active_directives(deny.body) == ["return 404"]
-        assert not {
-            statement.parts[0]
-            for statement in deny.body
-            if statement.parts
-        } & {"proxy_pass", "rewrite", "try_files", "error_page"}
-
-        backend_or_catch_all = [
-            location.start
-            for location in locations
-            if location.modifier in {"~", "~*"}
-            or (location.modifier == "" and location.pattern == "/")
-        ]
-        assert backend_or_catch_all
-        assert deny.start < min(backend_or_catch_all)
-
-        for request_path in INTERNAL_PATHS:
-            assert _resolve_location(locations, request_path) == deny
-        assert _resolve_location(locations, "/_internality") != deny
+        _assert_internal_boundary(server)
