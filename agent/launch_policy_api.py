@@ -1,20 +1,27 @@
 from __future__ import annotations
 
 import logging
+import re
+from hashlib import sha256
 
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
 if __package__:
-    from .launch_evidence import current_policy_evidence
+    from .launch_evidence import PolicyEvidence, current_policy_evidence
     from .sitemap_store import SitemapBundleStore
 else:
-    from launch_evidence import current_policy_evidence
+    from launch_evidence import PolicyEvidence, current_policy_evidence
     from sitemap_store import SitemapBundleStore
 
 
 router = APIRouter(prefix="/_internal", include_in_schema=False)
 logger = logging.getLogger(__name__)
+_SITEMAP_DOCUMENTS = frozenset(
+    ("sitemap-index.xml", "sitemap.xml", "sitemap-media.xml")
+)
+_SITEMAP_HASH_KEYS = frozenset(_SITEMAP_DOCUMENTS)
+_BATCH_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 
 
 def get_sitemap_bundle_store() -> SitemapBundleStore:
@@ -57,21 +64,91 @@ def launch_policy_attestation() -> JSONResponse:
 @router.get("/launch-sitemaps/{document}")
 def launch_sitemap_document(
     document: str,
-    batch: str | None = None,
+    request: Request,
 ) -> Response:
+    def failure() -> JSONResponse:
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "Launch sitemap document unavailable"},
+            headers={
+                "Cache-Control": "no-store",
+                "X-Launch-Indexing-Policy": "failed-open",
+            },
+        )
+
     try:
-        if document != "sitemap.xml" or batch is None:
-            raise ValueError("unsupported or unpinned sitemap document")
-        bundle = get_sitemap_bundle_store().load_batch(batch)
-        body = bundle.documents["sitemap.xml"]
+        if document not in _SITEMAP_DOCUMENTS:
+            raise ValueError("unsupported sitemap document")
+        raw_query = request.scope.get("query_string", b"")
+        if type(raw_query) is not bytes:
+            raise ValueError("invalid sitemap query")
+        if raw_query == b"":
+            requested_batch = None
+        else:
+            if not raw_query.startswith(b"batch="):
+                raise ValueError("invalid sitemap query")
+            raw_batch = raw_query[len(b"batch=") :]
+            try:
+                requested_batch = raw_batch.decode("ascii")
+            except UnicodeDecodeError as error:
+                raise ValueError("invalid sitemap batch") from error
+            if _BATCH_PATTERN.fullmatch(requested_batch) is None:
+                raise ValueError("invalid sitemap batch")
+
+        if document != "sitemap-index.xml" and requested_batch is None:
+            raise ValueError("child sitemap requires a pinned batch")
+        if document == "sitemap-index.xml" and requested_batch is None:
+            bundle = get_sitemap_bundle_store().load_active()
+        elif requested_batch is not None:
+            bundle = get_sitemap_bundle_store().load_batch(requested_batch)
+        else:
+            raise ValueError("invalid sitemap query")
+
         revision = bundle.batch_revision
+        if type(revision) is not str or _BATCH_PATTERN.fullmatch(revision) is None:
+            raise ValueError("invalid served sitemap batch")
+        metadata = bundle.metadata
+        evidence = current_policy_evidence()
+        if type(evidence) is not PolicyEvidence or not isinstance(metadata, dict):
+            raise ValueError("sitemap evidence unavailable")
+        renderer_evidence = metadata.get("renderer_evidence")
+        expected_evidence = {
+            "policy_fingerprint": evidence.policy_fingerprint,
+            "route_manifest_revision": evidence.route_manifest_revision,
+            "backend_policy_revision": evidence.backend_policy_revision,
+        }
+        if renderer_evidence != expected_evidence:
+            raise ValueError("sitemap evidence mismatch")
+        if metadata.get("batch_revision") != revision:
+            raise ValueError("sitemap metadata revision mismatch")
+        body = bundle.documents[document]
+        if type(body) is not bytes:
+            raise ValueError("sitemap document is not bytes")
+        document_hashes = metadata.get("documents")
+        if (
+            not isinstance(document_hashes, dict)
+            or set(document_hashes) != _SITEMAP_HASH_KEYS
+            or type(document_hashes.get(document)) is not str
+            or not _BATCH_PATTERN.fullmatch(document_hashes[document])
+            or document_hashes[document] != sha256(body).hexdigest()
+        ):
+            raise ValueError("sitemap document hash mismatch")
+        headers = {
+            "Cache-Control": "no-store",
+            "X-Launch-Policy-Fingerprint": evidence.policy_fingerprint,
+            "X-Launch-Route-Manifest-Revision": evidence.route_manifest_revision,
+            "X-Launch-Backend-Policy-Revision": evidence.backend_policy_revision,
+            "X-Launch-Sitemap-Batch-Revision": revision,
+        }
+        if requested_batch is not None:
+            if requested_batch != revision:
+                raise ValueError("requested sitemap batch mismatch")
+            headers["X-Launch-Sitemap-Requested-Batch"] = requested_batch
         return Response(
             content=body,
             media_type="application/xml",
-            headers={"X-Launch-Sitemap-Batch-Revision": revision},
+            headers=headers,
         )
     except Exception as exc:
-        raise HTTPException(
-            status_code=503,
-            detail="Launch sitemap document unavailable",
-        ) from exc
+        logger.warning("Immutable launch sitemap state unavailable: %s", type(exc).__name__)
+        return failure()

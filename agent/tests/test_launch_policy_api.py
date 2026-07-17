@@ -77,6 +77,11 @@ def _bundle(revision: str, main: bytes = b"<urlset>pinned</urlset>") -> StoredBu
         metadata={
             "schema_version": 1,
             "batch_revision": revision,
+            "renderer_evidence": {
+                "policy_fingerprint": "a" * 64,
+                "route_manifest_revision": "launch-indexing-policy-v1",
+                "backend_policy_revision": INDEX_POLICY_REVISION,
+            },
             "documents": {
                 name: hashlib.sha256(body).hexdigest()
                 for name, body in documents.items()
@@ -252,14 +257,79 @@ def test_pinned_main_sitemap_reads_only_requested_batch(tmp_path, monkeypatch):
     _assert_no_store_no_validator(response, 200)
 
 
+def test_active_index_reads_active_and_exposes_all_immutable_evidence(
+    tmp_path, monkeypatch
+):
+    store = SitemapBundleStore(tmp_path / "bundles")
+    active = _bundle("b" * 64)
+    store.publish(active)
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: store)
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(
+            "/_internal/launch-sitemaps/sitemap-index.xml",
+            headers={"If-None-Match": '"legacy"'},
+        )
+
+    assert response.content == active.documents["sitemap-index.xml"]
+    assert response.headers["x-launch-policy-fingerprint"] == EVIDENCE_A.policy_fingerprint
+    assert response.headers["x-launch-route-manifest-revision"] == EVIDENCE_A.route_manifest_revision
+    assert response.headers["x-launch-backend-policy-revision"] == EVIDENCE_A.backend_policy_revision
+    assert response.headers["x-launch-sitemap-batch-revision"] == active.batch_revision
+    assert "x-launch-sitemap-requested-batch" not in response.headers
+    _assert_no_store_no_validator(response, 200)
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "batch=",
+        "batch=ABC",
+        "batch=0",
+        "batch=" + "a" * 64 + "&x=1",
+        "batch=" + "a" * 64 + "&batch=" + "a" * 64,
+        "batch%3D" + "a" * 64,
+        "batch=" + "a" * 63 + "%61",
+        "batch=" + "a" * 64 + "&",
+        "&batch=" + "a" * 64,
+    ],
+)
+def test_sitemap_queries_are_rejected_without_active_fallback(
+    tmp_path, monkeypatch, query
+):
+    store = SitemapBundleStore(tmp_path / "bundles")
+    active = _bundle("b" * 64)
+    store.publish(active)
+
+    class NoFallbackStore:
+        def load_batch(self, _revision):
+            raise RuntimeError("invalid pinned request")
+
+        def load_active(self):
+            raise AssertionError("invalid pinned request must not load active")
+
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: NoFallbackStore())
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(f"/_internal/launch-sitemaps/sitemap.xml?{query}")
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Launch sitemap document unavailable"}
+    assert response.headers["x-launch-indexing-policy"] == "failed-open"
+    assert not any(name.startswith("x-launch-") and name != "x-launch-indexing-policy" for name in response.headers)
+    _assert_no_store_no_validator(response, 503)
+
+
 @pytest.mark.parametrize(
     "path",
     [
         "/_internal/launch-sitemaps/sitemap.xml",
         "/_internal/launch-sitemaps/sitemap.xml?batch=bad",
         f"/_internal/launch-sitemaps/sitemap.xml?batch={'c' * 64}",
-        f"/_internal/launch-sitemaps/sitemap-media.xml?batch={'a' * 64}",
-        f"/_internal/launch-sitemaps/sitemap-index.xml?batch={'a' * 64}",
+        f"/_internal/launch-sitemaps/sitemap-media.xml?batch={'c' * 64}",
+        f"/_internal/launch-sitemaps/sitemap-index.xml?batch={'c' * 64}",
         f"/_internal/launch-sitemaps/unknown.xml?batch={'a' * 64}",
     ],
 )

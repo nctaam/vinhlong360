@@ -83,6 +83,7 @@ def make_bundle(revision, marker=b"first", **metadata_evidence):
         "renderer_evidence": {
             "policy_fingerprint": "f" * 64,
             "route_manifest_revision": "route-1",
+            "backend_policy_revision": "policy-1",
             **metadata_evidence,
         },
     }
@@ -131,7 +132,7 @@ def test_stored_bundle_and_publication_stage_are_exact_contracts():
 
 
 def test_first_publication_round_trips_exact_bundle_and_pointer(tmp_path, clock):
-    candidate = make_bundle("a" * 64, nested={"labels": ["vi", "en"]})
+    candidate = make_bundle("a" * 64)
     store = SitemapBundleStore(tmp_path, now=clock.now)
 
     store.publish(candidate)
@@ -350,19 +351,20 @@ def test_candidate_validation_rejects_incomplete_or_inconsistent_bundle(
     assert not root.exists()
 
 
-def test_additional_renderer_metadata_is_preserved_exactly(tmp_path):
+def test_additional_renderer_metadata_is_rejected_before_root_creation(tmp_path):
     candidate = make_bundle(
         "a" * 64,
         rules={"entity": {"allowed": True, "minimum_images": 1}},
-        revisions=["route-1", "policy-2"],
     )
 
-    SitemapBundleStore(tmp_path).publish(candidate)
+    root = tmp_path / "not-created"
+    with pytest.raises(ValueError, match="renderer evidence"):
+        SitemapBundleStore(root).publish(candidate)
 
-    assert SitemapBundleStore(tmp_path).load_active().metadata == candidate.metadata
+    assert not root.exists()
 
 
-def test_renderer_evidence_metadata_is_optional(tmp_path):
+def test_renderer_evidence_metadata_is_required(tmp_path):
     candidate = make_bundle("a" * 64)
     metadata = {
         key: value
@@ -371,9 +373,41 @@ def test_renderer_evidence_metadata_is_optional(tmp_path):
     }
     candidate = replace(candidate, metadata=metadata)
 
-    SitemapBundleStore(tmp_path).publish(candidate)
+    root = tmp_path / "not-created"
+    with pytest.raises(ValueError, match="renderer evidence"):
+        SitemapBundleStore(root).publish(candidate)
 
-    assert SitemapBundleStore(tmp_path).load_active().metadata == metadata
+    assert not root.exists()
+
+
+@pytest.mark.parametrize(
+    "renderer_evidence",
+    [
+        {
+            "policy_fingerprint": "F" * 64,
+            "route_manifest_revision": "route-1",
+            "backend_policy_revision": "policy-1",
+        },
+        {
+            "policy_fingerprint": "f" * 64,
+            "route_manifest_revision": "",
+            "backend_policy_revision": "policy-1",
+        },
+        {
+            "policy_fingerprint": "f" * 64,
+            "route_manifest_revision": "route-1",
+            "backend_policy_revision": None,
+        },
+    ],
+)
+def test_renderer_evidence_values_are_exact_and_nonempty(tmp_path, renderer_evidence):
+    candidate = make_bundle("a" * 64)
+    candidate = replace(
+        candidate,
+        metadata={**candidate.metadata, "renderer_evidence": renderer_evidence},
+    )
+    with pytest.raises(ValueError, match="renderer evidence"):
+        SitemapBundleStore(tmp_path / "not-created").publish(candidate)
 
 
 @pytest.mark.parametrize(

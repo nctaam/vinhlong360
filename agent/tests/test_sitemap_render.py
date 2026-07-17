@@ -498,3 +498,100 @@ def test_media_sitemap_sorts_pages_before_enforcing_shared_limit(monkeypatch):
         "https://vinhlong360.vn/dia-diem/a",
         "https://vinhlong360.vn/dia-diem/m",
     ]
+
+
+def test_batch_revision_is_length_prefixed_and_changes_for_each_input():
+    compute = getattr(sitemap_render, "compute_batch_revision", None)
+    assert callable(compute), "compute_batch_revision is not implemented"
+    base = compute(
+        fingerprint="f" * 64,
+        route_revision="route-v1",
+        policy_revision="policy-v1",
+        main=b"main",
+        media=b"media",
+    )
+    assert len(base) == 64
+    assert base == compute(
+        fingerprint="f" * 64,
+        route_revision="route-v1",
+        policy_revision="policy-v1",
+        main=b"main",
+        media=b"media",
+    )
+    for key, value in (
+        ("fingerprint", "e" * 64),
+        ("route_revision", "route-v2"),
+        ("policy_revision", "policy-v2"),
+        ("main", b"main-2"),
+        ("media", b"media-2"),
+    ):
+        values = {
+            "fingerprint": "f" * 64,
+            "route_revision": "route-v1",
+            "policy_revision": "policy-v1",
+            "main": b"main",
+            "media": b"media",
+        }
+        values[key] = value
+        assert compute(**values) != base
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"fingerprint": b"f" * 64},
+        {"route_revision": b"route-v1"},
+        {"policy_revision": b"policy-v1"},
+        {"main": "main"},
+        {"media": "media"},
+    ],
+)
+def test_batch_revision_rejects_non_exact_input_types(kwargs):
+    values = {
+        "fingerprint": "f" * 64,
+        "route_revision": "route-v1",
+        "policy_revision": "policy-v1",
+        "main": b"main",
+        "media": b"media",
+    }
+    values.update(kwargs)
+    with pytest.raises(TypeError):
+        compute = getattr(sitemap_render, "compute_batch_revision", None)
+        assert callable(compute), "compute_batch_revision is not implemented"
+        compute(**values)
+
+
+def test_index_pins_both_children_to_one_batch_without_trailing_newline():
+    batch = "a" * 64
+    render = getattr(sitemap_render, "render_sitemap_index", None)
+    assert callable(render), "render_sitemap_index is not implemented"
+    xml = render("https://vinhlong360.vn", batch)
+    assert xml == (
+        b"<?xml version='1.0' encoding='utf-8'?>\n"
+        b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        b"<sitemap><loc>https://vinhlong360.vn/sitemap.xml?batch="
+        + batch.encode()
+        + b"</loc></sitemap><sitemap><loc>https://vinhlong360.vn/sitemap-media.xml?batch="
+        + batch.encode()
+        + b"</loc></sitemap></sitemapindex>"
+    )
+    assert not xml.startswith(b"\xef\xbb\xbf")
+    assert not xml.endswith(b"\n")
+
+
+@pytest.mark.parametrize(
+    ("origin", "batch"),
+    [
+        ("http://vinhlong360.vn", "a" * 64),
+        ("https://vinhlong360.vn/", "a" * 64),
+        ("https://user:pass@vinhlong360.vn", "a" * 64),
+        ("https://vinhlong360.vn?x=1", "a" * 64),
+        ("https://vinhlong360.vn", "A" * 64),
+        ("https://vinhlong360.vn", "a" * 63),
+    ],
+)
+def test_index_rejects_noncanonical_origin_or_batch(origin, batch):
+    render = getattr(sitemap_render, "render_sitemap_index", None)
+    assert callable(render), "render_sitemap_index is not implemented"
+    with pytest.raises((TypeError, ValueError)):
+        render(origin, batch)

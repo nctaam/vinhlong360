@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -15,6 +16,10 @@ sys.path.insert(0, str(AGENT))
 
 import launch_policy_api  # noqa: E402
 import sitemap_bundle  # noqa: E402
+from ai_disclosure import load_ai_disclosure  # noqa: E402
+from launch_evidence import current_policy_evidence  # noqa: E402
+from route_manifest import load_route_manifest  # noqa: E402
+from sitemap_snapshot import SitemapSnapshot  # noqa: E402
 
 
 def _run_cli(tmp_path: Path, *args: str, module: bool) -> subprocess.CompletedProcess[str]:
@@ -52,11 +57,8 @@ def test_refresh_cli_fails_closed_before_database_or_store_side_effects(
 
 
 def test_refresh_function_is_a_stable_fail_closed_skeleton():
-    with pytest.raises(
-        sitemap_bundle.SitemapRefreshUnavailable,
-        match=sitemap_bundle.REFRESH_UNAVAILABLE_ERROR,
-    ):
-        sitemap_bundle.refresh()
+    with pytest.raises(sitemap_bundle.SitemapRefreshUnavailable):
+        sitemap_bundle.refresh(database=SimpleNamespace(_use_pg=False))
 
 
 def test_bundle_module_import_does_not_load_database_store_or_snapshot():
@@ -138,3 +140,106 @@ def test_server_lifespan_invokes_only_startup_validation_for_sitemaps():
     assert "validate_sitemap_bundle_on_startup(app)" in lifespan_source
     assert "refresh(" not in lifespan_source
     assert ".publish(" not in lifespan_source
+
+
+def test_build_bundle_renders_all_documents_from_one_postgres_snapshot(monkeypatch):
+    database = SimpleNamespace(_use_pg=True)
+    snapshot = SitemapSnapshot(entities=(), relationships=(), wards=())
+    calls = []
+
+    @contextmanager
+    def one_snapshot(_database):
+        calls.append("open")
+        yield snapshot
+        calls.append("close")
+
+    monkeypatch.setattr(sitemap_bundle, "_open_sitemap_snapshot", one_snapshot)
+    bundle = sitemap_bundle.build_bundle(
+        database=database,
+        manifest=load_route_manifest(),
+        evidence=current_policy_evidence(),
+        disclosure=load_ai_disclosure(),
+    )
+
+    assert calls == ["open", "close"]
+    assert set(bundle.documents) == {
+        "sitemap.xml",
+        "sitemap-media.xml",
+        "sitemap-index.xml",
+    }
+    assert f"batch={bundle.batch_revision}".encode() in bundle.documents["sitemap-index.xml"]
+    assert set(bundle.metadata) == {
+        "schema_version",
+        "batch_revision",
+        "documents",
+        "renderer_evidence",
+    }
+    assert set(bundle.metadata["renderer_evidence"]) == {
+        "policy_fingerprint",
+        "route_manifest_revision",
+        "backend_policy_revision",
+    }
+
+
+def test_refresh_publishes_only_after_complete_bundle_render(monkeypatch):
+    database = SimpleNamespace(_use_pg=True)
+    snapshot = SitemapSnapshot(entities=(), relationships=(), wards=())
+
+    @contextmanager
+    def one_snapshot(_database):
+        yield snapshot
+
+    class Store:
+        def __init__(self):
+            self.published = []
+
+        def publish(self, bundle):
+            self.published.append(bundle)
+
+    store = Store()
+    monkeypatch.setattr(sitemap_bundle, "_open_sitemap_snapshot", one_snapshot)
+    result = sitemap_bundle.refresh(
+        database=database,
+        store=store,
+        manifest=load_route_manifest(),
+        evidence=current_policy_evidence(),
+        disclosure=load_ai_disclosure(),
+    )
+
+    assert store.published == [result]
+
+
+def test_build_bundle_rejects_index_with_wrong_batch_reference(monkeypatch):
+    database = SimpleNamespace(_use_pg=True)
+    snapshot = SitemapSnapshot(entities=(), relationships=(), wards=())
+
+    @contextmanager
+    def one_snapshot(_database):
+        yield snapshot
+
+    original_loader = sitemap_bundle._load_render_dependencies
+
+    def dependencies_with_bad_index():
+        dependencies = original_loader()
+        dependencies["render_sitemap_index"] = lambda _origin, _batch: (
+            b"<?xml version='1.0' encoding='utf-8'?>\n"
+            b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+            b"<sitemap><loc>https://vinhlong360.vn/sitemap.xml?batch="
+            + b"b" * 64
+            + b"</loc></sitemap><sitemap><loc>https://vinhlong360.vn/sitemap-media.xml?batch="
+            + b"b" * 64
+            + b"</loc></sitemap></sitemapindex>"
+        )
+        return dependencies
+
+    monkeypatch.setattr(sitemap_bundle, "_open_sitemap_snapshot", one_snapshot)
+    monkeypatch.setattr(
+        sitemap_bundle, "_load_render_dependencies", dependencies_with_bad_index
+    )
+    with pytest.raises(ValueError, match="pinned to the batch"):
+        sitemap_bundle.build_bundle(
+            database=database,
+            manifest=load_route_manifest(),
+            evidence=current_policy_evidence(),
+            disclosure=load_ai_disclosure(),
+        )

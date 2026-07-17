@@ -40,11 +40,18 @@ _DOCUMENT_NAMES = (
 _BUNDLE_ENTRY_NAMES = frozenset((_METADATA_NAME, *_DOCUMENT_NAMES))
 _POINTER_KEYS = frozenset(("batch_revision", "published_at", "published_batches"))
 _LEDGER_ENTRY_KEYS = frozenset(("batch_revision", "published_at"))
+_RENDERER_EVIDENCE_KEYS = frozenset(
+    (
+        "policy_fingerprint",
+        "route_manifest_revision",
+        "backend_policy_revision",
+    )
+)
 SITEMAP_METADATA_SCHEMA_VERSION = 1
 _REQUIRED_METADATA_KEYS = frozenset(
-    ("schema_version", "batch_revision", "documents")
+    ("schema_version", "batch_revision", "documents", "renderer_evidence")
 )
-_OPTIONAL_METADATA_KEYS = frozenset(("renderer_evidence",))
+_OPTIONAL_METADATA_KEYS = frozenset()
 
 
 class SitemapStateUnavailable(RuntimeError):
@@ -130,6 +137,8 @@ def _validate_metadata_envelope(metadata: object, revision: str) -> dict:
 
     metadata_keys = set(metadata)
     if not _REQUIRED_METADATA_KEYS.issubset(metadata_keys):
+        if "renderer_evidence" not in metadata_keys:
+            raise ValueError("metadata is missing required renderer evidence")
         raise ValueError("metadata is missing a required root key")
     if not metadata_keys.issubset(_REQUIRED_METADATA_KEYS | _OPTIONAL_METADATA_KEYS):
         raise ValueError("metadata contains an unknown root key")
@@ -141,8 +150,21 @@ def _validate_metadata_envelope(metadata: object, revision: str) -> dict:
     if metadata.get("batch_revision") != revision:
         raise ValueError("metadata batch_revision must match the bundle")
     renderer_evidence = metadata.get("renderer_evidence")
-    if "renderer_evidence" in metadata and not isinstance(renderer_evidence, dict):
-        raise ValueError("metadata renderer_evidence must be a JSON object")
+    if not isinstance(renderer_evidence, dict) or set(renderer_evidence) != set(
+        _RENDERER_EVIDENCE_KEYS
+    ):
+        raise ValueError("metadata renderer evidence keys mismatch")
+    fingerprint = renderer_evidence.get("policy_fingerprint")
+    if type(fingerprint) is not str or _REVISION_PATTERN.fullmatch(fingerprint) is None:
+        raise ValueError("metadata renderer evidence fingerprint must be lowercase SHA-256")
+    for key in ("route_manifest_revision", "backend_policy_revision"):
+        value = renderer_evidence.get(key)
+        if (
+            type(value) is not str
+            or not value
+            or value.strip() != value
+        ):
+            raise ValueError("metadata renderer evidence revisions must be non-empty")
     return metadata
 
 

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from urllib.parse import quote
+from hashlib import sha256
+from re import fullmatch
+from urllib.parse import quote, urlsplit
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 if __package__:
@@ -39,6 +41,74 @@ else:
 SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 IMAGE_NAMESPACE = "http://www.google.com/schemas/sitemap-image/1.1"
 MAX_SITEMAP_URLS = 50_000
+_BATCH_REVISION_PATTERN = r"[0-9a-f]{64}"
+
+
+def compute_batch_revision(
+    *,
+    fingerprint: str,
+    route_revision: str,
+    policy_revision: str,
+    main: bytes,
+    media: bytes,
+) -> str:
+    """Compute the content address for one completed main/media pair."""
+    values: tuple[bytes, ...] = []
+    for value in (fingerprint, route_revision, policy_revision):
+        if type(value) is not str:
+            raise TypeError("sitemap batch text inputs must be exact strings")
+        values.append(value.encode("utf-8"))
+    for value in (main, media):
+        if type(value) is not bytes:
+            raise TypeError("sitemap batch document inputs must be exact bytes")
+        values.append(value)
+    digest = sha256()
+    for value in values:
+        digest.update(len(value).to_bytes(8, "big"))
+        digest.update(value)
+    return digest.hexdigest()
+
+
+def _validate_sitemap_origin(origin: object) -> str:
+    if type(origin) is not str:
+        raise TypeError("sitemap origin must be an exact string")
+    parsed = urlsplit(origin)
+    try:
+        parsed.port
+    except ValueError as error:
+        raise ValueError("sitemap origin has an invalid port") from error
+    if (
+        parsed.scheme != "https"
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.path
+        or parsed.query
+        or parsed.fragment
+        or parsed.netloc != parsed.hostname
+        or origin != f"https://{parsed.hostname}"
+    ):
+        raise ValueError("sitemap origin must be a canonical HTTPS origin")
+    return origin
+
+
+def _validate_batch_revision(batch: object) -> str:
+    if type(batch) is not str or fullmatch(_BATCH_REVISION_PATTERN, batch) is None:
+        raise ValueError("sitemap batch revision must be lowercase SHA-256")
+    return batch
+
+
+def render_sitemap_index(origin: str, batch: str) -> bytes:
+    """Render the exact two-child index for one immutable batch."""
+    canonical_origin = _validate_sitemap_origin(origin)
+    revision = _validate_batch_revision(batch)
+    root = Element("sitemapindex", {"xmlns": SITEMAP_NAMESPACE})
+    for path in ("/sitemap.xml", "/sitemap-media.xml"):
+        node = SubElement(root, "sitemap")
+        SubElement(node, "loc").text = (
+            f"{canonical_origin}{path}?batch={revision}"
+        )
+    return tostring(root, encoding="utf-8", xml_declaration=True)
 
 
 def public_ward_child_counts(snapshot) -> dict[str, int]:
