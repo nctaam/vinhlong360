@@ -7,6 +7,13 @@ function shouldUseSecureAuthCookie() {
   return process.env.NODE_ENV === 'production'
 }
 
+function authEndpoint(path: string) {
+  if (!import.meta.server) return path
+  const configured = useRuntimeConfig().apiBase
+  if (typeof configured !== 'string' || !configured.trim()) return path
+  return `${configured.replace(/\/+$/, '')}${path}`
+}
+
 export function useAuth() {
   const user = useState<User | null>('auth-user', () => null)
   const loading = useState('auth-loading', () => false)
@@ -28,9 +35,7 @@ export function useAuth() {
   async function fetchCsrf() {
     if (csrfToken.value) return csrfToken.value
     try {
-      const url = import.meta.server
-        ? `${useRuntimeConfig().public.apiBase}/auth/csrf`
-        : '/auth/csrf'
+      const url = authEndpoint('/auth/csrf')
       const res = await $fetch<{ csrf_token?: string }>(url, {
         credentials: 'include',
         headers: authTransportHeaders(),
@@ -51,9 +56,7 @@ export function useAuth() {
     try {
       // SSR: wildcard proxy rule '/auth/**' doesn't resolve for internal $fetch
       // (same known issue as /api/**) — use absolute backend URL during SSR
-      const url = import.meta.server
-        ? `${useRuntimeConfig().public.apiBase}/auth/me`
-        : '/auth/me'
+      const url = authEndpoint('/auth/me')
       const res = await $fetch<{ user: User }>(url, {
         credentials: 'include',
         headers: authTransportHeaders(),

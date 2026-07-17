@@ -256,7 +256,7 @@ describe('UserCP regressions', () => {
 
   it('shared apiFetch honors runtime API_BASE during SSR', () => {
     const util = src('utils/apiFetch.ts')
-    expect(util).toContain('useRuntimeConfig().public.apiBase')
+    expect(util).toContain('useRuntimeConfig().apiBase')
     expect(util).toContain('FALLBACK_SSR_ORIGIN')
     expect(util).toContain('baseURL')
   })

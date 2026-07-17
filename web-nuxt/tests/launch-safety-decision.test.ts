@@ -16,7 +16,7 @@ import { readLaunchIntent } from '../server/utils/launch/launchIntent'
 import type { BackendAttestation, LaunchBuildEvidence } from '../types/launch'
 
 const fixture = JSON.parse(
-  readFileSync(resolve(process.cwd(), '../../tests/fixtures/launch-policy-fingerprint.json'), 'utf8'),
+  readFileSync(resolve(process.cwd(), '../tests/fixtures/launch-policy-fingerprint.json'), 'utf8'),
 ) as {
   inputs: {
     route_revision: string

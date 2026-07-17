@@ -69,7 +69,9 @@ export type BackendAttestationFetcher = (
 ) => Promise<unknown>
 
 function defaultFetcher(request: string, options: Parameters<BackendAttestationFetcher>[1]): Promise<unknown> {
-  return $fetch(request, options)
+  // Nitro's generated route overloads are recursive; keep this internal
+  // client on its deliberately narrow transport contract.
+  return ($fetch as unknown as BackendAttestationFetcher)(request, options)
 }
 
 export async function fetchBackendAttestation(input: {
