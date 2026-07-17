@@ -11,6 +11,7 @@ import inspect
 import sqlite3
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -1138,6 +1139,147 @@ def test_concurrent_upserts(db):
 
 
 # ── _conn rollback on error ──
+
+
+class _ManagedConnectionDouble:
+    def __init__(self, *, rollback_error=None):
+        self.autocommit = None
+        self.rollback_error = rollback_error
+        self.commit_calls = 0
+        self.rollback_calls = 0
+        self.close_calls = 0
+
+    def execute(self, _sql):
+        return self
+
+    def commit(self):
+        self.commit_calls += 1
+
+    def rollback(self):
+        self.rollback_calls += 1
+        if self.rollback_error:
+            raise self.rollback_error
+
+    def close(self):
+        self.close_calls += 1
+
+
+class _ConnectionPoolDouble:
+    def __init__(self, conn, *, putconn_error=None):
+        self.conn = conn
+        self.putconn_error = putconn_error
+        self.putconn_calls = []
+
+    def getconn(self):
+        return self.conn
+
+    def putconn(self, conn, *, close):
+        self.putconn_calls.append((conn, close))
+        if self.putconn_error:
+            raise self.putconn_error
+
+
+def _pg_connection_manager(monkeypatch, conn, pool=None):
+    database = Database.__new__(Database)
+    database._use_pg = True
+    database._dsn = "postgresql://example.invalid/test"
+    monkeypatch.setattr(database, "_get_pg_pool", lambda: pool)
+    monkeypatch.setattr(
+        sys.modules[Database.__module__],
+        "psycopg2",
+        SimpleNamespace(connect=lambda *args, **kwargs: conn),
+        raising=False,
+    )
+    return database
+
+
+def test_conn_commit_option_is_keyword_only():
+    parameter = inspect.signature(Database._conn).parameters["commit_on_success"]
+
+    assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameter.annotation is bool
+    assert parameter.default is True
+
+
+@pytest.mark.parametrize(
+    ("commit_on_success", "commit_calls", "rollback_calls"),
+    [(True, 1, 0), (False, 0, 1)],
+)
+def test_pg_conn_success_finalizes_and_returns_reusable_pool_connection(
+    monkeypatch, commit_on_success, commit_calls, rollback_calls
+):
+    conn = _ManagedConnectionDouble()
+    pool = _ConnectionPoolDouble(conn)
+    database = _pg_connection_manager(monkeypatch, conn, pool)
+
+    with database._conn(commit_on_success=commit_on_success) as yielded:
+        assert yielded is conn
+
+    assert conn.autocommit is False
+    assert conn.commit_calls == commit_calls
+    assert conn.rollback_calls == rollback_calls
+    assert pool.putconn_calls == [(conn, False)]
+
+
+@pytest.mark.parametrize(
+    ("commit_on_success", "commit_calls", "rollback_calls"),
+    [(True, 1, 0), (False, 0, 1)],
+)
+def test_sqlite_conn_success_uses_requested_finalization(
+    monkeypatch, commit_on_success, commit_calls, rollback_calls
+):
+    conn = _ManagedConnectionDouble()
+    monkeypatch.setattr(sqlite3, "connect", lambda *args, **kwargs: conn)
+    database = Database.__new__(Database)
+    database._use_pg = False
+    database.db_path = "unused.db"
+
+    with database._conn(commit_on_success=commit_on_success) as yielded:
+        assert yielded is conn
+
+    assert conn.commit_calls == commit_calls
+    assert conn.rollback_calls == rollback_calls
+    assert conn.close_calls == 1
+
+
+def test_pg_conn_base_exception_rolls_back_and_discards_pool_connection(monkeypatch):
+    conn = _ManagedConnectionDouble()
+    pool = _ConnectionPoolDouble(conn)
+    database = _pg_connection_manager(monkeypatch, conn, pool)
+
+    with pytest.raises(KeyboardInterrupt):
+        with database._conn():
+            raise KeyboardInterrupt
+
+    assert conn.rollback_calls == 1
+    assert pool.putconn_calls == [(conn, True)]
+
+
+def test_pg_conn_finalization_failure_discards_pool_connection(monkeypatch):
+    conn = _ManagedConnectionDouble(rollback_error=RuntimeError("rollback failed"))
+    pool = _ConnectionPoolDouble(conn)
+    database = _pg_connection_manager(monkeypatch, conn, pool)
+
+    with pytest.raises(RuntimeError, match="rollback failed"):
+        with database._conn(commit_on_success=False):
+            pass
+
+    assert conn.commit_calls == 0
+    assert conn.rollback_calls >= 1
+    assert pool.putconn_calls == [(conn, True)]
+
+
+def test_pg_conn_putconn_base_exception_closes_connection(monkeypatch):
+    conn = _ManagedConnectionDouble()
+    pool = _ConnectionPoolDouble(conn, putconn_error=SystemExit("putconn failed"))
+    database = _pg_connection_manager(monkeypatch, conn, pool)
+
+    with database._conn():
+        pass
+
+    assert pool.putconn_calls == [(conn, False)]
+    assert conn.close_calls == 1
+
 
 def test_conn_rollback_on_error(db):
     db.upsert_entity(_entity(eid="rb1", name="Before"))

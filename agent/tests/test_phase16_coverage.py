@@ -1227,10 +1227,10 @@ class TestMediumFixesBatch2:
 
     def test_db_conn_putconn_safety(self):
         """DB _conn() must catch putconn exceptions to prevent pool leak."""
-        src = (Path(__file__).resolve().parent.parent / "database.py").read_text(encoding="utf-8")
-        idx = src.find("def _conn(self)")
-        assert idx > 0
-        block = src[idx:idx+900]
+        import inspect
+        from database import Database
+
+        block = inspect.getsource(Database._conn)
         assert "putconn" in block, "_conn must use putconn"
         after_putconn = block.split("putconn")[1][:200]
         assert "except" in after_putconn or "conn.close()" in after_putconn, \

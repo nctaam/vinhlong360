@@ -446,31 +446,34 @@ class Database:
         return self._pg_pool
 
     @contextmanager
-    def _conn(self):
-        """Thread-safe connection context manager."""
+    def _conn(self, *, commit_on_success: bool = True):
+        """Own connection finalization and return only reusable pooled connections."""
         if self._use_pg:
             pool = self._get_pg_pool()
             conn = pool.getconn() if pool else psycopg2.connect(self._dsn, connect_timeout=5)
             conn.autocommit = False
-            ok = True
+            reusable = False
             try:
                 yield conn
-                conn.commit()
-            except Exception:
-                ok = False
+                if commit_on_success:
+                    conn.commit()
+                else:
+                    conn.rollback()
+                reusable = True
+            except BaseException:
                 try:
                     conn.rollback()
-                except Exception:
+                except BaseException:
                     pass
                 raise
             finally:
                 if pool:
                     try:
-                        pool.putconn(conn, close=not ok)
-                    except Exception:
+                        pool.putconn(conn, close=not reusable)
+                    except BaseException:
                         try:
                             conn.close()
-                        except Exception:
+                        except BaseException:
                             pass
                 else:
                     conn.close()
@@ -482,9 +485,15 @@ class Database:
             conn.execute("PRAGMA busy_timeout=5000")
             try:
                 yield conn
-                conn.commit()
-            except Exception:
-                conn.rollback()
+                if commit_on_success:
+                    conn.commit()
+                else:
+                    conn.rollback()
+            except BaseException:
+                try:
+                    conn.rollback()
+                except BaseException:
+                    pass
                 raise
             finally:
                 conn.close()
