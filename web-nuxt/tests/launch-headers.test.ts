@@ -368,6 +368,45 @@ describe('final response lifecycle', () => {
     }
   })
 
+  it('finalizes a dotted 404 HTML response from response evidence even when request heuristics reject it', () => {
+    const event = responseEvent({
+      path: '/foo.bar',
+      accept: 'application/json',
+      status: 404,
+      headers: {
+        'Content-Type': 'TEXT/HTML; CHARSET=UTF-8',
+        'x-robots-tag': 'stale-one',
+        'X-Robots-Tag': 'stale-two',
+      },
+    })
+
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).toMatchObject({
+      'cache-control': 'no-store',
+      'x-launch-indexing-policy': 'failed-open',
+      'x-robots-tag': 'noindex, follow',
+    })
+    expect(Object.keys(event.node.res.getHeaders()).filter(name => name.toLowerCase() === 'x-robots-tag'))
+      .toHaveLength(1)
+  })
+
+  it('fails closed for a browser-like error hook before Content-Type exists', () => {
+    const event = responseEvent({
+      path: '/missing.page',
+      accept: 'TEXT/HTML,APPLICATION/XHTML+XML;q=0.9',
+      status: 500,
+    })
+
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).toMatchObject({
+      'cache-control': 'no-store',
+      'x-launch-indexing-policy': 'failed-open',
+      'x-robots-tag': 'noindex, follow',
+    })
+  })
+
   it.each([
     '/robots.txt',
     '/sitemap.xml',
@@ -389,6 +428,17 @@ describe('final response lifecycle', () => {
     expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
   })
 
+  it('fails root SEO closed when middleware context is missing and never adds robots', () => {
+    const event = responseEvent({ path: '/robots.txt', accept: '*/*' })
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).toMatchObject({
+      'cache-control': 'no-store',
+      'x-launch-indexing-policy': 'failed-open',
+    })
+    expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
+  })
+
   it('does not add launch or robots headers to non-HTML assets and APIs', () => {
     for (const event of [
       responseEvent({ path: '/_nuxt/app.js', accept: '*/*', headers: { 'content-type': 'text/javascript' } }),
@@ -399,6 +449,23 @@ describe('final response lifecycle', () => {
       expect(lowerHeaders(event)).not.toHaveProperty('x-launch-indexing-policy')
       expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
     }
+  })
+
+  it('removes a stale robots header while leaving non-HTML responses otherwise untouched', () => {
+    const event = responseEvent({
+      path: '/api/entities',
+      accept: 'application/json',
+      headers: {
+        'content-type': 'application/json',
+        'X-Robots-Tag': 'stale',
+      },
+    })
+
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
+    expect(lowerHeaders(event)).not.toHaveProperty('cache-control')
+    expect(lowerHeaders(event)).not.toHaveProperty('x-launch-indexing-policy')
   })
 
   it('falls back synchronously to failed-open and clears stale headers when context is missing', () => {
@@ -453,7 +520,7 @@ describe('final response lifecycle', () => {
     const candidates = walk(serverRoot)
     const writers = candidates.filter((path) => {
       const source = readFileSync(path, 'utf8')
-      return /setResponseHeader[s]?\([^)]*X-Robots-Tag|['"]X-Robots-Tag['"]\s*:/u.test(source)
+      return source.includes('X-Robots-Tag')
     })
 
     expect(writers).toEqual([resolve(serverRoot, 'plugins/launch-response.ts')])
