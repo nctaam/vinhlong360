@@ -7,6 +7,8 @@ from urllib.parse import quote
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 if __package__:
+    from .ai_disclosure import LoadedAiDisclosure
+    from .image_descriptor import ImageDescriptor, describe_entity_images, normalize_renderable_image_url
     from .index_policy import (
         decide_entity,
         decide_ward,
@@ -19,6 +21,8 @@ if __package__:
         load_route_manifest,
     )
 else:
+    from ai_disclosure import LoadedAiDisclosure
+    from image_descriptor import ImageDescriptor, describe_entity_images, normalize_renderable_image_url
     from index_policy import (
         decide_entity,
         decide_ward,
@@ -33,6 +37,7 @@ else:
 
 
 SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
+IMAGE_NAMESPACE = "http://www.google.com/schemas/sitemap-image/1.1"
 MAX_SITEMAP_URLS = 50_000
 
 
@@ -94,6 +99,53 @@ def _serialize_urlset(urls: list[str]) -> bytes:
     return tostring(root, encoding="utf-8", xml_declaration=True)
 
 
+def resolve_sitemap_image_url(
+    raw: object,
+    manifest: LoadedRouteManifest,
+) -> str | None:
+    """Resolve a normalized local image path without URL-join semantics."""
+    normalized = normalize_renderable_image_url(raw)
+    if normalized is None:
+        return None
+    candidate = (
+        f"{manifest.data['canonical_origin']}{normalized}"
+        if normalized.startswith("/")
+        else normalized
+    )
+    resolved = normalize_renderable_image_url(candidate)
+    if resolved is None or resolved.startswith("/"):
+        return None
+    return resolved
+
+
+def serialize_image_urlset(
+    pages: Mapping[str, Mapping[str, ImageDescriptor]],
+) -> bytes:
+    """Serialize sorted page/image groups with only disclosure-safe image tags."""
+    root = Element(
+        "urlset",
+        {
+            "xmlns": SITEMAP_NAMESPACE,
+            "xmlns:image": IMAGE_NAMESPACE,
+        },
+    )
+    for page_url in sorted(pages)[:MAX_SITEMAP_URLS]:
+        descriptors = pages[page_url]
+        node = SubElement(root, "url")
+        SubElement(node, "loc").text = page_url
+        for image_url in sorted(descriptors):
+            descriptor = descriptors[image_url]
+            if (
+                type(descriptor) is not ImageDescriptor
+                or descriptor.source_class != "ai-generated"
+            ):
+                continue
+            image = SubElement(node, "image:image")
+            SubElement(image, "image:loc").text = image_url
+            SubElement(image, "image:caption").text = descriptor.full_disclosure
+    return tostring(root, encoding="utf-8", xml_declaration=True)
+
+
 def render_main_sitemap(
     snapshot,
     manifest: LoadedRouteManifest | None,
@@ -120,3 +172,37 @@ def render_main_sitemap(
         if location is not None:
             urls.add(location)
     return _serialize_urlset(sorted(urls)[:MAX_SITEMAP_URLS])
+
+
+def render_media_sitemap(
+    snapshot,
+    manifest: LoadedRouteManifest | None,
+    evidence,
+    disclosure,
+) -> bytes:
+    """Render disclosed entity editorial images with main-sitemap policy parity."""
+    if type(evidence) is not PolicyEvidence:
+        raise TypeError("evidence must be PolicyEvidence")
+    if type(disclosure) is not LoadedAiDisclosure:
+        raise TypeError("disclosure must be LoadedAiDisclosure")
+    manifest = manifest if manifest is not None else load_route_manifest()
+    canonical_origin = manifest.data["canonical_origin"]
+    entities = tuple(snapshot.entities)
+    child_counts = public_ward_child_counts(snapshot)
+    pages: dict[str, dict[str, ImageDescriptor]] = {}
+    for entity in entities:
+        page_url = _indexable_detail_url(
+            entity,
+            child_counts=child_counts,
+            canonical_origin=canonical_origin,
+            evidence=evidence,
+        )
+        if page_url is None:
+            continue
+        for descriptor in describe_entity_images(entity, disclosure=disclosure):
+            if descriptor.source_class != "ai-generated":
+                continue
+            image_url = resolve_sitemap_image_url(descriptor.url, manifest)
+            if image_url is not None:
+                pages.setdefault(page_url, {}).setdefault(image_url, descriptor)
+    return serialize_image_urlset(pages)

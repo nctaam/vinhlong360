@@ -11,12 +11,16 @@ AGENT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(AGENT))
 
 from launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence  # noqa: E402
+from ai_disclosure import load_ai_disclosure  # noqa: E402
 from route_manifest import extract_static_sitemap_paths, load_route_manifest  # noqa: E402
 import sitemap_render  # noqa: E402
 from sitemap_render import (  # noqa: E402
     canonical_detail_url,
     public_ward_child_counts,
+    render_media_sitemap,
     render_main_sitemap,
+    resolve_sitemap_image_url,
+    serialize_image_urlset,
 )
 from sitemap_snapshot import SitemapSnapshot  # noqa: E402
 
@@ -26,7 +30,15 @@ EVIDENCE = PolicyEvidence(
     route_manifest_revision="launch-indexing-policy-v1",
     backend_policy_revision=INDEX_POLICY_REVISION,
 )
+DISCLOSURE = load_ai_disclosure()
 SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
+IMAGE_NAMESPACE = "http://www.google.com/schemas/sitemap-image/1.1"
+MEDIA_FIXTURE = (
+    Path(__file__).resolve().parent
+    / "fixtures"
+    / "sitemap"
+    / "expected-sitemap-media.xml"
+)
 
 
 def _words(count: int, word: str = "word") -> str:
@@ -74,6 +86,32 @@ def _locs(xml: bytes) -> list[str]:
         node.findtext(f"{{{SITEMAP_NAMESPACE}}}loc", default="")
         for node in root
     ]
+
+
+def _media_entries(xml: bytes) -> list[tuple[str, list[tuple[str, str]]]]:
+    root = ElementTree.fromstring(xml)
+    assert root.tag == f"{{{SITEMAP_NAMESPACE}}}urlset"
+    entries: list[tuple[str, list[tuple[str, str]]]] = []
+    for page in root:
+        assert page.tag == f"{{{SITEMAP_NAMESPACE}}}url"
+        assert [child.tag for child in page][:1] == [f"{{{SITEMAP_NAMESPACE}}}loc"]
+        images: list[tuple[str, str]] = []
+        for image in list(page)[1:]:
+            assert image.tag == f"{{{IMAGE_NAMESPACE}}}image"
+            assert [child.tag for child in image] == [
+                f"{{{IMAGE_NAMESPACE}}}loc",
+                f"{{{IMAGE_NAMESPACE}}}caption",
+            ]
+            images.append(
+                (
+                    image.findtext(f"{{{IMAGE_NAMESPACE}}}loc", default=""),
+                    image.findtext(f"{{{IMAGE_NAMESPACE}}}caption", default=""),
+                )
+            )
+        entries.append(
+            (page.findtext(f"{{{SITEMAP_NAMESPACE}}}loc", default=""), images)
+        )
+    return entries
 
 
 def test_main_sitemap_is_absolute_sorted_deduplicated_and_permutation_stable():
@@ -223,3 +261,238 @@ def test_main_sitemap_sorts_before_enforcing_50000_url_limit():
     assert locs == sorted(locs)
     assert any(loc.endswith("/dia-diem/entity-00000") for loc in locs)
     assert not any(loc.endswith("/dia-diem/entity-50010") for loc in locs)
+
+
+def test_resolve_sitemap_image_url_prefixes_local_paths_and_preserves_https():
+    manifest = load_route_manifest()
+    origin = manifest.data["canonical_origin"]
+
+    assert resolve_sitemap_image_url("/media/ảnh.webp?x=1&y=2", manifest) == (
+        f"{origin}/media/ảnh.webp?x=1&y=2"
+    )
+    assert resolve_sitemap_image_url(
+        "https://cdn.example/ảnh.webp?x=1&y=2", manifest
+    ) == "https://cdn.example/ảnh.webp?x=1&y=2"
+    assert resolve_sitemap_image_url("http://cdn.example/image.webp", manifest) is None
+
+
+def test_media_serializer_matches_utf8_fixture_with_two_disclosed_images():
+    manifest = load_route_manifest()
+    entity = _entity(
+        "tram-chim",
+        name="Tràm Chim",
+        images=[
+            "/media/tram-chim-2.webp?size=large&crop=wide",
+            "https://cdn.example/tram-chim-1.webp",
+        ],
+    )
+
+    xml = render_media_sitemap(
+        _snapshot(entity), manifest, EVIDENCE, DISCLOSURE
+    )
+
+    assert xml == MEDIA_FIXTURE.read_bytes()
+    assert xml.startswith(b"<?xml version='1.0' encoding='utf-8'?>\n")
+    assert not xml.endswith(b"\n")
+
+
+def test_media_sitemap_is_sorted_deduplicated_and_permutation_stable():
+    manifest = load_route_manifest()
+    first_entity = _entity(
+        "z-entity",
+        name="Z entity",
+        images=[
+            "https://cdn.example/z.webp",
+            "/media/a.webp",
+            "https://cdn.example/z.webp",
+        ],
+    )
+    duplicate = dict(first_entity)
+    duplicate["images"] = list(reversed(first_entity["images"]))
+    second_entity = _entity(
+        "a-entity",
+        name="A entity",
+        images=("/media/ứ.webp?x=1&y=2",),
+    )
+
+    first_xml = render_media_sitemap(
+        _snapshot(first_entity, duplicate, second_entity),
+        manifest,
+        EVIDENCE,
+        DISCLOSURE,
+    )
+    second_xml = render_media_sitemap(
+        _snapshot(second_entity, duplicate, first_entity),
+        manifest,
+        EVIDENCE,
+        DISCLOSURE,
+    )
+    entries = _media_entries(first_xml)
+
+    assert first_xml == second_xml
+    assert [page for page, _images in entries] == sorted(page for page, _images in entries)
+    assert [loc for loc, _caption in entries[1][1]] == sorted(
+        loc for loc, _caption in entries[1][1]
+    )
+    assert len(entries[1][1]) == 2
+    assert all(
+        caption == DISCLOSURE.entity_ai.full_disclosure
+        for _page, images in entries
+        for _loc, caption in images
+    )
+    assert b"&amp;" in first_xml
+    assert "ứ".encode() in first_xml
+
+
+def test_media_sitemap_has_exact_main_policy_parity_including_ward_paths():
+    manifest = load_route_manifest()
+    rich = _entity("rich", name="Rich", images=["/rich.webp"])
+    thin = _entity("thin", name="Thin", summary=_words(129), images=["/thin.webp"])
+    draft = _entity("draft", name="Draft", status="draft", images=["/draft.webp"])
+    unverified = _entity(
+        "unverified", name="Unverified", verified=False, images=["/unverified.webp"]
+    )
+    private = _entity(
+        "private", name="Private", is_private=True, images=["/private.webp"]
+    )
+    ward = _ward("ward", name="Ward", images=["/ward.webp"])
+    child_a = _entity("child-a", name="Child A", placeId="ward")
+    child_b = _entity("child-b", name="Child B", placeId="ward")
+
+    entries = _media_entries(
+        render_media_sitemap(
+            _snapshot(
+                rich,
+                thin,
+                draft,
+                unverified,
+                private,
+                ward,
+                child_a,
+                child_b,
+                object(),
+            ),
+            manifest,
+            EVIDENCE,
+            DISCLOSURE,
+        )
+    )
+    pages = [page for page, _images in entries]
+
+    assert pages == [
+        f"{manifest.data['canonical_origin']}/dia-diem/rich",
+        f"{manifest.data['canonical_origin']}/xa-phuong/ward",
+    ]
+
+
+def test_media_sitemap_uses_only_entity_editorial_images_and_minimal_tags():
+    entity = _entity(
+        "rich",
+        name="Rich",
+        images=["/editorial.webp"],
+        placeholder="PLACEHOLDER-SENTINEL",
+        posts=[{"images": ["POST-SENTINEL"]}],
+        reviews=[{"images": ["REVIEW-SENTINEL"]}],
+        image_title="TITLE-SENTINEL",
+        image_credit="CREDIT-SENTINEL",
+        image_license="LICENSE-SENTINEL",
+        image_geo="GEO-SENTINEL",
+        summary="SUMMARY-SENTINEL " + _words(130),
+    )
+
+    xml = render_media_sitemap(
+        _snapshot(entity), load_route_manifest(), EVIDENCE, DISCLOSURE
+    )
+
+    assert b"editorial.webp" in xml
+    for forbidden in (
+        b"PLACEHOLDER-SENTINEL",
+        b"POST-SENTINEL",
+        b"REVIEW-SENTINEL",
+        b"TITLE-SENTINEL",
+        b"CREDIT-SENTINEL",
+        b"LICENSE-SENTINEL",
+        b"GEO-SENTINEL",
+        b"SUMMARY-SENTINEL",
+        b"image:title",
+        b"image:license",
+        b"image:geo_location",
+    ):
+        assert forbidden not in xml
+
+
+@pytest.mark.parametrize(
+    ("invalid_evidence", "invalid_disclosure", "message"),
+    [
+        (None, DISCLOSURE, "evidence must be PolicyEvidence"),
+        (EVIDENCE, None, "disclosure must be LoadedAiDisclosure"),
+        (object(), DISCLOSURE, "evidence must be PolicyEvidence"),
+        (EVIDENCE, object(), "disclosure must be LoadedAiDisclosure"),
+    ],
+)
+def test_media_sitemap_validates_policy_and_disclosure_before_empty_snapshot_access(
+    invalid_evidence: object,
+    invalid_disclosure: object,
+    message: str,
+):
+    class ExplodingSnapshot:
+        @property
+        def entities(self):
+            raise AssertionError("invalid contracts must abort before snapshot access")
+
+    with pytest.raises(TypeError, match=message):
+        render_media_sitemap(
+            ExplodingSnapshot(),
+            load_route_manifest(),
+            invalid_evidence,
+            invalid_disclosure,
+        )
+
+
+def test_media_policy_contract_exceptions_abort_render(monkeypatch):
+    def fail_policy(_entity, _evidence):
+        raise ValueError("policy contract failure")
+
+    monkeypatch.setattr(sitemap_render, "decide_entity", fail_policy)
+
+    with pytest.raises(ValueError, match="policy contract failure"):
+        render_media_sitemap(
+            _snapshot(_entity("rich", name="Rich", images=["/rich.webp"])),
+            load_route_manifest(),
+            EVIDENCE,
+            DISCLOSURE,
+        )
+
+
+def test_media_sitemap_empty_output_is_valid_and_contains_no_static_pages():
+    xml = render_media_sitemap(
+        _snapshot(), load_route_manifest(), EVIDENCE, DISCLOSURE
+    )
+
+    assert _media_entries(xml) == []
+    assert xml == serialize_image_urlset({})
+
+
+def test_media_sitemap_sorts_pages_before_enforcing_shared_limit(monkeypatch):
+    monkeypatch.setattr(sitemap_render, "MAX_SITEMAP_URLS", 2)
+    entities = tuple(
+        _entity(entity_id, name=entity_id, images=[f"/{entity_id}.webp"])
+        for entity_id in ("z", "a", "m")
+    )
+
+    pages = [
+        page
+        for page, _images in _media_entries(
+            render_media_sitemap(
+                _snapshot(*entities),
+                load_route_manifest(),
+                EVIDENCE,
+                DISCLOSURE,
+            )
+        )
+    ]
+
+    assert pages == [
+        "https://vinhlong360.vn/dia-diem/a",
+        "https://vinhlong360.vn/dia-diem/m",
+    ]
