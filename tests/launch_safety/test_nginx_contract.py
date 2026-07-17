@@ -227,6 +227,8 @@ def _literal_prefixes(
             }
             complete = len(pieces) == len(argument)
         elif operation == re._constants.SUBPATTERN:
+            if argument[1] & re.IGNORECASE:
+                return prefixes, False
             pieces, complete = _literal_prefixes(list(argument[-1]))
         elif operation == re._constants.BRANCH:
             branch_results = [
@@ -254,9 +256,14 @@ def _literal_prefixes(
 def _regex_is_provably_outside_internal(location: Location) -> bool:
     flags = re.IGNORECASE if location.modifier == "~*" else 0
     try:
-        parsed = list(re._parser.parse(location.pattern, flags))
+        parsed_pattern = re._parser.parse(location.pattern, flags)
     except re.error:
         return False
+    # Inline PCRE case-folding is accepted only when we can prove the path prefix
+    # is outside the protected namespace; unfamiliar parser forms fail closed.
+    if parsed_pattern.state.flags & re.IGNORECASE:
+        return False
+    parsed = list(parsed_pattern)
     if parsed[:2] != [
         (re._constants.AT, re._constants.AT_BEGINNING),
         (re._constants.LITERAL, ord("/")),
@@ -433,6 +440,8 @@ def test_location_resolution_exposes_exact_or_longer_prefix_overrides(override: 
         r"location ~ ^/_internal/new-secret$ { proxy_pass http://vl360_agent; }",
         r"location ~ ^/_inte[r]nal/new-secret$ { proxy_pass http://vl360_agent; }",
         r"location ~ ^/.*$ { proxy_pass http://vl360_agent; }",
+        r"location ~ (?i)^/_INTERNAL/new-secret$ { proxy_pass http://vl360_agent; }",
+        r"location ~ ^/(?i:_INTERNAL)/new-secret$ { proxy_pass http://vl360_agent; }",
         r"location ~* ^/_INTERNAL/new-secret$ { proxy_pass http://vl360_agent; }",
     ],
 )

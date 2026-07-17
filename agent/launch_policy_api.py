@@ -15,8 +15,6 @@ router = APIRouter(prefix="/_internal", include_in_schema=False)
 def launch_policy_attestation() -> dict[str, str]:
     try:
         evidence = current_policy_evidence()
-    except HTTPException:
-        raise
     except Exception as exc:
         raise HTTPException(
             status_code=503,

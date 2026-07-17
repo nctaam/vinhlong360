@@ -97,19 +97,18 @@ def test_attestation_loads_exact_current_evidence_for_every_request(monkeypatch)
 
 
 @pytest.mark.parametrize(
-    ("failure", "expected_status"),
+    "failure",
     [
-        (HTTPException(status_code=503, detail="evidence unavailable"), 503),
-        (HTTPException(status_code=500, detail="explicit internal failure"), 500),
-        (RuntimeError("invalid evidence artifact"), 503),
-        (ValueError("invalid evidence shape"), 503),
-        (FileNotFoundError("missing evidence artifact"), 503),
+        HTTPException(status_code=503, detail="evidence unavailable"),
+        HTTPException(status_code=500, detail="secret upstream failure"),
+        RuntimeError("invalid evidence artifact"),
+        ValueError("invalid evidence shape"),
+        FileNotFoundError("missing evidence artifact"),
     ],
 )
 def test_attestation_loader_failures_keep_the_policy_cache_contract(
     monkeypatch,
     failure: Exception,
-    expected_status: int,
 ):
     def fail() -> PolicyEvidence:
         raise failure
@@ -120,7 +119,21 @@ def test_attestation_loader_failures_keep_the_policy_cache_contract(
             headers={"If-None-Match": '"legacy"'},
         )
 
-    _assert_no_store_no_validator(response, expected_status)
+    assert response.json() == {"detail": "Launch policy evidence unavailable"}
+    _assert_no_store_no_validator(response, 503)
+
+
+def test_attestation_does_not_catch_base_exceptions(monkeypatch):
+    class FatalEvidenceFailure(BaseException):
+        pass
+
+    def fail() -> PolicyEvidence:
+        raise FatalEvidenceFailure
+
+    assert launch_policy_api is not None
+    monkeypatch.setattr(launch_policy_api, "current_policy_evidence", fail)
+    with pytest.raises(FatalEvidenceFailure):
+        launch_policy_api.launch_policy_attestation()
 
 
 def test_attestation_router_identity_and_openapi_exclusion(monkeypatch):
