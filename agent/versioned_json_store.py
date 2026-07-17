@@ -1,11 +1,13 @@
 """Concurrent-safe JSON reads and writes for runtime knowledge-base writers."""
 
 import hashlib
+import errno
 import json
 import os
 import stat
 import tempfile
 import threading
+import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -14,26 +16,61 @@ from typing import TypeVar
 T = TypeVar("T")
 
 _locks_guard = threading.Lock()
-_path_locks: dict[str, threading.RLock] = {}
+_path_locks: dict[str, threading.Lock] = {}
+_held_path_locks = threading.local()
 _lock_dir = Path(tempfile.gettempdir()) / "vinhlong360-json-locks"
 
 
-def _path_lock(path: Path) -> threading.RLock:
-    key = str(path.resolve())
+def _canonical_path(path: Path) -> str:
+    canonical = os.path.realpath(os.path.abspath(os.fspath(path)))
+    return os.path.normcase(canonical) if os.name == "nt" else canonical
+
+
+def _path_lock(path: Path) -> threading.Lock:
+    key = _canonical_path(path)
     with _locks_guard:
-        return _path_locks.setdefault(key, threading.RLock())
+        return _path_locks.setdefault(key, threading.Lock())
 
 
 def _lock_path(path: Path) -> Path:
-    digest = hashlib.sha256(str(path.resolve()).encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(_canonical_path(path).encode("utf-8")).hexdigest()
     return _lock_dir / f"{digest}.lock"
 
 
+def _is_reparse_point(file_stat: os.stat_result) -> bool:
+    attributes = getattr(file_stat, "st_file_attributes", 0)
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    return bool(attributes & reparse_flag)
+
+
+def _open_lock_file(lock_path: Path):
+    try:
+        lock_stat = lock_path.lstat()
+    except FileNotFoundError:
+        lock_stat = None
+    if lock_stat is not None and (
+        lock_path.is_symlink()
+        or _is_reparse_point(lock_stat)
+        or not stat.S_ISREG(lock_stat.st_mode)
+    ):
+        raise OSError("lock path must be a regular file")
+
+    flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0)
+    fd = os.open(lock_path, flags, 0o600)
+    try:
+        opened_stat = os.fstat(fd)
+        if not stat.S_ISREG(opened_stat.st_mode):
+            raise OSError("lock path must be a regular file")
+        return os.fdopen(fd, "r+b")
+    except BaseException:
+        os.close(fd)
+        raise
+
+
 @contextmanager
-def _cross_process_lock(path: Path) -> Iterator[None]:
-    lock_path = _lock_path(path)
+def _cross_process_lock_file(lock_path: Path) -> Iterator[None]:
     lock_path.parent.mkdir(parents=True, exist_ok=True)
-    with lock_path.open("a+b") as lock_file:
+    with _open_lock_file(lock_path) as lock_file:
         lock_file.seek(0, os.SEEK_END)
         if lock_file.tell() == 0:
             lock_file.write(b"\0")
@@ -43,7 +80,18 @@ def _cross_process_lock(path: Path) -> Iterator[None]:
         if os.name == "nt":
             import msvcrt
 
-            msvcrt.locking(lock_file.fileno(), msvcrt.LK_LOCK, 1)
+            while True:
+                lock_file.seek(0)
+                try:
+                    msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+                    break
+                except OSError as error:
+                    if error.errno == errno.EINTR:
+                        continue
+                    if error.errno in {errno.EACCES, errno.EAGAIN, errno.EDEADLK}:
+                        time.sleep(0.01)
+                        continue
+                    raise
             try:
                 yield
             finally:
@@ -60,9 +108,33 @@ def _cross_process_lock(path: Path) -> Iterator[None]:
 
 
 @contextmanager
-def _locked(path: Path) -> Iterator[None]:
+def _thread_locked(path: Path) -> Iterator[None]:
+    key = _canonical_path(path)
+    held = getattr(_held_path_locks, "keys", set())
+    if key in held:
+        raise RuntimeError("path locks are non-reentrant")
     with _path_lock(path):
-        with _cross_process_lock(path):
+        held.add(key)
+        _held_path_locks.keys = held
+        try:
+            yield
+        finally:
+            held.remove(key)
+
+
+@contextmanager
+def publication_lock(lock_path: Path) -> Iterator[None]:
+    """Lock one explicit persistent file across threads and processes."""
+    lock_path = Path(lock_path)
+    with _thread_locked(lock_path):
+        with _cross_process_lock_file(lock_path):
+            yield
+
+
+@contextmanager
+def _locked(path: Path) -> Iterator[None]:
+    with _thread_locked(path):
+        with _cross_process_lock_file(_lock_path(path)):
             yield
 
 
@@ -88,23 +160,25 @@ def json_version(path: Path) -> str:
     return _version(path.read_bytes())
 
 
-def _fsync_parent(path: Path) -> None:
+def fsync_directory(directory: Path) -> None:
+    """Persist directory entries on POSIX; Windows has no equivalent API."""
     if os.name == "nt":
         return
     flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
-    try:
-        directory_fd = os.open(path.parent, flags)
-    except OSError:
-        return
+    directory_fd = os.open(directory, flags)
     try:
         os.fsync(directory_fd)
-    except OSError:
-        pass
     finally:
         os.close(directory_fd)
 
 
-def _atomic_write(path: Path, data: dict) -> None:
+def _atomic_write_impl(
+    path: Path,
+    data: dict,
+    *,
+    strict_directory_fsync: bool,
+) -> None:
+    path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     target_mode = None
     try:
@@ -121,13 +195,28 @@ def _atomic_write(path: Path, data: dict) -> None:
         with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as temp_file:
             json.dump(data, temp_file, ensure_ascii=False, indent=2)
             temp_file.flush()
+            if target_mode is not None:
+                os.chmod(temp_path, target_mode)
             os.fsync(temp_file.fileno())
-        if target_mode is not None:
-            os.chmod(temp_path, target_mode)
         os.replace(temp_path, path)
-        _fsync_parent(path)
+        if strict_directory_fsync:
+            fsync_directory(path.parent)
+        else:
+            try:
+                fsync_directory(path.parent)
+            except OSError:
+                pass
     finally:
         temp_path.unlink(missing_ok=True)
+
+
+def atomic_write_json(path: Path, data: dict) -> None:
+    """Replace JSON and require parent-directory durability on POSIX."""
+    _atomic_write_impl(path, data, strict_directory_fsync=True)
+
+
+def _atomic_write(path: Path, data: dict) -> None:
+    _atomic_write_impl(path, data, strict_directory_fsync=False)
 
 
 def compare_and_swap_json(path: Path, expected_version: str, data: dict) -> bool:
