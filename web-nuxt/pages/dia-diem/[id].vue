@@ -478,6 +478,10 @@ import { seasonText } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { entityStoryTeaser } from '~/composables/useEntityStory'
 
+interface LaunchEntityCarrier extends Entity {
+  readonly __launchRequestId: string
+}
+
 useReveal()
 const { progress } = useScrollProgress()
 const { enabled: ff } = useFeature()
@@ -487,6 +491,13 @@ const route = useRoute()
 const router = useRouter()
 const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
+const launchSafety = useLaunchSafety()
+
+// Client-side route reuse must not carry a previous entity's launch evidence
+// into the next request before its own carrier has been checked.
+watch(id, (next, previous) => {
+  if (previous !== undefined && next !== previous) launchSafety.resetForNavigation()
+})
 
 // ── Đã-đi/Muốn-đi + theo-dõi địa-điểm (Tier-1 MXH) ──
 const { isLoggedIn, authHeaders } = useAuth()
@@ -587,10 +598,35 @@ const RELATIONSHIP_BATCH_SIZE = 24
 
 const goBack = () => goBackOr('/du-lich')
 
-const { data: entity, error: fetchError, refresh: refreshEntity } = await useAsyncData(
+const { data: entity, error: fetchError, status: entityStatus, refresh: refreshEntity } = await useAsyncData(
   computed(() => `entity-${id.value}`),
-  () => apiFetch<Entity>(`/api/entities/${encodedId.value}`),
+  async () => {
+    const requestId = id.value
+    const carrier = await apiFetch<Entity>(`/api/entities/${encodedId.value}`)
+    return { ...carrier, __launchRequestId: requestId } satisfies LaunchEntityCarrier
+  },
   { watch: [id], deep: false }
+)
+
+async function refineCurrentEntityLaunchDecision() {
+  if (entityStatus.value === 'idle' || entityStatus.value === 'pending') return
+  if (entity.value && entity.value.__launchRequestId !== id.value) return
+  if (entity.value && entity.value.id !== id.value) {
+    await launchSafety.refineEntityPolicy({ carrier: null, expectedKind: 'entity', canonicalPath: '' })
+    return
+  }
+  await launchSafety.refineEntityPolicy({
+    carrier: entityStatus.value === 'error' || fetchError.value ? null : entity.value,
+    expectedKind: 'entity',
+    canonicalPath: entity.value ? entityPath(entity.value.id) : '',
+  })
+}
+
+await refineCurrentEntityLaunchDecision()
+watch(
+  [entity, entityStatus, fetchError],
+  () => { void refineCurrentEntityLaunchDecision() },
+  { flush: 'post' },
 )
 
 type JsonLdPayload = Record<string, unknown> | Record<string, unknown>[]

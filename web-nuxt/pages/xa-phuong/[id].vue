@@ -166,25 +166,98 @@ interface WardOverviewResponse {
   products?: Entity[]
   facilities?: Entity[]
   counts?: WardOverviewCounts
+  readonly __launchRequestId?: string
+}
+
+interface WardPolicyCarrierResult {
+  readonly requestId: string
+  readonly carrier: Record<string, unknown> | null
 }
 
 const route = useRoute()
 const router = useRouter()
 const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
+const launchSafety = useLaunchSafety()
+
+// A reused client page must not retain the previous ward's decision while the
+// next overview and policy carrier are loading.
+watch(id, (next, previous) => {
+  if (previous !== undefined && next !== previous) launchSafety.resetForNavigation()
+})
 
 const goBack = () => goBackOr('/danh-ba')
 
 const fetchFailed = ref(false)
-const { data, refresh: refreshWard } = await useAsyncData(`ward-${id.value}`, async () => {
+const {
+  data,
+  error: wardOverviewError,
+  status: wardOverviewStatus,
+  refresh: refreshWard,
+} = await useAsyncData(computed(() => `ward-${id.value}`), async () => {
+  const requestId = id.value
   try {
     fetchFailed.value = false
-    return await apiFetch<WardOverviewResponse>(`/api/places/${encodedId.value}/overview`)
+    const overview = await apiFetch<WardOverviewResponse>(`/api/places/${encodedId.value}/overview`)
+    return { ...overview, __launchRequestId: requestId }
   } catch {
     fetchFailed.value = true
     return null
   }
-})
+}, { watch: [id], deep: false })
+
+// The overview is presentation data only. The backend's exact `/entities/{id}`
+// response is the sole ward policy carrier, and is skipped while the base gate
+// is closed so a closed request never makes this extra backend call.
+const {
+  data: wardPolicyCarrier,
+  error: wardPolicyError,
+  status: wardPolicyStatus,
+} = await useAsyncData(
+  computed(() => `ward-launch-policy-${id.value}`),
+  async () => {
+    const requestId = id.value
+    if (!launchSafety.canRefineEntityPolicy.value) {
+      return { requestId, carrier: null } satisfies WardPolicyCarrierResult
+    }
+    const carrier = await apiFetch<Record<string, unknown>>(`/api/entities/${encodedId.value}`)
+    return { requestId, carrier } satisfies WardPolicyCarrierResult
+  },
+  { watch: [id], deep: false },
+)
+
+async function refineCurrentWardLaunchDecision() {
+  if (
+    wardOverviewStatus.value === 'idle'
+    || wardOverviewStatus.value === 'pending'
+    || wardPolicyStatus.value === 'idle'
+    || wardPolicyStatus.value === 'pending'
+  ) return
+
+  await launchSafety.refineEntityPolicy({
+    carrier: data.value?.place
+      && data.value.__launchRequestId === id.value
+      && data.value.place.id === id.value
+      && wardOverviewStatus.value === 'success'
+      && !wardOverviewError.value
+      && !fetchFailed.value
+      && wardPolicyCarrier.value?.requestId === id.value
+      && wardPolicyCarrier.value.carrier?.id === id.value
+      && wardPolicyStatus.value === 'success'
+      && !wardPolicyError.value
+      ? wardPolicyCarrier.value.carrier
+      : null,
+    expectedKind: 'ward',
+    canonicalPath: data.value?.place ? `/xa-phuong/${encodePathId(data.value.place.id)}` : '',
+  })
+}
+
+await refineCurrentWardLaunchDecision()
+watch(
+  [data, wardPolicyCarrier, wardOverviewStatus, wardPolicyStatus, wardOverviewError, wardPolicyError],
+  () => { void refineCurrentWardLaunchDecision() },
+  { flush: 'post' },
+)
 if (import.meta.server && !data.value?.place && !fetchFailed.value) {
   throw createError({ statusCode: 404, statusMessage: 'Không tìm thấy xã/phường' })
 }
