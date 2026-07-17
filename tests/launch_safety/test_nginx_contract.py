@@ -217,15 +217,22 @@ def _literal_prefixes(
     prefixes = {""}
     for operation, argument in tokens:
         if operation == re._constants.LITERAL:
+            if argument == ord("\\"):
+                return prefixes, False
             pieces = {chr(argument)}
             complete = True
         elif operation == re._constants.IN:
+            if any(
+                item_operation != re._constants.LITERAL
+                for item_operation, _value in argument
+            ):
+                return prefixes, False
             pieces = {
                 chr(value)
                 for item_operation, value in argument
                 if item_operation == re._constants.LITERAL
             }
-            complete = len(pieces) == len(argument)
+            complete = True
         elif operation == re._constants.SUBPATTERN:
             if argument[1] & re.IGNORECASE:
                 return prefixes, False
@@ -255,6 +262,8 @@ def _literal_prefixes(
 
 def _regex_is_provably_outside_internal(location: Location) -> bool:
     flags = re.IGNORECASE if location.modifier == "~*" else 0
+    if "[:" in location.pattern:
+        return False
     try:
         parsed_pattern = re._parser.parse(location.pattern, flags)
     except re.error:
@@ -439,6 +448,11 @@ def test_location_resolution_exposes_exact_or_longer_prefix_overrides(override: 
         "location ^~ /_internal/new-secret { proxy_pass http://vl360_agent; }",
         r"location ~ ^/_internal/new-secret$ { proxy_pass http://vl360_agent; }",
         r"location ~ ^/_inte[r]nal/new-secret$ { proxy_pass http://vl360_agent; }",
+        r"location ~ ^/[xA-z]internal/ { proxy_pass http://vl360_agent; }",
+        r"location ~ ^/[x\D]internal/ { proxy_pass http://vl360_agent; }",
+        r"location ~ ^/[^xy]internal/ { proxy_pass http://vl360_agent; }",
+        r'location ~ "^/\\\\x5finternal/new-secret$" { proxy_pass http://vl360_agent; }',
+        r"location ~ ^/[[:punct:]]internal/new-secret$ { proxy_pass http://vl360_agent; }",
         r"location ~ ^/.*$ { proxy_pass http://vl360_agent; }",
         r"location ~ (?i)^/_INTERNAL/new-secret$ { proxy_pass http://vl360_agent; }",
         r"location ~ ^/(?i:_INTERNAL)/new-secret$ { proxy_pass http://vl360_agent; }",
@@ -450,6 +464,14 @@ def test_internal_boundary_rejects_every_overlapping_location_selector(selector:
 
     with pytest.raises(AssertionError):
         _assert_internal_boundary(server)
+
+
+def test_internal_boundary_allows_regex_class_after_disjoint_literal_prefix():
+    server = _public_server_with(
+        r"location ~ ^/api[x\D] { proxy_pass http://vl360_agent; }"
+    )
+
+    _assert_internal_boundary(server)
 
 
 @pytest.mark.parametrize(
