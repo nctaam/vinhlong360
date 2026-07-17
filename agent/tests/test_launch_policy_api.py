@@ -123,6 +123,46 @@ def test_attestation_loader_failures_keep_the_policy_cache_contract(
     _assert_no_store_no_validator(response, 503)
 
 
+def test_attestation_post_loader_field_failure_is_sanitized(monkeypatch):
+    class GetterFailureEvidence:
+        @property
+        def policy_fingerprint(self):
+            raise RuntimeError("secret")
+
+        route_manifest_revision = EVIDENCE_A.route_manifest_revision
+        backend_policy_revision = EVIDENCE_A.backend_policy_revision
+
+    app = _focused_app(monkeypatch, lambda: GetterFailureEvidence())
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        response = client.get(
+            "/_internal/launch-policy-attestation",
+            headers={"If-None-Match": '"legacy"'},
+        )
+
+    assert response.json() == {"detail": "Launch policy evidence unavailable"}
+    assert "secret" not in response.text
+    _assert_no_store_no_validator(response, 503)
+
+
+def test_attestation_post_loader_serialization_failure_is_sanitized(monkeypatch):
+    class SerializationFailureEvidence:
+        policy_fingerprint = object()
+        route_manifest_revision = EVIDENCE_A.route_manifest_revision
+        backend_policy_revision = EVIDENCE_A.backend_policy_revision
+
+    app = _focused_app(monkeypatch, lambda: SerializationFailureEvidence())
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        response = client.get(
+            "/_internal/launch-policy-attestation",
+            headers={"If-None-Match": '"legacy"'},
+        )
+
+    assert response.json() == {"detail": "Launch policy evidence unavailable"}
+    _assert_no_store_no_validator(response, 503)
+
+
 def test_attestation_does_not_catch_base_exceptions(monkeypatch):
     class FatalEvidenceFailure(BaseException):
         pass
