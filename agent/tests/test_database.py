@@ -1142,18 +1142,59 @@ def test_concurrent_upserts(db):
 
 
 class _ManagedConnectionDouble:
-    def __init__(self, *, rollback_error=None):
-        self.autocommit = None
+    def __init__(
+        self,
+        *,
+        autocommit_error=None,
+        row_factory_error=None,
+        execute_error=None,
+        commit_error=None,
+        rollback_error=None,
+        close_error=None,
+    ):
+        self._autocommit = None
+        self._row_factory = None
+        self.autocommit_error = autocommit_error
+        self.row_factory_error = row_factory_error
+        self.execute_error = execute_error
+        self.commit_error = commit_error
         self.rollback_error = rollback_error
+        self.close_error = close_error
+        self.execute_calls = 0
         self.commit_calls = 0
         self.rollback_calls = 0
         self.close_calls = 0
 
+    @property
+    def autocommit(self):
+        return self._autocommit
+
+    @autocommit.setter
+    def autocommit(self, value):
+        if self.autocommit_error:
+            raise self.autocommit_error
+        self._autocommit = value
+
+    @property
+    def row_factory(self):
+        return self._row_factory
+
+    @row_factory.setter
+    def row_factory(self, value):
+        if self.row_factory_error:
+            raise self.row_factory_error
+        self._row_factory = value
+
     def execute(self, _sql):
+        self.execute_calls += 1
+        if self.execute_error:
+            raise self.execute_error
         return self
 
     def commit(self):
         self.commit_calls += 1
+        if self.commit_error:
+            raise self.commit_error
 
     def rollback(self):
         self.rollback_calls += 1
@@ -1162,6 +1203,8 @@ class _ManagedConnectionDouble:
 
     def close(self):
         self.close_calls += 1
+        if self.close_error:
+            raise self.close_error
 
 
 class _ConnectionPoolDouble:
@@ -1190,6 +1233,14 @@ def _pg_connection_manager(monkeypatch, conn, pool=None):
         SimpleNamespace(connect=lambda *args, **kwargs: conn),
         raising=False,
     )
+    return database
+
+
+def _sqlite_connection_manager(monkeypatch, conn):
+    monkeypatch.setattr(sqlite3, "connect", lambda *args, **kwargs: conn)
+    database = Database.__new__(Database)
+    database._use_pg = False
+    database.db_path = "unused.db"
     return database
 
 
@@ -1229,10 +1280,7 @@ def test_sqlite_conn_success_uses_requested_finalization(
     monkeypatch, commit_on_success, commit_calls, rollback_calls
 ):
     conn = _ManagedConnectionDouble()
-    monkeypatch.setattr(sqlite3, "connect", lambda *args, **kwargs: conn)
-    database = Database.__new__(Database)
-    database._use_pg = False
-    database.db_path = "unused.db"
+    database = _sqlite_connection_manager(monkeypatch, conn)
 
     with database._conn(commit_on_success=commit_on_success) as yielded:
         assert yielded is conn
@@ -1269,15 +1317,126 @@ def test_pg_conn_finalization_failure_discards_pool_connection(monkeypatch):
     assert pool.putconn_calls == [(conn, True)]
 
 
-def test_pg_conn_putconn_base_exception_closes_connection(monkeypatch):
+@pytest.mark.parametrize(
+    "cleanup_error",
+    [KeyboardInterrupt(), SystemExit("putconn failed")],
+    ids=["keyboard-interrupt", "system-exit"],
+)
+def test_pg_conn_putconn_base_exception_closes_connection_and_propagates(
+    monkeypatch, cleanup_error
+):
     conn = _ManagedConnectionDouble()
-    pool = _ConnectionPoolDouble(conn, putconn_error=SystemExit("putconn failed"))
+    pool = _ConnectionPoolDouble(conn, putconn_error=cleanup_error)
     database = _pg_connection_manager(monkeypatch, conn, pool)
 
-    with database._conn():
-        pass
+    with pytest.raises(type(cleanup_error)):
+        with database._conn():
+            pass
 
     assert pool.putconn_calls == [(conn, False)]
+    assert conn.close_calls == 1
+
+
+@pytest.mark.parametrize("pooled", [True, False], ids=["pooled", "unpooled"])
+def test_pg_conn_autocommit_setup_failure_discards_or_closes(
+    monkeypatch, pooled
+):
+    error = RuntimeError("autocommit setup failed")
+    conn = _ManagedConnectionDouble(
+        autocommit_error=error,
+        close_error=None if pooled else SystemExit("close failed"),
+    )
+    pool = _ConnectionPoolDouble(conn) if pooled else None
+    database = _pg_connection_manager(monkeypatch, conn, pool)
+
+    with pytest.raises(RuntimeError, match="autocommit setup failed"):
+        with database._conn():
+            pass
+
+    if pooled:
+        assert pool.putconn_calls == [(conn, True)]
+    else:
+        assert conn.close_calls == 1
+
+
+@pytest.mark.parametrize(
+    ("failure_kwargs", "message"),
+    [
+        ({"row_factory_error": RuntimeError("row factory failed")}, "row factory failed"),
+        ({"execute_error": RuntimeError("pragma failed")}, "pragma failed"),
+    ],
+    ids=["row-factory", "pragma"],
+)
+def test_sqlite_conn_setup_failure_closes_and_preserves_error(
+    monkeypatch, failure_kwargs, message
+):
+    conn = _ManagedConnectionDouble(
+        **failure_kwargs,
+        close_error=SystemExit("close failed"),
+    )
+    database = _sqlite_connection_manager(monkeypatch, conn)
+
+    with pytest.raises(RuntimeError, match=message):
+        with database._conn():
+            pass
+
+    assert conn.close_calls == 1
+
+
+@pytest.mark.parametrize("backend", ["postgres", "sqlite"])
+def test_unpooled_close_failure_does_not_replace_body_error(monkeypatch, backend):
+    conn = _ManagedConnectionDouble(close_error=SystemExit("close failed"))
+    database = (
+        _pg_connection_manager(monkeypatch, conn)
+        if backend == "postgres"
+        else _sqlite_connection_manager(monkeypatch, conn)
+    )
+
+    with pytest.raises(ValueError, match="body failed"):
+        with database._conn():
+            raise ValueError("body failed")
+
+    assert conn.rollback_calls == 1
+    assert conn.close_calls == 1
+
+
+@pytest.mark.parametrize("backend", ["postgres", "sqlite"])
+def test_unpooled_close_failure_does_not_replace_finalization_error(
+    monkeypatch, backend
+):
+    conn = _ManagedConnectionDouble(
+        commit_error=RuntimeError("commit failed"),
+        close_error=SystemExit("close failed"),
+    )
+    database = (
+        _pg_connection_manager(monkeypatch, conn)
+        if backend == "postgres"
+        else _sqlite_connection_manager(monkeypatch, conn)
+    )
+
+    with pytest.raises(RuntimeError, match="commit failed"):
+        with database._conn():
+            pass
+
+    assert conn.commit_calls == 1
+    assert conn.rollback_calls == 1
+    assert conn.close_calls == 1
+
+
+@pytest.mark.parametrize("backend", ["postgres", "sqlite"])
+def test_unpooled_close_base_exception_propagates_after_success(monkeypatch, backend):
+    conn = _ManagedConnectionDouble(close_error=SystemExit("close failed"))
+    database = (
+        _pg_connection_manager(monkeypatch, conn)
+        if backend == "postgres"
+        else _sqlite_connection_manager(monkeypatch, conn)
+    )
+
+    with pytest.raises(SystemExit, match="close failed"):
+        with database._conn():
+            pass
+
+    assert conn.commit_calls == 1
     assert conn.close_calls == 1
 
 

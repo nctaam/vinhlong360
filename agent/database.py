@@ -451,16 +451,18 @@ class Database:
         if self._use_pg:
             pool = self._get_pg_pool()
             conn = pool.getconn() if pool else psycopg2.connect(self._dsn, connect_timeout=5)
-            conn.autocommit = False
             reusable = False
+            primary_error = None
             try:
+                conn.autocommit = False
                 yield conn
                 if commit_on_success:
                     conn.commit()
                 else:
                     conn.rollback()
                 reusable = True
-            except BaseException:
+            except BaseException as exc:
+                primary_error = exc
                 try:
                     conn.rollback()
                 except BaseException:
@@ -475,28 +477,40 @@ class Database:
                             conn.close()
                         except BaseException:
                             pass
+                        if primary_error is None:
+                            raise
                 else:
-                    conn.close()
+                    try:
+                        conn.close()
+                    except BaseException:
+                        if primary_error is None:
+                            raise
         else:
             conn = sqlite3.connect(self.db_path, timeout=30)
-            conn.row_factory = sqlite3.Row
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA foreign_keys=ON")
-            conn.execute("PRAGMA busy_timeout=5000")
+            primary_error = None
             try:
+                conn.row_factory = sqlite3.Row
+                conn.execute("PRAGMA journal_mode=WAL")
+                conn.execute("PRAGMA foreign_keys=ON")
+                conn.execute("PRAGMA busy_timeout=5000")
                 yield conn
                 if commit_on_success:
                     conn.commit()
                 else:
                     conn.rollback()
-            except BaseException:
+            except BaseException as exc:
+                primary_error = exc
                 try:
                     conn.rollback()
                 except BaseException:
                     pass
                 raise
             finally:
-                conn.close()
+                try:
+                    conn.close()
+                except BaseException:
+                    if primary_error is None:
+                        raise
 
     def _cursor(self, conn):
         if self._use_pg:
