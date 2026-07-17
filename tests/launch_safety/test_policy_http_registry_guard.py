@@ -976,7 +976,7 @@ def launch_policy_attestation():
     assert "POLICY_ROUTE_CONTRACT_MISMATCH" in _codes(findings)
 
 
-def test_hard_check_uses_only_the_remaining_sitemap_future_allowance():
+def test_hard_check_uses_zero_future_allowance():
     checker = _load_checker()
     assert checker is not None
 
@@ -1014,6 +1014,13 @@ def launch_policy_attestation():
         "route_manifest_revision": evidence.route_manifest_revision,
         "backend_policy_revision": evidence.backend_policy_revision,
     }
+
+@router.get("/launch-sitemaps/{document}")
+def launch_sitemap_document(document: str, batch: str | None = None):
+    return {
+        "x-launch-sitemap-batch-revision": batch,
+        "document": document,
+    }
 ''',
     )
     _write(
@@ -1049,14 +1056,14 @@ def test_public_future_allowance_is_rejected_and_cannot_hide_stale_entry(tmp_pat
     assert checker._validate_allow_future(["get_entity"])
 
 
-def test_current_repository_registry_is_exact_with_only_declared_futures():
+def test_current_repository_registry_is_exact_with_zero_future_allowance():
     checker = _load_checker()
     assert checker is not None and policy_http is not None
 
     findings = checker.scan_policy_routes(
         checker.agent_source_files(AGENT),
         policy_http.POLICY_ENDPOINTS,
-        allowed_future={"launch_sitemap_document"},
+        allowed_future=set(),
     )
 
     assert findings == []
@@ -1067,7 +1074,7 @@ def test_current_repository_registry_is_exact_with_only_declared_futures():
     [
         ["--allow-future", "unknown_future"],
         ["--allow-future", "launch_policy_attestation"],
-        ["--allow-future", "launch_sitemap_document", "--allow-future", "launch_sitemap_document"],
+        ["--allow-future", "launch_sitemap_document"],
         ["--allow-future", "get_entity"],
     ],
 )

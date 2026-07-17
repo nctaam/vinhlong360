@@ -1,5 +1,5 @@
 """
-vinhlong360 SEO endpoints: JSON-LD, sitemap.xml, robots.txt.
+vinhlong360 SEO endpoints: JSON-LD, media/index sitemaps, robots.txt.
 
 PostgreSQL is the production source of truth. Helpers are intentionally
 defensive so older coordinate/source shapes do not break structured data
@@ -26,10 +26,10 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, Response
 
 if __package__:
-    from .index_policy import decide_entity, decide_ward, is_publicly_eligible
+    from .index_policy import decide_entity
     from .launch_evidence import PolicyEvidence, current_policy_evidence
 else:
-    from index_policy import decide_entity, decide_ward, is_publicly_eligible
+    from index_policy import decide_entity
     from launch_evidence import PolicyEvidence, current_policy_evidence
 
 router = APIRouter()
@@ -148,66 +148,16 @@ COLLECTIONS: dict[str, dict[str, Any]] = {
     },
 }
 
-DETAIL_PRIORITY = {
-    "attraction": "0.9",
-    "experience": "0.8",
-    "product": "0.8",
-    "history": "0.8",
-    "nature": "0.8",
-    "event": "0.7",
-    "dish": "0.7",
-    "craft_village": "0.7",
-    "accommodation": "0.7",
-    "person": "0.6",
-    "organization": "0.6",
-    "itinerary": "0.6",
-}
-
-# P1-4: sitemap changefreq theo loại — di sản/tĩnh đổi hiếm (yearly), sự kiện đổi thường (weekly).
-DETAIL_CHANGEFREQ = {
-    "event": "weekly",
-    "dish": "monthly", "restaurant": "monthly", "cafe": "monthly", "drink": "monthly",
-    "product": "monthly", "accommodation": "monthly", "organization": "monthly",
-    "history": "yearly", "nature": "yearly", "attraction": "yearly",
-    "person": "yearly", "craft_village": "yearly", "facility": "yearly",
-    "place": "monthly", "itinerary": "monthly", "economy": "yearly",
-}
-
-CORE_PAGES = [
-    ("/", "daily", "1.0"),
-    ("/du-lich", "weekly", "0.9"),
-    ("/san-pham", "weekly", "0.9"),
-    ("/ocop", "weekly", "0.8"),
-    ("/luu-tru", "weekly", "0.8"),
-    ("/le-hoi", "weekly", "0.8"),
-    ("/su-kien", "weekly", "0.7"),
-    ("/theo-mua", "weekly", "0.8"),
-    ("/ban-do", "weekly", "0.7"),
-    ("/tuyen-duong", "weekly", "0.7"),
-    ("/danh-ba", "monthly", "0.7"),
-    ("/tim-kiem", "monthly", "0.5"),
-    ("/cong-dong", "daily", "0.6"),
-]
-
-GUIDE_PAGES = [
-    ("/kham-pha/am-thuc", "weekly", "0.8"),
-    ("/kham-pha/thien-nhien", "weekly", "0.8"),
-    ("/kham-pha/van-hoa", "weekly", "0.8"),
-    ("/kham-pha/lang-nghe", "weekly", "0.8"),
-    ("/kham-pha/mua-sam", "weekly", "0.8"),
-]
-
 _EMPTY_DATA: dict[str, Any] = {"entities": [], "relationships": [], "itineraries": []}
 
 _data: dict[str, Any] | None = None
 _data_mtime_ns: int | None = None
 _by_id_cache: dict[str, dict[str, Any]] | None = None
 _by_id_cache_key: int | None = None
-_sitemap_cache: tuple[int, int, str, str, str] | None = None
 
 
 def _load() -> dict[str, Any]:
-    global _data, _data_mtime_ns, _by_id_cache, _by_id_cache_key, _sitemap_cache
+    global _data, _data_mtime_ns, _by_id_cache, _by_id_cache_key
     if _data is not None and _data_mtime_ns is None:
         _data.setdefault("entities", [])
         _data.setdefault("relationships", [])
@@ -228,13 +178,12 @@ def _load() -> dict[str, Any]:
         _data_mtime_ns = mtime_ns
         _by_id_cache = None
         _by_id_cache_key = None
-        _sitemap_cache = None
     return _data
 
 
 # Audit vòng 2 fix #7: _load_db_data chạy trên MỖI request /seo/jsonld (trang detail
 # SSR await nó mọi pageview) — query cả 1780 entity + rels + itins mỗi lần. Cache
-# snapshot TTL 300s (đồng bộ TTL sitemap cache); dữ liệu SEO không cần real-time.
+# Snapshot TTL 300s; structured SEO data does not need real-time reads.
 _db_snapshot: dict[str, Any] | None = None
 _db_snapshot_ts: float = 0.0
 _db_snapshot_lock = threading.Lock()
@@ -1261,145 +1210,6 @@ def collection_jsonld(collection_type: str):
     if result is None:
         raise HTTPException(status_code=404, detail="not found")
     return result
-
-
-def _url_xml(loc: str, *, changefreq: str, priority: str, lastmod: str | None = None) -> str:
-    escaped_loc = xml_escape(loc)
-    parts = ["  <url>", f"    <loc>{escaped_loc}</loc>"]
-    if lastmod:
-        parts.append(f"    <lastmod>{xml_escape(lastmod)}</lastmod>")
-    parts.append(f"    <changefreq>{xml_escape(changefreq)}</changefreq>")
-    parts.append(f"    <priority>{xml_escape(priority)}</priority>")
-    parts.append(f'    <xhtml:link rel="alternate" hreflang="vi" href="{escaped_loc}"/>')
-    parts.append(f'    <xhtml:link rel="alternate" hreflang="x-default" href="{escaped_loc}"/>')
-    parts.append("  </url>")
-    return "\n".join(parts)
-
-
-def _sitemap_static_urls() -> list[str]:
-    urls: list[str] = []
-    for path, changefreq, priority in CORE_PAGES:
-        urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority))
-    for path, changefreq, priority in GUIDE_PAGES:
-        urls.append(_url_xml(f"{SITE}{path}", changefreq=changefreq, priority=priority))
-    for area in AREA_NAMES:
-        urls.append(_url_xml(f"{SITE}/khu-vuc/{quote(area, safe='-_~')}", changefreq="weekly", priority="0.8"))
-    return urls
-
-
-def _sitemap_place_children(data: dict[str, Any]) -> dict[str, int]:
-    # P1-5: đếm con nội dung mỗi place — ward là HUB, giá trị đến từ children chứ không
-    # từ độ dài summary; ward quality remains a separate reviewed policy step.
-    _place_children: dict[str, int] = {}
-    for e in data.get("entities", []):
-        if not isinstance(e, dict) or not is_publicly_eligible(e):
-            continue
-        pid = e.get("placeId")
-        entity_id = e.get("id")
-        if (
-            type(pid) is not str
-            or not pid.strip()
-            or type(entity_id) is not str
-            or not entity_id.strip()
-            or entity_id == pid
-        ):
-            continue
-        _place_children[pid] = _place_children.get(pid, 0) + 1
-    return _place_children
-
-
-def _sitemap_place_urls(
-    data: dict[str, Any],
-    place_children: dict[str, int],
-    evidence: PolicyEvidence,
-) -> list[str]:
-    urls: list[str] = []
-    for entity in data.get("entities", []):
-        if not isinstance(entity, dict) or entity.get("type") != "place":
-            continue
-        entity_id = entity.get("id")
-        if type(entity_id) is not str or not entity_id.strip():
-            continue
-        children = place_children.get(entity_id, 0)
-        if not decide_ward(
-            entity, public_child_count=children, evidence=evidence
-        ).indexable:
-            continue
-        urls.append(_url_xml(
-            f"{SITE}/xa-phuong/{quote(entity_id)}",
-            changefreq="monthly",
-            priority="0.6",
-            lastmod=None,  # P1-4: bỏ lastmod=updatedAt (import date → freshness-gaming)
-        ))
-    return urls
-
-
-def _sitemap_detail_urls(
-    data: dict[str, Any], evidence: PolicyEvidence
-) -> list[str]:
-    urls: list[str] = []
-    seen: set[str] = set()
-    for entity in data.get("entities", []):
-        if not isinstance(entity, dict) or not entity.get("id") or entity.get("type") == "place":
-            continue
-        if not decide_entity(entity, evidence).indexable:
-            continue
-        loc = _entity_url(str(entity["id"]))
-        if loc in seen:
-            continue
-        seen.add(loc)
-        urls.append(_url_xml(
-            loc,
-            changefreq=DETAIL_CHANGEFREQ.get(str(entity.get("type")), "monthly"),  # P1-4
-            priority=DETAIL_PRIORITY.get(str(entity.get("type")), "0.5"),
-            lastmod=None,  # P1-4: bỏ lastmod=updatedAt (import date → freshness-gaming)
-        ))
-    return urls
-
-
-def _sitemap_response(content: str) -> Response:
-    return Response(
-        content=content,
-        media_type="application/xml",
-        headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=600"},
-    )
-
-
-@router.get("/sitemap.xml", response_class=Response,
-            summary="XML Sitemap",
-            description="Returns the XML sitemap for search engine crawlers. Includes core pages, area pages, eligible wards, and entity detail pages.")
-def sitemap():
-    global _sitemap_cache
-    data = _load()
-    now = datetime.now(UTC).strftime("%Y-%m-%d")
-    mtime_ns = _data_mtime_ns or 0
-    data_key = id(data)
-    evidence = current_policy_evidence()
-    fingerprint = evidence.policy_fingerprint
-    if (
-        _sitemap_cache
-        and _sitemap_cache[0] == mtime_ns
-        and _sitemap_cache[1] == data_key
-        and _sitemap_cache[2] == now
-        and _sitemap_cache[3] == fingerprint
-    ):
-        return _sitemap_response(_sitemap_cache[4])
-
-    urls: list[str] = []
-    urls.extend(_sitemap_static_urls())
-    place_children = _sitemap_place_children(data)
-    urls.extend(_sitemap_place_urls(data, place_children, evidence))
-    urls.extend(_sitemap_detail_urls(data, evidence))
-
-    if len(urls) > 50000:
-        logger.warning("Sitemap has %d URLs, truncating to 50000 (Google limit)", len(urls))
-        urls = urls[:50000]
-    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
-    xml += "\n".join(urls)
-    xml += "\n</urlset>"
-    _sitemap_cache = (mtime_ns, data_key, now, fingerprint, xml)
-    return _sitemap_response(xml)
 
 
 @router.get("/sitemap-media.xml", response_class=Response,

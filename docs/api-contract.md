@@ -2,7 +2,7 @@
 
 > **STATUS (2026-07-07): active — đã truth-sync.** Type enum synced to the 18-type registry; auth/admin path prefixes corrected to the actual routes (`/auth/*`, `/admin/*`); 2FA/trusted-devices endpoints added.
 
-Date: 2026-06-12 (updated 2026-07-07)
+Date: 2026-06-12 (updated 2026-07-17)
 Status: Production — reflects actual endpoints
 
 This contract defines the data shapes and API endpoints shared between the FastAPI backend (`agent/`) and the Nuxt frontend (`web-nuxt/`).
@@ -125,6 +125,15 @@ every public Nginx server returns 404 for `/_internal/` descendants without prox
 them upstream. This internal attestation does not change the global `noindex` launch
 state.
 
+`GET /_internal/launch-sitemaps/{document}` currently serves only the immutable
+main document name `sitemap.xml` and requires an exact `batch` query revision. It
+loads that pinned publication batch only, returns the stored bytes with
+`X-Launch-Sitemap-Batch-Revision`, and never refreshes, generates, publishes, or
+falls back to the active batch during a request. Missing, malformed, unknown,
+unsupported, or corrupt state is sanitized as HTTP 503. Success and failure both
+use the registered no-store/no-validator contract and never return HTTP 304. The
+route remains private-network-only and does not change the global `noindex` state.
+
 ### Chat
 
 | Method | Path | Description |
@@ -230,7 +239,6 @@ state.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/sitemap.xml` | Entity sitemap |
 | GET | `/sitemap-media.xml` | Media sitemap |
 | GET | `/sitemap-index.xml` | Sitemap index |
 | GET | `/robots.txt` | Robots directives |
@@ -239,6 +247,10 @@ state.
 | GET | `/seo/jsonld/area/{slug}` | TouristDestination schema |
 | GET | `/seo/jsonld/itinerary/{id}` | TouristTrip schema |
 | GET | `/seo/jsonld/collection/{type}` | ItemList schema |
+
+Mutable FastAPI ownership of public `GET /sitemap.xml` is retired. The immutable
+main bytes are available only through the pinned internal launch-sitemap route;
+public handoff remains deferred while the site-wide launch gate is closed.
 
 ### Admin (`/admin`, requires admin key; exposed publicly as `/admin-api/*` via nginx proxy)
 

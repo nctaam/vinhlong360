@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 if __package__:
@@ -71,54 +71,59 @@ class IndexPolicyDecision:
     policy_revision: str
 
     def __post_init__(self) -> None:
-        if type(self.kind) is not str or self.kind not in _REASON_ORDERS:
-            raise ValueError("decision kind must be entity, ward, or itinerary")
-        if type(self.indexable) is not bool:
-            raise TypeError("indexable must be a boolean")
-        if type(self.reasons) is not tuple:
-            raise TypeError("reasons must be a tuple")
-        if any(type(reason) is not str for reason in self.reasons):
-            raise TypeError("decision reasons must be strings")
-        if len(set(self.reasons)) != len(self.reasons):
-            raise ValueError("decision reasons must be unique")
-        reason_order = _REASON_ORDERS[self.kind]
-        try:
-            positions = tuple(
-                reason_order.index(reason) for reason in self.reasons
-            )
-        except ValueError as exc:
-            raise ValueError("decision contains an unknown reason") from exc
-        if positions != tuple(sorted(positions)):
-            raise ValueError("decision reasons are not in canonical order")
-        if self.kind == "itinerary" and (
-            self.indexable or len(self.reasons) != 1
-        ):
-            raise ValueError(
-                "itinerary decision requires exactly one fixed noindex reason"
-            )
-        if self.indexable is bool(self.reasons):
-            raise ValueError("indexable does not match decision reasons")
-        if (
-            type(self.policy_fingerprint) is not str
-            or _SHA256.fullmatch(self.policy_fingerprint) is None
-        ):
-            raise ValueError("decision policy fingerprint is invalid")
-        if (
-            type(self.policy_revision) is not str
-            or self.policy_revision != INDEX_POLICY_REVISION
-        ):
-            raise ValueError("decision policy revision is not current")
+        _validate_decision_fields(self)
+        _validate_decision_reasons(self)
+        _validate_decision_evidence(self)
+
+
+def _validate_decision_fields(decision: IndexPolicyDecision) -> None:
+    if type(decision.kind) is not str or decision.kind not in _REASON_ORDERS:
+        raise ValueError("decision kind must be entity, ward, or itinerary")
+    if type(decision.indexable) is not bool:
+        raise TypeError("indexable must be a boolean")
+    if type(decision.reasons) is not tuple:
+        raise TypeError("reasons must be a tuple")
+    if any(type(reason) is not str for reason in decision.reasons):
+        raise TypeError("decision reasons must be strings")
+
+
+def _validate_decision_reasons(decision: IndexPolicyDecision) -> None:
+    if len(set(decision.reasons)) != len(decision.reasons):
+        raise ValueError("decision reasons must be unique")
+    reason_order = _REASON_ORDERS[decision.kind]
+    try:
+        positions = tuple(reason_order.index(reason) for reason in decision.reasons)
+    except ValueError as exc:
+        raise ValueError("decision contains an unknown reason") from exc
+    if positions != tuple(sorted(positions)):
+        raise ValueError("decision reasons are not in canonical order")
+    if decision.kind == "itinerary" and (
+        decision.indexable or len(decision.reasons) != 1
+    ):
+        raise ValueError(
+            "itinerary decision requires exactly one fixed noindex reason"
+        )
+    if decision.indexable is bool(decision.reasons):
+        raise ValueError("indexable does not match decision reasons")
+
+
+def _validate_decision_evidence(decision: IndexPolicyDecision) -> None:
+    if (
+        type(decision.policy_fingerprint) is not str
+        or _SHA256.fullmatch(decision.policy_fingerprint) is None
+    ):
+        raise ValueError("decision policy fingerprint is invalid")
+    if (
+        type(decision.policy_revision) is not str
+        or decision.policy_revision != INDEX_POLICY_REVISION
+    ):
+        raise ValueError("decision policy revision is not current")
 
 
 def _snapshot(entity: Mapping[str, object]) -> dict[str, object]:
     if not isinstance(entity, Mapping):
         raise TypeError("entity must be a mapping")
     return {field: entity.get(field, _MISSING) for field in _ENTITY_FIELDS}
-
-
-def _append_once(reasons: list[str], reason: str) -> None:
-    if reason not in reasons:
-        reasons.append(reason)
 
 
 def _is_supported_verified(value: object) -> bool:
@@ -138,37 +143,56 @@ def _entity_type_reasons(snapshot: Mapping[str, object]) -> tuple[str, ...]:
     return ()
 
 
-def _public_eligibility_reasons(snapshot: Mapping[str, object]) -> tuple[str, ...]:
-    reasons: list[str] = []
-
+def _status_reason(snapshot: Mapping[str, object]) -> str | None:
     status = snapshot["status"]
     if status is _MISSING or status is None:
-        reasons.append("public-status-missing")
-    elif type(status) is not str or status not in PUBLIC_STATUSES:
-        reasons.append("public-status-not-allowlisted")
+        return "public-status-missing"
+    if type(status) is not str or status not in PUBLIC_STATUSES:
+        return "public-status-not-allowlisted"
+    return None
 
+
+def _verification_reason(snapshot: Mapping[str, object]) -> str | None:
     verified = snapshot["verified"]
     if verified is _MISSING or verified is None:
-        reasons.append("public-verification-missing")
-    elif not _is_supported_verified(verified):
-        reasons.append("public-explicitly-unverified")
+        return "public-verification-missing"
+    if not _is_supported_verified(verified):
+        return "public-explicitly-unverified"
+    return None
 
+
+def _has_private_marker(snapshot: Mapping[str, object]) -> bool:
     is_private = snapshot["is_private"]
-    if is_private is not _MISSING and (
+    private_flag = is_private is not _MISSING and (
         type(is_private) is not bool or is_private is True
-    ):
-        _append_once(reasons, "public-private-content")
-
+    )
     visibility = snapshot["visibility"]
-    if visibility is not _MISSING and (
+    private_visibility = visibility is not _MISSING and (
         type(visibility) is not str or visibility != "public"
-    ):
-        _append_once(reasons, "public-private-content")
+    )
+    return private_flag or private_visibility
 
+
+def _has_unpublished_marker(snapshot: Mapping[str, object]) -> bool:
     for field in ("is_public", "published"):
         value = snapshot[field]
         if value is not _MISSING and (type(value) is not bool or value is False):
-            _append_once(reasons, "public-unpublished-content")
+            return True
+    return False
+
+
+def _public_eligibility_reasons(snapshot: Mapping[str, object]) -> tuple[str, ...]:
+    reasons: list[str] = []
+    status_reason = _status_reason(snapshot)
+    if status_reason is not None:
+        reasons.append(status_reason)
+    verification_reason = _verification_reason(snapshot)
+    if verification_reason is not None:
+        reasons.append(verification_reason)
+    if _has_private_marker(snapshot):
+        reasons.append("public-private-content")
+    if _has_unpublished_marker(snapshot):
+        reasons.append("public-unpublished-content")
 
     return tuple(reasons)
 
@@ -179,6 +203,40 @@ def public_eligibility_reasons(entity: Mapping[str, object]) -> tuple[str, ...]:
 
 def is_publicly_eligible(entity: Mapping[str, object]) -> bool:
     return not public_eligibility_reasons(entity)
+
+
+def _ward_child_identity(child: Mapping[str, object]) -> tuple[str, str] | None:
+    child_id = child.get("id")
+    place_id = child.get("placeId")
+    child_type = child.get("type")
+    if type(child_id) is not str or not child_id.strip():
+        return None
+    if type(place_id) is not str or not place_id.strip():
+        return None
+    if type(child_type) is not str or not child_type.strip():
+        return None
+    if child_type == "place" or child_id == place_id:
+        return None
+    return place_id, child_id
+
+
+def public_ward_child_counts(entities: Iterable[object]) -> dict[str, int]:
+    """Count unique, strictly identified public non-place children by ward."""
+    child_ids_by_ward: dict[str, set[str]] = {}
+    for child in entities:
+        if not isinstance(child, Mapping):
+            continue
+        identity = _ward_child_identity(child)
+        if identity is None:
+            continue
+        if not is_publicly_eligible(child):
+            continue
+        place_id, child_id = identity
+        child_ids_by_ward.setdefault(place_id, set()).add(child_id)
+    return {
+        ward_id: len(child_ids)
+        for ward_id, child_ids in child_ids_by_ward.items()
+    }
 
 
 def _unicode_word_count(value: object) -> int:

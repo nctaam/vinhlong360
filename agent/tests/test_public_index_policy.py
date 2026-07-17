@@ -11,6 +11,7 @@ from pydantic import ValidationError
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import public_api  # noqa: E402
+from index_policy import public_ward_child_counts  # noqa: E402
 from launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence  # noqa: E402
 
 
@@ -154,6 +155,25 @@ def test_ward_policy_counts_only_public_eligible_children(client: TestClient):
     policy = response.json()["index_policy"]
     assert policy["indexable"] is False
     assert "ward-below-child-and-summary-threshold" in policy["reasons"]
+
+
+def test_public_api_ward_count_matches_shared_sitemap_authority(monkeypatch):
+    children = [
+        _entity(id="one", placeId="public-ward"),
+        _entity(id="one", placeId="public-ward"),
+        _entity(id="two", placeId="public-ward"),
+        _entity(id="draft", placeId="public-ward", status="draft"),
+        _ward(id="nested", placeId="public-ward"),
+    ]
+    monkeypatch.setattr(
+        public_api.db,
+        "entities_by_place",
+        lambda place_id: copy.deepcopy(children if place_id == "public-ward" else []),
+    )
+
+    assert public_api._public_index_policy_child_count("public-ward") == (
+        public_ward_child_counts(children).get("public-ward", 0)
+    ) == 2
 
 
 def test_index_policy_nested_model_rejects_unknown_fields():

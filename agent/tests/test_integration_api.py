@@ -504,18 +504,9 @@ class TestSeoRobotsTxt:
 
 
 class TestSeoSitemap:
-    def test_sitemap_xml_200(self):
+    def test_mutable_main_sitemap_is_not_owned_by_seo_router(self):
         resp = _seo_client().get("/sitemap.xml")
-        assert resp.status_code == 200
-        assert "application/xml" in resp.headers.get("content-type", "")
-        body = resp.text
-        assert "<?xml" in body
-        assert "<urlset" in body
-        assert "<url>" in body
-
-    def test_sitemap_contains_core_pages(self):
-        body = _seo_client().get("/sitemap.xml").text
-        assert "https://vinhlong360.vn/" in body
+        assert resp.status_code == 404
 
     def test_sitemap_index_200(self):
         resp = _seo_client().get("/sitemap-index.xml")

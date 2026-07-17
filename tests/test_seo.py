@@ -25,28 +25,7 @@ def test_entity_jsonld_accepts_list_coordinates() -> None:
     assert ld["citation"]["url"] == "https://example.com/ao-ba-om"
 
 
-def test_sitemap_includes_public_entities_but_excludes_fixed_itineraries(monkeypatch) -> None:
-    rich = "chu " * 140  # >=130 tu -> qua cong chat luong is_index_worthy (P0-1)
-    monkeypatch.setattr(seo, "_data", {
-        "entities": [
-            {"id": "xa-vinh-long", "type": "place", "name": "Xa Vinh Long", "updatedAt": "2026-01-01"},
-            {"id": "lich-su-a", "type": "history", "name": "Lich su A", "status": "published",
-             "verified": True, "summary": rich, "updatedAt": "2026-01-02"},
-            {"id": "nhan-vat-b", "type": "person", "name": "Nhan vat B", "status": "published",
-             "verified": True, "summary": rich},
-        ],
-        "relationships": [],
-        "itineraries": [{"id": "hanh-trinh-a", "title": "Hanh trinh A", "updatedAt": "2026-01-03"}],
-    })
-
-    body = seo.sitemap().body.decode("utf-8")
-
-    assert "https://vinhlong360.vn/dia-diem/lich-su-a" in body
-    assert "https://vinhlong360.vn/dia-diem/nhan-vat-b" in body
-    assert "https://vinhlong360.vn/dia-diem/xa-vinh-long" not in body
-    assert "https://vinhlong360.vn/lich-trinh/hanh-trinh-a" not in body
-    assert "<lastmod>2026-01-03</lastmod>" not in body
-
+def test_itinerary_jsonld_keeps_fixed_detail_url_contract() -> None:
     itinerary_ld = seo.build_itinerary_jsonld(
         {"id": "hanh-trinh-a", "title": "Hanh trinh A", "stops": []}, {}
     )

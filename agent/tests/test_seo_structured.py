@@ -7,8 +7,6 @@ Covers the P2/P4 SEO/GEO additions:
   attribution fields present only when the entity actually carries them (B6).
 """
 
-import re
-
 import seo
 
 
@@ -381,74 +379,6 @@ def test_accommodation_without_attrs_omits_enrichment():
     assert "starRating" not in ld
     assert "priceRange" not in ld
     assert "amenityFeature" not in ld
-
-
-# ── Sitemap completeness ──────────────────────────────────────────────────
-
-
-def test_sitemap_includes_all_public_entities(monkeypatch, sample_data):
-    # Give every entity enough prose to clear the index gates so this test asserts
-    # the public-inclusion contract: non-place → P0-1 word gate; place → P1-5 ward
-    # summary gate (≥60 words). Thin-page exclusion is covered by dedicated tests.
-    for _e in sample_data["entities"]:
-        _e["status"] = "published"
-        _e["verified"] = True
-        _e["summary"] = " ".join(["từ"] * 220)
-    monkeypatch.setattr(seo, "_load", lambda: sample_data)
-    monkeypatch.setattr(seo, "_sitemap_cache", None)
-    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
-    resp = seo.sitemap()
-    xml = resp.body.decode()
-    for entity in sample_data["entities"]:
-        eid = entity["id"]
-        if entity["type"] == "place":
-            assert f"/xa-phuong/{eid}" in xml, f"place {eid} missing from sitemap"
-        else:
-            assert f"/dia-diem/{eid}" in xml, f"entity {eid} missing from sitemap"
-
-
-def test_sitemap_excludes_provisional(monkeypatch):
-    data = {
-        "entities": [
-            {"id": "ok", "name": "OK", "type": "attraction", "status": "published",
-             "verified": True, "summary": " ".join(["từ"] * 220)},
-            {"id": "prov", "name": "Provisional", "type": "attraction", "status": "provisional",
-             "verified": True},
-        ],
-        "relationships": [],
-        "itineraries": [],
-    }
-    monkeypatch.setattr(seo, "_load", lambda: data)
-    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
-    monkeypatch.setattr(seo, "_sitemap_cache", None)
-    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
-    resp = seo.sitemap()
-    xml = resp.body.decode()
-    assert "/dia-diem/ok" in xml
-    assert "/dia-diem/prov" not in xml
-
-
-def test_sitemap_includes_guide_pages(monkeypatch, sample_data):
-    monkeypatch.setattr(seo, "_load", lambda: sample_data)
-    monkeypatch.setattr(seo, "_sitemap_cache", None)
-    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
-    resp = seo.sitemap()
-    xml = resp.body.decode()
-    assert "/kham-pha/am-thuc" in xml
-    assert "/kham-pha/lang-nghe" in xml
-
-
-def test_sitemap_no_fake_lastmod_on_core_pages(monkeypatch, sample_data):
-    monkeypatch.setattr(seo, "_load", lambda: sample_data)
-    monkeypatch.setattr(seo, "_sitemap_cache", None)
-    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
-    resp = seo.sitemap()
-    xml = resp.body.decode()
-    # Core pages should NOT have today's date as lastmod
-    import re as _re
-    homepage_block = _re.search(r"<url>.*?<loc>[^<]*/</loc>.*?</url>", xml, _re.DOTALL)
-    assert homepage_block
-    assert "<lastmod>" not in homepage_block.group()
 
 
 # ── Event enrichment ──────────────────────────────────────────────────────
@@ -1333,27 +1263,6 @@ def test_collection_jsonld_empty_entities():
     assert ld["itemListElement"] == []
 
 
-def test_sitemap_xml_special_chars_in_id(monkeypatch):
-    """Entity IDs with special XML chars should be escaped in sitemap."""
-    data = {
-        "entities": [
-            {"id": "test&entity<>", "name": "Test", "type": "attraction",
-             "status": "published", "verified": True,
-             "summary": " ".join(["từ"] * 220)},
-        ],
-        "relationships": [],
-        "itineraries": [],
-    }
-    monkeypatch.setattr(seo, "_load", lambda: data)
-    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
-    monkeypatch.setattr(seo, "_sitemap_cache", None)
-    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
-    resp = seo.sitemap()
-    xml = resp.body.decode()
-    assert "%26" in xml or "&amp;" in xml
-    assert "%3C" in xml or "&lt;" in xml
-
-
 def test_itinerary_jsonld_with_entity_ref_and_name():
     """Stop with both entityId and name — entity name wins."""
     it = {
@@ -1697,29 +1606,6 @@ def test_load_invalidates_by_id_cache_on_data_change(monkeypatch, tmp_path):
     seo._load()
     by_id2 = seo._by_id()
     assert "b" in by_id2
-
-
-# ── Sitemap deduplication ────────────────────────────────────────────
-
-
-def test_sitemap_deduplicates_entity_urls(monkeypatch):
-    data = {
-        "entities": [
-            {"id": "dup", "name": "Dup 1", "type": "attraction", "status": "published",
-             "verified": True, "summary": " ".join(["từ"] * 220)},
-            {"id": "dup", "name": "Dup 2", "type": "dish", "status": "published",
-             "verified": True, "summary": " ".join(["từ"] * 220)},
-        ],
-        "relationships": [],
-        "itineraries": [],
-    }
-    monkeypatch.setattr(seo, "_load", lambda: data)
-    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
-    monkeypatch.setattr(seo, "_sitemap_cache", None)
-    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
-    resp = seo.sitemap()
-    xml = resp.body.decode()
-    assert xml.count("<loc>https://vinhlong360.vn/dia-diem/dup</loc>") == 1
 
 
 # ── Itinerary isPartOf graph linking ─────────────────────────────────
@@ -2215,20 +2101,6 @@ def test_event_no_capacity_when_string():
     assert "maximumAttendeeCapacity" not in ld
 
 
-# ── Sitemap hreflang ────────────────────────────────────────────────
-
-
-def test_sitemap_has_xhtml_namespace(monkeypatch):
-    data = {"entities": [], "relationships": [], "itineraries": []}
-    monkeypatch.setattr(seo, "_load", lambda: data)
-    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
-    monkeypatch.setattr(seo, "_sitemap_cache", None)
-    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
-    resp = seo.sitemap()
-    xml = resp.body.decode()
-    assert 'xmlns:xhtml="http://www.w3.org/1999/xhtml"' in xml
-
-
 def test_robots_has_crawl_delay():
     resp = seo.robots()
     assert "Crawl-delay: 2" in resp
@@ -2423,33 +2295,3 @@ def test_sitemap_media_no_caption_without_summary(monkeypatch):
     resp = seo.sitemap_media()
     xml = resp.body.decode()
     assert "<image:caption>" not in xml
-
-
-def test_sitemap_url_has_hreflang(monkeypatch):
-    data = {
-        "entities": [{
-            "id": "a",
-            "name": "A",
-            "type": "attraction",
-            "status": "published",
-            "verified": True,
-            "summary": "word " * 130,
-            "confidence": 0.9,
-        }],
-        "relationships": [],
-        "itineraries": [],
-    }
-    monkeypatch.setattr(seo, "_load", lambda: data)
-    monkeypatch.setattr(seo, "_load_db_data", lambda: None)  # ep fallback JSON (endpoint gio DB-first)
-    monkeypatch.setattr(seo, "_sitemap_cache", None)
-    monkeypatch.setattr(seo, "_data_mtime_ns", 0)
-    resp = seo.sitemap()
-    xml = resp.body.decode()
-    url_block = re.search(
-        rf"<url>\s*<loc>{re.escape(seo.SITE)}/dia-diem/a</loc>.*?</url>",
-        xml,
-        re.DOTALL,
-    )
-    assert url_block is not None
-    assert 'hreflang="vi"' in url_block.group(0)
-    assert 'hreflang="x-default"' in url_block.group(0)

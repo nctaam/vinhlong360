@@ -1121,11 +1121,12 @@ class TestMediumFixesBatch2:
         assert "asyncio.Lock()" in src, "Must use asyncio.Lock for homepage cache"
 
     def test_sitemap_50k_limit(self):
-        """Sitemap must truncate URLs to Google's 50,000 limit."""
-        src = (Path(__file__).resolve().parent.parent / "seo.py").read_text(encoding="utf-8")
-        assert "50000" in src, "Sitemap must enforce 50,000 URL limit"
-        assert "urls[:50000]" in src or "urls = urls[:50000]" in src, \
-            "Sitemap must truncate to 50k"
+        """The immutable renderer must truncate after deterministic sorting."""
+        src = (Path(__file__).resolve().parent.parent / "sitemap_render.py").read_text(
+            encoding="utf-8"
+        )
+        assert "MAX_SITEMAP_URLS = 50_000" in src
+        assert "sorted(urls)[:MAX_SITEMAP_URLS]" in src
 
     def test_bot_gateway_rejects_without_secret(self):
         """Zalo webhook must reject requests when ZALO_OA_SECRET is not configured."""

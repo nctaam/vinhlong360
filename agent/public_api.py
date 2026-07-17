@@ -42,7 +42,7 @@ if __package__:
         IndexPolicyDecision,
         decide_entity,
         decide_ward,
-        is_publicly_eligible,
+        public_ward_child_counts,
     )
     from .launch_evidence import current_policy_evidence
 else:
@@ -50,7 +50,7 @@ else:
         IndexPolicyDecision,
         decide_entity,
         decide_ward,
-        is_publicly_eligible,
+        public_ward_child_counts,
     )
     from launch_evidence import current_policy_evidence
 
@@ -124,24 +124,7 @@ def _public_index_policy_child_count(ward_id: object) -> int:
     """Count only strictly identified, policy-eligible content children."""
     if type(ward_id) is not str or not ward_id.strip():
         return 0
-    count = 0
-    for child in db.entities_by_place(ward_id):
-        if not isinstance(child, dict):
-            continue
-        child_id = child.get("id")
-        place_id = child.get("placeId")
-        if (
-            type(child_id) is not str
-            or not child_id.strip()
-            or type(place_id) is not str
-            or not place_id.strip()
-            or place_id != ward_id
-            or child_id == ward_id
-        ):
-            continue
-        if is_publicly_eligible(child):
-            count += 1
-    return count
+    return public_ward_child_counts(db.entities_by_place(ward_id)).get(ward_id, 0)
 
 
 def _entity_detail_index_policy(entity: dict) -> IndexPolicyDecision:

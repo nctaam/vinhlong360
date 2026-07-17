@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import hashlib
 from collections.abc import Callable
 from pathlib import Path
 
@@ -25,6 +26,7 @@ except ModuleNotFoundError:
     policy_http = None
 
 from launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence  # noqa: E402
+from sitemap_store import SitemapBundleStore, StoredBundle  # noqa: E402
 
 
 EVIDENCE_A = PolicyEvidence(
@@ -62,6 +64,26 @@ def _focused_app(monkeypatch: pytest.MonkeyPatch, loader: Callable[[], PolicyEvi
     app.include_router(launch_policy_api.router)
     app.add_middleware(policy_http.PolicyHttpMiddleware, route_resolver=app.router)
     return app
+
+
+def _bundle(revision: str, main: bytes = b"<urlset>pinned</urlset>") -> StoredBundle:
+    documents = {
+        "sitemap.xml": main,
+        "sitemap-media.xml": b"<urlset>synthetic-media</urlset>",
+        "sitemap-index.xml": b"<sitemapindex>synthetic-index</sitemapindex>",
+    }
+    return StoredBundle(
+        batch_revision=revision,
+        metadata={
+            "schema_version": 1,
+            "batch_revision": revision,
+            "documents": {
+                name: hashlib.sha256(body).hexdigest()
+                for name, body in documents.items()
+            },
+        },
+        documents=documents,
+    )
 
 
 def _assert_no_store_no_validator(response, expected_status: int) -> None:
@@ -207,3 +229,135 @@ def test_attestation_uses_an_explicit_three_field_payload():
     source = (AGENT / "launch_policy_api.py").read_text(encoding="utf-8")
 
     assert "asdict" not in source
+
+
+def test_pinned_main_sitemap_reads_only_requested_batch(tmp_path, monkeypatch):
+    store = SitemapBundleStore(tmp_path / "bundles")
+    previous = _bundle("a" * 64, b"<urlset>previous-pinned</urlset>")
+    active = _bundle("b" * 64, b"<urlset>active-pinned</urlset>")
+    store.publish(previous)
+    store.publish(active)
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: store)
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(
+            f"/_internal/launch-sitemaps/sitemap.xml?batch={previous.batch_revision}",
+            headers={"If-None-Match": '"legacy"'},
+        )
+
+    assert response.content == previous.documents["sitemap.xml"]
+    assert response.headers["x-launch-sitemap-batch-revision"] == previous.batch_revision
+    assert response.headers["content-type"].startswith("application/xml")
+    _assert_no_store_no_validator(response, 200)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/_internal/launch-sitemaps/sitemap.xml",
+        "/_internal/launch-sitemaps/sitemap.xml?batch=bad",
+        f"/_internal/launch-sitemaps/sitemap.xml?batch={'c' * 64}",
+        f"/_internal/launch-sitemaps/sitemap-media.xml?batch={'a' * 64}",
+        f"/_internal/launch-sitemaps/sitemap-index.xml?batch={'a' * 64}",
+        f"/_internal/launch-sitemaps/unknown.xml?batch={'a' * 64}",
+    ],
+)
+def test_sitemap_document_failures_are_sanitized_no_store(
+    tmp_path,
+    monkeypatch,
+    path: str,
+):
+    store = SitemapBundleStore(tmp_path / "bundles")
+    store.publish(_bundle("a" * 64))
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: store)
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(path, headers={"If-Modified-Since": "today"})
+
+    assert response.json() == {"detail": "Launch sitemap document unavailable"}
+    _assert_no_store_no_validator(response, 503)
+
+
+def test_sitemap_document_catches_document_access_failure(monkeypatch):
+    class BrokenDocuments:
+        def __getitem__(self, _name):
+            raise RuntimeError("secret document failure")
+
+    class Store:
+        def load_batch(self, _batch):
+            return type(
+                "Bundle",
+                (),
+                {"batch_revision": "a" * 64, "documents": BrokenDocuments()},
+            )()
+
+        def load_active(self):
+            raise AssertionError("GET must never fall back to active state")
+
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: Store())
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(
+            f"/_internal/launch-sitemaps/sitemap.xml?batch={'a' * 64}"
+        )
+
+    assert response.json() == {"detail": "Launch sitemap document unavailable"}
+    assert "secret" not in response.text
+    _assert_no_store_no_validator(response, 503)
+
+
+def test_sitemap_document_catches_store_getter_failure(monkeypatch):
+    def fail_store_getter():
+        raise RuntimeError("secret store getter failure")
+
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", fail_store_getter)
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(
+            f"/_internal/launch-sitemaps/sitemap.xml?batch={'a' * 64}"
+        )
+
+    assert response.json() == {"detail": "Launch sitemap document unavailable"}
+    assert "secret" not in response.text
+    _assert_no_store_no_validator(response, 503)
+
+
+def test_sitemap_document_catches_response_serialization_failure(monkeypatch):
+    class Store:
+        def load_batch(self, _batch):
+            return type(
+                "Bundle",
+                (),
+                {"batch_revision": "a" * 64, "documents": {"sitemap.xml": object()}},
+            )()
+
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: Store())
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(
+            f"/_internal/launch-sitemaps/sitemap.xml?batch={'a' * 64}"
+        )
+
+    assert response.json() == {"detail": "Launch sitemap document unavailable"}
+    _assert_no_store_no_validator(response, 503)
+
+
+def test_sitemap_route_identity_and_openapi_exclusion(monkeypatch):
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+    route = next(
+        route
+        for route in app.routes
+        if getattr(route, "path", None) == "/_internal/launch-sitemaps/{document}"
+    )
+
+    with TestClient(app) as client:
+        schema = client.get("/openapi.json").json()
+
+    assert route.name == "launch_sitemap_document"
+    assert route.methods == {"GET"}
+    assert "/_internal/launch-sitemaps/{document}" not in schema["paths"]
