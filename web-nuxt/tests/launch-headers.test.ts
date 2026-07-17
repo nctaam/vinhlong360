@@ -408,6 +408,56 @@ describe('final response lifecycle', () => {
   })
 
   it.each([
+    '/api/entities',
+    '/auth/session',
+    '/admin-api/users',
+    '/chat/stream',
+    '/health',
+    '/feedback/report',
+    '/_nuxt/app.js',
+    '/img/hero.webp',
+  ])('skips missing-type non-HTML error paths even with browser Accept: %s', (path) => {
+    const event = responseEvent({
+      path,
+      accept: 'text/html,application/xhtml+xml',
+      status: 404,
+    })
+
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).not.toHaveProperty('cache-control')
+    expect(lowerHeaders(event)).not.toHaveProperty('x-launch-indexing-policy')
+    expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
+  })
+
+  it('uses the launch candidate classification for a normal 200 response without Content-Type', () => {
+    const event = responseEvent({ path: '/du-lich', accept: 'text/html', status: 200 })
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).toMatchObject({
+      'cache-control': 'no-store',
+      'x-launch-indexing-policy': 'failed-open',
+      'x-robots-tag': 'noindex, follow',
+    })
+  })
+
+  it('prioritizes an existing middleware decision for wildcard HTML requests without Content-Type', () => {
+    const event = responseEvent({
+      path: '/du-lich',
+      accept: '*/*',
+      status: 200,
+      context: { launchSafety: failedOpenDecision },
+    })
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).toMatchObject({
+      'cache-control': 'no-store',
+      'x-launch-indexing-policy': 'failed-open',
+      'x-robots-tag': 'noindex, follow',
+    })
+  })
+
+  it.each([
     '/robots.txt',
     '/sitemap.xml',
     '/sitemap-media.xml',

@@ -6,7 +6,10 @@ import {
 } from 'h3'
 import { defineNitroPlugin } from 'nitropack/runtime/internal/plugin'
 
-import { isRootSeoRequest } from '../middleware/launch-safety'
+import {
+  isLaunchSafetyCandidate,
+  isRootSeoRequest,
+} from '../middleware/launch-safety'
 import {
   failedOpenLaunchDecision,
   writeLaunchResponseHeaders,
@@ -40,6 +43,32 @@ function isHtmlContentType(contentType: string): boolean {
   return contentType.includes('text/html') || contentType.includes('application/xhtml+xml')
 }
 
+const NON_HTML_PREFIXES = [
+  '/api',
+  '/auth',
+  '/admin-api',
+  '/chat',
+  '/health',
+  '/feedback',
+  '/_nuxt',
+] as const
+const STATIC_EXTENSION = /\.(?:avif|css|eot|gif|ico|jpe?g|js|json|map|mjs|pdf|png|svg|ttf|txt|wasm|webm|webmanifest|webp|woff2?)(?:$|\/)/iu
+
+function requestPathname(event: H3Event): string {
+  return (event.node.req.url || event.path || '/').split('?', 1)[0] || '/'
+}
+
+function isKnownNonHtmlPath(event: H3Event): boolean {
+  const pathname = requestPathname(event)
+  return NON_HTML_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`))
+    || STATIC_EXTENSION.test(pathname)
+}
+
+function responseStatus(event: H3Event): number {
+  const status = event.node.res.statusCode
+  return Number.isInteger(status) ? status : 200
+}
+
 function shouldFinalizeLaunchResponse(event: H3Event): boolean {
   if (isRootSeoRequest(event)) return true
 
@@ -48,11 +77,18 @@ function shouldFinalizeLaunchResponse(event: H3Event): boolean {
   const contentType = responseContentType(event)
   if (contentType) return isHtmlContentType(contentType)
 
+  // Middleware already attested this request. Preserve that request-local
+  // decision for wildcard browser requests, but never extend it to known APIs/assets.
+  if (event.context.launchSafety !== undefined && !isKnownNonHtmlPath(event)) return true
+
+  if (responseStatus(event) < 400) return isLaunchSafetyCandidate(event)
+
   // Error hooks can run before Nitro attaches Content-Type. Only an explicit
-  // browser HTML request is safe to treat as HTML in that window; wildcard
-  // Accept is common for assets and must remain unprotected.
+  // browser HTML request is safe to treat as HTML in that window. Known APIs,
+  // framework assets, and static extensions remain unprotected.
   const accept = requestHeader(event, 'accept')
-  return accept.includes('text/html') || accept.includes('application/xhtml+xml')
+  return !isKnownNonHtmlPath(event)
+    && (accept.includes('text/html') || accept.includes('application/xhtml+xml'))
 }
 
 function isStoredInput(value: unknown): value is LaunchResponseHeaderInput {
