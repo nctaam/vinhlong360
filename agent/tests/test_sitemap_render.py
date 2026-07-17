@@ -279,11 +279,12 @@ def test_resolve_sitemap_image_url_prefixes_local_paths_and_preserves_https():
 def test_media_serializer_matches_utf8_fixture_with_two_disclosed_images():
     manifest = load_route_manifest()
     entity = _entity(
-        "tram-chim",
-        name="Tràm Chim",
+        "two-images",
+        name="Two images",
         images=[
-            "/media/tram-chim-2.webp?size=large&crop=wide",
-            "https://cdn.example/tram-chim-1.webp",
+            "/media/z-local.webp",
+            "https://cdn.example.test/media/a-absolute.webp",
+            "http://cdn.example.test/media/rejected.webp",
         ],
     )
 
@@ -294,6 +295,7 @@ def test_media_serializer_matches_utf8_fixture_with_two_disclosed_images():
     assert xml == MEDIA_FIXTURE.read_bytes()
     assert xml.startswith(b"<?xml version='1.0' encoding='utf-8'?>\n")
     assert not xml.endswith(b"\n")
+    assert b"rejected.webp" not in xml
 
 
 def test_media_sitemap_is_sorted_deduplicated_and_permutation_stable():
