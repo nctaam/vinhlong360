@@ -42,6 +42,7 @@ ENTITIES_SQL = "SELECT * FROM entities"
 RELATIONSHIPS_SQL = (
     "SELECT from_id AS source_id, to_id AS target_id, type FROM relationships"
 )
+BOUNDED_PG_OPTIONS = "-cstatement_timeout=5000 -clock_timeout=5000"
 
 
 def _test_database_url() -> str | None:
@@ -185,8 +186,10 @@ class StubbornProcess:
 
     def join(self, timeout):
         self.join_timeouts.append(timeout)
-        if self.kill_calls:
+        if self.kill_calls and timeout > 0:
             self.alive = False
+        elif timeout > 0:
+            time.sleep(timeout)
 
 
 def test_process_cleanup_terminates_then_kills_with_only_bounded_joins():
@@ -199,23 +202,65 @@ def test_process_cleanup_terminates_then_kills_with_only_bounded_joins():
     assert process.kill_calls == 1
     assert process.join_timeouts
     assert all(timeout is not None and timeout <= 0.01 for timeout in process.join_timeouts)
+    assert process.join_timeouts[-1] > 0
+
+
+def test_schema_admin_dsn_for_create_and_drop_has_bounded_timeouts():
+    dsn = _bounded_admin_dsn(
+        "postgresql://task16_admin@127.0.0.1:55432/vl360_launch_test"
+        "?connect_timeout=0&options=-cstatement_timeout%3D0"
+    )
+
+    target = parse_dsn(dsn)
+
+    assert target["connect_timeout"] == "5"
+    assert "-cstatement_timeout=5000" in target["options"]
+    assert "-clock_timeout=5000" in target["options"]
+
+
+def _bounded_admin_dsn(url):
+    return make_dsn(
+        url,
+        connect_timeout=5,
+        options=BOUNDED_PG_OPTIONS,
+    )
 
 
 def _terminate_processes(processes, *, timeout):
     processes = tuple(processes)
-    deadline = time.monotonic() + timeout
+    graceful_deadline = time.monotonic() + timeout
     for process in processes:
         if process.is_alive():
             process.terminate()
     for process in processes:
-        process.join(max(0.0, deadline - time.monotonic()))
+        process.join(max(0.0, graceful_deadline - time.monotonic()))
 
     alive = tuple(process for process in processes if process.is_alive())
     for process in alive:
         process.kill()
+    kill_deadline = time.monotonic() + timeout
     for process in alive:
-        process.join(max(0.0, deadline - time.monotonic()))
+        process.join(max(0.0, kill_deadline - time.monotonic()))
     return tuple(process for process in processes if process.is_alive())
+
+
+def _start_bounded_connection_cancellation(connections):
+    def cancel(connection):
+        try:
+            connection.cancel()
+        except psycopg2.Error:
+            pass
+
+    cancellers = []
+    for connection in connections:
+        canceller = threading.Thread(
+            target=cancel,
+            args=(connection,),
+            daemon=True,
+        )
+        canceller.start()
+        cancellers.append(canceller)
+    return tuple(cancellers)
 
 
 def _publish_candidate_process(root, candidate, start, results):
@@ -284,8 +329,9 @@ def disposable_pg():
         )
     schema = f"sitemap_bundle_{uuid.uuid4().hex}"
     schema_created = False
+    admin_dsn = _bounded_admin_dsn(TEST_DATABASE_URL)
     try:
-        with psycopg2.connect(TEST_DATABASE_URL) as conn:
+        with psycopg2.connect(admin_dsn) as conn:
             with conn.cursor() as cursor:
                 cursor.execute(
                     sql.SQL("CREATE SCHEMA {}").format(sql.Identifier(schema))
@@ -294,9 +340,10 @@ def disposable_pg():
 
         schema_dsn = make_dsn(
             TEST_DATABASE_URL,
+            connect_timeout=5,
             options=(
                 f"-csearch_path={schema} "
-                "-cstatement_timeout=5000 -clock_timeout=5000"
+                f"{BOUNDED_PG_OPTIONS}"
             ),
         )
         with psycopg2.connect(schema_dsn) as conn:
@@ -334,7 +381,7 @@ def disposable_pg():
         yield DisposablePostgres(adapter=adapter, dsn=schema_dsn, schema=schema)
     finally:
         if schema_created:
-            with psycopg2.connect(TEST_DATABASE_URL) as conn:
+            with psycopg2.connect(admin_dsn) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(
                         sql.SQL("DROP SCHEMA {} CASCADE").format(
@@ -465,9 +512,12 @@ def test_all_three_documents_use_the_original_repeatable_read_snapshot(
 
     entity_read = threading.Event()
     release_relationship_read = threading.Event()
+    active_connections = []
     original_execute = disposable_pg.adapter._execute
 
     def execute_with_snapshot_barrier(conn, sql_text, params=None):
+        if conn not in active_connections:
+            active_connections.append(conn)
         statement = _normalized(sql_text)
         if statement == RELATIONSHIPS_SQL:
             if not release_relationship_read.wait(WAIT_TIMEOUT):
@@ -503,6 +553,12 @@ def test_all_three_documents_use_the_original_repeatable_read_snapshot(
     finally:
         release_relationship_read.set()
         worker.join(THREAD_TIMEOUT)
+        if worker.is_alive():
+            cancellers = _start_bounded_connection_cancellation(active_connections)
+            cancellation_deadline = time.monotonic() + WAIT_TIMEOUT
+            worker.join(max(0.0, cancellation_deadline - time.monotonic()))
+            for canceller in cancellers:
+                canceller.join(max(0.0, cancellation_deadline - time.monotonic()))
         assert not worker.is_alive(), "snapshot worker did not stop within its timeout"
 
     result_type, result = worker_result.get_nowait()
