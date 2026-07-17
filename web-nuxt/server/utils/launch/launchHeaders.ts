@@ -22,11 +22,12 @@ const LAUNCH_HEADER_NAMES_LOWER = new Set([
   ...LAUNCH_HEADER_NAMES.map(name => name.toLowerCase()),
   'cache-control',
 ])
-const VALID_REASONS = new Set([
+const CLOSED_REASONS = new Set([
   'closed-default',
-  'valid-two-key-unlock',
   'invalid-configuration',
   'owner-approval-missing',
+])
+const FAILED_OPEN_REASONS = new Set([
   'policy-attestation-unavailable',
   'policy-mismatch',
   'build-isolation-unsafe',
@@ -62,21 +63,37 @@ function isDecisionRecord(value: unknown): value is Readonly<LaunchSafetyDecisio
     && !Array.isArray(value)
 }
 
+function hasClearedEvidence(decision: Readonly<LaunchSafetyDecision>): boolean {
+  return decision.policy_fingerprint === null
+    && decision.route_manifest_revision === null
+    && decision.backend_policy_revision === null
+    && decision.sitemap_batch_revision === null
+}
+
 function validateDecision(value: unknown): Readonly<LaunchSafetyDecision> {
   if (!isDecisionRecord(value)) throw new TypeError('launch safety decision is invalid')
 
   const decision = value as Readonly<LaunchSafetyDecision>
-  if (!VALID_REASONS.has(decision.reason)) throw new TypeError('launch safety decision reason is invalid')
 
   if (decision.operational_state === 'closed') {
-    if (decision.indexing_posture !== 'closed' || decision.sitemap_action !== 'closed-empty') {
+    if (
+      decision.indexing_posture !== 'closed'
+      || decision.sitemap_action !== 'closed-empty'
+      || !CLOSED_REASONS.has(decision.reason)
+      || !hasClearedEvidence(decision)
+    ) {
       throw new TypeError('closed launch safety decision is invalid')
     }
     return decision
   }
 
   if (decision.operational_state === 'failed-open') {
-    if (decision.indexing_posture !== 'closed' || decision.sitemap_action !== 'unavailable') {
+    if (
+      decision.indexing_posture !== 'closed'
+      || decision.sitemap_action !== 'unavailable'
+      || !FAILED_OPEN_REASONS.has(decision.reason)
+      || !hasClearedEvidence(decision)
+    ) {
       throw new TypeError('failed-open launch safety decision is invalid')
     }
     return decision
@@ -86,6 +103,7 @@ function validateDecision(value: unknown): Readonly<LaunchSafetyDecision> {
   if (
     decision.indexing_posture !== 'selective-open'
     || decision.sitemap_action !== 'guarded-proxy'
+    || decision.reason !== 'valid-two-key-unlock'
     || !isSha256(decision.policy_fingerprint)
     || decision.route_manifest_revision !== launchRouteManifest.revision
     || decision.backend_policy_revision !== INDEX_POLICY_REVISION

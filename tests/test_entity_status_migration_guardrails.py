@@ -256,16 +256,52 @@ export default defineEventHandler((event) => {
         _assert_typescript_noindex_guard(middleware, "middleware")
 
 
+def test_launch_response_guard_rejects_missing_error_hook():
+    plugin = """
+export function finalizeLaunchResponse(event) {
+  setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow')
+}
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('beforeResponse', (event) => {
+    finalizeLaunchResponse(event)
+  })
+})
+"""
+
+    with pytest.raises(AssertionError):
+        _assert_typescript_noindex_guard(plugin, "plugin")
+
+
+def test_launch_response_guard_rejects_index_override():
+    plugin = """
+export function finalizeLaunchResponse(event) {
+  setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow')
+  setResponseHeader(event, 'X-Robots-Tag', 'index, follow')
+}
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('beforeResponse', (event) => {
+    finalizeLaunchResponse(event)
+  })
+  nitroApp.hooks.hook('error', (_error, context) => {
+    if (context.event) finalizeLaunchResponse(context.event)
+  })
+})
+"""
+
+    with pytest.raises(AssertionError):
+        _assert_typescript_noindex_guard(plugin, "plugin")
+
+
 def test_global_noindex_default_and_authoritative_header_are_executable_code():
     config = (WEB_NUXT / "nuxt.config.ts").read_text(encoding="utf-8")
-    middleware = (
-        WEB_NUXT / "server" / "middleware" / "noindex.ts"
+    response_plugin = (
+        WEB_NUXT / "server" / "plugins" / "launch-response.ts"
     ).read_text(
         encoding="utf-8"
     )
 
     _assert_typescript_noindex_guard(config, "config")
-    _assert_typescript_noindex_guard(middleware, "middleware")
+    _assert_typescript_noindex_guard(response_plugin, "plugin")
 
 
 def test_runbook_is_fail_closed_and_reproducible():

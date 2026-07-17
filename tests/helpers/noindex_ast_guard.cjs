@@ -393,6 +393,160 @@ function validateMiddleware() {
   }
 }
 
+function propertyAccessParts(node) {
+  const parts = []
+  node = unwrap(node)
+  while (ts.isPropertyAccessExpression(node)) {
+    parts.unshift(node.name.text)
+    node = unwrap(node.expression)
+  }
+  if (!ts.isIdentifier(node)) return null
+  parts.unshift(node.text)
+  return parts
+}
+
+function directCall(statement) {
+  if (!ts.isExpressionStatement(statement)) return null
+  const expression = unwrap(statement.expression)
+  return ts.isCallExpression(expression) ? expression : null
+}
+
+function exactFinalizeCall(call, argument) {
+  return Boolean(
+    call &&
+      isIdentifier(call.expression, 'finalizeLaunchResponse') &&
+      call.arguments.length === 1 &&
+      call.arguments[0].getText(sourceFile) === argument,
+  )
+}
+
+function validateLaunchResponsePlugin() {
+  const finalizers = sourceFile.statements.filter(
+    (statement) =>
+      ts.isFunctionDeclaration(statement) &&
+      statement.name?.text === 'finalizeLaunchResponse' &&
+      statement.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword),
+  )
+  expect(
+    finalizers.length === 1,
+    'source must export exactly one finalizeLaunchResponse function',
+  )
+
+  if (finalizers.length === 1) {
+    const finalizer = finalizers[0]
+    expect(
+      finalizer.parameters.length === 1 &&
+        ts.isIdentifier(finalizer.parameters[0].name) &&
+        finalizer.parameters[0].name.text === 'event',
+      'finalizeLaunchResponse must receive exactly one event parameter',
+    )
+    expect(Boolean(finalizer.body), 'finalizeLaunchResponse must have a function body')
+
+    const allRobotsCalls = callExpressionsWithin(sourceFile).filter(isAnyRobotsHeaderCall)
+    expect(
+      allRobotsCalls.length === 2,
+      'launch response plugin must contain exactly two X-Robots-Tag writer calls',
+    )
+    for (const call of allRobotsCalls) {
+      expect(
+        Boolean(finalizer.body && call.pos >= finalizer.body.pos && call.end <= finalizer.body.end),
+        'all X-Robots-Tag writes must be inside finalizeLaunchResponse',
+      )
+      expect(
+        isExactRobotsHeaderCall(call, 'event'),
+        "every X-Robots-Tag write must set event to 'noindex, follow'",
+      )
+    }
+  }
+
+  const pluginCall = defaultCall('defineNitroPlugin')
+  if (!pluginCall) return
+  expect(pluginCall.arguments.length === 1, 'defineNitroPlugin must receive exactly one handler')
+  if (pluginCall.arguments.length !== 1) return
+
+  const handler = unwrap(pluginCall.arguments[0])
+  expect(
+    ts.isArrowFunction(handler) || ts.isFunctionExpression(handler),
+    'defineNitroPlugin argument must be a function',
+  )
+  if (!ts.isArrowFunction(handler) && !ts.isFunctionExpression(handler)) return
+  expect(
+    handler.parameters.length === 1 &&
+      ts.isIdentifier(handler.parameters[0].name) &&
+      handler.parameters[0].name.text === 'nitroApp',
+    'launch response plugin must receive exactly one nitroApp parameter',
+  )
+  expect(ts.isBlock(handler.body), 'launch response plugin handler must use a block body')
+  if (!ts.isBlock(handler.body)) return
+
+  const hookCalls = handler.body.statements
+    .map(directCall)
+    .filter((call) => {
+      if (!call) return false
+      const parts = propertyAccessParts(call.expression)
+      return parts?.join('.') === 'nitroApp.hooks.hook'
+    })
+  expect(
+    hookCalls.length === 2,
+    'launch response plugin must register exactly beforeResponse and error hooks',
+  )
+
+  const namedHooks = new Map()
+  for (const call of hookCalls) {
+    if (!call || call.arguments.length !== 2 || !ts.isStringLiteral(call.arguments[0])) continue
+    const name = call.arguments[0].text
+    namedHooks.set(name, [...(namedHooks.get(name) || []), call])
+  }
+  expect(
+    namedHooks.get('beforeResponse')?.length === 1,
+    'launch response plugin must register exactly one beforeResponse hook',
+  )
+  expect(
+    namedHooks.get('error')?.length === 1,
+    'launch response plugin must register exactly one error hook',
+  )
+
+  const beforeCall = namedHooks.get('beforeResponse')?.[0]
+  const beforeHandler = beforeCall && unwrap(beforeCall.arguments[1])
+  if (beforeHandler) {
+    expect(
+      ts.isArrowFunction(beforeHandler) &&
+        beforeHandler.parameters.length === 1 &&
+        ts.isIdentifier(beforeHandler.parameters[0].name) &&
+        beforeHandler.parameters[0].name.text === 'event' &&
+        ts.isBlock(beforeHandler.body) &&
+        beforeHandler.body.statements.length === 1 &&
+        exactFinalizeCall(directCall(beforeHandler.body.statements[0]), 'event'),
+      'beforeResponse hook must directly finalize the current event',
+    )
+  }
+
+  const errorCall = namedHooks.get('error')?.[0]
+  const errorHandler = errorCall && unwrap(errorCall.arguments[1])
+  if (errorHandler) {
+    let validErrorHook = false
+    if (
+      ts.isArrowFunction(errorHandler) &&
+      errorHandler.parameters.length === 2 &&
+      ts.isIdentifier(errorHandler.parameters[1].name) &&
+      errorHandler.parameters[1].name.text === 'context' &&
+      ts.isBlock(errorHandler.body) &&
+      errorHandler.body.statements.length === 1
+    ) {
+      const statement = errorHandler.body.statements[0]
+      if (
+        ts.isIfStatement(statement) &&
+        !statement.elseStatement &&
+        propertyAccessParts(statement.expression)?.join('.') === 'context.event'
+      ) {
+        const calls = directExpressionStatementCalls(statement.thenStatement)
+        validErrorHook = calls.length === 1 && exactFinalizeCall(calls[0], 'context.event')
+      }
+    }
+    expect(validErrorHook, 'error hook must synchronously finalize context.event when present')
+  }
+}
+
 if (sourceFile.parseDiagnostics.length > 0) {
   for (const diagnostic of sourceFile.parseDiagnostics) {
     errors.push(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
@@ -407,6 +561,8 @@ if (sourceFile.parseDiagnostics.length > 0) {
   validateNitroHeaders()
 } else if (mode === 'middleware') {
   validateMiddleware()
+} else if (mode === 'plugin') {
+  validateLaunchResponsePlugin()
 } else {
   errors.push(`unknown guard mode: ${mode}`)
 }

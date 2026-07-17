@@ -183,9 +183,22 @@ describe('exact launch response header authority', () => {
     { ...selectiveOpenDecision, route_manifest_revision: 'launch-indexing-policy-v0' },
     { ...selectiveOpenDecision, backend_policy_revision: 'index-policy-v0' },
     { ...selectiveOpenDecision, indexing_posture: 'closed' },
+    { ...selectiveOpenDecision, reason: 'policy-mismatch' },
   ])('strictly rejects malformed selective-open decisions', (decision) => {
     expect(() => buildBaseLaunchResponseHeaders({ decision: decision as LaunchSafetyDecision }))
       .toThrow(/selective-open decision/i)
+  })
+
+  it.each([
+    { ...closedDecision, reason: 'valid-two-key-unlock' },
+    { ...closedDecision, policy_fingerprint: fingerprint },
+    { ...closedDecision, sitemap_batch_revision: batch },
+    { ...failedOpenDecision, reason: 'closed-default' },
+    { ...failedOpenDecision, route_manifest_revision: 'launch-indexing-policy-v1' },
+    { ...failedOpenDecision, sitemap_batch_revision: batch },
+  ])('rejects closed/failed-open decisions with inconsistent reasons or stale evidence', (decision) => {
+    expect(() => buildBaseLaunchResponseHeaders({ decision: decision as LaunchSafetyDecision }))
+      .toThrow(/decision/i)
   })
 
   it('clears case-insensitive stale evidence and safely downgrades malformed input', () => {
