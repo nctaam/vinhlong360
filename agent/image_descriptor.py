@@ -92,7 +92,7 @@ def describe_entity_image(
         type(entity_name) is not str
         or not entity_name.strip()
         or type(index) is not int
-        or index < 1
+        or index < 0
     ):
         return None
     url = normalize_renderable_image_url(raw)
@@ -101,7 +101,7 @@ def describe_entity_image(
     copy = loaded_disclosure.entity_ai
     return ImageDescriptor(
         url=url,
-        alt=f"{entity_name} — ảnh minh họa {index}",
+        alt=f"{entity_name} — ảnh minh họa {index + 1}",
         source_class="ai-generated",
         source_kind="entity-editorial",
         disclosure_key="entity-ai",
@@ -132,7 +132,7 @@ def describe_entity_images(
         return ()
 
     descriptors: list[ImageDescriptor] = []
-    for index, raw in enumerate(images, start=1):
+    for index, raw in enumerate(images):
         descriptor = describe_entity_image(
             raw,
             entity_name=entity_name,

@@ -78,7 +78,7 @@ def test_describe_entity_image_returns_the_exact_frozen_ai_editorial_contract():
 
     assert descriptor == ImageDescriptor(
         url="/media/entity.webp",
-        alt="Chùa Phước Hậu — ảnh minh họa 2",
+        alt="Chùa Phước Hậu — ảnh minh họa 3",
         source_class="ai-generated",
         source_kind="entity-editorial",
         disclosure_key="entity-ai",
@@ -90,6 +90,18 @@ def test_describe_entity_image_returns_the_exact_frozen_ai_editorial_contract():
     )
     with pytest.raises(AttributeError):
         descriptor.url = "/changed.webp"  # type: ignore[misc]
+
+
+def test_describe_entity_image_accepts_zero_based_index_and_formats_alt_one_based():
+    descriptor = describe_entity_image(
+        "/media/first.webp",
+        entity_name="Chùa Phước Hậu",
+        index=0,
+        disclosure=DISCLOSURE,
+    )
+
+    assert descriptor is not None
+    assert descriptor.alt == "Chùa Phước Hậu — ảnh minh họa 1"
 
 
 @pytest.mark.parametrize("invalid_disclosure", [None, object()])
