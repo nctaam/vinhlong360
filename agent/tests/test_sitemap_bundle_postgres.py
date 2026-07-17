@@ -479,6 +479,11 @@ def _complete_probe_bundle(revision: str, label: str) -> StoredBundle:
             name: hashlib.sha256(body).hexdigest()
             for name, body in documents.items()
         },
+        "renderer_evidence": {
+            "policy_fingerprint": "f" * 64,
+            "route_manifest_revision": "launch-indexing-policy-v1",
+            "backend_policy_revision": "index-policy-v1",
+        },
     }
     return StoredBundle(revision, metadata, documents)
 
