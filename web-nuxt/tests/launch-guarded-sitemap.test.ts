@@ -42,6 +42,16 @@ function upstreamFor(document: RootSitemapDocument = 'sitemap.xml'): InternalRaw
   return { status: 200, body: `<urlset>${document}</urlset>`, headers }
 }
 
+function pinnedIndexUpstream(): InternalRawSitemapResponse {
+  return {
+    ...upstreamFor('sitemap-index.xml'),
+    headers: {
+      ...upstreamFor('sitemap-index.xml').headers,
+      'x-launch-sitemap-requested-batch': batch,
+    },
+  }
+}
+
 function withHeader(upstream: InternalRawSitemapResponse, name: string, value: string): InternalRawSitemapResponse {
   return { ...upstream, headers: { ...upstream.headers, [name]: value } }
 }
@@ -138,6 +148,7 @@ describe('guarded Nuxt sitemap proxy', () => {
     ['sitemap.xml', `https://vinhlong360.vn/sitemap-media.xml?batch=${batch}`],
     ['sitemap.xml', `https://vinhlong360.vn/sitemap.xml?batch=${batch}#fragment`],
     ['sitemap.xml', `https://vinhlong360.vn/sitemap.xml?batch=${batch}#`],
+    ['sitemap-index.xml', 'https://vinhlong360.vn/sitemap-index.xml?'],
     ['sitemap-index.xml', 'https://vinhlong360.vn/sitemap-index.xml/'],
   ] as const)('rejects a non-canonical %s URL %s without fetching upstream', async (document, rawUrl) => {
     const fetchRaw = vi.fn().mockResolvedValue(upstreamFor(document))
@@ -153,7 +164,6 @@ describe('guarded Nuxt sitemap proxy', () => {
   })
 
   it.each([
-    '?batch=' + batch,
     '?x=1',
     '?batch=' + batch + '&x=1',
   ])('rejects any active index query %s', async query => {
@@ -163,6 +173,20 @@ describe('guarded Nuxt sitemap proxy', () => {
       upstream: upstreamFor('sitemap-index.xml'),
     })
     expect(response).toMatchObject({ status: 503, failureReason: 'sitemap-batch-unavailable' })
+  })
+
+  it('accepts a pinned sitemap index batch and binds both batch evidence values', async () => {
+    const response = await runGuardedProxy({
+      document: 'sitemap-index.xml',
+      query: `?batch=${batch}`,
+      upstream: pinnedIndexUpstream(),
+    })
+    expect(response).toMatchObject({
+      status: 200,
+      requestedBatch: batch,
+      decision: { sitemap_batch_revision: batch },
+      failureReason: null,
+    })
   })
 
   it.each([
@@ -207,6 +231,25 @@ describe('guarded Nuxt sitemap proxy', () => {
       'x-launch-sitemap-batch-revision', 'b'.repeat(64),
     )
     const response = await runGuardedProxy({ document: 'sitemap.xml', query: `?batch=${batch}`, upstream })
+    expect(response).toMatchObject({ status: 503, failureReason: 'sitemap-evidence-mismatch' })
+  })
+
+  it('rejects malformed route or backend revisions even when echoed verbatim', async () => {
+    const decision = {
+      ...matchingDecision,
+      route_manifest_revision: 'launch-indexing-policy-v1,stale',
+      backend_policy_revision: 'index-policy-v1\n',
+    }
+    const upstream = withHeader(
+      withHeader(upstreamFor(), 'x-launch-route-manifest-revision', decision.route_manifest_revision),
+      'x-launch-backend-policy-revision', decision.backend_policy_revision,
+    )
+    const response = await runGuardedProxy({
+      document: 'sitemap.xml',
+      query: `?batch=${batch}`,
+      decision,
+      upstream,
+    })
     expect(response).toMatchObject({ status: 503, failureReason: 'sitemap-evidence-mismatch' })
   })
 
@@ -269,6 +312,26 @@ describe('guarded Nuxt sitemap proxy', () => {
     expect(response).not.toHaveProperty('headers')
   })
 
+  it.each([
+    null,
+    {},
+    { status: 200, body: null, headers: upstreamFor().headers },
+    { status: 200, body: 42, headers: upstreamFor().headers },
+    { status: 200, body: '<xml/>', headers: null },
+    { status: '200', body: '<xml/>', headers: upstreamFor().headers },
+  ] as const)('fails unavailable for malformed runtime upstream %j', async upstream => {
+    const response = await runGuardedProxy({
+      document: 'sitemap.xml',
+      query: `?batch=${batch}`,
+      upstream: upstream as unknown as InternalRawSitemapResponse,
+    })
+    expect(response).toMatchObject({
+      status: 503,
+      body: '',
+      failureReason: 'sitemap-batch-unavailable',
+    })
+  })
+
   it('returns the refined successful decision as an immutable object', async () => {
     const response = await runGuardedProxy({ document: 'sitemap.xml', query: `?batch=${batch}`, upstream: upstreamFor() })
     expect(Object.isFrozen(response.decision)).toBe(true)
@@ -305,6 +368,13 @@ describe('sitemap query validation', () => {
   it('accepts only the empty active index query', () => {
     expect(validateSitemapQuery('sitemap-index.xml', new URL('https://example.test/sitemap-index.xml')))
       .toEqual({ requestedBatch: null })
+  })
+
+  it('accepts a pinned sitemap index query', () => {
+    expect(validateSitemapQuery(
+      'sitemap-index.xml',
+      new URL(`https://example.test/sitemap-index.xml?batch=${batch}`),
+    )).toEqual({ requestedBatch: batch })
   })
 
   it('accepts only a lowercase hexadecimal pinned batch', () => {
@@ -344,6 +414,11 @@ describe('internal sitemap fetcher', () => {
     )
     expect(rawFetcher.mock.calls[0]?.[1]).not.toHaveProperty('headers.cookie')
     expect(rawFetcher.mock.calls[0]?.[1]).not.toHaveProperty('headers.authorization')
+
+    await expect(fetchRaw('sitemap-index.xml', batch)).resolves.toMatchObject({ status: 200 })
+    expect(rawFetcher.mock.calls[1]?.[0]).toBe(
+      `http://agent.internal:8360/_internal/launch-sitemaps/sitemap-index.xml?batch=${batch}`,
+    )
   })
 
   it('never follows a redirect and returns normalized response headers', async () => {
@@ -362,6 +437,32 @@ describe('internal sitemap fetcher', () => {
     expect(rawFetcher.mock.calls[0]?.[1]).toMatchObject({ redirect: 'manual' })
   })
 
+  it('rejects a non-string raw body instead of coercing it to empty XML', async () => {
+    const rawFetcher = vi.fn().mockResolvedValue({
+      status: 200,
+      _data: { xml: true },
+      headers: new Headers(),
+    })
+    const fetchRaw = createInternalSitemapFetcher({} as never, rawFetcher)
+    await expect(fetchRaw('sitemap-index.xml', null)).rejects.toThrow(/body/i)
+  })
+
+  it('rejects non-string raw header callback values', async () => {
+    const rawFetcher = vi.fn().mockResolvedValue({
+      status: 200,
+      _data: '<xml/>',
+      headers: { forEach: (callback: (value: unknown, key: unknown) => void) => callback([], 'x-test') },
+    })
+    const fetchRaw = createInternalSitemapFetcher({} as never, rawFetcher)
+    await expect(fetchRaw('sitemap-index.xml', null)).rejects.toThrow(/header/i)
+  })
+
+  it('rejects an array-shaped raw header collection', async () => {
+    const rawFetcher = vi.fn().mockResolvedValue({ status: 200, _data: '<xml/>', headers: [] })
+    const fetchRaw = createInternalSitemapFetcher({} as never, rawFetcher)
+    await expect(fetchRaw('sitemap-index.xml', null)).rejects.toThrow(/headers?/i)
+  })
+
   it.each([
     '',
     'agent.internal:8360',
@@ -370,6 +471,17 @@ describe('internal sitemap fetcher', () => {
     'http://agent.internal:8360/api',
     'http://agent.internal:8360?x=1',
     'http://agent.internal:8360#fragment',
+    'http://evil.example:8360',
+    'http://agent.evil.example:8360',
+    'http://8.8.8.8:8360',
+    'http://169.254.169.254:8360',
+    'http://100.64.0.1:8360',
+    'http://0.0.0.0:8360',
+    'http://[::ffff:127.0.0.1]:8360',
+    'http://[::ffff:169.254.169.254]:8360',
+    'http://localhost:1',
+    'http://localhost:8360\t',
+    'http://localhost:8360\n',
   ])('rejects unsafe private apiBase %s only when fetching', async apiBase => {
     runtimeConfigState.apiBase = apiBase
     const rawFetcher = vi.fn()
@@ -377,5 +489,26 @@ describe('internal sitemap fetcher', () => {
 
     await expect(fetchRaw('sitemap-index.xml', null)).rejects.toThrow(/apiBase/i)
     expect(rawFetcher).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    'http://agent:8360',
+    'http://agent.internal:8360',
+    'http://localhost:8360',
+    'http://127.0.0.1:8360',
+    'http://127.0.0.2:8360',
+    'http://10.0.0.2:8360',
+    'http://172.16.1.2:8360',
+    'http://192.168.1.2:8360',
+    'http://[::1]:8360',
+  ])('accepts reviewed private apiBase %s', async apiBase => {
+    runtimeConfigState.apiBase = apiBase
+    const rawFetcher = vi.fn().mockResolvedValue({
+      status: 200,
+      _data: '',
+      headers: new Headers(),
+    })
+    const fetchRaw = createInternalSitemapFetcher({} as never, rawFetcher)
+    await expect(fetchRaw('sitemap-index.xml', null)).resolves.toMatchObject({ status: 200 })
   })
 })

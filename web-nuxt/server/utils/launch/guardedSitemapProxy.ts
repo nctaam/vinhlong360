@@ -6,6 +6,7 @@ import type { LaunchSafetyDecision } from '../../../types/launch'
 const XML_CONTENT_TYPE = 'application/xml; charset=utf-8'
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u
 const PINNED_QUERY_PATTERN = /^\?batch=([a-f0-9]{64})$/u
+const UNSAFE_CONTROL_PATTERN = /[\u0000-\u001f\u007f-\u009f]/u
 const ROOT_SITEMAP_DOCUMENTS = new Set<RootSitemapDocument>([
   'sitemap.xml',
   'sitemap-media.xml',
@@ -147,13 +148,13 @@ export function validateSitemapQuery(
     || url.pathname !== `/${document}`
     || url.hash !== ''
     || url.href.endsWith('#')
+    || url.href.endsWith('?')
   ) {
     throw new GuardedSitemapFailure('sitemap-batch-unavailable')
   }
 
   if (document === 'sitemap-index.xml') {
-    if (url.search !== '') throw new GuardedSitemapFailure('sitemap-batch-unavailable')
-    return Object.freeze({ requestedBatch: null })
+    if (url.search === '') return Object.freeze({ requestedBatch: null })
   }
 
   const match = PINNED_QUERY_PATTERN.exec(url.search)
@@ -199,17 +200,20 @@ function validateAllLaunchEvidence(
   ) mismatch()
   if (
     typeof decision.route_manifest_revision !== 'string'
-    || !decision.route_manifest_revision
+    || !validEvidenceRevision(decision.route_manifest_revision)
     || headers['x-launch-route-manifest-revision'] !== decision.route_manifest_revision
   ) mismatch()
   if (
     typeof decision.backend_policy_revision !== 'string'
-    || !decision.backend_policy_revision
+    || !validEvidenceRevision(decision.backend_policy_revision)
     || headers['x-launch-backend-policy-revision'] !== decision.backend_policy_revision
   ) mismatch()
 
-  const servedBatch = headers['x-launch-sitemap-batch-revision']
-  if (typeof servedBatch !== 'string' || !SHA256_PATTERN.test(servedBatch)) mismatch()
+  const servedBatchValue = headers['x-launch-sitemap-batch-revision']
+  if (typeof servedBatchValue !== 'string' || !SHA256_PATTERN.test(servedBatchValue)) {
+    throw new GuardedSitemapFailure('sitemap-evidence-mismatch')
+  }
+  const servedBatch: string = servedBatchValue
 
   const hasRequestedBatchEcho = Object.prototype.hasOwnProperty.call(
     headers,
@@ -226,8 +230,20 @@ function validateAllLaunchEvidence(
   return servedBatch
 }
 
+function validEvidenceRevision(value: string): boolean {
+  return value.length > 0
+    && value.trim() === value
+    && !UNSAFE_CONTROL_PATTERN.test(value)
+    && !value.includes(',')
+}
+
 function normalizePrivateApiBase(value: unknown): string {
-  if (typeof value !== 'string' || !value || value.trim() !== value) {
+  if (
+    typeof value !== 'string'
+    || !value
+    || value.trim() !== value
+    || UNSAFE_CONTROL_PATTERN.test(value)
+  ) {
     throw new TypeError('Private runtime apiBase is invalid')
   }
 
@@ -237,6 +253,16 @@ function normalizePrivateApiBase(value: unknown): string {
   } catch {
     throw new TypeError('Private runtime apiBase is invalid')
   }
+  const hostname = parsed.hostname.toLowerCase()
+  const normalizedIpv6 = hostname.startsWith('[') && hostname.endsWith(']')
+    ? hostname.slice(1, -1)
+    : hostname
+  const hostIsReviewedService = hostname === 'agent' || hostname === 'agent.internal' || hostname === 'localhost'
+  const hostIsLoopbackIpv4 = isIpv4Address(hostname) && isLoopbackIpv4(hostname)
+  const hostIsPrivateIpv4 = isIpv4Address(hostname) && isPrivateIpv4(hostname)
+  const hostIsLoopbackIpv6 = normalizedIpv6 === '::1'
+  const hostIsAllowed = hostIsReviewedService || hostIsLoopbackIpv4 || hostIsPrivateIpv4 || hostIsLoopbackIpv6
+  const expectedPort = parsed.protocol === 'https:' ? new Set(['443', '8360']) : new Set(['8360'])
   if (
     (parsed.protocol !== 'http:' && parsed.protocol !== 'https:')
     || parsed.username !== ''
@@ -245,10 +271,36 @@ function normalizePrivateApiBase(value: unknown): string {
     || parsed.search !== ''
     || parsed.hash !== ''
     || parsed.origin === 'null'
+    || !hostIsAllowed
+    || !expectedPort.has(parsed.port || (parsed.protocol === 'https:' ? '443' : '80'))
   ) {
     throw new TypeError('Private runtime apiBase is invalid')
   }
   return parsed.origin
+}
+
+function isIpv4Address(value: string): boolean {
+  return /^\d{1,3}(?:\.\d{1,3}){3}$/u.test(value)
+}
+
+function ipv4Octets(value: string): [number, number, number, number] | null {
+  if (!isIpv4Address(value)) return null
+  const octets = value.split('.').map(Number)
+  if (octets.length !== 4 || octets.some(octet => !Number.isInteger(octet) || octet < 0 || octet > 255)) return null
+  return octets as [number, number, number, number]
+}
+
+function isLoopbackIpv4(value: string): boolean {
+  return ipv4Octets(value)?.[0] === 127
+}
+
+function isPrivateIpv4(value: string): boolean {
+  const octets = ipv4Octets(value)
+  if (!octets) return false
+  const [first, second] = octets
+  return first === 10
+    || (first === 172 && second >= 16 && second <= 31)
+    || (first === 192 && second === 168)
 }
 
 function internalDocumentQuery(document: RootSitemapDocument, requestedBatch: string | null): string {
@@ -256,8 +308,9 @@ function internalDocumentQuery(document: RootSitemapDocument, requestedBatch: st
     throw new TypeError('Internal sitemap document is invalid')
   }
   if (document === 'sitemap-index.xml') {
-    if (requestedBatch !== null) throw new TypeError('Internal sitemap query is invalid')
-    return ''
+    if (requestedBatch === null) return ''
+    if (!SHA256_PATTERN.test(requestedBatch)) throw new TypeError('Internal sitemap query is invalid')
+    return `?batch=${requestedBatch}`
   }
   if (typeof requestedBatch !== 'string' || !SHA256_PATTERN.test(requestedBatch)) {
     throw new TypeError('Internal sitemap query is invalid')
@@ -283,8 +336,26 @@ export function createInternalSitemapFetcher(
         headers: { accept: 'application/xml' },
       },
     )
+    if (
+      response === null
+      || typeof response !== 'object'
+      || Array.isArray(response)
+      || !Number.isInteger(response.status)
+      || response.status < 100
+      || response.status > 599
+      || typeof response._data !== 'string'
+      || response.headers === null
+      || typeof response.headers !== 'object'
+      || Array.isArray(response.headers)
+      || typeof response.headers.forEach !== 'function'
+    ) {
+      throw new TypeError('Internal sitemap response body or headers are invalid')
+    }
     const headers: Record<string, string> = Object.create(null) as Record<string, string>
     response.headers.forEach((value, key) => {
+      if (typeof value !== 'string' || typeof key !== 'string') {
+        throw new TypeError('Internal sitemap response header is invalid')
+      }
       const lowerKey = key.toLowerCase()
       headers[lowerKey] = Object.prototype.hasOwnProperty.call(headers, lowerKey)
         ? `${headers[lowerKey]}, ${value}`
@@ -310,6 +381,20 @@ export async function proxyGuardedSitemap(input: GuardedSitemapInput): Promise<G
     try {
       upstream = await input.fetchRaw(input.document, query.requestedBatch)
     } catch {
+      throw new GuardedSitemapFailure('sitemap-batch-unavailable')
+    }
+    if (
+      upstream === null
+      || typeof upstream !== 'object'
+      || Array.isArray(upstream)
+      || !Number.isInteger(upstream.status)
+      || upstream.status < 100
+      || upstream.status > 599
+      || typeof upstream.body !== 'string'
+      || upstream.headers === null
+      || typeof upstream.headers !== 'object'
+      || Array.isArray(upstream.headers)
+    ) {
       throw new GuardedSitemapFailure('sitemap-batch-unavailable')
     }
     if (upstream.status !== 200) {
