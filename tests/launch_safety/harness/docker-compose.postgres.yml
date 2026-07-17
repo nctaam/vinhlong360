@@ -3,13 +3,13 @@ services:
     image: postgres:16
     restart: "no"
     environment:
-      POSTGRES_USER: task16_admin
-      POSTGRES_PASSWORD: task16_disposable_only
+      POSTGRES_USER: vl360
+      POSTGRES_PASSWORD: vl360_launch_test
       POSTGRES_DB: vl360_launch_test
     ports:
       - "127.0.0.1:55432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U task16_admin -d vl360_launch_test"]
+      test: ["CMD-SHELL", "pg_isready -U vl360 -d vl360_launch_test"]
       interval: 2s
       timeout: 3s
       retries: 20
