@@ -29,11 +29,18 @@ function isPlainRecord(value: unknown): value is AttestationRecord {
 }
 
 function hasExactKeys(value: AttestationRecord): boolean {
-  const keys = Object.keys(value).sort()
-  return keys.length === 3
-    && keys[0] === 'backend_policy_revision'
-    && keys[1] === 'policy_fingerprint'
-    && keys[2] === 'route_manifest_revision'
+  const keys = Reflect.ownKeys(value)
+  if (keys.length !== 3 || keys.some(key => typeof key !== 'string')) return false
+  const names = (keys as string[]).sort()
+  if (
+    names[0] !== 'backend_policy_revision'
+    || names[1] !== 'policy_fingerprint'
+    || names[2] !== 'route_manifest_revision'
+  ) return false
+  return names.every((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    return descriptor?.enumerable === true && 'value' in descriptor
+  })
 }
 
 function validRevision(value: unknown, expected: string): value is string {

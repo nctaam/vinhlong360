@@ -37,6 +37,14 @@ describe('backend launch attestation client', () => {
     expect(() => parseBackendAttestation(value)).toThrow(BackendAttestationMismatchError)
   })
 
+  it('rejects hidden and symbolic extra keys', () => {
+    const hidden = Object.defineProperty({ ...matching }, 'extra', { value: true })
+    const symbolic = { ...matching, [Symbol('extra')]: true }
+
+    expect(() => parseBackendAttestation(hidden)).toThrow(BackendAttestationMismatchError)
+    expect(() => parseBackendAttestation(symbolic)).toThrow(BackendAttestationMismatchError)
+  })
+
   it('propagates transport and HTTP failures as unavailable errors', async () => {
     await expect(fetchBackendAttestation({
       baseURL: 'http://agent.internal:8360',
