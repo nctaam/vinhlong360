@@ -54,6 +54,39 @@ _REQUIRED_METADATA_KEYS = frozenset(
 _OPTIONAL_METADATA_KEYS = frozenset()
 
 
+def compute_batch_revision(
+    *,
+    fingerprint: str,
+    route_revision: str,
+    policy_revision: str,
+    main: bytes,
+    media: bytes,
+) -> str:
+    """Compute the immutable sitemap content address without renderer imports."""
+    values: list[bytes] = []
+    for value in (fingerprint, route_revision, policy_revision):
+        if type(value) is not str:
+            raise TypeError("sitemap batch text inputs must be exact strings")
+        values.append(value.encode("utf-8"))
+    for value in (main, media):
+        if type(value) is not bytes:
+            raise TypeError("sitemap batch document inputs must be exact bytes")
+        values.append(value)
+    digest = hashlib.sha256()
+    for value in values:
+        digest.update(len(value).to_bytes(8, "big"))
+        digest.update(value)
+    return digest.hexdigest()
+
+
+def _validate_header_revision(value: object, label: str) -> str:
+    if type(value) is not str or not value or value.strip() != value:
+        raise ValueError(f"metadata renderer evidence {label} must be non-empty")
+    if any(ord(character) < 0x21 or ord(character) > 0x7E for character in value):
+        raise ValueError(f"metadata renderer evidence {label} contains invalid header characters")
+    return value
+
+
 class SitemapStateUnavailable(RuntimeError):
     """The persisted sitemap publication state cannot be trusted or reached."""
 
@@ -158,13 +191,7 @@ def _validate_metadata_envelope(metadata: object, revision: str) -> dict:
     if type(fingerprint) is not str or _REVISION_PATTERN.fullmatch(fingerprint) is None:
         raise ValueError("metadata renderer evidence fingerprint must be lowercase SHA-256")
     for key in ("route_manifest_revision", "backend_policy_revision"):
-        value = renderer_evidence.get(key)
-        if (
-            type(value) is not str
-            or not value
-            or value.strip() != value
-        ):
-            raise ValueError("metadata renderer evidence revisions must be non-empty")
+        _validate_header_revision(renderer_evidence.get(key), key)
     return metadata
 
 
@@ -189,6 +216,16 @@ def _prepare_bundle(bundle: StoredBundle) -> _PreparedBundle:
     documents = _copy_bundle_documents(bundle.documents)
     metadata = _validate_metadata_envelope(bundle.metadata, revision)
     _validate_document_hashes(metadata.get("documents"), documents)
+    evidence = metadata["renderer_evidence"]
+    expected_revision = compute_batch_revision(
+        fingerprint=evidence["policy_fingerprint"],
+        route_revision=evidence["route_manifest_revision"],
+        policy_revision=evidence["backend_policy_revision"],
+        main=documents["sitemap.xml"],
+        media=documents["sitemap-media.xml"],
+    )
+    if expected_revision != revision:
+        raise ValueError("batch revision does not match renderer evidence and documents")
     metadata_bytes = _canonical_metadata_bytes(metadata)
     metadata_copy = json.loads(metadata_bytes.decode("utf-8"))
     return _PreparedBundle(

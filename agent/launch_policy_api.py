@@ -9,10 +9,10 @@ from fastapi.responses import JSONResponse
 
 if __package__:
     from .launch_evidence import current_policy_evidence
-    from .sitemap_store import SitemapBundleStore
+    from .sitemap_store import SitemapBundleStore, compute_batch_revision
 else:
     from launch_evidence import current_policy_evidence
-    from sitemap_store import SitemapBundleStore
+    from sitemap_store import SitemapBundleStore, compute_batch_revision
 
 
 router = APIRouter(prefix="/_internal", include_in_schema=False)
@@ -28,6 +28,14 @@ _RENDERER_EVIDENCE_KEYS = frozenset(
         "backend_policy_revision",
     )
 )
+
+
+def _validate_header_revision(value: object, label: str) -> str:
+    if type(value) is not str or not value or value.strip() != value:
+        raise ValueError(f"sitemap evidence {label} is invalid")
+    if any(ord(character) < 0x21 or ord(character) > 0x7E for character in value):
+        raise ValueError(f"sitemap evidence {label} contains invalid header characters")
+    return value
 _BATCH_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 
 
@@ -127,16 +135,27 @@ def launch_sitemap_document(
         backend_revision = renderer_evidence.get("backend_policy_revision")
         if type(fingerprint) is not str or _BATCH_PATTERN.fullmatch(fingerprint) is None:
             raise ValueError("sitemap policy fingerprint is invalid")
-        if any(
-            type(value) is not str or not value or value.strip() != value
-            for value in (route_revision, backend_revision)
-        ):
-            raise ValueError("sitemap evidence revision is invalid")
+        route_revision = _validate_header_revision(route_revision, "route revision")
+        backend_revision = _validate_header_revision(
+            backend_revision, "backend policy revision"
+        )
         if metadata.get("batch_revision") != revision:
             raise ValueError("sitemap metadata revision mismatch")
         body = bundle.documents[document]
         if type(body) is not bytes:
             raise ValueError("sitemap document is not bytes")
+        main_body = bundle.documents["sitemap.xml"]
+        media_body = bundle.documents["sitemap-media.xml"]
+        if type(main_body) is not bytes or type(media_body) is not bytes:
+            raise ValueError("sitemap bundle documents are not bytes")
+        if compute_batch_revision(
+            fingerprint=fingerprint,
+            route_revision=route_revision,
+            policy_revision=backend_revision,
+            main=main_body,
+            media=media_body,
+        ) != revision:
+            raise ValueError("sitemap batch evidence mismatch")
         document_hashes = metadata.get("documents")
         if (
             not isinstance(document_hashes, dict)

@@ -73,6 +73,23 @@ def make_bundle(revision, marker=b"first", **metadata_evidence):
         "sitemap-media.xml": b"<urlset>media-" + marker + b"</urlset>",
         "sitemap-index.xml": b"<sitemapindex>" + marker + b"</sitemapindex>",
     }
+    evidence = {
+        "policy_fingerprint": "f" * 64,
+        "route_manifest_revision": "route-1",
+        "backend_policy_revision": "policy-1",
+        **metadata_evidence,
+    }
+    if type(revision) is str and sitemap_store._REVISION_PATTERN.fullmatch(revision):
+        try:
+            revision = sitemap_store.compute_batch_revision(
+                fingerprint=evidence["policy_fingerprint"],
+                route_revision=evidence["route_manifest_revision"],
+                policy_revision=evidence["backend_policy_revision"],
+                main=documents["sitemap.xml"],
+                media=documents["sitemap-media.xml"],
+            )
+        except (TypeError, ValueError):
+            pass
     metadata = {
         "schema_version": 1,
         "batch_revision": revision,
@@ -80,12 +97,7 @@ def make_bundle(revision, marker=b"first", **metadata_evidence):
             name: hashlib.sha256(document).hexdigest()
             for name, document in documents.items()
         },
-        "renderer_evidence": {
-            "policy_fingerprint": "f" * 64,
-            "route_manifest_revision": "route-1",
-            "backend_policy_revision": "policy-1",
-            **metadata_evidence,
-        },
+        "renderer_evidence": evidence,
     }
     return StoredBundle(revision, metadata, documents)
 
@@ -321,6 +333,16 @@ def test_publish_rejects_revision_before_creating_or_addressing_root(
         lambda bundle: replace(bundle, metadata={**bundle.metadata, "renderer_evidence": ["not", "an", "object"]}),
         lambda bundle: replace(bundle, metadata={**bundle.metadata, "renderer_evidence": None}),
         lambda bundle: replace(bundle, metadata={**bundle.metadata, "renderer_evidnce": {}}),
+        lambda bundle: replace(
+            bundle,
+            metadata={
+                **bundle.metadata,
+                "renderer_evidence": {
+                    **bundle.metadata["renderer_evidence"],
+                    "route_manifest_revision": "ok\r\nInjected: yes",
+                },
+            },
+        ),
     ],
     ids=[
         "missing-document",
@@ -337,6 +359,7 @@ def test_publish_rejects_revision_before_creating_or_addressing_root(
         "non-object-evidence",
         "null-evidence",
         "unknown-root-key",
+        "header-injection",
     ],
 )
 def test_candidate_validation_rejects_incomplete_or_inconsistent_bundle(
@@ -408,6 +431,23 @@ def test_renderer_evidence_values_are_exact_and_nonempty(tmp_path, renderer_evid
     )
     with pytest.raises(ValueError, match="renderer evidence"):
         SitemapBundleStore(tmp_path / "not-created").publish(candidate)
+
+
+def test_batch_revision_binds_renderer_evidence_and_documents(tmp_path):
+    candidate = make_bundle("a" * 64)
+    forged = replace(
+        candidate,
+        metadata={
+            **candidate.metadata,
+            "renderer_evidence": {
+                **candidate.metadata["renderer_evidence"],
+                "policy_fingerprint": "e" * 64,
+            },
+        },
+    )
+    with pytest.raises(ValueError, match="batch revision"):
+        SitemapBundleStore(tmp_path / "not-created").publish(forged)
+    assert not (tmp_path / "not-created").exists()
 
 
 @pytest.mark.parametrize(
@@ -860,18 +900,19 @@ def test_load_batch_validates_pointer_before_revision_and_refuses_orphan(tmp_pat
 def test_cleanup_keeps_active_previous_and_every_revision_inside_window(
     tmp_path, clock
 ):
-    revisions = [character * 64 for character in "abcd"]
+    bundles = [make_bundle(character * 64, marker=character.encode()) for character in "abcd"]
     store = SitemapBundleStore(tmp_path, retention=timedelta(hours=24), now=clock.now)
-    store.publish(make_bundle(revisions[0], marker=b"a"))
+    store.publish(bundles[0])
     clock.advance(hours=10)
-    store.publish(make_bundle(revisions[1], marker=b"b"))
+    store.publish(bundles[1])
     clock.advance(hours=15)
-    store.publish(make_bundle(revisions[2], marker=b"c"))
+    store.publish(bundles[2])
     clock.advance(hours=5)
-    store.publish(make_bundle(revisions[3], marker=b"d"))
+    store.publish(bundles[3])
 
     store.cleanup()
 
+    revisions = tuple(bundle.batch_revision for bundle in bundles)
     assert store.list_batches() == tuple(revisions[1:])
     assert not (tmp_path / revisions[0]).exists()
     assert all((tmp_path / revision).is_dir() for revision in revisions[1:])

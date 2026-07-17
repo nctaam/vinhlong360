@@ -28,6 +28,7 @@ from sitemap_store import (
     SitemapPublicationStage,
     SitemapStateUnavailable,
     StoredBundle,
+    compute_batch_revision,
 )
 
 
@@ -472,6 +473,18 @@ def _complete_probe_bundle(revision: str, label: str) -> StoredBundle:
         "sitemap-media.xml": b"media:" + marker,
         "sitemap-index.xml": b"index:" + marker,
     }
+    evidence = {
+        "policy_fingerprint": "f" * 64,
+        "route_manifest_revision": "launch-indexing-policy-v1",
+        "backend_policy_revision": "index-policy-v1",
+    }
+    revision = compute_batch_revision(
+        fingerprint=evidence["policy_fingerprint"],
+        route_revision=evidence["route_manifest_revision"],
+        policy_revision=evidence["backend_policy_revision"],
+        main=documents["sitemap.xml"],
+        media=documents["sitemap-media.xml"],
+    )
     metadata = {
         "schema_version": SITEMAP_METADATA_SCHEMA_VERSION,
         "batch_revision": revision,
@@ -479,11 +492,7 @@ def _complete_probe_bundle(revision: str, label: str) -> StoredBundle:
             name: hashlib.sha256(body).hexdigest()
             for name, body in documents.items()
         },
-        "renderer_evidence": {
-            "policy_fingerprint": "f" * 64,
-            "route_manifest_revision": "launch-indexing-policy-v1",
-            "backend_policy_revision": "index-policy-v1",
-        },
+        "renderer_evidence": evidence,
     }
     return StoredBundle(revision, metadata, documents)
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import hashlib
+from dataclasses import replace
 from collections.abc import Callable
 from pathlib import Path
 
@@ -26,7 +27,11 @@ except ModuleNotFoundError:
     policy_http = None
 
 from launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence  # noqa: E402
-from sitemap_store import SitemapBundleStore, StoredBundle  # noqa: E402
+from sitemap_store import (  # noqa: E402
+    SitemapBundleStore,
+    StoredBundle,
+    compute_batch_revision,
+)
 
 
 EVIDENCE_A = PolicyEvidence(
@@ -72,16 +77,25 @@ def _bundle(revision: str, main: bytes = b"<urlset>pinned</urlset>") -> StoredBu
         "sitemap-media.xml": b"<urlset>synthetic-media</urlset>",
         "sitemap-index.xml": b"<sitemapindex>synthetic-index</sitemapindex>",
     }
+    evidence = {
+        "policy_fingerprint": "a" * 64,
+        "route_manifest_revision": "launch-indexing-policy-v1",
+        "backend_policy_revision": INDEX_POLICY_REVISION,
+    }
+    if len(revision) == 64 and revision.islower() and revision.isalnum():
+        revision = compute_batch_revision(
+            fingerprint=evidence["policy_fingerprint"],
+            route_revision=evidence["route_manifest_revision"],
+            policy_revision=evidence["backend_policy_revision"],
+            main=documents["sitemap.xml"],
+            media=documents["sitemap-media.xml"],
+        )
     return StoredBundle(
         batch_revision=revision,
         metadata={
             "schema_version": 1,
             "batch_revision": revision,
-            "renderer_evidence": {
-                "policy_fingerprint": "a" * 64,
-                "route_manifest_revision": "launch-indexing-policy-v1",
-                "backend_policy_revision": INDEX_POLICY_REVISION,
-            },
+            "renderer_evidence": evidence,
             "documents": {
                 name: hashlib.sha256(body).hexdigest()
                 for name, body in documents.items()
@@ -304,6 +318,71 @@ def test_sitemap_uses_retained_immutable_evidence_when_current_policy_differs(
     assert response.headers["x-launch-sitemap-batch-revision"] == retained.batch_revision
     assert response.headers["x-launch-sitemap-requested-batch"] == retained.batch_revision
     _assert_no_store_no_validator(response, 200)
+
+
+def test_sitemap_rejects_forged_metadata_evidence_for_unchanged_batch(
+    monkeypatch,
+):
+    retained = _bundle("a" * 64)
+    forged = replace(
+        retained,
+        metadata={
+            **retained.metadata,
+            "renderer_evidence": {
+                **retained.metadata["renderer_evidence"],
+                "policy_fingerprint": "e" * 64,
+            },
+        },
+    )
+
+    class Store:
+        def load_batch(self, _revision):
+            return forged
+
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: Store())
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(
+            f"/_internal/launch-sitemaps/sitemap.xml?batch={retained.batch_revision}"
+        )
+
+    assert response.status_code == 503
+    assert response.headers["x-launch-indexing-policy"] == "failed-open"
+    assert not any(
+        name.startswith("x-launch-policy") or name.startswith("x-launch-sitemap")
+        for name in response.headers
+    )
+
+
+def test_sitemap_rejects_control_character_in_immutable_revision(monkeypatch):
+    retained = _bundle("a" * 64)
+    forged = replace(
+        retained,
+        metadata={
+            **retained.metadata,
+            "renderer_evidence": {
+                **retained.metadata["renderer_evidence"],
+                "route_manifest_revision": "ok\r\nInjected: yes",
+            },
+        },
+    )
+
+    class Store:
+        def load_batch(self, _revision):
+            return forged
+
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: Store())
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(
+            f"/_internal/launch-sitemaps/sitemap.xml?batch={retained.batch_revision}"
+        )
+
+    assert response.status_code == 503
+    assert response.headers["x-launch-indexing-policy"] == "failed-open"
+    assert "x-launch-route-manifest-revision" not in response.headers
 
 
 @pytest.mark.parametrize(
