@@ -8,10 +8,10 @@ from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
 if __package__:
-    from .launch_evidence import PolicyEvidence, current_policy_evidence
+    from .launch_evidence import current_policy_evidence
     from .sitemap_store import SitemapBundleStore
 else:
-    from launch_evidence import PolicyEvidence, current_policy_evidence
+    from launch_evidence import current_policy_evidence
     from sitemap_store import SitemapBundleStore
 
 
@@ -21,6 +21,13 @@ _SITEMAP_DOCUMENTS = frozenset(
     ("sitemap-index.xml", "sitemap.xml", "sitemap-media.xml")
 )
 _SITEMAP_HASH_KEYS = frozenset(_SITEMAP_DOCUMENTS)
+_RENDERER_EVIDENCE_KEYS = frozenset(
+    (
+        "policy_fingerprint",
+        "route_manifest_revision",
+        "backend_policy_revision",
+    )
+)
 _BATCH_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 
 
@@ -108,17 +115,23 @@ def launch_sitemap_document(
         if type(revision) is not str or _BATCH_PATTERN.fullmatch(revision) is None:
             raise ValueError("invalid served sitemap batch")
         metadata = bundle.metadata
-        evidence = current_policy_evidence()
-        if type(evidence) is not PolicyEvidence or not isinstance(metadata, dict):
+        if not isinstance(metadata, dict):
             raise ValueError("sitemap evidence unavailable")
         renderer_evidence = metadata.get("renderer_evidence")
-        expected_evidence = {
-            "policy_fingerprint": evidence.policy_fingerprint,
-            "route_manifest_revision": evidence.route_manifest_revision,
-            "backend_policy_revision": evidence.backend_policy_revision,
-        }
-        if renderer_evidence != expected_evidence:
-            raise ValueError("sitemap evidence mismatch")
+        if not isinstance(renderer_evidence, dict) or set(
+            renderer_evidence
+        ) != _RENDERER_EVIDENCE_KEYS:
+            raise ValueError("sitemap evidence shape mismatch")
+        fingerprint = renderer_evidence.get("policy_fingerprint")
+        route_revision = renderer_evidence.get("route_manifest_revision")
+        backend_revision = renderer_evidence.get("backend_policy_revision")
+        if type(fingerprint) is not str or _BATCH_PATTERN.fullmatch(fingerprint) is None:
+            raise ValueError("sitemap policy fingerprint is invalid")
+        if any(
+            type(value) is not str or not value or value.strip() != value
+            for value in (route_revision, backend_revision)
+        ):
+            raise ValueError("sitemap evidence revision is invalid")
         if metadata.get("batch_revision") != revision:
             raise ValueError("sitemap metadata revision mismatch")
         body = bundle.documents[document]
@@ -135,9 +148,9 @@ def launch_sitemap_document(
             raise ValueError("sitemap document hash mismatch")
         headers = {
             "Cache-Control": "no-store",
-            "X-Launch-Policy-Fingerprint": evidence.policy_fingerprint,
-            "X-Launch-Route-Manifest-Revision": evidence.route_manifest_revision,
-            "X-Launch-Backend-Policy-Revision": evidence.backend_policy_revision,
+            "X-Launch-Policy-Fingerprint": fingerprint,
+            "X-Launch-Route-Manifest-Revision": route_revision,
+            "X-Launch-Backend-Policy-Revision": backend_revision,
             "X-Launch-Sitemap-Batch-Revision": revision,
         }
         if requested_batch is not None:

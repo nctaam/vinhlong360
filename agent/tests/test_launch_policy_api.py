@@ -281,6 +281,31 @@ def test_active_index_reads_active_and_exposes_all_immutable_evidence(
     _assert_no_store_no_validator(response, 200)
 
 
+def test_sitemap_uses_retained_immutable_evidence_when_current_policy_differs(
+    tmp_path, monkeypatch
+):
+    store = SitemapBundleStore(tmp_path / "bundles")
+    retained = _bundle("a" * 64)
+    store.publish(retained)
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: store)
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_B)
+
+    with TestClient(app) as client:
+        response = client.get(
+            f"/_internal/launch-sitemaps/sitemap.xml?batch={retained.batch_revision}"
+        )
+
+    assert response.content == retained.documents["sitemap.xml"]
+    assert response.headers["x-launch-policy-fingerprint"] == "a" * 64
+    assert response.headers["x-launch-route-manifest-revision"] == (
+        "launch-indexing-policy-v1"
+    )
+    assert response.headers["x-launch-backend-policy-revision"] == INDEX_POLICY_REVISION
+    assert response.headers["x-launch-sitemap-batch-revision"] == retained.batch_revision
+    assert response.headers["x-launch-sitemap-requested-batch"] == retained.batch_revision
+    _assert_no_store_no_validator(response, 200)
+
+
 @pytest.mark.parametrize(
     "query",
     [
