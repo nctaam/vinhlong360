@@ -10,11 +10,11 @@ import pytest
 AGENT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(AGENT))
 
-from index_policy import public_ward_child_counts  # noqa: E402
 from launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence  # noqa: E402
 from route_manifest import extract_static_sitemap_paths, load_route_manifest  # noqa: E402
 from sitemap_render import (  # noqa: E402
     canonical_detail_url,
+    public_ward_child_counts,
     render_main_sitemap,
 )
 from sitemap_snapshot import SitemapSnapshot  # noqa: E402
@@ -156,9 +156,6 @@ def test_shared_ward_child_counts_are_exact_unique_and_relationship_independent(
         object(),
     )
 
-    counts = public_ward_child_counts(entities)
-
-    assert counts == {ward: 2, "other-ward": 1}
     snapshot = _snapshot(
         _ward(ward),
         *entities,
@@ -166,6 +163,9 @@ def test_shared_ward_child_counts_are_exact_unique_and_relationship_independent(
             {"source_id": "ghost", "target_id": ward, "type": "located_in"},
         ),
     )
+    counts = public_ward_child_counts(snapshot)
+
+    assert counts == {ward: 2, "other-ward": 1}
     locs = _locs(render_main_sitemap(snapshot, load_route_manifest(), EVIDENCE))
     assert any(loc.endswith(f"/xa-phuong/{ward}") for loc in locs)
 

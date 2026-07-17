@@ -10,7 +10,7 @@ if __package__:
     from .index_policy import (
         decide_entity,
         decide_ward,
-        public_ward_child_counts,
+        public_ward_child_counts as _index_policy_ward_child_counts,
     )
     from .route_manifest import (
         LoadedRouteManifest,
@@ -18,7 +18,11 @@ if __package__:
         load_route_manifest,
     )
 else:
-    from index_policy import decide_entity, decide_ward, public_ward_child_counts
+    from index_policy import (
+        decide_entity,
+        decide_ward,
+        public_ward_child_counts as _index_policy_ward_child_counts,
+    )
     from route_manifest import (
         LoadedRouteManifest,
         extract_static_sitemap_paths,
@@ -28,6 +32,11 @@ else:
 
 SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 MAX_SITEMAP_URLS = 50_000
+
+
+def public_ward_child_counts(snapshot) -> dict[str, int]:
+    """Expose ward counts through the immutable sitemap snapshot contract."""
+    return _index_policy_ward_child_counts(snapshot.entities)
 
 
 def canonical_detail_url(
@@ -95,7 +104,7 @@ def render_main_sitemap(
     manifest = manifest if manifest is not None else load_route_manifest()
     canonical_origin = manifest.data["canonical_origin"]
     entities = tuple(snapshot.entities)
-    child_counts = public_ward_child_counts(entities)
+    child_counts = public_ward_child_counts(snapshot)
     urls = {
         f"{canonical_origin}{path}"
         for path in extract_static_sitemap_paths(manifest)
