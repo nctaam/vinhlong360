@@ -70,6 +70,14 @@ export function isRootSeoRequest(event: H3Event): boolean {
   return ROOT_SEO_PATHS.has(requestPathname(event))
 }
 
+export function isKnownNonHtmlRequest(event: H3Event): boolean {
+  const pathname = requestPathname(event)
+  if (pathname === '/_nuxt' || pathname.startsWith('/_nuxt/')) return true
+
+  const decision = classifyRequestTarget(requestTarget(event), launchRouteManifest, requestMethod(event))
+  return decision.classification === 'crawl-blocked-sensitive'
+}
+
 export function isLaunchSafetyCandidate(event: H3Event): boolean {
   const method = requestMethod(event)
   if (method !== 'GET' && method !== 'HEAD') return false

@@ -7,6 +7,7 @@ import {
 import { defineNitroPlugin } from 'nitropack/runtime/internal/plugin'
 
 import {
+  isKnownNonHtmlRequest,
   isLaunchSafetyCandidate,
   isRootSeoRequest,
 } from '../middleware/launch-safety'
@@ -43,27 +44,6 @@ function isHtmlContentType(contentType: string): boolean {
   return contentType.includes('text/html') || contentType.includes('application/xhtml+xml')
 }
 
-const NON_HTML_PREFIXES = [
-  '/api',
-  '/auth',
-  '/admin-api',
-  '/chat',
-  '/health',
-  '/feedback',
-  '/_nuxt',
-] as const
-const STATIC_EXTENSION = /\.(?:avif|css|eot|gif|ico|jpe?g|js|json|map|mjs|pdf|png|svg|ttf|txt|wasm|webm|webmanifest|webp|woff2?)(?:$|\/)/iu
-
-function requestPathname(event: H3Event): string {
-  return (event.node.req.url || event.path || '/').split('?', 1)[0] || '/'
-}
-
-function isKnownNonHtmlPath(event: H3Event): boolean {
-  const pathname = requestPathname(event)
-  return NON_HTML_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`))
-    || STATIC_EXTENSION.test(pathname)
-}
-
 function responseStatus(event: H3Event): number {
   const status = event.node.res.statusCode
   return Number.isInteger(status) ? status : 200
@@ -71,6 +51,7 @@ function responseStatus(event: H3Event): number {
 
 function shouldFinalizeLaunchResponse(event: H3Event): boolean {
   if (isRootSeoRequest(event)) return true
+  if (isKnownNonHtmlRequest(event)) return false
 
   // The response is authoritative whenever Nitro has selected an HTML type;
   // Accept/path heuristics must not hide a dotted 404 or JSON-preferring client.
@@ -78,17 +59,16 @@ function shouldFinalizeLaunchResponse(event: H3Event): boolean {
   if (contentType) return isHtmlContentType(contentType)
 
   // Middleware already attested this request. Preserve that request-local
-  // decision for wildcard browser requests, but never extend it to known APIs/assets.
-  if (event.context.launchSafety !== undefined && !isKnownNonHtmlPath(event)) return true
+  // decision for wildcard browser requests only while response type is absent.
+  if (event.context.launchSafety !== undefined) return true
 
   if (responseStatus(event) < 400) return isLaunchSafetyCandidate(event)
 
   // Error hooks can run before Nitro attaches Content-Type. Only an explicit
   // browser HTML request is safe to treat as HTML in that window. Known APIs,
-  // framework assets, and static extensions remain unprotected.
+  // framework assets, and manifest-sensitive paths were excluded above.
   const accept = requestHeader(event, 'accept')
-  return !isKnownNonHtmlPath(event)
-    && (accept.includes('text/html') || accept.includes('application/xhtml+xml'))
+  return accept.includes('text/html') || accept.includes('application/xhtml+xml')
 }
 
 function isStoredInput(value: unknown): value is LaunchResponseHeaderInput {
@@ -107,10 +87,7 @@ function finalHeaderInput(event: H3Event): LaunchResponseHeaderInput {
 export function finalizeLaunchResponse(event: H3Event): void {
   try {
     const shouldFinalize = shouldFinalizeLaunchResponse(event)
-    if (!shouldFinalize) {
-      clearRobotsHeader(event)
-      return
-    }
+    if (!shouldFinalize) return
 
     writeLaunchResponseHeaders(event, finalHeaderInput(event))
     clearRobotsHeader(event)

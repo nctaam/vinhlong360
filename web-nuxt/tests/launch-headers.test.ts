@@ -414,8 +414,8 @@ describe('final response lifecycle', () => {
     '/chat/stream',
     '/health',
     '/feedback/report',
+    '/events',
     '/_nuxt/app.js',
-    '/img/hero.webp',
   ])('skips missing-type non-HTML error paths even with browser Accept: %s', (path) => {
     const event = responseEvent({
       path,
@@ -513,9 +513,65 @@ describe('final response lifecycle', () => {
 
     finalizeLaunchResponse(event as never)
 
-    expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
+    expect(lowerHeaders(event)['x-robots-tag']).toBe('stale')
     expect(lowerHeaders(event)).not.toHaveProperty('cache-control')
     expect(lowerHeaders(event)).not.toHaveProperty('x-launch-indexing-policy')
+  })
+
+  it.each([
+    '/api/entities',
+    '/events',
+    '/cai-dat',
+    '/_internal/launch-policy-attestation',
+  ])('skips manifest-sensitive paths even when an error body declares HTML: %s', (path) => {
+    const event = responseEvent({
+      path,
+      accept: 'text/html',
+      status: 500,
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'X-Robots-Tag': 'noindex, follow',
+      },
+    })
+
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).toMatchObject({ 'x-robots-tag': 'noindex, follow' })
+    expect(lowerHeaders(event)).not.toHaveProperty('cache-control')
+    expect(lowerHeaders(event)).not.toHaveProperty('x-launch-indexing-policy')
+  })
+
+  it('lets an explicit JSON response override an existing public middleware decision', () => {
+    const event = responseEvent({
+      path: '/du-lich',
+      accept: '*/*',
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+      context: { launchSafety: selectiveOpenDecision },
+    })
+
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).not.toHaveProperty('cache-control')
+    expect(lowerHeaders(event)).not.toHaveProperty('x-launch-indexing-policy')
+    expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
+  })
+
+  it('protects an unknown dotted path when its 404 response is actually HTML', () => {
+    const event = responseEvent({
+      path: '/foo.js',
+      accept: 'application/json',
+      status: 404,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+    })
+
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).toMatchObject({
+      'cache-control': 'no-store',
+      'x-launch-indexing-policy': 'failed-open',
+      'x-robots-tag': 'noindex, follow',
+    })
   })
 
   it('falls back synchronously to failed-open and clears stale headers when context is missing', () => {
