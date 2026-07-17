@@ -14,7 +14,9 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
+from urllib.parse import urlsplit
 from uuid import uuid4
+from xml.etree import ElementTree
 
 try:
     from .versioned_json_store import (
@@ -48,10 +50,12 @@ _RENDERER_EVIDENCE_KEYS = frozenset(
     )
 )
 SITEMAP_METADATA_SCHEMA_VERSION = 1
+SITEMAP_CANONICAL_ORIGIN = "https://vinhlong360.vn"
 _REQUIRED_METADATA_KEYS = frozenset(
     ("schema_version", "batch_revision", "documents", "renderer_evidence")
 )
 _OPTIONAL_METADATA_KEYS = frozenset()
+_SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 
 
 def compute_batch_revision(
@@ -85,6 +89,136 @@ def _validate_header_revision(value: object, label: str) -> str:
     if any(ord(character) < 0x21 or ord(character) > 0x7E for character in value):
         raise ValueError(f"metadata renderer evidence {label} contains invalid header characters")
     return value
+
+
+def _validate_canonical_origin(origin: object) -> str:
+    if type(origin) is not str or not origin:
+        raise ValueError("sitemap canonical origin must be a non-empty string")
+    if "\\" in origin or any(
+        ord(character) < 0x21 or ord(character) > 0x7E for character in origin
+    ):
+        raise ValueError("sitemap canonical origin contains invalid characters")
+    try:
+        parsed = urlsplit(origin)
+        port = parsed.port
+    except ValueError as error:
+        raise ValueError("sitemap canonical origin is invalid") from error
+    invalid = (
+        parsed.scheme != "https",
+        not parsed.hostname,
+        parsed.username is not None,
+        parsed.password is not None,
+        port is not None,
+        parsed.netloc != parsed.hostname,
+        bool(parsed.path),
+        bool(parsed.query),
+        bool(parsed.fragment),
+        origin != f"https://{parsed.hostname}",
+    )
+    if any(invalid):
+        raise ValueError("sitemap canonical origin is invalid")
+    return origin
+
+
+def _parse_sitemap_index(index: bytes):
+    declaration = b"<?xml version='1.0' encoding='utf-8'?>\n"
+    if (
+        not index.startswith(declaration)
+        or index.startswith(b"\xef\xbb\xbf")
+        or index != index.rstrip(b" \t\r\n")
+    ):
+        raise ValueError("sitemap index has an invalid UTF-8 XML boundary")
+    try:
+        index.decode("utf-8", errors="strict")
+        root = ElementTree.fromstring(index)
+    except (UnicodeError, ElementTree.ParseError) as error:
+        raise ValueError("sitemap index is not valid UTF-8 XML") from error
+    if (
+        root.tag != f"{{{_SITEMAP_NAMESPACE}}}sitemapindex"
+        or root.attrib
+        or len(root) != 2
+    ):
+        raise ValueError("sitemap index must contain exactly two children")
+    return declaration, root
+
+
+def _validate_sitemap_location(location: object, revision: str, expected_path: str) -> str:
+    if (
+        type(location) is not str
+        or "\\" in location
+        or any(ord(character) < 0x21 or ord(character) > 0x7E for character in location)
+    ):
+        raise ValueError("sitemap index location is invalid")
+    try:
+        parsed = urlsplit(location)
+        port = parsed.port
+    except ValueError as error:
+        raise ValueError("sitemap index location is invalid") from error
+    origin = f"https://{parsed.hostname}" if parsed.hostname else None
+    invalid = (
+        parsed.scheme != "https",
+        not parsed.hostname,
+        parsed.username is not None,
+        parsed.password is not None,
+        port is not None,
+        parsed.netloc != parsed.hostname,
+        parsed.path != expected_path,
+        parsed.query != f"batch={revision}",
+        bool(parsed.fragment),
+        location != f"{origin}{expected_path}?batch={revision}",
+    )
+    if any(invalid):
+        raise ValueError("sitemap index location does not match the pinned protocol")
+    return origin
+
+
+def _expected_sitemap_index(origin: str, revision: str, declaration: bytes) -> bytes:
+    return (
+        declaration
+        + b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        + f"<sitemap><loc>{origin}/sitemap.xml?batch={revision}</loc></sitemap>".encode(
+            "ascii"
+        )
+        + f"<sitemap><loc>{origin}/sitemap-media.xml?batch={revision}</loc></sitemap>".encode(
+            "ascii"
+        )
+        + b"</sitemapindex>"
+    )
+
+
+def validate_sitemap_index(
+    index: object,
+    revision: object,
+    canonical_origin: object = SITEMAP_CANONICAL_ORIGIN,
+) -> None:
+    """Validate the exact two-child pinned sitemap index protocol."""
+    revision = _validate_revision(revision)
+    canonical_origin = _validate_canonical_origin(canonical_origin)
+    if type(index) is not bytes:
+        raise TypeError("sitemap index must contain exact bytes")
+    declaration, root = _parse_sitemap_index(index)
+    origins = []
+    for node, expected_path in zip(root, ("/sitemap.xml", "/sitemap-media.xml"), strict=True):
+        if (
+            node.tag != f"{{{_SITEMAP_NAMESPACE}}}sitemap"
+            or node.attrib
+            or len(node) != 1
+        ):
+            raise ValueError("sitemap index child shape is invalid")
+        loc = node[0]
+        if (
+            loc.tag != f"{{{_SITEMAP_NAMESPACE}}}loc"
+            or loc.attrib
+            or len(loc) != 0
+        ):
+            raise ValueError("sitemap index location shape is invalid")
+        origins.append(_validate_sitemap_location(loc.text, revision, expected_path))
+    if origins[0] != origins[1]:
+        raise ValueError("sitemap index children must share one origin")
+    if origins[0] != canonical_origin:
+        raise ValueError("sitemap index origin does not match canonical authority")
+    if index != _expected_sitemap_index(origins[0], revision, declaration):
+        raise ValueError("sitemap index bytes do not match the pinned protocol")
 
 
 class SitemapStateUnavailable(RuntimeError):
@@ -211,7 +345,10 @@ def _validate_document_hashes(
             raise ValueError(f"metadata digest for {name} does not match its bytes")
 
 
-def _prepare_bundle(bundle: StoredBundle) -> _PreparedBundle:
+def _prepare_bundle(
+    bundle: StoredBundle,
+    canonical_origin: str = SITEMAP_CANONICAL_ORIGIN,
+) -> _PreparedBundle:
     revision = _validate_revision(bundle.batch_revision)
     documents = _copy_bundle_documents(bundle.documents)
     metadata = _validate_metadata_envelope(bundle.metadata, revision)
@@ -226,6 +363,7 @@ def _prepare_bundle(bundle: StoredBundle) -> _PreparedBundle:
     )
     if expected_revision != revision:
         raise ValueError("batch revision does not match renderer evidence and documents")
+    validate_sitemap_index(documents["sitemap-index.xml"], revision, canonical_origin)
     metadata_bytes = _canonical_metadata_bytes(metadata)
     metadata_copy = json.loads(metadata_bytes.decode("utf-8"))
     return _PreparedBundle(
@@ -273,7 +411,11 @@ def _require_bundle_directory(path: Path) -> None:
         raise SitemapStateUnavailable("immutable sitemap bundle is not a regular directory")
 
 
-def _read_and_validate_bundle(directory: Path, revision: str) -> StoredBundle:
+def _read_and_validate_bundle(
+    directory: Path,
+    revision: str,
+    canonical_origin: str = SITEMAP_CANONICAL_ORIGIN,
+) -> StoredBundle:
     _validate_revision(revision, state_error=True)
     if directory.name != revision:
         raise SitemapStateUnavailable("immutable sitemap bundle directory name is invalid")
@@ -298,7 +440,10 @@ def _read_and_validate_bundle(directory: Path, revision: str) -> StoredBundle:
         raise SitemapStateUnavailable("immutable sitemap bundle cannot be decoded") from error
 
     try:
-        prepared = _prepare_bundle(StoredBundle(revision, metadata, documents))
+        prepared = _prepare_bundle(
+            StoredBundle(revision, metadata, documents),
+            canonical_origin,
+        )
     except ValueError as error:
         raise SitemapStateUnavailable("immutable sitemap bundle validation failed") from error
     if prepared.metadata_bytes != metadata_bytes:
@@ -346,8 +491,12 @@ def _read_conflict_entry(entry: Path) -> bytes:
         ) from error
 
 
-def validate_completed_bundle_matches(directory: Path, bundle: StoredBundle) -> None:
-    prepared = _prepare_bundle(bundle)
+def validate_completed_bundle_matches(
+    directory: Path,
+    bundle: StoredBundle,
+    canonical_origin: str = SITEMAP_CANONICAL_ORIGIN,
+) -> None:
+    prepared = _prepare_bundle(bundle, canonical_origin)
     if directory.name != prepared.bundle.batch_revision:
         raise SitemapBundleConflict("content-addressed directory name differs")
     entries = _read_conflict_directory_entries(directory)
@@ -370,8 +519,12 @@ def _write_file_and_fsync(path: Path, content: bytes) -> None:
         os.fsync(output.fileno())
 
 
-def write_bundle_and_fsync(directory: Path, bundle: StoredBundle) -> None:
-    prepared = _prepare_bundle(bundle)
+def write_bundle_and_fsync(
+    directory: Path,
+    bundle: StoredBundle,
+    canonical_origin: str = SITEMAP_CANONICAL_ORIGIN,
+) -> None:
+    prepared = _prepare_bundle(bundle, canonical_origin)
     directory.mkdir()
     _write_file_and_fsync(directory / _METADATA_NAME, prepared.metadata_bytes)
     for name in _DOCUMENT_NAMES:
@@ -544,10 +697,14 @@ def _remove_operation_staging(staging: Path) -> None:
         staging.unlink()
 
 
-def _remove_validated_bundle_directory(root: Path, revision: str) -> None:
+def _remove_validated_bundle_directory(
+    root: Path,
+    revision: str,
+    canonical_origin: str = SITEMAP_CANONICAL_ORIGIN,
+) -> None:
     revision = _validate_revision(revision, state_error=True)
     target = root / revision
-    _read_and_validate_bundle(target, revision)
+    _read_and_validate_bundle(target, revision, canonical_origin)
     try:
         resolved_root = root.resolve(strict=True)
         resolved_target = target.resolve(strict=True)
@@ -569,6 +726,7 @@ class SitemapBundleStore:
         retention: timedelta = DEFAULT_RETENTION,
         now: Callable[[], datetime] = _utc_now,
         failure_injector: Callable[[SitemapPublicationStage], None] | None = None,
+        canonical_origin: str = SITEMAP_CANONICAL_ORIGIN,
     ):
         if not isinstance(retention, timedelta) or retention < timedelta(0):
             raise ValueError("retention must be a non-negative timedelta")
@@ -580,6 +738,7 @@ class SitemapBundleStore:
         self.retention = retention
         self.now = now
         self._failure_injector = failure_injector
+        self.canonical_origin = _validate_canonical_origin(canonical_origin)
 
     @classmethod
     def from_release_root(
@@ -614,7 +773,9 @@ class SitemapBundleStore:
             if not revisions:
                 return None
             if revisions == (prepared.bundle.batch_revision,) and target_stat is not None:
-                validate_completed_bundle_matches(target, prepared.bundle)
+                validate_completed_bundle_matches(
+                    target, prepared.bundle, self.canonical_origin
+                )
                 return None
             raise SitemapStateUnavailable(
                 "active sitemap pointer is missing beside immutable bundle state"
@@ -625,26 +786,36 @@ class SitemapBundleStore:
         if active_revision == prepared.bundle.batch_revision:
             if target_stat is None:
                 raise SitemapStateUnavailable("active immutable sitemap bundle is missing")
-            validate_completed_bundle_matches(target, prepared.bundle)
+            validate_completed_bundle_matches(
+                target, prepared.bundle, self.canonical_origin
+            )
         else:
-            _read_and_validate_bundle(self.root / active_revision, active_revision)
+            _read_and_validate_bundle(
+                self.root / active_revision,
+                active_revision,
+                self.canonical_origin,
+            )
         return pointer
 
     def publish(self, bundle: StoredBundle) -> None:
-        prepared = _prepare_bundle(bundle)
+        prepared = _prepare_bundle(bundle, self.canonical_origin)
         with _root_lock(self.root, create=True):
             pointer = self._pointer_for_publish(prepared)
             target = self.root / prepared.bundle.batch_revision
             target_stat = _lstat(target)
             if target_stat is not None:
-                validate_completed_bundle_matches(target, prepared.bundle)
+                validate_completed_bundle_matches(
+                    target, prepared.bundle, self.canonical_origin
+                )
             else:
                 staging = self.root / (
                     f".{prepared.bundle.batch_revision}.{uuid4().hex}.staging"
                 )
                 renamed = False
                 try:
-                    write_bundle_and_fsync(staging, prepared.bundle)
+                    write_bundle_and_fsync(
+                        staging, prepared.bundle, self.canonical_origin
+                    )
                     os.replace(staging, target)
                     renamed = True
                     fsync_directory(self.root)
@@ -684,7 +855,9 @@ class SitemapBundleStore:
         with _root_lock(self.root, create=False):
             pointer = _read_active_pointer(self.root)
             revision = pointer["batch_revision"]
-            return _read_and_validate_bundle(self.root / revision, revision)
+            return _read_and_validate_bundle(
+                self.root / revision, revision, self.canonical_origin
+            )
 
     def load_batch(self, revision: str) -> StoredBundle:
         with _root_lock(self.root, create=False):
@@ -697,7 +870,9 @@ class SitemapBundleStore:
                 raise SitemapStateUnavailable(
                     "requested sitemap bundle is not in the publication ledger"
                 )
-            return _read_and_validate_bundle(self.root / revision, revision)
+            return _read_and_validate_bundle(
+                self.root / revision, revision, self.canonical_origin
+            )
 
     def list_batches(self) -> tuple[str, ...]:
         with _root_lock(self.root, create=False):
@@ -738,7 +913,9 @@ class SitemapBundleStore:
 
             for item in ledger:
                 revision = item["batch_revision"]
-                _read_and_validate_bundle(self.root / revision, revision)
+                _read_and_validate_bundle(
+                    self.root / revision, revision, self.canonical_origin
+                )
 
             filtered_ledger = [
                 item for item in ledger if item["batch_revision"] in keep
@@ -751,4 +928,6 @@ class SitemapBundleStore:
                 }
             )
             for revision in retired:
-                _remove_validated_bundle_directory(self.root, revision)
+                _remove_validated_bundle_directory(
+                    self.root, revision, self.canonical_origin
+                )

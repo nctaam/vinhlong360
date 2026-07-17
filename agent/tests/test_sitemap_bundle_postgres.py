@@ -485,6 +485,15 @@ def _complete_probe_bundle(revision: str, label: str) -> StoredBundle:
         main=documents["sitemap.xml"],
         media=documents["sitemap-media.xml"],
     )
+    documents["sitemap-index.xml"] = (
+        b"<?xml version='1.0' encoding='utf-8'?>\n"
+        b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        b"<sitemap><loc>https://vinhlong360.vn/sitemap.xml?batch="
+        + revision.encode("ascii")
+        + b"</loc></sitemap><sitemap><loc>https://vinhlong360.vn/sitemap-media.xml?batch="
+        + revision.encode("ascii")
+        + b"</loc></sitemap></sitemapindex>"
+    )
     metadata = {
         "schema_version": SITEMAP_METADATA_SCHEMA_VERSION,
         "batch_revision": revision,

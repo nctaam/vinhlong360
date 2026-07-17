@@ -71,7 +71,6 @@ def make_bundle(revision, marker=b"first", **metadata_evidence):
     documents = {
         "sitemap.xml": b"<urlset>" + marker + b"</urlset>",
         "sitemap-media.xml": b"<urlset>media-" + marker + b"</urlset>",
-        "sitemap-index.xml": b"<sitemapindex>" + marker + b"</sitemapindex>",
     }
     evidence = {
         "policy_fingerprint": "f" * 64,
@@ -90,6 +89,16 @@ def make_bundle(revision, marker=b"first", **metadata_evidence):
             )
         except (TypeError, ValueError):
             pass
+    encoded_revision = str(revision).encode("ascii", errors="replace")
+    documents["sitemap-index.xml"] = (
+        b"<?xml version='1.0' encoding='utf-8'?>\n"
+        b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        b"<sitemap><loc>https://vinhlong360.vn/sitemap.xml?batch="
+        + encoded_revision
+        + b"</loc></sitemap><sitemap><loc>https://vinhlong360.vn/sitemap-media.xml?batch="
+        + encoded_revision
+        + b"</loc></sitemap></sitemapindex>"
+    )
     metadata = {
         "schema_version": 1,
         "batch_revision": revision,
@@ -450,6 +459,26 @@ def test_batch_revision_binds_renderer_evidence_and_documents(tmp_path):
     assert not (tmp_path / "not-created").exists()
 
 
+def test_load_rejects_index_tamper_even_when_metadata_hash_is_updated(tmp_path):
+    candidate = make_bundle("a" * 64)
+    store = SitemapBundleStore(tmp_path)
+    store.publish(candidate)
+    target = tmp_path / candidate.batch_revision
+    forged_index = candidate.documents["sitemap-index.xml"].replace(
+        b"https://vinhlong360.vn/",
+        b"https://evil.example/",
+    )
+    metadata = json.loads(json.dumps(candidate.metadata))
+    metadata["documents"]["sitemap-index.xml"] = hashlib.sha256(
+        forged_index
+    ).hexdigest()
+    (target / "sitemap-index.xml").write_bytes(forged_index)
+    (target / "metadata.json").write_bytes(canonical_metadata(metadata))
+
+    with pytest.raises(SitemapStateUnavailable):
+        store.load_active()
+
+
 @pytest.mark.parametrize(
     "stage",
     [
@@ -576,7 +605,7 @@ def test_pre_rename_write_failure_cleans_only_its_staging_directory(
     store = SitemapBundleStore(tmp_path)
     store.publish(previous)
 
-    def fail_write(directory, _bundle):
+    def fail_write(directory, _bundle, _canonical_origin):
         directory.mkdir()
         (directory / "partial").write_bytes(b"partial")
         raise OSError("write failed")
@@ -1053,7 +1082,7 @@ def test_cleanup_filters_pointer_before_delete_failure_leaves_safe_orphan(
     store.publish(previous)
     store.publish(active)
 
-    def fail_delete(_root, revision):
+    def fail_delete(_root, revision, _canonical_origin):
         assert revision == expired.batch_revision
         raise OSError("delete failed")
 

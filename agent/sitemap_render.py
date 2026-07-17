@@ -72,6 +72,12 @@ def compute_batch_revision(
 def _validate_sitemap_origin(origin: object) -> str:
     if type(origin) is not str:
         raise TypeError("sitemap origin must be an exact string")
+    if (
+        not origin
+        or "\\" in origin
+        or any(ord(character) < 0x21 or ord(character) > 0x7E for character in origin)
+    ):
+        raise ValueError("sitemap origin contains invalid characters")
     parsed = urlsplit(origin)
     try:
         parsed.port

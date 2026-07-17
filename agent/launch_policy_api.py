@@ -9,10 +9,20 @@ from fastapi.responses import JSONResponse
 
 if __package__:
     from .launch_evidence import current_policy_evidence
-    from .sitemap_store import SitemapBundleStore, compute_batch_revision
+    from .sitemap_store import (
+        SITEMAP_CANONICAL_ORIGIN,
+        SitemapBundleStore,
+        compute_batch_revision,
+        validate_sitemap_index,
+    )
 else:
     from launch_evidence import current_policy_evidence
-    from sitemap_store import SitemapBundleStore, compute_batch_revision
+    from sitemap_store import (
+        SITEMAP_CANONICAL_ORIGIN,
+        SitemapBundleStore,
+        compute_batch_revision,
+        validate_sitemap_index,
+    )
 
 
 router = APIRouter(prefix="/_internal", include_in_schema=False)
@@ -165,6 +175,8 @@ def launch_sitemap_document(
             or document_hashes[document] != sha256(body).hexdigest()
         ):
             raise ValueError("sitemap document hash mismatch")
+        if document == "sitemap-index.xml":
+            validate_sitemap_index(body, revision, SITEMAP_CANONICAL_ORIGIN)
         headers = {
             "Cache-Control": "no-store",
             "X-Launch-Policy-Fingerprint": fingerprint,

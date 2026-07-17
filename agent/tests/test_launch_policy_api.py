@@ -75,7 +75,6 @@ def _bundle(revision: str, main: bytes = b"<urlset>pinned</urlset>") -> StoredBu
     documents = {
         "sitemap.xml": main,
         "sitemap-media.xml": b"<urlset>synthetic-media</urlset>",
-        "sitemap-index.xml": b"<sitemapindex>synthetic-index</sitemapindex>",
     }
     evidence = {
         "policy_fingerprint": "a" * 64,
@@ -90,6 +89,16 @@ def _bundle(revision: str, main: bytes = b"<urlset>pinned</urlset>") -> StoredBu
             main=documents["sitemap.xml"],
             media=documents["sitemap-media.xml"],
         )
+    encoded_revision = revision.encode("ascii")
+    documents["sitemap-index.xml"] = (
+        b"<?xml version='1.0' encoding='utf-8'?>\n"
+        b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        b"<sitemap><loc>https://vinhlong360.vn/sitemap.xml?batch="
+        + encoded_revision
+        + b"</loc></sitemap><sitemap><loc>https://vinhlong360.vn/sitemap-media.xml?batch="
+        + encoded_revision
+        + b"</loc></sitemap></sitemapindex>"
+    )
     return StoredBundle(
         batch_revision=revision,
         metadata={
@@ -383,6 +392,45 @@ def test_sitemap_rejects_control_character_in_immutable_revision(monkeypatch):
     assert response.status_code == 503
     assert response.headers["x-launch-indexing-policy"] == "failed-open"
     assert "x-launch-route-manifest-revision" not in response.headers
+
+
+def test_sitemap_rejects_forged_index_with_matching_metadata_hash(monkeypatch):
+    retained = _bundle("a" * 64)
+    forged_index = retained.documents["sitemap-index.xml"].replace(
+        b"https://vinhlong360.vn/",
+        b"https://evil.example/",
+    )
+    forged_documents = {
+        **retained.documents,
+        "sitemap-index.xml": forged_index,
+    }
+    forged = replace(
+        retained,
+        documents=forged_documents,
+        metadata={
+            **retained.metadata,
+            "documents": {
+                **retained.metadata["documents"],
+                "sitemap-index.xml": hashlib.sha256(forged_index).hexdigest(),
+            },
+        },
+    )
+
+    class Store:
+        def load_batch(self, _revision):
+            return forged
+
+    monkeypatch.setattr(launch_policy_api, "get_sitemap_bundle_store", lambda: Store())
+    app = _focused_app(monkeypatch, lambda: EVIDENCE_A)
+
+    with TestClient(app) as client:
+        response = client.get(
+            f"/_internal/launch-sitemaps/sitemap-index.xml?batch={retained.batch_revision}"
+        )
+
+    assert response.status_code == 503
+    assert response.headers["x-launch-indexing-policy"] == "failed-open"
+    assert "x-launch-sitemap-batch-revision" not in response.headers
 
 
 @pytest.mark.parametrize(
