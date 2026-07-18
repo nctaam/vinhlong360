@@ -1,5 +1,7 @@
 import { fileURLToPath } from 'node:url'
 
+import { createLaunchRawArtifactPlugin } from './build/launchRawArtifactPlugin'
+
 const apiBase = process.env.API_BASE || 'http://localhost:8360'
 const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
 
@@ -215,6 +217,10 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
+    rollupConfig: {
+      output: { sourcemapExcludeSources: true },
+      plugins: [createLaunchRawArtifactPlugin(fileURLToPath(new URL('..', import.meta.url)))],
+    },
     // Dev-only: route the SWR/route cache to memory. The default fs cache driver
     // hits EISDIR on Windows ('.nuxt/cache/nuxt/payload' written as both dir + file),
     // 500-ing every SWR route in `nuxt dev`. Memory driver sidesteps it; prod cache
