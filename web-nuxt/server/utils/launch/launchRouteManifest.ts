@@ -60,6 +60,8 @@ export interface RouteDecision {
   readonly canonical_path: string | null
 }
 
+export type DynamicRouteAuthority = LaunchRouteManifest['dynamic_templates'][number]['authority']
+
 function record(value: unknown, label: string): Record<string, unknown> {
   if (
     value === null
@@ -431,6 +433,21 @@ export function classifyRequestTarget(
   if (dynamic) return { classification: dynamic.authority, canonical_path: normalized }
 
   return { classification: manifest.unknown_policy, canonical_path: normalized }
+}
+
+/**
+ * Resolve the manifest authority behind canonical and non-canonical aliases.
+ * Classification alone is insufficient because query/slash/encoding aliases
+ * intentionally classify as noindex or redirect before page authority runs.
+ */
+export function resolveRequestTargetAuthority(
+  target: string,
+  manifest: LaunchRouteManifest,
+  method: 'GET' | 'HEAD' | string = 'GET',
+): DynamicRouteAuthority | null {
+  const canonical = classifyRequestTarget(target, manifest, method).canonical_path
+  if (!canonical) return null
+  return manifest.dynamic_templates.find(item => matchesTemplate(canonical, item.template))?.authority ?? null
 }
 
 export function extractStaticSitemapPaths(manifest: LaunchRouteManifest): string[] {

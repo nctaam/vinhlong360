@@ -29,6 +29,17 @@ export function createLaunchGenerationGuard(onBegin: () => void) {
   })
 }
 
+export function isCurrentLaunchResult<T extends {
+  readonly generation: number
+  readonly requestId: string
+}>(
+  guard: { readonly isCurrent: (generation: unknown) => boolean },
+  result: T | null | undefined,
+  requestId: string,
+): result is T {
+  return !!result && guard.isCurrent(result.generation) && result.requestId === requestId
+}
+
 function freezeDecision(decision: LaunchPageDecision): LaunchPageDecision {
   return Object.isFrozen(decision) ? decision : Object.freeze({ ...decision })
 }

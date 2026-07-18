@@ -8,6 +8,7 @@ import { failedOpenLaunchDecision } from '~/server/utils/launch/launchHeaders'
 import {
   classifyRequestTarget,
   launchRouteManifest,
+  resolveRequestTargetAuthority,
 } from '~/server/utils/launch/launchRouteManifest'
 import {
   LAUNCH_SAFETY_BASE_STATE_KEY,
@@ -29,7 +30,10 @@ export default defineNuxtPlugin(() => {
   const routeClassification = event
     ? classifyRequestTarget(target, launchRouteManifest, method).classification
     : 'crawl-blocked-sensitive'
-  const requiresEntityPolicy = routeClassification === 'backend-entity' || routeClassification === 'backend-ward'
+  const routeAuthority = event
+    ? resolveRequestTargetAuthority(target, launchRouteManifest, method)
+    : null
+  const requiresEntityPolicy = routeAuthority === 'backend-entity' || routeAuthority === 'backend-ward'
   const routeIsKnownCanonical = !target.includes('?') && routeClassification === 'indexable-public'
   const initial: LaunchPageDecision = event
     ? initialRequestPageDecision(base, requiresEntityPolicy, routeIsKnownCanonical)

@@ -17,8 +17,13 @@ import {
   LAUNCH_SAFETY_ROUTE_STATE_KEY,
   LAUNCH_SAFETY_STATE_KEY,
   createLaunchGenerationGuard,
+  isCurrentLaunchResult,
   useLaunchSafety,
 } from '../composables/useLaunchSafety'
+import {
+  launchRouteManifest,
+  resolveRequestTargetAuthority,
+} from '../server/utils/launch/launchRouteManifest'
 
 const fingerprint = 'b'.repeat(64)
 
@@ -333,6 +338,24 @@ describe('entity launch policy refinement', () => {
 
 describe('request-local launch state bridge', () => {
   it.each([
+    ['/dia-diem/a?preview=1', 'backend-entity'],
+    ['/dia-diem/a/', 'backend-entity'],
+    ['/dia-diem/%61', 'backend-entity'],
+    ['/xa-phuong//ward-a', 'backend-ward'],
+  ])('keeps non-canonical backend authority pending during setup: %s', (target, expectedAuthority) => {
+    const authority = resolveRequestTargetAuthority(target, launchRouteManifest)
+    const requiresEntityPolicy = authority === 'backend-entity' || authority === 'backend-ward'
+
+    expect(authority).toBe(expectedAuthority)
+    expect(initialRequestPageDecision(selectiveOpen, requiresEntityPolicy, false)).toMatchObject({
+      operational_state: 'failed-open',
+      reason: 'entity-policy-unavailable',
+      robots: 'noindex, follow',
+      sitemapDiscovery: false,
+    })
+  })
+
+  it.each([
     ['positive', pageDecisionFromBase(selectiveOpen, true)],
     ['valid negative', pageDecisionFromBase(selectiveOpen)],
   ])('preserves a hydrated %s decision until real navigation begins', (_name, hydrated) => {
@@ -371,6 +394,32 @@ describe('request-local launch state bridge', () => {
     expect(guard.isCurrent(generationB)).toBe(false)
     expect(guard.isCurrent(generationAAgain)).toBe(true)
     expect(resets).toHaveLength(3)
+  })
+
+  it('ignores a deferred ward A failure after ward B has succeeded', () => {
+    let resets = 0
+    const guard = createLaunchGenerationGuard(() => { resets += 1 })
+    const generationA = guard.initialize()
+    const failureA = { generation: generationA, requestId: 'a', overview: null, failed: true }
+    const generationB = guard.begin()
+    const successB = {
+      generation: generationB,
+      requestId: 'b',
+      overview: { place: { id: 'b' } },
+      failed: false,
+    }
+    let accepted = null as typeof failureA | typeof successB | null
+
+    const accept = (result: typeof failureA | typeof successB) => {
+      if (isCurrentLaunchResult(guard, result, 'b')) accepted = result
+    }
+    accept(successB)
+    accept(failureA)
+
+    expect(accepted).toBe(successB)
+    expect(accepted?.failed).toBe(false)
+    expect(accepted?.overview?.place.id).toBe('b')
+    expect(resets).toBe(1)
   })
 
   function seedRequest(path: string, initial: LaunchSafetyDecision | ReturnType<typeof pageDecisionFromBase>) {
@@ -468,10 +517,12 @@ describe('request-scoped integration source', () => {
     expect(wardPage).toContain("expectedKind: 'ward'")
     expect(wardPage).toContain('`/api/entities/${encodedId.value}`')
     expect(wardPage).toContain('wardPolicyCarrier.value')
-    expect(wardPage).toContain('__launchRequestId')
+    expect(wardPage).toContain('currentWardOverview.value?.requestId === id.value')
     expect(wardPage).toContain('data.value.place.id === id.value')
     expect(wardPage).toContain('wardPolicyCarrier.value?.requestId === id.value')
     expect(wardPage).toContain('wardPolicyCarrier.value.carrier?.id === id.value')
+    expect(wardPage).toContain('isCurrentLaunchResult(wardLaunchGeneration')
+    expect(wardPage).not.toContain('fetchFailed.value =')
   })
 
   it('bridges only request-local context and hydratable Nuxt state', () => {
@@ -489,5 +540,6 @@ describe('request-scoped integration source', () => {
     expect(plugin).toContain('useState<LaunchPageDecision>')
     expect(plugin).toContain('state.value = initial')
     expect(plugin).toContain('event.context.launchSafety = initial')
+    expect(plugin).toContain('resolveRequestTargetAuthority(target, launchRouteManifest, method)')
   })
 })

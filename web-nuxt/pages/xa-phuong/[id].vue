@@ -148,6 +148,7 @@
 <script setup lang="ts">
 import type { Entity } from '~/types'
 import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
+import { isCurrentLaunchResult } from '~/composables/useLaunchSafety'
 
 useReveal()
 
@@ -166,8 +167,13 @@ interface WardOverviewResponse {
   products?: Entity[]
   facilities?: Entity[]
   counts?: WardOverviewCounts
-  readonly __launchGeneration?: number
-  readonly __launchRequestId?: string
+}
+
+interface WardOverviewResult {
+  readonly generation: number
+  readonly requestId: string
+  readonly overview: WardOverviewResponse | null
+  readonly failed: boolean
 }
 
 interface WardPolicyCarrierResult {
@@ -193,9 +199,8 @@ watch(() => route.fullPath, (next, previous) => {
 
 const goBack = () => goBackOr('/danh-ba')
 
-const fetchFailed = ref(false)
 const {
-  data,
+  data: wardOverviewResult,
   error: wardOverviewError,
   status: wardOverviewStatus,
   refresh: refreshWardOverview,
@@ -203,14 +208,28 @@ const {
   const generation = wardLaunchGeneration.current()
   const requestId = id.value
   try {
-    fetchFailed.value = false
     const overview = await apiFetch<WardOverviewResponse>(`/api/places/${encodedId.value}/overview`)
-    return { ...overview, __launchGeneration: generation, __launchRequestId: requestId }
+    return { generation, requestId, overview, failed: false } satisfies WardOverviewResult
   } catch {
-    fetchFailed.value = true
-    return null
+    return { generation, requestId, overview: null, failed: true } satisfies WardOverviewResult
   }
 }, { watch: [id, () => route.fullPath], deep: false })
+
+const acceptedWardOverview = shallowRef<WardOverviewResult | null>(null)
+const currentWardOverview = computed(() => {
+  const result = acceptedWardOverview.value
+  return isCurrentLaunchResult(wardLaunchGeneration, result, id.value) ? result : null
+})
+const data = computed(() => currentWardOverview.value?.overview ?? null)
+const fetchFailed = computed(() => currentWardOverview.value?.failed === true)
+
+function acceptCurrentWardOverview(result: WardOverviewResult | null | undefined) {
+  if (!isCurrentLaunchResult(wardLaunchGeneration, result, id.value)) return
+  acceptedWardOverview.value = result
+}
+
+acceptCurrentWardOverview(wardOverviewResult.value)
+watch(wardOverviewResult, acceptCurrentWardOverview, { flush: 'sync' })
 
 // The overview is presentation data only. The backend's exact `/entities/{id}`
 // response is the sole ward policy carrier, and is skipped while the base gate
@@ -248,7 +267,8 @@ async function refineCurrentWardLaunchDecision() {
   ) return
 
   if (
-    (data.value && !wardLaunchGeneration.isCurrent(data.value.__launchGeneration))
+    (acceptedWardOverview.value
+      && !wardLaunchGeneration.isCurrent(acceptedWardOverview.value.generation))
     || (wardPolicyCarrier.value && !wardLaunchGeneration.isCurrent(wardPolicyCarrier.value.generation))
   ) {
     launchSafety.resetForNavigation()
@@ -257,8 +277,8 @@ async function refineCurrentWardLaunchDecision() {
 
   await launchSafety.refineEntityPolicy({
     carrier: data.value?.place
-      && wardLaunchGeneration.isCurrent(data.value.__launchGeneration)
-      && data.value.__launchRequestId === id.value
+      && wardLaunchGeneration.isCurrent(currentWardOverview.value?.generation)
+      && currentWardOverview.value?.requestId === id.value
       && data.value.place.id === id.value
       && wardOverviewStatus.value === 'success'
       && !wardOverviewError.value
@@ -277,7 +297,15 @@ async function refineCurrentWardLaunchDecision() {
 
 await refineCurrentWardLaunchDecision()
 watch(
-  [data, wardPolicyCarrier, wardOverviewStatus, wardPolicyStatus, wardOverviewError, wardPolicyError],
+  [
+    acceptedWardOverview,
+    fetchFailed,
+    wardPolicyCarrier,
+    wardOverviewStatus,
+    wardPolicyStatus,
+    wardOverviewError,
+    wardPolicyError,
+  ],
   () => { void refineCurrentWardLaunchDecision() },
   { flush: 'post' },
 )
