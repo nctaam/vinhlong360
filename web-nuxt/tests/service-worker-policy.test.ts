@@ -3,13 +3,24 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import vm from 'node:vm'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
 
 type CacheRecord = {
-  match: ReturnType<typeof vi.fn>
-  put: ReturnType<typeof vi.fn>
-  addAll: ReturnType<typeof vi.fn>
+  match: Mock<(request: FakeRequest) => Promise<FakeResponse | undefined>>
+  put: Mock<(request: FakeRequest, response: FakeResponse) => Promise<void>>
+  addAll: Mock<(urls: string[]) => Promise<void>>
 }
+
+type WorkerFetchEvent = {
+  request: FakeRequest
+  respondWith: Mock<(value: Promise<unknown>) => void>
+}
+
+type WorkerLifecycleEvent = {
+  waitUntil: (value: Promise<unknown>) => void
+}
+
+type WorkerEvent = WorkerFetchEvent | WorkerLifecycleEvent
 
 class FakeHeaders {
   private readonly values = new Map<string, string>()
@@ -58,16 +69,16 @@ class FakeResponse {
 const serviceWorkerPath = resolve(process.cwd(), 'public/sw.js')
 
 describe('service worker policy', () => {
-  let listeners: Map<string, (event: any) => void>
+  let listeners: Map<string, (event: WorkerEvent) => void>
   let cacheMap: Map<string, CacheRecord>
   let cachesApi: {
-    open: ReturnType<typeof vi.fn>
-    keys: ReturnType<typeof vi.fn>
-    delete: ReturnType<typeof vi.fn>
+    open: Mock<(name: string) => Promise<CacheRecord>>
+    keys: Mock<() => Promise<string[]>>
+    delete: Mock<(name: string) => Promise<boolean>>
   }
-  let fetchSpy: ReturnType<typeof vi.fn>
-  let claimSpy: ReturnType<typeof vi.fn>
-  let skipWaitingSpy: ReturnType<typeof vi.fn>
+  let fetchSpy: Mock<() => Promise<FakeResponse>>
+  let claimSpy: Mock<() => void>
+  let skipWaitingSpy: Mock<() => void>
 
   beforeEach(() => {
     listeners = new Map()
@@ -102,7 +113,7 @@ describe('service worker policy', () => {
         location: { origin: 'https://vinhlong360.vn' },
         clients: { claim: claimSpy },
         skipWaiting: skipWaitingSpy,
-        addEventListener: (type: string, listener: (event: any) => void) => listeners.set(type, listener),
+        addEventListener: (type: string, listener: (event: WorkerEvent) => void) => listeners.set(type, listener),
       },
       caches: cachesApi,
       fetch: fetchSpy,
@@ -113,7 +124,7 @@ describe('service worker policy', () => {
     vm.runInNewContext(readFileSync(serviceWorkerPath, 'utf8'), context)
   })
 
-  function dispatchFetch(request: FakeRequest): { respondWith: ReturnType<typeof vi.fn>; response?: Promise<unknown> } {
+  function dispatchFetch(request: FakeRequest): { respondWith: Mock<(value: Promise<unknown>) => void>; response?: Promise<unknown> } {
     let response: Promise<unknown> | undefined
     const respondWith = vi.fn((value: Promise<unknown>) => { response = Promise.resolve(value) })
     listeners.get('fetch')?.({ request, respondWith })
