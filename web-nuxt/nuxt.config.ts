@@ -187,10 +187,6 @@ export default defineNuxtConfig({
     '/recommend': { proxy: `${apiBase}/recommend` },
     '/freshness/**': { proxy: `${apiBase}/freshness/**` },
     '/events': { proxy: `${apiBase}/events` },
-    '/sitemap.xml': { proxy: `${apiBase}/sitemap.xml` },
-    '/sitemap-media.xml': { proxy: `${apiBase}/sitemap-media.xml` },
-    '/sitemap-index.xml': { proxy: `${apiBase}/sitemap-index.xml` },
-    '/robots.txt': { proxy: `${apiBase}/robots.txt` },
   },
 
   experimental: {

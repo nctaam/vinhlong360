@@ -192,7 +192,7 @@ export function useAuth() {
 
   async function authFetch<T>(url: string, opts: Parameters<typeof $fetch>[1] = {}): Promise<T> {
     try {
-      return await $fetch<T>(url, {
+      return await $fetch<T, string>(url, {
         ...opts,
         credentials: 'include',
         headers: { ...authHeaders(), ...(opts.headers as Record<string, string> || {}) },

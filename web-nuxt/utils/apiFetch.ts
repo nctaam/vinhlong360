@@ -15,8 +15,8 @@ function getServerApiBase() {
 }
 
 export function apiFetch<T = unknown>(url: string, opts: Record<string, unknown> = {}): Promise<T> {
-  if (/^https?:\/\//i.test(url)) return $fetch<T>(url, opts)
+  if (/^https?:\/\//i.test(url)) return $fetch<T, string>(url, opts)
   const requestUrl = url.startsWith('/') ? url : `/${url}`
   const baseURL = import.meta.server ? getServerApiBase() : ''
-  return $fetch<T>(requestUrl, baseURL ? { baseURL, ...opts } : opts)
+  return $fetch<T, string>(requestUrl, baseURL ? { baseURL, ...opts } : opts)
 }
