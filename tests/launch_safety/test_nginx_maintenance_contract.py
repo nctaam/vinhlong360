@@ -113,6 +113,72 @@ def _run_script(
     )
 
 
+def test_toggle_script_is_directly_executable_from_the_git_index_archive(
+    tmp_path: Path,
+):
+    relative_script = SCRIPT.relative_to(ROOT).as_posix()
+    tracked = subprocess.run(
+        ["git", "ls-files", "--stage", "--", relative_script],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert tracked.stdout.split(maxsplit=1)[0] == "100755"
+
+    tree = subprocess.run(
+        ["git", "write-tree"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    archive = tmp_path / "index.tar"
+    subprocess.run(
+        [
+            "git",
+            "archive",
+            "--format=tar",
+            f"--output={archive}",
+            tree,
+            relative_script,
+        ],
+        cwd=ROOT,
+        check=True,
+    )
+    extracted = tmp_path / "extracted"
+    extracted.mkdir()
+    subprocess.run(
+        [
+            _bash(),
+            "-lc",
+            'tar -xf "$1" -C "$2"',
+            "maintenance-test",
+            _bash_path(archive),
+            _bash_path(extracted),
+        ],
+        check=True,
+    )
+
+    result = subprocess.run(
+        [
+            _bash(),
+            "-lc",
+            'script=$1; exec "$script"',
+            "maintenance-test",
+            _bash_path(extracted / relative_script),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert result.stderr == (
+        "usage: maintenance_mode.sh enable|disable --operator-cidr CIDR\n"
+    )
+
+
 def test_tracked_maintenance_includes_match_the_reviewed_contract():
     assert {path.name for path in SOURCE_ROOT.iterdir()} == {
         "http-context.conf.template",
@@ -323,3 +389,29 @@ def test_runtime_directory_symlink_is_rejected_without_touching_target(tmp_path:
     assert (real_runtime / "http-context.conf").read_bytes() == before_http
     assert os.readlink(real_runtime / "active-server.conf") == "server-disabled.conf"
     assert not nginx_log.exists()
+
+
+def test_double_leading_slash_runtime_path_is_rejected_before_timeout():
+    environment = os.environ.copy()
+    environment["VL360_MAINTENANCE_DIR"] = "//"
+
+    result = subprocess.run(
+        [
+            _bash(),
+            "-lc",
+            'timeout --kill-after=1 2 bash "$1" enable '
+            "--operator-cidr 10.0.0.1/32",
+            "maintenance-test",
+            _bash_path(SCRIPT),
+        ],
+        cwd=ROOT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+
+    assert result.returncode != 124, "double-leading slash path validation timed out"
+    assert result.returncode != 0
+    assert result.stderr == "maintenance_mode: unsafe-maintenance-path\n"
