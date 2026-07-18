@@ -65,6 +65,12 @@ function vueFiles(directory: string): string[] {
     : entry.name.endsWith('.vue') ? [resolve(directory, entry.name)] : [])
 }
 
+function sourceFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap(entry => entry.isDirectory()
+    ? sourceFiles(resolve(directory, entry.name))
+    : /\.(?:ts|vue)$/u.test(entry.name) ? [resolve(directory, entry.name)] : [])
+}
+
 describe('launch head authority', () => {
   it.each([
     [closedDecision, 'noindex, follow', 0],
@@ -114,5 +120,27 @@ describe('launch head authority', () => {
 
     expect(offenders).toEqual([])
     expect(source('pages/xa-phuong/[id].vue')).not.toContain('totalContent.value <= 1')
+  })
+
+  it('scans all frontend surfaces case-insensitively for alternate robots predicates', () => {
+    const roots = [
+      resolve(process.cwd(), 'pages'),
+      resolve(process.cwd(), 'layouts'),
+      resolve(process.cwd(), 'components'),
+      resolve(process.cwd(), 'composables'),
+      resolve(process.cwd(), 'plugins'),
+      resolve(process.cwd(), 'utils'),
+    ]
+    const offenders = roots.flatMap(sourceFiles).filter((path) => {
+      if (path.endsWith('composables\\useLaunchSafety.ts') || path.endsWith('composables/useLaunchSafety.ts')) return false
+      const normalized = readFileSync(path, 'utf8')
+        .toLowerCase()
+        .replace(/[\s'"`+()[\]{}]/gu, '')
+      return normalized.includes('robots:')
+        || normalized.includes('name:robots')
+        || normalized.includes('[robots]')
+    })
+
+    expect(offenders).toEqual([])
   })
 })

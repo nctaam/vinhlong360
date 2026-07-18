@@ -187,28 +187,7 @@ function validateRobotsMeta() {
         isStringLiteral(names[0].initializer, 'robots'),
     )
   })
-  expect(robotsEntries.length === 1, 'app.head.meta must contain exactly one robots entry')
-  if (robotsEntries.length !== 1) return
-
-  const robots = unwrap(robotsEntries[0])
-  const contentProperty = propertyAssignment(robots, 'content', 'robots meta')
-  if (!contentProperty) return
-  const content = unwrap(contentProperty.initializer)
-  expect(ts.isConditionalExpression(content), 'robots content must be a conditional expression')
-  if (!ts.isConditionalExpression(content)) return
-
-  expect(isIdentifier(content.condition, 'siteNoindex'), 'robots condition must be siteNoindex')
-  expect(
-    isStringLiteral(content.whenTrue, 'noindex, follow'),
-    "robots true branch must be 'noindex, follow'",
-  )
-  expect(
-    isStringLiteral(
-      content.whenFalse,
-      'index, follow, max-image-preview:large, max-snippet:-1',
-    ),
-    'robots false branch must be the authoritative index policy',
-  )
+  expect(robotsEntries.length === 0, 'app.head.meta must not contain a static robots authority')
 }
 
 function collectNamedProperties(node, name) {
@@ -252,27 +231,17 @@ function validateNitroHeaders() {
 
   const headerProperties = collectNamedProperties(headers, 'X-Robots-Tag')
   expect(
-    headerProperties.length === 1,
-    "nitro.routeRules['/**'].headers must contain exactly one X-Robots-Tag property",
+    headerProperties.length === 0,
+    "nitro.routeRules['/**'].headers must not contain a static X-Robots-Tag property",
   )
 
   const matchingSpreads = headers.properties.filter(
     (property) => ts.isSpreadAssignment(property) && exactNoindexHeaderSpread(property),
   )
   expect(
-    matchingSpreads.length === 1,
-    "nitro.routeRules['/**'].headers must contain the exact conditional noindex spread",
+    matchingSpreads.length === 0,
+    "nitro.routeRules['/**'].headers must not contain the legacy conditional noindex spread",
   )
-  if (matchingSpreads.length === 1) {
-    const noindexSpreadIndex = headers.properties.indexOf(matchingSpreads[0])
-    const laterSpreads = headers.properties
-      .slice(noindexSpreadIndex + 1)
-      .filter((property) => ts.isSpreadAssignment(property))
-    expect(
-      laterSpreads.length === 0,
-      "nitro.routeRules['/**'].headers must not spread unknown headers after noindex",
-    )
-  }
 }
 
 function exactRuntimeNoindexCondition(condition, eventName) {
@@ -411,12 +380,12 @@ function directCall(statement) {
   return ts.isCallExpression(expression) ? expression : null
 }
 
-function exactFinalizeCall(call, argument) {
+function exactFinalizeCall(call, ...arguments_) {
   return Boolean(
     call &&
       isIdentifier(call.expression, 'finalizeLaunchResponse') &&
-      call.arguments.length === 1 &&
-      call.arguments[0].getText(sourceFile) === argument,
+      call.arguments.length === arguments_.length &&
+      call.arguments.every((argument, index) => argument.getText(sourceFile) === arguments_[index]),
   )
 }
 
@@ -435,28 +404,21 @@ function validateLaunchResponsePlugin() {
   if (finalizers.length === 1) {
     const finalizer = finalizers[0]
     expect(
-      finalizer.parameters.length === 1 &&
+      finalizer.parameters.length === 2 &&
         ts.isIdentifier(finalizer.parameters[0].name) &&
-        finalizer.parameters[0].name.text === 'event',
-      'finalizeLaunchResponse must receive exactly one event parameter',
+        finalizer.parameters[0].name.text === 'event' &&
+        ts.isIdentifier(finalizer.parameters[1].name) &&
+        finalizer.parameters[1].name.text === 'response' &&
+        Boolean(finalizer.parameters[1].questionToken),
+      'finalizeLaunchResponse must receive event and an optional response body parameter',
     )
     expect(Boolean(finalizer.body), 'finalizeLaunchResponse must have a function body')
 
     const allRobotsCalls = callExpressionsWithin(sourceFile).filter(isAnyRobotsHeaderCall)
     expect(
-      allRobotsCalls.length === 2,
-      'launch response plugin must contain exactly two X-Robots-Tag writer calls',
+      allRobotsCalls.length === 0,
+      'launch response plugin must delegate all X-Robots-Tag writes to launchHeaders',
     )
-    for (const call of allRobotsCalls) {
-      expect(
-        Boolean(finalizer.body && call.pos >= finalizer.body.pos && call.end <= finalizer.body.end),
-        'all X-Robots-Tag writes must be inside finalizeLaunchResponse',
-      )
-      expect(
-        isExactRobotsHeaderCall(call, 'event'),
-        "every X-Robots-Tag write must set event to 'noindex, follow'",
-      )
-    }
   }
 
   const pluginCall = defaultCall('defineNitroPlugin')
@@ -511,13 +473,15 @@ function validateLaunchResponsePlugin() {
   if (beforeHandler) {
     expect(
       ts.isArrowFunction(beforeHandler) &&
-        beforeHandler.parameters.length === 1 &&
+        beforeHandler.parameters.length === 2 &&
         ts.isIdentifier(beforeHandler.parameters[0].name) &&
         beforeHandler.parameters[0].name.text === 'event' &&
+        ts.isIdentifier(beforeHandler.parameters[1].name) &&
+        beforeHandler.parameters[1].name.text === 'response' &&
         ts.isBlock(beforeHandler.body) &&
         beforeHandler.body.statements.length === 1 &&
-        exactFinalizeCall(directCall(beforeHandler.body.statements[0]), 'event'),
-      'beforeResponse hook must directly finalize the current event',
+        exactFinalizeCall(directCall(beforeHandler.body.statements[0]), 'event', 'response'),
+      'beforeResponse hook must directly finalize the current event and response body',
     )
   }
 

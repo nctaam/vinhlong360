@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
+import { parse as parseDevalue, stringify as stringifyDevalue } from 'devalue'
 
 import launchSafetyMiddleware, {
   launchBuildEvidence,
@@ -17,6 +18,7 @@ import {
   buildLaunchResponseHeaders,
   writeLaunchResponseHeaders,
 } from '../server/utils/launch/launchHeaders'
+import { LAUNCH_SAFETY_STATE_KEY } from '../composables/useLaunchSafety'
 import type { LaunchPageDecision, LaunchSafetyDecision } from '../types/launch'
 
 const batch = 'a'.repeat(64)
@@ -506,7 +508,10 @@ describe('final response lifecycle', () => {
     const event = responseEvent({
       path,
       accept: '*/*',
-      headers: { 'content-type': path === '/robots.txt' ? 'text/plain' : 'application/xml' },
+      headers: {
+        'content-type': path === '/robots.txt' ? 'text/plain' : 'application/xml',
+        'X-Robots-Tag': 'stale',
+      },
       context: { launchSafety: closedDecision },
     })
     finalizeLaunchResponse(event as never)
@@ -547,15 +552,182 @@ describe('final response lifecycle', () => {
       accept: 'application/json',
       headers: {
         'content-type': 'application/json',
+        'Cache-Control': 'public, max-age=60',
         'X-Robots-Tag': 'stale',
+        'x-launch-indexing-policy': 'stale',
       },
     })
 
     finalizeLaunchResponse(event as never)
 
-    expect(lowerHeaders(event)['x-robots-tag']).toBe('stale')
-    expect(lowerHeaders(event)).not.toHaveProperty('cache-control')
+    expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
+    expect(lowerHeaders(event)['cache-control']).toBe('public, max-age=60')
     expect(lowerHeaders(event)).not.toHaveProperty('x-launch-indexing-policy')
+  })
+
+  it.each([
+    ['indexable success', selectiveOpenPageDecision, 'index, follow'],
+    ['valid-negative success', selectiveNegativePageDecision, 'noindex, follow'],
+  ] as const)('keeps %s HTML body and payload parity', (_label, decision, robots) => {
+    const payload = stringifyDevalue({
+      state: {
+        [`$s${LAUNCH_SAFETY_STATE_KEY}`]: decision,
+      },
+    })
+    const response = {
+      body: `<html><head><meta name="robots" content="stale"><meta NAME="ROBOTS" content="stale-two"></head><body><script id="__NUXT_DATA__" type="application/json">${payload}</script></body></html>`,
+    }
+    const event = responseEvent({
+      status: 200,
+      headers: { 'content-type': 'text/html' },
+      context: { launchSafety: decision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    expect(response.body.match(/<meta\b[^>]*\bname=["']robots["'][^>]*>/giu)).toEqual([
+      `<meta name="robots" content="${robots}">`,
+    ])
+    const serialized = response.body.match(/<script[^>]+id=["']__NUXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/iu)?.[1]
+    const hydrated = parseDevalue(serialized!) as { state: Record<string, LaunchPageDecision> }
+    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`].robots).toBe(robots)
+    expect(lowerHeaders(event)['x-robots-tag']).toBe(robots)
+  })
+
+  it('rewrites late HTML status bodies to final robots meta and hydrated launch state', () => {
+    const payload = stringifyDevalue({
+      state: {
+        [`$s${LAUNCH_SAFETY_STATE_KEY}`]: selectiveOpenPageDecision,
+      },
+    })
+    const response = {
+      body: `<html><head><meta name="robots" content="index, follow"><meta name="robots" content="stale"></head><body><script id="__NUXT_DATA__" type="application/json">${payload}</script></body></html>`,
+    }
+    const event = responseEvent({
+      status: 404,
+      headers: { 'content-type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'stale' },
+      context: { launchSafety: selectiveOpenPageDecision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    expect(response.body.match(/<meta\b[^>]*\bname=["']robots["'][^>]*>/giu)).toEqual([
+      '<meta name="robots" content="noindex, follow">',
+    ])
+    const serialized = response.body.match(/<script[^>]+id=["']__NUXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/iu)?.[1]
+    expect(serialized).toBeTruthy()
+    const hydrated = parseDevalue(serialized!) as { state: Record<string, LaunchPageDecision> }
+    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`]).toMatchObject({
+      robots: 'noindex, follow',
+      policy_fingerprint: fingerprint,
+    })
+    expect(lowerHeaders(event)['x-robots-tag']).toBe('noindex, follow')
+  })
+
+  it('preserves unrelated head metadata while normalizing robots', () => {
+    const payload = stringifyDevalue({
+      state: {
+        [`$s${LAUNCH_SAFETY_STATE_KEY}`]: selectiveOpenPageDecision,
+      },
+    })
+    const response = {
+      body: `<html><head><meta charset="utf-8"><meta name="description" content="test"><meta name="robots" content="index, follow"></head><body><script id="__NUXT_DATA__" type="application/json">${payload}</script></body></html>`,
+    }
+    const event = responseEvent({
+      status: 404,
+      headers: { 'content-type': 'text/html' },
+      context: { launchSafety: selectiveOpenPageDecision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    expect(response.body).toContain('<meta charset="utf-8">')
+    expect(response.body).toContain('<meta name="description" content="test">')
+    expect(response.body).toContain('<meta name="robots" content="noindex, follow">')
+  })
+
+  it('does not treat head-like text inside scripts as HTML structure', () => {
+    const payload = stringifyDevalue({
+      state: {
+        [`$s${LAUNCH_SAFETY_STATE_KEY}`]: selectiveOpenPageDecision,
+      },
+    })
+    const scriptText = 'const marker = "</head><meta name=\\"robots\\" content=\\"script\\">";'
+    const response = {
+      body: `<html><head><script>${scriptText}</script><meta NAME="ROBOTS" content="index, follow"></head><body><script id="__NUXT_DATA__" type="application/json">${payload}</script></body></html>`,
+    }
+    const event = responseEvent({
+      status: 500,
+      headers: { 'content-type': 'text/html' },
+      context: { launchSafety: selectiveOpenPageDecision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    expect(response.body).toContain(`<script>${scriptText}</script>`)
+    expect(response.body.match(/<meta\b[^>]*\bname=["']robots["'][^>]*>/giu)).toEqual([
+      '<meta name="robots" content="noindex, follow">',
+    ])
+  })
+
+  it.each([
+    Buffer.from('<html><head></head></html>'),
+    new Response(null),
+    new ReadableStream({ start: controller => controller.close() }),
+  ])('leaves non-string HTML bodies untouched: %s', (body) => {
+    const response = { body }
+    const event = responseEvent({
+      status: 500,
+      headers: { 'content-type': 'text/html' },
+      context: { launchSafety: selectiveOpenPageDecision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    expect(response.body).toBe(body)
+    expect(lowerHeaders(event)['x-robots-tag']).toBe('noindex, follow')
+  })
+
+  it('does not mutate an unrelated Nuxt payload graph', () => {
+    const payload = stringifyDevalue({ state: { unrelated: { robots: 'index, follow' } } })
+    const response = {
+      body: `<html><head><meta name="robots" content="index, follow"></head><body><script id="__NUXT_DATA__" type="application/json">${payload}</script></body></html>`,
+    }
+    const event = responseEvent({
+      status: 404,
+      headers: { 'content-type': 'text/html' },
+      context: { launchSafety: selectiveOpenPageDecision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    const serialized = response.body.match(/<script[^>]+id=["']__NUXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/iu)?.[1]
+    expect(serialized).toBe(payload)
+    expect(response.body).toContain('<meta name="robots" content="noindex, follow">')
+  })
+
+  it('matches the exact Nuxt payload script id instead of attribute text', () => {
+    const payload = stringifyDevalue({
+      state: {
+        [`$s${LAUNCH_SAFETY_STATE_KEY}`]: selectiveOpenPageDecision,
+      },
+    })
+    const decoy = '<script type="application/json" data-marker=\'id="__NUXT_DATA__"\'>["decoy"]</script>'
+    const response = {
+      body: `<html><head><meta name="robots" content="index, follow"></head><body>${decoy}<script id="__NUXT_DATA__" type="application/json">${payload}</script></body></html>`,
+    }
+    const event = responseEvent({
+      status: 404,
+      headers: { 'content-type': 'text/html' },
+      context: { launchSafety: selectiveOpenPageDecision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    expect(response.body).toContain(decoy)
+    const scripts = [...response.body.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/giu)]
+    const hydrated = parseDevalue(scripts[1]![1]!) as { state: Record<string, LaunchPageDecision> }
+    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`].robots).toBe('noindex, follow')
   })
 
   it.each([
@@ -576,7 +748,7 @@ describe('final response lifecycle', () => {
 
     finalizeLaunchResponse(event as never)
 
-    expect(lowerHeaders(event)).toMatchObject({ 'x-robots-tag': 'noindex, follow' })
+    expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
     expect(lowerHeaders(event)).not.toHaveProperty('cache-control')
     expect(lowerHeaders(event)).not.toHaveProperty('x-launch-indexing-policy')
   })
@@ -689,8 +861,10 @@ describe('final response lifecycle', () => {
         : entry.name.endsWith('.ts') ? [resolve(directory, entry.name)] : [])
     const candidates = walk(serverRoot)
     const writers = candidates.filter((path) => {
-      const source = readFileSync(path, 'utf8')
-      return source.includes('X-Robots-Tag')
+      const normalized = readFileSync(path, 'utf8')
+        .toLowerCase()
+        .replace(/[\s'"`+()[\]{}]/gu, '')
+      return normalized.includes('x-robots-tag')
     })
 
     expect(writers).toEqual([resolve(serverRoot, 'utils/launch/launchHeaders.ts')])

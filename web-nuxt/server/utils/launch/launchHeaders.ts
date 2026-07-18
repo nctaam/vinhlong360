@@ -20,8 +20,11 @@ export const LAUNCH_HEADER_NAMES = Object.freeze([
 
 const LAUNCH_HEADER_NAMES_LOWER = new Set([
   ...LAUNCH_HEADER_NAMES.map(name => name.toLowerCase()),
-  'cache-control',
   'x-robots-tag',
+])
+const WRITTEN_HEADER_NAMES_LOWER = new Set([
+  ...LAUNCH_HEADER_NAMES_LOWER,
+  'cache-control',
 ])
 const CLOSED_REASONS = new Set([
   'closed-default',
@@ -179,6 +182,13 @@ export function buildLaunchResponseHeaders(input: LaunchResponseHeaderInput): Re
 }
 
 function clearLaunchHeaders(event: H3Event): void {
+  for (const name of Object.keys(getResponseHeaders(event))) {
+    if (WRITTEN_HEADER_NAMES_LOWER.has(name.toLowerCase())) removeResponseHeader(event, name)
+  }
+}
+
+/** Remove stale launch/robots headers without opting an unrelated response into policy headers. */
+export function clearLaunchResponseHeaders(event: H3Event): void {
   for (const name of Object.keys(getResponseHeaders(event))) {
     if (LAUNCH_HEADER_NAMES_LOWER.has(name.toLowerCase())) removeResponseHeader(event, name)
   }
