@@ -2,7 +2,6 @@ import {
   defineEventHandler,
   setHeader,
   setResponseStatus,
-  type EventHandler,
   type H3Event,
 } from 'h3'
 import { useRuntimeConfig } from 'nitropack/runtime'
@@ -68,7 +67,7 @@ function defaultDependencies(): LaunchReadinessDependencies {
 
 export function createLaunchReadinessHandler(
   dependencies: LaunchReadinessDependencies,
-): EventHandler<H3Event, Promise<ReadinessBody>> {
+) {
   return defineEventHandler(async (event): Promise<ReadinessBody> => {
     setHeader(event, 'Cache-Control', 'no-store')
 
