@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import hashlib
 import importlib.util
 import json
@@ -28,6 +29,15 @@ def _service_block(source: str, service: str, next_service: str | None = None) -
     return block
 
 
+def _source_healthcheck_command(service_block: str) -> list[str]:
+    line = next(
+        line.strip()
+        for line in service_block.splitlines()
+        if line.strip().startswith("test: [")
+    )
+    return json.loads(line.removeprefix("test:").strip())
+
+
 def _expected_closed_model() -> dict[str, object]:
     return {
         "services": {
@@ -36,6 +46,14 @@ def _expected_closed_model() -> dict[str, object]:
             "agent": {
                 "expose": ["8360"],
                 "environment": {"BIND_HOST": "0.0.0.0"},
+                "healthcheck": {
+                    "test": [
+                        "CMD",
+                        "curl",
+                        "-f",
+                        "http://127.0.0.1:8360/health",
+                    ]
+                },
             },
             "bot-gateway": {
                 "expose": ["8361"],
@@ -59,8 +77,18 @@ def _expected_closed_model() -> dict[str, object]:
             },
             "nginx": {
                 "ports": [
-                    {"target": 80, "published": 80},
-                    {"target": 443, "published": 443},
+                    {
+                        "host_ip": "0.0.0.0",
+                        "target": 80,
+                        "published": 80,
+                        "protocol": "tcp",
+                    },
+                    {
+                        "host_ip": "0.0.0.0",
+                        "target": 443,
+                        "published": 443,
+                        "protocol": "tcp",
+                    },
                 ],
                 "depends_on": {"nuxt": {"condition": "service_healthy"}},
             },
@@ -75,6 +103,7 @@ def _expected_closed_model() -> dict[str, object]:
 
 def test_production_compose_source_removes_non_nginx_host_publications():
     compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+    assert "container_name:" not in compose
     for service, next_service in (
         ("postgres", "redis"),
         ("redis", "agent"),
@@ -99,6 +128,10 @@ def test_nuxt_and_nginx_compose_dependencies_are_backend_independent():
     assert "http://127.0.0.1:3000/_internal/launch-readiness" in nuxt
     assert "HOST: 0.0.0.0" in nuxt
     assert "NITRO_HOST: 0.0.0.0" in nuxt
+    assert _source_healthcheck_command(nuxt) == [
+        "CMD-SHELL",
+        "wget -qO- http://127.0.0.1:3000/_internal/launch-readiness >/dev/null",
+    ]
     assert nginx.count("depends_on:") == 1
     assert "nuxt:" in nginx and "condition: service_healthy" in nginx
     assert "agent:" not in nginx
@@ -111,7 +144,18 @@ def test_container_bind_hosts_and_internal_agent_url_are_explicit():
     assert "BIND_HOST: 0.0.0.0" in agent
     assert "BIND_HOST: 0.0.0.0" in bot
     assert "AGENT_URL: http://agent:8360" in bot
-    assert "http://127.0.0.1:8361/" in bot
+    assert _source_healthcheck_command(agent) == [
+        "CMD",
+        "curl",
+        "-f",
+        "http://127.0.0.1:8360/health",
+    ]
+    assert _source_healthcheck_command(bot) == [
+        "CMD",
+        "curl",
+        "-f",
+        "http://127.0.0.1:8361/",
+    ]
     assert "required: false" in agent
     assert "required: false" in bot
 
@@ -176,6 +220,84 @@ def test_production_validator_rejects_a_missing_required_service():
     )
 
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("host_ip", "127.0.0.1"),
+        ("target", 8080),
+        ("protocol", "udp"),
+        ("published", "80-81"),
+    ],
+)
+def test_production_validator_rejects_invalid_nginx_endpoint(field, value):
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["nginx"]["ports"][0][field] = value
+    assert any(
+        "nginx exclusive public endpoints" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
+def test_production_validator_rejects_fixed_container_names():
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["redis"]["container_name"] = "fixed-redis"
+    assert any(
+        "container_name is forbidden: redis" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
+def test_production_validator_rejects_unknown_service_publication():
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["rogue"] = {
+        "ports": [
+            {
+                "host_ip": "0.0.0.0",
+                "target": 9999,
+                "published": 9999,
+                "protocol": "tcp",
+            }
+        ]
+    }
+    assert any(
+        "non-nginx service publishes host ports: rogue" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
+@pytest.mark.parametrize(
+    ("service", "command"),
+    [
+        (
+            "agent",
+            ["CMD", "curl", "-f", "http://127.0.0.1:8360/health-comment"],
+        ),
+        (
+            "bot-gateway",
+            ["CMD", "curl", "-f", "http://127.0.0.1:8361/health"],
+        ),
+        (
+            "nuxt",
+            [
+                "CMD-SHELL",
+                "printf 'http://127.0.0.1:3000/_internal/launch-readiness' >/dev/null",
+            ],
+        ),
+    ],
+)
+def test_production_validator_rejects_noncanonical_health_commands(service, command):
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"][service]["healthcheck"]["test"] = command
+    assert any(
+        f"{service} healthcheck command mismatch" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
 def test_production_validator_rejects_host_network_and_unlock_environment():
     audit = _load_audit()
     model = _expected_closed_model()
@@ -187,6 +309,43 @@ def test_production_validator_rejects_host_network_and_unlock_environment():
     assert any("host network" in issue for issue in issues)
     assert any("unlock" in issue for issue in issues)
     assert any("external network" in issue for issue in issues)
+
+
+def test_bot_root_health_route_exists_without_importing_gateway():
+    source = (ROOT / "agent" / "bot_gateway.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    create_app = next(
+        node
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == "create_bot_app"
+    )
+    routes = {
+        decorator.args[0].value
+        for node in ast.walk(create_app)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        for decorator in node.decorator_list
+        if isinstance(decorator, ast.Call)
+        and isinstance(decorator.func, ast.Attribute)
+        and isinstance(decorator.func.value, ast.Name)
+        and decorator.func.value.id == "bot_app"
+        and decorator.func.attr == "get"
+        and decorator.args
+        and isinstance(decorator.args[0], ast.Constant)
+        and isinstance(decorator.args[0].value, str)
+    }
+    assert "/" in routes
+
+
+def test_source_sha256_normalizes_checkout_line_endings(tmp_path: Path):
+    audit = _load_audit()
+    lf = tmp_path / "lf.yml"
+    crlf = tmp_path / "crlf.yml"
+    lf.write_bytes(b"services:\n  nginx: {}\n")
+    crlf.write_bytes(b"services:\r\n  nginx: {}\r\n")
+    expected = hashlib.sha256(lf.read_bytes()).hexdigest()
+    assert audit.source_sha256(lf) == expected
+    assert audit.source_sha256(crlf) == expected
 
 
 def test_audit_artifact_is_canonical_source_bound_and_has_no_raw_model(tmp_path: Path):
@@ -205,24 +364,43 @@ def test_audit_artifact_is_canonical_source_bound_and_has_no_raw_model(tmp_path:
         "check_names",
         "checks",
         "published_ports",
+        "source_digest_kind",
         "sources",
     }
     assert artifact["check_names"] == [
         "agent_bind_host",
         "bot_bind_host_and_agent_url",
-        "bot_healthcheck",
-        "internal_services_unpublished",
+        "container_names_absent",
+        "exact_healthcheck_commands",
         "nginx_depends_on_healthy_nuxt_only",
-        "nginx_exclusive_public_ports",
+        "nginx_exclusive_public_endpoints",
         "no_external_or_host_network",
         "no_launch_unlock_environment",
+        "non_nginx_services_unpublished",
         "nuxt_backend_independent_readiness",
         "nuxt_bind_host",
         "required_services_present",
     ]
     assert artifact["checks"] == {name: "passed" for name in artifact["check_names"]}
+    assert artifact["source_digest_kind"] == "sha256-utf8-lf-v1"
+    assert artifact["published_ports"] == [
+        {
+            "host_ip": "0.0.0.0",
+            "protocol": "tcp",
+            "published": 80,
+            "service": "nginx",
+            "target": 80,
+        },
+        {
+            "host_ip": "0.0.0.0",
+            "protocol": "tcp",
+            "published": 443,
+            "service": "nginx",
+            "target": 443,
+        },
+    ]
     assert artifact["sources"] == [
-        {"path": "docker-compose.yml", "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}
+        {"path": "docker-compose.yml", "sha256": audit.source_sha256(source)}
     ]
     assert "services" not in artifact
     canonical = audit.canonical_json_bytes(artifact)
@@ -242,7 +420,7 @@ def test_audit_artifact_refuses_overwrite_and_leaves_no_pending_file(tmp_path: P
     assert list(tmp_path.glob(".*pending*")) == []
 
 
-def test_cli_render_uses_no_env_resolution(monkeypatch, tmp_path: Path):
+def test_cli_render_uses_no_env_resolution(monkeypatch):
     audit = _load_audit()
     calls: list[list[str]] = []
 
@@ -256,9 +434,63 @@ def test_cli_render_uses_no_env_resolution(monkeypatch, tmp_path: Path):
         return Completed()
 
     monkeypatch.setattr(audit.subprocess, "run", run)
-    rendered = audit.render_production_compose(ROOT)
+    rendered = audit.render_production_compose(
+        ROOT,
+        ROOT / "docker-compose.yml",
+        ROOT / "docker-compose.prod.yml",
+    )
     assert rendered["services"]["nginx"]
     assert calls == [[
         "docker", "compose", "-f", "docker-compose.yml", "-f", "docker-compose.prod.yml",
         "config", "--format", "json", "--no-env-resolution",
     ]]
+
+
+def test_cli_supports_planned_paths_and_sibling_source_defaults(
+    monkeypatch, tmp_path: Path
+):
+    audit = _load_audit()
+    for name in (
+        "docker-compose.yml",
+        "docker-compose.prod.yml",
+        "docker-compose.dev.yml",
+        "docker-compose.systemd-deps.yml",
+    ):
+        (tmp_path / name).write_text(f"# {name}\n", encoding="utf-8")
+    calls = []
+
+    def render(root, compose, production):
+        calls.append((root, compose, production))
+        return _expected_closed_model()
+
+    monkeypatch.setattr(audit, "render_production_compose", render)
+    monkeypatch.chdir(tmp_path)
+    result = audit.main(
+        [
+            "--compose",
+            "docker-compose.yml",
+            "--production",
+            "docker-compose.prod.yml",
+            "--output",
+            "build/compose-network-audit.json",
+        ]
+    )
+    assert result == 0
+    assert calls == [
+        (
+            tmp_path.resolve(),
+            (tmp_path / "docker-compose.yml").resolve(),
+            (tmp_path / "docker-compose.prod.yml").resolve(),
+        )
+    ]
+    artifact = json.loads(
+        (tmp_path / "build" / "compose-network-audit.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert [source["path"] for source in artifact["sources"]] == [
+        "docker-compose.dev.yml",
+        "docker-compose.prod.yml",
+        "docker-compose.systemd-deps.yml",
+        "docker-compose.yml",
+    ]

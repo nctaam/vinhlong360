@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import ipaddress
 import json
 import os
 import secrets
@@ -22,11 +23,12 @@ SCHEMA_VERSION = 1
 AUDIT_REVISION = "compose-network-audit-v1"
 CHECK_NAMES = (
     "agent_bind_host",
-    "bot_healthcheck",
     "bot_bind_host_and_agent_url",
-    "internal_services_unpublished",
+    "container_names_absent",
+    "exact_healthcheck_commands",
+    "non_nginx_services_unpublished",
     "no_external_or_host_network",
-    "nginx_exclusive_public_ports",
+    "nginx_exclusive_public_endpoints",
     "nginx_depends_on_healthy_nuxt_only",
     "nuxt_backend_independent_readiness",
     "nuxt_bind_host",
@@ -49,6 +51,15 @@ FORBIDDEN_ENV_KEYS = {
     "LAUNCH_INDEXING_OWNER_APPROVED",
 }
 REQUIRED_SERVICES = INTERNAL_SERVICES | {"nginx"}
+EXPECTED_HEALTHCHECKS = {
+    "agent": ("CMD", "curl", "-f", "http://127.0.0.1:8360/health"),
+    "bot-gateway": ("CMD", "curl", "-f", "http://127.0.0.1:8361/"),
+    "nuxt": (
+        "CMD-SHELL",
+        "wget -qO- http://127.0.0.1:3000/_internal/launch-readiness >/dev/null",
+    ),
+}
+SOURCE_DIGEST_KIND = "sha256-utf8-lf-v1"
 
 
 def canonical_json_bytes(value: object) -> bytes:
@@ -60,31 +71,47 @@ def canonical_json_bytes(value: object) -> bytes:
     ).encode("utf-8")
 
 
-def _as_int(value: object) -> int | None:
-    try:
-        return int(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError):
+def _exact_port(value: object) -> int | None:
+    if type(value) is int:
+        port = value
+    elif isinstance(value, str) and value.isascii() and value.isdecimal():
+        port = int(value)
+    else:
         return None
+    return port if 1 <= port <= 65535 else None
 
 
-def _published_port(port: object) -> int | None:
-    if isinstance(port, Mapping):
-        return _as_int(port.get("published"))
-    if isinstance(port, str):
-        parts = port.split(":")
-        if len(parts) < 2:
-            return None
-        return _as_int(parts[-2].split("/")[0])
-    return None
+def _port_endpoint(service: str, value: object) -> dict[str, object] | None:
+    if not isinstance(value, Mapping):
+        return None
+    target = _exact_port(value.get("target"))
+    published = _exact_port(value.get("published"))
+    if target is None or published is None:
+        return None
+    host_value = value.get("host_ip") or "0.0.0.0"
+    if not isinstance(host_value, str):
+        return None
+    try:
+        host_ip = ipaddress.ip_address(host_value).compressed
+    except ValueError:
+        return None
+    protocol_value = value.get("protocol", "tcp")
+    if not isinstance(protocol_value, str):
+        return None
+    return {
+        "service": service,
+        "host_ip": host_ip,
+        "published": published,
+        "target": target,
+        "protocol": protocol_value.lower(),
+    }
 
 
-def published_ports(model: Mapping[str, Any]) -> set[tuple[str, int]]:
-    """Return ``(service, host-port)`` entries from a Compose model."""
-
+def published_endpoints(model: Mapping[str, Any]) -> list[dict[str, object]]:
     services = model.get("services", {})
     if not isinstance(services, Mapping):
-        return set()
-    result: set[tuple[str, int]] = set()
+        return []
+    endpoints: list[dict[str, object]] = []
     for service_name, service in services.items():
         if not isinstance(service, Mapping):
             continue
@@ -92,10 +119,19 @@ def published_ports(model: Mapping[str, Any]) -> set[tuple[str, int]]:
         if not isinstance(ports, Sequence) or isinstance(ports, (str, bytes)):
             continue
         for port in ports:
-            published = _published_port(port)
-            if published is not None:
-                result.add((str(service_name), published))
-    return result
+            endpoint = _port_endpoint(str(service_name), port)
+            if endpoint is not None:
+                endpoints.append(endpoint)
+    return endpoints
+
+
+def published_ports(model: Mapping[str, Any]) -> set[tuple[str, int]]:
+    """Return ``(service, host-port)`` entries from a Compose model."""
+
+    return {
+        (str(endpoint["service"]), int(endpoint["published"]))
+        for endpoint in published_endpoints(model)
+    }
 
 
 def _environment(service: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -119,14 +155,46 @@ def _exposed(service: Mapping[str, Any], port: int) -> bool:
     return any(str(item).split("/")[0] == str(port) for item in exposed)
 
 
-def _healthcheck_text(service: Mapping[str, Any]) -> str:
+def _healthcheck_command(service: Mapping[str, Any]) -> tuple[str, ...] | None:
     healthcheck = service.get("healthcheck", {})
     if not isinstance(healthcheck, Mapping):
-        return ""
+        return None
     test = healthcheck.get("test", ())
-    if isinstance(test, Sequence) and not isinstance(test, (str, bytes)):
-        return " ".join(str(item) for item in test)
-    return str(test)
+    if (
+        isinstance(test, Sequence)
+        and not isinstance(test, (str, bytes))
+        and all(isinstance(item, str) for item in test)
+    ):
+        return tuple(test)
+    return None
+
+
+def _nginx_endpoints_are_exact(model: Mapping[str, Any]) -> bool:
+    services = model.get("services", {})
+    if not isinstance(services, Mapping):
+        return False
+    nginx = services.get("nginx", {})
+    if not isinstance(nginx, Mapping):
+        return False
+    ports = nginx.get("ports", ())
+    if (
+        not isinstance(ports, Sequence)
+        or isinstance(ports, (str, bytes))
+        or len(ports) != 2
+    ):
+        return False
+    endpoints = [_port_endpoint("nginx", port) for port in ports]
+    if any(endpoint is None for endpoint in endpoints):
+        return False
+    valid_endpoints = [endpoint for endpoint in endpoints if endpoint is not None]
+    for endpoint in valid_endpoints:
+        host_ip = ipaddress.ip_address(str(endpoint["host_ip"]))
+        if host_ip.is_loopback or endpoint["protocol"] != "tcp":
+            return False
+    return {
+        (int(endpoint["published"]), int(endpoint["target"]))
+        for endpoint in valid_endpoints
+    } == {(80, 80), (443, 443)}
 
 
 def validate_production_model(model: Mapping[str, Any]) -> list[str]:
@@ -139,10 +207,8 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
     for missing in sorted(REQUIRED_SERVICES.difference(services)):
         issues.append(f"required service is missing: {missing}")
 
-    expected_public = {("nginx", 80), ("nginx", 443)}
-    actual_public = published_ports(model)
-    if actual_public != expected_public:
-        issues.append("nginx exclusive public ports violated")
+    if not _nginx_endpoints_are_exact(model):
+        issues.append("nginx exclusive public endpoints violated")
 
     networks = model.get("networks", {})
     if isinstance(networks, Mapping):
@@ -156,8 +222,10 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
             continue
         if str(service.get("network_mode", "")).strip().lower() == "host":
             issues.append(f"host network is forbidden: {name}")
-        if name in INTERNAL_SERVICES and service.get("ports"):
-            issues.append(f"internal service publishes host ports: {name}")
+        if "container_name" in service:
+            issues.append(f"container_name is forbidden: {name}")
+        if name != "nginx" and service.get("ports"):
+            issues.append(f"non-nginx service publishes host ports: {name}")
         environment = _environment(service)
         if FORBIDDEN_ENV_KEYS.intersection(environment):
             issues.append(f"unlock environment is forbidden: {name}")
@@ -175,8 +243,6 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
             issues.append("bot BIND_HOST must be 0.0.0.0")
         if bot_env.get("AGENT_URL") != "http://agent:8360":
             issues.append("bot AGENT_URL must target agent:8360")
-        if "http://127.0.0.1:8361/" not in _healthcheck_text(bot):
-            issues.append("bot healthcheck must use loopback port 8361")
 
     nuxt = services.get("nuxt", {})
     if isinstance(nuxt, Mapping):
@@ -190,8 +256,12 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
         nuxt_env = _environment(nuxt)
         if nuxt_env.get("HOST") != "0.0.0.0" or nuxt_env.get("NITRO_HOST") != "0.0.0.0":
             issues.append("nuxt HOST and NITRO_HOST must be 0.0.0.0")
-        if "http://127.0.0.1:3000/_internal/launch-readiness" not in _healthcheck_text(nuxt):
-            issues.append("nuxt healthcheck must use launch-readiness")
+
+    for service_name, expected_command in EXPECTED_HEALTHCHECKS.items():
+        service = services.get(service_name, {})
+        command = _healthcheck_command(service) if isinstance(service, Mapping) else None
+        if command != expected_command:
+            issues.append(f"{service_name} healthcheck command mismatch")
 
     nginx = services.get("nginx", {})
     if isinstance(nginx, Mapping):
@@ -217,6 +287,12 @@ def _repo_relative(root: Path, path: Path) -> str:
         raise ValueError(f"source path is outside repository root: {path}") from exc
 
 
+def source_sha256(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
 def build_audit_artifact(
     root: Path,
     rendered_model: Mapping[str, Any],
@@ -235,7 +311,7 @@ def build_audit_artifact(
     sources = [
         {
             "path": _repo_relative(root, path),
-            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "sha256": source_sha256(path),
         }
         for path in sorted(files, key=lambda item: _repo_relative(root, item))
     ]
@@ -244,10 +320,17 @@ def build_audit_artifact(
         "revision": AUDIT_REVISION,
         "check_names": sorted(CHECK_NAMES),
         "checks": {name: "passed" for name in sorted(CHECK_NAMES)},
-        "published_ports": [
-            {"service": service, "port": port}
-            for service, port in sorted(published_ports(rendered_model))
-        ],
+        "published_ports": sorted(
+            published_endpoints(rendered_model),
+            key=lambda endpoint: (
+                str(endpoint["service"]),
+                int(endpoint["published"]),
+                int(endpoint["target"]),
+                str(endpoint["host_ip"]),
+                str(endpoint["protocol"]),
+            ),
+        ),
+        "source_digest_kind": SOURCE_DIGEST_KIND,
         "sources": sources,
     }
 
@@ -282,14 +365,29 @@ def write_audit_artifact(path: Path, artifact: Mapping[str, Any]) -> Path:
     return path
 
 
-def render_production_compose(root: Path) -> dict[str, Any]:
+def _resolve_repo_source(root: Path, path: Path) -> Path:
+    resolved = path.resolve() if path.is_absolute() else (root / path).resolve()
+    _repo_relative(root, resolved)
+    return resolved
+
+
+def render_production_compose(
+    root: Path,
+    compose: Path | None = None,
+    production: Path | None = None,
+) -> dict[str, Any]:
+    root = root.resolve()
+    compose = _resolve_repo_source(root, compose or Path("docker-compose.yml"))
+    production = _resolve_repo_source(
+        root, production or Path("docker-compose.prod.yml")
+    )
     command = [
         "docker",
         "compose",
         "-f",
-        "docker-compose.yml",
+        _repo_relative(root, compose),
         "-f",
-        "docker-compose.prod.yml",
+        _repo_relative(root, production),
         "config",
         "--format",
         "json",
@@ -320,12 +418,31 @@ def render_production_compose(root: Path) -> dict[str, Any]:
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd())
+    parser.add_argument("--compose", type=Path, required=True)
+    parser.add_argument("--production", type=Path, required=True)
+    parser.add_argument("--developer", type=Path)
+    parser.add_argument("--systemd-deps", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
-        model = render_production_compose(args.root)
-        artifact = build_audit_artifact(args.root, model)
-        write_audit_artifact(args.output, artifact)
+        root = args.root.resolve()
+        compose = _resolve_repo_source(root, args.compose)
+        production = _resolve_repo_source(root, args.production)
+        developer = _resolve_repo_source(
+            root, args.developer or compose.parent / "docker-compose.dev.yml"
+        )
+        systemd_deps = _resolve_repo_source(
+            root,
+            args.systemd_deps or compose.parent / "docker-compose.systemd-deps.yml",
+        )
+        output = args.output if args.output.is_absolute() else root / args.output
+        model = render_production_compose(root, compose, production)
+        artifact = build_audit_artifact(
+            root,
+            model,
+            source_files=(compose, production, developer, systemd_deps),
+        )
+        write_audit_artifact(output, artifact)
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"compose network audit refused: {exc}", file=sys.stderr)
         return 2
