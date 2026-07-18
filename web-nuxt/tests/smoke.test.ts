@@ -223,9 +223,7 @@ describe('UserCP regressions', () => {
 
   it('keeps auth-aware community UI hydration-safe', () => {
     const config = src('nuxt.config.ts')
-    const prerenderStart = config.indexOf('prerender:')
-    const prerenderBlock = config.slice(prerenderStart, config.indexOf('routeRules:', prerenderStart))
-    expect(prerenderBlock).not.toContain("'/cong-dong'")
+    expect(config).not.toContain('prerender:')
 
     const timeAgo = src('composables/useTimeAgo.ts')
     expect(timeAgo).toContain('relative-time-hydrated')

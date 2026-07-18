@@ -4,6 +4,13 @@ import { createLaunchRawArtifactPlugin } from './build/launchRawArtifactPlugin'
 
 const apiBase = process.env.API_BASE || 'http://localhost:8360'
 const siteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX !== 'false'
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=()',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+} as const
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
@@ -146,34 +153,7 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    // ISR: entity detail pages cached 1h, revalidate in background
-    '/dia-diem/**': { swr: 3600 },
-    '/khu-vuc/**': { swr: 3600 },
-    '/xa-phuong/**': { swr: 3600 },
-    // Listing pages: shorter cache
-    '/dia-diem': { swr: 600 },
-    '/du-lich': { swr: 600 },
-    '/san-pham': { swr: 600 },
-    '/ocop': { swr: 600 },
-    '/le-hoi': { swr: 600 },
-    '/luu-tru': { swr: 600 },
-    '/lich-trinh': { swr: 600 },
-    '/lich-trinh/**': { swr: 1800 },
-    '/su-kien': { swr: 300 },
-    '/theo-mua': { swr: 600 },
-    // Static pages: long cache
-    '/': { swr: 300 },
-    '/ban-do': { swr: 1800 },
     '/admin/**': { ssr: false },
-    '/api/site-settings': { proxy: `${apiBase}/api/site-settings`, swr: 60 },
-    '/api/stats': { proxy: `${apiBase}/api/stats`, swr: 300 },
-    '/api/places': { proxy: `${apiBase}/api/places`, swr: 600 },
-    '/api/entities': { proxy: `${apiBase}/api/entities`, swr: 120 },
-    '/api/entities/**': { proxy: `${apiBase}/api/entities/**`, swr: 300 },
-    '/api/itineraries': { proxy: `${apiBase}/api/itineraries`, swr: 300 },
-    // SSR trang chủ: cần rule swr-proxy TƯỜNG MINH (catch-all /api/** proxy-thường
-    // KHÔNG resolve được cho internal $fetch lúc SSR → trang chủ rỗng + fallback).
-    '/api/homepage': { proxy: `${apiBase}/api/homepage`, swr: 120 },
     '/api/**': { proxy: `${apiBase}/api/**` },
     '/auth/**': { proxy: `${apiBase}/auth/**` },
     '/chat/**': { proxy: `${apiBase}/chat/**` },
@@ -217,32 +197,9 @@ export default defineNuxtConfig({
       output: { sourcemapExcludeSources: true },
       plugins: [createLaunchRawArtifactPlugin(fileURLToPath(new URL('..', import.meta.url)))],
     },
-    // Dev-only: route the SWR/route cache to memory. The default fs cache driver
-    // hits EISDIR on Windows ('.nuxt/cache/nuxt/payload' written as both dir + file),
-    // 500-ing every SWR route in `nuxt dev`. Memory driver sidesteps it; prod cache
-    // (storage, used by the built .output) is untouched.
-    devStorage: {
-      cache: { driver: 'memory' },
-    },
-    prerender: {
-      // /cong-dong is auth-aware (composer, private tabs), so keep it dynamic SSR.
-      routes: ['/', '/du-lich', '/san-pham', '/ocop', '/le-hoi', '/luu-tru',
-               '/lich-trinh', '/su-kien', '/theo-mua', '/ban-do', '/danh-ba',
-               '/lien-he',
-               '/gioi-thieu', '/chinh-sach-bao-mat', '/dieu-khoan-su-dung'],  // P1-18 SEO
-      crawlLinks: false,
-    },
     routeRules: {
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
-      '/**': {
-        headers: {
-          'X-Content-Type-Options': 'nosniff',
-          'X-Frame-Options': 'SAMEORIGIN',
-          'Referrer-Policy': 'strict-origin-when-cross-origin',
-          'Permissions-Policy': 'geolocation=(), microphone=(), camera=(), payment=()',
-          'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-        },
-      },
+      '/**': { headers: SECURITY_HEADERS },
     },
   },
 })

@@ -1,25 +1,13 @@
-#!/bin/bash
-# Build Nuxt with prerendered static pages.
-# Requires backend running at localhost:8360.
+#!/usr/bin/env bash
+# Build the launch-compatible Nuxt SSR output.
 #
-# Usage:
-#   # Start backend first (in another terminal):
-#   BUILD_SEARCH_INDEXES=false BACKGROUND_INDEX_BUILD=false SCHEDULER_ENABLED=false python agent/server.py
-#
-#   # Then run this script:
-#   bash scripts/build-prerender.sh
+# This wrapper intentionally does not contact the backend: launch output must
+# stay request-driven, with API calls handled at runtime by the SSR/Nginx path.
 
-set -e
+set -euo pipefail
 
-echo "=== Checking backend is running ==="
-if ! curl -sf http://localhost:8360/health > /dev/null 2>&1; then
-  echo "ERROR: Backend not running at localhost:8360"
-  echo "Start it first: python agent/server.py"
-  exit 1
-fi
-
-echo "=== Building Nuxt with prerender ==="
-cd web-nuxt
+echo "=== Building Nuxt launch output ==="
+cd "$(dirname "$0")/../web-nuxt"
 npm run build
 
 echo "=== Done ==="
