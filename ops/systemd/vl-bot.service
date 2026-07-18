@@ -7,8 +7,7 @@ Requires=vl-agent.service
 Type=simple
 WorkingDirectory=/opt/vinhlong360
 EnvironmentFile=/opt/vinhlong360/.env
-Environment=BIND_HOST=127.0.0.1
-ExecStart=/opt/vinhlong360/venv/bin/python agent/bot_gateway.py
+ExecStart=/usr/bin/env BIND_HOST=127.0.0.1 /opt/vinhlong360/venv/bin/python agent/bot_gateway.py
 Restart=on-failure
 RestartSec=5
 

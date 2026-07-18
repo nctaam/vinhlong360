@@ -4,6 +4,7 @@ import ast
 import importlib.util
 import json
 from pathlib import Path
+import shlex
 
 import pytest
 
@@ -23,8 +24,11 @@ EXPECTED_UNITS = {
             ("Type", "simple"),
             ("WorkingDirectory", "/opt/vinhlong360"),
             ("EnvironmentFile", "/opt/vinhlong360/.env"),
-            ("Environment", "BIND_HOST=127.0.0.1"),
-            ("ExecStart", "/opt/vinhlong360/venv/bin/python agent/server.py"),
+            (
+                "ExecStart",
+                "/usr/bin/env BIND_HOST=127.0.0.1 "
+                "/opt/vinhlong360/venv/bin/python agent/server.py",
+            ),
             ("Restart", "on-failure"),
             ("RestartSec", "5"),
         ],
@@ -59,8 +63,11 @@ EXPECTED_UNITS = {
             ("Type", "simple"),
             ("WorkingDirectory", "/opt/vinhlong360"),
             ("EnvironmentFile", "/opt/vinhlong360/.env"),
-            ("Environment", "BIND_HOST=127.0.0.1"),
-            ("ExecStart", "/opt/vinhlong360/venv/bin/python agent/bot_gateway.py"),
+            (
+                "ExecStart",
+                "/usr/bin/env BIND_HOST=127.0.0.1 "
+                "/opt/vinhlong360/venv/bin/python agent/bot_gateway.py",
+            ),
             ("Restart", "on-failure"),
             ("RestartSec", "5"),
         ],
@@ -115,6 +122,32 @@ def _parse_systemd(source: str) -> dict[str, list[tuple[str, str]]]:
         key, value = line.split("=", 1)
         active.append((key, value))
     return sections
+
+
+def _effective_process(
+    parsed: dict[str, list[tuple[str, str]]],
+    environment_file: dict[str, str],
+) -> tuple[dict[str, str], list[str]]:
+    service = parsed["Service"]
+    environment: dict[str, str] = {}
+    for key, value in service:
+        if key == "Environment":
+            name, assigned = value.split("=", 1)
+            environment[name] = assigned
+
+    # systemd applies EnvironmentFile values after Environment directives.
+    environment.update(environment_file)
+    exec_values = [value for key, value in service if key == "ExecStart"]
+    assert len(exec_values) == 1
+    argv = shlex.split(exec_values[0], posix=True)
+    if argv and argv[0] == "/usr/bin/env":
+        index = 1
+        while index < len(argv) and "=" in argv[index]:
+            name, assigned = argv[index].split("=", 1)
+            environment[name] = assigned
+            index += 1
+        argv = argv[index:]
+    return environment, argv
 
 
 def _load_probe():
@@ -211,6 +244,26 @@ def test_nuxt_has_no_agent_lifecycle_dependency():
     ]
 
     assert all("vl-agent" not in value for value in dependencies)
+
+
+@pytest.mark.parametrize(
+    ("filename", "script"),
+    [("vl-agent.service", "agent/server.py"), ("vl-bot.service", "agent/bot_gateway.py")],
+)
+@pytest.mark.parametrize("hostile_bind", ["0.0.0.0", "", "::"])
+def test_process_launch_override_wins_over_environment_file(
+    filename: str,
+    script: str,
+    hostile_bind: str,
+):
+    parsed = _parse_systemd(
+        (SYSTEMD_ROOT / filename).read_text(encoding="utf-8")
+    )
+
+    environment, argv = _effective_process(parsed, {"BIND_HOST": hostile_bind})
+
+    assert environment["BIND_HOST"] == "127.0.0.1"
+    assert argv == ["/opt/vinhlong360/venv/bin/python", script]
 
 
 def test_units_do_not_publish_internal_services_or_embed_indexing_unlocks():
