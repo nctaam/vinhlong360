@@ -127,4 +127,6 @@ export async function resolveRequestLaunchSafety(
   }
 }
 
-export default defineEventHandler(resolveRequestLaunchSafety)
+export default defineEventHandler(async (event) => {
+  await resolveRequestLaunchSafety(event)
+})

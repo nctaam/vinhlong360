@@ -57,13 +57,6 @@ function requestLaunchDecision(event: H3Event): Readonly<LaunchSafetyDecision> {
   return failedOpenLaunchDecision
 }
 
-function unavailableSitemapDecision(): Readonly<LaunchSafetyDecision> {
-  return Object.freeze({
-    ...failedOpenLaunchDecision,
-    reason: 'sitemap-batch-unavailable',
-  })
-}
-
 function writeRootResponse(
   event: H3Event,
   status: 200 | 503,
@@ -124,15 +117,6 @@ export function createRootSitemapHandler(
     }
 
     const url = getRequestURL(event)
-    if (
-      document === 'sitemap-index.xml'
-      && (url.search !== '' || url.href.endsWith('?'))
-    ) {
-      const unavailable = unavailableSitemapDecision()
-      event.context.launchSafety = unavailable
-      writeRootResponse(event, 503, XML_CONTENT_TYPE, unavailable, true)
-      return ''
-    }
 
     const result = await proxySitemap({
       event,

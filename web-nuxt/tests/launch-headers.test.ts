@@ -383,6 +383,21 @@ describe('request-scoped launch decision middleware', () => {
     await launchSafetyMiddleware(event as never)
     expect(event.context.launchSafety).toMatchObject({ operational_state: 'closed' })
   })
+
+  it.each([
+    '/',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/sitemap-media.xml',
+    '/sitemap-index.xml',
+  ])('stores context without producing a response body for Nitro route %s', async (path) => {
+    const event = responseEvent({ path })
+
+    const middlewareResult = await launchSafetyMiddleware(event as never)
+
+    expect(middlewareResult).toBeUndefined()
+    expect(event.context.launchSafety).toMatchObject({ operational_state: 'closed' })
+  })
 })
 
 describe('final response lifecycle', () => {

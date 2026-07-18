@@ -142,8 +142,10 @@ function expectFailedOpenHeaders(event: ReturnType<typeof rootEvent>, contentTyp
   })
 }
 
-function upstreamFor(document: RootSitemapDocument): ReturnType<InternalRawFetcher> {
-  const requestedBatch = document === 'sitemap-index.xml' ? null : batch
+function upstreamFor(
+  document: RootSitemapDocument,
+  requestedBatch: string | null = document === 'sitemap-index.xml' ? null : batch,
+): ReturnType<InternalRawFetcher> {
   return Promise.resolve({
     status: 200,
     body: `<${document}>validated</${document}>`,
@@ -161,6 +163,11 @@ const sitemapCases = [
   ['sitemap.xml', `?batch=${batch}`, EMPTY_URLSET],
   ['sitemap-media.xml', `?batch=${batch}`, EMPTY_MEDIA_URLSET],
   ['sitemap-index.xml', '', EMPTY_SITEMAP_INDEX],
+] as const satisfies ReadonlyArray<readonly [RootSitemapDocument, string, string]>
+
+const selectiveOpenSitemapCases = [
+  ...sitemapCases,
+  ['sitemap-index.xml', `?batch=${batch}`, EMPTY_SITEMAP_INDEX],
 ] as const satisfies ReadonlyArray<readonly [RootSitemapDocument, string, string]>
 
 describe('Nuxt-owned root SEO endpoints', () => {
@@ -217,7 +224,7 @@ describe('Nuxt-owned root SEO endpoints', () => {
     expect(proxySitemap).not.toHaveBeenCalled()
   })
 
-  it.each(sitemapCases)('proxies and validates selective-open %s with the actual request URL', async (
+  it.each(selectiveOpenSitemapCases)('proxies and validates selective-open %s%s with the actual request URL', async (
     document,
     query,
   ) => {
@@ -230,7 +237,8 @@ describe('Nuxt-owned root SEO endpoints', () => {
 
     expect(event.node.res.statusCode).toBe(200)
     expect(createFetcher).toHaveBeenCalledOnce()
-    expect(fetchRaw).toHaveBeenCalledWith(document, document === 'sitemap-index.xml' ? null : batch)
+    const requestedBatch = query === '' ? null : batch
+    expect(fetchRaw).toHaveBeenCalledWith(document, requestedBatch)
     expect(event.context.launchSafety).toMatchObject({
       operational_state: 'selective-open',
       sitemap_batch_revision: batch,
@@ -243,7 +251,7 @@ describe('Nuxt-owned root SEO endpoints', () => {
       'x-launch-policy-fingerprint': fingerprint,
       'x-launch-route-manifest-revision': 'launch-indexing-policy-v1',
       'x-launch-sitemap-batch-revision': batch,
-      ...(document === 'sitemap-index.xml' ? {} : { 'x-launch-sitemap-requested-batch': batch }),
+      ...(requestedBatch === null ? {} : { 'x-launch-sitemap-requested-batch': batch }),
     }
     expect(lowerHeaders(event)).toEqual(expected)
 
@@ -253,7 +261,7 @@ describe('Nuxt-owned root SEO endpoints', () => {
       launchResponseHeaderInput: {
         decision: event.context.launchSafety,
         sitemap: true,
-        requestedBatch: document === 'sitemap-index.xml' ? null : batch,
+        requestedBatch,
       },
     })
   })
@@ -264,7 +272,6 @@ describe('Nuxt-owned root SEO endpoints', () => {
     ['sitemap.xml', `?batch=${batch}&extra=1`],
     ['sitemap-media.xml', ''],
     ['sitemap-media.xml', `?batch=${batch}&extra=1`],
-    ['sitemap-index.xml', `?batch=${batch}`],
     ['sitemap-index.xml', '?extra=1'],
   ] as const)('fails invalid selective-open query protocol for %s%s before backend I/O', async (document, query) => {
     const fetchRaw = vi.fn<InternalRawFetcher>(upstreamFor)
