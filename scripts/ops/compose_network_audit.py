@@ -8,6 +8,7 @@ is the only code that shells out to Compose.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import hashlib
 import ipaddress
 import json
@@ -16,6 +17,7 @@ import secrets
 import stat
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Mapping, NamedTuple, Sequence
 
@@ -64,6 +66,12 @@ EXPECTED_HEALTHCHECKS = {
     ),
 }
 SOURCE_DIGEST_KIND = "sha256-utf8-lf-v1"
+SNAPSHOT_FILE_NAMES = (
+    "docker-compose.yml",
+    "docker-compose.prod.yml",
+    "docker-compose.dev.yml",
+    "docker-compose.systemd-deps.yml",
+)
 LAUNCH_NETWORK_SERVICES = ("agent", "bot-gateway", "nuxt", "nginx")
 NUXT_ALLOWED_ENV_KEYS = {"API_BASE", "HOST", "NITRO_HOST", "PORT"}
 EXPECTED_DEVELOPER_ENDPOINTS = {
@@ -83,12 +91,17 @@ EXPECTED_SYSTEMD_ENDPOINTS = {
 
 
 class SourceSnapshot(NamedTuple):
-    root: Path
-    path: Path
     relative_path: str
-    state: tuple[int, int, int, int]
-    raw_sha256: str
     normalized_sha256: str
+    raw_content: bytes
+
+
+class SnapshotRenderInputs(NamedTuple):
+    root: Path
+    compose: Path
+    production: Path
+    developer: Path
+    systemd: Path
 
 
 def canonical_json_bytes(value: object) -> bytes:
@@ -532,39 +545,54 @@ def capture_source_snapshots(
             raise RuntimeError(f"source changed while snapshotting: {_repo_relative(root, resolved)}")
         snapshots.append(
             SourceSnapshot(
-                root=root,
-                path=resolved,
                 relative_path=_repo_relative(root, resolved),
-                state=before,
-                raw_sha256=hashlib.sha256(raw).hexdigest(),
                 normalized_sha256=hashlib.sha256(
                     _normalized_source_bytes(raw)
                 ).hexdigest(),
+                raw_content=raw,
             )
         )
     return tuple(snapshots)
 
 
-def verify_source_snapshots(snapshots: Sequence[SourceSnapshot]) -> None:
-    for snapshot in snapshots:
-        _assert_no_symlink_components(
-            snapshot.root,
-            snapshot.path,
-            label="source",
-            allow_missing=False,
-        )
-        before = _source_state(snapshot.path)
-        raw = snapshot.path.read_bytes()
-        after = _source_state(snapshot.path)
-        if (
-            before != snapshot.state
-            or after != snapshot.state
-            or len(raw) != snapshot.state[2]
-            or hashlib.sha256(raw).hexdigest() != snapshot.raw_sha256
-        ):
-            raise RuntimeError(
-                f"source changed during compose render: {snapshot.relative_path}"
+@contextmanager
+def materialize_source_snapshots(
+    snapshots: Sequence[SourceSnapshot],
+):
+    if len(snapshots) != len(SNAPSHOT_FILE_NAMES):
+        raise ValueError("compose source snapshot set is incomplete")
+    temporary = tempfile.TemporaryDirectory(prefix="vl360-compose-audit-")
+    root = Path(temporary.name)
+    try:
+        try:
+            os.chmod(root, 0o700)
+        except OSError:
+            pass
+        paths: list[Path] = []
+        for filename, snapshot in zip(SNAPSHOT_FILE_NAMES, snapshots):
+            path = root / filename
+            descriptor = os.open(
+                path,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0),
+                0o600,
             )
+            try:
+                with os.fdopen(descriptor, "wb") as stream:
+                    descriptor = -1
+                    stream.write(snapshot.raw_content)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+            finally:
+                if descriptor != -1:
+                    os.close(descriptor)
+            try:
+                os.chmod(path, 0o400)
+            except OSError:
+                pass
+            paths.append(path)
+        yield SnapshotRenderInputs(root, *paths)
+    finally:
+        temporary.cleanup()
 
 
 def build_audit_artifact(
@@ -681,14 +709,41 @@ def _resolve_repo_source(root: Path, path: Path) -> Path:
     return resolved
 
 
+def _resolve_compose_source(project_root: Path, path: Path) -> Path:
+    """Resolve a repository source or an immutable external snapshot file."""
+
+    project_root = Path(os.path.abspath(project_root))
+    resolved = Path(os.path.abspath(path if path.is_absolute() else project_root / path))
+    try:
+        resolved.relative_to(project_root)
+    except ValueError:
+        # Snapshot files deliberately live outside the project root.  Keep the
+        # check narrow so arbitrary external Compose files cannot be rendered.
+        if resolved.name not in SNAPSHOT_FILE_NAMES:
+            raise ValueError("snapshot compose filename is invalid")
+        parent_metadata = os.lstat(resolved.parent)
+        metadata = os.lstat(resolved)
+        if (
+            stat.S_ISLNK(parent_metadata.st_mode)
+            or _is_reparse_point(parent_metadata)
+            or stat.S_ISLNK(metadata.st_mode)
+            or _is_reparse_point(metadata)
+        ):
+            raise ValueError("snapshot compose symlink is forbidden")
+        if not stat.S_ISREG(metadata.st_mode):
+            raise ValueError("snapshot compose source must be a regular file")
+        return resolved
+    return _resolve_repo_source(project_root, resolved)
+
+
 def render_production_compose(
     root: Path,
     compose: Path | None = None,
     production: Path | None = None,
 ) -> dict[str, Any]:
     root = root.resolve()
-    compose = _resolve_repo_source(root, compose or Path("docker-compose.yml"))
-    production = _resolve_repo_source(
+    compose = _resolve_compose_source(root, compose or Path("docker-compose.yml"))
+    production = _resolve_compose_source(
         root, production or Path("docker-compose.prod.yml")
     )
     return _render_compose(root, (compose, production))
@@ -700,21 +755,35 @@ def render_developer_compose(
     developer: Path,
 ) -> dict[str, Any]:
     root = root.resolve()
-    compose = _resolve_repo_source(root, compose)
-    developer = _resolve_repo_source(root, developer)
+    compose = _resolve_compose_source(root, compose)
+    developer = _resolve_compose_source(root, developer)
     return _render_compose(root, (compose, developer))
 
 
 def render_systemd_dependency_compose(root: Path, systemd: Path) -> dict[str, Any]:
     root = root.resolve()
-    systemd = _resolve_repo_source(root, systemd)
+    systemd = _resolve_compose_source(root, systemd)
     return _render_compose(root, (systemd,))
 
 
 def _render_compose(root: Path, sources: Sequence[Path]) -> dict[str, Any]:
+    root = root.resolve()
+    resolved_sources = tuple(_resolve_compose_source(root, source) for source in sources)
+    snapshot_parents = {
+        source.parent
+        for source in resolved_sources
+        if not source.is_relative_to(root)
+    }
+    if len(snapshot_parents) > 1:
+        raise ValueError("snapshot compose sources must share one directory")
     command = ["docker", "compose"]
-    for source in sources:
-        command.extend(("-f", _repo_relative(root, source)))
+    command.extend(("--project-directory", str(root)))
+    for source in resolved_sources:
+        try:
+            argument = _repo_relative(root, source)
+        except ValueError:
+            argument = str(source)
+        command.extend(("-f", argument))
     command.extend(("config", "--format", "json", "--no-env-resolution"))
     try:
         result = subprocess.run(
@@ -760,18 +829,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         output = _resolve_output_path(root, args.output)
         source_files = (compose, production, developer, systemd_deps)
         source_snapshots = capture_source_snapshots(root, source_files)
-        model = render_production_compose(root, compose, production)
-        developer_model = render_developer_compose(root, compose, developer)
-        systemd_model = render_systemd_dependency_compose(root, systemd_deps)
-        verify_source_snapshots(source_snapshots)
-        artifact = build_audit_artifact(
-            root,
-            model,
-            developer_model=developer_model,
-            systemd_model=systemd_model,
-            source_snapshots=source_snapshots,
-        )
-        verify_source_snapshots(source_snapshots)
+        with materialize_source_snapshots(source_snapshots) as render_inputs:
+            model = render_production_compose(
+                root,
+                render_inputs.compose,
+                render_inputs.production,
+            )
+            developer_model = render_developer_compose(
+                root,
+                render_inputs.compose,
+                render_inputs.developer,
+            )
+            systemd_model = render_systemd_dependency_compose(
+                root,
+                render_inputs.systemd,
+            )
+            artifact = build_audit_artifact(
+                root,
+                model,
+                developer_model=developer_model,
+                systemd_model=systemd_model,
+                source_snapshots=source_snapshots,
+            )
         write_audit_artifact(output, artifact, root=root)
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"compose network audit refused: {exc}", file=sys.stderr)

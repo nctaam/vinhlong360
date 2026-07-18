@@ -687,9 +687,19 @@ def test_audit_artifact_refuses_overwrite_and_leaves_no_pending_file(tmp_path: P
     assert list(tmp_path.glob(".*pending*")) == []
 
 
-def test_cli_render_uses_no_env_resolution(monkeypatch):
+def test_cli_render_preserves_project_root_for_snapshot_relative_paths(
+    monkeypatch, tmp_path: Path
+):
     audit = _load_audit()
-    calls: list[list[str]] = []
+    calls: list[tuple[list[str], dict[str, object]]] = []
+    project_root = tmp_path / "repo"
+    snapshot_root = tmp_path / "snapshots"
+    project_root.mkdir()
+    snapshot_root.mkdir()
+    snapshot_compose = snapshot_root / "docker-compose.yml"
+    snapshot_production = snapshot_root / "docker-compose.prod.yml"
+    snapshot_compose.write_text("services: {}\n", encoding="utf-8")
+    snapshot_production.write_text("services: {}\n", encoding="utf-8")
 
     class Completed:
         returncode = 0
@@ -697,20 +707,81 @@ def test_cli_render_uses_no_env_resolution(monkeypatch):
         stderr = ""
 
     def run(command, **kwargs):
-        calls.append(command)
+        calls.append((command, kwargs))
         return Completed()
 
     monkeypatch.setattr(audit.subprocess, "run", run)
     rendered = audit.render_production_compose(
-        ROOT,
-        ROOT / "docker-compose.yml",
-        ROOT / "docker-compose.prod.yml",
+        project_root,
+        snapshot_compose,
+        snapshot_production,
     )
     assert rendered["services"]["nginx"]
-    assert calls == [[
-        "docker", "compose", "-f", "docker-compose.yml", "-f", "docker-compose.prod.yml",
-        "config", "--format", "json", "--no-env-resolution",
-    ]]
+    command, kwargs = calls[0]
+    assert command == [
+        "docker",
+        "compose",
+        "--project-directory",
+        str(project_root.resolve()),
+        "-f",
+        str(snapshot_compose.resolve()),
+        "-f",
+        str(snapshot_production.resolve()),
+        "config",
+        "--format",
+        "json",
+        "--no-env-resolution",
+    ]
+    assert kwargs["cwd"] == project_root.resolve()
+    assert "env" not in kwargs
+    assert all(
+        Path(path).parent == snapshot_root.resolve()
+        for path in (command[5], command[7])
+    )
+    assert str(project_root.resolve()) not in " ".join((command[5], command[7]))
+
+
+def test_systemd_snapshot_render_inherits_caller_env_without_serializing_password(
+    monkeypatch, tmp_path: Path
+):
+    audit = _load_audit()
+    project_root = tmp_path / "repo"
+    snapshot_root = tmp_path / "snapshots"
+    project_root.mkdir()
+    snapshot_root.mkdir()
+    systemd = snapshot_root / "docker-compose.systemd-deps.yml"
+    systemd.write_text(
+        'services:\n  postgres:\n    environment:\n      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"\n',
+        encoding="utf-8",
+    )
+    calls = []
+
+    class Completed:
+        returncode = 0
+        stdout = json.dumps(_expected_systemd_model())
+        stderr = ""
+
+    def run(command, **kwargs):
+        calls.append((command, kwargs))
+        return Completed()
+
+    monkeypatch.setenv("POSTGRES_PASSWORD", "caller-secret")
+    monkeypatch.setattr(audit.subprocess, "run", run)
+    rendered = audit.render_systemd_dependency_compose(project_root, systemd)
+
+    assert rendered["services"]["postgres"]
+    command, kwargs = calls[0]
+    assert command[:5] == [
+        "docker",
+        "compose",
+        "--project-directory",
+        str(project_root.resolve()),
+        "-f",
+    ]
+    assert command[5] == str(systemd.resolve())
+    assert kwargs["cwd"] == project_root.resolve()
+    assert "env" not in kwargs
+    assert "caller-secret" not in command
 
 
 def test_render_refusal_does_not_forward_docker_stderr(monkeypatch):
@@ -773,30 +844,29 @@ def test_cli_supports_planned_paths_and_sibling_source_defaults(
         ]
     )
     assert result == 0
-    assert calls == [
-        (
-            "production",
-            tmp_path.resolve(),
-            (tmp_path / "docker-compose.yml").resolve(),
-            (tmp_path / "docker-compose.prod.yml").resolve(),
-        ),
-        (
-            "developer",
-            tmp_path.resolve(),
-            (tmp_path / "docker-compose.yml").resolve(),
-            (tmp_path / "docker-compose.dev.yml").resolve(),
-        ),
-        (
-            "systemd",
-            tmp_path.resolve(),
-            (tmp_path / "docker-compose.systemd-deps.yml").resolve(),
-        ),
+    assert [call[0] for call in calls] == ["production", "developer", "systemd"]
+    project_root = calls[0][1]
+    assert project_root == tmp_path.resolve()
+    assert all(call[1] == project_root for call in calls)
+    snapshot_paths = [calls[0][2], calls[0][3], calls[1][3], calls[2][2]]
+    snapshot_root = snapshot_paths[0].parent
+    assert snapshot_root != project_root
+    assert all(path.parent == snapshot_root for path in snapshot_paths)
+    assert all(path.is_absolute() for path in snapshot_paths)
+    assert [call[2].name for call in calls[:2]] == [
+        "docker-compose.yml",
+        "docker-compose.yml",
     ]
+    assert calls[0][3].name == "docker-compose.prod.yml"
+    assert calls[1][3].name == "docker-compose.dev.yml"
+    assert calls[2][2].name == "docker-compose.systemd-deps.yml"
+    assert not snapshot_root.exists()
     artifact = json.loads(
         (tmp_path / "build" / "compose-network-audit.json").read_text(
             encoding="utf-8"
         )
     )
+    assert str(snapshot_root) not in json.dumps(artifact)
     assert [source["path"] for source in artifact["sources"]] == [
         "docker-compose.dev.yml",
         "docker-compose.prod.yml",
@@ -805,8 +875,8 @@ def test_cli_supports_planned_paths_and_sibling_source_defaults(
     ]
 
 
-def test_cli_refuses_source_mutation_during_render_without_output(
-    monkeypatch, capsys, tmp_path: Path
+def test_cli_renders_immutable_snapshots_when_live_source_mutates_and_restores(
+    monkeypatch, tmp_path: Path
 ):
     audit = _load_audit()
     for name in (
@@ -817,8 +887,19 @@ def test_cli_refuses_source_mutation_during_render_without_output(
     ):
         (tmp_path / name).write_text(f"# {name}\n", encoding="utf-8")
 
+    original = (tmp_path / "docker-compose.yml").read_bytes()
+    original_state = (tmp_path / "docker-compose.yml").stat()
+    captured = []
+
     def render_production(root, compose, production):
-        compose.write_text("# changed during render\n", encoding="utf-8")
+        captured.append((root, compose, compose.read_bytes()))
+        live = tmp_path / "docker-compose.yml"
+        live.write_bytes(b"# transient live mutation\n")
+        live.write_bytes(original)
+        os.utime(
+            live,
+            ns=(original_state.st_atime_ns, original_state.st_mtime_ns),
+        )
         return _expected_closed_model()
 
     monkeypatch.setattr(audit, "render_production_compose", render_production)
@@ -844,12 +925,57 @@ def test_cli_refuses_source_mutation_during_render_without_output(
             "build/compose-network-audit.json",
         ]
     )
+    assert result == 0
+    assert output.exists()
+    assert captured[0][0] == tmp_path.resolve()
+    assert captured[0][1].name == "docker-compose.yml"
+    assert captured[0][1].parent != tmp_path.resolve()
+    assert captured[0][2] == original
+    artifact = json.loads(output.read_text(encoding="utf-8"))
+    assert artifact["sources"][-1]["path"] == "docker-compose.yml"
+    expected_sha = hashlib.sha256(original.replace(b"\r\n", b"\n")).hexdigest()
+    assert artifact["sources"][-1]["sha256"] == expected_sha
+
+
+def test_cli_cleans_snapshot_directory_and_hides_path_on_render_failure(
+    monkeypatch, capsys, tmp_path: Path
+):
+    audit = _load_audit()
+    for name in (
+        "docker-compose.yml",
+        "docker-compose.prod.yml",
+        "docker-compose.dev.yml",
+        "docker-compose.systemd-deps.yml",
+    ):
+        (tmp_path / name).write_text(f"# {name}\n", encoding="utf-8")
+    render_inputs = []
+
+    def render_production(root, compose, production):
+        render_inputs.append((root, compose, production))
+        raise RuntimeError("Docker Compose render failed")
+
+    monkeypatch.setattr(audit, "render_production_compose", render_production)
+    monkeypatch.chdir(tmp_path)
+    result = audit.main(
+        [
+            "--compose",
+            "docker-compose.yml",
+            "--production",
+            "docker-compose.prod.yml",
+            "--output",
+            "build/compose-network-audit.json",
+        ]
+    )
     assert result == 2
-    assert not output.exists()
-    assert "source changed during compose render" in capsys.readouterr().err
+    assert render_inputs
+    project_root, compose, production = render_inputs[0]
+    assert project_root == tmp_path.resolve()
+    assert compose.parent == production.parent
+    assert not compose.parent.exists()
+    assert str(compose.parent) not in capsys.readouterr().err
 
 
-def test_cli_refuses_source_replaced_by_symlink_to_same_inode(
+def test_cli_renders_snapshot_when_live_source_replaced_by_symlink_to_same_inode(
     monkeypatch, tmp_path: Path
 ):
     audit = _load_audit()
@@ -862,13 +988,15 @@ def test_cli_refuses_source_replaced_by_symlink_to_same_inode(
         (tmp_path / name).write_text(f"# {name}\n", encoding="utf-8")
 
     def render_production(root, compose, production):
-        actual = compose.with_name("actual-compose.yml")
-        compose.replace(actual)
+        live = tmp_path / "docker-compose.yml"
+        actual = live.with_name("actual-compose.yml")
+        live.replace(actual)
         try:
-            os.symlink(actual, compose)
+            os.symlink(actual, live)
         except OSError as exc:
-            actual.replace(compose)
+            actual.replace(live)
             pytest.skip(f"symlink creation unavailable: {exc}")
+        assert compose.read_text(encoding="utf-8") == "# docker-compose.yml\n"
         return _expected_closed_model()
 
     monkeypatch.setattr(audit, "render_production_compose", render_production)
@@ -894,8 +1022,8 @@ def test_cli_refuses_source_replaced_by_symlink_to_same_inode(
             "build/compose-network-audit.json",
         ]
     )
-    assert result == 2
-    assert not output.exists()
+    assert result == 0
+    assert output.exists()
 
 
 def test_source_snapshot_rejects_symlink_without_changing_artifact_role(tmp_path: Path):
