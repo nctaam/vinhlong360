@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path'
 import disclosureArtifactSource from '#launch-config/ai-disclosure.json?raw'
 import routeArtifactSource from '#launch-config/launch-indexing-policy.json?raw'
 
+import type { LaunchBuildEvidence } from '../../../types/launch'
 import { aiDisclosure } from '../../../utils/aiDisclosure'
 import { buildPolicyFingerprint } from './launchEvidence'
 import { launchRouteManifest } from './launchRouteManifest'
@@ -97,6 +98,11 @@ export type ReadinessManifestEvidence = {
   readonly routeDigest: string
   readonly disclosureDigest: string
   readonly serviceWorkerDigest: string
+}
+
+export type LoadedReadinessManifest = {
+  readonly evidence: Readonly<LaunchBuildEvidence>
+  readonly checks: readonly ReadinessCheck[]
 }
 
 const EMBEDDED_BUILD_EVIDENCE: Readonly<Omit<ReadinessManifestEvidence, 'serviceWorkerDigest'>> = Object.freeze({
@@ -370,6 +376,24 @@ export function loadReadinessManifest(
   return validateReadinessManifestEvidence(parsed, {
     ...EMBEDDED_BUILD_EVIDENCE,
     serviceWorkerDigest: createHash('sha256').update(serviceWorkerSource).digest('hex'),
+  })
+}
+
+export function loadAndValidateReadinessManifest(
+  manifestPath?: string,
+): LoadedReadinessManifest {
+  const manifest = loadReadinessManifest(manifestPath)
+  const inspected = inspectReadinessManifest(manifest)
+  if (!inspected.ok) throw new Error('readiness manifest invalid')
+
+  return deepFreeze({
+    evidence: {
+      routeRevision: manifest.artifacts.route_manifest.revision,
+      routeDigest: manifest.artifacts.route_manifest.sha256,
+      disclosureRevision: manifest.artifacts.ai_disclosure.revision,
+      disclosureDigest: manifest.artifacts.ai_disclosure.sha256,
+    },
+    checks: inspected.checks,
   })
 }
 
