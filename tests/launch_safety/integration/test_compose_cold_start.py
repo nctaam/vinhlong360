@@ -127,21 +127,3 @@ def test_agent_absent_exact_open_intent_is_unhealthy_and_blocks_nginx(
         }
         assert project.container_never_started("nginx")
         assert project.published_endpoints("nginx") == []
-
-
-def test_head_snapshot_allows_only_integration_and_excluded_dirty_paths(
-    head_snapshot_validator,
-):
-    head_snapshot_validator(
-        " M tests/launch_safety/integration/conftest.py\0"
-        "?? web/data.js\0"
-        "?? web-nuxt/pnpm-lock.yaml\0"
-    )
-
-
-def test_head_snapshot_rejects_dirty_runtime_input(head_snapshot_validator):
-    with pytest.raises(
-        AssertionError,
-        match="runtime snapshot differs from HEAD",
-    ):
-        head_snapshot_validator(" M docker-compose.yml\0")

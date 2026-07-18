@@ -120,9 +120,15 @@ def _preflight_command(args: list[str]) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(args, 1, "", "")
 
 
-def _remote_endpoint(value: str) -> bool:
+def remote_endpoint_is_unsafe(value: str) -> bool:
     endpoint = value.strip().strip('"').lower()
-    return endpoint.startswith(("tcp://", "ssh://", "http://", "https://"))
+    if not endpoint:
+        return False
+    if endpoint.startswith("unix:///"):
+        return False
+    if re.fullmatch(r"npipe:////\./pipe/.+", endpoint):
+        return False
+    return True
 
 
 def _porcelain_paths(source: str) -> list[str]:
@@ -145,7 +151,7 @@ def _porcelain_paths(source: str) -> list[str]:
     return paths
 
 
-def _assert_head_snapshot_safe(source: str) -> None:
+def assert_head_snapshot_safe(source: str) -> None:
     for path in _porcelain_paths(source):
         if path in ALLOWED_DIRTY_PATHS:
             continue
@@ -156,27 +162,32 @@ def _assert_head_snapshot_safe(source: str) -> None:
         )
 
 
-@pytest.fixture(scope="session")
-def docker_runtime() -> DockerRuntime:
+def preflight_docker_runtime() -> DockerRuntime:
+    configured_host = os.environ.get("DOCKER_HOST", "")
+    if remote_endpoint_is_unsafe(configured_host):
+        pytest.fail(
+            "Docker integration refused: remote tcp/ssh Docker context is not allowed",
+            pytrace=False,
+        )
+
     docker = shutil.which("docker")
     if docker is None:
         _unavailable(CLI_MISSING)
-
-    compose_version = _preflight_command([docker, "compose", "version"])
-    if compose_version.returncode != 0:
-        _unavailable(PLUGIN_MISSING)
 
     context = _preflight_command(
         [docker, "context", "inspect", "--format", "{{json .Endpoints.docker.Host}}"],
     )
     if context.returncode != 0:
         pytest.fail("Docker integration preflight failed: Docker context inspection failed", pytrace=False)
-    endpoints = [context.stdout, os.environ.get("DOCKER_HOST", "")]
-    if any(_remote_endpoint(endpoint) for endpoint in endpoints):
+    if remote_endpoint_is_unsafe(context.stdout):
         pytest.fail(
             "Docker integration refused: remote tcp/ssh Docker context is not allowed",
             pytrace=False,
         )
+
+    compose_version = _preflight_command([docker, "compose", "version"])
+    if compose_version.returncode != 0:
+        _unavailable(PLUGIN_MISSING)
 
     daemon = _preflight_command([docker, "info", "--format", "{{json .ServerVersion}}"])
     if daemon.returncode != 0:
@@ -189,12 +200,9 @@ def docker_runtime() -> DockerRuntime:
     return DockerRuntime(executable=docker, revision=revision)
 
 
-@pytest.fixture
-def head_snapshot_validator(
-    docker_runtime: DockerRuntime,
-) -> Callable[[str], None]:
-    del docker_runtime
-    return _assert_head_snapshot_safe
+@pytest.fixture(scope="session")
+def docker_runtime() -> DockerRuntime:
+    return preflight_docker_runtime()
 
 
 class ComposeProject:
@@ -279,7 +287,7 @@ class ComposeProject:
         )
         if status_result.returncode != 0:
             raise AssertionError("Docker integration setup failed: git status failed")
-        _assert_head_snapshot_safe(status_result.stdout)
+        assert_head_snapshot_safe(status_result.stdout)
 
         archive_result = subprocess.run(
             ["git", "archive", "--format=tar", f"--output={archive}", self.runtime.revision],
@@ -803,25 +811,47 @@ class ComposeProject:
         self._cleanup_attempts += 1
         if self._cleanup_attempts > 2:
             raise AssertionError("Docker integration cleanup retry limit exceeded")
-        if self.root is not None and self.compose_files:
-            result = self._raw(
-                "down",
-                "-v",
-                "--remove-orphans",
-                "--rmi",
-                "local",
-                "--timeout",
-                "10",
-                timeout=180,
-            )
-            if result.returncode != 0:
-                raise AssertionError(
-                    f"Docker integration cleanup failed: down exit {result.returncode}"
+        compose_error: BaseException | None = None
+        try:
+            if self.root is not None and self.compose_files:
+                result = self._raw(
+                    "down",
+                    "-v",
+                    "--remove-orphans",
+                    "--rmi",
+                    "local",
+                    "--timeout",
+                    "10",
+                    timeout=180,
                 )
-            self._assert_no_project_residue()
-        if self._temporary is not None:
-            self._temporary.cleanup()
-        self._closed = True
+                if result.returncode != 0:
+                    raise AssertionError(
+                        f"Docker integration cleanup failed: down exit {result.returncode}"
+                    )
+                self._assert_no_project_residue()
+        except BaseException as error:
+            compose_error = error
+
+        # Keep the compose inputs for one transient retry, but always remove the
+        # temporary project after the terminal (second) cleanup attempt.
+        terminal = compose_error is None or self._cleanup_attempts >= 2
+        temporary_error: BaseException | None = None
+        if terminal and self._temporary is not None:
+            try:
+                self._temporary.cleanup()
+            except BaseException as error:
+                temporary_error = error
+        if terminal:
+            self._closed = True
+
+        if compose_error is not None and temporary_error is not None:
+            raise AssertionError(
+                "Docker integration cleanup failed and temporary project cleanup failed"
+            ) from compose_error
+        if compose_error is not None:
+            raise compose_error
+        if temporary_error is not None:
+            raise temporary_error
 
 
 @pytest.fixture
