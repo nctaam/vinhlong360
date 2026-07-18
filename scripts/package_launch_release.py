@@ -310,7 +310,10 @@ def _path_exists(path: Path) -> bool:
 
 
 def _require_safe_source(root: Path, path: Path, *, directory: bool) -> None:
+    root = _lexical_path(root)
     path = _lexical_path(path)
+    if root.is_symlink():
+        raise ValueError(f"release source contains symlink: {root}")
     if not _is_within(path, root):
         raise ValueError(f"release source escapes root: {path}")
     try:
@@ -733,7 +736,7 @@ def build_launch_release_manifest(
     payload: list[tuple[Path, str]],
     source_revision: str,
     *,
-    compose_network_audit: Path,
+    compose_network_audit: Path | None = None,
 ) -> dict[str, object]:
     if (
         not isinstance(source_revision, str)
@@ -747,7 +750,22 @@ def build_launch_release_manifest(
     _readiness_path, readiness_raw = _validate_readiness_manifest(
         root, source_revision, canonical_artifacts
     )
-    audit_raw = _validate_network_audit(root, compose_network_audit)
+    audit_members = [
+        source for source, arcname in payload if arcname == "compose-network-audit.json"
+    ]
+    if len(audit_members) != 1:
+        raise ValueError("release payload must contain exactly one network audit")
+    payload_audit = _lexical_path(audit_members[0])
+    audit_path = payload_audit
+    if compose_network_audit is not None:
+        audit_path = _lexical_path(
+            compose_network_audit
+            if Path(compose_network_audit).is_absolute()
+            else root / compose_network_audit
+        )
+        if audit_path != payload_audit:
+            raise ValueError("network audit must match the release payload member")
+    audit_raw = _validate_network_audit(root, audit_path)
     return {
         "schema_version": 1,
         "package_kind": "vl360-launch-release",
@@ -842,6 +860,17 @@ def _publish_without_overwrite(temporary: Path, destination: Path) -> None:
     os.link(temporary, destination, follow_symlinks=False)
 
 
+def _remove_owned_output(temporary: Path | None, destination: Path) -> None:
+    if temporary is None:
+        return
+    try:
+        owned = temporary.samefile(destination)
+    except OSError:
+        return
+    if owned:
+        destination.unlink(missing_ok=True)
+
+
 def build_launch_release(
     root: Path,
     destination: Path,
@@ -862,26 +891,21 @@ def build_launch_release(
         root,
         payload,
         source_revision,
-        compose_network_audit=(
-            compose_network_audit
-            if Path(compose_network_audit).is_absolute()
-            else root / compose_network_audit
-        ),
     )
     manifest_raw = _canonical_json_bytes(manifest)
-    archive_descriptor, archive_name = tempfile.mkstemp(
-        prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
-    )
-    os.close(archive_descriptor)
-    digest_descriptor, digest_name = tempfile.mkstemp(
-        prefix=f".{digest_file.name}.", suffix=".tmp", dir=digest_file.parent
-    )
-    os.close(digest_descriptor)
-    temporary_archive = Path(archive_name)
-    temporary_digest = Path(digest_name)
-    archive_published = False
-    digest_published = False
+    temporary_archive: Path | None = None
+    temporary_digest: Path | None = None
     try:
+        archive_descriptor, archive_name = tempfile.mkstemp(
+            prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
+        )
+        temporary_archive = Path(archive_name)
+        os.close(archive_descriptor)
+        digest_descriptor, digest_name = tempfile.mkstemp(
+            prefix=f".{digest_file.name}.", suffix=".tmp", dir=digest_file.parent
+        )
+        temporary_digest = Path(digest_name)
+        os.close(digest_descriptor)
         write_deterministic_tar_gz(
             temporary_archive,
             payload,
@@ -894,18 +918,16 @@ def build_launch_release(
         _require_safe_destination(destination)
         _require_safe_destination(digest_file)
         _publish_without_overwrite(temporary_archive, destination)
-        archive_published = True
         _publish_without_overwrite(temporary_digest, digest_file)
-        digest_published = True
     except BaseException:
-        if digest_published:
-            digest_file.unlink(missing_ok=True)
-        if archive_published:
-            destination.unlink(missing_ok=True)
+        _remove_owned_output(temporary_digest, digest_file)
+        _remove_owned_output(temporary_archive, destination)
         raise
     finally:
-        temporary_archive.unlink(missing_ok=True)
-        temporary_digest.unlink(missing_ok=True)
+        if temporary_archive is not None:
+            temporary_archive.unlink(missing_ok=True)
+        if temporary_digest is not None:
+            temporary_digest.unlink(missing_ok=True)
     return LaunchReleasePackage(
         requested_archive,
         requested_digest,

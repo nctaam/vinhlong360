@@ -10,8 +10,14 @@ import pytest
 
 from ai_disclosure import load_ai_disclosure
 from route_manifest import load_route_manifest
+from scripts import package_launch_release as release_package
 from scripts.ops.compose_network_audit import CHECK_NAMES
-from scripts.package_launch_release import build_backend_archive, build_launch_release
+from scripts.package_launch_release import (
+    build_backend_archive,
+    build_launch_release,
+    build_launch_release_manifest,
+    collect_launch_release_payload,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -348,6 +354,23 @@ def test_build_launch_release_has_closed_manifest_and_deterministic_sidecar(tmp_
     }
 
 
+def test_build_launch_release_manifest_derives_network_audit_from_payload(
+    tmp_path: Path,
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    payload = collect_launch_release_payload(root, audit)
+
+    manifest = build_launch_release_manifest(
+        root, payload, "reviewed-source-revision"
+    )
+
+    assert manifest["network_audit"] == {
+        "path": "compose-network-audit.json",
+        "sha256": hashlib.sha256(audit.read_bytes()).hexdigest(),
+    }
+
+
 def test_build_launch_release_refuses_invalid_audit_without_outputs(tmp_path: Path):
     root = tmp_path / "source"
     audit = _write_launch_fixture(root)
@@ -399,3 +422,127 @@ def test_build_launch_release_never_overwrites_existing_outputs(tmp_path: Path):
         )
     assert destination.read_bytes() == b"keep archive"
     assert sidecar.read_text(encoding="ascii") == "keep digest\n"
+
+
+def test_build_launch_release_refuses_symlink_root(tmp_path: Path):
+    source = tmp_path / "source"
+    _write_launch_fixture(source)
+    root = tmp_path / "source-link"
+    root.symlink_to(source, target_is_directory=True)
+    destination = tmp_path / "release.tar.gz"
+
+    with pytest.raises(ValueError, match="release source contains symlink"):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=Path("build/compose-network-audit.json"),
+            source_revision="reviewed-source-revision",
+        )
+
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".sha256").exists()
+
+
+def test_build_launch_release_cleans_archive_temp_if_digest_temp_creation_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    destination = tmp_path / "release.tar.gz"
+    real_mkstemp = release_package.tempfile.mkstemp
+    call_count = 0
+
+    def fail_digest_temp(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        if call_count == 2:
+            raise OSError("digest temp creation failed")
+        return real_mkstemp(*args, **kwargs)
+
+    monkeypatch.setattr(release_package.tempfile, "mkstemp", fail_digest_temp)
+
+    with pytest.raises(OSError, match="digest temp creation failed"):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".sha256").exists()
+    assert list(tmp_path.glob(".*.tmp")) == []
+
+
+@pytest.mark.parametrize("failed_publish", [1, 2])
+def test_build_launch_release_cleans_owned_outputs_if_publish_raises_after_link(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failed_publish: int,
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    destination = tmp_path / "release.tar.gz"
+    real_publish = release_package._publish_without_overwrite
+    call_count = 0
+
+    def publish_then_fail(temporary: Path, output: Path) -> None:
+        nonlocal call_count
+        call_count += 1
+        real_publish(temporary, output)
+        if call_count == failed_publish:
+            raise OSError("publish interrupted after link")
+
+    monkeypatch.setattr(
+        release_package, "_publish_without_overwrite", publish_then_fail
+    )
+
+    with pytest.raises(OSError, match="publish interrupted after link"):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".sha256").exists()
+    assert list(tmp_path.glob(".*.tmp")) == []
+
+
+def test_build_launch_release_rollback_preserves_replacement_outputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    destination = tmp_path / "release.tar.gz"
+    digest_file = destination.with_name(destination.name + ".sha256")
+    real_publish = release_package._publish_without_overwrite
+    call_count = 0
+
+    def replace_outputs_before_failure(temporary: Path, output: Path) -> None:
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            real_publish(temporary, output)
+            output.unlink()
+            output.write_bytes(b"keep replacement archive")
+            return
+        output.write_text("keep replacement digest\n", encoding="ascii")
+        raise FileExistsError("digest output appeared concurrently")
+
+    monkeypatch.setattr(
+        release_package, "_publish_without_overwrite", replace_outputs_before_failure
+    )
+
+    with pytest.raises(FileExistsError, match="appeared concurrently"):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+
+    assert destination.read_bytes() == b"keep replacement archive"
+    assert digest_file.read_text(encoding="ascii") == "keep replacement digest\n"
+    assert list(tmp_path.glob(".*.tmp")) == []
