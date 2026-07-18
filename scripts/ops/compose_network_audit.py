@@ -13,10 +13,11 @@ import ipaddress
 import json
 import os
 import secrets
+import stat
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, NamedTuple, Sequence
 
 
 SCHEMA_VERSION = 1
@@ -25,6 +26,7 @@ CHECK_NAMES = (
     "agent_bind_host",
     "bot_bind_host_and_agent_url",
     "container_names_absent",
+    "developer_added_publications_loopback",
     "exact_healthcheck_commands",
     "non_nginx_services_unpublished",
     "no_external_or_host_network",
@@ -34,6 +36,8 @@ CHECK_NAMES = (
     "nuxt_bind_host",
     "no_launch_unlock_environment",
     "required_services_present",
+    "shared_private_bridge_network",
+    "systemd_dependency_topology",
 )
 INTERNAL_SERVICES = {
     "postgres",
@@ -60,6 +64,31 @@ EXPECTED_HEALTHCHECKS = {
     ),
 }
 SOURCE_DIGEST_KIND = "sha256-utf8-lf-v1"
+LAUNCH_NETWORK_SERVICES = ("agent", "bot-gateway", "nuxt", "nginx")
+NUXT_ALLOWED_ENV_KEYS = {"API_BASE", "HOST", "NITRO_HOST", "PORT"}
+EXPECTED_DEVELOPER_ENDPOINTS = {
+    ("postgres", "127.0.0.1", 5432, 5432, "tcp"),
+    ("redis", "127.0.0.1", 6379, 6379, "tcp"),
+    ("agent", "127.0.0.1", 8360, 8360, "tcp"),
+    ("bot-gateway", "127.0.0.1", 8361, 8361, "tcp"),
+    ("nuxt", "127.0.0.1", 3000, 3000, "tcp"),
+    ("prometheus", "127.0.0.1", 9090, 9090, "tcp"),
+    ("grafana", "127.0.0.1", 3001, 3000, "tcp"),
+    ("loki", "127.0.0.1", 3100, 3100, "tcp"),
+}
+EXPECTED_SYSTEMD_ENDPOINTS = {
+    ("postgres", "127.0.0.1", 5432, 5432, "tcp"),
+    ("redis", "127.0.0.1", 6379, 6379, "tcp"),
+}
+
+
+class SourceSnapshot(NamedTuple):
+    root: Path
+    path: Path
+    relative_path: str
+    state: tuple[int, int, int, int]
+    raw_sha256: str
+    normalized_sha256: str
 
 
 def canonical_json_bytes(value: object) -> bytes:
@@ -134,6 +163,31 @@ def published_ports(model: Mapping[str, Any]) -> set[tuple[str, int]]:
     }
 
 
+def _published_port_entry_count(model: Mapping[str, Any]) -> int | None:
+    services = model.get("services", {})
+    if not isinstance(services, Mapping):
+        return None
+    count = 0
+    for service in services.values():
+        if not isinstance(service, Mapping):
+            return None
+        ports = service.get("ports", ())
+        if not isinstance(ports, Sequence) or isinstance(ports, (str, bytes)):
+            return None
+        count += len(ports)
+    return count
+
+
+def _endpoint_identity(endpoint: Mapping[str, object]) -> tuple[str, str, int, int, str]:
+    return (
+        str(endpoint["service"]),
+        str(endpoint["host_ip"]),
+        int(endpoint["published"]),
+        int(endpoint["target"]),
+        str(endpoint["protocol"]),
+    )
+
+
 def _environment(service: Mapping[str, Any]) -> Mapping[str, Any]:
     value = service.get("environment", {})
     if isinstance(value, Mapping):
@@ -148,6 +202,42 @@ def _environment(service: Mapping[str, Any]) -> Mapping[str, Any]:
     return {}
 
 
+def _service_networks(service: Mapping[str, Any]) -> set[str]:
+    value = service.get("networks", {})
+    if isinstance(value, Mapping):
+        return {str(name) for name in value}
+    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        return {str(name) for name in value}
+    return set()
+
+
+def _has_shared_private_bridge_network(
+    model: Mapping[str, Any], services: Mapping[str, Any]
+) -> bool:
+    network_sets: list[set[str]] = []
+    for name in LAUNCH_NETWORK_SERVICES:
+        service = services.get(name, {})
+        if not isinstance(service, Mapping):
+            return False
+        networks = _service_networks(service)
+        if not networks:
+            return False
+        network_sets.append(networks)
+    shared = set.intersection(*network_sets)
+    definitions = model.get("networks", {})
+    if not shared or not isinstance(definitions, Mapping):
+        return False
+    for name in shared:
+        definition = definitions.get(name, {})
+        if not isinstance(definition, Mapping):
+            continue
+        if definition.get("external") is True:
+            continue
+        if definition.get("driver", "bridge") == "bridge":
+            return True
+    return False
+
+
 def _exposed(service: Mapping[str, Any], port: int) -> bool:
     exposed = service.get("expose", ())
     if not isinstance(exposed, Sequence) or isinstance(exposed, (str, bytes)):
@@ -158,6 +248,8 @@ def _exposed(service: Mapping[str, Any], port: int) -> bool:
 def _healthcheck_command(service: Mapping[str, Any]) -> tuple[str, ...] | None:
     healthcheck = service.get("healthcheck", {})
     if not isinstance(healthcheck, Mapping):
+        return None
+    if healthcheck.get("disable") is True:
         return None
     test = healthcheck.get("test", ())
     if (
@@ -222,6 +314,8 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
             continue
         if str(service.get("network_mode", "")).strip().lower() == "host":
             issues.append(f"host network is forbidden: {name}")
+        if name in {"nuxt", "nginx"} and "network_mode" in service:
+            issues.append(f"network_mode is forbidden: {name}")
         if "container_name" in service:
             issues.append(f"container_name is forbidden: {name}")
         if name != "nginx" and service.get("ports"):
@@ -247,13 +341,17 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
     nuxt = services.get("nuxt", {})
     if isinstance(nuxt, Mapping):
         depends_on = nuxt.get("depends_on", {})
-        if isinstance(depends_on, Mapping) and "agent" in depends_on:
-            issues.append("nuxt must not depend on agent")
-        elif isinstance(depends_on, Sequence) and "agent" in depends_on:
-            issues.append("nuxt must not depend on agent")
+        if depends_on:
+            issues.append("nuxt must not declare dependencies")
+        if "command" in nuxt or "entrypoint" in nuxt:
+            issues.append("nuxt command or entrypoint override is forbidden")
+        if "env_file" in nuxt:
+            issues.append("nuxt env_file is forbidden")
         if not _exposed(nuxt, 3000):
             issues.append("nuxt must expose port 3000")
         nuxt_env = _environment(nuxt)
+        if not set(nuxt_env).issubset(NUXT_ALLOWED_ENV_KEYS):
+            issues.append("nuxt environment key is forbidden")
         if nuxt_env.get("HOST") != "0.0.0.0" or nuxt_env.get("NITRO_HOST") != "0.0.0.0":
             issues.append("nuxt HOST and NITRO_HOST must be 0.0.0.0")
 
@@ -274,46 +372,236 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
             or set(depends_on) != {"nuxt"}
             or not isinstance(nuxt_dependency, Mapping)
             or nuxt_dependency.get("condition") != "service_healthy"
+            or not set(nuxt_dependency).issubset({"condition", "required", "restart"})
+            or nuxt_dependency.get("required", True) is not True
+            or nuxt_dependency.get("restart", False) is not False
         ):
             issues.append("nginx must depend on healthy nuxt only")
+
+    if not _has_shared_private_bridge_network(model, services):
+        issues.append("launch services must share a private bridge network")
 
     return sorted(set(issues))
 
 
+def _network_definition_issues(model: Mapping[str, Any], label: str) -> list[str]:
+    issues: list[str] = []
+    services = model.get("services", {})
+    if not isinstance(services, Mapping):
+        return [f"{label} services must be an object"]
+    for name, service in services.items():
+        if not isinstance(service, Mapping):
+            issues.append(f"{label} service is not an object: {name}")
+            continue
+        if str(service.get("network_mode", "")).strip().lower() == "host":
+            issues.append(f"{label} host network is forbidden: {name}")
+        if "container_name" in service:
+            issues.append(f"{label} container_name is forbidden: {name}")
+    networks = model.get("networks", {})
+    if isinstance(networks, Mapping):
+        for name, network in networks.items():
+            if isinstance(network, Mapping) and network.get("external") is True:
+                issues.append(f"{label} external network is forbidden: {name}")
+    return issues
+
+
+def validate_developer_model(model: Mapping[str, Any]) -> list[str]:
+    issues = _network_definition_issues(model, "developer")
+    services = model.get("services", {})
+    if not isinstance(services, Mapping):
+        return sorted(set(issues))
+    if set(services) != REQUIRED_SERVICES:
+        issues.append("developer services must match the production service set")
+    if not _nginx_endpoints_are_exact(model):
+        issues.append("developer nginx endpoint topology mismatch")
+    endpoints = published_endpoints(model)
+    non_nginx = {
+        _endpoint_identity(endpoint)
+        for endpoint in endpoints
+        if endpoint["service"] != "nginx"
+    }
+    expected_count = len(EXPECTED_DEVELOPER_ENDPOINTS) + 2
+    if (
+        non_nginx != EXPECTED_DEVELOPER_ENDPOINTS
+        or _published_port_entry_count(model) != expected_count
+        or len(endpoints) != expected_count
+    ):
+        issues.append("developer endpoint topology mismatch")
+    return sorted(set(issues))
+
+
+def validate_systemd_dependency_model(model: Mapping[str, Any]) -> list[str]:
+    issues = _network_definition_issues(model, "systemd dependency")
+    services = model.get("services", {})
+    if not isinstance(services, Mapping):
+        return sorted(set(issues))
+    if set(services) != {"postgres", "redis"}:
+        issues.append("systemd dependency services must be exactly postgres and redis")
+    postgres = services.get("postgres", {})
+    postgres_environment = _environment(postgres) if isinstance(postgres, Mapping) else {}
+    password = postgres_environment.get("POSTGRES_PASSWORD")
+    if (
+        not isinstance(password, str)
+        or not password.strip()
+        or password == "vl360_dev_password"
+        or ":-vl360_dev_password" in password
+    ):
+        issues.append("systemd dependency database password must be explicit")
+    parsed_endpoints = published_endpoints(model)
+    endpoints = {_endpoint_identity(endpoint) for endpoint in parsed_endpoints}
+    if (
+        endpoints != EXPECTED_SYSTEMD_ENDPOINTS
+        or _published_port_entry_count(model) != len(EXPECTED_SYSTEMD_ENDPOINTS)
+        or len(parsed_endpoints) != len(EXPECTED_SYSTEMD_ENDPOINTS)
+    ):
+        issues.append("systemd dependency endpoint topology mismatch")
+    return sorted(set(issues))
+
+
 def _repo_relative(root: Path, path: Path) -> str:
+    root = Path(os.path.abspath(root))
+    path = Path(os.path.abspath(path))
     try:
-        return path.resolve().relative_to(root.resolve()).as_posix()
+        return path.relative_to(root).as_posix()
     except ValueError as exc:
         raise ValueError(f"source path is outside repository root: {path}") from exc
 
 
+def _is_reparse_point(metadata: os.stat_result) -> bool:
+    attribute = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    return bool(getattr(metadata, "st_file_attributes", 0) & attribute)
+
+
+def _assert_no_symlink_components(
+    root: Path,
+    path: Path,
+    *,
+    label: str,
+    allow_missing: bool,
+) -> None:
+    root = Path(os.path.abspath(root))
+    path = Path(os.path.abspath(path))
+    relative = path.relative_to(root)
+    current = root
+    for part in relative.parts:
+        current = current / part
+        if not os.path.lexists(current):
+            if allow_missing:
+                break
+            raise ValueError(f"{label} is missing")
+        metadata = os.lstat(current)
+        if stat.S_ISLNK(metadata.st_mode) or _is_reparse_point(metadata):
+            raise ValueError(f"{label} symlink is forbidden")
+
+
+def _resolve_output_path(root: Path, path: Path) -> Path:
+    root = Path(os.path.abspath(root))
+    resolved = Path(os.path.abspath(path if path.is_absolute() else root / path))
+    _repo_relative(root, resolved)
+    _assert_no_symlink_components(
+        root, resolved.parent, label="output path", allow_missing=True
+    )
+    return resolved
+
+
+def _normalized_source_bytes(raw: bytes) -> bytes:
+    text = raw.decode("utf-8")
+    return text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+
+
 def source_sha256(path: Path) -> str:
-    text = path.read_text(encoding="utf-8")
-    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
-    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+    return hashlib.sha256(_normalized_source_bytes(path.read_bytes())).hexdigest()
+
+
+def _source_state(path: Path) -> tuple[int, int, int, int]:
+    metadata = path.stat()
+    return metadata.st_dev, metadata.st_ino, metadata.st_size, metadata.st_mtime_ns
+
+
+def capture_source_snapshots(
+    root: Path, source_files: Sequence[Path]
+) -> tuple[SourceSnapshot, ...]:
+    root = Path(os.path.abspath(root))
+    snapshots: list[SourceSnapshot] = []
+    for path in source_files:
+        resolved = _resolve_repo_source(root, path)
+        before = _source_state(resolved)
+        raw = resolved.read_bytes()
+        after = _source_state(resolved)
+        if before != after or len(raw) != before[2]:
+            raise RuntimeError(f"source changed while snapshotting: {_repo_relative(root, resolved)}")
+        snapshots.append(
+            SourceSnapshot(
+                root=root,
+                path=resolved,
+                relative_path=_repo_relative(root, resolved),
+                state=before,
+                raw_sha256=hashlib.sha256(raw).hexdigest(),
+                normalized_sha256=hashlib.sha256(
+                    _normalized_source_bytes(raw)
+                ).hexdigest(),
+            )
+        )
+    return tuple(snapshots)
+
+
+def verify_source_snapshots(snapshots: Sequence[SourceSnapshot]) -> None:
+    for snapshot in snapshots:
+        _assert_no_symlink_components(
+            snapshot.root,
+            snapshot.path,
+            label="source",
+            allow_missing=False,
+        )
+        before = _source_state(snapshot.path)
+        raw = snapshot.path.read_bytes()
+        after = _source_state(snapshot.path)
+        if (
+            before != snapshot.state
+            or after != snapshot.state
+            or len(raw) != snapshot.state[2]
+            or hashlib.sha256(raw).hexdigest() != snapshot.raw_sha256
+        ):
+            raise RuntimeError(
+                f"source changed during compose render: {snapshot.relative_path}"
+            )
 
 
 def build_audit_artifact(
     root: Path,
     rendered_model: Mapping[str, Any],
     *,
+    developer_model: Mapping[str, Any],
+    systemd_model: Mapping[str, Any],
     source_files: Sequence[Path] | None = None,
+    source_snapshots: Sequence[SourceSnapshot] | None = None,
 ) -> dict[str, Any]:
     """Build the canonical, model-free audit evidence document."""
 
     issues = validate_production_model(rendered_model)
+    issues.extend(validate_developer_model(developer_model))
+    issues.extend(validate_systemd_dependency_model(systemd_model))
     if issues:
         raise ValueError("production Compose audit failed: " + "; ".join(issues))
+    if source_files is not None and source_snapshots is not None:
+        raise ValueError("source files and source snapshots are mutually exclusive")
     files = source_files if source_files is not None else (
         root / "docker-compose.yml",
         root / "docker-compose.prod.yml",
+        root / "docker-compose.dev.yml",
+        root / "docker-compose.systemd-deps.yml",
+    )
+    snapshots = (
+        tuple(source_snapshots)
+        if source_snapshots is not None
+        else capture_source_snapshots(root, files)
     )
     sources = [
         {
-            "path": _repo_relative(root, path),
-            "sha256": source_sha256(path),
+            "path": snapshot.relative_path,
+            "sha256": snapshot.normalized_sha256,
         }
-        for path in sorted(files, key=lambda item: _repo_relative(root, item))
+        for snapshot in sorted(snapshots, key=lambda item: item.relative_path)
     ]
     return {
         "schema_version": SCHEMA_VERSION,
@@ -335,12 +623,23 @@ def build_audit_artifact(
     }
 
 
-def write_audit_artifact(path: Path, artifact: Mapping[str, Any]) -> Path:
+def write_audit_artifact(
+    path: Path,
+    artifact: Mapping[str, Any],
+    *,
+    root: Path | None = None,
+) -> Path:
     """Publish canonical bytes atomically without replacing an existing file."""
 
+    if root is not None:
+        path = _resolve_output_path(root, path)
     if path.exists() or os.path.lexists(path):
         raise FileExistsError(f"audit artifact already exists: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
+    if root is not None:
+        _assert_no_symlink_components(
+            root, path.parent, label="output path", allow_missing=False
+        )
     pending = path.with_name(f".{path.name}.pending-{secrets.token_hex(12)}")
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
     payload = canonical_json_bytes(artifact)
@@ -352,6 +651,10 @@ def write_audit_artifact(path: Path, artifact: Mapping[str, Any]) -> Path:
             stream.flush()
             os.fsync(stream.fileno())
         try:
+            if root is not None:
+                _assert_no_symlink_components(
+                    root, path.parent, label="output path", allow_missing=False
+                )
             os.link(pending, path, follow_symlinks=False)
         except FileExistsError:
             raise
@@ -366,8 +669,15 @@ def write_audit_artifact(path: Path, artifact: Mapping[str, Any]) -> Path:
 
 
 def _resolve_repo_source(root: Path, path: Path) -> Path:
-    resolved = path.resolve() if path.is_absolute() else (root / path).resolve()
+    root = Path(os.path.abspath(root))
+    resolved = Path(os.path.abspath(path if path.is_absolute() else root / path))
     _repo_relative(root, resolved)
+    _assert_no_symlink_components(
+        root, resolved, label="source", allow_missing=False
+    )
+    metadata = os.lstat(resolved)
+    if not stat.S_ISREG(metadata.st_mode):
+        raise ValueError("source must be a regular file")
     return resolved
 
 
@@ -381,18 +691,31 @@ def render_production_compose(
     production = _resolve_repo_source(
         root, production or Path("docker-compose.prod.yml")
     )
-    command = [
-        "docker",
-        "compose",
-        "-f",
-        _repo_relative(root, compose),
-        "-f",
-        _repo_relative(root, production),
-        "config",
-        "--format",
-        "json",
-        "--no-env-resolution",
-    ]
+    return _render_compose(root, (compose, production))
+
+
+def render_developer_compose(
+    root: Path,
+    compose: Path,
+    developer: Path,
+) -> dict[str, Any]:
+    root = root.resolve()
+    compose = _resolve_repo_source(root, compose)
+    developer = _resolve_repo_source(root, developer)
+    return _render_compose(root, (compose, developer))
+
+
+def render_systemd_dependency_compose(root: Path, systemd: Path) -> dict[str, Any]:
+    root = root.resolve()
+    systemd = _resolve_repo_source(root, systemd)
+    return _render_compose(root, (systemd,))
+
+
+def _render_compose(root: Path, sources: Sequence[Path]) -> dict[str, Any]:
+    command = ["docker", "compose"]
+    for source in sources:
+        command.extend(("-f", _repo_relative(root, source)))
+    command.extend(("config", "--format", "json", "--no-env-resolution"))
     try:
         result = subprocess.run(
             command,
@@ -404,8 +727,7 @@ def render_production_compose(
     except OSError as exc:
         raise RuntimeError("Docker Compose CLI is unavailable") from exc
     if result.returncode != 0:
-        detail = result.stderr.strip() or "docker compose config failed"
-        raise RuntimeError(detail)
+        raise RuntimeError("Docker Compose render failed")
     try:
         model = json.loads(result.stdout)
     except json.JSONDecodeError as exc:
@@ -435,14 +757,22 @@ def main(argv: Sequence[str] | None = None) -> int:
             root,
             args.systemd_deps or compose.parent / "docker-compose.systemd-deps.yml",
         )
-        output = args.output if args.output.is_absolute() else root / args.output
+        output = _resolve_output_path(root, args.output)
+        source_files = (compose, production, developer, systemd_deps)
+        source_snapshots = capture_source_snapshots(root, source_files)
         model = render_production_compose(root, compose, production)
+        developer_model = render_developer_compose(root, compose, developer)
+        systemd_model = render_systemd_dependency_compose(root, systemd_deps)
+        verify_source_snapshots(source_snapshots)
         artifact = build_audit_artifact(
             root,
             model,
-            source_files=(compose, production, developer, systemd_deps),
+            developer_model=developer_model,
+            systemd_model=systemd_model,
+            source_snapshots=source_snapshots,
         )
-        write_audit_artifact(output, artifact)
+        verify_source_snapshots(source_snapshots)
+        write_audit_artifact(output, artifact, root=root)
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"compose network audit refused: {exc}", file=sys.stderr)
         return 2

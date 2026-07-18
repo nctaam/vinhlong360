@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: vinhlong360
       POSTGRES_USER: vl360
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vl360_dev_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_INITDB_ARGS: "--wal-segsize=16"
     ports:
       - "127.0.0.1:5432:5432"

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import ast
+import copy
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -38,8 +40,18 @@ def _source_healthcheck_command(service_block: str) -> list[str]:
     return json.loads(line.removeprefix("test:").strip())
 
 
+def _source_port_entries(service_block: str) -> list[str]:
+    ports = service_block.split("    ports:\n", 1)[1]
+    entries: list[str] = []
+    for line in ports.splitlines():
+        if not line.startswith("      - "):
+            break
+        entries.append(json.loads(line.removeprefix("      - ")))
+    return entries
+
+
 def _expected_closed_model() -> dict[str, object]:
-    return {
+    model = {
         "services": {
             "postgres": {"expose": ["5432"]},
             "redis": {"expose": ["6379"]},
@@ -96,6 +108,51 @@ def _expected_closed_model() -> dict[str, object]:
             "grafana": {"expose": ["3000"]},
             "loki": {"expose": ["3100"]},
             "promtail": {},
+        },
+        "networks": {"default": {"external": False}},
+    }
+    for service in model["services"].values():
+        service["networks"] = {"default": None}
+    return model
+
+
+def _published_binding(host_ip: str, published: int, target: int) -> dict[str, object]:
+    return {
+        "host_ip": host_ip,
+        "published": published,
+        "target": target,
+        "protocol": "tcp",
+    }
+
+
+def _expected_developer_model() -> dict[str, object]:
+    model = copy.deepcopy(_expected_closed_model())
+    for service, published, target in (
+        ("postgres", 5432, 5432),
+        ("redis", 6379, 6379),
+        ("agent", 8360, 8360),
+        ("bot-gateway", 8361, 8361),
+        ("nuxt", 3000, 3000),
+        ("prometheus", 9090, 9090),
+        ("grafana", 3001, 3000),
+        ("loki", 3100, 3100),
+    ):
+        model["services"][service]["ports"] = [
+            _published_binding("127.0.0.1", published, target)
+        ]
+    return model
+
+
+def _expected_systemd_model() -> dict[str, object]:
+    return {
+        "services": {
+            "postgres": {
+                "ports": [_published_binding("127.0.0.1", 5432, 5432)],
+                "environment": {"POSTGRES_PASSWORD": "not-default-test-secret"},
+            },
+            "redis": {
+                "ports": [_published_binding("127.0.0.1", 6379, 6379)]
+            },
         },
         "networks": {"default": {"external": False}},
     }
@@ -162,6 +219,23 @@ def test_container_bind_hosts_and_internal_agent_url_are_explicit():
 
 def test_dev_overlay_has_only_explicit_loopback_publications():
     compose = (ROOT / "docker-compose.dev.yml").read_text(encoding="utf-8")
+    services = [
+        line.strip()[:-1]
+        for line in compose.splitlines()
+        if line.startswith("  ")
+        and not line.startswith("    ")
+        and line.rstrip().endswith(":")
+    ]
+    assert services == [
+        "postgres",
+        "redis",
+        "agent",
+        "bot-gateway",
+        "nuxt",
+        "prometheus",
+        "grafana",
+        "loki",
+    ]
     expected = {
         "127.0.0.1:5432:5432",
         "127.0.0.1:6379:6379",
@@ -172,11 +246,18 @@ def test_dev_overlay_has_only_explicit_loopback_publications():
         "127.0.0.1:3001:3000",
         "127.0.0.1:3100:3100",
     }
-    actual = {
-        line.strip().strip('- ').strip('"')
-        for line in compose.splitlines()
-        if "127.0.0.1:" in line
-    }
+    actual = set()
+    for service, next_service in (
+        ("postgres", "redis"),
+        ("redis", "agent"),
+        ("agent", "bot-gateway"),
+        ("bot-gateway", "nuxt"),
+        ("nuxt", "prometheus"),
+        ("prometheus", "grafana"),
+        ("grafana", "loki"),
+        ("loki", None),
+    ):
+        actual.update(_source_port_entries(_service_block(compose, service, next_service)))
     assert actual == expected
 
 
@@ -189,9 +270,14 @@ def test_systemd_dependency_compose_is_independent_and_loopback_only():
         if line.startswith("  ") and not line.startswith("    ") and line.rstrip().endswith(":")
     ]
     assert services == ["postgres", "redis"]
-    assert '"127.0.0.1:5432:5432"' in compose
-    assert '"127.0.0.1:6379:6379"' in compose
-    assert "0.0.0.0:" not in compose
+    assert "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}" in compose
+    assert "${POSTGRES_PASSWORD:-vl360_dev_password}" not in compose
+    assert _source_port_entries(_service_block(compose, "postgres", "redis")) == [
+        "127.0.0.1:5432:5432"
+    ]
+    assert _source_port_entries(_service_block(compose, "redis")) == [
+        "127.0.0.1:6379:6379"
+    ]
 
 
 def test_production_validator_accepts_private_model_and_published_ports_are_exact():
@@ -208,6 +294,82 @@ def test_production_validator_accepts_compose_default_dependency_metadata():
         {"required": True, "restart": False}
     )
     assert audit.validate_production_model(model) == []
+
+
+def test_production_validator_rejects_any_nuxt_dependency():
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["nuxt"]["depends_on"] = {
+        "redis": {"condition": "service_healthy"}
+    }
+    assert any(
+        "nuxt must not declare dependencies" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
+@pytest.mark.parametrize("field", ["command", "entrypoint"])
+def test_production_validator_rejects_nuxt_startup_wrappers(field):
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["nuxt"][field] = [
+        "sh",
+        "-c",
+        "until wget http://agent:8360/health; do sleep 1; done; node server.mjs",
+    ]
+    assert any(
+        "nuxt command or entrypoint override is forbidden" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
+@pytest.mark.parametrize("service", ["nuxt", "nginx"])
+def test_production_validator_rejects_any_network_mode_on_launch_services(service):
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"][service]["network_mode"] = "none"
+    assert any(
+        f"network_mode is forbidden: {service}" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
+def test_production_validator_requires_shared_private_bridge_network():
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["networks"]["isolated"] = {"external": False, "driver": "bridge"}
+    model["services"]["nginx"]["networks"] = {"isolated": None}
+    assert any(
+        "launch services must share a private bridge network" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
+@pytest.mark.parametrize("env_file", [".env", [{"path": ".env", "required": False}]])
+def test_production_validator_rejects_nuxt_env_file(env_file):
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["nuxt"]["env_file"] = env_file
+    assert any(
+        "nuxt env_file is forbidden" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("required", False), ("restart", True), ("unexpected", "value")],
+)
+def test_production_validator_rejects_noncanonical_nginx_dependency_metadata(
+    field, value
+):
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["nginx"]["depends_on"]["nuxt"][field] = value
+    assert any(
+        "nginx must depend on healthy nuxt only" in issue
+        for issue in audit.validate_production_model(model)
+    )
 
 
 def test_production_validator_rejects_a_missing_required_service():
@@ -298,6 +460,16 @@ def test_production_validator_rejects_noncanonical_health_commands(service, comm
     )
 
 
+def test_production_validator_rejects_disabled_healthcheck_with_matching_command():
+    audit = _load_audit()
+    model = _expected_closed_model()
+    model["services"]["nuxt"]["healthcheck"]["disable"] = True
+    assert any(
+        "nuxt healthcheck command mismatch" in issue
+        for issue in audit.validate_production_model(model)
+    )
+
+
 def test_production_validator_rejects_host_network_and_unlock_environment():
     audit = _load_audit()
     model = _expected_closed_model()
@@ -309,6 +481,89 @@ def test_production_validator_rejects_host_network_and_unlock_environment():
     assert any("host network" in issue for issue in issues)
     assert any("unlock" in issue for issue in issues)
     assert any("external network" in issue for issue in issues)
+
+
+def test_developer_validator_accepts_only_exact_loopback_publications():
+    audit = _load_audit()
+    model = _expected_developer_model()
+    assert audit.validate_developer_model(model) == []
+    model["services"]["agent"]["ports"][0]["host_ip"] = "0.0.0.0"
+    assert any(
+        "developer endpoint topology mismatch" in issue
+        for issue in audit.validate_developer_model(model)
+    )
+    model = _expected_developer_model()
+    model["services"]["rogue"] = {}
+    assert any(
+        "developer services must match the production service set" in issue
+        for issue in audit.validate_developer_model(model)
+    )
+    model = _expected_developer_model()
+    model["services"]["agent"]["ports"].append(
+        {
+            "host_ip": "127.0.0.1",
+            "published": "9999-10000",
+            "target": 9999,
+            "protocol": "tcp",
+        }
+    )
+    assert any(
+        "developer endpoint topology mismatch" in issue
+        for issue in audit.validate_developer_model(model)
+    )
+
+
+def test_systemd_validator_requires_exact_dependency_topology():
+    audit = _load_audit()
+    model = _expected_systemd_model()
+    assert audit.validate_systemd_dependency_model(model) == []
+    model["services"]["agent"] = {}
+    assert any(
+        "systemd dependency services must be exactly postgres and redis" in issue
+        for issue in audit.validate_systemd_dependency_model(model)
+    )
+    del model["services"]["agent"]
+    model["services"]["redis"]["ports"][0]["host_ip"] = "0.0.0.0"
+    assert any(
+        "systemd dependency endpoint topology mismatch" in issue
+        for issue in audit.validate_systemd_dependency_model(model)
+    )
+    model = _expected_systemd_model()
+    model["services"]["postgres"]["ports"].append(
+        {
+            "host_ip": "127.0.0.1",
+            "published": "9999-10000",
+            "target": 9999,
+            "protocol": "tcp",
+        }
+    )
+    assert any(
+        "systemd dependency endpoint topology mismatch" in issue
+        for issue in audit.validate_systemd_dependency_model(model)
+    )
+
+
+@pytest.mark.parametrize(
+    "password",
+    [
+        None,
+        "",
+        "   ",
+        "vl360_dev_password",
+        "${POSTGRES_PASSWORD:-vl360_dev_password}",
+    ],
+)
+def test_systemd_validator_rejects_missing_or_default_database_password(password):
+    audit = _load_audit()
+    model = _expected_systemd_model()
+    if password is None:
+        del model["services"]["postgres"]["environment"]["POSTGRES_PASSWORD"]
+    else:
+        model["services"]["postgres"]["environment"]["POSTGRES_PASSWORD"] = password
+    assert any(
+        "systemd dependency database password must be explicit" in issue
+        for issue in audit.validate_systemd_dependency_model(model)
+    )
 
 
 def test_bot_root_health_route_exists_without_importing_gateway():
@@ -354,6 +609,8 @@ def test_audit_artifact_is_canonical_source_bound_and_has_no_raw_model(tmp_path:
     artifact = audit.build_audit_artifact(
         ROOT,
         _expected_closed_model(),
+        developer_model=_expected_developer_model(),
+        systemd_model=_expected_systemd_model(),
         source_files=[source],
     )
     assert artifact["schema_version"] == 1
@@ -371,6 +628,7 @@ def test_audit_artifact_is_canonical_source_bound_and_has_no_raw_model(tmp_path:
         "agent_bind_host",
         "bot_bind_host_and_agent_url",
         "container_names_absent",
+        "developer_added_publications_loopback",
         "exact_healthcheck_commands",
         "nginx_depends_on_healthy_nuxt_only",
         "nginx_exclusive_public_endpoints",
@@ -380,6 +638,8 @@ def test_audit_artifact_is_canonical_source_bound_and_has_no_raw_model(tmp_path:
         "nuxt_backend_independent_readiness",
         "nuxt_bind_host",
         "required_services_present",
+        "shared_private_bridge_network",
+        "systemd_dependency_topology",
     ]
     assert artifact["checks"] == {name: "passed" for name in artifact["check_names"]}
     assert artifact["source_digest_kind"] == "sha256-utf8-lf-v1"
@@ -406,12 +666,19 @@ def test_audit_artifact_is_canonical_source_bound_and_has_no_raw_model(tmp_path:
     canonical = audit.canonical_json_bytes(artifact)
     assert canonical == audit.canonical_json_bytes(json.loads(canonical))
     assert b"tmp_path" not in canonical
+    assert b"not-default-test-secret" not in canonical
 
 
 def test_audit_artifact_refuses_overwrite_and_leaves_no_pending_file(tmp_path: Path):
     audit = _load_audit()
     output = tmp_path / "compose-network-audit.json"
-    artifact = audit.build_audit_artifact(ROOT, _expected_closed_model(), source_files=[])
+    artifact = audit.build_audit_artifact(
+        ROOT,
+        _expected_closed_model(),
+        developer_model=_expected_developer_model(),
+        systemd_model=_expected_systemd_model(),
+        source_files=[],
+    )
     audit.write_audit_artifact(output, artifact)
     original = output.read_bytes()
     with pytest.raises(FileExistsError):
@@ -446,6 +713,26 @@ def test_cli_render_uses_no_env_resolution(monkeypatch):
     ]]
 
 
+def test_render_refusal_does_not_forward_docker_stderr(monkeypatch):
+    audit = _load_audit()
+
+    class Completed:
+        returncode = 1
+        stdout = ""
+        stderr = "secret=do-not-leak C:/private/repo/.env"
+
+    monkeypatch.setattr(audit.subprocess, "run", lambda *_args, **_kwargs: Completed())
+    with pytest.raises(RuntimeError) as refusal:
+        audit.render_production_compose(
+            ROOT,
+            ROOT / "docker-compose.yml",
+            ROOT / "docker-compose.prod.yml",
+        )
+    assert str(refusal.value) == "Docker Compose render failed"
+    assert "secret" not in str(refusal.value)
+    assert "C:/" not in str(refusal.value)
+
+
 def test_cli_supports_planned_paths_and_sibling_source_defaults(
     monkeypatch, tmp_path: Path
 ):
@@ -459,11 +746,21 @@ def test_cli_supports_planned_paths_and_sibling_source_defaults(
         (tmp_path / name).write_text(f"# {name}\n", encoding="utf-8")
     calls = []
 
-    def render(root, compose, production):
-        calls.append((root, compose, production))
+    def render_production(root, compose, production):
+        calls.append(("production", root, compose, production))
         return _expected_closed_model()
 
-    monkeypatch.setattr(audit, "render_production_compose", render)
+    def render_developer(root, compose, developer):
+        calls.append(("developer", root, compose, developer))
+        return _expected_developer_model()
+
+    def render_systemd(root, systemd):
+        calls.append(("systemd", root, systemd))
+        return _expected_systemd_model()
+
+    monkeypatch.setattr(audit, "render_production_compose", render_production)
+    monkeypatch.setattr(audit, "render_developer_compose", render_developer)
+    monkeypatch.setattr(audit, "render_systemd_dependency_compose", render_systemd)
     monkeypatch.chdir(tmp_path)
     result = audit.main(
         [
@@ -478,10 +775,22 @@ def test_cli_supports_planned_paths_and_sibling_source_defaults(
     assert result == 0
     assert calls == [
         (
+            "production",
             tmp_path.resolve(),
             (tmp_path / "docker-compose.yml").resolve(),
             (tmp_path / "docker-compose.prod.yml").resolve(),
-        )
+        ),
+        (
+            "developer",
+            tmp_path.resolve(),
+            (tmp_path / "docker-compose.yml").resolve(),
+            (tmp_path / "docker-compose.dev.yml").resolve(),
+        ),
+        (
+            "systemd",
+            tmp_path.resolve(),
+            (tmp_path / "docker-compose.systemd-deps.yml").resolve(),
+        ),
     ]
     artifact = json.loads(
         (tmp_path / "build" / "compose-network-audit.json").read_text(
@@ -494,3 +803,162 @@ def test_cli_supports_planned_paths_and_sibling_source_defaults(
         "docker-compose.systemd-deps.yml",
         "docker-compose.yml",
     ]
+
+
+def test_cli_refuses_source_mutation_during_render_without_output(
+    monkeypatch, capsys, tmp_path: Path
+):
+    audit = _load_audit()
+    for name in (
+        "docker-compose.yml",
+        "docker-compose.prod.yml",
+        "docker-compose.dev.yml",
+        "docker-compose.systemd-deps.yml",
+    ):
+        (tmp_path / name).write_text(f"# {name}\n", encoding="utf-8")
+
+    def render_production(root, compose, production):
+        compose.write_text("# changed during render\n", encoding="utf-8")
+        return _expected_closed_model()
+
+    monkeypatch.setattr(audit, "render_production_compose", render_production)
+    monkeypatch.setattr(
+        audit,
+        "render_developer_compose",
+        lambda *_args: _expected_developer_model(),
+    )
+    monkeypatch.setattr(
+        audit,
+        "render_systemd_dependency_compose",
+        lambda *_args: _expected_systemd_model(),
+    )
+    monkeypatch.chdir(tmp_path)
+    output = tmp_path / "build" / "compose-network-audit.json"
+    result = audit.main(
+        [
+            "--compose",
+            "docker-compose.yml",
+            "--production",
+            "docker-compose.prod.yml",
+            "--output",
+            "build/compose-network-audit.json",
+        ]
+    )
+    assert result == 2
+    assert not output.exists()
+    assert "source changed during compose render" in capsys.readouterr().err
+
+
+def test_cli_refuses_source_replaced_by_symlink_to_same_inode(
+    monkeypatch, tmp_path: Path
+):
+    audit = _load_audit()
+    for name in (
+        "docker-compose.yml",
+        "docker-compose.prod.yml",
+        "docker-compose.dev.yml",
+        "docker-compose.systemd-deps.yml",
+    ):
+        (tmp_path / name).write_text(f"# {name}\n", encoding="utf-8")
+
+    def render_production(root, compose, production):
+        actual = compose.with_name("actual-compose.yml")
+        compose.replace(actual)
+        try:
+            os.symlink(actual, compose)
+        except OSError as exc:
+            actual.replace(compose)
+            pytest.skip(f"symlink creation unavailable: {exc}")
+        return _expected_closed_model()
+
+    monkeypatch.setattr(audit, "render_production_compose", render_production)
+    monkeypatch.setattr(
+        audit,
+        "render_developer_compose",
+        lambda *_args: _expected_developer_model(),
+    )
+    monkeypatch.setattr(
+        audit,
+        "render_systemd_dependency_compose",
+        lambda *_args: _expected_systemd_model(),
+    )
+    monkeypatch.chdir(tmp_path)
+    output = tmp_path / "build" / "compose-network-audit.json"
+    result = audit.main(
+        [
+            "--compose",
+            "docker-compose.yml",
+            "--production",
+            "docker-compose.prod.yml",
+            "--output",
+            "build/compose-network-audit.json",
+        ]
+    )
+    assert result == 2
+    assert not output.exists()
+
+
+def test_source_snapshot_rejects_symlink_without_changing_artifact_role(tmp_path: Path):
+    audit = _load_audit()
+    actual = tmp_path / "actual.yml"
+    link = tmp_path / "docker-compose.yml"
+    actual.write_text("services: {}\n", encoding="utf-8")
+    try:
+        os.symlink(actual, link)
+    except OSError as exc:
+        pytest.skip(f"symlink creation unavailable: {exc}")
+    with pytest.raises(ValueError, match="source symlink is forbidden"):
+        audit.capture_source_snapshots(tmp_path, [link])
+
+
+def test_cli_refuses_symlink_output_parent_without_writing_outside(
+    monkeypatch, tmp_path: Path
+):
+    audit = _load_audit()
+    root = tmp_path / "root"
+    outside = tmp_path / "outside"
+    root.mkdir()
+    outside.mkdir()
+    for name in (
+        "docker-compose.yml",
+        "docker-compose.prod.yml",
+        "docker-compose.dev.yml",
+        "docker-compose.systemd-deps.yml",
+    ):
+        (root / name).write_text(f"# {name}\n", encoding="utf-8")
+    try:
+        os.symlink(outside, root / "build", target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlink creation unavailable: {exc}")
+    victim = outside / "victim.txt"
+    victim.write_text("unchanged\n", encoding="utf-8")
+    monkeypatch.setattr(
+        audit,
+        "render_production_compose",
+        lambda *_args: _expected_closed_model(),
+    )
+    monkeypatch.setattr(
+        audit,
+        "render_developer_compose",
+        lambda *_args: _expected_developer_model(),
+    )
+    monkeypatch.setattr(
+        audit,
+        "render_systemd_dependency_compose",
+        lambda *_args: _expected_systemd_model(),
+    )
+    result = audit.main(
+        [
+            "--root",
+            str(root),
+            "--compose",
+            "docker-compose.yml",
+            "--production",
+            "docker-compose.prod.yml",
+            "--output",
+            "build/compose-network-audit.json",
+        ]
+    )
+    assert result == 2
+    assert victim.read_text(encoding="utf-8") == "unchanged\n"
+    assert not (outside / "compose-network-audit.json").exists()
