@@ -64,12 +64,6 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#9C3D22', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#1a1a1a', media: '(prefers-color-scheme: dark)' },
         { name: 'color-scheme', content: 'light dark' },
-        {
-          name: 'robots',
-          content: siteNoindex
-            ? 'noindex, follow'
-            : 'index, follow, max-image-preview:large, max-snippet:-1',
-        },
         { name: 'format-detection', content: 'telephone=no' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
@@ -98,7 +92,6 @@ export default defineNuxtConfig({
         { rel: 'dns-prefetch', href: '//vinhlong360.vn' },
         { rel: 'preconnect', href: 'https://images.weserv.nl' },
         { rel: 'dns-prefetch', href: 'https://maptiles.openmap.vn' },
-        { rel: 'sitemap', type: 'application/xml', href: '/sitemap.xml' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'manifest', href: '/manifest.json' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
@@ -144,11 +137,8 @@ export default defineNuxtConfig({
     apiBase,
     public: {
       ndaMapKey: process.env.NDA_MAP_KEY || 'J2TnJ4JIEP3WTBnFwzVPAxTP7KKfW1OD',
-      // ⚠️ TẠM THỜI — chặn Google index TOÀN SITE trong giai đoạn hoàn thiện nội dung.
-      // Mặc định BẬT (noindex). Cờ này đồng bộ runtime config với robots meta
-      // được ghi vào HTML prerender. Khi mở index, đặt NUXT_PUBLIC_SITE_NOINDEX=false
-      // trước khi build/generate, sau đó deploy/restart output mới; restart output cũ
-      // không thể thay đổi robots meta đã tạo sẵn. Middleware động vẫn theo runtime config.
+      // Legacy launch switch remains closed by default. HTML robots metadata and
+      // headers are now derived from the request-local launch safety decision.
       siteNoindex,
     },
   },
@@ -244,7 +234,6 @@ export default defineNuxtConfig({
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       '/**': {
         headers: {
-          ...(siteNoindex ? { 'X-Robots-Tag': 'noindex, follow' } : {}),
           'X-Content-Type-Options': 'nosniff',
           'X-Frame-Options': 'SAMEORIGIN',
           'Referrer-Policy': 'strict-origin-when-cross-origin',

@@ -50,7 +50,6 @@ if (import.meta.server && !plan.value) {
 useSeoMeta({
   title: () => plan.value ? `${plan.value.title} — Lịch trình chia sẻ` : 'Lịch trình chia sẻ',
   description: () => plan.value ? `Lịch trình ${plan.value.stops?.length || 0} điểm tại Vĩnh Long` : 'Lịch trình cộng đồng chia sẻ',
-  robots: 'noindex,follow',
 })
 useHead({ link: [{ rel: 'canonical', href: canonicalUrl(`/lich-trinh-chia-se/${encodedPlanId}`) }] })
 </script>

@@ -203,7 +203,6 @@ watch(isLoggedIn, (loggedIn) => {
 
 useHead({
   title: 'Thông báo — vinhlong360',
-  meta: [{ name: 'robots', content: 'noindex,nofollow' }],
   link: [{ rel: 'canonical', href: canonicalUrl('/thong-bao') }],
 })
 </script>

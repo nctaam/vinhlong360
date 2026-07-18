@@ -5,7 +5,7 @@ import {
   type H3Event,
 } from 'h3'
 
-import type { LaunchSafetyDecision } from '../../../types/launch'
+import type { LaunchPageDecision, LaunchSafetyDecision } from '../../../types/launch'
 import { INDEX_POLICY_REVISION, isSha256 } from './launchEvidence'
 import { launchRouteManifest } from './launchRouteManifest'
 
@@ -21,6 +21,7 @@ export const LAUNCH_HEADER_NAMES = Object.freeze([
 const LAUNCH_HEADER_NAMES_LOWER = new Set([
   ...LAUNCH_HEADER_NAMES.map(name => name.toLowerCase()),
   'cache-control',
+  'x-robots-tag',
 ])
 const CLOSED_REASONS = new Set([
   'closed-default',
@@ -49,6 +50,7 @@ const EMPTY_DECISION: LaunchSafetyDecision = Object.freeze({
 
 export interface LaunchResponseHeaderInput {
   readonly decision: Readonly<LaunchSafetyDecision>
+  readonly html?: boolean
   readonly sitemap?: boolean
   readonly requestedBatch?: string | null
 }
@@ -157,6 +159,25 @@ export function buildBaseLaunchResponseHeaders(input: LaunchResponseHeaderInput)
   return headers
 }
 
+function launchRobots(decision: Readonly<LaunchSafetyDecision>): LaunchPageDecision['robots'] {
+  if (!('robots' in decision)) throw new TypeError('HTML launch decision is missing robots')
+  const robots = decision.robots
+  if (robots !== 'index, follow' && robots !== 'noindex, follow') {
+    throw new TypeError('HTML launch robots decision is invalid')
+  }
+  return robots
+}
+
+export function buildLaunchResponseHeaders(input: LaunchResponseHeaderInput): Record<string, string> {
+  if (input.html !== undefined && typeof input.html !== 'boolean') {
+    throw new TypeError('HTML header option must be boolean')
+  }
+
+  const headers = buildBaseLaunchResponseHeaders(input)
+  if (input.html === true) headers['X-Robots-Tag'] = launchRobots(input.decision)
+  return headers
+}
+
 function clearLaunchHeaders(event: H3Event): void {
   for (const name of Object.keys(getResponseHeaders(event))) {
     if (LAUNCH_HEADER_NAMES_LOWER.has(name.toLowerCase())) removeResponseHeader(event, name)
@@ -166,6 +187,7 @@ function clearLaunchHeaders(event: H3Event): void {
 function storeHeaderInput(event: H3Event, input: LaunchResponseHeaderInput): void {
   event.context.launchResponseHeaderInput = Object.freeze({
     decision: input.decision,
+    html: input.html,
     sitemap: input.sitemap,
     requestedBatch: input.requestedBatch ?? null,
   })
@@ -180,13 +202,23 @@ export function writeLaunchResponseHeaders(
   let headers: Record<string, string>
   let effectiveInput: LaunchResponseHeaderInput = input
   try {
-    headers = buildBaseLaunchResponseHeaders(input)
+    headers = buildLaunchResponseHeaders(input)
   } catch {
-    effectiveInput = { decision: EMPTY_DECISION }
-    headers = buildBaseLaunchResponseHeaders(effectiveInput)
+    effectiveInput = {
+      decision: input.html === true
+        ? Object.freeze({
+            ...EMPTY_DECISION,
+            robots: 'noindex, follow',
+            sitemapDiscovery: false,
+          })
+        : EMPTY_DECISION,
+      html: input.html === true,
+    }
+    headers = buildLaunchResponseHeaders(effectiveInput)
   }
 
   setResponseHeaders(event, headers)
+  if (effectiveInput.html === true) event.context.launchSafety = effectiveInput.decision
   storeHeaderInput(event, effectiveInput)
 }
 

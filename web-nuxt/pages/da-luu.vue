@@ -162,7 +162,6 @@ const router = useRouter()
 
 useHead({
   title: 'Đã lưu',
-  meta: [{ name: 'robots', content: 'noindex,nofollow' }],
   link: [{ rel: 'canonical', href: canonicalUrl('/da-luu') }],
 })
 

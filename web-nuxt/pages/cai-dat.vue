@@ -448,7 +448,6 @@ function setColorMode(mode: 'light' | 'dark' | 'system') {
 }
 useHead({
   title: 'Cài đặt',
-  meta: [{ name: 'robots', content: 'noindex,nofollow' }],
   link: [{ rel: 'canonical', href: canonicalUrl('/cai-dat') }],
 })
 

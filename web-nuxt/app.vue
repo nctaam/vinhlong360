@@ -6,6 +6,14 @@
 </template>
 
 <script setup lang="ts">
+const launchSafety = useLaunchSafety()
+const route = useRoute()
+
+useHead(() => buildLaunchHead(launchSafety.decision.value))
+if (import.meta.client) {
+  watch(() => route.fullPath, () => launchSafety.resetForNavigation())
+}
+
 // Speculation Rules: prefetch (nhẹ — chỉ tải document, KHÔNG prerender/chạy JS → không
 // tải backend) link nội-bộ khi hover/pointerdown (eagerness moderate), loại admin/api/auth.
 // Chrome/Edge hỗ trợ; trình duyệt khác bỏ qua an toàn. Bổ trợ cho hard-nav (Nuxt SPA đã

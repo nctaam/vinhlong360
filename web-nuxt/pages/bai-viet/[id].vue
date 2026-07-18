@@ -449,7 +449,6 @@ watch(postId, async () => {
 
 useHead({
   link: computed(() => [{ rel: 'canonical', href: canonicalUrl(postPath(postId.value)) }]),
-  meta: [{ name: 'robots', content: 'noindex,follow' }],
 })
 
 useSeoMeta({

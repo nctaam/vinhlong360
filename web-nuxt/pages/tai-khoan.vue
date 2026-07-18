@@ -174,7 +174,6 @@ const { timeAgo } = useTimeAgo()
 
 useHead({
   title: 'Tài khoản',
-  meta: [{ name: 'robots', content: 'noindex, follow' }],
   link: [{ rel: 'canonical', href: canonicalUrl('/tai-khoan') }],
 })
 

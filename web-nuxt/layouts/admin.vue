@@ -206,10 +206,6 @@ function toggleDark() {
   try { localStorage.setItem('theme', isDark.value ? 'dark' : 'light') } catch {}
 }
 
-useHead({
-  meta: [{ name: 'robots', content: 'noindex,nofollow' }],
-})
-
 let badgeInterval: ReturnType<typeof setInterval> | undefined
 function _badgeTick() { if (!document.hidden) loadBadges() }
 function _onVisChange() { if (!document.hidden) loadBadges() }

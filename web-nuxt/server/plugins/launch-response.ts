@@ -1,11 +1,7 @@
-import {
-  getResponseHeaders,
-  removeResponseHeader,
-  setResponseHeader,
-  type H3Event,
-} from 'h3'
+import { type H3Event } from 'h3'
 import { defineNitroPlugin } from 'nitropack/runtime/internal/plugin'
 
+import type { LaunchPageDecision, LaunchSafetyDecision } from '../../types/launch'
 import {
   isKnownNonHtmlRequest,
   isLaunchSafetyCandidate,
@@ -16,12 +12,7 @@ import {
   writeLaunchResponseHeaders,
   type LaunchResponseHeaderInput,
 } from '../utils/launch/launchHeaders'
-
-function clearRobotsHeader(event: H3Event): void {
-  for (const name of Object.keys(getResponseHeaders(event))) {
-    if (name.toLowerCase() === 'x-robots-tag') removeResponseHeader(event, name)
-  }
-}
+import { pageDecisionFromBase } from '../utils/launch/entityPolicy'
 
 function responseContentType(event: H3Event): string {
   const header = event.node.res.getHeader('content-type')
@@ -51,12 +42,16 @@ function responseStatus(event: H3Event): number {
 
 function shouldFinalizeLaunchResponse(event: H3Event): boolean {
   if (isRootSeoRequest(event)) return true
-  if (isKnownNonHtmlRequest(event)) return false
 
   // The response is authoritative whenever Nitro has selected an HTML type;
   // Accept/path heuristics must not hide a dotted 404 or JSON-preferring client.
   const contentType = responseContentType(event)
-  if (contentType) return isHtmlContentType(contentType)
+  if (contentType) {
+    if (!isHtmlContentType(contentType)) return false
+    return event.context.launchSafety !== undefined || !isKnownNonHtmlRequest(event)
+  }
+
+  if (isKnownNonHtmlRequest(event)) return false
 
   // Middleware already attested this request. Preserve that request-local
   // decision for wildcard browser requests only while response type is absent.
@@ -77,32 +72,57 @@ function isStoredInput(value: unknown): value is LaunchResponseHeaderInput {
     && 'decision' in value
 }
 
-function finalHeaderInput(event: H3Event): LaunchResponseHeaderInput {
-  const decision = event.context.launchSafety
+function isPageDecision(value: unknown): value is Readonly<LaunchPageDecision> {
+  return value !== null
+    && typeof value === 'object'
+    && 'robots' in value
+    && 'sitemapDiscovery' in value
+}
+
+function finalHtmlDecision(event: H3Event): Readonly<LaunchPageDecision> {
+  const contextual = event.context.launchSafety
+  const decision = isPageDecision(contextual)
+    ? contextual
+    : pageDecisionFromBase((contextual as Readonly<LaunchSafetyDecision> | undefined) ?? failedOpenLaunchDecision)
+
+  if (responseStatus(event) < 400 || decision.robots === 'noindex, follow') {
+    event.context.launchSafety = decision
+    return decision
+  }
+
+  const noindexDecision = Object.freeze({ ...decision, robots: 'noindex, follow' as const })
+  event.context.launchSafety = noindexDecision
+  return noindexDecision
+}
+
+function finalHeaderInput(event: H3Event, html: boolean): LaunchResponseHeaderInput {
+  const decision = html
+    ? finalHtmlDecision(event)
+    : (event.context.launchSafety as Readonly<LaunchSafetyDecision> | undefined) ?? failedOpenLaunchDecision
   const stored = event.context.launchResponseHeaderInput
-  if (isStoredInput(stored) && stored.decision === decision) return stored
-  return { decision: decision ?? failedOpenLaunchDecision }
+  if (isStoredInput(stored) && stored.decision === decision) return { ...stored, html }
+  return { decision, html }
 }
 
 export function finalizeLaunchResponse(event: H3Event): void {
+  let shouldFinalize = false
+  let html = false
   try {
-    const shouldFinalize = shouldFinalizeLaunchResponse(event)
+    shouldFinalize = shouldFinalizeLaunchResponse(event)
     if (!shouldFinalize) return
 
-    writeLaunchResponseHeaders(event, finalHeaderInput(event))
-    clearRobotsHeader(event)
-    if (!isRootSeoRequest(event)) {
-      // Task 24 will refine eligible page robots; until then the global posture stays closed.
-      setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow')
-    }
+    html = !isRootSeoRequest(event)
+    writeLaunchResponseHeaders(event, finalHeaderInput(event, html))
   } catch {
     // Response/error hooks must never leak stale evidence or throw into Nitro's lifecycle.
     try {
-      writeLaunchResponseHeaders(event, { decision: failedOpenLaunchDecision })
-      clearRobotsHeader(event)
-      if (shouldFinalizeLaunchResponse(event) && !isRootSeoRequest(event)) {
-        setResponseHeader(event, 'X-Robots-Tag', 'noindex, follow')
-      }
+      if (!shouldFinalize && !shouldFinalizeLaunchResponse(event)) return
+      html = html || !isRootSeoRequest(event)
+      const decision = html
+        ? pageDecisionFromBase(failedOpenLaunchDecision)
+        : failedOpenLaunchDecision
+      if (html) event.context.launchSafety = decision
+      writeLaunchResponseHeaders(event, { decision, html })
     } catch {
       // A destroyed response cannot be repaired; the hook still remains non-throwing.
     }

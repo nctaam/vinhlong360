@@ -22,7 +22,7 @@ if (import.meta.server) {
   if (event) setResponseStatus(event, 404)
 }
 
-useSeoMeta({ title: '404 — vinhlong360', robots: 'noindex, nofollow' })
+useSeoMeta({ title: '404 — vinhlong360' })
 
 const q = ref('')
 function onSearch() {

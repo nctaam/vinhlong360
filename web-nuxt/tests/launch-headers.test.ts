@@ -14,9 +14,10 @@ import launchResponsePlugin, {
 } from '../server/plugins/launch-response'
 import {
   buildBaseLaunchResponseHeaders,
+  buildLaunchResponseHeaders,
   writeLaunchResponseHeaders,
 } from '../server/utils/launch/launchHeaders'
-import type { LaunchSafetyDecision } from '../types/launch'
+import type { LaunchPageDecision, LaunchSafetyDecision } from '../types/launch'
 
 const batch = 'a'.repeat(64)
 const fingerprint = 'b'.repeat(64)
@@ -52,6 +53,24 @@ const failedOpenDecision: LaunchSafetyDecision = {
   sitemap_batch_revision: null,
   sitemap_action: 'unavailable',
   reason: 'policy-attestation-unavailable',
+}
+
+const selectiveOpenPageDecision: LaunchPageDecision = {
+  ...selectiveOpenDecision,
+  robots: 'index, follow',
+  sitemapDiscovery: true,
+}
+
+const selectiveNegativePageDecision: LaunchPageDecision = {
+  ...selectiveOpenDecision,
+  robots: 'noindex, follow',
+  sitemapDiscovery: true,
+}
+
+const failedOpenPageDecision: LaunchPageDecision = {
+  ...failedOpenDecision,
+  robots: 'noindex, follow',
+  sitemapDiscovery: false,
 }
 
 type HeaderValue = string | number | readonly string[]
@@ -177,6 +196,23 @@ describe('exact launch response header authority', () => {
     })).toThrow(/requested sitemap batch/i)
   })
 
+  it('adds robots only for HTML and mirrors the page decision exactly', () => {
+    expect(buildLaunchResponseHeaders({
+      decision: selectiveOpenPageDecision,
+      html: true,
+    })).toMatchObject({
+      'X-Launch-Indexing-Policy': 'selective-open',
+      'X-Robots-Tag': 'index, follow',
+    })
+    expect(buildLaunchResponseHeaders({
+      decision: selectiveNegativePageDecision,
+      html: true,
+    })['X-Robots-Tag']).toBe('noindex, follow')
+    expect(buildLaunchResponseHeaders({
+      decision: selectiveOpenPageDecision,
+    })).not.toHaveProperty('X-Robots-Tag')
+  })
+
   it.each([
     { ...selectiveOpenDecision, policy_fingerprint: null },
     { ...selectiveOpenDecision, policy_fingerprint: 'B'.repeat(64) },
@@ -201,7 +237,7 @@ describe('exact launch response header authority', () => {
       .toThrow(/decision/i)
   })
 
-  it('clears case-insensitive stale evidence and safely downgrades malformed input', () => {
+  it('clears case-insensitive stale evidence and robots before safely downgrading malformed input', () => {
     const event = responseEvent({
       headers: {
         'x-launch-policy-fingerprint': 'stale-one',
@@ -210,6 +246,8 @@ describe('exact launch response header authority', () => {
         'x-launch-backend-policy-revision': 'stale',
         'X-Launch-Sitemap-Batch-Revision': 'c'.repeat(64),
         'x-launch-sitemap-requested-batch': 'c'.repeat(64),
+        'x-robots-tag': 'stale-one',
+        'X-ROBOTS-TAG': 'stale-two',
       },
     })
 
@@ -347,10 +385,11 @@ describe('request-scoped launch decision middleware', () => {
 
 describe('final response lifecycle', () => {
   it.each([
-    ['success HTML', 200, selectiveOpenDecision, 'selective-open'],
-    ['404 HTML', 404, selectiveOpenDecision, 'selective-open'],
-    ['error HTML', 500, failedOpenDecision, 'failed-open'],
-  ] as const)('finalizes %s after the final status without dropping valid evidence', (_label, status, decision, policy) => {
+    ['success HTML', 200, selectiveOpenPageDecision, 'selective-open', 'index, follow'],
+    ['valid-negative HTML', 200, selectiveNegativePageDecision, 'selective-open', 'noindex, follow'],
+    ['404 HTML', 404, selectiveOpenPageDecision, 'selective-open', 'noindex, follow'],
+    ['error HTML', 500, failedOpenPageDecision, 'failed-open', 'noindex, follow'],
+  ] as const)('finalizes %s after the final status without dropping valid evidence', (_label, status, decision, policy, robots) => {
     const event = responseEvent({
       status,
       headers: { 'content-type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'stale' },
@@ -361,11 +400,12 @@ describe('final response lifecycle', () => {
     expect(lowerHeaders(event)).toMatchObject({
       'cache-control': 'no-store',
       'x-launch-indexing-policy': policy,
-      'x-robots-tag': 'noindex, follow',
+      'x-robots-tag': robots,
     })
     if (decision.operational_state === 'selective-open') {
       expect(lowerHeaders(event)['x-launch-policy-fingerprint']).toBe(fingerprint)
     }
+    expect(event.context.launchSafety).toMatchObject({ robots })
   })
 
   it('finalizes a dotted 404 HTML response from response evidence even when request heuristics reject it', () => {
@@ -547,7 +587,7 @@ describe('final response lifecycle', () => {
       accept: '*/*',
       status: 200,
       headers: { 'content-type': 'application/json' },
-      context: { launchSafety: selectiveOpenDecision },
+      context: { launchSafety: selectiveOpenPageDecision },
     })
 
     finalizeLaunchResponse(event as never)
@@ -592,6 +632,30 @@ describe('final response lifecycle', () => {
     expect(lowerHeaders(event)).not.toHaveProperty('x-launch-policy-fingerprint')
   })
 
+  it('keeps the final HTML context aligned when malformed evidence is downgraded', () => {
+    const event = responseEvent({
+      headers: { 'content-type': 'text/html' },
+      context: {
+        launchSafety: {
+          ...selectiveOpenPageDecision,
+          policy_fingerprint: null,
+        },
+      },
+    })
+
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).toMatchObject({
+      'x-launch-indexing-policy': 'failed-open',
+      'x-robots-tag': 'noindex, follow',
+    })
+    expect(event.context.launchSafety).toMatchObject({
+      operational_state: 'failed-open',
+      policy_fingerprint: null,
+      robots: 'noindex, follow',
+    })
+  })
+
   it('preserves a root handler sitemap input during the generic final hook', () => {
     const decision = Object.freeze({ ...selectiveOpenDecision, sitemap_batch_revision: batch })
     const event = responseEvent({
@@ -629,6 +693,6 @@ describe('final response lifecycle', () => {
       return source.includes('X-Robots-Tag')
     })
 
-    expect(writers).toEqual([resolve(serverRoot, 'plugins/launch-response.ts')])
+    expect(writers).toEqual([resolve(serverRoot, 'utils/launch/launchHeaders.ts')])
   })
 })

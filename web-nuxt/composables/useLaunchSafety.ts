@@ -8,6 +8,15 @@ export const LAUNCH_SAFETY_STATE_KEY = 'launch-safety-page-decision'
 export const LAUNCH_SAFETY_BASE_STATE_KEY = 'launch-safety-base-decision'
 export const LAUNCH_SAFETY_ROUTE_STATE_KEY = 'launch-safety-request-target'
 
+export function buildLaunchHead(decision: Readonly<LaunchPageDecision>) {
+  return {
+    meta: [{ name: 'robots', content: decision.robots }],
+    link: decision.sitemapDiscovery
+      ? [{ rel: 'sitemap', type: 'application/xml', href: '/sitemap-index.xml' }]
+      : [],
+  }
+}
+
 export function createLaunchGenerationGuard(onBegin: () => void) {
   let activeGeneration = 0
   return Object.freeze({

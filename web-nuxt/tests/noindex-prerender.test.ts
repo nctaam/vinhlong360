@@ -3,7 +3,6 @@
 import { loadNuxtConfig } from '@nuxt/kit'
 import { afterEach, describe, expect, it } from 'vitest'
 
-const permissiveRobots = 'index, follow, max-image-preview:large, max-snippet:-1'
 const originalSiteNoindex = process.env.NUXT_PUBLIC_SITE_NOINDEX
 
 const loadConfig = async (siteNoindex?: string) => {
@@ -33,24 +32,24 @@ afterEach(() => {
 })
 
 describe('global noindex posture', () => {
-  it('defaults resolved runtime config and prerender metadata to noindex', async () => {
+  it('defaults resolved runtime config closed without a second static robots authority', async () => {
     const config = await loadConfig()
 
     expect(config.runtimeConfig.public.siteNoindex).toBe(true)
-    expect(robotsContent(config)).toBe('noindex, follow')
+    expect(robotsContent(config)).toBeUndefined()
   })
 
-  it('opens resolved runtime config and prerender metadata together', async () => {
+  it('does not activate static robots metadata when the legacy runtime flag is false', async () => {
     const config = await loadConfig('false')
 
     expect(config.runtimeConfig.public.siteNoindex).toBe(false)
-    expect(robotsContent(config)).toBe(permissiveRobots)
+    expect(robotsContent(config)).toBeUndefined()
   })
 
-  it('defaults prerender and static responses to the global noindex header', async () => {
+  it('leaves HTML robots headers to the request-local final response writer', async () => {
     const config = await loadConfig()
 
-    expect(globalNitroHeaders(config)).toHaveProperty('X-Robots-Tag', 'noindex, follow')
+    expect(globalNitroHeaders(config)).not.toHaveProperty('X-Robots-Tag')
   })
 
   it('removes the global static response header when indexing is opened', async () => {

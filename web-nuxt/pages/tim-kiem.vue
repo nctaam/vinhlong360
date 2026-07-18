@@ -424,7 +424,6 @@ useSeoMeta({
 })
 useHead({
   link: [{ rel: 'canonical', href: canonicalUrl('/tim-kiem') }],
-  meta: [{ name: 'robots', content: 'noindex,follow' }],
   script: [{
     type: 'application/ld+json',
     innerHTML: JSON.stringify({
