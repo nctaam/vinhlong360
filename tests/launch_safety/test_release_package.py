@@ -1,12 +1,17 @@
+import hashlib
+import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import tarfile
 
+import pytest
+
 from ai_disclosure import load_ai_disclosure
 from route_manifest import load_route_manifest
-from scripts.package_launch_release import build_backend_archive
+from scripts.ops.compose_network_audit import CHECK_NAMES
+from scripts.package_launch_release import build_backend_archive, build_launch_release
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -185,3 +190,212 @@ def test_unpacked_release_loaders_read_exact_packaged_bytes(tmp_path: Path):
     assert disclosure.artifact.path == release_root / "config" / disclosure_path.name
     assert route.artifact.raw == route_path.read_bytes()
     assert disclosure.artifact.raw == disclosure_path.read_bytes()
+
+
+def _write_launch_fixture(root: Path) -> Path:
+    """Create a small reviewed closed-release tree without building Nuxt."""
+    (root / "agent" / "data" / "sitemap-bundles").mkdir(parents=True)
+    (root / "agent" / "tests").mkdir(parents=True)
+    (root / "agent" / "server.py").write_bytes(b"agent\n")
+    (root / "agent" / "data" / "runtime.sqlite").write_bytes(b"persistent\n")
+    (root / "agent" / "tests" / "test_server.py").write_bytes(b"excluded\n")
+    (root / "agent" / ".env").write_bytes(b"SECRET=excluded\n")
+
+    (root / "config").mkdir(parents=True)
+    for name in ("launch-indexing-policy.json", "ai-disclosure.json"):
+        source = ROOT / "config" / name
+        (root / "config" / name).write_bytes(source.read_bytes())
+    (root / "requirements.txt").write_bytes(b"fastapi\n")
+    (root / "init.sql").write_bytes(b"-- schema\n")
+    (root / "nginx.conf").write_bytes(b"events {}\n")
+    (root / "nginx-ssl.conf").write_bytes(b"events {}\n")
+
+    (root / "web-nuxt" / ".output" / "server").mkdir(parents=True)
+    (root / "web-nuxt" / ".output" / "public").mkdir(parents=True)
+    (root / "web-nuxt" / ".output" / "server" / "index.mjs").write_bytes(b"output\n")
+    (root / "web-nuxt" / ".output" / "public" / "sw.js").write_bytes(b"worker\n")
+    (root / "web-nuxt" / "package.json").write_bytes(b'{"scripts":{"build":"nuxt build"}}\n')
+    (root / "web-nuxt" / "package-lock.json").write_bytes(b'{"lockfileVersion":3}\n')
+    route_raw = (root / "config" / "launch-indexing-policy.json").read_bytes()
+    disclosure_raw = (root / "config" / "ai-disclosure.json").read_bytes()
+    route_digest = hashlib.sha256(route_raw).hexdigest()
+    disclosure_digest = hashlib.sha256(disclosure_raw).hexdigest()
+    fingerprint_payload = {
+        "cache_isolation": "launch-cache-isolation-v1",
+        "disclosure_artifact": {
+            "revision": "ai-disclosure-v1",
+            "sha256": hashlib.sha256(disclosure_digest.encode("ascii")).hexdigest(),
+        },
+        "index_policy": "index-policy-v1",
+        "response_matrix": "launch-safety-matrix-v1",
+        "route_artifact": {
+            "revision": "launch-indexing-policy-v1",
+            "sha256": hashlib.sha256(route_digest.encode("ascii")).hexdigest(),
+        },
+        "sitemap_protocol": "pinned-sitemap-bundle-v1",
+    }
+    policy_fingerprint = hashlib.sha256(
+        json.dumps(fingerprint_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    readiness = {
+        "schema_version": 1,
+        "build_revision": "reviewed-source-revision",
+        "artifacts": {
+            "route_manifest": {
+                "revision": "launch-indexing-policy-v1",
+                "sha256": route_digest,
+            },
+            "ai_disclosure": {
+                "revision": "ai-disclosure-v1",
+                "sha256": disclosure_digest,
+            },
+            "policy_fingerprint": policy_fingerprint,
+        },
+        "policy_route_classes": ["public-html", "public-api", "root-seo", "internal-readiness"],
+        "compiled_cache_rules": [],
+        "public_prerender_files": [],
+        "service_worker": {
+            "version": "vl360-launch-v1",
+            "rule_digest": hashlib.sha256(b"worker\n").hexdigest(),
+            "cache_purge": {
+                "revision": "launch-cache-purge-v1",
+                "strategy": "delete-all-except",
+                "retained_cache_names": ["vl360-launch-v1-assets"],
+                "forbidden_cache_classes": [
+                    "navigation", "html", "root-seo", "internal", "api",
+                    "selective-open", "failed-open",
+                ],
+                "activation_verified": True,
+            },
+        },
+    }
+    (root / "web-nuxt" / ".output" / "server" / "launch-readiness-manifest.json").write_text(
+        json.dumps(readiness, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8"
+    )
+
+    (root / "ops" / "systemd").mkdir(parents=True)
+    (root / "ops" / "systemd" / "vl-agent.service").write_bytes(b"[Service]\n")
+    (root / "ops" / "nginx" / "maintenance").mkdir(parents=True)
+    (root / "ops" / "nginx" / "maintenance" / "server-enabled.conf").write_bytes(b"if (1) { return 503; }\n")
+    (root / "scripts" / "ops").mkdir(parents=True)
+    (root / "scripts" / "ops" / "deploy.sh").write_bytes(b"#!/bin/sh\n")
+
+    compose_names = (
+        "docker-compose.dev.yml",
+        "docker-compose.prod.yml",
+        "docker-compose.systemd-deps.yml",
+        "docker-compose.yml",
+    )
+    for name in compose_names:
+        (root / name).write_bytes((name + "\n").encode("ascii"))
+    audit = {
+        "schema_version": 1,
+        "revision": "compose-network-audit-v1",
+        "check_names": sorted(CHECK_NAMES),
+        "checks": {name: "passed" for name in sorted(CHECK_NAMES)},
+        "published_ports": [],
+        "source_digest_kind": "sha256-utf8-lf-v1",
+        "sources": [
+            {
+                "path": name,
+                "sha256": hashlib.sha256((name + "\n").encode("ascii")).hexdigest(),
+            }
+            for name in compose_names
+        ],
+    }
+    audit_path = root / "build" / "compose-network-audit.json"
+    audit_path.parent.mkdir()
+    audit_path.write_text(json.dumps(audit, sort_keys=True, separators=(",", ":")) + "\n", encoding="utf-8")
+    return audit_path
+
+
+def test_build_launch_release_has_closed_manifest_and_deterministic_sidecar(tmp_path: Path):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+
+    first = build_launch_release(
+        root,
+        tmp_path / "first.tar.gz",
+        compose_network_audit=audit,
+        source_revision="reviewed-source-revision",
+    )
+    second = build_launch_release(
+        root,
+        tmp_path / "second.tar.gz",
+        compose_network_audit=audit,
+        source_revision="reviewed-source-revision",
+    )
+
+    assert first.archive.read_bytes() == second.archive.read_bytes()
+    assert first.digest_file.read_text(encoding="ascii") == (
+        f"{hashlib.sha256(first.archive.read_bytes()).hexdigest()}  first.tar.gz\n"
+    )
+    with tarfile.open(first.archive, "r:gz") as bundle:
+        names = bundle.getnames()
+        manifest = json.loads(bundle.extractfile("launch-release-manifest.json").read())
+    assert "agent/data" not in names
+    assert not any(name.startswith("agent/data/") for name in names)
+    assert "agent/tests/test_server.py" not in names
+    assert "docker-compose.dev.yml" not in names
+    assert manifest["package_kind"] == "vl360-launch-release"
+    assert manifest["launch_posture"] == "closed"
+    assert manifest["developer_override"] == {"path": "docker-compose.dev.yml", "included": False}
+    assert manifest["persistent_paths"] == ["agent/data", "agent/data/sitemap-bundles"]
+    assert set(manifest) == {
+        "schema_version", "package_kind", "source_revision", "launch_posture",
+        "canonical_artifacts", "readiness_manifest", "network_audit",
+        "developer_override", "persistent_paths", "members",
+    }
+
+
+def test_build_launch_release_refuses_invalid_audit_without_outputs(tmp_path: Path):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    audit.write_text("{}\n", encoding="utf-8")
+    destination = tmp_path / "release.tar.gz"
+    with pytest.raises(ValueError):
+        build_launch_release(root, destination, compose_network_audit=audit, source_revision="r")
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".sha256").exists()
+
+
+def test_build_launch_release_normalizes_modes_and_excludes_pnpm_and_caches(tmp_path: Path):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    (root / "web-nuxt" / "pnpm-lock.yaml").write_bytes(b"excluded\n")
+    (root / "web-nuxt" / ".output" / ".cache").mkdir()
+    (root / "web-nuxt" / ".output" / ".cache" / "secret").write_bytes(b"excluded\n")
+    result = build_launch_release(
+        root,
+        tmp_path / "release.tar.gz",
+        compose_network_audit=audit,
+        source_revision="reviewed-source-revision",
+    )
+    with tarfile.open(result.archive, "r:gz") as bundle:
+        members = {item.name: item for item in bundle.getmembers()}
+    assert "web-nuxt/pnpm-lock.yaml" not in members
+    assert not any(name.startswith("web-nuxt/.output/.cache") for name in members)
+    assert members["scripts/ops/deploy.sh"].mode == 0o755
+    assert members["agent/server.py"].mode == 0o644
+    assert members["agent"].mode == 0o755
+    assert members["agent/server.py"].uid == 0
+    assert members["agent/server.py"].gid == 0
+    assert members["agent/server.py"].mtime == 0
+
+
+def test_build_launch_release_never_overwrites_existing_outputs(tmp_path: Path):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    destination = tmp_path / "release.tar.gz"
+    sidecar = destination.with_name(destination.name + ".sha256")
+    destination.write_bytes(b"keep archive")
+    sidecar.write_text("keep digest\n", encoding="ascii")
+    with pytest.raises(FileExistsError):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+    assert destination.read_bytes() == b"keep archive"
+    assert sidecar.read_text(encoding="ascii") == "keep digest\n"
