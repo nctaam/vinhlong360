@@ -1,0 +1,6 @@
+[Unit]
+Description=vinhlong360 watchdog (health + search + nuxt)
+
+[Service]
+Type=oneshot
+ExecStart=/opt/vinhlong360/scripts/ops/watchdog.sh

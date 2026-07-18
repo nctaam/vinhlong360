@@ -46,6 +46,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+BIND_HOST = os.environ.get("BIND_HOST", "127.0.0.1")
 
 
 def _env_bool(name: str, default: bool) -> bool:
@@ -4369,4 +4370,4 @@ if __name__ == "__main__":
         print("  Admin Key:   (NOT SET — admin endpoints disabled)")
     print("  URL:         http://localhost:8360")
     print("=" * 64)
-    uvicorn.run(app, host="0.0.0.0", port=8360)
+    uvicorn.run(app, host=BIND_HOST, port=8360)

@@ -1,0 +1,18 @@
+[Unit]
+Description=VinhLong360 Frontend (Nuxt SSR)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/vinhlong360/web-nuxt
+ExecStart=/usr/bin/node .output/server/index.mjs
+Environment=NUXT_API_BASE=http://127.0.0.1:8360
+Environment=HOST=127.0.0.1
+Environment=NITRO_HOST=127.0.0.1
+Environment=PORT=3000
+Environment=NITRO_PORT=3000
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

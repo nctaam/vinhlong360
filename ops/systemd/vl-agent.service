@@ -1,0 +1,16 @@
+[Unit]
+Description=VinhLong360 Backend (FastAPI)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/vinhlong360
+EnvironmentFile=/opt/vinhlong360/.env
+Environment=BIND_HOST=127.0.0.1
+ExecStart=/opt/vinhlong360/venv/bin/python agent/server.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -47,6 +47,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+BIND_HOST = os.environ.get("BIND_HOST", "127.0.0.1")
 
 # ── Structured logging ──
 
@@ -1039,4 +1040,4 @@ if __name__ == "__main__":
         print("  [Telegram] Polling started in background thread")
 
     # Start FastAPI server (Zalo webhook + stats)
-    uvicorn.run(app, host="0.0.0.0", port=8361)
+    uvicorn.run(app, host=BIND_HOST, port=8361)
