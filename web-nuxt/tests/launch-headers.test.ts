@@ -624,6 +624,91 @@ describe('final response lifecycle', () => {
     expect(lowerHeaders(event)['x-robots-tag']).toBe('noindex, follow')
   })
 
+  it('repoints only the exact launch state when the payload graph aliases its decision', () => {
+    const payload = stringifyDevalue({
+      state: {
+        [`$s${LAUNCH_SAFETY_STATE_KEY}`]: selectiveOpenPageDecision,
+        unrelated: selectiveOpenPageDecision,
+      },
+    })
+    const response = {
+      body: `<html><head><meta name="robots" content="index, follow"></head><body><script id="__NUXT_DATA__" type="application/json">${payload}</script></body></html>`,
+    }
+    const event = responseEvent({
+      status: 404,
+      headers: { 'content-type': 'text/html' },
+      context: { launchSafety: selectiveOpenPageDecision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    const serialized = response.body.match(/<script[^>]+id=["']__NUXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/iu)?.[1]
+    const hydrated = parseDevalue(serialized!) as { state: Record<string, LaunchPageDecision> }
+    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`]!.robots).toBe('noindex, follow')
+    expect(hydrated.state.unrelated!.robots).toBe('index, follow')
+    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`]).not.toBe(hydrated.state.unrelated)
+  })
+
+  it('replaces a malformed exact launch state with the complete final decision', () => {
+    const payload = stringifyDevalue({
+      state: {
+        [`$s${LAUNCH_SAFETY_STATE_KEY}`]: { robots: 'index, follow' },
+        unrelated: { robots: 'index, follow' },
+      },
+    })
+    const response = {
+      body: `<html><head><meta name="robots" content="index, follow"></head><body><script id="__NUXT_DATA__" type="application/json">${payload}</script></body></html>`,
+    }
+    const event = responseEvent({
+      status: 404,
+      headers: { 'content-type': 'text/html' },
+      context: { launchSafety: selectiveOpenPageDecision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    const serialized = response.body.match(/<script[^>]+id=["']__NUXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/iu)?.[1]
+    const hydrated = parseDevalue(serialized!) as { state: Record<string, LaunchPageDecision> }
+    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`]).toMatchObject({
+      robots: 'noindex, follow',
+      policy_fingerprint: fingerprint,
+      sitemapDiscovery: true,
+    })
+    expect(hydrated.state.unrelated).toEqual({ robots: 'index, follow' })
+  })
+
+  it.each([
+    ['failed-open', failedOpenPageDecision, 500, false],
+    ['late selective-open', selectiveOpenPageDecision, 404, true],
+  ] as const)('synchronizes launch sitemap discovery links for %s decisions', (_label, decision, status, discovery) => {
+    const payload = stringifyDevalue({
+      state: {
+        [`$s${LAUNCH_SAFETY_STATE_KEY}`]: decision,
+      },
+    })
+    const response = {
+      body: `<html><head><link HREF="/sitemap-index.xml" REL="SITEMAP" TYPE="application/xml"><link rel="sitemap" type="application/xml" href="/sitemap-index.xml"><link rel="alternate" href="/feed.xml"></head><body><script id="__NUXT_DATA__" type="application/json">${payload}</script></body></html>`,
+    }
+    const event = responseEvent({
+      status,
+      headers: { 'content-type': 'text/html' },
+      context: { launchSafety: decision },
+    })
+
+    finalizeLaunchResponse(event as never, response as never)
+
+    expect(response.body).toContain('<link rel="alternate" href="/feed.xml">')
+    const launchLinks = (response.body.match(/<link\b[^>]*>/giu) ?? [])
+      .filter(tag => /\brel\s*=\s*["']sitemap["']/iu.test(tag))
+      .filter(tag => /\bhref\s*=\s*["']\/sitemap-index\.xml["']/iu.test(tag))
+    expect(launchLinks).toHaveLength(discovery ? 1 : 0)
+    if (discovery) {
+      expect(response.body).toContain('<link rel="sitemap" type="application/xml" href="/sitemap-index.xml">')
+    } else {
+      expect(response.body).not.toContain('/sitemap-index.xml')
+    }
+  })
+
   it('preserves unrelated head metadata while normalizing robots', () => {
     const payload = stringifyDevalue({
       state: {

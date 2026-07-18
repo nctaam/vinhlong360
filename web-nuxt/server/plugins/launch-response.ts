@@ -113,6 +113,38 @@ function robotsMetaRanges(head: string): Array<[number, number]> {
   return ranges
 }
 
+function launchSitemapLinkRanges(head: string): Array<[number, number]> {
+  const ranges: Array<[number, number]> = []
+  let cursor = 0
+  while (cursor < head.length) {
+    const open = head.indexOf('<', cursor)
+    if (open < 0) break
+    if (head.startsWith('<!--', open)) {
+      const commentEnd = head.indexOf('-->', open + 4)
+      cursor = commentEnd < 0 ? head.length : commentEnd + 3
+      continue
+    }
+    const end = findTagEnd(head, open + 1)
+    if (end < 0) break
+    const tag = head.slice(open, end + 1)
+    const name = /^<\s*([a-z0-9:-]+)/iu.exec(tag)?.[1]?.toLowerCase()
+    if (name === 'script' || name === 'style' || name === 'noscript' || name === 'template') {
+      const close = new RegExp(`<\\/${name}\\s*>`, 'iu').exec(head.slice(end + 1))
+      cursor = close ? end + 1 + close.index + close[0].length : head.length
+      continue
+    }
+    if (name === 'link') {
+      const attributes = tagAttributes(tag)
+      const rel = (attributes.rel ?? '').toLowerCase().split(/\s+/u)
+      if (rel.includes('sitemap') && attributes.href === '/sitemap-index.xml') {
+        ranges.push([open, end + 1])
+      }
+    }
+    cursor = end + 1
+  }
+  return ranges
+}
+
 function headCloseIndex(body: string, start: number): number {
   let cursor = start
   while (cursor < body.length) {
@@ -160,6 +192,30 @@ function replaceRobotsMeta(body: string, robots: LaunchPageDecision['robots']): 
     cursor = end
   })
   output += head.slice(cursor)
+  return `${body.slice(0, headStart)}${output}${body.slice(headEnd)}`
+}
+
+function replaceLaunchSitemapLinks(body: string, discovery: boolean): string {
+  const headOpen = /<head(?:\s[^>]*)?>/iu.exec(body)
+  if (!headOpen) return body
+
+  const headStart = headOpen.index + headOpen[0].length
+  const headEnd = headCloseIndex(body, headStart)
+  if (headEnd < headStart) return body
+  const head = body.slice(headStart, headEnd)
+  const ranges = launchSitemapLinkRanges(head)
+  const replacement = '<link rel="sitemap" type="application/xml" href="/sitemap-index.xml">'
+
+  let output = ''
+  let cursor = 0
+  ranges.forEach(([start, end], index) => {
+    output += head.slice(cursor, start)
+    if (discovery && index === 0) output += replacement
+    cursor = end
+  })
+  output += head.slice(cursor)
+  if (discovery && ranges.length === 0) output += replacement
+
   return `${body.slice(0, headStart)}${output}${body.slice(headEnd)}`
 }
 
@@ -237,16 +293,20 @@ function replaceLaunchPayload(body: string, decision: Readonly<LaunchPageDecisio
 
   const root = payloadObject(values, 0)
   const state = root ? payloadObject(values, root.state) : null
-  const page = state ? payloadObject(values, state[LAUNCH_STATE_PAYLOAD_KEY]) : null
-  if (!page || LAUNCH_PAGE_FIELDS.some(field => !Object.hasOwn(page, field))) return body
+  if (!state || !Object.hasOwn(state, LAUNCH_STATE_PAYLOAD_KEY)) return body
 
+  const page: Record<string, unknown> = {}
   for (const field of LAUNCH_PAGE_FIELDS) page[field] = payloadReference(values, decision[field])
+  state[LAUNCH_STATE_PAYLOAD_KEY] = values.push(page) - 1
   const serialized = JSON.stringify(values).replaceAll('/', '\\u002F')
   return `${body.slice(0, range.start)}${serialized}${body.slice(range.end)}`
 }
 
 function synchronizeLaunchHtmlBody(body: string, decision: Readonly<LaunchPageDecision>): string {
-  return replaceRobotsMeta(replaceLaunchPayload(body, decision), decision.robots)
+  return replaceLaunchSitemapLinks(
+    replaceRobotsMeta(replaceLaunchPayload(body, decision), decision.robots),
+    decision.sitemapDiscovery,
+  )
 }
 
 function responseContentType(event: H3Event): string {
