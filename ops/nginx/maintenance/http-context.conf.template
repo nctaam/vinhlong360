@@ -1,0 +1,6 @@
+geo $launch_maintenance_operator {
+    default 0;
+    127.0.0.1/32 1;
+    ::1/128 1;
+    __OPERATOR_CIDR__ 1;
+}
