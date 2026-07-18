@@ -34,6 +34,15 @@ function auditLaunchOutput(input: LaunchOutputAuditInput): void {
   }
 }
 
+const cleanOutputFixture: LaunchOutputAuditInput = {
+  publicFiles: ['public/_nuxt/app.abc123.js', 'public/favicon.svg'],
+  routeRules: {
+    '/api/**': { proxy: 'http://backend/api/**' },
+    '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+    '/**': { headers: { 'X-Content-Type-Options': 'nosniff' } },
+  },
+}
+
 describe('launch cache isolation', () => {
   it('contains no policy-bearing SWR or prerender routes', () => {
     const config = readFileSync(configPath, 'utf8')
@@ -56,26 +65,26 @@ describe('launch cache isolation', () => {
     expect(nitroRules).not.toContain("'/api/")
   })
 
-  it('rejects public HTML and policy-bearing cache rules in built-output audit input', () => {
-    const cleanFixture: LaunchOutputAuditInput = {
-      publicFiles: ['public/_nuxt/app.abc123.js', 'public/favicon.svg'],
-      routeRules: {
-        '/api/**': { proxy: 'http://backend/api/**' },
-        '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
-        '/**': { headers: { 'X-Content-Type-Options': 'nosniff' } },
-      },
-    }
-    expect(() => auditLaunchOutput(cleanFixture)).not.toThrow()
+  it('accepts policy-neutral built-output audit input', () => {
+    expect(() => auditLaunchOutput(cleanOutputFixture)).not.toThrow()
+  })
 
+  it.each([
+    'public/index.html',
+    'public/index.html.br',
+    'public/index.html.gz',
+  ])('rejects built public HTML artifact %s', (publicHtml) => {
     expect(() => auditLaunchOutput({
-      ...cleanFixture,
-      publicFiles: [...cleanFixture.publicFiles, 'public/dia-diem/index.html'],
+      ...cleanOutputFixture,
+      publicFiles: [...cleanOutputFixture.publicFiles, publicHtml],
     })).toThrow(/public HTML/)
+  })
 
+  it('rejects policy-bearing cache rules in built-output audit input', () => {
     expect(() => auditLaunchOutput({
-      ...cleanFixture,
+      ...cleanOutputFixture,
       routeRules: {
-        ...cleanFixture.routeRules,
+        ...cleanOutputFixture.routeRules,
         '/dia-diem/**': { swr: 3600 },
       },
     })).toThrow(/cache rule/)
