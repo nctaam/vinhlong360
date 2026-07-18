@@ -590,7 +590,7 @@ describe('final response lifecycle', () => {
     ])
     const serialized = response.body.match(/<script[^>]+id=["']__NUXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/iu)?.[1]
     const hydrated = parseDevalue(serialized!) as { state: Record<string, LaunchPageDecision> }
-    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`].robots).toBe(robots)
+    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`]!.robots).toBe(robots)
     expect(lowerHeaders(event)['x-robots-tag']).toBe(robots)
   })
 
@@ -727,7 +727,7 @@ describe('final response lifecycle', () => {
     expect(response.body).toContain(decoy)
     const scripts = [...response.body.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/giu)]
     const hydrated = parseDevalue(scripts[1]![1]!) as { state: Record<string, LaunchPageDecision> }
-    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`].robots).toBe('noindex, follow')
+    expect(hydrated.state[`$s${LAUNCH_SAFETY_STATE_KEY}`]!.robots).toBe('noindex, follow')
   })
 
   it.each([

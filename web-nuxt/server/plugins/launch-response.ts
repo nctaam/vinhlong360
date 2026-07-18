@@ -164,14 +164,16 @@ function replaceRobotsMeta(body: string, robots: LaunchPageDecision['robots']): 
 }
 
 function payloadObject(values: unknown[], reference: unknown): Record<string, unknown> | null {
-  if (!Number.isInteger(reference) || reference < 0 || reference >= values.length) return null
-  let value = values[reference]
+  if (typeof reference !== 'number' || !Number.isInteger(reference)) return null
+  let index = reference
+  if (index < 0 || index >= values.length) return null
+  let value = values[index]
   const seen = new Set<number>()
   while (Array.isArray(value) && typeof value[0] === 'string' && Number.isInteger(value[1])) {
-    if (seen.has(reference as number)) return null
-    seen.add(reference as number)
-    reference = value[1]
-    value = values[reference]
+    if (seen.has(index)) return null
+    seen.add(index)
+    index = value[1] as number
+    value = values[index]
   }
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
