@@ -8,6 +8,23 @@ export const LAUNCH_SAFETY_STATE_KEY = 'launch-safety-page-decision'
 export const LAUNCH_SAFETY_BASE_STATE_KEY = 'launch-safety-base-decision'
 export const LAUNCH_SAFETY_ROUTE_STATE_KEY = 'launch-safety-request-target'
 
+export function createLaunchGenerationGuard(onBegin: () => void) {
+  let activeGeneration = 0
+  return Object.freeze({
+    begin(): number {
+      activeGeneration += 1
+      onBegin()
+      return activeGeneration
+    },
+    current(): number {
+      return activeGeneration
+    },
+    isCurrent(generation: unknown): generation is number {
+      return Number.isSafeInteger(generation) && generation === activeGeneration
+    },
+  })
+}
+
 function freezeDecision(decision: LaunchPageDecision): LaunchPageDecision {
   return Object.isFrozen(decision) ? decision : Object.freeze({ ...decision })
 }

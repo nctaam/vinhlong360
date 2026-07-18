@@ -479,6 +479,7 @@ import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables
 import { entityStoryTeaser } from '~/composables/useEntityStory'
 
 interface LaunchEntityCarrier extends Entity {
+  readonly __launchGeneration: number
   readonly __launchRequestId: string
 }
 
@@ -492,12 +493,16 @@ const router = useRouter()
 const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
 const launchSafety = useLaunchSafety()
+const entityLaunchGeneration = createLaunchGenerationGuard(() => launchSafety.resetForNavigation())
+entityLaunchGeneration.begin()
 
 // Client-side route reuse must not carry a previous entity's launch evidence
-// into the next request before its own carrier has been checked.
-watch(id, (next, previous) => {
-  if (previous !== undefined && next !== previous) launchSafety.resetForNavigation()
-})
+// into the next request before its own carrier has been checked. Watch the raw
+// target as well as the id so query, slash, and encoding aliases cannot reuse
+// a positive decision (including an A -> B -> A route sequence).
+watch(() => route.fullPath, (next, previous) => {
+  if (previous !== undefined && next !== previous) entityLaunchGeneration.begin()
+}, { flush: 'sync' })
 
 // ── Đã-đi/Muốn-đi + theo-dõi địa-điểm (Tier-1 MXH) ──
 const { isLoggedIn, authHeaders } = useAuth()
@@ -598,19 +603,32 @@ const RELATIONSHIP_BATCH_SIZE = 24
 
 const goBack = () => goBackOr('/du-lich')
 
-const { data: entity, error: fetchError, status: entityStatus, refresh: refreshEntity } = await useAsyncData(
+const { data: entity, error: fetchError, status: entityStatus, refresh: refreshEntityData } = await useAsyncData(
   computed(() => `entity-${id.value}`),
   async () => {
+    const generation = entityLaunchGeneration.current()
     const requestId = id.value
     const carrier = await apiFetch<Entity>(`/api/entities/${encodedId.value}`)
-    return { ...carrier, __launchRequestId: requestId } satisfies LaunchEntityCarrier
+    return { ...carrier, __launchGeneration: generation, __launchRequestId: requestId } satisfies LaunchEntityCarrier
   },
-  { watch: [id], deep: false }
+  { watch: [id, () => route.fullPath], deep: false }
 )
+
+async function refreshEntity() {
+  entityLaunchGeneration.begin()
+  await refreshEntityData()
+}
 
 async function refineCurrentEntityLaunchDecision() {
   if (entityStatus.value === 'idle' || entityStatus.value === 'pending') return
-  if (entity.value && entity.value.__launchRequestId !== id.value) return
+  if (entity.value && !entityLaunchGeneration.isCurrent(entity.value.__launchGeneration)) {
+    launchSafety.resetForNavigation()
+    return
+  }
+  if (entity.value && entity.value.__launchRequestId !== id.value) {
+    launchSafety.resetForNavigation()
+    return
+  }
   if (entity.value && entity.value.id !== id.value) {
     await launchSafety.refineEntityPolicy({ carrier: null, expectedKind: 'entity', canonicalPath: '' })
     return

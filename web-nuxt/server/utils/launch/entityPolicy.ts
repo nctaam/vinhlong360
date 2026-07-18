@@ -68,8 +68,24 @@ export function initialRequestPageDecision(
   return pageDecisionFromBase(base, routeIsKnownCanonical)
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
+function isPlainDataRecord(value: unknown): value is Record<string, unknown> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
+  if (Object.getPrototypeOf(value) !== Object.prototype) return false
+
+  for (const key of Reflect.ownKeys(value)) {
+    if (typeof key !== 'string') return false
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    if (!descriptor || !descriptor.enumerable || !('value' in descriptor)) return false
+  }
+  return true
+}
+
+function ownEnumerableDataProperty(
+  value: object,
+  key: PropertyKey,
+): PropertyDescriptor | null {
+  const descriptor = Object.getOwnPropertyDescriptor(value, key)
+  return descriptor && descriptor.enumerable && 'value' in descriptor ? descriptor : null
 }
 
 /**
@@ -83,18 +99,31 @@ export function parseMatchingEntityPolicy(
   expectedKind: EntityPolicyKind,
 ): Readonly<IndexPolicyDecision> | null {
   try {
-    if (!isRecord(carrier)) return null
-    const policy = carrier.index_policy
-    if (!isRecord(policy)) return null
+    if (!isPlainDataRecord(carrier)) return null
+    // Do not fall through to Object.prototype (or another inherited carrier
+    // field) when a polluted request object omits its policy payload.
+    const carrierPolicy = ownEnumerableDataProperty(carrier, 'index_policy')
+    if (!carrierPolicy) return null
+    const policy = carrierPolicy.value
+    if (!isPlainDataRecord(policy)) return null
 
-    const keys = Object.keys(policy)
-    if (keys.length !== INDEX_POLICY_KEYS.length || keys.some((key) => !INDEX_POLICY_KEY_SET.has(key))) {
+    const keys = Reflect.ownKeys(policy)
+    if (
+      keys.length !== INDEX_POLICY_KEYS.length
+      || keys.some((key) => typeof key !== 'string' || !INDEX_POLICY_KEY_SET.has(key))
+    ) {
       return null
     }
 
     if (policy.kind !== expectedKind || typeof policy.indexable !== 'boolean') return null
-    if (!Array.isArray(policy.reasons)) return null
-    if (policy.reasons.some((reason) => typeof reason !== 'string' || reason.trim().length === 0)) return null
+    const reasons = policy.reasons
+    if (!Array.isArray(reasons)) return null
+    const detachedReasons: string[] = []
+    for (let index = 0; index < reasons.length; index += 1) {
+      const descriptor = ownEnumerableDataProperty(reasons, String(index))
+      if (!descriptor || typeof descriptor.value !== 'string' || descriptor.value.trim().length === 0) return null
+      detachedReasons.push(descriptor.value)
+    }
 
     if (
       typeof policy.policy_fingerprint !== 'string'
@@ -114,7 +143,7 @@ export function parseMatchingEntityPolicy(
 
     // Backend semantics are intentionally checked here as well as in Python:
     // an indexable page has no exclusion reasons; a noindex page has at least one.
-    if ((policy.indexable && policy.reasons.length !== 0) || (!policy.indexable && policy.reasons.length === 0)) {
+    if ((policy.indexable && detachedReasons.length !== 0) || (!policy.indexable && detachedReasons.length === 0)) {
       return null
     }
 
@@ -123,7 +152,7 @@ export function parseMatchingEntityPolicy(
       kind: expectedKind,
       policy_fingerprint: policy.policy_fingerprint,
       policy_revision: policy.policy_revision,
-      reasons: Object.freeze([...policy.reasons]),
+      reasons: Object.freeze(detachedReasons),
     }
     return Object.freeze(parsed)
   } catch {

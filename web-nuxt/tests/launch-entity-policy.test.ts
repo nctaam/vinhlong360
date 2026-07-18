@@ -16,6 +16,7 @@ import {
   LAUNCH_SAFETY_BASE_STATE_KEY,
   LAUNCH_SAFETY_ROUTE_STATE_KEY,
   LAUNCH_SAFETY_STATE_KEY,
+  createLaunchGenerationGuard,
   useLaunchSafety,
 } from '../composables/useLaunchSafety'
 
@@ -162,7 +163,47 @@ describe('entity launch policy refinement', () => {
 
   it.each([
     ['missing policy', {}],
+    ['carrier symbol key', (() => {
+      const carrier = matchingEntityPolicy(false, 'entity') as Record<PropertyKey, unknown>
+      carrier[Symbol('extra')] = true
+      return carrier
+    })()],
+    ['carrier non-enumerable key', (() => {
+      const carrier = matchingEntityPolicy(false, 'entity')
+      Object.defineProperty(carrier, 'hidden', { value: true, enumerable: false })
+      return carrier
+    })()],
+    ['carrier accessor', (() => {
+      const policy = matchingEntityPolicy(false, 'entity').index_policy
+      const carrier = {}
+      Object.defineProperty(carrier, 'index_policy', { get: () => policy, enumerable: true })
+      return carrier
+    })()],
+    ['inherited policy', Object.create({ index_policy: matchingEntityPolicy(false, 'entity').index_policy })],
+    ['carrier null prototype', Object.assign(Object.create(null), matchingEntityPolicy(false, 'entity'))],
     ['extra policy key', matchingEntityPolicy(false, 'entity', { extra: true })],
+    ['policy symbol key', (() => {
+      const carrier = matchingEntityPolicy(false, 'entity')
+      const policy = carrier.index_policy as Record<PropertyKey, unknown>
+      policy[Symbol('extra')] = true
+      return carrier
+    })()],
+    ['policy non-enumerable key', (() => {
+      const carrier = matchingEntityPolicy(false, 'entity')
+      Object.defineProperty(carrier.index_policy, 'hidden', { value: true, enumerable: false })
+      return carrier
+    })()],
+    ['policy accessor', (() => {
+      const source = matchingEntityPolicy(false, 'entity').index_policy
+      const { kind: _kind, ...rest } = source
+      const policy = { ...rest }
+      Object.defineProperty(policy, 'kind', { get: () => 'entity', enumerable: true })
+      return { index_policy: policy }
+    })()],
+    ['policy custom prototype', (() => {
+      const policy = Object.assign(Object.create({ inherited: true }), matchingEntityPolicy(false, 'entity').index_policy)
+      return { index_policy: policy }
+    })()],
     ['missing policy key', (() => {
       const policy = { ...matchingEntityPolicy(false, 'entity').index_policy }
       delete (policy as Partial<typeof policy>).kind
@@ -172,6 +213,7 @@ describe('entity launch policy refinement', () => {
     ['non-boolean indexable', matchingEntityPolicy(false, 'entity', { indexable: 'false' })],
     ['non-array reasons', matchingEntityPolicy(false, 'entity', { reasons: 'thin' })],
     ['non-string reason', matchingEntityPolicy(false, 'entity', { reasons: ['thin', 1] })],
+    ['sparse reasons', matchingEntityPolicy(false, 'entity', { reasons: new Array(1) })],
     ['empty reason', matchingEntityPolicy(false, 'entity', { reasons: [''] })],
     ['invalid fingerprint shape', matchingEntityPolicy(false, 'entity', { policy_fingerprint: 'not-a-digest' })],
     ['uppercase fingerprint', matchingEntityPolicy(false, 'entity', { policy_fingerprint: 'B'.repeat(64) })],
@@ -200,6 +242,31 @@ describe('entity launch policy refinement', () => {
       sitemapDiscovery: false,
     })
     expect(Object.isFrozen(decision)).toBe(true)
+  })
+
+  it('rejects a policy inherited from a polluted Object.prototype', () => {
+    const previous = Object.getOwnPropertyDescriptor(Object.prototype, 'index_policy')
+    Object.defineProperty(Object.prototype, 'index_policy', {
+      configurable: true,
+      enumerable: false,
+      value: matchingEntityPolicy(false, 'entity').index_policy,
+    })
+
+    try {
+      expect(refineEntityLaunchDecision({
+        base: selectiveOpen,
+        carrier: {},
+        expectedKind: 'entity',
+        canonicalPath: true,
+      })).toMatchObject({
+        operational_state: 'failed-open',
+        reason: 'entity-policy-mismatch',
+        sitemapDiscovery: false,
+      })
+    } finally {
+      if (previous) Object.defineProperty(Object.prototype, 'index_policy', previous)
+      else delete (Object.prototype as { index_policy?: unknown }).index_policy
+    }
   })
 
   it.each([undefined, null])('classifies an unavailable carrier separately: %s', (carrier) => {
@@ -265,6 +332,23 @@ describe('entity launch policy refinement', () => {
 })
 
 describe('request-local launch state bridge', () => {
+  it('uses a monotonic generation instead of route identity for stale-response rejection', () => {
+    const resets: number[] = []
+    const guard = createLaunchGenerationGuard(() => { resets.push(1) })
+
+    const generationA = guard.begin()
+    const generationB = guard.begin()
+    const generationAAgain = guard.begin()
+
+    expect(generationB).toBeGreaterThan(generationA)
+    expect(generationAAgain).toBeGreaterThan(generationB)
+    expect(guard.current()).toBe(generationAAgain)
+    expect(guard.isCurrent(generationA)).toBe(false)
+    expect(guard.isCurrent(generationB)).toBe(false)
+    expect(guard.isCurrent(generationAAgain)).toBe(true)
+    expect(resets).toHaveLength(3)
+  })
+
   function seedRequest(path: string, initial: LaunchSafetyDecision | ReturnType<typeof pageDecisionFromBase>) {
     const event = { context: {} as Record<string, unknown>, node: { req: { url: path } } }
     const page = 'robots' in initial ? initial : pageDecisionFromBase(initial)

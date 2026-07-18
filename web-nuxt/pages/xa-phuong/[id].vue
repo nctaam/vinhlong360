@@ -166,10 +166,12 @@ interface WardOverviewResponse {
   products?: Entity[]
   facilities?: Entity[]
   counts?: WardOverviewCounts
+  readonly __launchGeneration?: number
   readonly __launchRequestId?: string
 }
 
 interface WardPolicyCarrierResult {
+  readonly generation: number
   readonly requestId: string
   readonly carrier: Record<string, unknown> | null
 }
@@ -179,12 +181,15 @@ const router = useRouter()
 const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
 const launchSafety = useLaunchSafety()
+const wardLaunchGeneration = createLaunchGenerationGuard(() => launchSafety.resetForNavigation())
+wardLaunchGeneration.begin()
 
 // A reused client page must not retain the previous ward's decision while the
-// next overview and policy carrier are loading.
-watch(id, (next, previous) => {
-  if (previous !== undefined && next !== previous) launchSafety.resetForNavigation()
-})
+// next overview and policy carrier are loading. The raw target also catches
+// query, slash, and encoding aliases that keep the same normalized id.
+watch(() => route.fullPath, (next, previous) => {
+  if (previous !== undefined && next !== previous) wardLaunchGeneration.begin()
+}, { flush: 'sync' })
 
 const goBack = () => goBackOr('/danh-ba')
 
@@ -193,18 +198,19 @@ const {
   data,
   error: wardOverviewError,
   status: wardOverviewStatus,
-  refresh: refreshWard,
+  refresh: refreshWardOverview,
 } = await useAsyncData(computed(() => `ward-${id.value}`), async () => {
+  const generation = wardLaunchGeneration.current()
   const requestId = id.value
   try {
     fetchFailed.value = false
     const overview = await apiFetch<WardOverviewResponse>(`/api/places/${encodedId.value}/overview`)
-    return { ...overview, __launchRequestId: requestId }
+    return { ...overview, __launchGeneration: generation, __launchRequestId: requestId }
   } catch {
     fetchFailed.value = true
     return null
   }
-}, { watch: [id], deep: false })
+}, { watch: [id, () => route.fullPath], deep: false })
 
 // The overview is presentation data only. The backend's exact `/entities/{id}`
 // response is the sole ward policy carrier, and is skipped while the base gate
@@ -213,18 +219,25 @@ const {
   data: wardPolicyCarrier,
   error: wardPolicyError,
   status: wardPolicyStatus,
+  refresh: refreshWardPolicy,
 } = await useAsyncData(
   computed(() => `ward-launch-policy-${id.value}`),
   async () => {
+    const generation = wardLaunchGeneration.current()
     const requestId = id.value
     if (!launchSafety.canRefineEntityPolicy.value) {
-      return { requestId, carrier: null } satisfies WardPolicyCarrierResult
+      return { generation, requestId, carrier: null } satisfies WardPolicyCarrierResult
     }
     const carrier = await apiFetch<Record<string, unknown>>(`/api/entities/${encodedId.value}`)
-    return { requestId, carrier } satisfies WardPolicyCarrierResult
+    return { generation, requestId, carrier } satisfies WardPolicyCarrierResult
   },
-  { watch: [id], deep: false },
+  { watch: [id, () => route.fullPath], deep: false },
 )
+
+async function refreshWard() {
+  wardLaunchGeneration.begin()
+  await Promise.all([refreshWardOverview(), refreshWardPolicy()])
+}
 
 async function refineCurrentWardLaunchDecision() {
   if (
@@ -234,13 +247,23 @@ async function refineCurrentWardLaunchDecision() {
     || wardPolicyStatus.value === 'pending'
   ) return
 
+  if (
+    (data.value && !wardLaunchGeneration.isCurrent(data.value.__launchGeneration))
+    || (wardPolicyCarrier.value && !wardLaunchGeneration.isCurrent(wardPolicyCarrier.value.generation))
+  ) {
+    launchSafety.resetForNavigation()
+    return
+  }
+
   await launchSafety.refineEntityPolicy({
     carrier: data.value?.place
+      && wardLaunchGeneration.isCurrent(data.value.__launchGeneration)
       && data.value.__launchRequestId === id.value
       && data.value.place.id === id.value
       && wardOverviewStatus.value === 'success'
       && !wardOverviewError.value
       && !fetchFailed.value
+      && wardLaunchGeneration.isCurrent(wardPolicyCarrier.value?.generation)
       && wardPolicyCarrier.value?.requestId === id.value
       && wardPolicyCarrier.value.carrier?.id === id.value
       && wardPolicyStatus.value === 'success'
