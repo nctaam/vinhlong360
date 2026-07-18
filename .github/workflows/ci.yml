@@ -225,6 +225,8 @@ jobs:
         run: npm ci
 
       - name: Build
+        env:
+          BUILD_REVISION: ${{ github.sha }}
         run: npm run build
 
       - name: Run tests

@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import {
   existsSync,
   readFileSync,
@@ -9,7 +9,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { dirname, relative, resolve, sep } from 'node:path'
+import { basename, dirname, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
 import {
@@ -132,11 +132,10 @@ export function auditCompiledRouteRules(routeRules) {
   const rules = plainRecord(routeRules, 'compiled route rules')
   for (const [path, rawRule] of Object.entries(rules)) {
     const rule = plainRecord(rawRule, `compiled route rule ${path}`)
-    if (Object.hasOwn(rule, 'swr') || Object.hasOwn(rule, 'isr') || Object.hasOwn(rule, 'prerender')) {
-      throw new Error(`compiled cache rule is unsafe: ${path}`)
-    }
-    if (Object.hasOwn(rule, 'cache') && !(path === '/__nuxt_error' && rule.cache === false)) {
-      throw new Error(`compiled cache rule is unsafe: ${path}`)
+    for (const key of ['swr', 'isr', 'prerender', 'cache']) {
+      if (Object.hasOwn(rule, key) && rule[key] !== false) {
+        throw new Error(`compiled cache rule is unsafe: ${path}`)
+      }
     }
 
     const cacheControl = cacheControlHeader(rule.headers)
@@ -418,6 +417,23 @@ export function resolveSourceRevision(options = {}) {
   return revision
 }
 
+export function writeLaunchReadinessManifest(outputManifestPath, manifest, options = {}) {
+  const fsOps = options.fsOps ?? { writeFileSync, renameSync, rmSync }
+  const temporaryPath = resolve(
+    dirname(outputManifestPath),
+    `.${basename(outputManifestPath)}.${process.pid}.${randomUUID()}.tmp`,
+  )
+  try {
+    fsOps.writeFileSync(temporaryPath, `${JSON.stringify(manifest, null, 2)}\n`, {
+      encoding: 'utf8',
+      flag: 'wx',
+    })
+    fsOps.renameSync(temporaryPath, outputManifestPath)
+  } finally {
+    fsOps.rmSync(temporaryPath, { force: true })
+  }
+}
+
 export async function generateLaunchReadinessManifest(options = {}) {
   const projectRoot = resolve(options.projectRoot ?? resolve(dirname(fileURLToPath(import.meta.url)), '..'))
   const repositoryRoot = resolve(projectRoot, '..')
@@ -488,10 +504,7 @@ export async function generateLaunchReadinessManifest(options = {}) {
     },
   }
 
-  const temporaryPath = `${outputManifestPath}.tmp`
-  rmSync(temporaryPath, { force: true })
-  writeFileSync(temporaryPath, `${JSON.stringify(manifest, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' })
-  renameSync(temporaryPath, outputManifestPath)
+  writeLaunchReadinessManifest(outputManifestPath, manifest)
   return manifest
 }
 

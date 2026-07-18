@@ -190,7 +190,7 @@ jobs:
             # Edit .env with your API keys
 
             # Run with Docker Compose
-            docker compose up -d
+            BUILD_REVISION="$(git rev-parse --verify HEAD)" docker compose up -d --build
             ```
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}

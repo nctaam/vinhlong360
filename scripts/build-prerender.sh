@@ -6,8 +6,11 @@
 
 set -euo pipefail
 
+cd "$(dirname "$0")/.."
+export BUILD_REVISION="$(git rev-parse --verify HEAD)"
+
 echo "=== Building Nuxt launch output ==="
-cd "$(dirname "$0")/../web-nuxt"
+cd web-nuxt
 npm run build
 
 echo "=== Done ==="

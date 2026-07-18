@@ -71,6 +71,31 @@ def test_nuxt_compose_build_uses_repository_root_context():
     assert "context: ./web-nuxt" not in nuxt_service
 
 
+def test_production_nuxt_build_entrypoints_supply_the_source_revision():
+    deploy = (ROOT / "scripts" / "deploy.sh").read_text(encoding="utf-8")
+    prerender = (ROOT / "scripts" / "build-prerender.sh").read_text(encoding="utf-8")
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    release = (ROOT / ".github" / "workflows" / "deploy.yml").read_text(
+        encoding="utf-8"
+    )
+
+    revision_export = 'export BUILD_REVISION="$(git rev-parse --verify HEAD)"'
+    assert revision_export in deploy
+    assert deploy.index(revision_export) < deploy.index(
+        'NODE_OPTIONS="--max-old-space-size=4096" npm run build'
+    )
+    assert revision_export in prerender
+    assert prerender.index(revision_export) < prerender.index("npm run build")
+    assert (
+        "env:\n          BUILD_REVISION: ${{ github.sha }}\n        run: npm run build"
+        in ci
+    )
+    assert (
+        'BUILD_REVISION="$(git rev-parse --verify HEAD)" docker compose up -d --build'
+        in release
+    )
+
+
 def test_nuxt_image_builds_from_web_project_and_root_config():
     dockerfile = (ROOT / "web-nuxt" / "Dockerfile").read_text(encoding="utf-8")
 

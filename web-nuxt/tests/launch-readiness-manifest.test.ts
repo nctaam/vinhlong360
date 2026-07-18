@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { buildPolicyFingerprint } from '../server/utils/launch/launchEvidence'
@@ -38,6 +38,17 @@ type GeneratorModule = {
   validateGeneratorRouteArtifact: (source: Buffer | string) => unknown
   validateGeneratorAiDisclosure: (source: Buffer | string) => unknown
   resolveSourceRevision: (options?: { env?: Record<string, string | undefined>; repositoryRoot?: string; gitCommand?: string }) => string
+  writeLaunchReadinessManifest: (
+    outputManifestPath: string,
+    manifest: unknown,
+    options?: {
+      fsOps?: {
+        writeFileSync: (path: string, data: string, options: Record<string, unknown>) => void
+        renameSync: (source: string, destination: string) => void
+        rmSync: (path: string, options: Record<string, unknown>) => void
+      }
+    },
+  ) => void
 }
 
 type RouteArtifactFixture = Record<string, unknown> & {
@@ -69,7 +80,7 @@ function withOutputFixture(sources: string[], check: (outputRoot: string) => voi
 
 const validManifest: LaunchReadinessManifest = {
   schema_version: 1,
-  build_revision: 'source-revision',
+  build_revision: 'a'.repeat(40),
   artifacts: {
     route_manifest: {
       revision: 'launch-indexing-policy-v1',
@@ -133,9 +144,21 @@ describe('launch readiness manifest', () => {
     const accessorCandidate = { ...validManifest }
     Object.defineProperty(accessorCandidate, 'build_revision', {
       enumerable: true,
-      get: () => 'source-revision',
+      get: () => 'a'.repeat(40),
     })
     expect(() => validateReadinessManifest(accessorCandidate)).toThrow(/root keys mismatch/i)
+  })
+
+  it.each([
+    'source-revision',
+    'A'.repeat(40),
+    'a'.repeat(39),
+    'a'.repeat(41),
+  ])('rejects non-canonical build revision %s', (buildRevision) => {
+    expect(() => validateReadinessManifest({
+      ...validManifest,
+      build_revision: buildRevision,
+    })).toThrow(/build revision.*lowercase 40-hex/i)
   })
 
   it('rejects a policy-bearing prerender artifact', () => {
@@ -208,18 +231,72 @@ describe('launch readiness manifest', () => {
     expect(generator.buildGeneratorPolicyFingerprint(input)).toBe(buildPolicyFingerprint(input))
   })
 
-  it('audits compiled cache rules and compressed public HTML fail closed', async () => {
+  it('accepts explicit false cache controls and rejects enabling values', async () => {
     const generator = await loadGenerator()
     expect(generator.auditCompiledRouteRules({
-      '/__nuxt_error': { cache: false },
+      '/dia-diem/**': { swr: false, isr: false, prerender: false, cache: false },
       '/_nuxt/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
       '/**': { headers: { 'X-Content-Type-Options': 'nosniff' } },
     })).toEqual([])
-    expect(() => generator.auditCompiledRouteRules({ '/dia-diem/**': { swr: 60 } }))
-      .toThrow(/compiled cache rule/i)
+
+    for (const key of ['swr', 'isr', 'prerender', 'cache']) {
+      for (const value of [true, 0, 60, {}]) {
+        expect(() => generator.auditCompiledRouteRules({ '/dia-diem/**': { [key]: value } }))
+          .toThrow(/compiled cache rule/i)
+      }
+    }
+  })
+
+  it('rejects compressed public HTML fail closed', async () => {
+    const generator = await loadGenerator()
     expect(() => generator.auditPublicPrerenderFiles(['public/index.html.gz']))
       .toThrow(/policy-bearing prerender/i)
   })
+
+  it('uses unique same-directory manifest temps and always cleans them up', async () => {
+    const generator = await loadGenerator()
+    const outputPath = resolve(tmpdir(), 'launch-readiness-manifest.json')
+    const writtenTemps: string[] = []
+    const removedTemps: string[] = []
+    const fsOps = {
+      writeFileSync: (path: string) => { writtenTemps.push(path) },
+      renameSync: () => undefined,
+      rmSync: (path: string) => { removedTemps.push(path) },
+    }
+
+    generator.writeLaunchReadinessManifest(outputPath, validManifest, { fsOps })
+    generator.writeLaunchReadinessManifest(outputPath, validManifest, { fsOps })
+
+    expect(writtenTemps).toHaveLength(2)
+    expect(new Set(writtenTemps).size).toBe(2)
+    expect(writtenTemps.every(path => dirname(path) === dirname(outputPath))).toBe(true)
+    expect(removedTemps).toEqual(writtenTemps)
+  })
+
+  it.each(['write', 'rename'] as const)(
+    'cleans the manifest temp after a %s failure',
+    async (failure) => {
+      const generator = await loadGenerator()
+      const outputPath = resolve(tmpdir(), `launch-readiness-${failure}.json`)
+      let temporaryPath = ''
+      const removedTemps: string[] = []
+      const fsOps = {
+        writeFileSync: (path: string) => {
+          temporaryPath = path
+          if (failure === 'write') throw new Error('injected write failure')
+        },
+        renameSync: () => {
+          if (failure === 'rename') throw new Error('injected rename failure')
+        },
+        rmSync: (path: string) => { removedTemps.push(path) },
+      }
+
+      expect(() => generator.writeLaunchReadinessManifest(outputPath, validManifest, { fsOps }))
+        .toThrow(new RegExp(`injected ${failure} failure`))
+      expect(temporaryPath).not.toBe('')
+      expect(removedTemps).toEqual([temporaryPath])
+    },
+  )
 
   it('requires exactly one compiled Nitro inline-config marker', async () => {
     const generator = await loadGenerator()

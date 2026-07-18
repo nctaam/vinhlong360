@@ -38,6 +38,7 @@ export const CACHE_PURGE_DECLARATION = Object.freeze({
 } as const)
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u
+const SOURCE_REVISION_PATTERN = /^[a-f0-9]{40}$/u
 const POLICY_PRERENDER_PATTERN = /\.html(?:\.(?:br|gz))?$/iu
 
 export type CachePurgeDeclaration = {
@@ -169,6 +170,13 @@ function sha256(value: unknown, label: string): string {
   return value
 }
 
+function sourceRevision(value: unknown): string {
+  if (typeof value !== 'string' || !SOURCE_REVISION_PATTERN.test(value)) {
+    throw new Error('readiness manifest build revision must be a lowercase 40-hex source revision')
+  }
+  return value
+}
+
 function exactStringArray(value: unknown, label: string): string[] {
   return denseArray(value, label).map((entry, index) => nonEmptyString(entry, `${label}[${index}]`))
 }
@@ -224,7 +232,7 @@ export function validateReadinessManifest(value: unknown): LaunchReadinessManife
     throw new Error('readiness manifest schema version mismatch')
   }
 
-  const buildRevision = nonEmptyString(root.build_revision, 'build revision')
+  const buildRevision = sourceRevision(root.build_revision)
   const artifacts = plainRecord(root.artifacts, 'artifacts')
   exactKeys(artifacts, ['route_manifest', 'ai_disclosure', 'policy_fingerprint'], 'artifacts')
   const routeManifest = plainRecord(artifacts.route_manifest, 'route manifest artifact')

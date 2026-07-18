@@ -72,6 +72,7 @@ $SSH "$VPS" 'systemctl is-active vl-agent vl-nuxt >/dev/null && echo "services u
 # 1. Build frontend (local)
 if [ "$DO_FRONTEND" = 1 ] && [ "$DO_BUILD" = 1 ]; then
   echo "==> building web-nuxt (npm run build)"
+  export BUILD_REVISION="$(git rev-parse --verify HEAD)"
   # NOTE: do NOT set API_BASE to the public URL here. `apiBase` (nuxt.config) bakes BOTH the
   # prerender fetch AND the runtime routeRule proxy targets — pointing it at the public URL
   # makes the runtime nitro proxy /api/** → nginx → nitro (infinite loop → 500 outage).
