@@ -494,7 +494,7 @@ const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
 const launchSafety = useLaunchSafety()
 const entityLaunchGeneration = createLaunchGenerationGuard(() => launchSafety.resetForNavigation())
-entityLaunchGeneration.begin()
+entityLaunchGeneration.initialize()
 
 // Client-side route reuse must not carry a previous entity's launch evidence
 // into the next request before its own carrier has been checked. Watch the raw

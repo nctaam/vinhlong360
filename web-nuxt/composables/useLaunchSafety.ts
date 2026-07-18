@@ -11,6 +11,10 @@ export const LAUNCH_SAFETY_ROUTE_STATE_KEY = 'launch-safety-request-target'
 export function createLaunchGenerationGuard(onBegin: () => void) {
   let activeGeneration = 0
   return Object.freeze({
+    initialize(): number {
+      if (activeGeneration === 0) activeGeneration = 1
+      return activeGeneration
+    },
     begin(): number {
       activeGeneration += 1
       onBegin()

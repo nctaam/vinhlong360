@@ -182,7 +182,7 @@ const id = computed(() => normalizeRouteParam(route.params.id))
 const encodedId = computed(() => encodePathId(id.value))
 const launchSafety = useLaunchSafety()
 const wardLaunchGeneration = createLaunchGenerationGuard(() => launchSafety.resetForNavigation())
-wardLaunchGeneration.begin()
+wardLaunchGeneration.initialize()
 
 // A reused client page must not retain the previous ward's decision while the
 // next overview and policy carrier are loading. The raw target also catches

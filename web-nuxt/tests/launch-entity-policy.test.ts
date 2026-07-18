@@ -332,6 +332,30 @@ describe('entity launch policy refinement', () => {
 })
 
 describe('request-local launch state bridge', () => {
+  it.each([
+    ['positive', pageDecisionFromBase(selectiveOpen, true)],
+    ['valid negative', pageDecisionFromBase(selectiveOpen)],
+  ])('preserves a hydrated %s decision until real navigation begins', (_name, hydrated) => {
+    const request = seedRequest('/dia-diem/a', hydrated)
+    request.runtime.client = true
+    request.runtime.server = false
+
+    const launch = useLaunchSafety(request.runtime)
+    const guard = createLaunchGenerationGuard(() => launch.resetForNavigation())
+
+    expect(guard.initialize()).toBe(1)
+    expect(launch.decision.value).toEqual(hydrated)
+    expect(Object.isFrozen(launch.decision.value)).toBe(true)
+
+    expect(guard.begin()).toBe(2)
+    expect(launch.decision.value).toMatchObject({
+      operational_state: 'failed-open',
+      reason: 'entity-policy-unavailable',
+      robots: 'noindex, follow',
+      sitemapDiscovery: false,
+    })
+  })
+
   it('uses a monotonic generation instead of route identity for stale-response rejection', () => {
     const resets: number[] = []
     const guard = createLaunchGenerationGuard(() => { resets.push(1) })
