@@ -3,8 +3,11 @@ from __future__ import annotations
 import ast
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shlex
+import subprocess
+import sys
 
 import pytest
 
@@ -79,7 +82,7 @@ EXPECTED_UNITS = {
         ],
         "Service": [
             ("Type", "oneshot"),
-            ("ExecStart", "/opt/vinhlong360/scripts/ops/watchdog.sh"),
+            ("ExecStart", "/bin/bash /opt/vinhlong360/scripts/ops/watchdog.sh"),
         ],
     },
     "vl-watchdog.timer": {
@@ -157,6 +160,48 @@ def _load_probe():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def _run_probe_subprocess(
+    tmp_path: Path,
+    args: list[str],
+    *,
+    source: str = "",
+    collection_error: bool = False,
+) -> subprocess.CompletedProcess[str]:
+    runner = tmp_path / "run_socket_probe.py"
+    collector_body = (
+        'raise OSError("host-specific collection detail")'
+        if collection_error
+        else f"return {source!r}"
+    )
+    runner.write_text(
+        f"""
+import importlib.util
+import sys
+
+spec = importlib.util.spec_from_file_location("socket_boundary_probe", {str(PROBE_PATH)!r})
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+def collect():
+    {collector_body}
+
+raise SystemExit(module.main(sys.argv[1:], collector=collect))
+""".lstrip(),
+        encoding="utf-8",
+    )
+    return subprocess.run(
+        [sys.executable, str(runner), *args],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _evidence_temps(path: Path) -> list[Path]:
+    return list(path.parent.glob(f".{path.name}.*.tmp"))
 
 
 def _module_ast(path: Path) -> ast.Module:
@@ -279,6 +324,15 @@ def test_units_do_not_publish_internal_services_or_embed_indexing_unlocks():
         assert all(token not in source for token in forbidden), filename
 
 
+def test_watchdog_uses_bash_for_non_executable_tracked_script():
+    parsed = _parse_systemd(
+        (SYSTEMD_ROOT / "vl-watchdog.service").read_text(encoding="utf-8")
+    )
+    exec_start = [value for key, value in parsed["Service"] if key == "ExecStart"]
+
+    assert exec_start == ["/bin/bash /opt/vinhlong360/scripts/ops/watchdog.sh"]
+
+
 @pytest.mark.parametrize(
     ("relative_path", "port"),
     [("agent/server.py", 8360), ("agent/bot_gateway.py", 8361)],
@@ -378,7 +432,7 @@ def test_socket_validator_requires_nginx_ownership_on_public_http_ports():
     assert any(item.startswith("public-http-not-nginx:443:") for item in violations)
 
 
-def test_socket_validator_rejects_other_public_services_but_ignores_ssh():
+def test_socket_validator_rejects_other_public_services_but_allows_owned_ssh():
     probe = _load_probe()
     listeners = [
         probe.Listener(host="0.0.0.0", port=22, owners=("sshd",)),
@@ -395,6 +449,66 @@ def test_socket_validator_rejects_other_public_services_but_ignores_ssh():
 
     assert all(":22:" not in item for item in violations)
     assert "unexpected-public-listener:8080:0.0.0.0:python" in violations
+
+
+@pytest.mark.parametrize("host", ["0.0.0.0", "::"])
+@pytest.mark.parametrize("owners", [("python",), (), ("sshd", "python")])
+def test_socket_validator_rejects_public_ssh_without_exact_sshd_ownership(
+    host: str,
+    owners: tuple[str, ...],
+):
+    probe = _load_probe()
+    listeners = [
+        probe.Listener(host=host, port=22, owners=owners),
+        probe.Listener(host="0.0.0.0", port=80, owners=("nginx",)),
+        probe.Listener(host="::", port=443, owners=("nginx",)),
+    ]
+
+    violations = probe.validate_listeners(
+        listeners,
+        expect_nginx_public_only=True,
+        expected_loopback_ports=[],
+    )
+
+    assert any(item.startswith(f"public-ssh-not-sshd:22:{host}:") for item in violations)
+
+
+@pytest.mark.parametrize(
+    ("source", "collection_error", "args", "expected_code"),
+    [
+        (
+            PASSING_SS,
+            False,
+            ["--expect-nginx-public-only", "--expect-loopback", "3000", "8360"],
+            0,
+        ),
+        (
+            PASSING_SS.replace("127.0.0.2:8360", "0.0.0.0:8360"),
+            False,
+            ["--expect-loopback", "8360"],
+            1,
+        ),
+        ("", True, ["--expect-loopback", "8360"], 2),
+    ],
+)
+def test_probe_subprocess_allows_omitted_evidence_and_preserves_exit_contract(
+    tmp_path: Path,
+    source: str,
+    collection_error: bool,
+    args: list[str],
+    expected_code: int,
+):
+    result = _run_probe_subprocess(
+        tmp_path,
+        args,
+        source=source,
+        collection_error=collection_error,
+    )
+
+    assert result.returncode == expected_code, result.stderr
+    assert "required: --evidence" not in result.stderr
+    assert "host-specific collection detail" not in result.stderr
+    assert not (tmp_path / "listeners.json").exists()
 
 
 def test_probe_writes_deterministic_sanitized_pass_evidence(tmp_path: Path):
@@ -428,6 +542,109 @@ def test_probe_writes_deterministic_sanitized_pass_evidence(tmp_path: Path):
     assert "pid=" not in second_bytes.decode("utf-8")
     assert "fd=" not in second_bytes.decode("utf-8")
     assert "raw" not in evidence
+    assert _evidence_temps(evidence_path) == []
+
+
+def test_probe_evidence_write_is_atomic_restrictive_and_same_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    probe = _load_probe()
+    evidence_path = tmp_path / "listeners.json"
+    evidence_path.write_bytes(b"previous evidence\n")
+    events: list[tuple[str, object]] = []
+    real_mkstemp = probe.tempfile.mkstemp
+    real_chmod = probe.os.chmod
+    real_fsync = probe.os.fsync
+    real_replace = probe.os.replace
+
+    def tracked_mkstemp(*args, **kwargs):
+        result = real_mkstemp(*args, **kwargs)
+        events.append(("mkstemp", Path(result[1])))
+        return result
+
+    def tracked_chmod(path, mode):
+        events.append(("chmod", mode))
+        return real_chmod(path, mode)
+
+    def tracked_fsync(fd):
+        events.append(("fsync", fd))
+        return real_fsync(fd)
+
+    def tracked_replace(source, destination):
+        events.append(("replace", (Path(source), Path(destination))))
+        return real_replace(source, destination)
+
+    monkeypatch.setattr(probe.tempfile, "mkstemp", tracked_mkstemp)
+    monkeypatch.setattr(probe.os, "chmod", tracked_chmod)
+    monkeypatch.setattr(probe.os, "fsync", tracked_fsync)
+    monkeypatch.setattr(probe.os, "replace", tracked_replace)
+
+    code = probe.main(
+        ["--expect-loopback", "8360", "--evidence", str(evidence_path)],
+        collector=lambda: PASSING_SS,
+    )
+
+    event_names = [name for name, _detail in events]
+    temp_path = next(detail for name, detail in events if name == "mkstemp")
+    replace = next(detail for name, detail in events if name == "replace")
+    assert code == 0
+    assert event_names.index("chmod") < event_names.index("fsync") < event_names.index("replace")
+    assert temp_path.parent == evidence_path.parent
+    assert next(detail for name, detail in events if name == "chmod") == 0o600
+    assert replace == (temp_path, evidence_path)
+    assert evidence_path.read_bytes() != b"previous evidence\n"
+    assert _evidence_temps(evidence_path) == []
+    if os.name != "nt":
+        assert evidence_path.stat().st_mode & 0o077 == 0
+
+
+def test_probe_preserves_existing_evidence_and_cleans_temp_on_pre_replace_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+):
+    probe = _load_probe()
+    evidence_path = tmp_path / "listeners.json"
+    original = b"previous evidence\n"
+    evidence_path.write_bytes(original)
+
+    def fail_fsync(_fd):
+        raise OSError("host-specific write detail")
+
+    monkeypatch.setattr(probe.os, "fsync", fail_fsync)
+
+    code = probe.main(
+        ["--expect-loopback", "8360", "--evidence", str(evidence_path)],
+        collector=lambda: PASSING_SS,
+    )
+    captured = capsys.readouterr()
+
+    assert code == 2
+    assert evidence_path.read_bytes() == original
+    assert _evidence_temps(evidence_path) == []
+    assert "host-specific write detail" not in captured.out + captured.err
+
+
+def test_probe_rejects_final_symlink_without_touching_victim(
+    tmp_path: Path,
+):
+    probe = _load_probe()
+    victim = tmp_path / "victim.json"
+    victim_bytes = b"victim evidence\n"
+    victim.write_bytes(victim_bytes)
+    evidence_path = tmp_path / "listeners.json"
+    evidence_path.symlink_to(victim)
+
+    code = probe.main(
+        ["--expect-loopback", "8360", "--evidence", str(evidence_path)],
+        collector=lambda: PASSING_SS,
+    )
+
+    assert code == 2
+    assert evidence_path.is_symlink()
+    assert victim.read_bytes() == victim_bytes
+    assert _evidence_temps(evidence_path) == []
 
 
 def test_probe_writes_failure_evidence_and_returns_one(tmp_path: Path):

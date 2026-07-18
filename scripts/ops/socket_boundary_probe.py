@@ -6,10 +6,12 @@ from __future__ import annotations
 import argparse
 import ipaddress
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 from collections.abc import Callable, Iterable, Sequence
 from typing import NamedTuple
 
@@ -18,7 +20,7 @@ PROHIBITED_PUBLIC_PORTS = frozenset(
     {3000, 3001, 3100, 5432, 6379, 8360, 8361, 9080, 9090}
 )
 PUBLIC_HTTP_PORTS = (80, 443)
-IGNORED_PUBLIC_PORTS = frozenset({22})
+PUBLIC_SSH_PORT = 22
 OWNER_PATTERN = re.compile(r'\("([^"\\]+)"')
 
 
@@ -96,6 +98,10 @@ def _is_nginx_owned(listener: Listener) -> bool:
     return bool(listener.owners) and all(owner.lower() == "nginx" for owner in listener.owners)
 
 
+def _is_sshd_owned(listener: Listener) -> bool:
+    return listener.owners == ("sshd",)
+
+
 def _internal_boundary_violations(listeners: Iterable[Listener]) -> set[str]:
     return {
         f"internal-port-not-loopback:{listener.port}:{listener.host}:"
@@ -122,11 +128,16 @@ def _public_listener_violations(listeners: Iterable[Listener]) -> set[str]:
         listener
         for listener in listeners
         if not _is_loopback(listener.host)
-        and listener.port not in IGNORED_PUBLIC_PORTS
     ]
     violations: set[str] = set()
     for listener in public:
-        if listener.port in PUBLIC_HTTP_PORTS:
+        if listener.port == PUBLIC_SSH_PORT:
+            if not _is_sshd_owned(listener):
+                violations.add(
+                    f"public-ssh-not-sshd:{listener.port}:{listener.host}:"
+                    f"{_owner_label(listener)}"
+                )
+        elif listener.port in PUBLIC_HTTP_PORTS:
             if not _is_nginx_owned(listener):
                 violations.add(
                     f"public-http-not-nginx:{listener.port}:{listener.host}:"
@@ -220,10 +231,53 @@ def _evidence_payload(
 
 def _write_evidence(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    if path.is_symlink():
+        raise OSError("refusing to replace a symlink evidence path")
+
+    evidence = (
+        json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    descriptor = -1
+    temporary: Path | None = None
+    try:
+        descriptor, temporary_name = tempfile.mkstemp(
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            dir=path.parent,
+        )
+        temporary = Path(temporary_name)
+        os.chmod(temporary, 0o600)
+        with os.fdopen(descriptor, "wb") as stream:
+            descriptor = -1
+            stream.write(evidence)
+            stream.flush()
+            os.fsync(stream.fileno())
+
+        if path.is_symlink():
+            raise OSError("refusing to replace a symlink evidence path")
+        os.replace(temporary, path)
+        temporary = None
+    finally:
+        if descriptor != -1:
+            os.close(descriptor)
+        if temporary is not None:
+            try:
+                os.unlink(temporary)
+            except FileNotFoundError:
+                pass
+
+
+def _write_requested_evidence(
+    path: Path | None,
+    payload: dict[str, object],
+) -> bool:
+    if path is None:
+        return True
+    try:
+        _write_evidence(path, payload)
+    except OSError:
+        return False
+    return True
 
 
 def _port(value: str) -> int:
@@ -249,7 +303,7 @@ def _parser() -> argparse.ArgumentParser:
         type=_port,
         metavar="PORT",
     )
-    parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--evidence", type=Path)
     return parser
 
 
@@ -274,9 +328,7 @@ def main(
             listeners=(),
             errors=("socket-collection-failed",),
         )
-        try:
-            _write_evidence(args.evidence, payload)
-        except OSError:
+        if not _write_requested_evidence(args.evidence, payload):
             return 2
         return 2
 
@@ -292,9 +344,7 @@ def main(
         listeners=listeners,
         violations=violations,
     )
-    try:
-        _write_evidence(args.evidence, payload)
-    except OSError:
+    if not _write_requested_evidence(args.evidence, payload):
         return 2
 
     if violations:
