@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: vinhlong360
+      POSTGRES_USER: vl360
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vl360_dev_password}
+      POSTGRES_INITDB_ARGS: "--wal-segsize=16"
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - pg-wal:/var/lib/postgresql/wal
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vl360 -d vinhlong360"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pg-data:
+  pg-wal:
+  redis-data:

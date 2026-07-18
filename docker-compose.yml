@@ -1,14 +1,13 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: vl360-postgres
     environment:
       POSTGRES_DB: vinhlong360
       POSTGRES_USER: vl360
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vl360_dev_password}
       POSTGRES_INITDB_ARGS: "--wal-segsize=16"
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     volumes:
       - pg-data:/var/lib/postgresql/data
       - pg-wal:/var/lib/postgresql/wal
@@ -22,9 +21,8 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: vl360-redis
-    ports:
-      - "6379:6379"
+    expose:
+      - "6379"
     volumes:
       - redis-data:/data
     restart: unless-stopped
@@ -36,13 +34,15 @@ services:
 
   agent:
     build: .
-    container_name: vl360-agent
-    ports:
-      - "8360:8360"
-    env_file: .env
+    expose:
+      - "8360"
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql://vl360:${POSTGRES_PASSWORD:-vl360_dev_password}@postgres:5432/vinhlong360
       REDIS_URL: redis://redis:6379/0
+      BIND_HOST: 0.0.0.0
     volumes:
       - ./web:/app/web
       - agent-data:/app/agent/data
@@ -61,18 +61,26 @@ services:
 
   bot-gateway:
     build: .
-    container_name: vl360-bots
     command: python agent/bot_gateway.py
-    ports:
-      - "8361:8361"
-    env_file: .env
+    expose:
+      - "8361"
+    env_file:
+      - path: .env
+        required: false
     environment:
       DATABASE_URL: postgresql://vl360:${POSTGRES_PASSWORD:-vl360_dev_password}@postgres:5432/vinhlong360
       REDIS_URL: redis://redis:6379/0
+      BIND_HOST: 0.0.0.0
+      AGENT_URL: http://agent:8360
     depends_on:
       agent:
         condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8361/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   nuxt:
     build:
@@ -80,26 +88,22 @@ services:
       dockerfile: web-nuxt/Dockerfile
       args:
         BUILD_REVISION: ${BUILD_REVISION:-}
-    container_name: vl360-nuxt
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       API_BASE: http://agent:8360
       HOST: 0.0.0.0
+      NITRO_HOST: 0.0.0.0
       PORT: 3000
-    depends_on:
-      agent:
-        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/_internal/launch-readiness >/dev/null"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   nginx:
     image: nginx:alpine
-    container_name: vl360-nginx
     ports:
       - "80:80"
       - "443:443"
@@ -108,15 +112,14 @@ services:
       - ./web:/var/www/html:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
-      - agent
-      - nuxt
+      nuxt:
+        condition: service_healthy
     restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: vl360-prometheus
-    ports:
-      - "9090:9090"
+    expose:
+      - "9090"
     volumes:
       - ./scripts/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
@@ -130,9 +133,8 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: vl360-grafana
-    ports:
-      - "3001:3000"
+    expose:
+      - "3000"
     volumes:
       - grafana-data:/var/lib/grafana
       - ./scripts/monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
@@ -145,9 +147,8 @@ services:
 
   loki:
     image: grafana/loki:latest
-    container_name: vl360-loki
-    ports:
-      - "3100:3100"
+    expose:
+      - "3100"
     volumes:
       - loki-data:/loki
       - ./scripts/monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
@@ -155,7 +156,6 @@ services:
 
   promtail:
     image: grafana/promtail:latest
-    container_name: vl360-promtail
     volumes:
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
