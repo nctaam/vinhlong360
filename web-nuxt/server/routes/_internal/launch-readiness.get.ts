@@ -13,6 +13,7 @@ import {
   fetchAndValidateActiveSitemapIndex,
   type GuardedSitemapResult,
 } from '../../utils/launch/guardedSitemapProxy'
+import { isSha256 } from '../../utils/launch/launchEvidence'
 import { readLaunchIntent } from '../../utils/launch/launchIntent'
 import {
   resolveBaseLaunchSafetyDecision,
@@ -28,7 +29,7 @@ type ReadinessBody =
   | {
       readonly ok: true
       readonly state: 'selective-open'
-      readonly active_batch: string | null
+      readonly active_batch: string
       readonly checks: LoadedReadinessManifest['checks']
     }
   | { readonly ok: false; readonly reason: LaunchSafetyDecision['reason'] }
@@ -103,11 +104,13 @@ export function createLaunchReadinessHandler(
       return unsafe(event, 'sitemap-batch-unavailable')
     }
     if (active.status === 503) return unsafe(event, active.failureReason)
+    const activeBatch = active.decision.sitemap_batch_revision
+    if (!isSha256(activeBatch)) return unsafe(event, 'sitemap-evidence-mismatch')
 
     return {
       ok: true,
       state: 'selective-open',
-      active_batch: active.decision.sitemap_batch_revision,
+      active_batch: activeBatch,
       checks: build.checks,
     }
   })

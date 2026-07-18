@@ -101,12 +101,12 @@ function matchingAttestation() {
   }
 }
 
-function successfulActiveSitemap() {
+function successfulActiveSitemap(batch: string | null = activeBatch) {
   return Object.freeze({
     status: 200 as const,
     body: '<sitemapindex/>',
     contentType: 'application/xml; charset=utf-8' as const,
-    decision: Object.freeze({ ...selectiveOpenDecision, sitemap_batch_revision: activeBatch }),
+    decision: Object.freeze({ ...selectiveOpenDecision, sitemap_batch_revision: batch }),
     requestedBatch: null,
     failureReason: null,
   })
@@ -297,6 +297,24 @@ describe('process-local launch readiness endpoint', () => {
 
     expect(response.status).toBe(503)
     expect(response.body).toEqual({ ok: false, reason })
+    expect(deps.fetchAttestation).toHaveBeenCalledOnce()
+    expect(deps.fetchActiveSitemap).toHaveBeenCalledOnce()
+  })
+
+  it.each([
+    ['null', null],
+    ['uppercase', 'A'.repeat(64)],
+    ['short', activeBatch.slice(1)],
+  ] as const)('rejects a status-200 sitemap result with a %s active batch', async (_label, batch) => {
+    const deps = dependencies({
+      env: exactOpenEnv,
+      fetchActiveSitemap: vi.fn().mockResolvedValue(successfulActiveSitemap(batch)),
+    })
+
+    const response = await runReadiness(deps)
+
+    expect(response.status).toBe(503)
+    expect(response.body).toEqual({ ok: false, reason: 'sitemap-evidence-mismatch' })
     expect(deps.fetchAttestation).toHaveBeenCalledOnce()
     expect(deps.fetchActiveSitemap).toHaveBeenCalledOnce()
   })
