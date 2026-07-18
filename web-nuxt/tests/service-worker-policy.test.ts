@@ -22,6 +22,22 @@ type WorkerLifecycleEvent = {
 
 type WorkerEvent = WorkerFetchEvent | WorkerLifecycleEvent
 
+type CachePurgeDeclaration = {
+  readonly revision: string
+  readonly strategy: string
+  readonly retained_cache_names: readonly string[]
+  readonly forbidden_cache_classes: readonly string[]
+  readonly activation_verified: boolean
+}
+
+type WorkerGlobal = {
+  location: { origin: string }
+  clients: { claim: Mock<() => void> }
+  skipWaiting: Mock<() => void>
+  addEventListener: (type: string, listener: (event: WorkerEvent) => void) => void
+  CACHE_PURGE_DECLARATION?: CachePurgeDeclaration
+}
+
 class FakeHeaders {
   private readonly values = new Map<string, string>()
 
@@ -79,6 +95,7 @@ describe('service worker policy', () => {
   let fetchSpy: Mock<() => Promise<FakeResponse>>
   let claimSpy: Mock<() => void>
   let skipWaitingSpy: Mock<() => void>
+  let workerGlobal: WorkerGlobal
 
   beforeEach(() => {
     listeners = new Map()
@@ -108,13 +125,14 @@ describe('service worker policy', () => {
     claimSpy = vi.fn()
     skipWaitingSpy = vi.fn()
 
+    workerGlobal = {
+      location: { origin: 'https://vinhlong360.vn' },
+      clients: { claim: claimSpy },
+      skipWaiting: skipWaitingSpy,
+      addEventListener: (type: string, listener: (event: WorkerEvent) => void) => listeners.set(type, listener),
+    }
     const context = {
-      self: {
-        location: { origin: 'https://vinhlong360.vn' },
-        clients: { claim: claimSpy },
-        skipWaiting: skipWaitingSpy,
-        addEventListener: (type: string, listener: (event: WorkerEvent) => void) => listeners.set(type, listener),
-      },
+      self: workerGlobal,
       caches: cachesApi,
       fetch: fetchSpy,
       URL,
@@ -122,6 +140,27 @@ describe('service worker policy', () => {
       console,
     }
     vm.runInNewContext(readFileSync(serviceWorkerPath, 'utf8'), context)
+  })
+
+  it('exports the exact frozen launch cache-purge declaration', () => {
+    expect(workerGlobal.CACHE_PURGE_DECLARATION).toEqual({
+      revision: 'launch-cache-purge-v1',
+      strategy: 'delete-all-except',
+      retained_cache_names: ['vl360-launch-v1-assets'],
+      forbidden_cache_classes: [
+        'navigation',
+        'html',
+        'root-seo',
+        'internal',
+        'api',
+        'selective-open',
+        'failed-open',
+      ],
+      activation_verified: true,
+    })
+    expect(Object.isFrozen(workerGlobal.CACHE_PURGE_DECLARATION)).toBe(true)
+    expect(Object.isFrozen(workerGlobal.CACHE_PURGE_DECLARATION?.retained_cache_names)).toBe(true)
+    expect(Object.isFrozen(workerGlobal.CACHE_PURGE_DECLARATION?.forbidden_cache_classes)).toBe(true)
   })
 
   function dispatchFetch(request: FakeRequest): { respondWith: Mock<(value: Promise<unknown>) => void>; response?: Promise<unknown> } {
@@ -204,6 +243,13 @@ describe('service worker policy', () => {
       'vl360-v3-assets',
       'vl360-launch-assets-v1',
       'vl360-launch-v0-assets',
+      'navigation',
+      'html',
+      'root-seo',
+      'internal',
+      'api',
+      'selective-open',
+      'failed-open',
       'vl360-launch-v1-assets',
     ])).resolves.toEqual(['vl360-launch-v1-assets'])
     expect(claimSpy).toHaveBeenCalledTimes(1)

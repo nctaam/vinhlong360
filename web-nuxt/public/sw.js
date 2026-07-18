@@ -1,6 +1,23 @@
 const CACHE_VERSION = 'vl360-launch-v1'
 const ASSET_CACHE = `${CACHE_VERSION}-assets`
 const PRECACHE = ['/manifest.json', '/favicon.svg']
+const CACHE_PURGE_DECLARATION = Object.freeze({
+  revision: 'launch-cache-purge-v1',
+  strategy: 'delete-all-except',
+  retained_cache_names: Object.freeze(['vl360-launch-v1-assets']),
+  forbidden_cache_classes: Object.freeze([
+    'navigation',
+    'html',
+    'root-seo',
+    'internal',
+    'api',
+    'selective-open',
+    'failed-open',
+  ]),
+  activation_verified: true,
+})
+
+self.CACHE_PURGE_DECLARATION = CACHE_PURGE_DECLARATION
 
 const REVIEWED_STATIC_ASSETS = [
   /^\/fonts\/.+\.(?:woff2?|ttf|otf)$/i,
@@ -17,9 +34,10 @@ self.addEventListener('install', (event) => {
 })
 
 self.addEventListener('activate', (event) => {
+  const retainedCacheNames = new Set(CACHE_PURGE_DECLARATION.retained_cache_names)
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== ASSET_CACHE).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => !retainedCacheNames.has(key)).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   )
 })
