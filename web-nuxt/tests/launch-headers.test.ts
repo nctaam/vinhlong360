@@ -450,6 +450,36 @@ describe('final response lifecycle', () => {
   })
 
   it.each([
+    ['without an earlier cache policy', undefined, undefined],
+    ['with an unrelated cache policy', 'public, max-age=60', 'public, max-age=60'],
+  ] as const)('cleans error-hook launch headers from a final non-HTML response %s', (_label, initialCache, expectedCache) => {
+    const event = responseEvent({
+      path: '/missing.page',
+      accept: 'text/html',
+      status: 500,
+      headers: initialCache ? { 'Cache-Control': initialCache } : {},
+    })
+
+    finalizeLaunchResponse(event as never)
+    expect(lowerHeaders(event)).toMatchObject({
+      'cache-control': 'no-store',
+      'x-launch-indexing-policy': 'failed-open',
+      'x-robots-tag': 'noindex, follow',
+    })
+
+    event.node.res.setHeader('Content-Type', 'application/json')
+    finalizeLaunchResponse(event as never)
+
+    expect(lowerHeaders(event)).not.toHaveProperty('x-robots-tag')
+    expect(lowerHeaders(event)).not.toHaveProperty('x-launch-indexing-policy')
+    if (expectedCache) {
+      expect(lowerHeaders(event)['cache-control']).toBe(expectedCache)
+    } else {
+      expect(lowerHeaders(event)).not.toHaveProperty('cache-control')
+    }
+  })
+
+  it.each([
     '/api/entities',
     '/auth/session',
     '/admin-api/users',

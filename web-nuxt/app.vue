@@ -11,7 +11,7 @@ const route = useRoute()
 
 useHead(() => buildLaunchHead(launchSafety.decision.value))
 if (import.meta.client) {
-  watch(() => route.fullPath, () => launchSafety.resetForNavigation())
+  watch(() => canonicalLaunchRequestTarget(route.fullPath), () => launchSafety.resetForNavigation())
 }
 
 // Speculation Rules: prefetch (nhẹ — chỉ tải document, KHÔNG prerender/chạy JS → không

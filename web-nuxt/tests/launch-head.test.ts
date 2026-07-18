@@ -109,6 +109,7 @@ describe('launch head authority', () => {
     expect(app.match(/useLaunchSafety\(\)/g)).toHaveLength(1)
     expect(app.match(/buildLaunchHead\(/g)).toHaveLength(1)
     expect(app).toContain('launchSafety.resetForNavigation()')
+    expect(app).toContain('watch(() => canonicalLaunchRequestTarget(route.fullPath)')
   })
 
   it('rejects page-owned robots declarations and quality predicates', () => {

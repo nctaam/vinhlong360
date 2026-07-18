@@ -8,6 +8,11 @@ export const LAUNCH_SAFETY_STATE_KEY = 'launch-safety-page-decision'
 export const LAUNCH_SAFETY_BASE_STATE_KEY = 'launch-safety-base-decision'
 export const LAUNCH_SAFETY_ROUTE_STATE_KEY = 'launch-safety-request-target'
 
+export function canonicalLaunchRequestTarget(target: string): string {
+  const fragment = target.indexOf('#')
+  return fragment < 0 ? target : target.slice(0, fragment)
+}
+
 export function buildLaunchHead(decision: Readonly<LaunchPageDecision>) {
   return {
     meta: [{ name: 'robots', content: decision.robots }],
@@ -108,10 +113,10 @@ export function useLaunchSafety(runtime?: Partial<LaunchSafetyRuntime>) {
   const requestTarget = state<string>(LAUNCH_SAFETY_ROUTE_STATE_KEY, () => '')
   const event = isServer ? getEvent() : undefined
 
-  let currentTarget = event?.node.req.url || ''
+  let currentTarget = canonicalLaunchRequestTarget(event?.node.req.url || '')
   if (!currentTarget) {
     try {
-      currentTarget = getRoute().fullPath
+      currentTarget = canonicalLaunchRequestTarget(getRoute().fullPath)
     } catch {
       currentTarget = ''
     }
@@ -154,9 +159,11 @@ export function useLaunchSafety(runtime?: Partial<LaunchSafetyRuntime>) {
   function isCanonicalPath(canonicalPath: string): boolean {
     if (typeof canonicalPath !== 'string' || !canonicalPath) return false
     const rawTarget = event?.node.req.url
-    if (typeof rawTarget === 'string') return rawTarget === canonicalPath
+    if (typeof rawTarget === 'string') {
+      return canonicalLaunchRequestTarget(rawTarget) === canonicalLaunchRequestTarget(canonicalPath)
+    }
     try {
-      return getRoute().fullPath === canonicalPath
+      return canonicalLaunchRequestTarget(getRoute().fullPath) === canonicalLaunchRequestTarget(canonicalPath)
     } catch {
       return false
     }
@@ -184,7 +191,7 @@ export function useLaunchSafety(runtime?: Partial<LaunchSafetyRuntime>) {
     // until the next SSR request establishes a new request-local decision.
     if (isClient) {
       try {
-        requestTarget.value = getRoute().fullPath
+        requestTarget.value = canonicalLaunchRequestTarget(getRoute().fullPath)
       } catch {
         requestTarget.value = ''
       }

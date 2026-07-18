@@ -20,6 +20,7 @@ import {
   isCurrentLaunchResult,
   useLaunchSafety,
 } from '../composables/useLaunchSafety'
+import * as launchSafetyComposable from '../composables/useLaunchSafety'
 import {
   launchRouteManifest,
   resolveRequestTargetAuthority,
@@ -501,6 +502,50 @@ describe('request-local launch state bridge', () => {
       robots: 'noindex, follow',
     })
     expect(request.states.get(LAUNCH_SAFETY_ROUTE_STATE_KEY)?.value).toBe('/xa-phuong/b')
+  })
+
+  it.each([
+    ['/dia-diem/a?view=map#photos', '/dia-diem/a?view=map'],
+    ['/dia-diem/a/?encoded=%23value#photos', '/dia-diem/a/?encoded=%23value'],
+    ['/dia-diem/a?view=map', '/dia-diem/a?view=map'],
+  ] as const)('canonicalizes only the fragment from launch request target %s', (target, expected) => {
+    const canonical = (launchSafetyComposable as unknown as {
+      canonicalLaunchRequestTarget?: (value: string) => string
+    }).canonicalLaunchRequestTarget
+
+    expect(canonical).toBeTypeOf('function')
+    expect(canonical?.(target)).toBe(expected)
+  })
+
+  it.each([
+    ['hash-only hydration', '/dia-diem/a?view=map#photos', 'selective-open', 'index, follow', '/dia-diem/a?view=map'],
+    ['query change', '/dia-diem/a?view=list#photos', 'failed-open', 'noindex, follow', '/dia-diem/a?view=list'],
+  ] as const)('handles %s without weakening query-sensitive client resets', (_label, fullPath, state, robots, storedTarget) => {
+    const request = seedRequest('/dia-diem/a?view=map', pageDecisionFromBase(selectiveOpen, true))
+    request.route.fullPath = fullPath
+    request.runtime.client = true
+    request.runtime.server = false
+
+    const launch = useLaunchSafety(request.runtime)
+
+    expect(launch.decision.value).toMatchObject({ operational_state: state, robots })
+    expect(request.states.get(LAUNCH_SAFETY_ROUTE_STATE_KEY)?.value).toBe(storedTarget)
+  })
+
+  it('stores a fragment-free target when a real client navigation resets launch state', () => {
+    const request = seedRequest('/dia-diem/a', pageDecisionFromBase(selectiveOpen, true))
+    request.runtime.client = true
+    request.runtime.server = false
+    const launch = useLaunchSafety(request.runtime)
+    request.route.fullPath = '/dia-diem/a?view=list#photos'
+
+    launch.resetForNavigation()
+
+    expect(launch.decision.value).toMatchObject({
+      operational_state: 'failed-open',
+      robots: 'noindex, follow',
+    })
+    expect(request.states.get(LAUNCH_SAFETY_ROUTE_STATE_KEY)?.value).toBe('/dia-diem/a?view=list')
   })
 })
 

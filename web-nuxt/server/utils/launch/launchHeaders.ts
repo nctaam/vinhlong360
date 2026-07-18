@@ -58,6 +58,10 @@ export interface LaunchResponseHeaderInput {
   readonly requestedBatch?: string | null
 }
 
+interface StoredLaunchResponseHeaderInput extends LaunchResponseHeaderInput {
+  readonly previousCacheControl?: unknown
+}
+
 function invalidSelectiveDecision(): Error {
   return new Error('selective-open decision evidence is invalid')
 }
@@ -189,17 +193,34 @@ function clearLaunchHeaders(event: H3Event): void {
 
 /** Remove stale launch/robots headers without opting an unrelated response into policy headers. */
 export function clearLaunchResponseHeaders(event: H3Event): void {
+  const stored = event.context.launchResponseHeaderInput as StoredLaunchResponseHeaderInput | undefined
   for (const name of Object.keys(getResponseHeaders(event))) {
     if (LAUNCH_HEADER_NAMES_LOWER.has(name.toLowerCase())) removeResponseHeader(event, name)
   }
+  if (stored) {
+    const headers = getResponseHeaders(event)
+    const cacheName = Object.keys(headers).find(name => name.toLowerCase() === 'cache-control')
+    if (cacheName && headers[cacheName] === 'no-store') {
+      removeResponseHeader(event, cacheName)
+      if (stored.previousCacheControl !== undefined) {
+        setResponseHeaders(event, { 'Cache-Control': stored.previousCacheControl })
+      }
+    }
+    delete event.context.launchResponseHeaderInput
+  }
 }
 
-function storeHeaderInput(event: H3Event, input: LaunchResponseHeaderInput): void {
+function storeHeaderInput(
+  event: H3Event,
+  input: LaunchResponseHeaderInput,
+  previousCacheControl: unknown,
+): void {
   event.context.launchResponseHeaderInput = Object.freeze({
     decision: input.decision,
     html: input.html,
     sitemap: input.sitemap,
     requestedBatch: input.requestedBatch ?? null,
+    previousCacheControl,
   })
 }
 
@@ -207,6 +228,10 @@ export function writeLaunchResponseHeaders(
   event: H3Event,
   input: LaunchResponseHeaderInput,
 ): void {
+  const previousInput = event.context.launchResponseHeaderInput as StoredLaunchResponseHeaderInput | undefined
+  const previousCacheControl = previousInput && Object.hasOwn(previousInput, 'previousCacheControl')
+    ? previousInput.previousCacheControl
+    : Object.entries(getResponseHeaders(event)).find(([name]) => name.toLowerCase() === 'cache-control')?.[1]
   clearLaunchHeaders(event)
 
   let headers: Record<string, string>
@@ -229,7 +254,7 @@ export function writeLaunchResponseHeaders(
 
   setResponseHeaders(event, headers)
   if (effectiveInput.html === true) event.context.launchSafety = effectiveInput.decision
-  storeHeaderInput(event, effectiveInput)
+  storeHeaderInput(event, effectiveInput, previousCacheControl)
 }
 
 export { EMPTY_DECISION as failedOpenLaunchDecision }
