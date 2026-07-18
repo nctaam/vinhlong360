@@ -2,11 +2,14 @@
 
 import { describe, expect, it } from 'vitest'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { buildPolicyFingerprint } from '../server/utils/launch/launchEvidence'
+import { parseLaunchRouteManifest } from '../server/utils/launch/launchRouteManifest'
+import { parseAiDisclosure } from '../utils/aiDisclosure'
 import {
   CACHE_PURGE_DECLARATION,
   validateReadinessManifest,
@@ -32,6 +35,20 @@ type GeneratorModule = {
     disclosureSource: Buffer
   }) => { routeDigest: string; disclosureDigest: string }
   verifyServiceWorkerActivation: (source: string) => Promise<Record<string, unknown>>
+  validateGeneratorRouteArtifact: (source: Buffer | string) => unknown
+  validateGeneratorAiDisclosure: (source: Buffer | string) => unknown
+  resolveSourceRevision: (options?: { env?: Record<string, string | undefined>; repositoryRoot?: string; gitCommand?: string }) => string
+}
+
+type RouteArtifactFixture = Record<string, unknown> & {
+  exact_routes: Array<Record<string, unknown>>
+  dynamic_templates: Array<Record<string, unknown>>
+}
+
+type DisclosureArtifactFixture = Record<string, unknown> & {
+  entity_ai: Record<string, unknown>
+  placeholder: Record<string, unknown>
+  forbidden_entity_image_claims: unknown[]
 }
 
 async function loadGenerator(): Promise<GeneratorModule> {
@@ -233,6 +250,76 @@ describe('launch readiness manifest', () => {
     const generator = await loadGenerator()
     const source = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8')
     await expect(generator.verifyServiceWorkerActivation(source)).resolves.toMatchObject(CACHE_PURGE_DECLARATION)
+  })
+
+  it('rejects a final worker whose lexical version differs from the reviewed cache version', async () => {
+    const generator = await loadGenerator()
+    const source = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8')
+      .replace("const CACHE_VERSION = 'vl360-launch-v1'", "const CACHE_VERSION = 'vl360-launch-v2'")
+    await expect(generator.verifyServiceWorkerActivation(source)).rejects.toThrow(/service-worker version/i)
+  })
+
+  it('rejects same-revision route artifacts with invalid schema, keys, types, or semantics', async () => {
+    const generator = await loadGenerator()
+    const canonical = JSON.parse(readFileSync(resolve(process.cwd(), '../config/launch-indexing-policy.json'), 'utf8')) as RouteArtifactFixture
+    const mutations = [
+      { ...canonical, extra: true },
+      { ...canonical, canonical_origin: 'https://example.test' },
+      { ...canonical, exact_routes: [{ ...canonical.exact_routes[0], sitemap: 'true' }] },
+      { ...canonical, dynamic_templates: [{ ...canonical.dynamic_templates[0], template: '/dia-diem/{id}/{id}' }] },
+    ]
+    for (const candidate of mutations) {
+      const source = JSON.stringify(candidate)
+      expect(() => parseLaunchRouteManifest(candidate)).toThrow()
+      expect(() => generator.validateGeneratorRouteArtifact(source)).toThrow()
+    }
+  })
+
+  it('rejects same-revision AI disclosure artifacts with invalid schema, keys, types, or semantics', async () => {
+    const generator = await loadGenerator()
+    const canonical = JSON.parse(readFileSync(resolve(process.cwd(), '../config/ai-disclosure.json'), 'utf8')) as DisclosureArtifactFixture
+    const mutations = [
+      { ...canonical, extra: true },
+      { ...canonical, entity_ai: { ...canonical.entity_ai, short_label: 42 } },
+      { ...canonical, placeholder: { ...canonical.placeholder, accessible_description_key: null } },
+      { ...canonical, forbidden_entity_image_claims: [...canonical.forbidden_entity_image_claims].reverse() },
+    ]
+    for (const candidate of mutations) {
+      const source = JSON.stringify(candidate)
+      expect(() => parseAiDisclosure(candidate)).toThrow()
+      expect(() => generator.validateGeneratorAiDisclosure(source)).toThrow()
+    }
+  })
+
+  it('resolves source revision from explicit env, then git, and fails without either', async () => {
+    const generator = await loadGenerator()
+    const buildRevision = 'a'.repeat(40)
+    const gitRevision = 'b'.repeat(40)
+    const sourceRevision = 'c'.repeat(40)
+    expect(generator.resolveSourceRevision({
+      env: { BUILD_REVISION: buildRevision, GIT_COMMIT: gitRevision, SOURCE_REVISION: sourceRevision },
+      repositoryRoot: resolve(process.cwd(), '..'),
+    })).toBe(buildRevision)
+    expect(generator.resolveSourceRevision({
+      env: { GIT_COMMIT: gitRevision, SOURCE_REVISION: sourceRevision },
+      repositoryRoot: resolve(process.cwd(), '..'),
+    })).toBe(gitRevision)
+
+    const repositoryRoot = resolve(process.cwd(), '..')
+    const expectedHead = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repositoryRoot, encoding: 'utf8' }).trim()
+    expect(generator.resolveSourceRevision({ env: {}, repositoryRoot })).toBe(expectedHead)
+
+    const noGitRoot = mkdtempSync(resolve(tmpdir(), 'vl360-no-git-'))
+    try {
+      expect(() => generator.resolveSourceRevision({
+        env: {},
+        repositoryRoot: noGitRoot,
+        gitCommand: 'git-command-that-does-not-exist',
+      }))
+        .toThrow(/source revision/i)
+    } finally {
+      rmSync(noGitRoot, { recursive: true, force: true })
+    }
   })
 
   it('runs the readiness generator only after nuxt build', () => {

@@ -6,10 +6,14 @@ RUN npm ci
 
 FROM node:22-alpine AS build
 
+ARG BUILD_REVISION
+ENV BUILD_REVISION=${BUILD_REVISION}
+
 WORKDIR /app/web-nuxt
 COPY --from=deps /app/web-nuxt/node_modules ./node_modules
 COPY web-nuxt/ ./
 COPY config/ /app/config/
+RUN test -n "$BUILD_REVISION"
 RUN npm run build
 
 FROM node:22-alpine AS runner

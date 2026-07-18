@@ -67,6 +67,7 @@ def test_nuxt_compose_build_uses_repository_root_context():
 
     assert "context: ." in nuxt_service
     assert "dockerfile: web-nuxt/Dockerfile" in nuxt_service
+    assert "BUILD_REVISION: ${BUILD_REVISION:-}" in nuxt_service
     assert "context: ./web-nuxt" not in nuxt_service
 
 
@@ -77,6 +78,9 @@ def test_nuxt_image_builds_from_web_project_and_root_config():
     assert "COPY web-nuxt/package*.json ./" in dockerfile
     assert "COPY web-nuxt/ ./" in dockerfile
     assert "COPY config/ /app/config/" in dockerfile
+    assert "ARG BUILD_REVISION" in dockerfile
+    assert "ENV BUILD_REVISION=${BUILD_REVISION}" in dockerfile
+    assert 'RUN test -n "$BUILD_REVISION"' in dockerfile
     assert "COPY --from=build /app/web-nuxt/.output ./.output" in dockerfile
 
 

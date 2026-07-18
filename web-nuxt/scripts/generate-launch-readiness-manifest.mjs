@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
   existsSync,
@@ -11,6 +12,10 @@ import {
 import { dirname, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
+import {
+  parseAiDisclosureArtifact,
+  parseLaunchRouteManifestArtifact,
+} from '../utils/launchArtifactValidators.mjs'
 
 const ROUTE_MANIFEST_REVISION = 'launch-indexing-policy-v1'
 const AI_DISCLOSURE_REVISION = 'ai-disclosure-v1'
@@ -207,7 +212,8 @@ export async function verifyServiceWorkerActivation(source) {
     addEventListener: (type, listener) => listeners.set(type, listener),
   }
 
-  vm.runInNewContext(source, {
+  const instrumentedSource = `${source}\nself.__AUDITED_CACHE_VERSION = CACHE_VERSION\n`
+  vm.runInNewContext(instrumentedSource, {
     self: workerGlobal,
     caches: cachesApi,
     fetch: async () => undefined,
@@ -215,6 +221,10 @@ export async function verifyServiceWorkerActivation(source) {
     Promise,
     console,
   }, { filename: 'public/sw.js' })
+
+  if (workerGlobal.__AUDITED_CACHE_VERSION !== SERVICE_WORKER_VERSION) {
+    throw new Error('service-worker version mismatch')
+  }
 
   const declaration = assertExactCachePurgeDeclaration(workerGlobal.CACHE_PURGE_DECLARATION)
   if (
@@ -356,15 +366,25 @@ export function readEmbeddedArtifactSources(outputRoot, expected) {
   }
 }
 
-function readArtifactEvidence(path, expectedRevision, label) {
-  const raw = readFileSync(path)
-  let parsed
+function parseArtifactJson(source, label) {
   try {
-    parsed = JSON.parse(raw.toString('utf8'))
+    return JSON.parse(source.toString('utf8'))
   } catch {
     throw new Error(`${label} artifact is not valid JSON`)
   }
-  const artifact = plainRecord(parsed, `${label} artifact`)
+}
+
+export function validateGeneratorRouteArtifact(source) {
+  return parseLaunchRouteManifestArtifact(parseArtifactJson(Buffer.from(source), 'route manifest'))
+}
+
+export function validateGeneratorAiDisclosure(source) {
+  return parseAiDisclosureArtifact(parseArtifactJson(Buffer.from(source), 'AI disclosure'))
+}
+
+function readArtifactEvidence(path, expectedRevision, label, validator) {
+  const raw = readFileSync(path)
+  const artifact = plainRecord(validator(raw), `${label} artifact`)
   return {
     revision: exactRevision(artifact.revision, expectedRevision, `${label} artifact`),
     sha256: sha256(raw),
@@ -372,12 +392,30 @@ function readArtifactEvidence(path, expectedRevision, label) {
   }
 }
 
-function sourceRevision() {
+const SOURCE_REVISION_PATTERN = /^[0-9a-f]{40}$/u
+
+export function resolveSourceRevision(options = {}) {
+  const env = options.env ?? process.env
+  const repositoryRoot = options.repositoryRoot ?? process.cwd()
+  const gitCommand = options.gitCommand ?? 'git'
   for (const name of ['BUILD_REVISION', 'GIT_COMMIT', 'SOURCE_REVISION']) {
-    const value = process.env[name]
-    if (typeof value === 'string' && value.trim() === value && value.length > 0) return value
+    if (!Object.hasOwn(env, name) || env[name] === undefined) continue
+    const value = env[name]
+    if (typeof value !== 'string' || !SOURCE_REVISION_PATTERN.test(value)) {
+      throw new Error(`${name} must be a lowercase 40-hex source revision`)
+    }
+    return value
   }
-  return 'source-revision'
+  const result = spawnSync(gitCommand, ['rev-parse', '--verify', 'HEAD'], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+    windowsHide: true,
+  })
+  const revision = result.status === 0 ? result.stdout.trim() : ''
+  if (!SOURCE_REVISION_PATTERN.test(revision)) {
+    throw new Error('source revision unavailable: set BUILD_REVISION for builds without git')
+  }
+  return revision
 }
 
 export async function generateLaunchReadinessManifest(options = {}) {
@@ -394,11 +432,13 @@ export async function generateLaunchReadinessManifest(options = {}) {
     resolve(repositoryRoot, 'config/launch-indexing-policy.json'),
     ROUTE_MANIFEST_REVISION,
     'route manifest',
+    validateGeneratorRouteArtifact,
   )
   const aiDisclosure = readArtifactEvidence(
     resolve(repositoryRoot, 'config/ai-disclosure.json'),
     AI_DISCLOSURE_REVISION,
     'AI disclosure',
+    validateGeneratorAiDisclosure,
   )
   const embeddedArtifacts = readEmbeddedArtifactSources(outputRoot, {
     routeSource: routeManifest.source,
@@ -427,7 +467,7 @@ export async function generateLaunchReadinessManifest(options = {}) {
 
   const manifest = {
     schema_version: 1,
-    build_revision: sourceRevision(),
+    build_revision: resolveSourceRevision({ env: process.env, repositoryRoot }),
     artifacts: {
       route_manifest: { revision: routeManifest.revision, sha256: routeManifest.sha256 },
       ai_disclosure: { revision: aiDisclosure.revision, sha256: aiDisclosure.sha256 },

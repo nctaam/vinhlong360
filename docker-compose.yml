@@ -78,6 +78,8 @@ services:
     build:
       context: .
       dockerfile: web-nuxt/Dockerfile
+      args:
+        BUILD_REVISION: ${BUILD_REVISION:-}
     container_name: vl360-nuxt
     ports:
       - "3000:3000"
