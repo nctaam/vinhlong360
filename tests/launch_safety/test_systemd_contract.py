@@ -69,6 +69,7 @@ EXPECTED_UNITS = {
             (
                 "ExecStart",
                 "/usr/bin/env BIND_HOST=127.0.0.1 "
+                "AGENT_URL=http://127.0.0.1:8360 "
                 "/opt/vinhlong360/venv/bin/python agent/bot_gateway.py",
             ),
             ("Restart", "on-failure"),
@@ -309,6 +310,27 @@ def test_process_launch_override_wins_over_environment_file(
 
     assert environment["BIND_HOST"] == "127.0.0.1"
     assert argv == ["/opt/vinhlong360/venv/bin/python", script]
+
+
+def test_bot_launch_overrides_hostile_bind_and_agent_url_environment_file():
+    parsed = _parse_systemd(
+        (SYSTEMD_ROOT / "vl-bot.service").read_text(encoding="utf-8")
+    )
+
+    environment, argv = _effective_process(
+        parsed,
+        {
+            "BIND_HOST": "0.0.0.0",
+            "AGENT_URL": "http://agent:8360/remote",
+        },
+    )
+
+    assert environment["BIND_HOST"] == "127.0.0.1"
+    assert environment["AGENT_URL"] == "http://127.0.0.1:8360"
+    assert argv == [
+        "/opt/vinhlong360/venv/bin/python",
+        "agent/bot_gateway.py",
+    ]
 
 
 def test_units_do_not_publish_internal_services_or_embed_indexing_unlocks():
