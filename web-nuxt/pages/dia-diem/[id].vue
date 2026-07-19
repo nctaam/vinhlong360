@@ -704,7 +704,7 @@ const areaName = computed(() => {
   return AREA_META[area]?.name || area || ''
 })
 
-const entityImageDescriptors = computed<Readonly<ImageDescriptor>[]>(() => {
+const entityImageDescriptors = computed<ReadonlyArray<Readonly<ImageDescriptor>>>(() => {
   if (galleryDescriptors.value?.length) return galleryDescriptors.value
 
   const legacy = Array.isArray(entity.value?.images)
