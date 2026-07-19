@@ -1,0 +1,55 @@
+services:
+  upstream:
+    image: python:3.12-alpine
+    command: ["python", "/opt/stub_upstream.py"]
+    volumes:
+      - type: bind
+        source: ../../../tests/launch_safety/harness/stub_upstream.py
+        target: /opt/stub_upstream.py
+        read_only: true
+    networks:
+      default:
+        aliases:
+          - agent
+          - nuxt
+          - bot-gateway
+
+  operator:
+    image: python:3.12-alpine
+    command: ["python", "-c", "import time; time.sleep(3600)"]
+
+  visitor:
+    image: python:3.12-alpine
+    command: ["python", "-c", "import time; time.sleep(3600)"]
+
+  nginx-http:
+    image: nginx:1.27-alpine
+    depends_on:
+      - upstream
+    volumes:
+      - type: bind
+        source: ../../../nginx.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+      - type: bind
+        source: ${VL360_MAINTENANCE_RUNTIME:-../../../ops/nginx/maintenance}
+        target: /etc/nginx/vl360-maintenance
+        read_only: true
+
+  nginx-ssl:
+    image: nginx:1.27-alpine
+    depends_on:
+      - upstream
+    volumes:
+      - type: bind
+        source: ../../../nginx-ssl.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+      - type: bind
+        source: ${VL360_MAINTENANCE_RUNTIME:-../../../ops/nginx/maintenance}
+        target: /etc/nginx/vl360-maintenance
+        read_only: true
+      - type: bind
+        source: ${VL360_NGINX_SSL_RUNTIME:-../../../ssl}
+        target: /etc/nginx/ssl
+        read_only: true

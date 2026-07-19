@@ -7,10 +7,14 @@ import subprocess
 
 import pytest
 
+from tests.launch_safety.test_nginx_contract import _public_servers
+
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOT = ROOT / "ops" / "nginx" / "maintenance"
 SCRIPT = ROOT / "scripts" / "ops" / "maintenance_mode.sh"
+HTTP_CONTEXT_INCLUDE = "include /etc/nginx/vl360-maintenance/http-context.conf;"
+ACTIVE_SERVER_INCLUDE = "include /etc/nginx/vl360-maintenance/active-server.conf;"
 
 HTTP_TEMPLATE = """\
 geo $launch_maintenance_operator {
@@ -24,6 +28,29 @@ SERVER_ENABLED = "if ($launch_maintenance_operator = 0) { return 503; }\n"
 SERVER_DISABLED = (
     "# Maintenance disabled: requests continue to the reviewed server locations.\n"
 )
+
+
+@pytest.mark.parametrize(
+    ("filename", "expected_public_servers"),
+    [("nginx.conf", 1), ("nginx-ssl.conf", 2)],
+)
+def test_real_nginx_configs_wire_maintenance_includes_exactly_once_per_context(
+    filename: str,
+    expected_public_servers: int,
+):
+    source = (ROOT / filename).read_text(encoding="utf-8")
+    assert source.count(HTTP_CONTEXT_INCLUDE) == 1
+    assert source.count(ACTIVE_SERVER_INCLUDE) == expected_public_servers
+    assert source.index(HTTP_CONTEXT_INCLUDE) < source.index("server {")
+
+    servers = _public_servers(ROOT / filename)
+    assert len(servers) == expected_public_servers
+    for server in servers:
+        assert server.children is not None
+        assert sum(
+            statement.parts == ("include", "/etc/nginx/vl360-maintenance/active-server.conf")
+            for statement in server.children
+        ) == 1
 
 
 def _bash() -> str:

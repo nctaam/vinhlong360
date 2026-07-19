@@ -311,10 +311,26 @@ def _server_scope_directive_names(body: tuple[Statement, ...]) -> set[str]:
     return names
 
 
+def _server_scope_includes(body: tuple[Statement, ...]) -> list[tuple[str, ...]]:
+    includes: list[tuple[str, ...]] = []
+    for statement in body:
+        if not statement.parts or statement.parts[0] == "location":
+            continue
+        if statement.parts[0] == "include":
+            includes.append(statement.parts[1:])
+        if statement.children is not None:
+            includes.extend(_server_scope_includes(statement.children))
+    return includes
+
+
 def _assert_internal_boundary(server: Statement) -> None:
     assert server.children is not None
     server_directives = _server_scope_directive_names(server.children)
-    assert not server_directives & {"error_page", "include", "rewrite"}
+    assert not server_directives & {"error_page", "rewrite"}
+    assert all(
+        include == ("/etc/nginx/vl360-maintenance/active-server.conf",)
+        for include in _server_scope_includes(server.children)
+    )
 
     locations = _locations(server)
     denies = [
