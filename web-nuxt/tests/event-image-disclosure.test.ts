@@ -115,6 +115,7 @@ describe.each([
   it('renders canonical local and HTTPS URLs with visible AI label and exact full disclosure association', async () => {
     const wrapper = await mountPage(Page)
     const images = wrapper.findAll('.event-thumb img')
+    expect(wrapper.findAll('[data-event-image]')).toHaveLength(images.length)
     expect(images.map(image => image.attributes('src'))).toEqual(expect.arrayContaining([...expectedUrls]))
 
     const disclosures = wrapper.findAll('.event-media [data-full-disclosure]')

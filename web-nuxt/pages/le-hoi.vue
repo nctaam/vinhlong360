@@ -215,8 +215,8 @@
           </div>
           <div v-if="eventImageUrl(e)" class="event-media">
             <div class="event-thumb">
-              <NuxtImg v-if="isRemoteUrl(eventImageUrl(e)!)" :src="eventImageUrl(e)!" :alt="eventImage(e)!.alt" :aria-describedby="eventDisclosureId(e, index)" loading="lazy" decoding="async" width="80" height="60" @error="hideImageError" />
-              <img v-else :src="eventImageUrl(e)!" :alt="eventImage(e)!.alt" :aria-describedby="eventDisclosureId(e, index)" loading="lazy" decoding="async" width="80" height="60" @error="hideImageError" />
+              <NuxtImg v-if="isRemoteUrl(eventImageUrl(e)!)" data-event-image :src="eventImageUrl(e)!" :alt="eventImage(e)!.alt" :aria-describedby="eventDisclosureId(e, index)" loading="lazy" decoding="async" width="80" height="60" @error="hideImageError" />
+              <img v-else data-event-image :src="eventImageUrl(e)!" :alt="eventImage(e)!.alt" :aria-describedby="eventDisclosureId(e, index)" loading="lazy" decoding="async" width="80" height="60" @error="hideImageError" />
             </div>
             <span class="event-disclosure"><ImageDisclosure :id="eventDisclosureId(e, index)" :descriptor="eventImage(e)!" presentation="short" /></span>
           </div>
