@@ -41,6 +41,20 @@ const fixtureEvents = [
     attributes: { category: 'le-hoi', date_start: '2099-04-02', date_end: '2099-04-03' },
   },
   {
+    id: 'malformed/event-nine',
+    type: 'event',
+    name: 'Lễ hội ảnh sai định dạng',
+    images: [42],
+    attributes: { category: 'le-hoi', date_start: '2099-04-04', date_end: '2099-04-05' },
+  },
+  {
+    id: 'empty/event-ten',
+    type: 'event',
+    name: 'Lễ hội ảnh rỗng',
+    images: [''],
+    attributes: { category: 'le-hoi', date_start: '2099-04-06', date_end: '2099-04-07' },
+  },
+  {
     id: 'event/five',
     type: 'event',
     name: 'Sự kiện minh họa',
@@ -66,6 +80,20 @@ const fixtureEvents = [
     type: 'event',
     name: 'Sự kiện chưa có ảnh',
     attributes: { category: 'su-kien', date_start: '2099-08-02', date_end: '2099-08-03' },
+  },
+  {
+    id: 'malformed/event-eleven',
+    type: 'event',
+    name: 'Sự kiện ảnh sai định dạng',
+    images: [{ url: '/not-a-string.webp' }],
+    attributes: { category: 'su-kien', date_start: '2099-09-02', date_end: '2099-09-03' },
+  },
+  {
+    id: 'empty/event-twelve',
+    type: 'event',
+    name: 'Sự kiện ảnh rỗng',
+    images: ['   '],
+    attributes: { category: 'su-kien', date_start: '2099-10-02', date_end: '2099-10-03' },
   },
 ]
 
@@ -109,14 +137,24 @@ async function mountPage(page: typeof LeHoiPage | typeof SuKienPage) {
 }
 
 describe.each([
-  ['le-hoi', LeHoiPage, ['/img/events/local.webp', 'https://cdn.example.test/events/remote.webp']],
-  ['su-kien', SuKienPage, ['/img/events/event.webp', 'https://cdn.example.test/events/event-remote.webp']],
- ] as const)('%s event imagery disclosure', (_name, Page, expectedUrls) => {
+  [
+    'le-hoi',
+    LeHoiPage,
+    ['/img/events/local.webp', 'https://cdn.example.test/events/remote.webp'],
+    ['Lễ hội ảnh không an toàn', 'Lễ hội chưa có ảnh', 'Lễ hội ảnh sai định dạng', 'Lễ hội ảnh rỗng'],
+  ],
+  [
+    'su-kien',
+    SuKienPage,
+    ['/img/events/event.webp', 'https://cdn.example.test/events/event-remote.webp'],
+    ['Sự kiện ảnh không an toàn', 'Sự kiện chưa có ảnh', 'Sự kiện ảnh sai định dạng', 'Sự kiện ảnh rỗng'],
+  ],
+ ] as const)('%s event imagery disclosure', (_name, Page, expectedUrls, invalidNames) => {
   it('renders canonical local and HTTPS URLs with visible AI label and exact full disclosure association', async () => {
     const wrapper = await mountPage(Page)
     const images = wrapper.findAll('.event-thumb img')
     expect(wrapper.findAll('[data-event-image]')).toHaveLength(images.length)
-    expect(images.map(image => image.attributes('src'))).toEqual(expect.arrayContaining([...expectedUrls]))
+    expect(images.map(image => image.attributes('src')).sort()).toEqual([...expectedUrls].sort())
 
     const disclosures = wrapper.findAll('.event-media [data-full-disclosure]')
     expect(disclosures).toHaveLength(images.length)
@@ -129,11 +167,15 @@ describe.each([
     expect(wrapper.findAll('[data-short-label]').some(node => node.text() === aiDisclosure.entity_ai.short_label)).toBe(true)
   })
 
-  it('does not render empty image sources for malformed, unsafe, or missing imagery', async () => {
+  it('does not render image targets for malformed, unsafe, empty, or missing imagery', async () => {
     const wrapper = await mountPage(Page)
-    expect(wrapper.findAll('.event-thumb img').every(image => Boolean(image.attributes('src')))).toBe(true)
-    expect(wrapper.text()).not.toContain('javascript:alert(1)')
-    expect(wrapper.findAll('.event-thumb').length).toBeGreaterThan(0)
+    for (const name of invalidNames) {
+      const row = wrapper.findAll('.event-row').find(candidate => candidate.text().includes(name))
+      if (!row) throw new Error(`Missing fixture row: ${name}`)
+      expect(row.find('[data-event-image]').exists()).toBe(false)
+      expect(row.find('.event-thumb img').exists()).toBe(false)
+    }
+    expect(wrapper.findAll('.event-thumb img').map(image => image.attributes('src')).sort()).toEqual([...expectedUrls].sort())
   })
 })
 
