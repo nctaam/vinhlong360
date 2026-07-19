@@ -1,4 +1,5 @@
 import type { Entity, Post, User } from './index'
+import type { ImageDescriptor } from './image'
 
 export interface ApiListResponse<T> {
   total: number
@@ -21,6 +22,10 @@ export interface EntityListQuery {
 
 export type EntityListResponse = ApiListResponse<Entity> & {
   entities: Entity[]
+}
+
+export interface GalleryResponse {
+  images: ImageDescriptor[]
 }
 
 export type SearchSuggestionKind = 'entity' | 'post' | 'user'
