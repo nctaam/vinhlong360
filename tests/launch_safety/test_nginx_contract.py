@@ -759,30 +759,36 @@ def _regex_backend_aliases(pattern: str) -> set[str]:
     raise AssertionError(f"backend regex lacks reviewed segment-boundary form: {pattern}")
 
 
-def _backend_ingress_aliases(source: str) -> dict[str, str]:
-    aliases: dict[str, str] = {}
+def _backend_ingress_inventory(
+    source: str,
+) -> dict[tuple[str, str], tuple[str, frozenset[str]]]:
+    inventory: dict[tuple[str, str], tuple[str, frozenset[str]]] = {}
     for server in _public_servers_from_source(source):
         for location in _locations(server):
             upstream = _backend_upstream(location)
             if upstream is None:
                 continue
             if location.modifier in {"~", "~*"}:
-                prefixes = _regex_backend_aliases(location.pattern)
+                aliases = frozenset(_regex_backend_aliases(location.pattern))
             elif location.modifier in {"=", "", "^~"}:
                 prefix = location.pattern.rstrip("/") or "/"
-                prefixes = {prefix}
+                aliases = frozenset({prefix})
             else:
                 raise AssertionError(
                     f"unsupported backend location modifier: {location.modifier}"
                 )
-            for prefix in prefixes:
-                previous = aliases.setdefault(prefix, upstream)
-                assert previous == upstream, (prefix, previous, upstream)
-    return aliases
+            selector = (location.modifier, location.pattern)
+            ingress = (upstream, aliases)
+            previous = inventory.setdefault(selector, ingress)
+            assert previous == ingress, (selector, previous, ingress)
+    return inventory
 
 
-def _assert_backend_ingress_matches_policy(source: str, policy: dict[str, object]) -> dict[str, str]:
-    aliases = _backend_ingress_aliases(source)
+def _assert_backend_ingress_matches_policy(
+    source: str,
+    policy: dict[str, object],
+) -> dict[tuple[str, str], tuple[str, frozenset[str]]]:
+    inventory = _backend_ingress_inventory(source)
     sensitive = {
         item["prefix"]
         for item in policy["sensitive_prefixes"]
@@ -793,16 +799,19 @@ def _assert_backend_ingress_matches_policy(source: str, policy: dict[str, object
         for item in policy["backend_ingress_exceptions"]
         if isinstance(item, dict)
     }
-    for prefix, upstream in aliases.items():
-        if prefix in sensitive:
-            continue
-        exception = exceptions.get(prefix)
-        assert exception is not None, f"unreviewed backend ingress alias: {prefix}"
-        assert exception.get("upstream") == upstream
-        assert isinstance(exception.get("review_reason"), str)
-        assert exception["review_reason"].strip()
-    assert set(exceptions) <= set(aliases), "stale backend ingress exception"
-    return aliases
+    reviewed_aliases: set[str] = set()
+    for upstream, aliases in inventory.values():
+        for prefix in aliases:
+            reviewed_aliases.add(prefix)
+            if prefix in sensitive:
+                continue
+            exception = exceptions.get(prefix)
+            assert exception is not None, f"unreviewed backend ingress alias: {prefix}"
+            assert exception.get("upstream") == upstream
+            assert isinstance(exception.get("review_reason"), str)
+            assert exception["review_reason"].strip()
+    assert set(exceptions) <= reviewed_aliases, "stale backend ingress exception"
+    return inventory
 
 
 def test_backend_ingress_aliases_match_policy_and_http_https_parity():
@@ -816,6 +825,39 @@ def test_backend_ingress_aliases_match_policy_and_http_https_parity():
         (ROOT / "nginx-ssl.conf").read_text(encoding="utf-8"), policy
     )
     assert http_aliases == https_aliases
+
+
+def _remove_location_block(source: str, header: str) -> str:
+    pattern = re.compile(
+        rf"^    {re.escape(header)} \{{\r?\n.*?^    \}}\r?\n",
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    mutated, count = pattern.subn("", source, count=1)
+    assert count == 1, header
+    return mutated
+
+
+@pytest.mark.parametrize(
+    "header",
+    (
+        "location = /admin-api",
+        "location ^~ /admin-api/",
+    ),
+)
+def test_backend_ingress_parity_rejects_missing_admin_selector(header: str):
+    policy = json.loads(
+        (ROOT / "config" / "launch-indexing-policy.json").read_text(encoding="utf-8")
+    )
+    http_inventory = _assert_backend_ingress_matches_policy(
+        (ROOT / "nginx.conf").read_text(encoding="utf-8"), policy
+    )
+    https_source = _remove_location_block(
+        (ROOT / "nginx-ssl.conf").read_text(encoding="utf-8"), header
+    )
+    https_inventory = _assert_backend_ingress_matches_policy(https_source, policy)
+
+    with pytest.raises(AssertionError):
+        assert http_inventory == https_inventory
 
 
 def test_backend_ingress_policy_rejects_rogue_route():
