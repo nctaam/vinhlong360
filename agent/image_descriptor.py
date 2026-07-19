@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from urllib.parse import urlsplit
+import ipaddress
+import re
 
 if __package__:
     from .ai_disclosure import LoadedAiDisclosure
@@ -26,6 +27,71 @@ class ImageDescriptor:
     height: int | None
 
 
+_DNS_LABEL = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\Z")
+_PUNYCODE_PAYLOAD = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,57}[A-Za-z0-9])?\Z")
+
+
+def _valid_port(port: str) -> bool:
+    return bool(re.fullmatch(r"[0-9]+", port)) and 1 <= int(port) <= 65535
+
+
+def _valid_dns_host(host: str) -> bool:
+    if not host or len(host) > 253:
+        return False
+    labels = host.split(".")
+    for label in labels:
+        if not _DNS_LABEL.fullmatch(label):
+            return False
+        if label.lower().startswith("xn--"):
+            if not _PUNYCODE_PAYLOAD.fullmatch(label[4:]):
+                return False
+            try:
+                label.encode("ascii").decode("idna")
+            except UnicodeError:
+                return False
+    if all(label.isascii() and label.isdigit() for label in labels):
+        if len(labels) != 4:
+            return False
+        return all(
+            (label == "0" or not label.startswith("0")) and int(label) <= 255
+            for label in labels
+        )
+    return True
+
+
+def _valid_https_authority(authority: str) -> bool:
+    if not authority or any(marker in authority for marker in ("@", "%")):
+        return False
+
+    if authority.startswith("["):
+        closing = authority.find("]")
+        if (
+            closing <= 1
+            or authority.count("[") != 1
+            or authority.count("]") != 1
+        ):
+            return False
+        host = authority[1:closing]
+        suffix = authority[closing + 1 :]
+        if suffix and (not suffix.startswith(":") or not _valid_port(suffix[1:])):
+            return False
+        try:
+            ipaddress.IPv6Address(host)
+        except ValueError:
+            return False
+        return True
+
+    if "[" in authority or "]" in authority or authority.count(":") > 1:
+        return False
+    if ":" in authority:
+        host, port = authority.split(":", 1)
+        if not _valid_port(port):
+            return False
+    else:
+        host = authority
+    return _valid_dns_host(host)
+
+
 def normalize_renderable_image_url(raw: object) -> str | None:
     """Return an approved local or absolute HTTPS image URL."""
     if type(raw) is not str:
@@ -43,35 +109,20 @@ def normalize_renderable_image_url(raw: object) -> str | None:
     ):
         return None
 
-    try:
-        parsed = urlsplit(normalized)
-    except ValueError:
-        return None
-
     if normalized.startswith("/"):
-        if parsed.scheme or parsed.netloc:
-            return None
         return normalized
 
-    if parsed.scheme.lower() != "https" or not parsed.netloc:
+    if not normalized[:8].lower() == "https://":
         return None
-    if "@" in parsed.netloc or "%" in parsed.netloc:
+    remainder = normalized[8:]
+    authority_end = len(remainder)
+    for delimiter in ("/", "?"):
+        position = remainder.find(delimiter)
+        if position >= 0:
+            authority_end = min(authority_end, position)
+    authority = remainder[:authority_end]
+    if not _valid_https_authority(authority):
         return None
-    try:
-        hostname = parsed.hostname
-        port = parsed.port
-        username = parsed.username
-        password = parsed.password
-    except ValueError:
-        return None
-    if (
-        hostname is None
-        or username is not None
-        or password is not None
-        or parsed.netloc.endswith(":")
-    ):
-        return None
-    del port
     return normalized
 
 

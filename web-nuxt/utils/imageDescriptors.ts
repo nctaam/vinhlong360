@@ -16,6 +16,9 @@ const DESCRIPTOR_KEYS = [
 
 const DESCRIPTOR_KEY_SIGNATURE = [...DESCRIPTOR_KEYS].sort().join('\0')
 
+const DNS_LABEL_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/
+const PUNYCODE_PAYLOAD_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,57}[A-Za-z0-9])?$/
+
 const ALLOWED_SOURCE_COMBINATIONS = new Set([
   'ai-generated|entity-editorial|entity-ai',
   'placeholder|generated-placeholder|entity-placeholder',
@@ -23,30 +26,88 @@ const ALLOWED_SOURCE_COMBINATIONS = new Set([
   'user-uploaded|post-ugc|ugc-photo',
 ])
 
+function isValidPort(port: string): boolean {
+  if (!/^[0-9]+$/.test(port)) return false
+  const value = Number(port)
+  return Number.isSafeInteger(value) && value >= 1 && value <= 65535
+}
+
+function isValidPunycodeLabel(label: string): boolean {
+  if (!label.toLowerCase().startsWith('xn--')) return true
+  if (label.length <= 4 || !PUNYCODE_PAYLOAD_PATTERN.test(label.slice(4))) return false
+  try {
+    const parsed = new URL(`https://${label}/`)
+    return parsed.hostname.toLowerCase() === label.toLowerCase()
+  } catch {
+    return false
+  }
+}
+
+function isValidDnsHost(host: string): boolean {
+  if (!host || host.length > 253) return false
+  const labels = host.split('.')
+  if (labels.some(label => (
+    !DNS_LABEL_PATTERN.test(label)
+    || !isValidPunycodeLabel(label)
+  ))) return false
+
+  if (labels.every(label => /^\d+$/.test(label))) {
+    if (labels.length !== 4) return false
+    return labels.every(label => (
+      (label === '0' || !label.startsWith('0'))
+      && Number(label) <= 255
+    ))
+  }
+  return true
+}
+
+function isValidHttpsAuthority(authority: string): boolean {
+  if (!authority || authority.includes('@') || authority.includes('%')) return false
+
+  if (authority.startsWith('[')) {
+    const closing = authority.indexOf(']')
+    if (
+      closing <= 1
+      || authority.indexOf('[', 1) !== -1
+      || authority.indexOf(']', closing + 1) !== -1
+    ) return false
+    const host = authority.slice(1, closing)
+    const suffix = authority.slice(closing + 1)
+    if (suffix && (!suffix.startsWith(':') || !isValidPort(suffix.slice(1)))) return false
+    try {
+      // WHATWG URL validates the bracketed IPv6 grammar after the lexical checks above.
+      new URL(`https://[${host}]/`)
+    } catch {
+      return false
+    }
+    return true
+  }
+
+  if (authority.includes('[') || authority.includes(']')) return false
+  if ((authority.match(/:/g) ?? []).length > 1) return false
+  const separator = authority.indexOf(':')
+  if (separator >= 0) {
+    if (!isValidPort(authority.slice(separator + 1))) return false
+    authority = authority.slice(0, separator)
+  }
+  return isValidDnsHost(authority)
+}
+
 export function normalizeRenderableImageUrl(value: unknown): string | null {
   if (typeof value !== 'string') return null
   const url = value.trim()
   if (!url || /[\u0000-\u0020\u007f\\]/.test(url) || url.includes('#')) return null
   if (url.startsWith('//')) return null
   if (url.startsWith('/')) return url
-  if (!/^https:\/\/[^/]/i.test(url)) return null
+  if (!/^https:\/\//i.test(url)) return null
 
-  try {
-    const authority = url.slice(url.indexOf('//') + 2).split(/[/?#]/, 1)[0]
-    const parsed = new URL(url)
-    if (
-      parsed.protocol !== 'https:'
-      || !parsed.hostname
-      || authority?.includes('@')
-      || authority?.includes('%')
-      || parsed.username
-      || parsed.password
-      || authority?.endsWith(':')
-    ) return null
-    return url
-  } catch {
-    return null
+  const remainder = url.slice(8)
+  let authorityEnd = remainder.length
+  for (const delimiter of ['/', '?']) {
+    const position = remainder.indexOf(delimiter)
+    if (position >= 0) authorityEnd = Math.min(authorityEnd, position)
   }
+  return isValidHttpsAuthority(remainder.slice(0, authorityEnd)) ? url : null
 }
 
 export function parseGalleryDescriptor(value: unknown): ImageDescriptor | null {
