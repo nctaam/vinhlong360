@@ -32,7 +32,12 @@ _PUNYCODE_PAYLOAD = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,57}[A-Za-z0-9])?\Z
 
 
 def _valid_port(port: str) -> bool:
-    return bool(re.fullmatch(r"[0-9]+", port)) and 1 <= int(port) <= 65535
+    if len(port) > 5 or not re.fullmatch(r"[0-9]+", port):
+        return False
+    try:
+        return 1 <= int(port) <= 65535
+    except ValueError:
+        return False
 
 
 def _valid_dns_host(host: str) -> bool:

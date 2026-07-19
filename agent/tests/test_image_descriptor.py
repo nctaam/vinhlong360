@@ -77,6 +77,7 @@ def test_normalize_renderable_image_url_accepts_local_and_external_https(
         "https://256.256.256.256/image.webp",
         "https://xn--/image.webp",
         "https://cdn.example:not-a-port/image.webp",
+        "https://cdn.example:" + "9" * 4301 + "/image.webp",
         "https://[2001:db8::1/image.webp",
         "https://example.com：443/image.webp",
     ],

@@ -27,7 +27,7 @@ const ALLOWED_SOURCE_COMBINATIONS = new Set([
 ])
 
 function isValidPort(port: string): boolean {
-  if (!/^[0-9]+$/.test(port)) return false
+  if (port.length > 5 || !/^[0-9]+$/.test(port)) return false
   const value = Number(port)
   return Number.isSafeInteger(value) && value >= 1 && value <= 65535
 }
@@ -104,7 +104,7 @@ export function normalizeRenderableImageUrl(value: unknown): string | null {
   return isValidHttpsAuthority(remainder.slice(0, authorityEnd)) ? url : null
 }
 
-export function parseGalleryDescriptor(value: unknown): ImageDescriptor | null {
+export function parseGalleryDescriptor(value: unknown): Readonly<ImageDescriptor> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
   const descriptor = value as Record<string, unknown>
   if (Object.keys(descriptor).sort().join('\0') !== DESCRIPTOR_KEY_SIGNATURE) return null
@@ -150,7 +150,7 @@ export function normalizeReviewPhoto(input: {
   url: unknown
   alt: unknown
   credit?: unknown
-}): ImageDescriptor | null {
+}): Readonly<ImageDescriptor> | null {
   const url = normalizeRenderableImageUrl(input.url)
   if (url === null) return null
   if (typeof input.alt !== 'string' || !input.alt.trim()) {
