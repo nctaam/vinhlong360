@@ -14,15 +14,19 @@
       </ol>
     </nav>
 
-    <!-- Cover + Hero Image -->
+    <!-- Cover + Hero Image. The descriptor remains authoritative here; the gallery
+         and lightbox receive URL strings only at their existing Task35 boundary. -->
     <div
+      data-entity-hero
       :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': hasEntityImages }]"
       :style="!hasEntityImages ? { backgroundImage: heroPlaceholderBg } : undefined"
       :role="!hasEntityImages ? 'img' : undefined"
-      :aria-label="!hasEntityImages ? 'Ảnh minh hoạ theo tông màu ' + typeMeta.label : undefined"
+      :aria-label="!hasEntityImages ? heroDescriptor.alt : undefined"
+      :aria-describedby="heroDisclosureId"
     >
-      <NuxtImg v-if="hasEntityImages && isRemoteUrl(coverImage)" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" :aria-label="hasEntityImages ? `Xem ảnh ${entity.name}` : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" @keydown.space.prevent="hasEntityImages && openCoverLightbox(0)" />
-      <img v-else-if="hasEntityImages" :src="coverImage" :alt="entity.name" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" :role="hasEntityImages ? 'button' : undefined" :tabindex="hasEntityImages ? 0 : undefined" :aria-label="hasEntityImages ? `Xem ảnh ${entity.name}` : undefined" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="hasEntityImages && openCoverLightbox(0)" @keydown.enter="hasEntityImages && openCoverLightbox(0)" @keydown.space.prevent="hasEntityImages && openCoverLightbox(0)" />
+      <NuxtImg v-if="hasEntityImages && heroDescriptor.url && isRemoteUrl(heroDescriptor.url)" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" sizes="sm:100vw md:100vw lg:960px xl:1200px" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
+      <img v-else-if="hasEntityImages && heroDescriptor.url" :src="heroDescriptor.url" :alt="heroDescriptor.alt" class="dc-bg" loading="eager" fetchpriority="high" width="1200" height="600" role="button" tabindex="0" :aria-describedby="heroDisclosureId" :aria-label="`Xem ảnh ${entity.name}`" @load="($event.target as HTMLElement)?.classList.add('loaded')" @click="openCoverLightbox(0)" @keydown.enter="openCoverLightbox(0)" @keydown.space.prevent="openCoverLightbox(0)" />
+      <EntityHeroPlaceholder v-else :id="entity.id" :cat="typeMeta.cat" :label="typeMeta.label" :descriptor="heroDescriptor" class="dc-placeholder" aria-hidden="true" />
       <div v-if="coverImage" class="dc-overlay"></div>
       <div v-if="coverImage" class="dc-vignette" aria-hidden="true"></div>
       <span v-if="!hasEntityImages" class="dc-motif" aria-hidden="true" v-html="heroMotifSvg"></span>
@@ -54,35 +58,35 @@
           </ClientOnly>
         </div>
       </div>
-      <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="entityImages.length === 1 ? 'Xem ảnh' : `Xem ${entityImages.length} ảnh`" @click="openCoverLightbox()">
+      <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="task35ImageUrls.length === 1 ? 'Xem ảnh' : `Xem ${task35ImageUrls.length} ảnh`" @click="openCoverLightbox()">
         <span class="dc-photo-icon" aria-hidden="true">&#128247;</span>
-        {{ entityImages.length === 1 ? 'Xem ảnh' : `${entityImages.length} ảnh` }}
+        {{ task35ImageUrls.length === 1 ? 'Xem ảnh' : `${task35ImageUrls.length} ảnh` }}
       </button>
-      <div v-if="hasEntityImages && entityImages.length > 1" class="dc-thumbs">
-        <template v-for="(src, i) in entityImages.slice(0, 4)" :key="src">
-          <button type="button" class="dc-thumb-btn" :class="{ active: i === 0 }" :aria-label="`Xem ảnh ${i + 1} của ${entity.name}`" @click="openCoverLightbox(i)">
-            <NuxtImg v-if="isRemoteUrl(src)" :src="src" :alt="`${entity.name} - ${i + 1}`" class="dc-thumb" loading="lazy" width="56" height="40" sizes="56px" decoding="async" @error="hideImage" />
-            <img v-else :src="src" :alt="`${entity.name} - ${i + 1}`" class="dc-thumb" loading="lazy" width="56" height="40" decoding="async" @error="hideImage" />
+      <div v-if="hasEntityImages && task35ImageUrls.length > 1" class="dc-thumbs">
+        <template v-for="(descriptor, i) in entityImageDescriptors.slice(0, 4)" :key="disclosureIdFor(i)">
+          <button type="button" class="dc-thumb-btn" data-disclosure-target :class="{ active: i === 0 }" :aria-label="`Xem ảnh ${i + 1} của ${entity.name}`" :aria-describedby="disclosureIdFor(i)" @click="openCoverLightbox(i)">
+            <NuxtImg v-if="descriptor.url && isRemoteUrl(descriptor.url)" :src="descriptor.url" :alt="descriptor.alt" class="dc-thumb" loading="lazy" width="56" height="40" sizes="56px" decoding="async" @error="hideImage" />
+            <img v-else-if="descriptor.url" :src="descriptor.url" :alt="descriptor.alt" class="dc-thumb" loading="lazy" width="56" height="40" decoding="async" @error="hideImage" />
+            <ImageDisclosure :id="disclosureIdFor(i)" :descriptor="descriptor" presentation="short" />
           </button>
         </template>
-        <button type="button" v-if="entityImages.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entityImages.length - 4} ảnh`" @click="openCoverLightbox(4)">
-          +{{ entityImages.length - 4 }}
+        <button type="button" v-if="task35ImageUrls.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${task35ImageUrls.length - 4} ảnh`" @click="openCoverLightbox(4)">
+          +{{ task35ImageUrls.length - 4 }}
         </button>
       </div>
-      <small v-if="imageCredit" class="dc-credit">{{ imageCredit }}</small>
-      <small v-else-if="!hasEntityImages" class="dc-nophoto-note">Ảnh minh hoạ theo tông màu đặc trưng — chưa có ảnh thật cho địa điểm này.</small>
+      <ImageDisclosure :id="heroDisclosureId" :descriptor="heroDescriptor" presentation="short" class="dc-disclosure" />
     </div>
 
     <!-- Photo Gallery (asymmetric grid for 2+ images) -->
     <LazyPhotoGallery
-      v-if="hasEntityImages && entityImages.length >= 2"
-      :images="entityImages"
+      v-if="hasEntityImages && task35ImageUrls.length >= 2"
+      :images="task35ImageUrls"
       :alt="entity.name"
       class="detail-gallery"
       @open-lightbox="openCoverLightbox"
     />
 
-    <LazyImageLightbox v-if="entityImages.length" v-model="lightboxOpen" :images="entityImages" :start-index="lbIndex" />
+    <LazyImageLightbox v-if="task35ImageUrls.length" v-model="lightboxOpen" :images="task35ImageUrls" :start-index="lbIndex" />
 
     <!-- Body -->
     <div class="detail-body">
@@ -473,14 +477,21 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
+import type { ImageDescriptor } from '~/types/image'
 import { TYPE_META, AREA_META, REL_FWD, REL_BWD } from '~/composables/useConstants'
 import { seasonText } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { entityStoryTeaser } from '~/composables/useEntityStory'
+import { aiDisclosure } from '~/utils/aiDisclosure'
+import { normalizeRenderableImageUrl, parseGalleryDescriptor } from '~/utils/imageDescriptors'
 
 interface LaunchEntityCarrier extends Entity {
   readonly __launchGeneration: number
   readonly __launchRequestId: string
+}
+
+interface GalleryResponse {
+  readonly images: unknown[]
 }
 
 useReveal()
@@ -614,6 +625,21 @@ const { data: entity, error: fetchError, status: entityStatus, refresh: refreshE
   { watch: [id, () => route.fullPath], deep: false }
 )
 
+const { data: galleryDescriptors } = await useAsyncData(
+  computed(() => `entity-gallery-${id.value}`),
+  async (): Promise<Readonly<ImageDescriptor>[]> => {
+    try {
+      const response = await apiFetch<GalleryResponse>(`/api/entities/${encodedId.value}/gallery`)
+      if (!response || !Array.isArray(response.images)) return []
+      return response.images.flatMap((raw) => {
+        const descriptor = parseGalleryDescriptor(raw)
+        return descriptor ? [descriptor] : []
+      })
+    } catch { return [] }
+  },
+  { watch: [id], deep: false },
+)
+
 async function refreshEntity() {
   entityLaunchGeneration.begin()
   await refreshEntityData()
@@ -673,17 +699,66 @@ const areaName = computed(() => {
   return AREA_META[area]?.name || area || ''
 })
 
-const entityImages = computed(() => {
-  const imgs = entity.value?.images
-  return Array.isArray(imgs) ? imgs.filter(Boolean) : []
-})
-const hasEntityImages = computed(() => entityImages.value.length > 0)
+const entityImageDescriptors = computed<Readonly<ImageDescriptor>[]>(() => {
+  if (galleryDescriptors.value?.length) return galleryDescriptors.value
 
-const coverImage = computed(() => {
-  const first = entityImages.value[0]
-  if (first) return first
-  return `/img/cat/${typeMeta.value.cat}.jpg`
+  const legacy = Array.isArray(entity.value?.images)
+    ? entity.value.images.flatMap((raw, index) => {
+        const url = normalizeRenderableImageUrl(raw)
+        if (!url) return []
+        const name = entity.value?.name || 'Địa điểm'
+        return [Object.freeze({
+          url,
+          alt: `${name} — ảnh minh họa ${index + 1}`,
+          source_class: 'ai-generated' as const,
+          source_kind: 'entity-editorial' as const,
+          disclosure_key: 'entity-ai' as const,
+          short_label: aiDisclosure.entity_ai.short_label,
+          full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+          credit: null,
+          width: null,
+          height: null,
+        })]
+      })
+    : []
+  return legacy.length ? legacy : [createPlaceholderDescriptor()]
 })
+
+function createPlaceholderDescriptor(): Readonly<ImageDescriptor> {
+  const name = entity.value?.name || 'Địa điểm'
+  return Object.freeze({
+    url: null,
+    alt: `${name} — chưa có ảnh riêng`,
+    source_class: 'placeholder',
+    source_kind: 'generated-placeholder',
+    disclosure_key: 'entity-placeholder',
+    short_label: aiDisclosure.placeholder.short_label,
+    full_disclosure: aiDisclosure.placeholder.full_disclosure,
+    credit: null,
+    width: null,
+    height: null,
+  })
+}
+
+const heroDescriptor = computed(() => entityImageDescriptors.value[0] || createPlaceholderDescriptor())
+const task35ImageUrls = computed<string[]>(() => (
+  entityImageDescriptors.value.flatMap(descriptor => descriptor.url ? [descriptor.url] : [])
+))
+const hasEntityImages = computed(() => task35ImageUrls.value.length > 0)
+
+const coverImage = computed(() => task35ImageUrls.value[0] || '')
+
+function sanitizeDisclosureIdToken(value: unknown): string {
+  const raw = String(value ?? '').trim()
+  if (!raw) return 'entity'
+  return encodeURIComponent(raw).replace(/%/g, '_').replace(/[^A-Za-z0-9_-]+/g, '-') || 'entity'
+}
+
+const disclosureEntityId = computed(() => sanitizeDisclosureIdToken(entity.value?.id || id.value))
+const heroDisclosureId = computed(() => `entity-image-disclosure-${disclosureEntityId.value}-hero`)
+function disclosureIdFor(index: number): string {
+  return `entity-image-disclosure-${disclosureEntityId.value}-rail-${index}`
+}
 
 // No-photo "phù sa" hero: per-entity hash-seeded gradient (same system as EntityCard),
 // promoted to full-bleed hero scale. Replaces the flat shared /img/cat/*.jpg fallback.
@@ -701,20 +776,10 @@ const heroHook = computed(() => {
   const t = entityStoryTeaser(entity.value)
   return t && t !== entity.value.name ? t : ''
 })
-
-
-const imageCredit = computed(() => {
-  const credits = entity.value?.image_credits
-  if (!Array.isArray(credits) || !credits.length) return ''
-  const c = credits[0]
-  if (!c) return ''
-  return c.author ? `${c.author} · ${c.license || 'CC'}` : ''
-})
-
 const lightboxOpen = ref(false)
 const lbIndex = ref(0)
 function openCoverLightbox(idx = 0) {
-  if (!entityImages.value.length) return
+  if (!task35ImageUrls.value.length) return
   lbIndex.value = typeof idx === 'number' ? idx : 0
   lightboxOpen.value = true
 }
@@ -1346,6 +1411,28 @@ useHead({
   position: absolute; right: var(--space-4); bottom: var(--space-3); z-index: 2;
   font-size: var(--text-2xs); color: rgba(var(--white-rgb), .82);
   text-shadow: 0 1px 3px rgba(var(--black-rgb), .5); max-width: 58%; text-align: right; line-height: 1.3;
+}
+.detail-cover .dc-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.detail-cover .dc-disclosure {
+  position: absolute;
+  left: var(--space-4);
+  bottom: var(--space-3);
+  z-index: 3;
+  color: rgba(var(--white-rgb), .9);
+  text-shadow: 0 1px 3px rgba(var(--black-rgb), .45);
+}
+.dc-thumb-btn { position: relative; }
+.dc-thumb-btn :deep(.image-disclosure) {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 2px 3px;
+  color: var(--text-on-dark, #fff);
+  background: rgba(0, 0, 0, .58);
+  pointer-events: none;
 }
 /* Oversized off-centre category motif watermark (no-photo hero only) — same visual
    language as EntityHeroPlaceholder.vue's .ehp-motif. Sits behind .dc-inner (z-index 2)

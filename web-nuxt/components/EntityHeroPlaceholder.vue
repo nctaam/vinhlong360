@@ -1,18 +1,32 @@
 <template>
-  <div class="ehp" :class="`cat-${cat}`" :style="{ backgroundImage: bg }" role="img" :aria-label="`Ảnh minh hoạ theo tông màu ${label}`">
+  <div class="ehp" :class="`cat-${cat}`" :style="{ backgroundImage: bg }" role="img" :aria-label="descriptor?.alt || `Minh hoạ đồ hoạ ${label}`">
     <span class="ehp-grain" aria-hidden="true"></span>
     <span class="ehp-wash" aria-hidden="true"></span>
     <span class="ehp-motif" aria-hidden="true" v-html="motif"></span>
-    <span class="ehp-note">Ảnh minh hoạ theo tông màu đặc trưng — chưa có ảnh thật cho nơi này.</span>
+    <span class="ehp-note">{{ disclosure }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
-const props = defineProps<{ id: string | number; cat: string; label?: string }>()
-const bg = computed(() => generateCategoryPlaceholder(props.id, props.cat))
+import type { ImageDescriptor } from '~/types/image'
+import { aiDisclosure } from '~/utils/aiDisclosure'
+
+const props = withDefaults(defineProps<{
+  id?: string | number
+  cat?: string
+  label?: string
+  descriptor?: ImageDescriptor
+}>(), {
+  cat: 'place',
+  label: '',
+})
+
+const seed = computed(() => props.id ?? props.descriptor?.alt ?? 'placeholder')
+const bg = computed(() => generateCategoryPlaceholder(seed.value, props.cat))
 const motif = computed(() => generateCategoryIcon(props.cat))
 const label = computed(() => props.label || '')
+const disclosure = computed(() => props.descriptor?.full_disclosure || aiDisclosure.placeholder.full_disclosure)
 </script>
 
 <style scoped>

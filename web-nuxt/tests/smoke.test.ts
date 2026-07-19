@@ -212,7 +212,8 @@ describe('UserCP regressions', () => {
     const ehp = src('components/EntityHeroPlaceholder.vue')
     expect(ehp).toContain('generateCategoryPlaceholder')
     expect(ehp).toContain('ehp-motif')
-    expect(ehp).toContain('chưa có ảnh thật')
+    expect(ehp).toContain('aiDisclosure.placeholder.full_disclosure')
+    expect(ehp).not.toContain('chưa có ảnh thật')
   })
 
   it('does not register the service worker on local dev hosts', () => {

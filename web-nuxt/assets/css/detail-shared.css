@@ -46,6 +46,21 @@ a.hl-action[href^="https://zalo"]:hover { background: var(--brand-zalo-hover); b
 .detail-gallery .detail-img:hover { opacity: .85; transform: scale(var(--img-hover-scale)); }
 .detail-gallery .detail-img:active { transform: scale(.97); transition-duration: .08s; }
 
+/* Image disclosures stay discoverable to assistive technology while their full
+   canonical copy is associated through aria-describedby at each media target. */
+[data-disclosure-target] { position: relative; }
+[data-full-disclosure].image-disclosure-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Lightbox (dùng bởi ImageGallery + PostCard) */
 .lightbox { position: fixed; inset: 0; z-index: var(--z-lightbox); background: rgba(0,0,0,.94); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); display: flex; align-items: center; justify-content: center; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
 .lb-fade-enter-active { transition: opacity .3s var(--ease-out-expo); }
