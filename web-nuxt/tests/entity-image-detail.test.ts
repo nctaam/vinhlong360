@@ -5,6 +5,7 @@ import { defineComponent, h } from 'vue'
 import { describe, expect, it } from 'vitest'
 import EntityHeroPlaceholder from '../components/EntityHeroPlaceholder.vue'
 import ImageDisclosure from '../components/ImageDisclosure.vue'
+import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '../utils/entityGallery'
 import { aiDisclosure } from '../utils/aiDisclosure'
 import type { ImageDescriptor } from '../types/image'
 
@@ -152,10 +153,28 @@ describe('entity detail image descriptor boundary', () => {
     expect(detailSource).toContain('Array.isArray(response.images)')
     expect(detailSource).toContain('response.images.flatMap')
     expect(detailSource).toContain('parseGalleryDescriptor')
-    expect(detailSource).toContain('catch { return [] }')
+    expect(detailSource).toContain('catch { return { requestId, descriptors: [] } }')
     expect(detailSource).toContain('normalizeRenderableImageUrl(raw)')
     expect(detailSource).toContain('source_class: \'ai-generated\'')
     expect(detailSource).toContain('source_kind: \'entity-editorial\'')
+    expect(detailSource).toContain('requestId')
+    expect(detailSource).toContain('currentGalleryDescriptors')
+  })
+
+  it('does not render a stale gallery carrier after a route change', () => {
+    const entityA: GalleryDescriptorCarrier = {
+      requestId: 'entity-a',
+      descriptors: [aiDescriptor],
+    }
+    const entityBDescriptor = { ...aiDescriptor, url: '/img/entity-b.webp', alt: 'Entity B — ảnh minh họa 1' }
+    const entityB: GalleryDescriptorCarrier = {
+      requestId: 'entity-b',
+      descriptors: [entityBDescriptor],
+    }
+
+    expect(currentGalleryDescriptors(entityA, 'entity-b')).toEqual([])
+    expect(currentGalleryDescriptors(entityB, 'entity-b')).toEqual([entityBDescriptor])
+    expect(detailSource).toContain('galleryCarrier.value')
   })
 
   it('keeps descriptors authoritative through the hero and rail', () => {

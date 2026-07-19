@@ -483,6 +483,7 @@ import { seasonText } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { entityStoryTeaser } from '~/composables/useEntityStory'
 import { aiDisclosure } from '~/utils/aiDisclosure'
+import { currentGalleryDescriptors, type GalleryDescriptorCarrier } from '~/utils/entityGallery'
 import { normalizeRenderableImageUrl, parseGalleryDescriptor } from '~/utils/imageDescriptors'
 
 interface LaunchEntityCarrier extends Entity {
@@ -625,20 +626,24 @@ const { data: entity, error: fetchError, status: entityStatus, refresh: refreshE
   { watch: [id, () => route.fullPath], deep: false }
 )
 
-const { data: galleryDescriptors } = await useAsyncData(
+const { data: galleryCarrier } = await useAsyncData(
   computed(() => `entity-gallery-${id.value}`),
-  async (): Promise<Readonly<ImageDescriptor>[]> => {
+  async (): Promise<GalleryDescriptorCarrier> => {
+    const requestId = id.value
     try {
       const response = await apiFetch<GalleryResponse>(`/api/entities/${encodedId.value}/gallery`)
-      if (!response || !Array.isArray(response.images)) return []
-      return response.images.flatMap((raw) => {
+      if (!response || !Array.isArray(response.images)) return { requestId, descriptors: [] }
+      const descriptors = response.images.flatMap((raw) => {
         const descriptor = parseGalleryDescriptor(raw)
         return descriptor ? [descriptor] : []
       })
-    } catch { return [] }
+      return { requestId, descriptors }
+    } catch { return { requestId, descriptors: [] } }
   },
   { watch: [id], deep: false },
 )
+
+const galleryDescriptors = computed(() => currentGalleryDescriptors(galleryCarrier.value, id.value))
 
 async function refreshEntity() {
   entityLaunchGeneration.begin()
