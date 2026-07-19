@@ -188,11 +188,10 @@ describe('entity detail image descriptor boundary', () => {
     expect(detailSource).not.toContain('imageCredit')
   })
 
-  it('adapts to string URLs only at the existing Task35 component boundary', () => {
-    expect(detailSource).toMatch(/const task35ImageUrls = computed<string\[\]>\(/)
-    expect(detailSource).toContain('descriptor.url ? [descriptor.url] : []')
-    expect(detailSource).toContain(':images="task35ImageUrls"')
-    expect(detailSource).not.toContain(':images="entityImageDescriptors"')
+  it('passes classified descriptors directly through the final Task35 component boundary', () => {
+    expect(detailSource).not.toContain('task35ImageUrls')
+    expect(detailSource).toContain(':images="entityImageDescriptors"')
+    expect(detailSource).toContain('entityImageDescriptors.value.some(descriptor => descriptor.url !== null)')
     expect(detailSource).not.toContain('const entityImages')
   })
 

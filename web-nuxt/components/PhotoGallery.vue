@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useId } from 'vue'
+import type { ImageDescriptor } from '~/types/image'
+
 const props = withDefaults(defineProps<{
-  images: string[]
+  images: ImageDescriptor[]
   alt: string
   maxThumbs?: number
   standalone?: boolean
@@ -12,8 +15,10 @@ const carouselRef = ref<HTMLElement | null>(null)
 const activeSlide = ref(0)
 const lbOpen = ref(false)
 const lbStart = ref(0)
+const galleryId = `gallery-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
 
 function openLightbox(idx: number) {
+  if (!props.images[idx]) return
   if (props.standalone) {
     lbStart.value = idx
     lbOpen.value = true
@@ -24,7 +29,12 @@ function openLightbox(idx: number) {
 
 const thumbImages = computed(() => props.images.slice(1, props.maxThumbs + 1))
 const extraCount = computed(() => Math.max(0, props.images.length - props.maxThumbs - 1))
-const firstImage = computed(() => props.images[0] ?? '')
+const firstImage = computed(() => props.images[0] ?? null)
+const hasRenderableImages = computed(() => props.images.some(image => Boolean(image.url)))
+
+function disclosureId(surface: string, index: number): string {
+  return `${galleryId}-${surface}-${index}`
+}
 
 const isRemote = isRemoteUrl
 
@@ -50,41 +60,59 @@ function goToSlide(idx: number) {
 
 <template>
   <!-- No images: placeholder -->
-  <div v-if="!images.length" class="pg-empty" role="img" :aria-label="alt">
+  <div v-if="!hasRenderableImages" class="pg-empty" role="img" :aria-label="firstImage?.alt || alt" :aria-describedby="firstImage ? disclosureId('empty', 0) : undefined">
     <span class="pg-empty-grain" aria-hidden="true"></span>
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
       <rect width="48" height="48" rx="8" fill="currentColor" opacity="0.08"/>
       <path d="M16 32l6-8 4 5 6-10 6 13H10z" fill="currentColor" opacity="0.2"/>
       <circle cx="18" cy="18" r="3" fill="currentColor" opacity="0.25"/>
     </svg>
-    <span class="pg-empty-text">Chưa có ảnh cho nơi này</span>
+    <span v-if="firstImage" :id="disclosureId('empty', 0)" data-full-disclosure class="pg-empty-text">
+      <span>{{ firstImage.full_disclosure }}</span>
+      <span v-if="firstImage.credit" data-credit class="pg-empty-credit">{{ firstImage.credit }}</span>
+    </span>
+    <span v-else class="pg-empty-text">Chưa có ảnh cho nơi này</span>
   </div>
 
   <!-- Single image -->
-  <div v-else-if="images.length === 1" class="pg-single">
-    <button type="button" class="pg-img-btn" @click="openLightbox(0)" :aria-label="`Xem ảnh ${alt}`">
-      <NuxtImg v-if="isRemote(firstImage)" :src="firstImage" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" sizes="sm:100vw md:100vw lg:960px" decoding="async" @error="onImgError" />
-      <img v-else :src="firstImage" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="960" height="640" decoding="async" @error="onImgError" />
+  <div v-else-if="images.length === 1 && firstImage" class="pg-single">
+    <button type="button" class="pg-img-btn" @click="openLightbox(0)" :aria-label="`Xem ảnh ${firstImage.alt}`">
+      <NuxtImg v-if="firstImage.url && isRemote(firstImage.url)" data-gallery-media :src="firstImage.url" :alt="firstImage.alt" class="pg-main-img" :aria-describedby="disclosureId('single', 0)" loading="eager" fetchpriority="high" width="960" height="640" sizes="sm:100vw md:100vw lg:960px" decoding="async" @error="onImgError" />
+      <img v-else-if="firstImage.url" data-gallery-media :src="firstImage.url" :alt="firstImage.alt" class="pg-main-img" :aria-describedby="disclosureId('single', 0)" loading="eager" fetchpriority="high" width="960" height="640" decoding="async" @error="onImgError" />
+      <span :id="disclosureId('single', 0)" data-full-disclosure class="pg-disclosure">
+        <span>{{ firstImage.full_disclosure }}</span>
+        <span v-if="firstImage.credit" data-credit>{{ firstImage.credit }}</span>
+      </span>
     </button>
   </div>
 
   <!-- Desktop: asymmetric grid -->
   <div v-else class="pg-grid" role="group" :aria-label="`Bộ ảnh ${alt}`">
-    <button type="button" class="pg-main" @click="openLightbox(0)" :aria-label="`Ảnh chính — ${alt}`">
-      <NuxtImg v-if="isRemote(firstImage)" :src="firstImage" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" sizes="sm:100vw md:60vw lg:640px" decoding="async" @error="onImgError" />
-      <img v-else :src="firstImage" :alt="alt" class="pg-main-img" loading="eager" fetchpriority="high" width="640" height="427" decoding="async" @error="onImgError" />
+    <button type="button" class="pg-main" @click="openLightbox(0)" :aria-label="`Ảnh chính — ${firstImage?.alt || alt}`">
+      <NuxtImg v-if="firstImage?.url && isRemote(firstImage.url)" data-gallery-media :src="firstImage.url" :alt="firstImage.alt" class="pg-main-img" :aria-describedby="disclosureId('main', 0)" loading="eager" fetchpriority="high" width="640" height="427" sizes="sm:100vw md:60vw lg:640px" decoding="async" @error="onImgError" />
+      <img v-else-if="firstImage?.url" data-gallery-media :src="firstImage.url" :alt="firstImage.alt" class="pg-main-img" :aria-describedby="disclosureId('main', 0)" loading="eager" fetchpriority="high" width="640" height="427" decoding="async" @error="onImgError" />
+      <span v-else class="pg-media-placeholder" role="img" :aria-label="firstImage?.alt || alt" :aria-describedby="disclosureId('main', 0)">▧</span>
+      <span v-if="firstImage" :id="disclosureId('main', 0)" data-full-disclosure class="pg-disclosure">
+        <span>{{ firstImage.full_disclosure }}</span>
+        <span v-if="firstImage.credit" data-credit>{{ firstImage.credit }}</span>
+      </span>
     </button>
     <div class="pg-thumbs">
       <button
-        v-for="(src, i) in thumbImages"
-        :key="src"
+        v-for="(descriptor, i) in thumbImages"
+        :key="`${descriptor.url || descriptor.alt}-${i}`"
         type="button"
         class="pg-thumb"
         @click="openLightbox(i + 1)"
         :aria-label="`Ảnh ${i + 2} — ${alt}`"
       >
-        <NuxtImg v-if="isRemote(src)" :src="src" alt="" aria-hidden="true" class="pg-thumb-img" loading="lazy" width="200" height="200" sizes="sm:60px md:80px lg:100px" decoding="async" @error="onImgError" />
-        <img v-else :src="src" alt="" aria-hidden="true" class="pg-thumb-img" loading="lazy" width="200" height="200" decoding="async" @error="onImgError" />
+        <NuxtImg v-if="descriptor.url && isRemote(descriptor.url)" data-gallery-media :src="descriptor.url" :alt="descriptor.alt" class="pg-thumb-img" :aria-describedby="disclosureId('thumb', i + 1)" loading="lazy" width="200" height="200" sizes="sm:60px md:80px lg:100px" decoding="async" @error="onImgError" />
+        <img v-else-if="descriptor.url" data-gallery-media :src="descriptor.url" :alt="descriptor.alt" class="pg-thumb-img" :aria-describedby="disclosureId('thumb', i + 1)" loading="lazy" width="200" height="200" decoding="async" @error="onImgError" />
+        <span v-else class="pg-media-placeholder" role="img" :aria-label="descriptor.alt" :aria-describedby="disclosureId('thumb', i + 1)">▧</span>
+        <span :id="disclosureId('thumb', i + 1)" data-full-disclosure class="pg-disclosure">
+          <span>{{ descriptor.full_disclosure }}</span>
+          <span v-if="descriptor.credit" data-credit>{{ descriptor.credit }}</span>
+        </span>
       </button>
     </div>
     <button v-if="images.length > 1" type="button" class="pg-show-all" @click="openLightbox(0)">
@@ -97,15 +125,20 @@ function goToSlide(idx: number) {
   <div v-if="images.length > 1" class="pg-carousel-wrap">
     <div ref="carouselRef" class="pg-carousel" @scroll.passive="onScroll" role="group" :aria-label="`Bộ ảnh ${alt}`">
       <button
-        v-for="(src, i) in images"
-        :key="src"
+        v-for="(descriptor, i) in images"
+        :key="`${descriptor.url || descriptor.alt}-slide-${i}`"
         type="button"
         class="pg-slide"
         @click="openLightbox(i)"
         :aria-label="`Ảnh ${i + 1} — ${alt}`"
       >
-        <NuxtImg v-if="isRemote(src)" :src="src" :alt="i === 0 ? alt : ''" :aria-hidden="i > 0 ? 'true' : undefined" class="pg-slide-img" :loading="i === 0 ? 'eager' : 'lazy'" width="400" height="267" sizes="sm:100vw md:60vw lg:400px" decoding="async" @error="onImgError" />
-        <img v-else :src="src" :alt="i === 0 ? alt : ''" :aria-hidden="i > 0 ? 'true' : undefined" class="pg-slide-img" :loading="i === 0 ? 'eager' : 'lazy'" width="400" height="267" decoding="async" @error="onImgError" />
+        <NuxtImg v-if="descriptor.url && isRemote(descriptor.url)" data-gallery-media :src="descriptor.url" :alt="descriptor.alt" :aria-describedby="disclosureId('slide', i)" class="pg-slide-img" :loading="i === 0 ? 'eager' : 'lazy'" width="400" height="267" sizes="sm:100vw md:60vw lg:400px" decoding="async" @error="onImgError" />
+        <img v-else-if="descriptor.url" data-gallery-media :src="descriptor.url" :alt="descriptor.alt" :aria-describedby="disclosureId('slide', i)" class="pg-slide-img" :loading="i === 0 ? 'eager' : 'lazy'" width="400" height="267" decoding="async" @error="onImgError" />
+        <span v-else class="pg-media-placeholder" role="img" :aria-label="descriptor.alt" :aria-describedby="disclosureId('slide', i)">▧</span>
+        <span :id="disclosureId('slide', i)" data-full-disclosure class="pg-disclosure">
+          <span>{{ descriptor.full_disclosure }}</span>
+          <span v-if="descriptor.credit" data-credit>{{ descriptor.credit }}</span>
+        </span>
       </button>
     </div>
     <div v-if="images.length <= 8" class="pg-dots" aria-hidden="true">
@@ -149,10 +182,12 @@ function goToSlide(idx: number) {
 .dark .pg-empty-grain { opacity: .08; }
 .pg-empty svg, .pg-empty-text { position: relative; z-index: 1; }
 .pg-empty-text { font-family: var(--font-editorial); font-size: var(--text-sm); }
+.pg-empty-credit { position: relative; z-index: 1; font-size: var(--text-xs); color: var(--muted); }
 
 /* Single image */
 .pg-single { width: 100%; }
 .pg-img-btn {
+  position: relative;
   display: block;
   width: 100%;
   padding: 0;
@@ -185,6 +220,7 @@ function goToSlide(idx: number) {
 }
 
 .pg-main {
+  position: relative;
   grid-row: 1 / -1;
   padding: 0;
   border: none;
@@ -210,6 +246,7 @@ function goToSlide(idx: number) {
 }
 
 .pg-thumb {
+  position: relative;
   padding: 0;
   border: none;
   background: var(--bg-alt);
@@ -226,6 +263,36 @@ function goToSlide(idx: number) {
   transition: transform .3s var(--ease-out, ease);
 }
 .pg-thumb:hover .pg-thumb-img { transform: scale(var(--img-hover-scale)); }
+
+.pg-media-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), .08), rgba(var(--secondary-rgb), .08));
+  font-size: 2rem;
+}
+.pg-disclosure {
+  position: absolute;
+  z-index: 2;
+  left: var(--space-2);
+  right: var(--space-2);
+  bottom: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--text-on-dark, #fff);
+  background: rgba(0, 0, 0, .7);
+  font-size: var(--text-2xs, .72rem);
+  line-height: 1.35;
+  text-align: left;
+  pointer-events: none;
+}
+.pg-disclosure [data-credit] { color: rgba(255, 255, 255, .78); }
 
 /* "Xem trọn bộ N ảnh" pill — hairline museum-label register, not an app badge */
 .pg-show-all {
@@ -269,6 +336,7 @@ function goToSlide(idx: number) {
   .pg-carousel::-webkit-scrollbar { display: none; }
 
   .pg-slide {
+    position: relative;
     flex: 0 0 100%;
     scroll-snap-align: center;
     padding: 0;

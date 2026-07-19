@@ -14,8 +14,7 @@
       </ol>
     </nav>
 
-    <!-- Cover + Hero Image. The descriptor remains authoritative here; the gallery
-         and lightbox receive URL strings only at their existing Task35 boundary. -->
+    <!-- Cover + Hero Image. The descriptor remains authoritative through gallery navigation. -->
     <div
       data-entity-hero
       :class="['detail-cover', `cat-${typeMeta.cat}`, { 'has-cover-img': hasEntityImages }]"
@@ -58,11 +57,11 @@
           </ClientOnly>
         </div>
       </div>
-      <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="task35ImageUrls.length === 1 ? 'Xem ảnh' : `Xem ${task35ImageUrls.length} ảnh`" @click="openCoverLightbox()">
+      <button type="button" v-if="hasEntityImages" class="dc-photo-btn" :aria-label="entityImageDescriptors.length === 1 ? 'Xem ảnh' : `Xem ${entityImageDescriptors.length} ảnh`" @click="openCoverLightbox()">
         <span class="dc-photo-icon" aria-hidden="true">&#128247;</span>
-        {{ task35ImageUrls.length === 1 ? 'Xem ảnh' : `${task35ImageUrls.length} ảnh` }}
+        {{ entityImageDescriptors.length === 1 ? 'Xem ảnh' : `${entityImageDescriptors.length} ảnh` }}
       </button>
-      <div v-if="hasEntityImages && task35ImageUrls.length > 1" class="dc-thumbs">
+      <div v-if="hasEntityImages && entityImageDescriptors.length > 1" class="dc-thumbs">
         <template v-for="(descriptor, i) in entityImageDescriptors.slice(0, 4)" :key="disclosureIdFor(i)">
           <button type="button" class="dc-thumb-btn" data-disclosure-target :class="{ active: i === 0 }" :aria-label="`Xem ảnh ${i + 1} của ${entity.name}`" :aria-describedby="disclosureIdFor(i)" @click="openCoverLightbox(i)">
             <NuxtImg v-if="descriptor.url && isRemoteUrl(descriptor.url)" :src="descriptor.url" :alt="descriptor.alt" class="dc-thumb" loading="lazy" width="56" height="40" sizes="56px" decoding="async" @error="hideImage" />
@@ -70,8 +69,8 @@
             <ImageDisclosure :id="disclosureIdFor(i)" :descriptor="descriptor" presentation="short" />
           </button>
         </template>
-        <button type="button" v-if="task35ImageUrls.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${task35ImageUrls.length - 4} ảnh`" @click="openCoverLightbox(4)">
-          +{{ task35ImageUrls.length - 4 }}
+        <button type="button" v-if="entityImageDescriptors.length > 4" class="dc-thumb-more" :aria-label="`Xem thêm ${entityImageDescriptors.length - 4} ảnh`" @click="openCoverLightbox(4)">
+          +{{ entityImageDescriptors.length - 4 }}
         </button>
       </div>
       <ImageDisclosure :id="heroDisclosureId" :descriptor="heroDescriptor" presentation="short" class="dc-disclosure" />
@@ -79,14 +78,14 @@
 
     <!-- Photo Gallery (asymmetric grid for 2+ images) -->
     <LazyPhotoGallery
-      v-if="hasEntityImages && task35ImageUrls.length >= 2"
-      :images="task35ImageUrls"
+      v-if="hasEntityImages && entityImageDescriptors.length >= 2"
+      :images="entityImageDescriptors"
       :alt="entity.name"
       class="detail-gallery"
       @open-lightbox="openCoverLightbox"
     />
 
-    <LazyImageLightbox v-if="task35ImageUrls.length" v-model="lightboxOpen" :images="task35ImageUrls" :start-index="lbIndex" />
+    <LazyImageLightbox v-if="entityImageDescriptors.length" v-model="lightboxOpen" :images="entityImageDescriptors" :start-index="lbIndex" />
 
     <!-- Body -->
     <div class="detail-body">
@@ -704,8 +703,8 @@ const areaName = computed(() => {
   return AREA_META[area]?.name || area || ''
 })
 
-const entityImageDescriptors = computed<ReadonlyArray<Readonly<ImageDescriptor>>>(() => {
-  if (galleryDescriptors.value?.length) return galleryDescriptors.value
+const entityImageDescriptors = computed<ImageDescriptor[]>(() => {
+  if (galleryDescriptors.value?.length) return [...galleryDescriptors.value]
 
   const legacy = Array.isArray(entity.value?.images)
     ? entity.value.images.flatMap((raw, index) => {
@@ -746,12 +745,11 @@ function createPlaceholderDescriptor(): Readonly<ImageDescriptor> {
 }
 
 const heroDescriptor = computed(() => entityImageDescriptors.value[0] || createPlaceholderDescriptor())
-const task35ImageUrls = computed<string[]>(() => (
-  entityImageDescriptors.value.flatMap(descriptor => descriptor.url ? [descriptor.url] : [])
+const hasEntityImages = computed(() => (
+  entityImageDescriptors.value.some(descriptor => descriptor.url !== null)
 ))
-const hasEntityImages = computed(() => task35ImageUrls.value.length > 0)
 
-const coverImage = computed(() => task35ImageUrls.value[0] || '')
+const coverImage = computed(() => heroDescriptor.value.url || '')
 
 function sanitizeDisclosureIdToken(value: unknown): string {
   const raw = String(value ?? '').trim()
@@ -784,7 +782,7 @@ const heroHook = computed(() => {
 const lightboxOpen = ref(false)
 const lbIndex = ref(0)
 function openCoverLightbox(idx = 0) {
-  if (!task35ImageUrls.value.length) return
+  if (!entityImageDescriptors.value.length) return
   lbIndex.value = typeof idx === 'number' ? idx : 0
   lightboxOpen.value = true
 }
