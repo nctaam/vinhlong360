@@ -37,6 +37,8 @@ export function normalizeRenderableImageUrl(value: unknown): string | null {
     if (
       parsed.protocol !== 'https:'
       || !parsed.hostname
+      || authority?.includes('@')
+      || authority?.includes('%')
       || parsed.username
       || parsed.password
       || authority?.endsWith(':')

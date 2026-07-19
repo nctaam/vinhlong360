@@ -855,7 +855,8 @@ def test_gallery_endpoint_mounted():
 
 
 def test_gallery_entity_images():
-    """Gallery should include entity images."""
+    """Gallery should return only strict AI editorial descriptors."""
+    from ai_disclosure import CANONICAL_ENTITY_AI
     import public_api
     from unittest.mock import patch
     entity = {
@@ -867,11 +868,34 @@ def test_gallery_entity_images():
         client = _public_client()
         resp = client.get("/api/entities/test-gallery/gallery")
     assert resp.status_code == 200
-    data = resp.json()
-    assert data["total"] == 2
-    assert data["images"][0]["url"] == "https://img1.jpg"
-    assert data["images"][0]["credit"] == "VL360"
-    assert "Test" in data["images"][0]["alt"]
+    assert resp.json() == {
+        "images": [
+            {
+                "url": "https://img1.jpg",
+                "alt": "Test — ảnh minh họa 1",
+                "source_class": "ai-generated",
+                "source_kind": "entity-editorial",
+                "disclosure_key": "entity-ai",
+                "short_label": CANONICAL_ENTITY_AI.short_label,
+                "full_disclosure": CANONICAL_ENTITY_AI.full_disclosure,
+                "credit": None,
+                "width": None,
+                "height": None,
+            },
+            {
+                "url": "https://img2.jpg",
+                "alt": "Test — ảnh minh họa 2",
+                "source_class": "ai-generated",
+                "source_kind": "entity-editorial",
+                "disclosure_key": "entity-ai",
+                "short_label": CANONICAL_ENTITY_AI.short_label,
+                "full_disclosure": CANONICAL_ENTITY_AI.full_disclosure,
+                "credit": None,
+                "width": None,
+                "height": None,
+            },
+        ],
+    }
 
 
 def test_gallery_no_entity_404():
@@ -891,9 +915,7 @@ def test_gallery_empty_images():
         client = _public_client()
         resp = client.get("/api/entities/empty/gallery")
     assert resp.status_code == 200
-    data = resp.json()
-    assert data["total"] == 0
-    assert data["images"] == []
+    assert resp.json() == {"images": []}
 
 
 # ── Contact view tracking ─────────────────────────────────────────────

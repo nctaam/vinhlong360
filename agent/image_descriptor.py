@@ -55,6 +55,8 @@ def normalize_renderable_image_url(raw: object) -> str | None:
 
     if parsed.scheme.lower() != "https" or not parsed.netloc:
         return None
+    if "@" in parsed.netloc or "%" in parsed.netloc:
+        return None
     try:
         hostname = parsed.hostname
         port = parsed.port
