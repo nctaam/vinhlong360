@@ -6,6 +6,7 @@ import io
 import json
 import os
 import re
+import stat
 import sys
 import tarfile
 import tempfile
@@ -98,6 +99,27 @@ class LaunchReleasePackage:
     archive: Path
     digest_file: Path
     manifest: Mapping[str, object]
+
+
+@dataclass(frozen=True)
+class _SnapshotSource:
+    path: Path
+    directory: bool
+    identity: os.stat_result
+    raw: bytes | None
+
+
+@dataclass(frozen=True)
+class _SnapshotMember:
+    source: _SnapshotSource
+    arcname: str
+
+
+@dataclass(frozen=True)
+class _LaunchReleaseSnapshot:
+    root: Path
+    members: tuple[_SnapshotMember, ...]
+    sources: Mapping[Path, _SnapshotSource]
 
 
 def _lexical_path(path: Path) -> Path:
@@ -401,8 +423,125 @@ def _collect_launch_file(
     return source, arcname or Path(relative).as_posix()
 
 
-def _json_object(path: Path, label: str) -> tuple[dict[str, object], bytes]:
-    raw = path.read_bytes()
+def _snapshot_regular_source(root: Path, path: Path) -> _SnapshotSource:
+    """Read a regular source through one descriptor and retain its identity."""
+    path = _lexical_path(path)
+    _require_safe_source(root, path, directory=False)
+    try:
+        before = path.stat(follow_symlinks=False)
+    except OSError as exc:
+        raise ValueError(f"release source changed while snapshotting: {path}") from exc
+    if not stat.S_ISREG(before.st_mode):
+        raise ValueError(f"required release file is unsafe: {path}")
+
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0)
+    flags |= getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(os.fspath(path), flags)
+    except OSError as exc:
+        raise ValueError(f"release source changed while snapshotting: {path}") from exc
+    try:
+        opened = os.fstat(descriptor)
+        if not os.path.samestat(before, opened) or not stat.S_ISREG(opened.st_mode):
+            raise ValueError(f"release source changed while snapshotting: {path}")
+        with os.fdopen(descriptor, "rb", closefd=False) as source_file:
+            raw = source_file.read()
+        after_open = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+
+    try:
+        _require_safe_source(root, path, directory=False)
+        after = path.stat(follow_symlinks=False)
+    except (FileNotFoundError, ValueError, OSError) as exc:
+        raise ValueError(f"release source changed while snapshotting: {path}") from exc
+    if (
+        not os.path.samestat(before, after_open)
+        or not os.path.samestat(before, after)
+        or not stat.S_ISREG(after.st_mode)
+    ):
+        raise ValueError(f"release source changed while snapshotting: {path}")
+    return _SnapshotSource(path, False, before, raw)
+
+
+def _snapshot_directory_source(root: Path, path: Path) -> _SnapshotSource:
+    path = _lexical_path(path)
+    _require_safe_source(root, path, directory=True)
+    try:
+        identity = path.stat(follow_symlinks=False)
+    except OSError as exc:
+        raise ValueError(f"release source changed while snapshotting: {path}") from exc
+    if not stat.S_ISDIR(identity.st_mode):
+        raise ValueError(f"required release directory is unsafe: {path}")
+    return _SnapshotSource(path, True, identity, None)
+
+
+def _snapshot_launch_release(
+    root: Path, payload: list[tuple[Path, str]]
+) -> _LaunchReleaseSnapshot:
+    root = _lexical_path(root)
+    sources: dict[Path, _SnapshotSource] = {}
+    members: list[_SnapshotMember] = []
+    for source, arcname in payload:
+        source = _lexical_path(source)
+        existing = sources.get(source)
+        if existing is None:
+            try:
+                state = source.stat(follow_symlinks=False)
+            except OSError as exc:
+                raise ValueError(f"release source changed while snapshotting: {source}") from exc
+            if stat.S_ISLNK(state.st_mode):
+                raise ValueError(f"release source contains symlink: {source}")
+            if stat.S_ISDIR(state.st_mode):
+                existing = _snapshot_directory_source(root, source)
+            elif stat.S_ISREG(state.st_mode):
+                existing = _snapshot_regular_source(root, source)
+            else:
+                raise ValueError(f"release source is not a regular file or directory: {source}")
+            sources[source] = existing
+        members.append(_SnapshotMember(existing, arcname))
+
+    # Compose files are validated but intentionally not included in the archive.
+    for relative in _AUDIT_SOURCE_PATHS:
+        source = _lexical_path(root / relative)
+        if source not in sources:
+            sources[source] = _snapshot_regular_source(root, source)
+    return _LaunchReleaseSnapshot(
+        root,
+        tuple(members),
+        MappingProxyType(sources),
+    )
+
+
+def _snapshot_raw(
+    root: Path,
+    snapshot: _LaunchReleaseSnapshot,
+    path: Path,
+    label: str,
+) -> bytes:
+    path = _lexical_path(path)
+    _require_safe_source(root, path, directory=False)
+    source = snapshot.sources.get(path)
+    if source is None or source.directory or source.raw is None:
+        raise ValueError(f"{label} was not captured in the release snapshot")
+    return source.raw
+
+
+def _revalidate_snapshot(snapshot: _LaunchReleaseSnapshot) -> None:
+    """Reject pathname swaps while allowing in-place writes to use captured bytes."""
+    for source in snapshot.sources.values():
+        if source.path.is_symlink():
+            raise ValueError(f"release source contains symlink: {source.path}")
+        try:
+            _require_safe_source(snapshot.root, source.path, directory=source.directory)
+            current = source.path.stat(follow_symlinks=False)
+        except (FileNotFoundError, ValueError, OSError) as exc:
+            raise ValueError(f"release source changed: {source.path}") from exc
+        if not os.path.samestat(source.identity, current):
+            raise ValueError(f"release source changed: {source.path}")
+
+
+def _json_object(raw: bytes, label: str) -> tuple[dict[str, object], bytes]:
 
     def reject_duplicates(pairs: list[tuple[str, object]]) -> dict[str, object]:
         result: dict[str, object] = {}
@@ -430,7 +569,9 @@ def _sha256_bytes(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def _validated_canonical_artifacts(root: Path) -> dict[str, object]:
+def _validated_canonical_artifacts(
+    root: Path, snapshot: _LaunchReleaseSnapshot
+) -> dict[str, object]:
     duplicates = find_duplicate_artifacts(root)
     if duplicates:
         details = ", ".join(path.as_posix() for path in duplicates)
@@ -446,8 +587,8 @@ def _validated_canonical_artifacts(root: Path) -> dict[str, object]:
     )
     for key, relative, expected_revision in definitions:
         path = root / relative
-        _require_safe_source(root, path, directory=False)
-        artifact, raw = _json_object(path, f"canonical artifact {relative}")
+        raw = _snapshot_raw(root, snapshot, path, f"canonical artifact {relative}")
+        artifact, raw = _json_object(raw, f"canonical artifact {relative}")
         expected_keys = (
             {
                 "schema_version",
@@ -518,10 +659,11 @@ def _validate_readiness_manifest(
     root: Path,
     source_revision: str,
     canonical_artifacts: Mapping[str, object],
+    snapshot: _LaunchReleaseSnapshot,
 ) -> tuple[Path, bytes]:
     path = root / Path(_READINESS_PATH)
-    _require_safe_source(root, path, directory=False)
-    manifest, raw = _json_object(path, "launch readiness manifest")
+    raw = _snapshot_raw(root, snapshot, path, "launch readiness manifest")
+    manifest, raw = _json_object(raw, "launch readiness manifest")
     _exact_keys(
         manifest,
         {
@@ -573,9 +715,9 @@ def _validate_readiness_manifest(
     if worker["version"] != "vl360-launch-v1":
         raise ValueError("launch readiness service worker version mismatch")
     worker_path = root / "web-nuxt" / ".output" / "public" / "sw.js"
-    _require_safe_source(root, worker_path, directory=False)
+    worker_raw = _snapshot_raw(root, snapshot, worker_path, "service worker")
     if _require_sha256(worker["rule_digest"], "service worker digest") != _sha256_bytes(
-        worker_path.read_bytes()
+        worker_raw
     ):
         raise ValueError("launch readiness service worker digest mismatch")
     cache_purge = worker["cache_purge"]
@@ -591,19 +733,21 @@ def _validate_readiness_manifest(
     return path, raw
 
 
-def _normalized_source_digest(path: Path) -> str:
+def _normalized_source_digest(raw: bytes, path: Path) -> str:
     try:
-        text = path.read_text(encoding="utf-8")
+        text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
         raise ValueError(f"compose audit source is not UTF-8: {path}") from exc
     normalized = text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
     return _sha256_bytes(normalized)
 
 
-def _validate_network_audit(root: Path, path: Path) -> bytes:
+def _validate_network_audit(
+    root: Path, path: Path, snapshot: _LaunchReleaseSnapshot
+) -> bytes:
     path = _lexical_path(path if path.is_absolute() else root / path)
-    _require_safe_source(root, path, directory=False)
-    audit, raw = _json_object(path, "compose network audit")
+    raw = _snapshot_raw(root, snapshot, path, "compose network audit")
+    audit, raw = _json_object(raw, "compose network audit")
     _exact_keys(
         audit,
         {
@@ -660,9 +804,9 @@ def _validate_network_audit(root: Path, path: Path) -> bytes:
     expected_sources = []
     for relative in _AUDIT_SOURCE_PATHS:
         source = root / relative
-        _require_safe_source(root, source, directory=False)
+        source_raw = _snapshot_raw(root, snapshot, source, f"compose audit source {relative}")
         expected_sources.append(
-            {"path": relative, "sha256": _normalized_source_digest(source)}
+            {"path": relative, "sha256": _normalized_source_digest(source_raw, source)}
         )
     if sources != expected_sources:
         raise ValueError("compose network audit sources are stale or incomplete")
@@ -715,11 +859,19 @@ def collect_launch_release_payload(
     return sorted(payload, key=lambda item: item[1])
 
 
-def _regular_member_map(payload: list[tuple[Path, str]]) -> dict[str, object]:
+def _regular_member_map(
+    payload: _LaunchReleaseSnapshot | list[tuple[Path, str]]
+) -> dict[str, object]:
     members: dict[str, object] = {}
-    for source, arcname in payload:
-        if source.is_file():
-            raw = source.read_bytes()
+    if isinstance(payload, _LaunchReleaseSnapshot):
+        entries = ((member.source.raw, member.arcname, member.source.directory) for member in payload.members)
+    else:
+        entries = (
+            (source.read_bytes() if source.is_file() else None, arcname, source.is_dir())
+            for source, arcname in payload
+        )
+    for raw, arcname, directory in entries:
+        if not directory and raw is not None:
             members[arcname] = {"sha256": _sha256_bytes(raw), "size": len(raw)}
     return members
 
@@ -731,27 +883,21 @@ def _canonical_json_bytes(value: object) -> bytes:
     ).encode("utf-8")
 
 
-def build_launch_release_manifest(
-    root: Path,
-    payload: list[tuple[Path, str]],
+def _build_launch_release_manifest_from_snapshot(
+    snapshot: _LaunchReleaseSnapshot,
     source_revision: str,
     *,
     compose_network_audit: Path | None = None,
 ) -> dict[str, object]:
-    if (
-        not isinstance(source_revision, str)
-        or not source_revision
-        or source_revision.strip() != source_revision
-        or any(character in source_revision for character in "\r\n\0")
-    ):
-        raise ValueError("source revision must be a non-empty canonical string")
-    root = _lexical_path(root)
-    canonical_artifacts = _validated_canonical_artifacts(root)
+    root = snapshot.root
+    canonical_artifacts = _validated_canonical_artifacts(root, snapshot)
     _readiness_path, readiness_raw = _validate_readiness_manifest(
-        root, source_revision, canonical_artifacts
+        root, source_revision, canonical_artifacts, snapshot
     )
     audit_members = [
-        source for source, arcname in payload if arcname == "compose-network-audit.json"
+        member.source.path
+        for member in snapshot.members
+        if member.arcname == "compose-network-audit.json"
     ]
     if len(audit_members) != 1:
         raise ValueError("release payload must contain exactly one network audit")
@@ -765,7 +911,7 @@ def build_launch_release_manifest(
         )
         if audit_path != payload_audit:
             raise ValueError("network audit must match the release payload member")
-    audit_raw = _validate_network_audit(root, audit_path)
+    audit_raw = _validate_network_audit(root, audit_path, snapshot)
     return {
         "schema_version": 1,
         "package_kind": "vl360-launch-release",
@@ -785,8 +931,31 @@ def build_launch_release_manifest(
             "included": False,
         },
         "persistent_paths": ["agent/data", "agent/data/sitemap-bundles"],
-        "members": _regular_member_map(payload),
+        "members": _regular_member_map(snapshot),
     }
+
+
+def build_launch_release_manifest(
+    root: Path,
+    payload: list[tuple[Path, str]],
+    source_revision: str,
+    *,
+    compose_network_audit: Path | None = None,
+) -> dict[str, object]:
+    if (
+        not isinstance(source_revision, str)
+        or not source_revision
+        or source_revision.strip() != source_revision
+        or any(character in source_revision for character in "\r\n\0")
+    ):
+        raise ValueError("source revision must be a non-empty canonical string")
+    root = _lexical_path(root)
+    snapshot = _snapshot_launch_release(root, payload)
+    return _build_launch_release_manifest_from_snapshot(
+        snapshot,
+        source_revision,
+        compose_network_audit=compose_network_audit,
+    )
 
 
 def _launch_tar_info(name: str, *, size: int = 0, directory: bool) -> tarfile.TarInfo:
@@ -809,16 +978,37 @@ def _launch_tar_info(name: str, *, size: int = 0, directory: bool) -> tarfile.Ta
     return info
 
 
-def write_deterministic_tar_gz(
+def _snapshot_tar_payload(payload: list[tuple[Path, str]]) -> _LaunchReleaseSnapshot:
+    root = _lexical_path(Path.cwd().anchor or Path.cwd())
+    sources: dict[Path, _SnapshotSource] = {}
+    members: list[_SnapshotMember] = []
+    for source, arcname in payload:
+        source = _lexical_path(source)
+        captured = sources.get(source)
+        if captured is None:
+            state = source.stat(follow_symlinks=False)
+            if stat.S_ISDIR(state.st_mode):
+                captured = _snapshot_directory_source(root, source)
+            elif stat.S_ISREG(state.st_mode):
+                captured = _snapshot_regular_source(root, source)
+            else:
+                raise ValueError(f"release source is not a regular file or directory: {source}")
+            sources[source] = captured
+        members.append(_SnapshotMember(captured, arcname))
+    return _LaunchReleaseSnapshot(root, tuple(members), MappingProxyType(sources))
+
+
+def _write_snapshot_tar_gz(
     destination: Path,
-    payload: list[tuple[Path, str]],
+    snapshot: _LaunchReleaseSnapshot,
     embedded_files: Mapping[str, bytes],
 ) -> None:
-    entries: list[tuple[str, Path | None, bytes | None, bool]] = []
-    for source, arcname in payload:
-        entries.append((arcname, source, None, source.is_dir()))
+    _revalidate_snapshot(snapshot)
+    entries: list[tuple[str, bytes | None, bool]] = []
+    for member in snapshot.members:
+        entries.append((member.arcname, member.source.raw, member.source.directory))
     for arcname, raw in embedded_files.items():
-        entries.append((arcname, None, raw, False))
+        entries.append((arcname, raw, False))
     with destination.open("wb") as raw_archive:
         with gzip.GzipFile(
             filename="",
@@ -830,15 +1020,25 @@ def write_deterministic_tar_gz(
             with tarfile.open(
                 fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT
             ) as archive:
-                for arcname, source, embedded, directory in sorted(entries):
+                for arcname, raw, directory in sorted(entries):
                     if directory:
                         archive.addfile(_launch_tar_info(arcname, directory=True))
                         continue
-                    raw = embedded if embedded is not None else source.read_bytes()
+                    if raw is None:
+                        raise ValueError(f"snapshot has no bytes for archive member: {arcname}")
                     archive.addfile(
                         _launch_tar_info(arcname, size=len(raw), directory=False),
                         fileobj=io.BytesIO(raw),
                     )
+
+
+def write_deterministic_tar_gz(
+    destination: Path,
+    payload: _LaunchReleaseSnapshot | list[tuple[Path, str]],
+    embedded_files: Mapping[str, bytes],
+) -> None:
+    snapshot = payload if isinstance(payload, _LaunchReleaseSnapshot) else _snapshot_tar_payload(payload)
+    _write_snapshot_tar_gz(destination, snapshot, embedded_files)
 
 
 def _require_safe_destination(path: Path) -> None:
@@ -887,9 +1087,9 @@ def build_launch_release(
     _require_safe_destination(digest_file)
 
     payload = collect_launch_release_payload(root, compose_network_audit)
-    manifest = build_launch_release_manifest(
-        root,
-        payload,
+    snapshot = _snapshot_launch_release(root, payload)
+    manifest = _build_launch_release_manifest_from_snapshot(
+        snapshot,
         source_revision,
     )
     manifest_raw = _canonical_json_bytes(manifest)
@@ -908,7 +1108,7 @@ def build_launch_release(
         os.close(digest_descriptor)
         write_deterministic_tar_gz(
             temporary_archive,
-            payload,
+            snapshot,
             {"launch-release-manifest.json": manifest_raw},
         )
         archive_digest = _sha256_bytes(temporary_archive.read_bytes())

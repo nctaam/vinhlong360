@@ -315,6 +315,24 @@ def _write_launch_fixture(root: Path) -> Path:
     return audit_path
 
 
+def _assert_manifest_matches_archive_members(archive: Path) -> dict[str, object]:
+    with tarfile.open(archive, "r:gz") as bundle:
+        manifest = json.loads(
+            bundle.extractfile("launch-release-manifest.json").read()
+        )
+        completed_members = {}
+        for member in bundle.getmembers():
+            if not member.isfile() or member.name == "launch-release-manifest.json":
+                continue
+            raw = bundle.extractfile(member).read()
+            completed_members[member.name] = {
+                "sha256": hashlib.sha256(raw).hexdigest(),
+                "size": len(raw),
+            }
+    assert manifest["members"] == completed_members
+    return manifest
+
+
 def test_build_launch_release_has_closed_manifest_and_deterministic_sidecar(tmp_path: Path):
     root = tmp_path / "source"
     audit = _write_launch_fixture(root)
@@ -339,6 +357,7 @@ def test_build_launch_release_has_closed_manifest_and_deterministic_sidecar(tmp_
     with tarfile.open(first.archive, "r:gz") as bundle:
         names = bundle.getnames()
         manifest = json.loads(bundle.extractfile("launch-release-manifest.json").read())
+    _assert_manifest_matches_archive_members(first.archive)
     assert "agent/data" not in names
     assert not any(name.startswith("agent/data/") for name in names)
     assert "agent/tests/test_server.py" not in names
@@ -352,6 +371,66 @@ def test_build_launch_release_has_closed_manifest_and_deterministic_sidecar(tmp_
         "canonical_artifacts", "readiness_manifest", "network_audit",
         "developer_override", "persistent_paths", "members",
     }
+
+
+def test_build_launch_release_uses_one_snapshot_if_source_mutates_before_tar(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    source = root / "agent" / "server.py"
+    destination = tmp_path / "release.tar.gz"
+    real_write = release_package.write_deterministic_tar_gz
+
+    def mutate_then_write(*args, **kwargs):
+        source.write_bytes(b"mutated after manifest\n")
+        return real_write(*args, **kwargs)
+
+    monkeypatch.setattr(
+        release_package, "write_deterministic_tar_gz", mutate_then_write
+    )
+
+    result = build_launch_release(
+        root,
+        destination,
+        compose_network_audit=audit,
+        source_revision="reviewed-source-revision",
+    )
+
+    with tarfile.open(result.archive, "r:gz") as bundle:
+        assert bundle.extractfile("agent/server.py").read() == b"agent\n"
+    _assert_manifest_matches_archive_members(result.archive)
+
+
+def test_build_launch_release_refuses_symlink_swap_before_tar_without_outputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    source = root / "agent" / "server.py"
+    outside_secret = tmp_path / "OUTSIDE_SECRET"
+    outside_secret.write_bytes(b"must never be packaged\n")
+    destination = tmp_path / "release.tar.gz"
+    real_write = release_package.write_deterministic_tar_gz
+
+    def swap_then_write(*args, **kwargs):
+        source.unlink()
+        source.symlink_to(outside_secret)
+        return real_write(*args, **kwargs)
+
+    monkeypatch.setattr(release_package, "write_deterministic_tar_gz", swap_then_write)
+
+    with pytest.raises(ValueError, match="release source (contains symlink|changed)"):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".sha256").exists()
+    assert list(tmp_path.glob(".*.tmp")) == []
 
 
 def test_build_launch_release_manifest_derives_network_audit_from_payload(
