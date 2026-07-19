@@ -1,12 +1,16 @@
-interface FavoriteItem {
+import type { ImageDescriptor } from '~/types/image'
+import { isKnownEntityType, normalizeSavedImageSnapshot } from '~/utils/savedImageDescriptors'
+
+export interface FavoriteItem {
   id: string
   name: string
   type: string
-  kind?: 'entity' | 'post' | 'itinerary'
+  kind?: 'entity' | 'post' | 'itinerary' | 'unknown'
   place_name?: string
   place_area?: string
   summary?: string
-  image?: string
+  image_descriptor: ImageDescriptor
+  descriptor_revision: 'ai-disclosure-v1'
   savedAt: string
 }
 
@@ -20,6 +24,27 @@ function isValidFavorite(v: unknown): v is FavoriteItem {
   return typeof o.id === 'string' && typeof o.name === 'string' && typeof o.type === 'string'
 }
 
+export function createFavoriteItem(entity: Record<string, any>, savedAt = new Date().toISOString()): FavoriteItem {
+  return normalizeSavedImageSnapshot({
+    id: entity.id,
+    name: entity.name,
+    type: entity.type,
+    kind: entity.kind || (entity.type === 'itinerary' ? 'itinerary' : isKnownEntityType(entity.type) ? 'entity' : 'unknown'),
+    place_name: entity.place_name,
+    place_area: entity.place_area || entity.area,
+    summary: entity.summary,
+    images: entity.images,
+    image: entity.image,
+    ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptor') ? { image_descriptor: entity.image_descriptor } : {}),
+    ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptors') ? { image_descriptors: entity.image_descriptors } : {}),
+    savedAt,
+  }) as FavoriteItem
+}
+
+function normalizeFavoriteItem(item: FavoriteItem): FavoriteItem {
+  return normalizeSavedImageSnapshot(item) as FavoriteItem
+}
+
 export function useFavorites() {
   const favorites = useState<FavoriteItem[]>('favorites', () => [])
   const { isLoggedIn, authHeaders } = useAuth()
@@ -31,7 +56,7 @@ export function useFavorites() {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) {
         const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) favorites.value = parsed.filter(isValidFavorite)
+        if (Array.isArray(parsed)) favorites.value = parsed.filter(isValidFavorite).map(normalizeFavoriteItem)
         else localStorage.removeItem(STORAGE_KEY)
       }
     } catch {
@@ -60,7 +85,7 @@ export function useFavorites() {
             method: 'POST', headers: authHeaders(), body: { items: favorites.value },
           })
         : await $fetch<{ items?: FavoriteItem[] }>('/api/saved', { headers: authHeaders() })
-      if (Array.isArray(res?.items)) { favorites.value = res.items; persist() }
+      if (Array.isArray(res?.items)) { favorites.value = res.items.filter(isValidFavorite).map(normalizeFavoriteItem); persist() }
     } catch { /* offline / not available — keep local */ }
   }
   async function pushAdd(item: FavoriteItem) {
@@ -91,17 +116,7 @@ export function useFavorites() {
       pushRemove(entity.id)
       if (removed) trackSave(removed, false)
     } else {
-      const item: FavoriteItem = {
-        id: entity.id,
-        name: entity.name,
-        type: entity.type,
-        kind: entity.kind || (entity.type === 'itinerary' ? 'itinerary' : 'entity'),
-        place_name: entity.place_name,
-        place_area: entity.place_area || entity.area,
-        summary: entity.summary,
-        image: Array.isArray(entity.images) ? entity.images[0] : undefined,
-        savedAt: new Date().toISOString(),
-      }
+      const item = createFavoriteItem(entity)
       favorites.value.unshift(item)
       persist()
       pushAdd(item)

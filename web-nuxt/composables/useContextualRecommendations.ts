@@ -1,5 +1,6 @@
 import { unref, type Ref } from 'vue'
 import type { RecommendationCard, RecommendationResponse, RecommendationSource } from '~/types/api'
+import { normalizeSavedImageSnapshot, type SavedImageSnapshot } from '~/utils/savedImageDescriptors'
 
 type MaybeRef<T> = T | Ref<T>
 
@@ -16,14 +17,13 @@ function optionValue<T>(value: MaybeRef<T> | undefined, fallback: T): T {
   return (resolved == null ? fallback : resolved) as T
 }
 
-function normalizeItems(list: unknown): RecommendationCard[] {
+export type NormalizedRecommendationCard = RecommendationCard & SavedImageSnapshot
+
+export function normalizeRecommendationItems(list: unknown): NormalizedRecommendationCard[] {
   if (!Array.isArray(list)) return []
   return list
     .filter((item): item is RecommendationCard => !!item && typeof item === 'object' && !!(item as RecommendationCard).id && !!(item as RecommendationCard).name)
-    .map((item: RecommendationCard) => ({
-      ...item,
-      images: Array.isArray(item.images) ? item.images : item.image ? [item.image] : [],
-    }))
+    .map((item: RecommendationCard) => normalizeSavedImageSnapshot({ ...item, kind: 'entity' }) as NormalizedRecommendationCard)
 }
 
 function reasonMapFromItems(list: RecommendationCard[], explicit: Record<string, string[]> = {}) {
@@ -50,10 +50,10 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
   async function loadFallback(limit: number, entityId?: string) {
     if (entityId) {
       const res = await apiFetch<RecommendationResponse>(`/api/entities/${encodePathId(entityId)}/similar?limit=${limit}`)
-      items.value = normalizeItems(res.similar || res.items || res.entities)
+      items.value = normalizeRecommendationItems(res.similar || res.items || res.entities)
     } else {
       const res = await apiFetch<RecommendationResponse>(`/api/entities/popular?limit=${limit}`)
-      items.value = normalizeItems(res.entities || res.items)
+      items.value = normalizeRecommendationItems(res.entities || res.items)
     }
     reasons.value = reasonMapFromItems(items.value)
     profile.value = null
@@ -80,7 +80,7 @@ export function useContextualRecommendations(options: ContextualRecommendationOp
           headers: authHeaders(),
         })
         if (currentRequest !== requestId) return
-        const personalized = normalizeItems(res.items || res.entities)
+        const personalized = normalizeRecommendationItems(res.items || res.entities)
         if (personalized.length) {
           items.value = personalized
           reasons.value = reasonMapFromItems(personalized, res.reasons || {})

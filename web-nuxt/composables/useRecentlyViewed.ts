@@ -1,8 +1,12 @@
-interface RecentItem {
+import type { ImageDescriptor } from '~/types/image'
+import { isKnownEntityType, normalizeSavedImageSnapshot } from '~/utils/savedImageDescriptors'
+
+export interface RecentItem {
   id: string
   name: string
   type: string
-  image?: string
+  image_descriptor: ImageDescriptor
+  descriptor_revision: 'ai-disclosure-v1'
   viewedAt: number
 }
 
@@ -17,6 +21,20 @@ function isValidItem(v: unknown): v is RecentItem {
   return typeof o.id === 'string' && typeof o.name === 'string' && typeof o.type === 'string'
 }
 
+export function createRecentItem(entity: Record<string, any>, viewedAt = Date.now()): RecentItem {
+  return normalizeSavedImageSnapshot({
+    id: entity.id,
+    name: entity.name,
+    type: entity.type,
+    kind: entity.kind || (entity.type === 'itinerary' ? 'itinerary' : isKnownEntityType(entity.type) ? 'entity' : 'unknown'),
+    images: entity.images,
+    image: entity.image,
+    ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptor') ? { image_descriptor: entity.image_descriptor } : {}),
+    ...(Object.prototype.hasOwnProperty.call(entity, 'image_descriptors') ? { image_descriptors: entity.image_descriptors } : {}),
+    viewedAt,
+  }) as RecentItem
+}
+
 export function useRecentlyViewed() {
   const items = useState<RecentItem[]>('recentlyViewed', () => [])
 
@@ -26,7 +44,7 @@ export function useRecentlyViewed() {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) {
         const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) items.value = parsed.filter(isValidItem)
+        if (Array.isArray(parsed)) items.value = parsed.filter(isValidItem).map(item => normalizeSavedImageSnapshot(item) as RecentItem)
       }
     } catch { /* corrupt data */ }
     loaded = true
@@ -38,18 +56,12 @@ export function useRecentlyViewed() {
 
   load()
 
-  function track(entity: { id: string; name: string; type: string; images?: string[] }) {
+  function track(entity: Record<string, any>) {
     if (!import.meta.client) return
     load()
     const existing = items.value.findIndex(i => i.id === entity.id)
     if (existing >= 0) items.value.splice(existing, 1)
-    items.value.unshift({
-      id: entity.id,
-      name: entity.name,
-      type: entity.type,
-      image: entity.images?.[0],
-      viewedAt: Date.now(),
-    })
+    items.value.unshift(createRecentItem(entity))
     if (items.value.length > MAX_ITEMS) items.value.length = MAX_ITEMS
     save()
   }

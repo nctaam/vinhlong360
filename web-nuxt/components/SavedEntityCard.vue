@@ -2,9 +2,10 @@
   <div class="saved-entity card">
     <NuxtLink :to="savedItemPath(item)" class="saved-entity-link">
       <span class="saved-entity-cover">
-        <NuxtImg v-if="item.image && isRemoteUrl(item.image)" :src="item.image" :alt="item.name" class="saved-entity-img" width="120" height="80" sizes="sm:100vw md:120px" loading="lazy" decoding="async" @error="imgError = true" />
-        <img v-else-if="item.image" :src="item.image" :alt="item.name" class="saved-entity-img" width="120" height="80" loading="lazy" decoding="async" @error="imgError = true" />
-        <span v-if="!item.image || imgError" class="saved-entity-img saved-entity-img-generated" aria-hidden="true"><span class="cover-grain"></span></span>
+        <NuxtImg v-if="displayDescriptor.url && isRemoteUrl(displayDescriptor.url)" :src="displayDescriptor.url" :alt="displayDescriptor.alt" :aria-describedby="disclosureId" class="saved-entity-img" width="120" height="80" sizes="sm:100vw md:120px" loading="lazy" decoding="async" @error="imgError = true" />
+        <img v-else-if="displayDescriptor.url" :src="displayDescriptor.url" :alt="displayDescriptor.alt" :aria-describedby="disclosureId" class="saved-entity-img" width="120" height="80" loading="lazy" decoding="async" @error="imgError = true" />
+        <span v-else class="saved-entity-img saved-entity-img-generated" aria-hidden="true"><span class="cover-grain"></span></span>
+        <span class="saved-image-disclosure"><ImageDisclosure :id="disclosureId" :descriptor="displayDescriptor" presentation="short" /></span>
       </span>
       <div class="saved-entity-info">
         <span v-if="dateline" class="saved-dateline">{{ dateline }}</span>
@@ -33,12 +34,25 @@
 // per-page action is a slot instead.
 import { TYPE_META } from '~/composables/useConstants'
 import { entityDateline } from '~/composables/useEntityStory'
+import { describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { normalizeSavedImageSnapshot } from '~/utils/savedImageDescriptors'
+import { useId } from 'vue'
 
 const props = defineProps<{
   item: Record<string, any>
 }>()
 
 const imgError = ref(false)
+const savedSnapshot = computed(() => normalizeSavedImageSnapshot(props.item))
+const displayDescriptor = computed(() => imgError.value
+  ? describeEntityPlaceholder(props.item)
+  : savedSnapshot.value.image_descriptor)
+const disclosureInstance = useId().replace(/[^A-Za-z0-9_-]+/g, '-')
+const disclosureId = computed(() => {
+  const token = String(props.item?.id || 'saved').replace(/[^A-Za-z0-9_-]+/g, '-')
+  return `saved-card-${token}-${disclosureInstance}`
+})
+watch(() => props.item, () => { imgError.value = false }, { deep: true })
 
 // "{TYPE LABEL} · {AREA}" eyebrow — same fallback chain as EntityCard's dateline,
 // applied to the thin saved-item snapshot (id/name/type/place_area/summary only).
@@ -60,6 +74,8 @@ const dateline = computed(() => {
 }
 .saved-entity-cover { position: relative; display: block; flex-shrink: 0; width: 80px; height: 56px; border-radius: var(--radius-md); overflow: hidden; }
 .saved-entity-img { display: block; width: 80px; height: 56px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
+.saved-image-disclosure { position: absolute; inset: auto 2px 2px; display: flex; justify-content: flex-end; }
+.saved-image-disclosure :deep([data-image-disclosure]) { font-size: 9px; padding: 1px 4px; }
 .saved-entity-img-generated { position: relative; background: linear-gradient(160deg, rgba(var(--primary-rgb), .14) 0%, var(--bg-alt) 70%); }
 .saved-entity-img-generated .cover-grain {
   position: absolute; inset: 0; background-image: var(--grain); background-size: 120px 120px; opacity: .06;

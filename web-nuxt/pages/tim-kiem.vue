@@ -142,9 +142,13 @@
         <section v-if="recentItems.length" class="block reveal">
           <div class="section-head sediment-head"><h2>Tiếp tục nơi bạn dừng lại</h2></div>
           <div class="scroll-row recent-filmstrip">
-            <NuxtLink v-for="r in recentItems" :key="r.id" :to="entityPath(r.id)" class="recent-card">
-              <img v-if="r.image" :src="r.image" :alt="r.name" class="recent-img" width="56" height="56" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.display = 'none')" />
-              <span v-else class="recent-img recent-placeholder" aria-hidden="true" :style="{ backgroundImage: categoryPlaceholderBg(r.id, TYPE_META[r.type]?.cat) }"><span class="recent-placeholder-glyph" v-html="categoryGlyph(TYPE_META[r.type]?.cat)"></span></span>
+            <NuxtLink v-for="(r, index) in recentItems" :key="r.id" :to="entityPath(r.id)" class="recent-card">
+              <span class="recent-image-wrap">
+                <NuxtImg v-if="recentImageDescriptor(r).url && isRemoteUrl(recentImageDescriptor(r).url || '')" :src="recentImageDescriptor(r).url || ''" :alt="recentImageDescriptor(r).alt" :aria-describedby="recentDisclosureId(r, index)" class="recent-img" width="56" height="56" sizes="56px" loading="lazy" decoding="async" />
+                <img v-else-if="recentImageDescriptor(r).url" :src="recentImageDescriptor(r).url || ''" :alt="recentImageDescriptor(r).alt" :aria-describedby="recentDisclosureId(r, index)" class="recent-img" width="56" height="56" loading="lazy" decoding="async" />
+                <span v-else class="recent-img recent-placeholder" aria-hidden="true" :style="{ backgroundImage: categoryPlaceholderBg(r.id, TYPE_META[r.type]?.cat) }"><span class="recent-placeholder-glyph" v-html="categoryGlyph(TYPE_META[r.type]?.cat)"></span></span>
+                <span class="recent-image-disclosure"><ImageDisclosure :id="recentDisclosureId(r, index)" :descriptor="recentImageDescriptor(r)" presentation="short" /></span>
+              </span>
               <span class="recent-name">{{ r.name }}</span>
               <span class="recent-type">{{ TYPE_META[r.type]?.label || r.type }}</span>
             </NuxtLink>
@@ -208,6 +212,8 @@
 import { TYPE_META } from '~/composables/useConstants'
 import { useJourneyActions } from '~/composables/useJourneyActions'
 import { generateCategoryIcon, generateCategoryPlaceholder } from '~/composables/useCategoryPlaceholder'
+import type { ImageDescriptor } from '~/types/image'
+import type { RecentItem } from '~/composables/useRecentlyViewed'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
@@ -215,6 +221,15 @@ const { trackSearch } = useUserEvents()
 const { searchAll, fetchEntitySuggestions } = useUnifiedSearch()
 const { searchRecoveryActions, searchSuccessActions } = useJourneyActions()
 const route = useRoute()
+
+function recentImageDescriptor(item: RecentItem): ImageDescriptor {
+  return item.image_descriptor
+}
+
+function recentDisclosureId(item: { id: string }, index: number): string {
+  const token = String(item.id || 'recent').replace(/[^A-Za-z0-9_-]+/g, '-')
+  return `recent-search-${token}-${index}`
+}
 
 // Same pairing EntityCard uses: glyph (currentColor/white-watermark strokes) is only
 // legible over its matching seeded gradient — never drop the glyph on a bare card.
@@ -686,6 +701,9 @@ useHead({
 .recent-img {
   width: 56px; height: 56px; border-radius: var(--radius-md); object-fit: cover;
 }
+.recent-image-wrap { position: relative; display: block; width: 56px; height: 56px; }
+.recent-image-disclosure { position: absolute; inset: auto 1px 1px; display: flex; justify-content: flex-end; }
+.recent-image-disclosure :deep([data-image-disclosure]) { font-size: 8px; padding: 1px 3px; }
 /* Same EntityCard pairing: seeded gradient (inline style) + white-watermark glyph on top. */
 .recent-placeholder {
   display: flex; align-items: center; justify-content: center;

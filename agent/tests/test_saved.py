@@ -16,6 +16,20 @@ from database import db  # noqa: E402
 import saved  # noqa: E402
 
 
+AI_DESCRIPTOR = {
+    "url": "/img/entity.webp",
+    "alt": "Homestay X — ảnh minh họa",
+    "source_class": "ai-generated",
+    "source_kind": "entity-editorial",
+    "disclosure_key": "entity-ai",
+    "short_label": "Minh họa AI",
+    "full_disclosure": "Ảnh minh họa do AI dựng — không phải ảnh chụp tại chỗ.",
+    "credit": None,
+    "width": None,
+    "height": None,
+}
+
+
 def _client():
     app = FastAPI()
     app.include_router(saved.router)
@@ -59,3 +73,24 @@ def test_saved_item_snapshot_trims_id_and_nones():
     # kind work, so the trimmed snapshot legitimately includes it alongside name/type.
     assert snap == {"kind": "entity", "name": "Homestay X", "type": "accommodation"}
     assert "id" not in snap
+
+
+def test_saved_item_descriptor_and_revision_round_trip_through_snapshot():
+    item = saved.SavedItem(
+        id="homestay-x",
+        name="Homestay X",
+        type="accommodation",
+        image_descriptor=AI_DESCRIPTOR,
+        descriptor_revision="ai-disclosure-v1",
+    )
+    snap = saved._snapshot(item)
+    row = saved._row_item({
+        "entity_id": item.id,
+        "snapshot": snap,
+        "created_at": "2026-07-19T00:00:00+00:00",
+    })
+
+    assert snap["image_descriptor"] == AI_DESCRIPTOR
+    assert snap["descriptor_revision"] == "ai-disclosure-v1"
+    assert row["image_descriptor"] == AI_DESCRIPTOR
+    assert row["descriptor_revision"] == "ai-disclosure-v1"

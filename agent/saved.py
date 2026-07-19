@@ -10,10 +10,12 @@ device can render saved cards without fetching each entity. Postgres-only
 import asyncio
 import json
 import logging
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+
+from api_schemas import GalleryImageDescriptor
 
 from auth_middleware import require_user, require_csrf, validate_path_id
 from database import db
@@ -38,10 +40,20 @@ class SavedItem(BaseModel):
     place_area: Optional[str] = Field(None, max_length=100)
     summary: Optional[str] = Field(None, max_length=1000)
     image: Optional[str] = Field(None, max_length=500)
+    image_descriptor: Optional[GalleryImageDescriptor] = None
+    descriptor_revision: Optional[Literal["ai-disclosure-v1"]] = None
 
 
 class MergeBody(BaseModel):
     items: list[SavedItem] = Field(default_factory=list, max_length=500)
+
+
+def _snapshot(item: SavedItem) -> dict:
+    snap = item.model_dump(exclude={"id"}, exclude_none=True)
+    if item.image_descriptor is not None:
+        # Descriptor null fields are part of the strict frontend parser contract.
+        snap["image_descriptor"] = item.image_descriptor.model_dump()
+    return snap
 
 
 def _entity_is_public(conn, entity_id: str) -> bool:
@@ -92,7 +104,7 @@ def _upsert(conn, uid: str, item: SavedItem, *, skip_missing: bool = False) -> b
         if skip_missing:
             return False
         raise HTTPException(404, "Äá»‹a Ä‘iá»ƒm khÃ´ng tá»“n táº¡i hoáº·c chÆ°a cÃ´ng khai")
-    snap = item.model_dump(exclude={"id"}, exclude_none=True)
+    snap = _snapshot(item)
     db._execute(conn, f"""
         INSERT INTO saved_entities (user_id, entity_id, snapshot)
         VALUES ({ph}::uuid, {ph}, {ph}::jsonb)
