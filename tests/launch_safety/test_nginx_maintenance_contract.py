@@ -415,3 +415,29 @@ def test_double_leading_slash_runtime_path_is_rejected_before_timeout():
     assert result.returncode != 124, "double-leading slash path validation timed out"
     assert result.returncode != 0
     assert result.stderr == "maintenance_mode: unsafe-maintenance-path\n"
+
+
+def test_windows_drive_root_runtime_path_is_rejected_before_timeout():
+    environment = os.environ.copy()
+    environment["VL360_MAINTENANCE_DIR"] = "C:/"
+
+    result = subprocess.run(
+        [
+            _bash(),
+            "-lc",
+            'timeout --kill-after=1 2 bash "$1" enable '
+            "--operator-cidr 10.0.0.1/32",
+            "maintenance-test",
+            _bash_path(SCRIPT),
+        ],
+        cwd=ROOT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+
+    assert result.returncode != 124, "Windows drive root path validation timed out"
+    assert result.returncode != 0
+    assert result.stderr == "maintenance_mode: unsafe-maintenance-path\n"

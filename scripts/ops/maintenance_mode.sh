@@ -58,6 +58,9 @@ is_absolute_path() {
 
 assert_safe_directory() {
   local directory="$1"
+  case "$directory" in
+    [A-Za-z]:[\\/]*) die 'unsafe-maintenance-path' ;;
+  esac
   is_absolute_path "$directory" || die 'unsafe-maintenance-path'
   [[ "$directory" != //* ]] || die 'unsafe-maintenance-path'
   [[ "$directory" != *'/../'* && "$directory" != */.. && "$directory" != ../* ]] \
