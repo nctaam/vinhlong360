@@ -195,22 +195,27 @@ function descriptorAlt(entity: EntityImageLike): string {
   return `${name} — ảnh minh họa`
 }
 
-function suppliedEntityDescriptors(entity: EntityImageLike): ImageDescriptor[] {
-  const supplied = Array.isArray(entity.image_descriptors)
-    ? entity.image_descriptors
-    : entity.image_descriptor !== undefined
-      ? [entity.image_descriptor]
-      : []
-  return supplied.flatMap(value => {
+function suppliedEntityDescriptors(entity: EntityImageLike): {
+  present: boolean
+  descriptors: ImageDescriptor[]
+} {
+  const hasMany = Object.prototype.hasOwnProperty.call(entity, 'image_descriptors')
+  const hasOne = Object.prototype.hasOwnProperty.call(entity, 'image_descriptor')
+  const supplied = [
+    ...(hasMany && Array.isArray(entity.image_descriptors) ? entity.image_descriptors : []),
+    ...(hasOne ? [entity.image_descriptor] : []),
+  ]
+  const descriptors = supplied.flatMap(value => {
     const parsed = parseGalleryDescriptor(value)
     return parsed ? [parsed] : []
   })
+  return { present: hasMany || hasOne, descriptors }
 }
 
 /** Convert API descriptors or legacy entity image URLs at the shared render boundary. */
 export function describeEntityImages(entity: EntityImageLike): ImageDescriptor[] {
   const supplied = suppliedEntityDescriptors(entity)
-  if (supplied.length) return supplied
+  if (supplied.present) return supplied.descriptors
 
   const legacy = Array.isArray(entity.images)
     ? entity.images

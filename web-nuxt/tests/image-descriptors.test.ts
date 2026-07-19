@@ -133,6 +133,38 @@ describe('entity image descriptor producers', () => {
       image_descriptor: supplied,
     })).toEqual([expect.objectContaining({ url: '/descriptor.webp', alt: 'Supplied descriptor' })])
   })
+
+  it('fails closed when a structured descriptor is invalid instead of relabeling a legacy URL', () => {
+    expect(describeEntityImages({
+      id: 'entity-1',
+      name: 'Điểm đến',
+      images: ['/legacy.webp'],
+      image_descriptor: { ...apiEntityImage, url: 'javascript:alert(1)' },
+    })).toEqual([])
+  })
+
+  it('parses a valid singleton when an explicitly supplied descriptor array is empty', () => {
+    expect(describeEntityImages({
+      id: 'entity-1',
+      name: 'Điểm đến',
+      images: ['/legacy.webp'],
+      image_descriptors: [],
+      image_descriptor: apiEntityImage,
+    })).toEqual([apiEntityImage])
+  })
+
+  it('preserves a structured UGC descriptor without assigning AI disclosure', () => {
+    const descriptors = describeEntityImages({
+      id: 'entity-1',
+      name: 'Điểm đến',
+      images: ['/legacy.webp'],
+      image_descriptors: [apiReviewImage],
+    })
+
+    expect(descriptors).toEqual([apiReviewImage])
+    expect(descriptors[0]?.source_class).toBe('user-uploaded')
+    expect(descriptors[0]?.short_label).not.toBe(aiDisclosure.entity_ai.short_label)
+  })
 })
 
 describe('gallery image descriptors', () => {

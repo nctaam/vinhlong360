@@ -292,11 +292,13 @@
         </div>
         <div class="scroll-row for-you-row" role="region" aria-label="Dành cho bạn" tabindex="0">
           <NuxtLink v-for="item in forYou" :key="item.id" :to="item.to" class="fy-chip">
-            <span class="fy-thumb" :class="`cat-${getFavTypeMeta(item.type).cat}`">
-              <NuxtImg v-if="item.imageDescriptor.url && isRemoteUrl(item.imageDescriptor.url)" :src="item.imageDescriptor.url" :alt="item.imageDescriptor.alt" :aria-describedby="item.disclosureId" loading="lazy" decoding="async" width="64" height="64" sizes="64px" @error="onImgError" />
-              <img v-else-if="item.imageDescriptor.url" :src="item.imageDescriptor.url" :alt="item.imageDescriptor.alt" :aria-describedby="item.disclosureId" loading="lazy" decoding="async" width="64" height="64" @error="onImgError" />
-              <span v-else class="fy-icon" v-html="genIcon(getFavTypeMeta(item.type).cat)" />
-              <ImageDisclosure :id="item.disclosureId" :descriptor="item.imageDescriptor" presentation="short" />
+            <span class="fy-media">
+              <span class="fy-thumb" :class="`cat-${getFavTypeMeta(item.type).cat}`">
+                <NuxtImg v-if="item.imageDescriptor.url && isRemoteUrl(item.imageDescriptor.url)" :src="item.imageDescriptor.url" :alt="item.imageDescriptor.alt" :aria-describedby="item.disclosureId" loading="lazy" decoding="async" width="64" height="64" sizes="64px" @error="onImgError" />
+                <img v-else-if="item.imageDescriptor.url" :src="item.imageDescriptor.url" :alt="item.imageDescriptor.alt" :aria-describedby="item.disclosureId" loading="lazy" decoding="async" width="64" height="64" @error="onImgError" />
+                <span v-else class="fy-icon" v-html="genIcon(getFavTypeMeta(item.type).cat)" />
+              </span>
+              <ImageDisclosure class="fy-disclosure" :id="item.disclosureId" :descriptor="item.imageDescriptor" presentation="short" />
             </span>
             <span class="fy-body">
               <span class="fy-type">{{ getFavTypeMeta(item.type).label }}</span>
@@ -1380,6 +1382,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .fy-chip:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); border-color: var(--border); }
 .fy-chip:active { transform: translateY(-1px) scale(.98); transition-duration: .1s; }
 .fy-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.fy-media { flex: 0 0 60px; width: 60px; display: flex; flex-direction: column; gap: 2px; align-self: stretch; }
 .fy-thumb {
   flex: 0 0 60px; width: 60px; height: 60px;
   border-radius: var(--radius-sm); overflow: hidden;
@@ -1387,6 +1390,8 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
   background: var(--bg-alt);
 }
 .fy-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.fy-disclosure { max-width: 60px; color: var(--muted); overflow-wrap: anywhere; }
+.fy-disclosure :deep([data-short-label]) { font-size: .6rem; font-weight: var(--weight-semibold); line-height: 1.15; }
 .fy-icon { width: 30px; height: 30px; opacity: .8; color: var(--muted); }
 .fy-icon :deep(svg) { width: 100%; height: 100%; }
 .fy-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

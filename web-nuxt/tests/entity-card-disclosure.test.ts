@@ -172,6 +172,8 @@ describe('Task36 image boundaries', () => {
     expect(source).not.toMatch(/v-if="item\.image\s*&&/)
     expect(source).toContain(':aria-describedby="item.disclosureId"')
     expect(source).toContain(':id="item.disclosureId"')
+    expect(source).toMatch(/<\/span>\s*<ImageDisclosure class="fy-disclosure" :id="item\.disclosureId"/)
+    expect(source).toContain('.fy-disclosure')
     expect(source).toContain('SPOT_CAT_PHOTO')
     expect(source).toContain('EntityFeature')
   })
