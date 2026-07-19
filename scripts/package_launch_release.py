@@ -1129,15 +1129,17 @@ def _publish_without_overwrite(temporary: Path, destination: Path) -> None:
         raise
 
 
-def _remove_owned_output(temporary: Path | None, destination: Path) -> None:
-    if temporary is None:
+def _remove_owned_identity(
+    identity: os.stat_result | None, destination: Path
+) -> None:
+    if identity is None:
         return
     try:
-        owned = temporary.samefile(destination)
+        current = os.lstat(destination)
+        if stat.S_ISREG(current.st_mode) and os.path.samestat(identity, current):
+            destination.unlink(missing_ok=True)
     except OSError:
-        return
-    if owned:
-        destination.unlink(missing_ok=True)
+        pass
 
 
 def _verify_open_temporary(descriptor: int, path: Path, label: str) -> None:
@@ -1222,6 +1224,8 @@ def build_launch_release(
     temporary_digest: Path | None = None
     archive_descriptor: int | None = None
     digest_descriptor: int | None = None
+    archive_output_identity: os.stat_result | None = None
+    digest_output_identity: os.stat_result | None = None
     try:
         archive_descriptor, archive_name = tempfile.mkstemp(
             prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
@@ -1260,11 +1264,13 @@ def build_launch_release(
         _verify_open_temporary(
             digest_descriptor, temporary_digest, "temporary digest"
         )
+        archive_output_identity = os.fstat(archive_descriptor)
+        digest_output_identity = os.fstat(digest_descriptor)
         _publish_without_overwrite(temporary_archive, destination)
         _publish_without_overwrite(temporary_digest, digest_file)
     except BaseException:
-        _remove_owned_output(temporary_digest, digest_file)
-        _remove_owned_output(temporary_archive, destination)
+        _remove_owned_identity(digest_output_identity, digest_file)
+        _remove_owned_identity(archive_output_identity, destination)
         raise
     finally:
         failed = sys.exc_info()[0] is not None
@@ -1277,6 +1283,8 @@ def build_launch_release(
         if temporary_digest is not None:
             _OPEN_TEMPORARY_DESCRIPTORS.pop(_lexical_path(temporary_digest), None)
         if cleanup_error is not None and not failed:
+            _remove_owned_identity(digest_output_identity, digest_file)
+            _remove_owned_identity(archive_output_identity, destination)
             raise cleanup_error
     return LaunchReleasePackage(
         requested_archive,

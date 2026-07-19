@@ -775,3 +775,67 @@ def test_build_launch_release_rollback_preserves_replacement_outputs(
     assert destination.read_bytes() == b"keep replacement archive"
     assert digest_file.read_text(encoding="ascii") == "keep replacement digest\n"
     assert list(tmp_path.glob(".*.tmp")) == []
+
+
+def test_build_launch_release_rolls_back_owned_outputs_if_temp_cleanup_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    destination = tmp_path / "release.tar.gz"
+    digest_file = destination.with_name(destination.name + ".sha256")
+    real_cleanup = release_package._cleanup_temporary_outputs
+
+    def cleanup_then_fail(descriptors, paths):
+        assert real_cleanup(descriptors, paths) is None
+        return OSError("post-publication temp cleanup failed")
+
+    monkeypatch.setattr(
+        release_package, "_cleanup_temporary_outputs", cleanup_then_fail
+    )
+
+    with pytest.raises(OSError, match="post-publication temp cleanup failed"):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+
+    assert not destination.exists()
+    assert not digest_file.exists()
+    assert list(tmp_path.glob(".*.tmp")) == []
+
+
+def test_temp_cleanup_failure_rollback_preserves_foreign_replacement_outputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    destination = tmp_path / "release.tar.gz"
+    digest_file = destination.with_name(destination.name + ".sha256")
+    real_cleanup = release_package._cleanup_temporary_outputs
+
+    def cleanup_replace_then_fail(descriptors, paths):
+        assert real_cleanup(descriptors, paths) is None
+        destination.unlink()
+        destination.write_bytes(b"keep foreign archive")
+        digest_file.unlink()
+        digest_file.write_text("keep foreign digest\n", encoding="ascii")
+        return OSError("post-publication temp cleanup failed")
+
+    monkeypatch.setattr(
+        release_package, "_cleanup_temporary_outputs", cleanup_replace_then_fail
+    )
+
+    with pytest.raises(OSError, match="post-publication temp cleanup failed"):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+
+    assert destination.read_bytes() == b"keep foreign archive"
+    assert digest_file.read_text(encoding="ascii") == "keep foreign digest\n"
+    assert list(tmp_path.glob(".*.tmp")) == []
