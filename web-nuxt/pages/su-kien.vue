@@ -176,7 +176,7 @@
       <p class="result-meta" aria-live="polite">{{ filtered.length }} sự kiện</p>
       <div v-if="filtered.length" class="event-list">
         <NuxtLink
-          v-for="e in filtered" :key="e.id"
+          v-for="(e, index) in filtered" :key="e.id"
           :to="entityPath(e.id)"
           class="event-row"
         >
@@ -194,9 +194,12 @@
               <span v-if="dateRange(e)" class="event-dates">🗓️ {{ dateRange(e) }}</span>
             </div>
           </div>
-          <div v-if="e.images?.length" class="event-thumb">
-            <NuxtImg v-if="isRemoteUrl(e.images[0] || '')" :src="e.images[0] || ''" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" sizes="160px" @error="fadeEventImageError" />
-            <img v-else :src="e.images[0] || ''" :alt="e.name" loading="lazy" decoding="async" width="160" height="120" @error="fadeEventImageError" />
+          <div v-if="eventImageUrl(e)" class="event-media">
+            <div class="event-thumb">
+              <NuxtImg v-if="isRemoteUrl(eventImageUrl(e)!)" :src="eventImageUrl(e)!" :alt="eventImage(e)!.alt" :aria-describedby="eventDisclosureId(e, index)" loading="lazy" decoding="async" width="160" height="120" sizes="160px" @error="fadeEventImageError" />
+              <img v-else :src="eventImageUrl(e)!" :alt="eventImage(e)!.alt" :aria-describedby="eventDisclosureId(e, index)" loading="lazy" decoding="async" width="160" height="120" @error="fadeEventImageError" />
+            </div>
+            <span class="event-disclosure"><ImageDisclosure :id="eventDisclosureId(e, index)" :descriptor="eventImage(e)!" presentation="short" /></span>
           </div>
           <button v-if="e.attributes?.date_start" type="button" class="ical-btn" title="Thêm vào lịch" @click.stop.prevent="downloadIcal(e)">📅</button>
         </NuxtLink>
@@ -273,8 +276,12 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
+import type { ImageDescriptor } from '~/types/image'
+import ImageDisclosure from '~/components/ImageDisclosure.vue'
 import { AREA_META } from '~/composables/useConstants'
 import { solarToLunar } from '~/composables/useLunar'
+import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { useId } from 'vue'
 
 useReveal()
 const { f: pc } = usePageContent('su_kien')
@@ -309,6 +316,24 @@ const { data, error: fetchError } = await useAsyncData('events', () =>
 const allEvents = computed(() =>
   (data.value?.events || []).filter((e: Entity) => (e.attributes?.category || 'su-kien') !== 'le-hoi')
 )
+
+const eventImageDescriptors = computed(() => new Map(
+  allEvents.value.map((event: Entity) => [event.id, describeEntityImages(event)[0] || null] as const),
+))
+const disclosureInstance = useId().replace(/[^A-Za-z0-9_-]+/g, '-')
+
+function eventImage(e: Entity): ImageDescriptor | null {
+  return eventImageDescriptors.value.get(e.id) || describeEntityPlaceholder(e)
+}
+
+function eventImageUrl(e: Entity): string | null {
+  return eventImage(e)?.url || null
+}
+
+function eventDisclosureId(e: Entity, index: number): string {
+  const token = String(e.id || 'event').trim().replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'event'
+  return `event-image-disclosure-${token}-${disclosureInstance}-${index}`
+}
 
 const areaCountMap = computed(() => {
   const counts: Record<string, number> = {}

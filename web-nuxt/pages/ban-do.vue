@@ -217,7 +217,7 @@ function esc(s: string) {
 function popupHTML(emoji: string, name: string, label: string, color: string, id: string) {
   const labelLine = label ? `<small style="display:block;color:var(--muted,#666);margin-top:2px">${label}</small>` : ''
   const linkLine = id ? `<a href="${entityPath(id)}" style="display:inline-block;margin-top:6px;font-weight:600">Xem chi tiết →</a>` : ''
-  return `<div style="display:flex;gap:8px;border-left:4px solid ${color};padding-left:8px"><div style="font-size:1.15rem;line-height:1.2">${emoji}</div><div style="min-width:0"><strong style="display:block">${name}</strong>${labelLine}${linkLine}</div></div>`
+  return `<div data-entity-image-policy="no-image-invariant" style="display:flex;gap:8px;border-left:4px solid ${color};padding-left:8px"><div style="font-size:1.15rem;line-height:1.2">${emoji}</div><div style="min-width:0"><strong style="display:block">${name}</strong>${labelLine}${linkLine}</div></div>`
 }
 
 // GĐ10.4: normalizeCoords gom vào composables/useCoords.ts (Nuxt auto-import).
