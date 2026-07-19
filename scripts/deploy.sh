@@ -308,7 +308,9 @@ evidence_final="\$evidence_root/\$LAUNCH_ID"
 install -d -m 700 "\$evidence_root"
 evidence_tmp="\$(mktemp -d "\$evidence_root/.\$LAUNCH_ID.XXXXXXXXXX")"
 cleanup_evidence() {
-  [ -n "\${evidence_tmp:-}" ] && rm -rf -- "\$evidence_tmp"
+  if [ -n "\${evidence_tmp:-}" ]; then
+    rm -rf -- "\$evidence_tmp"
+  fi
 }
 trap cleanup_evidence EXIT
 for evidence_file in \

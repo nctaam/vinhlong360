@@ -157,6 +157,39 @@ def test_deploy_persists_success_evidence_atomically_before_stage_cleanup():
     )
 
 
+def test_success_evidence_lifecycle_exit_trap_preserves_zero_status(tmp_path: Path):
+    script = DEPLOY.read_text(encoding="utf-8")
+    function_start = script.index("cleanup_evidence() {")
+    function_end = script.index("trap cleanup_evidence EXIT", function_start)
+    cleanup_function = script[function_start:function_end].replace("\\$", "$")
+    scenario = tmp_path / "evidence-success.sh"
+    scenario.write_text(
+        f"""#!/usr/bin/env bash
+set -euo pipefail
+{cleanup_function}
+evidence_tmp="$(mktemp -d)"
+evidence_final="$evidence_tmp.persisted"
+trap cleanup_evidence EXIT
+mv -T -- "$evidence_tmp" "$evidence_final"
+evidence_tmp=""
+rm -rf -- "$evidence_final"
+true
+""",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    result = subprocess.run(
+        [_git_bash(), str(scenario)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
 def test_deploy_probes_from_the_local_operator_before_remote_install():
     script = DEPLOY.read_text(encoding="utf-8")
     close_index = script.index("close_launch_admission")
