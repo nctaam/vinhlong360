@@ -4,9 +4,9 @@ import { resolve } from 'node:path'
 import { defineComponent, h } from 'vue'
 import { describe, expect, it } from 'vitest'
 import SavedEntityCard from '../components/SavedEntityCard.vue'
-import { createFavoriteItem } from '../composables/useFavorites'
+import { createFavoriteItem, readFavoriteStorage, runFavoriteBootstrap } from '../composables/useFavorites'
 import { normalizeRecommendationItems } from '../composables/useContextualRecommendations'
-import { createRecentItem } from '../composables/useRecentlyViewed'
+import { createRecentItem, readRecentStorage } from '../composables/useRecentlyViewed'
 import { aiDisclosure } from '../utils/aiDisclosure'
 import { normalizeSavedImageSnapshot } from '../utils/savedImageDescriptors'
 import type { ImageDescriptor } from '../types/image'
@@ -132,6 +132,55 @@ describe('saved image descriptor snapshots', () => {
 })
 
 describe('favorite, recent, and recommendation adapters', () => {
+  it('loads local favorites before logged-in server merge', async () => {
+    const order: string[] = []
+    let localItems: unknown[] = []
+    let requestMethod = 'GET'
+    await runFavoriteBootstrap(
+      async () => {
+        order.push('load')
+        localItems = [{ id: 'local-1' }]
+      },
+      () => true,
+      async () => {
+        order.push('merge')
+        requestMethod = localItems.length ? 'POST' : 'GET'
+      },
+    )
+
+    expect(order).toEqual(['load', 'merge'])
+    expect(requestMethod).toBe('POST')
+  })
+
+  it('rewrites migrated favorite storage while preserving order and saved timestamps', () => {
+    localStorage.setItem('vl360_favorites', JSON.stringify([
+      { id: 'first', name: 'First', type: 'attraction', image: '/first.webp', savedAt: '2026-07-19T01:00:00.000Z' },
+      { id: 'second', name: 'Second', type: 'attraction', image: '/second.webp', savedAt: '2026-07-19T02:00:00.000Z' },
+    ]))
+
+    const items = readFavoriteStorage(localStorage)
+    const persisted = JSON.parse(localStorage.getItem('vl360_favorites') || '[]')
+    expect(items.map(item => [item.id, item.savedAt])).toEqual([
+      ['first', '2026-07-19T01:00:00.000Z'],
+      ['second', '2026-07-19T02:00:00.000Z'],
+    ])
+    expect(persisted).toEqual(items)
+    expect(persisted.every((item: Record<string, unknown>) => !('image' in item))).toBe(true)
+  })
+
+  it('rewrites migrated recent storage while preserving order and viewed timestamps', () => {
+    localStorage.setItem('vl360_recent', JSON.stringify([
+      { id: 'first', name: 'First', type: 'attraction', image: '/first.webp', viewedAt: 100 },
+      { id: 'second', name: 'Second', type: 'attraction', image: '/second.webp', viewedAt: 200 },
+    ]))
+
+    const items = readRecentStorage(localStorage)
+    const persisted = JSON.parse(localStorage.getItem('vl360_recent') || '[]')
+    expect(items.map(item => [item.id, item.viewedAt])).toEqual([['first', 100], ['second', 200]])
+    expect(persisted).toEqual(items)
+    expect(persisted.every((item: Record<string, unknown>) => !('image' in item))).toBe(true)
+  })
+
   it('stores descriptors in favorite snapshots', () => {
     const favorite = createFavoriteItem(entity({ image_descriptor: reviewDescriptor }), '2026-07-19T00:00:00.000Z')
 
@@ -190,5 +239,7 @@ describe('saved-card and search rendering', () => {
     expect(search).not.toContain('v-if="r.image"')
     expect(search).toContain('recentImageDescriptor(r)')
     expect(search).toContain('ImageDisclosure')
+    expect(search).toContain('@error="markRecentImageError(r.id)"')
+    expect(search).toContain('describeEntityPlaceholder')
   })
 })

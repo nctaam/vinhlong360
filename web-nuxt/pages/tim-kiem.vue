@@ -144,8 +144,8 @@
           <div class="scroll-row recent-filmstrip">
             <NuxtLink v-for="(r, index) in recentItems" :key="r.id" :to="entityPath(r.id)" class="recent-card">
               <span class="recent-image-wrap">
-                <NuxtImg v-if="recentImageDescriptor(r).url && isRemoteUrl(recentImageDescriptor(r).url || '')" :src="recentImageDescriptor(r).url || ''" :alt="recentImageDescriptor(r).alt" :aria-describedby="recentDisclosureId(r, index)" class="recent-img" width="56" height="56" sizes="56px" loading="lazy" decoding="async" />
-                <img v-else-if="recentImageDescriptor(r).url" :src="recentImageDescriptor(r).url || ''" :alt="recentImageDescriptor(r).alt" :aria-describedby="recentDisclosureId(r, index)" class="recent-img" width="56" height="56" loading="lazy" decoding="async" />
+                <NuxtImg v-if="recentImageDescriptor(r).url && isRemoteUrl(recentImageDescriptor(r).url || '')" :src="recentImageDescriptor(r).url || ''" :alt="recentImageDescriptor(r).alt" :aria-describedby="recentDisclosureId(r, index)" class="recent-img" width="56" height="56" sizes="56px" loading="lazy" decoding="async" @error="markRecentImageError(r.id)" />
+                <img v-else-if="recentImageDescriptor(r).url" :src="recentImageDescriptor(r).url || ''" :alt="recentImageDescriptor(r).alt" :aria-describedby="recentDisclosureId(r, index)" class="recent-img" width="56" height="56" loading="lazy" decoding="async" @error="markRecentImageError(r.id)" />
                 <span v-else class="recent-img recent-placeholder" aria-hidden="true" :style="{ backgroundImage: categoryPlaceholderBg(r.id, TYPE_META[r.type]?.cat) }"><span class="recent-placeholder-glyph" v-html="categoryGlyph(TYPE_META[r.type]?.cat)"></span></span>
                 <span class="recent-image-disclosure"><ImageDisclosure :id="recentDisclosureId(r, index)" :descriptor="recentImageDescriptor(r)" presentation="short" /></span>
               </span>
@@ -214,6 +214,7 @@ import { useJourneyActions } from '~/composables/useJourneyActions'
 import { generateCategoryIcon, generateCategoryPlaceholder } from '~/composables/useCategoryPlaceholder'
 import type { ImageDescriptor } from '~/types/image'
 import type { RecentItem } from '~/composables/useRecentlyViewed'
+import { describeEntityPlaceholder } from '~/utils/imageDescriptors'
 useReveal()
 const { f: pc } = usePageContent('tim_kiem')
 const { recentItems } = useRecentlyViewed()
@@ -221,9 +222,14 @@ const { trackSearch } = useUserEvents()
 const { searchAll, fetchEntitySuggestions } = useUnifiedSearch()
 const { searchRecoveryActions, searchSuccessActions } = useJourneyActions()
 const route = useRoute()
+const recentImageErrors = ref<Record<string, boolean>>({})
 
 function recentImageDescriptor(item: RecentItem): ImageDescriptor {
-  return item.image_descriptor
+  return recentImageErrors.value[item.id] ? describeEntityPlaceholder(item) : item.image_descriptor
+}
+
+function markRecentImageError(id: string) {
+  recentImageErrors.value = { ...recentImageErrors.value, [id]: true }
 }
 
 function recentDisclosureId(item: { id: string }, index: number): string {

@@ -21,6 +21,25 @@ function isValidItem(v: unknown): v is RecentItem {
   return typeof o.id === 'string' && typeof o.name === 'string' && typeof o.type === 'string'
 }
 
+export function readRecentStorage(storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>): RecentItem[] {
+  const raw = storage.getItem(STORAGE_KEY)
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      storage.removeItem(STORAGE_KEY)
+      return []
+    }
+    const normalized = parsed.filter(isValidItem).map(item => normalizeSavedImageSnapshot(item) as RecentItem)
+    // Rewrite legacy URL snapshots while preserving their original order and timestamps.
+    storage.setItem(STORAGE_KEY, JSON.stringify(normalized))
+    return normalized
+  } catch {
+    storage.removeItem(STORAGE_KEY)
+    return []
+  }
+}
+
 export function createRecentItem(entity: Record<string, any>, viewedAt = Date.now()): RecentItem {
   return normalizeSavedImageSnapshot({
     id: entity.id,
@@ -40,13 +59,7 @@ export function useRecentlyViewed() {
 
   function load() {
     if (loaded || !import.meta.client) return
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) items.value = parsed.filter(isValidItem).map(item => normalizeSavedImageSnapshot(item) as RecentItem)
-      }
-    } catch { /* corrupt data */ }
+    items.value = readRecentStorage(localStorage)
     loaded = true
   }
 

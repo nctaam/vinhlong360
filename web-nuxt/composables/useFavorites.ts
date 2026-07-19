@@ -24,6 +24,34 @@ function isValidFavorite(v: unknown): v is FavoriteItem {
   return typeof o.id === 'string' && typeof o.name === 'string' && typeof o.type === 'string'
 }
 
+export function readFavoriteStorage(storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>): FavoriteItem[] {
+  const raw = storage.getItem(STORAGE_KEY)
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      storage.removeItem(STORAGE_KEY)
+      return []
+    }
+    const normalized = parsed.filter(isValidFavorite).map(normalizeFavoriteItem)
+    // Rewrite legacy URL snapshots immediately so later syncs cannot reintroduce raw media.
+    storage.setItem(STORAGE_KEY, JSON.stringify(normalized))
+    return normalized
+  } catch {
+    storage.removeItem(STORAGE_KEY)
+    return []
+  }
+}
+
+export async function runFavoriteBootstrap(
+  load: () => void | Promise<void>,
+  isLoggedIn: () => boolean,
+  merge: () => void | Promise<void>,
+): Promise<void> {
+  await load()
+  if (isLoggedIn()) await merge()
+}
+
 export function createFavoriteItem(entity: Record<string, any>, savedAt = new Date().toISOString()): FavoriteItem {
   return normalizeSavedImageSnapshot({
     id: entity.id,
@@ -52,16 +80,7 @@ export function useFavorites() {
 
   function load() {
     if (loaded || import.meta.server) return
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) favorites.value = parsed.filter(isValidFavorite).map(normalizeFavoriteItem)
-        else localStorage.removeItem(STORAGE_KEY)
-      }
-    } catch {
-      localStorage.removeItem(STORAGE_KEY)
-    }
+    favorites.value = readFavoriteStorage(localStorage)
     loaded = true
   }
 
@@ -69,8 +88,6 @@ export function useFavorites() {
     if (import.meta.server) return
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites.value)) } catch {}
   }
-
-  if (import.meta.client) onNuxtReady(load)
 
   // ── Account sync (P1) ──────────────────────────────────────────────
   // localStorage is the offline cache + UI source of truth; the server is the
@@ -97,10 +114,14 @@ export function useFavorites() {
     try { await $fetch(`/api/saved/${encodeURIComponent(id)}`, { method: 'DELETE', headers: authHeaders() }) } catch { /* keep local */ }
   }
 
+  function bootstrapSync() {
+    return runFavoriteBootstrap(load, () => isLoggedIn.value, mergeToServer)
+  }
+
   if (!syncSetup && import.meta.client) {
     syncSetup = true
-    if (isLoggedIn.value) mergeToServer()
-    watch(isLoggedIn, (v, old) => { if (v && !old) mergeToServer() })
+    onNuxtReady(() => { void bootstrapSync() })
+    watch(isLoggedIn, (v, old) => { if (v && !old) void bootstrapSync() })
   }
 
   function isSaved(id: string) {
