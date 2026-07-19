@@ -916,12 +916,24 @@ def _canonical_json_bytes(value: object) -> bytes:
     ).encode("utf-8")
 
 
+def _validate_source_revision(source_revision: object) -> str:
+    if (
+        not isinstance(source_revision, str)
+        or not source_revision
+        or source_revision.strip() != source_revision
+        or any(character in source_revision for character in "\r\n\0")
+    ):
+        raise ValueError("source revision must be a non-empty canonical string")
+    return source_revision
+
+
 def _build_launch_release_manifest_from_snapshot(
     snapshot: _LaunchReleaseSnapshot,
     source_revision: str,
     *,
     compose_network_audit: Path | None = None,
 ) -> dict[str, object]:
+    source_revision = _validate_source_revision(source_revision)
     root = snapshot.root
     canonical_artifacts = _validated_canonical_artifacts(root, snapshot)
     _readiness_path, readiness_raw = _validate_readiness_manifest(
@@ -975,13 +987,7 @@ def build_launch_release_manifest(
     *,
     compose_network_audit: Path | None = None,
 ) -> dict[str, object]:
-    if (
-        not isinstance(source_revision, str)
-        or not source_revision
-        or source_revision.strip() != source_revision
-        or any(character in source_revision for character in "\r\n\0")
-    ):
-        raise ValueError("source revision must be a non-empty canonical string")
+    source_revision = _validate_source_revision(source_revision)
     root = _lexical_path(root)
     snapshot = _snapshot_launch_release(root, payload)
     return _build_launch_release_manifest_from_snapshot(
@@ -1205,6 +1211,7 @@ def build_launch_release(
     compose_network_audit: Path,
     source_revision: str,
 ) -> LaunchReleasePackage:
+    source_revision = _validate_source_revision(source_revision)
     requested_archive = Path(destination)
     requested_digest = requested_archive.with_name(requested_archive.name + ".sha256")
     root = _lexical_path(root)

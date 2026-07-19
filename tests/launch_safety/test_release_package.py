@@ -388,6 +388,46 @@ def test_build_launch_release_has_closed_manifest_and_deterministic_sidecar(tmp_
     }
 
 
+@pytest.mark.parametrize(
+    "source_revision",
+    [
+        pytest.param(" invalid-revision ", id="surrounding-whitespace"),
+        pytest.param("invalid\0revision", id="nul"),
+        pytest.param("invalid\rrevision", id="carriage-return"),
+        pytest.param("invalid\nrevision", id="newline"),
+    ],
+)
+def test_build_launch_release_refuses_noncanonical_source_revision_without_outputs(
+    tmp_path: Path, source_revision: str
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    readiness_path = (
+        root / "web-nuxt" / ".output" / "server" / "launch-readiness-manifest.json"
+    )
+    readiness = json.loads(readiness_path.read_bytes())
+    readiness["build_revision"] = source_revision
+    readiness_path.write_text(
+        json.dumps(readiness, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    destination = tmp_path / "release.tar.gz"
+
+    with pytest.raises(
+        ValueError, match="source revision must be a non-empty canonical string"
+    ):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision=source_revision,
+        )
+
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".sha256").exists()
+    assert list(tmp_path.glob(".*.tmp")) == []
+
+
 def test_build_launch_release_uses_one_snapshot_if_source_mutates_before_tar(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
