@@ -299,7 +299,22 @@ def _write_launch_fixture(root: Path) -> Path:
         "revision": "compose-network-audit-v1",
         "check_names": sorted(CHECK_NAMES),
         "checks": {name: "passed" for name in sorted(CHECK_NAMES)},
-        "published_ports": [],
+        "published_ports": [
+            {
+                "service": "nginx",
+                "host_ip": "192.0.2.1",
+                "published": 80,
+                "target": 80,
+                "protocol": "tcp",
+            },
+            {
+                "service": "nginx",
+                "host_ip": "192.0.2.1",
+                "published": 443,
+                "target": 443,
+                "protocol": "tcp",
+            },
+        ],
         "source_digest_kind": "sha256-utf8-lf-v1",
         "sources": [
             {
@@ -459,6 +474,141 @@ def test_build_launch_release_refuses_invalid_audit_without_outputs(tmp_path: Pa
         build_launch_release(root, destination, compose_network_audit=audit, source_revision="r")
     assert not destination.exists()
     assert not destination.with_name(destination.name + ".sha256").exists()
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        pytest.param(
+            lambda ports: ports.__setitem__(0, {**ports[0], "host_ip": "127.0.0.1"}),
+            id="loopback-host-ip",
+        ),
+        pytest.param(
+            lambda ports: ports.__setitem__(0, {**ports[0], "host_ip": "not-an-ip"}),
+            id="invalid-host-ip",
+        ),
+        pytest.param(
+            lambda ports: ports.__setitem__(0, {**ports[0], "published": "80"}),
+            id="string-published-port",
+        ),
+        pytest.param(
+            lambda ports: ports.__setitem__(0, {**ports[0], "published": True}),
+            id="boolean-published-port",
+        ),
+        pytest.param(
+            lambda ports: ports.__setitem__(0, {**ports[0], "host_ip": 2130706433}),
+            id="non-string-host-ip",
+        ),
+        pytest.param(
+            lambda ports: ports.__setitem__(0, {**ports[0], "target": 443}),
+            id="wrong-target-port",
+        ),
+        pytest.param(
+            lambda ports: ports.__setitem__(0, {**ports[0], "protocol": "udp"}),
+            id="wrong-protocol",
+        ),
+        pytest.param(
+            lambda ports: ports.append(dict(ports[0])),
+            id="duplicate-endpoint",
+        ),
+        pytest.param(
+            lambda ports: ports.pop(1),
+            id="missing-endpoint",
+        ),
+        pytest.param(
+            lambda ports: ports.reverse(),
+            id="noncanonical-order",
+        ),
+    ],
+)
+def test_build_launch_release_rejects_noncanonical_published_endpoints_without_outputs(
+    tmp_path: Path, mutate
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    value = json.loads(audit.read_text(encoding="utf-8"))
+    mutate(value["published_ports"])
+    audit.write_text(
+        json.dumps(value, sort_keys=True, separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    destination = tmp_path / "release.tar.gz"
+
+    with pytest.raises(ValueError):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".sha256").exists()
+    assert list(tmp_path.glob(".*.tmp")) == []
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Windows denies unlinking an open temp file")
+def test_build_launch_release_rejects_temp_symlink_swap_without_touching_external_sentinel(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    destination = tmp_path / "release.tar.gz"
+    sentinel = tmp_path / "external-sentinel"
+    sentinel.write_bytes(b"must remain untouched\n")
+    real_mkstemp = release_package.tempfile.mkstemp
+    call_count = 0
+
+    def swap_archive_temp(*args, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        descriptor, name = real_mkstemp(*args, **kwargs)
+        if call_count == 1:
+            temporary = Path(name)
+            temporary.unlink()
+            temporary.symlink_to(sentinel)
+        return descriptor, name
+
+    monkeypatch.setattr(release_package.tempfile, "mkstemp", swap_archive_temp)
+
+    with pytest.raises(ValueError, match="temporary archive"):
+        build_launch_release(
+            root,
+            destination,
+            compose_network_audit=audit,
+            source_revision="reviewed-source-revision",
+        )
+
+    assert sentinel.read_bytes() == b"must remain untouched\n"
+    assert not destination.exists()
+    assert not destination.with_name(destination.name + ".sha256").exists()
+    assert list(tmp_path.glob(".*.tmp")) == []
+
+
+def test_build_launch_release_never_reopens_owned_temporary_paths(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    root = tmp_path / "source"
+    audit = _write_launch_fixture(root)
+    destination = tmp_path / "release.tar.gz"
+    real_open = Path.open
+
+    def reject_temporary_reopen(path: Path, *args, **kwargs):
+        if path.name.endswith(".tmp"):
+            raise AssertionError(f"temporary path was reopened: {path}")
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "open", reject_temporary_reopen)
+
+    result = build_launch_release(
+        root,
+        destination,
+        compose_network_audit=audit,
+        source_revision="reviewed-source-revision",
+    )
+
+    assert result.archive == destination
+    assert result.digest_file == destination.with_name(destination.name + ".sha256")
 
 
 def test_build_launch_release_normalizes_modes_and_excludes_pnpm_and_caches(tmp_path: Path):

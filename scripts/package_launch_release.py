@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import gzip
 import hashlib
 import io
+import ipaddress
 import json
 import os
 import re
@@ -92,6 +93,7 @@ _FORBIDDEN_CACHE_CLASSES = (
     "selective-open",
     "failed-open",
 )
+_OPEN_TEMPORARY_DESCRIPTORS: dict[Path, int] = {}
 
 
 @dataclass(frozen=True)
@@ -771,13 +773,28 @@ def _validate_network_audit(
     if audit["checks"] != {name: "passed" for name in expected_checks}:
         raise ValueError("compose network audit did not pass every check")
     published_ports = audit["published_ports"]
-    if not isinstance(published_ports, list):
+    if not isinstance(published_ports, list) or len(published_ports) != 2:
         raise ValueError("compose network audit published ports are invalid")
+    endpoint_keys: set[tuple[str, str, int, int, str]] = set()
     for endpoint in published_ports:
         if not isinstance(endpoint, dict) or set(endpoint) != {
             "service", "host_ip", "published", "target", "protocol"
         }:
             raise ValueError("compose network audit endpoint shape is invalid")
+        if (
+            type(endpoint["service"]) is not str
+            or type(endpoint["host_ip"]) is not str
+            or type(endpoint["published"]) is not int
+            or type(endpoint["target"]) is not int
+            or type(endpoint["protocol"]) is not str
+        ):
+            raise ValueError("compose network audit endpoint types are invalid")
+        try:
+            host_ip = ipaddress.ip_address(endpoint["host_ip"])
+        except ValueError as exc:
+            raise ValueError("compose network audit endpoint host IP is invalid") from exc
+        if endpoint["host_ip"] != host_ip.compressed or host_ip.is_loopback:
+            raise ValueError("compose network audit endpoint host IP is invalid")
         if (
             endpoint["service"] != "nginx"
             or endpoint["published"] not in {80, 443}
@@ -785,6 +802,22 @@ def _validate_network_audit(
             or endpoint["protocol"] != "tcp"
         ):
             raise ValueError("compose network audit exposes a non-nginx endpoint")
+        endpoint_keys.add(
+            (
+                endpoint["service"],
+                endpoint["host_ip"],
+                endpoint["published"],
+                endpoint["target"],
+                endpoint["protocol"],
+            )
+        )
+    if len(endpoint_keys) != len(published_ports):
+        raise ValueError("compose network audit published ports contain duplicates")
+    if {
+        (endpoint["published"], endpoint["target"])
+        for endpoint in published_ports
+    } != {(80, 80), (443, 443)}:
+        raise ValueError("compose network audit published ports are incomplete")
     if published_ports != sorted(
         published_ports,
         key=lambda endpoint: (
@@ -1002,6 +1035,8 @@ def _write_snapshot_tar_gz(
     destination: Path,
     snapshot: _LaunchReleaseSnapshot,
     embedded_files: Mapping[str, bytes],
+    *,
+    destination_descriptor: int | None = None,
 ) -> None:
     _revalidate_snapshot(snapshot)
     entries: list[tuple[str, bytes | None, bool]] = []
@@ -1009,7 +1044,15 @@ def _write_snapshot_tar_gz(
         entries.append((member.arcname, member.source.raw, member.source.directory))
     for arcname, raw in embedded_files.items():
         entries.append((arcname, raw, False))
-    with destination.open("wb") as raw_archive:
+    if destination_descriptor is None:
+        raw_archive_context = destination.open("wb")
+    else:
+        os.lseek(destination_descriptor, 0, os.SEEK_SET)
+        os.ftruncate(destination_descriptor, 0)
+        raw_archive_context = os.fdopen(
+            os.dup(destination_descriptor), "wb", closefd=True
+        )
+    with raw_archive_context as raw_archive:
         with gzip.GzipFile(
             filename="",
             mode="wb",
@@ -1036,9 +1079,16 @@ def write_deterministic_tar_gz(
     destination: Path,
     payload: _LaunchReleaseSnapshot | list[tuple[Path, str]],
     embedded_files: Mapping[str, bytes],
+    *,
+    destination_descriptor: int | None = None,
 ) -> None:
     snapshot = payload if isinstance(payload, _LaunchReleaseSnapshot) else _snapshot_tar_payload(payload)
-    _write_snapshot_tar_gz(destination, snapshot, embedded_files)
+    _write_snapshot_tar_gz(
+        destination,
+        snapshot,
+        embedded_files,
+        destination_descriptor=destination_descriptor,
+    )
 
 
 def _require_safe_destination(path: Path) -> None:
@@ -1057,7 +1107,26 @@ def _require_safe_destination(path: Path) -> None:
 
 
 def _publish_without_overwrite(temporary: Path, destination: Path) -> None:
+    descriptor = _OPEN_TEMPORARY_DESCRIPTORS.get(_lexical_path(temporary))
+    if descriptor is not None:
+        _verify_open_temporary(descriptor, temporary, "temporary output")
     os.link(temporary, destination, follow_symlinks=False)
+    if descriptor is None:
+        return
+    try:
+        opened = os.fstat(descriptor)
+        published = os.lstat(destination)
+        if not stat.S_ISREG(published.st_mode) or not os.path.samestat(opened, published):
+            raise ValueError("published output does not match temporary descriptor")
+    except BaseException:
+        try:
+            candidate = os.lstat(destination)
+            source = os.lstat(temporary)
+            if os.path.samestat(candidate, source):
+                destination.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
 
 
 def _remove_owned_output(temporary: Path | None, destination: Path) -> None:
@@ -1069,6 +1138,62 @@ def _remove_owned_output(temporary: Path | None, destination: Path) -> None:
         return
     if owned:
         destination.unlink(missing_ok=True)
+
+
+def _verify_open_temporary(descriptor: int, path: Path, label: str) -> None:
+    """Ensure an open temp descriptor still names the expected regular file."""
+    try:
+        opened = os.fstat(descriptor)
+        named = os.lstat(path)
+    except OSError as exc:
+        raise ValueError(f"{label} changed before publish") from exc
+    if (
+        not stat.S_ISREG(opened.st_mode)
+        or not stat.S_ISREG(named.st_mode)
+        or not os.path.samestat(opened, named)
+    ):
+        raise ValueError(f"{label} changed before publish")
+
+
+def _sha256_descriptor(descriptor: int) -> str:
+    digest = hashlib.sha256()
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    while True:
+        chunk = os.read(descriptor, 1024 * 1024)
+        if not chunk:
+            break
+        digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _write_descriptor(descriptor: int, raw: bytes) -> None:
+    view = memoryview(raw)
+    while view:
+        written = os.write(descriptor, view)
+        if written <= 0:
+            raise OSError("temporary output write made no progress")
+        view = view[written:]
+
+
+def _cleanup_temporary_outputs(
+    descriptors: tuple[int | None, ...], paths: tuple[Path | None, ...]
+) -> OSError | None:
+    first_error: OSError | None = None
+    for descriptor in descriptors:
+        if descriptor is None:
+            continue
+        try:
+            os.close(descriptor)
+        except OSError as exc:
+            first_error = first_error or exc
+    for path in paths:
+        if path is None:
+            continue
+        try:
+            path.unlink(missing_ok=True)
+        except OSError as exc:
+            first_error = first_error or exc
+    return first_error
 
 
 def build_launch_release(
@@ -1095,28 +1220,46 @@ def build_launch_release(
     manifest_raw = _canonical_json_bytes(manifest)
     temporary_archive: Path | None = None
     temporary_digest: Path | None = None
+    archive_descriptor: int | None = None
+    digest_descriptor: int | None = None
     try:
         archive_descriptor, archive_name = tempfile.mkstemp(
             prefix=f".{destination.name}.", suffix=".tmp", dir=destination.parent
         )
         temporary_archive = Path(archive_name)
-        os.close(archive_descriptor)
+        _OPEN_TEMPORARY_DESCRIPTORS[_lexical_path(temporary_archive)] = archive_descriptor
         digest_descriptor, digest_name = tempfile.mkstemp(
             prefix=f".{digest_file.name}.", suffix=".tmp", dir=digest_file.parent
         )
         temporary_digest = Path(digest_name)
-        os.close(digest_descriptor)
+        _OPEN_TEMPORARY_DESCRIPTORS[_lexical_path(temporary_digest)] = digest_descriptor
         write_deterministic_tar_gz(
             temporary_archive,
             snapshot,
             {"launch-release-manifest.json": manifest_raw},
+            destination_descriptor=archive_descriptor,
         )
-        archive_digest = _sha256_bytes(temporary_archive.read_bytes())
-        temporary_digest.write_text(
-            f"{archive_digest}  {destination.name}\n", encoding="ascii", newline="\n"
+        os.fsync(archive_descriptor)
+        _verify_open_temporary(
+            archive_descriptor, temporary_archive, "temporary archive"
+        )
+        archive_digest = _sha256_descriptor(archive_descriptor)
+        digest_raw = f"{archive_digest}  {destination.name}\n".encode("ascii")
+        os.lseek(digest_descriptor, 0, os.SEEK_SET)
+        os.ftruncate(digest_descriptor, 0)
+        _write_descriptor(digest_descriptor, digest_raw)
+        os.fsync(digest_descriptor)
+        _verify_open_temporary(
+            digest_descriptor, temporary_digest, "temporary digest"
         )
         _require_safe_destination(destination)
         _require_safe_destination(digest_file)
+        _verify_open_temporary(
+            archive_descriptor, temporary_archive, "temporary archive"
+        )
+        _verify_open_temporary(
+            digest_descriptor, temporary_digest, "temporary digest"
+        )
         _publish_without_overwrite(temporary_archive, destination)
         _publish_without_overwrite(temporary_digest, digest_file)
     except BaseException:
@@ -1124,10 +1267,17 @@ def build_launch_release(
         _remove_owned_output(temporary_archive, destination)
         raise
     finally:
+        failed = sys.exc_info()[0] is not None
+        cleanup_error = _cleanup_temporary_outputs(
+            (digest_descriptor, archive_descriptor),
+            (temporary_archive, temporary_digest),
+        )
         if temporary_archive is not None:
-            temporary_archive.unlink(missing_ok=True)
+            _OPEN_TEMPORARY_DESCRIPTORS.pop(_lexical_path(temporary_archive), None)
         if temporary_digest is not None:
-            temporary_digest.unlink(missing_ok=True)
+            _OPEN_TEMPORARY_DESCRIPTORS.pop(_lexical_path(temporary_digest), None)
+        if cleanup_error is not None and not failed:
+            raise cleanup_error
     return LaunchReleasePackage(
         requested_archive,
         requested_digest,
