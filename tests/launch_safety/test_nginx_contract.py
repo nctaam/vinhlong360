@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -689,3 +690,142 @@ def test_systemd_renderer_emits_loopback_targets_without_compose_dns(tmp_path: P
     assert "agent:8360" not in rendered
     assert "bot-gateway:8361" not in rendered
     assert "nuxt:3000" not in rendered
+
+
+def test_systemd_renderer_uses_uri_less_literal_upstreams_and_keeps_admin_rewrite():
+    from scripts.ops.render_nginx_config import render_config
+
+    source = (ROOT / "nginx.conf").read_text(encoding="utf-8")
+    rendered = render_config(source, topology="systemd")
+    servers = _public_servers_from_source(rendered)
+    assert len(servers) == 1
+
+    proxy_targets = [
+        statement.parts[1]
+        for location in _locations(servers[0])
+        for statement in _directive(location.body, "proxy_pass")
+    ]
+    assert "http://127.0.0.1:8360" in proxy_targets
+    assert "http://127.0.0.1:8361" in proxy_targets
+    assert all("$request_uri" not in target for target in proxy_targets)
+    assert all("$uri" not in target for target in proxy_targets)
+    assert all("$is_args" not in target for target in proxy_targets)
+    assert all("$args" not in target for target in proxy_targets)
+
+    exact_admin = _location_for(servers[0], "=", "/admin-api")
+    prefix_admin = _location_for(servers[0], "^~", "/admin-api/")
+    assert _directive(exact_admin.body, "rewrite")[0].parts == (
+        "rewrite",
+        "^",
+        "/admin",
+        "break",
+    )
+    assert _directive(prefix_admin.body, "rewrite")[0].parts[-2:] == (
+        "/admin$admin_rest",
+        "break",
+    )
+    assert _directive(exact_admin.body, "proxy_pass")[0].parts == (
+        "proxy_pass",
+        "http://127.0.0.1:8360",
+    )
+    assert _directive(prefix_admin.body, "proxy_pass")[0].parts == (
+        "proxy_pass",
+        "http://127.0.0.1:8360",
+    )
+
+
+def _backend_upstream(location: Location) -> str | None:
+    targets = _directive(location.body, "proxy_pass")
+    if not targets:
+        return None
+    assert len(targets) == 1
+    target = targets[0].parts[1]
+    if "$agent_upstream" in target or "vl360_agent" in target:
+        return "agent"
+    if "$bot_upstream" in target or "vl360_bots" in target:
+        return "bot-gateway"
+    return None
+
+
+def _regex_backend_aliases(pattern: str) -> set[str]:
+    single = re.fullmatch(r"\^/([a-z0-9-]+)\(\?:/\|\$\)", pattern)
+    if single:
+        return {f"/{single.group(1)}"}
+    grouped = re.fullmatch(r"\^/\(([a-z0-9|-]+)\)\(\?:/\|\$\)", pattern)
+    if grouped:
+        names = grouped.group(1).split("|")
+        assert all(names) and len(names) == len(set(names))
+        return {f"/{name}" for name in names}
+    raise AssertionError(f"backend regex lacks reviewed segment-boundary form: {pattern}")
+
+
+def _backend_ingress_aliases(source: str) -> dict[str, str]:
+    aliases: dict[str, str] = {}
+    for server in _public_servers_from_source(source):
+        for location in _locations(server):
+            upstream = _backend_upstream(location)
+            if upstream is None:
+                continue
+            if location.modifier in {"~", "~*"}:
+                prefixes = _regex_backend_aliases(location.pattern)
+            elif location.modifier in {"=", "", "^~"}:
+                prefix = location.pattern.rstrip("/") or "/"
+                prefixes = {prefix}
+            else:
+                raise AssertionError(
+                    f"unsupported backend location modifier: {location.modifier}"
+                )
+            for prefix in prefixes:
+                previous = aliases.setdefault(prefix, upstream)
+                assert previous == upstream, (prefix, previous, upstream)
+    return aliases
+
+
+def _assert_backend_ingress_matches_policy(source: str, policy: dict[str, object]) -> dict[str, str]:
+    aliases = _backend_ingress_aliases(source)
+    sensitive = {
+        item["prefix"]
+        for item in policy["sensitive_prefixes"]
+        if isinstance(item, dict)
+    }
+    exceptions = {
+        item["prefix"]: item
+        for item in policy["backend_ingress_exceptions"]
+        if isinstance(item, dict)
+    }
+    for prefix, upstream in aliases.items():
+        if prefix in sensitive:
+            continue
+        exception = exceptions.get(prefix)
+        assert exception is not None, f"unreviewed backend ingress alias: {prefix}"
+        assert exception.get("upstream") == upstream
+        assert isinstance(exception.get("review_reason"), str)
+        assert exception["review_reason"].strip()
+    assert set(exceptions) <= set(aliases), "stale backend ingress exception"
+    return aliases
+
+
+def test_backend_ingress_aliases_match_policy_and_http_https_parity():
+    policy = json.loads(
+        (ROOT / "config" / "launch-indexing-policy.json").read_text(encoding="utf-8")
+    )
+    http_aliases = _assert_backend_ingress_matches_policy(
+        (ROOT / "nginx.conf").read_text(encoding="utf-8"), policy
+    )
+    https_aliases = _assert_backend_ingress_matches_policy(
+        (ROOT / "nginx-ssl.conf").read_text(encoding="utf-8"), policy
+    )
+    assert http_aliases == https_aliases
+
+
+def test_backend_ingress_policy_rejects_rogue_route():
+    policy = json.loads(
+        (ROOT / "config" / "launch-indexing-policy.json").read_text(encoding="utf-8")
+    )
+    source = (ROOT / "nginx.conf").read_text(encoding="utf-8").replace(
+        "location ~ ^/api(?:/|$) {",
+        "location ~ ^/rogue(?:/|$) {",
+        1,
+    )
+    with pytest.raises(AssertionError, match="unreviewed backend ingress alias: /rogue"):
+        _assert_backend_ingress_matches_policy(source, policy)

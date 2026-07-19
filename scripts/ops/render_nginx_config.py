@@ -32,12 +32,25 @@ def render_config(source: str, *, topology: str) -> str:
         return source
 
     rendered = source
+    # URI-less proxy_pass preserves the original raw path/query.  When an
+    # admin rewrite runs first, Nginx forwards the rewritten URI with the same
+    # query string without constructing it from normalized variables.
+    for compose_target, systemd_target in (
+        ("$agent_upstream$request_uri", "http://127.0.0.1:8360"),
+        ("$agent_upstream$uri$is_args$args", "http://127.0.0.1:8360"),
+        ("$bot_upstream$request_uri", "http://127.0.0.1:8361"),
+        ("$bot_upstream$uri$is_args$args", "http://127.0.0.1:8361"),
+    ):
+        rendered = rendered.replace(
+            f"proxy_pass {compose_target};",
+            f"proxy_pass {systemd_target};",
+        )
     rendered = re.sub(r"^\s*set \$(?:agent|bot)_upstream [^;]+;\r?\n", "", rendered, flags=re.MULTILINE)
     rendered = rendered.replace("resolver 127.0.0.11 valid=5s ipv6=off;\n", "")
     rendered = rendered.replace("server nuxt:3000;", "server 127.0.0.1:3000;")
-    rendered = rendered.replace("$agent_upstream", "http://127.0.0.1:8360")
-    rendered = rendered.replace("$bot_upstream", "http://127.0.0.1:8361")
     rendered = rendered.replace("http://vl360_nuxt", "http://127.0.0.1:3000")
+    if "$agent_upstream" in rendered or "$bot_upstream" in rendered:
+        raise ValueError("systemd Nginx render contains an unsupported variable upstream")
     if any(host in rendered for host in ("agent:", "bot-gateway:", "nuxt:")):
         raise ValueError("systemd Nginx render contains a Docker service hostname")
     return rendered

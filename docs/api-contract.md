@@ -241,6 +241,7 @@ Task 17 does not yet guarantee exact single-query shape: rejection of duplicate
 
 | Method | Path | Description |
 |--------|------|-------------|
+| GET | `/sitemap.xml` | Main sitemap (Nuxt-owned root SEO response) |
 | GET | `/sitemap-media.xml` | Media sitemap |
 | GET | `/sitemap-index.xml` | Sitemap index |
 | GET | `/robots.txt` | Robots directives |
@@ -250,9 +251,16 @@ Task 17 does not yet guarantee exact single-query shape: rejection of duplicate
 | GET | `/seo/jsonld/itinerary/{id}` | TouristTrip schema |
 | GET | `/seo/jsonld/collection/{type}` | ItemList schema |
 
-Mutable FastAPI ownership of public `GET /sitemap.xml` is retired. The immutable
-main bytes are available only through the pinned internal launch-sitemap route;
-public handoff remains deferred while the site-wide launch gate is closed.
+The four root SEO documents (`/robots.txt`, `/sitemap.xml`, `/sitemap-media.xml`,
+and `/sitemap-index.xml`) are owned by Nuxt server routes and are routed to Nuxt
+by the exclusive Nginx ingress. FastAPI is not a public owner of these paths.
+Responses are `no-store` and preserve the launch policy/evidence headers. The
+site-wide global `noindex` gate remains active, so the Nuxt responses stay in
+their closed/empty form until selective indexing is explicitly admitted.
+
+The immutable main bytes used for launch evidence remain available only through
+the pinned internal launch-sitemap route; that private route is not a second
+public sitemap owner.
 
 ### Admin (`/admin`, requires admin key; exposed publicly as `/admin-api/*` via nginx proxy)
 
