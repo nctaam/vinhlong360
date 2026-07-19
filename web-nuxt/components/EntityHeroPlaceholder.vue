@@ -3,7 +3,7 @@
     <span class="ehp-grain" aria-hidden="true"></span>
     <span class="ehp-wash" aria-hidden="true"></span>
     <span class="ehp-motif" aria-hidden="true" v-html="motif"></span>
-    <span class="ehp-note">{{ disclosure }}</span>
+    <span v-if="!descriptor" class="ehp-note">{{ disclosure }}</span>
   </div>
 </template>
 

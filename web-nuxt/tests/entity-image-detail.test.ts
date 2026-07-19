@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineComponent, h } from 'vue'
 import { describe, expect, it } from 'vitest'
+import EntityHeroPlaceholder from '../components/EntityHeroPlaceholder.vue'
 import ImageDisclosure from '../components/ImageDisclosure.vue'
 import { aiDisclosure } from '../utils/aiDisclosure'
 import type { ImageDescriptor } from '../types/image'
@@ -82,6 +83,62 @@ describe('ImageDisclosure', () => {
     expect(id).toMatch(/^[A-Za-z][A-Za-z0-9_-]*$/)
     expect(id).not.toContain('[')
     expect(wrapper.get('[data-disclosure-target]').attributes('aria-describedby')).toBe(id)
+  })
+
+  it('maps detail hero and every rail target to its rendered disclosure node', async () => {
+    const railDescriptors = [
+      aiDescriptor,
+      { ...aiDescriptor, url: '/img/entity-2.webp', alt: 'Chùa Vàm Ray — ảnh minh họa 2' },
+    ]
+    const Harness = defineComponent({
+      setup() {
+        return () => h('section', [
+          h('figure', { 'data-entity-hero': true, 'aria-describedby': 'detail-hero-disclosure' }, [
+            h('img', { alt: aiDescriptor.alt }),
+            h(ImageDisclosure, { id: 'detail-hero-disclosure', descriptor: aiDescriptor, presentation: 'short' }),
+          ]),
+          h('div', { class: 'dc-thumbs' }, railDescriptors.map((descriptor, index) => {
+            const disclosureId = `detail-rail-disclosure-${index}`
+            return h('button', {
+              class: 'dc-thumb-btn',
+              'aria-describedby': disclosureId,
+            }, [
+              h('img', { alt: descriptor.alt }),
+              h(ImageDisclosure, { id: disclosureId, descriptor, presentation: 'short' }),
+            ])
+          })),
+        ])
+      },
+    })
+
+    const wrapper = await mountSuspended(Harness)
+    const disclosures = wrapper.findAll('[data-full-disclosure]')
+    const disclosureById = new Map(disclosures.map(node => [node.attributes('id'), node]))
+    const hero = wrapper.get('[data-entity-hero]')
+    const heroDisclosureId = hero.attributes('aria-describedby')
+
+    expect(heroDisclosureId).toBe('detail-hero-disclosure')
+    expect(disclosureById.get(heroDisclosureId)?.text()).toBe(aiDisclosure.entity_ai.full_disclosure)
+    expect(hero.text()).toContain(aiDisclosure.entity_ai.short_label)
+
+    const railButtons = wrapper.findAll('.dc-thumb-btn')
+    const railDisclosureIds = railButtons.map(button => button.attributes('aria-describedby'))
+    expect(new Set(railDisclosureIds).size).toBe(railButtons.length)
+    for (const [index, button] of railButtons.entries()) {
+      const disclosureId = railDisclosureIds[index]
+      expect(disclosureId).toBeTruthy()
+      expect(disclosureById.get(disclosureId)?.text()).toBe(aiDisclosure.entity_ai.full_disclosure)
+      expect(button.get('img').attributes('alt')).toBe(railDescriptors[index]?.alt)
+    }
+  })
+
+  it('leaves placeholder disclosure rendering to the detail ImageDisclosure when descriptor is supplied', async () => {
+    const wrapper = await mountSuspended(EntityHeroPlaceholder, {
+      props: { id: 'entity-placeholder', cat: 'place', descriptor: placeholderDescriptor },
+    })
+
+    expect(wrapper.find('.ehp-note').exists()).toBe(false)
+    expect(wrapper.get('[role="img"]').attributes('aria-label')).toBe(placeholderDescriptor.alt)
   })
 })
 
