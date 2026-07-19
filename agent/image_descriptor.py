@@ -113,6 +113,37 @@ def describe_entity_image(
     )
 
 
+def describe_review_image(
+    raw: object,
+    *,
+    entity_name: object,
+    credit: object,
+    disclosure: object,
+) -> ImageDescriptor | None:
+    """Describe one trusted review photo as user-uploaded media."""
+    loaded_disclosure = _require_disclosure(disclosure)
+    if type(entity_name) is not str or not entity_name.strip():
+        return None
+    if credit is not None and (type(credit) is not str or not credit.strip()):
+        return None
+    url = normalize_renderable_image_url(raw)
+    if url is None:
+        return None
+    copy = loaded_disclosure.ugc_photo
+    return ImageDescriptor(
+        url=url,
+        alt=f"{entity_name} — ảnh đánh giá",
+        source_class="user-uploaded",
+        source_kind="review-ugc",
+        disclosure_key="ugc-photo",
+        short_label=copy.short_label,
+        full_disclosure=copy.full_disclosure,
+        credit=credit,
+        width=None,
+        height=None,
+    )
+
+
 def describe_entity_images(
     entity: object,
     *,

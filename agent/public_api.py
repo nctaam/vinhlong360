@@ -30,12 +30,20 @@ from api_schemas import (  # W6.3: response_model (extra="allow" — không stri
     EntityDetailResponse, EntityListResponse, EntityMapResponse, EntityTypesResponse,
     EventsResponse, FeaturedResponse, HomepageResponse, MapPin, PopularResponse,
     SearchResponse, SiteSettingsResponse, StatsResponse, TransparencyResponse,
+    GalleryResponse,
     TrendingResponse,
 )
 from database import db
 from data_quality import entity_quality
 from middleware import report_limiter, get_client_ip
 from auth_middleware import validate_path_id, require_pg, require_user, require_csrf, get_current_user
+
+if __package__:
+    from .ai_disclosure import load_ai_disclosure
+    from .image_descriptor import describe_entity_images, describe_review_image
+else:
+    from ai_disclosure import load_ai_disclosure
+    from image_descriptor import describe_entity_images, describe_review_image
 
 if __package__:
     from .index_policy import (
@@ -55,6 +63,10 @@ else:
     from launch_evidence import current_policy_evidence
 
 router = APIRouter(prefix="/api", tags=["public"])
+
+# Load the release-owned disclosure artifact once so every gallery descriptor uses
+# the same canonical copy and revision.
+_GALLERY_DISCLOSURE = load_ai_disclosure()
 
 
 def _err(status_code: int, detail: str, **extra) -> JSONResponse:
@@ -2534,19 +2546,13 @@ async def report_stale_field(entity_id: str, payload: ReportStaleIn, request: Re
 # ── Entity gallery (entity images + review images) ───────────────────
 
 def _gallery_editorial_images(entity: dict) -> list[dict]:
-    images: list[dict] = []
-    attrs = entity.get("attributes") or {}
-    default_credit = attrs.get("image_credit", "AI-generated")
-    for url in (entity.get("images") or []):
-        if isinstance(url, str) and url:
-            images.append({
-                "url": url,
-                "alt": f"{entity['name']} — ảnh {len(images) + 1}",
-                "credit": default_credit,
-                "width": None,
-                "height": None,
-            })
-    return images
+    return [
+        asdict(descriptor)
+        for descriptor in describe_entity_images(
+            entity,
+            disclosure=_GALLERY_DISCLOSURE,
+        )
+    ]
 
 
 def _append_review_gallery_images(images: list[dict], review_rows: list[dict], entity_name: str) -> None:
@@ -2556,20 +2562,23 @@ def _append_review_gallery_images(images: list[dict], review_rows: list[dict], e
             try:
                 review_imgs = json.loads(review_imgs)
             except (json.JSONDecodeError, ValueError):
-                continue
-        credit = row.get("display_name", "Người dùng")
+                review_imgs = []
+        if type(review_imgs) not in {list, tuple}:
+            continue
+        credit = row.get("display_name")
         for url in review_imgs:
-            if isinstance(url, str) and url:
-                images.append({
-                    "url": url,
-                    "alt": f"{entity_name} — ảnh đánh giá",
-                    "credit": credit,
-                    "width": None,
-                    "height": None,
-                })
+            descriptor = describe_review_image(
+                url,
+                entity_name=entity_name,
+                credit=credit,
+                disclosure=_GALLERY_DISCLOSURE,
+            )
+            if descriptor is not None:
+                images.append(asdict(descriptor))
 
 
 @router.get("/entities/{entity_id}/gallery",
+            response_model=GalleryResponse,
             summary="Get entity image gallery",
             description="Returns all images for an entity including editorial images and user review photos with credits and alt text.")
 async def get_entity_gallery(entity_id: str, response: Response):
@@ -2604,7 +2613,7 @@ async def get_entity_gallery(entity_id: str, response: Response):
         except Exception:
             logger.exception("gallery review-images query failed for %s", entity_id)
 
-    return {"images": images, "total": len(images)}
+    return {"images": images}
 
 
 # ── Review stats (rating distribution + mention extraction) ──────────

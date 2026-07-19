@@ -15,12 +15,119 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr, field_validator, model_validator
+
+if __package__:
+    from .ai_disclosure import (
+        CANONICAL_ENTITY_AI,
+        CANONICAL_PLACEHOLDER,
+        CANONICAL_UGC_PHOTO,
+    )
+    from .image_descriptor import normalize_renderable_image_url
+else:
+    from ai_disclosure import (
+        CANONICAL_ENTITY_AI,
+        CANONICAL_PLACEHOLDER,
+        CANONICAL_UGC_PHOTO,
+    )
+    from image_descriptor import normalize_renderable_image_url
 
 
 class ApiModel(BaseModel):
     """Base: extra='allow' → không strip field trả về (an toàn FE)."""
     model_config = ConfigDict(extra="allow")
+
+
+_GALLERY_COMBINATIONS = {
+    ("ai-generated", "entity-editorial", "entity-ai"),
+    ("placeholder", "generated-placeholder", "entity-placeholder"),
+    ("user-uploaded", "review-ugc", "ugc-photo"),
+    ("user-uploaded", "post-ugc", "ugc-photo"),
+}
+_GALLERY_DISCLOSURES = {
+    "entity-ai": CANONICAL_ENTITY_AI,
+    "entity-placeholder": CANONICAL_PLACEHOLDER,
+    "ugc-photo": CANONICAL_UGC_PHOTO,
+}
+
+
+class GalleryImageDescriptor(BaseModel):
+    """Strict, disclosure-backed image descriptor returned by the gallery API."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    url: StrictStr | None
+    alt: StrictStr
+    source_class: Literal["ai-generated", "placeholder", "user-uploaded"]
+    source_kind: Literal[
+        "entity-editorial",
+        "generated-placeholder",
+        "review-ugc",
+        "post-ugc",
+    ]
+    disclosure_key: Literal["entity-ai", "entity-placeholder", "ugc-photo"]
+    short_label: StrictStr | None
+    full_disclosure: StrictStr
+    credit: StrictStr | None
+    width: StrictInt | None
+    height: StrictInt | None
+
+    @field_validator("url", mode="before")
+    @classmethod
+    def _validate_url(cls, value: object) -> object:
+        if value is None:
+            return None
+        normalized = normalize_renderable_image_url(value)
+        if normalized is None:
+            raise ValueError("image URL is not renderable")
+        return normalized
+
+    @field_validator("alt", "full_disclosure", mode="after")
+    @classmethod
+    def _require_non_blank_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("image text must be non-blank")
+        return value
+
+    @field_validator("short_label", "credit", mode="after")
+    @classmethod
+    def _require_non_blank_optional_text(cls, value: str | None) -> str | None:
+        if value is not None and not value.strip():
+            raise ValueError("image optional text must be non-blank")
+        return value
+
+    @model_validator(mode="after")
+    def _validate_invariants(self) -> "GalleryImageDescriptor":
+        combination = (self.source_class, self.source_kind, self.disclosure_key)
+        if combination not in _GALLERY_COMBINATIONS:
+            raise ValueError("image source combination is not allowed")
+
+        canonical = _GALLERY_DISCLOSURES[self.disclosure_key]
+        if (
+            self.short_label != canonical.short_label
+            or self.full_disclosure != canonical.full_disclosure
+        ):
+            raise ValueError("image disclosure copy is not canonical")
+
+        if self.source_class != "placeholder" and self.url is None:
+            raise ValueError("non-placeholder image must have a URL")
+        if self.source_class != "user-uploaded" and self.credit is not None:
+            raise ValueError("AI and placeholder images cannot have credit")
+
+        dimensions = (self.width, self.height)
+        if (dimensions[0] is None) != (dimensions[1] is None):
+            raise ValueError("image dimensions must be null together")
+        if any(dimension is not None and dimension <= 0 for dimension in dimensions):
+            raise ValueError("image dimensions must be positive integers")
+        return self
+
+
+class GalleryResponse(BaseModel):
+    """Exact gallery envelope; no legacy top-level fields are permitted."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    images: list[GalleryImageDescriptor]
 
 
 # ── list / catalog endpoints ─────────────────────────────────────────
