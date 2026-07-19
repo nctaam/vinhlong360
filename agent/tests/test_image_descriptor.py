@@ -31,6 +31,8 @@ DISCLOSURE = load_ai_disclosure()
         (" /media/minh-họa.webp?size=large&crop=wide ", "/media/minh-họa.webp?size=large&crop=wide"),
         ("https://cdn.example/ảnh.webp?size=large", "https://cdn.example/ảnh.webp?size=large"),
         ("https://[2001:db8::1]:443/ảnh.webp", "https://[2001:db8::1]:443/ảnh.webp"),
+        ("https://xn--strae-oqa.example/image.webp", "https://xn--strae-oqa.example/image.webp"),
+        ("https://xn--fa-hia.example/image.webp", "https://xn--fa-hia.example/image.webp"),
     ],
 )
 def test_normalize_renderable_image_url_accepts_local_and_external_https(

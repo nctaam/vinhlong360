@@ -52,6 +52,8 @@ describe('renderable image URL normalization', () => {
     [' /media/minh-hoa.webp?size=large&crop=wide ', '/media/minh-hoa.webp?size=large&crop=wide'],
     ['https://cdn.example/image.webp?size=large', 'https://cdn.example/image.webp?size=large'],
     ['https://[2001:db8::1]:443/image.webp', 'https://[2001:db8::1]:443/image.webp'],
+    ['https://xn--strae-oqa.example/image.webp', 'https://xn--strae-oqa.example/image.webp'],
+    ['https://xn--fa-hia.example/image.webp', 'https://xn--fa-hia.example/image.webp'],
   ])('accepts the same canonical forms as the backend: %s', (raw, expected) => {
     expect(normalizeRenderableImageUrl(raw)).toBe(expected)
   })

@@ -42,13 +42,10 @@ def _valid_dns_host(host: str) -> bool:
     for label in labels:
         if not _DNS_LABEL.fullmatch(label):
             return False
-        if label.lower().startswith("xn--"):
-            if not _PUNYCODE_PAYLOAD.fullmatch(label[4:]):
-                return False
-            try:
-                label.encode("ascii").decode("idna")
-            except UnicodeError:
-                return False
+        if label.lower().startswith("xn--") and not _PUNYCODE_PAYLOAD.fullmatch(
+            label[4:]
+        ):
+            return False
     if all(label.isascii() and label.isdigit() for label in labels):
         if len(labels) != 4:
             return False

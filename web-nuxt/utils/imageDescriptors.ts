@@ -34,13 +34,7 @@ function isValidPort(port: string): boolean {
 
 function isValidPunycodeLabel(label: string): boolean {
   if (!label.toLowerCase().startsWith('xn--')) return true
-  if (label.length <= 4 || !PUNYCODE_PAYLOAD_PATTERN.test(label.slice(4))) return false
-  try {
-    const parsed = new URL(`https://${label}/`)
-    return parsed.hostname.toLowerCase() === label.toLowerCase()
-  } catch {
-    return false
-  }
+  return PUNYCODE_PAYLOAD_PATTERN.test(label.slice(4))
 }
 
 function isValidDnsHost(host: string): boolean {
