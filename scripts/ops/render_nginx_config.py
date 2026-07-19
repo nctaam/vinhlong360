@@ -10,9 +10,11 @@ evidence and reviewed before installation.
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 import re
 import sys
+import tempfile
 
 
 TOPOLOGIES = {"compose", "systemd"}
@@ -46,7 +48,15 @@ def render_config(source: str, *, topology: str) -> str:
             f"proxy_pass {systemd_target};",
         )
     rendered = re.sub(r"^\s*set \$(?:agent|bot)_upstream [^;]+;\r?\n", "", rendered, flags=re.MULTILINE)
-    rendered = rendered.replace("resolver 127.0.0.11 valid=5s ipv6=off;\n", "")
+    docker_resolver = "resolver 127.0.0.11 valid=5s ipv6=off;\n"
+    if "ssl_stapling on;" in rendered:
+        rendered = rendered.replace(
+            docker_resolver,
+            "resolver 1.1.1.1 8.8.8.8 valid=300s;\nresolver_timeout 5s;\n",
+            1,
+        )
+    else:
+        rendered = rendered.replace(docker_resolver, "")
     rendered = rendered.replace("server nuxt:3000;", "server 127.0.0.1:3000;")
     rendered = rendered.replace("http://vl360_nuxt", "http://127.0.0.1:3000")
     if "$agent_upstream" in rendered or "$bot_upstream" in rendered:
@@ -57,11 +67,40 @@ def render_config(source: str, *, topology: str) -> str:
 
 
 def render_file(source_path: Path, destination: Path, *, topology: str) -> None:
+    if source_path.is_symlink():
+        raise ValueError("source path must not be a symlink")
+    if destination.is_symlink():
+        raise ValueError("destination path must not be a symlink")
+
     rendered = render_config(source_path.read_text(encoding="utf-8"), topology=topology)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_name(destination.name + ".tmp")
-    temporary.write_text(rendered, encoding="utf-8", newline="\n")
-    temporary.replace(destination)
+    if destination.is_symlink():
+        raise ValueError("destination path must not be a symlink")
+
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.",
+        suffix=".tmp",
+        dir=destination.parent,
+    )
+    temporary = Path(temporary_name)
+    open_descriptor: int | None = descriptor
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            open_descriptor = None
+            handle.write(rendered.encode("utf-8"))
+            handle.flush()
+            os.fsync(handle.fileno())
+
+        if destination.is_symlink():
+            raise ValueError("destination path must not be a symlink")
+        os.replace(temporary, destination)
+    finally:
+        if open_descriptor is not None:
+            os.close(open_descriptor)
+        try:
+            temporary.unlink()
+        except FileNotFoundError:
+            pass
 
 
 def _parser() -> argparse.ArgumentParser:

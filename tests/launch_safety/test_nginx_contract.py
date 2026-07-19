@@ -4,6 +4,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -690,6 +691,115 @@ def test_systemd_renderer_emits_loopback_targets_without_compose_dns(tmp_path: P
     assert "agent:8360" not in rendered
     assert "bot-gateway:8361" not in rendered
     assert "nuxt:3000" not in rendered
+    assert "resolver 1.1.1.1 8.8.8.8 valid=300s;" not in rendered
+    assert "resolver_timeout 5s;" not in rendered
+
+
+def test_systemd_renderer_preserves_ssl_stapling_resolver_without_compose_dns():
+    from scripts.ops.render_nginx_config import render_config
+
+    source = (ROOT / "nginx-ssl.conf").read_text(encoding="utf-8")
+    rendered = render_config(source, topology="systemd")
+
+    assert "resolver 1.1.1.1 8.8.8.8 valid=300s;" in rendered
+    assert "resolver_timeout 5s;" in rendered
+    assert "ssl_stapling on;" in rendered
+    assert "ssl_stapling_verify on;" in rendered
+    assert "127.0.0.11" not in rendered
+    assert "agent:8360" not in rendered
+    assert "bot-gateway:8361" not in rendered
+    assert "nuxt:3000" not in rendered
+
+
+def test_render_file_ignores_preexisting_fixed_temp_symlink(tmp_path: Path):
+    from scripts.ops.render_nginx_config import render_file
+
+    source = tmp_path / "source.conf"
+    destination = tmp_path / "rendered.conf"
+    victim = tmp_path / "victim.conf"
+    source.write_text("resolver 127.0.0.11 valid=5s ipv6=off;\n", encoding="utf-8")
+    victim.write_bytes(b"victim\n")
+    legacy_temp = tmp_path / "rendered.conf.tmp"
+    legacy_temp.symlink_to(victim)
+
+    render_file(source, destination, topology="systemd")
+
+    assert destination.read_text(encoding="utf-8") == ""
+    assert victim.read_bytes() == b"victim\n"
+    assert legacy_temp.is_symlink()
+
+
+def test_render_file_cleans_unique_temp_on_write_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import scripts.ops.render_nginx_config as renderer
+
+    source = tmp_path / "source.conf"
+    destination = tmp_path / "rendered.conf"
+    source.write_text("events {}\n", encoding="utf-8")
+    destination.write_bytes(b"previous\n")
+
+    def fail_fsync(_fd):
+        raise OSError("simulated fsync failure")
+
+    monkeypatch.setattr(renderer.os, "fsync", fail_fsync)
+
+    with pytest.raises(OSError, match="simulated fsync failure"):
+        renderer.render_file(source, destination, topology="systemd")
+
+    assert destination.read_bytes() == b"previous\n"
+    assert list(tmp_path.glob(f".{destination.name}.*.tmp")) == []
+
+
+def test_render_file_concurrent_writes_leave_complete_deterministic_output(tmp_path: Path):
+    from scripts.ops.render_nginx_config import render_file
+
+    source = tmp_path / "source.conf"
+    destination = tmp_path / "rendered.conf"
+    source.write_text("events {}\n", encoding="utf-8")
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [
+            executor.submit(render_file, source, destination, topology="systemd")
+            for _ in range(2)
+        ]
+        for future in futures:
+            future.result()
+
+    assert destination.read_bytes() == b"events {}\n"
+    assert list(tmp_path.glob(f".{destination.name}.*.tmp")) == []
+
+
+def test_render_file_rejects_source_symlink(tmp_path: Path):
+    from scripts.ops.render_nginx_config import render_file
+
+    source_target = tmp_path / "source-target.conf"
+    source = tmp_path / "source.conf"
+    destination = tmp_path / "rendered.conf"
+    source_target.write_text("events {}\n", encoding="utf-8")
+    source.symlink_to(source_target)
+
+    with pytest.raises(ValueError, match="source path must not be a symlink"):
+        render_file(source, destination, topology="systemd")
+
+    assert not destination.exists()
+
+
+def test_render_file_rejects_destination_symlink_without_touching_victim(tmp_path: Path):
+    from scripts.ops.render_nginx_config import render_file
+
+    source = tmp_path / "source.conf"
+    victim = tmp_path / "victim.conf"
+    destination = tmp_path / "rendered.conf"
+    source.write_text("events {}\n", encoding="utf-8")
+    victim.write_bytes(b"victim\n")
+    destination.symlink_to(victim)
+
+    with pytest.raises(ValueError, match="destination path must not be a symlink"):
+        render_file(source, destination, topology="systemd")
+
+    assert destination.is_symlink()
+    assert victim.read_bytes() == b"victim\n"
 
 
 def test_systemd_renderer_uses_uri_less_literal_upstreams_and_keeps_admin_rewrite():
