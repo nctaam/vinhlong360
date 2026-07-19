@@ -100,9 +100,16 @@ certbot certonly --standalone -d vinhlong360.vn -d www.vinhlong360.vn \
 ln -sf /etc/letsencrypt/live/vinhlong360.vn/fullchain.pem /opt/vinhlong360/ssl/fullchain.pem
 ln -sf /etc/letsencrypt/live/vinhlong360.vn/privkey.pem /opt/vinhlong360/ssl/privkey.pem
 
-# Nginx config
-cp nginx-ssl.conf /etc/nginx/sites-available/vinhlong360
+# Render host loopback upstreams for the systemd topology. Keep the staging file
+# beside the live site so mv replaces it atomically on the same filesystem.
+python3 scripts/ops/render_nginx_config.py \
+  --topology systemd \
+  --input nginx-ssl.conf \
+  --output /etc/nginx/sites-available/.vinhlong360.systemd.rendered
+chmod 0644 /etc/nginx/sites-available/.vinhlong360.systemd.rendered
+mv -f /etc/nginx/sites-available/.vinhlong360.systemd.rendered /etc/nginx/sites-available/vinhlong360
 ln -sf /etc/nginx/sites-available/vinhlong360 /etc/nginx/sites-enabled/
+# Validate the rendered systemd config before reloading Nginx.
 nginx -t && systemctl reload nginx
 
 # Auto-renewal hook

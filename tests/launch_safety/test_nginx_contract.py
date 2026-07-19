@@ -711,6 +711,30 @@ def test_systemd_renderer_preserves_ssl_stapling_resolver_without_compose_dns():
     assert "nuxt:3000" not in rendered
 
 
+def test_deployment_guide_renders_systemd_ssl_config_before_atomic_install():
+    guide = (ROOT / "docs" / "deployment-guide.md").read_text(encoding="utf-8")
+    ssl_setup = guide.split("## SSL Setup (One-time)", 1)[1].split(
+        "## Regular Deployment", 1
+    )[0]
+    normalized = " ".join(
+        line.strip().removesuffix("\\").strip() for line in ssl_setup.splitlines()
+    )
+    staging = "/etc/nginx/sites-available/.vinhlong360.systemd.rendered"
+    destination = "/etc/nginx/sites-available/vinhlong360"
+
+    assert (
+        "python3 scripts/ops/render_nginx_config.py --topology systemd "
+        f"--input nginx-ssl.conf --output {staging}"
+    ) in normalized
+    assert f"mv -f {staging} {destination}" in normalized
+    assert "systemd topology" in ssl_setup
+    assert ssl_setup.index("nginx -t") < ssl_setup.index("systemctl reload nginx")
+    assert not re.search(
+        r"(?m)^\s*(?:sudo\s+)?(?:cp|install|mv)\b[^\n]*\bnginx-ssl\.conf\b",
+        ssl_setup,
+    )
+
+
 def test_render_file_ignores_preexisting_fixed_temp_symlink(tmp_path: Path):
     from scripts.ops.render_nginx_config import render_file
 
