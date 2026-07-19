@@ -1,3 +1,5 @@
+import type { ImageDescriptor } from './image'
+
 export interface Coordinates {
   lat: number
   lng: number
@@ -89,6 +91,9 @@ export interface Entity {
   attributes?: EntityAttributes
   source?: EntitySource[]
   images?: string[]
+  /** Structured media supplied by the API; legacy URLs remain a migration input only. */
+  image_descriptor?: ImageDescriptor | null
+  image_descriptors?: ImageDescriptor[]
   image_urls?: string[]
   image?: string
   image_credits?: { author?: string; license?: string }[]

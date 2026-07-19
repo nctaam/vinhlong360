@@ -3,6 +3,8 @@
 import { describe, expect, it } from 'vitest'
 import { aiDisclosure } from '../utils/aiDisclosure'
 import {
+  describeEntityImages,
+  describeEntityPlaceholder,
   normalizeRenderableImageUrl,
   normalizeReviewPhoto,
   parseGalleryDescriptor,
@@ -93,6 +95,43 @@ describe('renderable image URL normalization', () => {
     'https://[2001:db8::1/image.webp',
   ])('rejects the same unsafe or malformed values as the backend: %s', (raw) => {
     expect(normalizeRenderableImageUrl(raw)).toBeNull()
+  })
+})
+
+describe('entity image descriptor producers', () => {
+  it('classifies every safe legacy entity image with canonical AI disclosure', () => {
+    expect(describeEntityImages({ id: 'entity-1', name: 'Điểm đến', images: ['/legacy.webp'] })).toEqual([
+      expect.objectContaining({
+        url: '/legacy.webp',
+        alt: 'Điểm đến — ảnh minh họa',
+        source_class: 'ai-generated',
+        source_kind: 'entity-editorial',
+        disclosure_key: 'entity-ai',
+        short_label: aiDisclosure.entity_ai.short_label,
+        full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+      }),
+    ])
+  })
+
+  it('omits unsafe legacy URLs and emits a canonical placeholder when no image remains', () => {
+    expect(describeEntityImages({ id: 'entity-1', name: 'Điểm đến', images: ['javascript:alert(1)'] })).toEqual([])
+    expect(describeEntityPlaceholder({ id: 'entity-1', name: 'Điểm đến' })).toEqual(expect.objectContaining({
+      url: null,
+      source_class: 'placeholder',
+      source_kind: 'generated-placeholder',
+      disclosure_key: 'entity-placeholder',
+      full_disclosure: aiDisclosure.placeholder.full_disclosure,
+    }))
+  })
+
+  it('keeps valid supplied descriptors authoritative over raw entity images', () => {
+    const supplied = { ...apiEntityImage, url: '/descriptor.webp', alt: 'Supplied descriptor' }
+    expect(describeEntityImages({
+      id: 'entity-1',
+      name: 'Điểm đến',
+      images: ['/conflicting.webp'],
+      image_descriptor: supplied,
+    })).toEqual([expect.objectContaining({ url: '/descriptor.webp', alt: 'Supplied descriptor' })])
   })
 })
 

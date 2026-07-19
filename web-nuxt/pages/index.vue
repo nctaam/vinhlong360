@@ -15,8 +15,9 @@
         </div>
         <aside v-if="heroFeature" class="hero-feature" aria-label="Gợi ý nổi bật">
           <div class="hf-card">
-            <NuxtLink :to="entityPath(heroFeature.id)" class="hf-thumb" :class="`cat-${hfMeta?.cat}`" :style="{ backgroundImage: hfBg }" :aria-label="`Xem ${heroFeature.name}`">
-              <span v-if="!heroFeature?.images?.length" class="hf-thumb-icon" v-html="hfIcon" />
+            <NuxtLink :to="entityPath(heroFeature.id)" class="hf-thumb" :class="`cat-${hfMeta?.cat}`" :style="{ backgroundImage: hfBg }" :aria-label="`Xem ${heroFeature.name}`" :aria-describedby="heroFeatureDisclosureId">
+              <span v-if="!heroFeatureDescriptor.url" class="hf-thumb-icon" v-html="hfIcon" />
+              <ImageDisclosure :id="heroFeatureDisclosureId" :descriptor="heroFeatureDescriptor" presentation="short" />
             </NuxtLink>
             <span class="hf-body">
               <span class="hf-tag">{{ heroFeatureReason }}</span>
@@ -136,7 +137,7 @@
     <!-- 2b. Feature — photo-led editorial block (Trải nghiệm miệt vườn) -->
     <section class="block reveal" aria-label="Trải nghiệm nổi bật">
       <EntityFeature
-        image="/img/features/trai-nghiem.webp"
+        :image="FEATURE_EXPERIENCE_IMAGE"
         v-bind="FEATURE_EXPERIENCE"
         accent="mở cửa"
         accent-tone="leaf"
@@ -162,8 +163,12 @@
             class="spot-visual"
             :style="{ backgroundImage: spotBgCss }"
             :aria-label="spotlight.name"
+            data-background-image
+            role="img"
+            :aria-describedby="spotDisclosureId"
           >
             <span v-if="spotRegion" class="spot-region">{{ spotRegion }}</span>
+            <ImageDisclosure :id="spotDisclosureId" :descriptor="spotDescriptor" presentation="short" />
           </NuxtLink>
           <div class="spot-body">
             <span class="spot-kicker">{{ spotMeta?.label }} · Nổi bật</span>
@@ -288,9 +293,10 @@
         <div class="scroll-row for-you-row" role="region" aria-label="Dành cho bạn" tabindex="0">
           <NuxtLink v-for="item in forYou" :key="item.id" :to="item.to" class="fy-chip">
             <span class="fy-thumb" :class="`cat-${getFavTypeMeta(item.type).cat}`">
-              <NuxtImg v-if="item.image && isRemoteUrl(item.image)" :src="item.image" :alt="item.name" loading="lazy" decoding="async" width="64" height="64" sizes="64px" @error="onImgError" />
-              <img v-else-if="item.image" :src="item.image" :alt="item.name" loading="lazy" decoding="async" width="64" height="64" @error="onImgError" />
+              <NuxtImg v-if="item.imageDescriptor.url && isRemoteUrl(item.imageDescriptor.url)" :src="item.imageDescriptor.url" :alt="item.imageDescriptor.alt" :aria-describedby="item.disclosureId" loading="lazy" decoding="async" width="64" height="64" sizes="64px" @error="onImgError" />
+              <img v-else-if="item.imageDescriptor.url" :src="item.imageDescriptor.url" :alt="item.imageDescriptor.alt" :aria-describedby="item.disclosureId" loading="lazy" decoding="async" width="64" height="64" @error="onImgError" />
               <span v-else class="fy-icon" v-html="genIcon(getFavTypeMeta(item.type).cat)" />
+              <ImageDisclosure :id="item.disclosureId" :descriptor="item.imageDescriptor" presentation="short" />
             </span>
             <span class="fy-body">
               <span class="fy-type">{{ getFavTypeMeta(item.type).label }}</span>
@@ -310,6 +316,10 @@ import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables
 import { useJourneyActions } from '~/composables/useJourneyActions'
 import EntityFeature from '~/components/home/EntityFeature.vue'
 import StorySpread from '~/components/home/StorySpread.vue'
+import ImageDisclosure from '~/components/ImageDisclosure.vue'
+import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import type { ImageDescriptor } from '~/types/image'
+import { useId } from 'vue'
 
 useReveal()
 const { get: ss } = useSiteSettings()
@@ -325,6 +335,11 @@ const FEATURE_EXPERIENCE = {
   ctaText: 'Khám phá trải nghiệm',
   ctaTo: '/du-lich',
 }
+const FEATURE_EXPERIENCE_IMAGE = describeEntityImages({
+  id: 'home-feature-experience',
+  name: 'Trải nghiệm miệt vườn',
+  images: ['/img/features/trai-nghiem.webp'],
+})[0]!
 
 // Full-bleed signature moment (StorySpread). Discover-only CTA — never an order/price
 // form, per project invariants.
@@ -356,16 +371,22 @@ const contextualRec = useContextualRecommendations({ context: 'home', limit: 8 }
 const hasPersonalSignal = computed(() => recentItems.value.length > 0 || favorites.value.length > 0)
 const forYou = computed(() => {
   const seen = new Set<string>()
-  const out: { id: string; name: string; type: string; image: string; to: string }[] = []
-  const push = (id: any, name: any, type: any, image: any, to: string) => {
+  const out: { id: string; name: string; type: string; imageDescriptor: ImageDescriptor; disclosureId: string; to: string }[] = []
+  const push = (source: any, type: any, to: string, allowLegacyImages: boolean) => {
+    const id = source?.id
+    const name = source?.name
     const key = String(id ?? '')
     if (!key || !name || seen.has(key)) return
     seen.add(key)
-    out.push({ id: key, name, type: type || 'place', image: image || '', to })
+    const descriptor = (allowLegacyImages ? describeEntityImages(source)[0] : null)
+      || (source?.image_descriptor ? describeEntityImages({ ...source, images: undefined, image: undefined })[0] : null)
+      || describeEntityPlaceholder(source)
+    const disclosureId = `for-you-${key.replace(/[^A-Za-z0-9_-]+/g, '-')}`
+    out.push({ id: key, name, type: type || 'place', imageDescriptor: descriptor, disclosureId, to })
   }
-  recentItems.value.forEach((rv: any) => push(rv.id, rv.name, rv.type, rv.image, entityPath(rv.id)))
-  favorites.value.forEach((fav: any) => push(fav.id, fav.name, fav.type, fav.image, savedItemPath(fav)))
-  if (ff('ai_recommendations')) contextualRec.items.value.forEach((e: any) => push(e.id, e.name, e.type, e.images?.[0], entityPath(e.id)))
+  recentItems.value.forEach((rv: any) => push(rv, rv.type, entityPath(rv.id), false))
+  favorites.value.forEach((fav: any) => push(fav, fav.type, savedItemPath(fav), false))
+  if (ff('ai_recommendations')) contextualRec.items.value.forEach((e: any) => push(e, e.type, entityPath(e.id), true))
   return out.slice(0, 8)
 })
 const genIcon = generateCategoryIcon
@@ -453,10 +474,17 @@ const SPOT_CAT_PHOTO: Record<string, string> = {
   product: '/img/cat-ocop.webp', dish: '/img/cat-am-thuc.webp',
   event: '/img/cat-le-hoi.webp', stay: '/img/cat-luu-tru.webp',
 }
-const spotPhoto = computed(() => spotlight.value?.images?.[0] || SPOT_CAT_PHOTO[spotMeta.value?.cat || ''] || '/img/cat-du-lich.webp')
+const spotDescriptor = computed<ImageDescriptor>(() => {
+  const entityDescriptor = spotlight.value ? describeEntityImages(spotlight.value)[0] : null
+  if (entityDescriptor) return entityDescriptor
+  const fallback = SPOT_CAT_PHOTO[spotMeta.value?.cat || ''] || '/img/cat-du-lich.webp'
+  return describeEntityImages({ id: `spotlight-${spotlight.value?.id || 'home'}`, name: spotlight.value?.name || 'Nổi bật', images: [fallback] })[0]!
+})
+const spotPhoto = computed(() => spotDescriptor.value.url || '')
 const spotBgCss = computed(() => spotlight.value
   ? `linear-gradient(to top, rgba(18,20,24,.55) 0%, rgba(18,20,24,.10) 45%, rgba(18,20,24,.32) 100%), url(${spotPhoto.value})`
   : '')
+const spotDisclosureId = `home-spotlight-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
 const spotRegion = computed(() => {
   const a = spotlight.value?.area || spotlight.value?.attributes?.area || spotlight.value?.attributes?.province
   if (!a) return ''
@@ -466,11 +494,16 @@ const spotRegion = computed(() => {
 
 const heroFeature = computed<any>(() => experiences.value.find((e: any) => e.id !== spotId.value) || spotlight.value || null)
 const hfMeta = computed(() => heroFeature.value ? (TYPE_META[heroFeature.value.type] || { emoji: '📍', label: heroFeature.value.type, cat: 'place' }) : null)
+const heroFeatureDescriptor = computed<ImageDescriptor>(() => {
+  const descriptor = heroFeature.value ? describeEntityImages(heroFeature.value)[0] : null
+  return descriptor || describeEntityPlaceholder(heroFeature.value || { name: 'Gợi ý nổi bật' })
+})
 const hfBg = computed(() => {
-  const img = heroFeature.value?.images?.[0]
+  const img = heroFeatureDescriptor.value.url
   if (img) return `linear-gradient(to top, rgba(18,20,24,.42) 0%, rgba(18,20,24,.06) 45%, rgba(18,20,24,.22) 100%), url(${img})`
   return heroFeature.value && hfMeta.value ? generateCategoryPlaceholder(heroFeature.value.id, hfMeta.value.cat) : ''
 })
+const heroFeatureDisclosureId = `home-hero-feature-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
 const hfIcon = computed(() => hfMeta.value ? generateCategoryIcon(hfMeta.value.cat) : '')
 const hfRegion = computed(() => {
   const a = heroFeature.value?.area || heroFeature.value?.attributes?.area || heroFeature.value?.attributes?.province

@@ -25,10 +25,11 @@ const disclosureVisible = computed(() => props.presentation === 'full' || props.
 
 <template>
   <span class="image-disclosure" data-disclosure-target :aria-describedby="disclosureId">
-    <span v-if="showShortLabel" data-short-label>{{ descriptor.short_label }}</span>
+    <span v-if="showShortLabel" data-short-label data-image-disclosure>{{ descriptor.short_label }}</span>
     <span
       :id="disclosureId"
       data-full-disclosure
+      :data-image-disclosure="showShortLabel ? undefined : ''"
       :class="{ 'image-disclosure-sr-only': !disclosureVisible }"
     >{{ descriptor.full_disclosure }}</span>
     <span v-if="descriptor.credit" class="image-disclosure-credit" data-credit>{{ descriptor.credit }}</span>

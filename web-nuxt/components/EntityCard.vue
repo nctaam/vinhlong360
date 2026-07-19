@@ -1,26 +1,30 @@
 <template>
   <article :class="['card', `cat-${typeMeta.cat}`]">
-    <div v-if="coverImage && !imgError" class="cover cover-img">
-      <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`">
-        <NuxtImg v-if="isRemote" :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" sizes="sm:100vw md:50vw lg:400px" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
-        <img v-else :src="allImages[activeSlide]" :alt="entity.name" :key="allImages[activeSlide]" loading="lazy" width="400" height="267" decoding="async" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
-        <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
-      </NuxtLink>
-      <template v-if="allImages.length > 1">
+    <div class="cover cover-img" :class="{ 'cover-generated': !activeDescriptor.url || imgError, [`cat-${typeMeta.cat}`]: true }" :style="(!activeDescriptor.url || imgError) ? { backgroundImage: placeholderBg } : undefined">
+      <template v-if="activeDescriptor.url && !imgError">
+        <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`" :aria-describedby="activeDisclosureId">
+          <NuxtImg v-if="isRemote" :src="activeDescriptor.url" :alt="activeDescriptor.alt" :key="activeDescriptor.url" loading="lazy" width="400" height="267" sizes="sm:100vw md:50vw lg:400px" decoding="async" :aria-describedby="activeDisclosureId" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
+          <img v-else :src="activeDescriptor.url" :alt="activeDescriptor.alt" :key="activeDescriptor.url" loading="lazy" width="400" height="267" decoding="async" :aria-describedby="activeDisclosureId" @load="($event.target as HTMLElement)?.classList.add('loaded')" @error="imgError = true" />
+          <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
+        </NuxtLink>
+      </template>
+      <template v-else>
+        <span class="cover-grain" aria-hidden="true"></span>
+        <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`" :aria-describedby="activeDisclosureId">
+          <span class="cover-svg-icon" v-html="placeholderSvg" />
+          <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
+        </NuxtLink>
+      </template>
+      <template v-if="allDescriptors.length > 1">
         <button v-if="activeSlide > 0" type="button" class="card-arrow card-arrow-prev" aria-label="Ảnh trước" @click.prevent="activeSlide--">‹</button>
-        <button v-if="activeSlide < allImages.length - 1" type="button" class="card-arrow card-arrow-next" aria-label="Ảnh sau" @click.prevent="activeSlide++">›</button>
+        <button v-if="activeSlide < allDescriptors.length - 1" type="button" class="card-arrow card-arrow-next" aria-label="Ảnh sau" @click.prevent="activeSlide++">›</button>
         <div class="card-dots" aria-hidden="true">
-          <span v-for="(_, i) in allImages.slice(0, 5)" :key="i" :class="['card-dot', { active: i === activeSlide }]" />
+          <span v-for="(_, i) in allDescriptors.slice(0, 5)" :key="i" :class="['card-dot', { active: i === activeSlide }]" />
         </div>
       </template>
-      <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
-    </div>
-    <div v-else class="cover cover-img cover-generated" :class="`cat-${typeMeta.cat}`" :style="{ backgroundImage: placeholderBg }">
-      <span class="cover-grain" aria-hidden="true"></span>
-      <NuxtLink :to="cardPath" class="card-cover-link" :aria-label="`Xem ${entity.name}`">
-        <span class="cover-svg-icon" v-html="placeholderSvg" />
-        <span class="cover-tag cover-dateline" :class="`cat-${typeMeta.cat}`">{{ dateline }}</span>
-      </NuxtLink>
+      <span class="cover-disclosure">
+        <ImageDisclosure :id="activeDisclosureId" :descriptor="displayDescriptor" presentation="short" />
+      </span>
       <ClientOnly><SaveButton class="card-save" :entity="entity" size="sm" /></ClientOnly>
     </div>
     <NuxtLink :to="cardPath" class="card-b card-body-link">
@@ -71,6 +75,9 @@ import { TYPE_META } from '~/composables/useConstants'
 import { isYearRound, seasonText, relevanceScore } from '~/composables/useSeason'
 import { generateCategoryPlaceholder, generateCategoryIcon } from '~/composables/useCategoryPlaceholder'
 import { entityStoryTeaser, entityDateline } from '~/composables/useEntityStory'
+import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import type { ImageDescriptor } from '~/types/image'
+import { useId } from 'vue'
 
 const props = defineProps<{
   entity: Record<string, any>
@@ -81,19 +88,26 @@ const imgError = ref(false)
 const activeSlide = ref(0)
 const cardPath = computed(() => entityPath(props.entity.id))
 const typeMeta = computed(() => TYPE_META[props.entity.type] || { emoji: '•', label: props.entity.type, cat: 'place' })
-const allImages = computed(() => {
-  const imgs = props.entity.images
-  return Array.isArray(imgs) && imgs.length ? imgs : coverImage.value ? [coverImage.value] : []
+const allDescriptors = computed<ImageDescriptor[]>(() => {
+  const descriptors = describeEntityImages(props.entity)
+  return descriptors.length ? descriptors : [describeEntityPlaceholder(props.entity)]
+})
+const activeDescriptor = computed(() => allDescriptors.value[activeSlide.value] || allDescriptors.value[0]!)
+const displayDescriptor = computed(() => imgError.value ? describeEntityPlaceholder(props.entity) : activeDescriptor.value)
+const disclosureInstance = useId().replace(/[^A-Za-z0-9_-]+/g, '-')
+const activeDisclosureId = computed(() => {
+  const token = String(props.entity.id || 'entity').replace(/[^A-Za-z0-9_-]+/g, '-')
+  return `entity-card-${token}-${disclosureInstance}-${activeSlide.value}`
 })
 // Deterministic per-entity placeholder (no real photos exist yet) — seeded by id.
 const placeholderBg = computed(() => generateCategoryPlaceholder(props.entity.id, typeMeta.value.cat))
 const placeholderSvg = computed(() => generateCategoryIcon(typeMeta.value.cat))
-const coverImage = computed(() => {
-  const imgs = props.entity.images
-  if (Array.isArray(imgs) && imgs.length > 0) return imgs[0]
-  return null
-})
-const isRemote = computed(() => typeof coverImage.value === 'string' && isRemoteUrl(coverImage.value))
+const isRemote = computed(() => typeof activeDescriptor.value.url === 'string' && isRemoteUrl(activeDescriptor.value.url))
+watch(activeSlide, () => { imgError.value = false })
+watch(allDescriptors, () => {
+  if (activeSlide.value >= allDescriptors.value.length) activeSlide.value = 0
+  imgError.value = false
+}, { deep: true })
 const isYearRoundSeason = computed(() => !props.entity.season || isYearRound(props.entity.season))
 const seasonLabel = computed(() => seasonText(props.entity.season))
 const placeName = computed(() => props.entity.placeName || props.entity.place_name || '')

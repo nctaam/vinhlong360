@@ -1,7 +1,18 @@
 <template>
   <section class="ef" :class="`ef-${side}`">
-    <NuxtLink :to="ctaTo" class="ef-visual" :aria-label="title">
-      <div class="ef-img" ref="imgEl" :style="{ backgroundImage: `url(${image})` }" />
+    <NuxtLink :to="ctaTo" class="ef-visual" :aria-label="title" :aria-describedby="disclosureId">
+      <div
+        class="ef-img"
+        ref="imgEl"
+        data-background-image
+        role="img"
+        :aria-label="image.alt"
+        :aria-describedby="disclosureId"
+        :style="{ backgroundImage: image.url ? `url(${image.url})` : undefined }"
+      />
+      <span class="ef-disclosure">
+        <ImageDisclosure :id="disclosureId" :descriptor="image" presentation="short" />
+      </span>
     </NuxtLink>
     <div class="ef-body">
       <span class="ef-kicker"><i class="ef-kicker-rule" aria-hidden="true" />{{ kicker }}</span>
@@ -20,9 +31,11 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
+import type { ImageDescriptor } from '~/types/image'
+import { useId } from 'vue'
 
 const props = withDefaults(defineProps<{
-  image: string
+  image: ImageDescriptor
   kicker: string
   title: string
   lede: string
@@ -50,14 +63,16 @@ const titleParts = computed(() => {
   return { before: props.title.slice(0, i), accent: props.accent, after: props.title.slice(i + props.accent.length) }
 })
 
+const disclosureId = `entity-feature-${useId().replace(/[^A-Za-z0-9_-]+/g, '-')}`
+
 const imgEl = ref<HTMLElement | null>(null)
 useParallax(() => (imgEl.value ? [imgEl.value] : []), { intensity: 0.05 })
 
 // LCP-critical image (Feature #1 only) — preload so the browser fetches it
 // before it discovers the background-image via the compiled CSS.
-if (props.priority) {
+if (props.priority && props.image.url) {
   useHead({
-    link: [{ rel: 'preload', as: 'image', href: props.image }],
+    link: [{ rel: 'preload', as: 'image', href: props.image.url }],
   })
 }
 </script>

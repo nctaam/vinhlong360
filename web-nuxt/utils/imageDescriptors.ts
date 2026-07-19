@@ -180,3 +180,73 @@ export function normalizeReviewPhoto(input: {
   if (parsed === null) throw new Error('review photo descriptor invariant failed')
   return parsed
 }
+
+type EntityImageLike = {
+  id?: unknown
+  name?: unknown
+  images?: unknown
+  image?: unknown
+  image_descriptor?: unknown
+  image_descriptors?: unknown
+}
+
+function descriptorAlt(entity: EntityImageLike): string {
+  const name = typeof entity.name === 'string' && entity.name.trim() ? entity.name.trim() : 'Địa điểm'
+  return `${name} — ảnh minh họa`
+}
+
+function suppliedEntityDescriptors(entity: EntityImageLike): ImageDescriptor[] {
+  const supplied = Array.isArray(entity.image_descriptors)
+    ? entity.image_descriptors
+    : entity.image_descriptor !== undefined
+      ? [entity.image_descriptor]
+      : []
+  return supplied.flatMap(value => {
+    const parsed = parseGalleryDescriptor(value)
+    return parsed ? [parsed] : []
+  })
+}
+
+/** Convert API descriptors or legacy entity image URLs at the shared render boundary. */
+export function describeEntityImages(entity: EntityImageLike): ImageDescriptor[] {
+  const supplied = suppliedEntityDescriptors(entity)
+  if (supplied.length) return supplied
+
+  const legacy = Array.isArray(entity.images)
+    ? entity.images
+    : typeof entity.image === 'string'
+      ? [entity.image]
+      : []
+  return legacy.flatMap(value => {
+    const url = normalizeRenderableImageUrl(value)
+    if (!url) return []
+    return [{
+      url,
+      alt: descriptorAlt(entity),
+      source_class: 'ai-generated',
+      source_kind: 'entity-editorial',
+      disclosure_key: 'entity-ai',
+      short_label: aiDisclosure.entity_ai.short_label,
+      full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+      credit: null,
+      width: null,
+      height: null,
+    } satisfies ImageDescriptor]
+  })
+}
+
+export function describeEntityPlaceholder(entity: EntityImageLike): ImageDescriptor {
+  const name = typeof entity.name === 'string' && entity.name.trim() ? entity.name.trim() : 'Địa điểm'
+  return {
+    url: null,
+    alt: `${name} — chưa có ảnh riêng`,
+    source_class: 'placeholder',
+    source_kind: 'generated-placeholder',
+    disclosure_key: 'entity-placeholder',
+    short_label: aiDisclosure.placeholder.short_label,
+    full_disclosure: aiDisclosure.placeholder.full_disclosure,
+    credit: null,
+    width: null,
+    height: null,
+  }
+}
