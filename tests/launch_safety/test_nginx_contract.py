@@ -568,3 +568,124 @@ def test_every_public_server_fails_closed_for_internal_routes(
 
     for server in servers:
         _assert_internal_boundary(server)
+
+
+ROOT_SEO_PATHS = (
+    "/robots.txt",
+    "/sitemap.xml",
+    "/sitemap-media.xml",
+    "/sitemap-index.xml",
+)
+
+
+def _directive(body: tuple[Statement, ...], name: str) -> list[Statement]:
+    return [statement for statement in body if statement.parts[:1] == (name,)]
+
+
+def _location_for(server: Statement, modifier: str, pattern: str) -> Location:
+    matches = [
+        location
+        for location in _locations(server)
+        if location.modifier == modifier and location.pattern == pattern
+    ]
+    assert len(matches) == 1, (modifier, pattern, matches)
+    return matches[0]
+
+
+@pytest.mark.parametrize("filename", ["nginx.conf", "nginx-ssl.conf"])
+def test_root_seo_is_nuxt_owned_and_uncached(filename: str):
+    servers = [
+        server
+        for server in _public_servers(ROOT / filename)
+        if any(
+            location.modifier == ""
+            and location.pattern == "/"
+            and any(
+                statement.parts[:2] == ("proxy_pass", "http://vl360_nuxt")
+                for statement in _directive(location.body, "proxy_pass")
+            )
+            for location in _locations(server)
+        )
+    ]
+    assert servers
+    for server in servers:
+        locations = _locations(server)
+        for path in ROOT_SEO_PATHS:
+            location = _location_for(server, "=", path)
+            proxy_pass = _directive(location.body, "proxy_pass")
+            assert len(proxy_pass) == 1
+            assert proxy_pass[0].parts[1] in {
+                "http://vl360_nuxt",
+                "$nuxt_upstream$request_uri",
+            }
+            assert not _directive(location.body, "proxy_cache_valid")
+            assert not _directive(location.body, "proxy_cache") or all(
+                statement.parts == ("proxy_cache", "off")
+                for statement in _directive(location.body, "proxy_cache")
+            )
+            assert _resolve_location(locations, path) == location
+
+
+@pytest.mark.parametrize("filename", ["nginx.conf", "nginx-ssl.conf"])
+def test_backend_prefixes_use_segment_boundaries(filename: str):
+    servers = [
+        server
+        for server in _public_servers(ROOT / filename)
+        if any(
+            location.modifier == ""
+            and location.pattern == "/"
+            and _directive(location.body, "proxy_pass")
+            for location in _locations(server)
+        )
+    ]
+    for server in servers:
+        locations = _locations(server)
+        backend_locations = [
+            location
+            for location in locations
+            if _directive(location.body, "proxy_pass")
+            and any(
+                "vl360_agent" in statement.parts[1]
+                or "vl360_bots" in statement.parts[1]
+                or "$agent_upstream" in statement.parts[1]
+                or "$bot_upstream" in statement.parts[1]
+                for statement in _directive(location.body, "proxy_pass")
+            )
+        ]
+        for path in ("/system", "/system/x", "/api", "/api/x", "/webhook"):
+            assert any(_resolve_location([location], path) == location for location in backend_locations), path
+        for path in ("/systematic", "/apiary", "/webhooks"):
+            assert not any(_resolve_location([location], path) == location for location in backend_locations), path
+
+
+def test_route_refactor_preserves_maintenance_includes_exactly_once():
+    for filename in ("nginx.conf", "nginx-ssl.conf"):
+        source = (ROOT / filename).read_text(encoding="utf-8")
+        assert source.count("include /etc/nginx/vl360-maintenance/http-context.conf;") == 1
+        for server in _public_servers_from_source(source):
+            assert sum(
+                statement.parts == ("include", "/etc/nginx/vl360-maintenance/active-server.conf")
+                for statement in server.children or ()
+            ) == 1
+
+
+def test_compose_optional_upstreams_use_request_time_resolution():
+    source = (ROOT / "nginx.conf").read_text(encoding="utf-8")
+    assert "resolver 127.0.0.11 valid=5s ipv6=off;" in source
+    assert "set $agent_upstream http://agent:8360;" in source
+    assert "set $bot_upstream http://bot-gateway:8361;" in source
+    assert "$agent_upstream$request_uri" in source
+    assert "$bot_upstream$request_uri" in source
+
+
+def test_systemd_renderer_emits_loopback_targets_without_compose_dns(tmp_path: Path):
+    from scripts.ops.render_nginx_config import render_config
+
+    source = (ROOT / "nginx.conf").read_text(encoding="utf-8")
+    rendered = render_config(source, topology="systemd")
+    assert "127.0.0.1:8360" in rendered
+    assert "127.0.0.1:8361" in rendered
+    assert "127.0.0.1:3000" in rendered
+    assert "agent:8360" not in rendered
+    assert "bot-gateway:8361" not in rendered
+    assert "nuxt:3000" not in rendered
