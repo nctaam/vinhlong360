@@ -7,24 +7,41 @@ import threading
 from urllib.parse import urlsplit
 
 
+def response_for(port: int, path: str) -> tuple[int, dict[str, str], bytes]:
+    if path.startswith("/_internal/"):
+        body = f"stub-internal-upstream:{port}:{path}\n".encode("utf-8")
+        return (
+            418,
+            {
+                "Cache-Control": "no-store",
+                "Content-Type": "text/plain; charset=utf-8",
+                "X-VL360-Upstream-Internal": "reached",
+            },
+            body,
+        )
+
+    body = f"stub-upstream:{port}:{path}\n".encode("utf-8")
+    return (
+        200,
+        {
+            "Cache-Control": "no-store",
+            "Content-Type": "text/plain; charset=utf-8",
+            "X-Robots-Tag": "noindex, follow",
+        },
+        body,
+    )
+
+
 class StubHandler(BaseHTTPRequestHandler):
     server_version = "vl360-maintenance-stub/1.0"
 
     def do_GET(self) -> None:  # noqa: N802 - stdlib handler API
         path = urlsplit(self.path).path
-        if path.startswith("/_internal/"):
-            self.send_response(404)
-            self.send_header("Cache-Control", "no-store")
-            self.end_headers()
-            return
-
-        port = self.server.server_port
-        body = f"stub-upstream:{port}:{path}\n".encode("utf-8")
-        self.send_response(200)
-        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        status, headers, body = response_for(self.server.server_port, path)
+        self.send_response(status)
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("X-Robots-Tag", "noindex, follow")
+        for name, value in headers.items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)
 

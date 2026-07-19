@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import ipaddress
 import json
 import os
@@ -30,6 +31,8 @@ geo $launch_maintenance_operator {
 """
 SERVER_ENABLED = "if ($launch_maintenance_operator = 0) { return 503; }\n"
 SERVER_DISABLED = "# Maintenance disabled: requests continue to the reviewed server locations.\n"
+UPSTREAM_INTERNAL_HEADER = "X-VL360-Upstream-Internal"
+UPSTREAM_INTERNAL_BODY_PREFIX = "stub-internal-upstream:"
 
 def _write_certificate(ssl: Path) -> None:
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -66,6 +69,22 @@ pytestmark = [pytest.mark.integration, pytest.mark.slow]
 def test_nginx_maintenance_harness_assets_are_present():
     assert HARNESS.is_file()
     assert STUB_UPSTREAM.is_file()
+
+
+def test_stub_upstream_internal_response_is_distinctive():
+    spec = importlib.util.spec_from_file_location("nginx_maintenance_stub", STUB_UPSTREAM)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    status, headers, body = module.response_for(
+        3000,
+        "/_internal/launch-readiness",
+    )
+
+    assert status == 418
+    assert headers["X-VL360-Upstream-Internal"] == "reached"
+    assert body == b"stub-internal-upstream:3000:/_internal/launch-readiness\n"
 
 
 def _compose(docker_runtime, project: str, maintenance: Path, *args: str, capture: bool = False):
@@ -178,6 +197,12 @@ def _assert_probe(response: dict[str, object], status: int, *, body: str | None 
         assert response["body"] == body
 
 
+def _assert_local_internal_denial(response: dict[str, object], status: int) -> None:
+    _assert_probe(response, status)
+    assert UPSTREAM_INTERNAL_HEADER not in response["headers"]
+    assert UPSTREAM_INTERNAL_BODY_PREFIX not in response["body"]
+
+
 def test_maintenance_toggle_gates_http_and_https_without_bypassing_upstream_or_ingress(
     docker_runtime,
 ):
@@ -228,15 +253,46 @@ def test_maintenance_toggle_gates_http_and_https_without_bypassing_upstream_or_i
                     if expected == 200:
                         _assert_probe(response, 200, body="stub-upstream:3000:/\n")
                         assert response["headers"]["X-Robots-Tag"] == "noindex, follow"
+                        assert UPSTREAM_INTERNAL_HEADER not in response["headers"]
 
-                for service, url in (
-                    ("visitor", "http://nginx-http/_internal/launch-readiness"),
-                    ("operator", "http://nginx-http/_internal/launch-readiness"),
-                    ("visitor", "https://nginx-ssl/_internal/launch-readiness"),
-                    ("operator", "https://nginx-ssl/_internal/launch-readiness"),
+                expected_visitor_internal = 503 if enabled else 404
+                for service, url, expected in (
+                    (
+                        "visitor",
+                        "http://nginx-http/_internal/launch-readiness",
+                        expected_visitor_internal,
+                    ),
+                    ("operator", "http://nginx-http/_internal/launch-readiness", 404),
+                    (
+                        "visitor",
+                        "http://nginx-ssl/_internal/launch-readiness",
+                        expected_visitor_internal,
+                    ),
+                    ("operator", "http://nginx-ssl/_internal/launch-readiness", 404),
+                    (
+                        "visitor",
+                        "https://nginx-ssl/_internal/launch-readiness",
+                        expected_visitor_internal,
+                    ),
+                    ("operator", "https://nginx-ssl/_internal/launch-readiness", 404),
                 ):
-                    response = _wait_probe(docker_runtime, project, runtime, service, url, 404)
-                    _assert_probe(response, 404)
+                    response = _wait_probe(docker_runtime, project, runtime, service, url, expected)
+                    _assert_local_internal_denial(response, expected)
+
+                upstream_internal = _wait_probe(
+                    docker_runtime,
+                    project,
+                    runtime,
+                    "operator",
+                    "http://upstream:3000/_internal/launch-readiness",
+                    418,
+                )
+                _assert_probe(
+                    upstream_internal,
+                    418,
+                    body="stub-internal-upstream:3000:/_internal/launch-readiness\n",
+                )
+                assert upstream_internal["headers"][UPSTREAM_INTERNAL_HEADER] == "reached"
 
                 _compose(docker_runtime, project, runtime, "down", "-v", "--remove-orphans")
         finally:
