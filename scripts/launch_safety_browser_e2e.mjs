@@ -2,9 +2,10 @@
 
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const POLICY_CACHE_NAMES = new Set([
   'navigation',
@@ -23,7 +24,6 @@ const POLICY_CACHE_NAMES = new Set([
 ])
 const LEGACY_MARKER = 'launch-safety-legacy-policy-replay-marker'
 const DEFAULT_BASE_URL = process.env.SMOKE_BASE_URL || 'http://localhost:3000'
-const DEFAULT_CDP_PORT = Number(process.env.SMOKE_CDP_PORT || 9224)
 const MAX_EVIDENCE_BYTES = 16 * 1024
 
 class LaunchSafetyError extends Error {
@@ -240,16 +240,104 @@ class CdpClient {
   }
 }
 
-async function waitForChrome(port) {
+export function parseSpawnedCdpEndpoint(output) {
+  const match = /DevTools listening on (ws:\/\/[^\s]+)/u.exec(String(output || ''))
+  if (!match) {
+    throw new LaunchSafetyError('chrome-cdp-unavailable', 'Chrome did not announce a CDP endpoint', { blocked: true })
+  }
+  let parsed
+  try {
+    parsed = new URL(match[1])
+  } catch {
+    throw new LaunchSafetyError('chrome-cdp-ownership-mismatch', 'Chrome announced an invalid CDP endpoint', { blocked: true })
+  }
+  if (
+    parsed.protocol !== 'ws:'
+    || !['127.0.0.1', '::1', 'localhost'].includes(parsed.hostname)
+    || !/^\/devtools\/browser\/[^/]+$/u.test(parsed.pathname)
+    || !Number.isInteger(Number(parsed.port))
+    || Number(parsed.port) < 1
+    || Number(parsed.port) > 65535
+  ) {
+    throw new LaunchSafetyError('chrome-cdp-ownership-mismatch', 'Chrome announced an invalid CDP endpoint', { blocked: true })
+  }
+  const host = parsed.hostname === '::1' ? '[::1]' : parsed.hostname
+  return Object.freeze({
+    port: Number(parsed.port),
+    versionUrl: `http://${host}:${parsed.port}/json/version`,
+    webSocketDebuggerUrl: parsed.toString(),
+  })
+}
+
+export function verifySpawnedCdpEndpoint(endpoint, payload) {
+  if (
+    !endpoint
+    || typeof endpoint.webSocketDebuggerUrl !== 'string'
+    || !payload
+    || payload.webSocketDebuggerUrl !== endpoint.webSocketDebuggerUrl
+  ) {
+    throw new LaunchSafetyError('chrome-cdp-ownership-mismatch', 'CDP endpoint does not belong to the spawned Chrome process', { blocked: true })
+  }
+  return endpoint
+}
+
+function waitForSpawnedCdpAnnouncement(chrome) {
+  if (!chrome.stderr) {
+    throw new LaunchSafetyError('chrome-cdp-unavailable', 'Chrome stderr is unavailable', { blocked: true })
+  }
+  return new Promise((resolve, reject) => {
+    let output = ''
+    let settled = false
+    const finish = (handler, value) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      chrome.stderr.off('data', onData)
+      chrome.off('error', onError)
+      chrome.off('exit', onExit)
+      handler(value)
+    }
+    const onData = chunk => {
+      output = `${output}${String(chunk)}`.slice(-16384)
+      try {
+        finish(resolve, parseSpawnedCdpEndpoint(output))
+      } catch (error) {
+        if (!(error instanceof LaunchSafetyError) || error.code !== 'chrome-cdp-unavailable') {
+          finish(reject, error)
+        }
+      }
+    }
+    const onError = () => finish(
+      reject,
+      new LaunchSafetyError('chrome-cdp-unavailable', 'Chrome process failed before CDP startup', { blocked: true }),
+    )
+    const onExit = () => finish(
+      reject,
+      new LaunchSafetyError('chrome-cdp-unavailable', 'Chrome exited before CDP startup', { blocked: true }),
+    )
+    const timer = setTimeout(() => finish(
+      reject,
+      new LaunchSafetyError('chrome-cdp-unavailable', 'Chrome did not announce a CDP endpoint', { blocked: true }),
+    ), 20000)
+    chrome.stderr.on('data', onData)
+    chrome.once('error', onError)
+    chrome.once('exit', onExit)
+  })
+}
+
+async function waitForSpawnedChrome(chrome) {
+  const endpoint = await waitForSpawnedCdpAnnouncement(chrome)
   for (let attempt = 0; attempt < 80; attempt += 1) {
     try {
-      const response = await fetch(`http://127.0.0.1:${port}/json/version`)
-      const payload = await response.json()
-      if (payload.webSocketDebuggerUrl) return
-    } catch {}
+      const response = await fetch(endpoint.versionUrl, { signal: AbortSignal.timeout(1000) })
+      if (!response.ok) throw new Error('CDP version endpoint is unavailable')
+      return verifySpawnedCdpEndpoint(endpoint, await response.json())
+    } catch (error) {
+      if (error instanceof LaunchSafetyError && error.code === 'chrome-cdp-ownership-mismatch') throw error
+    }
     await sleep(250)
   }
-  throw new LaunchSafetyError('chrome-cdp-unavailable', 'Chrome did not open a CDP endpoint', { blocked: true })
+  throw new LaunchSafetyError('chrome-cdp-unavailable', 'Spawned Chrome did not open its CDP endpoint', { blocked: true })
 }
 
 async function createPageTarget(port) {
@@ -442,15 +530,15 @@ async function main(argv = process.argv.slice(2)) {
     }
     chrome = spawn(chromePath, [
       '--headless=new',
-      `--remote-debugging-port=${DEFAULT_CDP_PORT}`,
+      '--remote-debugging-port=0',
       `--user-data-dir=${profile}`,
       '--disable-gpu',
       '--no-first-run',
       '--no-default-browser-check',
       'about:blank',
-    ], { stdio: 'ignore' })
-    await waitForChrome(DEFAULT_CDP_PORT)
-    cdp = new CdpClient(await createPageTarget(DEFAULT_CDP_PORT))
+    ], { stdio: ['ignore', 'ignore', 'pipe'] })
+    const endpoint = await waitForSpawnedChrome(chrome)
+    cdp = new CdpClient(await createPageTarget(endpoint.port))
     await cdp.connect()
     await cdp.send('Page.enable')
     await cdp.send('Runtime.enable')
@@ -501,7 +589,9 @@ async function main(argv = process.argv.slice(2)) {
   return evidence.verdict === 'pass' ? 0 : evidence.verdict === 'blocked' ? 2 : 1
 }
 
-main().then(code => { process.exitCode = code }).catch(error => {
-  console.error(`launch-safety browser smoke failed: ${safeMessage(error)}`)
-  process.exitCode = 1
-})
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().then(code => { process.exitCode = code }).catch(error => {
+    console.error(`launch-safety browser smoke failed: ${safeMessage(error)}`)
+    process.exitCode = 1
+  })
+}

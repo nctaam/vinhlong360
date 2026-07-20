@@ -20,6 +20,21 @@ ROUTE_MANIFEST_REVISION = "launch-indexing-policy-v1"
 BACKEND_POLICY_REVISION = "index-policy-v1"
 SITEMAP_BATCH_REVISION = "b" * 64
 PROCESS_LOCAL_READINESS_URL = "http://127.0.0.1:3000/_internal/launch-readiness"
+PUBLIC_INTERNAL_PATHS = (
+    "/_internal/launch-readiness",
+    "/_internal/launch-policy-attestation",
+    f"/_internal/launch-sitemaps/sitemap.xml?batch={SITEMAP_BATCH_REVISION}",
+)
+DIRECT_BYPASS_URLS = (
+    "http://vinhlong360.vn:3000/",
+    "http://vinhlong360.vn:3000/_internal/launch-readiness",
+    "http://vinhlong360.vn:8360/",
+    "http://vinhlong360.vn:8360/sitemap.xml",
+    "http://vinhlong360.vn:8360/sitemap-media.xml",
+    "http://vinhlong360.vn:8360/sitemap-index.xml",
+    "http://vinhlong360.vn:8360/_internal/launch-policy-attestation",
+    "http://vinhlong360.vn:8360/_internal/launch-sitemaps/sitemap.xml",
+)
 READINESS_CHECKS = [
     {"name": "manifest-schema", "ok": True, "reason": "manifest-valid"},
     {"name": "artifact-evidence", "ok": True, "reason": "artifact-evidence-valid"},
@@ -56,6 +71,70 @@ def _load_probe() -> ModuleType:
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def _closed_boundary_responses(probe: ModuleType) -> dict[str, object]:
+    responses = {
+        "/": probe.HttpResponse(
+            path="/",
+            status=200,
+            headers={
+                "cache-control": ("no-store",),
+                "content-type": ("text/html; charset=utf-8",),
+                "x-launch-indexing-policy": ("closed",),
+                "x-robots-tag": ("noindex, follow",),
+            },
+            body=b'<meta name="robots" content="noindex, follow">',
+        ),
+        "/robots.txt": probe.HttpResponse(
+            path="/robots.txt",
+            status=200,
+            headers={
+                "cache-control": ("no-store",),
+                "content-type": ("text/plain; charset=utf-8",),
+                "x-launch-indexing-policy": ("closed",),
+            },
+            body=b"User-agent: *\nAllow: /\n",
+        ),
+        "/sitemap.xml": probe.HttpResponse(
+            path="/sitemap.xml",
+            status=200,
+            headers={
+                "cache-control": ("no-store",),
+                "content-type": ("application/xml; charset=utf-8",),
+                "x-launch-indexing-policy": ("closed",),
+            },
+            body=probe.EMPTY_URLSET.encode(),
+        ),
+        "/sitemap-media.xml": probe.HttpResponse(
+            path="/sitemap-media.xml",
+            status=200,
+            headers={
+                "cache-control": ("no-store",),
+                "content-type": ("application/xml; charset=utf-8",),
+                "x-launch-indexing-policy": ("closed",),
+            },
+            body=probe.EMPTY_MEDIA_URLSET.encode(),
+        ),
+        "/sitemap-index.xml": probe.HttpResponse(
+            path="/sitemap-index.xml",
+            status=200,
+            headers={
+                "cache-control": ("no-store",),
+                "content-type": ("application/xml; charset=utf-8",),
+                "x-launch-indexing-policy": ("closed",),
+            },
+            body=probe.EMPTY_SITEMAP_INDEX.encode(),
+        ),
+    }
+    for path in PUBLIC_INTERNAL_PATHS:
+        responses[path] = probe.HttpResponse(
+            path=path,
+            status=404,
+            headers={"content-type": ("text/plain; charset=utf-8",)},
+            body=b"not found",
+        )
+    return responses
 
 
 def test_launch_matrix_contract_is_exact_and_deeply_immutable():
@@ -250,6 +329,41 @@ def test_browser_smoke_exposes_the_task44_compatible_cli_and_npm_entry():
     )
 
 
+def test_browser_cdp_endpoint_is_owned_by_the_spawned_chrome_process():
+    contract = f"""
+import {{ parseSpawnedCdpEndpoint, verifySpawnedCdpEndpoint }} from {json.dumps(BROWSER_SMOKE.as_uri())}
+
+const endpoint = parseSpawnedCdpEndpoint(
+  'startup noise\\nDevTools listening on ws://127.0.0.1:43123/devtools/browser/spawn-token\\n',
+)
+if (endpoint.port !== 43123) throw new Error('ephemeral port was not parsed')
+verifySpawnedCdpEndpoint(endpoint, {{ webSocketDebuggerUrl: endpoint.webSocketDebuggerUrl }})
+
+let rejected = false
+try {{
+  verifySpawnedCdpEndpoint(endpoint, {{
+    webSocketDebuggerUrl: 'ws://127.0.0.1:43123/devtools/browser/pre-existing-token',
+  }})
+}} catch (error) {{
+  rejected = error?.code === 'chrome-cdp-ownership-mismatch'
+}}
+if (!rejected) throw new Error('pre-existing CDP endpoint was accepted')
+"""
+    result = subprocess.run(
+        ["node", "--input-type=module", "-e", contract],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    source = BROWSER_SMOKE.read_text(encoding="utf-8")
+    assert "--remote-debugging-port=0" in source
+    assert "await waitForSpawnedChrome(chrome)" in source
+    assert "DEFAULT_CDP_PORT" not in source
+
+
 def test_probe_executes_exact_task44_process_local_readiness_invocation():
     probe = _load_probe()
     calls: list[str] = []
@@ -285,61 +399,64 @@ def test_probe_executes_exact_task44_process_local_readiness_invocation():
     assert calls == [PROCESS_LOCAL_READINESS_URL]
 
 
+@pytest.mark.parametrize(
+    "checks",
+    [
+        [*READINESS_CHECKS, dict(READINESS_CHECKS[0])],
+        [{**READINESS_CHECKS[0], "name": []}, *READINESS_CHECKS[1:]],
+        [{**READINESS_CHECKS[0], "reason": "unexpected-reason"}, *READINESS_CHECKS[1:]],
+    ],
+    ids=("duplicate", "malformed-name", "wrong-reason"),
+)
+def test_probe_rejects_non_exact_readiness_check_sets(
+    tmp_path: Path,
+    checks: list[object],
+):
+    probe = _load_probe()
+    evidence = tmp_path / "readiness.json"
+    readiness = probe.HttpResponse(
+        path="/_internal/launch-readiness",
+        status=200,
+        headers={
+            "cache-control": ("no-store",),
+            "content-type": ("application/json; charset=utf-8",),
+        },
+        body=json.dumps({"ok": True, "state": "closed", "checks": checks}).encode(),
+    )
+
+    result = probe.main(
+        [
+            "--process-local-readiness",
+            PROCESS_LOCAL_READINESS_URL,
+            "--expect",
+            "closed",
+            "--require-complete-check-set",
+            "--evidence",
+            str(evidence),
+        ],
+        requester=lambda _target, _timeout: readiness,
+    )
+
+    assert result == 1
+    payload = json.loads(evidence.read_text(encoding="utf-8"))
+    assert payload["errors"] == ["readiness-check-set-incomplete"]
+    assert payload["observations"]["process-local-readiness"] == {
+        "contract_passed": False,
+        "reasons": ["readiness-check-set-incomplete"],
+        "request_completed": True,
+    }
+
+
 def test_probe_executes_exact_task44_closed_operator_invocation():
     probe = _load_probe()
-    responses = {
-        "/": probe.HttpResponse(
-            path="/",
-            status=200,
-            headers={
-                "cache-control": ("no-store",),
-                "content-type": ("text/html; charset=utf-8",),
-                "x-launch-indexing-policy": ("closed",),
-                "x-robots-tag": ("noindex, follow",),
-            },
-            body=b'<meta name="robots" content="noindex, follow">',
-        ),
-        "/robots.txt": probe.HttpResponse(
-            path="/robots.txt",
-            status=200,
-            headers={
-                "cache-control": ("no-store",),
-                "content-type": ("text/plain; charset=utf-8",),
-                "x-launch-indexing-policy": ("closed",),
-            },
-            body=b"User-agent: *\nAllow: /\n",
-        ),
-        "/sitemap.xml": probe.HttpResponse(
-            path="/sitemap.xml",
-            status=200,
-            headers={
-                "cache-control": ("no-store",),
-                "content-type": ("application/xml; charset=utf-8",),
-                "x-launch-indexing-policy": ("closed",),
-            },
-            body=probe.EMPTY_URLSET.encode(),
-        ),
-        "/sitemap-media.xml": probe.HttpResponse(
-            path="/sitemap-media.xml",
-            status=200,
-            headers={
-                "cache-control": ("no-store",),
-                "content-type": ("application/xml; charset=utf-8",),
-                "x-launch-indexing-policy": ("closed",),
-            },
-            body=probe.EMPTY_MEDIA_URLSET.encode(),
-        ),
-        "/sitemap-index.xml": probe.HttpResponse(
-            path="/sitemap-index.xml",
-            status=200,
-            headers={
-                "cache-control": ("no-store",),
-                "content-type": ("application/xml; charset=utf-8",),
-                "x-launch-indexing-policy": ("closed",),
-            },
-            body=probe.EMPTY_SITEMAP_INDEX.encode(),
-        ),
-    }
+    responses = _closed_boundary_responses(probe)
+    calls: list[str] = []
+
+    def requester(target: str, _timeout: float):
+        calls.append(target)
+        if target in DIRECT_BYPASS_URLS:
+            raise probe._ProbeRequestError("direct bypass denied")
+        return responses[target]
 
     result = probe.main(
         [
@@ -357,7 +474,45 @@ def test_probe_executes_exact_task44_closed_operator_invocation():
             "--require-public-internal-404",
             "--require-direct-bypass-denied",
         ],
-        requester=lambda path, _timeout: responses[path],
+        requester=requester,
     )
 
     assert result == 0
+    assert set(calls) == {*responses, *DIRECT_BYPASS_URLS}
+
+
+def test_probe_rejects_exposed_public_internal_and_direct_bypass_surfaces(tmp_path: Path):
+    probe = _load_probe()
+    responses = _closed_boundary_responses(probe)
+    for path in PUBLIC_INTERNAL_PATHS:
+        responses[path] = probe.HttpResponse(
+            path=path,
+            status=200,
+            headers={"x-vl360-upstream-internal": ("true",)},
+            body=b"stub-internal-upstream",
+        )
+    evidence = tmp_path / "exposed-boundary.json"
+
+    def requester(target: str, _timeout: float):
+        if target in DIRECT_BYPASS_URLS:
+            return probe.HttpResponse(path=target, status=404, headers={}, body=b"")
+        return responses[target]
+
+    result = probe.main(
+        [
+            "--expect",
+            "closed",
+            "--maintenance-probe",
+            "--operator-source",
+            "--require-public-internal-404",
+            "--require-direct-bypass-denied",
+            "--evidence",
+            str(evidence),
+        ],
+        requester=requester,
+    )
+
+    assert result == 1
+    payload = json.loads(evidence.read_text(encoding="utf-8"))
+    assert "public-internal-route-exposed" in payload["errors"]
+    assert "direct-bypass-response-present" in payload["errors"]

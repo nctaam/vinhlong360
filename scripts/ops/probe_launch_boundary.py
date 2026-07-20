@@ -43,14 +43,29 @@ _LAUNCH_MATRIX_POLICY_FINGERPRINT = (
 _LAUNCH_MATRIX_ROUTE_MANIFEST_REVISION = "launch-indexing-policy-v1"
 _LAUNCH_MATRIX_BACKEND_POLICY_REVISION = "index-policy-v1"
 _LAUNCH_MATRIX_SITEMAP_BATCH_REVISION = "b" * 64
-_READINESS_CHECK_NAMES = frozenset(
+_READINESS_CHECK_REASONS = MappingProxyType(
     {
-        "manifest-schema",
-        "artifact-evidence",
-        "compiled-cache-rules",
-        "public-prerender",
-        "service-worker-cache-purge",
+        "manifest-schema": "manifest-valid",
+        "artifact-evidence": "artifact-evidence-valid",
+        "compiled-cache-rules": "compiled-cache-rules-safe",
+        "public-prerender": "public-prerender-safe",
+        "service-worker-cache-purge": "cache-purge-verified",
     }
+)
+_PUBLIC_INTERNAL_PATHS = (
+    "/_internal/launch-readiness",
+    "/_internal/launch-policy-attestation",
+    f"/_internal/launch-sitemaps/sitemap.xml?batch={_LAUNCH_MATRIX_SITEMAP_BATCH_REVISION}",
+)
+_DIRECT_BYPASS_PATHS = (
+    ("nuxt-root", 3000, "/"),
+    ("nuxt-readiness", 3000, "/_internal/launch-readiness"),
+    ("agent-root", 8360, "/"),
+    ("agent-sitemap", 8360, "/sitemap.xml"),
+    ("agent-media-sitemap", 8360, "/sitemap-media.xml"),
+    ("agent-index-sitemap", 8360, "/sitemap-index.xml"),
+    ("agent-attestation", 8360, "/_internal/launch-policy-attestation"),
+    ("agent-launch-sitemap", 8360, "/_internal/launch-sitemaps/sitemap.xml"),
 )
 
 
@@ -305,12 +320,31 @@ def _observation(
     *,
     request_completed: bool,
     reasons: Sequence[str],
+    contract_passed: bool | None = None,
 ) -> dict[str, object]:
     return {
-        "contract_passed": request_completed and not reasons,
+        "contract_passed": (
+            request_completed and not reasons
+            if contract_passed is None
+            else contract_passed
+        ),
         "reasons": sorted(set(reasons)),
         "request_completed": request_completed,
     }
+
+
+def _content_type_errors(response: HttpResponse, *, surface: str, html: bool) -> list[str]:
+    errors: list[str] = []
+    content_type = _single_header(response, "content-type")
+    if html and (content_type is None or not content_type.lower().startswith("text/html")):
+        errors.append("html-content-type-invalid")
+    if not html and surface == "/robots.txt":
+        if content_type is None or not content_type.lower().startswith("text/plain"):
+            errors.append("robots-content-type-invalid")
+    if not html and surface in SITEMAP_BODIES:
+        if content_type is None or not content_type.lower().startswith("application/xml"):
+            errors.append("sitemap-content-type-invalid")
+    return errors
 
 
 def _common_errors(response: HttpResponse, *, surface: str, html: bool) -> list[str]:
@@ -326,15 +360,7 @@ def _common_errors(response: HttpResponse, *, surface: str, html: bool) -> list[
         errors.append("launch-evidence-present")
     if any(name in response.headers for name in ("etag", "last-modified")):
         errors.append("launch-validator-present")
-    content_type = _single_header(response, "content-type")
-    if html and (content_type is None or not content_type.lower().startswith("text/html")):
-        errors.append("html-content-type-invalid")
-    if not html and surface == "/robots.txt":
-        if content_type is None or not content_type.lower().startswith("text/plain"):
-            errors.append("robots-content-type-invalid")
-    if not html and surface in SITEMAP_BODIES:
-        if content_type is None or not content_type.lower().startswith("application/xml"):
-            errors.append("sitemap-content-type-invalid")
+    errors.extend(_content_type_errors(response, surface=surface, html=html))
     return errors
 
 
@@ -418,36 +444,123 @@ def probe_closed_matrix(
     return sorted(errors), observations
 
 
-def probe_process_local_readiness(
+def probe_public_internal_404(
     *,
+    requester: Callable[[str, float], HttpResponse],
+    timeout_seconds: float,
+) -> tuple[list[str], dict[str, dict[str, object]]]:
+    errors: set[str] = set()
+    observations: dict[str, dict[str, object]] = {}
+    for path in _PUBLIC_INTERNAL_PATHS:
+        try:
+            response = requester(path, timeout_seconds)
+            if not isinstance(response, HttpResponse):
+                raise _ProbeRequestError("http-request-failed")
+        except Exception:  # noqa: BLE001 - sanitize transport failures.
+            reasons = ["public-internal-request-failed"]
+            errors.update(reasons)
+            observations[path] = _observation(request_completed=False, reasons=reasons)
+            continue
+
+        reasons: list[str] = []
+        if response.status != 404:
+            reasons.append("public-internal-route-exposed")
+        if "x-vl360-upstream-internal" in response.headers:
+            reasons.append("public-internal-upstream-marker-present")
+        if any(name in response.headers for name in LAUNCH_EVIDENCE_HEADERS):
+            reasons.append("public-internal-evidence-present")
+        if b"stub-internal-upstream" in response.body:
+            reasons.append("public-internal-upstream-marker-present")
+        observations[path] = _observation(request_completed=True, reasons=reasons)
+        errors.update(reasons)
+    return sorted(errors), observations
+
+
+def _direct_bypass_urls(base_url: str) -> tuple[tuple[str, str], ...]:
+    host = urlsplit(base_url).hostname
+    if not host:
+        return ()
+    authority = f"[{host}]" if ":" in host else host
+    return tuple(
+        (name, f"http://{authority}:{port}{path}")
+        for name, port, path in _DIRECT_BYPASS_PATHS
+    )
+
+
+def probe_direct_bypass_denied(
+    *,
+    requester: Callable[[str, float], HttpResponse],
+    base_url: str,
+    timeout_seconds: float,
+) -> tuple[list[str], dict[str, dict[str, object]]]:
+    errors: set[str] = set()
+    observations: dict[str, dict[str, object]] = {}
+    for name, url in _direct_bypass_urls(base_url):
+        key = f"direct-bypass:{name}"
+        try:
+            response = requester(url, timeout_seconds)
+            if not isinstance(response, HttpResponse):
+                raise _ProbeRequestError("http-request-failed")
+        except _ProbeRequestError:
+            observations[key] = _observation(
+                request_completed=False,
+                reasons=(),
+                contract_passed=True,
+            )
+            continue
+        except Exception:  # noqa: BLE001 - sanitize unexpected probe failures.
+            reasons = ["direct-bypass-probe-failed"]
+            errors.update(reasons)
+            observations[key] = _observation(request_completed=False, reasons=reasons)
+            continue
+
+        reasons = ["direct-bypass-response-present"]
+        errors.update(reasons)
+        observations[key] = _observation(request_completed=True, reasons=reasons)
+    return sorted(errors), observations
+
+
+def _readiness_check_set_is_exact(value: object) -> bool:
+    if not isinstance(value, list) or len(value) != len(_READINESS_CHECK_REASONS):
+        return False
+    seen: set[str] = set()
+    expected_keys = set(_READINESS_CHECK_REASONS)
+    for item in value:
+        if type(item) is not dict or set(item) != {"name", "ok", "reason"}:
+            return False
+        name = item["name"]
+        reason = item["reason"]
+        if type(name) is not str or type(reason) is not str or item["ok"] is not True:
+            return False
+        if name in seen or name not in expected_keys:
+            return False
+        if _READINESS_CHECK_REASONS[name] != reason:
+            return False
+        seen.add(name)
+    return seen == expected_keys
+
+
+def _readiness_request(
     requester: Callable[[str, float], HttpResponse],
     readiness_url: str,
     timeout_seconds: float,
-    expected_state: str,
-    require_complete_check_set: bool,
-) -> tuple[list[str], dict[str, dict[str, object]]]:
-    errors: list[str] = []
+) -> HttpResponse | None:
     try:
         response = requester(readiness_url, timeout_seconds)
         if not isinstance(response, HttpResponse):
             raise _ProbeRequestError("http-request-failed")
     except Exception:  # noqa: BLE001 - evidence must never contain exception text.
-        errors.append("http-request-failed")
-        return errors, {
-            "process-local-readiness": _observation(
-                request_completed=False,
-                reasons=errors,
-            )
-        }
+        return None
+    return response
 
-    if response.status != 200:
-        errors.append("readiness-status-invalid")
-    if _single_header(response, "cache-control") != "no-store":
-        errors.append("readiness-cache-control-invalid")
-    content_type = _single_header(response, "content-type")
-    if content_type is None or not content_type.lower().startswith("application/json"):
-        errors.append("readiness-content-type-invalid")
 
+def _readiness_payload_errors(
+    response: HttpResponse,
+    *,
+    expected_state: str,
+    require_complete_check_set: bool,
+) -> list[str]:
+    errors: list[str] = []
     payload: object | None = None
     try:
         payload = json.loads(response.body.decode("utf-8"))
@@ -456,26 +569,63 @@ def probe_process_local_readiness(
 
     if not isinstance(payload, Mapping):
         errors.append("readiness-body-invalid")
-    else:
-        if payload.get("ok") is not True:
-            errors.append("readiness-ok-invalid")
-        if payload.get("state") != expected_state:
-            errors.append("readiness-state-invalid")
-        if require_complete_check_set:
-            checks = payload.get("checks")
-            if not isinstance(checks, list):
-                errors.append("readiness-check-set-incomplete")
-            else:
-                names = {
-                    item.get("name")
-                    for item in checks
-                    if isinstance(item, Mapping)
-                }
-                if names != _READINESS_CHECK_NAMES or any(
-                    not isinstance(item, Mapping) or item.get("ok") is not True
-                    for item in checks
-                ):
-                    errors.append("readiness-check-set-incomplete")
+        return errors
+    if payload.get("ok") is not True:
+        errors.append("readiness-ok-invalid")
+    if payload.get("state") != expected_state:
+        errors.append("readiness-state-invalid")
+    if require_complete_check_set and not _readiness_check_set_is_exact(payload.get("checks")):
+        errors.append("readiness-check-set-incomplete")
+    return errors
+
+
+def _readiness_response_errors(
+    response: HttpResponse,
+    *,
+    expected_state: str,
+    require_complete_check_set: bool,
+) -> list[str]:
+    errors: list[str] = []
+    if response.status != 200:
+        errors.append("readiness-status-invalid")
+    if _single_header(response, "cache-control") != "no-store":
+        errors.append("readiness-cache-control-invalid")
+    content_type = _single_header(response, "content-type")
+    if content_type is None or not content_type.lower().startswith("application/json"):
+        errors.append("readiness-content-type-invalid")
+    errors.extend(
+        _readiness_payload_errors(
+            response,
+            expected_state=expected_state,
+            require_complete_check_set=require_complete_check_set,
+        )
+    )
+    return errors
+
+
+def probe_process_local_readiness(
+    *,
+    requester: Callable[[str, float], HttpResponse],
+    readiness_url: str,
+    timeout_seconds: float,
+    expected_state: str,
+    require_complete_check_set: bool,
+) -> tuple[list[str], dict[str, dict[str, object]]]:
+    response = _readiness_request(requester, readiness_url, timeout_seconds)
+    if response is None:
+        errors = ["http-request-failed"]
+        return errors, {
+            "process-local-readiness": _observation(
+                request_completed=False,
+                reasons=errors,
+            )
+        }
+
+    errors = _readiness_response_errors(
+        response,
+        expected_state=expected_state,
+        require_complete_check_set=require_complete_check_set,
+    )
 
     observations = {
         "process-local-readiness": _observation(
@@ -566,26 +716,35 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
-    compatibility_flags = (
-        args.maintenance_probe
-        or args.process_local_readiness is not None
-        or args.require_complete_check_set
-        or args.require_rich_html
-        or args.require_thin_html
-        or args.require_meta_robots
-        or args.require_rich_thin_html
-        or args.require_meta_header_noindex
-        or args.require_no_sitemap
-        or args.require_three_empty_sitemaps
-        or args.require_robots_without_sitemap
-        or args.require_three_empty_sitemap_shapes
-        or args.require_no_store
-        or args.require_no_evidence
-        or args.require_no_discovery
-        or args.require_public_internal_404
-        or args.require_direct_bypass_denied
+def _compatibility_flags_enabled(args: argparse.Namespace) -> bool:
+    return any(
+        (
+            args.maintenance_probe,
+            args.process_local_readiness is not None,
+            args.require_complete_check_set,
+            args.require_rich_html,
+            args.require_thin_html,
+            args.require_meta_robots,
+            args.require_rich_thin_html,
+            args.require_meta_header_noindex,
+            args.require_no_sitemap,
+            args.require_three_empty_sitemaps,
+            args.require_robots_without_sitemap,
+            args.require_three_empty_sitemap_shapes,
+            args.require_no_store,
+            args.require_no_evidence,
+            args.require_no_discovery,
+            args.require_public_internal_404,
+            args.require_direct_bypass_denied,
+        )
     )
+
+
+def _apply_compatibility_defaults(
+    parser: argparse.ArgumentParser,
+    args: argparse.Namespace,
+    compatibility_flags: bool,
+) -> None:
     if args.expect is None:
         if not compatibility_flags:
             parser.error("one of --expect or --maintenance-probe is required")
@@ -599,25 +758,102 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
         # assertion vocabulary; preserve the old explicit mode as-is.
         args.operator_source = True
 
-    if args.process_local_readiness is not None:
-        split = urlsplit(args.process_local_readiness)
-        if split.scheme not in {"http", "https"} or not split.netloc or split.fragment:
-            parser.error("process-local-readiness must be an absolute HTTP(S) URL")
-        if args.expect != "closed" or args.operator_source or args.require_public_post_reopen_matrix:
-            parser.error("process-local-readiness requires closed mode without public-source flags")
-        if not args.require_complete_check_set:
-            parser.error("process-local-readiness requires complete check set")
-    elif args.expect == "maintenance":
+
+def _validate_process_local_args(
+    parser: argparse.ArgumentParser,
+    args: argparse.Namespace,
+) -> None:
+    split = urlsplit(args.process_local_readiness)
+    if split.scheme not in {"http", "https"} or not split.netloc or split.fragment:
+        parser.error("process-local-readiness must be an absolute HTTP(S) URL")
+    if args.expect != "closed" or args.operator_source or args.require_public_post_reopen_matrix:
+        parser.error("process-local-readiness requires closed mode without public-source flags")
+    if not args.require_complete_check_set:
+        parser.error("process-local-readiness requires complete check set")
+
+
+def _validate_non_process_mode(
+    parser: argparse.ArgumentParser,
+    args: argparse.Namespace,
+) -> None:
+    if args.expect == "maintenance":
         if not args.operator_source or args.require_public_post_reopen_matrix:
             parser.error("maintenance mode requires operator-source")
-    elif args.maintenance_probe:
+        return
+    if args.maintenance_probe:
         if not args.operator_source or args.require_public_post_reopen_matrix:
             parser.error("maintenance probe requires operator-source")
-    elif not args.require_public_post_reopen_matrix or args.operator_source:
+        return
+    if not args.require_public_post_reopen_matrix or args.operator_source:
         parser.error("closed mode requires public post-reopen matrix")
 
+
+def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    compatibility_flags = _compatibility_flags_enabled(args)
+    _apply_compatibility_defaults(parser, args, compatibility_flags)
+    if args.process_local_readiness is not None:
+        _validate_process_local_args(parser, args)
+    else:
+        _validate_non_process_mode(parser, args)
     if args.base_url != DEFAULT_BASE_URL:
         parser.error(f"base URL must be exactly {DEFAULT_BASE_URL}")
+
+
+def _merge_probe_result(
+    errors: set[str],
+    observations: dict[str, dict[str, object]],
+    result: tuple[list[str], dict[str, dict[str, object]]],
+) -> None:
+    result_errors, result_observations = result
+    errors.update(result_errors)
+    observations.update(result_observations)
+
+
+def _probe_public_mode(
+    args: argparse.Namespace,
+    requester: Callable[[str, float], HttpResponse] | None,
+) -> tuple[list[str], dict[str, dict[str, object]]]:
+    request = requester or _make_requester(args.base_url.rstrip("/"))
+    initial_errors, observations = probe_closed_matrix(
+        requester=request,
+        timeout_seconds=args.timeout_seconds,
+    )
+    errors = set(initial_errors)
+    if args.require_public_internal_404:
+        _merge_probe_result(
+            errors,
+            observations,
+            probe_public_internal_404(
+                requester=request,
+                timeout_seconds=args.timeout_seconds,
+            ),
+        )
+    if args.require_direct_bypass_denied:
+        _merge_probe_result(
+            errors,
+            observations,
+            probe_direct_bypass_denied(
+                requester=requester or _request_absolute_url,
+                base_url=args.base_url,
+                timeout_seconds=args.timeout_seconds,
+            ),
+        )
+    return sorted(errors), observations
+
+
+def _probe_from_args(
+    args: argparse.Namespace,
+    requester: Callable[[str, float], HttpResponse] | None,
+) -> tuple[list[str], dict[str, dict[str, object]]]:
+    if args.process_local_readiness is not None:
+        return probe_process_local_readiness(
+            requester=requester or _request_absolute_url,
+            readiness_url=args.process_local_readiness,
+            timeout_seconds=args.timeout_seconds,
+            expected_state=args.expect,
+            require_complete_check_set=args.require_complete_check_set,
+        )
+    return _probe_public_mode(args, requester)
 
 
 def main(
@@ -628,20 +864,7 @@ def main(
     parser = _parser()
     args = parser.parse_args(argv)
     _validate_args(parser, args)
-    if args.process_local_readiness is not None:
-        errors, observations = probe_process_local_readiness(
-            requester=requester or _request_absolute_url,
-            readiness_url=args.process_local_readiness,
-            timeout_seconds=args.timeout_seconds,
-            expected_state=args.expect,
-            require_complete_check_set=args.require_complete_check_set,
-        )
-    else:
-        request = requester or _make_requester(args.base_url.rstrip("/"))
-        errors, observations = probe_closed_matrix(
-            requester=request,
-            timeout_seconds=args.timeout_seconds,
-        )
+    errors, observations = _probe_from_args(args, requester)
     payload: dict[str, object] = {
         "errors": errors,
         "expect": args.expect,
