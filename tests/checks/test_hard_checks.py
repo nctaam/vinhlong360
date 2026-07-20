@@ -13,6 +13,7 @@ from checks.check_api_contract import ApiContractCheck  # noqa: E402
 from checks.check_banned_claims import build_checks as banned_checks  # noqa: E402
 from checks.check_data_schema import DataSchemaCheck  # noqa: E402
 from checks.check_secrets import SecretsCheck  # noqa: E402
+from checks.check_entity_image_renderers import EntityImageRendererCheck  # noqa: E402
 
 
 def _mk(tmp_path: Path, rel: str, text: str) -> Path:
@@ -20,6 +21,20 @@ def _mk(tmp_path: Path, rel: str, text: str) -> Path:
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(text, encoding="utf-8")
     return p
+
+
+def test_entity_image_renderer_check_runs_full_scan_for_relevant_staged_registry(tmp_path):
+    _mk(tmp_path, "web-nuxt/config/entity-image-renderers.json", '{"schema_version": 1, "renderers": []}\n')
+    _mk(tmp_path, "web-nuxt/pages/new.vue", '<NuxtImg :src="entity.images[0]" />\n')
+    result = EntityImageRendererCheck(root=tmp_path).run(files=["web-nuxt/config/entity-image-renderers.json"])
+    assert result["level"] == "hard"
+    assert result["rule"] == "R20.10"
+    assert any(item["code"] == "UNREGISTERED_ENTITY_IMAGE_RENDERER" for item in result["violations"])
+
+
+def test_entity_image_renderer_check_ignores_irrelevant_staged_files(tmp_path):
+    result = EntityImageRendererCheck(root=tmp_path).run(files=["docs/README.md"])
+    assert result["count"] == 0
 
 
 # ---------- secrets ----------

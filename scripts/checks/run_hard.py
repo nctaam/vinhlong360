@@ -30,6 +30,7 @@ from checks.check_content_voice import CHECKS as voice  # noqa: E402
 from checks.check_coverage import CHECKS as coverage  # noqa: E402
 from checks.check_data_schema import CHECKS as schema  # noqa: E402
 from checks.check_doc_status import CHECKS as doc_status  # noqa: E402
+from checks.check_entity_image_renderers import CHECKS as entity_image_renderers  # noqa: E402
 from checks.check_fe_tokens import CHECKS as fe_tokens  # noqa: E402
 from checks.check_links import CHECKS as links  # noqa: E402
 from checks.check_policy_http_registry import CHECKS as policy_http_registry  # noqa: E402
@@ -42,7 +43,7 @@ from checks.check_tinh_cu import CHECKS as tinh_cu  # noqa: E402
 ALL_CHECKS = (secrets + banned + schema + api_checks
               + tinh_cu + fe_tokens + doc_status + links
               + voice + content_gates + thin + pairing + complexity + ruff_lint + coverage
-              + bundle + axe + policy_http_registry)
+              + bundle + axe + policy_http_registry + entity_image_renderers)
 REGISTRY = {c.name: c for c in ALL_CHECKS}
 
 
