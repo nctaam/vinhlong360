@@ -38,6 +38,18 @@ REQUIRED_MEMBERS = frozenset(
     }
 )
 PERSISTENT_PATHS = ["agent/data", "agent/data/sitemap-bundles"]
+CONFIG_INGRESS_UNIT_PATHS = (
+    "config/launch-indexing-policy.json",
+    "config/ai-disclosure.json",
+    "nginx.conf",
+    "nginx-ssl.conf",
+    "compose-network-audit.json",
+    "ops/systemd/vl-agent.service",
+    "ops/systemd/vl-nuxt.service",
+    "ops/systemd/vl-bot.service",
+    "ops/systemd/vl-watchdog.service",
+    "ops/systemd/vl-watchdog.timer",
+)
 ROUTE_REVISION = "launch-indexing-policy-v1"
 DISCLOSURE_REVISION = "ai-disclosure-v1"
 READINESS_PATH = "web-nuxt/.output/server/launch-readiness-manifest.json"
@@ -197,6 +209,90 @@ def _validate_manifest_members(
     }
     if member_manifest != observed:
         raise ValueError("archive member digests do not match manifest")
+
+
+def _verify_config_ingress_unit_digests(
+    manifest: Mapping[str, Any], members: Mapping[str, bytes]
+) -> tuple[str, ...]:
+    """Recheck the activation-critical config, ingress, and unit bytes."""
+    declarations = manifest.get("members")
+    if not isinstance(declarations, dict):
+        raise ValueError("archive member manifest is missing")
+    for relative in CONFIG_INGRESS_UNIT_PATHS:
+        declaration = declarations.get(relative)
+        raw = members.get(relative)
+        if not isinstance(declaration, dict) or raw is None:
+            raise ValueError(f"config/ingress/unit declaration missing: {relative}")
+        if declaration.get("sha256") != _sha256(raw) or declaration.get("size") != len(raw):
+            raise ValueError(f"config/ingress/unit digest mismatch: {relative}")
+    return CONFIG_INGRESS_UNIT_PATHS
+
+
+def validate_findmnt_evidence(
+    payload: Mapping[str, Any], *, expected_source: Path, expected_target: Path
+) -> dict[str, Any]:
+    filesystems = payload.get("filesystems")
+    if not isinstance(filesystems, list) or len(filesystems) != 1:
+        raise ValueError("findmnt evidence must contain one filesystem")
+    filesystem = filesystems[0]
+    if not isinstance(filesystem, dict):
+        raise ValueError("findmnt filesystem evidence is invalid")
+    observed_source = filesystem.get("source")
+    observed_target = filesystem.get("target")
+    options = filesystem.get("options")
+    if not isinstance(observed_source, str) or not isinstance(observed_target, str):
+        raise ValueError("findmnt source/target evidence is missing")
+    if Path(observed_source).resolve() != Path(expected_source).resolve():
+        raise ValueError("findmnt source does not match persistent authority")
+    if Path(observed_target).resolve() != Path(expected_target).resolve():
+        raise ValueError("findmnt target does not match installed mountpoint")
+    option_values = (
+        set(options)
+        if isinstance(options, list)
+        else set(str(options).split(","))
+        if isinstance(options, str)
+        else set()
+    )
+    if not {"rw", "bind"}.issubset(option_values):
+        raise ValueError("findmnt options must prove rw bind mount")
+    return {
+        "source": observed_source,
+        "target": observed_target,
+        "options": sorted(option_values),
+    }
+
+
+def _verify_persistent_agent_data_mount(
+    root: Path,
+    external: Path,
+    *,
+    local_rehearsal: bool = False,
+    findmnt_evidence: Path | None = None,
+) -> dict[str, Any]:
+    target = Path(root) / "agent" / "data"
+    external = Path(external)
+    if external.is_symlink() or not external.is_dir():
+        raise ValueError("persistent agent data authority is not a real directory")
+    if target.is_symlink() or not target.is_dir():
+        raise ValueError("installed persistent agent data mountpoint is not a real directory")
+    if local_rehearsal:
+        return {
+            "persistent_agent_data_mount_mode": "local-rehearsal",
+            "persistent_agent_data_mount_verified": True,
+        }
+    if findmnt_evidence is None:
+        raise ValueError("findmnt evidence is required for persistent mount verification")
+    payload = json.loads(Path(findmnt_evidence).read_text(encoding="utf-8"))
+    mount = validate_findmnt_evidence(
+        payload,
+        expected_source=external,
+        expected_target=target,
+    )
+    return {
+        "persistent_agent_data_mount_mode": "findmnt",
+        "persistent_agent_data_mount_verified": True,
+        "persistent_agent_data_mount": mount,
+    }
 
 
 def _validate_manifest(manifest: Mapping[str, Any], members: Mapping[str, bytes]) -> None:
@@ -404,7 +500,15 @@ def _walk_installed(root: Path) -> dict[str, bytes]:
     return result
 
 
-def verify_installed_root(root: Path, *, persistent_agent_data_root: Path | None = None) -> dict[str, Any]:
+def verify_installed_root(
+    root: Path,
+    *,
+    persistent_agent_data_root: Path | None = None,
+    verify_config_ingress_unit_digests: bool = False,
+    verify_persistent_agent_data_mount: bool = False,
+    local_rehearsal: bool = False,
+    persistent_mount_evidence: Path | None = None,
+) -> dict[str, Any]:
     """Verify bytes installed from a closed package without touching the tree."""
     root = Path(root)
     members = _walk_installed(root)
@@ -420,12 +524,28 @@ def verify_installed_root(root: Path, *, persistent_agent_data_root: Path | None
     )
     _validate_network_audit(members["compose-network-audit.json"])
     _validate_loopback_units(members)
-    persistent = root / "agent" / "data"
-    if persistent_agent_data_root is not None:
+    additional: dict[str, Any] = {}
+    if verify_config_ingress_unit_digests:
+        verified = _verify_config_ingress_unit_digests(manifest, members)
+        additional["config_ingress_unit_digests_verified"] = True
+        additional["config_ingress_unit_paths"] = list(verified)
+    if verify_persistent_agent_data_mount:
+        if persistent_agent_data_root is None:
+            raise ValueError("persistent agent data root is required for mount verification")
+        additional.update(
+            _verify_persistent_agent_data_mount(
+                root,
+                persistent_agent_data_root,
+                local_rehearsal=local_rehearsal,
+                findmnt_evidence=persistent_mount_evidence,
+            )
+        )
+    elif persistent_agent_data_root is not None:
+        persistent = root / "agent" / "data"
         external = Path(persistent_agent_data_root)
         if external.is_symlink() or not external.is_dir():
             raise ValueError("persistent agent data authority is not a real directory")
-        if not persistent.exists() and not persistent.is_symlink():
+        if persistent.is_symlink() or not persistent.is_dir():
             raise ValueError("installed persistent agent data mountpoint is missing")
     return {
         "installed_root": str(root),
@@ -435,6 +555,7 @@ def verify_installed_root(root: Path, *, persistent_agent_data_root: Path | None
         "stage3_claim": False,
         "live_sla_proven": False,
         "observed_local_elapsed_seconds": 0.0,
+        **additional,
     }
 
 
@@ -466,6 +587,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--persistent-agent-data-root", type=Path)
     parser.add_argument("--verify-config-ingress-unit-digests", action="store_true")
     parser.add_argument("--verify-persistent-agent-data-mount", action="store_true")
+    parser.add_argument("--persistent-mount-evidence", type=Path)
+    parser.add_argument("--local-rehearsal", action="store_true")
     parser.add_argument("--require-closed", action="store_true")
     parser.add_argument("--evidence-dir", type=Path)
     parser.add_argument("--operator")
@@ -485,6 +608,10 @@ def main(argv: list[str] | None = None) -> int:
             evidence = verify_installed_root(
                 args.installed_root,
                 persistent_agent_data_root=args.persistent_agent_data_root,
+                verify_config_ingress_unit_digests=args.verify_config_ingress_unit_digests,
+                verify_persistent_agent_data_mount=args.verify_persistent_agent_data_mount,
+                local_rehearsal=args.local_rehearsal,
+                persistent_mount_evidence=args.persistent_mount_evidence,
             )
         if args.operator:
             evidence["operator"] = args.operator

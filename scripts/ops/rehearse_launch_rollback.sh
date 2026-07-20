@@ -196,10 +196,15 @@ verify_dependencies_units_daemon_reload() {
   else
     python -m pip check
   fi
+  local verifier_args=()
+  if [ "$MODE" = "--local-rehearsal" ]; then
+    verifier_args+=(--local-rehearsal)
+  fi
   python "$SCRIPT_DIR/verify_closed_release.py" \
     --installed-root "$RELEASE_ROOT" \
     --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
     --verify-config-ingress-unit-digests --verify-persistent-agent-data-mount \
+    "${verifier_args[@]}" \
     --require-closed --evidence-dir "$EVIDENCE_DIR/runtime-authority"
   run_privileged systemctl daemon-reload
   run_privileged systemctl start vl-nuxt

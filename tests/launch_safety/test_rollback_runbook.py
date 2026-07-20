@@ -587,8 +587,8 @@ def test_installer_uses_one_verifier_and_persistent_safe_tree_swap():
 
     verify_index = source.index("verify_closed_release.py")
     extract_index = source.index("tar ")
-    detach_index = source.index("detach-agent-data")
-    swap_index = source.index("swap-release-root")
+    detach_index = source.index("detach-agent-data", extract_index)
+    swap_index = source.index("swap-release-root", extract_index)
     restore_index = source.index("restore-bind-agent-data")
     mount_verify_index = source.index("verify-agent-data-mount")
 
@@ -680,6 +680,8 @@ def test_local_rehearsal_uses_injected_authorities_instead_of_host_curl_or_pip()
     assert "validate_local_readiness_evidence" in readiness
     assert "python -m pip check" in dependencies
     assert "run_local_authority dependencies" in dependencies
+    assert "verifier_args+=(--local-rehearsal)" in dependencies
+    assert '"${verifier_args[@]}"' in dependencies
 
 
 def test_recovery_records_dependent_phases_as_skipped_after_redrain_failure():
