@@ -132,6 +132,10 @@ UNIT_MUTATION_MARKER=''
 mkdir -p -- "$EVIDENCE_DIR"
 rm -f -- "$EVIDENCE_DIR/systemd-unit-mutation-armed"
 rm -rf -- "$EVIDENCE_DIR/systemd-unit-backup"
+for stale_attempt in "$EVIDENCE_DIR"/.systemd-unit-attempt.*; do
+  [ -d "$stale_attempt" ] || continue
+  [ -e "$stale_attempt/armed" ] || rm -rf -- "$stale_attempt"
+done
 [ ! -e "$STAGING_ROOT" ] && [ ! -e "$OLD_ROOT" ] || die 'staging-path-exists'
 mkdir -- "$STAGING_ROOT"
 tar -xzf "$ARCHIVE" -C "$STAGING_ROOT" --no-same-owner --no-same-permissions
@@ -168,6 +172,28 @@ payload.setdefault("exit_codes", {})
 payload["results"][sys.argv[2]] = sys.argv[3]
 payload["exit_codes"][sys.argv[2]] = int(sys.argv[4])
 path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+PY
+}
+
+record_systemd_unit_cleanup() {
+  local status="$1"
+  local code="$2"
+  python - "$EVIDENCE_DIR/systemd-unit-cleanup.json" "$status" "$code" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+payload = {
+    "exit_code": int(sys.argv[3]),
+    "live_sla_proven": False,
+    "observed_local_elapsed_seconds": 0.0,
+    "schema_version": 1,
+    "stage3_claim": False,
+    "status": sys.argv[2],
+}
+Path(sys.argv[1]).write_text(
+    json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+)
 PY
 }
 
@@ -292,11 +318,15 @@ prepare_systemd_unit_attempt() {
 
 disarm_systemd_unit_attempt() {
   [ -n "$UNIT_ATTEMPT_ROOT" ] || return 0
-  rm -f -- "$UNIT_MUTATION_MARKER"
-  rm -rf -- "$UNIT_ATTEMPT_ROOT"
-  UNIT_ATTEMPT_ROOT=''
-  UNIT_BACKUP_ROOT=''
-  UNIT_MUTATION_MARKER=''
+  rm -f -- "$UNIT_MUTATION_MARKER" || true
+  if rm -rf -- "$UNIT_ATTEMPT_ROOT"; then
+    UNIT_ATTEMPT_ROOT=''
+    UNIT_BACKUP_ROOT=''
+    UNIT_MUTATION_MARKER=''
+    return 0
+  else
+    return $?
+  fi
 }
 
 install_systemd_units() {
@@ -684,6 +714,11 @@ payload = {
 Path(sys.argv[1]).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
 
-disarm_systemd_unit_attempt
 INSTALL_COMPLETE=true
+if disarm_systemd_unit_attempt; then
+  record_systemd_unit_cleanup passed 0
+else
+  cleanup_status=$?
+  record_systemd_unit_cleanup failed "$cleanup_status" || true
+fi
 exit 0

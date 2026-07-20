@@ -158,6 +158,7 @@ def _invoke_installer(
     *,
     failed_hook: str | None = None,
     include_sentinel: bool = True,
+    env_overrides: dict[str, str] | None = None,
 ):
     release, persistent, evidence, before_release, before_persistent, _, values = prepared
     if failed_hook is not None:
@@ -171,6 +172,8 @@ def _invoke_installer(
         values.pop("VL360_LOCAL_REHEARSAL_SENTINEL", None)
     env = os.environ.copy()
     env.update(values)
+    if env_overrides is not None:
+        env.update(env_overrides)
     args = [
         str(BASH),
         "scripts/ops/install_closed_release.sh",
@@ -770,6 +773,17 @@ def test_local_installer_full_success_records_every_authority_and_releases_old_t
     assert (evidence / "staged" / "closed-release.json").is_file()
     assert (evidence / "installed" / "closed-release.json").is_file()
     assert (evidence / "dependency-unit-checks.json").is_file()
+    cleanup = json.loads(
+        (evidence / "systemd-unit-cleanup.json").read_text(encoding="utf-8")
+    )
+    assert cleanup == {
+        "exit_code": 0,
+        "live_sla_proven": False,
+        "observed_local_elapsed_seconds": 0.0,
+        "schema_version": 1,
+        "stage3_claim": False,
+        "status": "passed",
+    }
     assert (release / "launch-release-manifest.json").is_file()
     assert not list(release.parent.glob(f".{release.name}.closed-*"))
     assert _snapshot_tree(persistent) == {}
@@ -888,3 +902,68 @@ def test_same_evidence_retry_during_units_restores_current_not_stale_destination
     )
     assert recovery["status"] == "rolled-back"
     assert recovery["systemd_units_restored"] is True
+
+
+def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_safe(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "cleanup-failure"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, evidence, _, _, _, _ = prepared
+    unit_destination = case_root / "runtime" / "systemd-units"
+    failure_used = case_root / "cleanup-failure-used"
+    bash_env = case_root / "cleanup-failure.bash"
+    bash_env.write_text(
+        "rm() {\n"
+        "for argument in \"$@\"; do\n"
+        "  case \"$(basename -- \"$argument\")\" in\n"
+        "    .systemd-unit-attempt.*)\n"
+        f"      if [ ! -f '{_bash_path(failure_used)}' ]; then\n"
+        f"        : > '{_bash_path(failure_used)}'\n"
+        "        return 61\n"
+        "      fi\n"
+        "      ;;\n"
+        "  esac\n"
+        "done\n"
+        "/usr/bin/rm \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert first.returncode == 0, first.stderr + first.stdout
+    assert failure_used.is_file()
+    assert (release / "launch-release-manifest.json").is_file()
+    assert not (release / "old-release-marker.txt").exists()
+    installed_release = _snapshot_tree(release)
+    installed_units = _snapshot_tree(unit_destination)
+    for name in SYSTEMD_UNIT_NAMES:
+        assert (unit_destination / name).read_bytes() == (
+            release / "ops" / "systemd" / name
+        ).read_bytes()
+    cleanup = json.loads(
+        (evidence / "systemd-unit-cleanup.json").read_text(encoding="utf-8")
+    )
+    assert cleanup["status"] == "failed"
+    assert cleanup["exit_code"] == 61
+    assert not list(evidence.glob(".systemd-unit-attempt.*/armed"))
+
+    second = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="nuxt",
+    )
+
+    assert second.returncode == 19, second.stderr + second.stdout
+    assert _snapshot_tree(release) == installed_release
+    assert _snapshot_tree(unit_destination) == installed_units
+    assert _unit_attempt_artifacts(evidence) == []
