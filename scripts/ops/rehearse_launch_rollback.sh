@@ -32,6 +32,7 @@ case "$MODE" in
     RELEASE_ROOT="${LOCAL_RELEASE_ROOT:?local rehearsal root is required}"
     LOCAL_COMMAND_STATE="${LOCAL_COMMAND_STATE:-$EVIDENCE_DIR/local-command-state.json}"
     LOCAL_MAINTENANCE_DIR="${LOCAL_MAINTENANCE_DIR:-$EVIDENCE_DIR/local-maintenance}"
+    SYSTEMD_UNIT_DESTINATION="$RUNTIME_AUTHORITY/systemd-units"
     ;;
   --execute-on-host)
     [ "${ACKNOWLEDGE_MAINTENANCE:-}" = "launch-safety-rollback" ] || exit 64
@@ -39,6 +40,7 @@ case "$MODE" in
     [ -n "$MOUNT_AUTHORITY" ] || { printf 'live mount authority is required\n' >&2; exit 64; }
     [ -f "$ENVIRONMENT_AUTHORITY" ] || exit 64
     [ -d "$RUNTIME_AUTHORITY" ] || exit 64
+    SYSTEMD_UNIT_DESTINATION=/etc/systemd/system
     ;;
   *)
     exit 64
@@ -204,6 +206,8 @@ verify_dependencies_units_daemon_reload() {
     --installed-root "$RELEASE_ROOT" \
     --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
     --verify-config-ingress-unit-digests --verify-persistent-agent-data-mount \
+    --systemd-unit-root "$SYSTEMD_UNIT_DESTINATION" --verify-systemd-unit-destination \
+    --environment-authority "$ENVIRONMENT_AUTHORITY" --verify-environment-authority \
     "${verifier_args[@]}" \
     --require-closed --evidence-dir "$EVIDENCE_DIR/runtime-authority"
   run_privileged systemctl daemon-reload

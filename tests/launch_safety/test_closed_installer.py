@@ -21,6 +21,7 @@ OPS = ROOT / "scripts" / "ops"
 INSTALL = OPS / "install_closed_release.sh"
 VERIFY = OPS / "verify_closed_release.py"
 BASH = Path(r"C:\Program Files\Git\bin\bash.exe")
+RUNBOOK = ROOT / "docs" / "runbooks" / "launch-safety-rollback.md"
 
 
 @pytest.fixture(scope="module")
@@ -56,7 +57,10 @@ def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
     persistent.mkdir()
     evidence.mkdir()
     runtime.mkdir()
+    sentinel = tmp_path / ".vl360-local-rehearsal"
+    sentinel.write_text("vinhlong360-local-rehearsal-v1\n", encoding="ascii")
     (release / "old-release-marker.txt").write_text("old-tree\n", encoding="ascii")
+    (release / ".env").write_text("OLD_ENV=1\n", encoding="ascii")
     (release_data / "app.db").write_bytes(b"persistent-db\n")
     (release_data / "sitemap-bundles" / "batch" / "metadata.json").parent.mkdir(
         parents=True
@@ -96,6 +100,7 @@ def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
         "VL360_PYTHON_DEPENDENCY_HOOK": _bash_path(hooks["python"]),
         "VL360_NUXT_DEPENDENCY_HOOK": _bash_path(hooks["nuxt"]),
         "VL360_UNIT_VERIFY_HOOK": _bash_path(hooks["units"]),
+        "VL360_LOCAL_REHEARSAL_SENTINEL": _bash_path(sentinel),
     }
     if fail_after is not None:
         env["VL360_INSTALL_FAIL_AFTER"] = fail_after
@@ -116,6 +121,7 @@ def _run_installer(
     *,
     fail_after: str | None = None,
     failed_hook: str | None = None,
+    include_sentinel: bool = True,
 ):
     prepared = _prepare_case(case_root, package, fail_after=fail_after)
     release, persistent, evidence, before_release, before_persistent, _, values = prepared
@@ -126,6 +132,8 @@ def _run_installer(
             encoding="ascii",
         )
         hook_path.chmod(0o755)
+    if not include_sentinel:
+        values.pop("VL360_LOCAL_REHEARSAL_SENTINEL", None)
     env = os.environ.copy()
     env.update(values)
     args = [
@@ -159,6 +167,192 @@ def _run_installer(
     return result, prepared
 
 
+def _run_live_mount_failure_case(package, case_root: Path):
+    prepared = _prepare_case(case_root, package)
+    release, persistent, evidence, before_release, _, _, values = prepared
+    runtime = case_root / "runtime"
+    for name in (
+        "install-python-dependencies",
+        "install-nuxt-production-dependencies",
+        "verify-systemd-units",
+    ):
+        hook = runtime / name
+        hook.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="ascii")
+        hook.chmod(0o755)
+    for name in (
+        "VL360_PYTHON_DEPENDENCY_HOOK",
+        "VL360_NUXT_DEPENDENCY_HOOK",
+        "VL360_UNIT_VERIFY_HOOK",
+    ):
+        values.pop(name, None)
+
+    findmnt_count = case_root / "findmnt-count"
+    umount_count = case_root / "umount-count"
+    mount_authority = case_root / "mount-authority.sh"
+    mount_authority.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        "case \"$1\" in\n"
+        "  findmnt)\n"
+        f"    count=$(cat '{_bash_path(findmnt_count)}' 2>/dev/null || printf 0)\n"
+        f"    printf '%s\\n' \"$((count + 1))\" > '{_bash_path(findmnt_count)}'\n"
+        "    [ \"$count\" -eq 0 ] || exit 44\n"
+        f"    source_path=$(cygpath -m '{_bash_path(persistent)}')\n"
+        "    target_path=$(cygpath -m \"$4\")\n"
+        "    printf '{\"filesystems\":[{\"source\":\"%s\",\"target\":\"%s\",\"options\":\"rw,bind\"}]}\\n' "
+        "\"$source_path\" \"$target_path\"\n"
+        "    ;;\n"
+        "  umount)\n"
+        f"    count=$(cat '{_bash_path(umount_count)}' 2>/dev/null || printf 0)\n"
+        f"    printf '%s\\n' \"$((count + 1))\" > '{_bash_path(umount_count)}'\n"
+        "    [ \"$count\" -eq 0 ] || exit 51\n"
+        f"    cp -a -- \"$2\"/. '{_bash_path(persistent)}/'\n"
+        "    find \"$2\" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +\n"
+        "    ;;\n"
+        "  mount)\n"
+        "    cp -a -- \"$3\"/. \"$4\"/\n"
+        "    ;;\n"
+        "  *) exit 64 ;;\n"
+        "esac\n",
+        encoding="ascii",
+    )
+    mount_authority.chmod(0o755)
+
+    env = os.environ.copy()
+    env.update(values)
+    result = subprocess.run(
+        [
+            str(BASH),
+            "scripts/ops/install_closed_release.sh",
+            "--archive",
+            _bash_path(package.archive),
+            "--archive-digest-file",
+            _bash_path(package.digest_file),
+            "--release-root",
+            _bash_path(release),
+            "--persistent-agent-data-root",
+            _bash_path(persistent),
+            "--environment-authority",
+            _bash_path(case_root / "external.env"),
+            "--runtime-authority",
+            _bash_path(runtime),
+            "--mount-authority",
+            _bash_path(mount_authority),
+            "--evidence-dir",
+            _bash_path(evidence),
+            "--require-closed",
+        ],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return result, prepared, before_release
+
+
+def _run_live_recovery_verification_case(
+    package,
+    case_root: Path,
+    *,
+    primary_mount_failure: bool = False,
+    corrupt_primary_mount: bool = False,
+):
+    prepared = _prepare_case(case_root, package)
+    release, persistent, evidence, _, _, _, values = prepared
+    runtime = case_root / "runtime"
+    for name in (
+        "install-python-dependencies",
+        "install-nuxt-production-dependencies",
+        "verify-systemd-units",
+    ):
+        hook = runtime / name
+        hook.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="ascii")
+        hook.chmod(0o755)
+    for name in (
+        "VL360_PYTHON_DEPENDENCY_HOOK",
+        "VL360_NUXT_DEPENDENCY_HOOK",
+        "VL360_UNIT_VERIFY_HOOK",
+        "VL360_LOCAL_REHEARSAL_SENTINEL",
+    ):
+        values.pop(name, None)
+
+    findmnt_count = case_root / "findmnt-count"
+    mount_count = case_root / "mount-count"
+    umount_count = case_root / "umount-count"
+    mount_authority = case_root / "mount-authority.sh"
+    primary_mount_code = 52 if primary_mount_failure else 0
+    corrupt_command = (
+        "    [ \"$count\" -ne 0 ] || printf 'corrupt\\n' >> \"$4/app.db\"\n"
+        if corrupt_primary_mount
+        else ""
+    )
+    mount_authority.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        "case \"$1\" in\n"
+        "  findmnt)\n"
+        f"    count=$(cat '{_bash_path(findmnt_count)}' 2>/dev/null || printf 0)\n"
+        f"    printf '%s\\n' \"$((count + 1))\" > '{_bash_path(findmnt_count)}'\n"
+        f"    source_path=$(cygpath -m '{_bash_path(persistent)}')\n"
+        "    target_path=$(cygpath -m \"$4\")\n"
+        "    printf '{\"filesystems\":[{\"source\":\"%s\",\"target\":\"%s\",\"options\":\"rw,bind\"}]}\\n' "
+        "\"$source_path\" \"$target_path\"\n"
+        "    ;;\n"
+        "  umount)\n"
+        f"    count=$(cat '{_bash_path(umount_count)}' 2>/dev/null || printf 0)\n"
+        f"    printf '%s\\n' \"$((count + 1))\" > '{_bash_path(umount_count)}'\n"
+        f"    if [ -z \"$(find '{_bash_path(persistent)}' -mindepth 1 -print -quit)\" ]; then\n"
+        f"      cp -a -- \"$2\"/. '{_bash_path(persistent)}/'\n"
+        "    fi\n"
+        "    find \"$2\" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +\n"
+        "    ;;\n"
+        "  mount)\n"
+        f"    count=$(cat '{_bash_path(mount_count)}' 2>/dev/null || printf 0)\n"
+        f"    printf '%s\\n' \"$((count + 1))\" > '{_bash_path(mount_count)}'\n"
+        f"    if [ \"$count\" -eq 0 ] && [ {primary_mount_code} -ne 0 ]; then exit {primary_mount_code}; fi\n"
+        "    cp -a -- \"$3\"/. \"$4\"/\n"
+        + corrupt_command
+        + "    ;;\n"
+        "  *) exit 64 ;;\n"
+        "esac\n",
+        encoding="ascii",
+    )
+    mount_authority.chmod(0o755)
+
+    env = os.environ.copy()
+    env.update(values)
+    result = subprocess.run(
+        [
+            str(BASH),
+            "scripts/ops/install_closed_release.sh",
+            "--archive",
+            _bash_path(package.archive),
+            "--archive-digest-file",
+            _bash_path(package.digest_file),
+            "--release-root",
+            _bash_path(release),
+            "--persistent-agent-data-root",
+            _bash_path(persistent),
+            "--environment-authority",
+            _bash_path(case_root / "external.env"),
+            "--runtime-authority",
+            _bash_path(runtime),
+            "--mount-authority",
+            _bash_path(mount_authority),
+            "--evidence-dir",
+            _bash_path(evidence),
+            "--require-closed",
+        ],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    return result, prepared, findmnt_count
+
+
 @pytest.mark.parametrize("fail_after", ["detach-agent-data", "swap-release-root"])
 def test_postmutation_failure_restores_old_tree_persistent_bytes_and_authority(
     tmp_path: Path, closed_package, fail_after: str
@@ -179,6 +373,193 @@ def test_postmutation_failure_restores_old_tree_persistent_bytes_and_authority(
     assert recovery["failure_point"] == fail_after
     assert recovery["persistent_restored"] is True
     assert recovery["root_restored"] is True
+
+
+def test_restore_bind_failure_after_local_move_rolls_back_without_data_loss(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    result, prepared = _run_installer(
+        closed_package,
+        tmp_path / "restore-bind-agent-data",
+        fail_after="restore-bind-agent-data",
+    )
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+
+    assert result.returncode == 73, result.stderr + result.stdout
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+    recovery = json.loads(
+        (evidence / "install-recovery.json").read_text(encoding="utf-8")
+    )
+    assert recovery["status"] == "rolled-back"
+    assert recovery["failure_point"] == "restore-bind-agent-data"
+    assert recovery["persistent_restored"] is True
+    assert recovery["root_restored"] is True
+
+
+def test_failed_recovery_umount_preserves_new_and_old_roots_and_persistent_bytes(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    result, prepared, before_release = _run_live_mount_failure_case(
+        closed_package,
+        tmp_path / "recovery-umount-failure",
+    )
+    release, persistent, evidence, _, _, _, _ = prepared
+
+    assert result.returncode == 44, result.stderr + result.stdout
+    old_roots = list(release.parent.glob(f".{release.name}.closed-old.*"))
+    assert len(old_roots) == 1
+    expected_old_root = {
+        name: raw
+        for name, raw in before_release.items()
+        if not name.startswith("agent/data/")
+    }
+    assert _snapshot_tree(old_roots[0]) == expected_old_root
+    assert (release / "launch-release-manifest.json").is_file()
+    assert (release / "agent" / "data" / "app.db").read_bytes() == b"persistent-db\n"
+    assert (persistent / "app.db").read_bytes() == b"persistent-db\n"
+    recovery = json.loads(
+        (evidence / "install-recovery.json").read_text(encoding="utf-8")
+    )
+    assert recovery["status"] == "rollback-failed"
+    assert recovery["persistent_restored"] is False
+    assert recovery["root_restored"] is False
+
+
+def test_local_rehearsal_requires_a_sentinel_beside_the_disposable_release_root(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    result, prepared = _run_installer(
+        closed_package,
+        tmp_path / "missing-sentinel",
+        include_sentinel=False,
+    )
+    release, persistent, _, before_release, before_persistent, _, _ = prepared
+
+    assert result.returncode == 2
+    assert "local-rehearsal-sentinel-required" in result.stderr
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+
+def test_live_mode_rejects_injected_hook_overrides_before_any_mount_or_tree_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "live-hook-override"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, values = prepared
+    runtime = case_root / "runtime"
+    for name in (
+        "install-python-dependencies",
+        "install-nuxt-production-dependencies",
+        "verify-systemd-units",
+    ):
+        hook = runtime / name
+        hook.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="ascii")
+        hook.chmod(0o755)
+    mount_log = case_root / "mount.log"
+    mount_authority = case_root / "mount-authority.sh"
+    mount_authority.write_text(
+        "#!/usr/bin/env bash\n"
+        f"printf '%s\\n' \"$*\" >> '{_bash_path(mount_log)}'\n"
+        "exit 97\n",
+        encoding="ascii",
+    )
+    mount_authority.chmod(0o755)
+    env = os.environ.copy()
+    env.update(values)
+
+    result = subprocess.run(
+        [
+            str(BASH),
+            "scripts/ops/install_closed_release.sh",
+            "--archive",
+            _bash_path(closed_package.archive),
+            "--archive-digest-file",
+            _bash_path(closed_package.digest_file),
+            "--release-root",
+            _bash_path(release),
+            "--persistent-agent-data-root",
+            _bash_path(persistent),
+            "--environment-authority",
+            _bash_path(case_root / "external.env"),
+            "--runtime-authority",
+            _bash_path(runtime),
+            "--mount-authority",
+            _bash_path(mount_authority),
+            "--evidence-dir",
+            _bash_path(evidence),
+            "--require-closed",
+        ],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "live-hook-override-forbidden" in result.stderr
+    assert not mount_log.exists()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+
+def test_primary_mount_failure_restores_old_root_then_verifies_recovery_mount(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    result, prepared, findmnt_count = _run_live_recovery_verification_case(
+        closed_package,
+        tmp_path / "primary-mount-failure",
+        primary_mount_failure=True,
+    )
+    release, _, evidence, before_release, _, _, _ = prepared
+
+    assert result.returncode == 52, result.stderr + result.stdout
+    assert _snapshot_tree(release) == before_release
+    assert findmnt_count.read_text(encoding="ascii").strip() == "2"
+    assert (evidence / "findmnt-recovery.json").is_file()
+    assert (evidence / "persistent-recovery.json").is_file()
+    recovery = json.loads(
+        (evidence / "install-recovery.json").read_text(encoding="utf-8")
+    )
+    assert recovery["status"] == "rolled-back"
+    assert recovery["persistent_restored"] is True
+    assert recovery["root_restored"] is True
+
+
+def test_recovery_rechecks_findmnt_and_bytes_after_post_remount_failure(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    result, prepared, findmnt_count = _run_live_recovery_verification_case(
+        closed_package,
+        tmp_path / "post-remount-verification",
+        corrupt_primary_mount=True,
+    )
+    release, _, evidence, before_release, _, _, _ = prepared
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert _snapshot_tree(release) == before_release
+    assert findmnt_count.read_text(encoding="ascii").strip() == "3"
+    assert (evidence / "findmnt-recovery.json").is_file()
+    assert (evidence / "persistent-recovery.json").is_file()
+    recovery = json.loads(
+        (evidence / "install-recovery.json").read_text(encoding="utf-8")
+    )
+    assert recovery["status"] == "rolled-back"
 
 
 def test_verifier_flags_execute_config_unit_and_persistent_mount_checks(
@@ -273,7 +654,9 @@ def test_installer_runs_injected_staged_dependency_and_unit_hooks_and_matches_un
         "nuxt-production-dependencies",
         "systemd-units",
     ]
-    assert all(".closed-stage." in line for line in hook_lines)
+    assert all(".closed-stage." in line for line in hook_lines[:2])
+    unit_destination = tmp_path / "success" / "runtime" / "systemd-units"
+    assert _bash_path(unit_destination) in hook_lines[2]
     checks = json.loads(
         (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
     )
@@ -297,6 +680,8 @@ def test_installer_runs_injected_staged_dependency_and_unit_hooks_and_matches_un
     ):
         raw = (release / relative).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == manifest["members"][relative]["sha256"]
+        destination = unit_destination / Path(relative).name
+        assert destination.read_bytes() == raw
     assert _snapshot_tree(persistent) == {}
 
 
@@ -326,3 +711,71 @@ def test_installer_records_failed_authority_hook_exit_and_stops_before_mutation(
         "python-dependencies": 0,
         "nuxt-production-dependencies": 19,
     }
+
+
+def test_local_installer_full_success_records_every_authority_and_releases_old_tree(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    result, prepared = _run_installer(closed_package, tmp_path / "full-success")
+    release, persistent, evidence, _, _, _, _ = prepared
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    summary = json.loads(
+        (evidence / "install-summary.json").read_text(encoding="utf-8")
+    )
+    assert summary["persistent_events"] == [
+        "detach-agent-data",
+        "swap-release-root",
+        "restore-bind-agent-data",
+        "verify-agent-data-mount",
+    ]
+    assert (evidence / "package" / "closed-release.json").is_file()
+    assert (evidence / "staged" / "closed-release.json").is_file()
+    assert (evidence / "installed" / "closed-release.json").is_file()
+    assert (evidence / "dependency-unit-checks.json").is_file()
+    assert (release / "launch-release-manifest.json").is_file()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+    assert _snapshot_tree(persistent) == {}
+
+
+def test_success_materializes_external_environment_without_packaging_or_logging_bytes(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "environment-authority"
+    result, prepared = _run_installer(closed_package, case_root)
+    release, _, evidence, _, _, _, _ = prepared
+    external = case_root / "external.env"
+    target = release / ".env"
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert target.is_file() and not target.is_symlink()
+    assert target.read_bytes() == external.read_bytes()
+    if os.name != "nt":
+        assert target.stat().st_mode & 0o077 == 0
+    manifest = json.loads(
+        (release / "launch-release-manifest.json").read_text(encoding="utf-8")
+    )
+    assert ".env" not in manifest["members"]
+    for path in evidence.rglob("*"):
+        if path.is_file():
+            assert b"SAFE_LOCAL=1" not in path.read_bytes()
+
+
+def test_runbook_local_success_command_creates_and_selects_required_authorities():
+    source = RUNBOOK.read_text(encoding="utf-8")
+    local = source.split("## Local rehearsal", 1)[1].split(
+        "## Host execution gate", 1
+    )[0]
+
+    assert "vinhlong360-local-rehearsal-v1" in local
+    assert "VL360_LOCAL_REHEARSAL_SENTINEL=/tmp/vl360/.vl360-local-rehearsal" in local
+    assert "install-python-dependencies" in local
+    assert "install-nuxt-production-dependencies" in local
+    assert "verify-systemd-units" in local
+    assert "VL360_PYTHON_DEPENDENCY_HOOK=/tmp/vl360/runtime/install-python-dependencies" in local
+    assert "VL360_NUXT_DEPENDENCY_HOOK=/tmp/vl360/runtime/install-nuxt-production-dependencies" in local
+    assert "VL360_UNIT_VERIFY_HOOK=/tmp/vl360/runtime/verify-systemd-units" in local

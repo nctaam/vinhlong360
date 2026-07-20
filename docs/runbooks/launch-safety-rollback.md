@@ -30,6 +30,12 @@ persistent `agent/data`, and detach/remount operations. The command refuses a
 live run when any authority is absent. Neither installer nor rehearsal performs
 network access or package installation.
 
+After the closed tree swap, the installer atomically materializes the external
+environment authority at `$RELEASE_ROOT/.env`, verifies exact byte identity,
+and uses owner-only permissions on POSIX hosts. The archive and evidence never
+contain the environment bytes. A later failure removes only the candidate copy
+when the old release root is restored; the external authority is never changed.
+
 Persistent storage includes all of `agent/data`, especially
 `agent/data/sitemap-bundles`. The installer hashes every regular file before
 detach and after remount. The old open tree is never a recovery source.
@@ -80,11 +86,41 @@ paths. Archive verification, path/symlink checks, extraction, tree swap, phase
 recording, and persistent byte hashing always execute for real.
 
 ```bash
+mkdir -p /tmp/vl360/runtime
+printf 'vinhlong360-local-rehearsal-v1\n' > /tmp/vl360/.vl360-local-rehearsal
+
+cat > /tmp/vl360/runtime/install-python-dependencies <<'SH'
+#!/usr/bin/env bash
+set -eu
+[ "$1" = --release-root ] && [ -d "$2" ]
+[ "$3" = --requirements ] && [ -f "$4" ]
+SH
+cat > /tmp/vl360/runtime/install-nuxt-production-dependencies <<'SH'
+#!/usr/bin/env bash
+set -eu
+[ "$1" = --project-root ] && [ -d "$2" ]
+[ "$3" = --production-only ]
+SH
+cat > /tmp/vl360/runtime/verify-systemd-units <<'SH'
+#!/usr/bin/env bash
+set -eu
+[ "$1" = --unit-root ] && [ -d "$2" ]
+[ "$3" = --manifest ] && [ -f "$4" ]
+SH
+chmod 0755 \
+  /tmp/vl360/runtime/install-python-dependencies \
+  /tmp/vl360/runtime/install-nuxt-production-dependencies \
+  /tmp/vl360/runtime/verify-systemd-units
+
 KNOWN_GOOD_CLOSED=/tmp/vl360/known-good-closed.tar.gz \
 LOCAL_RELEASE_ROOT=/tmp/vl360/release \
 PERSISTENT_AGENT_DATA_ROOT=/tmp/vl360/persistent-agent-data \
 ENVIRONMENT_AUTHORITY=/tmp/vl360/external.env \
 RUNTIME_AUTHORITY=/tmp/vl360/runtime \
+VL360_LOCAL_REHEARSAL_SENTINEL=/tmp/vl360/.vl360-local-rehearsal \
+VL360_PYTHON_DEPENDENCY_HOOK=/tmp/vl360/runtime/install-python-dependencies \
+VL360_NUXT_DEPENDENCY_HOOK=/tmp/vl360/runtime/install-nuxt-production-dependencies \
+VL360_UNIT_VERIFY_HOOK=/tmp/vl360/runtime/verify-systemd-units \
 EVIDENCE_DIR=/tmp/vl360/evidence \
 OPERATOR=local-reviewer \
 OPERATOR_CIDR=127.0.0.1/32 \

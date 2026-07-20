@@ -38,17 +38,20 @@ REQUIRED_MEMBERS = frozenset(
     }
 )
 PERSISTENT_PATHS = ["agent/data", "agent/data/sitemap-bundles"]
+SYSTEMD_UNIT_PATHS = (
+    "ops/systemd/vl-agent.service",
+    "ops/systemd/vl-nuxt.service",
+    "ops/systemd/vl-bot.service",
+    "ops/systemd/vl-watchdog.service",
+    "ops/systemd/vl-watchdog.timer",
+)
 CONFIG_INGRESS_UNIT_PATHS = (
     "config/launch-indexing-policy.json",
     "config/ai-disclosure.json",
     "nginx.conf",
     "nginx-ssl.conf",
     "compose-network-audit.json",
-    "ops/systemd/vl-agent.service",
-    "ops/systemd/vl-nuxt.service",
-    "ops/systemd/vl-bot.service",
-    "ops/systemd/vl-watchdog.service",
-    "ops/systemd/vl-watchdog.timer",
+    *SYSTEMD_UNIT_PATHS,
 )
 ROUTE_REVISION = "launch-indexing-policy-v1"
 DISCLOSURE_REVISION = "ai-disclosure-v1"
@@ -226,6 +229,45 @@ def _verify_config_ingress_unit_digests(
         if declaration.get("sha256") != _sha256(raw) or declaration.get("size") != len(raw):
             raise ValueError(f"config/ingress/unit digest mismatch: {relative}")
     return CONFIG_INGRESS_UNIT_PATHS
+
+
+def _verify_systemd_unit_destination(
+    manifest: Mapping[str, Any], destination: Path
+) -> tuple[str, ...]:
+    declarations = manifest.get("members")
+    if not isinstance(declarations, dict):
+        raise ValueError("archive member manifest is missing")
+    destination = Path(destination)
+    if destination.is_symlink() or not destination.is_dir():
+        raise ValueError("systemd unit destination is not a real directory")
+    for relative in SYSTEMD_UNIT_PATHS:
+        declaration = declarations.get(relative)
+        path = destination / Path(relative).name
+        if not isinstance(declaration, dict) or path.is_symlink() or not path.is_file():
+            raise ValueError(f"installed systemd unit missing: {path.name}")
+        raw = path.read_bytes()
+        if declaration.get("sha256") != _sha256(raw) or declaration.get("size") != len(raw):
+            raise ValueError(f"installed systemd unit digest mismatch: {path.name}")
+    return SYSTEMD_UNIT_PATHS
+
+
+def _verify_environment_authority(root: Path, authority: Path) -> dict[str, Any]:
+    authority = Path(authority)
+    target = Path(root) / ".env"
+    if authority.is_symlink() or not authority.is_file():
+        raise ValueError("environment authority is not a real file")
+    if target.is_symlink() or not target.is_file():
+        raise ValueError("installed environment authority is not a real file")
+    authority_raw = authority.read_bytes()
+    target_raw = target.read_bytes()
+    if target_raw != authority_raw:
+        raise ValueError("installed environment authority bytes do not match")
+    if os.name != "nt" and target.stat().st_mode & 0o077:
+        raise ValueError("installed environment authority permissions are too broad")
+    return {
+        "environment_authority_target": ".env",
+        "environment_authority_verified": True,
+    }
 
 
 def validate_findmnt_evidence(
@@ -496,6 +538,8 @@ def _walk_installed(root: Path) -> dict[str, bytes]:
             relative = path.relative_to(root).as_posix()
             if relative == "agent/data" or relative.startswith("agent/data/"):
                 continue
+            if relative == ".env":
+                continue
             result[relative] = path.read_bytes()
     return result
 
@@ -508,6 +552,10 @@ def verify_installed_root(
     verify_persistent_agent_data_mount: bool = False,
     local_rehearsal: bool = False,
     persistent_mount_evidence: Path | None = None,
+    systemd_unit_root: Path | None = None,
+    verify_systemd_unit_destination: bool = False,
+    environment_authority: Path | None = None,
+    verify_environment_authority: bool = False,
 ) -> dict[str, Any]:
     """Verify bytes installed from a closed package without touching the tree."""
     root = Path(root)
@@ -529,6 +577,16 @@ def verify_installed_root(
         verified = _verify_config_ingress_unit_digests(manifest, members)
         additional["config_ingress_unit_digests_verified"] = True
         additional["config_ingress_unit_paths"] = list(verified)
+    if verify_systemd_unit_destination:
+        if systemd_unit_root is None:
+            raise ValueError("systemd unit root is required for destination verification")
+        verified_units = _verify_systemd_unit_destination(manifest, systemd_unit_root)
+        additional["systemd_unit_destination_verified"] = True
+        additional["systemd_unit_paths"] = list(verified_units)
+    if verify_environment_authority:
+        if environment_authority is None:
+            raise ValueError("environment authority is required for installed verification")
+        additional.update(_verify_environment_authority(root, environment_authority))
     if verify_persistent_agent_data_mount:
         if persistent_agent_data_root is None:
             raise ValueError("persistent agent data root is required for mount verification")
@@ -589,6 +647,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--verify-persistent-agent-data-mount", action="store_true")
     parser.add_argument("--persistent-mount-evidence", type=Path)
     parser.add_argument("--local-rehearsal", action="store_true")
+    parser.add_argument("--systemd-unit-root", type=Path)
+    parser.add_argument("--verify-systemd-unit-destination", action="store_true")
+    parser.add_argument("--environment-authority", type=Path)
+    parser.add_argument("--verify-environment-authority", action="store_true")
     parser.add_argument("--require-closed", action="store_true")
     parser.add_argument("--evidence-dir", type=Path)
     parser.add_argument("--operator")
@@ -612,6 +674,10 @@ def main(argv: list[str] | None = None) -> int:
                 verify_persistent_agent_data_mount=args.verify_persistent_agent_data_mount,
                 local_rehearsal=args.local_rehearsal,
                 persistent_mount_evidence=args.persistent_mount_evidence,
+                systemd_unit_root=args.systemd_unit_root,
+                verify_systemd_unit_destination=args.verify_systemd_unit_destination,
+                environment_authority=args.environment_authority,
+                verify_environment_authority=args.verify_environment_authority,
             )
         if args.operator:
             evidence["operator"] = args.operator

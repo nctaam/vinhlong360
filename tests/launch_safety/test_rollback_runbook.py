@@ -589,8 +589,8 @@ def test_installer_uses_one_verifier_and_persistent_safe_tree_swap():
     extract_index = source.index("tar ")
     detach_index = source.index("detach-agent-data", extract_index)
     swap_index = source.index("swap-release-root", extract_index)
-    restore_index = source.index("restore-bind-agent-data")
-    mount_verify_index = source.index("verify-agent-data-mount")
+    restore_index = source.index("restore-bind-agent-data", extract_index)
+    mount_verify_index = source.index("verify-agent-data-mount", extract_index)
 
     assert verify_index < extract_index < detach_index < swap_index < restore_index < mount_verify_index
     assert "agent/data/sitemap-bundles" in source
