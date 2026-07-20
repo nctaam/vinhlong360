@@ -1435,8 +1435,8 @@ useHead({
   position: absolute;
   inset: auto 0 0;
   padding: 2px 3px;
-  color: var(--text-on-dark, #fff);
-  background: rgba(0, 0, 0, .58);
+  color: var(--text-on-dark);
+  background: rgba(var(--black-rgb), .58);
   pointer-events: none;
 }
 /* Oversized off-centre category motif watermark (no-photo hero only) — same visual

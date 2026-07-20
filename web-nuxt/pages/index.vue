@@ -1288,7 +1288,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cm-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .cm-img { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-alt); }
 .cm-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease-out); }
-.cm-img :deep(.image-disclosure) { position: absolute; left: var(--space-2); bottom: var(--space-2); padding: 3px 7px; border-radius: 999px; background: rgba(0, 0, 0, .66); color: var(--text-on-dark); }
+.cm-img :deep(.image-disclosure) { position: absolute; left: var(--space-2); bottom: var(--space-2); padding: 3px 7px; border-radius: 999px; background: rgba(var(--black-rgb), .66); color: var(--text-on-dark); }
 .cm-card:hover .cm-img img { transform: scale(var(--img-hover-scale)); }
 .cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
 .cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }

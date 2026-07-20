@@ -410,7 +410,7 @@ const { timeAgo } = useTimeAgo()
   z-index: 1;
   padding: 3px 7px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, .66);
+  background: rgba(var(--black-rgb), .66);
   color: var(--text-on-dark);
 }
 .lb-caption {
@@ -421,7 +421,7 @@ const { timeAgo } = useTimeAgo()
   width: min(720px, calc(100vw - 48px));
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, .68);
+  background: rgba(var(--black-rgb), .68);
   color: var(--text-on-dark);
   font-size: var(--text-sm);
   line-height: 1.4;

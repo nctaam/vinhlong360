@@ -66,7 +66,7 @@
             decoding="async"
             @error="onImgError"
           />
-          <span v-else class="media-placeholder" aria-hidden="true">&#128247;</span>
+          <span v-else class="media-placeholder" aria-hidden="true">&#x1F4F7;</span>
           <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
         </div>
         <div class="media-card-info">

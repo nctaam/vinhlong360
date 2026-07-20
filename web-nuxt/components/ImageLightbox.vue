@@ -183,23 +183,23 @@ onUnmounted(() => {
   flex-direction: column;
   gap: var(--space-1);
   padding: var(--space-2) var(--space-3);
-  border: .5px solid rgba(255, 255, 255, .16);
+  border: .5px solid rgba(var(--white-rgb), .16);
   border-radius: var(--radius-md, 10px);
-  background: rgba(0, 0, 0, .68);
-  color: var(--text-on-dark, #fff);
+  background: rgba(var(--black-rgb), .68);
+  color: var(--text-on-dark);
   font-size: var(--text-sm);
   line-height: 1.4;
   text-align: center;
 }
-.lb-credit { color: rgba(255, 255, 255, .74); font-size: var(--text-xs); }
+.lb-credit { color: rgba(var(--white-rgb), .74); font-size: var(--text-xs); }
 .lb-placeholder {
   width: min(90vw, 960px);
   height: min(70vh, 640px);
   display: grid;
   place-items: center;
   border-radius: var(--radius-md, 10px);
-  color: rgba(255, 255, 255, .62);
-  background: linear-gradient(135deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .03));
+  color: rgba(var(--white-rgb), .62);
+  background: linear-gradient(135deg, rgba(var(--white-rgb), .09), rgba(var(--white-rgb), .03));
   font-size: 4rem;
 }
 </style>

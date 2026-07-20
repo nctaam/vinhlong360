@@ -143,7 +143,7 @@
                       decoding="async"
                       @error="(ev) => ((ev.target as HTMLImageElement).style.display = 'none')"
                     />
-                    <span v-else aria-hidden="true">&#128247;</span>
+                    <span v-else aria-hidden="true">&#x1F4F7;</span>
                   </div>
                   <ImageDisclosure
                     :id="disclosureId"
@@ -369,7 +369,7 @@
             <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
             <p class="sf-help" data-entity-image-policy>Chỉ dùng ảnh minh họa AI cho nội dung biên tập entity. Không dùng ảnh đánh giá, ảnh bài đăng hoặc ảnh người dùng.</p>
             <div v-if="!editorImageRows.length" class="img-row img-row-placeholder">
-              <span class="img-thumb ent-thumb-empty" aria-hidden="true">&#128247;</span>
+              <span class="img-thumb ent-thumb-empty" aria-hidden="true">&#x1F4F7;</span>
               <ImageDisclosure :descriptor="editorPlaceholder" presentation="full" />
             </div>
             <div v-for="row in editorImageRows" :key="row.index" class="img-row" data-admin-entity-image-row>

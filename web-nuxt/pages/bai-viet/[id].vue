@@ -673,7 +673,7 @@ useHead({
 .related-card:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
 .related-media { position: relative; }
 .related-thumb { width: 100%; height: 100px; object-fit: cover; }
-.related-media :deep(.image-disclosure) { position: absolute; left: var(--space-2); bottom: var(--space-2); padding: 3px 7px; border-radius: 999px; background: rgba(0, 0, 0, .66); color: var(--text-on-dark); }
+.related-media :deep(.image-disclosure) { position: absolute; left: var(--space-2); bottom: var(--space-2); padding: 3px 7px; border-radius: 999px; background: rgba(var(--black-rgb), .66); color: var(--text-on-dark); }
 .related-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: .2rem; }
 .related-author { font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .related-text { margin: 0; font-size: var(--text-xs); color: var(--ink-secondary, var(--ink)); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

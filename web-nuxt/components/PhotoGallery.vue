@@ -285,14 +285,14 @@ function goToSlide(idx: number) {
   gap: 2px;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm, 6px);
-  color: var(--text-on-dark, #fff);
-  background: rgba(0, 0, 0, .7);
+  color: var(--text-on-dark);
+  background: rgba(var(--black-rgb), .7);
   font-size: var(--text-2xs, .72rem);
   line-height: 1.35;
   text-align: left;
   pointer-events: none;
 }
-.pg-disclosure [data-credit] { color: rgba(255, 255, 255, .78); }
+.pg-disclosure [data-credit] { color: rgba(var(--white-rgb), .78); }
 
 /* "Xem trọn bộ N ảnh" pill — hairline museum-label register, not an app badge */
 .pg-show-all {
