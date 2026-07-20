@@ -973,8 +973,10 @@ def test_entity_jsonld_mixed_images_filtered():
         "images": ["https://example.com/ok.jpg", None, 42, "/relative.jpg", "data:image/png;base64,xxx"],
     }
     ld = seo.build_entity_jsonld(entity, {})
-    assert len(ld["image"]) == 1
-    assert ld["image"][0]["url"] == "https://example.com/ok.jpg"
+    assert [image["url"] for image in ld["image"]] == [
+        "https://example.com/ok.jpg",
+        "https://vinhlong360.vn/relative.jpg",
+    ]
 
 
 def test_itinerary_jsonld_string_stops_skipped():
