@@ -312,14 +312,13 @@ def test_launch_matrix_contract_over_public_boundary(
             assert response.headers["x-launch-sitemap-requested-batch"] == response.headers[
                 "x-launch-sitemap-batch-revision"
             ]
-            html = project.wait_for_host_http(80, "/du-lich", status=200)
+            html = project.wait_for_host_http(80, "/du-lich", status=case["html_status"])
             assert _has_sitemap_discovery(html.body) is case["sitemap_discovery"]
         else:
-            expected_status = 404 if case_name == "entity-request-failed-open" else 200
             response = project.wait_for_host_http(
                 80,
                 str(case["surface"]),
-                status=expected_status,
+                status=case["html_status"],
             )
             _assert_html_contract(response, case)
 

@@ -40,6 +40,7 @@ CASE_KEYS = {
     "policy",
     "robots",
     "evidence_headers",
+    "html_status",
     "sitemap_discovery",
     "sitemap_status",
     "requires_matching_batch_revision",
@@ -88,6 +89,7 @@ def test_launch_matrix_contract_is_exact_and_deeply_immutable():
                 "policy": "closed",
                 "robots": "noindex, follow",
                 "evidence_headers": {},
+                "html_status": 200,
                 "sitemap_discovery": False,
                 "sitemap_status": 200,
                 "requires_matching_batch_revision": False,
@@ -101,6 +103,7 @@ def test_launch_matrix_contract_is_exact_and_deeply_immutable():
                 "policy": "selective-open",
                 "robots": "index, follow",
                 "evidence_headers": PAGE_EVIDENCE,
+                "html_status": 200,
                 "sitemap_discovery": True,
                 "sitemap_status": 200,
                 "requires_matching_batch_revision": False,
@@ -114,6 +117,7 @@ def test_launch_matrix_contract_is_exact_and_deeply_immutable():
                 "policy": "selective-open",
                 "robots": "index, follow",
                 "evidence_headers": PAGE_EVIDENCE,
+                "html_status": 200,
                 "sitemap_discovery": True,
                 "sitemap_status": 200,
                 "requires_matching_batch_revision": False,
@@ -127,6 +131,7 @@ def test_launch_matrix_contract_is_exact_and_deeply_immutable():
                 "policy": "selective-open",
                 "robots": "noindex, follow",
                 "evidence_headers": PAGE_EVIDENCE,
+                "html_status": 200,
                 "sitemap_discovery": True,
                 "sitemap_status": 200,
                 "requires_matching_batch_revision": False,
@@ -140,6 +145,7 @@ def test_launch_matrix_contract_is_exact_and_deeply_immutable():
                 "policy": "failed-open",
                 "robots": "noindex, follow",
                 "evidence_headers": {},
+                "html_status": 503,
                 "sitemap_discovery": False,
                 "sitemap_status": 200,
                 "requires_matching_batch_revision": False,
@@ -153,6 +159,7 @@ def test_launch_matrix_contract_is_exact_and_deeply_immutable():
                 "policy": "selective-open",
                 "robots": None,
                 "evidence_headers": PINNED_EVIDENCE,
+                "html_status": 200,
                 "sitemap_discovery": True,
                 "sitemap_status": 200,
                 "requires_matching_batch_revision": True,
@@ -166,6 +173,7 @@ def test_launch_matrix_contract_is_exact_and_deeply_immutable():
                 "policy": "closed",
                 "robots": "noindex, follow",
                 "evidence_headers": {},
+                "html_status": 200,
                 "sitemap_discovery": False,
                 "sitemap_status": 200,
                 "requires_matching_batch_revision": False,
@@ -193,6 +201,7 @@ def test_launch_matrix_contract_captures_fail_safe_invariants():
     assert contract["selective-entity-negative"]["sitemap_discovery"] is True
     assert contract["entity-request-failed-open"]["robots"] == "noindex, follow"
     assert contract["entity-request-failed-open"]["evidence_headers"] == {}
+    assert contract["entity-request-failed-open"]["html_status"] == 503
     assert contract["entity-request-failed-open"]["sitemap_discovery"] is False
     assert contract["entity-request-failed-open"]["sitemap_status"] == 200
 
