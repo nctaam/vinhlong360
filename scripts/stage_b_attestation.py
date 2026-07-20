@@ -378,6 +378,34 @@ def validate_artifacts(root: Path, now: datetime | None = None) -> dict[str, obj
 
     plan, plan_sha = load_canonical_object(plan_path, "publication plan")
     manifest, manifest_sha = load_canonical_object(manifest_path, "backup manifest")
+    plan_identity, target, artifact_info = _validate_artifact_documents(
+        plan, manifest, plan_sha, manifest_sha, run, now
+    )
+    dump_sha, listing_sha, dump_metadata = _validate_artifact_payload(
+        dump_path, listing_path, artifact_info, manifest
+    )
+    return {
+        "plan": {"path": _relative(root, plan_path), "sha256": plan_sha},
+        "manifest": {"path": _relative(root, manifest_path), "sha256": manifest_sha},
+        "dump": {
+            "path": _relative(root, dump_path),
+            "size": int(dump_metadata.st_size),
+            "sha256": dump_sha,
+        },
+        "restore_list": {"path": _relative(root, listing_path), "sha256": listing_sha},
+        "database_identity": plan_identity,
+        "target_fingerprint": target,
+    }
+
+
+def _validate_artifact_documents(
+    plan: dict[str, object],
+    manifest: dict[str, object],
+    plan_sha: str,
+    manifest_sha: str,
+    run: Path,
+    now: datetime,
+) -> tuple[dict[str, object], str, dict[str, object]]:
     artifact_info = manifest.get("artifact")
     if type(artifact_info) is not dict or artifact_info.get("path") != "postgres.dump":
         raise AttestationRefusal("backup artifact path must be postgres.dump")
@@ -409,6 +437,15 @@ def validate_artifacts(root: Path, now: datetime | None = None) -> dict[str, obj
         )
     except migration.MigrationRefusal as exc:
         raise AttestationRefusal(str(exc)) from None
+    return plan_identity, target, artifact_info
+
+
+def _validate_artifact_payload(
+    dump_path: Path,
+    listing_path: Path,
+    artifact_info: dict[str, object],
+    manifest: dict[str, object],
+) -> tuple[str, str, os.stat_result]:
 
     dump_raw, dump_metadata = _stable_read(dump_path, "postgres dump")
     dump_identity = (dump_metadata.st_dev, dump_metadata.st_ino, dump_metadata.st_size)
@@ -435,19 +472,7 @@ def validate_artifacts(root: Path, now: datetime | None = None) -> dict[str, obj
         dump_identity,
         listing_identity,
     )
-
-    return {
-        "plan": {"path": _relative(root, plan_path), "sha256": plan_sha},
-        "manifest": {"path": _relative(root, manifest_path), "sha256": manifest_sha},
-        "dump": {
-            "path": _relative(root, dump_path),
-            "size": int(dump_metadata.st_size),
-            "sha256": dump_sha,
-        },
-        "restore_list": {"path": _relative(root, listing_path), "sha256": listing_sha},
-        "database_identity": plan_identity,
-        "target_fingerprint": target,
-    }
+    return dump_sha, listing_sha, dump_metadata
 
 
 def _capture_artifact_snapshots(
@@ -730,6 +755,12 @@ def _validate_allowed_principals(value: object) -> None:
 
 
 def _acl_summary(value: dict[str, object], root: Path) -> dict[str, object]:
+    canonical = _canonical_acl_summary(value, root)
+    _validate_acl_counts(canonical)
+    return canonical
+
+
+def _canonical_acl_summary(value: dict[str, object], root: Path) -> dict[str, object]:
     keys = set(value)
     if keys == ACL_KEYS | {"root"}:
         _validate_acl_root(value["root"], root)
@@ -745,6 +776,10 @@ def _acl_summary(value: dict[str, object], root: Path) -> dict[str, object]:
         raise AttestationRefusal("ACL evidence is stale")
     if canonical["unexpected_principals"] != []:
         raise AttestationRefusal("ACL evidence is not explicit and clean")
+    return canonical
+
+
+def _validate_acl_counts(canonical: dict[str, object]) -> None:
     for key in (
         "inherited_rule_count",
         "reparse_point_count",
@@ -757,7 +792,6 @@ def _acl_summary(value: dict[str, object], root: Path) -> dict[str, object]:
             raise AttestationRefusal("ACL object counts are invalid")
     if canonical["protected_object_count"] != canonical["object_count"]:
         raise AttestationRefusal("ACL objects are not protected")
-    return canonical
 
 
 def _path_identity(path: Path) -> tuple[int, int]:

@@ -108,6 +108,12 @@ def canonical_target_identity(
         )
     if exact_keys and set(identity) != set(IDENTITY_KEYS):
         raise RuntimeError("PostgreSQL target identity has invalid keys")
+    _validate_database_identity(identity)
+    _validate_server_identity(identity)
+    return {key: identity[key] for key in IDENTITY_KEYS}
+
+
+def _validate_database_identity(identity: Mapping[str, object]) -> None:
 
     database = identity.get("database")
     if type(database) is not str or not database:
@@ -125,6 +131,9 @@ def canonical_target_identity(
             "PostgreSQL target identity has invalid system identifier"
         )
 
+
+def _validate_server_identity(identity: Mapping[str, object]) -> None:
+
     server_addr = identity.get("server_addr")
     if type(server_addr) is not str or not server_addr:
         raise RuntimeError("PostgreSQL target identity has invalid server address")
@@ -138,8 +147,6 @@ def canonical_target_identity(
         raise RuntimeError(
             "PostgreSQL target identity has invalid server version number"
         )
-
-    return {key: identity[key] for key in IDENTITY_KEYS}
 
 
 def read_target_identity(cursor) -> dict[str, object]:

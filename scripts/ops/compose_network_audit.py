@@ -275,31 +275,37 @@ def _healthcheck_command(service: Mapping[str, Any]) -> tuple[str, ...] | None:
 
 
 def _nginx_endpoints_are_exact(model: Mapping[str, Any]) -> bool:
+    endpoints = _nginx_endpoints(model)
+    if endpoints is None:
+        return False
+    for endpoint in endpoints:
+        host_ip = ipaddress.ip_address(str(endpoint["host_ip"]))
+        if host_ip.is_loopback or endpoint["protocol"] != "tcp":
+            return False
+    return {
+        (int(endpoint["published"]), int(endpoint["target"]))
+        for endpoint in endpoints
+    } == {(80, 80), (443, 443)}
+
+
+def _nginx_endpoints(model: Mapping[str, Any]) -> list[Mapping[str, Any]] | None:
     services = model.get("services", {})
     if not isinstance(services, Mapping):
-        return False
+        return None
     nginx = services.get("nginx", {})
     if not isinstance(nginx, Mapping):
-        return False
+        return None
     ports = nginx.get("ports", ())
     if (
         not isinstance(ports, Sequence)
         or isinstance(ports, (str, bytes))
         or len(ports) != 2
     ):
-        return False
+        return None
     endpoints = [_port_endpoint("nginx", port) for port in ports]
     if any(endpoint is None for endpoint in endpoints):
-        return False
-    valid_endpoints = [endpoint for endpoint in endpoints if endpoint is not None]
-    for endpoint in valid_endpoints:
-        host_ip = ipaddress.ip_address(str(endpoint["host_ip"]))
-        if host_ip.is_loopback or endpoint["protocol"] != "tcp":
-            return False
-    return {
-        (int(endpoint["published"]), int(endpoint["target"]))
-        for endpoint in valid_endpoints
-    } == {(80, 80), (443, 443)}
+        return None
+    return [endpoint for endpoint in endpoints if endpoint is not None]
 
 
 def validate_production_model(model: Mapping[str, Any]) -> list[str]:
@@ -309,9 +315,21 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
     services = model.get("services", {})
     if not isinstance(services, Mapping):
         return ["services must be an object"]
-    for missing in sorted(REQUIRED_SERVICES.difference(services)):
-        issues.append(f"required service is missing: {missing}")
+    issues.extend(_production_required_issues(model, services))
+    issues.extend(_production_service_issues(services))
+    issues.extend(_production_nuxt_issues(services))
+    issues.extend(_production_healthcheck_issues(services))
+    issues.extend(_production_nginx_issues(services))
+    return sorted(set(issues))
 
+
+def _production_required_issues(
+    model: Mapping[str, Any], services: Mapping[str, Any]
+) -> list[str]:
+    issues = [
+        f"required service is missing: {missing}"
+        for missing in sorted(REQUIRED_SERVICES.difference(services))
+    ]
     if not _nginx_endpoints_are_exact(model):
         issues.append("nginx exclusive public endpoints violated")
 
@@ -320,81 +338,125 @@ def validate_production_model(model: Mapping[str, Any]) -> list[str]:
         for name, network in networks.items():
             if isinstance(network, Mapping) and network.get("external") is True:
                 issues.append(f"external network is forbidden: {name}")
+    if not _has_shared_private_bridge_network(model, services):
+        issues.append("launch services must share a private bridge network")
 
+    return issues
+
+
+def _production_service_issues(services: Mapping[str, Any]) -> list[str]:
+    issues: list[str] = []
     for name, service in services.items():
-        if not isinstance(service, Mapping):
-            issues.append(f"service is not an object: {name}")
-            continue
-        if str(service.get("network_mode", "")).strip().lower() == "host":
-            issues.append(f"host network is forbidden: {name}")
-        if name in {"nuxt", "nginx"} and "network_mode" in service:
-            issues.append(f"network_mode is forbidden: {name}")
-        if "container_name" in service:
-            issues.append(f"container_name is forbidden: {name}")
-        if name != "nginx" and service.get("ports"):
-            issues.append(f"non-nginx service publishes host ports: {name}")
-        environment = _environment(service)
-        if FORBIDDEN_ENV_KEYS.intersection(environment):
-            issues.append(f"unlock environment is forbidden: {name}")
-        if name == "nuxt" and str(environment.get("NUXT_PUBLIC_SITE_NOINDEX", "")).lower() == "false":
-            issues.append("unlock environment is forbidden: nuxt")
+        issues.extend(_production_single_service_issues(name, service))
+    issues.extend(_production_agent_issues(services.get("agent", {})))
+    issues.extend(_production_bot_issues(services.get("bot-gateway", {})))
+    return issues
 
-    agent = services.get("agent", {})
+
+def _production_single_service_issues(name: object, service: object) -> list[str]:
+    if not isinstance(service, Mapping):
+        return [f"service is not an object: {name}"]
+    issues: list[str] = []
+    if str(service.get("network_mode", "")).strip().lower() == "host":
+        issues.append(f"host network is forbidden: {name}")
+    if name in {"nuxt", "nginx"} and "network_mode" in service:
+        issues.append(f"network_mode is forbidden: {name}")
+    if "container_name" in service:
+        issues.append(f"container_name is forbidden: {name}")
+    if name != "nginx" and service.get("ports"):
+        issues.append(f"non-nginx service publishes host ports: {name}")
+    environment = _environment(service)
+    if FORBIDDEN_ENV_KEYS.intersection(environment):
+        issues.append(f"unlock environment is forbidden: {name}")
+    if (
+        name == "nuxt"
+        and str(environment.get("NUXT_PUBLIC_SITE_NOINDEX", "")).lower() == "false"
+    ):
+        issues.append("unlock environment is forbidden: nuxt")
+    return issues
+
+
+def _production_agent_issues(agent: object) -> list[str]:
     if isinstance(agent, Mapping) and _environment(agent).get("BIND_HOST") != "0.0.0.0":
-        issues.append("agent BIND_HOST must be 0.0.0.0")
+        return ["agent BIND_HOST must be 0.0.0.0"]
+    return []
 
-    bot = services.get("bot-gateway", {})
-    if isinstance(bot, Mapping):
-        bot_env = _environment(bot)
-        if bot_env.get("BIND_HOST") != "0.0.0.0":
-            issues.append("bot BIND_HOST must be 0.0.0.0")
-        if bot_env.get("AGENT_URL") != "http://agent:8360":
-            issues.append("bot AGENT_URL must target agent:8360")
 
+def _production_bot_issues(bot: object) -> list[str]:
+    if not isinstance(bot, Mapping):
+        return []
+    issues: list[str] = []
+    bot_env = _environment(bot)
+    if bot_env.get("BIND_HOST") != "0.0.0.0":
+        issues.append("bot BIND_HOST must be 0.0.0.0")
+    if bot_env.get("AGENT_URL") != "http://agent:8360":
+        issues.append("bot AGENT_URL must target agent:8360")
+    return issues
+
+
+def _production_nuxt_issues(services: Mapping[str, Any]) -> list[str]:
     nuxt = services.get("nuxt", {})
-    if isinstance(nuxt, Mapping):
-        depends_on = nuxt.get("depends_on", {})
-        if depends_on:
-            issues.append("nuxt must not declare dependencies")
-        if "command" in nuxt or "entrypoint" in nuxt:
-            issues.append("nuxt command or entrypoint override is forbidden")
-        if "env_file" in nuxt:
-            issues.append("nuxt env_file is forbidden")
-        if not _exposed(nuxt, 3000):
-            issues.append("nuxt must expose port 3000")
-        nuxt_env = _environment(nuxt)
-        if not set(nuxt_env).issubset(NUXT_ALLOWED_ENV_KEYS):
-            issues.append("nuxt environment key is forbidden")
-        if nuxt_env.get("HOST") != "0.0.0.0" or nuxt_env.get("NITRO_HOST") != "0.0.0.0":
-            issues.append("nuxt HOST and NITRO_HOST must be 0.0.0.0")
+    if not isinstance(nuxt, Mapping):
+        return []
+    nuxt_env = _environment(nuxt)
+    return _nuxt_runtime_issues(nuxt, nuxt_env)
 
+
+def _nuxt_runtime_issues(
+    nuxt: Mapping[str, Any], nuxt_env: Mapping[str, str]
+) -> list[str]:
+    issues: list[str] = []
+    if nuxt.get("depends_on", {}):
+        issues.append("nuxt must not declare dependencies")
+    if "command" in nuxt or "entrypoint" in nuxt:
+        issues.append("nuxt command or entrypoint override is forbidden")
+    if "env_file" in nuxt:
+        issues.append("nuxt env_file is forbidden")
+    if not _exposed(nuxt, 3000):
+        issues.append("nuxt must expose port 3000")
+    if not set(nuxt_env).issubset(NUXT_ALLOWED_ENV_KEYS):
+        issues.append("nuxt environment key is forbidden")
+    if nuxt_env.get("HOST") != "0.0.0.0" or nuxt_env.get("NITRO_HOST") != "0.0.0.0":
+        issues.append("nuxt HOST and NITRO_HOST must be 0.0.0.0")
+    return issues
+
+
+def _production_healthcheck_issues(services: Mapping[str, Any]) -> list[str]:
+    issues: list[str] = []
     for service_name, expected_command in EXPECTED_HEALTHCHECKS.items():
         service = services.get(service_name, {})
         command = _healthcheck_command(service) if isinstance(service, Mapping) else None
         if command != expected_command:
             issues.append(f"{service_name} healthcheck command mismatch")
 
+    return issues
+
+
+def _production_nginx_issues(services: Mapping[str, Any]) -> list[str]:
     nginx = services.get("nginx", {})
-    if isinstance(nginx, Mapping):
-        depends_on = nginx.get("depends_on", {})
-        nuxt_dependency = (
-            depends_on.get("nuxt", {}) if isinstance(depends_on, Mapping) else {}
-        )
-        if (
-            not isinstance(depends_on, Mapping)
-            or set(depends_on) != {"nuxt"}
-            or not isinstance(nuxt_dependency, Mapping)
-            or nuxt_dependency.get("condition") != "service_healthy"
-            or not set(nuxt_dependency).issubset({"condition", "required", "restart"})
-            or nuxt_dependency.get("required", True) is not True
-            or nuxt_dependency.get("restart", False) is not False
-        ):
-            issues.append("nginx must depend on healthy nuxt only")
+    if isinstance(nginx, Mapping) and not _nginx_dependencies_are_exact(
+        nginx.get("depends_on", {})
+    ):
+        return ["nginx must depend on healthy nuxt only"]
+    return []
 
-    if not _has_shared_private_bridge_network(model, services):
-        issues.append("launch services must share a private bridge network")
 
-    return sorted(set(issues))
+def _nginx_dependencies_are_exact(depends_on: object) -> bool:
+    if not isinstance(depends_on, Mapping):
+        return False
+    if set(depends_on) != {"nuxt"}:
+        return False
+    return _dependency_is_exact(depends_on.get("nuxt", {}), "service_healthy")
+
+
+def _dependency_is_exact(dependency: object, condition: str) -> bool:
+    return (
+        isinstance(dependency, Mapping)
+        and dependency.get("condition") == condition
+        and set(dependency).issubset({"condition", "required", "restart"})
+        and dependency.get("required", True) is True
+        and dependency.get("restart", False) is False
+    )
 
 
 def _network_definition_issues(model: Mapping[str, Any], label: str) -> list[str]:

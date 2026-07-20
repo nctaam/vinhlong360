@@ -177,32 +177,75 @@ def _collect_tree(
     for current_root, dirnames, filenames in os.walk(source, topdown=True):
         current = Path(current_root)
         relative_current = current.relative_to(source)
-        accepted_directories: list[str] = []
-        for dirname in sorted(dirnames):
-            path = current / dirname
-            relative = relative_current / dirname
-            excluded = filter_agent_runtime and _excluded_agent_path(
-                relative, is_directory=True
+        accepted = _collect_tree_directories(
+            current,
+            relative_current,
+            arcroot,
+            dirnames,
+            release_root,
+            filter_agent_runtime=filter_agent_runtime,
+        )
+        dirnames[:] = [dirname for dirname, _, _ in accepted]
+        payload.extend((path, arcname) for _, path, arcname in accepted)
+        payload.extend(
+            _collect_tree_files(
+                current,
+                relative_current,
+                filenames,
+                release_root,
+                arcroot,
+                filter_agent_runtime=filter_agent_runtime,
             )
-            if path.is_symlink() or not _is_within(path, release_root) or excluded:
-                continue
-            accepted_directories.append(dirname)
-            payload.append((path, (Path(arcroot) / relative).as_posix()))
-        dirnames[:] = accepted_directories
-        for filename in sorted(filenames):
-            path = current / filename
-            relative = relative_current / filename
-            excluded = filter_agent_runtime and _excluded_agent_path(
-                relative, is_directory=False
-            )
-            if (
-                path.is_symlink()
-                or not path.is_file()
-                or not _is_within(path, release_root)
-                or excluded
-            ):
-                continue
-            payload.append((path, (Path(arcroot) / relative).as_posix()))
+        )
+    return payload
+
+
+def _collect_tree_directories(
+    current: Path,
+    relative_current: Path,
+    arcroot: str,
+    dirnames: list[str],
+    release_root: Path,
+    *,
+    filter_agent_runtime: bool,
+) -> list[tuple[str, Path, str]]:
+    accepted: list[tuple[str, Path, str]] = []
+    for dirname in sorted(dirnames):
+        path = current / dirname
+        relative = relative_current / dirname
+        excluded = filter_agent_runtime and _excluded_agent_path(
+            relative, is_directory=True
+        )
+        if path.is_symlink() or not _is_within(path, release_root) or excluded:
+            continue
+        accepted.append((dirname, path, (Path(arcroot) / relative).as_posix()))
+    return accepted
+
+
+def _collect_tree_files(
+    current: Path,
+    relative_current: Path,
+    filenames: list[str],
+    release_root: Path,
+    arcroot: str,
+    *,
+    filter_agent_runtime: bool,
+) -> list[tuple[Path, str]]:
+    payload: list[tuple[Path, str]] = []
+    for filename in sorted(filenames):
+        path = current / filename
+        relative = relative_current / filename
+        excluded = filter_agent_runtime and _excluded_agent_path(
+            relative, is_directory=False
+        )
+        if (
+            path.is_symlink()
+            or not path.is_file()
+            or not _is_within(path, release_root)
+            or excluded
+        ):
+            continue
+        payload.append((path, (Path(arcroot) / relative).as_posix()))
     return payload
 
 
@@ -666,6 +709,16 @@ def _validate_readiness_manifest(
     path = root / Path(_READINESS_PATH)
     raw = _snapshot_raw(root, snapshot, path, "launch readiness manifest")
     manifest, raw = _json_object(raw, "launch readiness manifest")
+    artifacts = _validate_readiness_shape(manifest, source_revision)
+    _validate_readiness_artifacts(artifacts, canonical_artifacts)
+    _validate_readiness_policy(manifest)
+    _validate_readiness_worker(root, snapshot, manifest["service_worker"])
+    return path, raw
+
+
+def _validate_readiness_shape(
+    manifest: dict[str, object], source_revision: str
+) -> dict[str, object]:
     _exact_keys(
         manifest,
         {
@@ -691,6 +744,12 @@ def _validate_readiness_manifest(
         {"route_manifest", "ai_disclosure", "policy_fingerprint"},
         "launch readiness artifacts",
     )
+    return artifacts
+
+
+def _validate_readiness_artifacts(
+    artifacts: dict[str, object], canonical_artifacts: Mapping[str, object]
+) -> None:
     for name in ("route_manifest", "ai_disclosure"):
         evidence = artifacts[name]
         expected = canonical_artifacts[name]
@@ -704,13 +763,20 @@ def _validate_readiness_manifest(
     )
     if policy_fingerprint != _policy_fingerprint(canonical_artifacts):
         raise ValueError("launch readiness policy fingerprint mismatch")
+
+
+def _validate_readiness_policy(manifest: dict[str, object]) -> None:
     if manifest["policy_route_classes"] != list(_READINESS_ROUTE_CLASSES):
         raise ValueError("launch readiness route classes mismatch")
     if manifest["compiled_cache_rules"] != []:
         raise ValueError("launch readiness compiled cache rules are unsafe")
     if manifest["public_prerender_files"] != []:
         raise ValueError("launch readiness contains policy-bearing prerender files")
-    worker = manifest["service_worker"]
+
+
+def _validate_readiness_worker(
+    root: Path, snapshot: _LaunchReleaseSnapshot, worker: object
+) -> None:
     if not isinstance(worker, dict):
         raise ValueError("launch readiness service worker evidence is invalid")
     _exact_keys(worker, {"version", "rule_digest", "cache_purge"}, "service worker")
@@ -732,7 +798,6 @@ def _validate_readiness_manifest(
     }
     if cache_purge != expected_purge:
         raise ValueError("launch readiness cache purge declaration mismatch")
-    return path, raw
 
 
 def _normalized_source_digest(raw: bytes, path: Path) -> str:
@@ -750,6 +815,13 @@ def _validate_network_audit(
     path = _lexical_path(path if path.is_absolute() else root / path)
     raw = _snapshot_raw(root, snapshot, path, "compose network audit")
     audit, raw = _json_object(raw, "compose network audit")
+    _validate_network_audit_header(audit)
+    _validate_network_audit_endpoints(audit["published_ports"])
+    _validate_network_audit_sources(root, snapshot, audit)
+    return raw
+
+
+def _validate_network_audit_header(audit: dict[str, object]) -> None:
     _exact_keys(
         audit,
         {
@@ -772,50 +844,17 @@ def _validate_network_audit(
         raise ValueError("compose network audit check inventory mismatch")
     if audit["checks"] != {name: "passed" for name in expected_checks}:
         raise ValueError("compose network audit did not pass every check")
-    published_ports = audit["published_ports"]
+
+
+def _validate_network_audit_endpoints(published_ports: object) -> None:
     if not isinstance(published_ports, list) or len(published_ports) != 2:
         raise ValueError("compose network audit published ports are invalid")
-    endpoint_keys: set[tuple[str, str, int, int, str]] = set()
-    for endpoint in published_ports:
-        if not isinstance(endpoint, dict) or set(endpoint) != {
-            "service", "host_ip", "published", "target", "protocol"
-        }:
-            raise ValueError("compose network audit endpoint shape is invalid")
-        if (
-            type(endpoint["service"]) is not str
-            or type(endpoint["host_ip"]) is not str
-            or type(endpoint["published"]) is not int
-            or type(endpoint["target"]) is not int
-            or type(endpoint["protocol"]) is not str
-        ):
-            raise ValueError("compose network audit endpoint types are invalid")
-        try:
-            host_ip = ipaddress.ip_address(endpoint["host_ip"])
-        except ValueError as exc:
-            raise ValueError("compose network audit endpoint host IP is invalid") from exc
-        if endpoint["host_ip"] != host_ip.compressed or host_ip.is_loopback:
-            raise ValueError("compose network audit endpoint host IP is invalid")
-        if (
-            endpoint["service"] != "nginx"
-            or endpoint["published"] not in {80, 443}
-            or endpoint["target"] != endpoint["published"]
-            or endpoint["protocol"] != "tcp"
-        ):
-            raise ValueError("compose network audit exposes a non-nginx endpoint")
-        endpoint_keys.add(
-            (
-                endpoint["service"],
-                endpoint["host_ip"],
-                endpoint["published"],
-                endpoint["target"],
-                endpoint["protocol"],
-            )
-        )
-    if len(endpoint_keys) != len(published_ports):
+    endpoint_keys = [_network_audit_endpoint_key(endpoint) for endpoint in published_ports]
+    if len(set(endpoint_keys)) != len(published_ports):
         raise ValueError("compose network audit published ports contain duplicates")
     if {
-        (endpoint["published"], endpoint["target"])
-        for endpoint in published_ports
+        (published, target)
+        for _, _, published, target, _ in endpoint_keys
     } != {(80, 80), (443, 443)}:
         raise ValueError("compose network audit published ports are incomplete")
     if published_ports != sorted(
@@ -829,6 +868,60 @@ def _validate_network_audit(
         ),
     ):
         raise ValueError("compose network audit endpoint ordering is non-canonical")
+
+
+def _network_audit_endpoint_key(
+    endpoint: object,
+) -> tuple[str, str, int, int, str]:
+    if not isinstance(endpoint, dict) or set(endpoint) != {
+        "service", "host_ip", "published", "target", "protocol"
+    }:
+        raise ValueError("compose network audit endpoint shape is invalid")
+    _validate_network_audit_endpoint_types(endpoint)
+    _validate_network_audit_endpoint_host(endpoint)
+    _validate_network_audit_endpoint_contract(endpoint)
+    return (
+        endpoint["service"],
+        endpoint["host_ip"],
+        endpoint["published"],
+        endpoint["target"],
+        endpoint["protocol"],
+    )
+
+
+def _validate_network_audit_endpoint_types(endpoint: dict[str, object]) -> None:
+    if (
+        type(endpoint["service"]) is not str
+        or type(endpoint["host_ip"]) is not str
+        or type(endpoint["published"]) is not int
+        or type(endpoint["target"]) is not int
+        or type(endpoint["protocol"]) is not str
+    ):
+        raise ValueError("compose network audit endpoint types are invalid")
+
+
+def _validate_network_audit_endpoint_host(endpoint: dict[str, object]) -> None:
+    try:
+        host_ip = ipaddress.ip_address(endpoint["host_ip"])
+    except ValueError as exc:
+        raise ValueError("compose network audit endpoint host IP is invalid") from exc
+    if endpoint["host_ip"] != host_ip.compressed or host_ip.is_loopback:
+        raise ValueError("compose network audit endpoint host IP is invalid")
+
+
+def _validate_network_audit_endpoint_contract(endpoint: dict[str, object]) -> None:
+    if (
+        endpoint["service"] != "nginx"
+        or endpoint["published"] not in {80, 443}
+        or endpoint["target"] != endpoint["published"]
+        or endpoint["protocol"] != "tcp"
+    ):
+        raise ValueError("compose network audit exposes a non-nginx endpoint")
+
+
+def _validate_network_audit_sources(
+    root: Path, snapshot: _LaunchReleaseSnapshot, audit: dict[str, object]
+) -> None:
     if audit["source_digest_kind"] != "sha256-utf8-lf-v1":
         raise ValueError("compose network audit source digest kind mismatch")
     sources = audit["sources"]
@@ -843,7 +936,6 @@ def _validate_network_audit(
         )
     if sources != expected_sources:
         raise ValueError("compose network audit sources are stale or incomplete")
-    return raw
 
 
 def collect_launch_release_payload(
