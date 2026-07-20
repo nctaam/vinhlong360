@@ -22,52 +22,139 @@ LOCAL_REHEARSAL=false
 REQUIRE_CLOSED=false
 LOCAL_REHEARSAL_SENTINEL="${VL360_LOCAL_REHEARSAL_SENTINEL:-}"
 
+reset_mutable_evidence() {
+  local root="$1"
+  [ ! -L "$root" ] || return 1
+  if [ -e "$root" ]; then
+    [ -d "$root" ] || return 1
+  else
+    mkdir -p -- "$root" || return 1
+  fi
+  [ -d "$root" ] && [ ! -L "$root" ] || return 1
+  rm -f -- \
+    "$root/dependency-unit-checks.json" \
+    "$root/install-summary.json" \
+    "$root/install-recovery.json" \
+    "$root/systemd-unit-cleanup.json" \
+    "$root/findmnt-before.json" \
+    "$root/findmnt-after.json" \
+    "$root/findmnt-recovery.json" \
+    "$root/persistent-before.json" \
+    "$root/persistent-after.json" \
+    "$root/persistent-recovery.json" || return 1
+  rm -rf -- \
+    "$root/package" \
+    "$root/staged" \
+    "$root/installed" || return 1
+}
+
+normalize_evidence_candidate() {
+  local candidate="$1"
+  local local_rehearsal="$2"
+  if [ "$local_rehearsal" = true ] && command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "$candidate"
+  else
+    printf '%s\n' "$candidate"
+  fi
+}
+
+prepare_evidence_dir() {
+  local root="$1"
+  [ ! -L "$root" ] || die 'evidence-dir-symlink-forbidden'
+  if [ -e "$root" ]; then
+    [ -d "$root" ] || die 'evidence-dir-invalid'
+  else
+    mkdir -p -- "$root" || die 'evidence-dir-invalid'
+  fi
+  [ -d "$root" ] && [ ! -L "$root" ] || die 'evidence-dir-invalid'
+  reset_mutable_evidence "$root" || die 'evidence-dir-reset-failed'
+}
+
+# Discover a valid evidence-dir token without allowing malformed options to
+# abort the scan. The strict parser below remains authoritative for all inputs.
+ORIGINAL_ARGS=("$@")
+DISCOVERY_LOCAL_REHEARSAL=false
+for discovery_arg in "${ORIGINAL_ARGS[@]}"; do
+  [ "$discovery_arg" = '--local-rehearsal' ] && DISCOVERY_LOCAL_REHEARSAL=true
+done
+DISCOVERED_EVIDENCE_DIR=''
+for ((discovery_index = 0; discovery_index < ${#ORIGINAL_ARGS[@]}; discovery_index++)); do
+  [ "${ORIGINAL_ARGS[$discovery_index]}" = '--evidence-dir' ] || continue
+  discovery_value_index=$((discovery_index + 1))
+  ((discovery_value_index < ${#ORIGINAL_ARGS[@]})) || continue
+  discovery_value="${ORIGINAL_ARGS[$discovery_value_index]}"
+  case "$discovery_value" in
+    ''|--*) continue ;;
+    *) DISCOVERED_EVIDENCE_DIR="$discovery_value" ;;
+  esac
+done
+if [ -n "$DISCOVERED_EVIDENCE_DIR" ]; then
+  if DISCOVERED_EVIDENCE_DIR="$(
+    normalize_evidence_candidate "$DISCOVERED_EVIDENCE_DIR" \
+      "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
+  )"; then
+    reset_mutable_evidence "$DISCOVERED_EVIDENCE_DIR" 2>/dev/null || true
+  fi
+fi
+
+require_option_value() {
+  local option="$1"
+  local argument_count="$2"
+  local value="${3:-}"
+  local error="${option#--}-value-required"
+  ((argument_count >= 2)) && [ -n "$value" ] || die "$error"
+  case "$value" in
+    --*) die "$error" ;;
+  esac
+}
+
 while (($#)); do
   case "$1" in
-    --archive) ARCHIVE="${2:-}"; shift 2 ;;
-    --archive-digest-file) ARCHIVE_DIGEST_FILE="${2:-}"; shift 2 ;;
-    --release-root) RELEASE_ROOT="${2:-}"; shift 2 ;;
-    --persistent-agent-data-root) PERSISTENT_AGENT_DATA_ROOT="${2:-}"; shift 2 ;;
-    --environment-authority) ENVIRONMENT_AUTHORITY="${2:-}"; shift 2 ;;
-    --runtime-authority) RUNTIME_AUTHORITY="${2:-}"; shift 2 ;;
-    --mount-authority) MOUNT_AUTHORITY="${2:-}"; shift 2 ;;
-    --evidence-dir) EVIDENCE_DIR="${2:-}"; shift 2 ;;
+    --archive)
+      require_option_value "$1" "$#" "${2:-}"
+      ARCHIVE="$2"
+      shift 2
+      ;;
+    --archive-digest-file)
+      require_option_value "$1" "$#" "${2:-}"
+      ARCHIVE_DIGEST_FILE="$2"
+      shift 2
+      ;;
+    --release-root)
+      require_option_value "$1" "$#" "${2:-}"
+      RELEASE_ROOT="$2"
+      shift 2
+      ;;
+    --persistent-agent-data-root)
+      require_option_value "$1" "$#" "${2:-}"
+      PERSISTENT_AGENT_DATA_ROOT="$2"
+      shift 2
+      ;;
+    --environment-authority)
+      require_option_value "$1" "$#" "${2:-}"
+      ENVIRONMENT_AUTHORITY="$2"
+      shift 2
+      ;;
+    --runtime-authority)
+      require_option_value "$1" "$#" "${2:-}"
+      RUNTIME_AUTHORITY="$2"
+      shift 2
+      ;;
+    --mount-authority)
+      require_option_value "$1" "$#" "${2:-}"
+      MOUNT_AUTHORITY="$2"
+      shift 2
+      ;;
+    --evidence-dir)
+      require_option_value "$1" "$#" "${2:-}"
+      EVIDENCE_DIR="$2"
+      shift 2
+      ;;
     --require-closed) REQUIRE_CLOSED=true; shift ;;
     --local-rehearsal) LOCAL_REHEARSAL=true; shift ;;
     *) die 'unknown-option' ;;
   esac
 done
-
-[ -n "$EVIDENCE_DIR" ] || die 'evidence-dir-required'
-if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
-  EVIDENCE_DIR="$(cygpath -u "$EVIDENCE_DIR")"
-fi
-
-# An invalid attempt must not inherit mutable success evidence, but the reset
-# authority itself must be a real directory rather than an attacker-controlled link.
-[ ! -L "$EVIDENCE_DIR" ] || die 'evidence-dir-symlink-forbidden'
-if [ -e "$EVIDENCE_DIR" ]; then
-  [ -d "$EVIDENCE_DIR" ] || die 'evidence-dir-invalid'
-else
-  mkdir -p -- "$EVIDENCE_DIR"
-fi
-[ -d "$EVIDENCE_DIR" ] && [ ! -L "$EVIDENCE_DIR" ] \
-  || die 'evidence-dir-invalid'
-rm -f -- \
-  "$EVIDENCE_DIR/dependency-unit-checks.json" \
-  "$EVIDENCE_DIR/install-summary.json" \
-  "$EVIDENCE_DIR/install-recovery.json" \
-  "$EVIDENCE_DIR/systemd-unit-cleanup.json" \
-  "$EVIDENCE_DIR/findmnt-before.json" \
-  "$EVIDENCE_DIR/findmnt-after.json" \
-  "$EVIDENCE_DIR/findmnt-recovery.json" \
-  "$EVIDENCE_DIR/persistent-before.json" \
-  "$EVIDENCE_DIR/persistent-after.json" \
-  "$EVIDENCE_DIR/persistent-recovery.json"
-rm -rf -- \
-  "$EVIDENCE_DIR/package" \
-  "$EVIDENCE_DIR/staged" \
-  "$EVIDENCE_DIR/installed"
 
 [ -n "$ARCHIVE" ] || die 'archive-required'
 [ -n "$ARCHIVE_DIGEST_FILE" ] || die 'archive-sidecar-required'
@@ -75,6 +162,7 @@ rm -rf -- \
 [ -n "$PERSISTENT_AGENT_DATA_ROOT" ] || die 'persistent-agent-data-root-required'
 [ -n "$ENVIRONMENT_AUTHORITY" ] || die 'environment-authority-required'
 [ -n "$RUNTIME_AUTHORITY" ] || die 'runtime-authority-required'
+[ -n "$EVIDENCE_DIR" ] || die 'evidence-dir-required'
 [ "$REQUIRE_CLOSED" = true ] || die 'require-closed-required'
 if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
   ARCHIVE="$(cygpath -u "$ARCHIVE")"
@@ -83,9 +171,11 @@ if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
   PERSISTENT_AGENT_DATA_ROOT="$(cygpath -u "$PERSISTENT_AGENT_DATA_ROOT")"
   ENVIRONMENT_AUTHORITY="$(cygpath -u "$ENVIRONMENT_AUTHORITY")"
   RUNTIME_AUTHORITY="$(cygpath -u "$RUNTIME_AUTHORITY")"
+  EVIDENCE_DIR="$(cygpath -u "$EVIDENCE_DIR")"
   [ -z "$LOCAL_REHEARSAL_SENTINEL" ] \
     || LOCAL_REHEARSAL_SENTINEL="$(cygpath -u "$LOCAL_REHEARSAL_SENTINEL")"
 fi
+prepare_evidence_dir "$EVIDENCE_DIR"
 [ -f "$ENVIRONMENT_AUTHORITY" ] && [ ! -L "$ENVIRONMENT_AUTHORITY" ] \
   || die 'external-environment-authority-required'
 [ -d "$RUNTIME_AUTHORITY" ] && [ ! -L "$RUNTIME_AUTHORITY" ] \

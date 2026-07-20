@@ -232,6 +232,20 @@ def _invoke_installer(
     return result
 
 
+def _invoke_installer_args(prepared, args: list[str]):
+    *_, values = prepared
+    env = os.environ.copy()
+    env.update(values)
+    return subprocess.run(
+        [str(BASH), "scripts/ops/install_closed_release.sh", *args],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
 def _run_live_mount_failure_case(package, case_root: Path):
     prepared = _prepare_case(case_root, package)
     release, persistent, evidence, before_release, _, _, values = prepared
@@ -1056,6 +1070,83 @@ def test_retry_rejects_symlinked_evidence_dir_without_deleting_target(
 
     assert second.returncode == 2
     assert "evidence-dir-symlink-forbidden" in second.stderr
+    assert _snapshot_tree(protected) == protected_before
+
+
+@pytest.mark.parametrize(
+    ("case_name", "raw_args", "expected_error"),
+    (
+        (
+            "unknown-before-evidence",
+            ("--unknown", "--evidence-dir", "{evidence}"),
+            "unknown-option",
+        ),
+        (
+            "unknown-after-evidence",
+            ("--evidence-dir", "{evidence}", "--unknown"),
+            "unknown-option",
+        ),
+        (
+            "missing-value-before-evidence",
+            ("--archive", "--evidence-dir", "{evidence}"),
+            "archive-value-required",
+        ),
+        (
+            "missing-value-after-evidence",
+            ("--evidence-dir", "{evidence}", "--archive"),
+            "archive-value-required",
+        ),
+    ),
+)
+def test_same_evidence_retry_resets_before_strict_parse_failure(
+    tmp_path: Path,
+    closed_package,
+    case_name: str,
+    raw_args: tuple[str, ...],
+    expected_error: str,
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / case_name
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+
+    first = _invoke_installer(closed_package, case_root, prepared)
+    assert first.returncode == 0, first.stderr + first.stdout
+    forensic_attempt = evidence / ".systemd-unit-attempt.parse-failure"
+    forensic_attempt.mkdir()
+    (forensic_attempt / "armed").write_text("armed\n", encoding="ascii")
+    forensic_before = _snapshot_tree(forensic_attempt)
+    evidence_arg = _bash_path_literal(evidence)
+    args = [evidence_arg if value == "{evidence}" else value for value in raw_args]
+
+    second = _invoke_installer_args(prepared, args)
+
+    assert second.returncode == 2
+    assert expected_error in second.stderr
+    _assert_mutable_attempt_evidence_absent(evidence)
+    assert _snapshot_tree(forensic_attempt) == forensic_before
+
+
+def test_malformed_evidence_option_does_not_reset_following_directory(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "malformed-evidence-option"
+    prepared = _prepare_case(case_root, closed_package)
+    protected = case_root / "protected"
+    (protected / "package").mkdir(parents=True)
+    (protected / "install-summary.json").write_text("protected\n", encoding="ascii")
+    (protected / "package" / "marker.txt").write_text("protected\n", encoding="ascii")
+    protected_before = _snapshot_tree(protected)
+
+    result = _invoke_installer_args(
+        prepared,
+        ["--evidence-dir", "--archive", _bash_path_literal(protected)],
+    )
+
+    assert result.returncode == 2
     assert _snapshot_tree(protected) == protected_before
 
 
