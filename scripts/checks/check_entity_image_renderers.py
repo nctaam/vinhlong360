@@ -324,13 +324,15 @@ def _load_registry(root: Path) -> tuple[list[dict], list[Finding]]:
 
 
 def iter_frontend_source_files(root: Path) -> list[Path]:
-    return sorted(
-        path
-        for path in root.rglob("*")
-        if path.is_file()
-        and path.suffix in SOURCE_SUFFIXES
-        and not any(part in IGNORED_SOURCE_DIRS for part in path.relative_to(root).parts)
-    )
+    paths: list[Path] = []
+    for directory, dirnames, filenames in root.walk():
+        dirnames[:] = [name for name in dirnames if name not in IGNORED_SOURCE_DIRS]
+        paths.extend(
+            directory / name
+            for name in filenames
+            if (directory / name).suffix in SOURCE_SUFFIXES
+        )
+    return sorted(paths)
 
 
 def _raw_accesses(text: str) -> list[_RawAccess]:
