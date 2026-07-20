@@ -37,11 +37,19 @@
       <!-- Image attach -->
       <p v-if="!formImages.length" class="rf-photo-hint"><IconLine name="camera" class="rf-photo-icon" /> Thêm ảnh thật để giúp cộng đồng + nhận huy hiệu <strong>Nhiếp ảnh</strong></p>
       <div class="rf-images">
-        <div v-if="formImages.length" class="rf-image-grid">
-          <div v-for="(img, i) in formImages" :key="img" class="rf-image-thumb">
-            <img :src="img" :alt="`Ảnh đính kèm ${i + 1}`" loading="lazy" decoding="async" width="64" height="64" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-            <button type="button" class="rf-image-remove" :aria-label="`Xóa ảnh ${i + 1}`" @click="removeImage(i)">×</button>
-          </div>
+        <div v-if="formImageDescriptors.length" class="rf-image-grid">
+          <figure
+            v-for="(img, i) in formImageDescriptors"
+            :key="img.url || i"
+            class="rf-image-preview"
+            :data-source-class="img.source_class"
+          >
+            <div class="rf-image-thumb">
+              <img v-if="img.url" :src="img.url" :alt="img.alt" :aria-describedby="reviewUploadDisclosureId(i)" loading="lazy" decoding="async" width="64" height="64" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+              <button type="button" class="rf-image-remove" :aria-label="`Xóa ảnh ${i + 1}`" @click="removeImage(i)">×</button>
+            </div>
+            <ImageDisclosure :id="reviewUploadDisclosureId(i)" :descriptor="img" presentation="short" />
+          </figure>
         </div>
         <label class="rf-image-add" :class="{ disabled: uploadingImage || formImages.length >= 4 }">
           <input
@@ -105,6 +113,8 @@
 
 <script setup lang="ts">
 import type { Review, ReviewFeedResponse } from '~/types'
+import ImageDisclosure from '~/components/ImageDisclosure.vue'
+import { describeReviewImages } from '~/utils/imageDescriptors'
 
 const props = defineProps<{
   entityId: string
@@ -131,6 +141,10 @@ const deleteErrorId = ref('')
 const selectedMentions = ref<string[]>([])
 
 const formImages = ref<string[]>([])
+const formImageDescriptors = computed(() => describeReviewImages({
+  display_name: user.value?.display_name || props.entityName || 'Đánh giá',
+  images: formImages.value,
+}))
 const uploadingImage = ref(false)
 const uploadError = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -140,6 +154,10 @@ const helpfulPending = reactive(new Set<string>())
 const encodedEntityId = computed(() => encodePathId(props.entityId))
 
 const hasMore = computed(() => reviews.value.length < total.value)
+
+function reviewUploadDisclosureId(index: number): string {
+  return `review-upload-image-${index}-disclosure`
+}
 
 const featuredId = computed(() => {
   if (reviews.value.length < 3) return null
@@ -333,6 +351,7 @@ onMounted(() => fetchReviews())
 .dark .rf-photo-icon { background: rgba(var(--white-rgb), .06); }
 .rf-images { display: flex; flex-direction: column; gap: var(--space-2); margin-block: var(--space-2); }
 .rf-image-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.rf-image-preview { display: flex; flex-direction: column; gap: var(--space-1); width: 120px; margin: 0; }
 .rf-image-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-md); overflow: hidden; border: .5px solid var(--line); }
 .rf-image-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .rf-image-remove {

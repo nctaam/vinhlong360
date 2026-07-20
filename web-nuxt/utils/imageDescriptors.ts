@@ -18,6 +18,7 @@ const DESCRIPTOR_KEY_SIGNATURE = [...DESCRIPTOR_KEYS].sort().join('\0')
 
 const DNS_LABEL_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/
 const PUNYCODE_PAYLOAD_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,57}[A-Za-z0-9])?$/
+const POST_UGC_DATA_IMAGE_PATTERN = /^data:image\/(?:jpeg|png|webp);base64,(?=.+$)(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
 
 const ALLOWED_SOURCE_COMBINATIONS = new Set([
   'ai-generated|entity-editorial|entity-ai',
@@ -104,12 +105,30 @@ export function normalizeRenderableImageUrl(value: unknown): string | null {
   return isValidHttpsAuthority(remainder.slice(0, authorityEnd)) ? url : null
 }
 
+function normalizePostUgcImageUrl(value: unknown): string | null {
+  const renderable = normalizeRenderableImageUrl(value)
+  if (renderable !== null) return renderable
+  return typeof value === 'string' && POST_UGC_DATA_IMAGE_PATTERN.test(value) ? value : null
+}
+
+function normalizeDescriptorImageUrl(
+  value: unknown,
+  descriptor: Record<string, unknown>,
+): string | null {
+  if (
+    descriptor.source_class === 'user-uploaded'
+    && descriptor.source_kind === 'post-ugc'
+    && descriptor.disclosure_key === 'ugc-photo'
+  ) return normalizePostUgcImageUrl(value)
+  return normalizeRenderableImageUrl(value)
+}
+
 export function parseGalleryDescriptor(value: unknown): Readonly<ImageDescriptor> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
   const descriptor = value as Record<string, unknown>
   if (Object.keys(descriptor).sort().join('\0') !== DESCRIPTOR_KEY_SIGNATURE) return null
 
-  const normalizedUrl = descriptor.url === null ? null : normalizeRenderableImageUrl(descriptor.url)
+  const normalizedUrl = descriptor.url === null ? null : normalizeDescriptorImageUrl(descriptor.url, descriptor)
   if (descriptor.url !== null && normalizedUrl === null) return null
   if (typeof descriptor.alt !== 'string' || !descriptor.alt.trim()) return null
   if (descriptor.credit !== null && (typeof descriptor.credit !== 'string' || !descriptor.credit.trim())) return null
@@ -212,7 +231,9 @@ function normalizeUgcPhoto(
   sourceKind: 'post-ugc' | 'review-ugc',
   label: 'post' | 'review',
 ): Readonly<ImageDescriptor> | null {
-  const url = normalizeRenderableImageUrl(input.url)
+  const url = sourceKind === 'post-ugc'
+    ? normalizePostUgcImageUrl(input.url)
+    : normalizeRenderableImageUrl(input.url)
   if (url === null) return null
 
   if (typeof input.alt !== 'string' || !input.alt.trim()) {
