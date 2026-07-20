@@ -9,6 +9,7 @@ import EntityReviews from '../components/EntityReviews.vue'
 import type { ImageDescriptor } from '../types/image'
 import { buildImageMeta, descriptorToImageObject } from '../composables/useSeoHelpers'
 import { aiDisclosure } from '../utils/aiDisclosure'
+import * as imageDescriptorUtils from '../utils/imageDescriptors'
 import {
   describeEntityImages,
   describePostImages,
@@ -41,6 +42,8 @@ vi.setConfig({ hookTimeout: 30_000 })
 const jpegDataUrl = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ=='
 const pngDataUrl = 'data:image/png;base64,iVBORw0KGgo='
 const webpDataUrl = 'data:image/webp;base64,UklGRg=='
+const maxPostDataImageUrlChars = 14 * 1024 * 1024
+const invalidPreviewAuditText = 'Ảnh xem trước không hợp lệ; ảnh không được hiển thị.'
 
 function postDescriptor(url: string): ImageDescriptor {
   return {
@@ -62,6 +65,16 @@ async function flushUi() {
   await nextTick()
   await new Promise(resolve => setTimeout(resolve, 0))
   await nextTick()
+}
+
+async function uploadReviewImage(wrapper: any, fileName: string) {
+  const input = wrapper.get('input[type="file"]')
+  Object.defineProperty(input.element, 'files', {
+    configurable: true,
+    value: [new File(['jpeg'], fileName, { type: 'image/jpeg' })],
+  })
+  await input.trigger('change')
+  await flushUi()
 }
 
 beforeEach(() => {
@@ -128,6 +141,79 @@ describe('persisted post composer data images', () => {
     expect(buildImageMeta(descriptor)).toEqual({})
     expect(descriptorToImageObject(descriptor)).toBeNull()
   })
+
+  it('accepts the largest bounded post data image and omits the next valid base64 quantum', () => {
+    const prefix = 'data:image/jpeg;base64,'
+    const boundedPayloadLength = Math.floor((maxPostDataImageUrlChars - prefix.length) / 4) * 4
+    const justUnderCap = `${prefix}${'A'.repeat(boundedPayloadLength)}`
+    const overCap = `${justUnderCap}AAAA`
+
+    expect(justUnderCap.length).toBeLessThanOrEqual(maxPostDataImageUrlChars)
+    expect(overCap.length).toBeGreaterThan(maxPostDataImageUrlChars)
+    expect(describePostImages({ images: [justUnderCap] }).length).toBe(1)
+    expect(describePostImages({ images: [overCap] }).length).toBe(0)
+    expect((imageDescriptorUtils as any).MAX_POST_UGC_DATA_IMAGE_URL_CHARS)
+      .toBe(maxPostDataImageUrlChars)
+  })
+})
+
+describe('index-preserving UGC preview rows', () => {
+  it('keeps invalid and valid post rows at their original raw indices', () => {
+    const describePostPreviewRows = (imageDescriptorUtils as any).describePostPreviewRows
+    expect(describePostPreviewRows).toBeTypeOf('function')
+    if (typeof describePostPreviewRows !== 'function') return
+
+    const rows = describePostPreviewRows({
+      display_name: 'Lan',
+      images: ['javascript:alert(1)', jpegDataUrl],
+    })
+
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toEqual({
+      rawIndex: 0,
+      rawValue: 'javascript:alert(1)',
+      descriptor: null,
+      status: 'invalid',
+      auditText: invalidPreviewAuditText,
+    })
+    expect(rows[1]).toEqual(expect.objectContaining({
+      rawIndex: 1,
+      rawValue: jpegDataUrl,
+      status: 'valid',
+      auditText: aiDisclosure.ugc_photo.full_disclosure,
+      descriptor: expect.objectContaining({
+        source_class: 'user-uploaded',
+        source_kind: 'post-ugc',
+      }),
+    }))
+  })
+
+  it('keeps invalid and valid review rows at their original raw indices', () => {
+    const describeReviewPreviewRows = (imageDescriptorUtils as any).describeReviewPreviewRows
+    expect(describeReviewPreviewRows).toBeTypeOf('function')
+    if (typeof describeReviewPreviewRows !== 'function') return
+
+    const rows = describeReviewPreviewRows({
+      display_name: 'Lan',
+      images: ['data:image/png;base64,AA==', '/media/review-upload.webp'],
+    })
+
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toEqual(expect.objectContaining({
+      rawIndex: 0,
+      descriptor: null,
+      status: 'invalid',
+      auditText: invalidPreviewAuditText,
+    }))
+    expect(rows[1]).toEqual(expect.objectContaining({
+      rawIndex: 1,
+      status: 'valid',
+      descriptor: expect.objectContaining({
+        source_class: 'user-uploaded',
+        source_kind: 'review-ugc',
+      }),
+    }))
+  })
 })
 
 describe('UGC upload preview disclosure surfaces', () => {
@@ -138,13 +224,7 @@ describe('UGC upload preview disclosure surfaces', () => {
     })
     await flushUi()
 
-    const input = wrapper.get('input[type="file"]')
-    Object.defineProperty(input.element, 'files', {
-      configurable: true,
-      value: [new File(['jpeg'], 'review.jpg', { type: 'image/jpeg' })],
-    })
-    await input.trigger('change')
-    await flushUi()
+    await uploadReviewImage(wrapper, 'review.jpg')
 
     const preview = wrapper.get('.rf-image-preview')
     const image = preview.get('img')
@@ -158,17 +238,62 @@ describe('UGC upload preview disclosure surfaces', () => {
     wrapper.unmount()
   })
 
+  it('keeps invalid review previews visible and removes mixed rows by raw index', async () => {
+    const uploadUrls = ['javascript:alert(1)', '/media/review-upload.webp']
+    mocks.fetch.mockImplementation((url: unknown) => {
+      if (String(url) === '/api/upload/image') return Promise.resolve({ url: uploadUrls.shift() })
+      return Promise.resolve({ posts: [], rating: { avg: 0, count: 0 }, total: 0 })
+    })
+    const wrapper = await mountSuspended(EntityReviews, {
+      props: { entityId: 'entity-1', entityName: 'Điểm đến thử' },
+      global: { stubs: { IconLine: true, ReviewCard: true, ReviewStats: true } },
+    })
+    await flushUi()
+
+    await uploadReviewImage(wrapper, 'invalid.jpg')
+    await uploadReviewImage(wrapper, 'valid.jpg')
+
+    let rows = wrapper.findAll('.rf-image-preview')
+    expect(rows).toHaveLength(2)
+    expect(rows[0]!.attributes('data-preview-status')).toBe('invalid')
+    expect(rows[0]!.find('img').exists()).toBe(false)
+    expect(rows[0]!.get('[role="status"]').text()).toBe(invalidPreviewAuditText)
+    expect(rows[0]!.get('button').attributes('aria-label')).toBe('Xóa ảnh 1')
+    expect(rows[1]!.attributes('data-preview-status')).toBe('valid')
+    expect(rows[1]!.get('img').attributes('src')).toBe('/media/review-upload.webp')
+    expect(rows[1]!.get('button').attributes('aria-label')).toBe('Xóa ảnh 2')
+
+    await rows[1]!.get('button').trigger('click')
+    await nextTick()
+    rows = wrapper.findAll('.rf-image-preview')
+    expect(rows).toHaveLength(1)
+    expect(rows[0]!.attributes('data-preview-status')).toBe('invalid')
+    expect(rows[0]!.find('img').exists()).toBe(false)
+
+    await rows[0]!.get('button').trigger('click')
+    await nextTick()
+    expect(wrapper.findAll('.rf-image-preview')).toHaveLength(0)
+    wrapper.unmount()
+  })
+
   it('routes the community composer preview through post descriptors without changing payload data', () => {
     const source = readFileSync(resolve(process.cwd(), 'pages/cong-dong.vue'), 'utf8')
       .replaceAll('\r\n', '\n')
 
     expect(source).toContain("canvas.toDataURL('image/jpeg', quality)")
-    expect(source).toContain('const previewImageDescriptors = computed(() => describePostImages({')
+    expect(source).toContain('const previewImageRows = computed(() => describePostPreviewRows({')
     expect(source).toContain('images: previewImages.value,')
-    expect(source).toContain('v-for="(img, i) in previewImageDescriptors"')
-    expect(source).toContain(':data-source-class="img.source_class"')
-    expect(source).toContain(':aria-describedby="communityUploadDisclosureId(i)"')
-    expect(source).toContain('<ImageDisclosure :id="communityUploadDisclosureId(i)" :descriptor="img" presentation="short" />')
+    expect(source).toContain('v-for="row in previewImageRows"')
+    expect(source).toContain(':key="row.rawIndex"')
+    expect(source).toContain(':data-preview-status="row.status"')
+    expect(source).toContain(':data-source-class="row.descriptor?.source_class || undefined"')
+    expect(source).toContain('v-if="row.descriptor?.url"')
+    expect(source).toContain(':src="row.descriptor.url"')
+    expect(source).toContain(':aria-describedby="communityUploadDisclosureId(row.rawIndex)"')
+    expect(source).toContain('v-else class="img-preview-invalid" role="status"')
+    expect(source).toContain('{{ row.auditText }}')
+    expect(source).toContain('@click="removeImage(row.rawIndex)"')
+    expect(source).toContain('<ImageDisclosure v-if="row.descriptor" :id="communityUploadDisclosureId(row.rawIndex)" :descriptor="row.descriptor" presentation="short" />')
     expect(source).not.toContain('v-for="(src, i) in previewImages"')
     expect(source).toContain('body.images = previewImages.value')
     expect(source).toContain('draftBody.images = previewImages.value')

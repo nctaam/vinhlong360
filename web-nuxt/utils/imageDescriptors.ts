@@ -18,7 +18,14 @@ const DESCRIPTOR_KEY_SIGNATURE = [...DESCRIPTOR_KEYS].sort().join('\0')
 
 const DNS_LABEL_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/
 const PUNYCODE_PAYLOAD_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,57}[A-Za-z0-9])?$/
-const POST_UGC_DATA_IMAGE_PATTERN = /^data:image\/(?:jpeg|png|webp);base64,(?=.+$)(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
+const POST_UGC_DATA_IMAGE_PREFIXES = [
+  'data:image/jpeg;base64,',
+  'data:image/png;base64,',
+  'data:image/webp;base64,',
+] as const
+
+// A 10 MiB upload expands to about 13.34 MiB as base64; cap the persisted URL at 14 MiB.
+export const MAX_POST_UGC_DATA_IMAGE_URL_CHARS = 14 * 1024 * 1024
 
 const ALLOWED_SOURCE_COMBINATIONS = new Set([
   'ai-generated|entity-editorial|entity-ai',
@@ -108,7 +115,43 @@ export function normalizeRenderableImageUrl(value: unknown): string | null {
 function normalizePostUgcImageUrl(value: unknown): string | null {
   const renderable = normalizeRenderableImageUrl(value)
   if (renderable !== null) return renderable
-  return typeof value === 'string' && POST_UGC_DATA_IMAGE_PATTERN.test(value) ? value : null
+  if (typeof value !== 'string' || value.length > MAX_POST_UGC_DATA_IMAGE_URL_CHARS) return null
+
+  const prefix = POST_UGC_DATA_IMAGE_PREFIXES.find(candidate => value.startsWith(candidate))
+  if (!prefix || !hasValidBase64Payload(value, prefix.length)) return null
+  return value
+}
+
+function isBase64Code(code: number): boolean {
+  return (
+    (code >= 48 && code <= 57)
+    || (code >= 65 && code <= 90)
+    || (code >= 97 && code <= 122)
+    || code === 43
+    || code === 47
+  )
+}
+
+function hasValidBase64Payload(value: string, payloadStart: number): boolean {
+  const payloadLength = value.length - payloadStart
+  if (payloadLength <= 0 || payloadLength % 4 !== 0) return false
+
+  let padding = 0
+  if (value.endsWith('=')) {
+    padding = 1
+    if (value.endsWith('==')) padding = 2
+  }
+  const payloadEnd = value.length - padding
+  if (padding === 1 && (payloadEnd - payloadStart) % 4 !== 3) return false
+  if (padding === 2 && (payloadEnd - payloadStart) % 4 !== 2) return false
+
+  for (let index = payloadStart; index < payloadEnd; index++) {
+    if (!isBase64Code(value.charCodeAt(index))) return false
+  }
+  for (let index = payloadEnd; index < value.length; index++) {
+    if (value.charCodeAt(index) !== 61) return false
+  }
+  return true
 }
 
 function normalizeDescriptorImageUrl(
@@ -362,6 +405,46 @@ export function describeReviewImages(input: any): ImageDescriptor[] {
     }, 'review-ugc', 'review')
     return descriptor ? [descriptor] : []
   })
+}
+
+export type UgcPreviewRow = Readonly<{
+  rawIndex: number
+  rawValue: unknown
+  descriptor: Readonly<ImageDescriptor> | null
+  status: 'valid' | 'invalid'
+  auditText: string
+}>
+
+const INVALID_UGC_PREVIEW_AUDIT_TEXT = 'Ảnh xem trước không hợp lệ; ảnh không được hiển thị.'
+
+function describeUgcPreviewRows(
+  input: any,
+  describeImages: (isolatedInput: any) => ImageDescriptor[],
+): UgcPreviewRow[] {
+  return imageRows(input).map((rawValue, rawIndex) => {
+    const descriptor = describeImages({
+      display_name: input?.display_name,
+      images: [rawValue],
+      image_credits: [creditAt(input, rawIndex)],
+    })[0] ?? null
+    return {
+      rawIndex,
+      rawValue,
+      descriptor,
+      status: descriptor ? 'valid' : 'invalid',
+      auditText: descriptor?.full_disclosure || INVALID_UGC_PREVIEW_AUDIT_TEXT,
+    }
+  })
+}
+
+/** Preserve raw composer indices even when post image validation fails closed. */
+export function describePostPreviewRows(input: any): UgcPreviewRow[] {
+  return describeUgcPreviewRows(input, describePostImages)
+}
+
+/** Preserve raw uploader indices even when review image validation fails closed. */
+export function describeReviewPreviewRows(input: any): UgcPreviewRow[] {
+  return describeUgcPreviewRows(input, describeReviewImages)
 }
 
 type EntityImageLike = {

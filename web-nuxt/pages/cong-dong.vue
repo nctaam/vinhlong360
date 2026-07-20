@@ -113,18 +113,20 @@
               </ul>
             </div>
 
-            <div v-if="previewImageDescriptors.length" class="img-preview-row">
+            <div v-if="previewImageRows.length" class="img-preview-row">
               <figure
-                v-for="(img, i) in previewImageDescriptors"
-                :key="img.url || i"
+                v-for="row in previewImageRows"
+                :key="row.rawIndex"
                 class="img-preview-item"
-                :data-source-class="img.source_class"
+                :data-preview-status="row.status"
+                :data-source-class="row.descriptor?.source_class || undefined"
               >
-                <div class="img-preview-thumb">
-                  <img v-if="img.url" :src="img.url" :alt="img.alt" :aria-describedby="communityUploadDisclosureId(i)" width="120" height="120" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-                  <button type="button" class="remove" aria-label="Xóa ảnh" @click="removeImage(i)">&times;</button>
+                <div v-if="row.descriptor?.url" class="img-preview-thumb">
+                  <img :src="row.descriptor.url" :alt="row.descriptor.alt" :aria-describedby="communityUploadDisclosureId(row.rawIndex)" width="120" height="120" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
                 </div>
-                <ImageDisclosure :id="communityUploadDisclosureId(i)" :descriptor="img" presentation="short" />
+                <p v-else class="img-preview-invalid" role="status">{{ row.auditText }}</p>
+                <button type="button" class="remove" :aria-label="`Xóa ảnh ${row.rawIndex + 1}`" @click="removeImage(row.rawIndex)">&times;</button>
+                <ImageDisclosure v-if="row.descriptor" :id="communityUploadDisclosureId(row.rawIndex)" :descriptor="row.descriptor" presentation="short" />
               </figure>
             </div>
 
@@ -473,7 +475,7 @@
 <script setup lang="ts">
 import type { Post, Entity } from '~/types'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
-import { describePostImages } from '~/utils/imageDescriptors'
+import { describePostPreviewRows } from '~/utils/imageDescriptors'
 useReveal()
 const { f: pc } = usePageContent('cong_dong')
 
@@ -591,7 +593,7 @@ const newType = ref('share')
 const posting = ref(false)
 const imageFiles = ref<File[]>([])
 const previewImages = ref<string[]>([])
-const previewImageDescriptors = computed(() => describePostImages({
+const previewImageRows = computed(() => describePostPreviewRows({
   display_name: user.value?.display_name || 'Bài viết',
   images: previewImages.value,
 }))
@@ -1745,13 +1747,14 @@ useHead({
 .report-form-inline .btn { justify-self: start; }
 
 .img-preview-row { display: flex; gap: var(--space-2); flex-wrap: wrap; animation: fadeIn .25s var(--ease-out); }
-.img-preview-item { width: 120px; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
+.img-preview-item { position: relative; width: 120px; margin: 0; display: flex; flex-direction: column; gap: var(--space-1); transition: transform .35s var(--ease-spring-gentle), box-shadow .3s var(--ease-out); }
 .img-preview-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-sm); overflow: hidden; }
 .img-preview-item:hover { transform: scale(1.08); box-shadow: var(--shadow-sm); }
 .img-preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.img-preview-thumb .remove { position: absolute; top: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--overlay-dark); color: var(--text-on-dark, var(--white)); border: none; cursor: pointer; font-size: .7rem; display: flex; align-items: center; justify-content: center; padding: var(--space-2); box-sizing: content-box; transition: background .2s, transform .25s var(--ease-spring-gentle); }
-.img-preview-thumb .remove:hover { background: var(--error); transform: scale(1.1); }
-.img-preview-thumb .remove:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 1px; }
+.img-preview-invalid { min-height: 64px; margin: 0; padding: var(--space-2) 32px var(--space-2) var(--space-2); border: 1px dashed var(--line); border-radius: var(--radius-sm); color: var(--error); font-size: var(--text-xs); line-height: 1.35; }
+.img-preview-item .remove { position: absolute; top: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--overlay-dark); color: var(--text-on-dark, var(--white)); border: none; cursor: pointer; font-size: .7rem; display: flex; align-items: center; justify-content: center; padding: var(--space-2); box-sizing: content-box; transition: background .2s, transform .25s var(--ease-spring-gentle); }
+.img-preview-item .remove:hover { background: var(--error); transform: scale(1.1); }
+.img-preview-item .remove:focus-visible { outline: 2px solid var(--text-on-dark, var(--white)); outline-offset: 1px; }
 @keyframes fadeIn { from { opacity: 0; } }
 
 .feed-error { text-align: center; padding: var(--space-5); color: var(--error); }

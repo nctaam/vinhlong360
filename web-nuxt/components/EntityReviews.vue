@@ -37,18 +37,20 @@
       <!-- Image attach -->
       <p v-if="!formImages.length" class="rf-photo-hint"><IconLine name="camera" class="rf-photo-icon" /> Thêm ảnh thật để giúp cộng đồng + nhận huy hiệu <strong>Nhiếp ảnh</strong></p>
       <div class="rf-images">
-        <div v-if="formImageDescriptors.length" class="rf-image-grid">
+        <div v-if="formImageRows.length" class="rf-image-grid">
           <figure
-            v-for="(img, i) in formImageDescriptors"
-            :key="img.url || i"
+            v-for="row in formImageRows"
+            :key="row.rawIndex"
             class="rf-image-preview"
-            :data-source-class="img.source_class"
+            :data-preview-status="row.status"
+            :data-source-class="row.descriptor?.source_class || undefined"
           >
-            <div class="rf-image-thumb">
-              <img v-if="img.url" :src="img.url" :alt="img.alt" :aria-describedby="reviewUploadDisclosureId(i)" loading="lazy" decoding="async" width="64" height="64" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
-              <button type="button" class="rf-image-remove" :aria-label="`Xóa ảnh ${i + 1}`" @click="removeImage(i)">×</button>
+            <div v-if="row.descriptor?.url" class="rf-image-thumb">
+              <img :src="row.descriptor.url" :alt="row.descriptor.alt" :aria-describedby="reviewUploadDisclosureId(row.rawIndex)" loading="lazy" decoding="async" width="64" height="64" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
             </div>
-            <ImageDisclosure :id="reviewUploadDisclosureId(i)" :descriptor="img" presentation="short" />
+            <p v-else class="rf-image-invalid" role="status">{{ row.auditText }}</p>
+            <button type="button" class="rf-image-remove" :aria-label="`Xóa ảnh ${row.rawIndex + 1}`" @click="removeImage(row.rawIndex)">×</button>
+            <ImageDisclosure v-if="row.descriptor" :id="reviewUploadDisclosureId(row.rawIndex)" :descriptor="row.descriptor" presentation="short" />
           </figure>
         </div>
         <label class="rf-image-add" :class="{ disabled: uploadingImage || formImages.length >= 4 }">
@@ -114,7 +116,7 @@
 <script setup lang="ts">
 import type { Review, ReviewFeedResponse } from '~/types'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
-import { describeReviewImages } from '~/utils/imageDescriptors'
+import { describeReviewPreviewRows } from '~/utils/imageDescriptors'
 
 const props = defineProps<{
   entityId: string
@@ -141,7 +143,7 @@ const deleteErrorId = ref('')
 const selectedMentions = ref<string[]>([])
 
 const formImages = ref<string[]>([])
-const formImageDescriptors = computed(() => describeReviewImages({
+const formImageRows = computed(() => describeReviewPreviewRows({
   display_name: user.value?.display_name || props.entityName || 'Đánh giá',
   images: formImages.value,
 }))
@@ -351,9 +353,10 @@ onMounted(() => fetchReviews())
 .dark .rf-photo-icon { background: rgba(var(--white-rgb), .06); }
 .rf-images { display: flex; flex-direction: column; gap: var(--space-2); margin-block: var(--space-2); }
 .rf-image-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.rf-image-preview { display: flex; flex-direction: column; gap: var(--space-1); width: 120px; margin: 0; }
-.rf-image-thumb { position: relative; width: 64px; height: 64px; border-radius: var(--radius-md); overflow: hidden; border: .5px solid var(--line); }
+.rf-image-preview { position: relative; display: flex; flex-direction: column; gap: var(--space-1); width: 120px; margin: 0; }
+.rf-image-thumb { width: 64px; height: 64px; border-radius: var(--radius-md); overflow: hidden; border: .5px solid var(--line); }
 .rf-image-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rf-image-invalid { min-height: 64px; margin: 0; padding: var(--space-2) 28px var(--space-2) var(--space-2); border: 1px dashed var(--line); border-radius: var(--radius-md); color: var(--error); font-size: var(--text-xs); line-height: 1.35; }
 .rf-image-remove {
   position: absolute; top: 2px; inset-inline-end: 2px;
   width: 20px; height: 20px; line-height: 1;
