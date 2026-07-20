@@ -143,6 +143,10 @@ reload, and the full public-plus-operator maintenance probe as `passed`,
 inconclusive state is `unknown`. Package mutation is skipped unless traffic is
 proven drained. Every later recovery phase is still recorded even when an
 earlier phase fails, and the original failing exit status is preserved.
+The prior watchdog timer restoration is itself recorded as
+`recovery:restore-watchdog` with `passed`, `failed`, or `skipped`. A failed
+restoration makes the recovery summary `failed`/`closed_verified=false`; it
+never replaces the original primary exit status.
 
 Listener evidence uses the `socket_boundary_probe.py` schema. Nginx proof uses
 the Task 43 closed-boundary schema. Browser evidence uses the Task 43 controlled

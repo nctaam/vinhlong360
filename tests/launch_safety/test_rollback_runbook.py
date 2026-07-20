@@ -166,26 +166,90 @@ def test_local_maintenance_probe_propagates_its_exact_failure_status():
     assert 'return "$probe_status"' in probe
 
 
-def test_operator_probe_alias_is_used_by_closed_boundary_and_browser_phases():
-    source = REHEARSE.read_text(encoding="utf-8")
-    closed = source.split("verify_nginx_closed_boundary()", 1)[1].split(
-        "verify_maintenance_boundary()", 1
-    )[0]
-    browser = source.split("verify_browser_worker_cache()", 1)[1].split(
-        "best_effort_recovery_step()", 1
-    )[0]
-
-    assert "NGINX_OPERATOR_PROBE_URL" in closed
-    assert "NGINX_OPERATOR_PROBE_URL" in browser
-    assert 'if [ -z "${NGINX_PROBE_URL:-}" ]' not in closed
-    assert 'if [ -z "${NGINX_PROBE_URL:-}" ]' not in browser
-
-
 def _bash_path(path: Path) -> str:
     resolved = path.resolve().as_posix()
     if len(resolved) >= 3 and resolved[1:3] == ":/":
         return f"/{resolved[0].lower()}/{resolved[3:]}"
     return resolved
+
+
+@pytest.mark.parametrize(
+    ("operator_url", "legacy_url", "expected_url"),
+    [
+        ("https://operator.example", "https://legacy.example", "https://operator.example"),
+        (None, "https://legacy.example", "https://legacy.example"),
+    ],
+)
+def test_operator_probe_url_precedence_and_legacy_fallback_are_behavioral(
+    tmp_path: Path,
+    operator_url: str | None,
+    legacy_url: str,
+    expected_url: str,
+):
+    bash = Path(r"C:\Program Files\Git\bin\bash.exe")
+    if not bash.is_file():
+        pytest.skip("Git Bash is unavailable")
+
+    capture = tmp_path / "capture.txt"
+    prefix = tmp_path / "rehearse-prefix.sh"
+    prefix.write_text(
+        REHEARSE.read_text(encoding="utf-8").split(
+            "CURRENT_PHASE=record-and-verify-evidence", 1
+        )[0],
+        encoding="utf-8",
+    )
+    evidence = tmp_path / "evidence"
+    release = tmp_path / "release"
+    persistent = tmp_path / "persistent"
+    runtime = tmp_path / "runtime"
+    for path in (evidence, release, persistent, runtime):
+        path.mkdir()
+    environment = tmp_path / "external.env"
+    environment.write_text("SAFE_LOCAL=1\n", encoding="ascii")
+    env = os.environ.copy()
+    env.update(
+        {
+            "PROBE_CAPTURE": _bash_path(capture),
+            "REHEARSE_PREFIX": _bash_path(prefix),
+            "KNOWN_GOOD_CLOSED": _bash_path(tmp_path / "unused.tar.gz"),
+            "LOCAL_RELEASE_ROOT": _bash_path(release),
+            "PERSISTENT_AGENT_DATA_ROOT": _bash_path(persistent),
+            "ENVIRONMENT_AUTHORITY": _bash_path(environment),
+            "RUNTIME_AUTHORITY": _bash_path(runtime),
+            "EVIDENCE_DIR": _bash_path(evidence),
+            "OPERATOR": "runtime-test",
+            "OPERATOR_CIDR": "127.0.0.1/32",
+            "CANDIDATE_RELEASE_ID": "candidate",
+            "ROLLBACK_RELEASE_ID": "rollback",
+            "NGINX_PROBE_URL": legacy_url,
+        }
+    )
+    if operator_url is None:
+        env.pop("NGINX_OPERATOR_PROBE_URL", None)
+    else:
+        env["NGINX_OPERATOR_PROBE_URL"] = operator_url
+    command = """
+set -Eeuo pipefail
+source "$REHEARSE_PREFIX"
+MODE=--execute-on-host
+python() { printf 'python=%s\n' "$VL360_LAUNCH_PUBLIC_URL" >> "$PROBE_CAPTURE"; }
+node() { printf 'node=%s\n' "$*" >> "$PROBE_CAPTURE"; }
+verify_nginx_closed_boundary "$EVIDENCE_DIR/closed.json"
+verify_browser_worker_cache "$EVIDENCE_DIR/browser.json"
+"""
+    result = subprocess.run(
+        [str(bash), "-c", command],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    captured = capture.read_text(encoding="utf-8").splitlines()
+    assert captured[0] == f"python={expected_url}"
+    assert f"--base-url {expected_url}" in captured[1]
 
 
 def test_local_rehearsal_failure_injection_preserves_status_and_records_recovery(
@@ -196,15 +260,104 @@ def test_local_rehearsal_failure_injection_preserves_status_and_records_recovery
         pytest.skip("Git Bash is unavailable")
 
     package = _build_closed_package(tmp_path / "package")
-    failures = (
-        ("systemctl stop vl-watchdog.timer", 37),
-        ("vl360-maintenance enable", 38),
-        ("systemctl reload nginx", 39),
-        ("vl360-maintenance-probe", 40),
+    later_skips = {
+        "recovery:verify-recovery-package": ("skipped", 0),
+        "recovery:install-closed-release": ("skipped", 0),
+        "recovery:verify-dependencies-units-daemon-reload": ("skipped", 0),
+        "recovery:verify-readiness-and-listeners": ("skipped", 0),
+        "recovery:verify-nginx-closed-boundary": ("skipped", 0),
+        "recovery:verify-browser-worker-cache": ("skipped", 0),
+    }
+    active_services = {
+        "nginx": "active",
+        "vl-nuxt": "active",
+        "vl-watchdog.service": "inactive",
+        "vl-watchdog.timer": "active",
+    }
+    cases = (
+        {
+            "failures": {"systemctl stop vl-watchdog.timer": 37},
+            "expected": {
+                "record-and-verify-evidence": ("passed", 0),
+                "suspend-watchdog": ("failed", 37),
+                **later_skips,
+                "recovery:restore-watchdog": ("passed", 0),
+                "recovery": ("failed", 37),
+            },
+            "traffic_state": "unknown",
+        },
+        {
+            "failures": {"vl360-maintenance enable": 38},
+            "services": {**active_services, "vl-watchdog.timer": "inactive"},
+            "expected": {
+                "record-and-verify-evidence": ("passed", 0),
+                "suspend-watchdog": ("passed", 0),
+                "enable-maintenance": ("failed", 38),
+                "recovery:maintenance-enable": ("failed", 38),
+                "recovery:nginx-test-closed": ("skipped", 0),
+                "recovery:nginx-reload-closed": ("skipped", 0),
+                "recovery:maintenance-probe": ("skipped", 0),
+                "recovery:classify-traffic-state": ("passed", 0),
+                **later_skips,
+                "recovery:restore-watchdog": ("skipped", 0),
+                "recovery": ("failed", 38),
+            },
+            "traffic_state": "open",
+        },
+        {
+            "failures": {"systemctl reload nginx": 39},
+            "expected": {
+                "record-and-verify-evidence": ("passed", 0),
+                "suspend-watchdog": ("passed", 0),
+                "enable-maintenance": ("failed", 39),
+                "recovery:maintenance-enable": ("passed", 0),
+                "recovery:nginx-test-closed": ("passed", 0),
+                "recovery:nginx-reload-closed": ("failed", 39),
+                "recovery:maintenance-probe": ("skipped", 0),
+                "recovery:classify-traffic-state": ("failed", 2),
+                **later_skips,
+                "recovery:restore-watchdog": ("passed", 0),
+                "recovery": ("failed", 39),
+            },
+            "traffic_state": "unknown",
+        },
+        {
+            "failures": {"vl360-maintenance-probe": 40},
+            "expected": {
+                "record-and-verify-evidence": ("passed", 0),
+                "suspend-watchdog": ("passed", 0),
+                "enable-maintenance": ("failed", 40),
+                "recovery:maintenance-enable": ("passed", 0),
+                "recovery:nginx-test-closed": ("passed", 0),
+                "recovery:nginx-reload-closed": ("passed", 0),
+                "recovery:maintenance-probe": ("failed", 40),
+                "recovery:classify-traffic-state": ("failed", 2),
+                **later_skips,
+                "recovery:restore-watchdog": ("passed", 0),
+                "recovery": ("failed", 40),
+            },
+            "traffic_state": "unknown",
+        },
+        {
+            "failures": {
+                "systemctl stop vl-watchdog.timer": 37,
+                "systemctl start vl-watchdog.timer": 41,
+            },
+            "expected": {
+                "record-and-verify-evidence": ("passed", 0),
+                "suspend-watchdog": ("failed", 37),
+                **later_skips,
+                "recovery:restore-watchdog": ("failed", 41),
+                "recovery": ("failed", 37),
+            },
+            "traffic_state": "unknown",
+        },
     )
 
-    def run_case(case: tuple[int, tuple[str, int]]) -> None:
-        index, (command, expected_status) = case
+    def run_case(case: tuple[int, dict[str, object]]) -> None:
+        index, configuration = case
+        expected = configuration["expected"]
+        failures = configuration["failures"]
         case_root = tmp_path / f"case-{index}"
         evidence = case_root / "evidence"
         release_root = case_root / "release"
@@ -215,8 +368,11 @@ def test_local_rehearsal_failure_injection_preserves_status_and_records_recovery
         environment = case_root / "external.env"
         environment.write_text("SAFE_LOCAL=1\n", encoding="ascii")
         state = case_root / "state.json"
+        state_payload: dict[str, object] = {"failures": failures}
+        if "services" in configuration:
+            state_payload["services"] = configuration["services"]
         state.write_text(
-            json.dumps({"failures": {command: expected_status}}) + "\n",
+            json.dumps(state_payload) + "\n",
             encoding="ascii",
         )
 
@@ -244,6 +400,7 @@ def test_local_rehearsal_failure_injection_preserves_status_and_records_recovery
             capture_output=True,
             text=True,
         )
+        expected_status = expected["recovery"][1]
         assert result.returncode == expected_status, result.stderr + result.stdout
         records = [
             json.loads(line)
@@ -251,31 +408,27 @@ def test_local_rehearsal_failure_injection_preserves_status_and_records_recovery
             .read_text(encoding="utf-8")
             .splitlines()
         ]
-        assert any(
-            record["phase"] == "recovery" and record["exit_code"] == expected_status
+        actual = {
+            record["phase"]: (record["status"], record["exit_code"])
             for record in records
+        }
+        assert actual == expected
+        summary = json.loads(
+            (evidence / "rollback-summary.json").read_text(encoding="utf-8")
         )
-        recovery_records = {
-            record["phase"]: record
-            for record in records
-            if record["phase"].startswith("recovery:")
-        }
-        assert set(recovery_records) >= {
-            "recovery:verify-recovery-package",
-            "recovery:install-closed-release",
-            "recovery:verify-dependencies-units-daemon-reload",
-            "recovery:verify-readiness-and-listeners",
-            "recovery:verify-nginx-closed-boundary",
-            "recovery:verify-browser-worker-cache",
-        }
-        assert {record["status"] for record in recovery_records.values()} <= {
-            "passed",
-            "failed",
-            "skipped",
-        }
+        assert summary["exit_code"] == expected_status
+        assert summary["status"] == "failed"
+        assert summary["recovery_status"] == "failed"
+        assert summary["closed_verified"] is False
+        assert summary["traffic_state"] == configuration["traffic_state"]
+        restore_index = next(
+            i for i, record in enumerate(records) if record["phase"] == "recovery:restore-watchdog"
+        )
+        summary_index = next(i for i, record in enumerate(records) if record["phase"] == "recovery")
+        assert restore_index < summary_index
 
-    with ThreadPoolExecutor(max_workers=len(failures)) as executor:
-        list(executor.map(run_case, enumerate(failures)))
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        list(executor.map(run_case, enumerate(cases)))
 
 
 def test_live_mode_is_acknowledgement_and_authority_gated_without_live_claims():

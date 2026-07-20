@@ -417,6 +417,7 @@ classify_incomplete_redrain() {
   # whatever host process happens to own a port. Host mode probes the approved
   # public boundary directly and treats every inconclusive result as unknown.
   local status_code=''
+  mkdir -p -- "$EVIDENCE_DIR/recovery"
   if [ "$MODE" = "--local-rehearsal" ]; then
     local classification_probe="$EVIDENCE_DIR/recovery/local-traffic-probe.json"
     run_local_authority maintenance > "$classification_probe" || true
@@ -520,6 +521,18 @@ keep_maintenance_and_recover() {
     record_recovery_result verify-browser-worker-cache skipped 0 || true
   fi
 
+  if [ "$WATCHDOG_TIMER_WAS_ACTIVE" = true ]; then
+    if run_privileged systemctl start vl-watchdog.timer; then
+      record_recovery_result restore-watchdog passed 0 || true
+    else
+      local watchdog_status=$?
+      record_recovery_result restore-watchdog failed "$watchdog_status" || true
+      RECOVERY_CHAIN_OK=false
+    fi
+  else
+    record_recovery_result restore-watchdog skipped 0 || true
+  fi
+
   recovery_status=failed
   closed_verified=false
   if [ "$RECOVERY_CHAIN_OK" = true ]; then
@@ -532,9 +545,6 @@ keep_maintenance_and_recover() {
     --candidate-id "$CANDIDATE_RELEASE_ID" --rollback-id "$ROLLBACK_RELEASE_ID" \
     --recovery-action "$recovery_action" --recovery-status "$recovery_status" \
     --closed-verified "$closed_verified" --old-open-restored false || true
-  if [ "$WATCHDOG_TIMER_WAS_ACTIVE" = true ]; then
-    run_privileged systemctl start vl-watchdog.timer || true
-  fi
   exit "$original_status"
 }
 
