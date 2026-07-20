@@ -38,13 +38,43 @@ while (($#)); do
   esac
 done
 
+[ -n "$EVIDENCE_DIR" ] || die 'evidence-dir-required'
+if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
+  EVIDENCE_DIR="$(cygpath -u "$EVIDENCE_DIR")"
+fi
+
+# An invalid attempt must not inherit mutable success evidence, but the reset
+# authority itself must be a real directory rather than an attacker-controlled link.
+[ ! -L "$EVIDENCE_DIR" ] || die 'evidence-dir-symlink-forbidden'
+if [ -e "$EVIDENCE_DIR" ]; then
+  [ -d "$EVIDENCE_DIR" ] || die 'evidence-dir-invalid'
+else
+  mkdir -p -- "$EVIDENCE_DIR"
+fi
+[ -d "$EVIDENCE_DIR" ] && [ ! -L "$EVIDENCE_DIR" ] \
+  || die 'evidence-dir-invalid'
+rm -f -- \
+  "$EVIDENCE_DIR/dependency-unit-checks.json" \
+  "$EVIDENCE_DIR/install-summary.json" \
+  "$EVIDENCE_DIR/install-recovery.json" \
+  "$EVIDENCE_DIR/systemd-unit-cleanup.json" \
+  "$EVIDENCE_DIR/findmnt-before.json" \
+  "$EVIDENCE_DIR/findmnt-after.json" \
+  "$EVIDENCE_DIR/findmnt-recovery.json" \
+  "$EVIDENCE_DIR/persistent-before.json" \
+  "$EVIDENCE_DIR/persistent-after.json" \
+  "$EVIDENCE_DIR/persistent-recovery.json"
+rm -rf -- \
+  "$EVIDENCE_DIR/package" \
+  "$EVIDENCE_DIR/staged" \
+  "$EVIDENCE_DIR/installed"
+
 [ -n "$ARCHIVE" ] || die 'archive-required'
 [ -n "$ARCHIVE_DIGEST_FILE" ] || die 'archive-sidecar-required'
 [ -n "$RELEASE_ROOT" ] || die 'release-root-required'
 [ -n "$PERSISTENT_AGENT_DATA_ROOT" ] || die 'persistent-agent-data-root-required'
 [ -n "$ENVIRONMENT_AUTHORITY" ] || die 'environment-authority-required'
 [ -n "$RUNTIME_AUTHORITY" ] || die 'runtime-authority-required'
-[ -n "$EVIDENCE_DIR" ] || die 'evidence-dir-required'
 [ "$REQUIRE_CLOSED" = true ] || die 'require-closed-required'
 if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
   ARCHIVE="$(cygpath -u "$ARCHIVE")"
@@ -53,7 +83,6 @@ if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
   PERSISTENT_AGENT_DATA_ROOT="$(cygpath -u "$PERSISTENT_AGENT_DATA_ROOT")"
   ENVIRONMENT_AUTHORITY="$(cygpath -u "$ENVIRONMENT_AUTHORITY")"
   RUNTIME_AUTHORITY="$(cygpath -u "$RUNTIME_AUTHORITY")"
-  EVIDENCE_DIR="$(cygpath -u "$EVIDENCE_DIR")"
   [ -z "$LOCAL_REHEARSAL_SENTINEL" ] \
     || LOCAL_REHEARSAL_SENTINEL="$(cygpath -u "$LOCAL_REHEARSAL_SENTINEL")"
 fi
@@ -93,25 +122,6 @@ case "${VL360_INSTALL_FAIL_AFTER:-}" in
 esac
 [ "$LOCAL_REHEARSAL" = true ] || [ -z "${VL360_INSTALL_FAIL_AFTER:-}" ] \
   || die 'live-failure-injection-forbidden'
-
-# Each invocation owns only its current mutable evidence. Preserve uniquely named
-# rollback attempts so an armed forensic recovery authority is never discarded.
-mkdir -p -- "$EVIDENCE_DIR"
-rm -f -- \
-  "$EVIDENCE_DIR/dependency-unit-checks.json" \
-  "$EVIDENCE_DIR/install-summary.json" \
-  "$EVIDENCE_DIR/install-recovery.json" \
-  "$EVIDENCE_DIR/systemd-unit-cleanup.json" \
-  "$EVIDENCE_DIR/findmnt-before.json" \
-  "$EVIDENCE_DIR/findmnt-after.json" \
-  "$EVIDENCE_DIR/findmnt-recovery.json" \
-  "$EVIDENCE_DIR/persistent-before.json" \
-  "$EVIDENCE_DIR/persistent-after.json" \
-  "$EVIDENCE_DIR/persistent-recovery.json"
-rm -rf -- \
-  "$EVIDENCE_DIR/package" \
-  "$EVIDENCE_DIR/staged" \
-  "$EVIDENCE_DIR/installed"
 
 # Integrity and manifest verification must complete before extraction or mutation.
 python "$VERIFY_SCRIPT" \

@@ -64,6 +64,32 @@ def _unit_attempt_artifacts(evidence: Path) -> list[Path]:
     )
 
 
+def _assert_mutable_attempt_evidence_absent(evidence: Path) -> None:
+    for name in (
+        "dependency-unit-checks.json",
+        "install-summary.json",
+        "install-recovery.json",
+        "systemd-unit-cleanup.json",
+        "findmnt-before.json",
+        "findmnt-after.json",
+        "findmnt-recovery.json",
+        "persistent-before.json",
+        "persistent-after.json",
+        "persistent-recovery.json",
+        "package",
+        "staged",
+        "installed",
+    ):
+        assert not (evidence / name).exists()
+
+
+def _bash_path_literal(path: Path) -> str:
+    raw = path.absolute().as_posix()
+    if len(raw) >= 3 and raw[1:3] == ":/":
+        return f"/{raw[0].lower()}/{raw[3:]}"
+    return raw
+
+
 def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
     release = tmp_path / "release"
     persistent = tmp_path / "persistent"
@@ -159,6 +185,7 @@ def _invoke_installer(
     failed_hook: str | None = None,
     include_sentinel: bool = True,
     env_overrides: dict[str, str] | None = None,
+    evidence_arg: str | None = None,
 ):
     release, persistent, evidence, before_release, before_persistent, _, values = prepared
     if failed_hook is not None:
@@ -190,7 +217,7 @@ def _invoke_installer(
         "--runtime-authority",
         _bash_path(case_root / "runtime"),
         "--evidence-dir",
-        _bash_path(evidence),
+        _bash_path(evidence) if evidence_arg is None else evidence_arg,
         "--require-closed",
         "--local-rehearsal",
     ]
@@ -895,6 +922,141 @@ def test_same_evidence_retry_after_success_resets_pre_mutation_evidence(
         assert not (evidence / name).exists()
     assert (evidence / "package").is_dir()
     assert (evidence / "staged").is_dir()
+
+
+@pytest.mark.parametrize(
+    ("invalid_authority", "expected_error"),
+    (
+        ("environment", "external-environment-authority-required"),
+        ("runtime", "external-runtime-authority-required"),
+        ("hook", "runtime-hook-authority-required"),
+    ),
+)
+def test_same_evidence_retry_resets_before_local_admission_failure(
+    tmp_path: Path,
+    closed_package,
+    invalid_authority: str,
+    expected_error: str,
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"same-evidence-pre-admission-{invalid_authority}"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+
+    first = _invoke_installer(closed_package, case_root, prepared)
+    assert first.returncode == 0, first.stderr + first.stdout
+    forensic_attempt = evidence / ".systemd-unit-attempt.pre-admission"
+    (forensic_attempt / "backup").mkdir(parents=True)
+    (forensic_attempt / "armed").write_text("armed\n", encoding="ascii")
+    (forensic_attempt / "backup" / "metadata.json").write_text(
+        "{}\n", encoding="ascii"
+    )
+    forensic_before = _snapshot_tree(forensic_attempt)
+
+    if invalid_authority == "environment":
+        (case_root / "external.env").unlink()
+    elif invalid_authority == "runtime":
+        (case_root / "runtime").rename(case_root / "invalid-runtime")
+    else:
+        (case_root / "runtime" / "python-hook.sh").unlink()
+
+    second = _invoke_installer(closed_package, case_root, prepared)
+
+    assert second.returncode == 2
+    assert expected_error in second.stderr
+    _assert_mutable_attempt_evidence_absent(evidence)
+    assert _snapshot_tree(forensic_attempt) == forensic_before
+
+
+def test_same_evidence_retry_resets_before_live_override_rejection(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "same-evidence-pre-admission-live-override"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, values = prepared
+
+    first = _invoke_installer(closed_package, case_root, prepared)
+    assert first.returncode == 0, first.stderr + first.stdout
+    forensic_attempt = evidence / ".systemd-unit-attempt.live-override"
+    forensic_attempt.mkdir()
+    (forensic_attempt / "armed").write_text("armed\n", encoding="ascii")
+    forensic_before = _snapshot_tree(forensic_attempt)
+
+    mount_authority = case_root / "mount-authority.sh"
+    mount_authority.write_text("#!/usr/bin/env bash\nexit 97\n", encoding="ascii")
+    mount_authority.chmod(0o755)
+    env = os.environ.copy()
+    env.update(values)
+    second = subprocess.run(
+        [
+            str(BASH),
+            "scripts/ops/install_closed_release.sh",
+            "--archive",
+            _bash_path(closed_package.archive),
+            "--archive-digest-file",
+            _bash_path(closed_package.digest_file),
+            "--release-root",
+            _bash_path(release),
+            "--persistent-agent-data-root",
+            _bash_path(persistent),
+            "--environment-authority",
+            _bash_path(case_root / "external.env"),
+            "--runtime-authority",
+            _bash_path(case_root / "runtime"),
+            "--mount-authority",
+            _bash_path(mount_authority),
+            "--evidence-dir",
+            _bash_path(evidence),
+            "--require-closed",
+        ],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert second.returncode == 2
+    assert "live-hook-override-forbidden" in second.stderr
+    _assert_mutable_attempt_evidence_absent(evidence)
+    assert _snapshot_tree(forensic_attempt) == forensic_before
+
+
+def test_retry_rejects_symlinked_evidence_dir_without_deleting_target(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "same-evidence-symlink"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+
+    first = _invoke_installer(closed_package, case_root, prepared)
+    assert first.returncode == 0, first.stderr + first.stdout
+    evidence.rename(case_root / "first-evidence")
+    protected = case_root / "protected-evidence"
+    (protected / "package").mkdir(parents=True)
+    (protected / "install-summary.json").write_text("protected\n", encoding="ascii")
+    (protected / "package" / "marker.txt").write_text("protected\n", encoding="ascii")
+    protected_before = _snapshot_tree(protected)
+    try:
+        evidence.symlink_to(protected, target_is_directory=True)
+    except OSError as error:
+        pytest.skip(f"directory symlinks are unavailable: {error}")
+
+    second = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        evidence_arg=_bash_path_literal(evidence),
+    )
+
+    assert second.returncode == 2
+    assert "evidence-dir-symlink-forbidden" in second.stderr
+    assert _snapshot_tree(protected) == protected_before
 
 
 def test_same_evidence_retry_after_success_resets_rollback_evidence(
