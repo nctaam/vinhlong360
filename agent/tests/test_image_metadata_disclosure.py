@@ -60,6 +60,18 @@ def test_entity_jsonld_uses_classified_ai_descriptor_and_omits_raw_or_forbidden_
     assert "Injected" not in str(ld)
 
 
+def test_entity_jsonld_absolutizes_legacy_local_image_descriptor_metadata():
+    entity = _entity(images=["/img/local.webp"])
+
+    ld = seo.build_entity_jsonld(entity, {entity["id"]: entity})
+
+    image = ld["image"][0]
+    expected_url = "https://vinhlong360.vn/img/local.webp"
+    assert image["url"] == expected_url
+    assert image["contentUrl"] == expected_url
+    assert image["caption"] == DISCLOSURE.entity_ai.full_disclosure
+
+
 def test_entity_jsonld_omits_placeholder_or_missing_images():
     for images in ([], [None, {"url": "https://evil.example/raw.webp"}]):
         ld = seo.build_entity_jsonld(_entity(images=images), {})

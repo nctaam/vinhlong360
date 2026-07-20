@@ -496,15 +496,12 @@ def _build_descriptor_image_objects(
     entity_name = str(entity.get("name") or entity.get("id") or "")
     out: list[dict[str, Any]] = []
     descriptors = describe_entity_images(entity, disclosure=_JSONLD_DISCLOSURE)
-    has_supplied_descriptors = (
-        "image_descriptors" in entity or "image_descriptor" in entity
-    )
     for index, descriptor in enumerate(descriptors):
         if not _is_jsonld_entity_image_descriptor(descriptor, _JSONLD_DISCLOSURE):
             continue
         img_url = (
             f"{SITE}{descriptor.url}"
-            if has_supplied_descriptors and descriptor.url.startswith("/")
+            if descriptor.url.startswith("/")
             else _image_url(descriptor.url)
         )
         if img_url is None:
