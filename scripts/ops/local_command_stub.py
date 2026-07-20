@@ -14,6 +14,11 @@ from typing import Any, Sequence
 ALLOWED_COMMANDS = {
     ("nginx", "-t"),
     ("ss", "-H", "-ltnp"),
+    ("vl360-dependencies",),
+    ("vl360-maintenance", "enable"),
+    ("vl360-maintenance", "disable"),
+    ("vl360-maintenance-probe",),
+    ("vl360-readiness",),
     ("systemctl", "daemon-reload"),
     ("systemctl", "is-active", "--quiet", "vl-watchdog.timer"),
     ("systemctl", "stop", "vl-watchdog.timer"),
@@ -40,6 +45,8 @@ def _default_state() -> dict[str, Any]:
             'LISTEN 0 128 0.0.0.0:22 0.0.0.0:* users:(("sshd",pid=2,fd=3))\n'
             'LISTEN 0 2048 127.0.0.1:3000 0.0.0.0:* users:(("node",pid=3,fd=4))\n'
         ),
+        "maintenance": False,
+        "dependency_status": "passed",
         "services": {
             "nginx": "active",
             "vl-nuxt": "active",
@@ -107,12 +114,71 @@ def _handle_systemctl(command: tuple[str, ...], state: dict[str, Any]) -> int | 
         return 0 if services.get(command[-1]) == "active" else 3
     if command[:2] in {("systemctl", "start"), ("systemctl", "restart")}:
         services[command[-1]] = "active"
+        if command[-1] == "vl-nuxt":
+            _set_nuxt_listener(state, active=True)
         return 0
     if command[:2] == ("systemctl", "stop"):
         services[command[-1]] = "inactive"
+        if command[-1] == "vl-nuxt":
+            _set_nuxt_listener(state, active=False)
         return 0
     if command == ("systemctl", "reload", "nginx"):
         return 0 if services.get("nginx") == "active" else 1
+    return None
+
+
+def _set_nuxt_listener(state: dict[str, Any], *, active: bool) -> None:
+    """Keep the loopback listener model coupled to the Nuxt service state."""
+    lines = [
+        line
+        for line in str(state.get("ss_output", "")).splitlines()
+        if ":3000 " not in line
+    ]
+    if active:
+        lines.append(
+            'LISTEN 0 2048 127.0.0.1:3000 0.0.0.0:* users:(("node",pid=3,fd=4))'
+        )
+    state["ss_output"] = "\n".join(lines) + ("\n" if lines else "")
+
+
+def _handle_local_authority(command: tuple[str, ...], state: dict[str, Any]) -> int | None:
+    if command == ("vl360-dependencies",):
+        print(json.dumps({"dependency_check": state.get("dependency_status", "passed")}))
+        return 0 if state.get("dependency_status", "passed") == "passed" else 1
+    if command in {
+        ("vl360-maintenance", "enable"),
+        ("vl360-maintenance", "disable"),
+    }:
+        state["maintenance"] = command[-1] == "enable"
+        return 0
+    if command == ("vl360-readiness",):
+        if state.get("services", {}).get("vl-nuxt") != "active":
+            return 7
+        payload = {
+            "checks": [
+                {"name": "manifest-schema", "ok": True},
+                {"name": "artifact-evidence", "ok": True},
+                {"name": "compiled-cache-rules", "ok": True},
+                {"name": "public-prerender", "ok": True},
+                {"name": "service-worker-cache-purge", "ok": True},
+            ],
+            "live_sla_proven": False,
+            "ok": True,
+            "stage3_claim": False,
+            "state": "closed",
+        }
+        print(json.dumps(payload, sort_keys=True))
+        return 0
+    if command == ("vl360-maintenance-probe",):
+        maintenance = bool(state.get("maintenance"))
+        nginx_active = state.get("services", {}).get("nginx") == "active"
+        payload = {
+            "operator": {"contract_passed": maintenance and nginx_active},
+            "public": {"status": 503 if maintenance and nginx_active else 200},
+            "traffic_state": "drained" if maintenance and nginx_active else "unknown",
+        }
+        print(json.dumps(payload, sort_keys=True))
+        return 0 if payload["operator"]["contract_passed"] and payload["public"]["status"] == 503 else 1
     return None
 
 
@@ -141,6 +207,9 @@ def _execute_command(command: tuple[str, ...], state: dict[str, Any]) -> int:
     systemctl_result = _handle_systemctl(command, state)
     if systemctl_result is not None:
         return systemctl_result
+    local_authority_result = _handle_local_authority(command, state)
+    if local_authority_result is not None:
+        return local_authority_result
     mount_result = _handle_mount_command(command, state)
     if mount_result is not None:
         return mount_result

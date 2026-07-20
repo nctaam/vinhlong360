@@ -22,6 +22,7 @@ STARTED_EPOCH="$(date +%s)"
 CURRENT_PHASE=initialization
 TRAFFIC_STATE=unknown
 REOPEN_ATTEMPTED=false
+MAINTENANCE_ADMISSION_ATTEMPTED=false
 RECOVERY_TRAP_ARMED=false
 WATCHDOG_TIMER_WAS_ACTIVE=false
 NO_LIVE_CLAIM_JSON='{"stage3_claim": false, "live_sla_proven": false, "observed_local_elapsed_seconds": 0}'
@@ -71,6 +72,29 @@ run_privileged() {
   fi
 }
 
+run_local_authority() {
+  local authority_kind="$1"
+  shift
+  local authority=''
+  case "$authority_kind" in
+    readiness) authority="${LOCAL_READINESS_AUTHORITY:-}" ;;
+    listener) authority="${LOCAL_LISTENER_AUTHORITY:-}" ;;
+    dependencies) authority="${LOCAL_DEPENDENCY_AUTHORITY:-}" ;;
+    maintenance) authority="${LOCAL_MAINTENANCE_AUTHORITY:-}" ;;
+    *) return 64 ;;
+  esac
+  if [ -n "$authority" ]; then
+    "$authority" "$@"
+    return
+  fi
+  case "$authority_kind" in
+    readiness) run_privileged vl360-readiness "$@" ;;
+    listener) run_privileged ss -H -ltnp "$@" ;;
+    dependencies) run_privileged vl360-dependencies "$@" ;;
+    maintenance) run_privileged vl360-maintenance-probe "$@" ;;
+  esac
+}
+
 maintenance_select() {
   local action="$1"
   if [ "$MODE" = "--local-rehearsal" ]; then
@@ -80,6 +104,7 @@ maintenance_select() {
       VL360_MAINTENANCE_DIR="$maintenance_dir" \
       VL360_NGINX_BIN=true \
       "$SCRIPT_DIR/maintenance_mode.sh" "$action" --operator-cidr "$OPERATOR_CIDR"
+    run_privileged vl360-maintenance "$action"
   else
     "$SCRIPT_DIR/maintenance_mode.sh" "$action" --operator-cidr "$OPERATOR_CIDR"
   fi
@@ -164,7 +189,13 @@ install_closed_package() {
 }
 
 verify_dependencies_units_daemon_reload() {
-  python -m pip check
+  if [ "$MODE" = "--local-rehearsal" ]; then
+    mkdir -p -- "$EVIDENCE_DIR/runtime-authority"
+    run_local_authority dependencies \
+      > "$EVIDENCE_DIR/runtime-authority/dependency-check.json"
+  else
+    python -m pip check
+  fi
   python "$SCRIPT_DIR/verify_closed_release.py" \
     --installed-root "$RELEASE_ROOT" \
     --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
@@ -174,18 +205,56 @@ verify_dependencies_units_daemon_reload() {
   run_privileged systemctl start vl-nuxt
 }
 
+validate_local_readiness_evidence() {
+  python - "$1" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+required = {
+    "manifest-schema",
+    "artifact-evidence",
+    "compiled-cache-rules",
+    "public-prerender",
+    "service-worker-cache-purge",
+}
+try:
+    payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+    checks = payload.get("checks")
+    names = {item.get("name") for item in checks if isinstance(item, dict)}
+    all_ok = all(item.get("ok") is True for item in checks if isinstance(item, dict))
+except (AttributeError, OSError, TypeError, ValueError):
+    raise SystemExit(2)
+if payload.get("ok") is not True or payload.get("state") != "closed":
+    raise SystemExit(2)
+if not isinstance(checks, list) or len(checks) != len(required):
+    raise SystemExit(2)
+if names != required or not all_ok:
+    raise SystemExit(2)
+PY
+}
+
 verify_readiness_and_listeners() {
   local evidence="$1"
   mkdir -p -- "$evidence"
-  if ! curl --fail --silent --show-error --max-time 3 \
-    http://127.0.0.1:3000/_internal/launch-readiness \
-    > "$evidence/process-local-readiness.json"; then
-    write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-unavailable"
-    return 2
+  if [ "$MODE" = "--local-rehearsal" ]; then
+    if ! run_local_authority readiness > "$evidence/process-local-readiness.json"; then
+      write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-unavailable"
+      return 2
+    fi
+    if ! validate_local_readiness_evidence "$evidence/process-local-readiness.json"; then
+      write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-readiness-invalid"
+      return 2
+    fi
+  elif ! curl --fail --silent --show-error --max-time 3 \
+      http://127.0.0.1:3000/_internal/launch-readiness \
+      > "$evidence/process-local-readiness.json"; then
+      write_blocked_evidence "$evidence/process-local-readiness.json" "nuxt-3000-unavailable"
+      return 2
   fi
   if [ "$MODE" = "--local-rehearsal" ]; then
     local ss_output
-    ss_output="$(run_privileged ss -H -ltnp)"
+    ss_output="$(run_local_authority listener)"
     python - "$SCRIPT_DIR/socket_boundary_probe.py" "$evidence/listeners.json" "$ss_output" <<'PY'
 import importlib.util
 from pathlib import Path
@@ -208,11 +277,77 @@ PY
 
 verify_nginx_closed_boundary() {
   local evidence="$1"
+  if [ "$MODE" = "--local-rehearsal" ]; then
+    if run_local_authority maintenance > "$evidence"; then
+      :
+    else
+      local probe_status=$?
+      return "$probe_status"
+    fi
+    python - "$evidence" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+if payload.get("public", {}).get("status") != 503:
+    raise SystemExit(2)
+if payload.get("operator", {}).get("contract_passed") is not True:
+    raise SystemExit(2)
+PY
+    return
+  fi
   if [ -z "${NGINX_PROBE_URL:-}" ]; then
     write_blocked_evidence "$evidence" "nginx-probe-url-unavailable"
     return 2
   fi
   VL360_LAUNCH_PUBLIC_URL="$NGINX_PROBE_URL" \
+    python "$SCRIPT_DIR/probe_launch_boundary.py" \
+      --expect maintenance --operator-source --maintenance-probe \
+      --require-rich-html --require-thin-html --require-meta-robots \
+      --require-no-sitemap --require-three-empty-sitemaps --require-no-store \
+      --require-no-evidence --require-no-discovery --require-public-internal-404 \
+      --require-direct-bypass-denied --evidence "$evidence"
+}
+
+verify_maintenance_boundary() {
+  local evidence="$1"
+  mkdir -p -- "$(dirname -- "$evidence")"
+  if [ "$MODE" = "--local-rehearsal" ]; then
+    if run_local_authority maintenance > "$evidence"; then
+      :
+    else
+      local probe_status=$?
+      return "$probe_status"
+    fi
+    python - "$evidence" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+if payload.get("public", {}).get("status") != 503:
+    raise SystemExit(2)
+if payload.get("operator", {}).get("contract_passed") is not True:
+    raise SystemExit(2)
+PY
+    return
+  fi
+
+  local public_url="${NGINX_PUBLIC_PROBE_URL:-}"
+  local operator_url="${NGINX_OPERATOR_PROBE_URL:-${NGINX_PROBE_URL:-}}"
+  if [ -z "$public_url" ] || [ -z "$operator_url" ]; then
+    write_blocked_evidence "$evidence" "public-and-operator-probe-url-unavailable"
+    return 2
+  fi
+  local public_status
+  public_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+    --max-time 3 "$public_url/" || true)"
+  if [ "$public_status" != 503 ]; then
+    write_traffic_classification unknown "public-maintenance-probe-failed" "$public_status"
+    return 2
+  fi
+  VL360_LAUNCH_PUBLIC_URL="$operator_url" \
     python "$SCRIPT_DIR/probe_launch_boundary.py" \
       --expect maintenance --operator-source --maintenance-probe \
       --require-rich-html --require-thin-html --require-meta-robots \
@@ -276,11 +411,29 @@ redrain_step() {
 }
 
 classify_incomplete_redrain() {
-  # Task 43 has no traffic-classifier CLI, so classify only a clear upstream.
+  # The local authority returns a deterministic public status without touching
+  # whatever host process happens to own a port. Host mode probes the approved
+  # public boundary directly and treats every inconclusive result as unknown.
   local status_code=''
-  if [ -n "${NGINX_PROBE_URL:-}" ]; then
+  if [ "$MODE" = "--local-rehearsal" ]; then
+    local classification_probe="$EVIDENCE_DIR/recovery/local-traffic-probe.json"
+    run_local_authority maintenance > "$classification_probe" || true
+    status_code="$(python - "$classification_probe" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+try:
+    payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+    value = payload.get("public", {}).get("status")
+except (OSError, TypeError, ValueError):
+    value = None
+print(value if value is not None else "")
+PY
+)"
+  elif [ -n "${NGINX_PUBLIC_PROBE_URL:-${NGINX_PROBE_URL:-}}" ]; then
     status_code="$(curl --silent --output /dev/null --write-out '%{http_code}' \
-      --max-time 3 "$NGINX_PROBE_URL/" || true)"
+      --max-time 3 "${NGINX_PUBLIC_PROBE_URL:-$NGINX_PROBE_URL}/" || true)"
   fi
   case "$status_code" in
     2??|3??|4??)
@@ -301,13 +454,13 @@ keep_maintenance_and_recover() {
   original_status="${1:-1}"
   trap - ERR
   set +e
-  if [ "$REOPEN_ATTEMPTED" = true ]; then
+  if [ "$REOPEN_ATTEMPTED" = true ] || [ "$MAINTENANCE_ADMISSION_ATTEMPTED" = true ]; then
     TRAFFIC_STATE=unknown
     REDRAIN_OK=true
     redrain_step maintenance-enable maintenance_select enable
     redrain_step nginx-test-closed run_privileged nginx -t
     redrain_step nginx-reload-closed run_privileged systemctl reload nginx
-    redrain_step maintenance-probe verify_nginx_closed_boundary \
+    redrain_step maintenance-probe verify_maintenance_boundary \
       "$EVIDENCE_DIR/recovery/redrain-maintenance.json"
     if [ "$REDRAIN_OK" = true ]; then
       TRAFFIC_STATE=drained
@@ -326,20 +479,44 @@ keep_maintenance_and_recover() {
     recovery_action=corrected-closed-roll-forward
   fi
 
-  best_effort_recovery_step verify-recovery-package \
-    python "$SCRIPT_DIR/verify_closed_release.py" \
-      --archive "$recovery_package" --archive-digest-file "$recovery_package.sha256" \
-      --require-closed --evidence-dir "$EVIDENCE_DIR/recovery/package"
-  best_effort_recovery_step install-closed-release \
-    install_closed_package "$recovery_package" "$EVIDENCE_DIR/recovery"
-  best_effort_recovery_step verify-dependencies-units-daemon-reload \
-    verify_dependencies_units_daemon_reload
-  best_effort_recovery_step verify-readiness-and-listeners \
-    verify_readiness_and_listeners "$EVIDENCE_DIR/recovery"
-  best_effort_recovery_step verify-nginx-closed-boundary \
-    verify_nginx_closed_boundary "$EVIDENCE_DIR/recovery/nginx-closed.json"
-  best_effort_recovery_step verify-browser-worker-cache \
-    verify_browser_worker_cache "$EVIDENCE_DIR/recovery/browser.json"
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step verify-recovery-package \
+      python "$SCRIPT_DIR/verify_closed_release.py" \
+        --archive "$recovery_package" --archive-digest-file "$recovery_package.sha256" \
+        --require-closed --evidence-dir "$EVIDENCE_DIR/recovery/package"
+  else
+    record_recovery_result verify-recovery-package skipped 0 || true
+  fi
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step install-closed-release \
+      install_closed_package "$recovery_package" "$EVIDENCE_DIR/recovery"
+  else
+    record_recovery_result install-closed-release skipped 0 || true
+  fi
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step verify-dependencies-units-daemon-reload \
+      verify_dependencies_units_daemon_reload
+  else
+    record_recovery_result verify-dependencies-units-daemon-reload skipped 0 || true
+  fi
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step verify-readiness-and-listeners \
+      verify_readiness_and_listeners "$EVIDENCE_DIR/recovery"
+  else
+    record_recovery_result verify-readiness-and-listeners skipped 0 || true
+  fi
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step verify-nginx-closed-boundary \
+      verify_nginx_closed_boundary "$EVIDENCE_DIR/recovery/nginx-closed.json"
+  else
+    record_recovery_result verify-nginx-closed-boundary skipped 0 || true
+  fi
+  if [ "$RECOVERY_CHAIN_OK" = true ]; then
+    best_effort_recovery_step verify-browser-worker-cache \
+      verify_browser_worker_cache "$EVIDENCE_DIR/recovery/browser.json"
+  else
+    record_recovery_result verify-browser-worker-cache skipped 0 || true
+  fi
 
   recovery_status=failed
   closed_verified=false
@@ -353,7 +530,7 @@ keep_maintenance_and_recover() {
     --candidate-id "$CANDIDATE_RELEASE_ID" --rollback-id "$ROLLBACK_RELEASE_ID" \
     --recovery-action "$recovery_action" --recovery-status "$recovery_status" \
     --closed-verified "$closed_verified" --old-open-restored false || true
-  if [ "$WATCHDOG_TIMER_WAS_ACTIVE" = true ] && [ "$TRAFFIC_STATE" = drained ]; then
+  if [ "$WATCHDOG_TIMER_WAS_ACTIVE" = true ]; then
     run_privileged systemctl start vl-watchdog.timer || true
   fi
   exit "$original_status"
@@ -368,6 +545,9 @@ record_phase passed
 
 prepare_local_maintenance_model
 
+RECOVERY_TRAP_ARMED=true
+trap 'keep_maintenance_and_recover "$?"' ERR
+
 CURRENT_PHASE=suspend-watchdog
 if run_privileged systemctl is-active --quiet vl-watchdog.timer; then
   WATCHDOG_TIMER_WAS_ACTIVE=true
@@ -377,15 +557,13 @@ run_privileged systemctl stop vl-watchdog.service
 record_phase passed
 
 CURRENT_PHASE=enable-maintenance
+MAINTENANCE_ADMISSION_ATTEMPTED=true
 maintenance_select enable
 run_privileged nginx -t
 run_privileged systemctl reload nginx
-write_blocked_evidence "$EVIDENCE_DIR/maintenance-http-proof.json" \
-  "local-selector-proven-http-proof-requires-nginx-harness"
+verify_maintenance_boundary "$EVIDENCE_DIR/maintenance-http-proof.json"
 TRAFFIC_STATE=drained
 record_phase passed
-RECOVERY_TRAP_ARMED=true
-trap 'keep_maintenance_and_recover "$?"' ERR
 
 CURRENT_PHASE=stop-vl-nuxt
 run_privileged systemctl stop vl-nuxt

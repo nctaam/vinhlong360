@@ -49,9 +49,10 @@ detach and after remount. The old open tree is never a recovery source.
 11. `reopen-and-recover-watchdog`
 
 Archive and sidecar verification completes before the watchdog, maintenance
-selector, service state, cache trees, or release root can change. The recovery
-trap is armed only after the maintenance selector, `nginx -t`, reload, and
-drained state are established.
+selector, service state, cache trees, or release root can change. Once that
+initial verification is recorded, the recovery trap is armed before the first
+watchdog stop or maintenance/Nginx mutation. A failure while establishing the
+drain therefore enters best-effort recovery without reopening traffic.
 
 The cache purge authority contains exactly `web-nuxt/.output`,
 `web-nuxt/.nuxt`, and `web-nuxt/.cache`. There is no dynamic readiness cache
@@ -60,9 +61,8 @@ symlinks, release-root deletion, `agent/data`, and protected descendants are
 refused.
 
 Closed admission is backend-independent: Nuxt on loopback port 3000 is
-required. Port 8360 is validated as loopback-only when present, but a missing
-agent listener does not invalidate a closed Nuxt release. Nginx remains the only
-non-loopback owner of ports 80 and 443.
+required. A missing agent listener does not invalidate a closed Nuxt release.
+Nginx remains the only non-loopback owner of ports 80 and 443.
 
 ## Local rehearsal
 
@@ -70,9 +70,14 @@ Use disposable Git Bash paths, a synthetic Task 31 archive plus its sidecar,
 an external fake environment file with no unlock names, an external runtime
 authority directory, a release root, and a persistent data path. The local
 command model can stand in only for unavailable privileged commands such as
-`systemctl`, `nginx -t`, `findmnt`, and bind mount operations. Archive
-verification, path/symlink checks, extraction, tree swap, phase recording, and
-persistent byte hashing always execute for real.
+`systemctl`, `nginx -t`, `findmnt`, and bind mount operations. It also models
+Nuxt readiness, the loopback-3000 listener transition, dependency status, and
+a combined public/operator maintenance probe from the state file; it never
+curls an unrelated host process. These authorities can be replaced for a
+rehearsal with `LOCAL_READINESS_AUTHORITY`, `LOCAL_LISTENER_AUTHORITY`,
+`LOCAL_DEPENDENCY_AUTHORITY`, and `LOCAL_MAINTENANCE_AUTHORITY` executable
+paths. Archive verification, path/symlink checks, extraction, tree swap, phase
+recording, and persistent byte hashing always execute for real.
 
 ```bash
 KNOWN_GOOD_CLOSED=/tmp/vl360/known-good-closed.tar.gz \
@@ -87,6 +92,13 @@ CANDIDATE_RELEASE_ID=local-candidate \
 ROLLBACK_RELEASE_ID=local-known-good \
 bash scripts/ops/rehearse_launch_rollback.sh --local-rehearsal
 ```
+
+Host execution must provide separate public and operator maintenance probe
+authorities. Set `NGINX_PUBLIC_PROBE_URL` to a non-operator source that must
+return HTTP 503, and `NGINX_OPERATOR_PROBE_URL` (or the legacy
+`NGINX_PROBE_URL`) to the operator source that must pass the complete closed
+boundary matrix. Traffic is classified as `drained` only after both proofs
+pass.
 
 The Task 43 browser script is always the browser authority. If no suitable
 server or browser is available, it records `blocked`/`skipped`; no stub can
@@ -125,10 +137,12 @@ known-good closed package. Recovery never disables maintenance or restores the
 candidate/open tree.
 
 After a reopen attempt, recovery first records maintenance enable, `nginx -t`,
-reload, and maintenance probe as `passed`, `failed`, or `skipped`. Only all four
-passing can establish `traffic_state=drained`; a recognized normal upstream is
-`open`, and every inconclusive state is `unknown`. Package mutation is skipped
-unless traffic is proven drained. The original failing exit status is preserved.
+reload, and the full public-plus-operator maintenance probe as `passed`,
+`failed`, or `skipped`. Only all four passing can establish
+`traffic_state=drained`; a recognized normal upstream is `open`, and every
+inconclusive state is `unknown`. Package mutation is skipped unless traffic is
+proven drained. Every later recovery phase is still recorded even when an
+earlier phase fails, and the original failing exit status is preserved.
 
 Listener evidence uses the `socket_boundary_probe.py` schema. Nginx proof uses
 the Task 43 closed-boundary schema. Browser evidence uses the Task 43 controlled

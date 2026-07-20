@@ -120,7 +120,48 @@ def test_rehearsal_verifies_package_before_any_operational_mutation():
     ]
 
     assert verifier < min(mutations)
-    assert source.index("RECOVERY_TRAP_ARMED=true") > source.index("maintenance-probe")
+    assert source.index("RECOVERY_TRAP_ARMED=true") > verifier
+
+
+def test_recovery_trap_is_armed_before_first_watchdog_or_selector_mutation():
+    source = REHEARSE.read_text(encoding="utf-8")
+    trap = source.index("trap 'keep_maintenance_and_recover")
+    armed = source.index("RECOVERY_TRAP_ARMED=true")
+    watchdog_stop = source.index("run_privileged systemctl stop vl-watchdog.timer")
+    maintenance_enable = source.index(
+        "maintenance_select enable", source.index("CURRENT_PHASE=enable-maintenance")
+    )
+
+    assert armed < watchdog_stop
+    assert trap < watchdog_stop
+    assert trap < maintenance_enable
+
+
+def test_drained_requires_full_public_and_operator_maintenance_proof():
+    source = REHEARSE.read_text(encoding="utf-8")
+    enable_block = source.split("CURRENT_PHASE=enable-maintenance", 1)[1].split(
+        "CURRENT_PHASE=stop-vl-nuxt", 1
+    )[0]
+
+    assert "verify_maintenance_boundary" in enable_block
+    assert "TRAFFIC_STATE=drained" in enable_block
+    assert "maintenance-http-proof.json" in enable_block
+    assert "public" in source.lower()
+    assert "operator" in source.lower()
+
+    drained = source.index("TRAFFIC_STATE=drained", source.index("CURRENT_PHASE=enable-maintenance"))
+    proof = source.index("verify_maintenance_boundary", source.index("CURRENT_PHASE=enable-maintenance"))
+    assert proof < drained
+
+
+def test_local_maintenance_probe_propagates_its_exact_failure_status():
+    source = REHEARSE.read_text(encoding="utf-8")
+    probe = source.split("verify_maintenance_boundary()", 1)[1].split(
+        "verify_browser_worker_cache()", 1
+    )[0]
+
+    assert "local probe_status=$?" in probe
+    assert 'return "$probe_status"' in probe
 
 
 def test_live_mode_is_acknowledgement_and_authority_gated_without_live_claims():
@@ -335,6 +376,79 @@ def test_local_stub_has_a_strict_privileged_command_allowlist():
     assert "findmnt" in source
     assert "mount" in source
     assert not any(command[0] in {"pip", "npm", "tar"} for command in module.ALLOWED_COMMANDS)
+
+
+def test_local_stub_models_nuxt_readiness_and_listener_transitions(tmp_path: Path):
+    module = _load_module("task44_local_command_stub_transitions", STUB)
+    state = tmp_path / "state.json"
+
+    assert module.run_stub(state, ("systemctl", "stop", "vl-nuxt")) == 0
+    assert module.run_stub(state, ("vl360-readiness",)) != 0
+    listener_state = json.loads(state.read_text(encoding="utf-8"))
+    assert ":3000" not in listener_state["ss_output"]
+
+    assert module.run_stub(state, ("systemctl", "start", "vl-nuxt")) == 0
+    assert module.run_stub(state, ("vl360-readiness",)) == 0
+    listener_state = json.loads(state.read_text(encoding="utf-8"))
+    assert "127.0.0.1:3000" in listener_state["ss_output"]
+
+
+def test_local_rehearsal_uses_injected_authorities_instead_of_host_curl_or_pip():
+    source = REHEARSE.read_text(encoding="utf-8")
+    readiness = source.split("verify_readiness_and_listeners()", 1)[1].split(
+        "verify_nginx_closed_boundary()", 1
+    )[0]
+    dependencies = source.split("verify_dependencies_units_daemon_reload()", 1)[1].split(
+        "verify_readiness_and_listeners()", 1
+    )[0]
+
+    assert "LOCAL_READINESS_AUTHORITY" in source
+    assert "LOCAL_LISTENER_AUTHORITY" in source
+    assert "LOCAL_DEPENDENCY_AUTHORITY" in source
+    local_readiness = readiness.split('if [ "$MODE" = "--local-rehearsal" ]; then', 1)[1].split(
+        "elif ! curl", 1
+    )[0]
+    assert "curl " not in local_readiness
+    assert "run_local_authority readiness" in local_readiness
+    assert "validate_local_readiness_evidence" in readiness
+    assert "python -m pip check" in dependencies
+    assert "run_local_authority dependencies" in dependencies
+
+
+def test_recovery_records_dependent_phases_as_skipped_after_redrain_failure():
+    source = REHEARSE.read_text(encoding="utf-8")
+    recovery = source.split("keep_maintenance_and_recover()", 1)[1].split(
+        "CURRENT_PHASE=record-and-verify-evidence", 1
+    )[0]
+
+    assert "if [ \"$RECOVERY_CHAIN_OK\" = true ]; then" in recovery
+    for phase in (
+        "verify-recovery-package",
+        "install-closed-release",
+        "verify-dependencies-units-daemon-reload",
+        "verify-readiness-and-listeners",
+        "verify-nginx-closed-boundary",
+        "verify-browser-worker-cache",
+    ):
+        assert f"{phase}" in recovery
+    assert "record_recovery_result verify-recovery-package skipped 0" in recovery
+
+
+def test_pre_reopen_maintenance_failure_redrains_and_restores_prior_watchdog_state():
+    source = REHEARSE.read_text(encoding="utf-8")
+    recovery = source.split("keep_maintenance_and_recover()", 1)[1].split(
+        "CURRENT_PHASE=record-and-verify-evidence", 1
+    )[0]
+    enable = source.split("CURRENT_PHASE=enable-maintenance", 1)[1].split(
+        "CURRENT_PHASE=stop-vl-nuxt", 1
+    )[0]
+
+    assert "MAINTENANCE_ADMISSION_ATTEMPTED=true" in enable
+    assert "MAINTENANCE_ADMISSION_ATTEMPTED" in recovery
+    assert 'if [ "$WATCHDOG_TIMER_WAS_ACTIVE" = true ]; then' in recovery
+    assert '[ "$TRAFFIC_STATE" = drained ]' not in recovery.split(
+        'if [ "$WATCHDOG_TIMER_WAS_ACTIVE" = true', 1
+    )[1].split("fi", 1)[0]
 
 
 def test_runbook_documents_provenance_gates_and_no_live_claim():
