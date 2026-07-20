@@ -126,9 +126,12 @@ OLD_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-old.$$"
 SNAPSHOT_BEFORE="$EVIDENCE_DIR/persistent-before.json"
 SNAPSHOT_AFTER="$EVIDENCE_DIR/persistent-after.json"
 SNAPSHOT_RECOVERY="$EVIDENCE_DIR/persistent-recovery.json"
-UNIT_BACKUP_ROOT="$EVIDENCE_DIR/systemd-unit-backup"
-UNIT_MUTATION_MARKER="$EVIDENCE_DIR/systemd-unit-mutation-armed"
+UNIT_ATTEMPT_ROOT=''
+UNIT_BACKUP_ROOT=''
+UNIT_MUTATION_MARKER=''
 mkdir -p -- "$EVIDENCE_DIR"
+rm -f -- "$EVIDENCE_DIR/systemd-unit-mutation-armed"
+rm -rf -- "$EVIDENCE_DIR/systemd-unit-backup"
 [ ! -e "$STAGING_ROOT" ] && [ ! -e "$OLD_ROOT" ] || die 'staging-path-exists'
 mkdir -- "$STAGING_ROOT"
 tar -xzf "$ARCHIVE" -C "$STAGING_ROOT" --no-same-owner --no-same-permissions
@@ -280,6 +283,22 @@ if os.name != "nt" and target.stat().st_mode & 0o077:
 PY
 }
 
+prepare_systemd_unit_attempt() {
+  [ -z "$UNIT_ATTEMPT_ROOT" ] || return 1
+  UNIT_ATTEMPT_ROOT="$(mktemp -d "$EVIDENCE_DIR/.systemd-unit-attempt.XXXXXXXX")"
+  UNIT_BACKUP_ROOT="$UNIT_ATTEMPT_ROOT/backup"
+  UNIT_MUTATION_MARKER="$UNIT_ATTEMPT_ROOT/armed"
+}
+
+disarm_systemd_unit_attempt() {
+  [ -n "$UNIT_ATTEMPT_ROOT" ] || return 0
+  rm -f -- "$UNIT_MUTATION_MARKER"
+  rm -rf -- "$UNIT_ATTEMPT_ROOT"
+  UNIT_ATTEMPT_ROOT=''
+  UNIT_BACKUP_ROOT=''
+  UNIT_MUTATION_MARKER=''
+}
+
 install_systemd_units() {
   python - "$RELEASE_ROOT" "$SYSTEMD_UNIT_DESTINATION" "$UNIT_BACKUP_ROOT" "$UNIT_MUTATION_MARKER" <<'PY'
 import hashlib
@@ -363,7 +382,7 @@ PY
 }
 
 restore_systemd_units() {
-  [ -f "$UNIT_MUTATION_MARKER" ] || return 0
+  [ -n "$UNIT_MUTATION_MARKER" ] && [ -f "$UNIT_MUTATION_MARKER" ] || return 0
   python - "$SYSTEMD_UNIT_DESTINATION" "$UNIT_BACKUP_ROOT" <<'PY'
 import json
 import os
@@ -509,6 +528,13 @@ install_recovery() {
       write_recovery_evidence rollback-failed "$root_restored" \
         "$persistent_restored" "$systemd_units_restored" || true
     fi
+
+    if [ -n "$UNIT_ATTEMPT_ROOT" ]; then
+      rm -f -- "$UNIT_MUTATION_MARKER" >/dev/null 2>&1 || true
+      if [ "$systemd_units_restored" = true ]; then
+        rm -rf -- "$UNIT_ATTEMPT_ROOT" >/dev/null 2>&1 || true
+      fi
+    fi
   fi
 
   rm -rf -- "$STAGING_ROOT" >/dev/null 2>&1 || true
@@ -618,6 +644,7 @@ snapshot_tree "$RELEASE_ROOT/agent/data" "$SNAPSHOT_AFTER"
 cmp -s -- "$SNAPSHOT_BEFORE" "$SNAPSHOT_AFTER" || die 'persistent-agent-data-bytes-changed'
 
 INSTALL_FAILURE_POINT=install-systemd-units
+prepare_systemd_unit_attempt
 install_systemd_units
 run_authority_hook systemd-units "$UNIT_VERIFY_HOOK" \
   --unit-root "$SYSTEMD_UNIT_DESTINATION" \
@@ -657,5 +684,6 @@ payload = {
 Path(sys.argv[1]).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
 
+disarm_systemd_unit_attempt
 INSTALL_COMPLETE=true
 exit 0

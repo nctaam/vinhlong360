@@ -22,6 +22,13 @@ INSTALL = OPS / "install_closed_release.sh"
 VERIFY = OPS / "verify_closed_release.py"
 BASH = Path(r"C:\Program Files\Git\bin\bash.exe")
 RUNBOOK = ROOT / "docs" / "runbooks" / "launch-safety-rollback.md"
+SYSTEMD_UNIT_NAMES = (
+    "vl-agent.service",
+    "vl-nuxt.service",
+    "vl-bot.service",
+    "vl-watchdog.service",
+    "vl-watchdog.timer",
+)
 
 
 @pytest.fixture(scope="module")
@@ -45,6 +52,16 @@ def _snapshot_tree(root: Path) -> dict[str, bytes]:
         for path in sorted(root.rglob("*"))
         if path.is_file()
     }
+
+
+def _unit_attempt_artifacts(evidence: Path) -> list[Path]:
+    return sorted(
+        [
+            *evidence.glob("systemd-unit-backup*"),
+            *evidence.glob("systemd-unit-mutation-armed*"),
+            *evidence.glob(".systemd-unit-attempt.*"),
+        ]
+    )
 
 
 def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
@@ -124,6 +141,24 @@ def _run_installer(
     include_sentinel: bool = True,
 ):
     prepared = _prepare_case(case_root, package, fail_after=fail_after)
+    result = _invoke_installer(
+        package,
+        case_root,
+        prepared,
+        failed_hook=failed_hook,
+        include_sentinel=include_sentinel,
+    )
+    return result, prepared
+
+
+def _invoke_installer(
+    package,
+    case_root: Path,
+    prepared,
+    *,
+    failed_hook: str | None = None,
+    include_sentinel: bool = True,
+):
     release, persistent, evidence, before_release, before_persistent, _, values = prepared
     if failed_hook is not None:
         hook_path = case_root / "runtime" / f"{failed_hook}-hook.sh"
@@ -164,7 +199,7 @@ def _run_installer(
         capture_output=True,
         text=True,
     )
-    return result, prepared
+    return result
 
 
 def _run_live_mount_failure_case(package, case_root: Path):
@@ -779,3 +814,77 @@ def test_runbook_local_success_command_creates_and_selects_required_authorities(
     assert "VL360_PYTHON_DEPENDENCY_HOOK=/tmp/vl360/runtime/install-python-dependencies" in local
     assert "VL360_NUXT_DEPENDENCY_HOOK=/tmp/vl360/runtime/install-nuxt-production-dependencies" in local
     assert "VL360_UNIT_VERIFY_HOOK=/tmp/vl360/runtime/verify-systemd-units" in local
+
+
+def test_same_evidence_retry_before_units_never_keeps_prior_rollback_state(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "same-evidence-before-units"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+    unit_destination = case_root / "runtime" / "systemd-units"
+
+    first = _invoke_installer(closed_package, case_root, prepared)
+    assert first.returncode == 0, first.stderr + first.stdout
+    installed_units = _snapshot_tree(unit_destination)
+
+    second = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="nuxt",
+    )
+
+    assert second.returncode == 19, second.stderr + second.stdout
+    assert _snapshot_tree(unit_destination) == installed_units
+    assert _unit_attempt_artifacts(evidence) == []
+    checks = json.loads(
+        (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
+    )
+    assert checks["results"]["nuxt-production-dependencies"] == "failed"
+    assert checks["exit_codes"]["nuxt-production-dependencies"] == 19
+
+
+def test_same_evidence_retry_during_units_restores_current_not_stale_destination(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "same-evidence-during-units"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, _ = prepared
+    unit_destination = case_root / "runtime" / "systemd-units"
+    unit_destination.mkdir()
+    for name in SYSTEMD_UNIT_NAMES:
+        (unit_destination / name).write_bytes(f"legacy-{name}\n".encode("ascii"))
+
+    first = _invoke_installer(closed_package, case_root, prepared)
+    assert first.returncode == 0, first.stderr + first.stdout
+    installed_units = _snapshot_tree(unit_destination)
+    installed_release = _snapshot_tree(release)
+    installed_persistent = _snapshot_tree(persistent)
+
+    second = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="units",
+    )
+
+    assert second.returncode == 19, second.stderr + second.stdout
+    assert _snapshot_tree(unit_destination) == installed_units
+    assert _snapshot_tree(release) == installed_release
+    assert _snapshot_tree(persistent) == installed_persistent
+    assert _unit_attempt_artifacts(evidence) == []
+    checks = json.loads(
+        (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
+    )
+    assert checks["results"]["systemd-units"] == "failed"
+    assert checks["exit_codes"]["systemd-units"] == 19
+    recovery = json.loads(
+        (evidence / "install-recovery.json").read_text(encoding="utf-8")
+    )
+    assert recovery["status"] == "rolled-back"
+    assert recovery["systemd_units_restored"] is True
