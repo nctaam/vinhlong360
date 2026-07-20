@@ -35,20 +35,33 @@ const safeMediaUrl = 'https://safe.example/media.webp'
 const invalidJavascript = 'javascript:alert(1)'
 const invalidObject = { url: 'not-a-url', note: '<script>bad</script>' }
 
-function installFetchDispatch() {
-  mocks.fetch.mockImplementation((input: unknown) => {
+interface FetchDispatchOptions {
+  entityImages?: string[]
+  addedImages?: string[]
+  uploadedImages?: string[]
+}
+
+function installFetchDispatch(options: FetchDispatchOptions = {}) {
+  const entityImages = options.entityImages ?? [safeEntityUrl]
+  mocks.fetch.mockImplementation((input: unknown, init?: { method?: string }) => {
     const url = String(input)
     if (url === '/admin-api/entity-schema') return Promise.resolve({ types: {} })
     if (url === '/admin-api/entity-kinds') return Promise.resolve({ kinds: [], grand_total: 0 })
     if (url.startsWith('/admin-api/entities?')) {
       return Promise.resolve({
-        entities: [{ id: 'entity-1', name: 'Địa điểm thử', type: 'experience', summary: 'Tóm tắt', images: [safeEntityUrl] }],
+        entities: [{ id: 'entity-1', name: 'Địa điểm thử', type: 'experience', summary: 'Tóm tắt', images: entityImages }],
         total: 1,
       })
     }
     if (url === '/admin-api/entities/places') return Promise.resolve([])
     if (url.startsWith('/api/entities/entity-1/relationships')) return Promise.resolve({ relationships: [] })
     if (url === '/admin-api/entities/entity-1/history') return Promise.resolve({ history: [] })
+    if (url === '/admin-api/entities/entity-1/images' && init?.method === 'POST') {
+      return Promise.resolve({ images: options.addedImages ?? [...entityImages, safeMediaUrl] })
+    }
+    if (url === '/admin-api/entities/entity-1/images/upload' && init?.method === 'POST') {
+      return Promise.resolve({ images: options.uploadedImages ?? [...entityImages, safeMediaUrl] })
+    }
     if (url.startsWith('/admin-api/media?')) {
       return Promise.resolve({
         items: [{ url: safeMediaUrl, entity_id: 'entity-1', entity_name: 'Địa điểm thử', entity_type: 'experience', credit: '', license: '', usage_count: 1 }],
@@ -162,6 +175,62 @@ describe('admin entity/media/self-learning image disclosure', () => {
     expect(provisional.findAll('pre').some(node => node.text().includes(invalidJavascript))).toBe(true)
     expect(provisional.findAll('pre').some(node => node.text().includes('not-a-url'))).toBe(true)
     provisional.unmount()
+  })
+
+  it('keeps a successful URL add truthful when the response includes a malformed legacy entry', async () => {
+    installFetchDispatch({
+      entityImages: [safeEntityUrl, invalidJavascript],
+      addedImages: [safeEntityUrl, invalidJavascript, safeMediaUrl],
+    })
+    const entities = await mountSuspended(EntitiesPage, {
+      global: { stubs: { LazyAdminKindCompleteness: true } },
+    })
+    await flushUi()
+    await entities.get('button[aria-label="Sửa Địa điểm thử"]').trigger('click')
+    await flushUi()
+
+    const input = entities.get('input[aria-label="URL ảnh AI biên tập mới"]')
+    await input.setValue(safeMediaUrl)
+    await entities.findAll('button').find(button => button.text() === 'Thêm ảnh')!.trigger('click')
+    await flushUi()
+
+    expect((input.element as HTMLInputElement).value).toBe('')
+    expect(mocks.showToast).toHaveBeenCalledWith('Đã thêm ảnh', 'success')
+    expect(entities.findAll('[data-admin-entity-image-row] img').map(node => node.attributes('src'))).toEqual([
+      safeEntityUrl,
+      safeMediaUrl,
+    ])
+    expect(entities.findAll('[data-admin-entity-image-row] pre').map(node => node.text())).toContain(invalidJavascript)
+    entities.unmount()
+  })
+
+  it('keeps a successful file upload truthful when the response includes a malformed legacy entry', async () => {
+    installFetchDispatch({
+      entityImages: [safeEntityUrl, invalidJavascript],
+      uploadedImages: [safeEntityUrl, invalidJavascript, safeMediaUrl],
+    })
+    const entities = await mountSuspended(EntitiesPage, {
+      global: { stubs: { LazyAdminKindCompleteness: true } },
+    })
+    await flushUi()
+    await entities.get('button[aria-label="Sửa Địa điểm thử"]').trigger('click')
+    await flushUi()
+
+    const input = entities.get('input[type="file"]')
+    Object.defineProperty(input.element, 'files', {
+      configurable: true,
+      value: [new File(['ai-image'], 'editorial.webp', { type: 'image/webp' })],
+    })
+    await input.trigger('change')
+    await flushUi()
+
+    expect(mocks.showToast).toHaveBeenCalledWith('Đã tải & tối ưu ảnh', 'success')
+    expect(entities.findAll('[data-admin-entity-image-row] img').map(node => node.attributes('src'))).toEqual([
+      safeEntityUrl,
+      safeMediaUrl,
+    ])
+    expect(entities.findAll('[data-admin-entity-image-row] pre').map(node => node.text())).toContain(invalidJavascript)
+    entities.unmount()
   })
 
   it('normalizes only canonical AI editorial entity uploads', () => {

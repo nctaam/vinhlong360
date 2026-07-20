@@ -28,7 +28,7 @@
         </div>
         <div v-else class="dth-review-list" aria-label="Entity tự học chờ duyệt">
           <article
-            v-for="e in provisional"
+            v-for="{ review: e, imageRows, placeholder } in provisionalRows"
             :key="e.id"
             class="dth-review-card"
             :aria-labelledby="`review-title-${e.id}`"
@@ -90,8 +90,8 @@
 
             <section class="dth-review-section" data-self-learning-inspector>
               <h4>Hình ảnh</h4>
-              <ul v-if="provisionalImageRows(e.entity).length" class="dth-image-list">
-                <li v-for="row in provisionalImageRows(e.entity)" :key="`${e.id}-image-${row.index}`" data-provisional-image-row>
+              <ul v-if="imageRows.length" class="dth-image-list">
+                <li v-for="row in imageRows" :key="`${e.id}-image-${row.index}`" data-provisional-image-row>
                   <template v-if="row.descriptor?.url">
                     <a
                       :href="row.descriptor.url"
@@ -111,7 +111,7 @@
               </ul>
               <span v-else class="dth-image-placeholder">
                 <span class="admin-muted">—</span>
-                <ImageDisclosure :descriptor="describeEntityPlaceholder(e.entity)" presentation="full" />
+                <ImageDisclosure :descriptor="placeholder" presentation="full" />
               </span>
             </section>
 
@@ -218,6 +218,11 @@ const loadError = ref(false)
 const acting = ref<string | null>(null)
 const loadingSources = ref(false)
 const expandedSnapshots = ref(new Set<string>())
+const provisionalRows = computed(() => provisional.value.map(review => ({
+  review,
+  imageRows: provisionalImageRows(review.entity),
+  placeholder: describeEntityPlaceholder(review.entity),
+})))
 
 async function loadProvisional(preserveCurrent = false) {
   if (!preserveCurrent) {

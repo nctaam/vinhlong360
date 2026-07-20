@@ -125,18 +125,18 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="e in sortedEntities" :key="e.id" :class="{ 'row-selected': selected.has(e.id), 'row-acting': acting === e.id }">
+          <tr v-for="{ entity: e, descriptor: tableImage, imageCount, disclosureId } in entityTableRows" :key="e.id" :class="{ 'row-selected': selected.has(e.id), 'row-acting': acting === e.id }">
             <td><input type="checkbox" :checked="selected.has(e.id)" @change="toggleSel(e.id)" :aria-label="`Chọn ${e.name}`" /></td>
             <td class="admin-td-id">{{ e.id }}</td>
             <td>
               <div class="ent-name-cell">
                 <div class="ent-thumb-stack" data-admin-entity-thumbnail>
-                  <div class="ent-thumb" :class="{ 'ent-thumb-empty': !entityTableImage(e).url }">
+                  <div class="ent-thumb" :class="{ 'ent-thumb-empty': !tableImage.url }">
                     <img
-                      v-if="entityTableImage(e).url"
-                      :src="entityTableImage(e).url!"
-                      :alt="entityTableImage(e).alt"
-                      :aria-describedby="entityTableDisclosureId(e)"
+                      v-if="tableImage.url"
+                      :src="tableImage.url"
+                      :alt="tableImage.alt"
+                      :aria-describedby="disclosureId"
                       width="32"
                       height="32"
                       loading="lazy"
@@ -146,8 +146,8 @@
                     <span v-else aria-hidden="true">&#128247;</span>
                   </div>
                   <ImageDisclosure
-                    :id="entityTableDisclosureId(e)"
-                    :descriptor="entityTableImage(e)"
+                    :id="disclosureId"
+                    :descriptor="tableImage"
                     presentation="short"
                   />
                 </div>
@@ -196,7 +196,7 @@
             </td>
             <td class="ent-health-cell">
               <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" :aria-label="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" role="img">{{ e.summary ? '✓' : '✗' }}</span>
-              <span class="ent-dot" :class="entityImageCount(e) ? 'dot-ok' : 'dot-miss'" :title="entityImageCount(e) ? `${entityImageCount(e)} ảnh` : 'Thiếu ảnh'" :aria-label="entityImageCount(e) ? `${entityImageCount(e)} ảnh` : 'Thiếu ảnh'" role="img">{{ entityImageCount(e) ? '✓' : '✗' }}</span>
+              <span class="ent-dot" :class="imageCount ? 'dot-ok' : 'dot-miss'" :title="imageCount ? `${imageCount} ảnh` : 'Thiếu ảnh'" :aria-label="imageCount ? `${imageCount} ảnh` : 'Thiếu ảnh'" role="img">{{ imageCount ? '✓' : '✗' }}</span>
               <span class="ent-dot" :class="e.placeId ? 'dot-ok' : 'dot-miss'" :title="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" :aria-label="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" role="img">{{ e.placeId ? '✓' : '✗' }}</span>
             </td>
             <td class="admin-actions">
@@ -598,14 +598,6 @@ function disclosureToken(value: unknown): string {
   return String(value || 'image').replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'image'
 }
 
-function entityTableImage(entity: Entity): ImageDescriptor {
-  return describeEntityImages(entity)[0] ?? describeEntityPlaceholder(entity)
-}
-
-function entityImageCount(entity: Entity): number {
-  return describeEntityImages(entity).length
-}
-
 function entityTableDisclosureId(entity: Entity): string {
   return `admin-entity-thumbnail-${disclosureToken(entity.id)}-disclosure`
 }
@@ -646,6 +638,11 @@ function normalizedEntityImageUrls(name: string, values: unknown[]): string[] {
     const normalized = normalizeEntityEditorialUpload(descriptor ?? value)
     return normalized.url as string
   })
+}
+
+function reconcileEntityImageResponse(value: unknown, fallback: string[]): string[] {
+  if (!Array.isArray(value) || value.some(image => typeof image !== 'string')) return fallback
+  return [...value]
 }
 
 // When the admin switches type inside the form, re-seed typed fields from any
@@ -771,6 +768,15 @@ const sortedEntities = computed(() => {
     return va < vb ? -dir : va > vb ? dir : 0
   })
 })
+const entityTableRows = computed(() => sortedEntities.value.map((entity) => {
+  const descriptors = describeEntityImages(entity)
+  return {
+    entity,
+    descriptor: descriptors[0] ?? describeEntityPlaceholder(entity),
+    imageCount: descriptors.length,
+    disclosureId: entityTableDisclosureId(entity),
+  }
+}))
 // Additive UX state — does not alter save/data path
 const loadError = ref(false)
 const searching = ref(false)
@@ -1211,8 +1217,9 @@ async function addImage() {
     )
     const r = await $fetch<EntityImagesResponse>(`/admin-api/entities/${form.value.id}/images`, {
       method: 'POST', headers: authHeaders(), body: { url: descriptor.url } })
-    form.value.images = normalizedEntityImageUrls(form.value.name, r.images || form.value.images)
+    form.value.images = reconcileEntityImageResponse(r.images, [...form.value.images, descriptor.url as string])
     newImage.value = ''
+    showToast('Đã thêm ảnh', 'success')
   } catch (e: unknown) { showToast(getErrorDetail(e, 'Thêm ảnh lỗi'), 'error') }
 }
 async function removeImage(idx: number) {
@@ -1235,7 +1242,7 @@ async function uploadImageFile(e: Event) {
     fd.append('file', file)
     const r = await $fetch<Record<string, any>>(`/admin-api/entities/${form.value.id}/images/upload`, {
       method: 'POST', headers: authHeaders(), body: fd })
-    form.value.images = normalizedEntityImageUrls(form.value.name, (r.images as unknown[]) || form.value.images)
+    form.value.images = reconcileEntityImageResponse(r.images, form.value.images)
     showToast('Đã tải & tối ưu ảnh', 'success')
     input.value = ''
   } catch (err: unknown) { showToast(getErrorDetail(err, 'Tải ảnh lỗi'), 'error') }

@@ -53,13 +53,13 @@
 
     <!-- Image grid -->
     <div class="media-grid" data-admin-media-grid>
-      <button v-for="(item, index) in items" :key="mediaItemKey(item, index)" type="button" class="media-card" data-open-preview :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item">
+      <button v-for="{ item, descriptor, itemKey, disclosureId } in mediaRows" :key="itemKey" type="button" class="media-card" data-open-preview :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item">
         <div class="media-img-wrap">
           <img
-            v-if="mediaDescriptor(item).url"
-            :src="mediaDescriptor(item).url!"
-            :alt="mediaDescriptor(item).alt"
-            :aria-describedby="mediaDisclosureId(item, index)"
+            v-if="descriptor.url"
+            :src="descriptor.url"
+            :alt="descriptor.alt"
+            :aria-describedby="disclosureId"
             width="400"
             height="300"
             loading="lazy"
@@ -72,7 +72,7 @@
         <div class="media-card-info">
           <span class="media-entity-name">{{ item.entity_name }}</span>
           <span class="media-entity-type">{{ item.entity_type }}</span>
-          <ImageDisclosure :id="mediaDisclosureId(item, index)" :descriptor="mediaDescriptor(item)" presentation="short" />
+          <ImageDisclosure :id="disclosureId" :descriptor="descriptor" presentation="short" />
           <span v-if="item.credit" class="media-credit">{{ item.credit }}</span>
           <span v-else class="media-no-credit">Thiếu credit</span>
         </div>
@@ -184,6 +184,12 @@ function mediaDisclosureId(item: AdminMediaItem, index: number): string {
 
 const previewDescriptor = computed(() => previewItem.value ? mediaDescriptor(previewItem.value) : null)
 const mediaPreviewDisclosureId = computed(() => `admin-media-preview-${mediaToken(previewItem.value?.entity_id)}-disclosure`)
+const mediaRows = computed(() => items.value.map((item, index) => ({
+  item,
+  descriptor: mediaDescriptor(item),
+  itemKey: mediaItemKey(item, index),
+  disclosureId: mediaDisclosureId(item, index),
+})))
 
 function formatMediaValue(value: unknown): string {
   if (typeof value === 'string') return value
