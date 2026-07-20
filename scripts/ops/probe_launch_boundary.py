@@ -17,6 +17,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+from types import MappingProxyType
 from typing import Any
 from urllib.error import HTTPError
 from urllib.parse import urlsplit, urlunsplit
@@ -35,6 +36,128 @@ LAUNCH_EVIDENCE_HEADERS = frozenset(
         "x-launch-sitemap-requested-batch",
     }
 )
+
+_LAUNCH_MATRIX_POLICY_FINGERPRINT = (
+    "ef12661b898905bd8b31804475aca64accd4c8b2df32b5252c3b2f61eeeca44c"
+)
+_LAUNCH_MATRIX_ROUTE_MANIFEST_REVISION = "launch-indexing-policy-v1"
+_LAUNCH_MATRIX_BACKEND_POLICY_REVISION = "index-policy-v1"
+_LAUNCH_MATRIX_SITEMAP_BATCH_REVISION = "b" * 64
+
+
+def _freeze_mapping(value: Mapping[str, object]) -> Mapping[str, object]:
+    return MappingProxyType(dict(value))
+
+
+def load_launch_matrix_contract() -> Mapping[str, Mapping[str, object]]:
+    """Return the immutable seven-case launch response contract.
+
+    The contract deliberately stores only stable response facts.  Runtime
+    probes and integration tests use the same mapping so policy cases cannot
+    drift between their assertions.
+    """
+
+    page_evidence = _freeze_mapping(
+        {
+            "x-launch-policy-fingerprint": _LAUNCH_MATRIX_POLICY_FINGERPRINT,
+            "x-launch-route-manifest-revision": _LAUNCH_MATRIX_ROUTE_MANIFEST_REVISION,
+            "x-launch-backend-policy-revision": _LAUNCH_MATRIX_BACKEND_POLICY_REVISION,
+        }
+    )
+    pinned_evidence = _freeze_mapping(
+        {
+            **page_evidence,
+            "x-launch-sitemap-batch-revision": _LAUNCH_MATRIX_SITEMAP_BATCH_REVISION,
+        }
+    )
+
+    cases: dict[str, Mapping[str, object]] = {
+        "closed": _freeze_mapping(
+            {
+                "policy": "closed",
+                "robots": "noindex, follow",
+                "evidence_headers": _freeze_mapping({}),
+                "sitemap_discovery": False,
+                "sitemap_status": 200,
+                "requires_matching_batch_revision": False,
+                "fixture": "closed-with-backend-sentinel",
+                "surface": "/",
+            }
+        ),
+        "selective-static": _freeze_mapping(
+            {
+                "policy": "selective-open",
+                "robots": "index, follow",
+                "evidence_headers": page_evidence,
+                "sitemap_discovery": True,
+                "sitemap_status": 200,
+                "requires_matching_batch_revision": False,
+                "fixture": "matching-backend",
+                "surface": "/du-lich",
+            }
+        ),
+        "selective-entity-positive": _freeze_mapping(
+            {
+                "policy": "selective-open",
+                "robots": "index, follow",
+                "evidence_headers": page_evidence,
+                "sitemap_discovery": True,
+                "sitemap_status": 200,
+                "requires_matching_batch_revision": False,
+                "fixture": "matching-indexable-entity",
+                "surface": "/dia-diem/launch-matrix-positive",
+            }
+        ),
+        "selective-entity-negative": _freeze_mapping(
+            {
+                "policy": "selective-open",
+                "robots": "noindex, follow",
+                "evidence_headers": page_evidence,
+                "sitemap_discovery": True,
+                "sitemap_status": 200,
+                "requires_matching_batch_revision": False,
+                "fixture": "matching-noindex-entity",
+                "surface": "/dia-diem/launch-matrix-negative",
+            }
+        ),
+        "entity-request-failed-open": _freeze_mapping(
+            {
+                "policy": "failed-open",
+                "robots": "noindex, follow",
+                "evidence_headers": _freeze_mapping({}),
+                "sitemap_discovery": False,
+                "sitemap_status": 503,
+                "requires_matching_batch_revision": False,
+                "fixture": "failed-entity-request",
+                "surface": "/dia-diem/launch-matrix-failed",
+            }
+        ),
+        "sitemap-pinned": _freeze_mapping(
+            {
+                "policy": "selective-open",
+                "robots": None,
+                "evidence_headers": pinned_evidence,
+                "sitemap_discovery": True,
+                "sitemap_status": 200,
+                "requires_matching_batch_revision": True,
+                "fixture": "matching-pinned-sitemap",
+                "surface": "/sitemap.xml",
+            }
+        ),
+        "agent-absent-closed": _freeze_mapping(
+            {
+                "policy": "closed",
+                "robots": "noindex, follow",
+                "evidence_headers": _freeze_mapping({}),
+                "sitemap_discovery": False,
+                "sitemap_status": 200,
+                "requires_matching_batch_revision": False,
+                "fixture": "agent-absent",
+                "surface": "/",
+            }
+        ),
+    }
+    return MappingProxyType(cases)
 
 EMPTY_URLSET = (
     '<?xml version="1.0" encoding="UTF-8"?>'
@@ -319,9 +442,29 @@ def _timeout(value: str) -> float:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Probe the closed launch boundary.")
-    parser.add_argument("--expect", choices=("maintenance", "closed"), required=True)
+    parser.add_argument("--expect", choices=("maintenance", "closed"))
     parser.add_argument("--operator-source", action="store_true")
     parser.add_argument("--require-public-post-reopen-matrix", action="store_true")
+    parser.add_argument(
+        "--maintenance-probe",
+        action="store_true",
+        help="Compatibility alias for the operator-source closed maintenance probe.",
+    )
+    parser.add_argument("--process-local-readiness", action="store_true")
+    parser.add_argument("--require-complete-check-set", action="store_true")
+    for flag in (
+        "--require-rich-html",
+        "--require-thin-html",
+        "--require-meta-robots",
+        "--require-no-sitemap",
+        "--require-three-empty-sitemaps",
+        "--require-no-store",
+        "--require-no-evidence",
+        "--require-no-discovery",
+        "--require-public-internal-404",
+        "--require-direct-bypass-denied",
+    ):
+        parser.add_argument(flag, action="store_true")
     parser.add_argument("--base-url", default=os.environ.get("VL360_LAUNCH_PUBLIC_URL", DEFAULT_BASE_URL))
     parser.add_argument("--timeout-seconds", type=_timeout, default=8.0)
     parser.add_argument("--evidence", type=Path)
@@ -329,6 +472,31 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    compatibility_flags = (
+        args.maintenance_probe
+        or args.process_local_readiness
+        or args.require_complete_check_set
+        or args.require_rich_html
+        or args.require_thin_html
+        or args.require_meta_robots
+        or args.require_no_sitemap
+        or args.require_three_empty_sitemaps
+        or args.require_no_store
+        or args.require_no_evidence
+        or args.require_no_discovery
+        or args.require_public_internal_404
+        or args.require_direct_bypass_denied
+    )
+    if args.expect is None:
+        if not compatibility_flags:
+            parser.error("one of --expect or --maintenance-probe is required")
+        args.expect = "maintenance"
+        args.operator_source = True
+    elif compatibility_flags and args.expect == "maintenance":
+        # Task44 callers may provide --expect maintenance with the richer
+        # assertion vocabulary; preserve the old explicit mode as-is.
+        args.operator_source = True
+
     if args.expect == "maintenance":
         if not args.operator_source or args.require_public_post_reopen_matrix:
             parser.error("maintenance mode requires operator-source")
