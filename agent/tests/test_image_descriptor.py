@@ -207,6 +207,22 @@ def test_entity_and_review_images_have_distinct_source_classes():
     )
 
 
+@pytest.mark.parametrize("credit", [None, "", "   ", 7, object()])
+def test_review_image_keeps_valid_image_when_author_credit_is_blank_or_non_string(
+    credit: object,
+):
+    descriptor = describe_review_image(
+        "/img/review.jpg",
+        entity_name="Chùa Vàm Ray",
+        credit=credit,
+        disclosure=DISCLOSURE,
+    )
+
+    assert descriptor is not None
+    assert descriptor.url == "/img/review.jpg"
+    assert descriptor.credit is None
+
+
 def _valid_api_descriptor(**overrides: object) -> dict[str, object]:
     descriptor = describe_review_image(
         "/img/review.jpg",
@@ -311,3 +327,21 @@ def test_gallery_helpers_keep_entity_images_before_review_images():
         "review-ugc",
     ]
     assert GalleryResponse.model_validate({"images": images}).model_dump()["images"] == images
+
+
+@pytest.mark.parametrize("display_name", [None, "", "   ", 7, object()])
+def test_gallery_review_images_normalize_invalid_display_name_to_null_credit(
+    display_name: object,
+):
+    import public_api
+
+    images: list[dict] = []
+    public_api._append_review_gallery_images(
+        images,
+        [{"images": ["/img/review.jpg"], "display_name": display_name}],
+        "Chùa Vàm Ray",
+    )
+
+    assert len(images) == 1
+    assert images[0]["url"] == "/img/review.jpg"
+    assert images[0]["credit"] is None

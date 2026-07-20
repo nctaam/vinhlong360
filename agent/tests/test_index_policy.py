@@ -618,6 +618,25 @@ def test_all_entity_media_shapes_receive_zero_quality_credit(images: object):
     assert decide_entity(entity, EVIDENCE).indexable is False
 
 
+@pytest.mark.parametrize(
+    "ugc_field",
+    [
+        {"review_images": [{"url": "/review.jpg"}]},
+        {"post_images": [{"url": "/post.jpg"}]},
+        {"reviews": [{"images": ["/review.jpg"]}]},
+        {"posts": [{"images": ["/post.jpg"]}]},
+    ],
+)
+def test_ugc_image_descriptors_do_not_change_thin_entity_index_policy(
+    ugc_field: dict[str, object],
+):
+    entity = _public_entity(summary=_words(129), **ugc_field)
+
+    assert decide_entity(entity, EVIDENCE) == decide_entity(
+        _public_entity(summary=_words(129)), EVIDENCE
+    )
+
+
 def test_decide_entity_requires_a_mapping_and_does_not_mutate_or_alias_the_caller():
     with pytest.raises(TypeError, match="entity must be a mapping"):
         decide_entity([], EVIDENCE)  # type: ignore[arg-type]

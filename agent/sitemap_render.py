@@ -42,6 +42,7 @@ SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 IMAGE_NAMESPACE = "http://www.google.com/schemas/sitemap-image/1.1"
 MAX_SITEMAP_URLS = 50_000
 _BATCH_REVISION_PATTERN = r"[0-9a-f]{64}"
+_SITEMAP_IMAGE_TRIPLE = ("ai-generated", "entity-editorial", "entity-ai")
 
 
 def compute_batch_revision(
@@ -72,30 +73,36 @@ def compute_batch_revision(
 def _validate_sitemap_origin(origin: object) -> str:
     if type(origin) is not str:
         raise TypeError("sitemap origin must be an exact string")
-    if (
-        not origin
-        or "\\" in origin
-        or any(ord(character) < 0x21 or ord(character) > 0x7E for character in origin)
-    ):
+    if not _has_valid_origin_characters(origin):
         raise ValueError("sitemap origin contains invalid characters")
     parsed = urlsplit(origin)
     try:
         parsed.port
     except ValueError as error:
         raise ValueError("sitemap origin has an invalid port") from error
-    if (
-        parsed.scheme != "https"
-        or not parsed.hostname
-        or parsed.username is not None
-        or parsed.password is not None
-        or parsed.path
-        or parsed.query
-        or parsed.fragment
-        or parsed.netloc != parsed.hostname
-        or origin != f"https://{parsed.hostname}"
-    ):
+    if not _is_canonical_https_origin(origin, parsed):
         raise ValueError("sitemap origin must be a canonical HTTPS origin")
     return origin
+
+
+def _has_valid_origin_characters(origin: str) -> bool:
+    return bool(origin) and "\\" not in origin and all(
+        0x21 <= ord(character) <= 0x7E for character in origin
+    )
+
+
+def _is_canonical_https_origin(origin: str, parsed) -> bool:
+    return (
+        parsed.scheme == "https"
+        and bool(parsed.hostname)
+        and parsed.username is None
+        and parsed.password is None
+        and not parsed.path
+        and not parsed.query
+        and not parsed.fragment
+        and parsed.netloc == parsed.hostname
+        and origin == f"https://{parsed.hostname}"
+    )
 
 
 def _validate_batch_revision(batch: object) -> str:
@@ -194,6 +201,19 @@ def resolve_sitemap_image_url(
     return resolved
 
 
+def _is_sitemap_image_descriptor(value: object) -> bool:
+    """Allow only canonical AI editorial descriptors into the media sitemap."""
+    return (
+        type(value) is ImageDescriptor
+        and (
+            value.source_class,
+            value.source_kind,
+            value.disclosure_key,
+        )
+        == _SITEMAP_IMAGE_TRIPLE
+    )
+
+
 def serialize_image_urlset(
     pages: Mapping[str, Mapping[str, ImageDescriptor]],
 ) -> bytes:
@@ -211,10 +231,7 @@ def serialize_image_urlset(
         SubElement(node, "loc").text = page_url
         for image_url in sorted(descriptors):
             descriptor = descriptors[image_url]
-            if (
-                type(descriptor) is not ImageDescriptor
-                or descriptor.source_class != "ai-generated"
-            ):
+            if not _is_sitemap_image_descriptor(descriptor):
                 continue
             image = SubElement(node, "image:image")
             SubElement(image, "image:loc").text = image_url
@@ -276,7 +293,7 @@ def render_media_sitemap(
         if page_url is None:
             continue
         for descriptor in describe_entity_images(entity, disclosure=disclosure):
-            if descriptor.source_class != "ai-generated":
+            if not _is_sitemap_image_descriptor(descriptor):
                 continue
             image_url = resolve_sitemap_image_url(descriptor.url, manifest)
             if image_url is not None:

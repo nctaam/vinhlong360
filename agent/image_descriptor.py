@@ -179,8 +179,9 @@ def describe_review_image(
     loaded_disclosure = _require_disclosure(disclosure)
     if type(entity_name) is not str or not entity_name.strip():
         return None
-    if credit is not None and (type(credit) is not str or not credit.strip()):
-        return None
+    normalized_credit = (
+        credit if type(credit) is str and credit.strip() else None
+    )
     url = normalize_renderable_image_url(raw)
     if url is None:
         return None
@@ -193,7 +194,7 @@ def describe_review_image(
         disclosure_key="ugc-photo",
         short_label=copy.short_label,
         full_disclosure=copy.full_disclosure,
-        credit=credit,
+        credit=normalized_credit,
         width=None,
         height=None,
     )

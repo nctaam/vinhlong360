@@ -2566,6 +2566,8 @@ def _append_review_gallery_images(images: list[dict], review_rows: list[dict], e
         if type(review_imgs) not in {list, tuple}:
             continue
         credit = row.get("display_name")
+        if type(credit) is not str or not credit.strip():
+            credit = None
         for url in review_imgs:
             descriptor = describe_review_image(
                 url,

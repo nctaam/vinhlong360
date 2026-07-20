@@ -12,6 +12,7 @@ sys.path.insert(0, str(AGENT))
 
 from launch_evidence import INDEX_POLICY_REVISION, PolicyEvidence  # noqa: E402
 from ai_disclosure import load_ai_disclosure  # noqa: E402
+from image_descriptor import ImageDescriptor  # noqa: E402
 from route_manifest import extract_static_sitemap_paths, load_route_manifest  # noqa: E402
 import sitemap_render  # noqa: E402
 from sitemap_render import (  # noqa: E402
@@ -421,6 +422,55 @@ def test_media_sitemap_uses_only_entity_editorial_images_and_minimal_tags():
         b"image:geo_location",
     ):
         assert forbidden not in xml
+
+
+@pytest.mark.parametrize(
+    "descriptor",
+    [
+        ImageDescriptor(
+            url="/ugc.jpg",
+            alt="UGC",
+            source_class="user-uploaded",
+            source_kind="review-ugc",
+            disclosure_key="ugc-photo",
+            short_label=DISCLOSURE.ugc_photo.short_label,
+            full_disclosure=DISCLOSURE.ugc_photo.full_disclosure,
+            credit="Lan",
+            width=None,
+            height=None,
+        ),
+        ImageDescriptor(
+            url="/contradictory.jpg",
+            alt="Contradictory",
+            source_class="ai-generated",
+            source_kind="review-ugc",
+            disclosure_key="ugc-photo",
+            short_label=DISCLOSURE.ugc_photo.short_label,
+            full_disclosure=DISCLOSURE.ugc_photo.full_disclosure,
+            credit="Lan",
+            width=None,
+            height=None,
+        ),
+        object(),
+    ],
+)
+def test_media_sitemap_requires_exact_ai_editorial_descriptor_before_page_node(
+    monkeypatch, descriptor: object
+):
+    entity = _entity("ugc-only", images=["/ignored.webp"])
+    monkeypatch.setattr(
+        sitemap_render,
+        "describe_entity_images",
+        lambda _entity, disclosure: (descriptor,),
+    )
+
+    entries = _media_entries(
+        render_media_sitemap(
+            _snapshot(entity), load_route_manifest(), EVIDENCE, DISCLOSURE
+        )
+    )
+
+    assert entries == []
 
 
 @pytest.mark.parametrize(
