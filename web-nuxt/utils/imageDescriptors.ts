@@ -201,6 +201,148 @@ export function normalizeReviewPhoto(input: {
   return parsed
 }
 
+type UGCPhotoInput = {
+  url: unknown
+  alt: unknown
+  credit?: unknown
+}
+
+function normalizeUgcPhoto(
+  input: UGCPhotoInput,
+  sourceKind: 'post-ugc' | 'review-ugc',
+  label: 'post' | 'review',
+): Readonly<ImageDescriptor> | null {
+  const url = normalizeRenderableImageUrl(input.url)
+  if (url === null) return null
+
+  if (typeof input.alt !== 'string' || !input.alt.trim()) {
+    throw new TypeError(`${label} photo alt must be non-blank`)
+  }
+  if (input.credit !== undefined && input.credit !== null && typeof input.credit !== 'string') {
+    throw new TypeError(`${label} photo credit must be a string`)
+  }
+  const credit = typeof input.credit === 'string' ? input.credit.trim() || null : null
+  const descriptor = {
+    url,
+    alt: input.alt.trim(),
+    source_class: 'user-uploaded' as const,
+    source_kind: sourceKind,
+    disclosure_key: 'ugc-photo' as const,
+    short_label: aiDisclosure.ugc_photo.short_label,
+    full_disclosure: aiDisclosure.ugc_photo.full_disclosure,
+    credit,
+    width: null,
+    height: null,
+  }
+  return parseGalleryDescriptor(descriptor)
+}
+
+function suppliedUgcDescriptor(value: unknown, sourceKind: 'post-ugc' | 'review-ugc'): Readonly<ImageDescriptor> | null {
+  const parsed = parseGalleryDescriptor(value)
+  if (!parsed || parsed.source_class !== 'user-uploaded' || parsed.source_kind !== sourceKind || parsed.disclosure_key !== 'ugc-photo') return null
+  return parseGalleryDescriptor({
+    ...parsed,
+    alt: parsed.alt.trim(),
+    credit: parsed.credit?.trim() || null,
+  })
+}
+
+function imageRows(input: any): unknown[] {
+  if (Array.isArray(input)) return input
+  if (Array.isArray(input?.images)) return input.images
+  return []
+}
+
+function descriptorRows(input: any): unknown[] {
+  if (Array.isArray(input?.image_descriptors)) return input.image_descriptors
+  if (Object.prototype.hasOwnProperty.call(input || {}, 'image_descriptor')) return [input.image_descriptor]
+  return []
+}
+
+function creditAt(input: any, index: number): unknown {
+  const credits = input?.image_credits ?? input?.credits ?? input?.imageCredits
+  return Array.isArray(credits) ? credits[index] : input?.credit
+}
+
+function describedCredit(value: unknown): string | null {
+  return typeof value === 'string' ? value.trim() || null : null
+}
+
+function describedAlt(value: unknown, fallback: string): string {
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback
+}
+
+/** Normalize post-uploaded media without inferring or changing its source classification. */
+export function normalizePostPhoto(input: UGCPhotoInput): Readonly<ImageDescriptor> | null {
+  return normalizeUgcPhoto(input, 'post-ugc', 'post')
+}
+
+/** Describe only post UGC; pre-classified non-post descriptors are ignored, never reclassified. */
+export function describePostImages(input: any): ImageDescriptor[] {
+  const supplied = descriptorRows(input).flatMap(value => {
+    const descriptor = suppliedUgcDescriptor(value, 'post-ugc')
+    return descriptor ? [descriptor] : []
+  })
+  if (descriptorRows(input).length) return supplied
+
+  const name = typeof input?.display_name === 'string' && input.display_name.trim()
+    ? input.display_name.trim()
+    : 'Bài viết'
+  return imageRows(input).flatMap((value, index) => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const row = value as Record<string, unknown>
+      const descriptor = suppliedUgcDescriptor(row, 'post-ugc')
+      if (descriptor) return [descriptor]
+      if (Object.prototype.hasOwnProperty.call(row, 'source_class')) return []
+      const normalized = normalizePostPhoto({
+        url: row.url,
+        alt: describedAlt(row.alt, `${name} — ảnh bài viết ${index + 1}`),
+        credit: describedCredit(row.credit ?? creditAt(input, index)),
+      })
+      return normalized ? [normalized] : []
+    }
+    const descriptor = normalizePostPhoto({
+      url: value,
+      alt: `${name} — ảnh bài viết ${index + 1}`,
+      credit: describedCredit(creditAt(input, index)),
+    })
+    return descriptor ? [descriptor] : []
+  })
+}
+
+/** Describe only review UGC; pre-classified non-review descriptors are ignored, never reclassified. */
+export function describeReviewImages(input: any): ImageDescriptor[] {
+  const supplied = descriptorRows(input).flatMap(value => {
+    const descriptor = suppliedUgcDescriptor(value, 'review-ugc')
+    return descriptor ? [descriptor] : []
+  })
+  if (descriptorRows(input).length) return supplied
+
+  const name = typeof input?.display_name === 'string' && input.display_name.trim()
+    ? input.display_name.trim()
+    : 'Đánh giá'
+  return imageRows(input).flatMap((value, index) => {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const row = value as Record<string, unknown>
+      const descriptor = suppliedUgcDescriptor(row, 'review-ugc')
+      if (descriptor) return [descriptor]
+      if (Object.prototype.hasOwnProperty.call(row, 'source_class')) return []
+      const normalized = normalizeUgcPhoto({
+        url: row.url,
+        alt: describedAlt(row.alt, `${name} — ảnh đánh giá ${index + 1}`),
+        credit: describedCredit(row.credit ?? creditAt(input, index)),
+      }, 'review-ugc', 'review')
+      return normalized ? [normalized] : []
+    }
+    const descriptor = normalizeUgcPhoto({
+      url: value,
+      alt: `${name} — ảnh đánh giá ${index + 1}`,
+      credit: describedCredit(creditAt(input, index)),
+    }, 'review-ugc', 'review')
+    return descriptor ? [descriptor] : []
+  })
+}
+
 type EntityImageLike = {
   id?: unknown
   name?: unknown

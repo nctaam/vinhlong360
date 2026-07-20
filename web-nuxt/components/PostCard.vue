@@ -60,15 +60,16 @@
         <span v-else class="tre-deleted"><span class="emoji-chip" aria-hidden="true">🔁</span> Bài viết gốc đã bị xoá</span>
       </NuxtLink>
 
-      <div v-if="post.images?.length" class="thread-images" :class="imgLayoutClass">
+      <div v-if="postImageDescriptors.length" class="thread-images" :class="imgLayoutClass" data-source-class="user-uploaded">
         <button type="button"
           v-for="(img, i) in displayImages"
-          :key="i"
+          :key="img.url || i"
           class="thread-img-wrap"
           @click="openLightbox(i)"
         >
-          <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`${post.display_name || 'Bài viết'} — ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="onImgError" />
-          <img v-else :src="img" :alt="`${post.display_name || 'Bài viết'} — ảnh ${i + 1}`" loading="lazy" decoding="async" width="400" height="300" @error="onImgError" />
+          <NuxtImg v-if="img.url && isRemoteUrl(img.url)" :src="img.url" :alt="img.alt" :aria-describedby="postImageDisclosureId(i)" loading="lazy" decoding="async" width="400" height="300" sizes="sm:100vw md:50vw lg:400px" @error="onImgError" />
+          <img v-else-if="img.url" :src="img.url" :alt="img.alt" :aria-describedby="postImageDisclosureId(i)" loading="lazy" decoding="async" width="400" height="300" @error="onImgError" />
+          <ImageDisclosure :id="postImageDisclosureId(i)" :descriptor="img" presentation="short" />
           <span v-if="i === 3 && extraCount > 0" class="thread-img-more">+{{ extraCount }}</span>
         </button>
       </div>
@@ -108,12 +109,14 @@
     <Teleport to="body">
       <div v-if="lbOpen" ref="lbEl" class="lightbox" role="dialog" aria-modal="true" aria-label="Xem ảnh" @click.self="closeLightbox">
         <button type="button" class="lb-close" aria-label="Đóng" @click="closeLightbox">&times;</button>
-        <button type="button" v-if="allImages.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
+        <button type="button" v-if="postImageDescriptors.length > 1" class="lb-prev" aria-label="Ảnh trước" @click="lbPrev">&#8249;</button>
         <img
+          v-if="activeImage?.url"
           :key="lbIdx"
-          :src="allImages[lbIdx]"
+          :src="activeImage.url"
           class="lb-img"
-          :alt="`Ảnh ${lbIdx + 1} / ${allImages.length}`"
+          :alt="activeImage.alt"
+          :aria-describedby="lightboxDisclosureId"
           loading="eager"
           decoding="async"
           :style="lbDragStyle"
@@ -122,14 +125,20 @@
           @touchend="onLbTouchEnd"
           @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')"
         />
-        <button type="button" v-if="allImages.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
-        <span class="lb-counter">{{ lbIdx + 1 }} / {{ allImages.length }}</span>
+        <span v-if="activeImage" :id="lightboxDisclosureId" class="lb-caption" data-full-disclosure>
+          {{ activeImage.full_disclosure }}<span v-if="activeImage.credit" data-credit> — {{ activeImage.credit }}</span>
+        </span>
+        <button type="button" v-if="postImageDescriptors.length > 1" class="lb-next" aria-label="Ảnh tiếp" @click="lbNext">&#8250;</button>
+        <span class="lb-counter">{{ lbIdx + 1 }} / {{ postImageDescriptors.length }}</span>
       </div>
     </Teleport>
   </article>
 </template>
 
 <script setup lang="ts">
+import ImageDisclosure from '~/components/ImageDisclosure.vue'
+import { describePostImages } from '~/utils/imageDescriptors'
+
 const props = defineProps<{
   post: Record<string, any>
   hasReplies?: boolean
@@ -227,16 +236,20 @@ const authorInitial = computed(() => {
   return name.charAt(0).toUpperCase()
 })
 
-const allImages = computed<string[]>(() =>
-  Array.isArray(props.post?.images)
-    ? props.post.images.filter((src: unknown): src is string => typeof src === 'string' && src.length > 0)
-    : []
-)
-const displayImages = computed(() => allImages.value.slice(0, 4))
-const extraCount = computed(() => Math.max(0, allImages.value.length - 4))
+const postDisclosurePrefix = computed(() => {
+  const token = String(props.post?.id || 'post').replace(/[^A-Za-z0-9_-]+/g, '-')
+  return `post-image-${token || 'post'}`
+})
+function postImageDisclosureId(index: number): string {
+  return `${postDisclosurePrefix.value}-${index}-disclosure`
+}
+
+const postImageDescriptors = computed(() => describePostImages(props.post))
+const displayImages = computed(() => postImageDescriptors.value.slice(0, 4))
+const extraCount = computed(() => Math.max(0, postImageDescriptors.value.length - 4))
 
 const imgLayoutClass = computed(() => {
-  const len = allImages.value.length
+  const len = postImageDescriptors.value.length
   if (len === 1) return 'img-grid-1'
   if (len === 2) return 'img-grid-2'
   if (len === 3) return 'img-grid-3'
@@ -246,6 +259,8 @@ const imgLayoutClass = computed(() => {
 const lbOpen = ref(false)
 const lbIdx = ref(0)
 const lbEl = ref<HTMLElement | null>(null)
+const activeImage = computed(() => postImageDescriptors.value[lbIdx.value] ?? null)
+const lightboxDisclosureId = computed(() => `${postDisclosurePrefix.value}-lightbox-${lbIdx.value}-disclosure`)
 
 function openLightbox(i: number) {
   lbIdx.value = i
@@ -255,8 +270,8 @@ function closeLightbox() {
   lbOpen.value = false
 }
 useModalA11y(lbOpen, lbEl, { onClose: closeLightbox })
-function lbPrev() { lbIdx.value = (lbIdx.value - 1 + allImages.value.length) % allImages.value.length }
-function lbNext() { lbIdx.value = (lbIdx.value + 1) % allImages.value.length }
+function lbPrev() { lbIdx.value = (lbIdx.value - 1 + postImageDescriptors.value.length) % postImageDescriptors.value.length }
+function lbNext() { lbIdx.value = (lbIdx.value + 1) % postImageDescriptors.value.length }
 
 const lbTouchX = ref(0)
 const lbTouchDX = ref(0)
@@ -387,5 +402,29 @@ const { timeAgo } = useTimeAgo()
   background: var(--bg-alt);
   font-size: .9em;
   line-height: 1.4;
+}
+.thread-img-wrap :deep(.image-disclosure) {
+  position: absolute;
+  left: var(--space-2);
+  bottom: var(--space-2);
+  z-index: 1;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .66);
+  color: var(--text-on-dark);
+}
+.lb-caption {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--space-5) + 48px);
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 48px));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, .68);
+  color: var(--text-on-dark);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  text-align: center;
 }
 </style>

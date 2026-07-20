@@ -23,10 +23,13 @@
       </div>
     </div>
     <p class="ri-content" :class="{ 'ri-content-testimony': featured }">{{ review.content }}</p>
-    <div v-if="review.images?.length" class="ri-images">
-      <template v-for="(img, i) in review.images" :key="i">
-        <NuxtImg v-if="isRemoteUrl(img)" :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" sizes="200px" @error="dimImage" />
-        <img v-else :src="img" :alt="`Ảnh đánh giá ${i + 1}`" loading="lazy" decoding="async" width="200" height="200" @error="dimImage" />
+    <div v-if="reviewImages.length" class="ri-images" data-source-class="user-uploaded">
+      <template v-for="(img, i) in reviewImages" :key="img.url || i">
+        <figure class="ri-image">
+          <NuxtImg v-if="img.url && isRemoteUrl(img.url)" :src="img.url" :alt="img.alt" :aria-describedby="reviewImageDisclosureId(i)" loading="lazy" decoding="async" width="200" height="200" sizes="200px" @error="dimImage" />
+          <img v-else-if="img.url" :src="img.url" :alt="img.alt" :aria-describedby="reviewImageDisclosureId(i)" loading="lazy" decoding="async" width="200" height="200" @error="dimImage" />
+          <ImageDisclosure :id="reviewImageDisclosureId(i)" :descriptor="img" presentation="short" />
+        </figure>
       </template>
     </div>
     <button type="button" :class="['ri-helpful', { active: review.user_liked }]" :aria-pressed="!!review.user_liked" @click="$emit('toggle-helpful', review)">
@@ -37,14 +40,25 @@
 
 <script setup lang="ts">
 import type { Review } from '~/types'
+import ImageDisclosure from '~/components/ImageDisclosure.vue'
+import { describeReviewImages } from '~/utils/imageDescriptors'
 
-defineProps<{
+const props = defineProps<{
   review: Review
   owned: boolean
   deleting: boolean
   deleteError: string
   featured?: boolean
 }>()
+
+const reviewImages = computed(() => describeReviewImages(props.review))
+const reviewDisclosurePrefix = computed(() => {
+  const token = String(props.review?.id || props.review?.user_id || 'review').replace(/[^A-Za-z0-9_-]+/g, '-')
+  return `review-image-${token || 'review'}`
+})
+function reviewImageDisclosureId(index: number): string {
+  return `${reviewDisclosurePrefix.value}-${index}-disclosure`
+}
 
 defineEmits<{
   delete: [review: Review]
@@ -70,6 +84,7 @@ function dimImage(payload: Event | string) {
 .ri-byline { letter-spacing: .01em; }
 
 .ri-content { text-wrap: pretty; }
+.ri-image { margin: 0; display: inline-flex; flex-direction: column; gap: var(--space-1); }
 /* Testimony treatment for the one most-helpful review per list (featured prop) — a light editorial quote frame, not a full pull-quote.
    Restraint: only the single featured review gets this so the list doesn't perform. */
 .ri-content-testimony {

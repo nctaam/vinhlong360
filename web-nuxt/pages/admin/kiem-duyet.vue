@@ -168,8 +168,11 @@
           <span class="mod-badge" :class="badgeOf(previewPost.moderation_status).cls">{{ badgeOf(previewPost.moderation_status).label }}</span>
         </div>
         <div class="mod-preview-body">{{ previewPost.content }}</div>
-        <div v-if="previewPost.images?.length" class="mod-preview-images">
-          <img v-for="(img, i) in previewPost.images" :key="i" :src="img" :alt="`Ảnh ${Number(i) + 1}`" loading="lazy" decoding="async" width="200" height="150" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+        <div v-if="previewImages.length" class="mod-preview-images" data-source-class="user-uploaded">
+          <figure v-for="(img, i) in previewImages" :key="img.url || i" class="mod-preview-image">
+            <img v-if="img.url" :src="img.url" :alt="img.alt" :aria-describedby="`moderation-image-${i}-disclosure`" loading="lazy" decoding="async" width="200" height="150" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+            <ImageDisclosure :id="`moderation-image-${i}-disclosure`" :descriptor="img" presentation="full" />
+          </figure>
         </div>
         <!-- Moderation notes -->
         <div class="mod-notes-section">
@@ -200,6 +203,9 @@
 </template>
 
 <script setup lang="ts">
+import ImageDisclosure from '~/components/ImageDisclosure.vue'
+import { describePostImages } from '~/utils/imageDescriptors'
+
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Kiểm duyệt — Admin' })
 
@@ -238,6 +244,7 @@ const loading = ref(true)
 const loadError = ref(false)
 const acting = ref<string | null>(null)
 const previewPost = ref<any>(null)
+const previewImages = computed(() => describePostImages(previewPost.value))
 const modModalRef = ref<HTMLElement | null>(null)
 const modModalOpen = computed(() => !!previewPost.value)
 useModalA11y(modModalOpen, modModalRef, { onClose: () => { previewPost.value = null } })
@@ -561,7 +568,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .mod-preview-meta { font-size: .78rem; color: var(--muted); }
 .mod-preview-body { white-space: pre-wrap; line-height: 1.7; margin-bottom: var(--space-4); }
 .mod-preview-images { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
-.mod-preview-images img { max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover; }
+.mod-preview-image { width: 200px; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.mod-preview-images img { width: 200px; max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: cover; }
 .mod-preview-actions { display: flex; gap: var(--space-2); justify-content: flex-end; }
 .mod-notes-section { border-top: 1px solid var(--line); padding-top: var(--space-3); margin-bottom: var(--space-4); }
 .mod-notes-title { font-size: .82rem; display: block; margin-bottom: var(--space-2); }

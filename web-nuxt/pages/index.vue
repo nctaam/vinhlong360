@@ -243,10 +243,11 @@
             <IconLine name="trophy" /> <NuxtLink to="/bang-xep-hang">Xem thành viên tích cực →</NuxtLink>
           </p>
           <div class="scroll-row" role="region" aria-label="Bài viết cộng đồng mới" tabindex="0">
-            <NuxtLink v-for="p in communityPosts" :key="p.id" :to="postPath(p.id)" class="cm-card">
-              <div v-if="p.images && p.images.length && p.images[0]" class="cm-img">
-                <NuxtImg v-if="isRemoteUrl(p.images[0])" :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" @error="onImgError" />
-                <img v-else :src="p.images[0]" :alt="p.display_name || 'Bài viết'" loading="lazy" decoding="async" width="280" height="150" @error="onImgError" />
+            <NuxtLink v-for="p in communityCards" :key="p.id" :to="postPath(p.id)" class="cm-card">
+              <div v-if="p.ugcImage?.url" class="cm-img" data-source-class="user-uploaded">
+                <NuxtImg v-if="isRemoteUrl(p.ugcImage.url)" :src="p.ugcImage.url" :alt="p.ugcImage.alt" :aria-describedby="`home-post-${p.id}-disclosure`" loading="lazy" decoding="async" width="280" height="150" sizes="sm:280px" @error="onImgError" />
+                <img v-else :src="p.ugcImage.url" :alt="p.ugcImage.alt" :aria-describedby="`home-post-${p.id}-disclosure`" loading="lazy" decoding="async" width="280" height="150" @error="onImgError" />
+                <ImageDisclosure :id="`home-post-${p.id}-disclosure`" :descriptor="p.ugcImage" presentation="short" />
               </div>
               <div class="cm-body">
                 <div class="cm-author">
@@ -319,7 +320,7 @@ import { useJourneyActions } from '~/composables/useJourneyActions'
 import EntityFeature from '~/components/home/EntityFeature.vue'
 import StorySpread from '~/components/home/StorySpread.vue'
 import ImageDisclosure from '~/components/ImageDisclosure.vue'
-import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+import { describeEntityImages, describeEntityPlaceholder, describePostImages } from '~/utils/imageDescriptors'
 import type { ImageDescriptor } from '~/types/image'
 import { useId } from 'vue'
 
@@ -423,6 +424,10 @@ const { data: communityData } = await useAsyncData('home-community', async () =>
   return { posts, stats: cstats, leaders: lb.leaders || [], tags: tags.tags || [] }
 }, { lazy: true })
 const communityPosts = computed(() => communityData.value?.posts || [])
+const communityCards = computed(() => communityPosts.value.map((post: any) => ({
+  ...post,
+  ugcImage: describePostImages(post)[0] ?? null,
+})))
 const communityStats = computed(() => communityData.value?.stats || null)
 const topMembers = computed(() => communityData.value?.leaders || [])
 const trendingTags = computed(() => communityData.value?.tags || [])
@@ -1223,7 +1228,7 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .dishes-heading { font-size: var(--text-lg); font-weight: var(--weight-bold); margin: 0 0 var(--space-3); }
 /* Two columns from tablet up so the featured-eatery board fills the width instead of
    a lonely stack of full-width rows — matters most when the spotlight beside/above it is
-   absent (no entity with a real photo qualifies), which is the common live state. */
+   absent (no entity with a suitable image qualifies), which is the common live state. */
 .dishes-list { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
 @media (min-width: 640px) { .dishes-list { grid-template-columns: 1fr 1fr; } }
 .dish-item {
@@ -1281,8 +1286,9 @@ html.js .home .hero-enter h1::after { animation: hero-underline-draw .8s var(--e
 .cm-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border); }
 .cm-card:active { transform: scale(.98); transition-duration: .1s; }
 .cm-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.cm-img { aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-alt); }
+.cm-img { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--bg-alt); }
 .cm-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease-out); }
+.cm-img :deep(.image-disclosure) { position: absolute; left: var(--space-2); bottom: var(--space-2); padding: 3px 7px; border-radius: 999px; background: rgba(0, 0, 0, .66); color: var(--text-on-dark); }
 .cm-card:hover .cm-img img { transform: scale(var(--img-hover-scale)); }
 .cm-body { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); }
 .cm-author { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }

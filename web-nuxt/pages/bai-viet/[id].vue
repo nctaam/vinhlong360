@@ -131,9 +131,12 @@
         <div v-if="relatedPosts.length" class="related-section">
           <h2 class="related-title">Bài viết liên quan</h2>
           <div class="related-grid">
-            <NuxtLink v-for="rp in relatedPosts" :key="rp.id" :to="postPath(rp.id)" class="related-card">
-              <NuxtImg v-if="rp.images?.[0] && isRemoteUrl(rp.images[0])" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" sizes="(max-width: 480px) 90vw, (max-width: 780px) 45vw, 300px" format="webp" @error="(e: string | Event) => { ((e as Event).target as HTMLImageElement).style.display = 'none' }" />
-              <img v-else-if="rp.images?.[0]" :src="rp.images[0]" :alt="rp.display_name || 'Bài viết liên quan'" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" @error="(e: string | Event) => { ((e as Event).target as HTMLImageElement).style.display = 'none' }" />
+            <NuxtLink v-for="rp in relatedCards" :key="rp.id" :to="postPath(rp.id)" class="related-card">
+              <div v-if="rp.ugcImage?.url" class="related-media" data-source-class="user-uploaded">
+                <NuxtImg v-if="isRemoteUrl(rp.ugcImage.url)" :src="rp.ugcImage.url" :alt="rp.ugcImage.alt" :aria-describedby="`related-post-${rp.id}-disclosure`" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" sizes="(max-width: 480px) 90vw, (max-width: 780px) 45vw, 300px" format="webp" @error="(e: string | Event) => { ((e as Event).target as HTMLImageElement).style.display = 'none' }" />
+                <img v-else :src="rp.ugcImage.url" :alt="rp.ugcImage.alt" :aria-describedby="`related-post-${rp.id}-disclosure`" class="related-thumb" loading="lazy" decoding="async" width="400" height="100" @error="(e: string | Event) => { ((e as Event).target as HTMLImageElement).style.display = 'none' }" />
+                <ImageDisclosure :id="`related-post-${rp.id}-disclosure`" :descriptor="rp.ugcImage" presentation="short" />
+              </div>
               <div class="related-body">
                 <span class="related-author">{{ rp.display_name }}</span>
                 <p class="related-text">{{ (rp.content || '').slice(0, 80) }}{{ (rp.content || '').length > 80 ? '…' : '' }}</p>
@@ -168,6 +171,8 @@
 
 <script setup lang="ts">
 import type { Comment, Post, User } from '~/types'
+import ImageDisclosure from '~/components/ImageDisclosure.vue'
+import { describePostImages } from '~/utils/imageDescriptors'
 useReveal()
 const route = useRoute()
 const postId = computed(() => normalizeRouteParam(route.params.id))
@@ -393,6 +398,11 @@ function toggleBookmark(id: string) {
 const { timeAgo } = useTimeAgo()
 
 const relatedPosts = ref<any[]>([])
+const relatedCards = computed(() => relatedPosts.value.map((relatedPost: any) => ({
+  ...relatedPost,
+  ugcImage: describePostImages(relatedPost)[0] ?? null,
+})))
+const postImageDescriptors = computed(() => describePostImages(post.value))
 async function fetchRelated() {
   try {
     // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
@@ -478,7 +488,15 @@ useHead({
       },
       publisher: { '@type': 'Organization', name: 'vinhlong360', url: 'https://vinhlong360.vn' },
     }
-    if (p.images?.length) articleLd.image = p.images
+    if (postImageDescriptors.value.length) {
+      articleLd.image = postImageDescriptors.value.map(descriptor => ({
+        '@type': 'ImageObject',
+        contentUrl: descriptor.url,
+        caption: descriptor.alt,
+        description: descriptor.full_disclosure,
+        ...(descriptor.credit ? { creditText: descriptor.credit } : {}),
+      }))
+    }
     if (p.post_type === 'review' && p.rating) {
       articleLd.reviewRating = { '@type': 'Rating', ratingValue: p.rating, bestRating: 5 }
     }
@@ -649,7 +667,9 @@ useHead({
   transition: border-color .2s, transform .2s var(--ease-spring-gentle);
 }
 .related-card:hover { border-color: var(--primary-fg); transform: translateY(-1px); }
+.related-media { position: relative; }
 .related-thumb { width: 100%; height: 100px; object-fit: cover; }
+.related-media :deep(.image-disclosure) { position: absolute; left: var(--space-2); bottom: var(--space-2); padding: 3px 7px; border-radius: 999px; background: rgba(0, 0, 0, .66); color: var(--text-on-dark); }
 .related-body { padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: .2rem; }
 .related-author { font-size: var(--text-xs); font-weight: var(--weight-semibold); }
 .related-text { margin: 0; font-size: var(--text-xs); color: var(--ink-secondary, var(--ink)); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
