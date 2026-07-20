@@ -36,6 +36,7 @@ reset_mutable_evidence() {
     "$root/install-summary.json" \
     "$root/install-recovery.json" \
     "$root/systemd-unit-cleanup.json" \
+    "$root/install-lock.json" \
     "$root/findmnt-before.json" \
     "$root/findmnt-after.json" \
     "$root/findmnt-recovery.json" \
@@ -180,7 +181,22 @@ prepare_evidence_dir "$EVIDENCE_DIR"
   || die 'external-environment-authority-required'
 [ -d "$RUNTIME_AUTHORITY" ] && [ ! -L "$RUNTIME_AUTHORITY" ] \
   || die 'external-runtime-authority-required'
-if grep -Eq '^[[:space:]]*(INDEXING_UNLOCK_KEY|SITEMAP_UNLOCK_KEY)=' "$ENVIRONMENT_AUTHORITY"; then
+if python - "$ENVIRONMENT_AUTHORITY" <<'PY'
+from dotenv.parser import parse_stream
+from pathlib import Path
+import sys
+
+forbidden = {"INDEXING_UNLOCK_KEY", "SITEMAP_UNLOCK_KEY"}
+with Path(sys.argv[1]).open(encoding="utf-8") as stream:
+    for binding in parse_stream(stream):
+        if not binding.error and binding.key in forbidden and binding.value not in (None, ""):
+            raise SystemExit(3)
+PY
+then
+  :
+else
+  environment_status=$?
+  [ "$environment_status" -eq 3 ] || die 'environment-authority-parse-failed'
   die 'unlock-keys-forbidden'
 fi
 if [ "$LOCAL_REHEARSAL" != true ]; then
@@ -206,17 +222,6 @@ for hook in "$PYTHON_DEPENDENCY_HOOK" "$NUXT_DEPENDENCY_HOOK" "$UNIT_VERIFY_HOOK
   [ -f "$hook" ] && [ -x "$hook" ] && [ ! -L "$hook" ] \
     || die 'runtime-hook-authority-required'
 done
-case "${VL360_INSTALL_FAIL_AFTER:-}" in
-  ''|detach-agent-data|swap-release-root|restore-bind-agent-data) ;;
-  *) die 'invalid-local-failure-injection' ;;
-esac
-[ "$LOCAL_REHEARSAL" = true ] || [ -z "${VL360_INSTALL_FAIL_AFTER:-}" ] \
-  || die 'live-failure-injection-forbidden'
-
-# Integrity and manifest verification must complete before extraction or mutation.
-python "$VERIFY_SCRIPT" \
-  --archive "$ARCHIVE" --archive-digest-file "$ARCHIVE_DIGEST_FILE" \
-  --require-closed --evidence-dir "$EVIDENCE_DIR/package"
 
 RELEASE_PARENT="$(CDPATH= cd -- "$(dirname -- "$RELEASE_ROOT")" && pwd -P)"
 RELEASE_NAME="$(basename -- "$RELEASE_ROOT")"
@@ -240,6 +245,114 @@ case "$PERSISTENT_NAME" in ''|.|..) die 'unsafe-persistent-root' ;; esac
 PERSISTENT_AGENT_DATA_ROOT="$PERSISTENT_PARENT/$PERSISTENT_NAME"
 [ ! -L "$PERSISTENT_AGENT_DATA_ROOT" ] || die 'persistent-root-symlink-forbidden'
 
+record_install_lock() {
+  local status="$1"
+  local code="$2"
+  python - "$EVIDENCE_DIR/install-lock.json" "$status" "$code" "$INSTALL_LOCK_KEY" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+payload = {
+    "exit_code": int(sys.argv[3]),
+    "live_sla_proven": False,
+    "observed_local_elapsed_seconds": 0.0,
+    "schema_version": 1,
+    "stage3_claim": False,
+    "status": sys.argv[2],
+    "target_key_sha256": sys.argv[4],
+}
+Path(sys.argv[1]).write_text(
+    json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+)
+PY
+}
+
+if [ "$LOCAL_REHEARSAL" = true ]; then
+  INSTALL_LOCK_ROOT="$RELEASE_PARENT/.vl360-install-locks"
+else
+  INSTALL_LOCK_ROOT=/run/lock/vl360-install-closed-release
+fi
+[ ! -L "$INSTALL_LOCK_ROOT" ] || die 'install-lock-root-symlink-forbidden'
+if [ -e "$INSTALL_LOCK_ROOT" ]; then
+  [ -d "$INSTALL_LOCK_ROOT" ] || die 'install-lock-root-invalid'
+else
+  mkdir -p -- "$INSTALL_LOCK_ROOT" || die 'install-lock-root-invalid'
+fi
+[ -d "$INSTALL_LOCK_ROOT" ] && [ ! -L "$INSTALL_LOCK_ROOT" ] \
+  || die 'install-lock-root-invalid'
+INSTALL_LOCK_KEY="$(python - "$RELEASE_ROOT" "$PERSISTENT_AGENT_DATA_ROOT" \
+  "$SYSTEMD_UNIT_DESTINATION" <<'PY'
+import hashlib
+import os
+import sys
+
+targets = [os.path.normcase(os.path.realpath(value)) for value in sys.argv[1:]]
+print(hashlib.sha256("\0".join(targets).encode("utf-8")).hexdigest())
+PY
+)"
+INSTALL_LOCK_DIR=''
+release_install_lock() {
+  [ -n "$INSTALL_LOCK_DIR" ] || return 0
+  local lock_dir="$INSTALL_LOCK_DIR"
+  if rm -rf -- "$lock_dir"; then
+    INSTALL_LOCK_DIR=''
+    record_install_lock released 0 || true
+    rmdir -- "$INSTALL_LOCK_ROOT" >/dev/null 2>&1 || true
+  else
+    local code=$?
+    record_install_lock release-failed "$code" || true
+    return "$code"
+  fi
+}
+
+candidate_lock="$INSTALL_LOCK_ROOT/$INSTALL_LOCK_KEY.lock"
+if mkdir -- "$candidate_lock" 2>/dev/null; then
+  INSTALL_LOCK_DIR="$candidate_lock"
+  trap release_install_lock EXIT
+  printf '%s\n' "$$" > "$INSTALL_LOCK_DIR/owner-pid"
+  record_install_lock acquired 0
+elif [ -d "$candidate_lock" ]; then
+  record_install_lock rejected 2
+  die 'install-target-locked'
+else
+  record_install_lock acquire-failed 2 || true
+  die 'install-lock-acquire-failed'
+fi
+
+case "${VL360_INSTALL_FAIL_AFTER:-}" in
+  ''|detach-agent-data|swap-release-root|restore-bind-agent-data) ;;
+  *) die 'invalid-local-failure-injection' ;;
+esac
+[ "$LOCAL_REHEARSAL" = true ] || [ -z "${VL360_INSTALL_FAIL_AFTER:-}" ] \
+  || die 'live-failure-injection-forbidden'
+
+PINNED_ARCHIVE_ROOT=''
+cleanup_pinned_archive() {
+  [ -n "$PINNED_ARCHIVE_ROOT" ] || return 0
+  rm -rf -- "$PINNED_ARCHIVE_ROOT" >/dev/null 2>&1 || true
+  PINNED_ARCHIVE_ROOT=''
+}
+cleanup_attempt_authorities() {
+  cleanup_pinned_archive
+  release_install_lock || true
+}
+trap cleanup_attempt_authorities EXIT
+
+# Snapshot the candidate into a private authority, then verify and extract only
+# those pinned bytes so replacing the caller-owned archive cannot win a TOCTOU race.
+PINNED_ARCHIVE_ROOT="$(mktemp -d "$EVIDENCE_DIR/.closed-archive-attempt.XXXXXXXX")"
+PINNED_ARCHIVE="$PINNED_ARCHIVE_ROOT/$(basename -- "$ARCHIVE")"
+PINNED_ARCHIVE_DIGEST_FILE="$PINNED_ARCHIVE_ROOT/$(basename -- "$ARCHIVE_DIGEST_FILE")"
+cp -- "$ARCHIVE" "$PINNED_ARCHIVE"
+cp -- "$ARCHIVE_DIGEST_FILE" "$PINNED_ARCHIVE_DIGEST_FILE"
+chmod 0600 -- "$PINNED_ARCHIVE" "$PINNED_ARCHIVE_DIGEST_FILE"
+
+# Integrity and manifest verification must complete before extraction or mutation.
+python "$VERIFY_SCRIPT" \
+  --archive "$PINNED_ARCHIVE" --archive-digest-file "$PINNED_ARCHIVE_DIGEST_FILE" \
+  --require-closed --evidence-dir "$EVIDENCE_DIR/package"
+
 STAGING_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage.$$"
 OLD_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-old.$$"
 SNAPSHOT_BEFORE="$EVIDENCE_DIR/persistent-before.json"
@@ -256,7 +369,11 @@ for stale_attempt in "$EVIDENCE_DIR"/.systemd-unit-attempt.*; do
 done
 [ ! -e "$STAGING_ROOT" ] && [ ! -e "$OLD_ROOT" ] || die 'staging-path-exists'
 mkdir -- "$STAGING_ROOT"
-tar -xzf "$ARCHIVE" -C "$STAGING_ROOT" --no-same-owner --no-same-permissions
+python "$VERIFY_SCRIPT" \
+  --archive "$PINNED_ARCHIVE" --archive-digest-file "$PINNED_ARCHIVE_DIGEST_FILE" \
+  --require-closed --evidence-dir "$EVIDENCE_DIR/package"
+tar -xzf "$PINNED_ARCHIVE" -C "$STAGING_ROOT" --no-same-owner --no-same-permissions
+cleanup_pinned_archive
 [ -f "$STAGING_ROOT/launch-release-manifest.json" ] || die 'extracted-manifest-missing'
 
 # Re-verify extracted activation-critical bytes before any dependency hook or mutation.
@@ -689,6 +806,7 @@ install_recovery() {
   if [ "$INSTALL_COMPLETE" = true ]; then
     rm -rf -- "$OLD_ROOT" >/dev/null 2>&1 || true
   fi
+  cleanup_attempt_authorities
   exit "$status"
 }
 trap install_recovery EXIT

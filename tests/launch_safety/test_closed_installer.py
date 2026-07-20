@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
+import shutil
+import shlex
 import subprocess
 import tarfile
+import time
 
 import pytest
 
@@ -70,6 +74,7 @@ def _assert_mutable_attempt_evidence_absent(evidence: Path) -> None:
         "install-summary.json",
         "install-recovery.json",
         "systemd-unit-cleanup.json",
+        "install-lock.json",
         "findmnt-before.json",
         "findmnt-after.json",
         "findmnt-recovery.json",
@@ -88,6 +93,15 @@ def _bash_path_literal(path: Path) -> str:
     if len(raw) >= 3 and raw[1:3] == ":/":
         return f"/{raw[0].lower()}/{raw[3:]}"
     return raw
+
+
+def _wait_for_path(path: Path, timeout: float = 60.0) -> None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if path.exists():
+            return
+        time.sleep(0.05)
+    raise AssertionError(f"timed out waiting for {path}")
 
 
 def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
@@ -177,6 +191,36 @@ def _run_installer(
     return result, prepared
 
 
+def _installer_command(
+    package,
+    case_root: Path,
+    prepared,
+    *,
+    evidence_arg: str | None = None,
+) -> list[str]:
+    release, persistent, evidence, *_ = prepared
+    return [
+        str(BASH),
+        "scripts/ops/install_closed_release.sh",
+        "--archive",
+        _bash_path(package.archive),
+        "--archive-digest-file",
+        _bash_path(package.digest_file),
+        "--release-root",
+        _bash_path(release),
+        "--persistent-agent-data-root",
+        _bash_path(persistent),
+        "--environment-authority",
+        _bash_path(case_root / "external.env"),
+        "--runtime-authority",
+        _bash_path(case_root / "runtime"),
+        "--evidence-dir",
+        _bash_path(evidence) if evidence_arg is None else evidence_arg,
+        "--require-closed",
+        "--local-rehearsal",
+    ]
+
+
 def _invoke_installer(
     package,
     case_root: Path,
@@ -201,26 +245,12 @@ def _invoke_installer(
     env.update(values)
     if env_overrides is not None:
         env.update(env_overrides)
-    args = [
-        str(BASH),
-        "scripts/ops/install_closed_release.sh",
-        "--archive",
-        _bash_path(package.archive),
-        "--archive-digest-file",
-        _bash_path(package.digest_file),
-        "--release-root",
-        _bash_path(release),
-        "--persistent-agent-data-root",
-        _bash_path(persistent),
-        "--environment-authority",
-        _bash_path(case_root / "external.env"),
-        "--runtime-authority",
-        _bash_path(case_root / "runtime"),
-        "--evidence-dir",
-        _bash_path(evidence) if evidence_arg is None else evidence_arg,
-        "--require-closed",
-        "--local-rehearsal",
-    ]
+    args = _installer_command(
+        package,
+        case_root,
+        prepared,
+        evidence_arg=evidence_arg,
+    )
     result = subprocess.run(
         args,
         cwd=ROOT,
@@ -792,6 +822,286 @@ def test_installer_records_failed_authority_hook_exit_and_stops_before_mutation(
     }
 
 
+def test_installer_extracts_only_pinned_verified_archive_bytes(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "archive-replacement"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, evidence, _, _, _, _ = prepared
+    archive = case_root / "candidate.tar.gz"
+    digest_file = case_root / "candidate.tar.gz.sha256"
+    shutil.copy2(closed_package.archive, archive)
+    verified_digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    digest_file.write_text(
+        f"{verified_digest}  {archive.name}\n", encoding="ascii"
+    )
+    package = type(closed_package)(
+        archive=archive,
+        digest_file=digest_file,
+        manifest=closed_package.manifest,
+    )
+
+    replacement = case_root / "replacement.tar.gz"
+    with tarfile.open(replacement, "w:gz") as malicious:
+        marker = tarfile.TarInfo("replacement-marker.txt")
+        marker_raw = b"unverified replacement\n"
+        marker.size = len(marker_raw)
+        malicious.addfile(marker, io.BytesIO(marker_raw))
+        traversal = tarfile.TarInfo("../archive-escape.txt")
+        traversal_raw = b"must never extract\n"
+        traversal.size = len(traversal_raw)
+        malicious.addfile(traversal, io.BytesIO(traversal_raw))
+        symlink = tarfile.TarInfo("web-nuxt/.output/server/archive-link")
+        symlink.type = tarfile.SYMTYPE
+        symlink.linkname = "../../../../archive-escape.txt"
+        malicious.addfile(symlink)
+    replacement_digest = hashlib.sha256(replacement.read_bytes()).hexdigest()
+
+    replacement_used = case_root / "replacement-used"
+    extracted_digest = case_root / "extracted-archive.sha256"
+    bash_env = case_root / "archive-replacement.bash"
+    bash_env.write_text(
+        "python() {\n"
+        "  command python \"$@\"\n"
+        "  status=$?\n"
+        "  if [ \"$status\" -eq 0 ] && [ ! -f "
+        f"'{_bash_path(replacement_used)}' ]; then\n"
+        "    for argument in \"$@\"; do\n"
+        "      if [ \"$argument\" = '--archive' ]; then\n"
+        f"        cp -- '{_bash_path(replacement)}' '{_bash_path(archive)}'\n"
+        f"        : > '{_bash_path(replacement_used)}'\n"
+        "        break\n"
+        "      fi\n"
+        "    done\n"
+        "  fi\n"
+        "  return \"$status\"\n"
+        "}\n"
+        "tar() {\n"
+        "  archive_path=''\n"
+        "  previous=''\n"
+        "  for argument in \"$@\"; do\n"
+        "    if [ \"$previous\" = '-xzf' ]; then archive_path=\"$argument\"; break; fi\n"
+        "    previous=\"$argument\"\n"
+        "  done\n"
+        f"  sha256sum \"$archive_path\" | cut -d' ' -f1 > '{_bash_path(extracted_digest)}'\n"
+        "  command tar \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert replacement_used.is_file()
+    assert hashlib.sha256(archive.read_bytes()).hexdigest() == replacement_digest
+    assert extracted_digest.read_text(encoding="ascii").strip() == verified_digest
+    assert not (release / "replacement-marker.txt").exists()
+    assert not (case_root / "archive-escape.txt").exists()
+    assert not (release / "web-nuxt" / ".output" / "server" / "archive-link").exists()
+    assert not list(evidence.glob(".closed-archive-attempt.*"))
+
+
+def test_same_target_concurrent_attempt_is_rejected_and_lock_is_released(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "same-target-concurrent"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, values = prepared
+    entered = case_root / "first-hook-entered"
+    release_hook = case_root / "release-first-hook"
+    gate = case_root / "first-hook-gate"
+    second_hook_entered = case_root / "second-hook-entered"
+    hook = case_root / "runtime" / "python-hook.sh"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        f"if mkdir '{_bash_path(gate)}' 2>/dev/null; then\n"
+        f"  : > '{_bash_path(entered)}'\n"
+        f"  while [ ! -f '{_bash_path(release_hook)}' ]; do sleep 0.05; done\n"
+        f"  rmdir '{_bash_path(gate)}'\n"
+        "  exit 19\n"
+        "fi\n"
+        f": > '{_bash_path(second_hook_entered)}'\n"
+        "exit 18\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o755)
+    env = os.environ.copy()
+    env.update(values)
+    first = subprocess.Popen(
+        _installer_command(closed_package, case_root, prepared),
+        cwd=ROOT,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_path(entered)
+        second_evidence = case_root / "second-evidence"
+        second_evidence.mkdir()
+        second = subprocess.run(
+            _installer_command(
+                closed_package,
+                case_root,
+                prepared,
+                evidence_arg=_bash_path(second_evidence),
+            ),
+            cwd=ROOT,
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        release_hook.touch()
+        try:
+            first_stdout, first_stderr = first.communicate(timeout=60)
+        except subprocess.TimeoutExpired:
+            first.kill()
+            first_stdout, first_stderr = first.communicate()
+
+    assert second.returncode == 2, second.stderr + second.stdout
+    assert "install-target-locked" in second.stderr
+    assert not second_hook_entered.exists()
+    second_lock = json.loads(
+        (second_evidence / "install-lock.json").read_text(encoding="utf-8")
+    )
+    assert second_lock["status"] == "rejected"
+    assert first.returncode == 19, first_stderr + first_stdout
+    first_lock = json.loads(
+        (evidence / "install-lock.json").read_text(encoding="utf-8")
+    )
+    assert first_lock["status"] == "released"
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+    third_evidence = case_root / "third-evidence"
+    third_evidence.mkdir()
+    hook.write_text("#!/usr/bin/env bash\nexit 19\n", encoding="ascii")
+    hook.chmod(0o755)
+    third = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        evidence_arg=_bash_path(third_evidence),
+    )
+    assert third.returncode == 19, third.stderr + third.stdout
+    assert "install-target-locked" not in third.stderr
+    third_lock = json.loads(
+        (third_evidence / "install-lock.json").read_text(encoding="utf-8")
+    )
+    assert third_lock["status"] == "released"
+
+
+def test_reentrant_same_target_attempt_is_rejected_before_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "same-target-reentrant"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    nested_evidence = case_root / "nested-evidence"
+    nested_evidence.mkdir()
+    nested_code = case_root / "nested-code"
+    nested_command = _installer_command(
+        closed_package,
+        case_root,
+        prepared,
+        evidence_arg=_bash_path(nested_evidence),
+    )
+    nested_shell = " ".join(shlex.quote(argument) for argument in nested_command[1:])
+    hook = case_root / "runtime" / "python-hook.sh"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "if [ \"${VL360_REENTRANT_CHILD:-}\" = true ]; then exit 18; fi\n"
+        "VL360_REENTRANT_CHILD=true "
+        f"{nested_shell} >/dev/null 2>&1\n"
+        "nested_status=$?\n"
+        f"printf '%s\\n' \"$nested_status\" > '{_bash_path(nested_code)}'\n"
+        "exit 19\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o755)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 19, result.stderr + result.stdout
+    assert nested_code.read_text(encoding="ascii").strip() == "2"
+    nested_lock = json.loads(
+        (nested_evidence / "install-lock.json").read_text(encoding="utf-8")
+    )
+    assert nested_lock["status"] == "rejected"
+    outer_lock = json.loads(
+        (evidence / "install-lock.json").read_text(encoding="utf-8")
+    )
+    assert outer_lock["status"] == "released"
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+
+def test_distinct_target_attempts_can_hold_install_locks_concurrently(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    processes = []
+    releases = []
+    prepared_cases = []
+    try:
+        for index in range(2):
+            case_root = tmp_path / f"distinct-target-{index}"
+            prepared = _prepare_case(case_root, closed_package)
+            entered = case_root / "hook-entered"
+            release_hook = case_root / "release-hook"
+            hook = case_root / "runtime" / "python-hook.sh"
+            hook.write_text(
+                "#!/usr/bin/env bash\n"
+                f": > '{_bash_path(entered)}'\n"
+                f"while [ ! -f '{_bash_path(release_hook)}' ]; do sleep 0.05; done\n"
+                "exit 19\n",
+                encoding="ascii",
+            )
+            hook.chmod(0o755)
+            *_, values = prepared
+            env = os.environ.copy()
+            env.update(values)
+            process = subprocess.Popen(
+                _installer_command(closed_package, case_root, prepared),
+                cwd=ROOT,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            processes.append(process)
+            releases.append(release_hook)
+            prepared_cases.append((prepared, entered))
+        for _, entered in prepared_cases:
+            _wait_for_path(entered)
+    finally:
+        for release_hook in releases:
+            release_hook.touch()
+
+    for process, (prepared, _) in zip(processes, prepared_cases, strict=True):
+        stdout, stderr = process.communicate(timeout=60)
+        assert process.returncode == 19, stderr + stdout
+        release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+        lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
+        assert lock["status"] == "released"
+        assert _snapshot_tree(release) == before_release
+        assert _snapshot_tree(persistent) == before_persistent
+
+
 def test_local_installer_full_success_records_every_authority_and_releases_old_tree(
     tmp_path: Path, closed_package
 ):
@@ -853,6 +1163,36 @@ def test_success_materializes_external_environment_without_packaging_or_logging_
     for path in evidence.rglob("*"):
         if path.is_file():
             assert b"SAFE_LOCAL=1" not in path.read_bytes()
+
+
+@pytest.mark.parametrize(
+    "unlock_line",
+    (
+        'export INDEXING_UNLOCK_KEY = "task5-secret"\n',
+        " \tINDEXING_UNLOCK_KEY\t=\t'task5-secret' \t\n",
+        "INDEXING_UNLOCK_KEY = task5-secret   # accepted dotenv comment\n",
+    ),
+)
+def test_installer_rejects_nonempty_dotenv_unlock_key_without_logging_secret(
+    tmp_path: Path, closed_package, unlock_line: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "dotenv-unlock-key"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    (case_root / "external.env").write_text(unlock_line, encoding="ascii")
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2
+    assert "unlock-keys-forbidden" in result.stderr
+    assert "task5-secret" not in result.stdout + result.stderr
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    for path in evidence.rglob("*"):
+        if path.is_file():
+            assert b"task5-secret" not in path.read_bytes()
 
 
 def test_runbook_local_success_command_creates_and_selects_required_authorities():
@@ -1297,6 +1637,9 @@ def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_saf
     )
 
     assert second.returncode == 19, second.stderr + second.stdout
+    assert "install-target-locked" not in second.stderr
     assert _snapshot_tree(release) == installed_release
     assert _snapshot_tree(unit_destination) == installed_units
     assert _unit_attempt_artifacts(evidence) == []
+    lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
+    assert lock["status"] == "released"
