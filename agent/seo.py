@@ -442,24 +442,50 @@ def _build_image_objects(
     return out
 
 
-def _is_jsonld_entity_image_descriptor(
+def _valid_jsonld_descriptor_dimensions(width: object, height: object) -> bool:
+    if width is None and height is None:
+        return True
+    return (
+        type(width) is int
+        and width > 0
+        and type(height) is int
+        and height > 0
+    )
+
+
+def _is_jsonld_entity_image_identity(
     descriptor: object,
     disclosure: LoadedAiDisclosure,
 ) -> bool:
     copy = disclosure.entity_ai
-    return (
-        type(descriptor) is ImageDescriptor
-        and type(descriptor.url) is str
-        and type(descriptor.alt) is str
-        and bool(descriptor.alt.strip())
-        and descriptor.source_class == "ai-generated"
-        and descriptor.source_kind == "entity-editorial"
-        and descriptor.disclosure_key == "entity-ai"
-        and descriptor.short_label == copy.short_label
-        and descriptor.full_disclosure == copy.full_disclosure
-        and descriptor.credit is None
-        and descriptor.width is None
-        and descriptor.height is None
+    if type(descriptor) is not ImageDescriptor:
+        return False
+    if type(descriptor.url) is not str or type(descriptor.alt) is not str:
+        return False
+    if not descriptor.alt.strip():
+        return False
+    if (descriptor.source_class, descriptor.source_kind, descriptor.disclosure_key) != (
+        "ai-generated",
+        "entity-editorial",
+        "entity-ai",
+    ):
+        return False
+    if descriptor.short_label != copy.short_label:
+        return False
+    if descriptor.full_disclosure != copy.full_disclosure:
+        return False
+    return descriptor.credit is None
+
+
+def _is_jsonld_entity_image_descriptor(
+    descriptor: object,
+    disclosure: LoadedAiDisclosure,
+) -> bool:
+    if type(descriptor) is not ImageDescriptor:
+        return False
+    return _is_jsonld_entity_image_identity(descriptor, disclosure) and _valid_jsonld_descriptor_dimensions(
+        descriptor.width,
+        descriptor.height,
     )
 
 
@@ -470,10 +496,17 @@ def _build_descriptor_image_objects(
     entity_name = str(entity.get("name") or entity.get("id") or "")
     out: list[dict[str, Any]] = []
     descriptors = describe_entity_images(entity, disclosure=_JSONLD_DISCLOSURE)
+    has_supplied_descriptors = (
+        "image_descriptors" in entity or "image_descriptor" in entity
+    )
     for index, descriptor in enumerate(descriptors):
         if not _is_jsonld_entity_image_descriptor(descriptor, _JSONLD_DISCLOSURE):
             continue
-        img_url = _image_url(descriptor.url)
+        img_url = (
+            f"{SITE}{descriptor.url}"
+            if has_supplied_descriptors and descriptor.url.startswith("/")
+            else _image_url(descriptor.url)
+        )
         if img_url is None:
             continue
         credit_meta = _image_credit_for_url(attrs, img_url)
@@ -803,10 +836,9 @@ def _jsonld_season(ld: dict[str, Any], entity: dict[str, Any]) -> None:
 def _jsonld_base(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, Any]) -> None:
     if entity.get("summary"):
         ld["description"] = entity["summary"]
-    if entity.get("images"):
-        image_objects = _build_descriptor_image_objects(entity, attrs)
-        if image_objects:
-            ld["image"] = image_objects
+    image_objects = _build_descriptor_image_objects(entity, attrs)
+    if image_objects:
+        ld["image"] = image_objects
 
 
 def _jsonld_location(ld: dict[str, Any], coordinates: Any, area: str | None,

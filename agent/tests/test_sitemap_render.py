@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from xml.etree import ElementTree
 
@@ -299,6 +300,33 @@ def test_media_serializer_matches_utf8_fixture_with_two_disclosed_images():
     assert xml.startswith(b"<?xml version='1.0' encoding='utf-8'?>\n")
     assert not xml.endswith(b"\n")
     assert b"rejected.webp" not in xml
+
+
+def test_media_sitemap_uses_structured_entity_descriptor_without_legacy_images():
+    descriptor = ImageDescriptor(
+        url="/media/structured.webp",
+        alt="Structured — ảnh minh họa",
+        source_class="ai-generated",
+        source_kind="entity-editorial",
+        disclosure_key="entity-ai",
+        short_label=DISCLOSURE.entity_ai.short_label,
+        full_disclosure=DISCLOSURE.entity_ai.full_disclosure,
+        credit=None,
+        width=None,
+        height=None,
+    )
+    entity = _entity(
+        "structured-only",
+        name="Structured only",
+        images=[],
+        image_descriptors=[asdict(descriptor)],
+    )
+    xml = render_media_sitemap(
+        _snapshot(entity), load_route_manifest(), EVIDENCE, DISCLOSURE
+    )
+
+    assert b"/media/structured.webp" in xml
+    assert DISCLOSURE.entity_ai.full_disclosure.encode() in xml
 
 
 def test_media_sitemap_is_sorted_deduplicated_and_permutation_stable():

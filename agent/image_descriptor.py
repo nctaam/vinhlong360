@@ -29,6 +29,20 @@ class ImageDescriptor:
 
 _DNS_LABEL = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\Z")
 _PUNYCODE_PAYLOAD = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,57}[A-Za-z0-9])?\Z")
+_IMAGE_DESCRIPTOR_KEYS = frozenset(
+    {
+        "alt",
+        "credit",
+        "disclosure_key",
+        "full_disclosure",
+        "height",
+        "short_label",
+        "source_class",
+        "source_kind",
+        "url",
+        "width",
+    }
+)
 
 
 def _valid_port(port: str) -> bool:
@@ -200,6 +214,87 @@ def describe_review_image(
     )
 
 
+def _valid_descriptor_dimensions(width: object, height: object) -> bool:
+    if (width is None) != (height is None):
+        return False
+    if width is None:
+        return True
+    return (
+        type(width) is int
+        and width > 0
+        and type(height) is int
+        and height > 0
+    )
+
+
+def _parse_supplied_entity_descriptor(
+    raw: object,
+    *,
+    disclosure: LoadedAiDisclosure,
+) -> ImageDescriptor | None:
+    if type(raw) is not dict or set(raw) != _IMAGE_DESCRIPTOR_KEYS:
+        return None
+    url = normalize_renderable_image_url(raw.get("url"))
+    alt = raw.get("alt")
+    source_class = raw.get("source_class")
+    source_kind = raw.get("source_kind")
+    disclosure_key = raw.get("disclosure_key")
+    short_label = raw.get("short_label")
+    full_disclosure = raw.get("full_disclosure")
+    credit = raw.get("credit")
+    width = raw.get("width")
+    height = raw.get("height")
+    if url is None or type(alt) is not str or not alt.strip():
+        return None
+    if (source_class, source_kind, disclosure_key) != (
+        "ai-generated",
+        "entity-editorial",
+        "entity-ai",
+    ):
+        return None
+    if short_label != disclosure.entity_ai.short_label:
+        return None
+    if full_disclosure != disclosure.entity_ai.full_disclosure:
+        return None
+    if credit is not None or not _valid_descriptor_dimensions(width, height):
+        return None
+    return ImageDescriptor(
+        url=url,
+        alt=alt,
+        source_class=source_class,
+        source_kind=source_kind,
+        disclosure_key=disclosure_key,
+        short_label=short_label,
+        full_disclosure=full_disclosure,
+        credit=None,
+        width=width,
+        height=height,
+    )
+
+
+def _supplied_entity_descriptors(
+    entity: Mapping[str, object],
+    *,
+    disclosure: LoadedAiDisclosure,
+) -> tuple[ImageDescriptor, ...]:
+    raw_values: list[object] = []
+    if "image_descriptors" in entity:
+        if type(entity.get("image_descriptors")) is not list:
+            return ()
+        raw_values.extend(entity["image_descriptors"])
+    if "image_descriptor" in entity:
+        raw_values.append(entity.get("image_descriptor"))
+    return tuple(
+        descriptor
+        for raw in raw_values
+        if (descriptor := _parse_supplied_entity_descriptor(
+            raw,
+            disclosure=disclosure,
+        ))
+        is not None
+    )
+
+
 def describe_entity_images(
     entity: object,
     *,
@@ -210,12 +305,14 @@ def describe_entity_images(
     if not isinstance(entity, Mapping):
         return ()
     entity_name = entity.get("name")
+    if type(entity_name) is not str or not entity_name.strip():
+        return ()
+
+    if "image_descriptors" in entity or "image_descriptor" in entity:
+        return _supplied_entity_descriptors(entity, disclosure=loaded_disclosure)
+
     images = entity.get("images")
-    if (
-        type(entity_name) is not str
-        or not entity_name.strip()
-        or type(images) not in {list, tuple}
-    ):
+    if type(images) not in {list, tuple}:
         return ()
 
     descriptors: list[ImageDescriptor] = []

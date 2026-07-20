@@ -66,6 +66,39 @@ def test_entity_jsonld_omits_placeholder_or_missing_images():
         assert "image" not in ld
 
 
+def test_entity_jsonld_emits_structured_ai_descriptor_without_legacy_images():
+    descriptor = {
+        "url": "https://cdn.example/structured.webp",
+        "alt": "Điểm đến AI — ảnh minh họa 1",
+        "source_class": "ai-generated",
+        "source_kind": "entity-editorial",
+        "disclosure_key": "entity-ai",
+        "short_label": DISCLOSURE.entity_ai.short_label,
+        "full_disclosure": DISCLOSURE.entity_ai.full_disclosure,
+        "credit": None,
+        "width": None,
+        "height": None,
+    }
+    local_descriptor = {**descriptor, "url": "/media/structured-local.webp"}
+    entities = [
+        (
+            _entity(images=[], image_descriptor=local_descriptor),
+            f"{seo.SITE}{local_descriptor['url']}",
+        ),
+        (_entity(image_descriptors=[descriptor]), descriptor["url"]),
+    ]
+    entities[1][0].pop("images")
+    for entity, expected_url in entities:
+        ld = seo.build_entity_jsonld(entity, {})
+        image = ld["image"][0]
+        assert image["@type"] == "ImageObject"
+        assert image["contentUrl"] == expected_url
+        assert image["caption"] == DISCLOSURE.entity_ai.full_disclosure
+        assert image["description"] == (
+            f"{descriptor['alt']} — {DISCLOSURE.entity_ai.full_disclosure}"
+        )
+
+
 def test_media_sitemap_caption_matches_classified_descriptor_copy():
     entity = _entity(images=["/media/ai.webp"])
     xml = render_media_sitemap(

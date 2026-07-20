@@ -218,7 +218,7 @@ const entityGroups = computed(() => {
   for (const e of entities.value) {
     const group = groups[e.type] || (groups[e.type] = [])
     group.push(e)
-    if (e.images?.length) withImages.push(e)
+    if (describeEntityImages(e).length) withImages.push(e)
   }
   return { groups, withImages }
 })

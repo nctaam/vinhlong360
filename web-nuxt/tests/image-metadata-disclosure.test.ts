@@ -120,7 +120,9 @@ describe('metadata consumers', () => {
     const source = readFileSync(resolve(process.cwd(), 'pages/khu-vuc/[area].vue'), 'utf8')
     expect(source).toContain('describeEntityImages(featured.value[0]')
     expect(source).toContain('buildImageMeta(featuredImageDescriptor.value)')
+    expect(source).toContain('if (describeEntityImages(e).length) withImages.push(e)')
     expect(source).not.toContain('entityOgImage(featured.value[0]?.images)')
+    expect(source).not.toContain('if (e.images?.length) withImages.push(e)')
   })
 
   it('keeps the legacy image helper scoped to non-entity profile covers', () => {

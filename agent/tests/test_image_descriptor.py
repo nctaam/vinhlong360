@@ -175,6 +175,72 @@ def test_describe_entity_images_preserves_source_positions_and_skips_invalid_url
     )
 
 
+def _supplied_entity_descriptor(**overrides: object) -> dict[str, object]:
+    descriptor: dict[str, object] = {
+        "url": "/media/supplied.webp",
+        "alt": "Vườn trái cây — ảnh minh họa đã phân loại",
+        "source_class": "ai-generated",
+        "source_kind": "entity-editorial",
+        "disclosure_key": "entity-ai",
+        "short_label": DISCLOSURE.entity_ai.short_label,
+        "full_disclosure": DISCLOSURE.entity_ai.full_disclosure,
+        "credit": None,
+        "width": None,
+        "height": None,
+    }
+    descriptor.update(overrides)
+    return descriptor
+
+
+def test_describe_entity_images_prefers_supplied_canonical_descriptors():
+    supplied = _supplied_entity_descriptor()
+    descriptors = describe_entity_images(
+        {
+            "name": "Vườn trái cây",
+            "images": ["/legacy.webp"],
+            "image_descriptor": supplied,
+        },
+        disclosure=DISCLOSURE,
+    )
+
+    assert descriptors == (ImageDescriptor(**supplied),)
+
+
+def test_describe_entity_images_accepts_structured_lists_and_https_urls():
+    supplied = _supplied_entity_descriptor(url="https://cdn.example/supplied.webp")
+    descriptors = describe_entity_images(
+        {"name": "Vườn trái cây", "image_descriptors": [supplied]},
+        disclosure=DISCLOSURE,
+    )
+
+    assert descriptors == (ImageDescriptor(**supplied),)
+
+
+@pytest.mark.parametrize(
+    "supplied",
+    [
+        _supplied_entity_descriptor(extra=True),
+        _supplied_entity_descriptor(source_kind="review-ugc"),
+        _supplied_entity_descriptor(full_disclosure="Ảnh thật."),
+        _supplied_entity_descriptor(url="javascript:alert(1)"),
+        _supplied_entity_descriptor(width=640, height=None),
+    ],
+)
+def test_describe_entity_images_fails_closed_for_invalid_supplied_descriptors(
+    supplied: dict[str, object],
+):
+    descriptors = describe_entity_images(
+        {
+            "name": "Vườn trái cây",
+            "images": ["/legacy.webp"],
+            "image_descriptors": [supplied],
+        },
+        disclosure=DISCLOSURE,
+    )
+
+    assert descriptors == ()
+
+
 def test_entity_and_review_images_have_distinct_source_classes():
     entity = describe_entity_image(
         "/img/entity.webp",
