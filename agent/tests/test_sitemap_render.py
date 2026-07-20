@@ -474,6 +474,90 @@ def test_media_sitemap_requires_exact_ai_editorial_descriptor_before_page_node(
 
 
 @pytest.mark.parametrize(
+    "descriptor",
+    [
+        ImageDescriptor(
+            url="/ugc.jpg",
+            alt="UGC",
+            source_class="user-uploaded",
+            source_kind="review-ugc",
+            disclosure_key="ugc-photo",
+            short_label=DISCLOSURE.ugc_photo.short_label,
+            full_disclosure=DISCLOSURE.ugc_photo.full_disclosure,
+            credit="Lan",
+            width=None,
+            height=None,
+        ),
+        ImageDescriptor(
+            url="/contradictory.jpg",
+            alt="Contradictory",
+            source_class="ai-generated",
+            source_kind="review-ugc",
+            disclosure_key="ugc-photo",
+            short_label=DISCLOSURE.ugc_photo.short_label,
+            full_disclosure=DISCLOSURE.ugc_photo.full_disclosure,
+            credit="Lan",
+            width=None,
+            height=None,
+        ),
+    ],
+)
+def test_serialize_image_urlset_omits_pages_without_editorial_descriptors(
+    descriptor: ImageDescriptor,
+):
+    xml = serialize_image_urlset(
+        {"https://vinhlong360.vn/dia-diem/ugc-only": {descriptor.url or "": descriptor}}
+    )
+
+    assert _media_entries(xml) == []
+
+
+def test_serialize_image_urlset_keeps_page_and_only_editorial_image_for_mixed_group():
+    editorial = ImageDescriptor(
+        url="/editorial.jpg",
+        alt="Editorial",
+        source_class="ai-generated",
+        source_kind="entity-editorial",
+        disclosure_key="entity-ai",
+        short_label=DISCLOSURE.entity_ai.short_label,
+        full_disclosure=DISCLOSURE.entity_ai.full_disclosure,
+        credit=None,
+        width=None,
+        height=None,
+    )
+    ugc = ImageDescriptor(
+        url="/ugc.jpg",
+        alt="UGC",
+        source_class="user-uploaded",
+        source_kind="review-ugc",
+        disclosure_key="ugc-photo",
+        short_label=DISCLOSURE.ugc_photo.short_label,
+        full_disclosure=DISCLOSURE.ugc_photo.full_disclosure,
+        credit="Lan",
+        width=None,
+        height=None,
+    )
+
+    entries = _media_entries(
+        serialize_image_urlset(
+            {
+                "https://vinhlong360.vn/dia-diem/mixed": {
+                    editorial.url or "": editorial,
+                    ugc.url or "": ugc,
+                }
+            }
+        )
+    )
+
+    assert entries == [
+        (
+            "https://vinhlong360.vn/dia-diem/mixed",
+            [("/editorial.jpg", DISCLOSURE.entity_ai.full_disclosure)],
+        )
+    ]
+
+
+@pytest.mark.parametrize(
     ("invalid_evidence", "invalid_disclosure", "message"),
     [
         (None, DISCLOSURE, "evidence must be PolicyEvidence"),

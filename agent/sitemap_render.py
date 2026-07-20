@@ -225,14 +225,21 @@ def serialize_image_urlset(
             "xmlns:image": IMAGE_NAMESPACE,
         },
     )
-    for page_url in sorted(pages)[:MAX_SITEMAP_URLS]:
-        descriptors = pages[page_url]
+    eligible_pages = {
+        page_url: {
+            image_url: descriptor
+            for image_url, descriptor in descriptors.items()
+            if _is_sitemap_image_descriptor(descriptor)
+        }
+        for page_url, descriptors in pages.items()
+        if any(_is_sitemap_image_descriptor(item) for item in descriptors.values())
+    }
+    for page_url in sorted(eligible_pages)[:MAX_SITEMAP_URLS]:
+        descriptors = eligible_pages[page_url]
         node = SubElement(root, "url")
         SubElement(node, "loc").text = page_url
         for image_url in sorted(descriptors):
             descriptor = descriptors[image_url]
-            if not _is_sitemap_image_descriptor(descriptor):
-                continue
             image = SubElement(node, "image:image")
             SubElement(image, "image:loc").text = image_url
             SubElement(image, "image:caption").text = descriptor.full_disclosure
