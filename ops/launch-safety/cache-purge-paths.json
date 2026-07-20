@@ -1,0 +1,15 @@
+{
+  "protected_paths": [
+    "agent/data",
+    "agent/data/sitemap-bundles"
+  ],
+  "reject_absolute_paths": true,
+  "reject_parent_segments": true,
+  "reject_symlinks": true,
+  "required_paths": [
+    "web-nuxt/.output",
+    "web-nuxt/.nuxt",
+    "web-nuxt/.cache"
+  ],
+  "schema_version": 1
+}

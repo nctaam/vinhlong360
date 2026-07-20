@@ -4,6 +4,7 @@ Description=Watchdog moi 5 phut
 [Timer]
 OnCalendar=*:0/5
 Persistent=false
+Unit=vl-watchdog.service
 
 [Install]
 WantedBy=timers.target

@@ -83,6 +83,11 @@ EXPECTED_UNITS = {
         ],
         "Service": [
             ("Type", "oneshot"),
+            (
+                "Environment",
+                "VL360_MAINTENANCE_SELECTOR="
+                "/etc/nginx/vl360-maintenance/active-server.conf",
+            ),
             ("ExecStart", "/bin/bash /opt/vinhlong360/scripts/ops/watchdog.sh"),
         ],
     },
@@ -91,6 +96,7 @@ EXPECTED_UNITS = {
         "Timer": [
             ("OnCalendar", "*:0/5"),
             ("Persistent", "false"),
+            ("Unit", "vl-watchdog.service"),
         ],
         "Install": [("WantedBy", "timers.target")],
     },
