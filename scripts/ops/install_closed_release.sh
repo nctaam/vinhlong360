@@ -94,6 +94,25 @@ esac
 [ "$LOCAL_REHEARSAL" = true ] || [ -z "${VL360_INSTALL_FAIL_AFTER:-}" ] \
   || die 'live-failure-injection-forbidden'
 
+# Each invocation owns only its current mutable evidence. Preserve uniquely named
+# rollback attempts so an armed forensic recovery authority is never discarded.
+mkdir -p -- "$EVIDENCE_DIR"
+rm -f -- \
+  "$EVIDENCE_DIR/dependency-unit-checks.json" \
+  "$EVIDENCE_DIR/install-summary.json" \
+  "$EVIDENCE_DIR/install-recovery.json" \
+  "$EVIDENCE_DIR/systemd-unit-cleanup.json" \
+  "$EVIDENCE_DIR/findmnt-before.json" \
+  "$EVIDENCE_DIR/findmnt-after.json" \
+  "$EVIDENCE_DIR/findmnt-recovery.json" \
+  "$EVIDENCE_DIR/persistent-before.json" \
+  "$EVIDENCE_DIR/persistent-after.json" \
+  "$EVIDENCE_DIR/persistent-recovery.json"
+rm -rf -- \
+  "$EVIDENCE_DIR/package" \
+  "$EVIDENCE_DIR/staged" \
+  "$EVIDENCE_DIR/installed"
+
 # Integrity and manifest verification must complete before extraction or mutation.
 python "$VERIFY_SCRIPT" \
   --archive "$ARCHIVE" --archive-digest-file "$ARCHIVE_DIGEST_FILE" \
@@ -129,7 +148,6 @@ SNAPSHOT_RECOVERY="$EVIDENCE_DIR/persistent-recovery.json"
 UNIT_ATTEMPT_ROOT=''
 UNIT_BACKUP_ROOT=''
 UNIT_MUTATION_MARKER=''
-mkdir -p -- "$EVIDENCE_DIR"
 rm -f -- "$EVIDENCE_DIR/systemd-unit-mutation-armed"
 rm -rf -- "$EVIDENCE_DIR/systemd-unit-backup"
 for stale_attempt in "$EVIDENCE_DIR"/.systemd-unit-attempt.*; do

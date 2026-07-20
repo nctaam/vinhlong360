@@ -861,6 +861,86 @@ def test_same_evidence_retry_before_units_never_keeps_prior_rollback_state(
     assert checks["exit_codes"]["nuxt-production-dependencies"] == 19
 
 
+def test_same_evidence_retry_after_success_resets_pre_mutation_evidence(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "same-evidence-reset-python"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+
+    first = _invoke_installer(closed_package, case_root, prepared)
+    assert first.returncode == 0, first.stderr + first.stdout
+
+    second = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert second.returncode == 19, second.stderr + second.stdout
+    checks = json.loads(
+        (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
+    )
+    assert checks["results"] == {"python-dependencies": "failed"}
+    assert checks["exit_codes"] == {"python-dependencies": 19}
+    for name in (
+        "install-summary.json",
+        "install-recovery.json",
+        "systemd-unit-cleanup.json",
+        "installed",
+    ):
+        assert not (evidence / name).exists()
+    assert (evidence / "package").is_dir()
+    assert (evidence / "staged").is_dir()
+
+
+def test_same_evidence_retry_after_success_resets_rollback_evidence(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "same-evidence-reset-units"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+
+    first = _invoke_installer(closed_package, case_root, prepared)
+    assert first.returncode == 0, first.stderr + first.stdout
+
+    second = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="units",
+    )
+
+    assert second.returncode == 19, second.stderr + second.stdout
+    checks = json.loads(
+        (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
+    )
+    assert checks["results"] == {
+        "python-dependencies": "passed",
+        "nuxt-production-dependencies": "passed",
+        "systemd-units": "failed",
+    }
+    assert checks["exit_codes"] == {
+        "python-dependencies": 0,
+        "nuxt-production-dependencies": 0,
+        "systemd-units": 19,
+    }
+    assert not (evidence / "install-summary.json").exists()
+    assert not (evidence / "systemd-unit-cleanup.json").exists()
+    recovery = json.loads(
+        (evidence / "install-recovery.json").read_text(encoding="utf-8")
+    )
+    assert recovery["status"] == "rolled-back"
+    assert recovery["failure_point"] == "install-systemd-units"
+    assert recovery["systemd_units_restored"] is True
+    assert not (evidence / "installed").exists()
+
+
 def test_same_evidence_retry_during_units_restores_current_not_stale_destination(
     tmp_path: Path, closed_package
 ):
