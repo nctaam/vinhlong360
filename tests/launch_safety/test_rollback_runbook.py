@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -162,6 +164,118 @@ def test_local_maintenance_probe_propagates_its_exact_failure_status():
 
     assert "local probe_status=$?" in probe
     assert 'return "$probe_status"' in probe
+
+
+def test_operator_probe_alias_is_used_by_closed_boundary_and_browser_phases():
+    source = REHEARSE.read_text(encoding="utf-8")
+    closed = source.split("verify_nginx_closed_boundary()", 1)[1].split(
+        "verify_maintenance_boundary()", 1
+    )[0]
+    browser = source.split("verify_browser_worker_cache()", 1)[1].split(
+        "best_effort_recovery_step()", 1
+    )[0]
+
+    assert "NGINX_OPERATOR_PROBE_URL" in closed
+    assert "NGINX_OPERATOR_PROBE_URL" in browser
+    assert 'if [ -z "${NGINX_PROBE_URL:-}" ]' not in closed
+    assert 'if [ -z "${NGINX_PROBE_URL:-}" ]' not in browser
+
+
+def _bash_path(path: Path) -> str:
+    resolved = path.resolve().as_posix()
+    if len(resolved) >= 3 and resolved[1:3] == ":/":
+        return f"/{resolved[0].lower()}/{resolved[3:]}"
+    return resolved
+
+
+def test_local_rehearsal_failure_injection_preserves_status_and_records_recovery(
+    tmp_path: Path,
+):
+    bash = Path(r"C:\Program Files\Git\bin\bash.exe")
+    if not bash.is_file():
+        pytest.skip("Git Bash is unavailable")
+
+    package = _build_closed_package(tmp_path / "package")
+    failures = (
+        ("systemctl stop vl-watchdog.timer", 37),
+        ("vl360-maintenance enable", 38),
+        ("systemctl reload nginx", 39),
+        ("vl360-maintenance-probe", 40),
+    )
+
+    def run_case(case: tuple[int, tuple[str, int]]) -> None:
+        index, (command, expected_status) = case
+        case_root = tmp_path / f"case-{index}"
+        evidence = case_root / "evidence"
+        release_root = case_root / "release"
+        persistent = case_root / "persistent"
+        runtime = case_root / "runtime"
+        for path in (evidence, release_root, persistent, runtime):
+            path.mkdir(parents=True)
+        environment = case_root / "external.env"
+        environment.write_text("SAFE_LOCAL=1\n", encoding="ascii")
+        state = case_root / "state.json"
+        state.write_text(
+            json.dumps({"failures": {command: expected_status}}) + "\n",
+            encoding="ascii",
+        )
+
+        env = os.environ.copy()
+        env.update(
+            {
+                "KNOWN_GOOD_CLOSED": _bash_path(package.archive),
+                "LOCAL_RELEASE_ROOT": _bash_path(release_root),
+                "PERSISTENT_AGENT_DATA_ROOT": _bash_path(persistent),
+                "ENVIRONMENT_AUTHORITY": _bash_path(environment),
+                "RUNTIME_AUTHORITY": _bash_path(runtime),
+                "EVIDENCE_DIR": _bash_path(evidence),
+                "LOCAL_COMMAND_STATE": _bash_path(state),
+                "OPERATOR": "runtime-test",
+                "OPERATOR_CIDR": "127.0.0.1/32",
+                "CANDIDATE_RELEASE_ID": "candidate",
+                "ROLLBACK_RELEASE_ID": "rollback",
+            }
+        )
+        result = subprocess.run(
+            [str(bash), "scripts/ops/rehearse_launch_rollback.sh", "--local-rehearsal"],
+            cwd=ROOT,
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == expected_status, result.stderr + result.stdout
+        records = [
+            json.loads(line)
+            for line in (evidence / "rollback-phases.jsonl")
+            .read_text(encoding="utf-8")
+            .splitlines()
+        ]
+        assert any(
+            record["phase"] == "recovery" and record["exit_code"] == expected_status
+            for record in records
+        )
+        recovery_records = {
+            record["phase"]: record
+            for record in records
+            if record["phase"].startswith("recovery:")
+        }
+        assert set(recovery_records) >= {
+            "recovery:verify-recovery-package",
+            "recovery:install-closed-release",
+            "recovery:verify-dependencies-units-daemon-reload",
+            "recovery:verify-readiness-and-listeners",
+            "recovery:verify-nginx-closed-boundary",
+            "recovery:verify-browser-worker-cache",
+        }
+        assert {record["status"] for record in recovery_records.values()} <= {
+            "passed",
+            "failed",
+            "skipped",
+        }
+
+    with ThreadPoolExecutor(max_workers=len(failures)) as executor:
+        list(executor.map(run_case, enumerate(failures)))
 
 
 def test_live_mode_is_acknowledgement_and_authority_gated_without_live_claims():

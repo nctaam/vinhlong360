@@ -297,11 +297,12 @@ if payload.get("operator", {}).get("contract_passed") is not True:
 PY
     return
   fi
-  if [ -z "${NGINX_PROBE_URL:-}" ]; then
+  local operator_url="${NGINX_OPERATOR_PROBE_URL:-${NGINX_PROBE_URL:-}}"
+  if [ -z "$operator_url" ]; then
     write_blocked_evidence "$evidence" "nginx-probe-url-unavailable"
     return 2
   fi
-  VL360_LAUNCH_PUBLIC_URL="$NGINX_PROBE_URL" \
+  VL360_LAUNCH_PUBLIC_URL="$operator_url" \
     python "$SCRIPT_DIR/probe_launch_boundary.py" \
       --expect maintenance --operator-source --maintenance-probe \
       --require-rich-html --require-thin-html --require-meta-robots \
@@ -358,12 +359,13 @@ PY
 
 verify_browser_worker_cache() {
   local evidence="$1"
-  if [ -z "${NGINX_PROBE_URL:-}" ]; then
+  local operator_url="${NGINX_OPERATOR_PROBE_URL:-${NGINX_PROBE_URL:-}}"
+  if [ -z "$operator_url" ]; then
     write_blocked_evidence "$evidence" "browser-server-unavailable"
     return 2
   fi
   node "$PROJECT_ROOT/scripts/launch_safety_browser_e2e.mjs" \
-    --base-url "$NGINX_PROBE_URL" --profile "$EVIDENCE_DIR/chrome-profile" \
+    --base-url "$operator_url" --profile "$EVIDENCE_DIR/chrome-profile" \
     --install-legacy-worker-first --activate-current-worker \
     --assert-policy-cache-storage-empty --assert-offline-policy-replay-denied \
     --evidence "$evidence"
