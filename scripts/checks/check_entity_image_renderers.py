@@ -36,8 +36,23 @@ ACCESSIBILITY = frozenset(
         "no-image-invariant",
     }
 )
-SOURCE_ROOTS = ("components", "pages", "composables", "utils")
+SOURCE_ROOTS = frozenset(
+    {
+        "components",
+        "pages",
+        "composables",
+        "utils",
+        "layouts",
+        "plugins",
+        "server",
+        "app",
+        "middleware",
+        "assets",
+        "types",
+    }
+)
 SOURCE_SUFFIXES = frozenset({".vue", ".ts", ".js", ".mjs"})
+IGNORED_SOURCE_DIRS = frozenset({"node_modules", ".nuxt", "build", ".output", "dist", "coverage", "tests"})
 CANONICAL_PRODUCERS = (
     "describeEntityImages",
     "describeEntityPlaceholder",
@@ -54,7 +69,7 @@ METADATA_PRODUCERS = frozenset(
 )
 RAW_FIELDS = frozenset({"image", "images", "image_url", "image_urls"})
 RAW_ROOT_HINT = re.compile(
-    r"(?:entity|event|item|saved|post|review|gallery|place|record|source|preview|form|response|data|row|card|pick|e|p)$",
+    r"(?:entity|event|item|saved|post|review|gallery|place|record|source|preview|form|response|data|row|card|pick|body|draftBody|props|attrs|e|p|r)$",
     re.I,
 )
 RAW_ACCESS_RE = re.compile(
@@ -70,7 +85,7 @@ DESTRUCTURE_RE = re.compile(
 )
 VUE_TAG_RE = re.compile(r"<(?:img|NuxtImg)\b[^>]*>", re.I | re.S)
 COMPONENT_SINK_RE = re.compile(
-    r"<(?:[\w.-]*(?:Gallery|Lightbox)|ImageLightbox|PhotoGallery)\b[^>]*\s:(?:images?|thumbnail|cover|poster|src)\s*=\s*['\"][^'\"]+['\"][^>]*>",
+    r"<(?!(?:img|NuxtImg)\b)(?:[A-Z][\w.-]*|[a-z][\w.-]*-[\w.-]*)\b[^>]*\s:(?:images?|thumbnail|cover|poster|src)\s*=\s*['\"][^'\"]+['\"][^>]*>",
     re.I | re.S,
 )
 STYLE_SINK_RE = re.compile(
@@ -87,6 +102,10 @@ SCRIPT_SINK_RE = re.compile(
 )
 DISCLOSURE_RE = re.compile(r"<ImageDisclosure\b(?P<attrs>[^>]*)>", re.I | re.S)
 ATTR_RE = re.compile(r"(?P<name>[:\w-]+)\s*=\s*(['\"])(?P<value>.*?)\2", re.S)
+SCOPED_OPEN_RE = re.compile(
+    r"<(?P<tag>[A-Za-z][\w.-]*)\b(?P<attrs>[^>]*?(?:data-(?:image-|renderer-)?surface|data-(?:image-|renderer-)?source-class)[^>]*)>",
+    re.I | re.S,
+)
 
 
 @dataclass(frozen=True)
@@ -148,7 +167,8 @@ def _registry_shape_error(entry: object, label: str) -> Finding | None:
 def _registry_source_error(entry: dict, label: str) -> Finding | None:
     file = entry["file"]
     source_root = file.split("/", 1)[0]
-    valid = _valid_relative_path(file) and source_root in SOURCE_ROOTS and Path(file).suffix in SOURCE_SUFFIXES
+    root_level_source = "/" not in file and Path(file).suffix in SOURCE_SUFFIXES
+    valid = _valid_relative_path(file) and (root_level_source or source_root in SOURCE_ROOTS) and Path(file).suffix in SOURCE_SUFFIXES
     if valid:
         return None
     return _finding(
@@ -300,17 +320,13 @@ def _load_registry(root: Path) -> tuple[list[dict], list[Finding]]:
 
 
 def iter_frontend_source_files(root: Path) -> list[Path]:
-    paths: list[Path] = []
-    for base in SOURCE_ROOTS:
-        directory = root / base
-        if not directory.is_dir():
-            continue
-        paths.extend(
-            path
-            for path in directory.rglob("*")
-            if path.is_file() and path.suffix in SOURCE_SUFFIXES and "tests" not in path.relative_to(root).parts
-        )
-    return sorted(set(paths))
+    return sorted(
+        path
+        for path in root.rglob("*")
+        if path.is_file()
+        and path.suffix in SOURCE_SUFFIXES
+        and not any(part in IGNORED_SOURCE_DIRS for part in path.relative_to(root).parts)
+    )
 
 
 def _raw_accesses(text: str) -> list[_RawAccess]:
@@ -320,7 +336,7 @@ def _raw_accesses(text: str) -> list[_RawAccess]:
         field = (match.group("dot") or match.group("bracket")).lower()
         if "descriptor" in root.lower() or "meta" in root.lower():
             continue
-        if field == "image" and not RAW_ROOT_HINT.search(root):
+        if not RAW_ROOT_HINT.search(root):
             continue
         accesses.append(_RawAccess(match.group(0), root, field, _line(text, match.start())))
     return accesses
@@ -448,8 +464,38 @@ def _entry_matches_access(entry: dict, access: _RawAccess) -> bool:
     path = entry["access_path"].lower().replace("?.", ".").replace(".value", "")
     if path in {"popup", "metadata.image", "native-share.image", "descriptor"}:
         return False
-    fields = set(re.findall(r"(?:^|[.|])(images?|image_urls?)(?:$|[.|])", path))
-    return access.field in fields
+    for alternative in path.split("|"):
+        parts = [part for part in re.split(r"[.]", alternative) if part]
+        fields = {part for part in parts if part in RAW_FIELDS}
+        roots = {parts[0]} if parts and parts[0] not in RAW_FIELDS else set()
+        if access.field in fields and (not roots or any(_same_source_boundary(root, access.root) for root in roots)):
+            return True
+    return False
+
+
+def _same_source_boundary(expected: str, actual: str) -> bool:
+    expected_boundary = _source_boundary(expected)
+    actual_boundary = _source_boundary(actual)
+    return expected_boundary == actual_boundary or actual_boundary == "alias"
+
+
+def _source_boundary(root: str) -> str:
+    value = root.lower()
+    if value in {"entity", "form", "e"}:
+        return "entity"
+    if value in {"event", "place", "record"}:
+        return value
+    if value in {"post", "p", "draftbody"}:
+        return "post"
+    if value == "review":
+        return "review"
+    if value in {"item", "saved", "recent", "fav"}:
+        return "saved"
+    if value == "gallery":
+        return "gallery"
+    if value in {"props", "attrs"}:
+        return "props"
+    return "alias"
 
 
 def _attrs(tag_attrs: str) -> dict[str, str]:
@@ -464,6 +510,78 @@ def _normalized_binding(value: str | None) -> str:
 
 def _disclosures(text: str) -> list[dict[str, str]]:
     return [_attrs(match.group("attrs")) for match in DISCLOSURE_RE.finditer(text)]
+
+
+def _scoped_proof_text(text: str, entry: dict) -> str | None:
+    """Return the explicit surface/source marker scope, if the file declares one."""
+    scopes: list[tuple[str, str, str]] = []
+    for match in SCOPED_OPEN_RE.finditer(text):
+        attrs = _attrs(match.group("attrs"))
+        surface = next(
+            (attrs.get(name, "") for name in ("data-image-surface", "data-renderer-surface", "data-surface") if attrs.get(name)),
+            "",
+        )
+        source_class = next(
+            (
+                attrs.get(name, "")
+                for name in ("data-source-class", "data-image-source-class", "data-renderer-source-class")
+                if attrs.get(name)
+            ),
+            "",
+        )
+        if not surface or not source_class:
+            continue
+        close = text.find(f"</{match.group('tag')}>", match.end())
+        body = text[match.end() : close if close >= 0 else len(text)]
+        scopes.append((surface, source_class, body))
+    if not scopes:
+        return None
+    matches = [body for surface, source_class, body in scopes if source_class == entry["source_class"] and surface == entry["surface"]]
+    return "\n".join(matches)
+
+
+def _descriptor_source_classes(attributes: dict[str, str]) -> set[str]:
+    descriptor = _binding(attributes, ":descriptor", "descriptor").lower()
+    if "placeholder" in descriptor:
+        return {"placeholder"}
+    if any(token in descriptor for token in ("ugc", "post", "review", "upload")):
+        return {"user-uploaded"}
+    if any(token in descriptor for token in ("ai", "generated")):
+        return {"ai-generated"}
+    return set(SOURCE_CLASSES - {"none"})
+
+
+def _entry_disclosures(text: str, entry: dict) -> list[dict[str, str]]:
+    return [
+        attributes
+        for attributes in _disclosures(text)
+        if entry["source_class"] in _descriptor_source_classes(attributes)
+    ]
+
+
+def _entry_has_presentation(text: str, entry: dict) -> bool:
+    disclosures = _entry_disclosures(text, entry)
+    presentations = {(item.get("presentation") or item.get(":presentation")) for item in disclosures}
+    if entry["presentation"] == "short":
+        return "short" in presentations
+    if entry["presentation"] == "full":
+        return "full" in presentations or _visible_full_copy(text)
+    if entry["presentation"] == "short-and-full":
+        return "short" in presentations and ("full" in presentations or _visible_full_copy(text))
+    return entry["presentation"] == "none"
+
+
+def _entry_has_accessibility(text: str, entry: dict) -> bool:
+    accessibility = entry["accessibility"]
+    disclosures = _entry_disclosures(text, entry)
+    linked = any(_disclosure_links_sink(disclosure, sink) for disclosure in disclosures for sink in _sink_attributes(text))
+    if accessibility == "aria-describedby-full-copy":
+        return linked
+    if accessibility == "visible-full-copy":
+        return _visible_full_copy(text)
+    if accessibility == "aria-and-visible-full-copy":
+        return linked and _visible_full_copy(text)
+    return accessibility == "no-image-invariant"
 
 
 def _binding(attributes: dict[str, str], *names: str) -> str:
@@ -619,7 +737,7 @@ def _metadata_proof(text: str, entry: dict, root: Path) -> bool:
 
 
 def _delegation_proof(text: str, producer: str) -> bool:
-    if producer in {"EntityCard", "SavedEntityCard", "PhotoGallery", "ImageLightbox"}:
+    if producer in {"EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox"}:
         return re.search(rf"<{re.escape(producer)}\b", text) is not None
     return producer in text and not find_image_render_sinks(text, require_raw_source=True, raw_aliases=trace_raw_image_aliases(text))
 
@@ -630,14 +748,14 @@ def _is_metadata_entry(entry: dict) -> bool:
 
 
 def _is_component_delegation(entry: dict) -> bool:
-    return entry["descriptor_producer"] in {"EntityCard", "SavedEntityCard", "PhotoGallery", "ImageLightbox"}
+    return entry["descriptor_producer"] in {"EntityCard", "SavedEntityCard", "PostCard", "PhotoGallery", "ImageLightbox"}
 
 
 def _has_delegated_presentation(text: str, presentation: str) -> bool:
     if presentation == "full":
         return bool(re.search(r"<(?:Lazy)?(?:PhotoGallery|ImageLightbox)\b", text))
     if presentation == "short":
-        return bool(re.search(r"<(?:EntityCard|SavedEntityCard)\b", text))
+        return bool(re.search(r"<(?:EntityCard|SavedEntityCard|PostCard)\b", text))
     return False
 
 
@@ -757,9 +875,15 @@ def _direct_entry_findings(analysis: _SourceAnalysis, entry: dict) -> list[Findi
     findings: list[Finding] = []
     producer, surface = entry["descriptor_producer"], entry["surface"]
     delegated = _has_delegated_presentation(analysis.text, entry["presentation"])
+    scoped = _scoped_proof_text(analysis.text, entry)
     if producer not in analysis.text:
         findings.append(_finding("MISSING_DESCRIPTOR_PRODUCER", analysis.relative, f"{surface} is missing {producer}"))
-    if not has_required_presentation(analysis.text, entry["presentation"], entry["source_class"]) and not delegated:
+    has_presentation = (
+        has_required_presentation(scoped, entry["presentation"], entry["source_class"])
+        if scoped is not None
+        else _entry_has_presentation(analysis.text, entry)
+    )
+    if not has_presentation and not delegated:
         findings.append(
             _finding(
                 "MISSING_DISCLOSURE_PRESENTATION",
@@ -767,7 +891,12 @@ def _direct_entry_findings(analysis: _SourceAnalysis, entry: dict) -> list[Findi
                 f"{surface} is missing {entry['presentation']} disclosure",
             )
         )
-    if not has_accessibility_proof(analysis.text, entry["accessibility"]) and not delegated:
+    has_accessibility = (
+        has_accessibility_proof(scoped, entry["accessibility"])
+        if scoped is not None
+        else _entry_has_accessibility(analysis.text, entry)
+    )
+    if not has_accessibility and not delegated:
         findings.append(
             _finding(
                 "MISSING_ACCESSIBLE_ASSOCIATION",

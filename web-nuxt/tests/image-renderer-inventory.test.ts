@@ -88,6 +88,7 @@ const requiredBoundaries = [
   ['components/PostCard.vue', 'post-lightbox', 'user-uploaded'],
   ['components/EntityFeed.vue', 'entity-feed', 'user-uploaded'],
   ['pages/bai-viet/[id].vue', 'related-post', 'user-uploaded'],
+  ['pages/bai-viet/[id].vue', 'post-detail-card', 'user-uploaded'],
   ['pages/bai-viet/[id].vue', 'post-metadata', 'user-uploaded'],
   ['pages/admin/kiem-duyet.vue', 'admin-moderation', 'user-uploaded'],
   ['components/EntityReviews.vue', 'review-upload-preview', 'user-uploaded'],

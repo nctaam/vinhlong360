@@ -270,3 +270,104 @@ def test_staged_relevant_change_runs_full_registry_scan(tmp_path: Path):
     result = EntityImageRendererCheck(root=tmp_path).run(files=["web-nuxt/config/entity-image-renderers.json"])
     assert result["count"] > 0
     assert any(item["code"] == "UNREGISTERED_ENTITY_IMAGE_RENDERER" for item in result["violations"])
+
+
+def test_repository_wide_scan_catches_layout_raw_renderer(tmp_path: Path):
+    _mk(tmp_path, "layouts/default.vue", '<template><NuxtImg :src="entity.images[0]" /></template>')
+    codes = _codes(scan_entity_image_renderers(tmp_path, registry=[]))
+    assert {"UNREGISTERED_ENTITY_IMAGE_RENDERER", "RAW_DESCRIPTOR_BYPASS"} <= codes
+
+
+@pytest.mark.parametrize(
+    "source_file",
+    ["layouts/default.vue", "plugins/images.client.ts", "server/api/images.ts", "app/gallery.vue", "error.vue"],
+)
+def test_registry_accepts_repository_wide_frontend_source_paths(tmp_path: Path, source_file: str):
+    _mk(tmp_path, source_file, "export default {}")
+    _mk(tmp_path, "tests/source.test.ts", "test('source', () => {})")
+    findings = group_validated_registry_entries(
+        tmp_path,
+        [_entry(file=source_file, test_file="tests/source.test.ts")],
+    )
+    assert "INVALID_ENTITY_IMAGE_REGISTRY" not in _codes(findings)
+
+
+def test_registration_cannot_cover_cross_root_generic_thumbnail_sink(tmp_path: Path):
+    _mk(tmp_path, "pages/registered.vue", '<template><Card :thumbnail="post.images[0]" /></template>')
+    findings = scan_entity_image_renderers(tmp_path, [_entry()])
+    assert {"UNREGISTERED_ENTITY_IMAGE_RENDERER", "RAW_DESCRIPTOR_BYPASS"} <= _codes(findings)
+
+
+def test_singular_props_image_is_not_a_raw_access_exemption(tmp_path: Path):
+    _mk(tmp_path, "pages/props.vue", '<template><NuxtImg :src="props.image" /></template>')
+    codes = _codes(scan_entity_image_renderers(tmp_path, registry=[]))
+    assert {"UNREGISTERED_ENTITY_IMAGE_RENDERER", "RAW_DESCRIPTOR_BYPASS"} <= codes
+
+
+def test_presentation_and_accessibility_are_scoped_to_source_row(tmp_path: Path):
+    _mk(
+        tmp_path,
+        "pages/scoped.vue",
+        """
+<template>
+  <section data-image-surface="cards" data-source-class="ai-generated">
+    <NuxtImg :src="ai.url" aria-describedby="ai-copy" />
+    <ImageDisclosure id="ai-copy" :descriptor="ai" presentation="short" />
+  </section>
+  <section data-image-surface="cards" data-source-class="placeholder">
+    <NuxtImg :src="placeholder.url" aria-describedby="placeholder-copy" />
+  </section>
+</template>
+<script setup>
+const ai = describeEntityImages(entity)[0]
+const placeholder = describeEntityPlaceholder(entity)
+</script>
+""",
+    )
+    registry = [
+        _entry(file="pages/scoped.vue", surface="cards", source_class="ai-generated", test_file="tests/scoped.test.ts"),
+        _entry(file="pages/scoped.vue", surface="cards", source_class="placeholder", descriptor_producer="describeEntityPlaceholder", test_file="tests/scoped.test.ts"),
+    ]
+    codes = _codes(scan_entity_image_renderers(tmp_path, registry))
+    assert "MISSING_DISCLOSURE_PRESENTATION" in codes
+    assert "MISSING_ACCESSIBLE_ASSOCIATION" in codes
+
+
+def test_source_named_disclosure_cannot_exempt_another_source_row(tmp_path: Path):
+    _mk(
+        tmp_path,
+        "pages/sources.vue",
+        """
+<template>
+  <NuxtImg :src="ai.url" aria-describedby="ai-copy" />
+  <ImageDisclosure id="ai-copy" :descriptor="ai" presentation="short" />
+</template>
+<script setup>
+const ai = describeEntityImages(entity)[0]
+const placeholder = describeEntityPlaceholder(entity)
+</script>
+""",
+    )
+    registry = [
+        _entry(file="pages/sources.vue", surface="cards", source_class="ai-generated", test_file="tests/sources.test.ts"),
+        _entry(file="pages/sources.vue", surface="cards", source_class="placeholder", descriptor_producer="describeEntityPlaceholder", test_file="tests/sources.test.ts"),
+    ]
+    codes = _codes(scan_entity_image_renderers(tmp_path, registry))
+    assert "MISSING_DISCLOSURE_PRESENTATION" in codes
+    assert "MISSING_ACCESSIBLE_ASSOCIATION" in codes
+
+
+def test_post_detail_boundary_requires_postcard_delegation(tmp_path: Path):
+    entry = _entry(
+        file="pages/bai-viet/[id].vue",
+        surface="post-detail-card",
+        access_path="post.images",
+        source_class="user-uploaded",
+        descriptor_producer="PostCard",
+        test_file="tests/ugc-image-classification.test.ts",
+    )
+    _mk(tmp_path, entry["file"], "<template><section /></template><script>const PostCard = 'decoy'</script>")
+    assert "MISSING_DELEGATION_PROOF" in _codes(scan_entity_image_renderers(tmp_path, [entry]))
+
+    _mk(tmp_path, entry["file"], '<template><PostCard :post="post" /></template>')
+    assert "MISSING_DELEGATION_PROOF" not in _codes(scan_entity_image_renderers(tmp_path, [entry]))
