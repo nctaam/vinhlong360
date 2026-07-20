@@ -59,8 +59,238 @@ normalize_evidence_candidate() {
   fi
 }
 
+ATTEMPT_ID="$(python - <<'PY'
+import secrets
+print(secrets.token_hex(16))
+PY
+)"
+
+process_start_identity() {
+  local pid="$1"
+  [ -r "/proc/$pid/stat" ] || return 1
+  awk '{print $22}' "/proc/$pid/stat"
+}
+
+PROCESS_START_IDENTITY="$(process_start_identity "$$" 2>/dev/null || printf 'unknown-%s\n' "$$")"
+HELD_LOCK_DIRS=()
+HELD_LOCK_ROOTS=()
+HELD_LOCK_KEYS=()
+HELD_LOCK_KINDS=()
+RECLAIMED_STALE_LOCKS=0
+LOCKED_EVIDENCE_DIR=''
+LOCK_EVIDENCE_ENABLED=false
+LOCK_TERMINAL_RECORDED=false
+
+lock_spec() {
+  local kind="$1"
+  local authority="$2"
+  local local_rehearsal="$3"
+  local lock_root
+  if [ "$local_rehearsal" = true ] || [ "$kind" = evidence ]; then
+    lock_root="$(CDPATH= cd -- "$(dirname -- "$authority")" && pwd -P)/.vl360-install-locks"
+  else
+    lock_root=/run/lock/vl360-install-closed-release
+  fi
+  local key
+  key="$(python - "$kind" "$authority" <<'PY'
+import hashlib
+import os
+import sys
+
+kind = sys.argv[1]
+authority = os.path.normcase(os.path.realpath(sys.argv[2]))
+print(hashlib.sha256(f"{kind}\0{authority}".encode("utf-8")).hexdigest())
+PY
+)"
+  printf '%s|%s|%s|%s\n' "$lock_root/$kind-$key.lock" "$lock_root" "$key" "$kind"
+}
+
+write_lock_owner() {
+  local lock_dir="$1"
+  local temporary="$lock_dir/.owner.$ATTEMPT_ID.tmp"
+  printf '{"attempt_id":"%s","pid":%s,"process_start_identity":"%s"}\n' \
+    "$ATTEMPT_ID" "$$" "$PROCESS_START_IDENTITY" > "$temporary" || return 1
+  mv -f -- "$temporary" "$lock_dir/owner.json"
+}
+
+lock_owner_is_live() {
+  local lock_dir="$1"
+  [ ! -e "$lock_dir/reclaimable" ] || return 1
+  local owner
+  owner="$(python - "$lock_dir/owner.json" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+try:
+    payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+    pid = int(payload["pid"])
+    start = str(payload["process_start_identity"])
+    attempt = str(payload["attempt_id"])
+except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+    raise SystemExit(2)
+print(f"{pid}\t{start}\t{attempt}")
+PY
+)" || return 2
+  local owner_pid owner_start owner_attempt
+  IFS=$'\t' read -r owner_pid owner_start owner_attempt <<< "$owner"
+  kill -0 "$owner_pid" 2>/dev/null || return 1
+  local current_start
+  current_start="$(process_start_identity "$owner_pid" 2>/dev/null)" || return 0
+  [ "$current_start" = "$owner_start" ]
+}
+
+remove_lock_dir() {
+  local lock_dir="$1"
+  local retry
+  for retry in 1 2 3 4 5; do
+    rm -rf -- "$lock_dir" >/dev/null 2>&1 || true
+    [ ! -e "$lock_dir" ] && [ ! -L "$lock_dir" ] && return 0
+    sleep 0.05
+  done
+  return 1
+}
+
+mark_lock_reclaimable() {
+  local lock_dir="$1"
+  [ -d "$lock_dir" ] || return 0
+  : > "$lock_dir/reclaimable" 2>/dev/null || true
+}
+
+lock_is_owned_by_attempt() {
+  local lock_dir="$1"
+  local actual expected
+  [ -f "$lock_dir/owner.json" ] && [ ! -L "$lock_dir/owner.json" ] || return 1
+  IFS= read -r actual < "$lock_dir/owner.json" || return 1
+  printf -v expected '{"attempt_id":"%s","pid":%s,"process_start_identity":"%s"}' \
+    "$ATTEMPT_ID" "$$" "$PROCESS_START_IDENTITY"
+  [ "$actual" = "$expected" ]
+}
+
+release_owned_lock() {
+  local lock_dir="$1"
+  local released="$lock_dir.released.$ATTEMPT_ID"
+  local retry
+  for retry in 1 2 3 4 5; do
+    lock_is_owned_by_attempt "$lock_dir" || return 1
+    if mv -- "$lock_dir" "$released" 2>/dev/null; then
+      remove_lock_dir "$released" || true
+      return 0
+    fi
+    sleep 0.05
+  done
+  if lock_is_owned_by_attempt "$lock_dir"; then
+    mark_lock_reclaimable "$lock_dir"
+  fi
+  return 1
+}
+
+acquire_authority_lock() {
+  local kind="$1"
+  local authority="$2"
+  local local_rehearsal="$3"
+  local spec lock_dir lock_root lock_key lock_kind
+  spec="$(lock_spec "$kind" "$authority" "$local_rehearsal")" || return 11
+  IFS='|' read -r lock_dir lock_root lock_key lock_kind <<< "$spec"
+  [ ! -L "$lock_root" ] || return 11
+  if [ -e "$lock_root" ]; then
+    [ -d "$lock_root" ] || return 11
+  else
+    mkdir -p -- "$lock_root" || return 11
+  fi
+  [ -d "$lock_root" ] && [ ! -L "$lock_root" ] || return 11
+
+  local retry owner_state tombstone
+  for retry in 1 2 3; do
+    if mkdir -- "$lock_dir" 2>/dev/null; then
+      if ! write_lock_owner "$lock_dir"; then
+        rm -rf -- "$lock_dir" >/dev/null 2>&1 || true
+        return 11
+      fi
+      HELD_LOCK_DIRS+=("$lock_dir")
+      HELD_LOCK_ROOTS+=("$lock_root")
+      HELD_LOCK_KEYS+=("$lock_key")
+      HELD_LOCK_KINDS+=("$lock_kind")
+      return 0
+    fi
+    [ -d "$lock_dir" ] || continue
+    if lock_owner_is_live "$lock_dir"; then
+      return 10
+    else
+      owner_state=$?
+    fi
+    [ "$owner_state" -eq 1 ] || return 10
+    tombstone="$lock_dir.stale.$ATTEMPT_ID"
+    if mv -- "$lock_dir" "$tombstone" 2>/dev/null; then
+      if mkdir -- "$lock_dir" 2>/dev/null; then
+        if write_lock_owner "$lock_dir"; then
+          rm -rf -- "$tombstone" >/dev/null 2>&1 || true
+          RECLAIMED_STALE_LOCKS=$((RECLAIMED_STALE_LOCKS + 1))
+          HELD_LOCK_DIRS+=("$lock_dir")
+          HELD_LOCK_ROOTS+=("$lock_root")
+          HELD_LOCK_KEYS+=("$lock_key")
+          HELD_LOCK_KINDS+=("$lock_kind")
+          return 0
+        fi
+        rm -rf -- "$lock_dir" >/dev/null 2>&1 || true
+      fi
+      rm -rf -- "$tombstone" >/dev/null 2>&1 || true
+    fi
+  done
+  return 10
+}
+
+release_all_install_locks() {
+  local release_failed=false
+  local evidence_lock=''
+  local evidence_root=''
+  local index lock_dir lock_root lock_kind
+  for ((index = ${#HELD_LOCK_DIRS[@]} - 1; index >= 0; index--)); do
+    lock_dir="${HELD_LOCK_DIRS[$index]}"
+    lock_root="${HELD_LOCK_ROOTS[$index]}"
+    lock_kind="${HELD_LOCK_KINDS[$index]}"
+    if [ "$lock_kind" = evidence ]; then
+      evidence_lock="$lock_dir"
+      evidence_root="$lock_root"
+      continue
+    fi
+    if release_owned_lock "$lock_dir"; then
+      rmdir -- "$lock_root" >/dev/null 2>&1 || true
+    else
+      release_failed=true
+    fi
+  done
+  if [ "$LOCK_EVIDENCE_ENABLED" = true ] && [ "$LOCK_TERMINAL_RECORDED" != true ]; then
+    if [ "$release_failed" = true ]; then
+      record_install_lock release-failed 1 || true
+    else
+      record_install_lock released 0 || true
+    fi
+  fi
+  if [ -n "$evidence_lock" ]; then
+    if release_owned_lock "$evidence_lock"; then
+      rmdir -- "$evidence_root" >/dev/null 2>&1 || true
+    else
+      release_failed=true
+      if [ "$LOCK_EVIDENCE_ENABLED" = true ] && [ "$LOCK_TERMINAL_RECORDED" != true ]; then
+        record_install_lock release-failed 1 || true
+      fi
+    fi
+  fi
+  HELD_LOCK_DIRS=()
+  HELD_LOCK_ROOTS=()
+  HELD_LOCK_KEYS=()
+  HELD_LOCK_KINDS=()
+  [ "$release_failed" = false ]
+}
+
+cleanup_lock_trap() {
+  release_all_install_locks || true
+}
+
 prepare_evidence_dir() {
   local root="$1"
+  local local_rehearsal="$2"
   [ ! -L "$root" ] || die 'evidence-dir-symlink-forbidden'
   if [ -e "$root" ]; then
     [ -d "$root" ] || die 'evidence-dir-invalid'
@@ -68,6 +298,17 @@ prepare_evidence_dir() {
     mkdir -p -- "$root" || die 'evidence-dir-invalid'
   fi
   [ -d "$root" ] && [ ! -L "$root" ] || die 'evidence-dir-invalid'
+  if [ -z "$LOCKED_EVIDENCE_DIR" ]; then
+    if acquire_authority_lock evidence "$root" "$local_rehearsal"; then
+      LOCKED_EVIDENCE_DIR="$root"
+      trap cleanup_lock_trap EXIT
+    else
+      local lock_status=$?
+      [ "$lock_status" -eq 10 ] && die 'install-evidence-locked'
+      die 'install-lock-acquire-failed'
+    fi
+  fi
+  [ "$LOCKED_EVIDENCE_DIR" = "$root" ] || die 'evidence-dir-lock-mismatch'
   reset_mutable_evidence "$root" || die 'evidence-dir-reset-failed'
 }
 
@@ -94,7 +335,22 @@ if [ -n "$DISCOVERED_EVIDENCE_DIR" ]; then
     normalize_evidence_candidate "$DISCOVERED_EVIDENCE_DIR" \
       "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
   )"; then
-    reset_mutable_evidence "$DISCOVERED_EVIDENCE_DIR" 2>/dev/null || true
+    if [ ! -L "$DISCOVERED_EVIDENCE_DIR" ]; then
+      if [ ! -e "$DISCOVERED_EVIDENCE_DIR" ]; then
+        mkdir -p -- "$DISCOVERED_EVIDENCE_DIR" 2>/dev/null || true
+      fi
+      if [ -d "$DISCOVERED_EVIDENCE_DIR" ] && [ ! -L "$DISCOVERED_EVIDENCE_DIR" ]; then
+        if acquire_authority_lock evidence "$DISCOVERED_EVIDENCE_DIR" \
+          "$DISCOVERY_LOCAL_REHEARSAL"; then
+          LOCKED_EVIDENCE_DIR="$DISCOVERED_EVIDENCE_DIR"
+          trap cleanup_lock_trap EXIT
+          reset_mutable_evidence "$DISCOVERED_EVIDENCE_DIR" 2>/dev/null || true
+        else
+          discovery_lock_status=$?
+          [ "$discovery_lock_status" -ne 10 ] || die 'install-evidence-locked'
+        fi
+      fi
+    fi
   fi
 fi
 
@@ -176,7 +432,7 @@ if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
   [ -z "$LOCAL_REHEARSAL_SENTINEL" ] \
     || LOCAL_REHEARSAL_SENTINEL="$(cygpath -u "$LOCAL_REHEARSAL_SENTINEL")"
 fi
-prepare_evidence_dir "$EVIDENCE_DIR"
+prepare_evidence_dir "$EVIDENCE_DIR" "$LOCAL_REHEARSAL"
 [ -f "$ENVIRONMENT_AUTHORITY" ] && [ ! -L "$ENVIRONMENT_AUTHORITY" ] \
   || die 'external-environment-authority-required'
 [ -d "$RUNTIME_AUTHORITY" ] && [ ! -L "$RUNTIME_AUTHORITY" ] \
@@ -248,19 +504,25 @@ PERSISTENT_AGENT_DATA_ROOT="$PERSISTENT_PARENT/$PERSISTENT_NAME"
 record_install_lock() {
   local status="$1"
   local code="$2"
-  python - "$EVIDENCE_DIR/install-lock.json" "$status" "$code" "$INSTALL_LOCK_KEY" <<'PY'
+  python - "$EVIDENCE_DIR/install-lock.json" "$status" "$code" \
+    "$RECLAIMED_STALE_LOCKS" "${CONFLICT_LOCK_KEY:-}" "${HELD_LOCK_KEYS[@]}" <<'PY'
+import hashlib
 import json
 from pathlib import Path
 import sys
 
+keys = sys.argv[6:]
 payload = {
+    "authority_keys_sha256": keys,
+    "conflict_key_sha256": sys.argv[5] or None,
     "exit_code": int(sys.argv[3]),
     "live_sla_proven": False,
     "observed_local_elapsed_seconds": 0.0,
+    "reclaimed_stale_locks": int(sys.argv[4]),
     "schema_version": 1,
     "stage3_claim": False,
     "status": sys.argv[2],
-    "target_key_sha256": sys.argv[4],
+    "target_key_sha256": hashlib.sha256("\0".join(sorted(keys)).encode("utf-8")).hexdigest(),
 }
 Path(sys.argv[1]).write_text(
     json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -268,57 +530,42 @@ Path(sys.argv[1]).write_text(
 PY
 }
 
-if [ "$LOCAL_REHEARSAL" = true ]; then
-  INSTALL_LOCK_ROOT="$RELEASE_PARENT/.vl360-install-locks"
-else
-  INSTALL_LOCK_ROOT=/run/lock/vl360-install-closed-release
-fi
-[ ! -L "$INSTALL_LOCK_ROOT" ] || die 'install-lock-root-symlink-forbidden'
-if [ -e "$INSTALL_LOCK_ROOT" ]; then
-  [ -d "$INSTALL_LOCK_ROOT" ] || die 'install-lock-root-invalid'
-else
-  mkdir -p -- "$INSTALL_LOCK_ROOT" || die 'install-lock-root-invalid'
-fi
-[ -d "$INSTALL_LOCK_ROOT" ] && [ ! -L "$INSTALL_LOCK_ROOT" ] \
-  || die 'install-lock-root-invalid'
-INSTALL_LOCK_KEY="$(python - "$RELEASE_ROOT" "$PERSISTENT_AGENT_DATA_ROOT" \
-  "$SYSTEMD_UNIT_DESTINATION" <<'PY'
-import hashlib
-import os
-import sys
-
-targets = [os.path.normcase(os.path.realpath(value)) for value in sys.argv[1:]]
-print(hashlib.sha256("\0".join(targets).encode("utf-8")).hexdigest())
-PY
-)"
-INSTALL_LOCK_DIR=''
-release_install_lock() {
-  [ -n "$INSTALL_LOCK_DIR" ] || return 0
-  local lock_dir="$INSTALL_LOCK_DIR"
-  if rm -rf -- "$lock_dir"; then
-    INSTALL_LOCK_DIR=''
-    record_install_lock released 0 || true
-    rmdir -- "$INSTALL_LOCK_ROOT" >/dev/null 2>&1 || true
+LOCK_EVIDENCE_ENABLED=true
+TARGET_LOCK_ORDER=()
+for target_kind in release persistent systemd; do
+  case "$target_kind" in
+    release) target_authority="$RELEASE_ROOT" ;;
+    persistent) target_authority="$PERSISTENT_AGENT_DATA_ROOT" ;;
+    systemd) target_authority="$SYSTEMD_UNIT_DESTINATION" ;;
+  esac
+  target_spec="$(lock_spec "$target_kind" "$target_authority" "$LOCAL_REHEARSAL")"
+  IFS='|' read -r _ _ target_key _ <<< "$target_spec"
+  TARGET_LOCK_ORDER+=("$target_key|$target_kind")
+done
+mapfile -t TARGET_LOCK_ORDER < <(printf '%s\n' "${TARGET_LOCK_ORDER[@]}" | sort)
+for target_request in "${TARGET_LOCK_ORDER[@]}"; do
+  IFS='|' read -r target_key target_kind <<< "$target_request"
+  case "$target_kind" in
+    release) target_authority="$RELEASE_ROOT" ;;
+    persistent) target_authority="$PERSISTENT_AGENT_DATA_ROOT" ;;
+    systemd) target_authority="$SYSTEMD_UNIT_DESTINATION" ;;
+  esac
+  if acquire_authority_lock "$target_kind" "$target_authority" "$LOCAL_REHEARSAL"; then
+    :
   else
-    local code=$?
-    record_install_lock release-failed "$code" || true
-    return "$code"
+    target_lock_status=$?
+    CONFLICT_LOCK_KEY="$target_key"
+    if [ "$target_lock_status" -eq 10 ]; then
+      record_install_lock rejected 2
+      LOCK_TERMINAL_RECORDED=true
+      die 'install-target-locked'
+    fi
+    record_install_lock acquire-failed 2 || true
+    LOCK_TERMINAL_RECORDED=true
+    die 'install-lock-acquire-failed'
   fi
-}
-
-candidate_lock="$INSTALL_LOCK_ROOT/$INSTALL_LOCK_KEY.lock"
-if mkdir -- "$candidate_lock" 2>/dev/null; then
-  INSTALL_LOCK_DIR="$candidate_lock"
-  trap release_install_lock EXIT
-  printf '%s\n' "$$" > "$INSTALL_LOCK_DIR/owner-pid"
-  record_install_lock acquired 0
-elif [ -d "$candidate_lock" ]; then
-  record_install_lock rejected 2
-  die 'install-target-locked'
-else
-  record_install_lock acquire-failed 2 || true
-  die 'install-lock-acquire-failed'
-fi
+done
+record_install_lock acquired 0
 
 case "${VL360_INSTALL_FAIL_AFTER:-}" in
   ''|detach-agent-data|swap-release-root|restore-bind-agent-data) ;;
@@ -335,7 +582,7 @@ cleanup_pinned_archive() {
 }
 cleanup_attempt_authorities() {
   cleanup_pinned_archive
-  release_install_lock || true
+  release_all_install_locks || true
 }
 trap cleanup_attempt_authorities EXIT
 

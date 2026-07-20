@@ -104,6 +104,34 @@ def _wait_for_path(path: Path, timeout: float = 60.0) -> None:
     raise AssertionError(f"timed out waiting for {path}")
 
 
+def _authority_lock_path(kind: str, authority: Path) -> Path:
+    canonical = os.path.normcase(os.path.realpath(authority))
+    digest = hashlib.sha256(f"{kind}\0{canonical}".encode("utf-8")).hexdigest()
+    return authority.parent / ".vl360-install-locks" / f"{kind}-{digest}.lock"
+
+
+def _write_lock_owner(
+    lock_dir: Path,
+    *,
+    pid: int,
+    process_start_identity: str,
+    attempt_id: str = "stale-attempt",
+) -> None:
+    lock_dir.mkdir(parents=True)
+    (lock_dir / "owner.json").write_text(
+        json.dumps(
+            {
+                "attempt_id": attempt_id,
+                "pid": pid,
+                "process_start_identity": process_start_identity,
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
     release = tmp_path / "release"
     persistent = tmp_path / "persistent"
@@ -197,6 +225,7 @@ def _installer_command(
     prepared,
     *,
     evidence_arg: str | None = None,
+    runtime_arg: str | None = None,
 ) -> list[str]:
     release, persistent, evidence, *_ = prepared
     return [
@@ -213,7 +242,7 @@ def _installer_command(
         "--environment-authority",
         _bash_path(case_root / "external.env"),
         "--runtime-authority",
-        _bash_path(case_root / "runtime"),
+        _bash_path(case_root / "runtime") if runtime_arg is None else runtime_arg,
         "--evidence-dir",
         _bash_path(evidence) if evidence_arg is None else evidence_arg,
         "--require-closed",
@@ -1000,6 +1029,314 @@ def test_same_target_concurrent_attempt_is_rejected_and_lock_is_released(
         (third_evidence / "install-lock.json").read_text(encoding="utf-8")
     )
     assert third_lock["status"] == "released"
+
+
+@pytest.mark.parametrize("shared_authority", ("release", "persistent", "systemd"))
+def test_attempts_sharing_any_destructive_authority_are_excluded(
+    tmp_path: Path, closed_package, shared_authority: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    first_root = tmp_path / f"overlap-{shared_authority}-first"
+    second_root = tmp_path / f"overlap-{shared_authority}-second"
+    first_prepared = _prepare_case(first_root, closed_package)
+    second_prepared = _prepare_case(second_root, closed_package)
+    (
+        first_release,
+        first_persistent,
+        _,
+        first_release_before,
+        first_persistent_before,
+        _,
+        first_values,
+    ) = first_prepared
+    (
+        second_release,
+        second_persistent,
+        second_evidence,
+        second_release_before,
+        second_persistent_before,
+        _,
+        second_values,
+    ) = second_prepared
+    first_runtime = first_root / "runtime"
+    entered = first_root / "hook-entered"
+    release_hook = first_root / "release-hook"
+    hook_gate = first_root / "hook-gate"
+    first_hook = first_runtime / "python-hook.sh"
+    first_hook.write_text(
+        "#!/usr/bin/env bash\n"
+        f"if mkdir '{_bash_path(hook_gate)}' 2>/dev/null; then\n"
+        f"  : > '{_bash_path(entered)}'\n"
+        f"  while [ ! -f '{_bash_path(release_hook)}' ]; do sleep 0.05; done\n"
+        f"  rmdir '{_bash_path(hook_gate)}'\n"
+        "  exit 19\n"
+        "fi\n"
+        "exit 18\n",
+        encoding="ascii",
+    )
+    first_hook.chmod(0o755)
+
+    runtime_arg = None
+    if shared_authority == "release":
+        second_prepared = (
+            first_release,
+            second_persistent,
+            second_evidence,
+            first_release_before,
+            second_persistent_before,
+            second_prepared[5],
+            second_values,
+        )
+        second_values["VL360_LOCAL_REHEARSAL_SENTINEL"] = first_values[
+            "VL360_LOCAL_REHEARSAL_SENTINEL"
+        ]
+    elif shared_authority == "persistent":
+        second_prepared = (
+            second_release,
+            first_persistent,
+            second_evidence,
+            second_release_before,
+            first_persistent_before,
+            second_prepared[5],
+            second_values,
+        )
+    else:
+        runtime_arg = _bash_path(first_runtime)
+        for name in (
+            "VL360_PYTHON_DEPENDENCY_HOOK",
+            "VL360_NUXT_DEPENDENCY_HOOK",
+            "VL360_UNIT_VERIFY_HOOK",
+        ):
+            second_values[name] = first_values[name]
+
+    if shared_authority != "systemd":
+        second_hook = second_root / "runtime" / "python-hook.sh"
+        second_hook.write_text("#!/usr/bin/env bash\nexit 18\n", encoding="ascii")
+        second_hook.chmod(0o755)
+
+    first_env = os.environ.copy()
+    first_env.update(first_values)
+    first = subprocess.Popen(
+        _installer_command(closed_package, first_root, first_prepared),
+        cwd=ROOT,
+        env=first_env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_path(entered)
+        second_env = os.environ.copy()
+        second_env.update(second_values)
+        second = subprocess.run(
+            _installer_command(
+                closed_package,
+                second_root,
+                second_prepared,
+                runtime_arg=runtime_arg,
+            ),
+            cwd=ROOT,
+            env=second_env,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        release_hook.touch()
+        first_stdout, first_stderr = first.communicate(timeout=60)
+
+    assert second.returncode == 2, second.stderr + second.stdout
+    assert "install-target-locked" in second.stderr
+    second_lock = json.loads(
+        (second_evidence / "install-lock.json").read_text(encoding="utf-8")
+    )
+    assert second_lock["status"] == "rejected"
+    assert first.returncode == 19, first_stderr + first_stdout
+    assert _snapshot_tree(first_release) == first_release_before
+    assert _snapshot_tree(first_persistent) == first_persistent_before
+    assert _snapshot_tree(second_release) == second_release_before
+    assert _snapshot_tree(second_persistent) == second_persistent_before
+
+
+def test_same_evidence_rejection_does_not_erase_active_attempt_evidence(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "same-evidence-concurrent"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, values = prepared
+    entered = case_root / "hook-entered"
+    release_hook = case_root / "release-hook"
+    gate = case_root / "hook-gate"
+    second_hook_entered = case_root / "second-hook-entered"
+    hook = case_root / "runtime" / "python-hook.sh"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        f"if mkdir '{_bash_path(gate)}' 2>/dev/null; then\n"
+        f"  : > '{_bash_path(entered)}'\n"
+        f"  while [ ! -f '{_bash_path(release_hook)}' ]; do sleep 0.05; done\n"
+        f"  rmdir '{_bash_path(gate)}'\n"
+        "  exit 19\n"
+        "fi\n"
+        f": > '{_bash_path(second_hook_entered)}'\n"
+        "exit 18\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o755)
+    env = os.environ.copy()
+    env.update(values)
+    first = subprocess.Popen(
+        _installer_command(closed_package, case_root, prepared),
+        cwd=ROOT,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_path(entered)
+        active_evidence = _snapshot_tree(evidence)
+        second = subprocess.run(
+            _installer_command(closed_package, case_root, prepared),
+            cwd=ROOT,
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        evidence_after_rejection = _snapshot_tree(evidence)
+    finally:
+        release_hook.touch()
+        first_stdout, first_stderr = first.communicate(timeout=60)
+
+    assert second.returncode == 2, second.stderr + second.stdout
+    assert "install-evidence-locked" in second.stderr
+    assert not second_hook_entered.exists()
+    assert evidence_after_rejection == active_evidence
+    assert first.returncode == 19, first_stderr + first_stdout
+    final_lock = json.loads(
+        (evidence / "install-lock.json").read_text(encoding="utf-8")
+    )
+    assert final_lock["status"] == "released"
+
+
+def test_dead_evidence_lock_owner_is_reclaimed(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "dead-evidence-lock"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+    stale_lock = _authority_lock_path("evidence", evidence)
+    _write_lock_owner(stale_lock, pid=999999, process_start_identity="dead")
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert result.returncode == 19, result.stderr + result.stdout
+    assert not stale_lock.exists()
+    lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
+    assert lock["status"] == "released"
+    assert lock["reclaimed_stale_locks"] >= 1
+
+
+def test_live_pid_with_mismatched_start_identity_is_reclaimed_safely(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "pid-reuse-lock"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+    identity_file = case_root / "holder-identity"
+    stop_file = case_root / "stop-holder"
+    holder = subprocess.Popen(
+        [
+            str(BASH),
+            "-lc",
+            (
+                f"printf '%s %s\\n' \"$$\" \"$(awk '{{print $22}}' /proc/$$/stat)\" "
+                f"> '{_bash_path(identity_file)}'; "
+                f"while [ ! -f '{_bash_path(stop_file)}' ]; do sleep 0.05; done"
+            ),
+        ],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_path(identity_file)
+        pid_text, start_identity = identity_file.read_text(encoding="ascii").split()
+        stale_lock = _authority_lock_path("evidence", evidence)
+        _write_lock_owner(
+            stale_lock,
+            pid=int(pid_text),
+            process_start_identity=f"{start_identity}-reused",
+        )
+
+        result = _invoke_installer(
+            closed_package,
+            case_root,
+            prepared,
+            failed_hook="python",
+        )
+    finally:
+        stop_file.touch()
+        holder_stdout, holder_stderr = holder.communicate(timeout=30)
+
+    assert holder.returncode == 0, holder_stderr + holder_stdout
+    assert result.returncode == 19, result.stderr + result.stdout
+    assert not stale_lock.exists()
+    lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
+    assert lock["status"] == "released"
+    assert lock["reclaimed_stale_locks"] >= 1
+
+
+def test_sigkill_style_multi_authority_leftovers_are_reclaimed(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "sigkill-leftovers"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, _ = prepared
+    authorities = (
+        ("evidence", evidence),
+        ("release", release),
+        ("persistent", persistent),
+        ("systemd", case_root / "runtime" / "systemd-units"),
+    )
+    stale_locks = []
+    for kind, authority in authorities:
+        stale_lock = _authority_lock_path(kind, authority)
+        _write_lock_owner(
+            stale_lock,
+            pid=999999,
+            process_start_identity="dead",
+            attempt_id="sigkill-attempt",
+        )
+        stale_locks.append(stale_lock)
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert result.returncode == 19, result.stderr + result.stdout
+    assert not any(path.exists() for path in stale_locks)
+    lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
+    assert lock["status"] == "released"
+    assert lock["reclaimed_stale_locks"] >= len(stale_locks)
 
 
 def test_reentrant_same_target_attempt_is_rejected_before_mutation(
