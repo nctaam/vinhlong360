@@ -293,7 +293,9 @@ def test_media_serializer_matches_utf8_fixture_with_two_disclosed_images():
         _snapshot(entity), manifest, EVIDENCE, DISCLOSURE
     )
 
-    assert xml == MEDIA_FIXTURE.read_bytes()
+    # Normalize checkout line endings so the byte fixture remains portable on Windows.
+    expected = MEDIA_FIXTURE.read_bytes().replace(b"\r\n", b"\n").rstrip(b"\r\n")
+    assert xml.rstrip(b"\r\n") == expected
     assert xml.startswith(b"<?xml version='1.0' encoding='utf-8'?>\n")
     assert not xml.endswith(b"\n")
     assert b"rejected.webp" not in xml

@@ -26,9 +26,13 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import PlainTextResponse, Response
 
 if __package__:
+    from .ai_disclosure import LoadedAiDisclosure, load_ai_disclosure
+    from .image_descriptor import ImageDescriptor, describe_entity_images
     from .index_policy import decide_entity
     from .launch_evidence import PolicyEvidence, current_policy_evidence
 else:
+    from ai_disclosure import LoadedAiDisclosure, load_ai_disclosure
+    from image_descriptor import ImageDescriptor, describe_entity_images
     from index_policy import decide_entity
     from launch_evidence import PolicyEvidence, current_policy_evidence
 
@@ -37,6 +41,7 @@ router = APIRouter()
 DATA_PATH = Path(__file__).parent.parent / "web" / "data.json"
 SITE = "https://vinhlong360.vn"
 AGGREGATE_RATING_MIN_COUNT = 3
+_JSONLD_DISCLOSURE = load_ai_disclosure()
 
 AREA_NAMES = {
     "vinh-long": "Vĩnh Long",
@@ -437,8 +442,55 @@ def _build_image_objects(
     return out
 
 
+def _is_jsonld_entity_image_descriptor(
+    descriptor: object,
+    disclosure: LoadedAiDisclosure,
+) -> bool:
+    copy = disclosure.entity_ai
+    return (
+        type(descriptor) is ImageDescriptor
+        and type(descriptor.url) is str
+        and type(descriptor.alt) is str
+        and bool(descriptor.alt.strip())
+        and descriptor.source_class == "ai-generated"
+        and descriptor.source_kind == "entity-editorial"
+        and descriptor.disclosure_key == "entity-ai"
+        and descriptor.short_label == copy.short_label
+        and descriptor.full_disclosure == copy.full_disclosure
+        and descriptor.credit is None
+        and descriptor.width is None
+        and descriptor.height is None
+    )
+
+
+def _build_descriptor_image_objects(
+    entity: dict[str, Any],
+    attrs: dict[str, Any],
+) -> list[dict[str, Any]]:
+    entity_name = str(entity.get("name") or entity.get("id") or "")
+    out: list[dict[str, Any]] = []
+    descriptors = describe_entity_images(entity, disclosure=_JSONLD_DISCLOSURE)
+    for index, descriptor in enumerate(descriptors):
+        if not _is_jsonld_entity_image_descriptor(descriptor, _JSONLD_DISCLOSURE):
+            continue
+        img_url = _image_url(descriptor.url)
+        if img_url is None:
+            continue
+        credit_meta = _image_credit_for_url(attrs, img_url)
+        obj = _image_object(
+            img_url,
+            entity_name,
+            index,
+            credit_meta,
+            descriptor=descriptor,
+        )
+        out.append({key: value for key, value in obj.items() if value not in (None, "", [], {})})
+    return out
+
+
 def _image_object(img_url: str, entity_name: str, idx: int,
-                  credit_meta: dict[str, Any]) -> dict[str, Any]:
+                  credit_meta: dict[str, Any], *,
+                  descriptor: ImageDescriptor | None = None) -> dict[str, Any]:
     author = credit_meta.get("author") or credit_meta.get("credit")
     license_url = _normalise_license_url(credit_meta.get("license"))
     source_url = credit_meta.get("source_url")
@@ -448,6 +500,9 @@ def _image_object(img_url: str, entity_name: str, idx: int,
         "contentUrl": img_url,
         "name": f"{entity_name} — {idx + 1}" if entity_name else None,
     }
+    if descriptor is not None:
+        obj["caption"] = descriptor.full_disclosure
+        obj["description"] = f"{descriptor.alt} — {descriptor.full_disclosure}"
     if isinstance(author, str) and author.strip():
         obj["author"] = author.strip()
         obj["copyrightHolder"] = author.strip()
@@ -749,9 +804,7 @@ def _jsonld_base(ld: dict[str, Any], entity: dict[str, Any], attrs: dict[str, An
     if entity.get("summary"):
         ld["description"] = entity["summary"]
     if entity.get("images"):
-        # B6: emit ImageObject[] (with attribution when available) only when
-        # real image URLs exist; otherwise leave image off entirely.
-        image_objects = _build_image_objects(entity["images"], ld["name"], attrs)
+        image_objects = _build_descriptor_image_objects(entity, attrs)
         if image_objects:
             ld["image"] = image_objects
 

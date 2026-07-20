@@ -12,7 +12,9 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ title?: string; text?: string }>()
+import type { ImageDescriptor } from '~/types/image'
+
+const props = defineProps<{ title?: string; text?: string; descriptor?: ImageDescriptor | null }>()
 const copied = ref(false)
 
 async function share() {
@@ -20,7 +22,11 @@ async function share() {
   const url = window.location.href
   if (navigator.share) {
     try {
-      await navigator.share({ title: props.title, text: props.text, url })
+      await navigator.share({
+        title: props.title,
+        text: appendImageDisclosureToShareText(props.text || '', props.descriptor),
+        url,
+      })
       return
     } catch { /* cancelled or unsupported */ }
   }

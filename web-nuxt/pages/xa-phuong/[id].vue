@@ -149,6 +149,7 @@
 import type { Entity } from '~/types'
 import { AREA_META, OFFICE_KIND, TYPE_META } from '~/composables/useConstants'
 import { isCurrentLaunchResult } from '~/composables/useLaunchSafety'
+import { describeEntityImages } from '~/utils/imageDescriptors'
 
 useReveal()
 
@@ -356,6 +357,15 @@ const allWardEntities = computed<Entity[]>(() => {
   return [...(d.tourism || []), ...(d.lodging || []), ...(d.products || [])]
 })
 
+const representativeImageDescriptor = computed(() => {
+  for (const entity of allWardEntities.value) {
+    const descriptor = describeEntityImages(entity).find(image => image.url !== null)
+    if (descriptor) return descriptor
+  }
+  return null
+})
+const representativeImageMeta = computed(() => buildImageMeta(representativeImageDescriptor.value))
+
 const placeName = computed(() => data.value?.place?.name || 'Xã/Phường')
 useSeoMeta({
   ogType: 'article',
@@ -363,7 +373,10 @@ useSeoMeta({
   description: () => data.value?.place?.summary || `Tổng hợp địa điểm du lịch, cơ sở lưu trú, sản phẩm đặc sản và danh bạ hành chính của ${placeName.value}.`,
   ogTitle: () => `${placeName.value} — vinhlong360`,
   ogDescription: () => data.value?.place?.summary || `Du lịch, đặc sản & danh bạ ${placeName.value}.`,
-  ogImage: () => entityOgImage(allWardEntities.value.find(e => e.images?.length)?.images),
+  ogImage: () => representativeImageMeta.value.ogImage,
+  ogImageAlt: () => representativeImageMeta.value.ogImageAlt,
+  twitterImage: () => representativeImageMeta.value.twitterImage,
+  twitterImageAlt: () => representativeImageMeta.value.twitterImageAlt,
 })
 useHead(() => {
   const place = data.value?.place
@@ -375,6 +388,8 @@ useHead(() => {
     ...(place.summary ? { description: place.summary } : {}),
     address: { '@type': 'PostalAddress', addressRegion: areaMeta.value.name, addressCountry: 'VN' },
   }
+  const representativeImage = descriptorToImageObject(representativeImageDescriptor.value)
+  if (representativeImage) adminLd.image = representativeImage
   const geoCoords = normalizeCoords(place.coordinates)
   if (geoCoords) {
     adminLd.geo = { '@type': 'GeoCoordinates', latitude: geoCoords[0], longitude: geoCoords[1] }

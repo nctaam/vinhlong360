@@ -147,6 +147,7 @@
 <script setup lang="ts">
 import type { Entity} from '~/types'
 import { AREA_META, CARD_TYPES, TYPE_META } from '~/composables/useConstants'
+import { describeEntityImages } from '~/utils/imageDescriptors'
 
 useReveal()
 const route = useRoute()
@@ -233,6 +234,12 @@ const visibleEntities = computed(() => entities.value.slice(0, showCount.value))
 function showMore() { showCount.value += 24 }
 
 const featured = computed(() => entityGroups.value.withImages.slice(0, 4))
+const featuredImageDescriptor = computed(() => (
+  featured.value[0]
+    ? describeEntityImages(featured.value[0]).find(descriptor => descriptor.url !== null) ?? null
+    : null
+))
+const featuredImageMeta = computed(() => buildImageMeta(featuredImageDescriptor.value))
 
 const typeSections = computed(() =>
   (CARD_TYPES as readonly string[])
@@ -258,7 +265,10 @@ if (areaMeta) {
     description: areaMeta.blurb,
     ogTitle: `${areaMeta.emoji} ${areaMeta.name} — vinhlong360`,
     ogDescription: areaMeta.blurb,
-    ogImage: () => entityOgImage(featured.value[0]?.images),
+    ogImage: () => featuredImageMeta.value.ogImage,
+    ogImageAlt: () => featuredImageMeta.value.ogImageAlt,
+    twitterImage: () => featuredImageMeta.value.twitterImage,
+    twitterImageAlt: () => featuredImageMeta.value.twitterImageAlt,
   })
 
   useHead(() => ({

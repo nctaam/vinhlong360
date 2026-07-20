@@ -403,6 +403,7 @@ const relatedCards = computed(() => relatedPosts.value.map((relatedPost: any) =>
   ugcImage: describePostImages(relatedPost)[0] ?? null,
 })))
 const postImageDescriptors = computed(() => describePostImages(post.value))
+const postImageMeta = computed(() => buildImageMeta(postImageDescriptors.value[0]))
 async function fetchRelated() {
   try {
     // declutter-3 T3: 4→2 — related là engagement-driver nhưng 4 card đè phần bình luận
@@ -466,7 +467,10 @@ useSeoMeta({
   description: () => (post.value?.content || '').substring(0, 160),
   ogTitle: () => `${post.value?.display_name || 'Bài viết'} — vinhlong360`,
   ogDescription: () => (post.value?.content || '').substring(0, 160),
-  ogImage: () => entityOgImage(post.value?.images),
+  ogImage: () => postImageMeta.value.ogImage,
+  ogImageAlt: () => postImageMeta.value.ogImageAlt,
+  twitterImage: () => postImageMeta.value.twitterImage,
+  twitterImageAlt: () => postImageMeta.value.twitterImageAlt,
 })
 
 useHead({

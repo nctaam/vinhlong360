@@ -263,7 +263,7 @@
         <ClientOnly>
           <div class="aside-actions">
             <SaveButton :entity="entity" :show-label="true" />
-            <ShareButton :title="entity.name" :text="entity.summary" />
+            <ShareButton :title="entity.name" :text="entity.summary" :descriptor="heroDescriptor" />
           </div>
         </ClientOnly>
 
@@ -1060,8 +1060,6 @@ async function loadMoreRelationships() {
 }
 
 // ── Reactive SEO meta: updates when entity changes (client-side navigation) ──
-const absUrl = (u: string) => (u.startsWith('http') ? u : `${SITE_URL}${u}`)
-
 const TYPE_TO_SCHEMA: Record<string, string> = {
   product: 'Product',
   accommodation: 'LodgingBusiness',
@@ -1082,13 +1080,18 @@ const seoDesc = computed(() => {
   return raw.slice(0, 157).replace(/\s+\S*$/, '') + '…'
 })
 
+const heroImageMeta = computed(() => buildImageMeta(heroDescriptor.value))
+
 useSeoMeta({
   ogType: 'article',
   title: () => entity.value ? `${entity.value.name} — ${typeMeta.value.label} — vinhlong360` : 'Địa điểm — vinhlong360',
   description: () => seoDesc.value,
   ogTitle: () => entity.value ? `${entity.value.name} — vinhlong360` : 'Địa điểm — vinhlong360',
   ogDescription: () => seoDesc.value,
-  ogImage: () => entityOgImage(entity.value?.images),
+  ogImage: () => heroImageMeta.value.ogImage,
+  ogImageAlt: () => heroImageMeta.value.ogImageAlt,
+  twitterImage: () => heroImageMeta.value.twitterImage,
+  twitterImageAlt: () => heroImageMeta.value.twitterImageAlt,
 })
 
 // JSON-LD + canonical: rebuilt reactively via computed
@@ -1097,8 +1100,6 @@ const fallbackJsonLdScripts = computed(() => {
   if (!e) return []
 
   const ldType = TYPE_TO_SCHEMA[e.type] || 'TouristAttraction'
-  const hasRealPhoto = Array.isArray(e.images) && e.images.length > 0
-
   const entityUrl = `${SITE_URL}${entityPath(e.id)}`
   const ld: Record<string, any> = {
     '@context': 'https://schema.org',
@@ -1115,7 +1116,8 @@ const fallbackJsonLdScripts = computed(() => {
       addressCountry: 'VN',
     },
   }
-  if (hasRealPhoto) ld.image = e.images!.map(absUrl)
+  const imageObject = descriptorToImageObject(heroDescriptor.value)
+  if (imageObject) ld.image = imageObject
   if (e.attributes?.phone) ld.telephone = e.attributes.phone
   const sameAs = [e.attributes?.website, e.quality?.source_url].filter(Boolean)
   if (sameAs.length) ld.sameAs = sameAs.length === 1 ? sameAs[0] : sameAs
