@@ -107,9 +107,6 @@ http.createServer((request, response) => {
   if (path.startsWith('/_internal/launch-sitemaps/')) {
     counts.launch += 1
     persist()
-    if (fixture === 'failed-entity-request') {
-      return json(response, 503, { detail: 'fixture sitemap unavailable' })
-    }
     const document = path.split('/').pop()
     const requested = url.searchParams.get('batch')
     if (document === 'sitemap-index.xml' && requested === null) {
@@ -140,7 +137,7 @@ http.createServer((request, response) => {
     counts.entity += 1
     persist()
     const id = decodeURIComponent(match[1])
-    if (id === 'launch-matrix-failed') {
+    if (fixture === 'failed-entity-request' && id === 'launch-matrix-failed') {
       return json(response, 503, { detail: 'fixture entity unavailable' })
     }
     if (id === 'launch-matrix-positive') return json(response, 200, entity(id, true))
@@ -349,6 +346,17 @@ def test_launch_matrix_contract_over_public_boundary(
             assert project.container_state("agent") is None
             assert project.container_state("matrix-backend") is None
         if case_name == "entity-request-failed-open":
+            assert sitemap.headers["x-launch-indexing-policy"] == "selective-open"
+            assert sitemap.headers["x-launch-sitemap-batch-revision"] == SITEMAP_BATCH_REVISION
+            assert sitemap.body == ACTIVE_SITEMAP_INDEX
+
+            valid = project.wait_for_host_http(
+                80,
+                "/dia-diem/launch-matrix-positive",
+                status=200,
+            )
+            _assert_html_contract(valid, LAUNCH_MATRIX["selective-entity-positive"])
+
             mismatch = project.wait_for_host_http(
                 80,
                 "/dia-diem/launch-matrix-mismatch",

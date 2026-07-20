@@ -19,6 +19,14 @@ POLICY_FINGERPRINT = "ef12661b898905bd8b31804475aca64accd4c8b2df32b5252c3b2f61ee
 ROUTE_MANIFEST_REVISION = "launch-indexing-policy-v1"
 BACKEND_POLICY_REVISION = "index-policy-v1"
 SITEMAP_BATCH_REVISION = "b" * 64
+PROCESS_LOCAL_READINESS_URL = "http://127.0.0.1:3000/_internal/launch-readiness"
+READINESS_CHECKS = [
+    {"name": "manifest-schema", "ok": True, "reason": "manifest-valid"},
+    {"name": "artifact-evidence", "ok": True, "reason": "artifact-evidence-valid"},
+    {"name": "compiled-cache-rules", "ok": True, "reason": "compiled-cache-rules-safe"},
+    {"name": "public-prerender", "ok": True, "reason": "public-prerender-safe"},
+    {"name": "service-worker-cache-purge", "ok": True, "reason": "cache-purge-verified"},
+]
 PAGE_EVIDENCE = {
     "x-launch-policy-fingerprint": POLICY_FINGERPRINT,
     "x-launch-route-manifest-revision": ROUTE_MANIFEST_REVISION,
@@ -133,7 +141,7 @@ def test_launch_matrix_contract_is_exact_and_deeply_immutable():
                 "robots": "noindex, follow",
                 "evidence_headers": {},
                 "sitemap_discovery": False,
-                "sitemap_status": 503,
+                "sitemap_status": 200,
                 "requires_matching_batch_revision": False,
                 "fixture": "failed-entity-request",
                 "surface": "/dia-diem/launch-matrix-failed",
@@ -186,6 +194,7 @@ def test_launch_matrix_contract_captures_fail_safe_invariants():
     assert contract["entity-request-failed-open"]["robots"] == "noindex, follow"
     assert contract["entity-request-failed-open"]["evidence_headers"] == {}
     assert contract["entity-request-failed-open"]["sitemap_discovery"] is False
+    assert contract["entity-request-failed-open"]["sitemap_status"] == 200
 
     pinned = contract["sitemap-pinned"]
     assert dict(pinned["evidence_headers"]) == PINNED_EVIDENCE
@@ -232,7 +241,42 @@ def test_browser_smoke_exposes_the_task44_compatible_cli_and_npm_entry():
     )
 
 
-def test_probe_accepts_task44_maintenance_probe_compatibility_flags():
+def test_probe_executes_exact_task44_process_local_readiness_invocation():
+    probe = _load_probe()
+    calls: list[str] = []
+    readiness = probe.HttpResponse(
+        path="/_internal/launch-readiness",
+        status=200,
+        headers={
+            "cache-control": ("no-store",),
+            "content-type": ("application/json; charset=utf-8",),
+        },
+        body=json.dumps(
+            {"ok": True, "state": "closed", "checks": READINESS_CHECKS}
+        ).encode(),
+    )
+
+    def requester(target: str, _timeout: float):
+        calls.append(target)
+        assert target == PROCESS_LOCAL_READINESS_URL
+        return readiness
+
+    result = probe.main(
+        [
+            "--process-local-readiness",
+            PROCESS_LOCAL_READINESS_URL,
+            "--expect",
+            "closed",
+            "--require-complete-check-set",
+        ],
+        requester=requester,
+    )
+
+    assert result == 0
+    assert calls == [PROCESS_LOCAL_READINESS_URL]
+
+
+def test_probe_executes_exact_task44_closed_operator_invocation():
     probe = _load_probe()
     responses = {
         "/": probe.HttpResponse(
@@ -254,7 +298,7 @@ def test_probe_accepts_task44_maintenance_probe_compatibility_flags():
                 "content-type": ("text/plain; charset=utf-8",),
                 "x-launch-indexing-policy": ("closed",),
             },
-            body=b"User-agent: *\\nAllow: /\\n",
+            body=b"User-agent: *\nAllow: /\n",
         ),
         "/sitemap.xml": probe.HttpResponse(
             path="/sitemap.xml",
@@ -290,14 +334,14 @@ def test_probe_accepts_task44_maintenance_probe_compatibility_flags():
 
     result = probe.main(
         [
+            "--expect",
+            "closed",
             "--maintenance-probe",
-            "--process-local-readiness",
-            "--require-complete-check-set",
-            "--require-rich-html",
-            "--require-thin-html",
-            "--require-meta-robots",
-            "--require-no-sitemap",
-            "--require-three-empty-sitemaps",
+            "--operator-source",
+            "--require-rich-thin-html",
+            "--require-meta-header-noindex",
+            "--require-robots-without-sitemap",
+            "--require-three-empty-sitemap-shapes",
             "--require-no-store",
             "--require-no-evidence",
             "--require-no-discovery",

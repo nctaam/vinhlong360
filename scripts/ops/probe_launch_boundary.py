@@ -43,6 +43,15 @@ _LAUNCH_MATRIX_POLICY_FINGERPRINT = (
 _LAUNCH_MATRIX_ROUTE_MANIFEST_REVISION = "launch-indexing-policy-v1"
 _LAUNCH_MATRIX_BACKEND_POLICY_REVISION = "index-policy-v1"
 _LAUNCH_MATRIX_SITEMAP_BATCH_REVISION = "b" * 64
+_READINESS_CHECK_NAMES = frozenset(
+    {
+        "manifest-schema",
+        "artifact-evidence",
+        "compiled-cache-rules",
+        "public-prerender",
+        "service-worker-cache-purge",
+    }
+)
 
 
 def _freeze_mapping(value: Mapping[str, object]) -> Mapping[str, object]:
@@ -126,7 +135,7 @@ def load_launch_matrix_contract() -> Mapping[str, Mapping[str, object]]:
                 "robots": "noindex, follow",
                 "evidence_headers": _freeze_mapping({}),
                 "sitemap_discovery": False,
-                "sitemap_status": 503,
+                "sitemap_status": 200,
                 "requires_matching_batch_revision": False,
                 "fixture": "failed-entity-request",
                 "surface": "/dia-diem/launch-matrix-failed",
@@ -255,6 +264,13 @@ def _make_requester(
             raise _ProbeRequestError("http-request-failed") from exc
 
     return request_path
+
+
+def _request_absolute_url(url: str, timeout_seconds: float) -> HttpResponse:
+    split = urlsplit(url)
+    base = urlunsplit((split.scheme, split.netloc, "", "", ""))
+    path = urlunsplit(("", "", split.path or "/", split.query, ""))
+    return _make_requester(base)(path, timeout_seconds)
 
 
 class _HtmlContractParser(HTMLParser):
@@ -395,6 +411,74 @@ def probe_closed_matrix(
     return sorted(errors), observations
 
 
+def probe_process_local_readiness(
+    *,
+    requester: Callable[[str, float], HttpResponse],
+    readiness_url: str,
+    timeout_seconds: float,
+    expected_state: str,
+    require_complete_check_set: bool,
+) -> tuple[list[str], dict[str, dict[str, object]]]:
+    errors: list[str] = []
+    try:
+        response = requester(readiness_url, timeout_seconds)
+        if not isinstance(response, HttpResponse):
+            raise _ProbeRequestError("http-request-failed")
+    except Exception:  # noqa: BLE001 - evidence must never contain exception text.
+        errors.append("http-request-failed")
+        return errors, {
+            "process-local-readiness": _observation(
+                request_completed=False,
+                reasons=errors,
+            )
+        }
+
+    if response.status != 200:
+        errors.append("readiness-status-invalid")
+    if _single_header(response, "cache-control") != "no-store":
+        errors.append("readiness-cache-control-invalid")
+    content_type = _single_header(response, "content-type")
+    if content_type is None or not content_type.lower().startswith("application/json"):
+        errors.append("readiness-content-type-invalid")
+
+    payload: object | None = None
+    try:
+        payload = json.loads(response.body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        errors.append("readiness-json-invalid")
+
+    if not isinstance(payload, Mapping):
+        errors.append("readiness-body-invalid")
+    else:
+        if payload.get("ok") is not True:
+            errors.append("readiness-ok-invalid")
+        if payload.get("state") != expected_state:
+            errors.append("readiness-state-invalid")
+        if require_complete_check_set:
+            checks = payload.get("checks")
+            if not isinstance(checks, list):
+                errors.append("readiness-check-set-incomplete")
+            else:
+                names = {
+                    item.get("name")
+                    for item in checks
+                    if isinstance(item, Mapping)
+                }
+                if names != _READINESS_CHECK_NAMES or any(
+                    not isinstance(item, Mapping) or item.get("ok") is not True
+                    for item in checks
+                ):
+                    errors.append("readiness-check-set-incomplete")
+
+    observations = {
+        "process-local-readiness": _observation(
+            request_completed=True,
+            reasons=errors,
+        )
+    }
+    return sorted(set(errors)), observations
+
+
 def _write_evidence(path: Path, payload: Mapping[str, object]) -> bool:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.is_symlink():
@@ -450,14 +534,18 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Compatibility alias for the operator-source closed maintenance probe.",
     )
-    parser.add_argument("--process-local-readiness", action="store_true")
+    parser.add_argument("--process-local-readiness", metavar="URL")
     parser.add_argument("--require-complete-check-set", action="store_true")
     for flag in (
         "--require-rich-html",
         "--require-thin-html",
         "--require-meta-robots",
+        "--require-rich-thin-html",
+        "--require-meta-header-noindex",
         "--require-no-sitemap",
         "--require-three-empty-sitemaps",
+        "--require-robots-without-sitemap",
+        "--require-three-empty-sitemap-shapes",
         "--require-no-store",
         "--require-no-evidence",
         "--require-no-discovery",
@@ -474,13 +562,17 @@ def _parser() -> argparse.ArgumentParser:
 def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
     compatibility_flags = (
         args.maintenance_probe
-        or args.process_local_readiness
+        or args.process_local_readiness is not None
         or args.require_complete_check_set
         or args.require_rich_html
         or args.require_thin_html
         or args.require_meta_robots
+        or args.require_rich_thin_html
+        or args.require_meta_header_noindex
         or args.require_no_sitemap
         or args.require_three_empty_sitemaps
+        or args.require_robots_without_sitemap
+        or args.require_three_empty_sitemap_shapes
         or args.require_no_store
         or args.require_no_evidence
         or args.require_no_discovery
@@ -490,16 +582,30 @@ def _validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
     if args.expect is None:
         if not compatibility_flags:
             parser.error("one of --expect or --maintenance-probe is required")
-        args.expect = "maintenance"
-        args.operator_source = True
+        if args.process_local_readiness is not None:
+            args.expect = "closed"
+        else:
+            args.expect = "maintenance"
+            args.operator_source = True
     elif compatibility_flags and args.expect == "maintenance":
         # Task44 callers may provide --expect maintenance with the richer
         # assertion vocabulary; preserve the old explicit mode as-is.
         args.operator_source = True
 
-    if args.expect == "maintenance":
+    if args.process_local_readiness is not None:
+        split = urlsplit(args.process_local_readiness)
+        if split.scheme not in {"http", "https"} or not split.netloc or split.fragment:
+            parser.error("process-local-readiness must be an absolute HTTP(S) URL")
+        if args.expect != "closed" or args.operator_source or args.require_public_post_reopen_matrix:
+            parser.error("process-local-readiness requires closed mode without public-source flags")
+        if not args.require_complete_check_set:
+            parser.error("process-local-readiness requires complete check set")
+    elif args.expect == "maintenance":
         if not args.operator_source or args.require_public_post_reopen_matrix:
             parser.error("maintenance mode requires operator-source")
+    elif args.maintenance_probe:
+        if not args.operator_source or args.require_public_post_reopen_matrix:
+            parser.error("maintenance probe requires operator-source")
     elif not args.require_public_post_reopen_matrix or args.operator_source:
         parser.error("closed mode requires public post-reopen matrix")
 
@@ -515,11 +621,20 @@ def main(
     parser = _parser()
     args = parser.parse_args(argv)
     _validate_args(parser, args)
-    if requester is not None:
-        request = requester
+    if args.process_local_readiness is not None:
+        errors, observations = probe_process_local_readiness(
+            requester=requester or _request_absolute_url,
+            readiness_url=args.process_local_readiness,
+            timeout_seconds=args.timeout_seconds,
+            expected_state=args.expect,
+            require_complete_check_set=args.require_complete_check_set,
+        )
     else:
-        request = _make_requester(args.base_url.rstrip("/"))
-    errors, observations = probe_closed_matrix(requester=request, timeout_seconds=args.timeout_seconds)
+        request = requester or _make_requester(args.base_url.rstrip("/"))
+        errors, observations = probe_closed_matrix(
+            requester=request,
+            timeout_seconds=args.timeout_seconds,
+        )
     payload: dict[str, object] = {
         "errors": errors,
         "expect": args.expect,
