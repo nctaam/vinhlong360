@@ -68,6 +68,7 @@ METADATA_PRODUCERS = frozenset(
     {"appendImageDisclosureToShareText", "buildImageMeta", "descriptorToImageObject", "metadata-helpers"}
 )
 RAW_FIELDS = frozenset({"image", "images", "image_url", "image_urls"})
+NON_IMAGE_ROOTS = frozenset({"badges"})
 RAW_ROOT_HINT = re.compile(
     r"(?:entity|event|item|saved|post|review|gallery|place|record|source|preview|form|response|data|row|card|pick|body|draftBody|props|attrs|e|p|r)$",
     re.I,
@@ -83,6 +84,8 @@ ASSIGNMENT_RE = re.compile(
 DESTRUCTURE_RE = re.compile(
     r"\b(?:const|let|var)\s*\{(?P<body>[^}]+)\}\s*=\s*(?P<source>[^;<\n]+)",
 )
+FUNCTION_START_RE = re.compile(r"\bfunction\s+(?P<name>[A-Za-z_$][\w$]*)\s*\([^)]*\)[^{]*\{")
+V_FOR_RE = re.compile(r"\bv-for\s*=\s*['\"](?P<binding>.*?)\s+in\s+(?P<source>[^'\"]+)", re.I)
 VUE_TAG_RE = re.compile(r"<(?:img|NuxtImg)\b[^>]*>", re.I | re.S)
 COMPONENT_SINK_RE = re.compile(
     r"<(?!(?:img|NuxtImg)\b)(?:[A-Z][\w.-]*|[a-z][\w.-]*-[\w.-]*)\b[^>]*\s:(?:images?|thumbnail|cover|poster|src)\s*=\s*['\"][^'\"]+['\"][^>]*>",
@@ -101,6 +104,7 @@ SCRIPT_SINK_RE = re.compile(
     re.I | re.S,
 )
 DISCLOSURE_RE = re.compile(r"<ImageDisclosure\b(?P<attrs>[^>]*)>", re.I | re.S)
+DISCLOSURE_TARGET_RE = re.compile(r"<[A-Za-z][\w.-]*\b[^>]*data-disclosure-target[^>]*>", re.I | re.S)
 ATTR_RE = re.compile(r"(?P<name>[:\w-]+)\s*=\s*(['\"])(?P<value>.*?)\2", re.S)
 SCOPED_OPEN_RE = re.compile(
     r"<(?P<tag>[A-Za-z][\w.-]*)\b(?P<attrs>[^>]*?(?:data-(?:image-|renderer-)?surface|data-(?:image-|renderer-)?source-class)[^>]*)>",
@@ -336,7 +340,9 @@ def _raw_accesses(text: str) -> list[_RawAccess]:
         field = (match.group("dot") or match.group("bracket")).lower()
         if "descriptor" in root.lower() or "meta" in root.lower():
             continue
-        if not RAW_ROOT_HINT.search(root):
+        if root.lower() in NON_IMAGE_ROOTS:
+            continue
+        if field == "image" and not RAW_ROOT_HINT.search(root):
             continue
         accesses.append(_RawAccess(match.group(0), root, field, _line(text, match.start())))
     return accesses
@@ -460,7 +466,7 @@ def find_image_render_sinks(
     return raw
 
 
-def _entry_matches_access(entry: dict, access: _RawAccess) -> bool:
+def _entry_matches_access(entry: dict, access: _RawAccess, source_aliases: dict[str, set[str]]) -> bool:
     path = entry["access_path"].lower().replace("?.", ".").replace(".value", "")
     if path in {"popup", "metadata.image", "native-share.image", "descriptor"}:
         return False
@@ -468,15 +474,15 @@ def _entry_matches_access(entry: dict, access: _RawAccess) -> bool:
         parts = [part for part in re.split(r"[.]", alternative) if part]
         fields = {part for part in parts if part in RAW_FIELDS}
         roots = {parts[0]} if parts and parts[0] not in RAW_FIELDS else set()
-        if access.field in fields and (not roots or any(_same_source_boundary(root, access.root) for root in roots)):
+        if access.field in fields and (not roots or any(_same_source_boundary(root, access.root, source_aliases) for root in roots)):
             return True
     return False
 
 
-def _same_source_boundary(expected: str, actual: str) -> bool:
+def _same_source_boundary(expected: str, actual: str, source_aliases: dict[str, set[str]]) -> bool:
     expected_boundary = _source_boundary(expected)
-    actual_boundary = _source_boundary(actual)
-    return expected_boundary == actual_boundary or actual_boundary == "alias"
+    actual_boundaries = source_aliases.get(actual.lower(), {_source_boundary(actual)})
+    return expected_boundary in actual_boundaries
 
 
 def _source_boundary(root: str) -> str:
@@ -495,7 +501,85 @@ def _source_boundary(root: str) -> str:
         return "gallery"
     if value in {"props", "attrs"}:
         return "props"
-    return "alias"
+    return value
+
+
+def _trace_source_boundaries(text: str, entries: Sequence[dict]) -> dict[str, set[str]]:
+    aliases = _propagate_source_aliases(list(ASSIGNMENT_RE.finditer(text)))
+    aliases.update(_contextual_source_aliases(text, entries))
+    return aliases
+
+
+def _propagate_source_aliases(assignments: Sequence[re.Match]) -> dict[str, set[str]]:
+    aliases: dict[str, set[str]] = {}
+    changed = True
+    while changed:
+        changed = False
+        for assignment in assignments:
+            resolved = _resolve_source_assignment(assignment, aliases)
+            if resolved is None:
+                continue
+            target, boundaries = resolved
+            current = aliases.setdefault(target, set())
+            if boundaries.issubset(current):
+                continue
+            current.update(boundaries)
+            changed = True
+    return aliases
+
+
+def _resolve_source_assignment(
+    assignment: re.Match, aliases: dict[str, set[str]]
+) -> tuple[str, set[str]] | None:
+    value = assignment.group("value").split("<", 1)[0].strip()
+    source_match = re.fullmatch(r"([A-Za-z_$][\w$]*)(?:(?:\?\.|\.)value)?", value)
+    if source_match is None:
+        return None
+    source = source_match.group(1).lower()
+    boundaries = aliases.get(source)
+    if boundaries is None:
+        boundary = _source_boundary(source)
+        known = {"entity", "event", "place", "record", "post", "review", "saved", "gallery", "props"}
+        if boundary == source and source not in known:
+            return None
+        boundaries = {boundary}
+    return assignment.group("name").lower(), boundaries
+
+
+def _contextual_source_aliases(text: str, entries: Sequence[dict]) -> dict[str, set[str]]:
+    entry_boundaries = _registry_source_boundaries(entries)
+    aliases: dict[str, set[str]] = {}
+    lowered = text.lower()
+    if "galleryresponse" in lowered:
+        aliases["response"] = {"gallery"}
+    if "entityimagesresponse" in lowered:
+        aliases["r"] = {"entity"}
+    body_boundaries = _contextual_body_boundaries(lowered, entry_boundaries)
+    if body_boundaries:
+        aliases["body"] = body_boundaries
+    if entry_boundaries and "response" in lowered and "galleryresponse" not in lowered:
+        aliases["response"] = entry_boundaries
+    if entry_boundaries and "r" in lowered and "entityimagesresponse" not in lowered:
+        aliases["r"] = entry_boundaries
+    return aliases
+
+
+def _contextual_body_boundaries(lowered: str, entry_boundaries: set[str]) -> set[str]:
+    if "previewimages" in lowered or "post_type" in lowered:
+        return {"post"}
+    if entry_boundaries and "body" in lowered:
+        return entry_boundaries
+    return set()
+
+
+def _registry_source_boundaries(entries: Sequence[dict]) -> set[str]:
+    return {
+        _source_boundary(root)
+        for entry in entries
+        for alternative in entry["access_path"].lower().split("|")
+        for root in [alternative.split(".", 1)[0]]
+        if root in {"entity", "event", "place", "record", "post", "review", "saved", "gallery"}
+    }
 
 
 def _attrs(tag_attrs: str) -> dict[str, str]:
@@ -540,27 +624,223 @@ def _scoped_proof_text(text: str, entry: dict) -> str | None:
     return "\n".join(matches)
 
 
-def _descriptor_source_classes(attributes: dict[str, str]) -> set[str]:
-    descriptor = _binding(attributes, ":descriptor", "descriptor").lower()
+PRODUCER_SOURCE_CLASSES = {
+    "describeEntityImages": {"ai-generated"},
+    "describeEntityPlaceholder": {"placeholder"},
+    "createPlaceholderDescriptor": {"placeholder"},
+    "describePostImages": {"user-uploaded"},
+    "describeReviewImages": {"user-uploaded"},
+    "describePostPreviewRows": {"user-uploaded"},
+    "describeReviewPreviewRows": {"user-uploaded"},
+    "parseGalleryDescriptor": set(SOURCE_CLASSES - {"none"}),
+    "normalizeSavedImageSnapshot": {"ai-generated", "placeholder"},
+    "ImageDescriptor": set(SOURCE_CLASSES - {"none"}),
+}
+
+
+def _descriptor_source_aliases(text: str) -> dict[str, set[str]]:
+    assignments = _full_assignment_values(text) + _function_values(text)
+    aliases = {
+        name: source_classes
+        for name, value in assignments
+        if (source_classes := _assignment_source_classes(name, value))
+    }
+    _propagate_descriptor_aliases(assignments, aliases)
+    _propagate_template_descriptor_aliases(text, aliases)
+    return aliases
+
+
+def _assignment_source_classes(name: str, value: str) -> set[str]:
+    lowered = value.lower()
+    classes = _producer_classes_in_value(lowered)
+    if not classes and "imagedescriptor" in lowered:
+        classes.update(PRODUCER_SOURCE_CLASSES["ImageDescriptor"])
+    if "placeholder" in name:
+        classes.add("placeholder")
+    if "gallery" in name and "descriptor" in name:
+        classes.update(SOURCE_CLASSES - {"none"})
+    if "ugc" in name or "post" in name or "review" in name:
+        classes.add("user-uploaded")
+    if "ai" in name or "generated" in name:
+        classes.add("ai-generated")
+    return classes
+
+
+def _producer_classes_in_value(lowered: str) -> set[str]:
+    classes: set[str] = set()
+    for producer, source_classes in PRODUCER_SOURCE_CLASSES.items():
+        if producer != "ImageDescriptor" and producer.lower() in lowered:
+            classes.update(source_classes)
+    return classes
+
+
+def _propagate_descriptor_aliases(
+    assignments: Sequence[tuple[str, str]], aliases: dict[str, set[str]]
+) -> None:
+    changed = True
+    while changed:
+        changed = False
+        for name, value in assignments:
+            target = aliases.setdefault(name, set())
+            for alias, source_classes in aliases.items():
+                if not _contains_name(value.lower(), alias) or source_classes.issubset(target):
+                    continue
+                target.update(source_classes)
+                changed = True
+
+
+def _full_assignment_values(text: str) -> list[tuple[str, str]]:
+    return [
+        (match.group("name").lower(), _statement_value(text, match.start("value")))
+        for match in ASSIGNMENT_RE.finditer(text)
+    ]
+
+
+def _function_values(text: str) -> list[tuple[str, str]]:
+    values: list[tuple[str, str]] = []
+    for match in FUNCTION_START_RE.finditer(text):
+        body = _extract_braced_block(text, match.start())
+        if body is not None:
+            values.append((match.group("name").lower(), body))
+    return values
+
+
+def _propagate_template_descriptor_aliases(text: str, aliases: dict[str, set[str]]) -> None:
+    for match in V_FOR_RE.finditer(text):
+        source = re.match(r"[A-Za-z_$][\w$]*", match.group("source").strip())
+        if source is None:
+            continue
+        source_classes = aliases.get(source.group(0).lower(), set())
+        if not source_classes:
+            continue
+        for binding in _v_for_bindings(match.group("binding")):
+            aliases.setdefault(binding, set()).update(source_classes)
+
+
+def _v_for_bindings(binding: str) -> list[str]:
+    value = binding.strip().strip("(){}")
+    names = []
+    for index, item in enumerate(value.split(",")):
+        if index > 0 and not binding.strip().startswith("{"):
+            break
+        alias = item.split(":", 1)[-1].strip()
+        if re.fullmatch(r"[A-Za-z_$][\w$]*", alias):
+            names.append(alias.lower())
+    return names
+
+
+def _statement_value(text: str, start: int) -> str:
+    depth = 0
+    quote: str | None = None
+    escaped = False
+    for index in range(start, len(text)):
+        char = text[index]
+        if escaped:
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        elif quote:
+            if char == quote:
+                quote = None
+        elif char in {"'", '"', "`"}:
+            quote = char
+        elif char in "([{":
+            depth += 1
+        elif char in ")]}":
+            depth = max(depth - 1, 0)
+        elif depth == 0 and (char in {";", "\n"} or text.startswith("</script", index)):
+            return text[start:index].strip()
+    return text[start:].strip()
+
+
+def _descriptor_source_classes(attributes: dict[str, str], aliases: dict[str, set[str]]) -> set[str]:
+    raw_descriptor = next(
+        (attributes[name] for name in (":descriptor", "descriptor") if attributes.get(name)),
+        "",
+    )
+    descriptor = _normalized_binding(raw_descriptor).lower()
+    direct = {
+        source_class
+        for producer, source_classes in PRODUCER_SOURCE_CLASSES.items()
+        if producer.lower() in descriptor
+        for source_class in source_classes
+    }
+    root = re.match(r"[a-z_$][\w$]*", raw_descriptor.strip(), re.I)
+    if root and root.group(0).lower() in aliases:
+        direct.update(aliases[root.group(0).lower()])
+    if direct:
+        return direct
     if "placeholder" in descriptor:
         return {"placeholder"}
     if any(token in descriptor for token in ("ugc", "post", "review", "upload")):
         return {"user-uploaded"}
     if any(token in descriptor for token in ("ai", "generated")):
         return {"ai-generated"}
-    return set(SOURCE_CLASSES - {"none"})
+    return set()
 
 
-def _entry_disclosures(text: str, entry: dict) -> list[dict[str, str]]:
+def _entry_disclosures(
+    text: str,
+    entry: dict,
+    entries: Sequence[dict],
+    aliases: dict[str, set[str]],
+) -> list[dict[str, str]]:
     return [
         attributes
         for attributes in _disclosures(text)
-        if entry["source_class"] in _descriptor_source_classes(attributes)
+        if _disclosure_matches_entry(text, attributes, aliases, entry, entries)
     ]
 
 
-def _entry_has_presentation(text: str, entry: dict) -> bool:
-    disclosures = _entry_disclosures(text, entry)
+def _disclosure_matches_entry(
+    text: str,
+    attributes: dict[str, str],
+    aliases: dict[str, set[str]],
+    entry: dict,
+    entries: Sequence[dict],
+) -> bool:
+    source_classes = _descriptor_source_classes(attributes, aliases)
+    source_matches = entry["source_class"] in source_classes
+    if not source_classes:
+        producer = entry["descriptor_producer"]
+        source_matches = producer == "ImageDescriptor" and _has_typed_descriptor_images(text)
+    return source_matches and _disclosure_matches_surface(attributes, entry, entries)
+
+
+def _disclosure_matches_surface(
+    attributes: dict[str, str], entry: dict, entries: Sequence[dict]
+) -> bool:
+    peers = {
+        row["surface"]
+        for row in entries
+        if row["source_class"] == entry["source_class"]
+        and row["presentation"] == entry["presentation"]
+        and row["descriptor_producer"] == entry["descriptor_producer"]
+    }
+    if len(peers) <= 1:
+        return True
+    haystack = _normalized_binding(" ".join(attributes.values())).lower()
+    return any(token in haystack for token in _surface_tokens(entry["surface"]))
+
+
+def _surface_tokens(surface: str) -> set[str]:
+    tokens = set(re.findall(r"[a-z0-9]+", surface.lower()))
+    aliases = {
+        "rail": {"thumb", "disclosureidfor"},
+        "spotlight": {"spot"},
+        "for": {"fy", "item"},
+        "community": {"homepost", "ugc"},
+        "thumbnail": {"thumb"},
+    }
+    for token in tuple(tokens):
+        tokens.update(aliases.get(token, set()))
+    return tokens - {"detail", "home", "admin", "entity", "image", "post", "event"}
+
+
+def _entry_has_presentation(
+    text: str, entry: dict, entries: Sequence[dict], aliases: dict[str, set[str]]
+) -> bool:
+    disclosures = _entry_disclosures(text, entry, entries, aliases)
     presentations = {(item.get("presentation") or item.get(":presentation")) for item in disclosures}
     if entry["presentation"] == "short":
         return "short" in presentations
@@ -571,9 +851,11 @@ def _entry_has_presentation(text: str, entry: dict) -> bool:
     return entry["presentation"] == "none"
 
 
-def _entry_has_accessibility(text: str, entry: dict) -> bool:
+def _entry_has_accessibility(
+    text: str, entry: dict, entries: Sequence[dict], aliases: dict[str, set[str]]
+) -> bool:
     accessibility = entry["accessibility"]
-    disclosures = _entry_disclosures(text, entry)
+    disclosures = _entry_disclosures(text, entry, entries, aliases)
     linked = any(_disclosure_links_sink(disclosure, sink) for disclosure in disclosures for sink in _sink_attributes(text))
     if accessibility == "aria-describedby-full-copy":
         return linked
@@ -590,7 +872,7 @@ def _binding(attributes: dict[str, str], *names: str) -> str:
 
 
 def _sink_attributes(text: str) -> list[dict[str, str]]:
-    sink_tags = VUE_TAG_RE.findall(text) + COMPONENT_SINK_RE.findall(text)
+    sink_tags = VUE_TAG_RE.findall(text) + COMPONENT_SINK_RE.findall(text) + DISCLOSURE_TARGET_RE.findall(text)
     return [_attrs(tag) for tag in sink_tags]
 
 
@@ -771,6 +1053,8 @@ class _SourceAnalysis:
     text: str
     entries: Sequence[dict]
     accesses: Sequence[_RawAccess]
+    source_aliases: dict[str, set[str]]
+    descriptor_aliases: dict[str, set[str]]
     render_sinks: Sequence[_Sink]
     raw_render_sinks: Sequence[_Sink]
 
@@ -783,6 +1067,8 @@ def _analyse_source(root: Path, path: Path, entries: Sequence[dict]) -> _SourceA
         text=text,
         entries=entries,
         accesses=_raw_accesses(text) + _destructured_raw_accesses(text),
+        source_aliases=_trace_source_boundaries(text, entries),
+        descriptor_aliases=_descriptor_source_aliases(text),
         render_sinks=find_image_render_sinks(text),
         raw_render_sinks=find_image_render_sinks(text, require_raw_source=True, raw_aliases=aliases),
     )
@@ -799,7 +1085,7 @@ def _unregistered_access_findings(analysis: _SourceAnalysis) -> list[Finding]:
             access.line,
         )
         for access in analysis.accesses
-        if not any(_entry_matches_access(entry, access) for entry in analysis.entries)
+        if not any(_entry_matches_access(entry, access, analysis.source_aliases) for entry in analysis.entries)
     ]
 
 
@@ -881,7 +1167,7 @@ def _direct_entry_findings(analysis: _SourceAnalysis, entry: dict) -> list[Findi
     has_presentation = (
         has_required_presentation(scoped, entry["presentation"], entry["source_class"])
         if scoped is not None
-        else _entry_has_presentation(analysis.text, entry)
+        else _entry_has_presentation(analysis.text, entry, analysis.entries, analysis.descriptor_aliases)
     )
     if not has_presentation and not delegated:
         findings.append(
@@ -894,7 +1180,7 @@ def _direct_entry_findings(analysis: _SourceAnalysis, entry: dict) -> list[Findi
     has_accessibility = (
         has_accessibility_proof(scoped, entry["accessibility"])
         if scoped is not None
-        else _entry_has_accessibility(analysis.text, entry)
+        else _entry_has_accessibility(analysis.text, entry, analysis.entries, analysis.descriptor_aliases)
     )
     if not has_accessibility and not delegated:
         findings.append(

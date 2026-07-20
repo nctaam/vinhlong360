@@ -371,3 +371,84 @@ def test_post_detail_boundary_requires_postcard_delegation(tmp_path: Path):
 
     _mk(tmp_path, entry["file"], '<template><PostCard :post="post" /></template>')
     assert "MISSING_DELEGATION_PROOF" not in _codes(scan_entity_image_renderers(tmp_path, [entry]))
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        '<NuxtImg :src="thing.images[0]" />',
+        '<script setup>const pics = model.images</script><NuxtImg :src="pics[0]" />',
+        '<Gallery :images="payload.images" />',
+    ],
+)
+def test_plural_raw_accesses_are_guarded_for_arbitrary_roots(tmp_path: Path, source: str):
+    _mk(tmp_path, "pages/arbitrary.vue", source)
+    codes = _codes(scan_entity_image_renderers(tmp_path, registry=[]))
+    assert {"UNREGISTERED_ENTITY_IMAGE_RENDERER", "RAW_DESCRIPTOR_BYPASS"} <= codes
+
+
+def test_unknown_root_cannot_be_exempted_by_entity_registration(tmp_path: Path):
+    _mk(
+        tmp_path,
+        "pages/card.vue",
+        """
+<script setup>
+const raw = card.images
+const descriptors = describeEntityImages({ images: raw })
+</script>
+<NuxtImg :src="descriptors[0].url" aria-describedby="card-copy" />
+<ImageDisclosure id="card-copy" :descriptor="descriptors[0]" presentation="short" />
+""",
+    )
+    findings = scan_entity_image_renderers(tmp_path, [_entry(file="pages/card.vue")])
+    assert "UNREGISTERED_ENTITY_IMAGE_RENDERER" in _codes(findings)
+
+
+def test_true_object_alias_can_match_its_registered_source_boundary(tmp_path: Path):
+    _mk(tmp_path, "pages/entity-alias.vue", "<script setup>const card = entity</script><NuxtImg :src=\"card.images[0]\" />")
+    findings = scan_entity_image_renderers(tmp_path, [_entry(file="pages/entity-alias.vue")])
+    assert "UNREGISTERED_ENTITY_IMAGE_RENDERER" not in _codes(findings)
+
+
+def test_generic_descriptor_proof_stays_with_exact_source_row(tmp_path: Path):
+    _mk(
+        tmp_path,
+        "pages/generic-proof.vue",
+        """
+<script setup>
+const descriptor = describeEntityImages(entity)[0]
+const placeholder = describeEntityPlaceholder(entity)
+</script>
+<NuxtImg :src="descriptor.url" aria-describedby="generic-copy" />
+<ImageDisclosure id="generic-copy" :descriptor="descriptor" presentation="short" />
+""",
+    )
+    registry = [
+        _entry(file="pages/generic-proof.vue", surface="cards", source_class="ai-generated", test_file="tests/generic.test.ts"),
+        _entry(file="pages/generic-proof.vue", surface="cards", source_class="placeholder", descriptor_producer="describeEntityPlaceholder", test_file="tests/generic.test.ts"),
+    ]
+    codes = _codes(scan_entity_image_renderers(tmp_path, registry))
+    assert "MISSING_DISCLOSURE_PRESENTATION" in codes
+    assert "MISSING_ACCESSIBLE_ASSOCIATION" in codes
+
+
+def test_unresolved_generic_descriptor_cannot_use_filewide_producer_presence(tmp_path: Path):
+    _mk(
+        tmp_path,
+        "pages/unresolved-proof.vue",
+        """
+<script setup>
+const ai = describeEntityImages(entity)[0]
+const placeholder = describeEntityPlaceholder(entity)
+</script>
+<NuxtImg :src="descriptor.url" aria-describedby="generic-copy" />
+<ImageDisclosure id="generic-copy" :descriptor="descriptor" presentation="short" />
+""",
+    )
+    registry = [
+        _entry(file="pages/unresolved-proof.vue", surface="cards", source_class="ai-generated", test_file="tests/unresolved.test.ts"),
+        _entry(file="pages/unresolved-proof.vue", surface="cards", source_class="placeholder", descriptor_producer="describeEntityPlaceholder", test_file="tests/unresolved.test.ts"),
+    ]
+    codes = _codes(scan_entity_image_renderers(tmp_path, registry))
+    assert "MISSING_DISCLOSURE_PRESENTATION" in codes
+    assert "MISSING_ACCESSIBLE_ASSOCIATION" in codes
