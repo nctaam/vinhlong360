@@ -88,15 +88,31 @@
               </section>
             </div>
 
-            <section class="dth-review-section">
+            <section class="dth-review-section" data-self-learning-inspector>
               <h4>Hình ảnh</h4>
-              <ul v-if="imageValues(e.entity.images).length" class="dth-image-list">
-                <li v-for="(image, index) in imageValues(e.entity.images)" :key="`${e.id}-image-${index}`">
-                  <a v-if="isHttpUrl(image)" :href="image" target="_blank" rel="noopener noreferrer">{{ image }}</a>
-                  <pre v-else>{{ formatInspectable(image) }}</pre>
+              <ul v-if="provisionalImageRows(e.entity).length" class="dth-image-list">
+                <li v-for="row in provisionalImageRows(e.entity)" :key="`${e.id}-image-${row.index}`" data-provisional-image-row>
+                  <template v-if="row.descriptor?.url">
+                    <a
+                      :href="row.descriptor.url"
+                      :aria-describedby="provisionalDisclosureId(e.id, row.index)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-provisional-image-link
+                    >{{ row.descriptor.url }}</a>
+                    <ImageDisclosure
+                      :id="provisionalDisclosureId(e.id, row.index)"
+                      :descriptor="row.descriptor"
+                      presentation="full"
+                    />
+                  </template>
+                  <pre v-else>{{ formatInspectable(row.raw) }}</pre>
                 </li>
               </ul>
-              <span v-else class="admin-muted">—</span>
+              <span v-else class="dth-image-placeholder">
+                <span class="admin-muted">—</span>
+                <ImageDisclosure :descriptor="describeEntityPlaceholder(e.entity)" presentation="full" />
+              </span>
             </section>
 
             <details class="dth-snapshot" @toggle="onSnapshotToggle(e.id, $event)">
@@ -152,6 +168,9 @@
 </template>
 
 <script setup lang="ts">
+import type { ImageDescriptor } from '~/types/image'
+import { describeEntityImages, describeEntityPlaceholder, normalizeEntityEditorialUpload } from '~/utils/imageDescriptors'
+
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Duyệt tự học — Admin' })
 const { authHeaders } = useAuth()
@@ -269,8 +288,29 @@ function imageValues(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [value]
 }
 
-function isHttpUrl(value: unknown): value is string {
-  return typeof value === 'string' && /^https?:\/\//i.test(value)
+function provisionalImageDescriptor(entity: ProvisionalEntitySnapshot, value: unknown): Readonly<ImageDescriptor> | null {
+  const described = value && typeof value === 'object' && !Array.isArray(value)
+    ? describeEntityImages({ ...entity, image_descriptor: value })[0]
+    : describeEntityImages({ ...entity, images: [value] })[0]
+  if (!described) return null
+  try {
+    return normalizeEntityEditorialUpload(described)
+  } catch {
+    return null
+  }
+}
+
+function provisionalImageRows(entity: ProvisionalEntitySnapshot) {
+  return imageValues(entity.images).map((raw, index) => ({
+    raw,
+    index,
+    descriptor: provisionalImageDescriptor(entity, raw),
+  }))
+}
+
+function provisionalDisclosureId(entityId: string, index: number): string {
+  const token = entityId.replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'entity'
+  return `admin-provisional-${token}-${index}-disclosure`
 }
 
 function onSnapshotToggle(entityId: string, event: Event) {
@@ -348,7 +388,9 @@ onMounted(loadProvisional)
 .dth-field-grid dt { font-size: .7rem; font-weight: 700; text-transform: uppercase; color: var(--muted); }
 .dth-field-grid dd { margin: 4px 0 0; font-size: .82rem; color: var(--ink); overflow-wrap: anywhere; }
 .dth-image-list { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.dth-image-list li { display: grid; gap: var(--space-1); }
 .dth-image-list a { color: var(--primary); font-size: .78rem; overflow-wrap: anywhere; }
+.dth-image-placeholder { display: grid; gap: var(--space-1); }
 .dth-snapshot { margin-top: var(--space-4); border-top: .5px solid var(--line); padding-top: var(--space-3); }
 .dth-snapshot summary { cursor: pointer; font-size: .8rem; font-weight: 650; color: var(--primary); }
 .dth-snapshot pre { margin-top: var(--space-3); max-height: 480px; overflow: auto; }

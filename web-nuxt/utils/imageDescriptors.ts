@@ -146,6 +146,26 @@ export function parseGalleryDescriptor(value: unknown): Readonly<ImageDescriptor
   return Object.freeze({ ...descriptor, url: normalizedUrl }) as unknown as ImageDescriptor
 }
 
+const ENTITY_EDITORIAL_UPLOAD_ERROR = [
+  'entity.images accepts AI editorial media only',
+  'entity.images chỉ nhận AI editorial',
+].join('; ')
+
+/** Enforce the AI-only entity image contract before admin data reaches the API. */
+export function normalizeEntityEditorialUpload(value: unknown): Readonly<ImageDescriptor> {
+  const descriptor = parseGalleryDescriptor(value)
+  if (
+    descriptor === null
+    || descriptor.source_class !== 'ai-generated'
+    || descriptor.source_kind !== 'entity-editorial'
+    || descriptor.disclosure_key !== 'entity-ai'
+    || descriptor.url === null
+  ) {
+    throw new TypeError(ENTITY_EDITORIAL_UPLOAD_ERROR)
+  }
+  return descriptor
+}
+
 export function normalizeReviewPhoto(input: {
   url: unknown
   alt: unknown

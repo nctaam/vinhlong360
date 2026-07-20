@@ -52,15 +52,27 @@
     </div>
 
     <!-- Image grid -->
-    <div class="media-grid">
-      <button v-for="item in items" :key="item.url + item.entity_id" type="button" class="media-card" :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item">
+    <div class="media-grid" data-admin-media-grid>
+      <button v-for="(item, index) in items" :key="mediaItemKey(item, index)" type="button" class="media-card" data-open-preview :aria-label="`Xem ảnh ${item.entity_name || item.entity_id}`" @click="previewItem = item">
         <div class="media-img-wrap">
-          <img :src="item.url" :alt="item.entity_name" width="400" height="300" loading="lazy" decoding="async" @error="onImgError" />
+          <img
+            v-if="mediaDescriptor(item).url"
+            :src="mediaDescriptor(item).url!"
+            :alt="mediaDescriptor(item).alt"
+            :aria-describedby="mediaDisclosureId(item, index)"
+            width="400"
+            height="300"
+            loading="lazy"
+            decoding="async"
+            @error="onImgError"
+          />
+          <span v-else class="media-placeholder" aria-hidden="true">&#128247;</span>
           <span v-if="item.usage_count > 1" class="media-dup-badge" title="Dùng bởi nhiều entity">{{ item.usage_count }}x</span>
         </div>
         <div class="media-card-info">
           <span class="media-entity-name">{{ item.entity_name }}</span>
           <span class="media-entity-type">{{ item.entity_type }}</span>
+          <ImageDisclosure :id="mediaDisclosureId(item, index)" :descriptor="mediaDescriptor(item)" presentation="short" />
           <span v-if="item.credit" class="media-credit">{{ item.credit }}</span>
           <span v-else class="media-no-credit">Thiếu credit</span>
         </div>
@@ -75,18 +87,29 @@
     <!-- Preview modal -->
     <Transition name="modal-fade">
     <div v-if="previewItem" ref="mediaModalRef" class="modal-overlay show" role="dialog" aria-modal="true" :aria-label="`Xem ảnh ${previewItem.entity_name}`" @click.self="previewItem = null">
-      <div class="modal admin-modal-lg">
+      <div class="modal admin-modal-lg" data-expanded-preview>
         <div class="media-preview-header">
           <strong>{{ previewItem.entity_name }}</strong>
           <button type="button" class="btn btn-ghost btn-sm" @click="previewItem = null">Đóng</button>
         </div>
-        <img :src="previewItem.url" :alt="previewItem.entity_name" class="media-preview-img" loading="lazy" decoding="async" @error="(e: Event) => ((e.target as HTMLImageElement).style.opacity = '.15')" />
+        <img
+          v-if="previewDescriptor?.url"
+          :src="previewDescriptor.url"
+          :alt="previewDescriptor.alt"
+          :aria-describedby="mediaPreviewDisclosureId"
+          class="media-preview-img"
+          loading="lazy"
+          decoding="async"
+          @error="(event: Event) => ((event.target as HTMLImageElement).style.opacity = '.15')"
+        />
+        <div v-else class="media-preview-placeholder" aria-hidden="true">&#128247;</div>
+        <ImageDisclosure v-if="previewDescriptor" :id="mediaPreviewDisclosureId" :descriptor="previewDescriptor" presentation="full" />
         <div class="media-preview-meta">
           <div><strong>Entity:</strong> <NuxtLink :to="`/dia-diem/${previewItem.entity_id}`" target="_blank" rel="noopener">{{ previewItem.entity_name }}</NuxtLink> ({{ previewItem.entity_type }})</div>
           <div><strong>Credit:</strong> {{ previewItem.credit || 'Không có' }}</div>
           <div><strong>License:</strong> {{ previewItem.license || 'Không rõ' }}</div>
           <div v-if="previewItem.usage_count > 1"><strong>Dùng bởi:</strong> {{ previewItem.usage_count }} entities</div>
-          <div class="media-preview-url"><strong>URL:</strong> <code>{{ previewItem.url }}</code></div>
+          <div class="media-preview-url"><strong>URL:</strong> <code>{{ previewDescriptor?.url || formatMediaValue(previewItem?.url) }}</code></div>
         </div>
         <div class="media-preview-actions">
           <NuxtLink :to="`/admin/entities?q=${encodeURIComponent(previewItem.entity_id)}`" class="btn btn-outline btn-sm">Mở entity</NuxtLink>
@@ -99,6 +122,9 @@
 </template>
 
 <script setup lang="ts">
+import type { ImageDescriptor } from '~/types/image'
+import { describeEntityImages, describeEntityPlaceholder } from '~/utils/imageDescriptors'
+
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Thư viện ảnh — Admin' })
 
@@ -112,18 +138,61 @@ const FILTERS = [
   { key: 'duplicate', label: 'Trùng lặp' },
 ] as const
 
-const items = ref<any[]>([])
+interface AdminMediaItem {
+  url: unknown
+  entity_id: string
+  entity_name: string
+  entity_type: string
+  credit?: string | null
+  license?: string | null
+  usage_count: number
+}
+
+const items = ref<AdminMediaItem[]>([])
 const stats = ref<any>(null)
 const total = ref(0)
 const page = ref(1)
 const loading = ref(true)
 const loadError = ref(false)
 const filter = ref('all')
-const previewItem = ref<any>(null)
+const previewItem = ref<AdminMediaItem | null>(null)
 const mediaModalRef = ref<HTMLElement | null>(null)
 const mediaModalOpen = computed(() => !!previewItem.value)
 useModalA11y(mediaModalOpen, mediaModalRef, { onClose: () => { previewItem.value = null } })
 const removing = ref(false)
+
+function mediaDescriptor(item: AdminMediaItem): ImageDescriptor {
+  const entity = {
+    id: item.entity_id,
+    name: item.entity_name,
+    images: [item.url],
+  }
+  return describeEntityImages(entity)[0] ?? describeEntityPlaceholder(entity)
+}
+
+function mediaToken(value: unknown): string {
+  return String(value || 'image').replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'image'
+}
+
+function mediaItemKey(item: AdminMediaItem, index: number): string {
+  return `${mediaToken(item.entity_id)}-${mediaToken(item.url)}-${index}`
+}
+
+function mediaDisclosureId(item: AdminMediaItem, index: number): string {
+  return `admin-media-card-${mediaToken(item.entity_id)}-${index}-disclosure`
+}
+
+const previewDescriptor = computed(() => previewItem.value ? mediaDescriptor(previewItem.value) : null)
+const mediaPreviewDisclosureId = computed(() => `admin-media-preview-${mediaToken(previewItem.value?.entity_id)}-disclosure`)
+
+function formatMediaValue(value: unknown): string {
+  if (typeof value === 'string') return value
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return String(value ?? '')
+  }
+}
 
 const hasMore = computed(() => items.value.length < total.value)
 
@@ -156,17 +225,18 @@ function onImgError(e: Event) {
   img.style.opacity = '0.3'
 }
 
-async function removeFromEntity(item: any) {
-  if (!item?.entity_id || !item?.url) return
+async function removeFromEntity(item: AdminMediaItem) {
+  const targetUrl = mediaDescriptor(item).url
+  if (!item.entity_id || !targetUrl) return
   if (!await confirmDialog('Xóa ảnh này khỏi entity?', { danger: true })) return
   removing.value = true
   try {
     const entity = await $fetch<any>(`/admin-api/entities/${item.entity_id}`, { headers: authHeaders() })
-    const images: any[] = Array.isArray(entity.images) ? entity.images : []
-    const idx = images.findIndex((img: any) => (typeof img === 'string' ? img : img?.url) === item.url)
+    const images: unknown[] = Array.isArray(entity.images) ? entity.images : []
+    const idx = images.findIndex(candidate => describeEntityImages({ name: item.entity_name, images: [candidate] })[0]?.url === targetUrl)
     if (idx === -1) { showToast('Không tìm thấy ảnh trong entity', 'error'); return }
     await $fetch(`/admin-api/entities/${item.entity_id}/images/${idx}`, { method: 'DELETE', headers: authHeaders() })
-    items.value = items.value.filter(i => !(i.url === item.url && i.entity_id === item.entity_id))
+    items.value = items.value.filter(candidate => !(mediaDescriptor(candidate).url === targetUrl && candidate.entity_id === item.entity_id))
     total.value = Math.max(0, total.value - 1)
     previewItem.value = null
     showToast('Đã xóa ảnh khỏi entity', 'success')
@@ -226,6 +296,8 @@ onMounted(fetchMedia)
 .media-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .media-img-wrap { position: relative; aspect-ratio: 4/3; background: var(--bg-alt); overflow: hidden; }
 .media-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.media-placeholder,
+.media-preview-placeholder { display: grid; place-items: center; width: 100%; min-height: 100%; color: var(--muted); font-size: 2rem; }
 .media-dup-badge {
   position: absolute; top: 6px; right: 6px; padding: 2px 8px; border-radius: 100px;
   background: rgba(var(--warning-rgb, 255,159,10),.9); color: var(--text-on-dark, var(--white)); font-size: .7rem; font-weight: 700;

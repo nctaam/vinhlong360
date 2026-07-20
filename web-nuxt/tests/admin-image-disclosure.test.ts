@@ -1,0 +1,198 @@
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
+import EntitiesPage from '../pages/admin/entities.vue'
+import MediaPage from '../pages/admin/media.vue'
+import ProvisionalReviewPage from '../pages/admin/duyet-tu-hoc.vue'
+import { aiDisclosure } from '../utils/aiDisclosure'
+import { normalizeEntityEditorialUpload } from '../utils/imageDescriptors'
+
+const mocks = vi.hoisted(() => ({
+  authHeaders: vi.fn(() => ({ 'X-Admin-Key': 'test-key' })),
+  confirmDialog: vi.fn(() => Promise.resolve(true)),
+  fetch: vi.fn(),
+  fetchMe: vi.fn(() => Promise.resolve()),
+  showToast: vi.fn(),
+  setPref: vi.fn(),
+}))
+
+mockNuxtImport('useAuth', () => () => ({
+  authHeaders: mocks.authHeaders,
+  fetchMe: mocks.fetchMe,
+  user: { value: null },
+}))
+mockNuxtImport('useConfirm', () => () => ({ confirmDialog: mocks.confirmDialog }))
+mockNuxtImport('useToast', () => () => ({ show: mocks.showToast }))
+mockNuxtImport('useTimeAgo', () => () => ({ timeAgo: (value: string) => value }))
+mockNuxtImport('useAdminPrefs', () => () => ({
+  prefs: { value: { pageSize: 30, entityTypeFilter: '' } },
+  setPref: mocks.setPref,
+}))
+mockNuxtImport('useModalA11y', () => () => undefined)
+
+const safeEntityUrl = 'https://safe.example/entity.webp'
+const safeMediaUrl = 'https://safe.example/media.webp'
+const invalidJavascript = 'javascript:alert(1)'
+const invalidObject = { url: 'not-a-url', note: '<script>bad</script>' }
+
+function installFetchDispatch() {
+  mocks.fetch.mockImplementation((input: unknown) => {
+    const url = String(input)
+    if (url === '/admin-api/entity-schema') return Promise.resolve({ types: {} })
+    if (url === '/admin-api/entity-kinds') return Promise.resolve({ kinds: [], grand_total: 0 })
+    if (url.startsWith('/admin-api/entities?')) {
+      return Promise.resolve({
+        entities: [{ id: 'entity-1', name: 'Địa điểm thử', type: 'experience', summary: 'Tóm tắt', images: [safeEntityUrl] }],
+        total: 1,
+      })
+    }
+    if (url === '/admin-api/entities/places') return Promise.resolve([])
+    if (url.startsWith('/api/entities/entity-1/relationships')) return Promise.resolve({ relationships: [] })
+    if (url === '/admin-api/entities/entity-1/history') return Promise.resolve({ history: [] })
+    if (url.startsWith('/admin-api/media?')) {
+      return Promise.resolve({
+        items: [{ url: safeMediaUrl, entity_id: 'entity-1', entity_name: 'Địa điểm thử', entity_type: 'experience', credit: '', license: '', usage_count: 1 }],
+        total: 1,
+        stats: { total_images: 1, duplicates: 0, missing_credit: 1 },
+      })
+    }
+    if (url === '/admin-api/provisional') {
+      return Promise.resolve({
+        provisional: [{
+          id: 'prov-1',
+          review_token: 'a'.repeat(64),
+          entity: {
+            id: 'prov-1',
+            name: 'Entity tự học',
+            type: 'experience',
+            summary: 'Nội dung cần duyệt',
+            images: [safeEntityUrl, invalidJavascript, invalidObject],
+          },
+        }],
+      })
+    }
+    return Promise.resolve({})
+  })
+}
+
+async function flushUi() {
+  await new Promise(resolve => setTimeout(resolve, 0))
+  await nextTick()
+}
+
+beforeEach(() => {
+  mocks.authHeaders.mockClear()
+  mocks.confirmDialog.mockClear()
+  mocks.confirmDialog.mockResolvedValue(true)
+  mocks.fetchMe.mockClear()
+  mocks.showToast.mockClear()
+  mocks.setPref.mockClear()
+  mocks.fetch.mockReset()
+  installFetchDispatch()
+  vi.stubGlobal('$fetch', mocks.fetch)
+})
+
+describe('admin entity/media/self-learning image disclosure', () => {
+  it('associates dense entity thumbnails and media cards with short and full disclosure', async () => {
+    const entities = await mountSuspended(EntitiesPage, {
+      global: { stubs: { LazyAdminKindCompleteness: true } },
+    })
+    await flushUi()
+
+    const thumbnail = entities.get('.ent-thumb img')
+    expect(thumbnail.attributes('src')).toBe(safeEntityUrl)
+    expect(thumbnail.attributes('aria-describedby')).toBeTruthy()
+    expect(entities.get(`[id="${thumbnail.attributes('aria-describedby')}"]`).text()).toBe(aiDisclosure.entity_ai.full_disclosure)
+    expect(entities.text()).toContain(aiDisclosure.entity_ai.short_label)
+
+    const media = await mountSuspended(MediaPage)
+    await flushUi()
+    const grid = media.get('[data-admin-media-grid]')
+    const card = grid.get('[data-open-preview]')
+    const cardImage = card.get('img')
+    expect(cardImage.attributes('src')).toBe(safeMediaUrl)
+    expect(cardImage.attributes('aria-describedby')).toBeTruthy()
+    expect(media.get(`[id="${cardImage.attributes('aria-describedby')}"]`).text()).toBe(aiDisclosure.entity_ai.full_disclosure)
+    await card.trigger('click')
+    await nextTick()
+    expect(media.get('[data-expanded-preview]').text()).toContain(aiDisclosure.entity_ai.full_disclosure)
+
+    entities.unmount()
+    media.unmount()
+  })
+
+  it('renders full disclosure in entity editor, media preview, and self-learning inspector', async () => {
+    const entities = await mountSuspended(EntitiesPage, {
+      global: { stubs: { LazyAdminKindCompleteness: true } },
+    })
+    await flushUi()
+    await entities.get('button[aria-label="Sửa Địa điểm thử"]').trigger('click')
+    await flushUi()
+    expect(entities.get('[data-expanded-preview]').text()).toContain(aiDisclosure.entity_ai.full_disclosure)
+    await entities.get('input[aria-label="URL ảnh AI biên tập mới"]').setValue(safeMediaUrl)
+    await entities.findAll('button').find(button => button.text() === 'Thêm ảnh')!.trigger('click')
+    await flushUi()
+    expect(mocks.fetch).toHaveBeenCalledWith('/admin-api/entities/entity-1/images', expect.objectContaining({
+      body: { url: safeMediaUrl },
+    }))
+
+    const media = await mountSuspended(MediaPage)
+    await flushUi()
+    await media.get('[data-open-preview]').trigger('click')
+    await nextTick()
+    expect(media.get('[data-expanded-preview]').text()).toContain(aiDisclosure.entity_ai.full_disclosure)
+
+    const provisional = await mountSuspended(ProvisionalReviewPage)
+    await flushUi()
+    expect(provisional.get('[data-self-learning-inspector]').text()).toContain(aiDisclosure.entity_ai.full_disclosure)
+
+    entities.unmount()
+    media.unmount()
+    provisional.unmount()
+  })
+
+  it('fails closed for malformed provisional values while preserving an audit trail', async () => {
+    const provisional = await mountSuspended(ProvisionalReviewPage)
+    await flushUi()
+
+    expect(provisional.findAll('img')).toHaveLength(0)
+    expect(provisional.findAll('[data-provisional-image-link]').map(node => node.attributes('href'))).toEqual([safeEntityUrl])
+    expect(provisional.text()).toContain(invalidJavascript)
+    expect(provisional.text()).toContain(JSON.stringify(invalidObject, null, 2))
+    expect(provisional.findAll('pre').some(node => node.text().includes(invalidJavascript))).toBe(true)
+    expect(provisional.findAll('pre').some(node => node.text().includes('not-a-url'))).toBe(true)
+    provisional.unmount()
+  })
+
+  it('normalizes only canonical AI editorial entity uploads', () => {
+    const descriptor = normalizeEntityEditorialUpload({
+      url: safeEntityUrl,
+      alt: 'Địa điểm thử — ảnh minh họa',
+      credit: null,
+      width: null,
+      height: null,
+      source_class: 'ai-generated',
+      source_kind: 'entity-editorial',
+      disclosure_key: 'entity-ai',
+      short_label: aiDisclosure.entity_ai.short_label,
+      full_disclosure: aiDisclosure.entity_ai.full_disclosure,
+    })
+    expect(descriptor.url).toBe(safeEntityUrl)
+    expect(() => normalizeEntityEditorialUpload({
+      ...descriptor,
+      source_class: 'user-uploaded',
+    })).toThrow(/entity\.images accepts AI editorial media only.*entity\.images chỉ nhận AI editorial/s)
+    expect(() => normalizeEntityEditorialUpload({
+      ...descriptor,
+      source_kind: 'review-ugc',
+    })).toThrow(/entity\.images accepts AI editorial media only.*entity\.images chỉ nhận AI editorial/s)
+    expect(() => normalizeEntityEditorialUpload({
+      ...descriptor,
+      disclosure_key: 'ugc-photo',
+    })).toThrow(/entity\.images accepts AI editorial media only.*entity\.images chỉ nhận AI editorial/s)
+    expect(() => normalizeEntityEditorialUpload({
+      ...descriptor,
+      unexpected: true,
+    })).toThrow(/entity\.images accepts AI editorial media only.*entity\.images chỉ nhận AI editorial/s)
+  })
+})

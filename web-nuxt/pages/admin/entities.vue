@@ -130,10 +130,27 @@
             <td class="admin-td-id">{{ e.id }}</td>
             <td>
               <div class="ent-name-cell">
-                <div class="ent-thumb" v-if="e.images?.length">
-                  <img :src="e.images[0]" :alt="e.name" width="32" height="32" loading="lazy" decoding="async" @error="(ev) => ((ev.target as HTMLImageElement).style.display = 'none')" />
+                <div class="ent-thumb-stack" data-admin-entity-thumbnail>
+                  <div class="ent-thumb" :class="{ 'ent-thumb-empty': !entityTableImage(e).url }">
+                    <img
+                      v-if="entityTableImage(e).url"
+                      :src="entityTableImage(e).url!"
+                      :alt="entityTableImage(e).alt"
+                      :aria-describedby="entityTableDisclosureId(e)"
+                      width="32"
+                      height="32"
+                      loading="lazy"
+                      decoding="async"
+                      @error="(ev) => ((ev.target as HTMLImageElement).style.display = 'none')"
+                    />
+                    <span v-else aria-hidden="true">&#128247;</span>
+                  </div>
+                  <ImageDisclosure
+                    :id="entityTableDisclosureId(e)"
+                    :descriptor="entityTableImage(e)"
+                    presentation="short"
+                  />
                 </div>
-                <div class="ent-thumb ent-thumb-empty" v-else>&#128247;</div>
                 <template v-if="inlineEdit.id === e.id && inlineEdit.field === 'name'">
                   <input v-model="inlineEdit.value" class="input ent-inline-input" :aria-label="`Sửa tên ${e.name}`" @keyup.enter="saveInline(e)" @keyup.escape="inlineEdit.id = ''" @vue:mounted="(vn: any) => vn.el?.focus()" />
                 </template>
@@ -179,7 +196,7 @@
             </td>
             <td class="ent-health-cell">
               <span class="ent-dot" :class="e.summary ? 'dot-ok' : 'dot-miss'" :title="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" :aria-label="e.summary ? 'Có tóm tắt' : 'Thiếu tóm tắt'" role="img">{{ e.summary ? '✓' : '✗' }}</span>
-              <span class="ent-dot" :class="e.images?.length ? 'dot-ok' : 'dot-miss'" :title="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'" :aria-label="e.images?.length ? `${e.images.length} ảnh` : 'Thiếu ảnh'" role="img">{{ e.images?.length ? '✓' : '✗' }}</span>
+              <span class="ent-dot" :class="entityImageCount(e) ? 'dot-ok' : 'dot-miss'" :title="entityImageCount(e) ? `${entityImageCount(e)} ảnh` : 'Thiếu ảnh'" :aria-label="entityImageCount(e) ? `${entityImageCount(e)} ảnh` : 'Thiếu ảnh'" role="img">{{ entityImageCount(e) ? '✓' : '✗' }}</span>
               <span class="ent-dot" :class="e.placeId ? 'dot-ok' : 'dot-miss'" :title="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" :aria-label="e.placeId ? 'Có địa điểm' : 'Thiếu địa điểm'" role="img">{{ e.placeId ? '✓' : '✗' }}</span>
             </td>
             <td class="admin-actions">
@@ -348,20 +365,41 @@
           </details>
 
           <!-- Quản lý ảnh (chỉ khi sửa) -->
-          <div v-if="editingEntity" class="img-mgr">
+          <div v-if="editingEntity" class="img-mgr" data-expanded-preview data-admin-entity-image-editor>
             <strong class="admin-label">Ảnh ({{ (form.images || []).length }}/10)</strong>
-            <div v-for="(img, i) in (form.images || [])" :key="i" class="img-row">
-              <img :src="img" :alt="`Ảnh ${i + 1}`" class="img-thumb" width="48" height="48" loading="lazy" decoding="async" @error="(e) => ((e.target as HTMLImageElement).style.opacity = '.3')" />
-              <span class="img-url">{{ img }}</span>
-              <button type="button" class="btn-danger btn-sm" @click="removeImage(i)">Xóa</button>
+            <p class="sf-help" data-entity-image-policy>Chỉ dùng ảnh minh họa AI cho nội dung biên tập entity. Không dùng ảnh đánh giá, ảnh bài đăng hoặc ảnh người dùng.</p>
+            <div v-if="!editorImageRows.length" class="img-row img-row-placeholder">
+              <span class="img-thumb ent-thumb-empty" aria-hidden="true">&#128247;</span>
+              <ImageDisclosure :descriptor="editorPlaceholder" presentation="full" />
+            </div>
+            <div v-for="row in editorImageRows" :key="row.index" class="img-row" data-admin-entity-image-row>
+              <template v-if="row.descriptor?.url">
+                <img
+                  :src="row.descriptor.url"
+                  :alt="row.descriptor.alt"
+                  :aria-describedby="editorDisclosureId(row.index)"
+                  class="img-thumb"
+                  width="48"
+                  height="48"
+                  loading="lazy"
+                  decoding="async"
+                  @error="(event) => ((event.target as HTMLImageElement).style.opacity = '.3')"
+                />
+                <span class="img-details">
+                  <span class="img-url">{{ row.descriptor.url }}</span>
+                  <ImageDisclosure :id="editorDisclosureId(row.index)" :descriptor="row.descriptor" presentation="full" />
+                </span>
+              </template>
+              <pre v-else class="img-invalid-value">{{ formatAdminImageValue(row.raw) }}</pre>
+              <button type="button" class="btn-danger btn-sm" @click="removeImage(row.index)">Xóa</button>
             </div>
             <div class="admin-inline-add">
-              <input v-model="newImage" class="input" placeholder="https://… (chỉ nguồn cấp phép)" aria-label="URL ảnh mới" @keyup.enter="addImage" />
+              <input v-model="newImage" class="input" placeholder="https://… (chỉ ảnh minh họa AI biên tập)" aria-label="URL ảnh AI biên tập mới" @keyup.enter="addImage" />
               <button type="button" class="btn btn-secondary btn-sm" :disabled="!newImage.trim()" @click="addImage">Thêm ảnh</button>
             </div>
             <div class="admin-inline-add">
               <label class="btn btn-outline btn-sm" style="cursor:pointer; margin:0">
-                {{ uploadingImg ? 'Đang tải & tối ưu…' : '📷 Tải ảnh lên (tự nén WebP)' }}
+                {{ uploadingImg ? 'Đang tải & tối ưu…' : '📷 Tải ảnh AI biên tập (tự nén WebP)' }}
                 <input type="file" accept="image/*" class="sr-only" :disabled="uploadingImg" @change="uploadImageFile" />
               </label>
             </div>
@@ -423,8 +461,10 @@
 
 <script setup lang="ts">
 import type { Entity } from '~/types'
+import type { ImageDescriptor } from '~/types/image'
 import { TYPE_META } from '~/composables/useConstants'
 import { ADMIN_KINDS } from '~/utils/adminKinds'
+import { describeEntityImages, describeEntityPlaceholder, normalizeEntityEditorialUpload } from '~/utils/imageDescriptors'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 useHead({ title: 'Quản lý Entity — Admin' })
 
@@ -553,6 +593,60 @@ const editingEntity = ref<Entity | null>(null)
 const placesList = ref<{ id: string; name: string; area?: string }[]>([])
 const form = ref<EntityForm>({ ...EMPTY_ENTITY_FORM })
 const selected = ref<Set<string>>(new Set())
+
+function disclosureToken(value: unknown): string {
+  return String(value || 'image').replace(/[^A-Za-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'image'
+}
+
+function entityTableImage(entity: Entity): ImageDescriptor {
+  return describeEntityImages(entity)[0] ?? describeEntityPlaceholder(entity)
+}
+
+function entityImageCount(entity: Entity): number {
+  return describeEntityImages(entity).length
+}
+
+function entityTableDisclosureId(entity: Entity): string {
+  return `admin-entity-thumbnail-${disclosureToken(entity.id)}-disclosure`
+}
+
+function editorialDescriptor(name: string, value: unknown): Readonly<ImageDescriptor> | null {
+  const descriptor = describeEntityImages({ name, images: [value] })[0]
+  if (!descriptor) return null
+  try {
+    return normalizeEntityEditorialUpload(descriptor)
+  } catch {
+    return null
+  }
+}
+
+const editorImageRows = computed(() => form.value.images.map((raw, index) => ({
+  raw,
+  index,
+  descriptor: editorialDescriptor(form.value.name, raw),
+})))
+const editorPlaceholder = computed(() => describeEntityPlaceholder(form.value))
+
+function editorDisclosureId(index: number): string {
+  return `admin-entity-editor-${disclosureToken(form.value.id)}-${index}-disclosure`
+}
+
+function formatAdminImageValue(value: unknown): string {
+  if (typeof value === 'string') return value
+  try {
+    return JSON.stringify(value, null, 2)
+  } catch {
+    return String(value)
+  }
+}
+
+function normalizedEntityImageUrls(name: string, values: unknown[]): string[] {
+  return values.map((value) => {
+    const descriptor = describeEntityImages({ name, images: [value] })[0]
+    const normalized = normalizeEntityEditorialUpload(descriptor ?? value)
+    return normalized.url as string
+  })
+}
 
 // When the admin switches type inside the form, re-seed typed fields from any
 // existing values so nothing already entered is lost.
@@ -1054,6 +1148,7 @@ async function saveEntity() {
   saving.value = true
   try {
     const body: Record<string, any> = { ...form.value }
+    body.images = normalizedEntityImageUrls(form.value.name, form.value.images)
     const existingAttrs = { ...((editingEntity.value as any)?.attributes || (body.attributes as Record<string, unknown>) || {}) }
     const managed = new Set([...currentSchemaKeys.value, ...KBYG_KEYS])
     // Advanced editor is authoritative for the bespoke tail (non-managed keys):
@@ -1108,12 +1203,15 @@ function mdLite(src: string): string {
     .replace(/\n/g, '<br>')
 }
 async function addImage() {
-  const url = newImage.value.trim()
-  if (!url || !editingEntity.value) return
+  const candidate = newImage.value.trim()
+  if (!candidate || !editingEntity.value) return
   try {
+    const descriptor = normalizeEntityEditorialUpload(
+      describeEntityImages({ name: form.value.name, images: [candidate] })[0] ?? candidate,
+    )
     const r = await $fetch<EntityImagesResponse>(`/admin-api/entities/${form.value.id}/images`, {
-      method: 'POST', headers: authHeaders(), body: { url } })
-    form.value.images = r.images || form.value.images
+      method: 'POST', headers: authHeaders(), body: { url: descriptor.url } })
+    form.value.images = normalizedEntityImageUrls(form.value.name, r.images || form.value.images)
     newImage.value = ''
   } catch (e: unknown) { showToast(getErrorDetail(e, 'Thêm ảnh lỗi'), 'error') }
 }
@@ -1137,7 +1235,7 @@ async function uploadImageFile(e: Event) {
     fd.append('file', file)
     const r = await $fetch<Record<string, any>>(`/admin-api/entities/${form.value.id}/images/upload`, {
       method: 'POST', headers: authHeaders(), body: fd })
-    form.value.images = (r.images as string[]) || form.value.images
+    form.value.images = normalizedEntityImageUrls(form.value.name, (r.images as unknown[]) || form.value.images)
     showToast('Đã tải & tối ưu ảnh', 'success')
     input.value = ''
   } catch (err: unknown) { showToast(getErrorDetail(err, 'Tải ảnh lỗi'), 'error') }
@@ -1206,6 +1304,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* ── Entity name cell with thumbnail ── */
 .ent-name-cell { display: flex; align-items: center; gap: var(--space-3); }
+.ent-thumb-stack { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .ent-thumb {
   width: 32px; height: 32px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
   background: var(--bg-alt);
@@ -1262,6 +1361,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .img-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: 0 0 40px; border: .5px solid var(--line); transition: transform .2s var(--ease-out, ease); }
 .img-row:hover .img-thumb { transform: scale(var(--img-hover-scale)); }
 .img-url { flex: 1; font-size: .78rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.img-details { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 3px; }
+.img-invalid-value { flex: 1; min-width: 0; margin: 0; padding: var(--space-2); border-radius: 6px; background: var(--bg-alt); white-space: pre-wrap; overflow-wrap: anywhere; }
+.img-row-placeholder { color: var(--muted); }
 
 /* ── Search box (clear + searching feedback) ── */
 .btn-active-warn { background: rgba(var(--warning-rgb),.12) !important; border-color: var(--warning) !important; color: var(--warning) !important; font-weight: 600; }
