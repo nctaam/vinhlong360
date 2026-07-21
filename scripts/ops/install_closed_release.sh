@@ -643,6 +643,10 @@ STALE_RELEASE_KEY=''
 STALE_PERSISTENT_KEY=''
 STALE_STAGING_ROOT=''
 STALE_OLD_ROOT=''
+STALE_RETIRED_ROOT=''
+STALE_SYSTEMD_UNIT_DESTINATION=''
+STALE_SYSTEMD_KEY=''
+STALE_SYSTEMD_UNIT_ATTEMPT_ROOT=''
 STALE_STAGE=''
 STALE_PID=''
 STALE_ATTEMPT_ID=''
@@ -656,14 +660,17 @@ write_mutation_state() {
     "$LOCAL_REHEARSAL")" || return 1
   IFS='|' read -r _ _ release_key _ <<< "$release_spec"
   IFS='|' read -r _ _ persistent_key _ <<< "$persistent_spec"
-  MSYS2_ENV_CONV_EXCL='VL360_STATE_RELEASE_ROOT;VL360_STATE_PERSISTENT_ROOT;VL360_STATE_STAGING_ROOT;VL360_STATE_OLD_ROOT' \
+  MSYS2_ENV_CONV_EXCL='VL360_STATE_RELEASE_ROOT;VL360_STATE_PERSISTENT_ROOT;VL360_STATE_STAGING_ROOT;VL360_STATE_OLD_ROOT;VL360_STATE_RETIRED_ROOT;VL360_STATE_SYSTEMD_UNIT_DESTINATION;VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT' \
     VL360_STATE_RELEASE_ROOT="$RELEASE_ROOT" \
     VL360_STATE_PERSISTENT_ROOT="$PERSISTENT_AGENT_DATA_ROOT" \
     VL360_STATE_STAGING_ROOT="$STAGING_ROOT" \
     VL360_STATE_OLD_ROOT="$OLD_ROOT" \
+    VL360_STATE_RETIRED_ROOT="$RETIRED_ROOT" \
+    VL360_STATE_SYSTEMD_UNIT_DESTINATION="$SYSTEMD_UNIT_DESTINATION" \
+    VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT="$UNIT_ATTEMPT_ROOT" \
     VL360_STATE_LOCAL_REHEARSAL="$LOCAL_REHEARSAL" \
     python - "$MUTATION_STATE" "$stage" "$ATTEMPT_ID" "$$" \
-      "$release_key" "$persistent_key" <<'PY'
+      "$release_key" "$persistent_key" "$CURRENT_SYSTEMD_KEY" <<'PY'
 import json
 import os
 from pathlib import Path
@@ -680,9 +687,13 @@ payload = {
     "pid": int(sys.argv[4]),
     "release_key_sha256": sys.argv[5],
     "release_root": os.environ["VL360_STATE_RELEASE_ROOT"],
-    "schema_version": 2,
+    "retired_root": os.environ["VL360_STATE_RETIRED_ROOT"],
+    "schema_version": 3,
     "stage": sys.argv[2],
     "staging_root": os.environ["VL360_STATE_STAGING_ROOT"],
+    "systemd_key_sha256": sys.argv[7],
+    "systemd_unit_attempt_root": os.environ["VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT"],
+    "systemd_unit_destination": os.environ["VL360_STATE_SYSTEMD_UNIT_DESTINATION"],
 }
 descriptor, name = tempfile.mkstemp(prefix=".install-mutation-state.", dir=path.parent)
 temporary = Path(name)
@@ -706,7 +717,8 @@ clear_mutation_state() {
 }
 
 load_stale_install_state() {
-  local state release_spec persistent_spec observed_release_key observed_persistent_key
+  local state release_spec persistent_spec systemd_spec
+  local observed_release_key observed_persistent_key observed_systemd_key
   state="$(python - "$MUTATION_STATE" <<'PY'
 import json
 import posixpath
@@ -717,7 +729,7 @@ import sys
 sha256_re = re.compile(r"^[0-9a-f]{64}$")
 try:
     payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    if payload.get("schema_version") != 2:
+    if payload.get("schema_version") != 3:
         raise ValueError
     attempt_id = str(payload["attempt_id"])
     pid = int(payload["pid"])
@@ -727,9 +739,20 @@ try:
     persistent_root = str(payload["persistent_root"])
     staging_root = str(payload["staging_root"])
     old_root = str(payload["old_root"])
+    retired_root = str(payload["retired_root"])
+    systemd_destination = str(payload["systemd_unit_destination"])
+    systemd_attempt_root = str(payload["systemd_unit_attempt_root"])
     release_key = str(payload["release_key_sha256"])
     persistent_key = str(payload["persistent_key_sha256"])
-    values = (release_root, persistent_root, staging_root, old_root)
+    systemd_key = str(payload["systemd_key_sha256"])
+    values = (
+        release_root,
+        persistent_root,
+        staging_root,
+        old_root,
+        retired_root,
+        systemd_destination,
+    )
     if (
         not attempt_id
         or pid <= 0
@@ -737,6 +760,7 @@ try:
         or any(not value.startswith("/") or any(c in value for c in "\t\n|") for value in values)
         or not sha256_re.fullmatch(release_key)
         or not sha256_re.fullmatch(persistent_key)
+        or not sha256_re.fullmatch(systemd_key)
     ):
         raise ValueError
     release_parent = posixpath.dirname(release_root)
@@ -747,6 +771,19 @@ try:
         raise ValueError
     if old_root != f"{release_parent}/.{release_name}.closed-old.{pid}":
         raise ValueError
+    if retired_root != f"{release_parent}/.{release_name}.closed-retired.{attempt_id}":
+        raise ValueError
+    if systemd_attempt_root:
+        if (
+            not systemd_attempt_root.startswith("/")
+            or any(c in systemd_attempt_root for c in "\t\n|")
+            or re.fullmatch(
+                r"\.systemd-unit-attempt\.[A-Za-z0-9]+",
+                posixpath.basename(systemd_attempt_root),
+            )
+            is None
+        ):
+            raise ValueError
 except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
     raise SystemExit(1)
 print(
@@ -762,6 +799,10 @@ print(
             persistent_key,
             staging_root,
             old_root,
+            retired_root,
+            systemd_destination,
+            systemd_key,
+            systemd_attempt_root,
         )
     )
 )
@@ -770,15 +811,24 @@ PY
   IFS=$'\t' read -r STALE_STAGE STALE_PID STALE_ATTEMPT_ID \
     STALE_LOCAL_REHEARSAL STALE_RELEASE_ROOT STALE_PERSISTENT_ROOT \
     STALE_RELEASE_KEY STALE_PERSISTENT_KEY STALE_STAGING_ROOT STALE_OLD_ROOT \
+    STALE_RETIRED_ROOT STALE_SYSTEMD_UNIT_DESTINATION STALE_SYSTEMD_KEY \
+    STALE_SYSTEMD_UNIT_ATTEMPT_ROOT \
     <<< "$state"
+  [ -z "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
+    || [ "$(dirname -- "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT")" = "$EVIDENCE_DIR" ] \
+    || return 1
   release_spec="$(lock_spec release "$STALE_RELEASE_ROOT" \
     "$STALE_LOCAL_REHEARSAL")" || return 1
   persistent_spec="$(lock_spec persistent "$STALE_PERSISTENT_ROOT" \
     "$STALE_LOCAL_REHEARSAL")" || return 1
+  systemd_spec="$(lock_spec systemd "$STALE_SYSTEMD_UNIT_DESTINATION" \
+    "$STALE_LOCAL_REHEARSAL")" || return 1
   IFS='|' read -r _ _ observed_release_key _ <<< "$release_spec"
   IFS='|' read -r _ _ observed_persistent_key _ <<< "$persistent_spec"
+  IFS='|' read -r _ _ observed_systemd_key _ <<< "$systemd_spec"
   [ "$observed_release_key" = "$STALE_RELEASE_KEY" ] \
-    && [ "$observed_persistent_key" = "$STALE_PERSISTENT_KEY" ]
+    && [ "$observed_persistent_key" = "$STALE_PERSISTENT_KEY" ] \
+    && [ "$observed_systemd_key" = "$STALE_SYSTEMD_KEY" ]
 }
 
 tree_matches_snapshot() {
@@ -809,16 +859,92 @@ raise SystemExit(0 if observed == expected else 1)
 PY
 }
 
+restore_systemd_units_from() {
+  local destination="$1"
+  local attempt_root="$2"
+  [ -d "$attempt_root" ] && [ ! -L "$attempt_root" ] \
+    && [ -f "$attempt_root/armed" ] && [ ! -L "$attempt_root/armed" ] \
+    || return 1
+  python - "$destination" "$attempt_root/backup" <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+import sys
+import tempfile
+
+destination = Path(sys.argv[1])
+backup = Path(sys.argv[2])
+if destination.is_symlink() or not destination.is_dir() or backup.is_symlink():
+    raise SystemExit(1)
+metadata = json.loads((backup / "metadata.json").read_text(encoding="utf-8"))
+for name, entry in metadata.items():
+    target = destination / name
+    if target.parent != destination or target.is_symlink():
+        raise SystemExit(1)
+    if entry.get("existed") is True:
+        raw = (backup / name).read_bytes()
+        if (
+            hashlib.sha256(raw).hexdigest() != entry.get("sha256")
+            or len(raw) != entry.get("size")
+        ):
+            raise SystemExit(1)
+        descriptor, temporary_name = tempfile.mkstemp(
+            prefix=f".{name}.", suffix=".tmp", dir=destination
+        )
+        temporary = Path(temporary_name)
+        try:
+            with os.fdopen(descriptor, "wb") as stream:
+                descriptor = -1
+                stream.write(raw)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.chmod(temporary, int(entry.get("mode", 0o644)))
+            os.replace(temporary, target)
+        finally:
+            if descriptor != -1:
+                os.close(descriptor)
+            temporary.unlink(missing_ok=True)
+    elif entry.get("existed") is False:
+        if target.exists() or target.is_symlink():
+            target.unlink()
+    else:
+        raise SystemExit(1)
+if os.name != "nt":
+    descriptor = os.open(destination, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+for name, entry in metadata.items():
+    target = destination / name
+    if entry["existed"]:
+        raw = target.read_bytes()
+        if (
+            target.is_symlink()
+            or hashlib.sha256(raw).hexdigest() != entry["sha256"]
+            or len(raw) != entry["size"]
+            or target.stat().st_mode & 0o777 != int(entry.get("mode", 0o644))
+        ):
+            raise SystemExit(1)
+    elif target.exists() or target.is_symlink():
+        raise SystemExit(1)
+PY
+}
+
 write_stale_mutation_state() {
   local stage="$1"
-  MSYS2_ENV_CONV_EXCL='VL360_STALE_RELEASE_ROOT;VL360_STALE_PERSISTENT_ROOT;VL360_STALE_STAGING_ROOT;VL360_STALE_OLD_ROOT' \
+  MSYS2_ENV_CONV_EXCL='VL360_STALE_RELEASE_ROOT;VL360_STALE_PERSISTENT_ROOT;VL360_STALE_STAGING_ROOT;VL360_STALE_OLD_ROOT;VL360_STALE_RETIRED_ROOT;VL360_STALE_SYSTEMD_UNIT_DESTINATION;VL360_STALE_SYSTEMD_UNIT_ATTEMPT_ROOT' \
     VL360_STALE_RELEASE_ROOT="$STALE_RELEASE_ROOT" \
     VL360_STALE_PERSISTENT_ROOT="$STALE_PERSISTENT_ROOT" \
     VL360_STALE_STAGING_ROOT="$STALE_STAGING_ROOT" \
     VL360_STALE_OLD_ROOT="$STALE_OLD_ROOT" \
+    VL360_STALE_RETIRED_ROOT="$STALE_RETIRED_ROOT" \
+    VL360_STALE_SYSTEMD_UNIT_DESTINATION="$STALE_SYSTEMD_UNIT_DESTINATION" \
+    VL360_STALE_SYSTEMD_UNIT_ATTEMPT_ROOT="$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" \
     python - "$MUTATION_STATE" "$stage" "$STALE_STAGE" \
       "$STALE_ATTEMPT_ID" "$STALE_PID" "$STALE_LOCAL_REHEARSAL" \
-      "$STALE_RELEASE_KEY" "$STALE_PERSISTENT_KEY" <<'PY'
+      "$STALE_RELEASE_KEY" "$STALE_PERSISTENT_KEY" "$STALE_SYSTEMD_KEY" <<'PY'
 import json
 import os
 from pathlib import Path
@@ -836,9 +962,13 @@ expected = {
     "pid": int(sys.argv[5]),
     "release_key_sha256": sys.argv[7],
     "release_root": os.environ["VL360_STALE_RELEASE_ROOT"],
-    "schema_version": 2,
+    "retired_root": os.environ["VL360_STALE_RETIRED_ROOT"],
+    "schema_version": 3,
     "stage": sys.argv[3],
     "staging_root": os.environ["VL360_STALE_STAGING_ROOT"],
+    "systemd_key_sha256": sys.argv[9],
+    "systemd_unit_attempt_root": os.environ["VL360_STALE_SYSTEMD_UNIT_ATTEMPT_ROOT"],
+    "systemd_unit_destination": os.environ["VL360_STALE_SYSTEMD_UNIT_DESTINATION"],
 }
 if payload != expected:
     raise SystemExit(1)
@@ -907,26 +1037,31 @@ reconcile_stale_install_attempt() {
   [ "$LOCAL_REHEARSAL" = "$STALE_LOCAL_REHEARSAL" ] \
     || return 1
   [ "$CURRENT_RELEASE_KEY" = "$STALE_RELEASE_KEY" ] \
-    && [ "$CURRENT_PERSISTENT_KEY" = "$STALE_PERSISTENT_KEY" ] || return 1
+    && [ "$CURRENT_PERSISTENT_KEY" = "$STALE_PERSISTENT_KEY" ] \
+    && [ "$CURRENT_SYSTEMD_KEY" = "$STALE_SYSTEMD_KEY" ] || return 1
   [ -f "$MUTATION_STATE" ] && [ ! -L "$MUTATION_STATE" ] || return 1
   local entry_stage="$STALE_STAGE"
   local stale_stage_owner="$STALE_STAGING_ROOT.owner"
   local current_data="$STALE_RELEASE_ROOT/agent/data"
   local current_state persistent_state mount_state
-  local old_present=false release_present=false mount_verified=false
+  local old_present=false retired_present=false release_present=false
+  local mount_verified=false committed_recovery=false
   case "$STALE_STAGE" in
     detach-agent-data-armed|persistent-detached|swap-release-root-armed|\
-    root-swapped|persistent-restored|\
+    root-swapped|persistent-restored|systemd-units-armed|\
+    retire-old-root-armed|committed-cleanup|\
     recovery-remove-empty-persistent-root-armed|\
     recovery-detach-persistent-armed|recovery-remove-release-root-armed|\
     recovery-restore-old-root-armed|recovery-restore-persistent-armed|\
     recovery-create-persistent-root-armed|recovery-remove-staging-armed|\
-    recovery-remove-staging-owner-armed) ;;
+    recovery-remove-staging-owner-armed|\
+    recovery-remove-systemd-attempt-armed) ;;
     *) return 1 ;;
   esac
 
   for candidate in "$STALE_RELEASE_ROOT" "$STALE_PERSISTENT_ROOT" \
-    "$STALE_STAGING_ROOT" "$STALE_OLD_ROOT" "$stale_stage_owner"; do
+    "$STALE_STAGING_ROOT" "$STALE_OLD_ROOT" "$STALE_RETIRED_ROOT" \
+    "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" "$stale_stage_owner"; do
     [ ! -L "$candidate" ] || return 1
   done
   if [ -e "$STALE_OLD_ROOT" ]; then
@@ -937,6 +1072,10 @@ reconcile_stale_install_attempt() {
     [ -d "$STALE_RELEASE_ROOT" ] || return 1
     release_present=true
   fi
+  if [ -e "$STALE_RETIRED_ROOT" ]; then
+    [ -d "$STALE_RETIRED_ROOT" ] || return 1
+    retired_present=true
+  fi
   if [ -e "$STALE_STAGING_ROOT" ]; then
     [ -d "$STALE_STAGING_ROOT" ] || return 1
   fi
@@ -945,16 +1084,48 @@ reconcile_stale_install_attempt() {
     detach-agent-data-armed|persistent-detached)
       [ "$old_present" = false ] || return 1
       ;;
-    root-swapped|persistent-restored|\
+    root-swapped|persistent-restored|systemd-units-armed|\
     recovery-remove-empty-persistent-root-armed|\
     recovery-detach-persistent-armed|recovery-remove-release-root-armed)
       [ "$old_present" = true ] || return 1
       ;;
+    retire-old-root-armed)
+      if [ "$old_present" = true ] && [ "$retired_present" = false ]; then
+        :
+      elif [ "$old_present" = false ] && [ "$retired_present" = true ]; then
+        committed_recovery=true
+      else
+        return 1
+      fi
+      ;;
+    committed-cleanup)
+      [ "$old_present" = false ] || return 1
+      committed_recovery=true
+      ;;
     recovery-restore-persistent-armed|recovery-create-persistent-root-armed|\
-    recovery-remove-staging-armed|recovery-remove-staging-owner-armed)
+    recovery-remove-staging-armed|recovery-remove-staging-owner-armed|\
+    recovery-remove-systemd-attempt-armed)
       [ "$old_present" = false ] || return 1
       ;;
   esac
+
+  if [ "$committed_recovery" = false ] && [ "$retired_present" = true ]; then
+    return 1
+  fi
+  if [ -n "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ]; then
+    if [ -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ]; then
+      [ -d "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
+        && [ ! -L "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] || return 1
+      if [ -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT/armed" ]; then
+        [ "$committed_recovery" = true ] \
+          || restore_systemd_units_from "$STALE_SYSTEMD_UNIT_DESTINATION" \
+            "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" || return 1
+      fi
+    else
+      [ "$entry_stage" = recovery-remove-systemd-attempt-armed ] \
+        || [ "$entry_stage" = committed-cleanup ] || return 1
+    fi
+  fi
 
   if [ "$old_present" = true ]; then
     if [ "$release_present" = true ] && [ -e "$STALE_STAGING_ROOT" ]; then
@@ -1105,6 +1276,30 @@ reconcile_stale_install_attempt() {
     write_stale_mutation_state recovery-remove-staging-owner-armed || return 1
     rm -f -- "$stale_stage_owner" || return 1
   fi
+  if [ "$committed_recovery" = true ]; then
+    write_stale_mutation_state committed-cleanup || return 1
+    if [ -e "$STALE_RETIRED_ROOT" ] || [ -L "$STALE_RETIRED_ROOT" ]; then
+      [ -d "$STALE_RETIRED_ROOT" ] && [ ! -L "$STALE_RETIRED_ROOT" ] \
+        || return 1
+      rm -rf -- "$STALE_RETIRED_ROOT" || return 1
+    fi
+    [ ! -e "$STALE_RETIRED_ROOT" ] && [ ! -L "$STALE_RETIRED_ROOT" ] \
+      || return 1
+  fi
+  if [ -n "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ]; then
+    if [ -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT/armed" ] \
+      && [ "$committed_recovery" = false ]; then
+      restore_systemd_units_from "$STALE_SYSTEMD_UNIT_DESTINATION" \
+        "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" || return 1
+    fi
+    if [ "$committed_recovery" = false ]; then
+      write_stale_mutation_state recovery-remove-systemd-attempt-armed || return 1
+    fi
+    rm -f -- "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT/armed" || return 1
+    rm -rf -- "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" || return 1
+    [ ! -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
+      && [ ! -L "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] || return 1
+  fi
   clear_mutation_state
 }
 
@@ -1173,6 +1368,7 @@ reject_authority_role_collision() {
 }
 CURRENT_RELEASE_KEY=''
 CURRENT_PERSISTENT_KEY=''
+CURRENT_SYSTEMD_KEY=''
 for target_kind in release persistent systemd; do
   case "$target_kind" in
     release) target_authority="$RELEASE_ROOT" ;;
@@ -1184,6 +1380,7 @@ for target_kind in release persistent systemd; do
   case "$target_kind" in
     release) CURRENT_RELEASE_KEY="$target_key" ;;
     persistent) CURRENT_PERSISTENT_KEY="$target_key" ;;
+    systemd) CURRENT_SYSTEMD_KEY="$target_key" ;;
   esac
   if add_target_lock_request "$target_kind" "$target_authority" "$target_key"; then
     :
@@ -1194,7 +1391,7 @@ for target_kind in release persistent systemd; do
   fi
 done
 if [ "$PENDING_STALE_RECOVERY" = true ]; then
-  for target_kind in release persistent; do
+  for target_kind in release persistent systemd; do
     case "$target_kind" in
       release)
         target_authority="$STALE_RELEASE_ROOT"
@@ -1203,6 +1400,10 @@ if [ "$PENDING_STALE_RECOVERY" = true ]; then
       persistent)
         target_authority="$STALE_PERSISTENT_ROOT"
         target_key="$STALE_PERSISTENT_KEY"
+        ;;
+      systemd)
+        target_authority="$STALE_SYSTEMD_UNIT_DESTINATION"
+        target_key="$STALE_SYSTEMD_KEY"
         ;;
     esac
     if add_target_lock_request "$target_kind" "$target_authority" "$target_key"; then
@@ -1256,6 +1457,7 @@ esac
 PINNED_ARCHIVE_ROOT=''
 STAGING_ROOT=''
 OLD_ROOT=''
+RETIRED_ROOT=''
 STAGING_OWNER_MARKER=''
 STAGING_CLEANUP_ARMED=false
 cleanup_pinned_archive() {
@@ -1300,6 +1502,7 @@ python "$VERIFY_SCRIPT" \
 
 STAGING_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage.$$"
 OLD_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-old.$$"
+RETIRED_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-retired.$ATTEMPT_ID"
 STAGING_OWNER_MARKER="$STAGING_ROOT.owner"
 UNIT_ATTEMPT_ROOT=''
 UNIT_BACKUP_ROOT=''
@@ -1312,7 +1515,9 @@ for stale_attempt in "$EVIDENCE_DIR"/.systemd-unit-attempt.*; do
 done
 [ ! -e "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ] \
   && [ ! -e "$STAGING_OWNER_MARKER" ] && [ ! -L "$STAGING_OWNER_MARKER" ] \
-  && [ ! -e "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ] || die 'staging-path-exists'
+  && [ ! -e "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ] \
+  && [ ! -e "$RETIRED_ROOT" ] && [ ! -L "$RETIRED_ROOT" ] \
+  || die 'staging-path-exists'
 STAGING_CLEANUP_ARMED=true
 printf '%s\n' "$ATTEMPT_ID" > "$STAGING_OWNER_MARKER"
 mkdir -- "$STAGING_ROOT"
@@ -1426,6 +1631,7 @@ MUTATION_STARTED=false
 PERSISTENT_DETACHED=false
 PERSISTENT_ATTACHED_TO_RELEASE=true
 OLD_ROOT_READY=false
+INSTALL_COMMITTED=false
 INSTALL_COMPLETE=false
 INSTALL_FAILURE_POINT=pre-mutation
 
@@ -1516,7 +1722,7 @@ disarm_systemd_unit_attempt() {
   fi
 }
 
-install_systemd_units() {
+prepare_systemd_unit_backup() {
   python - "$RELEASE_ROOT" "$SYSTEMD_UNIT_DESTINATION" "$UNIT_BACKUP_ROOT" "$UNIT_MUTATION_MARKER" <<'PY'
 import hashlib
 import json
@@ -1569,9 +1775,46 @@ for relative in UNIT_PATHS:
     json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
 )
 marker.write_text("armed\n", encoding="ascii")
+PY
+}
+
+install_systemd_units() {
+  python - "$RELEASE_ROOT" "$SYSTEMD_UNIT_DESTINATION" <<'PY'
+import hashlib
+import json
+import os
+from pathlib import Path
+import sys
+import tempfile
+
+UNIT_PATHS = (
+    "ops/systemd/vl-agent.service",
+    "ops/systemd/vl-nuxt.service",
+    "ops/systemd/vl-bot.service",
+    "ops/systemd/vl-watchdog.service",
+    "ops/systemd/vl-watchdog.timer",
+)
+
+release = Path(sys.argv[1])
+destination = Path(sys.argv[2])
+manifest = json.loads((release / "launch-release-manifest.json").read_text(encoding="utf-8"))
+declarations = manifest.get("members")
+if not isinstance(declarations, dict) or destination.is_symlink() or not destination.is_dir():
+    raise SystemExit("systemd unit destination is not a real directory")
 for relative in UNIT_PATHS:
     source = release / relative
     target = destination / Path(relative).name
+    raw = source.read_bytes()
+    declaration = declarations.get(relative)
+    if (
+        not isinstance(declaration, dict)
+        or source.is_symlink()
+        or declaration.get("sha256") != hashlib.sha256(raw).hexdigest()
+        or declaration.get("size") != len(raw)
+        or target.is_symlink()
+        or (target.exists() and not target.is_file())
+    ):
+        raise SystemExit(f"systemd unit source or destination is unsafe: {relative}")
     descriptor, name = tempfile.mkstemp(
         prefix=f".{target.name}.", suffix=".tmp", dir=destination
     )
@@ -1579,7 +1822,6 @@ for relative in UNIT_PATHS:
     try:
         with os.fdopen(descriptor, "wb") as stream:
             descriptor = -1
-            raw = source.read_bytes()
             stream.write(raw)
             stream.flush()
             os.fsync(stream.fileno())
@@ -1600,45 +1842,7 @@ PY
 
 restore_systemd_units() {
   [ -n "$UNIT_MUTATION_MARKER" ] && [ -f "$UNIT_MUTATION_MARKER" ] || return 0
-  python - "$SYSTEMD_UNIT_DESTINATION" "$UNIT_BACKUP_ROOT" <<'PY'
-import json
-import os
-from pathlib import Path
-import sys
-import tempfile
-
-destination = Path(sys.argv[1])
-backup = Path(sys.argv[2])
-metadata = json.loads((backup / "metadata.json").read_text(encoding="utf-8"))
-for name, entry in metadata.items():
-    target = destination / name
-    if entry.get("existed") is True:
-        raw = (backup / name).read_bytes()
-        descriptor, temporary_name = tempfile.mkstemp(
-            prefix=f".{name}.", suffix=".tmp", dir=destination
-        )
-        temporary = Path(temporary_name)
-        try:
-            with os.fdopen(descriptor, "wb") as stream:
-                descriptor = -1
-                stream.write(raw)
-                stream.flush()
-                os.fsync(stream.fileno())
-            os.chmod(temporary, int(entry.get("mode", 0o644)))
-            os.replace(temporary, target)
-        finally:
-            if descriptor != -1:
-                os.close(descriptor)
-            temporary.unlink(missing_ok=True)
-    elif target.exists() or target.is_symlink():
-        target.unlink()
-if os.name != "nt":
-    descriptor = os.open(destination, os.O_RDONLY)
-    try:
-        os.fsync(descriptor)
-    finally:
-        os.close(descriptor)
-PY
+  restore_systemd_units_from "$SYSTEMD_UNIT_DESTINATION" "$UNIT_ATTEMPT_ROOT"
 }
 
 detach_persistent_from_release_for_recovery() {
@@ -1705,7 +1909,8 @@ install_recovery() {
   local persistent_restored=true
   local systemd_units_restored=true
 
-  if [ "$INSTALL_COMPLETE" != true ] && [ "$MUTATION_STARTED" = true ]; then
+  if [ "$INSTALL_COMPLETE" != true ] && [ "$INSTALL_COMMITTED" != true ] \
+    && [ "$MUTATION_STARTED" = true ]; then
     restore_systemd_units >/dev/null 2>&1 || systemd_units_restored=false
 
     if [ "$OLD_ROOT_READY" = true ] && [ "$PERSISTENT_ATTACHED_TO_RELEASE" = true ]; then
@@ -1872,6 +2077,8 @@ cmp -s -- "$SNAPSHOT_BEFORE" "$SNAPSHOT_AFTER" || die 'persistent-agent-data-byt
 
 INSTALL_FAILURE_POINT=install-systemd-units
 prepare_systemd_unit_attempt
+write_mutation_state systemd-units-armed
+prepare_systemd_unit_backup
 install_systemd_units
 run_authority_hook systemd-units "$UNIT_VERIFY_HOOK" \
   --unit-root "$SYSTEMD_UNIT_DESTINATION" \
@@ -1912,15 +2119,22 @@ payload = {
 Path(sys.argv[1]).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
 
-INSTALL_FAILURE_POINT=remove-old-root
-rm -rf -- "$OLD_ROOT"
+INSTALL_FAILURE_POINT=retire-old-root
+write_mutation_state retire-old-root-armed
+mv -- "$OLD_ROOT" "$RETIRED_ROOT"
 OLD_ROOT_READY=false
-INSTALL_COMPLETE=true
-clear_mutation_state
+INSTALL_COMMITTED=true
+write_mutation_state committed-cleanup
+INSTALL_FAILURE_POINT=remove-retired-old-root
+rm -rf -- "$RETIRED_ROOT"
+[ ! -e "$RETIRED_ROOT" ] && [ ! -L "$RETIRED_ROOT" ] \
+  || die 'retired-old-root-cleanup-incomplete'
 if disarm_systemd_unit_attempt; then
   record_systemd_unit_cleanup passed 0
 else
   cleanup_status=$?
   record_systemd_unit_cleanup failed "$cleanup_status" || true
 fi
+INSTALL_COMPLETE=true
+clear_mutation_state
 exit 0

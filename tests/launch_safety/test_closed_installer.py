@@ -2962,6 +2962,128 @@ def test_same_evidence_retry_during_units_restores_current_not_stale_destination
     assert recovery["systemd_units_restored"] is True
 
 
+def _interrupt_after_systemd_mutation(package, case_root: Path, prepared):
+    release, _, evidence, _, _, _, values = prepared
+    unit_destination = case_root / "runtime" / "systemd-units"
+    unit_destination.mkdir()
+    for name in SYSTEMD_UNIT_NAMES:
+        (unit_destination / name).write_bytes(f"legacy-{name}\n".encode("ascii"))
+    legacy_units = _snapshot_tree(unit_destination)
+    interrupted = case_root / "interrupted-systemd-units"
+    unit_hook = case_root / "runtime" / "units-hook.sh"
+    unit_hook.write_text(
+        "#!/usr/bin/env bash\n"
+        f": > '{_bash_path(interrupted)}'\n"
+        "kill -9 \"$PPID\"\n"
+        "exit 97\n",
+        encoding="ascii",
+    )
+    unit_hook.chmod(0o755)
+    env = os.environ.copy()
+    env.update(values)
+
+    result = subprocess.run(
+        _installer_command(package, case_root, prepared),
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0, result.stderr + result.stdout
+    assert interrupted.is_file()
+    assert _snapshot_tree(unit_destination) != legacy_units
+    journal = evidence / "install-mutation-state.json"
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    attempts = list(evidence.glob(".systemd-unit-attempt.*"))
+    assert len(attempts) == 1
+    assert (attempts[0] / "armed").is_file()
+    assert payload["stage"] == "systemd-units-armed"
+    assert payload["systemd_unit_destination"] == _bash_path(unit_destination)
+    assert payload["systemd_unit_attempt_root"] == _bash_path(attempts[0])
+    assert len(payload["systemd_key_sha256"]) == 64
+    return journal, attempts[0], unit_destination, legacy_units
+
+
+def test_sigkill_after_systemd_mutation_restores_original_units_before_retry(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "sigkill-systemd-units"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    journal, _, unit_destination, legacy_units = _interrupt_after_systemd_mutation(
+        closed_package, case_root, prepared
+    )
+    unit_hook = case_root / "runtime" / "units-hook.sh"
+    unit_hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "printf '%s|%s\\n' 'systemd-units' \"$*\" >> \"$INSTALL_HOOK_LOG\"\n",
+        encoding="ascii",
+    )
+    unit_hook.chmod(0o755)
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert _snapshot_tree(unit_destination) == legacy_units
+    assert not journal.exists()
+    assert _unit_attempt_artifacts(evidence) == []
+
+
+def test_systemd_stale_recovery_rejects_different_runtime_without_reset(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "systemd-runtime-mismatch"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, _, _, _, values = prepared
+    journal, attempt, unit_destination, _ = _interrupt_after_systemd_mutation(
+        closed_package, case_root, prepared
+    )
+    journal_before = journal.read_bytes()
+    attempt_before = _snapshot_tree(attempt)
+    release_before = _snapshot_tree(release)
+    persistent_before = _snapshot_tree(persistent)
+    units_before = _snapshot_tree(unit_destination)
+    different_runtime = case_root / "different-runtime"
+    different_runtime.mkdir()
+    env = os.environ.copy()
+    env.update(values)
+
+    retry = subprocess.run(
+        _installer_command(
+            closed_package,
+            case_root,
+            prepared,
+            runtime_arg=_bash_path(different_runtime),
+        ),
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert journal.read_bytes() == journal_before
+    assert _snapshot_tree(attempt) == attempt_before
+    assert _snapshot_tree(release) == release_before
+    assert _snapshot_tree(persistent) == persistent_before
+    assert _snapshot_tree(unit_destination) == units_before
+
+
 def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_safe(
     tmp_path: Path, closed_package
 ):
@@ -3030,8 +3152,9 @@ def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_saf
     assert lock["status"] == "released"
 
 
-def test_old_root_cleanup_failure_rolls_back_and_retry_succeeds(
-    tmp_path: Path, closed_package
+@pytest.mark.parametrize("rm_status", (0, 61), ids=("fake-success", "partial-failure"))
+def test_old_root_cleanup_failure_keeps_committed_release_and_retry_finishes_cleanup(
+    tmp_path: Path, closed_package, rm_status: int
 ):
     if not BASH.is_file():
         pytest.skip("Git Bash is unavailable")
@@ -3046,16 +3169,17 @@ def test_old_root_cleanup_failure_rolls_back_and_retry_succeeds(
         _,
         _,
     ) = prepared
-    failure_used = case_root / "old-root-cleanup-failure-used"
+    failure_used = case_root / f"old-root-cleanup-failure-used-{rm_status}"
     bash_env = case_root / "old-root-cleanup-failure.bash"
     bash_env.write_text(
         "rm() {\n"
         "for argument in \"$@\"; do\n"
         "  case \"$(basename -- \"$argument\")\" in\n"
-        "    .release.closed-old.*)\n"
+        "    .release.closed-retired.*)\n"
         f"      if [ ! -f '{_bash_path(failure_used)}' ]; then\n"
         f"        : > '{_bash_path(failure_used)}'\n"
-        "        return 61\n"
+        "        /usr/bin/rm -f -- \"$argument/old-release-marker.txt\"\n"
+        f"        return {rm_status}\n"
         "      fi\n"
         "      ;;\n"
         "  esac\n"
@@ -3072,23 +3196,35 @@ def test_old_root_cleanup_failure_rolls_back_and_retry_succeeds(
         env_overrides={"BASH_ENV": _bash_path(bash_env)},
     )
 
-    assert first.returncode == 61, first.stderr + first.stdout
+    assert first.returncode != 0, first.stderr + first.stdout
     assert failure_used.is_file()
-    assert _snapshot_tree(release) == before_release
-    assert _snapshot_tree(persistent) == before_persistent
-    recovery = json.loads(
-        (evidence / "install-recovery.json").read_text(encoding="utf-8")
-    )
-    assert recovery["status"] == "rolled-back"
-    assert recovery["failure_point"] == "remove-old-root"
-    assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
-    assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
-
-    second = _invoke_installer(closed_package, case_root, prepared)
-
-    assert second.returncode == 0, second.stderr + second.stdout
     assert (release / "launch-release-manifest.json").is_file()
     assert not (release / "old-release-marker.txt").exists()
     assert _snapshot_tree(persistent) == before_persistent
+    installed_release = _snapshot_tree(release)
+    retired_roots = list(release.parent.glob(f".{release.name}.closed-retired.*"))
+    assert len(retired_roots) == 1
+    retired_root = retired_roots[0]
+    assert not (retired_root / "old-release-marker.txt").exists()
+    journal = evidence / "install-mutation-state.json"
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    assert payload["stage"] == "committed-cleanup"
+    assert payload["retired_root"] == _bash_path(retired_root)
     assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
     assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
+
+    second = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert second.returncode == 19, second.stderr + second.stdout
+    assert _snapshot_tree(release) == installed_release
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not journal.exists()
+    assert _unit_attempt_artifacts(evidence) == []
+    assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
+    assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
+    assert not list(release.parent.glob(f".{release.name}.closed-retired.*"))
