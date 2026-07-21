@@ -84,25 +84,19 @@ LOCK_TERMINAL_RECORDED=false
 lock_spec() {
   local kind="$1"
   local authority="$2"
-  local local_rehearsal="$3"
   local lock_root
-  if [ "$local_rehearsal" = true ] || [ "$kind" = evidence ]; then
-    lock_root="$(CDPATH= cd -- "$(dirname -- "$authority")" && pwd -P)/.vl360-install-locks"
-  else
-    lock_root=/run/lock/vl360-install-closed-release
-  fi
+  lock_root="$(CDPATH= cd -- "$(dirname -- "$authority")" && pwd -P)/.vl360-install-locks"
   local key
-  key="$(python - "$kind" "$authority" <<'PY'
+  key="$(python - "$authority" <<'PY'
 import hashlib
 import os
 import sys
 
-kind = sys.argv[1]
-authority = os.path.normcase(os.path.realpath(sys.argv[2]))
-print(hashlib.sha256(f"{kind}\0{authority}".encode("utf-8")).hexdigest())
+authority = os.path.normcase(os.path.realpath(sys.argv[1]))
+print(hashlib.sha256(authority.encode("utf-8")).hexdigest())
 PY
 )"
-  printf '%s|%s|%s|%s\n' "$lock_root/$kind-$key.lock" "$lock_root" "$key" "$kind"
+  printf '%s|%s|%s|%s\n' "$lock_root/authority-$key.lock" "$lock_root" "$key" "$kind"
 }
 
 write_lock_owner() {
@@ -120,20 +114,33 @@ lock_owner_is_live() {
   owner="$(python - "$lock_dir/owner.json" <<'PY'
 import json
 from pathlib import Path
+import re
 import sys
 
 try:
-    payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+    raw = Path(sys.argv[1]).read_text(encoding="utf-8")
+except FileNotFoundError:
+    raise SystemExit(2)
+try:
+    payload = json.loads(raw)
     pid = int(payload["pid"])
     start = str(payload["process_start_identity"])
-    attempt = str(payload["attempt_id"])
-except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+except json.JSONDecodeError:
+    pid_match = re.search(r'"pid"\s*:\s*([0-9]+)', raw)
+    start_match = re.search(
+        r'"process_start_identity"\s*:\s*"([^"\\]*)"', raw
+    )
+    if pid_match is None or start_match is None:
+        raise SystemExit(2)
+    pid = int(pid_match.group(1))
+    start = start_match.group(1)
+except (KeyError, TypeError, ValueError):
     raise SystemExit(2)
-print(f"{pid}\t{start}\t{attempt}")
+print(f"{pid}\t{start}")
 PY
 )" || return 2
-  local owner_pid owner_start owner_attempt
-  IFS=$'\t' read -r owner_pid owner_start owner_attempt <<< "$owner"
+  local owner_pid owner_start
+  IFS=$'\t' read -r owner_pid owner_start <<< "$owner"
   kill -0 "$owner_pid" 2>/dev/null || return 1
   local current_start
   current_start="$(process_start_identity "$owner_pid" 2>/dev/null)" || return 0
@@ -185,6 +192,24 @@ release_owned_lock() {
   return 1
 }
 
+publish_owned_lock() {
+  local lock_dir="$1"
+  local pending="$lock_dir.pending.$ATTEMPT_ID"
+  mkdir -- "$pending" 2>/dev/null || return 11
+  if ! write_lock_owner "$pending"; then
+    remove_lock_dir "$pending" || true
+    return 11
+  fi
+  if mv -T -n -- "$pending" "$lock_dir" 2>/dev/null \
+    && [ ! -e "$pending" ] \
+    && lock_is_owned_by_attempt "$lock_dir"; then
+    return 0
+  fi
+  remove_lock_dir "$pending" || true
+  [ -e "$lock_dir" ] || [ -L "$lock_dir" ] || return 11
+  return 10
+}
+
 acquire_authority_lock() {
   local kind="$1"
   local authority="$2"
@@ -200,41 +225,40 @@ acquire_authority_lock() {
   fi
   [ -d "$lock_root" ] && [ ! -L "$lock_root" ] || return 11
 
-  local retry owner_state tombstone
+  local retry owner_state publish_state tombstone
   for retry in 1 2 3; do
-    if mkdir -- "$lock_dir" 2>/dev/null; then
-      if ! write_lock_owner "$lock_dir"; then
-        rm -rf -- "$lock_dir" >/dev/null 2>&1 || true
-        return 11
-      fi
+    if publish_owned_lock "$lock_dir"; then
       HELD_LOCK_DIRS+=("$lock_dir")
       HELD_LOCK_ROOTS+=("$lock_root")
       HELD_LOCK_KEYS+=("$lock_key")
       HELD_LOCK_KINDS+=("$lock_kind")
       return 0
+    else
+      publish_state=$?
     fi
+    [ "$publish_state" -eq 10 ] || return "$publish_state"
     [ -d "$lock_dir" ] || continue
     if lock_owner_is_live "$lock_dir"; then
       return 10
     else
       owner_state=$?
     fi
-    [ "$owner_state" -eq 1 ] || return 10
+    case "$owner_state" in 1|2) ;; *) return 10 ;; esac
     tombstone="$lock_dir.stale.$ATTEMPT_ID"
     if mv -- "$lock_dir" "$tombstone" 2>/dev/null; then
-      if mkdir -- "$lock_dir" 2>/dev/null; then
-        if write_lock_owner "$lock_dir"; then
-          rm -rf -- "$tombstone" >/dev/null 2>&1 || true
-          RECLAIMED_STALE_LOCKS=$((RECLAIMED_STALE_LOCKS + 1))
-          HELD_LOCK_DIRS+=("$lock_dir")
-          HELD_LOCK_ROOTS+=("$lock_root")
-          HELD_LOCK_KEYS+=("$lock_key")
-          HELD_LOCK_KINDS+=("$lock_kind")
-          return 0
-        fi
-        rm -rf -- "$lock_dir" >/dev/null 2>&1 || true
+      if publish_owned_lock "$lock_dir"; then
+        rm -rf -- "$tombstone" >/dev/null 2>&1 || true
+        RECLAIMED_STALE_LOCKS=$((RECLAIMED_STALE_LOCKS + 1))
+        HELD_LOCK_DIRS+=("$lock_dir")
+        HELD_LOCK_ROOTS+=("$lock_root")
+        HELD_LOCK_KEYS+=("$lock_key")
+        HELD_LOCK_KINDS+=("$lock_kind")
+        return 0
+      else
+        publish_state=$?
       fi
       rm -rf -- "$tombstone" >/dev/null 2>&1 || true
+      [ "$publish_state" -eq 10 ] || return "$publish_state"
     fi
   done
   return 10
