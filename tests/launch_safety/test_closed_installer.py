@@ -3006,6 +3006,105 @@ def _interrupt_after_systemd_mutation(package, case_root: Path, prepared):
     return journal, attempts[0], unit_destination, legacy_units
 
 
+def _rewrite_systemd_backup_metadata(attempt: Path, mutation: str) -> None:
+    metadata_path = attempt / "backup" / "metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    if mutation == "unexpected-service":
+        metadata["unrelated.service"] = {"existed": False, "mode": 0}
+    elif mutation == "missing-service":
+        metadata.pop("vl-watchdog.timer")
+    elif mutation == "unexpected-field":
+        metadata["vl-watchdog.timer"]["destination"] = "untrusted"
+    elif mutation == "wrong-type":
+        metadata["vl-watchdog.timer"]["mode"] = "420"
+    elif mutation == "path-key":
+        metadata["../protected.service"] = metadata.pop("vl-watchdog.timer")
+    else:
+        raise AssertionError(f"unknown mutation: {mutation}")
+    metadata_path.write_text(
+        json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+@pytest.mark.parametrize(
+    "metadata_mutation",
+    (
+        "unexpected-service",
+        "missing-service",
+        "unexpected-field",
+        "wrong-type",
+        "path-key",
+    ),
+)
+def test_stale_systemd_recovery_rejects_noncanonical_metadata_before_mutation(
+    tmp_path: Path, closed_package, metadata_mutation: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"systemd-metadata-{metadata_mutation}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, _, _, _, _ = prepared
+    journal, attempt, unit_destination, _ = _interrupt_after_systemd_mutation(
+        closed_package, case_root, prepared
+    )
+    protected = unit_destination / "unrelated.service"
+    protected.write_bytes(b"must-survive\n")
+    _rewrite_systemd_backup_metadata(attempt, metadata_mutation)
+    journal_before = journal.read_bytes()
+    attempt_before = _snapshot_tree(attempt)
+    release_before = _snapshot_tree(release)
+    persistent_before = _snapshot_tree(persistent)
+    units_before = _snapshot_tree(unit_destination)
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert journal.read_bytes() == journal_before
+    assert _snapshot_tree(attempt) == attempt_before
+    assert _snapshot_tree(release) == release_before
+    assert _snapshot_tree(persistent) == persistent_before
+    assert _snapshot_tree(unit_destination) == units_before
+    assert protected.read_bytes() == b"must-survive\n"
+
+
+def test_systemd_recovery_material_is_durable_before_journal_and_unit_mutation():
+    source = INSTALL.read_text(encoding="utf-8")
+    flow = source[source.index("INSTALL_FAILURE_POINT=install-systemd-units") :]
+    assert flow.index("prepare_systemd_unit_attempt") < flow.index(
+        "prepare_systemd_unit_backup"
+    ) < flow.index("write_mutation_state systemd-units-armed") < flow.index(
+        "install_systemd_units"
+    )
+
+    backup = source[
+        source.index("prepare_systemd_unit_backup()") : source.index(
+            "install_systemd_units()"
+        )
+    ]
+    for required in (
+        "write_durable_bytes(backup_file",
+        "write_durable_text(metadata_path",
+        "write_durable_text(marker",
+        "fsync_directory(backup)",
+        "fsync_directory(backup.parent)",
+        "fsync_directory(backup.parent.parent)",
+    ):
+        assert required in backup
+
+    journal = source[
+        source.index("write_mutation_state()") : source.index("clear_mutation_state()")
+    ]
+    assert journal.index("os.replace(temporary, path)") < journal.index(
+        "fsync_directory(path.parent)"
+    )
+
+
 def test_sigkill_after_systemd_mutation_restores_original_units_before_retry(
     tmp_path: Path, closed_package
 ):
@@ -3150,6 +3249,66 @@ def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_saf
     assert _unit_attempt_artifacts(evidence) == []
     lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
     assert lock["status"] == "released"
+
+
+def test_false_success_systemd_cleanup_remains_nonzero_and_recoverable(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "systemd-cleanup-false-success"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, evidence, _, _, _, _ = prepared
+    fake_success_used = case_root / "cleanup-fake-success-used"
+    bash_env = case_root / "cleanup-fake-success.bash"
+    bash_env.write_text(
+        "rm() {\n"
+        "for argument in \"$@\"; do\n"
+        "  case \"$(basename -- \"$argument\")\" in\n"
+        "    .systemd-unit-attempt.*)\n"
+        f"      if [ ! -f '{_bash_path(fake_success_used)}' ]; then\n"
+        f"        : > '{_bash_path(fake_success_used)}'\n"
+        "        return 0\n"
+        "      fi\n"
+        "      ;;\n"
+        "  esac\n"
+        "done\n"
+        "/usr/bin/rm \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert first.returncode != 0, first.stderr + first.stdout
+    assert fake_success_used.is_file()
+    assert (release / "launch-release-manifest.json").is_file()
+    attempts = list(evidence.glob(".systemd-unit-attempt.*"))
+    assert len(attempts) == 1
+    assert (attempts[0] / "backup" / "metadata.json").is_file()
+    journal = evidence / "install-mutation-state.json"
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == "committed-cleanup"
+    cleanup = json.loads(
+        (evidence / "systemd-unit-cleanup.json").read_text(encoding="utf-8")
+    )
+    assert cleanup["status"] == "failed"
+    assert cleanup["exit_code"] != 0
+
+    second = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert second.returncode == 19, second.stderr + second.stdout
+    assert not journal.exists()
+    assert _unit_attempt_artifacts(evidence) == []
 
 
 @pytest.mark.parametrize("rm_status", (0, 61), ids=("fake-success", "partial-failure"))

@@ -677,6 +677,15 @@ from pathlib import Path
 import sys
 import tempfile
 
+def fsync_directory(directory):
+    if os.name == "nt":
+        return
+    descriptor = os.open(directory, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
 path = Path(sys.argv[1])
 payload = {
     "attempt_id": sys.argv[3],
@@ -705,6 +714,7 @@ try:
         stream.flush()
         os.fsync(stream.fileno())
     os.replace(temporary, path)
+    fsync_directory(path.parent)
 finally:
     if descriptor != -1:
         os.close(descriptor)
@@ -870,27 +880,77 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import sys
 import tempfile
 
+UNIT_NAMES = (
+    "vl-agent.service",
+    "vl-nuxt.service",
+    "vl-bot.service",
+    "vl-watchdog.service",
+    "vl-watchdog.timer",
+)
+
 destination = Path(sys.argv[1])
 backup = Path(sys.argv[2])
-if destination.is_symlink() or not destination.is_dir() or backup.is_symlink():
+metadata_path = backup / "metadata.json"
+if (
+    destination.is_symlink()
+    or not destination.is_dir()
+    or backup.is_symlink()
+    or not backup.is_dir()
+    or metadata_path.is_symlink()
+    or not metadata_path.is_file()
+):
     raise SystemExit(1)
-metadata = json.loads((backup / "metadata.json").read_text(encoding="utf-8"))
-for name, entry in metadata.items():
+metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+if type(metadata) is not dict or set(metadata) != set(UNIT_NAMES):
+    raise SystemExit(1)
+validated = []
+for name in UNIT_NAMES:
+    entry = metadata[name]
     target = destination / name
-    if target.parent != destination or target.is_symlink():
+    if (
+        type(entry) is not dict
+        or type(entry.get("existed")) is not bool
+        or type(entry.get("mode")) is not int
+        or isinstance(entry.get("mode"), bool)
+        or not 0 <= entry["mode"] <= 0o777
+        or target.parent != destination
+        or target.is_symlink()
+        or (target.exists() and not target.is_file())
+    ):
         raise SystemExit(1)
-    if entry.get("existed") is True:
-        raw = (backup / name).read_bytes()
+    if entry["existed"]:
         if (
-            hashlib.sha256(raw).hexdigest() != entry.get("sha256")
-            or len(raw) != entry.get("size")
+            set(entry) != {"existed", "mode", "sha256", "size"}
+            or type(entry["sha256"]) is not str
+            or re.fullmatch(r"[0-9a-f]{64}", entry["sha256"]) is None
+            or type(entry["size"]) is not int
+            or isinstance(entry["size"], bool)
+            or entry["size"] < 0
         ):
             raise SystemExit(1)
+        backup_file = backup / name
+        if backup_file.is_symlink() or not backup_file.is_file():
+            raise SystemExit(1)
+        raw = backup_file.read_bytes()
+        if (
+            hashlib.sha256(raw).hexdigest() != entry["sha256"]
+            or len(raw) != entry["size"]
+        ):
+            raise SystemExit(1)
+        validated.append((target, entry, raw))
+    else:
+        if set(entry) != {"existed", "mode"} or entry["mode"] != 0:
+            raise SystemExit(1)
+        validated.append((target, entry, None))
+
+for target, entry, raw in validated:
+    if entry["existed"]:
         descriptor, temporary_name = tempfile.mkstemp(
-            prefix=f".{name}.", suffix=".tmp", dir=destination
+            prefix=f".{target.name}.", suffix=".tmp", dir=destination
         )
         temporary = Path(temporary_name)
         try:
@@ -899,32 +959,29 @@ for name, entry in metadata.items():
                 stream.write(raw)
                 stream.flush()
                 os.fsync(stream.fileno())
-            os.chmod(temporary, int(entry.get("mode", 0o644)))
+            os.chmod(temporary, entry["mode"])
             os.replace(temporary, target)
         finally:
             if descriptor != -1:
                 os.close(descriptor)
             temporary.unlink(missing_ok=True)
-    elif entry.get("existed") is False:
+    else:
         if target.exists() or target.is_symlink():
             target.unlink()
-    else:
-        raise SystemExit(1)
 if os.name != "nt":
     descriptor = os.open(destination, os.O_RDONLY)
     try:
         os.fsync(descriptor)
     finally:
         os.close(descriptor)
-for name, entry in metadata.items():
-    target = destination / name
+for target, entry, _raw in validated:
     if entry["existed"]:
         raw = target.read_bytes()
         if (
             target.is_symlink()
             or hashlib.sha256(raw).hexdigest() != entry["sha256"]
             or len(raw) != entry["size"]
-            or target.stat().st_mode & 0o777 != int(entry.get("mode", 0o644))
+            or target.stat().st_mode & 0o777 != entry["mode"]
         ):
             raise SystemExit(1)
     elif target.exists() or target.is_symlink():
@@ -1711,15 +1768,27 @@ prepare_systemd_unit_attempt() {
 
 disarm_systemd_unit_attempt() {
   [ -n "$UNIT_ATTEMPT_ROOT" ] || return 0
-  rm -f -- "$UNIT_MUTATION_MARKER" || true
+  local cleanup_status=0
+  rm -f -- "$UNIT_MUTATION_MARKER" || cleanup_status=$?
   if rm -rf -- "$UNIT_ATTEMPT_ROOT"; then
+    :
+  else
+    local rm_status=$?
+    [ "$cleanup_status" -ne 0 ] || cleanup_status="$rm_status"
+  fi
+  for artifact in "$UNIT_ATTEMPT_ROOT" "$UNIT_MUTATION_MARKER" \
+    "$UNIT_BACKUP_ROOT" "$UNIT_BACKUP_ROOT/metadata.json"; do
+    if [ -e "$artifact" ] || [ -L "$artifact" ]; then
+      [ "$cleanup_status" -ne 0 ] || cleanup_status=1
+    fi
+  done
+  if [ "$cleanup_status" -eq 0 ]; then
     UNIT_ATTEMPT_ROOT=''
     UNIT_BACKUP_ROOT=''
     UNIT_MUTATION_MARKER=''
     return 0
-  else
-    return $?
   fi
+  return "$cleanup_status"
 }
 
 prepare_systemd_unit_backup() {
@@ -1738,6 +1807,27 @@ UNIT_PATHS = (
     "ops/systemd/vl-watchdog.service",
     "ops/systemd/vl-watchdog.timer",
 )
+
+def write_durable_bytes(path, raw):
+    with path.open("wb") as stream:
+        stream.write(raw)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+def write_durable_text(path, text):
+    with path.open("w", encoding="utf-8", newline="\n") as stream:
+        stream.write(text)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+def fsync_directory(directory):
+    if os.name == "nt":
+        return
+    descriptor = os.open(directory, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
 
 release = Path(sys.argv[1])
 destination = Path(sys.argv[2])
@@ -1767,14 +1857,18 @@ for relative in UNIT_PATHS:
     entry = {"existed": existed, "mode": target.stat().st_mode & 0o777 if existed else 0}
     if existed:
         backup_file = backup / target.name
-        backup_file.write_bytes(target.read_bytes())
-        entry["sha256"] = hashlib.sha256(backup_file.read_bytes()).hexdigest()
-        entry["size"] = backup_file.stat().st_size
+        raw = target.read_bytes()
+        write_durable_bytes(backup_file, raw)
+        entry["sha256"] = hashlib.sha256(raw).hexdigest()
+        entry["size"] = len(raw)
     metadata[target.name] = entry
-(backup / "metadata.json").write_text(
-    json.dumps(metadata, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-)
-marker.write_text("armed\n", encoding="ascii")
+metadata_path = backup / "metadata.json"
+metadata_text = json.dumps(metadata, indent=2, sort_keys=True) + "\n"
+write_durable_text(metadata_path, metadata_text)
+write_durable_text(marker, "armed\n")
+fsync_directory(backup)
+fsync_directory(backup.parent)
+fsync_directory(backup.parent.parent)
 PY
 }
 
@@ -2077,8 +2171,8 @@ cmp -s -- "$SNAPSHOT_BEFORE" "$SNAPSHOT_AFTER" || die 'persistent-agent-data-byt
 
 INSTALL_FAILURE_POINT=install-systemd-units
 prepare_systemd_unit_attempt
-write_mutation_state systemd-units-armed
 prepare_systemd_unit_backup
+write_mutation_state systemd-units-armed
 install_systemd_units
 run_authority_hook systemd-units "$UNIT_VERIFY_HOOK" \
   --unit-root "$SYSTEMD_UNIT_DESTINATION" \
@@ -2134,6 +2228,7 @@ if disarm_systemd_unit_attempt; then
 else
   cleanup_status=$?
   record_systemd_unit_cleanup failed "$cleanup_status" || true
+  exit "$cleanup_status"
 fi
 INSTALL_COMPLETE=true
 clear_mutation_state
