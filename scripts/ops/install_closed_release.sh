@@ -29,6 +29,26 @@ for raw in sys.argv[1:]:
 PY
 }
 
+remove_private_directory() {
+  local target="$1"
+  local parent="$2"
+  local cleanup_status=0
+  if rm -rf -- "$target" >/dev/null 2>&1; then
+    :
+  else
+    cleanup_status=$?
+  fi
+  if [ -e "$target" ] || [ -L "$target" ]; then
+    [ "$cleanup_status" -ne 0 ] || cleanup_status=1
+  elif fsync_directories "$parent"; then
+    :
+  else
+    local fsync_status=$?
+    [ "$cleanup_status" -ne 0 ] || cleanup_status="$fsync_status"
+  fi
+  return "$cleanup_status"
+}
+
 die() {
   printf 'install_closed_release: %s\n' "$1" >&2
   exit 2
@@ -522,15 +542,85 @@ PY
   [ "$current_start" = "$owner_start" ]
 }
 
+named_artifact_owner_is_live() {
+  local artifact="$1"
+  local name suffix owner_pid owner_start current_start
+  name="$(basename -- "$artifact")"
+  case "$name" in
+    vl360-executable-pins.*)
+      suffix="${name#vl360-executable-pins.}"
+      ;;
+    *.pending.*)
+      suffix="${name##*.pending.}"
+      ;;
+    *.released.*)
+      suffix="${name##*.released.}"
+      ;;
+    *.stale.*)
+      suffix="${name##*.stale.}"
+      ;;
+    *) return 2 ;;
+  esac
+  owner_pid="${suffix%%.*}"
+  [ "$owner_pid" != "$suffix" ] || return 2
+  suffix="${suffix#*.}"
+  owner_start="${suffix%%.*}"
+  case "$owner_pid" in ''|*[!0-9]*) return 2 ;; esac
+  [ -n "$owner_start" ] || return 2
+  kill -0 "$owner_pid" 2>/dev/null || return 1
+  current_start="$(process_start_identity "$owner_pid" 2>/dev/null)" || return 0
+  [ "$current_start" = "$owner_start" ]
+}
+
+private_attempt_artifact_is_stale() {
+  local artifact="$1"
+  local owner_state
+  if lock_owner_is_live "$artifact"; then
+    return 1
+  else
+    owner_state=$?
+  fi
+  case "$owner_state" in
+    1) return 0 ;;
+    2)
+      if named_artifact_owner_is_live "$artifact"; then
+        return 1
+      else
+        owner_state=$?
+      fi
+      [ "$owner_state" -eq 1 ]
+      ;;
+    *) return 1 ;;
+  esac
+}
+
+sweep_stale_lock_artifacts() {
+  local lock_dir="$1"
+  local lock_root="$2"
+  local artifact
+  for artifact in "$lock_dir".pending.* "$lock_dir".released.* \
+    "$lock_dir".stale.*; do
+    [ -e "$artifact" ] || [ -L "$artifact" ] || continue
+    [ -d "$artifact" ] && [ ! -L "$artifact" ] || return 1
+    if private_attempt_artifact_is_stale "$artifact"; then
+      remove_private_directory "$artifact" "$lock_root" || return 1
+    fi
+  done
+}
+
+sweep_stale_archive_attempts() {
+  local evidence_root="$1"
+  local artifact
+  for artifact in "$evidence_root"/.closed-archive-attempt.*; do
+    [ -e "$artifact" ] || [ -L "$artifact" ] || continue
+    [ -d "$artifact" ] && [ ! -L "$artifact" ] || return 1
+    remove_private_directory "$artifact" "$evidence_root" || return 1
+  done
+}
+
 remove_lock_dir() {
   local lock_dir="$1"
-  local retry
-  for retry in 1 2 3 4 5; do
-    rm -rf -- "$lock_dir" >/dev/null 2>&1 || true
-    [ ! -e "$lock_dir" ] && [ ! -L "$lock_dir" ] && return 0
-    sleep 0.05
-  done
-  return 1
+  remove_private_directory "$lock_dir" "$(dirname -- "$lock_dir")"
 }
 
 mark_lock_reclaimable() {
@@ -551,13 +641,15 @@ lock_is_owned_by_attempt() {
 
 release_owned_lock() {
   local lock_dir="$1"
-  local released="$lock_dir.released.$ATTEMPT_ID"
+  local released="$lock_dir.released.$$.${PROCESS_START_IDENTITY}"
   local retry
   for retry in 1 2 3 4 5; do
     lock_is_owned_by_attempt "$lock_dir" || return 1
     if mv -- "$lock_dir" "$released" 2>/dev/null; then
-      remove_lock_dir "$released" || true
-      return 0
+      [ ! -e "$lock_dir" ] && [ ! -L "$lock_dir" ] \
+        && lock_is_owned_by_attempt "$released" || return 1
+      remove_lock_dir "$released"
+      return $?
     fi
     sleep 0.05
   done
@@ -569,7 +661,7 @@ release_owned_lock() {
 
 publish_owned_lock() {
   local lock_dir="$1"
-  local pending="$lock_dir.pending.$ATTEMPT_ID"
+  local pending="$lock_dir.pending.$$.${PROCESS_START_IDENTITY}"
   mkdir -- "$pending" 2>/dev/null || return 11
   if ! write_lock_owner "$pending"; then
     remove_lock_dir "$pending" || true
@@ -599,6 +691,7 @@ acquire_authority_lock() {
     mkdir -p -- "$lock_root" || return 11
   fi
   [ -d "$lock_root" ] && [ ! -L "$lock_root" ] || return 11
+  sweep_stale_lock_artifacts "$lock_dir" "$lock_root" || return 11
 
   local retry owner_state publish_state tombstone
   for retry in 1 2 3; do
@@ -619,15 +712,15 @@ acquire_authority_lock() {
       owner_state=$?
     fi
     case "$owner_state" in 1|2) ;; *) return 10 ;; esac
-    tombstone="$lock_dir.stale.$ATTEMPT_ID"
+    tombstone="$lock_dir.stale.$$.${PROCESS_START_IDENTITY}"
     if mv -- "$lock_dir" "$tombstone" 2>/dev/null; then
       if publish_owned_lock "$lock_dir"; then
-        rm -rf -- "$tombstone" >/dev/null 2>&1 || true
-        RECLAIMED_STALE_LOCKS=$((RECLAIMED_STALE_LOCKS + 1))
         HELD_LOCK_DIRS+=("$lock_dir")
         HELD_LOCK_ROOTS+=("$lock_root")
         HELD_LOCK_KEYS+=("$lock_key")
         HELD_LOCK_KINDS+=("$lock_kind")
+        remove_private_directory "$tombstone" "$lock_root" || return 11
+        RECLAIMED_STALE_LOCKS=$((RECLAIMED_STALE_LOCKS + 1))
         return 0
       else
         publish_state=$?
@@ -708,6 +801,7 @@ prepare_evidence_dir() {
     fi
   fi
   [ "$LOCKED_EVIDENCE_DIR" = "$root" ] || die 'evidence-dir-lock-mismatch'
+  sweep_stale_archive_attempts "$root" || die 'private-archive-cleanup-failed'
   if [ -e "$root/install-mutation-state.json" ] \
     || [ -L "$root/install-mutation-state.json" ]; then
     PENDING_STALE_RECOVERY=true
@@ -1899,6 +1993,17 @@ PYTHON_DEPENDENCY_HOOK_SHA256=''
 NUXT_DEPENDENCY_HOOK_SHA256=''
 UNIT_VERIFY_HOOK_SHA256=''
 
+sweep_stale_executable_pin_roots() {
+  local artifact
+  for artifact in "$EXECUTABLE_PIN_PARENT"/vl360-executable-pins.*; do
+    [ -e "$artifact" ] || [ -L "$artifact" ] || continue
+    [ -d "$artifact" ] && [ ! -L "$artifact" ] || return 1
+    if private_attempt_artifact_is_stale "$artifact"; then
+      remove_private_directory "$artifact" "$EXECUTABLE_PIN_PARENT" || return 1
+    fi
+  done
+}
+
 cleanup_executable_pin_root() {
   [ -n "$EXECUTABLE_PIN_ROOT" ] || return 0
   local parent name
@@ -1906,14 +2011,26 @@ cleanup_executable_pin_root() {
   name="$(basename -- "$EXECUTABLE_PIN_ROOT")"
   [ "$parent" = "$EXECUTABLE_PIN_PARENT" ] || return 1
   case "$name" in vl360-executable-pins.*) ;; *) return 1 ;; esac
-  rm -rf -- "$EXECUTABLE_PIN_ROOT" >/dev/null 2>&1 || return 1
-  fsync_directories "$EXECUTABLE_PIN_PARENT" || return 1
+  lock_is_owned_by_attempt "$EXECUTABLE_PIN_ROOT" || return 1
+  remove_private_directory "$EXECUTABLE_PIN_ROOT" "$EXECUTABLE_PIN_PARENT" \
+    || return $?
   EXECUTABLE_PIN_ROOT=''
 }
 
 cleanup_preinstall_authorities() {
-  cleanup_executable_pin_root || true
-  release_all_install_locks || true
+  local primary_status=$?
+  local cleanup_status=0
+  local current_status
+  trap - EXIT
+  set +e
+  cleanup_executable_pin_root || cleanup_status=$?
+  release_all_install_locks
+  current_status=$?
+  if [ "$current_status" -ne 0 ] && [ "$cleanup_status" -eq 0 ]; then
+    cleanup_status="$current_status"
+  fi
+  [ "$primary_status" -ne 0 ] || primary_status="$cleanup_status"
+  exit "$primary_status"
 }
 
 LOCK_EVIDENCE_ENABLED=true
@@ -1988,10 +2105,13 @@ fi
 
 EXECUTABLE_PIN_PARENT="$(CDPATH= cd -- "${TMPDIR:-/tmp}" && pwd -P)" \
   || die 'executable-authority-pin-failed'
+sweep_stale_executable_pin_roots || die 'executable-authority-pin-cleanup-failed'
 EXECUTABLE_PIN_ROOT="$(mktemp -d \
-  "$EXECUTABLE_PIN_PARENT/vl360-executable-pins.XXXXXXXX")" \
+  "$EXECUTABLE_PIN_PARENT/vl360-executable-pins.$$.${PROCESS_START_IDENTITY}.XXXXXXXX")" \
   || die 'executable-authority-pin-failed'
 chmod 0700 -- "$EXECUTABLE_PIN_ROOT" || die 'executable-authority-pin-failed'
+write_lock_owner "$EXECUTABLE_PIN_ROOT" || die 'executable-authority-pin-failed'
+fsync_directories "$EXECUTABLE_PIN_ROOT" || die 'executable-authority-pin-failed'
 validate_executable_pin_root "$EXECUTABLE_PIN_ROOT" \
   || die 'executable-authority-pin-namespace-overlap'
 if executable_pin_digests="$(pin_executable_authorities)"; then
@@ -2347,8 +2467,13 @@ STAGING_OWNER_MARKER=''
 STAGING_CLEANUP_ARMED=false
 cleanup_pinned_archive() {
   [ -n "$PINNED_ARCHIVE_ROOT" ] || return 0
-  rm -rf -- "$PINNED_ARCHIVE_ROOT" >/dev/null 2>&1 || true
-  fsync_directories "$EVIDENCE_DIR" >/dev/null 2>&1 || true
+  local parent name
+  parent="$(dirname -- "$PINNED_ARCHIVE_ROOT")"
+  name="$(basename -- "$PINNED_ARCHIVE_ROOT")"
+  [ "$parent" = "$EVIDENCE_DIR" ] || return 1
+  case "$name" in .closed-archive-attempt.*) ;; *) return 1 ;; esac
+  remove_private_directory "$PINNED_ARCHIVE_ROOT" "$EVIDENCE_DIR" \
+    || return $?
   PINNED_ARCHIVE_ROOT=''
 }
 cleanup_private_staging() {
@@ -2367,12 +2492,36 @@ cleanup_private_staging() {
   STAGING_CLEANUP_ARMED=false
 }
 cleanup_attempt_authorities() {
-  cleanup_private_staging || true
+  local cleanup_status=0
+  local current_status
+  cleanup_private_staging || cleanup_status=$?
   cleanup_pinned_archive
-  cleanup_executable_pin_root || true
-  release_all_install_locks || true
+  current_status=$?
+  if [ "$current_status" -ne 0 ]; then
+    [ "$cleanup_status" -ne 0 ] || cleanup_status="$current_status"
+  fi
+  cleanup_executable_pin_root
+  current_status=$?
+  if [ "$current_status" -ne 0 ]; then
+    [ "$cleanup_status" -ne 0 ] || cleanup_status="$current_status"
+  fi
+  release_all_install_locks
+  current_status=$?
+  if [ "$current_status" -ne 0 ]; then
+    [ "$cleanup_status" -ne 0 ] || cleanup_status="$current_status"
+  fi
+  return "$cleanup_status"
 }
-trap cleanup_attempt_authorities EXIT
+cleanup_attempt_trap() {
+  local primary_status=$?
+  local cleanup_status=0
+  trap - EXIT
+  set +e
+  cleanup_attempt_authorities || cleanup_status=$?
+  [ "$primary_status" -ne 0 ] || primary_status="$cleanup_status"
+  exit "$primary_status"
+}
+trap cleanup_attempt_trap EXIT
 
 # Snapshot the candidate into a private authority, then verify and extract only
 # those pinned bytes so replacing the caller-owned archive cannot win a TOCTOU race.
@@ -2929,7 +3078,9 @@ install_recovery() {
       fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 || true
     fi
   fi
-  cleanup_attempt_authorities
+  local cleanup_status=0
+  cleanup_attempt_authorities || cleanup_status=$?
+  [ "$status" -ne 0 ] || status="$cleanup_status"
   exit "$status"
 }
 trap install_recovery EXIT
@@ -3005,8 +3156,8 @@ write_mutation_state swap-release-root-armed
 INSTALL_FAILURE_POINT=swap-release-root
 [ -d "$RELEASE_ROOT" ] || die 'existing-release-root-required'
 mv -- "$RELEASE_ROOT" "$OLD_ROOT"
-fsync_directories "$RELEASE_PARENT"
 OLD_ROOT_READY=true
+fsync_directories "$RELEASE_PARENT"
 mv -- "$STAGING_ROOT" "$RELEASE_ROOT"
 fsync_directories "$RELEASE_PARENT"
 rm -f -- "$STAGING_OWNER_MARKER"
@@ -3099,9 +3250,9 @@ PY
 INSTALL_FAILURE_POINT=retire-old-root
 write_mutation_state retire-old-root-armed
 mv -- "$OLD_ROOT" "$RETIRED_ROOT"
-fsync_directories "$RELEASE_PARENT"
 OLD_ROOT_READY=false
 INSTALL_COMMITTED=true
+fsync_directories "$RELEASE_PARENT"
 write_mutation_state committed-cleanup
 INSTALL_FAILURE_POINT=remove-retired-old-root
 rm -rf -- "$RETIRED_ROOT"

@@ -222,16 +222,102 @@ def _write_lock_owner(
     )
 
 
+def _private_attempt_artifacts(case_root: Path, evidence: Path) -> dict[str, list[Path]]:
+    private_tmp = case_root / "private-tmp"
+    lock_artifacts = []
+    for lock_root in case_root.rglob(".vl360-install-locks"):
+        lock_artifacts.extend(sorted(lock_root.iterdir()))
+    return {
+        "archive": sorted(evidence.glob(".closed-archive-attempt.*")),
+        "pin": sorted(private_tmp.glob("vl360-executable-pins.*")),
+        "lock": lock_artifacts,
+    }
+
+
+def _cleanup_failure_bash_env(
+    case_root: Path,
+    evidence: Path,
+    cleanup_kind: str,
+    failure_mode: str,
+) -> Path:
+    matched = case_root / f"{cleanup_kind}-{failure_mode}-matched"
+    removed = case_root / f"{cleanup_kind}-{failure_mode}-removed"
+    fsync_failed = case_root / f"{cleanup_kind}-{failure_mode}-fsync-failed"
+    if cleanup_kind == "archive":
+        basename_pattern = ".closed-archive-attempt.*"
+        fsync_parent = _bash_path(evidence)
+    elif cleanup_kind == "pin":
+        basename_pattern = "vl360-executable-pins.*"
+        fsync_parent = _bash_path(case_root / "private-tmp")
+    else:
+        basename_pattern = "*.lock.released.*"
+        fsync_parent = ".vl360-install-locks"
+
+    rm_action = {
+        "false-success": "return 0",
+        "nonzero": "return 61",
+        "fsync": (
+            '/usr/bin/rm "$@"\n'
+            "  status=$?\n"
+            "  [ \"$status\" -ne 0 ] || "
+            f": > '{_bash_path(removed)}'\n"
+            "  return \"$status\""
+        ),
+    }[failure_mode]
+    fsync_wrapper = ""
+    if failure_mode == "fsync":
+        if cleanup_kind == "lock":
+            parent_match = (
+                'if [ "$(basename -- "$argument")" = '
+                f"'{fsync_parent}' ]; then"
+            )
+        else:
+            parent_match = f"if [ \"$argument\" = '{fsync_parent}' ]; then"
+        fsync_wrapper = (
+            "python() {\n"
+            f"  if [ \"${{1:-}}\" = - ] && [ -f '{_bash_path(removed)}' ] "
+            f"&& [ ! -f '{_bash_path(fsync_failed)}' ]; then\n"
+            "    for argument in \"$@\"; do\n"
+            f"      {parent_match}\n"
+            f"        : > '{_bash_path(fsync_failed)}'\n"
+            "        return 63\n"
+            "      fi\n"
+            "    done\n"
+            "  fi\n"
+            "  command python \"$@\"\n"
+            "}\n"
+        )
+
+    bash_env = case_root / f"{cleanup_kind}-{failure_mode}.bash"
+    bash_env.write_text(
+        "rm() {\n"
+        "  for argument in \"$@\"; do\n"
+        f"    case \"$(basename -- \"$argument\")\" in {basename_pattern})\n"
+        f"      : > '{_bash_path(matched)}'\n"
+        f"      {rm_action}\n"
+        "      ;;\n"
+        "    esac\n"
+        "  done\n"
+        "  /usr/bin/rm \"$@\"\n"
+        "}\n"
+        f"{fsync_wrapper}",
+        encoding="ascii",
+    )
+    return bash_env
+
+
 def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
     release = tmp_path / "release"
     persistent = tmp_path / "persistent"
     evidence = tmp_path / "evidence"
     runtime = tmp_path / "runtime"
+    private_tmp = tmp_path / "private-tmp"
     release_data = release / "agent" / "data"
     release_data.mkdir(parents=True)
     persistent.mkdir()
     evidence.mkdir()
     runtime.mkdir()
+    private_tmp.mkdir()
     sentinel = tmp_path / ".vl360-local-rehearsal"
     sentinel.write_text("vinhlong360-local-rehearsal-v1\n", encoding="ascii")
     (release / "old-release-marker.txt").write_text("old-tree\n", encoding="ascii")
@@ -276,6 +362,7 @@ def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
         "VL360_NUXT_DEPENDENCY_HOOK": _bash_path(hooks["nuxt"]),
         "VL360_UNIT_VERIFY_HOOK": _bash_path(hooks["units"]),
         "VL360_LOCAL_REHEARSAL_SENTINEL": _bash_path(sentinel),
+        "TMPDIR": _bash_path(private_tmp),
     }
     if fail_after is not None:
         env["VL360_INSTALL_FAIL_AFTER"] = fail_after
@@ -2966,6 +3053,11 @@ def test_local_installer_full_success_records_every_authority_and_releases_old_t
     assert (release / "launch-release-manifest.json").is_file()
     assert not list(release.parent.glob(f".{release.name}.closed-*"))
     assert _snapshot_tree(persistent) == {}
+    assert _private_attempt_artifacts(tmp_path / "full-success", evidence) == {
+        "archive": [],
+        "pin": [],
+        "lock": [],
+    }
 
 
 def test_success_materializes_external_environment_without_packaging_or_logging_bytes(
@@ -3966,15 +4058,21 @@ def test_destructive_transition_parents_are_fsynced_before_followup_journals():
     ) < detach.index("write_mutation_state persistent-detached")
 
     swap = source[source.index("# swap-release-root") : source.index("# restore-bind-agent-data")]
+    assert swap.index('mv -- "$RELEASE_ROOT" "$OLD_ROOT"') < swap.index(
+        "OLD_ROOT_READY=true"
+    ) < swap.index('fsync_directories "$RELEASE_PARENT"')
     assert swap.index('rm -rf -- "$RELEASE_ROOT/agent/data"') < swap.index(
         'fsync_directories "$RELEASE_PARENT" "$RELEASE_ROOT" '
         '"$RELEASE_ROOT/agent"'
     ) < swap.index("write_mutation_state root-swapped")
 
     commit = source[source.index("INSTALL_FAILURE_POINT=retire-old-root") :]
-    assert commit.index('mv -- "$OLD_ROOT" "$RETIRED_ROOT"') < commit.index(
-        'fsync_directories "$RELEASE_PARENT"'
-    ) < commit.index("write_mutation_state committed-cleanup")
+    rename = commit.index('mv -- "$OLD_ROOT" "$RETIRED_ROOT"')
+    old_cleared = commit.index("OLD_ROOT_READY=false")
+    committed = commit.index("INSTALL_COMMITTED=true")
+    parent_fsync = commit.index('fsync_directories "$RELEASE_PARENT"')
+    assert rename < old_cleared < committed < parent_fsync
+    assert parent_fsync < commit.index("write_mutation_state committed-cleanup")
     cleanup = commit[commit.index("write_mutation_state committed-cleanup") :]
     assert cleanup.index('rm -rf -- "$RETIRED_ROOT"') < cleanup.index(
         'fsync_directories "$RELEASE_PARENT"'
@@ -4414,3 +4512,236 @@ def test_old_root_cleanup_failure_keeps_committed_release_and_retry_finishes_cle
     assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
     assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
     assert not list(release.parent.glob(f".{release.name}.closed-retired.*"))
+
+
+@pytest.mark.parametrize(
+    "rename_stage",
+    ("release-to-old", "old-to-retired"),
+)
+def test_postrename_fsync_failure_reconciles_the_observed_filesystem_state(
+    tmp_path: Path, closed_package, rename_stage: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"postrename-fsync-{rename_stage}"
+    prepared = _prepare_case(case_root, closed_package)
+    (
+        release,
+        persistent,
+        evidence,
+        before_release,
+        before_persistent,
+        _,
+        _,
+    ) = prepared
+    parent = _bash_path(release.parent)
+    failure_used = case_root / f"{rename_stage}-fsync-failed"
+    if rename_stage == "release-to-old":
+        state_probe = (
+            f"[ ! -e '{_bash_path(release)}' ] "
+            f"&& compgen -G '{parent}/.{release.name}.closed-old.*' >/dev/null "
+            f"&& compgen -G '{parent}/.{release.name}.closed-stage.*' >/dev/null"
+        )
+        failure_code = 71
+    else:
+        state_probe = (
+            f"[ -d '{_bash_path(release)}' ] "
+            f"&& ! compgen -G '{parent}/.{release.name}.closed-old.*' >/dev/null "
+            f"&& compgen -G '{parent}/.{release.name}.closed-retired.*' >/dev/null"
+        )
+        failure_code = 72
+    bash_env = case_root / f"{rename_stage}-fsync.bash"
+    bash_env.write_text(
+        "python() {\n"
+        f"  if [ \"${{1:-}}\" = - ] && [ ! -f '{_bash_path(failure_used)}' ] "
+        f"&& {state_probe}; then\n"
+        f"    : > '{_bash_path(failure_used)}'\n"
+        f"    return {failure_code}\n"
+        "  fi\n"
+        "  command python \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert first.returncode == failure_code, first.stderr + first.stdout
+    assert failure_used.is_file()
+    assert _snapshot_tree(persistent) == before_persistent
+    journal = evidence / "install-mutation-state.json"
+    if rename_stage == "release-to-old":
+        assert _snapshot_tree(release) == before_release
+        assert not journal.exists()
+        assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
+    else:
+        assert (release / "launch-release-manifest.json").is_file()
+        assert not (release / "old-release-marker.txt").exists()
+        installed_release = _snapshot_tree(release)
+        payload = json.loads(journal.read_text(encoding="utf-8"))
+        assert payload["stage"] == "retire-old-root-armed"
+        assert len(list(release.parent.glob(f".{release.name}.closed-retired.*"))) == 1
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    assert _snapshot_tree(persistent) == before_persistent
+    if rename_stage == "release-to-old":
+        assert _snapshot_tree(release) == before_release
+    else:
+        assert _snapshot_tree(release) == installed_release
+    assert not journal.exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
+    assert not list(release.parent.glob(f".{release.name}.closed-retired.*"))
+
+
+@pytest.mark.parametrize(
+    ("cleanup_kind", "failure_mode"),
+    (
+        ("archive", "false-success"),
+        ("pin", "nonzero"),
+        ("lock", "fsync"),
+    ),
+)
+def test_private_attempt_cleanup_failure_is_nonzero_and_retry_sweeps_stale_artifacts(
+    tmp_path: Path,
+    closed_package,
+    cleanup_kind: str,
+    failure_mode: str,
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"private-cleanup-{cleanup_kind}-{failure_mode}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, evidence, before_release, _, _, _ = prepared
+    bash_env = _cleanup_failure_bash_env(
+        case_root, evidence, cleanup_kind, failure_mode
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert first.returncode != 0, first.stderr + first.stdout
+    assert (case_root / f"{cleanup_kind}-{failure_mode}-matched").is_file()
+    artifacts = _private_attempt_artifacts(case_root, evidence)
+    if failure_mode == "fsync":
+        assert (case_root / f"{cleanup_kind}-{failure_mode}-fsync-failed").is_file()
+        assert artifacts[cleanup_kind] == []
+    else:
+        assert artifacts[cleanup_kind]
+    if cleanup_kind == "archive":
+        assert _snapshot_tree(release) == before_release
+    else:
+        assert (release / "launch-release-manifest.json").is_file()
+        assert not (release / "old-release-marker.txt").exists()
+
+    retry = _invoke_installer(closed_package, case_root, prepared)
+
+    assert retry.returncode == 0, retry.stderr + retry.stdout
+    assert _private_attempt_artifacts(case_root, evidence) == {
+        "archive": [],
+        "pin": [],
+        "lock": [],
+    }
+    lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
+    assert lock["status"] == "released"
+    assert lock["exit_code"] == 0
+
+
+def test_private_cleanup_preserves_primary_exit_status(tmp_path: Path, closed_package):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "private-cleanup-primary-status"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+    bash_env = _cleanup_failure_bash_env(
+        case_root, evidence, "pin", "nonzero"
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 19, result.stderr + result.stdout
+    assert _private_attempt_artifacts(case_root, evidence)["pin"]
+
+
+def test_startup_sweeps_only_ownerless_or_stale_private_attempt_artifacts(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "sweep"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+    private_tmp = case_root / "private-tmp"
+
+    stale_archive = evidence / ".closed-archive-attempt.ownerless"
+    stale_archive.mkdir()
+    stale_pin = private_tmp / "vl360-executable-pins.999999.dead.orphan"
+    stale_pin.mkdir()
+    evidence_lock = _authority_lock_path("evidence", evidence)
+    stale_lock = Path(f"{evidence_lock}.released.999999.dead")
+    stale_lock.mkdir(parents=True)
+
+    identity_file = case_root / "holder-identity"
+    stop_file = case_root / "stop-holder"
+    holder = subprocess.Popen(
+        [
+            str(BASH),
+            "-lc",
+            (
+                f"printf '%s %s\\n' \"$$\" \"$(awk '{{print $22}}' /proc/$$/stat)\" "
+                f"> '{_bash_path(identity_file)}'; "
+                f"while [ ! -f '{_bash_path(stop_file)}' ]; do sleep 0.05; done"
+            ),
+        ],
+        cwd=ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_path(identity_file)
+        pid_text, start_identity = identity_file.read_text(encoding="ascii").split()
+        active_pin = private_tmp / (
+            f"vl360-executable-pins.{pid_text}.{start_identity}.active"
+        )
+        active_pin.mkdir()
+        active_lock = Path(f"{evidence_lock}.released.{pid_text}.{start_identity}")
+        active_lock.mkdir()
+
+        result = _invoke_installer(
+            closed_package,
+            case_root,
+            prepared,
+            failed_hook="python",
+        )
+    finally:
+        stop_file.touch()
+        holder_stdout, holder_stderr = holder.communicate(timeout=30)
+
+    assert holder.returncode == 0, holder_stderr + holder_stdout
+    assert result.returncode == 19, result.stderr + result.stdout
+    assert not stale_archive.exists()
+    assert not stale_pin.exists()
+    assert not stale_lock.exists()
+    assert active_pin.is_dir()
+    assert active_lock.is_dir()
