@@ -1051,6 +1051,20 @@ for target, entry, _raw in validated:
 PY
 }
 
+remove_systemd_unit_attempt_root() {
+  local attempt_root="$1"
+  local cleanup_status=0
+  if rm -rf -- "$attempt_root"; then
+    :
+  else
+    cleanup_status=$?
+  fi
+  if [ -e "$attempt_root" ] || [ -L "$attempt_root" ]; then
+    [ "$cleanup_status" -ne 0 ] || cleanup_status=1
+  fi
+  return "$cleanup_status"
+}
+
 write_stale_mutation_state() {
   local stage="$1"
   local payload
@@ -1156,7 +1170,8 @@ reconcile_stale_install_attempt() {
   local mount_verified=false committed_recovery=false
   case "$STALE_STAGE" in
     detach-agent-data-armed|persistent-detached|swap-release-root-armed|\
-    root-swapped|persistent-restored|systemd-units-armed|\
+    root-swapped|persistent-restored|systemd-backup-preparing|\
+    systemd-units-armed|\
     retire-old-root-armed|committed-cleanup|\
     recovery-remove-empty-persistent-root-armed|\
     recovery-detach-persistent-armed|recovery-remove-release-root-armed|\
@@ -1192,7 +1207,8 @@ reconcile_stale_install_attempt() {
     detach-agent-data-armed|persistent-detached)
       [ "$old_present" = false ] || return 1
       ;;
-    root-swapped|persistent-restored|systemd-units-armed|\
+    root-swapped|persistent-restored|systemd-backup-preparing|\
+    systemd-units-armed|\
     recovery-remove-empty-persistent-root-armed|\
     recovery-detach-persistent-armed|recovery-remove-release-root-armed)
       [ "$old_present" = true ] || return 1
@@ -1403,10 +1419,8 @@ reconcile_stale_install_attempt() {
     if [ "$committed_recovery" = false ]; then
       write_stale_mutation_state recovery-remove-systemd-attempt-armed || return 1
     fi
-    rm -f -- "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT/armed" || return 1
-    rm -rf -- "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" || return 1
-    [ ! -e "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
-      && [ ! -L "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] || return 1
+    remove_systemd_unit_attempt_root "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" \
+      || return 1
   fi
   clear_mutation_state
 }
@@ -1843,29 +1857,12 @@ prepare_systemd_unit_attempt() {
   UNIT_MUTATION_MARKER="$UNIT_ATTEMPT_ROOT/armed"
 }
 
-disarm_systemd_unit_attempt() {
+remove_systemd_unit_attempt() {
   [ -n "$UNIT_ATTEMPT_ROOT" ] || return 0
-  local cleanup_status=0
-  rm -f -- "$UNIT_MUTATION_MARKER" || cleanup_status=$?
-  if rm -rf -- "$UNIT_ATTEMPT_ROOT"; then
-    :
-  else
-    local rm_status=$?
-    [ "$cleanup_status" -ne 0 ] || cleanup_status="$rm_status"
-  fi
-  for artifact in "$UNIT_ATTEMPT_ROOT" "$UNIT_MUTATION_MARKER" \
-    "$UNIT_BACKUP_ROOT" "$UNIT_BACKUP_ROOT/metadata.json"; do
-    if [ -e "$artifact" ] || [ -L "$artifact" ]; then
-      [ "$cleanup_status" -ne 0 ] || cleanup_status=1
-    fi
-  done
-  if [ "$cleanup_status" -eq 0 ]; then
-    UNIT_ATTEMPT_ROOT=''
-    UNIT_BACKUP_ROOT=''
-    UNIT_MUTATION_MARKER=''
-    return 0
-  fi
-  return "$cleanup_status"
+  remove_systemd_unit_attempt_root "$UNIT_ATTEMPT_ROOT" || return $?
+  UNIT_ATTEMPT_ROOT=''
+  UNIT_BACKUP_ROOT=''
+  UNIT_MUTATION_MARKER=''
 }
 
 prepare_systemd_unit_backup() {
@@ -2084,33 +2081,54 @@ install_recovery() {
     && [ "$MUTATION_STARTED" = true ]; then
     restore_systemd_units >/dev/null 2>&1 || systemd_units_restored=false
 
-    if [ "$OLD_ROOT_READY" = true ] && [ "$PERSISTENT_ATTACHED_TO_RELEASE" = true ]; then
-      detach_persistent_from_release_for_recovery >/dev/null 2>&1 \
-        || persistent_restored=false
+    if [ "$systemd_units_restored" = true ]; then
+      if [ "$OLD_ROOT_READY" = true ] \
+        && [ "$PERSISTENT_ATTACHED_TO_RELEASE" = true ]; then
+        detach_persistent_from_release_for_recovery >/dev/null 2>&1 \
+          || persistent_restored=false
+      fi
+
+      if [ "$OLD_ROOT_READY" = true ]; then
+        if [ "$PERSISTENT_ATTACHED_TO_RELEASE" = true ]; then
+          root_restored=false
+        else
+          rm -rf -- "$RELEASE_ROOT" >/dev/null 2>&1 || root_restored=false
+        fi
+        if [ "$root_restored" = true ] \
+          && [ "$PERSISTENT_ATTACHED_TO_RELEASE" != true ]; then
+          mv -- "$OLD_ROOT" "$RELEASE_ROOT" >/dev/null 2>&1 \
+            || root_restored=false
+        fi
+        if [ "$root_restored" = true ]; then
+          OLD_ROOT_READY=false
+        fi
+      fi
+
+      if [ "$root_restored" = true ] && [ "$PERSISTENT_DETACHED" = true ]; then
+        attach_persistent_to_release_for_recovery >/dev/null 2>&1 \
+          || persistent_restored=false
+      fi
+
+      if [ "$root_restored" = true ] && [ "$persistent_restored" = true ]; then
+        verify_recovered_persistent_state >/dev/null 2>&1 \
+          || persistent_restored=false
+      fi
+    else
+      root_restored=false
+      persistent_restored=false
     fi
 
-    if [ "$OLD_ROOT_READY" = true ]; then
-      if [ "$PERSISTENT_ATTACHED_TO_RELEASE" = true ]; then
-        root_restored=false
-      else
-        rm -rf -- "$RELEASE_ROOT" >/dev/null 2>&1 || root_restored=false
+    if [ "$root_restored" = true ] \
+      && [ "$persistent_restored" = true ] \
+      && [ "$systemd_units_restored" = true ]; then
+      if [ -n "$UNIT_ATTEMPT_ROOT" ]; then
+        write_mutation_state recovery-remove-systemd-attempt-armed \
+          >/dev/null 2>&1 || systemd_units_restored=false
+        if [ "$systemd_units_restored" = true ]; then
+          remove_systemd_unit_attempt >/dev/null 2>&1 \
+            || systemd_units_restored=false
+        fi
       fi
-      if [ "$root_restored" = true ] && [ "$PERSISTENT_ATTACHED_TO_RELEASE" != true ]; then
-        mv -- "$OLD_ROOT" "$RELEASE_ROOT" >/dev/null 2>&1 || root_restored=false
-      fi
-      if [ "$root_restored" = true ]; then
-        OLD_ROOT_READY=false
-      fi
-    fi
-
-    if [ "$root_restored" = true ] && [ "$PERSISTENT_DETACHED" = true ]; then
-      attach_persistent_to_release_for_recovery >/dev/null 2>&1 \
-        || persistent_restored=false
-    fi
-
-    if [ "$root_restored" = true ] && [ "$persistent_restored" = true ]; then
-      verify_recovered_persistent_state >/dev/null 2>&1 \
-        || persistent_restored=false
     fi
 
     if [ "$root_restored" = true ] \
@@ -2121,13 +2139,6 @@ install_recovery() {
     else
       write_recovery_evidence rollback-failed "$root_restored" \
         "$persistent_restored" "$systemd_units_restored" || true
-    fi
-
-    if [ -n "$UNIT_ATTEMPT_ROOT" ]; then
-      rm -f -- "$UNIT_MUTATION_MARKER" >/dev/null 2>&1 || true
-      if [ "$systemd_units_restored" = true ]; then
-        rm -rf -- "$UNIT_ATTEMPT_ROOT" >/dev/null 2>&1 || true
-      fi
     fi
   fi
 
@@ -2248,6 +2259,7 @@ cmp -s -- "$SNAPSHOT_BEFORE" "$SNAPSHOT_AFTER" || die 'persistent-agent-data-byt
 
 INSTALL_FAILURE_POINT=install-systemd-units
 prepare_systemd_unit_attempt
+write_mutation_state systemd-backup-preparing
 prepare_systemd_unit_backup
 write_mutation_state systemd-units-armed
 install_systemd_units
@@ -2300,7 +2312,7 @@ INSTALL_FAILURE_POINT=remove-retired-old-root
 rm -rf -- "$RETIRED_ROOT"
 [ ! -e "$RETIRED_ROOT" ] && [ ! -L "$RETIRED_ROOT" ] \
   || die 'retired-old-root-cleanup-incomplete'
-if disarm_systemd_unit_attempt; then
+if remove_systemd_unit_attempt; then
   record_systemd_unit_cleanup passed 0
 else
   cleanup_status=$?

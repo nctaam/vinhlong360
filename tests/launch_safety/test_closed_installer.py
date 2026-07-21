@@ -3163,10 +3163,10 @@ def test_systemd_recovery_material_is_durable_before_journal_and_unit_mutation()
     source = INSTALL.read_text(encoding="utf-8")
     flow = source[source.index("INSTALL_FAILURE_POINT=install-systemd-units") :]
     assert flow.index("prepare_systemd_unit_attempt") < flow.index(
-        "prepare_systemd_unit_backup"
-    ) < flow.index("write_mutation_state systemd-units-armed") < flow.index(
-        "install_systemd_units"
-    )
+        "write_mutation_state systemd-backup-preparing"
+    ) < flow.index("prepare_systemd_unit_backup") < flow.index(
+        "write_mutation_state systemd-units-armed"
+    ) < flow.index("install_systemd_units")
 
     backup = source[
         source.index("prepare_systemd_unit_backup()") : source.index(
@@ -3224,6 +3224,150 @@ def test_systemd_recovery_material_is_durable_before_journal_and_unit_mutation()
         ),
     ):
         assert recovery.index(journal_write) < recovery.index(file_operation)
+
+
+def test_sigkill_before_systemd_journal_leaves_attempt_journal_bound(
+    tmp_path: Path, closed_package
+):
+    case_root = tmp_path / "systemd-prejournal-sigkill"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+    unit_root = case_root / "runtime" / "systemd-units"
+    unit_root.mkdir()
+    for name in SYSTEMD_UNIT_NAMES:
+        (unit_root / name).write_bytes(f"legacy-{name}\n".encode())
+
+    reached = case_root / "prejournal"
+    bash_env = case_root / "prejournal.bash"
+    bash_env.write_text(
+        "python() {\n"
+        '  if [ "$1" = "-" ] && [ "${3:-}" = "systemd-units-armed" ]; then\n'
+        f"    : > '{_bash_path(reached)}'\n"
+        '    kill -9 "$$"\n'
+        "  fi\n"
+        '  command python "$@"\n'
+        "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode != 0
+    attempt = next(evidence.glob(".systemd-unit-attempt.*"))
+    assert (attempt / "armed").is_file()
+    journal = json.loads(
+        (evidence / "install-mutation-state.json").read_text(encoding="utf-8")
+    )
+    assert journal["stage"] == "systemd-backup-preparing"
+    assert journal["systemd_unit_attempt_root"] == _bash_path(attempt)
+
+
+def test_partial_systemd_restore_keeps_armed_material_for_retry(
+    tmp_path: Path, closed_package
+):
+    case_root = tmp_path / "partial-systemd-restore"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+    unit_root = case_root / "runtime" / "systemd-units"
+    unit_root.mkdir()
+    for name in SYSTEMD_UNIT_NAMES:
+        (unit_root / name).write_bytes(f"legacy-{name}\n".encode())
+    legacy = _snapshot_tree(unit_root)
+
+    used = case_root / "restore-failed"
+    bash_env = case_root / "restore-failed.bash"
+    bash_env.write_text(
+        "python() {\n"
+        '  case "${3:-}" in\n'
+        "    */.systemd-unit-attempt.*/backup)\n"
+        f"      if [ ! -f '{_bash_path(used)}' ]; then\n"
+        f"        : > '{_bash_path(used)}'\n"
+        '        printf partial > "$2/vl-agent.service"\n'
+        "        return 62\n"
+        "      fi\n"
+        "      ;;\n"
+        "  esac\n"
+        '  command python "$@"\n'
+        "}\n",
+        encoding="ascii",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="units",
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert first.returncode == 19
+    attempt = next(evidence.glob(".systemd-unit-attempt.*"))
+    assert (attempt / "armed").is_file()
+    assert (attempt / "backup" / "metadata.json").is_file()
+    assert (evidence / "install-mutation-state.json").is_file()
+    assert _snapshot_tree(unit_root) != legacy
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+    assert retry.returncode == 19
+    assert _snapshot_tree(unit_root) == legacy
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert _unit_attempt_artifacts(evidence) == []
+
+
+def test_false_success_rollback_cleanup_retains_journal_until_verified(
+    tmp_path: Path, closed_package
+):
+    case_root = tmp_path / "rollback-cleanup-false-success"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+
+    used = case_root / "fake-success"
+    bash_env = case_root / "fake-success.bash"
+    bash_env.write_text(
+        "rm() {\n"
+        '  for argument in "$@"; do\n'
+        '    case "$(basename -- "$argument")" in\n'
+        "      .systemd-unit-attempt.*)\n"
+        f"        if [ ! -f '{_bash_path(used)}' ]; then\n"
+        f"          : > '{_bash_path(used)}'\n"
+        "          return 0\n"
+        "        fi\n"
+        "        ;;\n"
+        "    esac\n"
+        "  done\n"
+        '  /usr/bin/rm "$@"\n'
+        "}\n",
+        encoding="ascii",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="units",
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert first.returncode == 19
+    journal = evidence / "install-mutation-state.json"
+    assert json.loads(journal.read_text())["stage"] == (
+        "recovery-remove-systemd-attempt-armed"
+    )
+    assert len(list(evidence.glob(".systemd-unit-attempt.*"))) == 1
+
+    retry = _invoke_installer(
+        closed_package, case_root, prepared, failed_hook="python"
+    )
+    assert retry.returncode == 19
+    assert not journal.exists()
+    assert _unit_attempt_artifacts(evidence) == []
 
 
 def test_sigkill_after_systemd_mutation_restores_original_units_before_retry(
@@ -3339,7 +3483,7 @@ def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_saf
         env_overrides={"BASH_ENV": _bash_path(bash_env)},
     )
 
-    assert first.returncode == 0, first.stderr + first.stdout
+    assert first.returncode == 61, first.stderr + first.stdout
     assert failure_used.is_file()
     assert (release / "launch-release-manifest.json").is_file()
     assert not (release / "old-release-marker.txt").exists()
@@ -3354,7 +3498,13 @@ def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_saf
     )
     assert cleanup["status"] == "failed"
     assert cleanup["exit_code"] == 61
-    assert not list(evidence.glob(".systemd-unit-attempt.*/armed"))
+    attempts = list(evidence.glob(".systemd-unit-attempt.*"))
+    assert len(attempts) == 1
+    assert (attempts[0] / "armed").is_file()
+    journal = evidence / "install-mutation-state.json"
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "committed-cleanup"
+    )
 
     second = _invoke_installer(
         closed_package,
@@ -3367,6 +3517,7 @@ def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_saf
     assert "install-target-locked" not in second.stderr
     assert _snapshot_tree(release) == installed_release
     assert _snapshot_tree(unit_destination) == installed_units
+    assert not journal.exists()
     assert _unit_attempt_artifacts(evidence) == []
     lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
     assert lock["status"] == "released"
