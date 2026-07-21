@@ -225,6 +225,7 @@ def _installer_command(
     prepared,
     *,
     evidence_arg: str | None = None,
+    environment_arg: str | None = None,
     runtime_arg: str | None = None,
 ) -> list[str]:
     release, persistent, evidence, *_ = prepared
@@ -240,7 +241,11 @@ def _installer_command(
         "--persistent-agent-data-root",
         _bash_path(persistent),
         "--environment-authority",
-        _bash_path(case_root / "external.env"),
+        (
+            _bash_path(case_root / "external.env")
+            if environment_arg is None
+            else environment_arg
+        ),
         "--runtime-authority",
         _bash_path(case_root / "runtime") if runtime_arg is None else runtime_arg,
         "--evidence-dir",
@@ -259,6 +264,8 @@ def _invoke_installer(
     include_sentinel: bool = True,
     env_overrides: dict[str, str] | None = None,
     evidence_arg: str | None = None,
+    environment_arg: str | None = None,
+    runtime_arg: str | None = None,
 ):
     release, persistent, evidence, before_release, before_persistent, _, values = prepared
     if failed_hook is not None:
@@ -279,6 +286,8 @@ def _invoke_installer(
         case_root,
         prepared,
         evidence_arg=evidence_arg,
+        environment_arg=environment_arg,
+        runtime_arg=runtime_arg,
     )
     result = subprocess.run(
         args,
@@ -3147,7 +3156,14 @@ def test_same_evidence_retry_during_units_restores_current_not_stale_destination
     assert recovery["systemd_units_restored"] is True
 
 
-def _interrupt_after_systemd_mutation(package, case_root: Path, prepared):
+def _interrupt_after_systemd_mutation(
+    package,
+    case_root: Path,
+    prepared,
+    *,
+    evidence_arg: str | None = None,
+    runtime_arg: str | None = None,
+):
     release, _, evidence, _, _, _, values = prepared
     unit_destination = case_root / "runtime" / "systemd-units"
     unit_destination.mkdir()
@@ -3168,7 +3184,13 @@ def _interrupt_after_systemd_mutation(package, case_root: Path, prepared):
     env.update(values)
 
     result = subprocess.run(
-        _installer_command(package, case_root, prepared),
+        _installer_command(
+            package,
+            case_root,
+            prepared,
+            evidence_arg=evidence_arg,
+            runtime_arg=runtime_arg,
+        ),
         cwd=ROOT,
         env=env,
         check=False,
@@ -3189,6 +3211,113 @@ def _interrupt_after_systemd_mutation(package, case_root: Path, prepared):
     assert payload["systemd_unit_attempt_root"] == _bash_path(attempts[0])
     assert len(payload["systemd_key_sha256"]) == 64
     return journal, attempts[0], unit_destination, legacy_units
+
+
+def test_evidence_parent_alias_journal_is_canonical_and_retryable_after_sigkill(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "evidence-parent-alias"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, evidence, _, _, _, _ = prepared
+    alias_component = case_root / "evidence-alias-component"
+    alias_component.mkdir()
+    evidence_arg = (
+        f"{_bash_path_literal(alias_component)}/../{evidence.name}"
+    )
+
+    journal, attempt, _, _ = _interrupt_after_systemd_mutation(
+        closed_package,
+        case_root,
+        prepared,
+        evidence_arg=evidence_arg,
+    )
+
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    assert payload["systemd_unit_attempt_root"] == _bash_path(attempt)
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+        evidence_arg=evidence_arg,
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    assert not journal.exists()
+
+
+@pytest.mark.parametrize("alias_kind", ("dot", "parent"))
+def test_runtime_alias_journal_uses_canonical_systemd_destination_and_retries(
+    tmp_path: Path, closed_package, alias_kind: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"runtime-alias-{alias_kind}"
+    prepared = _prepare_case(case_root, closed_package)
+    runtime = case_root / "runtime"
+    if alias_kind == "dot":
+        runtime_arg = f"{_bash_path_literal(runtime)}/."
+    else:
+        alias_component = runtime / "authority-alias-component"
+        alias_component.mkdir()
+        runtime_arg = f"{_bash_path_literal(alias_component)}/.."
+
+    journal, _, unit_destination, _ = _interrupt_after_systemd_mutation(
+        closed_package,
+        case_root,
+        prepared,
+        runtime_arg=runtime_arg,
+    )
+
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    assert payload["systemd_unit_destination"] == _bash_path(unit_destination)
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+        runtime_arg=runtime_arg,
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    assert not journal.exists()
+
+
+def test_environment_authority_symlink_parent_is_rejected_before_evidence_reset(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "environment-symlink-parent"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, hook_log, _ = prepared
+    alias_parent = case_root / "environment-parent-alias"
+    try:
+        alias_parent.symlink_to(case_root, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlinks are unavailable: {exc}")
+    preserved = evidence / "install-summary.json"
+    preserved.write_bytes(b"must-survive\n")
+    release_before = _snapshot_tree(release)
+    persistent_before = _snapshot_tree(persistent)
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        environment_arg=_bash_path_literal(alias_parent / "external.env"),
+    )
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "external-environment-authority-required" in result.stderr
+    assert preserved.read_bytes() == b"must-survive\n"
+    assert not hook_log.exists()
+    assert _snapshot_tree(release) == release_before
+    assert _snapshot_tree(persistent) == persistent_before
 
 
 @pytest.mark.parametrize("authority_role", ("release", "persistent", "systemd"))
@@ -3526,6 +3655,36 @@ def test_systemd_recovery_material_is_durable_before_journal_and_unit_mutation()
         ),
     ):
         assert recovery.index(journal_write) < recovery.index(file_operation)
+
+
+def test_destructive_transition_parents_are_fsynced_before_followup_journals():
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = source[source.index("fsync_directories()") : source.index("die()")]
+    assert 'if os.name == "nt":' in helper
+    assert "os.fsync(descriptor)" in helper
+
+    detach = source[source.index("# detach-agent-data") : source.index("# swap-release-root")]
+    assert detach.index('mv -- "$CURRENT_DATA" "$PERSISTENT_AGENT_DATA_ROOT"') < (
+        detach.index(
+            'fsync_directories "$(dirname -- "$CURRENT_DATA")" '
+            '"$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")"'
+        )
+    ) < detach.index("write_mutation_state persistent-detached")
+
+    swap = source[source.index("# swap-release-root") : source.index("# restore-bind-agent-data")]
+    assert swap.index('rm -rf -- "$RELEASE_ROOT/agent/data"') < swap.index(
+        'fsync_directories "$RELEASE_PARENT" "$RELEASE_ROOT" '
+        '"$RELEASE_ROOT/agent"'
+    ) < swap.index("write_mutation_state root-swapped")
+
+    commit = source[source.index("INSTALL_FAILURE_POINT=retire-old-root") :]
+    assert commit.index('mv -- "$OLD_ROOT" "$RETIRED_ROOT"') < commit.index(
+        'fsync_directories "$RELEASE_PARENT"'
+    ) < commit.index("write_mutation_state committed-cleanup")
+    cleanup = commit[commit.index("write_mutation_state committed-cleanup") :]
+    assert cleanup.index('rm -rf -- "$RETIRED_ROOT"') < cleanup.index(
+        'fsync_directories "$RELEASE_PARENT"'
+    ) < cleanup.index("clear_mutation_state")
 
 
 def test_sigkill_before_systemd_journal_leaves_attempt_journal_bound(

@@ -3,6 +3,32 @@
 set -Eeuo pipefail
 umask 077
 
+fsync_directories() {
+  (($# > 0)) || return 0
+  python - "$@" <<'PY'
+import os
+import sys
+
+if os.name == "nt":
+    raise SystemExit(0)
+
+seen = set()
+for raw in sys.argv[1:]:
+    directory = os.path.realpath(raw)
+    if directory in seen:
+        continue
+    seen.add(directory)
+    descriptor = os.open(
+        directory,
+        os.O_RDONLY | getattr(os, "O_DIRECTORY", 0),
+    )
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+PY
+}
+
 die() {
   printf 'install_closed_release: %s\n' "$1" >&2
   exit 2
@@ -48,6 +74,7 @@ reset_mutable_evidence() {
     "$root/package" \
     "$root/staged" \
     "$root/installed" || return 1
+  fsync_directories "$root" "$(dirname -- "$root")" || return 1
 }
 
 normalize_evidence_candidate() {
@@ -88,9 +115,23 @@ canonical_authority_path() {
   local canonical
   canonical="$(python - "$authority" <<'PY'
 import os
+from pathlib import Path
+import stat
 import sys
 
-print(os.path.realpath(os.path.abspath(sys.argv[1])))
+path = Path(os.path.abspath(sys.argv[1]))
+anchor = Path(path.anchor) if path.anchor else Path()
+current = anchor
+parts = path.parts[1:] if path.anchor else path.parts
+for part in parts:
+    current /= part
+    try:
+        observed = os.lstat(current)
+    except FileNotFoundError:
+        continue
+    if stat.S_ISLNK(observed.st_mode) or os.path.islink(current):
+        raise SystemExit(12)
+print(os.path.realpath(path))
 PY
   )" || return 1
   if [ "$local_rehearsal" = true ] && command -v cygpath >/dev/null 2>&1; then
@@ -685,11 +726,14 @@ done
 DISCOVERED_EVIDENCE_DIR=''
 DISCOVERED_RELEASE_ROOT=''
 DISCOVERED_PERSISTENT_ROOT=''
+DISCOVERED_ENVIRONMENT_AUTHORITY=''
 DISCOVERED_RUNTIME_AUTHORITY=''
+DISCOVERY_AUTHORITIES_VALID=false
 for ((discovery_index = 0; discovery_index < ${#ORIGINAL_ARGS[@]}; discovery_index++)); do
   discovery_option="${ORIGINAL_ARGS[$discovery_index]}"
   case "$discovery_option" in
-    --evidence-dir|--release-root|--persistent-agent-data-root|--runtime-authority) ;;
+    --evidence-dir|--release-root|--persistent-agent-data-root|\
+    --environment-authority|--runtime-authority) ;;
     *) continue ;;
   esac
   discovery_value_index=$((discovery_index + 1))
@@ -702,12 +746,14 @@ for ((discovery_index = 0; discovery_index < ${#ORIGINAL_ARGS[@]}; discovery_ind
     --evidence-dir) DISCOVERED_EVIDENCE_DIR="$discovery_value" ;;
     --release-root) DISCOVERED_RELEASE_ROOT="$discovery_value" ;;
     --persistent-agent-data-root) DISCOVERED_PERSISTENT_ROOT="$discovery_value" ;;
+    --environment-authority) DISCOVERED_ENVIRONMENT_AUTHORITY="$discovery_value" ;;
     --runtime-authority) DISCOVERED_RUNTIME_AUTHORITY="$discovery_value" ;;
   esac
 done
 if [ -n "$DISCOVERED_EVIDENCE_DIR" ] \
   && [ -n "$DISCOVERED_RELEASE_ROOT" ] \
   && [ -n "$DISCOVERED_PERSISTENT_ROOT" ] \
+  && [ -n "$DISCOVERED_ENVIRONMENT_AUTHORITY" ] \
   && { [ "$DISCOVERY_LOCAL_REHEARSAL" != true ] \
     || [ -n "$DISCOVERED_RUNTIME_AUTHORITY" ]; }; then
   if DISCOVERED_EVIDENCE_DIR="$(
@@ -721,35 +767,56 @@ if [ -n "$DISCOVERED_EVIDENCE_DIR" ] \
     && DISCOVERED_PERSISTENT_ROOT="$(
       normalize_evidence_candidate "$DISCOVERED_PERSISTENT_ROOT" \
         "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
+    )" \
+    && DISCOVERED_ENVIRONMENT_AUTHORITY="$(
+      normalize_evidence_candidate "$DISCOVERED_ENVIRONMENT_AUTHORITY" \
+        "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
     )"; then
-    if [ "$DISCOVERY_LOCAL_REHEARSAL" = true ]; then
-      if DISCOVERED_RUNTIME_AUTHORITY="$(
-        normalize_evidence_candidate "$DISCOVERED_RUNTIME_AUTHORITY" true \
-          2>/dev/null
+    if DISCOVERED_EVIDENCE_DIR="$(
+        canonical_authority_path "$DISCOVERED_EVIDENCE_DIR" \
+          "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
+      )" \
+      && DISCOVERED_ENVIRONMENT_AUTHORITY="$(
+        canonical_authority_path "$DISCOVERED_ENVIRONMENT_AUTHORITY" \
+          "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
       )"; then
-        DISCOVERED_SYSTEMD_DESTINATION="$DISCOVERED_RUNTIME_AUTHORITY/systemd-units"
+      if [ "$DISCOVERY_LOCAL_REHEARSAL" = true ]; then
+        if DISCOVERED_RUNTIME_AUTHORITY="$(
+          normalize_evidence_candidate "$DISCOVERED_RUNTIME_AUTHORITY" true \
+            2>/dev/null
+        )" \
+          && DISCOVERED_RUNTIME_AUTHORITY="$(
+            canonical_authority_path "$DISCOVERED_RUNTIME_AUTHORITY" true \
+              2>/dev/null
+          )"; then
+          DISCOVERED_SYSTEMD_DESTINATION="$DISCOVERED_RUNTIME_AUTHORITY/systemd-units"
+        else
+          DISCOVERED_SYSTEMD_DESTINATION=''
+        fi
       else
-        DISCOVERED_SYSTEMD_DESTINATION=''
+        DISCOVERED_SYSTEMD_DESTINATION=/etc/systemd/system
+      fi
+      if [ -n "$DISCOVERED_SYSTEMD_DESTINATION" ]; then
+        if preflight_authority_role_collisions \
+          evidence "$DISCOVERED_EVIDENCE_DIR" \
+          release "$DISCOVERED_RELEASE_ROOT" \
+          persistent "$DISCOVERED_PERSISTENT_ROOT" \
+          systemd "$DISCOVERED_SYSTEMD_DESTINATION"; then
+          :
+        else
+          discovery_collision_status=$?
+          [ "$discovery_collision_status" -ne 12 ] \
+            || die 'install-authority-role-collision'
+        fi
+        DISCOVERY_AUTHORITIES_VALID=true
       fi
     else
-      DISCOVERED_SYSTEMD_DESTINATION=/etc/systemd/system
-    fi
-    if [ -n "$DISCOVERED_SYSTEMD_DESTINATION" ]; then
-      if preflight_authority_role_collisions \
-        evidence "$DISCOVERED_EVIDENCE_DIR" \
-        release "$DISCOVERED_RELEASE_ROOT" \
-        persistent "$DISCOVERED_PERSISTENT_ROOT" \
-        systemd "$DISCOVERED_SYSTEMD_DESTINATION"; then
-        :
-      else
-        discovery_collision_status=$?
-        [ "$discovery_collision_status" -ne 12 ] \
-          || die 'install-authority-role-collision'
-      fi
+      DISCOVERED_SYSTEMD_DESTINATION=''
     fi
   fi
 fi
-if [ -n "$DISCOVERED_EVIDENCE_DIR" ]; then
+if [ "$DISCOVERY_AUTHORITIES_VALID" = true ] \
+  && [ -n "$DISCOVERED_EVIDENCE_DIR" ]; then
   if DISCOVERED_EVIDENCE_DIR="$(
     normalize_evidence_candidate "$DISCOVERED_EVIDENCE_DIR" \
       "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
@@ -856,6 +923,27 @@ if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
   EVIDENCE_DIR="$(cygpath -u "$EVIDENCE_DIR")"
   [ -z "$LOCAL_REHEARSAL_SENTINEL" ] \
     || LOCAL_REHEARSAL_SENTINEL="$(cygpath -u "$LOCAL_REHEARSAL_SENTINEL")"
+fi
+if canonical_evidence_dir="$(
+    canonical_authority_path "$EVIDENCE_DIR" "$LOCAL_REHEARSAL"
+  )"; then
+  EVIDENCE_DIR="$canonical_evidence_dir"
+else
+  die 'evidence-dir-symlink-forbidden'
+fi
+if canonical_environment_authority="$(
+    canonical_authority_path "$ENVIRONMENT_AUTHORITY" "$LOCAL_REHEARSAL"
+  )"; then
+  ENVIRONMENT_AUTHORITY="$canonical_environment_authority"
+else
+  die 'external-environment-authority-required'
+fi
+if canonical_runtime_authority="$(
+    canonical_authority_path "$RUNTIME_AUTHORITY" "$LOCAL_REHEARSAL"
+  )"; then
+  RUNTIME_AUTHORITY="$canonical_runtime_authority"
+else
+  die 'external-runtime-authority-required'
 fi
 prepare_evidence_dir "$EVIDENCE_DIR" "$LOCAL_REHEARSAL"
 [ -f "$ENVIRONMENT_AUTHORITY" ] && [ ! -L "$ENVIRONMENT_AUTHORITY" ] \
@@ -1046,7 +1134,8 @@ PY
 }
 
 clear_mutation_state() {
-  rm -f -- "$MUTATION_STATE"
+  rm -f -- "$MUTATION_STATE" || return 1
+  fsync_directories "$(dirname -- "$MUTATION_STATE")"
 }
 
 load_stale_install_state() {
@@ -1385,6 +1474,8 @@ remove_systemd_unit_attempt_root() {
   fi
   if [ -e "$attempt_root" ] || [ -L "$attempt_root" ]; then
     [ "$cleanup_status" -ne 0 ] || cleanup_status=1
+  elif ! fsync_directories "$(dirname -- "$attempt_root")"; then
+    [ "$cleanup_status" -ne 0 ] || cleanup_status=1
   fi
   return "$cleanup_status"
 }
@@ -1597,10 +1688,14 @@ reconcile_stale_install_attempt() {
               write_stale_mutation_state \
                 recovery-remove-empty-persistent-root-armed || return 1
               rmdir -- "$STALE_PERSISTENT_ROOT" || return 1
+              fsync_directories "$(dirname -- "$STALE_PERSISTENT_ROOT")" \
+                || return 1
             fi
             write_stale_mutation_state recovery-detach-persistent-armed \
               || return 1
             mv -- "$current_data" "$STALE_PERSISTENT_ROOT" || return 1
+            fsync_directories "$(dirname -- "$current_data")" \
+              "$(dirname -- "$STALE_PERSISTENT_ROOT")" || return 1
             ;;
           1:0|2:0) ;;
           *) return 1 ;;
@@ -1618,6 +1713,8 @@ reconcile_stale_install_attempt() {
             write_stale_mutation_state recovery-detach-persistent-armed \
               || return 1
             invoke_mount_authority umount "$current_data" || return 1
+            fsync_directories "$current_data" "$(dirname -- "$current_data")" \
+              || return 1
             ;;
           recovery-detach-persistent-armed:1|root-swapped:1|\
           swap-release-root-armed:1|recovery-remove-release-root-armed:1) ;;
@@ -1632,11 +1729,13 @@ reconcile_stale_install_attempt() {
       esac
       write_stale_mutation_state recovery-remove-release-root-armed || return 1
       rm -rf -- "$STALE_RELEASE_ROOT" || return 1
+      fsync_directories "$(dirname -- "$STALE_RELEASE_ROOT")" || return 1
       release_present=false
     fi
     [ "$release_present" = false ] || return 1
     write_stale_mutation_state recovery-restore-old-root-armed || return 1
     mv -- "$STALE_OLD_ROOT" "$STALE_RELEASE_ROOT" || return 1
+    fsync_directories "$(dirname -- "$STALE_RELEASE_ROOT")" || return 1
     old_present=false
     release_present=true
   fi
@@ -1662,6 +1761,8 @@ reconcile_stale_install_attempt() {
         write_stale_mutation_state recovery-create-persistent-root-armed \
           || return 1
         mkdir -- "$STALE_PERSISTENT_ROOT" || return 1
+        fsync_directories "$(dirname -- "$STALE_PERSISTENT_ROOT")" \
+          "$STALE_PERSISTENT_ROOT" || return 1
         ;;
       0:2) ;;
       1:0)
@@ -1669,9 +1770,13 @@ reconcile_stale_install_attempt() {
           && [ ! -L "$(dirname -- "$current_data")" ] || return 1
         write_stale_mutation_state recovery-restore-persistent-armed || return 1
         mv -- "$STALE_PERSISTENT_ROOT" "$current_data" || return 1
+        fsync_directories "$(dirname -- "$STALE_PERSISTENT_ROOT")" \
+          "$(dirname -- "$current_data")" || return 1
         write_stale_mutation_state recovery-create-persistent-root-armed \
           || return 1
         mkdir -- "$STALE_PERSISTENT_ROOT" || return 1
+        fsync_directories "$(dirname -- "$STALE_PERSISTENT_ROOT")" \
+          "$STALE_PERSISTENT_ROOT" || return 1
         ;;
       *) return 1 ;;
     esac
@@ -1698,6 +1803,8 @@ reconcile_stale_install_attempt() {
         write_stale_mutation_state recovery-restore-persistent-armed || return 1
         invoke_mount_authority mount --bind "$STALE_PERSISTENT_ROOT" "$current_data" \
           || return 1
+        fsync_directories "$current_data" "$(dirname -- "$current_data")" \
+          || return 1
         inspect_stale_mount "$current_data" || return 1
         mount_verified=true
         ;;
@@ -1718,11 +1825,13 @@ reconcile_stale_install_attempt() {
     [ "$stage_owner_valid" = true ] || return 1
     write_stale_mutation_state recovery-remove-staging-armed || return 1
     rm -rf -- "$STALE_STAGING_ROOT" || return 1
+    fsync_directories "$(dirname -- "$STALE_STAGING_ROOT")" || return 1
   fi
   if [ -e "$stale_stage_owner" ] || [ -L "$stale_stage_owner" ]; then
     [ "$stage_owner_valid" = true ] || return 1
     write_stale_mutation_state recovery-remove-staging-owner-armed || return 1
     rm -f -- "$stale_stage_owner" || return 1
+    fsync_directories "$(dirname -- "$stale_stage_owner")" || return 1
   fi
   if [ "$committed_recovery" = true ]; then
     write_stale_mutation_state committed-cleanup || return 1
@@ -1730,6 +1839,7 @@ reconcile_stale_install_attempt() {
       [ -d "$STALE_RETIRED_ROOT" ] && [ ! -L "$STALE_RETIRED_ROOT" ] \
         || return 1
       rm -rf -- "$STALE_RETIRED_ROOT" || return 1
+      fsync_directories "$(dirname -- "$STALE_RETIRED_ROOT")" || return 1
     fi
     [ ! -e "$STALE_RETIRED_ROOT" ] && [ ! -L "$STALE_RETIRED_ROOT" ] \
       || return 1
@@ -1797,6 +1907,7 @@ cleanup_executable_pin_root() {
   [ "$parent" = "$EXECUTABLE_PIN_PARENT" ] || return 1
   case "$name" in vl360-executable-pins.*) ;; *) return 1 ;; esac
   rm -rf -- "$EXECUTABLE_PIN_ROOT" >/dev/null 2>&1 || return 1
+  fsync_directories "$EXECUTABLE_PIN_PARENT" || return 1
   EXECUTABLE_PIN_ROOT=''
 }
 
@@ -2050,6 +2161,7 @@ STAGING_CLEANUP_ARMED=false
 cleanup_pinned_archive() {
   [ -n "$PINNED_ARCHIVE_ROOT" ] || return 0
   rm -rf -- "$PINNED_ARCHIVE_ROOT" >/dev/null 2>&1 || true
+  fsync_directories "$EVIDENCE_DIR" >/dev/null 2>&1 || true
   PINNED_ARCHIVE_ROOT=''
 }
 cleanup_private_staging() {
@@ -2064,6 +2176,7 @@ cleanup_private_staging() {
     rm -rf -- "$STAGING_ROOT" >/dev/null 2>&1 || return 1
   fi
   rm -f -- "$STAGING_OWNER_MARKER" >/dev/null 2>&1 || return 1
+  fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 || return 1
   STAGING_CLEANUP_ARMED=false
 }
 cleanup_attempt_authorities() {
@@ -2101,6 +2214,7 @@ for stale_attempt in "$EVIDENCE_DIR"/.systemd-unit-attempt.*; do
   [ -d "$stale_attempt" ] || continue
   [ -e "$stale_attempt/armed" ] || rm -rf -- "$stale_attempt"
 done
+fsync_directories "$EVIDENCE_DIR"
 [ ! -e "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ] \
   && [ ! -e "$STAGING_OWNER_MARKER" ] && [ ! -L "$STAGING_OWNER_MARKER" ] \
   && [ ! -e "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ] \
@@ -2109,6 +2223,7 @@ done
 STAGING_CLEANUP_ARMED=true
 printf '%s\n' "$ATTEMPT_ID" > "$STAGING_OWNER_MARKER"
 mkdir -- "$STAGING_ROOT"
+fsync_directories "$RELEASE_PARENT" "$STAGING_ROOT"
 python "$VERIFY_SCRIPT" \
   --archive "$PINNED_ARCHIVE" --archive-digest-file "$PINNED_ARCHIVE_DIGEST_FILE" \
   --require-closed --evidence-dir "$EVIDENCE_DIR/package"
@@ -2296,6 +2411,7 @@ if target.is_symlink() or target.read_bytes() != raw:
 if os.name != "nt" and target.stat().st_mode & 0o077:
     raise SystemExit("environment authority materialization permissions are too broad")
 PY
+  fsync_directories "$RELEASE_ROOT"
 }
 
 prepare_systemd_unit_attempt() {
@@ -2303,6 +2419,7 @@ prepare_systemd_unit_attempt() {
   UNIT_ATTEMPT_ROOT="$(mktemp -d "$EVIDENCE_DIR/.systemd-unit-attempt.XXXXXXXX")"
   UNIT_BACKUP_ROOT="$UNIT_ATTEMPT_ROOT/backup"
   UNIT_MUTATION_MARKER="$UNIT_ATTEMPT_ROOT/armed"
+  fsync_directories "$EVIDENCE_DIR" "$UNIT_ATTEMPT_ROOT"
 }
 
 remove_systemd_unit_attempt() {
@@ -2391,6 +2508,8 @@ write_durable_text(marker, "armed\n")
 fsync_directory(backup)
 fsync_directory(backup.parent)
 fsync_directory(backup.parent.parent)
+fsync_directory(destination)
+fsync_directory(destination.parent)
 PY
 }
 
@@ -2469,10 +2588,16 @@ detach_persistent_from_release_for_recovery() {
       [ -z "$(find "$PERSISTENT_AGENT_DATA_ROOT" -mindepth 1 -print -quit)" ] \
         || return 1
       rmdir -- "$PERSISTENT_AGENT_DATA_ROOT" || return $?
+      fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
+        || return $?
     fi
     mv -- "$RELEASE_ROOT/agent/data" "$PERSISTENT_AGENT_DATA_ROOT" || return $?
+    fsync_directories "$RELEASE_ROOT/agent" \
+      "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" || return $?
   else
     invoke_mount_authority umount "$RELEASE_ROOT/agent/data" || return $?
+    fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent" \
+      || return $?
   fi
   PERSISTENT_ATTACHED_TO_RELEASE=false
   PERSISTENT_DETACHED=true
@@ -2491,10 +2616,13 @@ attach_persistent_to_release_for_recovery() {
     PERSISTENT_ATTACHED_TO_RELEASE=true
     PERSISTENT_DETACHED=false
     mkdir -- "$PERSISTENT_AGENT_DATA_ROOT" || return $?
+    fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
+      "$PERSISTENT_AGENT_DATA_ROOT" "$(dirname -- "$target")" || return $?
   else
     mkdir -- "$target" || return $?
     invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$target" \
       || return $?
+    fsync_directories "$target" "$(dirname -- "$target")" || return $?
     PERSISTENT_ATTACHED_TO_RELEASE=true
     PERSISTENT_DETACHED=false
   fi
@@ -2542,9 +2670,17 @@ install_recovery() {
         else
           rm -rf -- "$RELEASE_ROOT" >/dev/null 2>&1 || root_restored=false
         fi
+        if [ "$root_restored" = true ]; then
+          fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 \
+            || root_restored=false
+        fi
         if [ "$root_restored" = true ] \
           && [ "$PERSISTENT_ATTACHED_TO_RELEASE" != true ]; then
           mv -- "$OLD_ROOT" "$RELEASE_ROOT" >/dev/null 2>&1 \
+            || root_restored=false
+        fi
+        if [ "$root_restored" = true ]; then
+          fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 \
             || root_restored=false
         fi
         if [ "$root_restored" = true ]; then
@@ -2590,9 +2726,13 @@ install_recovery() {
     fi
   fi
 
-  rm -rf -- "$STAGING_ROOT" >/dev/null 2>&1 || true
+  if rm -rf -- "$STAGING_ROOT" >/dev/null 2>&1; then
+    fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 || true
+  fi
   if [ "$INSTALL_COMPLETE" = true ]; then
-    rm -rf -- "$OLD_ROOT" >/dev/null 2>&1 || true
+    if rm -rf -- "$OLD_ROOT" >/dev/null 2>&1; then
+      fsync_directories "$RELEASE_PARENT" >/dev/null 2>&1 || true
+    fi
   fi
   cleanup_attempt_authorities
   exit "$status"
@@ -2636,6 +2776,7 @@ if [ -e "$CURRENT_DATA" ] || [ -L "$CURRENT_DATA" ]; then
 else
   mkdir -p -- "$(dirname -- "$CURRENT_DATA")"
   mkdir -- "$CURRENT_DATA"
+  fsync_directories "$RELEASE_ROOT" "$(dirname -- "$CURRENT_DATA")"
   snapshot_tree "$CURRENT_DATA" "$SNAPSHOT_BEFORE"
 fi
 
@@ -2648,13 +2789,16 @@ if [ "$LOCAL_REHEARSAL" = true ]; then
     [ -z "$(find "$PERSISTENT_AGENT_DATA_ROOT" -mindepth 1 -print -quit)" ] \
       || die 'local-persistent-authority-not-empty'
     rmdir -- "$PERSISTENT_AGENT_DATA_ROOT"
+    fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")"
   fi
   mv -- "$CURRENT_DATA" "$PERSISTENT_AGENT_DATA_ROOT"
+  fsync_directories "$(dirname -- "$CURRENT_DATA")" "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")"
 else
   invoke_mount_authority findmnt --json --target "$CURRENT_DATA" > "$EVIDENCE_DIR/findmnt-before.json"
   verify_findmnt_file "$EVIDENCE_DIR/findmnt-before.json" \
     "$PERSISTENT_AGENT_DATA_ROOT" "$CURRENT_DATA"
   invoke_mount_authority umount "$CURRENT_DATA"
+  fsync_directories "$CURRENT_DATA" "$(dirname -- "$CURRENT_DATA")"
 fi
 PERSISTENT_DETACHED=true
 PERSISTENT_ATTACHED_TO_RELEASE=false
@@ -2666,12 +2810,16 @@ write_mutation_state swap-release-root-armed
 INSTALL_FAILURE_POINT=swap-release-root
 [ -d "$RELEASE_ROOT" ] || die 'existing-release-root-required'
 mv -- "$RELEASE_ROOT" "$OLD_ROOT"
+fsync_directories "$RELEASE_PARENT"
 OLD_ROOT_READY=true
 mv -- "$STAGING_ROOT" "$RELEASE_ROOT"
+fsync_directories "$RELEASE_PARENT"
 rm -f -- "$STAGING_OWNER_MARKER"
+fsync_directories "$RELEASE_PARENT"
 STAGING_CLEANUP_ARMED=false
 mkdir -p -- "$RELEASE_ROOT/agent"
 rm -rf -- "$RELEASE_ROOT/agent/data"
+fsync_directories "$RELEASE_PARENT" "$RELEASE_ROOT" "$RELEASE_ROOT/agent"
 write_mutation_state root-swapped
 fail_after swap-release-root
 
@@ -2684,12 +2832,15 @@ if [ "$LOCAL_REHEARSAL" = true ]; then
   mv -- "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
   PERSISTENT_ATTACHED_TO_RELEASE=true
   PERSISTENT_DETACHED=false
+  mkdir -- "$PERSISTENT_AGENT_DATA_ROOT"
+  fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
+    "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent"
   write_mutation_state persistent-restored
   fail_after restore-bind-agent-data
-  mkdir -- "$PERSISTENT_AGENT_DATA_ROOT"
 else
   mkdir -- "$RELEASE_ROOT/agent/data"
   invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
+  fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent"
   PERSISTENT_ATTACHED_TO_RELEASE=true
   PERSISTENT_DETACHED=false
   write_mutation_state persistent-restored
@@ -2753,11 +2904,13 @@ PY
 INSTALL_FAILURE_POINT=retire-old-root
 write_mutation_state retire-old-root-armed
 mv -- "$OLD_ROOT" "$RETIRED_ROOT"
+fsync_directories "$RELEASE_PARENT"
 OLD_ROOT_READY=false
 INSTALL_COMMITTED=true
 write_mutation_state committed-cleanup
 INSTALL_FAILURE_POINT=remove-retired-old-root
 rm -rf -- "$RETIRED_ROOT"
+fsync_directories "$RELEASE_PARENT"
 [ ! -e "$RETIRED_ROOT" ] && [ ! -L "$RETIRED_ROOT" ] \
   || die 'retired-old-root-cleanup-incomplete'
 if remove_systemd_unit_attempt; then
