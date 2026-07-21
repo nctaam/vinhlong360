@@ -65,14 +65,20 @@ preflight_authority_role_collisions() {
 import os
 import sys
 
-seen = {}
+seen = []
 for index in range(1, len(sys.argv), 2):
     role = sys.argv[index]
     authority = os.path.normcase(os.path.realpath(sys.argv[index + 1]))
-    existing_role = seen.get(authority)
-    if existing_role is not None and existing_role != role:
-        raise SystemExit(12)
-    seen[authority] = role
+    for existing_role, existing_authority in seen:
+        if existing_role == role:
+            continue
+        try:
+            common = os.path.commonpath((authority, existing_authority))
+        except ValueError:
+            continue
+        if common in (authority, existing_authority):
+            raise SystemExit(12)
+    seen.append((role, authority))
 PY
 }
 
@@ -652,25 +658,10 @@ STALE_PID=''
 STALE_ATTEMPT_ID=''
 STALE_LOCAL_REHEARSAL=''
 
-write_mutation_state() {
-  local stage="$1"
-  local release_spec persistent_spec release_key persistent_key
-  release_spec="$(lock_spec release "$RELEASE_ROOT" "$LOCAL_REHEARSAL")" || return 1
-  persistent_spec="$(lock_spec persistent "$PERSISTENT_AGENT_DATA_ROOT" \
-    "$LOCAL_REHEARSAL")" || return 1
-  IFS='|' read -r _ _ release_key _ <<< "$release_spec"
-  IFS='|' read -r _ _ persistent_key _ <<< "$persistent_spec"
-  MSYS2_ENV_CONV_EXCL='VL360_STATE_RELEASE_ROOT;VL360_STATE_PERSISTENT_ROOT;VL360_STATE_STAGING_ROOT;VL360_STATE_OLD_ROOT;VL360_STATE_RETIRED_ROOT;VL360_STATE_SYSTEMD_UNIT_DESTINATION;VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT' \
-    VL360_STATE_RELEASE_ROOT="$RELEASE_ROOT" \
-    VL360_STATE_PERSISTENT_ROOT="$PERSISTENT_AGENT_DATA_ROOT" \
-    VL360_STATE_STAGING_ROOT="$STAGING_ROOT" \
-    VL360_STATE_OLD_ROOT="$OLD_ROOT" \
-    VL360_STATE_RETIRED_ROOT="$RETIRED_ROOT" \
-    VL360_STATE_SYSTEMD_UNIT_DESTINATION="$SYSTEMD_UNIT_DESTINATION" \
-    VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT="$UNIT_ATTEMPT_ROOT" \
-    VL360_STATE_LOCAL_REHEARSAL="$LOCAL_REHEARSAL" \
-    python - "$MUTATION_STATE" "$stage" "$ATTEMPT_ID" "$$" \
-      "$release_key" "$persistent_key" "$CURRENT_SYSTEMD_KEY" <<'PY'
+write_durable_atomic_json() {
+  local path="$1"
+  local payload="$2"
+  VL360_DURABLE_JSON_PAYLOAD="$payload" python - "$path" <<'PY'
 import json
 import os
 from pathlib import Path
@@ -687,23 +678,7 @@ def fsync_directory(directory):
         os.close(descriptor)
 
 path = Path(sys.argv[1])
-payload = {
-    "attempt_id": sys.argv[3],
-    "local_rehearsal": os.environ["VL360_STATE_LOCAL_REHEARSAL"] == "true",
-    "old_root": os.environ["VL360_STATE_OLD_ROOT"],
-    "persistent_key_sha256": sys.argv[6],
-    "persistent_root": os.environ["VL360_STATE_PERSISTENT_ROOT"],
-    "pid": int(sys.argv[4]),
-    "release_key_sha256": sys.argv[5],
-    "release_root": os.environ["VL360_STATE_RELEASE_ROOT"],
-    "retired_root": os.environ["VL360_STATE_RETIRED_ROOT"],
-    "schema_version": 3,
-    "stage": sys.argv[2],
-    "staging_root": os.environ["VL360_STATE_STAGING_ROOT"],
-    "systemd_key_sha256": sys.argv[7],
-    "systemd_unit_attempt_root": os.environ["VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT"],
-    "systemd_unit_destination": os.environ["VL360_STATE_SYSTEMD_UNIT_DESTINATION"],
-}
+payload = json.loads(os.environ["VL360_DURABLE_JSON_PAYLOAD"])
 descriptor, name = tempfile.mkstemp(prefix=".install-mutation-state.", dir=path.parent)
 temporary = Path(name)
 try:
@@ -722,6 +697,51 @@ finally:
 PY
 }
 
+write_mutation_state() {
+  local stage="$1"
+  local payload release_spec persistent_spec release_key persistent_key
+  release_spec="$(lock_spec release "$RELEASE_ROOT" "$LOCAL_REHEARSAL")" || return 1
+  persistent_spec="$(lock_spec persistent "$PERSISTENT_AGENT_DATA_ROOT" \
+    "$LOCAL_REHEARSAL")" || return 1
+  IFS='|' read -r _ _ release_key _ <<< "$release_spec"
+  IFS='|' read -r _ _ persistent_key _ <<< "$persistent_spec"
+  payload="$(MSYS2_ENV_CONV_EXCL='VL360_STATE_RELEASE_ROOT;VL360_STATE_PERSISTENT_ROOT;VL360_STATE_STAGING_ROOT;VL360_STATE_OLD_ROOT;VL360_STATE_RETIRED_ROOT;VL360_STATE_SYSTEMD_UNIT_DESTINATION;VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT' \
+    VL360_STATE_RELEASE_ROOT="$RELEASE_ROOT" \
+    VL360_STATE_PERSISTENT_ROOT="$PERSISTENT_AGENT_DATA_ROOT" \
+    VL360_STATE_STAGING_ROOT="$STAGING_ROOT" \
+    VL360_STATE_OLD_ROOT="$OLD_ROOT" \
+    VL360_STATE_RETIRED_ROOT="$RETIRED_ROOT" \
+    VL360_STATE_SYSTEMD_UNIT_DESTINATION="$SYSTEMD_UNIT_DESTINATION" \
+    VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT="$UNIT_ATTEMPT_ROOT" \
+    VL360_STATE_LOCAL_REHEARSAL="$LOCAL_REHEARSAL" \
+    python - "$MUTATION_STATE" "$stage" "$ATTEMPT_ID" "$$" \
+      "$release_key" "$persistent_key" "$CURRENT_SYSTEMD_KEY" <<'PY'
+import json
+import os
+import sys
+payload = {
+    "attempt_id": sys.argv[3],
+    "local_rehearsal": os.environ["VL360_STATE_LOCAL_REHEARSAL"] == "true",
+    "old_root": os.environ["VL360_STATE_OLD_ROOT"],
+    "persistent_key_sha256": sys.argv[6],
+    "persistent_root": os.environ["VL360_STATE_PERSISTENT_ROOT"],
+    "pid": int(sys.argv[4]),
+    "release_key_sha256": sys.argv[5],
+    "release_root": os.environ["VL360_STATE_RELEASE_ROOT"],
+    "retired_root": os.environ["VL360_STATE_RETIRED_ROOT"],
+    "schema_version": 3,
+    "stage": sys.argv[2],
+    "staging_root": os.environ["VL360_STATE_STAGING_ROOT"],
+    "systemd_key_sha256": sys.argv[7],
+    "systemd_unit_attempt_root": os.environ["VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT"],
+    "systemd_unit_destination": os.environ["VL360_STATE_SYSTEMD_UNIT_DESTINATION"],
+}
+print(json.dumps(payload, separators=(",", ":"), sort_keys=True))
+PY
+  )" || return 1
+  write_durable_atomic_json "$MUTATION_STATE" "$payload"
+}
+
 clear_mutation_state() {
   rm -f -- "$MUTATION_STATE"
 }
@@ -736,25 +756,45 @@ from pathlib import Path
 import re
 import sys
 
+attempt_id_re = re.compile(r"^[0-9a-f]{32}$")
 sha256_re = re.compile(r"^[0-9a-f]{64}$")
+expected_keys = {
+    "attempt_id",
+    "local_rehearsal",
+    "old_root",
+    "persistent_key_sha256",
+    "persistent_root",
+    "pid",
+    "release_key_sha256",
+    "release_root",
+    "retired_root",
+    "schema_version",
+    "stage",
+    "staging_root",
+    "systemd_key_sha256",
+    "systemd_unit_attempt_root",
+    "systemd_unit_destination",
+}
 try:
     payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    if payload.get("schema_version") != 3:
+    if type(payload) is not dict or set(payload) != expected_keys:
         raise ValueError
-    attempt_id = str(payload["attempt_id"])
-    pid = int(payload["pid"])
-    stage = str(payload["stage"])
+    if type(payload["schema_version"]) is not int or payload["schema_version"] != 3:
+        raise ValueError
+    attempt_id = payload["attempt_id"]
+    pid = payload["pid"]
+    stage = payload["stage"]
     local_rehearsal = payload["local_rehearsal"]
-    release_root = str(payload["release_root"])
-    persistent_root = str(payload["persistent_root"])
-    staging_root = str(payload["staging_root"])
-    old_root = str(payload["old_root"])
-    retired_root = str(payload["retired_root"])
-    systemd_destination = str(payload["systemd_unit_destination"])
-    systemd_attempt_root = str(payload["systemd_unit_attempt_root"])
-    release_key = str(payload["release_key_sha256"])
-    persistent_key = str(payload["persistent_key_sha256"])
-    systemd_key = str(payload["systemd_key_sha256"])
+    release_root = payload["release_root"]
+    persistent_root = payload["persistent_root"]
+    staging_root = payload["staging_root"]
+    old_root = payload["old_root"]
+    retired_root = payload["retired_root"]
+    systemd_destination = payload["systemd_unit_destination"]
+    systemd_attempt_root = payload["systemd_unit_attempt_root"]
+    release_key = payload["release_key_sha256"]
+    persistent_key = payload["persistent_key_sha256"]
+    systemd_key = payload["systemd_key_sha256"]
     values = (
         release_root,
         persistent_root,
@@ -764,9 +804,17 @@ try:
         systemd_destination,
     )
     if (
-        not attempt_id
+        type(attempt_id) is not str
+        or attempt_id_re.fullmatch(attempt_id) is None
+        or type(pid) is not int
         or pid <= 0
+        or type(stage) is not str
         or type(local_rehearsal) is not bool
+        or any(type(value) is not str for value in values)
+        or type(systemd_attempt_root) is not str
+        or type(release_key) is not str
+        or type(persistent_key) is not str
+        or type(systemd_key) is not str
         or any(not value.startswith("/") or any(c in value for c in "\t\n|") for value in values)
         or not sha256_re.fullmatch(release_key)
         or not sha256_re.fullmatch(persistent_key)
@@ -777,11 +825,25 @@ try:
     release_name = posixpath.basename(release_root)
     if release_name in ("", ".", ".."):
         raise ValueError
-    if staging_root != f"{release_parent}/.{release_name}.closed-stage.{pid}":
+    expected_staging_name = f".{release_name}.closed-stage.{pid}"
+    expected_old_name = f".{release_name}.closed-old.{pid}"
+    expected_retired_name = f".{release_name}.closed-retired.{attempt_id}"
+    for path, expected_name in (
+        (staging_root, expected_staging_name),
+        (old_root, expected_old_name),
+        (retired_root, expected_retired_name),
+    ):
+        if (
+            posixpath.normpath(path) != path
+            or posixpath.dirname(path) != release_parent
+            or posixpath.basename(path) != expected_name
+        ):
+            raise ValueError
+    if staging_root != f"{release_parent}/{expected_staging_name}":
         raise ValueError
-    if old_root != f"{release_parent}/.{release_name}.closed-old.{pid}":
+    if old_root != f"{release_parent}/{expected_old_name}":
         raise ValueError
-    if retired_root != f"{release_parent}/.{release_name}.closed-retired.{attempt_id}":
+    if retired_root != f"{release_parent}/{expected_retired_name}":
         raise ValueError
     if systemd_attempt_root:
         if (
@@ -991,7 +1053,8 @@ PY
 
 write_stale_mutation_state() {
   local stage="$1"
-  MSYS2_ENV_CONV_EXCL='VL360_STALE_RELEASE_ROOT;VL360_STALE_PERSISTENT_ROOT;VL360_STALE_STAGING_ROOT;VL360_STALE_OLD_ROOT;VL360_STALE_RETIRED_ROOT;VL360_STALE_SYSTEMD_UNIT_DESTINATION;VL360_STALE_SYSTEMD_UNIT_ATTEMPT_ROOT' \
+  local payload
+  payload="$(MSYS2_ENV_CONV_EXCL='VL360_STALE_RELEASE_ROOT;VL360_STALE_PERSISTENT_ROOT;VL360_STALE_STAGING_ROOT;VL360_STALE_OLD_ROOT;VL360_STALE_RETIRED_ROOT;VL360_STALE_SYSTEMD_UNIT_DESTINATION;VL360_STALE_SYSTEMD_UNIT_ATTEMPT_ROOT' \
     VL360_STALE_RELEASE_ROOT="$STALE_RELEASE_ROOT" \
     VL360_STALE_PERSISTENT_ROOT="$STALE_PERSISTENT_ROOT" \
     VL360_STALE_STAGING_ROOT="$STALE_STAGING_ROOT" \
@@ -1006,7 +1069,6 @@ import json
 import os
 from pathlib import Path
 import sys
-import tempfile
 
 path = Path(sys.argv[1])
 payload = json.loads(path.read_text(encoding="utf-8"))
@@ -1030,21 +1092,10 @@ expected = {
 if payload != expected:
     raise SystemExit(1)
 payload["stage"] = sys.argv[2]
-descriptor, name = tempfile.mkstemp(prefix=".install-mutation-state.", dir=path.parent)
-temporary = Path(name)
-try:
-    with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
-        descriptor = -1
-        json.dump(payload, stream, indent=2, sort_keys=True)
-        stream.write("\n")
-        stream.flush()
-        os.fsync(stream.fileno())
-    os.replace(temporary, path)
-finally:
-    if descriptor != -1:
-        os.close(descriptor)
-    temporary.unlink(missing_ok=True)
+print(json.dumps(payload, separators=(",", ":"), sort_keys=True))
 PY
+  )" || return 1
+  write_durable_atomic_json "$MUTATION_STATE" "$payload" || return 1
   STALE_STAGE="$stage"
 }
 
@@ -1394,6 +1445,32 @@ if [ "$PENDING_STALE_RECOVERY" = true ] && ! load_stale_install_state; then
   record_install_lock recovery-required 2 || true
   LOCK_TERMINAL_RECORDED=true
   die 'stale-install-recovery-required'
+fi
+AUTHORITY_ROLE_ARGS=(
+  evidence "$EVIDENCE_DIR"
+  release "$RELEASE_ROOT"
+  persistent "$PERSISTENT_AGENT_DATA_ROOT"
+  systemd "$SYSTEMD_UNIT_DESTINATION"
+)
+if [ "$PENDING_STALE_RECOVERY" = true ]; then
+  AUTHORITY_ROLE_ARGS+=(
+    release "$STALE_RELEASE_ROOT"
+    persistent "$STALE_PERSISTENT_ROOT"
+    systemd "$STALE_SYSTEMD_UNIT_DESTINATION"
+  )
+fi
+if preflight_authority_role_collisions "${AUTHORITY_ROLE_ARGS[@]}"; then
+  :
+else
+  authority_role_status=$?
+  if [ "$authority_role_status" -eq 12 ]; then
+    record_install_lock rejected 2 || true
+    LOCK_TERMINAL_RECORDED=true
+    die 'install-authority-role-collision'
+  fi
+  record_install_lock acquire-failed 2 || true
+  LOCK_TERMINAL_RECORDED=true
+  die 'install-lock-acquire-failed'
 fi
 TARGET_LOCK_KEYS=()
 declare -A TARGET_LOCK_AUTHORITIES=()

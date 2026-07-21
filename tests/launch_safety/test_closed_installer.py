@@ -1847,6 +1847,29 @@ def test_persistent_and_systemd_role_collision_is_rejected_before_mutation(
     assert not list(case_root.rglob("authority-*.lock"))
 
 
+def test_nested_release_and_persistent_roles_are_rejected_before_any_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "nested-release-persistent"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, hook_log, values = prepared
+    nested = release / "persistent"
+    persistent.rename(nested)
+    persistent = nested
+    prepared = (release, persistent, evidence, {}, {}, hook_log, values)
+    case_before = _snapshot_tree(case_root)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "install-authority-role-collision" in result.stderr
+    assert not hook_log.exists()
+    assert _snapshot_tree(case_root) == case_before
+    assert not list(case_root.rglob("authority-*.lock"))
+
+
 @pytest.mark.parametrize("shared_authority", ("release", "persistent", "systemd"))
 def test_attempts_sharing_any_destructive_authority_are_excluded(
     tmp_path: Path, closed_package, shared_authority: str
@@ -3006,6 +3029,69 @@ def _interrupt_after_systemd_mutation(package, case_root: Path, prepared):
     return journal, attempts[0], unit_destination, legacy_units
 
 
+@pytest.mark.parametrize(
+    "journal_mutation",
+    (
+        "uppercase-attempt-id",
+        "noncanonical-working-paths",
+    ),
+)
+def test_stale_recovery_rejects_noncanonical_journal_before_file_operations(
+    tmp_path: Path, closed_package, journal_mutation: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"journal-{journal_mutation}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, _, _, _, _ = prepared
+    journal, attempt, unit_destination, _ = _interrupt_after_systemd_mutation(
+        closed_package, case_root, prepared
+    )
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    if journal_mutation == "uppercase-attempt-id":
+        payload["attempt_id"] = payload["attempt_id"].upper()
+        payload["retired_root"] = payload["retired_root"].rsplit(".", 1)[0] + (
+            f".{payload['attempt_id']}"
+        )
+    else:
+        release_parent, release_name = payload["release_root"].rsplit("/", 1)
+        noncanonical_parent = f"{release_parent}/."
+        payload["release_root"] = f"{noncanonical_parent}/{release_name}"
+        payload["staging_root"] = (
+            f"{noncanonical_parent}/.{release_name}.closed-stage.{payload['pid']}"
+        )
+        payload["old_root"] = (
+            f"{noncanonical_parent}/.{release_name}.closed-old.{payload['pid']}"
+        )
+        payload["retired_root"] = (
+            f"{noncanonical_parent}/.{release_name}.closed-retired."
+            f"{payload['attempt_id']}"
+        )
+    journal.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    journal_before = journal.read_bytes()
+    attempt_before = _snapshot_tree(attempt)
+    release_before = _snapshot_tree(release)
+    persistent_before = _snapshot_tree(persistent)
+    units_before = _snapshot_tree(unit_destination)
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert journal.read_bytes() == journal_before
+    assert _snapshot_tree(attempt) == attempt_before
+    assert _snapshot_tree(release) == release_before
+    assert _snapshot_tree(persistent) == persistent_before
+    assert _snapshot_tree(unit_destination) == units_before
+
+
 def _rewrite_systemd_backup_metadata(attempt: Path, mutation: str) -> None:
     metadata_path = attempt / "backup" / "metadata.json"
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
@@ -3097,12 +3183,47 @@ def test_systemd_recovery_material_is_durable_before_journal_and_unit_mutation()
     ):
         assert required in backup
 
+    durable_writer = source[
+        source.index("write_durable_atomic_json()") : source.index(
+            "write_mutation_state()"
+        )
+    ]
+    assert durable_writer.index("os.replace(temporary, path)") < durable_writer.index(
+        "fsync_directory(path.parent)"
+    )
+
     journal = source[
         source.index("write_mutation_state()") : source.index("clear_mutation_state()")
     ]
-    assert journal.index("os.replace(temporary, path)") < journal.index(
-        "fsync_directory(path.parent)"
-    )
+    assert 'write_durable_atomic_json "$MUTATION_STATE" "$payload"' in journal
+
+    stale_journal = source[
+        source.index("write_stale_mutation_state()") : source.index(
+            "stale_tree_state()"
+        )
+    ]
+    assert 'write_durable_atomic_json "$MUTATION_STATE" "$payload"' in stale_journal
+
+    recovery = source[
+        source.index("reconcile_stale_install_attempt()") : source.index(
+            "record_install_lock()"
+        )
+    ]
+    for journal_write, file_operation in (
+        (
+            "write_stale_mutation_state recovery-detach-persistent-armed",
+            'mv -- "$current_data" "$STALE_PERSISTENT_ROOT"',
+        ),
+        (
+            "write_stale_mutation_state recovery-remove-release-root-armed",
+            'rm -rf -- "$STALE_RELEASE_ROOT"',
+        ),
+        (
+            "write_stale_mutation_state recovery-restore-old-root-armed",
+            'mv -- "$STALE_OLD_ROOT" "$STALE_RELEASE_ROOT"',
+        ),
+    ):
+        assert recovery.index(journal_write) < recovery.index(file_operation)
 
 
 def test_sigkill_after_systemd_mutation_restores_original_units_before_retry(
