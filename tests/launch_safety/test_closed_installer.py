@@ -3029,6 +3029,73 @@ def _interrupt_after_systemd_mutation(package, case_root: Path, prepared):
     return journal, attempts[0], unit_destination, legacy_units
 
 
+@pytest.mark.parametrize("authority_role", ("release", "persistent", "systemd"))
+def test_stale_recovery_rejects_nested_same_role_authorities_before_mutation(
+    tmp_path: Path, closed_package, authority_role: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"ns-{authority_role[0]}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, hook_log, values = prepared
+    journal, attempt, unit_destination, _ = _interrupt_after_systemd_mutation(
+        closed_package, case_root, prepared
+    )
+    current_release = release
+    current_persistent = persistent
+    runtime_arg = None
+    if authority_role == "release":
+        current_release = release / "current-release"
+        sentinel = release / ".vl360-current-rehearsal"
+        sentinel.write_text("vinhlong360-local-rehearsal-v1\n", encoding="ascii")
+        values["VL360_LOCAL_REHEARSAL_SENTINEL"] = _bash_path(sentinel)
+    elif authority_role == "persistent":
+        current_persistent = persistent / "current-persistent"
+    else:
+        runtime_arg = _bash_path(unit_destination)
+    current_prepared = (
+        current_release,
+        current_persistent,
+        evidence,
+        {},
+        {},
+        hook_log,
+        values,
+    )
+    python_hook = case_root / "runtime" / "python-hook.sh"
+    python_hook.write_text("#!/usr/bin/env bash\nexit 19\n", encoding="ascii")
+    python_hook.chmod(0o755)
+    journal_before = journal.read_bytes()
+    attempt_before = _snapshot_tree(attempt)
+    release_before = _snapshot_tree(release)
+    persistent_before = _snapshot_tree(persistent)
+    units_before = _snapshot_tree(unit_destination)
+    env = os.environ.copy()
+    env.update(values)
+
+    retry = subprocess.run(
+        _installer_command(
+            closed_package,
+            case_root,
+            current_prepared,
+            runtime_arg=runtime_arg,
+        ),
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "install-authority-role-collision" in retry.stderr
+    assert journal.read_bytes() == journal_before
+    assert _snapshot_tree(attempt) == attempt_before
+    assert _snapshot_tree(release) == release_before
+    assert _snapshot_tree(persistent) == persistent_before
+    assert _snapshot_tree(unit_destination) == units_before
+
+
 @pytest.mark.parametrize(
     "journal_mutation",
     (
@@ -3067,6 +3134,79 @@ def test_stale_recovery_rejects_noncanonical_journal_before_file_operations(
             f"{noncanonical_parent}/.{release_name}.closed-retired."
             f"{payload['attempt_id']}"
         )
+    journal.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    journal_before = journal.read_bytes()
+    attempt_before = _snapshot_tree(attempt)
+    release_before = _snapshot_tree(release)
+    persistent_before = _snapshot_tree(persistent)
+    units_before = _snapshot_tree(unit_destination)
+
+    retry = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        failed_hook="python",
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert journal.read_bytes() == journal_before
+    assert _snapshot_tree(attempt) == attempt_before
+    assert _snapshot_tree(release) == release_before
+    assert _snapshot_tree(persistent) == persistent_before
+    assert _snapshot_tree(unit_destination) == units_before
+
+
+@pytest.mark.parametrize(
+    "authority_mutation",
+    (
+        "release-redundant-separator",
+        "persistent-parent-traversal",
+        "systemd-redundant-component",
+        "systemd-attempt-redundant-separator",
+        "release-symlink-parent",
+    ),
+)
+def test_stale_recovery_rejects_noncanonical_authority_spelling_before_mutation(
+    tmp_path: Path, closed_package, authority_mutation: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"ja-{authority_mutation[0]}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, _, _, _, _ = prepared
+    journal, attempt, unit_destination, _ = _interrupt_after_systemd_mutation(
+        closed_package, case_root, prepared
+    )
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    if authority_mutation == "release-redundant-separator":
+        parent, name = payload["release_root"].rsplit("/", 1)
+        payload["release_root"] = f"{parent}//{name}"
+    elif authority_mutation == "persistent-parent-traversal":
+        alias_component = case_root / "authority-alias-component"
+        alias_component.mkdir()
+        parent, name = payload["persistent_root"].rsplit("/", 1)
+        payload["persistent_root"] = f"{parent}/{alias_component.name}/../{name}"
+    elif authority_mutation == "systemd-redundant-component":
+        parent, name = payload["systemd_unit_destination"].rsplit("/", 1)
+        payload["systemd_unit_destination"] = f"{parent}/./{name}"
+    elif authority_mutation == "systemd-attempt-redundant-separator":
+        parent, name = payload["systemd_unit_attempt_root"].rsplit("/", 1)
+        payload["systemd_unit_attempt_root"] = f"{parent}//{name}"
+    else:
+        alias_parent = case_root / "authority-parent-alias"
+        try:
+            alias_parent.symlink_to(case_root, target_is_directory=True)
+        except OSError as exc:
+            pytest.skip(f"directory symlinks are unavailable: {exc}")
+        canonical_parent = _bash_path(case_root)
+        alias_prefix = _bash_path_literal(alias_parent)
+        for field in ("release_root", "staging_root", "old_root", "retired_root"):
+            payload[field] = payload[field].replace(
+                f"{canonical_parent}/", f"{alias_prefix}/", 1
+            )
     journal.write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )

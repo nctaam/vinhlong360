@@ -70,7 +70,7 @@ for index in range(1, len(sys.argv), 2):
     role = sys.argv[index]
     authority = os.path.normcase(os.path.realpath(sys.argv[index + 1]))
     for existing_role, existing_authority in seen:
-        if existing_role == role:
+        if existing_role == role and existing_authority == authority:
             continue
         try:
             common = os.path.commonpath((authority, existing_authority))
@@ -80,6 +80,24 @@ for index in range(1, len(sys.argv), 2):
             raise SystemExit(12)
     seen.append((role, authority))
 PY
+}
+
+canonical_authority_path() {
+  local authority="$1"
+  local local_rehearsal="$2"
+  local canonical
+  canonical="$(python - "$authority" <<'PY'
+import os
+import sys
+
+print(os.path.realpath(os.path.abspath(sys.argv[1])))
+PY
+  )" || return 1
+  if [ "$local_rehearsal" = true ] && command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "$canonical"
+  else
+    printf '%s\n' "$canonical"
+  fi
 }
 
 ATTEMPT_ID="$(python - <<'PY'
@@ -821,6 +839,13 @@ try:
         or not sha256_re.fullmatch(systemd_key)
     ):
         raise ValueError
+    authority_paths = (
+        release_root,
+        persistent_root,
+        systemd_destination,
+    )
+    if any(posixpath.normpath(path) != path for path in authority_paths):
+        raise ValueError
     release_parent = posixpath.dirname(release_root)
     release_name = posixpath.basename(release_root)
     if release_name in ("", ".", ".."):
@@ -849,6 +874,7 @@ try:
         if (
             not systemd_attempt_root.startswith("/")
             or any(c in systemd_attempt_root for c in "\t\n|")
+            or posixpath.normpath(systemd_attempt_root) != systemd_attempt_root
             or re.fullmatch(
                 r"\.systemd-unit-attempt\.[A-Za-z0-9]+",
                 posixpath.basename(systemd_attempt_root),
@@ -886,9 +912,22 @@ PY
     STALE_RETIRED_ROOT STALE_SYSTEMD_UNIT_DESTINATION STALE_SYSTEMD_KEY \
     STALE_SYSTEMD_UNIT_ATTEMPT_ROOT \
     <<< "$state"
-  [ -z "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
-    || [ "$(dirname -- "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT")" = "$EVIDENCE_DIR" ] \
-    || return 1
+  local stale_authority canonical_authority
+  for stale_authority in "$STALE_RELEASE_ROOT" "$STALE_PERSISTENT_ROOT" \
+    "$STALE_SYSTEMD_UNIT_DESTINATION"; do
+    canonical_authority="$(canonical_authority_path "$stale_authority" \
+      "$STALE_LOCAL_REHEARSAL")" || return 1
+    [ "$canonical_authority" = "$stale_authority" ] || return 1
+  done
+  if [ -n "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ]; then
+    canonical_authority="$(canonical_authority_path \
+      "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" "$STALE_LOCAL_REHEARSAL")" \
+      || return 1
+    [ "$canonical_authority" = "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" ] \
+      || return 1
+    [ "$(dirname -- "$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT")" = "$EVIDENCE_DIR" ] \
+      || return 1
+  fi
   release_spec="$(lock_spec release "$STALE_RELEASE_ROOT" \
     "$STALE_LOCAL_REHEARSAL")" || return 1
   persistent_spec="$(lock_spec persistent "$STALE_PERSISTENT_ROOT" \
