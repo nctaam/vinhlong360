@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tarfile
 import time
+import venv
 
 import pytest
 
@@ -98,6 +99,8 @@ def _invoke_standalone_pinned_executor(
     args: list[str],
     *,
     local_rehearsal: bool,
+    bash_digest: str = "unused",
+    bash_executor: Path | None = None,
     env_overrides: dict[str, str] | None = None,
     stdin: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
@@ -107,6 +110,7 @@ def _invoke_standalone_pinned_executor(
         "python-dependency": pin_root / "python-dependency",
         "nuxt-dependency": pin_root / "nuxt-dependency",
         "unit-verify": pin_root / "unit-verify",
+        "bash-interpreter": pin_root / "bash-interpreter",
     }
     assignments = "\n".join(
         (
@@ -121,13 +125,19 @@ def _invoke_standalone_pinned_executor(
             "PINNED_UNIT_VERIFY_HOOK="
             f"{shlex.quote(_bash_path(pin_paths['unit-verify']))}",
             "UNIT_VERIFY_HOOK_SHA256=unused",
+            "PINNED_BASH_EXECUTOR="
+            f"{shlex.quote(_bash_path(pin_paths['bash-interpreter']))}",
+            f"BASH_EXECUTOR_SHA256={shlex.quote(bash_digest)}",
             f"EXECUTABLE_PIN_ROOT={shlex.quote(_bash_path(pin_root))}",
             f"LOCAL_REHEARSAL={'true' if local_rehearsal else 'false'}",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable)))}",
+            f"BASH_EXECUTOR={shlex.quote(_bash_path(bash_executor or BASH))}",
         )
     )
     script = "\n".join(
         (
             "set -u",
+            'invoke_python() { command "$PYTHON_EXECUTOR" "$@"; }',
             _shell_function(source, "verify_pinned_executable"),
             _shell_function(source, "invoke_pinned_executable"),
             assignments,
@@ -137,8 +147,11 @@ def _invoke_standalone_pinned_executor(
     env = os.environ.copy()
     if env_overrides:
         env.update(env_overrides)
+    runner = pin_root / "standalone-pinned-executor.sh"
+    runner.write_text(script + "\n", encoding="utf-8")
+    runner.chmod(0o755)
     return subprocess.run(
-        [str(BASH), "-c", script, "vl360-pinned-test", *args],
+        [str(BASH), _bash_path(runner), *args],
         cwd=ROOT,
         env=env,
         input=stdin,
@@ -146,6 +159,18 @@ def _invoke_standalone_pinned_executor(
         capture_output=True,
         text=True,
     )
+
+
+def _write_local_python_executor(path: Path, body: str) -> Path:
+    path.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -u\n"
+        f"REAL_PYTHON={shlex.quote(_bash_path(Path(sys.executable).resolve()))}\n"
+        f"{body}",
+        encoding="ascii",
+    )
+    path.chmod(0o755)
+    return path.resolve()
 
 
 def _unit_attempt_artifacts(evidence: Path) -> list[Path]:
@@ -239,7 +264,7 @@ def _cleanup_failure_bash_env(
     evidence: Path,
     cleanup_kind: str,
     failure_mode: str,
-) -> Path:
+) -> tuple[Path, Path | None]:
     matched = case_root / f"{cleanup_kind}-{failure_mode}-matched"
     removed = case_root / f"{cleanup_kind}-{failure_mode}-removed"
     fsync_failed = case_root / f"{cleanup_kind}-{failure_mode}-fsync-failed"
@@ -264,7 +289,7 @@ def _cleanup_failure_bash_env(
             "  return \"$status\""
         ),
     }[failure_mode]
-    fsync_wrapper = ""
+    python_executor = None
     if failure_mode == "fsync":
         if cleanup_kind == "lock":
             parent_match = (
@@ -273,19 +298,18 @@ def _cleanup_failure_bash_env(
             )
         else:
             parent_match = f"if [ \"$argument\" = '{fsync_parent}' ]; then"
-        fsync_wrapper = (
-            "python() {\n"
+        python_executor = _write_local_python_executor(
+            case_root / f"{cleanup_kind}-{failure_mode}-python",
             f"  if [ \"${{1:-}}\" = - ] && [ -f '{_bash_path(removed)}' ] "
             f"&& [ ! -f '{_bash_path(fsync_failed)}' ]; then\n"
             "    for argument in \"$@\"; do\n"
             f"      {parent_match}\n"
             f"        : > '{_bash_path(fsync_failed)}'\n"
-            "        return 63\n"
+            "        exit 63\n"
             "      fi\n"
             "    done\n"
             "  fi\n"
-            "  command python \"$@\"\n"
-            "}\n"
+            "command \"$REAL_PYTHON\" \"$@\"\n",
         )
 
     bash_env = case_root / f"{cleanup_kind}-{failure_mode}.bash"
@@ -299,11 +323,10 @@ def _cleanup_failure_bash_env(
         "    esac\n"
         "  done\n"
         "  /usr/bin/rm \"$@\"\n"
-        "}\n"
-        f"{fsync_wrapper}",
+        "}\n",
         encoding="ascii",
     )
-    return bash_env
+    return bash_env, python_executor
 
 
 def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
@@ -362,6 +385,7 @@ def _prepare_case(tmp_path: Path, package, *, fail_after: str | None = None):
         "VL360_NUXT_DEPENDENCY_HOOK": _bash_path(hooks["nuxt"]),
         "VL360_UNIT_VERIFY_HOOK": _bash_path(hooks["units"]),
         "VL360_LOCAL_REHEARSAL_SENTINEL": _bash_path(sentinel),
+        "VL360_PYTHON_EXECUTOR": _bash_path(Path(sys.executable).resolve()),
         "TMPDIR": _bash_path(private_tmp),
     }
     if fail_after is not None:
@@ -457,6 +481,8 @@ def _invoke_installer(
     env = os.environ.copy()
     env.update(values)
     if env_overrides is not None:
+        if "VL360_LOCAL_PYTHON_EXECUTOR" in env_overrides:
+            env.pop("VL360_PYTHON_EXECUTOR", None)
         env.update(env_overrides)
     args = _installer_command(
         package,
@@ -793,23 +819,22 @@ def _interrupt_at_journal_stage(package, case_root: Path, prepared, stage: str):
     *_, evidence, _, _, _, values = prepared
     interrupted = case_root / f"interrupted-{stage}"
     journal = evidence / "install-mutation-state.json"
-    bash_env = case_root / f"kill-at-{stage}.bash"
-    bash_env.write_text(
-        "python() {\n"
-        "  command python \"$@\"\n"
+    python_executor = _write_local_python_executor(
+        case_root / f"kill-at-{stage}-python",
+        "command \"$REAL_PYTHON\" \"$@\"\n"
         "  status=$?\n"
         f"  if [ -f '{_bash_path(journal)}' ] "
         f"&& grep -Fq '\"stage\": \"{stage}\"' '{_bash_path(journal)}'; then\n"
         f"    : > '{_bash_path(interrupted)}'\n"
+        "    kill -9 \"$PPID\"\n"
         "    kill -9 \"$$\"\n"
         "  fi\n"
-        "  return \"$status\"\n"
-        "}\n",
-        encoding="ascii",
+        "exit \"$status\"\n",
     )
     env = os.environ.copy()
     env.update(values)
-    env["BASH_ENV"] = _bash_path(bash_env)
+    env.pop("VL360_PYTHON_EXECUTOR", None)
+    env["VL360_LOCAL_PYTHON_EXECUTOR"] = _bash_path(python_executor)
     result = subprocess.run(
         _installer_command(package, case_root, prepared),
         cwd=ROOT,
@@ -1825,9 +1850,270 @@ def test_linux_pinned_executor_requires_memfd_sealing_fd_exec_and_safe_shebang()
     for seal in ("F_SEAL_WRITE", "F_SEAL_GROW", "F_SEAL_SHRINK", "F_SEAL_SEAL"):
         assert seal in helper
     assert "os.set_inheritable(memfd_fd, True)" in helper
-    assert 'b"#!/usr/bin/env"' in helper
+    assert 'b"#!/usr/bin/env bash"' in helper
     assert "executable-authority-shebang-forbidden" in helper
     assert "executable-authority-fd-exec-unavailable" in helper
+
+
+def test_installer_ignores_python_function_shadowed_from_bash_env(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "python-function-shadow"
+    prepared = _prepare_case(case_root, closed_package)
+    marker = case_root / "shadowed-python-called"
+    bash_env = case_root / "python-shadow.bash"
+    bash_env.write_text(
+        "python() {\n"
+        f"  : > '{_bash_path(marker)}'\n"
+        "  return 73\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert not marker.exists()
+
+
+def test_conflicting_python_executor_authorities_are_rejected_before_execution(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "conflicting-python-executors"
+    prepared = _prepare_case(case_root, closed_package)
+    *_, values = prepared
+    general_marker = case_root / "general-executor-ran"
+    local_marker = case_root / "local-executor-ran"
+    general_executor = _write_local_python_executor(
+        case_root / "general-python",
+        f": > '{_bash_path(general_marker)}'\n"
+        'command "$REAL_PYTHON" "$@"\n',
+    )
+    local_executor = _write_local_python_executor(
+        case_root / "local-python",
+        f": > '{_bash_path(local_marker)}'\n"
+        'command "$REAL_PYTHON" "$@"\n',
+    )
+    env = os.environ.copy()
+    env.update(values)
+    env["VL360_PYTHON_EXECUTOR"] = _bash_path(general_executor)
+    env["VL360_LOCAL_PYTHON_EXECUTOR"] = _bash_path(local_executor)
+
+    result = subprocess.run(
+        _installer_command(closed_package, case_root, prepared),
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "python-executor-authority-conflict" in result.stderr
+    assert not general_marker.exists()
+    assert not local_marker.exists()
+
+
+@pytest.mark.parametrize(
+    "malformed_args",
+    (
+        ["--archive", "--local-rehearsal"],
+        ["--local-rehearsal", "--unknown-option"],
+        ["--local-rehearsal"],
+    ),
+)
+def test_malformed_value_cannot_enable_local_python_executor(
+    tmp_path: Path, closed_package, malformed_args: list[str]
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "malformed-local-executor"
+    prepared = _prepare_case(case_root, closed_package)
+    *_, values = prepared
+    marker = case_root / "local-executor-ran"
+    python_executor = _write_local_python_executor(
+        case_root / "malformed-local-python",
+        f": > '{_bash_path(marker)}'\n"
+        'command "$REAL_PYTHON" "$@"\n',
+    )
+    env = os.environ.copy()
+    env.update(values)
+    env.pop("VL360_PYTHON_EXECUTOR", None)
+    env["VL360_LOCAL_PYTHON_EXECUTOR"] = _bash_path(python_executor)
+
+    result = subprocess.run(
+        [str(BASH), "scripts/ops/install_closed_release.sh", *malformed_args],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert not marker.exists()
+
+
+def test_linux_python_executor_is_bound_to_admitted_descriptor_before_mutation():
+    source = INSTALL.read_text(encoding="utf-8")
+
+    open_fd = 'exec {PYTHON_EXECUTOR_FD}<"$PYTHON_EXECUTOR_AUTHORITY"'
+    pinned_path = 'PYTHON_EXECUTOR="/proc/$BASHPID/fd/$PYTHON_EXECUTOR_FD"'
+    assert open_fd in source
+    assert pinned_path in source
+    assert source.index(open_fd) < source.index("ATTEMPT_ID=")
+    assert source.index(pinned_path) < source.index("ATTEMPT_ID=")
+    operational = source[source.index("fsync_directories()") :]
+    assert 'command "$PYTHON_EXECUTOR"' not in operational
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux fd pin only")
+def test_linux_installer_keeps_admitted_python_when_authority_path_is_replaced(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    case_root = tmp_path / "python-authority-replacement"
+    prepared = _prepare_case(case_root, closed_package)
+    python_executor = _write_local_python_executor(
+        case_root / "admitted-python",
+        'command "$REAL_PYTHON" "$@"\n',
+    )
+    marker = case_root / "replacement-python-ran"
+    hook = case_root / "runtime" / "python-hook.sh"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "printf '%s\\n' '#!/usr/bin/env bash' "
+        f"': > {_bash_path(marker)}' 'exit 97' > \"$PYTHON_EXECUTOR_SOURCE\"\n"
+        "chmod 0755 -- \"$PYTHON_EXECUTOR_SOURCE\"\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o755)
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "PYTHON_EXECUTOR_SOURCE": _bash_path(python_executor),
+            "VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor),
+        },
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert not marker.exists()
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux fd pin only")
+def test_linux_python_descriptor_preserves_runtime_imports_and_prefix():
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    bootstrap = source.split("\nfsync_directories()", 1)[0]
+    probe = bootstrap + """
+command "$PYTHON_EXECUTOR" -c '
+import json
+import ssl
+import dotenv
+import sys
+print(json.dumps({"base_prefix": sys.base_prefix, "prefix": sys.prefix}))
+'
+"""
+
+    result = subprocess.run(
+        [str(BASH), "-c", probe, "vl360-python-bootstrap", "--local-rehearsal"],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    payload = json.loads(result.stdout.splitlines()[-1])
+    assert payload["prefix"]
+    assert payload["base_prefix"]
+
+
+def test_explicit_python_executor_preserves_isolated_venv_runtime(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    venv_root = tmp_path / "isolated-venv"
+    venv.EnvBuilder(with_pip=False).create(venv_root)
+    venv_python = venv_root / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    purelib = Path(
+        subprocess.check_output(
+            [str(venv_python), "-c", "import sysconfig; print(sysconfig.get_paths()['purelib'])"],
+            text=True,
+        ).strip()
+    )
+    dotenv = purelib / "dotenv"
+    dotenv.mkdir()
+    (dotenv / "__init__.py").write_text("", encoding="ascii")
+    (dotenv / "parser.py").write_text("def parse_stream(stream): return ()\n", encoding="ascii")
+    source = INSTALL.read_text(encoding="utf-8")
+    bootstrap = source.split("\nfsync_directories()", 1)[0]
+    probe = bootstrap + """
+command "$PYTHON_EXECUTOR" -c '
+import json
+import dotenv.parser
+import ssl
+import sys
+print(json.dumps({"prefix": sys.prefix}))
+'
+"""
+    env = os.environ.copy()
+    env["VL360_PYTHON_EXECUTOR"] = _bash_path(venv_python.resolve())
+    required_args = [
+        "--archive",
+        "archive",
+        "--archive-digest-file",
+        "archive.sha256",
+        "--release-root",
+        "release",
+        "--persistent-agent-data-root",
+        "persistent",
+        "--environment-authority",
+        "external.env",
+        "--runtime-authority",
+        "runtime",
+        "--evidence-dir",
+        "evidence",
+        "--require-closed",
+        "--local-rehearsal",
+    ]
+
+    result = subprocess.run(
+        [str(BASH), "-c", probe, "vl360-python-bootstrap", *required_args],
+        cwd=tmp_path,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    payload = json.loads(result.stdout.splitlines()[-1])
+    assert Path(payload["prefix"]).resolve() == venv_root.resolve()
+
+
+def test_linux_pinned_executor_routes_env_bash_through_admitted_descriptors():
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = _pinned_executor_python(source)
+
+    assert 'ENV_BASH_SHEBANG = b"#!/usr/bin/env bash"' in helper
+    assert 'shebang.startswith(b"#!/usr/bin/env")' not in helper
+    assert "bash_fd = open_canonical_executor" in helper
+    assert 'f"/proc/self/fd/{memfd_fd}"' in helper
+    assert "os.execve(bash_fd, argv, env)" in helper
 
 
 def test_windows_local_pinned_executor_preserves_process_contract(tmp_path: Path):
@@ -1999,6 +2285,84 @@ def test_linux_pinned_executor_preserves_args_env_stdin_output_and_exit(
     assert result.stderr == "stderr=second argument\n"
 
 
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux fd exec only")
+def test_linux_env_bash_hook_preserves_process_contract_through_descriptors(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    hook = pin_root / "python-dependency"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "IFS= read -r payload\n"
+        "printf 'argv0=%s\\narg=%s\\nenv=%s\\nstdin=%s\\n' "
+        '"$0" "$1" "$PIN_TEST_ENV" "$payload"\n'
+        "printf 'stderr=%s\\n' \"$2\" >&2\n"
+        "exit 37\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o500)
+    bash_authority = BASH.resolve()
+    pinned_bash = pin_root / "bash-interpreter"
+    shutil.copy2(bash_authority, pinned_bash)
+    pinned_bash.chmod(0o500)
+
+    result = _invoke_standalone_pinned_executor(
+        pin_root,
+        "python-dependency",
+        hashlib.sha256(hook.read_bytes()).hexdigest(),
+        ["first argument", "second argument"],
+        local_rehearsal=False,
+        bash_digest=hashlib.sha256(pinned_bash.read_bytes()).hexdigest(),
+        bash_executor=bash_authority,
+        env_overrides={"PIN_TEST_ENV": "preserved-env"},
+        stdin="preserved-stdin\n",
+    )
+
+    assert result.returncode == 37, result.stderr + result.stdout
+    lines = result.stdout.splitlines()
+    assert lines[0].startswith("argv0=/proc/self/fd/")
+    assert lines[1:] == [
+        "arg=first argument",
+        "env=preserved-env",
+        "stdin=preserved-stdin",
+    ]
+    assert result.stderr == "stderr=second argument\n"
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux fd exec only")
+def test_linux_env_bash_hook_fails_closed_when_bash_pin_is_missing(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    hook = pin_root / "python-dependency"
+    marker = tmp_path / "target-ran"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        f": > '{_bash_path(marker)}'\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o500)
+
+    result = _invoke_standalone_pinned_executor(
+        pin_root,
+        "python-dependency",
+        hashlib.sha256(hook.read_bytes()).hexdigest(),
+        [],
+        local_rehearsal=False,
+        bash_digest="0" * 64,
+        bash_executor=BASH.resolve(),
+    )
+
+    assert result.returncode == 126
+    assert "executable-authority-pin-invalid" in result.stderr
+    assert "Traceback" not in result.stderr
+    assert not marker.exists()
+
+
 def test_installer_records_failed_authority_hook_exit_and_stops_before_mutation(
     tmp_path: Path, closed_package
 ):
@@ -2048,24 +2412,25 @@ def test_premutation_failure_removes_private_staging_root(
         hook.write_text("#!/usr/bin/env bash\nexit 19\n", encoding="ascii")
         hook.chmod(0o755)
     else:
-        bash_env = case_root / "premutation-failure.bash"
         if failure_kind == "verification":
             count_file = case_root / "verify-count"
-            bash_env.write_text(
-                "python() {\n"
+            python_executor = _write_local_python_executor(
+                case_root / "premutation-failure-python",
                 f"  if [ \"$1\" = '{_bash_path(VERIFY)}' ]; then\n"
                 f"    count=$(cat '{_bash_path(count_file)}' 2>/dev/null || printf 0)\n"
                 "    count=$((count + 1))\n"
                 f"    printf '%s\\n' \"$count\" > '{_bash_path(count_file)}'\n"
-                "    [ \"$count\" -ne 2 ] || return 61\n"
+                "    [ \"$count\" -ne 2 ] || exit 61\n"
                 "  fi\n"
-                "  command python \"$@\"\n"
-                "}\n",
-                encoding="ascii",
+                "command \"$REAL_PYTHON\" \"$@\"\n",
             )
+            env_overrides = {
+                "VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)
+            }
         else:
+            bash_env = case_root / "premutation-failure.bash"
             bash_env.write_text("tar() { return 62; }\n", encoding="ascii")
-        env_overrides = {"BASH_ENV": _bash_path(bash_env)}
+            env_overrides = {"BASH_ENV": _bash_path(bash_env)}
 
     result = _invoke_installer(
         closed_package,
@@ -2160,10 +2525,9 @@ def test_installer_extracts_only_pinned_verified_archive_bytes(
 
     replacement_used = case_root / "replacement-used"
     extracted_digest = case_root / "extracted-archive.sha256"
-    bash_env = case_root / "archive-replacement.bash"
-    bash_env.write_text(
-        "python() {\n"
-        "  command python \"$@\"\n"
+    python_executor = _write_local_python_executor(
+        case_root / "archive-replacement-python",
+        "command \"$REAL_PYTHON\" \"$@\"\n"
         "  status=$?\n"
         "  if [ \"$status\" -eq 0 ] && [ ! -f "
         f"'{_bash_path(replacement_used)}' ]; then\n"
@@ -2175,8 +2539,10 @@ def test_installer_extracts_only_pinned_verified_archive_bytes(
         "      fi\n"
         "    done\n"
         "  fi\n"
-        "  return \"$status\"\n"
-        "}\n"
+        "exit \"$status\"\n",
+    )
+    bash_env = case_root / "archive-replacement.bash"
+    bash_env.write_text(
         "tar() {\n"
         "  archive_path=''\n"
         "  previous=''\n"
@@ -2194,7 +2560,10 @@ def test_installer_extracts_only_pinned_verified_archive_bytes(
         package,
         case_root,
         prepared,
-        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+        env_overrides={
+            "BASH_ENV": _bash_path(bash_env),
+            "VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor),
+        },
     )
 
     assert result.returncode == 0, result.stderr + result.stdout
@@ -4091,23 +4460,21 @@ def test_sigkill_before_systemd_journal_leaves_attempt_journal_bound(
         (unit_root / name).write_bytes(f"legacy-{name}\n".encode())
 
     reached = case_root / "prejournal"
-    bash_env = case_root / "prejournal.bash"
-    bash_env.write_text(
-        "python() {\n"
+    python_executor = _write_local_python_executor(
+        case_root / "prejournal-python",
         '  if [ "$1" = "-" ] && [ "${3:-}" = "systemd-units-armed" ]; then\n'
         f"    : > '{_bash_path(reached)}'\n"
+        '    kill -9 "$PPID"\n'
         '    kill -9 "$$"\n'
         "  fi\n"
-        '  command python "$@"\n'
-        "}\n",
-        encoding="ascii",
+        'command "$REAL_PYTHON" "$@"\n',
     )
 
     result = _invoke_installer(
         closed_package,
         case_root,
         prepared,
-        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+        env_overrides={"VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)},
     )
 
     assert result.returncode != 0
@@ -4133,21 +4500,18 @@ def test_partial_systemd_restore_keeps_armed_material_for_retry(
     legacy = _snapshot_tree(unit_root)
 
     used = case_root / "restore-failed"
-    bash_env = case_root / "restore-failed.bash"
-    bash_env.write_text(
-        "python() {\n"
+    python_executor = _write_local_python_executor(
+        case_root / "restore-failed-python",
         '  case "${3:-}" in\n'
         "    */.systemd-unit-attempt.*/backup)\n"
         f"      if [ ! -f '{_bash_path(used)}' ]; then\n"
         f"        : > '{_bash_path(used)}'\n"
         '        printf partial > "$2/vl-agent.service"\n'
-        "        return 62\n"
+        "        exit 62\n"
         "      fi\n"
         "      ;;\n"
         "  esac\n"
-        '  command python "$@"\n'
-        "}\n",
-        encoding="ascii",
+        'command "$REAL_PYTHON" "$@"\n',
     )
 
     first = _invoke_installer(
@@ -4155,7 +4519,7 @@ def test_partial_systemd_restore_keeps_armed_material_for_retry(
         case_root,
         prepared,
         failed_hook="units",
-        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+        env_overrides={"VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)},
     )
 
     assert first.returncode == 19
@@ -4550,24 +4914,21 @@ def test_postrename_fsync_failure_reconciles_the_observed_filesystem_state(
             f"&& compgen -G '{parent}/.{release.name}.closed-retired.*' >/dev/null"
         )
         failure_code = 72
-    bash_env = case_root / f"{rename_stage}-fsync.bash"
-    bash_env.write_text(
-        "python() {\n"
+    python_executor = _write_local_python_executor(
+        case_root / f"{rename_stage}-fsync-python",
         f"  if [ \"${{1:-}}\" = - ] && [ ! -f '{_bash_path(failure_used)}' ] "
         f"&& {state_probe}; then\n"
         f"    : > '{_bash_path(failure_used)}'\n"
-        f"    return {failure_code}\n"
+        f"    exit {failure_code}\n"
         "  fi\n"
-        "  command python \"$@\"\n"
-        "}\n",
-        encoding="ascii",
+        "command \"$REAL_PYTHON\" \"$@\"\n",
     )
 
     first = _invoke_installer(
         closed_package,
         case_root,
         prepared,
-        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+        env_overrides={"VL360_LOCAL_PYTHON_EXECUTOR": _bash_path(python_executor)},
     )
 
     assert first.returncode == failure_code, first.stderr + first.stdout
@@ -4623,15 +4984,18 @@ def test_private_attempt_cleanup_failure_is_nonzero_and_retry_sweeps_stale_artif
     case_root = tmp_path / f"private-cleanup-{cleanup_kind}-{failure_mode}"
     prepared = _prepare_case(case_root, closed_package)
     release, _, evidence, before_release, _, _, _ = prepared
-    bash_env = _cleanup_failure_bash_env(
+    bash_env, python_executor = _cleanup_failure_bash_env(
         case_root, evidence, cleanup_kind, failure_mode
     )
+    env_overrides = {"BASH_ENV": _bash_path(bash_env)}
+    if python_executor is not None:
+        env_overrides["VL360_LOCAL_PYTHON_EXECUTOR"] = _bash_path(python_executor)
 
     first = _invoke_installer(
         closed_package,
         case_root,
         prepared,
-        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+        env_overrides=env_overrides,
     )
 
     assert first.returncode != 0, first.stderr + first.stdout
@@ -4667,16 +5031,19 @@ def test_private_cleanup_preserves_primary_exit_status(tmp_path: Path, closed_pa
     case_root = tmp_path / "private-cleanup-primary-status"
     prepared = _prepare_case(case_root, closed_package)
     _, _, evidence, _, _, _, _ = prepared
-    bash_env = _cleanup_failure_bash_env(
+    bash_env, python_executor = _cleanup_failure_bash_env(
         case_root, evidence, "pin", "nonzero"
     )
+    env_overrides = {"BASH_ENV": _bash_path(bash_env)}
+    if python_executor is not None:
+        env_overrides["VL360_LOCAL_PYTHON_EXECUTOR"] = _bash_path(python_executor)
 
     result = _invoke_installer(
         closed_package,
         case_root,
         prepared,
         failed_hook="python",
-        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+        env_overrides=env_overrides,
     )
 
     assert result.returncode == 19, result.stderr + result.stdout

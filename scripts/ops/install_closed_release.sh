@@ -3,9 +3,180 @@
 set -Eeuo pipefail
 umask 077
 
+EARLY_ARGUMENTS=("$@")
+EARLY_ARGUMENTS_VALID=true
+EARLY_LOCAL_REHEARSAL=false
+EARLY_ARCHIVE_PRESENT=false
+EARLY_ARCHIVE_DIGEST_PRESENT=false
+EARLY_RELEASE_ROOT_PRESENT=false
+EARLY_RELEASE_ROOT_VALUE=''
+EARLY_PERSISTENT_ROOT_PRESENT=false
+EARLY_ENVIRONMENT_AUTHORITY_PRESENT=false
+EARLY_RUNTIME_AUTHORITY_PRESENT=false
+EARLY_EVIDENCE_DIR_PRESENT=false
+EARLY_REQUIRE_CLOSED=false
+early_index=0
+while ((early_index < ${#EARLY_ARGUMENTS[@]})); do
+  early_argument="${EARLY_ARGUMENTS[$early_index]}"
+  case "$early_argument" in
+    --archive|--archive-digest-file|--release-root|--persistent-agent-data-root|\
+    --environment-authority|--runtime-authority|--mount-authority|--evidence-dir)
+      early_value_index=$((early_index + 1))
+      if ((early_value_index >= ${#EARLY_ARGUMENTS[@]})); then
+        EARLY_ARGUMENTS_VALID=false
+        break
+      fi
+      early_value="${EARLY_ARGUMENTS[$early_value_index]}"
+      case "$early_value" in
+        ''|--*) EARLY_ARGUMENTS_VALID=false; break ;;
+      esac
+      case "$early_argument" in
+        --archive) EARLY_ARCHIVE_PRESENT=true ;;
+        --archive-digest-file) EARLY_ARCHIVE_DIGEST_PRESENT=true ;;
+        --release-root)
+          EARLY_RELEASE_ROOT_PRESENT=true
+          EARLY_RELEASE_ROOT_VALUE="$early_value"
+          ;;
+        --persistent-agent-data-root) EARLY_PERSISTENT_ROOT_PRESENT=true ;;
+        --environment-authority) EARLY_ENVIRONMENT_AUTHORITY_PRESENT=true ;;
+        --runtime-authority) EARLY_RUNTIME_AUTHORITY_PRESENT=true ;;
+        --evidence-dir) EARLY_EVIDENCE_DIR_PRESENT=true ;;
+      esac
+      early_index=$((early_index + 2))
+      ;;
+    --require-closed)
+      EARLY_REQUIRE_CLOSED=true
+      early_index=$((early_index + 1))
+      ;;
+    --local-rehearsal)
+      EARLY_LOCAL_REHEARSAL=true
+      early_index=$((early_index + 1))
+      ;;
+    *)
+      EARLY_ARGUMENTS_VALID=false
+      break
+      ;;
+  esac
+done
+EARLY_REQUIRED_ARGUMENTS_VALID=false
+if [ "$EARLY_ARGUMENTS_VALID" = true ] \
+  && [ "$EARLY_ARCHIVE_PRESENT" = true ] \
+  && [ "$EARLY_ARCHIVE_DIGEST_PRESENT" = true ] \
+  && [ "$EARLY_RELEASE_ROOT_PRESENT" = true ] \
+  && [ "$EARLY_PERSISTENT_ROOT_PRESENT" = true ] \
+  && [ "$EARLY_ENVIRONMENT_AUTHORITY_PRESENT" = true ] \
+  && [ "$EARLY_RUNTIME_AUTHORITY_PRESENT" = true ] \
+  && [ "$EARLY_EVIDENCE_DIR_PRESENT" = true ] \
+  && [ "$EARLY_REQUIRE_CLOSED" = true ]; then
+  EARLY_REQUIRED_ARGUMENTS_VALID=true
+fi
+
+canonical_executable_path() {
+  local candidate="$1"
+  local canonical
+  [ -n "$candidate" ] || return 1
+  case "$candidate" in
+    /*) ;;
+    *) return 1 ;;
+  esac
+  canonical="$(/usr/bin/readlink -f -- "$candidate")" || return 1
+  case "$canonical" in
+    /*) ;;
+    *) return 1 ;;
+  esac
+  [ -f "$canonical" ] && [ ! -L "$canonical" ] && [ -x "$canonical" ] \
+    || return 1
+  [ "$(/usr/bin/readlink -f -- "$canonical")" = "$canonical" ] || return 1
+  printf '%s\n' "$canonical"
+}
+
+if [ "$EARLY_REQUIRED_ARGUMENTS_VALID" = true ] \
+  && [ -n "${VL360_PYTHON_EXECUTOR:-}" ] \
+  && [ -n "${VL360_LOCAL_PYTHON_EXECUTOR:-}" ]; then
+  printf 'install_closed_release: python-executor-authority-conflict\n' >&2
+  exit 2
+fi
+
+if [ -n "${VL360_PYTHON_EXECUTOR:-}" ] \
+  && [ "$EARLY_REQUIRED_ARGUMENTS_VALID" = true ]; then
+  PYTHON_EXECUTOR_CANDIDATE="$VL360_PYTHON_EXECUTOR"
+elif [ -n "${VL360_LOCAL_PYTHON_EXECUTOR:-}" ] \
+  && [ "$EARLY_REQUIRED_ARGUMENTS_VALID" = true ]; then
+  [ "$EARLY_LOCAL_REHEARSAL" = true ] || {
+    printf 'install_closed_release: local-python-executor-live-forbidden\n' >&2
+    exit 2
+  }
+  PYTHON_EXECUTOR_CANDIDATE="$VL360_LOCAL_PYTHON_EXECUTOR"
+  [ "$(/usr/bin/readlink -f -- "$PYTHON_EXECUTOR_CANDIDATE" 2>/dev/null)" \
+    = "$PYTHON_EXECUTOR_CANDIDATE" ] || {
+    printf 'install_closed_release: python-executor-authority-required\n' >&2
+    exit 2
+  }
+else
+  if [ "$EARLY_REQUIRED_ARGUMENTS_VALID" = true ] \
+    && [ "$EARLY_LOCAL_REHEARSAL" != true ]; then
+    PYTHON_EXECUTOR_CANDIDATE="$EARLY_RELEASE_ROOT_VALUE/venv/bin/python"
+    if [ ! -x "$PYTHON_EXECUTOR_CANDIDATE" ]; then
+      PYTHON_EXECUTOR_CANDIDATE=/usr/bin/python3
+    fi
+  else
+    PYTHON_EXECUTOR_CANDIDATE="$(type -P python3 2>/dev/null \
+      || type -P python 2>/dev/null)" || {
+      printf 'install_closed_release: python-executor-unavailable\n' >&2
+      exit 2
+    }
+  fi
+fi
+PYTHON_EXECUTOR_LOGICAL="$PYTHON_EXECUTOR_CANDIDATE"
+PYTHON_EXECUTOR_AUTHORITY="$(canonical_executable_path "$PYTHON_EXECUTOR_CANDIDATE")" || {
+  printf 'install_closed_release: python-executor-authority-required\n' >&2
+  exit 2
+}
+PYTHON_EXECUTOR="$PYTHON_EXECUTOR_AUTHORITY"
+PYTHON_EXECUTOR_FD=''
+if [[ "$OSTYPE" = linux* ]]; then
+  exec {PYTHON_EXECUTOR_FD}<"$PYTHON_EXECUTOR_AUTHORITY" || {
+    printf 'install_closed_release: python-executor-pin-failed\n' >&2
+    exit 2
+  }
+  [ "$PYTHON_EXECUTOR_AUTHORITY" -ef "/proc/$BASHPID/fd/$PYTHON_EXECUTOR_FD" ] || {
+    printf 'install_closed_release: python-executor-pin-mismatch\n' >&2
+    exit 2
+  }
+  PYTHON_EXECUTOR="/proc/$BASHPID/fd/$PYTHON_EXECUTOR_FD"
+fi
+invoke_python() {
+  if [[ "$OSTYPE" = linux* ]]; then
+    (exec -a "$PYTHON_EXECUTOR_LOGICAL" "$PYTHON_EXECUTOR" "$@")
+  else
+    command "$PYTHON_EXECUTOR" "$@"
+  fi
+}
+if [ "$EARLY_REQUIRED_ARGUMENTS_VALID" = true ] \
+  && ! invoke_python -c \
+    'import ssl; from dotenv.parser import parse_stream' >/dev/null 2>&1; then
+  printf 'install_closed_release: python-executor-runtime-incompatible\n' >&2
+  exit 2
+fi
+BASH_EXECUTOR="$(canonical_executable_path "$BASH")" || {
+  printf 'install_closed_release: bash-executor-authority-required\n' >&2
+  exit 2
+}
+if [[ "$OSTYPE" = linux* ]]; then
+  [ "$BASH_EXECUTOR" -ef "/proc/$BASHPID/exe" ] || {
+    printf 'install_closed_release: bash-executor-identity-mismatch\n' >&2
+    exit 2
+  }
+  BASH_PIN_AUTHORITY="$BASH_EXECUTOR"
+else
+  BASH_PIN_AUTHORITY=''
+fi
+readonly PYTHON_EXECUTOR_LOGICAL PYTHON_EXECUTOR_AUTHORITY PYTHON_EXECUTOR \
+  PYTHON_EXECUTOR_FD BASH_EXECUTOR BASH_PIN_AUTHORITY
+
 fsync_directories() {
   (($# > 0)) || return 0
-  python - "$@" <<'PY'
+  invoke_python - "$@" <<'PY'
 import os
 import sys
 
@@ -108,7 +279,7 @@ normalize_evidence_candidate() {
 }
 
 preflight_authority_role_collisions() {
-  python - "$@" <<'PY'
+  invoke_python - "$@" <<'PY'
 import os
 import sys
 
@@ -133,7 +304,7 @@ canonical_authority_path() {
   local authority="$1"
   local local_rehearsal="$2"
   local canonical
-  canonical="$(python - "$authority" <<'PY'
+  canonical="$(invoke_python - "$authority" <<'PY'
 import os
 from pathlib import Path
 import stat
@@ -162,7 +333,7 @@ PY
 }
 
 validate_executable_authority_sources() {
-  python - "$RELEASE_ROOT" "$PERSISTENT_AGENT_DATA_ROOT" "$EVIDENCE_DIR" \
+  invoke_python - "$RELEASE_ROOT" "$PERSISTENT_AGENT_DATA_ROOT" "$EVIDENCE_DIR" \
     "$SYSTEMD_UNIT_DESTINATION" "$STALE_RELEASE_ROOT" "$STALE_PERSISTENT_ROOT" \
     "$STALE_SYSTEMD_UNIT_DESTINATION" "$MOUNT_AUTHORITY" \
     "$PYTHON_DEPENDENCY_HOOK" "$NUXT_DEPENDENCY_HOOK" "$UNIT_VERIFY_HOOK" <<'PY'
@@ -268,7 +439,7 @@ PY
 
 validate_executable_pin_root() {
   local candidate="$1"
-  python - "$candidate" "$RELEASE_ROOT" "$PERSISTENT_AGENT_DATA_ROOT" \
+  invoke_python - "$candidate" "$RELEASE_ROOT" "$PERSISTENT_AGENT_DATA_ROOT" \
     "$EVIDENCE_DIR" "$SYSTEMD_UNIT_DESTINATION" "$STALE_RELEASE_ROOT" \
     "$STALE_PERSISTENT_ROOT" "$STALE_SYSTEMD_UNIT_DESTINATION" <<'PY'
 import os
@@ -319,8 +490,9 @@ PY
 }
 
 pin_executable_authorities() {
-  python - "$EXECUTABLE_PIN_ROOT" "$MOUNT_AUTHORITY" \
-    "$PYTHON_DEPENDENCY_HOOK" "$NUXT_DEPENDENCY_HOOK" "$UNIT_VERIFY_HOOK" <<'PY'
+  invoke_python - "$EXECUTABLE_PIN_ROOT" "$MOUNT_AUTHORITY" \
+    "$PYTHON_DEPENDENCY_HOOK" "$NUXT_DEPENDENCY_HOOK" "$UNIT_VERIFY_HOOK" \
+    "$BASH_PIN_AUTHORITY" <<'PY'
 from hashlib import sha256
 import os
 from pathlib import Path
@@ -393,6 +565,7 @@ roles = (
     ("python-dependency", sys.argv[3]),
     ("nuxt-dependency", sys.argv[4]),
     ("unit-verify", sys.argv[5]),
+    ("bash-interpreter", sys.argv[6]),
 )
 digests = []
 for role, source in roles:
@@ -432,7 +605,7 @@ PY
 verify_pinned_executable() {
   local path="$1"
   local expected_sha256="$2"
-  python - "$path" "$expected_sha256" <<'PY'
+  invoke_python - "$path" "$expected_sha256" <<'PY'
 from hashlib import sha256
 import os
 from pathlib import Path
@@ -453,7 +626,7 @@ if sha256(path.read_bytes()).hexdigest() != expected:
 PY
 }
 
-ATTEMPT_ID="$(python - <<'PY'
+ATTEMPT_ID="$(invoke_python - <<'PY'
 import secrets
 print(secrets.token_hex(16))
 PY
@@ -482,7 +655,7 @@ lock_spec() {
   local lock_root
   lock_root="$(CDPATH= cd -- "$(dirname -- "$authority")" && pwd -P)/.vl360-install-locks"
   local key
-  key="$(python - "$authority" <<'PY'
+  key="$(invoke_python - "$authority" <<'PY'
 import hashlib
 import os
 import sys
@@ -506,7 +679,7 @@ lock_owner_is_live() {
   local lock_dir="$1"
   [ ! -e "$lock_dir/reclaimable" ] || return 1
   local owner
-  owner="$(python - "$lock_dir/owner.json" <<'PY'
+  owner="$(invoke_python - "$lock_dir/owner.json" <<'PY'
 import json
 from pathlib import Path
 import re
@@ -1052,7 +1225,7 @@ for ((lock_index = 0; lock_index < ${#HELD_LOCK_DIRS[@]}; lock_index++)); do
   fi
 done
 [ -n "$PINNED_ENVIRONMENT_AUTHORITY" ] || die 'environment-authority-pin-failed'
-if ENVIRONMENT_AUTHORITY_SHA256="$(python - "$ENVIRONMENT_AUTHORITY" \
+if ENVIRONMENT_AUTHORITY_SHA256="$(invoke_python - "$ENVIRONMENT_AUTHORITY" \
   "$PINNED_ENVIRONMENT_AUTHORITY" <<'PY'
 from dotenv.parser import parse_stream
 from hashlib import sha256
@@ -1146,7 +1319,7 @@ STALE_LOCAL_REHEARSAL=''
 write_durable_atomic_json() {
   local path="$1"
   local payload="$2"
-  VL360_DURABLE_JSON_PAYLOAD="$payload" python - "$path" <<'PY'
+  VL360_DURABLE_JSON_PAYLOAD="$payload" invoke_python - "$path" <<'PY'
 import json
 import os
 from pathlib import Path
@@ -1199,7 +1372,7 @@ write_mutation_state() {
     VL360_STATE_SYSTEMD_UNIT_DESTINATION="$SYSTEMD_UNIT_DESTINATION" \
     VL360_STATE_SYSTEMD_UNIT_ATTEMPT_ROOT="$UNIT_ATTEMPT_ROOT" \
     VL360_STATE_LOCAL_REHEARSAL="$LOCAL_REHEARSAL" \
-    python - "$MUTATION_STATE" "$stage" "$ATTEMPT_ID" "$$" \
+    invoke_python - "$MUTATION_STATE" "$stage" "$ATTEMPT_ID" "$$" \
       "$release_key" "$persistent_key" "$CURRENT_SYSTEMD_KEY" <<'PY'
 import json
 import os
@@ -1235,7 +1408,7 @@ clear_mutation_state() {
 load_stale_install_state() {
   local state release_spec persistent_spec systemd_spec
   local observed_release_key observed_persistent_key observed_systemd_key
-  state="$(python - "$MUTATION_STATE" <<'PY'
+  state="$(invoke_python - "$MUTATION_STATE" <<'PY'
 import json
 import posixpath
 from pathlib import Path
@@ -1413,7 +1586,7 @@ PY
 tree_matches_snapshot() {
   local root="$1"
   local snapshot="$2"
-  python - "$root" "$snapshot" <<'PY'
+  invoke_python - "$root" "$snapshot" <<'PY'
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -1444,7 +1617,7 @@ restore_systemd_units_from() {
   [ -d "$attempt_root" ] && [ ! -L "$attempt_root" ] \
     && [ -f "$attempt_root/armed" ] && [ ! -L "$attempt_root/armed" ] \
     || return 1
-  python - "$destination" "$attempt_root/backup" <<'PY'
+  invoke_python - "$destination" "$attempt_root/backup" <<'PY'
 import hashlib
 import json
 import os
@@ -1585,7 +1758,7 @@ write_stale_mutation_state() {
     VL360_STALE_RETIRED_ROOT="$STALE_RETIRED_ROOT" \
     VL360_STALE_SYSTEMD_UNIT_DESTINATION="$STALE_SYSTEMD_UNIT_DESTINATION" \
     VL360_STALE_SYSTEMD_UNIT_ATTEMPT_ROOT="$STALE_SYSTEMD_UNIT_ATTEMPT_ROOT" \
-    python - "$MUTATION_STATE" "$stage" "$STALE_STAGE" \
+    invoke_python - "$MUTATION_STATE" "$stage" "$STALE_STAGE" \
       "$STALE_ATTEMPT_ID" "$STALE_PID" "$STALE_LOCAL_REHEARSAL" \
       "$STALE_RELEASE_KEY" "$STALE_PERSISTENT_KEY" "$STALE_SYSTEMD_KEY" <<'PY'
 import json
@@ -1636,7 +1809,7 @@ inspect_stale_mount() {
   local target="$1"
   if invoke_mount_authority findmnt --json --target "$target" \
     > "$EVIDENCE_DIR/findmnt-recovery.json"; then
-    if python - "$VERIFY_SCRIPT" "$EVIDENCE_DIR/findmnt-recovery.json" \
+    if invoke_python - "$VERIFY_SCRIPT" "$EVIDENCE_DIR/findmnt-recovery.json" \
       "$STALE_PERSISTENT_ROOT" "$target" <<'PY'
 import importlib.util
 import json
@@ -1956,7 +2129,7 @@ reconcile_stale_install_attempt() {
 record_install_lock() {
   local status="$1"
   local code="$2"
-  python - "$EVIDENCE_DIR/install-lock.json" "$status" "$code" \
+  invoke_python - "$EVIDENCE_DIR/install-lock.json" "$status" "$code" \
     "$RECLAIMED_STALE_LOCKS" "${CONFLICT_LOCK_KEY:-}" "${HELD_LOCK_KEYS[@]}" <<'PY'
 import hashlib
 import json
@@ -1988,10 +2161,12 @@ PINNED_MOUNT_AUTHORITY=''
 PINNED_PYTHON_DEPENDENCY_HOOK=''
 PINNED_NUXT_DEPENDENCY_HOOK=''
 PINNED_UNIT_VERIFY_HOOK=''
+PINNED_BASH_EXECUTOR=''
 MOUNT_AUTHORITY_SHA256=''
 PYTHON_DEPENDENCY_HOOK_SHA256=''
 NUXT_DEPENDENCY_HOOK_SHA256=''
 UNIT_VERIFY_HOOK_SHA256=''
+BASH_EXECUTOR_SHA256=''
 
 sweep_stale_executable_pin_roots() {
   local artifact
@@ -2116,19 +2291,26 @@ validate_executable_pin_root "$EXECUTABLE_PIN_ROOT" \
   || die 'executable-authority-pin-namespace-overlap'
 if executable_pin_digests="$(pin_executable_authorities)"; then
   IFS=$'\t' read -r MOUNT_AUTHORITY_SHA256 PYTHON_DEPENDENCY_HOOK_SHA256 \
-    NUXT_DEPENDENCY_HOOK_SHA256 UNIT_VERIFY_HOOK_SHA256 \
+    NUXT_DEPENDENCY_HOOK_SHA256 UNIT_VERIFY_HOOK_SHA256 BASH_EXECUTOR_SHA256 \
     <<< "$executable_pin_digests"
 else
   die 'executable-authority-pin-failed'
 fi
 [ "$MOUNT_AUTHORITY_SHA256" != - ] || MOUNT_AUTHORITY_SHA256=''
+[ "$BASH_EXECUTOR_SHA256" != - ] || BASH_EXECUTOR_SHA256=''
 [ -n "$PYTHON_DEPENDENCY_HOOK_SHA256" ] \
   && [ -n "$NUXT_DEPENDENCY_HOOK_SHA256" ] \
   && [ -n "$UNIT_VERIFY_HOOK_SHA256" ] \
   || die 'executable-authority-pin-failed'
+if [[ "$OSTYPE" = linux* ]]; then
+  [ -n "$BASH_EXECUTOR_SHA256" ] || die 'executable-authority-pin-failed'
+fi
 PINNED_PYTHON_DEPENDENCY_HOOK="$EXECUTABLE_PIN_ROOT/python-dependency"
 PINNED_NUXT_DEPENDENCY_HOOK="$EXECUTABLE_PIN_ROOT/nuxt-dependency"
 PINNED_UNIT_VERIFY_HOOK="$EXECUTABLE_PIN_ROOT/unit-verify"
+if [ -n "$BASH_EXECUTOR_SHA256" ]; then
+  PINNED_BASH_EXECUTOR="$EXECUTABLE_PIN_ROOT/bash-interpreter"
+fi
 PYTHON_DEPENDENCY_HOOK="$PINNED_PYTHON_DEPENDENCY_HOOK"
 NUXT_DEPENDENCY_HOOK="$PINNED_NUXT_DEPENDENCY_HOOK"
 UNIT_VERIFY_HOOK="$PINNED_UNIT_VERIFY_HOOK"
@@ -2162,7 +2344,7 @@ invoke_pinned_executable() {
     printf 'install_closed_release: executable-authority-role-unavailable\n' >&2
     return 126
   }
-  platform_name="$(python -c 'import os; print(os.name)')" || {
+  platform_name="$(invoke_python -c 'import os; print(os.name)')" || {
     printf 'install_closed_release: executable-authority-platform-unavailable\n' >&2
     return 126
   }
@@ -2195,11 +2377,15 @@ ROLE_FILENAMES = {
     "python-dependency": "python-dependency",
     "nuxt-dependency": "nuxt-dependency",
     "unit-verify": "unit-verify",
+    "bash-interpreter": "bash-interpreter",
 }
-APPROVED_SHEBANGS = {
+BASH_SHEBANGS = {
     b"#!/bin/bash",
-    b"#!/bin/sh",
     b"#!/usr/bin/bash",
+}
+ENV_BASH_SHEBANG = b"#!/usr/bin/env bash"
+APPROVED_SHEBANGS = {
+    b"#!/bin/sh",
     b"#!/usr/bin/python3",
     b"#!/usr/local/bin/python3",
 }
@@ -2242,27 +2428,35 @@ def write_all(descriptor, raw):
 
 def validate_script_shebang(prefix):
     if not prefix.startswith(b"#!"):
-        return
+        return "native"
     line_end = prefix.find(b"\n")
     if line_end < 0:
         fail("executable-authority-shebang-forbidden")
     shebang = prefix[:line_end].rstrip(b"\r")
-    if shebang.startswith(b"#!/usr/bin/env") or shebang not in APPROVED_SHEBANGS:
+    if shebang == ENV_BASH_SHEBANG or shebang in BASH_SHEBANGS:
+        return "bash"
+    if shebang not in APPROVED_SHEBANGS:
         fail("executable-authority-shebang-forbidden")
+    return "native"
 
 
-def open_pinned_role(pin_root, role_filename):
+def open_canonical_executor(pin_root, role_filename):
     root_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
-    pin_root_fd = os.open(pin_root, root_flags)
+    pin_root_fd = None
+    pin_fd = None
     try:
+        pin_root_fd = os.open(pin_root, root_flags)
         root_observed = os.fstat(pin_root_fd)
         if not stat.S_ISDIR(root_observed.st_mode):
             fail("executable-authority-pin-root-invalid")
         if stat.S_IMODE(root_observed.st_mode) != 0o700:
             fail("executable-authority-pin-root-invalid")
         pin_fd = os.open(role_filename, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=pin_root_fd)
+    except OSError:
+        fail("executable-authority-pin-invalid")
     finally:
-        os.close(pin_root_fd)
+        if pin_root_fd is not None:
+            os.close(pin_root_fd)
     observed = os.fstat(pin_fd)
     if not stat.S_ISREG(observed.st_mode) or stat.S_IMODE(observed.st_mode) != 0o500:
         os.close(pin_fd)
@@ -2283,7 +2477,7 @@ def seal_memfd(memfd_fd):
         fail("executable-authority-memfd-seal-failed")
 
 
-def copy_verified_to_memfd(pin_fd, expected_sha256, role):
+def copy_verified_to_memfd(pin_fd, expected_sha256, role, *, inspect_shebang=True):
     memfd_fd = os.memfd_create(f"vl360-{role}", os.MFD_ALLOW_SEALING)
     digest = sha256()
     prefix = bytearray()
@@ -2298,31 +2492,60 @@ def copy_verified_to_memfd(pin_fd, expected_sha256, role):
     if digest.hexdigest() != expected_sha256:
         os.close(memfd_fd)
         fail("executable-authority-digest-mismatch")
-    validate_script_shebang(bytes(prefix))
+    launch_kind = validate_script_shebang(bytes(prefix)) if inspect_shebang else "native"
     os.lseek(memfd_fd, 0, os.SEEK_SET)
     seal_memfd(memfd_fd)
-    return memfd_fd
+    return memfd_fd, launch_kind
 
 
 def main():
     require_linux_fd_exec()
-    if len(sys.argv) < 6 or sys.argv[5] != "--":
+    if len(sys.argv) < 8 or sys.argv[7] != "--":
         fail("executable-authority-arguments-invalid")
-    role, expected_sha256, pin_root, pin_path = sys.argv[1:5]
+    role, expected_sha256, pin_root, pin_path, bash_sha256, bash_path = sys.argv[1:7]
     role_filename = ROLE_FILENAMES.get(role)
-    if role_filename is None:
+    if role_filename is None or role_filename == "bash-interpreter":
         fail("executable-authority-role-invalid")
-    pin_fd = open_pinned_role(pin_root, role_filename)
+    pin_fd = open_canonical_executor(pin_root, role_filename)
     try:
-        memfd_fd = copy_verified_to_memfd(pin_fd, expected_sha256, role)
+        memfd_fd, launch_kind = copy_verified_to_memfd(pin_fd, expected_sha256, role)
     finally:
         os.close(pin_fd)
-    argv = [pin_path, *sys.argv[6:]]
+    argv = [pin_path, *sys.argv[8:]]
     env = dict(os.environ)
     os.set_inheritable(memfd_fd, True)
     if not os.get_inheritable(memfd_fd):
         os.close(memfd_fd)
         fail("executable-authority-fd-exec-unavailable")
+    if launch_kind == "bash":
+        bash_fd = open_canonical_executor(pin_root, ROLE_FILENAMES["bash-interpreter"])
+        try:
+            bash_memfd_fd, _ = copy_verified_to_memfd(
+                bash_fd,
+                bash_sha256,
+                "bash-interpreter",
+                inspect_shebang=False,
+            )
+        finally:
+            os.close(bash_fd)
+        bash_fd = bash_memfd_fd
+        os.set_inheritable(bash_fd, True)
+        if not os.get_inheritable(bash_fd):
+            os.close(bash_fd)
+            os.close(memfd_fd)
+            fail("executable-authority-fd-exec-unavailable")
+        argv = [
+            bash_path,
+            "--",
+            f"/proc/self/fd/{memfd_fd}",
+            *sys.argv[8:],
+        ]
+        try:
+            os.execve(bash_fd, argv, env)
+        except (OSError, TypeError, ValueError):
+            os.close(bash_fd)
+            os.close(memfd_fd)
+            fail("executable-authority-fd-exec-failed")
     try:
         os.execve(memfd_fd, argv, env)
     except (OSError, TypeError, ValueError):
@@ -2333,8 +2556,9 @@ def main():
 if __name__ == "__main__":
     main()
 VL360_PINNED_EXECUTOR_PY
-  python -c "$executor_source" "$role" "$expected_sha256" \
-    "$EXECUTABLE_PIN_ROOT" "$path" -- "$@"
+  invoke_python -c "$executor_source" "$role" "$expected_sha256" \
+    "$EXECUTABLE_PIN_ROOT" "$path" "$BASH_EXECUTOR_SHA256" \
+    "$BASH_EXECUTOR" -- "$@"
 }
 
 invoke_mount_authority() {
@@ -2533,7 +2757,7 @@ cp -- "$ARCHIVE_DIGEST_FILE" "$PINNED_ARCHIVE_DIGEST_FILE"
 chmod 0600 -- "$PINNED_ARCHIVE" "$PINNED_ARCHIVE_DIGEST_FILE"
 
 # Integrity and manifest verification must complete before extraction or mutation.
-python "$VERIFY_SCRIPT" \
+invoke_python "$VERIFY_SCRIPT" \
   --archive "$PINNED_ARCHIVE" --archive-digest-file "$PINNED_ARCHIVE_DIGEST_FILE" \
   --require-closed --evidence-dir "$EVIDENCE_DIR/package"
 
@@ -2560,7 +2784,7 @@ STAGING_CLEANUP_ARMED=true
 printf '%s\n' "$ATTEMPT_ID" > "$STAGING_OWNER_MARKER"
 mkdir -- "$STAGING_ROOT"
 fsync_directories "$RELEASE_PARENT" "$STAGING_ROOT"
-python "$VERIFY_SCRIPT" \
+invoke_python "$VERIFY_SCRIPT" \
   --archive "$PINNED_ARCHIVE" --archive-digest-file "$PINNED_ARCHIVE_DIGEST_FILE" \
   --require-closed --evidence-dir "$EVIDENCE_DIR/package"
 tar -xzf "$PINNED_ARCHIVE" -C "$STAGING_ROOT" --no-same-owner --no-same-permissions
@@ -2568,7 +2792,7 @@ cleanup_pinned_archive
 [ -f "$STAGING_ROOT/launch-release-manifest.json" ] || die 'extracted-manifest-missing'
 
 # Re-verify extracted activation-critical bytes before any dependency hook or mutation.
-python "$VERIFY_SCRIPT" \
+invoke_python "$VERIFY_SCRIPT" \
   --installed-root "$STAGING_ROOT" --verify-config-ingress-unit-digests \
   --require-closed --evidence-dir "$EVIDENCE_DIR/staged"
 
@@ -2576,7 +2800,7 @@ record_authority_result() {
   local name="$1"
   local status="$2"
   local code="$3"
-  python - "$EVIDENCE_DIR/dependency-unit-checks.json" "$name" "$status" "$code" <<'PY'
+  invoke_python - "$EVIDENCE_DIR/dependency-unit-checks.json" "$name" "$status" "$code" <<'PY'
 import json
 from pathlib import Path
 import sys
@@ -2604,7 +2828,7 @@ PY
 record_systemd_unit_cleanup() {
   local status="$1"
   local code="$2"
-  python - "$EVIDENCE_DIR/systemd-unit-cleanup.json" "$status" "$code" <<'PY'
+  invoke_python - "$EVIDENCE_DIR/systemd-unit-cleanup.json" "$status" "$code" <<'PY'
 import json
 from pathlib import Path
 import sys
@@ -2658,7 +2882,7 @@ run_authority_hook nuxt-production-dependencies "$NUXT_DEPENDENCY_HOOK" \
   --project-root "$STAGING_ROOT/web-nuxt" --production-only
 
 snapshot_tree() {
-  python - "$1" "$2" <<'PY'
+  invoke_python - "$1" "$2" <<'PY'
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -2695,7 +2919,7 @@ write_recovery_evidence() {
   local root_restored="$2"
   local persistent_restored="$3"
   local systemd_units_restored="$4"
-  python - "$EVIDENCE_DIR/install-recovery.json" "$status" \
+  invoke_python - "$EVIDENCE_DIR/install-recovery.json" "$status" \
     "$INSTALL_FAILURE_POINT" "$root_restored" "$persistent_restored" \
     "$systemd_units_restored" <<'PY'
 import json
@@ -2718,7 +2942,7 @@ PY
 }
 
 materialize_environment_authority() {
-  python - "$PINNED_ENVIRONMENT_AUTHORITY" "$RELEASE_ROOT/.env" \
+  invoke_python - "$PINNED_ENVIRONMENT_AUTHORITY" "$RELEASE_ROOT/.env" \
     "$ENVIRONMENT_AUTHORITY_SHA256" <<'PY'
 from hashlib import sha256
 import os
@@ -2775,7 +2999,7 @@ remove_systemd_unit_attempt() {
 }
 
 prepare_systemd_unit_backup() {
-  python - "$RELEASE_ROOT" "$SYSTEMD_UNIT_DESTINATION" "$UNIT_BACKUP_ROOT" "$UNIT_MUTATION_MARKER" <<'PY'
+  invoke_python - "$RELEASE_ROOT" "$SYSTEMD_UNIT_DESTINATION" "$UNIT_BACKUP_ROOT" "$UNIT_MUTATION_MARKER" <<'PY'
 import hashlib
 import json
 import os
@@ -2858,7 +3082,7 @@ PY
 }
 
 install_systemd_units() {
-  python - "$RELEASE_ROOT" "$SYSTEMD_UNIT_DESTINATION" <<'PY'
+  invoke_python - "$RELEASE_ROOT" "$SYSTEMD_UNIT_DESTINATION" <<'PY'
 import hashlib
 import json
 import os
@@ -3097,7 +3321,7 @@ verify_findmnt_file() {
   local evidence="$1"
   local source="$2"
   local target="$3"
-  python - "$VERIFY_SCRIPT" "$evidence" "$source" "$target" <<'PY'
+  invoke_python - "$VERIFY_SCRIPT" "$evidence" "$source" "$target" <<'PY'
 import importlib.util
 import json
 from pathlib import Path
@@ -3218,7 +3442,7 @@ if [ "$LOCAL_REHEARSAL" = true ]; then
 else
   VERIFY_MOUNT_ARGS+=(--persistent-mount-evidence "$EVIDENCE_DIR/findmnt-after.json")
 fi
-python "$VERIFY_SCRIPT" \
+invoke_python "$VERIFY_SCRIPT" \
   --installed-root "$RELEASE_ROOT" --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
   --verify-config-ingress-unit-digests --verify-persistent-agent-data-mount \
   --systemd-unit-root "$SYSTEMD_UNIT_DESTINATION" --verify-systemd-unit-destination \
@@ -3227,7 +3451,7 @@ python "$VERIFY_SCRIPT" \
   "${VERIFY_MOUNT_ARGS[@]}" \
   --require-closed --evidence-dir "$EVIDENCE_DIR/installed"
 
-python - "$EVIDENCE_DIR/install-summary.json" <<'PY'
+invoke_python - "$EVIDENCE_DIR/install-summary.json" <<'PY'
 import json
 from pathlib import Path
 import sys
