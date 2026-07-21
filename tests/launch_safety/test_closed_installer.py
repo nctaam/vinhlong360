@@ -592,6 +592,314 @@ def test_sigkill_after_persistent_detach_is_recovered_before_retry_reset(
     assert not list(release.parent.glob(f".{release.name}.closed-*"))
 
 
+def _interrupt_at_journal_stage(package, case_root: Path, prepared, stage: str):
+    *_, evidence, _, _, _, values = prepared
+    interrupted = case_root / f"interrupted-{stage}"
+    journal = evidence / "install-mutation-state.json"
+    bash_env = case_root / f"kill-at-{stage}.bash"
+    bash_env.write_text(
+        "python() {\n"
+        "  command python \"$@\"\n"
+        "  status=$?\n"
+        f"  if [ -f '{_bash_path(journal)}' ] "
+        f"&& grep -Fq '\"stage\": \"{stage}\"' '{_bash_path(journal)}'; then\n"
+        f"    : > '{_bash_path(interrupted)}'\n"
+        "    kill -9 \"$$\"\n"
+        "  fi\n"
+        "  return \"$status\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+    env = os.environ.copy()
+    env.update(values)
+    env["BASH_ENV"] = _bash_path(bash_env)
+    result = subprocess.run(
+        _installer_command(package, case_root, prepared),
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0, result.stderr + result.stdout
+    assert interrupted.is_file()
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == stage
+    return journal
+
+
+@pytest.mark.parametrize(
+    "stage", ("swap-release-root-armed", "root-swapped", "persistent-restored")
+)
+def test_sigkill_at_later_journal_stage_is_rolled_back_before_retry(
+    tmp_path: Path, closed_package, stage: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"sigkill-{stage}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, _, _, _, _ = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    journal = _interrupt_at_journal_stage(closed_package, case_root, prepared, stage)
+
+    retry = _invoke_installer(closed_package, case_root, prepared)
+
+    assert retry.returncode == 0, retry.stderr + retry.stdout
+    assert _snapshot_tree(release / "agent" / "data") == persistent_before
+    assert _snapshot_tree(persistent) == {}
+    assert not journal.exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def _interrupt_recovery_mutation(
+    package,
+    case_root: Path,
+    prepared,
+    *,
+    recovery_stage: str,
+    command: str,
+):
+    _, _, evidence, _, _, _, values = prepared
+    interrupted = case_root / f"interrupted-{recovery_stage}"
+    journal = evidence / "install-mutation-state.json"
+    bash_env = case_root / f"kill-at-{recovery_stage}.bash"
+    bash_env.write_text(
+        f"{command}() {{\n"
+        f"  /usr/bin/{command} \"$@\"\n"
+        "  status=$?\n"
+        f"  if [ -f '{_bash_path(journal)}' ] "
+        f"&& grep -Fq '\"stage\": \"{recovery_stage}\"' '{_bash_path(journal)}'; then\n"
+        f"    : > '{_bash_path(interrupted)}'\n"
+        "    kill -9 \"$$\"\n"
+        "  fi\n"
+        "  return \"$status\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+    env = os.environ.copy()
+    env.update(values)
+    env.pop("VL360_INSTALL_FAIL_AFTER", None)
+    env["BASH_ENV"] = _bash_path(bash_env)
+    result = subprocess.run(
+        _installer_command(package, case_root, prepared),
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0, result.stderr + result.stdout
+    assert interrupted.is_file()
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == recovery_stage
+
+
+@pytest.mark.parametrize(
+    ("initial_stage", "recovery_stage", "command", "persistent_must_exist"),
+    (
+        (
+            "persistent-restored",
+            "recovery-remove-empty-persistent-root-armed",
+            "rmdir",
+            True,
+        ),
+        (
+            "persistent-restored",
+            "recovery-detach-persistent-armed",
+            "mv",
+            True,
+        ),
+        ("root-swapped", "recovery-remove-release-root-armed", "rm", False),
+        ("root-swapped", "recovery-restore-old-root-armed", "mv", False),
+        ("persistent-detached", "recovery-restore-persistent-armed", "mv", False),
+        (
+            "persistent-detached",
+            "recovery-create-persistent-root-armed",
+            "mkdir",
+            False,
+        ),
+        ("persistent-detached", "recovery-remove-staging-armed", "rm", False),
+        (
+            "persistent-detached",
+            "recovery-remove-staging-owner-armed",
+            "rm",
+            False,
+        ),
+    ),
+)
+def test_stale_recovery_resumes_after_each_interrupted_mutation(
+    tmp_path: Path,
+    closed_package,
+    initial_stage: str,
+    recovery_stage: str,
+    command: str,
+    persistent_must_exist: bool,
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / recovery_stage
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, _ = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    _interrupt_at_journal_stage(closed_package, case_root, prepared, initial_stage)
+    if persistent_must_exist and not persistent.exists():
+        persistent.mkdir()
+
+    _interrupt_recovery_mutation(
+        closed_package,
+        case_root,
+        prepared,
+        recovery_stage=recovery_stage,
+        command=command,
+    )
+
+    retry = _invoke_installer(closed_package, case_root, prepared)
+
+    assert retry.returncode == 0, retry.stderr + retry.stdout
+    assert _snapshot_tree(release / "agent" / "data") == persistent_before
+    assert _snapshot_tree(persistent) == {}
+    assert not (evidence / "install-mutation-state.json").exists()
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
+def test_stale_recovery_retries_a_failed_journaled_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "failed-recovery-mkdir"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, _, values = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    _interrupt_at_journal_stage(
+        closed_package, case_root, prepared, "persistent-detached"
+    )
+    journal = evidence / "install-mutation-state.json"
+    failed = case_root / "recovery-mkdir-failed"
+    bash_env = case_root / "fail-recovery-mkdir.bash"
+    bash_env.write_text(
+        "mkdir() {\n"
+        f"  if [ -f '{_bash_path(journal)}' ] "
+        "&& grep -Fq '\"stage\": \"recovery-create-persistent-root-armed\"' "
+        f"'{_bash_path(journal)}' && [ ! -f '{_bash_path(failed)}' ]; then\n"
+        f"    : > '{_bash_path(failed)}'\n"
+        "    return 61\n"
+        "  fi\n"
+        "  /usr/bin/mkdir \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+    env = os.environ.copy()
+    env.update(values)
+    env["BASH_ENV"] = _bash_path(bash_env)
+    failed_retry = subprocess.run(
+        _installer_command(closed_package, case_root, prepared),
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert failed_retry.returncode == 2, failed_retry.stderr + failed_retry.stdout
+    assert failed.is_file()
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "recovery-create-persistent-root-armed"
+    )
+
+    retry = _invoke_installer(closed_package, case_root, prepared)
+
+    assert retry.returncode == 0, retry.stderr + retry.stdout
+    assert _snapshot_tree(release / "agent" / "data") == persistent_before
+    assert _snapshot_tree(persistent) == {}
+
+
+def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "production-shaped-stale-recovery"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, values = prepared
+    journal = _interrupt_at_journal_stage(
+        closed_package, case_root, prepared, "detach-agent-data-armed"
+    )
+    shutil.copytree(release / "agent" / "data", persistent, dirs_exist_ok=True)
+    persistent_before = _snapshot_tree(persistent)
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    payload["local_rehearsal"] = False
+    journal.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    runtime = case_root / "runtime"
+    for name, status in (
+        ("install-python-dependencies", 19),
+        ("install-nuxt-production-dependencies", 0),
+        ("verify-systemd-units", 0),
+    ):
+        hook = runtime / name
+        hook.write_text(f"#!/usr/bin/env bash\nexit {status}\n", encoding="ascii")
+        hook.chmod(0o755)
+    mount_log = case_root / "mount-authority.log"
+    mount_authority = case_root / "mount-authority.sh"
+    mount_authority.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        f"printf '%s\\n' \"$1\" >> '{_bash_path(mount_log)}'\n"
+        "[ \"$1\" = findmnt ] || exit 70\n"
+        f"source_path=$(cygpath -m '{_bash_path(persistent)}')\n"
+        "target_path=$(cygpath -m \"$4\")\n"
+        "printf '{\"filesystems\":[{\"source\":\"%s\",\"target\":\"%s\",\"options\":\"rw,bind\"}]}\\n' "
+        "\"$source_path\" \"$target_path\"\n",
+        encoding="ascii",
+    )
+    mount_authority.chmod(0o755)
+    env = os.environ.copy()
+    env.update(values)
+    for name in (
+        "VL360_PYTHON_DEPENDENCY_HOOK",
+        "VL360_NUXT_DEPENDENCY_HOOK",
+        "VL360_UNIT_VERIFY_HOOK",
+        "VL360_LOCAL_REHEARSAL_SENTINEL",
+        "VL360_INSTALL_FAIL_AFTER",
+    ):
+        env.pop(name, None)
+    retry = subprocess.run(
+        [
+            str(BASH),
+            "scripts/ops/install_closed_release.sh",
+            "--archive",
+            _bash_path(closed_package.archive),
+            "--archive-digest-file",
+            _bash_path(closed_package.digest_file),
+            "--release-root",
+            _bash_path(release),
+            "--persistent-agent-data-root",
+            _bash_path(persistent),
+            "--environment-authority",
+            _bash_path(case_root / "external.env"),
+            "--runtime-authority",
+            _bash_path(runtime),
+            "--mount-authority",
+            _bash_path(mount_authority),
+            "--evidence-dir",
+            _bash_path(evidence),
+            "--require-closed",
+        ],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    assert not journal.exists()
+    assert mount_log.read_text(encoding="ascii").splitlines() == ["findmnt"]
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == persistent_before
+
+
 def test_stale_recovery_refuses_different_retry_authorities(
     tmp_path: Path, closed_package
 ):

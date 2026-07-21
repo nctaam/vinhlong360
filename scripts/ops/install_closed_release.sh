@@ -737,47 +737,297 @@ raise SystemExit(0 if observed == expected else 1)
 PY
 }
 
+write_stale_mutation_state() {
+  local stage="$1"
+  MSYS2_ENV_CONV_EXCL='VL360_STALE_RELEASE_ROOT;VL360_STALE_PERSISTENT_ROOT;VL360_STALE_STAGING_ROOT;VL360_STALE_OLD_ROOT' \
+    VL360_STALE_RELEASE_ROOT="$STALE_RELEASE_ROOT" \
+    VL360_STALE_PERSISTENT_ROOT="$STALE_PERSISTENT_ROOT" \
+    VL360_STALE_STAGING_ROOT="$STALE_STAGING_ROOT" \
+    VL360_STALE_OLD_ROOT="$STALE_OLD_ROOT" \
+    python - "$MUTATION_STATE" "$stage" "$STALE_STAGE" \
+      "$STALE_ATTEMPT_ID" "$STALE_PID" "$STALE_LOCAL_REHEARSAL" \
+      "$STALE_RELEASE_KEY" "$STALE_PERSISTENT_KEY" <<'PY'
+import json
+import os
+from pathlib import Path
+import sys
+import tempfile
+
+path = Path(sys.argv[1])
+payload = json.loads(path.read_text(encoding="utf-8"))
+expected = {
+    "attempt_id": sys.argv[4],
+    "local_rehearsal": sys.argv[6] == "true",
+    "old_root": os.environ["VL360_STALE_OLD_ROOT"],
+    "persistent_key_sha256": sys.argv[8],
+    "persistent_root": os.environ["VL360_STALE_PERSISTENT_ROOT"],
+    "pid": int(sys.argv[5]),
+    "release_key_sha256": sys.argv[7],
+    "release_root": os.environ["VL360_STALE_RELEASE_ROOT"],
+    "schema_version": 2,
+    "stage": sys.argv[3],
+    "staging_root": os.environ["VL360_STALE_STAGING_ROOT"],
+}
+if payload != expected:
+    raise SystemExit(1)
+payload["stage"] = sys.argv[2]
+descriptor, name = tempfile.mkstemp(prefix=".install-mutation-state.", dir=path.parent)
+temporary = Path(name)
+try:
+    with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
+        descriptor = -1
+        json.dump(payload, stream, indent=2, sort_keys=True)
+        stream.write("\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary, path)
+finally:
+    if descriptor != -1:
+        os.close(descriptor)
+    temporary.unlink(missing_ok=True)
+PY
+  STALE_STAGE="$stage"
+}
+
+stale_tree_state() {
+  local root="$1"
+  [ ! -L "$root" ] || return 3
+  [ -e "$root" ] || return 1
+  [ -d "$root" ] || return 3
+  tree_matches_snapshot "$root" "$SNAPSHOT_BEFORE" && return 0
+  [ -z "$(find "$root" -mindepth 1 -print -quit)" ] && return 2
+  return 3
+}
+
+inspect_stale_mount() {
+  local target="$1"
+  if "$MOUNT_AUTHORITY" findmnt --json --target "$target" \
+    > "$EVIDENCE_DIR/findmnt-recovery.json"; then
+    python - "$VERIFY_SCRIPT" "$EVIDENCE_DIR/findmnt-recovery.json" \
+      "$STALE_PERSISTENT_ROOT" "$target" <<'PY'
+import importlib.util
+import json
+from pathlib import Path
+import sys
+
+spec = importlib.util.spec_from_file_location("task5_verify_stale_mount", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+payload = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+module.validate_findmnt_evidence(
+    payload,
+    expected_source=Path(sys.argv[3]),
+    expected_target=Path(sys.argv[4]),
+)
+PY
+    return $?
+  else
+    local status=$?
+    [ "$status" -eq 1 ] && return 1
+    return 2
+  fi
+}
+
 reconcile_stale_install_attempt() {
   [ "$LOCAL_REHEARSAL" = "$STALE_LOCAL_REHEARSAL" ] \
-    && [ "$LOCAL_REHEARSAL" = true ] || return 1
+    || return 1
   [ "$CURRENT_RELEASE_KEY" = "$STALE_RELEASE_KEY" ] \
     && [ "$CURRENT_PERSISTENT_KEY" = "$STALE_PERSISTENT_KEY" ] || return 1
   [ -f "$MUTATION_STATE" ] && [ ! -L "$MUTATION_STATE" ] || return 1
-  local stale_stage_owner current_data
+  local entry_stage="$STALE_STAGE"
+  local stale_stage_owner="$STALE_STAGING_ROOT.owner"
+  local current_data="$STALE_RELEASE_ROOT/agent/data"
+  local current_state persistent_state mount_state
+  local old_present=false release_present=false mount_verified=false
   case "$STALE_STAGE" in
-    detach-agent-data-armed|persistent-detached) ;;
+    detach-agent-data-armed|persistent-detached|swap-release-root-armed|\
+    root-swapped|persistent-restored|\
+    recovery-remove-empty-persistent-root-armed|\
+    recovery-detach-persistent-armed|recovery-remove-release-root-armed|\
+    recovery-restore-old-root-armed|recovery-restore-persistent-armed|\
+    recovery-create-persistent-root-armed|recovery-remove-staging-armed|\
+    recovery-remove-staging-owner-armed) ;;
     *) return 1 ;;
   esac
-  stale_stage_owner="$STALE_STAGING_ROOT.owner"
-  [ ! -e "$STALE_OLD_ROOT" ] && [ ! -L "$STALE_OLD_ROOT" ] || return 1
-  [ -d "$STALE_RELEASE_ROOT" ] && [ ! -L "$STALE_RELEASE_ROOT" ] || return 1
+
+  for candidate in "$STALE_RELEASE_ROOT" "$STALE_PERSISTENT_ROOT" \
+    "$STALE_STAGING_ROOT" "$STALE_OLD_ROOT" "$stale_stage_owner"; do
+    [ ! -L "$candidate" ] || return 1
+  done
+  if [ -e "$STALE_OLD_ROOT" ]; then
+    [ -d "$STALE_OLD_ROOT" ] || return 1
+    old_present=true
+  fi
+  if [ -e "$STALE_RELEASE_ROOT" ]; then
+    [ -d "$STALE_RELEASE_ROOT" ] || return 1
+    release_present=true
+  fi
+  if [ -e "$STALE_STAGING_ROOT" ]; then
+    [ -d "$STALE_STAGING_ROOT" ] || return 1
+  fi
+
+  case "$entry_stage" in
+    detach-agent-data-armed|persistent-detached)
+      [ "$old_present" = false ] || return 1
+      ;;
+    root-swapped|persistent-restored|\
+    recovery-remove-empty-persistent-root-armed|\
+    recovery-detach-persistent-armed|recovery-remove-release-root-armed)
+      [ "$old_present" = true ] || return 1
+      ;;
+    recovery-restore-persistent-armed|recovery-create-persistent-root-armed|\
+    recovery-remove-staging-armed|recovery-remove-staging-owner-armed)
+      [ "$old_present" = false ] || return 1
+      ;;
+  esac
+
+  if [ "$old_present" = true ]; then
+    if [ "$release_present" = true ] && [ -e "$STALE_STAGING_ROOT" ]; then
+      return 1
+    fi
+    if [ "$release_present" = true ]; then
+      if [ "$STALE_LOCAL_REHEARSAL" = true ]; then
+        if stale_tree_state "$current_data"; then
+          current_state=0
+        else
+          current_state=$?
+        fi
+        if stale_tree_state "$STALE_PERSISTENT_ROOT"; then
+          persistent_state=0
+        else
+          persistent_state=$?
+        fi
+        case "$current_state:$persistent_state" in
+          0:1|0:2)
+            if [ "$persistent_state" -eq 2 ]; then
+              write_stale_mutation_state \
+                recovery-remove-empty-persistent-root-armed || return 1
+              rmdir -- "$STALE_PERSISTENT_ROOT" || return 1
+            fi
+            write_stale_mutation_state recovery-detach-persistent-armed \
+              || return 1
+            mv -- "$current_data" "$STALE_PERSISTENT_ROOT" || return 1
+            ;;
+          1:0|2:0) ;;
+          *) return 1 ;;
+        esac
+      else
+        tree_matches_snapshot "$STALE_PERSISTENT_ROOT" "$SNAPSHOT_BEFORE" \
+          || return 1
+        if inspect_stale_mount "$current_data"; then
+          mount_state=0
+        else
+          mount_state=$?
+        fi
+        case "$entry_stage:$mount_state" in
+          persistent-restored:0|recovery-detach-persistent-armed:0)
+            write_stale_mutation_state recovery-detach-persistent-armed \
+              || return 1
+            "$MOUNT_AUTHORITY" umount "$current_data" || return 1
+            ;;
+          recovery-detach-persistent-armed:1|root-swapped:1|\
+          swap-release-root-armed:1|recovery-remove-release-root-armed:1) ;;
+          *) return 1 ;;
+        esac
+      fi
+      case "$entry_stage" in
+        recovery-remove-release-root-armed) ;;
+        *) [ -f "$STALE_RELEASE_ROOT/launch-release-manifest.json" ] \
+          && [ ! -L "$STALE_RELEASE_ROOT/launch-release-manifest.json" ] \
+          || return 1 ;;
+      esac
+      write_stale_mutation_state recovery-remove-release-root-armed || return 1
+      rm -rf -- "$STALE_RELEASE_ROOT" || return 1
+      release_present=false
+    fi
+    [ "$release_present" = false ] || return 1
+    write_stale_mutation_state recovery-restore-old-root-armed || return 1
+    mv -- "$STALE_OLD_ROOT" "$STALE_RELEASE_ROOT" || return 1
+    old_present=false
+    release_present=true
+  fi
+
+  [ "$release_present" = true ] \
+    && [ -d "$STALE_RELEASE_ROOT" ] && [ ! -L "$STALE_RELEASE_ROOT" ] \
+    && [ ! -e "$STALE_OLD_ROOT" ] && [ ! -L "$STALE_OLD_ROOT" ] || return 1
   current_data="$STALE_RELEASE_ROOT/agent/data"
-  [ ! -L "$current_data" ] && [ ! -L "$STALE_PERSISTENT_ROOT" ] || return 1
-  if [ -d "$current_data" ] \
-    && [ -d "$STALE_PERSISTENT_ROOT" ] \
-    && [ -z "$(find "$STALE_PERSISTENT_ROOT" -mindepth 1 -print -quit)" ] \
-    && tree_matches_snapshot "$current_data" "$SNAPSHOT_BEFORE"; then
-    :
-  elif [ ! -e "$current_data" ] \
-    && [ ! -L "$current_data" ] \
-    && [ -d "$STALE_PERSISTENT_ROOT" ] \
-    && tree_matches_snapshot "$STALE_PERSISTENT_ROOT" "$SNAPSHOT_BEFORE"; then
-    mkdir -p -- "$(dirname -- "$current_data")" || return 1
-    mv -- "$STALE_PERSISTENT_ROOT" "$current_data" || return 1
-    mkdir -- "$STALE_PERSISTENT_ROOT" || return 1
+  [ ! -L "$current_data" ] || return 1
+  if [ "$STALE_LOCAL_REHEARSAL" = true ]; then
+    if stale_tree_state "$current_data"; then
+      current_state=0
+    else
+      current_state=$?
+    fi
+    if stale_tree_state "$STALE_PERSISTENT_ROOT"; then
+      persistent_state=0
+    else
+      persistent_state=$?
+    fi
+    case "$current_state:$persistent_state" in
+      0:1)
+        write_stale_mutation_state recovery-create-persistent-root-armed \
+          || return 1
+        mkdir -- "$STALE_PERSISTENT_ROOT" || return 1
+        ;;
+      0:2) ;;
+      1:0)
+        [ -d "$(dirname -- "$current_data")" ] \
+          && [ ! -L "$(dirname -- "$current_data")" ] || return 1
+        write_stale_mutation_state recovery-restore-persistent-armed || return 1
+        mv -- "$STALE_PERSISTENT_ROOT" "$current_data" || return 1
+        write_stale_mutation_state recovery-create-persistent-root-armed \
+          || return 1
+        mkdir -- "$STALE_PERSISTENT_ROOT" || return 1
+        ;;
+      *) return 1 ;;
+    esac
     tree_matches_snapshot "$current_data" "$SNAPSHOT_BEFORE" || return 1
+    [ -d "$STALE_PERSISTENT_ROOT" ] \
+      && [ ! -L "$STALE_PERSISTENT_ROOT" ] \
+      && [ -z "$(find "$STALE_PERSISTENT_ROOT" -mindepth 1 -print -quit)" ] \
+      || return 1
   else
-    return 1
+    tree_matches_snapshot "$STALE_PERSISTENT_ROOT" "$SNAPSHOT_BEFORE" \
+      || return 1
+    if inspect_stale_mount "$current_data"; then
+      mount_state=0
+      mount_verified=true
+    else
+      mount_state=$?
+    fi
+    case "$mount_state" in
+      0) ;;
+      1)
+        [ -d "$current_data" ] && [ ! -L "$current_data" ] \
+          && [ -z "$(find "$current_data" -mindepth 1 -print -quit)" ] \
+          || return 1
+        write_stale_mutation_state recovery-restore-persistent-armed || return 1
+        "$MOUNT_AUTHORITY" mount --bind "$STALE_PERSISTENT_ROOT" "$current_data" \
+          || return 1
+        inspect_stale_mount "$current_data" || return 1
+        mount_verified=true
+        ;;
+      *) return 1 ;;
+    esac
+    [ "$mount_verified" = true ] || return 1
+    tree_matches_snapshot "$current_data" "$SNAPSHOT_BEFORE" || return 1
+  fi
+
+  local stage_owner_valid=false
+  if [ -e "$stale_stage_owner" ]; then
+    [ -f "$stale_stage_owner" ] && [ ! -L "$stale_stage_owner" ] \
+      && grep -Fxq "$STALE_ATTEMPT_ID" "$stale_stage_owner" || return 1
+    stage_owner_valid=true
   fi
   if [ -e "$STALE_STAGING_ROOT" ] || [ -L "$STALE_STAGING_ROOT" ]; then
     [ -d "$STALE_STAGING_ROOT" ] && [ ! -L "$STALE_STAGING_ROOT" ] || return 1
-    [ -f "$stale_stage_owner" ] && [ ! -L "$stale_stage_owner" ] \
-      && grep -Fxq "$STALE_ATTEMPT_ID" "$stale_stage_owner" || return 1
+    [ "$stage_owner_valid" = true ] || return 1
+    write_stale_mutation_state recovery-remove-staging-armed || return 1
     rm -rf -- "$STALE_STAGING_ROOT" || return 1
   fi
   if [ -e "$stale_stage_owner" ] || [ -L "$stale_stage_owner" ]; then
-    [ -f "$stale_stage_owner" ] && [ ! -L "$stale_stage_owner" ] \
-      && grep -Fxq "$STALE_ATTEMPT_ID" "$stale_stage_owner" || return 1
+    [ "$stage_owner_valid" = true ] || return 1
+    write_stale_mutation_state recovery-remove-staging-owner-armed || return 1
     rm -f -- "$stale_stage_owner" || return 1
   fi
   clear_mutation_state
