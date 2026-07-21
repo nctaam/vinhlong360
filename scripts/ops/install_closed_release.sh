@@ -147,9 +147,9 @@ if [[ "$OSTYPE" = linux* ]]; then
 fi
 invoke_python() {
   if [[ "$OSTYPE" = linux* ]]; then
-    (exec -a "$PYTHON_EXECUTOR_LOGICAL" "$PYTHON_EXECUTOR" "$@")
+    /usr/bin/env --argv0="$PYTHON_EXECUTOR_LOGICAL" "$PYTHON_EXECUTOR" "$@"
   else
-    command "$PYTHON_EXECUTOR" "$@"
+    "$PYTHON_EXECUTOR" "$@"
   fi
 }
 if [ "$EARLY_REQUIRED_ARGUMENTS_VALID" = true ] \

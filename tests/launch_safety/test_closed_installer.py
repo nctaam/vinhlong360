@@ -1883,6 +1883,62 @@ def test_installer_ignores_python_function_shadowed_from_bash_env(
     assert not marker.exists()
 
 
+def test_installer_ignores_command_and_exec_functions_shadowed_from_bash_env(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "command-exec-function-shadow"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, evidence, _, _, hook_log, _ = prepared
+    command_marker = case_root / "shadowed-command-called"
+    exec_marker = case_root / "shadowed-exec-called"
+    bash_env = case_root / "command-exec-shadow.bash"
+    bash_env.write_text(
+        "command() {\n"
+        "  if [ \"${1:-}\" = -v ]; then\n"
+        "    builtin command \"$@\"\n"
+        "    return $?\n"
+        "  fi\n"
+        f"  : > '{_bash_path(command_marker)}'\n"
+        "  return 0\n"
+        "}\n"
+        "exec() {\n"
+        "  if [ \"${1:-}\" != -a ]; then\n"
+        "    builtin exec \"$@\"\n"
+        "    return $?\n"
+        "  fi\n"
+        f"  : > '{_bash_path(exec_marker)}'\n"
+        "  return 0\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert [
+        line.split("|", 1)[0]
+        for line in hook_log.read_text(encoding="ascii").splitlines()
+    ] == [
+        "python-dependencies",
+        "nuxt-production-dependencies",
+        "systemd-units",
+    ]
+    checks = json.loads(
+        (evidence / "dependency-unit-checks.json").read_text(encoding="utf-8")
+    )
+    assert set(checks["results"].values()) == {"passed"}
+    assert (release / "launch-release-manifest.json").is_file()
+    assert not command_marker.exists()
+    assert not exec_marker.exists()
+
+
 def test_conflicting_python_executor_authorities_are_rejected_before_execution(
     tmp_path: Path, closed_package
 ):
