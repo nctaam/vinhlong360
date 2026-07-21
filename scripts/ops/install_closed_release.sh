@@ -60,6 +60,22 @@ normalize_evidence_candidate() {
   fi
 }
 
+preflight_authority_role_collisions() {
+  python - "$@" <<'PY'
+import os
+import sys
+
+seen = {}
+for index in range(1, len(sys.argv), 2):
+    role = sys.argv[index]
+    authority = os.path.normcase(os.path.realpath(sys.argv[index + 1]))
+    existing_role = seen.get(authority)
+    if existing_role is not None and existing_role != role:
+        raise SystemExit(12)
+    seen[authority] = role
+PY
+}
+
 ATTEMPT_ID="$(python - <<'PY'
 import secrets
 print(secrets.token_hex(16))
@@ -351,16 +367,72 @@ for discovery_arg in "${ORIGINAL_ARGS[@]}"; do
   [ "$discovery_arg" = '--local-rehearsal' ] && DISCOVERY_LOCAL_REHEARSAL=true
 done
 DISCOVERED_EVIDENCE_DIR=''
+DISCOVERED_RELEASE_ROOT=''
+DISCOVERED_PERSISTENT_ROOT=''
+DISCOVERED_RUNTIME_AUTHORITY=''
 for ((discovery_index = 0; discovery_index < ${#ORIGINAL_ARGS[@]}; discovery_index++)); do
-  [ "${ORIGINAL_ARGS[$discovery_index]}" = '--evidence-dir' ] || continue
+  discovery_option="${ORIGINAL_ARGS[$discovery_index]}"
+  case "$discovery_option" in
+    --evidence-dir|--release-root|--persistent-agent-data-root|--runtime-authority) ;;
+    *) continue ;;
+  esac
   discovery_value_index=$((discovery_index + 1))
   ((discovery_value_index < ${#ORIGINAL_ARGS[@]})) || continue
   discovery_value="${ORIGINAL_ARGS[$discovery_value_index]}"
   case "$discovery_value" in
     ''|--*) continue ;;
-    *) DISCOVERED_EVIDENCE_DIR="$discovery_value" ;;
+  esac
+  case "$discovery_option" in
+    --evidence-dir) DISCOVERED_EVIDENCE_DIR="$discovery_value" ;;
+    --release-root) DISCOVERED_RELEASE_ROOT="$discovery_value" ;;
+    --persistent-agent-data-root) DISCOVERED_PERSISTENT_ROOT="$discovery_value" ;;
+    --runtime-authority) DISCOVERED_RUNTIME_AUTHORITY="$discovery_value" ;;
   esac
 done
+if [ -n "$DISCOVERED_EVIDENCE_DIR" ] \
+  && [ -n "$DISCOVERED_RELEASE_ROOT" ] \
+  && [ -n "$DISCOVERED_PERSISTENT_ROOT" ] \
+  && { [ "$DISCOVERY_LOCAL_REHEARSAL" != true ] \
+    || [ -n "$DISCOVERED_RUNTIME_AUTHORITY" ]; }; then
+  if DISCOVERED_EVIDENCE_DIR="$(
+      normalize_evidence_candidate "$DISCOVERED_EVIDENCE_DIR" \
+        "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
+    )" \
+    && DISCOVERED_RELEASE_ROOT="$(
+      normalize_evidence_candidate "$DISCOVERED_RELEASE_ROOT" \
+        "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
+    )" \
+    && DISCOVERED_PERSISTENT_ROOT="$(
+      normalize_evidence_candidate "$DISCOVERED_PERSISTENT_ROOT" \
+        "$DISCOVERY_LOCAL_REHEARSAL" 2>/dev/null
+    )"; then
+    if [ "$DISCOVERY_LOCAL_REHEARSAL" = true ]; then
+      if DISCOVERED_RUNTIME_AUTHORITY="$(
+        normalize_evidence_candidate "$DISCOVERED_RUNTIME_AUTHORITY" true \
+          2>/dev/null
+      )"; then
+        DISCOVERED_SYSTEMD_DESTINATION="$DISCOVERED_RUNTIME_AUTHORITY/systemd-units"
+      else
+        DISCOVERED_SYSTEMD_DESTINATION=''
+      fi
+    else
+      DISCOVERED_SYSTEMD_DESTINATION=/etc/systemd/system
+    fi
+    if [ -n "$DISCOVERED_SYSTEMD_DESTINATION" ]; then
+      if preflight_authority_role_collisions \
+        evidence "$DISCOVERED_EVIDENCE_DIR" \
+        release "$DISCOVERED_RELEASE_ROOT" \
+        persistent "$DISCOVERED_PERSISTENT_ROOT" \
+        systemd "$DISCOVERED_SYSTEMD_DESTINATION"; then
+        :
+      else
+        discovery_collision_status=$?
+        [ "$discovery_collision_status" -ne 12 ] \
+          || die 'install-authority-role-collision'
+      fi
+    fi
+  fi
+fi
 if [ -n "$DISCOVERED_EVIDENCE_DIR" ]; then
   if DISCOVERED_EVIDENCE_DIR="$(
     normalize_evidence_candidate "$DISCOVERED_EVIDENCE_DIR" \
@@ -803,7 +875,7 @@ inspect_stale_mount() {
   local target="$1"
   if "$MOUNT_AUTHORITY" findmnt --json --target "$target" \
     > "$EVIDENCE_DIR/findmnt-recovery.json"; then
-    python - "$VERIFY_SCRIPT" "$EVIDENCE_DIR/findmnt-recovery.json" \
+    if python - "$VERIFY_SCRIPT" "$EVIDENCE_DIR/findmnt-recovery.json" \
       "$STALE_PERSISTENT_ROOT" "$target" <<'PY'
 import importlib.util
 import json
@@ -820,7 +892,10 @@ module.validate_findmnt_evidence(
     expected_target=Path(sys.argv[4]),
 )
 PY
-    return $?
+    then
+      return 0
+    fi
+    return 2
   else
     local status=$?
     [ "$status" -eq 1 ] && return 1

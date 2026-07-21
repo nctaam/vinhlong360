@@ -900,6 +900,110 @@ def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
     assert _snapshot_tree(persistent) == persistent_before
 
 
+@pytest.mark.parametrize("invalid_evidence", ("wrong-source", "invalid-options"))
+def test_stale_recovery_preserves_authorities_when_findmnt_evidence_is_invalid(
+    tmp_path: Path, closed_package, invalid_evidence: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"stale-invalid-findmnt-{invalid_evidence}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, hook_log, values = prepared
+    journal = _interrupt_at_journal_stage(
+        closed_package, case_root, prepared, "root-swapped"
+    )
+    current_data = release / "agent" / "data"
+    current_data.mkdir()
+    shutil.copytree(persistent, current_data, dirs_exist_ok=True)
+    payload = json.loads(journal.read_text(encoding="utf-8"))
+    payload["local_rehearsal"] = False
+    journal.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    runtime = case_root / "runtime"
+    for name in (
+        "install-python-dependencies",
+        "install-nuxt-production-dependencies",
+        "verify-systemd-units",
+    ):
+        hook = runtime / name
+        hook.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="ascii")
+        hook.chmod(0o755)
+    wrong_source = case_root / "wrong-source"
+    wrong_source.mkdir()
+    mount_log = case_root / "mount-authority.log"
+    mount_authority = case_root / "mount-authority.sh"
+    observed_source = wrong_source if invalid_evidence == "wrong-source" else persistent
+    observed_options = "rw,bind" if invalid_evidence == "wrong-source" else "rw"
+    mount_authority.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        f"printf '%s\\n' \"$1\" >> '{_bash_path(mount_log)}'\n"
+        "[ \"$1\" = findmnt ] || exit 70\n"
+        f"source_path=$(cygpath -m '{_bash_path(observed_source)}')\n"
+        "target_path=$(cygpath -m \"$4\")\n"
+        f"printf '{{\"filesystems\":[{{\"source\":\"%s\",\"target\":\"%s\",\"options\":\"{observed_options}\"}}]}}\\n' "
+        '"$source_path" "$target_path"\n',
+        encoding="ascii",
+    )
+    mount_authority.chmod(0o755)
+    for name in (
+        "VL360_PYTHON_DEPENDENCY_HOOK",
+        "VL360_NUXT_DEPENDENCY_HOOK",
+        "VL360_UNIT_VERIFY_HOOK",
+        "VL360_LOCAL_REHEARSAL_SENTINEL",
+        "VL360_INSTALL_FAIL_AFTER",
+    ):
+        values.pop(name, None)
+    old_root = next(release.parent.glob(f".{release.name}.closed-old.*"))
+    release_before = _snapshot_tree(release)
+    persistent_before = _snapshot_tree(persistent)
+    old_root_before = _snapshot_tree(old_root)
+    journal_before = journal.read_bytes()
+    hook_log_before = hook_log.read_bytes()
+    env = os.environ.copy()
+    env.update(values)
+
+    retry = subprocess.run(
+        [
+            str(BASH),
+            "scripts/ops/install_closed_release.sh",
+            "--archive",
+            _bash_path(closed_package.archive),
+            "--archive-digest-file",
+            _bash_path(closed_package.digest_file),
+            "--release-root",
+            _bash_path(release),
+            "--persistent-agent-data-root",
+            _bash_path(persistent),
+            "--environment-authority",
+            _bash_path(case_root / "external.env"),
+            "--runtime-authority",
+            _bash_path(runtime),
+            "--mount-authority",
+            _bash_path(mount_authority),
+            "--evidence-dir",
+            _bash_path(evidence),
+            "--require-closed",
+        ],
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert mount_log.read_text(encoding="ascii").splitlines() == ["findmnt"]
+    assert hook_log.read_bytes() == hook_log_before
+    assert _snapshot_tree(release) == release_before
+    assert _snapshot_tree(persistent) == persistent_before
+    assert _snapshot_tree(old_root) == old_root_before
+    assert journal.read_bytes() == journal_before
+
+
 def test_stale_recovery_refuses_different_retry_authorities(
     tmp_path: Path, closed_package
 ):
@@ -1645,13 +1749,13 @@ def test_same_target_concurrent_attempt_is_rejected_and_lock_is_released(
     assert third_lock["status"] == "released"
 
 
-@pytest.mark.parametrize("colliding_role", ("persistent", "systemd"))
-def test_same_attempt_rejects_canonical_authority_collision_across_roles(
-    tmp_path: Path, closed_package, colliding_role: str
+@pytest.mark.parametrize("target_role", ("release", "persistent", "systemd"))
+def test_evidence_role_collision_is_rejected_before_any_mutation(
+    tmp_path: Path, closed_package, target_role: str
 ):
     if not BASH.is_file():
         pytest.skip("Git Bash is unavailable")
-    case_root = tmp_path / f"same-attempt-role-collision-{colliding_role}"
+    case_root = tmp_path / f"evidence-role-collision-{target_role}"
     prepared = _prepare_case(case_root, closed_package)
     (
         release,
@@ -1662,16 +1766,14 @@ def test_same_attempt_rejects_canonical_authority_collision_across_roles(
         hook_log,
         values,
     ) = prepared
-    if colliding_role == "persistent":
-        persistent = release
-        before_persistent = before_release
+    if target_role == "release":
+        evidence = release
+    elif target_role == "persistent":
+        evidence = persistent
     else:
-        collision_authority = case_root / "runtime" / "systemd-units"
-        release.rename(collision_authority)
-        release = collision_authority
-        sentinel = case_root / "runtime" / ".vl360-local-rehearsal"
-        sentinel.write_text("vinhlong360-local-rehearsal-v1\n", encoding="ascii")
-        values["VL360_LOCAL_REHEARSAL_SENTINEL"] = _bash_path(sentinel)
+        evidence = case_root / "runtime" / "systemd-units"
+        evidence.mkdir()
+        (evidence / "forensic-marker.txt").write_text("keep\n", encoding="ascii")
     prepared = (
         release,
         persistent,
@@ -1681,32 +1783,67 @@ def test_same_attempt_rejects_canonical_authority_collision_across_roles(
         hook_log,
         values,
     )
-    release_before = _snapshot_tree(release)
-    persistent_before = _snapshot_tree(persistent)
-    conflict_key = (
-        _authority_lock_path("release", release)
-        .name.removeprefix("authority-")
-        .removesuffix(".lock")
-    )
+    case_before = _snapshot_tree(case_root)
 
     result = _invoke_installer(closed_package, case_root, prepared)
 
     assert result.returncode == 2, result.stderr + result.stdout
     assert "install-authority-role-collision" in result.stderr
     assert not hook_log.exists()
-    for name in (
-        "dependency-unit-checks.json",
-        "package",
-        "staged",
-        "installed",
-    ):
-        assert not (evidence / name).exists()
-    lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
-    assert lock["status"] == "rejected"
-    assert lock["exit_code"] == 2
-    assert lock["conflict_key_sha256"] == conflict_key
-    assert _snapshot_tree(release) == release_before
-    assert _snapshot_tree(persistent) == persistent_before
+    assert _snapshot_tree(case_root) == case_before
+    assert not list(case_root.rglob("authority-*.lock"))
+
+
+@pytest.mark.parametrize("colliding_role", ("persistent", "systemd"))
+def test_same_attempt_rejects_canonical_authority_collision_across_roles(
+    tmp_path: Path, closed_package, colliding_role: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"same-attempt-role-collision-{colliding_role}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, hook_log, values = prepared
+    if colliding_role == "persistent":
+        persistent = release
+    else:
+        collision_authority = case_root / "runtime" / "systemd-units"
+        release.rename(collision_authority)
+        release = collision_authority
+        sentinel = case_root / "runtime" / ".vl360-local-rehearsal"
+        sentinel.write_text("vinhlong360-local-rehearsal-v1\n", encoding="ascii")
+        values["VL360_LOCAL_REHEARSAL_SENTINEL"] = _bash_path(sentinel)
+    prepared = (release, persistent, evidence, {}, {}, hook_log, values)
+    case_before = _snapshot_tree(case_root)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "install-authority-role-collision" in result.stderr
+    assert not hook_log.exists()
+    assert _snapshot_tree(case_root) == case_before
+    assert not list(case_root.rglob("authority-*.lock"))
+
+
+def test_persistent_and_systemd_role_collision_is_rejected_before_mutation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "persistent-systemd-role-collision"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, hook_log, values = prepared
+    systemd_destination = case_root / "runtime" / "systemd-units"
+    persistent.rename(systemd_destination)
+    persistent = systemd_destination
+    prepared = (release, persistent, evidence, {}, {}, hook_log, values)
+    case_before = _snapshot_tree(case_root)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "install-authority-role-collision" in result.stderr
+    assert not hook_log.exists()
+    assert _snapshot_tree(case_root) == case_before
     assert not list(case_root.rglob("authority-*.lock"))
 
 
