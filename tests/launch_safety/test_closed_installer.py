@@ -1645,6 +1645,71 @@ def test_same_target_concurrent_attempt_is_rejected_and_lock_is_released(
     assert third_lock["status"] == "released"
 
 
+@pytest.mark.parametrize("colliding_role", ("persistent", "systemd"))
+def test_same_attempt_rejects_canonical_authority_collision_across_roles(
+    tmp_path: Path, closed_package, colliding_role: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"same-attempt-role-collision-{colliding_role}"
+    prepared = _prepare_case(case_root, closed_package)
+    (
+        release,
+        persistent,
+        evidence,
+        before_release,
+        before_persistent,
+        hook_log,
+        values,
+    ) = prepared
+    if colliding_role == "persistent":
+        persistent = release
+        before_persistent = before_release
+    else:
+        collision_authority = case_root / "runtime" / "systemd-units"
+        release.rename(collision_authority)
+        release = collision_authority
+        sentinel = case_root / "runtime" / ".vl360-local-rehearsal"
+        sentinel.write_text("vinhlong360-local-rehearsal-v1\n", encoding="ascii")
+        values["VL360_LOCAL_REHEARSAL_SENTINEL"] = _bash_path(sentinel)
+    prepared = (
+        release,
+        persistent,
+        evidence,
+        before_release,
+        before_persistent,
+        hook_log,
+        values,
+    )
+    release_before = _snapshot_tree(release)
+    persistent_before = _snapshot_tree(persistent)
+    conflict_key = (
+        _authority_lock_path("release", release)
+        .name.removeprefix("authority-")
+        .removesuffix(".lock")
+    )
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2, result.stderr + result.stdout
+    assert "install-authority-role-collision" in result.stderr
+    assert not hook_log.exists()
+    for name in (
+        "dependency-unit-checks.json",
+        "package",
+        "staged",
+        "installed",
+    ):
+        assert not (evidence / name).exists()
+    lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
+    assert lock["status"] == "rejected"
+    assert lock["exit_code"] == 2
+    assert lock["conflict_key_sha256"] == conflict_key
+    assert _snapshot_tree(release) == release_before
+    assert _snapshot_tree(persistent) == persistent_before
+    assert not list(case_root.rglob("authority-*.lock"))
+
+
 @pytest.mark.parametrize("shared_authority", ("release", "persistent", "systemd"))
 def test_attempts_sharing_any_destructive_authority_are_excluded(
     tmp_path: Path, closed_package, shared_authority: str
@@ -2826,3 +2891,67 @@ def test_cleanup_failure_keeps_completed_root_and_units_consistent_and_retry_saf
     assert _unit_attempt_artifacts(evidence) == []
     lock = json.loads((evidence / "install-lock.json").read_text(encoding="utf-8"))
     assert lock["status"] == "released"
+
+
+def test_old_root_cleanup_failure_rolls_back_and_retry_succeeds(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "old-root-cleanup-failure"
+    prepared = _prepare_case(case_root, closed_package)
+    (
+        release,
+        persistent,
+        evidence,
+        before_release,
+        before_persistent,
+        _,
+        _,
+    ) = prepared
+    failure_used = case_root / "old-root-cleanup-failure-used"
+    bash_env = case_root / "old-root-cleanup-failure.bash"
+    bash_env.write_text(
+        "rm() {\n"
+        "for argument in \"$@\"; do\n"
+        "  case \"$(basename -- \"$argument\")\" in\n"
+        "    .release.closed-old.*)\n"
+        f"      if [ ! -f '{_bash_path(failure_used)}' ]; then\n"
+        f"        : > '{_bash_path(failure_used)}'\n"
+        "        return 61\n"
+        "      fi\n"
+        "      ;;\n"
+        "  esac\n"
+        "done\n"
+        "/usr/bin/rm \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert first.returncode == 61, first.stderr + first.stdout
+    assert failure_used.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    recovery = json.loads(
+        (evidence / "install-recovery.json").read_text(encoding="utf-8")
+    )
+    assert recovery["status"] == "rolled-back"
+    assert recovery["failure_point"] == "remove-old-root"
+    assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
+    assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
+
+    second = _invoke_installer(closed_package, case_root, prepared)
+
+    assert second.returncode == 0, second.stderr + second.stdout
+    assert (release / "launch-release-manifest.json").is_file()
+    assert not (release / "old-release-marker.txt").exists()
+    assert _snapshot_tree(persistent) == before_persistent
+    assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
+    assert not list(release.parent.glob(f".{release.name}.closed-old.*"))

@@ -1075,15 +1075,26 @@ add_target_lock_request() {
   local kind="$1"
   local authority="$2"
   local expected_key="${3:-}"
-  local spec key
+  local spec key existing_kind
   spec="$(lock_spec "$kind" "$authority" "$LOCAL_REHEARSAL")" || return 1
   IFS='|' read -r _ _ key _ <<< "$spec"
   [ -z "$expected_key" ] || [ "$key" = "$expected_key" ] || return 1
-  if [ -z "${TARGET_LOCK_AUTHORITIES[$key]+x}" ]; then
-    TARGET_LOCK_KEYS+=("$key")
-    TARGET_LOCK_AUTHORITIES["$key"]="$authority"
-    TARGET_LOCK_KINDS["$key"]="$kind"
+  if [ -n "${TARGET_LOCK_AUTHORITIES[$key]+x}" ]; then
+    existing_kind="${TARGET_LOCK_KINDS[$key]}"
+    if [ "$existing_kind" != "$kind" ]; then
+      CONFLICT_LOCK_KEY="$key"
+      return 12
+    fi
+    return 0
   fi
+  TARGET_LOCK_KEYS+=("$key")
+  TARGET_LOCK_AUTHORITIES["$key"]="$authority"
+  TARGET_LOCK_KINDS["$key"]="$kind"
+}
+reject_authority_role_collision() {
+  record_install_lock rejected 2 || true
+  LOCK_TERMINAL_RECORDED=true
+  die 'install-authority-role-collision'
 }
 CURRENT_RELEASE_KEY=''
 CURRENT_PERSISTENT_KEY=''
@@ -1099,17 +1110,36 @@ for target_kind in release persistent systemd; do
     release) CURRENT_RELEASE_KEY="$target_key" ;;
     persistent) CURRENT_PERSISTENT_KEY="$target_key" ;;
   esac
-  add_target_lock_request "$target_kind" "$target_authority" "$target_key" \
-    || die 'install-lock-acquire-failed'
+  if add_target_lock_request "$target_kind" "$target_authority" "$target_key"; then
+    :
+  else
+    target_request_status=$?
+    [ "$target_request_status" -ne 12 ] || reject_authority_role_collision
+    die 'install-lock-acquire-failed'
+  fi
 done
 if [ "$PENDING_STALE_RECOVERY" = true ]; then
-  add_target_lock_request release "$STALE_RELEASE_ROOT" "$STALE_RELEASE_KEY" \
-    && add_target_lock_request persistent "$STALE_PERSISTENT_ROOT" \
-      "$STALE_PERSISTENT_KEY" || {
-        record_install_lock recovery-required 2 || true
-        LOCK_TERMINAL_RECORDED=true
-        die 'stale-install-recovery-required'
-      }
+  for target_kind in release persistent; do
+    case "$target_kind" in
+      release)
+        target_authority="$STALE_RELEASE_ROOT"
+        target_key="$STALE_RELEASE_KEY"
+        ;;
+      persistent)
+        target_authority="$STALE_PERSISTENT_ROOT"
+        target_key="$STALE_PERSISTENT_KEY"
+        ;;
+    esac
+    if add_target_lock_request "$target_kind" "$target_authority" "$target_key"; then
+      :
+    else
+      target_request_status=$?
+      [ "$target_request_status" -ne 12 ] || reject_authority_role_collision
+      record_install_lock recovery-required 2 || true
+      LOCK_TERMINAL_RECORDED=true
+      die 'stale-install-recovery-required'
+    fi
+  done
 fi
 mapfile -t TARGET_LOCK_KEYS < <(printf '%s\n' "${TARGET_LOCK_KEYS[@]}" | sort)
 for target_key in "${TARGET_LOCK_KEYS[@]}"; do
@@ -1807,6 +1837,9 @@ payload = {
 Path(sys.argv[1]).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
 
+INSTALL_FAILURE_POINT=remove-old-root
+rm -rf -- "$OLD_ROOT"
+OLD_ROOT_READY=false
 INSTALL_COMPLETE=true
 clear_mutation_state
 if disarm_systemd_unit_attempt; then
