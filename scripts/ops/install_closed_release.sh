@@ -1401,8 +1401,14 @@ PY
 }
 
 clear_mutation_state() {
-  rm -f -- "$MUTATION_STATE" || return 1
-  fsync_directories "$(dirname -- "$MUTATION_STATE")"
+  local clear_status=0
+  rm -f -- "$MUTATION_STATE" || clear_status=$?
+  if [ -e "$MUTATION_STATE" ] || [ -L "$MUTATION_STATE" ]; then
+    [ "$clear_status" -ne 0 ] || clear_status=1
+  elif ! fsync_directories "$(dirname -- "$MUTATION_STATE")"; then
+    [ "$clear_status" -ne 0 ] || clear_status=1
+  fi
+  return "$clear_status"
 }
 
 load_stale_install_state() {
@@ -1861,7 +1867,7 @@ reconcile_stale_install_attempt() {
     recovery-restore-old-root-armed|recovery-restore-persistent-armed|\
     recovery-create-persistent-root-armed|recovery-remove-staging-armed|\
     recovery-remove-staging-owner-armed|\
-    recovery-remove-systemd-attempt-armed) ;;
+    recovery-remove-systemd-attempt-armed|rollback-restored) ;;
     *) return 1 ;;
   esac
 
@@ -1912,7 +1918,7 @@ reconcile_stale_install_attempt() {
       ;;
     recovery-restore-persistent-armed|recovery-create-persistent-root-armed|\
     recovery-remove-staging-armed|recovery-remove-staging-owner-armed|\
-    recovery-remove-systemd-attempt-armed)
+    recovery-remove-systemd-attempt-armed|rollback-restored)
       [ "$old_present" = false ] || return 1
       ;;
   esac
@@ -1979,7 +1985,8 @@ reconcile_stale_install_attempt() {
         fi
         case "$entry_stage:$mount_state" in
           restore-bind-agent-data-armed:0|persistent-restored:0|\
-          recovery-detach-persistent-armed:0)
+          systemd-backup-preparing:0|systemd-units-armed:0|\
+          retire-old-root-armed:0|recovery-detach-persistent-armed:0)
             write_stale_mutation_state recovery-detach-persistent-armed \
               || return 1
             invoke_mount_authority umount "$current_data" || return 1
@@ -1987,7 +1994,8 @@ reconcile_stale_install_attempt() {
               || return 1
             ;;
           recovery-detach-persistent-armed:1|restore-bind-agent-data-armed:1|\
-          root-swapped:1|\
+          persistent-restored:1|systemd-backup-preparing:1|\
+          systemd-units-armed:1|retire-old-root-armed:1|root-swapped:1|\
           swap-release-root-armed:1|recovery-remove-release-root-armed:1) ;;
           *) return 1 ;;
         esac
@@ -2913,6 +2921,7 @@ PY
 MUTATION_STARTED=false
 PERSISTENT_DETACHED=false
 PERSISTENT_ATTACHED_TO_RELEASE=true
+PERSISTENT_MOUNT_STATE_UNKNOWN=false
 OLD_ROOT_READY=false
 INSTALL_COMMITTED=false
 INSTALL_COMPLETE=false
@@ -3152,6 +3161,20 @@ restore_systemd_units() {
   restore_systemd_units_from "$SYSTEMD_UNIT_DESTINATION" "$UNIT_ATTEMPT_ROOT"
 }
 
+inspect_current_mount() {
+  local target="$RELEASE_ROOT/agent/data"
+  if invoke_mount_authority findmnt --json --target "$target" \
+    > "$EVIDENCE_DIR/findmnt-recovery.json"; then
+    verify_findmnt_file "$EVIDENCE_DIR/findmnt-recovery.json" \
+      "$PERSISTENT_AGENT_DATA_ROOT" "$target" || return 2
+    return 0
+  else
+    local status=$?
+    [ "$status" -eq 1 ] && return 1
+    return 2
+  fi
+}
+
 detach_persistent_from_release_for_recovery() {
   if [ "$LOCAL_REHEARSAL" = true ]; then
     if [ -e "$PERSISTENT_AGENT_DATA_ROOT" ] || [ -L "$PERSISTENT_AGENT_DATA_ROOT" ]; then
@@ -3164,15 +3187,36 @@ detach_persistent_from_release_for_recovery() {
         || return $?
     fi
     mv -- "$RELEASE_ROOT/agent/data" "$PERSISTENT_AGENT_DATA_ROOT" || return $?
+    PERSISTENT_ATTACHED_TO_RELEASE=false
+    PERSISTENT_DETACHED=true
+    PERSISTENT_MOUNT_STATE_UNKNOWN=false
     fsync_directories "$RELEASE_ROOT/agent" \
       "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" || return $?
   else
-    invoke_mount_authority umount "$RELEASE_ROOT/agent/data" || return $?
-    fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent" \
-      || return $?
+    local mount_state
+    if inspect_current_mount; then
+      mount_state=0
+    else
+      mount_state=$?
+    fi
+    case "$mount_state" in
+      0)
+        write_mutation_state recovery-detach-persistent-armed || return $?
+        invoke_mount_authority umount "$RELEASE_ROOT/agent/data" || return $?
+        PERSISTENT_ATTACHED_TO_RELEASE=false
+        PERSISTENT_DETACHED=true
+        PERSISTENT_MOUNT_STATE_UNKNOWN=false
+        fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent" \
+          || return $?
+        ;;
+      1)
+        PERSISTENT_ATTACHED_TO_RELEASE=false
+        PERSISTENT_DETACHED=true
+        PERSISTENT_MOUNT_STATE_UNKNOWN=false
+        ;;
+      *) return 1 ;;
+    esac
   fi
-  PERSISTENT_ATTACHED_TO_RELEASE=false
-  PERSISTENT_DETACHED=true
 }
 
 attach_persistent_to_release_for_recovery() {
@@ -3187,15 +3231,18 @@ attach_persistent_to_release_for_recovery() {
     mv -- "$PERSISTENT_AGENT_DATA_ROOT" "$target" || return $?
     PERSISTENT_ATTACHED_TO_RELEASE=true
     PERSISTENT_DETACHED=false
+    PERSISTENT_MOUNT_STATE_UNKNOWN=false
     mkdir -- "$PERSISTENT_AGENT_DATA_ROOT" || return $?
     fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
       "$PERSISTENT_AGENT_DATA_ROOT" "$(dirname -- "$target")" || return $?
   else
     mkdir -- "$target" || return $?
+    PERSISTENT_MOUNT_STATE_UNKNOWN=true
     invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$target" \
       || return $?
     PERSISTENT_ATTACHED_TO_RELEASE=true
     PERSISTENT_DETACHED=false
+    PERSISTENT_MOUNT_STATE_UNKNOWN=false
     fsync_directories "$target" "$(dirname -- "$target")" || return $?
   fi
 }
@@ -3224,6 +3271,7 @@ install_recovery() {
   local root_restored=true
   local persistent_restored=true
   local systemd_units_restored=true
+  local recovery_cleanup_status=0
 
   if [ "$INSTALL_COMPLETE" != true ] && [ "$INSTALL_COMMITTED" != true ] \
     && [ "$MUTATION_STARTED" = true ]; then
@@ -3231,13 +3279,16 @@ install_recovery() {
 
     if [ "$systemd_units_restored" = true ]; then
       if [ "$OLD_ROOT_READY" = true ] \
-        && [ "$PERSISTENT_ATTACHED_TO_RELEASE" = true ]; then
+        && { [ "$PERSISTENT_ATTACHED_TO_RELEASE" = true ] \
+          || [ "$PERSISTENT_MOUNT_STATE_UNKNOWN" = true ]; }; then
         detach_persistent_from_release_for_recovery >/dev/null 2>&1 \
           || persistent_restored=false
       fi
 
       if [ "$OLD_ROOT_READY" = true ]; then
-        if [ "$PERSISTENT_ATTACHED_TO_RELEASE" = true ]; then
+        if [ "$persistent_restored" != true ] \
+          || [ "$PERSISTENT_ATTACHED_TO_RELEASE" = true ] \
+          || [ "$PERSISTENT_MOUNT_STATE_UNKNOWN" = true ]; then
           root_restored=false
         else
           rm -rf -- "$RELEASE_ROOT" >/dev/null 2>&1 || root_restored=false
@@ -3290,8 +3341,17 @@ install_recovery() {
     if [ "$root_restored" = true ] \
       && [ "$persistent_restored" = true ] \
       && [ "$systemd_units_restored" = true ]; then
-      write_recovery_evidence rolled-back true true true || true
-      clear_mutation_state || true
+      if write_mutation_state rollback-restored >/dev/null 2>&1; then
+        if clear_mutation_state; then
+          write_recovery_evidence rolled-back true true true || true
+        else
+          recovery_cleanup_status=$?
+          write_recovery_evidence rollback-failed true true true || true
+        fi
+      else
+        recovery_cleanup_status=$?
+        write_recovery_evidence rollback-failed true true true || true
+      fi
     else
       write_recovery_evidence rollback-failed "$root_restored" \
         "$persistent_restored" "$systemd_units_restored" || true
@@ -3308,6 +3368,7 @@ install_recovery() {
   fi
   local cleanup_status=0
   cleanup_attempt_authorities || cleanup_status=$?
+  [ "$cleanup_status" -ne 0 ] || cleanup_status="$recovery_cleanup_status"
   [ "$status" -ne 0 ] || status="$cleanup_status"
   exit "$status"
 }
@@ -3372,10 +3433,16 @@ else
   verify_findmnt_file "$EVIDENCE_DIR/findmnt-before.json" \
     "$PERSISTENT_AGENT_DATA_ROOT" "$CURRENT_DATA"
   invoke_mount_authority umount "$CURRENT_DATA"
+  PERSISTENT_DETACHED=true
+  PERSISTENT_ATTACHED_TO_RELEASE=false
+  PERSISTENT_MOUNT_STATE_UNKNOWN=false
   fsync_directories "$CURRENT_DATA" "$(dirname -- "$CURRENT_DATA")"
 fi
-PERSISTENT_DETACHED=true
-PERSISTENT_ATTACHED_TO_RELEASE=false
+if [ "$LOCAL_REHEARSAL" = true ]; then
+  PERSISTENT_DETACHED=true
+  PERSISTENT_ATTACHED_TO_RELEASE=false
+  PERSISTENT_MOUNT_STATE_UNKNOWN=false
+fi
 write_mutation_state persistent-detached
 fail_after detach-agent-data
 
@@ -3406,6 +3473,7 @@ if [ "$LOCAL_REHEARSAL" = true ]; then
   mv -- "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
   PERSISTENT_ATTACHED_TO_RELEASE=true
   PERSISTENT_DETACHED=false
+  PERSISTENT_MOUNT_STATE_UNKNOWN=false
   mkdir -- "$PERSISTENT_AGENT_DATA_ROOT"
   fsync_directories "$(dirname -- "$PERSISTENT_AGENT_DATA_ROOT")" \
     "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent"
@@ -3414,9 +3482,11 @@ if [ "$LOCAL_REHEARSAL" = true ]; then
 else
   mkdir -- "$RELEASE_ROOT/agent/data"
   write_mutation_state restore-bind-agent-data-armed
+  PERSISTENT_MOUNT_STATE_UNKNOWN=true
   invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
   PERSISTENT_ATTACHED_TO_RELEASE=true
   PERSISTENT_DETACHED=false
+  PERSISTENT_MOUNT_STATE_UNKNOWN=false
   fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent"
   write_mutation_state persistent-restored
 fi

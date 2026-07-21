@@ -981,7 +981,15 @@ def _interrupt_at_journal_stage(package, case_root: Path, prepared, stage: str):
 
 
 @pytest.mark.parametrize(
-    "stage", ("swap-release-root-armed", "root-swapped", "persistent-restored")
+    "stage",
+    (
+        "swap-release-root-armed",
+        "root-swapped",
+        "persistent-restored",
+        "systemd-backup-preparing",
+        "systemd-units-armed",
+        "retire-old-root-armed",
+    ),
 )
 def test_sigkill_at_later_journal_stage_is_rolled_back_before_retry(
     tmp_path: Path, closed_package, stage: str
@@ -4721,13 +4729,500 @@ def test_live_restore_bind_is_armed_and_recovery_accepts_either_mount_state():
     assert recovery_mount < recovery_detached < recovery_fsync
 
     reconciliation = source[
-        source.index("reconcile_stale_install_attempt()") : source.index(
+        source.index("inspect_stale_mount()") : source.index(
             "record_install_lock()"
         )
     ]
     assert "restore-bind-agent-data-armed|persistent-restored" in reconciliation
     assert "restore-bind-agent-data-armed:0" in reconciliation
     assert "restore-bind-agent-data-armed:1" in reconciliation
+
+
+def _run_live_post_bind_runtime_reconciliation(
+    tmp_path: Path,
+    stage: str,
+    mount_present: bool | None,
+    *,
+    fail_fsync_once: bool = False,
+    retry_after_failure: bool = False,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    reconciliation = source[
+        source.index("inspect_stale_mount()") : source.index(
+            "record_install_lock()"
+        )
+    ]
+    release = tmp_path / "release"
+    persistent = tmp_path / "persistent"
+    evidence = tmp_path / "evidence"
+    old_root = tmp_path / ".release.closed-old.321"
+    staging = tmp_path / ".release.closed-stage.321"
+    retired = tmp_path / (".release.closed-retired." + "a" * 32)
+    systemd = tmp_path / "systemd"
+    for directory in (release / "agent" / "data", persistent, evidence, old_root / "agent" / "data", systemd):
+        directory.mkdir(parents=True, exist_ok=True)
+    (release / "launch-release-manifest.json").write_text("{}\n", encoding="ascii")
+    (release / "new-marker").write_text("new\n", encoding="ascii")
+    (old_root / "old-marker").write_text("old\n", encoding="ascii")
+    (persistent / "app.db").write_text("persistent\n", encoding="ascii")
+    journal = evidence / "install-mutation-state.json"
+    journal.write_text("{}\n", encoding="ascii")
+    attempt = evidence / ".systemd-unit-attempt.runtime"
+    attempt_value = ""
+    if stage != "persistent-restored":
+        attempt.mkdir()
+        attempt_value = _bash_path(attempt)
+        if stage != "systemd-backup-preparing":
+            (attempt / "armed").write_text("armed\n", encoding="ascii")
+    log = tmp_path / "reconcile.log"
+    failed = tmp_path / "fsync-failed"
+    initial_mount_state = (
+        "2" if mount_present is None else "0" if mount_present else "1"
+    )
+    fsync_stub = "fsync_directories() { return 0; }"
+    if fail_fsync_once:
+        fsync_stub = "\n".join(
+            (
+                "fsync_directories() {",
+                "  if [ ! -f \"$FSYNC_FAILED\" ]; then",
+                "    : > \"$FSYNC_FAILED\"",
+                "    printf 'fsync-fail\\n' >> \"$RECOVERY_LOG\"",
+                "    return 71",
+                "  fi",
+                "  return 0",
+                "}",
+            )
+        )
+    reconciliation_calls = "\n".join(
+        (
+            "reconcile_stale_install_attempt",
+            "status=$?",
+            "printf '%s|%s\\n' \"$status\" \"$MOUNT_STATE\"",
+        )
+    )
+    if retry_after_failure:
+        reconciliation_calls = "\n".join(
+            (
+                "reconcile_stale_install_attempt",
+                "first_status=$?",
+                "printf '%s|%s|%s\\n' \"$first_status\" \"$STALE_STAGE\" \"$MOUNT_STATE\"",
+                "reconcile_stale_install_attempt",
+                "second_status=$?",
+                "printf '%s|%s\\n' \"$second_status\" \"$MOUNT_STATE\"",
+            )
+        )
+    script = "\n".join(
+        (
+            "set -u",
+            "LOCAL_REHEARSAL=false",
+            "STALE_LOCAL_REHEARSAL=false",
+            "CURRENT_RELEASE_KEY=release-key",
+            "STALE_RELEASE_KEY=release-key",
+            "CURRENT_PERSISTENT_KEY=persistent-key",
+            "STALE_PERSISTENT_KEY=persistent-key",
+            "CURRENT_SYSTEMD_KEY=systemd-key",
+            "STALE_SYSTEMD_KEY=systemd-key",
+            f"STALE_STAGE={shlex.quote(stage)}",
+            "STALE_ATTEMPT_ID=" + "a" * 32,
+            "STALE_PID=321",
+            f"STALE_RELEASE_ROOT={shlex.quote(_bash_path(release))}",
+            f"STALE_PERSISTENT_ROOT={shlex.quote(_bash_path(persistent))}",
+            f"STALE_STAGING_ROOT={shlex.quote(_bash_path(staging))}",
+            f"STALE_OLD_ROOT={shlex.quote(_bash_path(old_root))}",
+            f"STALE_RETIRED_ROOT={shlex.quote(_bash_path(retired))}",
+            f"STALE_SYSTEMD_UNIT_DESTINATION={shlex.quote(_bash_path(systemd))}",
+            f"STALE_SYSTEMD_UNIT_ATTEMPT_ROOT={shlex.quote(attempt_value)}",
+            f"MUTATION_STATE={shlex.quote(_bash_path(journal))}",
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            f"VERIFY_SCRIPT={shlex.quote(_bash_path(VERIFY))}",
+            "SNAPSHOT_BEFORE=/snapshot",
+            f"RECOVERY_LOG={shlex.quote(_bash_path(log))}",
+            f"FSYNC_FAILED={shlex.quote(_bash_path(failed))}",
+            f"MOUNT_STATE={initial_mount_state}",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            "tree_matches_snapshot() { return 0; }",
+            "stale_tree_state() { return 0; }",
+            "write_stale_mutation_state() { STALE_STAGE=\"$1\"; printf 'journal:%s\\n' \"$1\" >> \"$RECOVERY_LOG\"; printf '{}\\n' > \"$MUTATION_STATE\"; }",
+            "invoke_mount_authority() {",
+            "  case \"$1\" in",
+            "    findmnt)",
+            "      [ \"$2\" = --json ] && [ \"$3\" = --target ] && [ \"$4\" = \"$STALE_RELEASE_ROOT/agent/data\" ] || return 64",
+            "      printf 'findmnt:%s\\n' \"$MOUNT_STATE\" >> \"$RECOVERY_LOG\"",
+            "      case \"$MOUNT_STATE\" in",
+            "        0)",
+            "          source_path=$STALE_PERSISTENT_ROOT",
+            "          target_path=$4",
+            "          if command -v cygpath >/dev/null 2>&1; then",
+            "            source_path=$(cygpath -m \"$source_path\")",
+            "            target_path=$(cygpath -m \"$target_path\")",
+            "          fi",
+            "          printf '{\"filesystems\":[{\"source\":\"%s\",\"target\":\"%s\",\"options\":\"rw,bind\"}]}\\n' \"$source_path\" \"$target_path\"",
+            "          return 0",
+            "          ;;",
+            "        1) return 1 ;;",
+            "        *) return 72 ;;",
+            "      esac",
+            "      ;;",
+            "    umount)",
+            "      [ \"$2\" = \"$STALE_RELEASE_ROOT/agent/data\" ] || return 64",
+            "      printf 'umount\\n' >> \"$RECOVERY_LOG\"; MOUNT_STATE=1; return 0",
+            "      ;;",
+            "    mount)",
+            "      [ \"$2\" = --bind ] && [ \"$3\" = \"$STALE_PERSISTENT_ROOT\" ] && [ \"$4\" = \"$STALE_RELEASE_ROOT/agent/data\" ] || return 64",
+            "      printf 'mount\\n' >> \"$RECOVERY_LOG\"; MOUNT_STATE=0; return 0",
+            "      ;;",
+            "    *) return 64 ;;",
+            "  esac",
+            "}",
+            fsync_stub,
+            "restore_systemd_units_from() { printf 'restore-units\\n' >> \"$RECOVERY_LOG\"; return 0; }",
+            "remove_systemd_unit_attempt_root() { /usr/bin/rm -rf -- \"$1\"; }",
+            "clear_mutation_state() { /usr/bin/rm -f -- \"$MUTATION_STATE\"; printf 'clear\\n' >> \"$RECOVERY_LOG\"; }",
+            reconciliation,
+            reconciliation_calls,
+        )
+    )
+
+    runner = tmp_path / "reconcile.sh"
+    runner.write_text(script + "\n", encoding="utf-8")
+    result = subprocess.run(
+        [str(BASH), _bash_path(runner)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    return result, release, old_root, journal, log, failed
+
+
+@pytest.mark.parametrize(
+    "stage",
+    (
+        "persistent-restored",
+        "systemd-backup-preparing",
+        "systemd-units-armed",
+        "retire-old-root-armed",
+    ),
+)
+@pytest.mark.parametrize("mount_present", (True, False))
+def test_live_post_bind_runtime_reconciles_present_or_absent_mount(
+    tmp_path: Path, stage: str, mount_present: bool
+):
+    result, release, old_root, journal, log, _ = (
+        _run_live_post_bind_runtime_reconciliation(
+            tmp_path, stage, mount_present
+        )
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "0|0"
+    lines = log.read_text(encoding="ascii").splitlines()
+    assert ("umount" in lines) is mount_present
+    assert "mount" in lines
+    assert (release / "old-marker").is_file()
+    assert not old_root.exists()
+    assert not journal.exists()
+
+
+def test_live_post_bind_runtime_fails_closed_on_unknown_mount(tmp_path: Path):
+    result, release, old_root, journal, _, _ = (
+        _run_live_post_bind_runtime_reconciliation(
+            tmp_path, "systemd-units-armed", None
+        )
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "1|2"
+    assert (release / "new-marker").is_file()
+    assert (old_root / "old-marker").is_file()
+    assert journal.is_file()
+
+
+def test_live_recovery_umount_fsync_failure_retries_from_mount_absence(
+    tmp_path: Path,
+):
+    result, release, old_root, journal, log, failed = (
+        _run_live_post_bind_runtime_reconciliation(
+            tmp_path,
+            "persistent-restored",
+            True,
+            fail_fsync_once=True,
+            retry_after_failure=True,
+        )
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.splitlines() == [
+        "1|recovery-detach-persistent-armed|1",
+        "0|0",
+    ]
+    lines = log.read_text(encoding="ascii").splitlines()
+    assert lines.count("umount") == 1
+    assert lines.index("journal:recovery-detach-persistent-armed") < lines.index(
+        "umount"
+    ) < lines.index("fsync-fail") < lines.index(
+        "journal:recovery-remove-release-root-armed"
+    )
+    assert lines.index("mount") < lines.index("clear")
+    assert failed.is_file()
+    assert (release / "old-marker").is_file()
+    assert not (release / "new-marker").exists()
+    assert not old_root.exists()
+    assert not journal.exists()
+
+
+def test_primary_live_umount_success_keeps_truthful_flags_when_fsync_fails(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    primary = source[
+        source.index("# detach-agent-data") : source.index("# swap-release-root")
+    ]
+    current_data = tmp_path / "release" / "agent" / "data"
+    persistent = tmp_path / "persistent"
+    evidence = tmp_path / "evidence"
+    current_data.mkdir(parents=True)
+    persistent.mkdir()
+    evidence.mkdir()
+    log = tmp_path / "detach.log"
+    script = "\n".join(
+        (
+            "set -Eeuo pipefail",
+            "LOCAL_REHEARSAL=false",
+            f"CURRENT_DATA={shlex.quote(_bash_path(current_data))}",
+            f"PERSISTENT_AGENT_DATA_ROOT={shlex.quote(_bash_path(persistent))}",
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            "PERSISTENT_ATTACHED_TO_RELEASE=true",
+            "PERSISTENT_DETACHED=false",
+            "PERSISTENT_MOUNT_STATE_UNKNOWN=false",
+            "MUTATION_STARTED=false",
+            "INSTALL_FAILURE_POINT=",
+            f"DETACH_LOG={shlex.quote(_bash_path(log))}",
+            "write_mutation_state() { printf 'journal:%s\\n' \"$1\" >> \"$DETACH_LOG\"; }",
+            "verify_findmnt_file() { return 0; }",
+            "invoke_mount_authority() {",
+            "  case \"$1\" in",
+            "    findmnt)",
+            "      [ \"$2\" = --json ] && [ \"$3\" = --target ] && [ \"$4\" = \"$CURRENT_DATA\" ] || return 64",
+            "      printf 'findmnt\\n' >> \"$DETACH_LOG\"; printf '{}\\n'; return 0",
+            "      ;;",
+            "    umount)",
+            "      [ \"$2\" = \"$CURRENT_DATA\" ] || return 64",
+            "      printf 'umount\\n' >> \"$DETACH_LOG\"; return 0",
+            "      ;;",
+            "    *) return 64 ;;",
+            "  esac",
+            "}",
+            "fsync_directories() {",
+            "  [ \"$1\" = \"$CURRENT_DATA\" ] && [ \"$2\" = \"$(dirname -- \"$CURRENT_DATA\")\" ] || return 64",
+            "  printf 'fsync\\n' >> \"$DETACH_LOG\"",
+            "  return 71",
+            "}",
+            "fail_after() { return 0; }",
+            "report_state() {",
+            "  status=$?",
+            "  trap - EXIT",
+            "  printf '%s|%s|%s|%s\\n' \"$status\" \"$PERSISTENT_ATTACHED_TO_RELEASE\" \"$PERSISTENT_DETACHED\" \"$PERSISTENT_MOUNT_STATE_UNKNOWN\"",
+            "  exit \"$status\"",
+            "}",
+            "trap report_state EXIT",
+            primary,
+        )
+    )
+
+    runner = tmp_path / "primary-detach.sh"
+    runner.write_text(script + "\n", encoding="utf-8")
+    result = subprocess.run(
+        [str(BASH), _bash_path(runner)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 71, result.stderr + result.stdout
+    assert result.stdout.strip() == "71|false|true|false"
+    assert log.read_text(encoding="ascii").splitlines() == [
+        "journal:detach-agent-data-armed",
+        "findmnt",
+        "umount",
+        "fsync",
+    ]
+
+
+def test_recovery_umount_success_keeps_truthful_flags_when_fsync_fails(tmp_path: Path):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = source[
+        source.index("inspect_current_mount()") : source.index(
+            "attach_persistent_to_release_for_recovery()"
+        )
+    ]
+    log = tmp_path / "detach.log"
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    script = "\n".join(
+        (
+            "set -u",
+            "LOCAL_REHEARSAL=false",
+            "RELEASE_ROOT=/release",
+            "PERSISTENT_AGENT_DATA_ROOT=/persistent",
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            "PERSISTENT_ATTACHED_TO_RELEASE=true",
+            "PERSISTENT_DETACHED=false",
+            "PERSISTENT_MOUNT_STATE_UNKNOWN=false",
+            f"DETACH_LOG={shlex.quote(_bash_path(log))}",
+            "write_mutation_state() { printf 'journal:%s\\n' \"$1\" >> \"$DETACH_LOG\"; }",
+            "verify_findmnt_file() { return 0; }",
+            "invoke_mount_authority() {",
+            "  case \"$1\" in",
+            "    findmnt) printf '{}\\n'; return 0 ;;",
+            "    umount) printf 'umount\\n' >> \"$DETACH_LOG\"; return 0 ;;",
+            "    *) return 64 ;;",
+            "  esac",
+            "}",
+            "fsync_directories() { printf 'fsync\\n' >> \"$DETACH_LOG\"; return 71; }",
+            helper,
+            "set +e",
+            "detach_persistent_from_release_for_recovery",
+            "status=$?",
+            "set -e",
+            "printf '%s|%s|%s|%s\\n' \"$status\" \"$PERSISTENT_ATTACHED_TO_RELEASE\" \"$PERSISTENT_DETACHED\" \"$PERSISTENT_MOUNT_STATE_UNKNOWN\"",
+        )
+    )
+
+    runner = tmp_path / "rollback.sh"
+    runner.write_text(script + "\n", encoding="utf-8")
+    result = subprocess.run(
+        [str(BASH), _bash_path(runner)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == "71|false|true|false"
+    assert log.read_text(encoding="ascii").splitlines() == [
+        "journal:recovery-detach-persistent-armed",
+        "umount",
+        "fsync",
+    ]
+
+
+def test_live_bind_side_effect_then_nonzero_is_unmounted_before_root_rollback(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    source = INSTALL.read_text(encoding="utf-8")
+    recovery = source[source.index("inspect_current_mount()") : source.index("fail_after()")]
+    restore = source[
+        source.index("# restore-bind-agent-data") : source.index(
+            "# verify-agent-data-mount"
+        )
+    ]
+    release = tmp_path / "release"
+    old_root = tmp_path / ".release.closed-old.777"
+    persistent = tmp_path / "persistent"
+    evidence = tmp_path / "evidence"
+    for directory in (
+        release / "agent",
+        old_root / "agent" / "data",
+        persistent,
+        evidence,
+    ):
+        directory.mkdir(parents=True, exist_ok=True)
+    (release / "new-marker").write_text("new\n", encoding="ascii")
+    (old_root / "old-marker").write_text("old\n", encoding="ascii")
+    (persistent / "app.db").write_text("persistent\n", encoding="ascii")
+    journal = evidence / "install-mutation-state.json"
+    mounted = tmp_path / "mounted"
+    log = tmp_path / "rollback.log"
+    snapshot = evidence / "persistent-before.json"
+    snapshot.write_text("{}\n", encoding="ascii")
+    recovery_snapshot = evidence / "persistent-recovery.json"
+    script = "\n".join(
+        (
+            "set -Eeuo pipefail",
+            "LOCAL_REHEARSAL=false",
+            f"RELEASE_ROOT={shlex.quote(_bash_path(release))}",
+            f"OLD_ROOT={shlex.quote(_bash_path(old_root))}",
+            f"PERSISTENT_AGENT_DATA_ROOT={shlex.quote(_bash_path(persistent))}",
+            f"EVIDENCE_DIR={shlex.quote(_bash_path(evidence))}",
+            f"MUTATION_STATE={shlex.quote(_bash_path(journal))}",
+            f"SNAPSHOT_BEFORE={shlex.quote(_bash_path(snapshot))}",
+            f"SNAPSHOT_RECOVERY={shlex.quote(_bash_path(recovery_snapshot))}",
+            f"RELEASE_PARENT={shlex.quote(_bash_path(tmp_path))}",
+            "STAGING_ROOT=/nonexistent-staging",
+            "UNIT_ATTEMPT_ROOT=",
+            "UNIT_MUTATION_MARKER=",
+            "INSTALL_COMPLETE=false",
+            "INSTALL_COMMITTED=false",
+            "MUTATION_STARTED=true",
+            "OLD_ROOT_READY=true",
+            "PERSISTENT_ATTACHED_TO_RELEASE=false",
+            "PERSISTENT_DETACHED=true",
+            "PERSISTENT_MOUNT_STATE_UNKNOWN=false",
+            "INSTALL_FAILURE_POINT=restore-bind-agent-data",
+            f"MOUNTED_MARKER={shlex.quote(_bash_path(mounted))}",
+            f"ROLLBACK_LOG={shlex.quote(_bash_path(log))}",
+            "MOUNT_CALLS=0",
+            "write_mutation_state() { printf '%s\\n' \"$1\" > \"$MUTATION_STATE\"; printf 'journal:%s\\n' \"$1\" >> \"$ROLLBACK_LOG\"; }",
+            "clear_mutation_state() { /usr/bin/rm -f -- \"$MUTATION_STATE\"; printf 'clear\\n' >> \"$ROLLBACK_LOG\"; }",
+            "write_recovery_evidence() { return 0; }",
+            "cleanup_attempt_authorities() { return 0; }",
+            "remove_systemd_unit_attempt() { return 0; }",
+            "restore_systemd_units() { return 0; }",
+            "verify_findmnt_file() { return 0; }",
+            "snapshot_tree() { /usr/bin/cp -- \"$SNAPSHOT_BEFORE\" \"$2\"; }",
+            "fsync_directories() { return 0; }",
+            "invoke_mount_authority() {",
+            "  case \"$1\" in",
+            "    findmnt) [ -f \"$MOUNTED_MARKER\" ] || return 1; printf '{}\\n'; return 0 ;;",
+            "    umount) printf 'umount\\n' >> \"$ROLLBACK_LOG\"; /usr/bin/rm -f -- \"$MOUNTED_MARKER\"; find \"$2\" -mindepth 1 -maxdepth 1 -exec /usr/bin/rm -rf -- {} +; return 0 ;;",
+            "    mount) MOUNT_CALLS=$((MOUNT_CALLS + 1)); printf 'mount:%s:unknown=%s\\n' \"$MOUNT_CALLS\" \"$PERSISTENT_MOUNT_STATE_UNKNOWN\" >> \"$ROLLBACK_LOG\"; /usr/bin/cp -a -- \"$3\"/. \"$4\"/; : > \"$MOUNTED_MARKER\"; [ \"$MOUNT_CALLS\" -ne 1 ] || return 52; return 0 ;;",
+            "    *) return 64 ;;",
+            "  esac",
+            "}",
+            "rm() { for argument in \"$@\"; do [ \"$argument\" != \"$RELEASE_ROOT\" ] || printf 'rm-release\\n' >> \"$ROLLBACK_LOG\"; done; /usr/bin/rm \"$@\"; }",
+            "mv() { [ \"${1:-}\" != -- ] || shift; if [ \"${1:-}\" = \"$OLD_ROOT\" ] && [ \"${2:-}\" = \"$RELEASE_ROOT\" ]; then printf 'restore-old\\n' >> \"$ROLLBACK_LOG\"; fi; /usr/bin/mv \"$@\"; }",
+            recovery,
+            restore,
+        )
+    )
+
+    runner = tmp_path / "rollback.sh"
+    runner.write_text(script + "\n", encoding="utf-8")
+    result = subprocess.run(
+        [str(BASH), _bash_path(runner)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 52, result.stderr + result.stdout
+    lines = log.read_text(encoding="ascii").splitlines()
+    assert lines.index("mount:1:unknown=true") < lines.index(
+        "journal:recovery-detach-persistent-armed"
+    ) < lines.index("umount") < lines.index("rm-release")
+    assert lines.index("rm-release") < lines.index("mount:2:unknown=true") < lines.index(
+        "journal:rollback-restored"
+    ) < lines.index("clear")
+    assert (release / "old-marker").is_file()
+    assert (release / "agent" / "data" / "app.db").is_file()
+    assert not (release / "new-marker").exists()
+    assert not old_root.exists()
+    assert not journal.exists()
+    assert mounted.is_file()
 
 
 def test_sigkill_before_systemd_journal_leaves_attempt_journal_bound(
@@ -5330,6 +5825,62 @@ def test_private_cleanup_preserves_primary_exit_status(tmp_path: Path, closed_pa
 
     assert result.returncode == 19, result.stderr + result.stdout
     assert _private_attempt_artifacts(case_root, evidence)["pin"]
+
+
+def test_rollback_journal_clear_false_success_remains_retryable(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "rollback-journal-clear-false-success"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, _, _ = prepared
+    journal = evidence / "install-mutation-state.json"
+    clear_intercepted = case_root / "clear-intercepted"
+    bash_env = case_root / "clear-false-success.bash"
+    bash_env.write_text(
+        "rm() {\n"
+        "  for argument in \"$@\"; do\n"
+        f"    if [ \"$argument\" = '{_bash_path(journal)}' ] "
+        "&& [ -f \"$argument\" ] "
+        f"&& [ ! -f '{_bash_path(clear_intercepted)}' ]; then\n"
+        f"      : > '{_bash_path(clear_intercepted)}'\n"
+        "      return 0\n"
+        "    fi\n"
+        "  done\n"
+        "  /usr/bin/rm \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    first = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={
+            "BASH_ENV": _bash_path(bash_env),
+            "VL360_INSTALL_FAIL_AFTER": "swap-release-root",
+        },
+    )
+
+    assert first.returncode == 73, first.stderr + first.stdout
+    assert clear_intercepted.is_file()
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "rollback-restored"
+    )
+    recovery = json.loads(
+        (evidence / "install-recovery.json").read_text(encoding="utf-8")
+    )
+    assert recovery["status"] == "rollback-failed"
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+    retry = _invoke_installer(closed_package, case_root, prepared)
+
+    assert retry.returncode == 0, retry.stderr + retry.stdout
+    assert not journal.exists()
+    assert (release / "launch-release-manifest.json").is_file()
+    assert _snapshot_tree(persistent) == before_persistent
 
 
 def test_startup_sweeps_only_ownerless_or_stale_private_attempt_artifacts(
