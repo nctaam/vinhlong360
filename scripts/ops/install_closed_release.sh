@@ -565,10 +565,33 @@ SNAPSHOT_BEFORE="$EVIDENCE_DIR/persistent-before.json"
 SNAPSHOT_AFTER="$EVIDENCE_DIR/persistent-after.json"
 SNAPSHOT_RECOVERY="$EVIDENCE_DIR/persistent-recovery.json"
 MUTATION_STATE="$EVIDENCE_DIR/install-mutation-state.json"
+STALE_RELEASE_ROOT=''
+STALE_PERSISTENT_ROOT=''
+STALE_RELEASE_KEY=''
+STALE_PERSISTENT_KEY=''
+STALE_STAGING_ROOT=''
+STALE_OLD_ROOT=''
+STALE_STAGE=''
+STALE_PID=''
+STALE_ATTEMPT_ID=''
+STALE_LOCAL_REHEARSAL=''
 
 write_mutation_state() {
   local stage="$1"
-  python - "$MUTATION_STATE" "$stage" "$ATTEMPT_ID" "$$" <<'PY'
+  local release_spec persistent_spec release_key persistent_key
+  release_spec="$(lock_spec release "$RELEASE_ROOT" "$LOCAL_REHEARSAL")" || return 1
+  persistent_spec="$(lock_spec persistent "$PERSISTENT_AGENT_DATA_ROOT" \
+    "$LOCAL_REHEARSAL")" || return 1
+  IFS='|' read -r _ _ release_key _ <<< "$release_spec"
+  IFS='|' read -r _ _ persistent_key _ <<< "$persistent_spec"
+  MSYS2_ENV_CONV_EXCL='VL360_STATE_RELEASE_ROOT;VL360_STATE_PERSISTENT_ROOT;VL360_STATE_STAGING_ROOT;VL360_STATE_OLD_ROOT' \
+    VL360_STATE_RELEASE_ROOT="$RELEASE_ROOT" \
+    VL360_STATE_PERSISTENT_ROOT="$PERSISTENT_AGENT_DATA_ROOT" \
+    VL360_STATE_STAGING_ROOT="$STAGING_ROOT" \
+    VL360_STATE_OLD_ROOT="$OLD_ROOT" \
+    VL360_STATE_LOCAL_REHEARSAL="$LOCAL_REHEARSAL" \
+    python - "$MUTATION_STATE" "$stage" "$ATTEMPT_ID" "$$" \
+      "$release_key" "$persistent_key" <<'PY'
 import json
 import os
 from pathlib import Path
@@ -578,9 +601,16 @@ import tempfile
 path = Path(sys.argv[1])
 payload = {
     "attempt_id": sys.argv[3],
+    "local_rehearsal": os.environ["VL360_STATE_LOCAL_REHEARSAL"] == "true",
+    "old_root": os.environ["VL360_STATE_OLD_ROOT"],
+    "persistent_key_sha256": sys.argv[6],
+    "persistent_root": os.environ["VL360_STATE_PERSISTENT_ROOT"],
     "pid": int(sys.argv[4]),
-    "schema_version": 1,
+    "release_key_sha256": sys.argv[5],
+    "release_root": os.environ["VL360_STATE_RELEASE_ROOT"],
+    "schema_version": 2,
     "stage": sys.argv[2],
+    "staging_root": os.environ["VL360_STATE_STAGING_ROOT"],
 }
 descriptor, name = tempfile.mkstemp(prefix=".install-mutation-state.", dir=path.parent)
 temporary = Path(name)
@@ -601,6 +631,82 @@ PY
 
 clear_mutation_state() {
   rm -f -- "$MUTATION_STATE"
+}
+
+load_stale_install_state() {
+  local state release_spec persistent_spec observed_release_key observed_persistent_key
+  state="$(python - "$MUTATION_STATE" <<'PY'
+import json
+import posixpath
+from pathlib import Path
+import re
+import sys
+
+sha256_re = re.compile(r"^[0-9a-f]{64}$")
+try:
+    payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+    if payload.get("schema_version") != 2:
+        raise ValueError
+    attempt_id = str(payload["attempt_id"])
+    pid = int(payload["pid"])
+    stage = str(payload["stage"])
+    local_rehearsal = payload["local_rehearsal"]
+    release_root = str(payload["release_root"])
+    persistent_root = str(payload["persistent_root"])
+    staging_root = str(payload["staging_root"])
+    old_root = str(payload["old_root"])
+    release_key = str(payload["release_key_sha256"])
+    persistent_key = str(payload["persistent_key_sha256"])
+    values = (release_root, persistent_root, staging_root, old_root)
+    if (
+        not attempt_id
+        or pid <= 0
+        or type(local_rehearsal) is not bool
+        or any(not value.startswith("/") or any(c in value for c in "\t\n|") for value in values)
+        or not sha256_re.fullmatch(release_key)
+        or not sha256_re.fullmatch(persistent_key)
+    ):
+        raise ValueError
+    release_parent = posixpath.dirname(release_root)
+    release_name = posixpath.basename(release_root)
+    if release_name in ("", ".", ".."):
+        raise ValueError
+    if staging_root != f"{release_parent}/.{release_name}.closed-stage.{pid}":
+        raise ValueError
+    if old_root != f"{release_parent}/.{release_name}.closed-old.{pid}":
+        raise ValueError
+except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+    raise SystemExit(1)
+print(
+    "\t".join(
+        (
+            stage,
+            str(pid),
+            attempt_id,
+            "true" if local_rehearsal else "false",
+            release_root,
+            persistent_root,
+            release_key,
+            persistent_key,
+            staging_root,
+            old_root,
+        )
+    )
+)
+PY
+  )" || return 1
+  IFS=$'\t' read -r STALE_STAGE STALE_PID STALE_ATTEMPT_ID \
+    STALE_LOCAL_REHEARSAL STALE_RELEASE_ROOT STALE_PERSISTENT_ROOT \
+    STALE_RELEASE_KEY STALE_PERSISTENT_KEY STALE_STAGING_ROOT STALE_OLD_ROOT \
+    <<< "$state"
+  release_spec="$(lock_spec release "$STALE_RELEASE_ROOT" \
+    "$STALE_LOCAL_REHEARSAL")" || return 1
+  persistent_spec="$(lock_spec persistent "$STALE_PERSISTENT_ROOT" \
+    "$STALE_LOCAL_REHEARSAL")" || return 1
+  IFS='|' read -r _ _ observed_release_key _ <<< "$release_spec"
+  IFS='|' read -r _ _ observed_persistent_key _ <<< "$persistent_spec"
+  [ "$observed_release_key" = "$STALE_RELEASE_KEY" ] \
+    && [ "$observed_persistent_key" = "$STALE_PERSISTENT_KEY" ]
 }
 
 tree_matches_snapshot() {
@@ -632,65 +738,46 @@ PY
 }
 
 reconcile_stale_install_attempt() {
-  [ "$LOCAL_REHEARSAL" = true ] || return 1
+  [ "$LOCAL_REHEARSAL" = "$STALE_LOCAL_REHEARSAL" ] \
+    && [ "$LOCAL_REHEARSAL" = true ] || return 1
+  [ "$CURRENT_RELEASE_KEY" = "$STALE_RELEASE_KEY" ] \
+    && [ "$CURRENT_PERSISTENT_KEY" = "$STALE_PERSISTENT_KEY" ] || return 1
   [ -f "$MUTATION_STATE" ] && [ ! -L "$MUTATION_STATE" ] || return 1
-  local state stage stale_pid stale_attempt stale_stage stale_stage_owner stale_old current_data
-  state="$(python - "$MUTATION_STATE" <<'PY'
-import json
-from pathlib import Path
-import sys
-
-try:
-    payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    if payload.get("schema_version") != 1:
-        raise ValueError
-    stage = str(payload["stage"])
-    pid = int(payload["pid"])
-    attempt_id = str(payload["attempt_id"])
-    if not attempt_id or pid <= 0:
-        raise ValueError
-except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
-    raise SystemExit(1)
-print(f"{stage}\t{pid}\t{attempt_id}")
-PY
-  )" || return 1
-  IFS=$'\t' read -r stage stale_pid stale_attempt <<< "$state"
-  case "$stage" in
+  local stale_stage_owner current_data
+  case "$STALE_STAGE" in
     detach-agent-data-armed|persistent-detached) ;;
     *) return 1 ;;
   esac
-  stale_stage="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage.$stale_pid"
-  stale_stage_owner="$stale_stage.owner"
-  stale_old="$RELEASE_PARENT/.${RELEASE_NAME}.closed-old.$stale_pid"
-  [ ! -e "$stale_old" ] && [ ! -L "$stale_old" ] || return 1
-  [ -d "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ] || return 1
-  current_data="$RELEASE_ROOT/agent/data"
-  [ ! -L "$current_data" ] && [ ! -L "$PERSISTENT_AGENT_DATA_ROOT" ] || return 1
+  stale_stage_owner="$STALE_STAGING_ROOT.owner"
+  [ ! -e "$STALE_OLD_ROOT" ] && [ ! -L "$STALE_OLD_ROOT" ] || return 1
+  [ -d "$STALE_RELEASE_ROOT" ] && [ ! -L "$STALE_RELEASE_ROOT" ] || return 1
+  current_data="$STALE_RELEASE_ROOT/agent/data"
+  [ ! -L "$current_data" ] && [ ! -L "$STALE_PERSISTENT_ROOT" ] || return 1
   if [ -d "$current_data" ] \
-    && [ -d "$PERSISTENT_AGENT_DATA_ROOT" ] \
-    && [ -z "$(find "$PERSISTENT_AGENT_DATA_ROOT" -mindepth 1 -print -quit)" ] \
+    && [ -d "$STALE_PERSISTENT_ROOT" ] \
+    && [ -z "$(find "$STALE_PERSISTENT_ROOT" -mindepth 1 -print -quit)" ] \
     && tree_matches_snapshot "$current_data" "$SNAPSHOT_BEFORE"; then
     :
   elif [ ! -e "$current_data" ] \
     && [ ! -L "$current_data" ] \
-    && [ -d "$PERSISTENT_AGENT_DATA_ROOT" ] \
-    && tree_matches_snapshot "$PERSISTENT_AGENT_DATA_ROOT" "$SNAPSHOT_BEFORE"; then
+    && [ -d "$STALE_PERSISTENT_ROOT" ] \
+    && tree_matches_snapshot "$STALE_PERSISTENT_ROOT" "$SNAPSHOT_BEFORE"; then
     mkdir -p -- "$(dirname -- "$current_data")" || return 1
-    mv -- "$PERSISTENT_AGENT_DATA_ROOT" "$current_data" || return 1
-    mkdir -- "$PERSISTENT_AGENT_DATA_ROOT" || return 1
+    mv -- "$STALE_PERSISTENT_ROOT" "$current_data" || return 1
+    mkdir -- "$STALE_PERSISTENT_ROOT" || return 1
     tree_matches_snapshot "$current_data" "$SNAPSHOT_BEFORE" || return 1
   else
     return 1
   fi
-  if [ -e "$stale_stage" ] || [ -L "$stale_stage" ]; then
-    [ -d "$stale_stage" ] && [ ! -L "$stale_stage" ] || return 1
+  if [ -e "$STALE_STAGING_ROOT" ] || [ -L "$STALE_STAGING_ROOT" ]; then
+    [ -d "$STALE_STAGING_ROOT" ] && [ ! -L "$STALE_STAGING_ROOT" ] || return 1
     [ -f "$stale_stage_owner" ] && [ ! -L "$stale_stage_owner" ] \
-      && grep -Fxq "$stale_attempt" "$stale_stage_owner" || return 1
-    rm -rf -- "$stale_stage" || return 1
+      && grep -Fxq "$STALE_ATTEMPT_ID" "$stale_stage_owner" || return 1
+    rm -rf -- "$STALE_STAGING_ROOT" || return 1
   fi
   if [ -e "$stale_stage_owner" ] || [ -L "$stale_stage_owner" ]; then
     [ -f "$stale_stage_owner" ] && [ ! -L "$stale_stage_owner" ] \
-      && grep -Fxq "$stale_attempt" "$stale_stage_owner" || return 1
+      && grep -Fxq "$STALE_ATTEMPT_ID" "$stale_stage_owner" || return 1
     rm -f -- "$stale_stage_owner" || return 1
   fi
   clear_mutation_state
@@ -726,7 +813,30 @@ PY
 }
 
 LOCK_EVIDENCE_ENABLED=true
-TARGET_LOCK_ORDER=()
+if [ "$PENDING_STALE_RECOVERY" = true ] && ! load_stale_install_state; then
+  record_install_lock recovery-required 2 || true
+  LOCK_TERMINAL_RECORDED=true
+  die 'stale-install-recovery-required'
+fi
+TARGET_LOCK_KEYS=()
+declare -A TARGET_LOCK_AUTHORITIES=()
+declare -A TARGET_LOCK_KINDS=()
+add_target_lock_request() {
+  local kind="$1"
+  local authority="$2"
+  local expected_key="${3:-}"
+  local spec key
+  spec="$(lock_spec "$kind" "$authority" "$LOCAL_REHEARSAL")" || return 1
+  IFS='|' read -r _ _ key _ <<< "$spec"
+  [ -z "$expected_key" ] || [ "$key" = "$expected_key" ] || return 1
+  if [ -z "${TARGET_LOCK_AUTHORITIES[$key]+x}" ]; then
+    TARGET_LOCK_KEYS+=("$key")
+    TARGET_LOCK_AUTHORITIES["$key"]="$authority"
+    TARGET_LOCK_KINDS["$key"]="$kind"
+  fi
+}
+CURRENT_RELEASE_KEY=''
+CURRENT_PERSISTENT_KEY=''
 for target_kind in release persistent systemd; do
   case "$target_kind" in
     release) target_authority="$RELEASE_ROOT" ;;
@@ -735,16 +845,26 @@ for target_kind in release persistent systemd; do
   esac
   target_spec="$(lock_spec "$target_kind" "$target_authority" "$LOCAL_REHEARSAL")"
   IFS='|' read -r _ _ target_key _ <<< "$target_spec"
-  TARGET_LOCK_ORDER+=("$target_key|$target_kind")
-done
-mapfile -t TARGET_LOCK_ORDER < <(printf '%s\n' "${TARGET_LOCK_ORDER[@]}" | sort)
-for target_request in "${TARGET_LOCK_ORDER[@]}"; do
-  IFS='|' read -r target_key target_kind <<< "$target_request"
   case "$target_kind" in
-    release) target_authority="$RELEASE_ROOT" ;;
-    persistent) target_authority="$PERSISTENT_AGENT_DATA_ROOT" ;;
-    systemd) target_authority="$SYSTEMD_UNIT_DESTINATION" ;;
+    release) CURRENT_RELEASE_KEY="$target_key" ;;
+    persistent) CURRENT_PERSISTENT_KEY="$target_key" ;;
   esac
+  add_target_lock_request "$target_kind" "$target_authority" "$target_key" \
+    || die 'install-lock-acquire-failed'
+done
+if [ "$PENDING_STALE_RECOVERY" = true ]; then
+  add_target_lock_request release "$STALE_RELEASE_ROOT" "$STALE_RELEASE_KEY" \
+    && add_target_lock_request persistent "$STALE_PERSISTENT_ROOT" \
+      "$STALE_PERSISTENT_KEY" || {
+        record_install_lock recovery-required 2 || true
+        LOCK_TERMINAL_RECORDED=true
+        die 'stale-install-recovery-required'
+      }
+fi
+mapfile -t TARGET_LOCK_KEYS < <(printf '%s\n' "${TARGET_LOCK_KEYS[@]}" | sort)
+for target_key in "${TARGET_LOCK_KEYS[@]}"; do
+  target_kind="${TARGET_LOCK_KINDS[$target_key]}"
+  target_authority="${TARGET_LOCK_AUTHORITIES[$target_key]}"
   if acquire_authority_lock "$target_kind" "$target_authority" "$LOCAL_REHEARSAL"; then
     :
   else
@@ -1358,8 +1478,8 @@ INSTALL_FAILURE_POINT=swap-release-root
 mv -- "$RELEASE_ROOT" "$OLD_ROOT"
 OLD_ROOT_READY=true
 mv -- "$STAGING_ROOT" "$RELEASE_ROOT"
-STAGING_CLEANUP_ARMED=false
 rm -f -- "$STAGING_OWNER_MARKER"
+STAGING_CLEANUP_ARMED=false
 mkdir -p -- "$RELEASE_ROOT/agent"
 rm -rf -- "$RELEASE_ROOT/agent/data"
 write_mutation_state root-swapped

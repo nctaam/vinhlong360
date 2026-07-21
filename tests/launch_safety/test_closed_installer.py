@@ -592,6 +592,89 @@ def test_sigkill_after_persistent_detach_is_recovered_before_retry_reset(
     assert not list(release.parent.glob(f".{release.name}.closed-*"))
 
 
+def test_stale_recovery_refuses_different_retry_authorities(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    first_root = tmp_path / "stale-original"
+    second_root = tmp_path / "stale-different-retry"
+    first_prepared = _prepare_case(first_root, closed_package)
+    second_prepared = _prepare_case(second_root, closed_package)
+    first_release, first_persistent, first_evidence, _, _, _, first_values = (
+        first_prepared
+    )
+    second_release, second_persistent, _, second_release_before, second_persistent_before, _, second_values = (
+        second_prepared
+    )
+    first_bytes = _snapshot_tree(first_release / "agent" / "data")
+    detached = first_root / "detached"
+    bash_env = first_root / "kill-after-detach.bash"
+    bash_env.write_text(
+        "mv() {\n"
+        "  /usr/bin/mv \"$@\"\n"
+        "  status=$?\n"
+        f"  if [ \"$2\" = '{_bash_path(first_release / 'agent' / 'data')}' ] "
+        f"&& [ \"$3\" = '{_bash_path(first_persistent)}' ]; then\n"
+        f"    : > '{_bash_path(detached)}'\n"
+        "    kill -9 \"$$\"\n"
+        "  fi\n"
+        "  return \"$status\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+    first_env = os.environ.copy()
+    first_env.update(first_values)
+    first_env["BASH_ENV"] = _bash_path(bash_env)
+    first = subprocess.Popen(
+        _installer_command(closed_package, first_root, first_prepared),
+        cwd=ROOT,
+        env=first_env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_path(detached)
+        first_stdout, first_stderr = first.communicate(timeout=30)
+    finally:
+        if first.poll() is None:
+            first.kill()
+
+    assert first.returncode != 0, first_stderr + first_stdout
+    journal = first_evidence / "install-mutation-state.json"
+    journal_before = journal.read_bytes()
+    snapshot_before = (first_evidence / "persistent-before.json").read_bytes()
+    stale_artifacts = sorted(first_release.parent.glob(f".{first_release.name}.closed-*"))
+    assert stale_artifacts
+
+    second_env = os.environ.copy()
+    second_env.update(second_values)
+    retry = subprocess.run(
+        _installer_command(
+            closed_package,
+            second_root,
+            second_prepared,
+            evidence_arg=_bash_path(first_evidence),
+        ),
+        cwd=ROOT,
+        env=second_env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert retry.returncode == 2, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" in retry.stderr
+    assert journal.read_bytes() == journal_before
+    assert (first_evidence / "persistent-before.json").read_bytes() == snapshot_before
+    assert not (first_release / "agent" / "data").exists()
+    assert _snapshot_tree(first_persistent) == first_bytes
+    assert sorted(first_release.parent.glob(f".{first_release.name}.closed-*")) == stale_artifacts
+    assert _snapshot_tree(second_release) == second_release_before
+    assert _snapshot_tree(second_persistent) == second_persistent_before
+
+
 def test_failed_recovery_umount_preserves_new_and_old_roots_and_persistent_bytes(
     tmp_path: Path, closed_package
 ):
@@ -1028,6 +1111,48 @@ def test_premutation_failure_removes_private_staging_root(
     )
 
     assert result.returncode == expected_code, result.stderr + result.stdout
+    assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
+    assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
+
+
+def test_stage_owner_cleanup_retries_before_disarming(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "stage-owner-cleanup-failure"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, before_release, before_persistent, _, _ = prepared
+    failure_used = case_root / "owner-rm-failure-used"
+    bash_env = case_root / "owner-rm-failure.bash"
+    bash_env.write_text(
+        "rm() {\n"
+        "  for argument in \"$@\"; do\n"
+        "    case \"$(basename -- \"$argument\")\" in\n"
+        "      .release.closed-stage.*.owner)\n"
+        f"        if [ ! -f '{_bash_path(failure_used)}' ]; then\n"
+        f"          : > '{_bash_path(failure_used)}'\n"
+        "          return 61\n"
+        "        fi\n"
+        "        ;;\n"
+        "    esac\n"
+        "  done\n"
+        "  /usr/bin/rm \"$@\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides={"BASH_ENV": _bash_path(bash_env)},
+    )
+
+    assert result.returncode == 61, result.stderr + result.stdout
+    assert failure_used.is_file()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
     assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
     assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
 
