@@ -305,7 +305,9 @@ def _invoke_installer_args(prepared, args: list[str]):
     )
 
 
-def _run_live_mount_failure_case(package, case_root: Path):
+def _run_live_mount_failure_case(
+    package, case_root: Path, *, replace_mount_source_after_admission: bool = False
+):
     prepared = _prepare_case(case_root, package)
     release, persistent, evidence, before_release, _, _, values = prepared
     runtime = case_root / "runtime"
@@ -355,6 +357,15 @@ def _run_live_mount_failure_case(package, case_root: Path):
         encoding="ascii",
     )
     mount_authority.chmod(0o755)
+    if replace_mount_source_after_admission:
+        python_hook = runtime / "install-python-dependencies"
+        python_hook.write_text(
+            "#!/usr/bin/env bash\n"
+            f"printf '#!/usr/bin/env bash\\nexit 97\\n' > '{_bash_path(mount_authority)}'\n"
+            f"chmod 0755 '{_bash_path(mount_authority)}'\n",
+            encoding="ascii",
+        )
+        python_hook.chmod(0o755)
 
     env = os.environ.copy()
     env.update(values)
@@ -1445,6 +1456,157 @@ def test_installer_runs_injected_staged_dependency_and_unit_hooks_and_matches_un
         destination = unit_destination / Path(relative).name
         assert destination.read_bytes() == raw
     assert _snapshot_tree(persistent) == {}
+
+
+@pytest.mark.parametrize("invalid_kind", ("symlink-component", "nonregular"))
+def test_executable_authority_rejects_symlink_components_and_nonregular_sources(
+    tmp_path: Path, closed_package, invalid_kind: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"invalid-executable-{invalid_kind}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, _, _, hook_log, values = prepared
+    runtime = case_root / "runtime"
+    if invalid_kind == "symlink-component":
+        alias = case_root / "runtime-alias"
+        try:
+            alias.symlink_to(runtime, target_is_directory=True)
+        except OSError as error:
+            pytest.skip(f"directory symlinks are unavailable: {error}")
+        invalid = alias / "python-hook.sh"
+    else:
+        invalid = runtime / "nonregular-hook"
+        invalid.mkdir()
+    before_release = _snapshot_tree(release)
+    before_persistent = _snapshot_tree(persistent)
+    values["VL360_PYTHON_DEPENDENCY_HOOK"] = _bash_path_literal(invalid)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2
+    assert "executable-authority-required" in result.stderr
+    assert not hook_log.exists()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+
+@pytest.mark.parametrize(
+    "namespace",
+    ("release", "persistent", "evidence", "systemd", "stage", "old", "retired"),
+)
+def test_executable_authority_rejects_protected_and_reserved_namespace_overlap(
+    tmp_path: Path, closed_package, namespace: str
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"executable-overlap-{namespace}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, _, _, hook_log, values = prepared
+    roots = {
+        "release": release,
+        "persistent": persistent,
+        "evidence": evidence,
+        "systemd": case_root / "runtime" / "systemd-units",
+        "stage": release.parent / f".{release.name}.closed-stage.attacker",
+        "old": release.parent / f".{release.name}.closed-old.attacker",
+        "retired": release.parent / f".{release.name}.closed-retired.attacker",
+    }
+    authority = roots[namespace] / "authority.sh"
+    authority.parent.mkdir(parents=True, exist_ok=True)
+    authority.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="ascii")
+    authority.chmod(0o755)
+    before_release = _snapshot_tree(release)
+    before_persistent = _snapshot_tree(persistent)
+    values["VL360_PYTHON_DEPENDENCY_HOOK"] = _bash_path(authority)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 2
+    assert "executable-authority-namespace-overlap" in result.stderr
+    assert not hook_log.exists()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+
+
+def test_dependency_and_unit_sources_are_pinned_before_replacement(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "executable-source-replacement"
+    prepared = _prepare_case(case_root, closed_package)
+    _, _, _, _, _, hook_log, _ = prepared
+    runtime = case_root / "runtime"
+    python_hook = runtime / "python-hook.sh"
+    nuxt_hook = runtime / "nuxt-hook.sh"
+    unit_hook = runtime / "units-hook.sh"
+    python_hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "printf '%s|%s\\n' 'python-dependencies' \"$*\" >> \"$INSTALL_HOOK_LOG\"\n"
+        f"printf '%s\\n' '#!/usr/bin/env bash' 'printf \"tampered-nuxt|%s\\\\n\" \"$*\" >> \"$INSTALL_HOOK_LOG\"' > '{_bash_path(nuxt_hook)}'\n"
+        f"printf '%s\\n' '#!/usr/bin/env bash' 'printf \"tampered-units|%s\\\\n\" \"$*\" >> \"$INSTALL_HOOK_LOG\"' > '{_bash_path(unit_hook)}'\n"
+        f"chmod 0755 '{_bash_path(nuxt_hook)}' '{_bash_path(unit_hook)}'\n",
+        encoding="ascii",
+    )
+    python_hook.chmod(0o755)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert [line.split("|", 1)[0] for line in hook_log.read_text().splitlines()] == [
+        "python-dependencies",
+        "nuxt-production-dependencies",
+        "systemd-units",
+    ]
+
+
+def test_live_mount_authority_is_pinned_before_dependency_hook_replaces_source(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    result, _, _ = _run_live_mount_failure_case(
+        closed_package,
+        tmp_path / "mount-source-replacement",
+        replace_mount_source_after_admission=True,
+    )
+
+    assert result.returncode == 44, result.stderr + result.stdout
+
+
+def test_pinned_executable_tamper_fails_closed_before_next_hook_invocation(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "executable-pin-tamper"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, before_persistent, hook_log, _ = prepared
+    python_hook = case_root / "runtime" / "python-hook.sh"
+    python_hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "printf '%s|%s\\n' 'python-dependencies' \"$*\" >> \"$INSTALL_HOOK_LOG\"\n"
+        "target=$(dirname -- \"$0\")/nuxt-dependency\n"
+        "chmod 0700 -- \"$target\"\n"
+        "printf '#!/usr/bin/env bash\\nexit 0\\n# executable-pin-tampered\\n' > \"$target\"\n",
+        encoding="ascii",
+    )
+    python_hook.chmod(0o755)
+
+    result = _invoke_installer(closed_package, case_root, prepared)
+
+    assert result.returncode == 126, result.stderr + result.stdout
+    assert "executable-authority-digest-mismatch" in result.stderr
+    assert hook_log.read_text(encoding="ascii").splitlines()[0].startswith(
+        "python-dependencies|"
+    )
+    assert "nuxt-production-dependencies" not in hook_log.read_text(encoding="ascii")
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == before_persistent
+    for path in evidence.rglob("*"):
+        if path.is_file():
+            assert b"executable-pin-tampered" not in path.read_bytes()
 
 
 def test_installer_records_failed_authority_hook_exit_and_stops_before_mutation(

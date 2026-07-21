@@ -100,6 +100,298 @@ PY
   fi
 }
 
+validate_executable_authority_sources() {
+  python - "$RELEASE_ROOT" "$PERSISTENT_AGENT_DATA_ROOT" "$EVIDENCE_DIR" \
+    "$SYSTEMD_UNIT_DESTINATION" "$STALE_RELEASE_ROOT" "$STALE_PERSISTENT_ROOT" \
+    "$STALE_SYSTEMD_UNIT_DESTINATION" "$MOUNT_AUTHORITY" \
+    "$PYTHON_DEPENDENCY_HOOK" "$NUXT_DEPENDENCY_HOOK" "$UNIT_VERIFY_HOOK" <<'PY'
+import os
+from pathlib import Path
+import stat
+import sys
+
+
+def absolute(path):
+    return os.path.normcase(os.path.realpath(os.path.abspath(path)))
+
+
+def has_symlink_component(raw):
+    path = Path(os.path.abspath(raw))
+    anchor = Path(path.anchor) if path.anchor else Path()
+    current = anchor
+    parts = path.parts[1:] if path.anchor else path.parts
+    for part in parts:
+        current /= part
+        try:
+            observed = os.lstat(current)
+        except OSError:
+            return True
+        if stat.S_ISLNK(observed.st_mode) or os.path.islink(current):
+            return True
+    return False
+
+
+def overlaps(left, right):
+    try:
+        common = os.path.commonpath((left, right))
+    except ValueError:
+        return False
+    return common in (left, right)
+
+
+def is_reserved(candidate, release):
+    if not release:
+        return False
+    release = absolute(release)
+    parent = os.path.dirname(release)
+    name = os.path.basename(release)
+    try:
+        relative = os.path.relpath(candidate, parent)
+    except ValueError:
+        return False
+    if relative == os.pardir or relative.startswith(os.pardir + os.sep):
+        return False
+    first = relative.split(os.sep, 1)[0]
+    return any(
+        first == f".{name}.closed-{kind}"
+        or first.startswith(f".{name}.closed-{kind}.")
+        for kind in ("stage", "old", "retired")
+    )
+
+
+release, persistent, evidence, systemd, stale_release, stale_persistent, stale_systemd = (
+    sys.argv[1:8]
+)
+mount, python_hook, nuxt_hook, unit_hook = sys.argv[8:]
+if not mount and os.environ.get("VL360_EXECUTABLE_LIVE_MODE") == "true":
+    raise SystemExit(22)
+sources = [
+    ("mount", mount),
+    ("hook", python_hook),
+    ("hook", nuxt_hook),
+    ("hook", unit_hook),
+]
+protected = [
+    absolute(path)
+    for path in (
+        release,
+        persistent,
+        evidence,
+        systemd,
+        stale_release,
+        stale_persistent,
+        stale_systemd,
+    )
+    if path
+]
+for role, raw in sources:
+    if not raw:
+        continue
+    if has_symlink_component(raw):
+        raise SystemExit(22 if role == "mount" else 20)
+    path = Path(os.path.abspath(raw))
+    try:
+        observed = path.stat()
+    except OSError:
+        raise SystemExit(22 if role == "mount" else 20)
+    executable = os.access(path, os.X_OK) if os.name == "nt" else bool(observed.st_mode & 0o111)
+    if not stat.S_ISREG(observed.st_mode) or not executable:
+        raise SystemExit(22 if role == "mount" else 20)
+    candidate = absolute(raw)
+    if any(overlaps(candidate, namespace) for namespace in protected):
+        raise SystemExit(21)
+    if is_reserved(candidate, release) or is_reserved(candidate, stale_release):
+        raise SystemExit(21)
+PY
+}
+
+validate_executable_pin_root() {
+  local candidate="$1"
+  python - "$candidate" "$RELEASE_ROOT" "$PERSISTENT_AGENT_DATA_ROOT" \
+    "$EVIDENCE_DIR" "$SYSTEMD_UNIT_DESTINATION" "$STALE_RELEASE_ROOT" \
+    "$STALE_PERSISTENT_ROOT" "$STALE_SYSTEMD_UNIT_DESTINATION" <<'PY'
+import os
+import sys
+
+
+def absolute(path):
+    return os.path.normcase(os.path.realpath(os.path.abspath(path)))
+
+
+def overlaps(left, right):
+    try:
+        common = os.path.commonpath((left, right))
+    except ValueError:
+        return False
+    return common in (left, right)
+
+
+def is_reserved(candidate, release):
+    if not release:
+        return False
+    release = absolute(release)
+    parent = os.path.dirname(release)
+    name = os.path.basename(release)
+    try:
+        relative = os.path.relpath(candidate, parent)
+    except ValueError:
+        return False
+    if relative == os.pardir or relative.startswith(os.pardir + os.sep):
+        return False
+    first = relative.split(os.sep, 1)[0]
+    return any(
+        first == f".{name}.closed-{kind}"
+        or first.startswith(f".{name}.closed-{kind}.")
+        for kind in ("stage", "old", "retired")
+    )
+
+
+candidate = absolute(sys.argv[1])
+release = sys.argv[2]
+stale_release = sys.argv[6]
+protected = [absolute(path) for path in sys.argv[2:] if path]
+if any(overlaps(candidate, namespace) for namespace in protected):
+    raise SystemExit(1)
+if is_reserved(candidate, release) or is_reserved(candidate, stale_release):
+    raise SystemExit(1)
+PY
+}
+
+pin_executable_authorities() {
+  python - "$EXECUTABLE_PIN_ROOT" "$MOUNT_AUTHORITY" \
+    "$PYTHON_DEPENDENCY_HOOK" "$NUXT_DEPENDENCY_HOOK" "$UNIT_VERIFY_HOOK" <<'PY'
+from hashlib import sha256
+import os
+from pathlib import Path
+import stat
+import sys
+
+
+def validate_components(raw):
+    path = Path(os.path.abspath(raw))
+    anchor = Path(path.anchor) if path.anchor else Path()
+    current = anchor
+    parts = path.parts[1:] if path.anchor else path.parts
+    for part in parts:
+        current /= part
+        observed = os.lstat(current)
+        if stat.S_ISLNK(observed.st_mode) or os.path.islink(current):
+            raise OSError("symlink component")
+    return path
+
+
+def read_admitted_bytes(raw):
+    path = validate_components(raw)
+    if os.name != "nt" and hasattr(os, "O_NOFOLLOW") and os.open in os.supports_dir_fd:
+        parts = path.parts
+        descriptor = os.open(
+            path.anchor,
+            os.O_RDONLY | getattr(os, "O_DIRECTORY", 0),
+        )
+        try:
+            for component in parts[1:-1]:
+                next_descriptor = os.open(
+                    component,
+                    os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_DIRECTORY", 0),
+                    dir_fd=descriptor,
+                )
+                os.close(descriptor)
+                descriptor = next_descriptor
+            file_descriptor = os.open(
+                parts[-1], os.O_RDONLY | os.O_NOFOLLOW, dir_fd=descriptor
+            )
+        finally:
+            os.close(descriptor)
+    else:
+        file_descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_BINARY", 0))
+    try:
+        observed = os.fstat(file_descriptor)
+        executable = (
+            os.access(path, os.X_OK)
+            if os.name == "nt"
+            else bool(observed.st_mode & 0o111)
+        )
+        if not stat.S_ISREG(observed.st_mode) or not executable:
+            raise OSError("not a regular executable")
+        chunks = []
+        while True:
+            chunk = os.read(file_descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        return b"".join(chunks)
+    finally:
+        os.close(file_descriptor)
+
+
+root = Path(sys.argv[1])
+if root.is_symlink() or not root.is_dir():
+    raise SystemExit(1)
+roles = (
+    ("mount", sys.argv[2]),
+    ("python-dependency", sys.argv[3]),
+    ("nuxt-dependency", sys.argv[4]),
+    ("unit-verify", sys.argv[5]),
+)
+digests = []
+for role, source in roles:
+    if not source:
+        digests.append("-")
+        continue
+    raw = read_admitted_bytes(source)
+    target = root / role
+    descriptor = os.open(
+        target,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0),
+        0o500,
+    )
+    try:
+        offset = 0
+        while offset < len(raw):
+            offset += os.write(descriptor, raw[offset:])
+        os.fchmod(descriptor, 0o500)
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+    if target.is_symlink() or not target.is_file() or target.read_bytes() != raw:
+        raise SystemExit(1)
+    if os.name != "nt" and stat.S_IMODE(target.stat().st_mode) != 0o500:
+        raise SystemExit(1)
+    digests.append(sha256(raw).hexdigest())
+if os.name != "nt":
+    descriptor = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+print("\t".join(digests))
+PY
+}
+
+verify_pinned_executable() {
+  local path="$1"
+  local expected_sha256="$2"
+  python - "$path" "$expected_sha256" <<'PY'
+from hashlib import sha256
+import os
+from pathlib import Path
+import stat
+import sys
+
+path = Path(sys.argv[1])
+expected = sys.argv[2]
+if path.is_symlink() or not path.is_file():
+    raise SystemExit(1)
+observed = path.stat()
+if not stat.S_ISREG(observed.st_mode):
+    raise SystemExit(1)
+if os.name != "nt" and stat.S_IMODE(observed.st_mode) != 0o500:
+    raise SystemExit(1)
+if sha256(path.read_bytes()).hexdigest() != expected:
+    raise SystemExit(1)
+PY
+}
+
 ATTEMPT_ID="$(python - <<'PY'
 import secrets
 print(secrets.token_hex(16))
@@ -560,6 +852,7 @@ if [ "$LOCAL_REHEARSAL" = true ] && command -v cygpath >/dev/null 2>&1; then
   PERSISTENT_AGENT_DATA_ROOT="$(cygpath -u "$PERSISTENT_AGENT_DATA_ROOT")"
   ENVIRONMENT_AUTHORITY="$(cygpath -u "$ENVIRONMENT_AUTHORITY")"
   RUNTIME_AUTHORITY="$(cygpath -u "$RUNTIME_AUTHORITY")"
+  [ -z "$MOUNT_AUTHORITY" ] || MOUNT_AUTHORITY="$(cygpath -u "$MOUNT_AUTHORITY")"
   EVIDENCE_DIR="$(cygpath -u "$EVIDENCE_DIR")"
   [ -z "$LOCAL_REHEARSAL_SENTINEL" ] \
     || LOCAL_REHEARSAL_SENTINEL="$(cygpath -u "$LOCAL_REHEARSAL_SENTINEL")"
@@ -612,10 +905,6 @@ else
   [ "$environment_status" -eq 3 ] || die 'environment-authority-pin-failed'
   die 'unlock-keys-forbidden'
 fi
-if [ "$LOCAL_REHEARSAL" != true ]; then
-  [ -n "$MOUNT_AUTHORITY" ] && [ -x "$MOUNT_AUTHORITY" ] \
-    || die 'live-mount-authority-required'
-fi
 if [ "$LOCAL_REHEARSAL" = true ]; then
   PYTHON_DEPENDENCY_HOOK="${VL360_PYTHON_DEPENDENCY_HOOK:-$RUNTIME_AUTHORITY/install-python-dependencies}"
   NUXT_DEPENDENCY_HOOK="${VL360_NUXT_DEPENDENCY_HOOK:-$RUNTIME_AUTHORITY/install-nuxt-production-dependencies}"
@@ -631,10 +920,6 @@ else
   UNIT_VERIFY_HOOK="$RUNTIME_AUTHORITY/verify-systemd-units"
   SYSTEMD_UNIT_DESTINATION=/etc/systemd/system
 fi
-for hook in "$PYTHON_DEPENDENCY_HOOK" "$NUXT_DEPENDENCY_HOOK" "$UNIT_VERIFY_HOOK"; do
-  [ -f "$hook" ] && [ -x "$hook" ] && [ ! -L "$hook" ] \
-    || die 'runtime-hook-authority-required'
-done
 
 RELEASE_PARENT="$(CDPATH= cd -- "$(dirname -- "$RELEASE_ROOT")" && pwd -P)"
 RELEASE_NAME="$(basename -- "$RELEASE_ROOT")"
@@ -1164,7 +1449,7 @@ stale_tree_state() {
 
 inspect_stale_mount() {
   local target="$1"
-  if "$MOUNT_AUTHORITY" findmnt --json --target "$target" \
+  if invoke_mount_authority findmnt --json --target "$target" \
     > "$EVIDENCE_DIR/findmnt-recovery.json"; then
     if python - "$VERIFY_SCRIPT" "$EVIDENCE_DIR/findmnt-recovery.json" \
       "$STALE_PERSISTENT_ROOT" "$target" <<'PY'
@@ -1332,7 +1617,7 @@ reconcile_stale_install_attempt() {
           persistent-restored:0|recovery-detach-persistent-armed:0)
             write_stale_mutation_state recovery-detach-persistent-armed \
               || return 1
-            "$MOUNT_AUTHORITY" umount "$current_data" || return 1
+            invoke_mount_authority umount "$current_data" || return 1
             ;;
           recovery-detach-persistent-armed:1|root-swapped:1|\
           swap-release-root-armed:1|recovery-remove-release-root-armed:1) ;;
@@ -1411,7 +1696,7 @@ reconcile_stale_install_attempt() {
           && [ -z "$(find "$current_data" -mindepth 1 -print -quit)" ] \
           || return 1
         write_stale_mutation_state recovery-restore-persistent-armed || return 1
-        "$MOUNT_AUTHORITY" mount --bind "$STALE_PERSISTENT_ROOT" "$current_data" \
+        invoke_mount_authority mount --bind "$STALE_PERSISTENT_ROOT" "$current_data" \
           || return 1
         inspect_stale_mount "$current_data" || return 1
         mount_verified=true
@@ -1493,7 +1778,35 @@ Path(sys.argv[1]).write_text(
 PY
 }
 
+EXECUTABLE_PIN_ROOT=''
+EXECUTABLE_PIN_PARENT=''
+PINNED_MOUNT_AUTHORITY=''
+PINNED_PYTHON_DEPENDENCY_HOOK=''
+PINNED_NUXT_DEPENDENCY_HOOK=''
+PINNED_UNIT_VERIFY_HOOK=''
+MOUNT_AUTHORITY_SHA256=''
+PYTHON_DEPENDENCY_HOOK_SHA256=''
+NUXT_DEPENDENCY_HOOK_SHA256=''
+UNIT_VERIFY_HOOK_SHA256=''
+
+cleanup_executable_pin_root() {
+  [ -n "$EXECUTABLE_PIN_ROOT" ] || return 0
+  local parent name
+  parent="$(dirname -- "$EXECUTABLE_PIN_ROOT")"
+  name="$(basename -- "$EXECUTABLE_PIN_ROOT")"
+  [ "$parent" = "$EXECUTABLE_PIN_PARENT" ] || return 1
+  case "$name" in vl360-executable-pins.*) ;; *) return 1 ;; esac
+  rm -rf -- "$EXECUTABLE_PIN_ROOT" >/dev/null 2>&1 || return 1
+  EXECUTABLE_PIN_ROOT=''
+}
+
+cleanup_preinstall_authorities() {
+  cleanup_executable_pin_root || true
+  release_all_install_locks || true
+}
+
 LOCK_EVIDENCE_ENABLED=true
+trap cleanup_preinstall_authorities EXIT
 if [ "$PENDING_STALE_RECOVERY" = true ] && ! load_stale_install_state; then
   record_install_lock recovery-required 2 || true
   LOCK_TERMINAL_RECORDED=true
@@ -1525,6 +1838,93 @@ else
   LOCK_TERMINAL_RECORDED=true
   die 'install-lock-acquire-failed'
 fi
+
+executable_authority_has_symlink_component() {
+  local candidate="$1"
+  local parent
+  while [ "$candidate" != / ] && [ "$candidate" != . ]; do
+    [ ! -L "$candidate" ] || return 0
+    parent="$(dirname -- "$candidate")"
+    [ "$parent" != "$candidate" ] || break
+    candidate="$parent"
+  done
+  return 1
+}
+
+for executable_authority in "$PYTHON_DEPENDENCY_HOOK" \
+  "$NUXT_DEPENDENCY_HOOK" "$UNIT_VERIFY_HOOK"; do
+  if executable_authority_has_symlink_component "$executable_authority"; then
+    die 'runtime-hook-authority-required: executable-authority-required'
+  fi
+done
+if [ -n "$MOUNT_AUTHORITY" ] \
+  && executable_authority_has_symlink_component "$MOUNT_AUTHORITY"; then
+  die 'live-mount-authority-required: executable-authority-required'
+fi
+
+if VL360_EXECUTABLE_LIVE_MODE="$([ "$LOCAL_REHEARSAL" = true ] \
+  && printf false || printf true)" validate_executable_authority_sources; then
+  :
+else
+  executable_status=$?
+  case "$executable_status" in
+    20) die 'runtime-hook-authority-required: executable-authority-required' ;;
+    21) die 'executable-authority-namespace-overlap' ;;
+    22) die 'live-mount-authority-required: executable-authority-required' ;;
+    *) die 'executable-authority-admission-failed' ;;
+  esac
+fi
+
+EXECUTABLE_PIN_PARENT="$(CDPATH= cd -- "${TMPDIR:-/tmp}" && pwd -P)" \
+  || die 'executable-authority-pin-failed'
+EXECUTABLE_PIN_ROOT="$(mktemp -d \
+  "$EXECUTABLE_PIN_PARENT/vl360-executable-pins.XXXXXXXX")" \
+  || die 'executable-authority-pin-failed'
+chmod 0700 -- "$EXECUTABLE_PIN_ROOT" || die 'executable-authority-pin-failed'
+validate_executable_pin_root "$EXECUTABLE_PIN_ROOT" \
+  || die 'executable-authority-pin-namespace-overlap'
+if executable_pin_digests="$(pin_executable_authorities)"; then
+  IFS=$'\t' read -r MOUNT_AUTHORITY_SHA256 PYTHON_DEPENDENCY_HOOK_SHA256 \
+    NUXT_DEPENDENCY_HOOK_SHA256 UNIT_VERIFY_HOOK_SHA256 \
+    <<< "$executable_pin_digests"
+else
+  die 'executable-authority-pin-failed'
+fi
+[ "$MOUNT_AUTHORITY_SHA256" != - ] || MOUNT_AUTHORITY_SHA256=''
+[ -n "$PYTHON_DEPENDENCY_HOOK_SHA256" ] \
+  && [ -n "$NUXT_DEPENDENCY_HOOK_SHA256" ] \
+  && [ -n "$UNIT_VERIFY_HOOK_SHA256" ] \
+  || die 'executable-authority-pin-failed'
+PINNED_PYTHON_DEPENDENCY_HOOK="$EXECUTABLE_PIN_ROOT/python-dependency"
+PINNED_NUXT_DEPENDENCY_HOOK="$EXECUTABLE_PIN_ROOT/nuxt-dependency"
+PINNED_UNIT_VERIFY_HOOK="$EXECUTABLE_PIN_ROOT/unit-verify"
+PYTHON_DEPENDENCY_HOOK="$PINNED_PYTHON_DEPENDENCY_HOOK"
+NUXT_DEPENDENCY_HOOK="$PINNED_NUXT_DEPENDENCY_HOOK"
+UNIT_VERIFY_HOOK="$PINNED_UNIT_VERIFY_HOOK"
+if [ "$LOCAL_REHEARSAL" != true ]; then
+  [ -n "$MOUNT_AUTHORITY_SHA256" ] || die 'executable-authority-pin-failed'
+  PINNED_MOUNT_AUTHORITY="$EXECUTABLE_PIN_ROOT/mount"
+  MOUNT_AUTHORITY="$PINNED_MOUNT_AUTHORITY"
+fi
+
+invoke_pinned_executable() {
+  local path="$1"
+  local expected_sha256="$2"
+  shift 2
+  if ! verify_pinned_executable "$path" "$expected_sha256"; then
+    printf 'install_closed_release: executable-authority-digest-mismatch\n' >&2
+    return 126
+  fi
+  "$path" "$@"
+}
+
+invoke_mount_authority() {
+  [ -n "$PINNED_MOUNT_AUTHORITY" ] && [ -n "$MOUNT_AUTHORITY_SHA256" ] \
+    || return 126
+  invoke_pinned_executable "$PINNED_MOUNT_AUTHORITY" \
+    "$MOUNT_AUTHORITY_SHA256" "$@"
+}
+
 TARGET_LOCK_KEYS=()
 declare -A TARGET_LOCK_AUTHORITIES=()
 declare -A TARGET_LOCK_KINDS=()
@@ -1669,6 +2069,7 @@ cleanup_private_staging() {
 cleanup_attempt_authorities() {
   cleanup_private_staging || true
   cleanup_pinned_archive
+  cleanup_executable_pin_root || true
   release_all_install_locks || true
 }
 trap cleanup_attempt_authorities EXIT
@@ -1773,8 +2174,16 @@ PY
 
 run_authority_hook() {
   local name="$1"
-  shift
-  if "$@"; then
+  local authority="$2"
+  local expected_sha256
+  shift 2
+  case "$name" in
+    python-dependencies) expected_sha256="$PYTHON_DEPENDENCY_HOOK_SHA256" ;;
+    nuxt-production-dependencies) expected_sha256="$NUXT_DEPENDENCY_HOOK_SHA256" ;;
+    systemd-units) expected_sha256="$UNIT_VERIFY_HOOK_SHA256" ;;
+    *) return 126 ;;
+  esac
+  if invoke_pinned_executable "$authority" "$expected_sha256" "$@"; then
     record_authority_result "$name" passed 0
     return 0
   else
@@ -2063,7 +2472,7 @@ detach_persistent_from_release_for_recovery() {
     fi
     mv -- "$RELEASE_ROOT/agent/data" "$PERSISTENT_AGENT_DATA_ROOT" || return $?
   else
-    "$MOUNT_AUTHORITY" umount "$RELEASE_ROOT/agent/data" || return $?
+    invoke_mount_authority umount "$RELEASE_ROOT/agent/data" || return $?
   fi
   PERSISTENT_ATTACHED_TO_RELEASE=false
   PERSISTENT_DETACHED=true
@@ -2084,7 +2493,7 @@ attach_persistent_to_release_for_recovery() {
     mkdir -- "$PERSISTENT_AGENT_DATA_ROOT" || return $?
   else
     mkdir -- "$target" || return $?
-    "$MOUNT_AUTHORITY" mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$target" \
+    invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$target" \
       || return $?
     PERSISTENT_ATTACHED_TO_RELEASE=true
     PERSISTENT_DETACHED=false
@@ -2099,7 +2508,7 @@ verify_recovered_persistent_state() {
     [ -z "$(find "$PERSISTENT_AGENT_DATA_ROOT" -mindepth 1 -print -quit)" ] \
       || return 1
   else
-    "$MOUNT_AUTHORITY" findmnt --json --target "$RELEASE_ROOT/agent/data" \
+    invoke_mount_authority findmnt --json --target "$RELEASE_ROOT/agent/data" \
       > "$EVIDENCE_DIR/findmnt-recovery.json" || return $?
     verify_findmnt_file "$EVIDENCE_DIR/findmnt-recovery.json" \
       "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data" || return $?
@@ -2242,10 +2651,10 @@ if [ "$LOCAL_REHEARSAL" = true ]; then
   fi
   mv -- "$CURRENT_DATA" "$PERSISTENT_AGENT_DATA_ROOT"
 else
-  "$MOUNT_AUTHORITY" findmnt --json --target "$CURRENT_DATA" > "$EVIDENCE_DIR/findmnt-before.json"
+  invoke_mount_authority findmnt --json --target "$CURRENT_DATA" > "$EVIDENCE_DIR/findmnt-before.json"
   verify_findmnt_file "$EVIDENCE_DIR/findmnt-before.json" \
     "$PERSISTENT_AGENT_DATA_ROOT" "$CURRENT_DATA"
-  "$MOUNT_AUTHORITY" umount "$CURRENT_DATA"
+  invoke_mount_authority umount "$CURRENT_DATA"
 fi
 PERSISTENT_DETACHED=true
 PERSISTENT_ATTACHED_TO_RELEASE=false
@@ -2280,7 +2689,7 @@ if [ "$LOCAL_REHEARSAL" = true ]; then
   mkdir -- "$PERSISTENT_AGENT_DATA_ROOT"
 else
   mkdir -- "$RELEASE_ROOT/agent/data"
-  "$MOUNT_AUTHORITY" mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
+  invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
   PERSISTENT_ATTACHED_TO_RELEASE=true
   PERSISTENT_DETACHED=false
   write_mutation_state persistent-restored
@@ -2289,7 +2698,7 @@ fi
 # verify-agent-data-mount, including agent/data/sitemap-bundles byte evidence.
 INSTALL_FAILURE_POINT=verify-agent-data-mount
 if [ "$LOCAL_REHEARSAL" != true ]; then
-  "$MOUNT_AUTHORITY" findmnt --json --target "$RELEASE_ROOT/agent/data" > "$EVIDENCE_DIR/findmnt-after.json"
+  invoke_mount_authority findmnt --json --target "$RELEASE_ROOT/agent/data" > "$EVIDENCE_DIR/findmnt-after.json"
   verify_findmnt_file "$EVIDENCE_DIR/findmnt-after.json" \
     "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
 fi
