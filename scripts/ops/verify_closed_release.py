@@ -14,6 +14,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import stat
 import tarfile
 import tempfile
 import time
@@ -22,6 +23,9 @@ from typing import Any, Mapping
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 SIDECAR_RE = re.compile(r"^([0-9a-f]{64})  ([^\r\n]+)\n?$")
+FINDMNT_SOURCE_ROOT_RE = re.compile(
+    r"^(?P<device>[^\[\]]+)\[(?P<root>/[^\[\]]*)\]$"
+)
 REQUIRED_MEMBERS = frozenset(
     {
         "config/launch-indexing-policy.json",
@@ -270,6 +274,20 @@ def _verify_environment_authority(root: Path, authority: Path) -> dict[str, Any]
     }
 
 
+def _findmnt_device_matches_source(device: str, expected_source: Path) -> bool:
+    try:
+        device_stat = os.stat(device)
+        source_stat = os.stat(expected_source)
+    except OSError:
+        return False
+    if not stat.S_ISBLK(device_stat.st_mode):
+        return False
+    return (
+        os.major(device_stat.st_rdev) == os.major(source_stat.st_dev)
+        and os.minor(device_stat.st_rdev) == os.minor(source_stat.st_dev)
+    )
+
+
 def validate_findmnt_evidence(
     payload: Mapping[str, Any], *, expected_source: Path, expected_target: Path
 ) -> dict[str, Any]:
@@ -284,23 +302,42 @@ def validate_findmnt_evidence(
     options = filesystem.get("options")
     if not isinstance(observed_source, str) or not isinstance(observed_target, str):
         raise ValueError("findmnt source/target evidence is missing")
-    if Path(observed_source).resolve() != Path(expected_source).resolve():
-        raise ValueError("findmnt source does not match persistent authority")
+    expected_source_resolved = Path(expected_source).resolve()
+    observed_source_resolved = Path(observed_source).resolve()
+    bracketed_source = FINDMNT_SOURCE_ROOT_RE.fullmatch(observed_source)
+    bind_proven_by_source = False
+    if observed_source_resolved != expected_source_resolved:
+        if bracketed_source is None:
+            raise ValueError("findmnt source does not match persistent authority")
+        normalized_root = Path(bracketed_source.group("root")).resolve()
+        if normalized_root != expected_source_resolved:
+            raise ValueError("findmnt source does not match persistent authority")
+        if not _findmnt_device_matches_source(
+            bracketed_source.group("device"), expected_source_resolved
+        ):
+            raise ValueError("findmnt source device does not match persistent authority")
+        bind_proven_by_source = True
     if Path(observed_target).resolve() != Path(expected_target).resolve():
         raise ValueError("findmnt target does not match installed mountpoint")
-    option_values = (
+    raw_option_values = (
         set(options)
         if isinstance(options, list)
         else set(str(options).split(","))
         if isinstance(options, str)
         else set()
     )
-    if not {"rw", "bind"}.issubset(option_values):
+    raw_option_values.discard("")
+    option_values = set(raw_option_values)
+    if bind_proven_by_source:
+        option_values.add("bind")
+    if "rw" not in option_values or not ({"bind", "rbind"} & option_values):
         raise ValueError("findmnt options must prove rw bind mount")
     return {
         "source": observed_source,
+        "normalized_source": str(expected_source_resolved),
         "target": observed_target,
         "options": sorted(option_values),
+        "raw_options": sorted(raw_option_values),
     }
 
 

@@ -42,7 +42,8 @@ reset_mutable_evidence() {
     "$root/findmnt-recovery.json" \
     "$root/persistent-before.json" \
     "$root/persistent-after.json" \
-    "$root/persistent-recovery.json" || return 1
+    "$root/persistent-recovery.json" \
+    "$root/install-mutation-state.json" || return 1
   rm -rf -- \
     "$root/package" \
     "$root/staged" \
@@ -80,6 +81,7 @@ RECLAIMED_STALE_LOCKS=0
 LOCKED_EVIDENCE_DIR=''
 LOCK_EVIDENCE_ENABLED=false
 LOCK_TERMINAL_RECORDED=false
+PENDING_STALE_RECOVERY=false
 
 lock_spec() {
   local kind="$1"
@@ -333,7 +335,12 @@ prepare_evidence_dir() {
     fi
   fi
   [ "$LOCKED_EVIDENCE_DIR" = "$root" ] || die 'evidence-dir-lock-mismatch'
-  reset_mutable_evidence "$root" || die 'evidence-dir-reset-failed'
+  if [ -e "$root/install-mutation-state.json" ] \
+    || [ -L "$root/install-mutation-state.json" ]; then
+    PENDING_STALE_RECOVERY=true
+  else
+    reset_mutable_evidence "$root" || die 'evidence-dir-reset-failed'
+  fi
 }
 
 # Discover a valid evidence-dir token without allowing malformed options to
@@ -368,7 +375,12 @@ if [ -n "$DISCOVERED_EVIDENCE_DIR" ]; then
           "$DISCOVERY_LOCAL_REHEARSAL"; then
           LOCKED_EVIDENCE_DIR="$DISCOVERED_EVIDENCE_DIR"
           trap cleanup_lock_trap EXIT
-          reset_mutable_evidence "$DISCOVERED_EVIDENCE_DIR" 2>/dev/null || true
+          if [ -e "$DISCOVERED_EVIDENCE_DIR/install-mutation-state.json" ] \
+            || [ -L "$DISCOVERED_EVIDENCE_DIR/install-mutation-state.json" ]; then
+            PENDING_STALE_RECOVERY=true
+          else
+            reset_mutable_evidence "$DISCOVERED_EVIDENCE_DIR" 2>/dev/null || true
+          fi
         else
           discovery_lock_status=$?
           [ "$discovery_lock_status" -ne 10 ] || die 'install-evidence-locked'
@@ -461,22 +473,47 @@ prepare_evidence_dir "$EVIDENCE_DIR" "$LOCAL_REHEARSAL"
   || die 'external-environment-authority-required'
 [ -d "$RUNTIME_AUTHORITY" ] && [ ! -L "$RUNTIME_AUTHORITY" ] \
   || die 'external-runtime-authority-required'
-if python - "$ENVIRONMENT_AUTHORITY" <<'PY'
+PINNED_ENVIRONMENT_AUTHORITY=''
+for ((lock_index = 0; lock_index < ${#HELD_LOCK_DIRS[@]}; lock_index++)); do
+  if [ "${HELD_LOCK_KINDS[$lock_index]}" = evidence ]; then
+    PINNED_ENVIRONMENT_AUTHORITY="${HELD_LOCK_DIRS[$lock_index]}/env"
+    break
+  fi
+done
+[ -n "$PINNED_ENVIRONMENT_AUTHORITY" ] || die 'environment-authority-pin-failed'
+if ENVIRONMENT_AUTHORITY_SHA256="$(python - "$ENVIRONMENT_AUTHORITY" \
+  "$PINNED_ENVIRONMENT_AUTHORITY" <<'PY'
 from dotenv.parser import parse_stream
+from hashlib import sha256
+from io import StringIO
+import os
 from pathlib import Path
 import sys
 
 forbidden = {"INDEXING_UNLOCK_KEY", "SITEMAP_UNLOCK_KEY"}
-with Path(sys.argv[1]).open(encoding="utf-8") as stream:
-    for binding in parse_stream(stream):
-        if not binding.error and binding.key in forbidden and binding.value not in (None, ""):
-            raise SystemExit(3)
+raw = Path(sys.argv[1]).read_bytes()
+for binding in parse_stream(StringIO(raw.decode("utf-8"))):
+    if not binding.error and binding.key in forbidden and binding.value not in (None, ""):
+        raise SystemExit(3)
+pinned = Path(sys.argv[2])
+if pinned.parent.is_symlink() or not pinned.parent.is_dir():
+    raise SystemExit(4)
+with pinned.open("xb") as stream:
+    stream.write(raw)
+    stream.flush()
+    os.fsync(stream.fileno())
+os.chmod(pinned, 0o600)
+if pinned.is_symlink() or pinned.read_bytes() != raw:
+    raise SystemExit(4)
+if os.name != "nt" and pinned.stat().st_mode & 0o077:
+    raise SystemExit(4)
+print(sha256(raw).hexdigest())
 PY
-then
-  :
+  )"; then
+  [ -n "$ENVIRONMENT_AUTHORITY_SHA256" ] || die 'environment-authority-pin-failed'
 else
   environment_status=$?
-  [ "$environment_status" -eq 3 ] || die 'environment-authority-parse-failed'
+  [ "$environment_status" -eq 3 ] || die 'environment-authority-pin-failed'
   die 'unlock-keys-forbidden'
 fi
 if [ "$LOCAL_REHEARSAL" != true ]; then
@@ -524,6 +561,140 @@ PERSISTENT_NAME="$(basename -- "$PERSISTENT_AGENT_DATA_ROOT")"
 case "$PERSISTENT_NAME" in ''|.|..) die 'unsafe-persistent-root' ;; esac
 PERSISTENT_AGENT_DATA_ROOT="$PERSISTENT_PARENT/$PERSISTENT_NAME"
 [ ! -L "$PERSISTENT_AGENT_DATA_ROOT" ] || die 'persistent-root-symlink-forbidden'
+SNAPSHOT_BEFORE="$EVIDENCE_DIR/persistent-before.json"
+SNAPSHOT_AFTER="$EVIDENCE_DIR/persistent-after.json"
+SNAPSHOT_RECOVERY="$EVIDENCE_DIR/persistent-recovery.json"
+MUTATION_STATE="$EVIDENCE_DIR/install-mutation-state.json"
+
+write_mutation_state() {
+  local stage="$1"
+  python - "$MUTATION_STATE" "$stage" "$ATTEMPT_ID" "$$" <<'PY'
+import json
+import os
+from pathlib import Path
+import sys
+import tempfile
+
+path = Path(sys.argv[1])
+payload = {
+    "attempt_id": sys.argv[3],
+    "pid": int(sys.argv[4]),
+    "schema_version": 1,
+    "stage": sys.argv[2],
+}
+descriptor, name = tempfile.mkstemp(prefix=".install-mutation-state.", dir=path.parent)
+temporary = Path(name)
+try:
+    with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
+        descriptor = -1
+        json.dump(payload, stream, indent=2, sort_keys=True)
+        stream.write("\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary, path)
+finally:
+    if descriptor != -1:
+        os.close(descriptor)
+    temporary.unlink(missing_ok=True)
+PY
+}
+
+clear_mutation_state() {
+  rm -f -- "$MUTATION_STATE"
+}
+
+tree_matches_snapshot() {
+  local root="$1"
+  local snapshot="$2"
+  python - "$root" "$snapshot" <<'PY'
+from hashlib import sha256
+import json
+from pathlib import Path
+import sys
+
+root = Path(sys.argv[1])
+snapshot = Path(sys.argv[2])
+if root.is_symlink() or not root.is_dir() or snapshot.is_symlink() or not snapshot.is_file():
+    raise SystemExit(1)
+expected = json.loads(snapshot.read_text(encoding="utf-8"))
+observed = {}
+for path in sorted(root.rglob("*")):
+    if path.is_symlink():
+        raise SystemExit(1)
+    if path.is_file():
+        raw = path.read_bytes()
+        observed[path.relative_to(root).as_posix()] = {
+            "sha256": sha256(raw).hexdigest(),
+            "size": len(raw),
+        }
+raise SystemExit(0 if observed == expected else 1)
+PY
+}
+
+reconcile_stale_install_attempt() {
+  [ "$LOCAL_REHEARSAL" = true ] || return 1
+  [ -f "$MUTATION_STATE" ] && [ ! -L "$MUTATION_STATE" ] || return 1
+  local state stage stale_pid stale_attempt stale_stage stale_stage_owner stale_old current_data
+  state="$(python - "$MUTATION_STATE" <<'PY'
+import json
+from pathlib import Path
+import sys
+
+try:
+    payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+    if payload.get("schema_version") != 1:
+        raise ValueError
+    stage = str(payload["stage"])
+    pid = int(payload["pid"])
+    attempt_id = str(payload["attempt_id"])
+    if not attempt_id or pid <= 0:
+        raise ValueError
+except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+    raise SystemExit(1)
+print(f"{stage}\t{pid}\t{attempt_id}")
+PY
+  )" || return 1
+  IFS=$'\t' read -r stage stale_pid stale_attempt <<< "$state"
+  case "$stage" in
+    detach-agent-data-armed|persistent-detached) ;;
+    *) return 1 ;;
+  esac
+  stale_stage="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage.$stale_pid"
+  stale_stage_owner="$stale_stage.owner"
+  stale_old="$RELEASE_PARENT/.${RELEASE_NAME}.closed-old.$stale_pid"
+  [ ! -e "$stale_old" ] && [ ! -L "$stale_old" ] || return 1
+  [ -d "$RELEASE_ROOT" ] && [ ! -L "$RELEASE_ROOT" ] || return 1
+  current_data="$RELEASE_ROOT/agent/data"
+  [ ! -L "$current_data" ] && [ ! -L "$PERSISTENT_AGENT_DATA_ROOT" ] || return 1
+  if [ -d "$current_data" ] \
+    && [ -d "$PERSISTENT_AGENT_DATA_ROOT" ] \
+    && [ -z "$(find "$PERSISTENT_AGENT_DATA_ROOT" -mindepth 1 -print -quit)" ] \
+    && tree_matches_snapshot "$current_data" "$SNAPSHOT_BEFORE"; then
+    :
+  elif [ ! -e "$current_data" ] \
+    && [ ! -L "$current_data" ] \
+    && [ -d "$PERSISTENT_AGENT_DATA_ROOT" ] \
+    && tree_matches_snapshot "$PERSISTENT_AGENT_DATA_ROOT" "$SNAPSHOT_BEFORE"; then
+    mkdir -p -- "$(dirname -- "$current_data")" || return 1
+    mv -- "$PERSISTENT_AGENT_DATA_ROOT" "$current_data" || return 1
+    mkdir -- "$PERSISTENT_AGENT_DATA_ROOT" || return 1
+    tree_matches_snapshot "$current_data" "$SNAPSHOT_BEFORE" || return 1
+  else
+    return 1
+  fi
+  if [ -e "$stale_stage" ] || [ -L "$stale_stage" ]; then
+    [ -d "$stale_stage" ] && [ ! -L "$stale_stage" ] || return 1
+    [ -f "$stale_stage_owner" ] && [ ! -L "$stale_stage_owner" ] \
+      && grep -Fxq "$stale_attempt" "$stale_stage_owner" || return 1
+    rm -rf -- "$stale_stage" || return 1
+  fi
+  if [ -e "$stale_stage_owner" ] || [ -L "$stale_stage_owner" ]; then
+    [ -f "$stale_stage_owner" ] && [ ! -L "$stale_stage_owner" ] \
+      && grep -Fxq "$stale_attempt" "$stale_stage_owner" || return 1
+    rm -f -- "$stale_stage_owner" || return 1
+  fi
+  clear_mutation_state
+}
 
 record_install_lock() {
   local status="$1"
@@ -589,6 +760,15 @@ for target_request in "${TARGET_LOCK_ORDER[@]}"; do
     die 'install-lock-acquire-failed'
   fi
 done
+if [ "$PENDING_STALE_RECOVERY" = true ]; then
+  if ! reconcile_stale_install_attempt; then
+    record_install_lock recovery-required 2 || true
+    LOCK_TERMINAL_RECORDED=true
+    die 'stale-install-recovery-required'
+  fi
+  reset_mutable_evidence "$EVIDENCE_DIR" || die 'evidence-dir-reset-failed'
+  PENDING_STALE_RECOVERY=false
+fi
 record_install_lock acquired 0
 
 case "${VL360_INSTALL_FAIL_AFTER:-}" in
@@ -599,12 +779,31 @@ esac
   || die 'live-failure-injection-forbidden'
 
 PINNED_ARCHIVE_ROOT=''
+STAGING_ROOT=''
+OLD_ROOT=''
+STAGING_OWNER_MARKER=''
+STAGING_CLEANUP_ARMED=false
 cleanup_pinned_archive() {
   [ -n "$PINNED_ARCHIVE_ROOT" ] || return 0
   rm -rf -- "$PINNED_ARCHIVE_ROOT" >/dev/null 2>&1 || true
   PINNED_ARCHIVE_ROOT=''
 }
+cleanup_private_staging() {
+  [ "$STAGING_CLEANUP_ARMED" = true ] || return 0
+  local expected="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage.$$"
+  [ "$STAGING_ROOT" = "$expected" ] || return 1
+  [ "$STAGING_OWNER_MARKER" = "$STAGING_ROOT.owner" ] || return 1
+  [ -f "$STAGING_OWNER_MARKER" ] && [ ! -L "$STAGING_OWNER_MARKER" ] \
+    && grep -Fxq "$ATTEMPT_ID" "$STAGING_OWNER_MARKER" || return 1
+  if [ -e "$STAGING_ROOT" ] || [ -L "$STAGING_ROOT" ]; then
+    [ -d "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ] || return 1
+    rm -rf -- "$STAGING_ROOT" >/dev/null 2>&1 || return 1
+  fi
+  rm -f -- "$STAGING_OWNER_MARKER" >/dev/null 2>&1 || return 1
+  STAGING_CLEANUP_ARMED=false
+}
 cleanup_attempt_authorities() {
+  cleanup_private_staging || true
   cleanup_pinned_archive
   release_all_install_locks || true
 }
@@ -626,9 +825,7 @@ python "$VERIFY_SCRIPT" \
 
 STAGING_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-stage.$$"
 OLD_ROOT="$RELEASE_PARENT/.${RELEASE_NAME}.closed-old.$$"
-SNAPSHOT_BEFORE="$EVIDENCE_DIR/persistent-before.json"
-SNAPSHOT_AFTER="$EVIDENCE_DIR/persistent-after.json"
-SNAPSHOT_RECOVERY="$EVIDENCE_DIR/persistent-recovery.json"
+STAGING_OWNER_MARKER="$STAGING_ROOT.owner"
 UNIT_ATTEMPT_ROOT=''
 UNIT_BACKUP_ROOT=''
 UNIT_MUTATION_MARKER=''
@@ -638,7 +835,11 @@ for stale_attempt in "$EVIDENCE_DIR"/.systemd-unit-attempt.*; do
   [ -d "$stale_attempt" ] || continue
   [ -e "$stale_attempt/armed" ] || rm -rf -- "$stale_attempt"
 done
-[ ! -e "$STAGING_ROOT" ] && [ ! -e "$OLD_ROOT" ] || die 'staging-path-exists'
+[ ! -e "$STAGING_ROOT" ] && [ ! -L "$STAGING_ROOT" ] \
+  && [ ! -e "$STAGING_OWNER_MARKER" ] && [ ! -L "$STAGING_OWNER_MARKER" ] \
+  && [ ! -e "$OLD_ROOT" ] && [ ! -L "$OLD_ROOT" ] || die 'staging-path-exists'
+STAGING_CLEANUP_ARMED=true
+printf '%s\n' "$ATTEMPT_ID" > "$STAGING_OWNER_MARKER"
 mkdir -- "$STAGING_ROOT"
 python "$VERIFY_SCRIPT" \
   --archive "$PINNED_ARCHIVE" --archive-digest-file "$PINNED_ARCHIVE_DIGEST_FILE" \
@@ -781,19 +982,24 @@ PY
 }
 
 materialize_environment_authority() {
-  python - "$ENVIRONMENT_AUTHORITY" "$RELEASE_ROOT/.env" <<'PY'
+  python - "$PINNED_ENVIRONMENT_AUTHORITY" "$RELEASE_ROOT/.env" \
+    "$ENVIRONMENT_AUTHORITY_SHA256" <<'PY'
+from hashlib import sha256
 import os
 from pathlib import Path
 import sys
 import tempfile
 
-authority = Path(sys.argv[1])
+pinned = Path(sys.argv[1])
 target = Path(sys.argv[2])
-if authority.is_symlink() or not authority.is_file():
-    raise SystemExit("environment authority is not a real file")
+expected_sha256 = sys.argv[3]
+if pinned.is_symlink() or not pinned.is_file():
+    raise SystemExit("pinned environment authority is not a real file")
 if target.exists() or target.is_symlink():
     raise SystemExit("closed release unexpectedly contains environment material")
-raw = authority.read_bytes()
+raw = pinned.read_bytes()
+if sha256(raw).hexdigest() != expected_sha256:
+    raise SystemExit("pinned environment authority digest mismatch")
 descriptor, name = tempfile.mkstemp(prefix=".env.", suffix=".tmp", dir=target.parent)
 temporary = Path(name)
 try:
@@ -1060,6 +1266,7 @@ install_recovery() {
       && [ "$persistent_restored" = true ] \
       && [ "$systemd_units_restored" = true ]; then
       write_recovery_evidence rolled-back true true true || true
+      clear_mutation_state || true
     else
       write_recovery_evidence rollback-failed "$root_restored" \
         "$persistent_restored" "$systemd_units_restored" || true
@@ -1123,6 +1330,7 @@ else
 fi
 
 # detach-agent-data
+write_mutation_state detach-agent-data-armed
 MUTATION_STARTED=true
 INSTALL_FAILURE_POINT=detach-agent-data
 if [ "$LOCAL_REHEARSAL" = true ]; then
@@ -1140,16 +1348,21 @@ else
 fi
 PERSISTENT_DETACHED=true
 PERSISTENT_ATTACHED_TO_RELEASE=false
+write_mutation_state persistent-detached
 fail_after detach-agent-data
 
 # swap-release-root
+write_mutation_state swap-release-root-armed
 INSTALL_FAILURE_POINT=swap-release-root
 [ -d "$RELEASE_ROOT" ] || die 'existing-release-root-required'
 mv -- "$RELEASE_ROOT" "$OLD_ROOT"
 OLD_ROOT_READY=true
 mv -- "$STAGING_ROOT" "$RELEASE_ROOT"
+STAGING_CLEANUP_ARMED=false
+rm -f -- "$STAGING_OWNER_MARKER"
 mkdir -p -- "$RELEASE_ROOT/agent"
 rm -rf -- "$RELEASE_ROOT/agent/data"
+write_mutation_state root-swapped
 fail_after swap-release-root
 
 INSTALL_FAILURE_POINT=materialize-environment-authority
@@ -1161,6 +1374,7 @@ if [ "$LOCAL_REHEARSAL" = true ]; then
   mv -- "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
   PERSISTENT_ATTACHED_TO_RELEASE=true
   PERSISTENT_DETACHED=false
+  write_mutation_state persistent-restored
   fail_after restore-bind-agent-data
   mkdir -- "$PERSISTENT_AGENT_DATA_ROOT"
 else
@@ -1168,6 +1382,7 @@ else
   "$MOUNT_AUTHORITY" mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
   PERSISTENT_ATTACHED_TO_RELEASE=true
   PERSISTENT_DETACHED=false
+  write_mutation_state persistent-restored
 fi
 
 # verify-agent-data-mount, including agent/data/sitemap-bundles byte evidence.
@@ -1197,7 +1412,8 @@ python "$VERIFY_SCRIPT" \
   --installed-root "$RELEASE_ROOT" --persistent-agent-data-root "$PERSISTENT_AGENT_DATA_ROOT" \
   --verify-config-ingress-unit-digests --verify-persistent-agent-data-mount \
   --systemd-unit-root "$SYSTEMD_UNIT_DESTINATION" --verify-systemd-unit-destination \
-  --environment-authority "$ENVIRONMENT_AUTHORITY" --verify-environment-authority \
+  --environment-authority "$PINNED_ENVIRONMENT_AUTHORITY" \
+  --verify-environment-authority \
   "${VERIFY_MOUNT_ARGS[@]}" \
   --require-closed --evidence-dir "$EVIDENCE_DIR/installed"
 
@@ -1222,6 +1438,7 @@ Path(sys.argv[1]).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n
 PY
 
 INSTALL_COMPLETE=true
+clear_mutation_state
 if disarm_systemd_unit_attempt; then
   record_systemd_unit_cleanup passed 0
 else

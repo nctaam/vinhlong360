@@ -538,6 +538,60 @@ def test_restore_bind_failure_after_local_move_rolls_back_without_data_loss(
     assert recovery["root_restored"] is True
 
 
+def test_sigkill_after_persistent_detach_is_recovered_before_retry_reset(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "sigkill-after-detach"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, _, _, _, _, values = prepared
+    persistent_before = _snapshot_tree(release / "agent" / "data")
+    detached = case_root / "detached"
+    bash_env = case_root / "pause-after-detach.bash"
+    bash_env.write_text(
+        "mv() {\n"
+        "  /usr/bin/mv \"$@\"\n"
+        "  status=$?\n"
+        f"  if [ \"$2\" = '{_bash_path(release / 'agent' / 'data')}' ] "
+        f"&& [ \"$3\" = '{_bash_path(persistent)}' ]; then\n"
+        f"    : > '{_bash_path(detached)}'\n"
+        "    kill -9 \"$$\"\n"
+        "  fi\n"
+        "  return \"$status\"\n"
+        "}\n",
+        encoding="ascii",
+    )
+    env = os.environ.copy()
+    env.update(values)
+    env["BASH_ENV"] = _bash_path(bash_env)
+    first = subprocess.Popen(
+        _installer_command(closed_package, case_root, prepared),
+        cwd=ROOT,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_path(detached)
+        first_stdout, first_stderr = first.communicate(timeout=30)
+    finally:
+        if first.poll() is None:
+            first.kill()
+
+    assert first.returncode != 0, first_stderr + first_stdout
+    assert not (release / "agent" / "data").exists()
+    assert _snapshot_tree(persistent) == persistent_before
+
+    retry = _invoke_installer(closed_package, case_root, prepared)
+
+    assert retry.returncode == 0, retry.stderr + retry.stdout
+    assert _snapshot_tree(release / "agent" / "data") == persistent_before
+    assert _snapshot_tree(persistent) == {}
+    assert not list(release.parent.glob(f".{release.name}.closed-*"))
+
+
 def test_failed_recovery_umount_preserves_new_and_old_roots_and_persistent_bytes(
     tmp_path: Path, closed_package
 ):
@@ -769,9 +823,84 @@ def test_findmnt_validation_requires_expected_source_target_and_rw_bind_options(
         expected_target=target,
     )
     assert evidence["options"] == ["bind", "rw"]
+    rbind_evidence = module.validate_findmnt_evidence(
+        {"filesystems": [{**valid["filesystems"][0], "options": "rw,rbind"}]},
+        expected_source=source,
+        expected_target=target,
+    )
+    assert rbind_evidence["options"] == ["rbind", "rw"]
     with pytest.raises(ValueError, match="options"):
         module.validate_findmnt_evidence(
             {"filesystems": [{**valid["filesystems"][0], "options": "rw"}]},
+            expected_source=source,
+            expected_target=target,
+        )
+
+
+def test_findmnt_validation_normalizes_util_linux_bind_source_shape(monkeypatch):
+    module = _load_module("task5_findmnt_realistic_bind", VERIFY)
+    source = Path("/var/lib/vl360/agent/data")
+    target = Path("/opt/vl360/current/agent/data")
+    observed_source = f"/dev/mapper/vl-root[{source.as_posix()}]"
+    monkeypatch.setattr(
+        module,
+        "_findmnt_device_matches_source",
+        lambda device, expected: device == "/dev/mapper/vl-root"
+        and expected == source.resolve(),
+    )
+    realistic = {
+        "filesystems": [
+            {
+                "options": "rw,relatime",
+                "source": observed_source,
+                "target": target.as_posix(),
+            }
+        ]
+    }
+
+    evidence = module.validate_findmnt_evidence(
+        realistic,
+        expected_source=source,
+        expected_target=target,
+    )
+
+    assert evidence["source"] == observed_source
+    assert evidence["normalized_source"] == str(source.resolve())
+    assert evidence["options"] == ["bind", "relatime", "rw"]
+    assert evidence["raw_options"] == ["relatime", "rw"]
+    with pytest.raises(ValueError, match="source"):
+        module.validate_findmnt_evidence(
+            {
+                "filesystems": [
+                    {
+                        **realistic["filesystems"][0],
+                        "source": "/dev/mapper/vl-root[/var/lib/vl360/other]",
+                    }
+                ]
+            },
+            expected_source=source,
+            expected_target=target,
+        )
+    with pytest.raises(ValueError, match="device"):
+        module.validate_findmnt_evidence(
+            {
+                "filesystems": [
+                    {
+                        **realistic["filesystems"][0],
+                        "source": f"/dev/mapper/other[{source.as_posix()}]",
+                    }
+                ]
+            },
+            expected_source=source,
+            expected_target=target,
+        )
+    with pytest.raises(ValueError, match="options"):
+        module.validate_findmnt_evidence(
+            {
+                "filesystems": [
+                    {**realistic["filesystems"][0], "options": "ro,relatime"}
+                ]
+            },
             expected_source=source,
             expected_target=target,
         )
@@ -849,6 +978,58 @@ def test_installer_records_failed_authority_hook_exit_and_stops_before_mutation(
         "python-dependencies": 0,
         "nuxt-production-dependencies": 19,
     }
+
+
+@pytest.mark.parametrize(
+    ("failure_kind", "expected_code"),
+    (("verification", 61), ("extraction", 62), ("dependency-hook", 19)),
+)
+def test_premutation_failure_removes_private_staging_root(
+    tmp_path: Path,
+    closed_package,
+    failure_kind: str,
+    expected_code: int,
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / f"staging-cleanup-{failure_kind}"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, _, _, _, _, _ = prepared
+    env_overrides = None
+    if failure_kind == "dependency-hook":
+        hook = case_root / "runtime" / "python-hook.sh"
+        hook.write_text("#!/usr/bin/env bash\nexit 19\n", encoding="ascii")
+        hook.chmod(0o755)
+    else:
+        bash_env = case_root / "premutation-failure.bash"
+        if failure_kind == "verification":
+            count_file = case_root / "verify-count"
+            bash_env.write_text(
+                "python() {\n"
+                f"  if [ \"$1\" = '{_bash_path(VERIFY)}' ]; then\n"
+                f"    count=$(cat '{_bash_path(count_file)}' 2>/dev/null || printf 0)\n"
+                "    count=$((count + 1))\n"
+                f"    printf '%s\\n' \"$count\" > '{_bash_path(count_file)}'\n"
+                "    [ \"$count\" -ne 2 ] || return 61\n"
+                "  fi\n"
+                "  command python \"$@\"\n"
+                "}\n",
+                encoding="ascii",
+            )
+        else:
+            bash_env.write_text("tar() { return 62; }\n", encoding="ascii")
+        env_overrides = {"BASH_ENV": _bash_path(bash_env)}
+
+    result = _invoke_installer(
+        closed_package,
+        case_root,
+        prepared,
+        env_overrides=env_overrides,
+    )
+
+    assert result.returncode == expected_code, result.stderr + result.stdout
+    assert not list(release.parent.glob(f".{release.name}.closed-stage.*"))
+    assert not list(release.parent.glob(f".{release.name}.closed-old.*"))
 
 
 def test_installer_extracts_only_pinned_verified_archive_bytes(
@@ -1687,6 +1868,51 @@ def test_success_materializes_external_environment_without_packaging_or_logging_
     for path in evidence.rglob("*"):
         if path.is_file():
             assert b"SAFE_LOCAL=1" not in path.read_bytes()
+
+
+def test_environment_authority_bytes_are_pinned_before_dependency_hooks(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Git Bash is unavailable")
+    case_root = tmp_path / "environment-authority-race"
+    prepared = _prepare_case(case_root, closed_package)
+    release, _, evidence, _, _, _, values = prepared
+    external = case_root / "external.env"
+    admitted = external.read_bytes()
+    entered = case_root / "hook-entered"
+    release_hook = case_root / "release-hook"
+    hook = case_root / "runtime" / "python-hook.sh"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        f": > '{_bash_path(entered)}'\n"
+        f"while [ ! -f '{_bash_path(release_hook)}' ]; do sleep 0.05; done\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o755)
+    env = os.environ.copy()
+    env.update(values)
+    process = subprocess.Popen(
+        _installer_command(closed_package, case_root, prepared),
+        cwd=ROOT,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        _wait_for_path(entered)
+        external.write_text("INDEXING_UNLOCK_KEY=opened\n", encoding="ascii")
+    finally:
+        release_hook.touch()
+        stdout, stderr = process.communicate(timeout=60)
+
+    assert process.returncode == 0, stderr + stdout
+    assert (release / ".env").read_bytes() == admitted
+    assert b"opened" not in (release / ".env").read_bytes()
+    for path in evidence.rglob("*"):
+        if path.is_file():
+            assert b"opened" not in path.read_bytes()
 
 
 @pytest.mark.parametrize(
