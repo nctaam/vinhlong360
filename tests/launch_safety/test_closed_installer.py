@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import shlex
 import subprocess
+import sys
 import tarfile
 import time
 
@@ -24,7 +25,21 @@ ROOT = Path(__file__).resolve().parents[2]
 OPS = ROOT / "scripts" / "ops"
 INSTALL = OPS / "install_closed_release.sh"
 VERIFY = OPS / "verify_closed_release.py"
-BASH = Path(r"C:\Program Files\Git\bin\bash.exe")
+
+
+def _find_bash() -> Path:
+    candidates = (
+        os.environ.get("GIT_BASH"),
+        r"C:\Program Files\Git\bin\bash.exe",
+        shutil.which("bash"),
+    )
+    for candidate in candidates:
+        if candidate and Path(candidate).is_file():
+            return Path(candidate)
+    return Path("bash-unavailable")
+
+
+BASH = _find_bash()
 RUNBOOK = ROOT / "docs" / "runbooks" / "launch-safety-rollback.md"
 SYSTEMD_UNIT_NAMES = (
     "vl-agent.service",
@@ -56,6 +71,81 @@ def _snapshot_tree(root: Path) -> dict[str, bytes]:
         for path in sorted(root.rglob("*"))
         if path.is_file()
     }
+
+
+def _shell_function(source: str, name: str) -> str:
+    start = source.index(f"{name}() {{")
+    next_marker = {
+        "verify_pinned_executable": "\n\nATTEMPT_ID=",
+        "invoke_pinned_executable": "\n\ninvoke_mount_authority()",
+    }[name]
+    end = source.index(next_marker, start)
+    return source[start:end]
+
+
+def _pinned_executor_python(source: str) -> str:
+    delimiter = "VL360_PINNED_EXECUTOR_PY"
+    start = source.index(f"<<'{delimiter}'")
+    start = source.index("\n", start) + 1
+    end = source.index(f"\n{delimiter}\n", start)
+    return source[start:end]
+
+
+def _invoke_standalone_pinned_executor(
+    pin_root: Path,
+    role: str,
+    digest: str,
+    args: list[str],
+    *,
+    local_rehearsal: bool,
+    env_overrides: dict[str, str] | None = None,
+    stdin: str | None = None,
+) -> subprocess.CompletedProcess[str]:
+    source = INSTALL.read_text(encoding="utf-8")
+    pin_paths = {
+        "mount": pin_root / "mount",
+        "python-dependency": pin_root / "python-dependency",
+        "nuxt-dependency": pin_root / "nuxt-dependency",
+        "unit-verify": pin_root / "unit-verify",
+    }
+    assignments = "\n".join(
+        (
+            f"PINNED_MOUNT_AUTHORITY={shlex.quote(_bash_path(pin_paths['mount']))}",
+            "MOUNT_AUTHORITY_SHA256=unused",
+            "PINNED_PYTHON_DEPENDENCY_HOOK="
+            f"{shlex.quote(_bash_path(pin_paths['python-dependency']))}",
+            "PYTHON_DEPENDENCY_HOOK_SHA256=unused",
+            "PINNED_NUXT_DEPENDENCY_HOOK="
+            f"{shlex.quote(_bash_path(pin_paths['nuxt-dependency']))}",
+            "NUXT_DEPENDENCY_HOOK_SHA256=unused",
+            "PINNED_UNIT_VERIFY_HOOK="
+            f"{shlex.quote(_bash_path(pin_paths['unit-verify']))}",
+            "UNIT_VERIFY_HOOK_SHA256=unused",
+            f"EXECUTABLE_PIN_ROOT={shlex.quote(_bash_path(pin_root))}",
+            f"LOCAL_REHEARSAL={'true' if local_rehearsal else 'false'}",
+        )
+    )
+    script = "\n".join(
+        (
+            "set -u",
+            _shell_function(source, "verify_pinned_executable"),
+            _shell_function(source, "invoke_pinned_executable"),
+            assignments,
+            f"invoke_pinned_executable {shlex.quote(role)} {shlex.quote(digest)} -- \"$@\"",
+        )
+    )
+    env = os.environ.copy()
+    if env_overrides:
+        env.update(env_overrides)
+    return subprocess.run(
+        [str(BASH), "-c", script, "vl360-pinned-test", *args],
+        cwd=ROOT,
+        env=env,
+        input=stdin,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
 
 
 def _unit_attempt_artifacts(evidence: Path) -> list[Path]:
@@ -1616,6 +1706,210 @@ def test_pinned_executable_tamper_fails_closed_before_next_hook_invocation(
     for path in evidence.rglob("*"):
         if path.is_file():
             assert b"executable-pin-tampered" not in path.read_bytes()
+
+
+def test_linux_pinned_executor_copies_and_hashes_open_descriptor_before_fd_exec():
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = _pinned_executor_python(source)
+
+    assert 'ROLE_FILENAMES = {' in helper
+    for role in ("mount", "python-dependency", "nuxt-dependency", "unit-verify"):
+        assert f'"{role}": "{role}"' in helper
+    assert "os.O_NOFOLLOW" in helper
+    assert "dir_fd=pin_root_fd" in helper
+    assert "chunk = os.read(pin_fd" in helper
+    assert helper.index("digest.update(chunk)") < helper.index(
+        "write_all(memfd_fd, chunk)"
+    )
+    assert helper.index("digest.hexdigest() != expected_sha256") < helper.index(
+        "    seal_memfd(memfd_fd)"
+    )
+    assert "os.execve(memfd_fd, argv, env)" in helper
+    assert "os.execve(pin_path" not in helper
+
+
+def test_linux_pinned_executor_requires_memfd_sealing_fd_exec_and_safe_shebang():
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = _pinned_executor_python(source)
+
+    assert 'sys.platform.startswith("linux")' in helper
+    assert 'hasattr(os, "memfd_create")' in helper
+    assert "os.execve not in os.supports_fd" in helper
+    for seal in ("F_SEAL_WRITE", "F_SEAL_GROW", "F_SEAL_SHRINK", "F_SEAL_SEAL"):
+        assert seal in helper
+    assert "os.set_inheritable(memfd_fd, True)" in helper
+    assert 'b"#!/usr/bin/env"' in helper
+    assert "executable-authority-shebang-forbidden" in helper
+    assert "executable-authority-fd-exec-unavailable" in helper
+
+
+def test_windows_local_pinned_executor_preserves_process_contract(tmp_path: Path):
+    if os.name != "nt" or not BASH.is_file():
+        pytest.skip("Windows Git Bash is unavailable")
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    hook = pin_root / "python-dependency"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        "IFS= read -r payload\n"
+        "printf 'arg=%s\\nenv=%s\\nstdin=%s\\n' \"$1\" \"$PIN_TEST_ENV\" \"$payload\"\n"
+        "printf 'stderr=%s\\n' \"$2\" >&2\n"
+        "exit 37\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o500)
+    digest = hashlib.sha256(hook.read_bytes()).hexdigest()
+
+    result = _invoke_standalone_pinned_executor(
+        pin_root,
+        "python-dependency",
+        digest,
+        ["first argument", "second argument"],
+        local_rehearsal=True,
+        env_overrides={"PIN_TEST_ENV": "preserved-env"},
+        stdin="preserved-stdin\n",
+    )
+
+    assert result.returncode == 37, result.stderr + result.stdout
+    assert result.stdout.splitlines() == [
+        "arg=first argument",
+        "env=preserved-env",
+        "stdin=preserved-stdin",
+    ]
+    assert result.stderr == "stderr=second argument\n"
+
+
+def test_windows_local_pinned_executor_rejects_digest_and_unknown_role(
+    tmp_path: Path,
+):
+    if os.name != "nt" or not BASH.is_file():
+        pytest.skip("Windows Git Bash is unavailable")
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    hook = pin_root / "python-dependency"
+    hook.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="ascii")
+    hook.chmod(0o500)
+
+    mismatch = _invoke_standalone_pinned_executor(
+        pin_root,
+        "python-dependency",
+        "0" * 64,
+        [],
+        local_rehearsal=True,
+    )
+    unknown = _invoke_standalone_pinned_executor(
+        pin_root,
+        "attacker-path",
+        hashlib.sha256(hook.read_bytes()).hexdigest(),
+        [],
+        local_rehearsal=True,
+    )
+
+    assert mismatch.returncode == 126
+    assert "executable-authority-digest-mismatch" in mismatch.stderr
+    assert unknown.returncode == 126
+    assert "executable-authority-role-invalid" in unknown.stderr
+
+
+def test_windows_nonlocal_pinned_executor_has_no_path_fallback(tmp_path: Path):
+    if os.name != "nt" or not BASH.is_file():
+        pytest.skip("Windows Git Bash is unavailable")
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    hook = pin_root / "python-dependency"
+    marker = tmp_path / "executed"
+    hook.write_text(
+        "#!/usr/bin/env bash\n"
+        f": > '{_bash_path(marker)}'\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o500)
+
+    result = _invoke_standalone_pinned_executor(
+        pin_root,
+        "python-dependency",
+        hashlib.sha256(hook.read_bytes()).hexdigest(),
+        [],
+        local_rehearsal=False,
+    )
+
+    assert result.returncode == 126
+    assert "executable-authority-windows-fallback-forbidden" in result.stderr
+    assert not marker.exists()
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux fd exec only")
+@pytest.mark.parametrize(
+    ("digest_override", "shebang", "expected_error"),
+    (
+        ("0" * 64, "#!/bin/sh", "executable-authority-digest-mismatch"),
+        (None, "#!/usr/bin/env sh", "executable-authority-shebang-forbidden"),
+    ),
+)
+def test_linux_pinned_executor_fails_closed_on_digest_and_shebang(
+    tmp_path: Path,
+    digest_override: str | None,
+    shebang: str,
+    expected_error: str,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    hook = pin_root / "python-dependency"
+    hook.write_text(f"{shebang}\nprintf safe-output\\n", encoding="ascii")
+    hook.chmod(0o500)
+    digest = digest_override or hashlib.sha256(hook.read_bytes()).hexdigest()
+
+    result = _invoke_standalone_pinned_executor(
+        pin_root,
+        "python-dependency",
+        digest,
+        [],
+        local_rehearsal=False,
+    )
+
+    assert result.returncode == 126
+    assert expected_error in result.stderr
+    assert "safe-output" not in result.stdout
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux fd exec only")
+def test_linux_pinned_executor_preserves_args_env_stdin_output_and_exit(
+    tmp_path: Path,
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    pin_root = tmp_path / "pins"
+    pin_root.mkdir(mode=0o700)
+    hook = pin_root / "python-dependency"
+    hook.write_text(
+        "#!/bin/sh\n"
+        "IFS= read -r payload\n"
+        "printf 'arg=%s\\nenv=%s\\nstdin=%s\\n' \"$1\" \"$PIN_TEST_ENV\" \"$payload\"\n"
+        "printf 'stderr=%s\\n' \"$2\" >&2\n"
+        "exit 37\n",
+        encoding="ascii",
+    )
+    hook.chmod(0o500)
+
+    result = _invoke_standalone_pinned_executor(
+        pin_root,
+        "python-dependency",
+        hashlib.sha256(hook.read_bytes()).hexdigest(),
+        ["first argument", "second argument"],
+        local_rehearsal=False,
+        env_overrides={"PIN_TEST_ENV": "preserved-env"},
+        stdin="preserved-stdin\n",
+    )
+
+    assert result.returncode == 37, result.stderr + result.stdout
+    assert result.stdout.splitlines() == [
+        "arg=first argument",
+        "env=preserved-env",
+        "stdin=preserved-stdin",
+    ]
+    assert result.stderr == "stderr=second argument\n"
 
 
 def test_installer_records_failed_authority_hook_exit_and_stops_before_mutation(

@@ -2019,21 +2019,208 @@ if [ "$LOCAL_REHEARSAL" != true ]; then
 fi
 
 invoke_pinned_executable() {
-  local path="$1"
+  local role="$1"
   local expected_sha256="$2"
+  local path platform_name executor_source
   shift 2
-  if ! verify_pinned_executable "$path" "$expected_sha256"; then
-    printf 'install_closed_release: executable-authority-digest-mismatch\n' >&2
+  [ "${1:-}" = -- ] || {
+    printf 'install_closed_release: executable-authority-arguments-invalid\n' >&2
+    return 126
+  }
+  shift
+  case "$role" in
+    mount) path="$PINNED_MOUNT_AUTHORITY" ;;
+    python-dependency) path="$PINNED_PYTHON_DEPENDENCY_HOOK" ;;
+    nuxt-dependency) path="$PINNED_NUXT_DEPENDENCY_HOOK" ;;
+    unit-verify) path="$PINNED_UNIT_VERIFY_HOOK" ;;
+    *)
+      printf 'install_closed_release: executable-authority-role-invalid\n' >&2
+      return 126
+      ;;
+  esac
+  [ -n "$path" ] || {
+    printf 'install_closed_release: executable-authority-role-unavailable\n' >&2
+    return 126
+  }
+  platform_name="$(python -c 'import os; print(os.name)')" || {
+    printf 'install_closed_release: executable-authority-platform-unavailable\n' >&2
+    return 126
+  }
+  if [ "$platform_name" = nt ]; then
+    if [ "$LOCAL_REHEARSAL" != true ]; then
+      printf 'install_closed_release: executable-authority-windows-fallback-forbidden\n' >&2
+      return 126
+    fi
+    if ! verify_pinned_executable "$path" "$expected_sha256"; then
+      printf 'install_closed_release: executable-authority-digest-mismatch\n' >&2
+      return 126
+    fi
+    "$path" "$@"
+    return $?
+  fi
+  if [ "$platform_name" != posix ]; then
+    printf 'install_closed_release: executable-authority-fd-exec-unavailable\n' >&2
     return 126
   fi
-  "$path" "$@"
+  IFS= read -r -d '' executor_source <<'VL360_PINNED_EXECUTOR_PY' || true
+from hashlib import sha256
+import fcntl
+import os
+import stat
+import sys
+
+
+ROLE_FILENAMES = {
+    "mount": "mount",
+    "python-dependency": "python-dependency",
+    "nuxt-dependency": "nuxt-dependency",
+    "unit-verify": "unit-verify",
+}
+APPROVED_SHEBANGS = {
+    b"#!/bin/bash",
+    b"#!/bin/sh",
+    b"#!/usr/bin/bash",
+    b"#!/usr/bin/python3",
+    b"#!/usr/local/bin/python3",
+}
+
+
+def fail(reason):
+    print(f"install_closed_release: {reason}", file=sys.stderr)
+    raise SystemExit(126)
+
+
+def require_linux_fd_exec():
+    seals = (
+        "F_ADD_SEALS",
+        "F_GET_SEALS",
+        "F_SEAL_WRITE",
+        "F_SEAL_GROW",
+        "F_SEAL_SHRINK",
+        "F_SEAL_SEAL",
+    )
+    if os.name != "posix" or not sys.platform.startswith("linux"):
+        fail("executable-authority-fd-exec-unavailable")
+    if not hasattr(os, "memfd_create") or not hasattr(os, "MFD_ALLOW_SEALING"):
+        fail("executable-authority-fd-exec-unavailable")
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
+        fail("executable-authority-fd-exec-unavailable")
+    if os.open not in os.supports_dir_fd or os.execve not in os.supports_fd:
+        fail("executable-authority-fd-exec-unavailable")
+    if any(not hasattr(fcntl, name) for name in seals):
+        fail("executable-authority-fd-exec-unavailable")
+
+
+def write_all(descriptor, raw):
+    offset = 0
+    while offset < len(raw):
+        written = os.write(descriptor, raw[offset:])
+        if written <= 0:
+            fail("executable-authority-memfd-copy-failed")
+        offset += written
+
+
+def validate_script_shebang(prefix):
+    if not prefix.startswith(b"#!"):
+        return
+    line_end = prefix.find(b"\n")
+    if line_end < 0:
+        fail("executable-authority-shebang-forbidden")
+    shebang = prefix[:line_end].rstrip(b"\r")
+    if shebang.startswith(b"#!/usr/bin/env") or shebang not in APPROVED_SHEBANGS:
+        fail("executable-authority-shebang-forbidden")
+
+
+def open_pinned_role(pin_root, role_filename):
+    root_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    pin_root_fd = os.open(pin_root, root_flags)
+    try:
+        root_observed = os.fstat(pin_root_fd)
+        if not stat.S_ISDIR(root_observed.st_mode):
+            fail("executable-authority-pin-root-invalid")
+        if stat.S_IMODE(root_observed.st_mode) != 0o700:
+            fail("executable-authority-pin-root-invalid")
+        pin_fd = os.open(role_filename, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=pin_root_fd)
+    finally:
+        os.close(pin_root_fd)
+    observed = os.fstat(pin_fd)
+    if not stat.S_ISREG(observed.st_mode) or stat.S_IMODE(observed.st_mode) != 0o500:
+        os.close(pin_fd)
+        fail("executable-authority-pin-invalid")
+    return pin_fd
+
+
+def seal_memfd(memfd_fd):
+    seals = (
+        fcntl.F_SEAL_WRITE
+        | fcntl.F_SEAL_GROW
+        | fcntl.F_SEAL_SHRINK
+        | fcntl.F_SEAL_SEAL
+    )
+    fcntl.fcntl(memfd_fd, fcntl.F_ADD_SEALS, seals)
+    observed = fcntl.fcntl(memfd_fd, fcntl.F_GET_SEALS)
+    if observed & seals != seals:
+        fail("executable-authority-memfd-seal-failed")
+
+
+def copy_verified_to_memfd(pin_fd, expected_sha256, role):
+    memfd_fd = os.memfd_create(f"vl360-{role}", os.MFD_ALLOW_SEALING)
+    digest = sha256()
+    prefix = bytearray()
+    while True:
+        chunk = os.read(pin_fd, 1024 * 1024)
+        if not chunk:
+            break
+        if len(prefix) < 4096:
+            prefix.extend(chunk[: 4096 - len(prefix)])
+        digest.update(chunk)
+        write_all(memfd_fd, chunk)
+    if digest.hexdigest() != expected_sha256:
+        os.close(memfd_fd)
+        fail("executable-authority-digest-mismatch")
+    validate_script_shebang(bytes(prefix))
+    os.lseek(memfd_fd, 0, os.SEEK_SET)
+    seal_memfd(memfd_fd)
+    return memfd_fd
+
+
+def main():
+    require_linux_fd_exec()
+    if len(sys.argv) < 6 or sys.argv[5] != "--":
+        fail("executable-authority-arguments-invalid")
+    role, expected_sha256, pin_root, pin_path = sys.argv[1:5]
+    role_filename = ROLE_FILENAMES.get(role)
+    if role_filename is None:
+        fail("executable-authority-role-invalid")
+    pin_fd = open_pinned_role(pin_root, role_filename)
+    try:
+        memfd_fd = copy_verified_to_memfd(pin_fd, expected_sha256, role)
+    finally:
+        os.close(pin_fd)
+    argv = [pin_path, *sys.argv[6:]]
+    env = dict(os.environ)
+    os.set_inheritable(memfd_fd, True)
+    if not os.get_inheritable(memfd_fd):
+        os.close(memfd_fd)
+        fail("executable-authority-fd-exec-unavailable")
+    try:
+        os.execve(memfd_fd, argv, env)
+    except (OSError, TypeError, ValueError):
+        os.close(memfd_fd)
+        fail("executable-authority-fd-exec-failed")
+
+
+if __name__ == "__main__":
+    main()
+VL360_PINNED_EXECUTOR_PY
+  python -c "$executor_source" "$role" "$expected_sha256" \
+    "$EXECUTABLE_PIN_ROOT" "$path" -- "$@"
 }
 
 invoke_mount_authority() {
   [ -n "$PINNED_MOUNT_AUTHORITY" ] && [ -n "$MOUNT_AUTHORITY_SHA256" ] \
     || return 126
-  invoke_pinned_executable "$PINNED_MOUNT_AUTHORITY" \
-    "$MOUNT_AUTHORITY_SHA256" "$@"
+  invoke_pinned_executable mount "$MOUNT_AUTHORITY_SHA256" -- "$@"
 }
 
 TARGET_LOCK_KEYS=()
@@ -2289,16 +2476,24 @@ PY
 
 run_authority_hook() {
   local name="$1"
-  local authority="$2"
-  local expected_sha256
+  local expected_sha256 role
   shift 2
   case "$name" in
-    python-dependencies) expected_sha256="$PYTHON_DEPENDENCY_HOOK_SHA256" ;;
-    nuxt-production-dependencies) expected_sha256="$NUXT_DEPENDENCY_HOOK_SHA256" ;;
-    systemd-units) expected_sha256="$UNIT_VERIFY_HOOK_SHA256" ;;
+    python-dependencies)
+      role=python-dependency
+      expected_sha256="$PYTHON_DEPENDENCY_HOOK_SHA256"
+      ;;
+    nuxt-production-dependencies)
+      role=nuxt-dependency
+      expected_sha256="$NUXT_DEPENDENCY_HOOK_SHA256"
+      ;;
+    systemd-units)
+      role=unit-verify
+      expected_sha256="$UNIT_VERIFY_HOOK_SHA256"
+      ;;
     *) return 126 ;;
   esac
-  if invoke_pinned_executable "$authority" "$expected_sha256" "$@"; then
+  if invoke_pinned_executable "$role" "$expected_sha256" -- "$@"; then
     record_authority_result "$name" passed 0
     return 0
   else
