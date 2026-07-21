@@ -325,8 +325,8 @@ for part in parts:
 print(os.path.realpath(path))
 PY
   )" || return 1
-  if [ "$local_rehearsal" = true ] && command -v cygpath >/dev/null 2>&1; then
-    cygpath -u "$canonical"
+  if [ -x /usr/bin/cygpath ]; then
+    /usr/bin/cygpath -u "$canonical"
   else
     printf '%s\n' "$canonical"
   fi
@@ -1852,7 +1852,8 @@ reconcile_stale_install_attempt() {
   local mount_verified=false committed_recovery=false
   case "$STALE_STAGE" in
     detach-agent-data-armed|persistent-detached|swap-release-root-armed|\
-    root-swapped|persistent-restored|systemd-backup-preparing|\
+    root-swapped|restore-bind-agent-data-armed|persistent-restored|\
+    systemd-backup-preparing|\
     systemd-units-armed|\
     retire-old-root-armed|committed-cleanup|\
     recovery-remove-empty-persistent-root-armed|\
@@ -1889,7 +1890,8 @@ reconcile_stale_install_attempt() {
     detach-agent-data-armed|persistent-detached)
       [ "$old_present" = false ] || return 1
       ;;
-    root-swapped|persistent-restored|systemd-backup-preparing|\
+    root-swapped|restore-bind-agent-data-armed|persistent-restored|\
+    systemd-backup-preparing|\
     systemd-units-armed|\
     recovery-remove-empty-persistent-root-armed|\
     recovery-detach-persistent-armed|recovery-remove-release-root-armed)
@@ -1976,14 +1978,16 @@ reconcile_stale_install_attempt() {
           mount_state=$?
         fi
         case "$entry_stage:$mount_state" in
-          persistent-restored:0|recovery-detach-persistent-armed:0)
+          restore-bind-agent-data-armed:0|persistent-restored:0|\
+          recovery-detach-persistent-armed:0)
             write_stale_mutation_state recovery-detach-persistent-armed \
               || return 1
             invoke_mount_authority umount "$current_data" || return 1
             fsync_directories "$current_data" "$(dirname -- "$current_data")" \
               || return 1
             ;;
-          recovery-detach-persistent-armed:1|root-swapped:1|\
+          recovery-detach-persistent-armed:1|restore-bind-agent-data-armed:1|\
+          root-swapped:1|\
           swap-release-root-armed:1|recovery-remove-release-root-armed:1) ;;
           *) return 1 ;;
         esac
@@ -3190,9 +3194,9 @@ attach_persistent_to_release_for_recovery() {
     mkdir -- "$target" || return $?
     invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$target" \
       || return $?
-    fsync_directories "$target" "$(dirname -- "$target")" || return $?
     PERSISTENT_ATTACHED_TO_RELEASE=true
     PERSISTENT_DETACHED=false
+    fsync_directories "$target" "$(dirname -- "$target")" || return $?
   fi
 }
 
@@ -3409,10 +3413,11 @@ if [ "$LOCAL_REHEARSAL" = true ]; then
   fail_after restore-bind-agent-data
 else
   mkdir -- "$RELEASE_ROOT/agent/data"
+  write_mutation_state restore-bind-agent-data-armed
   invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$RELEASE_ROOT/agent/data"
-  fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent"
   PERSISTENT_ATTACHED_TO_RELEASE=true
   PERSISTENT_DETACHED=false
+  fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent"
   write_mutation_state persistent-restored
 fi
 

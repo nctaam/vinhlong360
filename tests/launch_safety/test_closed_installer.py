@@ -761,6 +761,137 @@ def test_restore_bind_failure_after_local_move_rolls_back_without_data_loss(
     assert recovery["root_restored"] is True
 
 
+@pytest.mark.skipif(
+    not sys.platform.startswith("linux"), reason="Linux live bind recovery only"
+)
+def test_live_retry_recovers_interruption_immediately_after_bind_mount(
+    tmp_path: Path, closed_package
+):
+    if not BASH.is_file():
+        pytest.skip("Bash is unavailable")
+    case_root = tmp_path / "live-bind-interruption"
+    prepared = _prepare_case(case_root, closed_package)
+    release, persistent, evidence, before_release, _, _, values = prepared
+    shutil.copytree(release / "agent" / "data", persistent, dirs_exist_ok=True)
+    persistent_before = _snapshot_tree(persistent)
+    runtime = case_root / "runtime"
+    failed_hook_ran = case_root / "failed-hook-ran"
+    for name, body in (
+        (
+            "install-python-dependencies",
+            f": > '{_bash_path(failed_hook_ran)}'\nexit 19\n",
+        ),
+        ("install-nuxt-production-dependencies", "exit 0\n"),
+        ("verify-systemd-units", "exit 0\n"),
+    ):
+        hook = runtime / name
+        hook.write_text("#!/usr/bin/env bash\n" + body, encoding="ascii")
+        hook.chmod(0o755)
+    for name in (
+        "VL360_PYTHON_DEPENDENCY_HOOK",
+        "VL360_NUXT_DEPENDENCY_HOOK",
+        "VL360_UNIT_VERIFY_HOOK",
+        "VL360_LOCAL_REHEARSAL_SENTINEL",
+        "VL360_INSTALL_FAIL_AFTER",
+    ):
+        values.pop(name, None)
+
+    mounted = case_root / "mounted"
+    interrupted = case_root / "interrupted-after-bind"
+    mount_log = case_root / "mount-authority.log"
+    mounted.touch()
+    mount_authority = case_root / "mount-authority.sh"
+    mount_authority.write_text(
+        "#!/usr/bin/env bash\n"
+        "set -eu\n"
+        f"printf '%s\\n' \"$*\" >> '{_bash_path(mount_log)}'\n"
+        "case \"$1\" in\n"
+        "  findmnt)\n"
+        f"    [ -f '{_bash_path(mounted)}' ] || exit 1\n"
+        f"    printf '{{\"filesystems\":[{{\"source\":\"{_bash_path(persistent)}\","
+        "\"target\":\"%s\",\"options\":\"rw,bind\"}]}' \"$4\"\n"
+        "    ;;\n"
+        "  umount)\n"
+        f"    rm -f -- '{_bash_path(mounted)}'\n"
+        "    find \"$2\" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +\n"
+        "    ;;\n"
+        "  mount)\n"
+        "    cp -a -- \"$3\"/. \"$4\"/\n"
+        f"    : > '{_bash_path(mounted)}'\n"
+        f"    if [ ! -f '{_bash_path(interrupted)}' ]; then\n"
+        f"      : > '{_bash_path(interrupted)}'\n"
+        "      kill -9 \"$PPID\"\n"
+        "    fi\n"
+        "    ;;\n"
+        "  *) exit 64 ;;\n"
+        "esac\n",
+        encoding="ascii",
+    )
+    mount_authority.chmod(0o755)
+    command = [
+        str(BASH),
+        "scripts/ops/install_closed_release.sh",
+        "--archive",
+        _bash_path(closed_package.archive),
+        "--archive-digest-file",
+        _bash_path(closed_package.digest_file),
+        "--release-root",
+        _bash_path(release),
+        "--persistent-agent-data-root",
+        _bash_path(persistent),
+        "--environment-authority",
+        _bash_path(case_root / "external.env"),
+        "--runtime-authority",
+        _bash_path(runtime),
+        "--mount-authority",
+        _bash_path(mount_authority),
+        "--evidence-dir",
+        _bash_path(evidence),
+        "--require-closed",
+    ]
+    env = os.environ.copy()
+    env.update(values)
+
+    first = subprocess.run(
+        command,
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+
+    assert first.returncode != 0, first.stderr + first.stdout
+    assert interrupted.is_file()
+    journal = evidence / "install-mutation-state.json"
+    assert json.loads(journal.read_text(encoding="utf-8"))["stage"] == (
+        "restore-bind-agent-data-armed"
+    )
+    assert mounted.is_file()
+
+    retry = subprocess.run(
+        command,
+        cwd=ROOT,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=180,
+    )
+
+    assert retry.returncode == 19, retry.stderr + retry.stdout
+    assert "stale-install-recovery-required" not in retry.stderr
+    assert failed_hook_ran.is_file()
+    assert not journal.exists()
+    assert _snapshot_tree(release) == before_release
+    assert _snapshot_tree(persistent) == persistent_before
+    assert any(
+        line.startswith("umount ")
+        for line in mount_log.read_text(encoding="ascii").splitlines()
+    )
+
+
 def test_sigkill_after_persistent_detach_is_recovered_before_retry_reset(
     tmp_path: Path, closed_package
 ):
@@ -1034,6 +1165,7 @@ def test_stale_recovery_retries_a_failed_journaled_mutation(
     assert _snapshot_tree(persistent) == {}
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
 def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
     tmp_path: Path, closed_package
 ):
@@ -1123,6 +1255,7 @@ def test_production_shaped_retry_reconciles_stale_journal_without_live_mutation(
 
 
 @pytest.mark.parametrize("invalid_evidence", ("wrong-source", "invalid-options"))
+@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
 def test_stale_recovery_preserves_authorities_when_findmnt_evidence_is_invalid(
     tmp_path: Path, closed_package, invalid_evidence: str
 ):
@@ -1309,6 +1442,7 @@ def test_stale_recovery_refuses_different_retry_authorities(
     assert _snapshot_tree(second_persistent) == second_persistent_before
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
 def test_failed_recovery_umount_preserves_new_and_old_roots_and_persistent_bytes(
     tmp_path: Path, closed_package
 ):
@@ -1423,6 +1557,7 @@ def test_live_mode_rejects_injected_hook_overrides_before_any_mount_or_tree_muta
     assert _snapshot_tree(persistent) == before_persistent
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
 def test_primary_mount_failure_restores_old_root_then_verifies_recovery_mount(
     tmp_path: Path, closed_package
 ):
@@ -1448,6 +1583,7 @@ def test_primary_mount_failure_restores_old_root_then_verifies_recovery_mount(
     assert recovery["root_restored"] is True
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
 def test_recovery_rechecks_findmnt_and_bytes_after_post_remount_failure(
     tmp_path: Path, closed_package
 ):
@@ -1772,6 +1908,7 @@ def test_dependency_and_unit_sources_are_pinned_before_replacement(
     ]
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows supports local rehearsal only")
 def test_live_mount_authority_is_pinned_before_dependency_hook_replaces_source(
     tmp_path: Path, closed_package
 ):
@@ -1937,6 +2074,44 @@ def test_installer_ignores_command_and_exec_functions_shadowed_from_bash_env(
     assert (release / "launch-release-manifest.json").is_file()
     assert not command_marker.exists()
     assert not exec_marker.exists()
+
+
+def test_canonical_authority_path_normalizes_msys_python_output_in_live_mode(
+    tmp_path: Path,
+):
+    if os.name != "nt" or not BASH.is_file():
+        pytest.skip("MSYS path normalization only")
+    source = INSTALL.read_text(encoding="utf-8")
+    helper = source[
+        source.index("canonical_authority_path()") : source.index(
+            "validate_executable_authority_sources()"
+        )
+    ]
+    assert "command -v cygpath" not in helper
+    assert "if [ -x /usr/bin/cygpath ]; then" in helper
+    assert '/usr/bin/cygpath -u "$canonical"' in helper
+    script = "\n".join(
+        (
+            "set -eu",
+            f"PYTHON_EXECUTOR={shlex.quote(_bash_path(Path(sys.executable).resolve()))}",
+            'invoke_python() { "$PYTHON_EXECUTOR" "$@"; }',
+            helper,
+            'canonical_authority_path "$1" false',
+        )
+    )
+    authority = tmp_path / "live-authority"
+    authority.mkdir()
+
+    result = subprocess.run(
+        [str(BASH), "-c", script, "canonical-authority-test", _bash_path(authority)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    assert result.stdout.strip() == _bash_path(authority.resolve())
 
 
 def test_conflicting_python_executor_authorities_are_rejected_before_execution(
@@ -4502,6 +4677,57 @@ def test_destructive_transition_parents_are_fsynced_before_followup_journals():
     assert cleanup.index('rm -rf -- "$RETIRED_ROOT"') < cleanup.index(
         'fsync_directories "$RELEASE_PARENT"'
     ) < cleanup.index("clear_mutation_state")
+
+
+def test_live_restore_bind_is_armed_and_recovery_accepts_either_mount_state():
+    source = INSTALL.read_text(encoding="utf-8")
+    restore = source[
+        source.index("# restore-bind-agent-data") : source.index(
+            "# verify-agent-data-mount"
+        )
+    ]
+    live = restore[restore.index("else\n") :]
+    armed = live.index("write_mutation_state restore-bind-agent-data-armed")
+    mounted = live.index(
+        'invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" '
+        '"$RELEASE_ROOT/agent/data"'
+    )
+    attached = live.index("PERSISTENT_ATTACHED_TO_RELEASE=true")
+    detached = live.index("PERSISTENT_DETACHED=false")
+    fsynced = live.index(
+        'fsync_directories "$RELEASE_ROOT/agent/data" "$RELEASE_ROOT/agent"'
+    )
+    restored = live.index("write_mutation_state persistent-restored")
+    assert armed < mounted < attached < fsynced < restored
+    assert mounted < detached < fsynced
+
+    recovery_attach = source[
+        source.index("attach_persistent_to_release_for_recovery()") : source.index(
+            "verify_recovered_persistent_state()"
+        )
+    ]
+    recovery_live = recovery_attach[
+        recovery_attach.index('  else\n    mkdir -- "$target"') :
+    ]
+    recovery_mount = recovery_live.index(
+        'invoke_mount_authority mount --bind "$PERSISTENT_AGENT_DATA_ROOT" "$target"'
+    )
+    recovery_attached = recovery_live.index("PERSISTENT_ATTACHED_TO_RELEASE=true")
+    recovery_detached = recovery_live.index("PERSISTENT_DETACHED=false")
+    recovery_fsync = recovery_live.index(
+        'fsync_directories "$target" "$(dirname -- "$target")"'
+    )
+    assert recovery_mount < recovery_attached < recovery_fsync
+    assert recovery_mount < recovery_detached < recovery_fsync
+
+    reconciliation = source[
+        source.index("reconcile_stale_install_attempt()") : source.index(
+            "record_install_lock()"
+        )
+    ]
+    assert "restore-bind-agent-data-armed|persistent-restored" in reconciliation
+    assert "restore-bind-agent-data-armed:0" in reconciliation
+    assert "restore-bind-agent-data-armed:1" in reconciliation
 
 
 def test_sigkill_before_systemd_journal_leaves_attempt_journal_bound(
