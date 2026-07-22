@@ -124,37 +124,12 @@ def build_bundle(
     deps = _load_render_dependencies()
     database = _load_database() if database is None else database
     _require_postgresql(database)
-    manifest = deps["load_route_manifest"]() if manifest is None else manifest
-    evidence = (
-        deps["current_policy_evidence"]() if evidence is None else evidence
+    manifest, evidence, disclosure = _resolve_bundle_inputs(
+        deps, manifest, evidence, disclosure
     )
-    disclosure = (
-        deps["load_ai_disclosure"]() if disclosure is None else disclosure
+    main, media, batch_revision, index = _render_bundle_documents(
+        deps, database, manifest, evidence, disclosure
     )
-    if type(manifest) is not deps["LoadedRouteManifest"]:
-        raise TypeError("manifest must be LoadedRouteManifest")
-    if type(evidence) is not deps["PolicyEvidence"]:
-        raise TypeError("evidence must be PolicyEvidence")
-    if type(disclosure) is not deps["LoadedAiDisclosure"]:
-        raise TypeError("disclosure must be LoadedAiDisclosure")
-
-    with _open_sitemap_snapshot(database) as snapshot:
-        main = deps["render_main_sitemap"](snapshot, manifest, evidence)
-        media = deps["render_media_sitemap"](
-            snapshot, manifest, evidence, disclosure
-        )
-        if type(main) is not bytes or type(media) is not bytes:
-            raise TypeError("sitemap renderers must return exact bytes")
-        batch_revision = deps["compute_batch_revision"](
-            fingerprint=evidence.policy_fingerprint,
-            route_revision=evidence.route_manifest_revision,
-            policy_revision=evidence.backend_policy_revision,
-            main=main,
-            media=media,
-        )
-        index = deps["render_sitemap_index"](
-            manifest.data["canonical_origin"], batch_revision
-        )
 
     documents = {
         "sitemap.xml": main,
@@ -173,8 +148,47 @@ def build_bundle(
         from .sitemap_store import SITEMAP_METADATA_SCHEMA_VERSION, StoredBundle
     else:
         from sitemap_store import SITEMAP_METADATA_SCHEMA_VERSION, StoredBundle
-    metadata = {
-        "schema_version": SITEMAP_METADATA_SCHEMA_VERSION,
+    metadata = _bundle_metadata(
+        SITEMAP_METADATA_SCHEMA_VERSION, batch_revision, documents, evidence
+    )
+    return StoredBundle(batch_revision, metadata, documents)
+
+
+def _resolve_bundle_inputs(deps, manifest, evidence, disclosure):
+    manifest = deps["load_route_manifest"]() if manifest is None else manifest
+    evidence = deps["current_policy_evidence"]() if evidence is None else evidence
+    disclosure = deps["load_ai_disclosure"]() if disclosure is None else disclosure
+    if type(manifest) is not deps["LoadedRouteManifest"]:
+        raise TypeError("manifest must be LoadedRouteManifest")
+    if type(evidence) is not deps["PolicyEvidence"]:
+        raise TypeError("evidence must be PolicyEvidence")
+    if type(disclosure) is not deps["LoadedAiDisclosure"]:
+        raise TypeError("disclosure must be LoadedAiDisclosure")
+    return manifest, evidence, disclosure
+
+
+def _render_bundle_documents(deps, database, manifest, evidence, disclosure):
+    with _open_sitemap_snapshot(database) as snapshot:
+        main = deps["render_main_sitemap"](snapshot, manifest, evidence)
+        media = deps["render_media_sitemap"](snapshot, manifest, evidence, disclosure)
+        if type(main) is not bytes or type(media) is not bytes:
+            raise TypeError("sitemap renderers must return exact bytes")
+        batch_revision = deps["compute_batch_revision"](
+            fingerprint=evidence.policy_fingerprint,
+            route_revision=evidence.route_manifest_revision,
+            policy_revision=evidence.backend_policy_revision,
+            main=main,
+            media=media,
+        )
+        index = deps["render_sitemap_index"](
+            manifest.data["canonical_origin"], batch_revision
+        )
+    return main, media, batch_revision, index
+
+
+def _bundle_metadata(schema_version, batch_revision, documents, evidence):
+    return {
+        "schema_version": schema_version,
         "batch_revision": batch_revision,
         "documents": _document_hashes(documents),
         "renderer_evidence": {
@@ -183,7 +197,6 @@ def build_bundle(
             "backend_policy_revision": evidence.backend_policy_revision,
         },
     }
-    return StoredBundle(batch_revision, metadata, documents)
 
 
 def refresh(

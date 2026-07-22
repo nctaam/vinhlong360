@@ -105,42 +105,54 @@ def decide_publication_candidate(
     _validate_reviewed_exclusions(reviewed_exclusions)
     if not isinstance(entity, Mapping):
         raise TypeError("entity must be a mapping")
+    reasons = _publication_reasons(entity, reviewed_exclusions)
+    return PublicationDecision(eligible=not reasons, reasons=tuple(reasons))
 
+
+def _publication_reasons(
+    entity: Mapping[str, object], reviewed_exclusions: frozenset[str]
+) -> list[str]:
     reasons: list[str] = []
+    _append_status_reasons(reasons, entity.get("status", _MISSING))
+    if not _verified_value(entity.get("verified", _MISSING)):
+        reasons.append("verified-not-true")
+    _append_type_reasons(reasons, entity.get("type", _MISSING))
+    attributes = _attributes_or_empty(reasons, entity.get("attributes", _MISSING))
+    if _has_non_public_flag(entity) or _has_non_public_flag(attributes):
+        reasons.append("non-public-flag")
+    if not has_external_source_url(entity.get("source")):
+        reasons.append("external-source-missing")
+    entity_id = entity.get("id", _MISSING)
+    if type(entity_id) is str and entity_id in reviewed_exclusions:
+        reasons.append("reviewed-exclusion")
+    return reasons
 
-    status = entity.get("status", _MISSING)
+
+def _append_status_reasons(reasons: list[str], status: object) -> None:
     if status is _MISSING:
         reasons.append("status-missing")
     elif status is not None:
         reasons.append("status-not-null")
 
-    verified = entity.get("verified", _MISSING)
-    if not (verified is True or (type(verified) is int and verified == 1)):
-        reasons.append("verified-not-true")
 
-    entity_type = entity.get("type", _MISSING)
-    if entity_type is _MISSING or entity_type is None or (
+def _verified_value(value: object) -> bool:
+    return value is True or (type(value) is int and value == 1)
+
+
+def _append_type_reasons(reasons: list[str], entity_type: object) -> None:
+    missing = entity_type is _MISSING or entity_type is None or (
         type(entity_type) is str and not entity_type
-    ):
+    )
+    if missing:
         reasons.append("entity-type-missing")
     elif type(entity_type) is not str or entity_type not in REVIEWED_NON_PLACE_ENTITY_TYPES:
         reasons.append("entity-type-not-allowlisted")
 
-    attributes = entity.get("attributes", _MISSING)
+
+def _attributes_or_empty(reasons: list[str], attributes: object) -> Mapping[str, object]:
     if attributes is _MISSING or attributes is None:
-        attributes = {}
-    elif not isinstance(attributes, Mapping):
-        reasons.append("attributes-invalid")
-        attributes = {}
-
-    if _has_non_public_flag(entity) or _has_non_public_flag(attributes):
-        reasons.append("non-public-flag")
-
-    if not has_external_source_url(entity.get("source")):
-        reasons.append("external-source-missing")
-
-    entity_id = entity.get("id", _MISSING)
-    if type(entity_id) is str and entity_id in reviewed_exclusions:
-        reasons.append("reviewed-exclusion")
-
-    return PublicationDecision(eligible=not reasons, reasons=tuple(reasons))
+        return {}
+    if isinstance(attributes, Mapping):
+        return attributes
+    reasons.append("attributes-invalid")
+    return {}

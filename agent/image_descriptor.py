@@ -58,21 +58,33 @@ def _valid_dns_host(host: str) -> bool:
     if not host or len(host) > 253:
         return False
     labels = host.split(".")
+    return _valid_dns_labels(labels)
+
+
+def _valid_dns_labels(labels: list[str]) -> bool:
     for label in labels:
-        if not _DNS_LABEL.fullmatch(label):
+        if not _valid_dns_label(label):
             return False
-        if label.lower().startswith("xn--") and not _PUNYCODE_PAYLOAD.fullmatch(
-            label[4:]
-        ):
-            return False
-    if all(label.isascii() and label.isdigit() for label in labels):
-        if len(labels) != 4:
-            return False
-        return all(
-            (label == "0" or not label.startswith("0")) and int(label) <= 255
-            for label in labels
-        )
-    return True
+    return _valid_ipv4_labels(labels) if all(
+        label.isascii() and label.isdigit() for label in labels
+    ) else True
+
+
+def _valid_dns_label(label: str) -> bool:
+    if not _DNS_LABEL.fullmatch(label):
+        return False
+    return not label.lower().startswith("xn--") or bool(
+        _PUNYCODE_PAYLOAD.fullmatch(label[4:])
+    )
+
+
+def _valid_ipv4_labels(labels: list[str]) -> bool:
+    if len(labels) != 4:
+        return False
+    return all(
+        (label == "0" or not label.startswith("0")) and int(label) <= 255
+        for label in labels
+    )
 
 
 def _valid_https_authority(authority: str) -> bool:
@@ -80,32 +92,29 @@ def _valid_https_authority(authority: str) -> bool:
         return False
 
     if authority.startswith("["):
-        closing = authority.find("]")
-        if (
-            closing <= 1
-            or authority.count("[") != 1
-            or authority.count("]") != 1
-        ):
-            return False
-        host = authority[1:closing]
-        suffix = authority[closing + 1 :]
-        if suffix and (not suffix.startswith(":") or not _valid_port(suffix[1:])):
-            return False
-        try:
-            ipaddress.IPv6Address(host)
-        except ValueError:
-            return False
-        return True
+        return _valid_bracketed_authority(authority)
 
     if "[" in authority or "]" in authority or authority.count(":") > 1:
         return False
-    if ":" in authority:
-        host, port = authority.split(":", 1)
-        if not _valid_port(port):
-            return False
-    else:
-        host = authority
+    host, separator, port = authority.partition(":")
+    if separator and not _valid_port(port):
+        return False
     return _valid_dns_host(host)
+
+
+def _valid_bracketed_authority(authority: str) -> bool:
+    closing = authority.find("]")
+    if closing <= 1 or authority.count("[") != 1 or authority.count("]") != 1:
+        return False
+    host = authority[1:closing]
+    suffix = authority[closing + 1 :]
+    if suffix and (not suffix.startswith(":") or not _valid_port(suffix[1:])):
+        return False
+    try:
+        ipaddress.IPv6Address(host)
+    except ValueError:
+        return False
+    return True
 
 
 def normalize_renderable_image_url(raw: object) -> str | None:
@@ -113,16 +122,7 @@ def normalize_renderable_image_url(raw: object) -> str | None:
     if type(raw) is not str:
         return None
     normalized = raw.strip()
-    if (
-        not normalized
-        or any(
-            ord(character) <= 0x20 or ord(character) == 0x7F
-            for character in normalized
-        )
-        or "\\" in normalized
-        or "#" in normalized
-        or normalized.startswith("//")
-    ):
+    if _unsafe_image_url(normalized):
         return None
 
     if normalized.startswith("/"):
@@ -130,16 +130,29 @@ def normalize_renderable_image_url(raw: object) -> str | None:
 
     if not normalized[:8].lower() == "https://":
         return None
-    remainder = normalized[8:]
+    authority = _https_authority(normalized[8:])
+    if not _valid_https_authority(authority):
+        return None
+    return normalized
+
+
+def _unsafe_image_url(normalized: str) -> bool:
+    return (
+        not normalized
+        or any(ord(character) <= 0x20 or ord(character) == 0x7F for character in normalized)
+        or "\\" in normalized
+        or "#" in normalized
+        or normalized.startswith("//")
+    )
+
+
+def _https_authority(remainder: str) -> str:
     authority_end = len(remainder)
     for delimiter in ("/", "?"):
         position = remainder.find(delimiter)
         if position >= 0:
             authority_end = min(authority_end, position)
-    authority = remainder[:authority_end]
-    if not _valid_https_authority(authority):
-        return None
-    return normalized
+    return remainder[:authority_end]
 
 
 def _require_disclosure(disclosure: object) -> LoadedAiDisclosure:

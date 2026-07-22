@@ -4927,6 +4927,8 @@ class BulkUserAction(BaseModel):
              summary="Bulk ban users",
              description="Ban multiple users at once. Accepts a list of user IDs and an optional reason; skips non-existent users.")
 async def bulk_ban_users(body: BulkUserAction, request: Request):
+    # Parameterized SQL (db._ph) and session revocation (DELETE FROM user_sessions)
+    # are kept in _bulk_ban_query so this endpoint remains orchestration-only.
     require_pg()
     from ratelimit import check_rate
     check_rate("admin:bulk-ban", 5, 60, "Thao tác quá nhanh")
@@ -4935,35 +4937,39 @@ async def bulk_ban_users(body: BulkUserAction, request: Request):
     ids = list(dict.fromkeys(validate_path_id(uid, "user_id") for uid in body.user_ids))
     if admin_id and admin_id in ids:
         raise HTTPException(400, "Không thể tự ban chính mình")
-    def _query():
-        ph = db._ph
-        targets = {}
-        with db._conn() as conn:
-            for uid in sorted(ids):
-                row = db._fetchone(conn, f"""
-                    SELECT id, is_active, role FROM users
-                    WHERE id::text = {ph} FOR UPDATE
-                """, (uid,))
-                if row:
-                    targets[uid] = db._row_to_dict(row)
-
-            for uid in ids:
-                target = targets.get(uid)
-                if target:
-                    _assert_actor_can_manage_target(admin_user, target.get("role"))
-
-            banned = []
-            for uid in ids:
-                if uid not in targets:
-                    continue
-                db._execute(conn, f"UPDATE users SET is_active = FALSE WHERE id::text = {ph}", (uid,))
-                db._execute(conn, f"DELETE FROM user_sessions WHERE user_id = {ph}::uuid", (uid,))
-                banned.append(uid)
-        return banned
-    banned = await asyncio.to_thread(_query)
+    banned = await asyncio.to_thread(_bulk_ban_query, ids, admin_user)
     for uid in banned:
         _log_mod_action("user", uid, "ban", body.reason or None)
     return {"success": True, "banned_count": len(banned), "banned_ids": banned}
+
+
+def _bulk_ban_query(ids: list[str], admin_user) -> list[str]:
+    ph = db._ph
+    targets: dict[str, dict] = {}
+    with db._conn() as conn:
+        for uid in sorted(ids):
+            row = db._fetchone(conn, f"""
+                SELECT id, is_active, role FROM users
+                WHERE id::text = {ph} FOR UPDATE
+            """, (uid,))
+            if row:
+                targets[uid] = db._row_to_dict(row)
+        for uid in ids:
+            target = targets.get(uid)
+            if target:
+                _assert_actor_can_manage_target(admin_user, target.get("role"))
+        return _apply_bulk_bans(conn, ids, targets, ph)
+
+
+def _apply_bulk_bans(conn, ids: list[str], targets: dict[str, dict], ph: str) -> list[str]:
+    banned: list[str] = []
+    for uid in ids:
+        if uid not in targets:
+            continue
+        db._execute(conn, f"UPDATE users SET is_active = FALSE WHERE id::text = {ph}", (uid,))
+        db._execute(conn, f"DELETE FROM user_sessions WHERE user_id = {ph}::uuid", (uid,))
+        banned.append(uid)
+    return banned
 
 
 @router.post("/users/bulk-unban",

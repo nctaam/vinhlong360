@@ -131,7 +131,13 @@ def _has_forbidden_path_character(value: str) -> bool:
 def _canonical_path(value: object, label: str) -> str:
     if type(value) is not str:
         raise ValueError(f"route manifest {label} is not canonical")
-    if (
+    if _invalid_canonical_path(value):
+        raise ValueError(f"route manifest {label} is not canonical")
+    return value
+
+
+def _invalid_canonical_path(value: str) -> bool:
+    return (
         not value.startswith("/")
         or "?" in value
         or "#" in value
@@ -141,9 +147,7 @@ def _canonical_path(value: object, label: str) -> str:
         or _has_forbidden_path_character(value)
         or (value != "/" and value.endswith("/"))
         or any(segment in {".", ".."} for segment in value.split("/"))
-    ):
-        raise ValueError(f"route manifest {label} is not canonical")
-    return value
+    )
 
 
 def _template_signature(template: object) -> str:
@@ -256,6 +260,18 @@ def _validate_route_manifest_shape(
 ) -> Mapping[str, Any]:
     manifest = _record(value, "root")
     _exact_keys(manifest, TOP_LEVEL_KEYS, "root")
+    _validate_fixed_fields(manifest, expected_revision)
+    exact_routes = _validate_exact_routes(manifest)
+    sensitive_prefixes = _validate_sensitive_prefixes(manifest)
+    ingress_exceptions = _validate_ingress_exceptions(manifest)
+    templates, signatures = _validate_templates(manifest)
+    _validate_manifest_uniqueness(
+        exact_routes, sensitive_prefixes, ingress_exceptions, templates, signatures
+    )
+    return manifest
+
+
+def _validate_fixed_fields(manifest: Mapping[str, Any], expected_revision: str) -> None:
     if (
         type(manifest["schema_version"]) is not int
         or manifest["schema_version"] != 1
@@ -267,7 +283,6 @@ def _validate_route_manifest_shape(
         or manifest["unknown_policy"] != UNKNOWN_POLICY
     ):
         raise ValueError("route manifest fixed fields mismatch")
-
     normalization = _record(manifest["normalization"], "normalization")
     _exact_keys(normalization, frozenset(NORMALIZATION), "normalization")
     if any(
@@ -276,107 +291,102 @@ def _validate_route_manifest_shape(
     ):
         raise ValueError("route manifest normalization mismatch")
 
-    exact_routes: list[dict[str, Any]] = []
+
+def _validate_exact_routes(manifest: Mapping[str, Any]) -> list[dict[str, Any]]:
+    routes: list[dict[str, Any]] = []
     for index, raw in enumerate(_array(manifest["exact_routes"], "exact_routes")):
         item = _record(raw, f"exact_routes[{index}]")
         _exact_keys(item, EXACT_KEYS, f"exact_routes[{index}]")
-        path = _canonical_path(item["path"], "exact path")
-        classification = _string_choice(
-            item["classification"],
-            EXACT_CLASSIFICATIONS,
-            "exact route values mismatch",
-        )
-        if type(item["sitemap"]) is not bool:
+        route = {
+            "path": _canonical_path(item["path"], "exact path"),
+            "classification": _string_choice(
+                item["classification"], EXACT_CLASSIFICATIONS, "exact route values mismatch"
+            ),
+            "sitemap": item["sitemap"],
+        }
+        if type(route["sitemap"]) is not bool:
             raise ValueError("route manifest exact route values mismatch")
-        exact_routes.append(
-            {"path": path, "classification": classification, "sitemap": item["sitemap"]}
-        )
+        routes.append(route)
+    return routes
 
-    sensitive_prefixes: list[dict[str, str]] = []
-    for index, raw in enumerate(
-        _array(manifest["sensitive_prefixes"], "sensitive_prefixes")
-    ):
+
+def _validate_sensitive_prefixes(manifest: Mapping[str, Any]) -> list[dict[str, str]]:
+    prefixes: list[dict[str, str]] = []
+    for index, raw in enumerate(_array(manifest["sensitive_prefixes"], "sensitive_prefixes")):
         item = _record(raw, f"sensitive_prefixes[{index}]")
         _exact_keys(item, PREFIX_KEYS, f"sensitive_prefixes[{index}]")
         prefix = _canonical_path(item["prefix"], "sensitive prefix")
         if prefix == "/":
             raise ValueError("route manifest sensitive prefix cannot be root")
-        classification = _string_choice(
-            item["classification"],
-            SENSITIVE_CLASSIFICATIONS,
-            "sensitive classification mismatch",
+        prefixes.append(
+            {"prefix": prefix, "classification": _string_choice(
+                item["classification"], SENSITIVE_CLASSIFICATIONS, "sensitive classification mismatch"
+            )}
         )
-        sensitive_prefixes.append({"prefix": prefix, "classification": classification})
+    return prefixes
 
-    ingress_exceptions: list[dict[str, str]] = []
+
+def _validate_ingress_exceptions(manifest: Mapping[str, Any]) -> list[dict[str, str]]:
+    exceptions: list[dict[str, str]] = []
     for index, raw in enumerate(
         _array(manifest["backend_ingress_exceptions"], "backend_ingress_exceptions")
     ):
         item = _record(raw, f"backend_ingress_exceptions[{index}]")
         _exact_keys(item, INGRESS_KEYS, f"backend_ingress_exceptions[{index}]")
         prefix = _canonical_path(item["prefix"], "ingress prefix")
-        if prefix == "/":
-            raise ValueError("route manifest ingress prefix cannot be root")
-        upstream = _string_choice(
-            item["upstream"], INGRESS_UPSTREAMS, "ingress exception mismatch"
-        )
         review_reason = item["review_reason"]
-        if (
-            type(review_reason) is not str
-            or review_reason.strip(JS_TRIM_CHARACTERS) == ""
-        ):
+        if prefix == "/" or type(review_reason) is not str or not review_reason.strip(JS_TRIM_CHARACTERS):
             raise ValueError("route manifest ingress exception mismatch")
-        ingress_exceptions.append(
-            {"prefix": prefix, "upstream": upstream, "review_reason": review_reason}
+        exceptions.append(
+            {
+                "prefix": prefix,
+                "upstream": _string_choice(item["upstream"], INGRESS_UPSTREAMS, "ingress exception mismatch"),
+                "review_reason": review_reason,
+            }
         )
+    return exceptions
 
+
+def _validate_templates(manifest: Mapping[str, Any]) -> tuple[list[dict[str, Any]], list[str]]:
     templates: list[dict[str, Any]] = []
     signatures: list[str] = []
-    for index, raw in enumerate(
-        _array(manifest["dynamic_templates"], "dynamic_templates")
-    ):
+    for index, raw in enumerate(_array(manifest["dynamic_templates"], "dynamic_templates")):
         item = _record(raw, f"dynamic_templates[{index}]")
         _exact_keys(item, TEMPLATE_KEYS, f"dynamic_templates[{index}]")
         template = item["template"]
-        signature = _template_signature(template)
-        authority = _string_choice(
-            item["authority"],
-            TEMPLATE_AUTHORITIES,
-            "dynamic authority mismatch",
-        )
-        if authority == "fixed-noindex":
-            if type(item["sitemap"]) is not bool or item["sitemap"] is not False:
-                raise ValueError("route manifest dynamic authority mismatch")
-            sitemap: str | bool = False
-        else:
-            if type(item["sitemap"]) is not str or item["sitemap"] != "backend":
-                raise ValueError("route manifest dynamic authority mismatch")
-            sitemap = "backend"
-        templates.append(
-            {"template": template, "authority": authority, "sitemap": sitemap}
-        )
-        signatures.append(signature)
+        authority = _string_choice(item["authority"], TEMPLATE_AUTHORITIES, "dynamic authority mismatch")
+        sitemap = _template_sitemap(item["sitemap"], authority)
+        templates.append({"template": template, "authority": authority, "sitemap": sitemap})
+        signatures.append(_template_signature(template))
+    return templates, signatures
 
+
+def _template_sitemap(value: object, authority: str) -> str | bool:
+    if authority == "fixed-noindex":
+        if type(value) is not bool or value is not False:
+            raise ValueError("route manifest dynamic authority mismatch")
+        return False
+    if type(value) is not str or value != "backend":
+        raise ValueError("route manifest dynamic authority mismatch")
+    return "backend"
+
+
+def _validate_manifest_uniqueness(
+    exact_routes: list[dict[str, Any]],
+    sensitive_prefixes: list[dict[str, str]],
+    ingress_exceptions: list[dict[str, str]],
+    templates: list[dict[str, Any]],
+    signatures: list[str],
+) -> None:
     _assert_unique([item["path"] for item in exact_routes], "duplicate exact route")
-    _assert_unique(
-        [item["prefix"] for item in sensitive_prefixes], "duplicate sensitive prefix"
-    )
-    _assert_unique(
-        [item["prefix"] for item in ingress_exceptions], "duplicate ingress exception"
-    )
+    _assert_unique([item["prefix"] for item in sensitive_prefixes], "duplicate sensitive prefix")
+    _assert_unique([item["prefix"] for item in ingress_exceptions], "duplicate ingress exception")
     _assert_unique(signatures, "ambiguous dynamic template")
     for left_index, left in enumerate(templates):
         for right in templates[left_index + 1 :]:
             if _templates_overlap(left["template"], right["template"]):
                 raise ValueError("route manifest overlapping dynamic template")
-
-    if any(
-        ingress["prefix"] == sensitive["prefix"]
-        or ingress["prefix"].startswith(f"{sensitive['prefix']}/")
-        or sensitive["prefix"].startswith(f"{ingress['prefix']}/")
-        for ingress in ingress_exceptions
-        for sensitive in sensitive_prefixes
-    ):
+    if _has_ingress_sensitive_ambiguity(ingress_exceptions, sensitive_prefixes):
         raise ValueError("route manifest ingress/sensitive ambiguity")
     if any(
         _matches_template(exact["path"], template["template"])
@@ -385,7 +395,17 @@ def _validate_route_manifest_shape(
     ):
         raise ValueError("route manifest exact/template ambiguity")
 
-    return manifest
+
+def _has_ingress_sensitive_ambiguity(
+    ingress_exceptions: list[dict[str, str]], sensitive_prefixes: list[dict[str, str]]
+) -> bool:
+    return any(
+        ingress["prefix"] == sensitive["prefix"]
+        or ingress["prefix"].startswith(f"{sensitive['prefix']}/")
+        or sensitive["prefix"].startswith(f"{ingress['prefix']}/")
+        for ingress in ingress_exceptions
+        for sensitive in sensitive_prefixes
+    )
 
 
 def validate_route_manifest_data(

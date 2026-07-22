@@ -301,7 +301,14 @@ def _copy_bundle_documents(documents: object) -> dict[str, bytes]:
 def _validate_metadata_envelope(metadata: object, revision: str) -> dict:
     if not isinstance(metadata, dict) or not _is_json_value(metadata):
         raise ValueError("metadata must be a valid JSON object")
+    _validate_metadata_keys(metadata)
+    if metadata.get("batch_revision") != revision:
+        raise ValueError("metadata batch_revision must match the bundle")
+    _validate_renderer_evidence(metadata.get("renderer_evidence"))
+    return metadata
 
+
+def _validate_metadata_keys(metadata: dict) -> None:
     metadata_keys = set(metadata)
     if not _REQUIRED_METADATA_KEYS.issubset(metadata_keys):
         if "renderer_evidence" not in metadata_keys:
@@ -310,13 +317,11 @@ def _validate_metadata_envelope(metadata: object, revision: str) -> dict:
     if not metadata_keys.issubset(_REQUIRED_METADATA_KEYS | _OPTIONAL_METADATA_KEYS):
         raise ValueError("metadata contains an unknown root key")
     schema_version = metadata["schema_version"]
-    if schema_version != SITEMAP_METADATA_SCHEMA_VERSION or isinstance(
-        schema_version, bool
-    ):
+    if schema_version != SITEMAP_METADATA_SCHEMA_VERSION or isinstance(schema_version, bool):
         raise ValueError("metadata schema_version is unsupported")
-    if metadata.get("batch_revision") != revision:
-        raise ValueError("metadata batch_revision must match the bundle")
-    renderer_evidence = metadata.get("renderer_evidence")
+
+
+def _validate_renderer_evidence(renderer_evidence: object) -> None:
     if not isinstance(renderer_evidence, dict) or set(renderer_evidence) != set(
         _RENDERER_EVIDENCE_KEYS
     ):
@@ -326,7 +331,6 @@ def _validate_metadata_envelope(metadata: object, revision: str) -> dict:
         raise ValueError("metadata renderer evidence fingerprint must be lowercase SHA-256")
     for key in ("route_manifest_revision", "backend_policy_revision"):
         _validate_header_revision(renderer_evidence.get(key), key)
-    return metadata
 
 
 def _validate_document_hashes(

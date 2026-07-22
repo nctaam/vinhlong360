@@ -86,6 +86,16 @@ def test_normalize_renderable_image_url_rejects_unsafe_or_malformed_values(raw: 
     assert normalize_renderable_image_url(raw) is None
 
 
+def test_normalize_renderable_image_url_preserves_ip_authority_boundaries():
+    assert normalize_renderable_image_url("https://192.168.1.1/image.webp") == (
+        "https://192.168.1.1/image.webp"
+    )
+    assert normalize_renderable_image_url("https://192.168.001.1/image.webp") is None
+    assert normalize_renderable_image_url("https://[2001:db8::1]:443/image.webp") == (
+        "https://[2001:db8::1]:443/image.webp"
+    )
+
+
 def test_describe_entity_image_returns_the_exact_frozen_ai_editorial_contract():
     descriptor = describe_entity_image(
         " /media/entity.webp ",
