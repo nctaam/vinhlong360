@@ -1,6 +1,8 @@
 # Launch Safety Gate Implementation Plan
 
-> STATUS: proposed; awaiting implementation-plan review; implementation must not start; global `noindex` and all external launch blockers remain active
+> STATUS: active/partial - implementation is in progress on `codex/launch-safety-gate`; global `noindex` and all external launch blockers remain active. Task 45 evidence is not final until a clean Commit A matrix passes and evidence-only Commit B is rendered.
+
+> Current implementation commits: `0951048`, `02a0fd7`, `907ee39`, `e20c4af`, `ce8a523`, `0c1e138`, `69323cf`. The real browser path and cache-policy fix are implemented and contract-tested; live Nuxt/Chrome acceptance is pending a successful build on an adequately resourced runner. Do not mark skipped/unrun evidence as pass.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
