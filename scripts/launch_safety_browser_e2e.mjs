@@ -157,14 +157,16 @@ function safeMessage(error) {
   return redactSensitiveUrl(error instanceof Error ? error.message : String(error || 'unknown error')).slice(0, 500)
 }
 
-async function assertServer(baseUrl) {
+export async function assertServer(baseUrl) {
   let response
   try {
     response = await fetch(new URL('/', baseUrl), { signal: AbortSignal.timeout(5000) })
   } catch {
     throw new LaunchSafetyError('server-unavailable', 'base URL is not reachable', { blocked: true })
   }
-  if (response.status >= 500) throw new LaunchSafetyError('server-unavailable', 'base URL returned a server error', { blocked: true })
+  if (response.status < 200 || response.status >= 400) {
+    throw new LaunchSafetyError('server-unavailable', 'base URL returned an unsuccessful status', { blocked: true })
+  }
   let worker
   try {
     worker = await fetch(new URL('/sw.js', baseUrl), { signal: AbortSignal.timeout(5000) })
@@ -174,6 +176,93 @@ async function assertServer(baseUrl) {
   if (!worker.ok || !(await worker.text()).trim()) {
     throw new LaunchSafetyError('service-worker-unavailable', 'current service worker is not reachable', { blocked: true })
   }
+}
+
+function childHasExited(child) {
+  return Boolean(child) && (child.exitCode !== null || child.signalCode !== null)
+}
+
+function waitForChildExit(child, timeoutMs) {
+  if (!child || childHasExited(child)) return Promise.resolve(true)
+  return new Promise(resolve => {
+    let timer
+    const finish = exited => {
+      clearTimeout(timer)
+      child.off('exit', onExit)
+      child.off('error', onError)
+      resolve(exited)
+    }
+    const onExit = () => finish(true)
+    const onError = () => finish(false)
+    child.once('exit', onExit)
+    child.once('error', onError)
+    timer = setTimeout(() => finish(childHasExited(child)), timeoutMs)
+  })
+}
+
+function runWindowsProcessTreeKill(pid) {
+  return new Promise((resolve, reject) => {
+    const killer = spawn(process.env.ComSpec || 'cmd.exe', [
+      '/d', '/s', '/c', `taskkill /PID ${pid} /T /F`,
+    ], { stdio: 'ignore' })
+    killer.once('error', reject)
+    killer.once('exit', code => {
+      if (code === 0) resolve()
+      else reject(new Error(`taskkill exited with code ${code ?? 'unknown'}`))
+    })
+  })
+}
+
+export async function stopChromeProcess(chrome, { timeoutMs = 5000 } = {}) {
+  if (!chrome || childHasExited(chrome)) return
+  let killError
+  try {
+    if (process.platform === 'win32') {
+      await runWindowsProcessTreeKill(chrome.pid)
+    } else {
+      try {
+        process.kill(-chrome.pid, 'SIGTERM')
+      } catch {
+        chrome.kill('SIGTERM')
+      }
+    }
+  } catch (error) {
+    killError = error
+    try { chrome.kill('SIGTERM') } catch { /* process may already be gone */ }
+  }
+  if (!(await waitForChildExit(chrome, timeoutMs))) {
+    try { chrome.kill('SIGKILL') } catch { /* cleanup error is reported below */ }
+    if (!(await waitForChildExit(chrome, 1000))) {
+      throw new LaunchSafetyError('chrome-cleanup-failed', 'Chrome process did not exit after cleanup', { blocked: true })
+    }
+  }
+  if (killError && !childHasExited(chrome)) {
+    throw new LaunchSafetyError('chrome-cleanup-failed', safeMessage(killError), { blocked: true })
+  }
+}
+
+export async function cleanupBrowserResources({
+  chrome = null,
+  profile = '',
+  temporaryProfile = false,
+  removeProfile = rm,
+} = {}) {
+  const errors = []
+  if (chrome) {
+    try {
+      await stopChromeProcess(chrome)
+    } catch (error) {
+      errors.push(`chrome-cleanup-failed:${safeMessage(error)}`)
+    }
+  }
+  if (temporaryProfile && profile) {
+    try {
+      await removeProfile(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
+    } catch (error) {
+      errors.push(`profile-cleanup-failed:${safeMessage(error)}`)
+    }
+  }
+  return errors
 }
 
 class CdpClient {
@@ -523,6 +612,7 @@ async function main(argv = process.argv.slice(2)) {
       policy_cache_storage_empty: false,
       offline_policy_replay_denied: false,
     },
+    cleanup_errors: [],
   }
   let profile = args.profile ? path.resolve(args.profile) : ''
   let temporaryProfile = false
@@ -546,7 +636,7 @@ async function main(argv = process.argv.slice(2)) {
       '--no-first-run',
       '--no-default-browser-check',
       'about:blank',
-    ], { stdio: ['ignore', 'ignore', 'pipe'] })
+    ], { stdio: ['ignore', 'ignore', 'pipe'], detached: process.platform !== 'win32' })
     const endpoint = await waitForSpawnedChrome(chrome)
     cdp = new CdpClient(await createPageTarget(endpoint.port))
     await cdp.connect()
@@ -585,9 +675,12 @@ async function main(argv = process.argv.slice(2)) {
     console.error(`${prefix}: ${error instanceof LaunchSafetyError ? error.code : safeMessage(error)}`)
   } finally {
     cdp?.close()
-    chrome?.kill()
-    await sleep(250)
-    if (temporaryProfile && profile) await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }).catch(() => {})
+    const cleanupErrors = await cleanupBrowserResources({ chrome, profile, temporaryProfile })
+    if (cleanupErrors.length > 0) {
+      evidence.cleanup_errors.push(...cleanupErrors)
+      evidence.verdict = 'fail'
+      evidence.reasons.push(...cleanupErrors.map(error => error.split(':', 1)[0]))
+    }
   }
   try {
     await writeEvidence(args.evidence, evidence)
