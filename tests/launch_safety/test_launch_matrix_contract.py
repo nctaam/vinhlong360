@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PROBE = ROOT / "scripts" / "ops" / "probe_launch_boundary.py"
 BROWSER_SMOKE = ROOT / "scripts" / "launch_safety_browser_e2e.mjs"
 NUXT_PACKAGE = ROOT / "web-nuxt" / "package.json"
+CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 
 POLICY_FINGERPRINT = "ef12661b898905bd8b31804475aca64accd4c8b2df32b5252c3b2f61eeeca44c"
 ROUTE_MANIFEST_REVISION = "launch-indexing-policy-v1"
@@ -62,6 +63,34 @@ CASE_KEYS = {
     "fixture",
     "surface",
 }
+
+
+def test_ci_runs_task45_contracts_without_docker_or_browser_opt_ins():
+    workflow = CI_WORKFLOW.read_text(encoding="utf-8")
+    job = workflow.split("\n  launch-safety-contracts:\n", 1)[1].split(
+        "\n  test-pg:\n", 1
+    )[0]
+
+    assert "runs-on: windows-latest" in job
+    assert "actions/setup-python@v5" in job
+    assert "actions/setup-node@v4" in job
+    assert (
+        "python -m pytest tests/launch_safety/test_evidence_record.py "
+        "tests/launch_safety/test_browser_probe_contract.py "
+        "tests/launch_safety/test_launch_matrix_contract.py -q"
+    ) in job
+    assert "Get-Command pwsh,powershell" in job
+    assert "tests/launch_safety/powershell/test_release_gate_harness.ps1" in job
+    assert "if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }" in job
+
+    for forbidden in (
+        "docker compose",
+        "--with-docker",
+        "--with-browser",
+        "--probe-browser",
+        "CHROME_PATH",
+    ):
+        assert forbidden not in job
 
 
 def _load_probe() -> ModuleType:

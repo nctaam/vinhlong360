@@ -104,6 +104,39 @@ jobs:
           path: coverage.xml
           retention-days: 14
 
+  # Task 45 unit/static contracts use Windows command stubs and must run
+  # without provisioning Docker, Chrome, or a Nuxt preview process.
+  launch-safety-contracts:
+    name: Launch safety contracts (Task 45)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install contract test dependencies
+        run: python -m pip install pytest
+
+      - name: Run Task 45 Python contracts
+        run: python -m pytest tests/launch_safety/test_evidence_record.py tests/launch_safety/test_browser_probe_contract.py tests/launch_safety/test_launch_matrix_contract.py -q
+
+      - name: Run PowerShell release-gate contract
+        shell: pwsh
+        run: |
+          $powershell = Get-Command pwsh,powershell -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $powershell) { throw 'pwsh or powershell is required' }
+          & $powershell.Source -NoProfile -File tests/launch_safety/powershell/test_release_gate_harness.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
   # ── 2b. Test on Postgres (UGC/auth prod-parity) ─────────────
   # Job RIÊNG: chạy suite với DATABASE_URL=postgres → bật các test UGC/auth
   # đang skip trên SQLite (Postgres-only). Job `test` ở trên vẫn chạy SQLite
