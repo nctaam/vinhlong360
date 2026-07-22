@@ -445,74 +445,95 @@ class Database:
                         return None
         return self._pg_pool
 
+    @staticmethod
+    def _finalize_connection(conn, commit_on_success: bool):
+        if commit_on_success:
+            conn.commit()
+        else:
+            conn.rollback()
+
+    @staticmethod
+    def _rollback_connection_quietly(conn):
+        try:
+            conn.rollback()
+        except BaseException:
+            pass
+
+    @staticmethod
+    def _close_connection_preserving_error(conn, primary_error):
+        try:
+            conn.close()
+        except BaseException:
+            if primary_error is None:
+                raise
+
+    @staticmethod
+    def _return_connection_to_pool(
+        pool, conn, *, reusable: bool, commit_on_success: bool, primary_error
+    ):
+        try:
+            pool.putconn(conn, close=not reusable)
+        except BaseException as cleanup_error:
+            try:
+                conn.close()
+            except BaseException:
+                pass
+            if primary_error is None:
+                committed_write = reusable and commit_on_success
+                if not (committed_write and isinstance(cleanup_error, Exception)):
+                    raise
+
+    @contextmanager
+    def _pg_conn(self, *, commit_on_success: bool):
+        pool = self._get_pg_pool()
+        conn = pool.getconn() if pool else psycopg2.connect(self._dsn, connect_timeout=5)
+        reusable = False
+        primary_error = None
+        try:
+            conn.autocommit = False
+            yield conn
+            self._finalize_connection(conn, commit_on_success)
+            reusable = True
+        except BaseException as exc:
+            primary_error = exc
+            self._rollback_connection_quietly(conn)
+            raise
+        finally:
+            if pool:
+                self._return_connection_to_pool(
+                    pool,
+                    conn,
+                    reusable=reusable,
+                    commit_on_success=commit_on_success,
+                    primary_error=primary_error,
+                )
+            else:
+                self._close_connection_preserving_error(conn, primary_error)
+
+    @contextmanager
+    def _sqlite_conn(self, *, commit_on_success: bool):
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        primary_error = None
+        try:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA foreign_keys=ON")
+            conn.execute("PRAGMA busy_timeout=5000")
+            yield conn
+            self._finalize_connection(conn, commit_on_success)
+        except BaseException as exc:
+            primary_error = exc
+            self._rollback_connection_quietly(conn)
+            raise
+        finally:
+            self._close_connection_preserving_error(conn, primary_error)
+
     @contextmanager
     def _conn(self, *, commit_on_success: bool = True):
         """Own connection finalization and return only reusable pooled connections."""
-        if self._use_pg:
-            pool = self._get_pg_pool()
-            conn = pool.getconn() if pool else psycopg2.connect(self._dsn, connect_timeout=5)
-            reusable = False
-            primary_error = None
-            try:
-                conn.autocommit = False
-                yield conn
-                if commit_on_success:
-                    conn.commit()
-                else:
-                    conn.rollback()
-                reusable = True
-            except BaseException as exc:
-                primary_error = exc
-                try:
-                    conn.rollback()
-                except BaseException:
-                    pass
-                raise
-            finally:
-                if pool:
-                    try:
-                        pool.putconn(conn, close=not reusable)
-                    except BaseException as cleanup_error:
-                        try:
-                            conn.close()
-                        except BaseException:
-                            pass
-                        if primary_error is None:
-                            committed_write = reusable and commit_on_success
-                            if not (committed_write and isinstance(cleanup_error, Exception)):
-                                raise
-                else:
-                    try:
-                        conn.close()
-                    except BaseException:
-                        if primary_error is None:
-                            raise
-        else:
-            conn = sqlite3.connect(self.db_path, timeout=30)
-            primary_error = None
-            try:
-                conn.row_factory = sqlite3.Row
-                conn.execute("PRAGMA journal_mode=WAL")
-                conn.execute("PRAGMA foreign_keys=ON")
-                conn.execute("PRAGMA busy_timeout=5000")
-                yield conn
-                if commit_on_success:
-                    conn.commit()
-                else:
-                    conn.rollback()
-            except BaseException as exc:
-                primary_error = exc
-                try:
-                    conn.rollback()
-                except BaseException:
-                    pass
-                raise
-            finally:
-                try:
-                    conn.close()
-                except BaseException:
-                    if primary_error is None:
-                        raise
+        manager = self._pg_conn if self._use_pg else self._sqlite_conn
+        with manager(commit_on_success=commit_on_success) as conn:
+            yield conn
 
     def _cursor(self, conn):
         if self._use_pg:
