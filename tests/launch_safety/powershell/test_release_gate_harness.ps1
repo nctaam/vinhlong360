@@ -23,6 +23,10 @@ function Assert-Equal($Actual, $Expected, [string]$Message) {
   if ($Actual -ne $Expected) { throw "$Message; expected=$Expected actual=$Actual" }
 }
 
+function Assert-True($Condition, [string]$Message) {
+  if (-not $Condition) { throw $Message }
+}
+
 $priorPath = $env:PATH
 $priorChromeExists = Test-Path Env:CHROME_PATH
 $priorChrome = $env:CHROME_PATH
@@ -83,6 +87,28 @@ finally {
 }
 
 . (Join-Path $repoRoot 'scripts/ops/release_gate_browser_harness.ps1')
+
+$noiseScript = Join-Path ([System.IO.Path]::GetTempPath()) (
+  'launch-safety-noisy-preview-' + [guid]::NewGuid().ToString('N') + '.mjs'
+)
+'process.stdout.write("o".repeat(65536)); process.stderr.write("e".repeat(65536));' |
+  Set-Content -LiteralPath $noiseScript -Encoding Ascii
+try {
+  $captured = Start-LaunchSafetyPreviewProcess 'node' $noiseScript $repoRoot
+  try {
+    Assert-True ($captured.PSObject.Properties.Name -contains 'Capture') 'preview must expose bounded capture'
+    $null = $captured.Process.WaitForExit(10000)
+    Start-Sleep -Milliseconds 100
+    Assert-True ($captured.Capture.Stdout.Length -le 16384) 'stdout capture must stay bounded during preview'
+    Assert-True ($captured.Capture.Stderr.Length -le 16384) 'stderr capture must stay bounded during preview'
+  }
+  finally {
+    Stop-LaunchSafetyPreviewProcess $captured 6>$null | Out-Null
+  }
+}
+finally {
+  Remove-Item -LiteralPath $noiseScript -Force -ErrorAction SilentlyContinue
+}
 
 $browserEnvironmentNames = @('HOST', 'NITRO_HOST', 'PORT', 'NITRO_PORT', 'SMOKE_BASE_URL')
 $browserEnvironmentSnapshot = @{}
@@ -193,7 +219,52 @@ try {
   Assert-Equal $retry.Starts 2 'readiness collision starts exactly one replacement preview'
   Assert-Equal $retry.Stops 2 'readiness collision cleans both preview processes'
 
-  $cleanupRetry = @{ Starts = 0; Stops = 0 }
+  $fakePreview = [pscustomobject]@{
+    Process = [pscustomobject]@{ HasExited = $false }
+  }
+  $root404 = Wait-LaunchSafetyPreviewReady `
+    -BaseUrl 'http://127.0.0.1:18443' `
+    -PreviewProcess $fakePreview `
+    -MaxAttempts 1 `
+    -DelayMilliseconds 0 `
+    -InvokeRequest {
+      param($Uri)
+      if ($Uri.EndsWith('/sw.js')) {
+        return [pscustomobject]@{ StatusCode = 200; Content = 'worker' }
+      }
+      return [pscustomobject]@{ StatusCode = 404; Content = 'missing' }
+    }
+  Assert-Equal $root404 1 'root 4xx must fail readiness'
+
+  $emptyWorker = Wait-LaunchSafetyPreviewReady `
+    -BaseUrl 'http://127.0.0.1:18443' `
+    -PreviewProcess $fakePreview `
+    -MaxAttempts 1 `
+    -DelayMilliseconds 0 `
+    -InvokeRequest {
+      param($Uri)
+      if ($Uri.EndsWith('/sw.js')) {
+        return [pscustomobject]@{ StatusCode = 200; Content = '' }
+      }
+      return [pscustomobject]@{ StatusCode = 200; Content = 'home' }
+    }
+  Assert-Equal $emptyWorker 1 'empty service worker must fail readiness'
+
+  $ready = Wait-LaunchSafetyPreviewReady `
+    -BaseUrl 'http://127.0.0.1:18443' `
+    -PreviewProcess $fakePreview `
+    -MaxAttempts 1 `
+    -DelayMilliseconds 0 `
+    -InvokeRequest {
+      param($Uri)
+      if ($Uri.EndsWith('/sw.js')) {
+        return [pscustomobject]@{ StatusCode = 200; Content = 'worker' }
+      }
+      return [pscustomobject]@{ StatusCode = 200; Content = 'home' }
+    }
+  Assert-Equal $ready 0 'root and service worker success must pass readiness'
+
+  $cleanupRetry = @{ Starts = 0; Stops = 0; Smokes = 0 }
   $cleanupRetryResult = @(Invoke-LaunchSafetyBrowserHarness `
     -Root $repoRoot `
     -SelectPort { return 18443 } `
@@ -203,12 +274,13 @@ try {
       return [pscustomobject]@{ Id = $cleanupRetry.Starts; HasExited = $false }
     } `
     -WaitForReady { param($BaseUrl, $PreviewProcess); return 1 } `
-    -RunSmoke { param($WorkingDirectory); return 0 } `
+    -RunSmoke { param($WorkingDirectory); $cleanupRetry.Smokes += 1; return 37 } `
     -StopPreview { param($PreviewProcess); $cleanupRetry.Stops += 1; return 9 } `
     -RecordEvidence { param($Status, $ExitCode, $Summary, $Command); return 0 })
   Assert-Equal $cleanupRetryResult[0] 9 'failed retry cleanup takes precedence'
   Assert-Equal $cleanupRetry.Starts 1 'failed cleanup prevents another preview start'
   Assert-Equal $cleanupRetry.Stops 1 'failed cleanup is attempted once'
+  Assert-Equal $cleanupRetry.Smokes 0 'failed readiness cleanup must not run browser smoke'
 }
 finally {
   foreach ($name in $browserEnvironmentNames) {
@@ -218,5 +290,91 @@ finally {
     } else {
       Remove-Item -LiteralPath "Env:$name" -ErrorAction SilentlyContinue
     }
+  }
+}
+
+$releaseStubRoot = Join-Path ([System.IO.Path]::GetTempPath()) (
+  'launch-gate-exit-stubs-' + [guid]::NewGuid().ToString('N')
+)
+$releaseState = Join-Path $releaseStubRoot 'evidence.json'
+$nodeMarker = Join-Path $releaseStubRoot 'node-probe.txt'
+$postgresHarnessDirectory = Join-Path $repoRoot 'tests/launch_safety/harness'
+$postgresHarnessFile = Join-Path $postgresHarnessDirectory 'docker-compose.postgres.yml'
+$postgresHarnessDirectoryExisted = Test-Path -LiteralPath $postgresHarnessDirectory -PathType Container
+$postgresHarnessFileExisted = Test-Path -LiteralPath $postgresHarnessFile -PathType Leaf
+New-Item -ItemType Directory -Path $releaseStubRoot | Out-Null
+if (-not $postgresHarnessDirectoryExisted) {
+  New-Item -ItemType Directory -Path $postgresHarnessDirectory -Force | Out-Null
+}
+if (-not $postgresHarnessFileExisted) {
+  'services: {}' | Set-Content -LiteralPath $postgresHarnessFile -Encoding Ascii
+}
+
+@'
+@echo off
+echo %* | findstr /C:"test_sitemap_bundle_postgres.py" >nul
+if %errorlevel%==0 exit /b 23
+exit /b 0
+'@ | Set-Content -LiteralPath (Join-Path $releaseStubRoot 'python.cmd') -Encoding Ascii
+
+@'
+@echo off
+if "%1"=="rev-parse" echo 0123456789abcdef0123456789abcdef01234567
+exit /b 0
+'@ | Set-Content -LiteralPath (Join-Path $releaseStubRoot 'git.cmd') -Encoding Ascii
+
+foreach ($name in @('npx.cmd', 'npm.cmd', 'bash.cmd', 'docker.cmd', 'pwsh.cmd')) {
+  "@echo off`r`nexit /b 0`r`n" |
+    Set-Content -LiteralPath (Join-Path $releaseStubRoot $name) -Encoding Ascii
+}
+
+"@echo off`r`necho invoked>`"$nodeMarker`"`r`nexit /b 41`r`n" |
+  Set-Content -LiteralPath (Join-Path $releaseStubRoot 'node.cmd') -Encoding Ascii
+
+$releasePriorPath = $env:PATH
+$releaseDatabaseUrlExists = Test-Path Env:DATABASE_URL
+$releaseDatabaseUrl = $env:DATABASE_URL
+try {
+  $env:PATH = "$releaseStubRoot;$releasePriorPath"
+  Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+  $powershell = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+  $priorErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    $releaseOutput = @(& $powershell -NoProfile -File `
+      (Join-Path $repoRoot 'scripts/release_gate.ps1') `
+      -SkipBackend -SkipFrontend -SkipData `
+      -Python (Join-Path $releaseStubRoot 'python.cmd') `
+      -Node (Join-Path $releaseStubRoot 'node.cmd') `
+      -LaunchSafetyEvidenceState $releaseState `
+      -RunLaunchSafetyDockerOptIn `
+      -RunLaunchSafetyBrowserOptIn 2>&1)
+    $releaseExit = [int]$LASTEXITCODE
+  }
+  finally {
+    $ErrorActionPreference = $priorErrorActionPreference
+  }
+
+  Assert-Equal $releaseExit 23 (
+    "first Docker opt-in failure must remain the release exit code; output=" +
+    ($releaseOutput -join ' | ')
+  )
+  Assert-True (Test-Path -LiteralPath $nodeMarker) 'browser probe must still run after Docker opt-in failure'
+  Assert-True (($releaseOutput -join "`n") -match 'Launch Safety browser opt-in') `
+    'release output must report the independent browser opt-in'
+}
+finally {
+  $env:PATH = $releasePriorPath
+  if ($releaseDatabaseUrlExists) {
+    $env:DATABASE_URL = $releaseDatabaseUrl
+  } else {
+    Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+  }
+  Remove-Item -LiteralPath $releaseStubRoot -Recurse -Force -ErrorAction SilentlyContinue
+  if (-not $postgresHarnessFileExisted) {
+    Remove-Item -LiteralPath $postgresHarnessFile -Force -ErrorAction SilentlyContinue
+  }
+  if (-not $postgresHarnessDirectoryExisted) {
+    Remove-Item -LiteralPath $postgresHarnessDirectory -Force -ErrorAction SilentlyContinue
   }
 }

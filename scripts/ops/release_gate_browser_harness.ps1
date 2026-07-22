@@ -1,5 +1,103 @@
 $MAX_LAUNCH_SAFETY_OUTPUT = 16 * 1024
 
+if (-not ('VinhLong360.LaunchSafety.BoundedProcessCapture' -as [type])) {
+  Add-Type -TypeDefinition @'
+using System;
+using System.Diagnostics;
+using System.Text;
+
+namespace VinhLong360.LaunchSafety
+{
+    public sealed class BoundedProcessCapture : IDisposable
+    {
+        private readonly int maxLength;
+        private readonly object stdoutLock = new object();
+        private readonly object stderrLock = new object();
+        private readonly StringBuilder stdout = new StringBuilder();
+        private readonly StringBuilder stderr = new StringBuilder();
+
+        public Process Process { get; private set; }
+
+        public string Stdout
+        {
+            get { lock (stdoutLock) { return stdout.ToString(); } }
+        }
+
+        public string Stderr
+        {
+            get { lock (stderrLock) { return stderr.ToString(); } }
+        }
+
+        public BoundedProcessCapture(
+            string executable,
+            string entryPoint,
+            string workingDirectory,
+            int maxLength)
+        {
+            this.maxLength = maxLength;
+            Process = new Process();
+            Process.StartInfo = new ProcessStartInfo
+            {
+                FileName = executable,
+                Arguments = QuoteArgument(entryPoint),
+                WorkingDirectory = workingDirectory,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            Process.OutputDataReceived += delegate(object sender, DataReceivedEventArgs args)
+            {
+                Append(stdout, stdoutLock, args.Data);
+            };
+            Process.ErrorDataReceived += delegate(object sender, DataReceivedEventArgs args)
+            {
+                Append(stderr, stderrLock, args.Data);
+            };
+        }
+
+        public void Start()
+        {
+            if (!Process.Start())
+            {
+                throw new InvalidOperationException("Nuxt preview process did not start");
+            }
+            Process.BeginOutputReadLine();
+            Process.BeginErrorReadLine();
+        }
+
+        private static string QuoteArgument(string value)
+        {
+            return "\"" + value.Replace("\"", "\\\"") + "\"";
+        }
+
+        private void Append(StringBuilder buffer, object sync, string line)
+        {
+            if (line == null) { return; }
+            string value = line + Environment.NewLine;
+            lock (sync)
+            {
+                if (value.Length >= maxLength)
+                {
+                    buffer.Clear();
+                    buffer.Append(value.Substring(value.Length - maxLength));
+                    return;
+                }
+                int overflow = buffer.Length + value.Length - maxLength;
+                if (overflow > 0) { buffer.Remove(0, overflow); }
+                buffer.Append(value);
+            }
+        }
+
+        public void Dispose()
+        {
+            Process.Dispose();
+        }
+    }
+}
+'@
+}
+
 function Get-LaunchSafetyLoopbackPort {
   $listener = [System.Net.Sockets.TcpListener]::new(
     [System.Net.IPAddress]::Loopback,
@@ -14,14 +112,6 @@ function Get-LaunchSafetyLoopbackPort {
   }
 }
 
-function Get-BoundedLaunchSafetyFileText {
-  param([string]$Path)
-  if (-not $Path -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) { return '' }
-  $content = [System.IO.File]::ReadAllText($Path)
-  if ($content.Length -le $MAX_LAUNCH_SAFETY_OUTPUT) { return $content }
-  return $content.Substring($content.Length - $MAX_LAUNCH_SAFETY_OUTPUT)
-}
-
 function Start-LaunchSafetyPreviewProcess {
   param(
     [string]$Node,
@@ -33,24 +123,22 @@ function Start-LaunchSafetyPreviewProcess {
     $missing.Data['ExitCode'] = 1
     throw $missing
   }
-  $stdoutPath = Join-Path ([System.IO.Path]::GetTempPath()) (
-    'vl360-launch-preview-' + [guid]::NewGuid().ToString('N') + '.stdout.log'
-  )
-  $stderrPath = Join-Path ([System.IO.Path]::GetTempPath()) (
-    'vl360-launch-preview-' + [guid]::NewGuid().ToString('N') + '.stderr.log'
-  )
+  $capture = $null
   try {
-    $process = Start-Process -FilePath $Node -ArgumentList @($EntryPoint) `
-      -WorkingDirectory $WorkingDirectory -PassThru -NoNewWindow `
-      -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+    $capture = [VinhLong360.LaunchSafety.BoundedProcessCapture]::new(
+      $Node,
+      $EntryPoint,
+      $WorkingDirectory,
+      $MAX_LAUNCH_SAFETY_OUTPUT
+    )
+    $capture.Start()
     return [pscustomobject]@{
-      Process = $process
-      StdoutPath = $stdoutPath
-      StderrPath = $stderrPath
+      Process = $capture.Process
+      Capture = $capture
     }
   }
   catch {
-    Remove-Item -LiteralPath $stdoutPath, $stderrPath -Force -ErrorAction SilentlyContinue
+    if ($null -ne $capture) { $capture.Dispose() }
     $failure = [System.Exception]::new("Nuxt preview failed to start: $($_.Exception.Message)")
     $failure.Data['ExitCode'] = 1
     throw $failure
@@ -60,14 +148,24 @@ function Start-LaunchSafetyPreviewProcess {
 function Wait-LaunchSafetyPreviewReady {
   param(
     [string]$BaseUrl,
-    [object]$PreviewProcess
+    [object]$PreviewProcess,
+    [int]$MaxAttempts = 60,
+    [int]$DelayMilliseconds = 250,
+    [scriptblock]$InvokeRequest
   )
-  for ($attempt = 0; $attempt -lt 60; $attempt++) {
+  if ($null -eq $InvokeRequest) {
+    $InvokeRequest = {
+      param($Uri)
+      Invoke-WebRequest -Uri $Uri -UseBasicParsing -TimeoutSec 2
+    }
+  }
+  for ($attempt = 0; $attempt -lt $MaxAttempts; $attempt++) {
     if ($PreviewProcess.Process.HasExited) { return 1 }
     try {
-      $rootResponse = Invoke-WebRequest -Uri "$BaseUrl/" -UseBasicParsing -TimeoutSec 2
-      $workerResponse = Invoke-WebRequest -Uri "$BaseUrl/sw.js" -UseBasicParsing -TimeoutSec 2
-      if ($rootResponse.StatusCode -lt 500 -and
+      $rootResponse = & $InvokeRequest "$BaseUrl/"
+      $workerResponse = & $InvokeRequest "$BaseUrl/sw.js"
+      if ($rootResponse.StatusCode -ge 200 -and
+          $rootResponse.StatusCode -lt 400 -and
           $workerResponse.StatusCode -ge 200 -and
           $workerResponse.StatusCode -lt 300 -and
           -not [string]::IsNullOrWhiteSpace([string]$workerResponse.Content)) {
@@ -77,7 +175,7 @@ function Wait-LaunchSafetyPreviewReady {
     catch {
       # The bounded retry loop handles startup races and a released-port collision.
     }
-    Start-Sleep -Milliseconds 250
+    if ($DelayMilliseconds -gt 0) { Start-Sleep -Milliseconds $DelayMilliseconds }
   }
   return 1
 }
@@ -127,20 +225,20 @@ function Stop-LaunchSafetyPreviewProcess {
       try { $process.Kill($true) } catch { Stop-Process -Id $process.Id -Force -ErrorAction Stop }
       if (-not $process.WaitForExit(5000)) { $cleanupExit = 1 }
     }
+    if ($null -ne $process -and $process.HasExited) { $process.WaitForExit() }
   }
   catch {
     $cleanupExit = 1
   }
   finally {
     $previewOutput = @(
-      Get-BoundedLaunchSafetyFileText $PreviewProcess.StdoutPath
-      Get-BoundedLaunchSafetyFileText $PreviewProcess.StderrPath
+      $PreviewProcess.Capture.Stdout
+      $PreviewProcess.Capture.Stderr
     ) -join [Environment]::NewLine
     if (-not [string]::IsNullOrWhiteSpace($previewOutput)) {
       Write-Host $previewOutput.Trim()
     }
-    Remove-Item -LiteralPath $PreviewProcess.StdoutPath, $PreviewProcess.StderrPath `
-      -Force -ErrorAction SilentlyContinue
+    if ($null -ne $PreviewProcess.Capture) { $PreviewProcess.Capture.Dispose() }
   }
   return [int]$cleanupExit
 }
@@ -251,13 +349,13 @@ function Invoke-LaunchSafetyBrowserHarness {
         if ($attempt -eq 4) { throw }
       }
     }
-    if (-not $started -and $cleanupExit -eq 0) {
-      $primaryExit = 1
-      $summary = 'Nuxt output server readiness failed'
-    } else {
+    if ($started) {
       $env:SMOKE_BASE_URL = $baseUrl
       $primaryExit = [int](& $RunSmoke $webDirectory)
       if ($primaryExit -ne 0) { $summary = "browser smoke failed with exit $primaryExit" }
+    } elseif ($cleanupExit -eq 0) {
+      $primaryExit = 1
+      $summary = 'Nuxt output server readiness failed'
     }
   }
   catch {

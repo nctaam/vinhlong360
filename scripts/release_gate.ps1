@@ -324,6 +324,13 @@ function Assert-LaunchSafetyCleanHead {
   }
 }
 
+function Set-LaunchSafetyOptInExit {
+  param([int]$ExitCode)
+  if ($ExitCode -ne 0 -and $Script:LaunchSafetyOptInExit -eq 0) {
+    $Script:LaunchSafetyOptInExit = [int]$ExitCode
+  }
+}
+
 function Invoke-LaunchSafetyOptIns {
   if (-not $RunLaunchSafetyDockerOptIn -and -not $RunLaunchSafetyBrowserOptIn) {
     if ($Script:LaunchSafetyEvidenceEnabled) {
@@ -348,59 +355,76 @@ function Invoke-LaunchSafetyOptIns {
   if ($RunLaunchSafetyDockerOptIn) {
     Write-Step "RUN" "Launch Safety Docker opt-in"
     try {
-      Assert-LaunchSafetyCleanHead
-    } catch {
-      Invoke-LaunchSafetyRecord "postgres-opt-in" "fail" 1 $_.Exception.Message "git status --porcelain --untracked-files=all"
-      Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "fail" 1 $_.Exception.Message "git status --porcelain --untracked-files=all"
-      throw "Launch Safety Docker opt-in requires a clean worktree"
-    }
-    $dockerReason = $null
-    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-      $dockerReason = "docker-cli-unavailable"
-    } else {
-      & docker info *> $null
-      if ($LASTEXITCODE -ne 0) { $dockerReason = "docker-daemon-unavailable" }
-    }
-    if ($dockerReason) {
-      Invoke-LaunchSafetyRecord "postgres-opt-in" "skip" 0 $dockerReason "docker info"
-      Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "skip" 0 $dockerReason "docker info"
-      Write-Step "SKIP" "Launch Safety Docker opt-in" $dockerReason
-    } else {
-      . (Join-Path $Root "scripts/ops/release_gate_harness.ps1")
-      $postgresCompose = Join-Path $Root "tests/launch_safety/harness/docker-compose.postgres.yml"
-      if (-not (Test-Path -LiteralPath $postgresCompose)) {
-        Invoke-LaunchSafetyRecord "postgres-opt-in" "fail" 1 "postgres harness is missing" "docker compose postgres"
-        Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "fail" 1 "nginx harness is missing" "pytest launch matrix"
-        throw "Launch Safety Docker harness files are missing"
+      try {
+        Assert-LaunchSafetyCleanHead
+      } catch {
+        Invoke-LaunchSafetyRecord "postgres-opt-in" "fail" 1 $_.Exception.Message "git status --porcelain --untracked-files=all"
+        Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "fail" 1 $_.Exception.Message "git status --porcelain --untracked-files=all"
+        throw "Launch Safety Docker opt-in requires a clean worktree"
       }
-      $postgresResult = @(Invoke-RecordedComposeHarness `
-        -Section "postgres-opt-in" `
-        -ComposeFile $postgresCompose `
-        -EnvironmentNames @("SITEMAP_BUNDLE_TEST_DATABASE_URL") `
-        -Python $Python `
-        -EvidenceState $LaunchSafetyEvidenceState `
-        -Body {
-          $env:SITEMAP_BUNDLE_TEST_DATABASE_URL = "postgresql://vl360:vl360_launch_test@127.0.0.1:55432/vl360_launch_test"
-          & $Python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q
-          if ($LASTEXITCODE -ne 0) {
-            $errorRecord = [System.Exception]::new("postgres launch test failed")
-            $errorRecord.Data["ExitCode"] = [int]$LASTEXITCODE
-            throw $errorRecord
-          }
+      $dockerReason = $null
+      if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+        $dockerReason = "docker-cli-unavailable"
+      } else {
+        & docker info *> $null
+        if ($LASTEXITCODE -ne 0) { $dockerReason = "docker-daemon-unavailable" }
+      }
+      if ($dockerReason) {
+        Invoke-LaunchSafetyRecord "postgres-opt-in" "skip" 0 $dockerReason "docker info"
+        Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "skip" 0 $dockerReason "docker info"
+        Write-Step "SKIP" "Launch Safety Docker opt-in" $dockerReason
+      } else {
+        . (Join-Path $Root "scripts/ops/release_gate_harness.ps1")
+        $postgresCompose = Join-Path $Root "tests/launch_safety/harness/docker-compose.postgres.yml"
+        if (-not (Test-Path -LiteralPath $postgresCompose)) {
+          Invoke-LaunchSafetyRecord "postgres-opt-in" "fail" 1 "postgres harness is missing" "docker compose postgres"
+          Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "fail" 1 "nginx harness is missing" "pytest launch matrix"
+          throw "Launch Safety Docker harness files are missing"
         }
-      )
-      if ($postgresResult.Count -ne 1 -or $postgresResult[0] -isnot [int]) {
-        throw "Launch Safety PostgreSQL harness returned a non-scalar result"
-      }
-      if ($postgresResult[0] -ne 0) { throw "Launch Safety PostgreSQL opt-in failed" }
+        $postgresResult = @(Invoke-RecordedComposeHarness `
+          -Section "postgres-opt-in" `
+          -ComposeFile $postgresCompose `
+          -EnvironmentNames @("SITEMAP_BUNDLE_TEST_DATABASE_URL") `
+          -Python $Python `
+          -EvidenceState $LaunchSafetyEvidenceState `
+          -Body {
+            $env:SITEMAP_BUNDLE_TEST_DATABASE_URL = "postgresql://vl360:vl360_launch_test@127.0.0.1:55432/vl360_launch_test"
+            & $Python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q
+            if ($LASTEXITCODE -ne 0) {
+              $errorRecord = [System.Exception]::new("postgres launch test failed")
+              $errorRecord.Data["ExitCode"] = [int]$LASTEXITCODE
+              throw $errorRecord
+            }
+          }
+        )
+        if ($postgresResult.Count -ne 1 -or $postgresResult[0] -isnot [int]) {
+          throw "Launch Safety PostgreSQL harness returned a non-scalar result"
+        }
+        $postgresExit = [int]$postgresResult[0]
+        if ($postgresExit -ne 0) {
+          Set-LaunchSafetyOptInExit $postgresExit
+          Write-Step "FAIL" "Launch Safety PostgreSQL opt-in" "exited with code $postgresExit"
+        }
 
-      $nginxExit = 0
-      & $Python -m pytest tests/launch_safety/integration/test_launch_matrix.py tests/launch_safety/integration/test_nginx_boundary.py tests/launch_safety/integration/test_network_boundary.py -m integration -q
-      $nginxExit = [int]$LASTEXITCODE
-      $nginxStatus = if ($nginxExit -eq 0) { "pass" } else { "fail" }
-      Invoke-LaunchSafetyRecord "compose-nginx-opt-in" $nginxStatus $nginxExit "launch matrix integration" "pytest launch matrix"
-      if ($nginxExit -ne 0) { throw "Launch Safety Nginx opt-in failed" }
-      Write-Step "OK" "Launch Safety Docker opt-in"
+        $nginxExit = 0
+        & $Python -m pytest tests/launch_safety/integration/test_launch_matrix.py tests/launch_safety/integration/test_nginx_boundary.py tests/launch_safety/integration/test_network_boundary.py -m integration -q
+        $nginxExit = [int]$LASTEXITCODE
+        $nginxStatus = if ($nginxExit -eq 0) { "pass" } else { "fail" }
+        Invoke-LaunchSafetyRecord "compose-nginx-opt-in" $nginxStatus $nginxExit "launch matrix integration" "pytest launch matrix"
+        if ($nginxExit -ne 0) {
+          Set-LaunchSafetyOptInExit $nginxExit
+          Write-Step "FAIL" "Launch Safety Nginx opt-in" "exited with code $nginxExit"
+        }
+        if ($postgresExit -eq 0 -and $nginxExit -eq 0) {
+          Write-Step "OK" "Launch Safety Docker opt-in"
+        }
+      }
+    } catch {
+      $dockerExit = if ($_.Exception.Data.Contains("ExitCode")) {
+        [int]$_.Exception.Data["ExitCode"]
+      } else { 1 }
+      Set-LaunchSafetyOptInExit $dockerExit
+      Write-Step "FAIL" "Launch Safety Docker opt-in" $_.Exception.Message
     }
   }
 
@@ -408,8 +432,8 @@ function Invoke-LaunchSafetyOptIns {
     Write-Step "RUN" "Launch Safety browser opt-in"
     $probe = Join-Path $Root "scripts/launch_safety_browser_e2e.mjs"
     if (-not (Test-Path -LiteralPath $probe)) {
+      Set-LaunchSafetyOptInExit 1
       Invoke-LaunchSafetyRecord "browser-opt-in" "fail" 1 "browser probe is missing" "node --probe-browser"
-      $Script:LaunchSafetyOptInExit = 1
       return
     }
     & $Node $probe --probe-browser
@@ -417,11 +441,10 @@ function Invoke-LaunchSafetyOptIns {
     if ($probeExit -eq 3) {
       Invoke-LaunchSafetyRecord "browser-opt-in" "skip" 0 "chrome-unavailable" "node --probe-browser"
       Write-Step "SKIP" "Launch Safety browser opt-in" "chrome-unavailable"
-      $Script:LaunchSafetyOptInExit = 0
     } elseif ($probeExit -ne 0) {
+      Set-LaunchSafetyOptInExit $probeExit
       Invoke-LaunchSafetyRecord "browser-opt-in" "fail" $probeExit "browser probe failed" "node --probe-browser"
       Write-Step "FAIL" "Launch Safety browser opt-in" "browser probe exited with code $probeExit"
-      $Script:LaunchSafetyOptInExit = $probeExit
     } else {
       . (Join-Path $Root "scripts/ops/release_gate_browser_harness.ps1")
       $browserResult = @(Invoke-LaunchSafetyBrowserHarness `
@@ -435,14 +458,15 @@ function Invoke-LaunchSafetyOptIns {
         }
       )
       if ($browserResult.Count -ne 1 -or $browserResult[0] -isnot [int]) {
-        $Script:LaunchSafetyOptInExit = 1
+        Set-LaunchSafetyOptInExit 1
         Invoke-LaunchSafetyRecord "browser-opt-in" "fail" 1 "browser harness returned a non-scalar result" "npm run smoke:launch-safety"
       } else {
-        $Script:LaunchSafetyOptInExit = [int]$browserResult[0]
-        if ($Script:LaunchSafetyOptInExit -eq 0) {
+        $browserExit = [int]$browserResult[0]
+        Set-LaunchSafetyOptInExit $browserExit
+        if ($browserExit -eq 0) {
           Write-Step "OK" "Launch Safety browser opt-in"
         } else {
-          Write-Step "FAIL" "Launch Safety browser opt-in" "browser harness exited with code $Script:LaunchSafetyOptInExit"
+          Write-Step "FAIL" "Launch Safety browser opt-in" "browser harness exited with code $browserExit"
         }
       }
     }
@@ -606,7 +630,10 @@ try {
 try {
   Invoke-LaunchSafetyOptIns
 } catch {
-  $Script:Failures++
+  $optInExit = if ($_.Exception.Data.Contains("ExitCode")) {
+    [int]$_.Exception.Data["ExitCode"]
+  } else { 1 }
+  Set-LaunchSafetyOptInExit $optInExit
   Write-Step "FAIL" "Launch Safety opt-ins" $_.Exception.Message
 }
 
