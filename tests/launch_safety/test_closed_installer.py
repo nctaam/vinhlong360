@@ -2329,9 +2329,13 @@ print(json.dumps({"prefix": sys.prefix}))
         "--require-closed",
         "--local-rehearsal",
     ]
+    # Run the long bootstrap through a file so Git Bash does not corrupt
+    # backslash-newline continuations while parsing a large `-c` argument.
+    probe_path = tmp_path / "python-bootstrap-probe.sh"
+    probe_path.write_text(probe, encoding="ascii")
 
     result = subprocess.run(
-        [str(BASH), "-c", probe, "vl360-python-bootstrap", *required_args],
+        [str(BASH), _bash_path(probe_path), *required_args],
         cwd=tmp_path,
         env=env,
         check=False,
