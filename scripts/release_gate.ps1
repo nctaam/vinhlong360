@@ -8,6 +8,9 @@ param(
   [switch]$RequireAuthCheck,
   [switch]$RunE2E,
   [switch]$RequireE2E,
+  [switch]$RunLaunchSafetyDockerOptIn,
+  [switch]$RunLaunchSafetyBrowserOptIn,
+  [string]$LaunchSafetyEvidenceState = "",
   [string]$SmokeBaseUrl = "",
   [string]$SmokeApiBaseUrl = ""
 )
@@ -16,6 +19,10 @@ $ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $Script:Failures = 0
 $Script:Warnings = 0
+
+if (-not $LaunchSafetyEvidenceState -and $env:LAUNCH_SAFETY_EVIDENCE_STATE) {
+  $LaunchSafetyEvidenceState = $env:LAUNCH_SAFETY_EVIDENCE_STATE
+}
 
 if ($RequireAuthCheck) { $RunAuthCheck = $true }
 if ($RequireE2E) { $RunE2E = $true }
@@ -90,6 +97,111 @@ function Invoke-NativeAllowWarning {
     }
   } finally {
     Pop-Location
+  }
+}
+
+function Invoke-LaunchSafetyRecord {
+  param(
+    [Parameter(Mandatory = $true)][string]$Section,
+    [Parameter(Mandatory = $true)][ValidateSet("pass", "fail", "skip")][string]$Status,
+    [Parameter(Mandatory = $true)][int]$ExitCode,
+    [Parameter(Mandatory = $true)][string]$Summary,
+    [string]$Command = "launch safety gate"
+  )
+  $recordArgs = @(
+    "scripts/ops/record_launch_evidence.py", "record",
+    "--section", $Section, "--status", $Status,
+    "--exit-code", [string]$ExitCode, "--summary", $Summary,
+    "--command", $Command
+  )
+  if ($LaunchSafetyEvidenceState) {
+    $recordArgs += @("--state", $LaunchSafetyEvidenceState)
+  }
+  & $Python @recordArgs
+  if ($LASTEXITCODE -ne 0) {
+    throw "failed to record Launch Safety evidence for $Section (exit $LASTEXITCODE)"
+  }
+}
+
+function Invoke-LaunchSafetyOptIns {
+  if (-not $RunLaunchSafetyDockerOptIn -and -not $RunLaunchSafetyBrowserOptIn) {
+    return
+  }
+  if ($Script:Failures -gt 0) {
+    Write-Step "SKIP" "Launch Safety opt-ins" "default release gate has failures"
+    return
+  }
+
+  if ($RunLaunchSafetyDockerOptIn) {
+    Write-Step "RUN" "Launch Safety Docker opt-in"
+    $dockerReason = $null
+    if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+      $dockerReason = "docker-cli-unavailable"
+    } else {
+      & docker info *> $null
+      if ($LASTEXITCODE -ne 0) { $dockerReason = "docker-daemon-unavailable" }
+    }
+    if ($dockerReason) {
+      Invoke-LaunchSafetyRecord "postgres-opt-in" "skip" 0 $dockerReason "docker info"
+      Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "skip" 0 $dockerReason "docker info"
+      Write-Step "SKIP" "Launch Safety Docker opt-in" $dockerReason
+    } else {
+      . (Join-Path $Root "scripts/ops/release_gate_harness.ps1")
+      $postgresCompose = Join-Path $Root "tests/launch_safety/harness/docker-compose.postgres.yml"
+      if (-not (Test-Path -LiteralPath $postgresCompose)) {
+        Invoke-LaunchSafetyRecord "postgres-opt-in" "fail" 1 "postgres harness is missing" "docker compose postgres"
+        Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "fail" 1 "nginx harness is missing" "pytest launch matrix"
+        throw "Launch Safety Docker harness files are missing"
+      }
+      $postgresResult = @(Invoke-RecordedComposeHarness `
+        -Section "postgres-opt-in" `
+        -ComposeFile $postgresCompose `
+        -EnvironmentNames @("SITEMAP_BUNDLE_TEST_DATABASE_URL") `
+        -Python $Python `
+        -EvidenceState $LaunchSafetyEvidenceState `
+        -Body {
+          $env:SITEMAP_BUNDLE_TEST_DATABASE_URL = "postgresql://vl360:vl360_launch_test@127.0.0.1:55432/vl360_launch_test"
+          & $Python -m pytest agent/tests/test_sitemap_bundle_postgres.py -m integration -q
+          if ($LASTEXITCODE -ne 0) {
+            $errorRecord = [System.Exception]::new("postgres launch test failed")
+            $errorRecord.Data["ExitCode"] = [int]$LASTEXITCODE
+            throw $errorRecord
+          }
+        }
+      )
+      if ($postgresResult.Count -ne 1 -or $postgresResult[0] -isnot [int]) {
+        throw "Launch Safety PostgreSQL harness returned a non-scalar result"
+      }
+      if ($postgresResult[0] -ne 0) { throw "Launch Safety PostgreSQL opt-in failed" }
+
+      $nginxExit = 0
+      & $Python -m pytest tests/launch_safety/integration/test_launch_matrix.py tests/launch_safety/integration/test_nginx_boundary.py tests/launch_safety/integration/test_network_boundary.py -m integration -q
+      $nginxExit = [int]$LASTEXITCODE
+      $nginxStatus = if ($nginxExit -eq 0) { "pass" } else { "fail" }
+      Invoke-LaunchSafetyRecord "compose-nginx-opt-in" $nginxStatus $nginxExit "launch matrix integration" "pytest launch matrix"
+      if ($nginxExit -ne 0) { throw "Launch Safety Nginx opt-in failed" }
+      Write-Step "OK" "Launch Safety Docker opt-in"
+    }
+  }
+
+  if ($RunLaunchSafetyBrowserOptIn) {
+    Write-Step "RUN" "Launch Safety browser opt-in"
+    $probe = Join-Path $Root "scripts/launch_safety_browser_e2e.mjs"
+    if (-not (Test-Path -LiteralPath $probe)) {
+      Invoke-LaunchSafetyRecord "browser-opt-in" "fail" 1 "browser probe is missing" "node --probe-browser"
+      throw "Launch Safety browser probe is missing"
+    }
+    & $Node $probe --probe-browser
+    $probeExit = [int]$LASTEXITCODE
+    if ($probeExit -eq 3) {
+      Invoke-LaunchSafetyRecord "browser-opt-in" "skip" 0 "chrome-unavailable" "node --probe-browser"
+      Write-Step "SKIP" "Launch Safety browser opt-in" "chrome-unavailable"
+    } else {
+      $probeStatus = if ($probeExit -eq 0) { "pass" } else { "fail" }
+      Invoke-LaunchSafetyRecord "browser-opt-in" $probeStatus $probeExit "browser probe-only" "node --probe-browser"
+      if ($probeExit -ne 0) { throw "Launch Safety browser probe failed" }
+      Write-Step "OK" "Launch Safety browser opt-in"
+    }
   }
 }
 
@@ -199,6 +311,13 @@ if ($RunE2E) {
   Write-Step "FAIL" "Chrome smoke E2E 20 routes" "required but not run"
 } else {
   Write-Step "SKIP" "Chrome smoke E2E 20 routes" "start local app/API and pass -RunE2E; use -RequireE2E in CI"
+}
+
+try {
+  Invoke-LaunchSafetyOptIns
+} catch {
+  $Script:Failures++
+  Write-Step "FAIL" "Launch Safety opt-ins" $_.Exception.Message
 }
 
 Write-Host ""
