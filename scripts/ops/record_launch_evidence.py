@@ -253,10 +253,18 @@ def record_section(
     name: str,
     evidence: CommandEvidence,
     evidence_path: Path | None = None,
+    *,
+    revision: str | None = None,
 ) -> None:
     """Load, upsert, and persist a single evidence section."""
 
     document = EvidenceDocument.load(evidence_path or _default_state_path())
+    if revision:
+        if document.revision not in {"unknown", revision}:
+            raise ValueError(
+                f"evidence revision mismatch: {document.revision} != {revision}"
+            )
+        document.revision = _redact(revision)
     document.record(name, evidence)
     document.save()
 
@@ -271,6 +279,7 @@ def _build_parser() -> argparse.ArgumentParser:
     record.add_argument("--exit-code", type=int, required=True)
     record.add_argument("--summary", required=True)
     record.add_argument("--command", default="")
+    record.add_argument("--revision")
     record.add_argument("--state", type=Path, default=_default_state_path())
 
     harness = subparsers.add_parser("harness-result", help="record compose result")
@@ -293,6 +302,7 @@ def main(argv: list[str] | None = None) -> int:
             args.section,
             CommandEvidence(args.command or args.section, args.exit_code, args.summary, args.status),
             args.state,
+            revision=args.revision,
         )
         return 0
     if args.action == "harness-result":

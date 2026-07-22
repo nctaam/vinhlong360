@@ -9,6 +9,7 @@ from scripts.ops.record_launch_evidence import (
     REQUIRED_SECTIONS,
     CommandEvidence,
     EvidenceDocument,
+    record_section,
     resolve_harness_result,
 )
 
@@ -73,6 +74,21 @@ def test_record_upserts_section_and_final_render_rejects_missing_sections(tmp_pa
         document.render(final=True)
 
 
+def test_record_section_persists_the_clean_head_revision(tmp_path: Path) -> None:
+    state_path = tmp_path / "state.json"
+
+    record_section(
+        "artifacts",
+        CommandEvidence("pytest artifacts", 0, "passed", "pass"),
+        state_path,
+        revision="09510487598f50488475a3f2d62d07a3fb337938",
+    )
+
+    document = EvidenceDocument.load(state_path)
+    assert document.revision == "09510487598f50488475a3f2d62d07a3fb337938"
+    assert "> Revision: 09510487598f50488475a3f2d62d07a3fb337938" in document.render()
+
+
 def test_final_render_rejects_not_requested_opt_in_and_accepts_explicit_skip(tmp_path: Path) -> None:
     document = EvidenceDocument.empty(tmp_path / "state.json")
     for section in REQUIRED_SECTIONS:
@@ -110,3 +126,37 @@ def test_release_gate_exposes_independent_opt_in_switches_without_default_startu
     assert "--probe-browser" in source
     assert "if ($RunLaunchSafetyDockerOptIn" in source
     assert "if ($RunLaunchSafetyBrowserOptIn" in source
+
+
+def test_release_gate_records_default_sections_and_renders_canonical_result() -> None:
+    gate = Path(__file__).resolve().parents[2] / "scripts" / "release_gate.ps1"
+    source = gate.read_text(encoding="utf-8")
+
+    assert "Invoke-LaunchSafetyRequiredEvidence" in source
+    for section in {
+        "artifacts",
+        "backend-focused",
+        "frontend-focused",
+        "rollback-local-rehearsal",
+        "backend-full-regression",
+        "frontend-serial-regression",
+        "source-scans",
+        "known-resource-timeout",
+        "external-gates",
+    }:
+        assert f'"{section}"' in source
+    assert "RenderLaunchSafetyFinalEvidence" in source
+    assert "docs/superpowers/results/2026-07-20-launch-safety-gate-evidence.md" in source
+    assert '"render", "--final"' in source
+    assert '"--output", $evidenceOutput' in source
+
+
+def test_release_gate_requires_clean_head_before_docker_prerequisites() -> None:
+    gate = Path(__file__).resolve().parents[2] / "scripts" / "release_gate.ps1"
+    source = gate.read_text(encoding="utf-8")
+
+    clean_head = source.index("git status --porcelain --untracked-files=all")
+    docker_lookup = source.index("Get-Command docker")
+    compose_start = source.index("Invoke-RecordedComposeHarness")
+
+    assert clean_head < docker_lookup < compose_start

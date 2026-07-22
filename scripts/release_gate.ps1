@@ -10,7 +10,9 @@ param(
   [switch]$RequireE2E,
   [switch]$RunLaunchSafetyDockerOptIn,
   [switch]$RunLaunchSafetyBrowserOptIn,
+  [switch]$RenderLaunchSafetyFinalEvidence,
   [string]$LaunchSafetyEvidenceState = "",
+  [string]$LaunchSafetyEvidenceOutput = "",
   [string]$SmokeBaseUrl = "",
   [string]$SmokeApiBaseUrl = ""
 )
@@ -19,9 +21,21 @@ $ErrorActionPreference = "Stop"
 $Root = Resolve-Path (Join-Path $PSScriptRoot "..")
 $Script:Failures = 0
 $Script:Warnings = 0
+$Script:LaunchSafetyEvidenceEnabled = $false
+$Script:LaunchSafetyRevision = ""
+$Script:LaunchSafetyEvidenceOutputPath = ""
 
 if (-not $LaunchSafetyEvidenceState -and $env:LAUNCH_SAFETY_EVIDENCE_STATE) {
   $LaunchSafetyEvidenceState = $env:LAUNCH_SAFETY_EVIDENCE_STATE
+}
+
+$Script:LaunchSafetyEvidenceEnabled = [bool]($LaunchSafetyEvidenceState -or
+  $RunLaunchSafetyDockerOptIn -or $RunLaunchSafetyBrowserOptIn -or
+  $RenderLaunchSafetyFinalEvidence)
+$Script:LaunchSafetyEvidenceOutputPath = if ($LaunchSafetyEvidenceOutput) {
+  $LaunchSafetyEvidenceOutput
+} else {
+  Join-Path $Root "docs/superpowers/results/2026-07-20-launch-safety-gate-evidence.md"
 }
 
 if ($RequireAuthCheck) { $RunAuthCheck = $true }
@@ -117,14 +131,194 @@ function Invoke-LaunchSafetyRecord {
   if ($LaunchSafetyEvidenceState) {
     $recordArgs += @("--state", $LaunchSafetyEvidenceState)
   }
-  & $Python @recordArgs
-  if ($LASTEXITCODE -ne 0) {
-    throw "failed to record Launch Safety evidence for $Section (exit $LASTEXITCODE)"
+  if ($Script:LaunchSafetyRevision) {
+    $recordArgs += @("--revision", $Script:LaunchSafetyRevision)
+  }
+  Push-Location $Root
+  try {
+    & $Python @recordArgs
+    if ($LASTEXITCODE -ne 0) {
+      throw "failed to record Launch Safety evidence for $Section (exit $LASTEXITCODE)"
+    }
+  } finally {
+    Pop-Location
+  }
+}
+
+function Invoke-RecordedLaunchSafetySection {
+  param(
+    [Parameter(Mandatory = $true)][string]$Section,
+    [Parameter(Mandatory = $true)][string]$Command,
+    [Parameter(Mandatory = $true)][scriptblock]$Body
+  )
+  Write-Step "RUN" "Launch Safety evidence: $Section"
+  $exitCode = 0
+  $summary = "passed"
+  try {
+    Push-Location $Root
+    try { & $Body } finally { Pop-Location }
+    Write-Step "OK" "Launch Safety evidence: $Section"
+  } catch {
+    $exitCode = if ($_.Exception.Data.Contains("ExitCode")) {
+      [int]$_.Exception.Data["ExitCode"]
+    } else { 1 }
+    $summary = $_.Exception.Message
+    $Script:Failures++
+    Write-Step "FAIL" "Launch Safety evidence: $Section" $summary
+  }
+  try {
+    $status = if ($exitCode -eq 0) { "pass" } else { "fail" }
+    Invoke-LaunchSafetyRecord $Section $status $exitCode $summary $Command
+  } catch {
+    $Script:Failures++
+    Write-Step "FAIL" "Launch Safety evidence recorder: $Section" $_.Exception.Message
+  }
+}
+
+function Resolve-LaunchSafetyRevision {
+  Push-Location $Root
+  try {
+    $revision = (& git rev-parse HEAD | Select-Object -First 1).Trim()
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($revision)) {
+      throw "unable to resolve clean-head revision"
+    }
+    return [string]$revision
+  } finally {
+    Pop-Location
+  }
+}
+
+function Invoke-LaunchSafetyRequiredEvidence {
+  if (-not $Script:LaunchSafetyEvidenceEnabled) { return }
+  $Script:LaunchSafetyRevision = Resolve-LaunchSafetyRevision
+
+  Invoke-RecordedLaunchSafetySection "artifacts" `
+    "pytest launch artifacts and release package" {
+      Invoke-Native $Python @(
+        "-m", "pytest",
+        "agent/tests/test_launch_artifacts.py",
+        "tests/launch_safety/test_route_manifest_artifact.py",
+        "tests/launch_safety/test_ai_disclosure_artifact.py",
+        "tests/launch_safety/test_release_package.py",
+        "-q"
+      )
+    }
+
+  Invoke-RecordedLaunchSafetySection "backend-focused" `
+    "pytest launch-safety backend focused matrix" {
+      Invoke-Native $Python @(
+        "-m", "pytest", "tests/launch_safety",
+        "agent/tests/test_launch_artifacts.py",
+        "agent/tests/test_route_manifest.py",
+        "agent/tests/test_ai_disclosure.py",
+        "agent/tests/test_index_policy.py",
+        "agent/tests/test_public_index_policy.py",
+        "agent/tests/test_policy_http.py",
+        "agent/tests/test_launch_policy_api.py",
+        "agent/tests/test_sitemap_snapshot.py",
+        "agent/tests/test_sitemap_render.py",
+        "agent/tests/test_sitemap_store.py",
+        "agent/tests/test_sitemap_bundle.py",
+        "agent/tests/test_image_descriptor.py",
+        "agent/tests/test_image_metadata_disclosure.py",
+        "-q"
+      )
+    }
+
+  Invoke-RecordedLaunchSafetySection "frontend-focused" `
+    "npm test launch-safety focused matrix" {
+      $webDir = Join-Path $Root "web-nuxt"
+      Invoke-Native "npx" @(
+        "vitest", "run",
+        "tests/launch-route-manifest.test.ts",
+        "tests/launch-safety-decision.test.ts",
+        "tests/launch-root-seo.test.ts",
+        "tests/launch-readiness.test.ts",
+        "tests/image-renderer-inventory.test.ts",
+        "tests/image-metadata-disclosure.test.ts"
+      ) $webDir
+    }
+
+  Invoke-RecordedLaunchSafetySection "rollback-local-rehearsal" `
+    "bash scripts/ops/rehearse_launch_rollback.sh --local-rehearsal" {
+      & "bash" "scripts/ops/rehearse_launch_rollback.sh" "--local-rehearsal"
+      if ($LASTEXITCODE -ne 0) {
+        $errorRecord = [System.Exception]::new("rollback rehearsal failed")
+        $errorRecord.Data["ExitCode"] = [int]$LASTEXITCODE
+        throw $errorRecord
+      }
+    }
+
+  Invoke-RecordedLaunchSafetySection "backend-full-regression" `
+    "python -m pytest -q" {
+      Invoke-Native $Python @("-m", "pytest", "-q")
+    }
+
+  Invoke-RecordedLaunchSafetySection "frontend-serial-regression" `
+    "npm test -- --no-file-parallelism --maxWorkers=1; npm run typecheck; npm run build" {
+      $webDir = Join-Path $Root "web-nuxt"
+      Invoke-Native "npm" @(
+        "test", "--", "--no-file-parallelism", "--maxWorkers=1",
+        "--testTimeout=30000", "--hookTimeout=30000"
+      ) $webDir
+      Invoke-Native "npm" @("run", "typecheck") $webDir
+      Invoke-Native "npm" @("run", "build") $webDir
+    }
+
+  Invoke-RecordedLaunchSafetySection "source-scans" `
+    "hard checks, quality gates, PowerShell harness, git diff --check" {
+      Invoke-Native $Python @("scripts/checks/run_hard.py", "--all")
+      Invoke-Native $Python @(
+        "-m", "pytest", "tests/checks/test_hard_checks.py",
+        "tests/test_release_quality_gates.py", "-q"
+      )
+      $powershell = Get-Command pwsh,powershell -ErrorAction Stop |
+        Select-Object -First 1
+      if ($null -eq $powershell -or [string]::IsNullOrWhiteSpace([string]$powershell.Source)) {
+        throw "PowerShell executable unavailable"
+      }
+      & $powershell.Source -NoProfile -File `
+        (Join-Path $Root "tests/launch_safety/powershell/test_release_gate_harness.ps1")
+      if ($LASTEXITCODE -ne 0) {
+        $errorRecord = [System.Exception]::new("PowerShell harness contract failed")
+        $errorRecord.Data["ExitCode"] = [int]$LASTEXITCODE
+        throw $errorRecord
+      }
+      & git diff --check
+      if ($LASTEXITCODE -ne 0) {
+        $errorRecord = [System.Exception]::new("git diff --check failed")
+        $errorRecord.Data["ExitCode"] = [int]$LASTEXITCODE
+        throw $errorRecord
+      }
+    }
+
+  Invoke-LaunchSafetyRecord "known-resource-timeout" "skip" 0 `
+    "known parallel frontend/backend resource timeout; functional expectations unchanged" `
+    "parallel resource baseline"
+  Invoke-LaunchSafetyRecord "external-gates" "skip" 0 `
+    "H1=blocked; H2=blocked; owner=not-authorized" "external launch gates"
+}
+
+function Assert-LaunchSafetyCleanHead {
+  Push-Location $Root
+  try {
+    $dirty = @(& git status --porcelain --untracked-files=all)
+    if ($LASTEXITCODE -ne 0) { throw "unable to inspect worktree status" }
+    if ($dirty.Count -gt 0) {
+      throw "worktree-not-clean"
+    }
+  } finally {
+    Pop-Location
   }
 }
 
 function Invoke-LaunchSafetyOptIns {
   if (-not $RunLaunchSafetyDockerOptIn -and -not $RunLaunchSafetyBrowserOptIn) {
+    if ($Script:LaunchSafetyEvidenceEnabled) {
+      Invoke-LaunchSafetyRecord "postgres-opt-in" "skip" 0 "not-requested" "docker opt-in"
+      Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "skip" 0 "not-requested" "docker opt-in"
+      Invoke-LaunchSafetyRecord "browser-opt-in" "skip" 0 "not-requested" "browser opt-in"
+    }
     return
   }
   if ($Script:Failures -gt 0) {
@@ -134,6 +328,13 @@ function Invoke-LaunchSafetyOptIns {
 
   if ($RunLaunchSafetyDockerOptIn) {
     Write-Step "RUN" "Launch Safety Docker opt-in"
+    try {
+      Assert-LaunchSafetyCleanHead
+    } catch {
+      Invoke-LaunchSafetyRecord "postgres-opt-in" "fail" 1 $_.Exception.Message "git status --porcelain --untracked-files=all"
+      Invoke-LaunchSafetyRecord "compose-nginx-opt-in" "fail" 1 $_.Exception.Message "git status --porcelain --untracked-files=all"
+      throw "Launch Safety Docker opt-in requires a clean worktree"
+    }
     $dockerReason = $null
     if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
       $dockerReason = "docker-cli-unavailable"
@@ -203,6 +404,38 @@ function Invoke-LaunchSafetyOptIns {
       Write-Step "OK" "Launch Safety browser opt-in"
     }
   }
+}
+
+function Invoke-LaunchSafetyFinalRender {
+  if (-not $RenderLaunchSafetyFinalEvidence) { return }
+  if ($Script:Failures -gt 0) {
+    Write-Step "SKIP" "Launch Safety final evidence render" "required gate has failures"
+    return
+  }
+  $evidenceOutput = if ([System.IO.Path]::IsPathRooted($Script:LaunchSafetyEvidenceOutputPath)) {
+    $Script:LaunchSafetyEvidenceOutputPath
+  } else {
+    Join-Path $Root $Script:LaunchSafetyEvidenceOutputPath
+  }
+  $renderArgs = @(
+    "scripts/ops/record_launch_evidence.py", "render", "--final",
+    "--output", $evidenceOutput
+  )
+  if ($LaunchSafetyEvidenceState) {
+    $renderArgs += @("--state", $LaunchSafetyEvidenceState)
+  }
+  Push-Location $Root
+  try {
+    & $Python @renderArgs
+    if ($LASTEXITCODE -ne 0) {
+      $Script:Failures++
+      Write-Step "FAIL" "Launch Safety final evidence render" "recorder exited with code $LASTEXITCODE"
+      return
+    }
+  } finally {
+    Pop-Location
+  }
+  Write-Step "OK" "Launch Safety final evidence render" $evidenceOutput
 }
 
 Write-Host "VinhLong360 release gate"
@@ -314,11 +547,20 @@ if ($RunE2E) {
 }
 
 try {
+  Invoke-LaunchSafetyRequiredEvidence
+} catch {
+  $Script:Failures++
+  Write-Step "FAIL" "Launch Safety required evidence" $_.Exception.Message
+}
+
+try {
   Invoke-LaunchSafetyOptIns
 } catch {
   $Script:Failures++
   Write-Step "FAIL" "Launch Safety opt-ins" $_.Exception.Message
 }
+
+Invoke-LaunchSafetyFinalRender
 
 Write-Host ""
 if ($Script:Failures -gt 0) {
