@@ -44,31 +44,62 @@ FUNCTIONAL_SECTIONS = {
     "source-scans",
 }
 OPT_IN_SECTIONS = {"postgres-opt-in", "compose-nginx-opt-in", "browser-opt-in"}
-ALLOWED_SKIP_REASONS = {
-    "docker-cli-unavailable",
-    "docker-daemon-unavailable",
-    "chrome-unavailable",
+OPT_IN_SKIP_REASONS = {
+    "postgres-opt-in": {"docker-cli-unavailable", "docker-daemon-unavailable"},
+    "compose-nginx-opt-in": {"docker-cli-unavailable", "docker-daemon-unavailable"},
+    "browser-opt-in": {"chrome-unavailable"},
 }
 DEFAULT_EXTERNAL_GATES = {
     "H1": "blocked",
     "H2": "blocked",
     "owner": "not-authorized",
 }
+EXTERNAL_GATE_SUMMARY = "H1=blocked; H2=blocked; owner=not-authorized"
 STATE_VERSION = 1
 MAX_TEXT = 500
+_NEWLINES = re.compile(r"\r\n?|\n")
+_URL_USERINFO = re.compile(
+    r"(?P<scheme>\b[a-z][a-z0-9+.-]*://)(?P<userinfo>[^/@\s]+)@",
+    re.IGNORECASE,
+)
 _SECRET_QUERY = re.compile(
-    r"([?&](?:token|access_token|auth|authorization|session|session_token|vl360_token|code)=)[^&#\s]+",
+    r"([?&](?:password|passwd|secret|token|access[_-]?token|refresh[_-]?token|"
+    r"auth|authorization|session|session_token|vl360_token|api[_-]?key|code)=)[^&#\s]+",
+    re.IGNORECASE,
+)
+_SECRET_ARG = re.compile(
+    r"(?P<prefix>(?<!\S)--(?:password|passwd|secret|token|access[-_]?token|"
+    r"refresh[-_]?token|auth|authorization|api[-_]?key|client[-_]?secret|"
+    r"database[-_]?(?:url|dsn))(?:=|\s+))"
+    r"(?P<value>\"[^\"]*\"|'[^']*'|[^\s]+)",
     re.IGNORECASE,
 )
 _SECRET_ASSIGNMENT = re.compile(
-    r"((?:password|passwd|secret|token|authorization)\s*[=:]\s*)[^\s,;]+",
+    r"((?:password|passwd|secret|token|access[-_]?token|refresh[-_]?token|"
+    r"authorization|api[-_]?key|client[-_]?secret)\s*[=:]\s*)[^\s,;]+",
     re.IGNORECASE,
 )
 
 
 def _redact(value: str) -> str:
-    value = _SECRET_QUERY.sub(r"\1[redacted]", str(value))
-    return _SECRET_ASSIGNMENT.sub(r"\1[redacted]", value)[:MAX_TEXT]
+    value = str(value)
+    value = _URL_USERINFO.sub(r"\g<scheme>[redacted]@", value)
+    value = _SECRET_QUERY.sub(r"\1[redacted]", value)
+    value = _SECRET_ARG.sub(r"\g<prefix>[redacted]", value)
+    value = _SECRET_ASSIGNMENT.sub(r"\1[redacted]", value)
+    return _NEWLINES.sub(r"\\n", value)[:MAX_TEXT]
+
+
+def _markdown_escape(value: str) -> str:
+    escaped: list[str] = []
+    length = 0
+    for character in _redact(value):
+        fragment = "\\" + character if character in {"|", "`"} else character
+        if length + len(fragment) > MAX_TEXT:
+            break
+        escaped.append(fragment)
+        length += len(fragment)
+    return "".join(escaped)
 
 
 def _default_state_path() -> Path:
@@ -90,6 +121,8 @@ class CommandEvidence:
             raise ValueError(f"invalid evidence status: {self.status}")
         if not isinstance(self.exit_code, int):
             raise TypeError("exit_code must be an integer")
+        if self.status in {"pass", "skip"} and self.exit_code != 0:
+            raise ValueError(f"{self.status} evidence exit_code must be 0")
         object.__setattr__(self, "command", _redact(self.command))
         object.__setattr__(self, "summary", _redact(self.summary))
 
@@ -136,8 +169,9 @@ class EvidenceDocument:
     ) -> None:
         self.path = Path(path)
         self.sections = sections or {}
-        self.external_gates = dict(external_gates or DEFAULT_EXTERNAL_GATES)
-        self.revision = revision
+        selected_gates = DEFAULT_EXTERNAL_GATES if external_gates is None else external_gates
+        self.external_gates = dict(selected_gates)
+        self.revision = _redact(revision).strip()
 
     @classmethod
     def empty(cls, path: Path) -> "EvidenceDocument":
@@ -202,19 +236,27 @@ class EvidenceDocument:
             raise ValueError(
                 "missing evidence sections: " + ", ".join(sorted(missing))
             )
+        if not self.revision.strip() or self.revision.strip().lower() == "unknown":
+            raise ValueError("final evidence revision is empty or unknown")
         if self.external_gates != DEFAULT_EXTERNAL_GATES:
             raise ValueError("external gates do not match the approved blocked state")
         for name in FUNCTIONAL_SECTIONS:
             if self.sections[name].status != "pass":
                 raise ValueError(f"functional section is not pass: {name}")
+        failed = sorted(
+            name for name, evidence in self.sections.items() if evidence.status == "fail"
+        )
+        if failed:
+            raise ValueError("failed evidence section: " + ", ".join(failed))
         for name in OPT_IN_SECTIONS:
             evidence = self.sections[name]
-            if evidence.status == "fail":
-                raise ValueError(f"opt-in section failed: {name}")
-            if evidence.status == "skip" and evidence.summary not in ALLOWED_SKIP_REASONS:
+            if evidence.status == "skip" and evidence.summary not in OPT_IN_SKIP_REASONS[name]:
                 raise ValueError(
                     f"opt-in section has invalid skip reason: {name}/{evidence.summary}"
                 )
+        external = self.sections["external-gates"]
+        if external.status != "skip" or external.summary != EXTERNAL_GATE_SUMMARY:
+            raise ValueError("external gates must be exact informational evidence")
 
     def render(self, *, final: bool = False) -> str:
         if final:
@@ -223,7 +265,7 @@ class EvidenceDocument:
         generated = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
         lines = [
             "> STATUS: " + status,
-            f"> Revision: {_redact(self.revision)}",
+            f"> Revision: {_markdown_escape(self.revision)}",
             f"> Generated: {generated} UTC",
             "> Scope: reproducible local gate evidence only; no live SLA claim.",
             "",
@@ -236,8 +278,8 @@ class EvidenceDocument:
                 lines.append(f"| `{name}` | — | — | missing | — |")
                 continue
             lines.append(
-                f"| `{name}` | `{evidence.command}` | {evidence.exit_code} | "
-                f"{evidence.status} | {_redact(evidence.summary)} |"
+                f"| `{name}` | `{_markdown_escape(evidence.command)}` | {evidence.exit_code} | "
+                f"{evidence.status} | {_markdown_escape(evidence.summary)} |"
             )
         lines.extend(
             [
@@ -259,12 +301,15 @@ def record_section(
     """Load, upsert, and persist a single evidence section."""
 
     document = EvidenceDocument.load(evidence_path or _default_state_path())
-    if revision:
-        if document.revision not in {"unknown", revision}:
+    if revision is not None:
+        normalized_revision = _redact(revision).strip()
+        if not normalized_revision or normalized_revision.lower() == "unknown":
+            raise ValueError("evidence revision is empty or unknown")
+        if document.revision.lower() != "unknown" and document.revision != normalized_revision:
             raise ValueError(
-                f"evidence revision mismatch: {document.revision} != {revision}"
+                f"evidence revision mismatch: {document.revision} != {normalized_revision}"
             )
-        document.revision = _redact(revision)
+        document.revision = normalized_revision
     document.record(name, evidence)
     document.save()
 
